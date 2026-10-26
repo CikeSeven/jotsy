@@ -4,7 +4,9 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
+import 'package:node_diary/ui/calendar/widgets/calendar_day_cell.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_day_heading.dart';
+import 'package:node_diary/ui/calendar/widgets/calendar_header.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_month_grid.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_year_view.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -69,8 +71,29 @@ void main() {
           .rowHeight,
       greaterThan(CalendarMonthGrid.rowHeight),
     );
-    // 双栏时页头始终展开：月份行可见。
+    // 月份行在左栏卡片正上方、与卡片同宽，页头只留标题栏。
     expect(find.byTooltip(l10n.autoT0184).hitTestable(), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(CalendarHeader),
+        matching: find.byType(CalendarMonthBar),
+      ),
+      findsNothing,
+    );
+    final monthBar = tester.getRect(find.byType(CalendarMonthBar));
+    expect(monthBar.left, 40);
+    expect(monthBar.width, 600);
+    expect(monthBar.bottom, lessThan(gridRect.top));
+    // 日期高亮保持手机比例：选中的今天最宽 64，居中在格子里。
+    final cellRect = tester.getRect(
+      find
+          .descendant(
+            of: find.byType(CalendarDayCell),
+            matching: find.byType(AnimatedContainer),
+          )
+          .first,
+    );
+    expect(cellRect.width, lessThanOrEqualTo(64));
 
     await tester.tap(_gridDay(other.day));
     await tester.pumpAndSettle();
@@ -155,18 +178,50 @@ void main() {
     );
   });
 
-  test('wide rows grow with the cell width but never shrink', () {
-    expect(
-      CalendarMonthGrid.wideRowHeight(300, lunar: false),
-      CalendarMonthGrid.rowHeight,
-    );
+  test('wide rows follow 0.6 of the cell width within 56 to 76', () {
+    expect(CalendarMonthGrid.wideRowHeight(300, lunar: false), 56);
     expect(
       CalendarMonthGrid.wideRowHeight(700, lunar: false),
-      moreOrLessEquals(70),
+      moreOrLessEquals(60),
     );
     expect(
       CalendarMonthGrid.wideRowHeight(700, lunar: true),
-      moreOrLessEquals(80),
+      moreOrLessEquals(68),
     );
+    expect(CalendarMonthGrid.wideRowHeight(1400, lunar: false), 76);
+    expect(CalendarMonthGrid.wideRowHeight(1400, lunar: true), 84);
   });
+
+  for (final size in const <Size>[Size(1183.2, 800), Size(901.6, 700)]) {
+    testWidgets('a fractional ${size.width} wide window pages months '
+        'without a precision assertion', (tester) async {
+      await pumpCalendarPage(tester, width: size.width, height: size.height);
+      final l10n = _l10n(tester);
+      final now = DateTime.now();
+
+      expect(
+        tester.getSize(find.byType(TableCalendar<DiaryCalendarMarker>)).width %
+            1,
+        0,
+      );
+      // 按钮翻一页、再左滑翻一页。
+      await tester.tap(find.byTooltip(l10n.autoT0185));
+      await tester.pumpAndSettle();
+      await tester.fling(
+        find.byType(CalendarMonthGrid),
+        const Offset(-400, 0),
+        1500,
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final focused = tester
+          .widget<CalendarMonthGrid>(find.byType(CalendarMonthGrid))
+          .focusedDay;
+      expect(
+        DateTime(focused.year, focused.month),
+        DateTime(now.year, now.month + 2),
+      );
+    });
+  }
 }

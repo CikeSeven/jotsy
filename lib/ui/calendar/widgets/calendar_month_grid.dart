@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -50,18 +48,23 @@ class CalendarMonthGrid extends StatefulWidget {
   static const double rowHeight = 52;
   static const double lunarRowHeight = 60;
 
-  /// 宽窗口下行高与格宽之比（不显示 / 显示农历）。
-  static const double wideRowAspect = 0.7;
-  static const double wideLunarRowAspect = 0.8;
+  /// 宽窗口的行高：格宽 × [wideRowAspect]，夹在 [wideRowMin]–[wideRowMax]
+  /// 之间；显示农历时多 [wideLunarExtra] 给小字行。手机布局不走这里，行高
+  /// 保持 52 / 60 不变。
+  static const double wideRowAspect = 0.6;
+  static const double wideRowMin = 56;
+  static const double wideRowMax = 76;
+  static const double wideLunarExtra = 8;
 
-  /// 宽窗口的行高：网格宽 [gridWidth] 平分 7 列，行高取格宽乘以比例，但不
-  /// 低于手机上的固定行高。手机布局不走这里，行高保持 52 / 60 不变。
+  /// 宽窗口下日期格高亮（选中填色、今天描边等）的最大宽度：与手机上的
+  /// 格子比例相当，居中在变宽的格子里，不会铺成一大块。
+  static const double wideHighlightMaxWidth = 64;
+
+  /// 宽窗口的行高：网格宽 [gridWidth] 平分 7 列后按上述规则换算。
   static double wideRowHeight(double gridWidth, {required bool lunar}) {
     final cellWidth = gridWidth / DateTime.daysPerWeek;
-    return math.max(
-      lunar ? lunarRowHeight : rowHeight,
-      cellWidth * (lunar ? wideLunarRowAspect : wideRowAspect),
-    );
+    final base = (cellWidth * wideRowAspect).clamp(wideRowMin, wideRowMax);
+    return lunar ? base + wideLunarExtra : base;
   }
 
   final DateTime focusedDay;
@@ -175,6 +178,9 @@ class CalendarMonthGrid extends StatefulWidget {
                 lunar: lunar ? CalendarLunarDay.of(day) : null,
                 holiday: holidays ? CalendarHolidayDay.of(day) : null,
                 anniversary: anniversaryIndex?.titleOn(day),
+                highlightMaxWidth: gridWidth == null
+                    ? null
+                    : wideHighlightMaxWidth,
               );
             },
         dowBuilder: (BuildContext context, DateTime day) {
@@ -187,7 +193,8 @@ class CalendarMonthGrid extends StatefulWidget {
                   day.weekday == DateTime.sunday);
           // 周末着色时星期栏的“六、日”也铺同样的灰底，与下方日期格连成
           // 一条竖向色带。
-          return Padding(
+          // 宽窗口下周末色带与日期格高亮同宽，上下连成一条。
+          final band = Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -209,6 +216,12 @@ class CalendarMonthGrid extends StatefulWidget {
               ),
             ),
           );
+          return gridWidth == null
+              ? band
+              : CalendarDayCell.limitWidth(
+                  band,
+                  maxWidth: wideHighlightMaxWidth + 4,
+                );
         },
       ),
     );
@@ -279,8 +292,19 @@ class _CalendarMonthGridState extends State<CalendarMonthGrid> {
     bucket: _pageStorageBucket,
     child: widget.scaleRowsWithWidth
         ? LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) =>
-                widget._buildCalendar(context, gridWidth: constraints.maxWidth),
+            builder: (BuildContext context, BoxConstraints constraints) {
+              // 网格宽度取整：table_calendar 的 PageView 在小数宽度下翻页会
+              // 触发 SliverFillViewport 的精度断言（debug 构建），而桌面窗口
+              // 的逻辑宽度常是小数（如 1183.2 @ 1.25 倍）。余下不到 1 的
+              // 宽度分在两侧。
+              final gridWidth = constraints.maxWidth.floorToDouble();
+              return Center(
+                child: SizedBox(
+                  width: gridWidth,
+                  child: widget._buildCalendar(context, gridWidth: gridWidth),
+                ),
+              );
+            },
           )
         : widget._buildCalendar(context),
   );

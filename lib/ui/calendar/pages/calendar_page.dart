@@ -282,29 +282,30 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
     // 页头、日历卡片与选中日各区块在这里一次装配好，窄屏单列、宽屏居中
     // 单列与双栏只是摆放方式不同（见 calendar_page_layout.dart）。
-    Widget buildHeader(double collapsedExtent, double horizontalInset) =>
-        CalendarHeader(
-          title: _controller.focusedMonthTitle,
-          month: _focusedMonth,
-          onJumpToToday: _controller.jumpToToday,
-          onPreviousMonth: _controller.goToPreviousMonth,
-          onNextMonth: _controller.goToNextMonth,
-          onPickDate: _controller.onTitlePressed,
-          onOpenDisplayOptions: () =>
-              unawaited(_controller.openDisplayOptions()),
-          onOpenFilter: () => unawaited(_controller.openFilter()),
-          onOpenAnniversaries: anniversariesEnabled
-              ? () => unawaited(openAnniversaryList(context))
-              : null,
-          filterActive: _filter.isActive,
-          titleTooltip: _yearMode
-              ? l10n.autoT0177
-              : l10n.calendarYearViewTooltip,
-          previousTooltip: _yearMode ? l10n.calendarPreviousYear : null,
-          nextTooltip: _yearMode ? l10n.calendarNextYear : null,
-          collapsedExtent: collapsedExtent,
-          horizontalInset: horizontalInset,
-        );
+    CalendarHeader buildHeader(
+      double collapsedExtent,
+      double horizontalInset, {
+      bool showMonthBar = true,
+    }) => CalendarHeader(
+      title: _controller.focusedMonthTitle,
+      month: _focusedMonth,
+      onJumpToToday: _controller.jumpToToday,
+      onPreviousMonth: _controller.goToPreviousMonth,
+      onNextMonth: _controller.goToNextMonth,
+      onPickDate: _controller.onTitlePressed,
+      onOpenDisplayOptions: () => unawaited(_controller.openDisplayOptions()),
+      onOpenFilter: () => unawaited(_controller.openFilter()),
+      onOpenAnniversaries: anniversariesEnabled
+          ? () => unawaited(openAnniversaryList(context))
+          : null,
+      filterActive: _filter.isActive,
+      titleTooltip: _yearMode ? l10n.autoT0177 : l10n.calendarYearViewTooltip,
+      previousTooltip: _yearMode ? l10n.calendarPreviousYear : null,
+      nextTooltip: _yearMode ? l10n.calendarNextYear : null,
+      collapsedExtent: collapsedExtent,
+      horizontalInset: horizontalInset,
+      showMonthBar: showMonthBar,
+    );
     Widget buildPanel({required bool wide}) => _buildCalendarPanel(
       options: options,
       filter: filter,

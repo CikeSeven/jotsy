@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../app/theme/expressive_motion.dart';
+import '../../core/services/app_platform.dart';
 
 /// 长内容的构建函数：[contentSize] 为内容尺寸，[visible] 为当前可见区域
 /// （内容坐标，已按缩放换算）。
@@ -28,6 +31,12 @@ typedef DoubleTapZoomContentBuilder =
 /// [builder] 拿到内容尺寸与当前可见区域（内容坐标），只需构建可见的部分。
 /// 宿主应关闭下拉关闭手势（竖向拖动要留给滚动），并可经 [onScrolledChanged]
 /// 得知是否已离开顶部。
+///
+/// 鼠标滚轮：普通模式沿用 InteractiveViewer，滚轮即缩放；长内容在桌面上普通
+/// 滚轮改为上下滚动（按住 Ctrl / ⌘ 时仍缩放，触控板捏合照常缩放、双指滑动
+/// 照常平移）。InteractiveViewer 的滚轮缩放不经 pointerSignalResolver，无法
+/// 抢先拦下，所以没按修饰键时把它的滚轮缩放倍率设成近乎无穷（每格缩放
+/// 系数恒为 1），平移由里层的 Listener 完成。
 class DoubleTapZoomViewer extends StatefulWidget {
   const DoubleTapZoomViewer({
     super.key,
@@ -85,14 +94,38 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
 
   bool get _tall => widget.contentHeightFactor != null;
 
+  /// 桌面长内容：普通滚轮用来滚动，只有按住 Ctrl / ⌘ 时滚轮才缩放。
+  bool get _wheelScrolls => _tall && AppPlatform.isDesktop;
+
+  /// Ctrl / ⌘ 是否按着（[_wheelScrolls] 时跟踪，决定滚轮缩放倍率）。
+  bool _zoomModifier = false;
+
+  static bool _modifierPressed() {
+    final keyboard = HardwareKeyboard.instance;
+    return keyboard.isControlPressed || keyboard.isMetaPressed;
+  }
+
+  bool _handleKey(KeyEvent event) {
+    final pressed = _modifierPressed();
+    if (pressed != _zoomModifier && mounted) {
+      setState(() => _zoomModifier = pressed);
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
     _transformation.addListener(_handleTransformationChanged);
+    if (_wheelScrolls) {
+      _zoomModifier = _modifierPressed();
+      HardwareKeyboard.instance.addHandler(_handleKey);
+    }
   }
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKey);
     _zoomController.dispose();
     _transformation.dispose();
     super.dispose();
@@ -205,6 +238,9 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
                   transformationController: _transformation,
                   minScale: 1,
                   maxScale: widget.maxScale,
+                  scaleFactor: _wheelScrolls && !_zoomModifier
+                      ? double.maxFinite
+                      : kDefaultMouseScrollToScaleFactor,
                   onInteractionStart: (_) => _zoomController.stop(),
                   builder: (BuildContext context, viewport) {
                     // 视口四角映射回内容坐标后的外接矩形即可见区域。
@@ -214,7 +250,7 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
                       Offset(viewport.point2.x, viewport.point2.y),
                       Offset(viewport.point3.x, viewport.point3.y),
                     ];
-                    return SizedBox.fromSize(
+                    final content = SizedBox.fromSize(
                       size: _contentSize,
                       child: widget.builder!(
                         context,
@@ -222,11 +258,46 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
                         _boundsOf(corners),
                       ),
                     );
+                    if (!_wheelScrolls) {
+                      return content;
+                    }
+                    return Listener(
+                      onPointerSignal: _handlePointerSignal,
+                      child: content,
+                    );
                   },
                 ),
         );
       },
     );
+  }
+
+  /// 长内容在桌面上的滚轮：没按 Ctrl / ⌘ 时按滚动量平移（夹在内容范围内）；
+  /// 登记到 pointerSignalResolver，外层的滚动视图不再响应同一格滚轮。按住
+  /// 修饰键时不处理，由 InteractiveViewer 缩放。
+  void _handlePointerSignal(PointerSignalEvent event) {
+    if (event is! PointerScrollEvent || _modifierPressed()) return;
+    GestureBinding.instance.pointerSignalResolver.register(event, (
+      PointerSignalEvent event,
+    ) {
+      final delta = (event as PointerScrollEvent).scrollDelta;
+      _zoomController.stop();
+      final current = _transformation.value;
+      final scale = current.getMaxScaleOnAxis();
+      final translation = current.getTranslation();
+      final double minDx = math.min(
+        0.0,
+        _viewportSize.width - _contentSize.width * scale,
+      );
+      final double minDy = math.min(
+        0.0,
+        _viewportSize.height - _contentSize.height * scale,
+      );
+      final dx = (translation.x - delta.dx).clamp(minDx, 0.0);
+      final dy = (translation.y - delta.dy).clamp(minDy, 0.0);
+      _transformation.value = Matrix4.translationValues(dx, dy, 0)
+        ..scaleByDouble(scale, scale, 1, 1);
+    });
   }
 
   static Rect _boundsOf(List<Offset> corners) {

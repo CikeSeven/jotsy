@@ -1,6 +1,7 @@
 part of 'home_page.dart';
 
-/// 首页的底栏与“新建”入口（全局 FAB / 玻璃底栏并排按钮）的组装。
+/// 首页的底栏 / 侧边栏与“新建”入口（全局 FAB / 玻璃底栏并排按钮 / 侧边栏
+/// 顶部按钮）的组装。
 ///
 /// 只负责按 [HomeBarResolvedStyle] 与首页状态拼出 widget，状态（当前 Tab、
 /// 切页中、滚动隐藏、提示可见）都由 [_HomePageState] 持有与更新。
@@ -23,6 +24,62 @@ extension _HomePageChrome on _HomePageState {
       // 日记列表的滚动显隐：它在底栏里，不会挡住列表末尾。
       showInlineAction: _effectiveTab == HomeTab.diaries,
       hidden: _barHiddenByScroll,
+    );
+  }
+
+  /// 宽窗口的 Scaffold.body：侧边栏 + 页面区。
+  ///
+  /// 页面区 [content] 是挂着 GlobalKey 的同一棵子树（见 `_buildHomeShell`），
+  /// 外面再包切页入场 [HomeTabEntrance]，并去掉侧边栏已经避让过的那一侧
+  /// 系统内边距（横屏刘海等），各 Tab 不再重复留白。Row 在从右到左的语言
+  /// 下自动把侧边栏放到右侧。
+  Widget _buildWideBody({
+    required List<BottomNavItem> navItems,
+    required HomeBarResolvedStyle barStyle,
+    required Widget content,
+  }) {
+    final ltr = Directionality.of(context) == TextDirection.ltr;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        HomeNavRail(
+          items: navItems,
+          selectedIndex: _effectiveIndex,
+          onTap: _controller.onTap,
+          style: barStyle,
+          leading: _buildRailCreateButton(),
+        ),
+        Expanded(
+          // Builder 取 Scaffold.body 这一层的 MediaQuery（而不是首页外层的）。
+          child: Builder(
+            builder: (context) => MediaQuery.removePadding(
+              context: context,
+              removeLeft: ltr,
+              removeRight: !ltr,
+              child: HomeTabEntrance(
+                generation: _wideEntranceGeneration,
+                color: Theme.of(context).colorScheme.surface,
+                child: content,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 侧边栏顶部的新建按钮：文字（提示）与全局 FAB 相同，在任何 Tab 都可用。
+  Widget _buildRailCreateButton() {
+    return LaunchReveal(
+      slot: LaunchRevealSlot.action,
+      child: Consumer(
+        builder: (context, ref, _) => HomeNavRailCreateButton(
+          label: _createLabel(context, ref),
+          onPressed: () {
+            unawaited(_openCreate());
+          },
+        ),
+      ),
     );
   }
 

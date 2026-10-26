@@ -106,8 +106,11 @@ class HomeNavRail extends StatelessWidget {
         color: style.solidFill,
         child: SizedBox(
           width: AppContentWidth.navRail,
+          // 只避让侧边栏所在一侧（从右到左的语言下栏在右侧）与上下的系统
+          // 内边距，另一侧挨着页面区。
           child: SafeArea(
-            right: false,
+            left: Directionality.of(context) == TextDirection.ltr,
+            right: Directionality.of(context) == TextDirection.rtl,
             // 矮窗口或超大字体放不下时整列滚动；放得下时设置贴底。
             child: ScrollConfiguration(
               behavior: ScrollConfiguration.of(

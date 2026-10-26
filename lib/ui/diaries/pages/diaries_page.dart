@@ -69,11 +69,16 @@ class DiariesPage extends ConsumerStatefulWidget {
     super.key,
     this.pageBackgroundColor,
     this.onCreateActionChanged,
+    this.onSearchActionChanged,
     this.onFabVisibilityChanged,
   });
 
   final Color? pageBackgroundColor;
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
+
+  /// 向首页注册“打开搜索页”的入口（首页快捷键 Ctrl/⌘+F 使用），与
+  /// [onCreateActionChanged] 同样在挂载时注册、销毁时注销（传 null）。
+  final ValueChanged<VoidCallback?>? onSearchActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
 
   @override
@@ -190,6 +195,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       duration: _tagFilterSnapDuration,
     )..addListener(_syncTagFiltersExpanded);
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
+    widget.onSearchActionChanged?.call(_controller.openSearchPage);
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     unawaited(_controller.restoreRememberedTagFiltersOnStartup());
     // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。控制器值直接作为
@@ -208,6 +214,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       oldWidget.onCreateActionChanged?.call(null);
       widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
     }
+    if (oldWidget.onSearchActionChanged != widget.onSearchActionChanged) {
+      oldWidget.onSearchActionChanged?.call(null);
+      widget.onSearchActionChanged?.call(_controller.openSearchPage);
+    }
     if (oldWidget.onFabVisibilityChanged != widget.onFabVisibilityChanged) {
       widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     }
@@ -216,6 +226,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   @override
   void dispose() {
     widget.onCreateActionChanged?.call(null);
+    widget.onSearchActionChanged?.call(null);
     _transitionCoordinator.dispose();
     _pagingCooldownTimer?.cancel();
     _tagFilterExpansionController.dispose();

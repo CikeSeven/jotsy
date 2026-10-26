@@ -273,7 +273,7 @@ jobs:
   windows:
     name: Windows release build
     if: ${{ !inputs.skip-desktop-builds }}
-    # 与 Ubuntu 一样固定镜像：自带 Visual Studio 2022（C++ 桌面工作负载）。
+    # 固定 Windows Server 2025 镜像；Visual Studio / MSVC 仍会随镜像更新。
     runs-on: windows-2025
     timeout-minutes: 45
     steps:

@@ -343,7 +343,7 @@ jobs:
     if: >-
       ${{ !cancelled() && needs.ci.result == 'success' &&
       (needs.check-version.result == 'success' || needs.check-version.result == 'skipped') }}
-    # 与 CI 同一镜像：自带 Visual Studio 2022、Inno Setup 6 与 7-Zip。
+    # 与 CI 同一镜像；Visual Studio / MSVC 仍会更新，打包使用 Inno Setup 与 7-Zip。
     runs-on: windows-2025
     timeout-minutes: 60
     permissions:

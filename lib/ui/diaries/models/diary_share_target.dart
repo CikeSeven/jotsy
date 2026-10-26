@@ -101,7 +101,13 @@ class DiaryShareRequest {
       target = null,
       images = const <String>[];
 
-  /// 截取预览页生成长图后交给系统分享。
+  /// 把勾选的图片保存到文件（没有系统分享的平台，如 Linux）。
+  const DiaryShareRequest.saveImages(this.images)
+    : action = DiaryShareAction.saveImages,
+      target = null,
+      text = '';
+
+  /// 截取预览页生成长图后交给系统分享（桌面改为弹出保存对话框）。
   const DiaryShareRequest.longImage()
     : action = DiaryShareAction.longImage,
       target = null,
@@ -117,4 +123,4 @@ class DiaryShareRequest {
   final List<String> images;
 }
 
-enum DiaryShareAction { target, copyText, longImage }
+enum DiaryShareAction { target, copyText, saveImages, longImage }

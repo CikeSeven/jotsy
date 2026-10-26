@@ -12,6 +12,17 @@ import 'package:path/path.dart' as p;
 import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 
+/// 打开附件（含交给系统播放器的视频）失败时的提示文案。
+String diaryFileOpenFailureMessage(
+  AppLocalizations l10n,
+  FileOpenFailure failure,
+) => switch (failure) {
+  FileOpenFailure.missingFile => l10n.attachmentFileMissing,
+  FileOpenFailure.noApp => l10n.attachmentNoApp,
+  FileOpenFailure.permissionDenied => l10n.attachmentPermissionDenied,
+  FileOpenFailure.failed => l10n.attachmentOpenFailed,
+};
+
 /// 编辑态、阅读态共用的文件卡片；文件打开由 controller/service 管理。
 class DiaryAttachmentTile extends StatefulWidget {
   const DiaryAttachmentTile({
@@ -50,16 +61,10 @@ class _DiaryAttachmentTileState extends State<DiaryAttachmentTile> {
     final path = widget.attachment.path;
     final failure = await _controller.open(path);
     if (!mounted || failure == null || path != widget.attachment.path) return;
-    final l10n = context.l10n;
     await HomeHintVisibilityScope.showTrackedSnackBar(
       context: context,
       snackBar: SnackBar(
-        content: Text(switch (failure) {
-          FileOpenFailure.missingFile => l10n.attachmentFileMissing,
-          FileOpenFailure.noApp => l10n.attachmentNoApp,
-          FileOpenFailure.permissionDenied => l10n.attachmentPermissionDenied,
-          FileOpenFailure.failed => l10n.attachmentOpenFailed,
-        }),
+        content: Text(diaryFileOpenFailureMessage(context.l10n, failure)),
       ),
     );
   }

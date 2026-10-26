@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/desktop_save_service.dart';
 import 'package:node_diary/core/services/diary_share_channel.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_share_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_share_target.dart';
@@ -313,5 +314,83 @@ void main() {
       DiaryShareOutcome.nothingToShare,
     );
     expect(clipboard, <String>['内容']);
+  });
+
+  group('saveImages', () {
+    test('one image goes through Save as… with its staged name', () async {
+      final target = p.join(media.path, 'out.jpg');
+      final share = DiaryShareController(
+        channel: _FakeChannel(),
+        cacheDirectory: () async => cache,
+        desktopSaver: DesktopSaveService(
+          pickPath:
+              ({
+                required String dialogTitle,
+                required String fileName,
+                required String extension,
+              }) async {
+                expect(fileName, 'jotsy_01.jpg');
+                return target;
+              },
+        ),
+      );
+
+      final result = await share.saveImages(
+        <String>[await image('a.jpg'), p.join(media.path, 'gone.jpg')],
+        fileDialogTitle: 'Save image',
+        folderDialogTitle: 'Choose a folder',
+      );
+
+      expect(result.path, target);
+      expect(result.saved, 1);
+      expect(result.missing, 1);
+      expect(File(target).readAsBytesSync(), <int>[1, 2, 3]);
+    });
+
+    test('several images go into the chosen folder', () async {
+      final folder = await Directory(p.join(media.path, 'folder')).create();
+      final share = DiaryShareController(
+        channel: _FakeChannel(),
+        cacheDirectory: () async => cache,
+        desktopSaver: DesktopSaveService(
+          pickDirectory: ({required String dialogTitle}) async => folder.path,
+        ),
+      );
+
+      final result = await share.saveImages(
+        <String>[await image('a.png'), await image('b.jpg')],
+        fileDialogTitle: 'Save image',
+        folderDialogTitle: 'Choose a folder',
+      );
+
+      expect(result.path, folder.path);
+      expect(result.saved, 2);
+      expect(folder.listSync().map((e) => p.basename(e.path)).toSet(), <String>{
+        'jotsy_01.png',
+        'jotsy_02.jpg',
+      });
+    });
+
+    test('nothing readable means no dialog at all', () async {
+      final share = DiaryShareController(
+        channel: _FakeChannel(),
+        cacheDirectory: () async => cache,
+        desktopSaver: DesktopSaveService(
+          pickPath:
+              ({
+                required String dialogTitle,
+                required String fileName,
+                required String extension,
+              }) async => fail('dialog must not open'),
+        ),
+      );
+      final result = await share.saveImages(
+        <String>[p.join(media.path, 'gone.jpg')],
+        fileDialogTitle: 'Save image',
+        folderDialogTitle: 'Choose a folder',
+      );
+      expect(result.path, isNull);
+      expect(result.missing, 1);
+    });
   });
 }

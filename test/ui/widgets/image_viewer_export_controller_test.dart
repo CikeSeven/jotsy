@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,11 +15,22 @@ class _FakeExportService extends ImageExportService {
 
   Completer<void> pending = Completer<void>();
   int saveCalls = 0;
+  String? savedPath;
+  final List<String> fileSaves = <String>[];
 
   @override
   Future<void> saveToGallery(String source) {
     saveCalls++;
     return pending.future;
+  }
+
+  @override
+  Future<String?> saveToFile(
+    String source, {
+    required String dialogTitle,
+  }) async {
+    fileSaves.add(source);
+    return savedPath;
   }
 }
 
@@ -200,5 +212,38 @@ void main() {
     controller.dispose();
     service.pending.complete();
     expect(await pending, l10n.imageViewerSaveSuccess);
+  });
+
+  group('on desktop', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.linux);
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('saving opens Save as… and hints the saved path', () async {
+      final service = _FakeExportService()..savedPath = '/home/me/a.png';
+      final controller = ImageViewerExportController(
+        service: service,
+        share: _FakeShareController(),
+      );
+      addTearDown(controller.dispose);
+
+      expect(
+        await controller.saveToGallery('/a.png', l10n),
+        'Saved to /home/me/a.png',
+      );
+      expect(service.fileSaves, <String>['/a.png']);
+      expect(service.saveCalls, 0);
+    });
+
+    test('cancelling the save dialog shows no hint', () async {
+      final service = _FakeExportService();
+      final controller = ImageViewerExportController(
+        service: service,
+        share: _FakeShareController(),
+      );
+      addTearDown(controller.dispose);
+
+      expect(await controller.saveToGallery('/a.png', l10n), isNull);
+      expect(controller.isBusy, isFalse);
+    });
   });
 }

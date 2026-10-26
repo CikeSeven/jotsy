@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/database/audio_embed_codec.dart';
 import '../../../../core/database/file_embed_codec.dart';
+import '../../../../core/services/app_platform.dart';
 import '../../../../core/services/audio_playback_service.dart';
 import '../../../../core/services/video_export_service.dart';
 import '../../../../core/services/file_open_service.dart';
@@ -17,6 +18,7 @@ import '../diary_embedded_image.dart' show DiaryEmbeddedImage;
 import '../diary_image_options_menu.dart';
 import '../diary_playback_interaction_guard.dart';
 import '../diary_video_player.dart';
+import '../diary_video_poster_card.dart';
 import '../../models/diary_image_embed_data.dart';
 import '../../controllers/diary_editor_controller.dart';
 
@@ -161,12 +163,21 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
       case 'video':
         final video = DiaryFileAttachment.tryDecode(data);
         if (video == null) return Text(context.l10n.videoPlaybackFailed);
-        child = DiaryVideoPlayer(
-          key: ValueKey(video.path),
-          video: video,
-          player: widget.videoPlayerFactory?.call(video.path),
-          exportService: widget.videoExportService,
-        );
+        // video_player 没有 Linux / Windows 实现：那里换成交给系统播放器的
+        // 封面卡片，也不调用播放器工厂（不创建任何原生播放器）。
+        child = AppPlatform.supportsInlineVideo
+            ? DiaryVideoPlayer(
+                key: ValueKey(video.path),
+                video: video,
+                player: widget.videoPlayerFactory?.call(video.path),
+                exportService: widget.videoExportService,
+              )
+            : DiaryVideoPosterCard(
+                key: ValueKey(video.path),
+                video: video,
+                openService: widget.fileOpenService,
+                exportService: widget.videoExportService,
+              );
       case 'attachment':
         final file = DiaryFileAttachment.tryDecode(data);
         if (file == null) return Text(context.l10n.attachmentFileMissing);

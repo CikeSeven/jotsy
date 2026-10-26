@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/services/app_platform.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../export/diary_export_format.dart';
@@ -162,20 +163,23 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
             const SizedBox(height: AppSpacing.xl),
             Row(
               children: <Widget>[
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => Navigator.of(context).pop(
-                      DiaryExportRequest(
-                        _options,
-                        DiaryExportAction.share,
-                        bookStructure: _bookStructure,
+                // share_plus 在 Linux 上不能分享文件：只保留“保存到文件”。
+                if (AppPlatform.supportsSystemFileShare) ...<Widget>[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).pop(
+                        DiaryExportRequest(
+                          _options,
+                          DiaryExportAction.share,
+                          bookStructure: _bookStructure,
+                        ),
                       ),
+                      icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
+                      label: Text(l10n.commonShare),
                     ),
-                    icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
-                    label: Text(l10n.commonShare),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.m),
+                  const SizedBox(width: AppSpacing.m),
+                ],
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () => Navigator.of(context).pop(

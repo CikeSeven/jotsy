@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/image_export_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_share_controller.dart';
@@ -10,7 +11,8 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_share_messages.dart';
 /// - 输入：当前图片源、分享目标与本地化文案；
 /// - 输出：忙碌态（[isBusy]/[busyLabel]，驱动 loading 遮罩，忙碌时看图页不再
 ///   弹出长按面板）和需要展示的结果提示（方法返回值，null 表示无需提示）；
-/// - 副作用：经 [ImageExportService] 写入相册；分享与日记分享同一条链路
+/// - 副作用：经 [ImageExportService] 写入相册（桌面没有相册，弹出“另存为…”
+///   对话框写到用户选的位置）；分享与日记分享同一条链路
 ///   （[DiaryShareController]：图片先暂存到缓存 `diary_share/`，指定应用经原生
 ///   通道按包名拉起，“更多应用”经系统分享面板），不把日记原图路径直接交出去。
 ///
@@ -38,11 +40,21 @@ class ImageViewerExportController extends ChangeNotifier {
   Future<Set<DiaryShareTarget>> availableTargets() => _share.availableTargets();
 
   /// 保存到相册；返回成功或失败提示，忙碌中被忽略时返回 null。
+  ///
+  /// 桌面（[AppPlatform.savesImagesToGallery] 为 false）改为“另存为…”：
+  /// 成功提示带上保存路径，用户取消对话框时不提示（返回 null）。
   Future<String?> saveToGallery(String source, AppLocalizations l10n) {
     return _run(
       label: l10n.imageViewerSaving,
       task: () async {
         try {
+          if (!AppPlatform.savesImagesToGallery) {
+            final path = await service.saveToFile(
+              source,
+              dialogTitle: l10n.desktopSaveImageDialogTitle,
+            );
+            return path == null ? null : l10n.desktopSavedTo(path);
+          }
           await service.saveToGallery(source);
           return l10n.imageViewerSaveSuccess;
         } on ImageExportException catch (error) {

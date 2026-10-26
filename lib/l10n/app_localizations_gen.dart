@@ -2750,6 +2750,78 @@ abstract class AppLocalizations {
   /// **'Gallery permission denied, cannot save'**
   String get imageViewerGalleryPermissionDenied;
 
+  /// Desktop replacement for “Save to gallery” in the image viewer sheet, the in-text image menu and the support QR code button; opens a save dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as…'**
+  String get desktopSaveAs;
+
+  /// Title of the desktop save dialog for images (viewer, in-text images, QR codes, long images, year image).
+  ///
+  /// In en, this message translates to:
+  /// **'Save image'**
+  String get desktopSaveImageDialogTitle;
+
+  /// Title of the desktop save dialog when exporting a diary video.
+  ///
+  /// In en, this message translates to:
+  /// **'Save video'**
+  String get desktopSaveVideoDialogTitle;
+
+  /// Shown after a file was saved through the desktop save dialog; path is the full saved path.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to {path}'**
+  String desktopSavedTo(String path);
+
+  /// Share sheet button on platforms without a system share sheet (Linux): saves the selected images to a folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Save images…'**
+  String get diaryShareSaveImages;
+
+  /// Title of the folder picker when saving several images from the share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a folder for the images'**
+  String get diaryShareSaveImagesDialogTitle;
+
+  /// Shown after the share sheet saved several images; count is the number of images, path the folder.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Saved 1 image to {path}} other{Saved {count} images to {path}}}'**
+  String diaryShareImagesSaved(int count, String path);
+
+  /// Desktop name of the long-image entry in the share sheet: renders the long image, then opens a save dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as a long image…'**
+  String get diaryShareLongImageSave;
+
+  /// Platforms that cannot play videos inline (Linux, Windows): tooltip of the video card.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in system player'**
+  String get videoOpenExternally;
+
+  /// Platforms that cannot play videos inline: caption under the video poster card.
+  ///
+  /// In en, this message translates to:
+  /// **'Click to open in the system player'**
+  String get videoPosterHint;
+
+  /// Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux).
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no system verification (fingerprint, face or password), so locking isn\'t available'**
+  String get deviceAuthUnavailable;
+
+  /// Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this year as an image…'**
+  String get calendarYearSaveImage;
+
   /// Loading hint while preparing to share an image.
   ///
   /// In en, this message translates to:

@@ -1476,6 +1476,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String get imageViewerGalleryPermissionDenied => '未获得相册权限，无法保存';
 
   @override
+  String get desktopSaveAs => '另存为…';
+
+  @override
+  String get desktopSaveImageDialogTitle => '保存图片';
+
+  @override
+  String get desktopSaveVideoDialogTitle => '保存视频';
+
+  @override
+  String desktopSavedTo(String path) {
+    return '已保存到 $path';
+  }
+
+  @override
+  String get diaryShareSaveImages => '保存图片…';
+
+  @override
+  String get diaryShareSaveImagesDialogTitle => '选择保存图片的文件夹';
+
+  @override
+  String diaryShareImagesSaved(int count, String path) {
+    return '已把 $count 张图片保存到 $path';
+  }
+
+  @override
+  String get diaryShareLongImageSave => '保存为长图…';
+
+  @override
+  String get videoOpenExternally => '用系统播放器打开';
+
+  @override
+  String get videoPosterHint => '点按用系统播放器打开';
+
+  @override
+  String get deviceAuthUnavailable => '这台设备没有系统身份验证（指纹、面容或系统密码），无法上锁';
+
+  @override
+  String get calendarYearSaveImage => '保存这一年的图片…';
+
+  @override
   String get imageViewerSharing => '正在准备分享…';
 
   @override

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/file_open_service.dart';
@@ -74,5 +75,40 @@ void main() {
       },
     );
     expect(await service.open(file.path), FileOpenFailure.failed);
+  });
+
+  group('on desktop', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.linux);
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('local files open through a file URI with the default app', () async {
+      final uris = <Uri>[];
+      final service = FileOpenService(
+        desktopLauncher: (uri) async {
+          uris.add(uri);
+          return true;
+        },
+      );
+      expect(await service.open(file.path), isNull);
+      expect(uris.single, Uri.file(file.absolute.path));
+      expect(uris.single.toFilePath(), file.absolute.path);
+    });
+
+    test('no default app is reported as noApp', () async {
+      final service = FileOpenService(desktopLauncher: (_) async => false);
+      expect(await service.open(file.path), FileOpenFailure.noApp);
+    });
+
+    test('missing files never reach the launcher', () async {
+      var launched = false;
+      final service = FileOpenService(
+        desktopLauncher: (_) async => launched = true,
+      );
+      expect(
+        await service.open(p.join(root.path, 'gone.pdf')),
+        FileOpenFailure.missingFile,
+      );
+      expect(launched, isFalse);
+    });
   });
 }

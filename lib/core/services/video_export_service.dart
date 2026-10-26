@@ -5,6 +5,8 @@ import 'package:gal/gal.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'desktop_save_service.dart';
+
 enum VideoExportFailure {
   missingFile,
   permissionDenied,
@@ -21,9 +23,67 @@ class VideoExportException implements Exception {
 
 /// 将正文视频保存到系统相册；本地源只读，网络视频按流下载并在导出后清理。
 /// 确认弹窗由 UI 负责；本服务只在确认之后执行权限检查和相册写入。
+/// 桌面没有相册，改经 [saveToFile] 弹出“另存为…”对话框。
 class VideoExportService {
-  const VideoExportService();
+  const VideoExportService({this._desktopSaver = const DesktopSaveService()});
   static const _timeout = Duration(seconds: 30);
+
+  final DesktopSaveService _desktopSaver;
+
+  /// 桌面端把视频另存为用户选的文件，返回写入路径；取消对话框返回 null。
+  ///
+  /// [fileName] 为对话框里的默认文件名（通常是附件显示名）。本地源只读；
+  /// 网络视频先下载到临时目录再交给对话框，临时目录用后即删。
+  Future<String?> saveToFile(
+    String source, {
+    required String fileName,
+    required String dialogTitle,
+  }) async {
+    Directory? downloaded;
+    try {
+      final value = source.trim();
+      if (value.isEmpty) {
+        throw const VideoExportException(VideoExportFailure.missingFile);
+      }
+      final uri = Uri.tryParse(value);
+      final remote =
+          uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+      if (!remote) {
+        final file = uri?.scheme == 'file' ? File.fromUri(uri!) : File(value);
+        if (!await file.exists() || await file.length() == 0) {
+          throw const VideoExportException(VideoExportFailure.missingFile);
+        }
+        return await _desktopSaver.saveFile(
+          file,
+          fileName: fileName,
+          dialogTitle: dialogTitle,
+        );
+      }
+      downloaded = await Directory(
+        (await getTemporaryDirectory()).path,
+      ).createTemp('jotsy_video_export_');
+      final file = await _download(uri, downloaded);
+      return await _desktopSaver.saveFile(
+        file,
+        fileName: p.extension(fileName).isEmpty
+            ? '$fileName${p.extension(file.path)}'
+            : fileName,
+        dialogTitle: dialogTitle,
+      );
+    } on VideoExportException {
+      rethrow;
+    } catch (_) {
+      throw const VideoExportException(VideoExportFailure.failed);
+    } finally {
+      if (downloaded != null) {
+        try {
+          await downloaded.delete(recursive: true);
+        } on FileSystemException {
+          // 临时目录清理失败不能覆盖已经完成的保存结果。
+        }
+      }
+    }
+  }
 
   Future<void> saveToGallery(String source) async {
     Directory? downloaded;

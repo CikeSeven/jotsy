@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+
+import 'desktop_save_service.dart';
 
 /// 备份文件保存服务。
 ///
@@ -46,18 +47,13 @@ class BackupFileSaveService {
       );
     }
 
-    final savePath = await FilePicker.platform.saveFile(
-      dialogTitle: dialogTitle,
+    // 桌面与“另存为…”共用同一条对话框 + 文件复制链路。
+    return const DesktopSaveService().saveFile(
+      file,
       fileName: fileName,
-      type: FileType.custom,
-      allowedExtensions: <String>[extension],
+      dialogTitle: dialogTitle,
+      extension: extension,
     );
-    if (savePath != null && savePath.trim().isNotEmpty) {
-      final outputFile = File(savePath);
-      await outputFile.parent.create(recursive: true);
-      await file.copy(outputFile.path);
-    }
-    return savePath;
   }
 
   static Future<String?> saveNativeBackupFile({

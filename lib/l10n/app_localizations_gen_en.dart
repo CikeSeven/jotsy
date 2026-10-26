@@ -1527,6 +1527,54 @@ class AppLocalizationsEn extends AppLocalizations {
       'Gallery permission denied, cannot save';
 
   @override
+  String get desktopSaveAs => 'Save as…';
+
+  @override
+  String get desktopSaveImageDialogTitle => 'Save image';
+
+  @override
+  String get desktopSaveVideoDialogTitle => 'Save video';
+
+  @override
+  String desktopSavedTo(String path) {
+    return 'Saved to $path';
+  }
+
+  @override
+  String get diaryShareSaveImages => 'Save images…';
+
+  @override
+  String get diaryShareSaveImagesDialogTitle =>
+      'Choose a folder for the images';
+
+  @override
+  String diaryShareImagesSaved(int count, String path) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count images to $path',
+      one: 'Saved 1 image to $path',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryShareLongImageSave => 'Save as a long image…';
+
+  @override
+  String get videoOpenExternally => 'Open in system player';
+
+  @override
+  String get videoPosterHint => 'Click to open in the system player';
+
+  @override
+  String get deviceAuthUnavailable =>
+      'This device has no system verification (fingerprint, face or password), so locking isn\'t available';
+
+  @override
+  String get calendarYearSaveImage => 'Save this year as an image…';
+
+  @override
   String get imageViewerSharing => 'Preparing to share…';
 
   @override

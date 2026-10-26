@@ -7,6 +7,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/services/app_platform.dart';
+import '../../../core/services/desktop_save_service.dart';
 import '../../../core/services/diary_share_channel.dart';
 import '../../../core/services/image_export_service.dart';
 import '../models/diary_share_target.dart';
@@ -51,6 +53,25 @@ class DiaryShareResult {
   final int missingImages;
 }
 
+/// 没有系统分享的平台（Linux）上“保存图片…”的结果。
+@immutable
+class DiarySaveImagesResult {
+  const DiarySaveImagesResult({
+    required this.path,
+    required this.saved,
+    required this.missing,
+  });
+
+  /// 保存的文件（一张时）或文件夹（多张时）；用户取消对话框时为 null。
+  final String? path;
+
+  /// 写出的张数。
+  final int saved;
+
+  /// 原图已删除、下载失败等读不到的张数。
+  final int missing;
+}
+
 /// 分享日记的执行链路。
 ///
 /// 流程（[share]）：
@@ -64,11 +85,16 @@ class DiaryShareResult {
 ///
 /// 暂存目录每次分享前整体清空、只保留本次：目标应用在被拉起时读取图片，
 /// 上一次分享早已完成，缓存不会随分享次数累积。
+///
+/// 没有系统分享的平台（Linux，[AppPlatform.supportsSystemFileShare] 为
+/// false）面板只提供复制文字与 [saveImages]；系统分享在这些平台直接抛
+/// [UnsupportedError]，不会走到 share_plus 未实现的 `shareXFiles`。
 class DiaryShareController {
   DiaryShareController({
     this._channel = const DiaryShareChannel(),
     this._imageService = const ImageExportService(),
     this._cacheDirectory = getTemporaryDirectory,
+    this._desktopSaver = const DesktopSaveService(),
     DiaryShareClipboardWriter? writeClipboard,
     DiarySystemShare? systemShare,
   }) : _writeClipboard = writeClipboard ?? _copyToClipboard,
@@ -80,6 +106,7 @@ class DiaryShareController {
   final DiaryShareChannel _channel;
   final ImageExportService _imageService;
   final Future<Directory> Function() _cacheDirectory;
+  final DesktopSaveService _desktopSaver;
   final DiaryShareClipboardWriter _writeClipboard;
   final DiarySystemShare _systemShare;
 
@@ -103,6 +130,42 @@ class DiaryShareController {
     }
     await _writeClipboard(normalized);
     return const DiaryShareResult(DiaryShareOutcome.copied, textCopied: true);
+  }
+
+  /// 把勾选的 [images] 保存到用户选的位置（代替系统分享）：一张时弹出
+  /// “另存为…”对话框（[fileDialogTitle]），多张时选一个文件夹
+  /// （[folderDialogTitle]）按面板顺序编号写入，不覆盖文件夹里的同名文件。
+  ///
+  /// 图片先经与分享相同的暂存（网络图片下载、data URI 解码），读不到的跳过
+  /// 并计入 [DiarySaveImagesResult.missing]；一张都读不到时不弹对话框。
+  Future<DiarySaveImagesResult> saveImages(
+    List<String> images, {
+    required String fileDialogTitle,
+    required String folderDialogTitle,
+  }) async {
+    final staged = await _stageImages(images);
+    final missing = images.length - staged.length;
+    if (staged.isEmpty) {
+      return DiarySaveImagesResult(path: null, saved: 0, missing: missing);
+    }
+    final files = staged.map(File.new).toList(growable: false);
+    final names = staged.map(p.basename).toList(growable: false);
+    final path = files.length == 1
+        ? await _desktopSaver.saveFile(
+            files.single,
+            fileName: names.single,
+            dialogTitle: fileDialogTitle,
+          )
+        : await _desktopSaver.saveFilesToDirectory(
+            files,
+            fileNames: names,
+            dialogTitle: folderDialogTitle,
+          );
+    return DiarySaveImagesResult(
+      path: path,
+      saved: path == null ? 0 : files.length,
+      missing: missing,
+    );
   }
 
   /// 把 [text] 与 [images] 分享到 [target]，[chooserTitle] 用于目标应用
@@ -231,6 +294,11 @@ class DiaryShareController {
     required List<String> imagePaths,
     String? text,
   }) async {
+    // share_plus 在 Linux 上没有实现文件分享；界面不提供系统分享，这里兜底，
+    // 调用方按分享失败提示。
+    if (!AppPlatform.supportsSystemFileShare) {
+      throw UnsupportedError('System share is unavailable on this platform');
+    }
     if (imagePaths.isEmpty) {
       await Share.share(text ?? '');
       return;

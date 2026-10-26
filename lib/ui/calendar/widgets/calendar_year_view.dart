@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../../core/services/app_platform.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
@@ -136,10 +137,18 @@ class CalendarYearView extends StatelessWidget {
               top: -6,
               right: 0,
               child: IconButton(
-                tooltip: l10n.calendarYearExport,
+                // 没有系统分享的平台（Linux）导出为保存图片，图标随之换成保存。
+                tooltip: AppPlatform.supportsSystemFileShare
+                    ? l10n.calendarYearExport
+                    : l10n.calendarYearSaveImage,
                 visualDensity: VisualDensity.compact,
                 onPressed: exporting ? null : onExport,
-                icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
+                icon: FaIcon(
+                  AppPlatform.supportsSystemFileShare
+                      ? FontAwesomeIcons.shareNodes
+                      : FontAwesomeIcons.download,
+                  size: 16,
+                ),
               ),
             ),
           ],

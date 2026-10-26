@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/image_export_service.dart';
@@ -16,6 +16,18 @@ class _FakeExportService extends ImageExportService {
       <({Uint8List bytes, String name})>[];
   ImageExportException? failure;
   Completer<void>? pending;
+  final List<String> fileNames = <String>[];
+  String? filePath;
+
+  @override
+  Future<String?> saveBytesToFile(
+    Uint8List bytes, {
+    required String fileName,
+    required String dialogTitle,
+  }) async {
+    fileNames.add(fileName);
+    return filePath;
+  }
 
   @override
   Future<void> saveBytesToGallery(
@@ -146,5 +158,26 @@ void main() {
     expect(service.saved, hasLength(1));
     expect(states, <bool>[true, false]);
     expect(subject.isBusy, isFalse);
+  });
+
+  group('on desktop', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.windows);
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('saving the code opens Save as… with a png name', () async {
+      service.filePath = r'C:\Users\me\jotsy_support_wechat.png';
+
+      final result = await controller().saveCode(SupportChannel.wechat, l10n);
+
+      expect(service.saved, isEmpty);
+      expect(service.fileNames, <String>['jotsy_support_wechat.png']);
+      expect(result!.message, l10n.desktopSavedTo(service.filePath!));
+      expect(result.isError, isFalse);
+    });
+
+    test('cancelling the dialog clears the message', () async {
+      final result = await controller().saveCode(SupportChannel.alipay, l10n);
+      expect(result!.message, isNull);
+    });
   });
 }

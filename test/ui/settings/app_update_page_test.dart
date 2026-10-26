@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -165,6 +167,101 @@ void main() {
     expect(find.text('In this version'), findsOneWidget);
     expect(find.text('New'), findsOneWidget);
     expect(find.text('Check for updates'), findsOneWidget);
+  });
+
+  group('desktop', () {
+    /// 拦截 url_launcher 的方法通道，记下在浏览器里打开的地址。
+    List<String> captureLaunches() {
+      final launched = <String>[];
+      const channel = MethodChannel('plugins.flutter.io/url_launcher');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'launch') {
+          launched.add((call.arguments as Map)['url'] as String);
+        }
+        return true;
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+      return launched;
+    }
+
+    testWidgets('offers a browser download instead of the install flow', (
+      tester,
+    ) async {
+      service
+        ..supportsInAppInstall = false
+        ..abis = const <String>[]
+        ..outcome = AppUpdateCheckOutcome(
+          fakeRelease(desktop: true),
+          AppUpdateSource.builtInSources.first,
+        );
+      final launched = captureLaunches();
+      await pumpPage(tester, size: const Size(320, 640), textScale: 1.3);
+
+      final linux = debugDefaultTargetPlatformOverride == TargetPlatform.linux;
+      expect(find.text('发现新版本 v0.6.1'), findsOneWidget);
+      expect(find.text('前往下载'), findsOneWidget);
+      expect(find.text('在 GitHub 查看'), findsOneWidget);
+      expect(find.text('跳过此版本'), findsOneWidget);
+      expect(find.textContaining('下载并安装'), findsNothing);
+      expect(find.textContaining('arm64-v8a'), findsNothing);
+      expect(
+        find.textContaining(linux ? 'install.sh' : '运行它即可覆盖安装'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('前往下载'));
+      await tester.pumpAndSettle();
+      final name = linux
+          ? 'jotsy-v0.6.1-linux-x64.tar.gz'
+          : 'jotsy-v0.6.1-windows-x64-setup.exe';
+      expect(launched, <String>[
+        '${AppUpdateSource.builtInSources.first.prefix}'
+            'https://github.com/CikeSeven/jotsy/releases/download/v0.6.1/$name',
+      ]);
+      expect(service.installCount, 0);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+    testWidgets('Windows opens the installer from the update page', (
+      tester,
+    ) async {
+      service
+        ..supportsInAppInstall = false
+        ..abis = const <String>[]
+        ..outcome = AppUpdateCheckOutcome(
+          fakeRelease(desktop: true),
+          AppUpdateSource.direct,
+        );
+      final launched = captureLaunches();
+      await pumpPage(tester, locale: const Locale('en'));
+
+      expect(find.text('Download'), findsOneWidget);
+      expect(find.textContaining('Download and install'), findsNothing);
+      await tester.tap(find.text('Download'));
+      await tester.pumpAndSettle();
+      expect(launched.single, endsWith('jotsy-v0.6.1-windows-x64-setup.exe'));
+    }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
+
+    testWidgets('an APK-only release sends desktop users to the release page', (
+      tester,
+    ) async {
+      service
+        ..supportsInAppInstall = false
+        ..abis = const <String>[]
+        ..outcome = AppUpdateCheckOutcome(
+          fakeRelease(),
+          AppUpdateSource.direct,
+        );
+      final launched = captureLaunches();
+      await pumpPage(tester);
+
+      expect(find.text('前往下载'), findsNothing);
+      expect(find.text('这个版本没有适合本机系统的安装包，请前往下载页面查看。'), findsOneWidget);
+      await tester.tap(find.text('前往下载页面'));
+      await tester.pumpAndSettle();
+      expect(launched, <String>[fakeRelease().pageUrl.toString()]);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
   });
 
   testWidgets('explains a failed check and retries', (tester) async {

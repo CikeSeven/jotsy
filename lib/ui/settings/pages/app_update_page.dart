@@ -24,7 +24,8 @@ import '../../widgets/form_width.dart';
 ///   下载中 / 有新版本 / 待安装时沿用全局状态（离开页面后下载不中断）；
 /// - [startDownload] 来自启动提示的“立即更新”：有新版本时进入即开始下载，
 ///   已下载过则直接打开安装器；
-/// - 回到前台时交给控制器，用户在系统设置里允许“安装未知应用”后自动继续。
+/// - 回到前台时交给控制器，用户在系统设置里允许“安装未知应用”后自动继续；
+/// - 桌面（Windows / Linux）只检查，“前往下载”在浏览器里打开本平台安装包。
 class AppUpdatePage extends ConsumerStatefulWidget {
   const AppUpdatePage({super.key, this.startDownload = false});
 
@@ -127,6 +128,9 @@ class _AppUpdatePageState extends ConsumerState<AppUpdatePage>
     );
   }
 
+  Future<void> _openDesktopDownload() =>
+      openExternalLink(context, _controller.desktopDownloadUri().toString());
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -171,6 +175,7 @@ class _AppUpdatePageState extends ConsumerState<AppUpdatePage>
           onInstall: () => unawaited(_controller.install()),
           onGrantInstallPermission: _grantInstallPermission,
           onOpenReleasePage: _openReleasePage,
+          onOpenDesktopDownload: _openDesktopDownload,
           onSkip: () => unawaited(_controller.skipCurrentVersion()),
         ),
       ),

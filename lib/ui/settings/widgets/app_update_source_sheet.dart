@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/expressive_choice_tile.dart';
@@ -123,7 +124,10 @@ class _AppUpdateSourceSheetState extends State<AppUpdateSourceSheet> {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l10n.appUpdateSourceSheetHint,
+                  // 桌面在浏览器里下载，应用不校验安装包，说明随之不同。
+                  AppPlatform.supportsInAppInstall
+                      ? l10n.appUpdateSourceSheetHint
+                      : l10n.appUpdateSourceSheetHintDesktop,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                     height: 1.4,
@@ -140,7 +144,9 @@ class _AppUpdateSourceSheetState extends State<AppUpdateSourceSheet> {
                 choice(
                   AppUpdatePreferences.autoSource,
                   l10n.appUpdateSourceAuto,
-                  l10n.appUpdateSourceAutoDescription,
+                  AppPlatform.supportsInAppInstall
+                      ? l10n.appUpdateSourceAutoDescription
+                      : l10n.appUpdateSourceAutoDescriptionDesktop,
                 ),
                 for (final source in mirrors)
                   choice(

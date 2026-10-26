@@ -522,6 +522,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appUpdatePromptLater => '以后再说';
 
   @override
+  String get appUpdateActionDesktopDownload => '前往下载';
+
+  @override
+  String get appUpdateDesktopHintWindows => '将在浏览器中下载安装程序，运行它即可覆盖安装，日记数据会保留。';
+
+  @override
+  String get appUpdateDesktopHintLinux =>
+      '将在浏览器中下载 .tar.gz 压缩包，解压后运行其中的 install.sh 即可更新，日记数据会保留。';
+
+  @override
+  String get appUpdateNoDesktopPackage => '这个版本没有适合本机系统的安装包，请前往下载页面查看。';
+
+  @override
+  String get appUpdateSourceAutoDescriptionDesktop => '使用检查更新时最先响应的线路；国内网络推荐';
+
+  @override
+  String get appUpdateSourceSheetHintDesktop =>
+      '镜像是第三方公共服务。下载后可用发布页面的 SHA256SUMS.txt 核对文件是否完整。';
+
+  @override
   String get aboutSubmitIssue => '提交 Issue';
 
   @override
@@ -4103,6 +4123,14 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String diaryPreviewPositionSemanticsMore(int index, int count) {
     return '第 $index 篇，至少 $count 篇';
+  }
+
+  @override
+  String get diaryDetailPaneEmpty => '选一篇日记来读';
+
+  @override
+  String diaryDetailPaneCreateHint(String shortcut) {
+    return '按 $shortcut 写新日记';
   }
 
   @override

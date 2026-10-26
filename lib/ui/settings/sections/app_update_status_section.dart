@@ -240,7 +240,8 @@ class _StatusIcon extends StatelessWidget {
 }
 
 /// 新版本信息：“新版本”胶囊 + 大号版本号 + 发布日期、大小与架构；跳过、
-/// 找不到适配安装包或平台不支持应用内安装时再补一行说明。
+/// 找不到适配安装包或平台不支持应用内安装时再补一行说明。桌面显示本平台
+/// 安装包的大小（不显示架构），并说明下载后如何安装。
 class _AvailableRelease extends StatelessWidget {
   const _AvailableRelease({required this.state});
 
@@ -252,16 +253,28 @@ class _AvailableRelease extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final l10n = context.l10n;
     final release = state.release!;
-    final asset = state.asset;
+    final desktop = state.desktopTarget;
+    final asset = desktop == null ? state.asset : state.desktopAsset;
     final published = release.publishedAt;
     final size = asset?.size;
     final meta = <String>[
       if (published != null)
         l10n.appUpdatePublishedOn(l10n.formatFullDate(published)),
       if (size != null) l10n.formatByteSize(size),
-      ?asset?.abi,
+      if (desktop == null) ?asset?.abi,
     ];
-    final note = !state.supportsInAppInstall
+    final note = desktop != null
+        ? asset == null
+              ? l10n.appUpdateNoDesktopPackage
+              : state.isSkipped
+              ? l10n.appUpdateSkippedHint
+              : switch (desktop) {
+                  AppUpdateDesktopTarget.windows =>
+                    l10n.appUpdateDesktopHintWindows,
+                  AppUpdateDesktopTarget.linux =>
+                    l10n.appUpdateDesktopHintLinux,
+                }
+        : !state.supportsInAppInstall
         ? l10n.appUpdateUnsupportedPlatform
         : asset == null
         ? l10n.appUpdateNoCompatibleApk

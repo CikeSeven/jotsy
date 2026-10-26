@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -384,6 +385,89 @@ void main() {
       );
       expect(await controller().autoCheck(languageCode: 'zh'), isNull);
       expect(service.fetchCount, 0);
+    });
+  });
+
+  group('desktop', () {
+    /// 以桌面平台运行（不支持应用内安装）；测试结束时还原目标平台。
+    Future<void> setUpDesktop(TargetPlatform platform) async {
+      debugDefaultTargetPlatformOverride = platform;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      service.supportsInAppInstall = false;
+      service.abis = const <String>[];
+      await setUpContainer();
+    }
+
+    test(
+      'Linux picks the tarball and opens it on the route that answered',
+      () async {
+        await setUpDesktop(TargetPlatform.linux);
+        final mirror = AppUpdateSource.builtInSources[1];
+        service.outcome = AppUpdateCheckOutcome(
+          fakeRelease(desktop: true),
+          mirror,
+        );
+
+        await controller().check(languageCode: 'zh');
+
+        expect(state().desktopTarget, AppUpdateDesktopTarget.linux);
+        expect(state().phase, AppUpdatePhase.available);
+        expect(state().asset, isNull);
+        expect(state().desktopAsset?.name, 'jotsy-v0.6.1-linux-x64.tar.gz');
+        expect(
+          controller().desktopDownloadUri(),
+          mirror.wrap(state().desktopAsset!.url),
+        );
+        expect(
+          controller().desktopDownloadUri().toString(),
+          '${mirror.prefix}https://github.com/CikeSeven/jotsy/releases/'
+          'download/v0.6.1/jotsy-v0.6.1-linux-x64.tar.gz',
+        );
+      },
+    );
+
+    test('Windows picks the installer, not the portable zip', () async {
+      await setUpDesktop(TargetPlatform.windows);
+      service.outcome = AppUpdateCheckOutcome(
+        fakeRelease(desktop: true),
+        AppUpdateSource.direct,
+      );
+
+      await controller().check(languageCode: 'zh');
+
+      expect(state().desktopTarget, AppUpdateDesktopTarget.windows);
+      expect(state().desktopAsset?.name, 'jotsy-v0.6.1-windows-x64-setup.exe');
+      expect(controller().desktopDownloadUri(), state().desktopAsset!.url);
+    });
+
+    test('an APK-only release falls back to its release page', () async {
+      await setUpDesktop(TargetPlatform.linux);
+      service.outcome = AppUpdateCheckOutcome(
+        fakeRelease(),
+        AppUpdateSource.direct,
+      );
+
+      await controller().check(languageCode: 'zh');
+
+      expect(state().hasUpdate, isTrue);
+      expect(state().desktopAsset, isNull);
+      expect(controller().desktopDownloadUri(), fakeRelease().pageUrl);
+    });
+
+    test('auto-checks once per interval like Android', () async {
+      await setUpDesktop(TargetPlatform.windows);
+      service.outcome = AppUpdateCheckOutcome(
+        fakeRelease(desktop: true),
+        AppUpdateSource.direct,
+      );
+
+      final release = await controller().autoCheck(languageCode: 'zh');
+      expect(release?.version, fakeRelease().version);
+      expect(service.fetchCount, 1);
+
+      now = now.add(const Duration(minutes: 30));
+      expect(await controller().autoCheck(languageCode: 'zh'), isNull);
+      expect(service.fetchCount, 1);
     });
   });
 

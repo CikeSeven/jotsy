@@ -14,13 +14,14 @@ enum AppUpdatePromptAction { update, later, skip }
 
 /// 自动检查发现新版本时的提示面板：版本号、当前版本、发布日期与
 /// 大小，以及按界面语言选取的更新说明（面板内滚动）。底部“立即更新”
-/// 为主操作，“跳过此版本”“以后再说”为次要文本按钮。点遮罩关闭视为
-/// “以后再说”。
+/// 为主操作（[desktop] 为 true 时是“前往下载”，在浏览器里下载桌面安装包），
+/// “跳过此版本”“以后再说”为次要文本按钮。点遮罩关闭视为“以后再说”。
 Future<AppUpdatePromptAction> showAppUpdateAvailableSheet(
   BuildContext context, {
   required AppUpdateRelease release,
   required AppVersion installed,
   AppUpdateAsset? asset,
+  bool desktop = false,
 }) async {
   final action = await showModalBottomSheet<AppUpdatePromptAction>(
     context: context,
@@ -38,6 +39,7 @@ Future<AppUpdatePromptAction> showAppUpdateAvailableSheet(
       release: release,
       installed: installed,
       asset: asset,
+      desktop: desktop,
     ),
   );
   return action ?? AppUpdatePromptAction.later;
@@ -48,11 +50,13 @@ class _AppUpdateAvailableSheet extends StatelessWidget {
     required this.release,
     required this.installed,
     required this.asset,
+    required this.desktop,
   });
 
   final AppUpdateRelease release;
   final AppVersion installed;
   final AppUpdateAsset? asset;
+  final bool desktop;
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +134,11 @@ class _AppUpdateAvailableSheet extends StatelessWidget {
             children: <Widget>[
               FilledButton(
                 onPressed: () => close(AppUpdatePromptAction.update),
-                child: Text(l10n.appUpdatePromptUpdate),
+                child: Text(
+                  desktop
+                      ? l10n.appUpdateActionDesktopDownload
+                      : l10n.appUpdatePromptUpdate,
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Row(

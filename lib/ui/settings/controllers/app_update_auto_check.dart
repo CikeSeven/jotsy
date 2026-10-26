@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../pages/app_update_page.dart';
 import '../widgets/app_update_available_sheet.dart';
+import '../widgets/external_link.dart';
 import 'app_update_controller.dart';
 
 /// 自动检查更新的触发时机：冷启动后与每次回到前台。
@@ -75,7 +76,9 @@ class AppUpdateAutoChecker with WidgetsBindingObserver {
 /// - 同一版本在本次进程内只提示一次（[AppUpdateController.markPrompted]）：
 ///   每 2 小时可能检查一次，“以后再说”之后不应每次回到应用都再弹；
 /// - “立即更新”进入更新页并直接开始下载（已下载则直接安装），“跳过此版本”
-///   之后的自动检查不再提示该版本。
+///   之后的自动检查不再提示该版本；
+/// - 桌面（Windows / Linux）的主操作为“前往下载”：直接在浏览器里打开本平台
+///   安装包的下载地址（没有时为发布页面），不进入更新页。
 Future<void> runAutoUpdateCheck(BuildContext context, WidgetRef ref) async {
   final controller = ref.read(appUpdateControllerProvider.notifier);
   final release = await controller.autoCheck(
@@ -93,16 +96,23 @@ Future<void> runAutoUpdateCheck(BuildContext context, WidgetRef ref) async {
     return;
   }
   controller.markPrompted(release);
+  final desktop = state.desktopTarget != null;
   final action = await showAppUpdateAvailableSheet(
     context,
     release: release,
     installed: installed.version,
-    asset: state.asset,
+    asset: desktop ? state.desktopAsset : state.asset,
+    desktop: desktop,
   );
   if (!context.mounted) {
     return;
   }
   switch (action) {
+    case AppUpdatePromptAction.update when desktop:
+      await openExternalLink(
+        context,
+        controller.desktopDownloadUri().toString(),
+      );
     case AppUpdatePromptAction.update:
       await Navigator.of(context).push(
         MaterialPageRoute<void>(

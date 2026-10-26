@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -139,4 +140,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.fetchCount, 1);
   });
+
+  testWidgets(
+    'desktop prompts with a browser download that opens the package',
+    (tester) async {
+      final launched = <String>[];
+      const channel = MethodChannel('plugins.flutter.io/url_launcher');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'launch') {
+          launched.add((call.arguments as Map)['url'] as String);
+        }
+        return true;
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+      service
+        ..supportsInAppInstall = false
+        ..abis = const <String>[]
+        ..outcome = AppUpdateCheckOutcome(
+          fakeRelease(desktop: true),
+          AppUpdateSource.direct,
+        );
+
+      await pumpHome(tester);
+      await tester.pump(AppUpdateAutoChecker.launchDelay);
+      await tester.pumpAndSettle();
+      expect(service.fetchCount, 1);
+      expect(find.text('立即更新'), findsNothing);
+      await tester.tap(find.text('前往下载'));
+      await tester.pumpAndSettle();
+
+      expect(launched, <String>[
+        'https://github.com/CikeSeven/jotsy/releases/download/v0.6.1/'
+            'jotsy-v0.6.1-linux-x64.tar.gz',
+      ]);
+      // 不进入更新页。
+      expect(find.text('home'), findsOneWidget);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
 }

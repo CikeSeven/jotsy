@@ -557,6 +557,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appUpdatePromptLater => 'Later';
 
   @override
+  String get appUpdateActionDesktopDownload => 'Download';
+
+  @override
+  String get appUpdateDesktopHintWindows =>
+      'Downloads the installer in your browser. Run it to update in place; your diaries are kept.';
+
+  @override
+  String get appUpdateDesktopHintLinux =>
+      'Downloads a .tar.gz archive in your browser. Extract it and run install.sh to update; your diaries are kept.';
+
+  @override
+  String get appUpdateNoDesktopPackage =>
+      'This release has no package for this system. Check the download page.';
+
+  @override
+  String get appUpdateSourceAutoDescriptionDesktop =>
+      'Uses the route that answered the update check first; recommended in mainland China';
+
+  @override
+  String get appUpdateSourceSheetHintDesktop =>
+      'Mirrors are third-party public services. After downloading, you can verify the file against SHA256SUMS.txt on the release page.';
+
+  @override
   String get aboutSubmitIssue => 'Submit issue';
 
   @override
@@ -4553,6 +4576,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String diaryPreviewPositionSemanticsMore(int index, int count) {
     return '$index of at least $count';
+  }
+
+  @override
+  String get diaryDetailPaneEmpty => 'Pick an entry to read';
+
+  @override
+  String diaryDetailPaneCreateHint(String shortcut) {
+    return 'Press $shortcut to write a new one';
   }
 
   @override

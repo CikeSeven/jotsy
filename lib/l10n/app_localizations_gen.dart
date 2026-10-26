@@ -1034,6 +1034,42 @@ abstract class AppLocalizations {
   /// **'Later'**
   String get appUpdatePromptLater;
 
+  /// 桌面版：在浏览器中打开新版本安装包的下载地址（更新页与启动提示的主按钮）。
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get appUpdateActionDesktopDownload;
+
+  /// Windows 版发现新版本时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads the installer in your browser. Run it to update in place; your diaries are kept.'**
+  String get appUpdateDesktopHintWindows;
+
+  /// Linux 版发现新版本时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads a .tar.gz archive in your browser. Extract it and run install.sh to update; your diaries are kept.'**
+  String get appUpdateDesktopHintLinux;
+
+  /// 桌面版：新版本里没有本平台的安装包（如桌面版之前的版本）。
+  ///
+  /// In en, this message translates to:
+  /// **'This release has no package for this system. Check the download page.'**
+  String get appUpdateNoDesktopPackage;
+
+  /// 桌面版下载线路面板里“自动选择”的说明（桌面在浏览器中下载，不测速）。
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the route that answered the update check first; recommended in mainland China'**
+  String get appUpdateSourceAutoDescriptionDesktop;
+
+  /// 桌面版下载线路面板的说明（安装包在浏览器中下载，应用不校验）。
+  ///
+  /// In en, this message translates to:
+  /// **'Mirrors are third-party public services. After downloading, you can verify the file against SHA256SUMS.txt on the release page.'**
+  String get appUpdateSourceSheetHintDesktop;
+
   /// Action title to open issue feedback page.
   ///
   /// In en, this message translates to:
@@ -7585,6 +7621,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{index} of at least {count}'**
   String diaryPreviewPositionSemanticsMore(int index, int count);
+
+  /// Wide-window diaries page, detail pane: hint while no entry is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an entry to read'**
+  String get diaryDetailPaneEmpty;
+
+  /// Wide-window diaries page, detail pane (desktop): second line with the new-entry shortcut; shortcut is Ctrl+N or ⌘N.
+  ///
+  /// In en, this message translates to:
+  /// **'Press {shortcut} to write a new one'**
+  String diaryDetailPaneCreateHint(String shortcut);
 
   /// Diary preview style settings: Paging tab.
   ///

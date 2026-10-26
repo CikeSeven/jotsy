@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui show Image;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../../../widgets/image_viewer_hero.dart';
 import '../../../widgets/long_image/long_image_cover_alignment.dart';
@@ -38,6 +40,9 @@ class DiaryPreviewCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cover = resolved.style.cover;
+    if (resolved.coverInColumn) {
+      return _buildInColumn(context);
+    }
     final inset = cover.mode == DiaryPreviewCoverMode.inset;
     final padding = inset
         ? EdgeInsets.fromLTRB(
@@ -83,6 +88,59 @@ class DiaryPreviewCover extends StatelessWidget {
       background: resolved.background,
       fillFrame: fill,
       collapseEffect: cover.fadeOnScroll,
+    );
+  }
+
+  /// 宽窗口：头图是正文列里的圆角卡片，左右与标题、正文的文字对齐，铺满
+  /// 卡片并裁掉超出部分（长图顶部对齐，规则同 [PublishDiaryCoverSliver] 的
+  /// 铺满模式）。头图横跨整个视口宽度的 sliver，所以两侧留白里要算上正文列
+  /// 居中后外侧的空白。
+  Widget _buildInColumn(BuildContext context) {
+    return SliverLayoutBuilder(
+      builder: (BuildContext context, SliverConstraints constraints) {
+        final width = constraints.crossAxisExtent;
+        final column = resolved.maxContentWidth ?? width;
+        final side =
+            math.max(0.0, (width - column) / 2) + resolved.horizontalPadding;
+        final height = resolved.coverHeight;
+        final radius = BorderRadius.circular(resolved.columnCoverRadius);
+        const top = DiaryPreviewResolvedStyle.columnCoverTop;
+        if (staticCover) {
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(side, top, side, 0),
+              child: ClipRRect(
+                borderRadius: radius,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: height,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(color: resolved.background),
+                    child: _StaticCoverImage(
+                      source: source,
+                      height: height,
+                      fill: true,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        return PublishDiaryCoverSliver(
+          cover: source,
+          // 上边距包在头部高度里（与内嵌模式一致），画面本身仍是 height 高。
+          maxExtentHeight: height + top,
+          padding: EdgeInsets.fromLTRB(side, top, side, 0),
+          borderRadius: radius,
+          heroTag: heroTag,
+          placeholder: placeholder,
+          onTap: onTap,
+          background: resolved.background,
+          fillFrame: true,
+          collapseEffect: resolved.style.cover.fadeOnScroll,
+        );
+      },
     );
   }
 }
@@ -203,12 +261,12 @@ class DiaryPreviewSection extends StatelessWidget {
     return SliverToBoxAdapter(
       child: maxWidth == null
           ? padded
+          // 定宽而不是只限最大宽度：Align 放松了约束，标题这类短内容会缩成
+          // 自身宽度再被居中，不再与正文左对齐。maxContentWidth 只在比可用
+          // 宽度窄时给出，定宽不会溢出。
           : Align(
               alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: maxWidth),
-                child: padded,
-              ),
+              child: SizedBox(width: maxWidth, child: padded),
             ),
     );
   }

@@ -57,6 +57,19 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# gal 与 local_auth_windows 使用 /await 的实验协程；旧版 local_auth_windows
+# 还依赖协程中的 return 扩展，不能仅移除该选项。VS 2026 / MSVC 14.51
+# 会以 STL1011 中断，因此仅为这两个目标启用 MSVC 提供的兼容宏，保留插件
+# 现有行为。等上游同时迁移到标准协程后移除此设置；应用与其他插件不受影响。
+if(MSVC)
+  foreach(plugin_target IN ITEMS gal_plugin local_auth_windows_plugin)
+    if(TARGET ${plugin_target})
+      target_compile_definitions(${plugin_target} PRIVATE
+        _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+    endif()
+  endforeach()
+endif()
+
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can

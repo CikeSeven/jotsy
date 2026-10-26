@@ -1,4 +1,5 @@
-// 下载区：读取最新版本、生成各架构安装包的下载地址，并为国内网络挑选镜像线路。
+// 下载区：读取最新版本、生成各架构安装包（Android APK）与桌面安装包（Windows 安装
+// 程序 / 便携版、Linux 压缩包）的下载地址，并为国内网络挑选镜像线路。
 //
 // 版本信息（先到先用，结果在 sessionStorage 里缓存 1 小时）：
 //   1. GitHub 接口 releases 列表（带下载次数与 SHA-256；api.github.com 允许跨域，
@@ -7,6 +8,9 @@
 //   3. 都失败时保留 HTML 里写死的版本（发布时不必改它，只是兜底）。
 //   刚发布、签名构建还没传完安装包的版本会被跳过，继续用上一个有安装包的版本。
 //   两路结果版本相同时合并：下载次数、SHA-256 取自接口，英文更新说明取自清单。
+//   桌面安装包与 APK 同在 Release 附件与清单的 assets 里（data-dl-pkg 按文件名后缀
+//   认领）；该版本没有桌面安装包（桌面版之前的版本）或还没读到版本信息时，桌面按钮
+//   停在发布页，不拼一个可能 404 的地址。
 //
 // 累计下载只统计 .apk：jotsy-update.json 每台装了 app 的手机每 2 小时会自动拉一次，
 // SHA256SUMS.txt 也会被更新流程读取，算进去会让数字越来越虚高。数字优先取接口的实时值；
@@ -39,7 +43,14 @@ const ROUTES = [
 // 这两条镜像的响应带 Access-Control-Allow-Origin: *，可以直接读清单内容。
 const CORS_PREFIXES = ['https://gh-proxy.com/', 'https://gh.llkk.cc/'];
 const ABIS = ['arm64-v8a', 'armeabi-v7a', 'x86_64'];
-const CACHE_KEY = 'jotsy.release.v2';
+// 桌面安装包的文件名后缀（jotsy-<tag><后缀>），与 release-apk.yml 的命名一致。
+const DESKTOP = {
+  'windows-setup': '-windows-x64-setup.exe',
+  'windows-zip': '-windows-x64.zip',
+  linux: '-linux-x64.tar.gz',
+};
+const isDesktopPackage = (name) => Object.values(DESKTOP).some((suffix) => name.endsWith(suffix));
+const CACHE_KEY = 'jotsy.release.v3'; // v3：assets 里加入了桌面安装包
 const STARS_KEY = 'jotsy.stars.v1';
 const STATS_KEY = 'jotsy.downloads.v1';
 const ROUTE_KEY = 'jotsy.route';
@@ -100,6 +111,8 @@ function abiOf(name) {
 }
 
 const isApk = (asset) => asset.name.endsWith('.apk');
+// 展示与下载的安装包：APK 与桌面安装包；累计下载仍只数 APK（见文件开头）。
+const isPackage = (asset) => isApk(asset) || isDesktopPackage(asset.name);
 
 /** GitHub 接口：取第一个正式发布且已上传安装包的版本；顺带累计各版本安装包的下载次数。 */
 async function fromApi() {
@@ -116,7 +129,7 @@ async function fromApi() {
     // Release 正文就是中文版更新说明（docs/releases/<tag>.md）
     notes: { zh: picked.body || '', en: '' },
     assets: picked.assets
-      .filter((a) => a.name.endsWith('.apk'))
+      .filter(isPackage)
       .map((a) => ({
         name: a.name,
         abi: abiOf(a.name),
@@ -137,7 +150,7 @@ async function fromManifest(prefix) {
     date: (m.publishedAt || '').slice(0, 10),
     downloads: null,
     notes: { zh: m.notes?.zh || '', en: m.notes?.en || '' },
-    assets: m.assets.map((a) => ({
+    assets: m.assets.filter(isPackage).map((a) => ({
       name: a.name,
       abi: a.abi || abiOf(a.name),
       size: a.size ?? null,
@@ -158,6 +171,12 @@ function assetUrl(abi) {
   const asset = release?.assets.find((a) => a.abi === abi);
   const tag = release?.tag || staticTag;
   return asset?.url || `${GH}/releases/download/${tag}/jotsy-${tag}-${abi}.apk`;
+}
+
+/** 桌面安装包的地址；该版本没有时（或还没读到版本信息）为 null。 */
+function desktopAsset(kind) {
+  const suffix = DESKTOP[kind];
+  return (suffix && release?.assets.find((a) => a.name.endsWith(suffix))) || null;
 }
 
 function autoRouteId() {
@@ -185,6 +204,13 @@ function renderLinks() {
     const size = release?.assets.find((a) => a.abi === abi)?.size;
     const sizeEl = link.querySelector('[data-dl-size]');
     if (sizeEl) sizeEl.textContent = size ? `· ${formatSize(size)}` : '';
+  });
+  $$('[data-dl-pkg]').forEach((link) => {
+    const asset = desktopAsset(link.dataset.dlPkg);
+    // 发布页是 HTML，不经镜像；只有安装包本身套线路前缀。
+    link.href = asset ? prefix + asset.url : `${GH}/releases/latest`;
+    const sizeEl = link.querySelector('[data-dl-size]');
+    if (sizeEl) sizeEl.textContent = asset?.size ? `· ${formatSize(asset.size)}` : '';
   });
 }
 

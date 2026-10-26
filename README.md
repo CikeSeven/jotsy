@@ -6,12 +6,14 @@
 
 **一本只属于你的本地日记**
 
-免费 · 开源 · 无广告 · 无需注册 · 数据只存在你的手机里
+免费 · 开源 · 无广告 · 无需注册 · 数据只存在你自己的设备里
 
 [![Release](https://img.shields.io/github/v/release/CikeSeven/jotsy?style=flat-square&color=1E6586&label=Release)](https://github.com/CikeSeven/jotsy/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/CikeSeven/jotsy/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/CikeSeven/jotsy/actions/workflows/ci.yml)
 [![Downloads](https://img.shields.io/github/downloads/CikeSeven/jotsy/total?style=flat-square&color=4F7FAF&label=Downloads)](https://github.com/CikeSeven/jotsy/releases)
 [![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](#-下载安装)
+[![Windows](https://img.shields.io/badge/Windows-10%2B%20x64-0078D4?style=flat-square)](#windows)
+[![Linux](https://img.shields.io/badge/Linux-x64%20%C2%B7%20GTK%203-E95420?style=flat-square&logo=linux&logoColor=white)](#linux)
 [![License](https://img.shields.io/github/license/CikeSeven/jotsy?style=flat-square&color=7E6BB0)](LICENSE)
 
 简体中文 | [English](docs/README.en.md)
@@ -120,16 +122,47 @@ Jotsy 想做一个纯粹的记录工具：打开就能写，不用登录，没�
 
 ## 📥 下载安装
 
-> 目前只提供 Android 版本，需要 Android 7.0 及以上。
+| 平台 | 系统要求 | 安装包 |
+| :-- | :-- | :-- |
+| Android | Android 7.0 及以上 | `jotsy-<版本>-<架构>.apk` |
+| Windows | Windows 10 及以上，x64 | 安装程序 `jotsy-<版本>-windows-x64-setup.exe`，或便携版 `jotsy-<版本>-windows-x64.zip` |
+| Linux | x64，GTK 3 | `jotsy-<版本>-linux-x64.tar.gz` |
 
-1. 打开 [Releases 页面](https://github.com/CikeSeven/jotsy/releases/latest)。
-2. 根据设备下载对应的安装包：
+所有安装包都在 [Releases 页面](https://github.com/CikeSeven/jotsy/releases/latest)，同一页的 `SHA256SUMS.txt` 可用来核对文件是否完整。国内网络下也可以在[官网](https://cikeseven.github.io/jotsy/)经镜像线路下载。
+
+### Android
+
+1. 根据设备下载对应的安装包：
    - `arm64-v8a`：绝大多数手机都选这个，不确定时也选它
    - `armeabi-v7a`：较老的 32 位设备
    - `x86_64`：模拟器
-3. 安装后即可使用。
+2. 安装后即可使用。
 
 之后有新版本时，Jotsy 会在应用里提示，可以直接下载并安装，不用再回到网页。下载会同时尝试多条国内镜像线路并自动选最快的一条，断线后从断点继续；安装前会核对文件校验值和应用签名。也可以在 **设置 › 关于 › 检查最新版本** 中手动检查，或者在那里关闭自动检查。
+
+### Windows
+
+- **安装程序**（推荐）：运行 `…-setup.exe`，可以为所有用户安装（需要管理员权限），也可以只为自己安装；会创建开始菜单快捷方式，桌面快捷方式可选。卸载在系统的“已安装的应用”里进行。
+- **便携版**：把 `.zip` 解压到任意文件夹，运行其中的 `jotsy.exe`。
+
+安装程序与 `jotsy.exe` 暂未做代码签名，首次运行时 SmartScreen 可能提示“未知发布者”，点 **更多信息 › 仍要运行** 即可；介意的话可以先用 `SHA256SUMS.txt` 核对文件。
+
+### Linux
+
+```bash
+tar -xzf jotsy-<版本>-linux-x64.tar.gz
+cd jotsy
+./install.sh              # 装到 ~/.local，无需 root；不安装的话 ./jotsy 也能直接运行
+./install.sh --uninstall  # 卸载
+```
+
+`install.sh` 把应用放到 `~/.local/share/jotsy`，并把图标和启动入口加进应用菜单；想装给所有用户可以用 `sudo PREFIX=/usr/local ./install.sh`。运行需要 GTK 3；播放录音需要 GStreamer 及常见插件（如 `gstreamer1.0-plugins-good`、`gstreamer1.0-libav`）。
+
+### 桌面版说明
+
+Windows 与 Linux 上有新版本时 Jotsy 同样会提示，点 **前往下载** 会在浏览器里经镜像线路下载新的安装包（Windows 为安装程序，Linux 为压缩包），按上面的方式覆盖安装即可，日记数据会保留。卸载或更新都不会删除日记。
+
+以下功能目前只在手机上提供：分享到指定应用（微信、QQ 等）、导入手机厂商与 WPS 的云端笔记（需要应用内网页登录）、补写日记时的“这天拍的照片”、自动获取地点与天气（可以手动填写）。另外，Windows 与 Linux 上正文里的视频不在页内播放，点按后用系统播放器打开；Linux 版暂不支持录音（可以播放）和应用锁 / 上锁日记本。
 
 ## 🛡️ 隐私说明
 
@@ -174,7 +207,7 @@ Jotsy 没有账号体系，也没有自己的服务器。日记保存在应用�
 <details>
 <summary><b>有 iOS 版吗？</b></summary>
 
-暂时没有，目前只发布 Android 版本。
+暂时没有，目前发布 Android、Windows 与 Linux 版本。
 
 </details>
 

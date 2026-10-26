@@ -39,7 +39,7 @@
     "name": "Jotsy",
     "alternateName": "Jotsy 日记",
     "description": "免费、开源、无广告、无需注册的本地日记应用，数据只存在你的手机里。",
-    "operatingSystem": "Android 7.0+",
+    "operatingSystem": "Android 7.0+, Windows 10+ (x64), Linux (x64)",
     "applicationCategory": "LifestyleApplication",
     "url": "https://jotsy.sisct.xyz/",
     "downloadUrl": "https://github.com/CikeSeven/jotsy/releases/latest",
@@ -123,8 +123,8 @@
       <a href="https://github.com/CikeSeven/jotsy">GitHub</a>
     </nav>
     <a class="btn btn--filled btn--lg" href="#download">
-      <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
-      <span data-en="Get it free for Android">免费下载 Android 版</span>
+      <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg>
+      <span data-en="Get it free">免费下载</span>
     </a>
   </div>
 
@@ -391,14 +391,15 @@
             <div class="faq-body"><p data-en="Yes. Your data only lives on the device, so uninstalling the app or clearing its data removes it. Export backups regularly, or set up cloud backup.">会。数据只存在本机，卸载或清除应用数据都会把它删掉。建议定期导出备份，或者使用网盘备份。</p></div>
           </details>
           <details class="faq reveal">
-            <summary><span data-en="Which APK should I download?">该下载哪个安装包？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
-            <div class="faq-body"><p data-en="Almost every modern phone needs arm64-v8a. Older 32-bit devices need armeabi-v7a, and x86_64 is for emulators. If you're not sure, pick arm64-v8a.">绝大多数手机选 arm64-v8a；较老的 32 位设备选 armeabi-v7a；x86_64 用于模拟器。不确定时选 arm64-v8a。</p></div>
+            <summary><span data-en="Which package should I download?">该下载哪个安装包？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
+            <div class="faq-body"><p data-en="Almost every modern phone needs arm64-v8a. Older 32-bit devices need armeabi-v7a, and x86_64 is for emulators. If you're not sure, pick arm64-v8a.">绝大多数手机选 arm64-v8a；较老的 32 位设备选 armeabi-v7a；x86_64 用于模拟器。不确定时选 arm64-v8a。</p><p data-en="On a computer: Windows 10 or later (x64) takes the installer, or the portable zip if you'd rather not install. On Linux (x64, GTK 3), extract the .tar.gz and run install.sh to add Jotsy to your app menu; playing voice notes needs GStreamer.">电脑上：Windows 10 及以上（x64）选安装程序，不想安装可以用便携版 zip；Linux（x64，需要 GTK 3）下载 .tar.gz，解压后运行 install.sh 即可加入应用菜单，播放录音需要 GStreamer。</p></div>
           </details>
           <details class="faq reveal">
             <summary><span data-en="Is the APK safe? How do updates work?">安装包安全吗？以后怎么更新？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
             <div class="faq-body">
               <p data-en="Release APKs are built and signed by GitHub Actions from the public source code, and each release includes SHA256SUMS.txt so you can check what you downloaded.">安装包由 GitHub Actions 从公开的源代码构建并签名，每个版本都附带 SHA256SUMS.txt，可以核对下载的文件。</p>
               <p data-en="Once installed, Jotsy offers new versions inside the app and installs them directly: it picks the fastest route, resumes dropped downloads, and checks the size, SHA-256, package name and signature before installing.">装好之后，Jotsy 会在应用内提示新版本并直接安装：自动选择最快的线路、断线续传，安装前核对大小、SHA-256、包名与签名。</p>
+              <p data-en="On Windows and Linux, Jotsy also tells you about new versions and opens the new package in your browser through a mirror; install it over the old one and your diaries are kept. The Windows installer isn't code-signed yet, so SmartScreen may warn about an unknown publisher.">Windows 与 Linux 版同样会提示新版本，并在浏览器里经镜像下载新的安装包，覆盖安装即可，日记数据保留。Windows 安装程序暂未做代码签名，SmartScreen 可能提示“未知发布者”。</p>
             </div>
           </details>
           <details class="faq reveal">
@@ -407,7 +408,7 @@
           </details>
           <details class="faq reveal">
             <summary><span data-en="Is there an iOS version?">有 iOS 版吗？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
-            <div class="faq-body"><p data-en="Not yet. Only Android builds (Android 7.0 or later) are released for now.">暂时没有，目前只发布 Android 版本（Android 7.0 及以上）。</p></div>
+            <div class="faq-body"><p data-en="Not yet. Android (7.0 or later), Windows (10 or later, x64) and Linux (x64) builds are released for now.">暂时没有，目前发布 Android（7.0 及以上）、Windows（10 及以上，x64）与 Linux（x64）版本。</p></div>
           </details>
         </div>
       </div>
@@ -420,7 +421,7 @@
           <div class="dl-main reveal">
             <img class="dl-icon" src="assets/img/brand/icon-256.webp" width="96" height="96" alt="" loading="lazy">
             <h2 class="display" data-en="Today is worth writing down">今天，也值得被记下来</h2>
-            <p class="lead" data-en="Free for Android 7.0 and later. Once it's installed, new versions show up in the app and install with one tap.">免费下载 Android 版，需要 Android 7.0 及以上。装好之后，新版本会在应用里提示，一键安装。</p>
+            <p class="lead" data-en="Free for Android 7.0+, Windows 10+ (x64) and Linux (x64). Once it's installed, new versions show up in the app.">免费下载，支持 Android 7.0+、Windows 10+（x64）与 Linux（x64）。装好之后，新版本会在应用里提示。</p>
             <p class="dl-release" aria-live="polite">
               <span data-dl-version>v0.7.0</span>
               <span data-dl-date>2026-10-20</span>
@@ -431,19 +432,28 @@
                 <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
                 <span class="btn-stack"><span data-en="Download APK">下载安装包</span><small><span data-en="arm64-v8a · recommended">arm64-v8a · 推荐</span> <span data-dl-size></span></small></span>
               </a>
+              <a class="btn btn--tonal btn--xl" data-dl-pkg="windows-setup" href="https://github.com/CikeSeven/jotsy/releases/latest">
+                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg>
+                <span class="btn-stack"><span data-en="Windows installer">Windows 安装程序</span><small>Windows 10+ · x64 <span data-dl-size></span></small></span>
+              </a>
+              <a class="btn btn--tonal btn--xl" data-dl-pkg="linux" href="https://github.com/CikeSeven/jotsy/releases/latest">
+                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg>
+                <span class="btn-stack"><span data-en="Linux package">Linux 压缩包</span><small>x64 · GTK 3 <span data-dl-size></span></small></span>
+              </a>
               <a class="btn btn--tonal btn--xl" href="https://github.com/CikeSeven/jotsy/releases/latest">
                 <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-github"></use></svg>
                 <span>GitHub Releases</span>
               </a>
             </div>
-            <p class="os-note os-note--ios"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-apple"></use></svg><span data-en="There's no iOS version yet; only Android builds are released for now.">暂时没有 iOS 版，目前只发布 Android 版本。</span></p>
+            <p class="os-note os-note--ios"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-apple"></use></svg><span data-en="There's no iOS version yet; Android, Windows and Linux builds are released for now.">暂时没有 iOS 版，目前发布 Android、Windows 与 Linux 版本。</span></p>
 
             <details class="dl-more">
-              <summary><span data-en="Other builds and download routes">其他安装包与下载线路</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></summary>
+              <summary><span data-en="Other packages and download routes">其他安装包与下载线路</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></summary>
               <div class="dl-more__body">
                 <div class="dl-alt">
                   <a data-dl-abi="armeabi-v7a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-armeabi-v7a.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b>armeabi-v7a</b><small data-en="older 32-bit phones">较老的 32 位手机</small><small data-dl-size></small></a>
                   <a data-dl-abi="x86_64" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-x86_64.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b>x86_64</b><small data-en="emulators">模拟器</small><small data-dl-size></small></a>
+                  <a data-dl-pkg="windows-zip" href="https://github.com/CikeSeven/jotsy/releases/latest"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b data-en="Windows portable">Windows 便携版</b><small data-en="zip, extract and run">zip，解压即用</small><small data-dl-size></small></a>
                 </div>
                 <div class="dl-line">
                   <label for="dl-route" data-en="Download route">下载线路</label>

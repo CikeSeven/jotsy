@@ -165,6 +165,7 @@ class _DesktopPageArrowButton extends StatelessWidget {
 /// 自带一个 autofocus 的焦点：页面里没有别的焦点时按键也能送到这里；正文
 /// 等子级拿到焦点时按键先交给子级，子级不处理的再冒泡上来。回调为 null 的
 /// 按键不绑定（照常冒泡给外层）。不要嵌套使用：外层的焦点会挡住内层。
+/// 页面上开着弹出菜单这类局部历史时，Esc 先关掉它（见 [_escape]）。
 class DesktopPageKeys extends StatelessWidget {
   const DesktopPageKeys({
     super.key,
@@ -198,9 +199,21 @@ class DesktopPageKeys extends StatelessWidget {
           const SingleActivator(LogicalKeyboardKey.pageDown): onNext,
         },
         if (onEscape != null)
-          const SingleActivator(LogicalKeyboardKey.escape): onEscape,
+          const SingleActivator(LogicalKeyboardKey.escape): () =>
+              _escape(context, onEscape),
       },
       child: Focus(autofocus: true, child: child),
     );
+  }
+
+  /// 页面上还开着登记了局部历史的浮层（如 ExpressiveMenuAnchor 的弹出菜单，
+  /// 焦点不在菜单里时它自己的 Esc 收不到）时，Esc 先弹出那条历史、关掉浮层，
+  /// 与系统返回一致；否则才执行页面的返回。
+  static void _escape(BuildContext context, VoidCallback onEscape) {
+    if (ModalRoute.of(context)?.willHandlePopInternally ?? false) {
+      Navigator.of(context).maybePop();
+      return;
+    }
+    onEscape();
   }
 }

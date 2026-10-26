@@ -1,6 +1,7 @@
 import '../../../support/diary_content_test_helpers.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:drift/native.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -303,6 +304,50 @@ void main() {
     expect(tester.takeException(), isNull);
     await unmount(tester);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('escape with the more menu open closes the menu, not the page', (
+    tester,
+  ) async {
+    await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
+    final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
+    await tester.tap(find.byTooltip(l10n.diaryEditorMoreActions));
+    await settle(tester);
+    expect(find.text(l10n.settingsEditorTitle), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    expect(find.text(l10n.settingsEditorTitle), findsNothing);
+    expect(find.byType(EditDiaryPage), findsOneWidget);
+
+    // 菜单关掉后再按一次才返回。
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    expect(find.byType(EditDiaryPage), findsNothing);
+    await unmount(tester);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('escape closes the menu first even while the body has focus', (
+    tester,
+  ) async {
+    await pumpPage(
+      tester,
+      const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+    );
+    final body = tester.widget<DiaryEditor>(find.byType(DiaryEditor));
+    expect(body.focusNode!.hasFocus, isTrue);
+    final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
+    await tester.tap(
+      find.byTooltip(l10n.diaryEditorMoreActions),
+      kind: PointerDeviceKind.mouse,
+    );
+    await settle(tester);
+    expect(find.text(l10n.settingsEditorTitle), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    expect(find.text(l10n.settingsEditorTitle), findsNothing);
+    expect(find.byType(EditDiaryPage), findsOneWidget);
+    await unmount(tester);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 
   testWidgets(
     'a phone width keeps the 16dp margins and the keyboard-bound toolbar',

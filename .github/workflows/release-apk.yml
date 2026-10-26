@@ -181,8 +181,10 @@ jobs:
             fail_runtime_secret 'Failed to write qweather.api_host'
 
       # 网盘备份的应用密钥经 --dart-define-from-file 注入（见 docs/cloud_backup.md）。
-      # 每个网盘都是可选的：未配置的只告警，安装包里不显示该网盘；配置了但格式
-      # 不对、或成对的值只配了一半时构建失败，避免发布授权必然失败的包。
+      # 校验与写入只在 tool/write_cloud_backup_keys.dart（Android 与 Linux / Windows
+      # 构建共用，三个平台的安装包配置一致；只打印变量名，不打印值）：每个网盘都是
+      # 可选的，未配置的只告警、安装包里不显示该网盘；配置了但格式不对、或成对的值
+      # 只配了一半时构建失败，避免发布授权必然失败的包。
       - name: Write cloud backup app keys
         env:
           JOTSY_GOOGLE_CLIENT_ID: ${{ secrets.JOTSY_GOOGLE_CLIENT_ID }}
@@ -196,78 +198,7 @@ jobs:
           JOTSY_BAIDU_APP_DIR: ${{ vars.JOTSY_BAIDU_APP_DIR }}
           JOTSY_ALIYUN_CLIENT_ID: ${{ secrets.JOTSY_ALIYUN_CLIENT_ID }}
           JOTSY_ALIYUN_CLIENT_SECRET: ${{ secrets.JOTSY_ALIYUN_CLIENT_SECRET }}
-        run: |
-          set -euo pipefail
-
-          fail_key() {
-            echo "Cloud backup key validation failed: $1"
-            echo "::error::$1"
-            exit 1
-          }
-
-          # 已配置的值必须是单行、无首尾空白，且符合 [pattern]。
-          check_key() {
-            local name="$1" pattern="$2" value="${!1:-}"
-            [[ -z "$value" ]] && return 0
-            if [[ "$value" == *$'\n'* || "$value" == *$'\r'* ]]; then
-              fail_key "Secret $name must contain exactly one line"
-            fi
-            if [[ "$value" =~ ^[[:space:]] || "$value" =~ [[:space:]]$ ]]; then
-              fail_key "Secret $name must not contain leading or trailing whitespace"
-            fi
-            [[ "$value" =~ $pattern ]] || fail_key "Secret $name has an unexpected format"
-          }
-
-          # 成对使用的值要么都配，要么都不配。
-          check_pair() {
-            if [[ -n "${!1:-}" && -z "${!2:-}" ]] || [[ -z "${!1:-}" && -n "${!2:-}" ]]; then
-              fail_key "Secrets $1 and $2 must be set together"
-            fi
-          }
-
-          google_client='^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$'
-          check_key JOTSY_GOOGLE_CLIENT_ID "$google_client"
-          check_key JOTSY_GOOGLE_CLIENT_SECRET '^GOCSPX-[A-Za-z0-9_-]+$'
-          check_key JOTSY_GOOGLE_WEB_CLIENT_ID "$google_client"
-          check_key JOTSY_DROPBOX_APP_KEY '^[a-z0-9]+$'
-          check_key JOTSY_MICROSOFT_CLIENT_ID '^[0-9a-fA-F-]{36}$'
-          check_key JOTSY_MICROSOFT_TENANT '^[A-Za-z0-9.-]+$'
-          check_key JOTSY_BAIDU_APP_KEY '^[A-Za-z0-9]+$'
-          check_key JOTSY_BAIDU_SECRET_KEY '^[A-Za-z0-9]+$'
-          check_key JOTSY_BAIDU_APP_DIR '^[^/]+$'
-          check_key JOTSY_ALIYUN_CLIENT_ID '^[A-Za-z0-9]+$'
-          check_key JOTSY_ALIYUN_CLIENT_SECRET '^[A-Za-z0-9]+$'
-          check_pair JOTSY_GOOGLE_CLIENT_ID JOTSY_GOOGLE_CLIENT_SECRET
-          check_pair JOTSY_BAIDU_APP_KEY JOTSY_BAIDU_SECRET_KEY
-
-          [[ -n "${JOTSY_GOOGLE_CLIENT_ID:-}${JOTSY_GOOGLE_WEB_CLIENT_ID:-}" ]] ||
-            echo "::warning::Google Drive keys are not set; Google Drive is hidden in this build"
-          [[ -n "${JOTSY_DROPBOX_APP_KEY:-}" ]] ||
-            echo "::warning::Dropbox key is not set; Dropbox is hidden in this build"
-          [[ -n "${JOTSY_MICROSOFT_CLIENT_ID:-}" ]] ||
-            echo "::warning::OneDrive key is not set; OneDrive is hidden in this build"
-          [[ -n "${JOTSY_BAIDU_APP_KEY:-}" ]] ||
-            echo "::warning::Baidu Netdisk keys are not set; Baidu Netdisk is hidden in this build"
-          [[ -n "${JOTSY_ALIYUN_CLIENT_ID:-}" ]] ||
-            echo "::warning::Alipan key is not set; Alipan is hidden in this build"
-
-          # 只写入已配置的值，未配置的沿用代码里的默认值（空即隐藏）。
-          python3 - <<'PY'
-          import json
-          import os
-
-          names = [
-              'JOTSY_GOOGLE_CLIENT_ID', 'JOTSY_GOOGLE_CLIENT_SECRET',
-              'JOTSY_GOOGLE_WEB_CLIENT_ID', 'JOTSY_DROPBOX_APP_KEY',
-              'JOTSY_MICROSOFT_CLIENT_ID', 'JOTSY_MICROSOFT_TENANT',
-              'JOTSY_BAIDU_APP_KEY', 'JOTSY_BAIDU_SECRET_KEY', 'JOTSY_BAIDU_APP_DIR',
-              'JOTSY_ALIYUN_CLIENT_ID', 'JOTSY_ALIYUN_CLIENT_SECRET',
-          ]
-          keys = {name: os.environ[name] for name in names if os.environ.get(name)}
-          with open('cloud_backup_keys.json', 'w', encoding='utf-8') as file:
-              json.dump(keys, file)
-          print('Cloud backup keys configured:', ', '.join(sorted(keys)) or 'none')
-          PY
+        run: dart run tool/write_cloud_backup_keys.dart cloud_backup_keys.json
 
       # 测试包只编译 arm64（真机装机测试够用），省掉另外两种 ABI 的 AOT 编译；
       # 分包方式不变，arm64 包的 versionCode 与正式版同一算法，可直接覆盖安装。
@@ -325,7 +256,8 @@ jobs:
           retention-days: 1
 
   # 桌面安装包只随正式流程构建：测试包（test-build）只为 Android 装机测试，
-  # 跳过门禁时这两个 job 也一并跳过。桌面构建不读取任何 secrets。
+  # 跳过门禁时这两个 job 也一并跳过。桌面构建只读取网盘应用密钥（与 APK 相同），
+  # 不读取签名材料；权限保持只读。
   build-linux:
     name: Build Linux release tarball
     needs: [check-version, ci]
@@ -334,6 +266,8 @@ jobs:
       (needs.check-version.result == 'success' || needs.check-version.result == 'skipped') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -349,8 +283,29 @@ jobs:
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
 
+      # 与 APK 相同的网盘应用密钥（桌面经设备码 / 粘贴授权码授权，见
+      # docs/cloud_backup.md）；同一个脚本校验与写入，不打印值，构建后删除。
+      - name: Write cloud backup app keys
+        env:
+          JOTSY_GOOGLE_CLIENT_ID: ${{ secrets.JOTSY_GOOGLE_CLIENT_ID }}
+          JOTSY_GOOGLE_CLIENT_SECRET: ${{ secrets.JOTSY_GOOGLE_CLIENT_SECRET }}
+          JOTSY_GOOGLE_WEB_CLIENT_ID: ${{ secrets.JOTSY_GOOGLE_WEB_CLIENT_ID }}
+          JOTSY_DROPBOX_APP_KEY: ${{ secrets.JOTSY_DROPBOX_APP_KEY }}
+          JOTSY_MICROSOFT_CLIENT_ID: ${{ secrets.JOTSY_MICROSOFT_CLIENT_ID }}
+          JOTSY_MICROSOFT_TENANT: ${{ vars.JOTSY_MICROSOFT_TENANT }}
+          JOTSY_BAIDU_APP_KEY: ${{ secrets.JOTSY_BAIDU_APP_KEY }}
+          JOTSY_BAIDU_SECRET_KEY: ${{ secrets.JOTSY_BAIDU_SECRET_KEY }}
+          JOTSY_BAIDU_APP_DIR: ${{ vars.JOTSY_BAIDU_APP_DIR }}
+          JOTSY_ALIYUN_CLIENT_ID: ${{ secrets.JOTSY_ALIYUN_CLIENT_ID }}
+          JOTSY_ALIYUN_CLIENT_SECRET: ${{ secrets.JOTSY_ALIYUN_CLIENT_SECRET }}
+        run: dart run tool/write_cloud_backup_keys.dart cloud_backup_keys.json
+
       - name: Build Linux release bundle
-        run: flutter build linux --release
+        run: flutter build linux --release --dart-define-from-file=cloud_backup_keys.json
+
+      - name: Remove cloud backup app keys
+        if: always()
+        run: rm -f cloud_backup_keys.json
 
       # 压缩包顶层是 jotsy/：bundle（可直接运行 ./jotsy）、桌面入口、hicolor 图标与
       # install.sh（装到 ~/.local，见 linux/packaging/install.sh）。属主写成 root，
@@ -391,6 +346,8 @@ jobs:
     # 与 CI 同一镜像：自带 Visual Studio 2022、Inno Setup 6 与 7-Zip。
     runs-on: windows-2025
     timeout-minutes: 60
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -398,8 +355,30 @@ jobs:
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
 
+      # 与 APK 相同的网盘应用密钥（桌面经设备码 / 粘贴授权码授权，见
+      # docs/cloud_backup.md）；同一个脚本校验与写入，不打印值，构建后删除。
+      - name: Write cloud backup app keys
+        env:
+          JOTSY_GOOGLE_CLIENT_ID: ${{ secrets.JOTSY_GOOGLE_CLIENT_ID }}
+          JOTSY_GOOGLE_CLIENT_SECRET: ${{ secrets.JOTSY_GOOGLE_CLIENT_SECRET }}
+          JOTSY_GOOGLE_WEB_CLIENT_ID: ${{ secrets.JOTSY_GOOGLE_WEB_CLIENT_ID }}
+          JOTSY_DROPBOX_APP_KEY: ${{ secrets.JOTSY_DROPBOX_APP_KEY }}
+          JOTSY_MICROSOFT_CLIENT_ID: ${{ secrets.JOTSY_MICROSOFT_CLIENT_ID }}
+          JOTSY_MICROSOFT_TENANT: ${{ vars.JOTSY_MICROSOFT_TENANT }}
+          JOTSY_BAIDU_APP_KEY: ${{ secrets.JOTSY_BAIDU_APP_KEY }}
+          JOTSY_BAIDU_SECRET_KEY: ${{ secrets.JOTSY_BAIDU_SECRET_KEY }}
+          JOTSY_BAIDU_APP_DIR: ${{ vars.JOTSY_BAIDU_APP_DIR }}
+          JOTSY_ALIYUN_CLIENT_ID: ${{ secrets.JOTSY_ALIYUN_CLIENT_ID }}
+          JOTSY_ALIYUN_CLIENT_SECRET: ${{ secrets.JOTSY_ALIYUN_CLIENT_SECRET }}
+        run: dart run tool/write_cloud_backup_keys.dart cloud_backup_keys.json
+
       - name: Build Windows release
-        run: flutter build windows --release
+        run: flutter build windows --release --dart-define-from-file=cloud_backup_keys.json
+
+      - name: Remove cloud backup app keys
+        if: always()
+        shell: pwsh
+        run: Remove-Item -Force -ErrorAction SilentlyContinue cloud_backup_keys.json
 
       # 便携版：Release 文件夹的内容原样打包，解压即可运行。安装程序：Inno Setup
       # 脚本 windows/packaging/jotsy.iss，版本经 /D 传入——tag 是版本号时取 tag

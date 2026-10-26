@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
+import 'diary_preview_host.dart';
 
 /// 预览页返回按钮（`<` 风格，18）；[onPressed] 为 null 时返回上一页。
 class DiaryPreviewBackButton extends StatelessWidget {
@@ -23,7 +24,8 @@ class DiaryPreviewBackButton extends StatelessWidget {
 
 /// 预览页顶栏 [SliverAppBar]：随滚动隐藏或常驻（[DiaryPreviewPageStyle.topBar]），
 /// 右侧依次为“字体与排版”、编辑、分享长图（各自可关）与常驻的“更多”。底色与
-/// 页面相同，滚动到正文上方时不加阴影与染色。
+/// 页面相同，滚动到正文上方时不加阴影与染色。预览嵌在页面里（宽窗口日记页
+/// 的右栏，见 [DiaryPreviewHostScope]）时没有返回按钮，其余不变。
 class DiaryPreviewTopBar extends StatelessWidget {
   const DiaryPreviewTopBar({
     super.key,
@@ -66,7 +68,9 @@ class DiaryPreviewTopBar extends StatelessWidget {
       pinned: pinned,
       centerTitle: true,
       automaticallyImplyLeading: false,
-      leading: DiaryPreviewBackButton(onPressed: onBack),
+      leading: DiaryPreviewHostScope.isEmbedded(context)
+          ? null
+          : DiaryPreviewBackButton(onPressed: onBack),
       title: title == null ? null : Text(title, semanticsLabel: titleSemantics),
       systemOverlayStyle:
           theme.appBarTheme.systemOverlayStyle ??

@@ -20,6 +20,7 @@ import '../sections/cloud_backup_account_section.dart';
 import '../sections/cloud_backup_config_forms.dart';
 import '../sections/cloud_backup_remote_list.dart';
 import '../widgets/cloud_backup_labels.dart';
+import '../../widgets/form_width.dart';
 
 /// 单个备份位置的页面：连接配置（或授权账号）、上传、远程备份列表与恢复。
 ///
@@ -194,6 +195,7 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
       canPop: !_busy,
       child: Scaffold(
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           title: Text(cloudBackupTargetName(l10n, _target)),
           leading: IconButton(
             tooltip: l10n.commonBack,
@@ -211,44 +213,49 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
         ),
         body: Stack(
           children: <Widget>[
-            ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.l,
-                AppSpacing.m,
-                AppSpacing.l,
-                AppSpacing.xxl,
-              ),
-              children: <Widget>[
-                ..._buildConfigSection(context),
-                const Divider(height: 32),
-                Wrap(
-                  spacing: AppSpacing.s,
-                  runSpacing: AppSpacing.s,
+            LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.gutter(constraints.maxWidth);
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    side,
+                    AppSpacing.m,
+                    side,
+                    AppSpacing.xxl,
+                  ),
                   children: <Widget>[
-                    FilledButton.icon(
-                      onPressed: _upload,
-                      icon: const FaIcon(
-                        FontAwesomeIcons.cloudArrowUp,
-                        size: 14,
-                      ),
-                      label: Text(l10n.cloudBackupUploadBackup),
+                    ..._buildConfigSection(context),
+                    const Divider(height: 32),
+                    Wrap(
+                      spacing: AppSpacing.s,
+                      runSpacing: AppSpacing.s,
+                      children: <Widget>[
+                        FilledButton.icon(
+                          onPressed: _upload,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.cloudArrowUp,
+                            size: 14,
+                          ),
+                          label: Text(l10n.cloudBackupUploadBackup),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _refresh,
+                          icon: const FaIcon(FontAwesomeIcons.rotate, size: 14),
+                          label: Text(l10n.cloudBackupRefreshBackups),
+                        ),
+                      ],
                     ),
-                    OutlinedButton.icon(
-                      onPressed: _refresh,
-                      icon: const FaIcon(FontAwesomeIcons.rotate, size: 14),
-                      label: Text(l10n.cloudBackupRefreshBackups),
+                    const SizedBox(height: AppSpacing.xl),
+                    CloudBackupRemoteList(
+                      backups: _backups,
+                      loading: _listLoading,
+                      error: _listError,
+                      onRestore: (entry) => _controller.restore(_target, entry),
+                      onDelete: _delete,
                     ),
                   ],
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                CloudBackupRemoteList(
-                  backups: _backups,
-                  loading: _listLoading,
-                  error: _listError,
-                  onRestore: (entry) => _controller.restore(_target, entry),
-                  onDelete: _delete,
-                ),
-              ],
+                );
+              },
             ),
             // 忙碌期间立即拦截点击，画面在超过 300ms 后才淡入：保存配置这类
             // 本地操作几十毫秒就结束，不再闪一下。

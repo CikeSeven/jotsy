@@ -11,6 +11,7 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/services/app_service.dart';
 import '../widgets/settings_card_group.dart';
+import '../../widgets/form_width.dart';
 
 /// 设置-外观与语言二级页。
 ///
@@ -89,6 +90,7 @@ class AppearanceLanguagePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(l10n.settingsAppearanceLanguage),
         leading: IconButton(
           tooltip: l10n.commonBack,
@@ -96,58 +98,62 @@ class AppearanceLanguagePage extends ConsumerWidget {
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-        children: <Widget>[
-          SettingsThemeSection(settingsAsync: settingsAsync),
-          const SizedBox(height: 16),
-          SettingsCardGroup(
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final side = FormWidth.extra(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
             children: <Widget>[
-              SettingsHomeBarStyleTile(settingsAsync: settingsAsync),
-              SettingsDiaryCardStyleTile(settingsAsync: settingsAsync),
-              SettingsDiaryPreviewStyleTile(settingsAsync: settingsAsync),
-              settingsAsync.when(
-                data: (settingsService) {
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    title: Text(
-                      l10n.settingsLanguage,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+              SettingsThemeSection(settingsAsync: settingsAsync),
+              const SizedBox(height: 16),
+              SettingsCardGroup(
+                children: <Widget>[
+                  SettingsHomeBarStyleTile(settingsAsync: settingsAsync),
+                  SettingsDiaryCardStyleTile(settingsAsync: settingsAsync),
+                  SettingsDiaryPreviewStyleTile(settingsAsync: settingsAsync),
+                  settingsAsync.when(
+                    data: (settingsService) {
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        title: Text(
+                          l10n.settingsLanguage,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(l10n.settingsLanguageSubtitle),
+                        trailing: const FaIcon(
+                          FontAwesomeIcons.angleRight,
+                          size: 14,
+                        ),
+                        onTap: () =>
+                            _showLanguagePickerDialog(context, settingsService),
+                      );
+                    },
+                    loading: () => ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
                       ),
+                      title: Text(l10n.settingsLanguage),
+                      subtitle: Text(l10n.settingsLanguageSubtitle),
                     ),
-                    subtitle: Text(l10n.settingsLanguageSubtitle),
-                    trailing: const FaIcon(
-                      FontAwesomeIcons.angleRight,
-                      size: 14,
+                    error: (_, __) => ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      title: Text(l10n.settingsLanguage),
+                      subtitle: Text(l10n.settingsLanguageSubtitle),
                     ),
-                    onTap: () =>
-                        _showLanguagePickerDialog(context, settingsService),
-                  );
-                },
-                loading: () => ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
                   ),
-                  title: Text(l10n.settingsLanguage),
-                  subtitle: Text(l10n.settingsLanguageSubtitle),
-                ),
-                error: (_, __) => ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  title: Text(l10n.settingsLanguage),
-                  subtitle: Text(l10n.settingsLanguageSubtitle),
-                ),
+                ],
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/form_width.dart';
 
 /// 回收站有勾选时从底部升起的操作栏：“恢复”与 `error` 系的“彻底删除”两个
 /// 等宽按钮，`surfaceContainer` 底。
@@ -70,37 +71,41 @@ class _Bar extends StatelessWidget {
       color: scheme.surfaceContainer,
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.l,
-            vertical: AppSpacing.m,
-          ),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  onPressed: onRestore,
-                  icon: const FaIcon(
-                    FontAwesomeIcons.arrowRotateLeft,
-                    size: 14,
-                  ),
-                  label: Text(l10n.autoT0030),
+        // 底色铺满整栏；宽窗口时按钮收进居中的内容列（最宽 720）。
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) =>
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: FormWidth.gutter(constraints.maxWidth),
+                  vertical: AppSpacing.m,
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: FilledButton.tonalIcon(
+                        onPressed: onRestore,
+                        icon: const FaIcon(
+                          FontAwesomeIcons.arrowRotateLeft,
+                          size: 14,
+                        ),
+                        label: Text(l10n.autoT0030),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.m),
+                    Expanded(
+                      child: FilledButton.tonalIcon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: scheme.errorContainer,
+                          foregroundColor: scheme.onErrorContainer,
+                        ),
+                        onPressed: onPurge,
+                        icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
+                        label: Text(l10n.autoT0028),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: AppSpacing.m),
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: scheme.errorContainer,
-                    foregroundColor: scheme.onErrorContainer,
-                  ),
-                  onPressed: onPurge,
-                  icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
-                  label: Text(l10n.autoT0028),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

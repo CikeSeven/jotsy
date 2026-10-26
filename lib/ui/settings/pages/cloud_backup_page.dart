@@ -20,6 +20,7 @@ import '../widgets/cloud_backup_labels.dart';
 import '../widgets/cloud_backup_provider_sheet.dart';
 import '../widgets/settings_card_group.dart';
 import 'cloud_backup_target_page.dart';
+import '../../widgets/form_width.dart';
 
 /// 网盘备份首页：已配置的备份位置列表与“添加备份位置”。
 ///
@@ -107,6 +108,7 @@ class _CloudBackupPageState extends ConsumerState<CloudBackupPage>
       canPop: !_busy,
       child: Scaffold(
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           title: Text(l10n.cloudBackupTitle),
           leading: IconButton(
             tooltip: l10n.commonBack,
@@ -147,65 +149,78 @@ class _CloudBackupPageState extends ConsumerState<CloudBackupPage>
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(0, AppSpacing.m, 0, AppSpacing.xxl),
-      children: <Widget>[
-        if (targets.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-            child: Text(
-              l10n.cloudBackupEmpty,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.5,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.extra(constraints.maxWidth);
+        return ListView(
+          padding: EdgeInsets.fromLTRB(
+            side,
+            AppSpacing.m,
+            side,
+            AppSpacing.xxl,
+          ),
+          children: <Widget>[
+            if (targets.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                child: Text(
+                  l10n.cloudBackupEmpty,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.5,
+                  ),
+                ),
+              )
+            else
+              SettingsCardGroup(
+                children: <Widget>[
+                  for (final target in targets)
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.l,
+                        vertical: AppSpacing.xs,
+                      ),
+                      leading: FaIcon(cloudBackupTargetIcon(target), size: 16),
+                      title: Text(cloudBackupTargetName(l10n, target)),
+                      subtitle: Text(
+                        cloudBackupTargetSummary(l10n, target),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: const FaIcon(
+                        FontAwesomeIcons.angleRight,
+                        size: 14,
+                      ),
+                      onTap: () => _open(target),
+                    ),
+                ],
+              ),
+            const SizedBox(height: AppSpacing.l),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: _add,
+                  icon: const FaIcon(FontAwesomeIcons.plus, size: 14),
+                  label: Text(l10n.cloudBackupAdd),
+                ),
               ),
             ),
-          )
-        else
-          SettingsCardGroup(
-            children: <Widget>[
-              for (final target in targets)
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.l,
-                    vertical: AppSpacing.xs,
-                  ),
-                  leading: FaIcon(cloudBackupTargetIcon(target), size: 16),
-                  title: Text(cloudBackupTargetName(l10n, target)),
-                  subtitle: Text(
-                    cloudBackupTargetSummary(l10n, target),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                  onTap: () => _open(target),
+            const SizedBox(height: AppSpacing.l),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+              child: Text(
+                l10n.cloudBackupHint,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.4,
                 ),
-            ],
-          ),
-        const SizedBox(height: AppSpacing.l),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: FilledButton.icon(
-              onPressed: _add,
-              icon: const FaIcon(FontAwesomeIcons.plus, size: 14),
-              label: Text(l10n.cloudBackupAdd),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.l),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-          child: Text(
-            l10n.cloudBackupHint,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

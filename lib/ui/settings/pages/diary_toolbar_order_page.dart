@@ -14,6 +14,7 @@ import '../../widgets/unsaved_changes_dialog.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../widgets/diary_toolbar_overflow_divider.dart';
 import 'diary_code_block_style_page.dart';
+import '../../widgets/form_width.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 ///
@@ -269,6 +270,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
       },
       child: Scaffold(
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           leading: IconButton(
             tooltip: l10n.commonBack,
             onPressed: () => unawaited(_attemptExit()),
@@ -292,98 +294,110 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
           switchOutCurve: ExpressiveMotion.exit,
           child: KeyedSubtree(
             key: ValueKey<int>(_resetGeneration),
-            child: ReorderableListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              buildDefaultDragHandles: false,
-              proxyDecorator: expressiveReorderProxyDecorator,
-              itemCount: _order.length + (boundary == null ? 0 : 1),
-              // 拖拽手柄立即拖动、不经过长按，系统不会反馈；拿起时补一次触觉。
-              onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
-              onReorderItem: (oldIndex, newIndex) => _handleReorder(
-                oldIndex,
-                newIndex,
-                boundary: boundary,
-                toolbarWidth: toolbarWidth,
-              ),
-              itemBuilder: (BuildContext context, int index) {
-                if (index == boundary) {
-                  return const DiaryToolbarOverflowDivider(
-                    key: ValueKey<String>('toolbar-overflow-divider'),
-                  );
-                }
-                final item =
-                    _order[boundary != null && index > boundary
-                        ? index - 1
-                        : index];
-                final enabled = !_hiddenItems.contains(item);
-                return ListTile(
-                  key: ValueKey<String>(item.storageKey),
-                  onTap: _saving
-                      ? null
-                      : () => _handleToggleEnabled(item, !enabled),
-                  leading: SizedBox(
-                    width: 80,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Checkbox(
-                          value: enabled,
-                          onChanged: _saving
-                              ? null
-                              : (value) => _handleToggleEnabled(item, value),
-                        ),
-                        const SizedBox(width: 8),
-                        FaIcon(
-                          item.iconData,
-                          size: 16,
-                          color: enabled
-                              ? null
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ],
-                    ),
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.extra(constraints.maxWidth);
+                return ReorderableListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: side, vertical: 12),
+                  buildDefaultDragHandles: false,
+                  proxyDecorator: expressiveReorderProxyDecorator,
+                  itemCount: _order.length + (boundary == null ? 0 : 1),
+                  // 拖拽手柄立即拖动、不经过长按，系统不会反馈；拿起时补一次触觉。
+                  onReorderStart: (_) =>
+                      unawaited(HapticFeedback.mediumImpact()),
+                  onReorderItem: (oldIndex, newIndex) => _handleReorder(
+                    oldIndex,
+                    newIndex,
+                    boundary: boundary,
+                    toolbarWidth: toolbarWidth,
                   ),
-                  title: Text(
-                    _labelForItem(context, item),
-                    style: enabled
-                        ? null
-                        : TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                  ),
-                  subtitle: item == DiaryToolbarItem.inlineCode
-                      ? Text(l10n.autoT0188)
-                      : item == DiaryToolbarItem.codeBlock
-                      ? Text(l10n.autoT0189)
-                      : item == DiaryToolbarItem.indent
-                      ? Text(l10n.autoT0190)
-                      : null,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      if (_hasToolSettings(item))
-                        IconButton(
-                          tooltip: l10n.diaryToolbarToolSettingsTooltip,
-                          onPressed: _saving
-                              ? null
-                              : () => _openToolSettings(item),
-                          icon: const FaIcon(FontAwesomeIcons.gear, size: 14),
-                        ),
-                      ReorderableDragStartListener(
-                        index: index,
-                        child: const SizedBox(
-                          width: 44,
-                          height: 40,
-                          child: ColoredBox(
-                            color: Colors.transparent,
-                            child: Center(child: TripleBarDragHandle()),
-                          ),
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index == boundary) {
+                      return const DiaryToolbarOverflowDivider(
+                        key: ValueKey<String>('toolbar-overflow-divider'),
+                      );
+                    }
+                    final item =
+                        _order[boundary != null && index > boundary
+                            ? index - 1
+                            : index];
+                    final enabled = !_hiddenItems.contains(item);
+                    return ListTile(
+                      key: ValueKey<String>(item.storageKey),
+                      onTap: _saving
+                          ? null
+                          : () => _handleToggleEnabled(item, !enabled),
+                      leading: SizedBox(
+                        width: 80,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Checkbox(
+                              value: enabled,
+                              onChanged: _saving
+                                  ? null
+                                  : (value) =>
+                                        _handleToggleEnabled(item, value),
+                            ),
+                            const SizedBox(width: 8),
+                            FaIcon(
+                              item.iconData,
+                              size: 16,
+                              color: enabled
+                                  ? null
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                      title: Text(
+                        _labelForItem(context, item),
+                        style: enabled
+                            ? null
+                            : TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                      ),
+                      subtitle: item == DiaryToolbarItem.inlineCode
+                          ? Text(l10n.autoT0188)
+                          : item == DiaryToolbarItem.codeBlock
+                          ? Text(l10n.autoT0189)
+                          : item == DiaryToolbarItem.indent
+                          ? Text(l10n.autoT0190)
+                          : null,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (_hasToolSettings(item))
+                            IconButton(
+                              tooltip: l10n.diaryToolbarToolSettingsTooltip,
+                              onPressed: _saving
+                                  ? null
+                                  : () => _openToolSettings(item),
+                              icon: const FaIcon(
+                                FontAwesomeIcons.gear,
+                                size: 14,
+                              ),
+                            ),
+                          ReorderableDragStartListener(
+                            index: index,
+                            child: const SizedBox(
+                              width: 44,
+                              height: 40,
+                              child: ColoredBox(
+                                color: Colors.transparent,
+                                child: Center(child: TripleBarDragHandle()),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 );
               },
             ),

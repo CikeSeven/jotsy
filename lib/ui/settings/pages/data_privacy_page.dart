@@ -13,6 +13,7 @@ import '../../../core/services/settings_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../widgets/settings_card_group.dart';
 import 'data_management_page.dart';
+import '../../widgets/form_width.dart';
 
 /// 设置-数据与隐私二级页。
 ///
@@ -73,6 +74,7 @@ class DataPrivacyPage extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsServiceProvider);
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(l10n.settingsDataPrivacyTitle),
         leading: IconButton(
           tooltip: l10n.commonBack,
@@ -80,126 +82,144 @@ class DataPrivacyPage extends ConsumerWidget {
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-        children: <Widget>[
-          SettingsCardGroup(
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final side = FormWidth.extra(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
             children: <Widget>[
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                leading: const FaIcon(FontAwesomeIcons.database, size: 16),
-                title: Text(l10n.settingsDataManagement),
-                subtitle: Text(l10n.settingsDataManagementSubtitle),
-                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (BuildContext context) {
-                        return const DataManagementPage();
-                      },
+              SettingsCardGroup(
+                children: <Widget>[
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
-                  );
-                },
+                    leading: const FaIcon(FontAwesomeIcons.database, size: 16),
+                    title: Text(l10n.settingsDataManagement),
+                    subtitle: Text(l10n.settingsDataManagementSubtitle),
+                    trailing: const FaIcon(
+                      FontAwesomeIcons.angleRight,
+                      size: 14,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) {
+                            return const DataManagementPage();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SettingsCardGroup(
+                children: <Widget>[
+                  settingsAsync.when(
+                    data: (settingsService) {
+                      return ValueListenableBuilder<bool>(
+                        valueListenable: settingsService.appLockEnabledNotifier,
+                        builder:
+                            (
+                              BuildContext context,
+                              bool enabled,
+                              Widget? child,
+                            ) {
+                              // 没有系统身份验证的平台（Linux）开关不可用并说明
+                              // 原因；已开启的锁由启动时的应用锁逻辑自动解除。
+                              final supported = AppPlatform.supportsDeviceAuth;
+                              return SwitchListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                value: supported && enabled,
+                                title: Text(l10n.settingsAppLock),
+                                subtitle: Text(
+                                  supported
+                                      ? l10n.settingsAppLockSubtitle
+                                      : l10n.deviceAuthUnavailable,
+                                ),
+                                onChanged: supported
+                                    ? (bool value) => _toggleAppLock(
+                                        context,
+                                        ref.read(deviceAuthServiceProvider),
+                                        settingsService,
+                                        value,
+                                      )
+                                    : null,
+                              );
+                            },
+                      );
+                    },
+                    loading: () => ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      title: Text(l10n.settingsAppLock),
+                      subtitle: Text(l10n.settingsAppLockSubtitle),
+                    ),
+                    error: (_, __) => ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      title: Text(l10n.settingsAppLock),
+                      subtitle: Text(l10n.settingsAppLockSubtitle),
+                    ),
+                  ),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: const FaIcon(FontAwesomeIcons.filePen, size: 16),
+                    title: Text(l10n.diaryDraftsTitle),
+                    subtitle: Text(l10n.diaryDraftsSettingsSubtitle),
+                    trailing: const FaIcon(
+                      FontAwesomeIcons.angleRight,
+                      size: 14,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) {
+                            return const DiaryDraftsPage();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: const FaIcon(FontAwesomeIcons.trashCan, size: 16),
+                    title: Text(l10n.settingsRecycleBin),
+                    subtitle: Text(l10n.settingsRecycleBinSubtitle),
+                    trailing: const FaIcon(
+                      FontAwesomeIcons.angleRight,
+                      size: 14,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) {
+                            return const RecycleBinPage();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          SettingsCardGroup(
-            children: <Widget>[
-              settingsAsync.when(
-                data: (settingsService) {
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: settingsService.appLockEnabledNotifier,
-                    builder:
-                        (BuildContext context, bool enabled, Widget? child) {
-                          // 没有系统身份验证的平台（Linux）开关不可用并说明
-                          // 原因；已开启的锁由启动时的应用锁逻辑自动解除。
-                          final supported = AppPlatform.supportsDeviceAuth;
-                          return SwitchListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                            value: supported && enabled,
-                            title: Text(l10n.settingsAppLock),
-                            subtitle: Text(
-                              supported
-                                  ? l10n.settingsAppLockSubtitle
-                                  : l10n.deviceAuthUnavailable,
-                            ),
-                            onChanged: supported
-                                ? (bool value) => _toggleAppLock(
-                                    context,
-                                    ref.read(deviceAuthServiceProvider),
-                                    settingsService,
-                                    value,
-                                  )
-                                : null,
-                          );
-                        },
-                  );
-                },
-                loading: () => ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  title: Text(l10n.settingsAppLock),
-                  subtitle: Text(l10n.settingsAppLockSubtitle),
-                ),
-                error: (_, __) => ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  title: Text(l10n.settingsAppLock),
-                  subtitle: Text(l10n.settingsAppLockSubtitle),
-                ),
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                leading: const FaIcon(FontAwesomeIcons.filePen, size: 16),
-                title: Text(l10n.diaryDraftsTitle),
-                subtitle: Text(l10n.diaryDraftsSettingsSubtitle),
-                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (BuildContext context) {
-                        return const DiaryDraftsPage();
-                      },
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                leading: const FaIcon(FontAwesomeIcons.trashCan, size: 16),
-                title: Text(l10n.settingsRecycleBin),
-                subtitle: Text(l10n.settingsRecycleBinSubtitle),
-                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (BuildContext context) {
-                        return const RecycleBinPage();
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }

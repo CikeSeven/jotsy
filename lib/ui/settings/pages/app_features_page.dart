@@ -33,6 +33,7 @@ import '../providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
 import '../widgets/settings_option_tiles.dart';
 import '../widgets/settings_reveal.dart';
+import '../../widgets/form_width.dart';
 
 /// 功能管理二级页。
 class AppFeaturesPage extends ConsumerWidget {
@@ -60,6 +61,7 @@ class AppFeaturesPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(l10n.settingsFeaturesTitle),
         leading: IconButton(
           tooltip: l10n.commonBack,
@@ -67,87 +69,97 @@ class AppFeaturesPage extends ConsumerWidget {
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-        children: <Widget>[
-          SettingsCardGroup(
-            title: l10n.settingsFeaturesPagesGroup,
-            footer: l10n.settingsFeaturesPagesFooter,
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final side = FormWidth.extra(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
             children: <Widget>[
-              // 日历与其下的纪念日合成分组里的一项：分组按位置复用子项，若把
-              // 纪念日作为单独一项增删，后面“探索”那一行的开关状态会被它
-              // 接手，从探索的值播一遍开关动画。
-              Column(
-                mainAxisSize: MainAxisSize.min,
+              SettingsCardGroup(
+                title: l10n.settingsFeaturesPagesGroup,
+                footer: l10n.settingsFeaturesPagesFooter,
+                children: <Widget>[
+                  // 日历与其下的纪念日合成分组里的一项：分组按位置复用子项，若把
+                  // 纪念日作为单独一项增删，后面“探索”那一行的开关状态会被它
+                  // 接手，从探索的值播一遍开关动画。
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      SettingsSwitchTile(
+                        title: l10n.navCalendar,
+                        subtitle: l10n.settingsFeaturesCalendarSubtitle,
+                        value: features.calendar,
+                        onChanged: writer(
+                          (v) => features.copyWith(calendar: v),
+                        ),
+                      ),
+                      SettingsReveal(
+                        visible: features.calendar,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            settingsNestedDivider,
+                            SettingsSwitchTile(
+                              title: l10n.settingsFeaturesAnniversaries,
+                              subtitle:
+                                  l10n.settingsFeaturesAnniversariesSubtitle,
+                              nested: true,
+                              value: features.anniversaries,
+                              onChanged: writer(
+                                (v) => features.copyWith(anniversaries: v),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SettingsSwitchTile(
+                    title: l10n.navExplore,
+                    subtitle: l10n.settingsFeaturesExploreSubtitle,
+                    value: features.explore,
+                    onChanged: writer((v) => features.copyWith(explore: v)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SettingsCardGroup(
+                title: l10n.settingsFeaturesFeaturesGroup,
+                footer: l10n.settingsFeaturesFeaturesFooter,
                 children: <Widget>[
                   SettingsSwitchTile(
-                    title: l10n.navCalendar,
-                    subtitle: l10n.settingsFeaturesCalendarSubtitle,
-                    value: features.calendar,
-                    onChanged: writer((v) => features.copyWith(calendar: v)),
-                  ),
-                  SettingsReveal(
-                    visible: features.calendar,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        settingsNestedDivider,
-                        SettingsSwitchTile(
-                          title: l10n.settingsFeaturesAnniversaries,
-                          subtitle: l10n.settingsFeaturesAnniversariesSubtitle,
-                          nested: true,
-                          value: features.anniversaries,
-                          onChanged: writer(
-                            (v) => features.copyWith(anniversaries: v),
+                    title: l10n.notebookTitle,
+                    subtitle: l10n.settingsFeaturesNotebooksSubtitle,
+                    value: features.notebooks,
+                    onChanged: settings == null
+                        ? null
+                        : (bool value) => _setNotebooks(
+                            context,
+                            ref,
+                            settings,
+                            privateCount,
+                            value,
                           ),
-                        ),
-                      ],
+                  ),
+                  SettingsSwitchTile(
+                    title: l10n.settingsFeaturesTemplates,
+                    subtitle: l10n.settingsFeaturesTemplatesSubtitle,
+                    value: features.templates,
+                    onChanged: writer((v) => features.copyWith(templates: v)),
+                  ),
+                  SettingsSwitchTile(
+                    title: l10n.settingsFeaturesTimeCapsules,
+                    subtitle: l10n.settingsFeaturesTimeCapsulesSubtitle,
+                    value: features.timeCapsules,
+                    onChanged: writer(
+                      (v) => features.copyWith(timeCapsules: v),
                     ),
                   ),
                 ],
               ),
-              SettingsSwitchTile(
-                title: l10n.navExplore,
-                subtitle: l10n.settingsFeaturesExploreSubtitle,
-                value: features.explore,
-                onChanged: writer((v) => features.copyWith(explore: v)),
-              ),
             ],
-          ),
-          const SizedBox(height: 16),
-          SettingsCardGroup(
-            title: l10n.settingsFeaturesFeaturesGroup,
-            footer: l10n.settingsFeaturesFeaturesFooter,
-            children: <Widget>[
-              SettingsSwitchTile(
-                title: l10n.notebookTitle,
-                subtitle: l10n.settingsFeaturesNotebooksSubtitle,
-                value: features.notebooks,
-                onChanged: settings == null
-                    ? null
-                    : (bool value) => _setNotebooks(
-                        context,
-                        ref,
-                        settings,
-                        privateCount,
-                        value,
-                      ),
-              ),
-              SettingsSwitchTile(
-                title: l10n.settingsFeaturesTemplates,
-                subtitle: l10n.settingsFeaturesTemplatesSubtitle,
-                value: features.templates,
-                onChanged: writer((v) => features.copyWith(templates: v)),
-              ),
-              SettingsSwitchTile(
-                title: l10n.settingsFeaturesTimeCapsules,
-                subtitle: l10n.settingsFeaturesTimeCapsulesSubtitle,
-                value: features.timeCapsules,
-                onChanged: writer((v) => features.copyWith(timeCapsules: v)),
-              ),
-            ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }

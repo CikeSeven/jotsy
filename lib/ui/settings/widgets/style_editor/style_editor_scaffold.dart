@@ -14,7 +14,7 @@ import '../../../widgets/snap_panel.dart';
 /// （[SnapPanel]），停在三档：上档盖住预览、只留顶部工具条（没有工具条的
 /// 页面只留标题栏）；中档为默认，预览
 /// 约占四成高度；下档只露出标签栏，预览占满其余空间。宽屏（≥720dp）时预览与
-/// 选项左右并排。右上角“重置”在已是默认样式时禁用。
+/// 选项左右并排（选项栏最宽 480，其余给预览）。右上角“重置”在已是默认样式时禁用。
 ///
 /// 标签页之间禁用横滑：选项里有大量滑块与拖拽排序，横滑切页会与它们抢
 /// 手势。状态与写入由各页的编辑控制器负责（[listenable]），外壳只管布局。
@@ -65,6 +65,9 @@ class StyleEditorScaffold extends StatefulWidget {
 
 class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
     with TickerProviderStateMixin {
+  /// 宽屏并排时选项栏的最大宽度。
+  static const double _controlsMaxWidth = 480;
+
   late final SnapPanelController _panel;
   TabController? _tabController;
 
@@ -149,6 +152,13 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
           return LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               if (constraints.maxWidth >= 720) {
+                // 选项栏最宽 [_controlsMaxWidth]：窄于 960 时与预览各占一半
+                // （与原来一致），更宽时选项栏停在 480，其余宽度都给预览，
+                // 滑块与选项行不会被拉得过长。
+                final controlsWidth = math.min(
+                  _controlsMaxWidth,
+                  (constraints.maxWidth - 1) / 2,
+                );
                 return Row(
                   children: <Widget>[
                     Expanded(
@@ -158,7 +168,8 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
                       ),
                     ),
                     const VerticalDivider(width: 1),
-                    Expanded(
+                    SizedBox(
+                      width: controlsWidth,
                       child: Column(
                         children: <Widget>[
                           _tabBar(tabController),

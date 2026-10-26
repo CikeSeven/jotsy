@@ -17,6 +17,7 @@ import '../widgets/app_update_badge.dart';
 import '../widgets/external_link.dart';
 import '../widgets/support_developer_sheet.dart';
 import 'app_update_page.dart';
+import '../../widgets/form_width.dart';
 
 /// 关于页面：以阅读化卡片布局展示应用信息、核心入口与协议信息。
 class AboutPage extends ConsumerStatefulWidget {
@@ -114,159 +115,170 @@ class _AboutPageState extends ConsumerState<AboutPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          CustomScrollView(
-            slivers: <Widget>[
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.l,
-                  contentTopPadding,
-                  AppSpacing.l,
-                  0,
-                ),
-                sliver: SliverList.list(
-                  children: <Widget>[
-                    _SectionCard(
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final side = FormWidth.gutter(constraints.maxWidth);
+              return CustomScrollView(
+                slivers: <Widget>[
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      side,
+                      contentTopPadding,
+                      side,
+                      0,
+                    ),
+                    sliver: SliverList.list(
+                      children: <Widget>[
+                        _SectionCard(
+                          child: Builder(
+                            builder: (BuildContext context) {
+                              final colorScheme = Theme.of(context).colorScheme;
+                              return Column(
+                                children: <Widget>[
+                                  Container(
+                                    width: 92,
+                                    height: 92,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          colorScheme.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(28),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.asset(
+                                        AboutPage._appIconAssetPath,
+                                        width: 72,
+                                        height: 72,
+                                        fit: BoxFit.cover,
+                                        frameBuilder:
+                                            expressiveImageFrameBuilder,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    AboutPage._appName,
+                                    style: textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${l10n.aboutVersion} $appVersion',
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    l10n.aboutPageSlogan,
+                                    textAlign: TextAlign.center,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _SectionCard(
+                          padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+                          child: Column(
+                            children: <Widget>[
+                              _AboutActionTile(
+                                icon: FontAwesomeIcons.github,
+                                title: l10n.aboutOpenSourceRepo,
+                                onTap: () => openExternalLink(
+                                  context,
+                                  AboutPage._repoUrl,
+                                ),
+                              ),
+                              const Divider(height: 1),
+                              const _CheckUpdateTile(),
+                              const Divider(height: 1),
+                              _AboutActionTile(
+                                icon: FontAwesomeIcons.bug,
+                                title: l10n.aboutSubmitIssue,
+                                onTap: () => openExternalLink(
+                                  context,
+                                  AboutPage._issueUrl,
+                                ),
+                              ),
+                              const Divider(height: 1),
+                              _AboutActionTile(
+                                icon: FontAwesomeIcons.qq,
+                                title: l10n.aboutQqFeedbackGroup,
+                                subtitle: l10n.aboutQqFeedbackGroupSubtitle,
+                                onTap: () => _copyQqFeedbackGroup(context),
+                              ),
+                              const Divider(height: 1),
+                              _AboutActionTile(
+                                icon: FontAwesomeIcons.mugHot,
+                                title: l10n.supportDeveloperTitle,
+                                subtitle: l10n.supportDeveloperEntrySubtitle,
+                                onTap: () => showSupportDeveloperSheet(context),
+                              ),
+                              const Divider(height: 1),
+                              _AboutActionTile(
+                                icon: FontAwesomeIcons.shieldHalved,
+                                title: l10n.aboutPrivacyAndData,
+                                onTap: () => _showPrivacyDialog(context),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _SectionCard(
+                          child: _AboutActionTile(
+                            icon: FontAwesomeIcons.fileContract,
+                            title: l10n.aboutOpenSourceLicenses,
+                            onTap: () {
+                              showLicensePage(
+                                context: context,
+                                applicationName: AboutPage._appName,
+                                applicationVersion: appVersion,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.xl,
+                        AppSpacing.l,
+                        AppSpacing.xl,
+                        AppSpacing.l + bottomSafeInset,
+                      ),
                       child: Builder(
                         builder: (BuildContext context) {
                           final colorScheme = Theme.of(context).colorScheme;
                           return Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: <Widget>[
-                              Container(
-                                width: 92,
-                                height: 92,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
-                                alignment: Alignment.center,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Image.asset(
-                                    AboutPage._appIconAssetPath,
-                                    width: 72,
-                                    height: 72,
-                                    fit: BoxFit.cover,
-                                    frameBuilder: expressiveImageFrameBuilder,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
                               Text(
-                                AboutPage._appName,
-                                style: textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                '${l10n.aboutVersion} $appVersion',
+                                l10n.aboutFooterCopyright,
                                 style: textTheme.bodySmall?.copyWith(
                                   color: colorScheme.onSurfaceVariant,
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                l10n.aboutPageSlogan,
                                 textAlign: TextAlign.center,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  height: 1.5,
-                                ),
                               ),
                             ],
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    _SectionCard(
-                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-                      child: Column(
-                        children: <Widget>[
-                          _AboutActionTile(
-                            icon: FontAwesomeIcons.github,
-                            title: l10n.aboutOpenSourceRepo,
-                            onTap: () =>
-                                openExternalLink(context, AboutPage._repoUrl),
-                          ),
-                          const Divider(height: 1),
-                          const _CheckUpdateTile(),
-                          const Divider(height: 1),
-                          _AboutActionTile(
-                            icon: FontAwesomeIcons.bug,
-                            title: l10n.aboutSubmitIssue,
-                            onTap: () =>
-                                openExternalLink(context, AboutPage._issueUrl),
-                          ),
-                          const Divider(height: 1),
-                          _AboutActionTile(
-                            icon: FontAwesomeIcons.qq,
-                            title: l10n.aboutQqFeedbackGroup,
-                            subtitle: l10n.aboutQqFeedbackGroupSubtitle,
-                            onTap: () => _copyQqFeedbackGroup(context),
-                          ),
-                          const Divider(height: 1),
-                          _AboutActionTile(
-                            icon: FontAwesomeIcons.mugHot,
-                            title: l10n.supportDeveloperTitle,
-                            subtitle: l10n.supportDeveloperEntrySubtitle,
-                            onTap: () => showSupportDeveloperSheet(context),
-                          ),
-                          const Divider(height: 1),
-                          _AboutActionTile(
-                            icon: FontAwesomeIcons.shieldHalved,
-                            title: l10n.aboutPrivacyAndData,
-                            onTap: () => _showPrivacyDialog(context),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    _SectionCard(
-                      child: _AboutActionTile(
-                        icon: FontAwesomeIcons.fileContract,
-                        title: l10n.aboutOpenSourceLicenses,
-                        onTap: () {
-                          showLicensePage(
-                            context: context,
-                            applicationName: AboutPage._appName,
-                            applicationVersion: appVersion,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.xl,
-                    AppSpacing.l,
-                    AppSpacing.xl,
-                    AppSpacing.l + bottomSafeInset,
                   ),
-                  child: Builder(
-                    builder: (BuildContext context) {
-                      final colorScheme = Theme.of(context).colorScheme;
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          Text(
-                            l10n.aboutFooterCopyright,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
           _AboutHeader(
             title: l10n.aboutTitle,
@@ -308,28 +320,38 @@ class _AboutHeader extends StatelessWidget {
           padding: EdgeInsets.only(top: topSafeInset),
           child: SizedBox(
             height: contentHeight,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-              child: Row(
-                children: <Widget>[
-                  IconButton(
-                    tooltip: backTooltip,
-                    onPressed: onBack,
-                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        title,
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
+            // 宽窗口：返回键随内容列内收（与 AppTopBar 的 contentMaxWidth 同一口径）。
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) =>
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal:
+                          AppSpacing.m + FormWidth.extra(constraints.maxWidth),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        IconButton(
+                          tooltip: backTooltip,
+                          onPressed: onBack,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.angleLeft,
+                            size: 18,
+                          ),
                         ),
-                      ),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              title,
+                              style: textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 48),
-                ],
-              ),
             ),
           ),
         ),

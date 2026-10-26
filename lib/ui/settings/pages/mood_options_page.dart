@@ -4,6 +4,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../../widgets/form_width.dart';
 
 /// 心情符号自定义页。
 ///
@@ -85,6 +86,7 @@ class _MoodOptionsPageState extends State<MoodOptionsPage> {
     final l10n = context.l10n;
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -102,22 +104,28 @@ class _MoodOptionsPageState extends State<MoodOptionsPage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        children: <Widget>[
-          for (
-            var index = 0;
-            index < _controllers.length;
-            index += 1
-          ) ...<Widget>[
-            _MoodOptionField(
-              controller: _controllers[index],
-              index: index,
-              enabled: !_saving,
-            ),
-            if (index != _controllers.length - 1) const SizedBox(height: 10),
-          ],
-        ],
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final side = FormWidth.gutter(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
+            children: <Widget>[
+              for (
+                var index = 0;
+                index < _controllers.length;
+                index += 1
+              ) ...<Widget>[
+                _MoodOptionField(
+                  controller: _controllers[index],
+                  index: index,
+                  enabled: !_saving,
+                ),
+                if (index != _controllers.length - 1)
+                  const SizedBox(height: 10),
+              ],
+            ],
+          );
+        },
       ),
     );
   }

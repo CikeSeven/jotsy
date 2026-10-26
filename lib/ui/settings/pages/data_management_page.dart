@@ -13,6 +13,7 @@ import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/delayed_loading_gate.dart';
 import '../controllers/data_management_controller.dart';
 import '../controllers/journal_import_controller.dart';
+import '../../widgets/form_width.dart';
 
 /// 数据管理页面：完整备份导出、导入（合并或覆盖）、从其他日记应用导入与
 /// 网盘备份入口。
@@ -77,6 +78,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
       canPop: !_busy,
       child: Scaffold(
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           title: Text(context.l10n.dataMgmtTitle),
           leading: IconButton(
             tooltip: context.l10n.commonBack,
@@ -86,136 +88,143 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
         ),
         body: Stack(
           children: <Widget>[
-            ListView(
-              padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-              children: <Widget>[
-                SettingsCardGroup(
+            LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.extra(constraints.maxWidth);
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(side, 12, side, 24),
                   children: <Widget>[
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      leading: const FaIcon(
-                        FontAwesomeIcons.fileExport,
-                        size: 16,
-                      ),
-                      title: Text(context.l10n.dataMgmtExport),
-                      subtitle: Text(context.l10n.dataMgmtExportSubtitle),
-                      trailing: const FaIcon(
-                        FontAwesomeIcons.angleRight,
-                        size: 14,
-                      ),
-                      onTap: _controller.exportAll,
-                    ),
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      leading: const FaIcon(
-                        FontAwesomeIcons.bookOpen,
-                        size: 16,
-                      ),
-                      title: Text(context.l10n.dataMgmtExportDiaries),
-                      subtitle: Text(
-                        context.l10n.dataMgmtExportDiariesSubtitle,
-                      ),
-                      trailing: const FaIcon(
-                        FontAwesomeIcons.angleRight,
-                        size: 14,
-                      ),
-                      onTap: () {
-                        if (_busy) {
-                          return;
-                        }
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (BuildContext context) {
-                              return const DiaryExportPage();
-                            },
+                    SettingsCardGroup(
+                      children: <Widget>[
+                        ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
                           ),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      leading: const FaIcon(
-                        FontAwesomeIcons.fileImport,
-                        size: 16,
-                      ),
-                      title: Text(context.l10n.dataMgmtImport),
-                      subtitle: Text(context.l10n.dataMgmtImportSubtitle),
-                      trailing: const FaIcon(
-                        FontAwesomeIcons.angleRight,
-                        size: 14,
-                      ),
-                      onTap: _controller.importData,
-                    ),
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      leading: const FaIcon(
-                        FontAwesomeIcons.rightToBracket,
-                        size: 16,
-                      ),
-                      title: Text(context.l10n.dataMgmtImportJournal),
-                      subtitle: Text(
-                        context.l10n.dataMgmtImportJournalSubtitle,
-                      ),
-                      trailing: const FaIcon(
-                        FontAwesomeIcons.angleRight,
-                        size: 14,
-                      ),
-                      onTap: _journalImport.importFromApp,
-                    ),
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      leading: const FaIcon(
-                        FontAwesomeIcons.cloudArrowUp,
-                        size: 16,
-                      ),
-                      title: Text(context.l10n.dataMgmtCloudBackup),
-                      subtitle: Text(context.l10n.dataMgmtCloudBackupSubtitle),
-                      trailing: const FaIcon(
-                        FontAwesomeIcons.angleRight,
-                        size: 14,
-                      ),
-                      onTap: () {
-                        if (_busy) {
-                          return;
-                        }
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (BuildContext context) {
-                              return const CloudBackupPage();
-                            },
+                          leading: const FaIcon(
+                            FontAwesomeIcons.fileExport,
+                            size: 16,
                           ),
-                        );
-                      },
+                          title: Text(context.l10n.dataMgmtExport),
+                          subtitle: Text(context.l10n.dataMgmtExportSubtitle),
+                          trailing: const FaIcon(
+                            FontAwesomeIcons.angleRight,
+                            size: 14,
+                          ),
+                          onTap: _controller.exportAll,
+                        ),
+                        ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          leading: const FaIcon(
+                            FontAwesomeIcons.bookOpen,
+                            size: 16,
+                          ),
+                          title: Text(context.l10n.dataMgmtExportDiaries),
+                          subtitle: Text(
+                            context.l10n.dataMgmtExportDiariesSubtitle,
+                          ),
+                          trailing: const FaIcon(
+                            FontAwesomeIcons.angleRight,
+                            size: 14,
+                          ),
+                          onTap: () {
+                            if (_busy) {
+                              return;
+                            }
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (BuildContext context) {
+                                  return const DiaryExportPage();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          leading: const FaIcon(
+                            FontAwesomeIcons.fileImport,
+                            size: 16,
+                          ),
+                          title: Text(context.l10n.dataMgmtImport),
+                          subtitle: Text(context.l10n.dataMgmtImportSubtitle),
+                          trailing: const FaIcon(
+                            FontAwesomeIcons.angleRight,
+                            size: 14,
+                          ),
+                          onTap: _controller.importData,
+                        ),
+                        ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          leading: const FaIcon(
+                            FontAwesomeIcons.rightToBracket,
+                            size: 16,
+                          ),
+                          title: Text(context.l10n.dataMgmtImportJournal),
+                          subtitle: Text(
+                            context.l10n.dataMgmtImportJournalSubtitle,
+                          ),
+                          trailing: const FaIcon(
+                            FontAwesomeIcons.angleRight,
+                            size: 14,
+                          ),
+                          onTap: _journalImport.importFromApp,
+                        ),
+                        ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          leading: const FaIcon(
+                            FontAwesomeIcons.cloudArrowUp,
+                            size: 16,
+                          ),
+                          title: Text(context.l10n.dataMgmtCloudBackup),
+                          subtitle: Text(
+                            context.l10n.dataMgmtCloudBackupSubtitle,
+                          ),
+                          trailing: const FaIcon(
+                            FontAwesomeIcons.angleRight,
+                            size: 14,
+                          ),
+                          onTap: () {
+                            if (_busy) {
+                              return;
+                            }
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (BuildContext context) {
+                                  return const CloudBackupPage();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        context.l10n.dataMgmtHint,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    context.l10n.dataMgmtHint,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
             // 忙碌期间立即拦截点击，画面在超过 300ms 后才淡入；条目不再随
             // 忙碌态整体变灰闪一下。

@@ -218,6 +218,9 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                     horizontal: side,
                                   ),
                                   sliver: DiariesListSection(
+                                    // 卡片样式按这一列实际的宽度解析。
+                                    availableWidth:
+                                        constraints.maxWidth - side * 2,
                                     diaries: visibleDiaries,
                                     pendingHideDiaryIds: _pendingHideDiaryIds,
                                     appearingDiaryIds: _appearingDiaryIds,

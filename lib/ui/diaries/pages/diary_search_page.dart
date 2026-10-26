@@ -285,6 +285,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                               slivers: <Widget>[
                                 // 新查询 loading 时继续展示上一份结果，避免输入停顿后整屏闪白。
                                 DiariesListSection(
+                                  // 卡片样式按这一列实际的宽度解析。
+                                  availableWidth:
+                                      constraints.maxWidth - side * 2,
                                   diaries: displayedSearchItems,
                                   layoutMode: DiaryLayoutMode.list,
                                   selectedDiaryIds: const <String>{},

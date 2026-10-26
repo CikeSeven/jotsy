@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
@@ -19,6 +20,9 @@ import 'publish_resolvable_field.dart';
 /// [DiaryMetaActions] 的进行中标记、层级与天气图标随草稿对应字段局部重建。
 /// 地址层级只在有地点时出现：没有地点时它既没有可预览的内容，也只是
 /// 下次定位的默认值，定位后再调整会自动按新层级改写地点。
+///
+/// 自动定位与天气只在 Android 提供（定位解析与高德 / 和风密钥都走 Android
+/// 通道）：其他平台点了只会失败，两行都只留手填输入框。
 class PublishContextFields extends StatelessWidget {
   const PublishContextFields({
     super.key,
@@ -53,6 +57,7 @@ class PublishContextFields extends StatelessWidget {
               size: 14,
             ),
             resolving: locating,
+            showResolve: AppPlatform.supportsAutoLocation,
             onResolve: () => actions.resolveLocation(context),
           ),
         ),
@@ -120,6 +125,7 @@ class PublishContextFields extends StatelessWidget {
                       size: 14,
                     ),
                     resolving: loading,
+                    showResolve: AppPlatform.supportsAutoLocation,
                     onResolve: () => actions.resolveWeather(context),
                   );
                 },

@@ -111,6 +111,19 @@ class DiaryPreviewContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 版式按这里实际拿到的宽度换算（嵌在双栏里时比屏幕窄，见
+    // [DiaryPreviewResolvedStyle.atWidth]）；手机上与屏幕同宽，原样返回。
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) =>
+          _buildScroll(context, ref, resolved.atWidth(constraints.maxWidth)),
+    );
+  }
+
+  Widget _buildScroll(
+    BuildContext context,
+    WidgetRef ref,
+    DiaryPreviewResolvedStyle resolved,
+  ) {
     final l10n = context.l10n;
     final diary = detail.diary;
     final style = resolved.style;

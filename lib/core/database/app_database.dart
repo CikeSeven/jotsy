@@ -6,12 +6,12 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../../utils/text_stats.dart';
 import 'content_codec.dart';
 import 'diary_list_scope.dart';
 import 'notebook_payload.dart';
+import '../services/app_data_directory.dart';
 
 export 'diary_list_scope.dart';
 export 'notebook_payload.dart';
@@ -135,11 +135,12 @@ class AppDatabase extends _$AppDatabase
 
 /// 打开 SQLite 连接。
 ///
-/// 数据库存储在应用文档目录，文件名固定为 `node_diary.sqlite`。
+/// 数据库存储在应用数据根目录（[appDataRootDirectory]：手机为文档目录，
+/// 桌面为应用支持目录），文件名固定为 `node_diary.sqlite`。
 /// 使用后台 isolate 建库，避免阻塞主线程。
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    final root = await getApplicationDocumentsDirectory();
+    final root = await appDataRootDirectory();
     final file = File(p.join(root.path, 'node_diary.sqlite'));
     return NativeDatabase.createInBackground(file);
   });

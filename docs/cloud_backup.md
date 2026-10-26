@@ -43,7 +43,7 @@ flutter build apk --release --split-per-abi --dart-define-from-file=cloud_backup
 
 OAuth 同意屏幕需要的首页与隐私政策由 GitHub Pages 托管（仓库 `docs/` 目录）：首页 `https://cikeseven.github.io/jotsy/`，隐私政策 `https://cikeseven.github.io/jotsy/privacy.html`，已获授权的网域填 `cikeseven.github.io`。
 
-GitHub Actions 发布（`.github/workflows/release-apk.yml`）从仓库 Secrets 读取同名的值（`JOTSY_GOOGLE_CLIENT_ID`、`JOTSY_GOOGLE_CLIENT_SECRET`、`JOTSY_GOOGLE_WEB_CLIENT_ID`、`JOTSY_DROPBOX_APP_KEY`、`JOTSY_MICROSOFT_CLIENT_ID`、`JOTSY_BAIDU_APP_KEY`、`JOTSY_BAIDU_SECRET_KEY`、`JOTSY_ALIYUN_CLIENT_ID`、`JOTSY_ALIYUN_CLIENT_SECRET`；`JOTSY_MICROSOFT_TENANT`、`JOTSY_BAIDU_APP_DIR` 为仓库 Variables）生成该文件。每个网盘都可选：没配的只告警、发布包里不显示；格式不对或成对的值只配一半时构建失败。
+GitHub Actions 发布（`.github/workflows/release-apk.yml`）从仓库 Secrets 读取同名的值（`JOTSY_GOOGLE_CLIENT_ID`、`JOTSY_GOOGLE_CLIENT_SECRET`、`JOTSY_GOOGLE_WEB_CLIENT_ID`、`JOTSY_DROPBOX_APP_KEY`、`JOTSY_MICROSOFT_CLIENT_ID`、`JOTSY_BAIDU_APP_KEY`、`JOTSY_BAIDU_SECRET_KEY`、`JOTSY_ALIYUN_CLIENT_ID`、`JOTSY_ALIYUN_CLIENT_SECRET`；`JOTSY_MICROSOFT_TENANT`、`JOTSY_BAIDU_APP_DIR` 为仓库 Variables）生成该文件。Android 签名构建与 Linux / Windows 构建共用同一份密钥与同一个脚本 `tool/write_cloud_backup_keys.dart`（只打印变量名，不打印值；桌面构建后删除该文件）。每个网盘都可选：没配的只告警、发布包里不显示；格式不对或成对的值只配一半时构建失败。桌面上 Google Drive 只走设备码（需要“电视和受限输入设备”客户端，只配了 Web 客户端 ID 时桌面版不显示 Google Drive），OneDrive、百度网盘走设备码，Dropbox、阿里云盘在系统浏览器授权后粘贴授权码。
 
 各平台注册要点：
 

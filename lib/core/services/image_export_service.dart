@@ -7,6 +7,8 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'desktop_save_service.dart';
+
 /// 图片导出失败的语义分类。
 ///
 /// UI 层据此映射到对应的本地化提示，避免直接暴露底层异常字符串。
@@ -45,15 +47,18 @@ class ImageExportException implements Exception {
 /// 职责边界：
 /// - 输入：一个媒体 `source`，可能是应用私有目录下的本地文件路径，也可能是 http(s) URL；
 ///   或内存中的图片字节（[saveBytesToGallery]，如打赏面板的内置收款码）；
-/// - 输出：把该图片保存到系统相册；网络图片经 [downloadRemoteImage] 落成本地
-///   文件，供分享链路（`DiaryShareController`）暂存后交给目标应用；
+/// - 输出：把该图片保存到系统相册（桌面没有相册，改经 [saveToFile] /
+///   [saveBytesToFile] 弹出“另存为…”对话框）；网络图片经
+///   [downloadRemoteImage] 落成本地文件，供分享链路（`DiaryShareController`）暂存后交给目标应用；
 /// - 副作用：网络图片会先流式下载到应用临时目录（[getTemporaryDirectory]）再处理，
 ///   短时间重复保存/分享同一 URL 会复用仍存在的临时文件；过期缓存会被清理；
 /// - 不负责：UI 提示、loading 态、权限弹窗时机（仅触发 [Gal.requestAccess]）。
 ///
 /// 失败一律抛出 [ImageExportException]，调用方转成本地化提示，禁止静默吞错。
 class ImageExportService {
-  const ImageExportService();
+  const ImageExportService({this._desktopSaver = const DesktopSaveService()});
+
+  final DesktopSaveService _desktopSaver;
 
   static const Duration _downloadTimeout = Duration(seconds: 20);
   static const Duration _remoteImageCacheTtl = Duration(minutes: 15);
@@ -145,6 +150,88 @@ class ImageExportService {
       throw ImageExportException(
         type: ImageExportErrorType.unknown,
         message: 'save bytes to gallery failed',
+        cause: error,
+      );
+    }
+  }
+
+  /// 桌面端的“另存为…”：把 [source] 指向的图片按原文件写到用户选的位置，
+  /// 返回写入路径；用户取消对话框返回 null。
+  ///
+  /// 默认文件名取原文件名（正文图片导入时保留了原名）；网络图片先下载到
+  /// 临时文件，文件名取链接末段（不是图片扩展名时用下载文件名）。原图读不到
+  /// 抛 [ImageExportErrorType.invalidSource]，下载失败同 [saveToGallery]。
+  Future<String?> saveToFile(
+    String source, {
+    required String dialogTitle,
+  }) async {
+    final normalized = source.trim();
+    if (normalized.isEmpty) {
+      throw const ImageExportException(
+        type: ImageExportErrorType.invalidSource,
+        message: 'empty image source',
+      );
+    }
+    try {
+      final File file;
+      final String fileName;
+      if (isRemoteSource(normalized)) {
+        file = await _downloadToTempFile(normalized);
+        final urlName = p.basename(Uri.parse(normalized).path);
+        fileName = _hasAllowedImageExtension(urlName)
+            ? urlName
+            : p.basename(file.path);
+      } else {
+        file = normalized.startsWith('file:')
+            ? File.fromUri(Uri.parse(normalized))
+            : File(normalized);
+        if (!await file.exists()) {
+          throw const ImageExportException(
+            type: ImageExportErrorType.invalidSource,
+            message: 'image file is missing',
+          );
+        }
+        fileName = p.basename(file.path);
+      }
+      return await _desktopSaver.saveFile(
+        file,
+        fileName: fileName,
+        dialogTitle: dialogTitle,
+      );
+    } on ImageExportException {
+      rethrow;
+    } catch (error) {
+      throw ImageExportException(
+        type: ImageExportErrorType.unknown,
+        message: 'save image file failed',
+        cause: error,
+      );
+    }
+  }
+
+  /// 桌面端把内存中的图片另存为文件，[fileName] 需带扩展名；其余同
+  /// [saveToFile]。
+  Future<String?> saveBytesToFile(
+    Uint8List bytes, {
+    required String fileName,
+    required String dialogTitle,
+  }) async {
+    if (bytes.isEmpty) {
+      throw const ImageExportException(
+        type: ImageExportErrorType.invalidSource,
+        message: 'empty image bytes',
+      );
+    }
+    try {
+      return await _desktopSaver.saveBytes(
+        bytes,
+        fileName: fileName,
+        dialogTitle: dialogTitle,
+      );
+    } catch (error) {
+      throw ImageExportException(
+        type: ImageExportErrorType.unknown,
+        message: 'save image bytes failed',
         cause: error,
       );
     }

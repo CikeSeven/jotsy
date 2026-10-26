@@ -17,6 +17,7 @@ import '../controllers/diary_export_flow.dart';
 import '../models/diary_export_scope.dart';
 import '../providers/diary_export_provider.dart';
 import '../widgets/diary_sheet_controls.dart';
+import '../../widgets/form_width.dart';
 
 /// 设置 → 数据管理 → 导出日记：按日期范围与标签选出日记，再进入共用的
 /// 导出面板选择格式。
@@ -86,6 +87,7 @@ class _DiaryExportPageState extends ConsumerState<DiaryExportPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -114,118 +116,124 @@ class _DiaryExportPageState extends ConsumerState<DiaryExportPage> {
     final theme = Theme.of(context);
     final dateFormat = DateFormat.yMMMd(l10n.localeName);
     final custom = _scope.customRange;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        AppSpacing.m,
-        AppSpacing.l,
-        AppSpacing.l,
-      ),
-      children: <Widget>[
-        DiarySheetSectionHeader(
-          icon: FontAwesomeIcons.calendarDays,
-          label: l10n.diaryExportRangeSection,
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        for (final (range, label) in <(DiaryExportRange, String)>[
-          (DiaryExportRange.all, l10n.diaryExportRangeAll),
-          (DiaryExportRange.thisYear, l10n.diaryExportRangeThisYear),
-          (DiaryExportRange.last30Days, l10n.diaryExportRangeLast30Days),
-          (DiaryExportRange.custom, l10n.diaryExportRangeCustom),
-        ])
-          ExpressiveChoiceTile(
-            label: label,
-            description: range == DiaryExportRange.custom && custom != null
-                ? l10n.diaryExportRangeCustomValue(
-                    dateFormat.format(custom.start),
-                    dateFormat.format(custom.end),
-                  )
-                : null,
-            selected: _scope.range == range,
-            onTap: () => unawaited(_selectRange(range)),
-          ),
-        if (tags.isNotEmpty) ...<Widget>[
-          const SizedBox(height: AppSpacing.l),
-          DiarySheetSectionHeader(
-            icon: FontAwesomeIcons.tags,
-            label: l10n.diaryExportTagsSection,
-          ),
-          const SizedBox(height: AppSpacing.s),
-          Wrap(
-            spacing: AppSpacing.s,
-            runSpacing: AppSpacing.s,
-            children: <Widget>[
-              for (final tag in tags)
-                FilterChip(
-                  label: Text('# ${tag.name}'),
-                  selected: _scope.tagIds.contains(tag.id),
-                  onSelected: (bool selected) => _toggleTag(tag.id, selected),
-                ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.s),
-          Text(
-            l10n.diaryExportTagsHint,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.gutter(constraints.maxWidth);
+        return ListView(
+          padding: EdgeInsets.fromLTRB(side, AppSpacing.m, side, AppSpacing.l),
+          children: <Widget>[
+            DiarySheetSectionHeader(
+              icon: FontAwesomeIcons.calendarDays,
+              label: l10n.diaryExportRangeSection,
             ),
-          ),
-        ],
-        const SizedBox(height: AppSpacing.m),
-        DiarySheetSwitch(
-          label: l10n.diaryExportIncludeArchived,
-          value: _scope.includeArchived,
-          onChanged: (bool value) =>
-              setState(() => _scope = _scope.copyWith(includeArchived: value)),
-        ),
-      ],
+            const SizedBox(height: AppSpacing.xs),
+            for (final (range, label) in <(DiaryExportRange, String)>[
+              (DiaryExportRange.all, l10n.diaryExportRangeAll),
+              (DiaryExportRange.thisYear, l10n.diaryExportRangeThisYear),
+              (DiaryExportRange.last30Days, l10n.diaryExportRangeLast30Days),
+              (DiaryExportRange.custom, l10n.diaryExportRangeCustom),
+            ])
+              ExpressiveChoiceTile(
+                label: label,
+                description: range == DiaryExportRange.custom && custom != null
+                    ? l10n.diaryExportRangeCustomValue(
+                        dateFormat.format(custom.start),
+                        dateFormat.format(custom.end),
+                      )
+                    : null,
+                selected: _scope.range == range,
+                onTap: () => unawaited(_selectRange(range)),
+              ),
+            if (tags.isNotEmpty) ...<Widget>[
+              const SizedBox(height: AppSpacing.l),
+              DiarySheetSectionHeader(
+                icon: FontAwesomeIcons.tags,
+                label: l10n.diaryExportTagsSection,
+              ),
+              const SizedBox(height: AppSpacing.s),
+              Wrap(
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.s,
+                children: <Widget>[
+                  for (final tag in tags)
+                    FilterChip(
+                      label: Text('# ${tag.name}'),
+                      selected: _scope.tagIds.contains(tag.id),
+                      onSelected: (bool selected) =>
+                          _toggleTag(tag.id, selected),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s),
+              Text(
+                l10n.diaryExportTagsHint,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.m),
+            DiarySheetSwitch(
+              label: l10n.diaryExportIncludeArchived,
+              value: _scope.includeArchived,
+              onChanged: (bool value) => setState(
+                () => _scope = _scope.copyWith(includeArchived: value),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildFooter(AppLocalizations l10n, List<DiaryWithTags> matched) {
     final theme = Theme.of(context);
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.l,
-          AppSpacing.s,
-          AppSpacing.l,
-          AppSpacing.l,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text(
-              l10n.diaryExportMatchCount(matched.length),
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+    // 宽窗口：底部按钮区与上方内容列同宽居中。
+    return FormWidthBar(
+      sideInset: AppSpacing.l,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.s,
+            AppSpacing.l,
+            AppSpacing.l,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(
+                l10n.diaryExportMatchCount(matched.length),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.diaryExportCapsuleNote,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                l10n.diaryExportCapsuleNote,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.m),
-            FilledButton.icon(
-              onPressed: matched.isEmpty
-                  ? null
-                  : () => unawaited(
-                      runDiaryExportFlow(
-                        context,
-                        ref,
-                        diaries: matched,
-                        showHint: _showHint,
+              const SizedBox(height: AppSpacing.m),
+              FilledButton.icon(
+                onPressed: matched.isEmpty
+                    ? null
+                    : () => unawaited(
+                        runDiaryExportFlow(
+                          context,
+                          ref,
+                          diaries: matched,
+                          showHint: _showHint,
+                        ),
                       ),
-                    ),
-              icon: const FaIcon(FontAwesomeIcons.fileExport, size: 16),
-              label: Text(l10n.diaryExportNext),
-            ),
-          ],
+                icon: const FaIcon(FontAwesomeIcons.fileExport, size: 16),
+                label: Text(l10n.diaryExportNext),
+              ),
+            ],
+          ),
         ),
       ),
     );

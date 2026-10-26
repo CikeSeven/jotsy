@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'app_data_directory.dart';
 
 /// 发布页封面文件存储服务。
 ///
@@ -54,7 +54,7 @@ class DiaryCoverStorageService {
   }
 
   static Future<Directory> _ensureCoversDirectory() async {
-    final root = await getApplicationDocumentsDirectory();
+    final root = await appDataRootDirectory();
     final directory = Directory(p.join(root.path, _coversDirectoryName));
     if (!await directory.exists()) {
       await directory.create(recursive: true);

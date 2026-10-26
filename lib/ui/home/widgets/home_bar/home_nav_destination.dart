@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import '../../models/home_bar_style/home_bar_style.dart';
 import 'home_nav_block.dart';
 import 'home_nav_indicator.dart';
@@ -245,7 +246,7 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
       verticalOffset: 42,
       excludeFromSemantics: true,
       preferBelow: false,
-      child: _IndicatorInkResponse(
+      child: HomeNavIndicatorInkResponse(
         rectOf: _rippleRect,
         customBorder: _rippleShape,
         onTap: widget.onTap,
@@ -274,12 +275,18 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
 }
 
 /// 水波纹与焦点高亮只画在 [rectOf] 给出的矩形里（指示器或圆角块的位置），
-/// 而不是整个导航项。
-class _IndicatorInkResponse extends InkResponse {
-  const _IndicatorInkResponse({
+/// 而不是整个导航项。底栏与宽窗口的侧边导航栏共用；侧边栏另给悬停与焦点
+/// 的状态层颜色（底栏不传，沿用主题）。
+class HomeNavIndicatorInkResponse extends InkResponse {
+  const HomeNavIndicatorInkResponse({
+    super.key,
     required this.rectOf,
     super.customBorder,
     super.onTap,
+    super.hoverColor,
+    super.focusColor,
+    super.focusNode,
+    super.mouseCursor,
     super.child,
   }) : super(containedInkWell: true, highlightColor: Colors.transparent);
 
@@ -300,6 +307,41 @@ class HomeNavColors {
     required this.selectedLabel,
     required this.unselectedLabel,
   });
+
+  /// 按材质解析导航项颜色（底栏与侧边导航栏共用同一口径）：
+  /// - 实色沿用主题（选中图标 onSecondaryContainer、未选中 onSurfaceVariant、
+  ///   指示器 secondaryContainer，文字取 navigationBarTheme）；
+  /// - 玻璃（高对比度下仍算玻璃）用 [style] 的前景色与指示器色。
+  factory HomeNavColors.resolve(ThemeData theme, HomeBarResolvedStyle style) {
+    final scheme = theme.colorScheme;
+    final labelTheme = theme.navigationBarTheme.labelTextStyle;
+    final base = theme.textTheme.labelMedium ?? const TextStyle();
+    // 与 M3 NavigationBar 取文字样式的顺序一致：主题优先，缺省用 M3 默认。
+    final selectedLabel =
+        labelTheme?.resolve(const <WidgetState>{WidgetState.selected}) ??
+        base.apply(color: scheme.onSurface);
+    final unselectedLabel =
+        labelTheme?.resolve(const <WidgetState>{}) ??
+        base.apply(color: scheme.onSurfaceVariant);
+    if (!style.isGlass) {
+      return HomeNavColors(
+        indicator: scheme.secondaryContainer,
+        selectedIcon: scheme.onSecondaryContainer,
+        unselectedIcon: scheme.onSurfaceVariant,
+        selectedLabel: selectedLabel,
+        unselectedLabel: unselectedLabel,
+      );
+    }
+    return HomeNavColors(
+      indicator: style.indicatorColor,
+      selectedIcon: style.selectedForeground,
+      unselectedIcon: style.unselectedForeground,
+      selectedLabel: selectedLabel.copyWith(color: style.selectedForeground),
+      unselectedLabel: unselectedLabel.copyWith(
+        color: style.unselectedForeground,
+      ),
+    );
+  }
 
   final Color indicator;
   final Color selectedIcon;

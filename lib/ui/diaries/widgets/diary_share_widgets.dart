@@ -11,6 +11,7 @@ import '../../widgets/expressive_state_blend.dart';
 import '../models/diary_image_embed_data.dart';
 import '../models/diary_share_target.dart';
 import '../viewmodels/diary_share_messages.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 分享文字预览：展示即将发出的纯文本，最多 8 行。
 ///
@@ -81,16 +82,18 @@ class DiaryShareImagePicker extends StatelessWidget {
       children: <Widget>[
         SizedBox(
           height: _thumbSize,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: images.length,
-            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s),
-            itemBuilder: (BuildContext context, int index) => _ImageChoice(
-              source: images[index],
-              selected: selected.contains(index),
-              label: l10n.diaryShareImageLabel(index + 1),
-              size: _thumbSize,
-              onTap: () => onToggle(index),
+          child: DesktopHorizontalScroll(
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: images.length,
+              separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s),
+              itemBuilder: (BuildContext context, int index) => _ImageChoice(
+                source: images[index],
+                selected: selected.contains(index),
+                label: l10n.diaryShareImageLabel(index + 1),
+                size: _thumbSize,
+                onTap: () => onToggle(index),
+              ),
             ),
           ),
         ),

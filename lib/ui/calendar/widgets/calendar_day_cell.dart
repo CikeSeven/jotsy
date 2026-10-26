@@ -46,6 +46,7 @@ class CalendarDayCell extends StatelessWidget {
     this.lunar,
     this.holiday,
     this.anniversary,
+    this.highlightMaxWidth,
   });
 
   static const double _radius = 14;
@@ -74,6 +75,20 @@ class CalendarDayCell extends StatelessWidget {
   /// 当天第一条纪念日的名称；没有或不显示纪念日时为 null。显示农历时写在
   /// 小字行，否则在数字左上画心形。
   final String? anniversary;
+
+  /// 高亮底块的最大宽度；格子更宽时底块居中、两侧留空。只在宽窗口给出，
+  /// 手机上为 null，整格绘制与原来一致。
+  final double? highlightMaxWidth;
+
+  /// 把 [child] 限制到 [maxWidth] 宽并在可用区域里居中，高度仍铺满。
+  static Widget limitWidth(Widget child, {required double maxWidth}) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: SizedBox.expand(child: child),
+      ),
+    );
+  }
 
   /// 三层排版下为底部指示物预留的高度（见 [CalendarCellLayout]）；热力格
   /// 没有指示物，数字组在整格居中。
@@ -142,7 +157,7 @@ class CalendarDayCell extends StatelessWidget {
       ring = Colors.transparent;
     }
 
-    return Padding(
+    final cell = Padding(
       padding: const EdgeInsets.all(2),
       child: AnimatedContainer(
         duration: duration,
@@ -156,6 +171,9 @@ class CalendarDayCell extends StatelessWidget {
         child: content,
       ),
     );
+    final maxWidth = highlightMaxWidth;
+    // 外圈 2 的留白也算在内：底块本身最宽 maxWidth。
+    return maxWidth == null ? cell : limitWidth(cell, maxWidth: maxWidth + 4);
   }
 
   // ---------------------------------------------------------------------------

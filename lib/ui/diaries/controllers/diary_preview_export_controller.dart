@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -9,8 +11,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
+import '../../../core/services/desktop_save_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/long_image/scrolled_boundary_capture.dart';
 import '../models/diary_share_content.dart';
 import '../models/diary_share_options.dart';
 import '../models/diary_share_target.dart';
@@ -26,6 +31,11 @@ import 'diary_share_controller.dart';
 /// 每次调用时传入的 context 与日记。输出：页面要显示的加载遮罩、静态头图
 /// 状态与忙碌态（经 [ChangeNotifier] 通知，翻页器据此暂停翻页），结果提示经
 /// [onHint] 给出。副作用：写临时文件，调起系统分享、目标应用与保存对话框。
+///
+/// 桌面（Linux / Windows）的长图在 Dart 里逐屏截图拼接
+/// （[captureScrolledBoundary]，插件的原生合并只有手机实现），生成后弹出
+/// 保存对话框而不是系统分享；没有系统分享的平台（Linux）在分享面板里选
+/// “保存图片…”时把勾选的图片保存到文件。
 ///
 /// 同一时刻只运行一个动作，进行中再次触发直接忽略。分享与长图在本控制器的
 /// 加载遮罩下执行：动作开始前先让遮罩真正绘制出来，并保证最短可见时长，避免
@@ -71,7 +81,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
   }
 
   /// 分享整页长图（分享面板里选了长图时调用）；[background] 为长图底色
-  /// （页面的纸色），默认取主题 surface。
+  /// （页面的纸色），默认取主题 surface。桌面改为保存到文件。
   Future<void> _shareLongImage(
     BuildContext context, {
     Color? background,
@@ -79,9 +89,12 @@ class DiaryPreviewExportController extends ChangeNotifier {
     if (_sharingImage || _showLoading) {
       return;
     }
+    final saveToFile = !AppPlatform.supportsNativeLongImageMerge;
     await _runWithLoading(
       context,
-      label: context.l10n.autoT0114,
+      label: saveToFile
+          ? context.l10n.imageViewerSaving
+          : context.l10n.autoT0114,
       action: () async {
         final l10n = context.l10n;
         final surfaceColor =
@@ -109,18 +122,25 @@ class DiaryPreviewExportController extends ChangeNotifier {
           if (renderObject is! WidgetShotPlusRenderRepaintBoundary) {
             throw Exception('截图节点未就绪');
           }
-          final imageBytes = await renderObject.screenshot(
-            scrollController: scrollController.hasClients
-                ? scrollController
-                : null,
-            format: ShotFormat.png,
-            quality: 100,
-            maxHeight: 22000,
-            backgroundColor: surfaceColor,
+          final imageBytes = await _captureLongImage(
+            renderObject,
+            background: surfaceColor,
             pixelRatio: pixelRatio,
           );
           if (imageBytes == null || imageBytes.isEmpty) {
             throw Exception(l10n.autoT0111);
+          }
+          if (saveToFile) {
+            final path = await const DesktopSaveService().saveBytes(
+              imageBytes,
+              fileName:
+                  'jotsy_diary_${DateTime.now().millisecondsSinceEpoch}.png',
+              dialogTitle: l10n.desktopSaveImageDialogTitle,
+            );
+            if (path != null && context.mounted) {
+              onHint(l10n.desktopSavedTo(path));
+            }
+            return;
           }
           final tempDirectory = await getTemporaryDirectory();
           final imagePath = p.join(
@@ -135,7 +155,11 @@ class DiaryPreviewExportController extends ChangeNotifier {
           if (!context.mounted) {
             return;
           }
-          onHint(context.l10n.autoT0112(error.toString()));
+          onHint(
+            saveToFile
+                ? context.l10n.imageViewerSaveFailed(error.toString())
+                : context.l10n.autoT0112(error.toString()),
+          );
         } finally {
           if (context.mounted) {
             _update(() {
@@ -148,8 +172,35 @@ class DiaryPreviewExportController extends ChangeNotifier {
     );
   }
 
-  /// 打开分享面板，按用户的选择分享长图、分享到指定应用 / 系统分享或复制
-  /// 文字。
+  /// 截取整页长图：手机经插件逐屏截图并原生合并；桌面插件的合并没有实现
+  /// （调用会抛 MissingPluginException），改在 Dart 里拼接。两者的截取上限
+  /// 都是 22000 逻辑像素。
+  Future<Uint8List?> _captureLongImage(
+    RenderRepaintBoundary boundary, {
+    required Color background,
+    required double pixelRatio,
+  }) {
+    final controller = scrollController.hasClients ? scrollController : null;
+    if (!AppPlatform.supportsNativeLongImageMerge) {
+      return captureScrolledBoundary(
+        boundary,
+        scrollController: controller,
+        pixelRatio: pixelRatio,
+        background: background,
+      );
+    }
+    return (boundary as WidgetShotPlusRenderRepaintBoundary).screenshot(
+      scrollController: controller,
+      format: ShotFormat.png,
+      quality: 100,
+      maxHeight: 22000,
+      backgroundColor: background,
+      pixelRatio: pixelRatio,
+    );
+  }
+
+  /// 打开分享面板，按用户的选择分享长图、分享到指定应用 / 系统分享、复制
+  /// 文字，或（没有系统分享的平台）把图片保存到文件。
   ///
   /// 已安装应用的检测与面板打开并行：检测完成前面板先显示系统分享与复制，
   /// 不让原生查询拖慢面板出现。内容开关在面板内每次改动即保存；[background]
@@ -182,6 +233,10 @@ class DiaryPreviewExportController extends ChangeNotifier {
       await _shareLongImage(context, background: background);
       return;
     }
+    if (request.action == DiaryShareAction.saveImages) {
+      await _saveImages(context, request.images);
+      return;
+    }
     final l10n = context.l10n;
     await _runWithLoading(
       context,
@@ -204,6 +259,49 @@ class DiaryPreviewExportController extends ChangeNotifier {
         } catch (error) {
           if (context.mounted) {
             onHint(l10n.diaryShareFailed(error.toString()));
+          }
+        }
+      },
+    );
+  }
+
+  /// 把勾选的图片保存到文件（代替系统分享）。对话框在遮罩下弹出，取消时
+  /// 不提示；读不到的图片张数附在结果提示后。
+  Future<void> _saveImages(BuildContext context, List<String> images) async {
+    final l10n = context.l10n;
+    await _runWithLoading(
+      context,
+      label: l10n.imageViewerSaving,
+      action: () async {
+        try {
+          final result = await _share.saveImages(
+            images,
+            fileDialogTitle: l10n.desktopSaveImageDialogTitle,
+            folderDialogTitle: l10n.diaryShareSaveImagesDialogTitle,
+          );
+          final path = result.path;
+          final String? message;
+          if (result.missing == images.length) {
+            // 一张都读不到：没有弹出对话框。
+            message = l10n.diaryShareNothingToShare;
+          } else if (path == null) {
+            // 用户取消了对话框。
+            message = null;
+          } else {
+            message = <String>[
+              result.saved == 1
+                  ? l10n.desktopSavedTo(path)
+                  : l10n.diaryShareImagesSaved(result.saved, path),
+              if (result.missing > 0)
+                l10n.diaryShareImagesMissing(result.missing),
+            ].join('\n');
+          }
+          if (context.mounted && message != null) {
+            onHint(message);
+          }
+        } catch (error) {
+          if (context.mounted) {
+            onHint(l10n.imageViewerSaveFailed(error.toString()));
           }
         }
       },

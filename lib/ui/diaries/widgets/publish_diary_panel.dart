@@ -47,6 +47,7 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
     this.publishTime,
     this.capsuleEnabled = false,
     this.showDraftCapsule = true,
+    this.fillWidth = false,
     this.onProgressChanged,
   });
 
@@ -69,6 +70,10 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
   final bool showDraftCapsule;
 
   final ValueChanged<double>? onProgressChanged;
+
+  /// 收起与展开都铺满宿主给的宽度，不再按收起 / 展开左右内缩。宽窗口里由
+  /// 宿主把面板放进与悬浮工具栏相同的居中列，收起栏与工具栏同宽、同边。
+  final bool fillWidth;
 
   /// 收起态从宿主底边算起占用的高度（底部间隙 + 抬升 + 收起栏）。宿主要在
   /// 收起栏上方再叠一层（如常显的悬浮工具栏）时，据此对齐，不必复制内部尺寸。
@@ -241,7 +246,9 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             ? constraints.maxHeight - _collapsedBottomGap - _expandedTopGap
             : null;
         final collapsedFactor = _collapsedHeight / _activeExpandedHeight;
-        final collapsedInset = constraints.hasBoundedWidth
+        final collapsedInset = widget.fillWidth
+            ? 0.0
+            : constraints.hasBoundedWidth
             ? ((constraints.maxWidth - _collapsedTargetWidth) / 2).clamp(
                 _collapsedMinInset,
                 _collapsedMaxInset,
@@ -253,7 +260,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             // 面板展开时变宽，收起时变窄，形成“悬浮卡片展开”感。
             final horizontalInset = lerpDouble(
               collapsedInset,
-              _expandedHorizontalInset,
+              widget.fillWidth ? 0.0 : _expandedHorizontalInset,
               progress,
             )!;
             final extraLift = lerpDouble(_collapsedExtraLift, 0, progress)!;

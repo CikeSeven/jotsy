@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,8 +13,12 @@ import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_tile.dart';
 
-/// 书架网格的列数：窄屏（< 360dp）两列，否则三列。
-int notebookShelfColumns(double width) => width < 360 ? 2 : 3;
+/// 书架网格的列数：窄屏（< 360dp）两列，否则每 180 一列、至少三列。
+///
+/// 书架面板最宽 640，在其中始终是三列；更宽的容器（宽窗口）才多放几列，
+/// 封面不会被拉得过大。
+int notebookShelfColumns(double width) =>
+    width < 360 ? 2 : math.max(3, width ~/ 180);
 
 /// 等宽网格：每行 [columns] 格、间距 12，最后一行不足时留空。用普通的行
 /// 而不是 GridView：分组要能放进 AnimatedSize 里展开收起。

@@ -11,6 +11,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_stri
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_swatch.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
+import '../../../widgets/desktop_horizontal_scroll.dart';
 
 part 'diary_color_saved_strip_cells.dart';
 
@@ -222,26 +223,28 @@ class _DiaryColorSavedStripState extends State<DiaryColorSavedStrip> {
       );
     }
 
-    return SingleChildScrollView(
-      key: const ValueKey<String>('strip'),
-      scrollDirection: Axis.horizontal,
-      primary: false,
-      child: Row(
-        children: <Widget>[
-          for (final slot in _slots)
-            _StripCell(
-              key: ValueKey<String>(slot.key),
-              width: slot.entry.kind == DiaryColorStripKind.divider
-                  ? _kDividerSlotWidth
-                  : slotWidth,
-              leaving: slot.leaving,
-              animateIn: animateIn,
-              onExited: () => _drop(slot.key),
-              child: slot.entry.kind == DiaryColorStripKind.divider
-                  ? const _StripDivider()
-                  : swatch(slot.entry),
-            ),
-        ],
+    return DesktopHorizontalScroll(
+      child: SingleChildScrollView(
+        key: const ValueKey<String>('strip'),
+        scrollDirection: Axis.horizontal,
+        primary: false,
+        child: Row(
+          children: <Widget>[
+            for (final slot in _slots)
+              _StripCell(
+                key: ValueKey<String>(slot.key),
+                width: slot.entry.kind == DiaryColorStripKind.divider
+                    ? _kDividerSlotWidth
+                    : slotWidth,
+                leaving: slot.leaving,
+                animateIn: animateIn,
+                onExited: () => _drop(slot.key),
+                child: slot.entry.kind == DiaryColorStripKind.divider
+                    ? const _StripDivider()
+                    : swatch(slot.entry),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../models/diary_template_variables.dart';
 import '../viewmodels/diary_template_labels.dart';
 import '../viewmodels/diary_template_variable_values.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 模板编辑页的“插入变量”条：常用的几个变量直接点，其余在“全部变量”面板
 /// 里（附按今天算出的示例）。点按回调 [onInsert] 当前界面语言的占位写法，
@@ -28,29 +29,31 @@ class DiaryTemplateVariableBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-      child: Row(
-        children: <Widget>[
-          for (final variable in _common) ...<Widget>[
+    return DesktopHorizontalScroll(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+        child: Row(
+          children: <Widget>[
+            for (final variable in _common) ...<Widget>[
+              ActionChip(
+                avatar: const FaIcon(FontAwesomeIcons.plus, size: 10),
+                label: Text(diaryTemplateVariableLabel(l10n, variable)),
+                onPressed: () =>
+                    onInsert(diaryTemplateVariableToken(l10n, variable)),
+              ),
+              const SizedBox(width: AppSpacing.s),
+            ],
             ActionChip(
-              avatar: const FaIcon(FontAwesomeIcons.plus, size: 10),
-              label: Text(diaryTemplateVariableLabel(l10n, variable)),
-              onPressed: () =>
-                  onInsert(diaryTemplateVariableToken(l10n, variable)),
+              avatar: const FaIcon(FontAwesomeIcons.ellipsis, size: 12),
+              label: Text(l10n.diaryTemplateEditorAllVariables),
+              onPressed: () async {
+                final token = await _showAllVariables(context);
+                if (token != null) onInsert(token);
+              },
             ),
-            const SizedBox(width: AppSpacing.s),
           ],
-          ActionChip(
-            avatar: const FaIcon(FontAwesomeIcons.ellipsis, size: 12),
-            label: Text(l10n.diaryTemplateEditorAllVariables),
-            onPressed: () async {
-              final token = await _showAllVariables(context);
-              if (token != null) onInsert(token);
-            },
-          ),
-        ],
+        ),
       ),
     );
   }

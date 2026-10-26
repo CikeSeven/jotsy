@@ -12,6 +12,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../notebooks/pages/notebooks_page.dart';
+import '../../widgets/form_width.dart';
 import '../../widgets/page_header.dart';
 import '../../../app/theme/app_effects.dart';
 import '../controllers/app_update_controller.dart';
@@ -43,144 +44,158 @@ class SettingsPage extends StatelessWidget {
     return Stack(
       children: <Widget>[
         Positioned.fill(child: ColoredBox(color: pageBgColor)),
-        ListView(
-          padding: EdgeInsets.only(
-            top: headerHeight + glassTopGap,
-            bottom: listBottomPadding,
-          ),
-          children: <Widget>[
-            _SettingsDestination(
-              icon: FontAwesomeIcons.palette,
-              title: l10n.settingsAppearanceLanguage,
-              subtitle: l10n.settingsLanguageSubtitle,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const AppearanceLanguagePage();
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            _SettingsDestination(
-              icon: FontAwesomeIcons.penNib,
-              title: l10n.settingsEditorTitle,
-              subtitle: l10n.settingsEditorSubtitle,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const EditorSettingsPage();
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            _SettingsDestination(
-              icon: FontAwesomeIcons.toggleOn,
-              title: l10n.settingsFeaturesTitle,
-              subtitle: l10n.settingsFeaturesSubtitle,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const AppFeaturesPage();
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-            _SettingsDestination(
-              icon: FontAwesomeIcons.tags,
-              title: l10n.settingsTagManagement,
-              subtitle: l10n.settingsTagManagementSubtitle,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const TagManagementPage();
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            // 日记本功能关闭时连同其后的间距一起隐藏，避免出现双倍间隔。
-            Consumer(
-              builder: (BuildContext context, WidgetRef ref, Widget? child) {
-                final enabled = ref.watch(
-                  appFeaturesProvider.select((f) => f.notebooks),
-                );
-                if (!enabled) return const SizedBox.shrink();
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    _SettingsDestination(
-                      icon: FontAwesomeIcons.book,
-                      title: l10n.notebookTitle,
-                      subtitle: l10n.notebookSettingsSubtitle,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (BuildContext context) {
-                              return const NotebooksPage();
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                );
-              },
-            ),
-            _SettingsDestination(
-              icon: FontAwesomeIcons.shieldHalved,
-              title: l10n.settingsDataPrivacy,
-              subtitle: l10n.settingsDataPrivacySubtitle,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const DataPrivacyPage();
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            // 有新版本时在“关于”入口上提示（自动检查或手动检查发现的）。
-            Consumer(
-              builder: (BuildContext context, WidgetRef ref, Widget? child) {
-                final hasUpdate = ref.watch(
-                  appUpdateControllerProvider.select(
-                    (state) => state.hasUpdate,
-                  ),
-                );
-                return _SettingsDestination(
-                  icon: FontAwesomeIcons.circleInfo,
-                  title: l10n.settingsAbout,
-                  subtitle: l10n.settingsAboutSubtitle,
-                  badge: hasUpdate ? const AppUpdateBadge() : null,
+        // 宽窗口：入口卡片保持一列、最宽 720 并居中（卡片自带左右 16，
+        // 列表再补齐其余留白）；手机上补的留白为 0，与原来一致。
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final side = FormWidth.extra(constraints.maxWidth);
+            return ListView(
+              padding: EdgeInsets.only(
+                left: side,
+                top: headerHeight + glassTopGap,
+                right: side,
+                bottom: listBottomPadding,
+              ),
+              children: <Widget>[
+                _SettingsDestination(
+                  icon: FontAwesomeIcons.palette,
+                  title: l10n.settingsAppearanceLanguage,
+                  subtitle: l10n.settingsLanguageSubtitle,
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (BuildContext context) {
-                          return const AboutPage();
+                          return const AppearanceLanguagePage();
                         },
                       ),
                     );
                   },
-                );
-              },
-            ),
-          ],
+                ),
+                const SizedBox(height: 12),
+                _SettingsDestination(
+                  icon: FontAwesomeIcons.penNib,
+                  title: l10n.settingsEditorTitle,
+                  subtitle: l10n.settingsEditorSubtitle,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return const EditorSettingsPage();
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _SettingsDestination(
+                  icon: FontAwesomeIcons.toggleOn,
+                  title: l10n.settingsFeaturesTitle,
+                  subtitle: l10n.settingsFeaturesSubtitle,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return const AppFeaturesPage();
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                _SettingsDestination(
+                  icon: FontAwesomeIcons.tags,
+                  title: l10n.settingsTagManagement,
+                  subtitle: l10n.settingsTagManagementSubtitle,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return const TagManagementPage();
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                // 日记本功能关闭时连同其后的间距一起隐藏，避免出现双倍间隔。
+                Consumer(
+                  builder:
+                      (BuildContext context, WidgetRef ref, Widget? child) {
+                        final enabled = ref.watch(
+                          appFeaturesProvider.select((f) => f.notebooks),
+                        );
+                        if (!enabled) return const SizedBox.shrink();
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            _SettingsDestination(
+                              icon: FontAwesomeIcons.book,
+                              title: l10n.notebookTitle,
+                              subtitle: l10n.notebookSettingsSubtitle,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (BuildContext context) {
+                                      return const NotebooksPage();
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      },
+                ),
+                _SettingsDestination(
+                  icon: FontAwesomeIcons.shieldHalved,
+                  title: l10n.settingsDataPrivacy,
+                  subtitle: l10n.settingsDataPrivacySubtitle,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return const DataPrivacyPage();
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                // 有新版本时在“关于”入口上提示（自动检查或手动检查发现的）。
+                Consumer(
+                  builder:
+                      (BuildContext context, WidgetRef ref, Widget? child) {
+                        final hasUpdate = ref.watch(
+                          appUpdateControllerProvider.select(
+                            (state) => state.hasUpdate,
+                          ),
+                        );
+                        return _SettingsDestination(
+                          icon: FontAwesomeIcons.circleInfo,
+                          title: l10n.settingsAbout,
+                          subtitle: l10n.settingsAboutSubtitle,
+                          badge: hasUpdate ? const AppUpdateBadge() : null,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (BuildContext context) {
+                                  return const AboutPage();
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                ),
+              ],
+            );
+          },
         ),
-        PageHeader(title: l10n.settingsTitle),
+        PageHeader(
+          title: l10n.settingsTitle,
+          contentMaxWidth: FormWidth.maxWidth,
+        ),
       ],
     );
   }

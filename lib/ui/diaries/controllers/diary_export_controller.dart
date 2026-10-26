@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/backup_file_save_service.dart';
 import '../../../core/services/data_archive_service.dart';
 import '../../../core/services/diary_typography.dart';
@@ -350,6 +351,10 @@ class DiaryExportController {
     File file, {
     required String mimeType,
   }) async {
+    // Linux 的 share_plus 没有实现文件分享：导出面板不提供“分享”，这里兜底。
+    if (!AppPlatform.supportsSystemFileShare) {
+      throw UnsupportedError('System share is unavailable on this platform');
+    }
     await Share.shareXFiles(<XFile>[XFile(file.path, mimeType: mimeType)]);
   }
 }

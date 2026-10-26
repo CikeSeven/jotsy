@@ -106,4 +106,71 @@ void main() {
       throwsStateError,
     );
   });
+
+  test('lists desktop packages next to the APKs with sizes and checksums, '
+      'which APK-only clients skip', () async {
+    await File(
+      p.join(artifacts.path, 'jotsy-v0.6.1-arm64-v8a.apk'),
+    ).writeAsString('arm64 package');
+    final setup = utf8.encode('windows installer');
+    final tarball = utf8.encode('linux tarball');
+    await File(
+      p.join(artifacts.path, 'jotsy-v0.6.1-windows-x64-setup.exe'),
+    ).writeAsBytes(setup);
+    await File(
+      p.join(artifacts.path, 'jotsy-v0.6.1-windows-x64.zip'),
+    ).writeAsString('windows portable');
+    await File(
+      p.join(artifacts.path, 'jotsy-v0.6.1-linux-x64.tar.gz'),
+    ).writeAsBytes(tarball);
+    await File(p.join(artifacts.path, 'SHA256SUMS.txt')).writeAsString('-');
+
+    final text = await buildUpdateManifest(
+      pubspec: 'version: 0.6.1+18\n',
+      tag: 'v0.6.1',
+      artifacts: artifacts,
+      releaseNotes: notes,
+    );
+
+    final json = jsonDecode(text) as Map<String, Object?>;
+    final rawAssets = (json['assets']! as List).cast<Map<String, Object?>>();
+    expect(rawAssets.map((a) => a['name']), <String>[
+      'jotsy-v0.6.1-arm64-v8a.apk',
+      'jotsy-v0.6.1-linux-x64.tar.gz',
+      'jotsy-v0.6.1-windows-x64-setup.exe',
+      'jotsy-v0.6.1-windows-x64.zip',
+    ]);
+    for (final asset in rawAssets) {
+      expect(asset['size'], isA<int>());
+      expect(asset['sha256'], matches(RegExp(r'^[0-9a-f]{64}$')));
+    }
+
+    final release = AppUpdateManifest.parse(json)!;
+    // Android 只会从 APK 里挑选。
+    expect(release.assets.map((a) => a.name), <String>[
+      'jotsy-v0.6.1-arm64-v8a.apk',
+    ]);
+    final windows = release.desktopAssetFor(AppUpdateDesktopTarget.windows)!;
+    expect(windows.name, 'jotsy-v0.6.1-windows-x64-setup.exe');
+    expect(windows.size, setup.length);
+    expect(windows.sha256, sha256.convert(setup).toString());
+    final linux = release.desktopAssetFor(AppUpdateDesktopTarget.linux)!;
+    expect(linux.name, 'jotsy-v0.6.1-linux-x64.tar.gz');
+    expect(linux.sha256, sha256.convert(tarball).toString());
+  });
+
+  test('refuses a manifest with only desktop packages', () async {
+    await File(
+      p.join(artifacts.path, 'jotsy-v0.6.1-linux-x64.tar.gz'),
+    ).writeAsString('linux');
+    await expectLater(
+      buildUpdateManifest(
+        pubspec: 'version: 0.6.1+18\n',
+        tag: 'v0.6.1',
+        artifacts: artifacts,
+        releaseNotes: notes,
+      ),
+      throwsStateError,
+    );
+  });
 }

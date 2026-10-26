@@ -16,7 +16,8 @@ extension _CalendarYearActions on _CalendarPageController {
   /// 流程：标记导出中（按钮禁用、页面遮罩在 300ms 后淡入）→ 等遮罩所在帧
   /// 提交 → 按设备像素比（2~3 倍）截图 → 写入临时目录 → 分享。截图区不在
   /// 屏幕上（年视图已关闭）时直接放弃；失败以本地化提示告知，不暴露底层
-  /// 异常文本。
+  /// 异常文本。没有系统分享的平台（Linux）改为弹出保存对话框，保存后提示
+  /// 路径，取消不提示。
   Future<void> exportYearImage() async {
     if (_state._exportingYear) {
       return;
@@ -43,6 +44,22 @@ extension _CalendarYearActions on _CalendarPageController {
       }
       if (data == null) {
         throw StateError('Year image encoding returned no bytes');
+      }
+      if (!AppPlatform.supportsSystemFileShare) {
+        final path = await const DesktopSaveService().saveBytes(
+          data.buffer.asUint8List(),
+          fileName: 'jotsy_year_$year.png',
+          dialogTitle: l10n.desktopSaveImageDialogTitle,
+        );
+        if (path != null && _state.mounted) {
+          unawaited(
+            HomeHintVisibilityScope.showTrackedSnackBar(
+              context: _state.context,
+              snackBar: SnackBar(content: Text(l10n.desktopSavedTo(path))),
+            ),
+          );
+        }
+        return;
       }
       final directory = await getTemporaryDirectory();
       final file = File(p.join(directory.path, 'jotsy_year_$year.png'));

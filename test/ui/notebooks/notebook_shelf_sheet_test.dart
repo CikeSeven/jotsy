@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_cover_tile.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_shelf_grid.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 
 import '../../support/diary_drafts_harness.dart';
@@ -87,6 +88,17 @@ void main() {
     );
     expect(find.text('旧事'), findsOneWidget);
     await h.unmount();
+  });
+
+  test('shelf columns: two when narrow, then one per 180 from three', () {
+    expect(notebookShelfColumns(320), 2);
+    expect(notebookShelfColumns(359), 2);
+    expect(notebookShelfColumns(360), 3);
+    expect(notebookShelfColumns(411), 3);
+    // 书架面板最宽 640：仍是三列。
+    expect(notebookShelfColumns(640), 3);
+    expect(notebookShelfColumns(720), 4);
+    expect(notebookShelfColumns(1200), 6);
   });
 
   testWidgets('uses two columns at 320dp', (tester) async {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import 'color_palette_families.dart';
 import 'color_swatch_button.dart';
+import 'desktop_horizontal_scroll.dart';
 
 /// 调色板取色器：当前颜色的 HEX 预览、横向的色系色块与所选色系的八个深浅。
 ///
@@ -60,26 +61,28 @@ class PaletteColorPicker extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List<Widget>.generate(kColorPaletteFamilies.length, (
-              index,
-            ) {
-              final family = kColorPaletteFamilies[index];
-              final selected = selectedFamilyIndex == index;
-              return ColorSwatchButton(
-                color: family.colors[2],
-                selected: selected,
-                borderRadius: 10,
-                showCheck: false,
-                semanticLabel: context.l10n.colorFamilySwatchLabel(
-                  index + 1,
-                  colorSwatchHex(family.colors[2]),
-                ),
-                onTap: () => onSelectFamily(index),
-              );
-            }),
+        DesktopHorizontalScroll(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List<Widget>.generate(kColorPaletteFamilies.length, (
+                index,
+              ) {
+                final family = kColorPaletteFamilies[index];
+                final selected = selectedFamilyIndex == index;
+                return ColorSwatchButton(
+                  color: family.colors[2],
+                  selected: selected,
+                  borderRadius: 10,
+                  showCheck: false,
+                  semanticLabel: context.l10n.colorFamilySwatchLabel(
+                    index + 1,
+                    colorSwatchHex(family.colors[2]),
+                  ),
+                  onTap: () => onSelectFamily(index),
+                );
+              }),
+            ),
           ),
         ),
         const SizedBox(height: 14),

@@ -217,7 +217,7 @@ ADD COLUMN capsule_locked_at INTEGER NULL
   /// Rebind only embedded media whose extracted target exists so external
   /// files and remote images retain their original behavior.
   Future<void> _migrateRebindImportedMediaPaths() async {
-    final documents = await getApplicationDocumentsDirectory();
+    final documents = await appDataRootDirectory();
     final rows = await customSelect(
       'SELECT id, content, cover FROM diaries',
     ).get();

@@ -6,6 +6,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../../widgets/form_width.dart';
 
 /// 目录页章节标题行上的操作。
 enum NotebookChapterAction { rename, moveUp, moveDown, delete }
@@ -376,47 +377,56 @@ class NotebookContentsSelectionBar extends StatelessWidget {
       color: scheme.surfaceContainer,
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.l,
-            vertical: AppSpacing.s,
-          ),
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: AppSpacing.s,
-            runSpacing: AppSpacing.xs,
-            children: <Widget>[
+        child: // 底色铺满整栏；宽窗口时内容收进居中的内容列（最宽 720）。
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) =>
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
-                child: Text(
-                  l10n.notebookContentsSelectedCount(count),
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: FormWidth.gutter(constraints.maxWidth),
+                  vertical: AppSpacing.s,
+                ),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.s,
+                  runSpacing: AppSpacing.xs,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.s,
+                      ),
+                      child: Text(
+                        l10n.notebookContentsSelectedCount(count),
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      children: <Widget>[
+                        if (onMoveToChapter != null)
+                          TextButton.icon(
+                            onPressed: enabled ? onMoveToChapter : null,
+                            icon: const FaIcon(
+                              FontAwesomeIcons.folderOpen,
+                              size: 14,
+                            ),
+                            label: Text(l10n.notebookContentsMoveToChapter),
+                          ),
+                        TextButton.icon(
+                          onPressed: enabled ? onRemove : null,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.arrowRightFromBracket,
+                            size: 14,
+                          ),
+                          label: Text(l10n.notebookRemoveFromCurrent),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              Wrap(
-                spacing: AppSpacing.xs,
-                children: <Widget>[
-                  if (onMoveToChapter != null)
-                    TextButton.icon(
-                      onPressed: enabled ? onMoveToChapter : null,
-                      icon: const FaIcon(FontAwesomeIcons.folderOpen, size: 14),
-                      label: Text(l10n.notebookContentsMoveToChapter),
-                    ),
-                  TextButton.icon(
-                    onPressed: enabled ? onRemove : null,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.arrowRightFromBracket,
-                      size: 14,
-                    ),
-                    label: Text(l10n.notebookRemoveFromCurrent),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );

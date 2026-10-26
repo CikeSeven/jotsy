@@ -200,11 +200,19 @@ class _HomePageController {
   }
 
   /// 切页动画：
+  /// - 宽窗口直接跳页并淡入（见上）；
   /// - 减少动画时直接跳页；
   /// - 跨多页时先无动画跳到目标的相邻页，只动画最后一页，避免 250ms 内
   ///   把中间的日历/探索页整页滑过（既晃眼又要额外布局绘制中间页）。
   ///   下标是当前可见列表中的位置，关闭了中间的 Tab 时自然只剩一步。
   Future<void> _animateToTab(int index) async {
+    // 宽窗口不滑动：直接跳到目标页，由 HomeTabEntrance 播放淡入与轻微放大
+    // （减少动画时它直接到位）。
+    if (_state._wide) {
+      _state._playWideEntrance();
+      pageController.jumpToPage(index);
+      return;
+    }
     if (ExpressiveMotion.reduceMotion(_state.context)) {
       pageController.jumpToPage(index);
       return;
@@ -218,6 +226,15 @@ class _HomePageController {
       duration: _pageSwitchDuration,
       curve: pageSwitchCurve,
     );
+  }
+
+  /// 切到第 [index] 个可见 Tab（快捷键 Ctrl/⌘+数字）；越界或已在该 Tab
+  /// 时什么也不做（不像点按底栏那样回到顶部）。
+  Future<void> switchToIndex(int index) {
+    if (!_state._isValidTabIndex(index)) {
+      return Future<void>.value();
+    }
+    return _switchToTab(index, allowDuringSwitch: false);
   }
 
   Future<void> switchToDiariesTab() {

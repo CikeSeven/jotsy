@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/image_export_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/support_channel.dart';
@@ -40,7 +42,8 @@ class SupportActionResult {
 ///   忙碌中重复触发直接忽略并返回 null，防止连点重复拉起应用或重复保存；
 /// - 副作用：经 [ExternalUriLauncher] 拉起支付宝 / 微信；经
 ///   [ImageExportService.saveBytesToGallery] 把内置收款码写入相册（只在用户点
-///   保存时申请相册权限）。不联网、不记录任何打赏信息。
+///   保存时申请相册权限；桌面没有相册，改为“另存为…”对话框）。不联网、
+///   不记录任何打赏信息。
 class SupportDeveloperController extends ChangeNotifier {
   SupportDeveloperController({
     this._service = const ImageExportService(),
@@ -90,10 +93,22 @@ class SupportDeveloperController extends ChangeNotifier {
     return _run(() async {
       try {
         final data = await _bundle.load(channel.assetPath);
-        await _service.saveBytesToGallery(
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-          name: channel.galleryName,
+        final bytes = data.buffer.asUint8List(
+          data.offsetInBytes,
+          data.lengthInBytes,
         );
+        if (!AppPlatform.savesImagesToGallery) {
+          final path = await _service.saveBytesToFile(
+            bytes,
+            fileName: '${channel.galleryName}${p.extension(channel.assetPath)}',
+            dialogTitle: l10n.desktopSaveImageDialogTitle,
+          );
+          // 取消对话框不算失败：清掉上一条说明即可。
+          return path == null
+              ? SupportActionResult.handedOff
+              : SupportActionResult(message: l10n.desktopSavedTo(path));
+        }
+        await _service.saveBytesToGallery(bytes, name: channel.galleryName);
         return SupportActionResult(message: l10n.imageViewerSaveSuccess);
       } on ImageExportException catch (error) {
         return SupportActionResult(

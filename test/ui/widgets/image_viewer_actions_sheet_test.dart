@@ -223,4 +223,50 @@ void main() {
     await tester.pumpAndSettle();
     expect(results.single, isA<ImageViewerOpenDiaryAction>());
   });
+
+  testWidgets('Linux has no share section and saves with Save as…', (
+    tester,
+  ) async {
+    final results = <ImageViewerAction?>[];
+    await tester.pumpWidget(
+      _host(
+        Brightness.light,
+        installed: Future<Set<DiaryShareTarget>>.value(
+          const <DiaryShareTarget>{},
+        ),
+        initial: const <DiaryShareTarget>{},
+        canOpenDiary: false,
+        results: results,
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryShareTargetButton), findsNothing);
+    expect(find.text('Save to gallery'), findsNothing);
+    await tester.tap(find.text('Save as…'));
+    await tester.pumpAndSettle();
+    expect(results.single, isA<ImageViewerSaveAction>());
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('Windows keeps the system share and labels saving Save as…', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        Brightness.dark,
+        installed: Future<Set<DiaryShareTarget>>.value(
+          const <DiaryShareTarget>{},
+        ),
+        initial: const <DiaryShareTarget>{},
+        canOpenDiary: false,
+        results: <ImageViewerAction?>[],
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(_targetLabels(tester), hasLength(1));
+    expect(find.text('Save as…'), findsOneWidget);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 }

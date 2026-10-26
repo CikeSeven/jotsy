@@ -25,6 +25,7 @@ import '../sections/notebook_contents_rows.dart';
 import '../viewmodels/notebook_book_layout.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
+import '../../widgets/form_width.dart';
 
 /// 普通日记本的目录页（首页头部卡片“目录”）。
 ///
@@ -87,6 +88,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
       child: Scaffold(
         backgroundColor: scheme.surface,
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           title: NotebookPageTitle(
             title: l10n.notebookContents,
             subtitle: notebook?.name,
@@ -145,87 +147,106 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
         ? NotebookContentsChapterHint(onAddChapter: _addChapter)
         : null;
     if (items.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          ?hint,
-          Expanded(
-            child: EmptyHint(
-              icon: FontAwesomeIcons.bookOpen,
-              message: context.l10n.notebookContentsEmpty,
+      return FormWidthBar(
+        sideInset: AppSpacing.l,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            ?hint,
+            Expanded(
+              child: EmptyHint(
+                icon: FontAwesomeIcons.bookOpen,
+                message: context.l10n.notebookContentsEmpty,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
     final dateMeta = ref.watch(diaryCardStyleProvider).meta;
     final untitled = context.l10n.autoT0033;
     final now = DateTime.now();
-    return CustomScrollView(
-      slivers: <Widget>[
-        if (hint != null) SliverToBoxAdapter(child: hint),
-        SliverReorderableList(
-          itemCount: items.length,
-          onReorderItem: (int oldIndex, int newIndex) =>
-              _reorder(chapters, entries, items, oldIndex, newIndex),
-          // 拿起条目即生效的瞬间给一次触觉：手柄是立即拖动，不经过长按。
-          onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
-          proxyDecorator: _liftProxy,
-          itemBuilder: (BuildContext context, int index) {
-            final item = items[index];
-            switch (item) {
-              case NotebookContentsHeader(:final chapter, :final count):
-                final chapterIndex = chapter == null
-                    ? -1
-                    : chapters.indexOf(chapter);
-                return NotebookContentsChapterHeader(
-                  key: ValueKey<String>(item.key),
-                  chapter: chapter,
-                  count: count,
-                  isFirst: chapterIndex == 0,
-                  isLast: chapterIndex == chapters.length - 1,
-                  onAction: chapter == null
-                      ? null
-                      : (action) =>
-                            unawaited(_chapterAction(chapter, count, action)),
-                );
-              case NotebookContentsRow(:final entry):
-                final sealed = TimeCapsuleState.fromFields(
-                  lockedAt: entry.capsuleLockedAt,
-                  unlockAt: entry.capsuleUnlockAt,
-                  now: now,
-                ).isLocked;
-                return NotebookContentsEntryTile(
-                  key: ValueKey<String>(item.key),
-                  dateLabel: DiaryCardDateFormatter.eyebrow(
-                    l10n: context.l10n,
-                    meta: dateMeta,
-                    createdAt: entry.createdAt,
-                    updatedAt: entry.updatedAt,
-                    now: now,
-                  ),
-                  title: entry.title.trim().isEmpty ? untitled : entry.title,
-                  archived: entry.isArchived,
-                  sealed: sealed,
-                  selecting: _selecting,
-                  selected: _selected.contains(entry.diaryId),
-                  onTap: _selecting
-                      ? () => _toggle(entry.diaryId)
-                      : () => unawaited(_openPreview(entry.diaryId, items)),
-                  dragHandle: ReorderableDragStartListener(
-                    index: index,
-                    child: const NotebookContentsDragGrip(),
-                  ),
-                );
-            }
-          },
-        ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.extra(constraints.maxWidth);
+        return CustomScrollView(
+          slivers: <Widget>[
+            // 宽窗口：每段内容都补上居中留白（各段自带左右 16，手机上补 0）。
+            for (final sliver in <Widget>[
+              if (hint != null) SliverToBoxAdapter(child: hint),
+              SliverReorderableList(
+                itemCount: items.length,
+                onReorderItem: (int oldIndex, int newIndex) =>
+                    _reorder(chapters, entries, items, oldIndex, newIndex),
+                // 拿起条目即生效的瞬间给一次触觉：手柄是立即拖动，不经过长按。
+                onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
+                proxyDecorator: _liftProxy,
+                itemBuilder: (BuildContext context, int index) {
+                  final item = items[index];
+                  switch (item) {
+                    case NotebookContentsHeader(:final chapter, :final count):
+                      final chapterIndex = chapter == null
+                          ? -1
+                          : chapters.indexOf(chapter);
+                      return NotebookContentsChapterHeader(
+                        key: ValueKey<String>(item.key),
+                        chapter: chapter,
+                        count: count,
+                        isFirst: chapterIndex == 0,
+                        isLast: chapterIndex == chapters.length - 1,
+                        onAction: chapter == null
+                            ? null
+                            : (action) => unawaited(
+                                _chapterAction(chapter, count, action),
+                              ),
+                      );
+                    case NotebookContentsRow(:final entry):
+                      final sealed = TimeCapsuleState.fromFields(
+                        lockedAt: entry.capsuleLockedAt,
+                        unlockAt: entry.capsuleUnlockAt,
+                        now: now,
+                      ).isLocked;
+                      return NotebookContentsEntryTile(
+                        key: ValueKey<String>(item.key),
+                        dateLabel: DiaryCardDateFormatter.eyebrow(
+                          l10n: context.l10n,
+                          meta: dateMeta,
+                          createdAt: entry.createdAt,
+                          updatedAt: entry.updatedAt,
+                          now: now,
+                        ),
+                        title: entry.title.trim().isEmpty
+                            ? untitled
+                            : entry.title,
+                        archived: entry.isArchived,
+                        sealed: sealed,
+                        selecting: _selecting,
+                        selected: _selected.contains(entry.diaryId),
+                        onTap: _selecting
+                            ? () => _toggle(entry.diaryId)
+                            : () =>
+                                  unawaited(_openPreview(entry.diaryId, items)),
+                        dragHandle: ReorderableDragStartListener(
+                          index: index,
+                          child: const NotebookContentsDragGrip(),
+                        ),
+                      );
+                  }
+                },
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
+                ),
+              ),
+            ])
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: side),
+                sliver: sliver,
+              ),
+          ],
+        );
+      },
     );
   }
 

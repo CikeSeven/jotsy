@@ -1,8 +1,8 @@
 name: CI
 
 # 合并门禁（规则见 AGENTS.md §7）：静态检查、生成代码一致性、全量测试、
-# Android release 构建、工作流 lint，PR 上另查提交信息。发布工作流经
-# workflow_call 复用同一套检查，打包前先过门禁。
+# Android / Linux / Windows release 构建、工作流 lint，PR 上另查提交信息。
+# 发布工作流经 workflow_call 复用同一套检查，打包前先过门禁。
 on:
   push:
     branches: [main]
@@ -21,6 +21,10 @@ on:
     inputs:
       skip-android-build:
         description: Skip the throwaway-key Android build (the caller builds signed APKs itself).
+        type: boolean
+        default: false
+      skip-desktop-builds:
+        description: Skip the Linux and Windows release builds (the caller builds and packages them itself).
         type: boolean
         default: false
 
@@ -230,6 +234,63 @@ jobs:
         run: |
           stat --format=%s build/app/outputs/flutter-apk/app-release.apk |
             awk '{ printf "### Android build\n\napp-release.apk (arm64-v8a): %.1f MiB\n", $1 / 1048576 }' \
+            >> "$GITHUB_STEP_SUMMARY"
+
+  # 桌面构建只验证能否编译（CMake、插件原生代码、AOT），产物不上传：发布包由
+  # release-apk.yml 在同一套门禁之后构建、打包并附上校验值，CI 的包没有对应的
+  # 校验与更新清单，与一次性签名的 APK 同理不分发。
+  linux:
+    name: Linux release build
+    if: ${{ !inputs.skip-desktop-builds }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # flutter build linux 需要 clang / CMake / Ninja / pkg-config 与 GTK 3 头文件；
+      # audioplayers_linux 另需 GStreamer（gstreamer-1.0、-app、-audio）的开发包。
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      # 与 Android 构建同理不加 --no-pub：release 构建要按构建模式重新生成插件注册。
+      - name: Build Linux release bundle
+        run: flutter build linux --release
+
+      - name: Report bundle size
+        run: |
+          du -sb build/linux/x64/release/bundle |
+            awk '{ printf "### Linux build\n\nbundle/: %.1f MiB\n", $1 / 1048576 }' \
+            >> "$GITHUB_STEP_SUMMARY"
+
+  windows:
+    name: Windows release build
+    if: ${{ !inputs.skip-desktop-builds }}
+    # 与 Ubuntu 一样固定镜像：自带 Visual Studio 2022（C++ 桌面工作负载）。
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      - name: Report build size
+        shell: bash
+        run: |
+          du -sb build/windows/x64/runner/Release |
+            awk '{ printf "### Windows build\n\nRelease/: %.1f MiB\n", $1 / 1048576 }' \
             >> "$GITHUB_STEP_SUMMARY"
 
   actionlint:

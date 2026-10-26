@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../widgets/desktop_page_arrows.dart';
 import '../../models/diary_preview_style/diary_preview_behavior.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
 import 'diary_pager_effects.dart';
@@ -39,6 +41,10 @@ typedef DiaryPagerItemBuilder =
 /// - 关闭滑动或 [locked]（导出、分享长图期间）时不接受拖动，`上一篇 /
 ///   下一篇` 与读屏动作仍可翻页（[locked] 时也不响应）。
 ///
+/// 桌面（[desktopControls]，只有正式预览页打开）：指针悬停时左右边缘淡入
+/// 上一篇 / 下一篇按钮，←/→（PageUp/PageDown）翻页、Esc 返回，都走与读屏
+/// 动作相同的程序翻页；不额外加拖动识别器（鼠标拖动本来就不翻页）。
+///
 /// 可见性：照首页 Tab 翻页器的做法，滑动途中露出的页启用 [TickerMode]，其余
 /// 缓存页静音（视频自行暂停、后台不出帧）；只有当前页启用 [HeroMode]，各页
 /// 头图与正文图的共享元素标签只在单篇内唯一，同时在树上时不会撞标签。
@@ -52,6 +58,7 @@ class DiaryPagerView extends StatefulWidget {
     this.behavior = DiaryPreviewBehavior.defaults,
     this.locked = false,
     this.cacheNeighbors = true,
+    this.desktopControls = false,
     this.onPageChanged,
   });
 
@@ -65,6 +72,10 @@ class DiaryPagerView extends StatefulWidget {
   /// 预先构建两侧各一页（`allowImplicitScrolling`）。正式页面在路由入场结束
   /// 后才打开，免得打开时同时排版三篇正文。
   final bool cacheNeighbors;
+
+  /// 桌面上的悬停翻页按钮与按键（见类注释）；手机上不起作用。设置页的实时
+  /// 预览不开：它嵌在设置页里，Esc 不该关掉设置页。
+  final bool desktopControls;
   final ValueChanged<int>? onPageChanged;
 
   @override
@@ -83,12 +94,18 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
       ValueNotifier<DiaryPagerEdgePull>(DiaryPagerEdgePull.none);
   late int _current = widget.initialPage;
 
+  /// 桌面翻页按钮按它显示两侧（只有这一小块随翻页重建）。
+  late final ValueNotifier<int> _currentPage = ValueNotifier<int>(
+    widget.initialPage,
+  );
+
   @override
   void dispose() {
     _controller
       ..removeListener(_syncVisibility)
       ..dispose();
     _visibility.dispose();
+    _currentPage.dispose();
     _edgePull.dispose();
     super.dispose();
   }
@@ -111,6 +128,7 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
 
   void _handlePageChanged(int index) {
     _current = index;
+    _currentPage.value = index;
     if (widget.behavior.hapticOnPage) {
       HapticFeedback.lightImpact();
     }
@@ -209,6 +227,18 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
       touchSlop: (pageSettings.touchSlop ?? kTouchSlop) * ratio,
     );
     final transition = widget.navigation.transition;
+    return _withDesktopControls(
+      context,
+      _buildPager(mediaQuery, pageSettings, pagerSettings, transition),
+    );
+  }
+
+  Widget _buildPager(
+    MediaQueryData mediaQuery,
+    DeviceGestureSettings pageSettings,
+    DeviceGestureSettings pagerSettings,
+    DiaryPreviewPageTransition transition,
+  ) {
     return ColoredBox(
       // 层叠与淡入时页面会缩小或半透明，露出的是这层“桌面”。
       color: Theme.of(context).colorScheme.surfaceContainer,
@@ -270,6 +300,35 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
           if (widget.navigation.edgeHint)
             Positioned.fill(child: DiaryPagerEdgeHint(pull: _edgePull)),
         ],
+      ),
+    );
+  }
+
+  /// 桌面的悬停按钮与按键包在整个翻页器外面；不开时原样返回。
+  Widget _withDesktopControls(BuildContext context, Widget pager) {
+    if (!widget.desktopControls) {
+      return pager;
+    }
+    final l10n = context.l10n;
+    void previous() => _goTo(_current - 1);
+    void next() => _goTo(_current + 1);
+    return DesktopPageKeys(
+      onPrevious: previous,
+      onNext: next,
+      onEscape: () => Navigator.of(context).maybePop(),
+      child: ValueListenableBuilder<int>(
+        valueListenable: _currentPage,
+        child: pager,
+        builder: (BuildContext context, int current, Widget? pager) {
+          final canPage = !widget.locked;
+          return DesktopPageArrows(
+            previousTooltip: l10n.diaryPreviewPrevious,
+            nextTooltip: l10n.diaryPreviewNext,
+            onPrevious: canPage && current > 0 ? previous : null,
+            onNext: canPage && current < widget.itemCount - 1 ? next : null,
+            child: pager!,
+          );
+        },
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../app/theme/app_radii.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/expressive_motion.dart';
+import '../../core/services/app_platform.dart';
 import '../diaries/models/diary_share_target.dart';
 import '../diaries/widgets/diary_share_widgets.dart';
 import '../diaries/widgets/diary_sheet_controls.dart';
@@ -40,6 +41,9 @@ final class ImageViewerOpenDiaryAction extends ImageViewerAction {
 /// 行图标落在同一条竖线上，末列圆形与行尾箭头右缘对齐（见
 /// `ImageViewerActionsSheet._contentInset`）。面板只负责挑选，保存与分享由
 /// 看图页在动作等待遮罩下执行，结果提示落在看图页上。
+///
+/// 没有系统分享的平台（Linux，[AppPlatform.supportsSystemFileShare] 为
+/// false）不显示“分享到”一组；桌面的保存一项为“另存为…”（弹出保存对话框）。
 ///
 /// [installedTargets] 为看图页打开时就开始的安装检测；[initialTargets] 为
 /// 检测已完成时的结果（通常长按前就已完成），首帧即可排好全部目标，不会先
@@ -103,53 +107,58 @@ class ImageViewerActionsSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: _contentInset),
-              child: DiarySheetSectionHeader(
-                icon: FontAwesomeIcons.shareNodes,
-                label: l10n.diaryShareTargetsSection,
+            if (AppPlatform.supportsSystemFileShare) ...<Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: _contentInset),
+                child: DiarySheetSectionHeader(
+                  icon: FontAwesomeIcons.shareNodes,
+                  label: l10n.diaryShareTargetsSection,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.m),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: _contentInset - _labelOverhang,
+              const SizedBox(height: AppSpacing.m),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: _contentInset - _labelOverhang,
+                ),
+                child: FutureBuilder<Set<DiaryShareTarget>>(
+                  future: installedTargets,
+                  initialData: initialTargets,
+                  builder: (context, snapshot) {
+                    final installed =
+                        snapshot.data ?? const <DiaryShareTarget>{};
+                    // 检测完成前只有“更多应用”；其他应用出现时面板平滑长高。
+                    return AnimatedSize(
+                      duration: ExpressiveMotion.durationNonZero(
+                        context,
+                        ExpressiveMotion.medium,
+                      ),
+                      curve: ExpressiveMotion.effects,
+                      alignment: Alignment.topCenter,
+                      child: _ShareTargetGrid(
+                        targets: <DiaryShareTarget>[
+                          ...DiaryShareTarget.appTargets.where(
+                            installed.contains,
+                          ),
+                          DiaryShareTarget.system,
+                        ],
+                        onSelected: (DiaryShareTarget target) =>
+                            choose(ImageViewerShareAction(target)),
+                      ),
+                    );
+                  },
+                ),
               ),
-              child: FutureBuilder<Set<DiaryShareTarget>>(
-                future: installedTargets,
-                initialData: initialTargets,
-                builder: (context, snapshot) {
-                  final installed = snapshot.data ?? const <DiaryShareTarget>{};
-                  // 检测完成前只有“更多应用”；其他应用出现时面板平滑长高。
-                  return AnimatedSize(
-                    duration: ExpressiveMotion.durationNonZero(
-                      context,
-                      ExpressiveMotion.medium,
-                    ),
-                    curve: ExpressiveMotion.effects,
-                    alignment: Alignment.topCenter,
-                    child: _ShareTargetGrid(
-                      targets: <DiaryShareTarget>[
-                        ...DiaryShareTarget.appTargets.where(
-                          installed.contains,
-                        ),
-                        DiaryShareTarget.system,
-                      ],
-                      onSelected: (DiaryShareTarget target) =>
-                          choose(ImageViewerShareAction(target)),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
+            ],
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: _groupInset),
               child: _ActionGroup(
                 children: <Widget>[
                   _ActionRow(
                     icon: FontAwesomeIcons.download,
-                    label: l10n.imageViewerSaveToGallery,
+                    label: AppPlatform.savesImagesToGallery
+                        ? l10n.imageViewerSaveToGallery
+                        : l10n.desktopSaveAs,
                     onTap: () => choose(const ImageViewerSaveAction()),
                   ),
                   if (canOpenDiary)

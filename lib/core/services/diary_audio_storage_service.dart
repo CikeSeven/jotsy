@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'app_data_directory.dart';
 
 /// Owns pending microphone files and recordings committed to diary documents.
 /// Only this service's directories are eligible for cleanup.
@@ -28,7 +29,7 @@ class DiaryAudioStorageService {
       throw const FileSystemException('Recorded audio file is empty');
     }
     final directory = Directory(
-      p.join((await getApplicationDocumentsDirectory()).path, directoryName),
+      p.join((await appDataRootDirectory()).path, directoryName),
     );
     await directory.create(recursive: true);
     final target = p.join(directory.path, p.basename(pendingPath));
@@ -48,10 +49,7 @@ class DiaryAudioStorageService {
 
   Future<void> deleteManagedRecording(String? path) async {
     if (path == null) return;
-    final root = p.join(
-      (await getApplicationDocumentsDirectory()).path,
-      directoryName,
-    );
+    final root = p.join((await appDataRootDirectory()).path, directoryName);
     await _deleteWithin(root, path);
   }
 

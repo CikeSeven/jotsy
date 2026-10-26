@@ -68,44 +68,12 @@ class _HomeNavBarState extends State<HomeNavBar> {
   int get _clampedIndex =>
       widget.selectedIndex.clamp(0, widget.items.length - 1);
 
-  HomeNavColors _colors(ThemeData theme) {
-    final style = widget.style;
-    final scheme = theme.colorScheme;
-    final labelTheme = theme.navigationBarTheme.labelTextStyle;
-    final base = theme.textTheme.labelMedium ?? const TextStyle();
-    // 与 M3 NavigationBar 取文字样式的顺序一致：主题优先，缺省用 M3 默认。
-    final selectedLabel =
-        labelTheme?.resolve(const <WidgetState>{WidgetState.selected}) ??
-        base.apply(color: scheme.onSurface);
-    final unselectedLabel =
-        labelTheme?.resolve(const <WidgetState>{}) ??
-        base.apply(color: scheme.onSurfaceVariant);
-    if (!style.isGlass) {
-      return HomeNavColors(
-        indicator: scheme.secondaryContainer,
-        selectedIcon: scheme.onSecondaryContainer,
-        unselectedIcon: scheme.onSurfaceVariant,
-        selectedLabel: selectedLabel,
-        unselectedLabel: unselectedLabel,
-      );
-    }
-    return HomeNavColors(
-      indicator: style.indicatorColor,
-      selectedIcon: style.selectedForeground,
-      unselectedIcon: style.unselectedForeground,
-      selectedLabel: selectedLabel.copyWith(color: style.selectedForeground),
-      unselectedLabel: unselectedLabel.copyWith(
-        color: style.unselectedForeground,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final style = widget.style;
     final items = widget.items;
     final position = widget.position;
-    final colors = _colors(Theme.of(context));
+    final colors = HomeNavColors.resolve(Theme.of(context), style);
     final barHeight = widget.height ?? style.barHeight;
     final selected = _clampedIndex;
     final duration = ExpressiveMotion.duration(context);
@@ -126,7 +94,7 @@ class _HomeNavBarState extends State<HomeNavBar> {
                     child: Semantics(
                       role: SemanticsRole.tab,
                       selected: i == selected,
-                      child: _SelectionAnimator(
+                      child: HomeNavSelectionAnimator(
                         selected: i == selected,
                         duration: duration,
                         builder:
@@ -169,8 +137,10 @@ class _HomeNavBarState extends State<HomeNavBar> {
 /// 每项自己的选中动画：选中时 0→1、取消时 1→0，时长取 ExpressiveMotion
 /// （减少动画时为 0，直接跳到终点）。另给出文字显现用的曲线版本，
 /// 正向 effects、反向 exit（与 effects 对称），由本 State 持有并释放。
-class _SelectionAnimator extends StatefulWidget {
-  const _SelectionAnimator({
+/// 底栏与宽窗口的侧边导航栏共用，两处的选中动画节奏一致。
+class HomeNavSelectionAnimator extends StatefulWidget {
+  const HomeNavSelectionAnimator({
+    super.key,
     required this.selected,
     required this.duration,
     required this.builder,
@@ -186,10 +156,11 @@ class _SelectionAnimator extends StatefulWidget {
   builder;
 
   @override
-  State<_SelectionAnimator> createState() => _SelectionAnimatorState();
+  State<HomeNavSelectionAnimator> createState() =>
+      _HomeNavSelectionAnimatorState();
 }
 
-class _SelectionAnimatorState extends State<_SelectionAnimator>
+class _HomeNavSelectionAnimatorState extends State<HomeNavSelectionAnimator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -203,7 +174,7 @@ class _SelectionAnimatorState extends State<_SelectionAnimator>
   );
 
   @override
-  void didUpdateWidget(_SelectionAnimator oldWidget) {
+  void didUpdateWidget(HomeNavSelectionAnimator oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.duration = widget.duration;
     if (oldWidget.selected != widget.selected) {

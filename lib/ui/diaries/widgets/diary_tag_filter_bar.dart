@@ -13,6 +13,7 @@ import 'tag_filter_clear_button.dart';
 import 'tag_filter_collapse_handle.dart';
 import 'tag_filter_expansion_gesture.dart';
 import 'tag_filter_layout.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 日记页顶部标签筛选栏。
 ///
@@ -241,15 +242,17 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
   }
 
   Widget _buildCollapsedTags() {
-    return ListView.separated(
-      key: const PageStorageKey<String>('diary_tag_filter_horizontal'),
-      controller: _horizontalController,
-      scrollDirection: Axis.horizontal,
-      itemCount: widget.tags.length + 1 + (widget.leading == null ? 0 : 1),
-      separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
-      // 有前置项时整体后移一位：-1 为前置项，0 为清除按钮。
-      itemBuilder: (BuildContext context, int index) =>
-          _buildTagItem(widget.leading == null ? index : index - 1),
+    return DesktopHorizontalScroll(
+      child: ListView.separated(
+        key: const PageStorageKey<String>('diary_tag_filter_horizontal'),
+        controller: _horizontalController,
+        scrollDirection: Axis.horizontal,
+        itemCount: widget.tags.length + 1 + (widget.leading == null ? 0 : 1),
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
+        // 有前置项时整体后移一位：-1 为前置项，0 为清除按钮。
+        itemBuilder: (BuildContext context, int index) =>
+            _buildTagItem(widget.leading == null ? index : index - 1),
+      ),
     );
   }
 

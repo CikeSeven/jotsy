@@ -14,6 +14,7 @@ import '../explore_test_fixtures.dart';
 
 void main() {
   _registerFirstFrameTest();
+  _registerWideWindowTests();
   for (final brightness in Brightness.values) {
     testWidgets(
       'shows all diary images and opens the tapped image in $brightness',
@@ -112,6 +113,47 @@ void _registerFirstFrameTest() {
     expect(find.byType(ExploreMediaThumb), findsNWidgets(3));
     expect(find.text(l10n.autoT0055), findsNothing);
   });
+}
+
+void _registerWideWindowTests() {
+  test('gallery columns grow every 160 but never drop below three', () {
+    expect(ExploreMediaGalleryPage.galleryColumns(320), 3);
+    expect(ExploreMediaGalleryPage.galleryColumns(599), 3);
+    expect(ExploreMediaGalleryPage.galleryColumns(800), 5);
+    expect(ExploreMediaGalleryPage.galleryColumns(1280), 8);
+  });
+
+  for (final (width, columns) in <(double, int)>[(400, 3), (1280, 8)]) {
+    testWidgets('a $width wide window lays the gallery out in $columns '
+        'columns', (tester) async {
+      tester.view.physicalSize = Size(width, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final database = _GalleryDatabase();
+      addTearDown(database.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [appDatabaseProvider.overrideWithValue(database)],
+          child: MaterialApp(
+            theme: expressiveTestTheme(Brightness.light),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const ExploreMediaGalleryPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final grid = tester.widget<SliverGrid>(find.byType(SliverGrid));
+      final delegate =
+          grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+      expect(delegate.crossAxisCount, columns);
+      // 缩略图不随窗口变宽而放大成大图。
+      final thumb = tester.getSize(find.byType(ExploreMediaThumb).first);
+      expect(thumb.width, lessThanOrEqualTo(160));
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
 class _GalleryDatabase extends AppDatabase {

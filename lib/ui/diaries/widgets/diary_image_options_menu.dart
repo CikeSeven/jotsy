@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import '../controllers/diary_editor_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_image_embed_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
@@ -215,7 +216,10 @@ class _DiaryImageOptionsDialog extends StatelessWidget {
         item(
           _ImageAction.save,
           FontAwesomeIcons.download,
-          l10n.imageViewerSaveToGallery,
+          // 桌面没有相册：同一动作弹出“另存为…”对话框。
+          AppPlatform.savesImagesToGallery
+              ? l10n.imageViewerSaveToGallery
+              : l10n.desktopSaveAs,
         ),
         if (!readOnly)
           item(

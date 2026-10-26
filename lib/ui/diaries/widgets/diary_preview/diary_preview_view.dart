@@ -18,11 +18,11 @@ import '../../../widgets/action_loading_overlay.dart';
 import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
 import '../../../widgets/image_viewer_hero.dart';
+import '../../controllers/diary_preview_edit_flow.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../controllers/diary_todo_autosave_controller.dart';
 import '../../models/diary_preview_result.dart';
 import '../../models/time_capsule.dart';
-import '../../pages/edit_diary_page.dart';
 import '../../pages/locked_diary_page.dart';
 import '../../providers/diary_card_style_provider.dart';
 import '../../providers/diary_detail_provider.dart';
@@ -33,6 +33,7 @@ import '../../viewmodels/diary_preview_view_data.dart';
 import 'diary_preview_actions_sheet.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
+import 'diary_preview_host.dart';
 import 'diary_preview_neighbors.dart';
 import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
@@ -51,6 +52,11 @@ import 'diary_preview_top_bar.dart';
 /// [onBusyChanged] 报告导出 / 分享长图的忙碌态（翻页器据此暂停翻页），共享
 /// 元素的标签与占位画面的所有权由翻页器决定（见 [coverHeroTag]、
 /// [ownsCoverHero]）。
+///
+/// 嵌在页面里（宽窗口日记页的右栏）时传入 [host]：顶栏没有返回按钮，头图
+/// 不建立共享元素（列表卡片与右栏同在一个路由，同名 Hero 会冲突），删除与
+/// “日记不见了”交给宿主而不是退出路由；未解封的胶囊同样内联显示封存页
+/// （也没有返回按钮）。[paging] 的上一篇 / 下一篇由宿主给出（在列表里换选）。
 class DiaryPreviewView extends ConsumerStatefulWidget {
   const DiaryPreviewView({
     super.key,
@@ -61,6 +67,7 @@ class DiaryPreviewView extends ConsumerStatefulWidget {
     this.coverHeroTag,
     this.paging,
     this.onBusyChanged,
+    this.host,
   });
 
   final String diaryId;
@@ -83,6 +90,9 @@ class DiaryPreviewView extends ConsumerStatefulWidget {
 
   /// 导出、分享长图等忙碌态变化时回调。
   final ValueChanged<bool>? onBusyChanged;
+
+  /// 嵌在页面里时的宿主；独立路由时为 null。
+  final DiaryPreviewHost? host;
 
   @override
   ConsumerState<DiaryPreviewView> createState() => _DiaryPreviewViewState();
@@ -204,26 +214,26 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
   }
 
   Future<void> _openEditor() async {
-    // 编辑页里删除日记后以 true 返回：按“已删除”退出，入口给出撤销。经发布
-    // 页保存时编辑页以日记 id（String）结束，所以结果类型放宽为 Object?。
-    final result = await Navigator.of(context).push<Object?>(
-      MaterialPageRoute<Object?>(
-        builder: (BuildContext context) {
-          return EditDiaryPage(
-            diaryId: widget.diaryId,
-            entryMode: EditDiaryEntryMode.edit,
-          );
-        },
-      ),
+    // 编辑页里删除了这一篇：按“已删除”收尾，入口给出撤销。
+    final deleted = await openDiaryEditorFromPreview(
+      context,
+      ref,
+      widget.diaryId,
     );
-    if (!mounted) {
+    if (mounted && deleted) {
+      _finishDeleted();
+    }
+  }
+
+  /// 这一篇已删除：独立路由以 [DiaryPreviewResult.deleted] 退出，由入口给出
+  /// 撤销；嵌在页面里时交给宿主。
+  void _finishDeleted() {
+    final host = widget.host;
+    if (host != null) {
+      host.onDeleted(widget.diaryId);
       return;
     }
-    if (result == true) {
-      Navigator.of(context).pop(DiaryPreviewResult.deleted(widget.diaryId));
-      return;
-    }
-    ref.invalidate(diaryDetailProvider(widget.diaryId));
+    Navigator.of(context).pop(DiaryPreviewResult.deleted(widget.diaryId));
   }
 
   Future<void> _deleteDiary() async {
@@ -236,16 +246,19 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     if (!mounted) {
       return;
     }
-    Navigator.of(context).pop(DiaryPreviewResult.deleted(widget.diaryId));
+    _finishDeleted();
   }
 
   Widget _messageScaffold(Widget body) {
+    final embedded = widget.host != null;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
         centerTitle: true,
-        title: Text(context.l10n.autoT0120),
-        leading: const DiaryPreviewBackButton(),
+        // 嵌入时与正文顶栏一致：不要返回按钮，也不要“日记”标题。
+        title: embedded ? null : Text(context.l10n.autoT0120),
+        automaticallyImplyLeading: !embedded,
+        leading: embedded ? null : const DiaryPreviewBackButton(),
       ),
       body: body,
     );
@@ -253,6 +266,12 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
 
   @override
   Widget build(BuildContext context) {
+    final page = _buildPage(context);
+    // 嵌入时让顶栏知道不画返回按钮（顶栏由版式组件构建，不经这里传参）。
+    return widget.host == null ? page : DiaryPreviewHostScope(child: page);
+  }
+
+  Widget _buildPage(BuildContext context) {
     final detailAsync = ref.watch(diaryDetailProvider(widget.diaryId));
 
     // 入口（列表、搜索、日历）已持有同一篇日记的完整数据（分页查询包含正文与
@@ -279,6 +298,11 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
                 return;
               }
               _showHint(context.l10n.autoT0122);
+              final host = widget.host;
+              if (host != null) {
+                host.onVanished();
+                return;
+              }
               Navigator.of(context).pop();
             });
             return _messageScaffold(
@@ -301,7 +325,11 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       now: DateTime.now(),
     );
     if (capsuleState.isLocked) {
-      return LockedDiaryPage(diaryId: widget.diaryId, initialDetail: detail);
+      return LockedDiaryPage(
+        diaryId: widget.diaryId,
+        initialDetail: detail,
+        host: widget.host,
+      );
     }
     _currentDetail = detail;
     _bindController(detail.diary.content);
@@ -344,8 +372,10 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           scrollController: _scrollController,
           resolved: resolved,
           behavior: behavior,
-          coverHeroTag:
-              widget.coverHeroTag ?? diaryCoverHeroTag(widget.diaryId),
+          // 嵌入时不建立共享元素：列表卡片与右栏同在一个路由。
+          coverHeroTag: widget.host != null
+              ? null
+              : widget.coverHeroTag ?? diaryCoverHeroTag(widget.diaryId),
           coverPlaceholder: widget.coverHero?.placeholder,
           staticCover: _export.staticCover,
           paging: widget.paging,

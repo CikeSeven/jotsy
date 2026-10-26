@@ -15,6 +15,7 @@ import '../viewmodels/diary_template_search.dart';
 import '../widgets/diary_template_search_field.dart';
 import '../widgets/diary_template_tile.dart';
 import 'diary_template_picker_preview.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 完整的模板面板：按分类筛选、点一个先预览（变量已按 [diaryDate] 替换），
 /// 再“使用这个模板”。只负责挑选，返回选定的模板（含“换一题”的偏移）；
@@ -220,20 +221,22 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
           ),
         ),
         SliverToBoxAdapter(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Row(
-              children: <Widget>[
-                for (final (value, label) in filters) ...<Widget>[
-                  ChoiceChip(
-                    label: Text(label),
-                    selected: value == filter,
-                    onSelected: (_) => setState(() => _filter = value),
-                  ),
-                  const SizedBox(width: AppSpacing.s),
+          child: DesktopHorizontalScroll(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+              child: Row(
+                children: <Widget>[
+                  for (final (value, label) in filters) ...<Widget>[
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: value == filter,
+                      onSelected: (_) => setState(() => _filter = value),
+                    ),
+                    const SizedBox(width: AppSpacing.s),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

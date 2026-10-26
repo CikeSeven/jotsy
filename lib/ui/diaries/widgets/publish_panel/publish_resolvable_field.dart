@@ -10,6 +10,7 @@ import 'publish_panel_tile.dart';
 /// 地点与天气共用。按钮在请求开始时立即禁用防止连点；请求超过
 /// [DelayedLoadingGate.defaultDelay] 才把图标换成加载指示器，命中缓存的
 /// 快速返回不会闪一下转圈，切换本身经 [ExpressiveIconSwap] 过渡。
+/// [showResolve] 为 false 时只留手填输入框（平台不支持自动获取时）。
 class PublishResolvableField extends StatelessWidget {
   const PublishResolvableField({
     super.key,
@@ -21,6 +22,7 @@ class PublishResolvableField extends StatelessWidget {
     required this.resolving,
     required this.onResolve,
     this.leadingGap = 12,
+    this.showResolve = true,
   });
 
   final Widget leading;
@@ -31,6 +33,7 @@ class PublishResolvableField extends StatelessWidget {
   final bool resolving;
   final VoidCallback? onResolve;
   final double leadingGap;
+  final bool showResolve;
 
   @override
   Widget build(BuildContext context) {
@@ -62,25 +65,26 @@ class PublishResolvableField extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            onPressed: resolving ? null : onResolve,
-            tooltip: resolveTooltip,
-            visualDensity: VisualDensity.compact,
-            icon: DelayedLoadingGate(
-              loading: resolving,
-              builder: (BuildContext context, bool showLoading) =>
-                  ExpressiveIconSwap(
-                    switchKey: showLoading,
-                    child: showLoading
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: ExpressiveLoadingIndicator(),
-                          )
-                        : resolveIcon,
-                  ),
+          if (showResolve)
+            IconButton(
+              onPressed: resolving ? null : onResolve,
+              tooltip: resolveTooltip,
+              visualDensity: VisualDensity.compact,
+              icon: DelayedLoadingGate(
+                loading: resolving,
+                builder: (BuildContext context, bool showLoading) =>
+                    ExpressiveIconSwap(
+                      switchKey: showLoading,
+                      child: showLoading
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: ExpressiveLoadingIndicator(),
+                            )
+                          : resolveIcon,
+                    ),
+              ),
             ),
-          ),
         ],
       ),
     );

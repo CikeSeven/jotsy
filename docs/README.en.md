@@ -12,6 +12,8 @@ Free · Open source · No ads · No account · Your data never leaves your devic
 [![CI](https://img.shields.io/github/actions/workflow/status/CikeSeven/jotsy/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/CikeSeven/jotsy/actions/workflows/ci.yml)
 [![Downloads](https://img.shields.io/github/downloads/CikeSeven/jotsy/total?style=flat-square&color=4F7FAF&label=Downloads)](https://github.com/CikeSeven/jotsy/releases)
 [![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](#-download)
+[![Windows](https://img.shields.io/badge/Windows-10%2B%20x64-0078D4?style=flat-square)](#windows)
+[![Linux](https://img.shields.io/badge/Linux-x64%20%C2%B7%20GTK%203-E95420?style=flat-square&logo=linux&logoColor=white)](#linux)
 [![License](https://img.shields.io/github/license/CikeSeven/jotsy?style=flat-square&color=7E6BB0)](../LICENSE)
 
 English | [简体中文](../README.md)
@@ -120,16 +122,47 @@ Export your data from the old app first, then open **Settings › Data & Privacy
 
 ## 📥 Download
 
-> Jotsy is currently available for Android only (Android 7.0 or later).
+| Platform | Requirements | Package |
+| :-- | :-- | :-- |
+| Android | Android 7.0 or later | `jotsy-<version>-<abi>.apk` |
+| Windows | Windows 10 or later, x64 | Installer `jotsy-<version>-windows-x64-setup.exe`, or the portable `jotsy-<version>-windows-x64.zip` |
+| Linux | x64, GTK 3 | `jotsy-<version>-linux-x64.tar.gz` |
 
-1. Open the [Releases page](https://github.com/CikeSeven/jotsy/releases/latest).
-2. Download the APK for your device:
+Every package is on the [Releases page](https://github.com/CikeSeven/jotsy/releases/latest), and `SHA256SUMS.txt` on the same page lets you verify the files. In mainland China you can also download through mirrors on the [website](https://cikeseven.github.io/jotsy/).
+
+### Android
+
+1. Download the APK for your device:
    - `arm64-v8a`: almost every modern phone. Pick this one if you're not sure
    - `armeabi-v7a`: older 32-bit devices
    - `x86_64`: emulators
-3. Install it and start writing.
+2. Install it and start writing.
 
 When a new version is out, Jotsy lets you know and downloads and installs it in the app, with no trip back to the browser. Downloads try several mirrors at once and use the fastest, resume after a dropped connection, and the checksum and app signature are verified before installing. You can also check by hand, or turn automatic checks off, in **Settings › About › Check for updates**.
+
+### Windows
+
+- **Installer** (recommended): run `…-setup.exe`. Install for all users (needs administrator rights) or just for yourself; it adds a Start menu shortcut and, optionally, a desktop shortcut. Uninstall it from the system's Installed apps.
+- **Portable**: extract the `.zip` to any folder and run `jotsy.exe` inside it.
+
+The installer and `jotsy.exe` aren't code-signed yet, so SmartScreen may warn about an unknown publisher the first time; choose **More info › Run anyway**. If that worries you, check the files against `SHA256SUMS.txt` first.
+
+### Linux
+
+```bash
+tar -xzf jotsy-<version>-linux-x64.tar.gz
+cd jotsy
+./install.sh              # installs into ~/.local, no root needed; ./jotsy also runs without installing
+./install.sh --uninstall  # remove it again
+```
+
+`install.sh` puts the app in `~/.local/share/jotsy` and adds its icon and launcher to your application menu; use `sudo PREFIX=/usr/local ./install.sh` to install it for every user. It needs GTK 3; playing voice recordings needs GStreamer and its common plugins (such as `gstreamer1.0-plugins-good` and `gstreamer1.0-libav`).
+
+### On the desktop
+
+Jotsy tells you about new versions on Windows and Linux too. **Download** fetches the new package through a mirror in your browser (the installer on Windows, the archive on Linux); install it over the old one as above. Updating or uninstalling never deletes your diaries.
+
+These features are phone-only for now: sharing to a specific app (WeChat, QQ, …), importing cloud notes from phone makers and WPS (they need the in-app web login), "photos from this day" when backfilling, and automatic location and weather (you can fill them in by hand). On Windows and Linux, videos in an entry open in the system player instead of playing inline, and the Linux build can't record audio yet (playback works) or lock the app and notebooks.
 
 ## 🛡️ Privacy
 
@@ -174,7 +207,7 @@ Yes. Your data only lives on the device, so uninstalling the app or clearing its
 <details>
 <summary><b>Is there an iOS version?</b></summary>
 
-Not yet. Only Android builds are released for now.
+Not yet. Android, Windows and Linux builds are released for now.
 
 </details>
 

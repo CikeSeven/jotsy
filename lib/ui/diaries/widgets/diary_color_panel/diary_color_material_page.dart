@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_material_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_swatch.dart';
+import '../../../widgets/desktop_horizontal_scroll.dart';
 
 part 'diary_color_material_cells.dart';
 
@@ -261,25 +262,27 @@ class _DiaryColorMaterialPageState extends State<DiaryColorMaterialPage> {
     _slotWidth = _familySlotWidth(width);
     _rowViewport = width;
     final l10n = context.l10n;
-    return SingleChildScrollView(
-      controller: _row ??= ScrollController(
-        initialScrollOffset: _rowOffset(_family),
-      ),
-      scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: _slotWidth / 2),
-      child: Row(
-        children: <Widget>[
-          for (final family in DiaryMaterialFamily.values)
-            SizedBox(
-              width: _slotWidth,
-              child: _FamilyDot(
-                color: family.color,
-                selected: family == _family,
-                label: l10n.diaryColorPanelFamily(family.label(l10n)),
-                onTap: () => _goTo(family),
+    return DesktopHorizontalScroll(
+      child: SingleChildScrollView(
+        controller: _row ??= ScrollController(
+          initialScrollOffset: _rowOffset(_family),
+        ),
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: _slotWidth / 2),
+        child: Row(
+          children: <Widget>[
+            for (final family in DiaryMaterialFamily.values)
+              SizedBox(
+                width: _slotWidth,
+                child: _FamilyDot(
+                  color: family.color,
+                  selected: family == _family,
+                  label: l10n.diaryColorPanelFamily(family.label(l10n)),
+                  onTap: () => _goTo(family),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

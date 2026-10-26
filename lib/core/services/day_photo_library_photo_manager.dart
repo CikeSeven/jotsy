@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
+import 'app_platform.dart';
 import 'day_photo_library.dart';
 
 /// [DayPhotoLibrary] 的 photo_manager 实现（Android / iOS）。
@@ -36,10 +37,7 @@ class PhotoManagerDayPhotoLibrary implements DayPhotoLibrary {
   final Map<String, AssetEntity> _entities = <String, AssetEntity>{};
 
   @override
-  bool get isSupported =>
-      !kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS);
+  bool get isSupported => AppPlatform.isMobile;
 
   @override
   Future<DayPhotoAccess> checkAccess() async {

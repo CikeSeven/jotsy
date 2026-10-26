@@ -162,10 +162,19 @@ class ArchivedDiariesController {
     );
   }
 
+  /// 桌面右键菜单“取消归档”：与多选同样先收起再写库，不动多选状态。
+  Future<void> unarchiveDiaryFromMenu(String diaryId) => _unarchiveDiaries(
+    <String>[diaryId],
+    clearSelection: false,
+    showUndoSnack: true,
+    collapseFirst: true,
+  );
+
   Future<void> _unarchiveDiaries(
     List<String> diaryIds, {
     required bool clearSelection,
     required bool showUndoSnack,
+    bool? collapseFirst,
   }) async {
     // 统一做一次 ID 归一化，避免空字符串或重复值进入数据库操作链路。
     final targetIds = diaryIds
@@ -178,11 +187,13 @@ class ArchivedDiariesController {
     }
 
     // 多选入口触发时先在 UI 层退出选择，降低“操作后仍高亮”错觉，
-    // 并先收起条目再写库。
+    // 并先收起条目再写库（右键菜单同样先收起）；左滑已播放离场动画，不再收起。
     if (clearSelection) {
       _state.setState(() {
         _state._selectedDiaryIds.removeAll(targetIds);
       });
+    }
+    if (collapseFirst ?? clearSelection) {
       await _collapseBeforeCommit(targetIds);
       if (!_state.mounted) {
         return;
@@ -307,6 +318,73 @@ class ArchivedDiariesController {
     );
   }
 
+  /// 桌面右键菜单“删除”一篇：确认（与预览页同一个对话框）→ 收起 → 写库 →
+  /// 撤销提示；撤销时以出现动画回来。多选状态不动。
+  Future<void> deleteDiaryFromMenu(String diaryId) async {
+    final confirmed = await confirmDiaryPreviewDelete(_state.context);
+    if (!_state.mounted || !confirmed) {
+      return;
+    }
+    final targetIds = <String>[diaryId];
+    await _collapseBeforeCommit(targetIds);
+    if (!_state.mounted) {
+      return;
+    }
+    final db = _state.ref.read(appDatabaseProvider);
+    try {
+      await db.softDeleteDiary(diaryId, touchUpdatedAt: false);
+    } catch (_) {
+      if (!_state.mounted) {
+        return;
+      }
+      _reveal(targetIds);
+      await showInfoSnackBar(_state.context.l10n.autoT0073);
+      return;
+    }
+    if (!_state.mounted) {
+      return;
+    }
+    await _offerUndoForDeleted(diaryId);
+  }
+
+  /// 桌面右键菜单“编辑”：编辑页里删除了这篇时与预览页删除同样给撤销。
+  Future<void> editDiaryFromMenu(String diaryId) async {
+    final deleted = await openDiaryEditorFromPreview(
+      _state.context,
+      _state.ref,
+      diaryId,
+    );
+    if (_state.mounted && deleted) {
+      await _offerUndoForDeleted(diaryId);
+    }
+  }
+
+  /// 删除了 [diaryId]（预览页、编辑页或右键菜单）：撤销提示，撤销时恢复
+  /// 并以出现动画回到列表。
+  Future<void> _offerUndoForDeleted(String diaryId) async {
+    final undoRequested = await showUndoSnackBar(
+      message: _state.context.l10n.autoT0075,
+      duration: _ArchivedDiariesPageState._undoSnackDuration,
+    );
+    if (!_state.mounted || !undoRequested) {
+      return;
+    }
+    try {
+      final db = _state.ref.read(appDatabaseProvider);
+      _reveal(<String>[diaryId]);
+      await db.restoreDiary(diaryId, touchUpdatedAt: false);
+      if (!_state.mounted) {
+        return;
+      }
+      await showInfoSnackBar(_state.context.l10n.autoT0076);
+    } catch (_) {
+      if (!_state.mounted) {
+        return;
+      }
+      await showInfoSnackBar(_state.context.l10n.autoT0077);
+    }
+  }
+
   /// 打开预览页（归档列表默认入口），[sequence] 为左右滑动的顺序（当前显示
   /// 的归档列表）。
   ///
@@ -334,27 +412,7 @@ class ArchivedDiariesController {
           }
           // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
           if (result case DiaryPreviewResult(:final diaryId)) {
-            final undoRequested = await showUndoSnackBar(
-              message: _state.context.l10n.autoT0075,
-              duration: _ArchivedDiariesPageState._undoSnackDuration,
-            );
-            if (!_state.mounted || !undoRequested) {
-              return;
-            }
-            try {
-              final db = _state.ref.read(appDatabaseProvider);
-              _reveal(<String>[diaryId]);
-              await db.restoreDiary(diaryId, touchUpdatedAt: false);
-              if (!_state.mounted) {
-                return;
-              }
-              await showInfoSnackBar(_state.context.l10n.autoT0076);
-            } catch (_) {
-              if (!_state.mounted) {
-                return;
-              }
-              await showInfoSnackBar(_state.context.l10n.autoT0077);
-            }
+            await _offerUndoForDeleted(diaryId);
           }
         });
   }

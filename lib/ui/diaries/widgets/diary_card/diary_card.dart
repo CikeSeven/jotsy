@@ -48,6 +48,7 @@ class DiaryCard extends StatelessWidget {
     required this.onToggleSelection,
     this.enableCoverHero = true,
     this.opensLockedCapsulePage = true,
+    this.onTapIntercept,
   });
 
   /// 选择标记展开、列表项进出的过渡时长。
@@ -68,6 +69,10 @@ class DiaryCard extends StatelessWidget {
   /// 点按未解封胶囊是否进入封存页；设置页预览的示例胶囊不是真实日记，
   /// 关闭后改为走 [onOpenEditor]。
   final bool opensLockedCapsulePage;
+
+  /// 点按时最先调用；返回 true 表示已处理（如桌面上 Ctrl / Shift + 点按的
+  /// 多选），卡片不再执行默认的点按动作。null 时与改版前一致。
+  final bool Function(DiaryWithTags diary)? onTapIntercept;
 
   @override
   Widget build(BuildContext context) {
@@ -204,6 +209,9 @@ class DiaryCard extends StatelessWidget {
                       ? BorderRadius.circular(radius)
                       : null,
                   onTap: () {
+                    if (onTapIntercept?.call(diary) ?? false) {
+                      return;
+                    }
                     if (isSelectionMode) {
                       onToggleSelection(diaryId, false);
                       return;

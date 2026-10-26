@@ -26,6 +26,12 @@ constexpr const wchar_t kGetPreferredBrightnessRegKey[] =
   L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
 constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme";
 
+// Minimum window size in logical pixels. Below 400 wide the phone layout
+// starts to clip, so the window is not allowed to shrink further. Scaled to
+// physical pixels with the DPI of the monitor the window is on.
+constexpr int kMinWindowWidth = 400;
+constexpr int kMinWindowHeight = 600;
+
 // The number of Win32Window objects that currently exist.
 static int g_active_window_count = 0;
 
@@ -195,6 +201,16 @@ Win32Window::MessageHandler(HWND hwnd,
       SetWindowPos(hwnd, nullptr, newRectSize->left, newRectSize->top, newWidth,
                    newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 
+      return 0;
+    }
+    case WM_GETMINMAXINFO: {
+      // Use the window's current monitor so the limit follows per-monitor
+      // DPI when the window is dragged between screens.
+      HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+      double scale_factor = FlutterDesktopGetDpiForMonitor(monitor) / 96.0;
+      auto info = reinterpret_cast<MINMAXINFO*>(lparam);
+      info->ptMinTrackSize.x = Scale(kMinWindowWidth, scale_factor);
+      info->ptMinTrackSize.y = Scale(kMinWindowHeight, scale_factor);
       return 0;
     }
     case WM_SIZE: {

@@ -181,6 +181,10 @@ void main() {
   testWidgets('cover modes: inset, hidden and no fallback to body photos', (
     tester,
   ) async {
+    // 手机宽度：宽窗口的头图改放进正文列（见 diary_preview_wide_layout_test）。
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     const photo = '/missing/photo.png';
     final withCover = _diary(cover: photo);
     await _pump(

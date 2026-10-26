@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../database/app_database.dart';
 import 'diary_media_sweeper.dart';
 import 'settings_service.dart';
+import 'app_data_directory.dart';
 
 /// 按引用回收日记媒体文件（图片、视频、附件、录音、封面）与选择器缓存。
 ///
@@ -32,8 +33,7 @@ class DiaryMediaCleanupService {
     DateTime Function()? clock,
     this.gracePeriod = const Duration(hours: 24),
     this.startupDelay = const Duration(seconds: 30),
-  }) : _documentsDirectory =
-           documentsDirectory ?? getApplicationDocumentsDirectory,
+  }) : _documentsDirectory = documentsDirectory ?? appDataRootDirectory,
        _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory,
        _clock = clock ?? DateTime.now;
 

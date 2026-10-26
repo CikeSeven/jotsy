@@ -17,6 +17,7 @@ import '../../widgets/delayed_loading_indicator.dart';
 import '../models/notebook_add_filter.dart';
 import '../sections/notebook_add_diaries_parts.dart';
 import '../viewmodels/notebook_view.dart';
+import '../../widgets/form_width.dart';
 
 /// 从已有日记里挑选、批量加进一本普通日记本（头部卡片“添加日记”与空日记本
 /// 的“从已有日记挑选”）。
@@ -209,22 +210,27 @@ class _NotebookAddDiariesPageState
     } else {
       body = NotificationListener<ScrollNotification>(
         onNotification: _handleScroll,
-        child: ListView.builder(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.l,
-            AppSpacing.s,
-            AppSpacing.l,
-            AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
-          ),
-          itemCount: result.items.length,
-          itemBuilder: (BuildContext context, int index) {
-            final diary = result.items[index].diary;
-            return NotebookAddDiaryRow(
-              key: ValueKey<String>('notebook_add_${diary.diaryId}'),
-              diary: diary,
-              selected: _selected.contains(diary.diaryId),
-              alreadyIn: _members.contains(diary.diaryId),
-              onToggle: () => _toggle(diary.diaryId),
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final side = FormWidth.gutter(constraints.maxWidth);
+            return ListView.builder(
+              padding: EdgeInsets.fromLTRB(
+                side,
+                AppSpacing.s,
+                side,
+                AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
+              ),
+              itemCount: result.items.length,
+              itemBuilder: (BuildContext context, int index) {
+                final diary = result.items[index].diary;
+                return NotebookAddDiaryRow(
+                  key: ValueKey<String>('notebook_add_${diary.diaryId}'),
+                  diary: diary,
+                  selected: _selected.contains(diary.diaryId),
+                  alreadyIn: _members.contains(diary.diaryId),
+                  onToggle: () => _toggle(diary.diaryId),
+                );
+              },
             );
           },
         ),
@@ -234,6 +240,7 @@ class _NotebookAddDiariesPageState
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(
           l10n.notebookAddPageTitle(widget.notebook.name),
           maxLines: 1,
@@ -254,44 +261,51 @@ class _NotebookAddDiariesPageState
       ),
       body: Column(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.l,
-              AppSpacing.xs,
-              AppSpacing.l,
-              AppSpacing.s,
-            ),
-            child: TextField(
-              controller: _search,
-              onChanged: _onKeywordChanged,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: l10n.notebookAddSearchHint,
-                isDense: true,
-                filled: true,
-                fillColor: scheme.surfaceContainerHigh,
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: FaIcon(
-                    FontAwesomeIcons.magnifyingGlass,
-                    size: 14,
-                    color: scheme.onSurfaceVariant,
+          // 宽窗口：搜索框与筛选条与列表同列居中。
+          FormWidthBar(
+            sideInset: AppSpacing.l,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                AppSpacing.xs,
+                AppSpacing.l,
+                AppSpacing.s,
+              ),
+              child: TextField(
+                controller: _search,
+                onChanged: _onKeywordChanged,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: l10n.notebookAddSearchHint,
+                  isDense: true,
+                  filled: true,
+                  fillColor: scheme.surfaceContainerHigh,
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: FaIcon(
+                      FontAwesomeIcons.magnifyingGlass,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.nav),
-                  borderSide: BorderSide.none,
+                  prefixIconConstraints: const BoxConstraints(minWidth: 40),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.nav),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
             ),
           ),
-          NotebookAddFilterBar(
-            timeFilter: _timeFilter,
-            onTimeFilterChanged: _setTimeFilter,
-            tags: tags,
-            selectedTagIds: _tagIds,
-            onToggleTag: _toggleTag,
+          FormWidthBar(
+            sideInset: AppSpacing.l,
+            child: NotebookAddFilterBar(
+              timeFilter: _timeFilter,
+              onTimeFilterChanged: _setTimeFilter,
+              tags: tags,
+              selectedTagIds: _tagIds,
+              onToggleTag: _toggleTag,
+            ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Expanded(child: body),

@@ -1034,6 +1034,42 @@ abstract class AppLocalizations {
   /// **'Later'**
   String get appUpdatePromptLater;
 
+  /// 桌面版：在浏览器中打开新版本安装包的下载地址（更新页与启动提示的主按钮）。
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get appUpdateActionDesktopDownload;
+
+  /// Windows 版发现新版本时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads the installer in your browser. Run it to update in place; your diaries are kept.'**
+  String get appUpdateDesktopHintWindows;
+
+  /// Linux 版发现新版本时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads a .tar.gz archive in your browser. Extract it and run install.sh to update; your diaries are kept.'**
+  String get appUpdateDesktopHintLinux;
+
+  /// 桌面版：新版本里没有本平台的安装包（如桌面版之前的版本）。
+  ///
+  /// In en, this message translates to:
+  /// **'This release has no package for this system. Check the download page.'**
+  String get appUpdateNoDesktopPackage;
+
+  /// 桌面版下载线路面板里“自动选择”的说明（桌面在浏览器中下载，不测速）。
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the route that answered the update check first; recommended in mainland China'**
+  String get appUpdateSourceAutoDescriptionDesktop;
+
+  /// 桌面版下载线路面板的说明（安装包在浏览器中下载，应用不校验）。
+  ///
+  /// In en, this message translates to:
+  /// **'Mirrors are third-party public services. After downloading, you can verify the file against SHA256SUMS.txt on the release page.'**
+  String get appUpdateSourceSheetHintDesktop;
+
   /// Action title to open issue feedback page.
   ///
   /// In en, this message translates to:
@@ -2750,6 +2786,78 @@ abstract class AppLocalizations {
   /// **'Gallery permission denied, cannot save'**
   String get imageViewerGalleryPermissionDenied;
 
+  /// Desktop replacement for “Save to gallery” in the image viewer sheet, the in-text image menu and the support QR code button; opens a save dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as…'**
+  String get desktopSaveAs;
+
+  /// Title of the desktop save dialog for images (viewer, in-text images, QR codes, long images, year image).
+  ///
+  /// In en, this message translates to:
+  /// **'Save image'**
+  String get desktopSaveImageDialogTitle;
+
+  /// Title of the desktop save dialog when exporting a diary video.
+  ///
+  /// In en, this message translates to:
+  /// **'Save video'**
+  String get desktopSaveVideoDialogTitle;
+
+  /// Shown after a file was saved through the desktop save dialog; path is the full saved path.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to {path}'**
+  String desktopSavedTo(String path);
+
+  /// Share sheet button on platforms without a system share sheet (Linux): saves the selected images to a folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Save images…'**
+  String get diaryShareSaveImages;
+
+  /// Title of the folder picker when saving several images from the share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a folder for the images'**
+  String get diaryShareSaveImagesDialogTitle;
+
+  /// Shown after the share sheet saved several images; count is the number of images, path the folder.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Saved 1 image to {path}} other{Saved {count} images to {path}}}'**
+  String diaryShareImagesSaved(int count, String path);
+
+  /// Desktop name of the long-image entry in the share sheet: renders the long image, then opens a save dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as a long image…'**
+  String get diaryShareLongImageSave;
+
+  /// Platforms that cannot play videos inline (Linux, Windows): tooltip of the video card.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in system player'**
+  String get videoOpenExternally;
+
+  /// Platforms that cannot play videos inline: caption under the video poster card.
+  ///
+  /// In en, this message translates to:
+  /// **'Click to open in the system player'**
+  String get videoPosterHint;
+
+  /// Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux).
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no system verification (fingerprint, face or password), so locking isn\'t available'**
+  String get deviceAuthUnavailable;
+
+  /// Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this year as an image…'**
+  String get calendarYearSaveImage;
+
   /// Loading hint while preparing to share an image.
   ///
   /// In en, this message translates to:
@@ -2785,6 +2893,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More actions'**
   String get imageViewerMoreActions;
+
+  /// Image viewer (desktop): tooltip of the hover button on the left that shows the previous image.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous image'**
+  String get imageViewerPrevious;
+
+  /// Image viewer (desktop): tooltip of the hover button on the right that shows the next image.
+  ///
+  /// In en, this message translates to:
+  /// **'Next image'**
+  String get imageViewerNext;
 
   /// Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time.
   ///
@@ -7513,6 +7633,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{index} of at least {count}'**
   String diaryPreviewPositionSemanticsMore(int index, int count);
+
+  /// Wide-window diaries page, detail pane: hint while no entry is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an entry to read'**
+  String get diaryDetailPaneEmpty;
+
+  /// Wide-window diaries page, detail pane (desktop): second line with the new-entry shortcut; shortcut is Ctrl+N or ⌘N.
+  ///
+  /// In en, this message translates to:
+  /// **'Press {shortcut} to write a new one'**
+  String diaryDetailPaneCreateHint(String shortcut);
 
   /// Diary preview style settings: Paging tab.
   ///
@@ -13945,6 +14077,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep typing to filter'**
   String get diaryEditorCommandTypeToFilter;
+
+  /// Desktop diary card context menu item (inside a regular notebook): move this diary to another notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to notebook…'**
+  String get diaryCardMenuMoveToNotebook;
+
+  /// Desktop diary card context menu item (all diaries, search and archive): open the notebook picker for this diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to notebook…'**
+  String get diaryCardMenuAddToNotebook;
+
+  /// Desktop: label in the middle of the highlight while files are dragged over the editor body; releasing inserts them.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop to insert'**
+  String get diaryEditorDropToInsert;
 }
 
 class _AppLocalizationsDelegate

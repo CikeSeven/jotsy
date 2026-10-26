@@ -16,6 +16,7 @@ import 'calendar_day_content_switcher.dart';
 import 'calendar_entry_thumbnail.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../diaries/viewmodels/diary_card_view_data.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 日历页“选中日期列表”的时间线区块。
 ///
@@ -362,9 +363,11 @@ class CalendarTimelineSection extends StatelessWidget {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(mainAxisSize: MainAxisSize.min, children: segments),
+    return DesktopHorizontalScroll(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(mainAxisSize: MainAxisSize.min, children: segments),
+      ),
     );
   }
 

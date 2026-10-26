@@ -10,6 +10,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
+import 'package:node_diary/ui/widgets/desktop_page_arrows.dart';
 import 'package:node_diary/ui/widgets/image_viewer_actions_sheet.dart';
 import 'package:node_diary/ui/widgets/image_viewer_export_controller.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -85,6 +86,10 @@ Future<void> openImageViewer(
 ///   保存 / 分享按钮；
 /// - 初始页可携带共享元素（[initialHero]）：从缩略图/正文图连续展开，返回时
 ///   飞回原处；翻到其他页后返回只做淡出；
+/// - 桌面上指针悬停时左右边缘淡入上一张 / 下一张按钮，←/→（PageUp/PageDown）
+///   翻页、Esc 关闭（[DesktopPageArrows] / [DesktopPageKeys]）；滚轮缩放与
+///   双击缩放由 [DoubleTapZoomViewer] 里的 InteractiveViewer 处理，下拉关闭
+///   只认拖动，不拦滚轮；
 /// - 不承担数据加载、去重或业务归属判断，图片列表由调用方透传；
 /// - 渲染层同时兼容本地图片路径与网络图片 URL；
 /// - 保存/分享的流程编排在 [ImageViewerExportController]，本页只负责触发、
@@ -224,6 +229,35 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
 
     // 背景、顶栏随下拉距离淡出（路由不透明度为 false，能看到下层页面）；每页
     // 不再各自铺底色，否则底色会跟着图片一起被拖动。
+    final content = hasImages
+        ? DesktopPageArrows(
+            previousTooltip: l10n.imageViewerPrevious,
+            nextTooltip: l10n.imageViewerNext,
+            // 放大时与拖动一样不翻页（先缩回原大小），按钮也收起。
+            onPrevious: !_pageZoomed && _activeIndex > 0
+                ? () => _goTo(_activeIndex - 1)
+                : null,
+            onNext: !_pageZoomed && _activeIndex < total - 1
+                ? () => _goTo(_activeIndex + 1)
+                : null,
+            child: pages,
+          )
+        : pages;
+    return DesktopPageKeys(
+      onPrevious: hasImages ? () => _goTo(_activeIndex - 1) : null,
+      onNext: hasImages ? () => _goTo(_activeIndex + 1) : null,
+      onEscape: () => Navigator.of(context).maybePop(),
+      child: _buildDismissible(context, hasImages, content, appBar),
+    );
+  }
+
+  Widget _buildDismissible(
+    BuildContext context,
+    bool hasImages,
+    Widget pages,
+    PreferredSizeWidget appBar,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SwipeDismissViewer(
       enabled: hasImages && !_pageZoomed && !_tallPages.contains(_activeIndex),
       onDismiss: () => Navigator.of(context).pop(),
@@ -254,6 +288,33 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
           ),
         );
       },
+    );
+  }
+
+  /// 程序翻页（桌面的按钮与方向键）：`medium` + `spatial`，减少动画时直接
+  /// 跳过去；越界、忙碌（保存 / 分享中）或当前页放大时忽略。
+  void _goTo(int index) {
+    if (_export.isBusy ||
+        _pageZoomed ||
+        index < 0 ||
+        index >= widget.items.length ||
+        !_pageController.hasClients) {
+      return;
+    }
+    final duration = ExpressiveMotion.duration(
+      context,
+      ExpressiveMotion.medium,
+    );
+    if (duration == Duration.zero) {
+      _pageController.jumpToPage(index);
+      return;
+    }
+    unawaited(
+      _pageController.animateToPage(
+        index,
+        duration: duration,
+        curve: ExpressiveMotion.spatial,
+      ),
     );
   }
 

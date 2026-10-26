@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'app_platform.dart';
 import 'journal_import_cloud_cookie_jar.dart';
 
 /// 登录网页视图里的 Cookie：读取供本次云端读取使用，读取结束后清除。
@@ -16,10 +16,7 @@ class CloudLoginCookies {
   );
 
   /// 只有 Android 与 iOS 提供网页视图与 Cookie 读取通道。
-  static bool get supported =>
-      !kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS);
+  static bool get supported => AppPlatform.supportsCloudNotesLogin;
 
   /// 读取对各接口源生效的 Cookie（含 HttpOnly），按源主机放进新的罐子。
   static Future<CloudCookieJar> read(Iterable<String> origins) async {

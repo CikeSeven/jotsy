@@ -138,7 +138,11 @@ class FakeAppUpdateService implements AppUpdateService {
 }
 
 /// 测试用的新版本（v0.6.1+18，三个分 ABI 安装包，带中英文说明）。
-AppUpdateRelease fakeRelease({String version = '0.6.1+18'}) {
+/// [desktop] 为 true 时另带 Windows 安装程序 / 便携版与 Linux 压缩包。
+AppUpdateRelease fakeRelease({
+  String version = '0.6.1+18',
+  bool desktop = false,
+}) {
   final parsed = AppVersion.tryParse(version)!;
   final tag = 'v${parsed.name}';
   return AppUpdateRelease(
@@ -159,6 +163,20 @@ AppUpdateRelease fakeRelease({String version = '0.6.1+18'}) {
           size: 51428875,
           sha256: 'a' * 64,
         ),
+    ],
+    desktopAssets: <AppUpdateAsset>[
+      if (desktop)
+        for (final name in <String>[
+          'jotsy-$tag-linux-x64.tar.gz',
+          'jotsy-$tag-windows-x64-setup.exe',
+          'jotsy-$tag-windows-x64.zip',
+        ])
+          AppUpdateAsset(
+            name: name,
+            url: AppUpdateEndpoints.assetUrl(tag, name),
+            size: 31457280,
+            sha256: 'b' * 64,
+          ),
     ],
   );
 }

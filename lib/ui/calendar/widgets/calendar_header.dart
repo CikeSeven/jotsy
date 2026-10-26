@@ -30,6 +30,8 @@ class CalendarHeader extends StatelessWidget {
     this.previousTooltip,
     this.nextTooltip,
     this.collapsedExtent = 0,
+    this.horizontalInset = 0,
+    this.showMonthBar = true,
   });
 
   /// 标题栏（“日历” + 操作按钮）的高度，月份行收起后仍然保留。
@@ -74,6 +76,26 @@ class CalendarHeader extends StatelessWidget {
   /// 超出范围的值会被夹取。
   final double collapsedExtent;
 
+  /// 宽窗口下内容在左右 16 之外再内缩的量，让按钮行与下方居中的日历内容
+  /// 对齐；底色仍铺满整个页宽。手机上为 0。
+  final double horizontalInset;
+
+  /// 是否在标题栏下画月份行。双栏布局里月份行改放在左栏日历卡片上方
+  /// （经 [monthBar] 取得），页头只留标题栏，此时为 false。
+  final bool showMonthBar;
+
+  /// 月份行（上一页 / 标题 / 下一页），按本页头的标题、提示与回调构建。
+  Widget monthBar() => CalendarMonthBar(
+    title: title,
+    month: month,
+    onPreviousMonth: onPreviousMonth,
+    onNextMonth: onNextMonth,
+    onPickDate: onPickDate,
+    titleTooltip: titleTooltip,
+    previousTooltip: previousTooltip,
+    nextTooltip: nextTooltip,
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -87,9 +109,9 @@ class CalendarHeader extends StatelessWidget {
       solidColor: theme.colorScheme.surface,
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          16,
+          16 + horizontalInset,
           MediaQuery.paddingOf(context).top,
-          16,
+          16 + horizontalInset,
           0,
         ),
         child: Column(
@@ -145,53 +167,82 @@ class CalendarHeader extends StatelessWidget {
             ),
             // 月份行始终按完整高度布局、底部对齐，只裁出还露着的那一段：
             // 收起时整行上移，像被内容带着滚到标题栏下面，而不是被压扁。
-            SizedBox(
-              height: monthBarHeight - collapsed,
-              child: ClipRect(
-                child: OverflowBox(
-                  alignment: Alignment.bottomCenter,
-                  minHeight: monthBarHeight,
-                  maxHeight: monthBarHeight,
-                  child: ExcludeFocus(
-                    excluding: monthBarHidden,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          tooltip: previousTooltip ?? l10n.autoT0184,
-                          onPressed: onPreviousMonth,
-                          icon: const FaIcon(
-                            FontAwesomeIcons.angleLeft,
-                            size: 18,
-                          ),
-                        ),
-                        Expanded(child: _buildTitleButton()),
-                        IconButton(
-                          tooltip: nextTooltip ?? l10n.autoT0185,
-                          onPressed: onNextMonth,
-                          icon: const FaIcon(
-                            FontAwesomeIcons.angleRight,
-                            size: 18,
-                          ),
-                        ),
-                      ],
+            if (showMonthBar)
+              SizedBox(
+                height: monthBarHeight - collapsed,
+                child: ClipRect(
+                  child: OverflowBox(
+                    alignment: Alignment.bottomCenter,
+                    minHeight: monthBarHeight,
+                    maxHeight: monthBarHeight,
+                    child: ExcludeFocus(
+                      excluding: monthBarHidden,
+                      child: monthBar(),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildTitleButton() {
+/// 月份行：上一页、可点的月份标题（随翻月方向滑动）与下一页，高度为
+/// [CalendarHeader.monthBarHeight]。单列时在页头里，双栏时在左栏卡片上方。
+class CalendarMonthBar extends StatelessWidget {
+  const CalendarMonthBar({
+    super.key,
+    required this.title,
+    this.month,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onPickDate,
+    this.titleTooltip,
+    this.previousTooltip,
+    this.nextTooltip,
+  });
+
+  final String title;
+  final DateTime? month;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final VoidCallback onPickDate;
+  final String? titleTooltip;
+  final String? previousTooltip;
+  final String? nextTooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final button = TextButton(
       onPressed: onPickDate,
       child: _MonthTitle(title: title, month: month),
     );
     final tooltip = titleTooltip;
-    return tooltip == null ? button : Tooltip(message: tooltip, child: button);
+    return SizedBox(
+      height: CalendarHeader.monthBarHeight,
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: previousTooltip ?? l10n.autoT0184,
+            onPressed: onPreviousMonth,
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+          ),
+          Expanded(
+            child: tooltip == null
+                ? button
+                : Tooltip(message: tooltip, child: button),
+          ),
+          IconButton(
+            tooltip: nextTooltip ?? l10n.autoT0185,
+            onPressed: onNextMonth,
+            icon: const FaIcon(FontAwesomeIcons.angleRight, size: 18),
+          ),
+        ],
+      ),
+    );
   }
 }
 

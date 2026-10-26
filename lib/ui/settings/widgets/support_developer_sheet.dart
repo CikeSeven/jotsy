@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_image_frame.dart';
@@ -242,7 +243,10 @@ class _SupportChannelPane extends StatelessWidget {
     );
     final save = (
       icon: FontAwesomeIcons.download,
-      label: l10n.supportDeveloperSaveCode,
+      // 桌面没有相册，同一按钮弹出“另存为…”对话框。
+      label: AppPlatform.savesImagesToGallery
+          ? l10n.supportDeveloperSaveCode
+          : l10n.desktopSaveAs,
       onPressed: onSave,
     );
     final primary = isAlipay ? open : save;

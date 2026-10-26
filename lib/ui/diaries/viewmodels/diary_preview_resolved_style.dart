@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_breakpoints.dart';
+import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/seeded_theme_cache.dart';
 import '../../../core/services/settings_service.dart';
 import '../../widgets/mood_band_palette.dart';
@@ -21,6 +23,14 @@ import 'diary_card_colors.dart';
 /// - 默认样式（跟随应用 + 主题底色）原样返回应用主题，渲染与改版前一致；
 /// - 自定义正文 / 标题颜色按纸色检查对比度（正文 4.5:1、标题 3:1，WCAG 2.x），
 ///   不足时回退为主题色，未设深色值时按色相推导。
+///
+/// 版式（边距、正文列宽、头图）按内容实际可用的宽度换算：[resolve] 先按屏幕
+/// 宽度算一遍，`DiaryPreviewContent` 再经 [atWidth] 按自己拿到的宽度重算
+/// （嵌在列表–详情双栏里时比屏幕窄）。手机上两者相同，结果与改版前一致：
+/// - 宽于 [wideReadingThreshold] 时正文列默认收到 [AppContentWidth.reading]
+///   并居中；用户开了“限制正文宽度”时以用户的宽度为准；
+/// - 宽度 ≥ [AppBreakpoints.medium] 时头图不再通栏，改为正文列里的圆角卡片
+///   （见 [coverInColumn]）。
 @immutable
 class DiaryPreviewResolvedStyle {
   const DiaryPreviewResolvedStyle._({
@@ -33,7 +43,22 @@ class DiaryPreviewResolvedStyle {
     required this.horizontalPadding,
     required this.maxContentWidth,
     required this.coverHeight,
+    required this.coverInColumn,
+    required this._layoutWidth,
+    required this._screenHeight,
   });
+
+  /// 宽于它（正文列默认宽度加两侧各 16）时正文列默认收窄居中。
+  static const double wideReadingThreshold = AppContentWidth.reading + 32;
+
+  /// 正文列内头图的上边距。
+  static const double columnCoverTop = 16;
+
+  /// 正文列内头图的最大高度。
+  static const double columnCoverMaxHeight = 420;
+
+  /// 正文列内头图的高宽比上限（高 = 宽 × 它）。
+  static const double columnCoverAspect = 0.6;
 
   /// 正文与背景的最低对比度。
   static const double bodyContrast = 4.5;
@@ -89,18 +114,7 @@ class DiaryPreviewResolvedStyle {
         : appTheme;
     final background = paper ?? theme.colorScheme.surface;
 
-    final width = screenSize.width;
-    final maxContentWidth = page.limitWidth ? page.contentWidth : null;
-    final available = maxContentWidth == null
-        ? width
-        : math.min(width, maxContentWidth);
-    final roomForPadding =
-        (available - DiaryPreviewStyleLimits.minTextWidth) / 2;
-    final horizontalPadding = math.max(
-      0.0,
-      math.min(page.horizontalPadding, roomForPadding),
-    );
-
+    final layout = _layoutFor(style, screenSize.width, screenSize.height);
     return DiaryPreviewResolvedStyle._(
       style: style,
       theme: theme,
@@ -120,14 +134,86 @@ class DiaryPreviewResolvedStyle {
         background,
         titleContrast,
       ),
+      horizontalPadding: layout.horizontalPadding,
+      maxContentWidth: layout.maxContentWidth,
+      coverHeight: layout.coverHeight,
+      coverInColumn: layout.coverInColumn,
+      layoutWidth: screenSize.width,
+      screenHeight: screenSize.height,
+    );
+  }
+
+  /// 按内容实际可用的宽度 [available] 重算版式（边距、正文列宽、头图），
+  /// 配色不变。与上次换算的宽度相同（手机上通常如此）时返回自身。
+  DiaryPreviewResolvedStyle atWidth(double available) {
+    if (!available.isFinite || available <= 0 || available == _layoutWidth) {
+      return this;
+    }
+    final layout = _layoutFor(style, available, _screenHeight);
+    return DiaryPreviewResolvedStyle._(
+      style: style,
+      theme: theme,
+      themed: themed,
+      background: background,
+      bodyColor: bodyColor,
+      titleColor: titleColor,
+      horizontalPadding: layout.horizontalPadding,
+      maxContentWidth: layout.maxContentWidth,
+      coverHeight: layout.coverHeight,
+      coverInColumn: layout.coverInColumn,
+      layoutWidth: available,
+      screenHeight: _screenHeight,
+    );
+  }
+
+  /// 宽度为 [width]、屏高为 [screenHeight] 时的版式。
+  ///
+  /// 正文列宽：用户开了“限制正文宽度”时取用户的宽度；没开但宽于
+  /// [wideReadingThreshold] 时取 [AppContentWidth.reading]；列宽不小于可用
+  /// 宽度时不限制（null）。正文列宽包含左右边距，与改版前“限制正文宽度”
+  /// 的口径一致。
+  static ({
+    double horizontalPadding,
+    double? maxContentWidth,
+    double coverHeight,
+    bool coverInColumn,
+  })
+  _layoutFor(DiaryPreviewStyle style, double width, double screenHeight) {
+    final page = style.page;
+    final limit = page.limitWidth
+        ? page.contentWidth
+        : width > wideReadingThreshold
+        ? AppContentWidth.reading
+        : null;
+    final maxContentWidth = limit != null && limit < width ? limit : null;
+    final column = maxContentWidth ?? width;
+    final roomForPadding = (column - DiaryPreviewStyleLimits.minTextWidth) / 2;
+    final horizontalPadding = math.max(
+      0.0,
+      math.min(page.horizontalPadding, roomForPadding),
+    );
+    final screenCap =
+        screenHeight * DiaryPreviewStyleLimits.coverMaxScreenFraction;
+    final coverInColumn = width >= AppBreakpoints.medium;
+    // 列内头图与正文左右对齐：宽度为正文列减去两侧边距，高度按宽度换算，
+    // 不随用户设定的头图高度（那是为通栏手机头图设计的）。
+    final coverHeight = coverInColumn
+        ? math.max(
+            0.0,
+            math.min(
+              math.min(
+                columnCoverMaxHeight,
+                (column - horizontalPadding * 2) * columnCoverAspect,
+              ),
+              screenCap,
+            ),
+          )
+        : math.min(style.cover.height, screenCap);
+    return (
       horizontalPadding: horizontalPadding,
-      maxContentWidth: maxContentWidth != null && maxContentWidth < width
-          ? maxContentWidth
-          : null,
-      coverHeight: math.min(
-        style.cover.height,
-        screenSize.height * DiaryPreviewStyleLimits.coverMaxScreenFraction,
-      ),
+      maxContentWidth: maxContentWidth,
+      coverHeight: coverHeight,
+      coverInColumn: coverInColumn,
     );
   }
 
@@ -150,12 +236,26 @@ class DiaryPreviewResolvedStyle {
   /// [DiaryPreviewStyleLimits.minTextWidth]）。
   final double horizontalPadding;
 
-  /// 正文最大宽度；不限制或屏幕本来就更窄时为 null。
+  /// 正文列最大宽度（含左右边距）；不限制或可用宽度本来就更窄时为 null。
   final double? maxContentWidth;
 
   /// 头图框高度（最高为屏高的
-  /// [DiaryPreviewStyleLimits.coverMaxScreenFraction]）。
+  /// [DiaryPreviewStyleLimits.coverMaxScreenFraction]）；[coverInColumn] 时
+  /// 为列内头图画面本身的高度（不含上边距）。
   final double coverHeight;
+
+  /// 头图放进正文列、作为圆角卡片显示（宽窗口），而不是通栏。
+  final bool coverInColumn;
+
+  /// 列内头图的圆角：内嵌模式沿用用户设定的圆角，通栏模式取卡片圆角。
+  double get columnCoverRadius =>
+      style.cover.mode == DiaryPreviewCoverMode.inset
+      ? style.cover.radius
+      : AppRadii.card;
+
+  /// 上次换算版式所用的宽度。
+  final double _layoutWidth;
+  final double _screenHeight;
 
   static Color? _paperColor(DiaryPreviewPageStyle page, Brightness brightness) {
     final light = brightness == Brightness.light;

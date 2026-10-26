@@ -300,4 +300,97 @@ void main() {
       expect(documentController.document.toPlainText(), 'new document\n');
     },
   );
+
+  group('insertFiles (desktop drag and drop)', () {
+    test('picks the block kind from the file extension', () {
+      expect(
+        DiaryMediaImportController.kindForPath('/a/Photo.JPG'),
+        DiaryMediaKind.image,
+      );
+      expect(
+        DiaryMediaImportController.kindForPath('/a/clip.mov'),
+        DiaryMediaKind.video,
+      );
+      for (final path in ['/a/song.mp3', '/a/notes.pdf', '/a/noext']) {
+        expect(
+          DiaryMediaImportController.kindForPath(path),
+          DiaryMediaKind.attachment,
+        );
+      }
+    });
+
+    test('dropped files are copied and inserted in their order', () async {
+      final image = File(p.join(root.path, 'dropped.png'));
+      await image.writeAsBytes([4, 5, 6]);
+      final audio = File(p.join(root.path, 'voice.mp3'));
+      await audio.writeAsBytes([7, 8]);
+      final folder = Directory(p.join(root.path, 'folder'));
+      await folder.create();
+      final importer = DiaryMediaImportController();
+      addTearDown(importer.dispose);
+
+      expect(
+        await importer.insertFiles(
+          controller: documentController,
+          paths: [image.path, folder.path, audio.path],
+          isCurrent: () => true,
+        ),
+        DiaryMediaImportOutcome.inserted,
+      );
+      final types = [
+        for (final node in walkDiaryEditorNodes(documentController.document))
+          node.type,
+      ];
+      expect(types.indexOf('image'), greaterThanOrEqualTo(0));
+      expect(
+        types.indexOf(diaryAttachmentEmbedType),
+        greaterThan(types.indexOf('image')),
+      );
+      final nodes = walkDiaryEditorNodes(documentController.document);
+      final paths = <String>[
+        for (final node in nodes)
+          if (node.type == 'image')
+            node.attributes['url'] as String
+          else if (node.type == diaryAttachmentEmbedType)
+            node.attributes['path'] as String,
+      ];
+      expect(paths, hasLength(2));
+      // 复制进私有目录，原文件原样保留。
+      for (final path in paths) {
+        expect(p.isWithin(root.path, path), isTrue);
+        expect(path, isNot(anyOf(image.path, audio.path)));
+        expect(await File(path).exists(), isTrue);
+      }
+      expect(await image.exists(), isTrue);
+      expect(await audio.exists(), isTrue);
+    });
+
+    test('a dropped file inside the picker cache is never deleted', () async {
+      final cached = File(p.join(root.path, 'file_picker', 'mine.png'));
+      await cached.parent.create(recursive: true);
+      await cached.writeAsBytes([1]);
+      final importer = DiaryMediaImportController();
+      addTearDown(importer.dispose);
+      await importer.insertFiles(
+        controller: documentController,
+        paths: [cached.path],
+        isCurrent: () => true,
+      );
+      expect(await cached.exists(), isTrue);
+    });
+
+    test('nothing usable leaves the document unchanged', () async {
+      final importer = DiaryMediaImportController();
+      addTearDown(importer.dispose);
+      expect(
+        await importer.insertFiles(
+          controller: documentController,
+          paths: [p.join(root.path, 'gone.png'), root.path],
+          isCurrent: () => true,
+        ),
+        DiaryMediaImportOutcome.cancelled,
+      );
+      expect(documentController.document.toPlainText(), '\n');
+    });
+  });
 }

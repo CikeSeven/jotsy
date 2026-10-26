@@ -387,6 +387,19 @@ void main() {
     expect(find.byType(HomeBarStylePage), findsOneWidget);
   });
 
+  testWidgets('side by side the preview stays a phone-sized centred frame', (
+    tester,
+  ) async {
+    await pumpHomeBarStylePage(tester, size: const Size(1184, 800));
+    final bar = tester.getRect(find.byType(BottomNav));
+    final pane = tester.getRect(find.byType(VerticalDivider));
+    // 画框最宽 412，在预览栏（分隔线左侧）里水平居中。
+    expect(bar.width, lessThanOrEqualTo(412));
+    expect(bar.width, greaterThan(360));
+    expect(bar.center.dx, moreOrLessEquals(pane.left / 2, epsilon: 1));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final locale in const <Locale>[Locale('zh'), Locale('en')]) {
     for (final glass in <bool>[false, true]) {
       testWidgets('every tab fits a 320dp screen in ${locale.languageCode}'

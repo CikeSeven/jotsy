@@ -20,6 +20,7 @@ import '../../widgets/select_all_button.dart';
 import '../controllers/recycle_bin_controller.dart';
 import '../widgets/recycle_bin_selection_bar.dart';
 import '../widgets/recycle_bin_tile.dart';
+import '../../widgets/form_width.dart';
 
 /// 回收站：已软删除的日记，最近删除的在前。
 ///
@@ -206,6 +207,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
       },
       child: Scaffold(
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           leading: ExpressiveIconSwap(
             switchKey: _hasSelection,
             child: _hasSelection
@@ -283,34 +285,39 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
               icon: FontAwesomeIcons.trashCan,
               message: context.l10n.autoT0032,
             )
-          : ListView.builder(
+          : LayoutBuilder(
               key: const ValueKey<String>('recycle_list'),
-              // 底栏收起时列表一直延伸到屏幕底，末尾让出系统导航条。
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.l,
-                AppSpacing.s,
-                AppSpacing.l,
-                AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
-              ),
-              itemCount: diaries.length,
-              itemBuilder: (BuildContext context, int index) {
-                final diary = diaries[index].diary;
-                final id = diary.diaryId;
-                // 间距放在收起容器内，收起时连同间距一起收掉。
-                return ListItemPresence(
-                  key: ValueKey<String>('recycle_$id'),
-                  visible: !_pendingHideIds.contains(id),
-                  appearing: false,
-                  duration: itemDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.s),
-                    child: RecycleBinTile(
-                      diary: diary,
-                      isPrivate: privateIds.contains(id),
-                      selected: _selectedIds.contains(id),
-                      onTap: () => _toggleSelection(id),
-                    ),
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.gutter(constraints.maxWidth);
+                return ListView.builder(
+                  // 底栏收起时列表一直延伸到屏幕底，末尾让出系统导航条。
+                  padding: EdgeInsets.fromLTRB(
+                    side,
+                    AppSpacing.s,
+                    side,
+                    AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
                   ),
+                  itemCount: diaries.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final diary = diaries[index].diary;
+                    final id = diary.diaryId;
+                    // 间距放在收起容器内，收起时连同间距一起收掉。
+                    return ListItemPresence(
+                      key: ValueKey<String>('recycle_$id'),
+                      visible: !_pendingHideIds.contains(id),
+                      appearing: false,
+                      duration: itemDuration,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.s),
+                        child: RecycleBinTile(
+                          diary: diary,
+                          isPrivate: privateIds.contains(id),
+                          selected: _selectedIds.contains(id),
+                          onTap: () => _toggleSelection(id),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

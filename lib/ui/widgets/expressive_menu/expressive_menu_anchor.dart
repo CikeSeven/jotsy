@@ -34,6 +34,10 @@ typedef ExpressiveMenuTriggerBuilder =
 /// - 行为：点外部关闭且不穿透；系统返回 / 预测式返回先关菜单（打开期间在
 ///   所在路由登记 [LocalHistoryEntry]）；Esc 关闭；↑/↓ 在菜单项间移动焦点；
 ///   关闭时焦点回到 [childFocusNode]。
+/// - 指定位置打开（右键菜单）：[ExpressiveMenuAnchorState.openAt] 把菜单的
+///   起始角放在给定的全局坐标上（指针处，间距 0，不看 [placement]），同样
+///   上下翻转并夹进安全区；打开后焦点停在菜单上（键盘打开时落在第一项），
+///   Esc / ↑↓ 由菜单自己处理，关闭时焦点回到打开前的位置。
 ///
 /// 菜单项用 [ExpressiveMenuItem]：RawMenuAnchor 不会替条目自动关闭菜单。
 class ExpressiveMenuAnchor extends StatefulWidget {
@@ -105,6 +109,15 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
   LocalHistoryEntry? _history;
   bool _reduced = false;
 
+  /// 本次是否经 [openAt] 在指定位置打开（相对锚点左上角的位置记在
+  /// [_openPosition]），以及打开后焦点该落在第一项还是菜单本身。
+  Offset? _openPosition;
+  bool _focusFirstItem = false;
+
+  /// [openAt] 打开前的焦点：没有 [ExpressiveMenuAnchor.childFocusNode] 时，
+  /// 关闭后把焦点还给它。
+  FocusNode? _focusBeforeOpen;
+
   /// 找到包住 [context] 的菜单（菜单浮层在元素树上仍是锚点的后代）。
   static ExpressiveMenuAnchorState? maybeOf(BuildContext context) =>
       context.findAncestorStateOfType<ExpressiveMenuAnchorState>();
@@ -124,6 +137,22 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
 
   /// 收起途中再点触发控件会重新展开，而不是被当作“已打开”再关一次。
   void toggle() => isExpanded ? close() : open();
+
+  /// 在全局坐标 [globalPosition]（通常是右键的指针位置）打开菜单：菜单的
+  /// 起始角贴着这一点（LTR 为左上角，下方放不下时翻到上方），夹在安全区内。
+  ///
+  /// 为什么打开后要把焦点移进菜单：右键时焦点通常还在页面上（如日记页的
+  /// 键盘焦点），Esc 与方向键会先被页面处理（清除选中、移动卡片），而不是
+  /// 关菜单。[focusFirstItem] 为 true（键盘的菜单键 / Shift+F10 打开）时焦点
+  /// 直接落在第一项，回车即可执行；鼠标打开时停在菜单本身，↓ 再进入第一项。
+  /// 已打开时换到新位置会从新位置重新展开。
+  void openAt(Offset globalPosition, {bool focusFirstItem = false}) {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    _focusBeforeOpen = FocusManager.instance.primaryFocus;
+    _focusFirstItem = focusFirstItem;
+    controller.open(position: box.globalToLocal(globalPosition));
+  }
 
   @override
   void didChangeDependencies() {
@@ -159,13 +188,28 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
   void _open(Offset? position, VoidCallback showOverlay) {
     // 收起途中重新展开：沿用当前浮层与进度，不重建内容，也丢掉上次收起的回调。
     _hideOverlay = null;
-    if (!controller.isOpen) {
+    final moved = controller.isOpen && position != _openPosition;
+    _openPosition = position;
+    if (!controller.isOpen || moved) {
+      // 换到新位置：RawMenuAnchor 重新挂浮层，缩放也从头播放（从新的角）。
       showOverlay();
+      if (moved && !_reduced) _animation.value = 0;
     } else if (!interactive) {
       widget.onOpen?.call();
     }
     _addHistory();
     if (!interactive) _animation.forward();
+    if (position != null) {
+      // 浮层这一帧才建出来，焦点要等它挂进焦点树之后再移。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !controller.isOpen || !interactive) return;
+        if (_focusFirstItem) {
+          _moveFocus(forward: true);
+        } else {
+          _menuFocus.requestScopeFocus();
+        }
+      });
+    }
   }
 
   void _close(VoidCallback hideOverlay) {
@@ -173,7 +217,14 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
     _hideOverlay = hideOverlay;
     // 收起一开始就撤掉返回拦截：动画中的返回手势应当作用于页面本身。
     _removeHistory();
-    if (_menuFocus.hasFocus) widget.childFocusNode?.requestFocus();
+    if (_menuFocus.hasFocus) {
+      final returnTo = widget.childFocusNode ?? _focusBeforeOpen;
+      // 打开前的焦点可能已随页面卸载（context 为 null），那时不再交还。
+      if (returnTo != null && returnTo.context != null) {
+        returnTo.requestFocus();
+      }
+    }
+    _focusBeforeOpen = null;
     if (_animation.status == AnimationStatus.reverse) return;
     if (_reduced || _animation.value == 0) {
       _animation.value = 0;
@@ -224,7 +275,9 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
   void _moveFocus({required bool forward}) {
     final menuContext = _menuFocus.context;
     if (!interactive || menuContext == null) return;
-    if (_menuFocus.hasFocus) {
+    // 焦点停在菜单本身（[openAt] 用鼠标打开）时还没有当前项，按“首次进入”
+    // 处理：↓ 落在第一项、↑ 落在最后一项。
+    if (_menuFocus.hasFocus && !_menuFocus.hasPrimaryFocus) {
       forward ? _menuFocus.nextFocus() : _menuFocus.previousFocus();
     } else {
       final policy = FocusTraversalGroup.of(menuContext);
@@ -276,10 +329,24 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
 
   Widget _buildOverlay(BuildContext context, RawMenuOverlayInfo info) {
     final area = ExpressiveMenuArea.of(context, info);
+    // 指定位置打开时，锚点收成那一点（零尺寸、零间距）、按起始边对齐：菜单
+    // 的起始角贴着指针，缩放也从这个角开始。
+    final position = info.position;
+    final anchor = position == null
+        ? info.anchorRect
+        : Rect.fromLTWH(
+            info.anchorRect.left + position.dx,
+            info.anchorRect.top + position.dy,
+            0,
+            0,
+          );
     return ExpressiveMenuPosition(
-      anchor: info.anchorRect,
+      anchor: anchor,
       bounds: area.bounds,
-      placement: widget.placement,
+      placement: position == null
+          ? widget.placement
+          : ExpressiveMenuPlacement.start,
+      gap: position == null ? ExpressiveMenuPosition.defaultGap : 0,
       textDirection: Directionality.of(context),
       scale: _scale,
       child: TapRegion(

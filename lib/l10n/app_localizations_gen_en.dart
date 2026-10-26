@@ -557,6 +557,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appUpdatePromptLater => 'Later';
 
   @override
+  String get appUpdateActionDesktopDownload => 'Download';
+
+  @override
+  String get appUpdateDesktopHintWindows =>
+      'Downloads the installer in your browser. Run it to update in place; your diaries are kept.';
+
+  @override
+  String get appUpdateDesktopHintLinux =>
+      'Downloads a .tar.gz archive in your browser. Extract it and run install.sh to update; your diaries are kept.';
+
+  @override
+  String get appUpdateNoDesktopPackage =>
+      'This release has no package for this system. Check the download page.';
+
+  @override
+  String get appUpdateSourceAutoDescriptionDesktop =>
+      'Uses the route that answered the update check first; recommended in mainland China';
+
+  @override
+  String get appUpdateSourceSheetHintDesktop =>
+      'Mirrors are third-party public services. After downloading, you can verify the file against SHA256SUMS.txt on the release page.';
+
+  @override
   String get aboutSubmitIssue => 'Submit issue';
 
   @override
@@ -1527,6 +1550,54 @@ class AppLocalizationsEn extends AppLocalizations {
       'Gallery permission denied, cannot save';
 
   @override
+  String get desktopSaveAs => 'Save as…';
+
+  @override
+  String get desktopSaveImageDialogTitle => 'Save image';
+
+  @override
+  String get desktopSaveVideoDialogTitle => 'Save video';
+
+  @override
+  String desktopSavedTo(String path) {
+    return 'Saved to $path';
+  }
+
+  @override
+  String get diaryShareSaveImages => 'Save images…';
+
+  @override
+  String get diaryShareSaveImagesDialogTitle =>
+      'Choose a folder for the images';
+
+  @override
+  String diaryShareImagesSaved(int count, String path) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count images to $path',
+      one: 'Saved 1 image to $path',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryShareLongImageSave => 'Save as a long image…';
+
+  @override
+  String get videoOpenExternally => 'Open in system player';
+
+  @override
+  String get videoPosterHint => 'Click to open in the system player';
+
+  @override
+  String get deviceAuthUnavailable =>
+      'This device has no system verification (fingerprint, face or password), so locking isn\'t available';
+
+  @override
+  String get calendarYearSaveImage => 'Save this year as an image…';
+
+  @override
   String get imageViewerSharing => 'Preparing to share…';
 
   @override
@@ -1547,6 +1618,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageViewerMoreActions => 'More actions';
+
+  @override
+  String get imageViewerPrevious => 'Previous image';
+
+  @override
+  String get imageViewerNext => 'Next image';
 
   @override
   String get diaryToolbarInsertCurrentTime => 'Insert current time';
@@ -4505,6 +4582,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String diaryPreviewPositionSemanticsMore(int index, int count) {
     return '$index of at least $count';
+  }
+
+  @override
+  String get diaryDetailPaneEmpty => 'Pick an entry to read';
+
+  @override
+  String diaryDetailPaneCreateHint(String shortcut) {
+    return 'Press $shortcut to write a new one';
   }
 
   @override
@@ -8494,4 +8579,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorCommandTypeToFilter => 'Keep typing to filter';
+
+  @override
+  String get diaryCardMenuMoveToNotebook => 'Move to notebook…';
+
+  @override
+  String get diaryCardMenuAddToNotebook => 'Add to notebook…';
+
+  @override
+  String get diaryEditorDropToInsert => 'Drop to insert';
 }

@@ -3,6 +3,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import 'color_palette_families.dart';
 import 'color_swatch_button.dart';
+import 'desktop_horizontal_scroll.dart';
 
 /// 两级色板：上面一排横向滚动的色系方块，下面是当前色系里的具体颜色圆点。
 /// 标签弹窗与日记本编辑页共用。
@@ -51,26 +52,28 @@ class _ColorPalettePickerState extends State<ColorPalettePicker> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List<Widget>.generate(kColorPaletteFamilies.length, (
-              index,
-            ) {
-              final swatch = kColorPaletteFamilies[index].colors[2];
-              return ColorSwatchButton(
-                color: swatch,
-                selected: _familyIndex == index,
-                swatchSize: 34,
-                borderRadius: 10,
-                showCheck: false,
-                semanticLabel: l10n.colorFamilySwatchLabel(
-                  index + 1,
-                  colorSwatchHex(swatch),
-                ),
-                onTap: () => _selectFamily(index),
-              );
-            }),
+        DesktopHorizontalScroll(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List<Widget>.generate(kColorPaletteFamilies.length, (
+                index,
+              ) {
+                final swatch = kColorPaletteFamilies[index].colors[2];
+                return ColorSwatchButton(
+                  color: swatch,
+                  selected: _familyIndex == index,
+                  swatchSize: 34,
+                  borderRadius: 10,
+                  showCheck: false,
+                  semanticLabel: l10n.colorFamilySwatchLabel(
+                    index + 1,
+                    colorSwatchHex(swatch),
+                  ),
+                  onTap: () => _selectFamily(index),
+                );
+              }),
+            ),
           ),
         ),
         const SizedBox(height: 12),

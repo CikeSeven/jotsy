@@ -1524,6 +1524,15 @@ html:not(.js) .palette {
   margin-top: 32px;
 }
 
+/* 三个平台按钮在桌面宽度下排成一行：可以比 .dl-main 的 720px 略宽（在列内居中），
+   放不下视口时照常换行；手机宽度下改为竖排（见文末断点）。 */
+@media (min-width: 560px) {
+  .dl-buttons {
+    width: max-content;
+    max-width: calc(100vw - 32px);
+  }
+}
+
 .os-note {
   display: none;
   align-items: center;

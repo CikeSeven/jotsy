@@ -16,6 +16,7 @@ import '../sections/app_update_preferences_section.dart';
 import '../sections/app_update_status_section.dart';
 import '../widgets/app_update_source_sheet.dart';
 import '../widgets/external_link.dart';
+import '../../widgets/form_width.dart';
 
 /// 设置 → 关于 → 检查更新：软件更新页（只负责装配）。
 ///
@@ -23,7 +24,8 @@ import '../widgets/external_link.dart';
 ///   下载中 / 有新版本 / 待安装时沿用全局状态（离开页面后下载不中断）；
 /// - [startDownload] 来自启动提示的“立即更新”：有新版本时进入即开始下载，
 ///   已下载过则直接打开安装器；
-/// - 回到前台时交给控制器，用户在系统设置里允许“安装未知应用”后自动继续。
+/// - 回到前台时交给控制器，用户在系统设置里允许“安装未知应用”后自动继续；
+/// - 桌面（Windows / Linux）只检查，“前往下载”在浏览器里打开本平台安装包。
 class AppUpdatePage extends ConsumerStatefulWidget {
   const AppUpdatePage({super.key, this.startDownload = false});
 
@@ -126,12 +128,16 @@ class _AppUpdatePageState extends ConsumerState<AppUpdatePage>
     );
   }
 
+  Future<void> _openDesktopDownload() =>
+      openExternalLink(context, _controller.desktopDownloadUri().toString());
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = ref.watch(appUpdateControllerProvider);
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(l10n.appUpdateTitle),
         leading: IconButton(
           tooltip: l10n.commonBack,
@@ -139,29 +145,39 @@ class _AppUpdatePageState extends ConsumerState<AppUpdatePage>
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-        children: <Widget>[
-          AppUpdateStatusSection(state: state),
-          AppUpdateNotesSection(state: state),
-          AppUpdatePreferencesSection(
-            preferences: state.preferences,
-            onAutoCheckChanged: (value) =>
-                unawaited(_controller.setAutoCheck(value)),
-            onPickSource: _pickSource,
-          ),
-        ],
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final side = FormWidth.extra(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
+            children: <Widget>[
+              AppUpdateStatusSection(state: state),
+              AppUpdateNotesSection(state: state),
+              AppUpdatePreferencesSection(
+                preferences: state.preferences,
+                onAutoCheckChanged: (value) =>
+                    unawaited(_controller.setAutoCheck(value)),
+                onPickSource: _pickSource,
+              ),
+            ],
+          );
+        },
       ),
-      bottomNavigationBar: AppUpdateActionBar(
-        state: state,
-        onCheck: () =>
-            unawaited(_controller.retry(languageCode: _languageCode)),
-        onDownload: () => unawaited(_controller.download()),
-        onCancelDownload: _controller.cancelDownload,
-        onInstall: () => unawaited(_controller.install()),
-        onGrantInstallPermission: _grantInstallPermission,
-        onOpenReleasePage: _openReleasePage,
-        onSkip: () => unawaited(_controller.skipCurrentVersion()),
+      // 宽窗口：操作按钮与内容列对齐（栏自带左右 16）。
+      bottomNavigationBar: FormWidthBar(
+        sideInset: 16,
+        child: AppUpdateActionBar(
+          state: state,
+          onCheck: () =>
+              unawaited(_controller.retry(languageCode: _languageCode)),
+          onDownload: () => unawaited(_controller.download()),
+          onCancelDownload: _controller.cancelDownload,
+          onInstall: () => unawaited(_controller.install()),
+          onGrantInstallPermission: _grantInstallPermission,
+          onOpenReleasePage: _openReleasePage,
+          onOpenDesktopDownload: _openDesktopDownload,
+          onSkip: () => unawaited(_controller.skipCurrentVersion()),
+        ),
       ),
     );
   }

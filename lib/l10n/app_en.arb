@@ -727,6 +727,30 @@
   "@appUpdatePromptLater": {
     "description": "启动提示：关闭，下次再提示。"
   },
+  "appUpdateActionDesktopDownload": "Download",
+  "@appUpdateActionDesktopDownload": {
+    "description": "桌面版：在浏览器中打开新版本安装包的下载地址（更新页与启动提示的主按钮）。"
+  },
+  "appUpdateDesktopHintWindows": "Downloads the installer in your browser. Run it to update in place; your diaries are kept.",
+  "@appUpdateDesktopHintWindows": {
+    "description": "Windows 版发现新版本时的说明。"
+  },
+  "appUpdateDesktopHintLinux": "Downloads a .tar.gz archive in your browser. Extract it and run install.sh to update; your diaries are kept.",
+  "@appUpdateDesktopHintLinux": {
+    "description": "Linux 版发现新版本时的说明。"
+  },
+  "appUpdateNoDesktopPackage": "This release has no package for this system. Check the download page.",
+  "@appUpdateNoDesktopPackage": {
+    "description": "桌面版：新版本里没有本平台的安装包（如桌面版之前的版本）。"
+  },
+  "appUpdateSourceAutoDescriptionDesktop": "Uses the route that answered the update check first; recommended in mainland China",
+  "@appUpdateSourceAutoDescriptionDesktop": {
+    "description": "桌面版下载线路面板里“自动选择”的说明（桌面在浏览器中下载，不测速）。"
+  },
+  "appUpdateSourceSheetHintDesktop": "Mirrors are third-party public services. After downloading, you can verify the file against SHA256SUMS.txt on the release page.",
+  "@appUpdateSourceSheetHintDesktop": {
+    "description": "桌面版下载线路面板的说明（安装包在浏览器中下载，应用不校验）。"
+  },
   "aboutSubmitIssue": "Submit issue",
   "@aboutSubmitIssue": {
     "description": "Action title to open issue feedback page."
@@ -2097,6 +2121,30 @@
   "@imageViewerGalleryPermissionDenied": {
     "description": "Hint shown when gallery write permission is denied."
   },
+  "desktopSaveAs": "Save as…",
+  "@desktopSaveAs": {"description": "Desktop replacement for “Save to gallery” in the image viewer sheet, the in-text image menu and the support QR code button; opens a save dialog."},
+  "desktopSaveImageDialogTitle": "Save image",
+  "@desktopSaveImageDialogTitle": {"description": "Title of the desktop save dialog for images (viewer, in-text images, QR codes, long images, year image)."},
+  "desktopSaveVideoDialogTitle": "Save video",
+  "@desktopSaveVideoDialogTitle": {"description": "Title of the desktop save dialog when exporting a diary video."},
+  "desktopSavedTo": "Saved to {path}",
+  "@desktopSavedTo": {"description": "Shown after a file was saved through the desktop save dialog; path is the full saved path.", "placeholders": {"path": {"type": "String"}}},
+  "diaryShareSaveImages": "Save images…",
+  "@diaryShareSaveImages": {"description": "Share sheet button on platforms without a system share sheet (Linux): saves the selected images to a folder."},
+  "diaryShareSaveImagesDialogTitle": "Choose a folder for the images",
+  "@diaryShareSaveImagesDialogTitle": {"description": "Title of the folder picker when saving several images from the share sheet."},
+  "diaryShareImagesSaved": "{count, plural, =1{Saved 1 image to {path}} other{Saved {count} images to {path}}}",
+  "@diaryShareImagesSaved": {"description": "Shown after the share sheet saved several images; count is the number of images, path the folder.", "placeholders": {"count": {"type": "int"}, "path": {"type": "String"}}},
+  "diaryShareLongImageSave": "Save as a long image…",
+  "@diaryShareLongImageSave": {"description": "Desktop name of the long-image entry in the share sheet: renders the long image, then opens a save dialog."},
+  "videoOpenExternally": "Open in system player",
+  "@videoOpenExternally": {"description": "Platforms that cannot play videos inline (Linux, Windows): tooltip of the video card."},
+  "videoPosterHint": "Click to open in the system player",
+  "@videoPosterHint": {"description": "Platforms that cannot play videos inline: caption under the video poster card."},
+  "deviceAuthUnavailable": "This device has no system verification (fingerprint, face or password), so locking isn't available",
+  "@deviceAuthUnavailable": {"description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."},
+  "calendarYearSaveImage": "Save this year as an image…",
+  "@calendarYearSaveImage": {"description": "Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image."},
   "imageViewerSharing": "Preparing to share…",
   "@imageViewerSharing": {
     "description": "Loading hint while preparing to share an image."
@@ -2125,6 +2173,14 @@
   "imageViewerMoreActions": "More actions",
   "@imageViewerMoreActions": {
     "description": "Tooltip of the image viewer top-bar more button, also the screen reader long-press hint on an image: opens the share / save actions sheet."
+  },
+  "imageViewerPrevious": "Previous image",
+  "@imageViewerPrevious": {
+    "description": "Image viewer (desktop): tooltip of the hover button on the left that shows the previous image."
+  },
+  "imageViewerNext": "Next image",
+  "@imageViewerNext": {
+    "description": "Image viewer (desktop): tooltip of the hover button on the right that shows the next image."
   },
   "diaryToolbarInsertCurrentTime": "Insert current time",
   "@diaryToolbarInsertCurrentTime": {
@@ -5797,6 +5853,19 @@
       },
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "diaryDetailPaneEmpty": "Pick an entry to read",
+  "@diaryDetailPaneEmpty": {
+    "description": "Wide-window diaries page, detail pane: hint while no entry is selected."
+  },
+  "diaryDetailPaneCreateHint": "Press {shortcut} to write a new one",
+  "@diaryDetailPaneCreateHint": {
+    "description": "Wide-window diaries page, detail pane (desktop): second line with the new-entry shortcut; shortcut is Ctrl+N or ⌘N.",
+    "placeholders": {
+      "shortcut": {
+        "type": "String"
       }
     }
   },
@@ -10908,5 +10977,11 @@
   "diaryEditorEmptyLineHint": "Type / to insert a block",
   "@diaryEditorEmptyLineHint": {"description": "Placeholder on the empty body line holding the caret, hinting at the slash command menu."},
   "diaryEditorCommandTypeToFilter": "Keep typing to filter",
-  "@diaryEditorCommandTypeToFilter": {"description": "Footer of the slash command menu: typing after the slash filters the commands."}
+  "@diaryEditorCommandTypeToFilter": {"description": "Footer of the slash command menu: typing after the slash filters the commands."},
+  "diaryCardMenuMoveToNotebook": "Move to notebook…",
+  "@diaryCardMenuMoveToNotebook": {"description": "Desktop diary card context menu item (inside a regular notebook): move this diary to another notebook."},
+  "diaryCardMenuAddToNotebook": "Add to notebook…",
+  "@diaryCardMenuAddToNotebook": {"description": "Desktop diary card context menu item (all diaries, search and archive): open the notebook picker for this diary."},
+  "diaryEditorDropToInsert": "Drop to insert",
+  "@diaryEditorDropToInsert": {"description": "Desktop: label in the middle of the highlight while files are dragged over the editor body; releasing inserts them."}
 }

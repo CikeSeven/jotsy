@@ -5,11 +5,15 @@ import '../../diaries/controllers/diary_editor_insert.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../diaries/models/diary_saved_colors.dart';
 import '../../diaries/providers/diary_saved_colors_provider.dart';
 import '../../diaries/providers/diary_typography_provider.dart';
+import '../../diaries/viewmodels/diary_text_appearance.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../../diaries/widgets/diary_mobile_toolbar.dart';
 import '../controllers/diary_template_editor_controller.dart';
@@ -20,7 +24,8 @@ import '../widgets/diary_template_variable_bar.dart';
 /// 正文是独立的 AppFlowy 编辑器（自带滚动），不走日记编辑页的光标跟随机制；
 /// 键盘弹起且正文有焦点时（打开“始终显示工具栏”后一直），底部显示与日记
 /// 编辑页同一套悬浮工具栏，但去掉图片、视频、附件、录音与插入时间——模板
-/// 里不能有媒体，时间应当用变量。
+/// 里不能有媒体，时间应当用变量。桌面上没有软键盘，工具栏一直显示。宽窗口里
+/// 标题、变量条与正文收成与日记编辑页同宽（最宽 760）的一列居中，工具栏同宽。
 ///
 /// 变量插到最后一个获得焦点的输入框（标题或正文）的光标处；变量面板会抢走
 /// 焦点，插入后把焦点还回去。
@@ -123,7 +128,6 @@ class _DiaryTemplateEditorContentTabState
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final theme = Theme.of(context);
     final appearance = ref.watch(diaryTextAppearanceProvider);
     final titleStyle = appearance.titleStyle(theme.textTheme.headlineSmall);
@@ -132,20 +136,55 @@ class _DiaryTemplateEditorContentTabState
     // 焦点在工具栏内（颜色代码输入框）时不看键盘：交接焦点时输入法可能先收起
     // 再弹出，键盘短暂消失也不能卸载工具栏（与日记编辑页同一口径）。打开
     // “始终显示工具栏”后不看键盘与焦点，接实体键盘时也能排版。
-    final alwaysVisible = settings?.isDiaryToolbarAlwaysVisible ?? false;
+    final alwaysVisible =
+        AppPlatform.isDesktop ||
+        (settings?.isDiaryToolbarAlwaysVisible ?? false);
     final showToolbar =
         (alwaysVisible ||
             (widget.keyboardVisible && _bodyFocus.hasFocus) ||
             _toolbarFocus.hasFocus) &&
         order.isNotEmpty;
+    final savedColors = ref.watch(diarySavedColorsProvider);
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        // 正文列每侧的留白；手机上就是原来的 16。
+        final gutter = AppContentWidth.gutter(
+          constraints.maxWidth,
+          AppContentWidth.editor,
+          minGutter: AppSpacing.l,
+        );
+        return _buildColumn(
+          context,
+          gutter: gutter,
+          appearance: appearance,
+          savedColors: savedColors,
+          titleStyle: titleStyle,
+          order: order,
+          showToolbar: showToolbar,
+        );
+      },
+    );
+  }
+
+  Widget _buildColumn(
+    BuildContext context, {
+    required double gutter,
+    required DiaryTextAppearance appearance,
+    required DiarySavedColors savedColors,
+    required TextStyle? titleStyle,
+    required List<DiaryToolbarItem> order,
+    required bool showToolbar,
+  }) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.l,
+          padding: EdgeInsets.fromLTRB(
+            gutter,
             AppSpacing.m,
-            AppSpacing.l,
+            gutter,
             AppSpacing.s,
           ),
           child: TextField(
@@ -183,7 +222,11 @@ class _DiaryTemplateEditorContentTabState
             ),
           ),
         ),
-        DiaryTemplateVariableBar(onInsert: _insert),
+        // 变量条自带 16 的左右边距，宽窗口里只补多出来的留白。
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: gutter - AppSpacing.l),
+          child: DiaryTemplateVariableBar(onInsert: _insert),
+        ),
         Expanded(
           // 边距交给编辑器本身：段落把手画在页面左边距里，边距包在外面
           // 时把手只能压在文字上。
@@ -192,7 +235,7 @@ class _DiaryTemplateEditorContentTabState
             appearance: appearance,
             focusNode: _bodyFocus,
             placeholder: l10n.diaryTemplateEditorBodyHint,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            padding: EdgeInsets.symmetric(horizontal: gutter),
             header: const SizedBox(height: 12),
             footer: const SizedBox(height: 24),
           ),
@@ -205,17 +248,20 @@ class _DiaryTemplateEditorContentTabState
               kDiaryFloatingToolbarInset,
               AppSpacing.s,
             ),
-            child: DiaryFloatingToolbarSurface(
-              child: Focus(
-                focusNode: _toolbarFocus,
-                child: DiaryFloatingToolbar(
-                  controller: widget.controller.body,
-                  order: order,
-                  maxPanelExtent: MediaQuery.sizeOf(context).height / 3,
-                  savedColors: ref.watch(diarySavedColorsProvider),
-                  onEditSavedColors: ref
-                      .read(diarySavedColorsProvider.notifier)
-                      .edit,
+            child: CenteredContent(
+              maxWidth: AppContentWidth.editor,
+              child: DiaryFloatingToolbarSurface(
+                child: Focus(
+                  focusNode: _toolbarFocus,
+                  child: DiaryFloatingToolbar(
+                    controller: widget.controller.body,
+                    order: order,
+                    maxPanelExtent: MediaQuery.sizeOf(context).height / 3,
+                    savedColors: savedColors,
+                    onEditSavedColors: ref
+                        .read(diarySavedColorsProvider.notifier)
+                        .edit,
+                  ),
                 ),
               ),
             ),

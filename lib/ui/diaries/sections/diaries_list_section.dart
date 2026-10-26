@@ -3,11 +3,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/settings_service.dart';
+import '../controllers/diary_pointer_selection.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../viewmodels/diary_card_resolved_style.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_card/diary_card.dart';
+import '../widgets/diary_card/diary_card_context_menu.dart';
+import '../widgets/diary_card/diary_card_reading_ring.dart';
 import '../widgets/diary_swipe_action_item.dart';
 import '../widgets/diary_waterfall_sliver.dart';
 import 'diary_head_section.dart';
@@ -17,6 +21,9 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/list_item_presence.dart';
 
 export '../widgets/diary_card/diary_card.dart' show DiaryOpenCallback;
+export '../widgets/diary_card/diary_card_context_menu.dart'
+    show DiaryCardMenuActions;
+export '../controllers/diary_pointer_selection.dart' show DiarySelectionAnchor;
 
 /// 日记页主列表区块。
 ///
@@ -52,6 +59,13 @@ class DiariesListSection extends StatelessWidget {
     this.enableCoverHero = true,
     this.opensLockedCapsulePage = true,
     this.sectionHeaderBuilder,
+    this.availableWidth,
+    this.minWaterfallColumns = 0,
+    this.readingRing = false,
+    this.readingDiaryId,
+    this.readingCardLocator,
+    this.menuActions,
+    this.selectionAnchor,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -106,6 +120,34 @@ class DiariesListSection extends StatelessWidget {
   /// 其他列表（归档、搜索、全部日记）不受影响。
   final Widget? Function(BuildContext context, int index)? sectionHeaderBuilder;
 
+  /// 本区块实际可用的宽度（含卡片左右边距），卡片样式按它解析。由调用方在
+  /// 滚动视图之外量好传入（`LayoutBuilder`），不在这里用 `SliverLayoutBuilder`：
+  /// 后者的约束含滚动偏移，每个滚动帧都会重跑。null 时取屏宽，适用于铺满
+  /// 整个窗口宽度的列表。
+  final double? availableWidth;
+
+  /// 瀑布流至少的列数（宽窗口按宽度加列）；0 表示只用卡片样式里的列数。
+  final int minWaterfallColumns;
+
+  /// 卡片是否带“正在阅读”环（宽窗口日记页双栏时）；为 false 时卡片结构
+  /// 与改版前一致。
+  final bool readingRing;
+
+  /// 正在右栏阅读的日记 id：这张卡片显示阅读环（与多选的勾选互不影响）。
+  final String? readingDiaryId;
+
+  /// 正在阅读的卡片把位置记在这里，页面据此把它滚进视口。
+  final DiaryReadingCardLocator? readingCardLocator;
+
+  /// 桌面上卡片右键菜单的动作（见 [DiaryCardContextMenu]）；null 时不提供
+  /// 右键菜单（日历、设置页预览）。手机上忽略。
+  final DiaryCardMenuActions? menuActions;
+
+  /// 桌面上 Ctrl / ⌘ + 点按切换勾选、Shift + 点按选范围（见
+  /// [handleDiaryModifierTap]）的范围起点；null 时不支持修饰键多选（搜索、
+  /// 日历这类没有多选的列表）。手机上忽略。
+  final DiarySelectionAnchor? selectionAnchor;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -136,15 +178,16 @@ class DiariesListSection extends StatelessWidget {
     }
 
     final isWaterfall = layoutMode == DiaryLayoutMode.waterfall;
-    // 屏宽取 MediaQuery 而不是 SliverLayoutBuilder：后者的约束含滚动偏移，
-    // 每个滚动帧都会重跑。四个调用方都是全宽页面，屏宽即可用宽度。
+    // 可用宽度由调用方量好传入（见 [availableWidth]）；没给时按铺满窗口
+    // 处理，取屏宽。
     final resolved = DiaryCardResolvedStyle.resolve(
       style: cardStyle,
       mode: isWaterfall ? DiaryCardMode.waterfall : DiaryCardMode.list,
       theme: Theme.of(context),
-      screenWidth: MediaQuery.sizeOf(context).width,
+      screenWidth: availableWidth ?? MediaQuery.sizeOf(context).width,
       textScale: MediaQuery.textScalerOf(context).scale(1),
       moodOptions: moodOptions,
+      minColumns: isWaterfall ? minWaterfallColumns : 0,
     );
     final modeStyle = resolved.modeStyle;
 
@@ -203,17 +246,53 @@ class DiariesListSection extends StatelessWidget {
     required DiaryCardResolvedStyle resolved,
   }) {
     final diaryId = diary.diary.diaryId;
-    final card = DiaryCard(
+    final anchor = AppPlatform.isDesktop ? selectionAnchor : null;
+    Widget card = DiaryCard(
       diary: diary,
       resolved: resolved,
       selected: selectedDiaryIds.contains(diaryId),
       isSelectionMode: isSelectionMode,
       maxVisibleTags: maxVisibleTags,
       onOpenEditor: onOpenEditor,
-      onToggleSelection: onToggleSelection,
+      // 长按勾选同样记作范围起点。
+      onToggleSelection: anchor == null
+          ? onToggleSelection
+          : (String id, bool force) {
+              anchor.id = id;
+              onToggleSelection(id, force);
+            },
       enableCoverHero: enableCoverHero,
       opensLockedCapsulePage: opensLockedCapsulePage,
+      onTapIntercept: anchor == null
+          ? null
+          : (DiaryWithTags tapped) => handleDiaryModifierTap(
+              order: <String>[for (final item in diaries) item.diary.diaryId],
+              diaryId: tapped.diary.diaryId,
+              anchor: anchor,
+              toggle: onToggleSelection,
+            ),
     );
+    // 双栏时每张卡都包一层阅读环（结构恒定，换选时卡片不重建），环随卡片
+    // 一起左滑；单栏时不包。
+    if (readingRing) {
+      card = DiaryCardReadingRing(
+        diaryId: diaryId,
+        active: diaryId == readingDiaryId,
+        radius: resolved.cornerRadius,
+        locator: readingCardLocator,
+        child: card,
+      );
+    }
+    // 桌面右键菜单包在最外层（含阅读环）；多选模式下不响应，结构不变。
+    final actions = menuActions;
+    if (actions != null && AppPlatform.isDesktop) {
+      card = DiaryCardContextMenu(
+        diary: diary,
+        actions: actions,
+        enabled: !isSelectionMode,
+        child: card,
+      );
+    }
     final animatedBaseItem = _buildAnimatedDiaryItem(
       context,
       diaryId: diaryId,
@@ -222,7 +301,8 @@ class DiariesListSection extends StatelessWidget {
 
     // 普通列表始终保留 Dismissible 根节点，避免进入选择模式时重建子树，
     // 从而让首次长按也能完整播放选中反馈；选择模式仅关闭滑动方向。
-    if (!resolved.compact && onArchiveDiary != null) {
+    // 桌面上不提供左滑：鼠标拖动卡片会误触发归档，右键菜单已提供同样的操作。
+    if (!resolved.compact && onArchiveDiary != null && !AppPlatform.isDesktop) {
       final colorScheme = Theme.of(context).colorScheme;
       return DiarySwipeActionItem(
         diaryId: diaryId,

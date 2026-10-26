@@ -72,4 +72,45 @@ void main() {
     expect(prefs.getBool('app.settings.diary_toolbar_always_visible'), isFalse);
     await h.unmount();
   });
+
+  testWidgets(
+    'desktop hides the always-show toolbar switch because it is always on',
+    (tester) async {
+      final h = await DiaryDraftsHarness.create(tester);
+      await h.pump(
+        Scaffold(
+          body: ListView(
+            children: <Widget>[
+              SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(h.l10n.settingsToolbarAlwaysVisible), findsNothing);
+      // Linux 不支持录音：工具栏预览里也没有它。
+      expect(find.textContaining(h.l10n.diaryToolbarRecording), findsNothing);
+      expect(find.text(h.l10n.diaryTemplatesTitle), findsOneWidget);
+      await h.unmount();
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets('the toolbar preview keeps recording where it is supported', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(
+      Scaffold(
+        body: ListView(
+          children: <Widget>[
+            SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining(h.l10n.diaryToolbarRecording), findsOneWidget);
+    await h.unmount();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 }

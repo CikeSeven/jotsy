@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/services/app_platform.dart';
 import '../../../../core/services/diary_media_storage_service.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
@@ -304,7 +305,24 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               return KeyEventResult.handled;
             },
           ),
-        ...af.standardCommandShortcutEvents,
+        // 桌面上 Esc 交给页面（与返回按钮相同，见各编辑页）：上游的
+        // “退出编辑”会吞掉 Esc、只清掉选区；斜杠菜单开着时先收起菜单。手机
+        // 保持上游行为。
+        if (AppPlatform.isDesktop)
+          af.CommandShortcutEvent(
+            key: 'diary_escape',
+            getDescription: () => 'escape',
+            command: 'escape',
+            handler: (_) {
+              if (!_slashMenu.isOpen) return KeyEventResult.ignored;
+              _slashMenu.close();
+              return KeyEventResult.handled;
+            },
+          ),
+        for (final event in af.standardCommandShortcutEvents)
+          if (!AppPlatform.isDesktop ||
+              !identical(event, af.exitEditingCommand))
+            event,
       ],
       contentInsertionConfiguration: ContentInsertionConfiguration(
         allowedMimeTypes: const [

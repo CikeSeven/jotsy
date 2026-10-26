@@ -216,6 +216,7 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
       behavior: behavior,
       locked: _busy.isNotEmpty,
       cacheNeighbors: _entered,
+      desktopControls: true,
       onPageChanged: _handlePageChanged,
       itemBuilder: (BuildContext context, DiaryPagerPosition position) {
         final id = _ids[position.index];

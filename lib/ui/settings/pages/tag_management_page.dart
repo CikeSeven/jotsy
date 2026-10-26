@@ -18,6 +18,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/list_item_presence.dart';
 import '../widgets/tag_management_tile.dart';
+import '../../widgets/form_width.dart';
 
 /// 标签管理页：
 /// 1. 标签排序（拖拽）；
@@ -203,36 +204,41 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       context,
       ExpressiveMotion.medium,
     );
-    return ReorderableListView.builder(
+    return LayoutBuilder(
       key: const ValueKey<String>('tags_list'),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      buildDefaultDragHandles: false,
-      proxyDecorator: expressiveReorderProxyDecorator,
-      itemCount: displayTags.length,
-      // 拿起条目即生效的瞬间给一次触觉：拖拽手柄是立即拖动，不经过长按，系统
-      // 不会自动反馈。
-      onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
-      onReorderItem: (oldIndex, newIndex) {
-        _reorderTags(displayTags, oldIndex, newIndex);
-      },
-      itemBuilder: (BuildContext context, int index) {
-        final tag = displayTags[index];
-        final removing = _pendingRemovalTagIds.contains(tag.id);
-        // 可排序列表要求每项最外层带稳定 key；进出场容器结构恒定，删除收起、
-        // 新建展开都不会重新挂载整行。
-        return ListItemPresence(
-          key: ValueKey<int>(tag.id),
-          visible: !removing,
-          appearing: _appearingTagIds.contains(tag.id),
-          duration: itemDuration,
-          child: TagManagementTile(
-            tag: tag,
-            index: index,
-            deleteTooltip: l10n.autoT0038,
-            dragEnabled: !removing,
-            onEdit: () => _editTag(tag),
-            onDelete: () => _deleteTag(tag),
-          ),
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.extra(constraints.maxWidth);
+        return ReorderableListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: side, vertical: 12),
+          buildDefaultDragHandles: false,
+          proxyDecorator: expressiveReorderProxyDecorator,
+          itemCount: displayTags.length,
+          // 拿起条目即生效的瞬间给一次触觉：拖拽手柄是立即拖动，不经过长按，系统
+          // 不会自动反馈。
+          onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
+          onReorderItem: (oldIndex, newIndex) {
+            _reorderTags(displayTags, oldIndex, newIndex);
+          },
+          itemBuilder: (BuildContext context, int index) {
+            final tag = displayTags[index];
+            final removing = _pendingRemovalTagIds.contains(tag.id);
+            // 可排序列表要求每项最外层带稳定 key；进出场容器结构恒定，删除收起、
+            // 新建展开都不会重新挂载整行。
+            return ListItemPresence(
+              key: ValueKey<int>(tag.id),
+              visible: !removing,
+              appearing: _appearingTagIds.contains(tag.id),
+              duration: itemDuration,
+              child: TagManagementTile(
+                tag: tag,
+                index: index,
+                deleteTooltip: l10n.autoT0038,
+                dragEnabled: !removing,
+                onEdit: () => _editTag(tag),
+                onDelete: () => _deleteTag(tag),
+              ),
+            );
+          },
         );
       },
     );
@@ -355,6 +361,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
 
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -437,12 +444,17 @@ class _TagFilterMemorySwitch extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: settings.tagFilterMemoryEnabledNotifier,
       builder: (BuildContext context, bool enabled, Widget? child) {
-        return SwitchListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          value: enabled,
-          title: Text(l10n.settingsTagMemory),
-          subtitle: Text(l10n.settingsTagMemorySubtitle),
-          onChanged: onChanged,
+        return LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) =>
+              SwitchListTile(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: FormWidth.gutter(constraints.maxWidth),
+                ),
+                value: enabled,
+                title: Text(l10n.settingsTagMemory),
+                subtitle: Text(l10n.settingsTagMemorySubtitle),
+                onChanged: onChanged,
+              ),
         );
       },
     );

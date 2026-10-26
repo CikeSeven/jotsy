@@ -217,4 +217,42 @@ void main() {
     expect(result()!.action, DiaryShareAction.longImage);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'Linux offers copy text and save images instead of the system share',
+    (tester) async {
+      final result = await _openSheet(tester, content: _content());
+
+      expect(find.bySemanticsLabel('更多应用'), findsNothing);
+      expect(find.bySemanticsLabel('复制文字'), findsOneWidget);
+      // 带图时“文字已复制”的说明只对分享成立，保存图片不动剪贴板。
+      expect(find.textContaining('剪贴板'), findsNothing);
+
+      await tester.tap(find.bySemanticsLabel('保存图片…'));
+      await tester.pumpAndSettle();
+      final request = result()!;
+      expect(request.action, DiaryShareAction.saveImages);
+      expect(request.images, <String>['/missing/0.jpg', '/missing/1.jpg']);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets('Linux disables saving images when none are selected', (
+    tester,
+  ) async {
+    await _openSheet(tester, content: _content(imageCount: 0));
+    final save = tester.widget<DiaryShareTargetButton>(
+      find.widgetWithText(DiaryShareTargetButton, '保存图片…'),
+    );
+    expect(save.onTap, isNull);
+    // 桌面的长图生成后保存到文件。
+    expect(find.text('保存为长图…', skipOffstage: false), findsOneWidget);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('Windows keeps the system share target', (tester) async {
+    await _openSheet(tester, content: _content());
+    expect(find.bySemanticsLabel('更多应用'), findsOneWidget);
+    expect(find.bySemanticsLabel('保存图片…'), findsNothing);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 }

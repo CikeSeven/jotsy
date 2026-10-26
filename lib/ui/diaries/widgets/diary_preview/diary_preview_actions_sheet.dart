@@ -9,10 +9,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../../anniversaries/models/anniversary_draft.dart';
 import '../../../diary_templates/controllers/diary_template_save_as.dart';
-import '../../../home/widgets/home_hint_visibility_scope.dart';
-import '../../../notebooks/controllers/notebook_membership_ops.dart';
-import '../../../notebooks/providers/notebook_providers.dart';
-import '../../../notebooks/sections/notebook_picker_sheet.dart';
+import '../../../notebooks/controllers/diary_notebook_pick_flow.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../settings/pages/diary_preview_style_page.dart';
 import '../../../settings/providers/app_features_provider.dart';
@@ -53,7 +50,8 @@ Future<void> showDiaryPreviewMore(
         ? l10n.notebookPreviewNone
         : notebooks.map((n) => n.name).join(l10n.notebookListSeparator),
     onAddToNotebook: notebooksEnabled
-        ? () => _addToNotebooks(context, ref, diaryId: detail.diary.diaryId)
+        ? () =>
+              pickNotebooksForDiary(context, ref, diaryId: detail.diary.diaryId)
         : null,
     onSetAsAnniversary: features.anniversariesEnabled
         ? () => openAnniversaryEditor(
@@ -86,48 +84,6 @@ Future<void> showDiaryPreviewMore(
               ),
             ),
           ),
-  );
-}
-
-/// 预览页“收进日记本”：选择器的初始勾选为这篇现在所在的本子，确认后一次
-/// 写入全部变化并提示（收进私密日记本时说明它只在那本里显示）。
-Future<void> _addToNotebooks(
-  BuildContext context,
-  WidgetRef ref, {
-  required String diaryId,
-}) async {
-  final database = ref.read(appDatabaseProvider);
-  final current = await database.getDiaryNotebookIds(diaryId);
-  if (!context.mounted) return;
-  final result = await showNotebookPickerSheet(
-    context,
-    initial: <String, NotebookPickState>{
-      for (final id in current) id: NotebookPickState.all,
-    },
-  );
-  if (result == null || !context.mounted) return;
-  final l10n = context.l10n;
-  final notebooks = ref.read(notebooksProvider).value ?? const <NotebookView>[];
-  String message;
-  try {
-    await NotebookMembershipOps(database).apply(result, <String>[diaryId]);
-    ref.invalidate(diaryNotebooksProvider(diaryId));
-    message =
-        notebookPrivateAddedHint(l10n, result.add, notebooks) ??
-        (result.remove.isEmpty
-            ? l10n.notebookAddedToCount(result.add.length)
-            : l10n.notebookMembershipUpdated);
-  } catch (error) {
-    debugPrint('Updating diary notebooks failed: $error');
-    message = l10n.notebookActionFailed;
-  }
-  if (!context.mounted) return;
-  await HomeHintVisibilityScope.showTrackedSnackBar(
-    context: context,
-    snackBar: SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 2),
-    ),
   );
 }
 

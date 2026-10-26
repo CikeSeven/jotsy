@@ -1,5 +1,6 @@
 import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
@@ -229,4 +230,36 @@ void main() {
     expect(find.byType(DiaryFloatingToolbar), findsOneWidget);
     await h.unmount();
   });
+
+  testWidgets(
+    'on desktop the body column and toolbar are centred and escape asks first',
+    (tester) async {
+      final h = await openEditor(tester);
+      // 宽窗口（harness 默认 400 宽，这里放大）。
+      tester.view.physicalSize = const Size(1280, 900);
+      await tester.pumpAndSettle();
+      // 桌面没有软键盘：不点正文、不开设置，工具栏也在，且与正文列同宽居中。
+      final bar = tester.getRect(find.byType(DiaryFloatingToolbar));
+      expect(bar.width, closeTo(760, 0.5));
+      expect(bar.center.dx, closeTo(640, 0.5));
+      final title = tester.getRect(find.byType(TextField).first);
+      expect(title.left, closeTo(260, 0.5));
+      expect(
+        tester.widget<DiaryEditor>(find.byType(DiaryEditor)).padding,
+        const EdgeInsets.symmetric(horizontal: 260),
+      );
+
+      // Esc 与返回按钮相同：有改动时先确认。
+      await tester.enterText(find.byType(TextField).first, '没保存的标题');
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await tester.tap(find.text(h.l10n.commonCancel));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryTemplateEditorPage), findsOneWidget);
+      await h.unmount();
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
 }

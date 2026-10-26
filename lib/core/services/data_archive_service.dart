@@ -17,6 +17,7 @@ import 'backup_settings.dart';
 import 'diary_media_references.dart';
 import 'journal_import_models.dart';
 import 'settings_service.dart';
+import 'app_data_directory.dart';
 
 /// 数据归档编排：导出完整 ZIP 或单篇日记包；导入前只读预检，再按所选方式
 /// 合并（[BackupMerge]）或先校验再覆盖恢复媒体、数据库与设置。
@@ -63,7 +64,7 @@ class DataArchiveService {
         const JsonEncoder.withIndent('  ').convert(payload),
         flush: true,
       );
-      final documents = await getApplicationDocumentsDirectory();
+      final documents = await appDataRootDirectory();
       for (final name in backupMediaDirectories) {
         final source = Directory(p.join(documents.path, name));
         if (await source.exists()) {
@@ -128,7 +129,7 @@ class DataArchiveService {
         for (final notebook in captured.notebooks) notebook.payload,
       ]);
       await BackupArchiveIO.copyMediaFiles(
-        await getApplicationDocumentsDirectory(),
+        await appDataRootDirectory(),
         working,
         references.keys,
       );
@@ -278,7 +279,7 @@ class DataArchiveService {
     if (!await File(zipPath).exists()) {
       throw const FileSystemException('备份文件不存在');
     }
-    final documents = await getApplicationDocumentsDirectory();
+    final documents = await appDataRootDirectory();
     await documents.create(recursive: true);
     // 位于相同文件系统，换入/回滚大媒体仅需 rename，避免额外复制或空间不足。
     final working = await documents.createTemp('.backup_import_');

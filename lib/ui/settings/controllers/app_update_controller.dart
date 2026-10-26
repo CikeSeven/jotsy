@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../../core/services/settings_service.dart';
@@ -35,6 +36,9 @@ final appUpdateControllerProvider =
 ///   SHA-256 与签名，通过即拉起系统安装器；
 /// - 安装：Android 8+ 未允许“安装未知应用”时停在待授权，用户从系统设置
 ///   返回（[handleAppResumed]）后自动继续，不需要再点一次。
+/// - 桌面（Windows / Linux，[AppUpdateState.desktopTarget]）：检查同上，有新
+///   版本时只挑出本平台的安装包（[AppUpdateRelease.desktopAssetFor]），不下载、
+///   不安装；界面经 [desktopDownloadUri] 在浏览器里打开它的下载地址。
 /// 所有异步回调写状态前检查 `ref.mounted`。同一时间只允许一个检查或下载，
 /// 忙碌时的重复调用直接忽略。
 class AppUpdateController extends Notifier<AppUpdateState> {
@@ -54,11 +58,32 @@ class AppUpdateController extends Notifier<AppUpdateState> {
       _checkToken?.cancel();
       _downloadToken?.cancel();
     });
+    final supportsInAppInstall = ref
+        .read(appUpdateServiceProvider)
+        .supportsInAppInstall;
     return AppUpdateState(
-      supportsInAppInstall: ref
-          .read(appUpdateServiceProvider)
-          .supportsInAppInstall,
+      supportsInAppInstall: supportsInAppInstall,
+      desktopTarget: supportsInAppInstall ? null : _desktopTargetOf(),
     );
+  }
+
+  /// 按目标平台（`AppPlatform`，测试可经 `debugDefaultTargetPlatformOverride`
+  /// 切换）推出桌面平台；macOS 等没有发布安装包的平台为 null。
+  static AppUpdateDesktopTarget? _desktopTargetOf() => AppPlatform.isWindows
+      ? AppUpdateDesktopTarget.windows
+      : AppPlatform.isLinux
+      ? AppUpdateDesktopTarget.linux
+      : null;
+
+  /// 桌面平台“前往下载”打开的地址：本平台安装包经首选线路（自动时即本次
+  /// 检查最先响应的线路，见 [AppUpdateSource.ordered]）的下载地址；新版本里
+  /// 没有本平台安装包时为它的发布页面。浏览器自己下载，所以不测速、不续传。
+  Uri desktopDownloadUri() {
+    final asset = state.desktopAsset;
+    if (asset == null) {
+      return state.release?.pageUrl ?? AppUpdateEndpoints.latestReleasePage;
+    }
+    return AppUpdateSource.ordered(state.preferences).first.wrap(asset.url);
   }
 
   AppUpdateService get _service => ref.read(appUpdateServiceProvider);
@@ -144,6 +169,7 @@ class AppUpdateController extends Notifier<AppUpdateState> {
           installed: installed,
           release: () => release,
           asset: () => null,
+          desktopAsset: () => null,
           progress: () => null,
           apkPath: () => null,
           checkedAt: checkedAt,
@@ -166,6 +192,10 @@ class AppUpdateController extends Notifier<AppUpdateState> {
         installed: installed,
         release: () => release,
         asset: () => asset,
+        desktopAsset: () {
+          final target = state.desktopTarget;
+          return target == null ? null : release.desktopAssetFor(target);
+        },
         progress: () => sameDownload ? previous.progress : null,
         apkPath: () => downloaded?.path,
         checkedAt: checkedAt,
@@ -197,10 +227,10 @@ class AppUpdateController extends Notifier<AppUpdateState> {
   /// 安装包）；正在下载、校验或已有待安装的安装包时也不打扰。有未被跳过、
   /// 本次进程内还没提示过的新版本时返回它，由首页决定是否提示。
   ///
-  /// 只在支持应用内安装的平台（Android）进行：Release 只发布 APK，其他平台
-  /// 提示了也无从更新。
+  /// 只在 Android 与桌面（Windows / Linux）进行：Release 发布这几个平台的
+  /// 安装包，其他平台提示了也无从更新。桌面的提示改为“前往下载”。
   Future<AppUpdateRelease?> autoCheck({required String languageCode}) async {
-    if (!_service.supportsInAppInstall) {
+    if (!_service.supportsInAppInstall && state.desktopTarget == null) {
       return null;
     }
     final preferences = await _ensurePreferences();

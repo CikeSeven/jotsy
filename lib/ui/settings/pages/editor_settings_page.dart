@@ -6,6 +6,7 @@ import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/services/app_service.dart';
+import '../../widgets/form_width.dart';
 
 /// 设置-编辑器二级页。
 class EditorSettingsPage extends ConsumerWidget {
@@ -17,6 +18,7 @@ class EditorSettingsPage extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsServiceProvider);
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(l10n.settingsEditorTitle),
         leading: IconButton(
           tooltip: l10n.commonBack,
@@ -24,9 +26,16 @@ class EditorSettingsPage extends ConsumerWidget {
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-        children: <Widget>[SettingsEditorSection(settingsAsync: settingsAsync)],
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final side = FormWidth.extra(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
+            children: <Widget>[
+              SettingsEditorSection(settingsAsync: settingsAsync),
+            ],
+          );
+        },
       ),
     );
   }

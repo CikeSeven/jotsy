@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/services/app_platform.dart';
 import '../models/diary_share_content.dart';
 import '../models/diary_share_options.dart';
 import '../models/diary_share_target.dart';
@@ -20,6 +21,10 @@ import '../widgets/diary_sheet_controls.dart';
 ///
 /// [availableTargets] 为已安装的应用目标（检测完成前只显示系统分享与
 /// 复制）；内容开关变化经 [onOptionsChanged] 交给调用方保存。
+///
+/// 没有系统分享的平台（Linux，[AppPlatform.supportsSystemFileShare] 为
+/// false）不显示系统分享，改为“复制文字”与“保存图片…”；桌面的长图一项
+/// 生成后弹出保存对话框，名称相应改为“保存为长图…”。
 Future<DiaryShareRequest?> showDiaryShareSheet(
   BuildContext context, {
   required DiaryShareContent content,
@@ -199,7 +204,11 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
                 horizontal: AppSpacing.s,
               ),
               leading: const FaIcon(FontAwesomeIcons.image, size: 16),
-              title: Text(l10n.diaryShareLongImage),
+              title: Text(
+                AppPlatform.isDesktop
+                    ? l10n.diaryShareLongImageSave
+                    : l10n.diaryShareLongImage,
+              ),
               subtitle: Text(l10n.diaryShareLongImageSubtitle),
               onTap: () => Navigator.of(
                 context,
@@ -299,7 +308,8 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
               diaryShareTargetLabel(l10n, needsImage.single),
             )
           : l10n.diaryShareRequiresImageSeveral;
-    } else if (hasText && hasImages) {
+    } else if (hasText && hasImages && AppPlatform.supportsSystemFileShare) {
+      // “带图时文字已复制”只对分享出去的情况成立；保存图片不动剪贴板。
       hint = l10n.diaryShareClipboardHint;
     } else {
       hint = null;
@@ -317,11 +327,22 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
                 target,
                 onTap: tapFor(target),
               ),
-            DiaryShareTargetButton.forTarget(
-              l10n,
-              DiaryShareTarget.system,
-              onTap: tapFor(DiaryShareTarget.system),
-            ),
+            if (AppPlatform.supportsSystemFileShare)
+              DiaryShareTargetButton.forTarget(
+                l10n,
+                DiaryShareTarget.system,
+                onTap: tapFor(DiaryShareTarget.system),
+              )
+            else
+              DiaryShareTargetButton(
+                label: l10n.diaryShareSaveImages,
+                icon: FontAwesomeIcons.download,
+                onTap: hasImages
+                    ? () => Navigator.of(
+                        context,
+                      ).pop(DiaryShareRequest.saveImages(_imagesToSend))
+                    : null,
+              ),
             DiaryShareTargetButton(
               label: l10n.diaryShareCopyText,
               icon: FontAwesomeIcons.copy,

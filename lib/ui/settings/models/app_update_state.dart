@@ -53,6 +53,8 @@ class AppUpdateState {
     this.checkedAt,
     this.awaitingInstallPermission = false,
     this.supportsInAppInstall = true,
+    this.desktopTarget,
+    this.desktopAsset,
   });
 
   final AppUpdatePhase phase;
@@ -80,6 +82,14 @@ class AppUpdateState {
 
   /// 当前平台能否应用内安装（Android）；否则只提供打开 Release 页面。
   final bool supportsInAppInstall;
+
+  /// 桌面平台（Windows / Linux）：新版本改为在浏览器里下载安装包，不显示
+  /// 应用内下载、安装与 ABI；其他平台为 null。
+  final AppUpdateDesktopTarget? desktopTarget;
+
+  /// 桌面平台要在浏览器里下载的安装包；新版本里没有本平台的安装包（桌面版
+  /// 之前的版本）时为 null，界面改为打开发布页面。
+  final AppUpdateAsset? desktopAsset;
 
   /// 有比本机新的版本（含下载中、待安装与下载失败）。
   bool get hasUpdate {
@@ -112,6 +122,7 @@ class AppUpdateState {
     DateTime? checkedAt,
     bool? awaitingInstallPermission,
     bool? supportsInAppInstall,
+    AppUpdateAsset? Function()? desktopAsset,
   }) {
     return AppUpdateState(
       phase: phase ?? this.phase,
@@ -126,6 +137,8 @@ class AppUpdateState {
       awaitingInstallPermission:
           awaitingInstallPermission ?? this.awaitingInstallPermission,
       supportsInAppInstall: supportsInAppInstall ?? this.supportsInAppInstall,
+      desktopTarget: desktopTarget,
+      desktopAsset: desktopAsset == null ? this.desktopAsset : desktopAsset(),
     );
   }
 }

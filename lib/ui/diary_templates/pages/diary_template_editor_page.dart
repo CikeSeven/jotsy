@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../app/theme/app_breakpoints.dart';
 import '../../../core/services/app_service.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
 import '../controllers/diary_template_editor_controller.dart';
 import '../controllers/diary_templates_controller.dart';
@@ -92,6 +94,7 @@ class _DiaryTemplateEditorPageState
     final scaffold = Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: AppContentWidth.editor,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => unawaited(_attemptExit()),
@@ -142,7 +145,11 @@ class _DiaryTemplateEditorPageState
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) unawaited(_attemptExit());
         },
-        child: child!,
+        // 桌面上 Esc 与顶栏返回按钮相同（有未保存的改动时先确认）。
+        child: DesktopPageKeys(
+          onEscape: () => unawaited(_attemptExit()),
+          child: child!,
+        ),
       ),
     );
   }

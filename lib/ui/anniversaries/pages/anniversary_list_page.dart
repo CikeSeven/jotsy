@@ -19,6 +19,7 @@ import '../providers/anniversary_providers.dart';
 import '../viewmodels/anniversary_countdown.dart';
 import '../viewmodels/anniversary_rule.dart';
 import '../widgets/anniversary_list_card.dart';
+import '../../widgets/form_width.dart';
 
 /// 全部纪念日：置顶在前，其余按下一次由近到远，已过去的倒数日排最后。
 ///
@@ -67,6 +68,7 @@ class _AnniversaryListPageState extends ConsumerState<AnniversaryListPage> {
     }
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -109,36 +111,41 @@ class _AnniversaryListPageState extends ConsumerState<AnniversaryListPage> {
       context,
       ExpressiveMotion.medium,
     );
-    return ListView.builder(
+    return LayoutBuilder(
       key: const ValueKey<String>('list'),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        AppSpacing.s,
-        AppSpacing.l,
-        AppSpacing.xxxl,
-      ),
-      itemCount: entries.length,
-      itemBuilder: (BuildContext context, int index) {
-        final (row, countdown) = entries[index];
-        return ListItemPresence(
-          key: ValueKey<String>(row.anniversaryId),
-          visible: true,
-          appearing: _appearing.contains(row.anniversaryId),
-          duration: duration,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.m),
-            child: AnniversaryListCard(
-              row: row,
-              countdown: countdown,
-              onTap: () => unawaited(
-                openAnniversaryDetail(
-                  context,
-                  anniversaryId: row.anniversaryId,
-                  initial: row,
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.gutter(constraints.maxWidth);
+        return ListView.builder(
+          padding: EdgeInsets.fromLTRB(
+            side,
+            AppSpacing.s,
+            side,
+            AppSpacing.xxxl,
+          ),
+          itemCount: entries.length,
+          itemBuilder: (BuildContext context, int index) {
+            final (row, countdown) = entries[index];
+            return ListItemPresence(
+              key: ValueKey<String>(row.anniversaryId),
+              visible: true,
+              appearing: _appearing.contains(row.anniversaryId),
+              duration: duration,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.m),
+                child: AnniversaryListCard(
+                  row: row,
+                  countdown: countdown,
+                  onTap: () => unawaited(
+                    openAnniversaryDetail(
+                      context,
+                      anniversaryId: row.anniversaryId,
+                      initial: row,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

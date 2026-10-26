@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_language.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
+import '../../../widgets/desktop_horizontal_scroll.dart';
 
 /// 语言选项的高度与行列间距。
 const double kDiaryCodeLanguageChipHeight = 32;
@@ -124,17 +125,19 @@ class _DiaryCodeLanguageChipsState extends State<DiaryCodeLanguageChips> {
     }
     return SizedBox(
       height: kDiaryCodeLanguageChipsHeight,
-      child: SingleChildScrollView(
-        controller: _scroll,
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: widget.horizontalInset),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(children: top),
-            const SizedBox(height: kDiaryCodeLanguageChipGap),
-            Row(children: bottom),
-          ],
+      child: DesktopHorizontalScroll(
+        child: SingleChildScrollView(
+          controller: _scroll,
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: widget.horizontalInset),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(children: top),
+              const SizedBox(height: kDiaryCodeLanguageChipGap),
+              Row(children: bottom),
+            ],
+          ),
         ),
       ),
     );

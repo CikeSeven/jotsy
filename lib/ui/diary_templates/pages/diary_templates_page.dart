@@ -21,6 +21,7 @@ import '../sections/diary_templates_lists.dart';
 import '../sections/diary_templates_settings_group.dart';
 import 'diary_template_auto_apply_page.dart';
 import 'diary_template_editor_page.dart';
+import '../../widgets/form_width.dart';
 
 /// 日记模板管理页（设置 → 编辑器设置 → 日记模板）。
 ///
@@ -49,6 +50,7 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(l10n.diaryTemplatesTitle),
         actions: <Widget>[
           IconButton(
@@ -75,75 +77,91 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
     final library = watchDiaryTemplateLibrary(ref, l10n, live: true).library;
     final mine = _ordered(library.userTemplates);
     final deleted = library.deletedBuiltIns;
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.m),
-            child: DiaryTemplatesSettingsGroup(
-              library: library,
-              onStripChanged: (value) =>
-                  unawaited(controller.setStripEnabled(value)),
-              onOpenAutoApply: () => Navigator.of(context).push<void>(
-                MaterialPageRoute<void>(
-                  builder: (_) => const DiaryTemplateAutoApplyPage(),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.extra(constraints.maxWidth);
+        return CustomScrollView(
+          slivers: <Widget>[
+            // 宽窗口：每段内容都补上居中留白（各段自带左右 16，手机上补 0）。
+            for (final sliver in <Widget>[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.m),
+                  child: DiaryTemplatesSettingsGroup(
+                    library: library,
+                    onStripChanged: (value) =>
+                        unawaited(controller.setStripEnabled(value)),
+                    onOpenAutoApply: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const DiaryTemplateAutoApplyPage(),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: DiaryTemplatesSectionHeader(
-            title: l10n.diaryTemplatesMineGroup,
-          ),
-        ),
-        if (mine.isEmpty)
-          const SliverToBoxAdapter(child: DiaryTemplatesMineEmpty())
-        else
-          DiaryTemplatesMineSliver(
-            templates: mine,
-            onTap: _openEditor,
-            onAction: (template, action) =>
-                _handleAction(controller, template, action, builtIn: false),
-            onReorder: (oldIndex, newIndex) =>
-                _reorder(controller, mine, oldIndex, newIndex),
-          ),
-        SliverToBoxAdapter(
-          child: DiaryTemplatesSectionHeader(
-            title: l10n.diaryTemplatesBuiltInGroup,
-          ),
-        ),
-        DiaryTemplatesBuiltInSliver(
-          templates: library.builtIns
-              .where((template) => !library.isDeleted(template))
-              .toList(growable: false),
-          editedIds: library.editedBuiltIns,
-          onTap: _openEditor,
-          onAction: (template, action) =>
-              _handleAction(controller, template, action, builtIn: true),
-        ),
-        if (deleted.isNotEmpty)
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.l,
-              AppSpacing.s,
-              AppSpacing.l,
-              0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: DiaryTemplatesRestoreRow(
-                key: const ValueKey<String>('template_restore_row'),
-                count: deleted.length,
-                onTap: () => _restoreDeleted(controller, deleted),
+              SliverToBoxAdapter(
+                child: DiaryTemplatesSectionHeader(
+                  title: l10n.diaryTemplatesMineGroup,
+                ),
               ),
-            ),
-          ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
-          ),
-        ),
-      ],
+              if (mine.isEmpty)
+                const SliverToBoxAdapter(child: DiaryTemplatesMineEmpty())
+              else
+                DiaryTemplatesMineSliver(
+                  templates: mine,
+                  onTap: _openEditor,
+                  onAction: (template, action) => _handleAction(
+                    controller,
+                    template,
+                    action,
+                    builtIn: false,
+                  ),
+                  onReorder: (oldIndex, newIndex) =>
+                      _reorder(controller, mine, oldIndex, newIndex),
+                ),
+              SliverToBoxAdapter(
+                child: DiaryTemplatesSectionHeader(
+                  title: l10n.diaryTemplatesBuiltInGroup,
+                ),
+              ),
+              DiaryTemplatesBuiltInSliver(
+                templates: library.builtIns
+                    .where((template) => !library.isDeleted(template))
+                    .toList(growable: false),
+                editedIds: library.editedBuiltIns,
+                onTap: _openEditor,
+                onAction: (template, action) =>
+                    _handleAction(controller, template, action, builtIn: true),
+              ),
+              if (deleted.isNotEmpty)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.l,
+                    AppSpacing.s,
+                    AppSpacing.l,
+                    0,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: DiaryTemplatesRestoreRow(
+                      key: const ValueKey<String>('template_restore_row'),
+                      count: deleted.length,
+                      onTap: () => _restoreDeleted(controller, deleted),
+                    ),
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
+                ),
+              ),
+            ])
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: side),
+                sliver: sliver,
+              ),
+          ],
+        );
+      },
     );
   }
 

@@ -12,9 +12,10 @@ import 'diary_card_appearance.dart';
 
 /// 某一布局模式下、已落到具体数值的卡片样式。
 ///
-/// 输入：[DiaryCardStyle]、布局模式、主题、屏宽、系统字号与心情配置；输出：
-/// 间距、封面尺寸、有效列数、不含颜色的基础文字样式，以及按卡片类别缓存的
-/// 颜色（[appearanceFor]）。无副作用。
+/// 输入：[DiaryCardStyle]、布局模式、主题、列表可用宽度（[screenWidth]）、
+/// 系统字号、心情配置与瀑布流最少列数（[minColumns]）；输出：间距、封面尺寸、
+/// 有效列数、不含颜色的基础文字样式，以及按卡片类别缓存的颜色
+/// （[appearanceFor]）。无副作用。
 ///
 /// 为什么集中解析：列表每帧可能构建十几张卡片，若每张卡都从样式重新推导
 /// 字号、夹紧封面并计算对比度，开销会落在滚动帧里。这里每次 section build
@@ -31,6 +32,7 @@ class DiaryCardResolvedStyle {
     required this.screenWidth,
     required this.textScale,
     required this.moodOptions,
+    required this.minColumns,
   }) : modeStyle = style.mode(mode) {
     final m = modeStyle;
     final textTheme = theme.textTheme;
@@ -97,7 +99,9 @@ class DiaryCardResolvedStyle {
         ? style.surface.accentWidth
         : 0;
 
-    var effectiveColumns = m.columns;
+    // 宽窗口里瀑布流按宽度加列（[minColumns]，见日记页的中等窗口布局）；
+    // 加出的列宽本就宽裕，下面的减列不会再把它减回去。
+    var effectiveColumns = math.max(m.columns, minColumns);
     final minColumn = minWaterfallColumnWidth * math.min(textScale, 1.3);
     while (effectiveColumns > 2 &&
         (screenWidth - 2 * m.sideMargin - (effectiveColumns - 1) * m.cardGap) /
@@ -150,12 +154,14 @@ class DiaryCardResolvedStyle {
     required double screenWidth,
     double textScale = 1,
     List<String> moodOptions = SettingsService.defaultMoodOptions,
+    int minColumns = 0,
   }) {
     for (final candidate in _recent) {
       if (candidate.mode == mode &&
           identical(candidate.theme, theme) &&
           candidate.screenWidth == screenWidth &&
           candidate.textScale == textScale &&
+          candidate.minColumns == minColumns &&
           candidate.style == style &&
           listEquals(candidate.moodOptions, moodOptions)) {
         return candidate;
@@ -168,6 +174,7 @@ class DiaryCardResolvedStyle {
       screenWidth: screenWidth,
       textScale: textScale,
       moodOptions: moodOptions,
+      minColumns: minColumns,
     );
     _recent.insert(0, resolved);
     if (_recent.length > _maxRecent) {
@@ -194,9 +201,15 @@ class DiaryCardResolvedStyle {
   final DiaryCardStyle style;
   final DiaryCardMode mode;
   final ThemeData theme;
+
+  /// 列表实际可用的宽度（含卡片左右边距）。沿用“屏宽”的名字：手机上它就是
+  /// 屏宽；宽窗口里是日记页内容列或双栏左栏的宽度。
   final double screenWidth;
   final double textScale;
   final List<String> moodOptions;
+
+  /// 瀑布流至少的列数（按可用宽度加列时给出）；0 表示只用样式里的列数。
+  final int minColumns;
   final DiaryCardModeStyle modeStyle;
 
   bool get compact => mode == DiaryCardMode.waterfall;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -13,11 +14,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/desktop_save_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
@@ -68,6 +72,7 @@ import '../../../app/theme/app_effects.dart';
 part 'calendar_page_sections.dart';
 part 'calendar_page_range.dart';
 part 'calendar_page_anniversaries.dart';
+part 'calendar_page_layout.dart';
 part '../controllers/calendar_anniversary_actions.dart';
 part '../controllers/calendar_page_controller.dart';
 part '../controllers/calendar_create_actions.dart';
@@ -275,6 +280,77 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final pageBgColor =
         widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
 
+    // 页头、日历卡片与选中日各区块在这里一次装配好，窄屏单列、宽屏居中
+    // 单列与双栏只是摆放方式不同（见 calendar_page_layout.dart）。
+    CalendarHeader buildHeader(
+      double collapsedExtent,
+      double horizontalInset, {
+      bool showMonthBar = true,
+    }) => CalendarHeader(
+      title: _controller.focusedMonthTitle,
+      month: _focusedMonth,
+      onJumpToToday: _controller.jumpToToday,
+      onPreviousMonth: _controller.goToPreviousMonth,
+      onNextMonth: _controller.goToNextMonth,
+      onPickDate: _controller.onTitlePressed,
+      onOpenDisplayOptions: () => unawaited(_controller.openDisplayOptions()),
+      onOpenFilter: () => unawaited(_controller.openFilter()),
+      onOpenAnniversaries: anniversariesEnabled
+          ? () => unawaited(openAnniversaryList(context))
+          : null,
+      filterActive: _filter.isActive,
+      titleTooltip: _yearMode ? l10n.autoT0177 : l10n.calendarYearViewTooltip,
+      previousTooltip: _yearMode ? l10n.calendarPreviousYear : null,
+      nextTooltip: _yearMode ? l10n.calendarNextYear : null,
+      collapsedExtent: collapsedExtent,
+      horizontalInset: horizontalInset,
+      showMonthBar: showMonthBar,
+    );
+    Widget buildPanel({required bool wide}) => _buildCalendarPanel(
+      options: options,
+      filter: filter,
+      filterTags: filterTags ?? const <Tag>[],
+      filterNotebooks: filterNotebooks ?? const <NotebookView>[],
+      summaries: summaries,
+      markersAsync: markersAsync,
+      moodOptions: moodOptions,
+      anniversaryIndex: anniversaryIndex,
+      now: now,
+      wide: wide,
+    );
+    final daySlivers = <Widget>[
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.m,
+            0,
+            AppSpacing.m,
+            AppSpacing.s,
+          ),
+          child: CalendarDayHeading(
+            day: _selectedDay,
+            now: now,
+            lunar:
+                CalendarMonthGrid.showsLunar(options.lunarMode, l10n.localeName)
+                ? CalendarLunarDay.of(_selectedDay)
+                : null,
+            holiday:
+                CalendarMonthGrid.showsHolidays(
+                  options.holidayMode,
+                  l10n.localeName,
+                )
+                ? CalendarHolidayDay.of(_selectedDay)
+                : null,
+            entryCount: day.entryCount,
+            wordCount: day.wordCount,
+          ),
+        ),
+      ),
+      _buildAnniversarySliver(anniversaryIndex, now),
+      ..._buildDayDiaryContentSlivers(day, options),
+      if (options.showOnThisDay) _buildOnThisDaySliver(now),
+    ];
+
     return Scaffold(
       backgroundColor: pageBgColor,
       body: Stack(
@@ -282,96 +358,16 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           SafeArea(
             top: false,
             bottom: false,
-            child: CustomScrollView(
-              slivers: <Widget>[
-                // 页头固定在顶部，月份行随下滑收起、只留标题栏，见
-                // CalendarHeaderSliver。
-                CalendarHeaderSliver(
-                  builder: (_, double collapsedExtent) => CalendarHeader(
-                    title: _controller.focusedMonthTitle,
-                    month: _focusedMonth,
-                    onJumpToToday: _controller.jumpToToday,
-                    onPreviousMonth: _controller.goToPreviousMonth,
-                    onNextMonth: _controller.goToNextMonth,
-                    onPickDate: _controller.onTitlePressed,
-                    onOpenDisplayOptions: () =>
-                        unawaited(_controller.openDisplayOptions()),
-                    onOpenFilter: () => unawaited(_controller.openFilter()),
-                    onOpenAnniversaries: anniversariesEnabled
-                        ? () => unawaited(openAnniversaryList(context))
-                        : null,
-                    filterActive: _filter.isActive,
-                    titleTooltip: _yearMode
-                        ? l10n.autoT0177
-                        : l10n.calendarYearViewTooltip,
-                    previousTooltip: _yearMode
-                        ? l10n.calendarPreviousYear
-                        : null,
-                    nextTooltip: _yearMode ? l10n.calendarNextYear : null,
-                    collapsedExtent: collapsedExtent,
+            // 按页面实际可用宽度（宽窗口时已扣掉首页侧边导航栏）选布局。
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) =>
+                  _buildCalendarLayout(
+                    width: constraints.maxWidth,
+                    buildHeader: buildHeader,
+                    buildPanel: buildPanel,
+                    daySlivers: daySlivers,
+                    bottomSpace: _listBottomExtraSpace + floatingBarInset,
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      _calendarCardHorizontalPadding,
-                      _calendarCardTopPadding,
-                      _calendarCardHorizontalPadding,
-                      _calendarBottomGap,
-                    ),
-                    child: _buildCalendarPanel(
-                      options: options,
-                      filter: filter,
-                      filterTags: filterTags ?? const <Tag>[],
-                      filterNotebooks:
-                          filterNotebooks ?? const <NotebookView>[],
-                      summaries: summaries,
-                      markersAsync: markersAsync,
-                      moodOptions: moodOptions,
-                      anniversaryIndex: anniversaryIndex,
-                      now: now,
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.m,
-                      0,
-                      AppSpacing.m,
-                      AppSpacing.s,
-                    ),
-                    child: CalendarDayHeading(
-                      day: _selectedDay,
-                      now: now,
-                      lunar:
-                          CalendarMonthGrid.showsLunar(
-                            options.lunarMode,
-                            l10n.localeName,
-                          )
-                          ? CalendarLunarDay.of(_selectedDay)
-                          : null,
-                      holiday:
-                          CalendarMonthGrid.showsHolidays(
-                            options.holidayMode,
-                            l10n.localeName,
-                          )
-                          ? CalendarHolidayDay.of(_selectedDay)
-                          : null,
-                      entryCount: day.entryCount,
-                      wordCount: day.wordCount,
-                    ),
-                  ),
-                ),
-                _buildAnniversarySliver(anniversaryIndex, now),
-                ..._buildDayDiaryContentSlivers(day, options),
-                if (options.showOnThisDay) _buildOnThisDaySliver(now),
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: _listBottomExtraSpace + floatingBarInset,
-                  ),
-                ),
-              ],
             ),
           ),
           // 导出只能在年视图发起：遮罩只在年视图挂载，月/周视图不多挂一个

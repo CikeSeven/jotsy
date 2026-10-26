@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../models/diary_preview_sequence.dart';
 import '../widgets/diary_preview/diary_preview_pager.dart';
@@ -17,6 +18,7 @@ export '../models/diary_preview_sequence.dart';
 /// 入口给出 [sequence]（进入时所在列表的顺序）且不止一篇时，可左右滑动切换
 /// （[DiaryPreviewPager]）；否则只看这一篇。删除后以
 /// [DiaryPreviewResult.deleted] 返回被删的那一篇，由入口给出撤销提示。
+/// 桌面上 Esc 与返回按钮相同；翻页时的 ←/→ 与悬停按钮在翻页器里。
 class DiaryPreviewPage extends StatelessWidget {
   const DiaryPreviewPage({
     super.key,
@@ -42,10 +44,13 @@ class DiaryPreviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final sequence = this.sequence;
     if (sequence == null || !sequence.canPage) {
-      return DiaryPreviewView(
-        diaryId: diaryId,
-        initialDetail: initialDetail,
-        coverHero: coverHero,
+      return DesktopPageKeys(
+        onEscape: () => Navigator.of(context).maybePop(),
+        child: DiaryPreviewView(
+          diaryId: diaryId,
+          initialDetail: initialDetail,
+          coverHero: coverHero,
+        ),
       );
     }
     return DiaryPreviewPager(

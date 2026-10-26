@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
 import '../../diary_templates/providers/diary_template_providers.dart';
 import '../../diary_templates/sections/diary_template_choice_sheet.dart';
 import '../../diary_templates/viewmodels/diary_template_auto_labels.dart';
@@ -70,6 +71,9 @@ class NotebookEditorTypeSection extends StatelessWidget {
 }
 
 /// 隐私（只对普通日记本）：正常 / 不在全部日记中显示 / 上锁。
+///
+/// 没有系统身份验证的平台（Linux）“上锁”不可选并说明原因：上锁的本子只能
+/// 经系统验证进入，在这些平台锁上就再也打不开。已上锁的本子保持原样。
 class NotebookEditorPrivacySection extends StatelessWidget {
   const NotebookEditorPrivacySection({super.key, required this.controller});
 
@@ -86,12 +90,24 @@ class NotebookEditorPrivacySection extends StatelessWidget {
           child: Column(
             children: <Widget>[
               for (final visibility in NotebookVisibility.values)
-                ExpressiveChoiceTile(
-                  label: notebookVisibilityLabel(l10n, visibility),
-                  description: notebookVisibilityDescription(l10n, visibility),
-                  selected: controller.visibility == visibility,
-                  onTap: () => controller.visibility = visibility,
-                ),
+                if (visibility == NotebookVisibility.locked &&
+                    !AppPlatform.supportsDeviceAuth)
+                  ExpressiveChoiceTile(
+                    label: notebookVisibilityLabel(l10n, visibility),
+                    description: l10n.deviceAuthUnavailable,
+                    selected: controller.visibility == visibility,
+                    onTap: null,
+                  )
+                else
+                  ExpressiveChoiceTile(
+                    label: notebookVisibilityLabel(l10n, visibility),
+                    description: notebookVisibilityDescription(
+                      l10n,
+                      visibility,
+                    ),
+                    selected: controller.visibility == visibility,
+                    onTap: () => controller.visibility = visibility,
+                  ),
             ],
           ),
         ),

@@ -65,7 +65,11 @@ abstract final class AppUpdateEndpoints {
   }
 }
 
-/// Release 里的一个安装包。
+/// 桌面平台：Release 附带的桌面安装包只在浏览器里下载、由用户自行安装，
+/// 应用不下载也不校验它们（见 docs/app_update.md）。
+enum AppUpdateDesktopTarget { windows, linux }
+
+/// Release 里的一个安装包：Android 的 APK，或桌面的安装包 / 压缩包。
 @immutable
 class AppUpdateAsset {
   const AppUpdateAsset({
@@ -100,6 +104,29 @@ class AppUpdateAsset {
     return null;
   }
 
+  /// 桌面安装包所属的平台，从文件名推断（`jotsy-<tag>-windows-x64-setup.exe`、
+  /// `jotsy-<tag>-windows-x64.zip`、`jotsy-<tag>-linux-x64.tar.gz`）；不是桌面
+  /// 安装包时为 null。
+  AppUpdateDesktopTarget? get desktopTarget => desktopTargetFromName(name);
+
+  static bool isApkName(String name) => name.toLowerCase().endsWith('.apk');
+
+  static AppUpdateDesktopTarget? desktopTargetFromName(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('windows') &&
+        (lower.endsWith('.exe') || lower.endsWith('.zip'))) {
+      return AppUpdateDesktopTarget.windows;
+    }
+    if (lower.contains('linux') && lower.endsWith('.tar.gz')) {
+      return AppUpdateDesktopTarget.linux;
+    }
+    return null;
+  }
+
+  /// 随 Release 发布的安装包（APK 或桌面安装包）；校验文件、清单等不算。
+  static bool isPackageName(String name) =>
+      isApkName(name) || desktopTargetFromName(name) != null;
+
   static const List<String> supportedAbiNames = <String>[
     'arm64-v8a',
     'armeabi-v7a',
@@ -121,6 +148,7 @@ class AppUpdateRelease {
     required this.version,
     required this.tag,
     required this.assets,
+    this.desktopAssets = const <AppUpdateAsset>[],
     this.publishedAt,
     this.notes = const <String, String>{},
     this.fallbackNotes,
@@ -128,7 +156,13 @@ class AppUpdateRelease {
 
   final AppVersion version;
   final String tag;
+
+  /// Android 安装包（只有 `.apk`）：应用内下载安装只从这里挑选。
   final List<AppUpdateAsset> assets;
+
+  /// 桌面安装包（Windows 安装程序与便携版、Linux 压缩包），与 [assets]
+  /// 分开存放，Android 的挑选永远不会拿到它们。
+  final List<AppUpdateAsset> desktopAssets;
   final DateTime? publishedAt;
 
   /// 按语言代码（`zh`、`en`）存放的更新说明（Markdown，已清理）。
@@ -176,6 +210,26 @@ class AppUpdateRelease {
     return null;
   }
 
+  /// 桌面在浏览器里下载的安装包：Windows 取安装程序（`.exe`，便携版 `.zip`
+  /// 只在发布页提供），Linux 取 `.tar.gz`。没有时（桌面版之前的 Release）为
+  /// null，界面改为打开发布页面。
+  AppUpdateAsset? desktopAssetFor(AppUpdateDesktopTarget target) {
+    for (final asset in desktopAssets) {
+      if (asset.desktopTarget != target) {
+        continue;
+      }
+      final lower = asset.name.toLowerCase();
+      final preferred = switch (target) {
+        AppUpdateDesktopTarget.windows => lower.endsWith('.exe'),
+        AppUpdateDesktopTarget.linux => lower.endsWith('.tar.gz'),
+      };
+      if (preferred) {
+        return asset;
+      }
+    }
+    return null;
+  }
+
   AppUpdateRelease copyWith({
     Map<String, String>? notes,
     String? fallbackNotes,
@@ -184,6 +238,7 @@ class AppUpdateRelease {
       version: version,
       tag: tag,
       assets: assets,
+      desktopAssets: desktopAssets,
       publishedAt: publishedAt,
       notes: notes ?? this.notes,
       fallbackNotes: fallbackNotes ?? this.fallbackNotes,
@@ -197,9 +252,14 @@ class AppUpdateRelease {
 /// {"schema":1,"version":"0.6.1+18","tag":"v0.6.1",
 ///  "publishedAt":"2026-10-20T08:00:00Z",
 ///  "notes":{"zh":"...","en":"..."},
-///  "assets":[{"name":"jotsy-v0.6.1-arm64-v8a.apk","size":1,"sha256":"..."}]}
+///  "assets":[{"name":"jotsy-v0.6.1-arm64-v8a.apk","size":1,"sha256":"..."},
+///            {"name":"jotsy-v0.6.1-linux-x64.tar.gz","size":1,"sha256":"..."}]}
 /// ```
 /// 下载地址由 tag 与文件名推出，不写进清单，镜像前缀由应用决定。
+///
+/// 桌面安装包与 APK 放在同一个 `assets` 列表里：桌面版之前的应用只认
+/// `.apk` 结尾的附件、跳过其余，新增桌面附件不影响它们挑选与校验 APK。
+/// 至少要有一个 APK，旧应用才不会把整份清单当作无效。
 abstract final class AppUpdateManifest {
   static const int schema = 1;
 
@@ -245,25 +305,28 @@ abstract final class AppUpdateManifest {
       return null;
     }
     final assets = <AppUpdateAsset>[];
+    final desktopAssets = <AppUpdateAsset>[];
     final rawAssets = json['assets'];
     if (rawAssets is List) {
       for (final raw in rawAssets.whereType<Map>()) {
         final name = raw['name'];
-        if (name is! String || !name.toLowerCase().endsWith('.apk')) {
+        if (name is! String) {
           continue;
         }
         final size = raw['size'];
-        assets.add(
+        addReleasePackage(
           AppUpdateAsset(
             name: name,
             url: AppUpdateEndpoints.assetUrl(tag, name),
             size: size is int && size > 0 ? size : null,
             sha256: AppUpdateAsset.normalizeSha256(raw['sha256']),
           ),
+          apks: assets,
+          desktop: desktopAssets,
         );
       }
     }
-    if (assets.isEmpty) {
+    if (assets.isEmpty && desktopAssets.isEmpty) {
       return null;
     }
     final notes = <String, String>{};
@@ -282,9 +345,25 @@ abstract final class AppUpdateManifest {
       version: version,
       tag: tag.trim(),
       assets: assets,
+      desktopAssets: desktopAssets,
       publishedAt: DateTime.tryParse(json['publishedAt']?.toString() ?? ''),
       notes: notes,
     );
+  }
+}
+
+/// 把一个 Release 附件按用途放进 [apks]（Android 应用内安装）或 [desktop]
+/// （桌面浏览器下载）；校验文件、清单等其余附件忽略。清单、GitHub 接口与
+/// 校验文件三种来源共用，口径一致。
+void addReleasePackage(
+  AppUpdateAsset asset, {
+  required List<AppUpdateAsset> apks,
+  required List<AppUpdateAsset> desktop,
+}) {
+  if (AppUpdateAsset.isApkName(asset.name)) {
+    apks.add(asset);
+  } else if (asset.desktopTarget != null) {
+    desktop.add(asset);
   }
 }
 

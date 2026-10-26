@@ -14,7 +14,9 @@ import '../widgets/app_update_notice_box.dart';
 ///
 /// - 检查中（含刚进入页面）：不显示操作；已是最新 / 检查失败：“检查更新”或“重试”；
 /// - 有新版本：“下载并安装（大小）”，取消过则为“继续下载（已完成 N%）”，
-///   下方“跳过此版本”；不能应用内安装时为“前往下载页面”；
+///   下方“跳过此版本”；桌面（Windows / Linux）为“前往下载”（在浏览器里下载
+///   本平台安装包）+ “在 GitHub 查看”发布页面 + “跳过此版本”；其余不能应用内
+///   安装的情况（含新版本里没有本平台安装包）为“前往下载页面”；
 /// - 下载中：已下载 / 总大小、速度、所用线路与进度条，“取消下载”；
 /// - 校验中：等待指示；
 /// - 待安装：“安装”；未允许安装未知应用时说明原因并提供“去设置”；
@@ -29,6 +31,7 @@ class AppUpdateActionBar extends StatelessWidget {
     required this.onInstall,
     required this.onGrantInstallPermission,
     required this.onOpenReleasePage,
+    required this.onOpenDesktopDownload,
     required this.onSkip,
   });
 
@@ -39,6 +42,9 @@ class AppUpdateActionBar extends StatelessWidget {
   final VoidCallback onInstall;
   final VoidCallback onGrantInstallPermission;
   final VoidCallback onOpenReleasePage;
+
+  /// 桌面：在浏览器里打开本平台安装包的下载地址。
+  final VoidCallback onOpenDesktopDownload;
   final VoidCallback onSkip;
 
   @override
@@ -116,6 +122,9 @@ class AppUpdateActionBar extends StatelessWidget {
 
   Widget _buildAvailable(BuildContext context) {
     final l10n = context.l10n;
+    if (state.desktopTarget != null && state.desktopAsset != null) {
+      return _buildDesktopAvailable(context);
+    }
     final asset = state.asset;
     if (!state.supportsInAppInstall || asset == null) {
       return _wide(
@@ -152,6 +161,36 @@ class AppUpdateActionBar extends StatelessWidget {
             child: Text(l10n.appUpdateActionSkip),
           ),
         ],
+      ],
+    );
+  }
+
+  /// 桌面：不在应用内下载，“前往下载”交给浏览器；发布页面作为次要入口
+  /// （便携版等其他安装包也在那里）。
+  Widget _buildDesktopAvailable(BuildContext context) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        FilledButton.icon(
+          onPressed: onOpenDesktopDownload,
+          icon: const FaIcon(FontAwesomeIcons.download, size: 14),
+          label: Text(l10n.appUpdateActionDesktopDownload),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        TextButton(
+          onPressed: onOpenReleasePage,
+          child: Text(l10n.appUpdateViewOnGitHub),
+        ),
+        if (!state.isSkipped)
+          TextButton(
+            onPressed: onSkip,
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            child: Text(l10n.appUpdateActionSkip),
+          ),
       ],
     );
   }

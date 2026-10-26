@@ -16,10 +16,16 @@ import 'package:node_diary/ui/widgets/empty_hint.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
+import '../../notebooks/controllers/diary_notebook_pick_flow.dart';
+import '../../settings/providers/app_features_provider.dart';
+import '../controllers/diary_card_menu_flows.dart';
+import '../controllers/diary_preview_edit_flow.dart';
 import '../providers/diary_card_style_provider.dart';
+import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../sections/diary_head_section.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import '../../widgets/form_width.dart';
 
 part '../controllers/archived_diaries_controller.dart';
 
@@ -60,6 +66,9 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   final Set<String> _appearingDiaryIds = <String>{};
   Timer? _appearingClearTimer;
 
+  /// 桌面上 Shift + 点按选范围的起点（见 [DiarySelectionAnchor]）。
+  final DiarySelectionAnchor _selectionAnchor = DiarySelectionAnchor();
+
   /// 业务控制器：处理删除/取消归档/撤销等流程。
   late final ArchivedDiariesController _controller;
 
@@ -92,6 +101,34 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
         .toList(growable: false);
   }
 
+  /// 桌面右键菜单：取消归档与删除带本页的收起 / 出现动画（见控制器）。
+  DiaryCardMenuActions _menuActions() {
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    return DiaryCardMenuActions(
+      onEdit: (diary) =>
+          unawaited(_controller.editDiaryFromMenu(diary.diary.diaryId)),
+      onTogglePin: (diary) => unawaited(
+        setDiaryPinned(
+          context,
+          ref,
+          diary.diary.diaryId,
+          pinned: !diary.diary.isPinned,
+        ),
+      ),
+      onNotebooks: notebooksEnabled
+          ? (diary) => unawaited(
+              pickNotebooksForDiary(context, ref, diaryId: diary.diary.diaryId),
+            )
+          : null,
+      onToggleArchive: (diary) =>
+          unawaited(_controller.unarchiveDiaryFromMenu(diary.diary.diaryId)),
+      onDelete: (diary) =>
+          unawaited(_controller.deleteDiaryFromMenu(diary.diary.diaryId)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final archivedAsync = ref.watch(archivedDiariesProvider);
@@ -115,6 +152,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
         // 进入/退出多选时标题、返回键与操作按钮缩放淡入切换，而不是整条
         // 标题栏硬换。
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           title: AnimatedSwitcher(
             duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
             switchInCurve: ExpressiveMotion.effects,
@@ -195,43 +233,76 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                       icon: FontAwesomeIcons.boxArchive,
                       message: context.l10n.autoT0103,
                     )
-                  : CustomScrollView(
+                  : LayoutBuilder(
                       key: const ValueKey<String>('archived_list'),
-                      slivers: <Widget>[
-                        // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
-                        DiariesListSection(
-                          diaries: visibleDiaries,
-                          pendingHideDiaryIds: _pendingHideDiaryIds,
-                          appearingDiaryIds: _appearingDiaryIds,
-                          layoutMode: DiaryLayoutMode.list,
-                          selectedDiaryIds: _selectedDiaryIds,
-                          isSelectionMode: _isSelectionMode,
-                          maxVisibleTags: diaryCardTagLimit,
-                          cardStyle: ref.watch(diaryCardStyleProvider),
-                          moodOptions: ref.watch(diaryCardMoodOptionsProvider),
-                          onCreate: _controller.noopCreate,
-                          onOpenEditor: (diary, coverHero) =>
-                              _controller.openPreview(
-                                diary.diary.diaryId,
-                                initialDetail: diary,
-                                coverHero: coverHero,
-                                // 正在取消归档而淡出的条目不参与翻页。
-                                sequence: DiaryPreviewSequence.fromItems(
-                                  visibleDiaries.where(
-                                    (DiaryWithTags item) =>
-                                        !_pendingHideDiaryIds.contains(
-                                          item.diary.diaryId,
+                      builder:
+                          (BuildContext context, BoxConstraints constraints) {
+                            final side = FormWidth.extra(
+                              constraints.maxWidth,
+                              childInset: ref
+                                  .watch(diaryCardStyleProvider)
+                                  .list
+                                  .sideMargin,
+                            );
+                            return CustomScrollView(
+                              slivers: <Widget>[
+                                // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
+                                // 宽窗口：卡片列最宽 720 并居中（卡片自带左右边距
+                                // sideMargin，这里只补其余留白；手机上为 0）。
+                                SliverPadding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: side,
+                                  ),
+                                  sliver: DiariesListSection(
+                                    // 卡片样式按这一列实际的宽度解析。
+                                    availableWidth:
+                                        constraints.maxWidth - side * 2,
+                                    diaries: visibleDiaries,
+                                    pendingHideDiaryIds: _pendingHideDiaryIds,
+                                    appearingDiaryIds: _appearingDiaryIds,
+                                    layoutMode: DiaryLayoutMode.list,
+                                    selectedDiaryIds: _selectedDiaryIds,
+                                    isSelectionMode: _isSelectionMode,
+                                    maxVisibleTags: diaryCardTagLimit,
+                                    cardStyle: ref.watch(
+                                      diaryCardStyleProvider,
+                                    ),
+                                    moodOptions: ref.watch(
+                                      diaryCardMoodOptionsProvider,
+                                    ),
+                                    onCreate: _controller.noopCreate,
+                                    onOpenEditor: (diary, coverHero) =>
+                                        _controller.openPreview(
+                                          diary.diary.diaryId,
+                                          initialDetail: diary,
+                                          coverHero: coverHero,
+                                          // 正在取消归档而淡出的条目不参与翻页。
+                                          sequence:
+                                              DiaryPreviewSequence.fromItems(
+                                                visibleDiaries.where(
+                                                  (DiaryWithTags item) =>
+                                                      !_pendingHideDiaryIds
+                                                          .contains(
+                                                            item.diary.diaryId,
+                                                          ),
+                                                ),
+                                              ),
                                         ),
+                                    onToggleSelection:
+                                        _controller.toggleSelection,
+                                    onArchiveDiary: (diaryId) => unawaited(
+                                      _controller.unarchiveDiaryBySwipe(
+                                        diaryId,
+                                      ),
+                                    ),
+                                    swipeActionIcon: FontAwesomeIcons.boxOpen,
+                                    menuActions: _menuActions(),
+                                    selectionAnchor: _selectionAnchor,
                                   ),
                                 ),
-                              ),
-                          onToggleSelection: _controller.toggleSelection,
-                          onArchiveDiary: (diaryId) => unawaited(
-                            _controller.unarchiveDiaryBySwipe(diaryId),
-                          ),
-                          swipeActionIcon: FontAwesomeIcons.boxOpen,
-                        ),
-                      ],
+                              ],
+                            );
+                          },
                     ),
             );
           },

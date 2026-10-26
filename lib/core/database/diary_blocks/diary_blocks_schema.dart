@@ -65,14 +65,16 @@ const Set<String> kDiaryTextBlockTypes = <String>{
   kDiaryBlockCode,
 };
 
-/// 可以挂子块的类型：子块在界面上缩进显示在父块之下。标题、代码块与媒体
-/// 不收子块，旧数据里缩进的行遇到它们时挂到更外层。
+/// 可以挂子块的类型：子块在界面上缩进显示在父块之下，必须与编辑器真正
+/// 画出子块的组件一致（上游可缩进的四种类型，测试兜底）。标题、引用、
+/// 代码块与媒体不画子块：旧数据里缩进的行遇到它们时挂到更外层，已存的
+/// 这类子块读取时提到它后面（见 decodeStoredDiaryBlocks），否则会留在
+/// 树里却看不见。
 const Set<String> kDiaryContainerBlockTypes = <String>{
   kDiaryBlockParagraph,
   kDiaryBlockBulletedList,
   kDiaryBlockNumberedList,
   kDiaryBlockTodoList,
-  kDiaryBlockQuote,
 };
 
 /// 独占一行、没有文字的块（媒体与分隔线）。

@@ -26,7 +26,9 @@ Map<String, Object?> decodeStoredDiaryBlocks(String raw) {
     return diaryBlocksFromPlainText(raw);
   }
   if (isDiaryBlocksDocument(decoded)) {
-    return (decoded as Map).cast<String, Object?>();
+    return liftHiddenDiaryBlockChildren(
+      (decoded as Map).cast<String, Object?>(),
+    );
   }
   if (decoded is List) return diaryBlocksFromQuillOps(decoded);
   if (decoded is Map<String, dynamic>) {
@@ -34,6 +36,62 @@ Map<String, Object?> decodeStoredDiaryBlocks(String raw) {
   }
   // 数字、字符串等合法但不是文档的 JSON：原文就是用户写的字。
   return diaryBlocksFromPlainText(raw);
+}
+
+/// 不画子块的块（不在 [kDiaryContainerBlockTypes] 里，如引用、标题）带着
+/// 子块时，子块依次提到它后面成为同级，子树里的同样逐级处理。
+///
+/// 来源：早先旧版正文转换时把引用后面缩进的行挂成了引用的子块，编辑器的
+/// 引用块不画子块，这些行在编辑页、预览页都看不见。提到后面只少一级缩进，
+/// 阅读顺序不变（纯文本镜像、搜索与导出照旧）；保存后即为修正后的结构。
+/// 没有这样的块时原样返回同一个对象，不做拷贝。
+Map<String, Object?> liftHiddenDiaryBlockChildren(
+  Map<String, Object?> document,
+) {
+  final page = document[kDiaryBlocksDocumentKey];
+  if (page is! Map) return document;
+  final children = page[kDiaryBlockChildrenKey];
+  if (children is! List) return document;
+  final lifted = _liftHiddenChildren(children);
+  if (lifted == null) return document;
+  return {
+    ...document,
+    kDiaryBlocksDocumentKey: {
+      ...page.cast<String, Object?>(),
+      kDiaryBlockChildrenKey: lifted,
+    },
+  };
+}
+
+/// 返回修正后的同级列表；不需要修正时为 null。
+List<Object?>? _liftHiddenChildren(List<Object?> nodes) {
+  List<Object?>? out;
+  for (var i = 0; i < nodes.length; i++) {
+    final node = nodes[i];
+    Map<String, Object?>? replaced;
+    List<Object?>? following;
+    if (node is Map) {
+      final children = node[kDiaryBlockChildrenKey];
+      if (children is List && children.isNotEmpty) {
+        final fixed = _liftHiddenChildren(children);
+        if (!kDiaryContainerBlockTypes.contains(node[kDiaryBlockTypeKey])) {
+          replaced = {...node.cast<String, Object?>()}
+            ..remove(kDiaryBlockChildrenKey);
+          following = fixed ?? children;
+        } else if (fixed != null) {
+          replaced = {
+            ...node.cast<String, Object?>(),
+            kDiaryBlockChildrenKey: fixed,
+          };
+        }
+      }
+    }
+    if (replaced != null) out ??= nodes.sublist(0, i);
+    if (out == null) continue;
+    out.add(replaced ?? node);
+    if (following != null) out.addAll(following);
+  }
+  return out;
 }
 
 /// 块文档编码为存储用 JSON（紧凑写法，库里的 LIKE 模式依赖这一点）。

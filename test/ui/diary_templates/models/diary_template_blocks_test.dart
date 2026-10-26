@@ -22,7 +22,7 @@ void main() {
       'type': 'page',
       'children': [
         {
-          'type': 'quote',
+          'type': 'bulleted_list',
           'data': {
             'delta': [
               {
@@ -63,6 +63,49 @@ void main() {
     expect(
       diaryTemplateCodeFormat.decode(code).style,
       template.copyWith(id: ''),
+    );
+  });
+
+  test('children of quotes, headings and code move after them', () {
+    final body = sanitizeDiaryTemplateBlocks({
+      'document': {
+        'type': 'page',
+        'children': [
+          for (final type in ['quote', 'heading', 'code'])
+            {
+              'type': type,
+              'data': {
+                'delta': [
+                  {'insert': type},
+                ],
+              },
+              'children': [
+                {
+                  'type': 'paragraph',
+                  'data': {
+                    'delta': [
+                      {'insert': 'under $type'},
+                    ],
+                  },
+                },
+              ],
+            },
+        ],
+      },
+    });
+    expect(
+      [
+        for (final (node, depth) in walkDiaryBlocks(body))
+          '$depth ${diaryBlockText(node)}',
+      ],
+      [
+        '0 quote',
+        '0 under quote',
+        '0 heading',
+        '0 under heading',
+        '0 code',
+        '0 under code',
+      ],
     );
   });
 

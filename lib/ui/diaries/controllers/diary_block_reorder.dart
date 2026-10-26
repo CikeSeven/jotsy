@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_editor_controller.dart';
 
 /// 移动整棵子树。目标路径按移动前的树解释，原生事务负责删除后的路径变换；
@@ -52,8 +53,8 @@ bool moveDiaryEditorBlock(
 /// 这里把文档按阅读顺序（先序）排开、去掉被移动的块及其子块，相邻两块
 /// 之间是一条缝；同一条缝能容纳的层级是一个区间——
 /// - 下限是缝下面那块的层级：块落在它前面，只能与它同级或更浅；
-/// - 上限是缝上面那块的层级，那块能收子块（上游可缩进的四种类型，也只有
-///   它们会画出子块）时再加一级，成为它的第一个子块；
+/// - 上限是缝上面那块的层级，那块能收子块（[kDiaryContainerBlockTypes]，
+///   也只有它们会画出子块）时再加一级，成为它的第一个子块；
 /// - 缝上面那块有子块时，缝下面就是它的第一个子块，两者相等，只能放进去。
 /// 移动时先在区间里取最接近原层级的那一级：放得下就原样保持，放不下（如
 /// 拖到标题后面）才取最近的一级，之后拖到放得下的地方又会恢复。
@@ -90,7 +91,7 @@ class DiaryBlockGaps {
     final max = above == null
         ? 1
         : above.path.length +
-              (af.indentableBlockTypes.contains(above.type) ? 1 : 0);
+              (kDiaryContainerBlockTypes.contains(above.type) ? 1 : 0);
     return (min, math.max(min, max));
   }
 

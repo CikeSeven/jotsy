@@ -43,7 +43,7 @@ void main() {
             'type': 'page',
             'children': [
               {
-                'type': 'quote',
+                'type': 'bulleted_list',
                 'data': {
                   'delta': [
                     {

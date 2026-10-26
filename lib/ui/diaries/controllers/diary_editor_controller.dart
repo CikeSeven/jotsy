@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/content_codec.dart';
+import 'diary_block_convert.dart';
 
 export 'package:appflowy_editor/appflowy_editor.dart'
     show Document, Node, Selection, Position, Delta;
@@ -212,18 +213,26 @@ class DiaryEditorController extends ChangeNotifier {
     };
   }
 
+  /// 选中的文字块换成 [type]；换成不画子块的类型时子块提到后面（见
+  /// [addDiaryBlockTypeChange]）。
   void setBlockType(String type, {Map<String, dynamic> attributes = const {}}) {
     if (readOnly) return;
     final transaction = state.transaction;
-    for (final node in selectedNodes) {
-      if (node.delta == null) continue;
-      transaction.updateNodeType(node, type, {
+    transaction.afterSelection = addDiaryBlockTypeChange(
+      transaction,
+      root: document.root,
+      nodes: [
+        for (final node in selectedNodes)
+          if (node.delta != null) node,
+      ],
+      type: type,
+      attributesFor: (node) => {
         kDiaryBlockDeltaKey: node.delta!.toJson(),
         if (node.attributes['align'] case final align?) 'align': align,
         ...attributes,
-      });
-    }
-    transaction.afterSelection = selection;
+      },
+      selection: selection,
+    );
     apply(transaction);
   }
 

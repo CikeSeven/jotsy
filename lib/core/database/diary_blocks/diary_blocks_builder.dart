@@ -1,6 +1,7 @@
 import 'diary_blocks_schema.dart';
 
-/// 从按阅读顺序到达的块建立子树：旧缩进跳级时就近降到合法父块下。
+/// 从按阅读顺序到达的块建立子树：旧缩进跳级时就近降到合法父块下，遇到
+/// 不画子块的块（标题、引用、代码块、媒体）挂到更外层。
 /// 历史格式转换和第三方导入共用这一条规则，输出键序与编辑器 Node 一致。
 class DiaryBlocksBuilder {
   final _root = <Map<String, Object?>>[];

@@ -51,11 +51,15 @@ Map<String, Object?> sanitizeDiaryTemplateBlocks(Object? raw) {
           if (type == 'code' && source['language'] is String)
             'language': source['language'],
         };
+        // 不画子块的块（标题、引用、代码块）的子块提到它后面，与正文读取
+        // 时的修正（liftHiddenDiaryBlockChildren）一致。
+        final nests = kDiaryContainerBlockTypes.contains(type);
         result.add({
           'type': type,
-          if (children.isNotEmpty) 'children': children,
+          if (nests && children.isNotEmpty) 'children': children,
           'data': data,
         });
+        if (!nests) result.addAll(children);
       } else {
         // 媒体与未知块自身丢弃；仍保留其中允许的后代文字。
         result.addAll(children);

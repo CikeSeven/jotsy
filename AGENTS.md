@@ -46,7 +46,7 @@
 - 例外：短期 PoC 可临时放置，但合并前必须归位到对应层。
 
 ## 3. 模块分层规则
-- 必须：日记正文的新写入统一为 AppFlowy `Document.toJson()` 同构的块文档，历史 Delta、旧节点与纯文本的读取只经 `decodeStoredDiaryBlocks`；媒体扫描和路径重绑复用 `diary_blocks_media.dart`，禁止业务模块自行扫描旧 JSON 字段。编辑与只读正文统一经 `DiaryEditor`（`widgets/diary_editor/`），会话与事务经 `DiaryEditorController`（`controllers/`）；模板正文同为块文档，模板码 v2 兼容读取 v1。禁止重新引入 Quill 编辑器、扩展或 PDF 插件；历史 Delta 的转换只保留纯数据兼容（说明见 `docs/appflowy_migration_handoff.md`）。
+- 必须：日记正文的新写入统一为 AppFlowy `Document.toJson()` 同构的块文档，历史 Delta、旧节点与纯文本的读取只经 `decodeStoredDiaryBlocks`；媒体扫描和路径重绑复用 `diary_blocks_media.dart`，禁止业务模块自行扫描旧 JSON 字段。只有 `kDiaryContainerBlockTypes`（段落、列表、待办，与编辑器真正画出子块的组件一致，测试兜底）能挂子块：换块类型经 `addDiaryBlockTypeChange`（换成不画子块的类型时子块提到它后面），已存的此类子块由 `decodeStoredDiaryBlocks`（`liftHiddenDiaryBlockChildren`）读取时修正，模板白名单同样处理，禁止留下看不见的子块。编辑与只读正文统一经 `DiaryEditor`（`widgets/diary_editor/`），会话与事务经 `DiaryEditorController`（`controllers/`）；模板正文同为块文档，模板码 v2 兼容读取 v1。禁止重新引入 Quill 编辑器、扩展或 PDF 插件；历史 Delta 的转换只保留纯数据兼容（说明见 `docs/appflowy_migration_handoff.md`）。
 - 必须：`pages/` 仅负责装配（路由参数、生命周期、provider watch、widget 组合）。
 - 必须：业务流程（异步链路、批量操作、撤销、防抖、发布流程）放 `controllers/`。
 - 必须：数据映射、草稿模型、metadata 组装放 `models/` 或 `viewmodels/`。

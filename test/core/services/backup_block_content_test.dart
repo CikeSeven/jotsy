@@ -77,7 +77,7 @@ void main() {
           'type': 'page',
           'children': [
             {
-              'type': 'quote',
+              'type': 'paragraph',
               'data': {
                 'delta': [
                   {'insert': '/old/diary_images/a.png'},

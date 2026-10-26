@@ -401,7 +401,7 @@ void main() {
   );
 
   testWidgets(
-    'the block handle lines up with the first-line marker and sits in the child indent',
+    'the block handle lines up with the first-line marker and stays in the page margin',
     (tester) async {
       final focus = FocusNode();
       final controller = DiaryEditorController.fromContent(
@@ -457,6 +457,12 @@ void main() {
         tester.getCenter(handle).dy,
         moreOrLessEquals(tester.getCenter(dot(0)).dy, epsilon: 0.5),
       );
+      final topLevelX = tester.getCenter(handle).dx;
+      // 顶层块的把手在 16dp 页面左边距里，紧贴正文左边界。
+      expect(
+        tester.getRect(handle).right - diaryBlockHandleHitSlop.right,
+        moreOrLessEquals(16, epsilon: 0.5),
+      );
 
       controller.select(af.Selection.collapsed(af.Position(path: [0, 0])));
       await frames();
@@ -464,16 +470,89 @@ void main() {
         tester.getCenter(handle).dy,
         moreOrLessEquals(tester.getCenter(dot(1)).dy, epsilon: 0.5),
       );
-      // 子块的把手贴着子块左边界，画在父块的缩进（行首标记列宽）里。
-      final childLeft = tester
-          .getTopLeft(find.byType(DiaryBulletMarker).at(1))
-          .dx;
-      expect(
-        tester.getRect(handle).right - diaryBlockHandleHitSlop.right,
-        moreOrLessEquals(childLeft, epsilon: 0.5),
-      );
+      // 缩进的块：把手不跟着缩进，仍在页面左边距的同一竖列。
+      expect(tester.getCenter(handle).dx, topLevelX);
 
       await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+      focus.dispose();
+    },
+  );
+
+  testWidgets(
+    'dragging an indented paragraph out of its parent keeps it indented',
+    (tester) async {
+      final focus = FocusNode();
+      Map<String, Object?> paragraph(
+        String text, [
+        List<Map<String, Object?>> children = const [],
+      ]) => {
+        'type': 'paragraph',
+        'data': {
+          'delta': [
+            {'insert': text},
+          ],
+        },
+        if (children.isNotEmpty) 'children': children,
+      };
+      final controller = DiaryEditorController.fromContent(
+        jsonEncode({
+          'document': {
+            'type': 'page',
+            'children': [
+              paragraph('parent', [paragraph('child')]),
+              paragraph('next'),
+              paragraph('last'),
+            ],
+          },
+        }),
+      );
+      final before = controller.contentJson;
+      controller.select(af.Selection.collapsed(af.Position(path: [0, 0])));
+      await pump(
+        tester,
+        controller,
+        focusNode: focus,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+      );
+      focus.requestFocus();
+      for (var i = 0; i < 4; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final next = tester.getRect(
+        find.ancestor(
+          of: find.descendant(
+            of: find.byType(af.AppFlowyRichText),
+            matching: find.text('next', findRichText: true),
+          ),
+          matching: find.byType(af.ParagraphBlockComponentWidget),
+        ),
+      );
+      final start = tester.getCenter(find.byType(DiaryBlockHandle));
+      final gesture = await tester.startGesture(start);
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      // 拖到下一段的下半区：落在它之后，仍缩进一级（成为它的子块），
+      // 而不是变回顶层段落。
+      final travel = next.bottom - 4 - start.dy;
+      for (var step = 1; step <= 6; step++) {
+        await gesture.moveTo(start + Offset(0, travel * step / 6));
+        await tester.pump();
+        await tester.pump();
+      }
+      await gesture.up();
+      await tester.pump();
+      String text(af.Path path) =>
+          controller.document.nodeAtPath(path)!.delta!.toPlainText();
+      expect(controller.document.nodeAtPath([0])!.children, isEmpty);
+      expect(text([1]), 'next');
+      expect(text([1, 0]), 'child');
+      expect(text([2]), 'last');
+      controller.undo();
+      await tester.pump();
+      expect(controller.contentJson, before);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 5));
       controller.dispose();
       focus.dispose();
     },

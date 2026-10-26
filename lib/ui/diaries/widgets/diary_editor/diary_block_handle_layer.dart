@@ -21,12 +21,14 @@ import 'diary_block_marker_metrics.dart';
 /// 沟槽，与标题对不齐、嵌套块缩进翻倍。这一层叠在编辑器之上，不改变任何
 /// 块的布局：
 /// - 位置：光标所在块（嵌套时为最内层的块）首行的字形中线（与行首标记同一
-///   口径，见 [_DiaryBlockHandleLayerState._firstLineCenter]），水平落在块
-///   左侧——顶层块在页面左边距里，子块在父块的缩进里。选区跨块、没有焦点或
-///   块滚出视口时隐藏；出现时 `fast` 淡入。
+///   口径，见 [_DiaryBlockHandleLayerState._firstLineCenter]），水平固定在
+///   页面左边距里，不随缩进右移：缩进的块也在同一竖列找到把手，把手不会
+///   挤进上一级的行首标记列。选区跨块、没有焦点或块滚出视口时隐藏；出现时
+///   `fast` 淡入。
 /// - 点按：Expressive 菜单上移 / 长按拖动 / 下移（见 [DiaryBlockHandle]）。
 /// - 长按把手或菜单里的“长按拖动”：拖动整棵子树，实时预览——落点随手指
-///   逐帧计算（自动滚动时手指不动也会变），一变就经 [DiaryBlockDragSession]
+///   逐帧计算（自动滚动时手指不动也会变），保持拖动开始时的缩进层级（见
+///   [resolveDiaryBlockDrop]），一变就经 [DiaryBlockDragSession]
 ///   把块真的挪过去，正文即是松手后的样子；不能落到自身及后代上。被拖的块
 ///   衬一块圆角底表示“拿在手里”。松手只记一步撤销；指针被系统取消时放回
 ///   原处。
@@ -59,7 +61,7 @@ class DiaryBlockHandleLayer extends StatefulWidget {
   final FocusNode? focusNode;
   final Widget child;
 
-  /// 编辑器的左内边距（页面左边距）：顶层块的左边界。
+  /// 编辑器的左内边距（页面左边距）：顶层块的左边界，把手固定在它左侧。
   final double contentLeft;
 
   /// 子块相对父块的缩进（编辑器块配置的 indentPadding，即行首标记列宽）。
@@ -253,18 +255,16 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     return node == null ? null : _placementFor(node);
   }
 
-  /// [node] 首行左侧的把手位置；块不在视口里时为 null。
+  /// [node] 首行那一行、页面左边距里的把手位置；块不在视口里时为 null。
   _HandlePlacement? _placementFor(af.Node node) {
     final box = context.findRenderObject();
     if (box is! RenderBox || !box.hasSize) return null;
-    final rect = node.rect;
-    if (rect == Rect.zero) return null;
-    final local = box.globalToLocal(Offset(rect.left, _handleCenterY(node)));
-    final left = _blockLeft(node, box, fallback: local.dx);
-    final center = Offset(left - diaryBlockHandleWidth / 2, local.dy);
+    if (node.rect == Rect.zero) return null;
+    final y = box.globalToLocal(Offset(0, _handleCenterY(node))).dy;
     // 滚出视口（被页头或底部浮层挡住的部分照常显示，交给上层裁切）。
-    if (center.dy < 0 || center.dy > box.size.height) return null;
-    return _HandlePlacement(node, Offset(math.max(center.dx, 8), center.dy));
+    if (y < 0 || y > box.size.height) return null;
+    final x = math.max(widget.contentLeft - diaryBlockHandleWidth / 2, 8.0);
+    return _HandlePlacement(node, Offset(x, y));
   }
 
   /// 把手中线的全局纵坐标：文字块为首行字形中心，媒体等没有文字的块为
@@ -276,7 +276,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
 
   /// 块的左边界（本层局部坐标），按结构算：顶层块为页面左边距，子块为
   /// 父块左边界加缩进。代码块等组件的节点几何只覆盖内部文字区（行号
-  /// 右侧），直接取它的 left 会把把手与落点线压进块里面。
+  /// 右侧），直接取它的 left 会把拿起的底板压进块里面。
   double _blockLeft(af.Node node, RenderBox box, {required double fallback}) {
     final parent = node.parent;
     if (parent == null || parent.type == af.PageBlockKeys.type) {
@@ -435,7 +435,12 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
       );
     }
     final root = widget.controller.document.root;
-    final destination = resolveDiaryBlockDrop(root, session.node, dy);
+    final destination = resolveDiaryBlockDrop(
+      root,
+      session.node,
+      dy,
+      depth: session.depth,
+    );
     if (destination != null) {
       final list = viewport?.list;
       final anchor = list == null

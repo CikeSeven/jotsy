@@ -35,7 +35,8 @@ const EdgeInsets diaryBlockHandleHitSlop = EdgeInsets.fromLTRB(8, 4, 2, 4);
 
 /// 段落把手本体。
 ///
-/// - 轻点：Expressive 菜单，依次为上移 / 长按拖动 / 下移（同级相邻位置）。
+/// - 轻点：Expressive 菜单，依次为上移 / 长按拖动 / 下移（相邻位置，缩进
+///   层级不变，见 [_StepMenuItem]）。
 /// - 长按把手：开始拖动，把手跟着手指走。
 /// - 在菜单里长按“长按拖动”：菜单收起（上移 / 下移随之消失），这一项变成
 ///   跟手的拖动条留在手指下（由把手层画），把手本身隐去（[hidden]）——
@@ -87,33 +88,13 @@ class DiaryBlockHandle extends StatelessWidget {
           child: ExpressiveMenuAnchor(
             placement: ExpressiveMenuPlacement.start,
             menuChildren: [
-              ExpressiveMenuItem(
-                onPressed: node.previous == null
-                    ? null
-                    : () => moveDiaryEditorBlock(
-                        controller,
-                        node,
-                        node.previous!.path,
-                      ),
-                leadingIcon: _menuIcon(FontAwesomeIcons.angleUp),
-                child: Text(l10n.diaryEditorMoveBlockUp),
-              ),
+              _StepMenuItem(node: node, controller: controller, up: true),
               _DragMenuItem(
                 onDragStart: onDragStart,
                 // 提示挂在把手的 context 上：菜单项随菜单收起而卸载。
                 onTap: () => _showDragTip(context),
               ),
-              ExpressiveMenuItem(
-                onPressed: node.next == null
-                    ? null
-                    : () => moveDiaryEditorBlock(
-                        controller,
-                        node,
-                        node.next!.path.next,
-                      ),
-                leadingIcon: _menuIcon(FontAwesomeIcons.angleDown),
-                child: Text(l10n.diaryEditorMoveBlockDown),
-              ),
+              _StepMenuItem(node: node, controller: controller, up: false),
             ],
             builder: (context, menu, _) => Semantics(
               button: true,
@@ -161,6 +142,48 @@ class DiaryBlockHandle extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 上移 / 下移一格，缩进层级不变（[DiaryBlockGaps.step]）：子块可以移出
+/// 父块，接到相邻块的子块里；朝那个方向没有放得下这一层级的位置时禁用。
+/// 随文档变化重算是否可用——菜单开着时把手不一定重建。
+class _StepMenuItem extends StatelessWidget {
+  const _StepMenuItem({
+    required this.node,
+    required this.controller,
+    required this.up,
+  });
+
+  final af.Node node;
+  final DiaryEditorController controller;
+  final bool up;
+
+  af.Path? _destination() => node.parent == null
+      ? null
+      : DiaryBlockGaps(controller.document.root, node).step(up: up);
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: controller,
+    builder: (context, _) => ExpressiveMenuItem(
+      onPressed: _destination() == null
+          ? null
+          : () {
+              final destination = _destination();
+              if (destination != null) {
+                moveDiaryEditorBlock(controller, node, destination);
+              }
+            },
+      leadingIcon: _menuIcon(
+        up ? FontAwesomeIcons.angleUp : FontAwesomeIcons.angleDown,
+      ),
+      child: Text(
+        up
+            ? context.l10n.diaryEditorMoveBlockUp
+            : context.l10n.diaryEditorMoveBlockDown,
+      ),
+    ),
+  );
 }
 
 /// 菜单前置图标占固定 16dp 宽：Font Awesome 按字形宽度绘制，点阵比箭头

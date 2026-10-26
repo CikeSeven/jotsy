@@ -2,31 +2,70 @@ import 'dart:ui' show Rect;
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
+import '../../controllers/diary_block_reorder.dart';
+
 /// 拖动段落的几何判断：手指下的落点，以及预览移动后该停在原处的块。
 /// 只读节点的全局矩形（上一帧的布局），不改文档。
 
-/// 找纵坐标 [dy]（全局）所在的块（嵌套时取最内层），按上下半区决定落在它
-/// 之前还是之后，返回按当前的树解释的目标路径；落在自身、后代或紧邻的
-/// 前后位置（等于没动）时为 null。带子块的块只能落在它之前：它“之后”的
-/// 位置由下一个同级块的上沿给出。
+/// 纵坐标 [dy]（全局）处的落点：先定落在哪条缝（[DiaryBlockGaps]），再在
+/// 缝里取最接近 [depth] 的层级，返回按当前的树解释的目标路径；落在自身、
+/// 后代或等于没动时为 null。
+///
+/// 缝按手指所在的块（嵌套时取最内层）找：在它自身文字的上半区为它之前，
+/// 下半区为它之后。带子块的块只取之前——它“之后”就是第一个子块之前，
+/// 由子块的上半区给出。手指不在任何块上（页头、末尾留白、块之间的空隙、
+/// 父块里子块之外的部分）时，取下方最近的块之前，下方没有块时取最后一个
+/// 可见块之后。
+///
+/// 层级按拖动开始时的 [depth] 取，不跟着手指所在的块：缩进的段落拖到哪里
+/// 都还是缩进的（接到上一块的子块里），顶层段落拖过列表也不会被并进去，
+/// 除非那条缝只容得下更深的层级。
 ///
 /// 预览会把块真的挪到落点，挪过去后 [dy] 就落在它自己身上，所以不会来回
 /// 跳——前提是 [dy] 在视口里（视口外还建着的缓存块会被命中，块会挪到
 /// 看不见的地方），由调用方夹好。
-af.Path? resolveDiaryBlockDrop(af.Node root, af.Node source, double dy) {
-  final hit = _hitBlock(root.children, dy) ?? _edgeBlock(root, dy);
-  if (hit == null || hit == source || source.isParentOf(hit)) return null;
-  final rect = hit.rect;
-  final ownBottom = hit.children.isEmpty
-      ? rect.bottom
-      : _firstVisibleTop(hit.children) ?? rect.bottom;
-  final after = hit.children.isEmpty && dy >= (rect.top + ownBottom) / 2;
-  final destination = after ? hit.path.next : hit.path;
+af.Path? resolveDiaryBlockDrop(
+  af.Node root,
+  af.Node source,
+  double dy, {
+  required int depth,
+}) {
+  final hit = _hitBlock(root.children, dy);
+  if (hit == source || (hit != null && source.isParentOf(hit))) return null;
+  final gaps = DiaryBlockGaps(root, source);
+  final gap = hit == null ? null : _gapOn(gaps, hit, dy);
+  final destination = gaps.destination(gap ?? _gapBelow(gaps, dy), depth);
+  if (destination == null) return null;
   final sourcePath = source.path;
   if (destination.equals(sourcePath) || destination.equals(sourcePath.next)) {
     return null;
   }
   return destination;
+}
+
+/// 手指在 [hit] 自身文字上时的缝；在它的子块区域里（子块之间的空隙）时
+/// 为 null，交给 [_gapBelow]。
+int? _gapOn(DiaryBlockGaps gaps, af.Node hit, double dy) {
+  final index = gaps.blocks.indexOf(hit);
+  final rect = hit.rect;
+  final ownBottom = _firstVisibleTop(hit.children) ?? rect.bottom;
+  if (dy >= ownBottom) return null;
+  // 被拖的块自己挂在它下面时不算子块：否则手指停在它的下半区，块会在
+  // “它之前”与“它的子块”之间来回跳。
+  final hasChildren = hit.children.any((child) => child != gaps.source);
+  return !hasChildren && dy >= (rect.top + ownBottom) / 2 ? index + 1 : index;
+}
+
+/// 下方最近的可见块之前；下方没有时为最后一个可见块之后。
+int _gapBelow(DiaryBlockGaps gaps, double dy) {
+  var gap = 0;
+  for (var i = 0; i < gaps.blocks.length; i++) {
+    final rect = gaps.blocks[i].rect;
+    if (rect == Rect.zero) continue;
+    if (rect.top > dy) return i;
+    gap = i + 1;
+  }
+  return gap;
 }
 
 af.Node? _hitBlock(Iterable<af.Node> nodes, double dy) {
@@ -44,19 +83,6 @@ double? _firstVisibleTop(Iterable<af.Node> nodes) {
     if (rect != Rect.zero) return rect.top;
   }
   return null;
-}
-
-/// [dy] 在全部可见块的上方或下方（页头、末尾留白）：落到最近的顶层块。
-af.Node? _edgeBlock(af.Node root, double dy) {
-  af.Node? first;
-  af.Node? last;
-  for (final node in root.children) {
-    if (node.rect == Rect.zero) continue;
-    first ??= node;
-    last = node;
-  }
-  if (first == null || last == null) return null;
-  return dy < first.rect.top ? first : last;
 }
 
 /// 把 [source] 移到 [destination] 之前，挑一个不受这次移动影响的顶层块，

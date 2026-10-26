@@ -57,19 +57,15 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
-# gal 与 local_auth_windows 已使用 C++20，却仍添加 /await，导致 WinRT
-# 选用实验协程并在 VS 2026 / MSVC 14.51 触发 STL1011。等插件完成注册后
-# 只移除这两个目标的旧选项，保留其他编译设置；不修改 pub 缓存或生成文件，
-# 让本地、CI 与正式发布都使用标准协程。目标检查兼容后续移除这些插件。
+# gal 与 local_auth_windows 使用 /await 的实验协程；旧版 local_auth_windows
+# 还依赖协程中的 return 扩展，不能仅移除该选项。VS 2026 / MSVC 14.51
+# 会以 STL1011 中断，因此仅为这两个目标启用 MSVC 提供的兼容宏，保留插件
+# 现有行为。等上游同时迁移到标准协程后移除此设置；应用与其他插件不受影响。
 if(MSVC)
   foreach(plugin_target IN ITEMS gal_plugin local_auth_windows_plugin)
     if(TARGET ${plugin_target})
-      get_target_property(plugin_options ${plugin_target} COMPILE_OPTIONS)
-      if(plugin_options)
-        list(REMOVE_ITEM plugin_options "/await")
-        set_property(TARGET ${plugin_target} PROPERTY COMPILE_OPTIONS "${plugin_options}")
-      endif()
-      target_compile_features(${plugin_target} PRIVATE cxx_std_20)
+      target_compile_definitions(${plugin_target} PRIVATE
+        _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
     endif()
   endforeach()
 endif()

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Jotsy
+Comment=Write and keep your diary
+Comment[zh_CN]=记录与珍藏你的日记
+Exec=jotsy %U
+Icon=com.jotsy.diary
+Terminal=false
+Categories=Office;Utility;
+StartupWMClass=com.jotsy.diary

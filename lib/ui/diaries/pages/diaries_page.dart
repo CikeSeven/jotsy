@@ -190,6 +190,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// 正在阅读的卡片把位置记在这里，用来把它滚进视口。
   final DiaryReadingCardLocator _readingCardLocator = DiaryReadingCardLocator();
 
+  /// 桌面上 Shift + 点按选范围的起点（见 [DiarySelectionAnchor]）。
+  final DiarySelectionAnchor _selectionAnchor = DiarySelectionAnchor();
+
   /// 常驻的标签栏在列表滚动视图里的 context（构建时记下）：要揭示的卡片还
   /// 没构建时，经它找到列表的滚动位置。切换布局换了滚动视图后旧的会被
   /// 卸载，用时先确认 `mounted`。
@@ -723,6 +726,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     _controller.archiveDiaryBySwipe(diaryId),
                                   ),
                                   isSearchResultEmpty: false,
+                                  selectionAnchor: _selectionAnchor,
                                   menuActions: _controller.menuActions(
                                     notebooksEnabled: notebooksEnabled,
                                   ),

@@ -66,6 +66,9 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   final Set<String> _appearingDiaryIds = <String>{};
   Timer? _appearingClearTimer;
 
+  /// 桌面上 Shift + 点按选范围的起点（见 [DiarySelectionAnchor]）。
+  final DiarySelectionAnchor _selectionAnchor = DiarySelectionAnchor();
+
   /// 业务控制器：处理删除/取消归档/撤销等流程。
   late final ArchivedDiariesController _controller;
 
@@ -294,6 +297,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                     ),
                                     swipeActionIcon: FontAwesomeIcons.boxOpen,
                                     menuActions: _menuActions(),
+                                    selectionAnchor: _selectionAnchor,
                                   ),
                                 ),
                               ],

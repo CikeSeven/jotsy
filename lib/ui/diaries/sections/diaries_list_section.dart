@@ -5,6 +5,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/settings_service.dart';
+import '../controllers/diary_pointer_selection.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../viewmodels/diary_card_resolved_style.dart';
 import '../widgets/diaries_empty_state.dart';
@@ -22,6 +23,7 @@ import '../../widgets/list_item_presence.dart';
 export '../widgets/diary_card/diary_card.dart' show DiaryOpenCallback;
 export '../widgets/diary_card/diary_card_context_menu.dart'
     show DiaryCardMenuActions;
+export '../controllers/diary_pointer_selection.dart' show DiarySelectionAnchor;
 
 /// 日记页主列表区块。
 ///
@@ -63,6 +65,7 @@ class DiariesListSection extends StatelessWidget {
     this.readingDiaryId,
     this.readingCardLocator,
     this.menuActions,
+    this.selectionAnchor,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -139,6 +142,11 @@ class DiariesListSection extends StatelessWidget {
   /// 桌面上卡片右键菜单的动作（见 [DiaryCardContextMenu]）；null 时不提供
   /// 右键菜单（日历、设置页预览）。手机上忽略。
   final DiaryCardMenuActions? menuActions;
+
+  /// 桌面上 Ctrl / ⌘ + 点按切换勾选、Shift + 点按选范围（见
+  /// [handleDiaryModifierTap]）的范围起点；null 时不支持修饰键多选（搜索、
+  /// 日历这类没有多选的列表）。手机上忽略。
+  final DiarySelectionAnchor? selectionAnchor;
 
   @override
   Widget build(BuildContext context) {
@@ -238,6 +246,7 @@ class DiariesListSection extends StatelessWidget {
     required DiaryCardResolvedStyle resolved,
   }) {
     final diaryId = diary.diary.diaryId;
+    final anchor = AppPlatform.isDesktop ? selectionAnchor : null;
     Widget card = DiaryCard(
       diary: diary,
       resolved: resolved,
@@ -245,9 +254,23 @@ class DiariesListSection extends StatelessWidget {
       isSelectionMode: isSelectionMode,
       maxVisibleTags: maxVisibleTags,
       onOpenEditor: onOpenEditor,
-      onToggleSelection: onToggleSelection,
+      // 长按勾选同样记作范围起点。
+      onToggleSelection: anchor == null
+          ? onToggleSelection
+          : (String id, bool force) {
+              anchor.id = id;
+              onToggleSelection(id, force);
+            },
       enableCoverHero: enableCoverHero,
       opensLockedCapsulePage: opensLockedCapsulePage,
+      onTapIntercept: anchor == null
+          ? null
+          : (DiaryWithTags tapped) => handleDiaryModifierTap(
+              order: <String>[for (final item in diaries) item.diary.diaryId],
+              diaryId: tapped.diary.diaryId,
+              anchor: anchor,
+              toggle: onToggleSelection,
+            ),
     );
     // 双栏时每张卡都包一层阅读环（结构恒定，换选时卡片不重建），环随卡片
     // 一起左滑；单栏时不包。

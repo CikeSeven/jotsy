@@ -13,7 +13,8 @@ part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 ///   重新显示；
 /// - 删除后的去向、列表里不见了时的清除、离开私密日记本时的清除都在这里；
 /// - 键盘（只在双栏、焦点在日记页里且不在输入框时）：↑ / ← 上一篇、↓ / →
-///   下一篇（并把选中的卡片滚进视口），Enter 编辑选中的一篇，Esc 清除选中；
+///   下一篇（并把选中的卡片滚进视口），Enter 编辑选中的一篇，Delete 删除
+///   选中的一篇（确认 + 撤销，与右键菜单同一流程），Esc 清除选中；
 ///   移过已加载部分的末尾时先加载下一页，到达后接着选下一篇；
 /// - 不构建 UI（右栏见 `DiaryDetailPane`）。
 class DiariesReadingSelectionController {
@@ -134,7 +135,8 @@ class DiariesReadingSelectionController {
     // 日记页在首页里保活：切到别的 Tab 后焦点可能还留在这里，那时不响应。
     if (!_state._twoPane ||
         !TickerMode.valuesOf(_state.context).enabled ||
-        _focusInTextField()) {
+        _focusInTextField() ||
+        _overlayOpen()) {
       return KeyEventResult.ignored;
     }
     final keyboard = HardwareKeyboard.instance;
@@ -168,8 +170,20 @@ class DiariesReadingSelectionController {
       clear();
       return KeyEventResult.handled;
     }
+    final selected = selectedId;
+    if (key == LogicalKeyboardKey.delete && selected != null) {
+      if (event is KeyDownEvent) {
+        unawaited(_state._controller.deleteDiary(selected));
+      }
+      return KeyEventResult.handled;
+    }
     return KeyEventResult.ignored;
   }
+
+  /// 页面上开着登记了局部历史的浮层（卡片右键菜单等）：菜单里没被处理的
+  /// 按键（焦点停在菜单本身时的回车、Delete）冒泡上来时不当作对列表的操作。
+  bool _overlayOpen() =>
+      ModalRoute.of(_state.context)?.willHandlePopInternally ?? false;
 
   /// 焦点是否在输入框里（搜索框、对话框外的文字输入等）。
   static bool _focusInTextField() {

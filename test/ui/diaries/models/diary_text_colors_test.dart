@@ -4,6 +4,7 @@ import 'dart:ui' show Color;
 import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
+import 'package:node_diary/ui/diaries/models/diary_material_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 
 void main() {
@@ -132,6 +133,32 @@ void main() {
     );
   });
 
+  test('the white preset is opaque pure white, the same as the Material '
+      'white', () {
+    for (final target in DiaryColorTarget.values) {
+      final white = DiaryColorPreset.white.colorFor(target);
+      expect(encodeDiaryColor(white), '#FFFFFFFF', reason: target.name);
+      expect(DiaryColorPreset.match(white, target), DiaryColorPreset.white);
+      // 与色系页灰色系的白同值：选区是白色时两页选中同一格。
+      expect(DiaryMaterialFamily.of(white), DiaryMaterialFamily.grey);
+    }
+    // 六位写法同样是纯白；半透明的白不是预设。
+    expect(
+      DiaryColorPreset.match(
+        parseDiaryColorValue('#ffffff')!,
+        DiaryColorTarget.text,
+      ),
+      DiaryColorPreset.white,
+    );
+    expect(
+      DiaryColorPreset.match(
+        const Color(0x4DFFFFFF),
+        DiaryColorTarget.background,
+      ),
+      isNull,
+    );
+  });
+
   test('collects distinct non-preset colors in document order', () {
     final document = documentFromLegacyDelta(
       (Delta()
@@ -141,6 +168,8 @@ void main() {
             ..insert('d', <String, dynamic>{'color': 'red'})
             ..insert('e', <String, dynamic>{'color': '#ff00aa00'})
             ..insert('f', <String, dynamic>{'background': '#80ABCDEF'})
+            // 纯白是预设，不算本篇用过的颜色。
+            ..insert('g', <String, dynamic>{'color': '#ffffff'})
             ..insert('\n'))
           .toJson(),
     );
@@ -163,10 +192,19 @@ void main() {
       expect(grid.height, 128);
     });
 
+    test('seven columns still fit the presets in two rows', () {
+      final grid = DiaryColorGridLayout.resolve(innerWidth: 280);
+      expect(grid.columns, 7);
+      expect(grid.presetRows, 2);
+      expect(grid.height, 128);
+    });
+
     test('columns are clamped between 6 and 16', () {
       final narrow = DiaryColorGridLayout.resolve(innerWidth: 200);
       expect(narrow.columns, 6);
-      expect(narrow.presetRows, 2);
+      // 默认 + 12 个预设共 13 格，只有 6 列的极窄窗口才排三行。
+      expect(narrow.presetRows, 3);
+      expect(narrow.height, 168);
       final wide = DiaryColorGridLayout.resolve(innerWidth: 1000);
       expect(wide.columns, 16);
       expect(wide.presetRows, 1);

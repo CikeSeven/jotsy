@@ -12950,7 +12950,7 @@ abstract class AppLocalizations {
   /// **'Blue gray'**
   String get diaryColorBlueGray;
 
-  /// Name of the pure white swatch at the light end of the gray Material color family.
+  /// Name of the pure white swatch in the editor color panel (a preset swatch, and the light end of the gray Material color family).
   ///
   /// In en, this message translates to:
   /// **'White'**

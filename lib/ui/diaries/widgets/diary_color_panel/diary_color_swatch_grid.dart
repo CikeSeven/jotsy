@@ -3,7 +3,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_swatch.dart';
 
-/// 色板页的预设网格：第一格默认 / 无背景，随后 11 个预设；按 [grid] 的列数
+/// 色板页的预设网格：第一格默认 / 无背景，随后 12 个预设；按 [grid] 的列数
 /// 逐行靠左排，列宽 = 可用宽度 / 列数（下方“我的颜色”一行用同一列宽对齐）。
 ///
 /// - 输入：目标、选区当前颜色、网格排布；

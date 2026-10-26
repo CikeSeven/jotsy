@@ -10177,7 +10177,7 @@
   },
   "diaryColorWhite": "白",
   "@diaryColorWhite": {
-    "description": "编辑器颜色面板：灰色系最浅一端的纯白色块名称。"
+    "description": "编辑器颜色面板：纯白色块的名称（色板页的预设，也是灰色系最浅一端）。"
   },
   "diaryColorBlack": "黑",
   "@diaryColorBlack": {

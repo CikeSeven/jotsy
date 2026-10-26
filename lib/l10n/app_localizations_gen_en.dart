@@ -8418,4 +8418,80 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get codeBlockPreviewIntro =>
       'Code blocks are highlighted by language, and inline code follows the theme too, like ';
+
+  @override
+  String get diaryEditorLinkUrl => 'Link URL';
+
+  @override
+  String get diaryEditorInvalidLink => 'Enter a valid link URL';
+
+  @override
+  String get diaryEditorRemoveLink => 'Remove link';
+
+  @override
+  String get diaryEditorDragBlock => 'Drag block';
+
+  @override
+  String get diaryEditorDragBlockHold => 'Hold to drag';
+
+  @override
+  String get diaryEditorDragBlockTip =>
+      'Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.';
+
+  @override
+  String get diaryEditorMoveBlockUp => 'Move block up';
+
+  @override
+  String get diaryEditorMoveBlockDown => 'Move block down';
+
+  @override
+  String get diaryEditorParagraph => 'Paragraph';
+
+  @override
+  String get diaryEditorIndent => 'Indent';
+
+  @override
+  String get diaryEditorOutdent => 'Outdent';
+
+  @override
+  String get diaryEditorSlashCommands => 'Insert block';
+
+  @override
+  String get diaryEditorDivider => 'Divider';
+
+  @override
+  String get diaryEditorUnsupportedBlock => 'Unsupported content';
+
+  @override
+  String get diaryEditorImageWidth => 'Image width';
+
+  @override
+  String get diaryEditorImageHeight => 'Image height';
+
+  @override
+  String get diaryEditorHeading1 => 'Heading 1';
+
+  @override
+  String get diaryEditorHeading2 => 'Heading 2';
+
+  @override
+  String get diaryEditorHeading3 => 'Heading 3';
+
+  @override
+  String get diaryEditorCommandGroupText => 'Text';
+
+  @override
+  String get diaryEditorCommandGroupList => 'Lists';
+
+  @override
+  String get diaryEditorCommandGroupInsert => 'Insert';
+
+  @override
+  String get diaryEditorCommandEmpty => 'No matching blocks';
+
+  @override
+  String get diaryEditorEmptyLineHint => 'Type / to insert a block';
+
+  @override
+  String get diaryEditorCommandTypeToFilter => 'Keep typing to filter';
 }

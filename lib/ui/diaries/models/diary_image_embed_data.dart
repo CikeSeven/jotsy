@@ -4,7 +4,7 @@ import 'dart:io' show File;
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart'
     show AlignmentDirectional, BoxConstraints;
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 /// 把图片 embed 上记录的宽高解析为显示上限，而不是强制尺寸。
 ///
@@ -15,11 +15,11 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 /// 图片按原始比例放进去，圆角裁切才能贴合真实画面。上游绘制用 scaleDown，
 /// 本就不会放大小图，作为上限后可见画面尺寸与原先一致。
 /// 只识别纯数字与 px，百分比/vw 等单位按未设置处理，交给布局宽度兜底。
-BoxConstraints diaryImageEmbedBounds(quill.Node node) {
-  final attributes = node.style.attributes;
-  var width = _parseLength(attributes[quill.Attribute.width.key]?.value);
-  var height = _parseLength(attributes[quill.Attribute.height.key]?.value);
-  final style = attributes[quill.Attribute.style.key]?.value;
+BoxConstraints diaryImageEmbedBounds(af.Node node) {
+  final attributes = node.attributes;
+  var width = _parseLength(attributes['width']);
+  var height = _parseLength(attributes['height']);
+  final style = attributes['style'];
   if (style is String) {
     for (final declaration in style.split(';')) {
       final separator = declaration.indexOf(':');
@@ -42,9 +42,8 @@ BoxConstraints diaryImageEmbedBounds(quill.Node node) {
 /// 比列宽窄的正文图片在行内的水平位置：默认靠行首（缩放菜单缩小后应贴着
 /// 正文左缘，而不是悬在中间）；所在行带对齐属性（导入的 HTML 居中/居右段落）
 /// 时从之。上游缩放菜单只写宽高，不写对齐。
-AlignmentGeometry diaryImageEmbedAlignment(quill.Node node) {
-  final line = node.parent;
-  final align = line?.style.attributes[quill.Attribute.align.key]?.value;
+AlignmentGeometry diaryImageEmbedAlignment(af.Node node) {
+  final align = node.attributes['align'];
   return switch (align) {
     'center' => Alignment.center,
     'right' => Alignment.centerRight,
@@ -69,16 +68,16 @@ String diaryImageStyleWithSize(
         .substring(separator + 1)
         .trim();
   }
-  declarations[quill.Attribute.width.key] = width.toString();
-  declarations[quill.Attribute.height.key] = height.toString();
+  declarations['width'] = width.toString();
+  declarations['height'] = height.toString();
   return declarations.entries
       .map((entry) => '${entry.key}: ${entry.value}; ')
       .join();
 }
 
 /// 图片 embed 当前的 `style` 属性（缩放菜单写入的宽高等）；没有时为 null。
-String? diaryImageStyleOf(quill.Node node) {
-  final style = node.style.attributes[quill.Attribute.style.key]?.value;
+String? diaryImageStyleOf(af.Node node) {
+  final style = node.attributes['style'];
   return style is String ? style : null;
 }
 

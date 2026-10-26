@@ -46,13 +46,12 @@ class EditDiaryController {
   }
 
   /// 替换正文控制器时同步管理监听，避免旧控制器泄漏。
-  void replaceContentController(quill.QuillController nextController) {
+  void replaceContentController(editor.DiaryEditorController nextController) {
     _state._mediaImportController.cancel();
     _state._contentController.removeListener(onCreateDraftInputChanged);
     _state._contentController.dispose();
     _state._contentController = nextController;
     _state._contentController.addListener(onCreateDraftInputChanged);
-    _state._caretFollow.attach(nextController);
   }
 
   /// 新建模式保存草稿，已有笔记直接自动保存；详情回填阶段不触发写入。
@@ -142,13 +141,15 @@ class EditDiaryController {
       }
 
       // 优先恢复富文本文档；若 JSON 不可用则降级为纯文本，保证可读可编辑。
-      quill.Document restoredDocument;
+      editor.Document restoredDocument;
       try {
-        restoredDocument = decodeDiaryContentToDocument(
+        restoredDocument = editor.diaryEditorDocument(
           restoredDraft.contentDocJson,
         );
       } catch (_) {
-        restoredDocument = documentFromPlainText(restoredDraft.contentText);
+        restoredDocument = editor.diaryEditorDocument(
+          restoredDraft.contentText,
+        );
       }
 
       final restoredMeta = DiaryMetaDraft.fromNewDiaryDraft(
@@ -172,9 +173,9 @@ class EditDiaryController {
               : restoredMeta,
         );
         replaceContentController(
-          quill.QuillController(
+          editor.DiaryEditorController(
             document: restoredDocument,
-            selection: const TextSelection.collapsed(offset: 0),
+            selection: editor.Selection.single(path: [0], startOffset: 0),
           ),
         );
       });
@@ -200,8 +201,7 @@ class EditDiaryController {
   /// 保存前校验：至少需要标题或正文其一非空。
   bool validateDraft() {
     final title = _state._titleController.text.trim();
-    if (title.isEmpty &&
-        !diaryDocumentHasVisibleContent(_state._contentController.document)) {
+    if (title.isEmpty && !_state._contentController.hasContent) {
       unawaited(
         HomeHintVisibilityScope.showTrackedSnackBar(
           context: _state.context,

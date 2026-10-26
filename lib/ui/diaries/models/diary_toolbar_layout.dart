@@ -3,10 +3,10 @@ import 'dart:math' as math;
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 
 /// 单个按钮在工具栏里占用的边长：32dp 可见按钮，padded 触控区在 compact 密度
-/// 下为 48 - 8 = 40dp。按钮样式见 `buildDiaryToolbarItemConfig`，两者须一致。
+/// 下为 48 - 8 = 40dp。按钮样式见 `buildDiaryToolbarItem`，两者须一致。
 const double kDiaryToolbarButtonExtent = 40;
 
-/// 「缩进」两个按钮之间的间距（Quill 工具栏的 section spacing）。
+/// 「缩进」两个按钮之间的间距。
 const double kDiaryToolbarIndentGap = 4;
 
 /// 工具栏一排的高度。

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'dart:async';
+import '../../diaries/widgets/diary_editor/diary_editor.dart';
+import '../../diaries/controllers/diary_editor_insert.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
@@ -8,7 +10,6 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../diaries/providers/diary_saved_colors_provider.dart';
 import '../../diaries/providers/diary_typography_provider.dart';
-import '../../diaries/viewmodels/diary_quill_styles.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../../diaries/widgets/diary_mobile_toolbar.dart';
 import '../controllers/diary_template_editor_controller.dart';
@@ -16,7 +17,7 @@ import '../widgets/diary_template_variable_bar.dart';
 
 /// 模板编辑页的“内容”标签：标题格式、插入变量条与正文。
 ///
-/// 正文是独立的 Quill 编辑器（自带滚动），不走日记编辑页的光标跟随机制；
+/// 正文是独立的 AppFlowy 编辑器（自带滚动），不走日记编辑页的光标跟随机制；
 /// 键盘弹起且正文有焦点时（打开“始终显示工具栏”后一直），底部显示与日记
 /// 编辑页同一套悬浮工具栏，但去掉图片、视频、附件、录音与插入时间——模板
 /// 里不能有媒体，时间应当用变量。
@@ -61,7 +62,6 @@ class _DiaryTemplateEditorContentTabState
     canRequestFocus: false,
     skipTraversal: true,
   );
-  final ScrollController _bodyScroll = ScrollController();
   bool _lastFocusedBody = true;
 
   @override
@@ -84,28 +84,16 @@ class _DiaryTemplateEditorContentTabState
     _titleFocus.dispose();
     _bodyFocus.dispose();
     _toolbarFocus.dispose();
-    _bodyScroll.dispose();
     super.dispose();
   }
 
   void _insert(String token) {
     if (_lastFocusedBody) {
-      final body = widget.controller.body;
-      final length = body.document.length;
-      final selection = body.selection;
-      final start = selection.isValid
-          ? selection.start.clamp(0, length - 1)
-          : length - 1;
-      final end = selection.isValid
-          ? selection.end.clamp(start, length - 1)
-          : start;
-      body.replaceText(
-        start,
-        end - start,
-        token,
-        TextSelection.collapsed(offset: start + token.length),
+      unawaited(
+        insertDiaryEditorText(widget.controller.body, token).then((_) {
+          if (mounted) _bodyFocus.requestFocus();
+        }),
       );
-      _bodyFocus.requestFocus();
       return;
     }
     final title = widget.controller.titlePattern;
@@ -197,28 +185,16 @@ class _DiaryTemplateEditorContentTabState
         ),
         DiaryTemplateVariableBar(onInsert: _insert),
         Expanded(
-          child: Padding(
+          // 边距交给编辑器本身：段落把手画在页面左边距里，边距包在外面
+          // 时把手只能压在文字上。
+          child: DiaryEditor(
+            controller: widget.controller.body,
+            appearance: appearance,
+            focusNode: _bodyFocus,
+            placeholder: l10n.diaryTemplateEditorBodyHint,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            // 样式在编辑器位置（Scaffold 之下）生成，见 DiaryQuillStylesBuilder。
-            child: DiaryQuillStylesBuilder(
-              appearance: appearance,
-              controller: widget.controller.body,
-              scrollController: _bodyScroll,
-              builder: (BuildContext context, DiaryQuillLook look) =>
-                  quill.QuillEditor.basic(
-                    controller: widget.controller.body,
-                    focusNode: _bodyFocus,
-                    scrollController: _bodyScroll,
-                    config: look.configure(
-                      quill.QuillEditorConfig(
-                        autoFocus: false,
-                        placeholder: l10n.diaryTemplateEditorBodyHint,
-                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                        embedBuilders: buildDiaryQuillEmbedBuilders(),
-                      ),
-                    ),
-                  ),
-            ),
+            header: const SizedBox(height: 12),
+            footer: const SizedBox(height: 24),
           ),
         ),
         if (showToolbar)

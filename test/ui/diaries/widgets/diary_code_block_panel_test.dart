@@ -1,9 +1,8 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_code_language_tracker.dart';
-import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_newline.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_language_tracker.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_language.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_code_block_panel.dart';
@@ -27,14 +26,14 @@ final List<DiaryToolbarItem> _codeFirstOrder = <DiaryToolbarItem>[
 /// 正文：`intro` / 两行代码块 `code1`、`code2` / `after`。
 ///
 /// 偏移：intro 0–5，code1 6–11，code2 12–17，after 18–23（各含行尾换行）。
-quill.QuillController _codeController({
+DiaryEditorController _codeController({
   Object codeValue = true,
   int caret = 8,
   String line1 = 'code1',
   String line2 = 'code2',
 }) {
-  final controller = quill.QuillController(
-    document: quill.Document.fromJson(<Map<String, dynamic>>[
+  final controller = DiaryEditorController(
+    document: documentFromLegacyDelta(<Map<String, dynamic>>[
       <String, dynamic>{'insert': 'intro\n$line1'},
       <String, dynamic>{
         'insert': '\n',
@@ -47,14 +46,14 @@ quill.QuillController _codeController({
       },
       <String, dynamic>{'insert': 'after\n'},
     ]),
-    selection: TextSelection.collapsed(offset: caret),
   );
+  controller.updateSelection(TextSelection.collapsed(offset: caret));
   addTearDown(controller.dispose);
   return controller;
 }
 
 /// 各行行尾换行上的 `code-block` 值（不是代码块为 null）。
-List<Object?> _lineCodeValues(quill.QuillController controller) => <Object?>[
+List<Object?> _lineCodeValues(DiaryEditorController controller) => <Object?>[
   for (final op in controller.document.toDelta().toList())
     if (op.data case final String text)
       for (final _ in '\n'.allMatches(text)) op.attributes?['code-block'],
@@ -62,7 +61,7 @@ List<Object?> _lineCodeValues(quill.QuillController controller) => <Object?>[
 
 Future<ColorPanelHarness> _pump(
   WidgetTester tester,
-  quill.QuillController controller, {
+  DiaryEditorController controller, {
   List<DiaryToolbarItem>? order,
   DiaryCodeBlockStyle codeBlockStyle = DiaryCodeBlockStyle.defaults,
 }) async {
@@ -107,7 +106,12 @@ void main() {
 
     await _tapCodeTool(tester);
 
-    expect(diaryCodeBlockAt(controller.document, 2), isNotNull);
+    expect(
+      controller.document.nodeAtPath(
+        diaryEditorSelectionAtOffset(controller.document, 2).end.path,
+      ),
+      isNotNull,
+    );
     expect(find.byType(DiaryCodeBlockPanel), findsNothing);
     expect(harness.extents.where((extent) => extent > 0), isEmpty);
     expect(harness.routes.pushes, pushes);
@@ -165,9 +169,19 @@ void main() {
     expect(_chipSelected(tester, 'Python'), isTrue);
 
     // 最后一个语言要先滑过去才能点到。
-    await tester.ensureVisible(find.text('Diff'));
+    await tester.ensureVisible(
+      find.descendant(
+        of: find.byType(DiaryCodeBlockPanel),
+        matching: find.text('Diff'),
+      ),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Diff'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(DiaryCodeBlockPanel),
+        matching: find.text('Diff'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(_lineCodeValues(controller), <Object?>[null, 'diff', 'diff', null]);
 
@@ -192,7 +206,12 @@ void main() {
     await _tapCodeTool(tester);
 
     final panel = tester.getRect(find.byType(DiaryCodeBlockPanel));
-    final chip = tester.getRect(find.text('Diff'));
+    final chip = tester.getRect(
+      find.descendant(
+        of: find.byType(DiaryCodeBlockPanel),
+        matching: find.text('Diff'),
+      ),
+    );
     expect(chip.left, greaterThanOrEqualTo(panel.left));
     expect(chip.right, lessThanOrEqualTo(panel.right));
     expect(_chipSelected(tester, 'Diff'), isTrue);
@@ -203,10 +222,12 @@ void main() {
       line1: 'def greet(name):',
       line2: '    print(f"hello {name}")',
     );
-    final block = diaryCodeBlockAt(controller.document, 8)!;
-    final detected = DiaryCodeLanguageTracker.of(
+    final block = controller.document.nodeAtPath(
+      diaryEditorSelectionAtOffset(controller.document, 8).end.path,
+    )!;
+    final detected = DiaryBlockLanguageTracker.of(
       controller,
-    ).languageFor(block, diaryCodeBlockText(block));
+    ).languageFor(block, block.delta!.toPlainText());
     expect(detected, isNotNull);
 
     await _pump(tester, controller);
@@ -246,9 +267,14 @@ void main() {
     await tester.tap(find.text('退出代码块'));
     await tester.pumpAndSettle();
 
-    final caret = controller.selection.extentOffset;
+    final caret = controller.flatSelection.extentOffset;
     expect(caret, 18);
-    expect(diaryCodeBlockAt(controller.document, caret), isNull);
+    expect(
+      controller.document.nodeAtPath(
+        diaryEditorSelectionAtOffset(controller.document, caret).end.path,
+      ),
+      isA<Node>().having((node) => node.type, 'type', 'paragraph'),
+    );
     expect(_lineCodeValues(controller), <Object?>[
       null,
       true,
@@ -330,7 +356,7 @@ void main() {
     // 选区离开代码块：回到「更多」。
     controller.updateSelection(
       const TextSelection.collapsed(offset: 2),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(find.byType(DiaryCodeBlockPanel), findsNothing);
@@ -350,7 +376,12 @@ void main() {
 
     await _tapCodeTool(tester);
 
-    expect(diaryCodeBlockAt(controller.document, 2), isNotNull);
+    expect(
+      controller.document.nodeAtPath(
+        diaryEditorSelectionAtOffset(controller.document, 2).end.path,
+      ),
+      isNotNull,
+    );
     expect(find.byType(DiaryCodeBlockPanel), findsNothing);
     expect(find.byTooltip('插入图片'), findsOneWidget);
     expect(find.byTooltip(colorPanelHideMoreTooltip), findsOneWidget);
@@ -366,14 +397,14 @@ void main() {
     // 块内移动不收起。
     controller.updateSelection(
       const TextSelection.collapsed(offset: 14),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(find.byType(DiaryCodeBlockPanel), findsOneWidget);
 
     controller.updateSelection(
       const TextSelection.collapsed(offset: 20),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(find.byType(DiaryCodeBlockPanel), findsNothing);
@@ -392,7 +423,7 @@ void main() {
     expect(scale(), 0);
     controller.updateSelection(
       const TextSelection.collapsed(offset: 8),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(scale(), 1);

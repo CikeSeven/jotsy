@@ -1,12 +1,10 @@
-import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart' show Color, TextDirection;
-import 'package:flutter_quill/quill_delta.dart';
-import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
+import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -19,8 +17,7 @@ import 'diary_export_entry.dart';
 import 'diary_export_font.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
-import 'diary_export_pdf_heading.dart';
-import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_body.dart';
 import 'diary_export_pdf_text_effects.dart';
 import 'diary_export_plain_text.dart';
 
@@ -84,27 +81,10 @@ class DiaryPdfFonts {
 
 /// PDF 写出器：多篇日记连续排版进一个 A4 文档，页脚为页码。
 ///
-/// 正文仍由 flutter_quill_to_pdf 按 Delta 渲染（保留标题、列表、引用、
-/// 代码块等样式），但不用它直接生成整份文档：经 `pageBuilder` 取出每篇
-/// 正文的块级组件，再与自绘的抬头（标题、日期、信息行、标签、封面）拼进
-/// 同一个 MultiPage。
-///
-/// 送进插件前先改写正文（[_prepareBody]），绕开插件的几处问题：
-/// - 本地图片文件不存在时插件会直接抛异常，整次导出失败——缺失的图片先删掉；
-/// - 以 `/9j/` 开头的 base64（JPEG）会被它误判成本地路径——所有图片改写成
-///   `https://jotsy.export/<序号>.png` 的虚拟地址，由 `onDetectImageUrl`
-///   按序号返回已读好的字节；
-/// - 录音、视频、附件它会把路径原样印出——改成名称说明，远程地址保留链接；
-/// - 正文非空却解析不出段落时它会死循环——没有可见内容的正文不送进去；
-/// - pdf 库填色时丢掉透明度，半透明的背景色会印成不透明的原色——文字色与
-///   背景色先按纸面压平成不透明色（[_flattenColorAttributes]）；
-/// - 标题默认样式会覆盖行内格式，相邻的非空属性表也会被误合并——标题
-///   经 [DiaryPdfHeading] 叠加样式，其余文字经 [DiaryPdfInlineSource] 还原
-///   原始片段，保留颜色、字号、粗斜体与装饰；没有斜体字面的字体经
-///   [DiaryPdfTextEffects] 在绘制时倾斜，粗体另加轻描边以保证可辨；
-/// - 它不认 `code-block` 的语言值，自带的高亮也不跟随用户的配色——给了代码
-///   配色（[DiaryExportCodeTheme]）时先把代码行按记号拆开、写上颜色，再把
-///   语言值改写为 `true`；代码块底色、正文字色与行号色同取这套配色。
+/// 正文经 prepareBody 检查图片、把媒体换为可读名称、压平透明色与代码着色，
+/// 再由共用块解析器和 pdf 库直接绘制，保持标题、列表、嵌套、引用与行内格式。
+/// 所有图片先检查/载入后换成虚拟地址，避免缺图中断或泄露私有路径；高亮与
+/// 应用配色同源。中文字体的粗斜体经 DiaryPdfTextEffects 在绘制时补偿。
 ///
 /// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。
 ///
@@ -653,10 +633,8 @@ class DiaryPdfWriter {
 
   /// 把代码块的语言值（`'python'`、`'plain'` 等字符串）改写为 `true`。
   ///
-  /// 为什么：flutter_quill_to_pdf 读 `code-block` 时按 `bool` 强转，遇到
-  /// 字符串会抛 TypeError，整份 PDF 导出失败；语言在着色时已经用过（见
-  /// [prepareBody]），之后丢掉不影响版面。只改非 bool 的值，`true` /
-  /// `false` / 缺失原样保留；属性表拷贝一份再改，不动调用方的正文。
+  /// 代码颜色已按语言计算，后续排版只需“代码行”标记，去掉语言值让准备
+  /// 结果使用同一种行结构；原文及其语言字段不受影响。
   static void _normalizeCodeBlockAttribute(Map<String, dynamic> op) {
     final attrs = op['attributes'];
     if (attrs is! Map) {
@@ -750,122 +728,16 @@ class DiaryPdfWriter {
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
   }) async {
-    final captured = <pw.Widget>[];
-    final palette = code?.paper;
-    final source = DiaryPdfInlineSource(body.toJson());
-    pw.TextSpan inline(
-      String text,
-      Map<String, dynamic>? attrs,
-      Object? extra,
-    ) {
-      final base = extra is Map && extra['currentStyle'] is pw.TextStyle
-          ? extra['currentStyle'] as pw.TextStyle
-          : theme.defaultTextStyle;
-      return pw.TextSpan(
-        children: <pw.InlineSpan>[
-          for (final run in source.take(text))
-            buildDiaryPdfInline(
-              run,
-              base,
-              effects: effects,
-              bodyFontSize: theme.defaultTextStyle.fontSize ?? 12,
-              isCodeBlock: attrs?['code-block'] == true,
-            ),
-        ],
-      );
-    }
-
-    // 在插件解析前保留标题片段：其解析器还会把相邻的非空属性表误当成
-    // 相同样式合并。按行文案排队保留原始块，重复标题依次取出；插件有时
-    // 把空标题当普通空行，不能依赖回调总次数与原始标题总数一致。
-    final headings = <String, Queue<ExportBlock>>{};
-    for (final block in ExportBlockParser.parse(body.toJson())) {
-      if (block.kind == ExportBlockKind.heading) {
-        (headings[block.plainText] ??= Queue<ExportBlock>()).add(block);
-      }
-    }
-    final converter = PDFConverter(
-      pageFormat: PDFPageFormat.a4,
-      document: body,
+    return buildDiaryPdfBody(
+      ExportBlockParser.parse(body.toJson()),
+      theme: theme,
+      codeFont: fonts.bundled,
+      effects: effects,
+      images: images,
       textDirection: textDirection,
-      themeData: theme,
-      codeBlockFont: fonts.bundled,
-      // 代码块的底色、正文字色与行号色取用户的代码块配色；记号的颜色已在
-      // prepareBody 里写成行内样式。没给配色时保持插件的默认样式。
-      codeBlockBackgroundColor: palette == null
-          ? null
-          : _pdfColor(palette.background),
-      codeBlockTextStyle: palette == null
-          ? null
-          : _codeTextStyle(fonts, palette.foreground),
-      codeBlockNumLinesTextStyle: palette == null
-          ? null
-          : _codeTextStyle(fonts, palette.lineNumber),
-      // 不用插件自带的高亮：它不跟随用户的配色，还会把解析异常打到控制台；
-      // 着色经 DiaryExportCodeTheme 与应用同源。插件把该参数标为实验性，
-      // 变动时这里会编译失败，不会静默失效。
-      // ignore: experimental_member_use
-      enableCodeBlockHighlighting: false,
-      fallbacks: <pw.Font>[fonts.bundled],
-      // 插件把该回调标为实验性；它是唯一能直接交给插件图片字节的入口，
-      // 接口若在升级中变化，这里会编译失败而不是静默失效。
-      // ignore: experimental_member_use
-      onDetectImageUrl: (String url) async {
-        final index = int.tryParse(
-          url.substring(_virtualImageHost.length).split('.').first,
-        );
-        return index == null || index >= images.length ? null : images[index];
-      },
-      onRequestFontFamily: (FontFamilyRequest _) => FontFamilyResponse(
-        fontNormalV: fonts.regular,
-        boldFontV: fonts.bold,
-        italicFontV: fonts.regular,
-        boldItalicFontV: fonts.bold,
-        fallbacks: <pw.Font>[fonts.bundled],
-      ),
-      onDetectHeaderBlock: (line, attrs, [extra]) {
-        final text = line.toPlainText.replaceFirst(RegExp(r'\n$'), '');
-        source.take(text);
-        return DiaryPdfHeading.build(
-          headings[text]!.removeFirst(),
-          theme: theme,
-          aligned: attrs?['align'] != null,
-          effects: effects,
-          textDirection:
-              attrs?['direction'] == 'rtl' || textDirection == TextDirection.rtl
-              ? pw.TextDirection.rtl
-              : pw.TextDirection.ltr,
-        );
-      },
-      onDetectInlineRichTextStyles: (fragment, attrs, [extra]) =>
-          inline(fragment.data as String, attrs, extra),
-      onDetectCommonText: (fragment, attrs, [extra]) =>
-          inline(fragment.data as String, attrs, extra),
+      code: code,
     );
-    // 只借用插件把 Delta 转成块级组件；它生成的那份文档直接丢弃。
-    await converter.createDocument(
-      pageBuilder: (List<pw.Widget> children, pw.ThemeData _, PdfPageFormat _) {
-        captured.addAll(children);
-        return pw.Page(build: (pw.Context _) => pw.SizedBox());
-      },
-    );
-    return captured.map(effects.wrap).toList();
   }
-
-  /// 代码行（与行号）的文字样式：字号、字距与行距沿用插件默认的代码样式
-  /// （传入这个参数会整份替换插件的默认值），只把颜色换成配色里的颜色。
-  static pw.TextStyle _codeTextStyle(DiaryPdfFonts fonts, Color color) =>
-      pw.TextStyle(
-        font: fonts.bundled,
-        fontSize: 10,
-        letterSpacing: 1.17,
-        lineSpacing: 1,
-        wordSpacing: 1,
-        color: _pdfColor(color),
-      );
-
-  /// 配色都是不透明色（pdf 库本来也不画透明度）。
-  static PdfColor _pdfColor(Color color) => PdfColor.fromInt(color.toARGB32());
 }
 
 /// 成书的章节与篇标题：PDF 书签（大纲）+ 命名目标，并在绘制时记下自己所在

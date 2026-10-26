@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
+    as editor;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
@@ -79,7 +80,7 @@ class DiaryColorPanel extends StatelessWidget {
     this.onMaterialFamilyChanged,
   });
 
-  final quill.QuillController controller;
+  final editor.DiaryEditorController controller;
   final DiaryColorTarget target;
   final DiaryColorPanelMode mode;
   final ValueChanged<DiaryColorPanelMode> onModeChanged;
@@ -130,10 +131,7 @@ class DiaryColorPanel extends StatelessWidget {
           listenable: controller,
           builder: (BuildContext context, Widget? child) => _buildPage(
             context,
-            DiaryColorValue.of(
-              controller.getSelectionStyle().attributes,
-              target,
-            ),
+            DiaryColorValue.of(controller.selectionAttributes, target),
           ),
         ),
       ],

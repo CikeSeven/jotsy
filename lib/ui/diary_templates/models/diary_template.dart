@@ -65,8 +65,8 @@ class DiaryTemplateTagRef {
 
 /// 一个日记模板（内置或用户自建），不可变、值相等。
 ///
-/// 正文 [bodyJson] 是 Quill Delta 的 JSON 字符串，只含文字与分隔线（构造
-/// 方保证经过 `sanitizeDiaryTemplateOps`），标题 [titlePattern] 与正文都可以
+/// 正文 [bodyJson] 是原生块文档 JSON 字符串，只含文字与分隔线（构造
+/// 方保证经过 `sanitizeDiaryTemplateBlocks`），标题 [titlePattern] 与正文都可以
 /// 含 `{{变量}}`，套用时才按日记日期替换。
 @immutable
 class DiaryTemplate {
@@ -86,7 +86,8 @@ class DiaryTemplate {
     this.recommend = DiaryTemplateRecommendRules.none,
   });
 
-  static const String emptyBodyJson = '[{"insert":"\\n"}]';
+  static const String emptyBodyJson =
+      '{"document":{"type":"page","children":[{"type":"paragraph","data":{"delta":[]}}]}}';
   static const int maxNameLength = 24;
   static const int maxDescriptionLength = 60;
   static const int maxTitleLength = 200;

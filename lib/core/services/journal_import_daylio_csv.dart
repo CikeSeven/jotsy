@@ -93,7 +93,7 @@ JournalImportParseResult? _parseCsv(String text) {
   final keys = JournalKeyRegistry();
   final entries = <JournalImportEntry>[];
   for (final item in parsed) {
-    final writer = JournalDeltaWriter();
+    final writer = JournalBlockWriter();
     _appendNote(writer, item.note);
     final content = writer.build();
     entries.add(

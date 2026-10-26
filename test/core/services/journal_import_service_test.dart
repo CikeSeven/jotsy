@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/database/notebook_payload.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
@@ -12,6 +11,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:path/path.dart' as p;
 
 import '../../support/backup_test_fixture.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 /// 其他日记应用导出的端到端导入：预检不写数据，合并写入日记、标签与媒体，
 /// 重复导入识别为已存在，结束后暂存区被清理。
@@ -89,11 +89,11 @@ void main() {
       expect(diaries.map((diary) => diary.title), ['', 'Second']);
       final first = diaries.first;
       expect(first.createdAt, DateTime.utc(2024, 5, 1, 8).toLocal());
-      expect(first.contentText, deltaJsonToPlainText(first.content));
+      expect(first.contentText, diaryContentToPlainText(first.content));
       final image =
-          ((jsonDecode(first.content) as List).firstWhere(
-                    (op) => (op as Map)['insert'] is Map,
-                  )
+          ((diaryContentQuillOps(
+                    first.content,
+                  )).firstWhere((op) => (op as Map)['insert'] is Map)
                   as Map)['insert']['image']
               as String;
       expect(

@@ -3,7 +3,7 @@ import 'diary_template.dart';
 import 'diary_template_json.dart';
 
 /// 模板码：经剪贴板分享与导入一个模板，格式与样式码相同
-/// （`jotsy-template:v1:<base64url(JSON)>`，见 [StyleCodeFormat]）。
+/// （`jotsy-template:v2:<base64url(JSON)>`，见 [StyleCodeFormat]）。
 ///
 /// 名称放在模板 JSON 里，不用样式码的 `n` 字段。导入得到的模板 id 为空串，
 /// 由调用方生成新的 id 后保存；正文在解码时已经白名单清洗。

@@ -5,22 +5,22 @@ import 'package:flutter/widgets.dart' show StringCharacters;
 import '../../diaries/models/style_library/style_json.dart';
 import '../../diaries/models/time_capsule.dart';
 import 'diary_template.dart';
-import 'diary_template_body.dart';
+import 'diary_template_blocks.dart';
 import 'diary_template_recommend.dart';
 
 /// 模板与 JSON 的互转：数据库 `payload` 列与模板码共用同一种 JSON。
 ///
 /// 格式（稀疏，默认值不写）：
-/// `{"v":1,"name":…,"description":…,"icon":"sun","accent":"#FB8C00",
-///   "category":"daily","title":…,"body":[Delta…],"tags":[{"name","color"}],
+/// `{"v":2,"name":…,"description":…,"icon":"sun","accent":"#FB8C00",
+///   "category":"daily","title":…,"body":{"document":…},"tags":[{"name","color"}],
 ///   "mood":"🙂","energy":4,"capsule":"year","recommend":{…}}`
 ///
 /// 解码逐字段容错：一个字段坏了只回退该字段的默认值；正文一律经
-/// [sanitizeDiaryTemplateOps] 白名单清洗——数据库行、备份、模板码都可能被
+/// [sanitizeDiaryTemplateBlocks] 白名单清洗——数据库行、备份、模板码都可能被
 /// 手工改过，不能信任其中的嵌入。id 不在 JSON 里，由调用方给出（数据库行的
 /// `templateId`；导入模板码时新生成）。
 abstract final class DiaryTemplateJson {
-  static const int version = 1;
+  static const int version = 2;
 
   /// 预设标签缺颜色时用的颜色（色板里的蓝）。
   static const int fallbackTagColor = 0xFF1E88E5;
@@ -39,7 +39,7 @@ abstract final class DiaryTemplateJson {
       DiaryTemplateCategory.other,
     );
     if (template.titlePattern.isNotEmpty) json['title'] = template.titlePattern;
-    json['body'] = jsonDecode(template.bodyJson) as Object;
+    json['body'] = sanitizeDiaryTemplateBlocks(template.bodyJson);
     if (template.tags.isNotEmpty) {
       json['tags'] = <Object>[
         for (final tag in template.tags)
@@ -78,7 +78,7 @@ abstract final class DiaryTemplateJson {
         DiaryTemplateCategory.other,
       ),
       titlePattern: text('title', DiaryTemplate.maxTitleLength),
-      bodyJson: encodeDiaryTemplateBody(_body(json['body'])),
+      bodyJson: encodeDiaryTemplateBody(json['body']),
       tags: List<DiaryTemplateTagRef>.unmodifiable(_tags(json['tags'])),
       mood: mood is String && mood.trim().isNotEmpty
           ? mood.trim().characters.take(4).toString()
@@ -108,18 +108,6 @@ abstract final class DiaryTemplateJson {
     return fromJson(json, id: id);
   }
 
-  /// 正文可能是 Delta 列表，也可能是被再编码过一次的 JSON 字符串。
-  static List<Map<String, Object?>> _body(Object? raw) {
-    if (raw is String) {
-      try {
-        return sanitizeDiaryTemplateOps(jsonDecode(raw));
-      } on FormatException {
-        return emptyDiaryTemplateOps;
-      }
-    }
-    return sanitizeDiaryTemplateOps(raw);
-  }
-
   /// 按名称去重、跳过空名与超过标签名上限的项，最多 [DiaryTemplate.maxTags] 个。
   static List<DiaryTemplateTagRef> _tags(Object? raw) {
     if (raw is! List) return const <DiaryTemplateTagRef>[];
@@ -145,15 +133,9 @@ abstract final class DiaryTemplateJson {
   }
 }
 
-/// 正文操作列表的规范 JSON 字符串（[DiaryTemplate.bodyJson] 的格式）。
-String encodeDiaryTemplateBody(List<Map<String, Object?>> ops) =>
-    jsonEncode(ops);
+/// 正文统一写块文档；v1 的 Delta 仅在读取时兼容转换。
+String encodeDiaryTemplateBody(Object? body) =>
+    jsonEncode(sanitizeDiaryTemplateBlocks(body));
 
-/// 解析 [DiaryTemplate.bodyJson]；构造时已清洗过，这里只做类型转换。
-List<Map<String, Object?>> decodeDiaryTemplateBody(String bodyJson) {
-  try {
-    return sanitizeDiaryTemplateOps(jsonDecode(bodyJson));
-  } on FormatException {
-    return emptyDiaryTemplateOps;
-  }
-}
+Map<String, Object?> decodeDiaryTemplateBody(String bodyJson) =>
+    sanitizeDiaryTemplateBlocks(bodyJson);

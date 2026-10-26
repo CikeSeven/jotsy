@@ -7,6 +7,8 @@ import '../../diaries/models/diary_meta_draft.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../models/diary_template_body.dart';
+import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
 import '../models/diary_template_selection.dart';
 import '../viewmodels/diary_template_application.dart';
 import '../viewmodels/diary_template_variable_values.dart';
@@ -146,7 +148,7 @@ class DiaryTemplateApplyController extends ChangeNotifier {
       metaBefore = _port.meta.value;
       bodyJson = _port.replaceContent(
         title: application.title,
-        ops: application.ops,
+        document: application.document,
         caret: _caretFor(application),
       );
       _applyPresets(application, metaBefore, now);
@@ -185,7 +187,11 @@ class DiaryTemplateApplyController extends ChangeNotifier {
     if (_disposed || !isPristine(applied)) return false;
     _applying = true;
     try {
-      _port.replaceContent(title: '', ops: emptyDiaryTemplateOps, caret: 0);
+      _port.replaceContent(
+        title: '',
+        document: diaryBlocksFromPlainText(''),
+        caret: 0,
+      );
       _revertPresets(applied);
     } finally {
       _applying = false;
@@ -221,10 +227,10 @@ class DiaryTemplateApplyController extends ChangeNotifier {
 
   int _caretFor(DiaryTemplateApplication application) {
     final buffer = StringBuffer();
-    for (final op in application.ops) {
-      final insert = op['insert'];
-      // 嵌入在 Quill 的偏移里占一个字符。
-      buffer.write(insert is String ? insert : '￼');
+    for (final (node, _) in walkDiaryBlocks(application.document)) {
+      buffer
+        ..write(diaryBlockText(node))
+        ..write('\n');
     }
     return firstEmptyLineOffset(buffer.toString());
   }

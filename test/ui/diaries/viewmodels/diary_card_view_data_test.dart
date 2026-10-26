@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_card_view_data.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_preview_view_data.dart';
+import 'package:node_diary/ui/explore/controllers/explore_content_extractor.dart';
 
 Diary _diary({
   String id = 'd1',
@@ -113,5 +117,68 @@ void main() {
     expect(data.moodEmoji, isNull);
     expect(data.energyLevel, isNull);
     expect(data.previewCover, isNull);
+  });
+
+  test('block media feed cards, preview galleries and explore in order', () {
+    final diary = _diary(
+      cover: '/cover.png',
+      content: jsonEncode({
+        'document': {
+          'type': 'page',
+          'children': [
+            {
+              'type': 'quote',
+              'data': {'delta': []},
+              'children': [
+                {
+                  'type': 'image',
+                  'data': {'url': ' /first.png '},
+                },
+                {
+                  'type': 'audio',
+                  'data': {'path': '/a.m4a', 'durationMs': 100},
+                },
+                {
+                  'type': 'video',
+                  'data': {'url': '/v.mp4'},
+                },
+                {
+                  'type': 'attachment',
+                  'data': {'path': '/a.pdf'},
+                },
+              ],
+            },
+            {'type': 'image', 'data': 'bad'},
+            {
+              'type': 'image',
+              'data': {'url': '/first.png'},
+            },
+            {
+              'type': 'image',
+              'data': {'url': '/last.png'},
+            },
+          ],
+        },
+      }),
+    );
+    final card = DiaryCardViewData.of(diary);
+    expect(card.previewCover, '/cover.png');
+    expect(DiaryCardViewData.firstImageInContent(diary.content), '/first.png');
+    expect(card.collageImages, ['/cover.png', '/first.png', '/last.png']);
+    expect(card.media.imageCount, 3);
+    expect(card.media.audioCount, 1);
+    expect(card.media.videoCount, 1);
+    expect(card.media.attachmentCount, 1);
+    expect(DiaryPreviewViewData.resolve(diary).images, [
+      '/cover.png',
+      '/first.png',
+      '/first.png',
+      '/last.png',
+    ]);
+    expect(const ExploreContentExtractor().resolveMediaSources(diary), [
+      '/cover.png',
+      '/first.png',
+      '/last.png',
+    ]);
   });
 }

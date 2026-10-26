@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
+    as editor;
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_code_block_editing.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_material_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
@@ -71,7 +72,7 @@ class DiaryFloatingToolbar extends StatefulWidget {
     this.onEditSavedColors,
   });
 
-  final quill.QuillController controller;
+  final editor.DiaryEditorController controller;
   final List<DiaryToolbarItem> order;
   final Set<DiaryToolbarItem> hiddenItems;
   final String? currentTimeFormatPattern;

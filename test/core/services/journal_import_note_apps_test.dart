@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/journal_import_media.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_support.dart';
 import 'package:path/path.dart' as p;
+import '../../support/diary_content_test_helpers.dart';
 
 const _jpeg = [0xFF, 0xD8, 0xFF, 0xE0, 0, 0x10, 0x4A, 0x46];
 
@@ -108,7 +109,7 @@ void main() {
       JournalImportInput(filePath: export.path, extractedPath: export.path);
 
   List<Map<String, Object?>> embeds(JournalImportEntry entry) => [
-    for (final op in jsonDecode(entry.contentJson) as List<Object?>)
+    for (final op in diaryContentQuillOps(entry.contentJson))
       if ((op as Map)['insert'] case final Map<String, Object?> data) data,
   ];
 

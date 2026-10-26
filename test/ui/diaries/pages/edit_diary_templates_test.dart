@@ -1,5 +1,5 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/core/services/day_photo_library.dart';
@@ -27,7 +27,7 @@ void main() {
 
   /// 正文由 Quill 以富文本绘制，不是 Text：直接读文档。
   String bodyText(WidgetTester tester) => tester
-      .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
+      .widget<DiaryEditor>(find.byType(DiaryEditor))
       .controller
       .document
       .toPlainText();

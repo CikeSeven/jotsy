@@ -1,13 +1,13 @@
-/// 把第三方正文里的颜色、字号与对齐换算成本应用正文（Quill Delta）能渲染
+/// 把第三方正文里的颜色、字号与对齐换算成本应用正文能渲染
 /// 的值；各导入来源（HTML、Markdown 行内 HTML、手机笔记的私有标记）共用。
 ///
-/// - 颜色一律输出 `#AARRGGBB`：Quill 只认 `#RRGGBB` / `#AARRGGBB` 与少数颜色
+/// - 颜色一律输出 `#AARRGGBB`：正文使用 `#RRGGBB` / `#AARRGGBB` 与少数颜色
 ///   名，`rgb()`、CSS 的 `#RRGGBBAA` 等写法会让正文渲染时抛异常；PDF 导出把
 ///   6 位十六进制当作全透明，所以始终带上 alpha。
 /// - 来源应用的默认配色不导入：接近黑 / 白的无彩色文字是对方主题的默认墨色，
 ///   白色、透明背景是对方的纸色，原样导入会在本应用的暗色（或亮色）主题下
 ///   看不清；只保留用户主动设置的彩色与中间灰。
-/// - 字号换算成 Quill 的 small / large / huge 三档（相对正文字号，跟随用户
+/// - 字号换算成 正文的 small / large / huge 三档（相对正文字号，跟随用户
 ///   的正文排版设置），不写绝对像素。
 /// - 对齐只保留 center / right / justify，左对齐即默认。
 ///
@@ -75,7 +75,7 @@ double? journalFontSizeRatio(String? css, {double base = 16}) {
 }
 
 /// 字号与正文字号之比换算成档位：小于等于 0.85 为 small，1.1 起为 large，
-/// 1.4 起为 huge；本应用对应的倍数见 `buildDiaryQuillStyles`。
+/// 1.4 起为 huge；本应用对应的倍数见 `diaryEditorSpanDecorator`。
 String? journalFontSizeForRatio(double ratio) {
   if (!ratio.isFinite || ratio <= 0) return null;
   if (ratio <= 0.85) return 'small';
@@ -98,7 +98,7 @@ String? journalFontSizeForLegacyLevel(String? level) {
   return null;
 }
 
-/// CSS `text-align` / HTML `align` 换算成 Quill 的行对齐；左对齐与无法识别
+/// CSS `text-align` / HTML `align` 换算成 正文的行对齐；左对齐与无法识别
 /// 时返回 null。
 String? journalAlign(String? css) => switch (css?.trim().toLowerCase()) {
   'center' || 'middle' || '-webkit-center' => 'center',

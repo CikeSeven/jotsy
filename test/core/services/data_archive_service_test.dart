@@ -6,12 +6,14 @@ import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/services/data_archive_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -179,7 +181,7 @@ void main() {
         extractDiaryAudioPaths(restoredDraft['contentDocJson'] as String),
         {restoredPath},
       );
-      final inserted = (jsonDecode(restoredDiary.content) as List).first as Map;
+      final inserted = diaryContentQuillOps(restoredDiary.content).first;
       final restoredAudio = DiaryAudioAttachment.tryDecode(
         (inserted['insert'] as Map)[diaryAudioEmbedType],
       );
@@ -293,23 +295,11 @@ void main() {
         'diary_covers',
         'cover.png',
       );
-      final quillOps = jsonDecode(quillDiary.content) as List<dynamic>;
-      expect(
-        (quillOps[0] as Map<String, dynamic>)['insert']['image'],
-        importedImagePath,
-      );
-      expect(
-        (quillOps[1] as Map<String, dynamic>)['insert']['image'],
-        missingImagePath,
-      );
-      expect(
-        (quillOps[2] as Map<String, dynamic>)['insert']['image'],
-        'https://example.invalid/remote.jpg',
-      );
-      expect(
-        (quillOps[3] as Map<String, dynamic>)['insert']['image'],
-        'data:image/png;base64,AA==',
-      );
+      final images = extractDiaryImageSources(quillDiary.content).toList();
+      expect(images[0], importedImagePath);
+      expect(images[1], missingImagePath);
+      expect(images[2], 'https://example.invalid/remote.jpg');
+      expect(images[3], 'data:image/png;base64,AA==');
       expect(quillDiary.cover, importedCoverPath);
       expect(await File(importedImagePath).readAsBytes(), <int>[1, 2, 3]);
       expect(await File(importedCoverPath).readAsBytes(), <int>[4, 5, 6]);
@@ -317,11 +307,7 @@ void main() {
       final legacy = imported.singleWhere(
         (diary) => diary.diaryId == 'legacy-media',
       );
-      final legacyNode =
-          (jsonDecode(legacy.content)
-                  as Map<String, dynamic>)['root']['children'][0]
-              as Map<String, dynamic>;
-      expect(legacyNode['attributes']['url'], importedImagePath);
+      expect(extractDiaryImageSources(legacy.content), [importedImagePath]);
     },
   );
 

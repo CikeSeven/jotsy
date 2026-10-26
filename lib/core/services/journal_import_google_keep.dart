@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_files.dart';
 import 'journal_import_html.dart';
 import 'journal_import_media.dart';
@@ -98,7 +98,7 @@ JournalImportEntry _parseNote(
   JournalKeyRegistry keys,
   JournalImportFiles files,
 ) {
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   // Keep 把图片与涂鸦显示在标题上方，录音在正文下方。
   final later = <Map<String, Object?>>[];
   for (final item in journalList(raw['attachments']).whereType<Map>()) {

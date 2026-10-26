@@ -7549,4 +7549,79 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get codeBlockPreviewIntro => '代码块会按语言高亮，行内代码也跟随配色，例如 ';
+
+  @override
+  String get diaryEditorLinkUrl => '链接地址';
+
+  @override
+  String get diaryEditorInvalidLink => '请输入有效的链接地址';
+
+  @override
+  String get diaryEditorRemoveLink => '移除链接';
+
+  @override
+  String get diaryEditorDragBlock => '拖动段落';
+
+  @override
+  String get diaryEditorDragBlockHold => '长按拖动';
+
+  @override
+  String get diaryEditorDragBlockTip => '按住“长按拖动”后上下滑动，段落会跟着移动；也可以直接长按左侧把手';
+
+  @override
+  String get diaryEditorMoveBlockUp => '上移段落';
+
+  @override
+  String get diaryEditorMoveBlockDown => '下移段落';
+
+  @override
+  String get diaryEditorParagraph => '正文';
+
+  @override
+  String get diaryEditorIndent => '增加缩进';
+
+  @override
+  String get diaryEditorOutdent => '减少缩进';
+
+  @override
+  String get diaryEditorSlashCommands => '插入区块';
+
+  @override
+  String get diaryEditorDivider => '分隔线';
+
+  @override
+  String get diaryEditorUnsupportedBlock => '暂不支持的内容';
+
+  @override
+  String get diaryEditorImageWidth => '图片宽度';
+
+  @override
+  String get diaryEditorImageHeight => '图片高度';
+
+  @override
+  String get diaryEditorHeading1 => '一级标题';
+
+  @override
+  String get diaryEditorHeading2 => '二级标题';
+
+  @override
+  String get diaryEditorHeading3 => '三级标题';
+
+  @override
+  String get diaryEditorCommandGroupText => '文本';
+
+  @override
+  String get diaryEditorCommandGroupList => '列表';
+
+  @override
+  String get diaryEditorCommandGroupInsert => '插入';
+
+  @override
+  String get diaryEditorCommandEmpty => '没有匹配的区块';
+
+  @override
+  String get diaryEditorEmptyLineHint => '输入 / 插入区块';
+
+  @override
+  String get diaryEditorCommandTypeToFilter => '继续输入即可筛选';
 }

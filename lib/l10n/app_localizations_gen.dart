@@ -13795,6 +13795,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Code blocks are highlighted by language, and inline code follows the theme too, like '**
   String get codeBlockPreviewIntro;
+
+  /// URL field in the diary editor link dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Link URL'**
+  String get diaryEditorLinkUrl;
+
+  /// Validation message for an invalid diary editor link.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid link URL'**
+  String get diaryEditorInvalidLink;
+
+  /// Clear the URL from the selected diary text.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove link'**
+  String get diaryEditorRemoveLink;
+
+  /// Accessibility label for the diary editor paragraph drag handle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag block'**
+  String get diaryEditorDragBlock;
+
+  /// Paragraph handle menu item between move up and move down: press and hold it, then slide to move the block.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to drag'**
+  String get diaryEditorDragBlockHold;
+
+  /// Hint shown after tapping the drag item in the paragraph handle menu instead of holding it.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.'**
+  String get diaryEditorDragBlockTip;
+
+  /// Move the selected editor block above its previous sibling.
+  ///
+  /// In en, this message translates to:
+  /// **'Move block up'**
+  String get diaryEditorMoveBlockUp;
+
+  /// Move the selected editor block below its next sibling.
+  ///
+  /// In en, this message translates to:
+  /// **'Move block down'**
+  String get diaryEditorMoveBlockDown;
+
+  /// Plain paragraph option in the diary editor block menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Paragraph'**
+  String get diaryEditorParagraph;
+
+  /// Nest the selected diary editor blocks under the previous block.
+  ///
+  /// In en, this message translates to:
+  /// **'Indent'**
+  String get diaryEditorIndent;
+
+  /// Move selected diary editor blocks out one level.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdent'**
+  String get diaryEditorOutdent;
+
+  /// Title of the diary editor slash command menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert block'**
+  String get diaryEditorSlashCommands;
+
+  /// Divider option in the diary editor slash command menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Divider'**
+  String get diaryEditorDivider;
+
+  /// Placeholder for a preserved editor block from an unsupported format.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported content'**
+  String get diaryEditorUnsupportedBlock;
+
+  /// Image dimension label in the diary image resize sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Image width'**
+  String get diaryEditorImageWidth;
+
+  /// Image dimension label in the diary image resize sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Image height'**
+  String get diaryEditorImageHeight;
+
+  /// Slash command option that turns the block into a level-1 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 1'**
+  String get diaryEditorHeading1;
+
+  /// Slash command option that turns the block into a level-2 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 2'**
+  String get diaryEditorHeading2;
+
+  /// Slash command option that turns the block into a level-3 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 3'**
+  String get diaryEditorHeading3;
+
+  /// Slash command group: paragraph, headings, quote and code block.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get diaryEditorCommandGroupText;
+
+  /// Slash command group: bulleted, numbered and to-do lists.
+  ///
+  /// In en, this message translates to:
+  /// **'Lists'**
+  String get diaryEditorCommandGroupList;
+
+  /// Slash command group: divider, image, video, attachment and recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert'**
+  String get diaryEditorCommandGroupInsert;
+
+  /// Shown in the slash command menu when the typed filter matches nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching blocks'**
+  String get diaryEditorCommandEmpty;
+
+  /// Placeholder on the empty body line holding the caret, hinting at the slash command menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Type / to insert a block'**
+  String get diaryEditorEmptyLineHint;
+
+  /// Footer of the slash command menu: typing after the slash filters the commands.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep typing to filter'**
+  String get diaryEditorCommandTypeToFilter;
 }
 
 class _AppLocalizationsDelegate

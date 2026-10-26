@@ -1,5 +1,6 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -17,7 +18,7 @@ void main() {
             locale: const Locale('en'),
             localizationsDelegates: const [
               ...AppLocalizations.localizationsDelegates,
-              quill.FlutterQuillLocalizations.delegate,
+              quill.AppFlowyEditorLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
@@ -42,7 +43,7 @@ void main() {
     );
     expect(find.text('Untitled diary'), findsOneWidget);
     expect(find.text('No content'), findsOneWidget);
-    expect(find.byType(quill.QuillEditor), findsNothing);
+    expect(find.byType(DiaryEditor), findsNothing);
   });
 
   // 正文不是 Delta JSON（旧数据、导入异常）时页面仍能打开，按纯文本显示。
@@ -58,9 +59,9 @@ void main() {
       ),
     );
     expect(find.text('A walk'), findsOneWidget);
-    expect(find.byType(quill.QuillEditor), findsOneWidget);
+    expect(find.byType(DiaryEditor), findsOneWidget);
     final controller = tester
-        .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
+        .widget<DiaryEditor>(find.byType(DiaryEditor))
         .controller;
     expect(controller.document.toPlainText().trim(), 'Plain body');
     expect(controller.readOnly, isTrue);

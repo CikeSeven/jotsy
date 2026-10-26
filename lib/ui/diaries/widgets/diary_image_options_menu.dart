@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/cupertino.dart' show showCupertinoModalPopup;
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
-// 复用上游的宽高滑条，保持与原菜单一致的调整方式；上游未导出该组件。
-// ignore: implementation_imports
-import 'package:flutter_quill_extensions/src/editor/image/widgets/image_resizer.dart'
-    show ImageResizer;
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import '../controllers/diary_editor_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_image_embed_actions.dart';
@@ -27,20 +23,20 @@ import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 /// 点按时从 [node] 取得，菜单期间正文不会被改动。
 Future<void> showDiaryImageOptions(
   BuildContext context, {
-  required quill.QuillController controller,
-  required quill.Node node,
+  required DiaryEditorController controller,
+  required af.Node node,
   required String source,
   required bool readOnly,
+  ValueChanged<BoxConstraints?>? onResizePreview,
 }) async {
   final l10n = context.l10n;
-  final offset = node.documentOffset;
   final style = diaryImageStyleOf(node);
   final action = await showDialog<_ImageAction>(
     context: context,
     builder: (BuildContext dialogContext) =>
         _DiaryImageOptionsDialog(readOnly: readOnly),
   );
-  if (action == null || !context.mounted) {
+  if (action == null || !context.mounted || controller.isDisposed) {
     return;
   }
   switch (action) {
@@ -53,18 +49,18 @@ Future<void> showDiaryImageOptions(
         ),
       );
     case _ImageAction.resize:
-      _showResizer(
+      await _showResizer(
         context,
         controller,
         node: node,
-        offset: offset,
         style: style,
+        onPreview: onResizePreview,
       );
     case _ImageAction.copy:
       await DiaryImageEmbedActions.copy(
         controller,
         source: source,
-        style: style,
+        data: node.attributes,
       );
     case _ImageAction.save:
       final hint = await DiaryImageEmbedActions.saveToGallery(source, l10n);
@@ -79,45 +75,96 @@ Future<void> showDiaryImageOptions(
         );
       }
     case _ImageAction.delete:
-      DiaryImageEmbedActions.remove(controller, offset: offset);
+      DiaryImageEmbedActions.remove(controller, node: node);
   }
 }
 
-/// 宽高滑条（上游 [ImageResizer]）：拖动时逐帧写回 embed 的样式。初始值取已有
-/// 上限并夹到滑条范围内（导入的图片可能写着比屏幕还大的宽度，滑条会断言越界）；
-/// 没有上限时取最大值，与上游一致。每次写入都只替换宽高两项，所以始终基于
-/// 打开时的 [style] 计算即可，样式里的其他声明原样保留。
-void _showResizer(
+/// 滑条逐帧更新原位图片的显示约束，不触发正文保存或堆积撤销记录。
+/// 确认后一次事务提交；取消、返回或卸载时清除预览，恢复文档里的原尺寸。
+Future<void> _showResizer(
   BuildContext context,
-  quill.QuillController controller, {
-  required quill.Node node,
-  required int offset,
+  DiaryEditorController controller, {
+  required af.Node node,
   required String? style,
-}) {
+  required ValueChanged<BoxConstraints?>? onPreview,
+}) async {
   final bounds = diaryImageEmbedBounds(node);
-  showCupertinoModalPopup<void>(
-    context: context,
-    builder: (BuildContext modalContext) {
-      final screen = MediaQuery.sizeOf(modalContext);
-      double? initial(double bound, double max) =>
-          bound.isFinite ? math.min(bound, max) : null;
-      return ImageResizer(
-        imageWidth: initial(bounds.maxWidth, screen.width),
-        imageHeight: initial(bounds.maxHeight, screen.height),
-        maxWidth: screen.width,
-        maxHeight: screen.height,
-        onImageResize: (double width, double height) {
-          DiaryImageEmbedActions.resize(
-            controller,
-            offset: offset,
-            style: style,
-            width: width,
-            height: height,
-          );
-        },
+  final screen = MediaQuery.sizeOf(context);
+  var width = bounds.maxWidth.isFinite
+      ? math.min(bounds.maxWidth, screen.width)
+      : screen.width;
+  var height = bounds.maxHeight.isFinite
+      ? math.min(bounds.maxHeight, screen.height)
+      : screen.height;
+  try {
+    final size = await showModalBottomSheet<Size>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  context.l10n.diaryImageMenuResize,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                Text(context.l10n.diaryEditorImageWidth),
+                Slider(
+                  value: width.clamp(24, screen.width),
+                  min: 24,
+                  max: screen.width,
+                  label: '${width.round()}',
+                  onChanged: (value) {
+                    setState(() => width = value);
+                    onPreview?.call(
+                      BoxConstraints(maxWidth: width, maxHeight: height),
+                    );
+                  },
+                ),
+                Text(context.l10n.diaryEditorImageHeight),
+                Slider(
+                  value: height.clamp(24, screen.height),
+                  min: 24,
+                  max: screen.height,
+                  label: '${height.round()}',
+                  onChanged: (value) {
+                    setState(() => height = value);
+                    onPreview?.call(
+                      BoxConstraints(maxWidth: width, maxHeight: height),
+                    );
+                  },
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () =>
+                        Navigator.pop(context, Size(width, height)),
+                    child: Text(context.l10n.commonConfirm),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (size != null && !controller.isDisposed) {
+      DiaryImageEmbedActions.resize(
+        controller,
+        node: node,
+        style: style,
+        width: size.width,
+        height: size.height,
       );
-    },
-  );
+    }
+  } finally {
+    onPreview?.call(null);
+  }
 }
 
 enum _ImageAction { view, resize, copy, save, delete }

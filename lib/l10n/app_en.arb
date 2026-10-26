@@ -10830,5 +10830,83 @@
   "codeBlockPreviewIntro": "Code blocks are highlighted by language, and inline code follows the theme too, like ",
   "@codeBlockPreviewIntro": {
     "description": "Intro text of the code block style preview; an inline code sample follows the trailing space."
-  }
+  },
+  "diaryEditorLinkUrl": "Link URL",
+  "@diaryEditorLinkUrl": {
+    "description": "URL field in the diary editor link dialog."
+  },
+  "diaryEditorInvalidLink": "Enter a valid link URL",
+  "@diaryEditorInvalidLink": {
+    "description": "Validation message for an invalid diary editor link."
+  },
+  "diaryEditorRemoveLink": "Remove link",
+  "@diaryEditorRemoveLink": {
+    "description": "Clear the URL from the selected diary text."
+  },
+  "diaryEditorDragBlock": "Drag block",
+  "@diaryEditorDragBlock": {
+    "description": "Accessibility label for the diary editor paragraph drag handle."
+  },
+  "diaryEditorDragBlockHold": "Hold to drag",
+  "@diaryEditorDragBlockHold": {
+    "description": "Paragraph handle menu item between move up and move down: press and hold it, then slide to move the block."
+  },
+  "diaryEditorDragBlockTip": "Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.",
+  "@diaryEditorDragBlockTip": {
+    "description": "Hint shown after tapping the drag item in the paragraph handle menu instead of holding it."
+  },
+  "diaryEditorMoveBlockUp": "Move block up",
+  "@diaryEditorMoveBlockUp": {
+    "description": "Move the selected editor block above its previous sibling."
+  },
+  "diaryEditorMoveBlockDown": "Move block down",
+  "@diaryEditorMoveBlockDown": {
+    "description": "Move the selected editor block below its next sibling."
+  },
+  "diaryEditorParagraph": "Paragraph",
+  "@diaryEditorParagraph": {
+    "description": "Plain paragraph option in the diary editor block menu."
+  },
+  "diaryEditorIndent": "Indent",
+  "@diaryEditorIndent": {
+    "description": "Nest the selected diary editor blocks under the previous block."
+  },
+  "diaryEditorOutdent": "Outdent",
+  "@diaryEditorOutdent": {
+    "description": "Move selected diary editor blocks out one level."
+  },
+  "diaryEditorSlashCommands": "Insert block",
+  "@diaryEditorSlashCommands": {
+    "description": "Title of the diary editor slash command menu."
+  },
+  "diaryEditorDivider": "Divider",
+  "@diaryEditorDivider": {
+    "description": "Divider option in the diary editor slash command menu."
+  },
+  "diaryEditorUnsupportedBlock": "Unsupported content",
+  "@diaryEditorUnsupportedBlock": {
+    "description": "Placeholder for a preserved editor block from an unsupported format."
+  },
+  "diaryEditorImageWidth": "Image width",
+  "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorImageHeight": "Image height",
+  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorHeading1": "Heading 1",
+  "@diaryEditorHeading1": {"description": "Slash command option that turns the block into a level-1 heading."},
+  "diaryEditorHeading2": "Heading 2",
+  "@diaryEditorHeading2": {"description": "Slash command option that turns the block into a level-2 heading."},
+  "diaryEditorHeading3": "Heading 3",
+  "@diaryEditorHeading3": {"description": "Slash command option that turns the block into a level-3 heading."},
+  "diaryEditorCommandGroupText": "Text",
+  "@diaryEditorCommandGroupText": {"description": "Slash command group: paragraph, headings, quote and code block."},
+  "diaryEditorCommandGroupList": "Lists",
+  "@diaryEditorCommandGroupList": {"description": "Slash command group: bulleted, numbered and to-do lists."},
+  "diaryEditorCommandGroupInsert": "Insert",
+  "@diaryEditorCommandGroupInsert": {"description": "Slash command group: divider, image, video, attachment and recording."},
+  "diaryEditorCommandEmpty": "No matching blocks",
+  "@diaryEditorCommandEmpty": {"description": "Shown in the slash command menu when the typed filter matches nothing."},
+  "diaryEditorEmptyLineHint": "Type / to insert a block",
+  "@diaryEditorEmptyLineHint": {"description": "Placeholder on the empty body line holding the caret, hinting at the slash command menu."},
+  "diaryEditorCommandTypeToFilter": "Keep typing to filter",
+  "@diaryEditorCommandTypeToFilter": {"description": "Footer of the slash command menu: typing after the slash filters the commands."}
 }

@@ -7,9 +7,7 @@ import 'diary_export_pdf_text_effects.dart';
 /// PDF 正文标题的局部适配：输入共用解析器读出的标题块（颜色已压平），
 /// 把行内样式叠到标题字阶上；不读取设置、不改写原正文。
 ///
-/// flutter_quill_to_pdf 2.3.9 在算完行内样式后，会用 getHeaderStyle 整份
-/// 替换它，导致 H1–H5 的颜色、背景、粗体与装饰丢失。只接管标题回调，
-/// 其余正文、列表、代码块仍走插件；标题间距与字阶沿用插件的既有值。
+/// 直接在 PDF 标题字阶上叠加行内片段，沿用既有导出的字阶与缩进规格。
 class DiaryPdfHeading {
   const DiaryPdfHeading._();
 
@@ -26,7 +24,7 @@ class DiaryPdfHeading {
       3 => theme.header3,
       4 => theme.header4,
       5 => theme.header5,
-      // 插件的 ThemeData 只有五级标题；H6 使用其默认的 15pt。
+      // PDF 主题 只有五级标题；H6 使用其默认的 15pt。
       _ => theme.defaultTextStyle.copyWith(fontSize: 15),
     };
     final rtl = textDirection == pw.TextDirection.rtl;
@@ -36,7 +34,7 @@ class DiaryPdfHeading {
       ExportAlign.start => rtl ? pw.TextAlign.right : pw.TextAlign.left,
       ExportAlign.end => rtl ? pw.TextAlign.left : pw.TextAlign.right,
     };
-    // 插件对非零缩进先加一级，标题的显式对齐与普通对齐用不同内边距。
+    // 兼容既有导出：非零缩进先加一级，标题的显式对齐与普通对齐用不同内边距。
     final indent = block.indent > 0 ? block.indent + 1 : 0;
     return pw.Padding(
       padding: const pw.EdgeInsets.only(top: 5),

@@ -1,6 +1,9 @@
+import 'diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
+import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -46,7 +49,7 @@ class ColorPanelHarness {
     DiarySavedColors saved,
   ) : saved = ValueNotifier<DiarySavedColors>(saved);
 
-  final quill.QuillController controller;
+  final DiaryEditorController controller;
   final FocusNode editorFocus;
   final ColorPanelRouteCounter routes;
   final List<double> extents = <double>[];
@@ -62,13 +65,13 @@ class ColorPanelHarness {
 }
 
 /// 正文为 [text] 并全选的控制器。
-quill.QuillController colorPanelController([String text = 'hello']) {
-  final controller = quill.QuillController.basic();
+DiaryEditorController colorPanelController([String text = 'hello']) {
+  final controller = DiaryEditorController();
   addTearDown(controller.dispose);
   controller.replaceText(0, 0, text, null);
   controller.updateSelection(
     TextSelection(baseOffset: 0, extentOffset: text.length),
-    quill.ChangeSource.local,
+    'local',
   );
   return controller;
 }
@@ -89,7 +92,7 @@ Future<void> loadColorPanelFonts() async {
 
 Future<ColorPanelHarness> pumpColorPanel(
   WidgetTester tester, {
-  quill.QuillController? controller,
+  DiaryEditorController? controller,
   double screenWidth = 360,
   List<DiaryToolbarItem> order = colorFirstToolbarOrder,
   bool recordingOpen = false,
@@ -126,14 +129,17 @@ Future<ColorPanelHarness> pumpColorPanel(
         navigatorObservers: <NavigatorObserver>[harness.routes],
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Column(
             children: <Widget>[
               Expanded(
-                child: quill.QuillEditor.basic(
+                child: DiaryEditor(
+                  appearance: const DiaryTextAppearance(
+                    typography: DiaryTypography(),
+                  ),
                   controller: harness.controller,
                   focusNode: harness.editorFocus,
                 ),
@@ -185,7 +191,7 @@ Future<void> openTextColorPanel(WidgetTester tester) async {
 
 /// 第 [i] 个字符上的行内属性。
 Map<String, dynamic>? colorPanelAttributesAt(
-  quill.QuillController controller,
+  DiaryEditorController controller,
   int i,
 ) {
   var offset = 0;

@@ -10,6 +10,7 @@ import 'package:node_diary/core/services/journal_import_memos.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_support.dart';
 import 'package:path/path.dart' as p;
+import '../../support/diary_content_test_helpers.dart';
 
 const _png = [
   0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0x0D, //
@@ -98,7 +99,7 @@ void main() {
       JournalImportInput(filePath: export.path, extractedPath: export.path);
 
   List<Object?> ops(JournalImportEntry entry) =>
-      jsonDecode(entry.contentJson) as List<Object?>;
+      diaryContentQuillOps(entry.contentJson);
 
   List<Map<String, Object?>> embeds(JournalImportEntry entry) => [
     for (final op in ops(entry))
@@ -138,7 +139,7 @@ void main() {
         'unchecked',
         'checked',
       ]);
-      expect(note.contentJson, contains('"code-block":true'));
+      expect(note.contentJson, contains('"type":"code"'));
       final [image, pdf] = embeds(note);
       expect(p.basename(image['image'] as String), 'map.png');
       expect(
@@ -283,7 +284,7 @@ void main() {
         p.basename(embeds(list).single['image'] as String),
         endsWith('.jpg'),
       );
-      expect(list.contentJson, contains('"link":"https://example.com"'));
+      expect(list.contentJson, contains('"href":"https://example.com"'));
       expect(result.missingMediaCount, 1);
 
       // 2021 年的导出没有创建时间，取编辑时间；富文本保留粗体与段间空行。

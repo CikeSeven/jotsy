@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../models/diary_template.dart';
 import '../models/diary_template_json.dart';
+import '../models/diary_template_blocks.dart';
 import 'diary_template_variable_values.dart';
 
 /// 一个模板按某天展开后的结果：变量已替换的标题与正文，以及要带上的预设。
@@ -11,7 +12,7 @@ class DiaryTemplateApplication {
   const DiaryTemplateApplication({
     required this.template,
     required this.title,
-    required this.ops,
+    required this.document,
   });
 
   /// 按 [values] 展开 [template]。正文在解码时再清洗一次（白名单），变量
@@ -23,8 +24,9 @@ class DiaryTemplateApplication {
     return DiaryTemplateApplication(
       template: template,
       title: values.resolve(template.titlePattern),
-      ops: List<Map<String, Object?>>.unmodifiable(
-        values.resolveOps(decodeDiaryTemplateBody(template.bodyJson)),
+      document: resolveDiaryTemplateBlockText(
+        decodeDiaryTemplateBody(template.bodyJson),
+        values.resolve,
       ),
     );
   }
@@ -33,7 +35,7 @@ class DiaryTemplateApplication {
   final String title;
 
   /// 正文 Delta 操作（已替换变量）。
-  final List<Map<String, Object?>> ops;
+  final Map<String, Object?> document;
 
   List<DiaryTemplateTagRef> get tags => template.tags;
   String? get mood => template.mood;

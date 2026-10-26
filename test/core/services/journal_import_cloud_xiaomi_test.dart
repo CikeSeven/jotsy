@@ -1,15 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_blocks.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi_markup.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 /// 块的简写：`kind[:属性]:文字`，便于对照参考实现测试中的期望。
 String _describe(CloudBlock block) {
@@ -399,10 +398,10 @@ void main() {
       expect(note.attachments.map((item) => (item.id, item.name)), [
         (fileId, '$fileId.jpg'),
       ]);
-      final writer = JournalDeltaWriter();
+      final writer = JournalBlockWriter();
       note.writeBody(writer, (id) => {'image': id});
       final inserts = [
-        for (final op in jsonDecode(writer.build().contentJson) as List)
+        for (final op in diaryContentQuillOps(writer.build().contentJson))
           (op as Map)['insert'],
       ];
       expect(inserts, [

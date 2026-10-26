@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
+    as editor;
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_preview.dart';
@@ -53,7 +54,7 @@ class DiaryColorCustomPicker extends StatefulWidget {
     required this.onSave,
   });
 
-  final quill.QuillController controller;
+  final editor.DiaryEditorController controller;
   final DiaryColorTarget target;
   final DiaryColorValue current;
 
@@ -91,7 +92,7 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
   /// 这次调色新存进我的颜色的那一个，以及当时的选区：再在同一选区上写入时
   /// 替换它。新的一次调色（选区变化、换目标）不替换。
   Color? _sessionColor;
-  TextSelection? _sessionSelection;
+  editor.Selection? _sessionSelection;
 
   bool get _isBackground => widget.target == DiaryColorTarget.background;
 

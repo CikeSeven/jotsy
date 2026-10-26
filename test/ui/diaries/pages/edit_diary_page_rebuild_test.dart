@@ -1,6 +1,6 @@
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -53,20 +53,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  quill.QuillEditor currentEditor(WidgetTester tester) =>
-      tester.widget<quill.QuillEditor>(find.byType(quill.QuillEditor));
+  af.AppFlowyEditor currentEditor(WidgetTester tester) =>
+      tester.widget<af.AppFlowyEditor>(find.byType(af.AppFlowyEditor));
 
-  double editorBottomPadding(WidgetTester tester) {
-    final scrollView = tester.widget<SingleChildScrollView>(
-      find
-          .ancestor(
-            of: find.byType(quill.QuillEditor),
-            matching: find.byType(SingleChildScrollView),
-          )
-          .first,
-    );
-    return (scrollView.padding! as EdgeInsets).bottom;
-  }
+  double editorBottomPadding(WidgetTester tester) => tester
+      .widget<SizedBox>(find.byKey(const ValueKey('diary-editor-page-reserve')))
+      .height!;
 
   Future<void> unmount(WidgetTester tester) async {
     await tester.pumpWidget(const SizedBox.shrink());

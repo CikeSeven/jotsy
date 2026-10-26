@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
-import '../../../core/database/audio_embed_codec.dart';
-import '../../../core/database/file_embed_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 
 /// 正文中的媒体概况：前几张图片的来源与各类嵌入的数量。
 ///
-/// 输入为正文 JSON（Quill Delta，或旧版 AppFlowy 文档）；输出供卡片的多图
+/// 输入为任一代正文 JSON；输出供卡片的多图
 /// 拼贴与媒体角标使用。只在样式需要时由 `DiaryCardViewData.media` 惰性扫描
 /// 一次并随卡片数据缓存，滚动中不重复解析。正文损坏时按“没有媒体”处理。
 @immutable
@@ -39,26 +36,35 @@ class DiaryCardMediaSummary {
       attachmentCount == 0;
 
   static DiaryCardMediaSummary scan(String contentJson) {
-    final normalized = contentJson.trim();
-    if (normalized.isEmpty) {
-      return empty;
+    final images = <String>[];
+    var imageCount = 0;
+    var audioCount = 0;
+    var videoCount = 0;
+    var attachmentCount = 0;
+    for (final media in diaryContentMedia(contentJson)) {
+      switch (media.kind) {
+        case DiaryBlockMediaKind.image:
+          imageCount++;
+          if (images.length < maxImages && !images.contains(media.path)) {
+            images.add(media.path!);
+          }
+        case DiaryBlockMediaKind.audio:
+          audioCount++;
+        case DiaryBlockMediaKind.video:
+          videoCount++;
+        case DiaryBlockMediaKind.attachment:
+          attachmentCount++;
+      }
     }
-    Object? root;
-    try {
-      root = jsonDecode(normalized);
-    } catch (_) {
-      return empty;
-    }
-    final scanner = _MediaScanner()..visit(root);
-    if (scanner.isEmpty) {
+    if (imageCount + audioCount + videoCount + attachmentCount == 0) {
       return empty;
     }
     return DiaryCardMediaSummary(
-      images: List<String>.unmodifiable(scanner.images),
-      imageCount: scanner.imageCount,
-      audioCount: scanner.audioCount,
-      videoCount: scanner.videoCount,
-      attachmentCount: scanner.attachmentCount,
+      images: List<String>.unmodifiable(images),
+      imageCount: imageCount,
+      audioCount: audioCount,
+      videoCount: videoCount,
+      attachmentCount: attachmentCount,
     );
   }
 
@@ -80,78 +86,4 @@ class DiaryCardMediaSummary {
     videoCount,
     attachmentCount,
   );
-}
-
-/// 递归遍历 Delta / AppFlowy 节点并计数；与 `DiaryCardViewData` 取首图的
-/// 规则一致（insert.image 与 type == image 两种写法）。
-class _MediaScanner {
-  final List<String> images = <String>[];
-  int imageCount = 0;
-  int audioCount = 0;
-  int videoCount = 0;
-  int attachmentCount = 0;
-
-  bool get isEmpty =>
-      imageCount == 0 &&
-      audioCount == 0 &&
-      videoCount == 0 &&
-      attachmentCount == 0;
-
-  void visit(Object? node) {
-    if (node is List) {
-      for (final item in node) {
-        visit(item);
-      }
-      return;
-    }
-    if (node is! Map) {
-      return;
-    }
-    final insert = node['insert'];
-    if (insert is Map) {
-      final image = insert['image'];
-      if (image is String && image.trim().isNotEmpty) {
-        _addImage(image.trim());
-      }
-      _countEmbed(insert.keys);
-    }
-    final type = node['type'];
-    if (type is String) {
-      if (type == 'image') {
-        final attributes = node['attributes'];
-        final url = attributes is Map ? attributes['url'] : null;
-        if (url is String && url.trim().isNotEmpty) {
-          _addImage(url.trim());
-        }
-      } else {
-        _countEmbed(<Object?>[type]);
-      }
-    }
-    for (final childKey in const <String>['root', 'children']) {
-      final child = node[childKey];
-      if (child != null) {
-        visit(child);
-      }
-    }
-  }
-
-  void _addImage(String source) {
-    imageCount += 1;
-    if (images.length < DiaryCardMediaSummary.maxImages &&
-        !images.contains(source)) {
-      images.add(source);
-    }
-  }
-
-  void _countEmbed(Iterable<Object?> keys) {
-    for (final key in keys) {
-      if (key == diaryAudioEmbedType) {
-        audioCount += 1;
-      } else if (key == 'video') {
-        videoCount += 1;
-      } else if (diaryFileEmbedTypes.contains(key)) {
-        attachmentCount += 1;
-      }
-    }
-  }
 }

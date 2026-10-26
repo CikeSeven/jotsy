@@ -1,7 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/day_photo_library.dart';
@@ -26,7 +26,7 @@ void main() {
       tester.widget<TextField>(titleField()).controller!.text;
 
   String bodyText(WidgetTester tester) => tester
-      .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
+      .widget<DiaryEditor>(find.byType(DiaryEditor))
       .controller
       .document
       .toPlainText();

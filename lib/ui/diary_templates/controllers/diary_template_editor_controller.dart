@@ -1,17 +1,15 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../../diaries/controllers/diary_editor_controller.dart' as editor;
 
-import '../../../core/database/content_codec.dart';
 import '../../diaries/models/diary_meta_draft.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/viewmodels/diary_meta_draft_controller.dart';
 import '../models/diary_template.dart';
-import '../models/diary_template_body.dart';
 import '../models/diary_template_json.dart';
 import '../models/diary_template_recommend.dart';
 import 'diary_templates_controller.dart';
 
-/// 模板编辑页的草稿状态：各字段、正文 Quill 文档、未保存判断与保存。
+/// 模板编辑页的草稿状态：各字段、正文块文档、未保存判断与保存。
 ///
 /// 输入：要编辑的模板（null 为新建；id 为空的模板是“另存为模板”预填的新
 /// 模板，同样算新建）。输出：[build] 出的模板与 [save] 的写入。
@@ -28,11 +26,11 @@ class DiaryTemplateEditorController extends ChangeNotifier {
       name = TextEditingController(text: template?.name ?? ''),
       description = TextEditingController(text: template?.description ?? ''),
       titlePattern = TextEditingController(text: template?.titlePattern ?? ''),
-      body = quill.QuillController(
-        document: decodeDiaryContentToDocument(
+      body = editor.DiaryEditorController(
+        document: editor.diaryEditorDocument(
           template?.bodyJson ?? DiaryTemplate.emptyBodyJson,
         ),
-        selection: const TextSelection.collapsed(offset: 0),
+        selection: editor.Selection.single(path: [0], startOffset: 0),
       ),
       meta = DiaryMetaDraftController(
         DiaryMetaDraft(
@@ -63,7 +61,7 @@ class DiaryTemplateEditorController extends ChangeNotifier {
   final TextEditingController name;
   final TextEditingController description;
   final TextEditingController titlePattern;
-  final quill.QuillController body;
+  final editor.DiaryEditorController body;
   final DiaryMetaDraftController meta;
   late DiaryTemplate _baseline;
 
@@ -143,9 +141,7 @@ class DiaryTemplateEditorController extends ChangeNotifier {
         titlePattern.text,
         DiaryTemplate.maxTitleLength,
       ),
-      bodyJson: encodeDiaryTemplateBody(
-        sanitizeDiaryTemplateOps(body.document.toDelta().toJson()),
-      ),
+      bodyJson: encodeDiaryTemplateBody(body.document.toJson()),
       tags: _tags,
       mood: metaValue.moodEmoji,
       energy: metaValue.energyLevel?.round(),

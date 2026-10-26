@@ -9,7 +9,7 @@ import 'package:node_diary/ui/diary_templates/models/diary_template_json.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_recommend.dart';
 
 void main() {
-  const full = DiaryTemplate(
+  final full = DiaryTemplate(
     id: 'tpl-1',
     name: '晨间日记',
     description: '给今天定个方向',
@@ -17,7 +17,12 @@ void main() {
     accent: 0xFFFB8C00,
     category: DiaryTemplateCategory.daily,
     titlePattern: '晨间 · {{日期}}',
-    bodyJson: '[{"insert":"今天\\n","attributes":{"header":2}}]',
+    bodyJson: encodeDiaryTemplateBody([
+      {
+        'insert': '今天\n',
+        'attributes': {'header': 2},
+      },
+    ]),
     tags: [
       DiaryTemplateTagRef(name: '晨间', color: 0xFF43A047),
       DiaryTemplateTagRef(name: 'morning', color: 0xFF1E88E5),
@@ -40,11 +45,9 @@ void main() {
       const DiaryTemplate(id: 'x', name: '空白'),
     );
     expect(json, {
-      'v': 1,
+      'v': 2,
       'name': '空白',
-      'body': [
-        {'insert': '\n'},
-      ],
+      'body': jsonDecode(DiaryTemplate.emptyBodyJson),
     });
   });
 
@@ -106,7 +109,12 @@ void main() {
       ],
     });
     final template = DiaryTemplateJson.fromPayload(payload, id: 'x')!;
-    expect(template.bodyJson, '[{"insert":"文字\\n"}]');
+    expect(
+      template.bodyJson,
+      encodeDiaryTemplateBody([
+        {'insert': '文字\n'},
+      ]),
+    );
   });
 
   test('an unreadable payload is null', () {
@@ -117,7 +125,7 @@ void main() {
   group('template code', () {
     test('round-trips and leaves the id to the importer', () {
       final code = encodeDiaryTemplateCode(full)!;
-      expect(code, startsWith('jotsy-template:v1:'));
+      expect(code, startsWith('jotsy-template:v2:'));
       final result = diaryTemplateCodeFormat.decode('看看这个模板 $code 好用');
       expect(result.status, StyleCodeStatus.ok);
       expect(result.style, full.copyWith(id: ''));
@@ -131,7 +139,7 @@ void main() {
     });
 
     test('a newer version is still read', () {
-      final code = encodeDiaryTemplateCode(full)!.replaceFirst(':v1:', ':v9:');
+      final code = encodeDiaryTemplateCode(full)!.replaceFirst(':v2:', ':v9:');
       final result = diaryTemplateCodeFormat.decode(code);
       expect(result.status, StyleCodeStatus.newerVersion);
       expect(result.style?.name, '晨间日记');

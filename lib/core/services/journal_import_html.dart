@@ -3,7 +3,7 @@ import 'package:html/parser.dart' as html_parser;
 
 import '../database/code_block_codec.dart';
 import '../database/divider_embed_codec.dart';
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_html_style.dart';
 import 'journal_import_style.dart';
 
@@ -13,7 +13,7 @@ bool looksLikeJournalHtml(String text) => RegExp(
   caseSensitive: false,
 ).hasMatch(text);
 
-/// 把其他日记应用导出的 HTML 正文写入 [JournalDeltaWriter]。
+/// 把其他日记应用导出的 HTML 正文写入 [JournalBlockWriter]。
 ///
 /// 保留本应用正文能渲染的格式：粗体、斜体、下划线、删除线、行内代码、链接、
 /// 文字颜色与背景色（`color` / `background-color`、`<font color>`、`<mark>`）、
@@ -31,7 +31,7 @@ bool looksLikeJournalHtml(String text) => RegExp(
 class JournalHtmlConverter {
   JournalHtmlConverter(this.writer, {this.resolveEmbed, this.resolveLink});
 
-  final JournalDeltaWriter writer;
+  final JournalBlockWriter writer;
   final JournalEmbedResolver? resolveEmbed;
   final JournalEmbedResolver? resolveLink;
 

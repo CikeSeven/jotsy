@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_files.dart';
 import 'journal_import_front_matter.dart';
 import 'journal_import_markdown.dart';
@@ -122,7 +122,7 @@ JournalImportEntry _parseNote(
     file,
   ).replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   if (_extension(file.path) == 'txt') {
-    final writer = JournalDeltaWriter(preserveWhitespace: true);
+    final writer = JournalBlockWriter(preserveWhitespace: true);
     appendJournalPlainText(writer, text);
     final content = writer.build();
     final nameDate = _fileNameDate(_noteStem(file));
@@ -139,7 +139,7 @@ JournalImportEntry _parseNote(
   final (:fields, :body) = splitJournalFrontMatter(text);
   var markdown = body;
   var title = journalFrontMatterString(fields, const ['title']) ?? '';
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   final converter = JournalMarkdownConverter(
     writer,
     resolveEmbed: resolve,

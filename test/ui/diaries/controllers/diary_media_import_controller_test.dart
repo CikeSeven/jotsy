@@ -1,12 +1,12 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/core/database/content_codec.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
@@ -18,7 +18,7 @@ void main() {
   const galleryChannel = MethodChannel('com.jotsy.diary/video_gallery');
   late Directory root;
   late File pickedFile;
-  late quill.QuillController documentController;
+  late DiaryEditorController documentController;
 
   setUp(() async {
     root = await Directory.systemTemp.createTemp('jotsy_media_import_test_');
@@ -26,7 +26,7 @@ void main() {
     await pickedFile.writeAsBytes([1, 2, 3]);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (_) async => root.path);
-    documentController = quill.QuillController.basic();
+    documentController = DiaryEditorController();
   });
 
   tearDown(() async {
@@ -125,7 +125,7 @@ void main() {
             isTrue,
           );
         }
-        expect(documentController.selection.baseOffset, 4);
+        expect(documentController.flatSelection.baseOffset, 4);
         expect(importer.isBusy, isFalse);
         expect(importer.isCopying, isFalse);
       },
@@ -237,10 +237,10 @@ void main() {
   test(
     'edits while the picker is open move the captured insertion anchor',
     () async {
-      documentController.document = documentFromPlainText('hello world');
+      documentController.restoreContent(plainTextToContentJson('hello world'));
       documentController.updateSelection(
         const TextSelection.collapsed(offset: 5),
-        quill.ChangeSource.local,
+        'local',
       );
       final pickerCompletion = Completer<List<PlatformFile>?>();
       final importer = DiaryMediaImportController(
@@ -290,7 +290,8 @@ void main() {
         ),
         DiaryMediaImportOutcome.busy,
       );
-      documentController.document = documentFromPlainText('new document');
+      importer.cancel();
+      documentController.restoreContent(plainTextToContentJson('new document'));
       pickerCompletion.complete([
         PlatformFile(name: 'video.mp4', size: 3, path: pickedFile.path),
       ]);

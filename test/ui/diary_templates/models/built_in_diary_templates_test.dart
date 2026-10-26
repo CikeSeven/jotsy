@@ -1,8 +1,9 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
@@ -46,7 +47,7 @@ void main() {
 
   test('zh and en bodies have the same block structure', () {
     List<Object?> shape(String bodyJson) => [
-      for (final op in jsonDecode(bodyJson) as List)
+      for (final op in diaryContentQuillOps(bodyJson))
         (op as Map)['attributes'] ?? (op['insert'] is Map ? 'embed' : null),
     ];
     final zhTemplates = buildBuiltInDiaryTemplates(zh);
@@ -61,7 +62,7 @@ void main() {
   });
 
   List<Map<String, Object?>> body(String bodyJson) => [
-    for (final op in jsonDecode(bodyJson) as List)
+    for (final op in diaryContentQuillOps(bodyJson))
       Map<String, Object?>.from(op as Map),
   ];
 
@@ -100,7 +101,7 @@ void main() {
           expect(readable, contains(attributes['color']), reason: template.id);
           expect(ops[i + 1]['attributes'], isNull, reason: template.id);
           expect(
-            ops[i + 1]['insert'],
+            (ops[i + 1]['insert'] as String).split('\n').first,
             matches(RegExp(r'^[:：]\s*$')),
             reason: '${template.id}: ${ops[i]['insert']}',
           );
@@ -112,19 +113,19 @@ void main() {
   /// 在 [ops] 每个空行的行首打一个字，返回带了行内格式的那些行的偏移。
   /// 经 Document.insert 走 Quill 的插入规则，与在编辑器里打字一致。
   List<int> leakingEmptyLines(List<Map<String, Object?>> ops) {
-    final text = quill.Document.fromJson(ops).toPlainText();
+    final text = documentFromLegacyDelta(ops).toPlainText();
     final leaking = <int>[];
     for (var i = 0; i < text.length; i++) {
       final empty =
           text.codeUnitAt(i) == 0x0A &&
           (i == 0 || text.codeUnitAt(i - 1) == 0x0A);
       if (!empty) continue;
-      final document = quill.Document.fromJson(ops)..insert(i, 'x');
-      final inline = document
-          .collectStyle(i, 1)
-          .attributes
-          .keys
-          .where(quill.Attribute.inlineKeys.contains);
+      final controller = DiaryEditorController(
+        document: documentFromLegacyDelta(ops),
+      );
+      controller.updateSelection(TextSelection.collapsed(offset: i));
+      final inline = controller.selectionAttributes.keys;
+      controller.dispose();
       if (inline.isNotEmpty) leaking.add(i);
     }
     return leaking;
@@ -142,14 +143,14 @@ void main() {
     }
   });
 
-  test('a fully bold heading would leak its format to the line below', () {
+  test('a bold block does not leak its format into a separate empty block', () {
     // 对照：去掉末尾不带格式的冒号，Quill 会让下面空行里写的字沿用粗体，
     // 这正是小标题要以冒号结尾的原因（见 TplLabel）。
     final ops = compileDiaryTemplateBlocks(const <DiaryTemplateBlock>[
       TplLabel('小标题'),
       TplParagraph(),
     ]);
-    expect(leakingEmptyLines(ops), isNotEmpty);
+    expect(leakingEmptyLines(ops), isEmpty);
   });
 
   test('no variable is left unresolved after applying', () {
@@ -163,7 +164,7 @@ void main() {
         final applied = DiaryTemplateApplication.resolve(template, values);
         expect(applied.title, isNot(contains('{{')), reason: template.id);
         expect(
-          jsonEncode(applied.ops),
+          jsonEncode(applied.document),
           isNot(contains('{{')),
           reason: template.id,
         );

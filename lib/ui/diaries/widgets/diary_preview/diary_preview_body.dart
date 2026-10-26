@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../../controllers/diary_editor_controller.dart';
+import '../diary_editor/diary_editor.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/database/app_database.dart';
-import '../../../../core/database/content_codec.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../utils/precise_time_formatter.dart';
 import '../../../../utils/relative_time_formatter.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
 import '../../models/time_capsule.dart';
-import '../../viewmodels/diary_quill_styles.dart';
 import '../../viewmodels/diary_text_appearance.dart';
-import '../diary_mobile_toolbar.dart';
 
-/// 预览页正文：只读 Quill，没有可见内容时显示空正文提示（可关）。
-///
-/// 是否有正文不能只看 contentText（纯文本镜像），否则“仅图片正文”会被误判
-/// 为空：统一按 Quill 文档是否存在可见内容判断，图片、视频与其他嵌入都算
-/// 正文。Quill 样式必须在正文位置生成（[DiaryQuillStylesBuilder]），这里在
-/// Scaffold 之下，取得到主题的正文样式；自定义正文颜色经 [DefaultTextStyle]
-/// 传给 Quill（段落、标题都从它取色），字号与行距仍只来自正文排版设置。
+/// 预览页正文：只读原生块文档，按真实文字/嵌入判断是否显示空正文提示。
+/// 自定义正文颜色经 DefaultTextStyle 传入，字体、字号、行距与块渲染继续
+/// 使用 DiaryEditor 的共用解析；待办只开放 checked 事务，保存由页面负责。
 class DiaryPreviewBody extends StatelessWidget {
   const DiaryPreviewBody({
     super.key,
@@ -35,7 +29,7 @@ class DiaryPreviewBody extends StatelessWidget {
     this.textColor,
   });
 
-  final quill.QuillController controller;
+  final DiaryEditorController controller;
   final DiaryTextAppearance appearance;
 
   /// 点按正文图片：来源与点按处抓取的共享元素。
@@ -56,34 +50,17 @@ class DiaryPreviewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasVisibleContent = diaryDocumentHasVisibleContent(
-      controller.document,
-    );
+    final hasVisibleContent = controller.hasContent;
     Widget body;
     if (hasVisibleContent) {
-      body = DiaryQuillStylesBuilder(
-        appearance: appearance,
+      body = DiaryEditor(
         controller: controller,
-        builder: (BuildContext context, DiaryQuillLook look) {
-          return quill.QuillEditor.basic(
-            controller: controller,
-            config: look.configure(
-              quill.QuillEditorConfig(
-                autoFocus: false,
-                scrollable: false,
-                padding: EdgeInsets.zero,
-                showCursor: false,
-                checkBoxReadOnly: !todoToggle,
-                enableInteractiveSelection: textSelection,
-                embedBuilders: buildDiaryQuillEmbedBuilders(
-                  onImageOpen: onOpenImage,
-                  foldLongImages:
-                      longImageMode == DiaryPreviewLongImageMode.fold,
-                ),
-              ),
-            ),
-          );
-        },
+        appearance: appearance,
+        shrinkWrap: true,
+        todoToggle: todoToggle,
+        textSelection: textSelection,
+        onImageOpen: onOpenImage,
+        foldLongImages: longImageMode == DiaryPreviewLongImageMode.fold,
       );
     } else if (showEmptyHint) {
       body = Text(

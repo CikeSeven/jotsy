@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_files.dart';
 import 'journal_import_markdown.dart';
 import 'journal_import_media.dart';
@@ -153,7 +153,7 @@ JournalImportEntry? _parseEntry(
     );
   }
 
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   final converter = JournalMarkdownConverter(
     writer,
     resolveEmbed: (source) {

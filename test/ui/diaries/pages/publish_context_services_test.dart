@@ -1,6 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -50,7 +51,7 @@ void main() {
           locale: const Locale('en'),
           localizationsDelegates: const [
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
@@ -167,7 +168,7 @@ void main() {
   testWidgets('panel input does not rebuild the body preview', (tester) async {
     await openPublisher(tester);
     final panel = PublishPanelDriver(tester);
-    final previewBefore = tester.widget(find.byType(quill.QuillEditor));
+    final previewBefore = tester.widget(find.byType(DiaryEditor));
 
     panel.setEnergy(3);
     panel.setMood('🙂');
@@ -175,7 +176,7 @@ void main() {
     await tester.pump();
 
     expect(
-      identical(tester.widget(find.byType(quill.QuillEditor)), previewBefore),
+      identical(tester.widget(find.byType(DiaryEditor)), previewBefore),
       isTrue,
     );
     await unmount(tester);

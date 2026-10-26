@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../core/database/content_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_to_delta.dart';
 import '../export/diary_export_blocks.dart';
 import '../export/diary_export_plain_text.dart';
 import 'diary_context_info.dart';
@@ -31,11 +32,12 @@ class DiaryShareContent {
     final diary = detail.diary;
     return DiaryShareContent.parse(
       title: diary.title,
-      deltaOps: decodeDiaryContentToDocument(diary.content).toDelta().toJson(),
+      deltaOps: diaryBlocksToQuillOps(decodeStoredDiaryBlocks(diary.content)),
       cover: diary.cover,
       metadata: diary.metadata,
       tagNames: detail.tags.map((Tag tag) => tag.name).toList(),
       createdAt: diary.createdAt,
+      blockDocument: decodeStoredDiaryBlocks(diary.content),
     );
   }
 
@@ -48,8 +50,13 @@ class DiaryShareContent {
     required String metadata,
     required List<String> tagNames,
     required DateTime createdAt,
+    Map<String, Object?>? blockDocument,
   }) {
-    final body = DiaryShareBodyFormatter.format(deltaOps);
+    final body = blockDocument == null
+        ? DiaryShareBodyFormatter.format(deltaOps)
+        : DiaryShareBodyFormatter.fromBlocks(
+            ExportBlockParser.parseDocument(blockDocument),
+          );
     final images = <String>[];
     void addImage(String? source) {
       final normalized = source?.trim();
@@ -137,6 +144,10 @@ class DiaryShareBodyFormatter {
 
   static DiaryShareBody format(List<dynamic> rawOps) {
     final blocks = ExportBlockParser.parse(rawOps);
+    return fromBlocks(blocks);
+  }
+
+  static DiaryShareBody fromBlocks(List<ExportBlock> blocks) {
     return DiaryShareBody(
       text: ExportPlainText.render(blocks),
       images: <String>[

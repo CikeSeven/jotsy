@@ -1,14 +1,15 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/file_open_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/media_insertion.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_attachment_embed_builder.dart';
+import 'dart:convert';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -25,12 +26,17 @@ void main() {
       testWidgets(
         'attachment opens from $brightness diary with readOnly=$readOnly',
         (tester) async {
-          final controller = quill.QuillController.basic();
+          final controller = DiaryEditorController();
           addTearDown(controller.dispose);
           insertDiaryMediaBlocks(
             controller: controller,
             selection: controller.selection,
-            embeds: [quill.BlockEmbed(diaryAttachmentEmbedType, file.encode())],
+            embeds: [
+              quill.Node(
+                type: 'attachment',
+                attributes: jsonDecode(file.encode()),
+              ),
+            ],
           );
           controller.readOnly = readOnly;
           final service = FakeFileOpenService();
@@ -58,12 +64,14 @@ void main() {
   testWidgets('imported file alias opens and reports unavailable handler', (
     tester,
   ) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
     insertDiaryMediaBlocks(
       controller: controller,
       selection: controller.selection,
-      embeds: [quill.BlockEmbed('file', file.path)],
+      embeds: [
+        quill.Node(type: 'attachment', attributes: {'path': file.path}),
+      ],
     );
     controller.readOnly = true;
     final service = FakeFileOpenService()..failure = FileOpenFailure.noApp;
@@ -81,12 +89,14 @@ void main() {
   testWidgets(
     'opening indicator blocks repeated taps until the handler returns',
     (tester) async {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       addTearDown(controller.dispose);
       insertDiaryMediaBlocks(
         controller: controller,
         selection: controller.selection,
-        embeds: [quill.BlockEmbed(diaryAttachmentEmbedType, file.encode())],
+        embeds: [
+          quill.Node(type: 'attachment', attributes: jsonDecode(file.encode())),
+        ],
       );
       controller.readOnly = true;
       final gate = Completer<FileOpenFailure?>();
@@ -112,12 +122,12 @@ void main() {
   testWidgets('malformed imported attachments render a localized error', (
     tester,
   ) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
     insertDiaryMediaBlocks(
       controller: controller,
       selection: controller.selection,
-      embeds: [quill.BlockEmbed(diaryAttachmentEmbedType, '{broken')],
+      embeds: [quill.Node(type: 'attachment', attributes: {})],
     );
     await tester.pumpWidget(
       _editor(controller, Brightness.light, FakeFileOpenService()),
@@ -130,7 +140,7 @@ void main() {
 }
 
 Widget _editor(
-  quill.QuillController controller,
+  DiaryEditorController controller,
   Brightness brightness,
   FileOpenService service,
 ) => MaterialApp(
@@ -138,19 +148,11 @@ Widget _editor(
   locale: const Locale('zh'),
   localizationsDelegates: const [
     ...AppLocalizations.localizationsDelegates,
-    quill.FlutterQuillLocalizations.delegate,
+    quill.AppFlowyEditorLocalizations.delegate,
   ],
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
-    body: quill.QuillEditor.basic(
-      controller: controller,
-      config: quill.QuillEditorConfig(
-        embedBuilders: [
-          DiaryAttachmentEmbedBuilder(openService: service),
-          DiaryAttachmentEmbedBuilder(embedType: 'file', openService: service),
-        ],
-      ),
-    ),
+    body: nativeTestEditor(controller: controller, fileOpenService: service),
   ),
 );
 

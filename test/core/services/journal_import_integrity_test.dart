@@ -14,6 +14,7 @@ import 'package:node_diary/core/services/journal_import_support.dart';
 import 'package:path/path.dart' as p;
 
 import '../../support/journal_import_fixture.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 void main() {
   late JournalImportFixture fixture;
@@ -196,7 +197,7 @@ void main() {
       fixture.media,
     ).entries.single;
     expect(entry.title, 'Plain');
-    expect(jsonDecode(entry.contentJson), [
+    expect(diaryContentQuillOps(entry.contentJson), [
       {'insert': text},
     ]);
   });

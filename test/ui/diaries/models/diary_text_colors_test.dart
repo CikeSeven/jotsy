@@ -1,7 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:ui' show Color;
 
-import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:flutter_quill/quill_delta.dart';
+import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
@@ -58,10 +58,7 @@ void main() {
       '#FFE5484D',
     );
     expect(DiaryColorTarget.background.attributeFor(null).value, isNull);
-    expect(
-      DiaryColorTarget.background.attributeFor(null).key,
-      quill.Attribute.background.key,
-    );
+    expect(DiaryColorTarget.background.attributeFor(null).key, 'bg_color');
   });
 
   group('parseDiaryColorValue', () {
@@ -136,15 +133,16 @@ void main() {
   });
 
   test('collects distinct non-preset colors in document order', () {
-    final document = quill.Document.fromDelta(
-      Delta()
-        ..insert('a', <String, dynamic>{'color': '#FF123456'})
-        ..insert('b', <String, dynamic>{'color': '#FFE5484D'})
-        ..insert('c', <String, dynamic>{'color': '#123456'})
-        ..insert('d', <String, dynamic>{'color': 'red'})
-        ..insert('e', <String, dynamic>{'color': '#ff00aa00'})
-        ..insert('f', <String, dynamic>{'background': '#80ABCDEF'})
-        ..insert('\n'),
+    final document = documentFromLegacyDelta(
+      (Delta()
+            ..insert('a', <String, dynamic>{'color': '#FF123456'})
+            ..insert('b', <String, dynamic>{'color': '#FFE5484D'})
+            ..insert('c', <String, dynamic>{'color': '#123456'})
+            ..insert('d', <String, dynamic>{'color': 'red'})
+            ..insert('e', <String, dynamic>{'color': '#ff00aa00'})
+            ..insert('f', <String, dynamic>{'background': '#80ABCDEF'})
+            ..insert('\n'))
+          .toJson(),
     );
     expect(collectDiaryDocumentColors(document, DiaryColorTarget.text), <Color>[
       const Color(0xFF123456),

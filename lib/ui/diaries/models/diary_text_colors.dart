@@ -1,6 +1,6 @@
 /// 正文文字色 / 背景色的纯数据模型：预设色板、属性值的读写与十六进制输入。
 ///
-/// - 输入：Quill 选区样式、文档 Delta、用户输入的颜色代码；
+/// - 输入：原生选区属性、块文档、用户输入的颜色代码；
 /// - 输出：可比较的 [Color] 与写回正文的属性值；
 /// - 无副作用，不依赖 BuildContext。
 ///
@@ -11,7 +11,7 @@ library;
 
 import 'dart:ui' show Color;
 
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../controllers/diary_editor_controller.dart' as editor;
 import 'package:node_diary/core/services/journal_import_style.dart';
 
 /// 颜色面板正在编辑的是文字色还是背景色。
@@ -19,18 +19,18 @@ enum DiaryColorTarget {
   text,
   background;
 
-  /// 对应的 Quill 行内属性键（`color` / `background`）。
+  /// 对应的原生行内属性键（`font_color` / `bg_color`）。
   String get attributeKey => switch (this) {
-    DiaryColorTarget.text => quill.Attribute.color.key,
-    DiaryColorTarget.background => quill.Attribute.background.key,
+    DiaryColorTarget.text => 'font_color',
+    DiaryColorTarget.background => 'bg_color',
   };
 
   /// 写入 [color] 的属性；[color] 为 null 时是清除该属性。
-  quill.Attribute<String?> attributeFor(Color? color) {
+  MapEntry<String, String?> attributeFor(Color? color) {
     final value = color == null ? null : encodeDiaryColor(color);
     return switch (this) {
-      DiaryColorTarget.text => quill.ColorAttribute(value),
-      DiaryColorTarget.background => quill.BackgroundAttribute(value),
+      DiaryColorTarget.text => MapEntry(attributeKey, value),
+      DiaryColorTarget.background => MapEntry(attributeKey, value),
     };
   }
 }
@@ -94,10 +94,10 @@ class DiaryColorValue {
 
   /// 从选区样式（`controller.getSelectionStyle().attributes`）里读取。
   factory DiaryColorValue.of(
-    Map<String, quill.Attribute> attributes,
+    Map<String, Object?> attributes,
     DiaryColorTarget target,
   ) {
-    final value = attributes[target.attributeKey]?.value;
+    final value = attributes[target.attributeKey];
     return DiaryColorValue.parse(value is String ? value : null);
   }
 
@@ -190,18 +190,20 @@ String sanitizeDiaryHexInput(String input) => input
 /// 遍历整篇 Delta，只在面板打开、切换目标与回到色板时调用一次，不在每次
 /// 构建或按键时计算。
 List<Color> collectDiaryDocumentColors(
-  quill.Document document,
+  editor.Document document,
   DiaryColorTarget target,
 ) {
   final seen = <int>{};
   final result = <Color>[];
-  for (final operation in document.toDelta().toList()) {
-    final value = operation.attributes?[target.attributeKey];
-    final color = value is String ? parseDiaryColorValue(value) : null;
-    if (color == null || DiaryColorPreset.match(color, target) != null) {
-      continue;
+  for (final node in editor.walkDiaryEditorNodes(document)) {
+    for (final operation in node.delta ?? editor.Delta()) {
+      final value = operation.attributes?[target.attributeKey];
+      final color = value is String ? parseDiaryColorValue(value) : null;
+      if (color == null || DiaryColorPreset.match(color, target) != null) {
+        continue;
+      }
+      if (seen.add(color.toARGB32())) result.add(color);
     }
-    if (seen.add(color.toARGB32())) result.add(color);
   }
   return result;
 }

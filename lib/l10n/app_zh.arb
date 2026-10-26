@@ -10830,5 +10830,83 @@
   "codeBlockPreviewIntro": "代码块会按语言高亮，行内代码也跟随配色，例如 ",
   "@codeBlockPreviewIntro": {
     "description": "代码块样式页预览的引导文字，末尾空格后接一段行内代码示例。"
-  }
+  },
+  "diaryEditorLinkUrl": "链接地址",
+  "@diaryEditorLinkUrl": {
+    "description": "URL field in the diary editor link dialog."
+  },
+  "diaryEditorInvalidLink": "请输入有效的链接地址",
+  "@diaryEditorInvalidLink": {
+    "description": "Validation message for an invalid diary editor link."
+  },
+  "diaryEditorRemoveLink": "移除链接",
+  "@diaryEditorRemoveLink": {
+    "description": "Clear the URL from the selected diary text."
+  },
+  "diaryEditorDragBlock": "拖动段落",
+  "@diaryEditorDragBlock": {
+    "description": "Accessibility label for the diary editor paragraph drag handle."
+  },
+  "diaryEditorDragBlockHold": "长按拖动",
+  "@diaryEditorDragBlockHold": {
+    "description": "Paragraph handle menu item between move up and move down: press and hold it, then slide to move the block."
+  },
+  "diaryEditorDragBlockTip": "按住“长按拖动”后上下滑动，段落会跟着移动；也可以直接长按左侧把手",
+  "@diaryEditorDragBlockTip": {
+    "description": "Hint shown after tapping the drag item in the paragraph handle menu instead of holding it."
+  },
+  "diaryEditorMoveBlockUp": "上移段落",
+  "@diaryEditorMoveBlockUp": {
+    "description": "Move the selected editor block above its previous sibling."
+  },
+  "diaryEditorMoveBlockDown": "下移段落",
+  "@diaryEditorMoveBlockDown": {
+    "description": "Move the selected editor block below its next sibling."
+  },
+  "diaryEditorParagraph": "正文",
+  "@diaryEditorParagraph": {
+    "description": "Plain paragraph option in the diary editor block menu."
+  },
+  "diaryEditorIndent": "增加缩进",
+  "@diaryEditorIndent": {
+    "description": "Nest the selected diary editor blocks under the previous block."
+  },
+  "diaryEditorOutdent": "减少缩进",
+  "@diaryEditorOutdent": {
+    "description": "Move selected diary editor blocks out one level."
+  },
+  "diaryEditorSlashCommands": "插入区块",
+  "@diaryEditorSlashCommands": {
+    "description": "Title of the diary editor slash command menu."
+  },
+  "diaryEditorDivider": "分隔线",
+  "@diaryEditorDivider": {
+    "description": "Divider option in the diary editor slash command menu."
+  },
+  "diaryEditorUnsupportedBlock": "暂不支持的内容",
+  "@diaryEditorUnsupportedBlock": {
+    "description": "Placeholder for a preserved editor block from an unsupported format."
+  },
+  "diaryEditorImageWidth": "图片宽度",
+  "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorImageHeight": "图片高度",
+  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorHeading1": "一级标题",
+  "@diaryEditorHeading1": {"description": "正文 / 命令菜单里转为一级标题的选项。"},
+  "diaryEditorHeading2": "二级标题",
+  "@diaryEditorHeading2": {"description": "正文 / 命令菜单里转为二级标题的选项。"},
+  "diaryEditorHeading3": "三级标题",
+  "@diaryEditorHeading3": {"description": "正文 / 命令菜单里转为三级标题的选项。"},
+  "diaryEditorCommandGroupText": "文本",
+  "@diaryEditorCommandGroupText": {"description": "正文 / 命令菜单的分组：段落、标题、引用与代码块。"},
+  "diaryEditorCommandGroupList": "列表",
+  "@diaryEditorCommandGroupList": {"description": "正文 / 命令菜单的分组：无序、有序与待办列表。"},
+  "diaryEditorCommandGroupInsert": "插入",
+  "@diaryEditorCommandGroupInsert": {"description": "正文 / 命令菜单的分组：分隔线、图片、视频、附件与录音。"},
+  "diaryEditorCommandEmpty": "没有匹配的区块",
+  "@diaryEditorCommandEmpty": {"description": "正文 / 命令菜单里输入的筛选词没有匹配项时的提示。"},
+  "diaryEditorEmptyLineHint": "输入 / 插入区块",
+  "@diaryEditorEmptyLineHint": {"description": "正文中间光标所在空行的占位提示，提醒可以用 / 命令插入区块。"},
+  "diaryEditorCommandTypeToFilter": "继续输入即可筛选",
+  "@diaryEditorCommandTypeToFilter": {"description": "正文 / 命令菜单底部的说明：在 / 后接着输入文字会筛选命令。"}
 }

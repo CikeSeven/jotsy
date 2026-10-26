@@ -1,5 +1,5 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_custom_picker.dart';
@@ -28,9 +28,9 @@ void main() {
     tester,
   ) async {
     final controller = colorPanelController();
-    controller.formatText(0, 1, const quill.ColorAttribute('#FF778899'));
+    controller.formatText(0, 1, const MapEntry('font_color', '#FF778899'));
     // 这篇也用过一个已保存的颜色：只出现一次，在我的颜色里。
-    controller.formatText(1, 1, const quill.ColorAttribute('#FF445566'));
+    controller.formatText(1, 1, const MapEntry('font_color', '#FF445566'));
     await pumpColorPanel(
       tester,
       controller: controller,
@@ -98,7 +98,7 @@ void main() {
     tester,
   ) async {
     final controller = colorPanelController();
-    controller.formatText(0, 1, const quill.ColorAttribute('#FF778899'));
+    controller.formatText(0, 1, const MapEntry('font_color', '#FF778899'));
     final harness = await pumpColorPanel(
       tester,
       controller: controller,

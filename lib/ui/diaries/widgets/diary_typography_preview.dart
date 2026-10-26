@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../controllers/diary_editor_controller.dart';
+import 'diary_editor/diary_editor.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../l10n/app_localizations.dart';
-import '../viewmodels/diary_quill_styles.dart';
 import '../viewmodels/diary_text_appearance.dart';
 
 /// 正文排版预览卡：示例标题 + 几段示例正文，按传入外观渲染。
 ///
-/// 正文用只读 Quill 渲染、与日记页面同一个样式生成函数，段间距这类块级
+/// 正文用只读 AppFlowy 渲染、与日记页面同一个样式生成函数，段间距这类块级
 /// 排版在这里看到的就是日记里的效果。示例文本随界面语言切换时重建文档。
 class DiaryTypographyPreview extends StatefulWidget {
   const DiaryTypographyPreview({
@@ -28,7 +28,7 @@ class DiaryTypographyPreview extends StatefulWidget {
 }
 
 class _DiaryTypographyPreviewState extends State<DiaryTypographyPreview> {
-  quill.QuillController? _controller;
+  DiaryEditorController? _controller;
   String? _sampleText;
 
   @override
@@ -40,11 +40,7 @@ class _DiaryTypographyPreviewState extends State<DiaryTypographyPreview> {
     }
     _sampleText = sample;
     _controller?.dispose();
-    _controller = quill.QuillController(
-      document: quill.Document()..insert(0, sample),
-      selection: const TextSelection.collapsed(offset: 0),
-      readOnly: true,
-    );
+    _controller = DiaryEditorController.fromContent(sample, readOnly: true);
   }
 
   @override
@@ -96,22 +92,11 @@ class _DiaryTypographyPreviewState extends State<DiaryTypographyPreview> {
         const SizedBox(height: AppSpacing.s),
         // 预览不可交互：避免点按出现光标或选区，也不抢滚动手势。
         IgnorePointer(
-          child: DiaryQuillStylesBuilder(
-            appearance: widget.appearance,
+          child: DiaryEditor(
             controller: _controller!,
-            builder: (BuildContext context, DiaryQuillLook look) {
-              return quill.QuillEditor.basic(
-                controller: _controller!,
-                config: look.configure(
-                  const quill.QuillEditorConfig(
-                    autoFocus: false,
-                    scrollable: false,
-                    padding: EdgeInsets.zero,
-                    showCursor: false,
-                  ),
-                ),
-              );
-            },
+            appearance: widget.appearance,
+            shrinkWrap: true,
+            textSelection: false,
           ),
         ),
       ],

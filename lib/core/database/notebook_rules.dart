@@ -577,16 +577,17 @@ String _compileDate(
 
 /// 正文里某类嵌入的 LIKE 模式（不含用户输入，直接写进 SQL）。
 ///
-/// 正文是 Dart `jsonEncode` 写出的紧凑 Delta：嵌入为
+/// 正文是 Dart `jsonEncode` 写出的紧凑块文档（`"type":"image"` 等），
+/// 同时兼容尚未改写的历史 Delta：嵌入为
 /// `{"insert":{"image":"…"}}`、`{"insert":{"video":"…"}}`、
 /// `{"insert":{"audio":"{\"path\":…}"}}`（自定义嵌入的数据是再编码一层的 JSON
 /// 字符串，内层引号被转义）、`{"insert":{"attachment":"{…}"}}`（旧版为 `file`）。
 /// 文字里的引号一定被转义成 `\"`，所以 `"image":` 这样未转义的“键 + 冒号”只能
-/// 出现在 JSON 结构里，不会被正文文字误中。旧版 AppFlowy 文档（尚未改写成
-/// Delta 的历史正文）的节点写作 `"type":"image"`，一并认出。
+/// 出现在 JSON 结构里，不会被正文文字误中。旧版 AppFlowy 的 type 节点
+/// 同样一并认出。
 List<String> _mediaPatterns(NotebookMediaKind kind) => switch (kind) {
   NotebookMediaKind.image => const <String>['%"image":%', '%"type":"image"%'],
-  NotebookMediaKind.audio => const <String>['%"audio":%'],
+  NotebookMediaKind.audio => const <String>['%"audio":%', '%"type":"audio"%'],
   NotebookMediaKind.video => const <String>['%"video":%', '%"type":"video"%'],
   NotebookMediaKind.attachment => const <String>[
     '%"attachment":%',

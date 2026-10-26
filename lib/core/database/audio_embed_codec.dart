@@ -41,10 +41,12 @@ class DiaryAudioAttachment {
           .toList(),
   });
 
+  /// 解析录音数据：Quill 嵌入里再编码一层的 JSON 字符串，或块文档 `data`
+  /// 里的 Map。
   static DiaryAudioAttachment? tryDecode(Object? data) {
-    if (data is! String) return null;
+    if (data is! String && data is! Map) return null;
     try {
-      final value = jsonDecode(data);
+      final value = data is String ? jsonDecode(data) : data;
       if (value is! Map || value['path'] is! String) return null;
       final path = (value['path'] as String).trim();
       if (path.isEmpty) return null;
@@ -75,23 +77,5 @@ class DiaryAudioAttachment {
     } on FormatException {
       return null;
     }
-  }
-}
-
-Set<String> extractDiaryAudioPaths(String content) {
-  try {
-    final delta = jsonDecode(content);
-    if (delta is! List) return <String>{};
-    return <String>{
-      for (final op in delta)
-        if (op is Map && op['insert'] is Map)
-          if (DiaryAudioAttachment.tryDecode(
-                (op['insert'] as Map)[diaryAudioEmbedType],
-              )
-              case final audio?)
-            audio.path,
-    };
-  } on FormatException {
-    return <String>{};
   }
 }

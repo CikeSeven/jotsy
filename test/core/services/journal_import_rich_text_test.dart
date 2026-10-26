@@ -1,22 +1,20 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/core/database/content_codec.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_html.dart';
 import 'package:node_diary/core/services/journal_import_markdown.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 List<Object?> _html(String html, {JournalEmbedResolver? resolve}) {
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   JournalHtmlConverter(writer, resolveEmbed: resolve).appendHtml(html);
-  return jsonDecode(writer.build().contentJson) as List<Object?>;
+  return diaryContentQuillOps(writer.build().contentJson);
 }
 
 List<Object?> _markdown(String markdown, {JournalEmbedResolver? resolve}) {
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   JournalMarkdownConverter(writer, resolveEmbed: resolve).append(markdown);
-  return jsonDecode(writer.build().contentJson) as List<Object?>;
+  return diaryContentQuillOps(writer.build().contentJson);
 }
 
 /// 各代码行的 `code-block` 值，按出现顺序。
@@ -397,12 +395,12 @@ void main() {
     });
 
     test('inline HTML colours, highlights and rules in Markdown notes', () {
-      final writer = JournalDeltaWriter();
+      final writer = JournalBlockWriter();
       JournalMarkdownConverter(writer, inlineHtml: true).append(
         '<span style="color:#e03e2d">红</span>与<mark>亮</mark>'
         '<font color="#00aaee"><b>蓝</b></font>\n<hr>\n***',
       );
-      final ops = jsonDecode(writer.build().contentJson) as List<Object?>;
+      final ops = diaryContentQuillOps(writer.build().contentJson);
       expect(ops, [
         {
           'insert': '红',
@@ -430,13 +428,13 @@ void main() {
     });
 
     test('the plain-text mirror matches the stored document', () {
-      final writer = JournalDeltaWriter();
+      final writer = JournalBlockWriter();
       JournalMarkdownConverter(
         writer,
         resolveEmbed: (_) => {'image': '/staged/x.jpg'},
       ).append('# Head\n![](dayone-moment://X)\n- item **b**\n\n');
       final built = writer.build();
-      expect(built.contentText, deltaJsonToPlainText(built.contentJson));
+      expect(built.contentText, diaryContentToPlainText(built.contentJson));
       expect(built.contentText, 'Head\n\nitem b');
     });
   });

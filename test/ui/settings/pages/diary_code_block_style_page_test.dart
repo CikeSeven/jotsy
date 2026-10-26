@@ -1,5 +1,6 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -53,7 +54,7 @@ Future<SettingsService> _pump(
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: (home ?? (s) => DiaryCodeBlockStylePage(settingsService: s))(
@@ -104,10 +105,10 @@ void main() {
   testWidgets('the preview renders the sample code blocks', (tester) async {
     await _pump(tester);
     expect(find.byType(DiaryCodeBlockStylePreview), findsOneWidget);
-    final editor = tester.widget<quill.QuillEditor>(
+    final editor = tester.widget<DiaryEditor>(
       find.descendant(
         of: find.byType(DiaryCodeBlockStylePreview),
-        matching: find.byType(quill.QuillEditor),
+        matching: find.byType(DiaryEditor),
       ),
     );
     final text = editor.controller.document.toPlainText();
@@ -162,9 +163,7 @@ void main() {
       expect(find.byTooltip(_l10n.styleEditorPreviewLight), findsOneWidget);
       // 预览明暗只影响预览，不写入设置。
       expect(settings.diaryCodeBlockStyleRaw, isNull);
-      final previewTheme = Theme.of(
-        tester.element(find.byType(quill.QuillEditor)),
-      );
+      final previewTheme = Theme.of(tester.element(find.byType(DiaryEditor)));
       expect(previewTheme.brightness, Brightness.dark);
     },
   );

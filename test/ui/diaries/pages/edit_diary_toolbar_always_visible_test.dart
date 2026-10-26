@@ -1,6 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -51,7 +52,7 @@ void main() {
           locale: const Locale('en'),
           localizationsDelegates: const [
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: page,
@@ -68,17 +69,9 @@ void main() {
 
   Finder toolbar() => find.byType(DiaryFloatingToolbar);
 
-  double editorBottomPadding(WidgetTester tester) {
-    final scrollView = tester.widget<SingleChildScrollView>(
-      find
-          .ancestor(
-            of: find.byType(quill.QuillEditor),
-            matching: find.byType(SingleChildScrollView),
-          )
-          .first,
-    );
-    return (scrollView.padding! as EdgeInsets).bottom;
-  }
+  double editorBottomPadding(WidgetTester tester) => tester
+      .widget<SizedBox>(find.byKey(const ValueKey('diary-editor-page-reserve')))
+      .height!;
 
   testWidgets('by default the toolbar waits for the on-screen keyboard', (
     tester,
@@ -88,7 +81,7 @@ void main() {
       const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
     );
     // 新建页进场后正文已有焦点，但没有软键盘（实体键盘输入时就是这样）。
-    expect(find.byType(quill.QuillEditor), findsOneWidget);
+    expect(find.byType(DiaryEditor), findsOneWidget);
     expect(toolbar(), findsNothing);
 
     // 在设置里打开后，回到编辑页立即生效。
@@ -121,28 +114,24 @@ void main() {
 
       // 不聚焦也能排版：工具按钮直接作用在正文的选区上。
       final controller = tester
-          .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
+          .widget<DiaryEditor>(find.byType(DiaryEditor))
           .controller;
       controller.replaceText(0, 0, 'hello', null);
       controller.updateSelection(
         const TextSelection(baseOffset: 0, extentOffset: 5),
-        quill.ChangeSource.local,
+        'local',
       );
       await tester.pumpAndSettle();
       await tester.tap(
         find.descendant(
           of: toolbar(),
-          matching: find.byWidgetPredicate(
-            (widget) =>
-                widget is quill.QuillToolbarToggleStyleButton &&
-                widget.attribute == quill.Attribute.bold,
-          ),
+          matching: find.byTooltip(tester.element(toolbar()).l10n.autoT0008),
         ),
       );
       await tester.pumpAndSettle();
       expect(
-        controller.getSelectionStyle().attributes,
-        contains(quill.Attribute.bold.key),
+        controller.selectionAttributes,
+        contains(const MapEntry('bold', true).key),
       );
       expect(tester.takeException(), isNull);
       await unmount(tester);
@@ -172,7 +161,7 @@ void main() {
       final toolbarState = tester.state(toolbar());
 
       // 点进正文、软键盘弹起：与默认一致，只剩工具栏贴着键盘。
-      await tester.tap(find.byType(quill.QuillEditor));
+      await tester.tap(find.byType(DiaryEditor));
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       await tester.pumpAndSettle();
       expect(panel.collapsedHeader, findsNothing);
@@ -222,7 +211,7 @@ void main() {
     tester,
   ) async {
     await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
-    await tester.tap(find.byType(quill.QuillEditor));
+    await tester.tap(find.byType(DiaryEditor));
     await tester.pumpAndSettle();
     expect(PublishPanelDriver(tester).collapsedHeader, findsOneWidget);
     expect(toolbar(), findsNothing);

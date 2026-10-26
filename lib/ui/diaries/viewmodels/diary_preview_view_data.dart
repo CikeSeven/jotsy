@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 import '../../../utils/text_stats.dart';
 import 'diary_card_media_summary.dart';
 
@@ -53,7 +54,7 @@ class DiaryPreviewViewData {
       diary.metadata,
       images: List<String>.unmodifiable(<String>[
         if (diary.cover?.trim() case final cover? when cover.isNotEmpty) cover,
-        ..._extractImageSources(diary.content),
+        ...extractDiaryImageSources(diary.content),
       ]),
       moodEmoji: _nonEmpty(context?['moodEmoji']),
       energyLevel: switch (energyRaw) {
@@ -108,57 +109,5 @@ class DiaryPreviewViewData {
   static String? _nonEmpty(Object? value) {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? null : text;
-  }
-
-  /// 正文（Quill Delta，或旧版 AppFlowy 文档）中的全部图片来源；正文损坏时
-  /// 按“没有图片”处理。
-  static List<String> _extractImageSources(String contentJson) {
-    final normalized = contentJson.trim();
-    if (normalized.isEmpty) {
-      return const <String>[];
-    }
-    try {
-      final sources = <String>[];
-      _collectImages(jsonDecode(normalized), sources);
-      return sources;
-    } catch (_) {
-      return const <String>[];
-    }
-  }
-
-  static void _collectImages(Object? node, List<String> sources) {
-    if (node is List) {
-      for (final item in node) {
-        _collectImages(item, sources);
-      }
-      return;
-    }
-    if (node is! Map) {
-      return;
-    }
-    final insert = node['insert'];
-    if (insert is Map) {
-      final image = insert['image'];
-      if (image is String && image.trim().isNotEmpty) {
-        sources.add(image.trim());
-      }
-    }
-    if (node['type'] == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map) {
-        final url = attributes['url'];
-        if (url is String && url.trim().isNotEmpty) {
-          sources.add(url.trim());
-        }
-      }
-    }
-    final root = node['root'];
-    if (root != null) {
-      _collectImages(root, sources);
-    }
-    final children = node['children'];
-    if (children != null) {
-      _collectImages(children, sources);
-    }
   }
 }

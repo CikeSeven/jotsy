@@ -13,6 +13,7 @@ import 'package:node_diary/core/services/data_archive_service.dart';
 import 'package:path/path.dart' as p;
 
 import '../../support/backup_test_fixture.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 /// 日记包导出与合并/覆盖导入：本机数据在合并时保持不变，覆盖只作用于所选
 /// 范围，失败时数据库与新拷贝的媒体一起回滚。
@@ -183,7 +184,8 @@ void main() {
       expect(tags['春天']!.color, 0xFF22AA55);
 
       final image =
-          (((jsonDecode(imported.diary.content) as List).first as Map)['insert']
+          (((diaryContentQuillOps(imported.diary.content)).first
+                      as Map)['insert']
                   as Map)['image']
               as String;
       expect(

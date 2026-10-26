@@ -1,6 +1,6 @@
 import '../database/divider_embed_codec.dart';
 import 'journal_import_cloud.dart';
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_style.dart';
 
 /// 云端笔记的通用富文本块，对应参考实现（笔记互迁 `models.py`）的
@@ -123,7 +123,7 @@ class CloudBlock {
 /// 附件块经 [resolve] 换成媒体嵌入，未下载到的附件丢弃；分隔线写成分隔线
 /// 嵌入；表格每行一行、单元格以空格分隔。
 void writeCloudBlocks(
-  JournalDeltaWriter writer,
+  JournalBlockWriter writer,
   List<CloudBlock> blocks,
   CloudEmbedResolver resolve,
 ) {
@@ -170,7 +170,7 @@ Map<String, Object?> _attributes(CloudBlock block) {
 }
 
 void _writeLines(
-  JournalDeltaWriter writer,
+  JournalBlockWriter writer,
   List<CloudSpan> spans,
   Map<String, Object?> attributes,
 ) {

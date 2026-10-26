@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../database/audio_embed_codec.dart';
-import '../database/file_embed_codec.dart';
+import '../database/diary_blocks/diary_blocks_codec.dart';
+import '../database/diary_blocks/diary_blocks_media.dart';
 import 'diary_audio_storage_service.dart';
 import 'diary_media_storage_service.dart';
 
@@ -92,90 +91,20 @@ class BackupMediaPaths {
   }
 
   Future<String> rewriteContent(String content) async {
-    Object? decoded;
-    try {
-      decoded = jsonDecode(content);
-    } on FormatException {
-      return content;
-    }
-
-    await _rewriteNode(decoded);
-    return jsonEncode(decoded);
-  }
-
-  /// 恢复 Quill 及旧版 AppFlowy 的媒体引用，保留文件 metadata 和远程 URL。
-  Future<void> _rewriteNode(Object? node) async {
-    if (node is List) {
-      for (final child in node) {
-        await _rewriteNode(child);
-      }
-      return;
-    }
-    if (node is! Map) {
-      return;
-    }
-
-    final insert = node['insert'];
-    if (insert is Map && insert['image'] is String) {
-      insert['image'] = await rewritePath(
-        insert['image'] as String,
-        directoryNames: const <String>['diary_images'],
-      );
-    }
-    if (insert is Map) {
-      final audio = DiaryAudioAttachment.tryDecode(insert[diaryAudioEmbedType]);
-      if (audio != null) {
-        final restoredPath = await rewritePath(
-          audio.path,
-          directoryNames: const [DiaryAudioStorageService.directoryName],
-        );
-        insert[diaryAudioEmbedType] = audio
-            .copyWith(path: restoredPath ?? audio.path)
-            .encode();
-      }
-      for (final type in ['video', ...diaryFileEmbedTypes]) {
-        final file = DiaryFileAttachment.tryDecode(insert[type]);
-        if (file == null) continue;
-        final path = await rewritePath(
-          file.path,
-          directoryNames: const [
-            DiaryMediaStorageService.videosDirectoryName,
-            DiaryMediaStorageService.attachmentsDirectoryName,
-          ],
-        );
-        if (path != file.path) {
-          insert[type] = replaceDiaryFilePath(insert[type], path!);
-        }
-      }
-    }
-
-    if (node['type'] == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map && attributes['url'] is String) {
-        attributes['url'] = await rewritePath(
-          attributes['url'] as String,
-          directoryNames: const <String>['diary_images'],
-        );
-      }
-    }
-    if (node['type'] == 'video' || diaryFileEmbedTypes.contains(node['type'])) {
-      final file = DiaryFileAttachment.tryDecode(node['attributes']);
-      if (file != null) {
-        final path = await rewritePath(
-          file.path,
-          directoryNames: const [
-            DiaryMediaStorageService.videosDirectoryName,
-            DiaryMediaStorageService.attachmentsDirectoryName,
-          ],
-        );
-        if (path != file.path) {
-          node['attributes'] = replaceDiaryFilePath(node['attributes'], path!);
-        }
-      }
-    }
-
-    for (final child in node.values.toList(growable: false)) {
-      await _rewriteNode(child);
-    }
+    final document = decodeStoredDiaryBlocks(content);
+    await rewriteDiaryBlocksMediaPaths(document, (kind, path) async {
+      final directories = switch (kind) {
+        DiaryBlockMediaKind.image => const ['diary_images'],
+        DiaryBlockMediaKind.audio => const [
+          DiaryAudioStorageService.directoryName,
+        ],
+        DiaryBlockMediaKind.video || DiaryBlockMediaKind.attachment => const [
+          DiaryMediaStorageService.videosDirectoryName,
+          DiaryMediaStorageService.attachmentsDirectoryName,
+        ],
+      };
+      return await rewritePath(path, directoryNames: directories) ?? path;
+    });
+    return encodeDiaryBlocks(document);
   }
 }

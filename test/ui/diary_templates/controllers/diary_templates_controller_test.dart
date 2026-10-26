@@ -52,7 +52,12 @@ void main() {
     expect(saved.id, id);
     expect(saved.id, isNot(startsWith('builtin.')));
     expect(saved.name, '我的每日');
-    expect(saved.bodyJson, '[{"insert":"正文\\n"}]');
+    expect(
+      saved.bodyJson,
+      encodeDiaryTemplateBody([
+        {'insert': '正文\n'},
+      ]),
+    );
     expect(changes, 1);
   });
 

@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../core/database/content_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_to_delta.dart';
 import '../../../utils/text_stats.dart';
 import '../models/diary_context_info.dart';
 import 'diary_export_blocks.dart';
@@ -9,8 +10,8 @@ import 'diary_export_book.dart';
 
 /// 一篇待导出日记的全部素材，从详情解析一次，各写出器只读不改。
 ///
-/// [deltaOps] 保留给 PDF（经 flutter_quill_to_pdf 渲染，样式更全），其余
-/// 格式统一读 [blocks]。旧版正文由 [decodeDiaryContentToDocument] 转成 Delta。
+/// 当前正文直接解析为 blocks 并保留嵌套深度；deltaOps 仅为 PDF 预处理的
+/// 纯数据投影，兼容历史导出调用，不创建任何编辑器或旧控制器。
 @immutable
 class DiaryExportEntry {
   const DiaryExportEntry({
@@ -33,7 +34,7 @@ class DiaryExportEntry {
       title: diary.title,
       createdAt: diary.createdAt,
       updatedAt: diary.updatedAt,
-      deltaOps: decodeDiaryContentToDocument(diary.content).toDelta().toJson(),
+      deltaOps: diaryBlocksToQuillOps(decodeStoredDiaryBlocks(diary.content)),
       wordCount: DiaryWordCounts.of(
         diaryId: diary.diaryId,
         updatedAt: diary.updatedAt,
@@ -42,6 +43,7 @@ class DiaryExportEntry {
       tagNames: detail.tags.map((Tag tag) => tag.name).toList(),
       cover: diary.cover,
       metadata: diary.metadata,
+      blockDocument: decodeStoredDiaryBlocks(diary.content),
     );
   }
 
@@ -55,8 +57,11 @@ class DiaryExportEntry {
     List<String> tagNames = const <String>[],
     String? cover,
     String metadata = '{}',
+    Map<String, Object?>? blockDocument,
   }) {
-    final blocks = ExportBlockParser.parse(deltaOps);
+    final blocks = blockDocument == null
+        ? ExportBlockParser.parse(deltaOps)
+        : ExportBlockParser.parseDocument(blockDocument);
     final normalizedCover = cover?.trim();
     return DiaryExportEntry(
       diaryId: diaryId,

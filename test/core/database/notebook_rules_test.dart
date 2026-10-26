@@ -1,8 +1,8 @@
+import '../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
@@ -79,12 +79,12 @@ void main() {
     return <String>{for (final id in ids) titles[id]!};
   }
 
-  String documentWith(quill.Embeddable embed) {
-    final document = quill.Document()
-      ..insert(0, '说 "image": "video": 不算\n')
-      ..insert(0, embed);
-    return encodeDiaryDocumentToJson(document);
-  }
+  String documentWith(Map<String, Object?> embed) => encodeDiaryDocumentToJson(
+    documentFromLegacyDelta([
+      {'insert': embed},
+      {'insert': '\n说 "image": "video": 不算\n'},
+    ]),
+  );
 
   group('JSON', () {
     test('every rule kind round-trips through encode / decode', () {
@@ -318,40 +318,28 @@ void main() {
     });
 
     test('media kinds read the codec-encoded embeds', () async {
-      await diary(
-        'image',
-        content: documentWith(quill.BlockEmbed.image('/m/a.png')),
-      );
-      await diary(
-        'video',
-        content: documentWith(quill.BlockEmbed.video('/m/a.mp4')),
-      );
+      await diary('image', content: documentWith({'image': '/m/a.png'}));
+      await diary('video', content: documentWith({'video': '/m/a.mp4'}));
       await diary(
         'audio',
-        content: documentWith(
-          quill.BlockEmbed(
-            diaryAudioEmbedType,
-            const DiaryAudioAttachment(
-              path: '/m/a.m4a',
-              duration: Duration(seconds: 3),
-              name: 'image',
-              waveform: <double>[0.1, 0.5],
-            ).encode(),
-          ),
-        ),
+        content: documentWith({
+          diaryAudioEmbedType: const DiaryAudioAttachment(
+            path: '/m/a.m4a',
+            duration: Duration(seconds: 3),
+            name: 'image',
+            waveform: <double>[0.1, 0.5],
+          ).encode(),
+        }),
       );
       await diary(
         'attachment',
-        content: documentWith(
-          quill.BlockEmbed(
-            diaryAttachmentEmbedType,
-            const DiaryFileAttachment(
-              path: '/m/a.pdf',
-              name: 'video.pdf',
-              sizeBytes: 10,
-            ).encode(),
-          ),
-        ),
+        content: documentWith({
+          diaryAttachmentEmbedType: const DiaryFileAttachment(
+            path: '/m/a.pdf',
+            name: 'video.pdf',
+            sizeBytes: 10,
+          ).encode(),
+        }),
       );
       await diary(
         'legacy file',
@@ -360,6 +348,17 @@ void main() {
             'insert': <String, Object?>{'file': '/m/old.zip'},
           },
           <String, Object?>{'insert': '\n'},
+        ]),
+      );
+      await diary(
+        'legacy delta audio',
+        content: jsonEncode([
+          {
+            'insert': {
+              'audio': jsonEncode({'path': '/m/old.m4a', 'durationMs': 100}),
+            },
+          },
+          {'insert': '\n'},
         ]),
       );
       await diary(
@@ -379,7 +378,7 @@ void main() {
       await diary('text only', text: '"image": "audio": "attachment":');
       await diary(
         'sealed image',
-        content: documentWith(quill.BlockEmbed.image('/m/s.png')),
+        content: documentWith({'image': '/m/s.png'}),
         capsuleUnlockAt: DateTime(2099),
       );
       Future<Set<String>> media(NotebookMediaKind kind) =>
@@ -389,7 +388,10 @@ void main() {
         'legacy appflowy image',
       });
       expect(await media(NotebookMediaKind.video), <String>{'video'});
-      expect(await media(NotebookMediaKind.audio), <String>{'audio'});
+      expect(await media(NotebookMediaKind.audio), <String>{
+        'audio',
+        'legacy delta audio',
+      });
       expect(await media(NotebookMediaKind.attachment), <String>{
         'attachment',
         'legacy file',

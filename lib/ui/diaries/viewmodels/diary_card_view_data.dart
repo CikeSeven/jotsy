@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 import '../../../utils/text_stats.dart';
 import 'diary_card_media_summary.dart';
 
@@ -12,7 +13,7 @@ import 'diary_card_media_summary.dart';
 /// 第一张图），以及按需惰性扫描的媒体概况（拼贴图片与媒体角标）。
 ///
 /// 为什么缓存：列表滚动、日历选日/翻月、筛选过渡都会高频重建卡片，若每次
-/// build 都 `jsonDecode` metadata、并在无封面时解析整段 Quill Delta，开销会
+/// build 都 `jsonDecode` metadata、并在无封面时解析整段正文，开销会
 /// 落在滚动与翻页动画的帧里。日记内容只会随 updatedAt 变化，因此以
 /// `(diaryId, updatedAt)` 为键做固定容量 LRU 缓存；无副作用。
 class DiaryCardViewData {
@@ -110,7 +111,7 @@ class DiaryCardViewData {
   /// 扫描整段纯文本。
   late final int wordCount = TextStats.countWords(_contentText);
 
-  /// 预览封面：显式封面字段优先，否则取正文 Delta 中第一张图片。
+  /// 预览封面：显式封面字段优先，否则取正文中第一张图片。
   /// 懒计算：未解封胶囊等不展示封面的场景不必解析整段正文。
   late final String? previewCover = _resolvePreviewCover();
 
@@ -148,19 +149,10 @@ class DiaryCardViewData {
     return firstImageInContent(_contentJson);
   }
 
-  /// 正文 Delta（或旧版 AppFlowy 文档）中的第一张图片；无图或正文损坏时为
+  /// 任一代正文中的第一张图片；无图或正文损坏时为
   /// null。日历照片样式复用这一取图规则，与列表封面口径一致。
-  static String? firstImageInContent(String contentJson) {
-    final normalized = contentJson.trim();
-    if (normalized.isEmpty) {
-      return null;
-    }
-    try {
-      return _findFirstImage(jsonDecode(normalized));
-    } catch (_) {
-      return null;
-    }
-  }
+  static String? firstImageInContent(String contentJson) =>
+      extractDiaryImageSources(contentJson).firstOrNull;
 
   /// 测试用：清空缓存，避免用例之间相互影响。
   static void debugClearCache() {
@@ -193,47 +185,5 @@ class DiaryCardViewData {
         ? contentText.substring(0, previewTextMaxLength)
         : contentText;
     return head.replaceAll('\n', ' ').trim();
-  }
-
-  /// 递归扫描 Delta 节点，兼容 list/map 嵌套与 image embed 写法。
-  static String? _findFirstImage(Object? node) {
-    if (node is List) {
-      for (final item in node) {
-        final image = _findFirstImage(item);
-        if (image != null) {
-          return image;
-        }
-      }
-      return null;
-    }
-    if (node is! Map) {
-      return null;
-    }
-    final insert = node['insert'];
-    if (insert is Map) {
-      final image = insert['image'];
-      if (image is String && image.trim().isNotEmpty) {
-        return image.trim();
-      }
-    }
-    if (node['type'] == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map) {
-        final url = attributes['url'];
-        if (url is String && url.trim().isNotEmpty) {
-          return url.trim();
-        }
-      }
-    }
-    for (final childKey in const <String>['root', 'children']) {
-      final child = node[childKey];
-      if (child != null) {
-        final image = _findFirstImage(child);
-        if (image != null) {
-          return image;
-        }
-      }
-    }
-    return null;
   }
 }

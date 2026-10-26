@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import '../../utils/csv_rows.dart';
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_html.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -135,7 +135,7 @@ JournalImportParseResult _parseBackup(
   final entries = <JournalImportEntry>[];
   for (final item in parsed) {
     final raw = item.raw;
-    final writer = JournalDeltaWriter();
+    final writer = JournalBlockWriter();
     _appendNote(writer, item.note);
     for (final id in journalList(raw['assets']).whereType<int>()) {
       final asset = assets[id];
@@ -206,7 +206,7 @@ DateTime? _backupTime(Map raw) {
   return DateTime(wall.year, wall.month, wall.day, wall.hour, wall.minute);
 }
 
-void _appendNote(JournalDeltaWriter writer, String note) {
+void _appendNote(JournalBlockWriter writer, String note) {
   if (note.trim().isEmpty) return;
   if (looksLikeJournalHtml(note) || RegExp(r'&[a-z]+;').hasMatch(note)) {
     JournalHtmlConverter(writer).appendHtml(note);

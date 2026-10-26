@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_quill/flutter_quill.dart';
+import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/app_bootstrap_home.dart';
@@ -257,7 +257,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
-        FlutterQuillLocalizations.delegate,
+        AppFlowyEditorLocalizations.delegate,
       ],
       builder: (BuildContext context, Widget? child) {
         if (child == null) {

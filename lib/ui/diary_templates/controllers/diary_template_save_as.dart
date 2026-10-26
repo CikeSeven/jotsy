@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../core/database/content_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../models/diary_template.dart';
-import '../models/diary_template_body.dart';
 import '../models/diary_template_json.dart';
 import '../pages/diary_template_editor_page.dart';
 
@@ -22,11 +22,8 @@ import '../pages/diary_template_editor_page.dart';
   String? mood,
   double? energy,
 }) {
-  final ops = decodeDiaryContentToDocument(contentDocJson).toDelta().toJson();
-  final droppedMedia = ops.any(
-    (op) =>
-        op['insert'] is Map && !(op['insert'] as Map).containsKey('divider'),
-  );
+  final document = decodeStoredDiaryBlocks(contentDocJson);
+  final droppedMedia = diaryBlocksMedia(document).isNotEmpty;
   final trimmedMood = mood?.trim();
   return (
     template: DiaryTemplate(
@@ -36,7 +33,7 @@ import '../pages/diary_template_editor_page.dart';
         title,
         DiaryTemplate.maxTitleLength,
       ),
-      bodyJson: encodeDiaryTemplateBody(sanitizeDiaryTemplateOps(ops)),
+      bodyJson: encodeDiaryTemplateBody(document),
       tags: List<DiaryTemplateTagRef>.unmodifiable(<DiaryTemplateTagRef>[
         for (final tag in tags.take(DiaryTemplate.maxTags))
           DiaryTemplateTagRef(name: tag.name, color: tag.color),

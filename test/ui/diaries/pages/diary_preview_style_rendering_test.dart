@@ -1,8 +1,9 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:async';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -15,7 +16,6 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_s
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_overlays.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -91,7 +91,7 @@ Future<void> _pump(
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: DiaryPreviewPage(
@@ -147,7 +147,7 @@ void main() {
     );
     expect(
       _top(tester, find.text('西湖')),
-      greaterThan(_top(tester, find.byType(quill.QuillEditor))),
+      greaterThan(_top(tester, find.byType(DiaryEditor))),
     );
     expect(
       _top(tester, find.text('西湖')),
@@ -286,11 +286,12 @@ void main() {
     tester,
   ) async {
     Color? paragraphColor() => tester
-        .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
-        .config
-        .customStyles!
-        .paragraph!
-        .style
+        .widget<DiaryEditor>(find.byType(DiaryEditor))
+        .controller
+        .state
+        .editorStyle
+        .textStyleConfiguration
+        .text
         .color;
 
     await _pump(
@@ -308,7 +309,7 @@ void main() {
         page: DiaryPreviewPageStyle(textLight: 0xFFFFF4C2),
       ),
     );
-    final theme = Theme.of(tester.element(find.byType(quill.QuillEditor)));
+    final theme = Theme.of(tester.element(find.byType(DiaryEditor)));
     expect(paragraphColor(), theme.textTheme.bodyMedium!.color);
   });
 
@@ -347,23 +348,16 @@ void main() {
         textSelection: false,
       ),
     );
-    final config = tester
-        .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
-        .config;
-    expect(config.checkBoxReadOnly, isTrue);
-    expect(config.enableInteractiveSelection, isFalse);
+    final config = tester.widget<DiaryEditor>(find.byType(DiaryEditor));
+    expect(config.todoToggle, isFalse);
+    expect(config.textSelection, isFalse);
   });
 
   testWidgets('the long image behavior reaches the body image builder', (
     tester,
   ) async {
-    bool foldsLongImages() => tester
-        .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
-        .config
-        .embedBuilders!
-        .whereType<DiaryImageEmbedBuilder>()
-        .single
-        .foldLongImages;
+    bool foldsLongImages() =>
+        tester.widget<DiaryEditor>(find.byType(DiaryEditor)).foldLongImages;
 
     await _pump(tester);
     expect(foldsLongImages(), isTrue);
@@ -389,7 +383,7 @@ void main() {
         page: DiaryPreviewPageStyle(limitWidth: true, contentWidth: 600),
       ),
     );
-    final editor = tester.getRect(find.byType(quill.QuillEditor));
+    final editor = tester.getRect(find.byType(DiaryEditor));
     expect(editor.width, closeTo(600 - 32, 0.5));
     expect(editor.center.dx, closeTo(500, 0.5));
   });
@@ -414,7 +408,7 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: DiaryPreviewPage(
@@ -455,7 +449,7 @@ void main() {
       before,
     );
     expect(
-      Theme.of(tester.element(find.byType(quill.QuillEditor))).brightness,
+      Theme.of(tester.element(find.byType(DiaryEditor))).brightness,
       Brightness.dark,
     );
   });
@@ -486,7 +480,7 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           // 与应用一致：设置服务在启动时就已就绪，之后才打开预览页。

@@ -348,7 +348,7 @@ void main() {
     expect(find.text('导入的模板'), findsOneWidget);
 
     await menu(h, builtIn('weekly'), h.l10n.diaryTemplatesCopyCode);
-    expect(clipboard, startsWith('jotsy-template:v1:'));
+    expect(clipboard, startsWith('jotsy-template:v2:'));
     expect(find.text(h.l10n.diaryTemplatesCodeCopied), findsOneWidget);
     await h.unmount();
   });

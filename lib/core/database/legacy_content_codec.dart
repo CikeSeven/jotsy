@@ -1,6 +1,9 @@
+import 'dart:convert';
+
+import 'audio_embed_codec.dart';
 import 'file_embed_codec.dart';
 
-/// 将旧版 AppFlowy 节点映射为 Quill Delta，保留图片、视频和附件引用。
+/// 将旧版 AppFlowy 节点映射为 Quill Delta，保留媒体引用及其 metadata。
 /// 无文件 IO；实际恢复位置由备份服务处理。
 List<Map<String, Object>> legacyDocumentToQuillDelta(
   Map<String, dynamic> rawDocument,
@@ -43,29 +46,58 @@ void _appendAppFlowyNode(dynamic rawNode, List<Map<String, Object>> ops) {
     return;
   }
 
-  final type = rawNode['type'] as String?;
-  if (type == 'video' || diaryFileEmbedTypes.contains(type)) {
-    final file = DiaryFileAttachment.tryDecode(rawNode['attributes']);
-    if (file != null) {
+  final rawType = rawNode['type'];
+  final type = rawType is String ? rawType : null;
+  final attributes = rawNode['attributes'];
+  if (type == diaryAudioEmbedType) {
+    if (DiaryAudioAttachment.tryDecode(attributes) != null) {
       ops.add(<String, Object>{
         'insert': <String, Object>{
-          type == 'video' ? 'video' : diaryAttachmentEmbedType: type == 'video'
-              ? file.path
-              : file.encode(),
+          diaryAudioEmbedType: attributes is String
+              ? attributes
+              : jsonEncode(attributes),
         },
       });
       ops.add(<String, Object>{'insert': '\n'});
     }
     return;
   }
+  if (type == 'video' || diaryFileEmbedTypes.contains(type)) {
+    final file = DiaryFileAttachment.tryDecode(attributes);
+    if (file != null) {
+      ops.add(<String, Object>{
+        'insert': <String, Object>{
+          type == 'video' ? 'video' : diaryAttachmentEmbedType: type == 'video'
+              ? file.path
+              : attributes is Map
+              ? jsonEncode(attributes)
+              : attributes is String
+              ? attributes
+              : file.encode(),
+        },
+        if (type == 'video' && attributes is Map)
+          'attributes': <String, Object?>{
+            for (final entry in attributes.entries)
+              if (entry.key is String &&
+                  entry.key != 'url' &&
+                  entry.key != 'path')
+                entry.key as String: entry.value,
+          },
+      });
+      ops.add(<String, Object>{'insert': '\n'});
+    }
+    return;
+  }
   if (type == 'image') {
-    final attributes = rawNode['attributes'];
-    final url = attributes is Map<String, dynamic>
-        ? attributes['url'] as String?
-        : null;
-    if (url != null && url.isNotEmpty) {
+    final url = attributes is Map ? attributes['url'] : null;
+    if (url is String && url.isNotEmpty) {
       ops.add(<String, Object>{
         'insert': <String, Object>{'image': url},
+        if (attributes is Map)
+          'attributes': <String, Object?>{
+            for (final key in const ['width', 'height', 'style'])
+              if (attributes[key] case final value?) key: value,
+          },
       });
       ops.add(<String, Object>{'insert': '\n'});
     }

@@ -1,7 +1,7 @@
 import 'dart:ui' as ui show Image;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/database/app_database.dart';
@@ -50,7 +50,7 @@ class DiaryPreviewActions {
 /// 预览页的整页内容：顶栏、头图、标题、信息栏与正文组成的滚动视图，版式全部
 /// 来自 [DiaryPreviewResolvedStyle]。
 ///
-/// 输入：已解封的日记、它的派生数据与只读 Quill 控制器、解析后的样式与阅读
+/// 输入：已解封的日记、它的派生数据与只读块控制器、解析后的样式与阅读
 /// 行为，以及顶栏动作与看图回调；不读写数据库，也不持有状态，设置页的实时
 /// 预览可以直接复用。默认样式下产出的部件结构与改版前逐项相同。
 ///
@@ -81,7 +81,7 @@ class DiaryPreviewContent extends ConsumerWidget {
   final DiaryPreviewViewData viewData;
 
   /// 正文控制器；尚未绑定时为 null（正文区不占位）。
-  final quill.QuillController? controller;
+  final DiaryEditorController? controller;
   final ScrollController scrollController;
   final DiaryPreviewResolvedStyle resolved;
   final DiaryPreviewBehavior behavior;

@@ -2,7 +2,7 @@ import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 
 import 'journal_import_cloud.dart';
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_html.dart';
 
 /// 把云端笔记的 HTML 正文写入 [writer]（华为、荣耀、OPPO、vivo 等）。
@@ -15,7 +15,7 @@ import 'journal_import_html.dart';
 /// 颜色与背景色、字号、标题、列表与待办 `data-checked`、引用、代码块、对齐、
 /// 分隔线）。
 void writeCloudHtml(
-  JournalDeltaWriter writer,
+  JournalBlockWriter writer,
   String html,
   CloudEmbedResolver resolve, {
   String? Function(dom.Element image)? imageId,

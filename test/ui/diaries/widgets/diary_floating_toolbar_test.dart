@@ -1,5 +1,6 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -20,7 +21,7 @@ double _dotScale(WidgetTester tester) =>
 /// 按真实摆放挂载：卡片左右各缩进 12dp，贴底。
 Future<void> _pumpToolbar(
   WidgetTester tester, {
-  required quill.QuillController controller,
+  required DiaryEditorController controller,
   double screenWidth = 360,
   List<DiaryToolbarItem> order = kDefaultDiaryToolbarOrder,
   bool recordingOpen = false,
@@ -37,7 +38,7 @@ Future<void> _pumpToolbar(
       locale: const Locale('zh'),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         ...AppLocalizations.localizationsDelegates,
-        quill.FlutterQuillLocalizations.delegate,
+        quill.AppFlowyEditorLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
@@ -63,8 +64,8 @@ Future<void> _pumpToolbar(
   await tester.pumpAndSettle();
 }
 
-quill.QuillController _controller() {
-  final controller = quill.QuillController.basic();
+DiaryEditorController _controller() {
+  final controller = DiaryEditorController();
   addTearDown(controller.dispose);
   return controller;
 }
@@ -172,14 +173,14 @@ void main() {
               !colorItems.contains(item) && item != DiaryToolbarItem.codeBlock,
         )
         .toList();
-    final toolbars = find.byType(quill.QuillSimpleToolbar);
-    expect(toolbars, findsNWidgets(quillItems.length));
-    for (var index = 0; index < quillItems.length; index++) {
-      final item = quillItems[index];
+    for (final item in quillItems) {
       expect(
-        tester.getSize(toolbars.at(index)).width,
+        tester
+            .getSize(
+              find.byKey(ValueKey('diary-toolbar-tool-${item.storageKey}')),
+            )
+            .width,
         diaryToolbarItemExtent(item),
-        reason: item.name,
       );
     }
     final colorButtons = find.byType(DiaryToolbarColorButton);
@@ -202,10 +203,11 @@ void main() {
   ) async {
     final controller = _controller();
     controller.replaceText(0, 0, 'quoted\nplain', null);
-    controller.formatText(0, 1, quill.Attribute.blockQuote);
+    controller.updateSelection(const TextSelection.collapsed(offset: 0));
+    controller.setBlockType('quote');
     controller.updateSelection(
       const TextSelection.collapsed(offset: 2),
-      quill.ChangeSource.local,
+      'local',
     );
     await _pumpToolbar(tester, controller: controller);
 
@@ -214,14 +216,14 @@ void main() {
 
     controller.updateSelection(
       const TextSelection.collapsed(offset: 9),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(_dotScale(tester), 0);
 
     controller.updateSelection(
       const TextSelection.collapsed(offset: 2),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(_dotScale(tester), 1);

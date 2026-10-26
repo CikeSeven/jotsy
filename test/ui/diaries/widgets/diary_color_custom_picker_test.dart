@@ -1,6 +1,6 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
@@ -26,7 +26,7 @@ void main() {
 
   Future<ColorPanelHarness> openCustom(
     WidgetTester tester, {
-    quill.QuillController? controller,
+    DiaryEditorController? controller,
     String tool = colorPanelTextTool,
     DiarySavedColors savedColors = DiarySavedColors.empty,
   }) async {
@@ -81,7 +81,7 @@ void main() {
 
   testWidgets('the hue bar changes only the hue', (tester) async {
     final controller = colorPanelController();
-    controller.formatSelection(const quill.ColorAttribute('#FF3A7BD5'));
+    controller.formatSelection(const MapEntry('font_color', '#FF3A7BD5'));
     final harness = await openCustom(tester, controller: controller);
     expect(hexText(tester), '3A7BD5');
 
@@ -100,7 +100,7 @@ void main() {
     tester,
   ) async {
     final controller = colorPanelController();
-    controller.formatSelection(const quill.BackgroundAttribute('#4D5B9BFF'));
+    controller.formatSelection(const MapEntry('bg_color', '#4D5B9BFF'));
     final harness = await openCustom(
       tester,
       controller: controller,
@@ -181,7 +181,7 @@ void main() {
     final controller = colorPanelController();
     controller.updateSelection(
       const TextSelection.collapsed(offset: 5),
-      quill.ChangeSource.local,
+      'local',
     );
     final harness = await openCustom(tester, controller: controller);
     await tester.tap(hexField);
@@ -192,10 +192,14 @@ void main() {
     expect(harness.editorFocus.hasFocus, isTrue);
 
     // 经输入法输入一个字：与真机打字走同一条路径。
+    final current = TextEditingValue.fromJSON(
+      tester.testTextInput.editingState!,
+    );
+    final offset = current.selection.end;
     tester.testTextInput.updateEditingValue(
-      const TextEditingValue(
-        text: 'hellox\n',
-        selection: TextSelection.collapsed(offset: 6),
+      current.copyWith(
+        text: current.text.replaceRange(offset, offset, 'x'),
+        selection: TextSelection.collapsed(offset: offset + 1),
       ),
     );
     await tester.pumpAndSettle();
@@ -250,18 +254,18 @@ void main() {
 
   testWidgets('the picker follows the selection color', (tester) async {
     final controller = colorPanelController('ab');
-    controller.formatText(0, 1, const quill.ColorAttribute('#FF112233'));
-    controller.formatText(1, 1, const quill.ColorAttribute('#FF445566'));
+    controller.formatText(0, 1, const MapEntry('font_color', '#FF112233'));
+    controller.formatText(1, 1, const MapEntry('font_color', '#FF445566'));
     controller.updateSelection(
       const TextSelection(baseOffset: 0, extentOffset: 1),
-      quill.ChangeSource.local,
+      'local',
     );
     await openCustom(tester, controller: controller);
     expect(hexText(tester), '112233');
 
     controller.updateSelection(
       const TextSelection(baseOffset: 1, extentOffset: 2),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(hexText(tester), '445566');
@@ -269,7 +273,7 @@ void main() {
 
   testWidgets('a gray selection keeps the hue where it was', (tester) async {
     final controller = colorPanelController();
-    controller.formatSelection(const quill.ColorAttribute('#FF808080'));
+    controller.formatSelection(const MapEntry('font_color', '#FF808080'));
     final handle = tester.ensureSemantics();
     await openCustom(tester, controller: controller);
 
@@ -283,7 +287,7 @@ void main() {
 
   testWidgets('screen readers step the hue and write it', (tester) async {
     final controller = colorPanelController();
-    controller.formatSelection(const quill.ColorAttribute('#FFFF0000'));
+    controller.formatSelection(const MapEntry('font_color', '#FFFF0000'));
     final handle = tester.ensureSemantics();
     final harness = await openCustom(tester, controller: controller);
 
@@ -372,7 +376,7 @@ void main() {
       final first = harness.saved.value.text.single;
       harness.controller.updateSelection(
         const TextSelection(baseOffset: 2, extentOffset: 4),
-        quill.ChangeSource.local,
+        'local',
       );
       await tester.pumpAndSettle();
       await tapArea(tester, const Offset(0.4, 0.6));

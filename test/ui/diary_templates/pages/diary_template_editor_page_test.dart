@@ -1,5 +1,5 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
@@ -149,7 +149,7 @@ void main() {
     final h = await openEditor(tester);
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     addTearDown(tester.view.resetViewInsets);
-    await tester.tap(find.byType(quill.QuillEditor));
+    await tester.tap(find.byType(DiaryEditor));
     await tester.pumpAndSettle();
 
     final toolbar = tester.widget<DiaryFloatingToolbar>(
@@ -175,7 +175,7 @@ void main() {
     final h = await openEditor(tester);
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     addTearDown(tester.view.resetViewInsets);
-    await tester.tap(find.byType(quill.QuillEditor));
+    await tester.tap(find.byType(DiaryEditor));
     await tester.pumpAndSettle();
     // 默认顺序里颜色工具排在后面，收在「更多」里。
     expect(find.byTooltip('文字颜色'), findsNothing);
@@ -224,7 +224,7 @@ void main() {
     // 没有软键盘、也还没点正文（接实体键盘时就是这样）：工具栏已经在底部。
     expect(find.byType(DiaryFloatingToolbar), findsOneWidget);
 
-    await tester.tap(find.byType(quill.QuillEditor));
+    await tester.tap(find.byType(DiaryEditor));
     await tester.pumpAndSettle();
     expect(find.byType(DiaryFloatingToolbar), findsOneWidget);
     await h.unmount();

@@ -1,6 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -47,7 +48,7 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: const [
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
@@ -62,9 +63,8 @@ void main() {
     await tester.pump(Duration.zero);
   }
 
-  quill.QuillController bodyController(WidgetTester tester) => tester
-      .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
-      .controller;
+  DiaryEditorController bodyController(WidgetTester tester) =>
+      tester.widget<DiaryEditor>(find.byType(DiaryEditor)).controller;
 
   ScrollPosition bodyScroll(WidgetTester tester) => tester
       .state<ScrollableState>(
@@ -79,13 +79,7 @@ void main() {
       .position;
 
   double caretBottom(WidgetTester tester) {
-    final renderEditor = tester
-        .state<quill.QuillRawEditorState>(find.byType(quill.QuillRawEditor))
-        .renderEditor;
-    final caret = renderEditor.getLocalRectForCaret(
-      bodyController(tester).selection.extent,
-    );
-    return renderEditor.localToGlobal(caret.bottomLeft).dy;
+    return bodyController(tester).state.selectionRects().first.bottom;
   }
 
   double toolbarTop(WidgetTester tester) =>
@@ -105,19 +99,17 @@ void main() {
     );
     controller.updateSelection(
       TextSelection.collapsed(offset: controller.document.length - 1),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
   }
 
   /// 经输入法在光标处输入，与真机打字走同一条 updateEditingValue 链路。
   Future<void> typeAtCaret(WidgetTester tester, String text) async {
-    final value = tester
-        .state<quill.QuillRawEditorState>(find.byType(quill.QuillRawEditor))
-        .currentTextEditingValue!;
+    final value = TextEditingValue.fromJSON(tester.testTextInput.editingState!);
     final offset = value.selection.extentOffset;
     tester.testTextInput.updateEditingValue(
-      TextEditingValue(
+      value.copyWith(
         text: value.text.replaceRange(offset, offset, text),
         selection: TextSelection.collapsed(offset: offset + text.length),
       ),
@@ -188,7 +180,7 @@ void main() {
     controller.replaceText(0, 0, 'hello world', null);
     controller.updateSelection(
       const TextSelection.collapsed(offset: 11),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
 
@@ -203,13 +195,13 @@ void main() {
       selecting: true,
     );
     expect(
-      controller.selection,
+      controller.flatSelection,
       const TextSelection(baseOffset: 11, extentOffset: 9),
     );
 
     // 关掉“选择”后方向键回到移动光标。
     await sendSoftKeyboardKey(tester, SoftKeyboardKey.arrowRight);
-    expect(controller.selection.isCollapsed, isTrue);
+    expect(controller.selection!.isCollapsed, isTrue);
     expect(tester.takeException(), isNull);
     await unmount(tester);
   });
@@ -223,7 +215,7 @@ void main() {
     position.jumpTo(0);
     await tester.pumpAndSettle();
 
-    bodyController(tester).formatSelection(quill.Attribute.bold);
+    bodyController(tester).formatSelection(const MapEntry('bold', true));
     await tester.pumpAndSettle();
 
     expect(position.pixels, 0);

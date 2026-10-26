@@ -6,7 +6,7 @@ import 'package:node_diary/core/services/journal_import_cloud_blocks.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_wps.dart';
 import 'package:node_diary/core/services/journal_import_cloud_wps_format.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
@@ -269,7 +269,7 @@ void main() {
         ]);
         expect(second.title, '长正文标题');
         expect(second.folder, '工作');
-        final writer = JournalDeltaWriter();
+        final writer = JournalBlockWriter();
         second.writeBody(writer, (_) => null);
         expect(writer.build().contentText, '长正文\n第一段');
       },
@@ -317,7 +317,7 @@ void main() {
       expect(notes.map((note) => note.id), ['gone', 'odd']);
       for (final note in notes) {
         expect(note.title, '购物清单');
-        final writer = JournalDeltaWriter();
+        final writer = JournalBlockWriter();
         note.writeBody(writer, (_) => null);
         expect(writer.build().contentText, '购物清单\n牛奶');
       }

@@ -1,20 +1,20 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 void main() {
   for (final readOnly in [false, true]) {
     testWidgets('recording renders as a player with readOnly=$readOnly', (
       tester,
     ) async {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       insertDiaryRecording(
         controller: controller,
-        selection: const TextSelection.collapsed(offset: 0),
+        selection: quill.Selection.single(path: [0], startOffset: 0),
         recording: const DiaryAudioAttachment(
           path: '/documents/diary_recordings/entry.m4a',
           duration: Duration(seconds: 12),
@@ -27,17 +27,10 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: const [
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: quill.QuillEditor.basic(
-              controller: controller,
-              config: quill.QuillEditorConfig(
-                embedBuilders: buildDiaryQuillEmbedBuilders(),
-              ),
-            ),
-          ),
+          home: Scaffold(body: nativeTestEditor(controller: controller)),
         ),
       );
       await tester.pump();
@@ -51,10 +44,10 @@ void main() {
   testWidgets('editable audio player shows rename button and updates title', (
     tester,
   ) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     insertDiaryRecording(
       controller: controller,
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       recording: const DiaryAudioAttachment(
         path: '/documents/diary_recordings/entry.m4a',
         duration: Duration(seconds: 10),
@@ -69,17 +62,10 @@ void main() {
         locale: const Locale('zh'),
         localizationsDelegates: const [
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: quill.QuillEditor.basic(
-            controller: controller,
-            config: quill.QuillEditorConfig(
-              embedBuilders: buildDiaryQuillEmbedBuilders(),
-            ),
-          ),
-        ),
+        home: Scaffold(body: nativeTestEditor(controller: controller)),
       ),
     );
     await tester.pump();

@@ -6,7 +6,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_html.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -121,7 +121,7 @@ JournalImportEntry? _parseJsonEntry(
 ) {
   final createdAt = parseJournalDateTime(raw['date']);
   if (createdAt == null) return null;
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   _appendBody(writer, journalString(raw['html']) ?? journalString(raw['text']));
   final content = writer.build();
   final location = raw['location'];
@@ -149,7 +149,7 @@ JournalImportEntry? _parseJsonEntry(
   );
 }
 
-void _appendBody(JournalDeltaWriter writer, String? body) {
+void _appendBody(JournalBlockWriter writer, String? body) {
   if (body == null) return;
   if (looksLikeJournalHtml(body)) {
     JournalHtmlConverter(writer).appendHtml(body);

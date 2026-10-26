@@ -66,7 +66,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
   final PublishDiaryPanelController _panelController =
       PublishDiaryPanelController();
   // 面板展开进度只驱动正文底部占位：用 ValueNotifier 局部刷新占位条，
-  // 避免拖拽时每帧 setState 重建整页（含只读 QuillEditor 预览）。
+  // 避免拖拽时每帧 setState 重建整页（含只读 块文档 预览）。
   final ValueNotifier<double> _panelExpandProgress = ValueNotifier<double>(0);
 
   // ==================== 草稿与流程 ====================

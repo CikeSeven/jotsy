@@ -1556,6 +1556,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get imageViewerMoreActions => '更多操作';
 
   @override
+  String get imageViewerPrevious => '上一张';
+
+  @override
+  String get imageViewerNext => '下一张';
+
+  @override
   String get diaryToolbarInsertCurrentTime => '插入当前时间';
 
   @override

@@ -2174,6 +2174,14 @@
   "@imageViewerMoreActions": {
     "description": "Tooltip of the image viewer top-bar more button, also the screen reader long-press hint on an image: opens the share / save actions sheet."
   },
+  "imageViewerPrevious": "Previous image",
+  "@imageViewerPrevious": {
+    "description": "Image viewer (desktop): tooltip of the hover button on the left that shows the previous image."
+  },
+  "imageViewerNext": "Next image",
+  "@imageViewerNext": {
+    "description": "Image viewer (desktop): tooltip of the hover button on the right that shows the next image."
+  },
   "diaryToolbarInsertCurrentTime": "Insert current time",
   "@diaryToolbarInsertCurrentTime": {
     "description": "Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time."

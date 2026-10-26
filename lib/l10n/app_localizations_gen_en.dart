@@ -1620,6 +1620,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageViewerMoreActions => 'More actions';
 
   @override
+  String get imageViewerPrevious => 'Previous image';
+
+  @override
+  String get imageViewerNext => 'Next image';
+
+  @override
   String get diaryToolbarInsertCurrentTime => 'Insert current time';
 
   @override

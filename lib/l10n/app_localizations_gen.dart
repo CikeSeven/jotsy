@@ -2894,6 +2894,18 @@ abstract class AppLocalizations {
   /// **'More actions'**
   String get imageViewerMoreActions;
 
+  /// Image viewer (desktop): tooltip of the hover button on the left that shows the previous image.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous image'**
+  String get imageViewerPrevious;
+
+  /// Image viewer (desktop): tooltip of the hover button on the right that shows the next image.
+  ///
+  /// In en, this message translates to:
+  /// **'Next image'**
+  String get imageViewerNext;
+
   /// Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time.
   ///
   /// In en, this message translates to:

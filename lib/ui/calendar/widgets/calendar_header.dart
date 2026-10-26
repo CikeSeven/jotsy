@@ -30,6 +30,7 @@ class CalendarHeader extends StatelessWidget {
     this.previousTooltip,
     this.nextTooltip,
     this.collapsedExtent = 0,
+    this.horizontalInset = 0,
   });
 
   /// 标题栏（“日历” + 操作按钮）的高度，月份行收起后仍然保留。
@@ -74,6 +75,10 @@ class CalendarHeader extends StatelessWidget {
   /// 超出范围的值会被夹取。
   final double collapsedExtent;
 
+  /// 宽窗口下内容在左右 16 之外再内缩的量，让按钮行与下方居中的日历内容
+  /// 对齐；底色仍铺满整个页宽。手机上为 0。
+  final double horizontalInset;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -87,9 +92,9 @@ class CalendarHeader extends StatelessWidget {
       solidColor: theme.colorScheme.surface,
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          16,
+          16 + horizontalInset,
           MediaQuery.paddingOf(context).top,
-          16,
+          16 + horizontalInset,
           0,
         ),
         child: Column(

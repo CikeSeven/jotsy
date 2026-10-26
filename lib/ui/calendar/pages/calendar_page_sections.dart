@@ -84,6 +84,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required List<String> moodOptions,
     required AnniversaryCalendarIndex anniversaryIndex,
     required DateTime now,
+    bool wide = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final today = DateUtils.dateOnly(now);
@@ -135,6 +136,7 @@ extension _CalendarPageSections on _CalendarPageState {
                 summaries: summaries,
                 moodOptions: moodOptions,
                 anniversaryIndex: anniversaryIndex,
+                wide: wide,
               ),
               if (filter.isActive)
                 Padding(
@@ -182,11 +184,15 @@ extension _CalendarPageSections on _CalendarPageState {
   /// 月/周网格与年视图之间的切换：缩放 + 淡入（进入年视图像“拉远”），
   /// 卡片高度经 AnimatedSize 过渡。网格内部的月/周高度动画是 table_calendar
   /// 自己的 AnimatedSize，外层在子项连续变化时会直接跟随，不会滞后。
+  ///
+  /// [wide] 为宽窗口（页面可用宽度 ≥ 600）：日期格变宽，行高随之按比例
+  /// 加高（[CalendarMonthGrid.scaleRowsWithWidth]），格子不会被拉成扁条。
   Widget _buildPanelBody({
     required CalendarDisplayOptions options,
     required Map<DateTime, CalendarDaySummary> summaries,
     required List<String> moodOptions,
     required AnniversaryCalendarIndex anniversaryIndex,
+    required bool wide,
   }) {
     final Widget body;
     if (_yearMode) {
@@ -224,6 +230,7 @@ extension _CalendarPageSections on _CalendarPageState {
             unawaited(_controller.onDayLongPressed(day)),
         range: _range,
         anniversaryIndex: anniversaryIndex.isEmpty ? null : anniversaryIndex,
+        scaleRowsWithWidth: wide,
       );
     }
     return AnimatedSize(

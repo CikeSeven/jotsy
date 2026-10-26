@@ -22,13 +22,15 @@ import 'expressive_test_theme.dart';
 ///
 /// 页宽默认 401.6：日历面板左右合计 41.6dp 内缩，页宽为整数 360，避免
 /// PageView 在数千页后触发 SliverFillViewport 的浮点精度断言；自定义
-/// [width] 也要满足“减 41.6 为整数”（如窄屏用 321.6）。
+/// [width] 也要满足“减 41.6 为整数”（如窄屏用 321.6）。宽窗口（≥ 600）
+/// 的网格宽度由居中布局决定，测试里避免在宽窗口下翻页。[height] 为窗口高度。
 /// 主题与应用同源（[expressiveTestTheme]），[brightness] 用于明暗双跑。
 Future<SettingsService> pumpCalendarPage(
   WidgetTester tester, {
   Locale locale = const Locale('zh'),
   Brightness brightness = Brightness.light,
   double width = 401.6,
+  double height = 900,
   Map<String, Object> prefs = const <String, Object>{},
   List<DiaryCalendarMarker> markers = const <DiaryCalendarMarker>[],
   List<DiaryWithTags> Function(DateTime day)? dayDiaries,
@@ -39,7 +41,7 @@ Future<SettingsService> pumpCalendarPage(
   List<NotebookView>? notebooks,
   List<Override> extraOverrides = const <Override>[],
 }) async {
-  tester.view.physicalSize = Size(width, 900);
+  tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(prefs);

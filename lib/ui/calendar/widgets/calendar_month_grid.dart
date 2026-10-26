@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -37,6 +39,7 @@ class CalendarMonthGrid extends StatefulWidget {
     this.onDayLongPressed,
     this.range,
     this.anniversaryIndex,
+    this.scaleRowsWithWidth = false,
   });
 
   static final DateTime firstDay = DateTime(2010, 1, 1);
@@ -46,6 +49,20 @@ class CalendarMonthGrid extends StatefulWidget {
   /// 60，数字、农历与底部指示物三层互不挤压。
   static const double rowHeight = 52;
   static const double lunarRowHeight = 60;
+
+  /// 宽窗口下行高与格宽之比（不显示 / 显示农历）。
+  static const double wideRowAspect = 0.7;
+  static const double wideLunarRowAspect = 0.8;
+
+  /// 宽窗口的行高：网格宽 [gridWidth] 平分 7 列，行高取格宽乘以比例，但不
+  /// 低于手机上的固定行高。手机布局不走这里，行高保持 52 / 60 不变。
+  static double wideRowHeight(double gridWidth, {required bool lunar}) {
+    final cellWidth = gridWidth / DateTime.daysPerWeek;
+    return math.max(
+      lunar ? lunarRowHeight : rowHeight,
+      cellWidth * (lunar ? wideLunarRowAspect : wideRowAspect),
+    );
+  }
 
   final DateTime focusedDay;
   final DateTime selectedDay;
@@ -70,10 +87,15 @@ class CalendarMonthGrid extends StatefulWidget {
   /// 影响纪念日——它们是日期本身的属性，不是日记。
   final AnniversaryCalendarIndex? anniversaryIndex;
 
+  /// 宽窗口：行高按网格宽度经 [wideRowHeight] 加高。格宽在宽窗口里可到
+  /// 80–100，固定 52 的行高会让格子成为横向扁条；窄屏为 false，与改版前
+  /// 完全一致。
+  final bool scaleRowsWithWidth;
+
   @override
   State<CalendarMonthGrid> createState() => _CalendarMonthGridState();
 
-  Widget _buildCalendar(BuildContext context) {
+  Widget _buildCalendar(BuildContext context, {double? gridWidth}) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -95,7 +117,9 @@ class CalendarMonthGrid extends StatefulWidget {
         MaterialLocalizations.of(context),
       ),
       sixWeekMonthsEnforced: options.fixedSixWeeks,
-      rowHeight: lunar ? lunarRowHeight : rowHeight,
+      rowHeight: gridWidth == null
+          ? (lunar ? lunarRowHeight : rowHeight)
+          : wideRowHeight(gridWidth, lunar: lunar),
       weekNumbersVisible: options.showWeekNumbers,
       selectedDayPredicate: (DateTime day) => isSameDay(day, selectedDay),
       headerVisible: false,
@@ -253,6 +277,11 @@ class _CalendarMonthGridState extends State<CalendarMonthGrid> {
   @override
   Widget build(BuildContext context) => PageStorage(
     bucket: _pageStorageBucket,
-    child: widget._buildCalendar(context),
+    child: widget.scaleRowsWithWidth
+        ? LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) =>
+                widget._buildCalendar(context, gridWidth: constraints.maxWidth),
+          )
+        : widget._buildCalendar(context),
   );
 }

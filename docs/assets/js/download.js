@@ -21,6 +21,10 @@
 // “## 版本要点 / ## Highlights”一节（没有就取第一组列表）生成一张新卡片放在最前，
 // 首屏版本标签也换成该版本的第一条要点；当前语言没有说明时只显示一行“已发布”提示。
 //
+// 主按钮：三个平台按钮里，访客系统对应的那个用 filled 并排到最前（Windows → 安装
+// 程序，Linux 桌面 → 压缩包，其余含 Android、ChromeOS、macOS、iOS → APK），其余为
+// tonal；没有脚本时保持 HTML 里的 Android 在前。
+//
 // 线路：与 app 内更新的 AppUpdateSource.builtInSources 保持一致
 // （lib/core/services/app_update_sources.dart，改那边时同步这里）。镜像是第三方公共
 // 服务：“自动”只对中文访客启用镜像（与 app 一样以镜像为主、直连为辅，国内直连附件
@@ -501,6 +505,27 @@ async function pickRoute() {
   renderLinks();
 }
 
+/** 访客系统对应的平台按钮：Windows、Linux 桌面（排除 Android 与 ChromeOS），其余为 Android。 */
+function visitorPlatform() {
+  const ua = navigator.userAgent || '';
+  if (/Windows/.test(ua)) return 'windows';
+  if (/Linux/.test(ua) && !/Android|CrOS/.test(ua)) return 'linux';
+  return 'android';
+}
+
+function renderPrimaryPlatform() {
+  const row = document.querySelector('[data-dl-platforms]');
+  if (!row) return;
+  const platform = visitorPlatform();
+  const buttons = [...row.querySelectorAll('[data-dl-platform]')];
+  const primary = buttons.find((b) => b.dataset.dlPlatform === platform) || buttons[0];
+  for (const button of buttons) {
+    button.classList.toggle('btn--filled', button === primary);
+    button.classList.toggle('btn--tonal', button !== primary);
+  }
+  if (primary && row.firstElementChild !== primary) row.prepend(primary);
+}
+
 /* ---------- 初始化 ---------- */
 const select = document.querySelector('[data-route]');
 if (select) {
@@ -520,6 +545,7 @@ if (select) {
 }
 
 if (section) {
+  renderPrimaryPlatform();
   renderLinks();
   renderRouteStatus();
   // 下载区接近视口、或用户把手放到下载按钮上时才开始探测线路

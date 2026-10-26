@@ -427,22 +427,19 @@
               <span data-dl-date>2026-10-20</span>
               <span data-dl-total hidden><span data-dl-total-value></span></span>
             </p>
-            <div class="dl-buttons">
-              <a class="btn btn--filled btn--xl" data-dl-abi="arm64-v8a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-arm64-v8a.apk">
+            <!-- 三个平台按钮：主按钮（filled）由 download.js 按访客系统换成对应平台并排到最前，没有脚本时为 Android -->
+            <div class="dl-buttons" data-dl-platforms>
+              <a class="btn btn--filled btn--xl" data-dl-platform="android" data-dl-abi="arm64-v8a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-arm64-v8a.apk">
                 <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
-                <span class="btn-stack"><span data-en="Download APK">下载安装包</span><small><span data-en="arm64-v8a · recommended">arm64-v8a · 推荐</span> <span data-dl-size></span></small></span>
+                <span class="btn-stack"><span data-en="Android APK">Android 安装包</span><small><span data-en="arm64-v8a · recommended">arm64-v8a · 推荐</span> <span data-dl-size></span></small></span>
               </a>
-              <a class="btn btn--tonal btn--xl" data-dl-pkg="windows-setup" href="https://github.com/CikeSeven/jotsy/releases/latest">
+              <a class="btn btn--tonal btn--xl" data-dl-platform="windows" data-dl-pkg="windows-setup" href="https://github.com/CikeSeven/jotsy/releases/latest">
                 <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg>
                 <span class="btn-stack"><span data-en="Windows installer">Windows 安装程序</span><small>Windows 10+ · x64 <span data-dl-size></span></small></span>
               </a>
-              <a class="btn btn--tonal btn--xl" data-dl-pkg="linux" href="https://github.com/CikeSeven/jotsy/releases/latest">
+              <a class="btn btn--tonal btn--xl" data-dl-platform="linux" data-dl-pkg="linux" href="https://github.com/CikeSeven/jotsy/releases/latest">
                 <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg>
                 <span class="btn-stack"><span data-en="Linux package">Linux 压缩包</span><small>x64 · GTK 3 <span data-dl-size></span></small></span>
-              </a>
-              <a class="btn btn--tonal btn--xl" href="https://github.com/CikeSeven/jotsy/releases/latest">
-                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-github"></use></svg>
-                <span>GitHub Releases</span>
               </a>
             </div>
             <p class="os-note os-note--ios"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-apple"></use></svg><span data-en="There's no iOS version yet; Android, Windows and Linux builds are released for now.">暂时没有 iOS 版，目前发布 Android、Windows 与 Linux 版本。</span></p>
@@ -454,6 +451,7 @@
                   <a data-dl-abi="armeabi-v7a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-armeabi-v7a.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b>armeabi-v7a</b><small data-en="older 32-bit phones">较老的 32 位手机</small><small data-dl-size></small></a>
                   <a data-dl-abi="x86_64" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-x86_64.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b>x86_64</b><small data-en="emulators">模拟器</small><small data-dl-size></small></a>
                   <a data-dl-pkg="windows-zip" href="https://github.com/CikeSeven/jotsy/releases/latest"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b data-en="Windows portable">Windows 便携版</b><small data-en="zip, extract and run">zip，解压即用</small><small data-dl-size></small></a>
+                  <a href="https://github.com/CikeSeven/jotsy/releases/latest"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-github"></use></svg><b>GitHub Releases</b><small data-en="every package and SHA256SUMS.txt">全部安装包与 SHA256SUMS.txt</small></a>
                 </div>
                 <div class="dl-line">
                   <label for="dl-route" data-en="Download route">下载线路</label>

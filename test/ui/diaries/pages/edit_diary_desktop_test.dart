@@ -11,6 +11,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
@@ -126,6 +127,13 @@ void main() {
       // 编辑器本身仍铺满窗口：滚动条留在窗口边缘。
       expect(tester.getRect(find.byType(DiaryEditor)).width, 1280);
 
+      // 顶栏返回键随正文列内收（AppTopBar.contentMaxWidth），不再贴窗口左缘。
+      final back = tester.getRect(
+        find.byTooltip(tester.element(toolbar()).l10n.commonBack),
+      );
+      expect(back.left, greaterThan(200));
+      expect(back.left, lessThan(260));
+
       // Linux 不支持录音：工具栏里没有录音。
       expect(recordingTool(tester), findsNothing);
       expect(tester.takeException(), isNull);
@@ -157,11 +165,28 @@ void main() {
         PublishPanelDriver(tester).collapsedHeader,
       );
       expect(bar.bottom, lessThanOrEqualTo(summary.top - 8));
-      final panel = tester.getRect(find.byType(PublishDiaryPanel));
-      // 收起栏与工具栏都与正文列同宽居中。
-      expect(panel.width, closeTo(760, 0.5));
-      expect(panel.center.dx, closeTo(640, 0.5));
-      expect(bar.width, closeTo(760, 0.5));
+      // 面板卡片（圆角裁切那一层）与工具栏卡片同宽同边：都是居中的 760。
+      Rect card() => tester.getRect(
+        find
+            .descendant(
+              of: find.byType(PublishDiaryPanel),
+              matching: find.byType(ClipRRect),
+            )
+            .first,
+      );
+      final surface = tester.getRect(find.byType(DiaryFloatingToolbarSurface));
+      expect(surface.width, closeTo(760, 0.5));
+      expect(surface.center.dx, closeTo(640, 0.5));
+      expect(card().left, closeTo(surface.left, 0.5));
+      expect(card().width, closeTo(surface.width, 0.5));
+
+      // 展开后仍是同一列（工具栏让位）。
+      final panel = PublishPanelDriver(tester);
+      await tester.tap(panel.collapsedHeader);
+      await settle(tester);
+      expect(panel.expandedHeader, findsOneWidget);
+      expect(card().left, closeTo(surface.left, 0.5));
+      expect(card().width, closeTo(760, 0.5));
       expect(tester.takeException(), isNull);
       await unmount(tester);
     },

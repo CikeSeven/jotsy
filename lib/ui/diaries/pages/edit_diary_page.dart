@@ -549,8 +549,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   /// 编辑模式底部元数据面板（与发布页同一组件）；区块直接写共享草稿，
   /// 变化经 [_onMetaChanged] 自动保存，这里只做装配。
-  Widget _buildMetaPanel() {
+  Widget _buildMetaPanel({required bool fillWidth}) {
     return PublishDiaryPanel(
+      fillWidth: fillWidth,
       controller: _editPanelController,
       draft: _meta,
       actions: _metaActions,
@@ -575,6 +576,27 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           FocusManager.instance.primaryFocus?.unfocus();
         }
         setState(() {});
+      },
+    );
+  }
+
+  /// 元数据面板所在的列：铺满 body、贴底对齐，面板据此拿到可用高度，矮屏时
+  /// 展开高度收缩。宽窗口（≥ 600）里与悬浮工具栏完全同一列——同样的左右
+  /// 边距、最宽 760 居中，面板不再自行内缩，收起栏与叠在上方的工具栏同宽
+  /// 同边；手机上照旧左右各 16、面板自己内缩。
+  Widget _metaPanelColumn(Widget Function(bool wide) panel) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final wide = constraints.maxWidth >= AppBreakpoints.medium;
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: wide ? kDiaryFloatingToolbarInset : 16,
+          ),
+          child: CenteredContent(
+            maxWidth: AppContentWidth.editor,
+            child: Align(alignment: Alignment.bottomCenter, child: panel(wide)),
+          ),
+        );
       },
     );
   }
@@ -827,6 +849,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       error: (Object error, StackTrace stackTrace) => Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppTopBar(
+          contentMaxWidth: AppContentWidth.editor,
           leading: IconButton(
             tooltip: context.l10n.commonBack,
             onPressed: () => Navigator.of(context).maybePop(),
@@ -842,6 +865,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           return Scaffold(
             backgroundColor: Theme.of(context).colorScheme.surface,
             appBar: AppTopBar(
+              contentMaxWidth: AppContentWidth.editor,
               leading: IconButton(
                 tooltip: context.l10n.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
@@ -892,6 +916,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         final scaffold = Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppTopBar(
+            contentMaxWidth: AppContentWidth.editor,
             leading: IconButton(
               tooltip: context.l10n.commonBack,
               onPressed: _controller.attemptExit,
@@ -992,15 +1017,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 // 与颜色面板的状态并重播入场动画。
                 Positioned.fill(
                   key: const ValueKey<String>('edit-meta-panel'),
-                  left: 16,
-                  right: 16,
-                  // 宽窗口里收起栏与展开的面板都与正文列同宽居中。
-                  child: CenteredContent(
-                    maxWidth: AppContentWidth.editor,
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
-                      child: ExpressiveEntrance(child: _buildMetaPanel()),
+                  child: _metaPanelColumn(
+                    // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
+                    (bool wide) => ExpressiveEntrance(
+                      child: _buildMetaPanel(fillWidth: wide),
                     ),
                   ),
                 ),

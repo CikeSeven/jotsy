@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../app/theme/app_breakpoints.dart';
 import '../../../core/services/app_service.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
@@ -93,6 +94,7 @@ class _DiaryTemplateEditorPageState
     final scaffold = Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: AppContentWidth.editor,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => unawaited(_attemptExit()),

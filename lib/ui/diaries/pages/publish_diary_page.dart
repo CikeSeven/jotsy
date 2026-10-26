@@ -14,6 +14,7 @@ import 'package:node_diary/ui/diaries/controllers/publish_diary_controller.dart'
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
+import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
@@ -270,6 +271,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
         child: Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppTopBar(
+            contentMaxWidth: AppContentWidth.form,
             title: PublishStatusTitle(published: _publisher.diaryId != null),
             leading: IconButton(
               tooltip: context.l10n.commonBack,
@@ -323,46 +325,56 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
               ),
               // 底部悬浮交互面板：铺满 body、贴底对齐，面板据此拿到可用高度
               // （键盘弹出时展开高度随之收缩）。
+              // 宽窗口（≥ 600）里与编辑页的面板同一列：左右 12、最宽 760 居中，
+              // 面板不再自行内缩（从编辑页进来时位置不跳）；手机上照旧。
               Positioned.fill(
-                left: 16,
-                right: 16,
-                // 宽窗口里收起栏与展开的面板都与编辑页正文列同宽（760）居中。
-                child: CenteredContent(
-                  maxWidth: AppContentWidth.editor,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
-                    // 写库前后、封存与退场期间锁住面板：这时的改动不会被保存，不该
-                    // 看起来可改。
-                    child: AbsorbPointer(
-                      absorbing: _leaveBlocked,
-                      child: ValueListenableBuilder<DateTime?>(
-                        valueListenable: _publisher.explicitPublishAt,
-                        builder: (context, _, _) => PublishDiaryPanel(
-                          controller: _panelController,
-                          draft: _meta,
-                          actions: _metaActions,
-                          busy: _leaveBlocked,
-                          // 进入即发表，发表时间就是写库那一刻（或用户改选的时间）。
-                          publishTime: PublishTimeOption(
-                            label: context.l10n.formatDateTimeMinute(
-                              _publisher.effectivePublishAt,
+                child: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final wide = constraints.maxWidth >= AppBreakpoints.medium;
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: wide ? kDiaryFloatingToolbarInset : 16,
+                      ),
+                      child: CenteredContent(
+                        maxWidth: AppContentWidth.editor,
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
+                          // 写库前后、封存与退场期间锁住面板：这时的改动不会被保存，不该
+                          // 看起来可改。
+                          child: AbsorbPointer(
+                            absorbing: _leaveBlocked,
+                            child: ValueListenableBuilder<DateTime?>(
+                              valueListenable: _publisher.explicitPublishAt,
+                              builder: (context, _, _) => PublishDiaryPanel(
+                                fillWidth: wide,
+                                controller: _panelController,
+                                draft: _meta,
+                                actions: _metaActions,
+                                busy: _leaveBlocked,
+                                // 进入即发表，发表时间就是写库那一刻（或用户改选的时间）。
+                                publishTime: PublishTimeOption(
+                                  label: context.l10n.formatDateTimeMinute(
+                                    _publisher.effectivePublishAt,
+                                  ),
+                                  onPick: _pickPublishTime,
+                                ),
+                                capsuleEnabled: capsulesEnabled,
+                                showDraftCapsule: capsulesEnabled,
+                                // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+                                // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
+                                onProgressChanged: (progress) {
+                                  if (mounted) {
+                                    _panelExpandProgress.value = progress;
+                                  }
+                                },
+                              ),
                             ),
-                            onPick: _pickPublishTime,
                           ),
-                          capsuleEnabled: capsulesEnabled,
-                          showDraftCapsule: capsulesEnabled,
-                          // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
-                          // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
-                          onProgressChanged: (progress) {
-                            if (mounted) {
-                              _panelExpandProgress.value = progress;
-                            }
-                          },
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
               // 写库通常几十毫秒完成：遮罩立即拦截点击，超过 300ms 才淡入显示。

@@ -27,6 +27,7 @@ AppUpdateRelease? parseGitHubRelease(Object? json) {
     return null;
   }
   final assets = <AppUpdateAsset>[];
+  final desktopAssets = <AppUpdateAsset>[];
   var hasChecksums = false;
   final rawAssets = json['assets'];
   if (rawAssets is List) {
@@ -35,21 +36,23 @@ AppUpdateRelease? parseGitHubRelease(Object? json) {
       if (name == AppUpdateEndpoints.checksumsFileName) {
         hasChecksums = true;
       }
-      if (!name.toLowerCase().endsWith('.apk')) {
+      if (!AppUpdateAsset.isPackageName(name)) {
         continue;
       }
       final size = raw['size'];
-      assets.add(
+      addReleasePackage(
         AppUpdateAsset(
           name: name,
           url: AppUpdateEndpoints.assetUrl(tag, name),
           size: size is int && size > 0 ? size : null,
           sha256: AppUpdateAsset.normalizeSha256(raw['digest']),
         ),
+        apks: assets,
+        desktop: desktopAssets,
       );
     }
   }
-  if (!hasChecksums || assets.isEmpty) {
+  if (!hasChecksums || (assets.isEmpty && desktopAssets.isEmpty)) {
     return null;
   }
   final body = cleanReleaseNotes(json['body']?.toString() ?? '');
@@ -57,6 +60,7 @@ AppUpdateRelease? parseGitHubRelease(Object? json) {
     version: version,
     tag: tag,
     assets: assets,
+    desktopAssets: desktopAssets,
     publishedAt: DateTime.tryParse(json['published_at']?.toString() ?? ''),
     fallbackNotes: body.isEmpty ? null : body,
   );
@@ -73,24 +77,32 @@ AppUpdateRelease? releaseFromChecksums(String tag, String checksums) {
   if (version == null) {
     return null;
   }
-  final line = RegExp(r'^([0-9a-fA-F]{64})\s+\*?(\S+\.apk)\s*$');
+  final line = RegExp(r'^([0-9a-fA-F]{64})\s+\*?(\S+)\s*$');
   final assets = <AppUpdateAsset>[];
+  final desktopAssets = <AppUpdateAsset>[];
   for (final raw in checksums.split('\n')) {
     final match = line.firstMatch(raw.trim());
     if (match == null) {
       continue;
     }
     final name = match.group(2)!;
-    assets.add(
+    addReleasePackage(
       AppUpdateAsset(
         name: name,
         url: AppUpdateEndpoints.assetUrl(tag, name),
         sha256: match.group(1)!.toLowerCase(),
       ),
+      apks: assets,
+      desktop: desktopAssets,
     );
   }
-  if (assets.isEmpty) {
+  if (assets.isEmpty && desktopAssets.isEmpty) {
     return null;
   }
-  return AppUpdateRelease(version: version, tag: tag, assets: assets);
+  return AppUpdateRelease(
+    version: version,
+    tag: tag,
+    assets: assets,
+    desktopAssets: desktopAssets,
+  );
 }

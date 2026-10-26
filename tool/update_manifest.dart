@@ -1,7 +1,8 @@
 /// 生成应用内更新清单 `jotsy-update.json`（schema 见 `AppUpdateManifest`），
 /// 供 `tool/write_update_manifest.dart` 与测试共用。
 ///
-/// 输入：pubspec 文本、发布 tag、存放签名安装包的目录与版本说明目录；
+/// 输入：pubspec 文本、发布 tag、存放安装包（签名 APK 与桌面安装包）的目录与
+/// 版本说明目录；
 /// 输出：清单 JSON 文本。只读文件，不依赖 Flutter——清单的读写共用应用里的
 /// `AppUpdateManifest`，发布脚本与应用的 schema 不会各写各的。
 library;
@@ -22,8 +23,10 @@ String? readPubspecVersion(String pubspec) {
   return match?.group(1);
 }
 
-/// [directory] 下的全部安装包（按文件名排序），逐个流式计算 SHA-256。
-Future<List<AppUpdateAsset>> collectApkAssets(
+/// [directory] 下的全部安装包（按文件名排序）：Android 的 `.apk` 与桌面的
+/// 安装程序 / 便携版 / 压缩包（`AppUpdateAsset.isPackageName`），逐个流式
+/// 计算 SHA-256。校验文件与清单本身不算。
+Future<List<AppUpdateAsset>> collectReleaseAssets(
   Directory directory,
   String tag,
 ) async {
@@ -31,7 +34,7 @@ Future<List<AppUpdateAsset>> collectApkAssets(
       directory
           .listSync()
           .whereType<File>()
-          .where((file) => file.path.toLowerCase().endsWith('.apk'))
+          .where((file) => AppUpdateAsset.isPackageName(p.basename(file.path)))
           .toList()
         ..sort((a, b) => a.path.compareTo(b.path));
   return <AppUpdateAsset>[
@@ -67,8 +70,9 @@ Map<String, String> collectReleaseNotes({
 }
 
 /// 组装清单 JSON。版本取 pubspec（含构建号，应用据此精确比较）；tag 若是
-/// 版本号，须与 pubspec 一致（发布流程的 check-version 也会拦下）。没有
-/// 安装包、版本无法解析时抛出 [StateError]。
+/// 版本号，须与 pubspec 一致（发布流程的 check-version 也会拦下）。桌面安装包
+/// 与 APK 写进同一个 `assets` 列表（旧版应用只认 `.apk`，其余跳过）；没有
+/// APK（旧版应用会把清单当作无效）、版本无法解析时抛出 [StateError]。
 Future<String> buildUpdateManifest({
   required String pubspec,
   required String tag,
@@ -86,8 +90,8 @@ Future<String> buildUpdateManifest({
   if (tagVersion != null && tagVersion.compareTo(parsed) != 0) {
     throw StateError('Tag $tag does not match pubspec version $version');
   }
-  final assets = await collectApkAssets(artifacts, tag);
-  if (assets.isEmpty) {
+  final assets = await collectReleaseAssets(artifacts, tag);
+  if (!assets.any((asset) => AppUpdateAsset.isApkName(asset.name))) {
     throw StateError('No APK found in ${artifacts.path}');
   }
   final json = AppUpdateManifest.toJson(

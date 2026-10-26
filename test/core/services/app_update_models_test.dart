@@ -225,6 +225,91 @@ void main() {
     );
   });
 
+  group('desktop packages', () {
+    const tag = 'v0.7.0';
+    final names = <String>[
+      'jotsy-$tag-arm64-v8a.apk',
+      'jotsy-$tag-armeabi-v7a.apk',
+      'jotsy-$tag-x86_64.apk',
+      'jotsy-$tag-linux-x64.tar.gz',
+      'jotsy-$tag-windows-x64-setup.exe',
+      'jotsy-$tag-windows-x64.zip',
+    ];
+    String sums() => [
+      for (final (i, name) in names.indexed)
+        '${i.toRadixString(16) * 64}  $name',
+      '${'f' * 64}  SHA256SUMS.txt',
+    ].join('\n');
+
+    void expectSplit(AppUpdateRelease release) {
+      // Android 只会从 APK 里挑选：通用包回落也拿不到桌面安装包。
+      expect(release.assets.map((a) => a.name), names.take(3));
+      expect(release.assetFor(const <String>['mips']), isNull);
+      expect(
+        release.assetFor(const <String>['x86_64'])!.name,
+        'jotsy-$tag-x86_64.apk',
+      );
+      expect(
+        release.desktopAssetFor(AppUpdateDesktopTarget.windows)!.name,
+        'jotsy-$tag-windows-x64-setup.exe',
+      );
+      expect(
+        release.desktopAssetFor(AppUpdateDesktopTarget.linux)!.name,
+        'jotsy-$tag-linux-x64.tar.gz',
+      );
+    }
+
+    test('the manifest keeps desktop packages apart from the APKs', () {
+      final release = AppUpdateManifest.parse(<String, Object?>{
+        'schema': 1,
+        'version': '0.7.0+20',
+        'tag': tag,
+        'assets': <Object?>[
+          for (final name in names)
+            <String, Object?>{'name': name, 'size': 10, 'sha256': 'c' * 64},
+        ],
+      })!;
+      expectSplit(release);
+      expect(release.desktopAssetFor(AppUpdateDesktopTarget.linux)!.size, 10);
+    });
+
+    test('the checksums file and the GitHub API split them the same way', () {
+      expectSplit(releaseFromChecksums(tag, sums())!);
+      expectSplit(
+        parseGitHubRelease(<String, Object?>{
+          'tag_name': tag,
+          'assets': <Object?>[
+            for (final name in <String>[...names, 'SHA256SUMS.txt'])
+              <String, Object?>{'name': name, 'size': 10},
+          ],
+        })!,
+      );
+    });
+
+    test('an APK-only release has no desktop package', () {
+      final release = releaseFromChecksums(
+        'v0.6.1',
+        '${'a' * 64}  jotsy-v0.6.1-arm64-v8a.apk',
+      )!;
+      expect(release.desktopAssets, isEmpty);
+      expect(release.desktopAssetFor(AppUpdateDesktopTarget.windows), isNull);
+      expect(release.desktopAssetFor(AppUpdateDesktopTarget.linux), isNull);
+    });
+
+    test('recognizes desktop packages by platform and extension only', () {
+      expect(
+        AppUpdateAsset.desktopTargetFromName('jotsy-v1-windows-x64.zip'),
+        AppUpdateDesktopTarget.windows,
+      );
+      expect(
+        AppUpdateAsset.desktopTargetFromName('jotsy-v1-linux.zip'),
+        isNull,
+      );
+      expect(AppUpdateAsset.desktopTargetFromName('SHA256SUMS.txt'), isNull);
+      expect(AppUpdateAsset.isPackageName('jotsy-update.json'), isFalse);
+    });
+  });
+
   test('cleanReleaseNotes keeps inner headings and drops web-only lines', () {
     expect(
       cleanReleaseNotes(

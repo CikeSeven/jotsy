@@ -19,6 +19,9 @@ import 'expressive_state_blend.dart';
 ///
 /// [destructive] 标记会永久改写数据的选项：标题常驻 error 色，选中时底色换成
 /// errorContainer、圆点换成 error 色，选到的那一刻就能看出风险。
+///
+/// [onTap] 为 null 时选项不可选（如设备不支持系统验证时的“上锁”）：标题与
+/// 圆点按 Material 停用态降到 38% 不透明度，说明保持原色，用来写明原因。
 class ExpressiveChoiceTile extends StatelessWidget {
   const ExpressiveChoiceTile({
     super.key,
@@ -31,7 +34,7 @@ class ExpressiveChoiceTile extends StatelessWidget {
 
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   /// 选项后果的简短说明，显示在标题下方。
   final String? description;
@@ -46,6 +49,9 @@ class ExpressiveChoiceTile extends StatelessWidget {
         ? colorScheme.errorContainer
         : colorScheme.secondaryContainer;
     final description = this.description;
+    final enabled = onTap != null;
+    Color disabled(Color color) =>
+        enabled ? color : color.withValues(alpha: 0.38);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: ExpressiveStateBlend(
@@ -67,20 +73,25 @@ class ExpressiveChoiceTile extends StatelessWidget {
             // 显式居中而不依赖主题默认的 threeLine：日后某处开启 isThreeLine
             // 或主题改了对齐方式，圆点也不会跑到上沿。
             titleAlignment: ListTileTitleAlignment.center,
+            enabled: enabled,
             onTap: onTap,
             leading: ExpressiveIconSwap(
               switchKey: selected,
               child: FaIcon(
                 selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
                 size: 16,
-                color: Color.lerp(colorScheme.onSurfaceVariant, accent, t),
+                color: disabled(
+                  Color.lerp(colorScheme.onSurfaceVariant, accent, t)!,
+                ),
               ),
             ),
             title: Text(
               label,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: destructive ? colorScheme.error : colorScheme.onSurface,
+                color: disabled(
+                  destructive ? colorScheme.error : colorScheme.onSurface,
+                ),
               ),
             ),
             // 危险项选中后底色是 errorContainer，说明随之过渡到配套的

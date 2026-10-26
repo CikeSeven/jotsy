@@ -77,6 +77,9 @@ dependencies:
   photo_manager_image_provider: ^2.2.0
   pasteboard: ^0.5.0
   dart_quill_delta: ^10.8.3
+  # 桌面上把文件拖进编辑页正文（Linux / Windows / macOS 的原生拖放）。0.9 起要求
+  # Flutter 3.47.7，暂停在 0.8.x。
+  desktop_drop: ^0.8.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

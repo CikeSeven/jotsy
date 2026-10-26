@@ -10981,5 +10981,7 @@
   "diaryCardMenuMoveToNotebook": "Move to notebook…",
   "@diaryCardMenuMoveToNotebook": {"description": "Desktop diary card context menu item (inside a regular notebook): move this diary to another notebook."},
   "diaryCardMenuAddToNotebook": "Add to notebook…",
-  "@diaryCardMenuAddToNotebook": {"description": "Desktop diary card context menu item (all diaries, search and archive): open the notebook picker for this diary."}
+  "@diaryCardMenuAddToNotebook": {"description": "Desktop diary card context menu item (all diaries, search and archive): open the notebook picker for this diary."},
+  "diaryEditorDropToInsert": "Drop to insert",
+  "@diaryEditorDropToInsert": {"description": "Desktop: label in the middle of the highlight while files are dragged over the editor body; releasing inserts them."}
 }

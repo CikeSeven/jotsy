@@ -43,6 +43,7 @@ import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_saved_colors_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor_drop_target.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
@@ -1002,13 +1003,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             children: <Widget>[
               // 软键盘“选择”模式的方向键在 Flutter 3.47 上只会移动光标，这里
               // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
-              SoftKeyboardSelectionKeys(
-                child: _buildEditor(
-                  context,
-                  resolveBottomSpacer: resolveEditorBottomSpacer,
-                  contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
-                  appearance: ref.watch(diaryTextAppearanceProvider),
-                  templatesEnabled: templatesEnabled,
+              // 桌面上可以把文件拖进正文（手机上 DiaryEditorDropTarget 原样
+              // 返回子树）；面板展开、录音或保存中不接收。
+              DiaryEditorDropTarget(
+                enabled:
+                    !_saving && !_isEditPanelExpanded && !_recordingPanelOpen,
+                onDropFiles: (paths) =>
+                    unawaited(_controller.insertDroppedFiles(paths)),
+                child: SoftKeyboardSelectionKeys(
+                  child: _buildEditor(
+                    context,
+                    resolveBottomSpacer: resolveEditorBottomSpacer,
+                    contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
+                    appearance: ref.watch(diaryTextAppearanceProvider),
+                    templatesEnabled: templatesEnabled,
+                  ),
                 ),
               ),
               if (showEditMetaPanel &&

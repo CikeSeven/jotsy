@@ -10981,5 +10981,7 @@
   "diaryCardMenuMoveToNotebook": "移动到日记本…",
   "@diaryCardMenuMoveToNotebook": {"description": "桌面上日记卡片右键菜单的一项（在普通日记本里）：把这篇移到另一本日记本。"},
   "diaryCardMenuAddToNotebook": "收进日记本…",
-  "@diaryCardMenuAddToNotebook": {"description": "桌面上日记卡片右键菜单的一项（全部日记、搜索与归档里）：打开收录选择器，选这篇所在的日记本。"}
+  "@diaryCardMenuAddToNotebook": {"description": "桌面上日记卡片右键菜单的一项（全部日记、搜索与归档里）：打开收录选择器，选这篇所在的日记本。"},
+  "diaryEditorDropToInsert": "松开以插入",
+  "@diaryEditorDropToInsert": {"description": "桌面上把文件拖到编辑页正文上方时，高亮框中间的说明：松开鼠标即把文件插入正文。"}
 }

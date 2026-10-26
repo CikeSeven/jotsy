@@ -14089,6 +14089,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to notebook…'**
   String get diaryCardMenuAddToNotebook;
+
+  /// Desktop: label in the middle of the highlight while files are dragged over the editor body; releasing inserts them.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop to insert'**
+  String get diaryEditorDropToInsert;
 }
 
 class _AppLocalizationsDelegate

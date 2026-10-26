@@ -8585,4 +8585,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryCardMenuAddToNotebook => 'Add to notebook…';
+
+  @override
+  String get diaryEditorDropToInsert => 'Drop to insert';
 }

@@ -7704,4 +7704,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryCardMenuAddToNotebook => '收进日记本…';
+
+  @override
+  String get diaryEditorDropToInsert => '松开以插入';
 }

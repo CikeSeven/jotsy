@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/diary_video_gallery_service.dart';
 import 'package:node_diary/ui/diaries/models/image_insertion.dart';
 import 'package:node_diary/ui/diaries/models/media_insertion.dart';
+import 'package:path/path.dart' as p;
 
 typedef DiaryMediaPicker = Future<List<PlatformFile>?> Function(DiaryMediaKind);
 typedef DiaryMediaImporter =
@@ -40,12 +42,15 @@ class DiaryMediaImportController extends ChangeNotifier {
   void cancel() => _generation++;
 
   /// [picker] 替换本次的文件来源（如“这天拍的照片”已在页面里选好），
-  /// 复制、插入、取消与失败回滚仍走同一条链路。
+  /// 复制、插入、取消与失败回滚仍走同一条链路。[discardPickerCopies] 为
+  /// false 时结束后不清理来源文件的“选择器缓存副本”：来源是用户自己的文件
+  /// （桌面拖放）时，哪怕它恰好位于缓存目录里也不能删。
   Future<DiaryMediaImportOutcome> pickAndInsert({
     required DiaryEditorController controller,
     required DiaryMediaKind kind,
     required bool Function() isCurrent,
     DiaryMediaPicker? picker,
+    bool discardPickerCopies = true,
   }) async {
     if (_disposed) return DiaryMediaImportOutcome.cancelled;
     if (isBusy) return DiaryMediaImportOutcome.busy;
@@ -162,8 +167,10 @@ class DiaryMediaImportController extends ChangeNotifier {
         }
       }
       // 无论成功与否，选择器在缓存里的中转副本都已无用（视频可达数百 MB）。
-      for (final file in files ?? const <PlatformFile>[]) {
-        await DiaryMediaStorageService.discardPickerCopy(file.path);
+      if (discardPickerCopies) {
+        for (final file in files ?? const <PlatformFile>[]) {
+          await DiaryMediaStorageService.discardPickerCopy(file.path);
+        }
       }
       if (!_disposed) {
         _copying = false;
@@ -171,6 +178,75 @@ class DiaryMediaImportController extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+
+  /// 正文图片块能显示的格式；其余按扩展名分到视频或附件。
+  static const Set<String> _imageExtensions = <String>{
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.bmp',
+  };
+  static const Set<String> _videoExtensions = <String>{
+    '.mp4',
+    '.mov',
+    '.m4v',
+    '.3gp',
+    '.avi',
+    '.webm',
+    '.mkv',
+  };
+
+  /// 按扩展名判断一份文件插入成哪种块：图片、视频，其余（音频、文档等）
+  /// 与工具栏“文件”一样作为附件。
+  static DiaryMediaKind kindForPath(String path) {
+    final extension = p.extension(path).toLowerCase();
+    if (_imageExtensions.contains(extension)) return DiaryMediaKind.image;
+    if (_videoExtensions.contains(extension)) return DiaryMediaKind.video;
+    return DiaryMediaKind.attachment;
+  }
+
+  /// 把本机文件（桌面上拖进正文的文件）插入正文：与工具栏选文件同一条链路
+  /// （复制到私有目录 → 插入 → 失败回滚），只是文件来源换成 [paths]。
+  ///
+  /// 文件夹与已不存在的路径跳过；按原顺序把相邻的同类文件分成一段，逐段经
+  /// [pickAndInsert] 插入（每段从当时的光标处接着插），某段没有插入（失败、
+  /// 取消、忙）就停下并返回它的结果。全部跳过时返回 cancelled。
+  Future<DiaryMediaImportOutcome> insertFiles({
+    required DiaryEditorController controller,
+    required List<String> paths,
+    required bool Function() isCurrent,
+  }) async {
+    final runs = <(DiaryMediaKind, List<PlatformFile>)>[];
+    for (final path in paths) {
+      final file = File(path);
+      if (!file.existsSync()) continue;
+      final kind = kindForPath(path);
+      final picked = PlatformFile(
+        name: p.basename(path),
+        size: file.lengthSync(),
+        path: path,
+      );
+      if (runs.isNotEmpty && runs.last.$1 == kind) {
+        runs.last.$2.add(picked);
+      } else {
+        runs.add((kind, <PlatformFile>[picked]));
+      }
+    }
+    var outcome = DiaryMediaImportOutcome.cancelled;
+    for (final (kind, files) in runs) {
+      outcome = await pickAndInsert(
+        controller: controller,
+        kind: kind,
+        isCurrent: isCurrent,
+        picker: (_) async => files,
+        discardPickerCopies: false,
+      );
+      if (outcome != DiaryMediaImportOutcome.inserted) return outcome;
+    }
+    return outcome;
   }
 
   static Future<List<PlatformFile>?> _pickFiles(DiaryMediaKind kind) async {

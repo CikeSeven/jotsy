@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'app_platform.dart';
+
 part 'location_device_position.dart';
 part 'location_resolver_models.dart';
 part 'location_reverse_geocoder.dart';
@@ -24,7 +26,7 @@ class LocationResolverService {
   static void debugClearCache() => _resolvedLocationCache.clear();
 
   Future<ResolvedLocation> resolveCurrentLocation() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+    if (!AppPlatform.supportsAutoLocation) {
       throw const LocationResolveException(
         type: LocationResolveErrorType.unsupported,
         message: 'Automatic location is only supported on Android.',

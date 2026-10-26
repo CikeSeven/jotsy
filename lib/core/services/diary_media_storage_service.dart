@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../database/file_embed_codec.dart';
+import 'app_data_directory.dart';
 
 enum DiaryMediaKind { image, video, attachment }
 
@@ -45,7 +46,7 @@ class DiaryMediaStorageService {
     Stream<List<int>>? readStream,
     List<int>? bytes,
   }) async {
-    final root = await getApplicationDocumentsDirectory();
+    final root = await appDataRootDirectory();
     final directory = Directory(p.join(root.path, directoryNameFor(kind)));
     await directory.create(recursive: true);
     final importDirectory = await directory.createTemp('media_');
@@ -111,7 +112,7 @@ class DiaryMediaStorageService {
         return;
       }
     }
-    final root = await getApplicationDocumentsDirectory();
+    final root = await appDataRootDirectory();
     final normalized = p.normalize(path);
     for (final kind in DiaryMediaKind.values) {
       final mediaRoot = p.normalize(p.join(root.path, directoryNameFor(kind)));

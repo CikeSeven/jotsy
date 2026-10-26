@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../database/app_database.dart';
 import 'backup_archive_io.dart';
@@ -28,6 +27,7 @@ import 'journal_import_notebooks.dart';
 import 'journal_import_payload.dart';
 import 'journal_import_support.dart';
 import 'settings_service.dart';
+import 'app_data_directory.dart';
 
 /// 导入其他日记应用的导出或云端笔记：解析 → 预检 → 按所选方式合并。
 ///
@@ -129,7 +129,7 @@ class JournalImportService {
     // 会话在 createTemp 完成、_liveStaging 登记前把新目录误当作遗留目录删掉。
     final (documents, staging) = await DataArchiveService.runSerialized(
       () async {
-        final documents = await getApplicationDocumentsDirectory();
+        final documents = await appDataRootDirectory();
         await documents.create(recursive: true);
         await _removeStaleStaging(documents);
         final staging = await documents.createTemp(_stagingPrefix);

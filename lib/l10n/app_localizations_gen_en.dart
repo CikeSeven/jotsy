@@ -8579,4 +8579,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorCommandTypeToFilter => 'Keep typing to filter';
+
+  @override
+  String get diaryCardMenuMoveToNotebook => 'Move to notebook…';
+
+  @override
+  String get diaryCardMenuAddToNotebook => 'Add to notebook…';
 }

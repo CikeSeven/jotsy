@@ -535,4 +535,114 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Unavailable'), findsOneWidget);
   });
+
+  group('openAt (context menu at a position)', () {
+    final anchorKey = GlobalKey<ExpressiveMenuAnchorState>();
+    final fieldFocus = FocusNode();
+    tearDownAll(fieldFocus.dispose);
+
+    /// 铺满页面的锚点（像一张卡片），另有一个输入框持有打开前的焦点。
+    Widget page() => Scaffold(
+      body: Column(
+        children: <Widget>[
+          TextField(focusNode: fieldFocus),
+          Expanded(
+            child: ExpressiveMenuAnchor(
+              key: anchorKey,
+              menuChildren: _items(),
+              builder: (context, menu, child) => const SizedBox.expand(),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    testWidgets('puts the start corner of the menu at the given point', (
+      tester,
+    ) async {
+      useSize(tester, const Size(800, 600));
+      await tester.pumpWidget(_app(home: page()));
+      anchorKey.currentState!.openAt(const Offset(200, 300));
+      await tester.pumpAndSettle();
+
+      final panel = tester.getRect(_panel);
+      expect(panel.left, moreOrLessEquals(200));
+      expect(panel.top, moreOrLessEquals(300));
+    });
+
+    testWidgets('flips above the point and stays inside near the corner', (
+      tester,
+    ) async {
+      useSize(tester, const Size(800, 600));
+      await tester.pumpWidget(_app(home: page()));
+      anchorKey.currentState!.openAt(const Offset(790, 590));
+      await tester.pumpAndSettle();
+
+      final panel = tester.getRect(_panel);
+      expect(panel.bottom, moreOrLessEquals(590));
+      expect(panel.right, lessThanOrEqualTo(800 - 8));
+    });
+
+    testWidgets('reopening at another point moves the menu', (tester) async {
+      useSize(tester, const Size(800, 600));
+      await tester.pumpWidget(_app(home: page()));
+      anchorKey.currentState!.openAt(const Offset(100, 200));
+      await tester.pumpAndSettle();
+      anchorKey.currentState!.openAt(const Offset(300, 250));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MenuItemButton), findsNWidgets(2));
+      final panel = tester.getRect(_panel);
+      expect(panel.topLeft, offsetMoreOrLessEquals(const Offset(300, 250)));
+    });
+
+    testWidgets('escape closes it and focus goes back to where it was', (
+      tester,
+    ) async {
+      useSize(tester, const Size(800, 600));
+      await tester.pumpWidget(_app(home: page()));
+      fieldFocus.requestFocus();
+      await tester.pump();
+      anchorKey.currentState!.openAt(const Offset(200, 300));
+      await tester.pumpAndSettle();
+      expect(fieldFocus.hasFocus, isFalse);
+
+      // 鼠标打开时焦点停在菜单本身：↓ 进入第一项。
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(Focus.of(tester.element(find.text('Edit'))).hasFocus, isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.byType(MenuItemButton), findsNothing);
+      expect(fieldFocus.hasFocus, isTrue);
+    });
+
+    testWidgets('a keyboard open focuses the first item', (tester) async {
+      useSize(tester, const Size(800, 600));
+      var edits = 0;
+      await tester.pumpWidget(
+        _app(
+          home: Scaffold(
+            body: ExpressiveMenuAnchor(
+              key: anchorKey,
+              menuChildren: _items(onEdit: () => edits++),
+              builder: (context, menu, child) => const SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+      anchorKey.currentState!.openAt(
+        const Offset(200, 300),
+        focusFirstItem: true,
+      );
+      await tester.pumpAndSettle();
+      expect(Focus.of(tester.element(find.text('Edit'))).hasFocus, isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(edits, 1);
+      expect(find.byType(MenuItemButton), findsNothing);
+    });
+  });
 }

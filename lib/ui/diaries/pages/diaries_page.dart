@@ -45,6 +45,7 @@ import '../../notebooks/widgets/notebook_header_sliver.dart';
 import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_preview_edit_flow.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../models/time_capsule.dart';
@@ -57,6 +58,7 @@ import '../widgets/diaries_header_sliver.dart';
 import '../widgets/diary_card/diary_card_reading_ring.dart';
 import '../widgets/diary_detail_pane/diary_detail_pane.dart';
 import '../widgets/diary_preview/diary_pager_view.dart';
+import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../widgets/diary_preview/diary_preview_host.dart';
 import '../widgets/diary_preview/diary_preview_neighbors.dart';
 import '../widgets/diary_tag_filter_bar.dart';
@@ -721,6 +723,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     _controller.archiveDiaryBySwipe(diaryId),
                                   ),
                                   isSearchResultEmpty: false,
+                                  menuActions: _controller.menuActions(
+                                    notebooksEnabled: notebooksEnabled,
+                                  ),
                                   sectionHeaderBuilder: _bookSectionHeaders(
                                     scopeResolution,
                                     displayedItems,

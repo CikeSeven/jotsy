@@ -3,11 +3,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/settings_service.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../viewmodels/diary_card_resolved_style.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_card/diary_card.dart';
+import '../widgets/diary_card/diary_card_context_menu.dart';
 import '../widgets/diary_card/diary_card_reading_ring.dart';
 import '../widgets/diary_swipe_action_item.dart';
 import '../widgets/diary_waterfall_sliver.dart';
@@ -18,6 +20,8 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/list_item_presence.dart';
 
 export '../widgets/diary_card/diary_card.dart' show DiaryOpenCallback;
+export '../widgets/diary_card/diary_card_context_menu.dart'
+    show DiaryCardMenuActions;
 
 /// 日记页主列表区块。
 ///
@@ -58,6 +62,7 @@ class DiariesListSection extends StatelessWidget {
     this.readingRing = false,
     this.readingDiaryId,
     this.readingCardLocator,
+    this.menuActions,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -130,6 +135,10 @@ class DiariesListSection extends StatelessWidget {
 
   /// 正在阅读的卡片把位置记在这里，页面据此把它滚进视口。
   final DiaryReadingCardLocator? readingCardLocator;
+
+  /// 桌面上卡片右键菜单的动作（见 [DiaryCardContextMenu]）；null 时不提供
+  /// 右键菜单（日历、设置页预览）。手机上忽略。
+  final DiaryCardMenuActions? menuActions;
 
   @override
   Widget build(BuildContext context) {
@@ -248,6 +257,16 @@ class DiariesListSection extends StatelessWidget {
         active: diaryId == readingDiaryId,
         radius: resolved.cornerRadius,
         locator: readingCardLocator,
+        child: card,
+      );
+    }
+    // 桌面右键菜单包在最外层（含阅读环）；多选模式下不响应，结构不变。
+    final actions = menuActions;
+    if (actions != null && AppPlatform.isDesktop) {
+      card = DiaryCardContextMenu(
+        diary: diary,
+        actions: actions,
+        enabled: !isSelectionMode,
         child: card,
       );
     }

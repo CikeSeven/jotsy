@@ -10977,5 +10977,9 @@
   "diaryEditorEmptyLineHint": "Type / to insert a block",
   "@diaryEditorEmptyLineHint": {"description": "Placeholder on the empty body line holding the caret, hinting at the slash command menu."},
   "diaryEditorCommandTypeToFilter": "Keep typing to filter",
-  "@diaryEditorCommandTypeToFilter": {"description": "Footer of the slash command menu: typing after the slash filters the commands."}
+  "@diaryEditorCommandTypeToFilter": {"description": "Footer of the slash command menu: typing after the slash filters the commands."},
+  "diaryCardMenuMoveToNotebook": "Move to notebook…",
+  "@diaryCardMenuMoveToNotebook": {"description": "Desktop diary card context menu item (inside a regular notebook): move this diary to another notebook."},
+  "diaryCardMenuAddToNotebook": "Add to notebook…",
+  "@diaryCardMenuAddToNotebook": {"description": "Desktop diary card context menu item (all diaries, search and archive): open the notebook picker for this diary."}
 }

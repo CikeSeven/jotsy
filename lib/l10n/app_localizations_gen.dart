@@ -14077,6 +14077,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep typing to filter'**
   String get diaryEditorCommandTypeToFilter;
+
+  /// Desktop diary card context menu item (inside a regular notebook): move this diary to another notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to notebook…'**
+  String get diaryCardMenuMoveToNotebook;
+
+  /// Desktop diary card context menu item (all diaries, search and archive): open the notebook picker for this diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to notebook…'**
+  String get diaryCardMenuAddToNotebook;
 }
 
 class _AppLocalizationsDelegate

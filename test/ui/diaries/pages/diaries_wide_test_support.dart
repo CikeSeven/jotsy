@@ -56,6 +56,9 @@ class WideDiaryStore {
   final List<DiaryWithTags> _diaries;
   final Set<String> deleted = <String>{};
   final Set<String> restored = <String>{};
+
+  /// 经 `pinDiary` 置顶过的日记（不改列表，只记录写入）。
+  final Set<String> pinned = <String>{};
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
   List<DiaryWithTags> get visible => <DiaryWithTags>[
@@ -115,6 +118,11 @@ class WideDiaryDatabase extends AppDatabase {
     bool touchUpdatedAt = true,
   }) async {
     store.softDelete(diaryId);
+  }
+
+  @override
+  Future<void> pinDiary(String diaryId, {bool touchUpdatedAt = false}) async {
+    store.pinned.add(diaryId);
   }
 
   @override

@@ -336,11 +336,32 @@ class DiariesPageController {
     if (!_state.mounted || !confirmed) {
       return;
     }
+    await _deleteDiaries(targetIds, fromSelection: true);
+  }
 
+  /// 删除一篇（桌面右键菜单、双栏里的 Delete 键）：确认（与预览页同一个
+  /// 对话框）后与多选删除同一条链路（收起动画 → 写库 → 撤销），不动多选
+  /// 状态。正在右栏阅读的是它时，选中先移到下一篇（与右栏里删除一致）。
+  Future<void> deleteDiary(String diaryId) async {
+    final confirmed = await confirmDiaryPreviewDelete(_state.context);
+    if (!_state.mounted || !confirmed) {
+      return;
+    }
+    _state._readingSelection.moveAwayFrom(diaryId);
+    await _deleteDiaries(<String>[diaryId], fromSelection: false);
+  }
+
+  /// 删除主流程：[fromSelection] 为多选入口（先清空选择，失败时恢复选择）。
+  Future<void> _deleteDiaries(
+    List<String> targetIds, {
+    required bool fromSelection,
+  }) async {
     // 先在 UI 层启动“收起并隐藏”动画，再执行真实删除。
-    _state.setState(() {
-      _state._selectedDiaryIds.clear();
-    });
+    if (fromSelection) {
+      _state.setState(() {
+        _state._selectedDiaryIds.clear();
+      });
+    }
     transitionCoordinator.startHideAnimations(targetIds);
 
     // 删除流程不更新 modified 时间，避免撤销后排序错位。
@@ -370,16 +391,20 @@ class DiariesPageController {
         return;
       }
       transitionCoordinator.revealDiaries(targetIds, animate: true);
-      _state.setState(() {
-        _state._selectedDiaryIds.addAll(targetIds);
-      });
+      if (fromSelection) {
+        _state.setState(() {
+          _state._selectedDiaryIds.addAll(targetIds);
+        });
+      }
       await feedback.showInfoSnackBar(_state.context.l10n.autoT0073);
       return;
     }
 
     final l10n = _state.context.l10n;
     final undoRequested = await feedback.showUndoSnackBar(
-      message: l10n.autoT0074(targetIds.length.toString()),
+      message: fromSelection
+          ? l10n.autoT0074(targetIds.length.toString())
+          : l10n.autoT0075,
       duration: _DiariesPage._deleteUndoSnackDuration,
     );
 
@@ -405,6 +430,54 @@ class DiariesPageController {
       _state._appearingDiaryIds.removeAll(targetIds);
     });
     transitionCoordinator.clearTransitionTimers(targetIds);
+  }
+
+  /// 桌面右键菜单的动作：编辑、置顶、日记本、归档与删除，各自接到与多选栏、
+  /// 右栏相同的写入与撤销。日记本功能关闭时没有日记本一项；在普通日记本里
+  /// 是“移动到日记本…”，其他范围是“收进日记本…”。
+  DiaryCardMenuActions menuActions({required bool notebooksEnabled}) {
+    final inManualNotebook =
+        _state._membershipController.currentManualNotebook != null;
+    return DiaryCardMenuActions(
+      onEdit: (diary) => unawaited(editDiary(diary.diary.diaryId)),
+      onTogglePin: (diary) => unawaited(
+        setDiaryPinned(
+          _state.context,
+          _state.ref,
+          diary.diary.diaryId,
+          pinned: !diary.diary.isPinned,
+        ),
+      ),
+      onNotebooks: notebooksEnabled
+          ? (diary) => unawaited(
+              _state._membershipController.pickNotebooksForDiary(
+                diary.diary.diaryId,
+              ),
+            )
+          : null,
+      notebooksMovesDiary: notebooksEnabled && inManualNotebook,
+      onToggleArchive: (diary) => unawaited(
+        _archiveDiaries(
+          <String>[diary.diary.diaryId],
+          clearSelection: false,
+          showUndoSnack: true,
+        ),
+      ),
+      onDelete: (diary) => unawaited(deleteDiary(diary.diary.diaryId)),
+    );
+  }
+
+  /// 编辑一篇（右键菜单）：与右栏的“编辑”、Enter 同一流程，编辑页里删除时
+  /// 按右栏删除收尾（选中移到下一篇，给撤销）。
+  Future<void> editDiary(String diaryId) async {
+    final deleted = await openDiaryEditorFromPreview(
+      _state.context,
+      _state.ref,
+      diaryId,
+    );
+    if (_state.mounted && deleted) {
+      _state._readingSelection.handleDeleted(diaryId);
+    }
   }
 
   /// 导出所选日记：按 id 从库中取最新的完整详情（列表项可能只是分页

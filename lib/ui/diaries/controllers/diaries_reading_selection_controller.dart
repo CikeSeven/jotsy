@@ -244,20 +244,28 @@ class DiariesReadingSelectionController {
   /// 顺序在删除写库之后、列表数据推送之前读取，这时被删的一篇通常还在列表
   /// 里；已经不在时（推送更快）选中由 [syncWithList] 清除。
   void handleDeleted(String diaryId) {
-    if (_state._readingDiaryId == diaryId) {
-      final order = _state._controller.readingOrder();
-      final index = order.indexWhere(
-        (DiaryWithTags item) => item.diary.diaryId == diaryId,
-      );
-      String? next;
-      if (index >= 0 && index + 1 < order.length) {
-        next = order[index + 1].diary.diaryId;
-      } else if (index > 0) {
-        next = order[index - 1].diary.diaryId;
-      }
-      _state.setState(() => _state._readingDiaryId = next);
-    }
+    moveAwayFrom(diaryId);
     unawaited(_state._controller.offerUndoForDeletedDiary(diaryId));
+  }
+
+  /// 选中的是 [diaryId] 时把选中移到列表里的下一篇（它是最后一篇时移到
+  /// 上一篇，都没有时清除）；其他情况不动。删除前后都可调用（见
+  /// [handleDeleted] 与 `DiariesPageController.deleteDiary`）。
+  void moveAwayFrom(String diaryId) {
+    if (_state._readingDiaryId != diaryId) {
+      return;
+    }
+    final order = _state._controller.readingOrder();
+    final index = order.indexWhere(
+      (DiaryWithTags item) => item.diary.diaryId == diaryId,
+    );
+    String? next;
+    if (index >= 0 && index + 1 < order.length) {
+      next = order[index + 1].diary.diaryId;
+    } else if (index > 0) {
+      next = order[index - 1].diary.diaryId;
+    }
+    _state.setState(() => _state._readingDiaryId = next);
   }
 
   /// 列表拿到新数据后对一次选中：选中的一篇不在 [items] 里了（换了筛选、

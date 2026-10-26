@@ -7698,4 +7698,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryEditorCommandTypeToFilter => '继续输入即可筛选';
+
+  @override
+  String get diaryCardMenuMoveToNotebook => '移动到日记本…';
+
+  @override
+  String get diaryCardMenuAddToNotebook => '收进日记本…';
 }

@@ -13,8 +13,10 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../notebooks/controllers/diary_notebook_pick_flow.dart';
 import '../../notebooks/controllers/notebook_quick_create_flows.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../controllers/diary_card_menu_flows.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
@@ -301,6 +303,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                                   onOpenEditor: _openPreview,
                                   onToggleSelection: (_, __) {},
                                   isSearchResultEmpty: true,
+                                  menuActions: _menuActions(),
                                 ),
                                 // 还有下一页时保留固定高度的槽位，指示器只在查询
                                 // 真正进行且超过 300ms 时出现：输入关键词触发的本地
@@ -535,6 +538,41 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
           sequence: sequence,
         ),
       ),
+    );
+  }
+
+  /// 桌面右键菜单：搜索结果没有收起动画，写入后由结果查询自己刷新（归档的
+  /// 日记也可能在结果里，按这篇的状态给“归档 / 取消归档”）。
+  DiaryCardMenuActions _menuActions() {
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    return DiaryCardMenuActions(
+      onEdit: (diary) =>
+          unawaited(editDiaryFromList(context, ref, diary.diary.diaryId)),
+      onTogglePin: (diary) => unawaited(
+        setDiaryPinned(
+          context,
+          ref,
+          diary.diary.diaryId,
+          pinned: !diary.diary.isPinned,
+        ),
+      ),
+      onNotebooks: notebooksEnabled
+          ? (diary) => unawaited(
+              pickNotebooksForDiary(context, ref, diaryId: diary.diary.diaryId),
+            )
+          : null,
+      onToggleArchive: (diary) => unawaited(
+        setDiaryArchivedWithUndo(
+          context,
+          ref,
+          diary.diary.diaryId,
+          archived: !diary.diary.isArchived,
+        ),
+      ),
+      onDelete: (diary) =>
+          unawaited(deleteDiaryWithUndo(context, ref, diary.diary.diaryId)),
     );
   }
 

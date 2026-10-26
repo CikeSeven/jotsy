@@ -39,8 +39,22 @@ class DiariesNotebookMembershipController {
 
   /// 收进日记本：三态选择器（初始状态按所选日记现在所在的本子算），一次
   /// 写入全部变化。
-  Future<void> addSelectedToNotebooks() async {
-    final targetIds = _state._selectedDiaryIds.toList(growable: false);
+  Future<void> addSelectedToNotebooks() => _addToNotebooks(
+    _state._selectedDiaryIds.toList(growable: false),
+    fromSelection: true,
+  );
+
+  /// 桌面右键菜单里一篇的日记本：在普通日记本里移到另一本，其他范围打开
+  /// 三态收录选择器；与多选同一套写入、收起动画与撤销，只是不动多选状态。
+  Future<void> pickNotebooksForDiary(String diaryId) =>
+      currentManualNotebook == null
+      ? _addToNotebooks(<String>[diaryId], fromSelection: false)
+      : _moveToNotebook(<String>[diaryId], fromSelection: false);
+
+  Future<void> _addToNotebooks(
+    List<String> targetIds, {
+    required bool fromSelection,
+  }) async {
     if (targetIds.isEmpty) return;
     final database = _state.ref.read(appDatabaseProvider);
     final membership = await database.getNotebookIdsForDiaries(targetIds);
@@ -63,6 +77,7 @@ class DiariesNotebookMembershipController {
         (current != null && result.remove.contains(current.id));
     await _run(
       targetIds,
+      fromSelection: fromSelection,
       animateOut: leaves,
       write: () => _ops.apply(result, targetIds),
       message:
@@ -81,6 +96,7 @@ class DiariesNotebookMembershipController {
     final l10n = _state.context.l10n;
     await _run(
       targetIds,
+      fromSelection: true,
       animateOut: true,
       write: () => _ops.remove(current.id, targetIds),
       message: l10n.notebookRemovedFrom(current.name, targetIds.length),
@@ -88,9 +104,16 @@ class DiariesNotebookMembershipController {
   }
 
   /// 移动到另一本：单选选择器（不列出当前这本），选定即移。
-  Future<void> moveSelectedToNotebook() async {
+  Future<void> moveSelectedToNotebook() => _moveToNotebook(
+    _state._selectedDiaryIds.toList(growable: false),
+    fromSelection: true,
+  );
+
+  Future<void> _moveToNotebook(
+    List<String> targetIds, {
+    required bool fromSelection,
+  }) async {
     final current = currentManualNotebook;
-    final targetIds = _state._selectedDiaryIds.toList(growable: false);
     if (current == null || targetIds.isEmpty) return;
     final l10n = _state.context.l10n;
     final result = await showNotebookPickerSheet(
@@ -105,6 +128,7 @@ class DiariesNotebookMembershipController {
     final target = notebooks.where((n) => n.id == targetId).firstOrNull;
     await _run(
       targetIds,
+      fromSelection: fromSelection,
       animateOut: true,
       write: () =>
           _ops.move(fromId: current.id, toId: targetId, diaryIds: targetIds),
@@ -115,13 +139,17 @@ class DiariesNotebookMembershipController {
   }
 
   /// 公共流程：退出多选 →（需要时）收起卡片 → 写库 → 撤销提示。
+  /// [fromSelection] 为 false（右键菜单的单篇）时不动多选状态。
   Future<void> _run(
     List<String> targetIds, {
+    required bool fromSelection,
     required bool animateOut,
     required Future<NotebookMembershipUndo> Function() write,
     required String message,
   }) async {
-    _state.setState(_state._selectedDiaryIds.clear);
+    if (fromSelection) {
+      _state.setState(_state._selectedDiaryIds.clear);
+    }
     if (animateOut) {
       transitionCoordinator.startHideAnimations(targetIds);
     }
@@ -134,7 +162,9 @@ class DiariesNotebookMembershipController {
       if (animateOut) {
         transitionCoordinator.revealDiaries(targetIds, animate: true);
       }
-      _state.setState(() => _state._selectedDiaryIds.addAll(targetIds));
+      if (fromSelection) {
+        _state.setState(() => _state._selectedDiaryIds.addAll(targetIds));
+      }
       await feedback.showInfoSnackBar(_state.context.l10n.notebookActionFailed);
       return;
     }

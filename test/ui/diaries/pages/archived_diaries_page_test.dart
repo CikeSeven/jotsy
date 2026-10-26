@@ -1,4 +1,5 @@
 import 'package:drift/native.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -107,6 +108,29 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await _unmount(tester);
   });
+
+  testWidgets('desktop right-click offers unarchive and it unarchives', (
+    tester,
+  ) async {
+    await _pumpPage(
+      tester,
+      const ArchivedDiariesPage(),
+      prepare: (db, id) => db.archiveDiary(id),
+    );
+    await tester.tap(
+      _storedCard(),
+      buttons: kSecondaryMouseButton,
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('归档'), findsNothing);
+    await tester.tap(find.text('取消归档'));
+    await tester.pumpAndSettle();
+    expect(find.byType(EmptyHint), findsOneWidget);
+    expect(find.text('已取消归档 1 条日记'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    await _unmount(tester);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets('recycle bin restore collapses the row then shows empty state', (
     tester,

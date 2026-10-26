@@ -16,7 +16,12 @@ import 'package:node_diary/ui/widgets/empty_hint.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
+import '../../notebooks/controllers/diary_notebook_pick_flow.dart';
+import '../../settings/providers/app_features_provider.dart';
+import '../controllers/diary_card_menu_flows.dart';
+import '../controllers/diary_preview_edit_flow.dart';
 import '../providers/diary_card_style_provider.dart';
+import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../sections/diary_head_section.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -91,6 +96,34 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
     return diaries
         .where((diary) => !_sweptAwayDiaryIds.contains(diary.diary.diaryId))
         .toList(growable: false);
+  }
+
+  /// 桌面右键菜单：取消归档与删除带本页的收起 / 出现动画（见控制器）。
+  DiaryCardMenuActions _menuActions() {
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    return DiaryCardMenuActions(
+      onEdit: (diary) =>
+          unawaited(_controller.editDiaryFromMenu(diary.diary.diaryId)),
+      onTogglePin: (diary) => unawaited(
+        setDiaryPinned(
+          context,
+          ref,
+          diary.diary.diaryId,
+          pinned: !diary.diary.isPinned,
+        ),
+      ),
+      onNotebooks: notebooksEnabled
+          ? (diary) => unawaited(
+              pickNotebooksForDiary(context, ref, diaryId: diary.diary.diaryId),
+            )
+          : null,
+      onToggleArchive: (diary) =>
+          unawaited(_controller.unarchiveDiaryFromMenu(diary.diary.diaryId)),
+      onDelete: (diary) =>
+          unawaited(_controller.deleteDiaryFromMenu(diary.diary.diaryId)),
+    );
   }
 
   @override
@@ -260,6 +293,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                       ),
                                     ),
                                     swipeActionIcon: FontAwesomeIcons.boxOpen,
+                                    menuActions: _menuActions(),
                                   ),
                                 ),
                               ],

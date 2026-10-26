@@ -10977,5 +10977,9 @@
   "diaryEditorEmptyLineHint": "输入 / 插入区块",
   "@diaryEditorEmptyLineHint": {"description": "正文中间光标所在空行的占位提示，提醒可以用 / 命令插入区块。"},
   "diaryEditorCommandTypeToFilter": "继续输入即可筛选",
-  "@diaryEditorCommandTypeToFilter": {"description": "正文 / 命令菜单底部的说明：在 / 后接着输入文字会筛选命令。"}
+  "@diaryEditorCommandTypeToFilter": {"description": "正文 / 命令菜单底部的说明：在 / 后接着输入文字会筛选命令。"},
+  "diaryCardMenuMoveToNotebook": "移动到日记本…",
+  "@diaryCardMenuMoveToNotebook": {"description": "桌面上日记卡片右键菜单的一项（在普通日记本里）：把这篇移到另一本日记本。"},
+  "diaryCardMenuAddToNotebook": "收进日记本…",
+  "@diaryCardMenuAddToNotebook": {"description": "桌面上日记卡片右键菜单的一项（全部日记、搜索与归档里）：打开收录选择器，选这篇所在的日记本。"}
 }

@@ -12,6 +12,7 @@ import 'package:node_diary/app/app_lock_layer.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
@@ -279,14 +280,20 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
           baseScaler: mediaQuery.textScaler,
           factor: fontScale,
         );
+        final themedChild = mediaQuery.disableAnimations
+            ? Theme(
+                data: ExpressiveControls.withoutMotion(Theme.of(context)),
+                child: child,
+              )
+            : child;
         final scaledChild = MediaQuery(
           data: mediaQuery.copyWith(textScaler: effectiveTextScaler),
-          child: mediaQuery.disableAnimations
-              ? Theme(
-                  data: ExpressiveControls.withoutMotion(Theme.of(context)),
-                  child: child,
-                )
-              : child,
+          // 桌面窗口（如 Linux GTK）背景是透明的：路由淡入淡出时最底层页面
+          // 半透明，下面又没有不透明的东西，桌面壁纸会透出来。垫一层当前主题
+          // 的 surface 色兜底；移动端窗口自带不透明背景，保持原样不加。
+          child: AppPlatform.isDesktop
+              ? ColoredBox(color: theme.colorScheme.surface, child: themedChild)
+              : themedChild,
         );
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: systemOverlayStyle,

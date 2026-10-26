@@ -3,14 +3,14 @@
 // 输入：导航项（最后一项为设置，固定在栏底）、选中项、点按回调、已解析的
 // 首页栏样式与顶部的新建按钮；输出：96dp 宽、铺满高度的竖栏，无副作用。
 //
-// - 底色一律为样式的不透明等效色 [HomeBarResolvedStyle.solidFill]，从不画
+// - 底色与手机底栏是同一块表面（见 [HomeNavRail.backgroundOf]），但从不画
 //   玻璃：侧边栏下面没有会滚过去的内容，模糊没有意义；也不画分隔线；
 // - 导航项与底栏同一套视觉口径：颜色经 [HomeNavColors.resolve]，指示器
 //   形态（胶囊 / 色块 / 无）、文字模式、图标大小、文字间距、色块内边距都读
 //   [HomeBarResolvedStyle]，选中动画复用 [HomeNavSelectionAnimator] 与
 //   [HomeNavIndicator]；
-// - 指示器区域有悬停 8% / 焦点 12% 的状态层与点击光标，文字不显示时给
-//   长按 / 悬停提示；
+// - 指示器区域有悬停 8% / 焦点 12% 的状态层（光标随平台默认，与应用里
+//   其他按钮一致），文字不显示时给长按 / 悬停提示；
 // - 高度不够（矮窗口、超大字体）时整列可滚动，不溢出。
 
 import 'package:flutter/material.dart';
@@ -43,8 +43,27 @@ class HomeNavRail extends StatelessWidget {
   /// 新建按钮与第一个导航项之间的距离。
   static const double leadingGap = 28;
 
-  /// 相邻导航项之间的距离。
-  static const double itemSpacing = 4;
+  /// 相邻导航项之间的距离（不含导航项自身上下的 [itemPadding]）：上一项
+  /// 文字底到下一项指示器顶共 itemSpacing + 2 × itemPadding = 16。
+  static const double itemSpacing = 12;
+
+  /// 每个导航项上下各自的内边距，算进点按区域。栏顶 / 栏底的留白与新建按钮
+  /// 下方的间距扣掉它，指示器到新建按钮仍是 [leadingGap]、设置的文字到栏底
+  /// 仍是 [edgePadding]。
+  static const double itemPadding = 2;
+
+  /// 侧边栏底色：与手机底栏实际画出的颜色相同，两种宽度下是同一块表面。
+  /// - 实色：底栏（BottomNav）的底色，即 navigationBarTheme 的背景色（亮色
+  ///   与页面画布同色，暗色 surfaceContainer）；
+  /// - 玻璃：玻璃底色（含自定义颜色）的不透明等效色 solidFill——侧边栏不
+  ///   模糊，与高对比度下的玻璃底栏同一颜色。
+  static Color backgroundOf(ThemeData theme, HomeBarResolvedStyle style) {
+    if (style.isGlass) {
+      return style.solidFill;
+    }
+    return theme.navigationBarTheme.backgroundColor ??
+        theme.colorScheme.surfaceContainer;
+  }
 
   /// 导航项（至少一项）；最后一项（设置）固定在栏底，其余从上往下排。
   final List<BottomNavItem> items;
@@ -84,7 +103,7 @@ class HomeNavRail extends StatelessWidget {
         const SizedBox(height: edgePadding),
         if (leading != null) ...<Widget>[
           leading!,
-          const SizedBox(height: leadingGap),
+          const SizedBox(height: leadingGap - itemPadding),
         ],
         for (var i = 0; i < count - 1; i++) ...<Widget>[
           if (i > 0) const SizedBox(height: itemSpacing),
@@ -95,7 +114,7 @@ class HomeNavRail extends StatelessWidget {
           const SizedBox(height: itemSpacing),
           item(count - 1),
         ],
-        const SizedBox(height: edgePadding),
+        const SizedBox(height: edgePadding - itemPadding),
       ],
     );
 
@@ -103,7 +122,7 @@ class HomeNavRail extends StatelessWidget {
       slot: LaunchRevealSlot.navigation,
       // 透明度以外的材质：Material 承载指示器（Ink）与水波纹。
       child: Material(
-        color: style.solidFill,
+        color: backgroundOf(Theme.of(context), style),
         child: SizedBox(
           width: AppContentWidth.navRail,
           // 只避让侧边栏所在一侧（从右到左的语言下栏在右侧）与上下的系统
@@ -366,15 +385,13 @@ class _HomeNavRailDestinationState extends State<HomeNavRailDestination> {
       focusColor: stateColor.withValues(
         alpha: HomeNavRailDestination.focusOpacity,
       ),
-      // 明确用手形光标：Flutter 新版在桌面端对按钮默认不换光标，侧边栏的
-      // 导航项需要让鼠标用户看出可点。
-      mouseCursor: WidgetStateMouseCursor.clickable,
       onTap: widget.onTap,
       child: SizedBox(
         width: double.infinity,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: HomeNavRailDestination.labelSideInset,
+            vertical: HomeNavRail.itemPadding,
           ),
           child: Center(child: content),
         ),

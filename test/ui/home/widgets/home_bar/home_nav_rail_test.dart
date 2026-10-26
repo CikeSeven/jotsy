@@ -35,13 +35,14 @@ Future<void> _pump(
   VoidCallback? onCreate,
   Size size = const Size(800, 600),
   double textScale = 1,
+  Brightness brightness = Brightness.light,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     MaterialApp(
-      theme: expressiveTestTheme(Brightness.light),
+      theme: expressiveTestTheme(brightness),
       home: MediaQuery.withClampedTextScaling(
         minScaleFactor: textScale,
         maxScaleFactor: textScale,
@@ -69,24 +70,51 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets(
-    'the rail is 96 wide, filled with the solid fill and full height',
-    (tester) async {
-      final style = _style(material: HomeBarMaterial.glass);
-      await _pump(tester, style: style);
+  testWidgets('a solid rail paints the same fill as the phone bottom bar', (
+    tester,
+  ) async {
+    for (final brightness in Brightness.values) {
+      final theme = expressiveTestTheme(brightness);
+      final style = HomeBarResolvedStyle.resolve(
+        HomeBarStyle.defaults,
+        theme.colorScheme,
+      );
+      await _pump(tester, style: style, brightness: brightness);
       final rail = find.byType(HomeNavRail);
       expect(tester.getSize(rail), const Size(96, 600));
       final material = tester.widget<Material>(
         find.descendant(of: rail, matching: find.byType(Material)).first,
       );
-      // 玻璃样式在侧边栏上也只用不透明的等效色，从不模糊。
-      expect(material.color, style.solidFill);
+      // 与 BottomNav 的底色同源。
       expect(
-        find.descendant(of: rail, matching: find.byType(BackdropFilter)),
-        findsNothing,
+        material.color,
+        theme.navigationBarTheme.backgroundColor,
+        reason: '$brightness',
       );
-    },
-  );
+    }
+  });
+
+  testWidgets('a glass rail uses the opaque tint, custom colours included, '
+      'and never blurs', (tester) async {
+    final style = HomeBarResolvedStyle.resolve(
+      const HomeBarStyle(
+        material: HomeBarMaterial.glass,
+        tint: HomeBarTint.custom,
+        tintColor: 0xFF3366AA,
+      ),
+      expressiveTestTheme(Brightness.light).colorScheme,
+    );
+    await _pump(tester, style: style);
+    final rail = find.byType(HomeNavRail);
+    final material = tester.widget<Material>(
+      find.descendant(of: rail, matching: find.byType(Material)).first,
+    );
+    expect(material.color, style.solidFill);
+    expect(
+      find.descendant(of: rail, matching: find.byType(BackdropFilter)),
+      findsNothing,
+    );
+  });
 
   testWidgets('the create button sits 16 below the top and is 56 square', (
     tester,
@@ -109,9 +137,21 @@ void main() {
     final diaries = tester.getRect(find.text('Diaries'));
     final calendar = tester.getRect(find.text('Calendar'));
     final settings = tester.getRect(find.text('Settings'));
-    // 指示器（32 高）在 FAB 下方 28 处，文字再往下。
-    expect(diaries.top, greaterThan(fabBottom.dy + 28 + 32));
-    expect(calendar.top, greaterThan(diaries.bottom));
+    final indicators = find.byType(HomeNavIndicator);
+    // 第一个指示器在 FAB 下方 28 处。
+    expect(
+      tester.getRect(indicators.at(0)).top,
+      closeTo(fabBottom.dy + 28, 0.01),
+    );
+    // 上一项文字底到下一项指示器顶 16。
+    expect(
+      tester.getRect(indicators.at(1)).top - diaries.bottom,
+      closeTo(16, 0.01),
+    );
+    expect(
+      tester.getRect(indicators.at(2)).top - calendar.bottom,
+      closeTo(16, 0.01),
+    );
     expect(settings.bottom, closeTo(600 - 16, 0.01));
   });
 
@@ -188,7 +228,7 @@ void main() {
   });
 
   testWidgets(
-    'hovering a destination shows a pointer cursor on desktop',
+    'hovering a destination keeps the platform default cursor',
     variant: TargetPlatformVariant.desktop(),
     (tester) async {
       await _pump(tester);
@@ -202,7 +242,7 @@ void main() {
       await tester.pump();
       expect(
         RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
-        SystemMouseCursors.click,
+        SystemMouseCursors.basic,
       );
     },
   );

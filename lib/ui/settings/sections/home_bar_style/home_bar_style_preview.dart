@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../app/theme/app_radii.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../app/theme/expressive_surfaces.dart';
@@ -104,6 +105,9 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
     );
   }
 
+  /// 宽屏并排时手机画框的最大宽度。
+  static const double _phoneFrameMaxWidth = 412;
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
@@ -119,7 +123,26 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
             padding: EdgeInsets.fromLTRB(16, 4, 16, 12 + widget.bottomPadding),
             child: Theme(
               data: _themeFor(appTheme, brightness),
-              child: Builder(builder: _buildFrame),
+              // 并排布局（宽屏）时预览仍是手机首页：样式塑造的是底栏 / 悬浮
+              // 胶囊，宽窗口的侧边栏只借用实色与指示器颜色。画框最宽
+              // [_phoneFrameMaxWidth] 并在预览栏里水平居中，高度照常铺满；
+              // 窄屏（上下布局）不变。
+              child: widget.showToolbar
+                  ? CenteredContent(
+                      maxWidth: _phoneFrameMaxWidth,
+                      // 画框里的卡片列表按屏宽解析样式：把 MediaQuery 的尺寸
+                      // 换成画框尺寸，卡片按手机宽度排版。
+                      child: LayoutBuilder(
+                        builder: (BuildContext context, BoxConstraints box) =>
+                            MediaQuery(
+                              data: MediaQuery.of(
+                                context,
+                              ).copyWith(size: box.biggest),
+                              child: Builder(builder: _buildFrame),
+                            ),
+                      ),
+                    )
+                  : Builder(builder: _buildFrame),
             ),
           ),
         ),

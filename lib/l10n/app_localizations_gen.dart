@@ -14594,10 +14594,10 @@ abstract class AppLocalizations {
   /// **'Cards & groups'**
   String get appSurfaceComponentCards;
 
-  /// 背景与材质设置：组件类别，按钮、输入框等小控件。
+  /// 背景与材质设置：组件类别，按钮组、输入框、FAB 等小控件与提示条（SnackBar）。
   ///
   /// In en, this message translates to:
-  /// **'Small controls'**
+  /// **'Controls & toasts'**
   String get appSurfaceComponentControls;
 
   /// 背景与材质设置：组件材质覆盖，跟随整体风格。

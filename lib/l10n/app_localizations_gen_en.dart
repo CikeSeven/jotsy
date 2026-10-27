@@ -8914,7 +8914,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appSurfaceComponentCards => 'Cards & groups';
 
   @override
-  String get appSurfaceComponentControls => 'Small controls';
+  String get appSurfaceComponentControls => 'Controls & toasts';
 
   @override
   String get appSurfaceOverrideFollow => 'Follow';

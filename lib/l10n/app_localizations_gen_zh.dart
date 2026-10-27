@@ -7978,7 +7978,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appSurfaceComponentCards => '卡片与分组';
 
   @override
-  String get appSurfaceComponentControls => '小控件';
+  String get appSurfaceComponentControls => '小控件与提示条';
 
   @override
   String get appSurfaceOverrideFollow => '跟随';

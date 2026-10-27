@@ -12,7 +12,13 @@ typedef DiaryCardRange = StyleRange;
 abstract final class DiaryCardStyleLimits {
   // 表面。
   static const cornerRadius = DiaryCardRange(0, 40, 1);
-  static const opacity = DiaryCardRange(0.5, 1, 0.05);
+
+  /// 下限为 0：玻璃材质的卡片常用很低的不透明度，实色卡片同样允许（只放宽
+  /// 下限，旧数据都在新范围内，不受影响）。
+  static const opacity = DiaryCardRange(0, 1, 0.05);
+
+  /// 玻璃材质的背景模糊半径（sigma）；0 即只有半透明底色。
+  static const blurSigma = DiaryCardRange(0, 40, 1);
   static const borderWidth = DiaryCardRange(0, 4, 0.2);
   static const accentWidth = DiaryCardRange(2, 12, 1);
   static const shadowElevation = DiaryCardRange(0, 24, 1);

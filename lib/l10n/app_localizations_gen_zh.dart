@@ -3041,6 +3041,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStylePresetMoodDesc => '卡片底色与描边随当天心情变化';
 
   @override
+  String get diaryCardStylePresetGlass => '玻璃';
+
+  @override
+  String get diaryCardStylePresetGlassDesc => '半透明磨砂卡片，透出页面背景图';
+
+  @override
+  String get diaryCardStyleMaterial => '材质';
+
+  @override
+  String get diaryCardStyleMaterialSolid => '实色';
+
+  @override
+  String get diaryCardStyleMaterialGlass => '玻璃';
+
+  @override
+  String get diaryCardStyleBlur => '模糊';
+
+  @override
+  String get diaryCardStyleBlurSubtitle => '页面设置了背景图时才有模糊效果';
+
+  @override
   String styleEditorApplied(String name) {
     return '已套用「$name」';
   }
@@ -7782,4 +7803,230 @@ class AppLocalizationsZh extends AppLocalizations {
   String backupImportDayMoodOverwriteResult(int added, int replaced) {
     return '心情：新增 $added 天，覆盖 $replaced 天';
   }
+
+  @override
+  String get appSurfaceTitle => '背景与材质';
+
+  @override
+  String get appSurfaceEntryDefault => '默认';
+
+  @override
+  String get appSurfaceEntryImage => '图片背景';
+
+  @override
+  String get appSurfaceEntryColor => '纯色背景';
+
+  @override
+  String get appSurfaceEntryGlass => '玻璃组件';
+
+  @override
+  String get appSurfaceEntryClassic => '经典组件';
+
+  @override
+  String appSurfaceEntryAreas(int count) {
+    return '$count 个区域单独设置';
+  }
+
+  @override
+  String get appSurfaceTabBackground => '背景';
+
+  @override
+  String get appSurfaceTabGlass => '玻璃';
+
+  @override
+  String get appSurfaceAreaGlobal => '全局';
+
+  @override
+  String get appSurfaceAreaDiaries => '日记';
+
+  @override
+  String get appSurfaceAreaCalendar => '日历';
+
+  @override
+  String get appSurfaceAreaExplore => '探索';
+
+  @override
+  String get appSurfaceAreaSettings => '设置';
+
+  @override
+  String get appSurfaceAreaEditor => '编辑';
+
+  @override
+  String get appSurfaceAreaPreview => '预览';
+
+  @override
+  String get appSurfaceAreaOther => '其他';
+
+  @override
+  String appSurfaceAreaCustomized(String area) {
+    return '$area，已单独设置';
+  }
+
+  @override
+  String get appSurfaceAreaModeFollow => '跟随全局';
+
+  @override
+  String get appSurfaceAreaModeOff => '不显示';
+
+  @override
+  String get appSurfaceAreaModeCustom => '单独设置';
+
+  @override
+  String appSurfaceAreaFollowNote(String kind) {
+    return '跟随全局背景，当前全局为：$kind。';
+  }
+
+  @override
+  String get appSurfaceAreaOffNote => '这个区域不显示背景，沿用主题底色。';
+
+  @override
+  String get appSurfaceAreaCustomNote => '这个区域使用下面单独设置的背景。';
+
+  @override
+  String get appSurfaceAreaPreviewNote => '仅在预览页纸张为“跟随主题”时显示。';
+
+  @override
+  String get appSurfaceGlobalBackground => '全局背景';
+
+  @override
+  String get appSurfaceGlobalFooter => '各区域默认跟随全局背景，可在上方选择区域单独设置。';
+
+  @override
+  String get appSurfaceAreaBackground => '单独设置的背景';
+
+  @override
+  String get appSurfaceKindNone => '无';
+
+  @override
+  String get appSurfaceKindColor => '颜色';
+
+  @override
+  String get appSurfaceKindImage => '图片';
+
+  @override
+  String get appSurfaceBackgroundColor => '背景颜色';
+
+  @override
+  String get appSurfaceImagePick => '选择图片';
+
+  @override
+  String get appSurfaceImageChange => '更换';
+
+  @override
+  String get appSurfaceImageRemove => '移除';
+
+  @override
+  String get appSurfaceImageEmpty => '还没有选择图片';
+
+  @override
+  String get appSurfaceImageMissing => '图片文件已不存在，请重新选择。';
+
+  @override
+  String get appSurfaceImageUnavailable => '无法读取所选图片，请选择存在本机上的图片。';
+
+  @override
+  String get appSurfaceImageImportFailed => '图片导入失败，请重试。';
+
+  @override
+  String get appSurfaceFocus => '焦点';
+
+  @override
+  String get appSurfaceFocusHint => '点按或拖动图片，选择裁切时保留的位置。';
+
+  @override
+  String appSurfaceFocusSemantics(String x, String y) {
+    return '背景焦点：横向 $x%，纵向 $y%';
+  }
+
+  @override
+  String get appSurfaceBlur => '模糊';
+
+  @override
+  String get appSurfaceScrimLight => '浅色遮罩';
+
+  @override
+  String get appSurfaceScrimDark => '深色遮罩';
+
+  @override
+  String get appSurfaceGlassStyle => '组件风格';
+
+  @override
+  String get appSurfaceGlassClassic => '经典';
+
+  @override
+  String get appSurfaceGlassGlass => '玻璃';
+
+  @override
+  String get appSurfaceGlassStyleFooter => '玻璃让组件透出下方的背景与内容，经典保持原来的实色。';
+
+  @override
+  String get appSurfaceGlassPerComponent => '分别设置';
+
+  @override
+  String get appSurfaceComponentTopBars => '二级页顶栏';
+
+  @override
+  String get appSurfaceComponentToolbar => '编辑器工具栏';
+
+  @override
+  String get appSurfaceComponentSheets => '底部面板';
+
+  @override
+  String get appSurfaceComponentDialogs => '对话框';
+
+  @override
+  String get appSurfaceComponentCards => '卡片与分组';
+
+  @override
+  String get appSurfaceComponentControls => '小控件';
+
+  @override
+  String get appSurfaceOverrideFollow => '跟随';
+
+  @override
+  String appSurfaceOverrideFollowResult(String material) {
+    return '跟随（$material）';
+  }
+
+  @override
+  String get appSurfaceGlassTexture => '玻璃质感';
+
+  @override
+  String get appSurfaceGlassOpacity => '不透明度';
+
+  @override
+  String get appSurfaceGlassTint => '底色';
+
+  @override
+  String get appSurfaceGlassTintNeutral => '中性';
+
+  @override
+  String get appSurfaceGlassTintTheme => '主题色';
+
+  @override
+  String get appSurfaceGlassTintColor => '玻璃底色';
+
+  @override
+  String get appSurfaceGlassBorder => '描边';
+
+  @override
+  String get appSurfaceGlassBorderSubtitle => '在与底色相近的背景上勾出组件边缘';
+
+  @override
+  String get appSurfaceGlassHighContrast => '高对比度模式下玻璃自动改为不透明。';
+
+  @override
+  String get appSurfacePreviewLabel => '背景与材质预览';
+
+  @override
+  String get appSurfacePreviewCardTitle1 => '午后的散步';
+
+  @override
+  String get appSurfacePreviewCardBody1 => '阳光正好，沿着河边走了一大圈。';
+
+  @override
+  String get appSurfacePreviewCardTitle2 => '读书笔记';
+
+  @override
+  String get appSurfacePreviewCardBody2 => '摘下几句喜欢的话，留着以后再读。';
 }

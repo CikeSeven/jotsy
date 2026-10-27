@@ -16,6 +16,8 @@ class DiaryCardSurfaceSpec {
     this.gradientColors,
     this.gradientBegin = AlignmentDirectional.topStart,
     this.gradientEnd = AlignmentDirectional.bottomEnd,
+    this.glass = false,
+    this.blurSigma = 0,
   });
 
   /// 表面底色（已含置顶着色与不透明度）；有渐变时作为渐变起点。
@@ -32,6 +34,14 @@ class DiaryCardSurfaceSpec {
   final AlignmentGeometry gradientBegin;
   final AlignmentGeometry gradientEnd;
 
+  /// 玻璃材质：底色（已含不透明度）之下再模糊页面背景。是否真的模糊还要
+  /// 看宿主页面（有背景图、有共享背景键、非高对比度），由
+  /// `DiarySelectionSurface` 决定。
+  final bool glass;
+
+  /// 玻璃的模糊半径（已夹紧）；实色时为 0。
+  final double blurSigma;
+
   @override
   bool operator ==(Object other) {
     return other is DiaryCardSurfaceSpec &&
@@ -42,7 +52,9 @@ class DiaryCardSurfaceSpec {
         listEquals(other.shadows, shadows) &&
         listEquals(other.gradientColors, gradientColors) &&
         other.gradientBegin == gradientBegin &&
-        other.gradientEnd == gradientEnd;
+        other.gradientEnd == gradientEnd &&
+        other.glass == glass &&
+        other.blurSigma == blurSigma;
   }
 
   @override
@@ -55,5 +67,7 @@ class DiaryCardSurfaceSpec {
     gradientColors == null ? null : Object.hashAll(gradientColors!),
     gradientBegin,
     gradientEnd,
+    glass,
+    blurSigma,
   );
 }

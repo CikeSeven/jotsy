@@ -3424,6 +3424,29 @@ class AppLocalizationsEn extends AppLocalizations {
       'Card colors follow the mood of each entry';
 
   @override
+  String get diaryCardStylePresetGlass => 'Glass';
+
+  @override
+  String get diaryCardStylePresetGlassDesc =>
+      'Frosted translucent cards over the page background';
+
+  @override
+  String get diaryCardStyleMaterial => 'Material';
+
+  @override
+  String get diaryCardStyleMaterialSolid => 'Solid';
+
+  @override
+  String get diaryCardStyleMaterialGlass => 'Glass';
+
+  @override
+  String get diaryCardStyleBlur => 'Blur';
+
+  @override
+  String get diaryCardStyleBlurSubtitle =>
+      'Blur shows only on pages with a background image';
+
+  @override
   String styleEditorApplied(String name) {
     return 'Applied “$name”';
   }
@@ -8701,4 +8724,249 @@ class AppLocalizationsEn extends AppLocalizations {
   String backupImportDayMoodOverwriteResult(int added, int replaced) {
     return 'Day moods: $added added, $replaced overwritten';
   }
+
+  @override
+  String get appSurfaceTitle => 'Background & Material';
+
+  @override
+  String get appSurfaceEntryDefault => 'Default';
+
+  @override
+  String get appSurfaceEntryImage => 'Image background';
+
+  @override
+  String get appSurfaceEntryColor => 'Color background';
+
+  @override
+  String get appSurfaceEntryGlass => 'Glass components';
+
+  @override
+  String get appSurfaceEntryClassic => 'Classic components';
+
+  @override
+  String appSurfaceEntryAreas(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count areas set separately',
+      one: '1 area set separately',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appSurfaceTabBackground => 'Background';
+
+  @override
+  String get appSurfaceTabGlass => 'Glass';
+
+  @override
+  String get appSurfaceAreaGlobal => 'Global';
+
+  @override
+  String get appSurfaceAreaDiaries => 'Diaries';
+
+  @override
+  String get appSurfaceAreaCalendar => 'Calendar';
+
+  @override
+  String get appSurfaceAreaExplore => 'Explore';
+
+  @override
+  String get appSurfaceAreaSettings => 'Settings';
+
+  @override
+  String get appSurfaceAreaEditor => 'Editor';
+
+  @override
+  String get appSurfaceAreaPreview => 'Preview';
+
+  @override
+  String get appSurfaceAreaOther => 'Other';
+
+  @override
+  String appSurfaceAreaCustomized(String area) {
+    return '$area, set separately';
+  }
+
+  @override
+  String get appSurfaceAreaModeFollow => 'Follow global';
+
+  @override
+  String get appSurfaceAreaModeOff => 'None';
+
+  @override
+  String get appSurfaceAreaModeCustom => 'Custom';
+
+  @override
+  String appSurfaceAreaFollowNote(String kind) {
+    return 'Uses the global background (currently: $kind).';
+  }
+
+  @override
+  String get appSurfaceAreaOffNote =>
+      'This area shows no background and keeps the theme color.';
+
+  @override
+  String get appSurfaceAreaCustomNote =>
+      'This area uses its own background set below.';
+
+  @override
+  String get appSurfaceAreaPreviewNote =>
+      'Only shown when the preview page\'s paper follows the theme.';
+
+  @override
+  String get appSurfaceGlobalBackground => 'Global background';
+
+  @override
+  String get appSurfaceGlobalFooter =>
+      'Every area follows the global background unless you pick it above and set it separately.';
+
+  @override
+  String get appSurfaceAreaBackground => 'Own background';
+
+  @override
+  String get appSurfaceKindNone => 'None';
+
+  @override
+  String get appSurfaceKindColor => 'Color';
+
+  @override
+  String get appSurfaceKindImage => 'Image';
+
+  @override
+  String get appSurfaceBackgroundColor => 'Background color';
+
+  @override
+  String get appSurfaceImagePick => 'Choose image';
+
+  @override
+  String get appSurfaceImageChange => 'Change';
+
+  @override
+  String get appSurfaceImageRemove => 'Remove';
+
+  @override
+  String get appSurfaceImageEmpty => 'No image chosen yet';
+
+  @override
+  String get appSurfaceImageMissing =>
+      'The image file is missing. Choose it again.';
+
+  @override
+  String get appSurfaceImageUnavailable =>
+      'Couldn\'t read that image. Choose one stored on this device.';
+
+  @override
+  String get appSurfaceImageImportFailed =>
+      'Couldn\'t import the image. Try again.';
+
+  @override
+  String get appSurfaceFocus => 'Focus';
+
+  @override
+  String get appSurfaceFocusHint =>
+      'Tap or drag on the image to choose which part stays in view when it\'s cropped.';
+
+  @override
+  String appSurfaceFocusSemantics(String x, String y) {
+    return 'Background focus: $x% across, $y% down';
+  }
+
+  @override
+  String get appSurfaceBlur => 'Blur';
+
+  @override
+  String get appSurfaceScrimLight => 'Light mode veil';
+
+  @override
+  String get appSurfaceScrimDark => 'Dark mode veil';
+
+  @override
+  String get appSurfaceGlassStyle => 'Component style';
+
+  @override
+  String get appSurfaceGlassClassic => 'Classic';
+
+  @override
+  String get appSurfaceGlassGlass => 'Glass';
+
+  @override
+  String get appSurfaceGlassStyleFooter =>
+      'Glass lets the background and content show through components; Classic keeps them solid.';
+
+  @override
+  String get appSurfaceGlassPerComponent => 'Per component';
+
+  @override
+  String get appSurfaceComponentTopBars => 'Page top bars';
+
+  @override
+  String get appSurfaceComponentToolbar => 'Editor toolbar';
+
+  @override
+  String get appSurfaceComponentSheets => 'Bottom sheets';
+
+  @override
+  String get appSurfaceComponentDialogs => 'Dialogs';
+
+  @override
+  String get appSurfaceComponentCards => 'Cards & groups';
+
+  @override
+  String get appSurfaceComponentControls => 'Small controls';
+
+  @override
+  String get appSurfaceOverrideFollow => 'Follow';
+
+  @override
+  String appSurfaceOverrideFollowResult(String material) {
+    return 'Follow ($material)';
+  }
+
+  @override
+  String get appSurfaceGlassTexture => 'Glass texture';
+
+  @override
+  String get appSurfaceGlassOpacity => 'Opacity';
+
+  @override
+  String get appSurfaceGlassTint => 'Tint';
+
+  @override
+  String get appSurfaceGlassTintNeutral => 'Neutral';
+
+  @override
+  String get appSurfaceGlassTintTheme => 'Theme';
+
+  @override
+  String get appSurfaceGlassTintColor => 'Glass color';
+
+  @override
+  String get appSurfaceGlassBorder => 'Outline';
+
+  @override
+  String get appSurfaceGlassBorderSubtitle =>
+      'Outlines components on backgrounds close to their color';
+
+  @override
+  String get appSurfaceGlassHighContrast =>
+      'In high contrast mode, glass automatically turns opaque.';
+
+  @override
+  String get appSurfacePreviewLabel => 'Background and material preview';
+
+  @override
+  String get appSurfacePreviewCardTitle1 => 'An afternoon walk';
+
+  @override
+  String get appSurfacePreviewCardBody1 =>
+      'Sunny out, so I took a long loop along the river.';
+
+  @override
+  String get appSurfacePreviewCardTitle2 => 'Reading notes';
+
+  @override
+  String get appSurfacePreviewCardBody2 =>
+      'Saved a few lines I liked to read again later.';
 }

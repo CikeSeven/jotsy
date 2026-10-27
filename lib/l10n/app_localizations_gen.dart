@@ -5540,6 +5540,48 @@ abstract class AppLocalizations {
   /// **'Card colors follow the mood of each entry'**
   String get diaryCardStylePresetMoodDesc;
 
+  /// Diary card style settings: name of the “Glass” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get diaryCardStylePresetGlass;
+
+  /// Diary card style settings: one-line description of the “Glass” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Frosted translucent cards over the page background'**
+  String get diaryCardStylePresetGlassDesc;
+
+  /// Diary card style settings: title of the card surface material (solid / glass) choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Material'**
+  String get diaryCardStyleMaterial;
+
+  /// Diary card style settings: the “Solid” material option.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid'**
+  String get diaryCardStyleMaterialSolid;
+
+  /// Diary card style settings: the “Glass” material option (translucent, blurs the page background).
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get diaryCardStyleMaterialGlass;
+
+  /// Diary card style settings: background blur strength slider for the glass material.
+  ///
+  /// In en, this message translates to:
+  /// **'Blur'**
+  String get diaryCardStyleBlur;
+
+  /// Diary card style settings: note under the blur slider; blur is only visible on pages with a background image.
+  ///
+  /// In en, this message translates to:
+  /// **'Blur shows only on pages with a background image'**
+  String get diaryCardStyleBlurSubtitle;
+
   /// Diary card style settings: message after applying a preset or saved style (can be undone).
   ///
   /// In en, this message translates to:
@@ -14221,6 +14263,438 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Day moods: {added} added, {replaced} overwritten'**
   String backupImportDayMoodOverwriteResult(int added, int replaced);
+
+  /// 背景与材质设置：页面标题与外观页入口标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Background & Material'**
+  String get appSurfaceTitle;
+
+  /// 背景与材质入口副标题：全部为默认设置时。
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get appSurfaceEntryDefault;
+
+  /// 背景与材质入口副标题片段：全局背景是图片。
+  ///
+  /// In en, this message translates to:
+  /// **'Image background'**
+  String get appSurfaceEntryImage;
+
+  /// 背景与材质入口副标题片段：全局背景是纯色。
+  ///
+  /// In en, this message translates to:
+  /// **'Color background'**
+  String get appSurfaceEntryColor;
+
+  /// 背景与材质入口副标题片段：整体组件风格为玻璃。
+  ///
+  /// In en, this message translates to:
+  /// **'Glass components'**
+  String get appSurfaceEntryGlass;
+
+  /// 背景与材质入口副标题片段：整体组件风格为经典。
+  ///
+  /// In en, this message translates to:
+  /// **'Classic components'**
+  String get appSurfaceEntryClassic;
+
+  /// 背景与材质入口副标题片段：不跟随全局背景的区域个数。
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 area set separately} other{{count} areas set separately}}'**
+  String appSurfaceEntryAreas(int count);
+
+  /// 背景与材质设置：背景标签页。
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get appSurfaceTabBackground;
+
+  /// 背景与材质设置：玻璃（组件材质）标签页。
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get appSurfaceTabGlass;
+
+  /// 背景与材质设置：区域胶囊“全局”（全局背景）。
+  ///
+  /// In en, this message translates to:
+  /// **'Global'**
+  String get appSurfaceAreaGlobal;
+
+  /// 背景与材质设置：区域胶囊，首页日记 Tab。
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries'**
+  String get appSurfaceAreaDiaries;
+
+  /// 背景与材质设置：区域胶囊，日历 Tab。
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get appSurfaceAreaCalendar;
+
+  /// 背景与材质设置：区域胶囊，探索 Tab。
+  ///
+  /// In en, this message translates to:
+  /// **'Explore'**
+  String get appSurfaceAreaExplore;
+
+  /// 背景与材质设置：区域胶囊，设置 Tab 与设置子页。
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get appSurfaceAreaSettings;
+
+  /// 背景与材质设置：区域胶囊，编辑页、发表页与模板编辑页。
+  ///
+  /// In en, this message translates to:
+  /// **'Editor'**
+  String get appSurfaceAreaEditor;
+
+  /// 背景与材质设置：区域胶囊，日记预览页。
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get appSurfaceAreaPreview;
+
+  /// 背景与材质设置：区域胶囊，其余二级页。
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get appSurfaceAreaOther;
+
+  /// 背景与材质设置：带小圆点的区域胶囊的读屏标签。
+  ///
+  /// In en, this message translates to:
+  /// **'{area}, set separately'**
+  String appSurfaceAreaCustomized(String area);
+
+  /// 背景与材质设置：区域背景取值方式，跟随全局背景。
+  ///
+  /// In en, this message translates to:
+  /// **'Follow global'**
+  String get appSurfaceAreaModeFollow;
+
+  /// 背景与材质设置：区域背景取值方式，这个区域不画背景。
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get appSurfaceAreaModeOff;
+
+  /// 背景与材质设置：区域背景取值方式，用区域自己的背景。
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get appSurfaceAreaModeCustom;
+
+  /// 背景与材质设置：区域跟随全局时的说明，kind 为全局背景的类型名。
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the global background (currently: {kind}).'**
+  String appSurfaceAreaFollowNote(String kind);
+
+  /// 背景与材质设置：区域选择不显示时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'This area shows no background and keeps the theme color.'**
+  String get appSurfaceAreaOffNote;
+
+  /// 背景与材质设置：区域选择单独设置时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'This area uses its own background set below.'**
+  String get appSurfaceAreaCustomNote;
+
+  /// 背景与材质设置：预览区域说明的补充行。
+  ///
+  /// In en, this message translates to:
+  /// **'Only shown when the preview page\'s paper follows the theme.'**
+  String get appSurfaceAreaPreviewNote;
+
+  /// 背景与材质设置：全局背景编辑分组的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Global background'**
+  String get appSurfaceGlobalBackground;
+
+  /// 背景与材质设置：全局背景分组的附注。
+  ///
+  /// In en, this message translates to:
+  /// **'Every area follows the global background unless you pick it above and set it separately.'**
+  String get appSurfaceGlobalFooter;
+
+  /// 背景与材质设置：区域单独设置时背景编辑分组的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Own background'**
+  String get appSurfaceAreaBackground;
+
+  /// 背景与材质设置：背景类型，无背景。
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get appSurfaceKindNone;
+
+  /// 背景与材质设置：背景类型，纯色。
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get appSurfaceKindColor;
+
+  /// 背景与材质设置：背景类型，图片。
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get appSurfaceKindImage;
+
+  /// 背景与材质设置：纯色背景的颜色行（点按选择浅色 / 深色）。
+  ///
+  /// In en, this message translates to:
+  /// **'Background color'**
+  String get appSurfaceBackgroundColor;
+
+  /// 背景与材质设置：还没有背景图时的选图按钮。
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image'**
+  String get appSurfaceImagePick;
+
+  /// 背景与材质设置：更换背景图按钮。
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get appSurfaceImageChange;
+
+  /// 背景与材质设置：移除背景图按钮。
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get appSurfaceImageRemove;
+
+  /// 背景与材质设置：背景类型为图片但还没选图时的提示。
+  ///
+  /// In en, this message translates to:
+  /// **'No image chosen yet'**
+  String get appSurfaceImageEmpty;
+
+  /// 背景与材质设置：背景图文件缺失时缩略图处的提示。
+  ///
+  /// In en, this message translates to:
+  /// **'The image file is missing. Choose it again.'**
+  String get appSurfaceImageMissing;
+
+  /// 背景与材质设置：选择器没有给出本地路径时的提示条。
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read that image. Choose one stored on this device.'**
+  String get appSurfaceImageUnavailable;
+
+  /// 背景与材质设置：背景图导入失败时的提示条。
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t import the image. Try again.'**
+  String get appSurfaceImageImportFailed;
+
+  /// 背景与材质设置：背景图焦点取景器的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get appSurfaceFocus;
+
+  /// 背景与材质设置：焦点取景器的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Tap or drag on the image to choose which part stays in view when it\'s cropped.'**
+  String get appSurfaceFocusHint;
+
+  /// 背景与材质设置：焦点取景器的读屏标签，x / y 为 0–100 的位置。
+  ///
+  /// In en, this message translates to:
+  /// **'Background focus: {x}% across, {y}% down'**
+  String appSurfaceFocusSemantics(String x, String y);
+
+  /// 背景与材质设置：背景图模糊滑块与玻璃模糊滑块的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Blur'**
+  String get appSurfaceBlur;
+
+  /// 背景与材质设置：浅色主题下叠在背景图上的遮罩不透明度滑块。
+  ///
+  /// In en, this message translates to:
+  /// **'Light mode veil'**
+  String get appSurfaceScrimLight;
+
+  /// 背景与材质设置：深色主题下叠在背景图上的遮罩不透明度滑块。
+  ///
+  /// In en, this message translates to:
+  /// **'Dark mode veil'**
+  String get appSurfaceScrimDark;
+
+  /// 背景与材质设置：整体组件材质分组的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Component style'**
+  String get appSurfaceGlassStyle;
+
+  /// 背景与材质设置：组件材质，经典实色。
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get appSurfaceGlassClassic;
+
+  /// 背景与材质设置：组件材质，毛玻璃。
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get appSurfaceGlassGlass;
+
+  /// 背景与材质设置：组件风格分组的附注。
+  ///
+  /// In en, this message translates to:
+  /// **'Glass lets the background and content show through components; Classic keeps them solid.'**
+  String get appSurfaceGlassStyleFooter;
+
+  /// 背景与材质设置：各类组件材质覆盖分组的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Per component'**
+  String get appSurfaceGlassPerComponent;
+
+  /// 背景与材质设置：组件类别，二级页顶栏。
+  ///
+  /// In en, this message translates to:
+  /// **'Page top bars'**
+  String get appSurfaceComponentTopBars;
+
+  /// 背景与材质设置：组件类别，编辑器悬浮工具栏。
+  ///
+  /// In en, this message translates to:
+  /// **'Editor toolbar'**
+  String get appSurfaceComponentToolbar;
+
+  /// 背景与材质设置：组件类别，底部面板。
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom sheets'**
+  String get appSurfaceComponentSheets;
+
+  /// 背景与材质设置：组件类别，对话框。
+  ///
+  /// In en, this message translates to:
+  /// **'Dialogs'**
+  String get appSurfaceComponentDialogs;
+
+  /// 背景与材质设置：组件类别，内容卡片与设置分组。
+  ///
+  /// In en, this message translates to:
+  /// **'Cards & groups'**
+  String get appSurfaceComponentCards;
+
+  /// 背景与材质设置：组件类别，按钮、输入框等小控件。
+  ///
+  /// In en, this message translates to:
+  /// **'Small controls'**
+  String get appSurfaceComponentControls;
+
+  /// 背景与材质设置：组件材质覆盖，跟随整体风格。
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get appSurfaceOverrideFollow;
+
+  /// 背景与材质设置：组件跟随整体风格时的副标题，material 为实际材质名。
+  ///
+  /// In en, this message translates to:
+  /// **'Follow ({material})'**
+  String appSurfaceOverrideFollowResult(String material);
+
+  /// 背景与材质设置：玻璃参数分组的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Glass texture'**
+  String get appSurfaceGlassTexture;
+
+  /// 背景与材质设置：玻璃底色不透明度滑块。
+  ///
+  /// In en, this message translates to:
+  /// **'Opacity'**
+  String get appSurfaceGlassOpacity;
+
+  /// 背景与材质设置：玻璃底色选择行。
+  ///
+  /// In en, this message translates to:
+  /// **'Tint'**
+  String get appSurfaceGlassTint;
+
+  /// 背景与材质设置：玻璃底色，中性表面色。
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral'**
+  String get appSurfaceGlassTintNeutral;
+
+  /// 背景与材质设置：玻璃底色，偏向主题色。
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get appSurfaceGlassTintTheme;
+
+  /// 背景与材质设置：自定义玻璃底色的颜色行。
+  ///
+  /// In en, this message translates to:
+  /// **'Glass color'**
+  String get appSurfaceGlassTintColor;
+
+  /// 背景与材质设置：玻璃边缘细描边开关。
+  ///
+  /// In en, this message translates to:
+  /// **'Outline'**
+  String get appSurfaceGlassBorder;
+
+  /// 背景与材质设置：玻璃描边开关的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Outlines components on backgrounds close to their color'**
+  String get appSurfaceGlassBorderSubtitle;
+
+  /// 背景与材质设置：玻璃质感分组的附注。
+  ///
+  /// In en, this message translates to:
+  /// **'In high contrast mode, glass automatically turns opaque.'**
+  String get appSurfaceGlassHighContrast;
+
+  /// 背景与材质设置：预览样稿的读屏标签。
+  ///
+  /// In en, this message translates to:
+  /// **'Background and material preview'**
+  String get appSurfacePreviewLabel;
+
+  /// 背景与材质设置预览：第一张示例卡片的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'An afternoon walk'**
+  String get appSurfacePreviewCardTitle1;
+
+  /// 背景与材质设置预览：第一张示例卡片的正文。
+  ///
+  /// In en, this message translates to:
+  /// **'Sunny out, so I took a long loop along the river.'**
+  String get appSurfacePreviewCardBody1;
+
+  /// 背景与材质设置预览：第二张示例卡片的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Reading notes'**
+  String get appSurfacePreviewCardTitle2;
+
+  /// 背景与材质设置预览：第二张示例卡片的正文。
+  ///
+  /// In en, this message translates to:
+  /// **'Saved a few lines I liked to read again later.'**
+  String get appSurfacePreviewCardBody2;
 }
 
 class _AppLocalizationsDelegate

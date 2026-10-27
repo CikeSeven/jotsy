@@ -33,6 +33,8 @@ const _everyField = DiaryCardStyle(
       source: DiaryCardColorSource.primary,
       strength: 0.4,
     ),
+    material: DiaryCardMaterial.glass,
+    blurSigma: 24,
   ),
   typography: DiaryCardTypography(
     titleScale: 1.2,
@@ -130,6 +132,7 @@ void main() {
       expect(style.surface.borderColor.source, DiaryCardColorSource.theme);
       expect(style.surface.accentBar, DiaryCardAccentBar.none);
       expect(style.surface.shadow, DiaryCardShadowStyle.themed);
+      expect(style.surface.material, DiaryCardMaterial.solid);
       expect(style.typography.titleScale, 1);
       expect(style.typography.titleWeight, DiaryCardTitleWeight.bold);
       expect(style.typography.previewScale, 1);

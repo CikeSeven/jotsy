@@ -1,9 +1,10 @@
 part of 'diary_card_style.dart';
 
-/// 卡片容器的外观：圆角、底色、渐变、描边、强调条与阴影。两种布局共用。
+/// 卡片容器的外观：材质、圆角、底色、渐变、描边、强调条与阴影。两种布局
+/// 共用。
 ///
-/// 默认值即 DESIGN.md §5.1 的经典样式：圆角 24、主题卡片表面、0.8dp 主题
-/// 描边、置顶淡主色着色与改版前的多层投影。
+/// 默认值即 DESIGN.md §5.1 的经典样式：实色材质、圆角 24、主题卡片表面、
+/// 0.8dp 主题描边、置顶淡主色着色与改版前的多层投影。
 @immutable
 class DiaryCardSurfaceStyle {
   const DiaryCardSurfaceStyle({
@@ -22,6 +23,8 @@ class DiaryCardSurfaceStyle {
     this.shadow = DiaryCardShadowStyle.themed,
     this.shadowElevation = 8,
     this.shadowColor = _defaultShadowColor,
+    this.material = DiaryCardMaterial.solid,
+    this.blurSigma = 16,
   });
 
   static const _defaultGradientEnd = DiaryCardColorSpec(
@@ -58,6 +61,15 @@ class DiaryCardSurfaceStyle {
   final double shadowElevation;
   final DiaryCardColorSpec shadowColor;
 
+  /// 材质：实色或玻璃。玻璃只在实色的基础上多一层背景模糊，透明度仍由
+  /// [opacity] 表达，所以两者可独立调节、切换材质不改动其余字段。
+  final DiaryCardMaterial material;
+
+  /// 玻璃材质的背景模糊半径；实色时不使用（仍保留，切回玻璃时沿用）。
+  final double blurSigma;
+
+  bool get isGlass => material == DiaryCardMaterial.glass;
+
   DiaryCardSurfaceStyle copyWith({
     double? cornerRadius,
     DiaryCardColorSpec? background,
@@ -74,6 +86,8 @@ class DiaryCardSurfaceStyle {
     DiaryCardShadowStyle? shadow,
     double? shadowElevation,
     DiaryCardColorSpec? shadowColor,
+    DiaryCardMaterial? material,
+    double? blurSigma,
   }) {
     return DiaryCardSurfaceStyle(
       cornerRadius: cornerRadius ?? this.cornerRadius,
@@ -91,6 +105,8 @@ class DiaryCardSurfaceStyle {
       shadow: shadow ?? this.shadow,
       shadowElevation: shadowElevation ?? this.shadowElevation,
       shadowColor: shadowColor ?? this.shadowColor,
+      material: material ?? this.material,
+      blurSigma: blurSigma ?? this.blurSigma,
     );
   }
 
@@ -163,6 +179,18 @@ class DiaryCardSurfaceStyle {
         json['shadowColor'],
         d.shadowColor,
       ),
+      // 材质与模糊是后加的字段：旧数据与旧样式码里没有它们，按默认（实色、
+      // 16）读出；旧版本读到新样式码时同样忽略这两个未知字段。
+      material: _enumByName(
+        DiaryCardMaterial.values,
+        json['material'],
+        d.material,
+      ),
+      blurSigma: _double(
+        json['blurSigma'],
+        d.blurSigma,
+        DiaryCardStyleLimits.blurSigma,
+      ),
     );
   }
 
@@ -184,6 +212,8 @@ class DiaryCardSurfaceStyle {
     _putEnum(json, 'shadow', shadow, d.shadow);
     _put(json, 'shadowElevation', shadowElevation, d.shadowElevation);
     _putObject(json, 'shadowColor', shadowColor._toJson(d.shadowColor));
+    _putEnum(json, 'material', material, d.material);
+    _put(json, 'blurSigma', blurSigma, d.blurSigma);
     return json;
   }
 
@@ -204,7 +234,9 @@ class DiaryCardSurfaceStyle {
         other.accentColor == accentColor &&
         other.shadow == shadow &&
         other.shadowElevation == shadowElevation &&
-        other.shadowColor == shadowColor;
+        other.shadowColor == shadowColor &&
+        other.material == material &&
+        other.blurSigma == blurSigma;
   }
 
   @override
@@ -224,5 +256,7 @@ class DiaryCardSurfaceStyle {
     shadow,
     shadowElevation,
     shadowColor,
+    material,
+    blurSigma,
   );
 }

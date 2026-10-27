@@ -4,6 +4,7 @@ import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../app/theme/expressive_surfaces.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../../diaries/sections/diaries_list_section.dart';
 import '../../../diaries/sections/diary_head_section.dart';
@@ -20,6 +21,11 @@ import '../../widgets/style_editor/style_editor_common.dart';
 /// 共享元素关闭（`enableCoverHero: false`），避免与真实列表的同名 Hero 冲突。
 /// 明暗与应用当前主题相反时，用同一种子色另装配一份主题（按种子色缓存），
 /// 减少动画时同样去掉控件动效，与应用外壳一致。
+///
+/// 预览自己铺了一块实色页面底（预览主题的页面底色），卡片叠在它上面而不是
+/// 设置页的背景上：这里以 [AppPageBackdrop.plain] 盖住外层页面背景的信息，
+/// 半透明 / 玻璃卡片的文字对比度按预览底色计算，也不拿外层的共享背景键去
+/// 模糊（实色底上模糊看不出差别），玻璃卡片在预览里就是半透明卡片。
 class DiaryCardStylePreview extends StatefulWidget {
   const DiaryCardStylePreview({
     super.key,
@@ -95,7 +101,7 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
             child: Builder(
               builder: (BuildContext context) {
                 final scheme = Theme.of(context).colorScheme;
-                return ClipRect(
+                final preview = ClipRect(
                   child: Material(
                     color: ExpressiveSurfaces.pageBackground(scheme),
                     child: CustomScrollView(
@@ -125,6 +131,10 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
                       ],
                     ),
                   ),
+                );
+                return AppPageBackdropScope(
+                  backdrop: AppPageBackdrop.plain(scheme),
+                  child: preview,
                 );
               },
             ),

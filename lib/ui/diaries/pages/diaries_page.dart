@@ -46,6 +46,7 @@ import '../../notebooks/widgets/notebook_header_sliver.dart';
 import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';
@@ -418,6 +419,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               : DiaryCardMode.list,
         );
         final cardSideMargin = cardModeStyle.sideMargin;
+        // 筛选切换的整列表刷新淡入：实色卡片照旧整块套 SliverFadeTransition；
+        // 玻璃卡片不能进透明度层（背景模糊会采不到页面，淡入途中先闪一块
+        // 没有模糊的底），改由 DiariesListSection 按同一进度逐项淡入
+        // （revealProgress），加载与错误占位各自套淡入。
+        final glassCards = cardStyle.surface.isGlass;
+        Widget refreshFade(Widget sliver) => SliverFadeTransition(
+          opacity: _listRefreshPulseController,
+          sliver: sliver,
+        );
+        Widget wrapListFade(Widget sliver) =>
+            glassCards ? sliver : refreshFade(sliver);
+        Widget wrapPlaceholderFade(Widget sliver) =>
+            glassCards ? refreshFade(sliver) : sliver;
         final tagHeaderContent = tagsAsync.when(
           data: (tags) {
             final visibleTagFilters = _resolveTagFiltersForDisplay(
@@ -669,9 +683,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                           onSelectChapter: _scopeController.selectChapter,
                         ),
                       ),
-                      SliverFadeTransition(
-                        opacity: _listRefreshPulseController,
-                        sliver: SliverPadding(
+                      wrapListFade(
+                        SliverPadding(
                           padding: EdgeInsets.symmetric(
                             horizontal: contentInset,
                           ),
@@ -681,19 +694,23 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               // 2) 首屏错误且无缓存；
                               // 3) 渲染列表/空态内容。
                               diariesAsync.isLoading && displayedItems.isEmpty
-                              ? const SliverFillRemaining(
-                                  hasScrollBody: false,
-                                  child: DelayedLoadingIndicator(size: 22),
+                              ? wrapPlaceholderFade(
+                                  const SliverFillRemaining(
+                                    hasScrollBody: false,
+                                    child: DelayedLoadingIndicator(size: 22),
+                                  ),
                                 )
                               : diariesAsync.hasError && displayedItems.isEmpty
-                              ? SliverFillRemaining(
-                                  hasScrollBody: false,
-                                  child: Center(
-                                    child: Text(
-                                      context.l10n.autoT0127(
-                                        diariesAsync.asError?.error
-                                                .toString() ??
-                                            '',
+                              ? wrapPlaceholderFade(
+                                  SliverFillRemaining(
+                                    hasScrollBody: false,
+                                    child: Center(
+                                      child: Text(
+                                        context.l10n.autoT0127(
+                                          diariesAsync.asError?.error
+                                                  .toString() ??
+                                              '',
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -719,6 +736,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   opensLockedCapsulePage: !twoPane,
                                   maxVisibleTags: diaryCardTagLimit,
                                   cardStyle: cardStyle,
+                                  revealProgress: glassCards
+                                      ? _listRefreshPulseController
+                                      : null,
                                   moodOptions: ref.watch(
                                     diaryCardMoodOptionsProvider,
                                   ),

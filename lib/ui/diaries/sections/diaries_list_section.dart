@@ -19,6 +19,8 @@ import '../../widgets/expressive_entrance.dart';
 import '../../widgets/launch_reveal.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/list_item_presence.dart';
+import '../../widgets/glass/glass_reveal.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 
 export '../widgets/diary_card/diary_card.dart' show DiaryOpenCallback;
 export '../widgets/diary_card/diary_card_context_menu.dart'
@@ -31,6 +33,11 @@ export '../controllers/diary_pointer_selection.dart' show DiarySelectionAnchor;
 /// 动画与滑动归档），不再承载顶部标签条或独立滚动容器。单张卡片的外观由
 /// [DiaryCard] 按 [cardStyle] 绘制；样式每次 build 只解析一次
 /// （[DiaryCardResolvedStyle]），卡片只做查表。
+///
+/// 玻璃卡片（`DiaryCardSurfaceStyle.isGlass`）不能放进 Opacity /
+/// FadeTransition（背景模糊采不到页面，见 [GlassReveal]）：本区块里的启动
+/// 编排与进出场在玻璃时改用 [GlassReveal]，宿主的整列表淡入改经
+/// [revealProgress] 交进来逐项处理。实色卡片的结构与改版前相同。
 class DiariesListSection extends StatelessWidget {
   /// 单条日记项进入/退出列表时的过渡时长。日记页的隐藏/出现计时器复用
   /// 同一常量，保证动画结束与状态收尾同步。
@@ -66,6 +73,7 @@ class DiariesListSection extends StatelessWidget {
     this.readingCardLocator,
     this.menuActions,
     this.selectionAnchor,
+    this.revealProgress,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -148,6 +156,50 @@ class DiariesListSection extends StatelessWidget {
   /// 日历这类没有多选的列表）。手机上忽略。
   final DiarySelectionAnchor? selectionAnchor;
 
+  /// 整列表淡入的进度，由宿主代替外层的 `SliverFadeTransition` 交进来（日记
+  /// 页筛选切换的刷新脉冲在卡片为玻璃时这样做）。非 null 时本区块逐项淡入：
+  /// 玻璃卡片经 [GlassRevealTransition]，实色卡片、分组标题与空态经
+  /// FadeTransition。null（默认）时不加任何包装，由宿主自己淡入。
+  final Animation<double>? revealProgress;
+
+  bool get _glass => cardStyle.surface.isGlass;
+
+  /// 按 [revealProgress] 淡入一块不含玻璃的内容（分组标题、空态）。
+  Widget _fadePlain(Widget child) {
+    final progress = revealProgress;
+    return progress == null
+        ? child
+        : FadeTransition(opacity: progress, child: child);
+  }
+
+  /// 按 [revealProgress] 淡入一个卡片列表项：玻璃不进透明度层。
+  Widget _revealItem(Widget child) {
+    final progress = revealProgress;
+    if (progress == null) {
+      return child;
+    }
+    return _glass
+        ? GlassRevealTransition(progress: progress, child: child)
+        : FadeTransition(opacity: progress, child: child);
+  }
+
+  /// 启动编排：实色照旧整块 Opacity；玻璃改用不套 Opacity 的
+  /// [LaunchReveal.builder]，透明度经 [GlassReveal] 交给卡片表面。玻璃时
+  /// 列表项里的分组标题不在玻璃之内、会随编排硬切——启动时首页总是停在
+  /// 全部日记（没有分组标题），实际不会出现。
+  Widget _launchReveal(int index, Widget child) {
+    final slot = LaunchRevealSlot.content(index);
+    if (!_glass) {
+      return LaunchReveal(slot: slot, child: child);
+    }
+    return LaunchReveal.builder(
+      slot: slot,
+      builder: (BuildContext context, double opacity, Widget? child) =>
+          GlassReveal(progress: opacity, child: child!),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -156,21 +208,23 @@ class DiariesListSection extends StatelessWidget {
     // 空态：根据是否搜索场景展示不同文案。
     if (diaries.isEmpty) {
       return SliverToBoxAdapter(
-        child: ColoredBox(
-          color: backgroundColor,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.m,
-              vertical: AppSpacing.m,
-            ),
-            // 最后一篇被归档/删除、或首屏没有日记时淡入上移，而不是硬切出现。
-            child: ExpressiveEntrance(
-              child:
-                  emptyState ??
-                  DiariesEmptyState(
-                    onCreate: onCreate,
-                    isSearchResultEmpty: isSearchResultEmpty,
-                  ),
+        child: _fadePlain(
+          ColoredBox(
+            color: backgroundColor,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m,
+                vertical: AppSpacing.m,
+              ),
+              // 最后一篇被归档/删除、或首屏没有日记时淡入上移，而不是硬切出现。
+              child: ExpressiveEntrance(
+                child:
+                    emptyState ??
+                    DiariesEmptyState(
+                      onCreate: onCreate,
+                      isSearchResultEmpty: isSearchResultEmpty,
+                    ),
+              ),
             ),
           ),
         ),
@@ -188,6 +242,9 @@ class DiariesListSection extends StatelessWidget {
       textScale: MediaQuery.textScalerOf(context).scale(1),
       moodOptions: moodOptions,
       minColumns: isWaterfall ? minWaterfallColumns : 0,
+      // 半透明 / 玻璃卡片的文字对比度按卡片实际叠在的颜色（页面背景色或
+      // 背景图的估计色）计算；没有页面背景时就是主题页面底色。
+      pageBackground: AppPageBackdrop.estimatedColorOf(context),
     );
     final modeStyle = resolved.modeStyle;
 
@@ -202,9 +259,11 @@ class DiariesListSection extends StatelessWidget {
           final diary = diaries[index];
           return KeyedSubtree(
             key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
-            child: LaunchReveal(
-              slot: LaunchRevealSlot.content(index),
-              child: _buildDiaryItem(context, diary: diary, resolved: resolved),
+            child: _revealItem(
+              _launchReveal(
+                index,
+                _buildDiaryItem(context, diary: diary, resolved: resolved),
+              ),
             ),
           );
         },
@@ -221,15 +280,17 @@ class DiariesListSection extends StatelessWidget {
         final sectionHeader = sectionHeaderBuilder?.call(context, index);
         return KeyedSubtree(
           key: ValueKey<String>('list_${diary.diary.diaryId}'),
-          child: LaunchReveal(
-            slot: LaunchRevealSlot.content(index),
-            child: Padding(
+          child: _launchReveal(
+            index,
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: modeStyle.sideMargin),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  ?sectionHeader,
-                  _buildDiaryItem(context, diary: diary, resolved: resolved),
+                  if (sectionHeader != null) _fadePlain(sectionHeader),
+                  _revealItem(
+                    _buildDiaryItem(context, diary: diary, resolved: resolved),
+                  ),
                   if (!isLast) SizedBox(height: modeStyle.cardGap),
                 ],
               ),
@@ -335,6 +396,8 @@ class DiariesListSection extends StatelessWidget {
       visible: !isExiting,
       appearing: isAppearing && !isExiting,
       duration: transitionDuration,
+      // 玻璃卡片的进出场走 GlassReveal，不进透明度层。
+      glass: _glass,
       child: child,
     );
   }

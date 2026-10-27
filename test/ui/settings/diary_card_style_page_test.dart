@@ -509,4 +509,39 @@ void main() {
       }
     });
   }
+
+  testWidgets('the glass material reveals a nested blur slider', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryCardStyleTabColor);
+    final blur = find.widgetWithText(
+      SettingsSliderTile,
+      l10n.diaryCardStyleBlur,
+    );
+    expect(blur, findsNothing);
+    // 不透明度滑块从 0 起步。
+    final opacity = tester.widget<SettingsSliderTile>(
+      find.widgetWithText(SettingsSliderTile, l10n.diaryCardStyleOpacity),
+    );
+    expect(opacity.min, 0);
+    expect(opacity.max, 1);
+
+    await _tapVisible(tester, find.text(l10n.diaryCardStyleMaterialGlass));
+    expect(_stored(settings).current.surface.material, DiaryCardMaterial.glass);
+    expect(blur, findsOneWidget);
+    expect(find.text(l10n.diaryCardStyleBlurSubtitle), findsOneWidget);
+    final tile = tester.widget<SettingsSliderTile>(blur);
+    expect(tile.nested, isTrue);
+    expect(tile.max, DiaryCardStyleLimits.blurSigma.max);
+    tile.onChangeEnd!(30);
+    await tester.pumpAndSettle();
+    expect(_stored(settings).current.surface.blurSigma, 30);
+
+    await _tapVisible(tester, find.text(l10n.diaryCardStyleMaterialSolid));
+    expect(_stored(settings).current.surface.material, DiaryCardMaterial.solid);
+    expect(blur, findsNothing);
+    await _dismissSnackBars(tester);
+    expect(tester.takeException(), isNull);
+  });
 }

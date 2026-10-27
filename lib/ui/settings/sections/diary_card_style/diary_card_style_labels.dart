@@ -20,6 +20,7 @@ String diaryCardPresetName(AppLocalizations l10n, DiaryCardPresetId id) =>
       DiaryCardPresetId.sticky => l10n.diaryCardStylePresetSticky,
       DiaryCardPresetId.journal => l10n.diaryCardStylePresetJournal,
       DiaryCardPresetId.mood => l10n.diaryCardStylePresetMood,
+      DiaryCardPresetId.glass => l10n.diaryCardStylePresetGlass,
     };
 
 String diaryCardPresetDescription(
@@ -34,6 +35,7 @@ String diaryCardPresetDescription(
   DiaryCardPresetId.sticky => l10n.diaryCardStylePresetStickyDesc,
   DiaryCardPresetId.journal => l10n.diaryCardStylePresetJournalDesc,
   DiaryCardPresetId.mood => l10n.diaryCardStylePresetMoodDesc,
+  DiaryCardPresetId.glass => l10n.diaryCardStylePresetGlassDesc,
 };
 
 FaIconData diaryCardPresetIcon(DiaryCardPresetId id) => switch (id) {
@@ -45,6 +47,7 @@ FaIconData diaryCardPresetIcon(DiaryCardPresetId id) => switch (id) {
   DiaryCardPresetId.sticky => FontAwesomeIcons.noteSticky,
   DiaryCardPresetId.journal => FontAwesomeIcons.bookBookmark,
   DiaryCardPresetId.mood => FontAwesomeIcons.faceSmile,
+  DiaryCardPresetId.glass => FontAwesomeIcons.droplet,
 };
 
 /// 当前样式的显示名：内置预设名、我的样式名，或“自定义”。

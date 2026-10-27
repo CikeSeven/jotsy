@@ -33,8 +33,8 @@ class ExportPlainText {
       }
       final text = block.inlines.map(_inlineText).join();
       final prefix = switch (block.kind) {
-        ExportBlockKind.bullet => '• ',
-        ExportBlockKind.ordered => '${block.ordinal}. ',
+        ExportBlockKind.bullet ||
+        ExportBlockKind.ordered => '${block.listMarker} ',
         ExportBlockKind.checked => '☑ ',
         ExportBlockKind.unchecked => '☐ ',
         ExportBlockKind.quote => '> ',

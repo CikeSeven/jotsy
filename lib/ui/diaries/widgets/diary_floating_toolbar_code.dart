@@ -31,19 +31,8 @@ extension _DiaryFloatingToolbarCode on _DiaryFloatingToolbarState {
     _setPanel(_panelFromMore ? _ToolbarPanel.more : _ToolbarPanel.none);
   }
 
-  /// 正文控制器通知时检查代码块面板是否还该开着。
-  ///
-  /// 通知可能落在构建阶段（编辑器在布局中纠正选区）：此时改状态会在锁定的
-  /// 树上 setState，并让编辑页在构建中刷新，所以推到这一帧结束后再检查。
+  /// 选区变化后（已推迟到构建之外）检查代码块面板是否还该开着。
   void _syncCodePanelWithSelection() {
-    if (_panel != _ToolbarPanel.code) return;
-    if (SchedulerBinding.instance.schedulerPhase ==
-        SchedulerPhase.persistentCallbacks) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _syncCodePanelWithSelection();
-      });
-      return;
-    }
     if (!diarySelectionInCodeBlock(widget.controller)) _closeCodePanel();
   }
 }

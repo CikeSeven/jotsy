@@ -1,8 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../../core/database/diary_blocks/diary_list_style.dart';
 import '../../../widgets/expressive_state_blend.dart';
+import '../../controllers/diary_list_style_editing.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_styles.dart';
 
@@ -50,8 +54,10 @@ class _MarkerCell extends StatelessWidget {
   );
 }
 
-/// 无序列表圆点：按所在无序列表的嵌套层级轮换实心圆、空心圆、小方块，
-/// 三种标记的中心都在距起始边 11dp 处。
+/// 无序列表标记：形状取这段列表选的样式（`diary_list_style.dart`），没选过
+/// 时按所在无序列表的嵌套层级轮换实心圆、空心圆、小方块。各形状的中心都在
+/// 距起始边 11dp 处；尺寸按视觉重量对齐（星形、箭头这类镂空多的形状画得
+/// 略大）。
 class DiaryBulletMarker extends StatelessWidget {
   const DiaryBulletMarker({
     super.key,
@@ -62,42 +68,109 @@ class DiaryBulletMarker extends StatelessWidget {
   final af.Node node;
   final DiaryMarkerMetrics metrics;
 
-  int get _level {
-    var level = 0;
-    for (var parent = node.parent; parent != null; parent = parent.parent) {
-      if (parent.type == af.BulletedListBlockKeys.type) level++;
-    }
-    return level;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    final level = _level % 3;
-    final size = metrics.dp(level == 2 ? 5 : 6);
-    final decoration = switch (level) {
-      0 => BoxDecoration(color: color, shape: BoxShape.circle),
-      1 => BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: metrics.dp(1.4)),
-      ),
-      _ => BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(metrics.dp(1)),
-      ),
-    };
+    final style = diaryBulletListStyleOf(node);
     return _MarkerCell(
       metrics: metrics,
-      size: size,
-      start: metrics.dp(11) - size / 2,
-      child: DecoratedBox(decoration: decoration),
+      size: metrics.dp(designExtent(style)),
+      start: metrics.dp(11 - designExtent(style) / 2),
+      child: DiaryBulletShape(
+        style: style,
+        color: Theme.of(context).colorScheme.primary,
+        scale: metrics.em / 16,
+      ),
     );
   }
+
+  /// 16sp 正文下各形状占的边长（列表面板的样式预览按比例缩小沿用）。
+  static double designExtent(DiaryBulletListStyle style) => switch (style) {
+    DiaryBulletListStyle.disc || DiaryBulletListStyle.circle => 6,
+    DiaryBulletListStyle.square => 5,
+    DiaryBulletListStyle.diamond => 7,
+    DiaryBulletListStyle.star || DiaryBulletListStyle.arrow => 10,
+    DiaryBulletListStyle.dash => 8,
+  };
 }
 
-/// 有序列表序号：层级轮换 1. / a. / i.，连续的同级有序列表接着编号（首项
-/// 可带 `number` 起始号）。数字等宽，宽度不够时向右延伸、不折行。序号与
-/// 正文同样式、同缩放、同行高规则排版，放在格子顶部即与正文基线对齐。
+/// 一个无序列表标记形状，铺满父级给的方块。编辑器标记与工具栏列表面板的
+/// 样式预览共用；[scale] 为相对 16sp 设计尺寸的比例（描边粗细随之变化）。
+class DiaryBulletShape extends StatelessWidget {
+  const DiaryBulletShape({
+    super.key,
+    required this.style,
+    required this.color,
+    this.scale = 1,
+  });
+
+  final DiaryBulletListStyle style;
+  final Color color;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) => switch (style) {
+    DiaryBulletListStyle.disc => DecoratedBox(
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    ),
+    DiaryBulletListStyle.circle => DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 1.4 * scale),
+      ),
+    ),
+    DiaryBulletListStyle.square => DecoratedBox(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(scale),
+      ),
+    ),
+    // 旋转 45° 的方块：外接边长为 7 时方块边长约 5。
+    DiaryBulletListStyle.diamond => Center(
+      child: FractionallySizedBox(
+        widthFactor: 0.7,
+        heightFactor: 0.7,
+        child: Transform.rotate(
+          angle: math.pi / 4,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(0.6 * scale),
+            ),
+          ),
+        ),
+      ),
+    ),
+    // 图标字形本身留有边距，按方块边长取字号即与其他形状等大。
+    DiaryBulletListStyle.star || DiaryBulletListStyle.arrow => LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) => Center(
+        child: FaIcon(
+          style == DiaryBulletListStyle.star
+              ? FontAwesomeIcons.solidStar
+              : FontAwesomeIcons.arrowRight,
+          size: constraints.biggest.shortestSide,
+          color: color,
+        ),
+      ),
+    ),
+    DiaryBulletListStyle.dash => Center(
+      child: SizedBox(
+        height: 1.6 * scale,
+        width: double.infinity,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(0.8 * scale),
+          ),
+        ),
+      ),
+    ),
+  };
+}
+
+/// 有序列表序号：格式取这段列表选的样式（`diary_list_style.dart`），没选过
+/// 时按层级轮换 1. / a. / i.；连续的同级有序列表接着编号（首项可带
+/// `number` 起始号）。数字等宽，宽度不够时向右延伸、不折行。序号与正文
+/// 同样式、同缩放、同行高规则排版，放在格子顶部即与正文基线对齐。
 class DiaryNumberMarker extends StatelessWidget {
   const DiaryNumberMarker({
     super.key,
@@ -111,14 +184,6 @@ class DiaryNumberMarker extends StatelessWidget {
 
   /// 正文样式（字体、字号、行距），颜色与字重在这里覆盖。
   final TextStyle textStyle;
-
-  int get _level {
-    var level = 0;
-    for (var parent = node.parent; parent != null; parent = parent.parent) {
-      if (parent.type == af.NumberedListBlockKeys.type) level++;
-    }
-    return level;
-  }
 
   int get _index {
     int? start(af.Node item) {
@@ -141,12 +206,6 @@ class DiaryNumberMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final index = _index;
-    final label = switch (_level % 3) {
-      1 => _latin(index),
-      2 => _roman(index),
-      _ => '$index',
-    };
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: metrics.width),
       child: Padding(
@@ -155,7 +214,7 @@ class DiaryNumberMarker extends StatelessWidget {
           end: metrics.dp(6),
         ),
         child: Text(
-          '$label.',
+          diaryOrderedListStyleOf(node).label(_index),
           maxLines: 1,
           softWrap: false,
           textScaler: metrics.scaler,
@@ -168,46 +227,6 @@ class DiaryNumberMarker extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static String _latin(int number) {
-    var value = number;
-    final buffer = StringBuffer();
-    while (value > 0) {
-      final remainder = (value - 1) % 26;
-      buffer.write(String.fromCharCode(remainder + 97));
-      value = (value - 1) ~/ 26;
-    }
-    return buffer.toString().split('').reversed.join();
-  }
-
-  static String _roman(int number) {
-    if (number <= 0 || number >= 4000) return '$number';
-    const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
-    const symbols = [
-      'm',
-      'cm',
-      'd',
-      'cd',
-      'c',
-      'xc',
-      'l',
-      'xl',
-      'x',
-      'ix',
-      'v',
-      'iv',
-      'i',
-    ];
-    var value = number;
-    final buffer = StringBuffer();
-    for (var i = 0; i < values.length; i++) {
-      while (value >= values[i]) {
-        buffer.write(symbols[i]);
-        value -= values[i];
-      }
-    }
-    return buffer.toString();
   }
 }
 

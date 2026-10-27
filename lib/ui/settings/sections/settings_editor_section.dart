@@ -20,6 +20,7 @@ import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
 import 'settings_code_block_style_tile.dart';
 import 'settings_open_in_editor_switch.dart';
+import 'settings_toolbar_size_tile.dart';
 
 /// 设置页编辑器配置区块。
 class SettingsEditorSection extends ConsumerWidget {
@@ -126,6 +127,9 @@ class SettingsEditorSection extends ConsumerWidget {
                                           ),
                                         );
                                       },
+                                    ),
+                                    SettingsToolbarSizeTile(
+                                      settings: settingsService,
                                     ),
                                     // 桌面没有软键盘，编辑页工具栏一直显示，
                                     // 这个开关没有意义。

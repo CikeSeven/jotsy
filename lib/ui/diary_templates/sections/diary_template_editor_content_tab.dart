@@ -160,6 +160,7 @@ class _DiaryTemplateEditorContentTabState
           savedColors: savedColors,
           titleStyle: titleStyle,
           order: order,
+          toolbarSize: DiaryToolbarSize.decode(settings?.diaryToolbarSizeRaw),
           showToolbar: showToolbar,
         );
       },
@@ -173,6 +174,7 @@ class _DiaryTemplateEditorContentTabState
     required DiarySavedColors savedColors,
     required TextStyle? titleStyle,
     required List<DiaryToolbarItem> order,
+    required DiaryToolbarSize toolbarSize,
     required bool showToolbar,
   }) {
     final l10n = context.l10n;
@@ -261,6 +263,7 @@ class _DiaryTemplateEditorContentTabState
                     onEditSavedColors: ref
                         .read(diarySavedColorsProvider.notifier)
                         .edit,
+                    size: toolbarSize,
                   ),
                 ),
               ),

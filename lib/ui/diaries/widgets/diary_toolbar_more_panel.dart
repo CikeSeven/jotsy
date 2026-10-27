@@ -22,22 +22,29 @@ const double kDiaryToolbarPanelChrome =
 /// 面板最多直接露出的行数；更多行在面板内纵向滚动，键盘弹起后正文仍露得出来。
 const int _kPanelMaxVisibleRows = 3;
 
-/// 行数超出上限时多露出半行，提示面板还能往下滚。
-const double _kPanelScrollPeek = kDiaryToolbarButtonExtent / 2;
-
-/// 「更多」面板 [rows] 行全部展开时的内容高度。
-double diaryToolbarMorePanelNaturalHeight(int rows) =>
-    rows * kDiaryToolbarButtonExtent + math.max(0, rows - 1) * _kPanelRowGap;
+/// 「更多」面板 [rows] 行全部展开时的内容高度；行高是按工具栏大小 [scale]
+/// 缩放后的一格，行距不变。
+double diaryToolbarMorePanelNaturalHeight(int rows, {double scale = 1}) =>
+    rows * diaryToolbarButtonExtent(scale) +
+    math.max(0, rows - 1) * _kPanelRowGap;
 
 /// 「更多」面板实际给内容的高度：最多露 3 行（再多露半行提示可滚动），并且
 /// 整个面板不超过 [maxPanelExtent]。
-double diaryToolbarMorePanelBodyHeight(int rows, double maxPanelExtent) {
-  var body = diaryToolbarMorePanelNaturalHeight(rows);
+double diaryToolbarMorePanelBodyHeight(
+  int rows,
+  double maxPanelExtent, {
+  double scale = 1,
+}) {
+  var body = diaryToolbarMorePanelNaturalHeight(rows, scale: scale);
   if (rows > _kPanelMaxVisibleRows) {
+    // 多露出半行，提示面板还能往下滚。
     body =
-        diaryToolbarMorePanelNaturalHeight(_kPanelMaxVisibleRows) +
+        diaryToolbarMorePanelNaturalHeight(
+          _kPanelMaxVisibleRows,
+          scale: scale,
+        ) +
         _kPanelRowGap +
-        _kPanelScrollPeek;
+        diaryToolbarButtonExtent(scale) / 2;
   }
   return diaryToolbarPanelBodyLimit(body, maxPanelExtent);
 }
@@ -127,11 +134,15 @@ class DiaryToolbarMorePanel extends StatelessWidget {
     required this.rows,
     required this.cell,
     required this.bodyHeight,
+    this.scale = 1,
   });
 
   final List<List<DiaryToolbarItem>> rows;
   final Widget Function(DiaryToolbarItem item) cell;
   final double bodyHeight;
+
+  /// 工具栏大小（`DiaryToolbarSize.scale`），决定行高。
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +152,7 @@ class DiaryToolbarMorePanel extends StatelessWidget {
         for (var index = 0; index < rows.length; index++) ...<Widget>[
           if (index > 0) const SizedBox(height: _kPanelRowGap),
           SizedBox(
-            height: kDiaryToolbarButtonExtent,
+            height: diaryToolbarButtonExtent(scale),
             child: Row(
               children: <Widget>[for (final item in rows[index]) cell(item)],
             ),
@@ -150,7 +161,8 @@ class DiaryToolbarMorePanel extends StatelessWidget {
       ],
     );
     final scrollable =
-        bodyHeight < diaryToolbarMorePanelNaturalHeight(rows.length);
+        bodyHeight <
+        diaryToolbarMorePanelNaturalHeight(rows.length, scale: scale);
     return SizedBox(
       height: bodyHeight,
       child: scrollable

@@ -73,8 +73,8 @@ List<pw.Widget> buildDiaryPdfBody(
             )
           : theme.defaultTextStyle;
       final prefix = switch (block.kind) {
-        ExportBlockKind.bullet => '•  ',
-        ExportBlockKind.ordered => '${block.ordinal}.  ',
+        ExportBlockKind.bullet ||
+        ExportBlockKind.ordered => '${block.listMarker}  ',
         ExportBlockKind.checked => '[x]  ',
         ExportBlockKind.unchecked => '[ ]  ',
         _ => '',

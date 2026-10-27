@@ -66,6 +66,37 @@ void main() {
     );
   });
 
+  test('list styles survive only when they belong to the list type', () {
+    Map<String, Object?> item(String type, Object? style) => {
+      'type': type,
+      'data': {
+        'delta': [
+          {'insert': 'x'},
+        ],
+        'listStyle': style,
+      },
+    };
+    final body = sanitizeDiaryTemplateBlocks({
+      'document': {
+        'type': 'page',
+        'children': [
+          item('numbered_list', 'upper-roman'),
+          item('bulleted_list', 'diamond'),
+          item('bulleted_list', 'upper-roman'),
+          item('numbered_list', 'from-the-future'),
+          item('paragraph', 'star'),
+        ],
+      },
+    });
+    expect(
+      [
+        for (final (node, _) in walkDiaryBlocks(body))
+          diaryBlockData(node)['listStyle'],
+      ],
+      ['upper-roman', 'diamond', null, null, null],
+    );
+  });
+
   test('children of quotes, headings and code move after them', () {
     final body = sanitizeDiaryTemplateBlocks({
       'document': {

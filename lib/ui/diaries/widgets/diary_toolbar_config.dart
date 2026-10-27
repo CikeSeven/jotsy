@@ -44,10 +44,15 @@ bool isDiaryToolbarItemActive(
   _ => false,
 };
 
+/// 构建一个工具按钮。[onPressed] 给出时取代默认动作（有序 / 无序列表由
+/// 工具栏决定转为列表还是打开列表面板），[panelOpen] 为它的面板正开着，
+/// 与“选区正处在这种格式里”一样显示选中态。
 Widget buildDiaryToolbarItem(
   BuildContext context,
   DiaryToolbarItem item,
   DiaryEditorController controller, {
+  VoidCallback? onPressed,
+  bool panelOpen = false,
   String? currentTimeFormatPattern,
   VoidCallback? onRecordingPressed,
   bool recordingOpen = false,
@@ -66,6 +71,7 @@ Widget buildDiaryToolbarItem(
             _ => null,
           };
           final active =
+              panelOpen ||
               (tool == DiaryToolbarItem.recording && recordingOpen) ||
               isDiaryToolbarItemActive(tool, controller.activeAttributes);
           final enabled =
@@ -97,6 +103,10 @@ Widget buildDiaryToolbarItem(
                     : tool.label(context.l10n),
                 onPressed: enabled
                     ? () {
+                        if (onPressed != null) {
+                          onPressed();
+                          return;
+                        }
                         if (kind != null) {
                           onMediaPressed!(kind);
                           return;
@@ -178,8 +188,6 @@ void _apply(
     return;
   }
   final type = switch (item) {
-    DiaryToolbarItem.orderedList => 'numbered_list',
-    DiaryToolbarItem.bulletList => 'bulleted_list',
     DiaryToolbarItem.checkList => 'todo_list',
     DiaryToolbarItem.quote => 'quote',
     _ => null,

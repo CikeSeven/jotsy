@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
+import 'package:node_diary/ui/diaries/models/diary_toolbar_size.dart';
 
 /// 悬浮工具栏卡片宽度 = 屏宽 - 两侧各 12dp。
 double _cardWidth(double screenWidth) =>
@@ -37,6 +38,48 @@ void main() {
         expect(layout.columns, 8, reason: '$screenWidth');
         expect(layout.pinned, kDefaultDiaryToolbarOrder.take(7));
       }
+    });
+
+    test('a larger toolbar size fits fewer tools on the row', () {
+      // 360dp：内容宽 320。小 34dp 一格放 8 格，大 48dp 放 6 格，特大 56dp
+      // 放 5 格；最后一格都留给「更多」。
+      int columns(DiaryToolbarSize size) => resolveDiaryToolbarLayout(
+        kDefaultDiaryToolbarOrder,
+        width: _cardWidth(360),
+        scale: size.scale,
+      ).columns;
+
+      expect(columns(DiaryToolbarSize.small), 8);
+      expect(columns(DiaryToolbarSize.standard), 7);
+      expect(columns(DiaryToolbarSize.large), 6);
+      expect(columns(DiaryToolbarSize.extraLarge), 5);
+
+      final large = resolveDiaryToolbarLayout(
+        kDefaultDiaryToolbarOrder,
+        width: _cardWidth(360),
+        scale: DiaryToolbarSize.large.scale,
+      );
+      expect(large.pinned, kDefaultDiaryToolbarOrder.take(5));
+
+      // 设置排序页的分界线按同一大小计算。
+      expect(
+        diaryToolbarOverflowBoundary(
+          kDefaultDiaryToolbarOrder,
+          const <DiaryToolbarItem>{},
+          width: _cardWidth(360),
+          scale: DiaryToolbarSize.extraLarge.scale,
+        ),
+        4,
+      );
+    });
+
+    test('unknown stored sizes read as standard', () {
+      expect(DiaryToolbarSize.decode(null), DiaryToolbarSize.standard);
+      expect(DiaryToolbarSize.decode('huge'), DiaryToolbarSize.standard);
+      expect(
+        DiaryToolbarSize.decode('extra_large'),
+        DiaryToolbarSize.extraLarge,
+      );
     });
 
     test(

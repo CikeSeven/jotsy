@@ -8170,4 +8170,85 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appSurfacePreviewCardBody2 => '摘下几句喜欢的话，留着以后再读。';
+
+  @override
+  String get diaryToolbarSizeTitle => '工具栏大小';
+
+  @override
+  String get diaryToolbarSizeSubtitle => '按钮和图标一起缩放，变大后一排放不下的工具收进「更多」';
+
+  @override
+  String get diaryToolbarSizeSmall => '小';
+
+  @override
+  String get diaryToolbarSizeStandard => '标准';
+
+  @override
+  String get diaryToolbarSizeLarge => '大';
+
+  @override
+  String get diaryToolbarSizeExtraLarge => '特大';
+
+  @override
+  String get diaryListStyleNumberedTitle => '有序列表样式';
+
+  @override
+  String get diaryListStyleBulletedTitle => '无序列表样式';
+
+  @override
+  String get diaryListStyleAuto => '自动（按层级变化）';
+
+  @override
+  String get diaryListStyleDecimal => '数字 1. 2. 3.';
+
+  @override
+  String get diaryListStyleParenthesized => '括号数字 (1) (2) (3)';
+
+  @override
+  String get diaryListStyleCircled => '带圈数字 ① ② ③';
+
+  @override
+  String get diaryListStyleChinese => '中文数字 一、二、三、';
+
+  @override
+  String get diaryListStyleLowerAlpha => '小写字母 a. b. c.';
+
+  @override
+  String get diaryListStyleUpperAlpha => '大写字母 A. B. C.';
+
+  @override
+  String get diaryListStyleLowerRoman => '小写罗马数字 i. ii. iii.';
+
+  @override
+  String get diaryListStyleUpperRoman => '大写罗马数字 I. II. III.';
+
+  @override
+  String get diaryListStyleDisc => '实心圆点';
+
+  @override
+  String get diaryListStyleCircle => '空心圆';
+
+  @override
+  String get diaryListStyleSquare => '方块';
+
+  @override
+  String get diaryListStyleDiamond => '菱形';
+
+  @override
+  String get diaryListStyleStar => '星形';
+
+  @override
+  String get diaryListStyleArrow => '箭头';
+
+  @override
+  String get diaryListStyleDash => '短横线';
+
+  @override
+  String get diaryListToBulleted => '转为无序列表';
+
+  @override
+  String get diaryListToNumbered => '转为有序列表';
+
+  @override
+  String get diaryListToText => '转为正文';
 }

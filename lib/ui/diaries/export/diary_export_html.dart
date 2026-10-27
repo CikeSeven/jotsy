@@ -430,9 +430,13 @@ class DiaryHtmlWriter {
           ' class="task"><input type="checkbox" disabled',
         _ => null,
       };
+      // 列表样式按项写类名（见 _css 的 li.ls-*）：无序项与待办共用一个 ul，
+      // 一个 ul 里可能有几段样式不同的列表。
+      final styleId = item.orderedStyle?.id ?? item.bulletStyle?.id;
       out.write(
         task == null
-            ? '<li>${_inlines(item.inlines)}'
+            ? '<li${styleId == null ? '' : ' class="ls-$styleId"'}>'
+                  '${_inlines(item.inlines)}'
             : '<li$task> ${_inlines(item.inlines)}',
       );
       itemOpen = true;
@@ -610,6 +614,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 p code,li code{background:var(--bg);border-radius:6px;padding:1px 5px}
 ul,ol{margin:4px 0;padding-left:1.6em}
 li.task{list-style:none;margin-left:-1.4em}
+li.ls-decimal{list-style-type:decimal}
+li.ls-paren{list-style-type:jotsy-paren}
+li.ls-circled{list-style-type:jotsy-circled}
+li.ls-cjk{list-style-type:simp-chinese-informal}
+li.ls-lower-alpha{list-style-type:lower-alpha}
+li.ls-upper-alpha{list-style-type:upper-alpha}
+li.ls-lower-roman{list-style-type:lower-roman}
+li.ls-upper-roman{list-style-type:upper-roman}
+li.ls-disc{list-style-type:disc}
+li.ls-circle{list-style-type:circle}
+li.ls-square{list-style-type:square}
+li.ls-diamond{list-style-type:"◆  "}
+li.ls-star{list-style-type:"★  "}
+li.ls-arrow{list-style-type:"→  "}
+li.ls-dash{list-style-type:"–  "}
+@counter-style jotsy-paren{system:extends decimal;prefix:"(";suffix:") "}
+@counter-style jotsy-circled{system:fixed;symbols:"①" "②" "③" "④" "⑤" "⑥" "⑦" "⑧" "⑨" "⑩";suffix:" "}
 a{color:var(--accent)}
 .attachment{color:var(--muted);font-size:14px;margin:4px 0}
 footer{color:var(--muted);font-size:12px;text-align:center}

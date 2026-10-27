@@ -9126,4 +9126,87 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appSurfacePreviewCardBody2 =>
       'Saved a few lines I liked to read again later.';
+
+  @override
+  String get diaryToolbarSizeTitle => 'Toolbar size';
+
+  @override
+  String get diaryToolbarSizeSubtitle =>
+      'Buttons and icons scale together. Tools that no longer fit in one row go into More.';
+
+  @override
+  String get diaryToolbarSizeSmall => 'Small';
+
+  @override
+  String get diaryToolbarSizeStandard => 'Standard';
+
+  @override
+  String get diaryToolbarSizeLarge => 'Large';
+
+  @override
+  String get diaryToolbarSizeExtraLarge => 'Extra large';
+
+  @override
+  String get diaryListStyleNumberedTitle => 'Numbered list style';
+
+  @override
+  String get diaryListStyleBulletedTitle => 'Bulleted list style';
+
+  @override
+  String get diaryListStyleAuto => 'Automatic (changes with level)';
+
+  @override
+  String get diaryListStyleDecimal => 'Numbers 1. 2. 3.';
+
+  @override
+  String get diaryListStyleParenthesized =>
+      'Numbers in parentheses (1) (2) (3)';
+
+  @override
+  String get diaryListStyleCircled => 'Circled numbers ① ② ③';
+
+  @override
+  String get diaryListStyleChinese => 'Chinese numerals 一、二、三、';
+
+  @override
+  String get diaryListStyleLowerAlpha => 'Lowercase letters a. b. c.';
+
+  @override
+  String get diaryListStyleUpperAlpha => 'Uppercase letters A. B. C.';
+
+  @override
+  String get diaryListStyleLowerRoman => 'Lowercase Roman numerals i. ii. iii.';
+
+  @override
+  String get diaryListStyleUpperRoman => 'Uppercase Roman numerals I. II. III.';
+
+  @override
+  String get diaryListStyleDisc => 'Filled dot';
+
+  @override
+  String get diaryListStyleCircle => 'Hollow circle';
+
+  @override
+  String get diaryListStyleSquare => 'Square';
+
+  @override
+  String get diaryListStyleDiamond => 'Diamond';
+
+  @override
+  String get diaryListStyleStar => 'Star';
+
+  @override
+  String get diaryListStyleArrow => 'Arrow';
+
+  @override
+  String get diaryListStyleDash => 'Dash';
+
+  @override
+  String get diaryListToBulleted => 'To bulleted list';
+
+  @override
+  String get diaryListToNumbered => 'To numbered list';
+
+  @override
+  String get diaryListToText => 'Convert to text';
 }

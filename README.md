@@ -227,6 +227,12 @@ Jotsy 免费开源，没有广告。如果它对你有帮助，欢迎扫码打�
   </tr>
 </table>
 
+### 💝 感谢打赏
+
+感谢以下朋友的支持：
+
+ParadiseGrass · 氢妹Ti · MR.CHEN · 白禹和Kamiko Kristo · Hongda · AXID · \*\*民 · 泽墨 · 霖
+
 ## 📄 开源许可
 
 Jotsy 以 [GPL-3.0](LICENSE) 协议开源。

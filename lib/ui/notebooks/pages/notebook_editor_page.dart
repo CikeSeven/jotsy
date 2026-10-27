@@ -19,6 +19,7 @@ import '../controllers/notebook_editor_controller.dart';
 import '../sections/notebook_editor_appearance.dart';
 import '../sections/notebook_editor_behavior.dart';
 import '../sections/notebook_editor_goal.dart';
+import '../sections/notebook_editor_parent.dart';
 import '../sections/notebook_editor_rules.dart';
 import '../viewmodels/notebook_tree.dart';
 import '../../widgets/form_width.dart';
@@ -276,13 +277,18 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
               gap,
               NotebookEditorTypeSection(controller: editor),
             ],
+            gap,
+            NotebookEditorParentSection(controller: editor),
             if (editor.isSmart) ...<Widget>[
               gap,
               NotebookEditorRulesSection(controller: editor),
             ],
             if (!editor.isSmart) ...<Widget>[
               gap,
-              NotebookEditorPrivacySection(controller: editor),
+              NotebookEditorPrivacySection(
+                controller: editor,
+                notice: NotebookInheritedPrivacyNote(controller: editor),
+              ),
               gap,
               NotebookEditorGoalSection(controller: editor),
             ],

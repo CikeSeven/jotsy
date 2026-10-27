@@ -10,6 +10,8 @@ import 'package:node_diary/ui/diaries/viewmodels/publish_panel_summary.dart';
 import 'package:node_diary/ui/notebooks/models/notebook_pick_selection.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/sections/notebook_quick_create_dialog.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_tree.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_tree_rows.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_capsule.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_pick_row.dart';
@@ -132,15 +134,15 @@ class PublishNotebookPickerPage extends ConsumerWidget {
         valueListenable: draft,
         selector: (value) => value.notebookIds,
         builder: (context, selectedIds, _) {
+          // 树序：子本紧跟在上级下面、按层级缩进（上级没列出时往外提）。
           final rows = all == null
               ? null
-              : <NotebookView>[
-                  for (final notebook in all)
-                    if (notebook.isManual &&
-                        (!notebook.isClosed ||
-                            selectedIds.contains(notebook.id)))
-                      notebook,
-                ];
+              : notebookTreeRows(
+                  NotebookTree.fromViews(all),
+                  include: (NotebookView notebook) =>
+                      notebook.isManual &&
+                      (!notebook.isClosed || selectedIds.contains(notebook.id)),
+                );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -163,10 +165,11 @@ class PublishNotebookPickerPage extends ConsumerWidget {
                   ),
                 )
               else
-                for (final notebook in rows)
+                for (final NotebookTreeRow(:notebook, :indent) in rows)
                   NotebookPickRow(
                     key: ValueKey<String>('publish_notebook_${notebook.id}'),
                     notebook: notebook,
+                    indent: indent,
                     count: counts[notebook.id] ?? 0,
                     state: selectedIds.contains(notebook.id)
                         ? NotebookPickState.all

@@ -2,7 +2,7 @@ import '../../../core/database/app_database.dart';
 import '../models/notebook_scope_resolver.dart';
 import '../viewmodels/notebook_view.dart';
 
-/// 日记本的书架操作：置顶、合上、排序、删除与撤销、合并、智能转普通。书架面板与管理页
+/// 日记本的书架操作：置顶、合上、排序、换上级、删除与撤销、合并、智能转普通。书架面板与管理页
 /// 共用，不构建 UI——确认、提示与撤销条由 `notebook_action_flows.dart` 负责。
 ///
 /// 输入输出一律是业务 id；数据库里找不到时由数据库层抛 [ArgumentError]。
@@ -47,6 +47,12 @@ class NotebooksController {
 
   Future<void> reorder(List<String> manualOrder) =>
       database.reorderNotebooks(manualOrder);
+
+  /// 把 [notebookId] 放到 [parentId] 下（null 为放回书架顶层），排在新上级的
+  /// 子本最后。不合法（成环、超过三层、上级不是手动本或已不存在）时数据库层
+  /// 抛 [ArgumentError]，由调用方提示。
+  Future<void> move(String notebookId, String? parentId) =>
+      database.moveNotebook(notebookId, parentId);
 }
 
 /// 一个分组内拖动排序后的全局顺序。

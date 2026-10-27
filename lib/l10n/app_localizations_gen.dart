@@ -11198,6 +11198,108 @@ abstract class AppLocalizations {
   /// **'Manage'**
   String get notebookManage;
 
+  /// Small title of the sub-notebook row in the home notebook header card.
+  ///
+  /// In en, this message translates to:
+  /// **'Sub-notebooks'**
+  String get notebookSubSectionTitle;
+
+  /// Tile at the end of the header card's sub-notebook row that creates a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get notebookSubCreateShort;
+
+  /// Notebook actions sheet item that creates a sub-notebook inside this one.
+  ///
+  /// In en, this message translates to:
+  /// **'New sub-notebook'**
+  String get notebookSubCreate;
+
+  /// Screen reader text for a shelf cover that has sub-notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Contains 1 sub-notebook} other{Contains {count} sub-notebooks}}'**
+  String notebookSubCountSemantics(int count);
+
+  /// Screen reader text and tooltip of a parent notebook in the header card breadcrumb.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to \"{name}\"'**
+  String notebookNestGoUp(String name);
+
+  /// Separator between levels of a notebook path, e.g. "Travel › 2025".
+  ///
+  /// In en, this message translates to:
+  /// **' › '**
+  String get notebookNestPathSeparator;
+
+  /// Notebook editor group title and parent picker sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent notebook'**
+  String get notebookParentLabel;
+
+  /// No parent notebook: the notebook sits at the top level of the shelf.
+  ///
+  /// In en, this message translates to:
+  /// **'None (on the shelf)'**
+  String get notebookParentNone;
+
+  /// Note under the editor's parent notebook group.
+  ///
+  /// In en, this message translates to:
+  /// **'Its entries also show up when you open the parent. Up to three levels; smart notebooks can sit inside another notebook but can\'t hold sub-notebooks.'**
+  String get notebookParentFooter;
+
+  /// Parent picker sheet note when nothing but "None" can be chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'No notebook can hold this one: up to three levels, and smart notebooks can\'t hold sub-notebooks'**
+  String get notebookParentPickerEmpty;
+
+  /// Editor privacy group note: the parent is hidden, so this notebook is hidden too.
+  ///
+  /// In en, this message translates to:
+  /// **'The parent \"{name}\" is hidden from All entries, so this notebook is hidden too'**
+  String notebookParentPrivacyHidden(String name);
+
+  /// Editor privacy group note: the parent is locked, so this notebook is locked too.
+  ///
+  /// In en, this message translates to:
+  /// **'The parent \"{name}\" is locked, so this notebook is locked too'**
+  String notebookParentPrivacyLocked(String name);
+
+  /// Notebook actions sheet item that puts this notebook inside another one (or back on the shelf).
+  ///
+  /// In en, this message translates to:
+  /// **'Move to…'**
+  String get notebookNestMove;
+
+  /// Subtitle of the "Move to…" item in the notebook actions sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Put it inside another notebook or back on the shelf'**
+  String get notebookNestMoveHint;
+
+  /// Message after moving a notebook inside another one.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved into \"{name}\"'**
+  String notebookNestMoved(String name);
+
+  /// Message after moving a sub-notebook back to the top level of the shelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved back to the shelf'**
+  String get notebookNestMovedToShelf;
+
+  /// Delete confirmation note for a notebook that has sub-notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Its sub-notebook moves up a level and isn\'t deleted} other{Its {count} sub-notebooks move up a level and aren\'t deleted}}'**
+  String notebookNestDeleteChildrenHint(int count);
+
   /// Shelf sheet row that returns to all entries.
   ///
   /// In en, this message translates to:
@@ -11323,6 +11425,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get notebookCoverRemove;
+
+  /// Title of the cover group on the notebook editor (layout, texture and image).
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get notebookCoverSectionTitle;
+
+  /// Small heading of the cover layout choices.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get notebookCoverLayoutTitle;
+
+  /// Cover layout: classic (image on top, name below).
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get notebookCoverLayoutClassic;
+
+  /// Cover layout: full bleed (the image fills the whole cover).
+  ///
+  /// In en, this message translates to:
+  /// **'Full bleed'**
+  String get notebookCoverLayoutFullBleed;
+
+  /// Cover layout: spine (a darker spine along the leading edge).
+  ///
+  /// In en, this message translates to:
+  /// **'Spine'**
+  String get notebookCoverLayoutSpine;
+
+  /// Cover layout: label (the name sits on a label in the middle).
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get notebookCoverLayoutPlate;
+
+  /// Cover layout: minimal (no icon, larger name).
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get notebookCoverLayoutMinimal;
+
+  /// Small heading of the cover texture choices.
+  ///
+  /// In en, this message translates to:
+  /// **'Texture'**
+  String get notebookCoverTextureTitle;
+
+  /// Cover texture: none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get notebookCoverTextureNone;
+
+  /// Cover texture: dots.
+  ///
+  /// In en, this message translates to:
+  /// **'Dots'**
+  String get notebookCoverTextureDots;
+
+  /// Cover texture: ruled lines.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines'**
+  String get notebookCoverTextureLines;
+
+  /// Cover texture: grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get notebookCoverTextureGrid;
+
+  /// Cover texture: diagonal stripes.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagonal'**
+  String get notebookCoverTextureDiagonal;
+
+  /// Button (existing notebooks only) that picks the cover from images in this notebook's diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'From diaries'**
+  String get notebookCoverFromDiaries;
+
+  /// Button that opens the cover framing page; also the page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust framing'**
+  String get notebookCoverAdjustCrop;
+
+  /// Top-right button on the framing page that keeps the framing and goes back.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get notebookCoverCropDone;
+
+  /// Hint at the bottom of the framing page on phones.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to move, pinch to zoom'**
+  String get notebookCoverCropHint;
+
+  /// Hint at the bottom of the framing page on desktop.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to move, scroll to zoom'**
+  String get notebookCoverCropHintDesktop;
+
+  /// Accessibility label of the zoom slider on the framing page.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom'**
+  String get notebookCoverCropZoom;
+
+  /// Shown on the framing page when the cover image cannot be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this image'**
+  String get notebookCoverCropLoadFailed;
+
+  /// Title of the sheet that picks a cover from diary images.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a cover from diaries'**
+  String get notebookCoverPhotosTitle;
+
+  /// Note under the title of the pick-from-diaries sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Images used in this notebook\'s diaries (sub-notebooks included), newest first'**
+  String get notebookCoverPhotosSubtitle;
+
+  /// Shown in the pick-from-diaries sheet when there are no images.
+  ///
+  /// In en, this message translates to:
+  /// **'No images in this notebook\'s diaries yet'**
+  String get notebookCoverPhotosEmpty;
+
+  /// Accessibility label of one thumbnail in the pick-from-diaries sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Image {index}'**
+  String notebookCoverPhotoItem(int index);
 
   /// Title of the notebook type group when creating a notebook.
   ///

@@ -23,7 +23,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
-import '../../../core/database/notebook_payload.dart';
 import '../../../core/services/app_features.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
@@ -209,10 +208,10 @@ class AppFeaturesPage extends ConsumerWidget {
     }
   }
 
-  /// 私密本子：手动、可见性不是 normal（智能本写入时一律存 normal）。
-  static int _countPrivate(List<NotebookView> notebooks) => notebooks
-      .where((n) => n.isManual && n.visibility != NotebookVisibility.normal)
-      .length;
+  /// 私密本子：手动、生效可见性不是 normal（上级私密的子本同样算；智能本
+  /// 没有收录的日记，不算）。
+  static int _countPrivate(List<NotebookView> notebooks) =>
+      notebooks.where((n) => n.isManual && n.isPrivate).length;
 
   Future<bool?> _confirmNotebooksOff(BuildContext context, int count) {
     final l10n = context.l10n;

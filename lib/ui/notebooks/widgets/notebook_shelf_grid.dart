@@ -12,6 +12,7 @@ import '../sections/notebook_action_flows.dart';
 import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_tile.dart';
+import 'notebook_stacked_cover.dart';
 
 /// 书架网格的列数：窄屏（< 360dp）两列，否则每 180 一列、至少三列。
 ///
@@ -60,7 +61,8 @@ class NotebookShelfGrid extends StatelessWidget {
 }
 
 /// 书架上的一本：点按选中，长按弹出编辑 / 置顶 / 合上 / 删除菜单（4 项单行
-/// 动作，按 DESIGN.md §5.4 用锚定弹出菜单）。
+/// 动作，按 DESIGN.md §5.4 用锚定弹出菜单）。有子本时封面后面叠两层纸边
+/// （[NotebookStackedCover]），点按照常进入（列表汇总子本）。
 class NotebookShelfTile extends ConsumerWidget {
   const NotebookShelfTile({
     super.key,
@@ -68,12 +70,16 @@ class NotebookShelfTile extends ConsumerWidget {
     required this.count,
     required this.selected,
     required this.onTap,
+    this.childCount = 0,
   });
 
   final NotebookView notebook;
   final int? count;
   final bool selected;
   final VoidCallback onTap;
+
+  /// 直接子本数（0 为没有子本，不画叠放）。
+  final int childCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -97,12 +103,17 @@ class NotebookShelfTile extends ConsumerWidget {
           ),
       ],
       builder: (BuildContext context, ExpressiveMenuAnchorState menu, _) =>
-          NotebookCoverTile.fromView(
-            notebook,
-            count: count,
-            selected: selected,
-            onTap: onTap,
-            onLongPress: menu.open,
+          NotebookStackedCover(
+            childCount: childCount,
+            color: notebook.color,
+            closed: notebook.isClosed,
+            child: NotebookCoverTile.fromView(
+              notebook,
+              count: count,
+              selected: selected,
+              onTap: onTap,
+              onLongPress: menu.open,
+            ),
           ),
     );
   }

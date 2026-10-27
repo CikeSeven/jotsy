@@ -9,7 +9,21 @@ import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
 
 /// 对一个日记本可做的操作（书架长按菜单与管理页“更多”面板共用）。
-enum NotebookAction { edit, pin, unpin, close, reopen, merge, convert, delete }
+///
+/// [createChild]（新建子日记本）与 [move]（移动到…：换上级或放回书架）只在
+/// 管理页的操作面板里出现。
+enum NotebookAction {
+  edit,
+  pin,
+  unpin,
+  createChild,
+  move,
+  close,
+  reopen,
+  merge,
+  convert,
+  delete,
+}
 
 /// 书架长按菜单的四项：编辑 / 置顶或取消置顶 / 合上或重新打开 / 删除。
 List<NotebookAction> notebookQuickActions(NotebookView notebook) =>
@@ -25,6 +39,8 @@ String notebookActionLabel(AppLocalizations l10n, NotebookAction action) =>
       NotebookAction.edit => l10n.commonEdit,
       NotebookAction.pin => l10n.notebookActionPin,
       NotebookAction.unpin => l10n.notebookActionUnpin,
+      NotebookAction.createChild => l10n.notebookSubCreate,
+      NotebookAction.move => l10n.notebookNestMove,
       NotebookAction.close => l10n.notebookActionClose,
       NotebookAction.reopen => l10n.notebookActionReopen,
       NotebookAction.merge => l10n.notebookActionMerge,
@@ -36,6 +52,8 @@ FaIconData notebookActionIcon(NotebookAction action) => switch (action) {
   NotebookAction.edit => FontAwesomeIcons.penToSquare,
   NotebookAction.pin => FontAwesomeIcons.thumbtack,
   NotebookAction.unpin => FontAwesomeIcons.thumbtackSlash,
+  NotebookAction.createChild => FontAwesomeIcons.squarePlus,
+  NotebookAction.move => FontAwesomeIcons.folderTree,
   NotebookAction.close => FontAwesomeIcons.boxArchive,
   NotebookAction.reopen => FontAwesomeIcons.bookOpen,
   NotebookAction.merge => FontAwesomeIcons.codeMerge,
@@ -83,8 +101,9 @@ class _SheetTitle extends StatelessWidget {
   }
 }
 
-/// 管理页行尾“更多”的底部面板：编辑、置顶、合并到…、合上 / 重新打开、
-/// 转为普通日记本（仅智能本）、删除（error 色）。
+/// 管理页行尾“更多”的底部面板：编辑、置顶、新建子日记本（还能放子本的
+/// 普通日记本）、移动到…、合并到…、合上 / 重新打开、转为普通日记本（仅
+/// 智能本）、删除（error 色）。
 /// 项目多且带说明，按 DESIGN.md §5.4 用面板而不是弹出菜单。
 Future<NotebookAction?> showNotebookActionsSheet(
   BuildContext context, {
@@ -100,6 +119,8 @@ Future<NotebookAction?> showNotebookActionsSheet(
         null,
         true,
       ),
+      if (notebook.canHaveChildren) (NotebookAction.createChild, null, true),
+      (NotebookAction.move, l10n.notebookNestMoveHint, true),
       if (notebook.isManual) (NotebookAction.merge, null, true),
       notebook.isClosed
           ? (NotebookAction.reopen, null, true)
@@ -174,12 +195,7 @@ Future<NotebookView?> showNotebookMergeTargetSheet(
                   horizontal: AppSpacing.xl,
                   vertical: AppSpacing.xs,
                 ),
-                leading: NotebookCoverTile.mini(
-                  icon: notebook.icon,
-                  color: notebook.color,
-                  coverPath: notebook.coverPath,
-                  closed: notebook.isClosed,
-                ),
+                leading: NotebookCoverTile.miniFromView(notebook),
                 title: Text(
                   notebook.name,
                   maxLines: 1,

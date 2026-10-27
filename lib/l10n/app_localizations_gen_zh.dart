@@ -6098,6 +6098,70 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookManage => '管理';
 
   @override
+  String get notebookSubSectionTitle => '子日记本';
+
+  @override
+  String get notebookSubCreateShort => '新建子本';
+
+  @override
+  String get notebookSubCreate => '新建子日记本';
+
+  @override
+  String notebookSubCountSemantics(int count) {
+    return '含 $count 本子日记本';
+  }
+
+  @override
+  String notebookNestGoUp(String name) {
+    return '回到「$name」';
+  }
+
+  @override
+  String get notebookNestPathSeparator => ' › ';
+
+  @override
+  String get notebookParentLabel => '上级日记本';
+
+  @override
+  String get notebookParentNone => '无（放在书架上）';
+
+  @override
+  String get notebookParentFooter =>
+      '打开上级时也会看到这本里的日记。最多三层；智能日记本可以放在别的本子下，但不能再放子本。';
+
+  @override
+  String get notebookParentPickerEmpty => '没有能放进去的日记本：最多三层，智能日记本不能放子本';
+
+  @override
+  String notebookParentPrivacyHidden(String name) {
+    return '上级「$name」不在全部日记中显示，这本也随之隐藏';
+  }
+
+  @override
+  String notebookParentPrivacyLocked(String name) {
+    return '上级「$name」已上锁，这本也随之上锁';
+  }
+
+  @override
+  String get notebookNestMove => '移动到…';
+
+  @override
+  String get notebookNestMoveHint => '放到另一本日记本下，或放回书架';
+
+  @override
+  String notebookNestMoved(String name) {
+    return '已移到「$name」下';
+  }
+
+  @override
+  String get notebookNestMovedToShelf => '已放回书架';
+
+  @override
+  String notebookNestDeleteChildrenHint(int count) {
+    return '$count 本子日记本会移到上一层，不会删除';
+  }
+
+  @override
   String get notebookAllDiaries => '全部日记';
 
   @override
@@ -6161,6 +6225,80 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookCoverRemove => '移除';
+
+  @override
+  String get notebookCoverSectionTitle => '封面';
+
+  @override
+  String get notebookCoverLayoutTitle => '版式';
+
+  @override
+  String get notebookCoverLayoutClassic => '经典';
+
+  @override
+  String get notebookCoverLayoutFullBleed => '满版';
+
+  @override
+  String get notebookCoverLayoutSpine => '书脊';
+
+  @override
+  String get notebookCoverLayoutPlate => '贴签';
+
+  @override
+  String get notebookCoverLayoutMinimal => '极简';
+
+  @override
+  String get notebookCoverTextureTitle => '纹理';
+
+  @override
+  String get notebookCoverTextureNone => '无';
+
+  @override
+  String get notebookCoverTextureDots => '圆点';
+
+  @override
+  String get notebookCoverTextureLines => '横线';
+
+  @override
+  String get notebookCoverTextureGrid => '方格';
+
+  @override
+  String get notebookCoverTextureDiagonal => '斜纹';
+
+  @override
+  String get notebookCoverFromDiaries => '从日记中选';
+
+  @override
+  String get notebookCoverAdjustCrop => '调整取景';
+
+  @override
+  String get notebookCoverCropDone => '完成';
+
+  @override
+  String get notebookCoverCropHint => '拖动移动图片，双指缩放';
+
+  @override
+  String get notebookCoverCropHintDesktop => '拖动移动图片，滚动滚轮缩放';
+
+  @override
+  String get notebookCoverCropZoom => '缩放';
+
+  @override
+  String get notebookCoverCropLoadFailed => '无法读取这张图片';
+
+  @override
+  String get notebookCoverPhotosTitle => '从日记中选封面';
+
+  @override
+  String get notebookCoverPhotosSubtitle => '本子里（含子日记本）的日记用到的图片，新的在前';
+
+  @override
+  String get notebookCoverPhotosEmpty => '这本日记本的日记里还没有图片';
+
+  @override
+  String notebookCoverPhotoItem(int index) {
+    return '第 $index 张图片';
+  }
 
   @override
   String get notebookTypeLabel => '类型';

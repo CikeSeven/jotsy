@@ -12,6 +12,7 @@ import '../../widgets/delayed_loading_indicator.dart';
 import '../pages/notebook_editor_page.dart';
 import '../pages/notebooks_page.dart';
 import '../providers/notebook_providers.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
 import '../widgets/notebook_shelf_grid.dart';
@@ -88,6 +89,9 @@ Future<NotebookShelfResult?> showNotebookShelfSheet(
 
 /// 书架面板内容：标题行（“管理”进入管理页）、“全部日记”、置顶 / 我的日记本
 /// / 智能日记本 / 已合上四组封面网格（空组不显示，“已合上”默认收起）。
+///
+/// 只列顶层的本子（置顶除外，见 [NotebookShelfGroups]）：子本跟着上级，在
+/// 上级的头部卡片里点进；有子本的封面画成叠放的样子。
 class NotebookShelf extends ConsumerStatefulWidget {
   const NotebookShelf({
     super.key,
@@ -117,6 +121,7 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
     final notebooks = ref.watch(notebooksProvider).value;
     final counts =
         ref.watch(notebookEntryCountsProvider).value ?? const <String, int>{};
+    final tree = ref.watch(notebookTreeProvider);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final columns = notebookShelfColumns(constraints.maxWidth);
@@ -178,6 +183,7 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
                 NotebookShelfGroups(notebooks),
                 counts,
                 columns,
+                tree,
               ),
           ],
         );
@@ -190,11 +196,13 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
     NotebookShelfGroups groups,
     Map<String, int> counts,
     int columns,
+    NotebookTree? tree,
   ) {
     final l10n = context.l10n;
     Widget tile(NotebookView notebook) => NotebookShelfTile(
       key: ValueKey<String>('notebook_shelf_${notebook.id}'),
       notebook: notebook,
+      childCount: tree?.childrenOf(notebook.id).length ?? 0,
       // 智能日记本的篇数由规则现算（算出之前不显示）。
       count: watchNotebookDisplayCount(ref, notebook, counts),
       selected: notebook.id == widget.currentNotebookId,

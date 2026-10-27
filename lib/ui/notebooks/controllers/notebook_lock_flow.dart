@@ -6,12 +6,36 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/device_auth_service.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../pages/notebook_editor_page.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 
 /// 打开这本日记本前是否要验证身份：看生效可见性，上级上了锁的子本同样要
 /// 验证。[notebook] 须带层级信息（取自书架列表，见 `NotebookView`）。
 bool notebookRequiresAuth(NotebookView notebook) =>
     notebook.effectiveVisibility == NotebookVisibility.locked;
+
+/// 首页从 [fromId]（null 为全部日记，或验证会话已失效）切到 [target] 时是否
+/// 要验证：目标上锁（看生效可见性），且两者不在同一个上锁范围里
+/// （[NotebookTree.lockRootOf] 不同）。
+///
+/// 为什么同一个范围里不再验证：进入这个范围时已经验证过（上锁的父本与随之
+/// 上锁的子本之间来回切换、经面包屑回到上级），切到后台时重锁遮罩会让整个
+/// 会话失效、回来须重新验证。进入比当前更私密的子本（自己上了锁的子本）
+/// 范围的根不同，仍要验证。
+bool notebookSwitchRequiresAuth(
+  NotebookTree tree,
+  NotebookView target, {
+  String? fromId,
+}) {
+  if (!notebookRequiresAuth(target)) {
+    return false;
+  }
+  if (fromId == null) {
+    return true;
+  }
+  final root = tree.lockRootOf(target.id);
+  return root == null || root != tree.lockRootOf(fromId);
+}
 
 /// 进入日记本前的身份验证（只有上锁的需要）。
 ///

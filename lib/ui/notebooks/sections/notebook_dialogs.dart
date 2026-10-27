@@ -9,24 +9,34 @@ import '../viewmodels/notebook_view.dart';
 ///
 /// 普通日记本给两个选项：默认“只删除日记本”（日记仍在全部日记里），或
 /// “连同日记移到回收站”（选中时确认键变为 error 色）。智能日记本没有收录
-/// 关系，只说明日记不受影响。
+/// 关系，只说明日记不受影响。有子本（[childCount] > 0）时另起一行说明子本
+/// 会移到上一层、不会删除（数据库层删除时整棵子树往上提）。
 Future<bool?> showNotebookDeleteDialog(
   BuildContext context, {
   required NotebookView notebook,
   required int count,
+  int childCount = 0,
 }) {
   return showAppDialog<bool>(
     context: context,
-    builder: (BuildContext _) =>
-        _NotebookDeleteDialog(notebook: notebook, count: count),
+    builder: (BuildContext _) => _NotebookDeleteDialog(
+      notebook: notebook,
+      count: count,
+      childCount: childCount,
+    ),
   );
 }
 
 class _NotebookDeleteDialog extends StatefulWidget {
-  const _NotebookDeleteDialog({required this.notebook, required this.count});
+  const _NotebookDeleteDialog({
+    required this.notebook,
+    required this.count,
+    required this.childCount,
+  });
 
   final NotebookView notebook;
   final int count;
+  final int childCount;
 
   @override
   State<_NotebookDeleteDialog> createState() => _NotebookDeleteDialogState();
@@ -60,6 +70,16 @@ class _NotebookDeleteDialogState extends State<_NotebookDeleteDialog> {
                   destructive: true,
                   onTap: () => setState(() => _trashDiaries = true),
                 ),
+                if (widget.childCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                    child: Text(
+                      l10n.notebookNestDeleteChildrenHint(widget.childCount),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
               ],
             )
           : Text(l10n.notebookDeleteSmartHint),

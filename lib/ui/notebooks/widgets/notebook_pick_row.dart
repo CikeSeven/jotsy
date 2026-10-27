@@ -6,6 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/notebook_pick_selection.dart';
+import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_parts.dart';
 
@@ -15,7 +16,9 @@ import 'notebook_cover_parts.dart';
 ///
 /// - [state] 为三态：空心圆 / 实心勾 / 实心减号（“部分已收进”）；切换经
 ///   [ExpressiveIconSwap]，底色经 [ExpressiveStateBlend] 补间；
-/// - [showCheck] 为 false 时行尾不显示勾选（“移动到…”点一下就选定）。
+/// - [showCheck] 为 false 时行尾不显示勾选（“移动到…”点一下就选定）；
+/// - [indent] 为树形列表里的缩进级数（子本缩在上级下面，见
+///   `notebookTreeRows`）；私密图标看生效可见性（上级私密的子本同样标出）。
 class NotebookPickRow extends StatelessWidget {
   const NotebookPickRow({
     super.key,
@@ -24,6 +27,7 @@ class NotebookPickRow extends StatelessWidget {
     required this.onTap,
     this.count,
     this.showCheck = true,
+    this.indent = 0,
   });
 
   final NotebookView notebook;
@@ -34,6 +38,9 @@ class NotebookPickRow extends StatelessWidget {
   final int? count;
   final bool showCheck;
 
+  /// 缩进级数，每级 [notebookTreeIndentStep]。
+  final int indent;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -43,7 +50,7 @@ class NotebookPickRow extends StatelessWidget {
     final accent = notebookAccentColors(notebook.color, scheme);
     final active = state != NotebookPickState.none;
     final count = this.count;
-    final privateIcon = switch (notebook.visibility) {
+    final privateIcon = switch (notebook.effectiveVisibility) {
       NotebookVisibility.locked => FontAwesomeIcons.lock,
       NotebookVisibility.hidden => FontAwesomeIcons.eyeSlash,
       NotebookVisibility.normal => null,
@@ -66,7 +73,10 @@ class NotebookPickRow extends StatelessWidget {
       ),
     };
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsetsDirectional.only(
+        start: indent * notebookTreeIndentStep,
+        bottom: 8,
+      ),
       child: Semantics(
         checked: showCheck ? state == NotebookPickState.all : null,
         mixed: showCheck && state == NotebookPickState.some ? true : null,
@@ -132,7 +142,7 @@ class NotebookPickRow extends StatelessWidget {
                                     size: 11,
                                     color: scheme.onSurfaceVariant,
                                     semanticLabel:
-                                        notebook.visibility ==
+                                        notebook.effectiveVisibility ==
                                             NotebookVisibility.locked
                                         ? l10n.notebookStateLocked
                                         : l10n.notebookStateHidden,

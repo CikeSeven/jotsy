@@ -8636,6 +8636,104 @@
   "@notebookManage": {
     "description": "书架面板标题行右侧的按钮，进入日记本管理页。"
   },
+  "notebookSubSectionTitle": "子日记本",
+  "@notebookSubSectionTitle": {
+    "description": "首页日记本头部卡片里子日记本那一行的小标题。"
+  },
+  "notebookSubCreateShort": "新建子本",
+  "@notebookSubCreateShort": {
+    "description": "头部卡片子日记本行末尾的新建格子。"
+  },
+  "notebookSubCreate": "新建子日记本",
+  "@notebookSubCreate": {
+    "description": "日记本操作面板里在这本下面新建子日记本的一项。"
+  },
+  "notebookSubCountSemantics": "含 {count} 本子日记本",
+  "@notebookSubCountSemantics": {
+    "description": "书架上有子本的日记本封面的读屏说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookNestGoUp": "回到「{name}」",
+  "@notebookNestGoUp": {
+    "description": "头部卡片面包屑里上级日记本的读屏说明与提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookNestPathSeparator": " › ",
+  "@notebookNestPathSeparator": {
+    "description": "日记本层级路径（如“旅行 › 2025”）里各级之间的分隔符。"
+  },
+  "notebookParentLabel": "上级日记本",
+  "@notebookParentLabel": {
+    "description": "日记本编辑页“上级日记本”分组标题与上级选择面板标题。"
+  },
+  "notebookParentNone": "无（放在书架上）",
+  "@notebookParentNone": {
+    "description": "没有上级日记本，放在书架顶层。"
+  },
+  "notebookParentFooter": "打开上级时也会看到这本里的日记。最多三层；智能日记本可以放在别的本子下，但不能再放子本。",
+  "@notebookParentFooter": {
+    "description": "编辑页“上级日记本”分组下方的说明。"
+  },
+  "notebookParentPickerEmpty": "没有能放进去的日记本：最多三层，智能日记本不能放子本",
+  "@notebookParentPickerEmpty": {
+    "description": "上级选择面板里除了“无”之外没有可选的日记本时的说明。"
+  },
+  "notebookParentPrivacyHidden": "上级「{name}」不在全部日记中显示，这本也随之隐藏",
+  "@notebookParentPrivacyHidden": {
+    "description": "编辑页隐私分组里的提示：上级隐藏，这本随之隐藏。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookParentPrivacyLocked": "上级「{name}」已上锁，这本也随之上锁",
+  "@notebookParentPrivacyLocked": {
+    "description": "编辑页隐私分组里的提示：上级上锁，这本随之上锁。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookNestMove": "移动到…",
+  "@notebookNestMove": {
+    "description": "日记本操作面板里把这本放到别的上级下（或放回书架）的一项。"
+  },
+  "notebookNestMoveHint": "放到另一本日记本下，或放回书架",
+  "@notebookNestMoveHint": {
+    "description": "操作面板“移动到…”一项的说明。"
+  },
+  "notebookNestMoved": "已移到「{name}」下",
+  "@notebookNestMoved": {
+    "description": "把日记本移到别的上级下之后的提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookNestMovedToShelf": "已放回书架",
+  "@notebookNestMovedToShelf": {
+    "description": "把子日记本移回书架顶层之后的提示。"
+  },
+  "notebookNestDeleteChildrenHint": "{count} 本子日记本会移到上一层，不会删除",
+  "@notebookNestDeleteChildrenHint": {
+    "description": "删除有子本的日记本时确认框里的说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notebookAllDiaries": "全部日记",
   "@notebookAllDiaries": {
     "description": "书架面板里回到全部日记的一行。"
@@ -8724,6 +8822,105 @@
   "notebookCoverRemove": "移除",
   "@notebookCoverRemove": {
     "description": "移除日记本封面图的按钮。"
+  },
+  "notebookCoverSectionTitle": "封面",
+  "@notebookCoverSectionTitle": {
+    "description": "日记本编辑页“封面”分组标题（版式、纹理与封面图）。"
+  },
+  "notebookCoverLayoutTitle": "版式",
+  "@notebookCoverLayoutTitle": {
+    "description": "封面分组里版式选择一行的小标题。"
+  },
+  "notebookCoverLayoutClassic": "经典",
+  "@notebookCoverLayoutClassic": {
+    "description": "封面版式：经典（图片在上、名称在下）。"
+  },
+  "notebookCoverLayoutFullBleed": "满版",
+  "@notebookCoverLayoutFullBleed": {
+    "description": "封面版式：满版（封面图铺满整张封面）。"
+  },
+  "notebookCoverLayoutSpine": "书脊",
+  "@notebookCoverLayoutSpine": {
+    "description": "封面版式：书脊（起始侧一条深色书脊）。"
+  },
+  "notebookCoverLayoutPlate": "贴签",
+  "@notebookCoverLayoutPlate": {
+    "description": "封面版式：贴签（名称写在封面中央的贴签上）。"
+  },
+  "notebookCoverLayoutMinimal": "极简",
+  "@notebookCoverLayoutMinimal": {
+    "description": "封面版式：极简（不画图标，名称放大）。"
+  },
+  "notebookCoverTextureTitle": "纹理",
+  "@notebookCoverTextureTitle": {
+    "description": "封面分组里纹理选择一行的小标题。"
+  },
+  "notebookCoverTextureNone": "无",
+  "@notebookCoverTextureNone": {
+    "description": "封面纹理：无。"
+  },
+  "notebookCoverTextureDots": "圆点",
+  "@notebookCoverTextureDots": {
+    "description": "封面纹理：圆点。"
+  },
+  "notebookCoverTextureLines": "横线",
+  "@notebookCoverTextureLines": {
+    "description": "封面纹理：横线。"
+  },
+  "notebookCoverTextureGrid": "方格",
+  "@notebookCoverTextureGrid": {
+    "description": "封面纹理：方格。"
+  },
+  "notebookCoverTextureDiagonal": "斜纹",
+  "@notebookCoverTextureDiagonal": {
+    "description": "封面纹理：斜纹。"
+  },
+  "notebookCoverFromDiaries": "从日记中选",
+  "@notebookCoverFromDiaries": {
+    "description": "编辑已有日记本时，从这本的日记图片里选封面的按钮。"
+  },
+  "notebookCoverAdjustCrop": "调整取景",
+  "@notebookCoverAdjustCrop": {
+    "description": "打开封面图取景页的按钮，也是取景页标题。"
+  },
+  "notebookCoverCropDone": "完成",
+  "@notebookCoverCropDone": {
+    "description": "取景页右上角保存取景并返回的按钮。"
+  },
+  "notebookCoverCropHint": "拖动移动图片，双指缩放",
+  "@notebookCoverCropHint": {
+    "description": "取景页底部的手机操作说明。"
+  },
+  "notebookCoverCropHintDesktop": "拖动移动图片，滚动滚轮缩放",
+  "@notebookCoverCropHintDesktop": {
+    "description": "取景页底部的桌面操作说明。"
+  },
+  "notebookCoverCropZoom": "缩放",
+  "@notebookCoverCropZoom": {
+    "description": "取景页缩放滑块的无障碍名称。"
+  },
+  "notebookCoverCropLoadFailed": "无法读取这张图片",
+  "@notebookCoverCropLoadFailed": {
+    "description": "取景页读取封面图失败时的说明。"
+  },
+  "notebookCoverPhotosTitle": "从日记中选封面",
+  "@notebookCoverPhotosTitle": {
+    "description": "从日记中选封面面板的标题。"
+  },
+  "notebookCoverPhotosSubtitle": "本子里（含子日记本）的日记用到的图片，新的在前",
+  "@notebookCoverPhotosSubtitle": {
+    "description": "从日记中选封面面板标题下的说明。"
+  },
+  "notebookCoverPhotosEmpty": "这本日记本的日记里还没有图片",
+  "@notebookCoverPhotosEmpty": {
+    "description": "从日记中选封面面板没有图片时的说明。"
+  },
+  "notebookCoverPhotoItem": "第 {index} 张图片",
+  "@notebookCoverPhotoItem": {
+    "description": "从日记中选封面面板里一张缩略图的无障碍名称。",
+    "placeholders": {
+      "index": {"type": "int"}
+    }
   },
   "notebookTypeLabel": "类型",
   "@notebookTypeLabel": {

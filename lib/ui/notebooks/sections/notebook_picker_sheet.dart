@@ -11,6 +11,8 @@ import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../models/notebook_pick_selection.dart';
 import '../providers/notebook_providers.dart';
+import '../viewmodels/notebook_tree.dart';
+import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_pick_row.dart';
 import 'notebook_quick_create_dialog.dart';
@@ -23,19 +25,20 @@ export '../models/notebook_pick_selection.dart';
 /// - [single]：“移动到…”，点一本即选定返回（当前日记本不列出）。
 enum NotebookPickerMode { multi, single }
 
-/// 选择器里列出的日记本：没合上的普通日记本，按书架顺序。智能日记本按规则
-/// 收录、合上的日记本不再接收新的日记，都不提供；[excludedIds] 另外排除
-/// （“移动到…”排除当前这本）。
-List<NotebookView> notebookPickCandidates(
+/// 选择器里列出的日记本：没合上的普通日记本，按树序（子本紧跟在上级下面、
+/// 缩进随层级，见 [notebookTreeRows]）。智能日记本按规则收录、合上的日记本
+/// 不再接收新的日记，都不提供；[excludedIds] 另外排除（“移动到…”排除当前
+/// 这本）。上级没列出时子本往外提一级。
+List<NotebookTreeRow> notebookPickCandidates(
   List<NotebookView> notebooks, {
   Set<String> excludedIds = const <String>{},
-}) => <NotebookView>[
-  for (final notebook in notebooks)
-    if (notebook.isManual &&
-        !notebook.isClosed &&
-        !excludedIds.contains(notebook.id))
-      notebook,
-];
+}) => notebookTreeRows(
+  NotebookTree.fromViews(notebooks),
+  include: (NotebookView notebook) =>
+      notebook.isManual &&
+      !notebook.isClosed &&
+      !excludedIds.contains(notebook.id),
+);
 
 /// 打开收录选择器（底部面板）。
 ///
@@ -70,7 +73,8 @@ Future<NotebookPickerResult?> showNotebookPickerSheet(
 }
 
 /// 收进私密日记本后的提示：这些日记从此只在那本里显示（不在全部日记里）。
-/// [added] 里没有隐藏或上锁的日记本时返回 null。
+/// [added] 里没有隐藏或上锁的日记本时返回 null。看生效可见性：上级私密的
+/// 子本同样算私密。
 String? notebookPrivateAddedHint(
   AppLocalizations l10n,
   Iterable<String> added,
@@ -78,7 +82,7 @@ String? notebookPrivateAddedHint(
 ) {
   for (final notebook in notebooks) {
     if (added.contains(notebook.id) &&
-        notebook.visibility != NotebookVisibility.normal) {
+        notebook.effectiveVisibility != NotebookVisibility.normal) {
       return l10n.notebookPickerPrivateHint(notebook.name);
     }
   }
@@ -181,10 +185,11 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
                 ),
               ),
             ),
-          for (final notebook in candidates)
+          for (final NotebookTreeRow(:notebook, :indent) in candidates)
             NotebookPickRow(
               key: ValueKey<String>('notebook_pick_${notebook.id}'),
               notebook: notebook,
+              indent: indent,
               count: counts[notebook.id] ?? 0,
               state: _selection.stateOf(notebook.id),
               showCheck: !_single,

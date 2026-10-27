@@ -15,16 +15,22 @@ import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../widgets/list_item_presence.dart';
 import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_labels.dart';
+import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
 
 /// 管理页的一个分组：按住左侧手柄拖动排序，点按编辑，行尾“更多”打开操作
 /// 面板。删除时这一行先收起（[collapsing]），撤销后从 0 高度展开
 /// （[appearing]），进出都经 [ListItemPresence]。
+///
+/// 行按树序排列（[rows]，见 `notebookSubtreeRows`）：子本紧跟在上级下面，
+/// 每深一层向内缩进 [notebookTreeIndentStep]；层级变化（上级被删、子本提上来）时缩进
+/// 经 [AnimatedPadding] 补间。拖动只在同一上级的兄弟之间换顺序，由页面按
+/// 落点换算（`notebookSiblingOrderAfterDrag`）。
 class NotebooksSectionSliver extends StatelessWidget {
   const NotebooksSectionSliver({
     super.key,
-    required this.notebooks,
+    required this.rows,
     required this.counts,
     required this.collapsing,
     required this.appearing,
@@ -33,7 +39,7 @@ class NotebooksSectionSliver extends StatelessWidget {
     required this.onReorder,
   });
 
-  final List<NotebookView> notebooks;
+  final List<NotebookTreeRow> rows;
   final Map<String, int> counts;
   final Set<String> collapsing;
   final Set<String> appearing;
@@ -52,20 +58,26 @@ class NotebooksSectionSliver extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
       sliver: SliverReorderableList(
-        itemCount: notebooks.length,
+        itemCount: rows.length,
         onReorderItem: onReorder,
         // 拿起条目即生效的瞬间给一次触觉：手柄是立即拖动，不经过长按。
         onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
         proxyDecorator: _liftProxy,
         itemBuilder: (BuildContext context, int index) {
-          final notebook = notebooks[index];
+          final row = rows[index];
+          final notebook = row.notebook;
           return ListItemPresence(
             key: ValueKey<String>('notebook_row_${notebook.id}'),
             visible: !collapsing.contains(notebook.id),
             appearing: appearing.contains(notebook.id),
             duration: duration,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.s),
+            child: AnimatedPadding(
+              duration: duration,
+              curve: ExpressiveMotion.effects,
+              padding: EdgeInsetsDirectional.only(
+                start: row.indent * notebookTreeIndentStep,
+                bottom: AppSpacing.s,
+              ),
               // 智能日记本的篇数由规则现算，只让这一行订阅它的计数。
               child: Consumer(
                 builder: (BuildContext context, WidgetRef ref, Widget? _) =>
@@ -147,12 +159,7 @@ class NotebookManageRow extends StatelessWidget {
                 ),
               ),
             ),
-            NotebookCoverTile.mini(
-              icon: notebook.icon,
-              color: notebook.color,
-              coverPath: notebook.coverPath,
-              closed: notebook.isClosed,
-            ),
+            NotebookCoverTile.miniFromView(notebook),
             const SizedBox(width: AppSpacing.m),
             Expanded(
               child: Column(

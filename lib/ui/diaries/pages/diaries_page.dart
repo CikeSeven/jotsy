@@ -46,6 +46,7 @@ import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../controllers/diary_card_menu_flows.dart';
+import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../models/time_capsule.dart';

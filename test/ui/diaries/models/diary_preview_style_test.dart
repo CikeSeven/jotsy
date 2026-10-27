@@ -180,6 +180,33 @@ void main() {
     );
   });
 
+  test(
+    'opening diaries in the editor is off by default and survives presets',
+    () {
+      expect(DiaryPreviewBehavior.defaults.openInEditor, isFalse);
+      const behavior = DiaryPreviewBehavior(openInEditor: true);
+      expect(behavior.toJson(), <String, Object>{'openInEditor': true});
+      const settings = DiaryPreviewSettings(behavior: behavior);
+      expect(DiaryPreviewSettings.decode(settings.encode()), settings);
+      expect(
+        settings
+            .withCurrent(
+              DiaryPreviewPresets.styleOf(DiaryPreviewPresetId.paper),
+            )
+            .behavior
+            .openInEditor,
+        isTrue,
+      );
+      // 读不懂的值回到默认（关），不影响同一份里的其他行为。
+      final broken = DiaryPreviewBehavior.fromJson(<String, Object?>{
+        'openInEditor': 'yes',
+        'todoToggle': false,
+      });
+      expect(broken.openInEditor, isFalse);
+      expect(broken.todoToggle, isFalse);
+    },
+  );
+
   test('settings keep the current style, saved styles and behavior', () {
     final settings = const DiaryPreviewSettings(
       current: _everything,

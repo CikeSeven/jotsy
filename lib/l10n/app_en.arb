@@ -7211,6 +7211,14 @@
   "@settingsToolbarAlwaysVisibleSubtitle": {
     "description": "Editor settings: description of the always-visible toolbar switch."
   },
+  "settingsOpenDiaryInEditor": "Open diaries in the editor",
+  "@settingsOpenDiaryInEditor": {
+    "description": "Editor settings: title of the switch that skips the preview page and opens a tapped diary straight in the editor."
+  },
+  "settingsOpenDiaryInEditorSubtitle": "Tap a diary to start editing right away instead of opening the preview first.",
+  "@settingsOpenDiaryInEditorSubtitle": {
+    "description": "Editor settings: description of the open-in-editor switch."
+  },
   "diaryDayPhotosSetCover": "Set as cover",
   "@diaryDayPhotosSetCover": {
     "description": "Photos from this day: button and menu item that makes a photo the entry cover."

@@ -177,7 +177,7 @@ class AnniversaryLinkedDiarySection extends ConsumerWidget {
               unawaited(
                 openDiaryFromAnniversary(
                   context,
-                  database: ref.read(appDatabaseProvider),
+                  ref,
                   diary: diary,
                   coverHero: hero,
                 ),
@@ -284,7 +284,7 @@ class AnniversaryPastDiariesSection extends ConsumerWidget {
                     unawaited(
                       openDiaryFromAnniversary(
                         context,
-                        database: ref.read(appDatabaseProvider),
+                        ref,
                         diary: diary,
                         coverHero: hero,
                         sequence: DiaryPreviewSequence.fromItems(diaries),

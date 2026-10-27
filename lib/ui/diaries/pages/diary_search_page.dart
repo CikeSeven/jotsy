@@ -17,6 +17,7 @@ import '../../notebooks/controllers/diary_notebook_pick_flow.dart';
 import '../../notebooks/controllers/notebook_quick_create_flows.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../controllers/diary_card_menu_flows.dart';
+import '../controllers/diary_open_flow.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
@@ -301,7 +302,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                                     diaryCardMoodOptionsProvider,
                                   ),
                                   onCreate: () {},
-                                  onOpenEditor: _openPreview,
+                                  onOpenEditor: (diary, coverHero) =>
+                                      unawaited(_openPreview(diary, coverHero)),
                                   onToggleSelection: (_, __) {},
                                   isSearchResultEmpty: true,
                                   menuActions: _menuActions(),
@@ -515,9 +517,13 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     Navigator.of(context).maybePop();
   }
 
-  /// 打开预览页：只在当前结果里左右翻，结果还有没加载的部分时按同一条件
-  /// 接上。
-  void _openPreview(DiaryWithTags diary, ImageViewerHero? coverHero) {
+  /// 打开预览页（“打开日记时直接编辑”开启时为编辑页，见 [openDiaryPage]）：
+  /// 只在当前结果里左右翻，结果还有没加载的部分时按同一条件接上。在里面
+  /// 删除了某一篇时与右键菜单的编辑一样给出撤销。
+  Future<void> _openPreview(
+    DiaryWithTags diary,
+    ImageViewerHero? coverHero,
+  ) async {
     final query = _cachedSearchQuery;
     final sequence = DiaryPreviewSequence.fromItems(
       _cachedSearchItems,
@@ -530,16 +536,17 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
             )
           : null,
     );
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => DiaryPreviewPage(
-          diaryId: diary.diary.diaryId,
-          initialDetail: diary,
-          coverHero: coverHero,
-          sequence: sequence,
-        ),
-      ),
+    final result = await openDiaryPage(
+      context,
+      ref,
+      diaryId: diary.diary.diaryId,
+      initialDetail: diary,
+      coverHero: coverHero,
+      sequence: sequence,
     );
+    if (result != null && mounted) {
+      await offerDeletedDiaryUndo(context, ref, result.diaryId);
+    }
   }
 
   /// 桌面右键菜单：搜索结果没有收起动画，写入后由结果查询自己刷新（归档的

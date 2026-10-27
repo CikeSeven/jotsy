@@ -11,6 +11,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/models/time_capsule.dart';
+import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
 import '../../diaries/viewmodels/diary_card_date_formatter.dart';
@@ -400,8 +401,8 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     );
   }
 
-  /// 打开预览页，可按书序左右翻（序列在打开时冻结）。在预览页删除日记时
-  /// 给 4 秒撤销。
+  /// 打开预览页（“打开日记时直接编辑”开启时为编辑页，见 [openDiaryPage]），
+  /// 可按书序左右翻（序列在打开时冻结）。在里面删除日记时给 4 秒撤销。
   Future<void> _openPreview(
     String diaryId,
     List<NotebookContentsItem> items,
@@ -412,10 +413,11 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
           if (item is NotebookContentsRow) item.entry.diaryId,
       ],
     );
-    final result = await Navigator.of(context).push<DiaryPreviewResult?>(
-      MaterialPageRoute<DiaryPreviewResult?>(
-        builder: (_) => DiaryPreviewPage(diaryId: diaryId, sequence: sequence),
-      ),
+    final result = await openDiaryPage(
+      context,
+      ref,
+      diaryId: diaryId,
+      sequence: sequence,
     );
     if (result == null || !mounted) return;
     final database = ref.read(appDatabaseProvider);

@@ -7,7 +7,7 @@ import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_open_flow.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -278,16 +278,13 @@ class _ExploreMediaGalleryPageState
     );
   }
 
-  /// 看图页长按“打开日记”：预览页压在看图页之上（单篇入口，不左右翻），
-  /// 返回时回到刚才那张图。在预览页删除日记时给 4 秒撤销，撤销即从回收站
-  /// 恢复；提示落在返回后的看图页上。
+  /// 看图页长按“打开日记”：预览页（“打开日记时直接编辑”开启时为编辑页，
+  /// 见 [openDiaryPage]）压在看图页之上（单篇入口，不左右翻），返回时回到
+  /// 刚才那张图。在里面删除日记时给 4 秒撤销，撤销即从回收站恢复；提示落在
+  /// 返回后的看图页上。
   Future<void> _openDiary(String diaryId) async {
     final database = ref.read(appDatabaseProvider);
-    final result = await Navigator.of(context).push<DiaryPreviewResult?>(
-      MaterialPageRoute<DiaryPreviewResult?>(
-        builder: (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
-      ),
-    );
+    final result = await openDiaryPage(context, ref, diaryId: diaryId);
     final deletedId = result?.diaryId;
     if (deletedId == null || !mounted) {
       return;

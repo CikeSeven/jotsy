@@ -15,6 +15,7 @@ class DiaryPreviewBehavior {
     this.todoToggle = true,
     this.textSelection = true,
     this.longImageMode = DiaryPreviewLongImageMode.fold,
+    this.openInEditor = false,
   });
 
   static const DiaryPreviewBehavior defaults = DiaryPreviewBehavior();
@@ -48,6 +49,10 @@ class DiaryPreviewBehavior {
         json['longImageMode'],
         defaults.longImageMode,
       ),
+      openInEditor: StyleJson.boolean(
+        json['openInEditor'],
+        defaults.openInEditor,
+      ),
     );
   }
 
@@ -68,6 +73,11 @@ class DiaryPreviewBehavior {
   /// 正文长图折叠还是完整显示。属于阅读习惯而非外观：套用预设或别人的
   /// 样式码不该改掉它。
   final DiaryPreviewLongImageMode longImageMode;
+
+  /// 点开日记时跳过预览页、直接进入编辑页（见 `openDiaryPage`；未解封的
+  /// 时间胶囊仍先显示封存页）。开关放在编辑器设置里，存在这里是因为它决定
+  /// 预览页出不出现，与其他阅读习惯一样随备份导出、不随预设改变。
+  final bool openInEditor;
 
   bool get isDefault => this == defaults;
 
@@ -94,6 +104,7 @@ class DiaryPreviewBehavior {
       longImageMode,
       defaults.longImageMode,
     );
+    StyleJson.put(json, 'openInEditor', openInEditor, defaults.openInEditor);
     return json;
   }
 
@@ -104,6 +115,7 @@ class DiaryPreviewBehavior {
     bool? todoToggle,
     bool? textSelection,
     DiaryPreviewLongImageMode? longImageMode,
+    bool? openInEditor,
   }) {
     return DiaryPreviewBehavior(
       swipeBetweenDiaries: swipeBetweenDiaries ?? this.swipeBetweenDiaries,
@@ -112,6 +124,7 @@ class DiaryPreviewBehavior {
       todoToggle: todoToggle ?? this.todoToggle,
       textSelection: textSelection ?? this.textSelection,
       longImageMode: longImageMode ?? this.longImageMode,
+      openInEditor: openInEditor ?? this.openInEditor,
     );
   }
 
@@ -123,7 +136,8 @@ class DiaryPreviewBehavior {
         other.hapticOnPage == hapticOnPage &&
         other.todoToggle == todoToggle &&
         other.textSelection == textSelection &&
-        other.longImageMode == longImageMode;
+        other.longImageMode == longImageMode &&
+        other.openInEditor == openInEditor;
   }
 
   @override
@@ -134,5 +148,6 @@ class DiaryPreviewBehavior {
     todoToggle,
     textSelection,
     longImageMode,
+    openInEditor,
   );
 }

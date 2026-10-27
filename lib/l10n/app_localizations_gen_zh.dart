@@ -5118,6 +5118,12 @@ class AppLocalizationsZh extends AppLocalizations {
       '收起软键盘或连接实体键盘时，工具栏仍留在编辑页底部';
 
   @override
+  String get settingsOpenDiaryInEditor => '打开日记时直接编辑';
+
+  @override
+  String get settingsOpenDiaryInEditorSubtitle => '点开日记直接进入编辑页，不再先打开预览页';
+
+  @override
   String get diaryDayPhotosSetCover => '设为封面';
 
   @override

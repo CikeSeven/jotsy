@@ -9,6 +9,7 @@ import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.d
 import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_breadcrumb.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_children_strip.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_header_actions.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 
@@ -175,6 +176,48 @@ void main() {
       find.byType(NotebookEditorPage),
     );
     expect(editor.initialParentId, travel);
+    await h.unmount();
+  });
+
+  Finder inActions(Finder finder) =>
+      find.descendant(of: find.byType(NotebookHeaderActions), matching: finder);
+
+  testWidgets('a notebook without children offers the first one in its '
+      'action row', (tester) async {
+    late String reading;
+    final h = await pumpHome(
+      tester,
+      seed: (h) async {
+        await seedTravel(h);
+        reading = await h.notebook('读书');
+      },
+    );
+    await openShelfAndPick(h, '读书');
+    expect(find.byType(NotebookChildrenStrip), findsNothing);
+    await tester.tap(inActions(find.text('新建子本')));
+    await h.settleAll();
+    expect(
+      tester
+          .widget<NotebookEditorPage>(find.byType(NotebookEditorPage))
+          .initialParentId,
+      reading,
+    );
+    await h.unmount();
+  });
+
+  testWidgets('once children exist only the strip offers a new one', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester, seed: seedTravel);
+    // 有子本的父本：入口只在子本条末尾；最深一层两处都没有。
+    await openShelfAndPick(h, '旅行');
+    expect(inActions(find.text('新建子本')), findsNothing);
+    expect(inStrip(find.text('新建子本')), findsOneWidget);
+    await tester.tap(inStrip(find.text('2025')));
+    await h.settleAll();
+    await tester.tap(inStrip(find.text('东京')));
+    await h.settleAll();
+    expect(find.text('新建子本'), findsNothing);
     await h.unmount();
   });
 

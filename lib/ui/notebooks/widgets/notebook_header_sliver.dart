@@ -74,6 +74,12 @@ class NotebookHeaderSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = notebook;
+    // 还没有子本时“新建子本”放在操作行里；有了子本之后改在子本条末尾，两处
+    // 不同时出现（高度变化由外层 AnimatedSize 过渡）。
+    final createFirstChild =
+        current != null && current.canHaveChildren && !current.hasChildren
+        ? onCreateChild
+        : null;
     return SliverToBoxAdapter(
       child: AnimatedSize(
         // AnimatedSize 不接受 0 时长（见 ExpressiveMotion.durationNonZero）。
@@ -116,6 +122,7 @@ class NotebookHeaderSliver extends StatelessWidget {
                         onTap: () => onAction(NotebookAction.edit),
                       ),
                     if (onOpenInsights != null ||
+                        createFirstChild != null ||
                         (current.isManual &&
                             (onAddDiaries != null || onOpenContents != null)))
                       NotebookHeaderActions(
@@ -124,6 +131,7 @@ class NotebookHeaderSliver extends StatelessWidget {
                             ? onOpenContents
                             : null,
                         onOpenInsights: onOpenInsights,
+                        onCreateChild: createFirstChild,
                       ),
                   ],
                   // 子本条在上，章节胶囊放在最下方，紧挨着它筛选的列表；

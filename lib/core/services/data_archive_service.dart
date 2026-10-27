@@ -18,6 +18,7 @@ import 'diary_media_references.dart';
 import 'journal_import_models.dart';
 import 'settings_service.dart';
 import 'app_data_directory.dart';
+import 'app_features_legacy.dart';
 
 /// 数据归档编排：导出完整 ZIP 或单篇日记包；导入前只读预检，再按所选方式
 /// 合并（[BackupMerge]）或先校验再覆盖恢复媒体、数据库与设置。
@@ -307,10 +308,16 @@ class DataArchiveService {
       );
       final (kind, payload) = await _readPayload(working);
       if (mode != BackupImportMode.replaceAll) {
-        return await BackupMerge(
+        final merged = await BackupMerge(
           documents: documents,
           staging: working,
         ).apply(database: database, payload: payload, mode: mode);
+        // 合并进来的纪念日与覆盖恢复同一口径：从没保存过功能开关时保持可见。
+        await keepLegacyAnniversariesVisible(
+          database: database,
+          settings: settingsService,
+        );
+        return merged;
       }
       if (kind != BackupArchiveKind.fullBackup) {
         throw const FormatException('日记文件只能合并导入，不能覆盖全部数据');
@@ -332,6 +339,12 @@ class DataArchiveService {
           await media.install();
           await restored.writeDatabase(database);
           await BackupSettings.restore(settingsService, restored.settings);
+          // 旧版备份恢复后没有功能开关时，有纪念日就保持纪念日开启；写在
+          // 事务里，恢复失败时随设置快照一起回滚。
+          await keepLegacyAnniversariesVisible(
+            database: database,
+            settings: settingsService,
+          );
         });
       } catch (error, stack) {
         final rollbackErrors = <Object>[];

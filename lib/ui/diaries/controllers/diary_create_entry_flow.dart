@@ -54,7 +54,7 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
   final database = ref.read(appDatabaseProvider);
   await ref.read(diaryDraftLegacyMigrationProvider.future);
   // 迁移等过设置服务就绪，此后读到的功能开关才是用户的设置（未就绪时
-  // appFeaturesProvider 给全部开启的默认值）。
+  // appFeaturesProvider 给的是默认值）。
   final features = ref.read(appFeaturesProvider);
   final presetCapsuleUnlockAt = features.timeCapsules ? capsuleUnlockAt : null;
   final recent = await database.getRecentDiaryDrafts(maxRecentDraftsInPicker);

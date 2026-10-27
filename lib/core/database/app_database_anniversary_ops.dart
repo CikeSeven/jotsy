@@ -106,6 +106,13 @@ mixin _AppDatabaseAnniversaryOps on _$AppDatabase {
     );
   }
 
+  /// 是否建过纪念日；功能开关的升级迁移据此决定是否保留纪念日（见
+  /// `keepLegacyAnniversariesVisible`）。
+  Future<bool> hasAnniversaries() async {
+    final row = await (select(anniversaries)..limit(1)).getSingleOrNull();
+    return row != null;
+  }
+
   /// 删除并返回被删的整行（供撤销）；不存在时返回 null。
   Future<Anniversary?> deleteAnniversary(String anniversaryId) {
     return transaction(() async {

@@ -54,7 +54,7 @@ extension EditDiaryTemplateFlow on EditDiaryController {
   /// 日记模板功能关闭时什么也不套用（入口带来的、自动套用的都不套），新建
   /// 空白日记就是空白；偏好与模板原样保留，重新开启即恢复。
   Future<void> applyInitialTemplate() async {
-    // 先等设置就绪：之前 appFeaturesProvider 给的是全部开启的默认值。
+    // 先等设置就绪：之前 appFeaturesProvider 给的是默认值。
     final settings = await _state.ref.read(settingsServiceProvider.future);
     if (!_state.mounted) return;
     if (!_state.ref.read(appFeaturesProvider).templates) return;

@@ -42,12 +42,14 @@ void main() {
     expect(stored(h).calendar, isFalse);
     await toggle(tester, l10n.navCalendar);
     expect(stored(h), AppFeatures.defaults);
-    expect(h.settings.appFeaturesRaw, isNull);
+    // 拨回默认也整份写入：有这个键就说明用户保存过，升级迁移不再改动。
+    expect(h.settings.appFeaturesRaw, AppFeatures.defaults.encode());
 
     await toggle(tester, l10n.navExplore);
     expect(stored(h).explore, isFalse);
+    // 纪念日默认关闭，拨一下是打开。
     await toggle(tester, l10n.settingsFeaturesAnniversaries);
-    expect(stored(h).anniversaries, isFalse);
+    expect(stored(h).anniversaries, isTrue);
     await toggle(tester, l10n.settingsFeaturesTemplates);
     expect(stored(h).templates, isFalse);
     await toggle(tester, l10n.settingsFeaturesTimeCapsules);
@@ -93,13 +95,14 @@ void main() {
       SettingsSwitchTile.nestedIndent - 16,
     );
 
+    // 纪念日默认关闭，但日历开着时照样可以拨动。
     final anniversaries = tile(tester, l10n.settingsFeaturesAnniversaries);
-    expect(anniversaries.value, isTrue);
+    expect(anniversaries.value, isFalse);
     expect(anniversaries.onChanged, isNotNull);
     expect(find.text(l10n.settingsFeaturesAnniversariesSubtitle), findsOne);
 
     await toggle(tester, l10n.settingsFeaturesAnniversaries);
-    expect(stored(h).anniversaries, isFalse);
+    expect(stored(h).anniversaries, isTrue);
     expect(stored(h).calendar, isTrue);
     await h.unmount();
   });
@@ -109,6 +112,8 @@ void main() {
     final h = await DiaryDraftsHarness.create(tester);
     await h.pump(const AppFeaturesPage());
     final l10n = h.l10n;
+    // 纪念日默认关闭，先打开它。
+    await toggle(tester, l10n.settingsFeaturesAnniversaries);
 
     await toggle(tester, l10n.navCalendar);
     expect(switchTile(l10n.settingsFeaturesAnniversaries), findsNothing);
@@ -142,7 +147,9 @@ void main() {
     );
 
     // 探索关着时打开日历：纪念日一行若按位置接手探索那一行，开关会从“关”
-    // 播一遍拨动动画；探索那一行必须还是原来的 element。
+    // 播一遍拨动动画；探索那一行必须还是原来的 element。纪念日默认关闭，
+    // 先打开它，两行的开关值才不同。
+    await toggle(tester, l10n.settingsFeaturesAnniversaries);
     await toggle(tester, l10n.navExplore);
     await toggle(tester, l10n.navCalendar);
     final exploreElement = tester.element(switchTile(l10n.navExplore));

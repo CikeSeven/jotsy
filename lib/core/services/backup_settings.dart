@@ -234,7 +234,8 @@ class BackupSettings {
       });
     }
 
-    // 功能管理同上：旧版备份没有时保留本机开关，显式 null 时恢复全部开启。
+    // 功能管理同上：旧版备份没有时保留本机开关，显式 null 时回到默认（之后
+    // 按库里有没有纪念日决定是否保留纪念日，见 keepLegacyAnniversariesVisible）。
     if (settingsNode.containsKey('appFeaturesRaw')) {
       final appFeaturesRaw = settingsNode['appFeaturesRaw'];
       await settingsService.setAppFeaturesRaw(switch (appFeaturesRaw) {

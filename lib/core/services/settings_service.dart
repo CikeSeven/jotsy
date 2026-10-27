@@ -626,7 +626,7 @@ class SettingsService {
     );
   }
 
-  /// 保存功能管理开关；空值移除该键，回到默认（全部功能开启）。
+  /// 保存功能管理开关；空值移除该键，回到默认（纪念日关闭，其余开启）。
   Future<void> setAppFeaturesRaw(String? value) async {
     final normalized = value?.trim();
     if (normalized == null || normalized.isEmpty) {

@@ -13,7 +13,7 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{
-      'app.settings.app_features': stored.encode()!,
+      'app.settings.app_features': stored.encode(),
     });
   });
 
@@ -60,8 +60,9 @@ void main() {
     );
     expect(seen, <AppFeatures>[stored, next]);
 
+    // 回到默认也整份写入：有这个键才说明用户保存过（升级迁移不再改动）。
     await saveAppFeatures(settings, AppFeatures.defaults);
-    expect(settings.appFeaturesRaw, isNull);
+    expect(settings.appFeaturesRaw, AppFeatures.defaults.encode());
     expect(container.read(appFeaturesProvider), AppFeatures.defaults);
   });
 }

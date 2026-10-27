@@ -342,8 +342,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         : ref.watch(scopeTagIdsProvider(scopeResolution.scope)).value;
 
     return settingsAsync.when(
-      loading: () => const Scaffold(body: DelayedLoadingIndicator()),
+      // 设置读取中 / 出错的分支同样用页面底色，不盖住首页画的背景。
+      loading: () => Scaffold(
+        backgroundColor: pageBgColor,
+        body: const DelayedLoadingIndicator(),
+      ),
       error: (Object error, StackTrace stackTrace) => Scaffold(
+        backgroundColor: pageBgColor,
         body: Center(child: Text(context.l10n.autoT0045(error.toString()))),
       ),
       data: (settingsService) {

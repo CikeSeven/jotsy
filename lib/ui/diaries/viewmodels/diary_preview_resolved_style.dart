@@ -38,6 +38,7 @@ class DiaryPreviewResolvedStyle {
     required this.theme,
     required this.themed,
     required this.background,
+    required this.paperFollowsTheme,
     required this.bodyColor,
     required this.titleColor,
     required this.horizontalPadding,
@@ -120,6 +121,7 @@ class DiaryPreviewResolvedStyle {
       theme: theme,
       themed: themed,
       background: background,
+      paperFollowsTheme: paper == null,
       bodyColor: _readable(
         page.textLight,
         page.textDark,
@@ -155,6 +157,7 @@ class DiaryPreviewResolvedStyle {
       theme: theme,
       themed: themed,
       background: background,
+      paperFollowsTheme: paperFollowsTheme,
       bodyColor: bodyColor,
       titleColor: titleColor,
       horizontalPadding: layout.horizontalPadding,
@@ -225,6 +228,10 @@ class DiaryPreviewResolvedStyle {
 
   /// 页面底色（纸色，或主题 surface）。
   final Color background;
+
+  /// 纸张是否“跟随主题”（没有纸色，[background] 取主题 surface）。只有这时
+  /// 预览页才让位给“背景与材质”的预览区域背景；选了纸色时纸色优先。
+  final bool paperFollowsTheme;
 
   /// 通过对比度检查的自定义正文颜色；null 表示用主题正文色。
   final Color? bodyColor;

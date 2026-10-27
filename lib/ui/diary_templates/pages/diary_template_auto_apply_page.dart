@@ -18,6 +18,8 @@ import '../sections/diary_template_auto_rule_sheet.dart';
 import '../sections/diary_template_choice_sheet.dart';
 import '../viewmodels/diary_template_library.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 自动套用页（模板管理页 →“自动套用”）：按时间段套用的规则与其他时间的
 /// 默认模板。
@@ -39,15 +41,20 @@ class _DiaryTemplateAutoApplyPageState
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsServiceProvider).asData?.value;
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        title: Text(l10n.diaryTemplatesAutoApply),
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            title: Text(l10n.diaryTemplatesAutoApply),
+          ),
+          body: settings == null
+              ? const DelayedLoadingIndicator()
+              : _buildBody(context, settings),
+        ),
       ),
-      body: settings == null
-          ? const DelayedLoadingIndicator()
-          : _buildBody(context, settings),
     );
   }
 

@@ -19,13 +19,17 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final settings = (await tester.runAsync(SettingsService.create))!;
     await tester.pumpWidget(
-      MaterialApp(
-        theme: expressiveTestTheme(Brightness.light),
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: SettingsDiaryCardStyleTile(settingsAsync: AsyncData(settings)),
+      ProviderScope(
+        child: MaterialApp(
+          theme: expressiveTestTheme(Brightness.light),
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SettingsDiaryCardStyleTile(
+              settingsAsync: AsyncData(settings),
+            ),
+          ),
         ),
       ),
     );

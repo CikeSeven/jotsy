@@ -18,6 +18,8 @@ import '../models/diary_export_scope.dart';
 import '../providers/diary_export_provider.dart';
 import '../widgets/diary_sheet_controls.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 设置 → 数据管理 → 导出日记：按日期范围与标签选出日记，再进入共用的
 /// 导出面板选择格式。
@@ -84,30 +86,35 @@ class _DiaryExportPageState extends ConsumerState<DiaryExportPage> {
     final l10n = context.l10n;
     final candidates = ref.watch(diaryExportCandidatesProvider);
     final tags = ref.watch(tagListProvider).value ?? const <Tag>[];
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+    return AppPageBackground(
+      area: AppBackgroundArea.other,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+            title: Text(l10n.diaryExportPageTitle),
+          ),
+          body: candidates.when(
+            loading: () => const DelayedLoadingIndicator(),
+            error: (Object error, StackTrace _) =>
+                Center(child: Text(l10n.previewExportFailed('$error'))),
+            data: (List<DiaryWithTags> diaries) {
+              final matched = _scope.apply(diaries, DateTime.now());
+              return Column(
+                children: <Widget>[
+                  Expanded(child: _buildScope(l10n, tags)),
+                  _buildFooter(l10n, matched),
+                ],
+              );
+            },
+          ),
         ),
-        title: Text(l10n.diaryExportPageTitle),
-      ),
-      body: candidates.when(
-        loading: () => const DelayedLoadingIndicator(),
-        error: (Object error, StackTrace _) =>
-            Center(child: Text(l10n.previewExportFailed('$error'))),
-        data: (List<DiaryWithTags> diaries) {
-          final matched = _scope.apply(diaries, DateTime.now());
-          return Column(
-            children: <Widget>[
-              Expanded(child: _buildScope(l10n, tags)),
-              _buildFooter(l10n, matched),
-            ],
-          );
-        },
       ),
     );
   }

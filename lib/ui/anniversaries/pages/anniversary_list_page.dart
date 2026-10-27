@@ -20,6 +20,8 @@ import '../viewmodels/anniversary_countdown.dart';
 import '../viewmodels/anniversary_rule.dart';
 import '../widgets/anniversary_list_card.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 全部纪念日：置顶在前，其余按下一次由近到远，已过去的倒数日排最后。
 ///
@@ -66,35 +68,46 @@ class _AnniversaryListPageState extends ConsumerState<AnniversaryListPage> {
     if (rows != null) {
       _trackAppearing(rows);
     }
-    return Scaffold(
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        title: Text(l10n.anniversaryListTitle),
-        actions: <Widget>[
-          IconButton(
-            tooltip: l10n.anniversaryNewTitle,
-            onPressed: () => unawaited(_create()),
-            icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
+    return AppPageBackground(
+      area: AppBackgroundArea.other,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+            title: Text(l10n.anniversaryListTitle),
+            actions: <Widget>[
+              IconButton(
+                tooltip: l10n.anniversaryNewTitle,
+                onPressed: () => unawaited(_create()),
+                icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: AnimatedSwitcher(
-        duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
-        switchInCurve: ExpressiveMotion.effects,
-        switchOutCurve: ExpressiveMotion.exit,
-        child: rows == null
-            ? const DelayedLoadingIndicator(key: ValueKey<String>('loading'))
-            : rows.isEmpty
-            ? _EmptyState(
-                key: const ValueKey<String>('empty'),
-                onCreate: () => unawaited(_create()),
-              )
-            : _buildList(context, rows),
+          body: AnimatedSwitcher(
+            duration: ExpressiveMotion.duration(
+              context,
+              ExpressiveMotion.medium,
+            ),
+            switchInCurve: ExpressiveMotion.effects,
+            switchOutCurve: ExpressiveMotion.exit,
+            child: rows == null
+                ? const DelayedLoadingIndicator(
+                    key: ValueKey<String>('loading'),
+                  )
+                : rows.isEmpty
+                ? _EmptyState(
+                    key: const ValueKey<String>('empty'),
+                    onCreate: () => unawaited(_create()),
+                  )
+                : _buildList(context, rows),
+          ),
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -59,12 +60,14 @@ Future<(SettingsService, AppLocalizations)> _pumpPage(
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final settings = (await tester.runAsync(SettingsService.create))!;
   await tester.pumpWidget(
-    MaterialApp(
-      theme: expressiveTestTheme(brightness),
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: DiaryCardStylePage(settingsService: settings),
+    ProviderScope(
+      child: MaterialApp(
+        theme: expressiveTestTheme(brightness),
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: DiaryCardStylePage(settingsService: settings),
+      ),
     ),
   );
   await tester.pumpAndSettle();

@@ -37,6 +37,7 @@ import 'diary_preview_host.dart';
 import 'diary_preview_neighbors.dart';
 import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
+import '../../../app_surface/widgets/app_page_backdrop.dart';
 
 /// 一篇日记的预览（阅读优先）：数据、只读正文与动作。
 ///
@@ -252,7 +253,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
   Widget _messageScaffold(Widget body) {
     final embedded = widget.host != null;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      // 读取中 / 出错：独立页面时透出预览区域背景，嵌在右栏时透出宿主日记页
+      // 的背景；都没有背景时就是原来的 surface。
+      backgroundColor: AppPageBackdrop.pageColorOf(context),
       appBar: AppTopBar(
         centerTitle: true,
         // 嵌入时与正文顶栏一致：不要返回按钮，也不要“日记”标题。

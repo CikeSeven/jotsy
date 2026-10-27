@@ -24,6 +24,8 @@ import '../widgets/diary_draft_tile.dart';
 import '../widgets/diary_swipe_action_item.dart';
 import 'edit_diary_page.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 草稿箱：还没发布的新建日记，最近编辑的在前。
 ///
@@ -258,67 +260,81 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _clearSelection();
       },
-      child: Scaffold(
-        // 进入/退出多选时返回键与操作按钮缩放淡入切换，而不是硬换。
-        appBar: AppTopBar(
-          contentMaxWidth: FormWidth.maxWidth,
-          leading: ExpressiveIconSwap(
-            switchKey: _isSelectionMode,
-            child: _isSelectionMode
-                ? IconButton(
-                    tooltip: l10n.commonCancel,
-                    onPressed: _clearSelection,
-                    icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-                  )
-                : IconButton(
-                    tooltip: l10n.commonBack,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+      child: AppPageBackground(
+        area: AppBackgroundArea.other,
+        child: Builder(
+          builder: (BuildContext context) => Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            // 进入/退出多选时返回键与操作按钮缩放淡入切换，而不是硬换。
+            appBar: AppTopBar(
+              contentMaxWidth: FormWidth.maxWidth,
+              leading: ExpressiveIconSwap(
+                switchKey: _isSelectionMode,
+                child: _isSelectionMode
+                    ? IconButton(
+                        tooltip: l10n.commonCancel,
+                        onPressed: _clearSelection,
+                        icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+                      )
+                    : IconButton(
+                        tooltip: l10n.commonBack,
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        icon: const FaIcon(
+                          FontAwesomeIcons.angleLeft,
+                          size: 18,
+                        ),
+                      ),
+              ),
+              // 进入/退出多选、选择数量变化时标题淡入淡出，而不是硬切。
+              title: AnimatedSwitcher(
+                duration: ExpressiveMotion.duration(
+                  context,
+                  ExpressiveMotion.fast,
+                ),
+                switchInCurve: ExpressiveMotion.effects,
+                switchOutCurve: ExpressiveMotion.exit,
+                child: Text(
+                  _isSelectionMode
+                      ? l10n.autoT0099(_selectedIds.length.toString())
+                      : l10n.diaryDraftsTitle,
+                  key: ValueKey<int>(
+                    _isSelectionMode ? _selectedIds.length : -1,
                   ),
-          ),
-          // 进入/退出多选、选择数量变化时标题淡入淡出，而不是硬切。
-          title: AnimatedSwitcher(
-            duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-            switchInCurve: ExpressiveMotion.effects,
-            switchOutCurve: ExpressiveMotion.exit,
-            child: Text(
-              _isSelectionMode
-                  ? l10n.autoT0099(_selectedIds.length.toString())
-                  : l10n.diaryDraftsTitle,
-              key: ValueKey<int>(_isSelectionMode ? _selectedIds.length : -1),
+                ),
+              ),
+              actions: <Widget>[
+                ExpressiveIconSwap(
+                  switchKey: _isSelectionMode,
+                  child: _isSelectionMode
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            SelectAllButton(
+                              allSelected: _allSelected,
+                              onPressed: _operating ? null : _toggleSelectAll,
+                            ),
+                            IconButton(
+                              tooltip: l10n.commonDelete,
+                              onPressed: _operating ? null : _deleteSelected,
+                              icon: FaIcon(
+                                FontAwesomeIcons.trashCan,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+            body: draftsAsync.when(
+              loading: () => const DelayedLoadingIndicator(),
+              error: (error, _) =>
+                  Center(child: Text(l10n.autoT0121(error.toString()))),
+              data: (_) => _buildList(visible),
             ),
           ),
-          actions: <Widget>[
-            ExpressiveIconSwap(
-              switchKey: _isSelectionMode,
-              child: _isSelectionMode
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        SelectAllButton(
-                          allSelected: _allSelected,
-                          onPressed: _operating ? null : _toggleSelectAll,
-                        ),
-                        IconButton(
-                          tooltip: l10n.commonDelete,
-                          onPressed: _operating ? null : _deleteSelected,
-                          icon: FaIcon(
-                            FontAwesomeIcons.trashCan,
-                            size: 16,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        ),
-        body: draftsAsync.when(
-          loading: () => const DelayedLoadingIndicator(),
-          error: (error, _) =>
-              Center(child: Text(l10n.autoT0121(error.toString()))),
-          data: (_) => _buildList(visible),
         ),
       ),
     );

@@ -19,6 +19,8 @@ import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/list_item_presence.dart';
 import '../widgets/tag_management_tile.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 标签管理页：
 /// 1. 标签排序（拖拽）；
@@ -359,71 +361,78 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     final tagsAsync = ref.watch(tagListProvider);
     final settingsAsync = ref.watch(settingsServiceProvider);
 
-    return Scaffold(
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        title: Text(l10n.autoT0039),
-        actions: <Widget>[
-          IconButton(
-            tooltip: l10n.autoT0040,
-            onPressed: _createTag,
-            icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
-          ),
-        ],
-      ),
-      body: settingsAsync.when(
-        data: (settings) {
-          return Column(
-            children: <Widget>[
-              _TagFilterMemorySwitch(
-                settings: settings,
-                onChanged: (enabled) =>
-                    unawaited(_setTagFilterMemoryEnabled(settings, enabled)),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: tagsAsync.when(
-                  data: (tags) {
-                    _syncDisplayTags(tags);
-                    final displayTags = _displayTags;
-                    // 最后一个标签被删除后与空态交叉淡入，而不是硬切。
-                    return AnimatedSwitcher(
-                      duration: ExpressiveMotion.duration(
-                        context,
-                        ExpressiveMotion.medium,
-                      ),
-                      switchInCurve: ExpressiveMotion.effects,
-                      switchOutCurve: ExpressiveMotion.exit,
-                      child: displayTags.isEmpty
-                          ? Center(
-                              key: const ValueKey<String>('tags_empty'),
-                              child: TextButton(
-                                onPressed: _createTag,
-                                child: Text(l10n.autoT0041),
-                              ),
-                            )
-                          : _buildTagList(context, displayTags),
-                    );
-                  },
-                  loading: () => const DelayedLoadingIndicator(size: 32),
-                  error: (error, stackTrace) {
-                    return Center(
-                      child: Text(l10n.autoT0042(error.toString())),
-                    );
-                  },
-                ),
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+            title: Text(l10n.autoT0039),
+            actions: <Widget>[
+              IconButton(
+                tooltip: l10n.autoT0040,
+                onPressed: _createTag,
+                icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
               ),
             ],
-          );
-        },
-        loading: () => const DelayedLoadingIndicator(size: 32),
-        error: (error, stackTrace) =>
-            Center(child: Text(l10n.autoT0045(error.toString()))),
+          ),
+          body: settingsAsync.when(
+            data: (settings) {
+              return Column(
+                children: <Widget>[
+                  _TagFilterMemorySwitch(
+                    settings: settings,
+                    onChanged: (enabled) => unawaited(
+                      _setTagFilterMemoryEnabled(settings, enabled),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: tagsAsync.when(
+                      data: (tags) {
+                        _syncDisplayTags(tags);
+                        final displayTags = _displayTags;
+                        // 最后一个标签被删除后与空态交叉淡入，而不是硬切。
+                        return AnimatedSwitcher(
+                          duration: ExpressiveMotion.duration(
+                            context,
+                            ExpressiveMotion.medium,
+                          ),
+                          switchInCurve: ExpressiveMotion.effects,
+                          switchOutCurve: ExpressiveMotion.exit,
+                          child: displayTags.isEmpty
+                              ? Center(
+                                  key: const ValueKey<String>('tags_empty'),
+                                  child: TextButton(
+                                    onPressed: _createTag,
+                                    child: Text(l10n.autoT0041),
+                                  ),
+                                )
+                              : _buildTagList(context, displayTags),
+                        );
+                      },
+                      loading: () => const DelayedLoadingIndicator(size: 32),
+                      error: (error, stackTrace) {
+                        return Center(
+                          child: Text(l10n.autoT0042(error.toString())),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+            loading: () => const DelayedLoadingIndicator(size: 32),
+            error: (error, stackTrace) =>
+                Center(child: Text(l10n.autoT0045(error.toString()))),
+          ),
+        ),
       ),
     );
   }

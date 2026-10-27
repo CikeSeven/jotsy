@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../../app/theme/expressive_surfaces.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/snap_panel.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 样式编辑页（卡片样式、预览页样式、代码块样式）共用的页面外壳。
 ///
@@ -118,120 +121,138 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
     };
   }
 
+  /// 实时预览垫一层原来的页面底色：设置区域设了背景时页面底透明，预览要
+  /// 看的是卡片 / 预览页本身的样子，不能透出设置页的背景（无背景时与原来
+  /// 的 Scaffold 底色相同，画面不变）。
+  Widget _preview({required bool showToolbar, required double bottomPadding}) {
+    return ColoredBox(
+      color: ExpressiveSurfaces.pageBackground(Theme.of(context).colorScheme),
+      child: widget.previewBuilder(
+        showToolbar: showToolbar,
+        bottomPadding: bottomPadding,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final tabController = _tabController!;
-    return Scaffold(
-      appBar: AppTopBar(
-        title: Text(widget.title),
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        actions: <Widget>[
-          ListenableBuilder(
-            listenable: widget.listenable,
-            builder: (BuildContext context, Widget? child) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                ...?widget.actionsBuilder?.call(context),
-                TextButton(
-                  onPressed: widget.isDefault() ? null : widget.onReset,
-                  child: Text(l10n.commonReset),
-                ),
-              ],
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            title: Text(widget.title),
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
-          ),
-        ],
-      ),
-      body: ListenableBuilder(
-        listenable: widget.listenable,
-        builder: (BuildContext context, Widget? child) {
-          return LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              if (constraints.maxWidth >= 720) {
-                // 选项栏最宽 [_controlsMaxWidth]：窄于 960 时与预览各占一半
-                // （与原来一致），更宽时选项栏停在 480，其余宽度都给预览，
-                // 滑块与选项行不会被拉得过长。
-                final controlsWidth = math.min(
-                  _controlsMaxWidth,
-                  (constraints.maxWidth - 1) / 2,
-                );
-                return Row(
+            actions: <Widget>[
+              ListenableBuilder(
+                listenable: widget.listenable,
+                builder: (BuildContext context, Widget? child) => Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Expanded(
-                      child: widget.previewBuilder(
-                        showToolbar: true,
-                        bottomPadding: 0,
-                      ),
-                    ),
-                    const VerticalDivider(width: 1),
-                    SizedBox(
-                      width: controlsWidth,
-                      child: Column(
-                        children: <Widget>[
-                          _tabBar(tabController),
-                          Expanded(
-                            child: TabBarView(
-                              controller: tabController,
-                              physics: const NeverScrollableScrollPhysics(),
-                              children: widget.tabViews(),
-                            ),
-                          ),
-                        ],
-                      ),
+                    ...?widget.actionsBuilder?.call(context),
+                    TextButton(
+                      onPressed: widget.isDefault() ? null : widget.onReset,
+                      child: Text(l10n.commonReset),
                     ),
                   ],
-                );
-              }
-              // 中档时预览约占四成高度（220~360），矮屏（横屏、分屏）上不超过
-              // 一半，给标签页留出可用空间；标签栏停在拖动条下方的原位置。
-              final previewHeight = math.min(
-                (constraints.maxHeight * 0.38).clamp(220.0, 360.0).toDouble(),
-                constraints.maxHeight * 0.5,
-              );
-              return Column(
-                children: <Widget>[
-                  ?widget.toolbarBuilder?.call(context),
-                  Expanded(
-                    child: SnapPanel(
-                      controller: _panel,
-                      halfExtent:
-                          constraints.maxHeight -
-                          previewHeight +
-                          SnapPanel.handleExtent,
-                      background: widget.previewBuilder(
-                        showToolbar: false,
-                        bottomPadding: SnapPanel.cornerRadius,
+                ),
+              ),
+            ],
+          ),
+          body: ListenableBuilder(
+            listenable: widget.listenable,
+            builder: (BuildContext context, Widget? child) {
+              return LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  if (constraints.maxWidth >= 720) {
+                    // 选项栏最宽 [_controlsMaxWidth]：窄于 960 时与预览各占一半
+                    // （与原来一致），更宽时选项栏停在 480，其余宽度都给预览，
+                    // 滑块与选项行不会被拉得过长。
+                    final controlsWidth = math.min(
+                      _controlsMaxWidth,
+                      (constraints.maxWidth - 1) / 2,
+                    );
+                    return Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: _preview(showToolbar: true, bottomPadding: 0),
+                        ),
+                        const VerticalDivider(width: 1),
+                        SizedBox(
+                          width: controlsWidth,
+                          child: Column(
+                            children: <Widget>[
+                              _tabBar(tabController),
+                              Expanded(
+                                child: TabBarView(
+                                  controller: tabController,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  children: widget.tabViews(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  // 中档时预览约占四成高度（220~360），矮屏（横屏、分屏）上不超过
+                  // 一半，给标签页留出可用空间；标签栏停在拖动条下方的原位置。
+                  final previewHeight = math.min(
+                    (constraints.maxHeight * 0.38)
+                        .clamp(220.0, 360.0)
+                        .toDouble(),
+                    constraints.maxHeight * 0.5,
+                  );
+                  return Column(
+                    children: <Widget>[
+                      ?widget.toolbarBuilder?.call(context),
+                      Expanded(
+                        child: SnapPanel(
+                          controller: _panel,
+                          halfExtent:
+                              constraints.maxHeight -
+                              previewHeight +
+                              SnapPanel.handleExtent,
+                          background: _preview(
+                            showToolbar: false,
+                            bottomPadding: SnapPanel.cornerRadius,
+                          ),
+                          // 收起时点标签：要看这一页的选项了，面板回到中档。
+                          header: _tabBar(
+                            tabController,
+                            onTap: (_) => _panel.reveal(),
+                          ),
+                          body: TabBarView(
+                            controller: tabController,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: <Widget>[
+                              for (final view in widget.tabViews())
+                                SnapPanelScrollScope(
+                                  controller: _panel,
+                                  child: view,
+                                ),
+                            ],
+                          ),
+                          handleLabel: l10n.styleEditorPanelHandle,
+                          stopLabel: (SnapPanelStop stop) =>
+                              _panelStopLabel(l10n, stop),
+                        ),
                       ),
-                      // 收起时点标签：要看这一页的选项了，面板回到中档。
-                      header: _tabBar(
-                        tabController,
-                        onTap: (_) => _panel.reveal(),
-                      ),
-                      body: TabBarView(
-                        controller: tabController,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: <Widget>[
-                          for (final view in widget.tabViews())
-                            SnapPanelScrollScope(
-                              controller: _panel,
-                              child: view,
-                            ),
-                        ],
-                      ),
-                      handleLabel: l10n.styleEditorPanelHandle,
-                      stopLabel: (SnapPanelStop stop) =>
-                          _panelStopLabel(l10n, stop),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+        ),
       ),
     );
   }

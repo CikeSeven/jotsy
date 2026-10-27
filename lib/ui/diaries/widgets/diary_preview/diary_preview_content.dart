@@ -18,6 +18,7 @@ import 'diary_preview_body.dart';
 import 'diary_preview_header.dart';
 import 'diary_preview_meta.dart';
 import 'diary_preview_neighbors.dart';
+import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
 
 /// 打开看图页：本篇的全部图片来源、点按的那一张与抓取的共享元素。
@@ -196,7 +197,9 @@ class DiaryPreviewContent extends ConsumerWidget {
               style.page.topBarTitle == DiaryPreviewTopBarTitle.position
               ? paging?.positionSemantics
               : null,
-          background: resolved.background,
+          // 实色顶栏：纸张跟随主题且有页面背景时取实色栏底色（见
+          // diaryPreviewPageColors），否则仍是纸色。
+          background: diaryPreviewPageColors(context, resolved).bar,
           onOpenTypography: actions.onOpenTypography,
           onEdit: actions.onEdit,
           onShare: actions.onShare,

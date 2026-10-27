@@ -27,6 +27,8 @@ import '../viewmodels/notebook_book_layout.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 普通日记本的目录页（首页头部卡片“目录”）。
 ///
@@ -72,7 +74,6 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final notebookAsync = ref.watch(notebookProvider(widget.notebookId));
     final entriesAsync = ref.watch(notebookContentsProvider(widget.notebookId));
     final notebook = notebookAsync.value;
@@ -81,54 +82,62 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     }
     final entries = entriesAsync.value;
     final hasEntries = entries != null && entries.isNotEmpty;
+    // 正文在这里先建好：_buildBody 里有 ref.watch，不能挪进下面读页面底色
+    // 的 Builder（那会在 Builder 自己重建时才订阅，订阅随之反复关开）。
+    final body = notebook == null || entries == null
+        ? const DelayedLoadingIndicator()
+        : _buildBody(context, notebook, entries);
     return PopScope(
       canPop: !_selecting,
       onPopInvokedWithResult: (bool didPop, Object? _) {
         if (!didPop) _setSelecting(false);
       },
-      child: Scaffold(
-        backgroundColor: scheme.surface,
-        appBar: AppTopBar(
-          contentMaxWidth: FormWidth.maxWidth,
-          title: NotebookPageTitle(
-            title: l10n.notebookContents,
-            subtitle: notebook?.name,
-          ),
-          actions: <Widget>[
-            IconButton(
-              tooltip: l10n.notebookContentsNewChapter,
-              onPressed: notebook == null ? null : _addChapter,
-              icon: const FaIcon(FontAwesomeIcons.folderPlus, size: 16),
-            ),
-            IconButton(
-              tooltip: _selecting
-                  ? l10n.notebookContentsSelectDone
-                  : l10n.notebookContentsSelect,
-              isSelected: _selecting,
-              onPressed: hasEntries || _selecting
-                  ? () => _setSelecting(!_selecting)
-                  : null,
-              icon: FaIcon(
-                _selecting
-                    ? FontAwesomeIcons.xmark
-                    : FontAwesomeIcons.listCheck,
-                size: 16,
+      child: AppPageBackground(
+        area: AppBackgroundArea.other,
+        child: Builder(
+          builder: (BuildContext context) => Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            appBar: AppTopBar(
+              contentMaxWidth: FormWidth.maxWidth,
+              title: NotebookPageTitle(
+                title: l10n.notebookContents,
+                subtitle: notebook?.name,
               ),
+              actions: <Widget>[
+                IconButton(
+                  tooltip: l10n.notebookContentsNewChapter,
+                  onPressed: notebook == null ? null : _addChapter,
+                  icon: const FaIcon(FontAwesomeIcons.folderPlus, size: 16),
+                ),
+                IconButton(
+                  tooltip: _selecting
+                      ? l10n.notebookContentsSelectDone
+                      : l10n.notebookContentsSelect,
+                  isSelected: _selecting,
+                  onPressed: hasEntries || _selecting
+                      ? () => _setSelecting(!_selecting)
+                      : null,
+                  icon: FaIcon(
+                    _selecting
+                        ? FontAwesomeIcons.xmark
+                        : FontAwesomeIcons.listCheck,
+                    size: 16,
+                  ),
+                ),
+              ],
             ),
-          ],
+            bottomNavigationBar: _selecting && notebook != null
+                ? NotebookContentsSelectionBar(
+                    count: _selected.length,
+                    onMoveToChapter: notebook.payload.chapters.isEmpty
+                        ? null
+                        : () => unawaited(_moveSelected(notebook)),
+                    onRemove: () => unawaited(_removeSelected(notebook)),
+                  )
+                : null,
+            body: body,
+          ),
         ),
-        bottomNavigationBar: _selecting && notebook != null
-            ? NotebookContentsSelectionBar(
-                count: _selected.length,
-                onMoveToChapter: notebook.payload.chapters.isEmpty
-                    ? null
-                    : () => unawaited(_moveSelected(notebook)),
-                onRemove: () => unawaited(_removeSelected(notebook)),
-              )
-            : null,
-        body: notebook == null || entries == null
-            ? const DelayedLoadingIndicator()
-            : _buildBody(context, notebook, entries),
       ),
     );
   }

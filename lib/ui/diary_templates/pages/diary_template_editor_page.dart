@@ -16,6 +16,8 @@ import '../controllers/diary_templates_controller.dart';
 import '../models/diary_template.dart';
 import '../sections/diary_template_editor_content_tab.dart';
 import '../sections/diary_template_editor_settings_tab.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 模板编辑页：新建、编辑我的模板，以及“另存为模板”预填后的确认。
 ///
@@ -91,49 +93,54 @@ class _DiaryTemplateEditorPageState
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
-    final scaffold = Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppTopBar(
-        contentMaxWidth: AppContentWidth.editor,
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => unawaited(_attemptExit()),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        title: Text(
-          _editor.isNew
-              ? l10n.diaryTemplateEditorNewTitle
-              : l10n.diaryTemplateEditorEditTitle,
-        ),
-        actions: <Widget>[
-          ListenableBuilder(
-            listenable: _editor,
-            builder: (BuildContext context, Widget? child) => TextButton(
-              onPressed: _editor.saving
-                  ? null
-                  : () => unawaited(_saveAndClose()),
-              child: Text(l10n.commonSave),
+    final scaffold = AppPageBackground(
+      area: AppBackgroundArea.editor,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: AppContentWidth.editor,
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => unawaited(_attemptExit()),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+            title: Text(
+              _editor.isNew
+                  ? l10n.diaryTemplateEditorNewTitle
+                  : l10n.diaryTemplateEditorEditTitle,
+            ),
+            actions: <Widget>[
+              ListenableBuilder(
+                listenable: _editor,
+                builder: (BuildContext context, Widget? child) => TextButton(
+                  onPressed: _editor.saving
+                      ? null
+                      : () => unawaited(_saveAndClose()),
+                  child: Text(l10n.commonSave),
+                ),
+              ),
+            ],
+            bottom: TabBar(
+              controller: _tabs,
+              tabs: <Widget>[
+                Tab(text: l10n.diaryTemplateEditorTabContent),
+                Tab(text: l10n.diaryTemplateEditorTabSettings),
+              ],
             ),
           ),
-        ],
-        bottom: TabBar(
-          controller: _tabs,
-          tabs: <Widget>[
-            Tab(text: l10n.diaryTemplateEditorTabContent),
-            Tab(text: l10n.diaryTemplateEditorTabSettings),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabs,
-        physics: const NeverScrollableScrollPhysics(),
-        children: <Widget>[
-          DiaryTemplateEditorContentTab(
-            controller: _editor,
-            keyboardVisible: keyboardVisible,
+          body: TabBarView(
+            controller: _tabs,
+            physics: const NeverScrollableScrollPhysics(),
+            children: <Widget>[
+              DiaryTemplateEditorContentTab(
+                controller: _editor,
+                keyboardVisible: keyboardVisible,
+              ),
+              DiaryTemplateEditorSettingsTab(controller: _editor),
+            ],
           ),
-          DiaryTemplateEditorSettingsTab(controller: _editor),
-        ],
+        ),
       ),
     );
     // 只有 canPop 随改动变化；child 不跟着重建，正文输入时整页不重排。

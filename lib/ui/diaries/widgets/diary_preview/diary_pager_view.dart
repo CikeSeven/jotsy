@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/models/app_surface_enums.dart';
+import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../widgets/desktop_page_arrows.dart';
 import '../../models/diary_preview_style/diary_preview_behavior.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
@@ -239,9 +241,19 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
     DeviceGestureSettings pagerSettings,
     DiaryPreviewPageTransition transition,
   ) {
+    // 预览区域画了背景时不铺这层“桌面”：它不透明，会把整页背景盖住；
+    // 层叠与淡入时露出的改为背景本身。设置页的实时预览处在设置区域之下，
+    // 照旧铺桌面。
+    final backdrop = AppPageBackdrop.maybeOf(context);
+    final onPreviewBackground =
+        backdrop != null &&
+        backdrop.area == AppBackgroundArea.preview &&
+        backdrop.hasBackground;
     return ColoredBox(
       // 层叠与淡入时页面会缩小或半透明，露出的是这层“桌面”。
-      color: Theme.of(context).colorScheme.surfaceContainer,
+      color: onPreviewBackground
+          ? Colors.transparent
+          : Theme.of(context).colorScheme.surfaceContainer,
       child: Stack(
         children: <Widget>[
           NotificationListener<ScrollNotification>(

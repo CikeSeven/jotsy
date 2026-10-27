@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -13,13 +14,15 @@ Future<SettingsService> _pumpOrderPage(WidgetTester tester) async {
   final settings = await SettingsService.create();
   final navigatorKey = GlobalKey<NavigatorState>();
   await tester.pumpWidget(
-    MaterialApp(
-      navigatorKey: navigatorKey,
-      theme: expressiveTestTheme(Brightness.light),
-      locale: const Locale('zh'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: const Scaffold(body: Text('settings home')),
+    ProviderScope(
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        theme: expressiveTestTheme(Brightness.light),
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: Text('settings home')),
+      ),
     ),
   );
   navigatorKey.currentState!.push(

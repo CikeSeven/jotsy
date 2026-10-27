@@ -21,6 +21,8 @@ import '../viewmodels/notebook_view.dart';
 import '../widgets/notebooks_empty_state.dart';
 import 'notebook_editor_page.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记本管理页（书架面板“管理”与设置首页入口）。
 ///
@@ -60,20 +62,25 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     } else {
       body = _buildList(context, notebooks, counts);
     }
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        title: Text(l10n.notebookTitle),
-        actions: <Widget>[
-          IconButton(
-            tooltip: l10n.notebookNew,
-            onPressed: () => unawaited(_create()),
-            icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            title: Text(l10n.notebookTitle),
+            actions: <Widget>[
+              IconButton(
+                tooltip: l10n.notebookNew,
+                onPressed: () => unawaited(_create()),
+                icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
+              ),
+            ],
           ),
-        ],
+          body: body,
+        ),
       ),
-      body: body,
     );
   }
 

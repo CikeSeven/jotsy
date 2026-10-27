@@ -385,35 +385,31 @@ class ArchivedDiariesController {
     }
   }
 
-  /// 打开预览页（归档列表默认入口），[sequence] 为左右滑动的顺序（当前显示
-  /// 的归档列表）。
+  /// 打开预览页（归档列表默认入口；“打开日记时直接编辑”开启时为编辑页，见
+  /// [openDiaryPage]），[sequence] 为左右滑动的顺序（当前显示的归档列表）。
   ///
-  /// 若在预览页中删除，返回后补一条轻提示反馈。
+  /// 若在预览页（或编辑页）中删除，返回后补一条轻提示反馈。
   void openPreview(
     String diaryId, {
     DiaryWithTags? initialDetail,
     ImageViewerHero? coverHero,
     DiaryPreviewSequence? sequence,
   }) {
-    Navigator.of(_state.context)
-        .push<DiaryPreviewResult?>(
-          MaterialPageRoute<DiaryPreviewResult?>(
-            builder: (BuildContext context) => DiaryPreviewPage(
-              diaryId: diaryId,
-              initialDetail: initialDetail,
-              coverHero: coverHero,
-              sequence: sequence,
-            ),
-          ),
-        )
-        .then((DiaryPreviewResult? result) async {
-          if (!_state.mounted) {
-            return;
-          }
-          // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
-          if (result case DiaryPreviewResult(:final diaryId)) {
-            await _offerUndoForDeleted(diaryId);
-          }
-        });
+    openDiaryPage(
+      _state.context,
+      _state.ref,
+      diaryId: diaryId,
+      initialDetail: initialDetail,
+      coverHero: coverHero,
+      sequence: sequence,
+    ).then((DiaryPreviewResult? result) async {
+      if (!_state.mounted) {
+        return;
+      }
+      // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
+      if (result case DiaryPreviewResult(:final diaryId)) {
+        await _offerUndoForDeleted(diaryId);
+      }
+    });
   }
 }

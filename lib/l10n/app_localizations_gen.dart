@@ -9416,6 +9416,18 @@ abstract class AppLocalizations {
   /// **'Keep the toolbar at the bottom of the editor when the on-screen keyboard is hidden or you type on a physical keyboard.'**
   String get settingsToolbarAlwaysVisibleSubtitle;
 
+  /// Editor settings: title of the switch that skips the preview page and opens a tapped diary straight in the editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Open diaries in the editor'**
+  String get settingsOpenDiaryInEditor;
+
+  /// Editor settings: description of the open-in-editor switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a diary to start editing right away instead of opening the preview first.'**
+  String get settingsOpenDiaryInEditorSubtitle;
+
   /// Photos from this day: button and menu item that makes a photo the entry cover.
   ///
   /// In en, this message translates to:

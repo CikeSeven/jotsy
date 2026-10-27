@@ -5652,6 +5652,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keep the toolbar at the bottom of the editor when the on-screen keyboard is hidden or you type on a physical keyboard.';
 
   @override
+  String get settingsOpenDiaryInEditor => 'Open diaries in the editor';
+
+  @override
+  String get settingsOpenDiaryInEditorSubtitle =>
+      'Tap a diary to start editing right away instead of opening the preview first.';
+
+  @override
   String get diaryDayPhotosSetCover => 'Set as cover';
 
   @override

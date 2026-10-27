@@ -10,6 +10,7 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
@@ -225,15 +226,14 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     );
   }
 
+  /// 打开预览页（“打开日记时直接编辑”开启时为编辑页，见 [openDiaryPage]）。
   void _openPreview(
     BuildContext context,
     String diaryId, {
     DiaryPreviewSequence? sequence,
   }) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => DiaryPreviewPage(diaryId: diaryId, sequence: sequence),
-      ),
+    unawaited(
+      openDiaryPage(context, ref, diaryId: diaryId, sequence: sequence),
     );
   }
 

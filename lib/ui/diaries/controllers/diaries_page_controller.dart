@@ -166,9 +166,10 @@ class DiariesPageController {
     );
   }
 
-  /// 打开日记预览页（列表默认入口）。
+  /// 打开日记预览页（列表默认入口；“打开日记时直接编辑”开启时为编辑页，
+  /// 见 [openDiaryPage]）。
   ///
-  /// 预览页内可能触发删除或编辑：
+  /// 预览页（或编辑页）内可能触发删除或编辑：
   /// - 删除通过返回值触发撤销提示；
   /// - 其余数据变更依赖数据库流自动回推，避免强制刷新导致滚动回跳。
   void openPreview(
@@ -178,31 +179,25 @@ class DiariesPageController {
   }) {
     final sequence = _previewSequence();
     unawaited(
-      Navigator.of(_state.context)
-          .push<DiaryPreviewResult?>(
-            MaterialPageRoute<DiaryPreviewResult?>(
-              builder: (BuildContext context) {
-                return DiaryPreviewPage(
-                  diaryId: diaryId,
-                  initialDetail: initialDetail,
-                  coverHero: coverHero,
-                  sequence: sequence,
-                );
-              },
-            ),
-          )
-          .then((DiaryPreviewResult? result) async {
-            if (!_state.mounted) {
-              return;
-            }
-            // 预览页返回不再强制触发列表重建：
-            // - 列表本身由数据库流驱动，数据变更会自动刷新；
-            // - 强制刷新会导致滚动位置回跳，影响“返回后继续浏览”体验。
-            // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
-            if (result case DiaryPreviewResult(:final diaryId)) {
-              await offerUndoForDeletedDiary(diaryId);
-            }
-          }),
+      openDiaryPage(
+        _state.context,
+        _state.ref,
+        diaryId: diaryId,
+        initialDetail: initialDetail,
+        coverHero: coverHero,
+        sequence: sequence,
+      ).then((DiaryPreviewResult? result) async {
+        if (!_state.mounted) {
+          return;
+        }
+        // 预览页返回不再强制触发列表重建：
+        // - 列表本身由数据库流驱动，数据变更会自动刷新；
+        // - 强制刷新会导致滚动位置回跳，影响“返回后继续浏览”体验。
+        // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
+        if (result case DiaryPreviewResult(:final diaryId)) {
+          await offerUndoForDeletedDiary(diaryId);
+        }
+      }),
     );
   }
 

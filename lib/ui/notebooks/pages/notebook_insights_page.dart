@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../explore/controllers/explore_page_controller.dart';
 import '../../explore/models/explore_view_data.dart';
@@ -221,13 +223,14 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
     _openPreview(ids[_random.nextInt(ids.length)], ids);
   }
 
+  /// 打开预览页（“打开日记时直接编辑”开启时为编辑页，见 [openDiaryPage]）。
   void _openPreview(String diaryId, List<String> ids) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => DiaryPreviewPage(
-          diaryId: diaryId,
-          sequence: DiaryPreviewSequence(ids: ids),
-        ),
+    unawaited(
+      openDiaryPage(
+        context,
+        ref,
+        diaryId: diaryId,
+        sequence: DiaryPreviewSequence(ids: ids),
       ),
     );
   }

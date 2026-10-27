@@ -30,6 +30,7 @@ import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
 import '../../diaries/models/time_capsule.dart';
+import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../../utils/text_stats.dart';

@@ -230,7 +230,8 @@ class _CalendarPageController {
     });
   }
 
-  /// 打开日记预览页（与主页列表行为保持一致）。
+  /// 打开日记预览页（与主页列表行为保持一致；“打开日记时直接编辑”开启时为
+  /// 编辑页，见 [openDiaryPage]）。
   ///
   /// [coverHero] 为从时间线缩略图抓取的共享元素画面，所有权转交预览页；
   /// [sequence] 为左右滑动的顺序（当天列表、那年今日），单篇入口不传。
@@ -240,43 +241,39 @@ class _CalendarPageController {
     ImageViewerHero? coverHero,
     DiaryPreviewSequence? sequence,
   }) {
-    Navigator.of(_state.context)
-        .push<DiaryPreviewResult?>(
-          MaterialPageRoute<DiaryPreviewResult?>(
-            builder: (BuildContext context) => DiaryPreviewPage(
-              diaryId: diaryId,
-              initialDetail: initialDetail,
-              coverHero: coverHero,
-              sequence: sequence,
-            ),
-          ),
-        )
-        .then((DiaryPreviewResult? result) async {
-          // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
-          final deletedId = result?.diaryId;
-          if (!_state.mounted || deletedId == null) {
-            return;
-          }
+    openDiaryPage(
+      _state.context,
+      _state.ref,
+      diaryId: diaryId,
+      initialDetail: initialDetail,
+      coverHero: coverHero,
+      sequence: sequence,
+    ).then((DiaryPreviewResult? result) async {
+      // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
+      final deletedId = result?.diaryId;
+      if (!_state.mounted || deletedId == null) {
+        return;
+      }
 
-          final undoRequested = await _showDeleteUndoSnackBar();
-          if (!_state.mounted || !undoRequested) {
-            return;
-          }
+      final undoRequested = await _showDeleteUndoSnackBar();
+      if (!_state.mounted || !undoRequested) {
+        return;
+      }
 
-          try {
-            final db = _state.ref.read(appDatabaseProvider);
-            await db.restoreDiary(deletedId, touchUpdatedAt: false);
-            if (!_state.mounted) {
-              return;
-            }
-            await _showInfoSnackBar(_state.context.l10n.autoT0076);
-          } catch (_) {
-            if (!_state.mounted) {
-              return;
-            }
-            await _showInfoSnackBar(_state.context.l10n.autoT0077);
-          }
-        });
+      try {
+        final db = _state.ref.read(appDatabaseProvider);
+        await db.restoreDiary(deletedId, touchUpdatedAt: false);
+        if (!_state.mounted) {
+          return;
+        }
+        await _showInfoSnackBar(_state.context.l10n.autoT0076);
+      } catch (_) {
+        if (!_state.mounted) {
+          return;
+        }
+        await _showInfoSnackBar(_state.context.l10n.autoT0077);
+      }
+    });
   }
 
   /// 显示“删除成功 + 撤销”提示，并等待用户动作结果。

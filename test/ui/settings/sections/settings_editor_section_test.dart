@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_behavior.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
 import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/diary_drafts_harness.dart';
 
 /// 编辑器设置分组：“新建时提示选择模板”开关只留在模板管理页，这里只保留
-/// “日记模板”入口；“始终显示工具栏”开关默认关，切换后写入本机偏好。
+/// “日记模板”入口；“始终显示工具栏”开关默认关，切换后写入本机偏好；
+/// “打开日记时直接编辑”默认关，写进预览页的阅读行为。
 void main() {
   testWidgets(
     'editor settings no longer shows the template suggestion switch but keeps the templates entry',
@@ -72,6 +75,52 @@ void main() {
     expect(prefs.getBool('app.settings.diary_toolbar_always_visible'), isFalse);
     await h.unmount();
   });
+
+  testWidgets(
+    'the open-in-editor switch is off by default and saves the preview behavior',
+    (tester) async {
+      final h = await DiaryDraftsHarness.create(tester);
+      // 预览页样式页里已有别的阅读行为：开关只改这一项。
+      await h.settings.setDiaryPreviewStyleRaw(
+        const DiaryPreviewSettings(
+          behavior: DiaryPreviewBehavior(todoToggle: false),
+        ).encode(),
+      );
+      await h.pump(
+        Scaffold(
+          body: ListView(
+            children: <Widget>[
+              SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final tile = find.widgetWithText(
+        SwitchListTile,
+        h.l10n.settingsOpenDiaryInEditor,
+      );
+      expect(tile, findsOneWidget);
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+
+      DiaryPreviewBehavior stored() => DiaryPreviewSettings.decode(
+        h.settings.diaryPreviewStyleRawNotifier.value,
+      ).behavior;
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+      expect(stored().openInEditor, isTrue);
+      expect(stored().todoToggle, isFalse);
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+      expect(stored(), const DiaryPreviewBehavior(todoToggle: false));
+      await h.unmount();
+    },
+  );
 
   testWidgets(
     'desktop hides the always-show toolbar switch because it is always on',

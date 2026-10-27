@@ -7211,6 +7211,14 @@
   "@settingsToolbarAlwaysVisibleSubtitle": {
     "description": "编辑器设置：工具栏常显开关的说明。"
   },
+  "settingsOpenDiaryInEditor": "打开日记时直接编辑",
+  "@settingsOpenDiaryInEditor": {
+    "description": "编辑器设置：点开日记时跳过预览页、直接进入编辑页的开关标题。"
+  },
+  "settingsOpenDiaryInEditorSubtitle": "点开日记直接进入编辑页，不再先打开预览页",
+  "@settingsOpenDiaryInEditorSubtitle": {
+    "description": "编辑器设置：打开日记直接编辑开关的说明。"
+  },
   "diaryDayPhotosSetCover": "设为封面",
   "@diaryDayPhotosSetCover": {
     "description": "这天拍的照片：把照片设为日记封面的按钮与菜单项。"

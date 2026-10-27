@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/edit_diary_page.dart';
 import '../providers/diary_detail_provider.dart';
 
-/// 从阅读处（预览页、宽窗口日记页的右栏与它的 Enter 快捷键）打开编辑页
-/// 编辑已有的一篇。
+/// 从阅读处（预览页、宽窗口日记页的右栏与它的 Enter 快捷键、列表右键菜单，
+/// 以及“打开日记时直接编辑”开启时的 `openDiaryPage`）打开编辑页编辑已有的
+/// 一篇。
 ///
 /// 返回 true 表示用户在编辑页里删除了这一篇（编辑页以 true 结束），调用方
 /// 按“已删除”收尾并给出撤销；否则刷新这一篇的详情（预览里显示的是编辑后

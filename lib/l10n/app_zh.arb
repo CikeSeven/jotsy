@@ -11406,5 +11406,17 @@
   "appSurfacePreviewCardTitle2": "读书笔记",
   "@appSurfacePreviewCardTitle2": {"description": "背景与材质设置预览：第二张示例卡片的标题。"},
   "appSurfacePreviewCardBody2": "摘下几句喜欢的话，留着以后再读。",
-  "@appSurfacePreviewCardBody2": {"description": "背景与材质设置预览：第二张示例卡片的正文。"}
+  "@appSurfacePreviewCardBody2": {"description": "背景与材质设置预览：第二张示例卡片的正文。"},
+  "diaryToolbarSizeTitle": "工具栏大小",
+  "@diaryToolbarSizeTitle": {"description": "编辑器设置：编辑页悬浮工具栏大小选项的标题。"},
+  "diaryToolbarSizeSubtitle": "按钮和图标一起缩放，变大后一排放不下的工具收进「更多」",
+  "@diaryToolbarSizeSubtitle": {"description": "编辑器设置：工具栏大小选项的说明。"},
+  "diaryToolbarSizeSmall": "小",
+  "@diaryToolbarSizeSmall": {"description": "工具栏大小：小。"},
+  "diaryToolbarSizeStandard": "标准",
+  "@diaryToolbarSizeStandard": {"description": "工具栏大小：标准（默认）。"},
+  "diaryToolbarSizeLarge": "大",
+  "@diaryToolbarSizeLarge": {"description": "工具栏大小：大。"},
+  "diaryToolbarSizeExtraLarge": "特大",
+  "@diaryToolbarSizeExtraLarge": {"description": "工具栏大小：特大。"}
 }

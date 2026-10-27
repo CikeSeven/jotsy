@@ -8170,4 +8170,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appSurfacePreviewCardBody2 => '摘下几句喜欢的话，留着以后再读。';
+
+  @override
+  String get diaryToolbarSizeTitle => '工具栏大小';
+
+  @override
+  String get diaryToolbarSizeSubtitle => '按钮和图标一起缩放，变大后一排放不下的工具收进「更多」';
+
+  @override
+  String get diaryToolbarSizeSmall => '小';
+
+  @override
+  String get diaryToolbarSizeStandard => '标准';
+
+  @override
+  String get diaryToolbarSizeLarge => '大';
+
+  @override
+  String get diaryToolbarSizeExtraLarge => '特大';
 }

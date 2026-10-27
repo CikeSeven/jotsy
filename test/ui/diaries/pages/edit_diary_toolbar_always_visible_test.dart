@@ -186,6 +186,45 @@ void main() {
     },
   );
 
+  testWidgets('a larger toolbar size takes effect at once and keeps clear', (
+    tester,
+  ) async {
+    await settings.setDiaryToolbarAlwaysVisible(true);
+    await pumpPage(
+      tester,
+      const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+    );
+    expect(
+      tester.widget<DiaryFloatingToolbar>(toolbar()).size,
+      DiaryToolbarSize.standard,
+    );
+    final standardTop = tester.getTopLeft(toolbar()).dy;
+    final standardReserve = editorBottomPadding(tester);
+
+    await settings.setDiaryToolbarSizeRaw(
+      DiaryToolbarSize.extraLarge.storageKey,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<DiaryFloatingToolbar>(toolbar()).size,
+      DiaryToolbarSize.extraLarge,
+    );
+    // 一排变高 44 × 0.4，正文末尾的留白同步加高，仍盖过工具栏与光标空隙。
+    final toolbarTop = tester.getTopLeft(toolbar()).dy;
+    expect(standardTop - toolbarTop, moreOrLessEquals(44 * 0.4));
+    expect(
+      editorBottomPadding(tester) - standardReserve,
+      moreOrLessEquals(44 * 0.4),
+    );
+    expect(
+      editorBottomPadding(tester),
+      greaterThanOrEqualTo(900 - toolbarTop + 40),
+    );
+    expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
   testWidgets('expanding the info panel hides the stacked toolbar', (
     tester,
   ) async {

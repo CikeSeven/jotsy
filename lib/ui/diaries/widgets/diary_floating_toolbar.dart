@@ -12,6 +12,7 @@ import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
+import 'package:node_diary/ui/diaries/models/diary_toolbar_size.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_code_block_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_toolbar_code_block_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
@@ -55,6 +56,9 @@ enum _ToolbarPanel { none, more, color, code }
 /// - 颜色面板的页签（[_colorMode]：色板 / 色系 / 自定义）与色系页看的色系
 ///   （[_materialFamily]）记在这里，本次挂载内切换目标、收起再打开都沿用；
 ///   各页高度不同时（宽屏），切换同样立即报告新高度。
+///
+/// 工具栏大小（[size]）只缩放一排与「更多」面板里的工具格（见 [_scaledTool]）
+/// 与排布用的格宽、行高；颜色、代码块等面板的内容保持原尺寸。
 class DiaryFloatingToolbar extends StatefulWidget {
   const DiaryFloatingToolbar({
     super.key,
@@ -70,11 +74,15 @@ class DiaryFloatingToolbar extends StatefulWidget {
     this.maxPanelExtent = double.infinity,
     this.savedColors = DiarySavedColors.empty,
     this.onEditSavedColors,
+    this.size = DiaryToolbarSize.standard,
   });
 
   final editor.DiaryEditorController controller;
   final List<DiaryToolbarItem> order;
   final Set<DiaryToolbarItem> hiddenItems;
+
+  /// 工具栏大小（设置里的本机偏好）。
+  final DiaryToolbarSize size;
   final String? currentTimeFormatPattern;
   final VoidCallback? onRecordingPressed;
   final bool recordingOpen;
@@ -176,6 +184,8 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
 
   /// 类成员而非扩展方法：注册与注销要用同一个函数对象。
   void _handleSelectionChanged() => _syncCodePanelWithSelection();
+
+  double get _scale => widget.size.scale;
 
   bool get _moreExpanded =>
       _panel == _ToolbarPanel.more ||
@@ -281,6 +291,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       _ToolbarPanel.more => diaryToolbarMorePanelBodyHeight(
         layout.overflowRows.length,
         widget.maxPanelExtent,
+        scale: _scale,
       ),
       _ToolbarPanel.color => diaryToolbarPanelBodyLimit(
         diaryColorPanelNaturalHeight(_colorMode, _colorGrid()),
@@ -322,7 +333,11 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       _reportExtent(0, deferred: true);
       return const SizedBox.shrink();
     }
-    final layout = resolveDiaryToolbarLayout(items, width: width);
+    final layout = resolveDiaryToolbarLayout(
+      items,
+      width: width,
+      scale: _scale,
+    );
     _layout = layout;
     _width = width;
     _reportExtent(_targetExtent(), deferred: true);
@@ -332,7 +347,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       children: <Widget>[
         _buildPanelArea(context, layout),
         SizedBox(
-          height: kDiaryToolbarBarHeight,
+          height: diaryToolbarBarHeight(_scale),
           child: layout.hasOverflow
               ? _buildOverflowBar(context, layout, width)
               : _buildCompactBar(context, items),
@@ -405,6 +420,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       _ => DiaryToolbarMorePanel(
         rows: layout.overflowRows,
         bodyHeight: _bodyHeight(_ToolbarPanel.more),
+        scale: _scale,
         cell: (DiaryToolbarItem item) =>
             _overflowCell(context, item, layout, inMorePanel: true),
       ),

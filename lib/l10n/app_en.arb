@@ -11406,5 +11406,17 @@
   "appSurfacePreviewCardTitle2": "Reading notes",
   "@appSurfacePreviewCardTitle2": {"description": "背景与材质设置预览：第二张示例卡片的标题。"},
   "appSurfacePreviewCardBody2": "Saved a few lines I liked to read again later.",
-  "@appSurfacePreviewCardBody2": {"description": "背景与材质设置预览：第二张示例卡片的正文。"}
+  "@appSurfacePreviewCardBody2": {"description": "背景与材质设置预览：第二张示例卡片的正文。"},
+  "diaryToolbarSizeTitle": "Toolbar size",
+  "@diaryToolbarSizeTitle": {"description": "Editor settings: title of the option that sets the size of the editor's floating toolbar."},
+  "diaryToolbarSizeSubtitle": "Buttons and icons scale together. Tools that no longer fit in one row go into More.",
+  "@diaryToolbarSizeSubtitle": {"description": "Editor settings: description of the toolbar size option."},
+  "diaryToolbarSizeSmall": "Small",
+  "@diaryToolbarSizeSmall": {"description": "Toolbar size: small."},
+  "diaryToolbarSizeStandard": "Standard",
+  "@diaryToolbarSizeStandard": {"description": "Toolbar size: standard (default)."},
+  "diaryToolbarSizeLarge": "Large",
+  "@diaryToolbarSizeLarge": {"description": "Toolbar size: large."},
+  "diaryToolbarSizeExtraLarge": "Extra large",
+  "@diaryToolbarSizeExtraLarge": {"description": "Toolbar size: extra large."}
 }

@@ -88,6 +88,11 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     return result;
   }
 
+  /// 工具栏大小在设置页直接保存，这里只读：变大后一排放下的工具变少，
+  /// 分界线随之上移。
+  double get _toolbarScale =>
+      DiaryToolbarSize.decode(widget.settingsService.diaryToolbarSizeRaw).scale;
+
   bool get _hasUnsavedChanges =>
       encodeDiaryToolbarOrder(_order) != _savedOrderRaw ||
       encodeDiaryToolbarHiddenItems(_hiddenItems) != _savedHiddenItemsRaw ||
@@ -149,6 +154,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
                 pinned: rows.indexOf(moved) < dividerIndex,
                 hiddenItems: _hiddenItems,
                 width: toolbarWidth,
+                scale: _toolbarScale,
               ),
       );
     });
@@ -293,6 +299,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
       shownOrder,
       _hiddenItems,
       width: toolbarWidth,
+      scale: _toolbarScale,
     );
     return PopScope(
       // 有未保存修改或正在保存时拦截系统返回，交给 _attemptExit 处理；

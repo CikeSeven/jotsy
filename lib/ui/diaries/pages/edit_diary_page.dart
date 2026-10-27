@@ -133,7 +133,8 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     with WidgetsBindingObserver {
-  static const double _floatingToolbarReservedSpace = 56.0;
+  /// 悬浮工具栏一排之外再留的 12dp：卡片与键盘之间的空隙。
+  static const double _floatingToolbarGap = 12.0;
   static const double _recordingPanelReservedSpace = 310.0;
   // 键盘弹起时光标与悬浮工具栏之间留出的空隙：光标贴着工具栏时下一行没有
   // 余地、读起来像被压住。底部占位同样加上它，最后一行才能被顶到这么高。
@@ -214,6 +215,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   String? _toolbarCurrentTimeFormatPattern;
   // 编辑器设置“始终显示工具栏”：打开后工具栏不再随软键盘出现与消失。
   bool _toolbarAlwaysVisible = false;
+  // 编辑器设置“工具栏大小”：一排高度与正文底部占位随之变化。
+  DiaryToolbarSize _toolbarSize = DiaryToolbarSize.standard;
   SettingsService? _boundToolbarSettingsService;
   VoidCallback? _toolbarSettingsListener;
   bool _recordingPanelOpen = false;
@@ -514,6 +517,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     }
     return _metaPanelBottomSpacer(panelProgress);
   }
+
+  /// 悬浮工具栏一排（不含面板）在正文底部占的高度，随工具栏大小变化。
+  double get _floatingToolbarReservedSpace =>
+      diaryToolbarBarHeight(_toolbarSize.scale) + _floatingToolbarGap;
 
   double _metaPanelBottomSpacer(double panelProgress) =>
       (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
@@ -1156,7 +1163,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                                       constraints.maxHeight -
                                                       safeBottom -
                                                       stackedLift -
-                                                      kDiaryToolbarBarHeight,
+                                                      diaryToolbarBarHeight(
+                                                        _toolbarSize.scale,
+                                                      ),
                                                 ),
                                               ),
                                             ),
@@ -1237,6 +1246,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     settingsService.diaryToolbarAlwaysVisibleNotifier.addListener(
       _toolbarSettingsListener!,
     );
+    settingsService.diaryToolbarSizeRawNotifier.addListener(
+      _toolbarSettingsListener!,
+    );
     _applyToolbarSettings(settingsService, notify: false);
   }
 
@@ -1254,6 +1266,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       settingsService.diaryToolbarAlwaysVisibleNotifier.removeListener(
         listener,
       );
+      settingsService.diaryToolbarSizeRawNotifier.removeListener(listener);
     }
     _boundToolbarSettingsService = null;
     _toolbarSettingsListener = null;
@@ -1272,7 +1285,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     final nextCurrentTimeFormat =
         settingsService.diaryToolbarCurrentTimeFormatRaw;
     final nextAlwaysVisible = settingsService.isDiaryToolbarAlwaysVisible;
+    final nextSize = DiaryToolbarSize.decode(
+      settingsService.diaryToolbarSizeRaw,
+    );
     if (nextAlwaysVisible == _toolbarAlwaysVisible &&
+        nextSize == _toolbarSize &&
         _hasSameToolbarSettings(
           nextOrder,
           nextHiddenItems,
@@ -1285,6 +1302,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       _toolbarHiddenItems = nextHiddenItems;
       _toolbarCurrentTimeFormatPattern = nextCurrentTimeFormat;
       _toolbarAlwaysVisible = nextAlwaysVisible;
+      _toolbarSize = nextSize;
     }
 
     if (notify && mounted) {
@@ -1334,6 +1352,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       maxPanelExtent: maxPanelExtent,
       savedColors: ref.watch(diarySavedColorsProvider),
       onEditSavedColors: ref.read(diarySavedColorsProvider.notifier).edit,
+      size: _toolbarSize,
     );
   }
 

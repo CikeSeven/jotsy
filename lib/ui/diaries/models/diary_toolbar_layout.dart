@@ -12,6 +12,17 @@ const double kDiaryToolbarIndentGap = 4;
 /// 工具栏一排的高度。
 const double kDiaryToolbarBarHeight = 44;
 
+// 以上尺寸都是标准大小（`DiaryToolbarSize.standard`）下的值。其他大小把
+// 按钮格、一排高度与按钮本身按 `scale` 等比缩放；工具之间的间隔与卡片左右
+// 留白不变。排布与渲染都经下面几个按 `scale` 换算的函数，两处一致。
+
+/// 一排的高度。
+double diaryToolbarBarHeight(double scale) => kDiaryToolbarBarHeight * scale;
+
+/// 一个按钮格的边长。
+double diaryToolbarButtonExtent(double scale) =>
+    kDiaryToolbarButtonExtent * scale;
+
 /// 工具栏内容距卡片左右边缘的留白。
 const double kDiaryToolbarHorizontalPadding = 8;
 
@@ -25,11 +36,12 @@ const double kDiaryFloatingToolbarInset = 12;
 int diaryToolbarItemSlots(DiaryToolbarItem item) =>
     item == DiaryToolbarItem.indent ? 2 : 1;
 
-/// 工具在紧凑排布里的实际宽度。
-double diaryToolbarItemExtent(DiaryToolbarItem item) {
+/// 工具在紧凑排布里的实际宽度（「缩进」两个按钮之间的间距随按钮一起缩放）。
+double diaryToolbarItemExtent(DiaryToolbarItem item, {double scale = 1}) {
   final slots = diaryToolbarItemSlots(item);
-  return slots * kDiaryToolbarButtonExtent +
-      (slots - 1) * kDiaryToolbarIndentGap;
+  return (slots * kDiaryToolbarButtonExtent +
+          (slots - 1) * kDiaryToolbarIndentGap) *
+      scale;
 }
 
 /// 悬浮工具栏的一次排布：一排放得下的工具常驻，放不下的收进「更多」面板。
@@ -85,10 +97,11 @@ class DiaryToolbarLayout {
   }
 }
 
-/// 按卡片宽度 [width] 排布已启用的工具 [items]。
+/// 按卡片宽度 [width] 与工具栏大小 [scale] 排布已启用的工具 [items]。
 DiaryToolbarLayout resolveDiaryToolbarLayout(
   List<DiaryToolbarItem> items, {
   required double width,
+  double scale = 1,
 }) {
   final contentWidth = math.max(
     0.0,
@@ -96,7 +109,7 @@ DiaryToolbarLayout resolveDiaryToolbarLayout(
   );
   var naturalWidth = 0.0;
   for (var index = 0; index < items.length; index++) {
-    naturalWidth += diaryToolbarItemExtent(items[index]);
+    naturalWidth += diaryToolbarItemExtent(items[index], scale: scale);
     if (index > 0) {
       naturalWidth += kDiaryToolbarItemGap;
     }
@@ -113,7 +126,7 @@ DiaryToolbarLayout resolveDiaryToolbarLayout(
   final columns = math.max(
     2,
     ((contentWidth + kDiaryToolbarItemGap) /
-            (kDiaryToolbarButtonExtent + kDiaryToolbarItemGap))
+            (diaryToolbarButtonExtent(scale) + kDiaryToolbarItemGap))
         .floor(),
   );
   final capacity = columns - 1;
@@ -142,10 +155,12 @@ int? diaryToolbarOverflowBoundary(
   List<DiaryToolbarItem> order,
   Set<DiaryToolbarItem> hiddenItems, {
   required double width,
+  double scale = 1,
 }) {
   final layout = resolveDiaryToolbarLayout(
     filterEnabledDiaryToolbarOrder(order, hiddenItems),
     width: width,
+    scale: scale,
   );
   if (!layout.hasOverflow) {
     return null;
@@ -171,6 +186,7 @@ List<DiaryToolbarItem> keepDiaryToolbarItemOnSide(
   required bool pinned,
   required Set<DiaryToolbarItem> hiddenItems,
   required double width,
+  double scale = 1,
 }) {
   final result = List<DiaryToolbarItem>.of(order);
   if (hiddenItems.contains(moved)) {
@@ -179,6 +195,7 @@ List<DiaryToolbarItem> keepDiaryToolbarItemOnSide(
   bool isPinned() => resolveDiaryToolbarLayout(
     filterEnabledDiaryToolbarOrder(result, hiddenItems),
     width: width,
+    scale: scale,
   ).pinned.contains(moved);
 
   while (isPinned() != pinned) {

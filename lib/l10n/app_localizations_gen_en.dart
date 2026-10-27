@@ -9126,4 +9126,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appSurfacePreviewCardBody2 =>
       'Saved a few lines I liked to read again later.';
+
+  @override
+  String get diaryToolbarSizeTitle => 'Toolbar size';
+
+  @override
+  String get diaryToolbarSizeSubtitle =>
+      'Buttons and icons scale together. Tools that no longer fit in one row go into More.';
+
+  @override
+  String get diaryToolbarSizeSmall => 'Small';
+
+  @override
+  String get diaryToolbarSizeStandard => 'Standard';
+
+  @override
+  String get diaryToolbarSizeLarge => 'Large';
+
+  @override
+  String get diaryToolbarSizeExtraLarge => 'Extra large';
 }

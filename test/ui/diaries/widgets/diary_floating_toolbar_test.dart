@@ -28,6 +28,7 @@ Future<void> _pumpToolbar(
   void Function(DiaryMediaKind)? onMediaPressed,
   ValueChanged<double>? onPanelExtentChanged,
   double maxPanelExtent = double.infinity,
+  DiaryToolbarSize size = DiaryToolbarSize.standard,
 }) async {
   tester.view.physicalSize = Size(screenWidth, 800);
   tester.view.devicePixelRatio = 1;
@@ -55,6 +56,7 @@ Future<void> _pumpToolbar(
               onMediaPressed: onMediaPressed,
               onPanelExtentChanged: onPanelExtentChanged,
               maxPanelExtent: maxPanelExtent,
+              size: size,
             ),
           ),
         ),
@@ -196,6 +198,54 @@ void main() {
       const Size.square(kDiaryToolbarButtonExtent),
     );
     expect(find.byTooltip(_moreTooltip), findsNothing);
+  });
+
+  testWidgets('a larger toolbar size scales the tools and pins fewer', (
+    tester,
+  ) async {
+    await _pumpToolbar(
+      tester,
+      controller: _controller(),
+      size: DiaryToolbarSize.large,
+    );
+    const scale = 1.2;
+
+    // 360dp 下大号一排 6 格：前 5 个常驻，「下划线」收进「更多」。
+    expect(find.byTooltip('斜体'), findsOneWidget);
+    expect(find.byTooltip('下划线'), findsNothing);
+    final undo = find.byKey(const ValueKey('diary-toolbar-tool-undo'));
+    expect(
+      tester.getSize(undo),
+      const Size.square(kDiaryToolbarButtonExtent * scale),
+    );
+    // 按钮本身随格子等比放大（点按区域同样变大）：排版尺寸仍是标准的
+    // 40dp，画到屏幕上是 48dp。
+    final undoButton = find.descendant(
+      of: undo,
+      matching: find.byType(IconButton),
+    );
+    expect(tester.getSize(undoButton).width, kDiaryToolbarButtonExtent);
+    expect(
+      tester.getRect(undoButton).width,
+      moreOrLessEquals(kDiaryToolbarButtonExtent * scale),
+    );
+    expect(
+      tester.getSize(find.byType(DiaryFloatingToolbar)).height,
+      moreOrLessEquals(kDiaryToolbarBarHeight * scale),
+    );
+
+    // 「更多」面板的行高同样放大。
+    await tester.tap(find.byTooltip(_moreTooltip));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('下划线'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('diary-toolbar-tool-underline')))
+          .height,
+      kDiaryToolbarButtonExtent * scale,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('More lights a dot while a tool inside the panel is active', (

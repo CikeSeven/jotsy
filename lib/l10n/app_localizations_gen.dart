@@ -14947,6 +14947,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved a few lines I liked to read again later.'**
   String get appSurfacePreviewCardBody2;
+
+  /// Editor settings: title of the option that sets the size of the editor's floating toolbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Toolbar size'**
+  String get diaryToolbarSizeTitle;
+
+  /// Editor settings: description of the toolbar size option.
+  ///
+  /// In en, this message translates to:
+  /// **'Buttons and icons scale together. Tools that no longer fit in one row go into More.'**
+  String get diaryToolbarSizeSubtitle;
+
+  /// Toolbar size: small.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get diaryToolbarSizeSmall;
+
+  /// Toolbar size: standard (default).
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get diaryToolbarSizeStandard;
+
+  /// Toolbar size: large.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get diaryToolbarSizeLarge;
+
+  /// Toolbar size: extra large.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra large'**
+  String get diaryToolbarSizeExtraLarge;
 }
 
 class _AppLocalizationsDelegate

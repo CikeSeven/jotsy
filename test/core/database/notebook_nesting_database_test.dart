@@ -313,6 +313,36 @@ void main() {
     });
   });
 
+  test('the unfiled scope lists diaries in no notebook at all', () async {
+    final parent = await notebook('父');
+    final closed = await notebook('合上的', parentId: parent);
+    await db.updateNotebook(closed, isClosed: true);
+    final secret = await notebook('私密', visibility: NotebookVisibility.locked);
+    await notebook(
+      '智能',
+      kind: NotebookKind.smart,
+      payload: NotebookPayload(
+        rules: const <String, Object?>{
+          'match': 'all',
+          'rules': <Object?>[
+            <String, Object?>{'type': 'keyword', 'text': '散'},
+          ],
+        },
+      ),
+    );
+    await diary('父的', notebookIds: <String>[parent]);
+    await diary('合上的', notebookIds: <String>[closed]);
+    await diary('秘密', notebookIds: <String>[secret]);
+    await diary('散篇一');
+    final loose = await diary('散篇二');
+
+    expect(await titles(DiaryListScope.unfiled), <String>['散篇一', '散篇二']);
+    expect(await db.watchScopedDiaryCount(DiaryListScope.unfiled).first, 2);
+    // 收进任何一本之后就不再是未收录。
+    await db.addDiariesToNotebook(parent, <String>[loose]);
+    expect(await titles(DiaryListScope.unfiled), <String>['散篇一']);
+  });
+
   group('deleting and merging', () {
     test(
       'deleting a parent lifts its children and undo puts them back',

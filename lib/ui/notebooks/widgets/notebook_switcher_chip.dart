@@ -6,21 +6,29 @@ import '../../widgets/expressive_state_blend.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_parts.dart';
 
-/// 首页标签栏最前面的日记本切换胶囊：“全部日记”或当前日记本的名称，点按
-/// 打开书架面板。
+/// 首页标签栏最前面的日记本切换胶囊：“全部日记”“未收录”或当前日记本的
+/// 名称，点按打开书架面板。
 ///
 /// 高度由标签栏给定（与标签胶囊同高）；宽度取内容固有宽度，展开成多行时
 /// 标签栏按 [measureWidth] 预留同样的宽度。全部日记用 `secondaryContainer`，
-/// 日记本用它强调色换算出的容器色，两者之间经 [ExpressiveStateBlend] 补间。
+/// 未收录用 `tertiaryContainer`，日记本用它强调色换算出的容器色，与全部日记
+/// 之间经 [ExpressiveStateBlend] 补间。
 class NotebookSwitcherChip extends StatelessWidget {
   const NotebookSwitcherChip({
     super.key,
     required this.notebook,
     required this.onTap,
+    this.unfiled = false,
   });
 
-  /// 当前日记本；null 为全部日记。
+  /// “未收录”的图标（书架那一行、胶囊与搜索页共用）。
+  static const FaIconData unfiledIcon = FontAwesomeIcons.inbox;
+
+  /// 当前日记本；null 为全部日记或未收录（[unfiled]）。
   final NotebookView? notebook;
+
+  /// 在“未收录”里。
+  final bool unfiled;
   final VoidCallback onTap;
 
   /// 名称最多显示的字符数，超出截断加“…”。
@@ -33,9 +41,15 @@ class NotebookSwitcherChip extends StatelessWidget {
   static const double _radius = 12;
 
   /// 胶囊上显示的名称（截断后）。
-  static String labelFor(BuildContext context, NotebookView? notebook) {
+  static String labelFor(
+    BuildContext context,
+    NotebookView? notebook, {
+    bool unfiled = false,
+  }) {
     if (notebook == null) {
-      return context.l10n.notebookAllDiaries;
+      return unfiled
+          ? context.l10n.notebookUnfiled
+          : context.l10n.notebookAllDiaries;
     }
     final characters = notebook.name.characters;
     if (characters.length <= maxLabelCharacters) {
@@ -52,10 +66,14 @@ class NotebookSwitcherChip extends StatelessWidget {
       );
 
   /// 胶囊在当前字号下的固有宽度（标签栏展开排版用）。
-  static double measureWidth(BuildContext context, NotebookView? notebook) {
+  static double measureWidth(
+    BuildContext context,
+    NotebookView? notebook, {
+    bool unfiled = false,
+  }) {
     final painter = TextPainter(
       text: TextSpan(
-        text: labelFor(context, notebook),
+        text: labelFor(context, notebook, unfiled: unfiled),
         style: _labelStyle(context),
       ),
       textDirection: Directionality.of(context),
@@ -78,21 +96,29 @@ class NotebookSwitcherChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final current = notebook;
+    final inUnfiled = current == null && unfiled;
     final accent = current == null
         ? null
         : notebookAccentColors(current.color, scheme);
-    final targetBackground = accent?.container ?? scheme.secondaryContainer;
-    final targetForeground = accent?.onContainer ?? scheme.onSecondaryContainer;
-    final label = labelFor(context, current);
+    final targetBackground =
+        accent?.container ??
+        (inUnfiled ? scheme.tertiaryContainer : scheme.secondaryContainer);
+    final targetForeground =
+        accent?.onContainer ??
+        (inUnfiled ? scheme.onTertiaryContainer : scheme.onSecondaryContainer);
+    final label = labelFor(context, current, unfiled: unfiled);
     final borderRadius = BorderRadius.circular(_radius);
     return Semantics(
       button: true,
       label: context.l10n.notebookSwitcherSemantics(
-        current?.name ?? context.l10n.notebookAllDiaries,
+        current?.name ??
+            (inUnfiled
+                ? context.l10n.notebookUnfiled
+                : context.l10n.notebookAllDiaries),
       ),
       excludeSemantics: true,
       child: ExpressiveStateBlend(
-        active: current != null,
+        active: current != null || inUnfiled,
         builder: (BuildContext context, double t, Widget? _) {
           // 全部日记 ↔ 日记本之间补间；两本之间切换时直接换成新本子的颜色。
           final background = Color.lerp(
@@ -119,9 +145,10 @@ class NotebookSwitcherChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     FaIcon(
-                      current == null
-                          ? FontAwesomeIcons.layerGroup
-                          : current.icon.data,
+                      current?.icon.data ??
+                          (inUnfiled
+                              ? unfiledIcon
+                              : FontAwesomeIcons.layerGroup),
                       size: _iconSize,
                       color: foreground,
                     ),

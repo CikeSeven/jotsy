@@ -53,6 +53,17 @@ void main() {
     return ids;
   }
 
+  /// 往上拖书架直到 [finder] 出现。每次拖完等稳定：先拖会展开可拖动面板，
+  /// 不等动画结束就接着拖，展开与列表的惯性滚动会叠在一起。
+  Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+    for (var i = 0; i < 10 && finder.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -200));
+      await tester.pumpAndSettle();
+    }
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+  }
+
   Finder tileOf(String name) => find.ancestor(
     of: find.text(name),
     matching: find.byType(NotebookCoverTile),
@@ -70,22 +81,14 @@ void main() {
     expect(find.text('1 篇'), findsOneWidget);
     expect(find.text('新建日记本'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('已合上'),
-      200,
-      scrollable: find.byType(Scrollable).last,
-    );
+    await scrollTo(tester, find.text('已合上'));
     expect(find.text('智能日记本'), findsOneWidget);
     expect(find.text('有照片的'), findsOneWidget);
     expect(find.text('旧事'), findsNothing);
 
     await tester.tap(find.text('已合上'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('旧事'),
-      200,
-      scrollable: find.byType(Scrollable).last,
-    );
+    await scrollTo(tester, find.text('旧事'));
     expect(find.text('旧事'), findsOneWidget);
     await h.unmount();
   });

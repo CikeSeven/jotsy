@@ -1,7 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
-/// 日记列表查询的范围：全部日记、某本手动日记本、或某本智能日记本。
+/// 日记列表查询的范围：全部日记、未收录的日记、某本手动日记本、或某本智能
+/// 日记本。
 ///
 /// 只描述“查哪些日记、按什么口径排序”，SQL 由数据库层
 /// （`app_database_diary_scope_sql.dart`）生成。三种范围都遵守同一条私密规则：
@@ -15,6 +16,9 @@ sealed class DiaryListScope {
 
   /// 全部日记（全局时间线），排除私密日记。
   static const DiaryListScope all = DiaryAllScope();
+
+  /// 没有收进任何日记本的日记。
+  static const DiaryListScope unfiled = DiaryUnfiledScope();
 }
 
 /// 全部日记：首页默认范围，以及启动预热与各类全局查询的口径。
@@ -29,6 +33,24 @@ final class DiaryAllScope extends DiaryListScope {
 
   @override
   String toString() => 'DiaryAllScope';
+}
+
+/// 没有收进任何日记本的日记（首页书架“未收录”）。
+///
+/// “收录”只看成员行：在任一手动日记本里（不论合上、私密与否、在哪一层）
+/// 就不算未收录；智能日记本按规则现算，不算收录。私密日记都在私密本子里，
+/// 自然不在其中。
+final class DiaryUnfiledScope extends DiaryListScope {
+  const DiaryUnfiledScope();
+
+  @override
+  bool operator ==(Object other) => other is DiaryUnfiledScope;
+
+  @override
+  int get hashCode => (DiaryUnfiledScope).hashCode;
+
+  @override
+  String toString() => 'DiaryUnfiledScope';
 }
 
 /// 一本手动日记本里的日记，可连同它的子本一起（父本汇总子本）。

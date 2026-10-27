@@ -35,10 +35,11 @@ class DiariesNotebookScopeController {
 
   /// 打开书架面板，按选择切换范围（上锁的先验证）。
   Future<void> openShelf() async {
-    final current = _state.ref.read(homeNotebookScopeProvider).notebookId;
+    final current = _state.ref.read(homeNotebookScopeProvider);
     final result = await showNotebookShelfSheet(
       _state.context,
-      currentNotebookId: current,
+      currentNotebookId: current.notebookId,
+      unfiledSelected: current.unfiled,
     );
     if (!_state.mounted || result == null) {
       return;
@@ -46,6 +47,8 @@ class DiariesNotebookScopeController {
     switch (result) {
       case NotebookShelfSelectAll():
         showAll();
+      case NotebookShelfSelectUnfiled():
+        showUnfiled();
       case NotebookShelfSelectNotebook(:final notebookId):
         await enter(notebookId);
     }
@@ -115,6 +118,14 @@ class DiariesNotebookScopeController {
     }
   }
 
+  /// 进入“未收录”（没有收进任何日记本的日记，已在其中时不变）。
+  void showUnfiled() {
+    if (_state.ref.read(homeNotebookScopeProvider).unfiled) {
+      return;
+    }
+    _switchScope(HomeNotebookScope.unfiledKey, _notifier.showUnfiled);
+  }
+
   /// 回到全部日记（已在全部日记时不变）。
   void showAll() {
     if (_state.ref.read(homeNotebookScopeProvider).isAll) {
@@ -143,15 +154,17 @@ class DiariesNotebookScopeController {
     });
   }
 
-  void _switchScope(String? notebookId, VoidCallback mutation) {
-    _expectedNotebookId = notebookId;
+  /// [scopeKey] 为新范围的 [HomeNotebookScope.key]。
+  void _switchScope(String? scopeKey, VoidCallback mutation) {
+    _expectedNotebookId = scopeKey;
     if (_state._selectedDiaryIds.isNotEmpty) {
       _state.setState(_state._selectedDiaryIds.clear);
     }
     transitionCoordinator.queueFilterMutation(mutation, scrollToTop: true);
   }
 
-  /// 范围的日记本 id 变了：不是页面发起的（上锁遮罩“回到全部日记”）时，
+  /// 范围的身份（[HomeNotebookScope.key]）变了：不是页面发起的（上锁遮罩
+  /// “回到全部日记”）时，
   /// 先关掉首页之上的所有页面（可能正开着这本里的日记），再同样退出多选、
   /// 冻结旧列表并回到顶部淡入。
   void handleScopeIdChanged(String? next) {
@@ -361,10 +374,17 @@ class DiariesNotebookScopeController {
     return (notebookId: notebook.id, chapterId: current.state.chapterId);
   }
 
-  /// 搜索页的范围参数：在日记本里时带上这本与它的名称、图标。
+  /// 搜索页的范围参数：在日记本或“未收录”里时带上范围与它的名称、图标。
   ({DiaryListScope scope, String? label, FaIconData? icon}) searchScope() {
     final current = resolution;
     final notebook = current.notebook;
+    if (current.isUnfiled) {
+      return (
+        scope: DiaryListScope.unfiled,
+        label: _state.context.l10n.notebookUnfiled,
+        icon: NotebookSwitcherChip.unfiledIcon,
+      );
+    }
     if (notebook == null) {
       return (scope: DiaryListScope.all, label: null, icon: null);
     }

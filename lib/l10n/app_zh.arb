@@ -8738,6 +8738,10 @@
   "@notebookAllDiaries": {
     "description": "书架面板里回到全部日记的一行。"
   },
+  "notebookUnfiled": "未收录",
+  "@notebookUnfiled": {
+    "description": "书架面板“全部日记”下面的一行与首页切换胶囊：没有收进任何日记本的日记。"
+  },
   "notebookSectionPinned": "置顶",
   "@notebookSectionPinned": {
     "description": "书架面板分组：置顶的日记本。"

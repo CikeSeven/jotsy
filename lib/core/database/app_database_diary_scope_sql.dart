@@ -53,7 +53,7 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
       DiaryNotebookScope() =>
         'JOIN diary_notebooks sdn ON sdn.diary_id = d.id\n'
             'JOIN notebooks sn ON sn.id = sdn.notebook_id\n',
-      DiaryAllScope() || DiarySmartScope() => '',
+      DiaryAllScope() || DiaryUnfiledScope() || DiarySmartScope() => '',
     };
   }
 
@@ -67,6 +67,10 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
     switch (scope) {
       case DiaryAllScope():
         sql.writeln('  AND ${_privateDiaryExclusionSql('d.id')}');
+      case DiaryUnfiledScope():
+        // 不在任何日记本里：私密日记都在私密本子里，已被这一条排除，不必
+        // 再叠私密排除。
+        sql.writeln('  AND d.id NOT IN ($_filedDiaryIdsSql)');
       case DiaryNotebookScope():
         sql.writeln('  AND sn.notebook_id = ?');
         variables.add(Variable<String>(scope.notebookId));
@@ -250,6 +254,12 @@ final String _privateDiaryIdsSql =
     'JOIN notebooks pn ON pn.id = pdn.notebook_id '
     "WHERE pn.kind = '${NotebookKind.manual.name}' "
     'AND pn.id IN ($_privateNotebookIdsSql)';
+
+/// 收进了日记本的日记的本地 id：在任一存在的日记本里有成员行（只有手动本
+/// 有成员行；连上日记本表，残留的悬空关联不算）。不相关子查询，只执行一次。
+const String _filedDiaryIdsSql =
+    'SELECT fdn.diary_id FROM diary_notebooks fdn '
+    'JOIN notebooks fn ON fn.id = fdn.notebook_id';
 
 /// 排除私密日记的条件，[idColumn] 是外层日记表的本地 id 列（如 `d.id`）。
 /// 所有全局日记查询都经它过滤，见 [_AppDatabaseDiaryScopeSql] 的私密规则。

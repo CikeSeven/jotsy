@@ -8738,6 +8738,10 @@
   "@notebookAllDiaries": {
     "description": "Shelf sheet row that returns to all entries."
   },
+  "notebookUnfiled": "Not in a notebook",
+  "@notebookUnfiled": {
+    "description": "Shelf sheet row below All entries, and the home switcher chip: entries that are not in any notebook."
+  },
   "notebookSectionPinned": "Pinned",
   "@notebookSectionPinned": {
     "description": "Shelf sheet group: pinned notebooks."

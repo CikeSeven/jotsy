@@ -11306,6 +11306,12 @@ abstract class AppLocalizations {
   /// **'All entries'**
   String get notebookAllDiaries;
 
+  /// Shelf sheet row below All entries, and the home switcher chip: entries that are not in any notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in a notebook'**
+  String get notebookUnfiled;
+
   /// Shelf sheet group: pinned notebooks.
   ///
   /// In en, this message translates to:

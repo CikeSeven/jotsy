@@ -337,7 +337,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       _scopeController.handleResolutionChanged,
     );
     ref.listen<String?>(
-      homeNotebookScopeProvider.select((scope) => scope.notebookId),
+      homeNotebookScopeProvider.select((scope) => scope.key),
       (_, String? next) {
         _readingSelection.handleScopeChanged();
         _scopeController.handleScopeIdChanged(next);
@@ -477,6 +477,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 leading: notebooksEnabled
                     ? NotebookSwitcherChip(
                         notebook: currentNotebook,
+                        unfiled: scopeResolution.isUnfiled,
                         onTap: () => unawaited(_scopeController.openShelf()),
                       )
                     : null,
@@ -484,11 +485,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                     ? NotebookSwitcherChip.measureWidth(
                         context,
                         currentNotebook,
+                        unfiled: scopeResolution.isUnfiled,
                       )
                     : 0,
                 keepVisible:
                     notebooksEnabled &&
-                    (hasNotebooks || currentNotebook != null),
+                    (hasNotebooks ||
+                        currentNotebook != null ||
+                        scopeResolution.isUnfiled),
               ),
             );
           },
@@ -649,12 +653,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   onOpenViewOptions:
                                       _controller.openViewOptions,
                                   onOpenSearchPage: _controller.openSearchPage,
-                                  searchHint: currentNotebook == null
+                                  searchHint: scopeResolution.isAll
                                       ? null
                                       : context.l10n.notebookSearchIn(
                                           NotebookSwitcherChip.labelFor(
                                             context,
                                             currentNotebook,
+                                            unfiled: scopeResolution.isUnfiled,
                                           ),
                                         ),
                                 ),

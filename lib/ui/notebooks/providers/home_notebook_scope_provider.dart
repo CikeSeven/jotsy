@@ -8,7 +8,8 @@ import '../models/notebook_scope_resolver.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_providers.dart';
 
-/// 首页“日记”页当前所在的范围：全部日记，或某本日记本（含章节选择）。
+/// 首页“日记”页当前所在的范围：全部日记、未收录的日记（[unfiled]），或某本
+/// 日记本（含章节选择）。
 ///
 /// 只在内存里：应用总是从“全部日记”启动（启动预热 `startupDiariesProvider`
 /// 也固定为全部日记）。
@@ -22,6 +23,7 @@ import 'notebook_providers.dart';
 class HomeNotebookScope {
   const HomeNotebookScope({
     this.notebookId,
+    this.unfiled = false,
     this.chapterId,
     this.unassignedChapterOnly = false,
     this.sortOverride,
@@ -30,13 +32,28 @@ class HomeNotebookScope {
 
   static const HomeNotebookScope all = HomeNotebookScope();
 
+  /// 未收录：没有收进任何日记本的日记（书架“全部日记”下面那一项）。
+  static const HomeNotebookScope unfiledScope = HomeNotebookScope(
+    unfiled: true,
+  );
+
+  /// [key] 里代表“未收录”的值；日记本的业务 id 是 UUID，不会与它相同。
+  static const String unfiledKey = ':unfiled';
+
   final String? notebookId;
+
+  /// 在“未收录”里（此时 [notebookId] 为 null）。
+  final bool unfiled;
   final String? chapterId;
   final bool unassignedChapterOnly;
   final NotebookSort? sortOverride;
   final bool relocked;
 
-  bool get isAll => notebookId == null;
+  bool get isAll => notebookId == null && !unfiled;
+
+  /// 范围的身份：日记本 id、[unfiledKey] 或 null（全部日记）。日记页按它
+  /// 判断“换了范围”（过渡、退出多选、外部切换时关掉上层页面）。
+  String? get key => notebookId ?? (unfiled ? unfiledKey : null);
 
   HomeNotebookScope _copyWith({
     ValueGetter<String?>? chapterId,
@@ -46,6 +63,7 @@ class HomeNotebookScope {
   }) {
     return HomeNotebookScope(
       notebookId: notebookId,
+      unfiled: unfiled,
       chapterId: chapterId == null ? this.chapterId : chapterId(),
       unassignedChapterOnly:
           unassignedChapterOnly ?? this.unassignedChapterOnly,
@@ -58,6 +76,7 @@ class HomeNotebookScope {
   bool operator ==(Object other) =>
       other is HomeNotebookScope &&
       other.notebookId == notebookId &&
+      other.unfiled == unfiled &&
       other.chapterId == chapterId &&
       other.unassignedChapterOnly == unassignedChapterOnly &&
       other.sortOverride == sortOverride &&
@@ -66,6 +85,7 @@ class HomeNotebookScope {
   @override
   int get hashCode => Object.hash(
     notebookId,
+    unfiled,
     chapterId,
     unassignedChapterOnly,
     sortOverride,
@@ -97,6 +117,19 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
     filter.setTags(const <int>[]);
   }
 
+  /// 进入“未收录”（已在其中时不变）；标签筛选与进入日记本同理。
+  void showUnfiled() {
+    if (state.unfiled) {
+      return;
+    }
+    final filter = ref.read(diaryFilterProvider.notifier);
+    if (state.isAll) {
+      _allScopeTagIds = <int>{...ref.read(diaryFilterProvider).selectedTagIds};
+    }
+    state = HomeNotebookScope.unfiledScope;
+    filter.setTags(const <int>[]);
+  }
+
   /// 回到全部日记，还原离开时的标签筛选。
   void showAll() {
     if (state.isAll) {
@@ -107,9 +140,9 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
     _allScopeTagIds = const <int>{};
   }
 
-  /// 章节筛选（章节界面使用）；全部日记里无效。
+  /// 章节筛选（章节界面使用）；全部日记与未收录里无效。
   void selectChapter({String? chapterId, bool unassignedOnly = false}) {
-    if (state.isAll) {
+    if (state.notebookId == null) {
       return;
     }
     state = state._copyWith(
@@ -122,7 +155,7 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
   /// 过渡等到的就是新排序的数据。推送回来后（或写入失败时）经
   /// [clearSortOverride] 清除，之后在编辑页改排序不会被它挡住。
   void setSortOverride(NotebookSort sort) {
-    if (state.isAll) {
+    if (state.notebookId == null) {
       return;
     }
     state = state._copyWith(sortOverride: () => sort);
@@ -137,7 +170,7 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
 
   /// 应用切到后台时让上锁日记本的验证会话失效。
   void relock() {
-    if (state.isAll || state.relocked) {
+    if (state.notebookId == null || state.relocked) {
       return;
     }
     state = state._copyWith(relocked: true);
@@ -157,8 +190,8 @@ final homeNotebookScopeProvider =
       HomeNotebookScopeNotifier.new,
     );
 
-/// 首页范围解析结果：当前日记本（全部日记时为 null）、查询范围与本子的
-/// 生效排序。
+/// 首页范围解析结果：当前日记本（全部日记与未收录时为 null）、查询范围与
+/// 本子的生效排序。
 ///
 /// [missing]：书架已加载但找不到当前日记本（已删除或已并入别的本子），
 /// 日记页据此回到全部日记并提示。
@@ -187,6 +220,9 @@ class HomeNotebookScopeResolution {
 
   bool get isAll => state.isAll;
 
+  /// 在“未收录”里。
+  bool get isUnfiled => state.unfiled;
+
   @override
   bool operator ==(Object other) =>
       other is HomeNotebookScopeResolution &&
@@ -207,10 +243,16 @@ DiaryListScope _matchNothingScope(String notebookId) => DiarySmartScope(
   predicate: const DiaryScopePredicate(sql: '0'),
 );
 
-/// 当前范围的解析：全部日记时不订阅书架。
+/// 当前范围的解析：全部日记与未收录时不订阅书架（未收录用全局排序偏好）。
 final homeNotebookScopeResolutionProvider =
     Provider<HomeNotebookScopeResolution>((Ref ref) {
       final state = ref.watch(homeNotebookScopeProvider);
+      if (state.unfiled) {
+        return HomeNotebookScopeResolution(
+          state: state,
+          scope: DiaryListScope.unfiled,
+        );
+      }
       final notebookId = state.notebookId;
       if (notebookId == null) {
         return HomeNotebookScopeResolution.all;

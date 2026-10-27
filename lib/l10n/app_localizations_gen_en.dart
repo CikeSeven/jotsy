@@ -6836,6 +6836,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookAllDiaries => 'All entries';
 
   @override
+  String get notebookUnfiled => 'Not in a notebook';
+
+  @override
   String get notebookSectionPinned => 'Pinned';
 
   @override

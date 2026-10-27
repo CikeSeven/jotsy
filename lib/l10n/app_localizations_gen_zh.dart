@@ -6165,6 +6165,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookAllDiaries => '全部日记';
 
   @override
+  String get notebookUnfiled => '未收录';
+
+  @override
   String get notebookSectionPinned => '置顶';
 
   @override

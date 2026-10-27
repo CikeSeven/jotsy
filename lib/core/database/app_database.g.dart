@@ -4107,6 +4107,268 @@ class DiaryNotebooksCompanion extends UpdateCompanion<DiaryNotebookRow> {
   }
 }
 
+class $DayMoodsTable extends DayMoods
+    with TableInfo<$DayMoodsTable, DayMoodRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DayMoodsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+    'day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _moodMeta = const VerificationMeta('mood');
+  @override
+  late final GeneratedColumn<String> mood = GeneratedColumn<String>(
+    'mood',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [day, mood, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'day_moods';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DayMoodRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('day')) {
+      context.handle(
+        _dayMeta,
+        day.isAcceptableOrUnknown(data['day']!, _dayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    if (data.containsKey('mood')) {
+      context.handle(
+        _moodMeta,
+        mood.isAcceptableOrUnknown(data['mood']!, _moodMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_moodMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {day};
+  @override
+  DayMoodRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DayMoodRow(
+      day: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day'],
+      )!,
+      mood: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mood'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DayMoodsTable createAlias(String alias) {
+    return $DayMoodsTable(attachedDatabase, alias);
+  }
+}
+
+class DayMoodRow extends DataClass implements Insertable<DayMoodRow> {
+  final String day;
+  final String mood;
+  final DateTime updatedAt;
+  const DayMoodRow({
+    required this.day,
+    required this.mood,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['day'] = Variable<String>(day);
+    map['mood'] = Variable<String>(mood);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DayMoodsCompanion toCompanion(bool nullToAbsent) {
+    return DayMoodsCompanion(
+      day: Value(day),
+      mood: Value(mood),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DayMoodRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DayMoodRow(
+      day: serializer.fromJson<String>(json['day']),
+      mood: serializer.fromJson<String>(json['mood']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'day': serializer.toJson<String>(day),
+      'mood': serializer.toJson<String>(mood),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DayMoodRow copyWith({String? day, String? mood, DateTime? updatedAt}) =>
+      DayMoodRow(
+        day: day ?? this.day,
+        mood: mood ?? this.mood,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  DayMoodRow copyWithCompanion(DayMoodsCompanion data) {
+    return DayMoodRow(
+      day: data.day.present ? data.day.value : this.day,
+      mood: data.mood.present ? data.mood.value : this.mood,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DayMoodRow(')
+          ..write('day: $day, ')
+          ..write('mood: $mood, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(day, mood, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DayMoodRow &&
+          other.day == this.day &&
+          other.mood == this.mood &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DayMoodsCompanion extends UpdateCompanion<DayMoodRow> {
+  final Value<String> day;
+  final Value<String> mood;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const DayMoodsCompanion({
+    this.day = const Value.absent(),
+    this.mood = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DayMoodsCompanion.insert({
+    required String day,
+    required String mood,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : day = Value(day),
+       mood = Value(mood),
+       updatedAt = Value(updatedAt);
+  static Insertable<DayMoodRow> custom({
+    Expression<String>? day,
+    Expression<String>? mood,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (day != null) 'day': day,
+      if (mood != null) 'mood': mood,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DayMoodsCompanion copyWith({
+    Value<String>? day,
+    Value<String>? mood,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return DayMoodsCompanion(
+      day: day ?? this.day,
+      mood: mood ?? this.mood,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (mood.present) {
+      map['mood'] = Variable<String>(mood.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DayMoodsCompanion(')
+          ..write('day: $day, ')
+          ..write('mood: $mood, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4118,6 +4380,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DiaryTemplatesTable diaryTemplates = $DiaryTemplatesTable(this);
   late final $NotebooksTable notebooks = $NotebooksTable(this);
   late final $DiaryNotebooksTable diaryNotebooks = $DiaryNotebooksTable(this);
+  late final $DayMoodsTable dayMoods = $DayMoodsTable(this);
   late final Index idxDiariesUpdatedAt = Index(
     'idx_diaries_updated_at',
     'CREATE INDEX idx_diaries_updated_at ON diaries (updated_at)',
@@ -4159,6 +4422,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     diaryTemplates,
     notebooks,
     diaryNotebooks,
+    dayMoods,
     idxDiariesUpdatedAt,
     idxDiariesCreatedAt,
     idxDiariesCapsuleUnlockAt,
@@ -6642,6 +6906,165 @@ typedef $$DiaryNotebooksTableProcessedTableManager =
       DiaryNotebookRow,
       PrefetchHooks Function()
     >;
+typedef $$DayMoodsTableCreateCompanionBuilder =
+    DayMoodsCompanion Function({
+      required String day,
+      required String mood,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$DayMoodsTableUpdateCompanionBuilder =
+    DayMoodsCompanion Function({
+      Value<String> day,
+      Value<String> mood,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$DayMoodsTableFilterComposer
+    extends Composer<_$AppDatabase, $DayMoodsTable> {
+  $$DayMoodsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DayMoodsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DayMoodsTable> {
+  $$DayMoodsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DayMoodsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DayMoodsTable> {
+  $$DayMoodsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  GeneratedColumn<String> get mood =>
+      $composableBuilder(column: $table.mood, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$DayMoodsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DayMoodsTable,
+          DayMoodRow,
+          $$DayMoodsTableFilterComposer,
+          $$DayMoodsTableOrderingComposer,
+          $$DayMoodsTableAnnotationComposer,
+          $$DayMoodsTableCreateCompanionBuilder,
+          $$DayMoodsTableUpdateCompanionBuilder,
+          (
+            DayMoodRow,
+            BaseReferences<_$AppDatabase, $DayMoodsTable, DayMoodRow>,
+          ),
+          DayMoodRow,
+          PrefetchHooks Function()
+        > {
+  $$DayMoodsTableTableManager(_$AppDatabase db, $DayMoodsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DayMoodsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DayMoodsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DayMoodsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> day = const Value.absent(),
+                Value<String> mood = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DayMoodsCompanion(
+                day: day,
+                mood: mood,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String day,
+                required String mood,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => DayMoodsCompanion.insert(
+                day: day,
+                mood: mood,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DayMoodsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DayMoodsTable,
+      DayMoodRow,
+      $$DayMoodsTableFilterComposer,
+      $$DayMoodsTableOrderingComposer,
+      $$DayMoodsTableAnnotationComposer,
+      $$DayMoodsTableCreateCompanionBuilder,
+      $$DayMoodsTableUpdateCompanionBuilder,
+      (DayMoodRow, BaseReferences<_$AppDatabase, $DayMoodsTable, DayMoodRow>),
+      DayMoodRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6661,4 +7084,6 @@ class $AppDatabaseManager {
       $$NotebooksTableTableManager(_db, _db.notebooks);
   $$DiaryNotebooksTableTableManager get diaryNotebooks =>
       $$DiaryNotebooksTableTableManager(_db, _db.diaryNotebooks);
+  $$DayMoodsTableTableManager get dayMoods =>
+      $$DayMoodsTableTableManager(_db, _db.dayMoods);
 }

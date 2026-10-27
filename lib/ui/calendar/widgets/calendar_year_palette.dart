@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import '../../widgets/mood_band_palette.dart';
 import '../models/calendar_display_options.dart';
@@ -13,7 +14,8 @@ import '../viewmodels/calendar_day_summary.dart';
 ///   在最浅一档也看得出来；
 /// - 心情：十档心情合并成五段——低落用 error、偏低用 tertiary、平静用
 ///   outline、不错与开心用两档 primary；写了日记但没选心情用浅 secondary，
-///   与“没写”的空格区分开。
+///   与“没写”的空格区分开。长按日期记下的“这天的心情”优先于当天日记的
+///   平均心情（五档即五段），没写日记的日子也按它着色。
 abstract final class CalendarYearPalette {
   static const List<double> _heatAlphas = <double>[0, 0.3, 0.5, 0.72, 1];
 
@@ -39,8 +41,12 @@ abstract final class CalendarYearPalette {
   static Color pixelColor(
     ColorScheme colorScheme,
     CalendarDaySummary? summary,
-    CalendarYearBasis basis,
-  ) {
+    CalendarYearBasis basis, {
+    DayMood? dayMood,
+  }) {
+    if (basis == CalendarYearBasis.mood && dayMood != null) {
+      return moodBandColor(colorScheme, dayMood.index);
+    }
     if (summary == null || !summary.hasEntries) {
       return emptyColor(colorScheme);
     }

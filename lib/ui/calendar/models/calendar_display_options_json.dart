@@ -80,6 +80,7 @@ CalendarDisplayOptions _optionsFromJson(Map<String, dynamic> json) {
       json['showAnniversaries'],
       defaults.showAnniversaries,
     ),
+    showDayMoods: _bool(json['showDayMoods'], defaults.showDayMoods),
   );
 }
 
@@ -104,6 +105,7 @@ Map<String, Object> _optionsToJson(CalendarDisplayOptions o) =>
       'lunarMode': o.lunarMode.name,
       'holidayMode': o.holidayMode.name,
       'showAnniversaries': o.showAnniversaries,
+      'showDayMoods': o.showDayMoods,
     };
 
 T _enumByName<T extends Enum>(List<T> values, Object? raw, T fallback) {

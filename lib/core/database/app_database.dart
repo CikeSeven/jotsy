@@ -35,6 +35,8 @@ part 'app_database_notebook_schema.dart';
 part 'app_database_notebook_ops.dart';
 part 'app_database_notebook_entry_ops.dart';
 part 'app_database_notebook_stats_ops.dart';
+part 'app_database_day_mood_schema.dart';
+part 'app_database_day_mood_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -46,6 +48,7 @@ part 'app_database_notebook_stats_ops.dart';
     DiaryTemplates,
     Notebooks,
     DiaryNotebooks,
+    DayMoods,
   ],
 )
 class AppDatabase extends _$AppDatabase
@@ -61,6 +64,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseTemplateOps,
         _AppDatabaseNotebookOps,
         _AppDatabaseNotebookStatsOps,
+        _AppDatabaseDayMoodOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -75,7 +79,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -100,6 +104,10 @@ class AppDatabase extends _$AppDatabase
       // 分支之前。
       if (from < 13) {
         await _migrateAddNotebooks(m);
+      }
+      // v14 这天的心情表只以日期为键、与其他表都无关联，同样排在 v1 分支之前。
+      if (from < 14) {
+        await _migrateAddDayMoods(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

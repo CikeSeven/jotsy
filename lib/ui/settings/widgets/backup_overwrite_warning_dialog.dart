@@ -141,6 +141,11 @@ class _BackupOverwriteWarningDialogState
                           l10n.backupOverwriteAllNotebooks(
                             widget.preview.localNotebookCount,
                           ),
+                        // 心情同理：不含心情的旧备份会清空本机记下的心情。
+                        if (widget.preview.localDayMoodCount > 0)
+                          l10n.backupOverwriteAllDayMoods(
+                            widget.preview.localDayMoodCount,
+                          ),
                         l10n.backupOverwriteAllMedia,
                         l10n.backupOverwriteAllSettings,
                       ])
@@ -157,6 +162,13 @@ class _BackupOverwriteWarningDialogState
                         Text(
                           l10n.backupOverwriteExistingAnniversariesBody(
                             widget.preview.existingAnniversaryCount,
+                          ),
+                          style: bodyStyle,
+                        ),
+                      if (widget.preview.existingDayMoodCount > 0)
+                        Text(
+                          l10n.backupOverwriteExistingDayMoodsBody(
+                            widget.preview.existingDayMoodCount,
                           ),
                           style: bodyStyle,
                         ),

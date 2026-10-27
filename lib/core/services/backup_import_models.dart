@@ -56,6 +56,8 @@ class BackupArchivePreview {
     this.localTemplateCount = 0,
     this.localNotebookCount = 0,
     this.existingNotebookCount = 0,
+    this.existingDayMoodCount = 0,
+    this.localDayMoodCount = 0,
   });
 
   final BackupArchiveKind kind;
@@ -114,11 +116,22 @@ class BackupArchivePreview {
   /// 提供“覆盖已存在”（见 [availableModes]），只在说明里补一行。
   final int existingNotebookCount;
 
-  /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记
-  /// 或纪念日时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部数据。
+  /// 文件内本机那天也记了心情的天数，即 [BackupImportMode.mergeOverwrite]
+  /// 会替换的天数（只有完整备份带心情）。
+  final int existingDayMoodCount;
+
+  /// 本机记了心情的天数，即 [BackupImportMode.replaceAll] 会删除的条数——
+  /// 不含心情的旧备份覆盖导入后，本机记下的心情会被清空，警告里要列出来。
+  final int localDayMoodCount;
+
+  /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记、
+  /// 纪念日或心情时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部
+  /// 数据。
   List<BackupImportMode> get availableModes => <BackupImportMode>[
     BackupImportMode.merge,
-    if (existingDiaryCount > 0 || existingAnniversaryCount > 0)
+    if (existingDiaryCount > 0 ||
+        existingAnniversaryCount > 0 ||
+        existingDayMoodCount > 0)
       BackupImportMode.mergeOverwrite,
     if (kind == BackupArchiveKind.fullBackup) BackupImportMode.replaceAll,
   ];
@@ -136,6 +149,8 @@ class BackupImportResult {
     this.skippedAnniversaries = 0,
     this.addedTemplates = 0,
     this.addedNotebooks = 0,
+    this.addedDayMoods = 0,
+    this.replacedDayMoods = 0,
   });
 
   final BackupImportMode mode;
@@ -161,6 +176,11 @@ class BackupImportResult {
   /// 新增的日记本数（只算新建的定义，替换或保留本机已有的不计）；
   /// [BackupImportMode.replaceAll] 时为换入的全部日记本数。
   final int addedNotebooks;
+
+  /// 新增与替换的“这天的心情”天数（合并保留本机而跳过的不计）；
+  /// [BackupImportMode.replaceAll] 时新增数为换入的全部天数。
+  final int addedDayMoods;
+  final int replacedDayMoods;
 
   bool get touchedAnniversaries =>
       addedAnniversaries + replacedAnniversaries + skippedAnniversaries > 0;

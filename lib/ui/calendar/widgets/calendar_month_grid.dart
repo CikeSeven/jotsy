@@ -37,6 +37,7 @@ class CalendarMonthGrid extends StatefulWidget {
     this.onDayLongPressed,
     this.range,
     this.anniversaryIndex,
+    this.dayMoods = const <DateTime, DayMood>{},
     this.scaleRowsWithWidth = false,
   });
 
@@ -89,6 +90,10 @@ class CalendarMonthGrid extends StatefulWidget {
   /// 纪念日按日索引；不显示纪念日时为 null。心情/标签筛选与范围选择都不
   /// 影响纪念日——它们是日期本身的属性，不是日记。
   final AnniversaryCalendarIndex? anniversaryIndex;
+
+  /// 这天的心情（按本地零点日期）；不显示时为空。与纪念日一样是日期本身的
+  /// 属性，不受心情/标签筛选与范围选择影响。
+  final Map<DateTime, DayMood> dayMoods;
 
   /// 宽窗口：行高按网格宽度经 [wideRowHeight] 加高。格宽在宽窗口里可到
   /// 80–100，固定 52 的行高会让格子成为横向扁条；窄屏为 false，与改版前
@@ -178,6 +183,7 @@ class CalendarMonthGrid extends StatefulWidget {
                 lunar: lunar ? CalendarLunarDay.of(day) : null,
                 holiday: holidays ? CalendarHolidayDay.of(day) : null,
                 anniversary: anniversaryIndex?.titleOn(day),
+                dayMood: dayMoods[dayKey],
                 highlightMaxWidth: gridWidth == null
                     ? null
                     : wideHighlightMaxWidth,

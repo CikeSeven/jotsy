@@ -51,7 +51,11 @@ class CalendarCellLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final head = _buildHead();
+    final head = buildHead(
+      number: number,
+      leadingBadge: leadingBadge,
+      trailingBadge: trailingBadge,
+    );
     final subtitle = this.subtitle;
     final indicator = this.indicator;
     return Stack(
@@ -100,9 +104,13 @@ class CalendarCellLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildHead() {
-    final leadingBadge = this.leadingBadge;
-    final trailingBadge = this.trailingBadge;
+  /// 数字 + 两侧角标：角标以固定宽度的槽位挂在数字框外侧，不改变数字的
+  /// 居中位置。记了心情的日期格（CalendarMoodTile）用同一套挂法。
+  static Widget buildHead({
+    required Widget number,
+    Widget? leadingBadge,
+    Widget? trailingBadge,
+  }) {
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[

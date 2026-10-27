@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../../core/database/app_database.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
 import '../viewmodels/calendar_holiday_day.dart';
@@ -9,6 +10,8 @@ import '../viewmodels/calendar_lunar_day.dart';
 import 'calendar_cell_layout.dart';
 import 'calendar_cell_marks.dart';
 import 'calendar_day_cell_parts.dart';
+import 'calendar_mood_tile.dart';
+import 'day_mood_face.dart';
 
 /// 日历网格中的一个日期格。
 ///
@@ -19,9 +22,15 @@ import 'calendar_day_cell_parts.dart';
 /// 两种高亮形态：
 /// - 填充（圆点/心情/标签色）：选中整格填 primary、今天填 tertiaryContainer，
 ///   与旧版日历一致；
-/// - 描边（热力/照片）：格子底色本身承载数据（热力色阶、照片），整格填色会
-///   盖掉它，改为外圈描边——选中 2dp primary、今天 tertiary。描边与内容之间
-///   留 2dp 间隙，深色热力格外的 primary 描边依然可辨。
+/// - 描边（热力/照片，以及记了“这天的心情”的格子）：格子底色本身承载数据
+///   （热力色阶、照片、心情底色），整格填色会盖掉它，改为外圈描边——选中
+///   2dp primary、今天 tertiary。描边与内容之间留 2dp 间隙，深色热力格外的
+///   primary 描边依然可辨。
+///
+/// 记了心情（[dayMood]）的日子不论哪种日期格样式都整格画成心情（
+/// [CalendarMoodTile]）：那是用户为这一天亲手选的，比按日记推算的样式更
+/// 直接。设定、换掉或清除心情时内容交叉淡入，新出现的脸以 spatial 曲线
+/// 轻轻弹出。
 ///
 /// 范围选择时首尾两天按“选中”绘制，中间的日子（[inRange]）铺一层浅
 /// primary 底（描边形态为半透明 primary 描边）。浅底而不是 primaryContainer：
@@ -46,6 +55,7 @@ class CalendarDayCell extends StatelessWidget {
     this.lunar,
     this.holiday,
     this.anniversary,
+    this.dayMood,
     this.highlightMaxWidth,
   });
 
@@ -75,6 +85,9 @@ class CalendarDayCell extends StatelessWidget {
   /// 当天第一条纪念日的名称；没有或不显示纪念日时为 null。显示农历时写在
   /// 小字行，否则在数字左上画心形。
   final String? anniversary;
+
+  /// 这天的心情；没有记或不显示时为 null。
+  final DayMood? dayMood;
 
   /// 高亮底块的最大宽度；格子更宽时底块居中、两侧留空。只在宽窗口给出，
   /// 手机上为 null，整格绘制与原来一致。
@@ -122,6 +135,7 @@ class CalendarDayCell extends StatelessWidget {
       colorScheme.primary.withValues(alpha: 0.2);
 
   bool get _ringMode =>
+      dayMood != null ||
       options.cellStyle == CalendarCellStyle.heat ||
       options.cellStyle == CalendarCellStyle.photo;
 
@@ -129,7 +143,10 @@ class CalendarDayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final duration = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
-    final content = _ringMode
+    final dayMood = this.dayMood;
+    final Widget content = dayMood != null
+        ? _buildMoodContent(colorScheme, dayMood)
+        : _ringMode
         ? _buildRingContent(context, colorScheme, duration)
         : _buildFillContent(context, colorScheme);
 
@@ -168,7 +185,11 @@ class CalendarDayCell extends StatelessWidget {
           // 描边宽度恒定：宽度变化会让内容随选中/今天切换位移半个像素。
           border: Border.all(color: ring, width: 2),
         ),
-        child: content,
+        child: _MoodSwitcher(
+          // 只在心情变化时换内容：选中、翻页数据刷新等不触发交叉淡入。
+          contentKey: ValueKey<DayMood?>(dayMood),
+          child: content,
+        ),
       ),
     );
     final maxWidth = highlightMaxWidth;
@@ -203,6 +224,48 @@ class CalendarDayCell extends StatelessWidget {
       ),
       subtitle: _buildLunarLabel(colorScheme, onFill: onFill),
       bottomReserve: _indicatorReserve,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 这天的心情：整格画成心情（描边形态）
+  // ---------------------------------------------------------------------------
+
+  Widget _buildMoodContent(ColorScheme colorScheme, DayMood mood) {
+    final base = DayMoodColors.of(colorScheme, mood);
+    final colors = isOutside ? base.faded() : base;
+    // 心情格底部是脸，放不下普通格的指示物：两篇及以上照常标篇数上标，
+    // 只写了一篇时在同一位置画一个小圆点。
+    final count = CalendarCellCountMark.countFor(
+      summary: summary,
+      options: options,
+    );
+    final Widget? trailing = count != null
+        ? CalendarCellCountMark(count: count, color: colors.onTile)
+        : summary?.hasEntries ?? false
+        ? CalendarMoodTile.writtenDot(colors.onTile)
+        : null;
+    // 手机上的格子只有 36×40dp 左右，数字再加农历小字会把脸挤得认不出：
+    // 心情格不写小字，纪念日像不显示农历时那样以数字左上的心形标出。宽窗口
+    // 的格子放得下，照常写。
+    final showSubtitle = highlightMaxWidth != null;
+    return Padding(
+      padding: const EdgeInsets.all(_ringGap),
+      child: CalendarMoodTile(
+        day: day.day,
+        mood: mood,
+        colors: colors,
+        borderRadius: BorderRadius.circular(_radius - 2 - _ringGap),
+        leadingBadge: _leadingBadge(
+          colorScheme,
+          onFill: colors.onTile,
+          subtitleShown: showSubtitle,
+        ),
+        trailingBadge: trailing,
+        subtitle: showSubtitle
+            ? _buildLunarLabel(colorScheme, onFill: colors.onTile)
+            : null,
+      ),
     );
   }
 
@@ -385,11 +448,13 @@ class CalendarDayCell extends StatelessWidget {
   }
 
   /// 数字左上方的角标（锁 > 休/班 > 心形 > 天气），见
-  /// [CalendarCellLeadingBadge]。
+  /// [CalendarCellLeadingBadge]。纪念日在没有小字行时（不显示农历，或心情格
+  /// 省掉了小字，[subtitleShown] 为 false）画成心形。
   Widget? _leadingBadge(
     ColorScheme colorScheme, {
     Color? onFill,
     bool onPhoto = false,
+    bool subtitleShown = true,
   }) {
     return CalendarCellLeadingBadge.resolve(
       colorScheme,
@@ -397,9 +462,51 @@ class CalendarDayCell extends StatelessWidget {
       summary: summary,
       holiday: holiday,
       isOutside: isOutside,
-      anniversaryHeart: lunar == null && anniversary != null,
+      anniversaryHeart:
+          (lunar == null || !subtitleShown) && anniversary != null,
       onFill: onFill,
       onPhoto: onPhoto,
+    );
+  }
+}
+
+/// 设定、换掉或清除心情时的内容过渡：旧内容淡出，新内容淡入；新出现的心情
+/// 格从 0.8 倍以 spatial 曲线弹到原大，像贴上一张贴纸。减少动画时直接切换。
+///
+/// 默认的 AnimatedSwitcher 布局让子项按松约束排版，日期格内容需要铺满整格，
+/// 这里改用撑满的 Stack。
+class _MoodSwitcher extends StatelessWidget {
+  const _MoodSwitcher({required this.contentKey, required this.child});
+
+  final Key contentKey;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      switchInCurve: ExpressiveMotion.effects,
+      switchOutCurve: ExpressiveMotion.exit,
+      layoutBuilder: (Widget? current, List<Widget> previous) => Stack(
+        fit: StackFit.expand,
+        clipBehavior: Clip.none,
+        children: <Widget>[...previous, ?current],
+      ),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        final scale = child.key == const ValueKey<DayMood?>(null)
+            ? const AlwaysStoppedAnimation<double>(1)
+            : Tween<double>(begin: 0.8, end: 1).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: ExpressiveMotion.spatial,
+                ),
+              );
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(scale: scale, child: child),
+        );
+      },
+      child: KeyedSubtree(key: contentKey, child: child),
     );
   }
 }

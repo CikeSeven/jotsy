@@ -38,6 +38,7 @@ class CalendarDisplayOptions {
     this.lunarMode = CalendarLunarMode.locale,
     this.holidayMode = CalendarLunarMode.locale,
     this.showAnniversaries = true,
+    this.showDayMoods = true,
   });
 
   /// 解析持久化的 JSON；null、空串或损坏时返回默认选项。
@@ -102,6 +103,10 @@ class CalendarDisplayOptions {
   /// 在日期格上标出纪念日，并在选中那天时显示纪念日卡片。
   final bool showAnniversaries;
 
+  /// 记了“这天的心情”的日子整格画成心情（月视图），年视图按心情着色时
+  /// 也按它着色；关闭时只是不显示，记下的心情保留，长按面板也不再提供。
+  final bool showDayMoods;
+
   /// 打开日历页时应使用的网格格式。
   CalendarGridFormat get initialFormat => switch (defaultFormat) {
     CalendarDefaultFormat.month => CalendarGridFormat.month,
@@ -133,6 +138,7 @@ class CalendarDisplayOptions {
     CalendarLunarMode? lunarMode,
     CalendarLunarMode? holidayMode,
     bool? showAnniversaries,
+    bool? showDayMoods,
   }) {
     return CalendarDisplayOptions(
       cellStyle: cellStyle ?? this.cellStyle,
@@ -154,6 +160,7 @@ class CalendarDisplayOptions {
       lunarMode: lunarMode ?? this.lunarMode,
       holidayMode: holidayMode ?? this.holidayMode,
       showAnniversaries: showAnniversaries ?? this.showAnniversaries,
+      showDayMoods: showDayMoods ?? this.showDayMoods,
     );
   }
 
@@ -178,7 +185,8 @@ class CalendarDisplayOptions {
         other.yearBasis == yearBasis &&
         other.lunarMode == lunarMode &&
         other.holidayMode == holidayMode &&
-        other.showAnniversaries == showAnniversaries;
+        other.showAnniversaries == showAnniversaries &&
+        other.showDayMoods == showDayMoods;
   }
 
   @override
@@ -202,5 +210,6 @@ class CalendarDisplayOptions {
     lunarMode,
     holidayMode,
     showAnniversaries,
+    showDayMoods,
   );
 }

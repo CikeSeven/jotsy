@@ -43,6 +43,7 @@ import '../models/calendar_marker_filter.dart';
 import '../models/calendar_range_selection.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../providers/calendar_display_options_provider.dart';
+import '../providers/day_mood_providers.dart';
 import '../viewmodels/calendar_day_summary.dart';
 import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
@@ -80,6 +81,7 @@ part '../controllers/calendar_display_options_actions.dart';
 part '../controllers/calendar_year_actions.dart';
 part '../controllers/calendar_range_actions.dart';
 part '../controllers/calendar_filter_actions.dart';
+part '../controllers/calendar_day_mood_actions.dart';
 
 /// 日历页（上历下表）。
 ///
@@ -87,7 +89,8 @@ part '../controllers/calendar_filter_actions.dart';
 /// - 组合页头（固定在顶部，下滑时月份行收起、只留标题栏）、日历卡片（月/周
 ///   网格或年视图 + 概览）、选中日标题、当天日记（时间线或卡片）与那年
 ///   今日；区块构建见 calendar_page_sections.dart；
-/// - 监听打点/当日日记/心情配置/显示选项，翻月期间保留上一份数据；
+/// - 监听打点/当日日记/心情配置/这天的心情/显示选项，翻月期间保留上一份
+///   数据；
 /// - 不注册 Home 的“新建”FAB：在某天写日记走长按日期菜单或当天的空状态。
 ///
 /// 日期格样式、月度统计等计算在 viewmodels/，网格与日期格绘制在 widgets/，
@@ -272,6 +275,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final anniversaryIndex = options.showAnniversaries && anniversariesEnabled
         ? ref.watch(anniversaryCalendarIndexProvider)
         : AnniversaryCalendarIndex.empty;
+    // 这天的心情与纪念日一样是日期本身的属性：整表订阅，不受筛选与范围选择
+    // 影响；显示选项关掉时不订阅，网格与年视图都按没有心情绘制。
+    final dayMoods = options.showDayMoods
+        ? ref.watch(dayMoodsProvider).value ?? const <DateTime, DayMood>{}
+        : const <DateTime, DayMood>{};
     final day = _resolveDayContent(
       ref.watch(calendarDayDiariesProvider(_selectedDay)),
       fallbackSummary: summaries[_selectedDay],
@@ -315,6 +323,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       markersAsync: markersAsync,
       moodOptions: moodOptions,
       anniversaryIndex: anniversaryIndex,
+      dayMoods: dayMoods,
       now: now,
       wide: wide,
     );

@@ -180,14 +180,23 @@ String _modeDescription(
   BackupArchivePreview preview,
 ) {
   final description = _baseModeDescription(l10n, mode, preview);
-  // 同一个日记本的定义也会被替换（名称、封面、章节等），在说明末尾补一行；
-  // 日记本重复本身不决定是否提供这种方式。
-  if (mode == BackupImportMode.mergeOverwrite &&
-      preview.existingNotebookCount > 0) {
-    return '$description\n'
-        '${l10n.backupImportModeOverwriteNotebooksExtra(preview.existingNotebookCount)}';
+  if (mode != BackupImportMode.mergeOverwrite) {
+    return description;
   }
-  return description;
+  // 只有心情重复时基础说明已经写了心情，不再补行。
+  final onlyDayMoods =
+      preview.existingDiaryCount == 0 && preview.existingAnniversaryCount == 0;
+  return <String>[
+    description,
+    // 同一个日记本的定义也会被替换（名称、封面、章节等），在说明末尾补一行；
+    // 日记本重复本身不决定是否提供这种方式。
+    if (preview.existingNotebookCount > 0)
+      l10n.backupImportModeOverwriteNotebooksExtra(
+        preview.existingNotebookCount,
+      ),
+    if (preview.existingDayMoodCount > 0 && !onlyDayMoods)
+      l10n.backupImportModeOverwriteDayMoodsExtra(preview.existingDayMoodCount),
+  ].join('\n');
 }
 
 String _baseModeDescription(
@@ -197,7 +206,12 @@ String _baseModeDescription(
 ) {
   return switch (mode) {
     BackupImportMode.merge => l10n.backupImportModeMergeDescription,
-    // 只有纪念日重复时单独一句；日记与纪念日都有重复时在日记说明后补一行。
+    // 只有纪念日（或只有心情）重复时单独一句；日记与纪念日都有重复时在
+    // 日记说明后补一行。
+    BackupImportMode.mergeOverwrite
+        when preview.existingDiaryCount == 0 &&
+            preview.existingAnniversaryCount == 0 =>
+      l10n.backupImportModeOverwriteDayMoodsOnly(preview.existingDayMoodCount),
     BackupImportMode.mergeOverwrite when preview.existingDiaryCount == 0 =>
       l10n.backupImportModeOverwriteAnniversariesOnly(
         preview.existingAnniversaryCount,

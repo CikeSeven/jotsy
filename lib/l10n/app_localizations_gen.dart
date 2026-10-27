@@ -14107,6 +14107,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drop to insert'**
   String get diaryEditorDropToInsert;
+
+  /// Lowest of the five day moods: name in the calendar long-press sheet and the date cell's screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'Awful'**
+  String get dayMoodAwful;
+
+  /// Second-lowest day mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad'**
+  String get dayMoodBad;
+
+  /// Middle day mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Meh'**
+  String get dayMoodMeh;
+
+  /// Second-highest day mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get dayMoodGood;
+
+  /// Highest day mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Great'**
+  String get dayMoodGreat;
+
+  /// Heading of the mood row in the calendar long-press sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood of the day'**
+  String get calendarDayMoodTitle;
+
+  /// Calendar long-press sheet: clears the mood set for the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get calendarDayMoodClear;
+
+  /// Snack bar (with undo) after clearing the day's mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood cleared'**
+  String get calendarDayMoodCleared;
+
+  /// Shown when setting or clearing the day's mood fails to save.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the mood. Try again.'**
+  String get calendarDayMoodSaveFailed;
+
+  /// Switch for day moods in the Sections group of the calendar display options.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood of the day'**
+  String get calendarShowDayMoods;
+
+  /// Explains the day-mood switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press a date to note how the day felt; the whole date cell turns into that mood.'**
+  String get calendarShowDayMoodsDescription;
+
+  /// Bullet in the replace-everything warning: day moods that will be deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Mood for 1 day} other{Moods for {count} days}}'**
+  String backupOverwriteAllDayMoods(int count);
+
+  /// Merge-and-overwrite warning: day moods that will be replaced.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The mood already noted for 1 day will be replaced by the one in the file.} other{The moods already noted for {count} days will be replaced by the ones in the file.}}'**
+  String backupOverwriteExistingDayMoodsBody(int count);
+
+  /// Description of “merge and overwrite existing” when only day moods overlap with this device.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Adds new items and replaces the mood already noted for 1 day with the one in the file} other{Adds new items and replaces the moods already noted for {count} days with the ones in the file}}'**
+  String backupImportModeOverwriteDayMoodsOnly(int count);
+
+  /// Extra line of the “merge and overwrite existing” description: day moods that overlap besides diaries or anniversaries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Also replaces the mood noted for 1 day} other{Also replaces the moods noted for {count} days}}'**
+  String backupImportModeOverwriteDayMoodsExtra(int count);
+
+  /// Extra line of the merge import result: day moods added.
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{Day moods: 1 added} other{Day moods: {added} added}}'**
+  String backupImportDayMoodMergeResult(int added);
+
+  /// Extra line of the merge-and-overwrite import result: day moods added and overwritten.
+  ///
+  /// In en, this message translates to:
+  /// **'Day moods: {added} added, {replaced} overwritten'**
+  String backupImportDayMoodOverwriteResult(int added, int replaced);
 }
 
 class _AppLocalizationsDelegate

@@ -21,6 +21,7 @@ class BackupPayload {
     this.diaryTemplates = const <DiaryTemplateRow>[],
     this.notebooks = const <NotebookRow>[],
     this.diaryNotebooks = const <DiaryNotebookRow>[],
+    this.dayMoods = const <DayMoodRow>[],
     this.settings,
   });
 
@@ -47,6 +48,10 @@ class BackupPayload {
   /// 经日记与日记本的 id 映射改写）。解析后只剩两端都在载荷里、且日记本为
   /// 手动类型的行（见 [_withRestorableRelations]）。
   final List<DiaryNotebookRow> diaryNotebooks;
+
+  /// 这天的心情（schema v14 起）。旧备份没有这张表，解析为空列表；日记包不带
+  /// （心情属于日子本身，不属于哪几篇日记）。认不出的心情名原样保留。
+  final List<DayMoodRow> dayMoods;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -135,6 +140,10 @@ class BackupPayload {
         diaryNotebooks: _optionalRows(database, 'diaryNotebooks')
             .map((row) => DiaryNotebookRow.fromJson({'position': 0, ...row}))
             .toList(growable: false),
+        dayMoods: _optionalRows(
+          database,
+          'dayMoods',
+        ).map(DayMoodRow.fromJson).toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
@@ -203,6 +212,7 @@ class BackupPayload {
     _unique(notebooks.map((row) => row.id));
     _unique(notebooks.map((row) => row.notebookId));
     _unique(diaryNotebooks.map((row) => (row.diaryId, row.notebookId)));
+    _unique(dayMoods.map((row) => row.day));
     // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
     // 才在页面上算不出日子。
     for (final row in anniversaries) {
@@ -219,6 +229,13 @@ class BackupPayload {
       final name = row.name.trim();
       if (name.isEmpty || name.length > 60) {
         throw const FormatException('备份中的日记本数据无效');
+      }
+    }
+    // 日期是心情的主键，算不出是哪天的行写进去也画不到日历上；心情名不校验，
+    // 更新版本写入的新心情原样保留（见 [DayMood.parse]）。
+    for (final row in dayMoods) {
+      if (parseAnniversaryDate(row.day) == null) {
+        throw const FormatException('备份中的心情数据无效');
       }
     }
   }
@@ -256,6 +273,7 @@ class BackupPayload {
                 manualNotebookIds.contains(row.notebookId),
           )
           .toList(growable: false),
+      dayMoods: dayMoods,
       settings: settings,
     );
   }
@@ -301,6 +319,9 @@ class BackupPayload {
         'diaryNotebooks': (await database.select(database.diaryNotebooks).get())
             .map((row) => row.toJson())
             .toList(),
+        'dayMoods': (await database.select(database.dayMoods).get())
+            .map((row) => row.toJson())
+            .toList(),
       },
     );
     return {
@@ -318,7 +339,7 @@ class BackupPayload {
   /// 的日记本与智能日记本：导入端按 notebookId 合并，本机没有的本子随之新增，
   /// 日记仍落在原来的本子与章节里。
   ///
-  /// 也不含纪念日与日记模板：日记包是“分享这几篇日记”，纪念日与模板属于
+  /// 也不含纪念日、日记模板与这天的心情：日记包是“分享这几篇日记”，它们属于
   /// 整本日记，只随完整备份走；关联了这些日记的纪念日留在本机。
   ///
   /// 同样在一个事务快照内读取；只导出两端都存在的关联，避免把历史悬空绑定
@@ -428,6 +449,7 @@ class BackupPayload {
       diaryTemplates: diaryTemplates,
       notebooks: restoredNotebooks,
       diaryNotebooks: diaryNotebooks,
+      dayMoods: dayMoods,
       settings: settings,
     );
   }
@@ -499,6 +521,7 @@ class BackupPayload {
     await database.delete(database.anniversaries).go();
     await database.delete(database.diaryDrafts).go();
     await database.delete(database.diaryTemplates).go();
+    await database.delete(database.dayMoods).go();
     await database.batch((batch) {
       batch.insertAll(
         database.tags,
@@ -535,6 +558,11 @@ class BackupPayload {
       batch.insertAll(
         database.diaryNotebooks,
         diaryNotebooks.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 心情只以日期为键，与其他表都没有关联。
+      batch.insertAll(
+        database.dayMoods,
+        dayMoods.map((row) => row.toCompanion(false)).toList(),
       );
     });
   }

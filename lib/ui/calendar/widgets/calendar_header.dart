@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_backdrop.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 
 /// 日历的 Expressive 双行页头。月份控制单独成行，避免窄屏或英文标题
@@ -106,7 +107,8 @@ class CalendarHeader extends StatelessWidget {
     // / 方向键的焦点遍历不看裁切，要另外排除，焦点才不会落到看不见的按钮上。
     final monthBarHidden = collapsed >= monthBarHeight;
     return HomeTopBarSurface(
-      solidColor: theme.colorScheme.surface,
+      // 实色顶栏：区域设了纯色背景时与背景同色，图片背景时仍是 surface。
+      solidColor: AppPageBackdrop.solidBarColorOf(context),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           16 + horizontalInset,

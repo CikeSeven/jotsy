@@ -58,7 +58,7 @@ extension _HomePageChrome on _HomePageState {
               removeRight: !ltr,
               child: HomeTabEntrance(
                 generation: _wideEntranceGeneration,
-                color: Theme.of(context).colorScheme.surface,
+                color: _wideEntranceCoverColor(context),
                 child: content,
               ),
             ),
@@ -66,6 +66,18 @@ extension _HomePageChrome on _HomePageState {
         ),
       ],
     );
+  }
+
+  /// 宽窗口切页入场的盖层颜色（见 [HomeTabEntrance]）。
+  ///
+  /// 盖层模拟“内容在页面底色上淡入”：目标 Tab 没有背景时就是原来的页面
+  /// 底色；有背景时页面底下是背景层（随切页交叉淡入），一块纯色盖层会在
+  /// 图片上闪出一个色块，改为透明——此时只有轻微放大，淡入交给背景层。
+  Color _wideEntranceCoverColor(BuildContext context) {
+    final backdrop = AppPageBackdrop.of(context);
+    return backdrop.hasBackground
+        ? Colors.transparent
+        : Theme.of(context).colorScheme.surface;
   }
 
   /// 侧边栏顶部的新建按钮：文字（提示）与全局 FAB 相同，在任何 Tab 都可用。

@@ -10,6 +10,7 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
@@ -104,8 +105,9 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     // 下方，末尾多留这一段让最后一块完整露出。
     final floatingBarInset = MediaQuery.paddingOf(context).bottom;
 
+    // 探索区域设了背景时页面底透明，露出首页画的背景（见 AppPagedBackground）。
     final pageBgColor =
-        widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
+        widget.pageBackgroundColor ?? AppPageBackdrop.pageColorOf(context);
 
     return Stack(
       children: <Widget>[

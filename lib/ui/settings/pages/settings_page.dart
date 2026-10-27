@@ -10,6 +10,7 @@ import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../notebooks/pages/notebooks_page.dart';
 import '../../widgets/form_width.dart';
@@ -38,8 +39,9 @@ class SettingsPage extends StatelessWidget {
     // 玻璃底栏悬浮在内容之上时，底部 padding 是底栏槽位高度（实色时为 0）：
     // 列表滚到胶囊下方，末尾多留这一段让最后一项完整露出。
     final listBottomPadding = 8.0 + MediaQuery.paddingOf(context).bottom;
+    // 设置区域设了背景时页面底透明，露出首页画的背景（见 AppPagedBackground）。
     final pageBgColor =
-        pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
+        pageBackgroundColor ?? AppPageBackdrop.pageColorOf(context);
 
     return Stack(
       children: <Widget>[

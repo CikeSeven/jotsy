@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_backdrop.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_export_flow.dart';
 import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_drafts_page.dart';
@@ -284,8 +285,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final brightness = theme.brightness;
-    final colorScheme = theme.colorScheme;
-    final pageBgColor = widget.pageBackgroundColor ?? colorScheme.surface;
+    // 页面底色（Scaffold、列表底）与实色顶栏（刊头、标签栏）的底色分开取：
+    // 日记区域设了背景时页面底透明、露出首页画的背景，实色顶栏仍是不透明
+    // 的栏色（纯色背景时与背景同色）；没有背景时两者都是 surface，与接入
+    // 前一致。
+    final pageBgColor =
+        widget.pageBackgroundColor ?? AppPageBackdrop.pageColorOf(context);
+    final solidBarColor = AppPageBackdrop.solidBarColorOf(context);
     final diaryCardTagLimit =
         ref.watch(diaryCardTagLimitProvider).asData?.value ??
         SettingsService.defaultDiaryCardTagLimit;
@@ -491,7 +497,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         // 宽窗口里底色仍铺满整页，只有标签内容收进内容列（[contentInset]）。
         Widget tagHeader(double contentInset) => PinnedHeaderSliver(
           child: HomeTopBarSurface(
-            solidColor: pageBgColor,
+            solidColor: solidBarColor,
             showHairline: true,
             grouped: true,
             child: Padding(
@@ -545,7 +551,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                         height: _headerCollapsibleHeight,
                         glass: glassTopBars,
                         topInset: viewPadding.top,
-                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        backgroundColor: solidBarColor,
                         child: Container(
                           height: _headerCollapsibleHeight,
                           padding: EdgeInsets.symmetric(

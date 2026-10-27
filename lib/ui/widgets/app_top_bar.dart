@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../app/theme/app_breakpoints.dart';
+import '../app_surface/widgets/app_page_backdrop.dart';
 
 /// Expressive 紧凑标题栏；统一 64dp 高度和默认返回图标，业务动作由页面注入。
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
@@ -51,7 +52,11 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     final colorScheme = theme.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
     final resolvedForeground = foregroundColor ?? colorScheme.onSurface;
-    final resolvedBackground = backgroundColor ?? colorScheme.surface;
+    // 未指定底色时取所在页面背景的实色栏底色：没有背景（或页面尚未接入
+    // 背景）时就是 surface，与原来一致；纯色背景时与页面同色，图片背景时
+    // 保持不透明的 surface。
+    final resolvedBackground =
+        backgroundColor ?? AppPageBackdrop.solidBarColorOf(context);
     final resolvedOverlay =
         systemOverlayStyle ??
         theme.appBarTheme.systemOverlayStyle ??

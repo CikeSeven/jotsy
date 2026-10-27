@@ -45,6 +45,8 @@ import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor_drop_target.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
@@ -845,308 +847,346 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         ? const AsyncData<DiaryWithTags?>(null)
         : ref.watch(diaryDetailProvider(widget.diaryId!));
 
-    // 编辑页统一处理三态：加载中 / 加载失败 / 数据可用。
-    return detailAsync.when(
-      loading: () => Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        body: const DelayedLoadingIndicator(),
-      ),
-      error: (Object error, StackTrace stackTrace) => Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        appBar: AppTopBar(
-          contentMaxWidth: AppContentWidth.editor,
-          leading: IconButton(
-            tooltip: context.l10n.commonBack,
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-          ),
-        ),
-        body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
-      ),
-      data: (DiaryWithTags? detail) {
-        // 工具栏顺序和启用状态已在外层解析，避免详情流重建时重复解析设置。
-
-        if (widget.diaryId != null && detail == null) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            appBar: AppTopBar(
-              contentMaxWidth: AppContentWidth.editor,
-              leading: IconButton(
-                tooltip: context.l10n.commonBack,
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+    // 编辑页统一处理三态：加载中 / 加载失败 / 数据可用。三态都画编辑区域的
+    // 背景（AppPageBackground 在 Scaffold 外面、按路由尺寸铺满，键盘弹出时
+    // 不缩放不移动）；页面底色经 Builder 从背景组件之下读：有背景时透明。
+    // 没有背景时 pageColor 就是 surface，与接入前一致。
+    // 在本 State 的 build 里订阅：下面 Builder 的 build 不在本元素的依赖
+    // 记录窗口内，在那里 watch 会在每次重建时退订再重订。
+    final appearance = ref.watch(diaryTextAppearanceProvider);
+    return AppPageBackground(
+      area: AppBackgroundArea.editor,
+      child: Builder(
+        builder: (BuildContext context) {
+          final pageColor = AppPageBackdrop.pageColorOf(context);
+          return detailAsync.when(
+            loading: () => Scaffold(
+              backgroundColor: pageColor,
+              body: const DelayedLoadingIndicator(),
+            ),
+            error: (Object error, StackTrace stackTrace) => Scaffold(
+              backgroundColor: pageColor,
+              appBar: AppTopBar(
+                contentMaxWidth: AppContentWidth.editor,
+                leading: IconButton(
+                  tooltip: context.l10n.commonBack,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                ),
+              ),
+              body: Center(
+                child: Text(context.l10n.autoT0121(error.toString())),
               ),
             ),
-            body: Center(child: Text(context.l10n.autoT0124)),
-          );
-        }
+            data: (DiaryWithTags? detail) {
+              // 工具栏顺序和启用状态已在外层解析，避免详情流重建时重复解析设置。
 
-        // 首次拿到详情时回填编辑器与草稿上下文，后续重建不重复执行。
-        if (!_initialized && detail != null) {
-          _titleController.text = detail.diary.title;
-          _controller.replaceContentController(
-            editor.DiaryEditorController(
-              document: editor.diaryEditorDocument(detail.diary.content),
-              selection: editor.Selection.single(path: [0], startOffset: 0),
-            ),
-          );
-          try {
-            _metadataJson = prettyMetadataJson(detail.diary.metadata);
-          } catch (_) {
-            _metadataJson = detail.diary.metadata;
-          }
-          // 面板字段从 metadata 读回；封面与标签以日记表的列为准。
-          _meta.restore(
-            PublishMetadataComposer.parse(detail.diary.metadata).copyWith(
-              cover: normalizeOptionalText(detail.diary.cover),
-              tagIds: Set<int>.unmodifiable(
-                detail.tags.map((Tag tag) => tag.id),
-              ),
-            ),
-          );
-          _draftPublishAt = detail.diary.createdAt;
-          _panelMetadataDirty = false;
-          _controller.initializeEditAutoSave();
-          _initialized = true;
-          unawaited(_loadEditNotebooks(detail.diary.diaryId));
-          // “这天的照片”跟随日记的发表日期；configure 会通知监听者，不能在
-          // build 中直接调用，放到这一帧之后。
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _syncDayPhotos();
-          });
-        }
+              if (widget.diaryId != null && detail == null) {
+                return Scaffold(
+                  backgroundColor: pageColor,
+                  appBar: AppTopBar(
+                    contentMaxWidth: AppContentWidth.editor,
+                    leading: IconButton(
+                      tooltip: context.l10n.commonBack,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                    ),
+                  ),
+                  body: Center(child: Text(context.l10n.autoT0124)),
+                );
+              }
 
-        final showDayPhotosMenu =
-            _dayPhotos.library.isSupported && _dayPhotosDay != null;
-        final scaffold = Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          appBar: AppTopBar(
-            contentMaxWidth: AppContentWidth.editor,
-            leading: IconButton(
-              tooltip: context.l10n.commonBack,
-              onPressed: _controller.attemptExit,
-              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-            ),
-            title: Text(
-              widget.entryMode == EditDiaryEntryMode.create
-                  ? context.l10n.autoT0134
-                  : context.l10n.autoT0135,
-            ),
-            actions: <Widget>[
-              ExpressiveMenuButton(
-                tooltip: context.l10n.diaryEditorMoreActions,
-                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
-                items: <Widget>[
-                  // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
-                  if (_templates.enabled && templatesEnabled)
-                    ExpressiveMenuItem(
-                      leadingIcon: const FaIcon(
-                        FontAwesomeIcons.wandMagicSparkles,
+              // 首次拿到详情时回填编辑器与草稿上下文，后续重建不重复执行。
+              if (!_initialized && detail != null) {
+                _titleController.text = detail.diary.title;
+                _controller.replaceContentController(
+                  editor.DiaryEditorController(
+                    document: editor.diaryEditorDocument(detail.diary.content),
+                    selection: editor.Selection.single(
+                      path: [0],
+                      startOffset: 0,
+                    ),
+                  ),
+                );
+                try {
+                  _metadataJson = prettyMetadataJson(detail.diary.metadata);
+                } catch (_) {
+                  _metadataJson = detail.diary.metadata;
+                }
+                // 面板字段从 metadata 读回；封面与标签以日记表的列为准。
+                _meta.restore(
+                  PublishMetadataComposer.parse(detail.diary.metadata).copyWith(
+                    cover: normalizeOptionalText(detail.diary.cover),
+                    tagIds: Set<int>.unmodifiable(
+                      detail.tags.map((Tag tag) => tag.id),
+                    ),
+                  ),
+                );
+                _draftPublishAt = detail.diary.createdAt;
+                _panelMetadataDirty = false;
+                _controller.initializeEditAutoSave();
+                _initialized = true;
+                unawaited(_loadEditNotebooks(detail.diary.diaryId));
+                // “这天的照片”跟随日记的发表日期；configure 会通知监听者，不能在
+                // build 中直接调用，放到这一帧之后。
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) _syncDayPhotos();
+                });
+              }
+
+              final showDayPhotosMenu =
+                  _dayPhotos.library.isSupported && _dayPhotosDay != null;
+              final scaffold = Scaffold(
+                backgroundColor: pageColor,
+                appBar: AppTopBar(
+                  contentMaxWidth: AppContentWidth.editor,
+                  leading: IconButton(
+                    tooltip: context.l10n.commonBack,
+                    onPressed: _controller.attemptExit,
+                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                  ),
+                  title: Text(
+                    widget.entryMode == EditDiaryEntryMode.create
+                        ? context.l10n.autoT0134
+                        : context.l10n.autoT0135,
+                  ),
+                  actions: <Widget>[
+                    ExpressiveMenuButton(
+                      tooltip: context.l10n.diaryEditorMoreActions,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.ellipsisVertical,
+                        size: 18,
                       ),
-                      onPressed:
-                          _saving ||
-                              _recordingPanelOpen ||
-                              _mediaImportController.isBusy
-                          ? null
-                          : () => _onEditorMenuAction(
-                              _EditorMenuAction.chooseTemplate,
+                      items: <Widget>[
+                        // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
+                        if (_templates.enabled && templatesEnabled)
+                          ExpressiveMenuItem(
+                            leadingIcon: const FaIcon(
+                              FontAwesomeIcons.wandMagicSparkles,
                             ),
-                      child: Text(context.l10n.diaryTemplateChoose),
-                    ),
-                  // 新建与编辑都有，与“自动显示当天照片”开关无关；未来日期
-                  // 与不支持读取相册的平台没有。
-                  if (showDayPhotosMenu)
-                    ExpressiveMenuItem(
-                      leadingIcon: const FaIcon(FontAwesomeIcons.solidImages),
-                      onPressed:
-                          _saving ||
-                              _recordingPanelOpen ||
-                              _mediaImportController.isBusy
-                          ? null
-                          : () => _onEditorMenuAction(
-                              _EditorMenuAction.dayPhotos,
-                            ),
-                      child: Text(context.l10n.diaryDayPhotosMenu),
-                    ),
-                  if (templatesEnabled)
-                    ExpressiveMenuItem(
-                      leadingIcon: const FaIcon(FontAwesomeIcons.layerGroup),
-                      onPressed: () =>
-                          _onEditorMenuAction(_EditorMenuAction.saveAsTemplate),
-                      child: Text(context.l10n.diaryTemplateSaveAs),
-                    ),
-                  ExpressiveMenuItem(
-                    leadingIcon: const FaIcon(FontAwesomeIcons.penNib),
-                    onPressed: () =>
-                        _onEditorMenuAction(_EditorMenuAction.editorSettings),
-                    child: Text(context.l10n.settingsEditorTitle),
-                  ),
-                ],
-              ),
-              if (widget.entryMode == EditDiaryEntryMode.create)
-                IconButton(
-                  onPressed:
-                      _saving ||
-                          _recordingPanelOpen ||
-                          _mediaImportController.isBusy
-                      ? null
-                      : _controller.openPublishPage,
-                  icon: const FaIcon(FontAwesomeIcons.plus),
-                  tooltip: context.l10n.autoT0136,
-                ),
-            ],
-          ),
-          // 底部键盘弹起时（或打开了“始终显示工具栏”时）显示悬浮工具栏，并对
-          // 正文底部做避让。
-          body: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              // 软键盘“选择”模式的方向键在 Flutter 3.47 上只会移动光标，这里
-              // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
-              // 桌面上可以把文件拖进正文（手机上 DiaryEditorDropTarget 原样
-              // 返回子树）；面板展开、录音或保存中不接收。
-              DiaryEditorDropTarget(
-                enabled:
-                    !_saving && !_isEditPanelExpanded && !_recordingPanelOpen,
-                onDropFiles: (paths) =>
-                    unawaited(_controller.insertDroppedFiles(paths)),
-                child: SoftKeyboardSelectionKeys(
-                  child: _buildEditor(
-                    context,
-                    resolveBottomSpacer: resolveEditorBottomSpacer,
-                    contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
-                    appearance: ref.watch(diaryTextAppearanceProvider),
-                    templatesEnabled: templatesEnabled,
-                  ),
-                ),
-              ),
-              if (showEditMetaPanel &&
-                  (!showFloatingToolbar ||
-                      _isEditPanelExpanded ||
-                      toolbarStacked))
-                // 铺满 body、贴底对齐：面板据此拿到可用高度，矮屏时展开高度收缩。
-                // 两个浮层都带 key：常显时面板会插在已有的工具栏之前，按位置
-                // 匹配会把工具栏的 Element 交给面板，工具栏重建、丢掉「更多」
-                // 与颜色面板的状态并重播入场动画。
-                Positioned.fill(
-                  key: const ValueKey<String>('edit-meta-panel'),
-                  child: _metaPanelColumn(
-                    // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
-                    (bool wide) => ExpressiveEntrance(
-                      child: _buildMetaPanel(fillWidth: wide),
-                    ),
-                  ),
-                ),
-              if (showFloatingToolbar)
-                Positioned(
-                  key: const ValueKey<String>('edit-floating-toolbar'),
-                  left: kDiaryFloatingToolbarInset,
-                  right: kDiaryFloatingToolbarInset,
-                  // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
-                  bottom: 0,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final safeBottom = math.max(
-                        MediaQuery.paddingOf(context).bottom,
-                        8.0,
-                      );
-                      // 叠在收起栏上方时在安全区之上再抬高到收起栏之上；键盘
-                      // 收起、弹起时随之平滑升降（effects 不越界，内边距不会
-                      // 被弹簧曲线插值成负数）。
-                      final stackedLift = toolbarStacked
-                          ? math.max(0.0, _toolbarStackedLift - safeBottom)
-                          : 0.0;
-                      // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
-                      return CenteredContent(
-                        maxWidth: AppContentWidth.editor,
-                        child: ExpressiveEntrance(
-                          child: SafeArea(
-                            top: false,
-                            minimum: const EdgeInsets.only(bottom: 8),
-                            child: AnimatedPadding(
-                              padding: EdgeInsets.only(bottom: stackedLift),
-                              duration: ExpressiveMotion.duration(
-                                context,
-                                ExpressiveMotion.medium,
-                              ),
-                              curve: ExpressiveMotion.effects,
-                              child: _fadeWhileMetaPanelRises(
-                                stacked: toolbarStacked,
-                                // 录音面板插入/移除时整列高度平滑变化，工具栏随之
-                                // 上移，不再瞬间跳到 300dp 之上。
-                                child: AnimatedSize(
-                                  duration: ExpressiveMotion.durationNonZero(
-                                    context,
-                                    ExpressiveMotion.medium,
+                            onPressed:
+                                _saving ||
+                                    _recordingPanelOpen ||
+                                    _mediaImportController.isBusy
+                                ? null
+                                : () => _onEditorMenuAction(
+                                    _EditorMenuAction.chooseTemplate,
                                   ),
-                                  curve: ExpressiveMotion.effects,
-                                  alignment: Alignment.bottomCenter,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      DiaryFloatingToolbarSurface(
-                                        child: Focus(
-                                          focusNode: _toolbarFocusNode,
-                                          // 焦点在正文与颜色代码输入框之间交接
-                                          // 时，按新的焦点重新判断工具栏是否显示。
-                                          onFocusChange: (_) => setState(() {}),
-                                          child: _buildFloatingToolbar(
-                                            enabledToolbarOrder,
-                                            // 面板最多铺满工具栏上方的整块正文
-                                            // 区，极矮的窗口里改为面板内滚动而
-                                            // 不溢出。
-                                            maxPanelExtent:
-                                                constraints.maxHeight -
-                                                safeBottom -
-                                                stackedLift -
-                                                kDiaryToolbarBarHeight,
-                                          ),
+                            child: Text(context.l10n.diaryTemplateChoose),
+                          ),
+                        // 新建与编辑都有，与“自动显示当天照片”开关无关；未来日期
+                        // 与不支持读取相册的平台没有。
+                        if (showDayPhotosMenu)
+                          ExpressiveMenuItem(
+                            leadingIcon: const FaIcon(
+                              FontAwesomeIcons.solidImages,
+                            ),
+                            onPressed:
+                                _saving ||
+                                    _recordingPanelOpen ||
+                                    _mediaImportController.isBusy
+                                ? null
+                                : () => _onEditorMenuAction(
+                                    _EditorMenuAction.dayPhotos,
+                                  ),
+                            child: Text(context.l10n.diaryDayPhotosMenu),
+                          ),
+                        if (templatesEnabled)
+                          ExpressiveMenuItem(
+                            leadingIcon: const FaIcon(
+                              FontAwesomeIcons.layerGroup,
+                            ),
+                            onPressed: () => _onEditorMenuAction(
+                              _EditorMenuAction.saveAsTemplate,
+                            ),
+                            child: Text(context.l10n.diaryTemplateSaveAs),
+                          ),
+                        ExpressiveMenuItem(
+                          leadingIcon: const FaIcon(FontAwesomeIcons.penNib),
+                          onPressed: () => _onEditorMenuAction(
+                            _EditorMenuAction.editorSettings,
+                          ),
+                          child: Text(context.l10n.settingsEditorTitle),
+                        ),
+                      ],
+                    ),
+                    if (widget.entryMode == EditDiaryEntryMode.create)
+                      IconButton(
+                        onPressed:
+                            _saving ||
+                                _recordingPanelOpen ||
+                                _mediaImportController.isBusy
+                            ? null
+                            : _controller.openPublishPage,
+                        icon: const FaIcon(FontAwesomeIcons.plus),
+                        tooltip: context.l10n.autoT0136,
+                      ),
+                  ],
+                ),
+                // 底部键盘弹起时（或打开了“始终显示工具栏”时）显示悬浮工具栏，并对
+                // 正文底部做避让。
+                body: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    // 软键盘“选择”模式的方向键在 Flutter 3.47 上只会移动光标，这里
+                    // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
+                    // 桌面上可以把文件拖进正文（手机上 DiaryEditorDropTarget 原样
+                    // 返回子树）；面板展开、录音或保存中不接收。
+                    DiaryEditorDropTarget(
+                      enabled:
+                          !_saving &&
+                          !_isEditPanelExpanded &&
+                          !_recordingPanelOpen,
+                      onDropFiles: (paths) =>
+                          unawaited(_controller.insertDroppedFiles(paths)),
+                      child: SoftKeyboardSelectionKeys(
+                        child: _buildEditor(
+                          context,
+                          resolveBottomSpacer: resolveEditorBottomSpacer,
+                          contentLocked:
+                              _isEditPanelExpanded || _recordingPanelOpen,
+                          appearance: appearance,
+                          templatesEnabled: templatesEnabled,
+                        ),
+                      ),
+                    ),
+                    if (showEditMetaPanel &&
+                        (!showFloatingToolbar ||
+                            _isEditPanelExpanded ||
+                            toolbarStacked))
+                      // 铺满 body、贴底对齐：面板据此拿到可用高度，矮屏时展开高度收缩。
+                      // 两个浮层都带 key：常显时面板会插在已有的工具栏之前，按位置
+                      // 匹配会把工具栏的 Element 交给面板，工具栏重建、丢掉「更多」
+                      // 与颜色面板的状态并重播入场动画。
+                      Positioned.fill(
+                        key: const ValueKey<String>('edit-meta-panel'),
+                        child: _metaPanelColumn(
+                          // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
+                          (bool wide) => ExpressiveEntrance(
+                            child: _buildMetaPanel(fillWidth: wide),
+                          ),
+                        ),
+                      ),
+                    if (showFloatingToolbar)
+                      Positioned(
+                        key: const ValueKey<String>('edit-floating-toolbar'),
+                        left: kDiaryFloatingToolbarInset,
+                        right: kDiaryFloatingToolbarInset,
+                        // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
+                        bottom: 0,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final safeBottom = math.max(
+                              MediaQuery.paddingOf(context).bottom,
+                              8.0,
+                            );
+                            // 叠在收起栏上方时在安全区之上再抬高到收起栏之上；键盘
+                            // 收起、弹起时随之平滑升降（effects 不越界，内边距不会
+                            // 被弹簧曲线插值成负数）。
+                            final stackedLift = toolbarStacked
+                                ? math.max(
+                                    0.0,
+                                    _toolbarStackedLift - safeBottom,
+                                  )
+                                : 0.0;
+                            // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
+                            return CenteredContent(
+                              maxWidth: AppContentWidth.editor,
+                              child: ExpressiveEntrance(
+                                child: SafeArea(
+                                  top: false,
+                                  minimum: const EdgeInsets.only(bottom: 8),
+                                  child: AnimatedPadding(
+                                    padding: EdgeInsets.only(
+                                      bottom: stackedLift,
+                                    ),
+                                    duration: ExpressiveMotion.duration(
+                                      context,
+                                      ExpressiveMotion.medium,
+                                    ),
+                                    curve: ExpressiveMotion.effects,
+                                    child: _fadeWhileMetaPanelRises(
+                                      stacked: toolbarStacked,
+                                      // 录音面板插入/移除时整列高度平滑变化，工具栏随之
+                                      // 上移，不再瞬间跳到 300dp 之上。
+                                      child: AnimatedSize(
+                                        duration:
+                                            ExpressiveMotion.durationNonZero(
+                                              context,
+                                              ExpressiveMotion.medium,
+                                            ),
+                                        curve: ExpressiveMotion.effects,
+                                        alignment: Alignment.bottomCenter,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            DiaryFloatingToolbarSurface(
+                                              child: Focus(
+                                                focusNode: _toolbarFocusNode,
+                                                // 焦点在正文与颜色代码输入框之间交接
+                                                // 时，按新的焦点重新判断工具栏是否显示。
+                                                onFocusChange: (_) =>
+                                                    setState(() {}),
+                                                child: _buildFloatingToolbar(
+                                                  enabledToolbarOrder,
+                                                  // 面板最多铺满工具栏上方的整块正文
+                                                  // 区，极矮的窗口里改为面板内滚动而
+                                                  // 不溢出。
+                                                  maxPanelExtent:
+                                                      constraints.maxHeight -
+                                                      safeBottom -
+                                                      stackedLift -
+                                                      kDiaryToolbarBarHeight,
+                                                ),
+                                              ),
+                                            ),
+                                            if (_recordingPanelOpen) ...[
+                                              const SizedBox(height: 8),
+                                              ExpressiveEntrance(
+                                                child: _buildRecordingPanel(),
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                       ),
-                                      if (_recordingPanelOpen) ...[
-                                        const SizedBox(height: 8),
-                                        ExpressiveEntrance(
-                                          child: _buildRecordingPanel(),
-                                        ),
-                                      ],
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    DiaryMediaImportOverlay(
+                      copying: _mediaImportController.isCopying,
+                    ),
+                  ],
                 ),
-              DiaryMediaImportOverlay(
-                copying: _mediaImportController.isCopying,
-              ),
-            ],
-          ),
-        );
-        // 根节点必须恒为 PopScope：若按 `_recordingPanelOpen` 在 Scaffold 与
-        // PopScope(Scaffold) 之间切换，根 widget 类型变化会销毁整棵子树，
-        // 连带 原生块编辑器、播放器与输入法连接一起重建。只用 canPop 表达差异。
-        return PopScope(
-          // 编辑模式返回时先补存最后一次输入，面板和录音仍优先收起。
-          canPop: !_isEditEntry && !_recordingPanelOpen,
-          onPopInvokedWithResult: (didPop, result) {
-            if (!didPop) {
-              unawaited(_controller.attemptExit());
-              return;
-            }
-            // 新建模式直接返回：补存防抖窗口里的输入，草稿静默留在草稿箱。
-            if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
-          },
-          // 桌面上 Esc 与顶栏返回按钮相同（补存、先收起面板与录音）。
-          child: DesktopPageKeys(
-            onEscape: () => unawaited(_controller.attemptExit()),
-            child: scaffold,
-          ),
-        );
-      },
+              );
+              // 根节点必须恒为 PopScope：若按 `_recordingPanelOpen` 在 Scaffold 与
+              // PopScope(Scaffold) 之间切换，根 widget 类型变化会销毁整棵子树，
+              // 连带 原生块编辑器、播放器与输入法连接一起重建。只用 canPop 表达差异。
+              return PopScope(
+                // 编辑模式返回时先补存最后一次输入，面板和录音仍优先收起。
+                canPop: !_isEditEntry && !_recordingPanelOpen,
+                onPopInvokedWithResult: (didPop, result) {
+                  if (!didPop) {
+                    unawaited(_controller.attemptExit());
+                    return;
+                  }
+                  // 新建模式直接返回：补存防抖窗口里的输入，草稿静默留在草稿箱。
+                  if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
+                },
+                // 桌面上 Esc 与顶栏返回按钮相同（补存、先收起面板与录音）。
+                child: DesktopPageKeys(
+                  onEscape: () => unawaited(_controller.attemptExit()),
+                  child: scaffold,
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 

@@ -26,6 +26,7 @@ import '../../../core/services/settings_service.dart';
 import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
 import '../../anniversaries/providers/anniversary_providers.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
@@ -286,8 +287,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       fallbackSummary: summaries[_selectedDay],
       now: now,
     );
+    // 日历区域设了背景时页面底透明，露出首页画的背景（见 AppPagedBackground）。
     final pageBgColor =
-        widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
+        widget.pageBackgroundColor ?? AppPageBackdrop.pageColorOf(context);
 
     // 页头、日历卡片与选中日各区块在这里一次装配好，窄屏单列、宽屏居中
     // 单列与双栏只是摆放方式不同（见 calendar_page_layout.dart）。

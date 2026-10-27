@@ -7,6 +7,8 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
 import '../viewmodels/anniversary_countdown.dart';
 import 'anniversary_labels.dart';
@@ -21,6 +23,21 @@ class AnniversaryDetailSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // 玻璃时为内容玻璃（共用页面背景读取、无背景图不模糊）；经典分支不变。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return SizedBox(
+        width: double.infinity,
+        child: AppGlassSurface(
+          component: AppGlassComponent.cards,
+          borderRadius: const BorderRadius.all(Radius.circular(AppRadii.card)),
+          shadow: true,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.l),
+            child: child,
+          ),
+        ),
+      );
+    }
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.l),

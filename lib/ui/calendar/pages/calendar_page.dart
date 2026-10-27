@@ -26,6 +26,8 @@ import '../../../core/services/settings_service.dart';
 import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
 import '../../anniversaries/providers/anniversary_providers.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';

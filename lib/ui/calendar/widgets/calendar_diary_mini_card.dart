@@ -5,6 +5,8 @@ import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../diaries/sections/diaries_list_section.dart'
     show DiaryOpenCallback;
 import '../../diaries/viewmodels/diary_card_view_data.dart';
@@ -46,6 +48,84 @@ class CalendarDiaryMiniCard extends StatelessWidget {
     final cover = viewData.previewCover;
     final anchor = ImageViewerHeroAnchor();
     final radius = BorderRadius.circular(20);
+    final content = InkWell(
+      onTap: () => onOpenDiary(
+        diary,
+        anchor.capture(tag: diaryCoverHeroTag(diary.diary.diaryId)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.m),
+        child: Row(
+          children: <Widget>[
+            if (cover != null) ...<Widget>[
+              CalendarEntryThumbnail(
+                source: cover,
+                diaryId: diary.diary.diaryId,
+                anchor: anchor,
+                size: 56,
+                radius: 12,
+              ),
+              const SizedBox(width: AppSpacing.m),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    eyebrow,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    title.isEmpty ? summary : title,
+                    maxLines: title.isEmpty ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: title.isEmpty
+                          ? FontWeight.w400
+                          : FontWeight.w700,
+                      color: title.isEmpty
+                          ? colorScheme.onSurfaceVariant
+                          : colorScheme.onSurface,
+                      height: 1.35,
+                    ),
+                  ),
+                  if (title.isNotEmpty)
+                    Text(
+                      summary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      // 小卡片既出现在页面上（那年今日横条），也叠在纪念日详情的卡片里：
+      // 不做模糊、只用半透明底，叠在玻璃卡片上时不会同一区域两层模糊；
+      // 外侧投影在小块上显得脏，也不画。
+      return SizedBox(
+        width: width,
+        child: AppGlassSurface(
+          component: AppGlassComponent.cards,
+          borderRadius: radius,
+          blur: AppGlassBlur.none,
+          child: content,
+        ),
+      );
+    }
     return Container(
       width: width,
       decoration: BoxDecoration(
@@ -60,70 +140,7 @@ class CalendarDiaryMiniCard extends StatelessWidget {
         color: ExpressiveSurfaces.cardColor(colorScheme),
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => onOpenDiary(
-            diary,
-            anchor.capture(tag: diaryCoverHeroTag(diary.diary.diaryId)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.m),
-            child: Row(
-              children: <Widget>[
-                if (cover != null) ...<Widget>[
-                  CalendarEntryThumbnail(
-                    source: cover,
-                    diaryId: diary.diary.diaryId,
-                    anchor: anchor,
-                    size: 56,
-                    radius: 12,
-                  ),
-                  const SizedBox(width: AppSpacing.m),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        eyebrow,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        title.isEmpty ? summary : title,
-                        maxLines: title.isEmpty ? 2 : 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: title.isEmpty
-                              ? FontWeight.w400
-                              : FontWeight.w700,
-                          color: title.isEmpty
-                              ? colorScheme.onSurfaceVariant
-                              : colorScheme.onSurface,
-                          height: 1.35,
-                        ),
-                      ),
-                      if (title.isNotEmpty)
-                        Text(
-                          summary,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        child: content,
       ),
     );
   }

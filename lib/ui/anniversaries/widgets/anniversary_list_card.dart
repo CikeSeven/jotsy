@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
-import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_card_surface.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
 import '../viewmodels/anniversary_countdown.dart';
 
@@ -46,74 +45,64 @@ class AnniversaryListCard extends StatelessWidget {
     final metaStyle = theme.textTheme.bodySmall?.copyWith(
       color: colorScheme.onSurfaceVariant,
     );
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        border: Border.all(
-          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-          width: 0.8,
-        ),
-        boxShadow: AppEffects.restingCardShadow(colorScheme),
-      ),
-      child: Material(
-        color: ExpressiveSurfaces.cardColor(colorScheme),
-        borderRadius: radius,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.l,
-              AppSpacing.m + 2,
-              AppSpacing.l,
-              AppSpacing.m + 2,
-            ),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Flexible(
-                            child: Text(
-                              row.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+    // 经典分支与原来的 Container + Material 写法逐像素一致；玻璃时为内容
+    // 玻璃。
+    return AppCardSurface(
+      borderRadius: radius,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.m + 2,
+            AppSpacing.l,
+            AppSpacing.m + 2,
+          ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Flexible(
+                          child: Text(
+                            row.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          if (row.isPinned) ...<Widget>[
-                            const SizedBox(width: AppSpacing.s),
-                            _PinnedCapsule(label: l10n.anniversaryPinnedBadge),
-                          ],
+                        ),
+                        if (row.isPinned) ...<Widget>[
+                          const SizedBox(width: AppSpacing.s),
+                          _PinnedCapsule(label: l10n.anniversaryPinnedBadge),
                         ],
-                      ),
-                      const SizedBox(height: 4),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      dateLine,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: metaStyle,
+                    ),
+                    if (lunarLine != null)
                       Text(
-                        dateLine,
+                        lunarLine,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: metaStyle,
                       ),
-                      if (lunarLine != null)
-                        Text(
-                          lunarLine,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: metaStyle,
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
-                const SizedBox(width: AppSpacing.m),
-                SizedBox(width: 88, child: _DayCount(countdown: countdown)),
-              ],
-            ),
+              ),
+              const SizedBox(width: AppSpacing.m),
+              SizedBox(width: 88, child: _DayCount(countdown: countdown)),
+            ],
           ),
         ),
       ),

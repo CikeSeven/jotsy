@@ -4,6 +4,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../models/diary_template.dart';
 import 'diary_template_icon_badge.dart';
 
@@ -98,6 +100,16 @@ class DiaryTemplateTile extends StatelessWidget {
         ],
       ),
     );
+    final ink = InkWell(onTap: onTap, child: content);
+    // 玻璃时为内容玻璃（在页面上共用页面背景读取、无背景图不模糊；在底部
+    // 面板里没有页面背景，只有半透明底）；经典分支保持原样。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadii.input)),
+        child: ink,
+      );
+    }
     return Material(
       color: ExpressiveSurfaces.cardColor(colorScheme),
       shape: RoundedRectangleBorder(
@@ -108,7 +120,7 @@ class DiaryTemplateTile extends StatelessWidget {
         ),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(onTap: onTap, child: content),
+      child: ink,
     );
   }
 }

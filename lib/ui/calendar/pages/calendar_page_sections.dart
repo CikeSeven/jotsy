@@ -109,15 +109,79 @@ extension _CalendarPageSections on _CalendarPageState {
             now: now,
             moodOptions: moodOptions,
           );
+    const padding = EdgeInsets.fromLTRB(
+      AppSpacing.s,
+      AppSpacing.l,
+      AppSpacing.s,
+      AppSpacing.s,
+    );
+    final panel = Stack(
+      children: <Widget>[
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _buildPanelBody(
+              options: options,
+              summaries: summaries,
+              moodOptions: moodOptions,
+              anniversaryIndex: anniversaryIndex,
+              dayMoods: dayMoods,
+              wide: wide,
+            ),
+            if (filter.isActive)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.s),
+                child: CalendarFilterBar(
+                  filter: filter,
+                  tags: filterTags,
+                  notebooks: filterNotebooks,
+                  onTap: () => unawaited(_controller.openFilter()),
+                  onClear: _controller.clearFilter,
+                ),
+              ),
+            if (range != null)
+              _buildRangeSummary(
+                range,
+                filter: filter,
+                moodOptions: moodOptions,
+                now: now,
+              )
+            else if (stats != null)
+              CalendarMonthSummary(
+                stats: stats,
+                isFuture: _yearMode
+                    ? year > today.year
+                    : focusedMonth.isAfter(today),
+                period: _yearMode
+                    ? CalendarSummaryPeriod.year
+                    : CalendarSummaryPeriod.month,
+              ),
+          ],
+        ),
+        Positioned(
+          top: 0,
+          right: 0,
+          child: CalendarRefreshCapsule(
+            loading: markersAsync.isLoading,
+            error: markersAsync.asError?.error,
+          ),
+        ),
+      ],
+    );
+    // 玻璃材质时面板改为内容玻璃（共用页面背景读取、无背景图不模糊）；
+    // 经典分支保持原样。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: const BorderRadius.all(Radius.circular(28)),
+        shadow: true,
+        child: Padding(padding: padding, child: panel),
+      );
+    }
     // 面板外观不随交互变化（主题切换已由 MaterialApp 的主题动画插值），
     // 用普通 Container 避免 AnimatedContainer 在主题动画中二次追赶目标值。
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.s,
-        AppSpacing.l,
-        AppSpacing.s,
-        AppSpacing.s,
-      ),
+      padding: padding,
       decoration: BoxDecoration(
         color: ExpressiveSurfaces.cardColor(colorScheme),
         borderRadius: BorderRadius.circular(28),
@@ -127,59 +191,7 @@ extension _CalendarPageSections on _CalendarPageState {
         ),
         boxShadow: AppEffects.restingCardShadow(colorScheme),
       ),
-      child: Stack(
-        children: <Widget>[
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              _buildPanelBody(
-                options: options,
-                summaries: summaries,
-                moodOptions: moodOptions,
-                anniversaryIndex: anniversaryIndex,
-                dayMoods: dayMoods,
-                wide: wide,
-              ),
-              if (filter.isActive)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.s),
-                  child: CalendarFilterBar(
-                    filter: filter,
-                    tags: filterTags,
-                    notebooks: filterNotebooks,
-                    onTap: () => unawaited(_controller.openFilter()),
-                    onClear: _controller.clearFilter,
-                  ),
-                ),
-              if (range != null)
-                _buildRangeSummary(
-                  range,
-                  filter: filter,
-                  moodOptions: moodOptions,
-                  now: now,
-                )
-              else if (stats != null)
-                CalendarMonthSummary(
-                  stats: stats,
-                  isFuture: _yearMode
-                      ? year > today.year
-                      : focusedMonth.isAfter(today),
-                  period: _yearMode
-                      ? CalendarSummaryPeriod.year
-                      : CalendarSummaryPeriod.month,
-                ),
-            ],
-          ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: CalendarRefreshCapsule(
-              loading: markersAsync.isLoading,
-              error: markersAsync.asError?.error,
-            ),
-          ),
-        ],
-      ),
+      child: panel,
     );
   }
 

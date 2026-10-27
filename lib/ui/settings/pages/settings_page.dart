@@ -10,6 +10,8 @@ import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../notebooks/pages/notebooks_page.dart';
@@ -223,6 +225,58 @@ class _SettingsDestination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final tile = ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      leading: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: colors.primaryContainer.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: FaIcon(icon, size: 18, color: colors.onPrimaryContainer),
+      ),
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontSize: 16.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          if (badge != null) ...<Widget>[badge!, const SizedBox(width: 8)],
+          FaIcon(
+            FontAwesomeIcons.angleRight,
+            size: 14,
+            color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+          ),
+        ],
+      ),
+      onTap: onTap,
+    );
+    const radius = BorderRadius.all(Radius.circular(20));
+    // 玻璃材质时整张卡改为内容玻璃（共用页面背景读取、无背景图不模糊）；
+    // 经典分支保持原来的 Card.filled 写法不变。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: AppGlassSurface(
+          component: AppGlassComponent.cards,
+          borderRadius: radius,
+          shadow: true,
+          child: tile,
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -237,50 +291,7 @@ class _SettingsDestination extends StatelessWidget {
             side: ExpressiveSurfaces.cardBorderSide(colors),
           ),
           color: ExpressiveSurfaces.cardColor(colors),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 6,
-            ),
-            leading: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colors.primaryContainer.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: FaIcon(icon, size: 18, color: colors.onPrimaryContainer),
-            ),
-            title: Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: 16.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            subtitle: Text(
-              subtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                if (badge != null) ...<Widget>[
-                  badge!,
-                  const SizedBox(width: 8),
-                ],
-                FaIcon(
-                  FontAwesomeIcons.angleRight,
-                  size: 14,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-                ),
-              ],
-            ),
-            onTap: onTap,
-          ),
+          child: tile,
         ),
       ),
     );

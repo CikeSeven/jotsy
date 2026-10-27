@@ -32,8 +32,13 @@ class GlassSurface extends StatelessWidget {
     this.shadowColor,
     this.progress = 1,
     this.grouped = false,
+    this.backdropKey,
     required this.child,
-  });
+  }) : assert(
+         !grouped || backdropKey == null,
+         'grouped 与 backdropKey 只能二选一：前者取最近的 BackdropGroup，'
+         '后者直接指定共享背景的键。',
+       );
 
   /// 底部细线的默认粗细（与实色栏顶部分隔线同一规格）。
   static const double hairlineWidth = 0.6;
@@ -68,6 +73,12 @@ class GlassSurface extends StatelessWidget {
   /// 玻璃（如顶栏与底栏）同在一个 BackdropGroup 下时只读一次背景，省掉重复
   /// 的背景回读。没有 BackdropGroup 祖先时与普通模糊相同。
   final bool grouped;
+
+  /// 直接指定共享背景读取的键（`BackdropFilter.backdropGroupKey`）：同一键下
+  /// 的多块玻璃只读一次背景。用于不在同一个 [BackdropGroup] 子树里、却叠在
+  /// 同一片背景上的玻璃（如页面背景交给内容卡片的
+  /// `AppPageBackdrop.contentBackdropKey`）。与 [grouped] 互斥。
+  final BackdropKey? backdropKey;
   final Widget child;
 
   static Color _scaled(Color color, double factor) =>
@@ -121,7 +132,12 @@ class GlassSurface extends StatelessWidget {
               filter: filter,
               child: surface,
             )
-          : BackdropFilter(enabled: enabled, filter: filter, child: surface),
+          : BackdropFilter(
+              enabled: enabled,
+              filter: filter,
+              backdropGroupKey: backdropKey,
+              child: surface,
+            ),
     );
     final shadow = shadowColor;
     // 没有投影时也保留 CustomPaint 节点（画笔为 null），开关投影不改变树结构。

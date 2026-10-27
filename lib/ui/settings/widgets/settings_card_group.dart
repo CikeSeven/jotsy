@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_radii.dart';
-import '../../../app/theme/expressive_surfaces.dart';
-import '../../../app/theme/app_effects.dart';
+import '../../app_surface/widgets/app_card_surface.dart';
 
 /// 设置页统一分组卡片组件。
 ///
@@ -53,29 +51,17 @@ class SettingsCardGroup extends StatelessWidget {
               ),
             ),
           ],
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadii.card),
-              border: Border.all(
-                color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-                width: 0.8,
-              ),
-              boxShadow: AppEffects.restingCardShadow(colorScheme),
-            ),
-            child: Material(
-              color: ExpressiveSurfaces.cardColor(colorScheme),
-              borderRadius: BorderRadius.circular(AppRadii.card),
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  for (var i = 0; i < children.length; i++) ...[
-                    children[i],
-                    if (i < children.length - 1)
-                      const SettingsCardGroupDivider(),
-                  ],
+          // 经典 / 玻璃两种材质都经 AppCardSurface：经典分支与原来的
+          // Container + Material 写法逐像素一致。
+          AppCardSurface(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                for (var i = 0; i < children.length; i++) ...[
+                  children[i],
+                  if (i < children.length - 1) const SettingsCardGroupDivider(),
                 ],
-              ),
+              ],
             ),
           ),
           if (footer != null) ...[

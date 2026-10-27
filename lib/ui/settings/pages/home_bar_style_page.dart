@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_surface/models/app_surface_enums.dart';
 import '../controllers/home_bar_style_editor_controller.dart';
 import '../sections/diary_card_style/diary_card_style_samples.dart';
 import '../sections/home_bar_style/home_bar_style_behavior_tab.dart';
@@ -91,6 +92,7 @@ class _HomeBarStylePageState extends State<HomeBarStylePage> {
       ],
       toolbarBuilder: (_) =>
           HomeBarStylePreviewToolbar(controller: _controller),
+      previewArea: AppBackgroundArea.diaries,
       previewBuilder:
           ({required bool showToolbar, required double bottomPadding}) =>
               HomeBarStylePreview(

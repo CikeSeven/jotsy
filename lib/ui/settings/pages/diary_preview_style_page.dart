@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_surface/models/app_surface_enums.dart';
 import '../controllers/diary_preview_style_editor_controller.dart';
 import '../sections/diary_preview_style/diary_preview_style_body_tab.dart';
 import '../sections/diary_preview_style/diary_preview_style_cover_tab.dart';
@@ -113,6 +114,7 @@ class _DiaryPreviewStylePageState extends State<DiaryPreviewStylePage> {
         page: _samplePage,
         count: samples.length,
       ),
+      previewArea: AppBackgroundArea.preview,
       previewBuilder:
           ({required bool showToolbar, required double bottomPadding}) =>
               DiaryPreviewStylePreview(

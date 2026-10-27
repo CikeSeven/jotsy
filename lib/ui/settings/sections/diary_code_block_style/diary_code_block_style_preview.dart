@@ -4,12 +4,13 @@ import '../../../diaries/controllers/diary_editor_controller.dart' as editor;
 import '../../../diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../app/theme/expressive_surfaces.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
 import '../../../diaries/providers/diary_typography_provider.dart';
 import '../../controllers/diary_code_block_style_editor_controller.dart';
+import '../../widgets/style_editor/style_preview_background.dart';
 
 /// 代码块样式页的实时预览：一段带行内代码的正文、一个明确指定 Python 的
 /// 代码块与一个未指定语言（走自动识别）的 JSON 代码块。
@@ -83,33 +84,37 @@ class _DiaryCodeBlockStylePreviewState
           child: ClipRect(
             child: Theme(
               data: previewTheme,
-              child: Builder(
-                builder: (BuildContext context) {
-                  final scheme = Theme.of(context).colorScheme;
-                  // Material 提供预览明暗下的 DefaultTextStyle：正文基础
-                  // 样式取自它，否则正文颜色会停在应用主题的明暗。
-                  return Material(
-                    color: ExpressiveSurfaces.pageBackground(scheme),
-                    child: SingleChildScrollView(
-                      primary: false,
-                      padding: EdgeInsets.fromLTRB(
-                        20,
-                        16,
-                        20,
-                        20 + widget.bottomPadding,
-                      ),
-                      child: IgnorePointer(
-                        child: DiaryEditor(
-                          controller: editorController,
-                          appearance: appearance,
-                          codeBlockStyle: controller.style,
-                          shrinkWrap: true,
-                          textSelection: false,
+              // 代码块所在的是编辑页：编辑区域的背景铺在正文下面（在预览
+              // 主题之内，明暗切换时遮罩随之切换），代码块自己的底色不变，
+              // 只是周围露出背景；编辑区域没有背景时与原来相同。
+              child: StylePreviewBackground(
+                child: Builder(
+                  builder: (BuildContext context) {
+                    // Material 提供预览明暗下的 DefaultTextStyle：正文基础
+                    // 样式取自它，否则正文颜色会停在应用主题的明暗。
+                    return Material(
+                      color: AppPageBackdrop.pageColorOf(context),
+                      child: SingleChildScrollView(
+                        primary: false,
+                        padding: EdgeInsets.fromLTRB(
+                          20,
+                          16,
+                          20,
+                          20 + widget.bottomPadding,
+                        ),
+                        child: IgnorePointer(
+                          child: DiaryEditor(
+                            controller: editorController,
+                            appearance: appearance,
+                            codeBlockStyle: controller.style,
+                            shrinkWrap: true,
+                            textSelection: false,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),

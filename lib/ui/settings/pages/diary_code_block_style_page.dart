@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_surface/models/app_surface_enums.dart';
 import '../controllers/diary_code_block_style_editor_controller.dart';
 import '../sections/diary_code_block_style/diary_code_block_style_display_tab.dart';
 import '../sections/diary_code_block_style/diary_code_block_style_font_tab.dart';
@@ -78,6 +79,7 @@ class _DiaryCodeBlockStylePageState extends State<DiaryCodeBlockStylePage> {
       actionsBuilder: (_) => <Widget>[
         StylePreviewBrightnessButton(controller: _controller, inAppBar: true),
       ],
+      previewArea: AppBackgroundArea.editor,
       previewBuilder:
           ({required bool showToolbar, required double bottomPadding}) =>
               DiaryCodeBlockStylePreview(

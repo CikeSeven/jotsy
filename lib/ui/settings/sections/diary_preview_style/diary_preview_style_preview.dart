@@ -16,6 +16,7 @@ import '../../../diaries/widgets/diary_preview/diary_preview_neighbors.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_surface.dart';
 import '../../controllers/diary_preview_style_editor_controller.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
+import '../../widgets/style_editor/style_preview_background.dart';
 
 /// 设置页的实时预览：用正式页面同一套组件（[DiaryPreviewSurface] +
 /// [DiaryPreviewContent]）渲染几篇内存示例，放进与正式页面相同的翻页器
@@ -64,27 +65,33 @@ class DiaryPreviewStylePreview extends ConsumerWidget {
           child: ClipRect(
             child: Theme(
               data: previewTheme,
-              child: DiaryPagerView(
-                itemCount: samples.length,
-                initialPage: page.value.clamp(0, samples.length - 1),
-                navigation: controller.style.navigation,
-                behavior: controller.behavior,
-                onPageChanged: (int index) => page.value = index,
-                itemBuilder: (BuildContext context, DiaryPagerPosition at) {
-                  return _SamplePage(
-                    key: ValueKey<String>(samples[at.index].diary.diaryId),
-                    controller: controller,
-                    detail: samples[at.index],
-                    appSeed: seed,
-                    bottomPadding: bottomPadding,
-                    paging: DiaryPreviewPaging.of(
-                      context.l10n,
-                      at,
-                      hasMore: false,
-                      titleAt: (int index) => samples[index].diary.title,
-                    ),
-                  );
-                },
+              // 与正式预览页一样，预览区域的背景包在翻页器外面（在预览主题
+              // 之内，明暗切换时遮罩随之切换）：纸张跟随主题时各篇让位给
+              // 背景、翻页器不铺“桌面”，选了纸色时仍是纸色（见
+              // diaryPreviewPageColors 与 DiaryPagerView）。
+              child: StylePreviewBackground(
+                child: DiaryPagerView(
+                  itemCount: samples.length,
+                  initialPage: page.value.clamp(0, samples.length - 1),
+                  navigation: controller.style.navigation,
+                  behavior: controller.behavior,
+                  onPageChanged: (int index) => page.value = index,
+                  itemBuilder: (BuildContext context, DiaryPagerPosition at) {
+                    return _SamplePage(
+                      key: ValueKey<String>(samples[at.index].diary.diaryId),
+                      controller: controller,
+                      detail: samples[at.index],
+                      appSeed: seed,
+                      bottomPadding: bottomPadding,
+                      paging: DiaryPreviewPaging.of(
+                        context.l10n,
+                        at,
+                        hasMore: false,
+                        titleAt: (int index) => samples[index].diary.title,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),

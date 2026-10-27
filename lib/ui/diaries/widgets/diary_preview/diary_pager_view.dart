@@ -242,8 +242,8 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
     DiaryPreviewPageTransition transition,
   ) {
     // 预览区域画了背景时不铺这层“桌面”：它不透明，会把整页背景盖住；
-    // 层叠与淡入时露出的改为背景本身。设置页的实时预览处在设置区域之下，
-    // 照旧铺桌面。
+    // 层叠与淡入时露出的改为背景本身。设置页“预览页样式”的实时预览同样
+    // 包着预览区域的背景，按同一规则处理；处在别的区域之下时照旧铺桌面。
     final backdrop = AppPageBackdrop.maybeOf(context);
     final onPreviewBackground =
         backdrop != null &&

@@ -5,10 +5,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../app/theme/app_radii.dart';
 import '../../../../app/theme/expressive_motion.dart';
-import '../../../../app/theme/expressive_surfaces.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/providers/diary_card_style_provider.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
 import '../../../diaries/sections/diaries_list_section.dart';
@@ -21,6 +21,7 @@ import '../../../home/widgets/home_bar/home_floating_bar.dart';
 import '../../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../../widgets/bottom_nav.dart';
 import '../../controllers/home_bar_style_editor_controller.dart';
+import '../../widgets/style_editor/style_preview_background.dart';
 import 'home_bar_style_preview_toolbar.dart';
 
 /// 导航栏样式的实时预览：一个缩小的首页。
@@ -223,44 +224,71 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
           child: HomeChromeScope(
             style: resolved,
             behavior: behavior,
-            child: Material(
-              color: ExpressiveSurfaces.pageBackground(scheme),
-              child: Stack(
-                children: <Widget>[
-                  Positioned.fill(
-                    child: _SampleList(
-                      samples: widget.samples,
-                      tagLimit: controller.settingsService.diaryCardTagLimit,
-                      topPadding: _topBarHeight + 10,
-                      bottomPadding: barExtent + 12,
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: _PreviewTopBar(title: HomeTab.diaries.label(l10n)),
-                  ),
-                  // 栏上方的新建按钮：实色与玻璃都有（与首页一致），位置随
-                  // 栏高变化；放在栏右侧时由悬浮栏自己画。
-                  if (!inline)
-                    Positioned(
-                      right: _fabEnd,
-                      bottom: barExtent + _fabGap,
-                      child: FloatingActionButton.extended(
-                        // 不参与 Hero：首页的新建按钮就在下层路由里。
-                        heroTag: null,
-                        onPressed: () {},
-                        icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
-                        label: Text(l10n.commonNew),
-                      ),
-                    ),
-                  bottomBar,
-                ],
+            // 画框里就是首页的日记 Tab：日记页区域的背景铺满画框（在预览
+            // 主题之内，明暗切换时遮罩随之切换），页面底与真实首页一样改读
+            // AppPageBackdrop——画了背景时透明，玻璃栏与玻璃顶栏模糊到背景；
+            // 没有背景时即预览主题的页面底色，与原来相同。
+            child: StylePreviewBackground(
+              child: Builder(
+                builder: (BuildContext context) => _buildPage(
+                  context,
+                  barExtent: barExtent,
+                  inline: inline,
+                  bottomBar: bottomBar,
+                ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// 画框里的“首页”：示例列表、顶栏、新建按钮与底栏。要在
+  /// [StylePreviewBackground] 之下的 [context] 里构建，才能读到日记页区域的
+  /// 页面底色。
+  Widget _buildPage(
+    BuildContext context, {
+    required double barExtent,
+    required bool inline,
+    required Widget bottomBar,
+  }) {
+    final controller = widget.controller;
+    final l10n = context.l10n;
+    return Material(
+      color: AppPageBackdrop.pageColorOf(context),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: _SampleList(
+              samples: widget.samples,
+              tagLimit: controller.settingsService.diaryCardTagLimit,
+              topPadding: _topBarHeight + 10,
+              bottomPadding: barExtent + 12,
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: _PreviewTopBar(title: HomeTab.diaries.label(l10n)),
+          ),
+          // 栏上方的新建按钮：实色与玻璃都有（与首页一致），位置随
+          // 栏高变化；放在栏右侧时由悬浮栏自己画。
+          if (!inline)
+            Positioned(
+              right: _fabEnd,
+              bottom: barExtent + _fabGap,
+              child: FloatingActionButton.extended(
+                // 不参与 Hero：首页的新建按钮就在下层路由里。
+                heroTag: null,
+                onPressed: () {},
+                icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
+                label: Text(l10n.commonNew),
+              ),
+            ),
+          bottomBar,
+        ],
       ),
     );
   }
@@ -277,7 +305,9 @@ class _PreviewTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return HomeTopBarSurface(
-      solidColor: theme.colorScheme.surface,
+      // 与真实日记页顶栏一样取区域的实色栏底色：无背景为 surface，图片
+      // 背景时仍不透明，纯色背景时与背景同色。
+      solidColor: AppPageBackdrop.solidBarColorOf(context),
       child: SizedBox(
         height: _HomeBarStylePreviewState._topBarHeight,
         child: Padding(

@@ -10,6 +10,7 @@ import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/snap_panel.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import 'style_preview_background.dart';
 
 /// 样式编辑页（卡片样式、预览页样式、代码块样式）共用的页面外壳。
 ///
@@ -32,6 +33,7 @@ class StyleEditorScaffold extends StatefulWidget {
     required this.tabViews,
     this.toolbarBuilder,
     this.actionsBuilder,
+    this.previewArea,
     required this.previewBuilder,
   });
 
@@ -53,6 +55,13 @@ class StyleEditorScaffold extends StatefulWidget {
   /// 按钮时放这里，不为它单独占一行、挤占预览。随 [listenable] 重建，理由
   /// 同 [toolbarBuilder]。
   final List<Widget> Function(BuildContext context)? actionsBuilder;
+
+  /// 预览所模拟的界面区域（卡片样式 → 日记页、预览页样式 → 预览页……）。
+  /// 给出时预览里的“页面”画在该区域已保存的背景上（经预览自己放的
+  /// [StylePreviewBackground]，见 [StylePreviewArea] 为什么不由外壳直接画），
+  /// 透明度与玻璃效果在预览里看得出来；为 null 或该区域没有背景时预览与
+  /// 原来逐像素一致。
+  final AppBackgroundArea? previewArea;
 
   /// 实时预览：[showToolbar] 为宽屏时自带工具条；[bottomPadding] 为窄屏时
   /// 被面板圆角压住的高度，预览末尾多留这段空白。
@@ -157,15 +166,19 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
     };
   }
 
-  /// 实时预览垫一层原来的页面底色：设置区域设了背景时页面底透明，预览要
-  /// 看的是卡片 / 预览页本身的样子，不能透出设置页的背景（无背景时与原来
-  /// 的 Scaffold 底色相同，画面不变）。
+  /// 实时预览垫一层原来的页面底色：设置区域设了背景时页面底透明，预览不能
+  /// 透出设置页的背景（无背景时与原来的 Scaffold 底色相同，画面不变）。
+  /// 预览模拟的区域（[StyleEditorScaffold.previewArea]）的背景由预览在自己
+  /// 的“页面”里画在这层之上；宽屏时预览自带的工具条仍垫在这层底色上。
   Widget _preview({required bool showToolbar, required double bottomPadding}) {
     return ColoredBox(
       color: ExpressiveSurfaces.pageBackground(Theme.of(context).colorScheme),
-      child: widget.previewBuilder(
-        showToolbar: showToolbar,
-        bottomPadding: bottomPadding,
+      child: StylePreviewArea(
+        area: widget.previewArea,
+        child: widget.previewBuilder(
+          showToolbar: showToolbar,
+          bottomPadding: bottomPadding,
+        ),
       ),
     );
   }

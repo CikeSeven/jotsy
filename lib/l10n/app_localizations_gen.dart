@@ -3116,6 +3116,18 @@ abstract class AppLocalizations {
   /// **'Files could not be imported. Please try again.'**
   String get diaryMediaImportFailed;
 
+  /// Shown when the system picker or file provider denies read access to selected diary media.
+  ///
+  /// In en, this message translates to:
+  /// **'Read access to the selected files was denied. Select them again and allow access.'**
+  String get diaryMediaImportPermissionDenied;
+
+  /// Shown when Android cannot launch either the system photo picker or the document picker.
+  ///
+  /// In en, this message translates to:
+  /// **'The system picker could not be opened. Make sure a gallery or file manager is enabled on your device.'**
+  String get diaryMediaPickerUnavailable;
+
   /// Shown when local diary media import is requested on an unsupported platform.
   ///
   /// In en, this message translates to:

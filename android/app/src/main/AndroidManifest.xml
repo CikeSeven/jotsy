@@ -85,19 +85,6 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <!-- 查询图片的默认相册，并复用其视频处理入口，避免回落到文件管理器。 -->
-        <intent>
-            <action android:name="android.intent.action.PICK" />
-            <data android:mimeType="image/*" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.PICK" />
-            <data android:mimeType="video/*" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.APP_GALLERY" />
-        </intent>
         <!-- 分享面板只列出已安装的应用（Android 11+ 需声明包可见性）。
              包名须与 lib/ui/diaries/models/diary_share_target.dart 一致。 -->
         <package android:name="com.sina.weibo" />

@@ -1670,6 +1670,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryMediaImportFailed => '文件导入失败，请重试';
 
   @override
+  String get diaryMediaImportPermissionDenied => '未获得所选文件的读取权限，请重新选择并允许访问';
+
+  @override
+  String get diaryMediaPickerUnavailable => '无法打开系统选择器，请确认设备已启用相册或文件管理器';
+
+  @override
   String get diaryMediaImportUnsupported => '当前平台暂不支持文件导入';
 
   @override

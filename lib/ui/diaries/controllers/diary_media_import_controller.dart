@@ -3,10 +3,12 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'diary_editor_controller.dart';
 import 'diary_editor_insert.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/diary_video_gallery_service.dart';
 import 'package:node_diary/ui/diaries/models/image_insertion.dart';
@@ -17,7 +19,15 @@ typedef DiaryMediaPicker = Future<List<PlatformFile>?> Function(DiaryMediaKind);
 typedef DiaryMediaImporter =
     Future<DiaryFileAttachment> Function(PlatformFile, DiaryMediaKind);
 
-enum DiaryMediaImportOutcome { inserted, cancelled, failed, busy, unsupported }
+enum DiaryMediaImportOutcome {
+  inserted,
+  cancelled,
+  failed,
+  permissionDenied,
+  pickerUnavailable,
+  busy,
+  unsupported,
+}
 
 /// 编排系统选文件 → 私有目录复制 → 正文插入；不构建 UI，不保存数据库。
 /// 页面退出或正文控制器更换会使当前操作失效，并清理尚未提交的文件。
@@ -154,9 +164,20 @@ class DiaryMediaImportController extends ChangeNotifier {
         );
       }
       debugPrint('Diary media import failed: $error\n$stackTrace');
-      return current
-          ? DiaryMediaImportOutcome.failed
-          : DiaryMediaImportOutcome.cancelled;
+      if (!current) return DiaryMediaImportOutcome.cancelled;
+      if (error is PlatformException) {
+        if (error.code == 'permission_denied') {
+          return DiaryMediaImportOutcome.permissionDenied;
+        }
+        if (error.code == 'gallery_unavailable') {
+          return DiaryMediaImportOutcome.pickerUnavailable;
+        }
+      }
+      if (error is FileSystemException &&
+          const {1, 13}.contains(error.osError?.errorCode)) {
+        return DiaryMediaImportOutcome.permissionDenied;
+      }
+      return DiaryMediaImportOutcome.failed;
     } finally {
       await subscription.cancel();
       for (final file in imported) {
@@ -250,11 +271,8 @@ class DiaryMediaImportController extends ChangeNotifier {
   }
 
   static Future<List<PlatformFile>?> _pickFiles(DiaryMediaKind kind) async {
-    // file_picker 的 Android 图片走相册，但视频走 SAF 文件管理器。
-    // 视频改用同类相册入口；其他平台继续复用插件已有的系统媒体选择行为。
-    if (!kIsWeb &&
-        defaultTargetPlatform == TargetPlatform.android &&
-        kind == DiaryMediaKind.video) {
+    // Android 原生入口使用所选文件的临时授权，不依赖整个视频库的读取权限。
+    if (AppPlatform.isAndroid && kind == DiaryMediaKind.video) {
       return DiaryVideoGalleryService.pickAndroidVideos();
     }
     final result = await FilePicker.platform.pickFiles(

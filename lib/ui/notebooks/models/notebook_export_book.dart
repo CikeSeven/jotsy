@@ -58,6 +58,27 @@ DiaryExportBook notebookExportBook(
   );
 }
 
+/// 有子本的日记本：在本子自己的书（[book]）之后，每本子本按树序各成一章
+/// （[parts]：章名为从这本往下的路径，如“日本 · 东京”；日记按子本自己的
+/// 成书先后）。成书只有一级章节，子本内部的章节不再分层。同一篇日记同时在
+/// 父本与子本里时只在第一次出现的地方收录（版式解析时去重）。
+DiaryExportBook withSubNotebookChapters(
+  DiaryExportBook book,
+  List<({String title, List<String> diaryIds})> parts,
+) {
+  if (parts.isEmpty) return book;
+  return DiaryExportBook(
+    title: book.title,
+    description: book.description,
+    coverPath: book.coverPath,
+    chapters: <DiaryExportBookChapter>[
+      ...book.chapters,
+      for (final part in parts)
+        DiaryExportBookChapter(title: part.title, diaryIds: part.diaryIds),
+    ],
+  );
+}
+
 /// 智能日记本：没有章节，按发表时间从旧到新（[orderedIds] 由查询排好）。
 DiaryExportBook smartNotebookExportBook(
   NotebookView notebook,

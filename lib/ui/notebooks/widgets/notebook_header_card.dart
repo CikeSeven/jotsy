@@ -171,7 +171,9 @@ class NotebookHeaderCard extends ConsumerWidget {
                       ),
                     if (isPrivate)
                       _StateCapsule(
-                        icon: notebook.visibility == NotebookVisibility.locked
+                        icon:
+                            notebook.effectiveVisibility ==
+                                NotebookVisibility.locked
                             ? FontAwesomeIcons.lock
                             : FontAwesomeIcons.eyeSlash,
                         label: l10n.notebookHeaderPrivateBadge,

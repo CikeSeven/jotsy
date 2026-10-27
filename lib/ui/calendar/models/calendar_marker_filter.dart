@@ -13,7 +13,7 @@ List<NotebookView> calendarFilterNotebooks(Iterable<NotebookView> notebooks) {
       .where(
         (NotebookView notebook) =>
             notebook.isManual &&
-            notebook.visibility == NotebookVisibility.normal,
+            notebook.effectiveVisibility == NotebookVisibility.normal,
       )
       .toList(growable: false);
   return List<NotebookView>.unmodifiable(<NotebookView>[
@@ -36,20 +36,27 @@ List<NotebookView> calendarFilterNotebooks(Iterable<NotebookView> notebooks) {
 /// 胶囊的内容（与心情、标签一视同仁，即便本子是用户自己放的）。
 ///
 /// 只能按普通日记本筛选：智能日记本的规则要对整篇日记求值，打点上没有这些
-/// 字段，在 UI 层重算一遍规则也会与数据库口径分叉，所以不提供。
+/// 字段，在 UI 层重算一遍规则也会与数据库口径分叉，所以不提供。选了有子本的
+/// 日记本时，与首页列表一样连同子本里的日记（[withSubNotebooks]；智能子本
+/// 同理不算）。
 @immutable
 class CalendarMarkerFilter {
   const CalendarMarkerFilter({
     this.tagIds = const <int>{},
     this.moods = const <String>{},
     this.notebookIds = const <String>{},
+    this.subNotebookIds = const <String>{},
   });
 
   final Set<int> tagIds;
   final Set<String> moods;
 
-  /// 普通日记本的业务 id。
+  /// 所选普通日记本的业务 id（筛选面板的选中态）。
   final Set<String> notebookIds;
+
+  /// 所选日记本一并汇总的普通子本（只参与匹配，不是选中态），由
+  /// [withSubNotebooks] 按书架的嵌套现算。
+  final Set<String> subNotebookIds;
 
   bool get isActive =>
       tagIds.isNotEmpty || moods.isNotEmpty || notebookIds.isNotEmpty;
@@ -62,7 +69,9 @@ class CalendarMarkerFilter {
       return false;
     }
     if (notebookIds.isNotEmpty &&
-        !marker.notebookIds.any(notebookIds.contains)) {
+        !marker.notebookIds.any(
+          (id) => notebookIds.contains(id) || subNotebookIds.contains(id),
+        )) {
       return false;
     }
     return moods.isEmpty || moods.contains(marker.moodEmoji);
@@ -110,14 +119,28 @@ class CalendarMarkerFilter {
     return _copyWith(notebookIds: notebookIds.where(eligible.contains).toSet());
   }
 
+  /// 带上所选日记本汇总的子本：[subNotebooksOf] 给出某本连同汇总的普通子本
+  /// （首页列表同一口径：比它更私密的不算）。没选日记本时原样返回。
+  CalendarMarkerFilter withSubNotebooks(
+    Iterable<String> Function(String notebookId) subNotebooksOf,
+  ) {
+    if (notebookIds.isEmpty) return this;
+    final subs = <String>{for (final id in notebookIds) ...subNotebooksOf(id)}
+      ..removeAll(notebookIds);
+    if (setEquals(subs, subNotebookIds)) return this;
+    return _copyWith(subNotebookIds: Set<String>.unmodifiable(subs));
+  }
+
   CalendarMarkerFilter _copyWith({
     Set<int>? tagIds,
     Set<String>? moods,
     Set<String>? notebookIds,
+    Set<String>? subNotebookIds,
   }) => CalendarMarkerFilter(
     tagIds: tagIds ?? this.tagIds,
     moods: moods ?? this.moods,
     notebookIds: notebookIds ?? this.notebookIds,
+    subNotebookIds: subNotebookIds ?? this.subNotebookIds,
   );
 
   static Set<T> _toggled<T>(Set<T> values, T value) {
@@ -133,12 +156,14 @@ class CalendarMarkerFilter {
       other is CalendarMarkerFilter &&
       setEquals(other.tagIds, tagIds) &&
       setEquals(other.moods, moods) &&
-      setEquals(other.notebookIds, notebookIds);
+      setEquals(other.notebookIds, notebookIds) &&
+      setEquals(other.subNotebookIds, subNotebookIds);
 
   @override
   int get hashCode => Object.hash(
     Object.hashAllUnordered(tagIds),
     Object.hashAllUnordered(moods),
     Object.hashAllUnordered(notebookIds),
+    Object.hashAllUnordered(subNotebookIds),
   );
 }

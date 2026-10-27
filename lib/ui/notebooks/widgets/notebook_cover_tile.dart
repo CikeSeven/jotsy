@@ -86,7 +86,7 @@ class NotebookCoverTile extends StatelessWidget {
     coverPath: notebook.coverPath,
     count: count,
     kind: notebook.kind,
-    visibility: notebook.visibility,
+    visibility: notebook.effectiveVisibility,
     selected: selected,
     closed: notebook.isClosed,
     onTap: onTap,

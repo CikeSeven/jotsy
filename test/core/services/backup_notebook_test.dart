@@ -531,6 +531,37 @@ void main() {
     expect(await File(coverOf(imported)!).readAsBytes(), [5, 5]);
   });
 
+  test('nesting survives a full backup and a merge, and a package whose '
+      'parent stays behind lands at the top level', () async {
+    final source = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(source.close);
+    await switchDocuments('source_documents');
+    final a = await diary(source, 'a');
+    final travel = await source.createNotebook(name: 'travel');
+    final japan = await source.createNotebook(name: 'japan', parentId: travel);
+    await source.addDiariesToNotebook(japan, [a]);
+    final zip = await DataArchiveService.exportToZip(
+      database: source,
+      settingsService: fixture.settings,
+    );
+    final package = await DataArchiveService.exportDiariesToZip(
+      database: source,
+      diaryIds: [a],
+    );
+
+    await switchDocuments('target_documents');
+    await importZip(package, BackupImportMode.merge);
+    // 包里只有 japan，上级 travel 不在本机：落到顶层。
+    expect((await db.getNotebook(japan))!.parentId, isNull);
+
+    await importZip(zip, BackupImportMode.mergeOverwrite);
+    expect((await db.getNotebook(japan))!.parentId, travel);
+
+    await importZip(zip, BackupImportMode.replaceAll);
+    expect((await db.getNotebook(japan))!.parentId, travel);
+    expect((await db.getNotebook(travel))!.parentId, isNull);
+  });
+
   test('media sweep keeps notebook covers', () async {
     final cover = await media('diary_covers/notebook.jpg', [1]);
     final orphan = await media('diary_covers/orphan.jpg', [2]);

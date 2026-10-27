@@ -5,6 +5,8 @@ import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_surface.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_live_voiceprint.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_controls.dart';
@@ -124,6 +126,57 @@ class _DiaryRecordingPanelState extends State<DiaryRecordingPanel>
     final l10n = context.l10n;
     final recording = _settled == DiaryRecordingPhase.recording;
 
+    final body = Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _RecordingHeader(
+            name: widget.recordingName ?? l10n.recordingDefaultTitle,
+            onRename: () => _rename(context),
+            onClose: widget.onClose,
+          ),
+          const SizedBox(height: 4),
+          DiaryRecordingStatus(
+            settled: _settled,
+            failure: widget.failure,
+            breath: _breath,
+          ),
+          DiaryRecordingTimer(
+            text: formatRecordingDuration(widget.elapsed),
+            settled: _settled,
+            breath: _breath,
+          ),
+          const SizedBox(height: 8),
+          LiveVoiceprintVisualizer(
+            samples: widget.waveform,
+            active: recording,
+            height: 48,
+          ),
+          const SizedBox(height: 20),
+          DiaryRecordingControls(
+            settled: _settled,
+            phase: widget.phase,
+            onStart: widget.onStart,
+            onPause: widget.onPause,
+            onResume: widget.onResume,
+            onFinish: widget.onFinish,
+          ),
+        ],
+      ),
+    );
+    // 录音面板挂在悬浮工具栏下方、随工具栏一起入场淡出，材质跟随工具栏：
+    // 一张玻璃一张实色既不协调，实色块在 GlassReveal 下也不会淡入（会硬切）。
+    // 玻璃叠在正文之上，总是模糊；投影只画在外侧（软阴影会从半透明底里透出）。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.toolbar)) {
+      return AppGlassSurface(
+        component: AppGlassComponent.toolbar,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        blur: AppGlassBlur.always,
+        shadow: true,
+        child: body,
+      );
+    }
     // 浮动面板按设计规范使用单层软阴影；阴影画在裁剪之外的 DecoratedBox 上。
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -134,45 +187,7 @@ class _DiaryRecordingPanelState extends State<DiaryRecordingPanel>
         color: ExpressiveSurfaces.cardColor(colors),
         shape: ExpressiveSurfaces.cardShape(colors),
         clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _RecordingHeader(
-                name: widget.recordingName ?? l10n.recordingDefaultTitle,
-                onRename: () => _rename(context),
-                onClose: widget.onClose,
-              ),
-              const SizedBox(height: 4),
-              DiaryRecordingStatus(
-                settled: _settled,
-                failure: widget.failure,
-                breath: _breath,
-              ),
-              DiaryRecordingTimer(
-                text: formatRecordingDuration(widget.elapsed),
-                settled: _settled,
-                breath: _breath,
-              ),
-              const SizedBox(height: 8),
-              LiveVoiceprintVisualizer(
-                samples: widget.waveform,
-                active: recording,
-                height: 48,
-              ),
-              const SizedBox(height: 20),
-              DiaryRecordingControls(
-                settled: _settled,
-                phase: widget.phase,
-                onStart: widget.onStart,
-                onPause: widget.onPause,
-                onResume: widget.onResume,
-                onFinish: widget.onFinish,
-              ),
-            ],
-          ),
-        ),
+        child: body,
       ),
     );
   }

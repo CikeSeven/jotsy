@@ -46,6 +46,7 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor_drop_target.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
@@ -72,8 +73,10 @@ import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/expressive_entrance.dart';
+import '../../widgets/glass/glass_reveal.dart';
 import 'package:node_diary/ui/widgets/route_entrance_waiter.dart';
 
 part '../controllers/edit_diary_controller.dart';
@@ -611,8 +614,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   /// 工具栏叠在收起栏上方时，元数据面板一被拖起或点开就会从下方盖上来：按
   /// 展开进度淡出并停止接收点按，越过展开阈值后再整个卸载（见 build）。只有
   /// 这一层随进度重建，工具栏本体作为缓存的 child 传入。
+  ///
+  /// [glass] 为 true（工具栏是玻璃）时用 [GlassReveal] 代替 Opacity：玻璃放进
+  /// 透明度层后背景模糊采不到正文，淡出途中会先变成一块没有模糊的底。整列
+  /// （工具栏卡片、录音面板）都是玻璃表面，由它们按进度一起淡出。
   Widget _fadeWhileMetaPanelRises({
     required bool stacked,
+    required bool glass,
     required Widget child,
   }) {
     // 面板长高约 60dp（进度 0.15）时已越过整条工具栏，淡出在此之前完成。
@@ -626,7 +634,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             : 1.0;
         return IgnorePointer(
           ignoring: opacity < 1,
-          child: Opacity(opacity: opacity, child: child),
+          child: glass
+              ? GlassReveal(progress: opacity, child: child!)
+              : Opacity(opacity: opacity, child: child),
         );
       },
     );
@@ -835,6 +845,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
     _floatingToolbarShown = showFloatingToolbar;
     _floatingToolbarStacked = toolbarStacked;
+    // 悬浮工具栏、录音面板与元数据面板同属“工具栏”材质。玻璃时它们外面的
+    // 入场与淡出都改用 GlassReveal（见 ExpressiveEntrance.glass），不再套
+    // Opacity——透明度层里的玻璃采不到下面的正文。只影响外观，遮挡高度与
+    // 正文末尾占位不随材质变化。
+    final toolbarGlass = AppGlass.of(
+      context,
+    ).isGlass(AppGlassComponent.toolbar);
     // 面板进度由 ValueNotifier 驱动，占位随之局部刷新，不触发整页重建。
     double resolveEditorBottomSpacer(double panelProgress) =>
         _editorBottomSpacer(
@@ -1063,6 +1080,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                         child: _metaPanelColumn(
                           // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
                           (bool wide) => ExpressiveEntrance(
+                            glass: toolbarGlass,
                             child: _buildMetaPanel(fillWidth: wide),
                           ),
                         ),
@@ -1093,6 +1111,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                             return CenteredContent(
                               maxWidth: AppContentWidth.editor,
                               child: ExpressiveEntrance(
+                                glass: toolbarGlass,
                                 child: SafeArea(
                                   top: false,
                                   minimum: const EdgeInsets.only(bottom: 8),
@@ -1107,6 +1126,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                     curve: ExpressiveMotion.effects,
                                     child: _fadeWhileMetaPanelRises(
                                       stacked: toolbarStacked,
+                                      glass: toolbarGlass,
                                       // 录音面板插入/移除时整列高度平滑变化，工具栏随之
                                       // 上移，不再瞬间跳到 300dp 之上。
                                       child: AnimatedSize(
@@ -1143,6 +1163,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                             if (_recordingPanelOpen) ...[
                                               const SizedBox(height: 8),
                                               ExpressiveEntrance(
+                                                glass: toolbarGlass,
                                                 child: _buildRecordingPanel(),
                                               ),
                                             ],

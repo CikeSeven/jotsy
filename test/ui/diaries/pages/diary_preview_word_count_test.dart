@@ -7,7 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/diaries/providers/diary_preview_style_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_word_count_sheet.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -48,7 +50,18 @@ Future<void> _pump(WidgetTester tester, DiaryWithTags detail) async {
   addTearDown(database.close);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [appDatabaseProvider.overrideWithValue(database)],
+      overrides: [
+        appDatabaseProvider.overrideWithValue(database),
+        // 字数与阅读时长默认关闭，这里打开它们来验证显示与详情面板。
+        diaryPreviewStyleProvider.overrideWithValue(
+          const DiaryPreviewStyle(
+            meta: DiaryPreviewMetaStyle(
+              showWordCount: true,
+              showReadingTime: true,
+            ),
+          ),
+        ),
+      ],
       child: MaterialApp(
         theme: expressiveTestTheme(Brightness.light),
         locale: const Locale('zh'),

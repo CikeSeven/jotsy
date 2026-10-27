@@ -167,6 +167,7 @@ void main() {
           dateFormat: DiaryCardDateFormat.full,
           dateSource: DiaryCardDateSource.updated,
           tagStyle: DiaryCardTagStyle.plain,
+          showWordCount: true,
           showReadingTime: false,
         ),
       ),
@@ -340,6 +341,40 @@ void main() {
     expect(find.byTooltip('分享'), findsOneWidget);
     expect(find.byType(DiaryPreviewProgressLine), findsOneWidget);
     expect(find.byType(DiaryPreviewBackToTop), findsOneWidget);
+  });
+
+  testWidgets('share sits before edit, and edit stays next to more', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      style: const DiaryPreviewStyle(
+        page: DiaryPreviewPageStyle(showShareButton: true),
+      ),
+    );
+    final share = tester.getCenter(find.byTooltip('分享')).dx;
+    final edit = tester.getCenter(find.byTooltip('编辑')).dx;
+    final more = tester.getCenter(find.byTooltip('更多')).dx;
+    expect(share, lessThan(edit));
+    expect(edit, lessThan(more));
+  });
+
+  testWidgets('the default style hides the word count and reading time', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(find.textContaining('12 字'), findsNothing);
+    expect(find.textContaining('分钟'), findsNothing);
+
+    // 只打开字数：阅读时长仍是关的。
+    await _pump(
+      tester,
+      style: const DiaryPreviewStyle(
+        meta: DiaryPreviewMetaStyle(showWordCount: true),
+      ),
+    );
+    expect(find.text('12 字'), findsOneWidget);
+    expect(find.textContaining('分钟'), findsNothing);
   });
 
   testWidgets('reading behavior locks to-dos and text selection', (

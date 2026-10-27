@@ -89,7 +89,7 @@ abstract final class DiaryPreviewPresets {
     ),
   );
 
-  /// 极简：不要头图与顶栏标题，只留日期、字数与圆点标签。
+  /// 极简：不要头图与顶栏标题，只留日期与圆点标签。
   static const _minimal = DiaryPreviewStyle(
     page: DiaryPreviewPageStyle(
       topBar: DiaryPreviewTopBarMode.pinned,

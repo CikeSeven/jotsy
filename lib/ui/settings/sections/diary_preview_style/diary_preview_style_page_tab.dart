@@ -250,14 +250,14 @@ class DiaryPreviewStylePageTab extends StatelessWidget {
                   commit(page.copyWith(showTypographyButton: v)),
             ),
             SettingsSwitchTile(
-              title: l10n.diaryPreviewStyleShowEditButton,
-              value: page.showEditButton,
-              onChanged: (bool v) => commit(page.copyWith(showEditButton: v)),
-            ),
-            SettingsSwitchTile(
               title: l10n.diaryPreviewStyleShowShareButton,
               value: page.showShareButton,
               onChanged: (bool v) => commit(page.copyWith(showShareButton: v)),
+            ),
+            SettingsSwitchTile(
+              title: l10n.diaryPreviewStyleShowEditButton,
+              value: page.showEditButton,
+              onChanged: (bool v) => commit(page.copyWith(showEditButton: v)),
             ),
           ],
         ),

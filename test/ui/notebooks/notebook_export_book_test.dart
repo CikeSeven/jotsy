@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_book.dart';
 import 'package:node_diary/ui/notebooks/controllers/notebook_book_export_flow.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_tree.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -118,6 +119,49 @@ void main() {
       's',
       'd',
       'c',
+    ]);
+  });
+
+  test('a parent notebook adds each sub-notebook as a chapter, once per '
+      'diary, and leaves out stricter children', () async {
+    final day = DateTime(2025, 3, 1);
+    final travel = await db.createNotebook(name: '旅行');
+    final japan = await db.createNotebook(name: '日本', parentId: travel);
+    final tokyo = await db.createNotebook(name: '东京', parentId: japan);
+    final secret = await db.createNotebook(
+      name: '秘密',
+      parentId: travel,
+      visibility: NotebookVisibility.locked,
+    );
+    final titles = <String, String>{
+      await diary('出发', createdAt: day, notebookIds: <String>[travel]): '出发',
+      await diary(
+        '京都',
+        createdAt: day.add(const Duration(days: 1)),
+        notebookIds: <String>[japan],
+      ): '京都',
+      await diary(
+        '浅草',
+        createdAt: day.add(const Duration(days: 2)),
+        notebookIds: <String>[tokyo, travel],
+      ): '浅草',
+      await diary(
+        '藏起来',
+        createdAt: day.add(const Duration(days: 3)),
+        notebookIds: <String>[secret],
+      ): '藏起来',
+    };
+    final tree = NotebookTree(await db.getNotebooks());
+    final source = await loadNotebookBookExport(db, tree[travel]!, tree: tree);
+    expect(chaptersOf(source.book, titles), <String>[
+      '-: 出发 浅草',
+      '日本: 京都',
+      '日本 · 东京: 浅草',
+    ]);
+    expect(source.diaries.map((d) => d.diary.title), <String>[
+      '出发',
+      '浅草',
+      '京都',
     ]);
   });
 

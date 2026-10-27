@@ -7,10 +7,12 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../core/database/app_database.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../controllers/notebook_lock_flow.dart';
+import '../pages/notebook_editor_page.dart';
 import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_action_sheets.dart';
 import 'notebook_dialogs.dart';
+import 'notebook_parent_picker_sheet.dart';
 
 /// 删除时宿主页面的配合：管理页先让这一行收起（[beforeDelete] 等收起动画
 /// 结束），删除失败时 [onDeleteFailed] 让它展开回来，撤销写回后
@@ -33,11 +35,15 @@ class NotebookDeleteHooks {
 /// - 合并（这本是来源）：日记并入别的本子后不再受锁保护；
 /// - 删除：“只删除日记本”让日记回到全部日记，“连同日记删除”的日记进回收站
 ///   也能看到；
-/// - 转为普通日记本：同样会打开设置。
+/// - 转为普通日记本：同样会打开设置；
+/// - 移动到…：移出上锁的上级后，这本的日记不再受那把锁保护；
+/// - 新建子日记本：改动上锁本子的结构，与编辑同一口径。
 ///
 /// 置顶、合上 / 重新打开、排序不涉及内容，不需要验证。
 const Set<NotebookAction> notebookRevealingActions = <NotebookAction>{
   NotebookAction.edit,
+  NotebookAction.createChild,
+  NotebookAction.move,
   NotebookAction.merge,
   NotebookAction.convert,
   NotebookAction.delete,
@@ -95,6 +101,13 @@ Future<void> runNotebookAction(
       await guarded(
         () => controller.setClosed(notebook.id, action == NotebookAction.close),
       );
+    case NotebookAction.createChild:
+      // 新子本保存后出现在上级下面；当前页面（书架、管理页）不跟着跳转。
+      await Navigator.of(
+        context,
+      ).push(NotebookEditorPage.route(initialParentId: notebook.id));
+    case NotebookAction.move:
+      await _move(context, ref, notebook);
     case NotebookAction.merge:
       await _merge(context, ref, notebook);
     case NotebookAction.convert:
@@ -117,6 +130,8 @@ Future<void> _delete(
     context,
     notebook: notebook,
     count: counts?[notebook.id] ?? 0,
+    childCount:
+        ref.read(notebookTreeProvider)?.childrenOf(notebook.id).length ?? 0,
   );
   if (trashDiaries == null || !context.mounted) return;
   await hooks.beforeDelete?.call();
@@ -142,6 +157,48 @@ Future<void> _delete(
         }),
       ),
     ),
+  );
+}
+
+/// “移动到…”：在上级选择面板里挑一本（或“无”放回书架），上级没变时什么
+/// 也不做。写入经 [NotebooksController.move]，不合法（面板打开期间层级被
+/// 别处改了）时只提示，不改动界面状态。
+Future<void> _move(
+  BuildContext context,
+  WidgetRef ref,
+  NotebookView notebook,
+) async {
+  final l10n = context.l10n;
+  final controller = ref.read(notebooksControllerProvider);
+  final tree = ref.read(notebookTreeProvider);
+  final currentParent = (tree?[notebook.id] ?? notebook).parentId;
+  final choice = await showNotebookParentPickerSheet(
+    context,
+    childId: notebook.id,
+    selectedParentId: currentParent,
+    title: l10n.notebookNestMove,
+  );
+  if (choice == null || !context.mounted) return;
+  final parentId = choice.parentId;
+  if (parentId == currentParent) return;
+  try {
+    await controller.move(notebook.id, parentId);
+  } catch (error) {
+    debugPrint('Moving notebook failed: $error');
+    if (context.mounted) {
+      showStyleEditorMessage(context, l10n.notebookActionFailed);
+    }
+    return;
+  }
+  if (!context.mounted) return;
+  final parent = parentId == null
+      ? null
+      : ref.read(notebookTreeProvider)?[parentId];
+  showStyleEditorMessage(
+    context,
+    parentId == null
+        ? l10n.notebookNestMovedToShelf
+        : l10n.notebookNestMoved(parent?.name ?? ''),
   );
 }
 

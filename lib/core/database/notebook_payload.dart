@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:meta/meta.dart';
 
+import 'notebook_cover_style.dart';
+
 /// 日记本的类型，按 [Enum.name] 存在 `notebooks.kind` 列。
 ///
 /// - [manual]：用户手动把日记放进来，成员关系存在 `diary_notebooks` 表；
@@ -165,7 +167,7 @@ class NotebookGoal {
 /// 这些需要 SQL 过滤或排序的字段是独立列，不在这里）。
 ///
 /// 格式：`{"desc":"…","icon":"book","color":4283215696,"cover":"/…/x.jpg",
-/// "chapters":[{"id":"a1b2c3d4","title":"第一章"}],"sort":"book",
+/// "coverStyle":{"layout":"spine"},"chapters":[{"id":"a1b2c3d4","title":"第一章"}],"sort":"book",
 /// "goal":{"period":"week","target":3},"template":"<模板 id>","rules":{…}}`。
 /// 稀疏写入：空值与默认值不写，默认设置编码为 `{}`（与列默认值一致）。
 /// 逐字段容错：坏 JSON 回退全部默认值，单个字段类型不符只丢弃该字段，不连累
@@ -180,6 +182,7 @@ class NotebookPayload {
     this.icon,
     this.color,
     this.coverPath,
+    this.coverStyle = NotebookCoverStyle.defaults,
     this.chapters = const <NotebookChapter>[],
     this.sort = NotebookSort.createdDesc,
     this.goal,
@@ -194,6 +197,7 @@ class NotebookPayload {
     String? icon,
     int? color,
     String? coverPath,
+    NotebookCoverStyle coverStyle = NotebookCoverStyle.defaults,
     List<NotebookChapter> chapters = const <NotebookChapter>[],
     NotebookSort sort = NotebookSort.createdDesc,
     NotebookGoal? goal,
@@ -206,6 +210,7 @@ class NotebookPayload {
       icon: _nonEmpty(icon),
       color: color != null && color >= 0 && color <= 0xFFFFFFFF ? color : null,
       coverPath: _nonEmpty(coverPath),
+      coverStyle: coverStyle,
       chapters: List<NotebookChapter>.unmodifiable(<NotebookChapter>[
         for (final chapter in chapters)
           if (seen.add(chapter.id)) chapter,
@@ -231,6 +236,9 @@ class NotebookPayload {
 
   /// 封面图片路径（应用私有目录内）。
   final String? coverPath;
+
+  /// 封面版式、纹理与封面图取景，见 [NotebookCoverStyle]。
+  final NotebookCoverStyle coverStyle;
 
   /// 章节，列表顺序即章节顺序；只对手动日记本有意义。
   final List<NotebookChapter> chapters;
@@ -273,6 +281,7 @@ class NotebookPayload {
       icon: icon is String ? icon : null,
       color: color is int ? color : null,
       coverPath: cover is String ? cover : null,
+      coverStyle: NotebookCoverStyle.fromJson(json['coverStyle']),
       chapters: <NotebookChapter>[
         if (chapters is List)
           for (final item in chapters) ?NotebookChapter._fromJson(item),
@@ -297,6 +306,7 @@ class NotebookPayload {
     'icon': ?icon,
     'color': ?color,
     'cover': ?coverPath,
+    if (!coverStyle.isDefault) 'coverStyle': coverStyle.toJson(),
     if (chapters.isNotEmpty)
       'chapters': <Map<String, Object>>[
         for (final chapter in chapters) chapter._toJson(),
@@ -316,6 +326,7 @@ class NotebookPayload {
     bool clearColor = false,
     String? coverPath,
     bool clearCoverPath = false,
+    NotebookCoverStyle? coverStyle,
     List<NotebookChapter>? chapters,
     NotebookSort? sort,
     NotebookGoal? goal,
@@ -330,6 +341,7 @@ class NotebookPayload {
       icon: clearIcon ? null : icon ?? this.icon,
       color: clearColor ? null : color ?? this.color,
       coverPath: clearCoverPath ? null : coverPath ?? this.coverPath,
+      coverStyle: coverStyle ?? this.coverStyle,
       chapters: chapters ?? this.chapters,
       sort: sort ?? this.sort,
       goal: clearGoal ? null : goal ?? this.goal,
@@ -345,6 +357,7 @@ class NotebookPayload {
       other.icon == icon &&
       other.color == color &&
       other.coverPath == coverPath &&
+      other.coverStyle == coverStyle &&
       _listEquals(other.chapters, chapters) &&
       other.sort == sort &&
       other.goal == goal &&
@@ -357,6 +370,7 @@ class NotebookPayload {
     icon,
     color,
     coverPath,
+    coverStyle,
     Object.hashAll(chapters),
     sort,
     goal,

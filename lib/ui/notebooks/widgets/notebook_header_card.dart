@@ -17,6 +17,7 @@ import '../providers/notebook_providers.dart';
 import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_header_meta.dart';
 import '../viewmodels/notebook_view.dart';
+import 'notebook_cover/notebook_cover_texture.dart';
 import 'notebook_cover_parts.dart';
 
 /// 首页在日记本里时列表上方的头部卡片：封面图（有则显示）、图标圆、名称与
@@ -34,10 +35,14 @@ class NotebookHeaderCard extends ConsumerWidget {
     this.extras = const <Widget>[],
     this.bleedExtras = const <Widget>[],
     this.horizontalMargin = AppSpacing.l,
+    this.breadcrumb,
   });
 
   final NotebookView notebook;
   final ValueChanged<NotebookAction> onAction;
+
+  /// 名称上方的上级路径（子本才有，见 `NotebookBreadcrumb`）；null 时不占位。
+  final Widget? breadcrumb;
 
   /// 菜单里的“导出成书”；null 时不显示这一项。
   final VoidCallback? onExportBook;
@@ -66,7 +71,10 @@ class NotebookHeaderCard extends ConsumerWidget {
     final accent = notebookAccentColors(notebook.color, scheme);
     final cover = notebook.coverPath;
     final showCover = cover != null && File(cover).existsSync();
-    final statsScope = notebookStatsScope(notebook);
+    final statsScope = notebookStatsScope(
+      notebook,
+      tree: ref.watch(notebookTreeProvider),
+    );
     final count = ref.watch(notebookScopeCountProvider(statsScope)).value;
     final overviews = ref
         .watch(notebookScopeOverviewsProvider(statsScope))
@@ -78,8 +86,7 @@ class NotebookHeaderCard extends ConsumerWidget {
             NotebookHeaderStats.from(count, overviews),
             now: DateTime.now(),
           );
-    final isPrivate =
-        !notebook.isSmart && notebook.visibility != NotebookVisibility.normal;
+    final isPrivate = notebook.isPrivate;
     final description = notebook.payload.description;
     final metaStyle = theme.textTheme.bodySmall?.copyWith(
       fontSize: 13,
@@ -95,7 +102,12 @@ class NotebookHeaderCard extends ConsumerWidget {
             height: coverHeight,
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) =>
-                  NotebookCoverImage(path: cover, width: constraints.maxWidth),
+                  NotebookCoverImage(
+                    path: cover,
+                    width: constraints.maxWidth,
+                    // 与书架封面同一组取景（对齐点与放大），横幅裁法不同。
+                    style: notebook.coverStyle,
+                  ),
             ),
           ),
         Padding(
@@ -108,6 +120,7 @@ class NotebookHeaderCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              ?breadcrumb,
               // 居中：没有简介时名称只有一行，顶对齐会让它高出图标圆心。
               Row(
                 children: <Widget>[
@@ -169,7 +182,9 @@ class NotebookHeaderCard extends ConsumerWidget {
                       ),
                     if (isPrivate)
                       _StateCapsule(
-                        icon: notebook.visibility == NotebookVisibility.locked
+                        icon:
+                            notebook.effectiveVisibility ==
+                                NotebookVisibility.locked
                             ? FontAwesomeIcons.lock
                             : FontAwesomeIcons.eyeSlash,
                         label: l10n.notebookHeaderPrivateBadge,
@@ -192,6 +207,15 @@ class NotebookHeaderCard extends ConsumerWidget {
           ),
       ],
     );
+    // 没有封面图时，封面纹理淡淡地画在卡片底色上（比封面上更轻，不影响
+    // 文字）；有封面图时纹理只属于封面，卡片保持素色。
+    final surfaceChild = showCover
+        ? body
+        : notebookCoverTextured(
+            texture: notebook.coverStyle.texture,
+            color: accent.onContainer.withValues(alpha: 0.07),
+            child: body,
+          );
     return Padding(
       padding: EdgeInsets.fromLTRB(
         horizontalMargin,
@@ -205,7 +229,7 @@ class NotebookHeaderCard extends ConsumerWidget {
           ? AppGlassSurface(
               component: AppGlassComponent.cards,
               borderRadius: const BorderRadius.all(Radius.circular(_radius)),
-              child: body,
+              child: surfaceChild,
             )
           : Material(
               color: ExpressiveSurfaces.cardColor(scheme),
@@ -214,7 +238,7 @@ class NotebookHeaderCard extends ConsumerWidget {
                 side: ExpressiveSurfaces.cardBorderSide(scheme),
               ),
               clipBehavior: Clip.antiAlias,
-              child: body,
+              child: surfaceChild,
             ),
     );
   }

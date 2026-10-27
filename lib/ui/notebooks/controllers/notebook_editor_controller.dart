@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 
@@ -17,6 +18,8 @@ typedef _NotebookDraft = ({
   NotebookIcon icon,
   int? color,
   String? coverPath,
+  NotebookCoverStyle coverStyle,
+  String? parentId,
   NotebookKind kind,
   NotebookVisibility visibility,
   NotebookSort sort,
@@ -41,13 +44,19 @@ typedef _NotebookDraft = ({
 /// - 写作目标只属于普通日记本：开关关闭时周期与篇数仍记在表单里（再打开时
 ///   恢复），保存时不写；智能日记本保存时一律清除目标；
 /// - 选封面只拷贝新图到封面私有目录，被替换或移除的旧封面不在这里删除——
-///   它可能仍被已保存的数据引用，由按引用回收的清理服务处理。
+///   它可能仍被已保存的数据引用，由按引用回收的清理服务处理；从本子的日记
+///   里选图（[setCoverFromFile]）同样拷贝一份，不引用日记的原图；
+/// - 封面图换了或移除时取景（`NotebookCoverStyle` 的对齐点与放大）随之重置，
+///   版式与纹理保留；
+/// - 上级（[parentId]）也是表单的一部分：新建时可由调用方预填（在某本的
+///   头部“新建子本”），保存时经数据库层校验，不合法时保存失败。
 class NotebookEditorController extends ChangeNotifier {
   NotebookEditorController({
     NotebookView? notebook,
     NotebookKind initialKind = NotebookKind.manual,
     String? initialName,
     NotebookPayload? initialPayload,
+    String? initialParentId,
   }) : _notebook = notebook,
        _basePayload =
            notebook?.payload ?? initialPayload ?? NotebookPayload.defaults {
@@ -57,6 +66,8 @@ class NotebookEditorController extends ChangeNotifier {
     _icon = notebook?.icon ?? NotebookIcon.fallback;
     _color = payload.color;
     _coverPath = payload.coverPath;
+    _coverStyle = payload.coverStyle;
+    _parentId = notebook == null ? initialParentId : notebook.parentId;
     _kind = notebook?.kind ?? initialKind;
     _visibility = notebook?.visibility ?? NotebookVisibility.normal;
     _sort = payload.sort;
@@ -95,7 +106,24 @@ class NotebookEditorController extends ChangeNotifier {
 
   String? _coverPath;
   String? get coverPath => _coverPath;
-  set coverPath(String? value) => _set(() => _coverPath = value);
+
+  /// 换图或移除时一并重置取景（旧图的取景对新图没有意义）。
+  set coverPath(String? value) => _set(() {
+    if (value != _coverPath) _coverStyle = _coverStyle.withoutCrop();
+    _coverPath = value;
+  });
+
+  late NotebookCoverStyle _coverStyle;
+
+  /// 封面版式、纹理与取景。
+  NotebookCoverStyle get coverStyle => _coverStyle;
+  set coverStyle(NotebookCoverStyle value) => _set(() => _coverStyle = value);
+
+  String? _parentId;
+
+  /// 上级日记本的业务 id；null 为书架顶层。
+  String? get parentId => _parentId;
+  set parentId(String? value) => _set(() => _parentId = value);
 
   late NotebookKind _kind;
   NotebookKind get kind => _kind;
@@ -214,6 +242,8 @@ class NotebookEditorController extends ChangeNotifier {
     icon: _icon,
     color: _color,
     coverPath: _coverPath,
+    coverStyle: _coverStyle,
+    parentId: _parentId,
     kind: _kind,
     visibility: _visibility,
     sort: _sort,
@@ -235,6 +265,7 @@ class NotebookEditorController extends ChangeNotifier {
       clearColor: _color == null,
       coverPath: _coverPath,
       clearCoverPath: _coverPath == null,
+      coverStyle: _coverStyle,
       sort: _sort,
       templateId: _templateId,
       clearTemplateId: _templateId == null,
@@ -266,6 +297,7 @@ class NotebookEditorController extends ChangeNotifier {
           kind: _kind,
           visibility: effectiveVisibility,
           payload: payload,
+          parentId: _parentId,
         );
       } else {
         id = existing.id;
@@ -274,6 +306,10 @@ class NotebookEditorController extends ChangeNotifier {
           name: name.text,
           visibility: effectiveVisibility,
           payload: payload,
+          // 只在改了上级时写：改动上级会把它排到新上级的子本最后。
+          parentId: _parentId == _initial.parentId
+              ? const Value<String?>.absent()
+              : Value<String?>(_parentId),
         );
       }
       _initial = _draft;
@@ -307,6 +343,23 @@ class NotebookEditorController extends ChangeNotifier {
       return NotebookCoverPickResult.failed;
     } finally {
       await DiaryMediaStorageService.discardPickerCopy(selectedPath);
+      _set(() => _importingCover = false);
+    }
+  }
+
+  /// 把 [sourcePath]（本子里某篇日记用到的图片）拷贝进封面私有目录后设为
+  /// 封面；原图不动、也不引用它（日记删掉后封面仍在）。拷贝失败时不改动
+  /// 当前封面。
+  Future<NotebookCoverPickResult> setCoverFromFile(String sourcePath) async {
+    if (_importingCover) return NotebookCoverPickResult.cancelled;
+    _set(() => _importingCover = true);
+    try {
+      coverPath = await DiaryCoverStorageService.importCover(sourcePath);
+      return NotebookCoverPickResult.picked;
+    } catch (error) {
+      debugPrint('Notebook cover copy failed: $error');
+      return NotebookCoverPickResult.failed;
+    } finally {
       _set(() => _importingCover = false);
     }
   }

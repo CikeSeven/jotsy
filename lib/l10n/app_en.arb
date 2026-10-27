@@ -8636,9 +8636,111 @@
   "@notebookManage": {
     "description": "Shelf sheet header button that opens the notebook management page."
   },
+  "notebookSubSectionTitle": "Sub-notebooks",
+  "@notebookSubSectionTitle": {
+    "description": "Small title of the sub-notebook row in the home notebook header card."
+  },
+  "notebookSubCreateShort": "New",
+  "@notebookSubCreateShort": {
+    "description": "Tile at the end of the header card's sub-notebook row that creates a sub-notebook."
+  },
+  "notebookSubCreate": "New sub-notebook",
+  "@notebookSubCreate": {
+    "description": "Notebook actions sheet item that creates a sub-notebook inside this one."
+  },
+  "notebookSubCountSemantics": "{count, plural, =1{Contains 1 sub-notebook} other{Contains {count} sub-notebooks}}",
+  "@notebookSubCountSemantics": {
+    "description": "Screen reader text for a shelf cover that has sub-notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookNestGoUp": "Go to \"{name}\"",
+  "@notebookNestGoUp": {
+    "description": "Screen reader text and tooltip of a parent notebook in the header card breadcrumb.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookNestPathSeparator": " › ",
+  "@notebookNestPathSeparator": {
+    "description": "Separator between levels of a notebook path, e.g. \"Travel › 2025\"."
+  },
+  "notebookParentLabel": "Parent notebook",
+  "@notebookParentLabel": {
+    "description": "Notebook editor group title and parent picker sheet title."
+  },
+  "notebookParentNone": "None (on the shelf)",
+  "@notebookParentNone": {
+    "description": "No parent notebook: the notebook sits at the top level of the shelf."
+  },
+  "notebookParentFooter": "Its entries also show up when you open the parent. Up to three levels; smart notebooks can sit inside another notebook but can't hold sub-notebooks.",
+  "@notebookParentFooter": {
+    "description": "Note under the editor's parent notebook group."
+  },
+  "notebookParentPickerEmpty": "No notebook can hold this one: up to three levels, and smart notebooks can't hold sub-notebooks",
+  "@notebookParentPickerEmpty": {
+    "description": "Parent picker sheet note when nothing but \"None\" can be chosen."
+  },
+  "notebookParentPrivacyHidden": "The parent \"{name}\" is hidden from All entries, so this notebook is hidden too",
+  "@notebookParentPrivacyHidden": {
+    "description": "Editor privacy group note: the parent is hidden, so this notebook is hidden too.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookParentPrivacyLocked": "The parent \"{name}\" is locked, so this notebook is locked too",
+  "@notebookParentPrivacyLocked": {
+    "description": "Editor privacy group note: the parent is locked, so this notebook is locked too.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookNestMove": "Move to…",
+  "@notebookNestMove": {
+    "description": "Notebook actions sheet item that puts this notebook inside another one (or back on the shelf)."
+  },
+  "notebookNestMoveHint": "Put it inside another notebook or back on the shelf",
+  "@notebookNestMoveHint": {
+    "description": "Subtitle of the \"Move to…\" item in the notebook actions sheet."
+  },
+  "notebookNestMoved": "Moved into \"{name}\"",
+  "@notebookNestMoved": {
+    "description": "Message after moving a notebook inside another one.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookNestMovedToShelf": "Moved back to the shelf",
+  "@notebookNestMovedToShelf": {
+    "description": "Message after moving a sub-notebook back to the top level of the shelf."
+  },
+  "notebookNestDeleteChildrenHint": "{count, plural, =1{Its sub-notebook moves up a level and isn't deleted} other{Its {count} sub-notebooks move up a level and aren't deleted}}",
+  "@notebookNestDeleteChildrenHint": {
+    "description": "Delete confirmation note for a notebook that has sub-notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notebookAllDiaries": "All entries",
   "@notebookAllDiaries": {
     "description": "Shelf sheet row that returns to all entries."
+  },
+  "notebookUnfiled": "Not in a notebook",
+  "@notebookUnfiled": {
+    "description": "Shelf sheet row below All entries, and the home switcher chip: entries that are not in any notebook."
   },
   "notebookSectionPinned": "Pinned",
   "@notebookSectionPinned": {
@@ -8724,6 +8826,105 @@
   "notebookCoverRemove": "Remove",
   "@notebookCoverRemove": {
     "description": "Button that removes the notebook cover image."
+  },
+  "notebookCoverSectionTitle": "Cover",
+  "@notebookCoverSectionTitle": {
+    "description": "Title of the cover group on the notebook editor (layout, texture and image)."
+  },
+  "notebookCoverLayoutTitle": "Layout",
+  "@notebookCoverLayoutTitle": {
+    "description": "Small heading of the cover layout choices."
+  },
+  "notebookCoverLayoutClassic": "Classic",
+  "@notebookCoverLayoutClassic": {
+    "description": "Cover layout: classic (image on top, name below)."
+  },
+  "notebookCoverLayoutFullBleed": "Full bleed",
+  "@notebookCoverLayoutFullBleed": {
+    "description": "Cover layout: full bleed (the image fills the whole cover)."
+  },
+  "notebookCoverLayoutSpine": "Spine",
+  "@notebookCoverLayoutSpine": {
+    "description": "Cover layout: spine (a darker spine along the leading edge)."
+  },
+  "notebookCoverLayoutPlate": "Label",
+  "@notebookCoverLayoutPlate": {
+    "description": "Cover layout: label (the name sits on a label in the middle)."
+  },
+  "notebookCoverLayoutMinimal": "Minimal",
+  "@notebookCoverLayoutMinimal": {
+    "description": "Cover layout: minimal (no icon, larger name)."
+  },
+  "notebookCoverTextureTitle": "Texture",
+  "@notebookCoverTextureTitle": {
+    "description": "Small heading of the cover texture choices."
+  },
+  "notebookCoverTextureNone": "None",
+  "@notebookCoverTextureNone": {
+    "description": "Cover texture: none."
+  },
+  "notebookCoverTextureDots": "Dots",
+  "@notebookCoverTextureDots": {
+    "description": "Cover texture: dots."
+  },
+  "notebookCoverTextureLines": "Lines",
+  "@notebookCoverTextureLines": {
+    "description": "Cover texture: ruled lines."
+  },
+  "notebookCoverTextureGrid": "Grid",
+  "@notebookCoverTextureGrid": {
+    "description": "Cover texture: grid."
+  },
+  "notebookCoverTextureDiagonal": "Diagonal",
+  "@notebookCoverTextureDiagonal": {
+    "description": "Cover texture: diagonal stripes."
+  },
+  "notebookCoverFromDiaries": "From diaries",
+  "@notebookCoverFromDiaries": {
+    "description": "Button (existing notebooks only) that picks the cover from images in this notebook's diaries."
+  },
+  "notebookCoverAdjustCrop": "Adjust framing",
+  "@notebookCoverAdjustCrop": {
+    "description": "Button that opens the cover framing page; also the page title."
+  },
+  "notebookCoverCropDone": "Done",
+  "@notebookCoverCropDone": {
+    "description": "Top-right button on the framing page that keeps the framing and goes back."
+  },
+  "notebookCoverCropHint": "Drag to move, pinch to zoom",
+  "@notebookCoverCropHint": {
+    "description": "Hint at the bottom of the framing page on phones."
+  },
+  "notebookCoverCropHintDesktop": "Drag to move, scroll to zoom",
+  "@notebookCoverCropHintDesktop": {
+    "description": "Hint at the bottom of the framing page on desktop."
+  },
+  "notebookCoverCropZoom": "Zoom",
+  "@notebookCoverCropZoom": {
+    "description": "Accessibility label of the zoom slider on the framing page."
+  },
+  "notebookCoverCropLoadFailed": "Couldn't load this image",
+  "@notebookCoverCropLoadFailed": {
+    "description": "Shown on the framing page when the cover image cannot be read."
+  },
+  "notebookCoverPhotosTitle": "Choose a cover from diaries",
+  "@notebookCoverPhotosTitle": {
+    "description": "Title of the sheet that picks a cover from diary images."
+  },
+  "notebookCoverPhotosSubtitle": "Images used in this notebook's diaries (sub-notebooks included), newest first",
+  "@notebookCoverPhotosSubtitle": {
+    "description": "Note under the title of the pick-from-diaries sheet."
+  },
+  "notebookCoverPhotosEmpty": "No images in this notebook's diaries yet",
+  "@notebookCoverPhotosEmpty": {
+    "description": "Shown in the pick-from-diaries sheet when there are no images."
+  },
+  "notebookCoverPhotoItem": "Image {index}",
+  "@notebookCoverPhotoItem": {
+    "description": "Accessibility label of one thumbnail in the pick-from-diaries sheet.",
+    "placeholders": {
+      "index": {"type": "int"}
+    }
   },
   "notebookTypeLabel": "Type",
   "@notebookTypeLabel": {

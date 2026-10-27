@@ -6755,7 +6755,88 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookManage => 'Manage';
 
   @override
+  String get notebookSubSectionTitle => 'Sub-notebooks';
+
+  @override
+  String get notebookSubCreateShort => 'New';
+
+  @override
+  String get notebookSubCreate => 'New sub-notebook';
+
+  @override
+  String notebookSubCountSemantics(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Contains $count sub-notebooks',
+      one: 'Contains 1 sub-notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookNestGoUp(String name) {
+    return 'Go to \"$name\"';
+  }
+
+  @override
+  String get notebookNestPathSeparator => ' › ';
+
+  @override
+  String get notebookParentLabel => 'Parent notebook';
+
+  @override
+  String get notebookParentNone => 'None (on the shelf)';
+
+  @override
+  String get notebookParentFooter =>
+      'Its entries also show up when you open the parent. Up to three levels; smart notebooks can sit inside another notebook but can\'t hold sub-notebooks.';
+
+  @override
+  String get notebookParentPickerEmpty =>
+      'No notebook can hold this one: up to three levels, and smart notebooks can\'t hold sub-notebooks';
+
+  @override
+  String notebookParentPrivacyHidden(String name) {
+    return 'The parent \"$name\" is hidden from All entries, so this notebook is hidden too';
+  }
+
+  @override
+  String notebookParentPrivacyLocked(String name) {
+    return 'The parent \"$name\" is locked, so this notebook is locked too';
+  }
+
+  @override
+  String get notebookNestMove => 'Move to…';
+
+  @override
+  String get notebookNestMoveHint =>
+      'Put it inside another notebook or back on the shelf';
+
+  @override
+  String notebookNestMoved(String name) {
+    return 'Moved into \"$name\"';
+  }
+
+  @override
+  String get notebookNestMovedToShelf => 'Moved back to the shelf';
+
+  @override
+  String notebookNestDeleteChildrenHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Its $count sub-notebooks move up a level and aren\'t deleted',
+      one: 'Its sub-notebook moves up a level and isn\'t deleted',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get notebookAllDiaries => 'All entries';
+
+  @override
+  String get notebookUnfiled => 'Not in a notebook';
 
   @override
   String get notebookSectionPinned => 'Pinned';
@@ -6826,6 +6907,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookCoverRemove => 'Remove';
+
+  @override
+  String get notebookCoverSectionTitle => 'Cover';
+
+  @override
+  String get notebookCoverLayoutTitle => 'Layout';
+
+  @override
+  String get notebookCoverLayoutClassic => 'Classic';
+
+  @override
+  String get notebookCoverLayoutFullBleed => 'Full bleed';
+
+  @override
+  String get notebookCoverLayoutSpine => 'Spine';
+
+  @override
+  String get notebookCoverLayoutPlate => 'Label';
+
+  @override
+  String get notebookCoverLayoutMinimal => 'Minimal';
+
+  @override
+  String get notebookCoverTextureTitle => 'Texture';
+
+  @override
+  String get notebookCoverTextureNone => 'None';
+
+  @override
+  String get notebookCoverTextureDots => 'Dots';
+
+  @override
+  String get notebookCoverTextureLines => 'Lines';
+
+  @override
+  String get notebookCoverTextureGrid => 'Grid';
+
+  @override
+  String get notebookCoverTextureDiagonal => 'Diagonal';
+
+  @override
+  String get notebookCoverFromDiaries => 'From diaries';
+
+  @override
+  String get notebookCoverAdjustCrop => 'Adjust framing';
+
+  @override
+  String get notebookCoverCropDone => 'Done';
+
+  @override
+  String get notebookCoverCropHint => 'Drag to move, pinch to zoom';
+
+  @override
+  String get notebookCoverCropHintDesktop => 'Drag to move, scroll to zoom';
+
+  @override
+  String get notebookCoverCropZoom => 'Zoom';
+
+  @override
+  String get notebookCoverCropLoadFailed => 'Couldn\'t load this image';
+
+  @override
+  String get notebookCoverPhotosTitle => 'Choose a cover from diaries';
+
+  @override
+  String get notebookCoverPhotosSubtitle =>
+      'Images used in this notebook\'s diaries (sub-notebooks included), newest first';
+
+  @override
+  String get notebookCoverPhotosEmpty =>
+      'No images in this notebook\'s diaries yet';
+
+  @override
+  String notebookCoverPhotoItem(int index) {
+    return 'Image $index';
+  }
 
   @override
   String get notebookTypeLabel => 'Type';

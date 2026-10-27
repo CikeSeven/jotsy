@@ -177,4 +177,34 @@ void main() {
       );
     });
   });
+
+  test('a chosen parent notebook also matches its sub-notebooks', () {
+    DiaryCalendarMarker inNotebooks(String id, List<String> notebooks) =>
+        DiaryCalendarMarker(
+          diaryId: id,
+          createdAt: DateTime(2026, 10, 3),
+          notebookIds: notebooks,
+        );
+    final markers = <DiaryCalendarMarker>[
+      inNotebooks('own', <String>['parent']),
+      inNotebooks('child', <String>['child']),
+      inNotebooks('other', <String>['other']),
+    ];
+    final picked = const CalendarMarkerFilter(notebookIds: <String>{'parent'})
+        .withSubNotebooks(
+          (String id) => id == 'parent' ? <String>['child'] : const <String>[],
+        );
+    expect(picked.subNotebookIds, <String>{'child'});
+    expect(picked.apply(markers, now: now).map((m) => m.diaryId), <String>[
+      'own',
+      'child',
+    ]);
+    // 没选日记本时不变；子本只参与匹配，不是选中态。
+    const none = CalendarMarkerFilter(moods: <String>{'😀'});
+    expect(
+      identical(none.withSubNotebooks((_) => <String>['x']), none),
+      isTrue,
+    );
+    expect(picked.notebookIds, <String>{'parent'});
+  });
 }

@@ -14,6 +14,7 @@ import 'notebook_payload.dart';
 import '../services/app_data_directory.dart';
 
 export 'diary_list_scope.dart';
+export 'notebook_cover_style.dart';
 export 'notebook_payload.dart';
 export 'notebook_rules.dart';
 
@@ -35,6 +36,8 @@ part 'app_database_notebook_schema.dart';
 part 'app_database_notebook_ops.dart';
 part 'app_database_notebook_entry_ops.dart';
 part 'app_database_notebook_stats_ops.dart';
+part 'app_database_notebook_hierarchy.dart';
+part 'app_database_notebook_tree_ops.dart';
 part 'app_database_day_mood_schema.dart';
 part 'app_database_day_mood_ops.dart';
 
@@ -62,6 +65,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseAnniversaryOps,
         _AppDatabaseDraftOps,
         _AppDatabaseTemplateOps,
+        _AppDatabaseNotebookTreeOps,
         _AppDatabaseNotebookOps,
         _AppDatabaseNotebookStatsOps,
         _AppDatabaseDayMoodOps,
@@ -79,7 +83,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -108,6 +112,11 @@ class AppDatabase extends _$AppDatabase
       // v14 这天的心情表只以日期为键、与其他表都无关联，同样排在 v1 分支之前。
       if (from < 14) {
         await _migrateAddDayMoods(m);
+      }
+      // v15 日记本加上级列（嵌套），只动日记本表，同样排在 v1 分支之前；
+      // 必须在 v13 分支之后：从 v13 之前升级时那里已按最新定义建表、自带此列。
+      if (from < 15) {
+        await _migrateNotebooksAddParent(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

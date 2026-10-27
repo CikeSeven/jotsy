@@ -74,10 +74,20 @@ class NotebookEditorTypeSection extends StatelessWidget {
 ///
 /// 没有系统身份验证的平台（Linux）“上锁”不可选并说明原因：上锁的本子只能
 /// 经系统验证进入，在这些平台锁上就再也打不开。已上锁的本子保持原样。
+///
+/// 选项只编辑这本自己的可见性；上级私密时的继承提示由调用方经 [notice]
+/// 放在选项上方（`NotebookInheritedPrivacyNote`）。
 class NotebookEditorPrivacySection extends StatelessWidget {
-  const NotebookEditorPrivacySection({super.key, required this.controller});
+  const NotebookEditorPrivacySection({
+    super.key,
+    required this.controller,
+    this.notice,
+  });
 
   final NotebookEditorController controller;
+
+  /// 选项上方的提示（自己负责出现与收起的过渡）。
+  final Widget? notice;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +98,9 @@ class NotebookEditorPrivacySection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(AppSpacing.s),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              ?notice,
               for (final visibility in NotebookVisibility.values)
                 if (visibility == NotebookVisibility.locked &&
                     !AppPlatform.supportsDeviceAuth)

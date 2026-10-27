@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_effects.dart';
@@ -9,6 +8,8 @@ import '../../widgets/expressive_state_blend.dart';
 import '../models/notebook_icon.dart';
 import '../viewmodels/notebook_labels.dart';
 import '../viewmodels/notebook_view.dart';
+import 'notebook_cover/notebook_cover_layouts.dart';
+import 'notebook_cover/notebook_cover_mini.dart';
 import 'notebook_cover_parts.dart';
 
 enum _TileVariant { full, mini, create }
@@ -16,10 +17,13 @@ enum _TileVariant { full, mini, create }
 /// 日记本封面：书架网格、收录选择器与编辑页预览共用。
 ///
 /// - 默认：3:4 的封面卡片。底色为强调色经主题换算后的容器色（见
-///   [notebookAccentColors]），有封面图时图片铺满上部，下方为名称与篇数；
-///   右上角按状态显示一个角标（上锁 / 隐藏 / 智能）；[selected] 时描边补间到
-///   2dp primary，[closed] 时整体 0.6 不透明度；
-/// - [NotebookCoverTile.mini]：44×56 的小封面，列表行左侧用，不含文字；
+///   [notebookAccentColors]），内容按 [style] 的版式排布（经典：有封面图时
+///   图片铺满上部，下方为名称与篇数；其余版式见 [NotebookCoverLayoutBody]），
+///   纹理画在露出底色的部分，封面图按取景裁切；右上角按状态显示一个角标
+///   （上锁 / 隐藏 / 智能）；[selected] 时描边补间到 2dp primary，[closed]
+///   时整体 0.6 不透明度——角标、描边、不透明度与水波纹不随版式变化；
+/// - [NotebookCoverTile.mini]：44×56 的小封面，列表行左侧用，不含文字，按
+///   版式保留主要特征（[NotebookCoverMini]）；
 /// - [NotebookCoverTile.create]：描边的“＋ 新建日记本”格子，放在网格末尾。
 ///
 /// 只负责展示与回调；点按墨水层叠在内容之上（DESIGN.md §4.3），封面图不会
@@ -31,6 +35,7 @@ class NotebookCoverTile extends StatelessWidget {
     required this.icon,
     this.color,
     this.coverPath,
+    this.style = NotebookCoverStyle.defaults,
     this.count,
     this.kind = NotebookKind.manual,
     this.visibility = NotebookVisibility.normal,
@@ -46,6 +51,7 @@ class NotebookCoverTile extends StatelessWidget {
     required this.icon,
     this.color,
     this.coverPath,
+    this.style = NotebookCoverStyle.defaults,
     this.closed = false,
   }) : _variant = _TileVariant.mini,
        name = null,
@@ -63,6 +69,7 @@ class NotebookCoverTile extends StatelessWidget {
       icon = NotebookIcon.fallback,
       color = null,
       coverPath = null,
+      style = NotebookCoverStyle.defaults,
       count = null,
       kind = NotebookKind.manual,
       visibility = NotebookVisibility.normal,
@@ -84,14 +91,26 @@ class NotebookCoverTile extends StatelessWidget {
     icon: notebook.icon,
     color: notebook.color,
     coverPath: notebook.coverPath,
+    style: notebook.coverStyle,
     count: count,
     kind: notebook.kind,
-    visibility: notebook.visibility,
+    visibility: notebook.effectiveVisibility,
     selected: selected,
     closed: notebook.isClosed,
     onTap: onTap,
     onLongPress: onLongPress,
   );
+
+  /// 由 [NotebookView] 构造小封面（带上这本的封面样式）。
+  factory NotebookCoverTile.miniFromView(NotebookView notebook, {Key? key}) =>
+      NotebookCoverTile.mini(
+        key: key,
+        icon: notebook.icon,
+        color: notebook.color,
+        coverPath: notebook.coverPath,
+        style: notebook.coverStyle,
+        closed: notebook.isClosed,
+      );
 
   static const double radius = 20;
   static const double aspectRatio = 3 / 4;
@@ -103,6 +122,9 @@ class NotebookCoverTile extends StatelessWidget {
   /// 强调色种子（ARGB），null 跟随主题色。
   final int? color;
   final String? coverPath;
+
+  /// 版式、纹理与封面图取景。
+  final NotebookCoverStyle style;
 
   /// 篇数；null 时不显示篇数行。
   final int? count;
@@ -139,12 +161,14 @@ class NotebookCoverTile extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          NotebookCoverBody(
+          NotebookCoverLayoutBody(
             name: name!,
             icon: icon,
             accent: accent,
+            style: style,
             coverPath: coverPath,
             countLabel: count == null ? null : l10n.notebookEntryCount(count!),
+            reserveBadge: badge != null,
           ),
           if (badge != null)
             PositionedDirectional(
@@ -206,7 +230,6 @@ class NotebookCoverTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final accent = notebookAccentColors(color, scheme);
     final borderRadius = BorderRadius.circular(10);
-    final cover = coverPath;
     return ExcludeSemantics(
       child: Opacity(
         opacity: closed ? 0.6 : 1,
@@ -224,14 +247,11 @@ class NotebookCoverTile extends StatelessWidget {
             ),
           ),
           clipBehavior: Clip.antiAlias,
-          child: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              Center(
-                child: FaIcon(icon.data, size: 18, color: accent.onContainer),
-              ),
-              if (cover != null) NotebookCoverImage(path: cover, width: 44),
-            ],
+          child: NotebookCoverMini(
+            icon: icon,
+            accent: accent,
+            coverPath: coverPath,
+            style: style,
           ),
         ),
       ),

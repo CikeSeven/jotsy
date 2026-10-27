@@ -7,21 +7,28 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/database/app_database.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../pages/notebook_editor_page.dart';
 import '../pages/notebooks_page.dart';
 import '../providers/notebook_providers.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
 import '../widgets/notebook_shelf_grid.dart';
+import '../widgets/notebook_switcher_chip.dart';
 import '../widgets/notebooks_empty_state.dart';
 
-/// 书架面板的选择结果：回到全部日记，或切到某一本。下滑或点遮罩关闭为 null。
+/// 书架面板的选择结果：回到全部日记、切到“未收录”，或切到某一本。下滑或点
+/// 遮罩关闭为 null。
 sealed class NotebookShelfResult {
   const NotebookShelfResult();
 
   const factory NotebookShelfResult.selectAll() = NotebookShelfSelectAll;
+
+  const factory NotebookShelfResult.selectUnfiled() =
+      NotebookShelfSelectUnfiled;
 
   const factory NotebookShelfResult.selectNotebook(String notebookId) =
       NotebookShelfSelectNotebook;
@@ -35,6 +42,16 @@ final class NotebookShelfSelectAll extends NotebookShelfResult {
 
   @override
   int get hashCode => (NotebookShelfSelectAll).hashCode;
+}
+
+final class NotebookShelfSelectUnfiled extends NotebookShelfResult {
+  const NotebookShelfSelectUnfiled();
+
+  @override
+  bool operator ==(Object other) => other is NotebookShelfSelectUnfiled;
+
+  @override
+  int get hashCode => (NotebookShelfSelectUnfiled).hashCode;
 }
 
 final class NotebookShelfSelectNotebook extends NotebookShelfResult {
@@ -51,13 +68,14 @@ final class NotebookShelfSelectNotebook extends NotebookShelfResult {
 }
 
 /// 打开书架面板。[currentNotebookId] 为当前所在的日记本（null 为全部日记），
-/// 对应的一格高亮。
+/// 对应的一格高亮；[unfiledSelected] 为当前在“未收录”里。
 ///
 /// 面板只负责挑选；切换由调用方完成。面板内的删除带撤销提示条：面板盖住了
 /// 页面底部，提示条显示在面板自己的 [ScaffoldMessenger] 里，撤销按钮才点得到。
 Future<NotebookShelfResult?> showNotebookShelfSheet(
   BuildContext context, {
   String? currentNotebookId,
+  bool unfiledSelected = false,
 }) {
   return showAppModalBottomSheet<NotebookShelfResult>(
     context: context,
@@ -79,6 +97,7 @@ Future<NotebookShelfResult?> showNotebookShelfSheet(
               body: NotebookShelf(
                 scrollController: scrollController,
                 currentNotebookId: currentNotebookId,
+                unfiledSelected: unfiledSelected,
               ),
             ),
           ),
@@ -86,17 +105,23 @@ Future<NotebookShelfResult?> showNotebookShelfSheet(
   );
 }
 
-/// 书架面板内容：标题行（“管理”进入管理页）、“全部日记”、置顶 / 我的日记本
-/// / 智能日记本 / 已合上四组封面网格（空组不显示，“已合上”默认收起）。
+/// 书架面板内容：标题行（“管理”进入管理页）、“全部日记”、“未收录”（没有
+/// 收进任何日记本的日记，行尾为篇数）、置顶 / 我的日记本 / 智能日记本 / 已合上
+/// 四组封面网格（空组不显示，“已合上”默认收起）。
+///
+/// 只列顶层的本子（置顶除外，见 [NotebookShelfGroups]）：子本跟着上级，在
+/// 上级的头部卡片里点进；有子本的封面画成叠放的样子。
 class NotebookShelf extends ConsumerStatefulWidget {
   const NotebookShelf({
     super.key,
     required this.scrollController,
     this.currentNotebookId,
+    this.unfiledSelected = false,
   });
 
   final ScrollController scrollController;
   final String? currentNotebookId;
+  final bool unfiledSelected;
 
   @override
   ConsumerState<NotebookShelf> createState() => _NotebookShelfState();
@@ -117,6 +142,7 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
     final notebooks = ref.watch(notebooksProvider).value;
     final counts =
         ref.watch(notebookEntryCountsProvider).value ?? const <String, int>{};
+    final tree = ref.watch(notebookTreeProvider);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final columns = notebookShelfColumns(constraints.maxWidth);
@@ -156,7 +182,8 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
             ),
             const SizedBox(height: AppSpacing.s),
             ListTile(
-              selected: widget.currentNotebookId == null,
+              selected:
+                  widget.currentNotebookId == null && !widget.unfiledSelected,
               selectedTileColor: theme.colorScheme.secondaryContainer,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -164,6 +191,11 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
               leading: const FaIcon(FontAwesomeIcons.layerGroup, size: 18),
               title: Text(l10n.notebookAllDiaries),
               onTap: () => _select(const NotebookShelfResult.selectAll()),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            _UnfiledTile(
+              selected: widget.unfiledSelected,
+              onTap: () => _select(const NotebookShelfResult.selectUnfiled()),
             ),
             if (notebooks == null)
               const SizedBox(height: 160, child: DelayedLoadingIndicator())
@@ -178,6 +210,7 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
                 NotebookShelfGroups(notebooks),
                 counts,
                 columns,
+                tree,
               ),
           ],
         );
@@ -190,11 +223,13 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
     NotebookShelfGroups groups,
     Map<String, int> counts,
     int columns,
+    NotebookTree? tree,
   ) {
     final l10n = context.l10n;
     Widget tile(NotebookView notebook) => NotebookShelfTile(
       key: ValueKey<String>('notebook_shelf_${notebook.id}'),
       notebook: notebook,
+      childCount: tree?.childrenOf(notebook.id).length ?? 0,
       // 智能日记本的篇数由规则现算（算出之前不显示）。
       count: watchNotebookDisplayCount(ref, notebook, counts),
       selected: notebook.id == widget.currentNotebookId,
@@ -246,5 +281,41 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
         ),
       ],
     ];
+  }
+}
+
+/// 书架里“全部日记”下面的“未收录”：没有收进任何日记本的日记，行尾为篇数
+/// （未删除、未归档，与首页列表同一口径；算出之前不显示）。
+class _UnfiledTile extends ConsumerWidget {
+  const _UnfiledTile({required this.selected, required this.onTap});
+
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final count = ref
+        .watch(notebookScopeCountProvider(DiaryListScope.unfiled))
+        .value;
+    return ListTile(
+      selected: selected,
+      selectedTileColor: theme.colorScheme.secondaryContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      leading: const FaIcon(NotebookSwitcherChip.unfiledIcon, size: 18),
+      title: Text(l10n.notebookUnfiled),
+      trailing: count == null
+          ? null
+          : Text(
+              l10n.notebookEntryCount(count),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: selected
+                    ? theme.colorScheme.onSecondaryContainer
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+      onTap: onTap,
+    );
   }
 }

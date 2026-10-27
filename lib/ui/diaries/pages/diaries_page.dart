@@ -35,6 +35,7 @@ import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/sections/notebook_action_flows.dart';
 import '../../notebooks/pages/notebook_add_diaries_page.dart';
 import '../../notebooks/pages/notebook_contents_page.dart';
+import '../../notebooks/pages/notebook_editor_page.dart';
 import '../../notebooks/controllers/notebook_book_export_flow.dart';
 import '../../notebooks/pages/notebook_insights_page.dart';
 import '../../notebooks/sections/notebook_action_sheets.dart';
@@ -321,7 +322,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _readingScopePrivate =
         currentNotebook != null &&
         currentNotebook.isManual &&
-        currentNotebook.visibility != NotebookVisibility.normal;
+        currentNotebook.isPrivate;
     // 日记本功能关闭时隐藏入口，数据保留：不订阅书架，标签栏不留切换胶囊。
     final notebooksEnabled = ref.watch(
       appFeaturesProvider.select((features) => features.notebooks),
@@ -336,7 +337,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       _scopeController.handleResolutionChanged,
     );
     ref.listen<String?>(
-      homeNotebookScopeProvider.select((scope) => scope.notebookId),
+      homeNotebookScopeProvider.select((scope) => scope.key),
       (_, String? next) {
         _readingSelection.handleScopeChanged();
         _scopeController.handleScopeIdChanged(next);
@@ -476,6 +477,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 leading: notebooksEnabled
                     ? NotebookSwitcherChip(
                         notebook: currentNotebook,
+                        unfiled: scopeResolution.isUnfiled,
                         onTap: () => unawaited(_scopeController.openShelf()),
                       )
                     : null,
@@ -483,11 +485,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                     ? NotebookSwitcherChip.measureWidth(
                         context,
                         currentNotebook,
+                        unfiled: scopeResolution.isUnfiled,
                       )
                     : 0,
                 keepVisible:
                     notebooksEnabled &&
-                    (hasNotebooks || currentNotebook != null),
+                    (hasNotebooks ||
+                        currentNotebook != null ||
+                        scopeResolution.isUnfiled),
               ),
             );
           },
@@ -648,12 +653,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   onOpenViewOptions:
                                       _controller.openViewOptions,
                                   onOpenSearchPage: _controller.openSearchPage,
-                                  searchHint: currentNotebook == null
+                                  searchHint: scopeResolution.isAll
                                       ? null
                                       : context.l10n.notebookSearchIn(
                                           NotebookSwitcherChip.labelFor(
                                             context,
                                             currentNotebook,
+                                            unfiled: scopeResolution.isUnfiled,
                                           ),
                                         ),
                                 ),
@@ -705,6 +711,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                             unassignedChapterOnly:
                                 scopeResolution.state.unassignedChapterOnly,
                             onSelectChapter: _scopeController.selectChapter,
+                            onOpenNotebook: (String id) =>
+                                unawaited(_scopeController.enter(id)),
+                            onCreateChild: () =>
+                                unawaited(_scopeController.createChild()),
                           ),
                         ),
                         wrapListFade(
@@ -975,7 +985,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
   }
 
-  /// 返回被拦下时的顺序：退出多选 → 收起展开的标签栏 → 回到全部日记。
+  /// 返回被拦下时的顺序：退出多选 → 收起展开的标签栏 → 子本里回到上级
+  /// 本子 → 顶层本子里回到全部日记。
   ///
   /// 日记页在 Home 里保活，切到别的 Tab 后它的 PopScope 仍会收到返回；那时
   /// 返回只用于切回日记页（Home 处理），后两步只在日记页可见时执行。
@@ -991,7 +1002,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       _animateTagFiltersTo(false);
       return;
     }
-    _scopeController.showAll();
+    _scopeController.back();
   }
 
   void _syncTagFiltersExpanded() {

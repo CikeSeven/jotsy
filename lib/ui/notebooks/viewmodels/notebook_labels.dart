@@ -33,7 +33,7 @@ String notebookRowSubtitle(
   NotebookView notebook,
   int? count,
 ) {
-  final badge = notebookBadgeFor(notebook.kind, notebook.visibility);
+  final badge = notebookBadgeFor(notebook.kind, notebook.effectiveVisibility);
   return <String>[
     if (count != null) l10n.notebookEntryCount(count),
     if (notebook.isPinned) l10n.notebookStatePinned,

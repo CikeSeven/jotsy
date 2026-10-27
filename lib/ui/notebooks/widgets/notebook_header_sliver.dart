@@ -6,7 +6,9 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_view.dart';
+import 'notebook_breadcrumb.dart';
 import 'notebook_chapter_chips.dart';
+import 'notebook_children_strip.dart';
 import 'notebook_goal_row.dart';
 import 'notebook_header_actions.dart';
 import 'notebook_header_card.dart';
@@ -16,6 +18,10 @@ import 'notebook_header_card.dart';
 /// “内容插入与移除”）。随列表一起滚走。
 ///
 /// 在两本之间切换时新旧卡片交叉淡入，高度差同样经 [AnimatedSize] 过渡。
+///
+/// 嵌套：子本的卡片在名称上方带上级路径（[NotebookBreadcrumb]），有子本的
+/// 卡片在章节胶囊之上带子本条（[NotebookChildrenStrip]）；两者点按都经
+/// [onOpenNotebook] 交给日记页切换范围，“新建子本”经 [onCreateChild]。
 class NotebookHeaderSliver extends StatelessWidget {
   const NotebookHeaderSliver({
     super.key,
@@ -29,6 +35,8 @@ class NotebookHeaderSliver extends StatelessWidget {
     this.selectedChapterId,
     this.unassignedChapterOnly = false,
     this.onSelectChapter,
+    this.onOpenNotebook,
+    this.onCreateChild,
   });
 
   /// 当前日记本；null（全部日记）时收起为 0 高度。
@@ -57,9 +65,21 @@ class NotebookHeaderSliver extends StatelessWidget {
   /// 点章节胶囊；null 时不显示胶囊行。胶囊行只在有章节的普通日记本里出现。
   final void Function({String? chapterId, bool unassigned})? onSelectChapter;
 
+  /// 点面包屑里的上级或子本条里的子本；null 时两者都不显示。
+  final ValueChanged<String>? onOpenNotebook;
+
+  /// 子本条末尾的“新建子本”；null 时不显示这一格。
+  final VoidCallback? onCreateChild;
+
   @override
   Widget build(BuildContext context) {
     final current = notebook;
+    // 还没有子本时“新建子本”放在操作行里；有了子本之后改在子本条末尾，两处
+    // 不同时出现（高度变化由外层 AnimatedSize 过渡）。
+    final createFirstChild =
+        current != null && current.canHaveChildren && !current.hasChildren
+        ? onCreateChild
+        : null;
     return SliverToBoxAdapter(
       child: AnimatedSize(
         // AnimatedSize 不接受 0 时长（见 ExpressiveMotion.durationNonZero）。
@@ -88,6 +108,12 @@ class NotebookHeaderSliver extends StatelessWidget {
                   onAction: onAction,
                   onExportBook: onExportBook,
                   horizontalMargin: horizontalMargin,
+                  breadcrumb: current.parentId != null && onOpenNotebook != null
+                      ? NotebookBreadcrumb(
+                          notebook: current,
+                          onOpen: onOpenNotebook!,
+                        )
+                      : null,
                   extras: <Widget>[
                     // 写作目标（只有设了目标的普通日记本）：点按打开编辑页。
                     if (current.isManual && current.payload.goal != null)
@@ -96,6 +122,7 @@ class NotebookHeaderSliver extends StatelessWidget {
                         onTap: () => onAction(NotebookAction.edit),
                       ),
                     if (onOpenInsights != null ||
+                        createFirstChild != null ||
                         (current.isManual &&
                             (onAddDiaries != null || onOpenContents != null)))
                       NotebookHeaderActions(
@@ -104,11 +131,18 @@ class NotebookHeaderSliver extends StatelessWidget {
                             ? onOpenContents
                             : null,
                         onOpenInsights: onOpenInsights,
+                        onCreateChild: createFirstChild,
                       ),
                   ],
-                  // 章节胶囊放在最下方，紧挨着它筛选的列表；横向滚动区铺到
-                  // 卡片边缘。
+                  // 子本条在上，章节胶囊放在最下方，紧挨着它筛选的列表；
+                  // 两行横向滚动区都铺到卡片边缘。
                   bleedExtras: <Widget>[
+                    if (current.hasChildren && onOpenNotebook != null)
+                      NotebookChildrenStrip(
+                        notebook: current,
+                        onOpen: onOpenNotebook!,
+                        onCreate: onCreateChild,
+                      ),
                     if (current.isManual &&
                         current.payload.chapters.isNotEmpty &&
                         onSelectChapter != null)

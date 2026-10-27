@@ -1,7 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
-/// 日记列表查询的范围：全部日记、某本手动日记本、或某本智能日记本。
+/// 日记列表查询的范围：全部日记、未收录的日记、某本手动日记本、或某本智能
+/// 日记本。
 ///
 /// 只描述“查哪些日记、按什么口径排序”，SQL 由数据库层
 /// （`app_database_diary_scope_sql.dart`）生成。三种范围都遵守同一条私密规则：
@@ -15,6 +16,9 @@ sealed class DiaryListScope {
 
   /// 全部日记（全局时间线），排除私密日记。
   static const DiaryListScope all = DiaryAllScope();
+
+  /// 没有收进任何日记本的日记。
+  static const DiaryListScope unfiled = DiaryUnfiledScope();
 }
 
 /// 全部日记：首页默认范围，以及启动预热与各类全局查询的口径。
@@ -31,15 +35,42 @@ final class DiaryAllScope extends DiaryListScope {
   String toString() => 'DiaryAllScope';
 }
 
-/// 一本手动日记本里的日记。
+/// 没有收进任何日记本的日记（首页书架“未收录”）。
 ///
+/// “收录”只看成员行：在任一手动日记本里（不论合上、私密与否、在哪一层）
+/// 就不算未收录；智能日记本按规则现算，不算收录。私密日记都在私密本子里，
+/// 自然不在其中。
+final class DiaryUnfiledScope extends DiaryListScope {
+  const DiaryUnfiledScope();
+
+  @override
+  bool operator ==(Object other) => other is DiaryUnfiledScope;
+
+  @override
+  int get hashCode => (DiaryUnfiledScope).hashCode;
+
+  @override
+  String toString() => 'DiaryUnfiledScope';
+}
+
+/// 一本手动日记本里的日记，可连同它的子本一起（父本汇总子本）。
+///
+/// - [subNotebookIds] / [subPredicates]：一并列出的子本——手动子本的业务 id
+///   （按书架上的树序，书序时决定各子本的先后）与智能子本编译好的规则。
+///   两者都空时只看本子自己收录的；由界面层按“比本子更私密的子本不汇总”
+///   挑选（见 `resolveNotebookScope`），数据库层不再解释层级；
 /// - [chapterId] 只看这一章；[unassignedChapterOnly] 只看“未分章”：章节为
 ///   空，或指向已不在 [chapterOrder] 里的章节（与 `updateNotebook` 清理
 ///   悬空章节前的口径一致）。两者互斥；
 /// - [bookOrder] 为 true 时按成书顺序排：章节在 [chapterOrder] 里的先后
 ///   （未分章与认不出的章节排最后），再按本子内的 `position`，最后按创建时间；
-///   此时列表的排序方式与置顶都不生效；
+///   汇总子本时本子自己的日记在前，再按 [subNotebookIds] 的先后接上各子本
+///   （子本内按它自己的位置），只因智能子本规则而在的排最后；此时列表的
+///   排序方式与置顶都不生效；
 /// - [chapterOrder] 来自日记本 payload 的章节列表（`NotebookPayload.chapterIds`）。
+///
+/// 章节筛选只看本子自己的日记：选了章节时调用方不传子本（即使传了，章节
+/// 条件也只认本子自己的成员行）。
 @immutable
 final class DiaryNotebookScope extends DiaryListScope {
   const DiaryNotebookScope({
@@ -48,6 +79,8 @@ final class DiaryNotebookScope extends DiaryListScope {
     this.unassignedChapterOnly = false,
     this.bookOrder = false,
     this.chapterOrder = const <String>[],
+    this.subNotebookIds = const <String>[],
+    this.subPredicates = const <DiaryScopePredicate>[],
   }) : assert(
          chapterId == null || !unassignedChapterOnly,
          'chapterId 与 unassignedChapterOnly 互斥',
@@ -58,6 +91,12 @@ final class DiaryNotebookScope extends DiaryListScope {
   final bool unassignedChapterOnly;
   final bool bookOrder;
   final List<String> chapterOrder;
+  final List<String> subNotebookIds;
+  final List<DiaryScopePredicate> subPredicates;
+
+  /// 是否连同子本一起列出。
+  bool get includesSubNotebooks =>
+      subNotebookIds.isNotEmpty || subPredicates.isNotEmpty;
 
   @override
   bool operator ==(Object other) {
@@ -67,7 +106,9 @@ final class DiaryNotebookScope extends DiaryListScope {
         other.chapterId == chapterId &&
         other.unassignedChapterOnly == unassignedChapterOnly &&
         other.bookOrder == bookOrder &&
-        _listEquals(other.chapterOrder, chapterOrder);
+        _listEquals(other.chapterOrder, chapterOrder) &&
+        _listEquals(other.subNotebookIds, subNotebookIds) &&
+        _listEquals(other.subPredicates, subPredicates);
   }
 
   @override
@@ -77,12 +118,15 @@ final class DiaryNotebookScope extends DiaryListScope {
     unassignedChapterOnly,
     bookOrder,
     Object.hashAll(chapterOrder),
+    Object.hashAll(subNotebookIds),
+    Object.hashAll(subPredicates),
   );
 
   @override
   String toString() =>
       'DiaryNotebookScope($notebookId, chapter: $chapterId, '
-      'unassigned: $unassignedChapterOnly, bookOrder: $bookOrder)';
+      'unassigned: $unassignedChapterOnly, bookOrder: $bookOrder, '
+      'subs: $subNotebookIds + ${subPredicates.length} smart)';
 }
 
 /// 一本智能日记本：成员由规则现算，[predicate] 是规则编译出的 SQL 条件。
@@ -144,7 +188,7 @@ class DiaryScopePredicate {
       Object.hash(sql, Object.hashAll(variables.map((v) => v.value)));
 }
 
-bool _listEquals(List<String> a, List<String> b) {
+bool _listEquals<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;

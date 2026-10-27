@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
@@ -11,8 +8,10 @@ import '../../widgets/color_palette_picker.dart';
 import '../controllers/notebook_editor_controller.dart';
 import '../widgets/notebook_cover_tile.dart';
 import '../widgets/notebook_icon_grid.dart';
+import 'notebook_editor_cover_section.dart';
 
-/// 编辑页顶部的实时预览：132dp 宽的封面，随表单即时变化。
+/// 编辑页顶部的实时预览：132dp 宽的封面，随表单即时变化（含封面版式、
+/// 纹理与取景）。
 class NotebookEditorPreview extends StatelessWidget {
   const NotebookEditorPreview({super.key, required this.controller});
 
@@ -30,6 +29,7 @@ class NotebookEditorPreview extends StatelessWidget {
           icon: controller.icon,
           color: controller.color,
           coverPath: controller.coverPath,
+          style: controller.coverStyle,
           kind: controller.kind,
           visibility: controller.effectiveVisibility,
         ),
@@ -91,7 +91,7 @@ class NotebookEditorTextFields extends StatelessWidget {
   }
 }
 
-/// 图标、颜色与封面图三组。
+/// 图标、颜色与封面三组（封面见 [NotebookEditorCoverSection]）。
 class NotebookEditorAppearance extends StatelessWidget {
   const NotebookEditorAppearance({
     super.key,
@@ -153,46 +153,9 @@ class NotebookEditorAppearance extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.xxl),
-        SettingsCardGroup(
-          title: l10n.notebookCoverLabel,
-          children: <Widget>[
-            Padding(
-              padding: padding,
-              child: Row(
-                children: <Widget>[
-                  NotebookCoverTile.mini(
-                    icon: controller.icon,
-                    color: controller.color,
-                    coverPath: controller.coverPath,
-                  ),
-                  const SizedBox(width: AppSpacing.m),
-                  Expanded(
-                    child: Wrap(
-                      spacing: AppSpacing.s,
-                      runSpacing: AppSpacing.s,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: <Widget>[
-                        FilledButton.tonalIcon(
-                          onPressed: controller.importingCover
-                              ? null
-                              : () => unawaited(onPickCover()),
-                          icon: const FaIcon(FontAwesomeIcons.image, size: 14),
-                          label: Text(l10n.notebookCoverPick),
-                        ),
-                        if (controller.coverPath != null)
-                          TextButton(
-                            onPressed: controller.importingCover
-                                ? null
-                                : () => controller.coverPath = null,
-                            child: Text(l10n.notebookCoverRemove),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        NotebookEditorCoverSection(
+          controller: controller,
+          onPickCover: onPickCover,
         ),
       ],
     );

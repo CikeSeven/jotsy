@@ -11,6 +11,11 @@ import 'backup_payload.dart';
 /// 合并导入中的日记本一步：定义按 notebookId 并入本机，成员关系经日记与
 /// 日记本两张 id 映射改写后写入。规则要点列在 [BackupMerge] 的类注释里。
 ///
+/// 上级（`parent_id`）按业务 id 引用，随定义原样写入：本机保留的定义保留
+/// 本机的上级，新增与被替换的定义用文件里的上级；文件里的上级在本机与文件
+/// 里都没有（日记包只带包内日记所在的本子）、或拼起来成环 / 超出层数的，
+/// 写完后经 `repairNotebookHierarchy` 改回顶层。
+///
 /// 输入：已校验的载荷（关联行只剩两端都在载荷里、日记本为手动的行）、
 /// 导入方式、合并写入日记后得到的“文件日记 id → 本机日记 id”。
 /// 输出：新增的日记本个数。副作用：在调用方的事务里写 `notebooks` 与
@@ -68,6 +73,7 @@ class BackupNotebookMerge {
     required Set<int> replacedDiaryIds,
   }) async {
     final definitions = await _writeDefinitions(db);
+    await db.repairNotebookHierarchy();
     await _writeMemberships(
       db,
       definitions.targets,

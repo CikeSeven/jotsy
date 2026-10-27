@@ -326,7 +326,9 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase, _AppDatabaseDiaryScopeSql {
     var filter =
         notebooks.notebookId.equals(notebookId) &
         diaries.isDeleted.equals(false) &
-        (notebooks.visibility.equals(NotebookVisibility.normal.name).not() |
+        (CustomExpression<bool>(
+              '"notebooks"."id" IN ($_privateNotebookIdsSql)',
+            ) |
             CustomExpression<bool>(
               _privateDiaryExclusionSql('"diaries"."id"'),
             ));

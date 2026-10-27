@@ -12,6 +12,8 @@ import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../models/notebook_export_book.dart';
 import '../models/notebook_scope_resolver.dart';
+import '../providers/notebook_providers.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 
 /// 导出成书的素材：书的结构与按书序排好的日记详情。
@@ -25,27 +27,51 @@ typedef NotebookBookExportSource = ({
 /// - 普通日记本：经 `getNotebookContents` 取成员与章节（私密规则与目录页
 ///   一致），再按 [notebookExportBook] 分章排序；
 /// - 智能日记本：规则范围内的日记按发表时间从旧到新
-///   （`getScopedDiaryIdsOldestFirst`），不分章。
+///   （`getScopedDiaryIdsOldestFirst`），不分章；
+/// - 给了 [tree] 且有子本时：首页列表汇总的那些子本
+///   （`NotebookTree.aggregatedDescendantsOf`，比它更私密的不收）按树序接在
+///   后面各成一章（[withSubNotebookChapters]），各自按上面的口径取日记。
 ///
-/// 详情逐篇按 id 读取（与首页多选导出相同）；读取途中被删掉的日记跳过。
+/// 详情逐篇按 id 读取（与首页多选导出相同）；读取途中被删掉的日记跳过，
+/// 同一篇只读一次。
 Future<NotebookBookExportSource> loadNotebookBookExport(
   AppDatabase database,
-  NotebookView notebook,
-) async {
-  final DiaryExportBook book;
-  if (notebook.isSmart) {
-    final ids = await database.getScopedDiaryIdsOldestFirst(
-      resolveNotebookScope(notebook),
-    );
-    book = smartNotebookExportBook(notebook, ids);
-  } else {
-    book = notebookExportBook(
-      notebook,
-      await database.getNotebookContents(notebook.id),
+  NotebookView notebook, {
+  NotebookTree? tree,
+}) async {
+  Future<DiaryExportBook> own(NotebookView target) async {
+    if (target.isSmart) {
+      final ids = await database.getScopedDiaryIdsOldestFirst(
+        resolveNotebookScope(target),
+      );
+      return smartNotebookExportBook(target, ids);
+    }
+    return notebookExportBook(
+      target,
+      await database.getNotebookContents(target.id),
     );
   }
+
+  final parts = <({String title, List<String> diaryIds})>[];
+  for (final sub
+      in tree?.aggregatedDescendantsOf(notebook.id) ?? const <NotebookView>[]) {
+    final path = <NotebookView>[
+      ...tree!
+          .ancestorsOf(sub.id)
+          .skipWhile((n) => n.id != notebook.id)
+          .skip(1),
+      sub,
+    ];
+    parts.add((
+      title: path.map((n) => n.name).join(' · '),
+      diaryIds: (await own(sub)).diaryIds,
+    ));
+  }
+  final book = withSubNotebookChapters(await own(notebook), parts);
   final diaries = <DiaryWithTags>[];
+  final seen = <String>{};
   for (final id in book.diaryIds) {
+    if (!seen.add(id)) continue;
     final detail = await database.getDiaryWithTagsByDiaryId(id);
     if (detail != null && !detail.diary.isDeleted) {
       diaries.add(detail);
@@ -83,7 +109,11 @@ Future<void> exportNotebookAsBook(
     source = await runWithActionLoadingOverlay(
       context,
       label: l10n.commonLoading,
-      task: () => loadNotebookBookExport(database, notebook),
+      task: () => loadNotebookBookExport(
+        database,
+        notebook,
+        tree: ref.read(notebookTreeProvider),
+      ),
     );
   } catch (error) {
     debugPrint('Loading notebook for book export failed: $error');

@@ -69,11 +69,13 @@ class DiariesNotebookMembershipController {
     final notebooks = _notebooks;
     final privateHint = notebookPrivateAddedHint(l10n, result.add, notebooks);
     final current = currentManualNotebook;
-    final isAll = _state.ref.read(homeNotebookScopeProvider).isAll;
-    // 收进私密日记本的日记不再出现在全部日记里；在本子里取消勾选这本则离开
-    // 这本的列表：两种情况都先让卡片收起。
+    final scope = _state.ref.read(homeNotebookScopeProvider);
+    // 收进私密日记本的日记不再出现在全部日记里；“未收录”里收进任何一本都会
+    // 离开列表；在本子里取消勾选这本则离开这本的列表：这些情况都先让卡片
+    // 收起。
     final leaves =
-        (isAll && privateHint != null) ||
+        (scope.isAll && privateHint != null) ||
+        (scope.unfiled && result.add.isNotEmpty) ||
         (current != null && result.remove.contains(current.id));
     await _run(
       targetIds,

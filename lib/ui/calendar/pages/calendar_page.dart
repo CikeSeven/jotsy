@@ -42,6 +42,7 @@ import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../notebooks/controllers/notebook_quick_create_flows.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
+import '../../notebooks/viewmodels/notebook_tree.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../models/calendar_display_options.dart';
 import '../models/calendar_marker_filter.dart';
@@ -256,6 +257,14 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     if (filterNotebooks != null) {
       filter = filter.retainNotebooks(
         filterNotebooks.map((NotebookView notebook) => notebook.id),
+      );
+      // 选了父本时连同它汇总的普通子本（与首页列表同一口径）。
+      final tree = NotebookTree.fromViews(allNotebooks!);
+      filter = filter.withSubNotebooks(
+        (String id) => <String>[
+          for (final sub in tree.aggregatedDescendantsOf(id))
+            if (sub.isManual) sub.id,
+        ],
       );
     }
     final summaries = _resolveDaySummaries(

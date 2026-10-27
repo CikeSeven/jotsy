@@ -17,6 +17,7 @@ extension NotebookHarnessX on DiaryDraftsHarness {
     NotebookPayload payload = NotebookPayload.defaults,
     bool pinned = false,
     bool closed = false,
+    String? parentId,
   }) async {
     final id = (await tester.runAsync(
       () => database.createNotebook(
@@ -24,6 +25,7 @@ extension NotebookHarnessX on DiaryDraftsHarness {
         kind: kind,
         visibility: visibility,
         payload: payload,
+        parentId: parentId,
       ),
     ))!;
     if (pinned || closed) {

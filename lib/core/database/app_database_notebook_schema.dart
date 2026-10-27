@@ -16,7 +16,14 @@ part of 'app_database.dart';
 ///    默认模板、智能规则），格式与容错见 [NotebookPayload]；
 /// 5. `sortOrder` 是书架上的手动顺序，`isPinned` 置顶的排在最前；`isClosed`
 ///    为“合上”（写完了、不再常用），仍可正常增删日记；
-/// 6. 日记本通常只有几个到几十个，全表读取，不建索引。
+/// 6. 日记本通常只有几个到几十个，全表读取，不建索引；
+/// 7. `parentId`（v15）是上级日记本的业务 id，null 为书架顶层。嵌套最多
+///    [kNotebookMaxDepth] 层，只有手动日记本能当上级（智能本可以当子本）。
+///    它是独立列而不放进 payload：私密继承要在 SQL 里沿上级链递归
+///    （上级私密的本子同样私密，见 `_privateNotebookIdsSql`）。写入经
+///    `moveNotebook` 校验；备份合并等批量写入之后经
+///    `repairNotebookHierarchy` 把指向不存在、非手动、成环或超出层数的
+///    上级改回顶层。
 @DataClassName('NotebookRow')
 class Notebooks extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -43,6 +50,9 @@ class Notebooks extends Table {
   DateTimeColumn get createdAt => dateTime().named('created_at')();
 
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  /// 放在最后：v15 升级经 ADD COLUMN 追加在表尾，新建库与升级库的列顺序一致。
+  TextColumn get parentId => text().named('parent_id').nullable()();
 }
 
 /// 日记-日记本关联表（多对多），只有手动日记本有关联行。
@@ -79,6 +89,9 @@ class DiaryNotebooks extends Table {
   @override
   Set<Column<Object>> get primaryKey => <Column<Object>>{diaryId, notebookId};
 }
+
+/// 日记本最多嵌套的层数（顶层算第 1 层）。
+const int kNotebookMaxDepth = 3;
 
 /// 读取日记本行里按名字存储的枚举与 payload。
 extension NotebookRowFields on NotebookRow {

@@ -35,10 +35,11 @@ class DiariesNotebookScopeController {
 
   /// 打开书架面板，按选择切换范围（上锁的先验证）。
   Future<void> openShelf() async {
-    final current = _state.ref.read(homeNotebookScopeProvider).notebookId;
+    final current = _state.ref.read(homeNotebookScopeProvider);
     final result = await showNotebookShelfSheet(
       _state.context,
-      currentNotebookId: current,
+      currentNotebookId: current.notebookId,
+      unfiledSelected: current.unfiled,
     );
     if (!_state.mounted || result == null) {
       return;
@@ -46,37 +47,83 @@ class DiariesNotebookScopeController {
     switch (result) {
       case NotebookShelfSelectAll():
         showAll();
+      case NotebookShelfSelectUnfiled():
+        showUnfiled();
       case NotebookShelfSelectNotebook(:final notebookId):
         await enter(notebookId);
     }
   }
 
-  /// 进入日记本：上锁的先验证，未通过（取消、失败、设备不支持）停留原处。
+  /// 进入日记本（书架、头部的子本条与面包屑共用）：上锁的先验证，未通过
+  /// （取消、失败、设备不支持）停留原处。
+  ///
+  /// 在同一个上锁范围里切换（上锁的父本与随之上锁的子本之间、经面包屑回到
+  /// 上级）不再验证，见 [notebookSwitchRequiresAuth]；验证会话因切到后台
+  /// 失效（relocked）时按从头进入处理。
   Future<void> enter(String notebookId) async {
-    if (_state.ref.read(homeNotebookScopeProvider).notebookId == notebookId) {
+    final current = _state.ref.read(homeNotebookScopeProvider);
+    if (current.notebookId == notebookId) {
       return;
     }
-    final notebooks =
-        _state.ref.read(notebooksProvider).value ?? const <NotebookView>[];
-    NotebookView? notebook;
-    for (final candidate in notebooks) {
-      if (candidate.id == notebookId) {
-        notebook = candidate;
-        break;
+    final tree = _state.ref.read(notebookTreeProvider);
+    final notebook = tree?[notebookId];
+    if (tree == null || notebook == null) {
+      return;
+    }
+    final needsAuth = notebookSwitchRequiresAuth(
+      tree,
+      notebook,
+      fromId: current.relocked ? null : current.notebookId,
+    );
+    if (needsAuth) {
+      final allowed = await authorizeNotebookEntry(
+        _state.context,
+        _state.ref,
+        notebook,
+      );
+      if (!allowed || !_state.mounted) {
+        return;
       }
     }
-    if (notebook == null) {
-      return;
-    }
-    final allowed = await authorizeNotebookEntry(
-      _state.context,
-      _state.ref,
-      notebook,
-    );
-    if (!allowed || !_state.mounted) {
-      return;
-    }
     _switchScope(notebookId, () => _notifier.enter(notebookId));
+  }
+
+  /// 系统返回（多选与标签栏都已收起之后）：在子本里先回到上级本子，在顶层
+  /// 本子里才回到全部日记。往上走不需要验证：上级要么与这本在同一个上锁
+  /// 范围里，要么本身没有上锁（这本自己上的锁不会传给上级）。
+  void back() => _goUp(resolution.notebook?.parentId);
+
+  /// 头部子本条末尾的“新建子本”：打开预填了上级的编辑页。保存后留在当前
+  /// 本子里，新子本出现在子本条里。
+  Future<void> createChild() async {
+    final notebook = resolution.notebook;
+    if (notebook == null || !notebook.canHaveChildren) {
+      return;
+    }
+    await Navigator.of(
+      _state.context,
+    ).push(NotebookEditorPage.route(initialParentId: notebook.id));
+  }
+
+  /// 回到上级 [parentId]（返回键、当前本子被删掉或不见了）；上级不存在（或
+  /// 本就在顶层）时回到全部日记。不经验证，理由见 [back]。
+  void _goUp(String? parentId) {
+    final parent = parentId == null
+        ? null
+        : _state.ref.read(notebookTreeProvider)?[parentId];
+    if (parent == null) {
+      showAll();
+    } else {
+      _switchScope(parent.id, () => _notifier.enter(parent.id));
+    }
+  }
+
+  /// 进入“未收录”（没有收进任何日记本的日记，已在其中时不变）。
+  void showUnfiled() {
+    if (_state.ref.read(homeNotebookScopeProvider).unfiled) {
+      return;
+    }
+    _switchScope(HomeNotebookScope.unfiledKey, _notifier.showUnfiled);
   }
 
   /// 回到全部日记（已在全部日记时不变）。
@@ -107,15 +154,17 @@ class DiariesNotebookScopeController {
     });
   }
 
-  void _switchScope(String? notebookId, VoidCallback mutation) {
-    _expectedNotebookId = notebookId;
+  /// [scopeKey] 为新范围的 [HomeNotebookScope.key]。
+  void _switchScope(String? scopeKey, VoidCallback mutation) {
+    _expectedNotebookId = scopeKey;
     if (_state._selectedDiaryIds.isNotEmpty) {
       _state.setState(_state._selectedDiaryIds.clear);
     }
     transitionCoordinator.queueFilterMutation(mutation, scrollToTop: true);
   }
 
-  /// 范围的日记本 id 变了：不是页面发起的（上锁遮罩“回到全部日记”）时，
+  /// 范围的身份（[HomeNotebookScope.key]）变了：不是页面发起的（上锁遮罩
+  /// “回到全部日记”）时，
   /// 先关掉首页之上的所有页面（可能正开着这本里的日记），再同样退出多选、
   /// 冻结旧列表并回到顶部淡入。
   void handleScopeIdChanged(String? next) {
@@ -133,7 +182,8 @@ class DiariesNotebookScopeController {
   }
 
   /// 范围解析变化：
-  /// - 当前日记本不见了（被删除或并入别的本子）→ 回到全部日记并提示；
+  /// - 当前日记本不见了（被删除或并入别的本子）→ 回到它的上级（上级也不在
+  ///   时回到全部日记）并提示。上级取自上一次解析：本子不见之后就查不到了；
   /// - 本子的排序已写回并推送回来 → 清除临时排序，之后在编辑页改排序不会
   ///   被它挡住。
   ///
@@ -143,11 +193,12 @@ class DiariesNotebookScopeController {
     HomeNotebookScopeResolution next,
   ) {
     if (next.missing && !(previous?.missing ?? false)) {
+      final lastParentId = previous?.notebook?.parentId;
       scheduleMicrotask(() {
         if (!_state.mounted) {
           return;
         }
-        showAll();
+        _goUp(lastParentId);
         unawaited(
           feedback.showInfoSnackBar(_state.context.l10n.notebookScopeDeleted),
         );
@@ -281,9 +332,9 @@ class DiariesNotebookScopeController {
     }
   }
 
-  /// 头部卡片“更多”菜单。删除前（确认之后）先回到全部日记，删除的撤销提示
-  /// 不会再叠一条“日记本已删除”。头部卡片只在这本已解锁时可见，编辑、删除
-  /// 不再二次验证（`authorized`）。
+  /// 头部卡片“更多”菜单。删除前（确认之后）先回到上级（顶层本子回到全部
+  /// 日记），删除的撤销提示不会再叠一条“日记本已删除”。头部卡片只在这本已
+  /// 解锁时可见，编辑、删除不再二次验证（`authorized`）。
   Future<void> handleHeaderAction(NotebookAction action) async {
     final notebook = resolution.notebook;
     if (notebook == null) {
@@ -294,7 +345,9 @@ class DiariesNotebookScopeController {
       _state.ref,
       notebook: notebook,
       action: action,
-      hooks: NotebookDeleteHooks(beforeDelete: () async => showAll()),
+      hooks: NotebookDeleteHooks(
+        beforeDelete: () async => _goUp(notebook.parentId),
+      ),
       authorized: true,
     );
   }
@@ -321,10 +374,17 @@ class DiariesNotebookScopeController {
     return (notebookId: notebook.id, chapterId: current.state.chapterId);
   }
 
-  /// 搜索页的范围参数：在日记本里时带上这本与它的名称、图标。
+  /// 搜索页的范围参数：在日记本或“未收录”里时带上范围与它的名称、图标。
   ({DiaryListScope scope, String? label, FaIconData? icon}) searchScope() {
     final current = resolution;
     final notebook = current.notebook;
+    if (current.isUnfiled) {
+      return (
+        scope: DiaryListScope.unfiled,
+        label: _state.context.l10n.notebookUnfiled,
+        icon: NotebookSwitcherChip.unfiledIcon,
+      );
+    }
     if (notebook == null) {
       return (scope: DiaryListScope.all, label: null, icon: null);
     }

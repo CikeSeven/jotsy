@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -17,6 +18,8 @@ import '../providers/notebook_providers.dart';
 import '../sections/notebook_action_flows.dart';
 import '../sections/notebook_action_sheets.dart';
 import '../sections/notebooks_page_lists.dart';
+import '../viewmodels/notebook_tree.dart';
+import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebooks_empty_state.dart';
 import 'notebook_editor_page.dart';
@@ -26,8 +29,11 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记本管理页（书架面板“管理”与设置首页入口）。
 ///
-/// 三组：我的日记本（含置顶）、智能日记本、已合上；每组按住手柄拖动排序，
-/// 写入时保持其他分组的相对顺序（[notebookOrderAfterReorder]）。行尾“更多”
+/// 三组：我的日记本（含置顶）、智能日记本、已合上；每组按树序列出顶层本子
+/// 与跟在它下面的子本（缩进随层级）。按住手柄拖动只在同一上级的兄弟之间
+/// 换顺序（落在别处时按落点换算，不改上级，见
+/// [notebookSiblingOrderAfterDrag]），写入时保持其他本子的相对顺序
+/// （[notebookOrderAfterReorder]）。行尾“更多”
 /// 打开操作面板，编辑、置顶、合并、合上与删除都经 [runNotebookAction]，与
 /// 书架面板同一套流程；删除时这一行先收起再删，撤销后重新展开。
 class NotebooksPage extends ConsumerStatefulWidget {
@@ -90,28 +96,31 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     Map<String, int> counts,
   ) {
     final l10n = context.l10n;
-    final groups = NotebookShelfGroups(_ordered(notebooks));
+    // 按（可能是拖动后暂定的）书架顺序重建层级：子本顺序随之。
+    final tree = NotebookTree.fromViews(_ordered(notebooks));
+    final groups = NotebookShelfGroups(tree.notebooks);
     _settleAppearing(notebooks);
-    Widget section(String title, List<NotebookView> members) =>
-        SliverMainAxisGroup(
-          slivers: <Widget>[
-            SliverToBoxAdapter(
-              child: DiaryTemplatesSectionHeader(title: title),
-            ),
-            NotebooksSectionSliver(
-              notebooks: members,
-              counts: counts,
-              collapsing: _collapsing,
-              appearing: _appearing,
-              // 上锁的先验证：编辑页能把隐私改回正常。
-              onTap: (notebook) =>
-                  unawaited(openNotebookEditor(context, ref, notebook)),
-              onMore: (notebook) => unawaited(_more(notebook)),
-              onReorder: (oldIndex, newIndex) =>
-                  _reorder(notebooks, members, oldIndex, newIndex),
-            ),
-          ],
-        );
+    Widget section(String title, List<NotebookView> roots) {
+      final rows = notebookSubtreeRows(tree, roots);
+      return SliverMainAxisGroup(
+        slivers: <Widget>[
+          SliverToBoxAdapter(child: DiaryTemplatesSectionHeader(title: title)),
+          NotebooksSectionSliver(
+            rows: rows,
+            counts: counts,
+            collapsing: _collapsing,
+            appearing: _appearing,
+            // 上锁的先验证：编辑页能把隐私改回正常。
+            onTap: (notebook) =>
+                unawaited(openNotebookEditor(context, ref, notebook)),
+            onMore: (notebook) => unawaited(_more(notebook)),
+            onReorder: (oldIndex, newIndex) =>
+                _reorder(notebooks, rows, oldIndex, newIndex),
+          ),
+        ],
+      );
+    }
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final side = FormWidth.extra(constraints.maxWidth);
@@ -173,16 +182,31 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     ];
   }
 
+  /// 拖动松手：换算成被拖那本在兄弟之间的新顺序，兄弟顺序没变时不写库。
   void _reorder(
     List<NotebookView> all,
-    List<NotebookView> section,
+    List<NotebookTreeRow> rows,
     int oldIndex,
     int newIndex,
   ) {
     if (oldIndex == newIndex) return;
-    final ids = section.map((n) => n.id).toList();
-    ids.insert(newIndex, ids.removeAt(oldIndex));
-    final order = notebookOrderAfterReorder(all, ids);
+    final ids = <String>[for (final row in rows) row.notebook.id];
+    final parents = <String, String?>{
+      for (final row in rows) row.notebook.id: row.notebook.parentId,
+    };
+    String? parentOf(String id) => parents[id];
+    final siblings = notebookSiblingOrderAfterDrag(
+      ids,
+      oldIndex,
+      newIndex,
+      parentOf,
+    );
+    final before = <String>[
+      for (final id in ids)
+        if (parentOf(id) == parentOf(ids[oldIndex])) id,
+    ];
+    if (listEquals(siblings, before)) return;
+    final order = notebookOrderAfterReorder(all, siblings);
     setState(() => _pendingOrder = order.shelf);
     unawaited(_writeOrder(order.manual));
   }

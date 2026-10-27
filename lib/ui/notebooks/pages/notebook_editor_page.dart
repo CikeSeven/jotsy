@@ -19,8 +19,9 @@ import '../controllers/notebook_editor_controller.dart';
 import '../sections/notebook_editor_appearance.dart';
 import '../sections/notebook_editor_behavior.dart';
 import '../sections/notebook_editor_goal.dart';
+import '../sections/notebook_editor_parent.dart';
 import '../sections/notebook_editor_rules.dart';
-import '../viewmodels/notebook_view.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
@@ -39,6 +40,7 @@ class NotebookEditorPage extends ConsumerStatefulWidget {
     this.initialKind = NotebookKind.manual,
     this.initialName,
     this.initialPayload,
+    this.initialParentId,
   });
 
   /// 要编辑的日记本；null 为新建。
@@ -51,12 +53,16 @@ class NotebookEditorPage extends ConsumerStatefulWidget {
   /// 新建时预填的设置（日历范围、搜索页“存为日记本”预填规则）；编辑时忽略。
   final NotebookPayload? initialPayload;
 
+  /// 新建时预填的上级（在某本的头部“新建子本”）；编辑时忽略。
+  final String? initialParentId;
+
   /// 打开编辑页；保存后返回日记本 id，未保存返回 null。
   static Route<String> route({
     String? notebookId,
     NotebookKind initialKind = NotebookKind.manual,
     String? initialName,
     NotebookPayload? initialPayload,
+    String? initialParentId,
   }) {
     return MaterialPageRoute<String>(
       builder: (_) => NotebookEditorPage(
@@ -64,6 +70,7 @@ class NotebookEditorPage extends ConsumerStatefulWidget {
         initialKind: initialKind,
         initialName: initialName,
         initialPayload: initialPayload,
+        initialParentId: initialParentId,
       ),
     );
   }
@@ -87,6 +94,7 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
         initialKind: widget.initialKind,
         initialName: widget.initialName,
         initialPayload: widget.initialPayload,
+        initialParentId: widget.initialParentId,
       );
       // 等页面滑入结束再聚焦名称框：键盘不与转场叠在一起。
       _entrance.schedule(this, _nameFocus.requestFocus);
@@ -95,15 +103,17 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
     }
   }
 
-  /// 编辑时读一次数据库行作为表单初值；之后的数据库变化不回灌表单。
+  /// 编辑时读一次数据库行作为表单初值；之后的数据库变化不回灌表单。层级
+  /// 信息（上级）按整张表现算，与书架同一口径（[NotebookTree]）。
   Future<void> _load(String id) async {
-    final row = await ref.read(appDatabaseProvider).getNotebook(id);
+    final database = ref.read(appDatabaseProvider);
+    final notebook = NotebookTree(await database.getNotebooks())[id];
     if (!mounted) return;
     setState(() {
-      if (row == null) {
+      if (notebook == null) {
         _missing = true;
       } else {
-        _editor = NotebookEditorController(notebook: NotebookView(row));
+        _editor = NotebookEditorController(notebook: notebook);
       }
     });
   }
@@ -267,13 +277,18 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
               gap,
               NotebookEditorTypeSection(controller: editor),
             ],
+            gap,
+            NotebookEditorParentSection(controller: editor),
             if (editor.isSmart) ...<Widget>[
               gap,
               NotebookEditorRulesSection(controller: editor),
             ],
             if (!editor.isSmart) ...<Widget>[
               gap,
-              NotebookEditorPrivacySection(controller: editor),
+              NotebookEditorPrivacySection(
+                controller: editor,
+                notice: NotebookInheritedPrivacyNote(controller: editor),
+              ),
               gap,
               NotebookEditorGoalSection(controller: editor),
             ],

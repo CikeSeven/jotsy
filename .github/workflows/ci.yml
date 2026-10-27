@@ -230,6 +230,11 @@ jobs:
       - name: Build release APK (arm64)
         run: flutter build apk --release --target-platform android-arm64
 
+      # Flutter 构建会先生成仓库未跟踪的 gradlew；原生测试复用这份 wrapper。
+      - name: Test Android picker permissions and result handling
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest --console=plain
+
       - name: Report APK size
         run: |
           stat --format=%s build/app/outputs/flutter-apk/app-release.apk |

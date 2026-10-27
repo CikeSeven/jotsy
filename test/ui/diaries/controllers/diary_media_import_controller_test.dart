@@ -92,6 +92,91 @@ void main() {
     },
   );
 
+  for (final (code, expected) in [
+    ('permission_denied', DiaryMediaImportOutcome.permissionDenied),
+    ('gallery_unavailable', DiaryMediaImportOutcome.pickerUnavailable),
+    ('video_copy_failed', DiaryMediaImportOutcome.failed),
+  ]) {
+    test(
+      'Android picker $code is recoverable and leaves content intact',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        var attempts = 0;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(galleryChannel, (_) async {
+              if (attempts++ == 0) throw PlatformException(code: code);
+              return [
+                {'name': 'retry.mp4', 'path': pickedFile.path, 'size': 3},
+              ];
+            });
+        final importer = DiaryMediaImportController();
+        addTearDown(importer.dispose);
+        final original = documentController.contentJson;
+        expect(
+          await importer.pickAndInsert(
+            controller: documentController,
+            kind: DiaryMediaKind.video,
+            isCurrent: () => true,
+          ),
+          expected,
+        );
+        expect(documentController.contentJson, original);
+        expect(importer.isBusy, isFalse);
+        expect(importer.isCopying, isFalse);
+        expect(
+          await importer.pickAndInsert(
+            controller: documentController,
+            kind: DiaryMediaKind.video,
+            isCurrent: () => true,
+          ),
+          DiaryMediaImportOutcome.inserted,
+        );
+      },
+    );
+  }
+
+  test('denied source reads roll back an already copied attachment', () async {
+    var imports = 0;
+    String? copiedPath;
+    final importer = DiaryMediaImportController(
+      picker: (_) async => [
+        PlatformFile(name: 'first.pdf', size: 3, path: pickedFile.path),
+        PlatformFile(name: 'denied.pdf', size: 3, path: pickedFile.path),
+      ],
+      importer: (file, kind) async {
+        if (imports++ == 1) {
+          throw const FileSystemException(
+            'Permission denied',
+            '/selected/denied.pdf',
+            OSError('Permission denied', 13),
+          );
+        }
+        final imported = await DiaryMediaStorageService.importFile(
+          kind: kind,
+          fileName: file.name,
+          sourcePath: file.path,
+        );
+        copiedPath = imported.path;
+        return imported;
+      },
+    );
+    addTearDown(importer.dispose);
+    final original = documentController.contentJson;
+    expect(
+      await importer.pickAndInsert(
+        controller: documentController,
+        kind: DiaryMediaKind.attachment,
+        isCurrent: () => true,
+      ),
+      DiaryMediaImportOutcome.permissionDenied,
+    );
+    expect(documentController.contentJson, original);
+    expect(copiedPath, isNotNull);
+    expect(await File(copiedPath!).exists(), isFalse);
+    expect(await pickedFile.exists(), isTrue);
+    expect(importer.isBusy, isFalse);
+  });
+
   for (final kind in [DiaryMediaKind.video, DiaryMediaKind.attachment]) {
     test(
       '$kind import copies every selected file before inserting blocks',

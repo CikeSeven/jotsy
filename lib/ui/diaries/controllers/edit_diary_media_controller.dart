@@ -44,6 +44,10 @@ extension EditDiaryMediaFlow on EditDiaryController {
     final l10n = _state.context.l10n;
     final message = switch (outcome) {
       DiaryMediaImportOutcome.failed => l10n.diaryMediaImportFailed,
+      DiaryMediaImportOutcome.permissionDenied =>
+        l10n.diaryMediaImportPermissionDenied,
+      DiaryMediaImportOutcome.pickerUnavailable =>
+        l10n.diaryMediaPickerUnavailable,
       DiaryMediaImportOutcome.unsupported => l10n.diaryMediaImportUnsupported,
       _ => null,
     };
@@ -104,6 +108,10 @@ extension EditDiaryDayPhotosFlow on EditDiaryController {
     final l10n = _state.context.l10n;
     final message = switch (outcome) {
       DiaryMediaImportOutcome.failed => l10n.diaryMediaImportFailed,
+      DiaryMediaImportOutcome.permissionDenied =>
+        l10n.diaryMediaImportPermissionDenied,
+      DiaryMediaImportOutcome.pickerUnavailable =>
+        l10n.diaryMediaPickerUnavailable,
       _ when missing.isNotEmpty => l10n.diaryDayPhotosMissing(missing.length),
       _ => null,
     };

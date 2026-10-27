@@ -1,21 +1,24 @@
 package com.jotsy.diary
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Environment
+import android.os.Build
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.util.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.IOException
 
 /**
- * Matches file_picker's image ACTION_PICK gallery route for video-only multi-selection.
- * URI permissions last only for the picker result, so cache streams off the UI thread
- * before returning file paths. Flutter owns copying those files into diary storage.
+ * Selects videos through the system photo picker or Storage Access Framework. These
+ * contracts grant access to the selected URIs without permission to read the video library;
+ * forcing an OEM ACTION_PICK gallery does not provide the same reliable grant contract.
+ * Copies URI streams off the UI thread before returning paths to Flutter. All picker-result
+ * parsing and provider failures must become channel errors, never uncaught Android callbacks.
  */
 class DiaryGalleryVideoPicker(
   private val activity: Activity,
@@ -24,6 +27,7 @@ class DiaryGalleryVideoPicker(
   private val channel = MethodChannel(messenger, "com.jotsy.diary/video_gallery")
   private val requestCode = 7622
   private var pendingResult: MethodChannel.Result? = null
+  private var copying = false
   @Volatile private var disposed = false
 
   init {
@@ -44,64 +48,70 @@ class DiaryGalleryVideoPicker(
       result.error("already_active", "Video gallery is already active.", null)
       return
     }
-    val intent = Intent(Intent.ACTION_PICK).apply {
-      setDataAndType(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video/*")
-      putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-      putExtra("multi-pick", true)
-      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
     pendingResult = result
     try {
-      // Android stores separate defaults for image/* and video/*. Reuse the
-      // image picker's gallery package when it also supports video selection,
-      // otherwise prefer the system's APP_GALLERY before leaving resolution to Android.
-      val imageIntent = Intent(Intent.ACTION_PICK).apply {
-        setDataAndType(Uri.parse(Environment.getExternalStorageDirectory().path + "/"), "image/*")
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val intent = Intent(MediaStore.ACTION_PICK_IMAGES).apply {
+          type = "video/*"
+          putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, MediaStore.getPickImagesMaxLimit())
+          addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+          activity.startActivityForResult(intent, requestCode)
+          return
+        } catch (_: ActivityNotFoundException) {
+          // Some Android distributions omit/disable the photo picker module.
+        } catch (_: SecurityException) {
+          // A restricted picker must not prevent using the system documents UI.
+        }
       }
-      val packages = listOfNotNull(
-        activity.packageManager.resolveActivity(
-          imageIntent, PackageManager.MATCH_DEFAULT_ONLY,
-        )?.activityInfo?.packageName,
-        activity.packageManager.resolveActivity(
-          Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_GALLERY),
-          PackageManager.MATCH_DEFAULT_ONLY,
-        )?.activityInfo?.packageName,
-      )
-      val handlers = activity.packageManager.queryIntentActivities(
-        intent, PackageManager.MATCH_DEFAULT_ONLY,
-      ).map { it.activityInfo.packageName }
-      packages.firstOrNull { it in handlers }?.let(intent::setPackage)
-      activity.startActivityForResult(intent, requestCode)
+      activity.startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        addCategory(Intent.CATEGORY_OPENABLE)
+        type = "video/*"
+        putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      }, requestCode)
+    } catch (error: SecurityException) {
+      fail(result, "permission_denied", error)
     } catch (error: Exception) {
-      pendingResult = null
-      result.error("gallery_unavailable", error.message, null)
+      fail(result, "gallery_unavailable", error)
     }
   }
 
   fun onActivityResult(code: Int, resultCode: Int, data: Intent?): Boolean {
     if (code != requestCode) return false
     val result = pendingResult ?: return true
+    if (copying) return true
     if (resultCode != Activity.RESULT_OK) {
       pendingResult = null
       result.success(null)
       return true
     }
 
-    val uris = mutableListOf<Uri>()
-    val clipData = data?.clipData
-    if (clipData != null) {
-      for (index in 0 until clipData.itemCount) {
-        uris.add(clipData.getItemAt(index).uri)
+    try {
+      // Intent/ClipData are supplied by another app. Even reading these fields
+      // can throw while Android unparcels a malformed result, before any I/O starts.
+      val uris = mutableListOf<Uri>()
+      data?.clipData?.let { clipData ->
+        for (index in 0 until clipData.itemCount) {
+          clipData.getItemAt(index).uri?.let(uris::add)
+        }
       }
-    } else {
       data?.data?.let(uris::add)
+      if (uris.isEmpty()) {
+        throw IOException("Picker returned no video URI.")
+      }
+      copying = true
+      cacheVideos(uris.distinct(), result)
+    } catch (error: SecurityException) {
+      fail(result, "permission_denied", error)
+    } catch (error: Exception) {
+      fail(result, "video_copy_failed", error)
     }
-    if (uris.isEmpty()) {
-      pendingResult = null
-      result.error("missing_video", "Gallery returned no video URI.", null)
-      return true
-    }
+    return true
+  }
 
+  private fun cacheVideos(uris: List<Uri>, result: MethodChannel.Result) {
     val context = activity.applicationContext
     Thread {
       var batch: File? = null
@@ -115,14 +125,19 @@ class DiaryGalleryVideoPicker(
         if (!directory.delete() || !directory.mkdir()) {
           throw IOException("Cannot create video selection directory.")
         }
-        val files = uris.distinct().mapIndexed { index, uri ->
+        val files = uris.mapIndexed { index, uri ->
           if (disposed) throw IOException("Gallery request was cancelled.")
           var name: String? = null
-          context.contentResolver.query(
-            uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null,
-          )?.use { cursor ->
-            val column = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            if (column >= 0 && cursor.moveToFirst()) name = cursor.getString(column)
+          try {
+            context.contentResolver.query(
+              uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null,
+            )?.use { cursor ->
+              val column = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+              if (column >= 0 && cursor.moveToFirst()) name = cursor.getString(column)
+            }
+          } catch (_: Exception) {
+            // Some providers permit reading the stream but not querying metadata.
+            // A missing display name must not turn an otherwise readable video into a failure.
           }
           val child = File(directory, index.toString())
           if (!child.mkdir()) throw IOException("Cannot create video cache target.")
@@ -145,23 +160,38 @@ class DiaryGalleryVideoPicker(
         }
         activity.runOnUiThread {
           if (disposed || pendingResult !== result) {
-            Thread { directory.deleteRecursively() }.start()
+            Thread { discard(directory) }.start()
           } else {
+            copying = false
             pendingResult = null
             result.success(files)
           }
         }
       } catch (error: Exception) {
-        batch?.deleteRecursively()
+        // Cleanup must not mask the original permission/I/O error or throw out
+        // of this worker thread and terminate the process.
+        discard(batch)
         activity.runOnUiThread {
-          if (!disposed && pendingResult === result) {
-            pendingResult = null
-            result.error("video_copy_failed", error.message, null)
-          }
+          fail(result, if (error is SecurityException) "permission_denied" else "video_copy_failed", error)
         }
       }
     }.start()
-    return true
+  }
+
+  private fun fail(result: MethodChannel.Result, code: String, error: Exception) {
+    Log.w("DiaryVideoPicker", code, error)
+    if (disposed || pendingResult !== result) return
+    copying = false
+    pendingResult = null
+    result.error(code, error.message, null)
+  }
+
+  private fun discard(directory: File?) {
+    try {
+      directory?.deleteRecursively()
+    } catch (error: Exception) {
+      Log.w("DiaryVideoPicker", "Could not discard video picker cache.", error)
+    }
   }
 
   private fun safeName(raw: String?): String {

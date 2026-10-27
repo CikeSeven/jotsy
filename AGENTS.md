@@ -38,7 +38,7 @@
 ├─ tool/                             # 开发与 CI 脚本（check_arb.dart：ARB 文案规范检查，规则在 arb_lint.dart；merge_lcov.dart：合并 CI 测试分片的行覆盖率；write_update_manifest.dart：发布时生成应用内更新清单，逻辑在 update_manifest.dart；generate_pinyin_table.dart：由 Unihan 生成汉字拼音表；write_cloud_backup_keys.dart：发布时校验并写出网盘应用密钥文件，逻辑在 cloud_backup_keys.dart）
 ├─ docs/                             # 项目文档（*.md、releases/ 中英版本说明）与官网（GitHub Pages 源目录：index.html / privacy.html / 404.html，样式脚本图片配色在 assets/）
 ├─ .github/                          # CI 门禁 workflows/ci.yml、发布 workflows/release-apk.yml、官网下载次数统计 workflows/download-stats.yml、共用的 actions/setup-flutter（唯一定义 Flutter 版本）、Dependabot
-├─ android/ ios/ web/ macos/        # 各平台工程（Android 为主平台；其余为 Flutter 默认工程）
+├─ android/ ios/ web/ macos/        # 各平台工程（Android 为主平台；android/app/src/test/ 为系统视频选择器授权与返回结果的原生回归测试；其余为 Flutter 默认工程）
 ├─ linux/ windows/                   # 桌面 runner（窗口默认 / 最小尺寸、窗口图标与版权信息；linux/packaging/：桌面入口 com.jotsy.diary.desktop、hicolor 图标与压缩包里的 install.sh；windows/packaging/：Inno Setup 安装程序脚本 jotsy.iss）
 └─ AGENTS.md                         # 协作规范
 ```
@@ -154,7 +154,7 @@
   - `dart run tool/check_arb.dart`（改动 ARB 后）
   - `flutter build linux --release`（桌面改动后本地验证；Windows 包只在 CI / 发布中构建）
 - 必须：本地构建 Linux 需先装 `clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev`，以及 audioplayers_linux 需要的 GStreamer 开发包（`libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`，与 `ci.yml` 同一份）。
-- 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（按文件分片，覆盖率经 `tool/merge_lcov.dart` 合并；`Tests` 门禁须等所有分片通过）、arm64 的 Android release 构建、Linux 与 Windows 的 release 构建（只验证能否编译，产物不上传；发布工作流经 `skip-desktop-builds` 跳过）、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。
+- 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（按文件分片，覆盖率经 `tool/merge_lcov.dart` 合并；`Tests` 门禁须等所有分片通过）、Android 视频选择器原生回归测试、arm64 的 Android release 构建、Linux 与 Windows 的 release 构建（只验证能否编译，产物不上传；发布工作流经 `skip-desktop-builds` 跳过）、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。
 - 必须：Flutter 版本只定义在 `.github/actions/setup-flutter/action.yml`（CI 与发布共用），升级须单独提交并先让 CI 全绿；依赖以 `pubspec.lock` 为准（CI 用 `flutter pub get --enforce-lockfile`），改动 `pubspec.yaml` 的依赖必须同时提交锁文件。
 - 必须：工作流引用的 action 一律固定到 commit SHA 并在行尾注明版本（由 Dependabot 升级）；工作流默认只读权限，写权限只授予确需写入的 job。
 - 禁止：CI 门禁读取签名材料或任何 secrets（fork 的 PR 也要能跑）；CI 用一次性密钥构建的 APK 不上传（签名与正式版不同，装上后无法覆盖升级）。secrets 只在 `release-apk.yml` 的发布构建 job 中使用：Android 签名构建（签名材料、运行时密钥与网盘应用密钥）与 Linux / Windows 构建（只有网盘应用密钥，权限只读）；网盘应用密钥一律经 `tool/write_cloud_backup_keys.dart` 校验并写入 `cloud_backup_keys.json`（不打印值，桌面构建后删除），禁止各 job 另写一份校验。

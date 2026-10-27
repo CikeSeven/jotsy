@@ -2327,6 +2327,14 @@
   "@diaryMediaImportFailed": {
     "description": "Shown when picking, copying, or inserting diary media fails."
   },
+  "diaryMediaImportPermissionDenied": "Read access to the selected files was denied. Select them again and allow access.",
+  "@diaryMediaImportPermissionDenied": {
+    "description": "Shown when the system picker or file provider denies read access to selected diary media."
+  },
+  "diaryMediaPickerUnavailable": "The system picker could not be opened. Make sure a gallery or file manager is enabled on your device.",
+  "@diaryMediaPickerUnavailable": {
+    "description": "Shown when Android cannot launch either the system photo picker or the document picker."
+  },
   "diaryMediaImportUnsupported": "File import is not available on this platform.",
   "@diaryMediaImportUnsupported": {
     "description": "Shown when local diary media import is requested on an unsupported platform."

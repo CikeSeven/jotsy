@@ -1738,6 +1738,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Files could not be imported. Please try again.';
 
   @override
+  String get diaryMediaImportPermissionDenied =>
+      'Read access to the selected files was denied. Select them again and allow access.';
+
+  @override
+  String get diaryMediaPickerUnavailable =>
+      'The system picker could not be opened. Make sure a gallery or file manager is enabled on your device.';
+
+  @override
   String get diaryMediaImportUnsupported =>
       'File import is not available on this platform.';
 

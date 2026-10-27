@@ -1,7 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 
-/// Android 视频采用与 file_picker 图片入口相同的 ACTION_PICK 相册流程。
+/// Android 视频经系统照片选择器（不支持时使用系统文件选择器）按项授权。
 /// 原生层把临时 URI 流式缓存为文件后只传路径；长期存储仍由媒体导入服务负责。
 class DiaryVideoGalleryService {
   const DiaryVideoGalleryService._();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
@@ -67,20 +68,22 @@ class _SearchField extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final iconColor = colorScheme.onSurfaceVariant;
+    // 玻璃时（“控件”为玻璃，或面板本身是玻璃）换成半透明填充，不模糊；
+    // “控件”为玻璃时静止描边取玻璃描边，聚焦补间照旧。
+    final glassField = AppGlassField.of(context);
+    final fill = glassField?.fill ?? PublishPanelTile.surfaceColor(colorScheme);
+    final idleOutline =
+        glassField?.border?.color ?? PublishPanelTile.outlineColor(colorScheme);
     // 聚焦时描边补间到 primary（与主题输入框的聚焦描边同色），提示正在输入。
     return ListenableBuilder(
       listenable: focusNode,
       builder: (BuildContext context, Widget? child) => ExpressiveStateBlend(
         active: focusNode.hasFocus,
         builder: (BuildContext context, double t, Widget? child) => Material(
-          color: PublishPanelTile.surfaceColor(colorScheme),
+          color: fill,
           shape: StadiumBorder(
             side: BorderSide(
-              color: Color.lerp(
-                PublishPanelTile.outlineColor(colorScheme),
-                colorScheme.primary,
-                t,
-              )!,
+              color: Color.lerp(idleOutline, colorScheme.primary, t)!,
               width: 1.5,
             ),
           ),
@@ -228,7 +231,9 @@ class _SortMenuButtonState extends State<_SortMenuButton> {
                               PublishTagSearchBar.height,
                             ),
                             backgroundColor: Color.lerp(
-                              PublishPanelTile.surfaceColor(colorScheme),
+                              // 与搜索框同底色（玻璃时同为半透明）。
+                              AppGlassField.of(context)?.fill ??
+                                  PublishPanelTile.surfaceColor(colorScheme),
                               colorScheme.secondaryContainer,
                               t,
                             ),

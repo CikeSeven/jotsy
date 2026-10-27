@@ -18,6 +18,8 @@ import '../sections/diary_template_auto_rule_sheet.dart';
 import '../sections/diary_template_choice_sheet.dart';
 import '../viewmodels/diary_template_library.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 自动套用页（模板管理页 →“自动套用”）：按时间段套用的规则与其他时间的
 /// 默认模板。
@@ -39,15 +41,20 @@ class _DiaryTemplateAutoApplyPageState
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsServiceProvider).asData?.value;
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        title: Text(l10n.diaryTemplatesAutoApply),
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            title: Text(l10n.diaryTemplatesAutoApply),
+          ),
+          body: settings == null
+              ? const DelayedLoadingIndicator()
+              : _buildBody(context, settings),
+        ),
       ),
-      body: settings == null
-          ? const DelayedLoadingIndicator()
-          : _buildBody(context, settings),
     );
   }
 
@@ -56,8 +63,13 @@ class _DiaryTemplateAutoApplyPageState
     final theme = Theme.of(context);
     final controller = createDiaryTemplatesController(ref, settings);
     final library = watchDiaryTemplateLibrary(ref, l10n, live: true).library;
-    final hintStyle = theme.textTheme.bodySmall?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
+    // 页首说明与卡片下方的附注都直接画在页面背景上（与设置分组的脚注
+    // 同理），有背景图时加可读性兜底。
+    final hintStyle = AppPageBackdrop.onBackgroundTextStyle(
+      context,
+      theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
     );
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -79,8 +91,11 @@ class _DiaryTemplateAutoApplyPageState
               ),
               child: Text(
                 l10n.diaryTemplatesAutoApplyIntro,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

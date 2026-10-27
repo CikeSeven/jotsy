@@ -10,11 +10,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
 import 'package:node_diary/app/theme/theme.dart';
+import 'package:node_diary/app/theme/app_scroll_behavior.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
+import 'package:node_diary/ui/app_surface/providers/app_surface_settings_provider.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_snack_bar_theme.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
@@ -240,6 +244,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     final (lightTheme, darkTheme) = _themesForSeed(themeSeedColor);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      // Android 拉伸越界时不让滚动内容里的玻璃失去背景模糊，见 AppScrollBehavior。
+      scrollBehavior: const AppScrollBehavior(),
       // 切换明暗/主题色时 AnimatedTheme 会逐帧 lerp 整份 ThemeData；减少动画时
       // 直接切换，曲线与其余颜色过渡统一为 effects。
       themeAnimationDuration: ExpressiveMotion.duration(
@@ -295,7 +301,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
               ? ColoredBox(color: theme.colorScheme.surface, child: themedChild)
               : themedChild,
         );
-        return AnnotatedRegion<SystemUiOverlayStyle>(
+        final region = AnnotatedRegion<SystemUiOverlayStyle>(
           value: systemOverlayStyle,
           child: HomeHintVisibilityScope(
             controller: _homeHintVisibilityController,
@@ -309,6 +315,19 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
               child: NotebookLockLayer(child: scaledChild),
             ),
           ),
+        );
+        // 组件材质（经典 / 玻璃）在 Theme 之下、Navigator 之上交给全应用：
+        // 页面、底部面板与对话框都能经 AppGlass.of 读到。只在材质设置变化
+        // 时重建这一层（appGlassStyleProvider 已按 == 去重），改背景不影响。
+        // 提示条的玻璃配色在同一处以主题覆盖交给全应用（见
+        // AppGlassSnackBarTheme），首页对 snackBarTheme 的 copyWith 会继承。
+        return Consumer(
+          child: AppGlassSnackBarTheme(child: region),
+          builder: (BuildContext context, WidgetRef ref, Widget? child) =>
+              AppGlassScope(
+                style: ref.watch(appGlassStyleProvider),
+                child: child!,
+              ),
         );
       },
       home: home,

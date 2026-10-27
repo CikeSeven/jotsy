@@ -3,6 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import '../../widgets/app_modal/app_dialog.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../controllers/diary_editor_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/app_platform.dart';
@@ -32,7 +34,7 @@ Future<void> showDiaryImageOptions(
 }) async {
   final l10n = context.l10n;
   final style = diaryImageStyleOf(node);
-  final action = await showDialog<_ImageAction>(
+  final action = await showAppDialog<_ImageAction>(
     context: context,
     builder: (BuildContext dialogContext) =>
         _DiaryImageOptionsDialog(readOnly: readOnly),
@@ -98,7 +100,7 @@ Future<void> _showResizer(
       ? math.min(bounds.maxHeight, screen.height)
       : screen.height;
   try {
-    final size = await showModalBottomSheet<Size>(
+    final size = await showAppModalBottomSheet<Size>(
       context: context,
       showDragHandle: true,
       builder: (context) => StatefulBuilder(

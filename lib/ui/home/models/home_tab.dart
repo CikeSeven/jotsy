@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/services/app_features.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_surface/models/app_surface_enums.dart';
 
 /// 首页 Tab。声明顺序就是底栏中的顺序。
 enum HomeTab {
@@ -30,6 +31,14 @@ enum HomeTab {
     HomeTab.calendar => FontAwesomeIcons.solidCalendar,
     HomeTab.explore => FontAwesomeIcons.solidCompass,
     HomeTab.settings => FontAwesomeIcons.gear,
+  };
+
+  /// 这个 Tab 的背景区域（“背景与材质”里可以单独设置）。
+  AppBackgroundArea get backgroundArea => switch (this) {
+    HomeTab.diaries => AppBackgroundArea.diaries,
+    HomeTab.calendar => AppBackgroundArea.calendar,
+    HomeTab.explore => AppBackgroundArea.explore,
+    HomeTab.settings => AppBackgroundArea.settings,
   };
 }
 

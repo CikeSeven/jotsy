@@ -13,6 +13,8 @@ import 'package:node_diary/ui/diaries/models/diary_toolbar_time_format.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
+import '../../widgets/app_modal/app_dialog.dart';
+
 /// 工具栏保持同一套尺寸与图标，动作直接作用于 AppFlowy 选区和节点。
 const BoxConstraints kDiaryToolbarButtonConstraints = BoxConstraints.tightFor(
   width: 32,
@@ -233,7 +235,7 @@ Future<void> _editLink(
   final input = TextEditingController(text: initial is String ? initial : '');
   final l10n = context.l10n;
   String? error;
-  final url = await showDialog<String>(
+  final url = await showAppDialog<String>(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => AlertDialog(

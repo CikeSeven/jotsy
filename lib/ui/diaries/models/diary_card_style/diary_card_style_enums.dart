@@ -73,3 +73,8 @@ enum DiaryCardCoverPosition { start, end, top, background, hidden }
 
 /// 列表侧边封面的形状。
 enum DiaryCardCoverShape { square, landscape, portrait, circle }
+
+/// 卡片表面的材质。[solid] 为改版前的实色卡片（默认）；[glass] 在半透明
+/// 底色下再模糊页面背景（只在页面设置了背景图时才有模糊，见
+/// `DiarySelectionSurface`）。
+enum DiaryCardMaterial { solid, glass }

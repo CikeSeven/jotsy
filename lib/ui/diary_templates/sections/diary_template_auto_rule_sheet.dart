@@ -6,6 +6,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
 import '../../settings/widgets/settings_card_group.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../models/diary_template_auto_rule.dart';
 import '../viewmodels/diary_template_auto_labels.dart';
 import '../viewmodels/diary_template_library.dart';
@@ -33,7 +34,7 @@ Future<DiaryTemplateAutoRuleSheetResult?> showDiaryTemplateAutoRuleSheet(
   required DiaryTemplateLibrary library,
   DiaryTemplateAutoRule? initial,
 }) {
-  return showModalBottomSheet<DiaryTemplateAutoRuleSheetResult>(
+  return showAppModalBottomSheet<DiaryTemplateAutoRuleSheetResult>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

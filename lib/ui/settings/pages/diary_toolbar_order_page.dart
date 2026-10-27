@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/triple_bar_drag_handle.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
@@ -17,6 +18,8 @@ import '../../../app/theme/expressive_motion.dart';
 import '../widgets/diary_toolbar_overflow_divider.dart';
 import 'diary_code_block_style_page.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 ///
@@ -175,7 +178,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
 
   Future<void> _confirmResetOrder() async {
     final l10n = context.l10n;
-    final shouldReset = await showDialog<bool>(
+    final shouldReset = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
@@ -222,7 +225,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   }
 
   Future<void> _openCurrentTimeFormatDialog() async {
-    final result = await showDialog<String>(
+    final result = await showAppDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) {
         return _CurrentTimeFormatDialog(
@@ -300,138 +303,150 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
           unawaited(_attemptExit());
         }
       },
-      child: Scaffold(
-        appBar: AppTopBar(
-          contentMaxWidth: FormWidth.maxWidth,
-          leading: IconButton(
-            tooltip: l10n.commonBack,
-            onPressed: () => unawaited(_attemptExit()),
-            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-          ),
-          title: Text(l10n.autoT0005),
-          actions: <Widget>[
-            TextButton(
-              onPressed: _saving ? null : _confirmResetOrder,
-              child: Text(l10n.commonReset),
+      child: AppPageBackground(
+        area: AppBackgroundArea.settings,
+        child: Builder(
+          builder: (BuildContext context) => Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            appBar: AppTopBar(
+              contentMaxWidth: FormWidth.maxWidth,
+              leading: IconButton(
+                tooltip: l10n.commonBack,
+                onPressed: () => unawaited(_attemptExit()),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+              ),
+              title: Text(l10n.autoT0005),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: _saving ? null : _confirmResetOrder,
+                  child: Text(l10n.commonReset),
+                ),
+                TextButton(
+                  onPressed: _saving ? null : _saveOrder,
+                  child: Text(l10n.commonSave),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: _saving ? null : _saveOrder,
-              child: Text(l10n.commonSave),
-            ),
-          ],
-        ),
-        body: AnimatedSwitcher(
-          duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
-          switchInCurve: ExpressiveMotion.effects,
-          switchOutCurve: ExpressiveMotion.exit,
-          child: KeyedSubtree(
-            key: ValueKey<int>(_resetGeneration),
-            child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                final side = FormWidth.extra(constraints.maxWidth);
-                return ReorderableListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: side, vertical: 12),
-                  buildDefaultDragHandles: false,
-                  proxyDecorator: expressiveReorderProxyDecorator,
-                  itemCount: shownOrder.length + (boundary == null ? 0 : 1),
-                  // 拖拽手柄立即拖动、不经过长按，系统不会反馈；拿起时补一次触觉。
-                  onReorderStart: (_) =>
-                      unawaited(HapticFeedback.mediumImpact()),
-                  onReorderItem: (oldIndex, newIndex) => _handleReorder(
-                    oldIndex,
-                    newIndex,
-                    boundary: boundary,
-                    toolbarWidth: toolbarWidth,
-                  ),
-                  itemBuilder: (BuildContext context, int index) {
-                    if (index == boundary) {
-                      return const DiaryToolbarOverflowDivider(
-                        key: ValueKey<String>('toolbar-overflow-divider'),
-                      );
-                    }
-                    final item =
-                        shownOrder[boundary != null && index > boundary
-                            ? index - 1
-                            : index];
-                    final enabled = !_hiddenItems.contains(item);
-                    return ListTile(
-                      key: ValueKey<String>(item.storageKey),
-                      onTap: _saving
-                          ? null
-                          : () => _handleToggleEnabled(item, !enabled),
-                      leading: SizedBox(
-                        width: 80,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Checkbox(
-                              value: enabled,
-                              onChanged: _saving
-                                  ? null
-                                  : (value) =>
-                                        _handleToggleEnabled(item, value),
-                            ),
-                            const SizedBox(width: 8),
-                            FaIcon(
-                              item.iconData,
-                              size: 16,
-                              color: enabled
-                                  ? null
-                                  : Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                            ),
-                          ],
-                        ),
+            body: AnimatedSwitcher(
+              duration: ExpressiveMotion.duration(
+                context,
+                ExpressiveMotion.medium,
+              ),
+              switchInCurve: ExpressiveMotion.effects,
+              switchOutCurve: ExpressiveMotion.exit,
+              child: KeyedSubtree(
+                key: ValueKey<int>(_resetGeneration),
+                child: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final side = FormWidth.extra(constraints.maxWidth);
+                    return ReorderableListView.builder(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: side,
+                        vertical: 12,
                       ),
-                      title: Text(
-                        _labelForItem(context, item),
-                        style: enabled
-                            ? null
-                            : TextStyle(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
+                      buildDefaultDragHandles: false,
+                      proxyDecorator: expressiveReorderProxyDecorator,
+                      itemCount: shownOrder.length + (boundary == null ? 0 : 1),
+                      // 拖拽手柄立即拖动、不经过长按，系统不会反馈；拿起时补一次触觉。
+                      onReorderStart: (_) =>
+                          unawaited(HapticFeedback.mediumImpact()),
+                      onReorderItem: (oldIndex, newIndex) => _handleReorder(
+                        oldIndex,
+                        newIndex,
+                        boundary: boundary,
+                        toolbarWidth: toolbarWidth,
                       ),
-                      subtitle: item == DiaryToolbarItem.inlineCode
-                          ? Text(l10n.autoT0188)
-                          : item == DiaryToolbarItem.codeBlock
-                          ? Text(l10n.autoT0189)
-                          : item == DiaryToolbarItem.indent
-                          ? Text(l10n.autoT0190)
-                          : null,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          if (_hasToolSettings(item))
-                            IconButton(
-                              tooltip: l10n.diaryToolbarToolSettingsTooltip,
-                              onPressed: _saving
-                                  ? null
-                                  : () => _openToolSettings(item),
-                              icon: const FaIcon(
-                                FontAwesomeIcons.gear,
-                                size: 14,
-                              ),
-                            ),
-                          ReorderableDragStartListener(
-                            index: index,
-                            child: const SizedBox(
-                              width: 44,
-                              height: 40,
-                              child: ColoredBox(
-                                color: Colors.transparent,
-                                child: Center(child: TripleBarDragHandle()),
-                              ),
+                      itemBuilder: (BuildContext context, int index) {
+                        if (index == boundary) {
+                          return const DiaryToolbarOverflowDivider(
+                            key: ValueKey<String>('toolbar-overflow-divider'),
+                          );
+                        }
+                        final item =
+                            shownOrder[boundary != null && index > boundary
+                                ? index - 1
+                                : index];
+                        final enabled = !_hiddenItems.contains(item);
+                        return ListTile(
+                          key: ValueKey<String>(item.storageKey),
+                          onTap: _saving
+                              ? null
+                              : () => _handleToggleEnabled(item, !enabled),
+                          leading: SizedBox(
+                            width: 80,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Checkbox(
+                                  value: enabled,
+                                  onChanged: _saving
+                                      ? null
+                                      : (value) =>
+                                            _handleToggleEnabled(item, value),
+                                ),
+                                const SizedBox(width: 8),
+                                FaIcon(
+                                  item.iconData,
+                                  size: 16,
+                                  color: enabled
+                                      ? null
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                          title: Text(
+                            _labelForItem(context, item),
+                            style: enabled
+                                ? null
+                                : TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                          ),
+                          subtitle: item == DiaryToolbarItem.inlineCode
+                              ? Text(l10n.autoT0188)
+                              : item == DiaryToolbarItem.codeBlock
+                              ? Text(l10n.autoT0189)
+                              : item == DiaryToolbarItem.indent
+                              ? Text(l10n.autoT0190)
+                              : null,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              if (_hasToolSettings(item))
+                                IconButton(
+                                  tooltip: l10n.diaryToolbarToolSettingsTooltip,
+                                  onPressed: _saving
+                                      ? null
+                                      : () => _openToolSettings(item),
+                                  icon: const FaIcon(
+                                    FontAwesomeIcons.gear,
+                                    size: 14,
+                                  ),
+                                ),
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: const SizedBox(
+                                  width: 44,
+                                  height: 40,
+                                  child: ColoredBox(
+                                    color: Colors.transparent,
+                                    child: Center(child: TripleBarDragHandle()),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     );
                   },
-                );
-              },
+                ),
+              ),
             ),
           ),
         ),

@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -31,10 +34,14 @@ class DiaryTemplatesSectionHeader extends StatelessWidget {
         header: true,
         child: Text(
           title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: 16,
-            color: theme.colorScheme.primary,
-            fontWeight: FontWeight.w700,
+          // 分组标题直接画在页面背景上（不在卡片里），有背景图时加可读性兜底。
+          style: AppPageBackdrop.onBackgroundTextStyle(
+            context,
+            theme.textTheme.titleMedium?.copyWith(
+              fontSize: 16,
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
@@ -50,38 +57,49 @@ class DiaryTemplatesMineEmpty extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final body = Padding(
+      padding: const EdgeInsets.all(AppSpacing.l),
+      child: Row(
+        children: <Widget>[
+          FaIcon(
+            FontAwesomeIcons.layerGroup,
+            size: 18,
+            color: colorScheme.secondary,
+          ),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Text(
+              context.l10n.diaryTemplatesMineEmpty,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: ExpressiveSurfaces.cardColor(colorScheme),
-          borderRadius: BorderRadius.circular(AppRadii.input),
-          border: Border.fromBorderSide(
-            ExpressiveSurfaces.cardBorderSide(colorScheme),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Row(
-            children: <Widget>[
-              FaIcon(
-                FontAwesomeIcons.layerGroup,
-                size: 18,
-                color: colorScheme.secondary,
+      // 玻璃时为内容玻璃（共用页面背景读取、无背景图不模糊）；经典分支
+      // 保持原样。
+      child: AppGlass.of(context).isGlass(AppGlassComponent.cards)
+          ? AppGlassSurface(
+              component: AppGlassComponent.cards,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(AppRadii.input),
               ),
-              const SizedBox(width: AppSpacing.m),
-              Expanded(
-                child: Text(
-                  context.l10n.diaryTemplatesMineEmpty,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+              child: body,
+            )
+          : DecoratedBox(
+              decoration: BoxDecoration(
+                color: ExpressiveSurfaces.cardColor(colorScheme),
+                borderRadius: BorderRadius.circular(AppRadii.input),
+                border: Border.fromBorderSide(
+                  ExpressiveSurfaces.cardBorderSide(colorScheme),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+              child: body,
+            ),
     );
   }
 }

@@ -25,6 +25,8 @@ import '../viewmodels/notebook_insights_data.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记本统计页（首页头部卡片“统计”，普通与智能日记本都有）。
 ///
@@ -83,7 +85,6 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final notebookAsync = ref.watch(notebookProvider(widget.notebookId));
     final notebook = notebookAsync.value;
     final Widget body;
@@ -97,21 +98,26 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
     } else {
       body = _buildBody(context, notebook);
     }
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        title: NotebookPageTitle(
-          title: l10n.notebookInsights,
-          subtitle: notebook?.name,
+    return AppPageBackground(
+      area: AppBackgroundArea.other,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+            title: NotebookPageTitle(
+              title: l10n.notebookInsights,
+              subtitle: notebook?.name,
+            ),
+          ),
+          body: body,
         ),
       ),
-      body: body,
     );
   }
 

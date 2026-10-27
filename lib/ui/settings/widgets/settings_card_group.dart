@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_radii.dart';
-import '../../../app/theme/expressive_surfaces.dart';
-import '../../../app/theme/app_effects.dart';
+import '../../app_surface/widgets/app_card_surface.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 
 /// 设置页统一分组卡片组件。
 ///
@@ -44,38 +43,31 @@ class SettingsCardGroup extends StatelessWidget {
               padding: const EdgeInsets.only(left: 12, bottom: 8),
               child: Text(
                 title!,
-                style: textTheme.titleMedium?.copyWith(
-                  fontSize: 16,
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.1,
+                // 标题与脚注直接画在页面背景上（不在卡片里）：有背景图时经
+                // onBackgroundTextStyle 加光晕、必要时换可读色，其余情况原样。
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  textTheme.titleMedium?.copyWith(
+                    fontSize: 16,
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.1,
+                  ),
                 ),
               ),
             ),
           ],
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadii.card),
-              border: Border.all(
-                color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-                width: 0.8,
-              ),
-              boxShadow: AppEffects.restingCardShadow(colorScheme),
-            ),
-            child: Material(
-              color: ExpressiveSurfaces.cardColor(colorScheme),
-              borderRadius: BorderRadius.circular(AppRadii.card),
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  for (var i = 0; i < children.length; i++) ...[
-                    children[i],
-                    if (i < children.length - 1)
-                      const SettingsCardGroupDivider(),
-                  ],
+          // 经典 / 玻璃两种材质都经 AppCardSurface：经典分支与原来的
+          // Container + Material 写法逐像素一致。
+          AppCardSurface(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                for (var i = 0; i < children.length; i++) ...[
+                  children[i],
+                  if (i < children.length - 1) const SettingsCardGroupDivider(),
                 ],
-              ),
+              ],
             ),
           ),
           if (footer != null) ...[
@@ -83,8 +75,11 @@ class SettingsCardGroup extends StatelessWidget {
               padding: const EdgeInsets.only(left: 12, top: 6),
               child: Text(
                 footer!,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

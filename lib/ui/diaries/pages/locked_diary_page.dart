@@ -8,7 +8,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_surface/models/app_surface_enums.dart';
+import '../../app_surface/widgets/app_page_background.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/qweather_icon.dart';
@@ -42,26 +45,46 @@ class LockedDiaryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(diaryDetailProvider(diaryId));
-    final surfaceColor = Theme.of(context).colorScheme.surface;
+    // 各分支的页面底色要从背景之下读，所以经 Builder 拿下层 context；
+    // provider 在上面先订阅好，不在 Builder 里 watch。
+    final page = Builder(
+      builder: (BuildContext context) => _buildState(context, detailAsync),
+    );
+    // 从日记卡片单独推入时自己画预览区域背景；内嵌在预览页（外层已是预览
+    // 区域背景）或宽窗口右栏（透出宿主日记页的背景）时不再画一层。
+    final ownsBackground =
+        host == null &&
+        AppPageBackdrop.maybeOf(context)?.area != AppBackgroundArea.preview;
+    if (!ownsBackground) {
+      return page;
+    }
+    return AppPageBackground(area: AppBackgroundArea.preview, child: page);
+  }
+
+  Widget _buildState(
+    BuildContext context,
+    AsyncValue<DiaryWithTags?> detailAsync,
+  ) {
+    final pageColor = AppPageBackdrop.pageColorOf(context);
     final seeded = initialDetail;
     if (seeded != null && !detailAsync.hasValue && !detailAsync.hasError) {
       return _LockedDiaryContent(detail: seeded, host: host);
     }
     return detailAsync.when(
       loading: () => Scaffold(
-        backgroundColor: surfaceColor,
+        backgroundColor: pageColor,
         appBar: _buildAppBar(context),
         body: const DelayedLoadingIndicator(),
       ),
       error: (error, stackTrace) => Scaffold(
-        backgroundColor: surfaceColor,
+        backgroundColor: pageColor,
         appBar: _buildAppBar(context),
         body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
       ),
       data: (detail) {
         if (detail == null) {
           return Scaffold(
-            backgroundColor: surfaceColor,
+            backgroundColor: pageColor,
             appBar: _buildAppBar(context),
             body: Center(child: Text(context.l10n.autoT0124)),
           );
@@ -117,7 +140,7 @@ class _LockedDiaryContent extends ConsumerWidget {
     final energy = _parseEnergy(contextMeta['energyLevel']);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppPageBackdrop.pageColorOf(context),
       appBar: _lockedAppBar(context, embedded: host != null),
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -269,7 +292,7 @@ class _LockedDiaryContent extends ConsumerWidget {
     WidgetRef ref,
     String diaryId,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

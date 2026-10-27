@@ -8,6 +8,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/viewmodels/diary_card_view_data.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../controllers/anniversary_navigation.dart';
 import '../providers/anniversary_providers.dart';
@@ -27,7 +28,7 @@ Future<AnniversaryDiaryPick?> showAnniversaryDiaryPicker(
   required DateTime date,
   String? selectedDiaryId,
 }) {
-  return showModalBottomSheet<AnniversaryDiaryPick>(
+  return showAppModalBottomSheet<AnniversaryDiaryPick>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

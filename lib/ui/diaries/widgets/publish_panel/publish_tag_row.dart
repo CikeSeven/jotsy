@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
+import 'package:node_diary/ui/app_surface/widgets/on_glass.dart';
 
 /// 标签子页的一行：`#` 色块 + 名称 + 勾选圈，点整行切换选中。
 ///
@@ -24,6 +25,11 @@ class PublishTagRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
     final tagColor = Color(tag.color);
+    // 未选中的底色：画在玻璃面板上时换成半透明的凹槽色（见 OnGlass），
+    // 经典面板上照旧。
+    final idle = OnGlass.of(context)
+        ? OnGlass.wellColor(colorScheme)
+        : colorScheme.surfaceContainerHighest.withValues(alpha: 0.45);
     // 选中换色经 ExpressiveStateBlend 补间（Material 不补间颜色）。
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -31,7 +37,7 @@ class PublishTagRow extends StatelessWidget {
         active: selected,
         builder: (context, t, child) => Material(
           color: Color.lerp(
-            colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+            idle,
             tagColor.withValues(alpha: isLight ? 0.12 : 0.22),
             t,
           ),

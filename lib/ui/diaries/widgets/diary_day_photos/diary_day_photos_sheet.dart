@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
 import '../../controllers/diary_day_photos_controller.dart';
 import 'diary_day_photo_tile.dart';
@@ -27,7 +28,7 @@ Future<bool?> showDiaryDayPhotosSheet(
   required ValueChanged<DayPhoto> onSetCover,
   required VoidCallback onClearCover,
 }) {
-  return showModalBottomSheet<bool>(
+  return showAppModalBottomSheet<bool>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

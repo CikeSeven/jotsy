@@ -10,6 +10,8 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../widgets/list_item_presence.dart';
 import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_labels.dart';
@@ -122,6 +124,85 @@ class NotebookManageRow extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final subtitle = notebookRowSubtitle(l10n, notebook, count);
+    final body = InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+        child: Row(
+          children: <Widget>[
+            ReorderableDragStartListener(
+              index: index,
+              child: Semantics(
+                label: l10n.notebookDragHandle,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.m,
+                    vertical: AppSpacing.l,
+                  ),
+                  child: FaIcon(
+                    FontAwesomeIcons.gripLines,
+                    size: 14,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+            NotebookCoverTile.mini(
+              icon: notebook.icon,
+              color: notebook.color,
+              coverPath: notebook.coverPath,
+              closed: notebook.isClosed,
+            ),
+            const SizedBox(width: AppSpacing.m),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    notebook.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: l10n.notebookMoreActions,
+              onPressed: onMore,
+              icon: FaIcon(
+                FontAwesomeIcons.ellipsisVertical,
+                size: 16,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+          ],
+        ),
+      ),
+    );
+    // 玻璃时为内容玻璃（共用页面背景读取、无背景图不模糊）；经典分支保持
+    // 原样。经典行没有投影，玻璃也不画。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadii.input)),
+        child: body,
+      );
+    }
     return Material(
       color: ExpressiveSurfaces.cardColor(scheme),
       shape: RoundedRectangleBorder(
@@ -129,76 +210,7 @@ class NotebookManageRow extends StatelessWidget {
         side: ExpressiveSurfaces.cardBorderSide(scheme),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
-          child: Row(
-            children: <Widget>[
-              ReorderableDragStartListener(
-                index: index,
-                child: Semantics(
-                  label: l10n.notebookDragHandle,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.m,
-                      vertical: AppSpacing.l,
-                    ),
-                    child: FaIcon(
-                      FontAwesomeIcons.gripLines,
-                      size: 14,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
-              NotebookCoverTile.mini(
-                icon: notebook.icon,
-                color: notebook.color,
-                coverPath: notebook.coverPath,
-                closed: notebook.isClosed,
-              ),
-              const SizedBox(width: AppSpacing.m),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      notebook.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (subtitle.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              IconButton(
-                tooltip: l10n.notebookMoreActions,
-                onPressed: onMore,
-                icon: FaIcon(
-                  FontAwesomeIcons.ellipsisVertical,
-                  size: 16,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-          ),
-        ),
-      ),
+      child: body,
     );
   }
 }

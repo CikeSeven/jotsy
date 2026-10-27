@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../viewmodels/notebook_view.dart';
 
@@ -14,7 +15,7 @@ Future<bool?> showNotebookDeleteDialog(
   required NotebookView notebook,
   required int count,
 }) {
-  return showDialog<bool>(
+  return showAppDialog<bool>(
     context: context,
     builder: (BuildContext _) =>
         _NotebookDeleteDialog(notebook: notebook, count: count),
@@ -88,7 +89,7 @@ Future<bool> showNotebookMergeConfirmDialog(
   required NotebookView target,
   required int count,
 }) async {
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showAppDialog<bool>(
     context: context,
     builder: (BuildContext dialogContext) {
       final l10n = dialogContext.l10n;
@@ -128,7 +129,7 @@ Future<bool> showNotebookConvertConfirmDialog(
   required NotebookView notebook,
   required int count,
 }) async {
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showAppDialog<bool>(
     context: context,
     builder: (BuildContext dialogContext) {
       final l10n = dialogContext.l10n;

@@ -10,6 +10,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../calendar/widgets/calendar_day_content_switcher.dart';
 import '../../calendar/widgets/calendar_diary_mini_card.dart';
 import '../../diaries/models/diary_preview_sequence.dart';
@@ -38,6 +39,11 @@ class AnniversarySectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final action = this.action;
+    // 区块标题直接画在详情页背景上：有背景图时图标与文字经同一可读性兜底。
+    final iconStyle = AppPageBackdrop.onBackgroundTextStyle(
+      context,
+      TextStyle(color: theme.colorScheme.primary),
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.xs,
@@ -49,15 +55,23 @@ class AnniversarySectionHeader extends StatelessWidget {
         header: true,
         child: Row(
           children: <Widget>[
-            FaIcon(icon, size: 14, color: theme.colorScheme.primary),
+            FaIcon(
+              icon,
+              size: 14,
+              color: iconStyle?.color,
+              shadows: iconStyle?.shadows,
+            ),
             const SizedBox(width: AppSpacing.s),
             Expanded(
               child: Text(
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

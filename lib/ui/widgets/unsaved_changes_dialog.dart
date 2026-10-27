@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'app_modal/app_dialog.dart';
 
 /// 离开页面时对“未保存改动”的处理选择。
 enum UnsavedChangesDecision { cancel, discard, saveAndExit }
@@ -12,7 +13,7 @@ enum UnsavedChangesDecision { cancel, discard, saveAndExit }
 Future<UnsavedChangesDecision> showUnsavedChangesDialog(
   BuildContext context,
 ) async {
-  final decision = await showDialog<UnsavedChangesDecision>(
+  final decision = await showAppDialog<UnsavedChangesDecision>(
     context: context,
     builder: (BuildContext dialogContext) {
       final colorScheme = Theme.of(dialogContext).colorScheme;

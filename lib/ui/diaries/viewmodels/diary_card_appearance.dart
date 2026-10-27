@@ -79,12 +79,21 @@ class DiaryCardAppearanceContext {
   final Color? tagColor;
 }
 
-/// 卡片外观解析器（纯函数，按主题实例化）。
+/// 卡片外观解析器（纯函数，按主题与页面底色实例化）。
 class DiaryCardAppearanceResolver {
-  DiaryCardAppearanceResolver(this.style, this.scheme);
+  DiaryCardAppearanceResolver(this.style, this.scheme, {Color? pageBackground})
+    : pageBackground =
+          pageBackground ?? ExpressiveSurfaces.pageBackground(scheme);
 
   final DiaryCardStyle style;
   final ColorScheme scheme;
+
+  /// 卡片实际叠在的颜色：半透明卡片的文字对比度按“卡片底色叠在它上面”
+  /// 计算。页面设了背景色 / 背景图时由宿主传入估计色（见
+  /// `AppPageBackdrop.estimatedColor`）——深色背景图上的半透明卡片若仍按
+  /// 浅色页面底色计算，文字会保持深色而看不清。缺省为主题页面底色，即
+  /// 接入背景前的行为。
+  final Color pageBackground;
 
   bool get _isLight => scheme.brightness == Brightness.light;
 
@@ -123,14 +132,15 @@ class DiaryCardAppearanceResolver {
         gradientEnd == null &&
         opacity >= 1;
 
-    // 文字对比度按“观感上的底色”计算：渐变取中点，半透明叠到页面底色上。
+    // 文字对比度按“观感上的底色”计算：渐变取中点，半透明叠到卡片实际所在
+    // 的页面颜色上（[pageBackground]）。
     var effective = gradientEnd == null
         ? background
         : Color.lerp(background, gradientEnd, 0.5)!;
     if (opacity < 1) {
       effective = Color.alphaBlend(
         effective.withValues(alpha: opacity),
-        ExpressiveSurfaces.pageBackground(scheme),
+        pageBackground,
       );
     }
 
@@ -184,7 +194,9 @@ class DiaryCardAppearanceResolver {
           DiaryCardColorRole.accent,
           context,
         ),
-        translucent: opacity < 1,
+        // 玻璃底色本就要透出背景（模糊后的图），投影一律只画外侧，免得
+        // 从卡片底下透出来压暗玻璃。
+        translucent: opacity < 1 || surfaceStyle.isGlass,
       ),
       gradientColors: gradientEnd == null
           ? null
@@ -203,6 +215,10 @@ class DiaryCardAppearanceResolver {
         DiaryCardGradientDirection.horizontal => AlignmentDirectional.centerEnd,
         DiaryCardGradientDirection.diagonal => AlignmentDirectional.bottomEnd,
       },
+      glass: surfaceStyle.isGlass,
+      blurSigma: surfaceStyle.isGlass
+          ? DiaryCardStyleLimits.blurSigma.clamp(surfaceStyle.blurSigma)
+          : 0,
     );
 
     final accentBarColor = surfaceStyle.accentBar == DiaryCardAccentBar.none

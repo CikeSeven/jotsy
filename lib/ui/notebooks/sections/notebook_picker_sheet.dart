@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../models/notebook_pick_selection.dart';
 import '../providers/notebook_providers.dart';
@@ -50,7 +51,7 @@ Future<NotebookPickerResult?> showNotebookPickerSheet(
   String? title,
   Set<String> excludedIds = const <String>{},
 }) {
-  return showModalBottomSheet<NotebookPickerResult>(
+  return showAppModalBottomSheet<NotebookPickerResult>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

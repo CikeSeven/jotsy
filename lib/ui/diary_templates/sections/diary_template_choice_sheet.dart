@@ -3,6 +3,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../viewmodels/diary_template_auto_labels.dart';
 import '../viewmodels/diary_template_library.dart';
@@ -23,7 +24,7 @@ Future<({String? id})?> showDiaryTemplateChoiceSheet(
   bool allowNone = true,
   String? noneLabel,
 }) {
-  return showModalBottomSheet<({String? id})>(
+  return showAppModalBottomSheet<({String? id})>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

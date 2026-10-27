@@ -8,6 +8,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../diary_templates/viewmodels/diary_template_accent.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../models/notebook_scope_resolver.dart';
@@ -85,6 +87,111 @@ class NotebookHeaderCard extends ConsumerWidget {
       color: scheme.onSurfaceVariant,
     );
 
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (showCover)
+          SizedBox(
+            height: coverHeight,
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) =>
+                  NotebookCoverImage(path: cover, width: constraints.maxWidth),
+            ),
+          ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            contentPadding,
+            contentPadding,
+            contentPadding,
+            bleedExtras.isEmpty ? contentPadding : 0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              // 居中：没有简介时名称只有一行，顶对齐会让它高出图标圆心。
+              Row(
+                children: <Widget>[
+                  NotebookIconCircle(icon: notebook.icon, accent: accent),
+                  const SizedBox(width: AppSpacing.m),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          notebook.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (description.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: 2),
+                          Text(
+                            description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  _HeaderMenu(
+                    notebook: notebook,
+                    onAction: onAction,
+                    onExportBook: onExportBook,
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.m),
+              // 统计还没算出来时占住一行高度，算好后不推动下方内容。
+              Text(
+                meta ?? ' ',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: metaStyle,
+              ),
+              if (notebook.isSmart || isPrivate) ...<Widget>[
+                const SizedBox(height: AppSpacing.s),
+                Wrap(
+                  spacing: AppSpacing.s,
+                  runSpacing: AppSpacing.xs,
+                  children: <Widget>[
+                    if (notebook.isSmart)
+                      _StateCapsule(
+                        icon: FontAwesomeIcons.wandMagicSparkles,
+                        label: l10n.notebookHeaderSmartBadge,
+                        accent: accent,
+                      ),
+                    if (isPrivate)
+                      _StateCapsule(
+                        icon: notebook.visibility == NotebookVisibility.locked
+                            ? FontAwesomeIcons.lock
+                            : FontAwesomeIcons.eyeSlash,
+                        label: l10n.notebookHeaderPrivateBadge,
+                        accent: accent,
+                      ),
+                  ],
+                ),
+              ],
+              ...extras,
+            ],
+          ),
+        ),
+        if (bleedExtras.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: contentPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: bleedExtras,
+            ),
+          ),
+      ],
+    );
     return Padding(
       padding: EdgeInsets.fromLTRB(
         horizontalMargin,
@@ -92,123 +199,23 @@ class NotebookHeaderCard extends ConsumerWidget {
         horizontalMargin,
         AppSpacing.m,
       ),
-      child: Material(
-        color: ExpressiveSurfaces.cardColor(scheme),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_radius),
-          side: ExpressiveSurfaces.cardBorderSide(scheme),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            if (showCover)
-              SizedBox(
-                height: coverHeight,
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) =>
-                      NotebookCoverImage(
-                        path: cover,
-                        width: constraints.maxWidth,
-                      ),
-                ),
+      // 玻璃时为内容玻璃（共用页面背景读取、无背景图不模糊）；经典分支
+      // 保持原样。经典卡片没有投影，玻璃也不画。
+      child: AppGlass.of(context).isGlass(AppGlassComponent.cards)
+          ? AppGlassSurface(
+              component: AppGlassComponent.cards,
+              borderRadius: const BorderRadius.all(Radius.circular(_radius)),
+              child: body,
+            )
+          : Material(
+              color: ExpressiveSurfaces.cardColor(scheme),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(_radius),
+                side: ExpressiveSurfaces.cardBorderSide(scheme),
               ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                contentPadding,
-                contentPadding,
-                contentPadding,
-                bleedExtras.isEmpty ? contentPadding : 0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  // 居中：没有简介时名称只有一行，顶对齐会让它高出图标圆心。
-                  Row(
-                    children: <Widget>[
-                      NotebookIconCircle(icon: notebook.icon, accent: accent),
-                      const SizedBox(width: AppSpacing.m),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              notebook.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            if (description.isNotEmpty) ...<Widget>[
-                              const SizedBox(height: 2),
-                              Text(
-                                description,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      _HeaderMenu(
-                        notebook: notebook,
-                        onAction: onAction,
-                        onExportBook: onExportBook,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-                  // 统计还没算出来时占住一行高度，算好后不推动下方内容。
-                  Text(
-                    meta ?? ' ',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: metaStyle,
-                  ),
-                  if (notebook.isSmart || isPrivate) ...<Widget>[
-                    const SizedBox(height: AppSpacing.s),
-                    Wrap(
-                      spacing: AppSpacing.s,
-                      runSpacing: AppSpacing.xs,
-                      children: <Widget>[
-                        if (notebook.isSmart)
-                          _StateCapsule(
-                            icon: FontAwesomeIcons.wandMagicSparkles,
-                            label: l10n.notebookHeaderSmartBadge,
-                            accent: accent,
-                          ),
-                        if (isPrivate)
-                          _StateCapsule(
-                            icon:
-                                notebook.visibility == NotebookVisibility.locked
-                                ? FontAwesomeIcons.lock
-                                : FontAwesomeIcons.eyeSlash,
-                            label: l10n.notebookHeaderPrivateBadge,
-                            accent: accent,
-                          ),
-                      ],
-                    ),
-                  ],
-                  ...extras,
-                ],
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: body,
             ),
-            if (bleedExtras.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: contentPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: bleedExtras,
-                ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

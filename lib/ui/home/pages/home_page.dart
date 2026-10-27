@@ -8,6 +8,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_fab.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_paged_background.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
@@ -37,6 +41,7 @@ import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/bottom_nav.dart';
+import '../../widgets/glass/glass_reveal.dart';
 import '../../widgets/launch_reveal.dart';
 part '../controllers/home_page_controller.dart';
 part 'home_page_chrome.dart';
@@ -289,46 +294,51 @@ class _HomePageState extends ConsumerState<HomePage> {
       () => _buildTabPage(
         tab,
         (context) => switch (tab) {
+          // 页面底色与实色顶栏底色不在这里传：各页从包住它的
+          // AppAreaBackdrop 读自己区域的背景（见 [_buildTabPage]）。
           HomeTab.diaries => DiariesPage(
             key: const PageStorageKey<String>('tab_diaries'),
-            pageBackgroundColor: Theme.of(context).colorScheme.surface,
             onCreateActionChanged: _diariesCreateActionChanged,
             onSearchActionChanged: _diariesSearchActionChanged,
             onFabVisibilityChanged: _diariesFabVisibilityChanged,
           ),
-          HomeTab.calendar => CalendarPage(
-            key: const PageStorageKey<String>('tab_calendar'),
-            pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          HomeTab.calendar => const CalendarPage(
+            key: PageStorageKey<String>('tab_calendar'),
           ),
-          HomeTab.explore => ExplorePage(
-            key: const PageStorageKey<String>('tab_explore'),
-            pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          HomeTab.explore => const ExplorePage(
+            key: PageStorageKey<String>('tab_explore'),
           ),
-          HomeTab.settings => SettingsPage(
-            key: const PageStorageKey<String>('tab_settings'),
-            pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          HomeTab.settings => const SettingsPage(
+            key: PageStorageKey<String>('tab_settings'),
           ),
         },
       ),
     );
   }
 
-  /// 保活 + 独立主滚动控制器 + 配置变更时重建。
+  /// 保活 + 区域背景信息 + 独立主滚动控制器 + 配置变更时重建。
   ///
   /// 所有平台都让主列表继承该控制器（默认只有移动端继承），桌面端同样支持
   /// 回到顶部；主列表会对子树下发 PrimaryScrollController.none，内层纵向列表
   /// 不会误挂到这个控制器上。
+  ///
+  /// 背景本身由首页外层的 [AppPagedBackground] 统一画（随页位置插值）；
+  /// 这里的 [AppAreaBackdrop] 只把这个 Tab 区域的页面底色、实色顶栏底色
+  /// 交给页面，不画任何东西。
   Widget _buildTabPage(HomeTab tab, WidgetBuilder builder) {
     return KeepAlivePage(
-      child: PrimaryScrollController(
-        controller: _tabScrollControllers.putIfAbsent(
-          tab,
-          ScrollController.new,
-        ),
-        automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
-        child: ValueListenableBuilder<int>(
-          valueListenable: _tabPageConfigRevision,
-          builder: (context, _, __) => builder(context),
+      child: AppAreaBackdrop(
+        area: tab.backgroundArea,
+        child: PrimaryScrollController(
+          controller: _tabScrollControllers.putIfAbsent(
+            tab,
+            ScrollController.new,
+          ),
+          automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
+          child: ValueListenableBuilder<int>(
+            valueListenable: _tabPageConfigRevision,
+            builder: (context, _, __) => builder(context),
+          ),
         ),
       ),
     );
@@ -465,27 +475,42 @@ class _HomePageState extends ConsumerState<HomePage> {
             unawaited(_controller.switchToDiariesTab());
           },
           child: _wrapShortcuts(
-            Scaffold(
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              resizeToAvoidBottomInset: false,
-              // 玻璃底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方透出。
-              // 宽窗口没有底栏，内容止于窗口底部。
-              extendBody: !wide && barStyle.isGlass,
-              body: wide
-                  ? _buildWideBody(
-                      navItems: navItems,
-                      barStyle: barStyle,
-                      content: content,
-                    )
-                  : content,
-              bottomNavigationBar: wide
-                  ? null
-                  : _buildBottomBar(
-                      navItems: navItems,
-                      barStyle: barStyle,
-                      barBehavior: barBehavior,
-                      inlineCreate: inlineCreate,
-                    ),
+            // 各 Tab 区域的背景画在整个首页 Scaffold 下面（键盘弹出时不动），
+            // 按 PageView 的页位置在相邻 Tab 之间插值；宽窗口跳页时交叉淡入。
+            // 没有任何 Tab 设背景时只插入不绘制的节点，与接入前一致。
+            AppPagedBackground(
+              areas: <AppBackgroundArea>[
+                for (final tab in _tabs) tab.backgroundArea,
+              ],
+              current: _effectiveIndex,
+              position: _pagePosition,
+              interpolate: !wide,
+              // Builder：Scaffold 底色要从背景组件之下的 context 读——背景层
+              // 在画时首页 Scaffold 透明，否则仍是主题页面底色。
+              child: Builder(
+                builder: (BuildContext context) => Scaffold(
+                  backgroundColor: AppPagedBackground.shellColorOf(context),
+                  resizeToAvoidBottomInset: false,
+                  // 玻璃底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
+                  // 透出。宽窗口没有底栏，内容止于窗口底部。
+                  extendBody: !wide && barStyle.isGlass,
+                  body: wide
+                      ? _buildWideBody(
+                          navItems: navItems,
+                          barStyle: barStyle,
+                          content: content,
+                        )
+                      : content,
+                  bottomNavigationBar: wide
+                      ? null
+                      : _buildBottomBar(
+                          navItems: navItems,
+                          barStyle: barStyle,
+                          barBehavior: barBehavior,
+                          inlineCreate: inlineCreate,
+                        ),
+                ),
+              ),
             ),
           ),
         ),

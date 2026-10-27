@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import 'glass_reveal.dart';
 import 'outer_shadow_painter.dart';
 
 /// 通用的毛玻璃表面：外侧投影 → 圆角裁切 → 背景模糊 → 半透明底色 + 描边 /
@@ -14,7 +15,9 @@ import 'outer_shadow_painter.dart';
 /// - 禁止把玻璃表面整体放进 `Opacity` / `FadeTransition`：背景模糊要采样
 ///   表面下方的页面，放进透明度层后只能采到透明层自己，显现途中会先闪一下
 ///   没有模糊的底。需要淡入时用 [progress]——它按比例缩放底色、描边、细线与
-///   投影的透明度以及模糊强度；内容另行淡入。
+///   投影的透明度以及模糊强度；内容另行淡入。整块（玻璃连同内容）淡入时
+///   用祖先 [GlassReveal]：它的进度与 [progress] 相乘，并由本表面把内容放进
+///   玻璃里面的一层 Opacity 一起淡入。
 /// - 投影只画在外侧（[OuterShadowPainter]）：底色半透明，普通 elevation
 ///   会从底下透出来，把表面中间压暗。
 /// - 底色由一层 canvas 类型的 [Material] 画出，因此内容里的 InkWell 水波纹
@@ -32,8 +35,13 @@ class GlassSurface extends StatelessWidget {
     this.shadowColor,
     this.progress = 1,
     this.grouped = false,
+    this.backdropKey,
     required this.child,
-  });
+  }) : assert(
+         !grouped || backdropKey == null,
+         'grouped 与 backdropKey 只能二选一：前者取最近的 BackdropGroup，'
+         '后者直接指定共享背景的键。',
+       );
 
   /// 底部细线的默认粗细（与实色栏顶部分隔线同一规格）。
   static const double hairlineWidth = 0.6;
@@ -68,6 +76,12 @@ class GlassSurface extends StatelessWidget {
   /// 玻璃（如顶栏与底栏）同在一个 BackdropGroup 下时只读一次背景，省掉重复
   /// 的背景回读。没有 BackdropGroup 祖先时与普通模糊相同。
   final bool grouped;
+
+  /// 直接指定共享背景读取的键（`BackdropFilter.backdropGroupKey`）：同一键下
+  /// 的多块玻璃只读一次背景。用于不在同一个 [BackdropGroup] 子树里、却叠在
+  /// 同一片背景上的玻璃（如页面背景交给内容卡片的
+  /// `AppPageBackdrop.contentBackdropKey`）。与 [grouped] 互斥。
+  final BackdropKey? backdropKey;
   final Widget child;
 
   static Color _scaled(Color color, double factor) =>
@@ -75,10 +89,18 @@ class GlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = progress.clamp(0.0, 1.0);
+    final reveal = GlassReveal.of(context);
+    final t = (progress * reveal).clamp(0.0, 1.0);
     final side = border;
     final hairline = bottomHairline;
     Widget content = child;
+    // 祖先 GlassReveal 代替了外面的透明度层，内容的淡入改由这里负责：
+    // Opacity 放在 BackdropFilter 之内，只影响内容本身，不妨碍模糊采样。
+    // 只有存在作用域时才包这一层，没有作用域时树结构与原来完全相同。
+    // （自身的 progress 不参与：它只管玻璃表面，内容由调用方另行淡入。）
+    if (GlassReveal.hasScope(context)) {
+      content = Opacity(opacity: reveal, child: content);
+    }
     if (hairline != null) {
       content = DecoratedBox(
         position: DecorationPosition.foreground,
@@ -121,7 +143,12 @@ class GlassSurface extends StatelessWidget {
               filter: filter,
               child: surface,
             )
-          : BackdropFilter(enabled: enabled, filter: filter, child: surface),
+          : BackdropFilter(
+              enabled: enabled,
+              filter: filter,
+              backdropGroupKey: backdropKey,
+              child: surface,
+            ),
     );
     final shadow = shadowColor;
     // 没有投影时也保留 CustomPaint 节点（画笔为 null），开关投影不改变树结构。

@@ -22,6 +22,8 @@ import '../sections/diary_templates_settings_group.dart';
 import 'diary_template_auto_apply_page.dart';
 import 'diary_template_editor_page.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记模板管理页（设置 → 编辑器设置 → 日记模板）。
 ///
@@ -47,27 +49,32 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsServiceProvider).asData?.value;
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        title: Text(l10n.diaryTemplatesTitle),
-        actions: <Widget>[
-          IconButton(
-            tooltip: l10n.diaryTemplatesImport,
-            onPressed: settings == null ? null : () => _import(settings),
-            icon: const FaIcon(FontAwesomeIcons.paste, size: 16),
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            title: Text(l10n.diaryTemplatesTitle),
+            actions: <Widget>[
+              IconButton(
+                tooltip: l10n.diaryTemplatesImport,
+                onPressed: settings == null ? null : () => _import(settings),
+                icon: const FaIcon(FontAwesomeIcons.paste, size: 16),
+              ),
+              IconButton(
+                tooltip: l10n.diaryTemplatesNew,
+                onPressed: () => _openEditor(null),
+                icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
+              ),
+            ],
           ),
-          IconButton(
-            tooltip: l10n.diaryTemplatesNew,
-            onPressed: () => _openEditor(null),
-            icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
-          ),
-        ],
+          body: settings == null
+              ? const DelayedLoadingIndicator()
+              : _buildBody(context, settings),
+        ),
       ),
-      body: settings == null
-          ? const DelayedLoadingIndicator()
-          : _buildBody(context, settings),
     );
   }
 

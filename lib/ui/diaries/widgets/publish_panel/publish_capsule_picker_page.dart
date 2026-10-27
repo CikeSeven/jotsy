@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/on_glass.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 
@@ -86,6 +87,10 @@ class _PublishCapsulePickerPageState extends State<PublishCapsulePickerPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
+    // 快捷预设胶囊的主题底色不透明，在玻璃面板上换成半透明凹槽色。
+    final chipColor = OnGlass.of(context)
+        ? OnGlass.wellColor(colorScheme)
+        : null;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
@@ -96,14 +101,17 @@ class _PublishCapsulePickerPageState extends State<PublishCapsulePickerPage> {
             runSpacing: 8,
             children: <Widget>[
               ActionChip(
+                backgroundColor: chipColor,
                 label: Text(l10n.timeCapsuleQuickWeek),
                 onPressed: () => _applyPreset(TimeCapsulePreset.week),
               ),
               ActionChip(
+                backgroundColor: chipColor,
                 label: Text(l10n.timeCapsuleQuickMonth),
                 onPressed: () => _applyPreset(TimeCapsulePreset.month),
               ),
               ActionChip(
+                backgroundColor: chipColor,
                 label: Text(l10n.timeCapsuleQuickYear),
                 onPressed: () => _applyPreset(TimeCapsulePreset.year),
               ),

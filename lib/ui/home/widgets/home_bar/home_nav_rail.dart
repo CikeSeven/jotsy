@@ -18,6 +18,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../app_surface/widgets/app_glass_fab.dart';
+import '../../../app_surface/widgets/app_glass_scope.dart';
+import '../../../app_surface/widgets/app_glass_surface.dart';
+import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../widgets/launch_reveal.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import '../../models/home_bar_style/home_bar_style.dart';
@@ -54,12 +58,21 @@ class HomeNavRail extends StatelessWidget {
 
   /// 侧边栏底色：与手机底栏实际画出的颜色相同，两种宽度下是同一块表面。
   /// - 实色：底栏（BottomNav）的底色，即 navigationBarTheme 的背景色（亮色
-  ///   与页面画布同色，暗色 surfaceContainer）；
+  ///   与页面画布同色，暗色 surfaceContainer）；当前 Tab 区域设了背景时
+  ///   （[backdrop] 实际在画）改为该区域的实色栏底色——纯色背景时与页面
+  ///   连成一片，图片背景时保持不透明的 surface；
   /// - 玻璃：玻璃底色（含自定义颜色）的不透明等效色 solidFill——侧边栏不
   ///   模糊，与高对比度下的玻璃底栏同一颜色。
-  static Color backgroundOf(ThemeData theme, HomeBarResolvedStyle style) {
+  static Color backgroundOf(
+    ThemeData theme,
+    HomeBarResolvedStyle style, {
+    AppPageBackdrop? backdrop,
+  }) {
     if (style.isGlass) {
       return style.solidFill;
+    }
+    if (backdrop != null && backdrop.hasBackground) {
+      return backdrop.solidBarColor;
     }
     return theme.navigationBarTheme.backgroundColor ??
         theme.colorScheme.surfaceContainer;
@@ -122,7 +135,11 @@ class HomeNavRail extends StatelessWidget {
       slot: LaunchRevealSlot.navigation,
       // 透明度以外的材质：Material 承载指示器（Ink）与水波纹。
       child: Material(
-        color: backgroundOf(Theme.of(context), style),
+        color: backgroundOf(
+          Theme.of(context),
+          style,
+          backdrop: AppPageBackdrop.maybeOf(context),
+        ),
         child: SizedBox(
           width: AppContentWidth.navRail,
           // 只避让侧边栏所在一侧（从右到左的语言下栏在右侧）与上下的系统
@@ -167,17 +184,28 @@ class HomeNavRailCreateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return FloatingActionButton(
+    final glass = AppGlass.of(context).isGlass(AppGlassComponent.controls);
+    final button = FloatingActionButton(
       // 同一路由里可能还有别的 FAB（各 Tab 页面），不参与 Hero 飞行。
       heroTag: null,
       tooltip: label,
       onPressed: onPressed,
-      backgroundColor: scheme.primaryContainer,
-      foregroundColor: scheme.onPrimaryContainer,
+      // 玻璃时底色交给外面的玻璃表面（AppGlassFab 经局部主题把它换成透明）。
+      backgroundColor: glass ? null : scheme.primaryContainer,
+      // 前景同理：玻璃时交给 AppGlassFab 的局部主题（含对比度兜底）。
+      foregroundColor: glass ? null : scheme.onPrimaryContainer,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
       ),
       child: const FaIcon(FontAwesomeIcons.plus, size: 20),
+    );
+    if (!glass) return button;
+    // 侧栏上没有可模糊的内容（下面只有侧栏自己的底色 / 页面背景），不模糊，
+    // 只要主色半透明底色。调用方负责入场不经透明度层（GlassReveal）。
+    return AppGlassFab(
+      borderRadius: BorderRadius.circular(radius),
+      blur: AppGlassBlur.none,
+      child: button,
     );
   }
 }

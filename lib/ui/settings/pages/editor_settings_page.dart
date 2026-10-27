@@ -7,6 +7,8 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 设置-编辑器二级页。
 class EditorSettingsPage extends ConsumerWidget {
@@ -16,26 +18,32 @@ class EditorSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settingsAsync = ref.watch(settingsServiceProvider);
-    return Scaffold(
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        title: Text(l10n.settingsEditorTitle),
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            title: Text(l10n.settingsEditorTitle),
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+          ),
+          body: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final side = FormWidth.extra(constraints.maxWidth);
+              return ListView(
+                padding: EdgeInsets.fromLTRB(side, 12, side, 24),
+                children: <Widget>[
+                  SettingsEditorSection(settingsAsync: settingsAsync),
+                ],
+              );
+            },
+          ),
         ),
-      ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final side = FormWidth.extra(constraints.maxWidth);
-          return ListView(
-            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
-            children: <Widget>[
-              SettingsEditorSection(settingsAsync: settingsAsync),
-            ],
-          );
-        },
       ),
     );
   }

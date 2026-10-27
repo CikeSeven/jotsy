@@ -22,6 +22,8 @@ import '../sections/notebook_editor_goal.dart';
 import '../sections/notebook_editor_rules.dart';
 import '../viewmodels/notebook_view.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记本编辑页：新建与编辑共用。
 ///
@@ -211,10 +213,15 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
     } else {
       body = const DelayedLoadingIndicator();
     }
-    final scaffold = Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: appBar,
-      body: body,
+    final scaffold = AppPageBackground(
+      area: AppBackgroundArea.other,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: appBar,
+          body: body,
+        ),
+      ),
     );
     if (editor == null) return scaffold;
     // 只有 canPop 随改动变化；child 不跟着重建，输入时整页不重排。

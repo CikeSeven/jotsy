@@ -21,6 +21,8 @@ import '../widgets/anniversary_detail_cards.dart';
 import '../widgets/anniversary_diary_picker.dart';
 import '../widgets/anniversary_diary_sections.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 纪念日详情：倒数卡、信息卡、关联的日记与“历年这一天”。
 ///
@@ -107,79 +109,90 @@ class AnniversaryDetailPage extends ConsumerWidget {
     final rule = row == null ? null : AnniversaryRule.fromRow(row);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    return Scaffold(
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        title: Text(l10n.anniversaryListTitle),
-        actions: <Widget>[
-          if (row != null) ...<Widget>[
-            IconButton(
-              tooltip: l10n.commonEdit,
-              onPressed: () => unawaited(_edit(context, ref, row)),
-              icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
+    return AppPageBackground(
+      area: AppBackgroundArea.other,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
-            // 只有两项单行动作：用锚定弹出菜单（条目先关菜单再执行动作）。
-            ExpressiveMenuButton(
-              tooltip: l10n.anniversaryMoreActions,
-              icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
-              items: <Widget>[
-                ExpressiveMenuItem(
-                  leadingIcon: const FaIcon(FontAwesomeIcons.thumbtack),
-                  onPressed: () => unawaited(_togglePin(ref, row)),
-                  child: Text(
-                    row.isPinned ? l10n.anniversaryUnpin : l10n.anniversaryPin,
-                  ),
+            title: Text(l10n.anniversaryListTitle),
+            actions: <Widget>[
+              if (row != null) ...<Widget>[
+                IconButton(
+                  tooltip: l10n.commonEdit,
+                  onPressed: () => unawaited(_edit(context, ref, row)),
+                  icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
                 ),
-                ExpressiveMenuItem(
-                  leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
-                  destructive: true,
-                  onPressed: () => unawaited(_delete(context, ref, row)),
-                  child: Text(l10n.anniversaryDelete),
+                // 只有两项单行动作：用锚定弹出菜单（条目先关菜单再执行动作）。
+                ExpressiveMenuButton(
+                  tooltip: l10n.anniversaryMoreActions,
+                  icon: const FaIcon(
+                    FontAwesomeIcons.ellipsisVertical,
+                    size: 16,
+                  ),
+                  items: <Widget>[
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.thumbtack),
+                      onPressed: () => unawaited(_togglePin(ref, row)),
+                      child: Text(
+                        row.isPinned
+                            ? l10n.anniversaryUnpin
+                            : l10n.anniversaryPin,
+                      ),
+                    ),
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
+                      destructive: true,
+                      onPressed: () => unawaited(_delete(context, ref, row)),
+                      child: Text(l10n.anniversaryDelete),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
-        ],
+            ],
+          ),
+          body: row == null || rule == null
+              ? async.isLoading
+                    ? const DelayedLoadingIndicator()
+                    : const SizedBox.shrink()
+              : LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final side = FormWidth.gutter(constraints.maxWidth);
+                    return ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        side,
+                        AppSpacing.s,
+                        side,
+                        AppSpacing.xxxl,
+                      ),
+                      children: <Widget>[
+                        AnniversaryHeroCard(
+                          row: row,
+                          countdown: AnniversaryCountdown.of(rule, today),
+                        ),
+                        const SizedBox(height: AppSpacing.m),
+                        AnniversaryInfoCard(
+                          row: row,
+                          countdown: AnniversaryCountdown.of(rule, today),
+                        ),
+                        AnniversaryLinkedDiarySection(
+                          row: row,
+                          onPick: () =>
+                              unawaited(_pickDiary(context, ref, row, rule)),
+                        ),
+                        AnniversaryPastDiariesSection(row: row, rule: rule),
+                      ],
+                    );
+                  },
+                ),
+        ),
       ),
-      body: row == null || rule == null
-          ? async.isLoading
-                ? const DelayedLoadingIndicator()
-                : const SizedBox.shrink()
-          : LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                final side = FormWidth.gutter(constraints.maxWidth);
-                return ListView(
-                  padding: EdgeInsets.fromLTRB(
-                    side,
-                    AppSpacing.s,
-                    side,
-                    AppSpacing.xxxl,
-                  ),
-                  children: <Widget>[
-                    AnniversaryHeroCard(
-                      row: row,
-                      countdown: AnniversaryCountdown.of(rule, today),
-                    ),
-                    const SizedBox(height: AppSpacing.m),
-                    AnniversaryInfoCard(
-                      row: row,
-                      countdown: AnniversaryCountdown.of(rule, today),
-                    ),
-                    AnniversaryLinkedDiarySection(
-                      row: row,
-                      onPick: () =>
-                          unawaited(_pickDiary(context, ref, row, rule)),
-                    ),
-                    AnniversaryPastDiariesSection(row: row, rule: rule),
-                  ],
-                );
-              },
-            ),
     );
   }
 }

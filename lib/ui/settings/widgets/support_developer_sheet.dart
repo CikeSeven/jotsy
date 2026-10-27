@@ -8,6 +8,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_image_frame.dart';
 import '../../widgets/long_image/long_image_policy.dart';
@@ -24,7 +25,7 @@ Future<void> showSupportDeveloperSheet(
   BuildContext context, {
   @visibleForTesting SupportDeveloperController Function()? createController,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

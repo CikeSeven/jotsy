@@ -11,6 +11,7 @@ import '../../core/services/app_platform.dart';
 import '../diaries/models/diary_share_target.dart';
 import '../diaries/widgets/diary_share_widgets.dart';
 import '../diaries/widgets/diary_sheet_controls.dart';
+import 'app_modal/app_modal_bottom_sheet.dart';
 
 /// 看图页长按面板选中的动作，关闭面板后由看图页执行。
 sealed class ImageViewerAction {
@@ -54,7 +55,7 @@ Future<ImageViewerAction?> showImageViewerActionsSheet(
   Set<DiaryShareTarget>? initialTargets,
   required bool canOpenDiary,
 }) {
-  return showModalBottomSheet<ImageViewerAction>(
+  return showAppModalBottomSheet<ImageViewerAction>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

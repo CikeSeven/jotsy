@@ -12,6 +12,7 @@ import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import '../diary_image_source.dart';
 import '../publish_diary_cover_sliver.dart';
+import 'diary_preview_surface.dart';
 
 /// 预览页头图（sliver）：通栏或内嵌的 [PublishDiaryCoverSliver]，是列表封面
 /// 共享元素的落点。分享长图期间换成固定高度的静态头图，避免折叠动画在长图
@@ -85,7 +86,8 @@ class DiaryPreviewCover extends StatelessWidget {
       heroTag: heroTag,
       placeholder: placeholder,
       onTap: onTap,
-      background: resolved.background,
+      // 头图框底色与页面底同源：让位给页面背景时透明，不在背景上留色块。
+      background: diaryPreviewPageColors(context, resolved).page,
       fillFrame: fill,
       collapseEffect: cover.fadeOnScroll,
     );
@@ -136,7 +138,7 @@ class DiaryPreviewCover extends StatelessWidget {
           heroTag: heroTag,
           placeholder: placeholder,
           onTap: onTap,
-          background: resolved.background,
+          background: diaryPreviewPageColors(context, resolved).page,
           fillFrame: true,
           collapseEffect: resolved.style.cover.fadeOnScroll,
         );

@@ -5,15 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
-import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
+import '../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../widgets/page_header.dart';
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
@@ -104,8 +107,9 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     // 下方，末尾多留这一段让最后一块完整露出。
     final floatingBarInset = MediaQuery.paddingOf(context).bottom;
 
+    // 探索区域设了背景时页面底透明，露出首页画的背景（见 AppPagedBackground）。
     final pageBgColor =
-        widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
+        widget.pageBackgroundColor ?? AppPageBackdrop.pageColorOf(context);
 
     return Stack(
       children: <Widget>[
@@ -119,8 +123,12 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
             builder: (BuildContext context, BoxConstraints constraints) =>
                 CustomScrollView(
                   slivers: <Widget>[
+                    // 顶栏下缘到第一张卡片固定留四个 Tab 统一的顶部间距
+                    // （经典无背景时也留，改版前就是 12）。
                     SliverToBoxAdapter(
-                      child: SizedBox(height: headerHeight + AppSpacing.m),
+                      child: SizedBox(
+                        height: headerHeight + kHomeTopContentGap,
+                      ),
                     ),
                     SliverPadding(
                       padding: EdgeInsets.symmetric(
@@ -302,6 +310,32 @@ class _ExploreErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          context.l10n.autoT0059,
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          message,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+      ],
+    );
+    // 玻璃时为内容玻璃；经典分支保持原样（这张卡本来就没有投影）。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        child: Padding(padding: const EdgeInsets.all(12), child: content),
+      );
+    }
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -312,24 +346,7 @@ class _ExploreErrorCard extends StatelessWidget {
           width: 0.8,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            context.l10n.autoT0059,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
+      child: content,
     );
   }
 }

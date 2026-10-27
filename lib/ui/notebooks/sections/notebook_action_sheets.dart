@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
 
@@ -43,7 +44,7 @@ FaIconData notebookActionIcon(NotebookAction action) => switch (action) {
 };
 
 Future<T?> _showSheet<T>(BuildContext context, WidgetBuilder builder) {
-  return showModalBottomSheet<T>(
+  return showAppModalBottomSheet<T>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

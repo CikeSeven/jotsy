@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import 'day_mood_picker.dart';
 
 /// 长按日期后可执行的快捷操作。
@@ -66,7 +67,7 @@ Future<CalendarDayChoice?> showCalendarDayActionsSheet(
 }) {
   final today = DateUtils.dateOnly(now);
   final isFuture = DateUtils.dateOnly(day).isAfter(today);
-  return showModalBottomSheet<CalendarDayChoice>(
+  return showAppModalBottomSheet<CalendarDayChoice>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

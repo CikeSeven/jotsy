@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../app_surface/models/app_surface_enums.dart';
+import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../models/diary_preview_sequence.dart';
@@ -42,6 +44,16 @@ class DiaryPreviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 预览区域的背景包在翻页器外面：左右翻页时背景不动，只有各篇（纸张
+    // 跟随主题时透明）滑过。纸张选了颜色时各篇的纸色盖住背景，见
+    // diaryPreviewPageColors。
+    return AppPageBackground(
+      area: AppBackgroundArea.preview,
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final sequence = this.sequence;
     if (sequence == null || !sequence.canPage) {
       return DesktopPageKeys(

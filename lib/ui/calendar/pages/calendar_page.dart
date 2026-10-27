@@ -26,6 +26,9 @@ import '../../../core/services/settings_service.dart';
 import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
 import '../../anniversaries/providers/anniversary_providers.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
@@ -34,6 +37,7 @@ import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../../utils/text_stats.dart';
+import '../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../notebooks/controllers/notebook_quick_create_flows.dart';
 import '../../notebooks/providers/notebook_providers.dart';
@@ -107,7 +111,9 @@ class CalendarPage extends ConsumerStatefulWidget {
 
 class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _calendarCardHorizontalPadding = AppSpacing.m;
-  static const double _calendarCardTopPadding = AppSpacing.m;
+  // 页头下缘到日历卡片：四个 Tab 统一的顶部间距（改版前就是 12，经典
+  // 无背景时同样保留）。
+  static const double _calendarCardTopPadding = kHomeTopContentGap;
   static const double _calendarBottomGap = AppSpacing.m;
   static const double _listBottomExtraSpace = 12;
   Map<DateTime, CalendarDaySummary> _cachedDaySummaries =
@@ -286,8 +292,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       fallbackSummary: summaries[_selectedDay],
       now: now,
     );
+    // 日历区域设了背景时页面底透明，露出首页画的背景（见 AppPagedBackground）。
     final pageBgColor =
-        widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
+        widget.pageBackgroundColor ?? AppPageBackdrop.pageColorOf(context);
 
     // 页头、日历卡片与选中日各区块在这里一次装配好，窄屏单列、宽屏居中
     // 单列与双栏只是摆放方式不同（见 calendar_page_layout.dart）。

@@ -4,6 +4,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../anniversaries/widgets/anniversary_tile.dart';
 
@@ -30,11 +32,43 @@ class CalendarAnniversarySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Semantics(
-      container: true,
-      label: context.l10n.anniversarySectionTitle,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+    final rows = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        for (var i = 0; i < marks.length; i++) ...<Widget>[
+          if (i > 0)
+            Divider(
+              height: 0.6,
+              thickness: 0.6,
+              indent: AppSpacing.m + 36 + AppSpacing.m,
+              endIndent: AppSpacing.m,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.25),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            child: AnniversaryTile(
+              mark: marks[i],
+              today: today,
+              onTap: () => onOpen(marks[i]),
+              trailing: trailingBuilder?.call(marks[i]),
+            ),
+          ),
+        ],
+      ],
+    );
+    const padding = EdgeInsets.symmetric(vertical: AppSpacing.xs);
+    final Widget surface;
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      // 玻璃：内容玻璃自带一层 canvas Material，各行的水波纹画在玻璃上。
+      surface = AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        shadow: true,
+        child: Padding(padding: padding, child: rows),
+      );
+    } else {
+      surface = Container(
+        padding: padding,
         decoration: BoxDecoration(
           color: ExpressiveSurfaces.cardColor(colorScheme),
           borderRadius: BorderRadius.circular(20),
@@ -44,36 +78,13 @@ class CalendarAnniversarySection extends StatelessWidget {
           ),
           boxShadow: AppEffects.restingCardShadow(colorScheme),
         ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              for (var i = 0; i < marks.length; i++) ...<Widget>[
-                if (i > 0)
-                  Divider(
-                    height: 0.6,
-                    thickness: 0.6,
-                    indent: AppSpacing.m + 36 + AppSpacing.m,
-                    endIndent: AppSpacing.m,
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.25),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                  ),
-                  child: AnniversaryTile(
-                    mark: marks[i],
-                    today: today,
-                    onTap: () => onOpen(marks[i]),
-                    trailing: trailingBuilder?.call(marks[i]),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+        child: Material(type: MaterialType.transparency, child: rows),
+      );
+    }
+    return Semantics(
+      container: true,
+      label: context.l10n.anniversarySectionTitle,
+      child: surface,
     );
   }
 }

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/seeded_theme_cache.dart';
-import '../../../../app/theme/expressive_surfaces.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../../diaries/sections/diaries_list_section.dart';
 import '../../../diaries/sections/diary_head_section.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../controllers/diary_card_style_editor_controller.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
+import '../../widgets/style_editor/style_preview_background.dart';
 
 /// 卡片样式的实时预览：顶部工具条（[DiaryCardStylePreviewToolbar]）切换列表/
 /// 瀑布流与预览明暗，下方用真实的 [DiariesListSection] 渲染示例日记，与日记
@@ -20,6 +21,13 @@ import '../../widgets/style_editor/style_editor_common.dart';
 /// 共享元素关闭（`enableCoverHero: false`），避免与真实列表的同名 Hero 冲突。
 /// 明暗与应用当前主题相反时，用同一种子色另装配一份主题（按种子色缓存），
 /// 减少动画时同样去掉控件动效，与应用外壳一致。
+///
+/// 卡片叠在日记页区域的背景上（[StylePreviewBackground]，在预览主题之内，
+/// 明暗切换时背景遮罩随之切换），而不是设置页的背景上：半透明 / 玻璃卡片
+/// 的文字对比度按该区域的估计色计算（[DiariesListSection] 读
+/// `AppPageBackdrop.estimatedColorOf`），玻璃卡片在有背景图时共用预览区的
+/// `contentBackdropKey` 模糊，调透明度与玻璃时看得出效果。日记页没有背景时
+/// 仍铺预览主题的页面底色，与原来相同。
 class DiaryCardStylePreview extends StatefulWidget {
   const DiaryCardStylePreview({
     super.key,
@@ -92,12 +100,13 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
         Expanded(
           child: Theme(
             data: previewTheme,
-            child: Builder(
-              builder: (BuildContext context) {
-                final scheme = Theme.of(context).colorScheme;
-                return ClipRect(
-                  child: Material(
-                    color: ExpressiveSurfaces.pageBackground(scheme),
+            child: ClipRect(
+              child: StylePreviewBackground(
+                child: Builder(
+                  builder: (BuildContext context) => Material(
+                    // 日记页区域画了背景时透明、露出背景；否则即预览主题的
+                    // 页面底色（与原来相同）。
+                    color: AppPageBackdrop.pageColorOf(context),
                     child: CustomScrollView(
                       primary: false,
                       slivers: <Widget>[
@@ -125,8 +134,8 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
                       ],
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ),
         ),

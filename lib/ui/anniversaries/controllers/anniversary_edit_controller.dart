@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../models/anniversary_draft.dart';
 
 /// 编辑页关闭时带回的结果，由打开方决定给什么提示。
@@ -74,7 +75,7 @@ class AnniversaryEditController {
 
   /// 删除确认：左侧灰色取消，右侧 error 色删除。
   static Future<bool> confirmDelete(BuildContext context, String title) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

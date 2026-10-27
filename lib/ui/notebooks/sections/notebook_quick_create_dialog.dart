@@ -11,6 +11,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/color_palette_families.dart';
 import '../../widgets/color_swatch_button.dart';
 import '../controllers/notebook_editor_controller.dart';
@@ -26,7 +27,7 @@ Future<String?> showQuickCreateNotebookDialog(
   BuildContext context, {
   String? initialName,
 }) {
-  return showDialog<String>(
+  return showAppDialog<String>(
     context: context,
     builder: (BuildContext _) =>
         _QuickCreateNotebookDialog(initialName: initialName),

@@ -65,7 +65,11 @@ class DataArchiveService {
         flush: true,
       );
       final documents = await appDataRootDirectory();
-      for (final name in backupMediaDirectories) {
+      // 完整备份带上全部托管目录：日记媒体与设置引用的背景图。
+      for (final name in [
+        ...backupMediaDirectories,
+        ...backupSettingsMediaDirectories,
+      ]) {
         final source = Directory(p.join(documents.path, name));
         if (await source.exists()) {
           await BackupArchiveIO.copyDirectory(
@@ -320,6 +324,7 @@ class DataArchiveService {
       final media = BackupMediaTransaction(
         documents: documents,
         staging: working,
+        directories: _replaceDirectories(restored.settings),
       );
       final settingsSnapshot = settingsService.captureBackupSnapshot();
       try {
@@ -364,6 +369,17 @@ class DataArchiveService {
       if (cleanup) await _cleanWorkingDirectory(working);
     }
   }
+
+  /// 覆盖恢复整目录换入的托管目录：日记媒体一律换入；设置引用的目录
+  /// （背景图）只在备份设置里有对应键、即这项设置也会被恢复时才换入。
+  /// 旧版备份没有该键时本机设置原样保留，本机的图片也必须原样保留，否则
+  /// 设置会指向已被换走的文件。
+  static List<String> _replaceDirectories(Map<String, dynamic>? settings) => [
+    ...backupMediaDirectories,
+    for (final name in backupSettingsMediaDirectories)
+      if (settings != null && settings.containsKey(backupSettingsKeyOf(name)))
+        name,
+  ];
 
   /// 按载荷文件名区分完整备份与日记包；两者都有或都没有都不是有效文件。
   static Future<(BackupArchiveKind, BackupPayload)> _readPayload(

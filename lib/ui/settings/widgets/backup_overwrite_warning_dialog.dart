@@ -7,6 +7,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/backup_import_models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 
 /// 确认按钮的锁定时长：给用户读完后果的时间，也防止上一步的连续点按直接
 /// 落到确认上。这是交互锁定计时而非动画时长，不取 ExpressiveMotion token，
@@ -25,7 +26,7 @@ Future<bool> showBackupOverwriteWarningDialog(
   required BackupArchivePreview preview,
 }) async {
   assert(mode.overwritesLocalData);
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showAppDialog<bool>(
     context: context,
     builder: (BuildContext dialogContext) =>
         BackupOverwriteWarningDialog(mode: mode, preview: preview),

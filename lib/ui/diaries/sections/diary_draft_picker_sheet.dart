@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../viewmodels/diary_draft_list_item.dart';
 import '../widgets/diary_draft_tile.dart';
 
@@ -46,7 +47,7 @@ Future<DiaryDraftPick?> showDiaryDraftPickerSheet(
   required int total,
   bool showFromTemplate = true,
 }) {
-  return showModalBottomSheet<DiaryDraftPick>(
+  return showAppModalBottomSheet<DiaryDraftPick>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

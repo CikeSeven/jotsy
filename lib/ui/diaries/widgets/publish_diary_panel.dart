@@ -18,6 +18,8 @@ import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import 'publish_panel/publish_capsule_picker_page.dart';
 import 'publish_panel/publish_notebook_tiles.dart';
 import 'publish_panel/publish_panel_chrome.dart';
@@ -300,6 +302,22 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
                 decoration: SheetDecorationBuilder(
                   size: SheetSize.fit,
                   builder: (context, child) {
+                    // 材质随“工具栏”组件（与编辑页悬浮工具栏同属叠在正文上
+                    // 的浮层）：玻璃时总是模糊下面的正文 / 预览。不套外层的
+                    // softShadow——普通 BoxShadow 会从半透明底下透出来，把面板
+                    // 中间压暗；投影改由玻璃表面只画在外侧。底色 Material 由
+                    // 玻璃表面提供，面板里的水波纹照样画在它上面。
+                    if (AppGlass.of(
+                      context,
+                    ).isGlass(AppGlassComponent.toolbar)) {
+                      return AppGlassSurface(
+                        component: AppGlassComponent.toolbar,
+                        borderRadius: BorderRadius.circular(AppRadii.nav),
+                        blur: AppGlassBlur.always,
+                        shadow: true,
+                        child: child,
+                      );
+                    }
                     return Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(AppRadii.nav),

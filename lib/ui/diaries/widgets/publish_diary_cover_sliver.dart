@@ -3,6 +3,7 @@ import 'dart:ui' as ui show Image;
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../widgets/expressive_image_frame.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../../widgets/long_image/long_image_policy.dart';
@@ -50,7 +51,8 @@ class PublishDiaryCoverSliver extends StatelessWidget {
   /// 动画时为 null。
   final ValueChanged<ImageViewerHero?>? onTap;
 
-  /// 头图框底色（原图比例与框不同时露出的部分）；默认为主题 surface。
+  /// 头图框底色（原图比例与框不同时露出的部分）；默认为页面底色（无背景时
+  /// 即主题 surface，设了页面背景时透明，不在背景上留一块色块）。
   final Color? background;
 
   /// 铺满头图框并裁掉超出部分；默认完整显示原图（框内按原图比例居中）。
@@ -128,13 +130,13 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
 
     // 透明度直接作用在图片绘制上，而不是外包 Opacity：滚动收起期间不透明度
     // 逐帧为小数，Opacity 会每帧为整块封面 saveLayer。底色与页面同为
-    // surface，是否随之淡出在视觉上没有差别。
+    // surface（或同为透明，见 AppPageBackdrop），是否随之淡出在视觉上没有差别。
     final coverContent = _CoverTapTarget(
       onTap: onTap,
       heroTag: heroTag,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: background ?? Theme.of(context).colorScheme.surface,
+          color: background ?? AppPageBackdrop.pageColorOf(context),
         ),
         child: _CoverImage(
           cover: cover,

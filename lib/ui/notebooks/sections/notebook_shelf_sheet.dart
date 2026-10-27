@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../pages/notebook_editor_page.dart';
 import '../pages/notebooks_page.dart';
@@ -58,7 +59,7 @@ Future<NotebookShelfResult?> showNotebookShelfSheet(
   BuildContext context, {
   String? currentNotebookId,
 }) {
-  return showModalBottomSheet<NotebookShelfResult>(
+  return showAppModalBottomSheet<NotebookShelfResult>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

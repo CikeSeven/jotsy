@@ -21,6 +21,8 @@ import '../widgets/cloud_backup_provider_sheet.dart';
 import '../widgets/settings_card_group.dart';
 import 'cloud_backup_target_page.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 网盘备份首页：已配置的备份位置列表与“添加备份位置”。
 ///
@@ -106,40 +108,50 @@ class _CloudBackupPageState extends ConsumerState<CloudBackupPage>
     final settingsAsync = ref.watch(cloudBackupSettingsServiceProvider);
     return PopScope(
       canPop: !_busy,
-      child: Scaffold(
-        appBar: AppTopBar(
-          contentMaxWidth: FormWidth.maxWidth,
-          title: Text(l10n.cloudBackupTitle),
-          leading: IconButton(
-            tooltip: l10n.commonBack,
-            onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
-            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-          ),
-        ),
-        body: Stack(
-          children: <Widget>[
-            settingsAsync.when(
-              data: (settings) =>
-                  ValueListenableBuilder<List<CloudBackupTarget>>(
-                    valueListenable: settings.targetsNotifier,
-                    builder: (context, targets, _) =>
-                        _buildContent(context, targets),
+      child: AppPageBackground(
+        area: AppBackgroundArea.settings,
+        child: Builder(
+          builder: (BuildContext context) => Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            appBar: AppTopBar(
+              contentMaxWidth: FormWidth.maxWidth,
+              title: Text(l10n.cloudBackupTitle),
+              leading: IconButton(
+                tooltip: l10n.commonBack,
+                onPressed: _busy
+                    ? null
+                    : () => Navigator.of(context).maybePop(),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+              ),
+            ),
+            body: Stack(
+              children: <Widget>[
+                settingsAsync.when(
+                  data: (settings) =>
+                      ValueListenableBuilder<List<CloudBackupTarget>>(
+                        valueListenable: settings.targetsNotifier,
+                        builder: (context, targets, _) =>
+                            _buildContent(context, targets),
+                      ),
+                  loading: () => const DelayedLoadingIndicator(),
+                  error: (error, _) => ListView(
+                    padding: const EdgeInsets.all(AppSpacing.l),
+                    children: <Widget>[
+                      Text(describeCloudBackupError(l10n, error)),
+                    ],
                   ),
-              loading: () => const DelayedLoadingIndicator(),
-              error: (error, _) => ListView(
-                padding: const EdgeInsets.all(AppSpacing.l),
-                children: <Widget>[Text(describeCloudBackupError(l10n, error))],
-              ),
+                ),
+                Positioned.fill(
+                  child: ActionLoadingOverlay(
+                    visible: _busy,
+                    label: _busyText,
+                    semanticLabel: l10n.cloudBackupBusyLabel,
+                    revealDelay: DelayedLoadingGate.defaultDelay,
+                  ),
+                ),
+              ],
             ),
-            Positioned.fill(
-              child: ActionLoadingOverlay(
-                visible: _busy,
-                label: _busyText,
-                semanticLabel: l10n.cloudBackupBusyLabel,
-                revealDelay: DelayedLoadingGate.defaultDelay,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

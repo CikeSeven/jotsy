@@ -29,6 +29,8 @@ import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
 import 'package:node_diary/ui/widgets/desktop_page_arrows.dart';
 import 'package:node_diary/ui/widgets/form_width.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记发布页（预览优先，进入即发表）。
 ///
@@ -268,126 +270,151 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
       // 桌面上 Esc 走与系统返回相同的路径（先退子页、收起面板，再补存退场）。
       child: DesktopPageKeys(
         onEscape: () => unawaited(Navigator.of(context).maybePop()),
-        child: Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          appBar: AppTopBar(
-            contentMaxWidth: AppContentWidth.form,
-            title: PublishStatusTitle(published: _publisher.diaryId != null),
-            leading: IconButton(
-              tooltip: context.l10n.commonBack,
-              onPressed: _leaveBlocked ? null : _leave,
-              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-            ),
-          ),
-          body: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              // 宽窗口里头图与正文预览收成表单宽度（720）的一列居中：两者自带
-              // 16 的左右边距，外面只补多出来的留白；手机上为 0。
-              LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  final extra = FormWidth.extra(constraints.maxWidth);
-                  return CustomScrollView(
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    slivers: <Widget>[
-                      SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: extra),
-                        sliver: SliverMainAxisGroup(
-                          slivers: <Widget>[
-                            // 只随封面重建：面板上打字、选心情不触碰封面头图。
-                            ValueListenableSelector<DiaryMetaDraft, String?>(
-                              valueListenable: _meta,
-                              selector: (draft) => draft.cover,
-                              builder: (context, cover, _) =>
-                                  AnimatedPublishDiaryCoverSliver(cover: cover),
-                            ),
-                            SliverToBoxAdapter(
-                              child: PublishDiaryPreview(
-                                draft: widget.initialDraft,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // 根据面板展开进度动态预留底部空间，避免正文被面板遮挡。
-                      SliverToBoxAdapter(
-                        child: ValueListenableBuilder<double>(
-                          valueListenable: _panelExpandProgress,
-                          builder: (context, progress, _) => SizedBox(
-                            height: lerpDouble(140, 460, progress) ?? 140,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+        child: AppPageBackground(
+          area: AppBackgroundArea.editor,
+          child: Builder(
+            builder: (BuildContext context) => Scaffold(
+              backgroundColor: AppPageBackdrop.pageColorOf(context),
+              appBar: AppTopBar(
+                contentMaxWidth: AppContentWidth.form,
+                title: PublishStatusTitle(
+                  published: _publisher.diaryId != null,
+                ),
+                leading: IconButton(
+                  tooltip: context.l10n.commonBack,
+                  onPressed: _leaveBlocked ? null : _leave,
+                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                ),
               ),
-              // 底部悬浮交互面板：铺满 body、贴底对齐，面板据此拿到可用高度
-              // （键盘弹出时展开高度随之收缩）。
-              // 宽窗口（≥ 600）里与编辑页的面板同一列：左右 12、最宽 760 居中，
-              // 面板不再自行内缩（从编辑页进来时位置不跳）；手机上照旧。
-              Positioned.fill(
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    final wide = constraints.maxWidth >= AppBreakpoints.medium;
-                    return Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: wide ? kDiaryFloatingToolbarInset : 16,
-                      ),
-                      child: CenteredContent(
-                        maxWidth: AppContentWidth.editor,
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
-                          // 写库前后、封存与退场期间锁住面板：这时的改动不会被保存，不该
-                          // 看起来可改。
-                          child: AbsorbPointer(
-                            absorbing: _leaveBlocked,
-                            child: ValueListenableBuilder<DateTime?>(
-                              valueListenable: _publisher.explicitPublishAt,
-                              builder: (context, _, _) => PublishDiaryPanel(
-                                fillWidth: wide,
-                                controller: _panelController,
-                                draft: _meta,
-                                actions: _metaActions,
-                                busy: _leaveBlocked,
-                                // 进入即发表，发表时间就是写库那一刻（或用户改选的时间）。
-                                publishTime: PublishTimeOption(
-                                  label: context.l10n.formatDateTimeMinute(
-                                    _publisher.effectivePublishAt,
-                                  ),
-                                  onPick: _pickPublishTime,
+              body: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  // 宽窗口里头图与正文预览收成表单宽度（720）的一列居中：两者自带
+                  // 16 的左右边距，外面只补多出来的留白；手机上为 0。
+                  LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
+                          final extra = FormWidth.extra(constraints.maxWidth);
+                          return CustomScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            slivers: <Widget>[
+                              SliverPadding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: extra,
                                 ),
-                                capsuleEnabled: capsulesEnabled,
-                                showDraftCapsule: capsulesEnabled,
-                                // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
-                                // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
-                                onProgressChanged: (progress) {
-                                  if (mounted) {
-                                    _panelExpandProgress.value = progress;
-                                  }
-                                },
+                                sliver: SliverMainAxisGroup(
+                                  slivers: <Widget>[
+                                    // 只随封面重建：面板上打字、选心情不触碰封面头图。
+                                    ValueListenableSelector<
+                                      DiaryMetaDraft,
+                                      String?
+                                    >(
+                                      valueListenable: _meta,
+                                      selector: (draft) => draft.cover,
+                                      builder: (context, cover, _) =>
+                                          AnimatedPublishDiaryCoverSliver(
+                                            cover: cover,
+                                          ),
+                                    ),
+                                    SliverToBoxAdapter(
+                                      child: PublishDiaryPreview(
+                                        draft: widget.initialDraft,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                              // 根据面板展开进度动态预留底部空间，避免正文被面板遮挡。
+                              SliverToBoxAdapter(
+                                child: ValueListenableBuilder<double>(
+                                  valueListenable: _panelExpandProgress,
+                                  builder: (context, progress, _) => SizedBox(
+                                    height:
+                                        lerpDouble(140, 460, progress) ?? 140,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                  ),
+                  // 底部悬浮交互面板：铺满 body、贴底对齐，面板据此拿到可用高度
+                  // （键盘弹出时展开高度随之收缩）。
+                  // 宽窗口（≥ 600）里与编辑页的面板同一列：左右 12、最宽 760 居中，
+                  // 面板不再自行内缩（从编辑页进来时位置不跳）；手机上照旧。
+                  Positioned.fill(
+                    child: LayoutBuilder(
+                      builder:
+                          (BuildContext context, BoxConstraints constraints) {
+                            final wide =
+                                constraints.maxWidth >= AppBreakpoints.medium;
+                            return Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: wide
+                                    ? kDiaryFloatingToolbarInset
+                                    : 16,
+                              ),
+                              child: CenteredContent(
+                                maxWidth: AppContentWidth.editor,
+                                child: Align(
+                                  alignment: Alignment.bottomCenter,
+                                  // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
+                                  // 写库前后、封存与退场期间锁住面板：这时的改动不会被保存，不该
+                                  // 看起来可改。
+                                  child: AbsorbPointer(
+                                    absorbing: _leaveBlocked,
+                                    child: ValueListenableBuilder<DateTime?>(
+                                      valueListenable:
+                                          _publisher.explicitPublishAt,
+                                      builder: (context, _, _) =>
+                                          PublishDiaryPanel(
+                                            fillWidth: wide,
+                                            controller: _panelController,
+                                            draft: _meta,
+                                            actions: _metaActions,
+                                            busy: _leaveBlocked,
+                                            // 进入即发表，发表时间就是写库那一刻（或用户改选的时间）。
+                                            publishTime: PublishTimeOption(
+                                              label: context.l10n
+                                                  .formatDateTimeMinute(
+                                                    _publisher
+                                                        .effectivePublishAt,
+                                                  ),
+                                              onPick: _pickPublishTime,
+                                            ),
+                                            capsuleEnabled: capsulesEnabled,
+                                            showDraftCapsule: capsulesEnabled,
+                                            // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+                                            // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
+                                            onProgressChanged: (progress) {
+                                              if (mounted) {
+                                                _panelExpandProgress.value =
+                                                    progress;
+                                              }
+                                            },
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                    ),
+                  ),
+                  // 写库通常几十毫秒完成：遮罩立即拦截点击，超过 300ms 才淡入显示。
+                  Positioned.fill(
+                    child: ActionLoadingOverlay(
+                      visible: _publisher.phase.value == PublishPhase.saving,
+                      label: context.l10n.autoT0176,
+                      revealDelay: DelayedLoadingGate.defaultDelay,
+                    ),
+                  ),
+                  if (_publisher.phase.value == PublishPhase.sealing)
+                    const TimeCapsuleSealOverlay(),
+                ],
               ),
-              // 写库通常几十毫秒完成：遮罩立即拦截点击，超过 300ms 才淡入显示。
-              Positioned.fill(
-                child: ActionLoadingOverlay(
-                  visible: _publisher.phase.value == PublishPhase.saving,
-                  label: context.l10n.autoT0176,
-                  revealDelay: DelayedLoadingGate.defaultDelay,
-                ),
-              ),
-              if (_publisher.phase.value == PublishPhase.sealing)
-                const TimeCapsuleSealOverlay(),
-            ],
+            ),
           ),
         ),
       ),

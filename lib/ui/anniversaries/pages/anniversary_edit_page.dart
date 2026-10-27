@@ -22,6 +22,8 @@ import '../viewmodels/anniversary_rule.dart';
 import '../widgets/anniversary_date_field.dart';
 import '../widgets/anniversary_link_field.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 纪念日编辑页（新建 / 编辑）。
 ///
@@ -165,143 +167,158 @@ class _AnniversaryEditPageState extends ConsumerState<AnniversaryEditPage> {
       onPopInvokedWithResult: (bool didPop, Object? result) {
         if (!didPop) unawaited(_attemptExit());
       },
-      child: Scaffold(
-        appBar: AppTopBar(
-          contentMaxWidth: FormWidth.maxWidth,
-          leading: IconButton(
-            tooltip: l10n.commonBack,
-            onPressed: () => unawaited(_attemptExit()),
-            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-          ),
-          title: Text(
-            widget.editing == null
-                ? l10n.anniversaryNewTitle
-                : l10n.anniversaryEditTitle,
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: _saving || !_draft.isValid ? null : _save,
-              child: Text(l10n.commonSave),
-            ),
-          ],
-        ),
-        body: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            final side = FormWidth.gutter(constraints.maxWidth);
-            return ListView(
-              padding: EdgeInsets.fromLTRB(
-                side,
-                AppSpacing.s,
-                side,
-                AppSpacing.xxxl,
+      child: AppPageBackground(
+        area: AppBackgroundArea.other,
+        child: Builder(
+          builder: (BuildContext context) => Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            appBar: AppTopBar(
+              contentMaxWidth: FormWidth.maxWidth,
+              leading: IconButton(
+                tooltip: l10n.commonBack,
+                onPressed: () => unawaited(_attemptExit()),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
               ),
-              children: <Widget>[
-                CalendarOptionsFieldLabel(text: l10n.anniversaryFieldName),
-                TextField(
-                  controller: _title,
-                  focusNode: _titleFocus,
-                  maxLength: AnniversaryDraft.maxTitleLength,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    hintText: l10n.anniversaryNameHint,
-                    errorText: titleMissing
-                        ? l10n.anniversaryNameRequired
-                        : null,
-                  ),
-                  onChanged: (String value) {
-                    if (value.trim().isEmpty) _titleTouched = true;
-                    _update(_draft.copyWith(title: value));
-                  },
-                  onSubmitted: (_) => _titleFocus.unfocus(),
+              title: Text(
+                widget.editing == null
+                    ? l10n.anniversaryNewTitle
+                    : l10n.anniversaryEditTitle,
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: _saving || !_draft.isValid ? null : _save,
+                  child: Text(l10n.commonSave),
                 ),
-                const SizedBox(height: AppSpacing.s),
-                CalendarOptionsFieldLabel(text: l10n.anniversaryFieldDate),
-                AnniversaryDateField(
-                  date: _draft.date,
-                  showLunar:
-                      l10n.isZh ||
-                      _draft.recurrence == AnniversaryRecurrence.lunarYearly,
-                  onChanged: (DateTime date) =>
-                      _update(_draft.copyWith(date: date)),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                CalendarOptionsFieldLabel(text: l10n.anniversaryFieldRepeat),
-                ExpressiveButtonGroup<AnniversaryRecurrence>(
-                  segments: <ButtonSegment<AnniversaryRecurrence>>[
-                    ButtonSegment<AnniversaryRecurrence>(
-                      value: AnniversaryRecurrence.solarYearly,
-                      label: Text(l10n.anniversaryRepeatSolar),
-                    ),
-                    ButtonSegment<AnniversaryRecurrence>(
-                      value: AnniversaryRecurrence.lunarYearly,
-                      label: Text(l10n.anniversaryRepeatLunar),
-                    ),
-                    ButtonSegment<AnniversaryRecurrence>(
-                      value: AnniversaryRecurrence.once,
-                      label: Text(l10n.anniversaryRepeatOnce),
-                    ),
-                  ],
-                  selected: <AnniversaryRecurrence>{_draft.recurrence},
-                  onSelectionChanged: (Set<AnniversaryRecurrence> selection) =>
-                      _update(_draft.copyWith(recurrence: selection.single)),
-                ),
-                const SizedBox(height: AppSpacing.s),
-                // 说明长短不一：高度随之过渡，下方字段不在换字的一帧里跳动。
-                AnimatedSize(
-                  duration: ExpressiveMotion.durationNonZero(
-                    context,
-                    ExpressiveMotion.fast,
-                  ),
-                  curve: ExpressiveMotion.effects,
-                  alignment: Alignment.topCenter,
-                  child: CalendarOptionsFadingText(
-                    text: _repeatDescription(l10n),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                CalendarOptionsFieldLabel(text: l10n.anniversaryFieldLink),
-                AnniversaryLinkField(
-                  date: _draft.date,
-                  diaryId: _draft.linkedDiaryId,
-                  onChanged: (String? diaryId) =>
-                      _update(_draft.copyWith(linkedDiaryId: () => diaryId)),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                CalendarOptionsFieldLabel(text: l10n.anniversaryFieldNote),
-                TextField(
-                  controller: _note,
-                  maxLength: AnniversaryDraft.maxNoteLength,
-                  minLines: 2,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    hintText: l10n.anniversaryNoteHint,
-                  ),
-                  onChanged: (String value) =>
-                      _update(_draft.copyWith(note: value)),
-                ),
-                CalendarOptionSwitch(
-                  label: l10n.anniversaryPin,
-                  description: l10n.anniversaryPinDescription,
-                  value: _draft.isPinned,
-                  onChanged: (bool value) =>
-                      _update(_draft.copyWith(isPinned: value)),
-                ),
-                if (widget.editing != null) ...<Widget>[
-                  const SizedBox(height: AppSpacing.xl),
-                  Center(
-                    child: TextButton.icon(
-                      style: TextButton.styleFrom(
-                        foregroundColor: colorScheme.error,
-                      ),
-                      onPressed: _saving ? null : _delete,
-                      icon: const FaIcon(FontAwesomeIcons.trashCan, size: 15),
-                      label: Text(l10n.anniversaryDelete),
-                    ),
-                  ),
-                ],
               ],
-            );
-          },
+            ),
+            body: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.gutter(constraints.maxWidth);
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    side,
+                    AppSpacing.s,
+                    side,
+                    AppSpacing.xxxl,
+                  ),
+                  children: <Widget>[
+                    CalendarOptionsFieldLabel(text: l10n.anniversaryFieldName),
+                    TextField(
+                      controller: _title,
+                      focusNode: _titleFocus,
+                      maxLength: AnniversaryDraft.maxTitleLength,
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        hintText: l10n.anniversaryNameHint,
+                        errorText: titleMissing
+                            ? l10n.anniversaryNameRequired
+                            : null,
+                      ),
+                      onChanged: (String value) {
+                        if (value.trim().isEmpty) _titleTouched = true;
+                        _update(_draft.copyWith(title: value));
+                      },
+                      onSubmitted: (_) => _titleFocus.unfocus(),
+                    ),
+                    const SizedBox(height: AppSpacing.s),
+                    CalendarOptionsFieldLabel(text: l10n.anniversaryFieldDate),
+                    AnniversaryDateField(
+                      date: _draft.date,
+                      showLunar:
+                          l10n.isZh ||
+                          _draft.recurrence ==
+                              AnniversaryRecurrence.lunarYearly,
+                      onChanged: (DateTime date) =>
+                          _update(_draft.copyWith(date: date)),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    CalendarOptionsFieldLabel(
+                      text: l10n.anniversaryFieldRepeat,
+                    ),
+                    ExpressiveButtonGroup<AnniversaryRecurrence>(
+                      segments: <ButtonSegment<AnniversaryRecurrence>>[
+                        ButtonSegment<AnniversaryRecurrence>(
+                          value: AnniversaryRecurrence.solarYearly,
+                          label: Text(l10n.anniversaryRepeatSolar),
+                        ),
+                        ButtonSegment<AnniversaryRecurrence>(
+                          value: AnniversaryRecurrence.lunarYearly,
+                          label: Text(l10n.anniversaryRepeatLunar),
+                        ),
+                        ButtonSegment<AnniversaryRecurrence>(
+                          value: AnniversaryRecurrence.once,
+                          label: Text(l10n.anniversaryRepeatOnce),
+                        ),
+                      ],
+                      selected: <AnniversaryRecurrence>{_draft.recurrence},
+                      onSelectionChanged:
+                          (Set<AnniversaryRecurrence> selection) => _update(
+                            _draft.copyWith(recurrence: selection.single),
+                          ),
+                    ),
+                    const SizedBox(height: AppSpacing.s),
+                    // 说明长短不一：高度随之过渡，下方字段不在换字的一帧里跳动。
+                    AnimatedSize(
+                      duration: ExpressiveMotion.durationNonZero(
+                        context,
+                        ExpressiveMotion.fast,
+                      ),
+                      curve: ExpressiveMotion.effects,
+                      alignment: Alignment.topCenter,
+                      child: CalendarOptionsFadingText(
+                        text: _repeatDescription(l10n),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    CalendarOptionsFieldLabel(text: l10n.anniversaryFieldLink),
+                    AnniversaryLinkField(
+                      date: _draft.date,
+                      diaryId: _draft.linkedDiaryId,
+                      onChanged: (String? diaryId) => _update(
+                        _draft.copyWith(linkedDiaryId: () => diaryId),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    CalendarOptionsFieldLabel(text: l10n.anniversaryFieldNote),
+                    TextField(
+                      controller: _note,
+                      maxLength: AnniversaryDraft.maxNoteLength,
+                      minLines: 2,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: l10n.anniversaryNoteHint,
+                      ),
+                      onChanged: (String value) =>
+                          _update(_draft.copyWith(note: value)),
+                    ),
+                    CalendarOptionSwitch(
+                      label: l10n.anniversaryPin,
+                      description: l10n.anniversaryPinDescription,
+                      value: _draft.isPinned,
+                      onChanged: (bool value) =>
+                          _update(_draft.copyWith(isPinned: value)),
+                    ),
+                    if (widget.editing != null) ...<Widget>[
+                      const SizedBox(height: AppSpacing.xl),
+                      Center(
+                        child: TextButton.icon(
+                          style: TextButton.styleFrom(
+                            foregroundColor: colorScheme.error,
+                          ),
+                          onPressed: _saving ? null : _delete,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.trashCan,
+                            size: 15,
+                          ),
+                          label: Text(l10n.anniversaryDelete),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/backup_import_models.dart';
 import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../../widgets/expressive_state_blend.dart';
 import 'backup_import_folder_section.dart';
@@ -26,7 +27,7 @@ Future<BackupImportMode?> showBackupImportOptionsSheet(
   required BackupArchivePreview preview,
   BackupImportFolderChoice? folderChoice,
 }) {
-  return showModalBottomSheet<BackupImportMode>(
+  return showAppModalBottomSheet<BackupImportMode>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

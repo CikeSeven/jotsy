@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/widgets/style_editor/style_editor_scaffold.dart';
@@ -11,23 +12,25 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('zh'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: StyleEditorScaffold(
-          title: '样式',
-          listenable: ChangeNotifier(),
-          isDefault: () => true,
-          onReset: () {},
-          tabs: const <String>['一', '二'],
-          tabViews: () => const <Widget>[
-            SizedBox.expand(key: ValueKey<String>('tab_1')),
-            SizedBox.expand(key: ValueKey<String>('tab_2')),
-          ],
-          previewBuilder:
-              ({required bool showToolbar, required double bottomPadding}) =>
-                  const SizedBox.expand(key: ValueKey<String>('preview')),
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: StyleEditorScaffold(
+            title: '样式',
+            listenable: ChangeNotifier(),
+            isDefault: () => true,
+            onReset: () {},
+            tabs: const <String>['一', '二'],
+            tabViews: () => const <Widget>[
+              SizedBox.expand(key: ValueKey<String>('tab_1')),
+              SizedBox.expand(key: ValueKey<String>('tab_2')),
+            ],
+            previewBuilder:
+                ({required bool showToolbar, required double bottomPadding}) =>
+                    const SizedBox.expand(key: ValueKey<String>('preview')),
+          ),
         ),
       ),
     );

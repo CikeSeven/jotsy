@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
 
@@ -40,6 +41,10 @@ class CalendarDayHeading extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final duration = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+    // 标题行直接画在日历页背景上（日记列表上方，不在卡片里）：有背景图时
+    // 各段文字经同一可读性兜底，无背景图时原样。
+    TextStyle? onBackground(TextStyle? style) =>
+        AppPageBackdrop.onBackgroundTextStyle(context, style);
     final statsText = entryCount == 0
         ? ''
         : l10n.calendarDayStats(
@@ -74,8 +79,10 @@ class CalendarDayHeading extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         DateFormat.MMMd(l10n.localeName).format(day),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                        style: onBackground(
+                          theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -84,8 +91,10 @@ class CalendarDayHeading extends StatelessWidget {
                           DateFormat.E(l10n.localeName).format(day),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                          style: onBackground(
+                            theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ),
                       ),
@@ -114,8 +123,10 @@ class CalendarDayHeading extends StatelessWidget {
             child: Text(
               statsText,
               maxLines: 1,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              style: onBackground(
+                theme.textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -137,33 +148,29 @@ class CalendarDayHeading extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     const emphasis = TextStyle(fontWeight: FontWeight.w600);
+    // 彩色片段各自做对比度兜底（光晕也随之写进片段）；无背景图时原样。
+    TextStyle emphasisIn(Color color) => AppPageBackdrop.onBackgroundTextStyle(
+      context,
+      emphasis.copyWith(color: color),
+    )!;
     final term = lunar?.term;
     final spans = <InlineSpan>[
       if (lunar != null) TextSpan(text: l10n.calendarLunarDate(lunar.date)),
       for (final festival in lunar?.festivals ?? const <String>[])
-        TextSpan(
-          text: festival,
-          style: emphasis.copyWith(color: colorScheme.tertiary),
-        ),
+        TextSpan(text: festival, style: emphasisIn(colorScheme.tertiary)),
       if (term != null)
-        TextSpan(
-          text: term,
-          style: emphasis.copyWith(color: colorScheme.primary),
-        ),
+        TextSpan(text: term, style: emphasisIn(colorScheme.primary)),
       if (holiday != null) ...<InlineSpan>[
         if (holiday.headingName(lunar) case final name?)
-          TextSpan(
-            text: name,
-            style: emphasis.copyWith(color: colorScheme.tertiary),
-          ),
+          TextSpan(text: name, style: emphasisIn(colorScheme.tertiary)),
         holiday.isWork
             ? TextSpan(
                 text: l10n.calendarHolidayMakeUpWorkday,
-                style: emphasis.copyWith(color: colorScheme.onSurfaceVariant),
+                style: emphasisIn(colorScheme.onSurfaceVariant),
               )
             : TextSpan(
                 text: l10n.calendarHolidayDayOff,
-                style: emphasis.copyWith(color: colorScheme.tertiary),
+                style: emphasisIn(colorScheme.tertiary),
               ),
       ],
     ];
@@ -180,8 +187,11 @@ class CalendarDayHeading extends StatelessWidget {
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
+        style: AppPageBackdrop.onBackgroundTextStyle(
+          context,
+          theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

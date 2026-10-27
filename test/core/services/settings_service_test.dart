@@ -650,6 +650,72 @@ void main() {
     );
   });
 
+  group('SettingsService app surface', () {
+    const key = 'app.settings.app_surface';
+    const raw = '{"v":1,"glass":{"mode":"glass"}}';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.appSurfaceRaw, isNull);
+
+      await settings.setAppSurfaceRaw('  $raw  ');
+      expect(settings.appSurfaceRaw, raw);
+      expect(settings.appSurfaceRawNotifier.value, raw);
+      expect((await SettingsService.create()).appSurfaceRaw, raw);
+
+      await settings.setAppSurfaceRaw('   ');
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.appSurfaceRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+
+      await settings.setAppSurfaceRaw(raw);
+      await settings.setAppSurfaceRaw(null);
+      expect(settings.appSurfaceRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 3});
+      final settings = await SettingsService.create();
+      expect(settings.appSurfaceRaw, isNull);
+    });
+
+    test(
+      'backups carry the settings, older backups keep the local ones, maps are re-encoded and null resets',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setAppSurfaceRaw(raw);
+
+        final captured = BackupSettings.capture(settings);
+        expect(captured['appSurfaceRaw'], raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.appSurfaceRaw, raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'appSurfaceRaw': '{"v":1,"global":{"kind":"color"}}',
+        });
+        expect(settings.appSurfaceRaw, '{"v":1,"global":{"kind":"color"}}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'appSurfaceRaw': <String, dynamic>{'v': 1},
+        });
+        expect(settings.appSurfaceRaw, '{"v":1}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'appSurfaceRaw': null,
+        });
+        expect(settings.appSurfaceRaw, isNull);
+      },
+    );
+  });
+
   group('SettingsService diary template prefs', () {
     const key = 'app.settings.diary_template_prefs';
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -59,12 +60,14 @@ Future<(SettingsService, AppLocalizations)> _pumpPage(
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final settings = (await tester.runAsync(SettingsService.create))!;
   await tester.pumpWidget(
-    MaterialApp(
-      theme: expressiveTestTheme(brightness),
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: DiaryCardStylePage(settingsService: settings),
+    ProviderScope(
+      child: MaterialApp(
+        theme: expressiveTestTheme(brightness),
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: DiaryCardStylePage(settingsService: settings),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -506,4 +509,39 @@ void main() {
       }
     });
   }
+
+  testWidgets('the glass material reveals a nested blur slider', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryCardStyleTabColor);
+    final blur = find.widgetWithText(
+      SettingsSliderTile,
+      l10n.diaryCardStyleBlur,
+    );
+    expect(blur, findsNothing);
+    // 不透明度滑块从 0 起步。
+    final opacity = tester.widget<SettingsSliderTile>(
+      find.widgetWithText(SettingsSliderTile, l10n.diaryCardStyleOpacity),
+    );
+    expect(opacity.min, 0);
+    expect(opacity.max, 1);
+
+    await _tapVisible(tester, find.text(l10n.diaryCardStyleMaterialGlass));
+    expect(_stored(settings).current.surface.material, DiaryCardMaterial.glass);
+    expect(blur, findsOneWidget);
+    expect(find.text(l10n.diaryCardStyleBlurSubtitle), findsOneWidget);
+    final tile = tester.widget<SettingsSliderTile>(blur);
+    expect(tile.nested, isTrue);
+    expect(tile.max, DiaryCardStyleLimits.blurSigma.max);
+    tile.onChangeEnd!(30);
+    await tester.pumpAndSettle();
+    expect(_stored(settings).current.surface.blurSigma, 30);
+
+    await _tapVisible(tester, find.text(l10n.diaryCardStyleMaterialSolid));
+    expect(_stored(settings).current.surface.material, DiaryCardMaterial.solid);
+    expect(blur, findsNothing);
+    await _dismissSnackBars(tester);
+    expect(tester.takeException(), isNull);
+  });
 }

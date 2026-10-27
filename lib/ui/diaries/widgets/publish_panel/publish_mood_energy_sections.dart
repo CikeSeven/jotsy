@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/on_glass.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
@@ -28,6 +29,7 @@ class PublishMoodSection extends StatelessWidget {
     final options = moodOptions.isEmpty
         ? SettingsService.defaultMoodOptions
         : SettingsService.normalizeMoodOptions(moodOptions);
+    final onGlass = OnGlass.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -51,6 +53,12 @@ class PublishMoodSection extends StatelessWidget {
                     SizedBox(
                       width: itemWidth,
                       child: ChoiceChip(
+                        // 主题的未选中底色（surfaceContainerHigh）不透明，在
+                        // 玻璃面板上会是一排实色补丁，换成半透明凹槽色；选中
+                        // 态沿用主题的 secondaryContainer，一眼可辨。
+                        backgroundColor: onGlass
+                            ? OnGlass.wellColor(Theme.of(context).colorScheme)
+                            : null,
                         showCheckmark: false,
                         side: BorderSide.none,
                         elevation: 0,

@@ -74,6 +74,7 @@ class SettingsService {
     required String? diaryPreviewStyleRaw,
     required String? diaryCodeBlockStyleRaw,
     required String? homeBarStyleRaw,
+    required String? appSurfaceRaw,
     required String? diaryTemplatePrefsRaw,
     required String? diarySavedColorsRaw,
     required String? appFeaturesRaw,
@@ -119,6 +120,7 @@ class SettingsService {
          diaryCodeBlockStyleRaw,
        ),
        homeBarStyleRawNotifier = ValueNotifier<String?>(homeBarStyleRaw),
+       appSurfaceRawNotifier = ValueNotifier<String?>(appSurfaceRaw),
        diaryTemplatePrefsRawNotifier = ValueNotifier<String?>(
          diaryTemplatePrefsRaw,
        ),
@@ -173,6 +175,11 @@ class SettingsService {
   /// （`HomeBarSettings`）负责，服务层只保存原文。
   final ValueNotifier<String?> homeBarStyleRawNotifier;
 
+  /// 背景与材质（单个 JSON 字符串：全局 / 各区域背景、各类组件的经典 /
+  /// 玻璃材质）；解析与默认值由 `AppSurfaceSettings` 负责，服务层只保存原文。
+  /// 背景图本身存于托管目录 `app_backgrounds/`，这里只有文件名。
+  final ValueNotifier<String?> appSurfaceRawNotifier;
+
   /// 日记模板偏好（单个 JSON 字符串：建议条开关、自动套用的模板、隐藏的
   /// 内置模板、最近使用）；解析与默认值由模板模块负责，服务层只保存原文。
   /// 用户模板本身存在数据库 `diary_templates` 表里。
@@ -221,6 +228,7 @@ class SettingsService {
   static const _keyDiaryPreviewStyle = 'app.settings.diary_preview_style';
   static const _keyDiaryCodeBlockStyle = 'app.settings.diary_code_block_style';
   static const _keyHomeBarStyle = 'app.settings.home_bar_style';
+  static const _keyAppSurface = 'app.settings.app_surface';
   static const _keyDiaryTemplatePrefs = 'app.settings.diary_template_prefs';
   // 键名沿用早先“最近颜色”的叫法，已有记录原样成为我的颜色。
   static const _keyDiarySavedColors = 'app.settings.diary_recent_colors';
@@ -289,6 +297,7 @@ class SettingsService {
     final storedDiaryPreviewStyle = prefs.get(_keyDiaryPreviewStyle);
     final storedDiaryCodeBlockStyle = prefs.get(_keyDiaryCodeBlockStyle);
     final storedHomeBarStyle = prefs.get(_keyHomeBarStyle);
+    final storedAppSurface = prefs.get(_keyAppSurface);
     final storedDiaryTemplatePrefs = prefs.get(_keyDiaryTemplatePrefs);
     final storedDiarySavedColors = prefs.get(_keyDiarySavedColors);
     final storedAppFeatures = prefs.get(_keyAppFeatures);
@@ -326,6 +335,7 @@ class SettingsService {
           ? storedDiaryCodeBlockStyle
           : null,
       homeBarStyleRaw: storedHomeBarStyle is String ? storedHomeBarStyle : null,
+      appSurfaceRaw: storedAppSurface is String ? storedAppSurface : null,
       diaryTemplatePrefsRaw: storedDiaryTemplatePrefs is String
           ? storedDiaryTemplatePrefs
           : null,
@@ -390,6 +400,7 @@ class SettingsService {
   String? get diaryPreviewStyleRaw => diaryPreviewStyleRawNotifier.value;
   String? get diaryCodeBlockStyleRaw => diaryCodeBlockStyleRawNotifier.value;
   String? get homeBarStyleRaw => homeBarStyleRawNotifier.value;
+  String? get appSurfaceRaw => appSurfaceRawNotifier.value;
   String? get diaryTemplatePrefsRaw => diaryTemplatePrefsRawNotifier.value;
 
   String? get diarySavedColorsRaw => diarySavedColorsRawNotifier.value;
@@ -573,6 +584,18 @@ class SettingsService {
     }
     homeBarStyleRawNotifier.value = normalized;
     await _writePreference(_prefs.setString(_keyHomeBarStyle, normalized));
+  }
+
+  /// 保存背景与材质设置；空值移除该键，回到无背景、全部经典材质。
+  Future<void> setAppSurfaceRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      appSurfaceRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyAppSurface));
+      return;
+    }
+    appSurfaceRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyAppSurface, normalized));
   }
 
   /// 保存日记模板偏好；空值移除该键，回到默认（显示建议条、不自动套用）。

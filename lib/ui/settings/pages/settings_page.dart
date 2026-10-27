@@ -8,9 +8,11 @@ import 'package:node_diary/ui/settings/pages/app_features_page.dart';
 import 'package:node_diary/ui/settings/pages/data_privacy_page.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
-import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
-import '../../home/widgets/home_bar/home_chrome_scope.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
+import '../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../notebooks/pages/notebooks_page.dart';
 import '../../widgets/form_width.dart';
 import '../../widgets/page_header.dart';
@@ -28,18 +30,19 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // 玻璃顶栏底缘有细线，第一张卡片紧贴它显得挤（实色时同色无线、看不出
-    // 来），玻璃时多留 12，与探索页、日历页标题下的间距一致；实色时不变。
-    final glassTopGap = HomeChromeScope.glassTopBarsOf(context)
-        ? AppSpacing.m
-        : 0.0;
+    // 顶栏下缘看得见时（玻璃顶栏，或设置区域有背景、实色栏与透明页面底
+    // 分开），第一张卡片紧贴它显得挤：留出四个 Tab 统一的顶部间距，与探索
+    // 页、日历页、日记页第一块内容离顶栏一样远。经典且无背景时栏与页面
+    // 同色、下缘看不出来，不留，与改版前一致。
+    final topContentGap = HomeTopBarSurface.contentGapOf(context);
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
     // 玻璃底栏悬浮在内容之上时，底部 padding 是底栏槽位高度（实色时为 0）：
     // 列表滚到胶囊下方，末尾多留这一段让最后一项完整露出。
     final listBottomPadding = 8.0 + MediaQuery.paddingOf(context).bottom;
+    // 设置区域设了背景时页面底透明，露出首页画的背景（见 AppPagedBackground）。
     final pageBgColor =
-        pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
+        pageBackgroundColor ?? AppPageBackdrop.pageColorOf(context);
 
     return Stack(
       children: <Widget>[
@@ -52,7 +55,7 @@ class SettingsPage extends StatelessWidget {
             return ListView(
               padding: EdgeInsets.only(
                 left: side,
-                top: headerHeight + glassTopGap,
+                top: headerHeight + topContentGap,
                 right: side,
                 bottom: listBottomPadding,
               ),
@@ -221,6 +224,58 @@ class _SettingsDestination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final tile = ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      leading: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: colors.primaryContainer.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: FaIcon(icon, size: 18, color: colors.onPrimaryContainer),
+      ),
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontSize: 16.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          if (badge != null) ...<Widget>[badge!, const SizedBox(width: 8)],
+          FaIcon(
+            FontAwesomeIcons.angleRight,
+            size: 14,
+            color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+          ),
+        ],
+      ),
+      onTap: onTap,
+    );
+    const radius = BorderRadius.all(Radius.circular(20));
+    // 玻璃材质时整张卡改为内容玻璃（共用页面背景读取、无背景图不模糊）；
+    // 经典分支保持原来的 Card.filled 写法不变。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: AppGlassSurface(
+          component: AppGlassComponent.cards,
+          borderRadius: radius,
+          shadow: true,
+          child: tile,
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -235,50 +290,7 @@ class _SettingsDestination extends StatelessWidget {
             side: ExpressiveSurfaces.cardBorderSide(colors),
           ),
           color: ExpressiveSurfaces.cardColor(colors),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 6,
-            ),
-            leading: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colors.primaryContainer.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: FaIcon(icon, size: 18, color: colors.onPrimaryContainer),
-            ),
-            title: Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: 16.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            subtitle: Text(
-              subtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                if (badge != null) ...<Widget>[
-                  badge!,
-                  const SizedBox(width: 8),
-                ],
-                FaIcon(
-                  FontAwesomeIcons.angleRight,
-                  size: 14,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-                ),
-              ],
-            ),
-            onTap: onTap,
-          ),
+          child: tile,
         ),
       ),
     );

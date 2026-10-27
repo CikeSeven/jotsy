@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import '../../widgets/mood_band_palette.dart';
@@ -13,7 +14,8 @@ import 'diary_card_appearance.dart';
 /// 某一布局模式下、已落到具体数值的卡片样式。
 ///
 /// 输入：[DiaryCardStyle]、布局模式、主题、列表可用宽度（[screenWidth]）、
-/// 系统字号、心情配置与瀑布流最少列数（[minColumns]）；输出：间距、封面尺寸、
+/// 系统字号、心情配置、瀑布流最少列数（[minColumns]）与卡片所在的页面颜色
+/// （[pageBackground]）；输出：间距、封面尺寸、
 /// 有效列数、不含颜色的基础文字样式，以及按卡片类别缓存的颜色
 /// （[appearanceFor]）。无副作用。
 ///
@@ -33,6 +35,7 @@ class DiaryCardResolvedStyle {
     required this.textScale,
     required this.moodOptions,
     required this.minColumns,
+    required this.pageBackground,
   }) : modeStyle = style.mode(mode) {
     final m = modeStyle;
     final textTheme = theme.textTheme;
@@ -155,9 +158,13 @@ class DiaryCardResolvedStyle {
     double textScale = 1,
     List<String> moodOptions = SettingsService.defaultMoodOptions,
     int minColumns = 0,
+    Color? pageBackground,
   }) {
+    final page =
+        pageBackground ?? ExpressiveSurfaces.pageBackground(theme.colorScheme);
     for (final candidate in _recent) {
       if (candidate.mode == mode &&
+          candidate.pageBackground == page &&
           identical(candidate.theme, theme) &&
           candidate.screenWidth == screenWidth &&
           candidate.textScale == textScale &&
@@ -175,6 +182,7 @@ class DiaryCardResolvedStyle {
       textScale: textScale,
       moodOptions: moodOptions,
       minColumns: minColumns,
+      pageBackground: page,
     );
     _recent.insert(0, resolved);
     if (_recent.length > _maxRecent) {
@@ -210,6 +218,10 @@ class DiaryCardResolvedStyle {
 
   /// 瀑布流至少的列数（按可用宽度加列时给出）；0 表示只用样式里的列数。
   final int minColumns;
+
+  /// 卡片实际叠在的页面颜色，半透明 / 玻璃卡片的文字对比度按它计算（见
+  /// [DiaryCardAppearanceResolver.pageBackground]）。缺省为主题页面底色。
+  final Color pageBackground;
   final DiaryCardModeStyle modeStyle;
 
   bool get compact => mode == DiaryCardMode.waterfall;
@@ -259,7 +271,11 @@ class DiaryCardResolvedStyle {
     moodOptions,
   );
   late final DiaryCardAppearanceResolver _resolver =
-      DiaryCardAppearanceResolver(style, colorScheme);
+      DiaryCardAppearanceResolver(
+        style,
+        colorScheme,
+        pageBackground: pageBackground,
+      );
   final LinkedHashMap<Object, DiaryCardAppearance> _appearances =
       LinkedHashMap<Object, DiaryCardAppearance>();
 

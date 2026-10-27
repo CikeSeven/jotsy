@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_breakpoints.dart';
 import '../../app/theme/app_spacing.dart';
+import '../app_surface/widgets/app_page_backdrop.dart';
 import '../home/widgets/home_bar/home_top_bar_surface.dart';
 
 /// 探索与设置页的顶栏：铺到状态栏的标题栏，作为页面 Stack 的直接子项叠在
@@ -25,14 +26,14 @@ class PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topSafeInset = MediaQuery.paddingOf(context).top;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Positioned(
       top: 0,
       left: 0,
       right: 0,
       child: HomeTopBarSurface(
-        solidColor: colorScheme.surface,
+        // 实色顶栏：区域设了纯色背景时与背景同色，图片背景时仍是 surface。
+        solidColor: AppPageBackdrop.solidBarColorOf(context),
         child: Column(
           children: [
             SizedBox(height: topSafeInset),

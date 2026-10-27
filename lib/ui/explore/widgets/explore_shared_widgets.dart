@@ -6,6 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../app/theme/app_effects.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../widgets/long_image/long_image_cover_alignment.dart';
 import '../../widgets/long_image/long_image_policy.dart';
 
@@ -23,6 +25,17 @@ class ExploreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      // 玻璃：内容玻璃（共用页面背景读取、无背景图不模糊）。表面自带一层
+      // canvas Material 并按圆角裁切，水波纹照常画在玻璃上。
+      final padded = Padding(padding: const EdgeInsets.all(18), child: child);
+      return AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: const BorderRadius.all(Radius.circular(24)),
+        shadow: true,
+        child: onTap == null ? padded : InkWell(onTap: onTap, child: padded),
+      );
+    }
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),

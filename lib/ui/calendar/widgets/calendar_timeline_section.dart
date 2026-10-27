@@ -4,7 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_card_surface.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/sections/diaries_list_section.dart'
@@ -14,7 +14,6 @@ import '../../widgets/image_viewer_hero.dart';
 import '../../widgets/qweather_icon.dart';
 import 'calendar_day_content_switcher.dart';
 import 'calendar_entry_thumbnail.dart';
-import '../../../app/theme/app_effects.dart';
 import '../../diaries/viewmodels/diary_card_view_data.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
 
@@ -204,84 +203,74 @@ class CalendarTimelineSection extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
+            // 经典分支与原来的 Container + Material 写法逐像素一致；玻璃
+            // 时为内容玻璃。
+            child: AppCardSurface(
+              borderRadius: const BorderRadius.all(Radius.circular(22)),
+              child: InkWell(
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-                  width: 0.8,
-                ),
-                boxShadow: AppEffects.restingCardShadow(colorScheme),
-              ),
-              child: Material(
-                color: ExpressiveSurfaces.cardColor(colorScheme),
-                borderRadius: BorderRadius.circular(22),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(22),
-                  onTap: () => onOpenDiary(
-                    diary,
-                    coverAnchor.capture(
-                      tag: diaryCoverHeroTag(diary.diary.diaryId),
-                    ),
+                onTap: () => onOpenDiary(
+                  diary,
+                  coverAnchor.capture(
+                    tag: diaryCoverHeroTag(diary.diary.diaryId),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text(
-                                createdAtLabel,
-                                style: Theme.of(context).textTheme.labelLarge
-                                    ?.copyWith(
-                                      color: colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              createdAtLabel,
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              summary,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: isLockedCapsule
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurfaceVariant,
+                                    fontWeight: isLockedCapsule
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
+                                    height: 1.38,
+                                  ),
+                            ),
+                            if (hasMetaRow) ...<Widget>[
+                              const SizedBox(height: 6),
+                              _buildMetaInlineRow(
+                                context,
+                                location: location,
+                                weather: weather,
+                                weatherIconCode: weatherIconCode,
+                                energyLevel: energyLevel,
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                summary,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: isLockedCapsule
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
-                                      fontWeight: isLockedCapsule
-                                          ? FontWeight.w700
-                                          : FontWeight.w400,
-                                      height: 1.38,
-                                    ),
-                              ),
-                              if (hasMetaRow) ...<Widget>[
-                                const SizedBox(height: 6),
-                                _buildMetaInlineRow(
-                                  context,
-                                  location: location,
-                                  weather: weather,
-                                  weatherIconCode: weatherIconCode,
-                                  energyLevel: energyLevel,
-                                ),
-                              ],
                             ],
-                          ),
+                          ],
                         ),
-                        if (cover != null) ...<Widget>[
-                          const SizedBox(width: 12),
-                          CalendarEntryThumbnail(
-                            source: cover,
-                            diaryId: diary.diary.diaryId,
-                            anchor: coverAnchor,
-                          ),
-                        ],
+                      ),
+                      if (cover != null) ...<Widget>[
+                        const SizedBox(width: 12),
+                        CalendarEntryThumbnail(
+                          source: cover,
+                          diaryId: diary.diary.diaryId,
+                          anchor: coverAnchor,
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),

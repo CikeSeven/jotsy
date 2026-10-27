@@ -5,6 +5,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../widgets/form_width.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 心情符号自定义页。
 ///
@@ -84,48 +86,54 @@ class _MoodOptionsPageState extends State<MoodOptionsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
-      appBar: AppTopBar(
-        contentMaxWidth: FormWidth.maxWidth,
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        title: Text(l10n.settingsMoodOptionsTitle),
-        actions: <Widget>[
-          TextButton(
-            onPressed: _saving ? null : _reset,
-            child: Text(l10n.commonReset),
-          ),
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final side = FormWidth.gutter(constraints.maxWidth);
-          return ListView(
-            padding: EdgeInsets.fromLTRB(side, 12, side, 24),
-            children: <Widget>[
-              for (
-                var index = 0;
-                index < _controllers.length;
-                index += 1
-              ) ...<Widget>[
-                _MoodOptionField(
-                  controller: _controllers[index],
-                  index: index,
-                  enabled: !_saving,
-                ),
-                if (index != _controllers.length - 1)
-                  const SizedBox(height: 10),
-              ],
+    return AppPageBackground(
+      area: AppBackgroundArea.settings,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            contentMaxWidth: FormWidth.maxWidth,
+            leading: IconButton(
+              tooltip: l10n.commonBack,
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+            title: Text(l10n.settingsMoodOptionsTitle),
+            actions: <Widget>[
+              TextButton(
+                onPressed: _saving ? null : _reset,
+                child: Text(l10n.commonReset),
+              ),
+              TextButton(
+                onPressed: _saving ? null : _save,
+                child: Text(l10n.commonSave),
+              ),
             ],
-          );
-        },
+          ),
+          body: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final side = FormWidth.gutter(constraints.maxWidth);
+              return ListView(
+                padding: EdgeInsets.fromLTRB(side, 12, side, 24),
+                children: <Widget>[
+                  for (
+                    var index = 0;
+                    index < _controllers.length;
+                    index += 1
+                  ) ...<Widget>[
+                    _MoodOptionField(
+                      controller: _controllers[index],
+                      index: index,
+                      enabled: !_saving,
+                    ),
+                    if (index != _controllers.length - 1)
+                      const SizedBox(height: 10),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }

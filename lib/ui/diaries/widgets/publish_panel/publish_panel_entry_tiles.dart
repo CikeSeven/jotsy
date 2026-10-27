@@ -159,7 +159,7 @@ class PublishCapsuleTile extends StatelessWidget {
             onTap: onOpen,
             padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
             color: Color.lerp(
-              PublishPanelTile.surfaceColor(colorScheme),
+              PublishPanelTile.surfaceColorOf(context),
               colorScheme.primaryContainer.withValues(alpha: 0.56),
               t,
             ),

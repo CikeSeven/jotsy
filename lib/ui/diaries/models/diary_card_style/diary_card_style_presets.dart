@@ -10,6 +10,7 @@ enum DiaryCardPresetId {
   sticky,
   journal,
   mood,
+  glass,
 }
 
 /// 内置的卡片样式预设。
@@ -27,6 +28,7 @@ abstract final class DiaryCardPresets {
         DiaryCardPresetId.sticky: _sticky,
         DiaryCardPresetId.journal: _journal,
         DiaryCardPresetId.mood: _mood,
+        DiaryCardPresetId.glass: _glass,
       };
 
   static DiaryCardStyle styleOf(DiaryCardPresetId id) => styles[id]!;
@@ -265,5 +267,24 @@ abstract final class DiaryCardPresets {
       coverFallback: DiaryCardCoverFallback.moodTile,
     ),
     meta: DiaryCardMetaStyle(indicatorStyle: DiaryCardIndicatorStyle.plain),
+  );
+
+  /// 玻璃：中性的主题卡片底色降到 55% 不透明并模糊页面背景图，白色细描边
+  /// 勾出边缘、柔和外投影托起卡片。底色取主题来源（不写死颜色），暗色主题
+  /// 下自然是深色玻璃；描边的自定义白色在暗色主题经 `deriveDark` 推导为
+  /// 浅灰。没有背景图的页面上它就是一张半透明卡片。
+  static const _glass = DiaryCardStyle(
+    surface: DiaryCardSurfaceStyle(
+      opacity: 0.55,
+      material: DiaryCardMaterial.glass,
+      blurSigma: 18,
+      borderWidth: 0.8,
+      borderColor: DiaryCardColorSpec(
+        source: DiaryCardColorSource.custom,
+        light: 0xFFFFFFFF,
+        strength: 0.5,
+      ),
+      shadow: DiaryCardShadowStyle.soft,
+    ),
   );
 }

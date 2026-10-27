@@ -19,6 +19,8 @@ import '../../../core/services/app_service.dart';
 import '../controllers/explore_media_gallery_controller.dart';
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
+import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 探索页“媒体画廊”全量浏览页。
 ///
@@ -79,23 +81,32 @@ class _ExploreMediaGalleryPageState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
-      appBar: AppTopBar(
-        centerTitle: true,
-        title: Text(l10n.autoT0054),
-        leading: IconButton(
-          tooltip: context.l10n.commonBack,
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+    return AppPageBackground(
+      area: AppBackgroundArea.other,
+      child: Builder(
+        builder: (BuildContext context) => Scaffold(
+          backgroundColor: AppPageBackdrop.pageColorOf(context),
+          appBar: AppTopBar(
+            centerTitle: true,
+            title: Text(l10n.autoT0054),
+            leading: IconButton(
+              tooltip: context.l10n.commonBack,
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
+          ),
+          // 首次加载 → 网格 / 空态 / 错误之间交叉淡入，而不是硬切；网格内追加
+          // 分页时 key 不变，不会重复淡入。
+          body: AnimatedSwitcher(
+            duration: ExpressiveMotion.duration(
+              context,
+              ExpressiveMotion.medium,
+            ),
+            switchInCurve: ExpressiveMotion.effects,
+            switchOutCurve: ExpressiveMotion.exit,
+            child: _buildBody(context),
+          ),
         ),
-      ),
-      // 首次加载 → 网格 / 空态 / 错误之间交叉淡入，而不是硬切；网格内追加
-      // 分页时 key 不变，不会重复淡入。
-      body: AnimatedSwitcher(
-        duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
-        switchInCurve: ExpressiveMotion.effects,
-        switchOutCurve: ExpressiveMotion.exit,
-        child: _buildBody(context),
       ),
     );
   }
@@ -120,8 +131,12 @@ class _ExploreMediaGalleryPageState
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                // 空状态与出错提示直接画在页面背景上，有背景图时加可读性兜底。
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -139,9 +154,12 @@ class _ExploreMediaGalleryPageState
         key: const ValueKey<String>('empty'),
         child: Text(
           l10n.autoT0055,
-          style: Theme.of(
+          style: AppPageBackdrop.onBackgroundTextStyle(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       );
     }
@@ -335,11 +353,15 @@ class _GalleryFooter extends StatelessWidget {
     } else if (!hasMore) {
       content = Center(
         key: const ValueKey<String>('footer_end'),
+        // “已到底”画在网格下方的页面背景上。
         child: Text(
           l10n.autoT0057,
-          style: Theme.of(
+          style: AppPageBackdrop.onBackgroundTextStyle(
             context,
-          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       );
     } else {

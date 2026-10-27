@@ -3,6 +3,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../viewmodels/notebook_book_layout.dart';
 
 /// 首页按书序看一本日记本（全部章节）时，每章第一篇卡片上方的分隔行：
@@ -36,17 +37,24 @@ class NotebookChapterDivider extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: scheme.primary,
+                  // 分隔行直接画在页面背景上（卡片之间），有背景图时加可读性兜底。
+                  style: AppPageBackdrop.onBackgroundTextStyle(
+                    context,
+                    theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: AppSpacing.s),
               Text(
                 context.l10n.notebookEntryCount(count),
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],

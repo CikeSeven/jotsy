@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/models/app_surface_enums.dart';
+import '../../../app_surface/widgets/app_page_background.dart';
 import '../../../widgets/desktop_page_arrows.dart';
 import '../../models/diary_preview_style/diary_preview_behavior.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
@@ -239,9 +241,27 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
     DeviceGestureSettings pagerSettings,
     DiaryPreviewPageTransition transition,
   ) {
+    // 预览区域画了背景时不铺这层“桌面”：它不透明，会把整页背景盖住；
+    // 层叠与淡入时露出的改为背景本身。设置页“预览页样式”的实时预览同样
+    // 包着预览区域的背景，按同一规则处理；处在别的区域之下时照旧铺桌面。
+    final backdrop = AppPageBackdrop.maybeOf(context);
+    final onPreviewBackground =
+        backdrop != null &&
+        backdrop.area == AppBackgroundArea.preview &&
+        backdrop.hasBackground;
+    // 滑动时两篇并排、互不重叠，各篇透明、背景不动只有内容滑过；层叠与
+    // 淡入时两篇在过渡中叠在一起，透明的页面会让两篇内容互相透出，所以
+    // 每篇自己垫一份同样的区域背景（AppPageBackgroundCopy：同一张图、同一
+    // 尺寸与 cover 对齐，静止时与下面的背景逐像素重合，看起来不变），跟着
+    // 页面一起移动、缩放与淡入淡出。纸张选了颜色时各篇本就不透明，垫的这
+    // 一份被纸色盖住，不影响观感。
+    final opaquePages =
+        onPreviewBackground && transition != DiaryPreviewPageTransition.slide;
     return ColoredBox(
       // 层叠与淡入时页面会缩小或半透明，露出的是这层“桌面”。
-      color: Theme.of(context).colorScheme.surfaceContainer,
+      color: onPreviewBackground
+          ? Colors.transparent
+          : Theme.of(context).colorScheme.surfaceContainer,
       child: Stack(
         children: <Widget>[
           NotificationListener<ScrollNotification>(
@@ -280,7 +300,10 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
                         // 页面不会重新挂载。
                         child: AnimatedBuilder(
                           animation: _controller,
-                          child: page,
+                          child: _PagerPageBase(
+                            opaque: opaquePages,
+                            child: page,
+                          ),
                           builder: (BuildContext context, Widget? child) {
                             return DiaryPagerTransition(
                               transition: transition,
@@ -330,6 +353,33 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
           );
         },
       ),
+    );
+  }
+}
+
+/// 翻页器里一篇页面的底：[opaque] 时在页面下面垫一份区域背景（见
+/// `_buildPager` 里的说明），否则什么也不画。
+///
+/// 结构始终是同一个 Stack，页面挂在带 key 的固定位置：切换转场效果、背景
+/// 有无时只增删下面那一层，页面本身不重新挂载（滚动位置、正文控制器保留）。
+class _PagerPageBase extends StatelessWidget {
+  const _PagerPageBase({required this.opaque, required this.child});
+
+  final bool opaque;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.passthrough,
+      children: <Widget>[
+        if (opaque)
+          const Positioned.fill(
+            key: ValueKey<String>('pageBackground'),
+            child: AppPageBackgroundCopy(),
+          ),
+        KeyedSubtree(key: const ValueKey<String>('page'), child: child),
+      ],
     );
   }
 }

@@ -7,19 +7,28 @@ import 'backup_constants.dart';
 
 /// 将已验证的暂存媒体换入私有目录；数据库/设置失败时按逆序恢复原目录。
 /// 暂存区与目标都位于 documents，rename 不跨磁盘且不复制大视频。
+///
+/// [directories] 为本次整目录换入的托管目录，默认是日记媒体
+/// [backupMediaDirectories]；覆盖恢复还会按需加上设置引用的目录（背景图，
+/// 见 [backupSettingsMediaDirectories]），换入与回滚一视同仁。
 class BackupMediaTransaction {
-  BackupMediaTransaction({required this.documents, required this.staging})
-    : renameDirectory = _moveDirectory;
+  BackupMediaTransaction({
+    required this.documents,
+    required this.staging,
+    this.directories = backupMediaDirectories,
+  }) : renameDirectory = _moveDirectory;
 
   @visibleForTesting
   BackupMediaTransaction.withDirectoryMover({
     required this.documents,
     required this.staging,
     required this.renameDirectory,
+    this.directories = backupMediaDirectories,
   });
 
   final Directory documents;
   final Directory staging;
+  final List<String> directories;
   final Future<Directory> Function(Directory, String) renameDirectory;
   final List<String> _saved = [];
   final List<String> _installed = [];
@@ -29,7 +38,7 @@ class BackupMediaTransaction {
   Future<void> install() async {
     await _previous.create();
     // 先确认所有目标类型，再进行换入，避免明显的目录错误造成半途替换。
-    for (final name in backupMediaDirectories) {
+    for (final name in directories) {
       final type = await FileSystemEntity.type(
         p.join(documents.path, name),
         followLinks: false,
@@ -40,7 +49,7 @@ class BackupMediaTransaction {
       }
       await Directory(p.join(staging.path, name)).create(recursive: true);
     }
-    for (final name in backupMediaDirectories) {
+    for (final name in directories) {
       final target = Directory(p.join(documents.path, name));
       if (await target.exists()) {
         await renameDirectory(target, p.join(_previous.path, name));
@@ -55,7 +64,7 @@ class BackupMediaTransaction {
     Object? firstError;
     StackTrace? firstStack;
     // 某一目录恢复失败仍继续恢复其他目录。失败的原文件留在暂存区，不能清理。
-    for (final name in backupMediaDirectories.reversed) {
+    for (final name in directories.reversed) {
       try {
         final target = Directory(p.join(documents.path, name));
         if (_installed.contains(name) && await target.exists()) {

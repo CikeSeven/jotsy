@@ -25,6 +25,7 @@ class BackupSettings {
     'diaryPreviewStyleRaw': settingsService.diaryPreviewStyleRaw,
     'diaryCodeBlockStyleRaw': settingsService.diaryCodeBlockStyleRaw,
     'homeBarStyleRaw': settingsService.homeBarStyleRaw,
+    'appSurfaceRaw': settingsService.appSurfaceRaw,
     'diaryTemplatePrefsRaw': settingsService.diaryTemplatePrefsRaw,
     // 我的颜色：字段名沿用早先的“最近颜色”，新旧版本的备份互相认得。
     'diaryRecentColorsRaw': settingsService.diarySavedColorsRaw,
@@ -169,6 +170,19 @@ class BackupSettings {
     if (settingsNode.containsKey('homeBarStyleRaw')) {
       final homeBarStyleRaw = settingsNode['homeBarStyleRaw'];
       await settingsService.setHomeBarStyleRaw(switch (homeBarStyleRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 背景与材质同上：旧版备份没有时保留本机设置，显式 null 时恢复默认。
+    // 设置里的背景图只有文件名；图片文件由完整备份的 `app_backgrounds/`
+    // 一并落回（见 backupSettingsMediaDirectories），文件名不变，恢复后直接有效。
+    if (settingsNode.containsKey('appSurfaceRaw')) {
+      final appSurfaceRaw = settingsNode['appSurfaceRaw'];
+      await settingsService.setAppSurfaceRaw(switch (appSurfaceRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

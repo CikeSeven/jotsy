@@ -1,3 +1,4 @@
+import 'app_background_storage_service.dart';
 import 'diary_audio_storage_service.dart';
 import 'diary_media_storage_service.dart';
 
@@ -17,3 +18,24 @@ const backupMediaDirectories = [
   DiaryMediaStorageService.videosDirectoryName,
   DiaryMediaStorageService.attachmentsDirectoryName,
 ];
+
+/// 由设置（而不是日记）引用的托管目录，目前只有背景图。
+///
+/// 与 [backupMediaDirectories] 分开，是因为那份列表同时是日记媒体引用识别与
+/// 回收（`diary_media_sweeper.dart`）的范围：放进去，不被日记引用的背景图会
+/// 被当作孤儿删除。这里的目录：
+/// - 随完整备份整目录导出，日记包不带；
+/// - 只在覆盖恢复、且备份设置里有对应键（[backupSettingsKeyOf]）时才整目录
+///   换入——设置原样保留时本机的文件也要原样保留，否则设置指向的图片会
+///   消失；合并导入从不恢复设置，也就不落回这些文件；
+/// - 换入与失败回滚与日记媒体走同一个 `BackupMediaTransaction`。
+const backupSettingsMediaDirectories = [
+  AppBackgroundStorageService.directoryName,
+];
+
+/// [backupSettingsMediaDirectories] 中目录对应的备份设置字段：备份设置里有
+/// 这个键（值可以是 null，即恢复为默认）才会恢复该设置，也才换入目录。
+String backupSettingsKeyOf(String directoryName) => switch (directoryName) {
+  AppBackgroundStorageService.directoryName => 'appSurfaceRaw',
+  _ => throw ArgumentError.value(directoryName, 'directoryName'),
+};

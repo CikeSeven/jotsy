@@ -33,7 +33,9 @@ abstract final class DiaryEditorClipboard {
   }
 
   static Future<void> copy(DiaryEditorController controller) async {
-    final selection = controller.selection;
+    // 上游按选择方向返回节点，但首尾裁切与落入剪贴板的文档都必须按正文顺序。
+    // 尤其反向跨段选区，未经规整会把两端的偏移用到相反的段落上。
+    final selection = controller.selection?.normalized;
     if (selection == null || selection.isCollapsed) return;
     final nodes = controller.state.getSelectedNodes(selection: selection);
     final document = {
@@ -51,7 +53,7 @@ abstract final class DiaryEditorClipboard {
 
   static Future<void> cut(DiaryEditorController controller) async {
     if (controller.readOnly) return;
-    final selection = controller.selection;
+    final selection = controller.selection?.normalized;
     if (selection == null || selection.isCollapsed) return;
     await copy(controller);
     if (!controller.state.isDisposed) {

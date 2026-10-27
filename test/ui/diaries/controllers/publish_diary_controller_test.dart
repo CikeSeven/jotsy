@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:ui' show AppExitResponse;
 
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_diary_controller.dart';
@@ -9,6 +11,7 @@ import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 
 void main() {
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
   late AppDatabase database;
   late DiaryMetaDraftController meta;
   late DateTime now;
@@ -261,6 +264,45 @@ void main() {
   });
 
   group('leaving', () {
+    test(
+      'desktop closing saves the last published metadata before exiting',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        final controller = publisher();
+        addTearDown(controller.dispose);
+        final id = await controller.submit(database);
+        meta.setMood('🙂');
+        expect(await binding.handleRequestAppExit(), AppExitResponse.exit);
+        expect(
+          (metadataOf(await stored(id))['context'] as Map)['moodEmoji'],
+          '🙂',
+        );
+        expect(controller.phase.value, PublishPhase.published);
+      },
+    );
+
+    test(
+      'desktop closing is cancelled if published metadata cannot be saved',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        final controller = publisher();
+        addTearDown(controller.dispose);
+        final id = await controller.submit(database);
+        await rejectDiaryUpdates();
+        meta.setMood('🙂');
+        expect(await binding.handleRequestAppExit(), AppExitResponse.cancel);
+        expect(saveErrors, hasLength(1));
+        await database.customStatement('DROP TRIGGER reject_diary_update');
+        expect(await binding.handleRequestAppExit(), AppExitResponse.exit);
+        expect(
+          (metadataOf(await stored(id))['context'] as Map)['moodEmoji'],
+          '🙂',
+        );
+      },
+    );
+
     test('a plain diary saves and leaves', () async {
       final controller = publisher();
       final id = await controller.submit(database);

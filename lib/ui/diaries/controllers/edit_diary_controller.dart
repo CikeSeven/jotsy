@@ -26,8 +26,14 @@ class EditDiaryController {
       readSnapshot: () =>
           _state._templates.snapshotFor(_state._currentCreateDraft),
       writeSnapshot: _persistCreateDraft,
-      // 草稿写入失败不打断输入：快照保持未存，下一次输入、返回或切后台重试。
-      onError: (error) => debugPrint('Create draft autosave failed: $error'),
+      // 快照保持未存，下一次输入、返回或切后台重试；桌面失败会阻止窗口
+      // 关闭，必须给出原因，不能让用户只看到关闭按钮没有反应。
+      onError: (error) {
+        debugPrint('Create draft autosave failed: $error');
+        if (AppPlatform.isDesktop && _state.mounted) {
+          _showHint(_state.context.l10n.autoT0087(error.toString()));
+        }
+      },
     );
   }
 

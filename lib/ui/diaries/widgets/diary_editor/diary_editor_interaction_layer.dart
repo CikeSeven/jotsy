@@ -7,6 +7,7 @@ import 'diary_block_handle_layer.dart';
 import 'diary_editor_selection_gestures.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
+import 'diary_read_only_shortcuts.dart';
 
 /// 原生正文外围的交互层：平台选区菜单、软键盘扩选兼容、编辑态段落把手与
 /// 光标避让。
@@ -89,7 +90,14 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
             : native,
       ),
     );
-    if (controller.readOnly) return content;
+    if (controller.readOnly) {
+      return DiaryReadOnlyShortcuts(
+        controller: controller,
+        enabled: textSelection,
+        focusNode: focusNode,
+        child: content,
+      );
+    }
     final handles = DiaryBlockHandleLayer(
       controller: controller,
       focusNode: focusNode,

@@ -159,6 +159,14 @@ bool Win32Window::Show() {
   return ShowWindow(window_handle_, SW_SHOWNORMAL);
 }
 
+void Win32Window::ActivateExisting(const std::wstring& title) {
+  HWND window = FindWindow(kWindowClassName, title.c_str());
+  if (window != nullptr) {
+    ShowWindow(window, IsIconic(window) ? SW_RESTORE : SW_SHOW);
+    SetForegroundWindow(window);
+  }
+}
+
 // static
 LRESULT CALLBACK Win32Window::WndProc(HWND const window,
                                       UINT const message,

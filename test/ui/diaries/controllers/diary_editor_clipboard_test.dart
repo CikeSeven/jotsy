@@ -96,4 +96,73 @@ void main() {
     source.dispose();
     target.dispose();
   });
+
+  for (final reverse in [false, true]) {
+    test('copying a ${reverse ? 'reverse' : 'forward'} cross-paragraph range '
+        'keeps text order and inline styles', () async {
+      final source = DiaryEditorController(
+        document: af.Document(
+          root: af.Node(
+            type: 'page',
+            children: [
+              af.paragraphNode(
+                delta: af.Delta()..insert('alpha', attributes: {'bold': true}),
+              ),
+              af.paragraphNode(
+                delta: af.Delta()..insert('beta', attributes: {'italic': true}),
+              ),
+            ],
+          ),
+        ),
+      );
+      final target = DiaryEditorController();
+      addTearDown(source.dispose);
+      addTearDown(target.dispose);
+      final selection = af.Selection(
+        start: af.Position(path: [0], offset: 3),
+        end: af.Position(path: [1], offset: 2),
+      );
+      source.select(reverse ? selection.reversed : selection);
+
+      await DiaryEditorClipboard.copy(source);
+      expect(clipboardText, 'ha\nbe');
+      await DiaryEditorClipboard.paste(target);
+      expect(target.plainText, 'ha\nbe');
+      expect(target.document.root.children[0].delta!.toJson(), [
+        {
+          'insert': 'ha',
+          'attributes': {'bold': true},
+        },
+      ]);
+      expect(target.document.root.children[1].delta!.toJson(), [
+        {
+          'insert': 'be',
+          'attributes': {'italic': true},
+        },
+      ]);
+      expect(source.plainText, 'alpha\nbeta');
+    });
+  }
+
+  test('a reverse cross-paragraph cut copies exactly what it removes and '
+      'can be undone', () async {
+    final source = DiaryEditorController.fromContent('alpha\nbeta');
+    final target = DiaryEditorController();
+    addTearDown(source.dispose);
+    addTearDown(target.dispose);
+    final original = source.contentJson;
+    source.select(
+      af.Selection(
+        start: af.Position(path: [1], offset: 2),
+        end: af.Position(path: [0], offset: 3),
+      ),
+    );
+    await DiaryEditorClipboard.cut(source);
+    expect(clipboardText, 'ha\nbe');
+    expect(source.plainText, 'alpta');
+    await DiaryEditorClipboard.paste(target);
+    expect(target.plainText, 'ha\nbe');
+    source.undo();
+    expect(source.contentJson, original);
+  });
 }

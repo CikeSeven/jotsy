@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import '../../../core/services/desktop_exit_guard.dart';
+
 /// 接收快照并串行自动写入；不访问页面或数据库。
 ///
 /// 编辑已有日记（快照为 `EditDiarySnapshot`）与新建草稿（草稿快照 record）
-/// 共用：输入防抖合并为一次保存，返回与切入后台时可调用 flush 跳过等待。
+/// 共用：输入防抖合并为一次保存，返回与切入后台时可调用 flush 跳过等待；
+/// 桌面关闭窗口时经 DesktopExitGuard 等待同一保存链路，失败则取消关闭。
 /// 快照靠 `==` 判断是否已存，类型必须有值相等语义。失败时保留上次成功的
 /// 快照，供下一次编辑或返回操作重试，不会把失败内容标为已存。
 class DebouncedAutoSaveController<T> {
@@ -12,12 +15,15 @@ class DebouncedAutoSaveController<T> {
     required this.readSnapshot,
     required this.writeSnapshot,
     required this.onError,
-  });
+  }) {
+    _exitGuard = DesktopExitGuard(onExit: flush);
+  }
 
   final Duration debounce;
   final T Function() readSnapshot;
   final Future<void> Function(T snapshot) writeSnapshot;
   final void Function(Object error) onError;
+  late final DesktopExitGuard _exitGuard;
 
   T? _savedSnapshot;
   bool _initialized = false;
@@ -79,5 +85,6 @@ class DebouncedAutoSaveController<T> {
   void dispose() {
     _disposed = true;
     _timer?.cancel();
+    _exitGuard.dispose();
   }
 }

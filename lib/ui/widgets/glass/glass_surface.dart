@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import 'glass_reveal.dart';
 import 'outer_shadow_painter.dart';
 
 /// 通用的毛玻璃表面：外侧投影 → 圆角裁切 → 背景模糊 → 半透明底色 + 描边 /
@@ -14,7 +15,9 @@ import 'outer_shadow_painter.dart';
 /// - 禁止把玻璃表面整体放进 `Opacity` / `FadeTransition`：背景模糊要采样
 ///   表面下方的页面，放进透明度层后只能采到透明层自己，显现途中会先闪一下
 ///   没有模糊的底。需要淡入时用 [progress]——它按比例缩放底色、描边、细线与
-///   投影的透明度以及模糊强度；内容另行淡入。
+///   投影的透明度以及模糊强度；内容另行淡入。整块（玻璃连同内容）淡入时
+///   用祖先 [GlassReveal]：它的进度与 [progress] 相乘，并由本表面把内容放进
+///   玻璃里面的一层 Opacity 一起淡入。
 /// - 投影只画在外侧（[OuterShadowPainter]）：底色半透明，普通 elevation
 ///   会从底下透出来，把表面中间压暗。
 /// - 底色由一层 canvas 类型的 [Material] 画出，因此内容里的 InkWell 水波纹
@@ -86,10 +89,18 @@ class GlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = progress.clamp(0.0, 1.0);
+    final reveal = GlassReveal.of(context);
+    final t = (progress * reveal).clamp(0.0, 1.0);
     final side = border;
     final hairline = bottomHairline;
     Widget content = child;
+    // 祖先 GlassReveal 代替了外面的透明度层，内容的淡入改由这里负责：
+    // Opacity 放在 BackdropFilter 之内，只影响内容本身，不妨碍模糊采样。
+    // 只有存在作用域时才包这一层，没有作用域时树结构与原来完全相同。
+    // （自身的 progress 不参与：它只管玻璃表面，内容由调用方另行淡入。）
+    if (GlassReveal.hasScope(context)) {
+      content = Opacity(opacity: reveal, child: content);
+    }
     if (hairline != null) {
       content = DecoratedBox(
         position: DecorationPosition.foreground,

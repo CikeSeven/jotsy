@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/expressive_motion.dart';
+import 'glass/glass_reveal.dart';
 
 /// 列表条目的进出场容器（收起/展开 + 淡入淡出），日记列表、归档页、回收站共用。
 ///
@@ -15,18 +16,26 @@ import '../../app/theme/expressive_motion.dart';
 /// 卡片内选中高亮等状态也随之丢失。这里结构恒定为
 /// FadeTransition → ClipRect → Align，只在动画进行时启用硬边裁剪；静止态使用
 /// Clip.none，避免卡片外散阴影被矩形切成直角（见 dfb8442）。
+///
+/// [glass] 为 true（条目主体是玻璃表面）时以 [GlassRevealTransition] 代替
+/// FadeTransition：玻璃放进透明度层后背景模糊采不到页面（见 [GlassReveal]）。
 class ListItemPresence extends StatefulWidget {
   const ListItemPresence({
     super.key,
     required this.visible,
     required this.appearing,
     required this.duration,
+    this.glass = false,
     required this.child,
   });
 
   final bool visible;
   final bool appearing;
   final Duration duration;
+
+  /// 条目主体是否为玻璃表面（由调用方按 `AppGlass.of(context).isGlass` 决定）。
+  /// 为 true 时淡入淡出交给条目里的 `GlassSurface`，不在玻璃之内的内容会硬切。
+  final bool glass;
   final Widget child;
 
   @override
@@ -78,23 +87,24 @@ class _ListItemPresenceState extends State<ListItemPresence>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _progress,
-      child: AnimatedBuilder(
-        animation: _progress,
-        child: widget.child,
-        builder: (BuildContext context, Widget? child) {
-          final settled = _controller.isCompleted;
-          return ClipRect(
-            clipBehavior: settled ? Clip.none : Clip.hardEdge,
-            child: Align(
-              alignment: Alignment.topCenter,
-              heightFactor: settled ? 1 : _progress.value.clamp(0.0, 1.0),
-              child: child,
-            ),
-          );
-        },
-      ),
+    final sized = AnimatedBuilder(
+      animation: _progress,
+      child: widget.child,
+      builder: (BuildContext context, Widget? child) {
+        final settled = _controller.isCompleted;
+        return ClipRect(
+          clipBehavior: settled ? Clip.none : Clip.hardEdge,
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: settled ? 1 : _progress.value.clamp(0.0, 1.0),
+            child: child,
+          ),
+        );
+      },
     );
+    if (widget.glass) {
+      return GlassRevealTransition(progress: _progress, child: sized);
+    }
+    return FadeTransition(opacity: _progress, child: sized);
   }
 }

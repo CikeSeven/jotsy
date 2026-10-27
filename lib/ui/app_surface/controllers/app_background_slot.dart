@@ -241,10 +241,13 @@ class AppBackgroundSlot extends ChangeNotifier {
   }) {
     final visual = front;
     if (visual == null) {
+      // 设置要背景、但还没画出来（解码中 / 失败）：颜色同无背景，
+      // wantsBackground 照实交代，布局类判断不必等解码。
       return AppPageBackdrop.plain(
         scheme,
         area: area,
         contentBackdropKey: contentBackdropKey,
+        wantsBackground: wantsBackground,
       );
     }
     final background = visual.background;
@@ -263,6 +266,8 @@ class AppBackgroundSlot extends ChangeNotifier {
     return AppPageBackdrop(
       area: area,
       hasBackground: true,
+      // 淡出到“无背景”的过程中仍在画，但设置已不要背景。
+      wantsBackground: wantsBackground,
       hasImage: background.isImage,
       pageColor: Colors.transparent,
       solidBarColor: color ?? scheme.surface,

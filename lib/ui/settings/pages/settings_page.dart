@@ -8,12 +8,11 @@ import 'package:node_diary/ui/settings/pages/app_features_page.dart';
 import 'package:node_diary/ui/settings/pages/data_privacy_page.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
-import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
-import '../../home/widgets/home_bar/home_chrome_scope.dart';
+import '../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../notebooks/pages/notebooks_page.dart';
 import '../../widgets/form_width.dart';
 import '../../widgets/page_header.dart';
@@ -31,11 +30,11 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // 玻璃顶栏底缘有细线，第一张卡片紧贴它显得挤（实色时同色无线、看不出
-    // 来），玻璃时多留 12，与探索页、日历页标题下的间距一致；实色时不变。
-    final glassTopGap = HomeChromeScope.glassTopBarsOf(context)
-        ? AppSpacing.m
-        : 0.0;
+    // 顶栏下缘看得见时（玻璃顶栏，或设置区域有背景、实色栏与透明页面底
+    // 分开），第一张卡片紧贴它显得挤：留出四个 Tab 统一的顶部间距，与探索
+    // 页、日历页、日记页第一块内容离顶栏一样远。经典且无背景时栏与页面
+    // 同色、下缘看不出来，不留，与改版前一致。
+    final topContentGap = HomeTopBarSurface.contentGapOf(context);
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
     // 玻璃底栏悬浮在内容之上时，底部 padding 是底栏槽位高度（实色时为 0）：
@@ -56,7 +55,7 @@ class SettingsPage extends StatelessWidget {
             return ListView(
               padding: EdgeInsets.only(
                 left: side,
-                top: headerHeight + glassTopGap,
+                top: headerHeight + topContentGap,
                 right: side,
                 bottom: listBottomPadding,
               ),

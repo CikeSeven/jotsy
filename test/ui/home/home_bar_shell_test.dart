@@ -12,9 +12,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
-import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style_enums.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
-import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/diaries/widgets/diaries_header_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card.dart';
@@ -230,20 +228,6 @@ double _trailingSpace(WidgetTester tester, Finder page) {
 /// 底栏槽位高度：玻璃时首页 body 读到的底部 padding。
 double _slotHeight(WidgetTester tester, Finder page) =>
     MediaQuery.paddingOf(tester.element(page)).bottom;
-
-/// 日记列表当前模式下的卡片间距（与列表读的是同一份样式）。
-double _listCardGap(WidgetTester tester) {
-  final section = tester.widget<DiariesListSection>(
-    find.byType(DiariesListSection),
-  );
-  return section.cardStyle
-      .mode(
-        section.layoutMode == DiaryLayoutMode.waterfall
-            ? DiaryCardMode.waterfall
-            : DiaryCardMode.list,
-      )
-      .cardGap;
-}
 
 /// 日记页标签栏（顶栏最下面一片）的底缘。
 double _tagBarBottom(WidgetTester tester) => tester
@@ -641,7 +625,7 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('the first card keeps the card gap below the hairline', (
+    testWidgets('the first card keeps the shared top gap below the hairline', (
       tester,
     ) async {
       await _pumpHome(
@@ -650,8 +634,8 @@ void main() {
         statusBar: _statusBar,
         homeBarRaw: _raw(_glass),
       );
-      final gap = _listCardGap(tester);
-      expect(gap, greaterThan(0));
+      // 四个 Tab 统一的顶部间距，与卡片间距无关。
+      const gap = kHomeTopContentGap;
       final tagBarBottom = _tagBarBottom(tester);
       expect(tester.getRect(_tagBarGlass).bottom, tagBarBottom);
       final firstCardTop = tester.getRect(find.byType(DiaryCard).first).top;
@@ -671,7 +655,7 @@ void main() {
     ) async {
       await _pumpHome(tester, diaryCount: 3, statusBar: _statusBar);
       expect(
-        find.byKey(const ValueKey<String>('diaries_glass_top_gap')),
+        find.byKey(const ValueKey<String>('diaries_top_content_gap')),
         findsNothing,
       );
       expect(

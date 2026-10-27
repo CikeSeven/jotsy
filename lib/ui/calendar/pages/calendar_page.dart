@@ -37,6 +37,7 @@ import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../../utils/text_stats.dart';
+import '../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../notebooks/controllers/notebook_quick_create_flows.dart';
 import '../../notebooks/providers/notebook_providers.dart';
@@ -110,7 +111,9 @@ class CalendarPage extends ConsumerStatefulWidget {
 
 class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _calendarCardHorizontalPadding = AppSpacing.m;
-  static const double _calendarCardTopPadding = AppSpacing.m;
+  // 页头下缘到日历卡片：四个 Tab 统一的顶部间距（改版前就是 12，经典
+  // 无背景时同样保留）。
+  static const double _calendarCardTopPadding = kHomeTopContentGap;
   static const double _calendarBottomGap = AppSpacing.m;
   static const double _listBottomExtraSpace = 12;
   Map<DateTime, CalendarDaySummary> _cachedDaySummaries =

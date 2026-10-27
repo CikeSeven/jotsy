@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
-import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
@@ -17,6 +16,7 @@ import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
+import '../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../widgets/page_header.dart';
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
@@ -123,8 +123,12 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
             builder: (BuildContext context, BoxConstraints constraints) =>
                 CustomScrollView(
                   slivers: <Widget>[
+                    // 顶栏下缘到第一张卡片固定留四个 Tab 统一的顶部间距
+                    // （经典无背景时也留，改版前就是 12）。
                     SliverToBoxAdapter(
-                      child: SizedBox(height: headerHeight + AppSpacing.m),
+                      child: SizedBox(
+                        height: headerHeight + kHomeTopContentGap,
+                      ),
                     ),
                     SliverPadding(
                       padding: EdgeInsets.symmetric(

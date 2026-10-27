@@ -20,6 +20,11 @@ import '../models/app_surface_settings.dart';
 ///   图片背景为 surface（实色栏保持不透明，不让图片从栏下透出）；
 /// - [estimatedColor]：内容实际叠在的颜色，供对比度兜底。无背景为 surface，
 ///   纯色为该颜色，图片为遮罩叠在均色上（均色未出时叠在 surface 上）。
+///
+/// [hasBackground] 与 [wantsBackground] 的区别：前者是“此刻画没画”，图片
+/// 解码完成那一刻才变 true；后者是“设置要不要画”，打开页面的第一帧就定了。
+/// 会影响布局的判断（如首页顶部间距）只看 [wantsBackground]，否则解码回来时
+/// 内容会跳一下；颜色类的判断照旧看 [hasBackground] 与各颜色字段。
 @immutable
 class AppPageBackdrop {
   const AppPageBackdrop({
@@ -30,17 +35,23 @@ class AppPageBackdrop {
     required this.solidBarColor,
     required this.estimatedColor,
     this.contentBackdropKey,
-  });
+    bool? wantsBackground,
+  }) : wantsBackground = wantsBackground ?? hasBackground;
 
   /// 没有背景时的值（与接入前的页面颜色相同）。
+  ///
+  /// [wantsBackground] 为 true 表示设置要求画背景、只是还没画出来（图片在
+  /// 解码，或文件缺失 / 解码失败）：颜色仍与无背景时相同。
   factory AppPageBackdrop.plain(
     ColorScheme scheme, {
     AppBackgroundArea? area,
     BackdropKey? contentBackdropKey,
+    bool wantsBackground = false,
   }) {
     return AppPageBackdrop(
       area: area,
       hasBackground: false,
+      wantsBackground: wantsBackground,
       hasImage: false,
       pageColor: ExpressiveSurfaces.pageBackground(scheme),
       solidBarColor: scheme.surface,
@@ -58,6 +69,11 @@ class AppPageBackdrop {
 
   /// 此刻显示（或正在淡入）的是否是图片。
   final bool hasImage;
+
+  /// 设置是否要求这个区域画背景（与解码进度无关：图片还在解码、文件缺失
+  /// 或解码失败时也为 true；换成“无背景”后的淡出过程中已为 false）。没有
+  /// 给出时等于 [hasBackground]。
+  final bool wantsBackground;
 
   final Color pageColor;
   final Color solidBarColor;
@@ -168,6 +184,7 @@ class AppPageBackdrop {
     return other is AppPageBackdrop &&
         other.area == area &&
         other.hasBackground == hasBackground &&
+        other.wantsBackground == wantsBackground &&
         other.hasImage == hasImage &&
         other.pageColor == pageColor &&
         other.solidBarColor == solidBarColor &&
@@ -179,6 +196,7 @@ class AppPageBackdrop {
   int get hashCode => Object.hash(
     area,
     hasBackground,
+    wantsBackground,
     hasImage,
     pageColor,
     solidBarColor,
@@ -188,7 +206,8 @@ class AppPageBackdrop {
 
   @override
   String toString() =>
-      'AppPageBackdrop($area, background: $hasBackground, image: $hasImage, '
+      'AppPageBackdrop($area, background: $hasBackground, '
+      'wants: $wantsBackground, image: $hasImage, '
       'page: $pageColor, bar: $solidBarColor, estimated: $estimatedColor)';
 }
 

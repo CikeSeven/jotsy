@@ -30,6 +30,7 @@ import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import '../../widgets/form_width.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记搜索页（独立覆盖层）。
@@ -689,17 +690,27 @@ class _SearchInputBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
+    // 玻璃时（“控件”为玻璃，或画在玻璃表面上）换成半透明填充与玻璃描边；
+    // 不模糊：它在顶栏上，同一区域不叠两层模糊。
+    final glassField = AppGlassField.of(context);
+    final glassBorder = glassField?.border;
     return Container(
       height: 56,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
-        color: isLight
-            ? ExpressiveSurfaces.cardColor(colorScheme)
-            : colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
-        border: Border.all(
-          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-          width: 0.8,
-        ),
+        color:
+            glassField?.fill ??
+            (isLight
+                ? ExpressiveSurfaces.cardColor(colorScheme)
+                : colorScheme.surfaceContainerHigh.withValues(alpha: 0.92)),
+        border: glassField == null
+            ? Border.all(
+                color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+                width: 0.8,
+              )
+            : glassBorder == null
+            ? null
+            : Border.fromBorderSide(glassBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),

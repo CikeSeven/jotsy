@@ -18,6 +18,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../app_surface/widgets/app_glass_fab.dart';
+import '../../../app_surface/widgets/app_glass_scope.dart';
+import '../../../app_surface/widgets/app_glass_surface.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../widgets/launch_reveal.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
@@ -181,17 +184,27 @@ class HomeNavRailCreateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return FloatingActionButton(
+    final glass = AppGlass.of(context).isGlass(AppGlassComponent.controls);
+    final button = FloatingActionButton(
       // 同一路由里可能还有别的 FAB（各 Tab 页面），不参与 Hero 飞行。
       heroTag: null,
       tooltip: label,
       onPressed: onPressed,
-      backgroundColor: scheme.primaryContainer,
+      // 玻璃时底色交给外面的玻璃表面（AppGlassFab 经局部主题把它换成透明）。
+      backgroundColor: glass ? null : scheme.primaryContainer,
       foregroundColor: scheme.onPrimaryContainer,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
       ),
       child: const FaIcon(FontAwesomeIcons.plus, size: 20),
+    );
+    if (!glass) return button;
+    // 侧栏上没有可模糊的内容（下面只有侧栏自己的底色 / 页面背景），不模糊，
+    // 只要主色半透明底色。调用方负责入场不经透明度层（GlassReveal）。
+    return AppGlassFab(
+      borderRadius: BorderRadius.circular(radius),
+      blur: AppGlassBlur.none,
+      child: button,
     );
   }
 }

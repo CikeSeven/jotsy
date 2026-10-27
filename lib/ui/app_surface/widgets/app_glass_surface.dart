@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/glass/glass_surface.dart';
 import 'app_glass_scope.dart';
 import 'app_page_backdrop.dart';
+import 'on_glass.dart';
 
 /// 一块玻璃要不要模糊它下面的东西。
 ///
@@ -41,7 +42,9 @@ enum AppGlassBlur {
 ///   的对比度，不够时子树的 onSurface / onSurfaceVariant（含文字、图标与
 ///   ListTile、AppBar 主题）换成可读色。自定义底色下始终插入同一组主题
 ///   节点（够看时数据与外层相同），不随对比度结果增删节点，背景图淡入、
-///   均色到达时子树不会被重新挂载；非自定义底色不插入任何节点。
+///   均色到达时子树不会被重新挂载；非自定义底色不插入任何主题节点；
+/// - 子树标记：内容外恒定插入一个 [OnGlass]，子组件据此把不透明的填充格
+///   换成半透明。
 ///
 /// 约束：与 [GlassSurface] 相同——禁止放进 `Opacity` / `FadeTransition`，
 /// 需要淡入时用 [progress]。
@@ -96,7 +99,9 @@ class AppGlassSurface extends StatelessWidget {
         (component == AppGlassComponent.cards
             ? backdrop.contentBackdropKey
             : null);
-    Widget content = child;
+    // 告诉子树“画在玻璃上”：行、输入框等据此把不透明填充换成半透明（见
+    // [OnGlass]）。只插入这一个 InheritedWidget，结构恒定。
+    Widget content = OnGlass(child: child);
     if (glass.customTint) {
       content = AppGlassForegroundTheme(
         foreground: glass.foregroundFor(backdrop.estimatedColor),

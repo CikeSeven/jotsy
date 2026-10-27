@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../app_surface/widgets/app_glass_fab.dart';
+import '../../../app_surface/widgets/app_glass_scope.dart';
+import '../../../widgets/glass/glass_reveal.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 页面顶端的阅读进度细线：宽度 = 已滚动 / 可滚动总长（不可滚动时为满）。
@@ -126,31 +129,65 @@ class _DiaryPreviewBackToTopState extends State<DiaryPreviewBackToTop> {
   @override
   Widget build(BuildContext context) {
     final duration = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+    final glass = AppGlass.of(context).isGlass(AppGlassComponent.controls);
+    final button = FloatingActionButton.small(
+      // 翻页器里每一页都有自己的按钮：不参与共享元素，避免同一路由里
+      // 出现重复的 FAB Hero 标签。
+      heroTag: null,
+      tooltip: context.l10n.diaryPreviewBackToTop,
+      onPressed: _scrollToTop,
+      child: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
+    );
     return ValueListenableBuilder<bool>(
       valueListenable: _visible,
       builder: (BuildContext context, bool visible, Widget? child) {
+        final curve = visible
+            ? ExpressiveMotion.effects
+            : ExpressiveMotion.exit;
         return IgnorePointer(
           ignoring: !visible,
           child: AnimatedScale(
             scale: visible ? 1 : 0.6,
             duration: duration,
             curve: ExpressiveMotion.spatial,
-            child: AnimatedOpacity(
-              opacity: visible ? 1 : 0,
-              duration: duration,
-              curve: visible ? ExpressiveMotion.effects : ExpressiveMotion.exit,
-              child: child,
-            ),
+            // 玻璃按钮不能放进透明度层（模糊会采不到正文），显隐改由
+            // GlassReveal 按同样的时长与曲线补间进度，玻璃表面自己淡入。
+            child: glass
+                ? TweenAnimationBuilder<double>(
+                    tween: Tween<double>(end: visible ? 1 : 0),
+                    duration: duration,
+                    curve: curve,
+                    builder:
+                        (BuildContext context, double value, Widget? child) =>
+                            GlassReveal(progress: value, child: child!),
+                    child: child,
+                  )
+                : AnimatedOpacity(
+                    opacity: visible ? 1 : 0,
+                    duration: duration,
+                    curve: curve,
+                    child: child,
+                  ),
           ),
         );
       },
-      child: FloatingActionButton.small(
-        // 翻页器里每一页都有自己的按钮：不参与共享元素，避免同一路由里
-        // 出现重复的 FAB Hero 标签。
-        heroTag: null,
-        tooltip: context.l10n.diaryPreviewBackToTop,
-        onPressed: _scrollToTop,
-        child: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
+      child: glass ? _glassButton(button) : button,
+    );
+  }
+
+  /// 主色玻璃的小号按钮，浮在正文上，总是模糊。
+  ///
+  /// [AppGlassFab] 把按钮的点按区收成 40dp（否则玻璃会被补成 48dp、比看得见
+  /// 的按钮大一圈），这里在外面补回 4dp 的点按边：占位与经典按钮的 48dp
+  /// 相同、位置不变，点在边上同样回到顶部（不重复读屏，语义仍是按钮本身）。
+  Widget _glassButton(Widget button) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
+      onTap: _scrollToTop,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: AppGlassFab(child: button),
       ),
     );
   }

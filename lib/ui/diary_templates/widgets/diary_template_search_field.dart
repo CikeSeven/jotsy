@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 
 /// 模板面板的搜索框：放大镜 + “搜索模板”占位，有字时右侧出现清空按钮。
 ///
 /// 输入框的文字与焦点由面板（[controller] / [focusNode] 的持有者）管理，
 /// 这样进入预览再返回时搜索词还在。外观取主题的 `searchBarTheme`
-/// （`surfaceContainerHigh`、无阴影），这里不覆盖颜色。
+/// （`surfaceContainerHigh`、无阴影），经典时不覆盖颜色；玻璃时（“控件”为
+/// 玻璃，或面板本身是玻璃）换成半透明填充与玻璃描边，不模糊（见
+/// [AppGlassField]）。
 /// 不自动聚焦：面板一打开就弹键盘会挡住大半列表。
 class DiaryTemplateSearchField extends StatelessWidget {
   const DiaryTemplateSearchField({
@@ -24,7 +27,15 @@ class DiaryTemplateSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final iconColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final glassField = AppGlassField.of(context);
+    final glassBorder = glassField?.border;
     return SearchBar(
+      backgroundColor: glassField == null
+          ? null
+          : WidgetStatePropertyAll<Color>(glassField.fill),
+      side: glassBorder == null
+          ? null
+          : WidgetStatePropertyAll<BorderSide>(glassBorder),
       controller: controller,
       focusNode: focusNode,
       hintText: l10n.diaryTemplatePickerSearchHint,

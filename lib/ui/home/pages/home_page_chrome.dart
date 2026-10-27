@@ -81,18 +81,27 @@ extension _HomePageChrome on _HomePageState {
   }
 
   /// 侧边栏顶部的新建按钮：文字（提示）与全局 FAB 相同，在任何 Tab 都可用。
+  ///
+  /// “控件”为玻璃时按钮是玻璃（见 [HomeNavRailCreateButton]），启动入场
+  /// 改经 [LaunchReveal.builder] + [GlassReveal]，不放进透明度层。
   Widget _buildRailCreateButton() {
-    return LaunchReveal(
-      slot: LaunchRevealSlot.action,
-      child: Consumer(
-        builder: (context, ref, _) => HomeNavRailCreateButton(
-          label: _createLabel(context, ref),
-          onPressed: () {
-            unawaited(_openCreate());
-          },
-        ),
+    final button = Consumer(
+      builder: (context, ref, _) => HomeNavRailCreateButton(
+        label: _createLabel(context, ref),
+        onPressed: () {
+          unawaited(_openCreate());
+        },
       ),
     );
+    if (AppGlass.of(context).isGlass(AppGlassComponent.controls)) {
+      return LaunchReveal.builder(
+        slot: LaunchRevealSlot.action,
+        builder: (BuildContext context, double opacity, Widget? child) =>
+            GlassReveal(progress: opacity, child: child!),
+        child: button,
+      );
+    }
+    return LaunchReveal(slot: LaunchRevealSlot.action, child: button);
   }
 
   /// 玻璃底栏右侧的并排新建按钮；文字与全局 FAB 相同，只作提示与读屏。
@@ -145,6 +154,25 @@ extension _HomePageChrome on _HomePageState {
     final hintExtent = HomeHintVisibilityScope.maybeController(
       context,
     )?.hintExtentNotifier;
+    // “控件”为玻璃时换成主色玻璃 FAB（见 [_buildGlassFabReveal]）。
+    final glassFab = AppGlass.of(context).isGlass(AppGlassComponent.controls);
+    // 只有按钮文字随日记页的范围变化：在普通日记本里为“写进「旅行」”，
+    // 新建的日记预先收进这本。
+    final button = Consumer(
+      builder: (context, ref, _) {
+        return FloatingActionButton.extended(
+          onPressed: () {
+            unawaited(_openCreateFromGlobalFab());
+          },
+          icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
+          label: Text(
+            _createLabel(context, ref),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      },
+    );
     return ListenableBuilder(
       listenable: Listenable.merge(<Listenable?>[
         widget.homeHintVisibleListenable,
@@ -184,38 +212,60 @@ extension _HomePageChrome on _HomePageState {
               ),
               curve: ExpressiveMotion.spatial,
               offset: shouldShow ? Offset.zero : const Offset(0, 1.6),
-              child: AnimatedOpacity(
-                duration: ExpressiveMotion.duration(
-                  context,
-                  _HomePageState._fabVisibilityDuration,
-                ),
-                curve: _HomePageState._fabVisibilityCurve,
-                opacity: shouldShow ? 1 : 0,
-                child: LaunchReveal(
-                  slot: LaunchRevealSlot.action,
-                  // 只有按钮文字随日记页的范围变化：在普通日记本里为
-                  // “写进「旅行」”，新建的日记预先收进这本。
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      return FloatingActionButton.extended(
-                        onPressed: () {
-                          unawaited(_openCreateFromGlobalFab());
-                        },
-                        icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
-                        label: Text(
-                          _createLabel(context, ref),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              child: glassFab
+                  ? _buildGlassFabReveal(context, shouldShow, button)
+                  : AnimatedOpacity(
+                      duration: ExpressiveMotion.duration(
+                        context,
+                        _HomePageState._fabVisibilityDuration,
+                      ),
+                      curve: _HomePageState._fabVisibilityCurve,
+                      opacity: shouldShow ? 1 : 0,
+                      child: LaunchReveal(
+                        slot: LaunchRevealSlot.action,
+                        child: button,
+                      ),
+                    ),
             ),
           ),
         );
       },
+    );
+  }
+
+  /// 玻璃 FAB 的显隐与启动入场。
+  ///
+  /// 经典 FAB 的两层透明度（显隐的 AnimatedOpacity、启动编排的
+  /// LaunchReveal）在玻璃时都不能用：背景模糊放进透明度层后只能采到层
+  /// 自己，淡入途中先露出没有模糊的底、结束时模糊“啪”地出现。改为两层
+  /// [GlassReveal]：显隐由 TweenAnimationBuilder 按同样的时长与曲线补间
+  /// 进度，入场取 [LaunchReveal.builder] 给出的不透明度（位移与缩放照旧由
+  /// 它负责），两者相乘后由玻璃表面自己缩放底色、描边、投影与模糊，并把
+  /// 按钮内容放进玻璃里面的透明度层一起淡入。
+  Widget _buildGlassFabReveal(
+    BuildContext context,
+    bool shouldShow,
+    Widget button,
+  ) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: shouldShow ? 1 : 0),
+      duration: ExpressiveMotion.duration(
+        context,
+        _HomePageState._fabVisibilityDuration,
+      ),
+      curve: _HomePageState._fabVisibilityCurve,
+      builder: (BuildContext context, double visibility, Widget? child) =>
+          GlassReveal(progress: visibility, child: child!),
+      child: LaunchReveal.builder(
+        slot: LaunchRevealSlot.action,
+        builder: (BuildContext context, double opacity, Widget? child) =>
+            GlassReveal(
+              progress: opacity,
+              // 浮在日记列表上：总是模糊下面的卡片。
+              child: AppGlassFab(child: child!),
+            ),
+        child: button,
+      ),
     );
   }
 }

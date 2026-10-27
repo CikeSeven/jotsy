@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../widgets/list_item_presence.dart';
 import 'expanded_tag_filter_list.dart';
 import 'tag_filter_chip.dart';
@@ -284,6 +285,12 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     );
   }
 
+  /// “控件”为玻璃时的材质；经典时为 null（胶囊照旧用标签色浅底）。
+  AppGlassResolved? get _glass {
+    final glass = AppGlass.of(context);
+    return glass.isGlass(AppGlassComponent.controls) ? glass : null;
+  }
+
   Widget _buildTagItem(int index) {
     final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = widget.selectedTagFilterIds.isNotEmpty;
@@ -305,11 +312,21 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     final tagColor = Color(tag.color);
     final isLight = Theme.of(context).brightness == Brightness.light;
 
-    final unselectedBg = tagColor.withValues(alpha: isLight ? 0.08 : 0.16);
+    // “控件”为玻璃时，未选中胶囊的底色换成玻璃底色（半透明的中性色，高
+    // 对比度时为不透明等效色），标签色只留在色点与描边上；选中态在同一块
+    // 玻璃底色上叠标签色浅底，加上满色 2dp 描边，仍一眼可辨。不模糊：标签
+    // 栏挂在刊头下面，那条栏是否模糊由导航栏样式决定，这里再加一层模糊就
+    // 成了同一区域两层模糊（刊头恰好两块启用的 BackdropFilter 由测试兜底）。
+    final glass = _glass;
+    final unselectedBg =
+        glass?.fill ?? tagColor.withValues(alpha: isLight ? 0.08 : 0.16);
     final unselectedBorder = tagColor.withValues(alpha: isLight ? 0.22 : 0.32);
     final unselectedText = colorScheme.onSurface;
 
-    final selectedBg = tagColor.withValues(alpha: isLight ? 0.22 : 0.36);
+    final tagTint = tagColor.withValues(alpha: isLight ? 0.22 : 0.36);
+    final selectedBg = glass == null
+        ? tagTint
+        : Color.alphaBlend(tagTint, glass.fill);
     final selectedBorder = tagColor;
     final selectedText = isLight
         ? (ThemeData.estimateBrightnessForColor(tagColor) == Brightness.dark

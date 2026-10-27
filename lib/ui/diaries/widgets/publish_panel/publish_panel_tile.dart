@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/app/theme/app_radii.dart';
+import 'package:node_diary/ui/app_surface/widgets/on_glass.dart';
 
 /// 发布/编辑面板里一行入口的统一表面：输入框填充色 + 输入框圆角 + 最小
 /// 高度（DESIGN.md §2.1“输入框填充底色”、§4.2 `AppRadii.input`）。
@@ -32,6 +33,16 @@ class PublishPanelTile extends StatelessWidget {
       ? colorScheme.surfaceContainerLow.withValues(alpha: 0.6)
       : colorScheme.surfaceContainerHighest;
 
+  /// 当前位置的行底色：画在玻璃表面上（[OnGlass]，如工具栏为玻璃时的
+  /// 信息面板）时换成半透明的 [OnGlass.wellColor]——不透明的输入框底色在
+  /// 玻璃上会成为一格格实色补丁；否则同 [surfaceColor]。
+  static Color surfaceColorOf(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return OnGlass.of(context)
+        ? OnGlass.wellColor(colorScheme)
+        : surfaceColor(colorScheme);
+  }
+
   /// 默认无描边（透明），状态补间从这里过渡到强调色描边。
   static Color outlineColor(ColorScheme colorScheme) =>
       colorScheme.outlineVariant.withValues(alpha: 0);
@@ -49,7 +60,7 @@ class PublishPanelTile extends StatelessWidget {
       child: Padding(padding: padding, child: child),
     );
     return Material(
-      color: color ?? surfaceColor(colorScheme),
+      color: color ?? surfaceColorOf(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
         side: BorderSide(

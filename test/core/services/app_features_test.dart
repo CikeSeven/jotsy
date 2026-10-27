@@ -36,21 +36,29 @@ void main() {
   });
 
   group('AppFeatures.encode', () {
-    test('stores nothing for the defaults', () {
-      expect(AppFeatures.defaults.encode(), isNull);
-      expect(const AppFeatures().encode(), isNull);
+    test('writes the defaults in full, so a saved choice is never missing', () {
+      final raw = AppFeatures.defaults.encode();
+
+      expect(jsonDecode(raw), <String, bool>{
+        'calendar': true,
+        'explore': true,
+        'notebooks': true,
+        'anniversaries': false,
+        'templates': true,
+        'timeCapsules': true,
+      });
+      expect(AppFeatures.decode(raw), AppFeatures.defaults);
     });
 
     test('round-trips every non-default combination field', () {
       const features = AppFeatures(
         explore: false,
-        anniversaries: false,
+        anniversaries: true,
         templates: false,
       );
       final raw = features.encode();
 
-      expect(raw, isNotNull);
-      expect((jsonDecode(raw!) as Map).keys, <String>[
+      expect((jsonDecode(raw) as Map).keys, <String>[
         'calendar',
         'explore',
         'notebooks',
@@ -63,10 +71,18 @@ void main() {
   });
 
   group('AppFeatures.anniversariesEnabled', () {
-    test('needs both the calendar and the anniversaries toggle', () {
-      expect(AppFeatures.defaults.anniversariesEnabled, isTrue);
+    test('is off by default and needs both the calendar and its toggle', () {
+      expect(AppFeatures.defaults.anniversaries, isFalse);
+      expect(AppFeatures.defaults.anniversariesEnabled, isFalse);
       expect(
-        const AppFeatures(calendar: false).anniversariesEnabled,
+        const AppFeatures(anniversaries: true).anniversariesEnabled,
+        isTrue,
+      );
+      expect(
+        const AppFeatures(
+          calendar: false,
+          anniversaries: true,
+        ).anniversariesEnabled,
         isFalse,
         reason: 'calendar off hides anniversaries even when kept on',
       );
@@ -89,7 +105,7 @@ void main() {
         const off = AppFeatures(calendar: false, anniversaries: false);
         expect(off.copyWith(calendar: true).anniversariesEnabled, isFalse);
 
-        const kept = AppFeatures(calendar: false);
+        const kept = AppFeatures(calendar: false, anniversaries: true);
         expect(kept.copyWith(calendar: true).anniversariesEnabled, isTrue);
       },
     );

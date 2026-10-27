@@ -31,6 +31,6 @@ class AppFeaturesNotifier extends Notifier<AppFeatures> {
   }
 }
 
-/// 保存功能开关；全部开启时移除设置键（[AppFeatures.encode] 返回 null）。
+/// 保存功能开关；总是整份写入（[AppFeatures.encode]），回到默认也不移除设置键。
 Future<void> saveAppFeatures(SettingsService settings, AppFeatures features) =>
     settings.setAppFeaturesRaw(features.encode());

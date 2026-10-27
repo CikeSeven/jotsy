@@ -18,6 +18,9 @@ import '../../support/calendar_test_harness.dart';
 const _optionsKey = 'app.settings.calendar_display_options';
 const _featuresKey = 'app.settings.app_features';
 
+/// 纪念日默认关闭；验证纪念日界面的用例先在功能管理里打开它。
+const _featuresOn = <String, Object>{_featuresKey: '{"anniversaries":true}'};
+
 void main() {
   final today = DateUtils.dateOnly(DateTime.now());
   // 四年前的今天：闰日也存在，今天就是第 4 周年。
@@ -44,6 +47,7 @@ void main() {
       await pumpCalendarPage(
         tester,
         brightness: brightness,
+        prefs: _featuresOn,
         anniversaries: <Anniversary>[together],
       );
       final l10n = tester.element(find.byType(CalendarPage)).l10n;
@@ -79,6 +83,7 @@ void main() {
       tester,
       anniversaries: <Anniversary>[together],
       prefs: <String, Object>{
+        ..._featuresOn,
         _optionsKey: const CalendarDisplayOptions(
           showAnniversaries: false,
         ).encode(),
@@ -94,7 +99,7 @@ void main() {
   testWidgets('long-pressing a day offers to add an anniversary', (
     tester,
   ) async {
-    await pumpCalendarPage(tester);
+    await pumpCalendarPage(tester, prefs: _featuresOn);
     final l10n = tester.element(find.byType(CalendarPage)).l10n;
     await tester.longPress(cellOn(otherDay));
     await tester.pumpAndSettle();
@@ -110,6 +115,7 @@ void main() {
     final linked = together.copyWith(linkedDiaryId: const Value('diary-1'));
     await pumpCalendarPage(
       tester,
+      prefs: _featuresOn,
       anniversaries: <Anniversary>[linked],
       linkedDiaries: <String, DiaryWithTags>{
         'diary-1': calendarTestDiary('diary-1', today, title: '那天'),
@@ -138,7 +144,12 @@ void main() {
 
   testWidgets('no shortcut when the linked diary is gone', (tester) async {
     final linked = together.copyWith(linkedDiaryId: const Value('gone'));
-    await pumpCalendarPage(tester, anniversaries: <Anniversary>[linked]);
+    await pumpCalendarPage(
+      tester,
+      prefs: _featuresOn,
+      anniversaries: <Anniversary>[linked],
+    );
+    expect(find.byType(CalendarAnniversarySection), findsOneWidget);
     expect(
       find.descendant(
         of: find.byType(AnniversaryLinkedDiaryButton),
@@ -198,10 +209,23 @@ void main() {
     });
   });
 
+  testWidgets('by default the feature is off: no header button or marks', (
+    tester,
+  ) async {
+    await pumpCalendarPage(tester, anniversaries: <Anniversary>[together]);
+    final l10n = tester.element(find.byType(CalendarPage)).l10n;
+    expect(find.byTooltip(l10n.anniversaryListTitle), findsNothing);
+    expect(
+      tester.widget<CalendarDayCell>(cellOn(today.day)).anniversary,
+      isNull,
+    );
+    expect(find.byType(CalendarAnniversarySection), findsNothing);
+  });
+
   testWidgets('with the feature on, the header button and option are there', (
     tester,
   ) async {
-    await pumpCalendarPage(tester);
+    await pumpCalendarPage(tester, prefs: _featuresOn);
     final l10n = tester.element(find.byType(CalendarPage)).l10n;
     expect(find.byTooltip(l10n.anniversaryListTitle), findsOneWidget);
     await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));

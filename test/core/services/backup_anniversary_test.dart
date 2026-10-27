@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/data_archive_service.dart';
 
@@ -66,6 +67,43 @@ void main() {
 
     await importWith(legacy, BackupImportMode.replaceAll);
     expect(await anniversaries(), isEmpty);
+  });
+
+  group('anniversaries toggle (off by default)', () {
+    bool anniversariesOn() =>
+        AppFeatures.decode(fixture.settings.appFeaturesRaw).anniversaries;
+
+    test('an old backup with anniversaries keeps them visible', () async {
+      // 纪念日默认关闭之前的备份：没保存过功能开关时导出的是 null。
+      final payload = await fixture.capturePayload();
+      (payload['settings'] as Map)['appFeaturesRaw'] = null;
+
+      await importWith(payload, BackupImportMode.replaceAll);
+
+      expect(anniversariesOn(), isTrue);
+    });
+
+    test('a toggle saved in the backup is restored as it was', () async {
+      final payload = await fixture.capturePayload();
+      (payload['settings'] as Map)['appFeaturesRaw'] = AppFeatures.defaults
+          .encode();
+
+      await importWith(payload, BackupImportMode.replaceAll);
+
+      expect(anniversariesOn(), isFalse);
+    });
+
+    test('merging anniversaries in keeps them visible when never saved, '
+        'but not over a saved choice', () async {
+      final payload = await fixture.capturePayload();
+      await fixture.settings.setAppFeaturesRaw(null);
+      await importWith(payload, BackupImportMode.merge);
+      expect(anniversariesOn(), isTrue);
+
+      await fixture.settings.setAppFeaturesRaw(AppFeatures.defaults.encode());
+      await importWith(payload, BackupImportMode.merge);
+      expect(anniversariesOn(), isFalse);
+    });
   });
 
   group('merging', () {

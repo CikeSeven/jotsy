@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../utils/provider_retention.dart';
 import '../database/app_database.dart';
 import 'amap_config_channel.dart';
+import 'app_features_legacy.dart';
 import 'app_update_service.dart';
 import 'cloud_backup_service.dart';
 import 'cloud_backup_settings_service.dart';
@@ -50,6 +51,22 @@ final diaryDraftLegacyMigrationProvider = FutureProvider<void>((Ref ref) async {
     );
   } catch (error, stackTrace) {
     debugPrint('Legacy create draft migration skipped: $error\n$stackTrace');
+  }
+});
+
+/// 纪念日改为默认关闭之前就建过纪念日的老用户，升级后保持纪念日开启（见
+/// [keepLegacyAnniversariesVisible]）；冷启动时触发一次。失败只记录日志，
+/// 不阻断启动，下次启动再试。
+final appFeaturesLegacyMigrationProvider = FutureProvider<void>((
+  Ref ref,
+) async {
+  try {
+    await keepLegacyAnniversariesVisible(
+      database: ref.watch(appDatabaseProvider),
+      settings: await ref.watch(settingsServiceProvider.future),
+    );
+  } catch (error, stackTrace) {
+    debugPrint('Legacy anniversaries toggle skipped: $error\n$stackTrace');
   }
 });
 

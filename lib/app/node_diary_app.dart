@@ -80,6 +80,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     ref.read(diaryMediaCleanupServiceProvider).scheduleStartupSweep();
     // 旧版本的单份新建草稿搬进草稿箱；新建入口与草稿箱读取前也会等它完成。
     unawaited(ref.read(diaryDraftLegacyMigrationProvider.future));
+    // 已经建过纪念日的老用户升级后保留纪念日（新默认关闭）。
+    unawaited(ref.read(appFeaturesLegacyMigrationProvider.future));
     // 常驻监听正文外观：设置就绪后即开始注册所选的导入字体，打开第一篇日记
     // 时通常已就绪，正文不会先按内置字体排一遍再换字体。
     ref.listenManual(diaryTextAppearanceProvider, (_, _) {});

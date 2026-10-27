@@ -1,12 +1,14 @@
 // 功能管理开关（设置 → 功能管理）。
 //
 // 职责：描述用户可整体关闭的功能——日历 Tab、探索 Tab、日记本、纪念日、
-// 日记模板、时间胶囊——是否开启；默认全部开启。关闭只是在各处隐藏入口与
-// 展示，数据一律保留，重新开启即恢复原样。
+// 日记模板、时间胶囊——是否开启；纪念日默认关闭（让初始界面简洁），其余
+// 默认开启。关闭只是在各处隐藏入口与展示，数据一律保留，重新开启即恢复原样。
 //
 // 存储：单个 JSON 设置键 `app.settings.app_features`（经
 // `SettingsService.setAppFeaturesRaw`），逐字段容错解析，随完整备份导出，
-// 导入失败时随设置快照回滚。全部为默认值时不落盘（[encode] 返回 null）。
+// 导入失败时随设置快照回滚。在功能管理里保存过就整份落盘（含与默认相同的
+// 值），没有这个键只表示从没保存过——纪念日改为默认关闭之前的老用户据此
+// 保留纪念日，见 `keepLegacyAnniversariesVisible`。
 
 import 'dart:convert';
 
@@ -16,12 +18,12 @@ class AppFeatures {
     this.calendar = true,
     this.explore = true,
     this.notebooks = true,
-    this.anniversaries = true,
+    this.anniversaries = false,
     this.templates = true,
     this.timeCapsules = true,
   });
 
-  /// 全部开启：从未设置、读不出或恢复默认时都是它。
+  /// 默认开关（纪念日关闭，其余开启）：从未设置、读不出或恢复默认时都是它。
   static const AppFeatures defaults = AppFeatures();
 
   /// 日历 Tab。
@@ -82,10 +84,9 @@ class AppFeatures {
     );
   }
 
-  /// 编码为设置原文；等于默认值时返回 null，让设置层移除该键而不是存一份
-  /// 与默认相同的 JSON。
-  String? encode() {
-    if (this == defaults) return null;
+  /// 编码为设置原文。与默认相同时也整份写出：设置里有这个键就说明用户在
+  /// 功能管理里保存过，升级迁移不会再改动它（见文件头）。
+  String encode() {
     return jsonEncode(<String, bool>{
       _keyCalendar: calendar,
       _keyExplore: explore,

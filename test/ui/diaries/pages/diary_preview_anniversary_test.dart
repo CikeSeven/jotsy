@@ -16,7 +16,10 @@ void main() {
   late AppDatabase database;
   late String diaryId;
   setUp(() async {
-    SharedPreferences.setMockInitialValues(<String, Object>{});
+    // 纪念日默认关闭，先在功能管理里打开它。
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      'app.settings.app_features': '{"anniversaries":true}',
+    });
     database = AppDatabase.forTesting(NativeDatabase.memory());
     diaryId = await database.createDiary(
       title: '第一次见面',
@@ -61,12 +64,19 @@ void main() {
     await tester.pump(Duration.zero);
   });
 
-  // 功能管理：纪念日 / 日记模板关闭时，“更多”里对应的一项隐藏（数据保留）。
+  // 功能管理：纪念日 / 日记模板关闭时，“更多”里对应的一项隐藏（数据保留）；
+  // 纪念日默认关闭。
   for (final (label, features, anniversary, template)
       in <(String, String?, bool, bool)>[
-        ('everything on', null, true, true),
+        ('the defaults', null, false, true),
+        ('everything on', '{"anniversaries":true}', true, true),
         ('anniversaries off', '{"anniversaries":false}', false, true),
-        ('templates off', '{"templates":false}', true, false),
+        (
+          'templates off',
+          '{"anniversaries":true,"templates":false}',
+          true,
+          false,
+        ),
       ]) {
     testWidgets('the More menu with $label', (tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{

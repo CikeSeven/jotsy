@@ -130,6 +130,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       readDocument: () => _controller?.document,
       readDatabase: () => container.read(appDatabaseProvider),
       onSaved: () => container.invalidate(diaryDetailProvider(diaryId)),
+      onSaveError: (error) =>
+          _showHint(context.l10n.autoT0087(error.toString())),
     );
   }
 

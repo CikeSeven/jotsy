@@ -5,14 +5,15 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/services/desktop_exit_guard.dart';
 
 /// 预览页待办勾选的自动保存。
 ///
 /// 预览页是只读的，唯一允许的本地改动是勾选待办。连续勾选多个待办时不必
-/// 每次都写库：[schedule] 在短防抖窗口后统一提交；正在写入时再次触发只记
-/// 一个排队标记，写完后再走一次防抖。正文与库里相同时跳过，写库失败静默
-/// 忽略，不打断阅读。写入只改正文（[AppDatabase.updateDiaryContent]），不会
-/// 把归档或回收站里的日记顺带恢复出来。
+/// 每次都写库：[schedule] 在短防抖窗口后统一提交，写入期间继续勾选的状态
+/// 也依次写入。正文与库里相同时跳过，失败保留待存状态并经 onSaveError
+/// 提示；桌面退出时取消关闭。写入只改正文（[AppDatabase.updateDiaryContent]），
+/// 不会把归档或回收站里的日记顺带恢复出来。
 ///
 /// 输入：读取当前日记、文档与数据库的回调（页面持有这些状态）；输出：写入
 /// 成功后的 [onSaved]（页面据此刷新详情）。
@@ -26,7 +27,10 @@ class DiaryTodoAutoSaveController {
     required this.readDocument,
     required this.readDatabase,
     required this.onSaved,
-  });
+    this.onSaveError,
+  }) {
+    _exitGuard = DesktopExitGuard(onExit: flush);
+  }
 
   /// 防抖窗口（写库节流，不是动画时长）。
   static const Duration debounce = Duration(milliseconds: 260);
@@ -35,21 +39,25 @@ class DiaryTodoAutoSaveController {
   final af.Document? Function() readDocument;
   final AppDatabase Function() readDatabase;
   final VoidCallback onSaved;
+  final ValueChanged<Object>? onSaveError;
+  late final DesktopExitGuard _exitGuard;
 
   Timer? _timer;
-  bool _saving = false;
-  bool _queued = false;
+  Future<bool>? _pendingSave;
+  _TodoSnapshot? _lastSaved;
+  bool _dirty = false;
   bool _disposed = false;
 
   void schedule() {
     if (_disposed) {
       return;
     }
+    _dirty = true;
     _timer?.cancel();
-    _timer = Timer(debounce, _saveIfNeeded);
+    _timer = Timer(debounce, () => unawaited(flush()));
   }
 
-  /// 当下要写入的内容；与库里相同或缺少数据时为 null。
+  /// 同步读取当下内容；销毁时也先取出它，后续写入不能再读已释放的文档。
   _TodoSnapshot? _snapshot() {
     final detail = readDetail();
     final document = readDocument();
@@ -57,10 +65,6 @@ class DiaryTodoAutoSaveController {
       return null;
     }
     final contentDocJson = encodeDiaryBlocks(document.toJson());
-    // 内容未变化直接跳过，减少无效写库。
-    if (contentDocJson == detail.diary.content) {
-      return null;
-    }
     return _TodoSnapshot(
       diaryId: detail.diary.diaryId,
       contentDocJson: contentDocJson,
@@ -68,60 +72,83 @@ class DiaryTodoAutoSaveController {
     );
   }
 
-  Future<void> _write(_TodoSnapshot snapshot) {
-    return readDatabase().updateDiaryContent(
+  Future<void> _write(_TodoSnapshot snapshot, {AppDatabase? database}) {
+    return (database ?? readDatabase()).updateDiaryContent(
       diaryId: snapshot.diaryId,
       contentDocJson: snapshot.contentDocJson,
       contentText: snapshot.contentText,
     );
   }
 
-  Future<void> _saveIfNeeded() async {
-    if (_disposed) {
-      return;
+  /// 不等防抖，等待本轮全部勾选落盘；关闭窗口前由退出守卫调用。
+  Future<bool> flush() {
+    _timer?.cancel();
+    // 只读正文可能来自旧格式，解码后的 JSON 与库存原文并不逐字相同。没有
+    // 勾选就不写，避免仅打开阅读页、再关闭窗口也刷新日记的最后编辑时间。
+    if (_disposed || (!_dirty && _pendingSave == null)) {
+      return Future.value(true);
     }
-    final snapshot = _snapshot();
-    if (snapshot == null) {
-      return;
-    }
-    if (_saving) {
-      _queued = true;
-      return;
-    }
+    return _pendingSave ??= _savePending().whenComplete(
+      () => _pendingSave = null,
+    );
+  }
 
-    _saving = true;
-    try {
-      await _write(snapshot);
-      if (!_disposed) {
-        onSaved();
+  bool _needsWrite(_TodoSnapshot snapshot) {
+    // 详情订阅尚未刷新时，以真正完成的写入为准：保存期间勾回原状态也必须
+    // 再写一次，不能拿仍旧显示原状态的详情当作已存的依据。
+    final saved = _lastSaved;
+    final previous = saved?.diaryId == snapshot.diaryId
+        ? saved?.contentDocJson
+        : readDetail()?.diary.content;
+    return previous != snapshot.contentDocJson;
+  }
+
+  Future<bool> _savePending() async {
+    while (!_disposed) {
+      final snapshot = _snapshot();
+      if (snapshot == null || !_needsWrite(snapshot)) {
+        _dirty = false;
+        return true;
       }
-    } catch (_) {
-      // 待办自动保存失败不打断阅读流程，仅静默跳过本次。
-    } finally {
-      _saving = false;
-      if (_queued && !_disposed) {
-        _queued = false;
-        schedule();
+      try {
+        await _write(snapshot);
+        _lastSaved = snapshot;
+        if (!_disposed) onSaved();
+      } catch (error) {
+        if (!_disposed) onSaveError?.call(error);
+        return false;
       }
     }
+    return true;
   }
 
   void dispose() {
     if (_disposed) {
       return;
     }
-    final pending = (_timer?.isActive ?? false) || _queued;
+    final pending =
+        _dirty || (_timer?.isActive ?? false) || _pendingSave != null;
+    final snapshot = pending ? _snapshot() : null;
+    final saving = _pendingSave;
+    final needsWrite =
+        snapshot != null && (saving != null || _needsWrite(snapshot));
+    final database = needsWrite ? readDatabase() : null;
     _disposed = true;
     _timer?.cancel();
-    if (!pending) {
-      return;
-    }
-    // 文档在调用方 dispose 之后就不可用，所以在这里同步取快照；写库本身
-    // 异步完成，失败同样静默（与防抖写入一致）。正在进行的那次写入与这次
-    // 都是整篇覆盖，后写的是更新的勾选状态。
-    final snapshot = _snapshot();
-    if (snapshot != null) {
-      unawaited(_write(snapshot).catchError((Object _) {}));
+    _exitGuard.dispose();
+    if (snapshot != null && database != null) {
+      // 翻页卸载时先等旧写入，再提交刚才同步取得的最新快照，避免旧勾选
+      // 反过来覆盖新勾选。失败仍保留既有阅读流程，不回调已释放的页面。
+      unawaited(
+        (saving ?? Future.value(true))
+            .then((_) async {
+              if (_lastSaved?.diaryId != snapshot.diaryId ||
+                  _lastSaved?.contentDocJson != snapshot.contentDocJson) {
+                await _write(snapshot, database: database);
+              }
+            })
+            .catchError((Object _) {}),
+      );
     }
   }
 }

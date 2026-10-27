@@ -39,6 +39,9 @@ class Win32Window {
   // Show the current window. Returns true if the window was successfully shown.
   bool Show();
 
+  // Restores and activates an existing runner window without changing its size.
+  static void ActivateExisting(const std::wstring& title);
+
   // Release OS resources associated with window.
   void Destroy();
 

@@ -7,6 +7,7 @@ import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/divider_embed_codec.dart';
 import '../../../core/database/file_embed_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
+import '../../../core/database/diary_blocks/diary_list_style.dart';
 import '../models/diary_text_colors.dart';
 
 part 'diary_export_native_blocks.dart';
@@ -111,6 +112,8 @@ class ExportBlock {
     this.mediaName,
     this.mediaDuration,
     this.codeLanguage,
+    this.orderedStyle,
+    this.bulletStyle,
   });
 
   final ExportBlockKind kind;
@@ -138,6 +141,21 @@ class ExportBlock {
   /// 未指定（`code-block: true`）或非代码块为 null。写出器按它给围栏 /
   /// `<code>` 标语言，并在语言变化处把相邻代码行分成两段。
   final String? codeLanguage;
+
+  /// 有序 / 无序列表实际显示的样式（`diary_list_style.dart`，已按层级补全），
+  /// 与编辑器一致；历史 Delta（[ExportBlockParser.parse]）没有样式，为 null。
+  final DiaryOrderedListStyle? orderedStyle;
+  final DiaryBulletListStyle? bulletStyle;
+
+  /// 纯文本、PDF、Word 写在行首的列表标记（不含其后的空白）：有序为按样式
+  /// 排出的序号（如 `a.`、`一、`、`①`），无序为样式的字符；没有样式时为
+  /// `1.` 与 `•`。其他块为空串。
+  String get listMarker => switch (kind) {
+    ExportBlockKind.ordered =>
+      (orderedStyle ?? DiaryOrderedListStyle.decimal).label(ordinal),
+    ExportBlockKind.bullet => (bulletStyle ?? DiaryBulletListStyle.disc).glyph,
+    _ => '',
+  };
 
   String get plainText => inlines.map((ExportInline run) => run.text).join();
 

@@ -5,7 +5,9 @@ part of 'diary_export_blocks.dart';
 List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
   final blocks = <ExportBlock>[];
   final counters = <int, int>{};
-  for (final (node, depth) in walkDiaryBlocks(document)) {
+  // 与 walkDiaryBlocks 同一顺序，下标一一对应。
+  final listStyles = diaryListStylesInOrder(document);
+  for (final (visit, (node, depth)) in walkDiaryBlocks(document).indexed) {
     final type = node['type'];
     final data = diaryBlockData(node);
     final kind = switch (type) {
@@ -88,6 +90,8 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
           codeLanguage: type == 'code'
               ? codeBlockExplicitLanguage(data['language'])
               : null,
+          orderedStyle: listStyles[visit].ordered,
+          bulletStyle: listStyles[visit].bullet,
         ),
       );
     }

@@ -4,6 +4,7 @@ import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_from_delta.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
+import '../../../core/database/diary_blocks/diary_list_style.dart';
 import 'diary_template_body.dart';
 
 /// 模板 v2 的树结构白名单。只重建允许的类型与字段：即使媒体节点藏在
@@ -50,6 +51,9 @@ Map<String, Object?> sanitizeDiaryTemplateBlocks(Object? raw) {
             'align': align,
           if (type == 'code' && source['language'] is String)
             'language': source['language'],
+          if (sanitizeDiaryListStyleId(type, source[kDiaryListStyleKey])
+              case final String listStyle)
+            kDiaryListStyleKey: listStyle,
         };
         // 不画子块的块（标题、引用、代码块）的子块提到它后面，与正文读取
         // 时的修正（liftHiddenDiaryBlockChildren）一致。

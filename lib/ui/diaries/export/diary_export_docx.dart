@@ -324,10 +324,9 @@ class DiaryDocxWriter {
             ExportBlockKind.checked ||
             ExportBlockKind.unchecked:
           final marker = switch (block.kind) {
-            ExportBlockKind.ordered => '${block.ordinal}.',
             ExportBlockKind.checked => '☑',
             ExportBlockKind.unchecked => '☐',
-            _ => '•',
+            _ => block.listMarker,
           };
           b.paragraph(
             style: 'DiaryList',

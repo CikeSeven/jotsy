@@ -14983,6 +14983,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Extra large'**
   String get diaryToolbarSizeExtraLarge;
+
+  /// Editor toolbar list panel: title when the cursor is in a numbered list.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbered list style'**
+  String get diaryListStyleNumberedTitle;
+
+  /// Editor toolbar list panel: title when the cursor is in a bulleted list.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulleted list style'**
+  String get diaryListStyleBulletedTitle;
+
+  /// List style: none chosen; the number format or bullet shape changes with the nesting level.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic (changes with level)'**
+  String get diaryListStyleAuto;
+
+  /// Numbered list style: Arabic numerals followed by a period.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers 1. 2. 3.'**
+  String get diaryListStyleDecimal;
+
+  /// Numbered list style: Arabic numerals in parentheses.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers in parentheses (1) (2) (3)'**
+  String get diaryListStyleParenthesized;
+
+  /// Numbered list style: circled numbers; plain numbers after 10.
+  ///
+  /// In en, this message translates to:
+  /// **'Circled numbers ① ② ③'**
+  String get diaryListStyleCircled;
+
+  /// Numbered list style: Chinese numerals followed by an enumeration comma.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese numerals 一、二、三、'**
+  String get diaryListStyleChinese;
+
+  /// Numbered list style: lowercase Latin letters.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowercase letters a. b. c.'**
+  String get diaryListStyleLowerAlpha;
+
+  /// Numbered list style: uppercase Latin letters.
+  ///
+  /// In en, this message translates to:
+  /// **'Uppercase letters A. B. C.'**
+  String get diaryListStyleUpperAlpha;
+
+  /// Numbered list style: lowercase Roman numerals.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowercase Roman numerals i. ii. iii.'**
+  String get diaryListStyleLowerRoman;
+
+  /// Numbered list style: uppercase Roman numerals.
+  ///
+  /// In en, this message translates to:
+  /// **'Uppercase Roman numerals I. II. III.'**
+  String get diaryListStyleUpperRoman;
+
+  /// Bulleted list style: filled dot.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled dot'**
+  String get diaryListStyleDisc;
+
+  /// Bulleted list style: hollow circle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hollow circle'**
+  String get diaryListStyleCircle;
+
+  /// Bulleted list style: small filled square.
+  ///
+  /// In en, this message translates to:
+  /// **'Square'**
+  String get diaryListStyleSquare;
+
+  /// Bulleted list style: filled diamond.
+  ///
+  /// In en, this message translates to:
+  /// **'Diamond'**
+  String get diaryListStyleDiamond;
+
+  /// Bulleted list style: filled star.
+  ///
+  /// In en, this message translates to:
+  /// **'Star'**
+  String get diaryListStyleStar;
+
+  /// Bulleted list style: right-pointing arrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrow'**
+  String get diaryListStyleArrow;
+
+  /// Bulleted list style: short dash.
+  ///
+  /// In en, this message translates to:
+  /// **'Dash'**
+  String get diaryListStyleDash;
+
+  /// List panel button: turn the selected numbered list items into a bulleted list.
+  ///
+  /// In en, this message translates to:
+  /// **'To bulleted list'**
+  String get diaryListToBulleted;
+
+  /// List panel button: turn the selected bulleted list items into a numbered list.
+  ///
+  /// In en, this message translates to:
+  /// **'To numbered list'**
+  String get diaryListToNumbered;
+
+  /// List panel button: turn the selected list items back into paragraphs.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to text'**
+  String get diaryListToText;
 }
 
 class _AppLocalizationsDelegate

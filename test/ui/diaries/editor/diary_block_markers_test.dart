@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
@@ -151,6 +152,47 @@ void main() {
     expect(markOf('b').shape, BoxShape.circle);
     expect(markOf('b').border, isNotNull);
     expect(markOf('c').shape, BoxShape.rectangle);
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
+
+  testWidgets('a chosen list style covers its whole run, new items included', (
+    tester,
+  ) async {
+    // 存储的正文经 decodeStoredDiaryBlocks 读入，样式键原样保留；没有样式
+    // 键的项（回车新起的）沿用同段的样式。
+    final controller = DiaryEditorController.fromContent(
+      _document([
+        _block('numbered_list', 'one', data: {'listStyle': 'cjk'}),
+        _block('numbered_list', 'two'),
+        _block('numbered_list', 'three', data: {'listStyle': 'cjk'}),
+        _block('paragraph', 'break'),
+        _block('bulleted_list', 'star', data: {'listStyle': 'star'}),
+        _block('bulleted_list', 'star too'),
+        _block('bulleted_list', 'dash', data: {'listStyle': 'dash'}),
+      ]),
+    );
+    await pump(tester, controller);
+    for (final label in ['一、', '二、', '三、']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+    IconData? iconOf(String text) => tester
+        .widgetList<FaIcon>(
+          find.descendant(
+            of: _markerOf(DiaryBulletMarker, text),
+            matching: find.byType(FaIcon),
+          ),
+        )
+        .firstOrNull
+        ?.icon;
+    expect(iconOf('star'), FontAwesomeIcons.solidStar.data);
+    expect(iconOf('star too'), FontAwesomeIcons.solidStar.data);
+    // 一个文档里同类型的相邻列表就是同一段：最近的样式优先。
+    expect(iconOf('dash'), isNull);
+    expect(
+      controller.document.root.children.first.attributes['listStyle'],
+      'cjk',
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   });

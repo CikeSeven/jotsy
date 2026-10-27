@@ -93,6 +93,15 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
         tooltip: item.label(context.l10n),
         onPressed: () => _handleColorTool(colorTarget, fromMore: inMorePanel),
       );
+    } else if (item == DiaryToolbarItem.orderedList ||
+        item == DiaryToolbarItem.bulletList) {
+      tool = buildDiaryToolbarItem(
+        context,
+        item,
+        widget.controller,
+        onPressed: () => _handleListTool(item, fromMore: inMorePanel),
+        panelOpen: !inMorePanel && _listPanelOpenFor(item),
+      );
     } else if (item == DiaryToolbarItem.codeBlock) {
       tool = DiaryToolbarCodeBlockButton(
         controller: widget.controller,

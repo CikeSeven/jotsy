@@ -8188,4 +8188,67 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryToolbarSizeExtraLarge => '特大';
+
+  @override
+  String get diaryListStyleNumberedTitle => '有序列表样式';
+
+  @override
+  String get diaryListStyleBulletedTitle => '无序列表样式';
+
+  @override
+  String get diaryListStyleAuto => '自动（按层级变化）';
+
+  @override
+  String get diaryListStyleDecimal => '数字 1. 2. 3.';
+
+  @override
+  String get diaryListStyleParenthesized => '括号数字 (1) (2) (3)';
+
+  @override
+  String get diaryListStyleCircled => '带圈数字 ① ② ③';
+
+  @override
+  String get diaryListStyleChinese => '中文数字 一、二、三、';
+
+  @override
+  String get diaryListStyleLowerAlpha => '小写字母 a. b. c.';
+
+  @override
+  String get diaryListStyleUpperAlpha => '大写字母 A. B. C.';
+
+  @override
+  String get diaryListStyleLowerRoman => '小写罗马数字 i. ii. iii.';
+
+  @override
+  String get diaryListStyleUpperRoman => '大写罗马数字 I. II. III.';
+
+  @override
+  String get diaryListStyleDisc => '实心圆点';
+
+  @override
+  String get diaryListStyleCircle => '空心圆';
+
+  @override
+  String get diaryListStyleSquare => '方块';
+
+  @override
+  String get diaryListStyleDiamond => '菱形';
+
+  @override
+  String get diaryListStyleStar => '星形';
+
+  @override
+  String get diaryListStyleArrow => '箭头';
+
+  @override
+  String get diaryListStyleDash => '短横线';
+
+  @override
+  String get diaryListToBulleted => '转为无序列表';
+
+  @override
+  String get diaryListToNumbered => '转为有序列表';
+
+  @override
+  String get diaryListToText => '转为正文';
 }

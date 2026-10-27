@@ -12,6 +12,7 @@ import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../notebooks/widgets/notebook_cover_parts.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../models/calendar_marker_filter.dart';
 import 'calendar_options_controls.dart';
 
@@ -26,7 +27,7 @@ Future<void> showCalendarFilterSheet(
   required List<String> moodOptions,
   required ValueChanged<CalendarMarkerFilter> onChanged,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

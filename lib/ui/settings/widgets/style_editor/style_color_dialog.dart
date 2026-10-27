@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/viewmodels/diary_card_colors.dart';
+import '../../../widgets/app_modal/app_dialog.dart';
 import '../../../widgets/color_palette_families.dart';
 import '../../../widgets/color_swatch_button.dart';
 import '../../../widgets/expressive_button_group.dart';
@@ -27,7 +28,7 @@ Future<StyleCustomColor?> showStyleColorDialog(
   required int? dark,
   required DiaryCardColorRole role,
 }) {
-  return showDialog<StyleCustomColor>(
+  return showAppDialog<StyleCustomColor>(
     context: context,
     builder: (BuildContext context) => _StyleColorDialog(
       title: title,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../widgets/app_modal/app_dialog.dart';
+
 /// 录音重命名弹窗，录音面板与正文播放器共用。
 ///
 /// 确认返回去除首尾空白后的名称（可能为空串，由调用方决定回退到默认标题），
@@ -8,7 +10,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 Future<String?> showDiaryRecordingRenameDialog(
   BuildContext context, {
   required String initialName,
-}) => showDialog<String>(
+}) => showAppDialog<String>(
   context: context,
   builder: (_) => _RecordingRenameDialog(initialName: initialName),
 );

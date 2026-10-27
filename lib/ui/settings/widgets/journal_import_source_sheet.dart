@@ -6,6 +6,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/journal_import_cloud_cookies.dart';
 import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import 'choice_sheet_parts.dart';
 import 'journal_import_source_labels.dart';
 
@@ -46,7 +47,7 @@ const List<JournalImportSource> _phoneNotes = [
 Future<JournalImportSource?> showJournalImportSourceSheet(
   BuildContext context,
 ) {
-  return showModalBottomSheet<JournalImportSource>(
+  return showAppModalBottomSheet<JournalImportSource>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

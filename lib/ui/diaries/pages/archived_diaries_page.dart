@@ -18,6 +18,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import '../../notebooks/controllers/diary_notebook_pick_flow.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';

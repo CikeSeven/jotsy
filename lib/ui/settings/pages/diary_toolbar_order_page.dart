@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/triple_bar_drag_handle.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
@@ -177,7 +178,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
 
   Future<void> _confirmResetOrder() async {
     final l10n = context.l10n;
-    final shouldReset = await showDialog<bool>(
+    final shouldReset = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
@@ -224,7 +225,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   }
 
   Future<void> _openCurrentTimeFormatDialog() async {
-    final result = await showDialog<String>(
+    final result = await showAppDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) {
         return _CurrentTimeFormatDialog(

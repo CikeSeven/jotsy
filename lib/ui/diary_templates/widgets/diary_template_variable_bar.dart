@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../models/diary_template_variables.dart';
 import '../viewmodels/diary_template_labels.dart';
 import '../viewmodels/diary_template_variable_values.dart';
@@ -60,7 +61,7 @@ class DiaryTemplateVariableBar extends StatelessWidget {
 }
 
 Future<String?> _showAllVariables(BuildContext context) {
-  return showModalBottomSheet<String>(
+  return showAppModalBottomSheet<String>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

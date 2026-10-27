@@ -29,6 +29,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
 import '../widgets/settings_option_tiles.dart';
@@ -216,7 +217,7 @@ class AppFeaturesPage extends ConsumerWidget {
   Future<bool?> _confirmNotebooksOff(BuildContext context, int count) {
     final l10n = context.l10n;
     final colors = Theme.of(context).colorScheme;
-    return showDialog<bool>(
+    return showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(

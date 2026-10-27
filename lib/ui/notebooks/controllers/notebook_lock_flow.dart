@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/device_auth_service.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../pages/notebook_editor_page.dart';
 import '../viewmodels/notebook_view.dart';
 
@@ -72,7 +73,7 @@ Future<void> openNotebookEditor(
 /// 设备没有锁屏密码：说明上锁的日记本在这台设备上打不开，只有“知道了”。
 Future<void> _showUnsupportedDialog(BuildContext context) {
   final l10n = context.l10n;
-  return showDialog<void>(
+  return showAppDialog<void>(
     context: context,
     builder: (BuildContext dialogContext) => AlertDialog(
       title: Text(l10n.notebookLockUnsupportedTitle),

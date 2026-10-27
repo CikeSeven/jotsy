@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../export/diary_export_format.dart';
@@ -44,7 +45,7 @@ Future<DiaryExportRequest?> showDiaryExportSheet(
   required ValueChanged<DiaryExportOptions> onOptionsChanged,
   bool isBook = false,
 }) {
-  return showModalBottomSheet<DiaryExportRequest>(
+  return showAppModalBottomSheet<DiaryExportRequest>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

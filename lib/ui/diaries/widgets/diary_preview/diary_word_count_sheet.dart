@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../utils/text_stats.dart';
+import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../viewmodels/diary_card_media_summary.dart';
 
 /// 打开一篇日记的字数统计明细（底部面板）。
@@ -12,7 +13,7 @@ Future<void> showDiaryWordCountSheet(
   required TextStats stats,
   required DiaryCardMediaSummary media,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

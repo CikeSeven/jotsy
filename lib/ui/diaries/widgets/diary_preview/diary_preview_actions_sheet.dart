@@ -13,6 +13,7 @@ import '../../../notebooks/controllers/diary_notebook_pick_flow.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../settings/pages/diary_preview_style_page.dart';
 import '../../../settings/providers/app_features_provider.dart';
+import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../models/publish_metadata_composer.dart';
 
@@ -126,7 +127,7 @@ Future<void> showDiaryPreviewActionsSheet(
   String? notebookSubtitle,
 }) {
   final l10n = context.l10n;
-  return showModalBottomSheet<void>(
+  return showAppModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

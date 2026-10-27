@@ -4,6 +4,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import 'app_update_badge.dart';
 import 'app_update_labels.dart';
 import 'external_link.dart';
@@ -23,7 +24,7 @@ Future<AppUpdatePromptAction> showAppUpdateAvailableSheet(
   AppUpdateAsset? asset,
   bool desktop = false,
 }) async {
-  final action = await showModalBottomSheet<AppUpdatePromptAction>(
+  final action = await showAppModalBottomSheet<AppUpdatePromptAction>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

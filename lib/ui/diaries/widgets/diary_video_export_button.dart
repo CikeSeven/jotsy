@@ -12,6 +12,8 @@ import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 
+import '../../widgets/app_modal/app_dialog.dart';
+
 /// 弹出二次确认后才授权 controller 保存，取消及页面退出均不会触发导出。
 /// 桌面没有相册，点按直接弹出“另存为…”对话框（对话框即确认）。
 class DiaryVideoExportButton extends StatefulWidget {
@@ -70,7 +72,7 @@ class _DiaryVideoExportButtonState extends State<DiaryVideoExportButton> {
     final controller = widget.controller;
     final video = widget.video;
     if (!controller.beginConfirmation()) return;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (dialogContext) {
         final l10n = dialogContext.l10n;

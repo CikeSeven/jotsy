@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../widgets/settings_card_group.dart';
 import '../../widgets/palette_color_picker.dart';
 
@@ -186,7 +187,7 @@ class _FontScaleSelector extends StatelessWidget {
   Future<void> _showFontScaleDialog(BuildContext context) async {
     final originalScale = selectedScale;
     var currentScale = selectedScale;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;
@@ -328,7 +329,7 @@ class _TabSwitchCurveSelector extends StatelessWidget {
   }
 
   Future<void> _showCurvePickerDialog(BuildContext context) async {
-    final result = await showDialog<HomeTabSwitchCurveType>(
+    final result = await showAppDialog<HomeTabSwitchCurveType>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

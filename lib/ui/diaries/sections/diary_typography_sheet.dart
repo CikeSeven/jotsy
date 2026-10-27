@@ -7,6 +7,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/diary_font_storage_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../settings/pages/diary_typography_page.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../controllers/diary_typography_controller.dart';
 import '../providers/diary_typography_provider.dart';
 import '../widgets/diary_font_choices.dart';
@@ -17,7 +18,7 @@ import '../widgets/diary_typography_metrics_editor.dart';
 /// 遮罩比默认浅：调整时要能看清后方正文的变化。导入与删除字体只在设置页
 /// 进行（需要文件选择与确认），面板底部提供入口。
 Future<void> showDiaryTypographySheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+  return showAppModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

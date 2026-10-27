@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'app_modal/app_dialog.dart';
 import 'expressive_icon_swap.dart';
 
 /// 密码弹窗的用途：导出时密码可选，导入时用于解开已加密的文件。
@@ -17,7 +18,7 @@ Future<String?> showBackupPasswordDialog(
   required BackupPasswordPurpose purpose,
   String? confirmLabel,
 }) {
-  return showDialog<String?>(
+  return showAppDialog<String?>(
     context: context,
     builder: (BuildContext dialogContext) =>
         _BackupPasswordDialog(purpose: purpose, confirmLabel: confirmLabel),

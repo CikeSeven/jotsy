@@ -5,6 +5,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../widgets/app_modal/app_dialog.dart';
+
 /// 设置页日记卡片展示区块。
 ///
 /// 输入为异步初始化的设置服务；输出当前标签显示上限及选择弹窗。
@@ -26,7 +28,7 @@ class SettingsDiaryCardSection extends StatelessWidget {
   ) async {
     final originalLimit = settings.diaryCardTagLimit;
     var selectedLimit = originalLimit;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(

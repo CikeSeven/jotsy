@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../widgets/app_modal/app_dialog.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../../widgets/image_viewer_page.dart';
 
@@ -56,7 +57,7 @@ void openDiaryPreviewImages(
 /// 删除确认：左侧灰色“取消”，右侧 error 色“删除”。
 Future<bool> confirmDiaryPreviewDelete(BuildContext context) async {
   final l10n = context.l10n;
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showAppDialog<bool>(
     context: context,
     builder: (BuildContext dialogContext) {
       final colorScheme = Theme.of(dialogContext).colorScheme;

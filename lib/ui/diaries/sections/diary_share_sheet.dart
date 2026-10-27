@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../models/diary_share_content.dart';
 import '../models/diary_share_options.dart';
 import '../models/diary_share_target.dart';
@@ -32,7 +33,7 @@ Future<DiaryShareRequest?> showDiaryShareSheet(
   required ValueChanged<DiaryShareOptions> onOptionsChanged,
   required Future<Set<DiaryShareTarget>> availableTargets,
 }) {
-  return showModalBottomSheet<DiaryShareRequest>(
+  return showAppModalBottomSheet<DiaryShareRequest>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

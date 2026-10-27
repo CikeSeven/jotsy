@@ -11,6 +11,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/empty_hint.dart';
@@ -191,7 +192,7 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
   }
 
   Future<bool> _confirmDelete(int count) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

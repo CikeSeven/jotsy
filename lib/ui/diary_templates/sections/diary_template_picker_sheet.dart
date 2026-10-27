@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/empty_hint.dart';
 import '../models/diary_template.dart';
 import '../models/diary_template_selection.dart';
@@ -24,7 +25,7 @@ Future<DiaryTemplateSelection?> showDiaryTemplatePickerSheet(
   BuildContext context, {
   required DateTime diaryDate,
 }) {
-  return showModalBottomSheet<DiaryTemplateSelection>(
+  return showAppModalBottomSheet<DiaryTemplateSelection>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

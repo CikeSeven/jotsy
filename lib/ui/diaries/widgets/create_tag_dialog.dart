@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/color_palette_picker.dart';
 
 /// 弹窗创建标签时的临时数据对象。
@@ -54,7 +55,7 @@ Future<NewTagDraft?> showTagDraftDialog(
   String? initialName,
   int? initialColor,
 }) async {
-  return showDialog<NewTagDraft>(
+  return showAppDialog<NewTagDraft>(
     context: context,
     builder: (BuildContext _) => _CreateTagDialog(
       title: title,

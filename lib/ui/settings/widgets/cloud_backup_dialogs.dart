@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 
 /// 确认删除远程的一份备份（不可撤销，部分网盘会进入其回收站）。
 Future<bool> confirmCloudBackupDelete(BuildContext context, String fileName) {
@@ -30,7 +31,7 @@ Future<bool> _confirmDestructive(
   required String content,
   required String action,
 }) async {
-  final result = await showDialog<bool>(
+  final result = await showAppDialog<bool>(
     context: context,
     builder: (BuildContext dialogContext) {
       final colorScheme = Theme.of(dialogContext).colorScheme;

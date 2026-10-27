@@ -253,7 +253,7 @@ class EditDiaryController {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: _state.context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

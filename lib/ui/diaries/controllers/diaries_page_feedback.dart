@@ -16,7 +16,7 @@ class DiariesPageFeedback {
 
   /// 多选删除确认弹窗。
   Future<bool> showDeleteSelectedConfirmDialog(int count) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: _state.context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

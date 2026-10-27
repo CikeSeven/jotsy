@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../notebooks/viewmodels/notebook_labels.dart';
 import '../../widgets/expressive_choice_tile.dart';
@@ -33,7 +34,7 @@ Future<void> showDiaryViewOptionsSheet(
   bool allowBookOrder = false,
   ValueChanged<NotebookSort>? onNotebookSortChanged,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

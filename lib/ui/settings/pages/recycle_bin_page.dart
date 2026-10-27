@@ -11,6 +11,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../notebooks/providers/notebook_providers.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/empty_hint.dart';
@@ -142,7 +143,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
   }
 
   Future<bool> _confirmPurge(int count) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

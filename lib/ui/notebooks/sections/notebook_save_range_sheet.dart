@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_choice_tile.dart';
 
 /// 日历范围“存为日记本”的小面板：智能日记本（按日期区间自动收录）或普通
@@ -12,7 +13,7 @@ Future<NotebookKind?> showNotebookSaveRangeSheet(
   BuildContext context, {
   required int count,
 }) {
-  return showModalBottomSheet<NotebookKind>(
+  return showAppModalBottomSheet<NotebookKind>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

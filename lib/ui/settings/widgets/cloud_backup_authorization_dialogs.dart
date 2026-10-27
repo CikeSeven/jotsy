@@ -7,6 +7,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/cloud_backup_drive.dart';
 import '../../../core/services/cloud_backup_oauth.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/expressive_loading_indicator.dart';
 import '../controllers/cloud_backup_failure.dart';
@@ -26,7 +27,7 @@ Future<CloudOAuthToken?> showCloudDeviceAuthorizationDialog(
   required CloudDeviceCodeAuthorization method,
   required String providerName,
 }) async {
-  final outcome = await showDialog<_AuthorizationOutcome>(
+  final outcome = await showAppDialog<_AuthorizationOutcome>(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext dialogContext) =>
@@ -44,7 +45,7 @@ Future<CloudOAuthToken?> showCloudCodePasteDialog(
   required CloudCodePasteAuthorization method,
   required String providerName,
 }) {
-  return showDialog<CloudOAuthToken>(
+  return showAppDialog<CloudOAuthToken>(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext dialogContext) =>

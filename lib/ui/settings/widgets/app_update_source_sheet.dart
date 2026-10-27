@@ -5,6 +5,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import 'app_update_labels.dart';
 
@@ -26,7 +27,7 @@ Future<AppUpdateSourceChoice?> showAppUpdateSourceSheet(
   BuildContext context, {
   required AppUpdatePreferences preferences,
 }) {
-  return showModalBottomSheet<AppUpdateSourceChoice>(
+  return showAppModalBottomSheet<AppUpdateSourceChoice>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

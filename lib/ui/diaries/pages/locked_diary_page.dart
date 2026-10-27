@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/qweather_icon.dart';
@@ -291,7 +292,7 @@ class _LockedDiaryContent extends ConsumerWidget {
     WidgetRef ref,
     String diaryId,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

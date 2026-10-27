@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/models/style_library/saved_style.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
+import '../../../widgets/app_modal/app_dialog.dart';
 import '../../controllers/style_draft_controller.dart';
 
 // 样式编辑页（卡片样式、预览页样式、代码块样式）各标签页共用的外壳、预览
@@ -116,7 +117,7 @@ Future<String?> showStyleEditorNameDialog(
   required String title,
   required String initialName,
 }) {
-  return showDialog<String>(
+  return showAppDialog<String>(
     context: context,
     builder: (BuildContext context) =>
         _StyleNameDialog(title: title, initialName: initialName),

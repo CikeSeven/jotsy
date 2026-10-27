@@ -6,6 +6,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/cloud_backup_models.dart';
 import '../../../core/services/cloud_backup_presets.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import 'choice_sheet_parts.dart';
 import 'cloud_backup_labels.dart';
 
@@ -35,7 +36,7 @@ Future<CloudBackupChoice?> showCloudBackupProviderSheet(
   BuildContext context, {
   required bool Function(CloudBackupKind kind) isDriveAvailable,
 }) {
-  return showModalBottomSheet<CloudBackupChoice>(
+  return showAppModalBottomSheet<CloudBackupChoice>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

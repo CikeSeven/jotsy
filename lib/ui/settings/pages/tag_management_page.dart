@@ -15,6 +15,7 @@ import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/list_item_presence.dart';
 import '../widgets/tag_management_tile.dart';
@@ -247,7 +248,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   }
 
   Future<bool?> _confirmDeleteTag(Tag tag) {
-    return showDialog<bool>(
+    return showAppDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;

@@ -6,6 +6,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../models/diary_template.dart';
 import '../widgets/diary_template_tile.dart';
 
@@ -82,7 +83,7 @@ Future<List<String>?> showDiaryTemplateRestoreSheet(
   BuildContext context, {
   required List<DiaryTemplate> templates,
 }) {
-  return showModalBottomSheet<List<String>>(
+  return showAppModalBottomSheet<List<String>>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

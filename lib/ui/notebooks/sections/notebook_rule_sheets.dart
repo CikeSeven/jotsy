@@ -8,6 +8,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/widgets/tag_filter_chip.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../viewmodels/notebook_rule_labels.dart';
@@ -20,7 +21,7 @@ import 'notebook_rule_date_editor.dart';
 /// 产生编译为“不匹配”的空规则。
 
 Future<T?> _showRuleSheet<T>(BuildContext context, WidgetBuilder builder) {
-  return showModalBottomSheet<T>(
+  return showAppModalBottomSheet<T>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

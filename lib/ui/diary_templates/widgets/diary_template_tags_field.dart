@@ -8,6 +8,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/widgets/create_tag_dialog.dart';
+import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../controllers/diary_template_editor_controller.dart';
 import '../models/diary_template.dart';
 
@@ -51,7 +52,7 @@ Future<DiaryTemplateTagRef?> _pickTag(
   BuildContext context,
   List<DiaryTemplateTagRef> current,
 ) async {
-  final choice = await showModalBottomSheet<Object>(
+  final choice = await showAppModalBottomSheet<Object>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,

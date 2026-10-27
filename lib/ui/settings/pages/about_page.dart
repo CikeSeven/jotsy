@@ -12,6 +12,7 @@ import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../app/theme/app_effects.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_image_frame.dart';
 import '../controllers/app_update_controller.dart';
 import '../models/app_update_state.dart';
@@ -71,7 +72,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
 
   Future<void> _showPrivacyDialog(BuildContext context) async {
     final colorScheme = Theme.of(context).colorScheme;
-    await showDialog<void>(
+    await showAppDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;

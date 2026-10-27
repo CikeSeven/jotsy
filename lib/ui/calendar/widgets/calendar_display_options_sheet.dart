@@ -295,6 +295,13 @@ class _CalendarDisplayOptionsSheetState
                 onChanged: (bool value) =>
                     _update(options.copyWith(showAnniversaries: value)),
               ),
+            CalendarOptionSwitch(
+              label: l10n.calendarShowDayMoods,
+              description: l10n.calendarShowDayMoodsDescription,
+              value: options.showDayMoods,
+              onChanged: (bool value) =>
+                  _update(options.copyWith(showDayMoods: value)),
+            ),
           ],
         ),
       ),

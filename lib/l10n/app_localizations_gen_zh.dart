@@ -7713,4 +7713,67 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryEditorDropToInsert => '松开以插入';
+
+  @override
+  String get dayMoodAwful => '很糟';
+
+  @override
+  String get dayMoodBad => '不太好';
+
+  @override
+  String get dayMoodMeh => '一般';
+
+  @override
+  String get dayMoodGood => '不错';
+
+  @override
+  String get dayMoodGreat => '超棒';
+
+  @override
+  String get calendarDayMoodTitle => '这天的心情';
+
+  @override
+  String get calendarDayMoodClear => '清除';
+
+  @override
+  String get calendarDayMoodCleared => '已清除这天的心情';
+
+  @override
+  String get calendarDayMoodSaveFailed => '心情没有保存成功，请重试';
+
+  @override
+  String get calendarShowDayMoods => '这天的心情';
+
+  @override
+  String get calendarShowDayMoodsDescription => '长按日期记下这天的心情，日期格整格换成心情的样子。';
+
+  @override
+  String backupOverwriteAllDayMoods(int count) {
+    return '$count 天的心情';
+  }
+
+  @override
+  String backupOverwriteExistingDayMoodsBody(int count) {
+    return '本机已记下的 $count 天心情将被文件中的心情替换。';
+  }
+
+  @override
+  String backupImportModeOverwriteDayMoodsOnly(int count) {
+    return '添加新内容，并用文件中的心情替换本机已记下的 $count 天心情';
+  }
+
+  @override
+  String backupImportModeOverwriteDayMoodsExtra(int count) {
+    return '同时替换本机已记下的 $count 天心情';
+  }
+
+  @override
+  String backupImportDayMoodMergeResult(int added) {
+    return '心情：新增 $added 天';
+  }
+
+  @override
+  String backupImportDayMoodOverwriteResult(int added, int replaced) {
+    return '心情：新增 $added 天，覆盖 $replaced 天';
+  }
 }

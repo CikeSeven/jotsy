@@ -20,6 +20,7 @@ import 'backup_payload.dart';
 ///   写入的日记用到的标签，跳过的日记不会把本机已改名或删除的标签带回来；
 /// - 纪念日按 anniversaryId 匹配：本机没有的新增，本机已有的按导入方式保留
 ///   或替换；关联的日记存业务 id，日记换了本地 id 也不影响；
+/// - 这天的心情按日期匹配：本机没有的新增，本机已有的按导入方式保留或替换；
 /// - 日记模板按 templateId 匹配：两种合并方式都只新增本机没有的模板，接在
 ///   “我的模板”最后，**从不覆盖**本机已有的模板——模板是写作习惯的配置，
 ///   本机那份往往是刻意改过的；只有覆盖全部恢复才整表换掉；
@@ -169,6 +170,7 @@ class BackupMerge {
       mode,
     );
     final addedTemplates = await _mergeTemplates(db, payload.diaryTemplates);
+    final dayMoods = await _mergeDayMoods(db, payload.dayMoods, mode);
 
     return BackupImportResult(
       mode: mode,
@@ -180,7 +182,43 @@ class BackupMerge {
       skippedAnniversaries: anniversaries.skipped,
       addedTemplates: addedTemplates,
       addedNotebooks: addedNotebooks,
+      addedDayMoods: dayMoods.added,
+      replacedDayMoods: dayMoods.replaced,
     );
+  }
+
+  /// 这天的心情并入本机：按日期匹配，本机没有的那天新增；本机那天已有心情
+  /// 时，合并保留本机的，合并并覆盖换成文件里的。
+  Future<({int added, int replaced})> _mergeDayMoods(
+    AppDatabase db,
+    List<DayMoodRow> incoming,
+    BackupImportMode mode,
+  ) async {
+    if (incoming.isEmpty) return (added: 0, replaced: 0);
+    final table = db.dayMoods;
+    final localDays = {
+      for (final row in await (db.selectOnly(
+        table,
+      )..addColumns([table.day])).get())
+        row.read(table.day)!,
+    };
+    final writes = <DayMoodRow>[];
+    var replaced = 0;
+    for (final row in incoming) {
+      if (!localDays.contains(row.day)) {
+        writes.add(row);
+      } else if (mode == BackupImportMode.mergeOverwrite) {
+        writes.add(row);
+        replaced++;
+      }
+    }
+    await db.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        table,
+        writes.map((row) => row.toCompanion(false)).toList(),
+      );
+    });
+    return (added: writes.length - replaced, replaced: replaced);
   }
 
   /// 本机没有的模板按文件中的顺序接在本机最后，返回新增个数；本机已有的

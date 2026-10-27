@@ -103,6 +103,7 @@ class BackupTestFixture {
       lunar: (year: 2020, month: -4, day: 1),
       linkedDiaryId: diaryId,
     );
+    await database.setDayMood(DateTime(2026, 10, 1), DayMood.good);
     return diaryId;
   }
 
@@ -180,6 +181,8 @@ class BackupTestFixture {
       (await database.select(database.anniversaries).getSingle()).title,
       'current anniversary',
     );
+    final dayMood = await database.select(database.dayMoods).getSingle();
+    expect((dayMood.day, dayMood.mood), ('2026-10-01', 'good'));
     final template = await database.select(database.diaryTemplates).getSingle();
     expect(template.templateId, 'current-template');
     expect(template.payload, '{"name":"current template"}');

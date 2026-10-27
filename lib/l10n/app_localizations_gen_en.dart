@@ -8596,4 +8596,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorDropToInsert => 'Drop to insert';
+
+  @override
+  String get dayMoodAwful => 'Awful';
+
+  @override
+  String get dayMoodBad => 'Bad';
+
+  @override
+  String get dayMoodMeh => 'Meh';
+
+  @override
+  String get dayMoodGood => 'Good';
+
+  @override
+  String get dayMoodGreat => 'Great';
+
+  @override
+  String get calendarDayMoodTitle => 'Mood of the day';
+
+  @override
+  String get calendarDayMoodClear => 'Clear';
+
+  @override
+  String get calendarDayMoodCleared => 'Mood cleared';
+
+  @override
+  String get calendarDayMoodSaveFailed => 'Couldn\'t save the mood. Try again.';
+
+  @override
+  String get calendarShowDayMoods => 'Mood of the day';
+
+  @override
+  String get calendarShowDayMoodsDescription =>
+      'Long-press a date to note how the day felt; the whole date cell turns into that mood.';
+
+  @override
+  String backupOverwriteAllDayMoods(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Moods for $count days',
+      one: 'Mood for 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupOverwriteExistingDayMoodsBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The moods already noted for $count days will be replaced by the ones in the file.',
+      one:
+          'The mood already noted for 1 day will be replaced by the one in the file.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportModeOverwriteDayMoodsOnly(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Adds new items and replaces the moods already noted for $count days with the ones in the file',
+      one:
+          'Adds new items and replaces the mood already noted for 1 day with the one in the file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportModeOverwriteDayMoodsExtra(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Also replaces the moods noted for $count days',
+      one: 'Also replaces the mood noted for 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportDayMoodMergeResult(int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'Day moods: $added added',
+      one: 'Day moods: 1 added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportDayMoodOverwriteResult(int added, int replaced) {
+    return 'Day moods: $added added, $replaced overwritten';
+  }
 }

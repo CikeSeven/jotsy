@@ -4,7 +4,8 @@ part of 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 ///
 /// 职责边界：
 /// - 处理日历视图状态（月/周/年、焦点月份、选中日期）；
-/// - 处理长按日期的快捷操作与预览页导航；
+/// - 处理长按日期的快捷操作与预览页导航；设定这天的心情见
+///   calendar_day_mood_actions.dart；
 /// - 选一段日期做统计见 calendar_range_actions.dart，纪念日入口见
 ///   calendar_anniversary_actions.dart；
 /// - 从日历新建日记（含草稿分流）见 calendar_create_actions.dart，显示选项
@@ -58,18 +59,34 @@ class _CalendarPageController {
   Future<void> onDayLongPressed(DateTime day) async {
     final normalizedDay = DateUtils.dateOnly(day);
     unawaited(Feedback.forLongPress(_state.context));
-    // 时间胶囊、纪念日功能关闭时隐藏入口，数据保留。
+    // 时间胶囊、纪念日功能关闭时隐藏入口，数据保留；显示选项关掉了这天的
+    // 心情时不提供心情一组（记下的心情保留）。
     final features = _state.ref.read(appFeaturesProvider);
-    final action = await showCalendarDayActionsSheet(
+    final showDayMood = _state._displayOptions.showDayMoods;
+    final dayMoods = showDayMood
+        ? _state.ref.read(dayMoodsProvider).value
+        : null;
+    final dayMood = dayMoods?[normalizedDay];
+    final choice = await showCalendarDayActionsSheet(
       _state.context,
       day: normalizedDay,
       now: DateTime.now(),
       isSelected: isSameDay(normalizedDay, _state._selectedDay),
+      dayMood: dayMood,
+      showDayMood: showDayMood,
       showCapsule: features.timeCapsules,
       showAnniversary: features.anniversariesEnabled,
     );
-    if (action == null || !_state.mounted) {
+    if (choice == null || !_state.mounted) {
       return;
+    }
+    final CalendarDayAction action;
+    switch (choice) {
+      case CalendarDayMoodChoice(:final mood):
+        await applyDayMood(normalizedDay, mood, current: dayMood);
+        return;
+      case CalendarDayActionChoice(action: final picked):
+        action = picked;
     }
     switch (action) {
       case CalendarDayAction.view:

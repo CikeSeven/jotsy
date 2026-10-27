@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../models/calendar_display_options.dart';
@@ -14,7 +15,8 @@ import 'calendar_year_palette.dart';
 /// 年视图（Year in Pixels）：12 个迷你月份，每天一个小格，按心情、篇数或
 /// 字数着色。
 ///
-/// 输入：年份、整年逐日汇总、着色依据、一周起始日（与月视图一致）；输出
+/// 输入：年份、整年逐日汇总与这天的心情、着色依据、一周起始日（与月视图
+/// 一致）；输出
 /// 网格与图例，点月份经 [onMonthTap] 回到该月的月视图，切换着色依据经
 /// [onBasisChanged]、导出经 [onExport] 交给页面。无副作用。
 ///
@@ -34,12 +36,16 @@ class CalendarYearView extends StatelessWidget {
     required this.onMonthTap,
     required this.onBasisChanged,
     required this.onExport,
+    this.dayMoods = const <DateTime, DayMood>{},
   });
 
   final int year;
   final Map<DateTime, CalendarDaySummary> summaries;
   final CalendarYearBasis basis;
   final List<String> moodOptions;
+
+  /// 这天的心情；按心情着色时优先于当天日记的平均心情，不显示时为空。
+  final Map<DateTime, DayMood> dayMoods;
 
   /// 每周第一天（DateTime.monday … DateTime.sunday）。
   final int firstWeekday;
@@ -118,6 +124,7 @@ class CalendarYearView extends StatelessWidget {
                       _MonthGrid(
                         year: year,
                         summaries: summaries,
+                        dayMoods: dayMoods,
                         basis: basis,
                         firstWeekday: firstWeekday,
                         today: today,
@@ -171,6 +178,7 @@ class _MonthGrid extends StatelessWidget {
   const _MonthGrid({
     required this.year,
     required this.summaries,
+    required this.dayMoods,
     required this.basis,
     required this.firstWeekday,
     required this.today,
@@ -181,6 +189,7 @@ class _MonthGrid extends StatelessWidget {
 
   final int year;
   final Map<DateTime, CalendarDaySummary> summaries;
+  final Map<DateTime, DayMood> dayMoods;
   final CalendarYearBasis basis;
   final int firstWeekday;
   final DateTime today;
@@ -199,6 +208,7 @@ class _MonthGrid extends StatelessWidget {
                 child: _MiniMonth(
                   month: DateTime(year, row * _columns + column + 1),
                   summaries: summaries,
+                  dayMoods: dayMoods,
                   basis: basis,
                   firstWeekday: firstWeekday,
                   today: today,
@@ -219,6 +229,7 @@ class _MiniMonth extends StatelessWidget {
   const _MiniMonth({
     required this.month,
     required this.summaries,
+    required this.dayMoods,
     required this.basis,
     required this.firstWeekday,
     required this.today,
@@ -227,6 +238,7 @@ class _MiniMonth extends StatelessWidget {
 
   final DateTime month;
   final Map<DateTime, CalendarDaySummary> summaries;
+  final Map<DateTime, DayMood> dayMoods;
   final CalendarYearBasis basis;
   final int firstWeekday;
   final DateTime today;
@@ -246,6 +258,7 @@ class _MiniMonth extends StatelessWidget {
           colorScheme,
           summaries[DateTime(month.year, month.month, day)],
           basis,
+          dayMood: dayMoods[DateTime(month.year, month.month, day)],
         ),
     ];
     final label = DateFormat.MMM(l10n.localeName).format(month);

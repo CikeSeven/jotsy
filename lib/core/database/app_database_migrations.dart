@@ -180,6 +180,12 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     await migrator.createIndex(idxDiaryNotebooksNotebook);
   }
 
+  /// v14 新增这天的心情表，与草稿表同理：表已存在（降级后再升级）时保留其中
+  /// 用户记下的心情，什么也不做。
+  Future<void> _migrateAddDayMoods(Migrator migrator) async {
+    await _createTableIfMissing(migrator, dayMoods);
+  }
+
   Future<void> _createTableIfMissing(
     Migrator migrator,
     TableInfo<Table, Object?> table,

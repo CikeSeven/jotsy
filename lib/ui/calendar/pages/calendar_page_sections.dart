@@ -83,6 +83,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required AsyncValue<List<DiaryCalendarMarker>> markersAsync,
     required List<String> moodOptions,
     required AnniversaryCalendarIndex anniversaryIndex,
+    required Map<DateTime, DayMood> dayMoods,
     required DateTime now,
     bool wide = false,
   }) {
@@ -136,6 +137,7 @@ extension _CalendarPageSections on _CalendarPageState {
                 summaries: summaries,
                 moodOptions: moodOptions,
                 anniversaryIndex: anniversaryIndex,
+                dayMoods: dayMoods,
                 wide: wide,
               ),
               if (filter.isActive)
@@ -192,6 +194,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required Map<DateTime, CalendarDaySummary> summaries,
     required List<String> moodOptions,
     required AnniversaryCalendarIndex anniversaryIndex,
+    required Map<DateTime, DayMood> dayMoods,
     required bool wide,
   }) {
     final Widget body;
@@ -200,6 +203,7 @@ extension _CalendarPageSections on _CalendarPageState {
         key: const ValueKey<String>('year'),
         year: _focusedMonth.year,
         summaries: summaries,
+        dayMoods: dayMoods,
         basis: options.yearBasis,
         moodOptions: moodOptions,
         firstWeekday: CalendarMonthGrid.firstWeekdayOf(
@@ -230,6 +234,7 @@ extension _CalendarPageSections on _CalendarPageState {
             unawaited(_controller.onDayLongPressed(day)),
         range: _range,
         anniversaryIndex: anniversaryIndex.isEmpty ? null : anniversaryIndex,
+        dayMoods: dayMoods,
         scaleRowsWithWidth: wide,
       );
     }

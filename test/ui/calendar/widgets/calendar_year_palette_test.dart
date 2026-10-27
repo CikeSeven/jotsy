@@ -57,6 +57,43 @@ void main() {
     expect(noMood, isNot(empty));
   });
 
+  test('a mood set for the day wins over the diaries in the mood view', () {
+    // 日记平均是最低一段，这天记的是“超棒”：按这天的心情着色。
+    final written = dayWith(<String?>[moods.first]);
+    for (final mood in DayMood.values) {
+      expect(
+        CalendarYearPalette.pixelColor(
+          colorScheme,
+          written,
+          CalendarYearBasis.mood,
+          dayMood: mood,
+        ),
+        CalendarYearPalette.moodBandColor(colorScheme, mood.index),
+        reason: mood.name,
+      );
+    }
+    // 没写日记的日子也按记下的心情着色。
+    expect(
+      CalendarYearPalette.pixelColor(
+        colorScheme,
+        null,
+        CalendarYearBasis.mood,
+        dayMood: DayMood.great,
+      ),
+      CalendarYearPalette.moodBandColor(colorScheme, 4),
+    );
+    // 按篇数着色时不看心情。
+    expect(
+      CalendarYearPalette.pixelColor(
+        colorScheme,
+        null,
+        CalendarYearBasis.entries,
+        dayMood: DayMood.great,
+      ),
+      CalendarYearPalette.emptyColor(colorScheme),
+    );
+  });
+
   test('entry counts use the heat steps', () {
     expect(
       CalendarYearPalette.pixelColor(

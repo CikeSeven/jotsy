@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/calendar/providers/day_mood_providers.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -49,6 +50,9 @@ Future<void> _pumpCalendar(
         ),
         anniversaryListProvider.overrideWith(
           (ref) => Stream.value(const <Anniversary>[]),
+        ),
+        dayMoodsProvider.overrideWith(
+          (ref) => Stream.value(const <DateTime, DayMood>{}),
         ),
       ],
       child: MaterialApp(

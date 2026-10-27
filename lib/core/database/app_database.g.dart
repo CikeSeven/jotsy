@@ -3234,6 +3234,17 @@ class $NotebooksTable extends Notebooks
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _parentIdMeta = const VerificationMeta(
+    'parentId',
+  );
+  @override
+  late final GeneratedColumn<String> parentId = GeneratedColumn<String>(
+    'parent_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3247,6 +3258,7 @@ class $NotebooksTable extends Notebooks
     isClosed,
     createdAt,
     updatedAt,
+    parentId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3331,6 +3343,12 @@ class $NotebooksTable extends Notebooks
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('parent_id')) {
+      context.handle(
+        _parentIdMeta,
+        parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta),
+      );
+    }
     return context;
   }
 
@@ -3384,6 +3402,10 @@ class $NotebooksTable extends Notebooks
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      parentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_id'],
+      ),
     );
   }
 
@@ -3405,6 +3427,9 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
   final bool isClosed;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// 放在最后：v15 升级经 ADD COLUMN 追加在表尾，新建库与升级库的列顺序一致。
+  final String? parentId;
   const NotebookRow({
     required this.id,
     required this.notebookId,
@@ -3417,6 +3442,7 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
     required this.isClosed,
     required this.createdAt,
     required this.updatedAt,
+    this.parentId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3432,6 +3458,9 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
     map['is_closed'] = Variable<bool>(isClosed);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || parentId != null) {
+      map['parent_id'] = Variable<String>(parentId);
+    }
     return map;
   }
 
@@ -3448,6 +3477,9 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
       isClosed: Value(isClosed),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      parentId: parentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentId),
     );
   }
 
@@ -3468,6 +3500,7 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
       isClosed: serializer.fromJson<bool>(json['isClosed']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      parentId: serializer.fromJson<String?>(json['parentId']),
     );
   }
   @override
@@ -3485,6 +3518,7 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
       'isClosed': serializer.toJson<bool>(isClosed),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'parentId': serializer.toJson<String?>(parentId),
     };
   }
 
@@ -3500,6 +3534,7 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
     bool? isClosed,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<String?> parentId = const Value.absent(),
   }) => NotebookRow(
     id: id ?? this.id,
     notebookId: notebookId ?? this.notebookId,
@@ -3512,6 +3547,7 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
     isClosed: isClosed ?? this.isClosed,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    parentId: parentId.present ? parentId.value : this.parentId,
   );
   NotebookRow copyWithCompanion(NotebooksCompanion data) {
     return NotebookRow(
@@ -3530,6 +3566,7 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
       isClosed: data.isClosed.present ? data.isClosed.value : this.isClosed,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      parentId: data.parentId.present ? data.parentId.value : this.parentId,
     );
   }
 
@@ -3546,7 +3583,8 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
           ..write('isPinned: $isPinned, ')
           ..write('isClosed: $isClosed, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('parentId: $parentId')
           ..write(')'))
         .toString();
   }
@@ -3564,6 +3602,7 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
     isClosed,
     createdAt,
     updatedAt,
+    parentId,
   );
   @override
   bool operator ==(Object other) =>
@@ -3579,7 +3618,8 @@ class NotebookRow extends DataClass implements Insertable<NotebookRow> {
           other.isPinned == this.isPinned &&
           other.isClosed == this.isClosed &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.parentId == this.parentId);
 }
 
 class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
@@ -3594,6 +3634,7 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
   final Value<bool> isClosed;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String?> parentId;
   const NotebooksCompanion({
     this.id = const Value.absent(),
     this.notebookId = const Value.absent(),
@@ -3606,6 +3647,7 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
     this.isClosed = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.parentId = const Value.absent(),
   });
   NotebooksCompanion.insert({
     this.id = const Value.absent(),
@@ -3619,6 +3661,7 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
     this.isClosed = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.parentId = const Value.absent(),
   }) : notebookId = Value(notebookId),
        name = Value(name),
        createdAt = Value(createdAt),
@@ -3635,6 +3678,7 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
     Expression<bool>? isClosed,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? parentId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3648,6 +3692,7 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
       if (isClosed != null) 'is_closed': isClosed,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (parentId != null) 'parent_id': parentId,
     });
   }
 
@@ -3663,6 +3708,7 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
     Value<bool>? isClosed,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<String?>? parentId,
   }) {
     return NotebooksCompanion(
       id: id ?? this.id,
@@ -3676,6 +3722,7 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
       isClosed: isClosed ?? this.isClosed,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      parentId: parentId ?? this.parentId,
     );
   }
 
@@ -3715,6 +3762,9 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (parentId.present) {
+      map['parent_id'] = Variable<String>(parentId.value);
+    }
     return map;
   }
 
@@ -3731,7 +3781,8 @@ class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
           ..write('isPinned: $isPinned, ')
           ..write('isClosed: $isClosed, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('parentId: $parentId')
           ..write(')'))
         .toString();
   }
@@ -6399,6 +6450,7 @@ typedef $$NotebooksTableCreateCompanionBuilder =
       Value<bool> isClosed,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<String?> parentId,
     });
 typedef $$NotebooksTableUpdateCompanionBuilder =
     NotebooksCompanion Function({
@@ -6413,6 +6465,7 @@ typedef $$NotebooksTableUpdateCompanionBuilder =
       Value<bool> isClosed,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<String?> parentId,
     });
 
 class $$NotebooksTableFilterComposer
@@ -6476,6 +6529,11 @@ class $$NotebooksTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentId => $composableBuilder(
+    column: $table.parentId,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -6543,6 +6601,11 @@ class $$NotebooksTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get parentId => $composableBuilder(
+    column: $table.parentId,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$NotebooksTableAnnotationComposer
@@ -6590,6 +6653,9 @@ class $$NotebooksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get parentId =>
+      $composableBuilder(column: $table.parentId, builder: (column) => column);
 }
 
 class $$NotebooksTableTableManager
@@ -6634,6 +6700,7 @@ class $$NotebooksTableTableManager
                 Value<bool> isClosed = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> parentId = const Value.absent(),
               }) => NotebooksCompanion(
                 id: id,
                 notebookId: notebookId,
@@ -6646,6 +6713,7 @@ class $$NotebooksTableTableManager
                 isClosed: isClosed,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                parentId: parentId,
               ),
           createCompanionCallback:
               ({
@@ -6660,6 +6728,7 @@ class $$NotebooksTableTableManager
                 Value<bool> isClosed = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<String?> parentId = const Value.absent(),
               }) => NotebooksCompanion.insert(
                 id: id,
                 notebookId: notebookId,
@@ -6672,6 +6741,7 @@ class $$NotebooksTableTableManager
                 isClosed: isClosed,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                parentId: parentId,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

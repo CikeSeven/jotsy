@@ -8,9 +8,10 @@ import '../../widgets/app_modal/app_dialog.dart';
 import '../pages/notebook_editor_page.dart';
 import '../viewmodels/notebook_view.dart';
 
-/// 打开这本日记本前是否要验证身份。
+/// 打开这本日记本前是否要验证身份：看生效可见性，上级上了锁的子本同样要
+/// 验证。[notebook] 须带层级信息（取自书架列表，见 `NotebookView`）。
 bool notebookRequiresAuth(NotebookView notebook) =>
-    notebook.visibility == NotebookVisibility.locked;
+    notebook.effectiveVisibility == NotebookVisibility.locked;
 
 /// 进入日记本前的身份验证（只有上锁的需要）。
 ///

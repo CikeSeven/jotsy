@@ -186,6 +186,21 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     await _createTableIfMissing(migrator, dayMoods);
   }
 
+  /// v15 日记本表加 `parent_id`（上级日记本的业务 id）。
+  ///
+  /// 列已存在时跳过：从 v13 之前升级时 [_migrateAddNotebooks] 按最新定义
+  /// 建表已带上它；降级后再升级时旧构建不会删列，也会留着。不建索引：日记本
+  /// 只有几十行，一律整表读取。
+  Future<void> _migrateNotebooksAddParent(Migrator migrator) async {
+    final columns = await customSelect('PRAGMA table_info(notebooks)').get();
+    final present = columns.any(
+      (row) => row.read<String>('name') == 'parent_id',
+    );
+    if (!present) {
+      await migrator.addColumn(notebooks, notebooks.parentId);
+    }
+  }
+
   Future<void> _createTableIfMissing(
     Migrator migrator,
     TableInfo<Table, Object?> table,

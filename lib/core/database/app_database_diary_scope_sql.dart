@@ -2,8 +2,10 @@ part of 'app_database.dart';
 
 /// 日记查询的范围（[DiaryListScope]）与私密排除：所有日记读取共用的 SQL 片段。
 ///
-/// 私密规则（唯一权威口径）：一篇日记只要在至少一本“手动 + 非 normal 可见性”
-/// 的日记本里就是私密日记。私密日记：
+/// 私密规则（唯一权威口径）：一篇日记只要在至少一本私密的手动日记本里就是
+/// 私密日记；私密日记本是可见性不是 normal 的手动本，以及它们（经手动本一路
+/// 往下）的子本、孙本——上级私密，整棵子树都私密（[_privateNotebookIdsSql]）。
+/// 私密日记：
 /// - 不出现在任何全局查询里（全部日记、搜索、探索、日历、归档、导出候选等）；
 /// - 只在它所在的那本私密日记本的范围里出现；
 /// - 普通日记本与智能日记本的范围同样排除它（私密优先于其他归属）。
@@ -38,8 +40,16 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
   /// 不带参数：日记本 id 的条件写在 WHERE 里（[_writeDiaryScopeFilter]），
   /// 调用方的参数顺序因此只取决于 SELECT 列与 WHERE。同一篇日记在同一本里
   /// 只有一行（复合主键），连接不会让日记重复。
+  ///
+  /// 汇总子本时改为先定下本子 `sn`（WHERE 里按业务 id 取唯一一行），再左连
+  /// 它自己的成员行：只在子本里的日记 `sdn` 为空，是否在范围内由 WHERE 的
+  /// 子本条件决定；左连接每篇日记至多一行，同样不会重复。
   String _diaryScopeJoinSql(DiaryListScope scope) {
     return switch (scope) {
+      DiaryNotebookScope(includesSubNotebooks: true) =>
+        'JOIN notebooks sn\n'
+            'LEFT JOIN diary_notebooks sdn '
+            'ON sdn.diary_id = d.id AND sdn.notebook_id = sn.id\n',
       DiaryNotebookScope() =>
         'JOIN diary_notebooks sdn ON sdn.diary_id = d.id\n'
             'JOIN notebooks sn ON sn.id = sdn.notebook_id\n',
@@ -60,19 +70,27 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
       case DiaryNotebookScope():
         sql.writeln('  AND sn.notebook_id = ?');
         variables.add(Variable<String>(scope.notebookId));
-        // 只有手动本有成员行，sn 必是手动本；本子自己私密时显示全部成员
-        // （这是私密日记唯一出现的地方），否则同样排除私密日记。
+        if (scope.includesSubNotebooks) {
+          _writeSubNotebookFilter(sql, variables, scope);
+        }
+        // 只有手动本有成员行，sn 必是手动本；本子自己私密（含继承上级的
+        // 私密）时显示全部成员（这是私密日记唯一出现的地方），否则同样排除
+        // 私密日记。
         sql.writeln(
-          "  AND (sn.visibility <> '${NotebookVisibility.normal.name}' "
+          '  AND (sn.id IN ($_privateNotebookIdsSql) '
           "OR ${_privateDiaryExclusionSql('d.id')})",
         );
         final chapterId = scope.chapterId;
         if (chapterId != null) {
           sql.writeln('  AND sdn.chapter_id = ?');
           variables.add(Variable<String>(chapterId));
-        } else if (scope.unassignedChapterOnly &&
-            scope.chapterOrder.isNotEmpty) {
-          // 章节列表为空时所有成员都算未分章，不加条件。
+        } else if (scope.unassignedChapterOnly) {
+          // 汇总子本时“未分章”也只认本子自己的成员（子本的日记没有 sdn）。
+          if (scope.includesSubNotebooks) {
+            sql.writeln('  AND sdn.diary_id IS NOT NULL');
+          }
+          // 章节列表为空时所有成员都算未分章，不再加章节条件。
+          if (scope.chapterOrder.isEmpty) return;
           sql.writeln(
             '  AND (sdn.chapter_id IS NULL OR sdn.chapter_id NOT IN '
             '(${_placeholders(scope.chapterOrder.length)}))',
@@ -86,23 +104,85 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
     }
   }
 
+  /// 汇总子本：本子自己的成员（`sdn` 连上了），或在某本手动子本里，或符合
+  /// 某本智能子本的规则。
+  void _writeSubNotebookFilter(
+    StringBuffer sql,
+    List<Variable<Object>> variables,
+    DiaryNotebookScope scope,
+  ) {
+    final branches = <String>['sdn.diary_id IS NOT NULL'];
+    if (scope.subNotebookIds.isNotEmpty) {
+      branches.add(
+        'd.id IN (SELECT xdn.diary_id FROM diary_notebooks xdn '
+        'JOIN notebooks xn ON xn.id = xdn.notebook_id '
+        'WHERE xn.notebook_id IN '
+        '(${_placeholders(scope.subNotebookIds.length)}))',
+      );
+      variables.addAll(_stringVariables(scope.subNotebookIds));
+    }
+    for (final predicate in scope.subPredicates) {
+      branches.add('(${predicate.sql})');
+      variables.addAll(predicate.variables);
+    }
+    sql.writeln('  AND (${branches.join('\n    OR ')})');
+  }
+
   /// 成书顺序里的章节序号表达式：章节在 `chapterOrder` 中的下标，未分章与
-  /// 认不出的章节排在最后。参数按出现顺序追加到 [variables]，调用方须在写
-  /// SELECT 列时立即调用（它出现在 SQL 文本的最前面）。
+  /// 认不出的章节排在最后；汇总子本时只在子本里的日记再排在它们之后。参数
+  /// 按出现顺序追加到 [variables]，调用方须在写 SELECT 列时立即调用（它出现
+  /// 在 SQL 文本的最前面），并紧接着调用 [_bookPositionSql]。
   String _bookChapterRankSql(
     DiaryNotebookScope scope,
     List<Variable<Object>> variables,
   ) {
     final order = scope.chapterOrder;
+    final String own;
     if (order.isEmpty) {
       // 没有章节时 CASE 没有 WHEN 分支（语法不允许），所有成员同一序号。
-      return '0';
+      own = '0';
+    } else {
+      variables.addAll(_stringVariables(order));
+      final whens = <String>[
+        for (var i = 0; i < order.length; i++) 'WHEN ? THEN $i',
+      ].join(' ');
+      own = 'CASE sdn.chapter_id $whens ELSE ${order.length} END';
     }
-    variables.addAll(_stringVariables(order));
+    if (!scope.includesSubNotebooks) return own;
+    return 'CASE WHEN sdn.diary_id IS NOT NULL THEN $own '
+        'ELSE ${order.length + 1} END';
+  }
+
+  /// 成书顺序里同一章节序号内的位置：本子自己的成员取本内 `position`。
+  ///
+  /// 汇总子本时，只在子本里的日记取“子本序号 × 10⁹ + 它在那本里的位置”的
+  /// 最小值（一篇日记可能在好几本子本里，按最靠前的那本排）：子本序号是它在
+  /// [DiaryNotebookScope.subNotebookIds] 中的下标，位置远小于 10⁹，两者
+  /// 合成一个整数后按子本、再按子本内位置排。只因智能子本规则而在的日记没有
+  /// 成员行，排最后（再按创建时间）。参数紧接 [_bookChapterRankSql] 追加。
+  String _bookPositionSql(
+    DiaryNotebookScope scope,
+    List<Variable<Object>> variables,
+  ) {
+    final subs = scope.subNotebookIds;
+    if (!scope.includesSubNotebooks) return 'sdn.position';
+    if (subs.isEmpty) {
+      return 'CASE WHEN sdn.diary_id IS NOT NULL THEN sdn.position '
+          'ELSE $_lastBookPosition END';
+    }
+    variables
+      ..addAll(_stringVariables(subs))
+      ..addAll(_stringVariables(subs));
     final whens = <String>[
-      for (var i = 0; i < order.length; i++) 'WHEN ? THEN $i',
+      for (var i = 0; i < subs.length; i++) 'WHEN ? THEN $i',
     ].join(' ');
-    return 'CASE sdn.chapter_id $whens ELSE ${order.length} END';
+    return 'CASE WHEN sdn.diary_id IS NOT NULL THEN sdn.position ELSE '
+        'COALESCE((SELECT MIN((CASE bxn.notebook_id $whens END) '
+        '* 1000000000 + bxdn.position) '
+        'FROM diary_notebooks bxdn '
+        'JOIN notebooks bxn ON bxn.id = bxdn.notebook_id '
+        'WHERE bxdn.diary_id = d.id AND bxn.notebook_id IN '
+        '(${_placeholders(subs.length)})), $_lastBookPosition) END';
   }
 
   /// 私密日记的业务 id（含回收站里的），用于回收站等不按范围过滤、但要
@@ -136,23 +216,48 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
   }
 }
 
-/// 全部私密日记的本地 id：在至少一本手动、可见性不是 normal 的日记本里。
+/// 私密日记本的本地 id（递归 CTE，可直接放进 `IN (…)`）：可见性不是 normal
+/// 的手动本，加上它们沿 `parent_id` 往下的全部子孙。
 ///
 /// - 可见性按“不等于 normal”判断而不是列举 hidden / locked：更新版本写入的
 ///   未知可见性一律当作私密，宁可多藏也不意外露出；
-/// - 未知类型的本子不算（只有手动本能私密，写入时非手动本一律存 normal）；
+/// - 起点只取手动本（只有手动本能私密，写入时非手动本一律存 normal）；往下
+///   只经手动本传递：智能本自己会被收进来（它在私密本里，打开同样要验证），
+///   但智能本不能当上级，挂在它下面的本子是坏数据，不随它变私密——与界面上
+///   把这种本子当顶层显示的口径一致；
+/// - UNION 而不是 UNION ALL：成环的坏数据（备份合并后修复前）也会停下；
+/// - 不相关子查询，SQLite 只执行一次，不随日记数逐行重跑。日记本只有几十行，
+///   递归的代价可以忽略。
+final String _privateNotebookIdsSql =
+    'WITH RECURSIVE private_nb(id, notebook_id, kind) AS ('
+    'SELECT id, notebook_id, kind FROM notebooks '
+    "WHERE kind = '${NotebookKind.manual.name}' "
+    "AND visibility <> '${NotebookVisibility.normal.name}' "
+    'UNION '
+    'SELECT c.id, c.notebook_id, c.kind FROM notebooks c '
+    'JOIN private_nb p ON c.parent_id = p.notebook_id '
+    "WHERE p.kind = '${NotebookKind.manual.name}'"
+    ') SELECT id FROM private_nb';
+
+/// 全部私密日记的本地 id：在至少一本私密的手动日记本里
+/// （[_privateNotebookIdsSql]）。
+///
+/// - 未知类型的本子不算（只有手动本有成员行）；
 /// - `diary_notebooks.diary_id` 非空，NOT IN 不会因子查询含 NULL 而整体为空；
 /// - 不相关子查询，SQLite 只执行一次并建临时索引，不随日记数逐行重跑。
 final String _privateDiaryIdsSql =
     'SELECT pdn.diary_id FROM diary_notebooks pdn '
     'JOIN notebooks pn ON pn.id = pdn.notebook_id '
     "WHERE pn.kind = '${NotebookKind.manual.name}' "
-    "AND pn.visibility <> '${NotebookVisibility.normal.name}'";
+    'AND pn.id IN ($_privateNotebookIdsSql)';
 
 /// 排除私密日记的条件，[idColumn] 是外层日记表的本地 id 列（如 `d.id`）。
 /// 所有全局日记查询都经它过滤，见 [_AppDatabaseDiaryScopeSql] 的私密规则。
 String _privateDiaryExclusionSql(String idColumn) =>
     '$idColumn NOT IN ($_privateDiaryIdsSql)';
+
+/// 成书位置的上限（int64 最大值）：排在所有成员之后。
+const String _lastBookPosition = '9223372036854775807';
 
 String _placeholders(int count) => List<String>.filled(count, '?').join(', ');
 

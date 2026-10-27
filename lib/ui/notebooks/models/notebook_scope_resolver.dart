@@ -1,4 +1,5 @@
 import '../../../core/database/app_database.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 
 /// 日记本 → 列表查询范围的换算（首页原地切换、搜索与统计共用）。
@@ -37,12 +38,16 @@ NotebookSort effectiveNotebookSort(NotebookView notebook, NotebookSort sort) =>
 /// - 普通日记本：成员范围，[sort] 为书序时按章节顺序 + 本内位置排；
 ///   [chapterId] / [unassignedChapterOnly] 为章节筛选（两者互斥：同时给出时
 ///   以 [chapterId] 为准）；
+/// - 有子本的普通日记本（给了 [tree]）：没选章节时连同子本一起列出
+///   （`NotebookTree.aggregatedDescendantsOf`：比它更私密的子本不汇总），
+///   手动子本按树序、智能子本按各自的规则；选了章节时只看本子自己的；
 /// - 智能日记本：规则编译出的条件（见 [compileNotebookPayloadRules]），章节
-///   不适用。
+///   不适用；智能本不能有子本。
 ///
 /// [sort] 缺省取日记本自己的排序（`payload.sort`）。
 DiaryListScope resolveNotebookScope(
   NotebookView notebook, {
+  NotebookTree? tree,
   NotebookSort? sort,
   String? chapterId,
   bool unassignedChapterOnly = false,
@@ -57,22 +62,49 @@ DiaryListScope resolveNotebookScope(
     notebook,
     sort ?? notebook.payload.sort,
   );
+  final unassigned = chapterId == null && unassignedChapterOnly;
+  final subs = chapterId != null || unassigned
+      ? const <NotebookView>[]
+      : _aggregatedSubs(notebook, tree);
   return DiaryNotebookScope(
     notebookId: notebook.id,
     chapterId: chapterId,
-    unassignedChapterOnly: chapterId == null && unassignedChapterOnly,
+    unassignedChapterOnly: unassigned,
     bookOrder: effectiveSort == NotebookSort.book,
     chapterOrder: <String>[
       for (final chapter in notebook.payload.chapters) chapter.id,
     ],
+    subNotebookIds: _manualSubIds(subs),
+    subPredicates: _smartSubPredicates(subs),
   );
 }
 
-/// 统计用的范围：整本（不分章、不排序），排序或章节变化时 key 不变，
-/// 头部卡片的统计不会因此重新查询。
-DiaryListScope notebookStatsScope(NotebookView notebook) {
+/// 统计用的范围：整本（不分章、不排序；给了 [tree] 时连同子本），排序或
+/// 章节变化时 key 不变，头部卡片的统计不会因此重新查询。
+DiaryListScope notebookStatsScope(NotebookView notebook, {NotebookTree? tree}) {
   if (notebook.isSmart) {
     return resolveNotebookScope(notebook);
   }
-  return DiaryNotebookScope(notebookId: notebook.id);
+  final subs = _aggregatedSubs(notebook, tree);
+  return DiaryNotebookScope(
+    notebookId: notebook.id,
+    subNotebookIds: _manualSubIds(subs),
+    subPredicates: _smartSubPredicates(subs),
+  );
 }
+
+List<NotebookView> _aggregatedSubs(NotebookView notebook, NotebookTree? tree) =>
+    tree == null || notebook.isSmart
+    ? const <NotebookView>[]
+    : tree.aggregatedDescendantsOf(notebook.id);
+
+List<String> _manualSubIds(List<NotebookView> subs) => <String>[
+  for (final sub in subs)
+    if (sub.isManual) sub.id,
+];
+
+List<DiaryScopePredicate> _smartSubPredicates(List<NotebookView> subs) =>
+    <DiaryScopePredicate>[
+      for (final sub in subs)
+        if (sub.isSmart) compileNotebookPayloadRules(sub.payload.rules),
+    ];

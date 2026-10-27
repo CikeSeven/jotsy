@@ -36,7 +36,7 @@ mixin _AppDatabaseDiaryListQueries
       // 章节序号的参数出现在 SQL 最前面，须先于 WHERE 的参数加入。
       sql.write(
         ', ${_bookChapterRankSql(bookScope, variables)} AS chapter_rank, '
-        'sdn.position AS book_pos',
+        '${_bookPositionSql(bookScope, variables)} AS book_pos',
       );
     }
     sql.write('\n  FROM diaries d\n${_diaryScopeJoinSql(scope)}');
@@ -119,7 +119,8 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     final sql = StringBuffer('SELECT d.diary_id');
     if (bookScope != null) {
       sql.write(
-        ', ${_bookChapterRankSql(bookScope, variables)} AS chapter_rank',
+        ', ${_bookChapterRankSql(bookScope, variables)} AS chapter_rank, '
+        '${_bookPositionSql(bookScope, variables)} AS book_pos',
       );
     }
     sql.write(' FROM diaries d\n${_diaryScopeJoinSql(scope)}');
@@ -257,11 +258,11 @@ WHERE d.is_deleted = 0
   /// 成书顺序：章节序号 → 本内位置 → 创建时间 → 本地 id（全序，分页稳定）。
   ///
   /// 置顶不浮到最前：一本书的目录顺序是固定的，置顶是全局时间线上的概念，
-  /// 在这里插队会打乱章节。[prefix] 为空时引用 id 窗口里的列别名与 `sdn`；
-  /// 外层查询传 `page.`，按 id 窗口带出的同一组键排序。
+  /// 在这里插队会打乱章节。[prefix] 为空时引用同一层 SELECT 的列别名
+  /// （`chapter_rank` / `book_pos`，见 [_bookChapterRankSql] 与
+  /// [_bookPositionSql]）；外层查询传 `page.`，按 id 窗口带出的同一组键排序。
   String _bookOrderBySql({String prefix = ''}) {
-    final position = prefix.isEmpty ? 'sdn.position' : '${prefix}book_pos';
-    return 'ORDER BY ${prefix}chapter_rank ASC, $position ASC, '
+    return 'ORDER BY ${prefix}chapter_rank ASC, ${prefix}book_pos ASC, '
         'd.created_at ASC, d.id ASC';
   }
 

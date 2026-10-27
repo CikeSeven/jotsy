@@ -4,8 +4,13 @@ part of 'app_database.dart';
 ///
 /// 输入输出一律是业务 id（`notebookId`）；不存在的 id 抛 [ArgumentError]。
 /// 删除返回 [NotebookDeletion] 快照，撤销经 [restoreNotebookDeletion] 原子写回。
-/// 成员关系的增删见 `_AppDatabaseNotebookEntryOps`。
-mixin _AppDatabaseNotebookOps on _$AppDatabase, _AppDatabaseNotebookEntryOps {
+/// 成员关系的增删见 `_AppDatabaseNotebookEntryOps`，嵌套（上级、层级修复）见
+/// `_AppDatabaseNotebookTreeOps`。
+mixin _AppDatabaseNotebookOps
+    on
+        _$AppDatabase,
+        _AppDatabaseNotebookEntryOps,
+        _AppDatabaseNotebookTreeOps {
   /// 书架上的全部日记本：置顶的在前，再按手动顺序，同序按本地 id 保证稳定。
   Stream<List<NotebookRow>> watchNotebooks() {
     return (select(notebooks)..orderBy(_notebookShelfOrder)).watch();
@@ -30,7 +35,7 @@ mixin _AppDatabaseNotebookOps on _$AppDatabase, _AppDatabaseNotebookEntryOps {
   /// 手动日记本 id → 篇数，口径与本子里的日记列表（`DiaryNotebookScope`）
   /// 一致：不算回收站与归档里的日记；普通本子不算私密日记（同时在某本私密
   /// 本子里的），否则书架上的篇数会透露私密日记的存在、也与列表对不上；私密
-  /// 本子自己算全部成员。没有这类日记的本子（含全部智能本）不在结果里，读取
+  /// 本子（含随上级私密的）自己算全部成员。只算本子自己收录的，不含子本。没有这类日记的本子（含全部智能本）不在结果里，读取
   /// 方按 0 处理。
   Stream<Map<String, int>> watchManualNotebookEntryCounts() {
     return customSelect(
@@ -40,13 +45,11 @@ FROM diary_notebooks dn
 INNER JOIN notebooks n ON n.id = dn.notebook_id
 INNER JOIN diaries d ON d.id = dn.diary_id
 WHERE n.kind = ? AND d.is_deleted = 0 AND d.is_archived = 0
-  AND (n.visibility <> ? OR ${_privateDiaryExclusionSql('d.id')})
+  AND (n.id IN ($_privateNotebookIdsSql)
+    OR ${_privateDiaryExclusionSql('d.id')})
 GROUP BY n.notebook_id
 ''',
-      variables: <Variable<Object>>[
-        Variable<String>(NotebookKind.manual.name),
-        Variable<String>(NotebookVisibility.normal.name),
-      ],
+      variables: <Variable<Object>>[Variable<String>(NotebookKind.manual.name)],
       readsFrom: <ResultSetImplementation<HasResultSet, dynamic>>{
         notebooks,
         diaryNotebooks,
@@ -62,14 +65,20 @@ GROUP BY n.notebook_id
 
   /// 新建日记本并返回业务 id，排在书架最后。名称去首尾空白后须为 1–60 个
   /// 字符，否则抛 [ArgumentError]。智能日记本一律存成 normal（见表注释）。
+  /// [parentId] 为上级日记本（null 为顶层），不合法时同样抛 [ArgumentError]
+  /// （见 [NotebookHierarchy.problemFor]）。
   Future<String> createNotebook({
     required String name,
     NotebookKind kind = NotebookKind.manual,
     NotebookVisibility visibility = NotebookVisibility.normal,
     NotebookPayload payload = NotebookPayload.defaults,
+    String? parentId,
   }) {
     final normalizedName = _normalizeNotebookName(name);
     return transaction(() async {
+      if (parentId != null) {
+        _checkNotebookParent(await notebookHierarchy(), null, parentId);
+      }
       final id = _newBusinessUuid();
       final now = DateTime.now();
       await into(notebooks).insert(
@@ -83,6 +92,7 @@ GROUP BY n.notebook_id
                 : NotebookVisibility.normal.name,
           ),
           payload: Value(payload.encode()),
+          parentId: Value(parentId),
           sortOrder: Value(await _nextNotebookSortOrder()),
           createdAt: now,
           updatedAt: now,
@@ -96,6 +106,8 @@ GROUP BY n.notebook_id
   ///
   /// 非手动日记本的可见性一律写成 normal。传入 [payload] 时，本子里指向已不在
   /// 章节列表中的 `chapter_id` 在同一事务里清空，这些日记回到“未分章”。
+  /// [parentId] 给出时（`Value(null)` 为移到顶层）同一事务里经
+  /// [moveNotebook] 改上级，不合法时整次修改都不写入。
   Future<void> updateNotebook(
     String notebookId, {
     String? name,
@@ -103,9 +115,13 @@ GROUP BY n.notebook_id
     NotebookPayload? payload,
     bool? isPinned,
     bool? isClosed,
+    Value<String?> parentId = const Value<String?>.absent(),
   }) {
     final normalizedName = name == null ? null : _normalizeNotebookName(name);
     return transaction(() async {
+      if (parentId.present) {
+        await moveNotebook(notebookId, parentId.value);
+      }
       final row = await _requireNotebookRow(notebookId);
       final nextVisibility = row.acceptsManualEntries
           ? visibility
@@ -166,10 +182,11 @@ GROUP BY n.notebook_id
 
   /// 删除日记本（硬删除）并返回撤销所需的快照，一个事务内完成。
   ///
-  /// 默认只删本子与关联行，日记本身不动；[trashDiaries] 为 true 时把本子里
+  /// 子本不删，整棵子树提到这本的上级下（顶层的就到顶层）。默认只删本子与
+  /// 关联行，日记本身不动；[trashDiaries] 为 true 时把本子里
   /// 尚未删除的日记一并移进回收站（语义同 `softDeleteDiary`：标记删除并取消
   /// 归档；不刷新 `updatedAt`，撤销后列表顺序不变）。智能日记本没有关联行，
-  /// 不会删除任何日记。
+  /// 不会删除任何日记；随之进回收站的只有本子自己收录的，不含子本里的。
   Future<NotebookDeletion> deleteNotebook(
     String notebookId, {
     bool trashDiaries = false,
@@ -198,6 +215,7 @@ GROUP BY n.notebook_id
           ),
         );
       }
+      final children = await _liftNotebookChildren(row);
       await (delete(
         diaryNotebooks,
       )..where((t) => t.notebookId.equals(row.id))).go();
@@ -207,6 +225,7 @@ GROUP BY n.notebook_id
         notebook: row,
         entries: List<DiaryNotebookRow>.unmodifiable(entries),
         trashedDiaryIds: List<String>.unmodifiable(trashed),
+        childIds: List<String>.unmodifiable(children),
       );
     });
   }
@@ -217,6 +236,8 @@ GROUP BY n.notebook_id
   /// 被新行复用，写回不会撞上别的本子，快照里的关联行也就仍然指得对。日记已
   /// 被彻底删除的关联行丢弃；随本子移进回收站的日记若仍在回收站则恢复，原来
   /// 归档的回到归档（不刷新 `updatedAt`）。已被用户另行恢复或彻底删除的不动。
+  /// 删除时提上去的子本挪回来（撤销窗口里被另行移动过的不动）；上级在此期间
+  /// 被删掉的，修复层级时回到顶层。
   Future<void> restoreNotebookDeletion(NotebookDeletion deletion) {
     return transaction(() async {
       await into(
@@ -245,14 +266,19 @@ GROUP BY n.notebook_id
               ),
             );
       }
+      await _restoreNotebookChildren(
+        deletion.notebook.notebookId,
+        deletion.notebook.parentId,
+        deletion.childIds,
+      );
     });
   }
 
   /// 把手动日记本 [sourceId] 并入 [targetId] 后删除 [sourceId]，一个事务内完成。
   ///
   /// 目标本里已有的日记跳过；搬过去的按原成书顺序接在目标本最后、未分章
-  /// （两本的章节互不相干），保留加入时间。任一方不是手动本或两者相同时抛
-  /// [ArgumentError]。
+  /// （两本的章节互不相干），保留加入时间。[sourceId] 的子本改挂到目标本下
+  /// （超出层数的回到顶层）。任一方不是手动本或两者相同时抛 [ArgumentError]。
   Future<void> mergeNotebook({
     required String sourceId,
     required String targetId,
@@ -276,10 +302,12 @@ GROUP BY n.notebook_id
             ),
       ];
       await batch((batch) => batch.insertAll(diaryNotebooks, moved));
+      await _moveChildrenForMerge(source, target);
       await (delete(
         diaryNotebooks,
       )..where((t) => t.notebookId.equals(source.id))).go();
       await (delete(notebooks)..where((t) => t.id.equals(source.id))).go();
+      await repairNotebookHierarchy();
     });
   }
 
@@ -334,15 +362,6 @@ GROUP BY n.notebook_id
     return normalized;
   }
 
-  Future<int> _nextNotebookSortOrder() async {
-    final maxOrder = notebooks.sortOrder.max();
-    final row = await (selectOnly(
-      notebooks,
-    )..addColumns(<Expression<Object>>[maxOrder])).getSingle();
-    final current = row.read(maxOrder);
-    return current == null ? 0 : current + 1;
-  }
-
   static final List<OrderClauseGenerator<$NotebooksTable>> _notebookShelfOrder =
       <OrderClauseGenerator<$NotebooksTable>>[
         (t) => OrderingTerm.desc(t.isPinned),
@@ -370,6 +389,7 @@ class NotebookDeletion {
     required this.notebook,
     required this.entries,
     required this.trashedDiaryIds,
+    this.childIds = const <String>[],
   });
 
   final NotebookRow notebook;
@@ -379,6 +399,9 @@ class NotebookDeletion {
 
   /// 随本子移进回收站的日记（`trashDiaries: true` 时才有）。
   final List<String> trashedDiaryIds;
+
+  /// 删除时提到上一层的直接子本，撤销时挪回来。
+  final List<String> childIds;
 
   /// 移进回收站前处于归档的日记 → 原归档时间，撤销时放回归档。
   final Map<String, DateTime?> _archivedBeforeTrash;

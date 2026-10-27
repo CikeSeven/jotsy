@@ -123,7 +123,10 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
 
   Widget _buildBody(BuildContext context, NotebookView notebook) {
     final l10n = context.l10n;
-    final scope = notebookStatsScope(notebook);
+    final scope = notebookStatsScope(
+      notebook,
+      tree: ref.watch(notebookTreeProvider),
+    );
     final diaries = ref.watch(notebookInsightsOverviewsProvider(scope)).value;
     final photoCount = ref.watch(notebookPhotoCountProvider(scope)).value ?? 0;
     final goal = watchNotebookGoalProgress(context, ref, notebook);

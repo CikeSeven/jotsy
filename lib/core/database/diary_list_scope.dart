@@ -31,15 +31,24 @@ final class DiaryAllScope extends DiaryListScope {
   String toString() => 'DiaryAllScope';
 }
 
-/// 一本手动日记本里的日记。
+/// 一本手动日记本里的日记，可连同它的子本一起（父本汇总子本）。
 ///
+/// - [subNotebookIds] / [subPredicates]：一并列出的子本——手动子本的业务 id
+///   （按书架上的树序，书序时决定各子本的先后）与智能子本编译好的规则。
+///   两者都空时只看本子自己收录的；由界面层按“比本子更私密的子本不汇总”
+///   挑选（见 `resolveNotebookScope`），数据库层不再解释层级；
 /// - [chapterId] 只看这一章；[unassignedChapterOnly] 只看“未分章”：章节为
 ///   空，或指向已不在 [chapterOrder] 里的章节（与 `updateNotebook` 清理
 ///   悬空章节前的口径一致）。两者互斥；
 /// - [bookOrder] 为 true 时按成书顺序排：章节在 [chapterOrder] 里的先后
 ///   （未分章与认不出的章节排最后），再按本子内的 `position`，最后按创建时间；
-///   此时列表的排序方式与置顶都不生效；
+///   汇总子本时本子自己的日记在前，再按 [subNotebookIds] 的先后接上各子本
+///   （子本内按它自己的位置），只因智能子本规则而在的排最后；此时列表的
+///   排序方式与置顶都不生效；
 /// - [chapterOrder] 来自日记本 payload 的章节列表（`NotebookPayload.chapterIds`）。
+///
+/// 章节筛选只看本子自己的日记：选了章节时调用方不传子本（即使传了，章节
+/// 条件也只认本子自己的成员行）。
 @immutable
 final class DiaryNotebookScope extends DiaryListScope {
   const DiaryNotebookScope({
@@ -48,6 +57,8 @@ final class DiaryNotebookScope extends DiaryListScope {
     this.unassignedChapterOnly = false,
     this.bookOrder = false,
     this.chapterOrder = const <String>[],
+    this.subNotebookIds = const <String>[],
+    this.subPredicates = const <DiaryScopePredicate>[],
   }) : assert(
          chapterId == null || !unassignedChapterOnly,
          'chapterId 与 unassignedChapterOnly 互斥',
@@ -58,6 +69,12 @@ final class DiaryNotebookScope extends DiaryListScope {
   final bool unassignedChapterOnly;
   final bool bookOrder;
   final List<String> chapterOrder;
+  final List<String> subNotebookIds;
+  final List<DiaryScopePredicate> subPredicates;
+
+  /// 是否连同子本一起列出。
+  bool get includesSubNotebooks =>
+      subNotebookIds.isNotEmpty || subPredicates.isNotEmpty;
 
   @override
   bool operator ==(Object other) {
@@ -67,7 +84,9 @@ final class DiaryNotebookScope extends DiaryListScope {
         other.chapterId == chapterId &&
         other.unassignedChapterOnly == unassignedChapterOnly &&
         other.bookOrder == bookOrder &&
-        _listEquals(other.chapterOrder, chapterOrder);
+        _listEquals(other.chapterOrder, chapterOrder) &&
+        _listEquals(other.subNotebookIds, subNotebookIds) &&
+        _listEquals(other.subPredicates, subPredicates);
   }
 
   @override
@@ -77,12 +96,15 @@ final class DiaryNotebookScope extends DiaryListScope {
     unassignedChapterOnly,
     bookOrder,
     Object.hashAll(chapterOrder),
+    Object.hashAll(subNotebookIds),
+    Object.hashAll(subPredicates),
   );
 
   @override
   String toString() =>
       'DiaryNotebookScope($notebookId, chapter: $chapterId, '
-      'unassigned: $unassignedChapterOnly, bookOrder: $bookOrder)';
+      'unassigned: $unassignedChapterOnly, bookOrder: $bookOrder, '
+      'subs: $subNotebookIds + ${subPredicates.length} smart)';
 }
 
 /// 一本智能日记本：成员由规则现算，[predicate] 是规则编译出的 SQL 条件。
@@ -144,7 +166,7 @@ class DiaryScopePredicate {
       Object.hash(sql, Object.hashAll(variables.map((v) => v.value)));
 }
 
-bool _listEquals(List<String> a, List<String> b) {
+bool _listEquals<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;

@@ -565,5 +565,8 @@ class BackupPayload {
         dayMoods.map((row) => row.toCompanion(false)).toList(),
       );
     });
+    // 上级按业务 id 引用，文件里的层级可能指向不在文件里的本子（旧版本手改、
+    // 损坏）：改回顶层，与合并导入同一口径。
+    await database.repairNotebookHierarchy();
   }
 }

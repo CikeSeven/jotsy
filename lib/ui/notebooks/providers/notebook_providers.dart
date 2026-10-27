@@ -4,40 +4,48 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../controllers/notebooks_controller.dart';
 import '../models/notebook_scope_resolver.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 
 /// 书架上的全部日记本（置顶在前，再按手动顺序），实时跟随数据库。
 ///
-/// 每行在这里解析一次成 [NotebookView]，组件不再自己解码 payload。
+/// 每行在这里解析一次成 [NotebookView]（经 [NotebookTree]，带好上级、层数
+/// 与生效可见性），组件不再自己解码 payload。
 final notebooksProvider = StreamProvider<List<NotebookView>>((Ref ref) {
   final database = ref.watch(appDatabaseProvider);
-  return database.watchNotebooks().map(
-    (rows) => List<NotebookView>.unmodifiable(rows.map(NotebookView.new)),
-  );
+  return database.watchNotebooks().map((rows) => NotebookTree(rows).notebooks);
+});
+
+/// 书架的嵌套结构；书架还没加载时为 null。由 [notebooksProvider] 现算
+/// （几十行，重建很便宜），测试只需覆盖书架列表。
+final notebookTreeProvider = Provider<NotebookTree?>((Ref ref) {
+  final notebooks = ref.watch(notebooksProvider).value;
+  return notebooks == null ? null : NotebookTree.fromViews(notebooks);
 });
 
 /// 普通日记本 id → 篇数（不算回收站与归档）。没有日记的本子不在表里，读取方
-/// 按 0 处理；智能日记本的篇数由规则现算，见 [smartNotebookCountProvider]。
+/// 按 0 处理；智能日记本与有子本的日记本的篇数现算，见
+/// [computedNotebookCountProvider]。
 final notebookEntryCountsProvider = StreamProvider<Map<String, int>>((Ref ref) {
   return ref.watch(appDatabaseProvider).watchManualNotebookEntryCounts();
 });
 
-/// 智能日记本按规则现算的篇数（未删除、未归档、非私密），口径与首页在这本里的
-/// 列表一致（同一个 [notebookStatsScope]）。
+/// 智能日记本按规则、有子本的普通日记本连同子本现算的篇数（未删除、未归档，
+/// 私密规则与列表相同），口径与首页在这本里的列表一致（同一个
+/// [notebookStatsScope]）。
 ///
 /// 只 select 这本的范围：书架流因别的本子改名、排序推送时，范围相等就不重新
-/// 订阅计数查询；改了规则才换查询。不是智能日记本或已删除时保持加载中（调用方
-/// 只对智能本读取）。
-final smartNotebookCountProvider = StreamProvider.autoDispose
+/// 订阅计数查询；改了规则或子本才换查询。既不是智能本也没有子本、或已删除时
+/// 保持加载中（调用方只对这两种读取）。
+final computedNotebookCountProvider = StreamProvider.autoDispose
     .family<int, String>((Ref ref, String notebookId) {
       final scope = ref.watch(
-        notebooksProvider.select((AsyncValue<List<NotebookView>> async) {
-          for (final notebook in async.value ?? const <NotebookView>[]) {
-            if (notebook.id == notebookId) {
-              return notebook.isSmart ? notebookStatsScope(notebook) : null;
-            }
+        notebookTreeProvider.select((NotebookTree? tree) {
+          final notebook = tree?[notebookId];
+          if (notebook == null || !(notebook.isSmart || notebook.hasChildren)) {
+            return null;
           }
-          return null;
+          return notebookStatsScope(notebook, tree: tree);
         }),
       );
       if (scope == null) return const Stream<int>.empty();
@@ -45,27 +53,31 @@ final smartNotebookCountProvider = StreamProvider.autoDispose
     });
 
 /// 书架、管理页等列表上显示的篇数：普通日记本取 [counts]（来自
-/// [notebookEntryCountsProvider]），智能日记本取 [smartNotebookCountProvider]
-/// （计算出来之前为 null，不显示篇数）。须在 build 期间调用。
+/// [notebookEntryCountsProvider]），智能日记本与有子本的日记本取
+/// [computedNotebookCountProvider]（计算出来之前为 null，不显示篇数）。须在
+/// build 期间调用。
 int? watchNotebookDisplayCount(
   WidgetRef ref,
   NotebookView notebook,
   Map<String, int> counts,
 ) {
-  if (notebook.isSmart) {
-    return ref.watch(smartNotebookCountProvider(notebook.id)).value;
+  if (notebook.isSmart || notebook.hasChildren) {
+    return ref.watch(computedNotebookCountProvider(notebook.id)).value;
   }
   return notebook.isManual ? counts[notebook.id] ?? 0 : null;
 }
 
-/// 单个日记本，不存在（已删除）时为 null。
-final notebookProvider = StreamProvider.autoDispose
-    .family<NotebookView?, String>((Ref ref, String notebookId) {
-      return ref
-          .watch(appDatabaseProvider)
-          .watchNotebook(notebookId)
-          .map((row) => row == null ? null : NotebookView(row));
-    });
+/// 单个日记本（带层级信息，取自书架列表），不存在（已删除）时为 null。
+final notebookProvider = Provider.autoDispose
+    .family<AsyncValue<NotebookView?>, String>(
+      (Ref ref, String notebookId) =>
+          ref.watch(notebooksProvider).whenData((notebooks) {
+            for (final notebook in notebooks) {
+              if (notebook.id == notebookId) return notebook;
+            }
+            return null;
+          }),
+    );
 
 /// 书架与管理页共用的日记本操作（置顶、合上、排序、删除与撤销、合并）。
 final notebooksControllerProvider = Provider<NotebooksController>(

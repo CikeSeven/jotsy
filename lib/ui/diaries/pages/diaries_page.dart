@@ -321,7 +321,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _readingScopePrivate =
         currentNotebook != null &&
         currentNotebook.isManual &&
-        currentNotebook.visibility != NotebookVisibility.normal;
+        currentNotebook.isPrivate;
     // 日记本功能关闭时隐藏入口，数据保留：不订阅书架，标签栏不留切换胶囊。
     final notebooksEnabled = ref.watch(
       appFeaturesProvider.select((features) => features.notebooks),

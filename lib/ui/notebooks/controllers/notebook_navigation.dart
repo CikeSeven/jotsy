@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../home/providers/home_tab_request_provider.dart';
 import '../providers/home_notebook_scope_provider.dart';
+import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_lock_flow.dart';
 
@@ -23,7 +24,10 @@ Future<void> openNotebookFromAnywhere(
   WidgetRef ref,
   NotebookView notebook,
 ) async {
-  final allowed = await authorizeNotebookEntry(context, ref, notebook);
+  // 调用方的视图可能是单独由一行构造的（预览页胶囊），不知道上级是否上锁：
+  // 以书架列表里带层级信息的那一份为准。
+  final resolved = ref.read(notebookTreeProvider)?[notebook.id] ?? notebook;
+  final allowed = await authorizeNotebookEntry(context, ref, resolved);
   if (!allowed || !context.mounted) {
     return;
   }

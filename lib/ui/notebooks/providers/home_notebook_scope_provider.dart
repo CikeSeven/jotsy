@@ -215,19 +215,13 @@ final homeNotebookScopeResolutionProvider =
       if (notebookId == null) {
         return HomeNotebookScopeResolution.all;
       }
-      final notebooks = ref.watch(notebooksProvider).value;
-      NotebookView? notebook;
-      for (final candidate in notebooks ?? const <NotebookView>[]) {
-        if (candidate.id == notebookId) {
-          notebook = candidate;
-          break;
-        }
-      }
+      final tree = ref.watch(notebookTreeProvider);
+      final notebook = tree?[notebookId];
       if (notebook == null) {
         return HomeNotebookScopeResolution(
           state: state,
           scope: _matchNothingScope(notebookId),
-          missing: notebooks != null,
+          missing: tree != null,
         );
       }
       final sort = effectiveNotebookSort(
@@ -240,6 +234,7 @@ final homeNotebookScopeResolutionProvider =
         sort: sort,
         scope: resolveNotebookScope(
           notebook,
+          tree: tree,
           sort: sort,
           chapterId: state.chapterId,
           unassignedChapterOnly: state.unassignedChapterOnly,

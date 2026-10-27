@@ -66,7 +66,10 @@ class NotebookHeaderCard extends ConsumerWidget {
     final accent = notebookAccentColors(notebook.color, scheme);
     final cover = notebook.coverPath;
     final showCover = cover != null && File(cover).existsSync();
-    final statsScope = notebookStatsScope(notebook);
+    final statsScope = notebookStatsScope(
+      notebook,
+      tree: ref.watch(notebookTreeProvider),
+    );
     final count = ref.watch(notebookScopeCountProvider(statsScope)).value;
     final overviews = ref
         .watch(notebookScopeOverviewsProvider(statsScope))
@@ -78,8 +81,7 @@ class NotebookHeaderCard extends ConsumerWidget {
             NotebookHeaderStats.from(count, overviews),
             now: DateTime.now(),
           );
-    final isPrivate =
-        !notebook.isSmart && notebook.visibility != NotebookVisibility.normal;
+    final isPrivate = notebook.isPrivate;
     final description = notebook.payload.description;
     final metaStyle = theme.textTheme.bodySmall?.copyWith(
       fontSize: 13,

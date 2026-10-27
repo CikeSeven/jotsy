@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/settings/sections/settings_app_surface_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_card_style_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_preview_style_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_home_bar_style_tile.dart';
@@ -12,14 +13,15 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../../core/services/app_service.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
+import '../../widgets/app_modal/app_dialog.dart';
 import '../widgets/settings_card_group.dart';
 import '../../widgets/form_width.dart';
 
 /// 设置-外观与语言二级页。
 ///
 /// 职责：
-/// - 收纳主题、日记卡片样式入口（标签显示数量也在样式页里）、标签页切换
-///   曲线与语言配置；
+/// - 收纳主题、背景与材质、导航栏 / 日记卡片样式入口（标签显示数量也在
+///   样式页里）、标签页切换曲线与语言配置；
 /// - 降低设置首页信息密度，仅保留分组入口。
 class AppearanceLanguagePage extends ConsumerWidget {
   const AppearanceLanguagePage({super.key});
@@ -28,7 +30,7 @@ class AppearanceLanguagePage extends ConsumerWidget {
     BuildContext context,
     SettingsService settingsService,
   ) async {
-    final result = await showDialog<String>(
+    final result = await showAppDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;
@@ -116,6 +118,7 @@ class AppearanceLanguagePage extends ConsumerWidget {
                   const SizedBox(height: 16),
                   SettingsCardGroup(
                     children: <Widget>[
+                      SettingsAppSurfaceTile(settingsAsync: settingsAsync),
                       SettingsHomeBarStyleTile(settingsAsync: settingsAsync),
                       SettingsDiaryCardStyleTile(settingsAsync: settingsAsync),
                       SettingsDiaryPreviewStyleTile(

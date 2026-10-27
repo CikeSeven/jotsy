@@ -27,9 +27,24 @@ export 'app_page_backdrop.dart';
 ///   （滚动位置、输入焦点都保留）。结构只随“设置要不要背景”切换，不随
 ///   解码完成切换，打开页面时图片解码回来不会搬动正在输入的编辑器。
 class AppPageBackground extends ConsumerStatefulWidget {
-  const AppPageBackground({super.key, required this.area, required this.child});
+  const AppPageBackground({super.key, required this.area, required this.child})
+    : background = null;
+
+  /// 设置页预览用：画给定的 [background]（如编辑中的草稿），不读已保存的
+  /// 设置。图片解码、缓存、遮罩与交叉淡入与正式页面同一套管线；解码尺寸
+  /// 取本组件之上 MediaQuery 的尺寸，预览把它换成所模拟手机的尺寸，模糊
+  /// 半径与真实页面一致（尺寸相同时还能直接命中真实页面的解码缓存）。
+  const AppPageBackground.preview({
+    super.key,
+    required this.area,
+    required AppBackground this.background,
+    required this.child,
+  });
 
   final AppBackgroundArea area;
+
+  /// 指定要画的背景；为 null 时读 [area] 已保存的设置。
+  final AppBackground? background;
   final Widget child;
 
   @override
@@ -67,7 +82,7 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
     // 已缓存的背景，页面随路由滑入时背景已经在那里。
     _slot.update(
       target: AppResolvedBackground.resolve(
-        ref.watch(appAreaBackgroundProvider(widget.area)),
+        widget.background ?? ref.watch(appAreaBackgroundProvider(widget.area)),
         scheme,
       ),
       logicalSize: MediaQuery.sizeOf(context),

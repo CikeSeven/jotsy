@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -33,10 +34,14 @@ class DiaryTemplatesSectionHeader extends StatelessWidget {
         header: true,
         child: Text(
           title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: 16,
-            color: theme.colorScheme.primary,
-            fontWeight: FontWeight.w700,
+          // 分组标题直接画在页面背景上（不在卡片里），有背景图时加可读性兜底。
+          style: AppPageBackdrop.onBackgroundTextStyle(
+            context,
+            theme.textTheme.titleMedium?.copyWith(
+              fontSize: 16,
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

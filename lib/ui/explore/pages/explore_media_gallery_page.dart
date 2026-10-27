@@ -131,8 +131,12 @@ class _ExploreMediaGalleryPageState
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                // 空状态与出错提示直接画在页面背景上，有背景图时加可读性兜底。
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -150,9 +154,12 @@ class _ExploreMediaGalleryPageState
         key: const ValueKey<String>('empty'),
         child: Text(
           l10n.autoT0055,
-          style: Theme.of(
+          style: AppPageBackdrop.onBackgroundTextStyle(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       );
     }
@@ -346,11 +353,15 @@ class _GalleryFooter extends StatelessWidget {
     } else if (!hasMore) {
       content = Center(
         key: const ValueKey<String>('footer_end'),
+        // “已到底”画在网格下方的页面背景上。
         child: Text(
           l10n.autoT0057,
-          style: Theme.of(
+          style: AppPageBackdrop.onBackgroundTextStyle(
             context,
-          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       );
     } else {

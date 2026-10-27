@@ -17,8 +17,10 @@ import 'app_page_backdrop.dart';
 /// 自行在外面补（见预览页“回到顶部”）。
 ///
 /// 高对比度时底色换成不透明的 primaryContainer、不模糊（与其他玻璃同口径）。
-/// 前景沿用主题的 onPrimaryContainer（FAB 主题已设），不做对比度兜底：主色
-/// 容器色与它本就成对，模糊后的背景只是让底色略有起伏。
+/// 前景默认沿用主题的 onPrimaryContainer（FAB 主题已设），并做对比度兜底
+/// （[foregroundOf]）：主色容器色半透明后，叠在深色图片（浅色主题）或浅色
+/// 图片（深色主题）上的实际底色可能与 onPrimaryContainer 拉不开，这时换成
+/// 可读色。经局部 FAB 主题下发，所以按钮本身不要再显式指定 foregroundColor。
 ///
 /// 约束：与 [GlassSurface] 相同——禁止放进 Opacity / FadeTransition，显隐
 /// 与入场经祖先 `GlassReveal`（它会把按钮内容放进玻璃里面一起淡入）。
@@ -44,6 +46,24 @@ class AppGlassFab extends StatelessWidget {
       glass.translucent
       ? scheme.primaryContainer.withValues(alpha: glass.tint.a)
       : scheme.primaryContainer;
+
+  /// 玻璃 FAB 的前景色：主题的 FAB 前景（缺省 onPrimaryContainer）在“[fillOf]
+  /// 叠在页面估计色上”的实际底色上对比度 ≥ 4.5 时原样，否则换成
+  /// onSurface / surface 中更可读的一个（与 `AppGlassResolved.foregroundFor`
+  /// 同口径）。高对比度时底色不透明，主色容器与它成对，总是原样。
+  static Color foregroundOf(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final glass = AppGlass.of(context);
+    final preferred =
+        theme.floatingActionButtonTheme.foregroundColor ??
+        scheme.onPrimaryContainer;
+    return glass.readableOn(
+      preferred,
+      fill: fillOf(glass, scheme),
+      backdrop: AppPageBackdrop.of(context).estimatedColor,
+    );
+  }
 
   /// 没有可用圆角时的回退（M3 FAB 规格）。
   static const double _fallbackRadius = 16;
@@ -76,6 +96,7 @@ class AppGlassFab extends StatelessWidget {
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           floatingActionButtonTheme: fabTheme.copyWith(
             backgroundColor: Colors.transparent,
+            foregroundColor: foregroundOf(context),
             elevation: 0,
             focusElevation: 0,
             hoverElevation: 0,

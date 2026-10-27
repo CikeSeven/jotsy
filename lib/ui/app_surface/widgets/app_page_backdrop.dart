@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../diaries/viewmodels/diary_card_colors.dart';
 import '../models/app_surface_settings.dart';
 
 /// 页面背景向子树交代的信息：页面底色、实色栏底色、内容实际叠在什么颜色
@@ -88,6 +89,79 @@ class AppPageBackdrop {
   /// 内容实际叠在的颜色（对比度兜底用）。
   static Color estimatedColorOf(BuildContext context) =>
       of(context).estimatedColor;
+
+  /// 小字的最低对比度（WCAG AA）。
+  static const double _minTextContrast = 4.5;
+
+  /// 直接画在页面背景上（不在卡片 / 栏 / 面板里）的文字与图标的可读性
+  /// 兜底：分组标题、脚注、空状态等。
+  ///
+  /// - 页面没有背景图（经典或纯色背景）时原样返回 [style]：纯色背景由用户
+  ///   挑的颜色决定，文字照旧，界面与接入背景前逐像素一致；
+  /// - 有背景图时：图片局部可能很花，遮罩之后的 [estimatedColor] 只是均值，
+  ///   于是一方面在文字色对估计色的对比度不足 4.5 时，换成 onSurface /
+  ///   surface 中对比度更高的一个（与玻璃前景兜底同一组候选，一深一浅总有
+  ///   一个看得清）；另一方面给文字加一圈与它反差最大的柔和光晕（通常即
+  ///   surface 色）：光晕在字形周围垫出一小片底色，局部的亮斑 / 暗斑也盖得住，
+  ///   又不像整块底板那样改变版面。只改颜色与 shadows，不碰字号、字重与布局。
+  ///
+  /// [style] 没有颜色时取 DefaultTextStyle 的颜色（再没有取 onSurface）作为
+  /// 判断依据，并把结果写回返回的 style——调用方原本靠默认色的文字也能
+  /// 得到兜底。图标经 `Icon(color: s.color, shadows: s.shadows)` 套用同一份结果。
+  static TextStyle? onBackgroundTextStyle(
+    BuildContext context,
+    TextStyle? style,
+  ) {
+    final backdrop = of(context);
+    if (!backdrop.hasImage) return style;
+    final scheme = Theme.of(context).colorScheme;
+    final base = style ?? const TextStyle();
+    final preferred =
+        base.color ??
+        DefaultTextStyle.of(context).style.color ??
+        scheme.onSurface;
+    // 估计色理论上不透明，仍先垫在 surface 上：对比度只对不透明色有意义；
+    // 半透明的文字色（如 onSurfaceVariant 带透明度）同样先叠上去再比较。
+    final under = Color.alphaBlend(backdrop.estimatedColor, scheme.surface);
+    final color =
+        DiaryCardColors.contrastOver(preferred, under) >= _minTextContrast
+        ? preferred
+        : DiaryCardColors.bestContrast(<Color>[
+            scheme.onSurface,
+            scheme.surface,
+          ], under);
+    // 光晕取 surface / onSurface 中与文字反差更大的一个：主题文字色本就与
+    // surface 成对，所以通常是 surface；只有上面换成了 surface 色文字（底图
+    // 偏暗而遮罩很弱）时光晕才反过来用 onSurface。
+    final halo = DiaryCardColors.bestContrast(<Color>[
+      scheme.surface,
+      scheme.onSurface,
+    ], Color.alphaBlend(color, under));
+    return base.copyWith(
+      color: color,
+      shadows: <Shadow>[...?base.shadows, ...haloShadows(halo)],
+    );
+  }
+
+  /// [onBackgroundTextStyle] 用的两层光晕：外层（模糊 8）铺开一片柔和的底，
+  /// 内层（模糊 3）贴着笔画把轮廓描清。浅色光晕在花哨的图上容易被稀释，
+  /// 不透明度给足；深色光晕本身就压得住，略低一些，免得字周围出现一团
+  /// “脏影”。按光晕本身的明暗而不是主题明暗区分：浅色主题里换成浅色文字时
+  /// 光晕是深色的。
+  @visibleForTesting
+  static List<Shadow> haloShadows(Color halo) {
+    final lightHalo = halo.computeLuminance() > 0.5;
+    return <Shadow>[
+      Shadow(
+        color: halo.withValues(alpha: lightHalo ? 1 : 0.85),
+        blurRadius: 8,
+      ),
+      Shadow(
+        color: halo.withValues(alpha: lightHalo ? 0.9 : 0.7),
+        blurRadius: 3,
+      ),
+    ];
+  }
 
   @override
   bool operator ==(Object other) {

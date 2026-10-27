@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -93,12 +94,18 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
     _built = true;
     Widget child = KeyedSubtree(key: _childKey, child: widget.child);
     if (_slot.wantsBackground || _slot.isPainting) {
-      child = Stack(
-        fit: StackFit.passthrough,
-        children: <Widget>[
-          Positioned.fill(child: AppBackgroundLayersView(layers: _slot.layers)),
-          child,
-        ],
+      final layers = _slot.layers;
+      // 图层只在画背景的这一支交给子树（AppPageBackgroundCopy 用），默认
+      // 设置下的结构不多出节点。
+      child = _AppPageBackgroundLayersScope(
+        layers: layers,
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: <Widget>[
+            Positioned.fill(child: AppBackgroundLayersView(layers: layers)),
+            child,
+          ],
+        ),
       );
     }
     return AppPageBackdropScope(
@@ -110,4 +117,44 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
       child: child,
     );
   }
+}
+
+/// 在页面内容里再画一份所在 [AppPageBackground] 的背景：同一组图层（同一张
+/// 已解码的图、同样的 cover 对齐与遮罩、交叉淡入同步），铺满本组件。
+///
+/// 用途：页面里某块“与页面同尺寸”的内容需要自带不透明的底，又要看起来
+/// 与页面背景无缝——如预览页翻页器在层叠 / 淡入转场下，每篇各自垫一份，
+/// 两篇重叠时不会互相透出。尺寸与页面背景相同、位置重合时与下面的页面背景
+/// 逐像素一致；随内容平移 / 缩放时背景跟着动（这正是它与页面背景的区别）。
+///
+/// 没有祖先背景、或背景什么也没画时不画任何东西（[SizedBox.expand]）；画了
+/// 背景时最下面垫一层页面底色，保证不透明（见 `AppBackgroundLayersView.opaque`）。
+class AppPageBackgroundCopy extends StatelessWidget {
+  const AppPageBackgroundCopy({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final layers = context
+        .dependOnInheritedWidgetOfExactType<_AppPageBackgroundLayersScope>()
+        ?.layers;
+    if (layers == null || layers.isEmpty) {
+      return const SizedBox.expand();
+    }
+    return AppBackgroundLayersView(layers: layers, opaque: true);
+  }
+}
+
+/// 把背景图层交给 [AppPageBackgroundCopy]。`layers` 每次构建都是新的只读
+/// 列表，按元素比较：图层不变时不通知依赖者。
+class _AppPageBackgroundLayersScope extends InheritedWidget {
+  const _AppPageBackgroundLayersScope({
+    required this.layers,
+    required super.child,
+  });
+
+  final List<AppBackgroundLayer> layers;
+
+  @override
+  bool updateShouldNotify(_AppPageBackgroundLayersScope oldWidget) =>
+      !listEquals(layers, oldWidget.layers);
 }

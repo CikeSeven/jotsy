@@ -140,6 +140,20 @@ class AppGlassResolved {
     );
   }
 
+  /// 任意玻璃底色 [fill]（如 FAB 的主色玻璃，不是本玻璃的 [fill]）叠在
+  /// [backdrop] 上之后，[preferred] 是否仍看得清（[minRatio]，默认小字的
+  /// 4.5）：看得清时原样返回，否则换成 onSurface / surface 中对比度更高的
+  /// 一个——与 [foregroundFor] 同一组候选、同一叠色口径。
+  Color readableOn(
+    Color preferred, {
+    required Color fill,
+    required Color backdrop,
+    double minRatio = 4.5,
+  }) {
+    final under = Color.alphaBlend(backdrop, themeSurface);
+    return _readable(preferred, Color.alphaBlend(fill, under), minRatio);
+  }
+
   Color _readable(Color preferred, Color background, double minRatio) {
     if (DiaryCardColors.contrastRatio(preferred, background) >= minRatio) {
       return preferred;

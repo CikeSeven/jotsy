@@ -200,11 +200,18 @@ class _NotebookAddDiariesPageState
       body = Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xxl),
-          child: Text(
-            l10n.notebookAddEmpty,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
+          // 空状态直接画在页面背景上，有背景图时加可读性兜底；须在页面背景
+          // 之下的 context 里读（本方法的 context 在 AppPageBackground 之上）。
+          child: Builder(
+            builder: (BuildContext context) => Text(
+              l10n.notebookAddEmpty,
+              textAlign: TextAlign.center,
+              style: AppPageBackdrop.onBackgroundTextStyle(
+                context,
+                theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
         ),

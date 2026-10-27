@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 
 /// 日历显示选项面板的通用行组件：分组标题、字段标签、开关行与淡入说明。
 /// 只负责排版，状态与保存由面板处理。
@@ -53,8 +54,13 @@ class CalendarOptionsFieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.s),
       child: Text(
         text,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+        // 也用在模板编辑、日记本编辑这类表单页上，标签直接画在页面背景上：
+        // 有背景图时加可读性兜底（面板与对话框里没有页面背景，原样返回）。
+        style: AppPageBackdrop.onBackgroundTextStyle(
+          context,
+          theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

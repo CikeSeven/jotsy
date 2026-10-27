@@ -63,8 +63,13 @@ class _DiaryTemplateAutoApplyPageState
     final theme = Theme.of(context);
     final controller = createDiaryTemplatesController(ref, settings);
     final library = watchDiaryTemplateLibrary(ref, l10n, live: true).library;
-    final hintStyle = theme.textTheme.bodySmall?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
+    // 页首说明与卡片下方的附注都直接画在页面背景上（与设置分组的脚注
+    // 同理），有背景图时加可读性兜底。
+    final hintStyle = AppPageBackdrop.onBackgroundTextStyle(
+      context,
+      theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
     );
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -86,8 +91,11 @@ class _DiaryTemplateAutoApplyPageState
               ),
               child: Text(
                 l10n.diaryTemplatesAutoApplyIntro,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

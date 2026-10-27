@@ -25,8 +25,8 @@ class AppBackground {
     this.alignX = 0,
     this.alignY = 0,
     this.blur = 0,
-    this.scrimLight = 0.25,
-    this.scrimDark = 0.5,
+    this.scrimLight = 0.35,
+    this.scrimDark = 0.55,
   });
 
   static const AppBackground defaults = AppBackground();

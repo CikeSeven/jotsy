@@ -192,7 +192,8 @@ class HomeNavRailCreateButton extends StatelessWidget {
       onPressed: onPressed,
       // 玻璃时底色交给外面的玻璃表面（AppGlassFab 经局部主题把它换成透明）。
       backgroundColor: glass ? null : scheme.primaryContainer,
-      foregroundColor: scheme.onPrimaryContainer,
+      // 前景同理：玻璃时交给 AppGlassFab 的局部主题（含对比度兜底）。
+      foregroundColor: glass ? null : scheme.onPrimaryContainer,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
       ),

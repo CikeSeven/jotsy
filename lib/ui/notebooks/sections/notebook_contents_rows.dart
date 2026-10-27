@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/form_width.dart';
 
@@ -62,9 +63,14 @@ class NotebookContentsChapterHeader extends StatelessWidget {
                             chapter?.title ?? l10n.notebookChapterUnassigned,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: scheme.primary,
+                            // 章节标题行直接画在目录页背景上，有背景图时
+                            // 加可读性兜底。
+                            style: AppPageBackdrop.onBackgroundTextStyle(
+                              context,
+                              theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: scheme.primary,
+                              ),
                             ),
                           ),
                         ),
@@ -72,8 +78,11 @@ class NotebookContentsChapterHeader extends StatelessWidget {
                       const SizedBox(width: AppSpacing.s),
                       Text(
                         l10n.notebookEntryCount(count),
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
+                        style: AppPageBackdrop.onBackgroundTextStyle(
+                          context,
+                          theme.textTheme.labelMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
@@ -128,8 +137,11 @@ class NotebookContentsChapterHeader extends StatelessWidget {
               ),
               child: Text(
                 l10n.notebookContentsUnassignedDropHint,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
+                style: AppPageBackdrop.onBackgroundTextStyle(
+                  context,
+                  theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

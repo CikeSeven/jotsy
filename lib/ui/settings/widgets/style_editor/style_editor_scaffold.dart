@@ -102,13 +102,49 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
     super.dispose();
   }
 
-  TabBar _tabBar(TabController controller, {ValueChanged<int>? onTap}) {
+  /// [onBackgroundOf] 给出时标签栏直接画在页面背景上（宽窗口右栏）：有背景
+  /// 图时选中 / 未选中的标签文字经 `AppPageBackdrop.onBackgroundTextStyle`
+  /// 加光晕、必要时换可读色；要用该 context 读页面背景（须在页面背景之下）。
+  /// 窄窗口的标签栏在 SnapPanel 的不透明面板里，不传。无背景图时各项都是
+  /// null，与原来的 TabBar 完全相同（沿用主题）。
+  TabBar _tabBar(
+    TabController controller, {
+    ValueChanged<int>? onTap,
+    BuildContext? onBackgroundOf,
+  }) {
+    TextStyle? selected;
+    TextStyle? unselected;
+    final context = onBackgroundOf;
+    if (context != null && AppPageBackdrop.of(context).hasImage) {
+      final theme = Theme.of(context);
+      final tabTheme = theme.tabBarTheme;
+      // TabBar 用 labelColor 覆盖 labelStyle 的颜色，所以颜色单独取出传回
+      // labelColor，光晕随 labelStyle 走。
+      selected = AppPageBackdrop.onBackgroundTextStyle(
+        context,
+        (tabTheme.labelStyle ?? theme.textTheme.titleSmall)?.copyWith(
+          color: tabTheme.labelColor ?? theme.colorScheme.primary,
+        ),
+      );
+      unselected = AppPageBackdrop.onBackgroundTextStyle(
+        context,
+        (tabTheme.unselectedLabelStyle ?? theme.textTheme.titleSmall)?.copyWith(
+          color:
+              tabTheme.unselectedLabelColor ??
+              theme.colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
     return TabBar(
       controller: controller,
       isScrollable: true,
       tabAlignment: TabAlignment.start,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       onTap: onTap,
+      labelStyle: selected,
+      unselectedLabelStyle: unselected,
+      labelColor: selected?.color,
+      unselectedLabelColor: unselected?.color,
       tabs: <Tab>[for (final tab in widget.tabs) Tab(text: tab)],
     );
   }
@@ -189,7 +225,7 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
                           width: controlsWidth,
                           child: Column(
                             children: <Widget>[
-                              _tabBar(tabController),
+                              _tabBar(tabController, onBackgroundOf: context),
                               Expanded(
                                 child: TabBarView(
                                   controller: tabController,

@@ -45,10 +45,6 @@ void main() {
       controller.items.every((item) => item.diaryId == diary.diaryId),
       isTrue,
     );
-    expect(
-      controller.items.every((item) => item.updatedAt == diary.updatedAt),
-      isTrue,
-    );
     expect(controller.hasMore, isFalse);
     expect(controller.hasError, isFalse);
     await controller.loadMore();

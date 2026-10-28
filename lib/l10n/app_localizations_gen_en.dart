@@ -959,9 +959,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0059 => 'Explore data is unavailable';
 
   @override
-  String get autoT0060 => 'Mood & energy trends';
-
-  @override
   String get autoT0061 => 'View all images';
 
   @override
@@ -975,15 +972,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoT0065 => 'Untitled diary';
-
-  @override
-  String get autoT0066 => 'Total records';
-
-  @override
-  String get autoT0067 => 'Streak';
-
-  @override
-  String get autoT0068 => 'Words this month';
 
   @override
   String get autoT0069 => 'Tag cloud';
@@ -1391,10 +1379,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoT0197 => 'Failed to load images. Please try again later.';
-
-  @override
-  String get autoT0198 =>
-      'Keep recording weather, tags, and mood to unlock deeper insights here.';
 
   @override
   String get autoT0199 => 'No tag data yet. Try writing diaries with tags.';
@@ -9249,4 +9233,1034 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryFastScrollUntitled => 'Untitled';
+
+  @override
+  String get exploreModuleGreeting => 'Today';
+
+  @override
+  String get exploreModuleGreetingDesc =>
+      'A greeting with the lunar date, today\'s progress and a daily prompt';
+
+  @override
+  String get exploreModuleOnThisDay => 'On this day';
+
+  @override
+  String get exploreModuleOnThisDayDesc =>
+      'Entries from this day (or nearby days, or this month) in past years';
+
+  @override
+  String get exploreModuleRandomMemory => 'Random memory';
+
+  @override
+  String get exploreModuleRandomMemoryDesc => 'Pulls up an old entry at random';
+
+  @override
+  String get exploreModuleRecap => 'Recap';
+
+  @override
+  String get exploreModuleRecapDesc =>
+      'This week, month or year at a glance, compared with the last one';
+
+  @override
+  String get exploreModuleMilestones => 'Milestones';
+
+  @override
+  String get exploreModuleMilestonesDesc =>
+      'Progress towards entry, word and streak milestones';
+
+  @override
+  String get exploreModuleOverview => 'Dashboard';
+
+  @override
+  String get exploreModuleOverviewDesc =>
+      'Numbers you choose: entries, words, streaks and more';
+
+  @override
+  String get exploreModuleHeatmap => 'Writing heatmap';
+
+  @override
+  String get exploreModuleHeatmapDesc => 'Daily squares laid out week by week';
+
+  @override
+  String get exploreModuleRhythm => 'Writing rhythm';
+
+  @override
+  String get exploreModuleRhythmDesc =>
+      'How much you wrote each month, week or day';
+
+  @override
+  String get exploreModuleHabits => 'Writing habits';
+
+  @override
+  String get exploreModuleHabitsDesc =>
+      'When and on which weekday you usually write';
+
+  @override
+  String get exploreModuleMoodTrend => 'Mood trend';
+
+  @override
+  String get exploreModuleMoodTrendDesc => 'How your mood changed day by day';
+
+  @override
+  String get exploreModuleMoodShare => 'Mood breakdown';
+
+  @override
+  String get exploreModuleMoodShareDesc => 'How often each mood appears';
+
+  @override
+  String get exploreModuleEnergy => 'Energy trend';
+
+  @override
+  String get exploreModuleEnergyDesc => 'Your energy level day by day';
+
+  @override
+  String get exploreModuleTags => 'Tags';
+
+  @override
+  String get exploreModuleTagsDesc => 'Your tags; tap one to search';
+
+  @override
+  String get exploreModuleMedia => 'Media gallery';
+
+  @override
+  String get exploreModuleMediaDesc => 'Photos from your diary';
+
+  @override
+  String get exploreModulePlaces => 'Places';
+
+  @override
+  String get exploreModulePlacesDesc => 'Where you write most often';
+
+  @override
+  String get exploreModuleWeather => 'Weather';
+
+  @override
+  String get exploreModuleWeatherDesc => 'The weather when you wrote';
+
+  @override
+  String get exploreModuleAnniversaries => 'Anniversaries';
+
+  @override
+  String get exploreModuleAnniversariesDesc =>
+      'Countdown to upcoming anniversaries';
+
+  @override
+  String get exploreModuleCapsules => 'Time capsules';
+
+  @override
+  String get exploreModuleCapsulesDesc =>
+      'Capsules waiting to open and those opened recently';
+
+  @override
+  String get exploreModuleNotebooks => 'Notebooks';
+
+  @override
+  String get exploreModuleNotebooksDesc => 'Your notebook shelf';
+
+  @override
+  String get exploreModuleDrafts => 'Drafts';
+
+  @override
+  String get exploreModuleDraftsDesc =>
+      'A reminder when you have unfinished drafts';
+
+  @override
+  String get explorePeriodWeek => 'This week';
+
+  @override
+  String get explorePeriodMonth => 'This month';
+
+  @override
+  String get explorePeriodYear => 'This year';
+
+  @override
+  String get explorePeriodAll => 'All time';
+
+  @override
+  String get explorePeriodEmpty => 'No entries in this period yet';
+
+  @override
+  String get exploreNoModules => 'No cards are shown on Explore';
+
+  @override
+  String get exploreModuleMenuHide => 'Hide this card';
+
+  @override
+  String exploreModuleHidden(String name) {
+    return 'Hid “$name”';
+  }
+
+  @override
+  String get exploreGreetingMorning => 'Good morning';
+
+  @override
+  String get exploreGreetingNoon => 'Good day';
+
+  @override
+  String get exploreGreetingAfternoon => 'Good afternoon';
+
+  @override
+  String get exploreGreetingEvening => 'Good evening';
+
+  @override
+  String get exploreGreetingNight => 'Up late';
+
+  @override
+  String exploreGreetingToday(int count, String words) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0 today · $words words';
+  }
+
+  @override
+  String get exploreGreetingTodayEmpty => 'Nothing written today yet';
+
+  @override
+  String get exploreGreetingWrite => 'Write';
+
+  @override
+  String get exploreGreetingNextPrompt => 'Another prompt';
+
+  @override
+  String get explorePrompt01 => 'What made you smile today?';
+
+  @override
+  String get explorePrompt02 => 'What has been on your mind lately?';
+
+  @override
+  String get explorePrompt03 => 'What did you learn today?';
+
+  @override
+  String get explorePrompt04 =>
+      'If you could redo today, what would you do differently?';
+
+  @override
+  String get explorePrompt05 =>
+      'Describe what\'s outside your window right now.';
+
+  @override
+  String get explorePrompt06 => 'What was the best thing you ate today?';
+
+  @override
+  String get explorePrompt07 =>
+      'Which line you read or heard recently stuck with you?';
+
+  @override
+  String get explorePrompt08 =>
+      'What do you have today that you didn\'t have yesterday?';
+
+  @override
+  String get explorePrompt09 =>
+      'Write about a small thing that made you feel grounded.';
+
+  @override
+  String get explorePrompt10 =>
+      'What would you like to tell yourself this week?';
+
+  @override
+  String get explorePrompt11 => 'Who did you talk to today, and about what?';
+
+  @override
+  String get explorePrompt12 => 'What are you looking forward to?';
+
+  @override
+  String get explorePrompt13 =>
+      'If today\'s mood were weather, what would it be?';
+
+  @override
+  String get explorePrompt14 =>
+      'Write down three small things you\'re grateful for today.';
+
+  @override
+  String get explorePrompt15 => 'Is there a song you\'ve had on repeat lately?';
+
+  @override
+  String get explorePrompt16 => 'What went better than expected today?';
+
+  @override
+  String get explorePrompt17 =>
+      'What would you say to yourself a year from now?';
+
+  @override
+  String get explorePrompt18 =>
+      'Where did you spend most of today? What was it like?';
+
+  @override
+  String get explorePrompt19 =>
+      'What has been tiring you out, and how can you look after yourself?';
+
+  @override
+  String get explorePrompt20 => 'What made you laugh out loud recently?';
+
+  @override
+  String get exploreOnThisDayEmpty =>
+      'No entries from this day in past years yet. What you write today shows up here next year.';
+
+  @override
+  String get exploreRandomShuffle => 'Another one';
+
+  @override
+  String get exploreRandomEmpty => 'No older entries match yet';
+
+  @override
+  String get exploreRecapTitleWeek => 'This week';
+
+  @override
+  String get exploreRecapTitleMonth => 'This month';
+
+  @override
+  String get exploreRecapTitleYear => 'This year';
+
+  @override
+  String get exploreRecapTopMood => 'Top mood';
+
+  @override
+  String get exploreRecapTopTag => 'Top tag';
+
+  @override
+  String exploreRecapMore(int count) {
+    return '$count more than last time';
+  }
+
+  @override
+  String exploreRecapFewer(int count) {
+    return '$count fewer than last time';
+  }
+
+  @override
+  String get exploreRecapSame => 'Same as last time';
+
+  @override
+  String get exploreMetricEntries => 'Entries';
+
+  @override
+  String get exploreMetricWords => 'Words';
+
+  @override
+  String get exploreMetricRecordedDays => 'Days written';
+
+  @override
+  String get exploreMetricCurrentStreak => 'Current streak';
+
+  @override
+  String get exploreMetricLongestStreak => 'Longest streak';
+
+  @override
+  String get exploreMetricAverageWords => 'Words per entry';
+
+  @override
+  String get exploreMetricPhotos => 'Photos';
+
+  @override
+  String get exploreMetricTags => 'Tags used';
+
+  @override
+  String get exploreMetricSpan => 'Time span';
+
+  @override
+  String get exploreMetricTodayWords => 'Words today';
+
+  @override
+  String get exploreMilestoneEntries => 'Entries';
+
+  @override
+  String get exploreMilestoneWords => 'Words';
+
+  @override
+  String get exploreMilestoneStreak => 'Longest streak';
+
+  @override
+  String get exploreMilestoneDays => 'Days written';
+
+  @override
+  String get exploreMilestoneYears => 'Years';
+
+  @override
+  String exploreMilestoneNext(String target, String remaining) {
+    return 'Next: $target · $remaining to go';
+  }
+
+  @override
+  String get exploreMilestoneAllDone => 'All reached';
+
+  @override
+  String exploreMilestoneAchieved(int count) {
+    return '$count reached';
+  }
+
+  @override
+  String exploreUnitEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exploreUnitWords(String words) {
+    return '$words words';
+  }
+
+  @override
+  String exploreUnitYears(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years',
+      one: '1 year',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exploreUnitTimes(int count) {
+    return '$count×';
+  }
+
+  @override
+  String exploreHeatmapSummary(int days, int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0 written in the last $weeks weeks';
+  }
+
+  @override
+  String exploreHeatmapDay(String date, int count, String words) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$date · $_temp0 · $words words';
+  }
+
+  @override
+  String exploreHeatmapDayEmpty(String date) {
+    return '$date · No entries';
+  }
+
+  @override
+  String get exploreHeatmapLess => 'Less';
+
+  @override
+  String get exploreHeatmapMore => 'More';
+
+  @override
+  String exploreTotalEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0 in total';
+  }
+
+  @override
+  String exploreTotalWords(String words) {
+    return '$words words in total';
+  }
+
+  @override
+  String get exploreSlotLateNight => 'Late night';
+
+  @override
+  String get exploreSlotMorning => 'Morning';
+
+  @override
+  String get exploreSlotForenoon => 'Late morning';
+
+  @override
+  String get exploreSlotAfternoon => 'Afternoon';
+
+  @override
+  String get exploreSlotEvening => 'Evening';
+
+  @override
+  String get exploreSlotNight => 'Night';
+
+  @override
+  String exploreHabitsTopSlot(String slot) {
+    return 'Most often: $slot';
+  }
+
+  @override
+  String exploreHabitsTopWeekday(String weekday) {
+    return 'Busiest day: $weekday';
+  }
+
+  @override
+  String get exploreHabitsTimeOfDay => 'Time of day';
+
+  @override
+  String get exploreHabitsWeekdays => 'Weekdays';
+
+  @override
+  String exploreLastDays(int days) {
+    return 'Last $days days';
+  }
+
+  @override
+  String exploreMoodAverage(String mood) {
+    return 'Average mood $mood';
+  }
+
+  @override
+  String get exploreMoodTrendEmpty => 'No moods recorded lately';
+
+  @override
+  String get exploreMoodShareEmpty => 'No moods recorded in this period';
+
+  @override
+  String exploreEnergyAverage(String value) {
+    return 'Average $value';
+  }
+
+  @override
+  String get exploreEnergyEmpty => 'No energy levels recorded lately';
+
+  @override
+  String get explorePlacesEmpty =>
+      'Add a location when you write and your favourite places show up here.';
+
+  @override
+  String get exploreWeatherEmpty =>
+      'Record the weather when you write to see it here.';
+
+  @override
+  String get exploreAnniversariesEmpty => 'No anniversaries yet';
+
+  @override
+  String get exploreAnniversariesAdd => 'Add an anniversary';
+
+  @override
+  String get exploreAnniversariesAll => 'All anniversaries';
+
+  @override
+  String exploreCapsulesWaiting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count capsules',
+      one: '1 capsule',
+    );
+    return '$_temp0 waiting to open';
+  }
+
+  @override
+  String exploreCapsuleOpensIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Opens in $count days',
+      one: 'Opens in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exploreCapsuleOpensToday => 'Opens today';
+
+  @override
+  String get exploreCapsulesRecent => 'Recently opened';
+
+  @override
+  String get exploreCapsulesEmpty =>
+      'No time capsules yet. Seal an entry when you publish it to send it to your future self.';
+
+  @override
+  String get exploreNotebooksEmpty => 'No notebooks yet';
+
+  @override
+  String get exploreNotebooksManage => 'Manage notebooks';
+
+  @override
+  String exploreDraftsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count drafts',
+      one: '1 draft',
+    );
+    return '$_temp0 waiting';
+  }
+
+  @override
+  String get exploreDraftsContinue => 'Continue';
+
+  @override
+  String get exploreDraftsManage => 'Manage';
+
+  @override
+  String get exploreCustomize => 'Customize Explore';
+
+  @override
+  String get exploreModuleMenuSettings => 'Card settings';
+
+  @override
+  String get exploreGroupRecall => 'Memories & ideas';
+
+  @override
+  String get exploreGroupStats => 'Charts';
+
+  @override
+  String get exploreGroupLife => 'Life log';
+
+  @override
+  String get exploreGroupLinked => 'Linked features';
+
+  @override
+  String get exploreLayoutTabPresets => 'Presets';
+
+  @override
+  String get exploreLayoutTabCards => 'Cards';
+
+  @override
+  String get exploreLayoutTabAppearance => 'Appearance';
+
+  @override
+  String get exploreLayoutTabRange => 'Range';
+
+  @override
+  String get exploreLayoutResetDone => 'Restored the default layout';
+
+  @override
+  String get exploreLayoutCardsHint =>
+      'Drag a handle to reorder; tap a row to see its options.';
+
+  @override
+  String get exploreLayoutCardsShowAll => 'Show all';
+
+  @override
+  String get exploreLayoutCardsDefaultOrder => 'Default order';
+
+  @override
+  String get exploreLayoutFeatureOff => 'Turned off in Features';
+
+  @override
+  String exploreLayoutDragHandle(String name) {
+    return 'Drag to reorder $name';
+  }
+
+  @override
+  String exploreLayoutShowModule(String name) {
+    return 'Show “$name”';
+  }
+
+  @override
+  String exploreLayoutMultiHint(int max) {
+    return 'Shown in the order you pick them, up to $max';
+  }
+
+  @override
+  String get exploreLayoutSpan => 'Width on wide screens';
+
+  @override
+  String get exploreLayoutSpanFull => 'Full row';
+
+  @override
+  String get exploreLayoutSpanHalf => 'Half';
+
+  @override
+  String get exploreLayoutPreviewMine => 'My data';
+
+  @override
+  String get exploreLayoutPreviewSample => 'Sample data';
+
+  @override
+  String get exploreLayoutCustom => 'Custom';
+
+  @override
+  String get exploreSamplePlaceHome => 'Home';
+
+  @override
+  String get exploreSamplePlaceOffice => 'Office';
+
+  @override
+  String get settingsExploreLayout => 'Explore page';
+
+  @override
+  String settingsExploreLayoutSubtitle(String name) {
+    return 'Current: $name';
+  }
+
+  @override
+  String get exploreOptLunar => 'Lunar date';
+
+  @override
+  String get exploreOptPrompt => 'Daily prompt';
+
+  @override
+  String get exploreOptWrite => 'Write button';
+
+  @override
+  String get exploreOptMatch => 'Match';
+
+  @override
+  String get exploreOptStyle => 'Style';
+
+  @override
+  String get exploreOptCount => 'How many';
+
+  @override
+  String get exploreOptSource => 'Pick from';
+
+  @override
+  String get exploreOptPhotosOnly => 'Only entries with a cover';
+
+  @override
+  String get exploreOptDaily => 'Same pick all day';
+
+  @override
+  String get exploreOptRecapPeriod => 'Period';
+
+  @override
+  String get exploreOptCompare => 'Compare with last time';
+
+  @override
+  String get exploreOptKinds => 'Milestones';
+
+  @override
+  String get exploreOptAchieved => 'Show how many reached';
+
+  @override
+  String get exploreOptMetrics => 'Metrics';
+
+  @override
+  String get exploreOptColumns => 'Columns';
+
+  @override
+  String get exploreOptHeatmapSpan => 'Span';
+
+  @override
+  String get exploreOptBasis => 'Color by';
+
+  @override
+  String get exploreOptWeekdayLabels => 'Weekday labels';
+
+  @override
+  String get exploreOptLegend => 'Legend';
+
+  @override
+  String get exploreOptUnit => 'Group by';
+
+  @override
+  String get exploreOptMetric => 'Count';
+
+  @override
+  String get exploreOptTimeOfDay => 'Time of day';
+
+  @override
+  String get exploreOptWeekdays => 'Weekdays';
+
+  @override
+  String get exploreOptDays => 'Range';
+
+  @override
+  String get exploreOptChart => 'Chart';
+
+  @override
+  String get exploreOptDayMoods => 'Include day moods';
+
+  @override
+  String get exploreOptSort => 'Sort';
+
+  @override
+  String get exploreOptPercent => 'Show percentages';
+
+  @override
+  String get exploreOptInline => 'Include photos in entries';
+
+  @override
+  String get exploreOptRecent => 'Show recently opened';
+
+  @override
+  String get exploreValFollowLanguage => 'Follow language';
+
+  @override
+  String get exploreValShow => 'Show';
+
+  @override
+  String get exploreValHide => 'Hide';
+
+  @override
+  String get exploreValSameDay => 'Same day';
+
+  @override
+  String get exploreValNearby => 'Within 3 days';
+
+  @override
+  String get exploreValSameMonth => 'Same month';
+
+  @override
+  String get exploreValCarousel => 'Carousel';
+
+  @override
+  String get exploreValList => 'List';
+
+  @override
+  String get exploreValAll => 'All';
+
+  @override
+  String get exploreValMonthAgo => 'Over a month ago';
+
+  @override
+  String get exploreValYearAgo => 'Over a year ago';
+
+  @override
+  String get exploreValWeeks12 => '12 weeks';
+
+  @override
+  String get exploreValHalfYear => 'Half a year';
+
+  @override
+  String get exploreValYear => 'A year';
+
+  @override
+  String get exploreValEntries => 'Entries';
+
+  @override
+  String get exploreValWords => 'Words';
+
+  @override
+  String get exploreValMood => 'Mood';
+
+  @override
+  String get exploreValByMonth => 'Monthly';
+
+  @override
+  String get exploreValByWeek => 'Weekly';
+
+  @override
+  String get exploreValByDay => 'Daily';
+
+  @override
+  String get exploreValPixels => 'Pixels';
+
+  @override
+  String get exploreValLine => 'Line';
+
+  @override
+  String get exploreValBars => 'Bars';
+
+  @override
+  String get exploreValByCount => 'By count';
+
+  @override
+  String get exploreValByMood => 'By mood';
+
+  @override
+  String get exploreValRanking => 'Ranking';
+
+  @override
+  String get exploreValManual => 'Custom order';
+
+  @override
+  String get exploreValRecent => 'Recent';
+
+  @override
+  String get exploreValStrip => 'Strip';
+
+  @override
+  String get exploreValGrid => 'Grid';
+
+  @override
+  String get exploreValMosaic => 'Mosaic';
+
+  @override
+  String get exploreValIcons => 'Icons';
+
+  @override
+  String get exploreValShelf => 'Shelf order';
+
+  @override
+  String get exploreValUpdated => 'Recently updated';
+
+  @override
+  String get exploreValByEntries => 'By entries';
+
+  @override
+  String get exploreValAuto => 'Auto';
+
+  @override
+  String exploreValColumns(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count columns',
+      one: '1 column',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get explorePresetBalanced => 'Balanced';
+
+  @override
+  String get explorePresetBalancedDesc =>
+      'The everyday set: a quick look at how things are going';
+
+  @override
+  String get explorePresetMinimal => 'Minimal';
+
+  @override
+  String get explorePresetMinimalDesc =>
+      'Just the greeting, memories, numbers and photos';
+
+  @override
+  String get explorePresetDataLover => 'Data lover';
+
+  @override
+  String get explorePresetDataLoverDesc =>
+      'Every chart: heatmap, rhythm, habits, mood and energy';
+
+  @override
+  String get explorePresetMemories => 'Memories';
+
+  @override
+  String get explorePresetMemoriesDesc =>
+      'On this day, random memories, recaps, capsules and anniversaries';
+
+  @override
+  String get explorePresetEverything => 'Everything';
+
+  @override
+  String get explorePresetEverythingDesc => 'All 20 cards switched on';
+
+  @override
+  String get exploreLookCards => 'Cards';
+
+  @override
+  String get exploreLookDensity => 'Density';
+
+  @override
+  String get exploreLookCompact => 'Compact';
+
+  @override
+  String get exploreLookStandard => 'Standard';
+
+  @override
+  String get exploreLookRelaxed => 'Relaxed';
+
+  @override
+  String get exploreLookRadius => 'Corner radius';
+
+  @override
+  String get exploreLookSurface => 'Surface';
+
+  @override
+  String get exploreLookFilled => 'Filled';
+
+  @override
+  String get exploreLookTonal => 'Tonal';
+
+  @override
+  String get exploreLookOutlined => 'Outlined';
+
+  @override
+  String get exploreLookSurfaceGlassNote =>
+      'With the glass material, cards are always glass.';
+
+  @override
+  String get exploreLookAccent => 'Accent';
+
+  @override
+  String get exploreLookPrimary => 'Primary';
+
+  @override
+  String get exploreLookSecondary => 'Secondary';
+
+  @override
+  String get exploreLookTertiary => 'Tertiary';
+
+  @override
+  String get exploreLookText => 'Titles & numbers';
+
+  @override
+  String get exploreLookHeading => 'Card titles';
+
+  @override
+  String get exploreLookBadge => 'Badge';
+
+  @override
+  String get exploreLookIcon => 'Icon';
+
+  @override
+  String get exploreLookTextOnly => 'Text';
+
+  @override
+  String get exploreLookHidden => 'Hidden';
+
+  @override
+  String get exploreLookCompactNumbers => 'Abbreviate large numbers';
+
+  @override
+  String get exploreLookCompactNumbersSubtitle => 'Show 12,345 as 12K';
+
+  @override
+  String get exploreLookAnimations => 'Chart animations';
+
+  @override
+  String get exploreLookAnimationsSubtitle =>
+      'Charts grow and numbers count up when shown';
+
+  @override
+  String get exploreLookWide => 'Wide screens';
+
+  @override
+  String get exploreLookWideFooter =>
+      'Narrow screens such as phones always use one column.';
+
+  @override
+  String get exploreLookColumns => 'Columns';
+
+  @override
+  String get exploreLookFlow => 'Arrangement';
+
+  @override
+  String get exploreLookRows => 'Rows';
+
+  @override
+  String get exploreLookStaggered => 'Staggered';
+
+  @override
+  String get exploreRangeBar => 'Show the range bar';
+
+  @override
+  String get exploreRangeBarSubtitle =>
+      'Switch between this week, month, year and all time at the top of Explore';
+
+  @override
+  String get exploreRangeCurrent => 'Range';
+
+  @override
+  String get exploreRangeFooter =>
+      'The range applies to the dashboard, tags, writing habits, mood breakdown, places and weather; other cards have their own time spans.';
+
+  @override
+  String get exploreSampleWeatherSunny => 'Sunny';
+
+  @override
+  String get exploreSampleWeatherCloudy => 'Cloudy';
+
+  @override
+  String get exploreSampleWeatherOvercast => 'Overcast';
+
+  @override
+  String get exploreSampleWeatherRain => 'Light rain';
+
+  @override
+  String get exploreSampleWeatherFog => 'Fog';
 }

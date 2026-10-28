@@ -7,7 +7,13 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations_gen_en.dart';
-import 'package:node_diary/ui/explore/controllers/explore_page_controller.dart';
+import 'package:node_diary/core/services/settings_service.dart';
+import 'package:node_diary/ui/explore/controllers/explore_data_builder.dart';
+import 'package:node_diary/ui/explore/models/explore_layout.dart';
+import 'package:node_diary/ui/explore/models/explore_module_id.dart';
+import 'package:node_diary/ui/explore/models/explore_period.dart';
+import 'package:node_diary/ui/explore/models/explore_presets.dart';
+import 'package:node_diary/ui/explore/viewmodels/explore_entry.dart';
 import 'package:node_diary/utils/text_stats.dart';
 
 /// 可选的本机微基准：固定合成数据、预热后报告中位数，不以墙钟时间作为门禁。
@@ -86,12 +92,23 @@ void main() {
     });
 
     final diaries = await db.watchExploreDiaryOverviews().first;
-    const controller = ExplorePageController();
     final l10n = AppLocalizationsEn();
+    // 全部卡片都显示时的整页聚合；每轮新建条目缓存，计入首次解析的开销。
     await _report('explore aggregation, ${diaries.length} rows', (_) {
-      final data = controller.buildViewData(diaries, now: now, l10n: l10n);
-      expect(data.stats.totalRecords, diaries.length);
-      expect(data.moodWeights30, hasLength(30));
+      final data = ExploreDataBuilder.build(
+        ExploreDataRequest(
+          index: ExploreEntryCache().index(diaries),
+          layout: ExplorePreset.everything.applyTo(ExploreLayout.defaults),
+          modules: ExploreModuleId.values.toSet(),
+          period: ExplorePeriod.all,
+          now: now,
+          firstWeekday: DateTime.monday,
+          moodOptions: SettingsService.defaultMoodOptions,
+          l10n: l10n,
+        ),
+      );
+      expect(data.totalEntries, diaries.length);
+      expect(data.moodTrend, hasLength(30));
     });
 
     await _report('word count, mixed ${body.length * 50} UTF-16 units', (_) {

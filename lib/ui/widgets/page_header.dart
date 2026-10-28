@@ -11,7 +11,12 @@ import '../home/widgets/home_bar/home_top_bar_surface.dart';
 /// 底由 [HomeTopBarSurface] 画：实色时与原来的 surface 色块完全一致；首页
 /// 顶栏用玻璃时换成玻璃，下方滚动的内容从顶栏后透出并被模糊。
 class PageHeader extends StatelessWidget {
-  const PageHeader({super.key, required this.title, this.contentMaxWidth});
+  const PageHeader({
+    super.key,
+    required this.title,
+    this.contentMaxWidth,
+    this.actions = const <Widget>[],
+  });
 
   // 与日记列表页头部体感高度对齐，避免 Explore/Settings 看起来偏高。
   static const double contentHeight = 64;
@@ -22,6 +27,9 @@ class PageHeader extends StatelessWidget {
   /// 留白改为 `AppContentWidth.gutter(宽度, contentMaxWidth)`，与居中的内容
   /// 列左缘对齐；不够宽时就是原来的 16。为 null（默认）时与原来完全一致。
   final double? contentMaxWidth;
+
+  /// 标题右侧的操作按钮（如探索页的“自定义”）。为空时与原来完全一致。
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
@@ -56,18 +64,31 @@ class PageHeader extends StatelessWidget {
                       side,
                       AppSpacing.s,
                     ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
+                    child: () {
+                      final text = Text(
                         title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
                               fontSize: 25,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.5,
                             ),
-                      ),
-                    ),
+                      );
+                      if (actions.isEmpty) {
+                        return Align(
+                          alignment: Alignment.centerLeft,
+                          child: text,
+                        );
+                      }
+                      return Row(
+                        children: <Widget>[
+                          Expanded(child: text),
+                          ...actions,
+                        ],
+                      );
+                    }(),
                   );
                 },
               ),

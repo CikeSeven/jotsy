@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../utils/text_stats.dart';
 import '../../explore/controllers/explore_content_extractor.dart';
 import '../../explore/controllers/explore_page_controller.dart';
+import '../../explore/controllers/explore_stats_builder.dart';
 import '../../explore/models/explore_view_data.dart';
 
 /// 日记本统计页的聚合数据：总览、心情分布、常用标签、写作节奏、那年今日。
@@ -137,22 +138,10 @@ class NotebookInsightsData {
     return (b.difference(a).inHours / 24).round() + 1;
   }
 
-  /// 一组本地日期里最长的连续天数。逐日用日期构造而不是加 24 小时。
-  static int longestDayStreak(Iterable<DateTime> days) {
-    final sorted = days.toSet().toList()..sort();
-    var longest = 0;
-    var current = 0;
-    DateTime? previous;
-    for (final day in sorted) {
-      final expected = previous == null
-          ? null
-          : DateTime(previous.year, previous.month, previous.day + 1);
-      current = expected == day ? current + 1 : 1;
-      if (current > longest) longest = current;
-      previous = day;
-    }
-    return longest;
-  }
+  /// 一组本地日期里最长的连续天数（与探索页同一口径，见
+  /// [ExploreStatsBuilder.longestStreak]）。
+  static int longestDayStreak(Iterable<DateTime> days) =>
+      ExploreStatsBuilder.longestStreak(days);
 
   static List<NotebookMonthCount> _monthBuckets(
     Map<DateTime, int> counts, {

@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/sections/settings_app_surface_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_card_style_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_preview_style_tile.dart';
+import 'package:node_diary/ui/settings/sections/settings_explore_layout_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_home_bar_style_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
@@ -14,6 +15,7 @@ import '../../../core/services/app_service.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/app_modal/app_dialog.dart';
+import '../providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
 import '../../widgets/form_width.dart';
 
@@ -124,6 +126,9 @@ class AppearanceLanguagePage extends ConsumerWidget {
                       SettingsDiaryPreviewStyleTile(
                         settingsAsync: settingsAsync,
                       ),
+                      // 探索 Tab 关闭时不显示它的自定义入口（功能管理）。
+                      if (ref.watch(appFeaturesProvider).explore)
+                        SettingsExploreLayoutTile(settingsAsync: settingsAsync),
                       settingsAsync.when(
                         data: (settingsService) {
                           return ListTile(

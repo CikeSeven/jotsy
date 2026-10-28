@@ -18,7 +18,7 @@ import 'package:node_diary/ui/diaries/widgets/diaries_header_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
-import 'package:node_diary/ui/explore/sections/explore_content_section.dart';
+import 'package:node_diary/ui/explore/sections/explore_content_view.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
@@ -745,7 +745,7 @@ void main() {
       expect(_trailingSpace(tester, explore), 12 + slot);
       await _scrollToEnd(tester, explore);
       expect(
-        tester.getRect(find.byType(ExploreContentSection)).bottom,
+        tester.getRect(find.byType(ExploreContentView)).bottom,
         lessThanOrEqualTo(pillTop),
       );
 

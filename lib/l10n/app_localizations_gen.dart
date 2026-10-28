@@ -1736,12 +1736,6 @@ abstract class AppLocalizations {
   /// **'Explore data is unavailable'**
   String get autoT0059;
 
-  /// Auto-generated metadata for autoT0060.
-  ///
-  /// In en, this message translates to:
-  /// **'Mood & energy trends'**
-  String get autoT0060;
-
   /// Auto-generated metadata for autoT0061.
   ///
   /// In en, this message translates to:
@@ -1771,24 +1765,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Untitled diary'**
   String get autoT0065;
-
-  /// Auto-generated metadata for autoT0066.
-  ///
-  /// In en, this message translates to:
-  /// **'Total records'**
-  String get autoT0066;
-
-  /// Auto-generated metadata for autoT0067.
-  ///
-  /// In en, this message translates to:
-  /// **'Streak'**
-  String get autoT0067;
-
-  /// Auto-generated metadata for autoT0068.
-  ///
-  /// In en, this message translates to:
-  /// **'Words this month'**
-  String get autoT0068;
 
   /// Auto-generated metadata for autoT0069.
   ///
@@ -2527,12 +2503,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load images. Please try again later.'**
   String get autoT0197;
-
-  /// Auto-generated metadata for autoT0198.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep recording weather, tags, and mood to unlock deeper insights here.'**
-  String get autoT0198;
 
   /// Auto-generated metadata for autoT0199.
   ///
@@ -15169,6 +15139,1764 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Untitled'**
   String get diaryFastScrollUntitled;
+
+  /// Explore card name: Today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get exploreModuleGreeting;
+
+  /// One-line description of the Explore card “Today” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'A greeting with the lunar date, today\'s progress and a daily prompt'**
+  String get exploreModuleGreetingDesc;
+
+  /// Explore card name: On this day.
+  ///
+  /// In en, this message translates to:
+  /// **'On this day'**
+  String get exploreModuleOnThisDay;
+
+  /// One-line description of the Explore card “On this day” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Entries from this day (or nearby days, or this month) in past years'**
+  String get exploreModuleOnThisDayDesc;
+
+  /// Explore card name: Random memory.
+  ///
+  /// In en, this message translates to:
+  /// **'Random memory'**
+  String get exploreModuleRandomMemory;
+
+  /// One-line description of the Explore card “Random memory” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Pulls up an old entry at random'**
+  String get exploreModuleRandomMemoryDesc;
+
+  /// Explore card name: Recap.
+  ///
+  /// In en, this message translates to:
+  /// **'Recap'**
+  String get exploreModuleRecap;
+
+  /// One-line description of the Explore card “Recap” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'This week, month or year at a glance, compared with the last one'**
+  String get exploreModuleRecapDesc;
+
+  /// Explore card name: Milestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get exploreModuleMilestones;
+
+  /// One-line description of the Explore card “Milestones” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Progress towards entry, word and streak milestones'**
+  String get exploreModuleMilestonesDesc;
+
+  /// Explore card name: Dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get exploreModuleOverview;
+
+  /// One-line description of the Explore card “Dashboard” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers you choose: entries, words, streaks and more'**
+  String get exploreModuleOverviewDesc;
+
+  /// Explore card name: Writing heatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing heatmap'**
+  String get exploreModuleHeatmap;
+
+  /// One-line description of the Explore card “Writing heatmap” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily squares laid out week by week'**
+  String get exploreModuleHeatmapDesc;
+
+  /// Explore card name: Writing rhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing rhythm'**
+  String get exploreModuleRhythm;
+
+  /// One-line description of the Explore card “Writing rhythm” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'How much you wrote each month, week or day'**
+  String get exploreModuleRhythmDesc;
+
+  /// Explore card name: Writing habits.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing habits'**
+  String get exploreModuleHabits;
+
+  /// One-line description of the Explore card “Writing habits” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'When and on which weekday you usually write'**
+  String get exploreModuleHabitsDesc;
+
+  /// Explore card name: Mood trend.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood trend'**
+  String get exploreModuleMoodTrend;
+
+  /// One-line description of the Explore card “Mood trend” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'How your mood changed day by day'**
+  String get exploreModuleMoodTrendDesc;
+
+  /// Explore card name: Mood breakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood breakdown'**
+  String get exploreModuleMoodShare;
+
+  /// One-line description of the Explore card “Mood breakdown” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'How often each mood appears'**
+  String get exploreModuleMoodShareDesc;
+
+  /// Explore card name: Energy trend.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy trend'**
+  String get exploreModuleEnergy;
+
+  /// One-line description of the Explore card “Energy trend” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Your energy level day by day'**
+  String get exploreModuleEnergyDesc;
+
+  /// Explore card name: Tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get exploreModuleTags;
+
+  /// One-line description of the Explore card “Tags” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Your tags; tap one to search'**
+  String get exploreModuleTagsDesc;
+
+  /// Explore card name: Media gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Media gallery'**
+  String get exploreModuleMedia;
+
+  /// One-line description of the Explore card “Media gallery” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from your diary'**
+  String get exploreModuleMediaDesc;
+
+  /// Explore card name: Places.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get exploreModulePlaces;
+
+  /// One-line description of the Explore card “Places” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Where you write most often'**
+  String get exploreModulePlacesDesc;
+
+  /// Explore card name: Weather.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get exploreModuleWeather;
+
+  /// One-line description of the Explore card “Weather” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'The weather when you wrote'**
+  String get exploreModuleWeatherDesc;
+
+  /// Explore card name: Anniversaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries'**
+  String get exploreModuleAnniversaries;
+
+  /// One-line description of the Explore card “Anniversaries” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Countdown to upcoming anniversaries'**
+  String get exploreModuleAnniversariesDesc;
+
+  /// Explore card name: Time capsules.
+  ///
+  /// In en, this message translates to:
+  /// **'Time capsules'**
+  String get exploreModuleCapsules;
+
+  /// One-line description of the Explore card “Time capsules” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Capsules waiting to open and those opened recently'**
+  String get exploreModuleCapsulesDesc;
+
+  /// Explore card name: Notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get exploreModuleNotebooks;
+
+  /// One-line description of the Explore card “Notebooks” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'Your notebook shelf'**
+  String get exploreModuleNotebooksDesc;
+
+  /// Explore card name: Drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafts'**
+  String get exploreModuleDrafts;
+
+  /// One-line description of the Explore card “Drafts” (customize page).
+  ///
+  /// In en, this message translates to:
+  /// **'A reminder when you have unfinished drafts'**
+  String get exploreModuleDraftsDesc;
+
+  /// Explore statistics range: this week.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get explorePeriodWeek;
+
+  /// Explore statistics range: this month.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get explorePeriodMonth;
+
+  /// Explore statistics range: this year.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get explorePeriodYear;
+
+  /// Explore statistics range: all entries.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get explorePeriodAll;
+
+  /// Explore card: shown when the selected range has no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries in this period yet'**
+  String get explorePeriodEmpty;
+
+  /// Explore: shown when every card is hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards are shown on Explore'**
+  String get exploreNoModules;
+
+  /// Explore card long-press menu: hide this card.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this card'**
+  String get exploreModuleMenuHide;
+
+  /// Snack bar after hiding an Explore card, with undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Hid “{name}”'**
+  String exploreModuleHidden(String name);
+
+  /// Explore greeting, 5–11 am.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get exploreGreetingMorning;
+
+  /// Explore greeting, 11 am–1 pm.
+  ///
+  /// In en, this message translates to:
+  /// **'Good day'**
+  String get exploreGreetingNoon;
+
+  /// Explore greeting, 1–6 pm.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get exploreGreetingAfternoon;
+
+  /// Explore greeting, 6–11 pm.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get exploreGreetingEvening;
+
+  /// Explore greeting, 11 pm–5 am.
+  ///
+  /// In en, this message translates to:
+  /// **'Up late'**
+  String get exploreGreetingNight;
+
+  /// Explore greeting: today's entries and words (words is pre-formatted).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}} today · {words} words'**
+  String exploreGreetingToday(int count, String words);
+
+  /// Explore greeting: nothing written today.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing written today yet'**
+  String get exploreGreetingTodayEmpty;
+
+  /// Explore greeting: new entry button.
+  ///
+  /// In en, this message translates to:
+  /// **'Write'**
+  String get exploreGreetingWrite;
+
+  /// Explore greeting: show another writing prompt (tooltip).
+  ///
+  /// In en, this message translates to:
+  /// **'Another prompt'**
+  String get exploreGreetingNextPrompt;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What made you smile today?'**
+  String get explorePrompt01;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What has been on your mind lately?'**
+  String get explorePrompt02;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you learn today?'**
+  String get explorePrompt03;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'If you could redo today, what would you do differently?'**
+  String get explorePrompt04;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what\'s outside your window right now.'**
+  String get explorePrompt05;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What was the best thing you ate today?'**
+  String get explorePrompt06;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'Which line you read or heard recently stuck with you?'**
+  String get explorePrompt07;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you have today that you didn\'t have yesterday?'**
+  String get explorePrompt08;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'Write about a small thing that made you feel grounded.'**
+  String get explorePrompt09;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to tell yourself this week?'**
+  String get explorePrompt10;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'Who did you talk to today, and about what?'**
+  String get explorePrompt11;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you looking forward to?'**
+  String get explorePrompt12;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'If today\'s mood were weather, what would it be?'**
+  String get explorePrompt13;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'Write down three small things you\'re grateful for today.'**
+  String get explorePrompt14;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'Is there a song you\'ve had on repeat lately?'**
+  String get explorePrompt15;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What went better than expected today?'**
+  String get explorePrompt16;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you say to yourself a year from now?'**
+  String get explorePrompt17;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'Where did you spend most of today? What was it like?'**
+  String get explorePrompt18;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What has been tiring you out, and how can you look after yourself?'**
+  String get explorePrompt19;
+
+  /// Daily writing prompt on the Explore greeting card.
+  ///
+  /// In en, this message translates to:
+  /// **'What made you laugh out loud recently?'**
+  String get explorePrompt20;
+
+  /// Explore on this day: shown when there are no memories.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries from this day in past years yet. What you write today shows up here next year.'**
+  String get exploreOnThisDayEmpty;
+
+  /// Explore random memory: pick another entry (tooltip).
+  ///
+  /// In en, this message translates to:
+  /// **'Another one'**
+  String get exploreRandomShuffle;
+
+  /// Explore random memory: shown when nothing matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No older entries match yet'**
+  String get exploreRandomEmpty;
+
+  /// Explore recap title (week).
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get exploreRecapTitleWeek;
+
+  /// Explore recap title (month).
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get exploreRecapTitleMonth;
+
+  /// Explore recap title (year).
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get exploreRecapTitleYear;
+
+  /// Explore recap: most frequent mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Top mood'**
+  String get exploreRecapTopMood;
+
+  /// Explore recap: most used tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Top tag'**
+  String get exploreRecapTopTag;
+
+  /// Explore recap: more than the previous period (screen readers).
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more than last time'**
+  String exploreRecapMore(int count);
+
+  /// Explore recap: fewer than the previous period (screen readers).
+  ///
+  /// In en, this message translates to:
+  /// **'{count} fewer than last time'**
+  String exploreRecapFewer(int count);
+
+  /// Explore recap: same as the previous period (screen readers).
+  ///
+  /// In en, this message translates to:
+  /// **'Same as last time'**
+  String get exploreRecapSame;
+
+  /// Explore dashboard metric: entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get exploreMetricEntries;
+
+  /// Explore dashboard metric: words.
+  ///
+  /// In en, this message translates to:
+  /// **'Words'**
+  String get exploreMetricWords;
+
+  /// Explore dashboard metric: days with entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Days written'**
+  String get exploreMetricRecordedDays;
+
+  /// Explore dashboard metric: current streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak'**
+  String get exploreMetricCurrentStreak;
+
+  /// Explore dashboard metric: longest streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get exploreMetricLongestStreak;
+
+  /// Explore dashboard metric: average words per entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Words per entry'**
+  String get exploreMetricAverageWords;
+
+  /// Explore dashboard metric: photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get exploreMetricPhotos;
+
+  /// Explore dashboard metric: distinct tags used.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags used'**
+  String get exploreMetricTags;
+
+  /// Explore dashboard metric: span from first to last entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Time span'**
+  String get exploreMetricSpan;
+
+  /// Explore dashboard metric: words written today.
+  ///
+  /// In en, this message translates to:
+  /// **'Words today'**
+  String get exploreMetricTodayWords;
+
+  /// Explore milestone kind: entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get exploreMilestoneEntries;
+
+  /// Explore milestone kind: words.
+  ///
+  /// In en, this message translates to:
+  /// **'Words'**
+  String get exploreMilestoneWords;
+
+  /// Explore milestone kind: longest streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get exploreMilestoneStreak;
+
+  /// Explore milestone kind: days written.
+  ///
+  /// In en, this message translates to:
+  /// **'Days written'**
+  String get exploreMilestoneDays;
+
+  /// Explore milestone kind: years since the first entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Years'**
+  String get exploreMilestoneYears;
+
+  /// Explore milestone: next step and how far away it is (both pre-formatted).
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {target} · {remaining} to go'**
+  String exploreMilestoneNext(String target, String remaining);
+
+  /// Explore milestone: every step reached.
+  ///
+  /// In en, this message translates to:
+  /// **'All reached'**
+  String get exploreMilestoneAllDone;
+
+  /// Explore milestone: number of steps reached.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reached'**
+  String exploreMilestoneAchieved(int count);
+
+  /// A number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String exploreUnitEntries(int count);
+
+  /// A number of words (pre-formatted).
+  ///
+  /// In en, this message translates to:
+  /// **'{words} words'**
+  String exploreUnitWords(String words);
+
+  /// A number of years.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 year} other{{count} years}}'**
+  String exploreUnitYears(int count);
+
+  /// A number of times.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}×'**
+  String exploreUnitTimes(int count);
+
+  /// Explore heatmap summary line.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{1 day} other{{days} days}} written in the last {weeks} weeks'**
+  String exploreHeatmapSummary(int days, int weeks);
+
+  /// Explore heatmap: details of the hovered or tapped day (date and words are pre-formatted).
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · {count, plural, =1{1 entry} other{{count} entries}} · {words} words'**
+  String exploreHeatmapDay(String date, int count, String words);
+
+  /// Explore heatmap: that day has no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · No entries'**
+  String exploreHeatmapDayEmpty(String date);
+
+  /// Explore heatmap legend: less.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get exploreHeatmapLess;
+
+  /// Explore heatmap legend: more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get exploreHeatmapMore;
+
+  /// Explore card header: total entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}} in total'**
+  String exploreTotalEntries(int count);
+
+  /// Explore card header: total words (pre-formatted).
+  ///
+  /// In en, this message translates to:
+  /// **'{words} words in total'**
+  String exploreTotalWords(String words);
+
+  /// Explore writing habits slot: 0–6.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night'**
+  String get exploreSlotLateNight;
+
+  /// Explore writing habits slot: 6–9.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get exploreSlotMorning;
+
+  /// Explore writing habits slot: 9–12.
+  ///
+  /// In en, this message translates to:
+  /// **'Late morning'**
+  String get exploreSlotForenoon;
+
+  /// Explore writing habits slot: 12–18.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get exploreSlotAfternoon;
+
+  /// Explore writing habits slot: 18–21.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get exploreSlotEvening;
+
+  /// Explore writing habits slot: 21–24.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get exploreSlotNight;
+
+  /// Explore writing habits: busiest time of day.
+  ///
+  /// In en, this message translates to:
+  /// **'Most often: {slot}'**
+  String exploreHabitsTopSlot(String slot);
+
+  /// Explore writing habits: busiest weekday.
+  ///
+  /// In en, this message translates to:
+  /// **'Busiest day: {weekday}'**
+  String exploreHabitsTopWeekday(String weekday);
+
+  /// Explore writing habits: time-of-day chart label.
+  ///
+  /// In en, this message translates to:
+  /// **'Time of day'**
+  String get exploreHabitsTimeOfDay;
+
+  /// Explore writing habits: weekday chart label.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get exploreHabitsWeekdays;
+
+  /// Explore trend cards: time range.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {days} days'**
+  String exploreLastDays(int days);
+
+  /// Explore mood trend: average mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Average mood {mood}'**
+  String exploreMoodAverage(String mood);
+
+  /// Explore mood trend: no data.
+  ///
+  /// In en, this message translates to:
+  /// **'No moods recorded lately'**
+  String get exploreMoodTrendEmpty;
+
+  /// Explore mood breakdown: no data.
+  ///
+  /// In en, this message translates to:
+  /// **'No moods recorded in this period'**
+  String get exploreMoodShareEmpty;
+
+  /// Explore energy trend: average energy (pre-formatted).
+  ///
+  /// In en, this message translates to:
+  /// **'Average {value}'**
+  String exploreEnergyAverage(String value);
+
+  /// Explore energy trend: no data.
+  ///
+  /// In en, this message translates to:
+  /// **'No energy levels recorded lately'**
+  String get exploreEnergyEmpty;
+
+  /// Explore places: no data.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a location when you write and your favourite places show up here.'**
+  String get explorePlacesEmpty;
+
+  /// Explore weather: no data.
+  ///
+  /// In en, this message translates to:
+  /// **'Record the weather when you write to see it here.'**
+  String get exploreWeatherEmpty;
+
+  /// Explore anniversaries card: none yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No anniversaries yet'**
+  String get exploreAnniversariesEmpty;
+
+  /// Explore anniversaries card: add button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an anniversary'**
+  String get exploreAnniversariesAdd;
+
+  /// Explore anniversaries card: open the list (tooltip).
+  ///
+  /// In en, this message translates to:
+  /// **'All anniversaries'**
+  String get exploreAnniversariesAll;
+
+  /// Explore time capsules card: number still sealed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 capsule} other{{count} capsules}} waiting to open'**
+  String exploreCapsulesWaiting(int count);
+
+  /// Explore time capsules card: days until it opens.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Opens in 1 day} other{Opens in {count} days}}'**
+  String exploreCapsuleOpensIn(int count);
+
+  /// Explore time capsules card: opens today.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens today'**
+  String get exploreCapsuleOpensToday;
+
+  /// Explore time capsules card: opened in the last 30 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently opened'**
+  String get exploreCapsulesRecent;
+
+  /// Explore time capsules card: none yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No time capsules yet. Seal an entry when you publish it to send it to your future self.'**
+  String get exploreCapsulesEmpty;
+
+  /// Explore notebooks card: none yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notebooks yet'**
+  String get exploreNotebooksEmpty;
+
+  /// Explore notebooks card: open the manager (tooltip).
+  ///
+  /// In en, this message translates to:
+  /// **'Manage notebooks'**
+  String get exploreNotebooksManage;
+
+  /// Explore drafts card: number of drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 draft} other{{count} drafts}} waiting'**
+  String exploreDraftsCount(int count);
+
+  /// Explore drafts card: continue button.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get exploreDraftsContinue;
+
+  /// Explore drafts card: manage button.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get exploreDraftsManage;
+
+  /// Explore header button and customize page title: Customize Explore.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Explore'**
+  String get exploreCustomize;
+
+  /// Explore card long-press menu: Card settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Card settings'**
+  String get exploreModuleMenuSettings;
+
+  /// Explore card group (customize page): Memories & ideas.
+  ///
+  /// In en, this message translates to:
+  /// **'Memories & ideas'**
+  String get exploreGroupRecall;
+
+  /// Explore card group (customize page): Charts.
+  ///
+  /// In en, this message translates to:
+  /// **'Charts'**
+  String get exploreGroupStats;
+
+  /// Explore card group (customize page): Life log.
+  ///
+  /// In en, this message translates to:
+  /// **'Life log'**
+  String get exploreGroupLife;
+
+  /// Explore card group (customize page): Linked features.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked features'**
+  String get exploreGroupLinked;
+
+  /// Customize Explore tab: Presets.
+  ///
+  /// In en, this message translates to:
+  /// **'Presets'**
+  String get exploreLayoutTabPresets;
+
+  /// Customize Explore tab: Cards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get exploreLayoutTabCards;
+
+  /// Customize Explore tab: Appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get exploreLayoutTabAppearance;
+
+  /// Customize Explore tab: Range.
+  ///
+  /// In en, this message translates to:
+  /// **'Range'**
+  String get exploreLayoutTabRange;
+
+  /// Customize Explore: snack bar after reset (with undo): Restored the default layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored the default layout'**
+  String get exploreLayoutResetDone;
+
+  /// Customize Explore cards tab hint: Drag a handle to reorder; tap a row to see its options..
+  ///
+  /// In en, this message translates to:
+  /// **'Drag a handle to reorder; tap a row to see its options.'**
+  String get exploreLayoutCardsHint;
+
+  /// Customize Explore cards tab button: Show all.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get exploreLayoutCardsShowAll;
+
+  /// Customize Explore cards tab button: Default order.
+  ///
+  /// In en, this message translates to:
+  /// **'Default order'**
+  String get exploreLayoutCardsDefaultOrder;
+
+  /// Customize Explore: the card's feature is off: Turned off in Features.
+  ///
+  /// In en, this message translates to:
+  /// **'Turned off in Features'**
+  String get exploreLayoutFeatureOff;
+
+  /// Customize Explore: drag handle label for screen readers.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder {name}'**
+  String exploreLayoutDragHandle(String name);
+
+  /// Customize Explore: show switch label for screen readers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show “{name}”'**
+  String exploreLayoutShowModule(String name);
+
+  /// Customize Explore: ordered multi-select hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown in the order you pick them, up to {max}'**
+  String exploreLayoutMultiHint(int max);
+
+  /// Customize Explore: card width option: Width on wide screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Width on wide screens'**
+  String get exploreLayoutSpan;
+
+  /// Customize Explore: card takes a full row: Full row.
+  ///
+  /// In en, this message translates to:
+  /// **'Full row'**
+  String get exploreLayoutSpanFull;
+
+  /// Customize Explore: card takes one column: Half.
+  ///
+  /// In en, this message translates to:
+  /// **'Half'**
+  String get exploreLayoutSpanHalf;
+
+  /// Customize Explore preview: use my entries: My data.
+  ///
+  /// In en, this message translates to:
+  /// **'My data'**
+  String get exploreLayoutPreviewMine;
+
+  /// Customize Explore preview: use sample entries: Sample data.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample data'**
+  String get exploreLayoutPreviewSample;
+
+  /// Customize Explore: layout matches no preset or saved layout: Custom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get exploreLayoutCustom;
+
+  /// Customize Explore sample entry location: Home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get exploreSamplePlaceHome;
+
+  /// Customize Explore sample entry location: Office.
+  ///
+  /// In en, this message translates to:
+  /// **'Office'**
+  String get exploreSamplePlaceOffice;
+
+  /// Settings → Appearance: Explore page entry: Explore page.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore page'**
+  String get settingsExploreLayout;
+
+  /// Settings → Appearance: Explore entry subtitle (current layout name).
+  ///
+  /// In en, this message translates to:
+  /// **'Current: {name}'**
+  String settingsExploreLayoutSubtitle(String name);
+
+  /// Customize Explore: card option title: Lunar date.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar date'**
+  String get exploreOptLunar;
+
+  /// Customize Explore: card option title: Daily prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily prompt'**
+  String get exploreOptPrompt;
+
+  /// Customize Explore: card option title: Write button.
+  ///
+  /// In en, this message translates to:
+  /// **'Write button'**
+  String get exploreOptWrite;
+
+  /// Customize Explore: card option title: Match.
+  ///
+  /// In en, this message translates to:
+  /// **'Match'**
+  String get exploreOptMatch;
+
+  /// Customize Explore: card option title: Style.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get exploreOptStyle;
+
+  /// Customize Explore: card option title: How many.
+  ///
+  /// In en, this message translates to:
+  /// **'How many'**
+  String get exploreOptCount;
+
+  /// Customize Explore: card option title: Pick from.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick from'**
+  String get exploreOptSource;
+
+  /// Customize Explore: card option title: Only entries with a cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Only entries with a cover'**
+  String get exploreOptPhotosOnly;
+
+  /// Customize Explore: card option title: Same pick all day.
+  ///
+  /// In en, this message translates to:
+  /// **'Same pick all day'**
+  String get exploreOptDaily;
+
+  /// Customize Explore: card option title: Period.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get exploreOptRecapPeriod;
+
+  /// Customize Explore: card option title: Compare with last time.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare with last time'**
+  String get exploreOptCompare;
+
+  /// Customize Explore: card option title: Milestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get exploreOptKinds;
+
+  /// Customize Explore: card option title: Show how many reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Show how many reached'**
+  String get exploreOptAchieved;
+
+  /// Customize Explore: card option title: Metrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Metrics'**
+  String get exploreOptMetrics;
+
+  /// Customize Explore: card option title: Columns.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns'**
+  String get exploreOptColumns;
+
+  /// Customize Explore: card option title: Span.
+  ///
+  /// In en, this message translates to:
+  /// **'Span'**
+  String get exploreOptHeatmapSpan;
+
+  /// Customize Explore: card option title: Color by.
+  ///
+  /// In en, this message translates to:
+  /// **'Color by'**
+  String get exploreOptBasis;
+
+  /// Customize Explore: card option title: Weekday labels.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekday labels'**
+  String get exploreOptWeekdayLabels;
+
+  /// Customize Explore: card option title: Legend.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend'**
+  String get exploreOptLegend;
+
+  /// Customize Explore: card option title: Group by.
+  ///
+  /// In en, this message translates to:
+  /// **'Group by'**
+  String get exploreOptUnit;
+
+  /// Customize Explore: card option title: Count.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get exploreOptMetric;
+
+  /// Customize Explore: card option title: Time of day.
+  ///
+  /// In en, this message translates to:
+  /// **'Time of day'**
+  String get exploreOptTimeOfDay;
+
+  /// Customize Explore: card option title: Weekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get exploreOptWeekdays;
+
+  /// Customize Explore: card option title: Range.
+  ///
+  /// In en, this message translates to:
+  /// **'Range'**
+  String get exploreOptDays;
+
+  /// Customize Explore: card option title: Chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Chart'**
+  String get exploreOptChart;
+
+  /// Customize Explore: card option title: Include day moods.
+  ///
+  /// In en, this message translates to:
+  /// **'Include day moods'**
+  String get exploreOptDayMoods;
+
+  /// Customize Explore: card option title: Sort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get exploreOptSort;
+
+  /// Customize Explore: card option title: Show percentages.
+  ///
+  /// In en, this message translates to:
+  /// **'Show percentages'**
+  String get exploreOptPercent;
+
+  /// Customize Explore: card option title: Include photos in entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Include photos in entries'**
+  String get exploreOptInline;
+
+  /// Customize Explore: card option title: Show recently opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Show recently opened'**
+  String get exploreOptRecent;
+
+  /// Customize Explore: option value: Follow language.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow language'**
+  String get exploreValFollowLanguage;
+
+  /// Customize Explore: option value: Show.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get exploreValShow;
+
+  /// Customize Explore: option value: Hide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get exploreValHide;
+
+  /// Customize Explore: option value: Same day.
+  ///
+  /// In en, this message translates to:
+  /// **'Same day'**
+  String get exploreValSameDay;
+
+  /// Customize Explore: option value: Within 3 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Within 3 days'**
+  String get exploreValNearby;
+
+  /// Customize Explore: option value: Same month.
+  ///
+  /// In en, this message translates to:
+  /// **'Same month'**
+  String get exploreValSameMonth;
+
+  /// Customize Explore: option value: Carousel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carousel'**
+  String get exploreValCarousel;
+
+  /// Customize Explore: option value: List.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get exploreValList;
+
+  /// Customize Explore: option value: All.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get exploreValAll;
+
+  /// Customize Explore: option value: Over a month ago.
+  ///
+  /// In en, this message translates to:
+  /// **'Over a month ago'**
+  String get exploreValMonthAgo;
+
+  /// Customize Explore: option value: Over a year ago.
+  ///
+  /// In en, this message translates to:
+  /// **'Over a year ago'**
+  String get exploreValYearAgo;
+
+  /// Customize Explore: option value: 12 weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'12 weeks'**
+  String get exploreValWeeks12;
+
+  /// Customize Explore: option value: Half a year.
+  ///
+  /// In en, this message translates to:
+  /// **'Half a year'**
+  String get exploreValHalfYear;
+
+  /// Customize Explore: option value: A year.
+  ///
+  /// In en, this message translates to:
+  /// **'A year'**
+  String get exploreValYear;
+
+  /// Customize Explore: option value: Entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get exploreValEntries;
+
+  /// Customize Explore: option value: Words.
+  ///
+  /// In en, this message translates to:
+  /// **'Words'**
+  String get exploreValWords;
+
+  /// Customize Explore: option value: Mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get exploreValMood;
+
+  /// Customize Explore: option value: Monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get exploreValByMonth;
+
+  /// Customize Explore: option value: Weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get exploreValByWeek;
+
+  /// Customize Explore: option value: Daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get exploreValByDay;
+
+  /// Customize Explore: option value: Pixels.
+  ///
+  /// In en, this message translates to:
+  /// **'Pixels'**
+  String get exploreValPixels;
+
+  /// Customize Explore: option value: Line.
+  ///
+  /// In en, this message translates to:
+  /// **'Line'**
+  String get exploreValLine;
+
+  /// Customize Explore: option value: Bars.
+  ///
+  /// In en, this message translates to:
+  /// **'Bars'**
+  String get exploreValBars;
+
+  /// Customize Explore: option value: By count.
+  ///
+  /// In en, this message translates to:
+  /// **'By count'**
+  String get exploreValByCount;
+
+  /// Customize Explore: option value: By mood.
+  ///
+  /// In en, this message translates to:
+  /// **'By mood'**
+  String get exploreValByMood;
+
+  /// Customize Explore: option value: Ranking.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranking'**
+  String get exploreValRanking;
+
+  /// Customize Explore: option value: Custom order.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom order'**
+  String get exploreValManual;
+
+  /// Customize Explore: option value: Recent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get exploreValRecent;
+
+  /// Customize Explore: option value: Strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Strip'**
+  String get exploreValStrip;
+
+  /// Customize Explore: option value: Grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get exploreValGrid;
+
+  /// Customize Explore: option value: Mosaic.
+  ///
+  /// In en, this message translates to:
+  /// **'Mosaic'**
+  String get exploreValMosaic;
+
+  /// Customize Explore: option value: Icons.
+  ///
+  /// In en, this message translates to:
+  /// **'Icons'**
+  String get exploreValIcons;
+
+  /// Customize Explore: option value: Shelf order.
+  ///
+  /// In en, this message translates to:
+  /// **'Shelf order'**
+  String get exploreValShelf;
+
+  /// Customize Explore: option value: Recently updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently updated'**
+  String get exploreValUpdated;
+
+  /// Customize Explore: option value: By entries.
+  ///
+  /// In en, this message translates to:
+  /// **'By entries'**
+  String get exploreValByEntries;
+
+  /// Customize Explore: option value: Auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get exploreValAuto;
+
+  /// Customize Explore: number of columns.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 column} other{{count} columns}}'**
+  String exploreValColumns(int count);
+
+  /// Customize Explore: built-in layout name: Balanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get explorePresetBalanced;
+
+  /// Customize Explore: built-in layout description: The everyday set: a quick look at how things are going.
+  ///
+  /// In en, this message translates to:
+  /// **'The everyday set: a quick look at how things are going'**
+  String get explorePresetBalancedDesc;
+
+  /// Customize Explore: built-in layout name: Minimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get explorePresetMinimal;
+
+  /// Customize Explore: built-in layout description: Just the greeting, memories, numbers and photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Just the greeting, memories, numbers and photos'**
+  String get explorePresetMinimalDesc;
+
+  /// Customize Explore: built-in layout name: Data lover.
+  ///
+  /// In en, this message translates to:
+  /// **'Data lover'**
+  String get explorePresetDataLover;
+
+  /// Customize Explore: built-in layout description: Every chart: heatmap, rhythm, habits, mood and energy.
+  ///
+  /// In en, this message translates to:
+  /// **'Every chart: heatmap, rhythm, habits, mood and energy'**
+  String get explorePresetDataLoverDesc;
+
+  /// Customize Explore: built-in layout name: Memories.
+  ///
+  /// In en, this message translates to:
+  /// **'Memories'**
+  String get explorePresetMemories;
+
+  /// Customize Explore: built-in layout description: On this day, random memories, recaps, capsules and anniversaries.
+  ///
+  /// In en, this message translates to:
+  /// **'On this day, random memories, recaps, capsules and anniversaries'**
+  String get explorePresetMemoriesDesc;
+
+  /// Customize Explore: built-in layout name: Everything.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything'**
+  String get explorePresetEverything;
+
+  /// Customize Explore: built-in layout description: All 20 cards switched on.
+  ///
+  /// In en, this message translates to:
+  /// **'All 20 cards switched on'**
+  String get explorePresetEverythingDesc;
+
+  /// Customize Explore appearance tab: Cards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get exploreLookCards;
+
+  /// Customize Explore appearance tab: Density.
+  ///
+  /// In en, this message translates to:
+  /// **'Density'**
+  String get exploreLookDensity;
+
+  /// Customize Explore appearance tab: Compact.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get exploreLookCompact;
+
+  /// Customize Explore appearance tab: Standard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get exploreLookStandard;
+
+  /// Customize Explore appearance tab: Relaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get exploreLookRelaxed;
+
+  /// Customize Explore appearance tab: Corner radius.
+  ///
+  /// In en, this message translates to:
+  /// **'Corner radius'**
+  String get exploreLookRadius;
+
+  /// Customize Explore appearance tab: Surface.
+  ///
+  /// In en, this message translates to:
+  /// **'Surface'**
+  String get exploreLookSurface;
+
+  /// Customize Explore appearance tab: Filled.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled'**
+  String get exploreLookFilled;
+
+  /// Customize Explore appearance tab: Tonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonal'**
+  String get exploreLookTonal;
+
+  /// Customize Explore appearance tab: Outlined.
+  ///
+  /// In en, this message translates to:
+  /// **'Outlined'**
+  String get exploreLookOutlined;
+
+  /// Customize Explore appearance tab: With the glass material, cards are always glass..
+  ///
+  /// In en, this message translates to:
+  /// **'With the glass material, cards are always glass.'**
+  String get exploreLookSurfaceGlassNote;
+
+  /// Customize Explore appearance tab: Accent.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get exploreLookAccent;
+
+  /// Customize Explore appearance tab: Primary.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary'**
+  String get exploreLookPrimary;
+
+  /// Customize Explore appearance tab: Secondary.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary'**
+  String get exploreLookSecondary;
+
+  /// Customize Explore appearance tab: Tertiary.
+  ///
+  /// In en, this message translates to:
+  /// **'Tertiary'**
+  String get exploreLookTertiary;
+
+  /// Customize Explore appearance tab: Titles & numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles & numbers'**
+  String get exploreLookText;
+
+  /// Customize Explore appearance tab: Card titles.
+  ///
+  /// In en, this message translates to:
+  /// **'Card titles'**
+  String get exploreLookHeading;
+
+  /// Customize Explore appearance tab: Badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge'**
+  String get exploreLookBadge;
+
+  /// Customize Explore appearance tab: Icon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get exploreLookIcon;
+
+  /// Customize Explore appearance tab: Text.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get exploreLookTextOnly;
+
+  /// Customize Explore appearance tab: Hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get exploreLookHidden;
+
+  /// Customize Explore appearance tab: Abbreviate large numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Abbreviate large numbers'**
+  String get exploreLookCompactNumbers;
+
+  /// Customize Explore appearance tab: Show 12,345 as 12K.
+  ///
+  /// In en, this message translates to:
+  /// **'Show 12,345 as 12K'**
+  String get exploreLookCompactNumbersSubtitle;
+
+  /// Customize Explore appearance tab: Chart animations.
+  ///
+  /// In en, this message translates to:
+  /// **'Chart animations'**
+  String get exploreLookAnimations;
+
+  /// Customize Explore appearance tab: Charts grow and numbers count up when shown.
+  ///
+  /// In en, this message translates to:
+  /// **'Charts grow and numbers count up when shown'**
+  String get exploreLookAnimationsSubtitle;
+
+  /// Customize Explore appearance tab: Wide screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Wide screens'**
+  String get exploreLookWide;
+
+  /// Customize Explore appearance tab: Narrow screens such as phones always use one column..
+  ///
+  /// In en, this message translates to:
+  /// **'Narrow screens such as phones always use one column.'**
+  String get exploreLookWideFooter;
+
+  /// Customize Explore appearance tab: Columns.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns'**
+  String get exploreLookColumns;
+
+  /// Customize Explore appearance tab: Arrangement.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrangement'**
+  String get exploreLookFlow;
+
+  /// Customize Explore appearance tab: Rows.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows'**
+  String get exploreLookRows;
+
+  /// Customize Explore appearance tab: Staggered.
+  ///
+  /// In en, this message translates to:
+  /// **'Staggered'**
+  String get exploreLookStaggered;
+
+  /// Customize Explore range tab switch: Show the range bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the range bar'**
+  String get exploreRangeBar;
+
+  /// Customize Explore range tab switch subtitle: Switch between this week, month, year and all time at the top of Explore.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between this week, month, year and all time at the top of Explore'**
+  String get exploreRangeBarSubtitle;
+
+  /// Customize Explore range tab: current range: Range.
+  ///
+  /// In en, this message translates to:
+  /// **'Range'**
+  String get exploreRangeCurrent;
+
+  /// Customize Explore range tab footer: The range applies to the dashboard, tags, writing habits, mood breakdown, places and weather; other cards have their own time spans..
+  ///
+  /// In en, this message translates to:
+  /// **'The range applies to the dashboard, tags, writing habits, mood breakdown, places and weather; other cards have their own time spans.'**
+  String get exploreRangeFooter;
+
+  /// Weather of a sample entry in the Explore customize preview: Sunny.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunny'**
+  String get exploreSampleWeatherSunny;
+
+  /// Weather of a sample entry in the Explore customize preview: Cloudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudy'**
+  String get exploreSampleWeatherCloudy;
+
+  /// Weather of a sample entry in the Explore customize preview: Overcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Overcast'**
+  String get exploreSampleWeatherOvercast;
+
+  /// Weather of a sample entry in the Explore customize preview: Light rain.
+  ///
+  /// In en, this message translates to:
+  /// **'Light rain'**
+  String get exploreSampleWeatherRain;
+
+  /// Weather of a sample entry in the Explore customize preview: Fog.
+  ///
+  /// In en, this message translates to:
+  /// **'Fog'**
+  String get exploreSampleWeatherFog;
 }
 
 class _AppLocalizationsDelegate

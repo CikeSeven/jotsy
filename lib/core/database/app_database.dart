@@ -36,6 +36,7 @@ part 'app_database_notebook_schema.dart';
 part 'app_database_notebook_ops.dart';
 part 'app_database_notebook_entry_ops.dart';
 part 'app_database_notebook_stats_ops.dart';
+part 'app_database_explore_ops.dart';
 part 'app_database_notebook_hierarchy.dart';
 part 'app_database_notebook_tree_ops.dart';
 part 'app_database_day_mood_schema.dart';
@@ -68,6 +69,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseNotebookTreeOps,
         _AppDatabaseNotebookOps,
         _AppDatabaseNotebookStatsOps,
+        _AppDatabaseExploreOps,
         _AppDatabaseDayMoodOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());

@@ -79,6 +79,7 @@ class SettingsService {
     required String? diaryTemplatePrefsRaw,
     required String? diarySavedColorsRaw,
     required String? appFeaturesRaw,
+    required String? exploreLayoutRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
@@ -131,7 +132,8 @@ class SettingsService {
        diarySavedColorsRawNotifier = ValueNotifier<String?>(
          diarySavedColorsRaw,
        ),
-       appFeaturesRawNotifier = ValueNotifier<String?>(appFeaturesRaw);
+       appFeaturesRawNotifier = ValueNotifier<String?>(appFeaturesRaw),
+       exploreLayoutRawNotifier = ValueNotifier<String?>(exploreLayoutRaw);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -203,6 +205,10 @@ class SettingsService {
   /// 回滚）时立即重建。
   final ValueNotifier<String?> appFeaturesRawNotifier;
 
+  /// 探索页布局（单个 JSON 字符串：卡片顺序与设置、外观、我的布局与统计
+  /// 范围）；解析与默认值由 `ExploreSettings` 负责，服务层只保存原文。
+  final ValueNotifier<String?> exploreLayoutRawNotifier;
+
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
@@ -244,6 +250,7 @@ class SettingsService {
   static const _keyDiaryShareOptions = 'app.settings.diary_share_options';
   static const _keyDiaryExportOptions = 'app.settings.diary_export_options';
   static const _keyAppFeatures = 'app.settings.app_features';
+  static const _keyExploreLayout = 'app.settings.explore_layout';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyTagPickerSort = 'app.settings.tag_picker_sort';
@@ -311,6 +318,7 @@ class SettingsService {
     final storedDiaryTemplatePrefs = prefs.get(_keyDiaryTemplatePrefs);
     final storedDiarySavedColors = prefs.get(_keyDiarySavedColors);
     final storedAppFeatures = prefs.get(_keyAppFeatures);
+    final storedExploreLayout = prefs.get(_keyExploreLayout);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -356,6 +364,9 @@ class SettingsService {
           ? storedDiarySavedColors
           : null,
       appFeaturesRaw: storedAppFeatures is String ? storedAppFeatures : null,
+      exploreLayoutRaw: storedExploreLayout is String
+          ? storedExploreLayout
+          : null,
     );
   }
 
@@ -418,6 +429,7 @@ class SettingsService {
 
   String? get diarySavedColorsRaw => diarySavedColorsRawNotifier.value;
   String? get appFeaturesRaw => appFeaturesRawNotifier.value;
+  String? get exploreLayoutRaw => exploreLayoutRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
@@ -636,6 +648,18 @@ class SettingsService {
     }
     appFeaturesRawNotifier.value = normalized;
     await _writePreference(_prefs.setString(_keyAppFeatures, normalized));
+  }
+
+  /// 保存探索页布局；空值移除该键，回到默认布局与“全部”统计范围。
+  Future<void> setExploreLayoutRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      exploreLayoutRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyExploreLayout));
+      return;
+    }
+    exploreLayoutRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyExploreLayout, normalized));
   }
 
   /// 保存颜色面板的“我的颜色”；空值移除该键（什么都没存）。

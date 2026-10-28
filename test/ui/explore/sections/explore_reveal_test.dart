@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/explore/sections/explore_insight_card.dart';
+import 'package:node_diary/ui/explore/models/explore_layout.dart';
+import 'package:node_diary/ui/explore/models/explore_module_data.dart';
+import 'package:node_diary/ui/explore/models/explore_module_id.dart';
+import 'package:node_diary/ui/explore/sections/explore_mood_cards.dart';
 import 'package:node_diary/ui/explore/widgets/explore_shared_widgets.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -82,13 +85,20 @@ void main() {
       return tallest;
     }
 
+    final today = DateTime(2026, 10, 28);
     await tester.pumpWidget(
       _host(
         SizedBox(
           width: 360,
-          child: ExploreInsightCard(
-            moodWeights30: List<double?>.filled(30, 4),
-            energyValues7: List<double?>.filled(7, 5),
+          child: ExploreEnergyCard(
+            config: ExploreLayout.defaults.module(ExploreModuleId.energy),
+            series: <ExploreDayValue>[
+              for (var i = 6; i >= 0; i--)
+                ExploreDayValue(
+                  DateTime(today.year, today.month, today.day - i),
+                  5,
+                ),
+            ],
           ),
         ),
       ),

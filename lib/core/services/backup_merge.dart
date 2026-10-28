@@ -21,6 +21,9 @@ import 'backup_payload.dart';
 /// - 纪念日按 anniversaryId 匹配：本机没有的新增，本机已有的按导入方式保留
 ///   或替换；关联的日记存业务 id，日记换了本地 id 也不影响；
 /// - 这天的心情按日期匹配：本机没有的新增，本机已有的按导入方式保留或替换；
+/// - 日记留言按 commentId 匹配：本机没有的新增（包括本机保留了自己版本的
+///   日记——留言只会越合越全），本机已有的按导入方式保留或替换；所属日记
+///   存业务 id，日记换了本地 id 也不影响；
 /// - 日记模板按 templateId 匹配：两种合并方式都只新增本机没有的模板，接在
 ///   “我的模板”最后，**从不覆盖**本机已有的模板——模板是写作习惯的配置，
 ///   本机那份往往是刻意改过的；只有覆盖全部恢复才整表换掉；
@@ -171,6 +174,7 @@ class BackupMerge {
     );
     final addedTemplates = await _mergeTemplates(db, payload.diaryTemplates);
     final dayMoods = await _mergeDayMoods(db, payload.dayMoods, mode);
+    final comments = await _mergeDiaryComments(db, payload.diaryComments, mode);
 
     return BackupImportResult(
       mode: mode,
@@ -184,7 +188,49 @@ class BackupMerge {
       addedNotebooks: addedNotebooks,
       addedDayMoods: dayMoods.added,
       replacedDayMoods: dayMoods.replaced,
+      addedComments: comments.added,
+      replacedComments: comments.replaced,
     );
+  }
+
+  /// 日记留言并入本机：按 commentId 匹配，本机没有的新增（去掉文件里的本地
+  /// id）；本机已有的，合并保留本机的，合并并覆盖整行换成文件里的（保留
+  /// 本机 id）。
+  ///
+  /// 载荷里的留言都属于载荷里的日记（见 `BackupPayload._withRestorableRelations`），
+  /// 而载荷里的每篇日记合并后在本机都有——新增、替换或保留本机版本——所以
+  /// 每条留言都有地方显示，不必再按日记过滤。
+  Future<({int added, int replaced})> _mergeDiaryComments(
+    AppDatabase db,
+    List<DiaryCommentRow> incoming,
+    BackupImportMode mode,
+  ) async {
+    if (incoming.isEmpty) return (added: 0, replaced: 0);
+    final table = db.diaryComments;
+    final localIds = <String, int>{
+      for (final row in await (db.selectOnly(
+        table,
+      )..addColumns([table.id, table.commentId])).get())
+        row.read(table.commentId)!: row.read(table.id)!,
+    };
+    var added = 0;
+    var replaced = 0;
+    for (final row in incoming) {
+      final companion = row
+          .toCompanion(false)
+          .copyWith(id: const Value.absent());
+      final localId = localIds[row.commentId];
+      if (localId == null) {
+        await db.into(table).insert(companion);
+        added++;
+      } else if (mode == BackupImportMode.mergeOverwrite) {
+        await (db.update(
+          table,
+        )..where((t) => t.id.equals(localId))).write(companion);
+        replaced++;
+      }
+    }
+    return (added: added, replaced: replaced);
   }
 
   /// 这天的心情并入本机：按日期匹配，本机没有的那天新增；本机那天已有心情

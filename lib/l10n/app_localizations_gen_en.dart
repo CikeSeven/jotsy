@@ -10263,4 +10263,202 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exploreSampleWeatherFog => 'Fog';
+
+  @override
+  String get settingsFeaturesComments => 'Comments';
+
+  @override
+  String get settingsFeaturesCommentsSubtitle =>
+      'Leave notes at the end of a diary when you reread it; the entry stays as written';
+
+  @override
+  String diaryCommentsHeading(int count) {
+    return 'Comments · $count';
+  }
+
+  @override
+  String get diaryCommentsWrite => 'Write a comment…';
+
+  @override
+  String diaryCommentsExpand(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count more',
+      one: 'Show 1 more',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryCommentsCollapse => 'Show less';
+
+  @override
+  String get diaryCommentEdited => 'Edited';
+
+  @override
+  String get diaryCommentSameDay => 'Same day';
+
+  @override
+  String diaryCommentDaysLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days later',
+      one: '1 day later',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryCommentMonthsLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count months later',
+      one: '1 month later',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryCommentYearsLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years later',
+      one: '1 year later',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryCommentYearsMonthsLater(int years, int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      years,
+      locale: localeName,
+      other: '$years years',
+      one: '1 year',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months months',
+      one: '1 month',
+    );
+    return '$_temp0, $_temp1 later';
+  }
+
+  @override
+  String get diaryCommentSheetNew => 'Write a comment';
+
+  @override
+  String get diaryCommentSheetEdit => 'Edit comment';
+
+  @override
+  String get diaryCommentHint => 'Anything to tell the you who wrote this…';
+
+  @override
+  String get diaryCommentMoodLabel => 'Mood';
+
+  @override
+  String get diaryCommentMoodOptional => 'Optional';
+
+  @override
+  String get diaryCommentCopy => 'Copy';
+
+  @override
+  String get diaryCommentCopied => 'Comment copied';
+
+  @override
+  String get diaryCommentDeleted => 'Comment deleted';
+
+  @override
+  String get diaryCommentSaveFailed => 'Couldn\'t save the comment. Try again.';
+
+  @override
+  String get diaryCommentActionsHint => 'edit, copy or delete';
+
+  @override
+  String diaryCommentsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count comments',
+      one: '1 comment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryPreviewStyleShowComments => 'Comment count';
+
+  @override
+  String get diaryCardStyleShowComments => 'Comment count';
+
+  @override
+  String diarySearchCommentHit(String text) {
+    return 'Mentioned in a comment: $text';
+  }
+
+  @override
+  String get exploreModuleComments => 'Recent comments';
+
+  @override
+  String get exploreModuleCommentsDesc =>
+      'Your latest comments and how you look back';
+
+  @override
+  String exploreCommentsDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'on $count diaries',
+      one: 'on 1 diary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exploreCommentsAverageGap(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'looked back after $days days on average',
+      one: 'looked back after 1 day on average',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exploreCommentsEmpty =>
+      'Write your first comment at the end of a diary';
+
+  @override
+  String get exploreSampleComment =>
+      'Thanks to the me who didn\'t give up back then.';
+
+  @override
+  String get diaryPreviewSampleComment1 =>
+      'Looking back, that day wasn\'t so bad after all.';
+
+  @override
+  String get diaryPreviewSampleComment2 =>
+      'I did end up going, and it was even better than I imagined.';
+
+  @override
+  String get diaryExportIncludeComments => 'Include comments';
+
+  @override
+  String get diaryExportCommentsHeading => 'Comments';
+
+  @override
+  String backupImportCommentMergeResult(int added) {
+    return 'Comments: $added added';
+  }
+
+  @override
+  String backupImportCommentOverwriteResult(int added, int replaced) {
+    return 'Comments: $added added, $replaced overwritten';
+  }
 }

@@ -16,6 +16,7 @@ class _EmptyDatabase extends AppDatabase {
     int offset = 0,
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
+    bool matchComments = false,
   }) => Stream<List<DiaryWithTags>>.value(const <DiaryWithTags>[]);
 }
 

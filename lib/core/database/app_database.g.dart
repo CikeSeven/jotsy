@@ -4420,6 +4420,452 @@ class DayMoodsCompanion extends UpdateCompanion<DayMoodRow> {
   }
 }
 
+class $DiaryCommentsTable extends DiaryComments
+    with TableInfo<$DiaryCommentsTable, DiaryCommentRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DiaryCommentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _commentIdMeta = const VerificationMeta(
+    'commentId',
+  );
+  @override
+  late final GeneratedColumn<String> commentId = GeneratedColumn<String>(
+    'comment_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _diaryIdMeta = const VerificationMeta(
+    'diaryId',
+  );
+  @override
+  late final GeneratedColumn<String> diaryId = GeneratedColumn<String>(
+    'diary_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _moodMeta = const VerificationMeta('mood');
+  @override
+  late final GeneratedColumn<String> mood = GeneratedColumn<String>(
+    'mood',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _editedAtMeta = const VerificationMeta(
+    'editedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> editedAt = GeneratedColumn<DateTime>(
+    'edited_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    commentId,
+    diaryId,
+    content,
+    mood,
+    createdAt,
+    editedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'diary_comments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DiaryCommentRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('comment_id')) {
+      context.handle(
+        _commentIdMeta,
+        commentId.isAcceptableOrUnknown(data['comment_id']!, _commentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_commentIdMeta);
+    }
+    if (data.containsKey('diary_id')) {
+      context.handle(
+        _diaryIdMeta,
+        diaryId.isAcceptableOrUnknown(data['diary_id']!, _diaryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaryIdMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('mood')) {
+      context.handle(
+        _moodMeta,
+        mood.isAcceptableOrUnknown(data['mood']!, _moodMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('edited_at')) {
+      context.handle(
+        _editedAtMeta,
+        editedAt.isAcceptableOrUnknown(data['edited_at']!, _editedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DiaryCommentRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DiaryCommentRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      commentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}comment_id'],
+      )!,
+      diaryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}diary_id'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      mood: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mood'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      editedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}edited_at'],
+      ),
+    );
+  }
+
+  @override
+  $DiaryCommentsTable createAlias(String alias) {
+    return $DiaryCommentsTable(attachedDatabase, alias);
+  }
+}
+
+class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
+  final int id;
+  final String commentId;
+  final String diaryId;
+  final String content;
+  final String? mood;
+  final DateTime createdAt;
+  final DateTime? editedAt;
+  const DiaryCommentRow({
+    required this.id,
+    required this.commentId,
+    required this.diaryId,
+    required this.content,
+    this.mood,
+    required this.createdAt,
+    this.editedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['comment_id'] = Variable<String>(commentId);
+    map['diary_id'] = Variable<String>(diaryId);
+    map['content'] = Variable<String>(content);
+    if (!nullToAbsent || mood != null) {
+      map['mood'] = Variable<String>(mood);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || editedAt != null) {
+      map['edited_at'] = Variable<DateTime>(editedAt);
+    }
+    return map;
+  }
+
+  DiaryCommentsCompanion toCompanion(bool nullToAbsent) {
+    return DiaryCommentsCompanion(
+      id: Value(id),
+      commentId: Value(commentId),
+      diaryId: Value(diaryId),
+      content: Value(content),
+      mood: mood == null && nullToAbsent ? const Value.absent() : Value(mood),
+      createdAt: Value(createdAt),
+      editedAt: editedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(editedAt),
+    );
+  }
+
+  factory DiaryCommentRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DiaryCommentRow(
+      id: serializer.fromJson<int>(json['id']),
+      commentId: serializer.fromJson<String>(json['commentId']),
+      diaryId: serializer.fromJson<String>(json['diaryId']),
+      content: serializer.fromJson<String>(json['content']),
+      mood: serializer.fromJson<String?>(json['mood']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      editedAt: serializer.fromJson<DateTime?>(json['editedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'commentId': serializer.toJson<String>(commentId),
+      'diaryId': serializer.toJson<String>(diaryId),
+      'content': serializer.toJson<String>(content),
+      'mood': serializer.toJson<String?>(mood),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'editedAt': serializer.toJson<DateTime?>(editedAt),
+    };
+  }
+
+  DiaryCommentRow copyWith({
+    int? id,
+    String? commentId,
+    String? diaryId,
+    String? content,
+    Value<String?> mood = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> editedAt = const Value.absent(),
+  }) => DiaryCommentRow(
+    id: id ?? this.id,
+    commentId: commentId ?? this.commentId,
+    diaryId: diaryId ?? this.diaryId,
+    content: content ?? this.content,
+    mood: mood.present ? mood.value : this.mood,
+    createdAt: createdAt ?? this.createdAt,
+    editedAt: editedAt.present ? editedAt.value : this.editedAt,
+  );
+  DiaryCommentRow copyWithCompanion(DiaryCommentsCompanion data) {
+    return DiaryCommentRow(
+      id: data.id.present ? data.id.value : this.id,
+      commentId: data.commentId.present ? data.commentId.value : this.commentId,
+      diaryId: data.diaryId.present ? data.diaryId.value : this.diaryId,
+      content: data.content.present ? data.content.value : this.content,
+      mood: data.mood.present ? data.mood.value : this.mood,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      editedAt: data.editedAt.present ? data.editedAt.value : this.editedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DiaryCommentRow(')
+          ..write('id: $id, ')
+          ..write('commentId: $commentId, ')
+          ..write('diaryId: $diaryId, ')
+          ..write('content: $content, ')
+          ..write('mood: $mood, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('editedAt: $editedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, commentId, diaryId, content, mood, createdAt, editedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DiaryCommentRow &&
+          other.id == this.id &&
+          other.commentId == this.commentId &&
+          other.diaryId == this.diaryId &&
+          other.content == this.content &&
+          other.mood == this.mood &&
+          other.createdAt == this.createdAt &&
+          other.editedAt == this.editedAt);
+}
+
+class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
+  final Value<int> id;
+  final Value<String> commentId;
+  final Value<String> diaryId;
+  final Value<String> content;
+  final Value<String?> mood;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> editedAt;
+  const DiaryCommentsCompanion({
+    this.id = const Value.absent(),
+    this.commentId = const Value.absent(),
+    this.diaryId = const Value.absent(),
+    this.content = const Value.absent(),
+    this.mood = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.editedAt = const Value.absent(),
+  });
+  DiaryCommentsCompanion.insert({
+    this.id = const Value.absent(),
+    required String commentId,
+    required String diaryId,
+    required String content,
+    this.mood = const Value.absent(),
+    required DateTime createdAt,
+    this.editedAt = const Value.absent(),
+  }) : commentId = Value(commentId),
+       diaryId = Value(diaryId),
+       content = Value(content),
+       createdAt = Value(createdAt);
+  static Insertable<DiaryCommentRow> custom({
+    Expression<int>? id,
+    Expression<String>? commentId,
+    Expression<String>? diaryId,
+    Expression<String>? content,
+    Expression<String>? mood,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? editedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (commentId != null) 'comment_id': commentId,
+      if (diaryId != null) 'diary_id': diaryId,
+      if (content != null) 'content': content,
+      if (mood != null) 'mood': mood,
+      if (createdAt != null) 'created_at': createdAt,
+      if (editedAt != null) 'edited_at': editedAt,
+    });
+  }
+
+  DiaryCommentsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? commentId,
+    Value<String>? diaryId,
+    Value<String>? content,
+    Value<String?>? mood,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? editedAt,
+  }) {
+    return DiaryCommentsCompanion(
+      id: id ?? this.id,
+      commentId: commentId ?? this.commentId,
+      diaryId: diaryId ?? this.diaryId,
+      content: content ?? this.content,
+      mood: mood ?? this.mood,
+      createdAt: createdAt ?? this.createdAt,
+      editedAt: editedAt ?? this.editedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (commentId.present) {
+      map['comment_id'] = Variable<String>(commentId.value);
+    }
+    if (diaryId.present) {
+      map['diary_id'] = Variable<String>(diaryId.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (mood.present) {
+      map['mood'] = Variable<String>(mood.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (editedAt.present) {
+      map['edited_at'] = Variable<DateTime>(editedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DiaryCommentsCompanion(')
+          ..write('id: $id, ')
+          ..write('commentId: $commentId, ')
+          ..write('diaryId: $diaryId, ')
+          ..write('content: $content, ')
+          ..write('mood: $mood, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('editedAt: $editedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4432,6 +4878,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NotebooksTable notebooks = $NotebooksTable(this);
   late final $DiaryNotebooksTable diaryNotebooks = $DiaryNotebooksTable(this);
   late final $DayMoodsTable dayMoods = $DayMoodsTable(this);
+  late final $DiaryCommentsTable diaryComments = $DiaryCommentsTable(this);
   late final Index idxDiariesUpdatedAt = Index(
     'idx_diaries_updated_at',
     'CREATE INDEX idx_diaries_updated_at ON diaries (updated_at)',
@@ -4460,6 +4907,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_diary_notebooks_notebook',
     'CREATE INDEX idx_diary_notebooks_notebook ON diary_notebooks (notebook_id, position)',
   );
+  late final Index idxDiaryCommentsDiary = Index(
+    'idx_diary_comments_diary',
+    'CREATE INDEX idx_diary_comments_diary ON diary_comments (diary_id, created_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4474,6 +4925,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     notebooks,
     diaryNotebooks,
     dayMoods,
+    diaryComments,
     idxDiariesUpdatedAt,
     idxDiariesCreatedAt,
     idxDiariesCapsuleUnlockAt,
@@ -4481,6 +4933,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxDiariesActiveCreated,
     idxDiaryTagsTagId,
     idxDiaryNotebooksNotebook,
+    idxDiaryCommentsDiary,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -7135,6 +7588,238 @@ typedef $$DayMoodsTableProcessedTableManager =
       DayMoodRow,
       PrefetchHooks Function()
     >;
+typedef $$DiaryCommentsTableCreateCompanionBuilder =
+    DiaryCommentsCompanion Function({
+      Value<int> id,
+      required String commentId,
+      required String diaryId,
+      required String content,
+      Value<String?> mood,
+      required DateTime createdAt,
+      Value<DateTime?> editedAt,
+    });
+typedef $$DiaryCommentsTableUpdateCompanionBuilder =
+    DiaryCommentsCompanion Function({
+      Value<int> id,
+      Value<String> commentId,
+      Value<String> diaryId,
+      Value<String> content,
+      Value<String?> mood,
+      Value<DateTime> createdAt,
+      Value<DateTime?> editedAt,
+    });
+
+class $$DiaryCommentsTableFilterComposer
+    extends Composer<_$AppDatabase, $DiaryCommentsTable> {
+  $$DiaryCommentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get commentId => $composableBuilder(
+    column: $table.commentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get diaryId => $composableBuilder(
+    column: $table.diaryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get editedAt => $composableBuilder(
+    column: $table.editedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DiaryCommentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DiaryCommentsTable> {
+  $$DiaryCommentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get commentId => $composableBuilder(
+    column: $table.commentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get diaryId => $composableBuilder(
+    column: $table.diaryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get editedAt => $composableBuilder(
+    column: $table.editedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DiaryCommentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DiaryCommentsTable> {
+  $$DiaryCommentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get commentId =>
+      $composableBuilder(column: $table.commentId, builder: (column) => column);
+
+  GeneratedColumn<String> get diaryId =>
+      $composableBuilder(column: $table.diaryId, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get mood =>
+      $composableBuilder(column: $table.mood, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get editedAt =>
+      $composableBuilder(column: $table.editedAt, builder: (column) => column);
+}
+
+class $$DiaryCommentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DiaryCommentsTable,
+          DiaryCommentRow,
+          $$DiaryCommentsTableFilterComposer,
+          $$DiaryCommentsTableOrderingComposer,
+          $$DiaryCommentsTableAnnotationComposer,
+          $$DiaryCommentsTableCreateCompanionBuilder,
+          $$DiaryCommentsTableUpdateCompanionBuilder,
+          (
+            DiaryCommentRow,
+            BaseReferences<_$AppDatabase, $DiaryCommentsTable, DiaryCommentRow>,
+          ),
+          DiaryCommentRow,
+          PrefetchHooks Function()
+        > {
+  $$DiaryCommentsTableTableManager(_$AppDatabase db, $DiaryCommentsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DiaryCommentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DiaryCommentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DiaryCommentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> commentId = const Value.absent(),
+                Value<String> diaryId = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<String?> mood = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> editedAt = const Value.absent(),
+              }) => DiaryCommentsCompanion(
+                id: id,
+                commentId: commentId,
+                diaryId: diaryId,
+                content: content,
+                mood: mood,
+                createdAt: createdAt,
+                editedAt: editedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String commentId,
+                required String diaryId,
+                required String content,
+                Value<String?> mood = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> editedAt = const Value.absent(),
+              }) => DiaryCommentsCompanion.insert(
+                id: id,
+                commentId: commentId,
+                diaryId: diaryId,
+                content: content,
+                mood: mood,
+                createdAt: createdAt,
+                editedAt: editedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DiaryCommentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DiaryCommentsTable,
+      DiaryCommentRow,
+      $$DiaryCommentsTableFilterComposer,
+      $$DiaryCommentsTableOrderingComposer,
+      $$DiaryCommentsTableAnnotationComposer,
+      $$DiaryCommentsTableCreateCompanionBuilder,
+      $$DiaryCommentsTableUpdateCompanionBuilder,
+      (
+        DiaryCommentRow,
+        BaseReferences<_$AppDatabase, $DiaryCommentsTable, DiaryCommentRow>,
+      ),
+      DiaryCommentRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7156,4 +7841,6 @@ class $AppDatabaseManager {
       $$DiaryNotebooksTableTableManager(_db, _db.diaryNotebooks);
   $$DayMoodsTableTableManager get dayMoods =>
       $$DayMoodsTableTableManager(_db, _db.dayMoods);
+  $$DiaryCommentsTableTableManager get diaryComments =>
+      $$DiaryCommentsTableTableManager(_db, _db.diaryComments);
 }

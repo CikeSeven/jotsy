@@ -16897,6 +16897,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fog'**
   String get exploreSampleWeatherFog;
+
+  /// Feature management: title of the comments switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get settingsFeaturesComments;
+
+  /// Feature management: subtitle of the comments switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave notes at the end of a diary when you reread it; the entry stays as written'**
+  String get settingsFeaturesCommentsSubtitle;
+
+  /// Heading of the comments section at the end of the diary preview, with the count.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments · {count}'**
+  String diaryCommentsHeading(int count);
+
+  /// Entry at the end of the preview comments section; opens the write-comment sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment…'**
+  String get diaryCommentsWrite;
+
+  /// Shown when more than five comments are folded; expands the hidden ones.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Show 1 more} other{Show {count} more}}'**
+  String diaryCommentsExpand(int count);
+
+  /// Button that folds the comments again after expanding them.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get diaryCommentsCollapse;
+
+  /// Small label after the time when a comment was changed after it was written.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get diaryCommentEdited;
+
+  /// Relative time of a comment written on the same day as the diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Same day'**
+  String get diaryCommentSameDay;
+
+  /// How long after the diary the comment was written: in days.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day later} other{{count} days later}}'**
+  String diaryCommentDaysLater(int count);
+
+  /// How long after the diary the comment was written: in months.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 month later} other{{count} months later}}'**
+  String diaryCommentMonthsLater(int count);
+
+  /// How long after the diary the comment was written: in whole years.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 year later} other{{count} years later}}'**
+  String diaryCommentYearsLater(int count);
+
+  /// How long after the diary the comment was written: years and months.
+  ///
+  /// In en, this message translates to:
+  /// **'{years, plural, =1{1 year} other{{years} years}}, {months, plural, =1{1 month} other{{months} months}} later'**
+  String diaryCommentYearsMonthsLater(int years, int months);
+
+  /// Title of the write-comment sheet; also the entry in the preview's More sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment'**
+  String get diaryCommentSheetNew;
+
+  /// Title of the sheet when editing an existing comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit comment'**
+  String get diaryCommentSheetEdit;
+
+  /// Placeholder of the comment text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything to tell the you who wrote this…'**
+  String get diaryCommentHint;
+
+  /// Label of the mood row in the comment sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get diaryCommentMoodLabel;
+
+  /// Note on the mood row in the comment sheet: choosing a mood is optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get diaryCommentMoodOptional;
+
+  /// Comment long-press menu: copy the comment text.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get diaryCommentCopy;
+
+  /// Snackbar after copying a comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment copied'**
+  String get diaryCommentCopied;
+
+  /// Snackbar after deleting a comment (undoable).
+  ///
+  /// In en, this message translates to:
+  /// **'Comment deleted'**
+  String get diaryCommentDeleted;
+
+  /// Snackbar when saving a comment fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the comment. Try again.'**
+  String get diaryCommentSaveFailed;
+
+  /// Screen reader: what long-pressing a comment does.
+  ///
+  /// In en, this message translates to:
+  /// **'edit, copy or delete'**
+  String get diaryCommentActionsHint;
+
+  /// Number of comments: preview meta item, card semantics and explore stats.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 comment} other{{count} comments}}'**
+  String diaryCommentsCount(int count);
+
+  /// Preview style → meta: show the comment count (when comments are on and the diary has some).
+  ///
+  /// In en, this message translates to:
+  /// **'Comment count'**
+  String get diaryPreviewStyleShowComments;
+
+  /// Diary card style: show the comment count in the footer (when comments are on and the diary has some).
+  ///
+  /// In en, this message translates to:
+  /// **'Comment count'**
+  String get diaryCardStyleShowComments;
+
+  /// Screen reader: the matching comment shown under a search result card.
+  ///
+  /// In en, this message translates to:
+  /// **'Mentioned in a comment: {text}'**
+  String diarySearchCommentHit(String text);
+
+  /// Explore card name: recent comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent comments'**
+  String get exploreModuleComments;
+
+  /// Explore card description: recent comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Your latest comments and how you look back'**
+  String get exploreModuleCommentsDesc;
+
+  /// Explore comments card stat: how many diaries have comments.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{on 1 diary} other{on {count} diaries}}'**
+  String exploreCommentsDiaries(int count);
+
+  /// Explore comments card stat: average days between a diary and its comments.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{looked back after 1 day on average} other{looked back after {days} days on average}}'**
+  String exploreCommentsAverageGap(int days);
+
+  /// Explore comments card empty hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your first comment at the end of a diary'**
+  String get exploreCommentsEmpty;
+
+  /// Sample comment in the explore customization preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks to the me who didn\'t give up back then.'**
+  String get exploreSampleComment;
+
+  /// First sample comment in the preview style sample.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking back, that day wasn\'t so bad after all.'**
+  String get diaryPreviewSampleComment1;
+
+  /// Second sample comment in the preview style sample.
+  ///
+  /// In en, this message translates to:
+  /// **'I did end up going, and it was even better than I imagined.'**
+  String get diaryPreviewSampleComment2;
+
+  /// Export sheet switch: write comments at the end of each diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Include comments'**
+  String get diaryExportIncludeComments;
+
+  /// Heading of the comments section in exported files and the CSV column name.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get diaryExportCommentsHeading;
+
+  /// Extra line of the merge import result: comments added.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments: {added} added'**
+  String backupImportCommentMergeResult(int added);
+
+  /// Extra line of the merge-and-overwrite import result: comments added and overwritten.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments: {added} added, {replaced} overwritten'**
+  String backupImportCommentOverwriteResult(int added, int replaced);
 }
 
 class _AppLocalizationsDelegate

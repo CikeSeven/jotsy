@@ -22,6 +22,7 @@ class BackupPayload {
     this.notebooks = const <NotebookRow>[],
     this.diaryNotebooks = const <DiaryNotebookRow>[],
     this.dayMoods = const <DayMoodRow>[],
+    this.diaryComments = const <DiaryCommentRow>[],
     this.settings,
   });
 
@@ -52,6 +53,11 @@ class BackupPayload {
   /// 这天的心情（schema v14 起）。旧备份没有这张表，解析为空列表；日记包不带
   /// （心情属于日子本身，不属于哪几篇日记）。认不出的心情名原样保留。
   final List<DayMoodRow> dayMoods;
+
+  /// 日记留言（schema v16 起），按日记的**业务 id** 关联。旧备份没有这张表，
+  /// 解析为空列表；日记包带包内日记的留言。解析后只剩所属日记在载荷里的行
+  /// （见 [_withRestorableRelations]）。
+  final List<DiaryCommentRow> diaryComments;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -144,6 +150,10 @@ class BackupPayload {
           database,
           'dayMoods',
         ).map(DayMoodRow.fromJson).toList(growable: false),
+        diaryComments: _optionalRows(
+          database,
+          'diaryComments',
+        ).map(DiaryCommentRow.fromJson).toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
@@ -213,6 +223,8 @@ class BackupPayload {
     _unique(notebooks.map((row) => row.notebookId));
     _unique(diaryNotebooks.map((row) => (row.diaryId, row.notebookId)));
     _unique(dayMoods.map((row) => row.day));
+    _unique(diaryComments.map((row) => row.id));
+    _unique(diaryComments.map((row) => row.commentId));
     // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
     // 才在页面上算不出日子。
     for (final row in anniversaries) {
@@ -238,10 +250,17 @@ class BackupPayload {
         throw const FormatException('备份中的心情数据无效');
       }
     }
+    // 空白留言写不进去（写库时同样拒绝），在解析时就按“备份数据无效”拒绝。
+    for (final row in diaryComments) {
+      if (row.content.trim().isEmpty) {
+        throw const FormatException('备份中的留言数据无效');
+      }
+    }
   }
 
   BackupPayload _withRestorableRelations() {
     final diaryIds = diaries.map((row) => row.id).toSet();
+    final diaryBusinessIds = diaries.map((row) => row.diaryId).toSet();
     final tagIds = tags.map((row) => row.id).toSet();
     // 只有手动日记本有成员关系；智能或认不出类型的日记本不接收关联行。
     final manualNotebookIds = {
@@ -252,7 +271,8 @@ class BackupPayload {
     // 旧版本会把这些关联一起导出；它们不是整份备份损坏的证据。
     // 保留全部日记、标签及有效关联，只有已不存在的两端无法恢复为标签绑定。
     // 不对历史数据额外施加编辑器的长度或正数 ID 规则，避免拒绝旧库真实行。
-    // 日记本关联同理：悬空或指向智能日记本的行丢弃，不拒绝整份备份。
+    // 日记本关联同理：悬空或指向智能日记本的行丢弃，不拒绝整份备份；
+    // 所属日记已不在载荷里的留言同样丢弃（导入后没有地方显示它）。
     return BackupPayload(
       diaries: diaries,
       tags: tags,
@@ -274,6 +294,9 @@ class BackupPayload {
           )
           .toList(growable: false),
       dayMoods: dayMoods,
+      diaryComments: diaryComments
+          .where((row) => diaryBusinessIds.contains(row.diaryId))
+          .toList(growable: false),
       settings: settings,
     );
   }
@@ -322,6 +345,9 @@ class BackupPayload {
         'dayMoods': (await database.select(database.dayMoods).get())
             .map((row) => row.toJson())
             .toList(),
+        'diaryComments': (await database.select(database.diaryComments).get())
+            .map((row) => row.toJson())
+            .toList(),
       },
     );
     return {
@@ -332,8 +358,8 @@ class BackupPayload {
     };
   }
 
-  /// 日记包载荷：指定日记及其标签与关联、所在的手动日记本及成员关系，不含
-  /// 应用设置。
+  /// 日记包载荷：指定日记及其标签与关联、所在的手动日记本及成员关系、这些
+  /// 日记的留言，不含应用设置。
   ///
   /// 日记本只带包内日记所在的手动日记本（定义与这些日记的成员行），不带无关
   /// 的日记本与智能日记本：导入端按 notebookId 合并，本机没有的本子随之新增，
@@ -388,6 +414,10 @@ class BackupPayload {
                 .where((row) => row.acceptsManualEntries)
                 .toList(growable: false);
       final notebookIds = notebooks.map((row) => row.id).toSet();
+      // 留言是这篇日记的一部分（写给它的回应），随日记一起走。
+      final comments = await (database.select(
+        database.diaryComments,
+      )..where((row) => row.diaryId.isIn(diaries.map((d) => d.diaryId)))).get();
       return (
         json: <String, Object?>{
           'formatVersion': backupFormatVersion,
@@ -404,6 +434,7 @@ class BackupPayload {
                 .where((row) => notebookIds.contains(row.notebookId))
                 .map((row) => row.toJson())
                 .toList(),
+            'diaryComments': comments.map((row) => row.toJson()).toList(),
           },
         },
         diaries: diaries,
@@ -450,6 +481,8 @@ class BackupPayload {
       notebooks: restoredNotebooks,
       diaryNotebooks: diaryNotebooks,
       dayMoods: dayMoods,
+      // 留言只有文字与心情，没有媒体路径要改写。
+      diaryComments: diaryComments,
       settings: settings,
     );
   }
@@ -522,6 +555,7 @@ class BackupPayload {
     await database.delete(database.diaryDrafts).go();
     await database.delete(database.diaryTemplates).go();
     await database.delete(database.dayMoods).go();
+    await database.delete(database.diaryComments).go();
     await database.batch((batch) {
       batch.insertAll(
         database.tags,
@@ -563,6 +597,11 @@ class BackupPayload {
       batch.insertAll(
         database.dayMoods,
         dayMoods.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 留言按日记业务 id 引用日记、没有外键，写入顺序无关。
+      batch.insertAll(
+        database.diaryComments,
+        diaryComments.map((row) => row.toCompanion(false)).toList(),
       );
     });
     // 上级按业务 id 引用，文件里的层级可能指向不在文件里的本子（旧版本手改、

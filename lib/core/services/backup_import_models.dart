@@ -151,6 +151,8 @@ class BackupImportResult {
     this.addedNotebooks = 0,
     this.addedDayMoods = 0,
     this.replacedDayMoods = 0,
+    this.addedComments = 0,
+    this.replacedComments = 0,
   });
 
   final BackupImportMode mode;
@@ -181,6 +183,11 @@ class BackupImportResult {
   /// [BackupImportMode.replaceAll] 时新增数为换入的全部天数。
   final int addedDayMoods;
   final int replacedDayMoods;
+
+  /// 新增与替换的日记留言条数（合并保留本机而跳过的不计）；
+  /// [BackupImportMode.replaceAll] 时新增数为换入的全部留言数。
+  final int addedComments;
+  final int replacedComments;
 
   bool get touchedAnniversaries =>
       addedAnniversaries + replacedAnniversaries + skippedAnniversaries > 0;

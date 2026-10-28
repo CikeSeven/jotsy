@@ -12811,5 +12811,195 @@
   "exploreSampleWeatherFog": "Fog",
   "@exploreSampleWeatherFog": {
     "description": "Weather of a sample entry in the Explore customize preview: Fog."
+  },
+  "settingsFeaturesComments": "Comments",
+  "@settingsFeaturesComments": {
+    "description": "Feature management: title of the comments switch."
+  },
+  "settingsFeaturesCommentsSubtitle": "Leave notes at the end of a diary when you reread it; the entry stays as written",
+  "@settingsFeaturesCommentsSubtitle": {
+    "description": "Feature management: subtitle of the comments switch."
+  },
+  "diaryCommentsHeading": "Comments · {count}",
+  "@diaryCommentsHeading": {
+    "description": "Heading of the comments section at the end of the diary preview, with the count.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentsWrite": "Write a comment…",
+  "@diaryCommentsWrite": {
+    "description": "Entry at the end of the preview comments section; opens the write-comment sheet."
+  },
+  "diaryCommentsExpand": "{count, plural, =1{Show 1 more} other{Show {count} more}}",
+  "@diaryCommentsExpand": {
+    "description": "Shown when more than five comments are folded; expands the hidden ones.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentsCollapse": "Show less",
+  "@diaryCommentsCollapse": {
+    "description": "Button that folds the comments again after expanding them."
+  },
+  "diaryCommentEdited": "Edited",
+  "@diaryCommentEdited": {
+    "description": "Small label after the time when a comment was changed after it was written."
+  },
+  "diaryCommentSameDay": "Same day",
+  "@diaryCommentSameDay": {
+    "description": "Relative time of a comment written on the same day as the diary."
+  },
+  "diaryCommentDaysLater": "{count, plural, =1{1 day later} other{{count} days later}}",
+  "@diaryCommentDaysLater": {
+    "description": "How long after the diary the comment was written: in days.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentMonthsLater": "{count, plural, =1{1 month later} other{{count} months later}}",
+  "@diaryCommentMonthsLater": {
+    "description": "How long after the diary the comment was written: in months.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentYearsLater": "{count, plural, =1{1 year later} other{{count} years later}}",
+  "@diaryCommentYearsLater": {
+    "description": "How long after the diary the comment was written: in whole years.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentYearsMonthsLater": "{years, plural, =1{1 year} other{{years} years}}, {months, plural, =1{1 month} other{{months} months}} later",
+  "@diaryCommentYearsMonthsLater": {
+    "description": "How long after the diary the comment was written: years and months.",
+    "placeholders": {
+      "years": {"type": "int"},
+      "months": {"type": "int"}
+    }
+  },
+  "diaryCommentSheetNew": "Write a comment",
+  "@diaryCommentSheetNew": {
+    "description": "Title of the write-comment sheet; also the entry in the preview's More sheet."
+  },
+  "diaryCommentSheetEdit": "Edit comment",
+  "@diaryCommentSheetEdit": {
+    "description": "Title of the sheet when editing an existing comment."
+  },
+  "diaryCommentHint": "Anything to tell the you who wrote this…",
+  "@diaryCommentHint": {
+    "description": "Placeholder of the comment text field."
+  },
+  "diaryCommentMoodLabel": "Mood",
+  "@diaryCommentMoodLabel": {
+    "description": "Label of the mood row in the comment sheet."
+  },
+  "diaryCommentMoodOptional": "Optional",
+  "@diaryCommentMoodOptional": {
+    "description": "Note on the mood row in the comment sheet: choosing a mood is optional."
+  },
+  "diaryCommentCopy": "Copy",
+  "@diaryCommentCopy": {
+    "description": "Comment long-press menu: copy the comment text."
+  },
+  "diaryCommentCopied": "Comment copied",
+  "@diaryCommentCopied": {
+    "description": "Snackbar after copying a comment."
+  },
+  "diaryCommentDeleted": "Comment deleted",
+  "@diaryCommentDeleted": {
+    "description": "Snackbar after deleting a comment (undoable)."
+  },
+  "diaryCommentSaveFailed": "Couldn't save the comment. Try again.",
+  "@diaryCommentSaveFailed": {
+    "description": "Snackbar when saving a comment fails."
+  },
+  "diaryCommentActionsHint": "edit, copy or delete",
+  "@diaryCommentActionsHint": {
+    "description": "Screen reader: what long-pressing a comment does."
+  },
+  "diaryCommentsCount": "{count, plural, =1{1 comment} other{{count} comments}}",
+  "@diaryCommentsCount": {
+    "description": "Number of comments: preview meta item, card semantics and explore stats.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryPreviewStyleShowComments": "Comment count",
+  "@diaryPreviewStyleShowComments": {
+    "description": "Preview style → meta: show the comment count (when comments are on and the diary has some)."
+  },
+  "diaryCardStyleShowComments": "Comment count",
+  "@diaryCardStyleShowComments": {
+    "description": "Diary card style: show the comment count in the footer (when comments are on and the diary has some)."
+  },
+  "diarySearchCommentHit": "Mentioned in a comment: {text}",
+  "@diarySearchCommentHit": {
+    "description": "Screen reader: the matching comment shown under a search result card.",
+    "placeholders": {
+      "text": {"type": "String"}
+    }
+  },
+  "exploreModuleComments": "Recent comments",
+  "@exploreModuleComments": {
+    "description": "Explore card name: recent comments."
+  },
+  "exploreModuleCommentsDesc": "Your latest comments and how you look back",
+  "@exploreModuleCommentsDesc": {
+    "description": "Explore card description: recent comments."
+  },
+  "exploreCommentsDiaries": "{count, plural, =1{on 1 diary} other{on {count} diaries}}",
+  "@exploreCommentsDiaries": {
+    "description": "Explore comments card stat: how many diaries have comments.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "exploreCommentsAverageGap": "{days, plural, =1{looked back after 1 day on average} other{looked back after {days} days on average}}",
+  "@exploreCommentsAverageGap": {
+    "description": "Explore comments card stat: average days between a diary and its comments.",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "exploreCommentsEmpty": "Write your first comment at the end of a diary",
+  "@exploreCommentsEmpty": {
+    "description": "Explore comments card empty hint."
+  },
+  "exploreSampleComment": "Thanks to the me who didn't give up back then.",
+  "@exploreSampleComment": {
+    "description": "Sample comment in the explore customization preview."
+  },
+  "diaryPreviewSampleComment1": "Looking back, that day wasn't so bad after all.",
+  "@diaryPreviewSampleComment1": {
+    "description": "First sample comment in the preview style sample."
+  },
+  "diaryPreviewSampleComment2": "I did end up going, and it was even better than I imagined.",
+  "@diaryPreviewSampleComment2": {
+    "description": "Second sample comment in the preview style sample."
+  },
+  "diaryExportIncludeComments": "Include comments",
+  "@diaryExportIncludeComments": {
+    "description": "Export sheet switch: write comments at the end of each diary."
+  },
+  "diaryExportCommentsHeading": "Comments",
+  "@diaryExportCommentsHeading": {
+    "description": "Heading of the comments section in exported files and the CSV column name."
+  },
+  "backupImportCommentMergeResult": "Comments: {added} added",
+  "@backupImportCommentMergeResult": {
+    "description": "Extra line of the merge import result: comments added.",
+    "placeholders": {
+      "added": {"type": "int"}
+    }
+  },
+  "backupImportCommentOverwriteResult": "Comments: {added} added, {replaced} overwritten",
+  "@backupImportCommentOverwriteResult": {
+    "description": "Extra line of the merge-and-overwrite import result: comments added and overwritten.",
+    "placeholders": {
+      "added": {"type": "int"},
+      "replaced": {"type": "int"}
+    }
   }
 }

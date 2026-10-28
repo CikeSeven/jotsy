@@ -71,11 +71,7 @@ class ExploreMediaGalleryController extends ChangeNotifier {
               continue;
             }
             appended.add(
-              ExploreMediaItem(
-                source: source,
-                diaryId: diary.diaryId,
-                updatedAt: diary.updatedAt,
-              ),
+              ExploreMediaItem(source: source, diaryId: diary.diaryId),
             );
           }
         }

@@ -10,9 +10,13 @@ class ExploreColumn {
     required this.label,
     this.sublabel,
     this.valueLabel,
+    this.color,
   });
 
   final num value;
+
+  /// 这根柱单独的颜色（心情柱按心情分段着色）；null 时用整张图的颜色。
+  final Color? color;
 
   /// 柱下的文字（月份、星期……）。
   final String label;
@@ -40,6 +44,7 @@ class ExploreColumnChart extends StatelessWidget {
     this.color,
     this.showValues = true,
     this.semanticsLabel,
+    this.maxValue,
   });
 
   final List<ExploreColumn> columns;
@@ -56,12 +61,15 @@ class ExploreColumnChart extends StatelessWidget {
   final bool showValues;
   final String? semanticsLabel;
 
+  /// 柱高的满格值（心情 10、精力 5）；null 时取最高的一根。
+  final num? maxValue;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final barColor = color ?? scheme.primary;
-    var maxValue = 0.0;
+    var maxValue = this.maxValue?.toDouble() ?? 0.0;
     for (final column in columns) {
       if (column.value > maxValue) maxValue = column.value.toDouble();
     }
@@ -122,7 +130,7 @@ class ExploreColumnChart extends StatelessWidget {
                                   columns.length,
                                 ),
                             decoration: BoxDecoration(
-                              color: barColor,
+                              color: columns[i].color ?? barColor,
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),

@@ -1278,10 +1278,6 @@
   "@autoT0059": {
     "description": "Auto-generated metadata for autoT0059."
   },
-  "autoT0060": "情绪与精力趋势",
-  "@autoT0060": {
-    "description": "Auto-generated metadata for autoT0060."
-  },
   "autoT0061": "查看全部图片",
   "@autoT0061": {
     "description": "Auto-generated metadata for autoT0061."
@@ -1301,18 +1297,6 @@
   "autoT0065": "无标题日记",
   "@autoT0065": {
     "description": "Auto-generated metadata for autoT0065."
-  },
-  "autoT0066": "总计记录",
-  "@autoT0066": {
-    "description": "Auto-generated metadata for autoT0066."
-  },
-  "autoT0067": "连续打卡",
-  "@autoT0067": {
-    "description": "Auto-generated metadata for autoT0067."
-  },
-  "autoT0068": "本月字数",
-  "@autoT0068": {
-    "description": "Auto-generated metadata for autoT0068."
   },
   "autoT0069": "标签云",
   "@autoT0069": {
@@ -1898,10 +1882,6 @@
   "autoT0197": "加载图片失败，请稍后重试",
   "@autoT0197": {
     "description": "Auto-generated metadata for autoT0197."
-  },
-  "autoT0198": "继续记录天气、标签和心情后，这里会出现更具体的关联洞察。",
-  "@autoT0198": {
-    "description": "Auto-generated metadata for autoT0198."
   },
   "autoT0199": "还没有标签数据，写几篇带标签的日记试试。",
   "@autoT0199": {
@@ -11480,5 +11460,1332 @@
   "diaryListToNumbered": "转为有序列表",
   "@diaryListToNumbered": {"description": "列表面板按钮：把选中的无序列表项改成有序列表。"},
   "diaryListToText": "转为正文",
-  "@diaryListToText": {"description": "列表面板按钮：把选中的列表项改回普通段落。"}
+  "@diaryListToText": {"description": "列表面板按钮：把选中的列表项改回普通段落。"},
+  "exploreModuleGreeting": "今日问候",
+  "@exploreModuleGreeting": {
+    "description": "探索页卡片名称：今日问候。"
+  },
+  "exploreModuleGreetingDesc": "按时段问候，显示农历节气、今天的记录与每日写作提示",
+  "@exploreModuleGreetingDesc": {
+    "description": "探索页卡片“今日问候”的一句话说明（编辑页）。"
+  },
+  "exploreModuleOnThisDay": "那年今日",
+  "@exploreModuleOnThisDay": {
+    "description": "探索页卡片名称：那年今日。"
+  },
+  "exploreModuleOnThisDayDesc": "往年同一天（或前后几天、同月）写下的日记",
+  "@exploreModuleOnThisDayDesc": {
+    "description": "探索页卡片“那年今日”的一句话说明（编辑页）。"
+  },
+  "exploreModuleRandomMemory": "随机回顾",
+  "@exploreModuleRandomMemory": {
+    "description": "探索页卡片名称：随机回顾。"
+  },
+  "exploreModuleRandomMemoryDesc": "随机翻出一篇旧日记，可以换一篇",
+  "@exploreModuleRandomMemoryDesc": {
+    "description": "探索页卡片“随机回顾”的一句话说明（编辑页）。"
+  },
+  "exploreModuleRecap": "周期回顾",
+  "@exploreModuleRecap": {
+    "description": "探索页卡片名称：周期回顾。"
+  },
+  "exploreModuleRecapDesc": "本周、本月或今年的概况，并与上一期对比",
+  "@exploreModuleRecapDesc": {
+    "description": "探索页卡片“周期回顾”的一句话说明（编辑页）。"
+  },
+  "exploreModuleMilestones": "里程碑",
+  "@exploreModuleMilestones": {
+    "description": "探索页卡片名称：里程碑。"
+  },
+  "exploreModuleMilestonesDesc": "篇数、字数、连续天数等里程碑的进度",
+  "@exploreModuleMilestonesDesc": {
+    "description": "探索页卡片“里程碑”的一句话说明（编辑页）。"
+  },
+  "exploreModuleOverview": "数据看板",
+  "@exploreModuleOverview": {
+    "description": "探索页卡片名称：数据看板。"
+  },
+  "exploreModuleOverviewDesc": "篇数、字数、连续天数等数字，指标可自选",
+  "@exploreModuleOverviewDesc": {
+    "description": "探索页卡片“数据看板”的一句话说明（编辑页）。"
+  },
+  "exploreModuleHeatmap": "写作热力图",
+  "@exploreModuleHeatmap": {
+    "description": "探索页卡片名称：写作热力图。"
+  },
+  "exploreModuleHeatmapDesc": "按周排布的每日记录格子",
+  "@exploreModuleHeatmapDesc": {
+    "description": "探索页卡片“写作热力图”的一句话说明（编辑页）。"
+  },
+  "exploreModuleRhythm": "写作节奏",
+  "@exploreModuleRhythm": {
+    "description": "探索页卡片名称：写作节奏。"
+  },
+  "exploreModuleRhythmDesc": "每月、每周或每天写了多少",
+  "@exploreModuleRhythmDesc": {
+    "description": "探索页卡片“写作节奏”的一句话说明（编辑页）。"
+  },
+  "exploreModuleHabits": "写作习惯",
+  "@exploreModuleHabits": {
+    "description": "探索页卡片名称：写作习惯。"
+  },
+  "exploreModuleHabitsDesc": "你习惯在什么时段、星期几写日记",
+  "@exploreModuleHabitsDesc": {
+    "description": "探索页卡片“写作习惯”的一句话说明（编辑页）。"
+  },
+  "exploreModuleMoodTrend": "心情趋势",
+  "@exploreModuleMoodTrend": {
+    "description": "探索页卡片名称：心情趋势。"
+  },
+  "exploreModuleMoodTrendDesc": "最近每天的心情变化",
+  "@exploreModuleMoodTrendDesc": {
+    "description": "探索页卡片“心情趋势”的一句话说明（编辑页）。"
+  },
+  "exploreModuleMoodShare": "心情分布",
+  "@exploreModuleMoodShare": {
+    "description": "探索页卡片名称：心情分布。"
+  },
+  "exploreModuleMoodShareDesc": "各种心情出现的次数与占比",
+  "@exploreModuleMoodShareDesc": {
+    "description": "探索页卡片“心情分布”的一句话说明（编辑页）。"
+  },
+  "exploreModuleEnergy": "精力趋势",
+  "@exploreModuleEnergy": {
+    "description": "探索页卡片名称：精力趋势。"
+  },
+  "exploreModuleEnergyDesc": "最近每天的精力水平",
+  "@exploreModuleEnergyDesc": {
+    "description": "探索页卡片“精力趋势”的一句话说明（编辑页）。"
+  },
+  "exploreModuleTags": "标签",
+  "@exploreModuleTags": {
+    "description": "探索页卡片名称：标签。"
+  },
+  "exploreModuleTagsDesc": "常用标签，点按即可搜索",
+  "@exploreModuleTagsDesc": {
+    "description": "探索页卡片“标签”的一句话说明（编辑页）。"
+  },
+  "exploreModuleMedia": "媒体画廊",
+  "@exploreModuleMedia": {
+    "description": "探索页卡片名称：媒体画廊。"
+  },
+  "exploreModuleMediaDesc": "日记里的图片",
+  "@exploreModuleMediaDesc": {
+    "description": "探索页卡片“媒体画廊”的一句话说明（编辑页）。"
+  },
+  "exploreModulePlaces": "足迹",
+  "@exploreModulePlaces": {
+    "description": "探索页卡片名称：足迹。"
+  },
+  "exploreModulePlacesDesc": "写日记时最常在的地方",
+  "@exploreModulePlacesDesc": {
+    "description": "探索页卡片“足迹”的一句话说明（编辑页）。"
+  },
+  "exploreModuleWeather": "天气",
+  "@exploreModuleWeather": {
+    "description": "探索页卡片名称：天气。"
+  },
+  "exploreModuleWeatherDesc": "写日记时的天气分布",
+  "@exploreModuleWeatherDesc": {
+    "description": "探索页卡片“天气”的一句话说明（编辑页）。"
+  },
+  "exploreModuleAnniversaries": "纪念日",
+  "@exploreModuleAnniversaries": {
+    "description": "探索页卡片名称：纪念日。"
+  },
+  "exploreModuleAnniversariesDesc": "即将到来的纪念日倒数",
+  "@exploreModuleAnniversariesDesc": {
+    "description": "探索页卡片“纪念日”的一句话说明（编辑页）。"
+  },
+  "exploreModuleCapsules": "时间胶囊",
+  "@exploreModuleCapsules": {
+    "description": "探索页卡片名称：时间胶囊。"
+  },
+  "exploreModuleCapsulesDesc": "等待开启的时间胶囊与最近开启的",
+  "@exploreModuleCapsulesDesc": {
+    "description": "探索页卡片“时间胶囊”的一句话说明（编辑页）。"
+  },
+  "exploreModuleNotebooks": "日记本",
+  "@exploreModuleNotebooks": {
+    "description": "探索页卡片名称：日记本。"
+  },
+  "exploreModuleNotebooksDesc": "你的日记本书架",
+  "@exploreModuleNotebooksDesc": {
+    "description": "探索页卡片“日记本”的一句话说明（编辑页）。"
+  },
+  "exploreModuleDrafts": "草稿箱",
+  "@exploreModuleDrafts": {
+    "description": "探索页卡片名称：草稿箱。"
+  },
+  "exploreModuleDraftsDesc": "有未写完的草稿时提醒你继续写",
+  "@exploreModuleDraftsDesc": {
+    "description": "探索页卡片“草稿箱”的一句话说明（编辑页）。"
+  },
+  "explorePeriodWeek": "本周",
+  "@explorePeriodWeek": {
+    "description": "探索页统计范围：本周。"
+  },
+  "explorePeriodMonth": "本月",
+  "@explorePeriodMonth": {
+    "description": "探索页统计范围：本月。"
+  },
+  "explorePeriodYear": "今年",
+  "@explorePeriodYear": {
+    "description": "探索页统计范围：今年。"
+  },
+  "explorePeriodAll": "全部",
+  "@explorePeriodAll": {
+    "description": "探索页统计范围：全部日记。"
+  },
+  "explorePeriodEmpty": "这段时间还没有日记",
+  "@explorePeriodEmpty": {
+    "description": "探索页卡片：所选统计范围里没有日记时的说明。"
+  },
+  "exploreNoModules": "探索页没有显示任何卡片",
+  "@exploreNoModules": {
+    "description": "探索页：所有卡片都被隐藏时的说明。"
+  },
+  "exploreModuleMenuHide": "隐藏此卡片",
+  "@exploreModuleMenuHide": {
+    "description": "探索页长按卡片菜单：隐藏这张卡片。"
+  },
+  "exploreModuleHidden": "已隐藏“{name}”",
+  "@exploreModuleHidden": {
+    "description": "探索页隐藏卡片后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreGreetingMorning": "早上好",
+  "@exploreGreetingMorning": {
+    "description": "探索页问候：5–11 点。"
+  },
+  "exploreGreetingNoon": "中午好",
+  "@exploreGreetingNoon": {
+    "description": "探索页问候：11–13 点。"
+  },
+  "exploreGreetingAfternoon": "下午好",
+  "@exploreGreetingAfternoon": {
+    "description": "探索页问候：13–18 点。"
+  },
+  "exploreGreetingEvening": "晚上好",
+  "@exploreGreetingEvening": {
+    "description": "探索页问候：18–23 点。"
+  },
+  "exploreGreetingNight": "夜深了",
+  "@exploreGreetingNight": {
+    "description": "探索页问候：23 点到次日 5 点。"
+  },
+  "exploreGreetingToday": "今天写了 {count} 篇 · {words} 字",
+  "@exploreGreetingToday": {
+    "description": "探索页问候卡：今天的篇数与字数（words 已按语言格式化）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreGreetingTodayEmpty": "今天还没有写日记",
+  "@exploreGreetingTodayEmpty": {
+    "description": "探索页问候卡：今天还没写。"
+  },
+  "exploreGreetingWrite": "写日记",
+  "@exploreGreetingWrite": {
+    "description": "探索页问候卡的新建日记按钮。"
+  },
+  "exploreGreetingNextPrompt": "换一个",
+  "@exploreGreetingNextPrompt": {
+    "description": "探索页问候卡：换一条写作提示（按钮提示）。"
+  },
+  "explorePrompt01": "今天让你会心一笑的瞬间是什么？",
+  "@explorePrompt01": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt02": "最近在反复想的一件事是什么？",
+  "@explorePrompt02": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt03": "今天学到了什么新东西？",
+  "@explorePrompt03": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt04": "如果能重来一次，今天你会做哪些不同的选择？",
+  "@explorePrompt04": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt05": "描述一下此刻窗外的样子。",
+  "@explorePrompt05": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt06": "今天吃到的最好吃的东西是什么？",
+  "@explorePrompt06": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt07": "最近读到或听到的话里，哪一句让你印象最深？",
+  "@explorePrompt07": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt08": "今天的你，比昨天多了一点什么？",
+  "@explorePrompt08": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt09": "写一写最近让你感到踏实的一件小事。",
+  "@explorePrompt09": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt10": "这周有什么想对自己说的话？",
+  "@explorePrompt10": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt11": "今天和谁聊了天？聊了些什么？",
+  "@explorePrompt11": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt12": "最近有什么期待的事情？",
+  "@explorePrompt12": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt13": "如果今天的心情是一种天气，会是什么？",
+  "@explorePrompt13": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt14": "写下三件今天值得感恩的小事。",
+  "@explorePrompt14": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt15": "最近有没有一首歌一直在单曲循环？",
+  "@explorePrompt15": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt16": "今天有什么事情比预想的更顺利？",
+  "@explorePrompt16": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt17": "如果给一年后的自己写一句话，你会写什么？",
+  "@explorePrompt17": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt18": "今天在哪里待得最久？那里是什么样子？",
+  "@explorePrompt18": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt19": "最近让你感到疲惫的是什么？可以怎样照顾自己？",
+  "@explorePrompt19": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "explorePrompt20": "最近一次大笑是因为什么？",
+  "@explorePrompt20": {
+    "description": "探索页问候卡的每日写作提示。"
+  },
+  "exploreOnThisDayEmpty": "往年的这一天还没有日记，今天写下的会在明年出现在这里。",
+  "@exploreOnThisDayEmpty": {
+    "description": "探索页那年今日：没有回忆时的说明。"
+  },
+  "exploreRandomShuffle": "换一篇",
+  "@exploreRandomShuffle": {
+    "description": "探索页随机回顾：换一篇（按钮提示）。"
+  },
+  "exploreRandomEmpty": "还没有符合条件的旧日记",
+  "@exploreRandomEmpty": {
+    "description": "探索页随机回顾：没有候选时的说明。"
+  },
+  "exploreRecapTitleWeek": "本周回顾",
+  "@exploreRecapTitleWeek": {
+    "description": "探索页周期回顾的标题（周）。"
+  },
+  "exploreRecapTitleMonth": "本月回顾",
+  "@exploreRecapTitleMonth": {
+    "description": "探索页周期回顾的标题（月）。"
+  },
+  "exploreRecapTitleYear": "今年回顾",
+  "@exploreRecapTitleYear": {
+    "description": "探索页周期回顾的标题（年）。"
+  },
+  "exploreRecapTopMood": "最常见的心情",
+  "@exploreRecapTopMood": {
+    "description": "探索页周期回顾：用得最多的心情。"
+  },
+  "exploreRecapTopTag": "最常用的标签",
+  "@exploreRecapTopTag": {
+    "description": "探索页周期回顾：用得最多的标签。"
+  },
+  "exploreRecapMore": "比上期多 {count}",
+  "@exploreRecapMore": {
+    "description": "探索页周期回顾：比上一期多（读屏）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreRecapFewer": "比上期少 {count}",
+  "@exploreRecapFewer": {
+    "description": "探索页周期回顾：比上一期少（读屏）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreRecapSame": "与上期持平",
+  "@exploreRecapSame": {
+    "description": "探索页周期回顾：与上一期相同（读屏）。"
+  },
+  "exploreMetricEntries": "日记篇数",
+  "@exploreMetricEntries": {
+    "description": "探索页数据看板指标：篇数。"
+  },
+  "exploreMetricWords": "字数",
+  "@exploreMetricWords": {
+    "description": "探索页数据看板指标：字数。"
+  },
+  "exploreMetricRecordedDays": "记录天数",
+  "@exploreMetricRecordedDays": {
+    "description": "探索页数据看板指标：有日记的天数。"
+  },
+  "exploreMetricCurrentStreak": "连续打卡",
+  "@exploreMetricCurrentStreak": {
+    "description": "探索页数据看板指标：当前连续天数。"
+  },
+  "exploreMetricLongestStreak": "最长连续",
+  "@exploreMetricLongestStreak": {
+    "description": "探索页数据看板指标：最长连续天数。"
+  },
+  "exploreMetricAverageWords": "平均每篇",
+  "@exploreMetricAverageWords": {
+    "description": "探索页数据看板指标：平均每篇字数。"
+  },
+  "exploreMetricPhotos": "照片",
+  "@exploreMetricPhotos": {
+    "description": "探索页数据看板指标：图片数。"
+  },
+  "exploreMetricTags": "用过的标签",
+  "@exploreMetricTags": {
+    "description": "探索页数据看板指标：用过的标签数。"
+  },
+  "exploreMetricSpan": "时间跨度",
+  "@exploreMetricSpan": {
+    "description": "探索页数据看板指标：第一篇到最后一篇的跨度。"
+  },
+  "exploreMetricTodayWords": "今日字数",
+  "@exploreMetricTodayWords": {
+    "description": "探索页数据看板指标：今天写的字数。"
+  },
+  "exploreMilestoneEntries": "篇数",
+  "@exploreMilestoneEntries": {
+    "description": "探索页里程碑类别：篇数。"
+  },
+  "exploreMilestoneWords": "字数",
+  "@exploreMilestoneWords": {
+    "description": "探索页里程碑类别：总字数。"
+  },
+  "exploreMilestoneStreak": "最长连续",
+  "@exploreMilestoneStreak": {
+    "description": "探索页里程碑类别：最长连续天数。"
+  },
+  "exploreMilestoneDays": "记录天数",
+  "@exploreMilestoneDays": {
+    "description": "探索页里程碑类别：记录天数。"
+  },
+  "exploreMilestoneYears": "坚持年数",
+  "@exploreMilestoneYears": {
+    "description": "探索页里程碑类别：从第一篇起满几年。"
+  },
+  "exploreMilestoneNext": "下一站 {target} · 还差 {remaining}",
+  "@exploreMilestoneNext": {
+    "description": "探索页里程碑：下一档与还差多少（都已格式化）。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreMilestoneAllDone": "已全部达成",
+  "@exploreMilestoneAllDone": {
+    "description": "探索页里程碑：这一类已全部达成。"
+  },
+  "exploreMilestoneAchieved": "已达成 {count} 个",
+  "@exploreMilestoneAchieved": {
+    "description": "探索页里程碑：已达成的个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreUnitEntries": "{count} 篇",
+  "@exploreUnitEntries": {
+    "description": "篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreUnitWords": "{words} 字",
+  "@exploreUnitWords": {
+    "description": "字数（words 已格式化）。",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreUnitYears": "{count} 年",
+  "@exploreUnitYears": {
+    "description": "年数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreUnitTimes": "{count} 次",
+  "@exploreUnitTimes": {
+    "description": "次数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreHeatmapSummary": "近 {weeks} 周里有 {days} 天写了日记",
+  "@exploreHeatmapSummary": {
+    "description": "探索页写作热力图的说明行。",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreHeatmapDay": "{date} · {count} 篇 · {words} 字",
+  "@exploreHeatmapDay": {
+    "description": "探索页写作热力图：悬停或点按某天时的说明（date、words 已格式化）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHeatmapDayEmpty": "{date} · 没有日记",
+  "@exploreHeatmapDayEmpty": {
+    "description": "探索页写作热力图：那天没有日记。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHeatmapLess": "少",
+  "@exploreHeatmapLess": {
+    "description": "探索页写作热力图图例：少。"
+  },
+  "exploreHeatmapMore": "多",
+  "@exploreHeatmapMore": {
+    "description": "探索页写作热力图图例：多。"
+  },
+  "exploreTotalEntries": "共 {count} 篇",
+  "@exploreTotalEntries": {
+    "description": "探索页卡片标题行：合计篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreTotalWords": "共 {words} 字",
+  "@exploreTotalWords": {
+    "description": "探索页卡片标题行：合计字数（已格式化）。",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreSlotLateNight": "凌晨",
+  "@exploreSlotLateNight": {
+    "description": "探索页写作习惯时段：0–6 点。"
+  },
+  "exploreSlotMorning": "早上",
+  "@exploreSlotMorning": {
+    "description": "探索页写作习惯时段：6–9 点。"
+  },
+  "exploreSlotForenoon": "上午",
+  "@exploreSlotForenoon": {
+    "description": "探索页写作习惯时段：9–12 点。"
+  },
+  "exploreSlotAfternoon": "下午",
+  "@exploreSlotAfternoon": {
+    "description": "探索页写作习惯时段：12–18 点。"
+  },
+  "exploreSlotEvening": "傍晚",
+  "@exploreSlotEvening": {
+    "description": "探索页写作习惯时段：18–21 点。"
+  },
+  "exploreSlotNight": "夜晚",
+  "@exploreSlotNight": {
+    "description": "探索页写作习惯时段：21–24 点。"
+  },
+  "exploreHabitsTopSlot": "最常在{slot}写",
+  "@exploreHabitsTopSlot": {
+    "description": "探索页写作习惯：写得最多的时段。",
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHabitsTopWeekday": "{weekday}写得最多",
+  "@exploreHabitsTopWeekday": {
+    "description": "探索页写作习惯：写得最多的星期几。",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHabitsTimeOfDay": "时段",
+  "@exploreHabitsTimeOfDay": {
+    "description": "探索页写作习惯：时段分布的小标题。"
+  },
+  "exploreHabitsWeekdays": "星期",
+  "@exploreHabitsWeekdays": {
+    "description": "探索页写作习惯：星期分布的小标题。"
+  },
+  "exploreLastDays": "近 {days} 天",
+  "@exploreLastDays": {
+    "description": "探索页趋势卡：时间范围。",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoodAverage": "平均心情 {mood}",
+  "@exploreMoodAverage": {
+    "description": "探索页心情趋势：平均心情。",
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreMoodTrendEmpty": "最近还没有记录心情",
+  "@exploreMoodTrendEmpty": {
+    "description": "探索页心情趋势：没有数据。"
+  },
+  "exploreMoodShareEmpty": "这段时间还没有记录心情",
+  "@exploreMoodShareEmpty": {
+    "description": "探索页心情分布：没有数据。"
+  },
+  "exploreEnergyAverage": "平均 {value}",
+  "@exploreEnergyAverage": {
+    "description": "探索页精力趋势：平均精力（已格式化）。",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreEnergyEmpty": "最近还没有记录精力",
+  "@exploreEnergyEmpty": {
+    "description": "探索页精力趋势：没有数据。"
+  },
+  "explorePlacesEmpty": "写日记时添加地点后，这里会列出常去的地方。",
+  "@explorePlacesEmpty": {
+    "description": "探索页足迹：没有数据。"
+  },
+  "exploreWeatherEmpty": "写日记时记录天气后，这里会显示天气分布。",
+  "@exploreWeatherEmpty": {
+    "description": "探索页天气：没有数据。"
+  },
+  "exploreAnniversariesEmpty": "还没有纪念日",
+  "@exploreAnniversariesEmpty": {
+    "description": "探索页纪念日卡：没有纪念日。"
+  },
+  "exploreAnniversariesAdd": "添加纪念日",
+  "@exploreAnniversariesAdd": {
+    "description": "探索页纪念日卡：添加按钮。"
+  },
+  "exploreAnniversariesAll": "全部纪念日",
+  "@exploreAnniversariesAll": {
+    "description": "探索页纪念日卡：进入列表（按钮提示）。"
+  },
+  "exploreCapsulesWaiting": "{count} 个时间胶囊等待开启",
+  "@exploreCapsulesWaiting": {
+    "description": "探索页时间胶囊卡：未解封的个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreCapsuleOpensIn": "{count} 天后开启",
+  "@exploreCapsuleOpensIn": {
+    "description": "探索页时间胶囊卡：还有几天解封。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreCapsuleOpensToday": "今天开启",
+  "@exploreCapsuleOpensToday": {
+    "description": "探索页时间胶囊卡：今天解封。"
+  },
+  "exploreCapsulesRecent": "最近开启",
+  "@exploreCapsulesRecent": {
+    "description": "探索页时间胶囊卡：最近 30 天解封的小标题。"
+  },
+  "exploreCapsulesEmpty": "还没有时间胶囊。发表日记时可以把它封存起来，寄给未来的自己。",
+  "@exploreCapsulesEmpty": {
+    "description": "探索页时间胶囊卡：没有胶囊。"
+  },
+  "exploreNotebooksEmpty": "还没有日记本",
+  "@exploreNotebooksEmpty": {
+    "description": "探索页日记本卡：没有日记本。"
+  },
+  "exploreNotebooksManage": "管理日记本",
+  "@exploreNotebooksManage": {
+    "description": "探索页日记本卡：进入管理页（按钮提示）。"
+  },
+  "exploreDraftsCount": "草稿箱里有 {count} 份草稿",
+  "@exploreDraftsCount": {
+    "description": "探索页草稿卡：草稿份数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreDraftsContinue": "继续写",
+  "@exploreDraftsContinue": {
+    "description": "探索页草稿卡：继续写按钮。"
+  },
+  "exploreDraftsManage": "管理",
+  "@exploreDraftsManage": {
+    "description": "探索页草稿卡：管理按钮。"
+  },
+  "exploreCustomize": "自定义探索页",
+  "@exploreCustomize": {
+    "description": "探索页顶栏按钮与自定义页标题：自定义探索页。"
+  },
+  "exploreModuleMenuSettings": "卡片设置",
+  "@exploreModuleMenuSettings": {
+    "description": "探索页长按卡片菜单：卡片设置。"
+  },
+  "exploreGroupRecall": "回顾与灵感",
+  "@exploreGroupRecall": {
+    "description": "探索页卡片分组（自定义页）：回顾与灵感。"
+  },
+  "exploreGroupStats": "统计图表",
+  "@exploreGroupStats": {
+    "description": "探索页卡片分组（自定义页）：统计图表。"
+  },
+  "exploreGroupLife": "生活记录",
+  "@exploreGroupLife": {
+    "description": "探索页卡片分组（自定义页）：生活记录。"
+  },
+  "exploreGroupLinked": "关联功能",
+  "@exploreGroupLinked": {
+    "description": "探索页卡片分组（自定义页）：关联功能。"
+  },
+  "exploreLayoutTabPresets": "预设",
+  "@exploreLayoutTabPresets": {
+    "description": "探索页自定义的标签页：预设。"
+  },
+  "exploreLayoutTabCards": "卡片",
+  "@exploreLayoutTabCards": {
+    "description": "探索页自定义的标签页：卡片。"
+  },
+  "exploreLayoutTabAppearance": "外观",
+  "@exploreLayoutTabAppearance": {
+    "description": "探索页自定义的标签页：外观。"
+  },
+  "exploreLayoutTabRange": "范围",
+  "@exploreLayoutTabRange": {
+    "description": "探索页自定义的标签页：范围。"
+  },
+  "exploreLayoutResetDone": "已恢复默认布局",
+  "@exploreLayoutResetDone": {
+    "description": "探索页自定义：重置后的提示（带撤销）：已恢复默认布局。"
+  },
+  "exploreLayoutCardsHint": "拖动右侧手柄调整顺序，点按一行展开它的选项。",
+  "@exploreLayoutCardsHint": {
+    "description": "探索页自定义“卡片”页顶部说明：拖动右侧手柄调整顺序，点按一行展开它的选项。。"
+  },
+  "exploreLayoutCardsShowAll": "全部显示",
+  "@exploreLayoutCardsShowAll": {
+    "description": "探索页自定义“卡片”页按钮：全部显示。"
+  },
+  "exploreLayoutCardsDefaultOrder": "恢复默认顺序",
+  "@exploreLayoutCardsDefaultOrder": {
+    "description": "探索页自定义“卡片”页按钮：恢复默认顺序。"
+  },
+  "exploreLayoutFeatureOff": "已在功能管理中关闭",
+  "@exploreLayoutFeatureOff": {
+    "description": "探索页自定义：卡片依赖的功能已关闭：已在功能管理中关闭。"
+  },
+  "exploreLayoutDragHandle": "拖动排序：{name}",
+  "@exploreLayoutDragHandle": {
+    "description": "探索页自定义：拖动手柄的读屏文字。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreLayoutShowModule": "显示“{name}”",
+  "@exploreLayoutShowModule": {
+    "description": "探索页自定义：卡片显示开关的读屏文字。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreLayoutMultiHint": "按点选的先后排列，最多 {max} 个",
+  "@exploreLayoutMultiHint": {
+    "description": "探索页自定义：有序多选的说明。",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreLayoutSpan": "宽窗口下的宽度",
+  "@exploreLayoutSpan": {
+    "description": "探索页自定义：卡片宽度选项：宽窗口下的宽度。"
+  },
+  "exploreLayoutSpanFull": "整行",
+  "@exploreLayoutSpanFull": {
+    "description": "探索页自定义：卡片占整行：整行。"
+  },
+  "exploreLayoutSpanHalf": "半行",
+  "@exploreLayoutSpanHalf": {
+    "description": "探索页自定义：卡片占一列：半行。"
+  },
+  "exploreLayoutPreviewMine": "我的数据",
+  "@exploreLayoutPreviewMine": {
+    "description": "探索页自定义预览：用自己的日记：我的数据。"
+  },
+  "exploreLayoutPreviewSample": "示例数据",
+  "@exploreLayoutPreviewSample": {
+    "description": "探索页自定义预览：用示例日记：示例数据。"
+  },
+  "exploreLayoutCustom": "自定义",
+  "@exploreLayoutCustom": {
+    "description": "探索页自定义：当前布局不是任何预设或我的布局：自定义。"
+  },
+  "exploreSamplePlaceHome": "家",
+  "@exploreSamplePlaceHome": {
+    "description": "探索页自定义示例日记的地点：家。"
+  },
+  "exploreSamplePlaceOffice": "公司",
+  "@exploreSamplePlaceOffice": {
+    "description": "探索页自定义示例日记的地点：公司。"
+  },
+  "settingsExploreLayout": "探索页",
+  "@settingsExploreLayout": {
+    "description": "设置 → 外观与语言：探索页入口：探索页。"
+  },
+  "settingsExploreLayoutSubtitle": "当前：{name}",
+  "@settingsExploreLayoutSubtitle": {
+    "description": "设置 → 外观与语言：探索页入口副标题（当前布局名）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreOptLunar": "农历与节气",
+  "@exploreOptLunar": {
+    "description": "探索页自定义：卡片选项标题：农历与节气。"
+  },
+  "exploreOptPrompt": "每日写作提示",
+  "@exploreOptPrompt": {
+    "description": "探索页自定义：卡片选项标题：每日写作提示。"
+  },
+  "exploreOptWrite": "“写日记”按钮",
+  "@exploreOptWrite": {
+    "description": "探索页自定义：卡片选项标题：“写日记”按钮。"
+  },
+  "exploreOptMatch": "匹配方式",
+  "@exploreOptMatch": {
+    "description": "探索页自定义：卡片选项标题：匹配方式。"
+  },
+  "exploreOptStyle": "样式",
+  "@exploreOptStyle": {
+    "description": "探索页自定义：卡片选项标题：样式。"
+  },
+  "exploreOptCount": "显示数量",
+  "@exploreOptCount": {
+    "description": "探索页自定义：卡片选项标题：显示数量。"
+  },
+  "exploreOptSource": "抽取范围",
+  "@exploreOptSource": {
+    "description": "探索页自定义：卡片选项标题：抽取范围。"
+  },
+  "exploreOptPhotosOnly": "只抽有封面的",
+  "@exploreOptPhotosOnly": {
+    "description": "探索页自定义：卡片选项标题：只抽有封面的。"
+  },
+  "exploreOptDaily": "每天固定一篇",
+  "@exploreOptDaily": {
+    "description": "探索页自定义：卡片选项标题：每天固定一篇。"
+  },
+  "exploreOptRecapPeriod": "回顾周期",
+  "@exploreOptRecapPeriod": {
+    "description": "探索页自定义：卡片选项标题：回顾周期。"
+  },
+  "exploreOptCompare": "与上一期对比",
+  "@exploreOptCompare": {
+    "description": "探索页自定义：卡片选项标题：与上一期对比。"
+  },
+  "exploreOptKinds": "里程碑类别",
+  "@exploreOptKinds": {
+    "description": "探索页自定义：卡片选项标题：里程碑类别。"
+  },
+  "exploreOptAchieved": "显示已达成个数",
+  "@exploreOptAchieved": {
+    "description": "探索页自定义：卡片选项标题：显示已达成个数。"
+  },
+  "exploreOptMetrics": "指标",
+  "@exploreOptMetrics": {
+    "description": "探索页自定义：卡片选项标题：指标。"
+  },
+  "exploreOptColumns": "列数",
+  "@exploreOptColumns": {
+    "description": "探索页自定义：卡片选项标题：列数。"
+  },
+  "exploreOptHeatmapSpan": "时间跨度",
+  "@exploreOptHeatmapSpan": {
+    "description": "探索页自定义：卡片选项标题：时间跨度。"
+  },
+  "exploreOptBasis": "着色依据",
+  "@exploreOptBasis": {
+    "description": "探索页自定义：卡片选项标题：着色依据。"
+  },
+  "exploreOptWeekdayLabels": "星期标签",
+  "@exploreOptWeekdayLabels": {
+    "description": "探索页自定义：卡片选项标题：星期标签。"
+  },
+  "exploreOptLegend": "图例",
+  "@exploreOptLegend": {
+    "description": "探索页自定义：卡片选项标题：图例。"
+  },
+  "exploreOptUnit": "粒度",
+  "@exploreOptUnit": {
+    "description": "探索页自定义：卡片选项标题：粒度。"
+  },
+  "exploreOptMetric": "统计",
+  "@exploreOptMetric": {
+    "description": "探索页自定义：卡片选项标题：统计。"
+  },
+  "exploreOptTimeOfDay": "时段分布",
+  "@exploreOptTimeOfDay": {
+    "description": "探索页自定义：卡片选项标题：时段分布。"
+  },
+  "exploreOptWeekdays": "星期分布",
+  "@exploreOptWeekdays": {
+    "description": "探索页自定义：卡片选项标题：星期分布。"
+  },
+  "exploreOptDays": "时间范围",
+  "@exploreOptDays": {
+    "description": "探索页自定义：卡片选项标题：时间范围。"
+  },
+  "exploreOptChart": "图表",
+  "@exploreOptChart": {
+    "description": "探索页自定义：卡片选项标题：图表。"
+  },
+  "exploreOptDayMoods": "合并“这天的心情”",
+  "@exploreOptDayMoods": {
+    "description": "探索页自定义：卡片选项标题：合并“这天的心情”。"
+  },
+  "exploreOptSort": "排序",
+  "@exploreOptSort": {
+    "description": "探索页自定义：卡片选项标题：排序。"
+  },
+  "exploreOptPercent": "显示百分比",
+  "@exploreOptPercent": {
+    "description": "探索页自定义：卡片选项标题：显示百分比。"
+  },
+  "exploreOptInline": "包括正文里的图片",
+  "@exploreOptInline": {
+    "description": "探索页自定义：卡片选项标题：包括正文里的图片。"
+  },
+  "exploreOptRecent": "显示最近开启的",
+  "@exploreOptRecent": {
+    "description": "探索页自定义：卡片选项标题：显示最近开启的。"
+  },
+  "exploreValFollowLanguage": "跟随语言",
+  "@exploreValFollowLanguage": {
+    "description": "探索页自定义：选项取值：跟随语言。"
+  },
+  "exploreValShow": "显示",
+  "@exploreValShow": {
+    "description": "探索页自定义：选项取值：显示。"
+  },
+  "exploreValHide": "隐藏",
+  "@exploreValHide": {
+    "description": "探索页自定义：选项取值：隐藏。"
+  },
+  "exploreValSameDay": "同月同日",
+  "@exploreValSameDay": {
+    "description": "探索页自定义：选项取值：同月同日。"
+  },
+  "exploreValNearby": "前后 3 天",
+  "@exploreValNearby": {
+    "description": "探索页自定义：选项取值：前后 3 天。"
+  },
+  "exploreValSameMonth": "同月",
+  "@exploreValSameMonth": {
+    "description": "探索页自定义：选项取值：同月。"
+  },
+  "exploreValCarousel": "轮播",
+  "@exploreValCarousel": {
+    "description": "探索页自定义：选项取值：轮播。"
+  },
+  "exploreValList": "列表",
+  "@exploreValList": {
+    "description": "探索页自定义：选项取值：列表。"
+  },
+  "exploreValAll": "全部",
+  "@exploreValAll": {
+    "description": "探索页自定义：选项取值：全部。"
+  },
+  "exploreValMonthAgo": "一个月前",
+  "@exploreValMonthAgo": {
+    "description": "探索页自定义：选项取值：一个月前。"
+  },
+  "exploreValYearAgo": "一年前",
+  "@exploreValYearAgo": {
+    "description": "探索页自定义：选项取值：一年前。"
+  },
+  "exploreValWeeks12": "12 周",
+  "@exploreValWeeks12": {
+    "description": "探索页自定义：选项取值：12 周。"
+  },
+  "exploreValHalfYear": "半年",
+  "@exploreValHalfYear": {
+    "description": "探索页自定义：选项取值：半年。"
+  },
+  "exploreValYear": "一年",
+  "@exploreValYear": {
+    "description": "探索页自定义：选项取值：一年。"
+  },
+  "exploreValEntries": "篇数",
+  "@exploreValEntries": {
+    "description": "探索页自定义：选项取值：篇数。"
+  },
+  "exploreValWords": "字数",
+  "@exploreValWords": {
+    "description": "探索页自定义：选项取值：字数。"
+  },
+  "exploreValMood": "心情",
+  "@exploreValMood": {
+    "description": "探索页自定义：选项取值：心情。"
+  },
+  "exploreValByMonth": "按月",
+  "@exploreValByMonth": {
+    "description": "探索页自定义：选项取值：按月。"
+  },
+  "exploreValByWeek": "按周",
+  "@exploreValByWeek": {
+    "description": "探索页自定义：选项取值：按周。"
+  },
+  "exploreValByDay": "按天",
+  "@exploreValByDay": {
+    "description": "探索页自定义：选项取值：按天。"
+  },
+  "exploreValPixels": "像素格",
+  "@exploreValPixels": {
+    "description": "探索页自定义：选项取值：像素格。"
+  },
+  "exploreValLine": "折线",
+  "@exploreValLine": {
+    "description": "探索页自定义：选项取值：折线。"
+  },
+  "exploreValBars": "柱状",
+  "@exploreValBars": {
+    "description": "探索页自定义：选项取值：柱状。"
+  },
+  "exploreValByCount": "按次数",
+  "@exploreValByCount": {
+    "description": "探索页自定义：选项取值：按次数。"
+  },
+  "exploreValByMood": "按心情",
+  "@exploreValByMood": {
+    "description": "探索页自定义：选项取值：按心情。"
+  },
+  "exploreValRanking": "排行",
+  "@exploreValRanking": {
+    "description": "探索页自定义：选项取值：排行。"
+  },
+  "exploreValManual": "手动顺序",
+  "@exploreValManual": {
+    "description": "探索页自定义：选项取值：手动顺序。"
+  },
+  "exploreValRecent": "最近使用",
+  "@exploreValRecent": {
+    "description": "探索页自定义：选项取值：最近使用。"
+  },
+  "exploreValStrip": "横条",
+  "@exploreValStrip": {
+    "description": "探索页自定义：选项取值：横条。"
+  },
+  "exploreValGrid": "宫格",
+  "@exploreValGrid": {
+    "description": "探索页自定义：选项取值：宫格。"
+  },
+  "exploreValMosaic": "拼贴",
+  "@exploreValMosaic": {
+    "description": "探索页自定义：选项取值：拼贴。"
+  },
+  "exploreValIcons": "图标",
+  "@exploreValIcons": {
+    "description": "探索页自定义：选项取值：图标。"
+  },
+  "exploreValShelf": "书架顺序",
+  "@exploreValShelf": {
+    "description": "探索页自定义：选项取值：书架顺序。"
+  },
+  "exploreValUpdated": "最近更新",
+  "@exploreValUpdated": {
+    "description": "探索页自定义：选项取值：最近更新。"
+  },
+  "exploreValByEntries": "按篇数",
+  "@exploreValByEntries": {
+    "description": "探索页自定义：选项取值：按篇数。"
+  },
+  "exploreValAuto": "自动",
+  "@exploreValAuto": {
+    "description": "探索页自定义：选项取值：自动。"
+  },
+  "exploreValColumns": "{count} 列",
+  "@exploreValColumns": {
+    "description": "探索页自定义：列数取值。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "explorePresetBalanced": "均衡",
+  "@explorePresetBalanced": {
+    "description": "探索页自定义：内置布局名称：均衡。"
+  },
+  "explorePresetBalancedDesc": "常用卡片，看一眼就知道最近的状态",
+  "@explorePresetBalancedDesc": {
+    "description": "探索页自定义：内置布局说明：常用卡片，看一眼就知道最近的状态。"
+  },
+  "explorePresetMinimal": "精简",
+  "@explorePresetMinimal": {
+    "description": "探索页自定义：内置布局名称：精简。"
+  },
+  "explorePresetMinimalDesc": "只留问候、那年今日、数据看板与图片",
+  "@explorePresetMinimalDesc": {
+    "description": "探索页自定义：内置布局说明：只留问候、那年今日、数据看板与图片。"
+  },
+  "explorePresetDataLover": "数据控",
+  "@explorePresetDataLover": {
+    "description": "探索页自定义：内置布局名称：数据控。"
+  },
+  "explorePresetDataLoverDesc": "统计图表全开：热力图、节奏、习惯、心情与精力",
+  "@explorePresetDataLoverDesc": {
+    "description": "探索页自定义：内置布局说明：统计图表全开：热力图、节奏、习惯、心情与精力。"
+  },
+  "explorePresetMemories": "回忆",
+  "@explorePresetMemories": {
+    "description": "探索页自定义：内置布局名称：回忆。"
+  },
+  "explorePresetMemoriesDesc": "那年今日、随机回顾、周期回顾、胶囊与纪念日",
+  "@explorePresetMemoriesDesc": {
+    "description": "探索页自定义：内置布局说明：那年今日、随机回顾、周期回顾、胶囊与纪念日。"
+  },
+  "explorePresetEverything": "全部显示",
+  "@explorePresetEverything": {
+    "description": "探索页自定义：内置布局名称：全部显示。"
+  },
+  "explorePresetEverythingDesc": "20 张卡片全部打开",
+  "@explorePresetEverythingDesc": {
+    "description": "探索页自定义：内置布局说明：20 张卡片全部打开。"
+  },
+  "exploreLookCards": "卡片",
+  "@exploreLookCards": {
+    "description": "探索页自定义“外观”页：卡片。"
+  },
+  "exploreLookDensity": "密度",
+  "@exploreLookDensity": {
+    "description": "探索页自定义“外观”页：密度。"
+  },
+  "exploreLookCompact": "紧凑",
+  "@exploreLookCompact": {
+    "description": "探索页自定义“外观”页：紧凑。"
+  },
+  "exploreLookStandard": "标准",
+  "@exploreLookStandard": {
+    "description": "探索页自定义“外观”页：标准。"
+  },
+  "exploreLookRelaxed": "宽松",
+  "@exploreLookRelaxed": {
+    "description": "探索页自定义“外观”页：宽松。"
+  },
+  "exploreLookRadius": "圆角",
+  "@exploreLookRadius": {
+    "description": "探索页自定义“外观”页：圆角。"
+  },
+  "exploreLookSurface": "卡片表面",
+  "@exploreLookSurface": {
+    "description": "探索页自定义“外观”页：卡片表面。"
+  },
+  "exploreLookFilled": "填充",
+  "@exploreLookFilled": {
+    "description": "探索页自定义“外观”页：填充。"
+  },
+  "exploreLookTonal": "色调",
+  "@exploreLookTonal": {
+    "description": "探索页自定义“外观”页：色调。"
+  },
+  "exploreLookOutlined": "描边",
+  "@exploreLookOutlined": {
+    "description": "探索页自定义“外观”页：描边。"
+  },
+  "exploreLookSurfaceGlassNote": "材质设为玻璃时，卡片一律是玻璃。",
+  "@exploreLookSurfaceGlassNote": {
+    "description": "探索页自定义“外观”页：材质设为玻璃时，卡片一律是玻璃。。"
+  },
+  "exploreLookAccent": "强调色",
+  "@exploreLookAccent": {
+    "description": "探索页自定义“外观”页：强调色。"
+  },
+  "exploreLookPrimary": "主色",
+  "@exploreLookPrimary": {
+    "description": "探索页自定义“外观”页：主色。"
+  },
+  "exploreLookSecondary": "次要色",
+  "@exploreLookSecondary": {
+    "description": "探索页自定义“外观”页：次要色。"
+  },
+  "exploreLookTertiary": "第三色",
+  "@exploreLookTertiary": {
+    "description": "探索页自定义“外观”页：第三色。"
+  },
+  "exploreLookText": "标题与数字",
+  "@exploreLookText": {
+    "description": "探索页自定义“外观”页：标题与数字。"
+  },
+  "exploreLookHeading": "卡片标题",
+  "@exploreLookHeading": {
+    "description": "探索页自定义“外观”页：卡片标题。"
+  },
+  "exploreLookBadge": "徽章",
+  "@exploreLookBadge": {
+    "description": "探索页自定义“外观”页：徽章。"
+  },
+  "exploreLookIcon": "图标",
+  "@exploreLookIcon": {
+    "description": "探索页自定义“外观”页：图标。"
+  },
+  "exploreLookTextOnly": "文字",
+  "@exploreLookTextOnly": {
+    "description": "探索页自定义“外观”页：文字。"
+  },
+  "exploreLookHidden": "隐藏",
+  "@exploreLookHidden": {
+    "description": "探索页自定义“外观”页：隐藏。"
+  },
+  "exploreLookCompactNumbers": "大数字缩写",
+  "@exploreLookCompactNumbers": {
+    "description": "探索页自定义“外观”页：大数字缩写。"
+  },
+  "exploreLookCompactNumbersSubtitle": "超过一万时写成 1.2万 这样",
+  "@exploreLookCompactNumbersSubtitle": {
+    "description": "探索页自定义“外观”页：超过一万时写成 1.2万 这样。"
+  },
+  "exploreLookAnimations": "图表动画",
+  "@exploreLookAnimations": {
+    "description": "探索页自定义“外观”页：图表动画。"
+  },
+  "exploreLookAnimationsSubtitle": "首次出现时图表生长、数字递增",
+  "@exploreLookAnimationsSubtitle": {
+    "description": "探索页自定义“外观”页：首次出现时图表生长、数字递增。"
+  },
+  "exploreLookWide": "宽窗口",
+  "@exploreLookWide": {
+    "description": "探索页自定义“外观”页：宽窗口。"
+  },
+  "exploreLookWideFooter": "手机等窄屏上始终是单列。",
+  "@exploreLookWideFooter": {
+    "description": "探索页自定义“外观”页：手机等窄屏上始终是单列。。"
+  },
+  "exploreLookColumns": "列数",
+  "@exploreLookColumns": {
+    "description": "探索页自定义“外观”页：列数。"
+  },
+  "exploreLookFlow": "排布",
+  "@exploreLookFlow": {
+    "description": "探索页自定义“外观”页：排布。"
+  },
+  "exploreLookRows": "对齐成行",
+  "@exploreLookRows": {
+    "description": "探索页自定义“外观”页：对齐成行。"
+  },
+  "exploreLookStaggered": "错落",
+  "@exploreLookStaggered": {
+    "description": "探索页自定义“外观”页：错落。"
+  },
+  "exploreRangeBar": "显示统计范围条",
+  "@exploreRangeBar": {
+    "description": "探索页自定义“范围”页开关：显示统计范围条。"
+  },
+  "exploreRangeBarSubtitle": "在探索页顶部切换本周、本月、今年与全部",
+  "@exploreRangeBarSubtitle": {
+    "description": "探索页自定义“范围”页开关说明：在探索页顶部切换本周、本月、今年与全部。"
+  },
+  "exploreRangeCurrent": "统计范围",
+  "@exploreRangeCurrent": {
+    "description": "探索页自定义“范围”页：当前统计范围：统计范围。"
+  },
+  "exploreRangeFooter": "统计范围影响数据看板、标签、写作习惯、心情分布、足迹和天气；其他卡片有各自的时间范围。",
+  "@exploreRangeFooter": {
+    "description": "探索页自定义“范围”页说明：统计范围影响数据看板、标签、写作习惯、心情分布、足迹和天气；其他卡片有各自的时间范围。。"
+  },
+  "exploreSampleWeatherSunny": "晴",
+  "@exploreSampleWeatherSunny": {
+    "description": "探索页自定义预览示例日记的天气：晴。"
+  },
+  "exploreSampleWeatherCloudy": "多云",
+  "@exploreSampleWeatherCloudy": {
+    "description": "探索页自定义预览示例日记的天气：多云。"
+  },
+  "exploreSampleWeatherOvercast": "阴",
+  "@exploreSampleWeatherOvercast": {
+    "description": "探索页自定义预览示例日记的天气：阴。"
+  },
+  "exploreSampleWeatherRain": "小雨",
+  "@exploreSampleWeatherRain": {
+    "description": "探索页自定义预览示例日记的天气：小雨。"
+  },
+  "exploreSampleWeatherFog": "雾",
+  "@exploreSampleWeatherFog": {
+    "description": "探索页自定义预览示例日记的天气：雾。"
+  }
 }

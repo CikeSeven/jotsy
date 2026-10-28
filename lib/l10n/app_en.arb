@@ -1278,10 +1278,6 @@
   "@autoT0059": {
     "description": "Auto-generated metadata for autoT0059."
   },
-  "autoT0060": "Mood & energy trends",
-  "@autoT0060": {
-    "description": "Auto-generated metadata for autoT0060."
-  },
   "autoT0061": "View all images",
   "@autoT0061": {
     "description": "Auto-generated metadata for autoT0061."
@@ -1301,18 +1297,6 @@
   "autoT0065": "Untitled diary",
   "@autoT0065": {
     "description": "Auto-generated metadata for autoT0065."
-  },
-  "autoT0066": "Total records",
-  "@autoT0066": {
-    "description": "Auto-generated metadata for autoT0066."
-  },
-  "autoT0067": "Streak",
-  "@autoT0067": {
-    "description": "Auto-generated metadata for autoT0067."
-  },
-  "autoT0068": "Words this month",
-  "@autoT0068": {
-    "description": "Auto-generated metadata for autoT0068."
   },
   "autoT0069": "Tag cloud",
   "@autoT0069": {
@@ -1898,10 +1882,6 @@
   "autoT0197": "Failed to load images. Please try again later.",
   "@autoT0197": {
     "description": "Auto-generated metadata for autoT0197."
-  },
-  "autoT0198": "Keep recording weather, tags, and mood to unlock deeper insights here.",
-  "@autoT0198": {
-    "description": "Auto-generated metadata for autoT0198."
   },
   "autoT0199": "No tag data yet. Try writing diaries with tags.",
   "@autoT0199": {
@@ -11480,5 +11460,1332 @@
   "diaryListToNumbered": "To numbered list",
   "@diaryListToNumbered": {"description": "List panel button: turn the selected bulleted list items into a numbered list."},
   "diaryListToText": "Convert to text",
-  "@diaryListToText": {"description": "List panel button: turn the selected list items back into paragraphs."}
+  "@diaryListToText": {"description": "List panel button: turn the selected list items back into paragraphs."},
+  "exploreModuleGreeting": "Today",
+  "@exploreModuleGreeting": {
+    "description": "Explore card name: Today."
+  },
+  "exploreModuleGreetingDesc": "A greeting with the lunar date, today's progress and a daily prompt",
+  "@exploreModuleGreetingDesc": {
+    "description": "One-line description of the Explore card “Today” (customize page)."
+  },
+  "exploreModuleOnThisDay": "On this day",
+  "@exploreModuleOnThisDay": {
+    "description": "Explore card name: On this day."
+  },
+  "exploreModuleOnThisDayDesc": "Entries from this day (or nearby days, or this month) in past years",
+  "@exploreModuleOnThisDayDesc": {
+    "description": "One-line description of the Explore card “On this day” (customize page)."
+  },
+  "exploreModuleRandomMemory": "Random memory",
+  "@exploreModuleRandomMemory": {
+    "description": "Explore card name: Random memory."
+  },
+  "exploreModuleRandomMemoryDesc": "Pulls up an old entry at random",
+  "@exploreModuleRandomMemoryDesc": {
+    "description": "One-line description of the Explore card “Random memory” (customize page)."
+  },
+  "exploreModuleRecap": "Recap",
+  "@exploreModuleRecap": {
+    "description": "Explore card name: Recap."
+  },
+  "exploreModuleRecapDesc": "This week, month or year at a glance, compared with the last one",
+  "@exploreModuleRecapDesc": {
+    "description": "One-line description of the Explore card “Recap” (customize page)."
+  },
+  "exploreModuleMilestones": "Milestones",
+  "@exploreModuleMilestones": {
+    "description": "Explore card name: Milestones."
+  },
+  "exploreModuleMilestonesDesc": "Progress towards entry, word and streak milestones",
+  "@exploreModuleMilestonesDesc": {
+    "description": "One-line description of the Explore card “Milestones” (customize page)."
+  },
+  "exploreModuleOverview": "Dashboard",
+  "@exploreModuleOverview": {
+    "description": "Explore card name: Dashboard."
+  },
+  "exploreModuleOverviewDesc": "Numbers you choose: entries, words, streaks and more",
+  "@exploreModuleOverviewDesc": {
+    "description": "One-line description of the Explore card “Dashboard” (customize page)."
+  },
+  "exploreModuleHeatmap": "Writing heatmap",
+  "@exploreModuleHeatmap": {
+    "description": "Explore card name: Writing heatmap."
+  },
+  "exploreModuleHeatmapDesc": "Daily squares laid out week by week",
+  "@exploreModuleHeatmapDesc": {
+    "description": "One-line description of the Explore card “Writing heatmap” (customize page)."
+  },
+  "exploreModuleRhythm": "Writing rhythm",
+  "@exploreModuleRhythm": {
+    "description": "Explore card name: Writing rhythm."
+  },
+  "exploreModuleRhythmDesc": "How much you wrote each month, week or day",
+  "@exploreModuleRhythmDesc": {
+    "description": "One-line description of the Explore card “Writing rhythm” (customize page)."
+  },
+  "exploreModuleHabits": "Writing habits",
+  "@exploreModuleHabits": {
+    "description": "Explore card name: Writing habits."
+  },
+  "exploreModuleHabitsDesc": "When and on which weekday you usually write",
+  "@exploreModuleHabitsDesc": {
+    "description": "One-line description of the Explore card “Writing habits” (customize page)."
+  },
+  "exploreModuleMoodTrend": "Mood trend",
+  "@exploreModuleMoodTrend": {
+    "description": "Explore card name: Mood trend."
+  },
+  "exploreModuleMoodTrendDesc": "How your mood changed day by day",
+  "@exploreModuleMoodTrendDesc": {
+    "description": "One-line description of the Explore card “Mood trend” (customize page)."
+  },
+  "exploreModuleMoodShare": "Mood breakdown",
+  "@exploreModuleMoodShare": {
+    "description": "Explore card name: Mood breakdown."
+  },
+  "exploreModuleMoodShareDesc": "How often each mood appears",
+  "@exploreModuleMoodShareDesc": {
+    "description": "One-line description of the Explore card “Mood breakdown” (customize page)."
+  },
+  "exploreModuleEnergy": "Energy trend",
+  "@exploreModuleEnergy": {
+    "description": "Explore card name: Energy trend."
+  },
+  "exploreModuleEnergyDesc": "Your energy level day by day",
+  "@exploreModuleEnergyDesc": {
+    "description": "One-line description of the Explore card “Energy trend” (customize page)."
+  },
+  "exploreModuleTags": "Tags",
+  "@exploreModuleTags": {
+    "description": "Explore card name: Tags."
+  },
+  "exploreModuleTagsDesc": "Your tags; tap one to search",
+  "@exploreModuleTagsDesc": {
+    "description": "One-line description of the Explore card “Tags” (customize page)."
+  },
+  "exploreModuleMedia": "Media gallery",
+  "@exploreModuleMedia": {
+    "description": "Explore card name: Media gallery."
+  },
+  "exploreModuleMediaDesc": "Photos from your diary",
+  "@exploreModuleMediaDesc": {
+    "description": "One-line description of the Explore card “Media gallery” (customize page)."
+  },
+  "exploreModulePlaces": "Places",
+  "@exploreModulePlaces": {
+    "description": "Explore card name: Places."
+  },
+  "exploreModulePlacesDesc": "Where you write most often",
+  "@exploreModulePlacesDesc": {
+    "description": "One-line description of the Explore card “Places” (customize page)."
+  },
+  "exploreModuleWeather": "Weather",
+  "@exploreModuleWeather": {
+    "description": "Explore card name: Weather."
+  },
+  "exploreModuleWeatherDesc": "The weather when you wrote",
+  "@exploreModuleWeatherDesc": {
+    "description": "One-line description of the Explore card “Weather” (customize page)."
+  },
+  "exploreModuleAnniversaries": "Anniversaries",
+  "@exploreModuleAnniversaries": {
+    "description": "Explore card name: Anniversaries."
+  },
+  "exploreModuleAnniversariesDesc": "Countdown to upcoming anniversaries",
+  "@exploreModuleAnniversariesDesc": {
+    "description": "One-line description of the Explore card “Anniversaries” (customize page)."
+  },
+  "exploreModuleCapsules": "Time capsules",
+  "@exploreModuleCapsules": {
+    "description": "Explore card name: Time capsules."
+  },
+  "exploreModuleCapsulesDesc": "Capsules waiting to open and those opened recently",
+  "@exploreModuleCapsulesDesc": {
+    "description": "One-line description of the Explore card “Time capsules” (customize page)."
+  },
+  "exploreModuleNotebooks": "Notebooks",
+  "@exploreModuleNotebooks": {
+    "description": "Explore card name: Notebooks."
+  },
+  "exploreModuleNotebooksDesc": "Your notebook shelf",
+  "@exploreModuleNotebooksDesc": {
+    "description": "One-line description of the Explore card “Notebooks” (customize page)."
+  },
+  "exploreModuleDrafts": "Drafts",
+  "@exploreModuleDrafts": {
+    "description": "Explore card name: Drafts."
+  },
+  "exploreModuleDraftsDesc": "A reminder when you have unfinished drafts",
+  "@exploreModuleDraftsDesc": {
+    "description": "One-line description of the Explore card “Drafts” (customize page)."
+  },
+  "explorePeriodWeek": "This week",
+  "@explorePeriodWeek": {
+    "description": "Explore statistics range: this week."
+  },
+  "explorePeriodMonth": "This month",
+  "@explorePeriodMonth": {
+    "description": "Explore statistics range: this month."
+  },
+  "explorePeriodYear": "This year",
+  "@explorePeriodYear": {
+    "description": "Explore statistics range: this year."
+  },
+  "explorePeriodAll": "All time",
+  "@explorePeriodAll": {
+    "description": "Explore statistics range: all entries."
+  },
+  "explorePeriodEmpty": "No entries in this period yet",
+  "@explorePeriodEmpty": {
+    "description": "Explore card: shown when the selected range has no entries."
+  },
+  "exploreNoModules": "No cards are shown on Explore",
+  "@exploreNoModules": {
+    "description": "Explore: shown when every card is hidden."
+  },
+  "exploreModuleMenuHide": "Hide this card",
+  "@exploreModuleMenuHide": {
+    "description": "Explore card long-press menu: hide this card."
+  },
+  "exploreModuleHidden": "Hid “{name}”",
+  "@exploreModuleHidden": {
+    "description": "Snack bar after hiding an Explore card, with undo.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreGreetingMorning": "Good morning",
+  "@exploreGreetingMorning": {
+    "description": "Explore greeting, 5–11 am."
+  },
+  "exploreGreetingNoon": "Good day",
+  "@exploreGreetingNoon": {
+    "description": "Explore greeting, 11 am–1 pm."
+  },
+  "exploreGreetingAfternoon": "Good afternoon",
+  "@exploreGreetingAfternoon": {
+    "description": "Explore greeting, 1–6 pm."
+  },
+  "exploreGreetingEvening": "Good evening",
+  "@exploreGreetingEvening": {
+    "description": "Explore greeting, 6–11 pm."
+  },
+  "exploreGreetingNight": "Up late",
+  "@exploreGreetingNight": {
+    "description": "Explore greeting, 11 pm–5 am."
+  },
+  "exploreGreetingToday": "{count, plural, =1{1 entry} other{{count} entries}} today · {words} words",
+  "@exploreGreetingToday": {
+    "description": "Explore greeting: today's entries and words (words is pre-formatted).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreGreetingTodayEmpty": "Nothing written today yet",
+  "@exploreGreetingTodayEmpty": {
+    "description": "Explore greeting: nothing written today."
+  },
+  "exploreGreetingWrite": "Write",
+  "@exploreGreetingWrite": {
+    "description": "Explore greeting: new entry button."
+  },
+  "exploreGreetingNextPrompt": "Another prompt",
+  "@exploreGreetingNextPrompt": {
+    "description": "Explore greeting: show another writing prompt (tooltip)."
+  },
+  "explorePrompt01": "What made you smile today?",
+  "@explorePrompt01": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt02": "What has been on your mind lately?",
+  "@explorePrompt02": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt03": "What did you learn today?",
+  "@explorePrompt03": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt04": "If you could redo today, what would you do differently?",
+  "@explorePrompt04": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt05": "Describe what's outside your window right now.",
+  "@explorePrompt05": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt06": "What was the best thing you ate today?",
+  "@explorePrompt06": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt07": "Which line you read or heard recently stuck with you?",
+  "@explorePrompt07": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt08": "What do you have today that you didn't have yesterday?",
+  "@explorePrompt08": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt09": "Write about a small thing that made you feel grounded.",
+  "@explorePrompt09": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt10": "What would you like to tell yourself this week?",
+  "@explorePrompt10": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt11": "Who did you talk to today, and about what?",
+  "@explorePrompt11": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt12": "What are you looking forward to?",
+  "@explorePrompt12": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt13": "If today's mood were weather, what would it be?",
+  "@explorePrompt13": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt14": "Write down three small things you're grateful for today.",
+  "@explorePrompt14": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt15": "Is there a song you've had on repeat lately?",
+  "@explorePrompt15": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt16": "What went better than expected today?",
+  "@explorePrompt16": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt17": "What would you say to yourself a year from now?",
+  "@explorePrompt17": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt18": "Where did you spend most of today? What was it like?",
+  "@explorePrompt18": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt19": "What has been tiring you out, and how can you look after yourself?",
+  "@explorePrompt19": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "explorePrompt20": "What made you laugh out loud recently?",
+  "@explorePrompt20": {
+    "description": "Daily writing prompt on the Explore greeting card."
+  },
+  "exploreOnThisDayEmpty": "No entries from this day in past years yet. What you write today shows up here next year.",
+  "@exploreOnThisDayEmpty": {
+    "description": "Explore on this day: shown when there are no memories."
+  },
+  "exploreRandomShuffle": "Another one",
+  "@exploreRandomShuffle": {
+    "description": "Explore random memory: pick another entry (tooltip)."
+  },
+  "exploreRandomEmpty": "No older entries match yet",
+  "@exploreRandomEmpty": {
+    "description": "Explore random memory: shown when nothing matches."
+  },
+  "exploreRecapTitleWeek": "This week",
+  "@exploreRecapTitleWeek": {
+    "description": "Explore recap title (week)."
+  },
+  "exploreRecapTitleMonth": "This month",
+  "@exploreRecapTitleMonth": {
+    "description": "Explore recap title (month)."
+  },
+  "exploreRecapTitleYear": "This year",
+  "@exploreRecapTitleYear": {
+    "description": "Explore recap title (year)."
+  },
+  "exploreRecapTopMood": "Top mood",
+  "@exploreRecapTopMood": {
+    "description": "Explore recap: most frequent mood."
+  },
+  "exploreRecapTopTag": "Top tag",
+  "@exploreRecapTopTag": {
+    "description": "Explore recap: most used tag."
+  },
+  "exploreRecapMore": "{count} more than last time",
+  "@exploreRecapMore": {
+    "description": "Explore recap: more than the previous period (screen readers).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreRecapFewer": "{count} fewer than last time",
+  "@exploreRecapFewer": {
+    "description": "Explore recap: fewer than the previous period (screen readers).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreRecapSame": "Same as last time",
+  "@exploreRecapSame": {
+    "description": "Explore recap: same as the previous period (screen readers)."
+  },
+  "exploreMetricEntries": "Entries",
+  "@exploreMetricEntries": {
+    "description": "Explore dashboard metric: entries."
+  },
+  "exploreMetricWords": "Words",
+  "@exploreMetricWords": {
+    "description": "Explore dashboard metric: words."
+  },
+  "exploreMetricRecordedDays": "Days written",
+  "@exploreMetricRecordedDays": {
+    "description": "Explore dashboard metric: days with entries."
+  },
+  "exploreMetricCurrentStreak": "Current streak",
+  "@exploreMetricCurrentStreak": {
+    "description": "Explore dashboard metric: current streak."
+  },
+  "exploreMetricLongestStreak": "Longest streak",
+  "@exploreMetricLongestStreak": {
+    "description": "Explore dashboard metric: longest streak."
+  },
+  "exploreMetricAverageWords": "Words per entry",
+  "@exploreMetricAverageWords": {
+    "description": "Explore dashboard metric: average words per entry."
+  },
+  "exploreMetricPhotos": "Photos",
+  "@exploreMetricPhotos": {
+    "description": "Explore dashboard metric: photos."
+  },
+  "exploreMetricTags": "Tags used",
+  "@exploreMetricTags": {
+    "description": "Explore dashboard metric: distinct tags used."
+  },
+  "exploreMetricSpan": "Time span",
+  "@exploreMetricSpan": {
+    "description": "Explore dashboard metric: span from first to last entry."
+  },
+  "exploreMetricTodayWords": "Words today",
+  "@exploreMetricTodayWords": {
+    "description": "Explore dashboard metric: words written today."
+  },
+  "exploreMilestoneEntries": "Entries",
+  "@exploreMilestoneEntries": {
+    "description": "Explore milestone kind: entries."
+  },
+  "exploreMilestoneWords": "Words",
+  "@exploreMilestoneWords": {
+    "description": "Explore milestone kind: words."
+  },
+  "exploreMilestoneStreak": "Longest streak",
+  "@exploreMilestoneStreak": {
+    "description": "Explore milestone kind: longest streak."
+  },
+  "exploreMilestoneDays": "Days written",
+  "@exploreMilestoneDays": {
+    "description": "Explore milestone kind: days written."
+  },
+  "exploreMilestoneYears": "Years",
+  "@exploreMilestoneYears": {
+    "description": "Explore milestone kind: years since the first entry."
+  },
+  "exploreMilestoneNext": "Next: {target} · {remaining} to go",
+  "@exploreMilestoneNext": {
+    "description": "Explore milestone: next step and how far away it is (both pre-formatted).",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreMilestoneAllDone": "All reached",
+  "@exploreMilestoneAllDone": {
+    "description": "Explore milestone: every step reached."
+  },
+  "exploreMilestoneAchieved": "{count} reached",
+  "@exploreMilestoneAchieved": {
+    "description": "Explore milestone: number of steps reached.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreUnitEntries": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@exploreUnitEntries": {
+    "description": "A number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreUnitWords": "{words} words",
+  "@exploreUnitWords": {
+    "description": "A number of words (pre-formatted).",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreUnitYears": "{count, plural, =1{1 year} other{{count} years}}",
+  "@exploreUnitYears": {
+    "description": "A number of years.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreUnitTimes": "{count}×",
+  "@exploreUnitTimes": {
+    "description": "A number of times.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreHeatmapSummary": "{days, plural, =1{1 day} other{{days} days}} written in the last {weeks} weeks",
+  "@exploreHeatmapSummary": {
+    "description": "Explore heatmap summary line.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreHeatmapDay": "{date} · {count, plural, =1{1 entry} other{{count} entries}} · {words} words",
+  "@exploreHeatmapDay": {
+    "description": "Explore heatmap: details of the hovered or tapped day (date and words are pre-formatted).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHeatmapDayEmpty": "{date} · No entries",
+  "@exploreHeatmapDayEmpty": {
+    "description": "Explore heatmap: that day has no entries.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHeatmapLess": "Less",
+  "@exploreHeatmapLess": {
+    "description": "Explore heatmap legend: less."
+  },
+  "exploreHeatmapMore": "More",
+  "@exploreHeatmapMore": {
+    "description": "Explore heatmap legend: more."
+  },
+  "exploreTotalEntries": "{count, plural, =1{1 entry} other{{count} entries}} in total",
+  "@exploreTotalEntries": {
+    "description": "Explore card header: total entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreTotalWords": "{words} words in total",
+  "@exploreTotalWords": {
+    "description": "Explore card header: total words (pre-formatted).",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreSlotLateNight": "Late night",
+  "@exploreSlotLateNight": {
+    "description": "Explore writing habits slot: 0–6."
+  },
+  "exploreSlotMorning": "Morning",
+  "@exploreSlotMorning": {
+    "description": "Explore writing habits slot: 6–9."
+  },
+  "exploreSlotForenoon": "Late morning",
+  "@exploreSlotForenoon": {
+    "description": "Explore writing habits slot: 9–12."
+  },
+  "exploreSlotAfternoon": "Afternoon",
+  "@exploreSlotAfternoon": {
+    "description": "Explore writing habits slot: 12–18."
+  },
+  "exploreSlotEvening": "Evening",
+  "@exploreSlotEvening": {
+    "description": "Explore writing habits slot: 18–21."
+  },
+  "exploreSlotNight": "Night",
+  "@exploreSlotNight": {
+    "description": "Explore writing habits slot: 21–24."
+  },
+  "exploreHabitsTopSlot": "Most often: {slot}",
+  "@exploreHabitsTopSlot": {
+    "description": "Explore writing habits: busiest time of day.",
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHabitsTopWeekday": "Busiest day: {weekday}",
+  "@exploreHabitsTopWeekday": {
+    "description": "Explore writing habits: busiest weekday.",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreHabitsTimeOfDay": "Time of day",
+  "@exploreHabitsTimeOfDay": {
+    "description": "Explore writing habits: time-of-day chart label."
+  },
+  "exploreHabitsWeekdays": "Weekdays",
+  "@exploreHabitsWeekdays": {
+    "description": "Explore writing habits: weekday chart label."
+  },
+  "exploreLastDays": "Last {days} days",
+  "@exploreLastDays": {
+    "description": "Explore trend cards: time range.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoodAverage": "Average mood {mood}",
+  "@exploreMoodAverage": {
+    "description": "Explore mood trend: average mood.",
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreMoodTrendEmpty": "No moods recorded lately",
+  "@exploreMoodTrendEmpty": {
+    "description": "Explore mood trend: no data."
+  },
+  "exploreMoodShareEmpty": "No moods recorded in this period",
+  "@exploreMoodShareEmpty": {
+    "description": "Explore mood breakdown: no data."
+  },
+  "exploreEnergyAverage": "Average {value}",
+  "@exploreEnergyAverage": {
+    "description": "Explore energy trend: average energy (pre-formatted).",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreEnergyEmpty": "No energy levels recorded lately",
+  "@exploreEnergyEmpty": {
+    "description": "Explore energy trend: no data."
+  },
+  "explorePlacesEmpty": "Add a location when you write and your favourite places show up here.",
+  "@explorePlacesEmpty": {
+    "description": "Explore places: no data."
+  },
+  "exploreWeatherEmpty": "Record the weather when you write to see it here.",
+  "@exploreWeatherEmpty": {
+    "description": "Explore weather: no data."
+  },
+  "exploreAnniversariesEmpty": "No anniversaries yet",
+  "@exploreAnniversariesEmpty": {
+    "description": "Explore anniversaries card: none yet."
+  },
+  "exploreAnniversariesAdd": "Add an anniversary",
+  "@exploreAnniversariesAdd": {
+    "description": "Explore anniversaries card: add button."
+  },
+  "exploreAnniversariesAll": "All anniversaries",
+  "@exploreAnniversariesAll": {
+    "description": "Explore anniversaries card: open the list (tooltip)."
+  },
+  "exploreCapsulesWaiting": "{count, plural, =1{1 capsule} other{{count} capsules}} waiting to open",
+  "@exploreCapsulesWaiting": {
+    "description": "Explore time capsules card: number still sealed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreCapsuleOpensIn": "{count, plural, =1{Opens in 1 day} other{Opens in {count} days}}",
+  "@exploreCapsuleOpensIn": {
+    "description": "Explore time capsules card: days until it opens.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreCapsuleOpensToday": "Opens today",
+  "@exploreCapsuleOpensToday": {
+    "description": "Explore time capsules card: opens today."
+  },
+  "exploreCapsulesRecent": "Recently opened",
+  "@exploreCapsulesRecent": {
+    "description": "Explore time capsules card: opened in the last 30 days."
+  },
+  "exploreCapsulesEmpty": "No time capsules yet. Seal an entry when you publish it to send it to your future self.",
+  "@exploreCapsulesEmpty": {
+    "description": "Explore time capsules card: none yet."
+  },
+  "exploreNotebooksEmpty": "No notebooks yet",
+  "@exploreNotebooksEmpty": {
+    "description": "Explore notebooks card: none yet."
+  },
+  "exploreNotebooksManage": "Manage notebooks",
+  "@exploreNotebooksManage": {
+    "description": "Explore notebooks card: open the manager (tooltip)."
+  },
+  "exploreDraftsCount": "{count, plural, =1{1 draft} other{{count} drafts}} waiting",
+  "@exploreDraftsCount": {
+    "description": "Explore drafts card: number of drafts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreDraftsContinue": "Continue",
+  "@exploreDraftsContinue": {
+    "description": "Explore drafts card: continue button."
+  },
+  "exploreDraftsManage": "Manage",
+  "@exploreDraftsManage": {
+    "description": "Explore drafts card: manage button."
+  },
+  "exploreCustomize": "Customize Explore",
+  "@exploreCustomize": {
+    "description": "Explore header button and customize page title: Customize Explore."
+  },
+  "exploreModuleMenuSettings": "Card settings",
+  "@exploreModuleMenuSettings": {
+    "description": "Explore card long-press menu: Card settings."
+  },
+  "exploreGroupRecall": "Memories & ideas",
+  "@exploreGroupRecall": {
+    "description": "Explore card group (customize page): Memories & ideas."
+  },
+  "exploreGroupStats": "Charts",
+  "@exploreGroupStats": {
+    "description": "Explore card group (customize page): Charts."
+  },
+  "exploreGroupLife": "Life log",
+  "@exploreGroupLife": {
+    "description": "Explore card group (customize page): Life log."
+  },
+  "exploreGroupLinked": "Linked features",
+  "@exploreGroupLinked": {
+    "description": "Explore card group (customize page): Linked features."
+  },
+  "exploreLayoutTabPresets": "Presets",
+  "@exploreLayoutTabPresets": {
+    "description": "Customize Explore tab: Presets."
+  },
+  "exploreLayoutTabCards": "Cards",
+  "@exploreLayoutTabCards": {
+    "description": "Customize Explore tab: Cards."
+  },
+  "exploreLayoutTabAppearance": "Appearance",
+  "@exploreLayoutTabAppearance": {
+    "description": "Customize Explore tab: Appearance."
+  },
+  "exploreLayoutTabRange": "Range",
+  "@exploreLayoutTabRange": {
+    "description": "Customize Explore tab: Range."
+  },
+  "exploreLayoutResetDone": "Restored the default layout",
+  "@exploreLayoutResetDone": {
+    "description": "Customize Explore: snack bar after reset (with undo): Restored the default layout."
+  },
+  "exploreLayoutCardsHint": "Drag a handle to reorder; tap a row to see its options.",
+  "@exploreLayoutCardsHint": {
+    "description": "Customize Explore cards tab hint: Drag a handle to reorder; tap a row to see its options.."
+  },
+  "exploreLayoutCardsShowAll": "Show all",
+  "@exploreLayoutCardsShowAll": {
+    "description": "Customize Explore cards tab button: Show all."
+  },
+  "exploreLayoutCardsDefaultOrder": "Default order",
+  "@exploreLayoutCardsDefaultOrder": {
+    "description": "Customize Explore cards tab button: Default order."
+  },
+  "exploreLayoutFeatureOff": "Turned off in Features",
+  "@exploreLayoutFeatureOff": {
+    "description": "Customize Explore: the card's feature is off: Turned off in Features."
+  },
+  "exploreLayoutDragHandle": "Drag to reorder {name}",
+  "@exploreLayoutDragHandle": {
+    "description": "Customize Explore: drag handle label for screen readers.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreLayoutShowModule": "Show “{name}”",
+  "@exploreLayoutShowModule": {
+    "description": "Customize Explore: show switch label for screen readers.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreLayoutMultiHint": "Shown in the order you pick them, up to {max}",
+  "@exploreLayoutMultiHint": {
+    "description": "Customize Explore: ordered multi-select hint.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreLayoutSpan": "Width on wide screens",
+  "@exploreLayoutSpan": {
+    "description": "Customize Explore: card width option: Width on wide screens."
+  },
+  "exploreLayoutSpanFull": "Full row",
+  "@exploreLayoutSpanFull": {
+    "description": "Customize Explore: card takes a full row: Full row."
+  },
+  "exploreLayoutSpanHalf": "Half",
+  "@exploreLayoutSpanHalf": {
+    "description": "Customize Explore: card takes one column: Half."
+  },
+  "exploreLayoutPreviewMine": "My data",
+  "@exploreLayoutPreviewMine": {
+    "description": "Customize Explore preview: use my entries: My data."
+  },
+  "exploreLayoutPreviewSample": "Sample data",
+  "@exploreLayoutPreviewSample": {
+    "description": "Customize Explore preview: use sample entries: Sample data."
+  },
+  "exploreLayoutCustom": "Custom",
+  "@exploreLayoutCustom": {
+    "description": "Customize Explore: layout matches no preset or saved layout: Custom."
+  },
+  "exploreSamplePlaceHome": "Home",
+  "@exploreSamplePlaceHome": {
+    "description": "Customize Explore sample entry location: Home."
+  },
+  "exploreSamplePlaceOffice": "Office",
+  "@exploreSamplePlaceOffice": {
+    "description": "Customize Explore sample entry location: Office."
+  },
+  "settingsExploreLayout": "Explore page",
+  "@settingsExploreLayout": {
+    "description": "Settings → Appearance: Explore page entry: Explore page."
+  },
+  "settingsExploreLayoutSubtitle": "Current: {name}",
+  "@settingsExploreLayoutSubtitle": {
+    "description": "Settings → Appearance: Explore entry subtitle (current layout name).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreOptLunar": "Lunar date",
+  "@exploreOptLunar": {
+    "description": "Customize Explore: card option title: Lunar date."
+  },
+  "exploreOptPrompt": "Daily prompt",
+  "@exploreOptPrompt": {
+    "description": "Customize Explore: card option title: Daily prompt."
+  },
+  "exploreOptWrite": "Write button",
+  "@exploreOptWrite": {
+    "description": "Customize Explore: card option title: Write button."
+  },
+  "exploreOptMatch": "Match",
+  "@exploreOptMatch": {
+    "description": "Customize Explore: card option title: Match."
+  },
+  "exploreOptStyle": "Style",
+  "@exploreOptStyle": {
+    "description": "Customize Explore: card option title: Style."
+  },
+  "exploreOptCount": "How many",
+  "@exploreOptCount": {
+    "description": "Customize Explore: card option title: How many."
+  },
+  "exploreOptSource": "Pick from",
+  "@exploreOptSource": {
+    "description": "Customize Explore: card option title: Pick from."
+  },
+  "exploreOptPhotosOnly": "Only entries with a cover",
+  "@exploreOptPhotosOnly": {
+    "description": "Customize Explore: card option title: Only entries with a cover."
+  },
+  "exploreOptDaily": "Same pick all day",
+  "@exploreOptDaily": {
+    "description": "Customize Explore: card option title: Same pick all day."
+  },
+  "exploreOptRecapPeriod": "Period",
+  "@exploreOptRecapPeriod": {
+    "description": "Customize Explore: card option title: Period."
+  },
+  "exploreOptCompare": "Compare with last time",
+  "@exploreOptCompare": {
+    "description": "Customize Explore: card option title: Compare with last time."
+  },
+  "exploreOptKinds": "Milestones",
+  "@exploreOptKinds": {
+    "description": "Customize Explore: card option title: Milestones."
+  },
+  "exploreOptAchieved": "Show how many reached",
+  "@exploreOptAchieved": {
+    "description": "Customize Explore: card option title: Show how many reached."
+  },
+  "exploreOptMetrics": "Metrics",
+  "@exploreOptMetrics": {
+    "description": "Customize Explore: card option title: Metrics."
+  },
+  "exploreOptColumns": "Columns",
+  "@exploreOptColumns": {
+    "description": "Customize Explore: card option title: Columns."
+  },
+  "exploreOptHeatmapSpan": "Span",
+  "@exploreOptHeatmapSpan": {
+    "description": "Customize Explore: card option title: Span."
+  },
+  "exploreOptBasis": "Color by",
+  "@exploreOptBasis": {
+    "description": "Customize Explore: card option title: Color by."
+  },
+  "exploreOptWeekdayLabels": "Weekday labels",
+  "@exploreOptWeekdayLabels": {
+    "description": "Customize Explore: card option title: Weekday labels."
+  },
+  "exploreOptLegend": "Legend",
+  "@exploreOptLegend": {
+    "description": "Customize Explore: card option title: Legend."
+  },
+  "exploreOptUnit": "Group by",
+  "@exploreOptUnit": {
+    "description": "Customize Explore: card option title: Group by."
+  },
+  "exploreOptMetric": "Count",
+  "@exploreOptMetric": {
+    "description": "Customize Explore: card option title: Count."
+  },
+  "exploreOptTimeOfDay": "Time of day",
+  "@exploreOptTimeOfDay": {
+    "description": "Customize Explore: card option title: Time of day."
+  },
+  "exploreOptWeekdays": "Weekdays",
+  "@exploreOptWeekdays": {
+    "description": "Customize Explore: card option title: Weekdays."
+  },
+  "exploreOptDays": "Range",
+  "@exploreOptDays": {
+    "description": "Customize Explore: card option title: Range."
+  },
+  "exploreOptChart": "Chart",
+  "@exploreOptChart": {
+    "description": "Customize Explore: card option title: Chart."
+  },
+  "exploreOptDayMoods": "Include day moods",
+  "@exploreOptDayMoods": {
+    "description": "Customize Explore: card option title: Include day moods."
+  },
+  "exploreOptSort": "Sort",
+  "@exploreOptSort": {
+    "description": "Customize Explore: card option title: Sort."
+  },
+  "exploreOptPercent": "Show percentages",
+  "@exploreOptPercent": {
+    "description": "Customize Explore: card option title: Show percentages."
+  },
+  "exploreOptInline": "Include photos in entries",
+  "@exploreOptInline": {
+    "description": "Customize Explore: card option title: Include photos in entries."
+  },
+  "exploreOptRecent": "Show recently opened",
+  "@exploreOptRecent": {
+    "description": "Customize Explore: card option title: Show recently opened."
+  },
+  "exploreValFollowLanguage": "Follow language",
+  "@exploreValFollowLanguage": {
+    "description": "Customize Explore: option value: Follow language."
+  },
+  "exploreValShow": "Show",
+  "@exploreValShow": {
+    "description": "Customize Explore: option value: Show."
+  },
+  "exploreValHide": "Hide",
+  "@exploreValHide": {
+    "description": "Customize Explore: option value: Hide."
+  },
+  "exploreValSameDay": "Same day",
+  "@exploreValSameDay": {
+    "description": "Customize Explore: option value: Same day."
+  },
+  "exploreValNearby": "Within 3 days",
+  "@exploreValNearby": {
+    "description": "Customize Explore: option value: Within 3 days."
+  },
+  "exploreValSameMonth": "Same month",
+  "@exploreValSameMonth": {
+    "description": "Customize Explore: option value: Same month."
+  },
+  "exploreValCarousel": "Carousel",
+  "@exploreValCarousel": {
+    "description": "Customize Explore: option value: Carousel."
+  },
+  "exploreValList": "List",
+  "@exploreValList": {
+    "description": "Customize Explore: option value: List."
+  },
+  "exploreValAll": "All",
+  "@exploreValAll": {
+    "description": "Customize Explore: option value: All."
+  },
+  "exploreValMonthAgo": "Over a month ago",
+  "@exploreValMonthAgo": {
+    "description": "Customize Explore: option value: Over a month ago."
+  },
+  "exploreValYearAgo": "Over a year ago",
+  "@exploreValYearAgo": {
+    "description": "Customize Explore: option value: Over a year ago."
+  },
+  "exploreValWeeks12": "12 weeks",
+  "@exploreValWeeks12": {
+    "description": "Customize Explore: option value: 12 weeks."
+  },
+  "exploreValHalfYear": "Half a year",
+  "@exploreValHalfYear": {
+    "description": "Customize Explore: option value: Half a year."
+  },
+  "exploreValYear": "A year",
+  "@exploreValYear": {
+    "description": "Customize Explore: option value: A year."
+  },
+  "exploreValEntries": "Entries",
+  "@exploreValEntries": {
+    "description": "Customize Explore: option value: Entries."
+  },
+  "exploreValWords": "Words",
+  "@exploreValWords": {
+    "description": "Customize Explore: option value: Words."
+  },
+  "exploreValMood": "Mood",
+  "@exploreValMood": {
+    "description": "Customize Explore: option value: Mood."
+  },
+  "exploreValByMonth": "Monthly",
+  "@exploreValByMonth": {
+    "description": "Customize Explore: option value: Monthly."
+  },
+  "exploreValByWeek": "Weekly",
+  "@exploreValByWeek": {
+    "description": "Customize Explore: option value: Weekly."
+  },
+  "exploreValByDay": "Daily",
+  "@exploreValByDay": {
+    "description": "Customize Explore: option value: Daily."
+  },
+  "exploreValPixels": "Pixels",
+  "@exploreValPixels": {
+    "description": "Customize Explore: option value: Pixels."
+  },
+  "exploreValLine": "Line",
+  "@exploreValLine": {
+    "description": "Customize Explore: option value: Line."
+  },
+  "exploreValBars": "Bars",
+  "@exploreValBars": {
+    "description": "Customize Explore: option value: Bars."
+  },
+  "exploreValByCount": "By count",
+  "@exploreValByCount": {
+    "description": "Customize Explore: option value: By count."
+  },
+  "exploreValByMood": "By mood",
+  "@exploreValByMood": {
+    "description": "Customize Explore: option value: By mood."
+  },
+  "exploreValRanking": "Ranking",
+  "@exploreValRanking": {
+    "description": "Customize Explore: option value: Ranking."
+  },
+  "exploreValManual": "Custom order",
+  "@exploreValManual": {
+    "description": "Customize Explore: option value: Custom order."
+  },
+  "exploreValRecent": "Recent",
+  "@exploreValRecent": {
+    "description": "Customize Explore: option value: Recent."
+  },
+  "exploreValStrip": "Strip",
+  "@exploreValStrip": {
+    "description": "Customize Explore: option value: Strip."
+  },
+  "exploreValGrid": "Grid",
+  "@exploreValGrid": {
+    "description": "Customize Explore: option value: Grid."
+  },
+  "exploreValMosaic": "Mosaic",
+  "@exploreValMosaic": {
+    "description": "Customize Explore: option value: Mosaic."
+  },
+  "exploreValIcons": "Icons",
+  "@exploreValIcons": {
+    "description": "Customize Explore: option value: Icons."
+  },
+  "exploreValShelf": "Shelf order",
+  "@exploreValShelf": {
+    "description": "Customize Explore: option value: Shelf order."
+  },
+  "exploreValUpdated": "Recently updated",
+  "@exploreValUpdated": {
+    "description": "Customize Explore: option value: Recently updated."
+  },
+  "exploreValByEntries": "By entries",
+  "@exploreValByEntries": {
+    "description": "Customize Explore: option value: By entries."
+  },
+  "exploreValAuto": "Auto",
+  "@exploreValAuto": {
+    "description": "Customize Explore: option value: Auto."
+  },
+  "exploreValColumns": "{count, plural, =1{1 column} other{{count} columns}}",
+  "@exploreValColumns": {
+    "description": "Customize Explore: number of columns.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "explorePresetBalanced": "Balanced",
+  "@explorePresetBalanced": {
+    "description": "Customize Explore: built-in layout name: Balanced."
+  },
+  "explorePresetBalancedDesc": "The everyday set: a quick look at how things are going",
+  "@explorePresetBalancedDesc": {
+    "description": "Customize Explore: built-in layout description: The everyday set: a quick look at how things are going."
+  },
+  "explorePresetMinimal": "Minimal",
+  "@explorePresetMinimal": {
+    "description": "Customize Explore: built-in layout name: Minimal."
+  },
+  "explorePresetMinimalDesc": "Just the greeting, memories, numbers and photos",
+  "@explorePresetMinimalDesc": {
+    "description": "Customize Explore: built-in layout description: Just the greeting, memories, numbers and photos."
+  },
+  "explorePresetDataLover": "Data lover",
+  "@explorePresetDataLover": {
+    "description": "Customize Explore: built-in layout name: Data lover."
+  },
+  "explorePresetDataLoverDesc": "Every chart: heatmap, rhythm, habits, mood and energy",
+  "@explorePresetDataLoverDesc": {
+    "description": "Customize Explore: built-in layout description: Every chart: heatmap, rhythm, habits, mood and energy."
+  },
+  "explorePresetMemories": "Memories",
+  "@explorePresetMemories": {
+    "description": "Customize Explore: built-in layout name: Memories."
+  },
+  "explorePresetMemoriesDesc": "On this day, random memories, recaps, capsules and anniversaries",
+  "@explorePresetMemoriesDesc": {
+    "description": "Customize Explore: built-in layout description: On this day, random memories, recaps, capsules and anniversaries."
+  },
+  "explorePresetEverything": "Everything",
+  "@explorePresetEverything": {
+    "description": "Customize Explore: built-in layout name: Everything."
+  },
+  "explorePresetEverythingDesc": "All 20 cards switched on",
+  "@explorePresetEverythingDesc": {
+    "description": "Customize Explore: built-in layout description: All 20 cards switched on."
+  },
+  "exploreLookCards": "Cards",
+  "@exploreLookCards": {
+    "description": "Customize Explore appearance tab: Cards."
+  },
+  "exploreLookDensity": "Density",
+  "@exploreLookDensity": {
+    "description": "Customize Explore appearance tab: Density."
+  },
+  "exploreLookCompact": "Compact",
+  "@exploreLookCompact": {
+    "description": "Customize Explore appearance tab: Compact."
+  },
+  "exploreLookStandard": "Standard",
+  "@exploreLookStandard": {
+    "description": "Customize Explore appearance tab: Standard."
+  },
+  "exploreLookRelaxed": "Relaxed",
+  "@exploreLookRelaxed": {
+    "description": "Customize Explore appearance tab: Relaxed."
+  },
+  "exploreLookRadius": "Corner radius",
+  "@exploreLookRadius": {
+    "description": "Customize Explore appearance tab: Corner radius."
+  },
+  "exploreLookSurface": "Surface",
+  "@exploreLookSurface": {
+    "description": "Customize Explore appearance tab: Surface."
+  },
+  "exploreLookFilled": "Filled",
+  "@exploreLookFilled": {
+    "description": "Customize Explore appearance tab: Filled."
+  },
+  "exploreLookTonal": "Tonal",
+  "@exploreLookTonal": {
+    "description": "Customize Explore appearance tab: Tonal."
+  },
+  "exploreLookOutlined": "Outlined",
+  "@exploreLookOutlined": {
+    "description": "Customize Explore appearance tab: Outlined."
+  },
+  "exploreLookSurfaceGlassNote": "With the glass material, cards are always glass.",
+  "@exploreLookSurfaceGlassNote": {
+    "description": "Customize Explore appearance tab: With the glass material, cards are always glass.."
+  },
+  "exploreLookAccent": "Accent",
+  "@exploreLookAccent": {
+    "description": "Customize Explore appearance tab: Accent."
+  },
+  "exploreLookPrimary": "Primary",
+  "@exploreLookPrimary": {
+    "description": "Customize Explore appearance tab: Primary."
+  },
+  "exploreLookSecondary": "Secondary",
+  "@exploreLookSecondary": {
+    "description": "Customize Explore appearance tab: Secondary."
+  },
+  "exploreLookTertiary": "Tertiary",
+  "@exploreLookTertiary": {
+    "description": "Customize Explore appearance tab: Tertiary."
+  },
+  "exploreLookText": "Titles & numbers",
+  "@exploreLookText": {
+    "description": "Customize Explore appearance tab: Titles & numbers."
+  },
+  "exploreLookHeading": "Card titles",
+  "@exploreLookHeading": {
+    "description": "Customize Explore appearance tab: Card titles."
+  },
+  "exploreLookBadge": "Badge",
+  "@exploreLookBadge": {
+    "description": "Customize Explore appearance tab: Badge."
+  },
+  "exploreLookIcon": "Icon",
+  "@exploreLookIcon": {
+    "description": "Customize Explore appearance tab: Icon."
+  },
+  "exploreLookTextOnly": "Text",
+  "@exploreLookTextOnly": {
+    "description": "Customize Explore appearance tab: Text."
+  },
+  "exploreLookHidden": "Hidden",
+  "@exploreLookHidden": {
+    "description": "Customize Explore appearance tab: Hidden."
+  },
+  "exploreLookCompactNumbers": "Abbreviate large numbers",
+  "@exploreLookCompactNumbers": {
+    "description": "Customize Explore appearance tab: Abbreviate large numbers."
+  },
+  "exploreLookCompactNumbersSubtitle": "Show 12,345 as 12K",
+  "@exploreLookCompactNumbersSubtitle": {
+    "description": "Customize Explore appearance tab: Show 12,345 as 12K."
+  },
+  "exploreLookAnimations": "Chart animations",
+  "@exploreLookAnimations": {
+    "description": "Customize Explore appearance tab: Chart animations."
+  },
+  "exploreLookAnimationsSubtitle": "Charts grow and numbers count up when shown",
+  "@exploreLookAnimationsSubtitle": {
+    "description": "Customize Explore appearance tab: Charts grow and numbers count up when shown."
+  },
+  "exploreLookWide": "Wide screens",
+  "@exploreLookWide": {
+    "description": "Customize Explore appearance tab: Wide screens."
+  },
+  "exploreLookWideFooter": "Narrow screens such as phones always use one column.",
+  "@exploreLookWideFooter": {
+    "description": "Customize Explore appearance tab: Narrow screens such as phones always use one column.."
+  },
+  "exploreLookColumns": "Columns",
+  "@exploreLookColumns": {
+    "description": "Customize Explore appearance tab: Columns."
+  },
+  "exploreLookFlow": "Arrangement",
+  "@exploreLookFlow": {
+    "description": "Customize Explore appearance tab: Arrangement."
+  },
+  "exploreLookRows": "Rows",
+  "@exploreLookRows": {
+    "description": "Customize Explore appearance tab: Rows."
+  },
+  "exploreLookStaggered": "Staggered",
+  "@exploreLookStaggered": {
+    "description": "Customize Explore appearance tab: Staggered."
+  },
+  "exploreRangeBar": "Show the range bar",
+  "@exploreRangeBar": {
+    "description": "Customize Explore range tab switch: Show the range bar."
+  },
+  "exploreRangeBarSubtitle": "Switch between this week, month, year and all time at the top of Explore",
+  "@exploreRangeBarSubtitle": {
+    "description": "Customize Explore range tab switch subtitle: Switch between this week, month, year and all time at the top of Explore."
+  },
+  "exploreRangeCurrent": "Range",
+  "@exploreRangeCurrent": {
+    "description": "Customize Explore range tab: current range: Range."
+  },
+  "exploreRangeFooter": "The range applies to the dashboard, tags, writing habits, mood breakdown, places and weather; other cards have their own time spans.",
+  "@exploreRangeFooter": {
+    "description": "Customize Explore range tab footer: The range applies to the dashboard, tags, writing habits, mood breakdown, places and weather; other cards have their own time spans.."
+  },
+  "exploreSampleWeatherSunny": "Sunny",
+  "@exploreSampleWeatherSunny": {
+    "description": "Weather of a sample entry in the Explore customize preview: Sunny."
+  },
+  "exploreSampleWeatherCloudy": "Cloudy",
+  "@exploreSampleWeatherCloudy": {
+    "description": "Weather of a sample entry in the Explore customize preview: Cloudy."
+  },
+  "exploreSampleWeatherOvercast": "Overcast",
+  "@exploreSampleWeatherOvercast": {
+    "description": "Weather of a sample entry in the Explore customize preview: Overcast."
+  },
+  "exploreSampleWeatherRain": "Light rain",
+  "@exploreSampleWeatherRain": {
+    "description": "Weather of a sample entry in the Explore customize preview: Light rain."
+  },
+  "exploreSampleWeatherFog": "Fog",
+  "@exploreSampleWeatherFog": {
+    "description": "Weather of a sample entry in the Explore customize preview: Fog."
+  }
 }

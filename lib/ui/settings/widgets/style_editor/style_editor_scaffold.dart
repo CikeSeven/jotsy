@@ -35,6 +35,7 @@ class StyleEditorScaffold extends StatefulWidget {
     this.actionsBuilder,
     this.previewArea,
     required this.previewBuilder,
+    this.initialIndex = 0,
   });
 
   final String title;
@@ -71,6 +72,9 @@ class StyleEditorScaffold extends StatefulWidget {
   })
   previewBuilder;
 
+  /// 打开时停在第几个标签页（如探索页长按“卡片设置”直接进“卡片”页）。
+  final int initialIndex;
+
   @override
   State<StyleEditorScaffold> createState() => _StyleEditorScaffoldState();
 }
@@ -96,6 +100,7 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
     // MediaQuery，因此在首次 didChangeDependencies 而不是 initState 里创建。
     _tabController ??= TabController(
       length: widget.tabs.length,
+      initialIndex: widget.initialIndex,
       vsync: this,
       animationDuration: ExpressiveMotion.duration(
         context,

@@ -1,28 +1,5 @@
-/// 探索页聚合后的只读视图模型。
-///
-/// 作用：
-/// - 将“统计/趋势/回顾”数据统一收敛为页面可直接消费的数据结构；
-/// - 避免页面层重复进行 JSON 解析与集合聚合；
-/// - 让 UI 组件只关心渲染，不关心计算过程。
-class ExploreViewData {
-  const ExploreViewData({
-    required this.stats,
-    required this.onThisDayDiaries,
-    required this.fallbackPrompt,
-    required this.moodWeights30,
-    required this.energyValues7,
-    required this.tagUsages,
-    required this.mediaItems,
-  });
-
-  final ExploreStats stats;
-  final List<ExploreOnThisDayItem> onThisDayDiaries;
-  final String fallbackPrompt;
-  final List<double?> moodWeights30;
-  final List<double?> energyValues7;
-  final List<ExploreTagUsage> tagUsages;
-  final List<ExploreMediaItem> mediaItems;
-}
+// 探索页与日记本统计页共用的展示项（各卡片的聚合数据见
+// `explore_module_data.dart`）。
 
 /// “那年今日”轮播项。
 ///
@@ -42,19 +19,6 @@ class ExploreOnThisDayItem {
   final String summaryText;
   final String timeLabel;
   final String? mediaSource;
-}
-
-/// 顶部轻量看板数据。
-class ExploreStats {
-  const ExploreStats({
-    required this.totalRecords,
-    required this.streakDays,
-    required this.currentMonthWords,
-  });
-
-  final int totalRecords;
-  final int streakDays;
-  final int currentMonthWords;
 }
 
 /// 标签云展示项。
@@ -97,13 +61,8 @@ class ExploreTagUsage {
 
 /// 媒体画廊项。
 class ExploreMediaItem {
-  const ExploreMediaItem({
-    required this.source,
-    required this.diaryId,
-    required this.updatedAt,
-  });
+  const ExploreMediaItem({required this.source, required this.diaryId});
 
   final String source;
   final String diaryId;
-  final DateTime updatedAt;
 }

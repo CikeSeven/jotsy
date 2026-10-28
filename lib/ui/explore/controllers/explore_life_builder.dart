@@ -53,13 +53,7 @@ abstract final class ExploreLifeBuilder {
     for (final entry in sorted) {
       final cover = entry.cover;
       if (cover == null || !seen.add(cover)) continue;
-      items.add(
-        ExploreMediaItem(
-          source: cover,
-          diaryId: entry.diaryId,
-          updatedAt: entry.updatedAt,
-        ),
-      );
+      items.add(ExploreMediaItem(source: cover, diaryId: entry.diaryId));
       if (items.length >= limit) break;
     }
     return List<ExploreMediaItem>.unmodifiable(items);
@@ -74,14 +68,20 @@ abstract final class ExploreLifeBuilder {
     return _group(entries, limit: limit, keyOf: (entry) => entry.location);
   }
 
-  /// 天气：按天气图标代码分组（没有代码时按天气文字），标签取最近一篇的
-  /// 天气文字。
+  /// 天气：按天气图标代码分组（没有代码时按天气文字），组名取最近一篇写了
+  /// 天气文字的；都没写时为空串（卡片只画图标）。
   static List<ExploreGroupCount> weather(List<ExploreEntry> entries) {
     return _group(
       entries,
       limit: 0,
       keyOf: (entry) => entry.weatherIconCode ?? entry.weather,
-      labelOf: (entry) => entry.weather ?? '',
+      labelOf: (items) {
+        for (final entry in items) {
+          final text = entry.weather;
+          if (text != null) return text;
+        }
+        return '';
+      },
       iconOf: (entry) => entry.weatherIconCode,
     );
   }
@@ -90,7 +90,9 @@ abstract final class ExploreLifeBuilder {
     List<ExploreEntry> entries, {
     required int limit,
     required String? Function(ExploreEntry entry) keyOf,
-    String Function(ExploreEntry entry)? labelOf,
+
+    /// 组名（按这一组的日记，新 → 旧）；为 null 时用分组的键（地点文字）。
+    String Function(List<ExploreEntry> items)? labelOf,
     String? Function(ExploreEntry entry)? iconOf,
   }) {
     final groups = <String, List<ExploreEntry>>{};
@@ -115,10 +117,7 @@ abstract final class ExploreLifeBuilder {
     return List<ExploreGroupCount>.unmodifiable(<ExploreGroupCount>[
       for (final group in limited)
         ExploreGroupCount(
-          label: () {
-            final label = labelOf?.call(group.items.first) ?? group.key;
-            return label.isEmpty ? group.key : label;
-          }(),
+          label: labelOf?.call(group.items) ?? group.key,
           count: group.items.length,
           iconCode: iconOf?.call(group.items.first),
           diaryIds: <String>[for (final entry in group.items) entry.diaryId],

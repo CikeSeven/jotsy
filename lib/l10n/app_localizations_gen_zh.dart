@@ -914,9 +914,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0059 => '探索数据暂不可用';
 
   @override
-  String get autoT0060 => '情绪与精力趋势';
-
-  @override
   String get autoT0061 => '查看全部图片';
 
   @override
@@ -930,15 +927,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoT0065 => '无标题日记';
-
-  @override
-  String get autoT0066 => '总计记录';
-
-  @override
-  String get autoT0067 => '连续打卡';
-
-  @override
-  String get autoT0068 => '本月字数';
 
   @override
   String get autoT0069 => '标签云';
@@ -1344,9 +1332,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoT0197 => '加载图片失败，请稍后重试';
-
-  @override
-  String get autoT0198 => '继续记录天气、标签和心情后，这里会出现更具体的关联洞察。';
 
   @override
   String get autoT0199 => '还没有标签数据，写几篇带标签的日记试试。';
@@ -8267,4 +8252,940 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryListToText => '转为正文';
+
+  @override
+  String get exploreModuleGreeting => '今日问候';
+
+  @override
+  String get exploreModuleGreetingDesc => '按时段问候，显示农历节气、今天的记录与每日写作提示';
+
+  @override
+  String get exploreModuleOnThisDay => '那年今日';
+
+  @override
+  String get exploreModuleOnThisDayDesc => '往年同一天（或前后几天、同月）写下的日记';
+
+  @override
+  String get exploreModuleRandomMemory => '随机回顾';
+
+  @override
+  String get exploreModuleRandomMemoryDesc => '随机翻出一篇旧日记，可以换一篇';
+
+  @override
+  String get exploreModuleRecap => '周期回顾';
+
+  @override
+  String get exploreModuleRecapDesc => '本周、本月或今年的概况，并与上一期对比';
+
+  @override
+  String get exploreModuleMilestones => '里程碑';
+
+  @override
+  String get exploreModuleMilestonesDesc => '篇数、字数、连续天数等里程碑的进度';
+
+  @override
+  String get exploreModuleOverview => '数据看板';
+
+  @override
+  String get exploreModuleOverviewDesc => '篇数、字数、连续天数等数字，指标可自选';
+
+  @override
+  String get exploreModuleHeatmap => '写作热力图';
+
+  @override
+  String get exploreModuleHeatmapDesc => '按周排布的每日记录格子';
+
+  @override
+  String get exploreModuleRhythm => '写作节奏';
+
+  @override
+  String get exploreModuleRhythmDesc => '每月、每周或每天写了多少';
+
+  @override
+  String get exploreModuleHabits => '写作习惯';
+
+  @override
+  String get exploreModuleHabitsDesc => '你习惯在什么时段、星期几写日记';
+
+  @override
+  String get exploreModuleMoodTrend => '心情趋势';
+
+  @override
+  String get exploreModuleMoodTrendDesc => '最近每天的心情变化';
+
+  @override
+  String get exploreModuleMoodShare => '心情分布';
+
+  @override
+  String get exploreModuleMoodShareDesc => '各种心情出现的次数与占比';
+
+  @override
+  String get exploreModuleEnergy => '精力趋势';
+
+  @override
+  String get exploreModuleEnergyDesc => '最近每天的精力水平';
+
+  @override
+  String get exploreModuleTags => '标签';
+
+  @override
+  String get exploreModuleTagsDesc => '常用标签，点按即可搜索';
+
+  @override
+  String get exploreModuleMedia => '媒体画廊';
+
+  @override
+  String get exploreModuleMediaDesc => '日记里的图片';
+
+  @override
+  String get exploreModulePlaces => '足迹';
+
+  @override
+  String get exploreModulePlacesDesc => '写日记时最常在的地方';
+
+  @override
+  String get exploreModuleWeather => '天气';
+
+  @override
+  String get exploreModuleWeatherDesc => '写日记时的天气分布';
+
+  @override
+  String get exploreModuleAnniversaries => '纪念日';
+
+  @override
+  String get exploreModuleAnniversariesDesc => '即将到来的纪念日倒数';
+
+  @override
+  String get exploreModuleCapsules => '时间胶囊';
+
+  @override
+  String get exploreModuleCapsulesDesc => '等待开启的时间胶囊与最近开启的';
+
+  @override
+  String get exploreModuleNotebooks => '日记本';
+
+  @override
+  String get exploreModuleNotebooksDesc => '你的日记本书架';
+
+  @override
+  String get exploreModuleDrafts => '草稿箱';
+
+  @override
+  String get exploreModuleDraftsDesc => '有未写完的草稿时提醒你继续写';
+
+  @override
+  String get explorePeriodWeek => '本周';
+
+  @override
+  String get explorePeriodMonth => '本月';
+
+  @override
+  String get explorePeriodYear => '今年';
+
+  @override
+  String get explorePeriodAll => '全部';
+
+  @override
+  String get explorePeriodEmpty => '这段时间还没有日记';
+
+  @override
+  String get exploreNoModules => '探索页没有显示任何卡片';
+
+  @override
+  String get exploreModuleMenuHide => '隐藏此卡片';
+
+  @override
+  String exploreModuleHidden(String name) {
+    return '已隐藏“$name”';
+  }
+
+  @override
+  String get exploreGreetingMorning => '早上好';
+
+  @override
+  String get exploreGreetingNoon => '中午好';
+
+  @override
+  String get exploreGreetingAfternoon => '下午好';
+
+  @override
+  String get exploreGreetingEvening => '晚上好';
+
+  @override
+  String get exploreGreetingNight => '夜深了';
+
+  @override
+  String exploreGreetingToday(int count, String words) {
+    return '今天写了 $count 篇 · $words 字';
+  }
+
+  @override
+  String get exploreGreetingTodayEmpty => '今天还没有写日记';
+
+  @override
+  String get exploreGreetingWrite => '写日记';
+
+  @override
+  String get exploreGreetingNextPrompt => '换一个';
+
+  @override
+  String get explorePrompt01 => '今天让你会心一笑的瞬间是什么？';
+
+  @override
+  String get explorePrompt02 => '最近在反复想的一件事是什么？';
+
+  @override
+  String get explorePrompt03 => '今天学到了什么新东西？';
+
+  @override
+  String get explorePrompt04 => '如果能重来一次，今天你会做哪些不同的选择？';
+
+  @override
+  String get explorePrompt05 => '描述一下此刻窗外的样子。';
+
+  @override
+  String get explorePrompt06 => '今天吃到的最好吃的东西是什么？';
+
+  @override
+  String get explorePrompt07 => '最近读到或听到的话里，哪一句让你印象最深？';
+
+  @override
+  String get explorePrompt08 => '今天的你，比昨天多了一点什么？';
+
+  @override
+  String get explorePrompt09 => '写一写最近让你感到踏实的一件小事。';
+
+  @override
+  String get explorePrompt10 => '这周有什么想对自己说的话？';
+
+  @override
+  String get explorePrompt11 => '今天和谁聊了天？聊了些什么？';
+
+  @override
+  String get explorePrompt12 => '最近有什么期待的事情？';
+
+  @override
+  String get explorePrompt13 => '如果今天的心情是一种天气，会是什么？';
+
+  @override
+  String get explorePrompt14 => '写下三件今天值得感恩的小事。';
+
+  @override
+  String get explorePrompt15 => '最近有没有一首歌一直在单曲循环？';
+
+  @override
+  String get explorePrompt16 => '今天有什么事情比预想的更顺利？';
+
+  @override
+  String get explorePrompt17 => '如果给一年后的自己写一句话，你会写什么？';
+
+  @override
+  String get explorePrompt18 => '今天在哪里待得最久？那里是什么样子？';
+
+  @override
+  String get explorePrompt19 => '最近让你感到疲惫的是什么？可以怎样照顾自己？';
+
+  @override
+  String get explorePrompt20 => '最近一次大笑是因为什么？';
+
+  @override
+  String get exploreOnThisDayEmpty => '往年的这一天还没有日记，今天写下的会在明年出现在这里。';
+
+  @override
+  String get exploreRandomShuffle => '换一篇';
+
+  @override
+  String get exploreRandomEmpty => '还没有符合条件的旧日记';
+
+  @override
+  String get exploreRecapTitleWeek => '本周回顾';
+
+  @override
+  String get exploreRecapTitleMonth => '本月回顾';
+
+  @override
+  String get exploreRecapTitleYear => '今年回顾';
+
+  @override
+  String get exploreRecapTopMood => '最常见的心情';
+
+  @override
+  String get exploreRecapTopTag => '最常用的标签';
+
+  @override
+  String exploreRecapMore(int count) {
+    return '比上期多 $count';
+  }
+
+  @override
+  String exploreRecapFewer(int count) {
+    return '比上期少 $count';
+  }
+
+  @override
+  String get exploreRecapSame => '与上期持平';
+
+  @override
+  String get exploreMetricEntries => '日记篇数';
+
+  @override
+  String get exploreMetricWords => '字数';
+
+  @override
+  String get exploreMetricRecordedDays => '记录天数';
+
+  @override
+  String get exploreMetricCurrentStreak => '连续打卡';
+
+  @override
+  String get exploreMetricLongestStreak => '最长连续';
+
+  @override
+  String get exploreMetricAverageWords => '平均每篇';
+
+  @override
+  String get exploreMetricPhotos => '照片';
+
+  @override
+  String get exploreMetricTags => '用过的标签';
+
+  @override
+  String get exploreMetricSpan => '时间跨度';
+
+  @override
+  String get exploreMetricTodayWords => '今日字数';
+
+  @override
+  String get exploreMilestoneEntries => '篇数';
+
+  @override
+  String get exploreMilestoneWords => '字数';
+
+  @override
+  String get exploreMilestoneStreak => '最长连续';
+
+  @override
+  String get exploreMilestoneDays => '记录天数';
+
+  @override
+  String get exploreMilestoneYears => '坚持年数';
+
+  @override
+  String exploreMilestoneNext(String target, String remaining) {
+    return '下一站 $target · 还差 $remaining';
+  }
+
+  @override
+  String get exploreMilestoneAllDone => '已全部达成';
+
+  @override
+  String exploreMilestoneAchieved(int count) {
+    return '已达成 $count 个';
+  }
+
+  @override
+  String exploreUnitEntries(int count) {
+    return '$count 篇';
+  }
+
+  @override
+  String exploreUnitWords(String words) {
+    return '$words 字';
+  }
+
+  @override
+  String exploreUnitYears(int count) {
+    return '$count 年';
+  }
+
+  @override
+  String exploreUnitTimes(int count) {
+    return '$count 次';
+  }
+
+  @override
+  String exploreHeatmapSummary(int days, int weeks) {
+    return '近 $weeks 周里有 $days 天写了日记';
+  }
+
+  @override
+  String exploreHeatmapDay(String date, int count, String words) {
+    return '$date · $count 篇 · $words 字';
+  }
+
+  @override
+  String exploreHeatmapDayEmpty(String date) {
+    return '$date · 没有日记';
+  }
+
+  @override
+  String get exploreHeatmapLess => '少';
+
+  @override
+  String get exploreHeatmapMore => '多';
+
+  @override
+  String exploreTotalEntries(int count) {
+    return '共 $count 篇';
+  }
+
+  @override
+  String exploreTotalWords(String words) {
+    return '共 $words 字';
+  }
+
+  @override
+  String get exploreSlotLateNight => '凌晨';
+
+  @override
+  String get exploreSlotMorning => '早上';
+
+  @override
+  String get exploreSlotForenoon => '上午';
+
+  @override
+  String get exploreSlotAfternoon => '下午';
+
+  @override
+  String get exploreSlotEvening => '傍晚';
+
+  @override
+  String get exploreSlotNight => '夜晚';
+
+  @override
+  String exploreHabitsTopSlot(String slot) {
+    return '最常在$slot写';
+  }
+
+  @override
+  String exploreHabitsTopWeekday(String weekday) {
+    return '$weekday写得最多';
+  }
+
+  @override
+  String get exploreHabitsTimeOfDay => '时段';
+
+  @override
+  String get exploreHabitsWeekdays => '星期';
+
+  @override
+  String exploreLastDays(int days) {
+    return '近 $days 天';
+  }
+
+  @override
+  String exploreMoodAverage(String mood) {
+    return '平均心情 $mood';
+  }
+
+  @override
+  String get exploreMoodTrendEmpty => '最近还没有记录心情';
+
+  @override
+  String get exploreMoodShareEmpty => '这段时间还没有记录心情';
+
+  @override
+  String exploreEnergyAverage(String value) {
+    return '平均 $value';
+  }
+
+  @override
+  String get exploreEnergyEmpty => '最近还没有记录精力';
+
+  @override
+  String get explorePlacesEmpty => '写日记时添加地点后，这里会列出常去的地方。';
+
+  @override
+  String get exploreWeatherEmpty => '写日记时记录天气后，这里会显示天气分布。';
+
+  @override
+  String get exploreAnniversariesEmpty => '还没有纪念日';
+
+  @override
+  String get exploreAnniversariesAdd => '添加纪念日';
+
+  @override
+  String get exploreAnniversariesAll => '全部纪念日';
+
+  @override
+  String exploreCapsulesWaiting(int count) {
+    return '$count 个时间胶囊等待开启';
+  }
+
+  @override
+  String exploreCapsuleOpensIn(int count) {
+    return '$count 天后开启';
+  }
+
+  @override
+  String get exploreCapsuleOpensToday => '今天开启';
+
+  @override
+  String get exploreCapsulesRecent => '最近开启';
+
+  @override
+  String get exploreCapsulesEmpty => '还没有时间胶囊。发表日记时可以把它封存起来，寄给未来的自己。';
+
+  @override
+  String get exploreNotebooksEmpty => '还没有日记本';
+
+  @override
+  String get exploreNotebooksManage => '管理日记本';
+
+  @override
+  String exploreDraftsCount(int count) {
+    return '草稿箱里有 $count 份草稿';
+  }
+
+  @override
+  String get exploreDraftsContinue => '继续写';
+
+  @override
+  String get exploreDraftsManage => '管理';
+
+  @override
+  String get exploreCustomize => '自定义探索页';
+
+  @override
+  String get exploreModuleMenuSettings => '卡片设置';
+
+  @override
+  String get exploreGroupRecall => '回顾与灵感';
+
+  @override
+  String get exploreGroupStats => '统计图表';
+
+  @override
+  String get exploreGroupLife => '生活记录';
+
+  @override
+  String get exploreGroupLinked => '关联功能';
+
+  @override
+  String get exploreLayoutTabPresets => '预设';
+
+  @override
+  String get exploreLayoutTabCards => '卡片';
+
+  @override
+  String get exploreLayoutTabAppearance => '外观';
+
+  @override
+  String get exploreLayoutTabRange => '范围';
+
+  @override
+  String get exploreLayoutResetDone => '已恢复默认布局';
+
+  @override
+  String get exploreLayoutCardsHint => '拖动右侧手柄调整顺序，点按一行展开它的选项。';
+
+  @override
+  String get exploreLayoutCardsShowAll => '全部显示';
+
+  @override
+  String get exploreLayoutCardsDefaultOrder => '恢复默认顺序';
+
+  @override
+  String get exploreLayoutFeatureOff => '已在功能管理中关闭';
+
+  @override
+  String exploreLayoutDragHandle(String name) {
+    return '拖动排序：$name';
+  }
+
+  @override
+  String exploreLayoutShowModule(String name) {
+    return '显示“$name”';
+  }
+
+  @override
+  String exploreLayoutMultiHint(int max) {
+    return '按点选的先后排列，最多 $max 个';
+  }
+
+  @override
+  String get exploreLayoutSpan => '宽窗口下的宽度';
+
+  @override
+  String get exploreLayoutSpanFull => '整行';
+
+  @override
+  String get exploreLayoutSpanHalf => '半行';
+
+  @override
+  String get exploreLayoutPreviewMine => '我的数据';
+
+  @override
+  String get exploreLayoutPreviewSample => '示例数据';
+
+  @override
+  String get exploreLayoutCustom => '自定义';
+
+  @override
+  String get exploreSamplePlaceHome => '家';
+
+  @override
+  String get exploreSamplePlaceOffice => '公司';
+
+  @override
+  String get settingsExploreLayout => '探索页';
+
+  @override
+  String settingsExploreLayoutSubtitle(String name) {
+    return '当前：$name';
+  }
+
+  @override
+  String get exploreOptLunar => '农历与节气';
+
+  @override
+  String get exploreOptPrompt => '每日写作提示';
+
+  @override
+  String get exploreOptWrite => '“写日记”按钮';
+
+  @override
+  String get exploreOptMatch => '匹配方式';
+
+  @override
+  String get exploreOptStyle => '样式';
+
+  @override
+  String get exploreOptCount => '显示数量';
+
+  @override
+  String get exploreOptSource => '抽取范围';
+
+  @override
+  String get exploreOptPhotosOnly => '只抽有封面的';
+
+  @override
+  String get exploreOptDaily => '每天固定一篇';
+
+  @override
+  String get exploreOptRecapPeriod => '回顾周期';
+
+  @override
+  String get exploreOptCompare => '与上一期对比';
+
+  @override
+  String get exploreOptKinds => '里程碑类别';
+
+  @override
+  String get exploreOptAchieved => '显示已达成个数';
+
+  @override
+  String get exploreOptMetrics => '指标';
+
+  @override
+  String get exploreOptColumns => '列数';
+
+  @override
+  String get exploreOptHeatmapSpan => '时间跨度';
+
+  @override
+  String get exploreOptBasis => '着色依据';
+
+  @override
+  String get exploreOptWeekdayLabels => '星期标签';
+
+  @override
+  String get exploreOptLegend => '图例';
+
+  @override
+  String get exploreOptUnit => '粒度';
+
+  @override
+  String get exploreOptMetric => '统计';
+
+  @override
+  String get exploreOptTimeOfDay => '时段分布';
+
+  @override
+  String get exploreOptWeekdays => '星期分布';
+
+  @override
+  String get exploreOptDays => '时间范围';
+
+  @override
+  String get exploreOptChart => '图表';
+
+  @override
+  String get exploreOptDayMoods => '合并“这天的心情”';
+
+  @override
+  String get exploreOptSort => '排序';
+
+  @override
+  String get exploreOptPercent => '显示百分比';
+
+  @override
+  String get exploreOptInline => '包括正文里的图片';
+
+  @override
+  String get exploreOptRecent => '显示最近开启的';
+
+  @override
+  String get exploreValFollowLanguage => '跟随语言';
+
+  @override
+  String get exploreValShow => '显示';
+
+  @override
+  String get exploreValHide => '隐藏';
+
+  @override
+  String get exploreValSameDay => '同月同日';
+
+  @override
+  String get exploreValNearby => '前后 3 天';
+
+  @override
+  String get exploreValSameMonth => '同月';
+
+  @override
+  String get exploreValCarousel => '轮播';
+
+  @override
+  String get exploreValList => '列表';
+
+  @override
+  String get exploreValAll => '全部';
+
+  @override
+  String get exploreValMonthAgo => '一个月前';
+
+  @override
+  String get exploreValYearAgo => '一年前';
+
+  @override
+  String get exploreValWeeks12 => '12 周';
+
+  @override
+  String get exploreValHalfYear => '半年';
+
+  @override
+  String get exploreValYear => '一年';
+
+  @override
+  String get exploreValEntries => '篇数';
+
+  @override
+  String get exploreValWords => '字数';
+
+  @override
+  String get exploreValMood => '心情';
+
+  @override
+  String get exploreValByMonth => '按月';
+
+  @override
+  String get exploreValByWeek => '按周';
+
+  @override
+  String get exploreValByDay => '按天';
+
+  @override
+  String get exploreValPixels => '像素格';
+
+  @override
+  String get exploreValLine => '折线';
+
+  @override
+  String get exploreValBars => '柱状';
+
+  @override
+  String get exploreValByCount => '按次数';
+
+  @override
+  String get exploreValByMood => '按心情';
+
+  @override
+  String get exploreValRanking => '排行';
+
+  @override
+  String get exploreValManual => '手动顺序';
+
+  @override
+  String get exploreValRecent => '最近使用';
+
+  @override
+  String get exploreValStrip => '横条';
+
+  @override
+  String get exploreValGrid => '宫格';
+
+  @override
+  String get exploreValMosaic => '拼贴';
+
+  @override
+  String get exploreValIcons => '图标';
+
+  @override
+  String get exploreValShelf => '书架顺序';
+
+  @override
+  String get exploreValUpdated => '最近更新';
+
+  @override
+  String get exploreValByEntries => '按篇数';
+
+  @override
+  String get exploreValAuto => '自动';
+
+  @override
+  String exploreValColumns(int count) {
+    return '$count 列';
+  }
+
+  @override
+  String get explorePresetBalanced => '均衡';
+
+  @override
+  String get explorePresetBalancedDesc => '常用卡片，看一眼就知道最近的状态';
+
+  @override
+  String get explorePresetMinimal => '精简';
+
+  @override
+  String get explorePresetMinimalDesc => '只留问候、那年今日、数据看板与图片';
+
+  @override
+  String get explorePresetDataLover => '数据控';
+
+  @override
+  String get explorePresetDataLoverDesc => '统计图表全开：热力图、节奏、习惯、心情与精力';
+
+  @override
+  String get explorePresetMemories => '回忆';
+
+  @override
+  String get explorePresetMemoriesDesc => '那年今日、随机回顾、周期回顾、胶囊与纪念日';
+
+  @override
+  String get explorePresetEverything => '全部显示';
+
+  @override
+  String get explorePresetEverythingDesc => '20 张卡片全部打开';
+
+  @override
+  String get exploreLookCards => '卡片';
+
+  @override
+  String get exploreLookDensity => '密度';
+
+  @override
+  String get exploreLookCompact => '紧凑';
+
+  @override
+  String get exploreLookStandard => '标准';
+
+  @override
+  String get exploreLookRelaxed => '宽松';
+
+  @override
+  String get exploreLookRadius => '圆角';
+
+  @override
+  String get exploreLookSurface => '卡片表面';
+
+  @override
+  String get exploreLookFilled => '填充';
+
+  @override
+  String get exploreLookTonal => '色调';
+
+  @override
+  String get exploreLookOutlined => '描边';
+
+  @override
+  String get exploreLookSurfaceGlassNote => '材质设为玻璃时，卡片一律是玻璃。';
+
+  @override
+  String get exploreLookAccent => '强调色';
+
+  @override
+  String get exploreLookPrimary => '主色';
+
+  @override
+  String get exploreLookSecondary => '次要色';
+
+  @override
+  String get exploreLookTertiary => '第三色';
+
+  @override
+  String get exploreLookText => '标题与数字';
+
+  @override
+  String get exploreLookHeading => '卡片标题';
+
+  @override
+  String get exploreLookBadge => '徽章';
+
+  @override
+  String get exploreLookIcon => '图标';
+
+  @override
+  String get exploreLookTextOnly => '文字';
+
+  @override
+  String get exploreLookHidden => '隐藏';
+
+  @override
+  String get exploreLookCompactNumbers => '大数字缩写';
+
+  @override
+  String get exploreLookCompactNumbersSubtitle => '超过一万时写成 1.2万 这样';
+
+  @override
+  String get exploreLookAnimations => '图表动画';
+
+  @override
+  String get exploreLookAnimationsSubtitle => '首次出现时图表生长、数字递增';
+
+  @override
+  String get exploreLookWide => '宽窗口';
+
+  @override
+  String get exploreLookWideFooter => '手机等窄屏上始终是单列。';
+
+  @override
+  String get exploreLookColumns => '列数';
+
+  @override
+  String get exploreLookFlow => '排布';
+
+  @override
+  String get exploreLookRows => '对齐成行';
+
+  @override
+  String get exploreLookStaggered => '错落';
+
+  @override
+  String get exploreRangeBar => '显示统计范围条';
+
+  @override
+  String get exploreRangeBarSubtitle => '在探索页顶部切换本周、本月、今年与全部';
+
+  @override
+  String get exploreRangeCurrent => '统计范围';
+
+  @override
+  String get exploreRangeFooter =>
+      '统计范围影响数据看板、标签、写作习惯、心情分布、足迹和天气；其他卡片有各自的时间范围。';
+
+  @override
+  String get exploreSampleWeatherSunny => '晴';
+
+  @override
+  String get exploreSampleWeatherCloudy => '多云';
+
+  @override
+  String get exploreSampleWeatherOvercast => '阴';
+
+  @override
+  String get exploreSampleWeatherRain => '小雨';
+
+  @override
+  String get exploreSampleWeatherFog => '雾';
 }

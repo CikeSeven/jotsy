@@ -22,7 +22,7 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
-import 'package:node_diary/ui/explore/sections/explore_stats_card.dart';
+import 'package:node_diary/ui/explore/sections/explore_period_bar.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
@@ -194,7 +194,7 @@ Future<Map<String, double>> _measureGaps(WidgetTester tester) async {
   await _openTab(tester, l10n.navExplore);
   final explore = find.byType(ExplorePage);
   gaps['explore'] =
-      tester.getRect(find.byType(ExploreStatsCard)).top -
+      tester.getRect(find.byType(ExplorePeriodBar)).top -
       tester
           .getRect(
             find.descendant(of: explore, matching: find.byType(PageHeader)),

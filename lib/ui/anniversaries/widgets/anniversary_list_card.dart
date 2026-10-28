@@ -26,22 +26,40 @@ class AnniversaryListCard extends StatelessWidget {
   final AnniversaryCountdown countdown;
   final VoidCallback onTap;
 
+  /// 下一次的日期行：重复的写“月日 周几 · 第几周年”，不重复的写完整日期。
+  /// 探索页的纪念日卡同样用它。
+  static String dateLineOf(
+    AppLocalizations l10n,
+    AnniversaryCountdown countdown,
+  ) {
+    final next = countdown.next;
+    final rule = countdown.rule;
+    final date = next?.date ?? rule.base;
+    return rule.repeats
+        ? '${DateFormat.MMMEd(l10n.localeName).format(date)} · '
+              '${next != null && next.ordinal > 0 ? l10n.anniversaryOrdinal(next.ordinal) : l10n.anniversaryBaseDay}'
+        : DateFormat.yMMMEd(l10n.localeName).format(date);
+  }
+
+  /// 农历规则另起一行写这一次的农历日期；公历规则为 null。
+  static String? lunarLineOf(
+    AppLocalizations l10n,
+    AnniversaryCountdown countdown,
+  ) {
+    final rule = countdown.rule;
+    if (rule.lunar == null) return null;
+    final date = countdown.next?.date ?? rule.base;
+    return l10n.calendarLunarDate(CalendarLunarDay.of(date).date);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final radius = BorderRadius.circular(AppRadii.card);
-    final next = countdown.next;
-    final rule = countdown.rule;
-    final date = next?.date ?? rule.base;
-    final dateLine = rule.repeats
-        ? '${DateFormat.MMMEd(l10n.localeName).format(date)} · '
-              '${next != null && next.ordinal > 0 ? l10n.anniversaryOrdinal(next.ordinal) : l10n.anniversaryBaseDay}'
-        : DateFormat.yMMMEd(l10n.localeName).format(date);
-    final lunarLine = rule.lunar == null
-        ? null
-        : l10n.calendarLunarDate(CalendarLunarDay.of(date).date);
+    final dateLine = AnniversaryListCard.dateLineOf(l10n, countdown);
+    final lunarLine = AnniversaryListCard.lunarLineOf(l10n, countdown);
     final metaStyle = theme.textTheme.bodySmall?.copyWith(
       color: colorScheme.onSurfaceVariant,
     );
@@ -101,7 +119,10 @@ class AnniversaryListCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.m),
-              SizedBox(width: 88, child: _DayCount(countdown: countdown)),
+              SizedBox(
+                width: 88,
+                child: AnniversaryDayCount(countdown: countdown),
+              ),
             ],
           ),
         ),
@@ -110,10 +131,18 @@ class AnniversaryListCard extends StatelessWidget {
   }
 }
 
-class _DayCount extends StatelessWidget {
-  const _DayCount({required this.countdown});
+/// 纪念日的大号天数：距下一次几天（当天写 tertiary 色的“今天”），已过去的
+/// 倒数日写过去了几天；数字按宽度等比缩小，等宽数字。[numberStyle] 默认
+/// `headlineMedium`（列表卡片），探索页的紧凑行传更小的字阶。
+class AnniversaryDayCount extends StatelessWidget {
+  const AnniversaryDayCount({
+    super.key,
+    required this.countdown,
+    this.numberStyle,
+  });
 
   final AnniversaryCountdown countdown;
+  final TextStyle? numberStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +173,7 @@ class _DayCount extends StatelessWidget {
           child: Text(
             big,
             maxLines: 1,
-            style: theme.textTheme.headlineMedium?.copyWith(
+            style: (numberStyle ?? theme.textTheme.headlineMedium)?.copyWith(
               fontWeight: FontWeight.w800,
               height: 1.1,
               fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],

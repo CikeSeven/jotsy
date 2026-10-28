@@ -3,30 +3,33 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../controllers/explore_page_controller.dart' show ExplorePageController;
+import '../models/explore_module_options.dart';
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
 import '../../../app/theme/expressive_motion.dart';
 
-/// “那年今日”情感回顾卡片。
+/// “那年今日”情感回顾卡片（探索页与日记本统计页共用）。
 ///
 /// 设计目标：
-/// - 无历史记录：显示引导文案与“补写今天”；
-/// - 有 1 条记录：展示单卡，无轮播指示器；
-/// - 有多条记录：启用左右滑动 Carousel，并展示页码 dots。
+/// - 无历史记录：显示 [emptyMessage] 与“写日记”；
+/// - 轮播样式（默认）：1 条时展示单卡，多条时左右滑动并展示页码点；
+/// - 列表样式（[ExploreMemoryStyle.list]）：每条一行，缩略图在左。
 class ExploreMemoryCard extends StatefulWidget {
   const ExploreMemoryCard({
     super.key,
     required this.items,
     required this.onOpenDiary,
     required this.onCreateToday,
-    this.fallbackPrompt = '',
+    this.emptyMessage = '',
+    this.style = ExploreMemoryStyle.carousel,
   });
 
   /// 回忆条目（经 [ExplorePageController.pickOnThisDayList] 选出）。
   final List<ExploreOnThisDayItem> items;
 
-  /// 没有回忆时的引导文案。
-  final String fallbackPrompt;
+  /// 没有回忆时的说明。
+  final String emptyMessage;
+  final ExploreMemoryStyle style;
   final ValueChanged<String> onOpenDiary;
   final VoidCallback onCreateToday;
 
@@ -82,11 +85,13 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          ExploreSectionTitle(
+          ExploreCardHeader(
             icon: FontAwesomeIcons.clockRotateLeft,
-            title: l10n.autoT0063,
+            title: l10n.exploreModuleOnThisDay,
+            trailing: memories.isEmpty
+                ? null
+                : ExploreHeaderNote(l10n.exploreUnitEntries(memories.length)),
           ),
-          const SizedBox(height: 10),
           if (memories.isEmpty)
             Container(
               width: double.infinity,
@@ -112,16 +117,25 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    widget.fallbackPrompt,
+                    widget.emptyMessage,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 10),
                   FilledButton.tonal(
                     onPressed: widget.onCreateToday,
-                    child: Text(l10n.autoT0064),
+                    child: Text(l10n.exploreGreetingWrite),
                   ),
                 ],
               ),
+            )
+          else if (widget.style == ExploreMemoryStyle.list)
+            Column(
+              children: <Widget>[
+                for (var i = 0; i < memories.length; i++) ...<Widget>[
+                  if (i > 0) const SizedBox(height: 8),
+                  _buildListRow(context, memories[i]),
+                ],
+              ],
             )
           else ...<Widget>[
             SizedBox(
@@ -168,6 +182,67 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
             ],
           ],
         ],
+      ),
+    );
+  }
+
+  /// 列表样式的一行：缩略图（有时）+ 时间标签、标题与一行摘要。
+  Widget _buildListRow(BuildContext context, ExploreOnThisDayItem item) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final title = item.title.trim();
+    final mediaSource = item.mediaSource;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => widget.onOpenDiary(item.diaryId),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: <Widget>[
+            if (mediaSource != null) ...<Widget>[
+              ExploreMediaThumb(
+                source: mediaSource,
+                width: 56,
+                height: 56,
+                radius: 12,
+              ),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    item.timeLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    title.isEmpty ? context.l10n.autoT0065 : title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    item.summaryText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

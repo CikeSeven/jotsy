@@ -576,6 +576,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         final cornerFab =
             !AppBreakpoints.of(context).isWide &&
             barStyle?.fabPlacement != HomeBarFabPlacement.inline;
+        // 滚动条的“顶线”：始终固定在列表上方的高度——标签栏一行，玻璃顶栏
+        // 时刊头收起后留下的状态栏那一条，多选时刊头也固定住。浮动的刊头
+        // 时有时无，不算在内。
+        final fastScrollPinnedExtent =
+            (glassTopBars ? viewPadding.top : 0) +
+            (_isSelectionMode ? _headerCollapsibleHeight : 0) +
+            _tagSectionTopGap +
+            _tagBarHeight +
+            _tagSectionBottomGap;
         final fastScrollPadding = EdgeInsets.only(
           top:
               (glassTopBars ? viewPadding.top : 0) +
@@ -626,6 +635,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                       currentNotebook,
                     ),
                     onNeedItems: _ensureDiaryLimit,
+                    pinnedExtent: fastScrollPinnedExtent,
                     padding: fastScrollPadding,
                     enabled: !_tagFiltersExpanded,
                     // 刊头与标签栏两片玻璃共用一次背景读取（同一区域

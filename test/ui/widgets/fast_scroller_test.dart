@@ -47,6 +47,7 @@ void main() {
     int? loaded,
     bool growOnRequest = true,
     bool masonry = false,
+    bool topBars = false,
   }) async {
     loadedCount = ValueNotifier<int>(loaded ?? total);
     addTearDown(loadedCount.dispose);
@@ -78,6 +79,8 @@ void main() {
                 itemCount: total,
                 loadedCount: loadedCount.value,
                 listIdentity: identity.value,
+                // 顶栏：状态栏那一条 44 + 标签栏 46。
+                pinnedExtent: topBars ? 90 : 0,
                 labelBuilder: (int index) =>
                     FastScrollLabel('L$index', caption: 'C${index ~/ 50}'),
                 sections: <FastScrollSection>[
@@ -96,9 +99,20 @@ void main() {
                 ),
                 child: CustomScrollView(
                   slivers: <Widget>[
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: headerHeight),
-                    ),
+                    // 与日记页相同的顶栏：玻璃时“浮动 + 固定”的刊头（收起
+                    // 到状态栏那一条）、固定的标签栏、随内容滚走的间距。
+                    if (topBars) ...<Widget>[
+                      SliverPersistentHeader(
+                        pinned: true,
+                        floating: true,
+                        delegate: _MastheadDelegate(),
+                      ),
+                      const PinnedHeaderSliver(child: SizedBox(height: 46)),
+                      const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                    ] else
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: headerHeight),
+                      ),
                     KeyedSubtree(key: listKey, child: list(loadedCount.value)),
                     const SliverToBoxAdapter(child: SizedBox(height: 40)),
                   ],
@@ -342,6 +356,61 @@ void main() {
     });
   }
 
+  for (final masonry in <bool>[false, true]) {
+    testWidgets('resting near the top of the '
+        '${masonry ? 'waterfall' : 'list'} under pinned bars is stable', (
+      WidgetTester tester,
+    ) async {
+      await pumpScroller(tester, total: 400, topBars: true, masonry: masonry);
+      await revealByScrolling(tester);
+      final position = positionOf(tester);
+
+      // 拖到最顶，再往下一点点停在头一两篇之间：这里列表正从顶栏下方滑进
+      // 去，滚动条换算若跟着被挡住的高度变，会每帧来回跳（实机上刊头随之
+      // 反复弹出收起、整屏闪烁），松手后也停不下来。
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(FastScrollThumb)),
+      );
+      await tester.pump();
+      for (var i = 0; i < 20; i++) {
+        await gesture.moveBy(const Offset(0, -20));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await settle(tester, frames: 10);
+      expect(position.pixels, 0);
+      // 手指已越过轨道顶端：松开，在按钮上重新按住。
+      await gesture.up();
+      await tester.pump();
+      final regrab = await tester.startGesture(
+        tester.getCenter(find.byType(FastScrollThumb)),
+      );
+      await tester.pump();
+
+      Future<void> expectStill(String when) async {
+        final samples = <double>[];
+        for (var i = 0; i < 30; i++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          samples.add(position.pixels);
+        }
+        final spread =
+            samples.reduce((a, b) => a > b ? a : b) -
+            samples.reduce((a, b) => a < b ? a : b);
+        expect(spread, lessThan(0.5), reason: '$when: $samples');
+      }
+
+      // 第一步越过拖动阈值（2dp），之后每步约半篇。
+      for (final step in <double>[3, 0.5, 0.5, 0.5]) {
+        await regrab.moveBy(Offset(0, step));
+        await tester.pump(const Duration(milliseconds: 16));
+        await tester.pump(const Duration(milliseconds: 16));
+        await expectStill('holding');
+      }
+      await regrab.up();
+      await tester.pump();
+      await expectStill('released');
+    });
+  }
+
   testWidgets('a pending jump is dropped when the list changes', (
     WidgetTester tester,
   ) async {
@@ -428,4 +497,23 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     }
   });
+}
+
+/// 日记页玻璃顶栏的刊头：最大 100（状态栏 44 + 内容 56），收起到 44。
+class _MastheadDelegate extends SliverPersistentHeaderDelegate {
+  @override
+  double get minExtent => 44;
+
+  @override
+  double get maxExtent => 100;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => const ColoredBox(color: Color(0xFF8899AA));
+
+  @override
+  bool shouldRebuild(covariant _MastheadDelegate oldDelegate) => false;
 }

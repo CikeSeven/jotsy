@@ -32,6 +32,7 @@ class DiariesFastScroller extends ConsumerStatefulWidget {
     required this.onNeedItems,
     required this.child,
     this.chapterTitles = const <String>[],
+    this.pinnedExtent = 0,
     this.padding = EdgeInsets.zero,
     this.enabled = true,
   });
@@ -43,6 +44,9 @@ class DiariesFastScroller extends ConsumerStatefulWidget {
   final ValueChanged<int> onNeedItems;
   final Widget child;
   final List<String> chapterTitles;
+
+  /// 列表上方始终固定的栏的高度（见 [FastScroller.pinnedExtent]）。
+  final double pinnedExtent;
   final EdgeInsets padding;
   final bool enabled;
 
@@ -113,6 +117,7 @@ class _DiariesFastScrollerState extends ConsumerState<DiariesFastScroller> {
         sections: index.sections,
         onNeedItems: widget.onNeedItems,
         listIdentity: query.timelineKey,
+        pinnedExtent: widget.pinnedExtent,
         padding: widget.padding,
         enabled: widget.enabled,
         child: widget.child,

@@ -44,6 +44,7 @@ class FastScroller extends StatefulWidget {
     this.sections = const <FastScrollSection>[],
     this.onNeedItems,
     this.listIdentity,
+    this.pinnedExtent = 0,
     this.padding = EdgeInsets.zero,
     this.enabled = true,
   });
@@ -61,6 +62,11 @@ class FastScroller extends StatefulWidget {
   /// 列表的身份（筛选、排序、范围）：变化时放弃进行中的跳转——还在等数据
   /// 的目标属于旧列表，不能套到新列表上。
   final Object? listIdentity;
+
+  /// 滚动视图顶部始终固定的栏（标签栏等）的高度：项滚到它的下缘才算在
+  /// 最上面。会浮动收起的栏不算在内。须是常量，不能随滚动位置变化（见
+  /// [FastScrollListGeometry]）。
+  final double pinnedExtent;
   final EdgeInsets padding;
   final bool enabled;
 
@@ -132,6 +138,7 @@ class _FastScrollerState extends State<FastScroller>
   FastScrollListGeometry? _geometry() => FastScrollListGeometry.of(
     widget.listKey.currentContext,
     widget.loadedCount,
+    pinnedExtent: widget.pinnedExtent,
   );
 
   @override

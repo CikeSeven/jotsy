@@ -35,11 +35,14 @@ class FastScrollSection {
 /// 列表 sliver（SliverList 或瀑布流）当前布局的读数，在“第几项”与滚动
 /// 位置之间换算。
 ///
-/// 输入：列表 sliver 外层 GlobalKey 的 context 与交给列表的项数；输出：连续
-/// 的项序与对应的滚动位置。只读渲染树，无副作用。
+/// 输入：列表 sliver 外层 GlobalKey 的 context、交给列表的项数与顶部固定栏
+/// 的高度；输出：连续的项序与对应的滚动位置。只读渲染树，无副作用。
 ///
-/// - 顶线：可见内容的上缘，即滚动视图上缘再往下让过固定的标签栏等
-///   （sliver 约束的 overlap）；项滚到这条线才算“在最上面”。
+/// - 顶线：滚动视图上缘再往下让过始终固定的栏（[pinnedExtent]，由宿主
+///   给出）；项滚到这条线才算“在最上面”。不读 sliver 约束的 overlap：列表
+///   刚从顶栏下方滑进去时它随滚动位置在 0 与栏高之间变，换算出的位置又反过
+///   来改变它，跳转会每帧在两处之间来回（实机上刊头随之反复弹出收起、整屏
+///   闪烁）；浮动的刊头时有时无，也不算在内。
 /// - 项序 i + t 对应第 i 项上缘与第 i + 1 项上缘之间 t 处，而不是第 i 项
 ///   自身高度的 t 处：单列时两者相同；瀑布流两列交错，第 i 项可能比第 i + 1
 ///   项高出一截，按自身高度换算会让项序增大时位置反而后退（拖动时列表
@@ -51,12 +54,16 @@ class FastScrollSection {
 /// - 读数来自上一次布局：滚动位置刚变、还没重新布局时，用新位置配旧布局，
 ///   结果仍连续，下一帧即准确。
 class FastScrollListGeometry {
-  FastScrollListGeometry._(this._sliver, this.loadedCount);
+  FastScrollListGeometry._(this._sliver, this.loadedCount, this.pinnedExtent);
 
   /// 在 [context] 下（只沿 sliver 往下找，不进入卡片内部）找第一个多子
   /// sliver；列表还没布局（加载中、空态）或是横向的时为 null。
   /// [loadedCount] 为交给列表的项数（渲染对象不公开子项总数）。
-  static FastScrollListGeometry? of(BuildContext? context, int loadedCount) {
+  static FastScrollListGeometry? of(
+    BuildContext? context,
+    int loadedCount, {
+    double pinnedExtent = 0,
+  }) {
     final root = context?.findRenderObject();
     final sliver = root == null ? null : _findList(root);
     if (sliver == null ||
@@ -65,7 +72,7 @@ class FastScrollListGeometry {
         sliver.constraints.axis != Axis.vertical) {
       return null;
     }
-    return FastScrollListGeometry._(sliver, loadedCount);
+    return FastScrollListGeometry._(sliver, loadedCount, pinnedExtent);
   }
 
   static RenderSliverMultiBoxAdaptor? _findList(RenderObject node) {
@@ -93,8 +100,8 @@ class FastScrollListGeometry {
   /// 列表自身的滚动范围（未布局部分为估算）。
   double get extent => _sliver.geometry!.scrollExtent;
 
-  /// 顶线以上被固定标签栏等盖住的高度。
-  double get overlap => math.max(0, _sliver.constraints.overlap);
+  /// 顶线以上始终固定的栏（标签栏等）的高度，见类注释。
+  final double pinnedExtent;
 
   /// 每项平均占的滚动距离（瀑布流为每项摊到的距离）。
   double get averageExtent {
@@ -168,7 +175,7 @@ class FastScrollListGeometry {
   /// 滚动位置为 [pixels] 时顶线所在的连续项序。列表还没滚到顶线（上面还有
   /// 顶栏、日记本头部）时为 0。顶线在已布局范围之外时按平均高度推算。
   double indexAt(double pixels) {
-    final line = pixels - start + overlap;
+    final line = pixels - start + pinnedExtent;
     if (line <= 0 || loadedCount == 0) {
       return 0;
     }
@@ -212,7 +219,7 @@ class FastScrollListGeometry {
       final entry = placed[k];
       if (entry.index == whole) {
         final offset = entry.top + fraction * _stepAfter(placed, k);
-        return (pixels: start + offset - overlap, exact: true);
+        return (pixels: start + offset - pinnedExtent, exact: true);
       }
       if (nearest == null ||
           (entry.index - whole).abs() < (nearest.index - whole).abs()) {
@@ -223,7 +230,7 @@ class FastScrollListGeometry {
     final offset = nearest == null
         ? index * average
         : nearest.top + (index - nearest.index) * average;
-    return (pixels: start + offset - overlap, exact: false);
+    return (pixels: start + offset - pinnedExtent, exact: false);
   }
 }
 

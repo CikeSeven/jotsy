@@ -23,6 +23,8 @@ import 'fast_scroller_geometry.dart';
 ///   状态，不挡列表的点按。
 /// - 用户按住列表拖动、或别处开始了新的滚动（如回到顶部）时，滚动活动被
 ///   取代，本次移动随之取消。
+/// - 兜底：同一个目标让移动方向连续翻转 [_maxReversals] 次（换算与布局
+///   互相影响、来回追不到）时按已到达处理，不让列表每帧来回跳。
 class FastScrollSeek {
   FastScrollSeek({
     required TickerProvider vsync,
@@ -40,6 +42,7 @@ class FastScrollSeek {
   static const double _maxItemsPerFrame = 32;
   static const double _minStepViewports = 3;
   static const int _maxRefines = 4;
+  static const int _maxReversals = 2;
 
   /// 估算速度用的帧率：只用来让图片推迟解码的判断生效，不必精确。
   static const double _framesPerSecond = 60;
@@ -57,6 +60,10 @@ class FastScrollSeek {
   double? _target;
   bool _holding = false;
   int _refines = 0;
+
+  /// 同一目标下最近一步的方向（-1 / 0 / 1）与方向翻转的次数。
+  int _lastDirection = 0;
+  int _reversals = 0;
   _FastScrollSeekActivity? _activity;
 
   /// 是否有尚未完成的移动（含等数据）。
@@ -67,6 +74,8 @@ class FastScrollSeek {
   void seekTo(double index, {required bool holding}) {
     if (_target != index) {
       _refines = 0;
+      _lastDirection = 0;
+      _reversals = 0;
     }
     _target = index;
     _holding = holding;
@@ -144,23 +153,38 @@ class FastScrollSeek {
         _refines++;
         return;
       }
-      _ticker.stop();
-      if (_holding) {
-        _activity?.settle();
-      } else if (waitingForItems) {
-        // 等下一页：先不占着滚动（不挡点按），数据到了经 resume 继续。
-        _endActivity();
-      } else {
-        _target = null;
-        _endActivity();
-        onSettled?.call();
-      }
+      _arrive(waitingForItems: waitingForItems);
       return;
     }
+    final direction = distance.sign.toInt();
+    if (_lastDirection != 0 && direction != _lastDirection) {
+      _reversals++;
+      if (_reversals >= _maxReversals) {
+        _arrive(waitingForItems: false);
+        return;
+      }
+    }
+    _lastDirection = direction;
     final step = reduceMotion()
         ? distance
         : _limitStep(distance, position.viewportDimension, geometry);
     _moveTo(position, position.pixels + step, step * _framesPerSecond);
+  }
+
+  /// 到达目标（或判定为追不到）：仍按住时停在原地等下一个目标；目标在
+  /// 还没加载的部分时先交回空闲状态（不挡点按），数据到了经 [resume]
+  /// 继续；否则结束本次移动。
+  void _arrive({required bool waitingForItems}) {
+    _ticker.stop();
+    if (_holding) {
+      _activity?.settle();
+    } else if (waitingForItems) {
+      _endActivity();
+    } else {
+      _target = null;
+      _endActivity();
+      onSettled?.call();
+    }
   }
 
   double _limitStep(

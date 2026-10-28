@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import 'explore_content_extractor.dart';
 import 'explore_trend_builder.dart';
+import '../models/explore_module_options.dart';
 import '../models/explore_view_data.dart';
 import '../../../utils/text_stats.dart';
 
@@ -105,24 +106,47 @@ class ExplorePageController {
   }
 
   /// 选择“那年今日”候选列表（日记本统计页对本子里的日记复用同一规则）：
-  /// - 同月同日；
+  /// - [match] 为同月同日（默认）、前后 3 天内，或同月；
   /// - 年份早于当前年；
   /// - 按创建时间倒序，最近年份优先；
-  /// - 默认最多展示 12 条，避免轮播过长影响浏览体验。
+  /// - 最多 [limit] 条（默认 12），避免轮播过长影响浏览体验。
   List<ExploreOnThisDayItem> pickOnThisDayList(
     List<ExploreDiaryOverview> diaries, {
     required DateTime now,
     required AppLocalizations l10n,
+    ExploreOnThisDayMatch match = ExploreOnThisDayMatch.sameDay,
+    int limit = _onThisDayMaxEntries,
   }) {
-    final candidates = diaries.where((item) {
-      final created = item.createdAt.toLocal();
-      return created.month == now.month &&
-          created.day == now.day &&
-          created.year < now.year;
-    }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final today = DateTime.utc(now.year, now.month, now.day);
+    bool matches(DateTime created) {
+      if (created.year >= now.year) return false;
+      return switch (match) {
+        ExploreOnThisDayMatch.sameDay =>
+          created.month == now.month && created.day == now.day,
+        ExploreOnThisDayMatch.sameMonth => created.month == now.month,
+        // 把那天挪到今年再比：跨年（12/30 与 1/2）按相邻处理，2 月 29 日在
+        // 平年落到 3 月 1 日。
+        ExploreOnThisDayMatch.nearby => () {
+          var shifted = DateTime.utc(now.year, created.month, created.day);
+          var diff = shifted.difference(today).inDays;
+          if (diff > 182) {
+            shifted = DateTime.utc(now.year - 1, created.month, created.day);
+            diff = shifted.difference(today).inDays;
+          } else if (diff < -182) {
+            shifted = DateTime.utc(now.year + 1, created.month, created.day);
+            diff = shifted.difference(today).inDays;
+          }
+          return diff.abs() <= 3;
+        }(),
+      };
+    }
+
+    final candidates =
+        diaries.where((item) => matches(item.createdAt.toLocal())).toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return candidates
-        .take(_onThisDayMaxEntries)
+        .take(limit)
         .map(
           (item) => ExploreOnThisDayItem(
             diaryId: item.diaryId,
@@ -144,7 +168,7 @@ class ExplorePageController {
 
   /// 生成“那年今日”卡片时间标签。
   ///
-  /// 优先使用“X年前的今天”；在无法形成有效年差时，回退到具体日期字符串。
+  /// 同月同日写“X年前的今天”；其余（前后几天、同月）写具体日期。
   String _buildOnThisDayLabel(
     DateTime createdAt, {
     required DateTime now,
@@ -152,7 +176,9 @@ class ExplorePageController {
   }) {
     final localCreated = createdAt.toLocal();
     final yearDiff = now.year - localCreated.year;
-    if (yearDiff > 0) {
+    if (yearDiff > 0 &&
+        localCreated.month == now.month &&
+        localCreated.day == now.day) {
       return l10n.exploreOnThisDayYearsAgo(yearDiff);
     }
     return l10n.formatFullDate(localCreated);

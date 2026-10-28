@@ -32,6 +32,7 @@ class DiaryCardBlocks extends StatelessWidget {
     required this.maxVisibleTags,
     required this.metaPosition,
     required this.selectionMarkDuration,
+    this.commentCount = 0,
   });
 
   final DiaryWithTags diary;
@@ -48,6 +49,9 @@ class DiaryCardBlocks extends StatelessWidget {
   /// 心情天气实际所在位置（封面上时这里不画）。
   final DiaryCardMetaPosition metaPosition;
   final Duration selectionMarkDuration;
+
+  /// 这篇的留言条数（底栏的留言数；留言功能关闭时为 0）。
+  final int commentCount;
 
   /// 标题行要显示的文字：样式隐藏标题时为 null；日记没写标题时按
   /// “无标题”占位开关取 [untitled] 或 null（不显示标题行）。
@@ -111,6 +115,7 @@ class DiaryCardBlocks extends StatelessWidget {
       viewData: viewData,
       resolved: resolved,
       appearance: appearance,
+      commentCount: commentCount,
     );
     final mark = DiaryCardSelectionMark(
       selected: selected,

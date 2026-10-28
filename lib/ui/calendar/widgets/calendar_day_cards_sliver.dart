@@ -30,6 +30,7 @@ class CalendarDayCardsSliver extends StatefulWidget {
     required this.onCreate,
     this.cardStyle = DiaryCardStyle.defaults,
     this.moodOptions = SettingsService.defaultMoodOptions,
+    this.commentCounts = const <String, int>{},
   });
 
   final DateTime day;
@@ -41,6 +42,9 @@ class CalendarDayCardsSliver extends StatefulWidget {
   /// 与日记列表相同的用户卡片样式。
   final DiaryCardStyle cardStyle;
   final List<String> moodOptions;
+
+  /// 每篇的留言条数（卡片底栏的留言数，见 `DiariesListSection.commentCounts`）。
+  final Map<String, int> commentCounts;
 
   @override
   State<CalendarDayCardsSliver> createState() => _CalendarDayCardsSliverState();
@@ -115,6 +119,7 @@ class _CalendarDayCardsSliverState extends State<CalendarDayCardsSliver>
             onToggleSelection: (_, __) {},
             cardStyle: widget.cardStyle,
             moodOptions: widget.moodOptions,
+            commentCounts: widget.commentCounts,
             availableWidth: width,
           );
         },

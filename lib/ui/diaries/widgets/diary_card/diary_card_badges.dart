@@ -145,8 +145,9 @@ class DiaryCardMetaIndicators extends StatelessWidget {
   }
 }
 
-/// 底栏的附加信息（地点、精力、字数、媒体）。返回的部件放进底栏的 Wrap，
-/// 每项单行；地点过长时截断。
+/// 底栏的附加信息（地点、精力、字数、媒体、留言数）。返回的部件放进底栏的
+/// Wrap，每项单行；地点过长时截断。[commentCount] 为 0（没有留言或留言功能
+/// 关闭）时不显示留言数。
 List<Widget> buildDiaryCardFooterExtras(
   BuildContext context, {
   required DiaryCardMetaStyle meta,
@@ -156,6 +157,7 @@ List<Widget> buildDiaryCardFooterExtras(
   required double? energyLevel,
   required int wordCount,
   required DiaryCardMediaSummary? media,
+  int commentCount = 0,
   double scale = 1,
 }) {
   final l10n = context.l10n;
@@ -238,6 +240,15 @@ List<Widget> buildDiaryCardFooterExtras(
         item(FontAwesomeIcons.paperclip, null, l10n.diaryCardMediaAttachment),
       );
     }
+  }
+  if (meta.showComments && commentCount > 0) {
+    items.add(
+      item(
+        FontAwesomeIcons.comment,
+        '$commentCount',
+        l10n.diaryCommentsCount(commentCount),
+      ),
+    );
   }
   return items;
 }

@@ -136,6 +136,7 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
             requiredTagIds: query.requiredTagIds,
             sortMode: query.sortMode,
             scope: query.scope,
+            matchComments: query.matchComments,
           );
       if (!mounted) {
         return;

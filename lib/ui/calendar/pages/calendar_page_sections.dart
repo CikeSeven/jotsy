@@ -362,6 +362,9 @@ extension _CalendarPageSections on _CalendarPageState {
               SettingsService.defaultDiaryCardTagLimit,
           cardStyle: ref.watch(diaryCardStyleProvider),
           moodOptions: ref.watch(diaryCardMoodOptionsProvider),
+          commentCounts:
+              ref.watch(diaryCommentCountsProvider).value ??
+              const <String, int>{},
           onOpenDiary: openDiary,
           onCreate: () => unawaited(_openCreateForSelectedDay()),
         ),

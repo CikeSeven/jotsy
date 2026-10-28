@@ -22,5 +22,6 @@ final diaryTimelineProvider = StreamProvider.autoDispose
         requiredTagIds: query.requiredTagIds,
         sortMode: query.sortMode,
         scope: query.scope,
+        matchComments: query.matchComments,
       );
     });

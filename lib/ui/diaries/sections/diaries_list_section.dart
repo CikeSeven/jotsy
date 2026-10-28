@@ -74,10 +74,22 @@ class DiariesListSection extends StatelessWidget {
     this.menuActions,
     this.selectionAnchor,
     this.revealProgress,
+    this.commentCounts = const <String, int>{},
+    this.belowCardBuilder,
   });
 
   /// 视图层已过滤/排序后的日记数据。
   final List<DiaryWithTags> diaries;
+
+  /// 每篇的留言条数（键为日记业务 id）：卡片底栏的留言数。调用方读
+  /// `diaryCommentCountsProvider`（留言功能关闭时为空表）；本区块不读
+  /// provider，测试与设置页预览可以直接传入。
+  final Map<String, int> commentCounts;
+
+  /// 卡片下方的附加内容（搜索页“只命中留言”时那条命中的留言）；返回 null
+  /// 表示这篇没有。附加内容与卡片一起进出场、一起左滑。
+  final Widget? Function(BuildContext context, DiaryWithTags diary)?
+  belowCardBuilder;
 
   /// 列表布局模式：列表 or 瀑布流。
   final DiaryLayoutMode layoutMode;
@@ -324,6 +336,7 @@ class DiariesListSection extends StatelessWidget {
             },
       enableCoverHero: enableCoverHero,
       opensLockedCapsulePage: opensLockedCapsulePage,
+      commentCount: commentCounts[diaryId] ?? 0,
       onTapIntercept: anchor == null
           ? null
           : (DiaryWithTags tapped) => handleDiaryModifierTap(
@@ -352,6 +365,14 @@ class DiariesListSection extends StatelessWidget {
         actions: actions,
         enabled: !isSelectionMode,
         child: card,
+      );
+    }
+    final below = belowCardBuilder?.call(context, diary);
+    if (below != null) {
+      card = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[card, below],
       );
     }
     final animatedBaseItem = _buildAnimatedDiaryItem(

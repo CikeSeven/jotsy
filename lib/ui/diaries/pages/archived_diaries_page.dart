@@ -23,6 +23,7 @@ import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';
 import '../providers/diary_card_style_provider.dart';
+import '../providers/diary_comments_provider.dart';
 import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../sections/diary_head_section.dart';
 import '../../widgets/expressive_icon_swap.dart';
@@ -280,6 +281,13 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                         availableWidth:
                                             constraints.maxWidth - side * 2,
                                         diaries: visibleDiaries,
+                                        commentCounts:
+                                            ref
+                                                .watch(
+                                                  diaryCommentCountsProvider,
+                                                )
+                                                .value ??
+                                            const <String, int>{},
                                         pendingHideDiaryIds:
                                             _pendingHideDiaryIds,
                                         appearingDiaryIds: _appearingDiaryIds,

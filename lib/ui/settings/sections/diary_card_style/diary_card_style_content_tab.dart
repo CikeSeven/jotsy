@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/models/diary_card_style/diary_card_style.dart';
+import '../../../diaries/providers/diary_comments_provider.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../controllers/diary_card_style_editor_controller.dart';
 import '../../widgets/settings_card_group.dart';
@@ -14,17 +15,20 @@ import '../../widgets/style_editor/style_editor_common.dart';
 /// “内容”标签页：标题/摘要显隐与行数、“无标题”占位、标签（数量沿用独立的
 /// 旧设置）、置顶标记、心情天气与底栏附加信息。“无标题”占位只在显示标题时
 /// 才有意义，标题关闭时随之收起。
-class DiaryCardStyleContentTab extends StatelessWidget {
+///
+/// “留言数”只在开启留言功能时列出（功能关闭时隐藏它的全部选项）。
+class DiaryCardStyleContentTab extends ConsumerWidget {
   const DiaryCardStyleContentTab({super.key, required this.controller});
 
   final DiaryCardStyleEditorController controller;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final style = controller.style;
     final content = style.content;
     final meta = style.meta;
+    final commentsEnabled = ref.watch(diaryCommentsEnabledProvider);
     final m = controller.modeStyle;
 
     void commitContent(DiaryCardContentStyle next) =>
@@ -193,6 +197,13 @@ class DiaryCardStyleContentTab extends StatelessWidget {
               value: meta.showMedia,
               onChanged: (bool v) => commitMeta(meta.copyWith(showMedia: v)),
             ),
+            if (commentsEnabled)
+              SettingsSwitchTile(
+                title: l10n.diaryCardStyleShowComments,
+                value: meta.showComments,
+                onChanged: (bool v) =>
+                    commitMeta(meta.copyWith(showComments: v)),
+              ),
           ],
         ),
         diaryCardModeGroup(

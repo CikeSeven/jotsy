@@ -1,6 +1,6 @@
 part of 'diary_card_style.dart';
 
-/// 卡片上的日期、时间与附加信息（心情、天气、地点、精力、字数、媒体）。
+/// 卡片上的日期、时间与附加信息（心情、天气、地点、精力、字数、媒体、留言数）。
 /// 两种布局共用；心情与天气放在哪由各模式的 `metaPosition` 决定。
 @immutable
 class DiaryCardMetaStyle {
@@ -18,6 +18,7 @@ class DiaryCardMetaStyle {
     this.showEnergy = false,
     this.showWordCount = false,
     this.showMedia = false,
+    this.showComments = true,
   });
 
   /// 眉线日期；关闭后眉线只剩置顶徽章与（位于眉线时的）心情天气。
@@ -41,7 +42,12 @@ class DiaryCardMetaStyle {
   /// 正文中的图片数量、录音、视频与附件标记。
   final bool showMedia;
 
-  /// 底栏是否有附加信息（地点、精力、字数、媒体）。
+  /// 留言条数。默认开：只在开启留言功能且这篇有留言时才出现，没有留言的
+  /// 卡片与改版前完全一样。
+  final bool showComments;
+
+  /// 底栏是否有常驻的附加信息（地点、精力、字数、媒体）。留言数不算在内：
+  /// 它默认开，却只在这篇有留言时出现，默认卡片仍然没有附加信息。
   bool get hasFooterExtras =>
       showLocation || showEnergy || showWordCount || showMedia;
 
@@ -59,6 +65,7 @@ class DiaryCardMetaStyle {
     bool? showEnergy,
     bool? showWordCount,
     bool? showMedia,
+    bool? showComments,
   }) {
     return DiaryCardMetaStyle(
       showDate: showDate ?? this.showDate,
@@ -74,6 +81,7 @@ class DiaryCardMetaStyle {
       showEnergy: showEnergy ?? this.showEnergy,
       showWordCount: showWordCount ?? this.showWordCount,
       showMedia: showMedia ?? this.showMedia,
+      showComments: showComments ?? this.showComments,
     );
   }
 
@@ -113,6 +121,7 @@ class DiaryCardMetaStyle {
       showEnergy: _bool(json['showEnergy'], d.showEnergy),
       showWordCount: _bool(json['showWordCount'], d.showWordCount),
       showMedia: _bool(json['showMedia'], d.showMedia),
+      showComments: _bool(json['showComments'], d.showComments),
     );
   }
 
@@ -132,6 +141,7 @@ class DiaryCardMetaStyle {
     _put(json, 'showEnergy', showEnergy, d.showEnergy);
     _put(json, 'showWordCount', showWordCount, d.showWordCount);
     _put(json, 'showMedia', showMedia, d.showMedia);
+    _put(json, 'showComments', showComments, d.showComments);
     return json;
   }
 
@@ -150,7 +160,8 @@ class DiaryCardMetaStyle {
         other.showLocation == showLocation &&
         other.showEnergy == showEnergy &&
         other.showWordCount == showWordCount &&
-        other.showMedia == showMedia;
+        other.showMedia == showMedia &&
+        other.showComments == showComments;
   }
 
   @override
@@ -168,5 +179,6 @@ class DiaryCardMetaStyle {
     showEnergy,
     showWordCount,
     showMedia,
+    showComments,
   );
 }

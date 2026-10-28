@@ -20,12 +20,16 @@ class DiaryCardLines {
     required this.viewData,
     required this.resolved,
     required this.appearance,
+    this.commentCount = 0,
   });
 
   final DiaryWithTags diary;
   final DiaryCardViewData viewData;
   final DiaryCardResolvedStyle resolved;
   final DiaryCardAppearance appearance;
+
+  /// 这篇的留言条数（留言功能关闭时为 0）。
+  final int commentCount;
 
   /// 置顶徽章；未置顶或样式隐藏时为 null。
   Widget? pinBadge() {
@@ -186,7 +190,8 @@ class DiaryCardLines {
     final timeStyle = resolved.footerStyle?.copyWith(
       color: appearance.footerColor,
     );
-    final extras = meta.hasFooterExtras
+    final extras =
+        meta.hasFooterExtras || (meta.showComments && commentCount > 0)
         ? buildDiaryCardFooterExtras(
             context,
             meta: meta,
@@ -196,6 +201,7 @@ class DiaryCardLines {
             energyLevel: viewData.energyLevel,
             wordCount: viewData.wordCount,
             media: meta.showMedia ? viewData.media : null,
+            commentCount: commentCount,
             scale: resolved.metaScale,
           )
         : const <Widget>[];

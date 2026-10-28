@@ -44,12 +44,17 @@ class DiaryPageQuery {
     required this.limit,
     required this.sortMode,
     this.scope = DiaryListScope.all,
+    this.matchComments = false,
   });
 
   final String keyword;
   final List<int> requiredTagIds;
   final int limit;
   final DiarySortMode sortMode;
+
+  /// 关键词是否也匹配留言：只有搜索页在开启留言功能时为 true，参与相等
+  /// 比较（开关一变即换一个 provider 实例）。
+  final bool matchComments;
 
   /// 查询范围（全部日记或某本日记本），参与相等比较：切换日记本即换一个
   /// provider 实例，不会命中别的范围的缓存。
@@ -65,6 +70,7 @@ class DiaryPageQuery {
           limit: 0,
           sortMode: sortMode,
           scope: scope,
+          matchComments: matchComments,
         );
 
   @override
@@ -79,6 +85,7 @@ class DiaryPageQuery {
         limit != other.limit ||
         sortMode != other.sortMode ||
         scope != other.scope ||
+        matchComments != other.matchComments ||
         requiredTagIds.length != other.requiredTagIds.length) {
       return false;
     }
@@ -96,6 +103,7 @@ class DiaryPageQuery {
     limit,
     sortMode,
     scope,
+    matchComments,
     Object.hashAll(requiredTagIds),
   );
 }
@@ -177,6 +185,7 @@ final pagedDiariesProvider = StreamProvider.autoDispose
             limit: fetchLimit,
             sortMode: query.sortMode,
             scope: query.scope,
+            matchComments: query.matchComments,
           )
           .map((items) {
             final hasMore = items.length > query.limit;
@@ -297,6 +306,7 @@ final searchDiariesProvider = StreamProvider.autoDispose
             limit: fetchLimit,
             sortMode: query.sortMode,
             scope: query.scope,
+            matchComments: query.matchComments,
           )
           .map((items) {
             final hasMore = items.length > query.limit;

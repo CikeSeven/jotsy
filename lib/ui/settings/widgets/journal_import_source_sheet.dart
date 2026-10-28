@@ -12,7 +12,7 @@ import 'journal_import_source_labels.dart';
 
 /// 面板分组（顺序即展示顺序）：日记应用、笔记应用逐项列出导出方式；手机与
 /// WPS 云笔记都是在应用内登录官方云服务后直接读取，说明放在分组标题下，
-/// 各项以两列紧凑按钮排列，避免七条相同的说明把面板拉得过长。
+/// 各项以两列紧凑按钮排列，避免八条相同的说明把面板拉得过长。
 const List<JournalImportSource> _journalApps = [
   JournalImportSource.dayOne,
   JournalImportSource.journey,
@@ -38,6 +38,7 @@ const List<JournalImportSource> _phoneNotes = [
   JournalImportSource.honorNotes,
   JournalImportSource.meizuNotes,
   JournalImportSource.wpsNotes,
+  JournalImportSource.smartisanNotes,
 ];
 
 /// 打开来源应用面板，返回所选应用；取消返回 null。

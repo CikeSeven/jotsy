@@ -2883,6 +2883,10 @@
   "@journalImportWpsNotes": {
     "description": "WPS 便签应用名称。"
   },
+  "journalImportSmartisanNotes": "锤子便签",
+  "@journalImportSmartisanNotes": {
+    "description": "锤子便签（锤子科技 / 欢喜云）应用名称。"
+  },
   "journalImportEncrypted": "{app} 的加密备份无法导入，请在原应用中创建未加密的备份",
   "@journalImportEncrypted": {
     "description": "所选文件是密钥不公开的加密备份时的提示。",

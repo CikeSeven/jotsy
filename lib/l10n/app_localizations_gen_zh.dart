@@ -2065,6 +2065,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get journalImportWpsNotes => 'WPS 便签';
 
   @override
+  String get journalImportSmartisanNotes => '锤子便签';
+
+  @override
   String journalImportEncrypted(String app) {
     return '$app 的加密备份无法导入，请在原应用中创建未加密的备份';
   }

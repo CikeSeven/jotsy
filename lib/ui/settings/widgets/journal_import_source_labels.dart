@@ -28,6 +28,7 @@ String journalImportSourceName(
     JournalImportSource.honorNotes => l10n.journalImportHonorNotes,
     JournalImportSource.meizuNotes => l10n.journalImportMeizuNotes,
     JournalImportSource.wpsNotes => l10n.journalImportWpsNotes,
+    JournalImportSource.smartisanNotes => l10n.journalImportSmartisanNotes,
   };
 }
 

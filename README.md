@@ -116,7 +116,7 @@ Jotsy 想做一个纯粹的记录工具：打开就能写，不用登录，没�
 | :-- | :-- |
 | 日记应用 | Day One · Journey · Diarium · Daylio · Apple 手记 · Diaro |
 | 笔记应用 | 印象笔记 / Evernote · Google Keep · Joplin · Memos · Markdown / 纯文本（Obsidian、Bear、Notion 导出等） |
-| 云端笔记 | 小米笔记 · 华为备忘录 · OPPO 笔记 · vivo 笔记 · 荣耀笔记 · 魅族笔记 · WPS 便签 |
+| 云端笔记 | 小米笔记 · 华为备忘录 · OPPO 笔记 · vivo 笔记 · 荣耀笔记 · 魅族笔记 · WPS 便签 · 锤子便签 |
 
 > 云端笔记需要在应用内打开对应厂商的官方网页登录，Jotsy 只读取笔记内容。登录 Cookie 只存在于本次导入的内存中，导入结束就会清除，不会写入存储，也不会用于其他请求。
 

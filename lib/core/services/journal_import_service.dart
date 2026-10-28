@@ -348,7 +348,8 @@ JournalImportParseResult parseJournalExport(
     JournalImportSource.vivoNotes ||
     JournalImportSource.honorNotes ||
     JournalImportSource.meizuNotes ||
-    JournalImportSource.wpsNotes => throw ArgumentError.value(
+    JournalImportSource.wpsNotes ||
+    JournalImportSource.smartisanNotes => throw ArgumentError.value(
       source,
       'source',
       '云端来源经 prepareCloud 读取，没有导出文件',

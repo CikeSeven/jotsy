@@ -2883,6 +2883,10 @@
   "@journalImportWpsNotes": {
     "description": "Display name of WPS Notes."
   },
+  "journalImportSmartisanNotes": "Smartisan Notes",
+  "@journalImportSmartisanNotes": {
+    "description": "Display name of Smartisan Notes (Smartisan cloud)."
+  },
   "journalImportEncrypted": "Encrypted {app} backups can't be imported. Create an unencrypted backup in {app}",
   "@journalImportEncrypted": {
     "description": "Shown when the chosen file is an encrypted backup that can't be read.",

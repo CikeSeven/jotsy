@@ -3842,6 +3842,12 @@ abstract class AppLocalizations {
   /// **'WPS Notes'**
   String get journalImportWpsNotes;
 
+  /// Display name of Smartisan Notes (Smartisan cloud).
+  ///
+  /// In en, this message translates to:
+  /// **'Smartisan Notes'**
+  String get journalImportSmartisanNotes;
+
   /// Shown when the chosen file is an encrypted backup that can't be read.
   ///
   /// In en, this message translates to:

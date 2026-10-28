@@ -2219,6 +2219,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get journalImportWpsNotes => 'WPS Notes';
 
   @override
+  String get journalImportSmartisanNotes => 'Smartisan Notes';
+
+  @override
   String journalImportEncrypted(String app) {
     return 'Encrypted $app backups can\'t be imported. Create an unencrypted backup in $app';
   }

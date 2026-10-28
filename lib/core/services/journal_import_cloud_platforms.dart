@@ -3,6 +3,7 @@ import 'journal_import_cloud_honor.dart';
 import 'journal_import_cloud_huawei.dart';
 import 'journal_import_cloud_meizu.dart';
 import 'journal_import_cloud_oppo.dart';
+import 'journal_import_cloud_smartisan.dart';
 import 'journal_import_cloud_vivo.dart';
 import 'journal_import_cloud_wps.dart';
 import 'journal_import_cloud_xiaomi.dart';
@@ -69,5 +70,13 @@ final Map<JournalImportSource, CloudNotePlatform> cloudNotePlatforms = {
       'https://account.wps.cn/',
     ],
     create: WpsCloudProvider.new,
+  ),
+  JournalImportSource.smartisanNotes: CloudNotePlatform(
+    source: JournalImportSource.smartisanNotes,
+    // 便签应用“网页版”的入口；未登录时页面上有登录按钮，登录在
+    // account.smartisan.com 完成后回到这里。
+    loginUrl: 'https://yun.smartisan.com/?from=snote#/notes',
+    cookieOrigins: const ['https://yun.smartisan.com/'],
+    create: SmartisanCloudProvider.new,
   ),
 };

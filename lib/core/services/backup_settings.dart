@@ -32,6 +32,7 @@ class BackupSettings {
     'diaryShareOptionsRaw': settingsService.diaryShareOptionsRaw,
     'diaryExportOptionsRaw': settingsService.diaryExportOptionsRaw,
     'appFeaturesRaw': settingsService.appFeaturesRaw,
+    'exploreLayoutRaw': settingsService.exploreLayoutRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -239,6 +240,17 @@ class BackupSettings {
     if (settingsNode.containsKey('appFeaturesRaw')) {
       final appFeaturesRaw = settingsNode['appFeaturesRaw'];
       await settingsService.setAppFeaturesRaw(switch (appFeaturesRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 探索页布局同上：旧版备份没有时保留本机布局，显式 null 时回到默认。
+    if (settingsNode.containsKey('exploreLayoutRaw')) {
+      final exploreLayoutRaw = settingsNode['exploreLayoutRaw'];
+      await settingsService.setExploreLayoutRaw(switch (exploreLayoutRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

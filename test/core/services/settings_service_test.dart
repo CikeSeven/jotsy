@@ -584,6 +584,66 @@ void main() {
     });
   });
 
+  group('SettingsService explore layout', () {
+    const key = 'app.settings.explore_layout';
+    const raw = '{"v":1,"behavior":{"period":"month"}}';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.exploreLayoutRaw, isNull);
+
+      await settings.setExploreLayoutRaw('  $raw  ');
+      expect(settings.exploreLayoutRaw, raw);
+      expect(settings.exploreLayoutRawNotifier.value, raw);
+      expect((await SettingsService.create()).exploreLayoutRaw, raw);
+
+      await settings.setExploreLayoutRaw('   ');
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.exploreLayoutRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 3});
+      final settings = await SettingsService.create();
+      expect(settings.exploreLayoutRaw, isNull);
+    });
+
+    test(
+      'backups carry the layout, older backups keep the local one, maps are re-encoded and null resets',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setExploreLayoutRaw(raw);
+        expect(BackupSettings.capture(settings)['exploreLayoutRaw'], raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.exploreLayoutRaw, raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'exploreLayoutRaw': <String, dynamic>{
+            'v': 1,
+            'behavior': <String, dynamic>{'period': 'year'},
+          },
+        });
+        expect(
+          settings.exploreLayoutRaw,
+          '{"v":1,"behavior":{"period":"year"}}',
+        );
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'exploreLayoutRaw': null,
+        });
+        expect(settings.exploreLayoutRaw, isNull);
+      },
+    );
+  });
+
   group('SettingsService home bar style', () {
     const key = 'app.settings.home_bar_style';
     const raw = '{"v":1,"current":{"material":"glass"}}';

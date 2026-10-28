@@ -11,7 +11,8 @@ mixin _AppDatabaseDiaryListQueries
   ///
   /// 查询说明：
   /// 1. 默认仅返回未软删除、未归档记录；
-  /// 2. 关键词匹配 `title` 与 `content_text`；
+  /// 2. 关键词匹配 `title` 与 `content_text`；[matchComments] 为 true 时
+  ///    （搜索页且开启了留言功能）也匹配这篇的留言；
   /// 3. 多标签过滤采用 AND 语义；
   /// 4. 先在只含 id 的窗口内筛选、排序与分页，再读取正文并聚合标签；
   ///    否则 JOIN + GROUP BY 会先为全部命中项聚合标签与搬运正文，最后才
@@ -26,6 +27,7 @@ mixin _AppDatabaseDiaryListQueries
     int offset = 0,
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
+    bool matchComments = false,
   }) {
     final normalizedKeyword = keyword.trim();
     final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
@@ -46,6 +48,7 @@ mixin _AppDatabaseDiaryListQueries
       normalizedKeyword: normalizedKeyword,
       normalizedTagIds: normalizedTagIds,
       scope: scope,
+      matchComments: matchComments,
     );
     sql.writeln(
       bookScope != null ? _bookOrderBySql() : _diaryOrderBySql(sortMode),
@@ -98,6 +101,7 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
         diaries,
         diaryTags,
         tags,
+        ..._commentReadsFrom(normalizedKeyword, matchComments),
       ]),
     ).watch().map(_mapDiaryWithTagsRows);
   }
@@ -112,6 +116,7 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     List<int> requiredTagIds = const <int>[],
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
+    bool matchComments = false,
   }) async {
     final query = _activeDiaryKeysQuery(
       columns: 'd.diary_id',
@@ -119,6 +124,7 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
       requiredTagIds: requiredTagIds,
       sortMode: sortMode,
       scope: scope,
+      matchComments: matchComments,
     );
     final rows = await query.get();
     return rows
@@ -137,6 +143,7 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     List<int> requiredTagIds = const <int>[],
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
+    bool matchComments = false,
   }) {
     final bookOrder = _bookOrderScope(scope) != null;
     return _activeDiaryKeysQuery(
@@ -145,6 +152,7 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
       requiredTagIds: requiredTagIds,
       sortMode: sortMode,
       scope: scope,
+      matchComments: matchComments,
     ).watch().map(
       (rows) => rows
           .map(
@@ -170,6 +178,7 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     required List<int> requiredTagIds,
     required DiarySortMode sortMode,
     required DiaryListScope scope,
+    bool matchComments = false,
   }) {
     final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
     final variables = <Variable<Object>>[];
@@ -188,6 +197,7 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
       normalizedKeyword: keyword.trim(),
       normalizedTagIds: normalizedTagIds,
       scope: scope,
+      matchComments: matchComments,
     );
     sql.writeln(
       bookScope != null ? _bookOrderBySql() : _diaryOrderBySql(sortMode),
@@ -195,7 +205,11 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     return customSelect(
       sql.toString(),
       variables: variables,
-      readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[diaries, diaryTags]),
+      readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[
+        diaries,
+        diaryTags,
+        ..._commentReadsFrom(keyword.trim(), matchComments),
+      ]),
     );
   }
 
@@ -257,6 +271,7 @@ ${_diaryScopeJoinSql(scope)}''');
     required String normalizedKeyword,
     required List<int> normalizedTagIds,
     required DiaryListScope scope,
+    bool matchComments = false,
   }) {
     sql.write('''
 WHERE d.is_deleted = 0
@@ -266,16 +281,27 @@ WHERE d.is_deleted = 0
     // 不必为一个恒真的 OR 条件访问每篇日记的大文本列。
     if (normalizedKeyword.isNotEmpty) {
       final likePattern = '%$normalizedKeyword%';
+      // 留言与正文同属“解封后才看得到”的内容：未解封的胶囊只按标题匹配。
+      final commentMatch = matchComments
+          ? '''
+      OR EXISTS (
+        SELECT 1 FROM diary_comments c
+        WHERE c.diary_id = d.diary_id AND c.content LIKE ?
+      )'''
+          : '';
       sql.write('''
   AND (
     d.title LIKE ?
-    OR ((d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?) AND d.content_text LIKE ?)
+    OR ((d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?) AND (
+      d.content_text LIKE ?$commentMatch
+    ))
   )
 ''');
       variables
         ..add(Variable<String>(likePattern))
         ..add(Variable<DateTime>(DateTime.now()))
         ..add(Variable<String>(likePattern));
+      if (matchComments) variables.add(Variable<String>(likePattern));
     }
 
     if (normalizedTagIds.isNotEmpty) {
@@ -283,6 +309,13 @@ WHERE d.is_deleted = 0
     }
     _writeDiaryScopeFilter(sql, variables, scope);
   }
+
+  /// 关键词也匹配留言时，查询要订阅留言表（写留言后搜索结果随之更新）；
+  /// 其余情况不订阅，写留言不会让首页列表连同正文整页重查。
+  List<TableInfo> _commentReadsFrom(String keyword, bool matchComments) =>
+      matchComments && keyword.isNotEmpty
+      ? <TableInfo>[diaryComments]
+      : const <TableInfo>[];
 
   /// 多标签 AND：日记须同时带有全部所选标签。
   void _writeRequiredTagsFilter(

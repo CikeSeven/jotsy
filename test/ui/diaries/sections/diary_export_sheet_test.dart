@@ -15,6 +15,7 @@ Future<DiaryExportRequest? Function()> _open(
   List<DiaryExportOptions>? changes,
   Brightness brightness = Brightness.light,
   bool isBook = false,
+  bool commentsEnabled = false,
 }) async {
   DiaryExportRequest? result;
   await tester.pumpWidget(
@@ -33,6 +34,7 @@ Future<DiaryExportRequest? Function()> _open(
                 initialOptions: options,
                 onOptionsChanged: (next) => changes?.add(next),
                 isBook: isBook,
+                commentsEnabled: commentsEnabled,
               );
             },
             child: const Text('open'),
@@ -219,6 +221,57 @@ void main() {
     expect(request.options.format, DiaryExportFormat.html);
     expect(request.bookStructure, isFalse);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the comments switch follows the feature and the format', (
+    tester,
+  ) async {
+    final changes = <DiaryExportOptions>[];
+    await _open(
+      tester,
+      commentsEnabled: true,
+      options: const DiaryExportOptions(format: DiaryExportFormat.text),
+      changes: changes,
+    );
+    await tester.scrollUntilVisible(
+      find.text('包含留言'),
+      80,
+      scrollable: _sheetScrollable(),
+    );
+    expect(
+      tester
+          .widget<SwitchListTile>(find.widgetWithText(SwitchListTile, '包含留言'))
+          .value,
+      isTrue,
+    );
+    await tester.tap(find.text('包含留言'));
+    await tester.pumpAndSettle();
+    expect(changes.last.includeComments, isFalse);
+
+    // 表格本没有选项开关，开启留言后多出这一项；日记文件不提供。
+    await tester.scrollUntilVisible(
+      find.text('表格（CSV）'),
+      80,
+      scrollable: _sheetScrollable(),
+    );
+    await tester.tap(find.text('表格（CSV）'));
+    await tester.pumpAndSettle();
+    expect(find.text('包含留言'), findsOneWidget);
+    await tester.tap(find.text('Jotsy 日记文件'));
+    await tester.pumpAndSettle();
+    expect(find.text('包含留言'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('without the comments feature the switch never appears', (
+    tester,
+  ) async {
+    await _open(
+      tester,
+      options: const DiaryExportOptions(format: DiaryExportFormat.text),
+    );
+    expect(find.text('包含心情、天气、地点与标签'), findsOneWidget);
+    expect(find.text('包含留言'), findsNothing);
   });
 
   testWidgets('without a book the switch never appears', (tester) async {

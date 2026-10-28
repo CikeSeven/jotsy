@@ -7,9 +7,11 @@ import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/providers/diary_card_style_provider.dart';
+import '../../../diaries/providers/diary_comments_provider.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
 import '../../../diaries/viewmodels/diary_preview_resolved_style.dart';
 import '../../../diaries/viewmodels/diary_preview_view_data.dart';
+import '../../../diaries/widgets/diary_comments/diary_comments_section.dart';
 import '../../../diaries/widgets/diary_preview/diary_pager_view.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_content.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_neighbors.dart';
@@ -17,6 +19,7 @@ import '../../../diaries/widgets/diary_preview/diary_preview_surface.dart';
 import '../../controllers/diary_preview_style_editor_controller.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import '../../widgets/style_editor/style_preview_background.dart';
+import 'diary_preview_style_samples.dart';
 
 /// 设置页的实时预览：用正式页面同一套组件（[DiaryPreviewSurface] +
 /// [DiaryPreviewContent]）渲染几篇内存示例，放进与正式页面相同的翻页器
@@ -139,6 +142,30 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
     super.dispose();
   }
 
+  /// 开启留言功能时示例正文末尾的留言区（只读）：第一篇示例日记带两条示例
+  /// 留言，从预览页带进来的真实日记显示它自己的留言，其余示例没有留言。
+  DiaryPreviewComments? _sampleComments(Diary diary) {
+    if (!ref.watch(diaryCommentsEnabledProvider)) return null;
+    final List<DiaryCommentRow> comments;
+    if (!isDiaryPreviewStyleSample(diary.diaryId)) {
+      comments =
+          ref.watch(diaryCommentsProvider(diary.diaryId)).value ??
+          const <DiaryCommentRow>[];
+    } else if (diary.id == -1) {
+      comments = buildDiaryPreviewStyleSampleComments(
+        context.l10n,
+        diary,
+        now: DateTime.now(),
+      );
+    } else {
+      comments = const <DiaryCommentRow>[];
+    }
+    return DiaryPreviewComments(
+      diaryCreatedAt: diary.createdAt,
+      comments: comments,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
@@ -166,6 +193,7 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
         behavior: controller.behavior,
         extraBottomPadding: widget.bottomPadding,
         paging: widget.paging,
+        comments: _sampleComments(detail.diary),
         onOpenImage: (_, _, hero) => hero?.dispose(),
         actions: DiaryPreviewActions(
           onOpenTypography: ignore,

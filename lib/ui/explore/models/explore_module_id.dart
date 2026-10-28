@@ -26,7 +26,8 @@ enum ExploreModuleId {
   anniversaries,
   capsules,
   notebooks,
-  drafts;
+  drafts,
+  comments;
 
   /// 按枚举名查找；认不出时为 null。
   static ExploreModuleId? byName(Object? raw) {

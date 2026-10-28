@@ -103,3 +103,36 @@ class DiaryPreviewWordCountMeta extends StatelessWidget {
     );
   }
 }
+
+/// 信息栏里的留言数：“2 条留言”，点按滚到正文末尾的留言区。
+class DiaryPreviewCommentCountMeta extends StatelessWidget {
+  const DiaryPreviewCommentCountMeta({
+    super.key,
+    required this.count,
+    this.onTap,
+  });
+
+  final int count;
+
+  /// 为 null 时不可点（设置页预览）。
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final meta = DiaryPreviewInlineMeta(
+      icon: FontAwesomeIcons.comment,
+      label: context.l10n.diaryCommentsCount(count),
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    final onTap = this.onTap;
+    if (onTap == null) return meta;
+    return Semantics(
+      button: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        onTap: onTap,
+        child: meta,
+      ),
+    );
+  }
+}

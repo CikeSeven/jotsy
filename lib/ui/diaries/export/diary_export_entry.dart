@@ -25,9 +25,14 @@ class DiaryExportEntry {
     this.tagNames = const <String>[],
     this.cover,
     this.context = const DiaryContextInfo(),
+    this.comments = const <DiaryCommentRow>[],
   });
 
-  factory DiaryExportEntry.fromDetail(DiaryWithTags detail) {
+  /// [comments] 为这篇日记要写出的留言（旧 → 新）；不导出留言时不给。
+  factory DiaryExportEntry.fromDetail(
+    DiaryWithTags detail, {
+    List<DiaryCommentRow> comments = const <DiaryCommentRow>[],
+  }) {
     final diary = detail.diary;
     return DiaryExportEntry.parse(
       diaryId: diary.diaryId,
@@ -44,6 +49,7 @@ class DiaryExportEntry {
       cover: diary.cover,
       metadata: diary.metadata,
       blockDocument: decodeStoredDiaryBlocks(diary.content),
+      comments: comments,
     );
   }
 
@@ -58,6 +64,7 @@ class DiaryExportEntry {
     String? cover,
     String metadata = '{}',
     Map<String, Object?>? blockDocument,
+    List<DiaryCommentRow> comments = const <DiaryCommentRow>[],
   }) {
     final blocks = blockDocument == null
         ? ExportBlockParser.parse(deltaOps)
@@ -84,6 +91,7 @@ class DiaryExportEntry {
           ? null
           : normalizedCover,
       context: DiaryContextInfo.parse(metadata),
+      comments: List<DiaryCommentRow>.unmodifiable(comments),
     );
   }
 
@@ -101,6 +109,10 @@ class DiaryExportEntry {
   final List<String> tagNames;
   final String? cover;
   final DiaryContextInfo context;
+
+  /// 写在正文之后的留言，按写下时间旧 → 新。为空时各写出器不写留言区，
+  /// 产物与没有留言功能时逐字节相同（功能关闭、开关关闭或这篇没有留言）。
+  final List<DiaryCommentRow> comments;
 
   /// 封面与正文图片，按出现顺序去重；封面在最前。
   List<String> get imageSources {
@@ -146,6 +158,10 @@ class DiaryExportLabels {
     required this.formatDateTime,
     required this.formatDate,
     required this.exportedBy,
+    required this.commentsHeading,
+    required this.commentEdited,
+    required this.commentAge,
+    required this.commentTime,
     this.book,
   });
 
@@ -174,6 +190,20 @@ class DiaryExportLabels {
 
   /// HTML 页脚与 Word 文档属性中的“由 Jotsy 导出”。
   final String exportedBy;
+
+  /// 留言区的标题（“留言”），也是表格里留言一列的列名。
+  final String commentsHeading;
+
+  /// 留言改过时说明行末尾的“已编辑”。
+  final String commentEdited;
+
+  /// 留言距日记写下过了多久（“写下后 3 天”“当天写下”），与预览页留言区
+  /// 同一说法。
+  final String Function(DateTime diaryCreatedAt, DateTime commentCreatedAt)
+  commentAge;
+
+  /// 留言写下的时间，带完整日期（导出文件以后在别处打开，不按当天省略）。
+  final String Function(DateTime value) commentTime;
 
   /// 导出成书的文案（目录、未分章、扉页统计与导出日期）；只导出日记、不成书
   /// 的调用方可以不给，成书时由导出控制器检查。
@@ -218,5 +248,33 @@ class DiaryExportLabels {
       if (includeMood && context.moodEmoji != null) context.moodEmoji!,
       if (context.energyLevel != null) '$energy ${context.energyLevel}/5',
     ].join(' · ');
+  }
+
+  /// 一条留言的说明行：“写下后 3 天 · 4月5日 21:30”，改过的末尾加
+  /// “· 已编辑”。各写出器共用，说法一致。
+  String commentMetaLine(DiaryExportEntry entry, DiaryCommentRow comment) {
+    return <String>[
+      commentAge(entry.createdAt, comment.createdAt),
+      commentTime(comment.createdAt),
+      if (comment.editedAt != null) commentEdited,
+    ].join(' · ');
+  }
+
+  /// 一条留言的文字，心情 emoji 在前、空一格。[includeMood] 为 false 时
+  /// 省略心情（PDF 字体不含 emoji，与 [metaLine] 同一处理）。
+  String commentText(DiaryCommentRow comment, {bool includeMood = true}) {
+    final mood = includeMood ? comment.mood : null;
+    return mood == null ? comment.content : '$mood ${comment.content}';
+  }
+
+  /// 一篇的全部留言写成纯文本：每条为说明行 + 心情与文字，条与条之间空
+  /// 一行。纯文本导出的留言区与表格的留言一格共用；没有留言时为空串。
+  String commentsPlainText(DiaryExportEntry entry) {
+    return entry.comments
+        .map(
+          (DiaryCommentRow comment) =>
+              '${commentMetaLine(entry, comment)}\n${commentText(comment)}',
+        )
+        .join('\n\n');
   }
 }

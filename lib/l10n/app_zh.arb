@@ -12811,5 +12811,195 @@
   "exploreSampleWeatherFog": "雾",
   "@exploreSampleWeatherFog": {
     "description": "探索页自定义预览示例日记的天气：雾。"
+  },
+  "settingsFeaturesComments": "留言",
+  "@settingsFeaturesComments": {
+    "description": "功能管理：留言开关的标题。"
+  },
+  "settingsFeaturesCommentsSubtitle": "重读日记时在末尾写下回应，正文保持原样",
+  "@settingsFeaturesCommentsSubtitle": {
+    "description": "功能管理：留言开关的说明。"
+  },
+  "diaryCommentsHeading": "留言 · {count}",
+  "@diaryCommentsHeading": {
+    "description": "预览页正文末尾留言区的标题，带条数。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentsWrite": "写留言…",
+  "@diaryCommentsWrite": {
+    "description": "预览页留言区末尾的入口，点按打开写留言面板。"
+  },
+  "diaryCommentsExpand": "展开其余 {count} 条",
+  "@diaryCommentsExpand": {
+    "description": "留言超过 5 条时折叠，点按展开中间被折叠的条数。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentsCollapse": "收起",
+  "@diaryCommentsCollapse": {
+    "description": "展开全部留言后，收回折叠状态的按钮。"
+  },
+  "diaryCommentEdited": "已编辑",
+  "@diaryCommentEdited": {
+    "description": "留言写下后改过时，时间后面的小字。"
+  },
+  "diaryCommentSameDay": "当天写下",
+  "@diaryCommentSameDay": {
+    "description": "留言与日记在同一天写下时的相对时间。"
+  },
+  "diaryCommentDaysLater": "写下后 {count} 天",
+  "@diaryCommentDaysLater": {
+    "description": "留言相对日记的时间：写下日记后多少天。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentMonthsLater": "写下后 {count} 个月",
+  "@diaryCommentMonthsLater": {
+    "description": "留言相对日记的时间：写下日记后多少个月。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentYearsLater": "写下后 {count} 年",
+  "@diaryCommentYearsLater": {
+    "description": "留言相对日记的时间：写下日记后整整多少年。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentYearsMonthsLater": "写下后 {years} 年 {months} 个月",
+  "@diaryCommentYearsMonthsLater": {
+    "description": "留言相对日记的时间：写下日记后多少年零几个月。",
+    "placeholders": {
+      "years": {"type": "int"},
+      "months": {"type": "int"}
+    }
+  },
+  "diaryCommentSheetNew": "写留言",
+  "@diaryCommentSheetNew": {
+    "description": "写留言面板的标题；也是预览页“更多”面板里的入口。"
+  },
+  "diaryCommentSheetEdit": "编辑留言",
+  "@diaryCommentSheetEdit": {
+    "description": "编辑已有留言时面板的标题。"
+  },
+  "diaryCommentHint": "想对写下这篇的自己说点什么…",
+  "@diaryCommentHint": {
+    "description": "写留言输入框的占位文字。"
+  },
+  "diaryCommentMoodLabel": "心情",
+  "@diaryCommentMoodLabel": {
+    "description": "写留言面板里心情一行的标题。"
+  },
+  "diaryCommentMoodOptional": "可不选",
+  "@diaryCommentMoodOptional": {
+    "description": "写留言面板心情一行的说明：心情可以不选。"
+  },
+  "diaryCommentCopy": "复制",
+  "@diaryCommentCopy": {
+    "description": "长按留言菜单：复制留言文字。"
+  },
+  "diaryCommentCopied": "已复制留言",
+  "@diaryCommentCopied": {
+    "description": "复制留言后的提示。"
+  },
+  "diaryCommentDeleted": "已删除留言",
+  "@diaryCommentDeleted": {
+    "description": "删除留言后的提示（可撤销）。"
+  },
+  "diaryCommentSaveFailed": "留言没有保存成功，请重试",
+  "@diaryCommentSaveFailed": {
+    "description": "写入或修改留言失败时的提示。"
+  },
+  "diaryCommentActionsHint": "编辑、复制或删除",
+  "@diaryCommentActionsHint": {
+    "description": "读屏：长按一条留言可以做的操作。"
+  },
+  "diaryCommentsCount": "{count} 条留言",
+  "@diaryCommentsCount": {
+    "description": "留言条数：预览页信息栏与日记卡片的读屏文字、探索页统计。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryPreviewStyleShowComments": "留言数",
+  "@diaryPreviewStyleShowComments": {
+    "description": "预览页样式 → 信息栏：显示留言条数（开启留言功能且有留言时）。"
+  },
+  "diaryCardStyleShowComments": "留言数",
+  "@diaryCardStyleShowComments": {
+    "description": "日记卡片样式：底部显示留言条数（开启留言功能且有留言时）。"
+  },
+  "diarySearchCommentHit": "留言中提到：{text}",
+  "@diarySearchCommentHit": {
+    "description": "读屏：搜索结果卡片下方命中的留言片段。",
+    "placeholders": {
+      "text": {"type": "String"}
+    }
+  },
+  "exploreModuleComments": "最近的留言",
+  "@exploreModuleComments": {
+    "description": "探索页卡片名称：最近的留言。"
+  },
+  "exploreModuleCommentsDesc": "最近写下的留言与回看统计",
+  "@exploreModuleCommentsDesc": {
+    "description": "探索页卡片说明：最近的留言。"
+  },
+  "exploreCommentsDiaries": "回应了 {count} 篇",
+  "@exploreCommentsDiaries": {
+    "description": "探索页留言卡片统计：留言涉及多少篇日记。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "exploreCommentsAverageGap": "平均隔 {days} 天回看",
+  "@exploreCommentsAverageGap": {
+    "description": "探索页留言卡片统计：从写日记到写留言平均隔多少天。",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "exploreCommentsEmpty": "在日记预览页末尾写下第一条留言",
+  "@exploreCommentsEmpty": {
+    "description": "探索页留言卡片没有留言时的提示。"
+  },
+  "exploreSampleComment": "谢谢那时候没有放弃的自己。",
+  "@exploreSampleComment": {
+    "description": "探索页自定义预览的示例留言。"
+  },
+  "diaryPreviewSampleComment1": "回头再看，那天其实没有那么糟。",
+  "@diaryPreviewSampleComment1": {
+    "description": "预览页样式示例里的第一条示例留言。"
+  },
+  "diaryPreviewSampleComment2": "后来真的去了，比想象中还要好。",
+  "@diaryPreviewSampleComment2": {
+    "description": "预览页样式示例里的第二条示例留言。"
+  },
+  "diaryExportIncludeComments": "包含留言",
+  "@diaryExportIncludeComments": {
+    "description": "导出面板开关：在每篇末尾写出留言。"
+  },
+  "diaryExportCommentsHeading": "留言",
+  "@diaryExportCommentsHeading": {
+    "description": "导出文件里每篇末尾留言段的标题与 CSV 列名。"
+  },
+  "backupImportCommentMergeResult": "留言：新增 {added} 条",
+  "@backupImportCommentMergeResult": {
+    "description": "合并导入结果的附加行：新增的留言条数。",
+    "placeholders": {
+      "added": {"type": "int"}
+    }
+  },
+  "backupImportCommentOverwriteResult": "留言：新增 {added} 条，覆盖 {replaced} 条",
+  "@backupImportCommentOverwriteResult": {
+    "description": "合并并覆盖导入结果的附加行：新增与覆盖的留言条数。",
+    "placeholders": {
+      "added": {"type": "int"},
+      "replaced": {"type": "int"}
+    }
   }
 }

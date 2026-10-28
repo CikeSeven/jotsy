@@ -18,6 +18,7 @@ import '../../../widgets/action_loading_overlay.dart';
 import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
 import '../../../widgets/image_viewer_hero.dart';
+import '../../controllers/diary_comment_flows.dart';
 import '../../controllers/diary_preview_edit_flow.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../controllers/diary_todo_autosave_controller.dart';
@@ -25,11 +26,13 @@ import '../../models/diary_preview_result.dart';
 import '../../models/time_capsule.dart';
 import '../../pages/locked_diary_page.dart';
 import '../../providers/diary_card_style_provider.dart';
+import '../../providers/diary_comments_provider.dart';
 import '../../providers/diary_detail_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../../sections/diary_typography_sheet.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
+import '../diary_comments/diary_comments_section.dart';
 import 'diary_preview_actions_sheet.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
@@ -101,6 +104,7 @@ class DiaryPreviewView extends ConsumerStatefulWidget {
 
 class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
   final GlobalKey _shareCaptureKey = GlobalKey();
+  final GlobalKey _commentsKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
   late final DiaryPreviewExportController _export =
       DiaryPreviewExportController(
@@ -239,6 +243,41 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     Navigator.of(context).pop(DiaryPreviewResult.deleted(widget.diaryId));
   }
 
+  /// 写留言。从“更多”进入时（[reveal]）先滚到留言区末尾再打开面板：面板
+  /// 收起后，新写下的那条就在眼前。
+  Future<void> _writeComment(Diary diary, {bool reveal = false}) async {
+    if (reveal) {
+      await DiaryCommentsSection.reveal(context, _commentsKey, end: true);
+      if (!mounted) return;
+    }
+    await writeDiaryComment(context, ref, diary: diary);
+  }
+
+  /// 留言区的数据与动作；留言功能关闭、日记在回收站或首次读取还没返回时为
+  /// null（不显示留言区）。截取分享长图期间同样为 null：分享不带留言。
+  ///
+  /// 截图期间仍然订阅留言：只是不交给正文，截完立刻原样回来，不必重新读取。
+  DiaryPreviewComments? _resolveComments(Diary diary) {
+    if (!ref.watch(diaryCommentsEnabledProvider) || diary.isDeleted) {
+      return null;
+    }
+    final rows = ref.watch(diaryCommentsProvider(widget.diaryId)).value;
+    if (rows == null || _export.capturingLongImage) return null;
+    return DiaryPreviewComments(
+      diaryCreatedAt: diary.createdAt,
+      comments: rows,
+      sectionKey: _commentsKey,
+      actions: DiaryCommentActions(
+        onWrite: () => unawaited(_writeComment(diary)),
+        onEdit: (comment) =>
+            unawaited(editDiaryComment(context, ref, comment: comment)),
+        onCopy: (comment) => unawaited(copyDiaryComment(context, comment)),
+        onDelete: (comment) =>
+            unawaited(deleteDiaryComment(context, ref, comment: comment)),
+      ),
+    );
+  }
+
   Future<void> _deleteDiary() async {
     final shouldDelete = await confirmDiaryPreviewDelete(context);
     if (!mounted || !shouldDelete) {
@@ -365,6 +404,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
         ? ref.watch(diaryNotebooksProvider(widget.diaryId)).value ??
               const <NotebookView>[]
         : const <NotebookView>[];
+    final comments = _resolveComments(detail.diary);
+    final canComment =
+        ref.watch(diaryCommentsEnabledProvider) && !detail.diary.isDeleted;
     return DiaryPreviewSurface(
       resolved: resolved,
       scrollController: _scrollController,
@@ -385,6 +427,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           staticCover: _export.staticCover,
           paging: widget.paging,
           notebooks: notebooks,
+          comments: comments,
           onOpenNotebook: notebooksEnabled
               ? (NotebookView notebook) =>
                     unawaited(openNotebookFromAnywhere(context, ref, notebook))
@@ -408,6 +451,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               background: resolved.background,
               onDelete: _deleteDiary,
               notebooks: notebooks,
+              onWriteComment: canComment
+                  ? () => _writeComment(detail.diary, reveal: true)
+                  : null,
             ),
           ),
         ),

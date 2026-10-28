@@ -16,6 +16,7 @@ class _EmptyDatabase extends AppDatabase {
     int offset = 0,
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
+    bool matchComments = false,
   }) => Stream<List<DiaryWithTags>>.value(const <DiaryWithTags>[]);
 }
 
@@ -36,6 +37,16 @@ void main() {
       page(const DiaryNotebookScope(notebookId: 'n')).hashCode,
     );
     expect(page(book), isNot(page(DiaryListScope.all)));
+    // 搜索是否也匹配留言参与相等比较：开关一变即换一个查询实例。
+    final withComments = DiaryPageQuery(
+      keyword: 'k',
+      requiredTagIds: const <int>[1],
+      limit: 20,
+      sortMode: DiarySortMode.updatedDesc,
+      matchComments: true,
+    );
+    expect(withComments, isNot(page(DiaryListScope.all)));
+    expect(withComments.timelineKey.matchComments, isTrue);
 
     expect(
       SearchDiaryQuery(keyword: 'k', scope: book),

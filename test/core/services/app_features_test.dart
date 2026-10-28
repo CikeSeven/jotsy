@@ -21,6 +21,7 @@ void main() {
           'templates': 0,
           'timeCapsules': false,
           'swipeArchive': 'off',
+          'comments': true,
           'futureFeature': false,
         }),
       );
@@ -31,6 +32,7 @@ void main() {
           calendar: false,
           notebooks: false,
           timeCapsules: false,
+          comments: true,
         ),
       );
     });
@@ -48,6 +50,7 @@ void main() {
         'templates': true,
         'timeCapsules': true,
         'swipeArchive': true,
+        'comments': false,
       });
       expect(AppFeatures.decode(raw), AppFeatures.defaults);
     });
@@ -58,6 +61,7 @@ void main() {
         anniversaries: true,
         templates: false,
         swipeArchive: false,
+        comments: true,
       );
       final raw = features.encode();
 
@@ -69,6 +73,7 @@ void main() {
         'templates',
         'timeCapsules',
         'swipeArchive',
+        'comments',
       ]);
       expect(AppFeatures.decode(raw), features);
     });

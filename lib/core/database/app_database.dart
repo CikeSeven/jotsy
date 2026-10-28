@@ -41,6 +41,8 @@ part 'app_database_notebook_hierarchy.dart';
 part 'app_database_notebook_tree_ops.dart';
 part 'app_database_day_mood_schema.dart';
 part 'app_database_day_mood_ops.dart';
+part 'app_database_comment_schema.dart';
+part 'app_database_comment_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -53,6 +55,7 @@ part 'app_database_day_mood_ops.dart';
     Notebooks,
     DiaryNotebooks,
     DayMoods,
+    DiaryComments,
   ],
 )
 class AppDatabase extends _$AppDatabase
@@ -71,6 +74,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseNotebookStatsOps,
         _AppDatabaseExploreOps,
         _AppDatabaseDayMoodOps,
+        _AppDatabaseCommentOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -79,13 +83,13 @@ class AppDatabase extends _$AppDatabase
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
 
-  /// 新的业务唯一 id（UUID v4），与日记、纪念日、草稿、模板、日记本写库时生成的
+  /// 新的业务唯一 id（UUID v4），与日记、纪念日、草稿、模板、日记本、留言写库时生成的
   /// 同一种。
   /// 供数据库之外需要先定好 id 的场合使用（如旧备份里的单份草稿转为草稿行）。
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -119,6 +123,10 @@ class AppDatabase extends _$AppDatabase
       // 必须在 v13 分支之后：从 v13 之前升级时那里已按最新定义建表、自带此列。
       if (from < 15) {
         await _migrateNotebooksAddParent(m);
+      }
+      // v16 日记留言表只存日记的业务 id、不改日记表，同样排在 v1 分支之前。
+      if (from < 16) {
+        await _migrateAddDiaryComments(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

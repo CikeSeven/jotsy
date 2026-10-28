@@ -88,6 +88,11 @@ class DiaryExportEmptyException implements Exception {
 ///   不自行读取设置，避免生成途中混入另一份排版参数。
 /// - 代码高亮跟随代码块样式：[build] 的 `code` 交给 PDF、Word 与网页写出器；
 ///   没给时代码块只是等宽文字。
+/// - 留言：[build] 的 `commentsEnabled`（留言功能开启）、导出选项的“包含
+///   留言”与格式支持三者都满足时，才一次批量读出各篇的留言交给写出器，
+///   每篇写在正文之后；任一不满足时不读留言，产物与没有留言功能时相同。
+///   胶囊在读取前已经去掉，它的留言不会借导出露出。Jotsy 日记文件经日记包
+///   导出，本就带着留言，不看这个开关。
 class DiaryExportController {
   DiaryExportController({
     required this._database,
@@ -136,6 +141,7 @@ class DiaryExportController {
     bool bookStructure = true,
     DiaryExportCodeTheme? code,
     DiaryTypography typography = const DiaryTypography(),
+    bool commentsEnabled = false,
   }) async {
     final now = _now();
     var exportable = diaries.where((DiaryWithTags detail) {
@@ -157,7 +163,22 @@ class DiaryExportController {
         return options.order == DiaryExportOrder.oldestFirst ? order : -order;
       });
     }
-    var entries = exportable.map(DiaryExportEntry.fromDetail).toList();
+    final withComments =
+        commentsEnabled &&
+        options.includeComments &&
+        options.format.supportsCommentsToggle;
+    final comments = withComments
+        ? await _database.getDiaryCommentsFor(
+            exportable.map((DiaryWithTags d) => d.diary.diaryId),
+          )
+        : const <String, List<DiaryCommentRow>>{};
+    var entries = <DiaryExportEntry>[
+      for (final detail in exportable)
+        DiaryExportEntry.fromDetail(
+          detail,
+          comments: comments[detail.diary.diaryId] ?? const <DiaryCommentRow>[],
+        ),
+    ];
     DiaryExportBookLayout? layout;
     if (book != null && bookStructure && options.format.supportsBookStructure) {
       final bookLabels = labels.book;
@@ -246,7 +267,11 @@ class DiaryExportController {
           labels: labels,
           book: layout,
         ),
-        DiaryExportFormat.csv => DiaryCsvWriter.write(entries, labels: labels),
+        DiaryExportFormat.csv => DiaryCsvWriter.write(
+          entries,
+          labels: labels,
+          includeComments: withComments,
+        ),
         DiaryExportFormat.diaryFile => throw StateError('handled above'),
       };
       if (output.isBundle) {

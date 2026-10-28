@@ -49,6 +49,7 @@ class DiaryCard extends StatelessWidget {
     this.enableCoverHero = true,
     this.opensLockedCapsulePage = true,
     this.onTapIntercept,
+    this.commentCount = 0,
   });
 
   /// 选择标记展开、列表项进出的过渡时长。
@@ -73,6 +74,10 @@ class DiaryCard extends StatelessWidget {
   /// 点按时最先调用；返回 true 表示已处理（如桌面上 Ctrl / Shift + 点按的
   /// 多选），卡片不再执行默认的点按动作。null 时与改版前一致。
   final bool Function(DiaryWithTags diary)? onTapIntercept;
+
+  /// 这篇的留言条数（底栏的留言数，见 `DiaryCardMetaStyle.showComments`）；
+  /// 留言功能关闭或没有留言时为 0。未解封的胶囊不画底栏，不显示它。
+  final int commentCount;
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +137,7 @@ class DiaryCard extends StatelessWidget {
         maxVisibleTags: maxVisibleTags,
         metaPosition: metaPosition,
         selectionMarkDuration: transitionDuration,
+        commentCount: commentCount,
       );
       final indicators = blocks.buildIndicators(onCover: true);
       content = DiaryCardContent(

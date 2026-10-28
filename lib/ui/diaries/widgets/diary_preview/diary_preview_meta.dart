@@ -15,9 +15,10 @@ import 'diary_preview_meta_items.dart';
 
 export 'diary_preview_meta_items.dart';
 
-/// 预览页信息栏：时间、字数、地点、天气与心情、精力、标签胶囊，以及这篇
-/// 所在日记本的胶囊（排在标签之后、同一组，随“标签”开关显示，点按打开
-/// 那本）。
+/// 预览页信息栏：时间、字数、留言数、地点、天气与心情、精力、标签胶囊，
+/// 以及这篇所在日记本的胶囊（排在标签之后、同一组，随“标签”开关显示，
+/// 点按打开那本）。留言数跟在字数后面，只在开启留言功能且有留言时出现，
+/// 点按滚到正文末尾的留言区。
 ///
 /// 版式（[DiaryPreviewMetaStyle.layout]）：
 /// - stacked：时间与字数一行、地点与天气一行、胶囊折行一组（改版前的样子）；
@@ -35,6 +36,8 @@ class DiaryPreviewMeta extends StatelessWidget {
     required this.style,
     this.notebooks = const <NotebookView>[],
     this.onOpenNotebook,
+    this.commentCount = 0,
+    this.onOpenComments,
   });
 
   final DiaryWithTags detail;
@@ -47,15 +50,23 @@ class DiaryPreviewMeta extends StatelessWidget {
   /// 点按日记本胶囊；null 时胶囊不可点。
   final ValueChanged<NotebookView>? onOpenNotebook;
 
+  /// 这篇的留言条数；留言功能关闭时调用方传 0。
+  final int commentCount;
+
+  /// 点按留言数：滚到留言区；null 时不可点。
+  final VoidCallback? onOpenComments;
+
   /// 这一篇在当前样式下是否有任何信息可显示。
   static bool hasContent(
     DiaryWithTags detail,
     DiaryPreviewViewData viewData,
     DiaryPreviewMetaStyle style, {
     List<NotebookView> notebooks = const <NotebookView>[],
+    int commentCount = 0,
   }) {
     return style.showDate ||
         (style.showWordCount && viewData.textStats.words > 0) ||
+        (style.showCommentCount && commentCount > 0) ||
         (style.showLocation && viewData.location != null) ||
         (style.showWeather && viewData.weather != null) ||
         (style.showMood && viewData.moodEmoji != null) ||
@@ -131,6 +142,11 @@ class DiaryPreviewMeta extends StatelessWidget {
         DiaryPreviewWordCountMeta(
           viewData: viewData,
           showReadingTime: style.showReadingTime,
+        ),
+      if (style.showCommentCount && commentCount > 0)
+        DiaryPreviewCommentCountMeta(
+          count: commentCount,
+          onTap: onOpenComments,
         ),
     ];
     final location = viewData.location;

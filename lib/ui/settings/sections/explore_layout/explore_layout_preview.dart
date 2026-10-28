@@ -11,6 +11,7 @@ import '../../../../core/services/settings_service.dart';
 import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/providers/diary_draft_providers.dart';
+import '../../../explore/controllers/explore_comment_stats.dart';
 import '../../../explore/controllers/explore_module_actions.dart';
 import '../../../explore/providers/explore_providers.dart';
 import '../../../explore/sections/explore_content_view.dart';
@@ -25,7 +26,9 @@ import 'explore_layout_samples.dart';
 /// 渲染，可以滚动，点按不跳转（[ExploreModuleActions.inert]）。
 ///
 /// 数据来源可在工具条切换：自己的日记（与探索页同一份概览）或示例数据；
-/// 草稿箱卡与探索页一样只在有草稿时出现。预览在自己的明暗
+/// 草稿箱卡与探索页一样只在有草稿时出现。示例数据模式下“最近的留言”卡片
+/// 的两个 provider 在预览里换成示例留言（嵌套 [ProviderScope]，只作用于预览
+/// 这棵子树）；其余关联卡片照旧读自己模块的数据。预览在自己的明暗
 /// 主题之内画探索区域的背景（[StylePreviewBackground]）。
 class ExploreLayoutPreview extends ConsumerStatefulWidget {
   const ExploreLayoutPreview({
@@ -46,9 +49,12 @@ class ExploreLayoutPreview extends ConsumerStatefulWidget {
 
 class _ExploreLayoutPreviewState extends ConsumerState<ExploreLayoutPreview> {
   List<ExploreDiaryOverview>? _samples;
+  ExploreCommentSamples? _commentSamples;
   String? _samplesKey;
 
-  List<ExploreDiaryOverview> _samplesFor(
+  /// 示例日记与挂在它们上面的示例留言，按语言、日期与心情选项缓存（同一天
+  /// 重建预览不重新生成）。
+  (List<ExploreDiaryOverview>, ExploreCommentSamples) _samplesFor(
     AppLocalizations l10n,
     List<String> moodOptions,
   ) {
@@ -58,13 +64,19 @@ class _ExploreLayoutPreviewState extends ConsumerState<ExploreLayoutPreview> {
         '${moodOptions.join()}';
     if (_samples == null || key != _samplesKey) {
       _samplesKey = key;
-      _samples = buildExploreLayoutSamples(
+      final samples = _samples = buildExploreLayoutSamples(
         l10n,
         now: now,
         moodOptions: moodOptions,
       );
+      _commentSamples = buildExploreCommentSamples(
+        l10n,
+        now: now,
+        diaries: samples,
+        moodOptions: moodOptions,
+      );
     }
-    return _samples!;
+    return (_samples!, _commentSamples!);
   }
 
   ThemeData _themeFor(ThemeData appTheme, Brightness brightness) {
@@ -84,9 +96,10 @@ class _ExploreLayoutPreviewState extends ConsumerState<ExploreLayoutPreview> {
         ref.watch(moodOptionsProvider).value ??
         SettingsService.defaultMoodOptions;
     final mine = ref.watch(exploreDiariesProvider).value;
-    final diaries = controller.useSamples || mine == null
+    final samples = controller.useSamples || mine == null
         ? _samplesFor(l10n, moodOptions)
-        : mine;
+        : null;
+    final diaries = samples?.$1 ?? mine!;
     final orderedTags = ref.watch(tagListProvider).value ?? const <Tag>[];
     final appTheme = Theme.of(context);
     final previewTheme = _themeFor(
@@ -123,27 +136,30 @@ class _ExploreLayoutPreviewState extends ConsumerState<ExploreLayoutPreview> {
                               12 + widget.bottomPadding,
                             ),
                             children: <Widget>[
-                              ExploreActionsScope(
-                                actions: ExploreModuleActions.inert,
-                                child: ExploreContentView(
-                                  diaries: diaries,
-                                  layout: controller.style,
-                                  period: controller.period,
-                                  features: ref.watch(appFeaturesProvider),
-                                  moodOptions: moodOptions,
-                                  firstWeekday: watchGoalFirstWeekday(
-                                    context,
-                                    ref,
+                              _withSampleComments(
+                                samples?.$2,
+                                ExploreActionsScope(
+                                  actions: ExploreModuleActions.inert,
+                                  child: ExploreContentView(
+                                    diaries: diaries,
+                                    layout: controller.style,
+                                    period: controller.period,
+                                    features: ref.watch(appFeaturesProvider),
+                                    moodOptions: moodOptions,
+                                    firstWeekday: watchGoalFirstWeekday(
+                                      context,
+                                      ref,
+                                    ),
+                                    orderedTagIds: <int>[
+                                      for (final tag in orderedTags) tag.id,
+                                    ],
+                                    draftCount:
+                                        ref
+                                            .watch(diaryDraftCountProvider)
+                                            .value ??
+                                        0,
+                                    onPeriodChanged: controller.setPeriod,
                                   ),
-                                  orderedTagIds: <int>[
-                                    for (final tag in orderedTags) tag.id,
-                                  ],
-                                  draftCount:
-                                      ref
-                                          .watch(diaryDraftCountProvider)
-                                          .value ??
-                                      0,
-                                  onPeriodChanged: controller.setPeriod,
                                 ),
                               ),
                             ],
@@ -158,6 +174,26 @@ class _ExploreLayoutPreviewState extends ConsumerState<ExploreLayoutPreview> {
       ],
     );
   }
+}
+
+/// 示例数据模式（[comments] 非空）下把“最近的留言”卡片的数据换成示例留言。
+///
+/// 只覆盖这两个 provider，其余仍取外层的；切换数据来源时这一层出现或消失，
+/// 预览的卡片随之重建（数据本来就整份换了）。真实数据模式不加这一层，卡片照常
+/// 订阅留言表（只在留言功能开启且卡片显示时）。
+Widget _withSampleComments(ExploreCommentSamples? comments, Widget child) {
+  if (comments == null) return child;
+  return ProviderScope(
+    overrides: [
+      exploreRecentCommentsProvider.overrideWithValue(
+        AsyncData<List<DiaryCommentSummary>>(comments.recent),
+      ),
+      exploreCommentStatsProvider.overrideWithValue(
+        AsyncData<ExploreCommentStats>(comments.stats),
+      ),
+    ],
+    child: child,
+  );
 }
 
 /// 预览工具条：数据来源（我的数据 / 示例数据）与预览明暗。

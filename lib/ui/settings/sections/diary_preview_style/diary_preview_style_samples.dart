@@ -55,7 +55,7 @@ List<DiaryWithTags> buildDiaryPreviewStyleSamples(
   }) {
     return Diary(
       id: -index,
-      diaryId: '__preview_style_sample_$index',
+      diaryId: '$_sampleIdPrefix$index',
       title: title,
       content: jsonEncode(ops),
       contentText: text,
@@ -134,6 +134,41 @@ List<DiaryWithTags> buildDiaryPreviewStyleSamples(
         },
       ),
       tags: <Tag>[reading],
+    ),
+  ];
+}
+
+/// 示例日记 id 的前缀（见 [buildDiaryPreviewStyleSamples]）。
+const String _sampleIdPrefix = '__preview_style_sample_';
+
+/// 是不是预览页样式的示例日记（而不是从预览页带进来的真实日记）。
+bool isDiaryPreviewStyleSample(String diaryId) =>
+    diaryId.startsWith(_sampleIdPrefix);
+
+/// 示例日记的两条示例留言（开启留言功能时显示在示例正文末尾）：一条没选
+/// 心情、一条带心情，时间在日记之后、[now] 之前，读作“写下后 N 天”。
+List<DiaryCommentRow> buildDiaryPreviewStyleSampleComments(
+  AppLocalizations l10n,
+  Diary diary, {
+  required DateTime now,
+}) {
+  final first = diary.createdAt.add(const Duration(days: 1));
+  final second = now.subtract(const Duration(hours: 2));
+  return <DiaryCommentRow>[
+    DiaryCommentRow(
+      id: -1,
+      commentId: '${diary.diaryId}_comment_1',
+      diaryId: diary.diaryId,
+      content: l10n.diaryPreviewSampleComment1,
+      createdAt: first.isBefore(now) ? first : now,
+    ),
+    DiaryCommentRow(
+      id: -2,
+      commentId: '${diary.diaryId}_comment_2',
+      diaryId: diary.diaryId,
+      content: l10n.diaryPreviewSampleComment2,
+      mood: '😊',
+      createdAt: second.isAfter(diary.createdAt) ? second : diary.createdAt,
     ),
   ];
 }

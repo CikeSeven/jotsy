@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/models/diary_card_style/diary_card_style.dart';
+import '../../../diaries/providers/diary_comments_provider.dart';
 import '../../../diaries/sections/diaries_list_section.dart';
 import '../../../diaries/sections/diary_head_section.dart';
 import '../../../widgets/expressive_button_group.dart';
@@ -28,7 +30,7 @@ import '../../widgets/style_editor/style_preview_background.dart';
 /// `AppPageBackdrop.estimatedColorOf`），玻璃卡片在有背景图时共用预览区的
 /// `contentBackdropKey` 模糊，调透明度与玻璃时看得出效果。日记页没有背景时
 /// 仍铺预览主题的页面底色，与原来相同。
-class DiaryCardStylePreview extends StatefulWidget {
+class DiaryCardStylePreview extends ConsumerStatefulWidget {
   const DiaryCardStylePreview({
     super.key,
     required this.controller,
@@ -50,10 +52,11 @@ class DiaryCardStylePreview extends StatefulWidget {
   final double bottomPadding;
 
   @override
-  State<DiaryCardStylePreview> createState() => _DiaryCardStylePreviewState();
+  ConsumerState<DiaryCardStylePreview> createState() =>
+      _DiaryCardStylePreviewState();
 }
 
-class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
+class _DiaryCardStylePreviewState extends ConsumerState<DiaryCardStylePreview> {
   final Set<String> _selected = <String>{};
 
   void _toggle(String diaryId) {
@@ -113,6 +116,14 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
                         const SliverToBoxAdapter(child: SizedBox(height: 10)),
                         DiariesListSection(
                           diaries: widget.samples,
+                          // 开启留言功能时第一张示例带两条留言，调“留言数”
+                          // 开关看得出效果。
+                          commentCounts: ref.watch(diaryCommentsEnabledProvider)
+                              ? <String, int>{
+                                  if (widget.samples.isNotEmpty)
+                                    widget.samples.first.diary.diaryId: 2,
+                                }
+                              : const <String, int>{},
                           layoutMode: controller.mode == DiaryCardMode.list
                               ? DiaryLayoutMode.list
                               : DiaryLayoutMode.waterfall,

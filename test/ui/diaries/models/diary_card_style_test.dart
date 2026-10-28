@@ -159,6 +159,8 @@ void main() {
       expect(style.meta.showWeather, isTrue);
       expect(style.meta.indicatorStyle, DiaryCardIndicatorStyle.stamp);
       expect(style.meta.hasFooterExtras, isFalse);
+      // 留言数默认开，但只在开启留言功能且有留言时出现。
+      expect(style.meta.showComments, isTrue);
 
       final list = style.list;
       expect(list.coverPosition, DiaryCardCoverPosition.start);

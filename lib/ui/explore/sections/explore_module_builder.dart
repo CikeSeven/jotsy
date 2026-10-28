@@ -7,6 +7,7 @@ import '../models/explore_module_id.dart';
 import '../models/explore_module_options.dart';
 import '../models/explore_period.dart';
 import '../controllers/explore_module_actions.dart';
+import 'explore_comments_card.dart';
 import 'explore_greeting_card.dart';
 import 'explore_habits_card.dart';
 import 'explore_heatmap_card.dart';
@@ -142,5 +143,7 @@ Widget? buildExploreModule(
       return ExploreNotebooksCard(config: config);
     case ExploreModuleId.drafts:
       return const ExploreDraftsCard();
+    case ExploreModuleId.comments:
+      return ExploreCommentsCard(config: config);
   }
 }

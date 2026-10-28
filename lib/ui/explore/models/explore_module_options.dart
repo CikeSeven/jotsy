@@ -289,4 +289,11 @@ abstract final class ExploreOptions {
     values: <int>[4, 8, 0],
     fallback: 8,
   );
+
+  // 留言
+  static const commentsCount = ExploreCountOption(
+    'count',
+    values: <int>[3, 5, 8],
+    fallback: 3,
+  );
 }

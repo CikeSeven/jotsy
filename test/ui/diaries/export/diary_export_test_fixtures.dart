@@ -37,6 +37,20 @@ final DiaryExportLabels testExportLabels = DiaryExportLabels(
       '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}',
   formatDate: _day,
   exportedBy: '由 Jotsy 导出',
+  commentsHeading: '留言',
+  commentEdited: '已编辑',
+  // 固定写法便于断言：按日历日相差几天，时间写成“月-日 时:分”。
+  commentAge: (DateTime diary, DateTime comment) {
+    final days = DateTime(
+      comment.year,
+      comment.month,
+      comment.day,
+    ).difference(DateTime(diary.year, diary.month, diary.day)).inDays;
+    return days == 0 ? '当天写下' : '写下后 $days 天';
+  },
+  commentTime: (DateTime value) =>
+      '${value.month}-${value.day} '
+      '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}',
   book: testBookLabels,
 );
 

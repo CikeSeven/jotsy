@@ -8,7 +8,7 @@ import 'explore_option_spec.dart';
 
 /// 卡片依赖的功能（设置 → 功能管理）；功能关闭时卡片不出现，编辑页里也
 /// 显示为不可用。
-enum ExploreModuleFeature { anniversaries, timeCapsules, notebooks }
+enum ExploreModuleFeature { anniversaries, timeCapsules, notebooks, comments }
 
 /// 一张卡片的登记信息：图标、分组、默认显隐与宽度、依赖的功能、是否跟随
 /// 统计范围，以及它的选项。
@@ -46,6 +46,7 @@ class ExploreModuleSpec {
     ExploreModuleFeature.anniversaries => features.anniversariesEnabled,
     ExploreModuleFeature.timeCapsules => features.timeCapsules,
     ExploreModuleFeature.notebooks => features.notebooks,
+    ExploreModuleFeature.comments => features.comments,
   };
 
   /// [span] 为“自动”时换算成这张卡的默认宽度。
@@ -269,6 +270,18 @@ class ExploreModuleSpec {
         ExploreOptions.notebooksSort,
         ExploreOptions.notebooksCount,
       ],
+    ),
+    // 留言是后加的功能：登记在最后，老布局读取时它按默认显示补到末尾（功能
+    // 默认关闭，开启前不会出现）。归“关联”：数据来自留言这项独立功能（自己的
+    // 表、可在功能管理里关闭），与纪念日、时间胶囊、日记本同一类。
+    ExploreModuleSpec(
+      ExploreModuleId.comments,
+      group: ExploreModuleGroup.linked,
+      icon: FontAwesomeIcons.comment,
+      visibleByDefault: true,
+      halfByDefault: true,
+      feature: ExploreModuleFeature.comments,
+      options: <ExploreOptionSpec>[ExploreOptions.commentsCount],
     ),
   ];
 }

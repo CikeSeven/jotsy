@@ -33,6 +33,9 @@ import 'diary_export_media.dart';
 /// 正文的文字色与背景色写成内联 `style`，按原值带透明度写出：半透明背景
 /// 叠在卡片上，与应用里叠在纸面上一样；亮暗模式都不换色，也与应用一致。
 /// 代码里设过文字色的片段保留原色、不取记号色。
+///
+/// 有留言的日记在正文之后多一个 `<section class="comments">`（见
+/// [_writeComments]），样式只在有留言时写出。
 class DiaryHtmlWriter {
   const DiaryHtmlWriter._();
 
@@ -60,6 +63,10 @@ class DiaryHtmlWriter {
             )
         ? code
         : null;
+    // 同理，没有留言时不写留言区样式。
+    final hasComments = entries.any(
+      (DiaryExportEntry entry) => entry.comments.isNotEmpty,
+    );
     // 来源 → img 的 src（data URI，或打包时的相对路径）。
     final images = <String, String>{};
     final mediaFiles = <DiaryExportBundleFile>[];
@@ -114,7 +121,8 @@ class DiaryHtmlWriter {
       ..write(
         '<style>$_css${codeTheme == null ? '' : _codeCss(codeTheme)}'
         '${_fontCss(fontFamilies)}'
-        '${book == null ? '' : _bookCss}</style>\n',
+        '${book == null ? '' : _bookCss}'
+        '${hasComments ? _commentsCss : ''}</style>\n',
       )
       ..write('</head>\n<body>\n<main>\n');
     if (book != null) {
@@ -283,7 +291,34 @@ class DiaryHtmlWriter {
       code: code,
       headingOffset: titleLevel,
     );
+    _writeComments(out, entry, labels: labels, level: titleLevel + 1);
     out.write('</article>\n');
+  }
+
+  /// 留言区（没有留言时不写）：标题比日记标题低一级，每条留言为一行说明
+  /// 加心情与文字；文字按原样换行（`pre-wrap`），不必把换行改写成 `<br>`。
+  static void _writeComments(
+    StringBuffer out,
+    DiaryExportEntry entry, {
+    required DiaryExportLabels labels,
+    required int level,
+  }) {
+    if (entry.comments.isEmpty) {
+      return;
+    }
+    out.write(
+      '<section class="comments">\n'
+      '<h$level>${_text(labels.commentsHeading)}</h$level>\n',
+    );
+    for (final comment in entry.comments) {
+      out.write(
+        '<div class="comment">'
+        '<p class="meta">${_text(labels.commentMetaLine(entry, comment))}</p>'
+        '<p class="comment-text">${_text(labels.commentText(comment))}</p>'
+        '</div>\n',
+      );
+    }
+    out.write('</section>\n');
   }
 
   /// [headingOffset] 是日记标题的级别：正文标题从下一级起（最深到 h6）。
@@ -656,5 +691,15 @@ footer{color:var(--muted);font-size:12px;text-align:center}
 .chapter-title{margin:40px 0 20px;font-size:30px;line-height:1.3}
 article>header h2{margin:0 0 4px;font-size:24px;line-height:1.35}
 @media print{.book-title,.toc{page-break-after:always}.toc{border:none;padding:0}.chapter{break-before:page}}
+''';
+
+  /// 留言区的样式（只在有留言时写出，没有留言的页面保持原样）：以一条
+  /// 细线与正文隔开，标题与说明行用次要色，文字保留原来的换行。
+  static const String _commentsCss = '''
+.comments{margin-top:20px;padding-top:12px;border-top:1px solid var(--line)}
+.comments>h2,.comments>h3{margin:0 0 8px;font-size:16px;line-height:1.4;color:var(--muted)}
+.comment{margin:0 0 12px}
+.comment:last-child{margin-bottom:0}
+.comment-text{white-space:pre-wrap}
 ''';
 }

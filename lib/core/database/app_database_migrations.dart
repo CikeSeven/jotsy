@@ -186,6 +186,14 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     await _createTableIfMissing(migrator, dayMoods);
   }
 
+  /// v16 新增日记留言表，与日记本表同理：表已存在（降级后再升级）时保留
+  /// 其中用户的留言；索引先删再建，保证与生成的 schema 一致。
+  Future<void> _migrateAddDiaryComments(Migrator migrator) async {
+    await _createTableIfMissing(migrator, diaryComments);
+    await migrator.drop(idxDiaryCommentsDiary);
+    await migrator.createIndex(idxDiaryCommentsDiary);
+  }
+
   /// v15 日记本表加 `parent_id`（上级日记本的业务 id）。
   ///
   /// 列已存在时跳过：从 v13 之前升级时 [_migrateAddNotebooks] 按最新定义

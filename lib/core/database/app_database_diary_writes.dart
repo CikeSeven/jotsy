@@ -312,8 +312,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
   ///
   /// 显式清理 diary_tags 与 diary_notebooks：本库不开启外键，diary_tags 声明
   /// 的级联不会生效，diary_notebooks 则根本没有声明外键；关联这篇日记的
-  /// 纪念日同时解除关联（纪念日只存日记业务 id、没有外键）。软删除不动关联，
-  /// 从回收站恢复后关联仍在。
+  /// 纪念日同时解除关联、留言一并删除（两者都只存日记业务 id、没有外键）。
+  /// 软删除不动关联与留言，从回收站恢复后都还在。
   /// 只删除数据库记录：正文媒体可能被其他日记或草稿复用（复制粘贴图片），
   /// 文件由 DiaryMediaCleanupService 确认无人引用后再回收。
   Future<void> hardDeleteDiary(String diaryId) async {
@@ -338,6 +338,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
       await (update(anniversaries)
             ..where((t) => t.linkedDiaryId.equals(diaryId)))
           .write(const AnniversariesCompanion(linkedDiaryId: Value(null)));
+      await (delete(
+        diaryComments,
+      )..where((t) => t.diaryId.equals(diaryId))).go();
     });
   }
 

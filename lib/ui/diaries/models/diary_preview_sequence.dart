@@ -12,6 +12,7 @@ class DiaryPreviewListQuery {
     required this.sortMode,
     this.scope = DiaryListScope.all,
     this.excludedIds = const <String>{},
+    this.matchComments = false,
   });
 
   final String keyword;
@@ -23,6 +24,9 @@ class DiaryPreviewListQuery {
 
   /// 列表里暂时隐藏、等待撤销的日记（刚归档或删除），翻页时同样跳过。
   final Set<String> excludedIds;
+
+  /// 关键词是否也匹配留言（搜索页开启留言功能时），与列表同一口径。
+  final bool matchComments;
 }
 
 /// 预览页左右滑动的顺序：进入时所在列表的日记 id，打开时即冻结。

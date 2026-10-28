@@ -70,6 +70,10 @@ class DiaryPreviewExportController extends ChangeNotifier {
   /// 分享长图期间用静态头图替换会随滚动折叠的头图，避免长图拼接出现拖影。
   bool get staticCover => _staticCover;
 
+  /// 正在截取分享长图（与 [staticCover] 同一时段）：预览页据此隐藏留言区，
+  /// 分享不带留言。
+  bool get capturingLongImage => _staticCover;
+
   /// 正在执行任一动作（遮罩、截图或导出中）。
   bool get busy => _showLoading || _sharingImage || _exporting;
 

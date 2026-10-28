@@ -9205,4 +9205,142 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exploreSampleWeatherFog => '雾';
+
+  @override
+  String get settingsFeaturesComments => '留言';
+
+  @override
+  String get settingsFeaturesCommentsSubtitle => '重读日记时在末尾写下回应，正文保持原样';
+
+  @override
+  String diaryCommentsHeading(int count) {
+    return '留言 · $count';
+  }
+
+  @override
+  String get diaryCommentsWrite => '写留言…';
+
+  @override
+  String diaryCommentsExpand(int count) {
+    return '展开其余 $count 条';
+  }
+
+  @override
+  String get diaryCommentsCollapse => '收起';
+
+  @override
+  String get diaryCommentEdited => '已编辑';
+
+  @override
+  String get diaryCommentSameDay => '当天写下';
+
+  @override
+  String diaryCommentDaysLater(int count) {
+    return '写下后 $count 天';
+  }
+
+  @override
+  String diaryCommentMonthsLater(int count) {
+    return '写下后 $count 个月';
+  }
+
+  @override
+  String diaryCommentYearsLater(int count) {
+    return '写下后 $count 年';
+  }
+
+  @override
+  String diaryCommentYearsMonthsLater(int years, int months) {
+    return '写下后 $years 年 $months 个月';
+  }
+
+  @override
+  String get diaryCommentSheetNew => '写留言';
+
+  @override
+  String get diaryCommentSheetEdit => '编辑留言';
+
+  @override
+  String get diaryCommentHint => '想对写下这篇的自己说点什么…';
+
+  @override
+  String get diaryCommentMoodLabel => '心情';
+
+  @override
+  String get diaryCommentMoodOptional => '可不选';
+
+  @override
+  String get diaryCommentCopy => '复制';
+
+  @override
+  String get diaryCommentCopied => '已复制留言';
+
+  @override
+  String get diaryCommentDeleted => '已删除留言';
+
+  @override
+  String get diaryCommentSaveFailed => '留言没有保存成功，请重试';
+
+  @override
+  String get diaryCommentActionsHint => '编辑、复制或删除';
+
+  @override
+  String diaryCommentsCount(int count) {
+    return '$count 条留言';
+  }
+
+  @override
+  String get diaryPreviewStyleShowComments => '留言数';
+
+  @override
+  String get diaryCardStyleShowComments => '留言数';
+
+  @override
+  String diarySearchCommentHit(String text) {
+    return '留言中提到：$text';
+  }
+
+  @override
+  String get exploreModuleComments => '最近的留言';
+
+  @override
+  String get exploreModuleCommentsDesc => '最近写下的留言与回看统计';
+
+  @override
+  String exploreCommentsDiaries(int count) {
+    return '回应了 $count 篇';
+  }
+
+  @override
+  String exploreCommentsAverageGap(int days) {
+    return '平均隔 $days 天回看';
+  }
+
+  @override
+  String get exploreCommentsEmpty => '在日记预览页末尾写下第一条留言';
+
+  @override
+  String get exploreSampleComment => '谢谢那时候没有放弃的自己。';
+
+  @override
+  String get diaryPreviewSampleComment1 => '回头再看，那天其实没有那么糟。';
+
+  @override
+  String get diaryPreviewSampleComment2 => '后来真的去了，比想象中还要好。';
+
+  @override
+  String get diaryExportIncludeComments => '包含留言';
+
+  @override
+  String get diaryExportCommentsHeading => '留言';
+
+  @override
+  String backupImportCommentMergeResult(int added) {
+    return '留言：新增 $added 条';
+  }
+
+  @override
+  String backupImportCommentOverwriteResult(int added, int replaced) {
+    return '留言：新增 $added 条，覆盖 $replaced 条';
+  }
 }

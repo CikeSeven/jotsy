@@ -377,6 +377,7 @@ class DataArchiveService {
         addedTemplates: restored.diaryTemplates.length,
         addedNotebooks: restored.notebooks.length,
         addedDayMoods: restored.dayMoods.length,
+        addedComments: restored.diaryComments.length,
       );
     } finally {
       if (cleanup) await _cleanWorkingDirectory(working);

@@ -19,9 +19,11 @@ import '../../settings/providers/app_features_provider.dart';
 import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../providers/diary_card_style_provider.dart';
+import '../providers/diary_comments_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
+import '../widgets/diary_comments/diary_search_comment_hit.dart';
 import '../widgets/search_scope_condition_chip.dart';
 import 'diary_preview_page.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -204,6 +206,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       limit: _visibleDiaryLimit,
       sortMode: DiarySortMode.updatedDesc,
       scope: query.scope,
+      // 开启留言功能时关键词也搜留言（只在搜索页）。
+      matchComments: ref.watch(diaryCommentsEnabledProvider),
     );
     final diariesAsync = query.hasAnyCondition
         ? ref.watch(searchDiariesProvider(pageQuery))
@@ -216,6 +220,10 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     }
     final displayedSearchItems = latestPage?.items ?? _cachedSearchItems;
     final hasMoreDiaries = _hasMoreDiaries;
+    // 只命中留言的结果在卡片下方附上命中的那条（功能关闭时为空表）。
+    final commentHits =
+        ref.watch(diaryCommentHitsProvider(query.keyword)).value ??
+        const <String, DiaryCommentRow>{};
     final tagListAsync = ref.watch(tagListProvider);
     final selectedTags = tagListAsync.maybeWhen(
       data: (tags) => tags
@@ -299,6 +307,18 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                                       availableWidth:
                                           constraints.maxWidth - side * 2,
                                       diaries: displayedSearchItems,
+                                      commentCounts:
+                                          ref
+                                              .watch(diaryCommentCountsProvider)
+                                              .value ??
+                                          const <String, int>{},
+                                      belowCardBuilder:
+                                          (BuildContext context, diary) =>
+                                              _commentHit(
+                                                commentHits,
+                                                diary,
+                                                query.keyword,
+                                              ),
                                       layoutMode: DiaryLayoutMode.list,
                                       selectedDiaryIds: const <String>{},
                                       isSelectionMode: false,
@@ -536,6 +556,24 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     Navigator.of(context).maybePop();
   }
 
+  /// 只命中留言的结果下方那条命中的留言；标题或正文本身含关键词时不加。
+  Widget? _commentHit(
+    Map<String, DiaryCommentRow> hits,
+    DiaryWithTags diary,
+    String keyword,
+  ) {
+    final hit = hits[diary.diary.diaryId];
+    if (hit == null ||
+        !DiarySearchCommentHit.matchesOnlyComment(
+          title: diary.diary.title,
+          contentText: diary.diary.contentText,
+          keyword: keyword,
+        )) {
+      return null;
+    }
+    return DiarySearchCommentHit(content: hit.content, keyword: keyword);
+  }
+
   /// 打开预览页（“打开日记时直接编辑”开启时为编辑页，见 [openDiaryPage]）：
   /// 只在当前结果里左右翻，结果还有没加载的部分时按同一条件接上。在里面
   /// 删除了某一篇时与右键菜单的编辑一样给出撤销。
@@ -552,6 +590,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
               requiredTagIds: query.requiredTagIds,
               sortMode: query.sortMode,
               scope: query.scope,
+              matchComments: query.matchComments,
             )
           : null,
     );

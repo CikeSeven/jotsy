@@ -18,6 +18,7 @@ class DiaryPreviewMetaStyle {
     this.showTags = true,
     this.showWordCount = false,
     this.showReadingTime = false,
+    this.showCommentCount = true,
     this.dateFormat = DiaryCardDateFormat.relative,
     this.showWeekday = false,
     this.showTime = false,
@@ -39,6 +40,9 @@ class DiaryPreviewMetaStyle {
 
   /// 字数后附“约 N 分钟”（只在显示字数时生效）。
   final bool showReadingTime;
+
+  /// 留言条数（开启留言功能且这篇有留言时才出现，点按滚到留言区）。
+  final bool showCommentCount;
   final DiaryCardDateFormat dateFormat;
   final bool showWeekday;
   final bool showTime;
@@ -57,7 +61,8 @@ class DiaryPreviewMetaStyle {
       showMood ||
       showEnergy ||
       showTags ||
-      showWordCount;
+      showWordCount ||
+      showCommentCount;
 
   DiaryPreviewMetaStyle copyWith({
     DiaryPreviewMetaPosition? position,
@@ -70,6 +75,7 @@ class DiaryPreviewMetaStyle {
     bool? showTags,
     bool? showWordCount,
     bool? showReadingTime,
+    bool? showCommentCount,
     DiaryCardDateFormat? dateFormat,
     bool? showWeekday,
     bool? showTime,
@@ -89,6 +95,7 @@ class DiaryPreviewMetaStyle {
       showTags: showTags ?? this.showTags,
       showWordCount: showWordCount ?? this.showWordCount,
       showReadingTime: showReadingTime ?? this.showReadingTime,
+      showCommentCount: showCommentCount ?? this.showCommentCount,
       dateFormat: dateFormat ?? this.dateFormat,
       showWeekday: showWeekday ?? this.showWeekday,
       showTime: showTime ?? this.showTime,
@@ -126,6 +133,7 @@ class DiaryPreviewMetaStyle {
       showTags: flag('showTags', d.showTags),
       showWordCount: flag('showWordCount', d.showWordCount),
       showReadingTime: flag('showReadingTime', d.showReadingTime),
+      showCommentCount: flag('showCommentCount', d.showCommentCount),
       dateFormat: StyleJson.enumByName(
         DiaryCardDateFormat.values,
         json['dateFormat'],
@@ -165,6 +173,12 @@ class DiaryPreviewMetaStyle {
     StyleJson.put(json, 'showTags', showTags, d.showTags);
     StyleJson.put(json, 'showWordCount', showWordCount, d.showWordCount);
     StyleJson.put(json, 'showReadingTime', showReadingTime, d.showReadingTime);
+    StyleJson.put(
+      json,
+      'showCommentCount',
+      showCommentCount,
+      d.showCommentCount,
+    );
     StyleJson.putEnum(json, 'dateFormat', dateFormat, d.dateFormat);
     StyleJson.put(json, 'showWeekday', showWeekday, d.showWeekday);
     StyleJson.put(json, 'showTime', showTime, d.showTime);
@@ -188,6 +202,7 @@ class DiaryPreviewMetaStyle {
         other.showTags == showTags &&
         other.showWordCount == showWordCount &&
         other.showReadingTime == showReadingTime &&
+        other.showCommentCount == showCommentCount &&
         other.dateFormat == dateFormat &&
         other.showWeekday == showWeekday &&
         other.showTime == showTime &&
@@ -209,6 +224,7 @@ class DiaryPreviewMetaStyle {
     showTags,
     showWordCount,
     showReadingTime,
+    showCommentCount,
     dateFormat,
     showWeekday,
     showTime,

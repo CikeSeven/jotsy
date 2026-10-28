@@ -18,6 +18,7 @@ import '../../controllers/diary_preview_export_controller.dart';
 import '../../models/publish_metadata_composer.dart';
 
 /// 预览页“更多”的完整接线：分享与导出经 [export]（分享面板里可选长图），
+/// “写留言”经 [onWriteComment]（留言功能关闭或日记在回收站时为 null），
 /// “收进日记本”打开收录选择器（[notebooks] 为这篇现在所在的本子，用作说明），
 /// 设为纪念日经数据库，存为模板打开预填好的模板编辑页（去掉媒体），“页面样式”打开预览页样式设置且第一篇示例就是这篇
 /// （设置尚未就绪时不显示这一项）。[ref] 属于预览页本身，页面卸载后不再使用。
@@ -29,6 +30,7 @@ Future<void> showDiaryPreviewMore(
   required Color background,
   required Future<void> Function() onDelete,
   List<NotebookView> notebooks = const <NotebookView>[],
+  Future<void> Function()? onWriteComment,
 }) {
   final database = ref.read(appDatabaseProvider);
   final l10n = context.l10n;
@@ -47,6 +49,7 @@ Future<void> showDiaryPreviewMore(
       background: background,
     ),
     onExport: () => export.exportDiary(context, ref, detail: detail),
+    onWriteComment: onWriteComment,
     notebookSubtitle: notebooks.isEmpty
         ? l10n.notebookPreviewNone
         : notebooks.map((n) => n.name).join(l10n.notebookListSeparator),
@@ -110,8 +113,8 @@ Future<void> openDiaryPreviewShare(
   );
 }
 
-/// 预览页“更多”面板：分享、导出、收进日记本、设为纪念日、存为模板、页面
-/// 样式与删除。可选项的回调为 null 时不显示这一项（功能关闭或设置未就绪）。
+/// 预览页“更多”面板：分享、导出、写留言、收进日记本、设为纪念日、存为
+/// 模板、页面样式与删除。可选项的回调为 null 时不显示这一项（功能关闭或设置未就绪）。
 ///
 /// 每一项先关闭面板，再执行对应动作（分享面板里选了长图时，截图要等面板
 /// 完全退场，见 `DiaryPreviewExportController.openShareSheet`）。
@@ -124,6 +127,7 @@ Future<void> showDiaryPreviewActionsSheet(
   Future<void> Function()? onSaveAsTemplate,
   Future<void> Function()? onOpenStyle,
   Future<void> Function()? onAddToNotebook,
+  Future<void> Function()? onWriteComment,
   String? notebookSubtitle,
 }) {
   final l10n = context.l10n;
@@ -172,6 +176,12 @@ Future<void> showDiaryPreviewActionsSheet(
                 title: Text(l10n.previewExport),
                 action: onExport,
               ),
+              if (onWriteComment != null)
+                item(
+                  icon: const FaIcon(FontAwesomeIcons.comment, size: 16),
+                  title: Text(l10n.diaryCommentSheetNew),
+                  action: onWriteComment,
+                ),
               if (onAddToNotebook != null)
                 item(
                   icon: const FaIcon(FontAwesomeIcons.bookBookmark, size: 16),

@@ -66,7 +66,11 @@ class DiaryDocxWriter {
     DiaryExportCodeTheme? code,
     DiaryTypography typography = const DiaryTypography(),
   }) async {
-    final builder = _DocxBuilder();
+    // 首行缩进按正文的字步进换成 twip（1px = 0.75pt = 15 twip），与 Normal
+    // 样式的字号、字间距同一口径，缩进两字正好空出两个汉字。
+    final builder = _DocxBuilder(
+      firstLineTwips: (typography.firstLineIndentExtent * 15).round(),
+    );
     if (book != null) {
       await _writeBook(
         builder,
@@ -335,9 +339,16 @@ class DiaryDocxWriter {
             runs: <String>[b.run('$marker\t'), ...b.inlines(block.inlines)],
           );
         case ExportBlockKind.paragraph:
+          // 与应用一致：居中、右对齐的段落不缩进首行。
+          final firstLine =
+              block.align == ExportAlign.start ||
+                  block.align == ExportAlign.justify
+              ? b.firstLineTwips
+              : 0;
           b.paragraph(
             align: block.align,
             indentTwips: block.indent > 0 ? 420 * block.indent : null,
+            firstLineTwips: firstLine > 0 ? firstLine : null,
             runs: b.inlines(block.inlines),
           );
       }
@@ -509,6 +520,11 @@ class DiaryDocxWriter {
 
 /// 拼接 document.xml 与其关系文件；图片与链接按出现顺序分配关系 id。
 class _DocxBuilder {
+  _DocxBuilder({this.firstLineTwips = 0});
+
+  /// 正文段落的首行缩进（twip），0 为不缩进。
+  final int firstLineTwips;
+
   final StringBuffer _body = StringBuffer();
   final List<String> _relationships = <String>[];
   final List<({String name, DiaryExportMediaFile media})> images =
@@ -610,6 +626,7 @@ class _DocxBuilder {
     bool pageBreakBefore = false,
     int? indentTwips,
     int? hangingTwips,
+    int? firstLineTwips,
     ExportAlign align = ExportAlign.start,
     String? bookmark,
   }) {
@@ -617,10 +634,13 @@ class _DocxBuilder {
     final pPr = StringBuffer();
     if (style != null) pPr.write('<w:pStyle w:val="$style"/>');
     if (pageBreakBefore) pPr.write('<w:pageBreakBefore/>');
-    if (indentTwips != null) {
+    // w:hanging 与 w:firstLine 互斥：列表只用前者，正文段落只用后者。
+    if (indentTwips != null || firstLineTwips != null) {
       pPr.write(
-        '<w:ind w:left="$indentTwips"'
-        '${hangingTwips == null ? '' : ' w:hanging="$hangingTwips"'}/>',
+        '<w:ind'
+        '${indentTwips == null ? '' : ' w:left="$indentTwips"'}'
+        '${hangingTwips == null ? '' : ' w:hanging="$hangingTwips"'}'
+        '${firstLineTwips == null ? '' : ' w:firstLine="$firstLineTwips"'}/>',
       );
     }
     final jc = switch (align) {

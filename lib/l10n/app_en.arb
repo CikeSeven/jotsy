@@ -4069,6 +4069,26 @@
   "@diaryTypographyParagraphSpacing": {
     "description": "Body layout: paragraph spacing slider label."
   },
+  "diaryTypographyFirstLineIndent": "First-line indent",
+  "@diaryTypographyFirstLineIndent": {
+    "description": "Body layout: paragraph first-line indent slider label."
+  },
+  "diaryTypographyFirstLineIndentValue": "{count, plural, =1{1 character} other{{value} characters}}",
+  "@diaryTypographyFirstLineIndentValue": {
+    "description": "Body layout: current first-line indent; count selects the plural, value is the number of characters without trailing zeros (e.g. 1.5).",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTypographyFirstLineIndentOff": "None",
+  "@diaryTypographyFirstLineIndentOff": {
+    "description": "Body layout: value shown when the first-line indent is 0."
+  },
   "diaryTypographyDecrease": "{label}: decrease",
   "@diaryTypographyDecrease": {
     "description": "Body layout: tooltip of the decrease button; label is the value name.",
@@ -4085,7 +4105,7 @@
   },
   "diaryTypographyReset": "Reset layout",
   "@diaryTypographyReset": {
-    "description": "Body layout: reset size and spacing values to defaults (keeps the font)."
+    "description": "Body layout: reset size, spacing and first-line indent values to defaults (keeps the font)."
   },
   "diaryTypographyScopeHint": "Applies when writing, reading and publishing diaries; the font is also used for titles.",
   "@diaryTypographyScopeHint": {

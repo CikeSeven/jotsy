@@ -2859,6 +2859,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTypographyParagraphSpacing => '段间距';
 
   @override
+  String get diaryTypographyFirstLineIndent => '首行缩进';
+
+  @override
+  String diaryTypographyFirstLineIndentValue(num count, String value) {
+    return '$value 字';
+  }
+
+  @override
+  String get diaryTypographyFirstLineIndentOff => '不缩进';
+
+  @override
   String diaryTypographyDecrease(String label) {
     return '减小$label';
   }

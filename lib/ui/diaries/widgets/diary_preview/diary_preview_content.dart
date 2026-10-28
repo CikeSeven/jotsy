@@ -14,6 +14,7 @@ import '../../models/time_capsule.dart';
 import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
+import '../diary_comments/diary_comments_section.dart';
 import 'diary_preview_body.dart';
 import 'diary_preview_header.dart';
 import 'diary_preview_meta.dart';
@@ -48,8 +49,8 @@ class DiaryPreviewActions {
   final VoidCallback? onBack;
 }
 
-/// 预览页的整页内容：顶栏、头图、标题、信息栏与正文组成的滚动视图，版式全部
-/// 来自 [DiaryPreviewResolvedStyle]。
+/// 预览页的整页内容：顶栏、头图、标题、信息栏、正文与留言区组成的滚动视图，
+/// 版式全部来自 [DiaryPreviewResolvedStyle]。
 ///
 /// 输入：已解封的日记、它的派生数据与只读块控制器、解析后的样式与阅读
 /// 行为，以及顶栏动作与看图回调；不读写数据库，也不持有状态，设置页的实时
@@ -76,6 +77,7 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.paging,
     this.notebooks = const <NotebookView>[],
     this.onOpenNotebook,
+    this.comments,
   });
 
   final DiaryWithTags detail;
@@ -110,6 +112,10 @@ class DiaryPreviewContent extends ConsumerWidget {
   /// 点按日记本胶囊：回到首页打开那本。
   final ValueChanged<NotebookView>? onOpenNotebook;
 
+  /// 正文末尾的留言区；null 时不显示（留言功能关闭、日记在回收站、截取
+  /// 分享长图时）。信息栏的留言数也由它给出。
+  final DiaryPreviewComments? comments;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 版式按这里实际拿到的宽度换算（嵌在双栏里时比屏幕窄，见
@@ -142,11 +148,15 @@ class DiaryPreviewContent extends ConsumerWidget {
         : _explicitCover(diary);
     final title = _titleText(l10n, diary, style.title);
     final meta = style.meta;
+    final comments = this.comments;
+    final commentCount = comments?.comments.length ?? 0;
+    final commentsKey = comments?.sectionKey;
     final hasMeta = DiaryPreviewMeta.hasContent(
       detail,
       viewData,
       meta,
       notebooks: notebooks,
+      commentCount: commentCount,
     );
     final metaWidget = hasMeta
         ? DiaryPreviewMeta(
@@ -155,6 +165,10 @@ class DiaryPreviewContent extends ConsumerWidget {
             style: meta,
             notebooks: notebooks,
             onOpenNotebook: onOpenNotebook,
+            commentCount: commentCount,
+            onOpenComments: commentsKey == null || comments?.actions == null
+                ? null
+                : () => DiaryCommentsSection.reveal(context, commentsKey),
           )
         : null;
     final controller = this.controller;
@@ -265,6 +279,16 @@ class DiaryPreviewContent extends ConsumerWidget {
                 if (editedLabel != null) ...<Widget>[
                   const SizedBox(height: 16),
                   DiaryPreviewEditedLine(label: editedLabel),
+                ],
+                if (comments != null) ...<Widget>[
+                  const SizedBox(height: 28),
+                  DiaryCommentsSection(
+                    key: ValueKey<String>(
+                      'diary_comments_${detail.diary.diaryId}',
+                    ),
+                    data: comments,
+                    textColor: resolved.bodyColor,
+                  ),
                 ],
                 if (neighbors != null) ...<Widget>[
                   const SizedBox(height: 24),

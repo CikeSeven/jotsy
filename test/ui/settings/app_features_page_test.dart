@@ -54,6 +54,9 @@ void main() {
     expect(stored(h).templates, isFalse);
     await toggle(tester, l10n.settingsFeaturesTimeCapsules);
     expect(stored(h).timeCapsules, isFalse);
+    // 留言默认关闭，拨一下是打开。
+    await toggle(tester, l10n.settingsFeaturesComments);
+    expect(stored(h).comments, isTrue);
     await toggle(tester, l10n.settingsFeaturesSwipeArchive);
     expect(stored(h).swipeArchive, isFalse);
     await toggle(tester, l10n.notebookTitle);
@@ -272,7 +275,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.byType(SwitchListTile), findsNWidgets(7));
+      expect(find.byType(SwitchListTile), findsNWidgets(8));
     });
   }
 

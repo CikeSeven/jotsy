@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/models/diary_preview_style/diary_preview_style.dart';
+import '../../../diaries/providers/diary_comments_provider.dart';
 import '../../../diaries/viewmodels/diary_card_date_formatter.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../../widgets/expressive_choice_tile.dart';
@@ -13,16 +15,18 @@ import '../../widgets/style_editor/style_editor_common.dart';
 import 'diary_preview_style_labels.dart';
 
 /// “信息”标签页：位置与版式、显示哪些信息、时间格式（附实时示例）、标签与
-/// 心情精力的样式。
-class DiaryPreviewStyleMetaTab extends StatelessWidget {
+/// 心情精力的样式。“留言数”只在开启留言功能时列出（功能关闭时隐藏它的
+/// 全部选项）。
+class DiaryPreviewStyleMetaTab extends ConsumerWidget {
   const DiaryPreviewStyleMetaTab({super.key, required this.controller});
 
   final DiaryPreviewStyleEditorController controller;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final meta = controller.style.meta;
+    final commentsEnabled = ref.watch(diaryCommentsEnabledProvider);
     final now = DateTime.now();
     // 示例取“三天前的上午”：相对时间读作“3 天前”，日期也不是今天。
     final sample = DateTime(
@@ -113,6 +117,12 @@ class DiaryPreviewStyleMetaTab extends StatelessWidget {
                 l10n.diaryPreviewStyleShowReadingTime,
                 meta.showReadingTime,
                 (v) => meta.copyWith(showReadingTime: v),
+              ),
+            if (commentsEnabled)
+              toggle(
+                l10n.diaryPreviewStyleShowComments,
+                meta.showCommentCount,
+                (v) => meta.copyWith(showCommentCount: v),
               ),
             toggle(
               l10n.diaryPreviewStyleShowLocation,

@@ -13,6 +13,7 @@ import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
 import 'package:node_diary/ui/settings/widgets/recycle_bin_tile.dart';
 import 'package:node_diary/ui/widgets/empty_hint.dart';
 import 'package:node_diary/ui/widgets/list_item_presence.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_swipe_action_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -101,7 +102,7 @@ void main() {
 
     await tester.drag(_storedCard(), const Offset(-500, 0));
     await tester.pumpAndSettle();
-    // 已 dismiss 的 Dismissible 若仍留在树中会抛断言。
+    // 滑出并收起后，宿主须在这一帧把条目移出列表。
     expect(tester.takeException(), isNull);
     expect(find.text('Stored diary'), findsNothing);
     expect(find.byType(EmptyHint), findsOneWidget);
@@ -117,8 +118,8 @@ void main() {
       const ArchivedDiariesPage(),
       prepare: (db, id) => db.archiveDiary(id),
     );
-    // 桌面上没有左滑（Dismissible），右键菜单代替。
-    expect(find.byType(Dismissible), findsNothing);
+    // 桌面上没有左滑，右键菜单代替。
+    expect(find.byType(DiarySwipeActionItem), findsNothing);
     await tester.tap(
       _storedCard(),
       buttons: kSecondaryMouseButton,

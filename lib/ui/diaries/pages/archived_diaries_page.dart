@@ -62,7 +62,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   /// 在 build 中清理。
   final Set<String> _pendingHideDiaryIds = <String>{};
 
-  /// 滑动取消归档后同步隐藏的条目：Dismissible 离场后必须立即移出列表，
+  /// 滑动取消归档后同步隐藏的条目：侧滑组件收起后必须立即移出列表，
   /// 不能等待异步写库后的数据流更新。
   final Set<String> _sweptAwayDiaryIds = <String>{};
 

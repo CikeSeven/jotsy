@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card_context_menu.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_swipe_action_item.dart';
 
 import 'diaries_wide_test_support.dart';
 
@@ -164,7 +165,7 @@ void main() {
       size: const Size(800, 800),
       diaries: _diaries('noswipe', 2),
     );
-    expect(find.byType(Dismissible), findsNothing);
+    expect(find.byType(DiarySwipeActionItem), findsNothing);
     await unmountWideDiariesPage(tester);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
@@ -174,7 +175,7 @@ void main() {
       size: const Size(400, 800),
       diaries: _diaries('swipe', 2),
     );
-    expect(find.byType(Dismissible), findsNWidgets(2));
+    expect(find.byType(DiarySwipeActionItem), findsNWidgets(2));
     await unmountWideDiariesPage(tester);
   });
 }

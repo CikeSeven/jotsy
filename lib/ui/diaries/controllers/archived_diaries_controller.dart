@@ -153,7 +153,7 @@ class ArchivedDiariesController {
   }
 
   Future<void> unarchiveDiaryBySwipe(String diaryId) async {
-    // Dismissible 已播放离场动画，必须在本帧同步移出列表。
+    // 侧滑组件已播完滑出与收起，必须在本帧同步移出列表。
     _state.setState(() => _state._sweptAwayDiaryIds.add(diaryId));
     await _unarchiveDiaries(
       <String>[diaryId],

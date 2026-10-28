@@ -57,7 +57,7 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
   /// 写库失败的重新展开。
   final Set<String> _pendingHideIds = <String>{};
 
-  /// 左滑删掉的条目：Dismissible 已播完离场，必须在同一帧移出列表。
+  /// 左滑删掉的条目：侧滑组件已播完滑出与收起，必须在同一帧移出列表。
   final Set<String> _sweptAwayIds = <String>{};
 
   /// 撤销后重新出现的条目，从 0 展开而不是直接冒出。

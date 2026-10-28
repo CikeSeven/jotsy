@@ -103,6 +103,8 @@ flutter:
     - assets/img/diary_card_samples/
     # 关于页“支持开发者”面板的收款码，与 README 共用同一份图片。
     - assets/img/support/
+    # 关于页“更新日志”离线读取的各版本中英文说明，与发布流程共用同一份文件。
+    - docs/releases/
   fonts:
     - family: HarmonyOSSansSC
       fonts:

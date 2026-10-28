@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 
 /// 搜索结果卡片下方的一条“命中的留言”：搜索词只出现在这篇的留言里（标题
 /// 与正文都没有）时，说明它为什么被搜到。
 ///
 /// 留言长时只取命中处前后一段（前面最多 [_lead] 个字），关键词以主色容器
-/// 底标出；垫一层容器色，放在背景图上也读得清。
+/// 底标出；垫一层容器色，放在背景图上也读得清。底色与描边按
+/// [AppGlassField] 跟随“控件”材质（经典时为 surfaceContainerHigh、无描边）。
 class DiarySearchCommentHit extends StatelessWidget {
   const DiarySearchCommentHit({
     super.key,
@@ -44,6 +46,7 @@ class DiarySearchCommentHit extends StatelessWidget {
     final start = at > _lead ? at - _lead : 0;
     final shown = start > 0 ? '…${text.substring(start)}' : text;
     final hit = at < 0 ? -1 : at - start + (start > 0 ? 1 : 0);
+    final glassField = AppGlassField.of(context);
     final base = theme.textTheme.bodySmall?.copyWith(
       color: scheme.onSurfaceVariant,
     );
@@ -71,8 +74,11 @@ class DiarySearchCommentHit extends StatelessWidget {
         padding: const EdgeInsets.only(top: 6),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh,
+            color: glassField?.fill ?? scheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(12),
+            border: glassField?.border == null
+                ? null
+                : Border.fromBorderSide(glassField!.border!),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

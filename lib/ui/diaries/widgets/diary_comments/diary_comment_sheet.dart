@@ -4,7 +4,9 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
+import '../../../widgets/expressive_state_blend.dart';
 
 /// 写留言面板的结果：去掉首尾空白的文字与可选心情。
 @immutable
@@ -209,7 +211,9 @@ class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
   }
 }
 
-/// 一个可选的心情：选中时为主色容器底的圆。
+/// 一个可选的心情：选中时为主色容器底 + 主色描边的圆，选中态经
+/// [ExpressiveStateBlend] 补间。未选中的底色与描边按 [AppGlassField] 跟随
+/// “控件”材质（经典时透明底 + outlineVariant 细描边），选中色不变。
 class _MoodChoice extends StatelessWidget {
   const _MoodChoice({
     required this.mood,
@@ -224,19 +228,19 @@ class _MoodChoice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final glassField = AppGlassField.of(context);
+    final restingFill =
+        glassField?.fill ?? scheme.primaryContainer.withValues(alpha: 0);
+    final restingSide =
+        glassField?.border ?? BorderSide(color: scheme.outlineVariant);
+    final selectedSide = BorderSide(color: scheme.primary, width: 1.5);
     return Semantics(
       button: true,
       selected: selected,
       label: mood,
       excludeSemantics: true,
-      child: Material(
-        color: selected ? scheme.primaryContainer : Colors.transparent,
-        shape: CircleBorder(
-          side: BorderSide(
-            color: selected ? scheme.primary : scheme.outlineVariant,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
+      child: ExpressiveStateBlend(
+        active: selected,
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
@@ -250,6 +254,13 @@ class _MoodChoice extends StatelessWidget {
               ),
             ),
           ),
+        ),
+        builder: (BuildContext context, double t, Widget? child) => Material(
+          color: Color.lerp(restingFill, scheme.primaryContainer, t),
+          shape: CircleBorder(
+            side: BorderSide.lerp(restingSide, selectedSide, t),
+          ),
+          child: child,
         ),
       ),
     );

@@ -113,10 +113,68 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
   }) async {
+    final query = _activeDiaryKeysQuery(
+      columns: 'd.diary_id',
+      keyword: keyword,
+      requiredTagIds: requiredTagIds,
+      sortMode: sortMode,
+      scope: scope,
+    );
+    final rows = await query.get();
+    return rows
+        .map((row) => row.read<String>('diary_id'))
+        .toList(growable: false);
+  }
+
+  /// 监听首页列表的完整时间轴：与 [watchDiaries] 同一筛选、范围与排序的全部
+  /// 篇目，每篇只带排序依据（置顶、创建 / 更新时间、标题、成书顺序的章节
+  /// 序号），不带正文与标签。
+  ///
+  /// 首页快速滚动条用它得到总篇数，并在还没分页加载到的位置显示日期、首字母
+  /// 或章节；只读，订阅与 [getActiveDiaryIds] 相同的表。
+  Stream<List<DiaryTimelineEntry>> watchDiaryTimeline({
+    String keyword = '',
+    List<int> requiredTagIds = const <int>[],
+    DiarySortMode sortMode = DiarySortMode.updatedDesc,
+    DiaryListScope scope = DiaryListScope.all,
+  }) {
+    final bookOrder = _bookOrderScope(scope) != null;
+    return _activeDiaryKeysQuery(
+      columns: 'd.diary_id, d.is_pinned, d.created_at, d.updated_at, d.title',
+      keyword: keyword,
+      requiredTagIds: requiredTagIds,
+      sortMode: sortMode,
+      scope: scope,
+    ).watch().map(
+      (rows) => rows
+          .map(
+            (row) => DiaryTimelineEntry(
+              diaryId: row.read<String>('diary_id'),
+              isPinned: row.read<bool>('is_pinned'),
+              createdAt: _readDateTime(row, 'created_at'),
+              updatedAt: _readDateTime(row, 'updated_at'),
+              title: row.read<String>('title'),
+              chapterRank: bookOrder ? row.read<int>('chapter_rank') : null,
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  /// 首页 / 搜索口径的轻量键查询（不分页）：先选出 [columns]，成书顺序时再
+  /// 带上排序键 `chapter_rank` 与 `book_pos`；筛选、范围与排序同
+  /// [watchDiaries] 的 id 窗口。
+  Selectable<QueryRow> _activeDiaryKeysQuery({
+    required String columns,
+    required String keyword,
+    required List<int> requiredTagIds,
+    required DiarySortMode sortMode,
+    required DiaryListScope scope,
+  }) {
     final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
     final variables = <Variable<Object>>[];
     final bookScope = _bookOrderScope(scope);
-    final sql = StringBuffer('SELECT d.diary_id');
+    final sql = StringBuffer('SELECT $columns');
     if (bookScope != null) {
       sql.write(
         ', ${_bookChapterRankSql(bookScope, variables)} AS chapter_rank, '
@@ -134,14 +192,11 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     sql.writeln(
       bookScope != null ? _bookOrderBySql() : _diaryOrderBySql(sortMode),
     );
-    final rows = await customSelect(
+    return customSelect(
       sql.toString(),
       variables: variables,
       readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[diaries, diaryTags]),
-    ).get();
-    return rows
-        .map((row) => row.read<String>('diary_id'))
-        .toList(growable: false);
+    );
   }
 
   /// 范围内未删除、未归档的日记篇数（含私密排除）：智能日记本的实时篇数与

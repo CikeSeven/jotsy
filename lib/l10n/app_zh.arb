@@ -4049,6 +4049,26 @@
   "@diaryTypographyParagraphSpacing": {
     "description": "正文排版：段间距滑块标题。"
   },
+  "diaryTypographyFirstLineIndent": "首行缩进",
+  "@diaryTypographyFirstLineIndent": {
+    "description": "正文排版：段落首行缩进滑块标题。"
+  },
+  "diaryTypographyFirstLineIndentValue": "{value} 字",
+  "@diaryTypographyFirstLineIndentValue": {
+    "description": "正文排版：首行缩进的当前值；count 用于复数，value 为去掉末尾 0 的字数（如 1.5）。",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTypographyFirstLineIndentOff": "不缩进",
+  "@diaryTypographyFirstLineIndentOff": {
+    "description": "正文排版：首行缩进为 0 时显示的当前值。"
+  },
   "diaryTypographyDecrease": "减小{label}",
   "@diaryTypographyDecrease": {
     "description": "正文排版：数值减小按钮的提示，label 为数值名称。",
@@ -4065,7 +4085,7 @@
   },
   "diaryTypographyReset": "恢复默认排版",
   "@diaryTypographyReset": {
-    "description": "正文排版：把字号、行距、字间距、段间距恢复默认（保留字体）。"
+    "description": "正文排版：把字号、行距、字间距、段间距与首行缩进恢复默认（保留字体）。"
   },
   "diaryTypographyScopeHint": "作用于日记的编辑、阅读与发布页面；字体也用于日记标题。",
   "@diaryTypographyScopeHint": {
@@ -11461,6 +11481,10 @@
   "@diaryListToNumbered": {"description": "列表面板按钮：把选中的无序列表项改成有序列表。"},
   "diaryListToText": "转为正文",
   "@diaryListToText": {"description": "列表面板按钮：把选中的列表项改回普通段落。"},
+  "diaryFastScrollPinned": "置顶",
+  "@diaryFastScrollPinned": {"description": "首页快速滚动条：拖到置顶日记时气泡与刻度上的文字。"},
+  "diaryFastScrollUntitled": "无标题",
+  "@diaryFastScrollUntitled": {"description": "首页快速滚动条：按标题排序时，没有标题的日记在气泡与刻度上的文字。"},
   "exploreModuleGreeting": "今日问候",
   "@exploreModuleGreeting": {
     "description": "探索页卡片名称：今日问候。"

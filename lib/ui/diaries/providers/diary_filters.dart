@@ -55,6 +55,18 @@ class DiaryPageQuery {
   /// provider 实例，不会命中别的范围的缓存。
   final DiaryListScope scope;
 
+  /// 同一组筛选、排序与范围，窗口大小归零：不随翻页变化的查询 key（见
+  /// `diaryTimelineProvider`）。
+  DiaryPageQuery get timelineKey => limit == 0
+      ? this
+      : DiaryPageQuery(
+          keyword: keyword,
+          requiredTagIds: requiredTagIds,
+          limit: 0,
+          sortMode: sortMode,
+          scope: scope,
+        );
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) {

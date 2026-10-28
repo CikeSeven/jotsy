@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
-/// 日记正文排版偏好：字体来源 + 字号 / 行距 / 字间距 / 段间距。
+/// 日记正文排版偏好：字体来源 + 字号 / 行距 / 字间距 / 段间距 / 首行缩进。
 ///
 /// 编辑页、预览页与发布页共用同一份偏好（单个 JSON 设置键，随备份导出）。
 /// 本类只描述“用户选了什么”，不关心字体是否已加载：导入字体按 [fontId]
@@ -19,6 +20,7 @@ class DiaryTypography {
     this.lineHeight = defaultLineHeight,
     this.letterSpacing = defaultLetterSpacing,
     this.paragraphSpacing = defaultParagraphSpacing,
+    this.firstLineIndent = defaultFirstLineIndent,
   });
 
   /// 应用内置的 HarmonyOS Sans SC（与全局主题同一字体）。
@@ -32,6 +34,9 @@ class DiaryTypography {
   static const double defaultLineHeight = 1.55;
   static const double defaultLetterSpacing = 0;
   static const double defaultParagraphSpacing = 0;
+
+  /// 默认不缩进：升级后已有日记的观感不变。
+  static const double defaultFirstLineIndent = 0;
 
   static const double minFontSize = 10;
   static const double maxFontSize = 32;
@@ -50,6 +55,11 @@ class DiaryTypography {
   static const double maxParagraphSpacing = 48;
   static const double paragraphSpacingStep = 1;
 
+  // 中文习惯“首行空两字”；半字步进照顾西文常见的 1–1.5em 缩进。
+  static const double minFirstLineIndent = 0;
+  static const double maxFirstLineIndent = 4;
+  static const double firstLineIndentStep = 0.5;
+
   /// [bundledFontId]、[systemFontId] 或导入字体的 id。
   final String fontId;
   final double fontSize;
@@ -61,6 +71,14 @@ class DiaryTypography {
   /// 段落（每次换行）之后追加的垂直间距，逻辑像素。
   final double paragraphSpacing;
 
+  /// 普通段落首行缩进的字数，0 为不缩进；宽度见 [firstLineIndentExtent]。
+  final double firstLineIndent;
+
+  /// 首行缩进的宽度（逻辑像素）：每个字按字号加字间距计，正好是中文全角字
+  /// 的步进，缩进两字时首行与下面各行的第三个字对齐。
+  double get firstLineIndentExtent =>
+      firstLineIndent * math.max(0.0, fontSize + letterSpacing);
+
   bool get usesImportedFont =>
       fontId != bundledFontId && fontId != systemFontId;
 
@@ -70,6 +88,7 @@ class DiaryTypography {
     double? lineHeight,
     double? letterSpacing,
     double? paragraphSpacing,
+    double? firstLineIndent,
   }) {
     return DiaryTypography(
       fontId: _normalizeFontId(fontId ?? this.fontId),
@@ -80,6 +99,9 @@ class DiaryTypography {
       ),
       paragraphSpacing: normalizeParagraphSpacing(
         paragraphSpacing ?? this.paragraphSpacing,
+      ),
+      firstLineIndent: normalizeFirstLineIndent(
+        firstLineIndent ?? this.firstLineIndent,
       ),
     );
   }
@@ -96,6 +118,7 @@ class DiaryTypography {
     'lineHeight': lineHeight,
     'letterSpacing': letterSpacing,
     'paragraphSpacing': paragraphSpacing,
+    'firstLineIndent': firstLineIndent,
   };
 
   String toRaw() => jsonEncode(toJson());
@@ -114,6 +137,7 @@ class DiaryTypography {
       lineHeight: read('lineHeight', defaultLineHeight),
       letterSpacing: read('letterSpacing', defaultLetterSpacing),
       paragraphSpacing: read('paragraphSpacing', defaultParagraphSpacing),
+      firstLineIndent: read('firstLineIndent', defaultFirstLineIndent),
     );
   }
 
@@ -180,6 +204,14 @@ class DiaryTypography {
     defaultParagraphSpacing,
   );
 
+  static double normalizeFirstLineIndent(double value) => _snap(
+    value,
+    minFirstLineIndent,
+    maxFirstLineIndent,
+    firstLineIndentStep,
+    defaultFirstLineIndent,
+  );
+
   static String _normalizeFontId(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? bundledFontId : trimmed;
@@ -209,7 +241,8 @@ class DiaryTypography {
         other.fontSize == fontSize &&
         other.lineHeight == lineHeight &&
         other.letterSpacing == letterSpacing &&
-        other.paragraphSpacing == paragraphSpacing;
+        other.paragraphSpacing == paragraphSpacing &&
+        other.firstLineIndent == firstLineIndent;
   }
 
   @override
@@ -219,6 +252,7 @@ class DiaryTypography {
     lineHeight,
     letterSpacing,
     paragraphSpacing,
+    firstLineIndent,
   );
 
   @override

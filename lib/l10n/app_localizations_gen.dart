@@ -5186,6 +5186,24 @@ abstract class AppLocalizations {
   /// **'Paragraph spacing'**
   String get diaryTypographyParagraphSpacing;
 
+  /// Body layout: paragraph first-line indent slider label.
+  ///
+  /// In en, this message translates to:
+  /// **'First-line indent'**
+  String get diaryTypographyFirstLineIndent;
+
+  /// Body layout: current first-line indent; count selects the plural, value is the number of characters without trailing zeros (e.g. 1.5).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 character} other{{value} characters}}'**
+  String diaryTypographyFirstLineIndentValue(num count, String value);
+
+  /// Body layout: value shown when the first-line indent is 0.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get diaryTypographyFirstLineIndentOff;
+
   /// Body layout: tooltip of the decrease button; label is the value name.
   ///
   /// In en, this message translates to:
@@ -5198,7 +5216,7 @@ abstract class AppLocalizations {
   /// **'{label}: increase'**
   String diaryTypographyIncrease(String label);
 
-  /// Body layout: reset size and spacing values to defaults (keeps the font).
+  /// Body layout: reset size, spacing and first-line indent values to defaults (keeps the font).
   ///
   /// In en, this message translates to:
   /// **'Reset layout'**
@@ -15109,6 +15127,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Convert to text'**
   String get diaryListToText;
+
+  /// Home fast scroller: bubble and track label for pinned diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get diaryFastScrollPinned;
+
+  /// Home fast scroller: bubble and track label for diaries without a title when sorted by title.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled'**
+  String get diaryFastScrollUntitled;
 
   /// Explore card name: Today.
   ///

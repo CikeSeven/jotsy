@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/diary_font_storage_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_paragraph_block.dart';
 import 'package:node_diary/ui/settings/pages/diary_typography_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -105,6 +106,42 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.diaryTypography.paragraphSpacing, draftSpacing);
     expect(_previewParagraph(tester).verticalSpacing.bottom, draftSpacing);
+  });
+
+  testWidgets('the first-line indent is shown in characters and indents the '
+      'preview paragraphs', (tester) async {
+    await pumpDiaryTypographyHarness(
+      tester,
+      settings: settings,
+      storage: storage,
+      home: const DiaryTypographyPage(),
+    );
+    final l10n = tester.element(find.byType(DiaryTypographyPage)).l10n;
+    expect(find.text(l10n.diaryTypographyFirstLineIndentOff), findsOneWidget);
+    expect(find.byType(DiaryParagraphBlock), findsNothing);
+
+    final increase = find.byTooltip(
+      l10n.diaryTypographyIncrease(l10n.diaryTypographyFirstLineIndent),
+    );
+    await tester.ensureVisible(increase);
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 4; i++) {
+      await tester.tap(increase);
+      await tester.pumpAndSettle();
+    }
+
+    expect(settings.diaryTypography.firstLineIndent, 2);
+    expect(
+      find.text(l10n.diaryTypographyFirstLineIndentValue(2, '2')),
+      findsOneWidget,
+    );
+    expect(find.byType(DiaryParagraphBlock), findsWidgets);
+
+    // 恢复默认排版一并取消缩进。
+    await tester.tap(find.text(l10n.diaryTypographyReset));
+    await tester.pumpAndSettle();
+    expect(settings.diaryTypography.firstLineIndent, 0);
+    expect(find.byType(DiaryParagraphBlock), findsNothing);
   });
 
   testWidgets('deleting the font in use falls back to the bundled font', (

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_docx.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_entry.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_media.dart';
 import 'package:xml/xml.dart';
@@ -27,6 +28,50 @@ void main() {
       ),
     );
   }
+
+  Future<XmlDocument> body(DiaryTypography typography) async {
+    final entry = DiaryExportEntry.parse(
+      diaryId: 'indent',
+      title: '缩进',
+      createdAt: DateTime(2026, 4, 3, 9, 5),
+      updatedAt: DateTime(2026, 4, 3, 9, 5),
+      tagNames: const <String>[],
+      metadata: testMetadata,
+      deltaOps: <dynamic>[
+        <String, dynamic>{'insert': '第一段正文\n居中的一行'},
+        <String, dynamic>{
+          'insert': '\n',
+          'attributes': <String, dynamic>{'align': 'center'},
+        },
+        <String, dynamic>{'insert': '列表项'},
+        <String, dynamic>{
+          'insert': '\n',
+          'attributes': <String, dynamic>{'list': 'bullet'},
+        },
+      ],
+    );
+    final output = await DiaryDocxWriter.write(
+      [entry],
+      options: DiaryExportOptions.defaults,
+      labels: testExportLabels,
+      media: DiaryExportMediaLibrary(),
+      documentTitle: 'Indent',
+      languageTag: 'zh-CN',
+      typography: typography,
+    );
+    return XmlDocument.parse(
+      utf8.decode(
+        output.files!.singleWhere((f) => f.path == 'word/document.xml').bytes!,
+      ),
+    );
+  }
+
+  /// 文字为 [text] 的段落的 `w:ind`；没有缩进时为 null。
+  XmlElement? indentOf(XmlDocument document, String text) => document
+      .findAllElements('w:p')
+      .singleWhere((p) => p.innerText.contains(text))
+      .getElement('w:pPr')
+      ?.getElement('w:ind');
 
   XmlElement style(XmlDocument document, String id) => document
       .findAllElements('w:style')
@@ -122,5 +167,25 @@ void main() {
     final run = normal.getElement('w:rPr')!;
     expect(run.getElement('w:sz')!.getAttribute('w:val'), '15');
     expect(run.getElement('w:spacing')!.getAttribute('w:val'), '-15');
+  });
+
+  test('body paragraphs indent their first line by whole characters; '
+      'centered lines and lists do not', () async {
+    final document = await body(
+      const DiaryTypography(fontSize: 18, letterSpacing: 2, firstLineIndent: 2),
+    );
+    // 两个字 = 2 × (18px + 2px) = 40px = 30pt = 600 twip。
+    final indent = indentOf(document, '第一段正文')!;
+    expect(indent.getAttribute('w:firstLine'), '600');
+    expect(indent.getAttribute('w:left'), isNull);
+    expect(indentOf(document, '居中的一行'), isNull);
+    final list = indentOf(document, '列表项')!;
+    expect(list.getAttribute('w:hanging'), '420');
+    expect(list.getAttribute('w:firstLine'), isNull);
+  });
+
+  test('without an indent body paragraphs carry no w:ind', () async {
+    final document = await body(const DiaryTypography());
+    expect(indentOf(document, '第一段正文'), isNull);
   });
 }

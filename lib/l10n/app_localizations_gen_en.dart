@@ -3210,6 +3210,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTypographyParagraphSpacing => 'Paragraph spacing';
 
   @override
+  String get diaryTypographyFirstLineIndent => 'First-line indent';
+
+  @override
+  String diaryTypographyFirstLineIndentValue(num count, String value) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$value characters',
+      one: '1 character',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryTypographyFirstLineIndentOff => 'None';
+
+  @override
   String diaryTypographyDecrease(String label) {
     return '$label: decrease';
   }
@@ -9210,6 +9227,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryListToText => 'Convert to text';
+
+  @override
+  String get diaryFastScrollPinned => 'Pinned';
+
+  @override
+  String get diaryFastScrollUntitled => 'Untitled';
 
   @override
   String get exploreModuleGreeting => 'Today';

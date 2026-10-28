@@ -2844,6 +2844,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTypographyParagraphSpacing => '段间距';
 
   @override
+  String get diaryTypographyFirstLineIndent => '首行缩进';
+
+  @override
+  String diaryTypographyFirstLineIndentValue(num count, String value) {
+    return '$value 字';
+  }
+
+  @override
+  String get diaryTypographyFirstLineIndentOff => '不缩进';
+
+  @override
   String diaryTypographyDecrease(String label) {
     return '减小$label';
   }
@@ -8252,6 +8263,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryListToText => '转为正文';
+
+  @override
+  String get diaryFastScrollPinned => '置顶';
+
+  @override
+  String get diaryFastScrollUntitled => '无标题';
 
   @override
   String get exploreModuleGreeting => '今日问候';

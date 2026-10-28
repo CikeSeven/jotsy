@@ -28,6 +28,7 @@ void main() {
     FocusNode? focusNode,
     Brightness brightness = Brightness.light,
     EdgeInsets padding = EdgeInsets.zero,
+    DiaryTextAppearance textAppearance = appearance,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -47,14 +48,14 @@ void main() {
                 ? SingleChildScrollView(
                     child: DiaryEditor(
                       controller: controller,
-                      appearance: appearance,
+                      appearance: textAppearance,
                       shrinkWrap: true,
                       focusNode: focusNode,
                     ),
                   )
                 : DiaryEditor(
                     controller: controller,
-                    appearance: appearance,
+                    appearance: textAppearance,
                     focusNode: focusNode,
                     padding: padding,
                   ),
@@ -129,6 +130,36 @@ void main() {
       controller.dispose();
     },
   );
+
+  testWidgets('typography changes re-lay out the blocks of an open editor', (
+    tester,
+  ) async {
+    final controller = DiaryEditorController.fromContent(
+      '第一段\n第二段',
+      readOnly: true,
+    );
+    double gap() {
+      final blocks = find.byType(af.ParagraphBlockComponentWidget);
+      return tester.getTopLeft(blocks.at(1)).dy -
+          tester.getTopLeft(blocks.at(0)).dy;
+    }
+
+    await pump(tester, controller);
+    final flush = gap();
+    // 段间距是块级排版：上游只在挂载时装入块组件，不换渲染器就不会变。
+    await pump(
+      tester,
+      controller,
+      textAppearance: const DiaryTextAppearance(
+        typography: DiaryTypography(paragraphSpacing: 30),
+      ),
+    );
+    expect(gap(), closeTo(flush + 30, 0.5));
+    await pump(tester, controller);
+    expect(gap(), closeTo(flush, 0.5));
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
 
   test('readonly sessions preserve initial noncollapsed selections', () {
     final range = af.Selection.single(path: [0], startOffset: 0, endOffset: 4);

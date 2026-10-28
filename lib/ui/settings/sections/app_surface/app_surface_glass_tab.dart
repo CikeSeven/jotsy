@@ -18,8 +18,10 @@ import '../home_bar_style/home_bar_style_labels.dart';
 import 'app_surface_glass_texture_group.dart';
 import 'app_surface_labels.dart';
 
-/// “玻璃”标签页：组件风格总开关、六类组件的分别设置（另带导航栏样式与
-/// 日记卡片样式两个入口），以及只在有组件实际是玻璃时出现的“玻璃质感”。
+/// “玻璃”标签页：自上而下为组件风格总开关、只在有组件实际是玻璃时出现的
+/// “玻璃质感”，最后是六类组件的分别设置（另带导航栏样式与日记卡片样式两个
+/// 入口）。玻璃质感紧跟总开关：切到玻璃后要调的通常是质感，分别设置是少数
+/// 人才用的细调，放在最下面。
 ///
 /// 导航栏与日记卡片有各自的样式页（各自的材质与外观设置），这里只放入口，
 /// 不重复它们的选项。
@@ -35,7 +37,7 @@ class AppSurfaceGlassTab extends StatelessWidget {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     // 不用 StyleEditorTabList：玻璃质感分组随条件展开收起，它与上方分组之间
     // 的间距要放进 Reveal 一起收拢（StyleEditorTabList 会在每项之间固定插
-    // 16，收起后底部多出一段空白）。
+    // 16，收起后多出一段空白）。
     return ListView(
       padding: EdgeInsets.fromLTRB(0, 16, 0, 24 + bottomInset),
       children: <Widget>[
@@ -60,6 +62,17 @@ class AppSurfaceGlassTab extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        SettingsReveal(
+          visible: glass.anyGlass,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const SizedBox(height: 16),
+              AppSurfaceGlassTextureGroup(controller: controller),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         SettingsCardGroup(
@@ -86,17 +99,6 @@ class AppSurfaceGlassTab extends StatelessWidget {
             _HomeBarStyleLink(settings: controller.settingsService),
             _DiaryCardStyleLink(settings: controller.settingsService),
           ],
-        ),
-        SettingsReveal(
-          visible: glass.anyGlass,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              const SizedBox(height: 16),
-              AppSurfaceGlassTextureGroup(controller: controller),
-            ],
-          ),
         ),
       ],
     );

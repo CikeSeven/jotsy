@@ -2173,6 +2173,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get journalImportDiaroHint => 'Backup file (.zip, unencrypted)';
 
   @override
+  String get journalImportDurianDiary => 'Durian Diary';
+
+  @override
+  String get journalImportDurianDiaryHint =>
+      'Archive exported from Import & Export (.lld), or a backup folder compressed to .zip';
+
+  @override
   String get journalImportEvernote => 'Evernote';
 
   @override

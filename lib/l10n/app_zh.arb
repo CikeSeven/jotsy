@@ -2827,6 +2827,14 @@
   "@journalImportDiaroHint": {
     "description": "可导入的 Diaro 文件类型。"
   },
+  "journalImportDurianDiary": "榴莲日记",
+  "@journalImportDurianDiary": {
+    "description": "榴莲日记应用名称。"
+  },
+  "journalImportDurianDiaryHint": "「导入导出」中导出的压缩包（.lld），或压缩成 .zip 的备份文件夹",
+  "@journalImportDurianDiaryHint": {
+    "description": "可导入的榴莲日记文件类型与导出位置。"
+  },
   "journalImportEvernote": "印象笔记 / Evernote",
   "@journalImportEvernote": {
     "description": "Evernote（国内版为印象笔记）的名称。"

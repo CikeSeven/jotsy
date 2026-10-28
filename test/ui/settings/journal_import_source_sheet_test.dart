@@ -59,6 +59,7 @@ void main() {
       'Daylio',
       'Apple 手记',
       'Diaro',
+      '榴莲日记',
       '印象笔记 / Evernote',
       'Google Keep',
       'Joplin',

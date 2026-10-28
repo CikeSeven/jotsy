@@ -23,6 +23,10 @@ enum JournalImportSource {
   /// Diaro：备份 ZIP（`DiaroBackup.xml` + `media/photo/`）；加密备份不支持。
   diaro,
 
+  /// 榴莲日记：本地备份 / 导出的 `.lld`（ZIP：`app_database.db` SQLite 数据库
+  /// + `image/` + `attachment/`），见 `journal_import_durian.dart`。
+  durianDiary,
+
   /// Evernote / 印象笔记：每个笔记本一个 `.enex`（可多个打包成 ZIP）。
   evernote,
 

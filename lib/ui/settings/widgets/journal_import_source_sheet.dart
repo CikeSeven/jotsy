@@ -20,6 +20,7 @@ const List<JournalImportSource> _journalApps = [
   JournalImportSource.daylio,
   JournalImportSource.appleJournal,
   JournalImportSource.diaro,
+  JournalImportSource.durianDiary,
 ];
 
 const List<JournalImportSource> _noteApps = [

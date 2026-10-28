@@ -15,6 +15,7 @@ import 'journal_import_day_one.dart';
 import 'journal_import_daylio.dart';
 import 'journal_import_diaro.dart';
 import 'journal_import_diarium.dart';
+import 'journal_import_durian.dart';
 import 'journal_import_evernote.dart';
 import 'journal_import_google_keep.dart';
 import 'journal_import_joplin.dart';
@@ -337,6 +338,7 @@ JournalImportParseResult parseJournalExport(
     JournalImportSource.daylio => parseDaylioExport(input, media),
     JournalImportSource.appleJournal => parseAppleJournalExport(input, media),
     JournalImportSource.diaro => parseDiaroExport(input, media),
+    JournalImportSource.durianDiary => parseDurianDiaryExport(input, media),
     JournalImportSource.evernote => parseEvernoteExport(input, media),
     JournalImportSource.googleKeep => parseGoogleKeepExport(input, media),
     JournalImportSource.joplin => parseJoplinExport(input, media),

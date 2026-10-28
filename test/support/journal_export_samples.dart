@@ -6,6 +6,7 @@ import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
 
+import 'durian_backup_fixture.dart';
 import 'journal_import_fixture.dart';
 
 /// 各文件来源的最小有效导出：含中文、表情、已知日期和一份字节可比对的
@@ -106,6 +107,22 @@ Future<File> writeJournalExportSample(
           '<data><table name="diaro_entries"><r><uid>one</uid><date>$millis</date><text>$body</text></r></table>'
           '<table name="diaro_attachments"><r><entry_uid>one</entry_uid><filename>photo.jpg</filename><type>photo</type></r></table></data>';
       photo('media/photo/photo.jpg');
+    case JournalImportSource.durianDiary:
+      final fixture =
+          DurianBackupFixture(
+            Directory(p.join(directory.path, 'durian'))..createSync(),
+          )..diary(
+            'one',
+            content: body,
+            imagesGrid: 'img:photo.jpg',
+            createTime: millis,
+          );
+      fixture.database.close();
+      files['app_database.db'] = File(
+        p.join(fixture.directory.path, 'app_database.db'),
+      ).readAsBytesSync();
+      photo('image/photo.jpg');
+      extension = 'lld';
     case JournalImportSource.evernote:
       extension = 'enex';
       raw = utf8.encode(

@@ -3758,6 +3758,18 @@ abstract class AppLocalizations {
   /// **'Backup file (.zip, unencrypted)'**
   String get journalImportDiaroHint;
 
+  /// Display name of Durian Diary (榴莲日记).
+  ///
+  /// In en, this message translates to:
+  /// **'Durian Diary'**
+  String get journalImportDurianDiary;
+
+  /// The Durian Diary file type that can be imported and where to export it.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive exported from Import & Export (.lld), or a backup folder compressed to .zip'**
+  String get journalImportDurianDiaryHint;
+
   /// Display name of Evernote.
   ///
   /// In en, this message translates to:

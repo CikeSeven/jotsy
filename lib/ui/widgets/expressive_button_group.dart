@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/expressive_motion.dart';
+import '../app_surface/widgets/app_glass_field.dart';
 
 /// 单选连接按钮组：输入选项/当前值，输出用户选择，不保存业务状态。
 /// 利用原生按钮保留键盘、焦点与 disabled 行为；窄屏和大字体时改为纵向连接，
 /// 避免 SegmentedButton 固定横排挤掉标签。方向圆角同时适配 RTL。
+///
+/// 材质：未选中的段落按 [AppGlassField] 取色——“控件”为玻璃时为玻璃底色 +
+/// 玻璃描边，经典控件画在玻璃表面上时为半透明凹槽色；选中段始终是主色。
+/// 与输入框一样不模糊：按钮组多在面板、卡片或另一块玻璃上，直接放在页面
+/// 上的（如探索页统计范围条）也只透出半透明底色，不另加一层模糊。经典且
+/// 不在玻璃上时与原来逐像素一致。
 class ExpressiveButtonGroup<T> extends StatelessWidget {
   const ExpressiveButtonGroup({
     super.key,
@@ -33,6 +40,8 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final glassField = AppGlassField.of(context);
+    final unselectedSide = glassField?.border;
     return LayoutBuilder(
       builder: (context, constraints) {
         final stacked =
@@ -71,12 +80,17 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
                   if (states.contains(WidgetState.disabled)) return null;
                   return isSelected
                       ? colors.primary
-                      : colors.surfaceContainerHighest;
+                      : glassField?.fill ?? colors.surfaceContainerHighest;
                 }),
                 foregroundColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.disabled)) return null;
                   return isSelected ? colors.onPrimary : colors.onSurface;
                 }),
+                side: unselectedSide == null
+                    ? null
+                    : WidgetStatePropertyAll(
+                        isSelected ? BorderSide.none : unselectedSide,
+                      ),
                 shape: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.pressed) || isSelected) {
                     return RoundedRectangleBorder(

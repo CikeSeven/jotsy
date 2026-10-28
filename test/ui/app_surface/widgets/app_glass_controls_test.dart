@@ -27,6 +27,7 @@ import 'package:node_diary/ui/home/models/home_bar_style/home_bar_presets.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
+import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 import 'package:node_diary/ui/widgets/glass/glass_reveal.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -561,6 +562,75 @@ void main() {
       await tester.tapAt(rect.topLeft - const Offset(2, 2));
       await tester.pumpAndSettle();
       expect(controller.offset, 0);
+    });
+  });
+
+  group('ExpressiveButtonGroup', () {
+    Widget buttonGroup() => ExpressiveButtonGroup<int>(
+      selected: const <int>{0},
+      onSelectionChanged: (_) {},
+      segments: const <ButtonSegment<int>>[
+        ButtonSegment<int>(value: 0, label: Text('Week')),
+        ButtonSegment<int>(value: 1, label: Text('Month')),
+      ],
+    );
+
+    Material segment(WidgetTester tester, String label) =>
+        tester.widget<Material>(
+          find
+              .descendant(
+                of: find.ancestor(
+                  of: find.text(label),
+                  matching: find.byType(FilledButton),
+                ),
+                matching: find.byType(Material),
+              )
+              .first,
+        );
+
+    BorderSide sideOf(Material material) =>
+        (material.shape! as OutlinedBorder).side;
+
+    testWidgets('classic keeps the opaque tonal segments', (tester) async {
+      await tester.pumpWidget(_host(child: buttonGroup()));
+      final scheme = _scheme(tester, find.byType(Scaffold));
+      expect(segment(tester, 'Week').color, scheme.primary);
+      expect(segment(tester, 'Month').color, scheme.surfaceContainerHighest);
+      expect(sideOf(segment(tester, 'Month')), BorderSide.none);
+    });
+
+    for (final brightness in Brightness.values) {
+      testWidgets('glass controls: glass fill and border, no blur '
+          '($brightness)', (tester) async {
+        await tester.pumpWidget(
+          _host(style: _glass, brightness: brightness, child: buttonGroup()),
+        );
+        final scheme = _scheme(tester, find.byType(Scaffold));
+        final glass = AppGlass.of(tester.element(find.text('Month')));
+        final month = segment(tester, 'Month');
+        expect(_translucent(month.color!), isTrue);
+        expect(month.color, glass.fill);
+        expect(sideOf(month), glass.border);
+        // 选中段仍是主色、不加描边。
+        final week = segment(tester, 'Week');
+        expect(week.color, scheme.primary);
+        expect(sideOf(week), BorderSide.none);
+        // 与输入框一样不模糊，即使直接放在页面上。
+        expect(find.byType(BackdropFilter), findsNothing);
+      });
+    }
+
+    testWidgets('classic controls on a glass panel use the well color', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(style: _toolbarOnly, child: _onToolbarGlass(buttonGroup())),
+      );
+      final scheme = _scheme(tester, find.byType(Scaffold));
+      final month = segment(tester, 'Month');
+      expect(month.color, OnGlass.wellColor(scheme));
+      expect(sideOf(month), BorderSide.none);
+      expect(segment(tester, 'Week').color, scheme.primary);
     });
   });
 }

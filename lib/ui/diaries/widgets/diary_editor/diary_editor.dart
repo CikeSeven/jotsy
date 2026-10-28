@@ -250,6 +250,14 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       foldLongImages: widget.foldLongImages,
       overrides: widget.blockComponentOverrides,
     );
+    // 上游只在编辑器首次挂载时装入块组件，之后传入新的 builders 不生效：
+    // 排版（段间距、首行缩进、标题字号）与代码块样式这类块级输入变化时，
+    // 打开着的编辑页、预览与设置预览仍按旧块组件渲染。这里换上新的渲染器，
+    // 上游随后重建页面即按新块组件排版（同类型的块就地更新，换了类型的块
+    // 重新创建）。
+    controller.state.renderer = af.BlockComponentRenderer(
+      builders: {...builders},
+    );
     final editor = af.AppFlowyEditor(
       key: ValueKey(controller.state),
       editorState: controller.state,

@@ -2827,6 +2827,14 @@
   "@journalImportDiaroHint": {
     "description": "Which Diaro files can be imported."
   },
+  "journalImportDurianDiary": "Durian Diary",
+  "@journalImportDurianDiary": {
+    "description": "Display name of Durian Diary (榴莲日记)."
+  },
+  "journalImportDurianDiaryHint": "Archive exported from Import & Export (.lld), or a backup folder compressed to .zip",
+  "@journalImportDurianDiaryHint": {
+    "description": "The Durian Diary file type that can be imported and where to export it."
+  },
   "journalImportEvernote": "Evernote",
   "@journalImportEvernote": {
     "description": "Display name of Evernote."
@@ -2882,6 +2890,10 @@
   "journalImportWpsNotes": "WPS Notes",
   "@journalImportWpsNotes": {
     "description": "Display name of WPS Notes."
+  },
+  "journalImportSmartisanNotes": "Smartisan Notes",
+  "@journalImportSmartisanNotes": {
+    "description": "Display name of Smartisan Notes (Smartisan cloud)."
   },
   "journalImportEncrypted": "Encrypted {app} backups can't be imported. Create an unencrypted backup in {app}",
   "@journalImportEncrypted": {

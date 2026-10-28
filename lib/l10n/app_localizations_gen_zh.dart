@@ -2022,6 +2022,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get journalImportDiaroHint => '备份文件（.zip，不能加密）';
 
   @override
+  String get journalImportDurianDiary => '榴莲日记';
+
+  @override
+  String get journalImportDurianDiaryHint =>
+      '「导入导出」中导出的压缩包（.lld），或压缩成 .zip 的备份文件夹';
+
+  @override
   String get journalImportEvernote => '印象笔记 / Evernote';
 
   @override
@@ -2063,6 +2070,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get journalImportWpsNotes => 'WPS 便签';
+
+  @override
+  String get journalImportSmartisanNotes => '锤子便签';
 
   @override
   String journalImportEncrypted(String app) {

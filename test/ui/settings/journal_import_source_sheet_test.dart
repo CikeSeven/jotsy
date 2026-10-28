@@ -59,6 +59,7 @@ void main() {
       'Daylio',
       'Apple 手记',
       'Diaro',
+      '榴莲日记',
       '印象笔记 / Evernote',
       'Google Keep',
       'Joplin',
@@ -71,6 +72,7 @@ void main() {
       '荣耀笔记',
       '魅族笔记',
       'WPS 便签',
+      '锤子便签',
     ]) {
       expect(find.text(name), findsOneWidget, reason: name);
     }
@@ -145,7 +147,7 @@ void main() {
       await _open(tester, brightness: brightness, size: const Size(320, 640));
       expect(tester.takeException(), isNull);
       expect(find.text('Daylio'), findsOneWidget);
-      await tester.ensureVisible(find.text('WPS 便签'));
+      await tester.ensureVisible(find.text('锤子便签'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });

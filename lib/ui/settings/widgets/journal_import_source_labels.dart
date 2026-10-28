@@ -3,8 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// 来源应用的展示名称：外文应用名是专有名词不翻译；Apple 手记、印象笔记与
-/// 国内手机厂商的笔记按系统里的中文名。
+/// 来源应用的展示名称：外文应用名是专有名词不翻译；Apple 手记、印象笔记、
+/// 榴莲日记与国内手机厂商的笔记按各自的中文名（英文界面用官方英文名）。
 String journalImportSourceName(
   AppLocalizations l10n,
   JournalImportSource source,
@@ -16,6 +16,7 @@ String journalImportSourceName(
     JournalImportSource.daylio => 'Daylio',
     JournalImportSource.appleJournal => l10n.journalImportAppleJournal,
     JournalImportSource.diaro => 'Diaro',
+    JournalImportSource.durianDiary => l10n.journalImportDurianDiary,
     JournalImportSource.evernote => l10n.journalImportEvernote,
     JournalImportSource.googleKeep => 'Google Keep',
     JournalImportSource.joplin => 'Joplin',
@@ -28,6 +29,7 @@ String journalImportSourceName(
     JournalImportSource.honorNotes => l10n.journalImportHonorNotes,
     JournalImportSource.meizuNotes => l10n.journalImportMeizuNotes,
     JournalImportSource.wpsNotes => l10n.journalImportWpsNotes,
+    JournalImportSource.smartisanNotes => l10n.journalImportSmartisanNotes,
   };
 }
 
@@ -43,6 +45,7 @@ String? journalImportSourceHint(
     JournalImportSource.daylio => l10n.journalImportDaylioHint,
     JournalImportSource.appleJournal => l10n.journalImportAppleJournalHint,
     JournalImportSource.diaro => l10n.journalImportDiaroHint,
+    JournalImportSource.durianDiary => l10n.journalImportDurianDiaryHint,
     JournalImportSource.evernote => l10n.journalImportEvernoteHint,
     JournalImportSource.googleKeep => l10n.journalImportGoogleKeepHint,
     JournalImportSource.joplin => l10n.journalImportJoplinHint,
@@ -60,6 +63,7 @@ FaIconData journalImportSourceIcon(JournalImportSource source) {
     JournalImportSource.daylio => FontAwesomeIcons.faceSmile,
     JournalImportSource.appleJournal => FontAwesomeIcons.apple,
     JournalImportSource.diaro => FontAwesomeIcons.penNib,
+    JournalImportSource.durianDiary => FontAwesomeIcons.bookBookmark,
     JournalImportSource.evernote => FontAwesomeIcons.evernote,
     JournalImportSource.googleKeep => FontAwesomeIcons.lightbulb,
     JournalImportSource.joplin => FontAwesomeIcons.fileLines,

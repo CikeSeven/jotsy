@@ -114,9 +114,9 @@ Export your data from the old app first, then open **Settings › Data & Privacy
 
 | Type | Supported apps |
 | :-- | :-- |
-| Journaling apps | Day One · Journey · Diarium · Daylio · Apple Journal · Diaro |
+| Journaling apps | Day One · Journey · Diarium · Daylio · Apple Journal · Diaro · Durian Diary |
 | Note apps | Evernote · Google Keep · Joplin · Memos · Markdown / plain text (Obsidian, Bear, Notion exports and more) |
-| Cloud notes | Xiaomi Notes · Huawei Notepad · OPPO Notes · vivo Notes · HONOR Notes · Meizu Notes · WPS Notes |
+| Cloud notes | Xiaomi Notes · Huawei Notepad · OPPO Notes · vivo Notes · HONOR Notes · Meizu Notes · WPS Notes · Smartisan Notes |
 
 > For cloud notes, you sign in on the vendor's official website inside the app, and Jotsy only reads your notes. The login cookies exist only in memory for that import and are cleared when it ends. They are never written to storage or used for anything else.
 

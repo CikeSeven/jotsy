@@ -2827,6 +2827,14 @@
   "@journalImportDiaroHint": {
     "description": "可导入的 Diaro 文件类型。"
   },
+  "journalImportDurianDiary": "榴莲日记",
+  "@journalImportDurianDiary": {
+    "description": "榴莲日记应用名称。"
+  },
+  "journalImportDurianDiaryHint": "「导入导出」中导出的压缩包（.lld），或压缩成 .zip 的备份文件夹",
+  "@journalImportDurianDiaryHint": {
+    "description": "可导入的榴莲日记文件类型与导出位置。"
+  },
   "journalImportEvernote": "印象笔记 / Evernote",
   "@journalImportEvernote": {
     "description": "Evernote（国内版为印象笔记）的名称。"
@@ -2882,6 +2890,10 @@
   "journalImportWpsNotes": "WPS 便签",
   "@journalImportWpsNotes": {
     "description": "WPS 便签应用名称。"
+  },
+  "journalImportSmartisanNotes": "锤子便签",
+  "@journalImportSmartisanNotes": {
+    "description": "锤子便签（锤子科技 / 欢喜云）应用名称。"
   },
   "journalImportEncrypted": "{app} 的加密备份无法导入，请在原应用中创建未加密的备份",
   "@journalImportEncrypted": {

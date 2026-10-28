@@ -23,6 +23,10 @@ enum JournalImportSource {
   /// Diaro：备份 ZIP（`DiaroBackup.xml` + `media/photo/`）；加密备份不支持。
   diaro,
 
+  /// 榴莲日记：本地备份 / 导出的 `.lld`（ZIP：`app_database.db` SQLite 数据库
+  /// + `image/` + `attachment/`），见 `journal_import_durian.dart`。
+  durianDiary,
+
   /// Evernote / 印象笔记：每个笔记本一个 `.enex`（可多个打包成 ZIP）。
   evernote,
 
@@ -40,7 +44,7 @@ enum JournalImportSource {
   /// 等导出的 ZIP，每个文件一篇。
   markdown,
 
-  // 以下七个是手机厂商与 WPS 的云端笔记：没有自带的导出，在应用内登录官方
+  // 以下八个是手机厂商、WPS 与锤子的云端笔记：没有自带的导出，在应用内登录官方
   // 云服务后直接读取（`journal_import_cloud_<平台>.dart`，协议依据开源项目
   // 「笔记互迁」note-bridge-desktop），不经过文件解析。
 
@@ -64,6 +68,10 @@ enum JournalImportSource {
 
   /// WPS 便签。
   wpsNotes,
+
+  /// 锤子便签（欢喜云）：官方没有导出功能，协议依据网页版与开源导出脚本，
+  /// 见 `journal_import_cloud_smartisan.dart`。
+  smartisanNotes,
 }
 
 /// 在应用内登录后从云端读取的来源。
@@ -75,6 +83,7 @@ const Set<JournalImportSource> cloudJournalSources = {
   JournalImportSource.honorNotes,
   JournalImportSource.meizuNotes,
   JournalImportSource.wpsNotes,
+  JournalImportSource.smartisanNotes,
 };
 
 /// 第三方导出中识别出的一篇日记，正文已转换为本应用的 Delta JSON。

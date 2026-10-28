@@ -322,18 +322,27 @@ void main() {
     expect(h.stored.glass.mode, AppGlassMode.glass);
     // 顶栏、两张卡片、工具栏与新建按钮都换成玻璃。
     expect(_previewGlass, findsNWidgets(5));
-    // 各组件都跟随整体：副标题写实际效果（列表懒构建，只看已建出的行）。
-    expect(
-      _inOptions(
-        l10n.appSurfaceOverrideFollowResult(l10n.appSurfaceGlassGlass),
-      ),
-      findsWidgets,
-    );
+    // 玻璃质感紧跟在组件风格下面出现。
     await scrollToHomeBarOption(
       tester,
       _inOptions(l10n.appSurfaceGlassTexture),
     );
     expect(_inOptions(l10n.appSurfaceGlassTexture), findsOneWidget);
+    // 分别设置在最下面；各组件都跟随整体，副标题写实际效果（列表懒构建，
+    // 只看已建出的行）。
+    final followGlass = _inOptions(
+      l10n.appSurfaceOverrideFollowResult(l10n.appSurfaceGlassGlass),
+    );
+    await scrollToHomeBarOption(tester, followGlass.first);
+    expect(followGlass, findsWidgets);
+    // 滚回组件风格：下面要看的玻璃质感在分别设置上方。
+    await tester.scrollUntilVisible(
+      _inOptions(l10n.appSurfaceGlassStyle),
+      -120,
+      scrollable: find
+          .ancestor(of: followGlass.first, matching: find.byType(Scrollable))
+          .first,
+    );
 
     // 整体改回经典、只让卡片固定为玻璃：分组仍在，预览只有两张卡片是玻璃。
     // （外部改动经 raw notifier 同步进来，与备份恢复同一路径。）

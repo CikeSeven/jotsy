@@ -8,6 +8,7 @@ import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../core/services/settings_service.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/providers/diary_draft_providers.dart';
 import '../../../explore/controllers/explore_module_actions.dart';
@@ -194,7 +195,9 @@ class ExploreLayoutPreviewToolbar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+          // 与左边的按钮组一样跟随“控件”材质。
           IconButton.filledTonal(
+            style: AppGlassField.tonalButtonStyle(context),
             tooltip: isLight
                 ? l10n.styleEditorPreviewDark
                 : l10n.styleEditorPreviewLight,

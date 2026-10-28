@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../viewmodels/anniversary_rule.dart';
 
 /// 编辑页的日期选择行：点按打开系统日期选择器。
@@ -49,13 +50,19 @@ class AnniversaryDateField extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    // 底色取主题的输入框填充：“控件”为玻璃时主题已换成玻璃底色
+    // （AppGlassControlsTheme）；描边同理补上玻璃描边，与旁边的输入框一致。
     final fill =
         theme.inputDecorationTheme.fillColor ??
         colorScheme.surfaceContainerHighest;
+    final glassBorder = AppGlassField.of(context)?.border;
     final lunar = LunarYmd.of(date);
     return Material(
       color: fill,
-      borderRadius: BorderRadius.circular(AppRadii.input),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.input),
+        side: glassBorder ?? BorderSide.none,
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _pick(context),

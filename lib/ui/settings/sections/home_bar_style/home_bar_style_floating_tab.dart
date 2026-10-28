@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../home/models/home_bar_style/home_bar_style.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../controllers/home_bar_style_editor_controller.dart';
@@ -64,13 +65,18 @@ class _SolidHint extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              FilledButton.tonal(
-                // 与材质页的选择器同一条换材质路径（withMaterial），两处
-                // 切到玻璃得到的间距一致，预设标记也才对得上。
-                onPressed: () => controller.commitWith(
-                  (s) => s.withMaterial(HomeBarMaterial.glass),
+              // Builder 取卡片之内的 context：分组卡片为玻璃时按钮才读得到
+              // OnGlass。
+              Builder(
+                builder: (BuildContext cardContext) => FilledButton.tonal(
+                  // 与材质页的选择器同一条换材质路径（withMaterial），两处
+                  // 切到玻璃得到的间距一致，预设标记也才对得上。
+                  onPressed: () => controller.commitWith(
+                    (s) => s.withMaterial(HomeBarMaterial.glass),
+                  ),
+                  style: AppGlassField.tonalButtonStyle(cardContext),
+                  child: Text(l10n.homeBarStyleSwitchToGlass),
                 ),
-                child: Text(l10n.homeBarStyleSwitchToGlass),
               ),
             ],
           ),

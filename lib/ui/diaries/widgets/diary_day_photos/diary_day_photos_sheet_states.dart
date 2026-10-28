@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../../app/theme/app_spacing.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../controllers/diary_day_photos_controller.dart';
 import 'diary_day_photos_limited_hint.dart';
 
@@ -78,6 +79,7 @@ class DiaryDayPhotosSheetAccess extends StatelessWidget {
           : l10n.diaryDayPhotosAccessBody,
       action: FilledButton.tonal(
         onPressed: controller.requestAccess,
+        style: AppGlassField.tonalButtonStyle(context),
         child: Text(
           openSettings
               ? l10n.diaryDayPhotosOpenSettings

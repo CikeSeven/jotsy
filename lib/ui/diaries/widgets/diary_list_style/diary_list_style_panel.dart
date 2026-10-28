@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_list_style.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
     as editor;
 import 'package:node_diary/ui/diaries/controllers/diary_list_style_editing.dart';
@@ -207,6 +208,7 @@ class DiaryListStylePanel extends StatelessWidget {
       child: Row(
         children: <Widget>[
           _action(
+            context,
             icon: _numbered ? FontAwesomeIcons.listUl : FontAwesomeIcons.listOl,
             label: _numbered
                 ? l10n.diaryListToBulleted
@@ -217,6 +219,7 @@ class DiaryListStylePanel extends StatelessWidget {
           ),
           const SizedBox(width: _kTileGap),
           _action(
+            context,
             icon: FontAwesomeIcons.paragraph,
             label: l10n.diaryListToText,
             onPressed: () {
@@ -230,19 +233,22 @@ class DiaryListStylePanel extends StatelessWidget {
   }
 
   /// 两个等宽的 tonal 按钮；放不下时图标与文字一起缩小（同代码块面板）。
-  Widget _action({
+  Widget _action(
+    BuildContext context, {
     required FaIconData icon,
     required String label,
     required VoidCallback onPressed,
   }) {
+    final base = FilledButton.styleFrom(
+      minimumSize: const Size(0, _kActionsHeight),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
     return Expanded(
       child: FilledButton.tonal(
         onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          minimumSize: const Size(0, _kActionsHeight),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+        // 面板在玻璃工具栏里时叠上玻璃底色与描边，经典时原样。
+        style: AppGlassField.tonalButtonStyle(context)?.merge(base) ?? base,
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Row(

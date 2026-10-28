@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../../core/database/app_database.dart';
 import '../../anniversaries/providers/anniversary_providers.dart';
 import '../../anniversaries/viewmodels/anniversary_countdown.dart';
@@ -407,6 +408,7 @@ class ExploreDraftsCard extends ConsumerWidget {
             runSpacing: 8,
             children: <Widget>[
               FilledButton.tonalIcon(
+                style: AppGlassField.tonalButtonStyle(context),
                 onPressed: actions.createDiary,
                 icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 14),
                 label: Text(l10n.exploreDraftsContinue),

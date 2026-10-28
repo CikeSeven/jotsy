@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_backdrop.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 
@@ -160,6 +161,7 @@ class CalendarHeader extends StatelessWidget {
                     const SizedBox(width: 4),
                   ],
                   IconButton.filledTonal(
+                    style: AppGlassField.tonalButtonStyle(context),
                     tooltip: l10n.autoT0180,
                     onPressed: onJumpToToday,
                     icon: const FaIcon(FontAwesomeIcons.calendarDay, size: 18),

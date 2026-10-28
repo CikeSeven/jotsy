@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../settings/widgets/settings_option_tiles.dart';
 import '../../widgets/expressive_button_group.dart';
@@ -80,66 +81,81 @@ class NotebookEditorGoalSection extends StatelessWidget {
                                 controller.goalPeriod = value.single,
                           ),
                           const SizedBox(height: AppSpacing.m),
-                          Row(
-                            children: <Widget>[
-                              IconButton.filledTonal(
-                                key: const ValueKey<String>(
-                                  'notebook_goal_minus',
-                                ),
-                                tooltip: l10n.notebookGoalDecrease,
-                                onPressed: target > NotebookGoal.minTarget
-                                    ? () => controller.goalTarget = target - 1
-                                    : null,
-                                icon: const FaIcon(
-                                  FontAwesomeIcons.minus,
-                                  size: 14,
-                                ),
-                              ),
-                              SizedBox(
-                                width: 48,
-                                child: Text(
-                                  '$target',
-                                  key: const ValueKey<String>(
-                                    'notebook_goal_target',
+                          // 取卡片之内的 context：分组卡片为玻璃时加减按钮才
+                          // 读得到 OnGlass。
+                          Builder(
+                            builder: (BuildContext cardContext) {
+                              final tonal = AppGlassField.tonalButtonStyle(
+                                cardContext,
+                              );
+                              return Row(
+                                children: <Widget>[
+                                  IconButton.filledTonal(
+                                    key: const ValueKey<String>(
+                                      'notebook_goal_minus',
+                                    ),
+                                    tooltip: l10n.notebookGoalDecrease,
+                                    style: tonal,
+                                    onPressed: target > NotebookGoal.minTarget
+                                        ? () =>
+                                              controller.goalTarget = target - 1
+                                        : null,
+                                    icon: const FaIcon(
+                                      FontAwesomeIcons.minus,
+                                      size: 14,
+                                    ),
                                   ),
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    fontFeatures: const <FontFeature>[
-                                      FontFeature.tabularFigures(),
-                                    ],
+                                  SizedBox(
+                                    width: 48,
+                                    child: Text(
+                                      '$target',
+                                      key: const ValueKey<String>(
+                                        'notebook_goal_target',
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            fontFeatures: const <FontFeature>[
+                                              FontFeature.tabularFigures(),
+                                            ],
+                                          ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              IconButton.filledTonal(
-                                key: const ValueKey<String>(
-                                  'notebook_goal_plus',
-                                ),
-                                tooltip: l10n.notebookGoalIncrease,
-                                onPressed: target < NotebookGoal.maxTarget
-                                    ? () => controller.goalTarget = target + 1
-                                    : null,
-                                icon: const FaIcon(
-                                  FontAwesomeIcons.plus,
-                                  size: 14,
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.m),
-                              Expanded(
-                                child: Text(
-                                  notebookGoalSummary(
-                                    l10n,
-                                    controller.goalPeriod,
-                                    target,
+                                  IconButton.filledTonal(
+                                    key: const ValueKey<String>(
+                                      'notebook_goal_plus',
+                                    ),
+                                    tooltip: l10n.notebookGoalIncrease,
+                                    style: tonal,
+                                    onPressed: target < NotebookGoal.maxTarget
+                                        ? () =>
+                                              controller.goalTarget = target + 1
+                                        : null,
+                                    icon: const FaIcon(
+                                      FontAwesomeIcons.plus,
+                                      size: 14,
+                                    ),
                                   ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: scheme.onSurfaceVariant,
+                                  const SizedBox(width: AppSpacing.m),
+                                  Expanded(
+                                    child: Text(
+                                      notebookGoalSummary(
+                                        l10n,
+                                        controller.goalPeriod,
+                                        target,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),

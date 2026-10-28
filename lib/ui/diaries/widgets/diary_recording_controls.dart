@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
 import 'package:node_diary/ui/widgets/expressive_entrance.dart';
@@ -189,20 +190,22 @@ class _SecondaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = context.l10n;
+    final style = ButtonStyle(
+      shape: ExpressiveControls.shape,
+      animationDuration: ExpressiveMotion.duration(
+        context,
+        ExpressiveMotion.fast,
+      ),
+      fixedSize: const WidgetStatePropertyAll(
+        Size.square(DiaryRecordingControls.secondarySize),
+      ),
+      backgroundColor: WidgetStatePropertyAll(colors.secondaryContainer),
+      foregroundColor: WidgetStatePropertyAll(colors.onSecondaryContainer),
+    );
     return IconButton.filledTonal(
       tooltip: paused ? l10n.recordingResume : l10n.recordingPause,
-      style: ButtonStyle(
-        shape: ExpressiveControls.shape,
-        animationDuration: ExpressiveMotion.duration(
-          context,
-          ExpressiveMotion.fast,
-        ),
-        fixedSize: const WidgetStatePropertyAll(
-          Size.square(DiaryRecordingControls.secondarySize),
-        ),
-        backgroundColor: WidgetStatePropertyAll(colors.secondaryContainer),
-        foregroundColor: WidgetStatePropertyAll(colors.onSecondaryContainer),
-      ),
+      // 面板为玻璃时换成玻璃底色与描边（主录音键是强调色，不跟随）。
+      style: AppGlassField.tonalButtonStyle(context)?.merge(style) ?? style,
       onPressed: enabled ? (paused ? onResume : onPause) : null,
       icon: ExpressiveIconSwap(
         switchKey: paused ? 'play' : 'pause',

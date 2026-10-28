@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/services/image_dimensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/models/app_surface_settings.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../widgets/expressive_image_frame.dart';
 import '../../../widgets/expressive_loading_indicator.dart';
 import '../../../widgets/long_image/long_image_policy.dart';
@@ -262,6 +263,7 @@ class _ImageRow extends StatelessWidget {
           ],
           FilledButton.tonal(
             onPressed: picking ? null : onPick,
+            style: AppGlassField.tonalButtonStyle(context),
             child: picking
                 ? const ExpressiveLoadingIndicator(size: 20)
                 : Text(pickLabel),

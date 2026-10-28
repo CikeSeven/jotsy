@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_language.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 import '../../../widgets/desktop_horizontal_scroll.dart';
@@ -169,6 +170,10 @@ class _DiaryCodeLanguageChip extends StatelessWidget {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16),
     );
+    // 在玻璃工具栏里未选中的底色换成半透明填充（“控件”为玻璃时再加玻璃
+    // 描边）；选中色不变，描边随选中淡出。经典时两者都是原值。
+    final glassField = AppGlassField.of(context);
+    final restingSide = glassField?.border ?? BorderSide.none;
     return Semantics(
       button: true,
       selected: selected,
@@ -182,11 +187,13 @@ class _DiaryCodeLanguageChip extends StatelessWidget {
           )!;
           return Material(
             color: Color.lerp(
-              colors.surfaceContainerHigh,
+              glassField?.fill ?? colors.surfaceContainerHigh,
               colors.primaryContainer,
               t,
             ),
-            shape: shape,
+            shape: shape.copyWith(
+              side: BorderSide.lerp(restingSide, BorderSide.none, t),
+            ),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onTap,

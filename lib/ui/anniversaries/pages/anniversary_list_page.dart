@@ -21,6 +21,7 @@ import '../viewmodels/anniversary_rule.dart';
 import '../widgets/anniversary_list_card.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 全部纪念日：置顶在前，其余按下一次由近到远，已过去的倒数日排最后。
@@ -186,6 +187,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: AppSpacing.l),
             FilledButton.tonal(
               onPressed: onCreate,
+              style: AppGlassField.tonalButtonStyle(context),
               child: Text(l10n.calendarDayActionAnniversary),
             ),
           ],

@@ -5,6 +5,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
+import '../../app_surface/widgets/on_glass.dart';
 import '../../widgets/long_image/long_image_cover_alignment.dart';
 import '../../widgets/long_image/long_image_policy.dart';
 import '../../widgets/expressive_state_blend.dart';
@@ -15,7 +17,8 @@ import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 分享文字预览：展示即将发出的纯文本，最多 8 行。
 ///
-/// 底色沿用输入框填充色，与面板表面拉开层次；文字为空时显示说明而不是
+/// 底色沿用输入框填充色，与面板表面拉开层次（面板为玻璃时换成半透明的
+/// [OnGlass.wellColor]，免得成为一块实色补丁）；文字为空时显示说明而不是
 /// 空白框，告诉用户这次只会发图片。
 class DiaryShareTextPreview extends StatelessWidget {
   const DiaryShareTextPreview({super.key, required this.text});
@@ -32,7 +35,9 @@ class DiaryShareTextPreview extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.m),
       decoration: BoxDecoration(
-        color: isLight
+        color: OnGlass.of(context)
+            ? OnGlass.wellColor(colorScheme)
+            : isLight
             ? colorScheme.surfaceContainerLow.withValues(alpha: 0.6)
             : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppRadii.input),
@@ -270,6 +275,9 @@ class DiaryShareTargetButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final enabled = onTap != null;
     final foreground = colorScheme.onSecondaryContainer;
+    // 圆形底色与描边跟随“控件”材质（经典时为 null，照旧 secondaryContainer）。
+    final glassField = AppGlassField.of(context);
+    final side = glassField?.border;
     // 读屏的点按动作直接挂在这一层：子树（含 InkWell）的语义都被排除了。
     return Semantics(
       button: true,
@@ -292,8 +300,10 @@ class DiaryShareTargetButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Material(
-                  color: colorScheme.secondaryContainer,
-                  shape: const CircleBorder(),
+                  color: glassField?.fill ?? colorScheme.secondaryContainer,
+                  shape: side == null
+                      ? const CircleBorder()
+                      : CircleBorder(side: side),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: onTap,

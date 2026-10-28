@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_book_layout.dart';
@@ -109,6 +110,10 @@ class _ChapterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    // 未选中的章节胶囊随“控件”材质换成玻璃底色 + 描边；选中仍为强调色。
+    final glassField = AppGlassField.of(context);
+    final resting = glassField?.fill ?? scheme.surfaceContainerHigh;
+    final restingSide = glassField?.border;
     return Padding(
       padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
       child: Semantics(
@@ -118,7 +123,7 @@ class _ChapterChip extends StatelessWidget {
           active: selected,
           builder: (BuildContext context, double t, Widget? _) {
             final background = Color.lerp(
-              scheme.surfaceContainerHigh,
+              resting,
               scheme.secondaryContainer,
               t,
             )!;
@@ -129,7 +134,15 @@ class _ChapterChip extends StatelessWidget {
             )!;
             return Material(
               color: background,
-              shape: const StadiumBorder(),
+              shape: restingSide == null
+                  ? const StadiumBorder()
+                  : StadiumBorder(
+                      side: restingSide.copyWith(
+                        color: restingSide.color.withValues(
+                          alpha: restingSide.color.a * (1 - t).clamp(0.0, 1.0),
+                        ),
+                      ),
+                    ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onTap,

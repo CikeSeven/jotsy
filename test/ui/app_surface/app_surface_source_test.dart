@@ -8,6 +8,12 @@
 ///    页面底色一律经 `AppPageBackdrop.pageColorOf`（无背景时就是 surface）。
 ///
 /// 两条规则共用一份豁免名单，每项写明原因。只看代码，忽略 `//` 注释行。
+///
+/// 3. 色调按钮（`FilledButton.tonal` / `.tonalIcon` / `IconButton.filledTonal`）
+///    须经 `AppGlassField.tonalButtonStyle` 跟随“小控件”材质：主题无法单独
+///    给 tonal 变体取色，漏掉一处就是玻璃界面里的一块实色补丁。自己指定了
+///    语义底色（`backgroundColor:`，如危险操作的 errorContainer）的不算，
+///    另有 [_tonalExempt] 名单。
 library;
 
 import 'dart:io';
@@ -23,6 +29,17 @@ const Map<String, String> _exempt = <String, String>{
   'lib/ui/widgets/image_viewer_page.dart': '看图页：图片铺满整页，底色随下拉关闭渐隐',
 };
 
+/// 不经 `AppGlassField.tonalButtonStyle` 的色调按钮所在文件与原因。
+const Map<String, String> _tonalExempt = <String, String>{
+  'lib/ui/widgets/expressive_button_group.dart':
+      '按钮组的各段自己按 AppGlassField 取色（选中段为主色）',
+  'lib/ui/diaries/widgets/diary_video_surface.dart': '叠在视频画面上的播放控件，不是玻璃界面的一部分',
+  'lib/ui/diaries/widgets/diary_video_poster_card.dart':
+      '视频封面卡的播放按钮叠在封面图上，与视频播放器的控件一致',
+  'lib/ui/diaries/widgets/diary_audio_player_controls.dart':
+      '播放键随播放状态在 secondaryContainer 与 primary 之间补间，是强调色',
+};
+
 /// `lib/ui/**/pages/` 之外、同样是页面壳（自己建页面 Scaffold）的组件。
 const List<String> _pageShells = <String>[
   'lib/ui/settings/widgets/style_editor/style_editor_scaffold.dart',
@@ -31,6 +48,9 @@ const List<String> _pageShells = <String>[
 ];
 
 final RegExp _scaffoldCall = RegExp(r'(?<![A-Za-z0-9_])Scaffold\(');
+final RegExp _tonalCall = RegExp(
+  r'(FilledButton\.tonal(Icon)?|IconButton\.filledTonal)\(',
+);
 final RegExp _surfaceColor = RegExp(
   r'^(Theme\.of\(context\)\.)?(theme\.)?(colorScheme|scheme)\.surface$',
 );
@@ -110,7 +130,11 @@ void main() {
 
   test('exempt files exist', () {
     final missing = <String>[
-      for (final path in <String>[..._exempt.keys, ..._pageShells])
+      for (final path in <String>[
+        ..._exempt.keys,
+        ..._pageShells,
+        ..._tonalExempt.keys,
+      ])
         if (!File(path).existsSync()) path,
     ];
     expect(missing, isEmpty, reason: '豁免名单或页面壳名单里的文件已移动');
@@ -161,6 +185,35 @@ void main() {
       violations,
       isEmpty,
       reason: '页面底色经 AppPageBackdrop.pageColorOf(context)：无背景时就是 surface',
+    );
+  });
+
+  test('tonal buttons follow the glass controls material', () {
+    final violations = <String>[];
+    for (final file in uiFiles) {
+      if (_tonalExempt.containsKey(file.path)) continue;
+      final code = _code(file);
+      for (final match in _tonalCall.allMatches(code)) {
+        final open = match.end - 1;
+        final call = code.substring(open, _matchParen(code, open));
+        // 合并后的样式常先放进局部变量（如几个按钮共用的紧凑样式），这时
+        // 调用里只有 `style:`，按文件里确有 tonalButtonStyle 放行。
+        final viaVariable =
+            call.contains('style:') && code.contains('tonalButtonStyle');
+        if (call.contains('tonalButtonStyle') ||
+            call.contains('backgroundColor:') ||
+            viaVariable) {
+          continue;
+        }
+        violations.add('${file.path}:${_lineOf(code, match.start)}');
+      }
+    }
+    expect(
+      violations,
+      isEmpty,
+      reason:
+          '色调按钮须传 style: AppGlassField.tonalButtonStyle(context)'
+          '（已有 style 时 merge），否则玻璃材质下是一块实色补丁',
     );
   });
 }

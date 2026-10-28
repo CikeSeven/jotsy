@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../app_surface/widgets/on_glass.dart';
 import '../../widgets/qweather_icon.dart';
 import '../controllers/explore_module_actions.dart';
 import '../models/explore_module_config.dart';
@@ -266,7 +267,10 @@ class ExploreWeatherCard extends StatelessWidget {
                 children: <Widget>[
                   for (final group in groups.take(12))
                     Material(
-                      color: theme.brightness == Brightness.light
+                      // 玻璃卡片里改为半透明凹槽色，不留一块块实色补丁。
+                      color: OnGlass.of(context)
+                          ? OnGlass.wellColor(scheme)
+                          : theme.brightness == Brightness.light
                           ? scheme.surfaceContainerLow
                           : scheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(14),

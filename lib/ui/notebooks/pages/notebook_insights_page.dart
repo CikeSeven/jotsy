@@ -24,6 +24,7 @@ import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 日记本统计页（首页头部卡片“统计”，普通与智能日记本都有）。
@@ -192,6 +193,7 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
               FilledButton.tonalIcon(
                 key: const ValueKey<String>('notebook_insights_random'),
                 onPressed: () => _openRandom(notebook, diaries, bookOrder),
+                style: AppGlassField.tonalButtonStyle(context),
                 icon: const FaIcon(FontAwesomeIcons.shuffle, size: 14),
                 label: Text(l10n.notebookInsightsRandom),
               ),

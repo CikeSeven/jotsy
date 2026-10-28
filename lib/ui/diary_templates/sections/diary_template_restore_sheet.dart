@@ -6,6 +6,8 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../models/diary_template.dart';
 import '../widgets/diary_template_tile.dart';
@@ -28,6 +30,48 @@ class DiaryTemplatesRestoreRow extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = context.l10n;
+    final ink = InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        child: Row(
+          children: <Widget>[
+            FaIcon(
+              FontAwesomeIcons.rotateLeft,
+              size: 16,
+              color: colorScheme.primary,
+            ),
+            const SizedBox(width: AppSpacing.m),
+            Expanded(
+              child: Text(
+                l10n.diaryTemplatesRestoreDeleted,
+                style: theme.textTheme.bodyLarge,
+              ),
+            ),
+            Text(
+              l10n.diaryTemplatesRestoreDeletedCount(count),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.s),
+            FaIcon(
+              FontAwesomeIcons.angleRight,
+              size: 14,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+    // 与 [DiaryTemplateTile] 同一材质：玻璃时为内容玻璃，经典分支保持原样。
+    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+      return AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadii.input)),
+        child: ink,
+      );
+    }
     return Material(
       color: ExpressiveSurfaces.cardColor(colorScheme),
       shape: RoundedRectangleBorder(
@@ -38,40 +82,7 @@ class DiaryTemplatesRestoreRow extends StatelessWidget {
         ),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Row(
-            children: <Widget>[
-              FaIcon(
-                FontAwesomeIcons.rotateLeft,
-                size: 16,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(width: AppSpacing.m),
-              Expanded(
-                child: Text(
-                  l10n.diaryTemplatesRestoreDeleted,
-                  style: theme.textTheme.bodyLarge,
-                ),
-              ),
-              Text(
-                l10n.diaryTemplatesRestoreDeletedCount(count),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s),
-              FaIcon(
-                FontAwesomeIcons.angleRight,
-                size: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
-      ),
+      child: ink,
     );
   }
 }

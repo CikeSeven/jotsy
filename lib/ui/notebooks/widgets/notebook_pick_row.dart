@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/on_glass.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/notebook_pick_selection.dart';
@@ -18,7 +19,9 @@ import 'notebook_cover_parts.dart';
 ///   [ExpressiveIconSwap]，底色经 [ExpressiveStateBlend] 补间；
 /// - [showCheck] 为 false 时行尾不显示勾选（“移动到…”点一下就选定）；
 /// - [indent] 为树形列表里的缩进级数（子本缩在上级下面，见
-///   `notebookTreeRows`）；私密图标看生效可见性（上级私密的子本同样标出）。
+///   `notebookTreeRows`）；私密图标看生效可见性（上级私密的子本同样标出）；
+/// - 画在玻璃面板上时（[OnGlass]）未选中的行底换成半透明凹槽色（与发布
+///   面板里的标签行同一口径），选中的本子容器色不变。
 class NotebookPickRow extends StatelessWidget {
   const NotebookPickRow({
     super.key,
@@ -85,7 +88,7 @@ class NotebookPickRow extends StatelessWidget {
           active: active && showCheck,
           builder: (context, t, child) => Material(
             color: Color.lerp(
-              scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+              notebookPickRowColor(context),
               accent.container.withValues(alpha: isLight ? 0.72 : 0.6),
               t,
             ),
@@ -184,7 +187,7 @@ class NotebookPickCreateRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: notebookPickRowColor(context),
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -214,4 +217,13 @@ class NotebookPickCreateRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 选择器各行（含上级选择面板的“无”）未选中时的行底：玻璃面板上为半透明
+/// 凹槽色，否则为原来的浅灰底。
+Color notebookPickRowColor(BuildContext context) {
+  final scheme = Theme.of(context).colorScheme;
+  return OnGlass.of(context)
+      ? OnGlass.wellColor(scheme)
+      : scheme.surfaceContainerHighest.withValues(alpha: 0.45);
 }

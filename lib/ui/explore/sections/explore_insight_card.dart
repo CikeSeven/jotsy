@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../widgets/charts/explore_reveal.dart';
 import '../widgets/explore_shared_widgets.dart';
 
 /// 情绪与精力趋势卡片。
@@ -112,14 +113,9 @@ class ExploreInsightCard extends StatelessWidget {
     );
   }
 
-  /// 第 [index] 项在共享进度 [reveal] 下的局部进度：各项依次起步（总时长的前
-  /// 40% 内错开），各自用 60% 的时长走完 effects 曲线。日记本统计页的柱状图
-  /// 与心情条复用同一节奏（DESIGN §4.3）。
-  static double staggered(double reveal, int index, int count) {
-    final start = count <= 1 ? 0.0 : 0.4 * index / (count - 1);
-    final local = ((reveal - start) / 0.6).clamp(0.0, 1.0);
-    return ExpressiveMotion.effects.transform(local);
-  }
+  /// 共享进度下第 [index] 项的局部进度，见 [ExploreReveal.staggered]。
+  static double staggered(double reveal, int index, int count) =>
+      ExploreReveal.staggered(reveal, index, count);
 
   Widget _buildEnergyBar(ColorScheme colorScheme, double? value, double grow) {
     final activeHeight = value == null

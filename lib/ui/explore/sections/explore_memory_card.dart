@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
-import '../controllers/explore_page_controller.dart';
+import '../controllers/explore_page_controller.dart' show ExplorePageController;
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -16,14 +16,17 @@ import '../../../app/theme/expressive_motion.dart';
 class ExploreMemoryCard extends StatefulWidget {
   const ExploreMemoryCard({
     super.key,
-    required this.viewData,
-    required this.controller,
+    required this.items,
     required this.onOpenDiary,
     required this.onCreateToday,
+    this.fallbackPrompt = '',
   });
 
-  final ExploreViewData viewData;
-  final ExplorePageController controller;
+  /// 回忆条目（经 [ExplorePageController.pickOnThisDayList] 选出）。
+  final List<ExploreOnThisDayItem> items;
+
+  /// 没有回忆时的引导文案。
+  final String fallbackPrompt;
   final ValueChanged<String> onOpenDiary;
   final VoidCallback onCreateToday;
 
@@ -44,7 +47,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
   @override
   void didUpdateWidget(covariant ExploreMemoryCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final maxIndex = widget.viewData.onThisDayDiaries.length - 1;
+    final maxIndex = widget.items.length - 1;
     if (maxIndex < 0) {
       if (_activeIndex != 0) {
         setState(() {
@@ -73,7 +76,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final memories = widget.viewData.onThisDayDiaries;
+    final memories = widget.items;
 
     return ExploreCard(
       child: Column(
@@ -109,7 +112,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    widget.viewData.fallbackPrompt,
+                    widget.fallbackPrompt,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 10),

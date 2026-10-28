@@ -10,8 +10,6 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
-import '../../explore/controllers/explore_page_controller.dart';
-import '../../explore/models/explore_view_data.dart';
 import '../../explore/sections/explore_memory_card.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
@@ -181,8 +179,7 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
               if (data.onThisDay.isNotEmpty) ...<Widget>[
                 gap,
                 ExploreMemoryCard(
-                  viewData: _memoryViewData(data.onThisDay),
-                  controller: const ExplorePageController(),
+                  items: data.onThisDay,
                   onOpenDiary: (String diaryId) => _openPreview(
                     diaryId,
                     <String>[for (final item in data.onThisDay) item.diaryId],
@@ -204,22 +201,6 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
       },
     );
   }
-
-  /// 那年今日卡只读 [ExploreViewData.onThisDayDiaries]，其余字段给空值。
-  ExploreViewData _memoryViewData(List<ExploreOnThisDayItem> items) =>
-      ExploreViewData(
-        stats: const ExploreStats(
-          totalRecords: 0,
-          streakDays: 0,
-          currentMonthWords: 0,
-        ),
-        onThisDayDiaries: items,
-        fallbackPrompt: '',
-        moodWeights30: const <double?>[],
-        energyValues7: const <double?>[],
-        tagUsages: const <ExploreTagUsage>[],
-        mediaItems: const <ExploreMediaItem>[],
-      );
 
   /// 随机打开一篇，左右翻页的顺序为整本（见 [notebookInsightsRandomOrder]）。
   void _openRandom(

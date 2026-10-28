@@ -50,8 +50,8 @@ class ExploreContentSection extends StatelessWidget {
 
   Widget _buildColumn({required bool twoUp}) {
     final memory = ExploreMemoryCard(
-      viewData: viewData,
-      controller: controller,
+      items: viewData.onThisDayDiaries,
+      fallbackPrompt: viewData.fallbackPrompt,
       onOpenDiary: onOpenDiary,
       onCreateToday: onCreateToday,
     );

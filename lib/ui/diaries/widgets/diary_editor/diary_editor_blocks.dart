@@ -12,9 +12,10 @@ import '../../controllers/diary_editor_controller.dart';
 import 'diary_media_block.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_block_markers.dart';
+import 'diary_paragraph_block.dart';
 
-/// 原生块组件的单一注册点：共享排版、行首标记（列表、待办、引用）、代码
-/// 外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
+/// 原生块组件的单一注册点：共享排版、段落首行缩进、行首标记（列表、待办、
+/// 引用）、代码外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
 Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   BuildContext context, {
   required DiaryEditorController controller,
@@ -50,7 +51,13 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   );
   final builders = <String, af.BlockComponentBuilder>{
     'page': page,
-    'paragraph': af.ParagraphBlockComponentBuilder(configuration: text),
+    // 不缩进时用上游段落块，默认排版与改版前逐像素一致。
+    'paragraph': appearance.typography.firstLineIndentExtent > 0
+        ? DiaryParagraphBlockBuilder(
+            configuration: text,
+            firstLineIndent: appearance.typography.firstLineIndentExtent,
+          )
+        : af.ParagraphBlockComponentBuilder(configuration: text),
     'heading': af.HeadingBlockComponentBuilder(
       configuration: text,
       textStyleBuilder: (level) => diaryHeadingTextStyle(appearance, level),

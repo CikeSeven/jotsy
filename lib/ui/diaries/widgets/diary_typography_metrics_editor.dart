@@ -10,7 +10,8 @@ String formatDiaryTypographyValue(double value) {
   return value.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
 }
 
-/// 字号 / 行距 / 字间距 / 段间距四个滑块，设置页与预览页快捷面板共用。
+/// 字号 / 行距 / 字间距 / 段间距 / 首行缩进五个滑块，设置页与预览页快捷面板
+/// 共用。
 ///
 /// 拖动期间只更新本地草稿（经 [onPreview] 交给需要即时预览的页面），松手时
 /// 经 [onCommit] 提交；± 按钮每点一次直接提交一步，便于精确微调。提交完成
@@ -109,6 +110,22 @@ class _DiaryTypographyMetricsEditorState
             onChanged: (v) => _preview(current.copyWith(paragraphSpacing: v)),
             onCommit: (v) => _commit(current.copyWith(paragraphSpacing: v)),
           ),
+          _MetricRow(
+            label: l10n.diaryTypographyFirstLineIndent,
+            value: current.firstLineIndent,
+            min: DiaryTypography.minFirstLineIndent,
+            max: DiaryTypography.maxFirstLineIndent,
+            step: DiaryTypography.firstLineIndentStep,
+            // 只有这一项的数值带单位：“2”看不出是两个字还是 2 像素。
+            valueText: current.firstLineIndent == 0
+                ? l10n.diaryTypographyFirstLineIndentOff
+                : l10n.diaryTypographyFirstLineIndentValue(
+                    current.firstLineIndent,
+                    formatDiaryTypographyValue(current.firstLineIndent),
+                  ),
+            onChanged: (v) => _preview(current.copyWith(firstLineIndent: v)),
+            onCommit: (v) => _commit(current.copyWith(firstLineIndent: v)),
+          ),
         ],
       ),
     );
@@ -126,6 +143,7 @@ class _MetricRow extends StatelessWidget {
     required this.step,
     required this.onChanged,
     required this.onCommit,
+    this.valueText,
   });
 
   final String label;
@@ -136,11 +154,14 @@ class _MetricRow extends StatelessWidget {
   final ValueChanged<double> onChanged;
   final ValueChanged<double> onCommit;
 
+  /// 当前值的显示文本，缺省为去掉末尾 0 的数值。
+  final String? valueText;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final valueText = formatDiaryTypographyValue(value);
+    final valueText = this.valueText ?? formatDiaryTypographyValue(value);
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.s),
       child: Column(

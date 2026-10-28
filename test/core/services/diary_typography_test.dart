@@ -17,6 +17,7 @@ void main() {
         lineHeight: 2.15,
         letterSpacing: 1.25,
         paragraphSpacing: 14,
+        firstLineIndent: 1.5,
       );
 
       expect(DiaryTypography.fromRaw(typography.toRaw()), typography);
@@ -56,6 +57,62 @@ void main() {
 
       expect(DiaryTypography.normalizeLineHeight(lineHeight), 2.55);
       expect(DiaryTypography.normalizeLineHeight(double.nan), 1.55);
+    });
+  });
+
+  group('DiaryTypography first-line indent', () {
+    test('settings saved before the indent existed keep paragraphs flush', () {
+      final typography = DiaryTypography.fromRaw(
+        '{"fontId":"bundled","fontSize":18,"lineHeight":1.6,'
+        '"letterSpacing":0,"paragraphSpacing":4}',
+      );
+
+      expect(typography.firstLineIndent, 0);
+      expect(typography.firstLineIndentExtent, 0);
+    });
+
+    test('clamps to four characters and snaps to half a character', () {
+      expect(
+        DiaryTypography.fromRaw('{"firstLineIndent":9}').firstLineIndent,
+        4,
+      );
+      expect(
+        DiaryTypography.fromRaw('{"firstLineIndent":-2}').firstLineIndent,
+        0,
+      );
+      expect(
+        DiaryTypography.fromRaw('{"firstLineIndent":"1.3"}').firstLineIndent,
+        1.5,
+      );
+      expect(
+        DiaryTypography.fromRaw('{"firstLineIndent":false}').firstLineIndent,
+        0,
+      );
+    });
+
+    test('the indent spans whole characters including letter spacing', () {
+      const typography = DiaryTypography(
+        fontSize: 18,
+        letterSpacing: 2,
+        firstLineIndent: 2,
+      );
+
+      expect(typography.firstLineIndentExtent, 40);
+      expect(
+        const DiaryTypography(
+          fontSize: 10,
+          letterSpacing: -1,
+          firstLineIndent: 1.5,
+        ).firstLineIndentExtent,
+        13.5,
+      );
+    });
+
+    test('resetting the metrics removes the indent', () {
+      final typography = const DiaryTypography().copyWith(firstLineIndent: 2);
+
+      expect(typography.hasDefaultMetrics, isFalse);
+      expect(typography.withDefaultMetrics().firstLineIndent, 0);
     });
   });
 

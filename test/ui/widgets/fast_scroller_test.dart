@@ -310,6 +310,38 @@ void main() {
     await tester.pump();
   });
 
+  for (final masonry in <bool>[false, true]) {
+    testWidgets('a slow drag moves the ${masonry ? 'waterfall' : 'list'} '
+        'one way only', (WidgetTester tester) async {
+      await pumpScroller(tester, total: 400, masonry: masonry);
+      await revealByScrolling(tester);
+      final position = positionOf(tester);
+
+      // 手指每帧 1dp 往下、再往上：瀑布流两列交错，相邻两篇的上缘谁高谁
+      // 低不一定，列表也不能因此来回跳。
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(FastScrollThumb)),
+      );
+      await tester.pump();
+      for (final step in <double>[1, -1]) {
+        var last = position.pixels;
+        for (var i = 0; i < 150; i++) {
+          await gesture.moveBy(Offset(0, step));
+          await tester.pump(const Duration(milliseconds: 16));
+          final delta = position.pixels - last;
+          expect(
+            delta * step,
+            greaterThanOrEqualTo(-0.5),
+            reason: 'frame $i moved $delta against the finger',
+          );
+          last = position.pixels;
+        }
+      }
+      await gesture.up();
+      await tester.pump();
+    });
+  }
+
   testWidgets('a pending jump is dropped when the list changes', (
     WidgetTester tester,
   ) async {

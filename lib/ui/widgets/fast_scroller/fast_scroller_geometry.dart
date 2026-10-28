@@ -36,11 +36,15 @@ class FastScrollSection {
 /// 位置之间换算。
 ///
 /// 输入：列表 sliver 外层 GlobalKey 的 context 与交给列表的项数；输出：连续
-/// 的项序（整数部分是项，小数部分是这一项已滚过顶线的比例）与对应的滚动
-/// 位置。只读渲染树，无副作用。
+/// 的项序与对应的滚动位置。只读渲染树，无副作用。
 ///
 /// - 顶线：可见内容的上缘，即滚动视图上缘再往下让过固定的标签栏等
 ///   （sliver 约束的 overlap）；项滚到这条线才算“在最上面”。
+/// - 项序 i + t 对应第 i 项上缘与第 i + 1 项上缘之间 t 处，而不是第 i 项
+///   自身高度的 t 处：单列时两者相同；瀑布流两列交错，第 i 项可能比第 i + 1
+///   项高出一截，按自身高度换算会让项序增大时位置反而后退（拖动时列表
+///   来回抖）。瀑布流总把下一项放进最短的一列，上缘按项序不递减，所以这样
+///   换算在两种排布里都是单调的。
 /// - 列表只布局了视口附近的项：已布局的按实际位置换算（精确）；其余按已
 ///   布局项的平均高度推算（与 SliverList 估算滚动范围同一口径），等滚到
 ///   附近布局出来后再由调用方校正。
@@ -137,46 +141,63 @@ class FastScrollListGeometry {
     return range;
   }
 
-  /// 已布局项沿滚动方向的高度（列表是竖向的，见 [of]）。
-  static double _heightOf(RenderBox child) => child.size.height;
-
-  /// 滚动位置为 [pixels] 时顶线所在的连续项序。列表还没滚到顶线（上面还有
-  /// 顶栏、日记本头部）时为 0。
-  double indexAt(double pixels) {
-    final top = pixels - start + overlap;
-    if (top <= 0 || loadedCount == 0) {
-      return 0;
-    }
-    final average = averageExtent;
+  /// 已布局的项（按项序），带上缘与高度（列表是竖向的，见 [of]）。
+  List<_Placed> _placed() {
+    final placed = <_Placed>[];
     RenderBox? child = _sliver.firstChild;
-    RenderBox? last;
     while (child != null) {
       final offset = _sliver.childScrollOffset(child);
       if (offset != null) {
-        final index = _sliver.indexOf(child);
-        final height = _heightOf(child);
-        // 按项序第一个底边越过顶线的：顶线落在它上面（瀑布流另一列、间隙
-        // 或还没布局到的前面几项）时往前按平均高度推。
-        if (offset + height > top) {
-          if (offset <= top) {
-            return index + (height > 0 ? (top - offset) / height : 0.0);
-          }
-          final back = average > 0 ? (offset - top) / average : 0.0;
-          return math.max(0.0, index - back);
-        }
-        last = child;
+        placed.add(_Placed(_sliver.indexOf(child), offset, child.size.height));
       }
       child = _sliver.childAfter(child);
     }
-    if (last == null) {
-      return average > 0 ? top / average : 0;
-    }
-    final lastEnd = _sliver.childScrollOffset(last)! + _heightOf(last);
-    final ahead = average > 0 ? (top - lastEnd) / average : 0.0;
-    return _sliver.indexOf(last) + 1 + ahead;
+    return placed;
   }
 
-  /// 第 [index] 项（连续值，小数部分为项内比例）落到顶线时的滚动位置。
+  /// 第 [k] 个已布局项的上缘到下一项上缘的距离；下一项没布局时取它自己的
+  /// 高度（单列时正好相等，瀑布流里是上限）。
+  static double _stepAfter(List<_Placed> placed, int k) {
+    final current = placed[k];
+    if (k + 1 < placed.length && placed[k + 1].index == current.index + 1) {
+      return math.max(0, placed[k + 1].top - current.top);
+    }
+    return current.height;
+  }
+
+  /// 滚动位置为 [pixels] 时顶线所在的连续项序。列表还没滚到顶线（上面还有
+  /// 顶栏、日记本头部）时为 0。顶线在已布局范围之外时按平均高度推算。
+  double indexAt(double pixels) {
+    final line = pixels - start + overlap;
+    if (line <= 0 || loadedCount == 0) {
+      return 0;
+    }
+    final average = averageExtent;
+    final placed = _placed();
+    if (placed.isEmpty) {
+      return average > 0 ? line / average : 0;
+    }
+    if (line < placed.first.top) {
+      final back = average > 0 ? (placed.first.top - line) / average : 0.0;
+      return math.max(0.0, placed.first.index - back);
+    }
+    // 最后一个上缘不低于顶线的项。
+    var k = 0;
+    while (k + 1 < placed.length && placed[k + 1].top <= line) {
+      k++;
+    }
+    final current = placed[k];
+    final step = _stepAfter(placed, k);
+    final into = line - current.top;
+    if (into <= step) {
+      return current.index + (step > 0 ? into / step : 0.0);
+    }
+    // 顶线越过了已布局的最后一项。
+    final ahead = average > 0 ? (into - step) / average : 0.0;
+    return current.index + 1 + ahead;
+  }
+
+  /// 第 [index] 项（连续值）落到顶线时的滚动位置，与 [indexAt] 互逆。
   /// [exact] 为 true 表示这一项已布局、位置是精确的；否则是估算，项还可能
   /// 在已加载的范围之外（超出时位置也超过当前最大滚动范围）。
   ({double pixels, bool exact}) pixelsFor(double index) {
@@ -185,37 +206,32 @@ class FastScrollListGeometry {
     }
     final whole = index.floor();
     final fraction = index - whole;
-    RenderBox? nearest;
-    var nearestDistance = double.infinity;
-    RenderBox? child = _sliver.firstChild;
-    while (child != null) {
-      final offset = _sliver.childScrollOffset(child);
-      if (offset != null) {
-        final childIndex = _sliver.indexOf(child);
-        if (childIndex == whole) {
-          final height = _heightOf(child);
-          return (
-            pixels: start + offset + fraction * height - overlap,
-            exact: true,
-          );
-        }
-        final distance = (childIndex - whole).abs().toDouble();
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearest = child;
-        }
+    final placed = _placed();
+    _Placed? nearest;
+    for (var k = 0; k < placed.length; k++) {
+      final entry = placed[k];
+      if (entry.index == whole) {
+        final offset = entry.top + fraction * _stepAfter(placed, k);
+        return (pixels: start + offset - overlap, exact: true);
       }
-      child = _sliver.childAfter(child);
+      if (nearest == null ||
+          (entry.index - whole).abs() < (nearest.index - whole).abs()) {
+        nearest = entry;
+      }
     }
     final average = averageExtent;
-    final double offset;
-    if (nearest == null) {
-      offset = index * average;
-    } else {
-      offset =
-          _sliver.childScrollOffset(nearest)! +
-          (index - _sliver.indexOf(nearest)) * average;
-    }
+    final offset = nearest == null
+        ? index * average
+        : nearest.top + (index - nearest.index) * average;
     return (pixels: start + offset - overlap, exact: false);
   }
+}
+
+/// 一个已布局的项：项序、在列表 sliver 里的上缘与高度。
+class _Placed {
+  const _Placed(this.index, this.top, this.height);
+
+  final int index;
+  final double top;
+  final double height;
 }

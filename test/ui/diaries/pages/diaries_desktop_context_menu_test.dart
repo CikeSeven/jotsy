@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card_context_menu.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_swipe_action_item.dart';
 
@@ -176,6 +177,24 @@ void main() {
       diaries: _diaries('swipe', 2),
     );
     expect(find.byType(DiarySwipeActionItem), findsNWidgets(2));
+    await unmountWideDiariesPage(tester);
+  });
+
+  testWidgets('turning swipe-to-archive off in features removes the swipe', (
+    tester,
+  ) async {
+    await pumpWideDiariesPage(
+      tester,
+      size: const Size(400, 800),
+      diaries: _diaries('swipeoff', 2),
+      preferences: <String, Object>{
+        'app.settings.app_features': const AppFeatures(
+          swipeArchive: false,
+        ).encode(),
+      },
+    );
+    expect(wideListCards, findsNWidgets(2));
+    expect(find.byType(DiarySwipeActionItem), findsNothing);
     await unmountWideDiariesPage(tester);
   });
 }

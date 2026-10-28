@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_selection_surface.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -22,11 +23,12 @@ Future<AppDatabase> _pumpPage(
   WidgetTester tester,
   Widget page, {
   required Future<void> Function(AppDatabase db, String id) prepare,
+  Map<String, Object> preferences = const <String, Object>{},
 }) async {
   tester.view.physicalSize = const Size(400, 860);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  SharedPreferences.setMockInitialValues(<String, Object>{});
+  SharedPreferences.setMockInitialValues(preferences);
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
   final settings = await SettingsService.create();
@@ -106,6 +108,29 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Stored diary'), findsNothing);
     expect(find.byType(EmptyHint), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    await _unmount(tester);
+  });
+
+  testWidgets('turning swipe-to-archive off removes the unarchive swipe', (
+    tester,
+  ) async {
+    await _pumpPage(
+      tester,
+      const ArchivedDiariesPage(),
+      prepare: (db, id) => db.archiveDiary(id),
+      preferences: <String, Object>{
+        'app.settings.app_features': const AppFeatures(
+          swipeArchive: false,
+        ).encode(),
+      },
+    );
+    expect(find.byType(DiarySwipeActionItem), findsNothing);
+
+    await tester.drag(_storedCard(), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+    // 左滑不再取消归档，日记留在归档页。
+    expect(find.text('Stored diary'), findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
     await _unmount(tester);
   });

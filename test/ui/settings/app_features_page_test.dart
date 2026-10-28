@@ -54,6 +54,8 @@ void main() {
     expect(stored(h).templates, isFalse);
     await toggle(tester, l10n.settingsFeaturesTimeCapsules);
     expect(stored(h).timeCapsules, isFalse);
+    await toggle(tester, l10n.settingsFeaturesSwipeArchive);
+    expect(stored(h).swipeArchive, isFalse);
     await toggle(tester, l10n.notebookTitle);
     await h.settle();
     expect(stored(h).notebooks, isFalse);
@@ -270,7 +272,16 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.byType(SwitchListTile), findsNWidgets(6));
+      expect(find.byType(SwitchListTile), findsNWidgets(7));
     });
   }
+
+  testWidgets('desktop has no swipe-to-archive switch', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(const AppFeaturesPage());
+
+    expect(switchTile(h.l10n.settingsFeaturesTimeCapsules), findsOneWidget);
+    expect(switchTile(h.l10n.settingsFeaturesSwipeArchive), findsNothing);
+    await h.unmount();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 }

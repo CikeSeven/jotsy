@@ -1,5 +1,6 @@
 // 设置 → 功能管理：整体开关日历、探索两个页面（纪念日随日历放在其下），
-// 以及日记本、日记模板、时间胶囊三项功能。
+// 以及日记本、日记模板、时间胶囊、侧滑归档几项功能。侧滑归档只在手机上有
+// （桌面卡片没有左滑，用右键菜单），桌面不显示这一行。
 //
 // 输入：`appFeaturesProvider`（当前开关）、`settingsServiceProvider`
 // （写入目标，未就绪时全部开关禁用）、`notebooksProvider`（只取私密本子
@@ -24,6 +25,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/services/app_features.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../notebooks/providers/notebook_providers.dart';
@@ -163,6 +165,15 @@ class AppFeaturesPage extends ConsumerWidget {
                           (v) => features.copyWith(timeCapsules: v),
                         ),
                       ),
+                      if (!AppPlatform.isDesktop)
+                        SettingsSwitchTile(
+                          title: l10n.settingsFeaturesSwipeArchive,
+                          subtitle: l10n.settingsFeaturesSwipeArchiveSubtitle,
+                          value: features.swipeArchive,
+                          onChanged: writer(
+                            (v) => features.copyWith(swipeArchive: v),
+                          ),
+                        ),
                     ],
                   ),
                 ],

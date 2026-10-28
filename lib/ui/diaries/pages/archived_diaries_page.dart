@@ -136,6 +136,10 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   @override
   Widget build(BuildContext context) {
     final archivedAsync = ref.watch(archivedDiariesProvider);
+    // 侧滑归档关闭时，归档页同样不再左滑取消归档。
+    final swipeArchiveEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.swipeArchive),
+    );
     final diaryCardTagLimit =
         ref.watch(diaryCardTagLimitProvider).asData?.value ??
         SettingsService.defaultDiaryCardTagLimit;
@@ -310,11 +314,14 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                             ),
                                         onToggleSelection:
                                             _controller.toggleSelection,
-                                        onArchiveDiary: (diaryId) => unawaited(
-                                          _controller.unarchiveDiaryBySwipe(
-                                            diaryId,
-                                          ),
-                                        ),
+                                        onArchiveDiary: swipeArchiveEnabled
+                                            ? (diaryId) => unawaited(
+                                                _controller
+                                                    .unarchiveDiaryBySwipe(
+                                                      diaryId,
+                                                    ),
+                                              )
+                                            : null,
                                         swipeActionIcon:
                                             FontAwesomeIcons.boxOpen,
                                         menuActions: _menuActions(),

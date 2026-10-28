@@ -10543,6 +10543,14 @@
   "@settingsFeaturesTimeCapsulesSubtitle": {
     "description": "功能管理页：时间胶囊开关的说明。"
   },
+  "settingsFeaturesSwipeArchive": "侧滑归档",
+  "@settingsFeaturesSwipeArchive": {
+    "description": "功能管理页：侧滑归档开关的标题（只在手机上显示）。"
+  },
+  "settingsFeaturesSwipeArchiveSubtitle": "在日记列表左滑卡片归档，在归档页左滑取消归档",
+  "@settingsFeaturesSwipeArchiveSubtitle": {
+    "description": "功能管理页：侧滑归档开关的说明；同一手势在归档页是取消归档。"
+  },
   "settingsFeaturesNotebooksOffTitle": "关闭日记本？",
   "@settingsFeaturesNotebooksOffTitle": {
     "description": "功能管理页：有私密日记本时关闭日记本的确认弹窗标题。"

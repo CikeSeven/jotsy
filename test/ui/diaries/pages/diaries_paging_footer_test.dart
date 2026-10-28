@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
+import 'package:node_diary/ui/diaries/providers/diary_timeline_provider.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
@@ -55,6 +56,10 @@ void main() {
           ),
           settingsServiceProvider.overrideWith((ref) async => settings),
           tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[])),
+          // 快速滚动条的完整时间轴：不打开真实数据库。
+          diaryTimelineProvider.overrideWith(
+            (ref, query) => Stream.value(const <DiaryTimelineEntry>[]),
+          ),
           pagedDiariesProvider.overrideWith(
             (ref, query) => Stream.value(
               PagedDiariesResult(

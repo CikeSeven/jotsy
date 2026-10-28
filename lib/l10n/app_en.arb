@@ -11500,5 +11500,9 @@
   "diaryListToNumbered": "To numbered list",
   "@diaryListToNumbered": {"description": "List panel button: turn the selected bulleted list items into a numbered list."},
   "diaryListToText": "Convert to text",
-  "@diaryListToText": {"description": "List panel button: turn the selected list items back into paragraphs."}
+  "@diaryListToText": {"description": "List panel button: turn the selected list items back into paragraphs."},
+  "diaryFastScrollPinned": "Pinned",
+  "@diaryFastScrollPinned": {"description": "Home fast scroller: bubble and track label for pinned diaries."},
+  "diaryFastScrollUntitled": "Untitled",
+  "@diaryFastScrollUntitled": {"description": "Home fast scroller: bubble and track label for diaries without a title when sorted by title."}
 }

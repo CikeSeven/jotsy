@@ -9,6 +9,7 @@ import 'package:node_diary/ui/anniversaries/providers/anniversary_providers.dart
 import 'package:node_diary/ui/calendar/providers/day_mood_providers.dart';
 import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_draft_list_item.dart';
+import 'package:node_diary/ui/explore/controllers/explore_comment_stats.dart';
 import 'package:node_diary/ui/explore/providers/explore_providers.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
@@ -18,12 +19,15 @@ import 'expressive_test_theme.dart';
 
 /// 探索页与自定义页的测试外壳：设置服务用内存偏好（[prefs] 为初始值），
 /// 各数据 provider 用固定数据，不打开数据库。返回设置服务，供断言写入。
+///
+/// [comments] 为“最近的留言”卡片的留言（新 → 旧），统计按它现算。
 Future<SettingsService> pumpExploreHarness(
   WidgetTester tester,
   Widget home, {
   Map<String, Object> prefs = const <String, Object>{},
   List<ExploreDiaryOverview> diaries = const <ExploreDiaryOverview>[],
   int draftCount = 0,
+  List<DiaryCommentSummary> comments = const <DiaryCommentSummary>[],
   Size size = const Size(400, 2400),
 }) async {
   // 同一个测试里第二次调用时先拆掉上一棵树：ProviderScope 原位复用时不会
@@ -64,6 +68,21 @@ Future<SettingsService> pumpExploreHarness(
         ),
         explorePhotoCountsProvider.overrideWith(
           (ref) => Stream.value(const <String, int>{}),
+        ),
+        exploreRecentCommentsProvider.overrideWith(
+          (ref) => Stream.value(comments),
+        ),
+        exploreCommentStatsProvider.overrideWith(
+          (ref) => Stream.value(
+            ExploreCommentStats.of(<DiaryCommentTiming>[
+              for (final comment in comments)
+                DiaryCommentTiming(
+                  diaryId: comment.diaryId,
+                  createdAt: comment.createdAt,
+                  diaryCreatedAt: comment.diaryCreatedAt,
+                ),
+            ]),
+          ),
         ),
       ],
       child: MaterialApp(

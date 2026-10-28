@@ -1,8 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../controllers/explore_comment_stats.dart';
 import '../controllers/explore_content_extractor.dart';
+import '../models/explore_module_options.dart';
 import '../models/explore_view_data.dart';
 
 /// 探索页轻量日记流：
@@ -20,6 +24,33 @@ final exploreDiariesProvider = StreamProvider<List<ExploreDiaryOverview>>((
 final exploreLockedCapsulesProvider =
     StreamProvider.autoDispose<List<LockedCapsuleSummary>>(
       (Ref ref) => ref.watch(appDatabaseProvider).watchLockedCapsules(),
+    );
+
+/// “最近的留言”卡片最多显示的条数（数量选项里的最大值）。
+final int exploreRecentCommentsMax = ExploreOptions.commentsCount.values.reduce(
+  max,
+);
+
+/// 最近写下的留言（新 → 旧，“最近的留言”卡片）。只在卡片显示时订阅（留言
+/// 功能关闭时卡片不出现，也就不查询）。
+///
+/// 固定取选项的最大条数、由卡片按选项截取：不按条数分 family，切换选项时
+/// 不必重新订阅，自定义页预览也只需替换这一个 provider 换成示例数据。
+final exploreRecentCommentsProvider =
+    StreamProvider.autoDispose<List<DiaryCommentSummary>>(
+      (Ref ref) => ref
+          .watch(appDatabaseProvider)
+          .watchRecentDiaryComments(limit: exploreRecentCommentsMax),
+    );
+
+/// 留言的回看统计（“最近的留言”卡片顶部）：只读留言与日记的时间，每次推送
+/// 现算（[ExploreCommentStats.of]）。只在卡片显示时订阅。
+final exploreCommentStatsProvider =
+    StreamProvider.autoDispose<ExploreCommentStats>(
+      (Ref ref) => ref
+          .watch(appDatabaseProvider)
+          .watchDiaryCommentTimings()
+          .map(ExploreCommentStats.of),
     );
 
 /// 媒体卡“包括正文里的图片”：最近更新的几篇带图日记里的图片（封面在前，

@@ -170,6 +170,31 @@ void main() {
         ).isAvailable(off.copyWith(calendar: false)),
         isFalse,
       );
+      // 留言默认关闭：默认开关下留言卡片不可用，打开后可用。
+      final comments = ExploreModuleSpec.of(ExploreModuleId.comments);
+      expect(comments.isAvailable(AppFeatures.defaults), isFalse);
+      expect(comments.isAvailable(off.copyWith(comments: true)), isTrue);
+    });
+
+    test('layouts saved before the comments card append it, shown', () {
+      final layout = ExploreLayout.fromJson(<String, Object>{
+        'm': <Object>[
+          <String, Object>{'id': 'greeting', 'on': true},
+          <String, Object>{'id': 'drafts', 'on': true},
+        ],
+      });
+      final last = layout.modules.last;
+      expect(last.id, ExploreModuleId.comments);
+      expect(last.visible, isTrue);
+      expect(last.count(ExploreOptions.commentsCount), 3);
+      expect(
+        last.withOption(ExploreOptions.commentsCount, 8).toJson(),
+        <String, Object>{
+          'id': 'comments',
+          'on': true,
+          'o': <String, Object>{'count': 8},
+        },
+      );
     });
   });
 

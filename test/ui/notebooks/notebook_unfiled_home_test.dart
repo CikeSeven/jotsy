@@ -12,7 +12,7 @@ import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
 /// 书架“全部日记”下面的“未收录”：列出没有收进任何日记本的日记，切换胶囊
-/// 随之显示“未收录”，返回回到全部日记。
+/// 随之显示“未收录”，返回回到全部日记；两行行尾都有篇数。
 void main() {
   Future<DiaryDraftsHarness> pumpHome(WidgetTester tester) async {
     final h = await DiaryDraftsHarness.create(tester);
@@ -53,17 +53,17 @@ void main() {
       unfiled.dy,
       lessThan(tester.getTopLeft(inShelf(find.text('我的日记本'))).dy),
     );
-    // 只算不在任何日记本里的两篇（私密本子里的不算、也不透露）。
-    expect(
-      find.descendant(
-        of: find.ancestor(
-          of: inShelf(find.text('未收录')),
-          matching: find.byType(ListTile),
-        ),
-        matching: find.text('2 篇'),
+    Finder rowCount(String row, String count) => find.descendant(
+      of: find.ancestor(
+        of: inShelf(find.text(row)),
+        matching: find.byType(ListTile),
       ),
-      findsOneWidget,
+      matching: find.text(count),
     );
+    // 全部日记与首页列表同一口径：私密本子里的那篇不计入、也不透露。
+    expect(rowCount('全部日记', '4 篇'), findsOneWidget);
+    // 只算不在任何日记本里的两篇。
+    expect(rowCount('未收录', '2 篇'), findsOneWidget);
 
     await tester.tap(inShelf(find.text('未收录')));
     await h.settleAll();

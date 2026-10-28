@@ -105,9 +105,9 @@ Future<NotebookShelfResult?> showNotebookShelfSheet(
   );
 }
 
-/// 书架面板内容：标题行（“管理”进入管理页）、“全部日记”、“未收录”（没有
-/// 收进任何日记本的日记，行尾为篇数）、置顶 / 我的日记本 / 智能日记本 / 已合上
-/// 四组封面网格（空组不显示，“已合上”默认收起）。
+/// 书架面板内容：标题行（“管理”进入管理页）、“全部日记”与“未收录”（没有
+/// 收进任何日记本的日记）两行（行尾为篇数）、置顶 / 我的日记本 / 智能日记本 /
+/// 已合上四组封面网格（空组不显示，“已合上”默认收起）。
 ///
 /// 只列顶层的本子（置顶除外，见 [NotebookShelfGroups]）：子本跟着上级，在
 /// 上级的头部卡片里点进；有子本的封面画成叠放的样子。
@@ -181,19 +181,19 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
               ],
             ),
             const SizedBox(height: AppSpacing.s),
-            ListTile(
+            _ScopeTile(
+              scope: DiaryListScope.all,
+              icon: FontAwesomeIcons.layerGroup,
+              title: l10n.notebookAllDiaries,
               selected:
                   widget.currentNotebookId == null && !widget.unfiledSelected,
-              selectedTileColor: theme.colorScheme.secondaryContainer,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              leading: const FaIcon(FontAwesomeIcons.layerGroup, size: 18),
-              title: Text(l10n.notebookAllDiaries),
               onTap: () => _select(const NotebookShelfResult.selectAll()),
             ),
             const SizedBox(height: AppSpacing.xs),
-            _UnfiledTile(
+            _ScopeTile(
+              scope: DiaryListScope.unfiled,
+              icon: NotebookSwitcherChip.unfiledIcon,
+              title: l10n.notebookUnfiled,
               selected: widget.unfiledSelected,
               onTap: () => _select(const NotebookShelfResult.selectUnfiled()),
             ),
@@ -284,11 +284,21 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
   }
 }
 
-/// 书架里“全部日记”下面的“未收录”：没有收进任何日记本的日记，行尾为篇数
-/// （未删除、未归档，与首页列表同一口径；算出之前不显示）。
-class _UnfiledTile extends ConsumerWidget {
-  const _UnfiledTile({required this.selected, required this.onTap});
+/// 书架顶部的“全部日记”与“未收录”两行，行尾为范围内的篇数（未删除、未归档，
+/// 与首页列表同一口径：私密日记不计入，也就不透露私密本子里有多少篇；算出
+/// 之前不显示）。
+class _ScopeTile extends ConsumerWidget {
+  const _ScopeTile({
+    required this.scope,
+    required this.icon,
+    required this.title,
+    required this.selected,
+    required this.onTap,
+  });
 
+  final DiaryListScope scope;
+  final FaIconData icon;
+  final String title;
   final bool selected;
   final VoidCallback onTap;
 
@@ -296,15 +306,13 @@ class _UnfiledTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final count = ref
-        .watch(notebookScopeCountProvider(DiaryListScope.unfiled))
-        .value;
+    final count = ref.watch(notebookScopeCountProvider(scope)).value;
     return ListTile(
       selected: selected,
       selectedTileColor: theme.colorScheme.secondaryContainer,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      leading: const FaIcon(NotebookSwitcherChip.unfiledIcon, size: 18),
-      title: Text(l10n.notebookUnfiled),
+      leading: FaIcon(icon, size: 18),
+      title: Text(title),
       trailing: count == null
           ? null
           : Text(

@@ -78,7 +78,10 @@ void main() {
     expect(find.text('我的日记本'), findsOneWidget);
     expect(find.text('置顶本'), findsOneWidget);
     expect(find.text('旅行'), findsOneWidget);
-    expect(find.text('1 篇'), findsOneWidget);
+    expect(
+      find.descendant(of: tileOf('旅行'), matching: find.text('1 篇')),
+      findsOneWidget,
+    );
     expect(find.text('新建日记本'), findsOneWidget);
 
     await scrollTo(tester, find.text('已合上'));

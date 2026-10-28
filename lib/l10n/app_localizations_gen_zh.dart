@@ -8278,4 +8278,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryListToText => '转为正文';
+
+  @override
+  String get diaryFastScrollPinned => '置顶';
+
+  @override
+  String get diaryFastScrollUntitled => '无标题';
 }

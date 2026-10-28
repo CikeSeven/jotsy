@@ -15157,6 +15157,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Convert to text'**
   String get diaryListToText;
+
+  /// Home fast scroller: bubble and track label for pinned diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get diaryFastScrollPinned;
+
+  /// Home fast scroller: bubble and track label for diaries without a title when sorted by title.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled'**
+  String get diaryFastScrollUntitled;
 }
 
 class _AppLocalizationsDelegate

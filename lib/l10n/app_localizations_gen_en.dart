@@ -9243,4 +9243,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryListToText => 'Convert to text';
+
+  @override
+  String get diaryFastScrollPinned => 'Pinned';
+
+  @override
+  String get diaryFastScrollUntitled => 'Untitled';
 }

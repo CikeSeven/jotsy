@@ -11500,5 +11500,9 @@
   "diaryListToNumbered": "转为有序列表",
   "@diaryListToNumbered": {"description": "列表面板按钮：把选中的无序列表项改成有序列表。"},
   "diaryListToText": "转为正文",
-  "@diaryListToText": {"description": "列表面板按钮：把选中的列表项改回普通段落。"}
+  "@diaryListToText": {"description": "列表面板按钮：把选中的列表项改回普通段落。"},
+  "diaryFastScrollPinned": "置顶",
+  "@diaryFastScrollPinned": {"description": "首页快速滚动条：拖到置顶日记时气泡与刻度上的文字。"},
+  "diaryFastScrollUntitled": "无标题",
+  "@diaryFastScrollUntitled": {"description": "首页快速滚动条：按标题排序时，没有标题的日记在气泡与刻度上的文字。"}
 }

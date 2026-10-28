@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 
 /// 颜色代码最多几位：六位 RGB（三位简写同样接受，见 [parseDiaryHexInput]）。
@@ -37,6 +38,10 @@ class DiaryColorHexField extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = Theme.of(context).colorScheme;
+    // 工具栏为玻璃（或“控件”为玻璃）时换成半透明填充与玻璃描边；只换颜色，
+    // 焦点与键盘逻辑不动。获得焦点的主色描边照旧。
+    final glassField = AppGlassField.of(context);
+    final restingSide = glassField?.border ?? BorderSide.none;
     // 行高由 height 固定为 18dp，上下各 11dp，胶囊正好 40dp 高、文字居中。
     final textStyle = TextStyle(
       fontSize: 14,
@@ -76,7 +81,7 @@ class DiaryColorHexField extends StatelessWidget {
         style: textStyle,
         decoration: InputDecoration(
           filled: true,
-          fillColor: colors.surfaceContainerHigh,
+          fillColor: glassField?.fill ?? colors.surfaceContainerHigh,
           isDense: true,
           prefixText: '#',
           prefixStyle: textStyle.copyWith(color: colors.onSurfaceVariant),
@@ -86,8 +91,8 @@ class DiaryColorHexField extends StatelessWidget {
             horizontal: 8,
             vertical: 11,
           ),
-          border: pill(),
-          enabledBorder: pill(),
+          border: pill(restingSide),
+          enabledBorder: pill(restingSide),
           focusedBorder: pill(BorderSide(color: colors.primary, width: 1.5)),
         ),
       ),

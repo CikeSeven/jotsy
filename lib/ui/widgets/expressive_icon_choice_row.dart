@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../app/theme/app_spacing.dart';
+import '../app_surface/widgets/app_glass_field.dart';
 import 'expressive_state_blend.dart';
 
 /// 图标选择行中的一项。
@@ -22,7 +23,8 @@ class ExpressiveIconChoice<T> {
 /// 选项较多（四个以上）时比连接按钮组更省宽度：一行放下，比逐个带说明的
 /// 单选项省出大半屏高度。超过 [maxPerRow] 个时折成多行，末行用空位补齐，
 /// 每个色块宽度一致。选中项换 secondaryContainer 底并经
-/// [ExpressiveStateBlend] 补间。
+/// [ExpressiveStateBlend] 补间。未选中的底色与描边按 [AppGlassField] 取色
+/// （与按钮组未选中的段落同一口径），选中色不变。
 class ExpressiveIconChoiceRow<T> extends StatelessWidget {
   const ExpressiveIconChoiceRow({
     super.key,
@@ -94,6 +96,8 @@ class _IconChoiceSwatch extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final glassField = AppGlassField.of(context);
+    final restingSide = glassField?.border;
     return Semantics(
       selected: selected,
       inMutuallyExclusiveGroup: true,
@@ -102,7 +106,8 @@ class _IconChoiceSwatch extends StatelessWidget {
         active: selected,
         builder: (BuildContext context, double t, Widget? child) {
           final background = Color.lerp(
-            colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+            glassField?.fill ??
+                colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
             colorScheme.secondaryContainer,
             t,
           );
@@ -111,9 +116,16 @@ class _IconChoiceSwatch extends StatelessWidget {
             colorScheme.onSecondaryContainer,
             t,
           );
+          // 描边只属于未选中态，随选中补间淡出。经典时 side 为 none，
+          // 与原来的 borderRadius 写法画出的形状一致。
           return Material(
             color: background,
-            borderRadius: BorderRadius.circular(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: restingSide == null
+                  ? BorderSide.none
+                  : BorderSide.lerp(restingSide, BorderSide.none, t),
+            ),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
               onTap: onTap,

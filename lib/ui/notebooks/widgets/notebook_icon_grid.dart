@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/notebook_icon.dart';
 import 'notebook_cover_parts.dart';
 
 /// 日记本图标选择：44dp 圆形格子，选中的格子底色与图标补间到强调色容器色、
-/// 描边补间到 primary（[ExpressiveStateBlend]）。编辑页与快速新建弹窗共用。
+/// 描边补间到 primary（[ExpressiveStateBlend]）。未选中格子的底色与描边按
+/// [AppGlassField] 跟随“控件”材质，选中色不变。编辑页与快速新建弹窗共用。
 class NotebookIconGrid extends StatelessWidget {
   const NotebookIconGrid({
     super.key,
@@ -28,6 +30,13 @@ class NotebookIconGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final accent = notebookAccentColors(color, scheme);
+    final glassField = AppGlassField.of(context);
+    final restingFill = glassField?.fill ?? scheme.surfaceContainerHigh;
+    // 经典时是透明的 2dp primary 描边，补间到不透明；玻璃时从玻璃描边起步。
+    final restingSide =
+        glassField?.border ??
+        BorderSide(color: scheme.primary.withValues(alpha: 0), width: 2);
+    final selectedSide = BorderSide(color: scheme.primary, width: 2);
     return Wrap(
       spacing: AppSpacing.s,
       runSpacing: AppSpacing.s,
@@ -48,18 +57,9 @@ class NotebookIconGrid extends StatelessWidget {
                     height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color.lerp(
-                        scheme.surfaceContainerHigh,
-                        accent.container,
-                        t,
-                      ),
-                      border: Border.all(
-                        color: Color.lerp(
-                          scheme.primary.withValues(alpha: 0),
-                          scheme.primary,
-                          t,
-                        )!,
-                        width: 2,
+                      color: Color.lerp(restingFill, accent.container, t),
+                      border: Border.fromBorderSide(
+                        BorderSide.lerp(restingSide, selectedSide, t),
                       ),
                     ),
                     child: Center(

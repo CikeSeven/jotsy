@@ -15,6 +15,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../app/theme/expressive_motion.dart';
 import '../../core/services/app_platform.dart';
+import '../app_surface/widgets/app_glass_field.dart';
 
 /// 指针悬停时在 [child] 左右边缘淡入的翻页按钮（只在桌面）。
 ///
@@ -140,6 +141,9 @@ class _DesktopPageArrowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // “控件”为玻璃时换成玻璃底色 + 描边；不模糊（按钮在 AnimatedOpacity 里
+    // 淡入淡出，模糊会在淡入时闪一块无模糊的底）。
+    final glassField = AppGlassField.of(context);
     return SizedBox.square(
       dimension: DesktopPageArrows.size,
       child: IconButton(
@@ -148,8 +152,11 @@ class _DesktopPageArrowButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         style: IconButton.styleFrom(
           // 叠在正文与图片上：略透出下面的内容，又足够不透明保证图标可读。
-          backgroundColor: scheme.surfaceContainerHigh.withValues(alpha: 0.92),
+          backgroundColor:
+              glassField?.fill ??
+              scheme.surfaceContainerHigh.withValues(alpha: 0.92),
           foregroundColor: scheme.onSurface,
+          side: glassField?.border,
           shape: const CircleBorder(),
           fixedSize: const Size.square(DesktopPageArrows.size),
           minimumSize: const Size.square(DesktopPageArrows.size),

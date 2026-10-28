@@ -13,6 +13,7 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_service.dart';
@@ -141,6 +142,7 @@ class _ExploreMediaGalleryPageState
               ),
               const SizedBox(height: 12),
               FilledButton.tonal(
+                style: AppGlassField.tonalButtonStyle(context),
                 onPressed: _loadMore,
                 child: Text(l10n.commonRetry),
               ),

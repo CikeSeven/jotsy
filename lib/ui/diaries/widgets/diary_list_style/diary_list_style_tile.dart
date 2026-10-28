@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_list_style.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 import '../diary_editor/diary_block_markers.dart';
@@ -59,6 +60,10 @@ class DiaryListStyleTile extends StatelessWidget {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),
     );
+    // 同代码块的语言选项：玻璃下未选中为半透明底色（+ 玻璃描边，随选中
+    // 淡出），选中色不变；经典时原样。
+    final glassField = AppGlassField.of(context);
+    final restingSide = glassField?.border ?? BorderSide.none;
     return Tooltip(
       message: label,
       excludeFromSemantics: true,
@@ -82,11 +87,13 @@ class DiaryListStyleTile extends StatelessWidget {
             )!.withValues(alpha: 0.35);
             return Material(
               color: Color.lerp(
-                colors.surfaceContainerHigh,
+                glassField?.fill ?? colors.surfaceContainerHigh,
                 colors.primaryContainer,
                 t,
               ),
-              shape: shape,
+              shape: shape.copyWith(
+                side: BorderSide.lerp(restingSide, BorderSide.none, t),
+              ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onTap,

@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../viewmodels/notebook_view.dart';
@@ -56,6 +57,9 @@ class NotebookChildTile extends StatelessWidget {
     final mutedStyle = theme.textTheme.labelSmall?.copyWith(
       color: scheme.onSurfaceVariant,
     );
+    // 头部卡片里的子本格子随“控件”材质：玻璃卡片上不留一块实色补丁。
+    final glassField = AppGlassField.of(context);
+    final glassSide = glassField?.border;
     return Padding(
       padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
       child: Semantics(
@@ -66,8 +70,14 @@ class NotebookChildTile extends StatelessWidget {
         child: Opacity(
           opacity: notebook.isClosed ? 0.6 : 1,
           child: Material(
-            color: scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(14),
+            color: glassField?.fill ?? scheme.surfaceContainerHigh,
+            borderRadius: glassSide == null ? BorderRadius.circular(14) : null,
+            shape: glassSide == null
+                ? null
+                : RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: glassSide,
+                  ),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onTap,

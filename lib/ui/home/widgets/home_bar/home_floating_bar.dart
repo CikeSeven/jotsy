@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../app_surface/widgets/app_glass_fab.dart';
+import '../../../app_surface/widgets/app_glass_scope.dart';
+import '../../../widgets/glass/glass_reveal.dart';
 import '../../../widgets/glass/glass_surface.dart';
 import '../../../widgets/glass/outer_shadow_painter.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
@@ -195,12 +198,10 @@ class _InlineActionSlotState extends State<_InlineActionSlot>
                 alignment: Alignment.centerLeft,
                 minWidth: extent,
                 maxWidth: extent,
-                child: Opacity(
-                  opacity: ExpressiveMotion.effects.transform(t),
-                  child: Transform.scale(
-                    scale: 0.6 + 0.4 * settle,
-                    child: child,
-                  ),
+                child: _fade(
+                  context,
+                  ExpressiveMotion.effects.transform(t),
+                  Transform.scale(scale: 0.6 + 0.4 * settle, child: child),
                 ),
               ),
             );
@@ -209,13 +210,25 @@ class _InlineActionSlotState extends State<_InlineActionSlot>
       ),
     );
   }
+
+  /// 按钮的淡入：玻璃按钮经 [GlassReveal]（不能放进透明度层），实色照旧
+  /// Opacity。
+  static Widget _fade(BuildContext context, double opacity, Widget child) =>
+      HomeInlineCreateButton.isGlass(context)
+      ? GlassReveal(progress: opacity, child: child)
+      : Opacity(opacity: opacity, child: child);
 }
 
 /// 与悬浮底栏并排的新建按钮：边长为栏高的方块，圆角与胶囊一致（不超过
 /// 边长一半），主色容器底色 + 加号图标，投影与胶囊同源。
 ///
+/// “小控件”为玻璃时与全局 FAB 同一外壳（[AppGlassFab]：主色玻璃、玻璃
+/// 描边与投影，浮在列表上总是模糊），否则为实色。
+///
 /// [label] 用作长按提示与读屏文字（如“新建”“写进「旅行」”），按钮本身
-/// 只有图标。[progress] 为显现进度：按钮是实色的，直接按比例淡入。
+/// 只有图标。[progress] 为显现进度：实色按钮直接按比例淡入；玻璃按钮不能
+/// 放进透明度层，改经 [GlassReveal] 由玻璃自己淡入（调用方的入场同理，见
+/// [isGlass]）。
 class HomeInlineCreateButton extends StatelessWidget {
   const HomeInlineCreateButton({
     super.key,
@@ -232,6 +245,11 @@ class HomeInlineCreateButton extends StatelessWidget {
   final VoidCallback onPressed;
   final double progress;
 
+  /// 当前材质下按钮是否为玻璃：调用方据此在入场时用 [GlassReveal] 代替
+  /// Opacity。
+  static bool isGlass(BuildContext context) =>
+      AppGlass.of(context).isGlass(AppGlassComponent.controls);
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -239,6 +257,36 @@ class HomeInlineCreateButton extends StatelessWidget {
     final radius = BorderRadius.circular(
       math.min(style.cornerRadius, side / 2),
     );
+    if (isGlass(context)) {
+      return Semantics(
+        container: true,
+        button: true,
+        label: label,
+        child: Tooltip(
+          message: label,
+          excludeFromSemantics: true,
+          child: GlassReveal(
+            progress: progress.clamp(0.0, 1.0),
+            child: AppGlassFab(
+              borderRadius: radius,
+              child: SizedBox.square(
+                dimension: side,
+                child: InkWell(
+                  onTap: onPressed,
+                  child: Center(
+                    child: FaIcon(
+                      FontAwesomeIcons.plus,
+                      size: iconSize,
+                      color: AppGlassFab.foregroundOf(context),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Semantics(
       container: true,
       button: true,

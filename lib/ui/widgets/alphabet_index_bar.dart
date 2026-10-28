@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/theme/expressive_motion.dart';
+import '../app_surface/widgets/app_glass_field.dart';
 import 'expressive_state_blend.dart';
 
 /// 列表右侧的字母索引条：按下或上下拖动即跳到对应分组。
@@ -175,11 +176,15 @@ class _AlphabetIndexBarState extends State<AlphabetIndexBar>
                     curve: touching
                         ? ExpressiveMotion.effects
                         : ExpressiveMotion.exit,
+                    // 胶囊底跟随“控件”材质（只换填充，不加描边）；没有模糊，
+                    // 放在 AnimatedOpacity 里淡入无妨。
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
+                        color:
+                            AppGlassField.of(context)?.fill ??
+                            Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(
                           AlphabetIndexBar.width / 2,
                         ),

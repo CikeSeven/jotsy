@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/app_spacing.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../widgets/expressive_state_blend.dart';
 
 /// 一套内置预设在网格里的展示：图标、名称与一句说明。
@@ -80,6 +81,10 @@ class _PresetTile<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    // 玻璃时未选中为玻璃底色 + 玻璃描边（随选中淡出），选中色不变；经典时
+    // 原样（side 为 none 与只给 borderRadius 的形状一致）。
+    final glassField = AppGlassField.of(context);
+    final restingSide = glassField?.border ?? BorderSide.none;
     return Semantics(
       selected: selected,
       inMutuallyExclusiveGroup: true,
@@ -88,7 +93,8 @@ class _PresetTile<T> extends StatelessWidget {
         active: selected,
         builder: (BuildContext context, double t, Widget? child) {
           final background = Color.lerp(
-            scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            glassField?.fill ??
+                scheme.surfaceContainerHighest.withValues(alpha: 0.5),
             scheme.secondaryContainer,
             t,
           );
@@ -99,7 +105,10 @@ class _PresetTile<T> extends StatelessWidget {
           );
           return Material(
             color: background,
-            borderRadius: BorderRadius.circular(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide.lerp(restingSide, BorderSide.none, t),
+            ),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
               onTap: onTap,

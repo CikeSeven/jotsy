@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/app_surface/models/app_glass_style.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_controls_theme.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_fab.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
@@ -631,6 +632,166 @@ void main() {
       expect(month.color, OnGlass.wellColor(scheme));
       expect(sideOf(month), BorderSide.none);
       expect(segment(tester, 'Week').color, scheme.primary);
+    });
+  });
+
+  group('AppGlassControlsTheme', () {
+    Future<ThemeData> pumpTheme(
+      WidgetTester tester,
+      AppGlassStyle style,
+    ) async {
+      late ThemeData theme;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: expressiveTestTheme(Brightness.light),
+          builder: (BuildContext context, Widget? child) => AppGlassScope(
+            style: style,
+            child: AppGlassControlsTheme(child: child!),
+          ),
+          home: Builder(
+            builder: (context) {
+              theme = Theme.of(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      return theme;
+    }
+
+    testWidgets('classic leaves the theme untouched', (tester) async {
+      final theme = await pumpTheme(tester, AppGlassStyle.defaults);
+      final base = expressiveTestTheme(Brightness.light);
+      expect(theme.chipTheme, base.chipTheme);
+      expect(theme.inputDecorationTheme, base.inputDecorationTheme);
+      expect(theme.switchTheme, base.switchTheme);
+    });
+
+    testWidgets('glass controls: chips, inputs and switch tracks go glass', (
+      tester,
+    ) async {
+      final theme = await pumpTheme(tester, _glass);
+      final glass = AppGlass.of(tester.element(find.byType(SizedBox)));
+      expect(_translucent(glass.fill), isTrue);
+
+      final chip = theme.chipTheme;
+      expect(chip.backgroundColor, glass.fill);
+      // 选中仍为强调色、不加描边。
+      expect(chip.selectedColor, theme.colorScheme.secondaryContainer);
+      final side = chip.side! as WidgetStateBorderSide;
+      expect(side.resolve(<WidgetState>{}), glass.border);
+      expect(
+        side.resolve(<WidgetState>{WidgetState.selected}),
+        BorderSide.none,
+      );
+
+      final input = theme.inputDecorationTheme;
+      expect(input.fillColor, glass.fill);
+      expect(
+        (input.enabledBorder! as OutlineInputBorder).borderSide,
+        glass.border,
+      );
+      // 获得焦点时仍是主色描边。
+      expect(
+        (input.focusedBorder! as OutlineInputBorder).borderSide.color,
+        theme.colorScheme.primary,
+      );
+
+      final track = theme.switchTheme.trackColor!;
+      expect(track.resolve(<WidgetState>{}), glass.fill);
+      expect(track.resolve(<WidgetState>{WidgetState.selected}), isNull);
+    });
+
+    testWidgets('a themed FilterChip paints the glass fill', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: expressiveTestTheme(Brightness.light),
+          builder: (BuildContext context, Widget? child) => AppGlassScope(
+            style: _glass,
+            child: AppGlassControlsTheme(child: child!),
+          ),
+          home: Scaffold(
+            body: FilterChip(
+              label: const Text('Tag'),
+              selected: false,
+              onSelected: (_) {},
+            ),
+          ),
+        ),
+      );
+      final glass = AppGlass.of(tester.element(find.text('Tag')));
+      // Chip 的底色与描边画在 Ink 的 ShapeDecoration 上。
+      final decoration =
+          tester
+                  .widget<Ink>(
+                    find.descendant(
+                      of: find.byType(FilterChip),
+                      matching: find.byType(Ink),
+                    ),
+                  )
+                  .decoration!
+              as ShapeDecoration;
+      expect(decoration.color, glass.fill);
+      expect((decoration.shape as OutlinedBorder).side, glass.border);
+    });
+  });
+
+  group('AppGlassField.tonalButtonStyle', () {
+    testWidgets('null when classic, glass fill and border otherwise', (
+      tester,
+    ) async {
+      ButtonStyle? classic;
+      ButtonStyle? controls;
+      ButtonStyle? well;
+      await tester.pumpWidget(
+        _host(
+          child: Builder(
+            builder: (context) {
+              classic = AppGlassField.tonalButtonStyle(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      await tester.pumpWidget(
+        _host(
+          style: _glass,
+          child: Builder(
+            builder: (context) {
+              controls = AppGlassField.tonalButtonStyle(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      final glass = AppGlass.of(tester.element(find.byType(SizedBox)));
+      await tester.pumpWidget(
+        _host(
+          style: _toolbarOnly,
+          child: _onToolbarGlass(
+            Builder(
+              builder: (context) {
+                well = AppGlassField.tonalButtonStyle(context);
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      );
+      final scheme = _scheme(tester, find.byType(Scaffold));
+      expect(classic, isNull);
+      expect(controls!.backgroundColor!.resolve(<WidgetState>{}), glass.fill);
+      // 禁用态交给按钮自己的禁用色。
+      expect(
+        controls!.backgroundColor!.resolve(<WidgetState>{WidgetState.disabled}),
+        isNull,
+      );
+      expect(controls!.side!.resolve(<WidgetState>{}), glass.border);
+      expect(
+        well!.backgroundColor!.resolve(<WidgetState>{}),
+        OnGlass.wellColor(scheme),
+      );
+      expect(well!.side, isNull);
     });
   });
 }

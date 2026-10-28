@@ -4,6 +4,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_block_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_block_language_tracker.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_language.dart';
@@ -209,11 +210,7 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
     return Expanded(
       child: FilledButton.tonal(
         onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          minimumSize: const Size(0, _kActionsHeight),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+        style: _actionStyle(context),
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Row(
@@ -227,6 +224,17 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// 操作按钮的尺寸；面板在玻璃工具栏里时叠上玻璃底色与描边
+  /// （[AppGlassField.tonalButtonStyle]，经典时为 null，原样）。
+  ButtonStyle _actionStyle(BuildContext context) {
+    final base = FilledButton.styleFrom(
+      minimumSize: const Size(0, _kActionsHeight),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+    return AppGlassField.tonalButtonStyle(context)?.merge(base) ?? base;
   }
 
   /// 复制光标所在的代码块（选区跨块时取第一块），面板保持打开。

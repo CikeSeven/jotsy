@@ -38,4 +38,22 @@ class AppGlassField {
     }
     return null;
   }
+
+  /// 色调按钮（`FilledButton.tonal` / `IconButton.filledTonal`）在玻璃下的
+  /// 底色与描边，经典时为 null。主题无法单独给 tonal 变体取色（它与实心
+  /// `FilledButton` 共用 filledButtonTheme），所以由调用处传入
+  /// `style:`；已有 style 的用 `tonalButtonStyle(context)?.merge(style) ??
+  /// style`，玻璃的底色与描边优先。禁用态保留按钮自己的禁用色。
+  static ButtonStyle? tonalButtonStyle(BuildContext context) {
+    final field = of(context);
+    if (field == null) return null;
+    final side = field.border;
+    return ButtonStyle(
+      backgroundColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> states) =>
+            states.contains(WidgetState.disabled) ? null : field.fill,
+      ),
+      side: side == null ? null : WidgetStatePropertyAll(side),
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 
 /// 开始 / 结束时间按钮：上方小标题，下方大号时间。两个按钮等宽；12 小时制
 /// 的“上午 10:00”在窄屏大字号下可能放不下，时间只缩小不折行。
@@ -19,13 +20,14 @@ class DiaryTemplateTimeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return FilledButton.tonal(
-      style: FilledButton.styleFrom(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s,
-          vertical: AppSpacing.m,
-        ),
+    final style = FilledButton.styleFrom(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s,
+        vertical: AppSpacing.m,
       ),
+    );
+    return FilledButton.tonal(
+      style: AppGlassField.tonalButtonStyle(context)?.merge(style) ?? style,
       onPressed: onPressed,
       child: Column(
         mainAxisSize: MainAxisSize.min,

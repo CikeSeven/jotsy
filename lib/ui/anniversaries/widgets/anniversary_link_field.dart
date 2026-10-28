@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../diaries/viewmodels/diary_card_view_data.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../providers/anniversary_providers.dart';
@@ -62,11 +63,17 @@ class AnniversaryLinkField extends ConsumerWidget {
             : l10n.autoT0065;
       }
     }
+    // 同日期行：底色随主题的输入框填充（玻璃时已是玻璃底色），描边补上
+    // 玻璃描边。
+    final glassBorder = AppGlassField.of(context)?.border;
     return Material(
       color:
           theme.inputDecorationTheme.fillColor ??
           colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(AppRadii.input),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.input),
+        side: glassBorder ?? BorderSide.none,
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _pick(context),

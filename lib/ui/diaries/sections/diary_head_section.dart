@@ -6,6 +6,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 
@@ -248,17 +249,22 @@ class _SearchPreview extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
 
-    // 玻璃顶栏上不透明的卡片色会挖出一块实心色块、遮住后面透出的内容；
-    // 改成在玻璃上轻轻压一层前景色，保留描边勾出胶囊轮廓。
+    // “控件”为玻璃时与点开后的搜索页输入框同一材质（玻璃底色 + 玻璃描边）。
+    // 否则：玻璃顶栏上不透明的卡片色会挖出一块实心色块、遮住后面透出的
+    // 内容，改成在玻璃上轻轻压一层前景色，保留描边勾出胶囊轮廓。
+    final glassField = AppGlassField.of(context);
     final glassTopBars = HomeChromeScope.glassTopBarsOf(context);
     final Color fill;
-    if (glassTopBars) {
+    if (glassField != null) {
+      fill = glassField.fill;
+    } else if (glassTopBars) {
       fill = colorScheme.onSurface.withValues(alpha: isLight ? 0.05 : 0.08);
     } else {
       fill = isLight
           ? ExpressiveSurfaces.cardColor(colorScheme)
           : colorScheme.surfaceContainerHigh;
     }
+    final glassSide = glassField?.border;
 
     // 未进入搜索页时展示的“可点击搜索预览条”，采用 Expressive 柔和胶囊风格。
     return Container(
@@ -266,10 +272,12 @@ class _SearchPreview extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
         color: fill,
-        border: Border.all(
-          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-          width: 0.8,
-        ),
+        border: glassField != null
+            ? (glassSide == null ? null : Border.fromBorderSide(glassSide))
+            : Border.all(
+                color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+                width: 0.8,
+              ),
       ),
       child: Material(
         color: Colors.transparent,

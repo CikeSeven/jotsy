@@ -7,6 +7,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../diaries/widgets/tag_filter_chip.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
@@ -318,22 +319,26 @@ Widget notebookRuleTagChip(
   );
 }
 
-/// 心情胶囊（与日历筛选面板一致）；月份胶囊也用它。
+/// 心情胶囊（与日历筛选面板一致）；月份胶囊也用它。未选中时的底色与描边按
+/// [AppGlassField] 跟随玻璃（面板为玻璃或“控件”为玻璃），选中色不变。
 Widget notebookRuleOptionChip(
-  ColorScheme scheme, {
+  BuildContext context, {
   required String label,
   required bool selected,
   required VoidCallback onTap,
 }) {
+  final scheme = Theme.of(context).colorScheme;
   final isLight = scheme.brightness == Brightness.light;
+  final glassField = AppGlassField.of(context);
   return TagFilterChip(
     label: label,
     selected: selected,
     selectedColor: scheme.primary.withValues(alpha: isLight ? 0.16 : 0.28),
     selectedForegroundColor: scheme.onSurface,
     selectedBorderColor: scheme.primary,
-    unselectedColor: scheme.surfaceContainerHigh,
+    unselectedColor: glassField?.fill ?? scheme.surfaceContainerHigh,
     unselectedForegroundColor: scheme.onSurface,
+    unselectedBorderColor: glassField?.border?.color,
     radius: 12,
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     animateBorder: true,
@@ -358,7 +363,6 @@ class _MoodRuleEditorState extends ConsumerState<_MoodRuleEditor> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final options = ref.watch(moodOptionsProvider).value ?? const <String>[];
     final moods = <String>[
       ...options,
@@ -374,7 +378,7 @@ class _MoodRuleEditorState extends ConsumerState<_MoodRuleEditor> {
           children: <Widget>[
             for (final mood in moods)
               notebookRuleOptionChip(
-                scheme,
+                context,
                 label: mood,
                 selected: _selected.contains(mood),
                 onTap: () => setState(() {

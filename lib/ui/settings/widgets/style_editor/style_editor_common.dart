@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../diaries/models/style_library/saved_style.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../widgets/app_modal/app_dialog.dart';
@@ -45,9 +46,11 @@ class StylePreviewBrightnessButton extends StatelessWidget {
         icon: FaIcon(icon, size: 18),
       );
     }
+    // 预览工具条上与按钮组同排，一样跟随“控件”材质。
     return IconButton.filledTonal(
       tooltip: tooltip,
       onPressed: toggle,
+      style: AppGlassField.tonalButtonStyle(context),
       icon: FaIcon(icon, size: 16),
     );
   }

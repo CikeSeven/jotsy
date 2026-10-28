@@ -7,6 +7,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../diaries/widgets/tag_filter_chip.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
@@ -212,6 +213,9 @@ class _CalendarFilterSheetState extends ConsumerState<CalendarFilterSheet> {
 
   Widget _buildMoodChip(ColorScheme colorScheme, String mood, bool selected) {
     final isLight = colorScheme.brightness == Brightness.light;
+    // 未选中的底色与描边跟随“控件”材质（经典时为 null，保持原样）；
+    // 选中态的主色浅底与描边是强调，不变。
+    final glassField = AppGlassField.of(context);
     return TagFilterChip(
       label: mood,
       selected: selected,
@@ -220,8 +224,9 @@ class _CalendarFilterSheetState extends ConsumerState<CalendarFilterSheet> {
       ),
       selectedForegroundColor: colorScheme.onSurface,
       selectedBorderColor: colorScheme.primary,
-      unselectedColor: colorScheme.surfaceContainerHigh,
+      unselectedColor: glassField?.fill ?? colorScheme.surfaceContainerHigh,
       unselectedForegroundColor: colorScheme.onSurface,
+      unselectedBorderColor: glassField?.border?.color,
       radius: 12,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       animateBorder: true,

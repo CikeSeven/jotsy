@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../utils/text_stats.dart';
+import '../../../app_surface/widgets/on_glass.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../viewmodels/diary_card_media_summary.dart';
 
@@ -106,9 +107,12 @@ class DiaryWordCountSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            // 明细块：玻璃面板上换成半透明的凹槽色，不透明底会成为实色补丁。
             DecoratedBox(
               decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: OnGlass.of(context)
+                    ? OnGlass.wellColor(scheme)
+                    : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Padding(

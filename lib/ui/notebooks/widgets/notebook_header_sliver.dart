@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_view.dart';
@@ -211,6 +212,7 @@ class NotebookEmptyState extends StatelessWidget {
               children: <Widget>[
                 if (onWriteFirst != null)
                   FilledButton.tonalIcon(
+                    style: AppGlassField.tonalButtonStyle(context),
                     onPressed: onWriteFirst,
                     icon: const FaIcon(FontAwesomeIcons.penNib, size: 14),
                     label: Text(l10n.notebookEmptyWriteFirst),

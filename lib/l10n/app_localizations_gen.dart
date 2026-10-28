@@ -13418,6 +13418,18 @@ abstract class AppLocalizations {
   /// **'Write to the future; opens only when it\'s due'**
   String get settingsFeaturesTimeCapsulesSubtitle;
 
+  /// Features page: title of the swipe-to-archive switch (phones only).
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to archive'**
+  String get settingsFeaturesSwipeArchive;
+
+  /// Features page: subtitle of the swipe-to-archive switch; the same swipe restores a diary on the Archive page.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe a diary card left to archive it, or left in Archive to restore it'**
+  String get settingsFeaturesSwipeArchiveSubtitle;
+
   /// Features page: title of the confirmation shown when turning notebooks off with private notebooks.
   ///
   /// In en, this message translates to:

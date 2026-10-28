@@ -8228,6 +8228,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Write to the future; opens only when it\'s due';
 
   @override
+  String get settingsFeaturesSwipeArchive => 'Swipe to archive';
+
+  @override
+  String get settingsFeaturesSwipeArchiveSubtitle =>
+      'Swipe a diary card left to archive it, or left in Archive to restore it';
+
+  @override
   String get settingsFeaturesNotebooksOffTitle => 'Turn off notebooks?';
 
   @override

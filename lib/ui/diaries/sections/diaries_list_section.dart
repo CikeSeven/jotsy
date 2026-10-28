@@ -360,8 +360,9 @@ class DiariesListSection extends StatelessWidget {
       child: card,
     );
 
-    // 普通列表始终保留 Dismissible 根节点，避免进入选择模式时重建子树，
-    // 从而让首次长按也能完整播放选中反馈；选择模式仅关闭滑动方向。
+    // 普通列表始终保留侧滑包装，避免进入选择模式时重建子树，从而让首次
+    // 长按也能完整播放选中反馈；选择模式仅关闭滑动。未传 [onArchiveDiary]
+    // （功能管理里关闭了侧滑归档）时不包。
     // 桌面上不提供左滑：鼠标拖动卡片会误触发归档，右键菜单已提供同样的操作。
     if (!resolved.compact && onArchiveDiary != null && !AppPlatform.isDesktop) {
       final colorScheme = Theme.of(context).colorScheme;

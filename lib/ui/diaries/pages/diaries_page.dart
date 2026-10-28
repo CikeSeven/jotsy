@@ -328,6 +328,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       appFeaturesProvider.select((features) => features.notebooks),
     );
     final hasNotebooks = notebooksEnabled && ref.watch(hasNotebooksProvider);
+    // 功能管理里关闭侧滑归档时卡片不再左滑，仍可多选或在预览页归档。
+    final swipeArchiveEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.swipeArchive),
+    );
     ref.listen<bool>(
       appFeaturesProvider.select((features) => features.notebooks),
       (_, bool enabled) => _scopeController.handleFeatureToggled(enabled),
@@ -789,9 +793,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           noteId,
                                           forceSelect: forceSelect,
                                         ),
-                                    onArchiveDiary: (diaryId) => unawaited(
-                                      _controller.archiveDiaryBySwipe(diaryId),
-                                    ),
+                                    onArchiveDiary: swipeArchiveEnabled
+                                        ? (diaryId) => unawaited(
+                                            _controller.archiveDiaryBySwipe(
+                                              diaryId,
+                                            ),
+                                          )
+                                        : null,
                                     isSearchResultEmpty: false,
                                     selectionAnchor: _selectionAnchor,
                                     menuActions: _controller.menuActions(

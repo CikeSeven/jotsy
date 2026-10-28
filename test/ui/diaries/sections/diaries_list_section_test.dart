@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_swipe_action_item.dart';
 
 const _threeTags = <Tag>[
   Tag(id: 1, name: 'Tag 1', color: 0xFF336699),
@@ -138,8 +139,10 @@ void main() {
     final unselectedDecoration = unselectedSurface.decoration! as BoxDecoration;
     final unselectedColor = unselectedDecoration.color;
     expect(
-      tester.widget<Dismissible>(find.byType(Dismissible)).direction,
-      DismissDirection.endToStart,
+      tester
+          .widget<DiarySwipeActionItem>(find.byType(DiarySwipeActionItem))
+          .enabled,
+      isTrue,
     );
 
     await tester.pumpWidget(
@@ -162,8 +165,10 @@ void main() {
     expect(transitioningDecoration.color, isNot(unselectedColor));
     expect(transitioningMotion.transform.storage[0], lessThan(1));
     expect(
-      tester.widget<Dismissible>(find.byType(Dismissible)).direction,
-      DismissDirection.none,
+      tester
+          .widget<DiarySwipeActionItem>(find.byType(DiarySwipeActionItem))
+          .enabled,
+      isFalse,
     );
 
     await tester.pumpAndSettle();

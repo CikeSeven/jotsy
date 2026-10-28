@@ -30,6 +30,9 @@ import 'diary_export_naming.dart';
 /// 重名标题尤其不可靠），显式锚点在 GitHub、Typora 等渲染 HTML 的阅读器里
 /// 都能跳转。成书不再写每篇的 YAML front matter（一个文件只能有一份），
 /// 需要按篇导回 Jotsy 时关掉“书籍结构”。
+///
+/// 有留言时每篇正文之后是留言区（[_renderComments]）：标题比日记标题低一级
+/// （单篇 `##`、成书 `###`），每条留言一个列表项。
 class DiaryMarkdownWriter {
   const DiaryMarkdownWriter._();
 
@@ -168,6 +171,8 @@ class DiaryMarkdownWriter {
       body.add('![](${_destination(cover)})');
     }
     body.addAll(_renderBlocks(entry, labels: labels, mediaPathOf: mediaPathOf));
+    // 单篇的标题只在 front matter 里，相当于一级，留言区用二级。
+    body.addAll(_renderComments(entry, labels: labels, level: 2));
     if (body.isNotEmpty) {
       out
         ..writeln()
@@ -249,9 +254,37 @@ class DiaryMarkdownWriter {
             headingOffset: 2,
           ),
         );
+        sections.addAll(_renderComments(entry, labels: labels, level: 3));
       }
     }
     return '${sections.join('\n\n')}\n';
+  }
+
+  /// 留言区：[level] 级标题 + 每条留言一个列表项。说明行（斜体）在前，
+  /// 心情与文字随后；留言里的每一行各成一段（与正文的分行写法一致，不靠
+  /// 行尾空格或反斜杠换行，各种阅读器都显示为分开的行）。没有留言时为空。
+  static List<String> _renderComments(
+    DiaryExportEntry entry, {
+    required DiaryExportLabels labels,
+    required int level,
+  }) {
+    if (entry.comments.isEmpty) {
+      return const <String>[];
+    }
+    final items = <String>[
+      for (final comment in entry.comments)
+        <String>[
+          '- *${_escape(labels.commentMetaLine(entry, comment))}*',
+          for (final line in labels.commentText(comment).split('\n'))
+            if (line.trim().isNotEmpty)
+              // 续行缩进两格，仍属于这一项。
+              '  ${_escapeLineStart(_escape(line.trimRight()))}',
+        ].join('\n\n'),
+    ];
+    return <String>[
+      '${'#' * level} ${_escape(labels.commentsHeading)}',
+      items.join('\n\n'),
+    ];
   }
 
   /// 每组相邻的同类块（列表、引用、代码）合成一段，段与段之间空一行。

@@ -122,6 +122,50 @@ void main() {
     expect(rows[2], contains(',一,'));
   });
 
+  test(
+    'writes comments only when the feature and the switch are both on',
+    () async {
+      final d = await diary('回看', createdAt: DateTime(2026, 5, 1));
+      await fixture.database.addDiaryComment(
+        diaryId: d.diary.diaryId,
+        content: '回头再看',
+        mood: '😀',
+      );
+      Future<String> export({
+        required bool enabled,
+        bool include = true,
+        DiaryExportFormat format = DiaryExportFormat.text,
+      }) async {
+        final artifact = await controller().build(
+          <DiaryWithTags>[d],
+          options: DiaryExportOptions(format: format, includeComments: include),
+          labels: testExportLabels,
+          languageTag: 'zh',
+          commentsEnabled: enabled,
+        );
+        return artifact.file.readAsString();
+      }
+
+      // 功能关闭或开关关闭：与没有留言功能时完全相同。
+      final off = await export(enabled: false);
+      expect(off, isNot(contains('回头再看')));
+      expect(await export(enabled: true, include: false), off);
+      final on = await export(enabled: true);
+      expect(on, startsWith(off.trimRight()));
+      expect(on, contains('——— 留言 ———\n'));
+      expect(on, contains('😀 回头再看'));
+
+      final csvOff = await export(
+        enabled: false,
+        format: DiaryExportFormat.csv,
+      );
+      expect(csvOff.split('\r\n').first, endsWith('字数,最后编辑'));
+      final csvOn = await export(enabled: true, format: DiaryExportFormat.csv);
+      expect(csvOn.split('\r\n').first, endsWith('字数,最后编辑,留言'));
+      expect(csvOn, contains('😀 回头再看'));
+    },
+  );
+
   test('only sealed capsules selected → nothing to export', () async {
     final sealed = await diary(
       '胶囊',

@@ -11,7 +11,9 @@ import 'diary_export_plain_text.dart';
 /// 纯文本写出器：所有日记依次写进一个 `.txt`，篇与篇之间用分隔线隔开。
 ///
 /// 每篇：标题、日期行、（可选）信息行与标签行，空一行后是正文；图片与
-/// 附件写成一行说明，保留“这里原本有张图”的上下文。
+/// 附件写成一行说明，保留“这里原本有张图”的上下文。有留言时正文之后是
+/// 留言区：一行“——— 留言 ———”，每条留言为说明行加心情与文字，条与条之间
+/// 空一行。
 ///
 /// 导出成书（[book] 不为 null）时，开头依次是扉页（书名、简介、统计行与
 /// 导出日期）与目录（章节名下缩进列出“日期  标题”），各自以 [bookRule]
@@ -65,7 +67,19 @@ class DiaryTextWriter {
       entry.blocks,
       embedLabel: labels.mediaLine,
     );
-    return <String>[header.join('\n'), if (body.isNotEmpty) body].join('\n\n');
+    return <String>[
+      header.join('\n'),
+      if (body.isNotEmpty) body,
+      if (entry.comments.isNotEmpty) _comments(entry, labels),
+    ].join('\n\n');
+  }
+
+  /// 留言区：标题夹在两段短横线之间，与正文里的分隔线同一写法，一眼能
+  /// 看出正文到此为止。
+  static String _comments(DiaryExportEntry entry, DiaryExportLabels labels) {
+    const rule = ExportPlainText.dividerLine;
+    return '$rule ${labels.commentsHeading} $rule\n'
+        '${labels.commentsPlainText(entry)}';
   }
 
   static String _book(
@@ -115,7 +129,8 @@ class DiaryTextWriter {
 }
 
 /// CSV 写出器：每篇一行，列为日期、时间、标题、正文、心情、精力、天气、
-/// 地点、标签、字数与最后编辑时间。
+/// 地点、标签、字数与最后编辑时间；导出留言时（[write] 的 `includeComments`）
+/// 末尾多一列留言，一篇的全部留言写在同一格里。
 ///
 /// - 文件以 UTF-8 BOM 开头、行尾 CRLF（RFC 4180），Excel 直接双击打开不
 ///   乱码；
@@ -129,9 +144,13 @@ class DiaryCsvWriter {
   static final DateFormat _time = DateFormat('HH:mm');
   static final DateFormat _dateTime = DateFormat('yyyy-MM-dd HH:mm');
 
+  /// [includeComments] 由导出控制器按留言功能、开关与格式决定，而不是看
+  /// 有没有哪篇带留言：选了导出留言时，即使这几篇都没有留言也保留这一列，
+  /// 表头不随所选日记变化；不导出时表格与没有留言功能时逐字节相同。
   static DiaryExportOutput write(
     List<DiaryExportEntry> entries, {
     required DiaryExportLabels labels,
+    bool includeComments = false,
   }) {
     final rows = <List<String>>[
       <String>[
@@ -146,6 +165,7 @@ class DiaryCsvWriter {
         labels.tags,
         labels.wordCount,
         labels.updated,
+        if (includeComments) labels.commentsHeading,
       ],
       for (final entry in entries)
         <String>[
@@ -163,6 +183,7 @@ class DiaryCsvWriter {
           entry.tagNames.join(', '),
           '${entry.wordCount}',
           _dateTime.format(entry.updatedAt.toLocal()),
+          if (includeComments) labels.commentsPlainText(entry),
         ],
     ];
     final csv = rows

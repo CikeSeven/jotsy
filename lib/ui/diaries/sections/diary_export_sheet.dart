@@ -38,12 +38,16 @@ class DiaryExportRequest {
 /// [isBook] 为 true（导出成书）时：先后顺序由书决定，不显示排序；能写出
 /// 结构的格式在“选项”最前多一个“书籍结构”开关（默认开），表格与日记文件
 /// 照常导出、不显示它。这个开关只对本次有效，不写进导出选项。
+///
+/// [commentsEnabled]（留言功能开启）时，支持的格式多一个“包含留言”开关；
+/// 功能关闭时不显示，导出也不写留言（见 `DiaryExportController.build`）。
 Future<DiaryExportRequest?> showDiaryExportSheet(
   BuildContext context, {
   required int diaryCount,
   required DiaryExportOptions initialOptions,
   required ValueChanged<DiaryExportOptions> onOptionsChanged,
   bool isBook = false,
+  bool commentsEnabled = false,
 }) {
   return showAppModalBottomSheet<DiaryExportRequest>(
     context: context,
@@ -60,6 +64,7 @@ Future<DiaryExportRequest?> showDiaryExportSheet(
       initialOptions: initialOptions,
       onOptionsChanged: onOptionsChanged,
       isBook: isBook,
+      commentsEnabled: commentsEnabled,
     ),
   );
 }
@@ -71,6 +76,7 @@ class DiaryExportSheet extends StatefulWidget {
     required this.initialOptions,
     required this.onOptionsChanged,
     this.isBook = false,
+    this.commentsEnabled = false,
   });
 
   final int diaryCount;
@@ -79,6 +85,9 @@ class DiaryExportSheet extends StatefulWidget {
 
   /// 导出成书（见 [showDiaryExportSheet]）。
   final bool isBook;
+
+  /// 留言功能是否开启（见 [showDiaryExportSheet]）。
+  final bool commentsEnabled;
 
   @override
   State<DiaryExportSheet> createState() => _DiaryExportSheetState();
@@ -104,9 +113,12 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
     final showOrder =
         !widget.isBook && widget.diaryCount > 1 && format.supportsOrder;
     final showBookStructure = widget.isBook && format.supportsBookStructure;
+    final showComments =
+        widget.commentsEnabled && format.supportsCommentsToggle;
     final hasOptions =
         format.supportsMediaToggle ||
         format.supportsMetaToggle ||
+        showComments ||
         showOrder ||
         showBookStructure;
     return SafeArea(
@@ -157,6 +169,7 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
                         l10n,
                         showOrder: showOrder,
                         showBookStructure: showBookStructure,
+                        showComments: showComments,
                       ),
                     )
                   : const SizedBox(width: double.infinity),
@@ -206,6 +219,7 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
     AppLocalizations l10n, {
     required bool showOrder,
     required bool showBookStructure,
+    required bool showComments,
   }) {
     final format = _options.format;
     return Column(
@@ -236,6 +250,13 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
             value: _options.includeMeta,
             onChanged: (bool value) =>
                 _update(_options.copyWith(includeMeta: value)),
+          ),
+        if (showComments)
+          DiarySheetSwitch(
+            label: l10n.diaryExportIncludeComments,
+            value: _options.includeComments,
+            onChanged: (bool value) =>
+                _update(_options.copyWith(includeComments: value)),
           ),
         if (showOrder) ...<Widget>[
           const SizedBox(height: AppSpacing.s),

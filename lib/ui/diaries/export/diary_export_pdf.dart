@@ -18,6 +18,7 @@ import 'diary_export_font.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
 import 'diary_export_pdf_body.dart';
+import 'diary_export_pdf_comments.dart';
 import 'diary_export_pdf_text_effects.dart';
 import 'diary_export_plain_text.dart';
 
@@ -86,7 +87,8 @@ class DiaryPdfFonts {
 /// 所有图片先检查/载入后换成虚拟地址，避免缺图中断或泄露私有路径；高亮与
 /// 应用配色同源。中文字体的粗斜体经 DiaryPdfTextEffects 在绘制时补偿。
 ///
-/// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。
+/// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。有留言的
+/// 日记在正文之后接留言区（[buildDiaryPdfComments]，同样不写心情）。
 ///
 /// 排版库生成文档时要同时持有全部图片；图片总量超过 [maxImageBytes] 时
 /// 抛出 [DiaryExportTooLargeException]，请用户缩小范围或关闭图片，而不是
@@ -254,6 +256,7 @@ class DiaryPdfWriter {
         ),
       );
     }
+    widgets.addAll(buildDiaryPdfComments(entry, labels));
     return widgets;
   }
 

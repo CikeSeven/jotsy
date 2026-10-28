@@ -13,6 +13,7 @@ import '../export/diary_export_code.dart';
 import '../export/diary_export_font.dart';
 import '../export/diary_export_format.dart';
 import '../providers/diary_code_block_style_provider.dart';
+import '../providers/diary_comments_provider.dart';
 import '../providers/diary_typography_provider.dart';
 import '../sections/diary_export_sheet.dart';
 import '../viewmodels/diary_export_messages.dart';
@@ -52,11 +53,14 @@ Future<void> runDiaryExportFlow(
   if (!context.mounted) {
     return;
   }
+  // 留言功能关闭时面板不显示“包含留言”，生成时也不读留言。
+  final commentsEnabled = ref.read(diaryCommentsEnabledProvider);
   final request = await showDiaryExportSheet(
     context,
     diaryCount: diaries.length,
     initialOptions: DiaryExportOptions.fromRaw(settings.diaryExportOptionsRaw),
     isBook: book != null,
+    commentsEnabled: commentsEnabled,
     // 选项只是下次打开时的默认值，写入失败不打断本次导出。
     onOptionsChanged: (DiaryExportOptions options) => unawaited(
       settings
@@ -121,6 +125,7 @@ Future<void> runDiaryExportFlow(
         bookStructure: request.bookStructure,
         code: code,
         typography: typography,
+        commentsEnabled: commentsEnabled,
       ),
     );
   } on DiaryExportEmptyException catch (error) {

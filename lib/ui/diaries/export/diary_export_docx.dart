@@ -19,6 +19,7 @@ import 'diary_export_media.dart';
 /// 里都显示一致）；图片按原比例缩放到版心宽度内嵌入，Word 不支持的格式
 /// （WebP、HEIC）写成一行“[图片]”。给了代码配色（[DiaryExportCodeTheme]）
 /// 时代码段落的底色与正文字色取纸面配色，记号按角色写成带颜色的 run。
+/// 有留言的日记在正文之后写留言区（见 [_writeComments]）。
 ///
 /// 正文的文字色与背景色写成 run 的 `w:color` 与 `w:shd`。Word 的颜色没有
 /// 透明度，半透明的颜色（背景预设都是）先叠到纸面上再写（[flattenDiaryColors]）：
@@ -352,6 +353,42 @@ class DiaryDocxWriter {
             runs: b.inlines(block.inlines),
           );
       }
+    }
+    _writeComments(b, entry, labels);
+  }
+
+  /// 留言区（没有留言时不写）：一条分隔线、加粗的“留言”，每条留言为一段
+  /// 说明行（DiaryMeta）加一段心情与文字。
+  ///
+  /// 只用已有样式：样式表不随有没有留言变化，没有留言时文档逐字节不变。
+  /// 标题不用 Heading 样式，免得每篇的“留言”都进 Word 的导航窗格；留言里的
+  /// 换行写成 `w:br`，一条留言仍是一段，段间距不会把它拆散。
+  static void _writeComments(
+    _DocxBuilder b,
+    DiaryExportEntry entry,
+    DiaryExportLabels labels,
+  ) {
+    if (entry.comments.isEmpty) {
+      return;
+    }
+    b
+      ..paragraph(style: 'Divider', runs: const <String>[])
+      ..paragraph(runs: <String>[b.run(labels.commentsHeading, bold: true)]);
+    for (final comment in entry.comments) {
+      b
+        ..paragraph(
+          style: 'DiaryMeta',
+          runs: <String>[b.run(labels.commentMetaLine(entry, comment))],
+        )
+        ..paragraph(
+          runs: <String>[
+            for (final (index, line)
+                in labels.commentText(comment).split('\n').indexed) ...<String>[
+              if (index > 0) '<w:r><w:br/></w:r>',
+              b.run(line),
+            ],
+          ],
+        );
     }
   }
 

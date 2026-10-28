@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../export/diary_export_book.dart';
 import '../export/diary_export_entry.dart';
 import '../export/diary_export_format.dart';
+import 'diary_comment_timeline.dart';
 
 /// 写出器用的文案：按当前界面语言构造，日期带星期与时间。
 DiaryExportLabels buildDiaryExportLabels(AppLocalizations l10n) {
@@ -29,6 +30,13 @@ DiaryExportLabels buildDiaryExportLabels(AppLocalizations l10n) {
     video: l10n.diaryExportLabelVideo,
     attachment: l10n.diaryExportLabelAttachment,
     exportedBy: l10n.diaryExportLabelExportedBy,
+    commentsHeading: l10n.diaryExportCommentsHeading,
+    commentEdited: l10n.diaryCommentEdited,
+    commentAge: (DateTime diaryCreatedAt, DateTime commentCreatedAt) =>
+        diaryCommentRelativeLabel(l10n, diaryCreatedAt, commentCreatedAt),
+    // 导出文件会在以后、在别处打开：留言时间总是写出完整日期，不像预览页
+    // 那样按“今天 / 今年”省略。
+    commentTime: l10n.formatDateTimeMinute,
     formatDateTime: dateTime.format,
     formatDate: date.format,
     book: DiaryExportBookLabels(

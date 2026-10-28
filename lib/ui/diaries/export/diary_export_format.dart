@@ -85,6 +85,10 @@ enum DiaryExportFormat {
   bool get supportsMetaToggle =>
       this != DiaryExportFormat.csv && this != DiaryExportFormat.diaryFile;
 
+  /// 是否提供“包含留言”开关（留言功能开启时才显示）：日记文件经日记包
+  /// 导出，本就原样带着留言，不受开关影响。
+  bool get supportsCommentsToggle => this != DiaryExportFormat.diaryFile;
+
   bool get supportsMediaToggle => media != DiaryExportMediaSupport.none;
 
   /// 导出顺序对日记文件没有意义（导入后按日期排列）。
@@ -106,6 +110,7 @@ class DiaryExportOptions {
     this.format = DiaryExportFormat.pdf,
     this.includeMedia = true,
     this.includeMeta = true,
+    this.includeComments = true,
     this.order = DiaryExportOrder.oldestFirst,
   });
 
@@ -118,6 +123,11 @@ class DiaryExportOptions {
 
   /// 是否写出心情、天气、地点、精力与标签。
   final bool includeMeta;
+
+  /// 是否在每篇正文后写出它的留言。只在留言功能开启、格式支持
+  /// （[DiaryExportFormat.supportsCommentsToggle]）时生效；功能关闭时保留
+  /// 这一选择，重新开启后沿用。
+  final bool includeComments;
 
   /// 多篇导出时的排列顺序；默认从旧到新，读起来像一本日记。
   final DiaryExportOrder order;
@@ -151,6 +161,7 @@ class DiaryExportOptions {
       ),
       includeMedia: flag('media', defaults.includeMedia),
       includeMeta: flag('meta', defaults.includeMeta),
+      includeComments: flag('comments', defaults.includeComments),
       order: byName(DiaryExportOrder.values, decoded['order'], defaults.order),
     );
   }
@@ -159,6 +170,7 @@ class DiaryExportOptions {
     'format': format.name,
     'media': includeMedia,
     'meta': includeMeta,
+    'comments': includeComments,
     'order': order.name,
   });
 
@@ -166,12 +178,14 @@ class DiaryExportOptions {
     DiaryExportFormat? format,
     bool? includeMedia,
     bool? includeMeta,
+    bool? includeComments,
     DiaryExportOrder? order,
   }) {
     return DiaryExportOptions(
       format: format ?? this.format,
       includeMedia: includeMedia ?? this.includeMedia,
       includeMeta: includeMeta ?? this.includeMeta,
+      includeComments: includeComments ?? this.includeComments,
       order: order ?? this.order,
     );
   }
@@ -182,10 +196,12 @@ class DiaryExportOptions {
       other.format == format &&
       other.includeMedia == includeMedia &&
       other.includeMeta == includeMeta &&
+      other.includeComments == includeComments &&
       other.order == order;
 
   @override
-  int get hashCode => Object.hash(format, includeMedia, includeMeta, order);
+  int get hashCode =>
+      Object.hash(format, includeMedia, includeMeta, includeComments, order);
 }
 
 /// 打包进 zip 的一个文件：文本类内容给 [bytes]，大文件（视频等）给

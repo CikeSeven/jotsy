@@ -191,7 +191,7 @@ class _ParentNoneRow extends StatelessWidget {
           active: selected,
           builder: (BuildContext context, double t, Widget? child) => Material(
             color: Color.lerp(
-              scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+              notebookPickRowColor(context),
               scheme.secondaryContainer,
               t,
             ),

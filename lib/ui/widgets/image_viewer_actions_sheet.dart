@@ -8,6 +8,7 @@ import '../../app/theme/app_radii.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/expressive_motion.dart';
 import '../../core/services/app_platform.dart';
+import '../app_surface/widgets/on_glass.dart';
 import '../diaries/models/diary_share_target.dart';
 import '../diaries/widgets/diary_share_widgets.dart';
 import '../diaries/widgets/diary_sheet_controls.dart';
@@ -223,7 +224,8 @@ class _ShareTargetGrid extends StatelessWidget {
 }
 
 /// 动作分组：输入框填充色的大圆角块，与面板表面拉开层次（面板与卡片同为
-/// 纯净表面，卡片描边在面板上几乎看不见）；行间细分隔线与设置分组一致。
+/// 纯净表面，卡片描边在面板上几乎看不见）；面板为玻璃时换成半透明的
+/// [OnGlass.wellColor]，免得成为一块实色补丁。行间细分隔线与设置分组一致。
 class _ActionGroup extends StatelessWidget {
   const _ActionGroup({required this.children});
 
@@ -234,7 +236,9 @@ class _ActionGroup extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
     return Material(
-      color: isLight
+      color: OnGlass.of(context)
+          ? OnGlass.wellColor(colorScheme)
+          : isLight
           ? colorScheme.surfaceContainerLow
           : colorScheme.surfaceContainerHigh,
       borderRadius: BorderRadius.circular(AppRadii.card),

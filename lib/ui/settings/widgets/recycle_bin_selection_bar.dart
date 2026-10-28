@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/form_width.dart';
 
 /// 回收站有勾选时从底部升起的操作栏：“恢复”与 `error` 系的“彻底删除”两个
@@ -82,8 +83,10 @@ class _Bar extends StatelessWidget {
                 child: Row(
                   children: <Widget>[
                     Expanded(
+                      // “彻底删除”是危险色，不跟随玻璃；“恢复”跟随。
                       child: FilledButton.tonalIcon(
                         onPressed: onRestore,
+                        style: AppGlassField.tonalButtonStyle(context),
                         icon: const FaIcon(
                           FontAwesomeIcons.arrowRotateLeft,
                           size: 14,

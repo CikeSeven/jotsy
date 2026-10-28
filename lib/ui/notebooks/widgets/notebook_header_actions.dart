@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 
 /// 首页日记本头部卡片的操作行：一排小号的浅色按钮，窄屏时折行。
 ///
@@ -35,13 +36,15 @@ class NotebookHeaderActions extends StatelessWidget {
     final onOpenInsights = this.onOpenInsights;
     final onCreateChild = this.onCreateChild;
     // 小号按钮：紧凑密度、缩小内边距，仍保留 40dp 的可点高度。
-    final style = FilledButton.styleFrom(
+    final compact = FilledButton.styleFrom(
       visualDensity: VisualDensity.compact,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
       textStyle: Theme.of(
         context,
       ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
     );
+    final style =
+        AppGlassField.tonalButtonStyle(context)?.merge(compact) ?? compact;
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.m),
       child: Wrap(

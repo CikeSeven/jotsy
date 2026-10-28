@@ -17,6 +17,7 @@ import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/app_surface/providers/app_surface_settings_provider.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_controls_theme.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_snack_bar_theme.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
@@ -322,9 +323,13 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         // 页面、底部面板与对话框都能经 AppGlass.of 读到。只在材质设置变化
         // 时重建这一层（appGlassStyleProvider 已按 == 去重），改背景不影响。
         // 提示条的玻璃配色在同一处以主题覆盖交给全应用（见
-        // AppGlassSnackBarTheme），首页对 snackBarTheme 的 copyWith 会继承。
+        // AppGlassSnackBarTheme），首页对 snackBarTheme 的 copyWith 会继承；
+        // Chip、输入框与开关轨道的玻璃底色同样在这里覆盖（见
+        // AppGlassControlsTheme）。
         return Consumer(
-          child: AppGlassSnackBarTheme(child: region),
+          child: AppGlassSnackBarTheme(
+            child: AppGlassControlsTheme(child: region),
+          ),
           builder: (BuildContext context, WidgetRef ref, Widget? child) =>
               AppGlassScope(
                 style: ref.watch(appGlassStyleProvider),

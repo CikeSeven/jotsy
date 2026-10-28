@@ -7,6 +7,11 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../app_surface/widgets/app_card_surface.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../widgets/glass/glass_reveal.dart';
 import '../controllers/diary_template_apply_controller.dart';
 import '../models/diary_template.dart';
 import '../providers/diary_template_providers.dart';
@@ -70,6 +75,12 @@ class DiaryTemplateStrip extends ConsumerWidget {
             duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
             switchInCurve: ExpressiveMotion.effects,
             switchOutCurve: ExpressiveMotion.exit,
+            // 卡片为玻璃时提示条是玻璃表面，不能放进 FadeTransition（模糊会
+            // 采不到页面），改经 GlassReveal 由玻璃自己淡入。
+            transitionBuilder: AppCardSurface.isGlass(context)
+                ? (Widget child, Animation<double> animation) =>
+                      GlassRevealTransition(progress: animation, child: child)
+                : AnimatedSwitcher.defaultTransitionBuilder,
             layoutBuilder: (Widget? current, List<Widget> previous) => Stack(
               alignment: Alignment.topCenter,
               children: <Widget>[...previous, ?current],
@@ -117,14 +128,7 @@ class _StripCard extends StatelessWidget {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.m),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: ExpressiveSurfaces.cardColor(colorScheme),
-          borderRadius: BorderRadius.circular(AppRadii.input),
-          border: Border.fromBorderSide(
-            ExpressiveSurfaces.cardBorderSide(colorScheme),
-          ),
-        ),
+      child: _StripBox(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.m,
@@ -212,9 +216,11 @@ class _TemplateChip extends StatelessWidget {
     final name = template.name.isEmpty
         ? l10n.diaryTemplateUntitled
         : template.name;
+    // 玻璃时为半透明底色 + 玻璃描边，经典时原样。
+    final glassField = AppGlassField.of(context);
     return Material(
-      color: theme.colorScheme.surfaceContainerHigh,
-      shape: const StadiumBorder(),
+      color: glassField?.fill ?? theme.colorScheme.surfaceContainerHigh,
+      shape: StadiumBorder(side: glassField?.border ?? BorderSide.none),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -243,6 +249,37 @@ class _TemplateChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 提示条外壳：经典为卡片表面 + 0.8dp 微边框；“卡片”为玻璃时为内容玻璃
+/// （与页面里的其他卡片同一材质，切换的淡入见 transitionBuilder）。
+class _StripBox extends StatelessWidget {
+  const _StripBox({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(AppRadii.input));
+    if (AppCardSurface.isGlass(context)) {
+      return AppGlassSurface(
+        component: AppGlassComponent.cards,
+        borderRadius: radius,
+        child: child,
+      );
+    }
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: ExpressiveSurfaces.cardColor(colorScheme),
+        borderRadius: radius,
+        border: Border.fromBorderSide(
+          ExpressiveSurfaces.cardBorderSide(colorScheme),
+        ),
+      ),
+      child: child,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 
 /// 选择面板（导入来源、备份位置）共用的分组标题：主色图标 + 粗体标题。
 class ChoiceSheetSectionHeader extends StatelessWidget {
@@ -74,7 +75,7 @@ class ChoiceSheetSectionHint extends StatelessWidget {
 
 /// 两列等宽的紧凑选项按钮（`secondaryContainer` 底色，16dp 圆角），奇数项
 /// 时最后一个占半宽靠左；名称过长时缩小字号而不折行。[iconOf] 为空时只显示
-/// 名称（分组标题已有图标）。
+/// 名称（分组标题已有图标）。底色与描边按 [AppGlassField] 跟随“控件”材质。
 class ChoiceSheetCompactGrid<T> extends StatelessWidget {
   const ChoiceSheetCompactGrid({
     super.key,
@@ -93,6 +94,8 @@ class ChoiceSheetCompactGrid<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final glassField = AppGlassField.of(context);
+    final side = glassField?.border;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final width = (constraints.maxWidth - AppSpacing.s) / 2;
@@ -104,8 +107,12 @@ class ChoiceSheetCompactGrid<T> extends StatelessWidget {
               SizedBox(
                 width: width,
                 child: Material(
-                  color: colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(16),
+                  color: glassField?.fill ?? colorScheme.secondaryContainer,
+                  // 经典时 side 为 none，与只给 borderRadius 的形状一致。
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: side ?? BorderSide.none,
+                  ),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: () => onPick(item),

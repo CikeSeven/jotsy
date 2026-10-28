@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 
 import '../../widgets/expressive_state_blend.dart';
 import '../viewmodels/notebook_view.dart';
@@ -108,6 +109,12 @@ class NotebookSwitcherChip extends StatelessWidget {
         (inUnfiled ? scheme.onTertiaryContainer : scheme.onSecondaryContainer);
     final label = labelFor(context, current, unfiled: unfiled);
     final borderRadius = BorderRadius.circular(_radius);
+    // “控件”为玻璃时，停在全部日记的静止态与旁边的标签胶囊一样换成玻璃
+    // 底色 + 玻璃描边；在某本 / 未收录时仍是强调色容器（表示“正在范围里”），
+    // 描边随补间淡出。
+    final glassField = AppGlassField.of(context);
+    final restingBackground = glassField?.fill ?? scheme.secondaryContainer;
+    final restingSide = glassField?.border;
     return Semantics(
       button: true,
       label: context.l10n.notebookSwitcherSemantics(
@@ -122,7 +129,7 @@ class NotebookSwitcherChip extends StatelessWidget {
         builder: (BuildContext context, double t, Widget? _) {
           // 全部日记 ↔ 日记本之间补间；两本之间切换时直接换成新本子的颜色。
           final background = Color.lerp(
-            scheme.secondaryContainer,
+            restingBackground,
             targetBackground,
             t,
           )!;
@@ -131,9 +138,20 @@ class NotebookSwitcherChip extends StatelessWidget {
             targetForeground,
             t,
           )!;
+          final side = restingSide;
           return Material(
             color: background,
-            borderRadius: borderRadius,
+            borderRadius: side == null ? borderRadius : null,
+            shape: side == null
+                ? null
+                : RoundedRectangleBorder(
+                    borderRadius: borderRadius,
+                    side: side.copyWith(
+                      color: side.color.withValues(
+                        alpha: side.color.a * (1 - t).clamp(0.0, 1.0),
+                      ),
+                    ),
+                  ),
             child: InkWell(
               onTap: onTap,
               borderRadius: borderRadius,

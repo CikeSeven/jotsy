@@ -105,23 +105,29 @@ extension _HomePageChrome on _HomePageState {
   }
 
   /// 玻璃底栏右侧的并排新建按钮；文字与全局 FAB 相同，只作提示与读屏。
-  /// 按钮是实色的，可以放进 LaunchReveal 的 Opacity，按 action 槽位弹出。
+  /// 实色按钮放进 LaunchReveal 的 Opacity，按 action 槽位弹出；“控件”为
+  /// 玻璃时按钮是玻璃，入场改经 [LaunchReveal.builder] + [GlassReveal]。
   Widget _buildInlineCreateButton(HomeBarResolvedStyle barStyle) {
+    final button = Consumer(
+      builder: (context, ref, _) => HomeInlineCreateButton(
+        style: barStyle,
+        label: _createLabel(context, ref),
+        onPressed: () {
+          unawaited(_openCreateFromGlobalFab());
+        },
+      ),
+    );
     return IgnorePointer(
       // 切页动画途中不响应，与全局 FAB 一致。
       ignoring: !_canUseGlobalCreateFab,
-      child: LaunchReveal(
-        slot: LaunchRevealSlot.action,
-        child: Consumer(
-          builder: (context, ref, _) => HomeInlineCreateButton(
-            style: barStyle,
-            label: _createLabel(context, ref),
-            onPressed: () {
-              unawaited(_openCreateFromGlobalFab());
-            },
-          ),
-        ),
-      ),
+      child: HomeInlineCreateButton.isGlass(context)
+          ? LaunchReveal.builder(
+              slot: LaunchRevealSlot.action,
+              builder: (BuildContext context, double opacity, Widget? child) =>
+                  GlassReveal(progress: opacity, child: child!),
+              child: button,
+            )
+          : LaunchReveal(slot: LaunchRevealSlot.action, child: button),
     );
   }
 

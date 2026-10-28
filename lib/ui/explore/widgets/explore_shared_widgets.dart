@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../app/theme/app_effects.dart';
@@ -275,7 +276,11 @@ class ExploreInlineHint extends StatelessWidget {
         ),
         if (actionLabel != null) ...<Widget>[
           const SizedBox(height: 10),
-          FilledButton.tonal(onPressed: onAction, child: Text(actionLabel)),
+          FilledButton.tonal(
+            style: AppGlassField.tonalButtonStyle(context),
+            onPressed: onAction,
+            child: Text(actionLabel),
+          ),
         ],
       ],
     );

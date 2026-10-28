@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../viewmodels/notebook_rule_labels.dart';
 import 'notebook_rule_sheets.dart';
@@ -142,12 +143,15 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
           ),
         );
       case NotebookDateKind.lastDays:
+        // 面板为玻璃时加减按钮换成玻璃底色，经典时为 null（原样）。
+        final tonal = AppGlassField.tonalButtonStyle(context);
         return Padding(
           padding: padding,
           child: Row(
             children: <Widget>[
               IconButton.filledTonal(
                 tooltip: l10n.notebookRuleDaysDecrease,
+                style: tonal,
                 onPressed: _days > NotebookDateRule.minDays
                     ? () => _setDays(_days - 1)
                     : null,
@@ -183,6 +187,7 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
               const SizedBox(width: AppSpacing.s),
               IconButton.filledTonal(
                 tooltip: l10n.notebookRuleDaysIncrease,
+                style: tonal,
                 onPressed: _days < NotebookDateRule.maxDays
                     ? () => _setDays(_days + 1)
                     : null,
@@ -211,7 +216,7 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
             children: <Widget>[
               for (var month = 1; month <= 12; month++)
                 notebookRuleOptionChip(
-                  scheme,
+                  context,
                   label: notebookMonthShortName(l10n, month),
                   selected: _month == month,
                   onTap: () => setState(() => _month = month),

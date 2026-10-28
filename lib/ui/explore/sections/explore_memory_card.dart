@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../app_surface/widgets/app_glass_field.dart';
+import '../../app_surface/widgets/on_glass.dart';
 import '../controllers/explore_page_controller.dart' show ExplorePageController;
 import '../models/explore_module_options.dart';
 import '../models/explore_view_data.dart';
@@ -97,8 +99,11 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color:
-                    Theme.of(context).colorScheme.brightness == Brightness.light
+                // 玻璃卡片里改为半透明凹槽色，不留一块实色补丁。
+                color: OnGlass.of(context)
+                    ? OnGlass.wellColor(colorScheme)
+                    : Theme.of(context).colorScheme.brightness ==
+                          Brightness.light
                     ? colorScheme.surfaceContainerLow
                     : colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(14),
@@ -122,6 +127,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   ),
                   const SizedBox(height: 10),
                   FilledButton.tonal(
+                    style: AppGlassField.tonalButtonStyle(context),
                     onPressed: widget.onCreateToday,
                     child: Text(l10n.exploreGreetingWrite),
                   ),
@@ -255,7 +261,10 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
     // 底色与描边由 Material 承载，InkWell 的水波纹画在同一 Material 上；
     // 若用带底色的 Container 包在 InkWell 里，水波纹会被底色完全盖住。
     return Material(
-      color: isLight
+      // 玻璃卡片里与其他行一样改为半透明凹槽色。
+      color: OnGlass.of(context)
+          ? OnGlass.wellColor(colorScheme)
+          : isLight
           ? colorScheme.surfaceContainerLow
           : colorScheme.surfaceContainer,
       shape: RoundedRectangleBorder(

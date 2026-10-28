@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../controllers/notebook_cover_flows.dart';
@@ -99,50 +100,66 @@ class NotebookEditorCoverSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 CalendarOptionsFieldLabel(text: l10n.notebookCoverLabel),
-                Wrap(
-                  spacing: AppSpacing.s,
-                  runSpacing: AppSpacing.s,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: <Widget>[
-                    FilledButton.tonalIcon(
-                      onPressed: busy ? null : () => unawaited(onPickCover()),
-                      icon: const FaIcon(FontAwesomeIcons.image, size: 14),
-                      label: Text(l10n.notebookCoverPick),
-                    ),
-                    if (controller.notebookId != null)
-                      FilledButton.tonalIcon(
-                        onPressed: busy
-                            ? null
-                            : () => unawaited(
-                                pickNotebookCoverFromDiaries(
-                                  context,
-                                  controller,
-                                ),
-                              ),
-                        icon: const FaIcon(FontAwesomeIcons.images, size: 14),
-                        label: Text(l10n.notebookCoverFromDiaries),
-                      ),
-                    if (hasCover)
-                      OutlinedButton.icon(
-                        onPressed: busy
-                            ? null
-                            : () => unawaited(
-                                adjustNotebookCoverCrop(context, controller),
-                              ),
-                        icon: const FaIcon(
-                          FontAwesomeIcons.cropSimple,
-                          size: 14,
+                // 取卡片之内的 context：分组卡片为玻璃时按钮才读得到 OnGlass。
+                Builder(
+                  builder: (BuildContext cardContext) {
+                    final tonal = AppGlassField.tonalButtonStyle(cardContext);
+                    return Wrap(
+                      spacing: AppSpacing.s,
+                      runSpacing: AppSpacing.s,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: <Widget>[
+                        FilledButton.tonalIcon(
+                          onPressed: busy
+                              ? null
+                              : () => unawaited(onPickCover()),
+                          style: tonal,
+                          icon: const FaIcon(FontAwesomeIcons.image, size: 14),
+                          label: Text(l10n.notebookCoverPick),
                         ),
-                        label: Text(l10n.notebookCoverAdjustCrop),
-                      ),
-                    if (hasCover)
-                      TextButton(
-                        onPressed: busy
-                            ? null
-                            : () => controller.coverPath = null,
-                        child: Text(l10n.notebookCoverRemove),
-                      ),
-                  ],
+                        if (controller.notebookId != null)
+                          FilledButton.tonalIcon(
+                            onPressed: busy
+                                ? null
+                                : () => unawaited(
+                                    pickNotebookCoverFromDiaries(
+                                      context,
+                                      controller,
+                                    ),
+                                  ),
+                            style: tonal,
+                            icon: const FaIcon(
+                              FontAwesomeIcons.images,
+                              size: 14,
+                            ),
+                            label: Text(l10n.notebookCoverFromDiaries),
+                          ),
+                        if (hasCover)
+                          OutlinedButton.icon(
+                            onPressed: busy
+                                ? null
+                                : () => unawaited(
+                                    adjustNotebookCoverCrop(
+                                      context,
+                                      controller,
+                                    ),
+                                  ),
+                            icon: const FaIcon(
+                              FontAwesomeIcons.cropSimple,
+                              size: 14,
+                            ),
+                            label: Text(l10n.notebookCoverAdjustCrop),
+                          ),
+                        if (hasCover)
+                          TextButton(
+                            onPressed: busy
+                                ? null
+                                : () => controller.coverPath = null,
+                            child: Text(l10n.notebookCoverRemove),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

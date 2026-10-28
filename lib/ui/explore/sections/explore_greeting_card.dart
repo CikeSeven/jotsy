@@ -3,6 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../app_surface/widgets/app_glass_field.dart';
+import '../../app_surface/widgets/on_glass.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
 import '../../calendar/widgets/calendar_month_grid.dart';
 import '../controllers/explore_module_actions.dart';
@@ -157,8 +159,11 @@ class _ExploreGreetingCardState extends State<ExploreGreetingCard> {
             Container(
               width: double.infinity,
               padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 4, 10),
+              // 玻璃卡片里改为半透明凹槽色，不留一块实色补丁。
               decoration: BoxDecoration(
-                color: theme.brightness == Brightness.light
+                color: OnGlass.of(context)
+                    ? OnGlass.wellColor(scheme)
+                    : theme.brightness == Brightness.light
                     ? scheme.surfaceContainerLow
                     : scheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(16),
@@ -190,6 +195,7 @@ class _ExploreGreetingCardState extends State<ExploreGreetingCard> {
           if (showWrite) ...<Widget>[
             const SizedBox(height: 12),
             FilledButton.tonalIcon(
+              style: AppGlassField.tonalButtonStyle(context),
               onPressed: actions.createDiary,
               icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 14),
               label: Text(l10n.exploreGreetingWrite),

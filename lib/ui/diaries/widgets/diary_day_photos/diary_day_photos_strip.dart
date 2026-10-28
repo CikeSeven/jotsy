@@ -8,6 +8,11 @@ import '../../../../app/theme/app_radii.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../app/theme/expressive_surfaces.dart';
+import '../../../app_surface/widgets/app_card_surface.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
+import '../../../app_surface/widgets/app_glass_scope.dart';
+import '../../../app_surface/widgets/app_glass_surface.dart';
+import '../../../widgets/glass/glass_reveal.dart';
 import '../../controllers/diary_day_photos_controller.dart';
 import 'diary_day_photo_tile.dart';
 import 'diary_day_photos_limited_hint.dart';
@@ -61,6 +66,12 @@ class DiaryDayPhotosStrip extends StatelessWidget {
             duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
             switchInCurve: ExpressiveMotion.effects,
             switchOutCurve: ExpressiveMotion.exit,
+            // 卡片为玻璃时提示条是玻璃表面，不能放进 FadeTransition（模糊会
+            // 采不到页面），改经 GlassReveal 由玻璃自己淡入。
+            transitionBuilder: AppCardSurface.isGlass(context)
+                ? (Widget child, Animation<double> animation) =>
+                      GlassRevealTransition(progress: animation, child: child)
+                : AnimatedSwitcher.defaultTransitionBuilder,
             layoutBuilder: (Widget? current, List<Widget> previous) => Stack(
               alignment: Alignment.topCenter,
               children: <Widget>[...previous, ?current],
@@ -98,26 +109,39 @@ class _StripSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(AppRadii.input));
+    final content = Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.m,
+        AppSpacing.xs,
+        AppSpacing.xs,
+        AppSpacing.m,
+      ),
+      child: child,
+    );
+    // “卡片”为玻璃时为内容玻璃（切换的淡入见 transitionBuilder）。
+    if (AppCardSurface.isGlass(context)) {
+      return Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.m),
+        child: AppGlassSurface(
+          component: AppGlassComponent.cards,
+          borderRadius: radius,
+          child: content,
+        ),
+      );
+    }
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.m),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: ExpressiveSurfaces.cardColor(colorScheme),
-          borderRadius: BorderRadius.circular(AppRadii.input),
+          borderRadius: radius,
           border: Border.fromBorderSide(
             ExpressiveSurfaces.cardBorderSide(colorScheme),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.m,
-            AppSpacing.xs,
-            AppSpacing.xs,
-            AppSpacing.m,
-          ),
-          child: child,
-        ),
+        child: content,
       ),
     );
   }
@@ -205,12 +229,16 @@ class _AccessCard extends StatelessWidget {
             alignment: AlignmentDirectional.centerEnd,
             child: Padding(
               padding: const EdgeInsets.only(right: AppSpacing.s),
-              child: FilledButton.tonal(
-                onPressed: controller.requestAccess,
-                child: Text(
-                  openSettings
-                      ? l10n.diaryDayPhotosOpenSettings
-                      : l10n.diaryDayPhotosAllowAccess,
+              // 样式取提示条外壳之内的 context：外壳是玻璃时才认得出 OnGlass。
+              child: Builder(
+                builder: (BuildContext context) => FilledButton.tonal(
+                  onPressed: controller.requestAccess,
+                  style: AppGlassField.tonalButtonStyle(context),
+                  child: Text(
+                    openSettings
+                        ? l10n.diaryDayPhotosOpenSettings
+                        : l10n.diaryDayPhotosAllowAccess,
+                  ),
                 ),
               ),
             ),
@@ -338,9 +366,12 @@ class _PhotosCard extends StatelessWidget {
                           onClearCover: onClearCover,
                         ),
                         const SizedBox(width: AppSpacing.xs),
-                        FilledButton.tonal(
-                          onPressed: busy ? null : onInsert,
-                          child: Text(l10n.diaryDayPhotosInsert),
+                        Builder(
+                          builder: (BuildContext context) => FilledButton.tonal(
+                            onPressed: busy ? null : onInsert,
+                            style: AppGlassField.tonalButtonStyle(context),
+                            child: Text(l10n.diaryDayPhotosInsert),
+                          ),
                         ),
                       ],
                     ),

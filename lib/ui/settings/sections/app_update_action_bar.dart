@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/expressive_loading_indicator.dart';
 import '../models/app_update_state.dart';
 import '../widgets/app_update_download_progress_view.dart';
@@ -101,6 +102,7 @@ class AppUpdateActionBar extends StatelessWidget {
         return _wide(
           FilledButton.tonal(
             onPressed: onCheck,
+            style: AppGlassField.tonalButtonStyle(context),
             child: Text(l10n.appUpdateActionCheck),
           ),
         );
@@ -253,6 +255,7 @@ class AppUpdateActionBar extends StatelessWidget {
       return _wide(
         FilledButton.tonal(
           onPressed: onCheck,
+          style: AppGlassField.tonalButtonStyle(context),
           child: Text(l10n.appUpdateActionRetry),
         ),
       );

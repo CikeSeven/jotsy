@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/form_width.dart';
@@ -323,6 +324,9 @@ class NotebookContentsChapterHint extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    // 玻璃时为半透明底色 + 玻璃描边；经典时 side 为 none，与只给
+    // borderRadius 的形状一致。
+    final glassField = AppGlassField.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,
@@ -331,8 +335,11 @@ class NotebookContentsChapterHint extends StatelessWidget {
         AppSpacing.s,
       ),
       child: Material(
-        color: scheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(16),
+        color: glassField?.fill ?? scheme.secondaryContainer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: glassField?.border ?? BorderSide.none,
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onAddChapter,

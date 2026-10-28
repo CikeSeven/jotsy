@@ -19,6 +19,7 @@ import '../sections/notebook_add_diaries_parts.dart';
 import '../viewmodels/notebook_view.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
+import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
 /// 从已有日记里挑选、批量加进一本普通日记本（头部卡片“添加日记”与空日记本
@@ -291,7 +292,11 @@ class _NotebookAddDiariesPageState
                       hintText: l10n.notebookAddSearchHint,
                       isDense: true,
                       filled: true,
-                      fillColor: scheme.surfaceContainerHigh,
+                      // 玻璃时换成半透明填充；描边不用另加：未获焦点时用的是
+                      // 主题的 enabledBorder，玻璃下已带玻璃描边。
+                      fillColor:
+                          AppGlassField.of(context)?.fill ??
+                          scheme.surfaceContainerHigh,
                       prefixIcon: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: FaIcon(

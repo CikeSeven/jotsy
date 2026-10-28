@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../controllers/home_bar_style_editor_controller.dart';
 
 /// 预览工具条：只有预览明暗切换（导航栏没有需要在预览里切换的布局）。
@@ -22,6 +23,7 @@ class HomeBarStylePreviewToolbar extends StatelessWidget {
         children: <Widget>[
           const Spacer(),
           IconButton.filledTonal(
+            style: AppGlassField.tonalButtonStyle(context),
             tooltip: isLight
                 ? l10n.styleEditorPreviewDark
                 : l10n.styleEditorPreviewLight,

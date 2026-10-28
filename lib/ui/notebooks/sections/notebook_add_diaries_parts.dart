@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/widgets/tag_filter_chip.dart';
 import '../../widgets/expressive_icon_swap.dart';
@@ -35,6 +36,8 @@ class NotebookAddFilterBar extends StatelessWidget {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final isLight = scheme.brightness == Brightness.light;
+    // 时间筛选未选中时为玻璃底色（有玻璃描边时描边也用它）；选中色不变。
+    final glassField = AppGlassField.of(context);
     Widget timeChip(NotebookAddTimeFilter filter, String label) {
       final selected = timeFilter == filter;
       return TagFilterChip(
@@ -43,9 +46,10 @@ class NotebookAddFilterBar extends StatelessWidget {
         selectedColor: scheme.secondaryContainer,
         selectedForegroundColor: scheme.onSecondaryContainer,
         selectedBorderColor: scheme.secondary,
-        unselectedColor: scheme.surfaceContainerHigh,
+        unselectedColor: glassField?.fill ?? scheme.surfaceContainerHigh,
         unselectedForegroundColor: scheme.onSurfaceVariant,
-        unselectedBorderColor: scheme.outlineVariant,
+        unselectedBorderColor:
+            glassField?.border?.color ?? scheme.outlineVariant,
         radius: 12,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         animateBorder: true,
@@ -130,6 +134,10 @@ class NotebookAddDiaryRow extends StatelessWidget {
     final checked = selected || alreadyIn;
     final eyebrow = l10n.formatFullDate(diary.createdAt.toLocal());
     final muted = scheme.onSurfaceVariant;
+    // 玻璃时未勾选的行为玻璃底色 + 玻璃描边（随勾选淡出），勾选色不变；
+    // 经典时原样。
+    final glassField = AppGlassField.of(context);
+    final restingSide = glassField?.border ?? BorderSide.none;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.s),
       child: Semantics(
@@ -139,11 +147,15 @@ class NotebookAddDiaryRow extends StatelessWidget {
           active: selected,
           builder: (context, t, child) => Material(
             color: Color.lerp(
-              scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+              glassField?.fill ??
+                  scheme.surfaceContainerHighest.withValues(alpha: 0.45),
               scheme.secondaryContainer,
               t,
             ),
-            borderRadius: BorderRadius.circular(AppRadii.input),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadii.input),
+              side: BorderSide.lerp(restingSide, BorderSide.none, t),
+            ),
             child: child,
           ),
           child: InkWell(

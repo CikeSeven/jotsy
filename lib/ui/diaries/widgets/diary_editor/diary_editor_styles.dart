@@ -153,7 +153,10 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
       'heading' => switch (_headingLevel(node)) {
         1 => context.l10n.diaryEditorHeading1,
         2 => context.l10n.diaryEditorHeading2,
-        _ => context.l10n.diaryEditorHeading3,
+        3 => context.l10n.diaryEditorHeading3,
+        4 => context.l10n.diaryEditorHeading4,
+        5 => context.l10n.diaryEditorHeading5,
+        _ => context.l10n.diaryEditorHeading6,
       },
       'paragraph'
           when node.parent?.type == 'page' &&
@@ -164,5 +167,14 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
     },
     placeholderTextStyle: (_, {textSpan}) =>
         TextStyle(color: colors.onSurfaceVariant.withValues(alpha: 0.7)),
+    textAlign: diaryBlockTextAlign,
   );
 }
+
+/// 文字块的排版对齐。上游各文字块（段落、标题、列表、待办、引用，以及
+/// [DiaryParagraphBlock]）按 `data.align` 只认 left / center / right，认出时
+/// 直接用它；`justify` 认不出，回落到块配置的 `textAlign`，所以两端对齐只在
+/// 这里给出。其余情况与上游默认（[TextAlign.start]）相同，不设对齐的正文
+/// 排版不变。代码块另行固定为 start（见 `buildDiaryEditorBlocks`）。
+TextAlign diaryBlockTextAlign(af.Node node) =>
+    node.attributes['align'] == 'justify' ? TextAlign.justify : TextAlign.start;

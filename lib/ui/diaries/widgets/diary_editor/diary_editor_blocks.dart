@@ -107,6 +107,8 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
         padding: (_) => EdgeInsets.zero,
         textStyle: (_, {textSpan}) => code.codeTextStyle,
         placeholderText: (_) => ' ',
+        // 代码按原文排版，不随两端对齐拉开空格。
+        textAlign: (_) => TextAlign.start,
       ),
     ),
     // 独占一行的 1dp 细线，上下各留 12dp（DESIGN §3.2）。

@@ -23,6 +23,8 @@ enum DiaryToolbarItem {
   video,
   attachment,
   headerStyle,
+  align,
+  fontSize,
   orderedList,
   bulletList,
   checkList,
@@ -52,6 +54,10 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.currentTime,
   DiaryToolbarItem.quote,
   DiaryToolbarItem.headerStyle,
+  // 对齐与字号紧跟标题：新工具排在默认顺序的后半段，不挤进常驻的前几格；
+  // 已保存过顺序的用户由 [decodeDiaryToolbarOrder] 补到末尾。
+  DiaryToolbarItem.align,
+  DiaryToolbarItem.fontSize,
   DiaryToolbarItem.link,
   DiaryToolbarItem.textColor,
   DiaryToolbarItem.backgroundColor,
@@ -80,6 +86,8 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.video => 'video',
       DiaryToolbarItem.attachment => 'attachment',
       DiaryToolbarItem.headerStyle => 'header_style',
+      DiaryToolbarItem.align => 'align',
+      DiaryToolbarItem.fontSize => 'font_size',
       DiaryToolbarItem.orderedList => 'ordered_list',
       DiaryToolbarItem.bulletList => 'bullet_list',
       DiaryToolbarItem.checkList => 'check_list',
@@ -109,6 +117,10 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.video => FontAwesomeIcons.video,
       DiaryToolbarItem.attachment => FontAwesomeIcons.paperclip,
       DiaryToolbarItem.headerStyle => FontAwesomeIcons.heading,
+      // 工具栏上的对齐按钮按选区当前的对齐换图标（见 diary_toolbar_config），
+      // 这里是设置页与预览里的默认图标。
+      DiaryToolbarItem.align => FontAwesomeIcons.alignLeft,
+      DiaryToolbarItem.fontSize => FontAwesomeIcons.textHeight,
       DiaryToolbarItem.orderedList => FontAwesomeIcons.listOl,
       DiaryToolbarItem.bulletList => FontAwesomeIcons.listUl,
       DiaryToolbarItem.checkList => FontAwesomeIcons.squareCheck,
@@ -137,6 +149,8 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.video => l10n.diaryToolbarInsertVideo,
       DiaryToolbarItem.attachment => l10n.diaryToolbarInsertAttachment,
       DiaryToolbarItem.headerStyle => l10n.autoT0017,
+      DiaryToolbarItem.align => l10n.diaryToolbarAlign,
+      DiaryToolbarItem.fontSize => l10n.diaryToolbarFontSize,
       DiaryToolbarItem.orderedList => l10n.autoT0018,
       DiaryToolbarItem.bulletList => l10n.autoT0019,
       DiaryToolbarItem.checkList => l10n.autoT0020,

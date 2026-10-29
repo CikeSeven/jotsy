@@ -8839,6 +8839,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorHeading3 => 'Heading 3';
 
   @override
+  String get diaryEditorHeading4 => 'Heading 4';
+
+  @override
+  String get diaryEditorHeading5 => 'Heading 5';
+
+  @override
+  String get diaryEditorHeading6 => 'Heading 6';
+
+  @override
+  String get diaryToolbarAlign => 'Alignment';
+
+  @override
+  String get diaryToolbarFontSize => 'Font size';
+
+  @override
+  String get diaryHeadingPanelTitle => 'Heading';
+
+  @override
+  String get diaryHeadingPanelBody => 'Body';
+
+  @override
+  String get diaryAlignLeft => 'Align left';
+
+  @override
+  String get diaryAlignCenter => 'Center';
+
+  @override
+  String get diaryAlignRight => 'Align right';
+
+  @override
+  String get diaryAlignJustify => 'Justify';
+
+  @override
+  String get diaryFontSizeSmall => 'Small';
+
+  @override
+  String get diaryFontSizeNormal => 'Normal';
+
+  @override
+  String get diaryFontSizeLarge => 'Large';
+
+  @override
+  String get diaryFontSizeHuge => 'Huge';
+
+  @override
   String get diaryEditorCommandGroupText => 'Text';
 
   @override

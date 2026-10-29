@@ -203,6 +203,11 @@ class DiaryEditorController extends ChangeNotifier {
 
   Map<String, Object?> get activeAttributes {
     final nodes = selectedNodes;
+    // 对齐按选区里第一个非代码文字块（工具栏「对齐」按钮的图标与选中态），
+    // 与对齐面板的作用范围一致。
+    final firstText = nodes
+        .where((node) => node.delta != null && node.type != kDiaryBlockCode)
+        .firstOrNull;
     return {
       ...selectionAttributes,
       if (nodes.isNotEmpty &&
@@ -210,6 +215,7 @@ class DiaryEditorController extends ChangeNotifier {
         'type': nodes.first.type,
       if (nodes.isNotEmpty) 'depth': nodes.first.path.length - 1,
       if (nodes.isNotEmpty) 'level': nodes.first.attributes['level'],
+      kDiaryBlockAlignKey: firstText?.attributes[kDiaryBlockAlignKey],
     };
   }
 

@@ -79,6 +79,9 @@ List<DiaryBlockCommand> diaryBlockCommands(
     (1, l10n.diaryEditorHeading1),
     (2, l10n.diaryEditorHeading2),
     (3, l10n.diaryEditorHeading3),
+    (4, l10n.diaryEditorHeading4),
+    (5, l10n.diaryEditorHeading5),
+    (6, l10n.diaryEditorHeading6),
   ])
     DiaryBlockCommand(
       'heading',

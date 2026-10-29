@@ -18,6 +18,7 @@ import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_blocks.dart';
+import 'diary_editor_globals.dart';
 import 'diary_slash_commands.dart';
 import 'diary_slash_menu.dart';
 import 'diary_block_commands.dart';
@@ -96,6 +97,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   @override
   void initState() {
     super.initState();
+    // 上游的行内属性登记是全局的，必须先于任何编辑器构建（见该函数）。
+    ensureDiaryEditorGlobals();
     _bind();
   }
 

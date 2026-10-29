@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/content_codec.dart';
+import '../models/diary_link_candidate.dart';
 import 'diary_block_convert.dart';
 import 'diary_toggle_state.dart';
 
@@ -20,6 +21,7 @@ class DiaryEditorController extends ChangeNotifier {
     af.Document? document,
     af.Selection? selection,
     bool readOnly = false,
+    this.linkSource,
   }) : state = af.EditorState(
          document: document ?? af.Document.blank(withInitialText: true),
        ) {
@@ -45,12 +47,18 @@ class DiaryEditorController extends ChangeNotifier {
   factory DiaryEditorController.fromContent(
     String content, {
     bool readOnly = false,
+    DiaryLinkSource? linkSource,
   }) => DiaryEditorController(
     document: diaryEditorDocument(content),
     readOnly: readOnly,
+    linkSource: linkSource,
   );
 
   final af.EditorState state;
+
+  /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；
+  /// null 即不能（模板编辑页、只读正文）。见 [DiaryLinkSource]。
+  final DiaryLinkSource? linkSource;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
 

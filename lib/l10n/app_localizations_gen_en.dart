@@ -10641,4 +10641,110 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTableDelete => 'Delete table';
+
+  @override
+  String diaryLinkUntitled(String date) {
+    return 'Diary of $date';
+  }
+
+  @override
+  String get diaryLinkGroupDiaries => 'Diaries';
+
+  @override
+  String get diaryLinkGroupNotebooks => 'Notebooks';
+
+  @override
+  String get diaryLinkGroupWeb => 'Web';
+
+  @override
+  String get diaryLinkEmpty => 'No matching diaries or notebooks';
+
+  @override
+  String get diaryLinkMenuHint => 'Type to search titles and notebooks';
+
+  @override
+  String get diaryLinkMenuLabel => 'Link a diary or notebook';
+
+  @override
+  String get diaryLinkSearchDiaries => 'Search diary titles';
+
+  @override
+  String get diaryLinkSearchNotebooks => 'Search notebooks';
+
+  @override
+  String get diaryLinkOpen => 'Open';
+
+  @override
+  String get diaryLinkRemove => 'Remove link';
+
+  @override
+  String get diaryLinkCurrentDiary => 'Links to a diary';
+
+  @override
+  String get diaryLinkCurrentNotebook => 'Links to a notebook';
+
+  @override
+  String get diaryLinkMissingDiary => 'This diary no longer exists';
+
+  @override
+  String get diaryLinkMissingNotebook => 'This notebook no longer exists';
+
+  @override
+  String get diaryEditorDiaryCard => 'Diary card';
+
+  @override
+  String get diaryEditorNotebookCard => 'Notebook card';
+
+  @override
+  String get diaryLinkCardPrivate => 'Private diary';
+
+  @override
+  String diaryLinkCardSealed(String date) {
+    return 'Opens $date';
+  }
+
+  @override
+  String diaryLinkCardNotebookCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryLinkCardToInline => 'Convert to inline link';
+
+  @override
+  String get diaryLinkCardMenu => 'Card options';
+
+  @override
+  String get diaryBacklinksTitle => 'Mentioned in';
+
+  @override
+  String diaryBacklinksShowAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show all $count',
+      one: 'Show 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookBacklinksChip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mentioned in $count diaries',
+      one: 'Mentioned in 1 diary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookBacklinksTitle => 'Diaries mentioning this notebook';
 }

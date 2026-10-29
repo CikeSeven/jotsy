@@ -13202,5 +13202,136 @@
   "diaryTableDelete": "删除表格",
   "@diaryTableDelete": {
     "description": "表格面板：删除整个表格。"
+  },
+  "diaryLinkUntitled": "{date} 的日记",
+  "@diaryLinkUntitled": {
+    "description": "日记链接：没有标题与摘要的日记插入正文时的链接文字。",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Oct 29"
+      }
+    }
+  },
+  "diaryLinkGroupDiaries": "日记",
+  "@diaryLinkGroupDiaries": {
+    "description": "@ 菜单与链接对话框：日记分组的标题 / 对话框里“日记”一页。"
+  },
+  "diaryLinkGroupNotebooks": "日记本",
+  "@diaryLinkGroupNotebooks": {
+    "description": "@ 菜单与链接对话框：日记本分组的标题 / 对话框里“日记本”一页。"
+  },
+  "diaryLinkGroupWeb": "网址",
+  "@diaryLinkGroupWeb": {
+    "description": "链接对话框：“网址”一页（填写网页链接）。"
+  },
+  "diaryLinkEmpty": "没有找到日记或日记本",
+  "@diaryLinkEmpty": {
+    "description": "@ 菜单与链接对话框：检索词没有匹配项。"
+  },
+  "diaryLinkMenuHint": "输入标题或日记本名搜索",
+  "@diaryLinkMenuHint": {
+    "description": "@ 菜单：提示接着输入文字即可搜索。"
+  },
+  "diaryLinkMenuLabel": "链接日记或日记本",
+  "@diaryLinkMenuLabel": {
+    "description": "@ 菜单的无障碍标签。"
+  },
+  "diaryLinkSearchDiaries": "搜索日记标题",
+  "@diaryLinkSearchDiaries": {
+    "description": "链接对话框“日记”一页的搜索框提示。"
+  },
+  "diaryLinkSearchNotebooks": "搜索日记本",
+  "@diaryLinkSearchNotebooks": {
+    "description": "链接对话框“日记本”一页的搜索框提示。"
+  },
+  "diaryLinkOpen": "打开",
+  "@diaryLinkOpen": {
+    "description": "链接对话框与卡片菜单：打开链接到的日记或日记本。"
+  },
+  "diaryLinkRemove": "移除链接",
+  "@diaryLinkRemove": {
+    "description": "链接对话框：移除选中文字上的链接。"
+  },
+  "diaryLinkCurrentDiary": "链接到日记",
+  "@diaryLinkCurrentDiary": {
+    "description": "链接对话框：选中的文字已链接到一篇日记时的说明。"
+  },
+  "diaryLinkCurrentNotebook": "链接到日记本",
+  "@diaryLinkCurrentNotebook": {
+    "description": "链接对话框：选中的文字已链接到一本日记本时的说明。"
+  },
+  "diaryLinkMissingDiary": "这篇日记不存在或已删除",
+  "@diaryLinkMissingDiary": {
+    "description": "点按日记链接：目标日记已删除或不存在时的提示。"
+  },
+  "diaryLinkMissingNotebook": "这本日记本不存在或已删除",
+  "@diaryLinkMissingNotebook": {
+    "description": "点按日记本链接：目标日记本已删除或不存在时的提示。"
+  },
+  "diaryEditorDiaryCard": "日记卡片",
+  "@diaryEditorDiaryCard": {
+    "description": "/ 菜单命令与 @ 菜单标题：插入一张链接到日记的卡片。"
+  },
+  "diaryEditorNotebookCard": "日记本卡片",
+  "@diaryEditorNotebookCard": {
+    "description": "/ 菜单命令与 @ 菜单标题：插入一张链接到日记本的卡片。"
+  },
+  "diaryLinkCardPrivate": "私密日记",
+  "@diaryLinkCardPrivate": {
+    "description": "日记卡片：目标日记在私密日记本里时，代替标题显示。"
+  },
+  "diaryLinkCardSealed": "{date} 解封",
+  "@diaryLinkCardSealed": {
+    "description": "日记卡片：目标是未解封的时间胶囊时显示解封日期。",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Oct 29, 2027"
+      }
+    }
+  },
+  "diaryLinkCardNotebookCount": "{count} 篇",
+  "@diaryLinkCardNotebookCount": {
+    "description": "日记本卡片：本子里的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryLinkCardToInline": "转为行内链接",
+  "@diaryLinkCardToInline": {
+    "description": "日记卡片菜单：把卡片换成一段链接文字。"
+  },
+  "diaryLinkCardMenu": "卡片选项",
+  "@diaryLinkCardMenu": {
+    "description": "日记卡片在编辑态点按后弹出菜单的无障碍标签。"
+  },
+  "diaryBacklinksTitle": "提到这篇的日记",
+  "@diaryBacklinksTitle": {
+    "description": "预览页：列出链接到这篇日记的其他日记的区块标题。"
+  },
+  "diaryBacklinksShowAll": "全部 {count} 篇",
+  "@diaryBacklinksShowAll": {
+    "description": "预览页反向链接区：条数超过显示上限时打开全部的按钮。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookBacklinksChip": "被 {count} 篇日记提到",
+  "@notebookBacklinksChip": {
+    "description": "日记本头部：有日记链接到这本时的胶囊，点按查看。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookBacklinksTitle": "提到这本的日记",
+  "@notebookBacklinksTitle": {
+    "description": "日记本反向链接面板的标题。"
   }
 }

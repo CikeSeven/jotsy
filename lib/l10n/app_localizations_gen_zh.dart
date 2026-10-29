@@ -9517,4 +9517,92 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTableDelete => '删除表格';
+
+  @override
+  String diaryLinkUntitled(String date) {
+    return '$date 的日记';
+  }
+
+  @override
+  String get diaryLinkGroupDiaries => '日记';
+
+  @override
+  String get diaryLinkGroupNotebooks => '日记本';
+
+  @override
+  String get diaryLinkGroupWeb => '网址';
+
+  @override
+  String get diaryLinkEmpty => '没有找到日记或日记本';
+
+  @override
+  String get diaryLinkMenuHint => '输入标题或日记本名搜索';
+
+  @override
+  String get diaryLinkMenuLabel => '链接日记或日记本';
+
+  @override
+  String get diaryLinkSearchDiaries => '搜索日记标题';
+
+  @override
+  String get diaryLinkSearchNotebooks => '搜索日记本';
+
+  @override
+  String get diaryLinkOpen => '打开';
+
+  @override
+  String get diaryLinkRemove => '移除链接';
+
+  @override
+  String get diaryLinkCurrentDiary => '链接到日记';
+
+  @override
+  String get diaryLinkCurrentNotebook => '链接到日记本';
+
+  @override
+  String get diaryLinkMissingDiary => '这篇日记不存在或已删除';
+
+  @override
+  String get diaryLinkMissingNotebook => '这本日记本不存在或已删除';
+
+  @override
+  String get diaryEditorDiaryCard => '日记卡片';
+
+  @override
+  String get diaryEditorNotebookCard => '日记本卡片';
+
+  @override
+  String get diaryLinkCardPrivate => '私密日记';
+
+  @override
+  String diaryLinkCardSealed(String date) {
+    return '$date 解封';
+  }
+
+  @override
+  String diaryLinkCardNotebookCount(int count) {
+    return '$count 篇';
+  }
+
+  @override
+  String get diaryLinkCardToInline => '转为行内链接';
+
+  @override
+  String get diaryLinkCardMenu => '卡片选项';
+
+  @override
+  String get diaryBacklinksTitle => '提到这篇的日记';
+
+  @override
+  String diaryBacklinksShowAll(int count) {
+    return '全部 $count 篇';
+  }
+
+  @override
+  String notebookBacklinksChip(int count) {
+    return '被 $count 篇日记提到';
+  }
+
+  @override
+  String get notebookBacklinksTitle => '提到这本的日记';
 }

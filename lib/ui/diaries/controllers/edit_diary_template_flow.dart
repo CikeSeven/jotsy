@@ -200,6 +200,7 @@ class _EditDiaryTemplatePort implements DiaryTemplateEditorPort {
         editor.DiaryEditorController(
           document: body,
           selection: editor.diaryEditorSelectionAtOffset(body, caret),
+          linkSource: _state._linkSource,
         ),
       );
     });

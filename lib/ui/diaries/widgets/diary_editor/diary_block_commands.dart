@@ -7,6 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../utils/pinyin/name_index.dart';
 import '../../models/diary_toolbar_preferences.dart';
 import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../controllers/diary_callout_editing.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_editor_insert.dart';
@@ -66,10 +67,14 @@ class DiaryBlockCommand {
   }
 }
 
+/// [onLinkCard] 给出时（正文能插入日记链接）插入组多出“日记卡片”，
+/// [notebookCards] 再多出“日记本卡片”（日记本功能开启时）。
 List<DiaryBlockCommand> diaryBlockCommands(
   AppLocalizations l10n, {
   void Function(DiaryMediaKind)? onMedia,
   VoidCallback? onRecording,
+  void Function(DiaryLinkKind)? onLinkCard,
+  bool notebookCards = false,
 }) => [
   DiaryBlockCommand(
     'paragraph',
@@ -182,6 +187,26 @@ List<DiaryBlockCommand> diaryBlockCommands(
       group: DiaryBlockCommandGroup.insert,
       action: () => onMedia(DiaryMediaKind.attachment),
     ),
+  ],
+  // 日记链接卡片：在光标处开启卡片模式的 `@` 会话，选中后插入卡片。
+  if (onLinkCard != null) ...[
+    DiaryBlockCommand(
+      kDiaryBlockLinkCard,
+      l10n.diaryEditorDiaryCard,
+      FontAwesomeIcons.bookOpen,
+      const ['diary', 'card', 'link', 'mention', '日记', '卡片', '链接', '引用'],
+      group: DiaryBlockCommandGroup.insert,
+      action: () => onLinkCard(DiaryLinkKind.diary),
+    ),
+    if (notebookCards)
+      DiaryBlockCommand(
+        kDiaryBlockLinkCard,
+        l10n.diaryEditorNotebookCard,
+        FontAwesomeIcons.book,
+        const ['notebook', 'card', 'link', '日记本', '本子', '卡片', '链接'],
+        group: DiaryBlockCommandGroup.insert,
+        action: () => onLinkCard(DiaryLinkKind.notebook),
+      ),
   ],
   if (onRecording != null)
     DiaryBlockCommand(

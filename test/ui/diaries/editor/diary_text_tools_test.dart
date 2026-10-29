@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
@@ -14,7 +15,8 @@ import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
-/// 编辑器的文字工具周边：两端对齐的渲染。
+/// 编辑器的文字工具周边：两端对齐的渲染、`> ` 转引用、Ctrl+Shift+H 高亮
+/// 的颜色写法与桌面 Ctrl+K 打开应用自己的链接对话框。
 
 Map<String, Object?> _block(
   String type,
@@ -80,6 +82,20 @@ RichText _richText(WidgetTester tester, String text) => tester.widget<RichText>(
   }),
 );
 
+/// 软键盘输入：在当前光标处插入 [text]。
+Future<void> _type(WidgetTester tester, String text) async {
+  final state = tester.testTextInput.editingState!;
+  final value = state['text'] as String;
+  final caret = state['selectionBase'] as int;
+  tester.testTextInput.updateEditingValue(
+    TextEditingValue(
+      text: '${value.substring(0, caret)}$text${value.substring(caret)}',
+      selection: TextSelection.collapsed(offset: caret + text.length),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   for (final indent in [0.0, 2.0]) {
     testWidgets('justify renders TextAlign.justify on text blocks '
@@ -126,6 +142,119 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('typing > and a space turns a paragraph into a quote', (
+    tester,
+  ) async {
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
+    final controller = _document([
+      _block('paragraph', 'text', data: {'align': 'center'}),
+    ]);
+    controller.select(af.Selection.collapsed(af.Position(path: [0])));
+    await _pump(tester, controller, focusNode: focus);
+    focus.requestFocus();
+    await tester.pumpAndSettle();
+
+    await _type(tester, '>');
+    expect(controller.document.nodeAtPath([0])!.delta!.toPlainText(), '>text');
+    await _type(tester, ' ');
+
+    final node = controller.document.nodeAtPath([0])!;
+    expect(node.type, 'quote');
+    expect(node.delta!.toPlainText(), 'text');
+    expect(node.attributes['align'], 'center');
+
+    // 转换本身一步撤销。
+    controller.undo();
+    await tester.pumpAndSettle();
+    expect(controller.document.nodeAtPath([0])!.type, 'paragraph');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('> and a space stay literal inside a code block', (tester) async {
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
+    final controller = _document([_block('code', '')]);
+    controller.select(af.Selection.collapsed(af.Position(path: [0])));
+    await _pump(tester, controller, focusNode: focus);
+    focus.requestFocus();
+    await tester.pumpAndSettle();
+
+    await _type(tester, '>');
+    await _type(tester, ' ');
+
+    final node = controller.document.nodeAtPath([0])!;
+    expect(node.type, 'code');
+    expect(node.delta!.toPlainText(), '> ');
+    expect(tester.takeException(), isNull);
+  });
+
+  Future<void> shortcut(
+    WidgetTester tester,
+    LogicalKeyboardKey key, {
+    bool shift = false,
+  }) async {
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(key);
+    if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets(
+    'Ctrl+Shift+H writes the uppercase #AARRGGBB highlight and toggles off',
+    (tester) async {
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      final controller = _document([_block('paragraph', 'hello')]);
+      await _pump(tester, controller, focusNode: focus);
+      focus.requestFocus();
+      await tester.pumpAndSettle();
+      controller.select(
+        af.Selection.single(path: [0], startOffset: 0, endOffset: 5),
+      );
+      await tester.pumpAndSettle();
+
+      await shortcut(tester, LogicalKeyboardKey.keyH, shift: true);
+      final ops = controller.document.nodeAtPath([0])!.delta!.toList();
+      expect(ops.single.attributes, {'bg_color': '#66FFC107'});
+
+      await shortcut(tester, LogicalKeyboardKey.keyH, shift: true);
+      expect(
+        controller.document.nodeAtPath([0])!.delta!.toList().single.attributes,
+        isNull,
+      );
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets('Ctrl+K on desktop opens the app link dialog', (tester) async {
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
+    final controller = _document([_block('paragraph', 'hello')]);
+    await _pump(tester, controller, focusNode: focus);
+    focus.requestFocus();
+    await tester.pumpAndSettle();
+    controller.select(
+      af.Selection.single(path: [0], startOffset: 0, endOffset: 5),
+    );
+    await tester.pumpAndSettle();
+
+    await shortcut(tester, LogicalKeyboardKey.keyK);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('链接'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'example.com');
+    await tester.tap(find.text('确认'));
+    await tester.pumpAndSettle();
+    expect(
+      controller.document.nodeAtPath([0])!.delta!.toList().single.attributes,
+      {'href': 'https://example.com'},
+    );
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 }
 
 class _CodeStyle extends DiaryCodeBlockStyleNotifier {

@@ -1,6 +1,7 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';
 import 'diary_block_convert.dart';
 import 'diary_editor_controller.dart';
@@ -159,4 +160,31 @@ void _forEachSelectedRange(
         : length;
     if (to > from) visit(node, from, to);
   }
+}
+
+// ---- 高亮快捷键 ----
+
+/// Ctrl / ⌘ + Shift + H 写入的高亮色：色板里黄色背景预设（与导入的高亮同值），
+/// 按应用的颜色写法编码为大写 `#AARRGGBB`。
+final String kDiaryDefaultHighlight = encodeDiaryColor(
+  DiaryColorPreset.yellow.colorFor(DiaryColorTarget.background),
+);
+
+/// 选中的文字整段都是默认高亮色时去掉背景色，否则涂上默认高亮色（一步
+/// 撤销）。取代上游的同名快捷键：上游写 `0x60FFCE00` 这种写法，与颜色面板、
+/// 导出认的 `#AARRGGBB` 不一致。折叠光标时不处理（与上游相同）。
+bool toggleDiaryDefaultHighlight(DiaryEditorController controller) {
+  final selection = controller.selection;
+  if (controller.readOnly || selection == null || selection.isCollapsed) {
+    return false;
+  }
+  final current = DiaryColorValue.of(
+    controller.selectionAttributes,
+    DiaryColorTarget.background,
+  );
+  controller.format(
+    DiaryColorTarget.background.attributeKey,
+    current.raw == kDiaryDefaultHighlight ? null : kDiaryDefaultHighlight,
+  );
+  return true;
 }

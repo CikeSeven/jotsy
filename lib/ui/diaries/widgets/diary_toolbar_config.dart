@@ -14,7 +14,7 @@ import 'package:node_diary/ui/diaries/models/diary_toolbar_time_format.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
-import '../../widgets/app_modal/app_dialog.dart';
+import 'diary_link_dialog.dart';
 
 /// 工具栏保持同一套尺寸与图标，动作直接作用于 AppFlowy 选区和节点。
 const BoxConstraints kDiaryToolbarButtonConstraints = BoxConstraints.tightFor(
@@ -129,7 +129,7 @@ Widget buildDiaryToolbarItem(
                           return;
                         }
                         if (tool == DiaryToolbarItem.link) {
-                          unawaited(_editLink(context, controller));
+                          unawaited(editDiaryLink(context, controller));
                           return;
                         }
                         _apply(tool, controller, outdent: outdent);
@@ -238,68 +238,6 @@ void _apply(
     default:
       break;
   }
-}
-
-Future<void> _editLink(
-  BuildContext context,
-  DiaryEditorController controller,
-) async {
-  final selection = controller.selection;
-  if (selection == null) return;
-  final initial = controller.selectionAttributes['href'];
-  final input = TextEditingController(text: initial is String ? initial : '');
-  final l10n = context.l10n;
-  String? error;
-  final url = await showAppDialog<String>(
-    context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
-        title: Text(l10n.autoT0024),
-        content: TextField(
-          controller: input,
-          autofocus: true,
-          keyboardType: TextInputType.url,
-          decoration: InputDecoration(
-            labelText: l10n.diaryEditorLinkUrl,
-            errorText: error,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () {
-              var value = input.text.trim();
-              if (value.isNotEmpty) {
-                if (!(Uri.tryParse(value)?.hasScheme ?? false)) {
-                  value = 'https://$value';
-                }
-                final uri = Uri.tryParse(value);
-                if (uri == null ||
-                    !['https', 'http', 'mailto', 'tel'].contains(uri.scheme) ||
-                    (['https', 'http'].contains(uri.scheme) &&
-                        uri.host.isEmpty)) {
-                  setState(() => error = l10n.diaryEditorInvalidLink);
-                  return;
-                }
-              }
-              Navigator.pop(context, value);
-            },
-            child: Text(l10n.commonConfirm),
-          ),
-        ],
-      ),
-    ),
-  );
-  input.dispose();
-  if (url == null || controller.state.isDisposed) return;
-  controller.select(selection);
-  controller.format('href', url.isEmpty ? null : url);
 }
 
 /// 对齐的图标：工具栏「对齐」按钮（按选区当前的对齐）与对齐面板共用。

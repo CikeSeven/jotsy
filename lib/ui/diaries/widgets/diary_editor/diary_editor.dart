@@ -11,6 +11,7 @@ import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
 import '../../controllers/diary_block_editing.dart';
 import '../../controllers/diary_editor_clipboard.dart';
+import '../../controllers/diary_text_style_editing.dart';
 import '../../models/diary_code_block/diary_code_block_style.dart';
 import '../../providers/diary_code_block_style_provider.dart';
 import '../../providers/diary_typography_provider.dart';
@@ -28,6 +29,7 @@ import 'diary_editor_styles.dart';
 import 'diary_editor_interaction_layer.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_inline_page.dart';
+import '../diary_link_dialog.dart';
 
 /// 所有正文位置共用 AppFlowy 渲染与主题。编辑页使用原生虚拟滚动，标题等
 /// 非正文 UI 经 header/footer 装配；只读正文可嵌在预览页的现有滚动视图中。
@@ -331,9 +333,37 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               return KeyEventResult.handled;
             },
           ),
+        // 高亮写应用自己的颜色格式（见 toggleDiaryDefaultHighlight）。
+        af.CommandShortcutEvent(
+          key: 'diary_toggle_highlight',
+          getDescription: () => 'toggle highlight',
+          command: 'ctrl+shift+h',
+          macOSCommand: 'cmd+shift+h',
+          handler: (_) => toggleDiaryDefaultHighlight(controller)
+              ? KeyEventResult.handled
+              : KeyEventResult.ignored,
+        ),
+        // 桌面的 Ctrl / ⌘ + K 打开与工具栏「链接」相同的对话框，取代上游的
+        // 链接浮层（样式与校验都与应用不一致）。手机保持上游行为。
+        if (AppPlatform.isDesktop)
+          af.CommandShortcutEvent(
+            key: 'diary_edit_link',
+            getDescription: () => 'edit link',
+            command: 'ctrl+k',
+            macOSCommand: 'cmd+k',
+            handler: (_) {
+              if (!mounted || controller.readOnly) {
+                return KeyEventResult.ignored;
+              }
+              unawaited(editDiaryLink(context, controller));
+              return KeyEventResult.handled;
+            },
+          ),
         for (final event in af.standardCommandShortcutEvents)
-          if (!AppPlatform.isDesktop ||
-              !identical(event, af.exitEditingCommand))
+          if (!identical(event, af.toggleHighlightCommand) &&
+              !(AppPlatform.isDesktop &&
+                  (identical(event, af.exitEditingCommand) ||
+                      identical(event, af.showLinkMenuCommand))))
             event,
       ],
       // 桌面的复制 / 粘贴菜单只在右键时出现（手机为选中后自动浮出，见

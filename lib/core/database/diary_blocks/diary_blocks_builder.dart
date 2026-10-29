@@ -1,8 +1,9 @@
 import 'diary_blocks_schema.dart';
 
 /// 从按阅读顺序到达的块建立子树：旧缩进跳级时就近降到合法父块下，遇到
-/// 不画子块的块（标题、引用、代码块、媒体）挂到更外层。
+/// 不画子块的块（标题、引用、代码块、标注、表格、媒体）挂到更外层。
 /// 历史格式转换和第三方导入共用这一条规则，输出键序与编辑器 Node 一致。
+/// 自带子块的节点（如导入时整个建好的表格：格子与格内段落）原样带上。
 class DiaryBlocksBuilder {
   final _root = <Map<String, Object?>>[];
   final _stack = <Map<String, Object?>>[];
@@ -42,8 +43,12 @@ class DiaryBlocksBuilder {
 
   Map<String, Object?> _ordered(Map<String, Object?> node) => {
     'type': node['type'],
-    if (node['children'] case final List<Map<String, Object?>> children)
-      'children': children.map(_ordered).toList(),
+    // 不限定列表的元素类型：调用方建好的子树（如表格）可能是 List<Object?>。
+    if (node['children'] case final List children)
+      'children': [
+        for (final child in children)
+          if (child is Map) _ordered(child.cast<String, Object?>()),
+      ],
     if (node['data'] case final data?) 'data': data,
   };
 }

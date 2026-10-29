@@ -205,6 +205,7 @@
 - 例外：用户明确授权回滚/改写时可执行，并先说明影响。
 - 必须：需要新建工作树（如主目录已有其他代理在改动）时，使用代理自带的工作树工具创建（Claude Code 为 `EnterWorktree`，落在已忽略的 `.claude/worktrees/`），默认以远程 `origin/main` 为基准；新工作树需先执行 `flutter pub get`（无网络时加 `--offline`）再分析与测试。
 - 禁止：手动 `git worktree add` 新建工作树；在工作树中工作时读写、暂存或提交主目录的文件（`git stash` 为所有工作树共享，不得使用不带标记的 `git stash` / `git stash pop`）。
+- 必须：每次开 PR 前先 `git fetch origin`，检查 `origin/main` 有没有分支里还没有的新提交；有就先合并进分支（`git merge origin/main`，已推送的分支不 rebase、不改写历史），解决冲突后重跑与改动相关的 `dart format`、`flutter analyze` 与测试，通过后再推送、开 PR。PR 开着期间 main 有新提交并与之冲突时同样处理；PR 说明里写明合并了哪些冲突、怎么解决的。
 - 提交前检查项：
   - 本次变更是否仅覆盖目标文件
   - 是否满足本规范中的编码、注释、分层、UI 规则

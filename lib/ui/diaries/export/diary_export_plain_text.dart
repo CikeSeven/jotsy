@@ -1,10 +1,13 @@
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_export_blocks.dart';
 
 /// 块列表 → 纯文本（分享、TXT 与 CSV 导出共用）。
 ///
 /// 纯文本的读者是社交应用的发布框、记事本与表格软件，它们都不渲染
 /// Markdown，`**粗体**` 之类的标记会原样露出来，所以只保留读得懂的结构：
-/// 列表用 `•` / `1.` / `☐` / `☑` 前缀、引用用 `> `、缩进两格一级；链接文字
+/// 列表用 `•` / `1.` / `☐` / `☑` 前缀、引用用 `> `、标注以图标开头、折叠
+/// 列表以 `▸ ` 开头（导出时一律展开，子块照常缩进跟在后面）、表格每行一行
+/// （格间 ` | `），缩进两格一级；上下标与字号没有纯文本写法，只写文字；链接文字
 /// 与地址不同时在后面附上地址；分隔线写成一行 [dividerLine]。嵌入块交给
 /// [embedLabel] 决定写成一行说明还是略过（返回 null）。连续空行压成一行，
 /// 首尾空行去掉。
@@ -31,12 +34,9 @@ class ExportPlainText {
         lines.add(dividerLine);
         continue;
       }
-      if (block.kind == ExportBlockKind.callout ||
-          block.kind == ExportBlockKind.toggle ||
-          block.kind == ExportBlockKind.table) {
-        // 暂按普通段落写（ExportBlock.fallbackLines），内容不丢。
-        for (final line in block.fallbackLines) {
-          final text = line.map(_inlineText).join();
+      if (block.kind == ExportBlockKind.table) {
+        for (final row in block.tableTextLines) {
+          final text = row.map(_inlineText).join();
           lines.add(text.isEmpty ? '' : '${'  ' * block.indent}$text');
         }
         continue;
@@ -48,6 +48,9 @@ class ExportPlainText {
         ExportBlockKind.checked => '☑ ',
         ExportBlockKind.unchecked => '☐ ',
         ExportBlockKind.quote => '> ',
+        ExportBlockKind.callout =>
+          '${block.calloutIcon ?? kDiaryCalloutDefaultIcon} ',
+        ExportBlockKind.toggle => '▸ ',
         _ => '',
       };
       lines.add(

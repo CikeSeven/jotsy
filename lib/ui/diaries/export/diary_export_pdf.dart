@@ -576,8 +576,8 @@ class DiaryPdfWriter {
   /// 按语言整块高亮）；图片读出字节、读不出或关掉图片时整块去掉，否则计入
   /// [images] 并把来源换成按下标取图的虚拟地址；录音、视频、附件换成一行
   /// 名称（远程地址保留为链接，本地私有路径不写出）；分隔线写成一行横线；
-  /// 还没有专门画法的标注、折叠列表与表格退化为普通段落
-  /// （[ExportBlock.fallbackLines]）；最后把文字色与背景色压平到白纸上。
+  /// 最后把文字色与背景色压平到白纸上（表格逐格压平）。标注、折叠列表与
+  /// 表格保持原来的块类型，由 [buildDiaryPdfBody] 专门绘制。
   @visibleForTesting
   static Future<List<ExportBlock>?> prepareBody(
     DiaryExportEntry entry, {
@@ -630,12 +630,18 @@ class DiaryPdfWriter {
             ]),
           );
           hasContent = true;
-        case ExportBlockKind.callout ||
-            ExportBlockKind.toggle ||
-            ExportBlockKind.table:
-          for (final line in block.fallbackLines) {
-            addText(block.paragraphWith(line));
-          }
+        case ExportBlockKind.table:
+          body.add(
+            block.copyWith(
+              tableRows: <List<List<ExportInline>>>[
+                for (final row in block.tableRows)
+                  <List<ExportInline>>[
+                    for (final cell in row) _flattenColors(cell),
+                  ],
+              ],
+            ),
+          );
+          hasContent = hasContent || block.plainText.trim().isNotEmpty;
         default:
           addText(block);
       }

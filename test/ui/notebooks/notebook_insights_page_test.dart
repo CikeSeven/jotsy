@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/explore/sections/explore_memory_card.dart';
 import 'package:node_diary/ui/explore/widgets/explore_shared_widgets.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_insights_page.dart';
@@ -14,8 +15,8 @@ import 'package:node_diary/ui/notebooks/sections/notebook_insights_charts.dart';
 import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
-/// 日记本统计页：总览数字、心情分布、常用标签、写作节奏、那年今日与“随机
-/// 翻一篇”；未解封的胶囊、回收站与本子外的日记都不计入；写作目标卡；空本子。
+/// 日记本统计页：总览数字、心情分布、常用标签（点按在这本里搜索）、写作
+/// 节奏、那年今日与“随机翻一篇”；未解封的胶囊、回收站与本子外的日记都不计入；写作目标卡；空本子。
 void main() {
   /// 一年前的今天（今天是 2 月 29 日时退到四年前，那年同样有这一天）。
   DateTime yearAgoToday() {
@@ -49,6 +50,7 @@ void main() {
   }
 
   late Map<String, String> ids;
+  late int seaTag;
 
   Future<(DiaryDraftsHarness, String)> open(
     WidgetTester tester, {
@@ -61,7 +63,7 @@ void main() {
     final other = await h.notebook('工作');
     ids = <String, String>{};
     if (seed) {
-      final sea = (await tester.runAsync(
+      final sea = seaTag = (await tester.runAsync(
         () => h.database.createTag(name: '海边', color: 0xFF2196F3),
       ))!;
       final now = DateTime.now();
@@ -171,6 +173,32 @@ void main() {
       ),
       findsOneWidget,
     );
+    await h.unmount();
+  });
+
+  testWidgets('a top tag opens the search inside this notebook', (
+    tester,
+  ) async {
+    final (h, travel) = await open(tester);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NotebookInsightsTagsCard),
+        matching: find.textContaining('海边', findRichText: true),
+      ),
+    );
+    await h.settleAll();
+
+    final search = tester.widget<DiarySearchPage>(find.byType(DiarySearchPage));
+    expect(search.initialTagIds, <int>{seaTag});
+    expect(
+      search.scope,
+      isA<DiaryNotebookScope>().having(
+        (DiaryNotebookScope scope) => scope.notebookId,
+        'notebookId',
+        travel,
+      ),
+    );
+    expect(search.scopeLabel, '旅行');
     await h.unmount();
   });
 

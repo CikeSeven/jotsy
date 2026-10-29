@@ -21,6 +21,7 @@ import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_comment_flows.dart';
 import '../../controllers/diary_preview_edit_flow.dart';
 import '../../controllers/diary_preview_export_controller.dart';
+import '../../controllers/diary_tag_search_flow.dart';
 import '../../controllers/diary_todo_autosave_controller.dart';
 import '../../models/diary_preview_result.dart';
 import '../../models/time_capsule.dart';
@@ -432,6 +433,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               ? (NotebookView notebook) =>
                     unawaited(openNotebookFromAnywhere(context, ref, notebook))
               : null,
+          onOpenTag: (int tagId) =>
+              unawaited(openDiaryTagSearch(context, tagId)),
           onOpenImage: _openImageViewer,
           actions: DiaryPreviewActions(
             onOpenTypography: () => showDiaryTypographySheet(context),

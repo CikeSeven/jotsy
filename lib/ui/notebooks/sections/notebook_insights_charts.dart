@@ -65,11 +65,19 @@ class NotebookInsightsMoodCard extends StatelessWidget {
 }
 
 /// 常用标签：次数最多的几个标签的微胶囊（DESIGN §5.2：`# ` 前缀、标签色淡底、
-/// 无描边无阴影），胶囊里写次数。
+/// 无描边无阴影），胶囊里写次数；给了 [onOpenTag] 时点按胶囊交给它（统计页：
+/// 在这本里按这个标签搜索）。
 class NotebookInsightsTagsCard extends StatelessWidget {
-  const NotebookInsightsTagsCard({super.key, required this.tags});
+  const NotebookInsightsTagsCard({
+    super.key,
+    required this.tags,
+    this.onOpenTag,
+  });
 
   final List<ExploreTagUsage> tags;
+
+  /// 点按某个标签，参数为标签 id；null 时胶囊不可点。
+  final ValueChanged<int>? onOpenTag;
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +100,7 @@ class NotebookInsightsTagsCard extends StatelessWidget {
                   name: tag.name,
                   color: tag.color,
                   count: tag.count,
+                  onTap: onOpenTag == null ? null : () => onOpenTag!(tag.id),
                 ),
             ],
           ),

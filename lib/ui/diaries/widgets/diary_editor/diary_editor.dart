@@ -13,6 +13,7 @@ import '../../controllers/diary_block_editing.dart';
 import '../../controllers/diary_editor_clipboard.dart';
 import '../../controllers/diary_text_style_editing.dart';
 import '../../models/diary_code_block/diary_code_block_style.dart';
+import '../../models/diary_text_style_options.dart';
 import '../../providers/diary_code_block_style_provider.dart';
 import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_code_block_look.dart';
@@ -343,6 +344,27 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               ? KeyEventResult.handled
               : KeyEventResult.ignored,
         ),
+        // 桌面的 Ctrl / ⌘ + . 与 Ctrl / ⌘ + , 切换上标 / 下标，与工具栏同一
+        // 动作；上游与应用都没有占用这两个组合。代码块里不处理（交还按键）。
+        if (AppPlatform.isDesktop)
+          for (final (name, key, script) in [
+            ('superscript', 'period', DiaryScript.superscript),
+            ('subscript', 'comma', DiaryScript.subscript),
+          ])
+            af.CommandShortcutEvent(
+              key: 'diary_toggle_$name',
+              getDescription: () => 'toggle $name',
+              command: 'ctrl+$key',
+              macOSCommand: 'cmd+$key',
+              handler: (_) {
+                if (controller.readOnly ||
+                    diaryTextStyleTargets(controller).isEmpty) {
+                  return KeyEventResult.ignored;
+                }
+                toggleDiaryScript(controller, script);
+                return KeyEventResult.handled;
+              },
+            ),
         // 桌面的 Ctrl / ⌘ + K 打开与工具栏「链接」相同的对话框，取代上游的
         // 链接浮层（样式与校验都与应用不一致）。手机保持上游行为。
         if (AppPlatform.isDesktop)

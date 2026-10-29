@@ -6,8 +6,8 @@ import '../models/diary_text_style_options.dart';
 import 'diary_block_convert.dart';
 import 'diary_editor_controller.dart';
 
-/// 工具栏「标题」「对齐」「字号」三块面板读写正文：读出选区当前的取值（面板
-/// 据此选中一格），以及把一个取值写进选区。
+/// 工具栏「标题」「对齐」「字号」三块面板与「上标」「下标」两个按钮读写
+/// 正文：读出选区当前的取值（面板据此选中一格），以及把一个取值写进选区。
 ///
 /// - 作用范围：选区触及的文字块，代码块除外（代码块里的 Markdown 与排版都是
 ///   原文，有自己的字体与字号）；一个文字块都没有时（光标在代码块里）面板
@@ -138,6 +138,53 @@ void setDiaryFontSize(DiaryEditorController controller, DiaryFontSize size) {
     transaction.formatText(node, from, to - from, {
       kDiaryInlineSize: size.attributeValue,
     });
+  });
+  if (!changed) return;
+  transaction.afterSelection = selection;
+  controller.apply(transaction);
+}
+
+// ---- 上标 / 下标 ----
+
+/// 选区的上下标：折叠光标取“接下来输入”的（含刚在光标上点过的），选中范围
+/// 时取代码块之外各段文字的；混着不同取值、普通文字或认不出的值时为 null。
+DiaryScript? selectedDiaryScript(DiaryEditorController controller) {
+  final selection = controller.selection;
+  if (selection == null) return null;
+  if (selection.isCollapsed) {
+    return DiaryScript.fromAttribute(
+      controller.selectionAttributes[kDiaryInlineScript],
+    );
+  }
+  final values = <Object?>{};
+  _forEachSelectedRange(controller, selection.normalized, (node, from, to) {
+    for (final op in node.delta!.slice(from, to)) {
+      values.add(op.attributes?[kDiaryInlineScript]);
+    }
+  });
+  return values.length == 1 ? DiaryScript.fromAttribute(values.single) : null;
+}
+
+/// 工具栏「上标」「下标」：选中的文字（代码块之外）全是 [script] 时恢复为
+/// 普通文字，否则整段设为 [script]——同一个键，另一种直接被替换。一步撤销。
+/// 折叠光标时改“接下来输入”的样式（上游的 toggled style，见
+/// `ensureDiaryEditorGlobals`）。选区只落在代码块里时不写。
+void toggleDiaryScript(DiaryEditorController controller, DiaryScript script) {
+  final selection = controller.selection;
+  if (selection == null || controller.readOnly) return;
+  if (diaryTextStyleTargets(controller).isEmpty) return;
+  final value = selectedDiaryScript(controller) == script
+      ? null
+      : script.attributeValue;
+  if (selection.isCollapsed) {
+    controller.format(kDiaryInlineScript, value);
+    return;
+  }
+  final transaction = controller.state.transaction;
+  var changed = false;
+  _forEachSelectedRange(controller, selection.normalized, (node, from, to) {
+    changed = true;
+    transaction.formatText(node, from, to - from, {kDiaryInlineScript: value});
   });
   if (!changed) return;
   transaction.afterSelection = selection;

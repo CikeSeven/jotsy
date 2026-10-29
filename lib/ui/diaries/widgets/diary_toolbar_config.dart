@@ -4,9 +4,11 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_text_style_editing.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_style_options.dart';
@@ -30,6 +32,10 @@ bool isDiaryToolbarItemActive(
   DiaryToolbarItem.italic => attributes['italic'] == true,
   DiaryToolbarItem.underline => attributes['underline'] == true,
   DiaryToolbarItem.strikeThrough => attributes['strikethrough'] == true,
+  DiaryToolbarItem.superscript =>
+    attributes[kDiaryInlineScript] == kDiaryScriptSuper,
+  DiaryToolbarItem.subscript =>
+    attributes[kDiaryInlineScript] == kDiaryScriptSub,
   DiaryToolbarItem.inlineCode => attributes['code'] == true,
   DiaryToolbarItem.textColor => attributes['font_color'] != null,
   DiaryToolbarItem.backgroundColor => attributes['bg_color'] != null,
@@ -94,6 +100,10 @@ Widget buildDiaryToolbarItem(
                   outdent
                       ? af.isOutdentable(controller.state)
                       : af.isIndentable(controller.state),
+                // 代码块里的文字是原文，不写上下标：选区只落在代码块里时停用。
+                DiaryToolbarItem.superscript || DiaryToolbarItem.subscript =>
+                  controller.selection == null ||
+                      diaryTextStyleTargets(controller).isNotEmpty,
                 _ => true,
               };
           return ExpressiveStateBlend(
@@ -213,6 +223,10 @@ void _apply(
     return;
   }
   switch (item) {
+    case DiaryToolbarItem.superscript:
+      toggleDiaryScript(controller, DiaryScript.superscript);
+    case DiaryToolbarItem.subscript:
+      toggleDiaryScript(controller, DiaryScript.subscript);
     case DiaryToolbarItem.undo:
       controller.undo();
     case DiaryToolbarItem.redo:

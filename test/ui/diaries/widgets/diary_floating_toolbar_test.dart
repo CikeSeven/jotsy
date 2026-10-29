@@ -163,7 +163,7 @@ void main() {
   ) async {
     // 足够宽时全部常驻，逐个核对按钮实际宽度；按钮样式或 Quill 内部间距一旦
     // 变化，常驻个数的计算就会和画面对不上。
-    await _pumpToolbar(tester, controller: _controller(), screenWidth: 1200);
+    await _pumpToolbar(tester, controller: _controller(), screenWidth: 1400);
     // 文字颜色 / 背景颜色与代码块是自绘按钮，其余仍是单项 Quill 工具栏。
     const colorItems = <DiaryToolbarItem>{
       DiaryToolbarItem.textColor,

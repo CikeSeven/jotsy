@@ -53,3 +53,32 @@ enum DiaryFontSize {
     return null;
   }
 }
+
+/// 上标 / 下标：存在文字的 `script` 属性（见 [kDiaryInlineScript]），同一个键，
+/// 两者互斥；普通文字不写。
+///
+/// [scale] 与 [baselineShift] 都相对所在文字的字号，只用于编辑器渲染
+/// （`diary_script_spans.dart`）；代码块里不生效。
+enum DiaryScript {
+  superscript(kDiaryScriptSuper, 0.34),
+  subscript(kDiaryScriptSub, -0.2);
+
+  const DiaryScript(this.attributeValue, this.baselineShift);
+
+  /// 写进 `script` 的值。
+  final String attributeValue;
+
+  /// 基线位移，正值向上。
+  final double baselineShift;
+
+  /// 上下标字的字号倍数。
+  static const double scale = 0.7;
+
+  /// 读出 `script` 属性；没有或认不出的值（按普通文字渲染）为 null。
+  static DiaryScript? fromAttribute(Object? value) {
+    for (final script in values) {
+      if (script.attributeValue == value) return script;
+    }
+    return null;
+  }
+}

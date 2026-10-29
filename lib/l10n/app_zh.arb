@@ -13080,5 +13080,339 @@
       "added": {"type": "int"},
       "replaced": {"type": "int"}
     }
+  },
+  "lanSyncTitle": "局域网同步",
+  "@lanSyncTitle": {
+    "description": "Title of the LAN sync page and its settings entry."
+  },
+  "lanSyncEntrySubtitleUnpaired": "在同一 Wi-Fi 下的设备之间同步日记",
+  "@lanSyncEntrySubtitleUnpaired": {
+    "description": "Settings entry subtitle when no device is paired yet."
+  },
+  "lanSyncEntrySubtitlePaired": "已配对 {count} 台 · {ago}已同步",
+  "@lanSyncEntrySubtitlePaired": {
+    "description": "Settings entry subtitle: number of paired devices and how long ago the latest sync was (ago is a relative time such as '5 min ago').",
+    "placeholders": {
+      "count": {"type": "int"},
+      "ago": {"type": "String"}
+    }
+  },
+  "lanSyncEntrySubtitlePairedNever": "已配对 {count} 台 · 还没有同步过",
+  "@lanSyncEntrySubtitlePairedNever": {
+    "description": "Settings entry subtitle: devices are paired but none has synced yet.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncEntrySubtitleAttention": "有一次同步需要你确认",
+  "@lanSyncEntrySubtitleAttention": {
+    "description": "Settings entry subtitle (error color) when a sync waits for the user's confirmation."
+  },
+  "lanSyncDefaultDeviceName": "这台设备",
+  "@lanSyncDefaultDeviceName": {
+    "description": "Name shown for this device before it has a name."
+  },
+  "lanSyncLocalPlatform": "本机 · {platform}",
+  "@lanSyncLocalPlatform": {
+    "description": "Line under this device's name in the hero card, with its platform name.",
+    "placeholders": {
+      "platform": {"type": "String"}
+    }
+  },
+  "lanSyncPlatformAndroid": "Android",
+  "@lanSyncPlatformAndroid": {
+    "description": "Platform name: Android."
+  },
+  "lanSyncPlatformIos": "iOS",
+  "@lanSyncPlatformIos": {
+    "description": "Platform name: iOS."
+  },
+  "lanSyncPlatformLinux": "Linux",
+  "@lanSyncPlatformLinux": {
+    "description": "Platform name: Linux."
+  },
+  "lanSyncPlatformWindows": "Windows",
+  "@lanSyncPlatformWindows": {
+    "description": "Platform name: Windows."
+  },
+  "lanSyncPlatformMacos": "macOS",
+  "@lanSyncPlatformMacos": {
+    "description": "Platform name: macOS."
+  },
+  "lanSyncPlatformUnknown": "其他设备",
+  "@lanSyncPlatformUnknown": {
+    "description": "Platform name when the platform is not recognized."
+  },
+  "lanSyncRenameTooltip": "修改设备名",
+  "@lanSyncRenameTooltip": {
+    "description": "Tooltip of the pencil button next to this device's name."
+  },
+  "lanSyncRenameTitle": "设备名称",
+  "@lanSyncRenameTitle": {
+    "description": "Title of the rename-this-device dialog."
+  },
+  "lanSyncRenameHint": "附近的设备会看到这个名字",
+  "@lanSyncRenameHint": {
+    "description": "Hint text of the device name field in the rename dialog."
+  },
+  "lanSyncDiscoverable": "可被发现",
+  "@lanSyncDiscoverable": {
+    "description": "Hero card chip when nearby devices can find this one."
+  },
+  "lanSyncNotDiscoverable": "不可被发现",
+  "@lanSyncNotDiscoverable": {
+    "description": "Hero card chip when this device is hidden from nearby devices."
+  },
+  "lanSyncDiscoverableToggleHint": "切换是否可被附近的设备发现",
+  "@lanSyncDiscoverableToggleHint": {
+    "description": "Screen reader hint of the discoverable chip, which toggles discovery when tapped."
+  },
+  "lanSyncNoNetwork": "未连接局域网",
+  "@lanSyncNoNetwork": {
+    "description": "Hero card address chip when this device has no local network address."
+  },
+  "lanSyncCopyAddressHint": "复制地址",
+  "@lanSyncCopyAddressHint": {
+    "description": "Screen reader hint of the address chip, which copies the address when tapped."
+  },
+  "lanSyncAddressCopied": "地址已复制",
+  "@lanSyncAddressCopied": {
+    "description": "Snack bar after copying this device's address."
+  },
+  "lanSyncScanQr": "扫码连接",
+  "@lanSyncScanQr": {
+    "description": "Hero card button: scan another device's QR code to pair."
+  },
+  "lanSyncShowQr": "显示二维码",
+  "@lanSyncShowQr": {
+    "description": "Hero card button: show a QR code for another device to scan."
+  },
+  "lanSyncManualAddress": "手动输入地址",
+  "@lanSyncManualAddress": {
+    "description": "Button and sheet title: connect by typing the other device's address."
+  },
+  "lanSyncTroubleshoot": "找不到设备？",
+  "@lanSyncTroubleshoot": {
+    "description": "Footer link and sheet title: tips when nearby devices don't show up."
+  },
+  "lanSyncSearchingNearbyJotsy": "正在寻找附近的 Jotsy…",
+  "@lanSyncSearchingNearbyJotsy": {
+    "description": "Hero card line on first use while looking for nearby devices."
+  },
+  "lanSyncSectionMyDevices": "我的设备",
+  "@lanSyncSectionMyDevices": {
+    "description": "Section title of the paired devices."
+  },
+  "lanSyncDeviceCount": "{count} 台",
+  "@lanSyncDeviceCount": {
+    "description": "Gray count next to the My devices section title.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncSectionNearby": "附近的设备",
+  "@lanSyncSectionNearby": {
+    "description": "Section title of nearby devices that are not paired yet."
+  },
+  "lanSyncSearching": "正在寻找",
+  "@lanSyncSearching": {
+    "description": "Text next to the Nearby devices title while searching; three animated dots follow it."
+  },
+  "lanSyncNearbyEmpty": "附近还没有发现其他 Jotsy，请在另一台设备上也打开这个页面。",
+  "@lanSyncNearbyEmpty": {
+    "description": "Hint under the Nearby devices title when nothing has been found."
+  },
+  "lanSyncSectionOptions": "同步选项",
+  "@lanSyncSectionOptions": {
+    "description": "Section title of the sync options."
+  },
+  "lanSyncAutoSync": "自动同步",
+  "@lanSyncAutoSync": {
+    "description": "Switch: sync with paired devices automatically."
+  },
+  "lanSyncAutoSyncSubtitle": "应用打开时与已配对的设备自动同步",
+  "@lanSyncAutoSyncSubtitle": {
+    "description": "Subtitle of the auto sync switch."
+  },
+  "lanSyncSyncSettings": "同步设置",
+  "@lanSyncSyncSettings": {
+    "description": "Switch: also sync app settings."
+  },
+  "lanSyncSyncSettingsSubtitle": "两台设备都开启时，外观、编辑器等设置也一并同步",
+  "@lanSyncSyncSettingsSubtitle": {
+    "description": "Subtitle of the sync settings switch."
+  },
+  "lanSyncOnline": "在线",
+  "@lanSyncOnline": {
+    "description": "Paired device status: online."
+  },
+  "lanSyncOffline": "离线",
+  "@lanSyncOffline": {
+    "description": "Paired device status: offline."
+  },
+  "lanSyncSyncedAgo": "{ago}已同步",
+  "@lanSyncSyncedAgo": {
+    "description": "After the online/offline status: how long ago this device last synced (ago is a relative time such as '5 min ago').",
+    "placeholders": {
+      "ago": {"type": "String"}
+    }
+  },
+  "lanSyncNeverSynced": "还没有同步过",
+  "@lanSyncNeverSynced": {
+    "description": "After the online/offline status when the device has never synced."
+  },
+  "lanSyncNearbySubtitle": "{platform} · {address}",
+  "@lanSyncNearbySubtitle": {
+    "description": "Subtitle of a nearby device: platform and address.",
+    "placeholders": {
+      "platform": {"type": "String"},
+      "address": {"type": "String"}
+    }
+  },
+  "lanSyncNeedsAttention": "需要你确认",
+  "@lanSyncNeedsAttention": {
+    "description": "Paired device subtitle (error color) when a sync waits for confirmation."
+  },
+  "lanSyncReview": "查看",
+  "@lanSyncReview": {
+    "description": "Button to look at a sync that needs confirmation, also the snack bar action."
+  },
+  "lanSyncSyncButton": "同步",
+  "@lanSyncSyncButton": {
+    "description": "Small button on an online paired device: sync now."
+  },
+  "lanSyncPair": "配对",
+  "@lanSyncPair": {
+    "description": "Small button on a nearby device: start pairing."
+  },
+  "lanSyncStageConnecting": "正在连接…",
+  "@lanSyncStageConnecting": {
+    "description": "Sync stage: connecting."
+  },
+  "lanSyncStageComparing": "正在比对…",
+  "@lanSyncStageComparing": {
+    "description": "Sync stage: comparing the two devices' data."
+  },
+  "lanSyncStageTransferring": "正在传输…",
+  "@lanSyncStageTransferring": {
+    "description": "Sync stage: transferring diaries and media."
+  },
+  "lanSyncStageMerging": "正在合并…",
+  "@lanSyncStageMerging": {
+    "description": "Sync stage: writing the merged data."
+  },
+  "lanSyncFirstUseTitle": "还没有配对的设备",
+  "@lanSyncFirstUseTitle": {
+    "description": "Title of the first-use explainer card."
+  },
+  "lanSyncFirstUseBody": "日记在同一局域网的设备之间直接传输，全程加密，不经过任何服务器。",
+  "@lanSyncFirstUseBody": {
+    "description": "Body of the first-use explainer card."
+  },
+  "lanSyncFirstUseStep1": "两台设备连上同一个 Wi-Fi",
+  "@lanSyncFirstUseStep1": {
+    "description": "First-use step 1."
+  },
+  "lanSyncFirstUseStep2": "在另一台设备上打开 设置 › 数据与隐私 › 局域网同步",
+  "@lanSyncFirstUseStep2": {
+    "description": "First-use step 2."
+  },
+  "lanSyncFirstUseStep3": "在「附近的设备」里点「配对」，或扫码连接",
+  "@lanSyncFirstUseStep3": {
+    "description": "First-use step 3."
+  },
+  "lanSyncPortBusyNotice": "发现端口 {port} 被其他程序占用，这台设备暂时找不到别的设备，也无法被发现。仍可手动输入地址或扫码连接。",
+  "@lanSyncPortBusyNotice": {
+    "description": "Notice at the top of the troubleshooting sheet when the discovery port is busy.",
+    "placeholders": {
+      "port": {"type": "int"}
+    }
+  },
+  "lanSyncTipWifiTitle": "连上同一个 Wi-Fi",
+  "@lanSyncTipWifiTitle": {
+    "description": "Troubleshooting tip title: both devices on the same network."
+  },
+  "lanSyncTipWifiBody": "两台设备要在同一个网络里。访客网络或开启了 AP 隔离的路由器会挡住发现。",
+  "@lanSyncTipWifiBody": {
+    "description": "Troubleshooting tip body: same network."
+  },
+  "lanSyncTipOpenPageTitle": "另一台也打开同步页",
+  "@lanSyncTipOpenPageTitle": {
+    "description": "Troubleshooting tip title: open the sync page on the other device."
+  },
+  "lanSyncTipOpenPageBody": "同步页打开时设备会更频繁地广播自己，更快被找到。",
+  "@lanSyncTipOpenPageBody": {
+    "description": "Troubleshooting tip body: open the sync page."
+  },
+  "lanSyncTipWindowsTitle": "Windows 防火墙",
+  "@lanSyncTipWindowsTitle": {
+    "description": "Troubleshooting tip title: Windows firewall."
+  },
+  "lanSyncTipWindowsBody": "第一次打开时如果弹出防火墙提示，请允许 Jotsy 访问“专用网络”。",
+  "@lanSyncTipWindowsBody": {
+    "description": "Troubleshooting tip body: Windows firewall."
+  },
+  "lanSyncTipLinuxTitle": "Linux 防火墙",
+  "@lanSyncTipLinuxTitle": {
+    "description": "Troubleshooting tip title: Linux firewall."
+  },
+  "lanSyncTipLinuxBody": "如果开着防火墙，请放行 UDP {udpPort} 与 TCP {tcpPort}。",
+  "@lanSyncTipLinuxBody": {
+    "description": "Troubleshooting tip body: Linux firewall ports.",
+    "placeholders": {
+      "udpPort": {"type": "int"},
+      "tcpPort": {"type": "int"}
+    }
+  },
+  "lanSyncTipFallbackTitle": "还是找不到？",
+  "@lanSyncTipFallbackTitle": {
+    "description": "Troubleshooting tip title: fall back to address or QR code."
+  },
+  "lanSyncTipFallbackBody": "直接输入另一台设备的地址，或扫描它显示的二维码。",
+  "@lanSyncTipFallbackBody": {
+    "description": "Troubleshooting tip body: fall back to address or QR code."
+  },
+  "lanSyncManualIntro": "在另一台设备的同步页上可以看到它的地址。连接后需要在两台设备上确认配对。",
+  "@lanSyncManualIntro": {
+    "description": "Explanation at the top of the enter-address sheet."
+  },
+  "lanSyncManualHostLabel": "地址",
+  "@lanSyncManualHostLabel": {
+    "description": "Label of the address field."
+  },
+  "lanSyncManualHostHint": "例如 192.168.1.23",
+  "@lanSyncManualHostHint": {
+    "description": "Hint of the address field."
+  },
+  "lanSyncManualPortLabel": "端口",
+  "@lanSyncManualPortLabel": {
+    "description": "Label of the port field."
+  },
+  "lanSyncManualHostInvalid": "请输入有效的 IP 地址或主机名",
+  "@lanSyncManualHostInvalid": {
+    "description": "Error under the address field."
+  },
+  "lanSyncManualPortInvalid": "端口应在 1–65535 之间",
+  "@lanSyncManualPortInvalid": {
+    "description": "Error under the port field."
+  },
+  "lanSyncManualConnect": "连接",
+  "@lanSyncManualConnect": {
+    "description": "Confirm button of the enter-address sheet."
+  },
+  "lanSyncAutoSyncApplied": "已从「{name}」同步 {count} 篇日记",
+  "@lanSyncAutoSyncApplied": {
+    "description": "Snack bar after a foreground auto sync wrote changes.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncAutoSyncNeedsAttention": "与「{name}」的同步需要你确认",
+  "@lanSyncAutoSyncNeedsAttention": {
+    "description": "Snack bar when a foreground auto sync stopped to wait for confirmation.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
   }
 }

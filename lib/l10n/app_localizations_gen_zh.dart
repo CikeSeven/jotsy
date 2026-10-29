@@ -9400,4 +9400,249 @@ class AppLocalizationsZh extends AppLocalizations {
   String backupImportCommentOverwriteResult(int added, int replaced) {
     return '留言：新增 $added 条，覆盖 $replaced 条';
   }
+
+  @override
+  String get lanSyncTitle => '局域网同步';
+
+  @override
+  String get lanSyncEntrySubtitleUnpaired => '在同一 Wi-Fi 下的设备之间同步日记';
+
+  @override
+  String lanSyncEntrySubtitlePaired(int count, String ago) {
+    return '已配对 $count 台 · $ago已同步';
+  }
+
+  @override
+  String lanSyncEntrySubtitlePairedNever(int count) {
+    return '已配对 $count 台 · 还没有同步过';
+  }
+
+  @override
+  String get lanSyncEntrySubtitleAttention => '有一次同步需要你确认';
+
+  @override
+  String get lanSyncDefaultDeviceName => '这台设备';
+
+  @override
+  String lanSyncLocalPlatform(String platform) {
+    return '本机 · $platform';
+  }
+
+  @override
+  String get lanSyncPlatformAndroid => 'Android';
+
+  @override
+  String get lanSyncPlatformIos => 'iOS';
+
+  @override
+  String get lanSyncPlatformLinux => 'Linux';
+
+  @override
+  String get lanSyncPlatformWindows => 'Windows';
+
+  @override
+  String get lanSyncPlatformMacos => 'macOS';
+
+  @override
+  String get lanSyncPlatformUnknown => '其他设备';
+
+  @override
+  String get lanSyncRenameTooltip => '修改设备名';
+
+  @override
+  String get lanSyncRenameTitle => '设备名称';
+
+  @override
+  String get lanSyncRenameHint => '附近的设备会看到这个名字';
+
+  @override
+  String get lanSyncDiscoverable => '可被发现';
+
+  @override
+  String get lanSyncNotDiscoverable => '不可被发现';
+
+  @override
+  String get lanSyncDiscoverableToggleHint => '切换是否可被附近的设备发现';
+
+  @override
+  String get lanSyncNoNetwork => '未连接局域网';
+
+  @override
+  String get lanSyncCopyAddressHint => '复制地址';
+
+  @override
+  String get lanSyncAddressCopied => '地址已复制';
+
+  @override
+  String get lanSyncScanQr => '扫码连接';
+
+  @override
+  String get lanSyncShowQr => '显示二维码';
+
+  @override
+  String get lanSyncManualAddress => '手动输入地址';
+
+  @override
+  String get lanSyncTroubleshoot => '找不到设备？';
+
+  @override
+  String get lanSyncSearchingNearbyJotsy => '正在寻找附近的 Jotsy…';
+
+  @override
+  String get lanSyncSectionMyDevices => '我的设备';
+
+  @override
+  String lanSyncDeviceCount(int count) {
+    return '$count 台';
+  }
+
+  @override
+  String get lanSyncSectionNearby => '附近的设备';
+
+  @override
+  String get lanSyncSearching => '正在寻找';
+
+  @override
+  String get lanSyncNearbyEmpty => '附近还没有发现其他 Jotsy，请在另一台设备上也打开这个页面。';
+
+  @override
+  String get lanSyncSectionOptions => '同步选项';
+
+  @override
+  String get lanSyncAutoSync => '自动同步';
+
+  @override
+  String get lanSyncAutoSyncSubtitle => '应用打开时与已配对的设备自动同步';
+
+  @override
+  String get lanSyncSyncSettings => '同步设置';
+
+  @override
+  String get lanSyncSyncSettingsSubtitle => '两台设备都开启时，外观、编辑器等设置也一并同步';
+
+  @override
+  String get lanSyncOnline => '在线';
+
+  @override
+  String get lanSyncOffline => '离线';
+
+  @override
+  String lanSyncSyncedAgo(String ago) {
+    return '$ago已同步';
+  }
+
+  @override
+  String get lanSyncNeverSynced => '还没有同步过';
+
+  @override
+  String lanSyncNearbySubtitle(String platform, String address) {
+    return '$platform · $address';
+  }
+
+  @override
+  String get lanSyncNeedsAttention => '需要你确认';
+
+  @override
+  String get lanSyncReview => '查看';
+
+  @override
+  String get lanSyncSyncButton => '同步';
+
+  @override
+  String get lanSyncPair => '配对';
+
+  @override
+  String get lanSyncStageConnecting => '正在连接…';
+
+  @override
+  String get lanSyncStageComparing => '正在比对…';
+
+  @override
+  String get lanSyncStageTransferring => '正在传输…';
+
+  @override
+  String get lanSyncStageMerging => '正在合并…';
+
+  @override
+  String get lanSyncFirstUseTitle => '还没有配对的设备';
+
+  @override
+  String get lanSyncFirstUseBody => '日记在同一局域网的设备之间直接传输，全程加密，不经过任何服务器。';
+
+  @override
+  String get lanSyncFirstUseStep1 => '两台设备连上同一个 Wi-Fi';
+
+  @override
+  String get lanSyncFirstUseStep2 => '在另一台设备上打开 设置 › 数据与隐私 › 局域网同步';
+
+  @override
+  String get lanSyncFirstUseStep3 => '在「附近的设备」里点「配对」，或扫码连接';
+
+  @override
+  String lanSyncPortBusyNotice(int port) {
+    return '发现端口 $port 被其他程序占用，这台设备暂时找不到别的设备，也无法被发现。仍可手动输入地址或扫码连接。';
+  }
+
+  @override
+  String get lanSyncTipWifiTitle => '连上同一个 Wi-Fi';
+
+  @override
+  String get lanSyncTipWifiBody => '两台设备要在同一个网络里。访客网络或开启了 AP 隔离的路由器会挡住发现。';
+
+  @override
+  String get lanSyncTipOpenPageTitle => '另一台也打开同步页';
+
+  @override
+  String get lanSyncTipOpenPageBody => '同步页打开时设备会更频繁地广播自己，更快被找到。';
+
+  @override
+  String get lanSyncTipWindowsTitle => 'Windows 防火墙';
+
+  @override
+  String get lanSyncTipWindowsBody => '第一次打开时如果弹出防火墙提示，请允许 Jotsy 访问“专用网络”。';
+
+  @override
+  String get lanSyncTipLinuxTitle => 'Linux 防火墙';
+
+  @override
+  String lanSyncTipLinuxBody(int udpPort, int tcpPort) {
+    return '如果开着防火墙，请放行 UDP $udpPort 与 TCP $tcpPort。';
+  }
+
+  @override
+  String get lanSyncTipFallbackTitle => '还是找不到？';
+
+  @override
+  String get lanSyncTipFallbackBody => '直接输入另一台设备的地址，或扫描它显示的二维码。';
+
+  @override
+  String get lanSyncManualIntro => '在另一台设备的同步页上可以看到它的地址。连接后需要在两台设备上确认配对。';
+
+  @override
+  String get lanSyncManualHostLabel => '地址';
+
+  @override
+  String get lanSyncManualHostHint => '例如 192.168.1.23';
+
+  @override
+  String get lanSyncManualPortLabel => '端口';
+
+  @override
+  String get lanSyncManualHostInvalid => '请输入有效的 IP 地址或主机名';
+
+  @override
+  String get lanSyncManualPortInvalid => '端口应在 1–65535 之间';
+
+  @override
+  String get lanSyncManualConnect => '连接';
+
+  @override
+  String lanSyncAutoSyncApplied(String name, int count) {
+    return '已从「$name」同步 $count 篇日记';
+  }
+
+  @override
+  String lanSyncAutoSyncNeedsAttention(String name) {
+    return '与「$name」的同步需要你确认';
+  }
 }

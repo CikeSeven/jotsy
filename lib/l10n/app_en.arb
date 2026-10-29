@@ -13080,5 +13080,339 @@
       "added": {"type": "int"},
       "replaced": {"type": "int"}
     }
+  },
+  "lanSyncTitle": "LAN sync",
+  "@lanSyncTitle": {
+    "description": "Title of the LAN sync page and its settings entry."
+  },
+  "lanSyncEntrySubtitleUnpaired": "Sync diaries between devices on the same Wi-Fi",
+  "@lanSyncEntrySubtitleUnpaired": {
+    "description": "Settings entry subtitle when no device is paired yet."
+  },
+  "lanSyncEntrySubtitlePaired": "{count, plural, =1{1 device paired} other{{count} devices paired}} · synced {ago}",
+  "@lanSyncEntrySubtitlePaired": {
+    "description": "Settings entry subtitle: number of paired devices and how long ago the latest sync was (ago is a relative time such as '5 min ago').",
+    "placeholders": {
+      "count": {"type": "int"},
+      "ago": {"type": "String"}
+    }
+  },
+  "lanSyncEntrySubtitlePairedNever": "{count, plural, =1{1 device paired} other{{count} devices paired}} · not synced yet",
+  "@lanSyncEntrySubtitlePairedNever": {
+    "description": "Settings entry subtitle: devices are paired but none has synced yet.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncEntrySubtitleAttention": "A sync needs your confirmation",
+  "@lanSyncEntrySubtitleAttention": {
+    "description": "Settings entry subtitle (error color) when a sync waits for the user's confirmation."
+  },
+  "lanSyncDefaultDeviceName": "This device",
+  "@lanSyncDefaultDeviceName": {
+    "description": "Name shown for this device before it has a name."
+  },
+  "lanSyncLocalPlatform": "This device · {platform}",
+  "@lanSyncLocalPlatform": {
+    "description": "Line under this device's name in the hero card, with its platform name.",
+    "placeholders": {
+      "platform": {"type": "String"}
+    }
+  },
+  "lanSyncPlatformAndroid": "Android",
+  "@lanSyncPlatformAndroid": {
+    "description": "Platform name: Android."
+  },
+  "lanSyncPlatformIos": "iOS",
+  "@lanSyncPlatformIos": {
+    "description": "Platform name: iOS."
+  },
+  "lanSyncPlatformLinux": "Linux",
+  "@lanSyncPlatformLinux": {
+    "description": "Platform name: Linux."
+  },
+  "lanSyncPlatformWindows": "Windows",
+  "@lanSyncPlatformWindows": {
+    "description": "Platform name: Windows."
+  },
+  "lanSyncPlatformMacos": "macOS",
+  "@lanSyncPlatformMacos": {
+    "description": "Platform name: macOS."
+  },
+  "lanSyncPlatformUnknown": "Other device",
+  "@lanSyncPlatformUnknown": {
+    "description": "Platform name when the platform is not recognized."
+  },
+  "lanSyncRenameTooltip": "Rename this device",
+  "@lanSyncRenameTooltip": {
+    "description": "Tooltip of the pencil button next to this device's name."
+  },
+  "lanSyncRenameTitle": "Device name",
+  "@lanSyncRenameTitle": {
+    "description": "Title of the rename-this-device dialog."
+  },
+  "lanSyncRenameHint": "Nearby devices will see this name",
+  "@lanSyncRenameHint": {
+    "description": "Hint text of the device name field in the rename dialog."
+  },
+  "lanSyncDiscoverable": "Discoverable",
+  "@lanSyncDiscoverable": {
+    "description": "Hero card chip when nearby devices can find this one."
+  },
+  "lanSyncNotDiscoverable": "Not discoverable",
+  "@lanSyncNotDiscoverable": {
+    "description": "Hero card chip when this device is hidden from nearby devices."
+  },
+  "lanSyncDiscoverableToggleHint": "Change whether nearby devices can find this one",
+  "@lanSyncDiscoverableToggleHint": {
+    "description": "Screen reader hint of the discoverable chip, which toggles discovery when tapped."
+  },
+  "lanSyncNoNetwork": "Not on a local network",
+  "@lanSyncNoNetwork": {
+    "description": "Hero card address chip when this device has no local network address."
+  },
+  "lanSyncCopyAddressHint": "Copy address",
+  "@lanSyncCopyAddressHint": {
+    "description": "Screen reader hint of the address chip, which copies the address when tapped."
+  },
+  "lanSyncAddressCopied": "Address copied",
+  "@lanSyncAddressCopied": {
+    "description": "Snack bar after copying this device's address."
+  },
+  "lanSyncScanQr": "Scan QR code",
+  "@lanSyncScanQr": {
+    "description": "Hero card button: scan another device's QR code to pair."
+  },
+  "lanSyncShowQr": "Show QR code",
+  "@lanSyncShowQr": {
+    "description": "Hero card button: show a QR code for another device to scan."
+  },
+  "lanSyncManualAddress": "Enter address",
+  "@lanSyncManualAddress": {
+    "description": "Button and sheet title: connect by typing the other device's address."
+  },
+  "lanSyncTroubleshoot": "Can't find a device?",
+  "@lanSyncTroubleshoot": {
+    "description": "Footer link and sheet title: tips when nearby devices don't show up."
+  },
+  "lanSyncSearchingNearbyJotsy": "Looking for Jotsy nearby…",
+  "@lanSyncSearchingNearbyJotsy": {
+    "description": "Hero card line on first use while looking for nearby devices."
+  },
+  "lanSyncSectionMyDevices": "My devices",
+  "@lanSyncSectionMyDevices": {
+    "description": "Section title of the paired devices."
+  },
+  "lanSyncDeviceCount": "{count, plural, =1{1 device} other{{count} devices}}",
+  "@lanSyncDeviceCount": {
+    "description": "Gray count next to the My devices section title.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncSectionNearby": "Nearby devices",
+  "@lanSyncSectionNearby": {
+    "description": "Section title of nearby devices that are not paired yet."
+  },
+  "lanSyncSearching": "Searching",
+  "@lanSyncSearching": {
+    "description": "Text next to the Nearby devices title while searching; three animated dots follow it."
+  },
+  "lanSyncNearbyEmpty": "No other Jotsy has shown up yet. Open this page on the other device too.",
+  "@lanSyncNearbyEmpty": {
+    "description": "Hint under the Nearby devices title when nothing has been found."
+  },
+  "lanSyncSectionOptions": "Sync options",
+  "@lanSyncSectionOptions": {
+    "description": "Section title of the sync options."
+  },
+  "lanSyncAutoSync": "Auto sync",
+  "@lanSyncAutoSync": {
+    "description": "Switch: sync with paired devices automatically."
+  },
+  "lanSyncAutoSyncSubtitle": "Sync with paired devices automatically while Jotsy is open",
+  "@lanSyncAutoSyncSubtitle": {
+    "description": "Subtitle of the auto sync switch."
+  },
+  "lanSyncSyncSettings": "Sync settings",
+  "@lanSyncSyncSettings": {
+    "description": "Switch: also sync app settings."
+  },
+  "lanSyncSyncSettingsSubtitle": "Appearance, editor and other settings sync too when both devices turn this on",
+  "@lanSyncSyncSettingsSubtitle": {
+    "description": "Subtitle of the sync settings switch."
+  },
+  "lanSyncOnline": "Online",
+  "@lanSyncOnline": {
+    "description": "Paired device status: online."
+  },
+  "lanSyncOffline": "Offline",
+  "@lanSyncOffline": {
+    "description": "Paired device status: offline."
+  },
+  "lanSyncSyncedAgo": "synced {ago}",
+  "@lanSyncSyncedAgo": {
+    "description": "After the online/offline status: how long ago this device last synced (ago is a relative time such as '5 min ago').",
+    "placeholders": {
+      "ago": {"type": "String"}
+    }
+  },
+  "lanSyncNeverSynced": "not synced yet",
+  "@lanSyncNeverSynced": {
+    "description": "After the online/offline status when the device has never synced."
+  },
+  "lanSyncNearbySubtitle": "{platform} · {address}",
+  "@lanSyncNearbySubtitle": {
+    "description": "Subtitle of a nearby device: platform and address.",
+    "placeholders": {
+      "platform": {"type": "String"},
+      "address": {"type": "String"}
+    }
+  },
+  "lanSyncNeedsAttention": "Needs your confirmation",
+  "@lanSyncNeedsAttention": {
+    "description": "Paired device subtitle (error color) when a sync waits for confirmation."
+  },
+  "lanSyncReview": "View",
+  "@lanSyncReview": {
+    "description": "Button to look at a sync that needs confirmation, also the snack bar action."
+  },
+  "lanSyncSyncButton": "Sync",
+  "@lanSyncSyncButton": {
+    "description": "Small button on an online paired device: sync now."
+  },
+  "lanSyncPair": "Pair",
+  "@lanSyncPair": {
+    "description": "Small button on a nearby device: start pairing."
+  },
+  "lanSyncStageConnecting": "Connecting…",
+  "@lanSyncStageConnecting": {
+    "description": "Sync stage: connecting."
+  },
+  "lanSyncStageComparing": "Comparing…",
+  "@lanSyncStageComparing": {
+    "description": "Sync stage: comparing the two devices' data."
+  },
+  "lanSyncStageTransferring": "Transferring…",
+  "@lanSyncStageTransferring": {
+    "description": "Sync stage: transferring diaries and media."
+  },
+  "lanSyncStageMerging": "Merging…",
+  "@lanSyncStageMerging": {
+    "description": "Sync stage: writing the merged data."
+  },
+  "lanSyncFirstUseTitle": "No paired devices yet",
+  "@lanSyncFirstUseTitle": {
+    "description": "Title of the first-use explainer card."
+  },
+  "lanSyncFirstUseBody": "Diaries go straight between your devices on the local network, encrypted all the way and never through a server.",
+  "@lanSyncFirstUseBody": {
+    "description": "Body of the first-use explainer card."
+  },
+  "lanSyncFirstUseStep1": "Connect both devices to the same Wi-Fi",
+  "@lanSyncFirstUseStep1": {
+    "description": "First-use step 1."
+  },
+  "lanSyncFirstUseStep2": "On the other device, open Settings › Data & Privacy › LAN sync",
+  "@lanSyncFirstUseStep2": {
+    "description": "First-use step 2."
+  },
+  "lanSyncFirstUseStep3": "Tap Pair under Nearby devices, or scan the QR code",
+  "@lanSyncFirstUseStep3": {
+    "description": "First-use step 3."
+  },
+  "lanSyncPortBusyNotice": "Port {port} is used by another app, so this device can't find others or be found. You can still enter an address or scan a QR code.",
+  "@lanSyncPortBusyNotice": {
+    "description": "Notice at the top of the troubleshooting sheet when the discovery port is busy.",
+    "placeholders": {
+      "port": {"type": "int"}
+    }
+  },
+  "lanSyncTipWifiTitle": "Use the same Wi-Fi",
+  "@lanSyncTipWifiTitle": {
+    "description": "Troubleshooting tip title: both devices on the same network."
+  },
+  "lanSyncTipWifiBody": "Both devices need to be on the same network. Guest networks and routers with AP isolation block discovery.",
+  "@lanSyncTipWifiBody": {
+    "description": "Troubleshooting tip body: same network."
+  },
+  "lanSyncTipOpenPageTitle": "Open this page on the other device",
+  "@lanSyncTipOpenPageTitle": {
+    "description": "Troubleshooting tip title: open the sync page on the other device."
+  },
+  "lanSyncTipOpenPageBody": "Devices announce themselves more often while this page is open, so they show up faster.",
+  "@lanSyncTipOpenPageBody": {
+    "description": "Troubleshooting tip body: open the sync page."
+  },
+  "lanSyncTipWindowsTitle": "Windows firewall",
+  "@lanSyncTipWindowsTitle": {
+    "description": "Troubleshooting tip title: Windows firewall."
+  },
+  "lanSyncTipWindowsBody": "If Windows asks about the firewall the first time, allow Jotsy on private networks.",
+  "@lanSyncTipWindowsBody": {
+    "description": "Troubleshooting tip body: Windows firewall."
+  },
+  "lanSyncTipLinuxTitle": "Linux firewall",
+  "@lanSyncTipLinuxTitle": {
+    "description": "Troubleshooting tip title: Linux firewall."
+  },
+  "lanSyncTipLinuxBody": "If a firewall is on, allow UDP {udpPort} and TCP {tcpPort}.",
+  "@lanSyncTipLinuxBody": {
+    "description": "Troubleshooting tip body: Linux firewall ports.",
+    "placeholders": {
+      "udpPort": {"type": "int"},
+      "tcpPort": {"type": "int"}
+    }
+  },
+  "lanSyncTipFallbackTitle": "Still can't find it?",
+  "@lanSyncTipFallbackTitle": {
+    "description": "Troubleshooting tip title: fall back to address or QR code."
+  },
+  "lanSyncTipFallbackBody": "Enter the other device's address directly, or scan the QR code it shows.",
+  "@lanSyncTipFallbackBody": {
+    "description": "Troubleshooting tip body: fall back to address or QR code."
+  },
+  "lanSyncManualIntro": "You can see the other device's address on its sync page. After connecting, confirm the pairing on both devices.",
+  "@lanSyncManualIntro": {
+    "description": "Explanation at the top of the enter-address sheet."
+  },
+  "lanSyncManualHostLabel": "Address",
+  "@lanSyncManualHostLabel": {
+    "description": "Label of the address field."
+  },
+  "lanSyncManualHostHint": "e.g. 192.168.1.23",
+  "@lanSyncManualHostHint": {
+    "description": "Hint of the address field."
+  },
+  "lanSyncManualPortLabel": "Port",
+  "@lanSyncManualPortLabel": {
+    "description": "Label of the port field."
+  },
+  "lanSyncManualHostInvalid": "Enter a valid IP address or host name",
+  "@lanSyncManualHostInvalid": {
+    "description": "Error under the address field."
+  },
+  "lanSyncManualPortInvalid": "Port must be between 1 and 65535",
+  "@lanSyncManualPortInvalid": {
+    "description": "Error under the port field."
+  },
+  "lanSyncManualConnect": "Connect",
+  "@lanSyncManualConnect": {
+    "description": "Confirm button of the enter-address sheet."
+  },
+  "lanSyncAutoSyncApplied": "Synced {count, plural, =1{1 diary} other{{count} diaries}} from “{name}”",
+  "@lanSyncAutoSyncApplied": {
+    "description": "Snack bar after a foreground auto sync wrote changes.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncAutoSyncNeedsAttention": "Sync with “{name}” needs your confirmation",
+  "@lanSyncAutoSyncNeedsAttention": {
+    "description": "Snack bar when a foreground auto sync stopped to wait for confirmation.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
   }
 }

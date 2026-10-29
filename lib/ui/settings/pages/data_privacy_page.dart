@@ -11,6 +11,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/device_auth_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../sections/settings_lan_sync_tile.dart';
 import '../widgets/settings_card_group.dart';
 import 'data_management_page.dart';
 import '../../widgets/form_width.dart';
@@ -121,6 +122,9 @@ class DataPrivacyPage extends ConsumerWidget {
                           );
                         },
                       ),
+                      // 局域网同步：iOS 不支持（见 AppPlatform.supportsLanSync）。
+                      if (AppPlatform.supportsLanSync)
+                        const SettingsLanSyncTile(),
                     ],
                   ),
                   const SizedBox(height: 16),

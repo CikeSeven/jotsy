@@ -17227,6 +17227,456 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Comments: {added} added, {replaced} overwritten'**
   String backupImportCommentOverwriteResult(int added, int replaced);
+
+  /// Title of the LAN sync page and its settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'LAN sync'**
+  String get lanSyncTitle;
+
+  /// Settings entry subtitle when no device is paired yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync diaries between devices on the same Wi-Fi'**
+  String get lanSyncEntrySubtitleUnpaired;
+
+  /// Settings entry subtitle: number of paired devices and how long ago the latest sync was (ago is a relative time such as '5 min ago').
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 device paired} other{{count} devices paired}} · synced {ago}'**
+  String lanSyncEntrySubtitlePaired(int count, String ago);
+
+  /// Settings entry subtitle: devices are paired but none has synced yet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 device paired} other{{count} devices paired}} · not synced yet'**
+  String lanSyncEntrySubtitlePairedNever(int count);
+
+  /// Settings entry subtitle (error color) when a sync waits for the user's confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'A sync needs your confirmation'**
+  String get lanSyncEntrySubtitleAttention;
+
+  /// Name shown for this device before it has a name.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get lanSyncDefaultDeviceName;
+
+  /// Line under this device's name in the hero card, with its platform name.
+  ///
+  /// In en, this message translates to:
+  /// **'This device · {platform}'**
+  String lanSyncLocalPlatform(String platform);
+
+  /// Platform name: Android.
+  ///
+  /// In en, this message translates to:
+  /// **'Android'**
+  String get lanSyncPlatformAndroid;
+
+  /// Platform name: iOS.
+  ///
+  /// In en, this message translates to:
+  /// **'iOS'**
+  String get lanSyncPlatformIos;
+
+  /// Platform name: Linux.
+  ///
+  /// In en, this message translates to:
+  /// **'Linux'**
+  String get lanSyncPlatformLinux;
+
+  /// Platform name: Windows.
+  ///
+  /// In en, this message translates to:
+  /// **'Windows'**
+  String get lanSyncPlatformWindows;
+
+  /// Platform name: macOS.
+  ///
+  /// In en, this message translates to:
+  /// **'macOS'**
+  String get lanSyncPlatformMacos;
+
+  /// Platform name when the platform is not recognized.
+  ///
+  /// In en, this message translates to:
+  /// **'Other device'**
+  String get lanSyncPlatformUnknown;
+
+  /// Tooltip of the pencil button next to this device's name.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename this device'**
+  String get lanSyncRenameTooltip;
+
+  /// Title of the rename-this-device dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Device name'**
+  String get lanSyncRenameTitle;
+
+  /// Hint text of the device name field in the rename dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby devices will see this name'**
+  String get lanSyncRenameHint;
+
+  /// Hero card chip when nearby devices can find this one.
+  ///
+  /// In en, this message translates to:
+  /// **'Discoverable'**
+  String get lanSyncDiscoverable;
+
+  /// Hero card chip when this device is hidden from nearby devices.
+  ///
+  /// In en, this message translates to:
+  /// **'Not discoverable'**
+  String get lanSyncNotDiscoverable;
+
+  /// Screen reader hint of the discoverable chip, which toggles discovery when tapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Change whether nearby devices can find this one'**
+  String get lanSyncDiscoverableToggleHint;
+
+  /// Hero card address chip when this device has no local network address.
+  ///
+  /// In en, this message translates to:
+  /// **'Not on a local network'**
+  String get lanSyncNoNetwork;
+
+  /// Screen reader hint of the address chip, which copies the address when tapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy address'**
+  String get lanSyncCopyAddressHint;
+
+  /// Snack bar after copying this device's address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address copied'**
+  String get lanSyncAddressCopied;
+
+  /// Hero card button: scan another device's QR code to pair.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get lanSyncScanQr;
+
+  /// Hero card button: show a QR code for another device to scan.
+  ///
+  /// In en, this message translates to:
+  /// **'Show QR code'**
+  String get lanSyncShowQr;
+
+  /// Button and sheet title: connect by typing the other device's address.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter address'**
+  String get lanSyncManualAddress;
+
+  /// Footer link and sheet title: tips when nearby devices don't show up.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t find a device?'**
+  String get lanSyncTroubleshoot;
+
+  /// Hero card line on first use while looking for nearby devices.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for Jotsy nearby…'**
+  String get lanSyncSearchingNearbyJotsy;
+
+  /// Section title of the paired devices.
+  ///
+  /// In en, this message translates to:
+  /// **'My devices'**
+  String get lanSyncSectionMyDevices;
+
+  /// Gray count next to the My devices section title.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 device} other{{count} devices}}'**
+  String lanSyncDeviceCount(int count);
+
+  /// Section title of nearby devices that are not paired yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby devices'**
+  String get lanSyncSectionNearby;
+
+  /// Text next to the Nearby devices title while searching; three animated dots follow it.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching'**
+  String get lanSyncSearching;
+
+  /// Hint under the Nearby devices title when nothing has been found.
+  ///
+  /// In en, this message translates to:
+  /// **'No other Jotsy has shown up yet. Open this page on the other device too.'**
+  String get lanSyncNearbyEmpty;
+
+  /// Section title of the sync options.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync options'**
+  String get lanSyncSectionOptions;
+
+  /// Switch: sync with paired devices automatically.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto sync'**
+  String get lanSyncAutoSync;
+
+  /// Subtitle of the auto sync switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync with paired devices automatically while Jotsy is open'**
+  String get lanSyncAutoSyncSubtitle;
+
+  /// Switch: also sync app settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync settings'**
+  String get lanSyncSyncSettings;
+
+  /// Subtitle of the sync settings switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance, editor and other settings sync too when both devices turn this on'**
+  String get lanSyncSyncSettingsSubtitle;
+
+  /// Paired device status: online.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get lanSyncOnline;
+
+  /// Paired device status: offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get lanSyncOffline;
+
+  /// After the online/offline status: how long ago this device last synced (ago is a relative time such as '5 min ago').
+  ///
+  /// In en, this message translates to:
+  /// **'synced {ago}'**
+  String lanSyncSyncedAgo(String ago);
+
+  /// After the online/offline status when the device has never synced.
+  ///
+  /// In en, this message translates to:
+  /// **'not synced yet'**
+  String get lanSyncNeverSynced;
+
+  /// Subtitle of a nearby device: platform and address.
+  ///
+  /// In en, this message translates to:
+  /// **'{platform} · {address}'**
+  String lanSyncNearbySubtitle(String platform, String address);
+
+  /// Paired device subtitle (error color) when a sync waits for confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs your confirmation'**
+  String get lanSyncNeedsAttention;
+
+  /// Button to look at a sync that needs confirmation, also the snack bar action.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get lanSyncReview;
+
+  /// Small button on an online paired device: sync now.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get lanSyncSyncButton;
+
+  /// Small button on a nearby device: start pairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair'**
+  String get lanSyncPair;
+
+  /// Sync stage: connecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get lanSyncStageConnecting;
+
+  /// Sync stage: comparing the two devices' data.
+  ///
+  /// In en, this message translates to:
+  /// **'Comparing…'**
+  String get lanSyncStageComparing;
+
+  /// Sync stage: transferring diaries and media.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferring…'**
+  String get lanSyncStageTransferring;
+
+  /// Sync stage: writing the merged data.
+  ///
+  /// In en, this message translates to:
+  /// **'Merging…'**
+  String get lanSyncStageMerging;
+
+  /// Title of the first-use explainer card.
+  ///
+  /// In en, this message translates to:
+  /// **'No paired devices yet'**
+  String get lanSyncFirstUseTitle;
+
+  /// Body of the first-use explainer card.
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries go straight between your devices on the local network, encrypted all the way and never through a server.'**
+  String get lanSyncFirstUseBody;
+
+  /// First-use step 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect both devices to the same Wi-Fi'**
+  String get lanSyncFirstUseStep1;
+
+  /// First-use step 2.
+  ///
+  /// In en, this message translates to:
+  /// **'On the other device, open Settings › Data & Privacy › LAN sync'**
+  String get lanSyncFirstUseStep2;
+
+  /// First-use step 3.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Pair under Nearby devices, or scan the QR code'**
+  String get lanSyncFirstUseStep3;
+
+  /// Notice at the top of the troubleshooting sheet when the discovery port is busy.
+  ///
+  /// In en, this message translates to:
+  /// **'Port {port} is used by another app, so this device can\'t find others or be found. You can still enter an address or scan a QR code.'**
+  String lanSyncPortBusyNotice(int port);
+
+  /// Troubleshooting tip title: both devices on the same network.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the same Wi-Fi'**
+  String get lanSyncTipWifiTitle;
+
+  /// Troubleshooting tip body: same network.
+  ///
+  /// In en, this message translates to:
+  /// **'Both devices need to be on the same network. Guest networks and routers with AP isolation block discovery.'**
+  String get lanSyncTipWifiBody;
+
+  /// Troubleshooting tip title: open the sync page on the other device.
+  ///
+  /// In en, this message translates to:
+  /// **'Open this page on the other device'**
+  String get lanSyncTipOpenPageTitle;
+
+  /// Troubleshooting tip body: open the sync page.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices announce themselves more often while this page is open, so they show up faster.'**
+  String get lanSyncTipOpenPageBody;
+
+  /// Troubleshooting tip title: Windows firewall.
+  ///
+  /// In en, this message translates to:
+  /// **'Windows firewall'**
+  String get lanSyncTipWindowsTitle;
+
+  /// Troubleshooting tip body: Windows firewall.
+  ///
+  /// In en, this message translates to:
+  /// **'If Windows asks about the firewall the first time, allow Jotsy on private networks.'**
+  String get lanSyncTipWindowsBody;
+
+  /// Troubleshooting tip title: Linux firewall.
+  ///
+  /// In en, this message translates to:
+  /// **'Linux firewall'**
+  String get lanSyncTipLinuxTitle;
+
+  /// Troubleshooting tip body: Linux firewall ports.
+  ///
+  /// In en, this message translates to:
+  /// **'If a firewall is on, allow UDP {udpPort} and TCP {tcpPort}.'**
+  String lanSyncTipLinuxBody(int udpPort, int tcpPort);
+
+  /// Troubleshooting tip title: fall back to address or QR code.
+  ///
+  /// In en, this message translates to:
+  /// **'Still can\'t find it?'**
+  String get lanSyncTipFallbackTitle;
+
+  /// Troubleshooting tip body: fall back to address or QR code.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the other device\'s address directly, or scan the QR code it shows.'**
+  String get lanSyncTipFallbackBody;
+
+  /// Explanation at the top of the enter-address sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'You can see the other device\'s address on its sync page. After connecting, confirm the pairing on both devices.'**
+  String get lanSyncManualIntro;
+
+  /// Label of the address field.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get lanSyncManualHostLabel;
+
+  /// Hint of the address field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 192.168.1.23'**
+  String get lanSyncManualHostHint;
+
+  /// Label of the port field.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get lanSyncManualPortLabel;
+
+  /// Error under the address field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid IP address or host name'**
+  String get lanSyncManualHostInvalid;
+
+  /// Error under the port field.
+  ///
+  /// In en, this message translates to:
+  /// **'Port must be between 1 and 65535'**
+  String get lanSyncManualPortInvalid;
+
+  /// Confirm button of the enter-address sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get lanSyncManualConnect;
+
+  /// Snack bar after a foreground auto sync wrote changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced {count, plural, =1{1 diary} other{{count} diaries}} from “{name}”'**
+  String lanSyncAutoSyncApplied(String name, int count);
+
+  /// Snack bar when a foreground auto sync stopped to wait for confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync with “{name}” needs your confirmation'**
+  String lanSyncAutoSyncNeedsAttention(String name);
 }
 
 class _AppLocalizationsDelegate

@@ -15,6 +15,15 @@ abstract final class ExpressiveMotion {
   static const standard = Duration(milliseconds: 350);
   static const long = Duration(milliseconds: 500);
 
+  /// 循环动画的周期（不是一次过渡的时长）：减少动画时这些循环一律不启动，
+  /// 也不经 [duration] 解析。
+  /// - [pulseLoop]：雷达波纹一圈（局域网同步英雄卡，三圈各差三分之一周期）；
+  /// - [flowLoop]：连线跑道上的圆点走完一程；
+  /// - [scanLoop]：扫码页扫描线往返一次。
+  static const pulseLoop = Duration(milliseconds: 3600);
+  static const flowLoop = Duration(milliseconds: 1800);
+  static const scanLoop = Duration(milliseconds: 2400);
+
   /// 进场与状态变化：减速收尾，不越界。
   static const effects = Curves.easeOutCubic;
 

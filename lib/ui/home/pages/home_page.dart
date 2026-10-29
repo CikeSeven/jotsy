@@ -32,9 +32,12 @@ import 'package:node_diary/ui/home/widgets/home_tab_entrance.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
+import 'package:node_diary/ui/lan_sync/controllers/lan_sync_auto_sync_notices.dart';
+import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
 import 'package:node_diary/ui/settings/controllers/app_update_auto_check.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
@@ -96,6 +99,10 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   /// 冷启动与回到前台时自动检查更新（时机与间隔见 [AppUpdateAutoChecker]）。
   late final AppUpdateAutoChecker _updateAutoChecker;
+
+  /// 前台自动同步的提示条（只在支持局域网同步的平台订阅，见
+  /// [LanSyncAutoSyncNotices]）。
+  LanSyncAutoSyncNotices? _lanSyncNotices;
 
   // 页面切换状态。下标都是在 [_tabs] 中的位置；[_tabs] 变化时由
   // `_HomePageController.syncVisibleTabs` 换算到新列表。
@@ -196,6 +203,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         await runAutoUpdateCheck(context, ref);
       }
     })..start();
+    if (AppPlatform.supportsLanSync) {
+      _lanSyncNotices = LanSyncAutoSyncNotices(
+        ref.read(lanSyncControllerProvider).events,
+        () => mounted ? context : null,
+      );
+    }
   }
 
   @override
@@ -221,6 +234,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void dispose() {
     _updateAutoChecker.dispose();
+    _lanSyncNotices?.dispose();
     widget.homeHintVisibleListenable.removeListener(_handleHomeHintVisibility);
     _pagePosition.dispose();
     _controller.pageController.removeListener(_syncVisibleTabs);

@@ -54,7 +54,7 @@ class DiariesNotebookScopeController {
     }
   }
 
-  /// 进入日记本（书架、头部的子本条与面包屑共用）：上锁的先验证，未通过
+  /// 进入日记本（书架、头部的子本网格与面包屑共用）：上锁的先验证，未通过
   /// （取消、失败、设备不支持）停留原处。
   ///
   /// 在同一个上锁范围里切换（上锁的父本与随之上锁的子本之间、经面包屑回到
@@ -93,8 +93,8 @@ class DiariesNotebookScopeController {
   /// 范围里，要么本身没有上锁（这本自己上的锁不会传给上级）。
   void back() => _goUp(resolution.notebook?.parentId);
 
-  /// 头部子本条末尾的“新建子本”：打开预填了上级的编辑页。保存后留在当前
-  /// 本子里，新子本出现在子本条里。
+  /// 头部的“新建子本”：打开预填了上级的编辑页。保存后留在当前
+  /// 本子里，新子本出现在子本网格里。
   Future<void> createChild() async {
     final notebook = resolution.notebook;
     if (notebook == null || !notebook.canHaveChildren) {

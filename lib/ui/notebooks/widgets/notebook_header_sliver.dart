@@ -9,7 +9,7 @@ import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_breadcrumb.dart';
 import 'notebook_chapter_chips.dart';
-import 'notebook_children_strip.dart';
+import 'notebook_children_grid.dart';
 import 'notebook_goal_row.dart';
 import 'notebook_header_actions.dart';
 import 'notebook_header_card.dart';
@@ -21,7 +21,7 @@ import 'notebook_header_card.dart';
 /// 在两本之间切换时新旧卡片交叉淡入，高度差同样经 [AnimatedSize] 过渡。
 ///
 /// 嵌套：子本的卡片在名称上方带上级路径（[NotebookBreadcrumb]），有子本的
-/// 卡片在章节胶囊之上带子本条（[NotebookChildrenStrip]）；两者点按都经
+/// 卡片在章节胶囊之上带子本网格（[NotebookChildrenGrid]）；两者点按都经
 /// [onOpenNotebook] 交给日记页切换范围，“新建子本”经 [onCreateChild]。
 class NotebookHeaderSliver extends StatelessWidget {
   const NotebookHeaderSliver({
@@ -66,16 +66,17 @@ class NotebookHeaderSliver extends StatelessWidget {
   /// 点章节胶囊；null 时不显示胶囊行。胶囊行只在有章节的普通日记本里出现。
   final void Function({String? chapterId, bool unassigned})? onSelectChapter;
 
-  /// 点面包屑里的上级或子本条里的子本；null 时两者都不显示。
+  /// 点面包屑里的上级或子本网格里的子本；null 时两者都不显示。
   final ValueChanged<String>? onOpenNotebook;
 
-  /// 子本条末尾的“新建子本”；null 时不显示这一格。
+  /// “新建子本”：没有子本时在操作行里，有了子本之后在子本网格的标题行；
+  /// null 时都不显示。
   final VoidCallback? onCreateChild;
 
   @override
   Widget build(BuildContext context) {
     final current = notebook;
-    // 还没有子本时“新建子本”放在操作行里；有了子本之后改在子本条末尾，两处
+    // 还没有子本时“新建子本”放在操作行里；有了子本之后改在子本网格的标题行，两处
     // 不同时出现（高度变化由外层 AnimatedSize 过渡）。
     final createFirstChild =
         current != null && current.canHaveChildren && !current.hasChildren
@@ -135,11 +136,11 @@ class NotebookHeaderSliver extends StatelessWidget {
                         onCreateChild: createFirstChild,
                       ),
                   ],
-                  // 子本条在上，章节胶囊放在最下方，紧挨着它筛选的列表；
-                  // 两行横向滚动区都铺到卡片边缘。
+                  // 子本网格在上，章节胶囊放在最下方，紧挨着它筛选的列表；
+                  // 章节胶囊横向滚动、铺到卡片边缘。
                   bleedExtras: <Widget>[
                     if (current.hasChildren && onOpenNotebook != null)
-                      NotebookChildrenStrip(
+                      NotebookChildrenGrid(
                         notebook: current,
                         onOpen: onOpenNotebook!,
                         onCreate: onCreateChild,

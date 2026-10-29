@@ -6793,6 +6793,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookSubCreateShort => 'New';
 
   @override
+  String notebookSubMore(int count) {
+    return '$count more';
+  }
+
+  @override
+  String get notebookSubMoreHint => 'Show all';
+
+  @override
+  String notebookSubMoreSemantics(int count) {
+    return 'Show $count more sub-notebooks';
+  }
+
+  @override
+  String get notebookSubLess => 'Show less';
+
+  @override
+  String get notebookSubLessSemantics => 'Show fewer sub-notebooks';
+
+  @override
   String get notebookSubCreate => 'New sub-notebook';
 
   @override

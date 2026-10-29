@@ -11246,17 +11246,47 @@ abstract class AppLocalizations {
   /// **'Manage'**
   String get notebookManage;
 
-  /// Small title of the sub-notebook row in the home notebook header card.
+  /// Small title of the sub-notebook grid in the home notebook header card, followed by the sub-notebook count.
   ///
   /// In en, this message translates to:
   /// **'Sub-notebooks'**
   String get notebookSubSectionTitle;
 
-  /// Tile at the end of the header card's sub-notebook row that creates a sub-notebook.
+  /// Header card button that creates a sub-notebook: right of the sub-notebook grid title when there are sub-notebooks, otherwise in the action row.
   ///
   /// In en, this message translates to:
   /// **'New'**
   String get notebookSubCreateShort;
+
+  /// Main text of the last cell of the collapsed sub-notebook grid: how many sub-notebooks are not listed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more'**
+  String notebookSubMore(int count);
+
+  /// Small second line in the sub-notebook grid's "N more" cell; tapping shows every sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get notebookSubMoreHint;
+
+  /// Screen reader label of the "N more" cell: expands the remaining sub-notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Show {count} more sub-notebooks'**
+  String notebookSubMoreSemantics(int count);
+
+  /// Last cell of the expanded sub-notebook grid; tapping folds it back to two rows.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get notebookSubLess;
+
+  /// Screen reader label of the "Show less" cell: folds the sub-notebook grid back to two rows.
+  ///
+  /// In en, this message translates to:
+  /// **'Show fewer sub-notebooks'**
+  String get notebookSubLessSemantics;
 
   /// Notebook actions sheet item that creates a sub-notebook inside this one.
   ///

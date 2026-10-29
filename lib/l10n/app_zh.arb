@@ -8678,11 +8678,37 @@
   },
   "notebookSubSectionTitle": "子日记本",
   "@notebookSubSectionTitle": {
-    "description": "首页日记本头部卡片里子日记本那一行的小标题。"
+    "description": "首页日记本头部卡片里子日记本网格的小标题，后面跟着子本数。"
   },
   "notebookSubCreateShort": "新建子本",
   "@notebookSubCreateShort": {
-    "description": "头部卡片子日记本行末尾的新建格子。"
+    "description": "头部卡片里新建子日记本的按钮：有子本时在子本网格标题行右侧，没有子本时在操作行里。"
+  },
+  "notebookSubMore": "还有 {count} 本",
+  "@notebookSubMore": {
+    "description": "子日记本网格折叠时最后一格的主文字：没列出的子日记本数。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notebookSubMoreHint": "展开",
+  "@notebookSubMoreHint": {
+    "description": "子日记本网格“还有 N 本”格里的第二行小字，点按展开全部子本。"
+  },
+  "notebookSubMoreSemantics": "展开其余 {count} 本子日记本",
+  "@notebookSubMoreSemantics": {
+    "description": "读屏朗读的“还有 N 本”格：点按展开其余子日记本。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notebookSubLess": "收起",
+  "@notebookSubLess": {
+    "description": "子日记本网格展开后最后一格，点按折叠回两行。"
+  },
+  "notebookSubLessSemantics": "收起子日记本",
+  "@notebookSubLessSemantics": {
+    "description": "读屏朗读的“收起”格：把子日记本网格折叠回两行。"
   },
   "notebookSubCreate": "新建子日记本",
   "@notebookSubCreate": {

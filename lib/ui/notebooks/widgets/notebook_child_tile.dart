@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
-import '../../../app/theme/app_spacing.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_tile.dart';
 
-// 头部子本条（`NotebookChildrenStrip`）的格子：子本格、“＋ 新建子本”格与
-// 新格子的横向展开。只负责展示与回调，数据由子本条传入。
+// 头部子本网格（`NotebookChildrenGrid`）的子本格与新格子的出现动画。只负责
+// 展示与回调，数据由网格传入；“还有 N 本 / 收起”格见
+// `notebook_children_toggle_tile.dart`。
 
-/// 一本子本：`surfaceContainerHigh` 底、14dp 圆角，缩小的封面 + 名称与篇数。
+/// 一本子本：`surfaceContainerHigh` 底、14dp 圆角，缩小的封面 + 名称与篇数，
+/// 铺满网格的一格（名称按格宽省略）。
 class NotebookChildTile extends StatelessWidget {
   const NotebookChildTile({
     super.key,
@@ -31,6 +32,10 @@ class NotebookChildTile extends StatelessWidget {
 
   /// 格子的最小高度（小封面 42 + 上下各 6）；同一行的格子按最高的拉齐。
   static const double minHeight = 54;
+
+  /// 格子里的小封面尺寸（列表行小封面 44×56 的 3/4）。
+  static const double coverWidth = 33;
+  static const double coverHeight = 42;
 
   @override
   Widget build(BuildContext context) {
@@ -60,93 +65,87 @@ class NotebookChildTile extends StatelessWidget {
     // 头部卡片里的子本格子随“控件”材质：玻璃卡片上不留一块实色补丁。
     final glassField = AppGlassField.of(context);
     final glassSide = glassField?.border;
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
-      child: Semantics(
-        button: true,
-        label: semantics,
-        excludeSemantics: true,
-        onTap: onTap,
-        child: Opacity(
-          opacity: notebook.isClosed ? 0.6 : 1,
-          child: Material(
-            color: glassField?.fill ?? scheme.surfaceContainerHigh,
-            borderRadius: glassSide == null ? BorderRadius.circular(14) : null,
-            shape: glassSide == null
-                ? null
-                : RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    side: glassSide,
-                  ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minHeight: NotebookChildTile.minHeight,
+    return Semantics(
+      button: true,
+      label: semantics,
+      excludeSemantics: true,
+      onTap: onTap,
+      child: Opacity(
+        opacity: notebook.isClosed ? 0.6 : 1,
+        child: Material(
+          color: glassField?.fill ?? scheme.surfaceContainerHigh,
+          borderRadius: glassSide == null ? BorderRadius.circular(14) : null,
+          shape: glassSide == null
+              ? null
+              : RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: glassSide,
                 ),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(6, 6, 12, 6),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      // 列表行的小封面（44×56）按 3/4 缩小，圆角与描边一起缩。
-                      SizedBox(
-                        width: 33,
-                        height: 42,
-                        child: FittedBox(
-                          child: NotebookCoverTile.mini(
-                            icon: notebook.icon,
-                            color: notebook.color,
-                            coverPath: notebook.coverPath,
-                            style: notebook.coverStyle,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: NotebookChildTile.minHeight,
+              ),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(6, 6, 12, 6),
+                child: Row(
+                  children: <Widget>[
+                    // 列表行的小封面（44×56）按 3/4 缩小，圆角与描边一起缩。
+                    SizedBox(
+                      width: NotebookChildTile.coverWidth,
+                      height: NotebookChildTile.coverHeight,
+                      child: FittedBox(
+                        child: NotebookCoverTile.mini(
+                          icon: notebook.icon,
+                          color: notebook.color,
+                          coverPath: notebook.coverPath,
+                          style: notebook.coverStyle,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            notebook.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 112),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              notebook.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                // 篇数算出前留住一行高度，算好后格子不跳。
-                                Flexible(
-                                  child: Text(
-                                    count == null
-                                        ? ' '
-                                        : l10n.notebookEntryCount(count),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: mutedStyle,
-                                  ),
+                          Row(
+                            children: <Widget>[
+                              // 篇数算出前留住一行高度，算好后格子不跳。
+                              Flexible(
+                                child: Text(
+                                  count == null
+                                      ? ' '
+                                      : l10n.notebookEntryCount(count),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: mutedStyle,
                                 ),
-                                if (privateIcon != null) ...<Widget>[
-                                  const SizedBox(width: 4),
-                                  FaIcon(
-                                    privateIcon,
-                                    size: 10,
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                ],
+                              ),
+                              if (privateIcon != null) ...<Widget>[
+                                const SizedBox(width: 4),
+                                FaIcon(
+                                  privateIcon,
+                                  size: 10,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ],
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -157,75 +156,14 @@ class NotebookChildTile extends StatelessWidget {
   }
 }
 
-/// 末尾的“＋ 新建子本”：与书架的新建格同一语言（`outlineVariant` 描边、
-/// 无底色、primary 12% 圆里的加号），高度随同一行的子本格。
-class NotebookCreateChildTile extends StatelessWidget {
-  const NotebookCreateChildTile({super.key, required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final borderRadius = BorderRadius.circular(14);
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
-      child: Material(
-        type: MaterialType.transparency,
-        shape: RoundedRectangleBorder(
-          borderRadius: borderRadius,
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: NotebookChildTile.minHeight,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Container(
-                    width: 24,
-                    height: 24,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: scheme.primary.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: FaIcon(
-                      FontAwesomeIcons.plus,
-                      size: 11,
-                      color: scheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s),
-                  Text(
-                    context.l10n.notebookSubCreateShort,
-                    maxLines: 1,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: scheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 新出现的子本格：从 0 宽度横向展开并淡入（[appearing] 只在首次创建时
+/// 新出现的格子：淡入并从 92% 放大到原尺寸（[appearing] 只在首次创建时
 /// 起作用）；其余格子原样显示，结构恒定。
-class NotebookStripEntrance extends StatefulWidget {
-  const NotebookStripEntrance({
+///
+/// 用于网格里新增的子本（比如刚在这里新建的）、展开后露出来的子本，以及
+/// “还有 N 本 / 收起”两格互换的那一刻。格子不是磨砂玻璃（随“控件”材质只换
+/// 底色与描边、不模糊），可以放进 FadeTransition。
+class NotebookChildEntrance extends StatefulWidget {
+  const NotebookChildEntrance({
     super.key,
     required this.appearing,
     required this.duration,
@@ -237,10 +175,10 @@ class NotebookStripEntrance extends StatefulWidget {
   final Widget child;
 
   @override
-  State<NotebookStripEntrance> createState() => _NotebookStripEntranceState();
+  State<NotebookChildEntrance> createState() => _NotebookChildEntranceState();
 }
 
-class _NotebookStripEntranceState extends State<NotebookStripEntrance>
+class _NotebookChildEntranceState extends State<NotebookChildEntrance>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -250,6 +188,9 @@ class _NotebookStripEntranceState extends State<NotebookStripEntrance>
   late final CurvedAnimation _progress = CurvedAnimation(
     parent: _controller,
     curve: ExpressiveMotion.effects,
+  );
+  late final Animation<double> _scale = _progress.drive(
+    Tween<double>(begin: 0.92, end: 1),
   );
 
   @override
@@ -267,11 +208,9 @@ class _NotebookStripEntranceState extends State<NotebookStripEntrance>
 
   @override
   Widget build(BuildContext context) {
-    return SizeTransition(
-      axis: Axis.horizontal,
-      sizeFactor: _progress,
-      alignment: AlignmentDirectional.centerStart,
-      child: FadeTransition(opacity: _progress, child: widget.child),
+    return FadeTransition(
+      opacity: _progress,
+      child: ScaleTransition(scale: _scale, child: widget.child),
     );
   }
 }

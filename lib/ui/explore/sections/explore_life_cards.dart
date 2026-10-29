@@ -199,6 +199,20 @@ class ExploreWeatherCard extends StatelessWidget {
   final ExploreModuleConfig config;
   final List<ExploreGroupCount> groups;
 
+  static const double _tileMinWidth = 76;
+  static const double _gap = 8;
+
+  /// 图标格每行几格：先按 [width] 最多能放几格（每格至少 [_tileMinWidth]）
+  /// 定出行数，再把 [count] 格均分到这些行。格子随后拉宽铺满整行——固定
+  /// 格宽时整行放不下下一格的余量全堆在右侧；天气种类少于一行能放的格数时
+  /// 也按种类数分列，同样不留空。均分后最后一行最多比其他行少一格。
+  static int _gridColumns(double width, int count) {
+    var fit = ((width + _gap) / (_tileMinWidth + _gap)).floor();
+    if (fit < 1) fit = 1;
+    final rows = (count / fit).ceil();
+    return (count / rows).ceil();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -261,54 +275,107 @@ class ExploreWeatherCard extends StatelessWidget {
                 ],
               )
             else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: <Widget>[
-                  for (final group in groups.take(12))
-                    Material(
-                      // 玻璃卡片里改为半透明凹槽色，不留一块块实色补丁。
-                      color: OnGlass.of(context)
-                          ? OnGlass.wellColor(scheme)
-                          : theme.brightness == Brightness.light
-                          ? scheme.surfaceContainerLow
-                          : scheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(14),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        onTap: () => open(group),
-                        child: SizedBox(
-                          width: 76,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 10,
-                            ),
-                            child: Column(
-                              children: <Widget>[
-                                icon(group, 26),
-                                const SizedBox(height: 6),
-                                Text(
-                                  group.label,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.labelMedium,
-                                ),
-                                Text(
-                                  l10n.exploreUnitTimes(group.count),
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                  ),
+              LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final tiles = groups.take(12).toList();
+                  final width = constraints.maxWidth;
+                  final columns = _gridColumns(width, tiles.length);
+                  final tileWidth = (width - _gap * (columns - 1)) / columns;
+                  // 逐行用 Row 排而不用 Wrap：格宽正好均分整行，Wrap 会因
+                  // 浮点误差提前折行，Row 的溢出判断带容差。
+                  return Column(
+                    children: <Widget>[
+                      for (
+                        var start = 0;
+                        start < tiles.length;
+                        start += columns
+                      )
+                        Padding(
+                          padding: EdgeInsets.only(top: start == 0 ? 0 : _gap),
+                          child: Row(
+                            children: <Widget>[
+                              for (
+                                var i = start;
+                                i < start + columns && i < tiles.length;
+                                i++
+                              ) ...<Widget>[
+                                if (i > start) const SizedBox(width: _gap),
+                                _WeatherTile(
+                                  width: tileWidth,
+                                  icon: icon(tiles[i], 26),
+                                  label: tiles[i].label,
+                                  count: tiles[i].count,
+                                  onTap: () => open(tiles[i]),
                                 ),
                               ],
-                            ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                ],
+                    ],
+                  );
+                },
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 天气图标格里的一格：图标、天气名与次数，点按翻看那种天气下写的日记。
+class _WeatherTile extends StatelessWidget {
+  const _WeatherTile({
+    required this.width,
+    required this.icon,
+    required this.label,
+    required this.count,
+    required this.onTap,
+  });
+
+  final double width;
+  final Widget icon;
+  final String label;
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      // 玻璃卡片里改为半透明凹槽色，不留一块块实色补丁。
+      color: OnGlass.of(context)
+          ? OnGlass.wellColor(scheme)
+          : theme.brightness == Brightness.light
+          ? scheme.surfaceContainerLow
+          : scheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          width: width,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+            child: Column(
+              children: <Widget>[
+                icon,
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium,
+                ),
+                Text(
+                  context.l10n.exploreUnitTimes(count),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

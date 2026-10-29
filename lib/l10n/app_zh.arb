@@ -511,6 +511,34 @@
   "@appUpdateViewOnGitHub": {
     "description": "在浏览器打开 Release 页面。"
   },
+  "aboutChangelog": "更新日志",
+  "@aboutChangelog": {
+    "description": "关于页打开更新日志页的入口。"
+  },
+  "changelogTitle": "更新日志",
+  "@changelogTitle": {
+    "description": "更新日志页标题。"
+  },
+  "changelogCurrentVersion": "当前版本",
+  "@changelogCurrentVersion": {
+    "description": "更新日志页：本机安装的版本旁的小胶囊。"
+  },
+  "changelogShowAll": "展开全部",
+  "@changelogShowAll": {
+    "description": "更新日志页：展开这个版本其余的更新说明。"
+  },
+  "changelogCollapse": "收起",
+  "@changelogCollapse": {
+    "description": "更新日志页：收起为只显示版本要点。"
+  },
+  "changelogEmpty": "暂时没有可显示的更新日志。",
+  "@changelogEmpty": {
+    "description": "更新日志页：读不到打包的更新说明时的空状态。"
+  },
+  "changelogAllReleases": "在 GitHub 查看全部版本",
+  "@changelogAllReleases": {
+    "description": "更新日志页页尾：在 GitHub 打开全部版本。"
+  },
   "appUpdateActionCheck": "检查更新",
   "@appUpdateActionCheck": {
     "description": "软件更新页按钮：检查更新。"

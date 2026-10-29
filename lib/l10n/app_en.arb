@@ -511,6 +511,34 @@
   "@appUpdateViewOnGitHub": {
     "description": "在浏览器打开 Release 页面。"
   },
+  "aboutChangelog": "Changelog",
+  "@aboutChangelog": {
+    "description": "About page entry that opens the changelog page."
+  },
+  "changelogTitle": "Changelog",
+  "@changelogTitle": {
+    "description": "Changelog page title."
+  },
+  "changelogCurrentVersion": "Current",
+  "@changelogCurrentVersion": {
+    "description": "Changelog page: badge on the version installed on this device."
+  },
+  "changelogShowAll": "Show all",
+  "@changelogShowAll": {
+    "description": "Changelog page: expands the rest of a version's notes."
+  },
+  "changelogCollapse": "Show less",
+  "@changelogCollapse": {
+    "description": "Changelog page: collapses a version's notes back to its highlights."
+  },
+  "changelogEmpty": "No release notes to show.",
+  "@changelogEmpty": {
+    "description": "Changelog page: empty state when no bundled release notes can be read."
+  },
+  "changelogAllReleases": "All releases on GitHub",
+  "@changelogAllReleases": {
+    "description": "Changelog page footer link that opens every release on GitHub."
+  },
   "appUpdateActionCheck": "Check for updates",
   "@appUpdateActionCheck": {
     "description": "软件更新页按钮：检查更新。"

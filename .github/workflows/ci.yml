@@ -6,7 +6,9 @@ name: CI
 on:
   push:
     branches: [main]
-    # 只改文档时不跑：测试不读取任何 Markdown 或 docs/ 下的文件。
+    # 只改文档时不跑。例外是 docs/releases/：它随应用打包（更新日志页），测试会
+    # 核对每个版本都能读到；它通常与版本号同一个 PR 提交，发布时也会经
+    # workflow_call 跑全量门禁，所以不为它单独触发。
     paths-ignore:
       - 'docs/**'
       - '**.md'

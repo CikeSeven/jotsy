@@ -37,6 +37,12 @@ abstract final class AppUpdateEndpoints {
     '/$owner/$repo/releases/latest',
   );
 
+  /// 全部版本的列表页（更新日志页尾的链接）。
+  static final Uri releasesPage = Uri.https(
+    'github.com',
+    '/$owner/$repo/releases',
+  );
+
   static final Uri latestReleaseApi = Uri.https(
     'api.github.com',
     '/repos/$owner/$repo/releases/latest',

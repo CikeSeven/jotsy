@@ -20,6 +20,7 @@ import '../widgets/app_update_badge.dart';
 import '../widgets/external_link.dart';
 import '../widgets/support_developer_sheet.dart';
 import 'app_update_page.dart';
+import 'changelog_page.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
@@ -215,6 +216,17 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                                   ),
                                   const Divider(height: 1),
                                   const _CheckUpdateTile(),
+                                  const Divider(height: 1),
+                                  _AboutActionTile(
+                                    icon: FontAwesomeIcons.clockRotateLeft,
+                                    title: l10n.aboutChangelog,
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (BuildContext context) =>
+                                            const ChangelogPage(),
+                                      ),
+                                    ),
+                                  ),
                                   const Divider(height: 1),
                                   _AboutActionTile(
                                     icon: FontAwesomeIcons.bug,

@@ -4,13 +4,14 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import '../../../widgets/soft_keyboard_selection_keys.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_block_handle_layer.dart';
+import 'diary_editor_keyboard_reopen.dart';
 import 'diary_editor_selection_gestures.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
 import 'diary_read_only_shortcuts.dart';
 
-/// 原生正文外围的交互层：手机选区菜单、软键盘扩选兼容、编辑态段落把手与
-/// 光标避让。
+/// 原生正文外围的交互层：手机选区菜单、软键盘扩选兼容、点回插入点重新弹出
+/// 键盘、编辑态段落把手与光标避让。
 /// 与块注册/主题解析分开，键盘约束变化时只更新这一层。
 class DiaryEditorInteractionLayer extends StatelessWidget {
   const DiaryEditorInteractionLayer({
@@ -55,9 +56,14 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
                 Theme.of(context).platform == TargetPlatform.iOS)
         ? kMinInteractiveDimension
         : 0.0;
+    // 始终挂着（只读时自行跳过），只读切换时不改变外层结构、不重建编辑器。
+    final reopen = DiaryEditorKeyboardReopen(
+      controller: controller,
+      child: editor,
+    );
     final native = shrinkWrap && controller.readOnly && handleSpace > 0
-        ? DiaryEditorSelectionGestures(controller: controller, child: editor)
-        : editor;
+        ? DiaryEditorSelectionGestures(controller: controller, child: reopen)
+        : reopen;
     final content = SoftKeyboardSelectionKeys(
       onExtendSelection: (key) {
         final focusContext = primaryFocus?.context;

@@ -68,6 +68,8 @@ Windows 与 Linux 不在应用内下载安装：
 
 所以每个版本都应在 `docs/releases/` 下写好中英文说明；开头的 `# Release vX` 标题、语言切换行和 `**Full Changelog**` 行在应用里会被去掉。
 
+`docs/releases/` 同时登记为 pubspec 的 assets，随应用打包：设置 → 关于 → 更新日志（`ChangelogPage`）离线列出打进这个安装包的全部版本，不联网。文件名须是 `<tag>.md`（中文）/ `<tag>.en.md`（英文），tag 能解析为版本号（`release_notes_catalog.dart`），否则不会出现在更新日志里；`release_notes_catalog_test.dart` 会核对目录里的每个版本都已打包、中英文都能读到。卡片常显第一节（“版本要点 / Highlights”）的正文，其余章节点“展开全部”显示，所以新版本的说明请继续以要点一节开头。
+
 ## 实机检查清单
 
 1. 装一个旧版本（versionCode 更小、同一签名），进入 设置 → 关于 → 检查更新：显示“发现新版本”、发布日期、大小与本机 ABI，更新内容按界面语言显示。

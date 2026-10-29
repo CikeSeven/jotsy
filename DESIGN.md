@@ -380,6 +380,7 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
 - **底部操作区**：有新版本时为填充按钮“下载并安装（大小）”（取消过则“继续下载（已完成 N%）”）+ 灰色文本按钮“跳过此版本”；下载中为“已下载 / 总大小”（`titleSmall` 等宽数字）+ 速度、进度条、“经 线路”与描边按钮“取消下载”；待安装为“安装”；缺少安装权限时为 `secondaryContainer` 说明块 + “去设置”；下载 / 安装失败为 `errorContainer` 说明块 + “重试” / “前往下载页面”。
 - **进度条**（`AppUpdateProgressBar`）：8dp 高圆角轨道（`secondaryContainer`），指示（`primary`）与轨道之间 4dp 间隙，末端停止点；进度变化 `medium` + `effects` 补间，减少动画时直接到位。不用 `LinearProgressIndicator`：其 2024 规格依赖已弃用的 `year2023` 开关。总长未知时改用 `ExpressiveLoadingIndicator`。
 - **自动检查提示**：冷启动或回到前台的自动检查发现未跳过的新版本、且首页在栈顶时弹出底部面板（同一版本每次进程只弹一次）（最高 82% 屏高）：“新版本”胶囊、版本标题、当前版本 · 发布日期 · 大小，更新说明在面板内滚动；底部整宽填充按钮“立即更新”，下方并排灰色文本按钮“跳过此版本 / 以后再说”；点遮罩等同“以后再说”。
+- **更新日志（`ChangelogPage`）**：设置 → 关于 → 更新日志（“检查更新”下一行，图标 `clockRotateLeft`）。标准顶栏（`angleLeft` 18，标题“更新日志”），内容列同表单二级页（`FormWidth`），版本从新到旧，卡片之间 12dp。每个版本一张卡片（`AppCardSurface`，内边距左右 20、上 16）：`titleLarge` w700 版本号（不带构建号），本机安装的版本右侧为 `secondaryContainer` 底 + `onSecondaryContainer` 字的“当前版本”小胶囊（与“新版本”胶囊同尺寸，换次要色以免与新版本提示混淆）；下方以 `ReleaseNotesView` 常显第一节（版本要点）的正文、不重复节标题；有其余章节时右下角为文本按钮“展开全部 ⌄ / 收起 ⌃”，其余章节以高度 + 淡入展开（`SettingsReveal`，`medium`）。列表末尾居中为 GitHub 图标的文本按钮“在 GitHub 查看全部版本”（画在页面背景上，经 `onBackgroundTextStyle` 兜底）。首屏等待用 `DelayedLoadingIndicator`；读不到说明时为 `EmptyHint`（`clockRotateLeft`，“暂时没有可显示的更新日志。”）。
 
 ### 5.14 草稿箱（`DiaryDraftsPage` / `showDiaryDraftPickerSheet`）
 - **入口**：首页顶栏搜索条右侧的草稿箱按钮（`filePen` 18），有草稿时带 `Badge` 角标显示份数：`primary` 底 + `onPrimary` 字（草稿是“还没写完”，不是警告，不用默认的错误色），0 份隐藏，超过 99 显示 99+；设置 → 数据与隐私（回收站上方）。首页顶栏不显示应用名，搜索条占满左侧，提示“在 Jotsy 中搜索”（搜索页输入框仍为“搜索标题或内容”）。

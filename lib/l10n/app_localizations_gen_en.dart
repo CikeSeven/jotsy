@@ -389,6 +389,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appUpdateViewOnGitHub => 'View on GitHub';
 
   @override
+  String get aboutChangelog => 'Changelog';
+
+  @override
+  String get changelogTitle => 'Changelog';
+
+  @override
+  String get changelogCurrentVersion => 'Current';
+
+  @override
+  String get changelogShowAll => 'Show all';
+
+  @override
+  String get changelogCollapse => 'Show less';
+
+  @override
+  String get changelogEmpty => 'No release notes to show.';
+
+  @override
+  String get changelogAllReleases => 'All releases on GitHub';
+
+  @override
   String get appUpdateActionCheck => 'Check for updates';
 
   @override

@@ -10721,7 +10721,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryLinkCardMenu => 'Card options';
 
   @override
-  String get diaryBacklinksTitle => 'Mentioned in';
+  String diaryBacklinksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mentioned in $count diaries',
+      one: 'Mentioned in 1 diary',
+    );
+    return '$_temp0';
+  }
 
   @override
   String diaryBacklinksShowAll(int count) {

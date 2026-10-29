@@ -9591,7 +9591,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryLinkCardMenu => '卡片选项';
 
   @override
-  String get diaryBacklinksTitle => '提到这篇的日记';
+  String diaryBacklinksTitle(int count) {
+    return '提到这篇的日记 · $count';
+  }
 
   @override
   String diaryBacklinksShowAll(int count) {

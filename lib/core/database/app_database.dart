@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 
 import '../../utils/text_stats.dart';
 import 'content_codec.dart';
+import 'diary_blocks/diary_link_target.dart';
 import 'diary_list_scope.dart';
 import 'notebook_payload.dart';
 import '../services/app_data_directory.dart';
@@ -43,6 +44,7 @@ part 'app_database_day_mood_schema.dart';
 part 'app_database_day_mood_ops.dart';
 part 'app_database_comment_schema.dart';
 part 'app_database_comment_ops.dart';
+part 'app_database_diary_link_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -75,6 +77,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseExploreOps,
         _AppDatabaseDayMoodOps,
         _AppDatabaseCommentOps,
+        _AppDatabaseDiaryLinkOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 

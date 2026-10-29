@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/database/app_database.dart';
 import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../notebooks/providers/notebook_providers.dart';
@@ -316,18 +315,4 @@ class _CardContent {
 
   /// 私密或不存在：标题用次要色。
   final bool muted;
-}
-
-/// 卡片没有快照时给“转为行内链接”用的文字（日记取实时标题）。
-String diaryLinkCardFallbackLabel(
-  AppLocalizations l10n,
-  DiaryLinkTarget? target, {
-  Diary? diary,
-  NotebookView? notebook,
-}) {
-  if (diary != null) return diaryLinkLabel(l10n, diary, now: DateTime.now());
-  if (notebook != null) return notebook.name;
-  return target?.kind == DiaryLinkKind.notebook
-      ? l10n.diaryLinkGroupNotebooks
-      : l10n.diaryLinkGroupDiaries;
 }

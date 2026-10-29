@@ -17594,11 +17594,11 @@ abstract class AppLocalizations {
   /// **'Card options'**
   String get diaryLinkCardMenu;
 
-  /// 预览页：列出链接到这篇日记的其他日记的区块标题。
+  /// 预览页：列出链接到这篇日记的其他日记的区块标题（count 为篇数）。
   ///
   /// In en, this message translates to:
-  /// **'Mentioned in'**
-  String get diaryBacklinksTitle;
+  /// **'{count, plural, =1{Mentioned in 1 diary} other{Mentioned in {count} diaries}}'**
+  String diaryBacklinksTitle(int count);
 
   /// 预览页反向链接区：条数超过显示上限时打开全部的按钮。
   ///

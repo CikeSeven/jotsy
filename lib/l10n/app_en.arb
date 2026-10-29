@@ -13308,9 +13308,14 @@
   "@diaryLinkCardMenu": {
     "description": "日记卡片在编辑态点按后弹出菜单的无障碍标签。"
   },
-  "diaryBacklinksTitle": "Mentioned in",
+  "diaryBacklinksTitle": "{count, plural, =1{Mentioned in 1 diary} other{Mentioned in {count} diaries}}",
   "@diaryBacklinksTitle": {
-    "description": "预览页：列出链接到这篇日记的其他日记的区块标题。"
+    "description": "预览页：列出链接到这篇日记的其他日记的区块标题（count 为篇数）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "diaryBacklinksShowAll": "{count, plural, =1{Show 1} other{Show all {count}}}",
   "@diaryBacklinksShowAll": {

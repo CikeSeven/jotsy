@@ -5,6 +5,7 @@ import '../divider_embed_codec.dart';
 import '../file_embed_codec.dart';
 import 'diary_blocks_schema.dart';
 import 'diary_blocks_walk.dart';
+import 'diary_link_target.dart';
 
 /// 把块文档投影为平铺的 Quill Delta。
 ///
@@ -12,7 +13,7 @@ import 'diary_blocks_walk.dart';
 /// 嵌套按深度写成 `indent`，与 [diaryBlocksFromQuillOps] 互逆——由 Delta
 /// 转来的文档投影回去逐 op 相同。块文档能表达而 Delta 不能的结构（例如
 /// 引用下挂的列表）按深度缩进展开，读取方看到的是缩进的行；标注与折叠
-/// 列表写成普通行，表格逐格写出格内段落。
+/// 列表写成普通行，表格逐格写出格内段落，日记链接卡片写成一行快照标题。
 ///
 /// 输出的 Delta 以换行结尾；空文档为单个换行。纯函数，无 IO。
 List<Map<String, Object?>> diaryBlocksToQuillOps(
@@ -103,6 +104,12 @@ void _appendNode(
       final value = data[kDiaryBlockValueKey];
       if (value is! Map || value.isEmpty) return;
       ops.add(<String, Object?>{'insert': value});
+    case kDiaryBlockLinkCard:
+      // 日记链接卡片写成一行快照标题（不带链接）：分享文字里留下它提到了
+      // 什么，内部地址在应用外打不开。
+      final title = diaryLinkCardTitle(data);
+      if (title == null) return;
+      _insert(ops, title, const <String, Object?>{});
     default:
       // 认不出的块类型（更新版本写入的新块）没有可投影的内容，略过。
       return;

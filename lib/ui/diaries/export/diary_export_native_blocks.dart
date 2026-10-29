@@ -8,6 +8,7 @@ part of 'diary_export_blocks.dart';
 /// - 结构有效的表格（[DiaryTableGrid]）整个成一块，格子与格内段落不再各自
 ///   成块；结构无效的表格（读取时本已展开，只有手改数据才会遇到）按普通
 ///   块往下读，格子里的段落照常导出。
+/// - 日记链接卡片按一段快照标题导出（[diaryLinkCardTitle]）。
 /// - 认不出的块类型（更新版本写入的新块）带 `delta` 时按段落导出，不丢文字；
 ///   原样保留的历史嵌入（[kDiaryBlockUnknownEmbed]）按 Quill 嵌入认读。
 List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
@@ -42,6 +43,10 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
       'video' || 'audio' || 'attachment' => ExportBlockKind.media,
       kDiaryBlockCallout => ExportBlockKind.callout,
       kDiaryBlockToggleList => ExportBlockKind.toggle,
+      // 日记链接卡片：一段快照标题文字（内部地址在应用外打不开）；没有
+      // 快照的卡片没有可导出的内容。
+      kDiaryBlockLinkCard =>
+        diaryLinkCardTitle(data) == null ? null : ExportBlockKind.paragraph,
       _ when table != null => ExportBlockKind.table,
       _ when data[kDiaryBlockDeltaKey] is List => ExportBlockKind.paragraph,
       _ => null,
@@ -89,7 +94,12 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
     }
     final icon = data[kDiaryCalloutIconKey];
     final tone = data[kDiaryCalloutToneKey];
-    for (final line in _inlineLines(node)) {
+    final lines = type == kDiaryBlockLinkCard
+        ? [
+            [ExportInline(diaryLinkCardTitle(data)!)],
+          ]
+        : _inlineLines(node);
+    for (final line in lines) {
       final level = data['level'];
       blocks.add(
         ExportBlock._(

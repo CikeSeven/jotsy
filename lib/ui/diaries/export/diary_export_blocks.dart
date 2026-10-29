@@ -9,6 +9,7 @@ import '../../../core/database/file_embed_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/diary_blocks/diary_blocks_table.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
+import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/diary_blocks/diary_list_style.dart';
 import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';
@@ -27,8 +28,10 @@ part 'diary_export_native_blocks.dart';
 /// - 标注（[ExportBlockKind.callout]）带图标与底色档位，折叠列表
 ///   （[ExportBlockKind.toggle]）的子块照常以更深的缩进跟在后面，表格
 ///   （[ExportBlockKind.table]）整个是一块（[ExportBlock.tableRows]）；
-/// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接、
-///   上下标，以及字号、文字色与背景色（没有对应写法的格式照常略过）。
+/// - 日记链接卡片导出为一段快照标题文字；
+/// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接
+///   （日记链接只留文字）、上下标，以及字号、文字色与背景色（没有对应写法
+///   的格式照常略过）。
 /// 纯函数，无 IO。
 enum ExportBlockKind {
   paragraph,
@@ -70,9 +73,13 @@ class ExportInline {
     this.script,
   });
 
+  /// 日记链接（`jotsy://…`，[DiaryLinkTarget]）只在应用里打得开：导出与
+  /// 分享一律只留文字，所有写出器都不会写出内部地址。
   factory ExportInline.fromAttributes(String text, Map<String, dynamic> attrs) {
     final link = attrs['href'] ?? attrs['link'];
-    final url = link is String ? link.trim() : '';
+    final url = link is String && !DiaryLinkTarget.isLink(link)
+        ? link.trim()
+        : '';
     Color? color(Object? value) =>
         value is String ? parseDiaryColorValue(value) : null;
     final background = color(attrs['bg_color'] ?? attrs['background']);

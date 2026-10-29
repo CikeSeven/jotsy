@@ -6,11 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
 
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/services/diary_media_storage_service.dart';
 import '../../../core/services/journal_import_block_writer.dart';
 import '../../../core/services/journal_import_html.dart';
 import 'diary_editor_controller.dart';
 import 'diary_editor_insert.dart';
+import 'diary_markdown_paste.dart';
 
 /// 剪贴板只在显式复制/粘贴时访问。原生树的格式快照只留在本进程内，并以
 /// 系统剪贴板的文字或图片摘要核对，避免粘贴到其他应用后来复制的新内容时
@@ -61,8 +63,24 @@ abstract final class DiaryEditorClipboard {
     }
   }
 
-  static Future<void> paste(DiaryEditorController controller) async {
+  /// 粘贴的优先级：图片 → 本应用复制的格式快照 → HTML → 看起来是
+  /// Markdown 的纯文字（[looksLikeDiaryMarkdown]）→ 每行一段的纯文字。
+  ///
+  /// [plainText] 为 true（桌面 Ctrl / ⌘ + Shift + V）时跳过前面所有转换，
+  /// 只按每行一段粘贴原文。光标在代码块或表格格子里时同样不转换 Markdown：
+  /// 代码要原样保留，格子只收段落。
+  static Future<void> paste(
+    DiaryEditorController controller, {
+    bool plainText = false,
+  }) async {
     if (controller.readOnly) return;
+    if (plainText) {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (controller.state.isDisposed) return;
+      final text = data?.text;
+      if (text != null && text.isNotEmpty) await _pastePlain(controller, text);
+      return;
+    }
     Uint8List? bytes;
     try {
       bytes = await Pasteboard.image;
@@ -103,12 +121,41 @@ abstract final class DiaryEditorClipboard {
         for (final node in document.root.children) node.toJson(),
       ]);
     } else if (text != null && text.isNotEmpty) {
-      controller.select(diaryEditorInsertionSelection(controller));
-      await _pasteNodes(controller, [
-        for (final line in text.replaceAll('\r\n', '\n').split('\n'))
-          af.paragraphNode(text: line).toJson(),
-      ]);
+      if (!_caretInRawTextBlock(controller) && looksLikeDiaryMarkdown(text)) {
+        final nodes = diaryMarkdownPasteNodes(text);
+        if (nodes.isNotEmpty) {
+          await _pasteNodes(controller, nodes);
+          return;
+        }
+      }
+      await _pastePlain(controller, text);
     }
+  }
+
+  static Future<void> _pastePlain(
+    DiaryEditorController controller,
+    String text,
+  ) async {
+    controller.select(diaryEditorInsertionSelection(controller));
+    await _pasteNodes(controller, [
+      for (final line in text.replaceAll('\r\n', '\n').split('\n'))
+        af.paragraphNode(text: line).toJson(),
+    ]);
+  }
+
+  /// 光标所在的块是代码块，或在表格格子里：这两处粘贴原文，不转换 Markdown。
+  static bool _caretInRawTextBlock(DiaryEditorController controller) {
+    final selection = diaryEditorInsertionSelection(controller);
+    for (
+      af.Node? node = controller.document.nodeAtPath(selection.start.path);
+      node != null;
+      node = node.parent
+    ) {
+      if (node.type == kDiaryBlockCode || node.type == kDiaryBlockTableCell) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static Future<void> _pasteNodes(

@@ -20,6 +20,7 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
     required this.onSelectionChanged,
     this.minSegmentWidth = 104,
     this.dense = false,
+    this.segmentPadding,
   }) : assert(segments.length > 0),
        assert(selected.length == 1);
 
@@ -35,6 +36,10 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
   /// 固定高度的一行（如编辑器颜色面板的 40dp 表头）。宽度可能不够时由调用方
   /// 整体缩放（如 `FittedBox`），标签不省略。
   final bool dense;
+
+  /// 每段的内边距，为 null 时按 [dense] 取默认（横向 12）。段数多、整排要塞进
+  /// 一行窄面板时（如编辑器标题面板的 7 段）调小，标签才有位置。
+  final EdgeInsetsGeometry? segmentPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +74,13 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
                 ),
                 tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
                 padding: WidgetStatePropertyAll(
-                  dense
-                      ? const EdgeInsets.symmetric(horizontal: 12)
-                      : const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
+                  segmentPadding ??
+                      (dense
+                          ? const EdgeInsets.symmetric(horizontal: 12)
+                          : const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            )),
                 ),
                 backgroundColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.disabled)) return null;

@@ -2,6 +2,7 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/services.dart';
 
 import '../../../core/database/code_block_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_editor_controller.dart';
 
 /// 代码块的语言、转换、复制与退出都通过原生事务操作节点，保持子树与撤销。
@@ -122,8 +123,38 @@ List<af.CharacterShortcutEvent> diaryBlockCharacterShortcuts() => [
       return true;
     },
   ),
+  // 行首 `> ` 转为引用。上游只认 `" `，`/` 菜单却教的是 `>`；排在代码原文
+  // 之后，代码块里的 `> ` 已按原文插入，走不到这里。
+  af.CharacterShortcutEvent(
+    key: 'diary_greater_to_quote',
+    character: ' ',
+    handler: _greaterToQuote,
+  ),
   ...af.standardCharacterShortcutEvents,
 ];
+
+/// 文字块（引用、代码块除外）行首只有 `>` 时按空格：去掉 `>` 转为引用，
+/// 对齐随块保留。与上游的列表、标题快捷输入同一个助手：只认折叠光标、光标
+/// 前正好是这个符号，整次转换一个事务。引用不画子块，带缩进子块的块把子块
+/// 提到引用后面（与 `# ` 一致，见 `addDiaryBlockTypeChange`）。
+Future<bool> _greaterToQuote(af.EditorState state) => af.formatMarkdownSymbol(
+  state,
+  (node) =>
+      node.delta != null &&
+      node.type != kDiaryBlockQuote &&
+      node.type != kDiaryBlockCode,
+  (_, text, _) => text == '>',
+  (_, node, delta) => [
+    af.quoteNode(
+      attributes: {
+        kDiaryBlockDeltaKey: delta.compose(af.Delta()..delete(1)).toJson(),
+        if (node.attributes[kDiaryBlockAlignKey] case final align?)
+          kDiaryBlockAlignKey: align,
+      },
+    ),
+    ...node.children,
+  ],
+);
 
 Future<bool> _codeFence(af.EditorState state) async {
   final selection = state.selection;

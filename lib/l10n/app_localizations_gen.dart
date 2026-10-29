@@ -14480,6 +14480,96 @@ abstract class AppLocalizations {
   /// **'Heading 3'**
   String get diaryEditorHeading3;
 
+  /// Slash command option that turns the block into a level-4 heading; also the placeholder of an empty level-4 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 4'**
+  String get diaryEditorHeading4;
+
+  /// Slash command option that turns the block into a level-5 heading; also the placeholder of an empty level-5 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 5'**
+  String get diaryEditorHeading5;
+
+  /// Slash command option that turns the block into a level-6 heading; also the placeholder of an empty level-6 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 6'**
+  String get diaryEditorHeading6;
+
+  /// Name of the editor toolbar alignment tool; also the title of the alignment panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alignment'**
+  String get diaryToolbarAlign;
+
+  /// Name of the editor toolbar font size tool; also the title of the font size panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get diaryToolbarFontSize;
+
+  /// Title of the editor toolbar heading panel (body text and heading levels 1-6).
+  ///
+  /// In en, this message translates to:
+  /// **'Heading'**
+  String get diaryHeadingPanelTitle;
+
+  /// Heading panel option that turns text blocks back into body paragraphs.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get diaryHeadingPanelBody;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Align left'**
+  String get diaryAlignLeft;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Center'**
+  String get diaryAlignCenter;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Align right'**
+  String get diaryAlignRight;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Justify'**
+  String get diaryAlignJustify;
+
+  /// Font size panel option: small text.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get diaryFontSizeSmall;
+
+  /// Font size panel option: normal body size (no size set).
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get diaryFontSizeNormal;
+
+  /// Font size panel option: large text.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get diaryFontSizeLarge;
+
+  /// Font size panel option: huge text.
+  ///
+  /// In en, this message translates to:
+  /// **'Huge'**
+  String get diaryFontSizeHuge;
+
   /// Slash command group: paragraph, headings, quote and code block.
   ///
   /// In en, this message translates to:

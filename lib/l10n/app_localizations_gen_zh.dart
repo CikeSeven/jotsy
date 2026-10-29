@@ -7925,6 +7925,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorHeading3 => '三级标题';
 
   @override
+  String get diaryEditorHeading4 => '四级标题';
+
+  @override
+  String get diaryEditorHeading5 => '五级标题';
+
+  @override
+  String get diaryEditorHeading6 => '六级标题';
+
+  @override
+  String get diaryToolbarAlign => '对齐';
+
+  @override
+  String get diaryToolbarFontSize => '字号';
+
+  @override
+  String get diaryHeadingPanelTitle => '标题';
+
+  @override
+  String get diaryHeadingPanelBody => '正文';
+
+  @override
+  String get diaryAlignLeft => '左对齐';
+
+  @override
+  String get diaryAlignCenter => '居中';
+
+  @override
+  String get diaryAlignRight => '右对齐';
+
+  @override
+  String get diaryAlignJustify => '两端对齐';
+
+  @override
+  String get diaryFontSizeSmall => '小';
+
+  @override
+  String get diaryFontSizeNormal => '正文';
+
+  @override
+  String get diaryFontSizeLarge => '大';
+
+  @override
+  String get diaryFontSizeHuge => '特大';
+
+  @override
   String get diaryEditorCommandGroupText => '文本';
 
   @override

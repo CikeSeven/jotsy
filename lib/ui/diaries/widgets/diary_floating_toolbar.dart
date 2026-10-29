@@ -20,6 +20,8 @@ import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_toolbar_cod
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_toolbar_color_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_list_style/diary_list_style_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_text_style/diary_text_style_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_text_style/diary_text_style_panels.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_config.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_panel.dart';
@@ -27,9 +29,10 @@ import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_panel.dart';
 part 'diary_floating_toolbar_bar.dart';
 part 'diary_floating_toolbar_code.dart';
 part 'diary_floating_toolbar_list.dart';
+part 'diary_floating_toolbar_text_style.dart';
 
 /// 卡片内正在展开的面板。
-enum _ToolbarPanel { none, more, color, code, list }
+enum _ToolbarPanel { none, more, color, code, list, heading, align, fontSize }
 
 /// 编辑页悬浮工具栏：一排放得下的工具常驻，其余收进「更多」面板就地展开；
 /// 文字颜色 / 背景颜色在同一位置展开颜色面板，光标在代码块里时代码块工具
@@ -58,6 +61,9 @@ enum _ToolbarPanel { none, more, color, code, list }
 /// - 有序 / 无序列表工具：选区不全是这种列表时转为列表，全是时打开列表面板，
 ///   路由同代码块；面板随选区换成另一种列表或收起（见
 ///   diary_floating_toolbar_list.dart）；
+/// - 标题、对齐、字号工具：点按即打开各自的面板，路由同颜色工具；面板不随
+///   选区收起，只跟着显示选区当前的取值（见
+///   diary_floating_toolbar_text_style.dart）；
 /// - 面板之间切换（更多 ↔ 颜色 / 代码块）时外层展开系数保持 1，高度由 AnimatedSize
 ///   补间、内容交叉淡入，新的目标高度立即报告（变高时编辑页随即揭示光标）；
 /// - 颜色面板的页签（[_colorMode]：色板 / 色系 / 自定义）与色系页看的色系
@@ -136,7 +142,8 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   _ToolbarPanel _content = _ToolbarPanel.none;
   DiaryColorTarget _colorTarget = DiaryColorTarget.text;
 
-  /// 颜色 / 代码块 / 列表面板是不是从「更多」里点开的。
+  /// 「更多」之外的面板（颜色、代码块、列表、标题、对齐、字号）是不是从
+  /// 「更多」里点开的。
   bool _panelFromMore = false;
 
   /// 列表面板对应的列表块类型（有序或无序）。
@@ -216,10 +223,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
 
   bool get _moreExpanded =>
       _panel == _ToolbarPanel.more ||
-      ((_panel == _ToolbarPanel.color ||
-              _panel == _ToolbarPanel.code ||
-              _panel == _ToolbarPanel.list) &&
-          _panelFromMore);
+      (_panel != _ToolbarPanel.none && _panelFromMore);
 
   /// 当前排布下实际显示的面板：横竖屏切换后全部放得下时，「更多」面板没有
   /// 位置，暂不显示，回到放不下时按用户上次的选择恢复。
@@ -341,6 +345,12 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       ),
       _ToolbarPanel.list => diaryToolbarPanelBodyLimit(
         diaryListStylePanelHeight(_panelInnerWidth, _listType),
+        widget.maxPanelExtent,
+      ),
+      _ToolbarPanel.heading ||
+      _ToolbarPanel.align ||
+      _ToolbarPanel.fontSize => diaryToolbarPanelBodyLimit(
+        kDiaryTextStylePanelHeight,
         widget.maxPanelExtent,
       ),
     };
@@ -465,6 +475,21 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
         innerWidth: _panelInnerWidth,
         bodyHeight: _bodyHeight(_ToolbarPanel.list),
         onClose: _closeListPanel,
+      ),
+      _ToolbarPanel.heading => DiaryHeadingPanel(
+        controller: widget.controller,
+        bodyHeight: _bodyHeight(_ToolbarPanel.heading),
+        onClose: _closeTextStylePanel,
+      ),
+      _ToolbarPanel.align => DiaryAlignPanel(
+        controller: widget.controller,
+        bodyHeight: _bodyHeight(_ToolbarPanel.align),
+        onClose: _closeTextStylePanel,
+      ),
+      _ToolbarPanel.fontSize => DiaryFontSizePanel(
+        controller: widget.controller,
+        bodyHeight: _bodyHeight(_ToolbarPanel.fontSize),
+        onClose: _closeTextStylePanel,
       ),
       _ => DiaryToolbarMorePanel(
         rows: layout.overflowRows,

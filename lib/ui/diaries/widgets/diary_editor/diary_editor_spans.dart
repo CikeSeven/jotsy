@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/database/code_block_codec.dart';
 import '../../controllers/diary_block_language_tracker.dart';
 import '../../models/diary_code_block/diary_code_highlighter.dart';
+import '../../models/diary_text_style_options.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 
 /// AppFlowy 按行内片段给出 UTF-16 偏移，组字前、中、后的片段都据此切高亮；
@@ -25,13 +26,10 @@ af.TextSpanDecoratorForAttribute diaryEditorSpanDecorator(
         before,
         after,
       );
-      final size = switch (insert.attributes?['size']) {
-        'small' => fontSize * 0.85,
-        'large' => fontSize * 1.25,
-        'huge' => fontSize * 1.5,
-        _ => null,
-      };
-      if (size == null) return decorated;
+      // 正文档（没有 size）与认不出的值都不改字号；倍数与「字号」面板共用。
+      final level = DiaryFontSize.fromAttribute(insert.attributes?['size']);
+      if (level == null || level == DiaryFontSize.normal) return decorated;
+      final size = fontSize * level.scale;
       return TextSpan(
         text: decorated.text,
         children: decorated.children,

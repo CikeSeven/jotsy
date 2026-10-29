@@ -17,14 +17,22 @@ void main() {
   ];
 
   test('a single letter matches keyword prefixes, not every word with it', () {
-    expect(labels('h'), ['一级标题', '二级标题', '三级标题', '分隔线']);
+    expect(labels('h'), [
+      '一级标题',
+      '二级标题',
+      '三级标题',
+      '四级标题',
+      '五级标题',
+      '六级标题',
+      '分隔线',
+    ]);
   });
 
   test('Chinese names match anywhere, pinyin from two letters', () {
     expect(labels('代码'), ['代码块（多行）']);
-    expect(labels('biaoti'), ['一级标题', '二级标题', '三级标题']);
+    expect(labels('biaoti'), ['一级标题', '二级标题', '三级标题', '四级标题', '五级标题', '六级标题']);
     expect(labels('dmk'), ['代码块（多行）']);
-    expect(labels('##'), ['二级标题', '三级标题']);
+    expect(labels('##'), ['二级标题', '三级标题', '四级标题', '五级标题', '六级标题']);
     expect(labels('zzz'), isEmpty);
   });
 }

@@ -92,11 +92,21 @@ class SyncStateData {
 /// - 只比较 [current] 观测到的实体；没观测的实体在新检查点里沿用 P 的条目。
 ///
 /// [previous] 为 null（第一次、或状态被重置）时没有差异可记，C 直接成为检查点。
+///
+/// [seenAtOverrides]（键 → 分面 → 毫秒）只在同步写入之后传入（规划器的
+/// `SyncSidePlan.historySeenAt`）：P、C 都有且哈希变了的分面，旧哈希进历史时
+/// 有覆盖值就以它为 `seenAt`，没有才用 [now]。这些分面是直接采纳了另一侧的
+/// 值，覆盖值是那个值在来源一侧的确立时间——若记成写入时刻，采纳者每次都会
+/// 变成“最新确立者”，三台以上设备之间来回改过的值会按同步顺序无休止地翻转
+/// （规格 §4.1.1）。墓碑、改名与新记录不受影响；覆盖了没变化或不存在的分面
+/// 时忽略。
 SyncObservation foldSyncObservation({
   required SyncObservation? previous,
   required SyncObservation current,
   required SyncStateData state,
   required int now,
+  Map<SyncKey, Map<String, int>> seenAtOverrides =
+      const <SyncKey, Map<String, int>>{},
 }) {
   final observed = current.observed;
   if (previous != null) {
@@ -109,6 +119,7 @@ SyncObservation foldSyncObservation({
       final before = entry.value;
       final after = current.manifest[key];
       if (after != null) {
+        final overrides = seenAtOverrides[key];
         for (final facet in before.entries) {
           if (after[facet.key] == facet.value) continue;
           final values = SyncFacet.tracksValue(key.entity, facet.key)
@@ -120,7 +131,7 @@ SyncObservation foldSyncObservation({
             facet.key,
             SyncHistoryEntry(
               hash: facet.value,
-              seenAt: now,
+              seenAt: overrides?[facet.key] ?? now,
               hasValue: hasValue,
               value: hasValue ? values[facet.key] : null,
             ),

@@ -73,10 +73,18 @@ class SyncLocalState {
   /// 同步写入之后，用写入后的观测 [after] 按同一套规则更新历史、墓碑与检查点
   /// （被同步删掉的记录写墓碑，被替换的值进历史）。[after] 由 [observeRows]
   /// 从写入事务里读出的行算出。
-  Future<void> recordAppliedState(SyncObservation after) {
+  ///
+  /// [historySeenAt] 是这一侧计划的 `SyncSidePlan.historySeenAt`：直接采纳了
+  /// 另一侧值的分面，旧值进历史时继承那个值的确立时间而不是现在（规格
+  /// §4.1.1，见 [foldSyncObservation] 的 `seenAtOverrides`）。写入层原样传入。
+  Future<void> recordAppliedState(
+    SyncObservation after, {
+    Map<SyncKey, Map<String, int>> historySeenAt =
+        const <SyncKey, Map<String, int>>{},
+  }) {
     return _serialized(() async {
       final state = await _state();
-      _fold(state, after);
+      _fold(state, after, seenAtOverrides: historySeenAt);
       await _persist(state);
     });
   }
@@ -165,12 +173,18 @@ class SyncLocalState {
     return result.observation;
   }
 
-  void _fold(_LoadedState state, SyncObservation current) {
+  void _fold(
+    _LoadedState state,
+    SyncObservation current, {
+    Map<SyncKey, Map<String, int>> seenAtOverrides =
+        const <SyncKey, Map<String, int>>{},
+  }) {
     state.checkpoint = foldSyncObservation(
       previous: state.checkpoint,
       current: current,
       state: state.data,
       now: _clock().millisecondsSinceEpoch,
+      seenAtOverrides: seenAtOverrides,
     );
   }
 

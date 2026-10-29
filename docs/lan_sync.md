@@ -17,7 +17,7 @@
 | `lib/core/services/lan_sync/sync/sync_model.dart` | `SyncEntity`、`SyncKey`、`SyncRecord`、`SyncManifest`、规范 JSON 与哈希 | 4 |
 | `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 | 4 |
 | `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 | 4 |
-| `lib/core/services/lan_sync/sync/sync_planner.dart`、`sync_plan.dart` | 合并判定，产出双方的写入计划 | 5 |
+| `lib/core/services/lan_sync/sync/sync_planner.dart`（+ `_keys` / `_decide` / `_merge` / `_revive` / `_copies` / `_tags` / `_notebooks` / `_lists` / `_output` / `_values`）、`sync_plan.dart`、`sync_plan_side.dart`；本机一侧适配器 `sync_local_plan_side.dart` | 合并判定（纯函数）：按需取数、产出双方的写入计划 | 5 |
 | `lib/core/database/app_database_sync_ops.dart` | `_AppDatabaseSyncOps`：读规范行、单事务按原值写入（带前置条件）、关联清理 | 6（读规范行的部分由 4 先建） |
 | `lib/core/services/lan_sync/sync/sync_apply.dart`、`sync_media.dart` | 写入编排、媒体暂存与就位、写入后更新本机状态 | 6 |
 | `lib/core/services/lan_sync/lan_sync_identity.dart`、`lan_sync_crypto.dart`、`lan_sync_frames.dart`、`lan_sync_handshake.dart`（+ `_types` / `_flows` / `_sas`）、`lan_sync_channel.dart`（+ `_types` / `_inbound` / `_outlet`）、`lan_sync_messages.dart`、`lan_sync_qr_payload.dart` | 身份、密码学原语、长度前缀帧、握手与配对、加密信道、消息信封、二维码载荷 | 2 |
@@ -114,53 +114,86 @@ class SyncManifest {
   - 然后检查点 := C。
   - 先写历史、墓碑、改名，最后写检查点：中途失败时检查点仍是旧的，下次刷新把同一份差异再折一遍，结果相同。
   - 状态文件读不出（不存在、解压或解析失败）一律当作空并 debugPrint：丢了这些“记忆”只会让规划多判冲突、按并集合并，删除不传播，最坏是多出数据、不会丢数据。
-- 写入后（第 6 节）同一套规则以写入后的清单更新历史、墓碑与检查点：被同步删掉的记录写墓碑，被替换的值进入历史。
+- 写入后（第 6 节）同一套规则以写入后的清单更新历史、墓碑与检查点：被同步删掉的记录写墓碑，被替换的值进入历史。被替换的值进历史时的 `seenAt` 一般为当前时间，但直接采纳了另一侧值的分面继承那个值在来源一侧的确立时间（§4.1.1）：`foldSyncObservation` 的 `seenAtOverrides` 已支持，`SyncLocalState.recordAppliedState(after, historySeenAt: …)` 传下去，写入层负责把这一侧计划的 `SyncSidePlan.historySeenAt` 原样传入。
 - **哈希缓存**：计算清单时先算每行原始列的指纹（便宜），命中缓存直接取分面哈希，未命中才做规范化（解码正文、归一路径、编码），整体在 `Isolate.run` 中进行；缓存只保留当前存在的行。
 - **覆盖恢复**：`DataArchiveService` 的 replaceAll 成功后删除检查点、历史、墓碑、改名、哈希缓存，并在 `store.json` 置 `restoredPending`（任务 11 接线；任务 4 提供 `resetAfterRestore()`）。之后与每台设备的第一次同步走“以哪边为准”（4.5）。
 - **身份**：`identity.json` 缺失或内容损坏时重新生成（`LanSyncIdentityStore.loadOrCreate()` 返回 `created: true`），调用方据此清空已配对设备与上述同步状态（视为一台新设备）；读文件本身的 I/O 错误（权限等）照常抛出，不当作损坏。
 
-## 4. 合并判定（规划器，`sync_planner.dart`）
+## 4. 合并判定（规划器，`sync_planner*.dart`）
 
-发起方是唯一规划者：持有双方清单、所需完整记录、双方相关键的历史与墓碑，产出 `SyncPlan`（双方各一份写入列表 + 统计 + 需要用户确认的事项）。规划器是纯函数，不碰数据库与文件。
+发起方是唯一规划者：持有双方清单、所需完整记录、双方相关键的历史与墓碑，产出 `SyncPlan`（双方各一份写入列表 + 统计 + 需要用户确认的事项）。规划器（`sync_planner.dart` 及其 part 文件、`sync_plan.dart`、`sync_plan_side.dart`）是纯函数：不碰数据库、文件、时钟与随机数，遍历一律按 `SyncKey` 排序，同一份输入得到逐项相同的计划（中断后重新规划得到同一个副本 id）。
 
 记号：L = 本机（发起方）分面哈希，R = 对方分面哈希，H_L / H_R = 双方该分面历史（哈希集合）。
 
+### 4.0 两段规划与按需取数
+- 会话层反复调用 `planSyncFetch(local, remote, options)`，按返回的 `SyncFetchRequest` 取数（对方的历史 `history.get`、墓碑详情、记录 `records.get`；本机记录经 `buildRecords`），直到 `isEmpty`，再调用 `planSync`。两者跑同一条流水线，区别只在缺数据时：前者记下要取的数据、跳过依赖它的判定，后者抛 `StateError`。两侧以 `SyncPlanSide` 表示：本机为 `SyncLocalPlanSide`（`sync_local_plan_side.dart`，适配 `SyncLocalSnapshot`；历史、墓碑详情恒可答，`hasHistory` 恒为 true；本机记录经它的 `loadRecords(SyncLocalState, keys)` 构建）；对方为 `SyncPlanSideData`，清单、墓碑键与改名随清单送达，其余边取边填。
+- 只取判定真正用到的数据，每段结束时若还缺数据就停下（后一段依赖前一段的完整结果，提前往下走只会猜着取）：
+  - 两侧哈希全同：什么都不取；
+  - 两侧都有、某个非 stamp 分面不同：取对方这个键的历史（全部分面）；判定后只取“值确实要用”的一侧记录——全部分面都取同一侧时只取那一侧，stamp 不同或真冲突时两侧都取；
+  - 只有本机有：对方有墓碑时先取墓碑详情，覆盖即删除、不再取记录；否则构建本机记录；
+  - 只有对方有：本机墓碑覆盖时什么都不取（删除只要清单）；否则取对方记录；
+  - 第二段（跨键）：复活的日记 / 日记本在保留一侧的成员关系、被一并删除的留言（读所属日记）、改过的纪念日；冲突副本败方的成员关系；
+  - 第三段（收尾，多为本机记录）：有日记本变化时两侧原样的日记本（层级校验）、所在日记本有变化时两侧原样的成员关系（章节校验）、集合有变化的两侧原样的顺序列表、有标签只在一侧时的 settings、被引用而改判保留的标签。
+  - 两侧原样的值一律读本机记录，不走网络。典型同步（只有编辑）两次网络往返；复活、冲突副本、被引用的标签最多各加一次。
+
 ### 4.1 两边都有的记录，逐分面
 1. L == R：不动。
-2. R ∈ H_L：L 是 R 的后代 → 取 L（推给对方）。
-3. L ∈ H_R：R 是 L 的后代 → 取 R（写到本机）。
-4. 否则真冲突：
-   - diary.content：stamp 较新者（平手按 deviceId 字典序较大者）留在原 id；另一份写成**冲突副本**：新 `diaryId = UUIDv5(命名空间, 原 diaryId + 败方 content 哈希)`（中断重试不重复）；标题 = 原标题 + 本地化后缀（由调用方传入，如“（冲突副本 · ThinkPad）”）并截断到 200；metadata 加 `sync.conflictOf = 原 diaryId`；副本继承**败方**的 tags、日记本成员（含章节）、capsule、archive、trash、pin 分面——私密日记本里的内容不能因副本而出现在全部日记，未解封的胶囊不能提前解封。
-   - diary.tags、orderList.items：取双方历史中最近的共同祖先值（同一哈希出现在两边历史里、且 `seenAt` 最新者）做三方合并（集合：祖先 ∪ 双方新增 − 任一方删除；列表：保留祖先顺序，依次并入双方新增项、去掉任一方删除项，确定性规则：按 L 的相对位置插入 L 的新增，再按 R 的相对位置插入 R 的新增），找不到共同祖先时取并集（列表：L 的顺序 + R 独有项按 R 顺序追加）。
-   - diary.stamp：取较大值（不是冲突）。content 的最终值与任一方不同（或取了对方的 content）时，最终 `updatedAt` 至少为 max(L, R)，并在与写入方原值相同时 +1 秒，保证各处按 `diaryId + updatedAt` 的缓存失效。
-   - 其他分面：取该分面“变化发现时间”（历史头条的 `seenAt`，没有历史时用记录自身时间字段）较新的一方，平手按 deviceId 较大者。
+2. 一侧缺少该分面（只会来自规范形式不同的版本，如更新版本多出的设置键）：有值的一侧胜出，不算冲突——取有值的一侧从不丢数据，写入层也表达不了“去掉一个分面”。
+3. R ∈ H_L 而 L ∉ H_R：L 是 R 的后代 → 取 L（推给对方）；L ∈ H_R 而 R ∉ H_L：取 R（写到本机）。
+4. R ∈ H_L 且 L ∈ H_R（来回改过：A → B → A）：取**当前值确立时间**（历史头条的 `seenAt`）较晚的一侧，平手按 deviceId 较大者。见 4.1.1。
+5. 否则真冲突：
+   - diary.content：stamp 较新者（平手按 deviceId 字典序较大者）留在原 id；另一份写成**冲突副本**：新 `diaryId = UUIDv5(kSyncConflictCopyNamespace, 原 diaryId + 败方 content 哈希)`（两串直接拼接；只由数据决定，中断重试、换一台发起方都得到同一个 id）；标题 = 原标题 + 本地化后缀（由调用方传入，如“（冲突副本 · ThinkPad）”），截断到 200 个 UTF-16 码元、不切开代理对；metadata 加 `sync.conflictOf = 原 diaryId`（metadata 是坏数据原文时原样保留）；副本继承**败方**的 stamp、tags、日记本成员（含章节）、capsule、archive、trash、pin 分面——私密日记本里的内容不能因副本而出现在全部日记，未解封的胶囊不能提前解封。副本 id 在任一侧已存在（上次同步只写了一侧）或任一侧有它的墓碑（用户看过并删掉了）时不再生成，已存在的作为普通记录照常复制。副本与它的成员关系两侧都是新增；书序里新副本排在原日记之后。原 id 的其余分面照常逐分面判定。
+   - diary.tags、orderList.items：取双方历史中最近的共同祖先值（同一哈希出现在两边历史里且带值，取两边 `seenAt` 中较大者最新的，再平手按哈希）做三方合并。集合：祖先 ∪ 双方新增 − 任一方删除。列表：去掉任一方删除的项；双方都保留的项的相对顺序——只有一方调整过（与祖先不同）就用那一方的，双方都调整过用主侧的，都没调整即祖先顺序；再依次把主侧、次侧的新增项按各自的相对位置插入（插在它在自己列表里最近的、已在结果中的前一项之后，没有就放最前）。找不到共同祖先时取并集（集合直接并；列表：主侧顺序 + 次侧独有项按次侧顺序追加）。主侧 = 变化时间较新的一侧（规则同下面“其他分面”，平手按 deviceId），与谁发起同步无关。（原文“保留祖先顺序”“按 L / R 的相对位置”在只有一方拖动过时会丢掉那次拖动、且结果随发起方而变，故作此解释。）
+   - diary.stamp：取较大值（不是冲突）。content 的最终值与某一侧当前值不同、而最终 stamp 恰等于那一侧的当前值时 +1000 毫秒（库里按秒存），保证各处按 `diaryId + updatedAt` 的缓存失效；抬高后大于两侧。
+   - 其他分面：取该分面“变化时间”较新的一方——历史头条的 `seenAt`；没有历史时用记录自身时间字段（日记：archive 用 `archivedAt`、trash 用 `deletedAt`、capsule 用 `lockedAt`，缺省及其余分面用 stamp；日记本 `definition.updatedAt`；成员 `addedAt`；留言 `editedAt ?? createdAt`；模板、纪念日、心情 `updatedAt`；标签、顺序列表、设置为 0）——平手按 deviceId 较大者。
+
+#### 4.1.1 历史时间继承（收敛性修正）
+- **规则**：同步写入之后折叠时，凡是直接采纳了另一侧原值的分面（取一侧、变化时间较新者、正文胜方、合并结果恰好等于一侧原值），被换掉的旧值进历史时的 `seenAt` 不用写入时刻，而用那个值在来源一侧的确立时间（来源一侧的历史头条 `seenAt`，没有历史时用上面的记录时间字段）；合并出的新值、由从属关系改出的值（章节置 null、关联置 null、层级断开、改名换名、列表校正）照常用写入时刻。规划器在 `SyncSidePlan.historySeenAt`（键 → 分面 → 毫秒）给出，写入后的折叠已支持（`foldSyncObservation` 的 `seenAtOverrides`，经 `SyncLocalState.recordAppliedState(after, historySeenAt: …)`；第 3 节“写入后”），写入层负责把这一侧计划的 `historySeenAt` 原样传入。
+- **为什么**：原规则在 R ∈ H_L 且 L ∈ H_R 时比较“谁离开对方当前值更晚”，而每次同步采纳都会把旧值以写入时刻记进历史，采纳者立刻成为“最晚离开者”。收敛模拟在 3–5 台设备时找到了不收敛的情形，最小复现：四台设备 a、b 的 pin 为 true（历史里有 false，seenAt 996 / 1000），c、d 为 false（历史里有 true，seenAt 994 / 1005），按 (a,c) (a,d) (b,d) (c,d) (a,b) (b,c) 循环同步——每一对都“正确”地判给较晚的一方，但败方采纳后又成了最晚的，四台的值每轮整体翻转，永远不收敛（`test/core/services/lan_sync/sync/sync_planner_convergence_test.dart` 保留了这个复现）。
+- **修复后**：同一个值在所有设备上的确立时间相同（采纳时继承），4.1 第 4 条与“其他分面”的冲突都等价于按值确立时间的后写者胜（LWW），与经过哪些设备、谁发起无关，因而收敛；两台设备之间“改回旧值”仍是后改的一侧胜出。只改第 4 条的比较方式（不继承）仍会翻转；只继承而保留“离开时间”的比较，在有中间值时离开时间不等于确立时间，二者一起才成立。
 
 ### 4.2 只有一边有的记录
-- 设缺失一方对该键有墓碑 T：
+- 设缺失一方对该键有墓碑 T（对方的墓碑详情按需取）：
   - 在场一方**每个分面**的哈希都在 `T.known` 对应分面里（它没在删除之后改过）→ 删除传播到在场一方；
-  - 否则（在场一方删除后又改过，或两边无关）→ 保留，复制给缺失一方（“改过的赢”）。
+  - 否则（在场一方删除后又改过，或两边无关）→ 保留，复制给缺失一方（“改过的赢”），记为复活（4.3）。
 - 缺失一方没有墓碑 → 新记录，复制。
-- tag：还被任何最终日记引用的标签名不删除；改名记录（缺失一方 `renames` 有 旧名 → 新名、且新名在最终集合里）让对方**原地改名**（保持本地 id，见 6.3）。
+- 缺少某类实体（不在两侧共同的实体集合里）、对方不提供设置：整类跳过，从不视为删除。
+- tag：
+  - 还被任何最终日记引用的标签名不删（改判保留并复制）。“最终日记”指不是两侧原样的日记（含复活的、冲突副本）；两侧原样的日记引用的标签两侧都有，不会被判删除。
+  - 改名：一侧 X 的 `renames` 有 旧名 → 新名，且 X 已经没有旧名、有新名时生效（两侧把同一个旧名改成不同新名时取改名时间较新者，平手按 deviceId；跨侧的链 a → b、b → c 沿链解析为 a → c，成环的整条不生效）。生效的改名作用于全部最终日记的 tags 分面（旧名换成新名，包括对方在改名之后才打上旧名的日记——否则旧名会被它们“引用”而重新出现）；对方 Y 还有旧名、没有新名，且最终只剩新名时，Y **原地改名**（`SyncTagRenameOp`，保持本地 id，见 6.3），代替 Y 上“删旧名 + 建新名”两条写入。Y 在改名之后改过旧名的颜色时，旧名作为“删除后改过”的记录保留，Y 另建新名、不原地改名，日记上的旧名照样换成新名。
+  - settings 的 `tagOrderNames`：写入后各侧由本机标签表重新推出（本地 id → 名称，查不到的丢掉），所以最终值按改名换名、只留最终存在的标签、去重；只在有标签只在一侧时才可能变化。
 
 ### 4.3 从属与复活
-- 复活（4.2 中“保留并复制”的被删记录）时，它的从属记录一并按保留一方为准：日记 → 它的成员、留言、tags 分面、引用它的纪念日关联；日记本 → 它的成员、书序列表、子本的 `parentId`。
-- 给已被对方删除的日记新增或修改留言，算作对日记的修改（该日记复活）。
-- 最终状态里日记或日记本不存在的成员关系、书序项一律丢弃；留言所属日记不存在时丢弃；纪念日 `linkedDiaryId` 指向不存在的日记时置 null。
-- 智能日记本没有成员与书序；成员的 `chapterId` 不在目标日记本的章节里时写 null。
+- 复活（4.2 中缺失一侧有墓碑却“保留并复制”的记录）时，它的从属按保留一方为准：日记 → 它在保留一侧的成员关系、留言（被墓碑覆盖的也改判保留）、指向它的纪念日关联（最终值里恢复 `linkedDiaryId`）；tags 分面随记录本身；日记本 → 它在保留一侧的成员关系、书序列表、在保留一侧挂在它下面的子本的 `parentId`。没有墓碑的新记录不必特殊处理：它的从属在缺失一侧本来就没有墓碑。
+- 给已被对方删除的日记新增或修改留言，算作对日记的修改：保留下来的留言（不是两侧原样的）指向判为删除的日记时，该日记改判复活（连同上面的从属）。成员关系、书序列表、纪念日的改动不复活日记 / 日记本，它们随日记 / 日记本不存在而丢弃。
+- 最终状态里日记或日记本不存在、或日记本不是手动本（`kind` 原始值）的成员关系、书序项一律丢弃；留言所属日记不存在时丢弃；纪念日 `linkedDiaryId` 指向不存在的日记时置 null。只检查不是两侧原样的记录：两侧原样的成员 / 留言 / 纪念日引用的日记与日记本在两侧都在（删除时会一并清理），最终也一定还在。
+- 智能日记本没有成员与书序；成员的 `chapterId` 不在目标日记本最终章节里时写 null（章节口径同 `NotebookPayload.chapterIds`：id 与标题去掉首尾空白后非空，比较去掉空白后的 id）。检查范围：不是两侧原样的成员关系，以及所在日记本不是两侧原样的全部成员关系（两侧原样的读本机记录）。
+- 顺序列表恰好是最终集合：书架 = 全部最终日记本；我的模板 = 全部最终用户模板（不含 `builtin.*`）；书序 = 这本最终手动本的最终成员。先按 4.1 / 4.2 定出底（复活日记本的书序以保留一侧为准；判为删除但日记本最终仍是手动本的，以在场一侧的列表为底），去掉不在集合里的 id、去重，再补上缺的：新冲突副本插在原日记之后（同一原日记的多份按 id 排序），其余按 id 排序追加到末尾。两侧原样、且最终集合与两侧现有集合（由清单的键算出，不必读值）都相同的列表不动。
 
 ### 4.4 日记本层级
-在最终日记本集合上按 `NotebookHierarchy`（`lib/core/database/app_database_notebook_hierarchy.dart`）口径校验：上级必须存在且为手动本、不成环、深度不超过 `kNotebookMaxDepth`；不合法的按业务 id 排序确定性地断开（`parentId` 置 null），写入精确的 `parentId`。
+在最终日记本集合上按 `NotebookHierarchy`（`lib/core/database/app_database_notebook_hierarchy.dart`）口径校验——它基于 Drift 的 `NotebookRow`，纯 Dart 的规划器按同一规则重写，测试与 `NotebookHierarchy.repairs` 对拍：上级须存在、为手动本、不是自己；成环时环上的每一本都断开；之后层数超过 `kNotebookMaxDepth` 且上级恰在最深一层的断开（只断开放不下的那一层，下面的跟着上移）。结果与遍历顺序无关；断开即把 `parentId` 精确写成 null。只在有日记本不是两侧原样时校验（两侧原样的读本机记录）；复活日记本的子本先按保留一侧恢复 `parentId` 再校验。
 
 ### 4.5 需要用户确认的情况（规划器只报告，会话层决定）
-- **删除保护**：任一侧将彻底删除的日记数 > max(20, 该侧日记总数的 10%)。
-- **以哪边为准**：本次与该设备是首次同步、或任一侧 `restoredPending`，且出现没有共同祖先的冲突时，列出数量，请用户选：保留两份（按 4.1 生成副本）/ 以本机为准 / 以对方为准；后两种对这些冲突直接取一方，不生成副本、不删除任何记录。
+- **删除保护**：任一侧将彻底删除的日记数 > max(20, 该侧日记总数的 10%)（总数 = 该侧清单里的日记数）。
+- **以哪边为准**：本次与该设备是首次同步、或任一侧 `restoredPending`，且出现没有共同祖先的冲突（两侧该分面历史没有任何共同哈希；stamp 与缺分面不算）时，报告涉及的记录数，请用户选：保留两份（按 4.1 生成副本）/ 以本机为准 / 以对方为准；后两种对这些冲突直接取一方，不生成副本。“不删除任何记录”：选择只作用于这些冲突分面，不把只在一侧的记录变成删除——只在一侧的记录仍按 4.2（覆盖恢复后墓碑已清空，实际都是复制）。不论本次按哪种选择规划都照样报告数量，用户是否已经选过由会话层记住。
 - 自动同步遇到以上任一情况：中止，不写入，在同步页标记“需要确认”。
 
 ### 4.6 产出
 `SyncPlan`：
-- `localWrites` / `remoteWrites`：每项为 `SyncWrite{ key, expected: 规划时依据的该方当前分面哈希（记录不存在为 null）, record: 最终规范记录（删除为 null） }`；冲突副本是 `expected == null` 的新增；
-- `mediaNeeded`：每方需要从另一方取得的媒体键；
-- 统计（每方：新增 / 更新 / 删除，按实体）、冲突副本列表（原 id、副本 id、标题）、待确认事项。
+- `local` / `remote`（`SyncSidePlan`）：
+  - `writes`：每项 `SyncWrite{ key, expected: 规划时依据的该方当前分面哈希（记录不存在为 null）, record: 最终规范记录（删除为 null） }`，按 `SyncKey` 排序（实体枚举顺序）；最终值与该方当前哈希全同的不写；冲突副本与其成员关系是 `expected == null` 的新增；
+  - `renames`：原地改名 `SyncTagRenameOp{ from, to, expected: 该方 tag:from 的哈希, record: tag:to 的最终记录 }`，按旧名排序；写入列表里没有对应的 `tag:from` 删除与 `tag:to` 新增；
+  - `mediaNeeded`：该方需要从另一方取得的媒体键候选（写入记录里哈希有变化的分面引用的媒体键；写入层经 `media.have` 按 sha256 核对后只传缺的）；
+  - `stats`：每类实体的新增 / 更新 / 删除（原地改名记为标签更新）；
+  - `historySeenAt`：写入后折叠用的继承时间（4.1.1）。
+- `conflictCopies`：新生成的冲突副本（原 id、副本 id、标题、败方），按原 id 排序；`confirmations`：删除保护（0–2 项）与“以哪边为准”的冲突数。
+- 写入层须知（第 6 节）：
+  1. 事务开始时先逐条比对**全部**前置条件（写入的 `expected`；改名的 from 哈希等于 `expected` 且 to 不存在），不符的跳过；再执行原地改名；再按 `writes` 的顺序写——引用旧名的日记写入里 tags 已是新名，它的 `expected` 是改名前的哈希。
+  2. 日记排在标签之前：日记的标签按名称（`ensureTagsByName` 口径）建出后，颜色由同一计划里 `tag:` 记录的写入定下；计划保证每个最终日记引用的标签名都有最终的 tag 记录（不被删除）。
+  3. 删除日记 / 日记本 / 标签时写入层的关联清理，与计划里显式列出的成员、留言、纪念日、书序写入一致（重复执行无害）；删除日记本不提升子本，子本的 `parentId` 由计划精确给出。
+  4. 顺序列表写入后按列表重排为 0..n-1；计划给出的列表恰为最终集合，“列表里没有的现有项排在末尾”只在有写入被跳过时才会出现。
+  5. 一侧的智能本被改成手动本时，先清掉该本残留的关联行（智能本的残留行不进清单），否则写入后的清单与计划不符。
+  6. 写入后调用 `recordAppliedState(after, historySeenAt: plan.historySeenAt)`（4.1.1），漏传则多台设备之间可能不收敛。
 
 ## 5. 协议
 
@@ -200,7 +233,7 @@ class SyncManifest {
    - 按原值写入列（业务 id ↔ 本地 id 换算；标签按名称 `ensureTagsByName` 口径但**不改已有标签颜色**，颜色只由 tag 记录决定；删除时手动清理关联行，与 `hardDeleteDiary` 等现有删除路径的清理范围一致：日记 → diary_tags、diary_notebooks、留言、纪念日关联；日记本 → diary_notebooks、书序；标签 → diary_tags）；
    - 不调用 `deleteNotebook` / `mergeNotebook`（它们的子本上提会覆盖另一边的移动），层级以计划里的精确 `parentId` 为准；
    - orderList 写入后按列表重排 `sortOrder` / `position` 为 0..n-1，列表里没有的现有项按原相对顺序排在末尾；
-   - 模板删除时同时移除指向它的日记本默认模板（`NotebookPayload.templateId`）；`DiaryTemplatePrefs` 是设置，由 settings 同步处理；
+   - 写入层不因删除模板而改动日记本定义（`NotebookPayload.templateId` 保持原样）：应用自己删除模板（`DiaryTemplatesController.delete` → `deleteDiaryTemplates`）也只清 `DiaryTemplatePrefs` 里的规则、不动日记本，指向已删模板的默认模板在应用里本来就会出现，读取时找不到即回落；写入层若改了日记本定义，写入后的清单就与计划不符，下次同步又判成差异。`DiaryTemplatePrefs` 是设置，由 settings 同步处理；
    - 事务内算出写入后的清单。
 4. 事务提交后：用写入后的清单更新历史、墓碑与检查点（第 3 节），移动暂存媒体的残留清理，发出 `EditingSessionRegistry.notifyDataReplaced()`。
 5. settings 分面经 `BackupSettings.restore` 只应用本次变化的键（部分节点），背景图从暂存目录拷入 `app_backgrounds/`；失败按 `SettingsServiceBackup` 的快照回滚。部分节点由 `syncSettingsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id）。注意 `BackupSettings.restore` 对若干键的“空值”什么也不做（`tagOrderRaw` 为空串，`diarySortModeRaw` / `diaryLayoutModeRaw` / `diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` / `appLocaleCode` 为 null 或空串时保留本机值），另外它总会顺带 `clearCreateDiaryDraft()`：要把这些键清空时写入层须直接调用对应的 setter，否则本机规范值不变、下次同步会反复判为差异。

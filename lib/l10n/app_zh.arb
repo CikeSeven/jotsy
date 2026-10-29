@@ -13639,5 +13639,500 @@
   "lanSyncScanUnavailableBody": "没有找到可用的相机，或相机正被其他应用占用。可以改用手动输入地址。",
   "@lanSyncScanUnavailableBody": {
     "description": "Scan page explanation when the camera could not start."
+  },
+  "lanSyncFlowLocal": "本机",
+  "@lanSyncFlowLocal": {
+    "description": "Label under this device's block in the sync flow panel."
+  },
+  "lanSyncFlowSent": "↑ 发送 {count} 篇",
+  "@lanSyncFlowSent": {
+    "description": "Counter below the sync flow panel: diaries sent so far.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncFlowReceived": "↓ 接收 {count} 篇",
+  "@lanSyncFlowReceived": {
+    "description": "Counter below the sync flow panel: diaries received so far.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncStepConnect": "连接",
+  "@lanSyncStepConnect": {
+    "description": "Stage bar label: connecting."
+  },
+  "lanSyncStepCompare": "比对",
+  "@lanSyncStepCompare": {
+    "description": "Stage bar label: comparing."
+  },
+  "lanSyncStepTransfer": "传输",
+  "@lanSyncStepTransfer": {
+    "description": "Stage bar label: transferring."
+  },
+  "lanSyncStepMerge": "合并",
+  "@lanSyncStepMerge": {
+    "description": "Stage bar label: merging."
+  },
+  "lanSyncMediaTransferring": "正在传输图片与录音",
+  "@lanSyncMediaTransferring": {
+    "description": "Progress area label while media files are transferred."
+  },
+  "lanSyncMediaFiles": "{done} / {total} 个文件",
+  "@lanSyncMediaFiles": {
+    "description": "Media file progress, e.g. 23 / 48 files.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncMediaBytes": "{done} / {total}",
+  "@lanSyncMediaBytes": {
+    "description": "Transferred bytes over total bytes, sizes already formatted.",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncMediaBytesSpeed": "{done} / {total} · {speed}/s",
+  "@lanSyncMediaBytesSpeed": {
+    "description": "Transferred bytes over total bytes plus the current speed, sizes already formatted.",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncSessionSemantics": "{stage}，已完成 {percent}%",
+  "@lanSyncSessionSemantics": {
+    "description": "Screen reader text for the session progress: stage and percentage.",
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryTitle": "同步完成",
+  "@lanSyncSummaryTitle": {
+    "description": "Title of the sync summary sheet."
+  },
+  "lanSyncSummarySubtitle": "与 {name} · 用时 {seconds} 秒",
+  "@lanSyncSummarySubtitle": {
+    "description": "Subtitle of the sync summary sheet: peer name and duration.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryReceived": "↓ 收到",
+  "@lanSyncSummaryReceived": {
+    "description": "Summary stat card label: changes received."
+  },
+  "lanSyncSummarySent": "↑ 发出",
+  "@lanSyncSummarySent": {
+    "description": "Summary stat card label: changes sent."
+  },
+  "lanSyncSummaryDiaryUnit": "{count, plural, other{篇}}",
+  "@lanSyncSummaryDiaryUnit": {
+    "description": "Unit after the big diary count in a summary stat card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryAdded": "新增",
+  "@lanSyncSummaryAdded": {
+    "description": "Summary stat row: diaries added."
+  },
+  "lanSyncSummaryUpdated": "更新",
+  "@lanSyncSummaryUpdated": {
+    "description": "Summary stat row: diaries updated."
+  },
+  "lanSyncSummaryDeleted": "删除",
+  "@lanSyncSummaryDeleted": {
+    "description": "Summary stat row: diaries deleted."
+  },
+  "lanSyncSummaryMedia": "媒体",
+  "@lanSyncSummaryMedia": {
+    "description": "Summary stat row: media files."
+  },
+  "lanSyncSummaryMediaValue": "{count} 个 · {size}",
+  "@lanSyncSummaryMediaValue": {
+    "description": "Summary stat row value: media file count and formatted size.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncSummaryConflicts": "{count} 篇日记两边都改过，已保留两份",
+  "@lanSyncSummaryConflicts": {
+    "description": "Conflict notice in the sync summary sheet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryConflictHint": "原日记保留较新的版本",
+  "@lanSyncSummaryConflictHint": {
+    "description": "Second line of a conflict copy row in the sync summary sheet."
+  },
+  "lanSyncUntitled": "无标题",
+  "@lanSyncUntitled": {
+    "description": "Title shown for a conflict copy without a title."
+  },
+  "lanSyncSummaryFootnote": "标签、日记本、留言与纪念日已一并合并",
+  "@lanSyncSummaryFootnote": {
+    "description": "Footnote in the sync summary sheet."
+  },
+  "lanSyncSummaryDone": "完成",
+  "@lanSyncSummaryDone": {
+    "description": "Button closing the sync summary sheet."
+  },
+  "lanSyncSummaryUpToDate": "已经是最新的了",
+  "@lanSyncSummaryUpToDate": {
+    "description": "Sync summary when nothing changed on either side."
+  },
+  "lanSyncSummaryFailedTitle": "同步没有完成",
+  "@lanSyncSummaryFailedTitle": {
+    "description": "Title of the sync summary sheet when the sync failed."
+  },
+  "lanSyncSyncFailUnreachable": "连不上对方。请确认两台设备连着同一个 Wi-Fi，且对方打开着 Jotsy。",
+  "@lanSyncSyncFailUnreachable": {
+    "description": "Failed sync: unreachable, with the next step."
+  },
+  "lanSyncSyncFailConnectionLost": "连接中断，已写入的部分下次会自动补齐。",
+  "@lanSyncSyncFailConnectionLost": {
+    "description": "Failed sync: connection lost, with the next step."
+  },
+  "lanSyncSyncFailTimedOut": "对方长时间没有回应，已写入的部分下次会自动补齐。",
+  "@lanSyncSyncFailTimedOut": {
+    "description": "Failed sync: timed out, with the next step."
+  },
+  "lanSyncSyncFailDeclined": "对方拒绝了这次同步。",
+  "@lanSyncSyncFailDeclined": {
+    "description": "Failed sync: declined by the peer."
+  },
+  "lanSyncSyncFailCancelled": "同步已取消，已写入的部分下次会自动补齐。",
+  "@lanSyncSyncFailCancelled": {
+    "description": "Failed sync: cancelled."
+  },
+  "lanSyncSyncFailIncompatible": "两台设备的 Jotsy 版本不兼容，请把旧的那台升级后再同步。",
+  "@lanSyncSyncFailIncompatible": {
+    "description": "Failed sync: incompatible versions, with the next step."
+  },
+  "lanSyncSyncFailUntrusted": "对方已不再认识这台设备，请取消配对后重新配对。",
+  "@lanSyncSyncFailUntrusted": {
+    "description": "Failed sync: the peer forgot this device, with the next step."
+  },
+  "lanSyncSyncFailTicketExpired": "二维码已失效，请重新扫码连接。",
+  "@lanSyncSyncFailTicketExpired": {
+    "description": "Failed sync: QR ticket expired, with the next step."
+  },
+  "lanSyncSyncFailWriteFailed": "写入本机失败，可能是存储空间不足。请清理空间后重试。",
+  "@lanSyncSyncFailWriteFailed": {
+    "description": "Failed sync: local write failed, with the next step."
+  },
+  "lanSyncSyncFailUnknown": "同步没有完成，请重试。",
+  "@lanSyncSyncFailUnknown": {
+    "description": "Failed sync: unknown reason."
+  },
+  "lanSyncSyncReasonUnreachable": "连不上对方",
+  "@lanSyncSyncReasonUnreachable": {
+    "description": "Short failure reason in the sync history: unreachable."
+  },
+  "lanSyncSyncReasonConnectionLost": "连接中断",
+  "@lanSyncSyncReasonConnectionLost": {
+    "description": "Short failure reason in the sync history: connection lost."
+  },
+  "lanSyncSyncReasonTimedOut": "对方没有回应",
+  "@lanSyncSyncReasonTimedOut": {
+    "description": "Short failure reason in the sync history: timed out."
+  },
+  "lanSyncSyncReasonDeclined": "对方拒绝了同步",
+  "@lanSyncSyncReasonDeclined": {
+    "description": "Short failure reason in the sync history: declined."
+  },
+  "lanSyncSyncReasonCancelled": "已取消",
+  "@lanSyncSyncReasonCancelled": {
+    "description": "Short failure reason in the sync history: cancelled."
+  },
+  "lanSyncSyncReasonIncompatible": "版本不兼容",
+  "@lanSyncSyncReasonIncompatible": {
+    "description": "Short failure reason in the sync history: incompatible versions."
+  },
+  "lanSyncSyncReasonUntrusted": "对方不再认识本机",
+  "@lanSyncSyncReasonUntrusted": {
+    "description": "Short failure reason in the sync history: untrusted."
+  },
+  "lanSyncSyncReasonTicketExpired": "二维码已失效",
+  "@lanSyncSyncReasonTicketExpired": {
+    "description": "Short failure reason in the sync history: ticket expired."
+  },
+  "lanSyncSyncReasonWriteFailed": "写入本机失败",
+  "@lanSyncSyncReasonWriteFailed": {
+    "description": "Short failure reason in the sync history: write failed."
+  },
+  "lanSyncSyncReasonUnknown": "同步失败",
+  "@lanSyncSyncReasonUnknown": {
+    "description": "Short failure reason in the sync history: unknown."
+  },
+  "lanSyncChooseSideTitle": "以哪边为准",
+  "@lanSyncChooseSideTitle": {
+    "description": "Title of the dialog asking how to merge diaries changed on both devices."
+  },
+  "lanSyncChooseSideBody": "有 {count} 篇日记在本机和「{name}」上都改过，要怎么合并？",
+  "@lanSyncChooseSideBody": {
+    "description": "Body of the which-side dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncChooseKeepBoth": "保留两份（推荐）",
+  "@lanSyncChooseKeepBoth": {
+    "description": "Which-side option: keep both versions."
+  },
+  "lanSyncChooseKeepBothDesc": "较新的版本留在原日记，另一份存为冲突副本",
+  "@lanSyncChooseKeepBothDesc": {
+    "description": "Explanation of the keep-both option."
+  },
+  "lanSyncChoosePreferLocal": "以本机为准",
+  "@lanSyncChoosePreferLocal": {
+    "description": "Which-side option: this device wins."
+  },
+  "lanSyncChoosePreferLocalDesc": "用本机的版本覆盖对方的改动",
+  "@lanSyncChoosePreferLocalDesc": {
+    "description": "Explanation of the this-device-wins option."
+  },
+  "lanSyncChoosePreferPeer": "以对方为准",
+  "@lanSyncChoosePreferPeer": {
+    "description": "Which-side option: the other device wins."
+  },
+  "lanSyncChoosePreferPeerDesc": "用「{name}」的版本覆盖本机的改动",
+  "@lanSyncChoosePreferPeerDesc": {
+    "description": "Explanation of the other-device-wins option.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncChooseSideNote": "三种方式都不会删除任何日记",
+  "@lanSyncChooseSideNote": {
+    "description": "Footnote of the which-side dialog."
+  },
+  "lanSyncContinueSync": "继续同步",
+  "@lanSyncContinueSync": {
+    "description": "Confirm button of the sync confirmation dialogs."
+  },
+  "lanSyncDeletionTitle": "要彻底删除日记吗",
+  "@lanSyncDeletionTitle": {
+    "description": "Title of the deletion protection dialog."
+  },
+  "lanSyncDeletionBodyPeer": "这次同步会在「{name}」上彻底删除 {count} 篇日记（它们已在本机的回收站里清空）",
+  "@lanSyncDeletionBodyPeer": {
+    "description": "Deletion protection body when diaries would be deleted on the other device.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncDeletionBodyLocal": "这次同步会在本机上彻底删除 {count} 篇日记（它们已在「{name}」的回收站里清空）",
+  "@lanSyncDeletionBodyLocal": {
+    "description": "Deletion protection body when diaries would be deleted on this device.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncDeletionSync": "同步删除",
+  "@lanSyncDeletionSync": {
+    "description": "Deletion protection option: delete on the other device as well."
+  },
+  "lanSyncDeletionSyncDesc": "两台设备上都不再保留这些日记",
+  "@lanSyncDeletionSyncDesc": {
+    "description": "Explanation of the delete option."
+  },
+  "lanSyncDeletionKeep": "保留，并恢复到另一台",
+  "@lanSyncDeletionKeep": {
+    "description": "Deletion protection option: keep the diaries and restore them."
+  },
+  "lanSyncDeletionKeepDesc": "这些日记会恢复到清空它们的那台设备上",
+  "@lanSyncDeletionKeepDesc": {
+    "description": "Explanation of the keep-and-restore option."
+  },
+  "lanSyncDeviceTitle": "设备详情",
+  "@lanSyncDeviceTitle": {
+    "description": "Title of the paired device detail page."
+  },
+  "lanSyncInfoLastSync": "上次同步",
+  "@lanSyncInfoLastSync": {
+    "description": "Device detail info cell label: last sync time."
+  },
+  "lanSyncInfoPairedAt": "配对于",
+  "@lanSyncInfoPairedAt": {
+    "description": "Device detail info cell label: pairing date."
+  },
+  "lanSyncInfoAddress": "地址",
+  "@lanSyncInfoAddress": {
+    "description": "Device detail info cell label: network address."
+  },
+  "lanSyncInfoNever": "还没有",
+  "@lanSyncInfoNever": {
+    "description": "Device detail info cell value when the device never synced."
+  },
+  "lanSyncInfoNoAddress": "未知",
+  "@lanSyncInfoNoAddress": {
+    "description": "Device detail info cell value when the address is unknown."
+  },
+  "lanSyncDeviceOffline": "设备不在线",
+  "@lanSyncDeviceOffline": {
+    "description": "Disabled sync button label when the paired device is offline."
+  },
+  "lanSyncPeerAutoSyncSubtitle": "应用打开时自动与这台设备同步",
+  "@lanSyncPeerAutoSyncSubtitle": {
+    "description": "Subtitle of the per-device auto sync switch."
+  },
+  "lanSyncPeerAutoSyncGlobalOff": "“同步选项”里的自动同步已关闭，这里暂不生效",
+  "@lanSyncPeerAutoSyncGlobalOff": {
+    "description": "Subtitle of the per-device auto sync switch while global auto sync is off."
+  },
+  "lanSyncAliasTitle": "备注名",
+  "@lanSyncAliasTitle": {
+    "description": "Device detail row and dialog title: local nickname for the device."
+  },
+  "lanSyncAliasNotSet": "未设置",
+  "@lanSyncAliasNotSet": {
+    "description": "Nickname row value when no nickname is set."
+  },
+  "lanSyncAliasLocalOnly": "只在本机显示",
+  "@lanSyncAliasLocalOnly": {
+    "description": "Hint that the nickname is only shown on this device."
+  },
+  "lanSyncAliasDialogHint": "留空则显示「{name}」",
+  "@lanSyncAliasDialogHint": {
+    "description": "Hint text of the nickname field.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncHistoryTitle": "同步记录",
+  "@lanSyncHistoryTitle": {
+    "description": "Section title of the sync history timeline."
+  },
+  "lanSyncHistoryEmpty": "还没有与这台设备同步过",
+  "@lanSyncHistoryEmpty": {
+    "description": "Empty state of the sync history."
+  },
+  "lanSyncHistoryAutomatic": "自动",
+  "@lanSyncHistoryAutomatic": {
+    "description": "Gray text in a history entry for an automatic sync."
+  },
+  "lanSyncHistoryDuration": "{seconds} 秒",
+  "@lanSyncHistoryDuration": {
+    "description": "Gray duration text in a history entry.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistoryReceived": "↓ 收到 {count} 篇",
+  "@lanSyncHistoryReceived": {
+    "description": "History summary part: diaries received.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistorySent": "↑ 发出 {count} 篇",
+  "@lanSyncHistorySent": {
+    "description": "History summary part: diaries sent.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistoryMedia": "媒体 {size}",
+  "@lanSyncHistoryMedia": {
+    "description": "History summary part: media size.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncHistoryConflicts": "{count} 篇冲突副本",
+  "@lanSyncHistoryConflicts": {
+    "description": "Chip in a history entry that created conflict copies.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncForget": "取消配对",
+  "@lanSyncForget": {
+    "description": "Button and confirm action for forgetting a paired device."
+  },
+  "lanSyncForgetTitle": "取消与「{name}」的配对？",
+  "@lanSyncForgetTitle": {
+    "description": "Title of the unpair confirmation dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncForgetBody": "两台设备上的日记都不会被删除。之后要同步需要重新配对。",
+  "@lanSyncForgetBody": {
+    "description": "Body of the unpair confirmation dialog."
   }
 }

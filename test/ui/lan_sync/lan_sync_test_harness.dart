@@ -31,6 +31,9 @@ LanSyncPeerView lanSyncTestPeer({
   DateTime? lastSyncAt,
   bool needsAttention = false,
   LanSyncSessionView? session,
+  String? alias,
+  bool autoSync = true,
+  List<LanSyncHistoryEntryView> history = const <LanSyncHistoryEntryView>[],
 }) {
   return LanSyncPeerView(
     deviceId: id,
@@ -42,6 +45,9 @@ LanSyncPeerView lanSyncTestPeer({
     lastSyncAt: lastSyncAt,
     needsAttention: needsAttention,
     session: session,
+    alias: alias,
+    autoSync: autoSync,
+    history: history,
   );
 }
 
@@ -61,7 +67,9 @@ final LanSyncPairingAuthGate lanSyncNoAuthGate = LanSyncPairingAuthGate(
 );
 
 /// 挂上同步页。[reduceMotion] 默认开：雷达与“正在寻找…”不循环，
-/// pumpAndSettle 可以收尾；测雷达播放的用例单独关掉。
+/// pumpAndSettle 可以收尾；测雷达播放的用例单独关掉。[openDiary] 替换打开
+/// 日记的入口（默认经 `openDiaryPage`，会打开真实数据库），测冲突副本的用例
+/// 传入记录调用的桩。
 Future<void> pumpLanSyncPage(
   WidgetTester tester,
   FakeLanSyncController controller, {
@@ -71,6 +79,7 @@ Future<void> pumpLanSyncPage(
   bool reduceMotion = true,
   bool settle = true,
   LanSyncPairingAuthGate? authGate,
+  LanSyncOpenDiary? openDiary,
 }) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
@@ -83,6 +92,8 @@ Future<void> pumpLanSyncPage(
           authGate ?? lanSyncNoAuthGate,
         ),
         appThemeSeedColorProvider.overrideWithValue(const Color(0xff1e6586)),
+        if (openDiary != null)
+          lanSyncOpenDiaryProvider.overrideWithValue(openDiary),
       ],
       child: MaterialApp(
         theme: expressiveTestTheme(brightness),

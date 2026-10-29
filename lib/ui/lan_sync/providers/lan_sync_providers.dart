@@ -1,5 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../diaries/controllers/diary_open_flow.dart';
 import '../controllers/inert_lan_sync_ui_controller.dart';
 import '../models/lan_sync_ui_controller.dart';
 
@@ -14,3 +16,15 @@ final lanSyncControllerProvider = Provider<LanSyncUiController>((Ref ref) {
   ref.onDispose(controller.dispose);
   return controller;
 });
+
+/// 从同步界面打开一篇日记（完成摘要里的冲突副本）。
+typedef LanSyncOpenDiary =
+    Future<void> Function(BuildContext context, WidgetRef ref, String diaryId);
+
+/// 打开日记的入口：一律经 `openDiaryPage`（AGENTS.md §6）。做成 provider 只为
+/// 测试能换成记录调用的桩，不必真的推入预览页、打开数据库。
+final lanSyncOpenDiaryProvider = Provider<LanSyncOpenDiary>(
+  (Ref ref) =>
+      (BuildContext context, WidgetRef ref, String diaryId) =>
+          openDiaryPage(context, ref, diaryId: diaryId),
+);

@@ -124,7 +124,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.byType(LanSyncSessionPanel), findsOneWidget);
-    // 行副标题与会话面板占位都显示阶段文字。
+    // 行副标题与会话面板的进度区都显示阶段文字。
     expect(_rich('正在比对…'), findsNWidgets(2));
     expect(find.text('取消'), findsOneWidget);
     expect(find.text('同步'), findsNothing);

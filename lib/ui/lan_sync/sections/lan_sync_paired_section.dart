@@ -13,6 +13,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../app_surface/widgets/app_card_surface.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../widgets/list_item_presence.dart';
+import '../models/lan_sync_platform.dart';
 import '../models/lan_sync_view_state.dart';
 import '../widgets/lan_sync_device_row.dart';
 import '../widgets/lan_sync_peer_row.dart';
@@ -23,6 +24,7 @@ class LanSyncPairedSection extends StatelessWidget {
   const LanSyncPairedSection({
     super.key,
     required this.peers,
+    required this.localPlatform,
     required this.now,
     required this.onSync,
     required this.onCancel,
@@ -31,6 +33,9 @@ class LanSyncPairedSection extends StatelessWidget {
   });
 
   final List<LanSyncPeerView> peers;
+
+  /// 本机平台（会话面板左侧“本机”的图标）。
+  final LanSyncPlatform localPlatform;
   final DateTime now;
   final ValueChanged<String> onSync;
   final ValueChanged<String> onCancel;
@@ -90,7 +95,12 @@ class LanSyncPairedSection extends StatelessWidget {
         _SessionCard(
           key: ValueKey<String>('lanSyncSession:${peer.deviceId}'),
           row: _row(peer),
-          panel: LanSyncSessionPanel(session: session),
+          panel: LanSyncSessionPanel(
+            session: session,
+            localPlatform: localPlatform,
+            peerPlatform: peer.platform,
+            peerName: peer.displayName,
+          ),
         ),
       );
     }

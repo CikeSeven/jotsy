@@ -1,4 +1,4 @@
-// 局域网同步界面的文案换算（平台名、相对时间、会话阶段、设备图标）。
+// 局域网同步界面的文案换算（平台名、相对时间、会话阶段、失败原因、设备图标）。
 // 纯函数，同步页、设备详情页与设置入口共用，说法一致。
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -53,6 +53,12 @@ String lanSyncLastSyncLabel(
   return l10n.lanSyncSyncedAgo(lanSyncRelativeTime(l10n, lastSyncAt, now));
 }
 
+/// 用时（整秒，向上取整）：不足一秒按 1 秒写，不出现“用时 0 秒”。
+int lanSyncDurationSeconds(Duration duration) {
+  final value = (duration.inMilliseconds / 1000).ceil();
+  return value < 1 ? 1 : value;
+}
+
 /// 会话阶段文字（设备行副标题、会话面板）。
 String lanSyncStageLabel(AppLocalizations l10n, LanSyncSessionStage stage) {
   return switch (stage) {
@@ -80,5 +86,45 @@ String lanSyncPairingFailureText(
     LanSyncFailureReason.ticketExpired => l10n.lanSyncPairFailTicketExpired,
     LanSyncFailureReason.writeFailed => l10n.lanSyncPairFailWriteFailed,
     LanSyncFailureReason.unknown => l10n.lanSyncPairFailUnknown,
+  };
+}
+
+/// 同步失败的原因与下一步（完成摘要面板的失败态）。
+String lanSyncSyncFailureText(
+  AppLocalizations l10n,
+  LanSyncFailureReason reason,
+) {
+  return switch (reason) {
+    LanSyncFailureReason.unreachable => l10n.lanSyncSyncFailUnreachable,
+    LanSyncFailureReason.connectionLost => l10n.lanSyncSyncFailConnectionLost,
+    LanSyncFailureReason.timedOut => l10n.lanSyncSyncFailTimedOut,
+    LanSyncFailureReason.declined => l10n.lanSyncSyncFailDeclined,
+    LanSyncFailureReason.cancelled => l10n.lanSyncSyncFailCancelled,
+    LanSyncFailureReason.incompatibleVersion =>
+      l10n.lanSyncSyncFailIncompatible,
+    LanSyncFailureReason.untrusted => l10n.lanSyncSyncFailUntrusted,
+    LanSyncFailureReason.ticketExpired => l10n.lanSyncSyncFailTicketExpired,
+    LanSyncFailureReason.writeFailed => l10n.lanSyncSyncFailWriteFailed,
+    LanSyncFailureReason.unknown => l10n.lanSyncSyncFailUnknown,
+  };
+}
+
+/// 同步失败的短原因（设备详情页同步记录里的一行 `error` 色文字）。
+String lanSyncSyncReasonText(
+  AppLocalizations l10n,
+  LanSyncFailureReason reason,
+) {
+  return switch (reason) {
+    LanSyncFailureReason.unreachable => l10n.lanSyncSyncReasonUnreachable,
+    LanSyncFailureReason.connectionLost => l10n.lanSyncSyncReasonConnectionLost,
+    LanSyncFailureReason.timedOut => l10n.lanSyncSyncReasonTimedOut,
+    LanSyncFailureReason.declined => l10n.lanSyncSyncReasonDeclined,
+    LanSyncFailureReason.cancelled => l10n.lanSyncSyncReasonCancelled,
+    LanSyncFailureReason.incompatibleVersion =>
+      l10n.lanSyncSyncReasonIncompatible,
+    LanSyncFailureReason.untrusted => l10n.lanSyncSyncReasonUntrusted,
+    LanSyncFailureReason.ticketExpired => l10n.lanSyncSyncReasonTicketExpired,
+    LanSyncFailureReason.writeFailed => l10n.lanSyncSyncReasonWriteFailed,
+    LanSyncFailureReason.unknown => l10n.lanSyncSyncReasonUnknown,
   };
 }

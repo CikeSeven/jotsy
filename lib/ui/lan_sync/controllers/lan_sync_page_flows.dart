@@ -1,4 +1,4 @@
-// 同步页上的交互流程：弹出面板 / 对话框收集输入，再交给同步控制器执行。
+// 同步页与设备详情页上的交互流程：弹出面板 / 对话框收集输入，再交给同步控制器执行。
 //
 // - 输入：页面 context 与 [LanSyncUiController]；
 // - 输出：无（结果体现在控制器状态与事件里）；
@@ -14,7 +14,9 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../core/services/app_platform.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../models/lan_sync_ui_controller.dart';
+import '../models/lan_sync_view_state.dart';
 import '../pages/lan_sync_scan_page.dart';
+import '../widgets/lan_sync_confirm_dialogs.dart';
 import '../widgets/lan_sync_labels.dart';
 import '../widgets/lan_sync_manual_address_sheet.dart';
 import '../widgets/lan_sync_rename_dialog.dart';
@@ -94,4 +96,39 @@ Future<void> showLanSyncTroubleshooting(
     case LanSyncTroubleshootAction.manualAddress:
       await connectLanSyncByAddress(context, controller);
   }
+}
+
+/// 修改已配对设备的备注名（设备详情页）：留空确认即清除，回到显示对方自己
+/// 的名字；名称没变或取消时什么都不做。
+Future<void> editLanSyncPeerAlias(
+  BuildContext context,
+  LanSyncUiController controller,
+  LanSyncPeerView peer,
+) async {
+  final l10n = context.l10n;
+  final result = await showLanSyncRenameDialog(
+    context,
+    initialName: peer.alias?.trim() ?? '',
+    title: l10n.lanSyncAliasTitle,
+    hintText: l10n.lanSyncAliasDialogHint(peer.name),
+    allowEmpty: true,
+  );
+  if (result == null) return;
+  await controller.setPeerAlias(peer.deviceId, result.isEmpty ? null : result);
+}
+
+/// 取消配对（设备详情页）：确认后调用 `forgetPeer`，返回是否已取消配对，
+/// 调用方据此关闭详情页。
+Future<bool> forgetLanSyncPeer(
+  BuildContext context,
+  LanSyncUiController controller,
+  LanSyncPeerView peer,
+) async {
+  final confirmed = await showLanSyncForgetDialog(
+    context,
+    peerName: peer.displayName,
+  );
+  if (!confirmed) return false;
+  await controller.forgetPeer(peer.deviceId);
+  return true;
 }

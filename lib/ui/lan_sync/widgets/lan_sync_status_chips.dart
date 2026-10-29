@@ -1,4 +1,5 @@
-// 英雄卡的状态胶囊：地址（点按复制）与发现状态（点按切换）。
+// 同步界面的状态胶囊：英雄卡的地址（点按复制）与发现状态（点按切换），
+// 设备详情页的在线 / 离线与平台胶囊共用同一枚 [LanSyncChip]。
 
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -7,8 +8,9 @@ import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/expressive_state_blend.dart';
 
 /// 一枚 12 圆角、12.5 / w600 的胶囊。
-class _HeroChip extends StatelessWidget {
-  const _HeroChip({
+class LanSyncChip extends StatelessWidget {
+  const LanSyncChip({
+    super.key,
     required this.background,
     required this.foreground,
     required this.label,
@@ -73,6 +75,17 @@ class _HeroChip extends StatelessWidget {
   }
 }
 
+/// 中性胶囊（地址、平台）的底色：玻璃下经 AppGlassField 取未选中态的底色
+/// （DESIGN §5.23）；暗色卡片本身就是 surfaceContainerLow，胶囊得再高一档
+/// 才看得出来。
+Color lanSyncNeutralChipFill(BuildContext context) {
+  final colors = Theme.of(context).colorScheme;
+  return AppGlassField.of(context)?.fill ??
+      (colors.brightness == Brightness.light
+          ? colors.surfaceContainerLow
+          : colors.surfaceContainerHigh);
+}
+
 /// 地址胶囊：等宽数字，点按复制；没有地址时为灰字“未连接局域网”。
 class LanSyncAddressChip extends StatelessWidget {
   const LanSyncAddressChip({
@@ -89,15 +102,8 @@ class LanSyncAddressChip extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final address = this.address;
-    // 玻璃下自定底色的胶囊经 AppGlassField 取未选中态的底色（DESIGN §5.23）。
-    // 暗色卡片本身就是 surfaceContainerLow，胶囊得再高一档才看得出来。
-    final background =
-        AppGlassField.of(context)?.fill ??
-        (colors.brightness == Brightness.light
-            ? colors.surfaceContainerLow
-            : colors.surfaceContainerHigh);
-    return _HeroChip(
-      background: background,
+    return LanSyncChip(
+      background: lanSyncNeutralChipFill(context),
       foreground: address == null ? colors.onSurfaceVariant : colors.onSurface,
       label: address ?? l10n.lanSyncNoNetwork,
       tabular: true,
@@ -129,7 +135,7 @@ class LanSyncDiscoverableChip extends StatelessWidget {
     return ExpressiveStateBlend(
       active: discoverable,
       builder: (BuildContext context, double t, Widget? child) {
-        return _HeroChip(
+        return LanSyncChip(
           background: Color.lerp(offBackground, colors.primaryContainer, t)!,
           foreground: Color.lerp(
             colors.onSurfaceVariant,
@@ -141,21 +147,50 @@ class LanSyncDiscoverableChip extends StatelessWidget {
               : l10n.lanSyncNotDiscoverable,
           hint: l10n.lanSyncDiscoverableToggleHint,
           onTap: onToggle,
-          leading: t > 0
-              ? Opacity(
-                  opacity: t,
-                  child: Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: colors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                )
-              : null,
+          leading: _statusDot(colors, t),
         );
       },
+    );
+  }
+}
+
+/// “● 可被发现”“● 在线”前的 7dp `primary` 圆点，随补间进度淡入淡出。
+Widget? _statusDot(ColorScheme colors, double t) {
+  if (t <= 0) return null;
+  return Opacity(
+    opacity: t,
+    child: Container(
+      width: 7,
+      height: 7,
+      decoration: BoxDecoration(color: colors.primary, shape: BoxShape.circle),
+    ),
+  );
+}
+
+/// 设备详情页的在线状态胶囊：在线为 `primaryContainer` 底 + `primary` 圆点，
+/// 离线为中性底灰字；切换经 [ExpressiveStateBlend] 补间。
+class LanSyncOnlineChip extends StatelessWidget {
+  const LanSyncOnlineChip({super.key, required this.online});
+
+  final bool online;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final offBackground = lanSyncNeutralChipFill(context);
+    return ExpressiveStateBlend(
+      active: online,
+      builder: (BuildContext context, double t, Widget? child) => LanSyncChip(
+        background: Color.lerp(offBackground, colors.primaryContainer, t)!,
+        foreground: Color.lerp(
+          colors.onSurfaceVariant,
+          colors.onPrimaryContainer,
+          t,
+        )!,
+        label: online ? l10n.lanSyncOnline : l10n.lanSyncOffline,
+        leading: _statusDot(colors, t),
+      ),
     );
   }
 }

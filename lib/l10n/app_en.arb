@@ -13639,5 +13639,500 @@
   "lanSyncScanUnavailableBody": "No usable camera was found, or another app is using it. You can enter the address instead.",
   "@lanSyncScanUnavailableBody": {
     "description": "Scan page explanation when the camera could not start."
+  },
+  "lanSyncFlowLocal": "This device",
+  "@lanSyncFlowLocal": {
+    "description": "Label under this device's block in the sync flow panel."
+  },
+  "lanSyncFlowSent": "↑ Sent {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncFlowSent": {
+    "description": "Counter below the sync flow panel: diaries sent so far.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncFlowReceived": "↓ Received {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncFlowReceived": {
+    "description": "Counter below the sync flow panel: diaries received so far.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncStepConnect": "Connect",
+  "@lanSyncStepConnect": {
+    "description": "Stage bar label: connecting."
+  },
+  "lanSyncStepCompare": "Compare",
+  "@lanSyncStepCompare": {
+    "description": "Stage bar label: comparing."
+  },
+  "lanSyncStepTransfer": "Transfer",
+  "@lanSyncStepTransfer": {
+    "description": "Stage bar label: transferring."
+  },
+  "lanSyncStepMerge": "Merge",
+  "@lanSyncStepMerge": {
+    "description": "Stage bar label: merging."
+  },
+  "lanSyncMediaTransferring": "Transferring photos and recordings",
+  "@lanSyncMediaTransferring": {
+    "description": "Progress area label while media files are transferred."
+  },
+  "lanSyncMediaFiles": "{done} / {total, plural, =1{1 file} other{{total} files}}",
+  "@lanSyncMediaFiles": {
+    "description": "Media file progress, e.g. 23 / 48 files.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncMediaBytes": "{done} / {total}",
+  "@lanSyncMediaBytes": {
+    "description": "Transferred bytes over total bytes, sizes already formatted.",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncMediaBytesSpeed": "{done} / {total} · {speed}/s",
+  "@lanSyncMediaBytesSpeed": {
+    "description": "Transferred bytes over total bytes plus the current speed, sizes already formatted.",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncSessionSemantics": "{stage}, {percent}% done",
+  "@lanSyncSessionSemantics": {
+    "description": "Screen reader text for the session progress: stage and percentage.",
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryTitle": "Sync complete",
+  "@lanSyncSummaryTitle": {
+    "description": "Title of the sync summary sheet."
+  },
+  "lanSyncSummarySubtitle": "With {name} · took {seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "@lanSyncSummarySubtitle": {
+    "description": "Subtitle of the sync summary sheet: peer name and duration.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryReceived": "↓ Received",
+  "@lanSyncSummaryReceived": {
+    "description": "Summary stat card label: changes received."
+  },
+  "lanSyncSummarySent": "↑ Sent",
+  "@lanSyncSummarySent": {
+    "description": "Summary stat card label: changes sent."
+  },
+  "lanSyncSummaryDiaryUnit": "{count, plural, =1{diary} other{diaries}}",
+  "@lanSyncSummaryDiaryUnit": {
+    "description": "Unit after the big diary count in a summary stat card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryAdded": "Added",
+  "@lanSyncSummaryAdded": {
+    "description": "Summary stat row: diaries added."
+  },
+  "lanSyncSummaryUpdated": "Updated",
+  "@lanSyncSummaryUpdated": {
+    "description": "Summary stat row: diaries updated."
+  },
+  "lanSyncSummaryDeleted": "Deleted",
+  "@lanSyncSummaryDeleted": {
+    "description": "Summary stat row: diaries deleted."
+  },
+  "lanSyncSummaryMedia": "Media",
+  "@lanSyncSummaryMedia": {
+    "description": "Summary stat row: media files."
+  },
+  "lanSyncSummaryMediaValue": "{count} · {size}",
+  "@lanSyncSummaryMediaValue": {
+    "description": "Summary stat row value: media file count and formatted size.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncSummaryConflicts": "{count, plural, =1{1 diary was} other{{count} diaries were}} changed on both devices — both versions were kept",
+  "@lanSyncSummaryConflicts": {
+    "description": "Conflict notice in the sync summary sheet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryConflictHint": "The original keeps the newer version",
+  "@lanSyncSummaryConflictHint": {
+    "description": "Second line of a conflict copy row in the sync summary sheet."
+  },
+  "lanSyncUntitled": "Untitled",
+  "@lanSyncUntitled": {
+    "description": "Title shown for a conflict copy without a title."
+  },
+  "lanSyncSummaryFootnote": "Tags, notebooks, comments and anniversaries were merged too",
+  "@lanSyncSummaryFootnote": {
+    "description": "Footnote in the sync summary sheet."
+  },
+  "lanSyncSummaryDone": "Done",
+  "@lanSyncSummaryDone": {
+    "description": "Button closing the sync summary sheet."
+  },
+  "lanSyncSummaryUpToDate": "Already up to date",
+  "@lanSyncSummaryUpToDate": {
+    "description": "Sync summary when nothing changed on either side."
+  },
+  "lanSyncSummaryFailedTitle": "Sync didn't finish",
+  "@lanSyncSummaryFailedTitle": {
+    "description": "Title of the sync summary sheet when the sync failed."
+  },
+  "lanSyncSyncFailUnreachable": "Couldn't reach the other device. Make sure both are on the same Wi-Fi and Jotsy is open there.",
+  "@lanSyncSyncFailUnreachable": {
+    "description": "Failed sync: unreachable, with the next step."
+  },
+  "lanSyncSyncFailConnectionLost": "The connection dropped. What was already written will be completed next time.",
+  "@lanSyncSyncFailConnectionLost": {
+    "description": "Failed sync: connection lost, with the next step."
+  },
+  "lanSyncSyncFailTimedOut": "The other device stopped responding. What was already written will be completed next time.",
+  "@lanSyncSyncFailTimedOut": {
+    "description": "Failed sync: timed out, with the next step."
+  },
+  "lanSyncSyncFailDeclined": "The other device declined this sync.",
+  "@lanSyncSyncFailDeclined": {
+    "description": "Failed sync: declined by the peer."
+  },
+  "lanSyncSyncFailCancelled": "The sync was cancelled. What was already written will be completed next time.",
+  "@lanSyncSyncFailCancelled": {
+    "description": "Failed sync: cancelled."
+  },
+  "lanSyncSyncFailIncompatible": "The two devices run incompatible versions of Jotsy. Update the older one, then sync again.",
+  "@lanSyncSyncFailIncompatible": {
+    "description": "Failed sync: incompatible versions, with the next step."
+  },
+  "lanSyncSyncFailUntrusted": "The other device no longer recognizes this one. Unpair, then pair again.",
+  "@lanSyncSyncFailUntrusted": {
+    "description": "Failed sync: the peer forgot this device, with the next step."
+  },
+  "lanSyncSyncFailTicketExpired": "The QR code has expired. Scan a new one to connect.",
+  "@lanSyncSyncFailTicketExpired": {
+    "description": "Failed sync: QR ticket expired, with the next step."
+  },
+  "lanSyncSyncFailWriteFailed": "Couldn't write to this device, possibly because storage is full. Free up space and try again.",
+  "@lanSyncSyncFailWriteFailed": {
+    "description": "Failed sync: local write failed, with the next step."
+  },
+  "lanSyncSyncFailUnknown": "The sync didn't finish. Please try again.",
+  "@lanSyncSyncFailUnknown": {
+    "description": "Failed sync: unknown reason."
+  },
+  "lanSyncSyncReasonUnreachable": "Couldn't reach the device",
+  "@lanSyncSyncReasonUnreachable": {
+    "description": "Short failure reason in the sync history: unreachable."
+  },
+  "lanSyncSyncReasonConnectionLost": "Connection dropped",
+  "@lanSyncSyncReasonConnectionLost": {
+    "description": "Short failure reason in the sync history: connection lost."
+  },
+  "lanSyncSyncReasonTimedOut": "No response",
+  "@lanSyncSyncReasonTimedOut": {
+    "description": "Short failure reason in the sync history: timed out."
+  },
+  "lanSyncSyncReasonDeclined": "Declined by the other device",
+  "@lanSyncSyncReasonDeclined": {
+    "description": "Short failure reason in the sync history: declined."
+  },
+  "lanSyncSyncReasonCancelled": "Cancelled",
+  "@lanSyncSyncReasonCancelled": {
+    "description": "Short failure reason in the sync history: cancelled."
+  },
+  "lanSyncSyncReasonIncompatible": "Incompatible versions",
+  "@lanSyncSyncReasonIncompatible": {
+    "description": "Short failure reason in the sync history: incompatible versions."
+  },
+  "lanSyncSyncReasonUntrusted": "No longer paired on the other device",
+  "@lanSyncSyncReasonUntrusted": {
+    "description": "Short failure reason in the sync history: untrusted."
+  },
+  "lanSyncSyncReasonTicketExpired": "QR code expired",
+  "@lanSyncSyncReasonTicketExpired": {
+    "description": "Short failure reason in the sync history: ticket expired."
+  },
+  "lanSyncSyncReasonWriteFailed": "Couldn't write to this device",
+  "@lanSyncSyncReasonWriteFailed": {
+    "description": "Short failure reason in the sync history: write failed."
+  },
+  "lanSyncSyncReasonUnknown": "Sync failed",
+  "@lanSyncSyncReasonUnknown": {
+    "description": "Short failure reason in the sync history: unknown."
+  },
+  "lanSyncChooseSideTitle": "Which version wins?",
+  "@lanSyncChooseSideTitle": {
+    "description": "Title of the dialog asking how to merge diaries changed on both devices."
+  },
+  "lanSyncChooseSideBody": "{count, plural, =1{1 diary was} other{{count} diaries were}} changed both here and on “{name}”. How should they be merged?",
+  "@lanSyncChooseSideBody": {
+    "description": "Body of the which-side dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncChooseKeepBoth": "Keep both (recommended)",
+  "@lanSyncChooseKeepBoth": {
+    "description": "Which-side option: keep both versions."
+  },
+  "lanSyncChooseKeepBothDesc": "The newer version stays in the diary, the other is saved as a conflict copy",
+  "@lanSyncChooseKeepBothDesc": {
+    "description": "Explanation of the keep-both option."
+  },
+  "lanSyncChoosePreferLocal": "Use this device's version",
+  "@lanSyncChoosePreferLocal": {
+    "description": "Which-side option: this device wins."
+  },
+  "lanSyncChoosePreferLocalDesc": "This device's version replaces the other device's changes",
+  "@lanSyncChoosePreferLocalDesc": {
+    "description": "Explanation of the this-device-wins option."
+  },
+  "lanSyncChoosePreferPeer": "Use the other device's version",
+  "@lanSyncChoosePreferPeer": {
+    "description": "Which-side option: the other device wins."
+  },
+  "lanSyncChoosePreferPeerDesc": "The version on “{name}” replaces the changes on this device",
+  "@lanSyncChoosePreferPeerDesc": {
+    "description": "Explanation of the other-device-wins option.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncChooseSideNote": "None of these deletes any diary",
+  "@lanSyncChooseSideNote": {
+    "description": "Footnote of the which-side dialog."
+  },
+  "lanSyncContinueSync": "Continue sync",
+  "@lanSyncContinueSync": {
+    "description": "Confirm button of the sync confirmation dialogs."
+  },
+  "lanSyncDeletionTitle": "Delete diaries for good?",
+  "@lanSyncDeletionTitle": {
+    "description": "Title of the deletion protection dialog."
+  },
+  "lanSyncDeletionBodyPeer": "This sync will permanently delete {count, plural, =1{1 diary} other{{count} diaries}} on “{name}” (they were already emptied from this device's trash).",
+  "@lanSyncDeletionBodyPeer": {
+    "description": "Deletion protection body when diaries would be deleted on the other device.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncDeletionBodyLocal": "This sync will permanently delete {count, plural, =1{1 diary} other{{count} diaries}} on this device (they were already emptied from the trash on “{name}”).",
+  "@lanSyncDeletionBodyLocal": {
+    "description": "Deletion protection body when diaries would be deleted on this device.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncDeletionSync": "Delete them too",
+  "@lanSyncDeletionSync": {
+    "description": "Deletion protection option: delete on the other device as well."
+  },
+  "lanSyncDeletionSyncDesc": "Neither device keeps these diaries",
+  "@lanSyncDeletionSyncDesc": {
+    "description": "Explanation of the delete option."
+  },
+  "lanSyncDeletionKeep": "Keep, and restore on the other device",
+  "@lanSyncDeletionKeep": {
+    "description": "Deletion protection option: keep the diaries and restore them."
+  },
+  "lanSyncDeletionKeepDesc": "They come back on the device that emptied them",
+  "@lanSyncDeletionKeepDesc": {
+    "description": "Explanation of the keep-and-restore option."
+  },
+  "lanSyncDeviceTitle": "Device details",
+  "@lanSyncDeviceTitle": {
+    "description": "Title of the paired device detail page."
+  },
+  "lanSyncInfoLastSync": "Last sync",
+  "@lanSyncInfoLastSync": {
+    "description": "Device detail info cell label: last sync time."
+  },
+  "lanSyncInfoPairedAt": "Paired",
+  "@lanSyncInfoPairedAt": {
+    "description": "Device detail info cell label: pairing date."
+  },
+  "lanSyncInfoAddress": "Address",
+  "@lanSyncInfoAddress": {
+    "description": "Device detail info cell label: network address."
+  },
+  "lanSyncInfoNever": "Never",
+  "@lanSyncInfoNever": {
+    "description": "Device detail info cell value when the device never synced."
+  },
+  "lanSyncInfoNoAddress": "Unknown",
+  "@lanSyncInfoNoAddress": {
+    "description": "Device detail info cell value when the address is unknown."
+  },
+  "lanSyncDeviceOffline": "Device is offline",
+  "@lanSyncDeviceOffline": {
+    "description": "Disabled sync button label when the paired device is offline."
+  },
+  "lanSyncPeerAutoSyncSubtitle": "Sync with this device automatically while the app is open",
+  "@lanSyncPeerAutoSyncSubtitle": {
+    "description": "Subtitle of the per-device auto sync switch."
+  },
+  "lanSyncPeerAutoSyncGlobalOff": "Auto sync is off in Sync options, so this has no effect for now",
+  "@lanSyncPeerAutoSyncGlobalOff": {
+    "description": "Subtitle of the per-device auto sync switch while global auto sync is off."
+  },
+  "lanSyncAliasTitle": "Nickname",
+  "@lanSyncAliasTitle": {
+    "description": "Device detail row and dialog title: local nickname for the device."
+  },
+  "lanSyncAliasNotSet": "Not set",
+  "@lanSyncAliasNotSet": {
+    "description": "Nickname row value when no nickname is set."
+  },
+  "lanSyncAliasLocalOnly": "Only shown on this device",
+  "@lanSyncAliasLocalOnly": {
+    "description": "Hint that the nickname is only shown on this device."
+  },
+  "lanSyncAliasDialogHint": "Leave empty to show “{name}”",
+  "@lanSyncAliasDialogHint": {
+    "description": "Hint text of the nickname field.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncHistoryTitle": "Sync history",
+  "@lanSyncHistoryTitle": {
+    "description": "Section title of the sync history timeline."
+  },
+  "lanSyncHistoryEmpty": "No syncs with this device yet",
+  "@lanSyncHistoryEmpty": {
+    "description": "Empty state of the sync history."
+  },
+  "lanSyncHistoryAutomatic": "Auto",
+  "@lanSyncHistoryAutomatic": {
+    "description": "Gray text in a history entry for an automatic sync."
+  },
+  "lanSyncHistoryDuration": "{seconds, plural, =1{1 sec} other{{seconds} sec}}",
+  "@lanSyncHistoryDuration": {
+    "description": "Gray duration text in a history entry.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistoryReceived": "↓ Received {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncHistoryReceived": {
+    "description": "History summary part: diaries received.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistorySent": "↑ Sent {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncHistorySent": {
+    "description": "History summary part: diaries sent.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistoryMedia": "Media {size}",
+  "@lanSyncHistoryMedia": {
+    "description": "History summary part: media size.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncHistoryConflicts": "{count, plural, =1{1 conflict copy} other{{count} conflict copies}}",
+  "@lanSyncHistoryConflicts": {
+    "description": "Chip in a history entry that created conflict copies.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncForget": "Unpair",
+  "@lanSyncForget": {
+    "description": "Button and confirm action for forgetting a paired device."
+  },
+  "lanSyncForgetTitle": "Unpair “{name}”?",
+  "@lanSyncForgetTitle": {
+    "description": "Title of the unpair confirmation dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncForgetBody": "No diary is deleted on either device. To sync again you'll need to pair again.",
+  "@lanSyncForgetBody": {
+    "description": "Body of the unpair confirmation dialog."
   }
 }

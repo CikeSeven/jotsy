@@ -15,9 +15,9 @@ import 'diary_preview_meta_items.dart';
 
 export 'diary_preview_meta_items.dart';
 
-/// 预览页信息栏：时间、字数、留言数、地点、天气与心情、精力、标签胶囊，
-/// 以及这篇所在日记本的胶囊（排在标签之后、同一组，随“标签”开关显示，
-/// 点按打开那本）。留言数跟在字数后面，只在开启留言功能且有留言时出现，
+/// 预览页信息栏：时间、字数、留言数、地点、天气与心情、精力、标签胶囊（点按
+/// 按这个标签搜索），以及这篇所在日记本的胶囊（排在标签之后、同一组，随
+/// “标签”开关显示，点按打开那本）。留言数跟在字数后面，只在开启留言功能且有留言时出现，
 /// 点按滚到正文末尾的留言区。
 ///
 /// 版式（[DiaryPreviewMetaStyle.layout]）：
@@ -36,6 +36,7 @@ class DiaryPreviewMeta extends StatelessWidget {
     required this.style,
     this.notebooks = const <NotebookView>[],
     this.onOpenNotebook,
+    this.onOpenTag,
     this.commentCount = 0,
     this.onOpenComments,
   });
@@ -49,6 +50,9 @@ class DiaryPreviewMeta extends StatelessWidget {
 
   /// 点按日记本胶囊；null 时胶囊不可点。
   final ValueChanged<NotebookView>? onOpenNotebook;
+
+  /// 点按标签胶囊，参数为标签 id；null 时标签不可点（设置页预览）。
+  final ValueChanged<int>? onOpenTag;
 
   /// 这篇的留言条数；留言功能关闭时调用方传 0。
   final int commentCount;
@@ -103,6 +107,7 @@ class DiaryPreviewMeta extends StatelessWidget {
             kind: DiaryPreviewChipKind.tag,
             label: tag.name,
             tagColor: tag.color,
+            tagId: tag.id,
           ),
         );
       }
@@ -175,6 +180,9 @@ class DiaryPreviewMeta extends StatelessWidget {
           item: item,
           tagStyle: style.tagStyle,
           plain: style.chipStyle == DiaryPreviewChipStyle.plain,
+          onTap: item.tagId == null || onOpenTag == null
+              ? null
+              : () => onOpenTag!(item.tagId!),
         ),
       if (style.showTags)
         for (final notebook in notebooks)

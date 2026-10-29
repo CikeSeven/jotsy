@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
+import '../../diaries/controllers/diary_tag_search_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../explore/sections/explore_memory_card.dart';
 import '../../widgets/app_top_bar.dart';
@@ -23,6 +24,7 @@ import '../viewmodels/notebook_insights_data.dart';
 import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
+import '../widgets/notebook_switcher_chip.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
@@ -31,7 +33,8 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 /// 日记本统计页（首页头部卡片“统计”，普通与智能日记本都有）。
 ///
 /// 自上而下：写作目标（设了目标时）、总览、心情分布（有心情时）、常用标签
-/// （有标签时）、写作节奏、那年今日（有时）、“随机翻一篇”。
+/// （有标签时，点按在这本里按标签搜索）、写作节奏、那年今日（有时）、“随机
+/// 翻一篇”。
 ///
 /// 数据口径：本子里含归档、不含已删除与未解封胶囊的日记（与探索页同一条
 /// 概览查询换成日记本范围），聚合在 [NotebookInsightsData]；照片数单独查。
@@ -173,7 +176,23 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
               ],
               if (data.topTags.isNotEmpty) ...<Widget>[
                 gap,
-                NotebookInsightsTagsCard(tags: data.topTags),
+                NotebookInsightsTagsCard(
+                  tags: data.topTags,
+                  // 在这本里按标签搜（与统计同一范围，连同子本）；搜索页里
+                  // 可移除日记本条件，改在全部日记中找。
+                  onOpenTag: (int tagId) => unawaited(
+                    openDiaryTagSearch(
+                      context,
+                      tagId,
+                      scope: scope,
+                      scopeLabel: NotebookSwitcherChip.labelFor(
+                        context,
+                        notebook,
+                      ),
+                      scopeIcon: notebook.icon.data,
+                    ),
+                  ),
+                ),
               ],
               gap,
               NotebookInsightsRhythmCard(months: data.months),

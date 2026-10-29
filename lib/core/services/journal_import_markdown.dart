@@ -3,17 +3,21 @@ import 'package:markdown/markdown.dart' as md;
 
 import '../database/code_block_codec.dart';
 import '../database/divider_embed_codec.dart';
+import '../database/diary_blocks/diary_blocks_walk.dart';
 import 'journal_import_block_writer.dart';
+import 'journal_import_blocks.dart';
 import 'journal_import_html_style.dart';
 import 'journal_import_markdown_references.dart';
+import 'journal_import_markdown_table.dart';
 
 /// 把 Markdown 正文（Day One、旧版 Journey、笔记应用导出）写入
 /// [JournalBlockWriter]。
 ///
 /// 日记应用里每个换行都是用户敲下的换行，所以按“源文本一行 = 正文一行”
 /// 处理，不套用 Markdown 的段落合并规则（那会把相邻两行拼成一段）。块级
-/// 语法（标题、列表、待办、引用、代码围栏、分隔线）逐行识别，分隔线写成
-/// 分隔线嵌入；行内语法
+/// 语法（标题 1~6 级、列表、待办、引用、代码围栏、分隔线）逐行识别，分隔线
+/// 写成分隔线嵌入；GFM 管道表格写成表格块（规则见 [_appendPipeTable]）；
+/// 行内语法
 /// （粗体、斜体、删除线、行内代码、链接、图片、转义字符）交给 markdown
 /// 包解析，图片经 [resolveEmbed] 转为本应用的媒体嵌入。
 ///
@@ -79,8 +83,10 @@ class JournalMarkdownConverter {
     // 当前围栏的 `code-block` 值：认得的语言 id、`plain` 或 true（未指定 /
     // 认不出，见 normalizeCodeLanguageTag）。
     Object codeBlock = true;
+    // 管道表格占用的行到这里为止（不含）。
+    var tableEnd = 0;
     for (final (index, line) in lines.indexed) {
-      if (definitions.contains(index)) continue;
+      if (index < tableEnd || definitions.contains(index)) continue;
       if (fence != null) {
         if (line.trimLeft().startsWith(fence)) {
           fence = null;
@@ -96,10 +102,71 @@ class JournalMarkdownConverter {
         codeBlock = normalizeCodeLanguageTag(fenceMatch.group(2)) ?? true;
         continue;
       }
+      final end = _appendPipeTable(lines, index);
+      if (end != null) {
+        tableEnd = end;
+        continue;
+      }
       _appendLine(line);
     }
     writer.closeLine();
   }
+
+  /// GFM 管道表格：[start] 行是表头，下一行是分隔行（每格只有 `-`，两端
+  /// 可带对齐冒号，冒号忽略），格数与表头相同；其后连续的带 `|` 的行是
+  /// 表体，遇到空行或别的块级语法结束。写成表格块（首行为表头）并返回
+  /// 表格之后的行号；不是表格或不规整时什么都不写、返回 null，这些行照旧
+  /// 逐行写成文字。不规整即：表体某行的格数多于表头（短的行补空格子）、
+  /// 行列数超出上限（[journalImportTableFits]），或格子里有图片、分隔线
+  /// 这类块级内容，或有要经解析器换成媒体 / 附件的引用（试写时不调用
+  /// 解析器，以免它的副作用发生两次）。`\|` 是格子里的竖线。
+  int? _appendPipeTable(List<String> lines, int start) {
+    final rows = journalPipeTableRows(lines, start, _isOtherBlock);
+    if (rows == null) return null;
+    var trapped = false;
+    Map<String, Object?>? trap(String _) {
+      trapped = true;
+      return null;
+    }
+
+    final cells = <List<List<Map<String, Object?>>>>[];
+    for (final row in rows) {
+      final cellRow = <List<Map<String, Object?>>>[];
+      for (final text in row) {
+        final sub = JournalBlockWriter();
+        final converter = JournalMarkdownConverter(
+          sub,
+          resolveEmbed: trap,
+          resolveLink: trap,
+          inlineHtml: inlineHtml,
+        );
+        converter._inlineParser.linkReferences.addAll(
+          _inlineParser.linkReferences,
+        );
+        converter._inline(
+          converter._inlineParser.parseInline(text),
+          const {},
+          const {},
+        );
+        final body = diaryBlockChildren(diaryBlocksRoot(sub.buildDocument())!);
+        if (trapped || !journalImportCellIsInline(body)) return null;
+        cellRow.add(body);
+      }
+      cells.add(cellRow);
+    }
+    _listIndents.clear();
+    writer.node(journalImportTableNode(cells, headerRow: true));
+    return start + rows.length + 1;
+  }
+
+  /// 别的块级语法开头的行，不当作表格行。
+  bool _isOtherBlock(String line) =>
+      _heading.hasMatch(line) ||
+      _quote.hasMatch(line) ||
+      _rule.hasMatch(line) ||
+      _fence.hasMatch(line) ||
+      _bullet.hasMatch(line) ||
+      _ordered.hasMatch(line);
 
   /// 返回 Markdown 行内语法渲染后的纯文本（如把 `# **标题**` 的内容取作标题）。
   String plainInline(String text) =>
@@ -135,7 +202,7 @@ class JournalMarkdownConverter {
     if (heading != null) {
       _listIndents.clear();
       final level = heading.group(1)!.length;
-      return (heading.group(2)!, {'header': level > 3 ? 3 : level});
+      return (heading.group(2)!, {'header': level});
     }
     final quote = _quote.firstMatch(line);
     if (quote != null) {
@@ -236,7 +303,8 @@ class JournalMarkdownConverter {
   }
 
   /// 行内 HTML 标签（见 [_HtmlTagSyntax]）：格式标签开/闭当前行的格式
-  /// （`<span>`/`<font>`/`<mark>`/`<big>`/`<small>` 带颜色、背景与字号），
+  /// （`<span>`/`<font>`/`<mark>`/`<big>`/`<small>` 带颜色、背景与字号，
+  /// `<sup>`/`<sub>` 为上下标），
   /// `<br>` 换行，`<hr>` 为分隔线，`<img>`/`<audio>`/`<video>` 转为媒体嵌入，
   /// 其余丢弃。
   void _htmlTag(md.Element node, Map<String, Object?> line) {
@@ -250,7 +318,15 @@ class JournalMarkdownConverter {
       'code' => 'code',
       _ => null,
     };
-    if (const {'span', 'font', 'mark', 'big', 'small'}.contains(name)) {
+    if (const {
+      'span',
+      'font',
+      'mark',
+      'big',
+      'small',
+      'sup',
+      'sub',
+    }.contains(name)) {
       if (closing) {
         final index = _htmlStyles.lastIndexWhere((entry) => entry.name == name);
         if (index >= 0) _htmlStyles.removeAt(index);

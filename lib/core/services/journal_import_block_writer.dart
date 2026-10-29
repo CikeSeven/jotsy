@@ -15,6 +15,14 @@ typedef JournalEmbedResolver = Map<String, Object?>? Function(String source);
 ///   （见 insertDiaryImages / insertDiaryMediaBlocks）；
 /// - 最后去掉文档首尾的空行。
 ///
+/// 块级属性沿用 Quill 的写法（`header`、`list`、`indent`、`blockquote`、
+/// `code-block`、`align`），另有两种本应用的结构：
+/// - 折叠列表：标题行带 `toggle: true` 与 `collapsed`（bool，是否收起），
+///   折叠的内容是后面 `indent` 比它多一级的行（与列表嵌套同一规则，见
+///   DiaryBlocksBuilder）；
+/// - 调用方整个建好的结构块（如表格，含格子与格内段落）经 [node] 写入，
+///   独占一行，不再拆分。
+///
 /// 纯文本镜像与 Document.toPlainText 的规则一致：嵌入物不计文本，只留换行。
 /// 只是内存中的组装，不做 IO，可在后台 isolate 中使用。
 class JournalBlockWriter {
@@ -73,7 +81,33 @@ class JournalBlockWriter {
     _lines.add(_Line.embed(data, embedAttributes));
   }
 
+  /// 插入调用方建好的结构块 [node]（如整个表格：格子与格内段落都已建好），
+  /// 独占一行、原样进入文档；当前行的文本先以 [blockAttributes] 结束。节点
+  /// 与当前块同级：层级取 [blockAttributes] 的 `indent`，其余块属性不作用
+  /// 于它。节点自身的结构由调用方保证（表格应能通过 DiaryTableGrid 校验），
+  /// 这里不做检查。
+  void node(
+    Map<String, Object?> node, [
+    Map<String, Object?> blockAttributes = const {},
+  ]) {
+    closeLine(blockAttributes);
+    final indent = blockAttributes['indent'];
+    _lines.add(
+      _Line.node(node, {if (indent is int && indent > 0) 'indent': indent}),
+    );
+  }
+
   ({String contentJson, String contentText}) build() {
+    final document = buildDocument();
+    return (
+      contentJson: encodeDiaryBlocks(document),
+      contentText: diaryBlocksPlainText(document),
+    );
+  }
+
+  /// 与 [build] 相同，但直接返回块文档（未编码），供需要再加工节点的调用方
+  /// （如把一格表格内容写成格内段落）使用。
+  Map<String, Object?> buildDocument() {
     closeLine();
     var start = 0;
     var end = _lines.length;
@@ -83,7 +117,7 @@ class JournalBlockWriter {
     while (!preserveWhitespace && end > start && _lines[end - 1].isBlank) {
       end--;
     }
-    final document = buildJournalImportBlocks([
+    return buildJournalImportBlocks([
       for (final line in _lines.sublist(start, end))
         (
           delta: [
@@ -96,12 +130,9 @@ class JournalBlockWriter {
           ],
           attributes: line.blockAttributes,
           embed: line.embed,
+          node: line.node,
         ),
     ]);
-    return (
-      contentJson: encodeDiaryBlocks(document),
-      contentText: diaryBlocksPlainText(document),
-    );
   }
 
   /// 去掉行首与行尾的空格/制表符，必要时整段丢弃只含空白的片段。
@@ -150,16 +181,29 @@ class _Segment {
 }
 
 class _Line {
-  const _Line.text(this.segments, this.blockAttributes) : embed = null;
+  const _Line.text(this.segments, this.blockAttributes)
+    : embed = null,
+      node = null;
 
   const _Line.embed(Map<String, Object?> this.embed, this.blockAttributes)
-    : segments = const <_Segment>[];
+    : segments = const <_Segment>[],
+      node = null;
+
+  const _Line.node(Map<String, Object?> this.node, this.blockAttributes)
+    : segments = const <_Segment>[],
+      embed = null;
 
   final List<_Segment> segments;
   final Map<String, Object?> blockAttributes;
   final Map<String, Object?>? embed;
 
+  /// 调用方建好的结构块（见 JournalBlockWriter.node）。
+  final Map<String, Object?>? node;
+
   /// 没有文本、没有媒体、也没有块级格式的空行，文档首尾的这种行会被去掉。
   bool get isBlank =>
-      embed == null && segments.isEmpty && blockAttributes.isEmpty;
+      embed == null &&
+      node == null &&
+      segments.isEmpty &&
+      blockAttributes.isEmpty;
 }

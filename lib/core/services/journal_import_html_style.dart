@@ -1,9 +1,10 @@
 import 'package:html/dom.dart' as dom;
 
+import '../database/diary_blocks/diary_blocks_schema.dart';
 import 'journal_import_style.dart';
 
 /// 读取元素自身的行内格式（内联 style、`<font>` 属性、`<mark>`、`<big>` /
-/// `<small>`），叠加在继承的 [inline] 上；Markdown 的行内 HTML 标签也经这里
+/// `<small>`、上下标 `<sup>` / `<sub>` 与 `vertical-align`），叠加在继承的 [inline] 上；Markdown 的行内 HTML 标签也经这里
 /// 读取。
 ///
 /// 颜色与字号显式改回默认值（默认墨色、正文字号）时去掉继承的格式；看不
@@ -23,6 +24,10 @@ Map<String, Object?> journalHtmlInlineStyle(
       result['size'] = 'large';
     case 'small':
       result['size'] = 'small';
+    case 'sup':
+      result['script'] = kDiaryScriptSuper;
+    case 'sub':
+      result['script'] = kDiaryScriptSub;
     case 'font':
       _setColor(result, 'color', element.attributes['color'], text: true);
       final level = element.attributes['size'];
@@ -52,6 +57,16 @@ Map<String, Object?> journalHtmlInlineStyle(
         journalStyleValue(style, 'background'),
     text: false,
   );
+  // 上下标：super / sub 写入，baseline 取消继承的；长度、百分比等其他
+  // 写法（多为排版微调）保持继承。
+  switch (journalStyleValue(style, 'vertical-align')?.trim().toLowerCase()) {
+    case 'super':
+      result['script'] = kDiaryScriptSuper;
+    case 'sub':
+      result['script'] = kDiaryScriptSub;
+    case 'baseline':
+      result.remove('script');
+  }
   final ratio = journalFontSizeRatio(journalStyleValue(style, 'font-size'));
   if (ratio != null) {
     _setValue(result, 'size', journalFontSizeForRatio(ratio / baseRatio));

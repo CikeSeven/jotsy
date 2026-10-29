@@ -198,6 +198,80 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('random reading also draws from the sub-notebooks', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    tester.view.physicalSize = const Size(320, 1400);
+    final travel = await h.notebook('旅行');
+    final tokyo = await h.notebook('东京', parentId: travel);
+    final now = DateTime.now();
+    final own = await diary(
+      h,
+      '自己的',
+      notebookIds: <String>[travel],
+      createdAt: DateTime(now.year, now.month, now.day - 5, 9),
+    );
+    final sub = await diary(
+      h,
+      '子本的',
+      notebookIds: <String>[tokyo],
+      createdAt: DateTime(now.year, now.month, now.day - 1, 9),
+    );
+    await h.pump(
+      NotebookInsightsPage(notebookId: travel, random: Random(7)),
+      overrides: [
+        deviceAuthServiceProvider.overrideWithValue(FakeDeviceAuth()),
+      ],
+    );
+    await h.settleAll();
+    expect(tileValue(tester, '篇数'), 2);
+
+    final button = find.byKey(
+      const ValueKey<String>('notebook_insights_random'),
+    );
+    await tester.scrollUntilVisible(
+      button,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(button);
+    await h.settleAll();
+    final preview = tester.widget<DiaryPreviewPage>(
+      find.byType(DiaryPreviewPage),
+    );
+    // 本子自己的目录在前，子本的接在后面。
+    expect(preview.sequence!.ids, <String>[own, sub]);
+    await h.unmount();
+  });
+
+  test('random order keeps the book order and appends the rest', () {
+    ExploreDiaryOverview overview(String id, int day) => ExploreDiaryOverview(
+      diaryId: id,
+      title: id,
+      contentText: '',
+      metadata: '{}',
+      createdAt: DateTime(2026, 10, day),
+      updatedAt: DateTime(2026, 10, day),
+      tags: const <Tag>[],
+    );
+    final diaries = <ExploreDiaryOverview>[
+      overview('a', 1),
+      overview('b', 2),
+      overview('c', 3),
+      overview('d', 4),
+    ];
+    // 目录里有统计口径外的（x）与重复的只取一次；目录外的按新 → 旧接在后面。
+    expect(
+      notebookInsightsRandomOrder(
+        diaries,
+        bookOrder: <String>['b', 'x', 'a', 'b'],
+      ),
+      <String>['b', 'a', 'd', 'c'],
+    );
+    expect(notebookInsightsRandomOrder(diaries), <String>['d', 'c', 'b', 'a']);
+  });
+
   testWidgets('goal card shows progress and recent periods', (tester) async {
     final (h, _) = await open(
       tester,

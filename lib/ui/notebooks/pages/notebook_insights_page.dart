@@ -20,6 +20,7 @@ import '../providers/notebook_providers.dart';
 import '../sections/notebook_insights_cards.dart';
 import '../sections/notebook_insights_charts.dart';
 import '../viewmodels/notebook_insights_data.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
 import '../../widgets/form_width.dart';
@@ -122,16 +123,15 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
 
   Widget _buildBody(BuildContext context, NotebookView notebook) {
     final l10n = context.l10n;
-    final scope = notebookStatsScope(
-      notebook,
-      tree: ref.watch(notebookTreeProvider),
-    );
+    final tree = ref.watch(notebookTreeProvider);
+    final scope = notebookStatsScope(notebook, tree: tree);
     final diaries = ref.watch(notebookInsightsOverviewsProvider(scope)).value;
     final photoCount = ref.watch(notebookPhotoCountProvider(scope)).value ?? 0;
     final goal = watchNotebookGoalProgress(context, ref, notebook);
-    // 普通日记本按成书顺序翻（目录页同一条查询）；智能日记本按发表时间新→旧。
+    // 普通日记本按成书顺序翻（连同子本，见 [_watchBookOrder]）；智能日记本
+    // 按发表时间新→旧。
     final bookOrder = notebook.isManual
-        ? ref.watch(notebookContentsProvider(notebook.id)).value
+        ? _watchBookOrder(notebook, tree)
         : null;
     if (diaries == null) return const DelayedLoadingIndicator();
     final data = _resolve(diaries, l10n);
@@ -204,11 +204,36 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
     );
   }
 
+  /// 普通日记本连同子本的成书顺序（日记业务 id）：本子自己的目录在前，再按
+  /// 树序接上各本汇总的手动子本的目录（与首页书序同一口径：一篇在好几本里
+  /// 时按最靠前的那本排）。智能子本没有目录，它们的日记由
+  /// [notebookInsightsRandomOrder] 排在最后。本子自己的目录还没读到时为 null；
+  /// 某本子本还没读到时它的日记暂时同样排在最后。
+  List<String>? _watchBookOrder(NotebookView notebook, NotebookTree? tree) {
+    final own = ref.watch(notebookContentsProvider(notebook.id)).value;
+    if (own == null) return null;
+    final subs = <NotebookView>[
+      if (tree != null)
+        for (final sub in tree.aggregatedDescendantsOf(notebook.id))
+          if (sub.isManual) sub,
+    ];
+    final seen = <String>{};
+    return <String>[
+      for (final entry in own)
+        if (seen.add(entry.diaryId)) entry.diaryId,
+      for (final sub in subs)
+        for (final entry
+            in ref.watch(notebookContentsProvider(sub.id)).value ??
+                const <NotebookContentsEntry>[])
+          if (seen.add(entry.diaryId)) entry.diaryId,
+    ];
+  }
+
   /// 随机打开一篇，左右翻页的顺序为整本（见 [notebookInsightsRandomOrder]）。
   void _openRandom(
     NotebookView notebook,
     List<ExploreDiaryOverview> diaries,
-    List<NotebookContentsEntry>? bookOrder,
+    List<String>? bookOrder,
   ) {
     final ids = notebookInsightsRandomOrder(diaries, bookOrder: bookOrder);
     if (ids.isEmpty) return;
@@ -228,24 +253,29 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
   }
 }
 
-/// “随机翻一篇”的候选与翻页顺序：只取统计口径里的日记（[diaries]：不含
-/// 未解封的胶囊与回收站），普通日记本按成书顺序（[bookOrder]，目录页的
-/// 查询），智能日记本（[bookOrder] 为 null）按发表时间新 → 旧。
+/// “随机翻一篇”的候选与翻页顺序：统计口径里的每一篇（[diaries]：连同汇总的
+/// 子本，不含未解封的胶囊与回收站）都在其中，且只出现一次。
+///
+/// 普通日记本按成书顺序（[bookOrder]：本子与手动子本的目录，日记业务 id），
+/// 目录里没有的（只因智能子本的规则而在、或那本子本的目录还没读到）接在后面；
+/// 智能日记本（[bookOrder] 为 null）整本按发表时间新 → 旧。
 List<String> notebookInsightsRandomOrder(
   List<ExploreDiaryOverview> diaries, {
-  List<NotebookContentsEntry>? bookOrder,
+  List<String>? bookOrder,
 }) {
   final visible = <String>{for (final diary in diaries) diary.diaryId};
-  if (bookOrder != null) {
-    return <String>[
-      for (final entry in bookOrder)
-        if (visible.contains(entry.diaryId)) entry.diaryId,
-    ];
-  }
-  final sorted = <ExploreDiaryOverview>[...diaries]
-    ..sort((a, b) {
-      final byCreated = b.createdAt.compareTo(a.createdAt);
-      return byCreated != 0 ? byCreated : b.diaryId.compareTo(a.diaryId);
-    });
-  return <String>[for (final diary in sorted) diary.diaryId];
+  final ordered = <String>[
+    if (bookOrder != null)
+      for (final id in bookOrder)
+        if (visible.remove(id)) id,
+  ];
+  final rest =
+      <ExploreDiaryOverview>[
+        for (final diary in diaries)
+          if (visible.remove(diary.diaryId)) diary,
+      ]..sort((a, b) {
+        final byCreated = b.createdAt.compareTo(a.createdAt);
+        return byCreated != 0 ? byCreated : b.diaryId.compareTo(a.diaryId);
+      });
+  return <String>[...ordered, for (final diary in rest) diary.diaryId];
 }

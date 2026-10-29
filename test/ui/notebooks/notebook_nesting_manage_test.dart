@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -253,6 +254,214 @@ void main() {
       await h.settleAll();
       expect((await h.notebookRow(reading))!.parentId, year);
       expect(find.text('已移到「2025」下'), findsOneWidget);
+      await h.unmount();
+    });
+
+    double height(WidgetTester tester, String id) =>
+        tester.getSize(row(id)).height;
+
+    /// 按住 [start] 拖动 [dy]（分 20 步），松手后等数据库与动画。
+    Future<void> drag(
+      DiaryDraftsHarness h,
+      Offset start,
+      double dy, {
+      Duration hold = Duration.zero,
+    }) async {
+      final gesture = await h.tester.startGesture(start);
+      await h.tester.pump(hold);
+      await h.tester.pump();
+      for (var i = 0; i < 20; i++) {
+        await gesture.moveBy(Offset(0, dy / 20));
+        await h.tester.pump();
+      }
+      await gesture.up();
+      await h.settleAll();
+    }
+
+    Offset handleOf(WidgetTester tester, String id) => tester.getCenter(
+      find.descendant(
+        of: row(id),
+        matching: find.byType(ReorderableDragStartListener),
+      ),
+    );
+
+    testWidgets('a parent row collapses and expands its children', (
+      tester,
+    ) async {
+      final h = await openManager(tester);
+      expect(
+        find.descendant(
+          of: row(travel),
+          matching: find.textContaining('2 本子本'),
+        ),
+        findsOneWidget,
+      );
+      // 没有子本的行没有展开 / 收起按钮。
+      expect(
+        find.byKey(ValueKey<String>('notebook_toggle_$reading')),
+        findsNothing,
+      );
+      await tester.tap(find.byTooltip('收起子本'));
+      await h.settleAll();
+      expect(height(tester, year), 0);
+      expect(height(tester, spring), 0);
+      expect(
+        tester.getTopLeft(row(reading)).dy,
+        tester.getBottomLeft(row(travel)).dy,
+      );
+
+      await tester.tap(find.byTooltip('展开子本'));
+      await h.settleAll();
+      expect(height(tester, year), greaterThan(0));
+      expect(height(tester, spring), height(tester, year));
+      await h.unmount();
+    });
+
+    testWidgets('collapse all keeps the top level and expand all undoes it', (
+      tester,
+    ) async {
+      late String tokyo;
+      final h = await openManager(
+        tester,
+        seed: (h) async {
+          await seedTree(h);
+          tokyo = await h.notebook('东京', parentId: year);
+        },
+      );
+      await tester.tap(find.byTooltip('全部收起'));
+      await h.settleAll();
+      for (final id in <String>[year, spring, tokyo]) {
+        expect(height(tester, id), 0);
+      }
+      expect(height(tester, reading), greaterThan(0));
+
+      // 只展开旅行：2025 自己也收起过，东京仍藏着。
+      await tester.tap(find.byKey(ValueKey<String>('notebook_toggle_$travel')));
+      await h.settleAll();
+      expect(height(tester, year), greaterThan(0));
+      expect(height(tester, tokyo), 0);
+
+      // 还有展开着的时候，顶栏仍是“全部收起”。
+      expect(find.byTooltip('全部展开'), findsNothing);
+      await tester.tap(find.byTooltip('全部收起'));
+      await h.settleAll();
+      expect(height(tester, year), 0);
+
+      await tester.tap(find.byTooltip('全部展开'));
+      await h.settleAll();
+      expect(height(tester, year), greaterThan(0));
+      expect(height(tester, tokyo), greaterThan(0));
+      expect(find.byTooltip('全部收起'), findsOneWidget);
+      await h.unmount();
+    });
+
+    testWidgets('a collapsed parent is passed over in one step', (
+      tester,
+    ) async {
+      final h = await openManager(tester);
+      await tester.tap(find.byTooltip('收起子本'));
+      await h.settleAll();
+      // 收起后“读书”紧挨着“旅行”，拖过一行就到它上面。
+      await drag(
+        h,
+        handleOf(tester, reading),
+        -(tester.getTopLeft(row(reading)).dy -
+            tester.getTopLeft(row(travel)).dy +
+            10),
+      );
+      // 兄弟只在原本占着的全局位置之间对调，子本跟着上级（树序）。
+      expect((await h.shelf()).map((r) => r.name).toList(), <String>[
+        '读书',
+        '2025',
+        '2024',
+        '旅行',
+      ]);
+      expect((await h.notebookRow(year))!.parentId, travel);
+      expect(height(tester, year), 0);
+      await h.unmount();
+    });
+
+    testWidgets('dragging a parent folds its children and lands with them', (
+      tester,
+    ) async {
+      final h = await openManager(tester);
+      final distance =
+          tester.getTopLeft(row(reading)).dy -
+          tester.getTopLeft(row(travel)).dy;
+      final gesture = await tester.startGesture(handleOf(tester, travel));
+      await tester.pump();
+      for (var i = 0; i < 20; i++) {
+        await gesture.moveBy(Offset(0, distance / 20));
+        await tester.pump();
+      }
+      await tester.pump(const Duration(milliseconds: 400));
+      // 拖动中子本收进来，跟着上级走。
+      expect(height(tester, year), 0);
+      expect(height(tester, spring), 0);
+      await gesture.up();
+      await h.settleAll();
+
+      // 兄弟只在原本占着的全局位置之间对调，子本跟着上级（树序）。
+      expect((await h.shelf()).map((r) => r.name).toList(), <String>[
+        '读书',
+        '2025',
+        '2024',
+        '旅行',
+      ]);
+      // 放下后在新位置展开。
+      expect(height(tester, year), greaterThan(0));
+      expect(
+        tester.getTopLeft(row(reading)).dy,
+        lessThan(tester.getTopLeft(row(travel)).dy),
+      );
+      expect(
+        tester.getTopLeft(row(travel)).dy,
+        lessThan(tester.getTopLeft(row(year)).dy),
+      );
+      // 收起状态没有被拖动改写。
+      expect(find.byTooltip('收起子本'), findsOneWidget);
+      await h.unmount();
+    });
+
+    testWidgets('long-pressing a row starts a drag, a tap still edits', (
+      tester,
+    ) async {
+      final h = await openManager(tester);
+      final name = find.descendant(of: row(reading), matching: find.text('读书'));
+      await drag(
+        h,
+        tester.getCenter(name),
+        -(tester.getTopLeft(row(reading)).dy -
+            tester.getTopLeft(row(travel)).dy +
+            10),
+        hold: kLongPressTimeout + const Duration(milliseconds: 100),
+      );
+      expect((await h.shelf()).first.name, '读书');
+      expect(find.byType(NotebookEditorPage), findsNothing);
+
+      await tester.tap(name);
+      await h.settleAll();
+      expect(find.byType(NotebookEditorPage), findsOneWidget);
+      await h.unmount();
+    });
+
+    testWidgets('a book moved under a collapsed parent opens it up', (
+      tester,
+    ) async {
+      final h = await openManager(tester);
+      await tester.tap(find.byTooltip('收起子本'));
+      await h.settleAll();
+      await tester.runAsync(() => h.database.moveNotebook(reading, travel));
+      await h.settleAll();
+      expect(find.byTooltip('收起子本'), findsOneWidget);
+      expect(height(tester, reading), greaterThan(0));
+      expect(height(tester, year), greaterThan(0));
+      double left(String id) => tester
+          .getTopLeft(
+            find.descendant(of: row(id), matching: find.byType(Material)).first,
+          )
+          .dx;
+      expect(left(reading) - left(travel), 20);
       await h.unmount();
     });
 

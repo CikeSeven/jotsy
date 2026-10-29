@@ -134,3 +134,36 @@ final notebookContentsProvider = StreamProvider.autoDispose
       (Ref ref, String notebookId) =>
           ref.watch(appDatabaseProvider).watchNotebookContents(notebookId),
     );
+
+/// 管理页里收起了子本的日记本（业务 id）。
+///
+/// 只在内存里：本次运行期间离开管理页再回来仍保持，重启应用后全部展开，
+/// 不加设置键。已删除的本子留在集合里无害（没有行认它）。
+final notebookManageCollapsedProvider =
+    NotifierProvider<NotebookManageCollapsedNotifier, Set<String>>(
+      NotebookManageCollapsedNotifier.new,
+    );
+
+class NotebookManageCollapsedNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => const <String>{};
+
+  /// 收起或展开 [id] 下面的子本。
+  void toggle(String id) => state = state.contains(id)
+      ? Set<String>.unmodifiable(state.difference(<String>{id}))
+      : Set<String>.unmodifiable(<String>{...state, id});
+
+  /// 全部收起：收起 [ids]（有子本的本子），其余保持。
+  void collapseAll(Iterable<String> ids) =>
+      state = Set<String>.unmodifiable(<String>{...state, ...ids});
+
+  /// 展开 [ids]；全部展开时传 null。
+  void expand([Iterable<String>? ids]) {
+    if (ids == null) {
+      if (state.isNotEmpty) state = const <String>{};
+      return;
+    }
+    final next = state.difference(ids.toSet());
+    if (next.length != state.length) state = Set<String>.unmodifiable(next);
+  }
+}

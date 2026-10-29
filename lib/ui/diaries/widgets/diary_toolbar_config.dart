@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_text_style_editing.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_toggle_editing.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_style_options.dart';
@@ -51,6 +52,8 @@ bool isDiaryToolbarItemActive(
   // 光标在提示块里（选区的块都是提示块）；面板开着时由工具栏经
   // `panelOpen` 另行点亮。
   DiaryToolbarItem.callout => attributes['type'] == 'callout',
+  // 光标在折叠块的标题里（选区的块都是折叠块）。
+  DiaryToolbarItem.toggle => attributes['type'] == 'toggle_list',
   DiaryToolbarItem.indent =>
     attributes['depth'] is num && (attributes['depth'] as num) > 0,
   DiaryToolbarItem.link => attributes['href'] != null,
@@ -230,6 +233,9 @@ void _apply(
       toggleDiaryScript(controller, DiaryScript.superscript);
     case DiaryToolbarItem.subscript:
       toggleDiaryScript(controller, DiaryScript.subscript);
+    case DiaryToolbarItem.toggle:
+      // 不全是折叠块时转为折叠块，全是时转回正文（代码块除外）。
+      toggleDiaryToggleBlocks(controller);
     case DiaryToolbarItem.undo:
       controller.undo();
     case DiaryToolbarItem.redo:

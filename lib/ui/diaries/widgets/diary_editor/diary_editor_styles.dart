@@ -108,6 +108,7 @@ bool _isFirstBlock(af.Node node) =>
 ///   相邻两项的间距 = 一个整行 + 4dp，随行距设置变化，又不比项内换行更挤；
 /// - 引用：上下 4dp，文字为 `onSurfaceVariant`，与正文区分而不刺眼；
 /// - 提示块：框外上下 4dp（同引用），框内留白与底色见 `DiaryCalloutBlock`；
+/// - 折叠块：标题行同列表与待办，展开时子块同列表子块的缩进；
 /// - 子块缩进等于行首标记列宽：嵌套列表的标记正好落在上一级的正文起点下。
 af.BlockComponentConfiguration diaryTextBlockConfiguration(
   BuildContext context,
@@ -130,7 +131,9 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
       ),
       'bulleted_list' ||
       'numbered_list' ||
-      'todo_list' => EdgeInsets.symmetric(vertical: 2 + markers.halfLeading),
+      'todo_list' ||
+      // 折叠块的标题行与列表项同一节奏（标记格同一套几何）。
+      'toggle_list' => EdgeInsets.symmetric(vertical: 2 + markers.halfLeading),
       // 提示块的底色框在块内（见 DiaryCalloutBlock），这里只是框外的
       // 上下间距，与引用相同。
       'quote' || 'callout' => const EdgeInsets.symmetric(vertical: 4),
@@ -163,6 +166,8 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
         _ => context.l10n.diaryEditorHeading6,
       },
       'callout' => context.l10n.diaryCalloutPlaceholder,
+      // 空折叠块写“折叠块”，同提示块始终显示。
+      'toggle_list' => context.l10n.diaryToggleListPlaceholder,
       'paragraph'
           when node.parent?.type == 'page' &&
               node.parent!.children.length == 1 =>

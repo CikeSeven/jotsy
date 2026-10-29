@@ -110,6 +110,14 @@ List<DiaryBlockCommand> diaryBlockCommands(
     const ['callout', 'tip', 'note', '提示', '标注', '提醒'],
     group: DiaryBlockCommandGroup.text,
   ),
+  // 折叠块没有 Markdown 写法；转换保留文字与对齐，新折叠块展开。
+  DiaryBlockCommand(
+    'toggle_list',
+    DiaryToolbarItem.toggle.label(l10n),
+    DiaryToolbarItem.toggle.iconData,
+    const ['toggle', 'fold', 'collapse', 'details', '折叠', '展开'],
+    group: DiaryBlockCommandGroup.text,
+  ),
   DiaryBlockCommand(
     'code',
     DiaryToolbarItem.codeBlock.label(l10n),

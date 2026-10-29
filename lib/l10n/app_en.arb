@@ -11336,6 +11336,22 @@
   "@diaryEditorUnsupportedBlock": {
     "description": "Placeholder for a preserved editor block from an unsupported format."
   },
+  "diaryEditorToggleList": "Toggle",
+  "@diaryEditorToggleList": {
+    "description": "Name of the toggle block (toggle_list) tool in the editor toolbar and slash menu."
+  },
+  "diaryToggleListPlaceholder": "Toggle",
+  "@diaryToggleListPlaceholder": {
+    "description": "Placeholder shown in a toggle block whose title is empty."
+  },
+  "diaryToggleExpand": "Expand",
+  "@diaryToggleExpand": {
+    "description": "Screen reader label of a collapsed toggle block's leading marker: tapping it expands the folded content."
+  },
+  "diaryToggleCollapse": "Collapse",
+  "@diaryToggleCollapse": {
+    "description": "Screen reader label of an expanded toggle block's leading marker: tapping it collapses the folded content."
+  },
   "diaryEditorImageWidth": "Image width",
   "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
   "diaryEditorImageHeight": "Image height",

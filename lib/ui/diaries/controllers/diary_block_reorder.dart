@@ -4,6 +4,7 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_editor_controller.dart';
+import 'diary_toggle_state.dart';
 
 /// 移动整棵子树。目标路径按移动前的树解释，原生事务负责删除后的路径变换；
 /// 同时换算新选区，避免光标仍指向被挤走的相邻段落。禁止把块拖进自己的子树。
@@ -54,7 +55,9 @@ bool moveDiaryEditorBlock(
 /// 之间是一条缝；同一条缝能容纳的层级是一个区间——
 /// - 下限是缝下面那块的层级：块落在它前面，只能与它同级或更浅；
 /// - 上限是缝上面那块的层级，那块能收子块（[kDiaryContainerBlockTypes]，
-///   也只有它们会画出子块）时再加一级，成为它的第一个子块；
+///   也只有它们会画出子块；收起的折叠块不算）时再加一级，成为它的第一个
+///   子块；
+/// - 收起的折叠块里的内容不在阅读顺序里（看不见），里面没有缝；
 /// - 缝上面那块有子块时，缝下面就是它的第一个子块，两者相等，只能放进去。
 /// 移动时先在区间里取最接近原层级的那一级：放得下就原样保持，放不下（如
 /// 拖到标题后面）才取最近的一级，之后拖到放得下的地方又会恢复。
@@ -67,7 +70,9 @@ class DiaryBlockGaps {
           continue;
         }
         blocks.add(node);
-        visit(node.children);
+        // 收起的折叠块里的内容看不见、没有几何：不排进阅读顺序，块既不会
+        // 落进去，上移 / 下移也把收起的折叠块连同内容当作一格越过。
+        if (!isDiaryToggleCollapsed(node)) visit(node.children);
       }
     }
 
@@ -90,10 +95,15 @@ class DiaryBlockGaps {
     final min = below?.path.length ?? 1;
     final max = above == null
         ? 1
-        : above.path.length +
-              (kDiaryContainerBlockTypes.contains(above.type) ? 1 : 0);
+        : above.path.length + (_acceptsChildren(above) ? 1 : 0);
     return (min, math.max(min, max));
   }
+
+  /// 块能不能收下拖来的子块：能挂子块的类型，收起的折叠块除外（放进去
+  /// 就看不见了）。
+  static bool _acceptsChildren(af.Node node) =>
+      kDiaryContainerBlockTypes.contains(node.type) &&
+      !isDiaryToggleCollapsed(node);
 
   /// 落到第 [gap] 条缝、层级尽量为 [depth] 的目标路径（按当前的树解释，
   /// 交给 [moveDiaryEditorBlock]）；文档里没有别的块时为 null。

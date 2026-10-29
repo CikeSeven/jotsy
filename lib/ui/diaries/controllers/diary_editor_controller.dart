@@ -7,6 +7,7 @@ import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/content_codec.dart';
 import 'diary_block_convert.dart';
+import 'diary_toggle_state.dart';
 
 export 'package:appflowy_editor/appflowy_editor.dart'
     show Document, Node, Selection, Position, Delta;
@@ -79,7 +80,27 @@ class DiaryEditorController extends ChangeNotifier {
       return;
     }
     if (state.selection != null) _lastSelection = state.selection;
+    _revealCollapsedSelection();
     notifyListeners();
+  }
+
+  /// 选区落进已收起的折叠块里（撤销 / 重做、程序设的选区、方向键越过
+  /// 标题等）时展开它，光标才画得出来；展开不进撤销栈，见
+  /// [expandDiaryTogglesAroundSelection]。推到微任务里执行：选区通知常在
+  /// 上游 `apply` 的中途发出，不在里面再套一次事务；微任务赶在下一帧之前，
+  /// 收起的内容随即建好。只读正文没有光标，不展开；拖动段落时块本来就
+  /// 不会落进收起的内容。
+  void _revealCollapsedSelection() {
+    if (readOnly ||
+        draggingBlock ||
+        !diarySelectionInsideCollapsedToggle(state)) {
+      return;
+    }
+    scheduleMicrotask(() {
+      if (!state.isDisposed && !readOnly) {
+        expandDiaryTogglesAroundSelection(state);
+      }
+    });
   }
 
   /// 只读时不该出现的折叠选区。拖动选区把手或长按扩选途中选区可能暂时

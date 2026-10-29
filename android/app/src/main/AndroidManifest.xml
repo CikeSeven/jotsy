@@ -4,6 +4,13 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- 局域网同步的设备发现（组播锁）与扫码配对 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 扫码配对只是可选能力，没有摄像头的设备照样可以安装 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- 附件从系统选择器复制到私有目录，FileProvider 打开无需读取整个媒体库。
          移除 open_filex 的视频/音频读取声明，保留现有相册写入权限。 -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />

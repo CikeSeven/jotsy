@@ -80,6 +80,14 @@ dependencies:
   # 桌面上把文件拖进编辑页正文（Linux / Windows / macOS 的原生拖放）。0.9 起要求
   # Flutter 3.47.7，暂停在 0.8.x。
   desktop_drop: ^0.8.4
+  # 局域网同步：设备身份（Ed25519）、密钥交换（X25519）、HKDF 与
+  # ChaCha20-Poly1305 加密。
+  cryptography: ^2.9.0
+  # 局域网同步：自绘配对二维码（只用编码器）。
+  qr: ^3.0.2
+  # 局域网同步：手机扫码配对。Android 用内置的 ML Kit 模型（默认），不开启
+  # unbundled 模式：多数国内手机没有 Google Play 服务。
+  mobile_scanner: ^7.4.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

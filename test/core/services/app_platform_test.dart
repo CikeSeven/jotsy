@@ -69,6 +69,31 @@ void main() {
     });
   });
 
+  group('AppPlatform LAN sync', () {
+    test('Android supports LAN sync and QR scanning', () {
+      expect(AppPlatform.supportsLanSync, isTrue);
+      expect(AppPlatform.supportsQrScan, isTrue);
+    });
+
+    test('desktops support LAN sync but only display the QR code', () {
+      for (final platform in [
+        TargetPlatform.linux,
+        TargetPlatform.windows,
+        TargetPlatform.macOS,
+      ]) {
+        debugDefaultTargetPlatformOverride = platform;
+        expect(AppPlatform.supportsLanSync, isTrue, reason: '$platform');
+        expect(AppPlatform.supportsQrScan, isFalse, reason: '$platform');
+      }
+    });
+
+    test('iOS has neither LAN sync nor QR scanning', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      expect(AppPlatform.supportsLanSync, isFalse);
+      expect(AppPlatform.supportsQrScan, isFalse);
+    });
+  });
+
   group('appDataRootDirectory', () {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     late Directory sandbox;

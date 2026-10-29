@@ -231,7 +231,7 @@ Jotsy is free, open source and ad-free. If it helps you, you're welcome to leave
 
 Thanks to everyone who has supported Jotsy:
 
-ParadiseGrass · 氢妹Ti · MR.CHEN · 白禹和Kamiko Kristo · Hongda · AXID · \*\*民 · 泽墨 · 霖
+ParadiseGrass · 氢妹Ti · MR.CHEN · 白禹和Kamiko Kristo · Hongda · AXID · \*\*民 · 泽墨 · 霖 · 望¹CHun_F
 
 ## 📄 License
 

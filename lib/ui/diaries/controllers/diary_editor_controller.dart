@@ -39,7 +39,7 @@ class DiaryEditorController extends ChangeNotifier {
       }
     });
     state.selectionNotifier.addListener(_onSelection);
-    state.toggledStyleNotifier.addListener(notifyListeners);
+    state.toggledStyleNotifier.addListener(_onToggledStyle);
   }
 
   factory DiaryEditorController.fromContent(
@@ -61,6 +61,7 @@ class DiaryEditorController extends ChangeNotifier {
   bool _disposeRequested = false;
   bool get isDisposed => _disposeRequested;
   af.Selection? _lastSelection;
+  Map<String, dynamic> _lastToggledStyle = const {};
   af.Document get document => state.document;
   af.Selection? get selection {
     final current = state.selection ?? _lastSelection;
@@ -79,8 +80,21 @@ class DiaryEditorController extends ChangeNotifier {
       });
       return;
     }
-    if (state.selection != null) _lastSelection = state.selection;
+    if (state.selection != null) {
+      _lastSelection = state.selection;
+      _lastToggledStyle = Map.of(state.toggledStyle);
+    }
     _revealCollapsedSelection();
+    notifyListeners();
+  }
+
+  void _onToggledStyle() {
+    // 上游在失焦、选区变为 null 时先清空待输入格式。保留最后一次实际设置，
+    // 只在恢复同一插入点时取回；失焦期间颜色面板的新设置覆盖对应属性。
+    _lastToggledStyle = {
+      if (state.selection == null) ..._lastToggledStyle,
+      ...state.toggledStyle,
+    };
     notifyListeners();
   }
 
@@ -182,7 +196,7 @@ class DiaryEditorController extends ChangeNotifier {
   void select(af.Selection? selection) {
     final restoreToggled =
         state.selection == null && selection == _lastSelection
-        ? Map<String, dynamic>.of(state.toggledStyle)
+        ? {..._lastToggledStyle, ...state.toggledStyle}
         : const <String, dynamic>{};
     unawaited(state.updateSelectionWithReason(selection));
     // 颜色代码输入框和正文交接焦点时，上游会暂时清空选区。恢复同一选区
@@ -310,7 +324,7 @@ class DiaryEditorController extends ChangeNotifier {
     if (_disposeRequested) return;
     _disposeRequested = true;
     state.selectionNotifier.removeListener(_onSelection);
-    state.toggledStyleNotifier.removeListener(notifyListeners);
+    state.toggledStyleNotifier.removeListener(_onToggledStyle);
     unawaited(_subscription.cancel());
     _releaseStateIfUnused();
     super.dispose();

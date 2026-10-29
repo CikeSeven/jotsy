@@ -11,9 +11,9 @@ import '../../anniversaries/controllers/anniversary_navigation.dart'
 import '../../anniversaries/models/anniversary_draft.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
+import '../../diaries/controllers/diary_tag_search_flow.dart';
 import '../../diaries/pages/diary_drafts_page.dart';
 import '../../diaries/pages/diary_preview_page.dart';
-import '../../diaries/pages/diary_search_page.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../notebooks/controllers/notebook_navigation.dart';
 import '../../notebooks/pages/notebooks_page.dart';
@@ -202,11 +202,7 @@ class ExplorePageActions extends ExploreModuleActions {
 
   @override
   void openTagSearch(int tagId) {
-    unawaited(
-      Navigator.of(
-        context,
-      ).push(DiarySearchPage.buildRoute(initialTagIds: <int>{tagId})),
-    );
+    unawaited(openDiaryTagSearch(context, tagId));
   }
 
   @override

@@ -77,6 +77,7 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.paging,
     this.notebooks = const <NotebookView>[],
     this.onOpenNotebook,
+    this.onOpenTag,
     this.comments,
   });
 
@@ -111,6 +112,9 @@ class DiaryPreviewContent extends ConsumerWidget {
 
   /// 点按日记本胶囊：回到首页打开那本。
   final ValueChanged<NotebookView>? onOpenNotebook;
+
+  /// 点按标签胶囊（参数为标签 id）：按这个标签搜索；设置页预览不传。
+  final ValueChanged<int>? onOpenTag;
 
   /// 正文末尾的留言区；null 时不显示（留言功能关闭、日记在回收站、截取
   /// 分享长图时）。信息栏的留言数也由它给出。
@@ -165,6 +169,7 @@ class DiaryPreviewContent extends ConsumerWidget {
             style: meta,
             notebooks: notebooks,
             onOpenNotebook: onOpenNotebook,
+            onOpenTag: onOpenTag,
             commentCount: commentCount,
             onOpenComments: commentsKey == null || comments?.actions == null
                 ? null

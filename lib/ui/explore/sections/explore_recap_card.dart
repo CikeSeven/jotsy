@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../controllers/explore_module_actions.dart';
 import '../models/explore_module_config.dart';
 import '../models/explore_module_data.dart';
 import '../models/explore_module_options.dart';
@@ -12,7 +13,7 @@ import '../widgets/explore_shared_widgets.dart';
 import '../widgets/explore_tag_capsule.dart';
 
 /// 周期回顾：本周 / 本月 / 今年的篇数、字数与记录天数（可与上一期对比），
-/// 以及最常见的心情与最常用的标签。
+/// 以及最常见的心情与最常用的标签（与标签卡一样，点按标签打开搜索）。
 class ExploreRecapCard extends StatelessWidget {
   const ExploreRecapCard({super.key, required this.config, required this.data});
 
@@ -25,6 +26,7 @@ class ExploreRecapCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final look = ExploreAppearanceScope.of(context);
+    final actions = ExploreActionsScope.of(context);
     final compare = config.toggle(ExploreOptions.recapCompare);
     final current = data.current;
     final previous = data.previous;
@@ -124,6 +126,7 @@ class ExploreRecapCard extends StatelessWidget {
                           child: ExploreTagCapsule(
                             name: tag.name,
                             color: tag.color,
+                            onTap: () => actions.openTagSearch(tag.id),
                           ),
                         ),
                       ],

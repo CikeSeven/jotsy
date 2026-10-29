@@ -8881,6 +8881,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryToolbarFontSize => 'Font size';
 
   @override
+  String get diaryToolbarSuperscript => 'Superscript';
+
+  @override
+  String get diaryToolbarSubscript => 'Subscript';
+
+  @override
   String get diaryHeadingPanelTitle => 'Heading';
 
   @override

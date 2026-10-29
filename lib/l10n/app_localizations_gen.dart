@@ -14564,6 +14564,18 @@ abstract class AppLocalizations {
   /// **'Font size'**
   String get diaryToolbarFontSize;
 
+  /// Name of the editor toolbar superscript tool: shrinks and raises the selected text (as in x²); tap again to return to normal text.
+  ///
+  /// In en, this message translates to:
+  /// **'Superscript'**
+  String get diaryToolbarSuperscript;
+
+  /// Name of the editor toolbar subscript tool: shrinks and lowers the selected text (as in H₂O); tap again to return to normal text.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscript'**
+  String get diaryToolbarSubscript;
+
   /// Title of the editor toolbar heading panel (body text and heading levels 1-6).
   ///
   /// In en, this message translates to:

@@ -7967,6 +7967,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryToolbarFontSize => '字号';
 
   @override
+  String get diaryToolbarSuperscript => '上标';
+
+  @override
+  String get diaryToolbarSubscript => '下标';
+
+  @override
   String get diaryHeadingPanelTitle => '标题';
 
   @override

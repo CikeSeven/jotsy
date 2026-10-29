@@ -1,6 +1,7 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import 'diary_table_editing.dart';
 
 /// 把 [nodes] 换成 [type]（各块的新属性由 [attributesFor] 给出），写进
 /// [transaction]，返回换类型后与 [selection] 对应的选区。
@@ -18,6 +19,9 @@ import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 /// 整棵替换时删除操作持有未改动的原节点，撤销原样放回。
 ///
 /// 不带子块的块、或换成能画子块的类型时原地换类型，节点保留。
+///
+/// 表格格子里的段落不换类型（格子只能放段落，换了读取时会被改回来）：
+/// [nodes] 里在格子中的块一律跳过，工具栏、`/` 菜单与各面板共用这一条。
 af.Selection? addDiaryBlockTypeChange(
   af.Transaction transaction, {
   required af.Node root,
@@ -26,6 +30,10 @@ af.Selection? addDiaryBlockTypeChange(
   required Map<String, Object?> Function(af.Node node) attributesFor,
   required af.Selection? selection,
 }) {
+  nodes = [
+    for (final node in nodes)
+      if (!diaryNodeInTableCell(node)) node,
+  ];
   final selected = nodes.toSet();
   final hidesChildren = !kDiaryContainerBlockTypes.contains(type);
   final parents = hidesChildren

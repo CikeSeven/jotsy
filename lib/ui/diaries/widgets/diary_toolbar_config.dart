@@ -8,6 +8,7 @@ import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_table_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_text_style_editing.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
@@ -99,10 +100,12 @@ Widget buildDiaryToolbarItem(
                 DiaryToolbarItem.video ||
                 DiaryToolbarItem.attachment =>
                   !mediaImportBusy && !recordingOpen && onMediaPressed != null,
+                // 格子里只能放段落，不缩进（缩进即成为上一段的子块）。
                 DiaryToolbarItem.indent =>
-                  outdent
-                      ? af.isOutdentable(controller.state)
-                      : af.isIndentable(controller.state),
+                  !diarySelectionInTable(controller) &&
+                      (outdent
+                          ? af.isOutdentable(controller.state)
+                          : af.isIndentable(controller.state)),
                 // 代码块里的文字是原文，不写上下标：选区只落在代码块里时停用。
                 DiaryToolbarItem.superscript || DiaryToolbarItem.subscript =>
                   controller.selection == null ||

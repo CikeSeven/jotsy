@@ -67,7 +67,8 @@ class DiaryBlockGaps {
           continue;
         }
         blocks.add(node);
-        visit(node.children);
+        // 表格整个是一块：格子与格内段落之间没有缝。
+        if (node.type != kDiaryBlockTable) visit(node.children);
       }
     }
 

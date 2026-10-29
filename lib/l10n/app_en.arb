@@ -13150,5 +13150,41 @@
       "added": {"type": "int"},
       "replaced": {"type": "int"}
     }
+  },
+  "diaryEditorTable": "Table",
+  "@diaryEditorTable": {
+    "description": "Table tool in the editor toolbar and slash menu; also the title of the table panel."
+  },
+  "diaryTableInsertRowAbove": "Row above",
+  "@diaryTableInsertRowAbove": {
+    "description": "Table panel: insert a row above the caret's row."
+  },
+  "diaryTableInsertRowBelow": "Row below",
+  "@diaryTableInsertRowBelow": {
+    "description": "Table panel: insert a row below the caret's row."
+  },
+  "diaryTableInsertColumnLeft": "Column left",
+  "@diaryTableInsertColumnLeft": {
+    "description": "Table panel: insert a column to the left of the caret's column."
+  },
+  "diaryTableInsertColumnRight": "Column right",
+  "@diaryTableInsertColumnRight": {
+    "description": "Table panel: insert a column to the right of the caret's column."
+  },
+  "diaryTableDeleteRow": "Delete row",
+  "@diaryTableDeleteRow": {
+    "description": "Table panel: delete the caret's row."
+  },
+  "diaryTableDeleteColumn": "Delete column",
+  "@diaryTableDeleteColumn": {
+    "description": "Table panel: delete the caret's column."
+  },
+  "diaryTableHeaderRow": "Header row",
+  "@diaryTableHeaderRow": {
+    "description": "Table panel: toggle whether the first row is a header row."
+  },
+  "diaryTableDelete": "Delete table",
+  "@diaryTableDelete": {
+    "description": "Table panel: delete the whole table."
   }
 }

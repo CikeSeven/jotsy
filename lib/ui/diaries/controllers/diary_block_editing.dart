@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_editor_controller.dart';
+import 'diary_table_editing.dart';
 
 /// 代码块的语言、转换、复制与退出都通过原生事务操作节点，保持子树与撤销。
 List<af.Node> selectedDiaryCodeBlocks(DiaryEditorController controller) =>
@@ -55,9 +56,11 @@ Future<void> copyDiaryCodeBlock(af.Node block) =>
     Clipboard.setData(ClipboardData(text: block.delta?.toPlainText() ?? ''));
 
 void toggleDiaryCodeBlockOn(DiaryEditorController controller) {
+  // 表格格子里的段落不转代码块（与 addDiaryBlockTypeChange 同一口径）。
   final nodes = controller.selectedNodes
-      .where((node) => node.delta != null)
+      .where((node) => node.delta != null && !diaryNodeInTableCell(node))
       .toList();
+  if (nodes.isEmpty) return;
   final siblings =
       nodes.length > 1 &&
       nodes.every(
@@ -190,7 +193,11 @@ Future<bool> _codeFence(af.EditorState state) async {
   final selection = state.selection;
   if (selection == null || !selection.isCollapsed) return false;
   final node = state.document.nodeAtPath(selection.end.path);
-  if (node?.type != 'paragraph' || node!.children.isNotEmpty) return false;
+  if (node?.type != 'paragraph' ||
+      node!.children.isNotEmpty ||
+      diaryNodeInTableCell(node)) {
+    return false;
+  }
   final text = node.delta?.toPlainText() ?? '';
   if (selection.end.offset != text.length) return false;
   final match = RegExp(r'^```([\w+-]*)$').firstMatch(text);

@@ -17383,6 +17383,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Comments: {added} added, {replaced} overwritten'**
   String backupImportCommentOverwriteResult(int added, int replaced);
+
+  /// Table tool in the editor toolbar and slash menu; also the title of the table panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Table'**
+  String get diaryEditorTable;
+
+  /// Table panel: insert a row above the caret's row.
+  ///
+  /// In en, this message translates to:
+  /// **'Row above'**
+  String get diaryTableInsertRowAbove;
+
+  /// Table panel: insert a row below the caret's row.
+  ///
+  /// In en, this message translates to:
+  /// **'Row below'**
+  String get diaryTableInsertRowBelow;
+
+  /// Table panel: insert a column to the left of the caret's column.
+  ///
+  /// In en, this message translates to:
+  /// **'Column left'**
+  String get diaryTableInsertColumnLeft;
+
+  /// Table panel: insert a column to the right of the caret's column.
+  ///
+  /// In en, this message translates to:
+  /// **'Column right'**
+  String get diaryTableInsertColumnRight;
+
+  /// Table panel: delete the caret's row.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete row'**
+  String get diaryTableDeleteRow;
+
+  /// Table panel: delete the caret's column.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete column'**
+  String get diaryTableDeleteColumn;
+
+  /// Table panel: toggle whether the first row is a header row.
+  ///
+  /// In en, this message translates to:
+  /// **'Header row'**
+  String get diaryTableHeaderRow;
+
+  /// Table panel: delete the whole table.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete table'**
+  String get diaryTableDelete;
 }
 
 class _AppLocalizationsDelegate

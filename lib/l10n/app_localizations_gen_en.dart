@@ -10602,4 +10602,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String backupImportCommentOverwriteResult(int added, int replaced) {
     return 'Comments: $added added, $replaced overwritten';
   }
+
+  @override
+  String get diaryEditorTable => 'Table';
+
+  @override
+  String get diaryTableInsertRowAbove => 'Row above';
+
+  @override
+  String get diaryTableInsertRowBelow => 'Row below';
+
+  @override
+  String get diaryTableInsertColumnLeft => 'Column left';
+
+  @override
+  String get diaryTableInsertColumnRight => 'Column right';
+
+  @override
+  String get diaryTableDeleteRow => 'Delete row';
+
+  @override
+  String get diaryTableDeleteColumn => 'Delete column';
+
+  @override
+  String get diaryTableHeaderRow => 'Header row';
+
+  @override
+  String get diaryTableDelete => 'Delete table';
 }

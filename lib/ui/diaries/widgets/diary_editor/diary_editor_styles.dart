@@ -5,6 +5,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
+import 'diary_table_block.dart';
 
 /// 正文的行高分配（与上游默认相同，这里显式写出以便共用）：首行上方与末行
 /// 下方不加行距，块与块的距离只由块的 padding 决定；多出的行距在行内上下
@@ -146,6 +147,10 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
         _headingLevel(node),
       ).copyWith(fontFamily: appearance.fontFamily, height: 1.3),
       'quote' => TextStyle(color: colors.onSurfaceVariant),
+      // 表头行的格子加粗只在渲染时，不写进正文。
+      'paragraph' when diaryTableHeaderParagraph(node) => const TextStyle(
+        fontWeight: FontWeight.w700,
+      ),
       _ => const TextStyle(),
     },
     // 段落的占位只在光标停在这个空段落时显示（上游按选区控制）：整篇只有

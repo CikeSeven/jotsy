@@ -23,6 +23,8 @@ import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
 import 'diary_slash_commands.dart';
 import 'diary_slash_menu.dart';
+import 'diary_table_keyboard_interceptor.dart';
+import 'diary_table_shortcuts.dart';
 import 'diary_block_commands.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_editor_spans.dart';
@@ -97,6 +99,11 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   late af.EditorScrollController _scroll;
   late DiaryBlockLanguageTracker _tracker;
   late DiarySlashMenuController _slashMenu;
+
+  /// 表格里的软键盘规则（见 [DiaryTableKeyboardInterceptor]）：上游的键盘
+  /// 服务在编辑器挂载后才有，首帧之后再登记；只读正文没有键盘服务。
+  final DiaryTableKeyboardInterceptor _tableInterceptor =
+      DiaryTableKeyboardInterceptor();
   @override
   void initState() {
     super.initState();
@@ -116,6 +123,20 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     );
     _tracker = DiaryBlockLanguageTracker.of(widget.controller)
       ..addListener(_rebuild);
+    final state = widget.controller.state;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !state.isDisposed && state == widget.controller.state) {
+        state.service.keyboardService?.registerInterceptor(_tableInterceptor);
+      }
+    });
+  }
+
+  void _unregisterInterceptor(DiaryEditorController controller) {
+    if (!controller.state.isDisposed) {
+      controller.state.service.keyboardService?.unregisterInterceptor(
+        _tableInterceptor,
+      );
+    }
   }
 
   void _onFocus() {
@@ -157,6 +178,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         old.focusNode != widget.focusNode) {
       _scroll.dispose();
       _slashMenu.dispose();
+      _unregisterInterceptor(old.controller);
       old.controller.detachView();
       old.focusNode?.removeListener(_onFocus);
       _tracker.removeListener(_rebuild);
@@ -169,6 +191,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     widget.focusNode?.removeListener(_onFocus);
     _scroll.dispose();
     _slashMenu.dispose();
+    _unregisterInterceptor(widget.controller);
     widget.controller.detachView();
     _tracker.removeListener(_rebuild);
     _headerSlot.dispose();
@@ -279,6 +302,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             onRecording: widget.onRecordingCommand,
           ),
         ),
+        // 表格里的回车与 Markdown 原文先于其他块规则。
+        ...diaryTableCharacterShortcuts(),
         ...diaryBlockCharacterShortcuts(),
       ],
       editorStyle: buildDiaryEditorStyle(
@@ -293,6 +318,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         ),
       ),
       commandShortcutEvents: [
+        // 表格里的退格 / Delete / Tab / 方向键先于上游（见该文件）。
+        ...diaryTableCommandShortcuts(),
         for (final command in ['copy', 'cut', 'paste'])
           af.CommandShortcutEvent(
             key: 'diary_$command',
@@ -382,7 +409,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             },
           ),
         for (final event in af.standardCommandShortcutEvents)
-          if (!identical(event, af.toggleHighlightCommand) &&
+          if (!kUpstreamTableCommandKeys.contains(event.key) &&
+              !identical(event, af.toggleHighlightCommand) &&
               !(AppPlatform.isDesktop &&
                   (identical(event, af.exitEditingCommand) ||
                       identical(event, af.showLinkMenuCommand))))

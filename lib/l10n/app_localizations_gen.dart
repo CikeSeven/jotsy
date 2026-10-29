@@ -752,6 +752,48 @@ abstract class AppLocalizations {
   /// **'View on GitHub'**
   String get appUpdateViewOnGitHub;
 
+  /// About page entry that opens the changelog page.
+  ///
+  /// In en, this message translates to:
+  /// **'Changelog'**
+  String get aboutChangelog;
+
+  /// Changelog page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Changelog'**
+  String get changelogTitle;
+
+  /// Changelog page: badge on the version installed on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get changelogCurrentVersion;
+
+  /// Changelog page: expands the rest of a version's notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get changelogShowAll;
+
+  /// Changelog page: collapses a version's notes back to its highlights.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get changelogCollapse;
+
+  /// Changelog page: empty state when no bundled release notes can be read.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes to show.'**
+  String get changelogEmpty;
+
+  /// Changelog page footer link that opens every release on GitHub.
+  ///
+  /// In en, this message translates to:
+  /// **'All releases on GitHub'**
+  String get changelogAllReleases;
+
   /// 软件更新页按钮：检查更新。
   ///
   /// In en, this message translates to:

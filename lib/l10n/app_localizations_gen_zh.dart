@@ -366,6 +366,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appUpdateViewOnGitHub => '在 GitHub 查看';
 
   @override
+  String get aboutChangelog => '更新日志';
+
+  @override
+  String get changelogTitle => '更新日志';
+
+  @override
+  String get changelogCurrentVersion => '当前版本';
+
+  @override
+  String get changelogShowAll => '展开全部';
+
+  @override
+  String get changelogCollapse => '收起';
+
+  @override
+  String get changelogEmpty => '暂时没有可显示的更新日志。';
+
+  @override
+  String get changelogAllReleases => '在 GitHub 查看全部版本';
+
+  @override
   String get appUpdateActionCheck => '检查更新';
 
   @override

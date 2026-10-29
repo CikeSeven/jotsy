@@ -320,6 +320,22 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               return KeyEventResult.handled;
             },
           ),
+        // 桌面的 Ctrl / ⌘ + Shift + V 只粘贴原文（不转换 HTML 与
+        // Markdown），排在上游同键的“粘贴为纯文本”之前。手机保持上游行为。
+        if (AppPlatform.isDesktop)
+          af.CommandShortcutEvent(
+            key: 'diary_paste_plain_text',
+            getDescription: () => 'paste as plain text',
+            command: 'ctrl+shift+v',
+            macOSCommand: 'cmd+shift+v',
+            handler: (_) {
+              if (controller.readOnly) return KeyEventResult.ignored;
+              unawaited(
+                DiaryEditorClipboard.paste(controller, plainText: true),
+              );
+              return KeyEventResult.handled;
+            },
+          ),
         // 桌面上 Esc 交给页面（与返回按钮相同，见各编辑页）：上游的
         // “退出编辑”会吞掉 Esc、只清掉选区；斜杠菜单开着时先收起菜单。手机
         // 保持上游行为。

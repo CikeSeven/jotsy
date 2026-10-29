@@ -13414,5 +13414,230 @@
     "placeholders": {
       "name": {"type": "String"}
     }
+  },
+  "lanSyncPairConnecting": "Connecting to {name}…",
+  "@lanSyncPairConnecting": {
+    "description": "Pairing sheet while the connection is being set up.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairTitleOutgoing": "Pair with “{name}”",
+  "@lanSyncPairTitleOutgoing": {
+    "description": "Pairing sheet title when this device started the pairing.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairTitleIncoming": "“{name}” wants to pair",
+  "@lanSyncPairTitleIncoming": {
+    "description": "Pairing sheet title when the other device asked to pair.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairSubtitle": "Check that both devices show the same number",
+  "@lanSyncPairSubtitle": {
+    "description": "Pairing sheet subtitle above the verification code."
+  },
+  "lanSyncPairCodeSemantics": "Pairing code {first} {second}",
+  "@lanSyncPairCodeSemantics": {
+    "description": "Screen reader label of the six-digit pairing code, read as two groups of three.",
+    "placeholders": {
+      "first": {"type": "String"},
+      "second": {"type": "String"}
+    }
+  },
+  "lanSyncPairSafetyNote": "After pairing, both devices merge all their diaries both ways (including private notebooks and the trash). The connection is encrypted end to end and never goes through a server.",
+  "@lanSyncPairSafetyNote": {
+    "description": "Safety note on the pairing sheet explaining what pairing does."
+  },
+  "lanSyncPairExportBackup": "Export a full backup first",
+  "@lanSyncPairExportBackup": {
+    "description": "Text button in the pairing safety note: cancels this pairing and starts the full backup export."
+  },
+  "lanSyncPairMismatch": "Doesn't match",
+  "@lanSyncPairMismatch": {
+    "description": "Outlined button: the codes on the two devices differ, cancel pairing."
+  },
+  "lanSyncPairConfirm": "Matches, pair",
+  "@lanSyncPairConfirm": {
+    "description": "Filled button: the codes match, confirm pairing."
+  },
+  "lanSyncPairTimeoutNote": "Cancels automatically if not confirmed within 60 seconds",
+  "@lanSyncPairTimeoutNote": {
+    "description": "Small note at the bottom of the pairing sheet."
+  },
+  "lanSyncPairWaitingPeer": "Waiting for the other device…",
+  "@lanSyncPairWaitingPeer": {
+    "description": "Replaces the buttons after this device confirmed the code."
+  },
+  "lanSyncPairSucceeded": "Paired with {name}",
+  "@lanSyncPairSucceeded": {
+    "description": "Pairing sheet success title.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairSyncNow": "Sync now",
+  "@lanSyncPairSyncNow": {
+    "description": "Filled button on the pairing success state."
+  },
+  "lanSyncPairLater": "Later",
+  "@lanSyncPairLater": {
+    "description": "Text button on the pairing success state that just closes the sheet."
+  },
+  "lanSyncPairFailedTitle": "Pairing didn't finish",
+  "@lanSyncPairFailedTitle": {
+    "description": "Pairing sheet title when pairing failed."
+  },
+  "lanSyncPairAuthReason": "Verify it's you to pair with “{name}”",
+  "@lanSyncPairAuthReason": {
+    "description": "System authentication prompt shown before confirming a pairing.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairAuthFailed": "Identity check didn't pass; the pairing isn't confirmed yet",
+  "@lanSyncPairAuthFailed": {
+    "description": "Hint on the pairing sheet when device authentication was cancelled or failed."
+  },
+  "lanSyncPairAuthUnsupported": "This device uses app lock or has locked notebooks but no screen lock, so your identity can't be verified. Set a screen lock in system settings first.",
+  "@lanSyncPairAuthUnsupported": {
+    "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
+  },
+  "lanSyncPairFailUnreachable": "Couldn't reach the other device. Make sure both are on the same Wi-Fi.",
+  "@lanSyncPairFailUnreachable": {
+    "description": "Pairing failure reason: the other device could not be reached."
+  },
+  "lanSyncPairFailConnectionLost": "The connection dropped. Please pair again.",
+  "@lanSyncPairFailConnectionLost": {
+    "description": "Pairing failure reason: the connection was lost."
+  },
+  "lanSyncPairFailTimedOut": "Not confirmed within 60 seconds, so pairing was cancelled.",
+  "@lanSyncPairFailTimedOut": {
+    "description": "Pairing failure reason: timeout."
+  },
+  "lanSyncPairFailDeclined": "The other device cancelled, or the numbers didn't match.",
+  "@lanSyncPairFailDeclined": {
+    "description": "Pairing failure reason: the other side declined."
+  },
+  "lanSyncPairFailCancelled": "Pairing was cancelled.",
+  "@lanSyncPairFailCancelled": {
+    "description": "Pairing failure reason: cancelled on this device."
+  },
+  "lanSyncPairFailIncompatible": "The two devices run incompatible versions of Jotsy. Update the older one.",
+  "@lanSyncPairFailIncompatible": {
+    "description": "Pairing failure reason: protocol versions differ."
+  },
+  "lanSyncPairFailUntrusted": "The other device refused the connection. Pair again on both devices.",
+  "@lanSyncPairFailUntrusted": {
+    "description": "Pairing failure reason: the other device doesn't trust this one."
+  },
+  "lanSyncPairFailTicketExpired": "The QR code has expired. Ask for a new one and scan again.",
+  "@lanSyncPairFailTicketExpired": {
+    "description": "Pairing failure reason: the QR ticket expired or was used."
+  },
+  "lanSyncPairFailWriteFailed": "Couldn't save the pairing. Please try again.",
+  "@lanSyncPairFailWriteFailed": {
+    "description": "Pairing failure reason: writing the pairing failed."
+  },
+  "lanSyncPairFailUnknown": "Pairing didn't finish. Please try again.",
+  "@lanSyncPairFailUnknown": {
+    "description": "Pairing failure reason: anything else."
+  },
+  "lanSyncQrTitle": "Pair by QR code",
+  "@lanSyncQrTitle": {
+    "description": "QR sheet title."
+  },
+  "lanSyncQrSubtitle": "On the other phone, tap “Scan to connect” in Jotsy",
+  "@lanSyncQrSubtitle": {
+    "description": "QR sheet subtitle."
+  },
+  "lanSyncQrSemantics": "Pairing QR code",
+  "@lanSyncQrSemantics": {
+    "description": "Screen reader label of the QR code."
+  },
+  "lanSyncQrCountdown": "New code in {time}",
+  "@lanSyncQrCountdown": {
+    "description": "Countdown pill under the QR code; time is m:ss.",
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "lanSyncQrDeviceLine": "{name} · {address}",
+  "@lanSyncQrDeviceLine": {
+    "description": "Device name and address:port under the QR code.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "address": {"type": "String"}
+    }
+  },
+  "lanSyncQrSingleUse": "Each code works once and expires once scanned",
+  "@lanSyncQrSingleUse": {
+    "description": "Note under the QR code."
+  },
+  "lanSyncQrUseCode": "Pair with a code instead",
+  "@lanSyncQrUseCode": {
+    "description": "Text button at the bottom of the QR sheet."
+  },
+  "lanSyncQrUseCodeHint": "On the other device, find “{name}” under Nearby devices and tap Pair",
+  "@lanSyncQrUseCodeHint": {
+    "description": "Snack bar after choosing to pair with a code instead of the QR code.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncScanHint": "Point at the Jotsy QR code on the other device",
+  "@lanSyncScanHint": {
+    "description": "Scan page hint under the viewfinder."
+  },
+  "lanSyncScanHintDetail": "On that device, tap “Show QR code” on the sync page",
+  "@lanSyncScanHintDetail": {
+    "description": "Second hint line on the scan page."
+  },
+  "lanSyncScanTorchOn": "Turn on flashlight",
+  "@lanSyncScanTorchOn": {
+    "description": "Tooltip of the torch button when it is off."
+  },
+  "lanSyncScanTorchOff": "Turn off flashlight",
+  "@lanSyncScanTorchOff": {
+    "description": "Tooltip of the torch button when it is on."
+  },
+  "lanSyncScanManual": "No QR code? Enter the address",
+  "@lanSyncScanManual": {
+    "description": "Text button at the bottom of the scan page."
+  },
+  "lanSyncScanNotJotsy": "This isn't a Jotsy pairing code",
+  "@lanSyncScanNotJotsy": {
+    "description": "Hint when a non-Jotsy code was scanned."
+  },
+  "lanSyncScanNewerVersion": "This code is from a newer Jotsy. Update first",
+  "@lanSyncScanNewerVersion": {
+    "description": "Hint when a Jotsy code of an unsupported version was scanned."
+  },
+  "lanSyncScanMalformed": "The code is damaged. Ask for a new one",
+  "@lanSyncScanMalformed": {
+    "description": "Hint when a Jotsy code could not be decoded."
+  },
+  "lanSyncScanDeniedTitle": "Camera access needed",
+  "@lanSyncScanDeniedTitle": {
+    "description": "Scan page title when camera permission was denied."
+  },
+  "lanSyncScanDeniedBody": "Scanning uses the camera to read the QR code on the other device. Allow Jotsy to use the camera in system settings, or enter the address instead.",
+  "@lanSyncScanDeniedBody": {
+    "description": "Scan page explanation when camera permission was denied."
+  },
+  "lanSyncScanOpenSettings": "Open settings",
+  "@lanSyncScanOpenSettings": {
+    "description": "Button opening the app's system settings page."
+  },
+  "lanSyncScanUnavailableTitle": "Camera unavailable",
+  "@lanSyncScanUnavailableTitle": {
+    "description": "Scan page title when the camera could not start."
+  },
+  "lanSyncScanUnavailableBody": "No usable camera was found, or another app is using it. You can enter the address instead.",
+  "@lanSyncScanUnavailableBody": {
+    "description": "Scan page explanation when the camera could not start."
   }
 }

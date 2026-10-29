@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_view_state.dart';
+import 'package:node_diary/ui/lan_sync/widgets/lan_sync_qr_sheet.dart';
 
 import '../../support/fake_lan_sync_controller.dart';
 import 'lan_sync_test_harness.dart';
@@ -68,7 +69,12 @@ void main() {
     expect(controller.calls, contains('discoverable:false'));
 
     await tester.tap(find.text('显示二维码'));
+    await tester.pumpAndSettle();
     expect(controller.calls, contains('issueQrTicket'));
+    // 二维码面板盖在页面上：关掉它再继续点页面上的按钮。
+    Navigator.of(tester.element(find.byType(LanSyncQrSheet))).pop();
+    await tester.pumpAndSettle();
+    expect(controller.calls, contains('revokeQrTicket'));
 
     await tester.scrollUntilVisible(find.text('配对'), 200);
     await tester.tap(find.text('配对'));

@@ -5,17 +5,28 @@
 // 没有被别的不透明页面盖住（TickerMode 开着——Overlay 会给被盖住的路由关掉
 // TickerMode）。任一变化都重新判断，变化时才调用 attach / detach，保证成对、
 // 不重复；页面销毁时若仍处于 attach 状态则补一次 detach。
+//
+// 配对事件只在本页处理（[LanSyncPairingFlow]）：本页是当前路由时弹配对
+// 面板，否则拒绝——对方发来的配对请求只在同步页打开时接受。配对面板里的
+// “先导出完整备份”借用数据管理页的导出流程（[LanSyncBackupExport]），导出
+// 期间本页盖一层 ActionLoadingOverlay。
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../core/services/app_platform.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
+import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/delayed_loading_gate.dart';
 import '../../widgets/form_width.dart';
+import '../controllers/lan_sync_backup_export.dart';
 import '../controllers/lan_sync_page_flows.dart';
+import '../controllers/lan_sync_pairing_auth_gate.dart';
+import '../controllers/lan_sync_pairing_flow.dart';
 import '../models/lan_sync_ui_controller.dart';
 import '../models/lan_sync_view_state.dart';
 import '../providers/lan_sync_providers.dart';
@@ -41,6 +52,17 @@ class _LanSyncPageState extends ConsumerState<LanSyncPage>
   late final LanSyncUiController _controller = ref.read(
     lanSyncControllerProvider,
   );
+  late final LanSyncBackupExport _backup = LanSyncBackupExport(
+    contextOf: () => context,
+    ref: ref,
+  );
+  late final LanSyncPairingFlow _pairing = LanSyncPairingFlow(
+    controller: _controller,
+    contextOf: () => mounted ? context : null,
+    authGate: () => ref.read(lanSyncPairingAuthGateProvider),
+    exportBackup: _backup.run,
+    clock: widget.clock,
+  );
   bool _foreground = true;
   bool _routeVisible = true;
   bool _attached = false;
@@ -52,6 +74,8 @@ class _LanSyncPageState extends ConsumerState<LanSyncPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _foreground = _isForeground(WidgetsBinding.instance.lifecycleState);
+    // 立即订阅事件：配对事件不重放，晚订阅会漏掉。
+    _pairing;
   }
 
   /// 生命周期未知（测试、首帧前）时按在前台处理；inactive（桌面窗口失焦、
@@ -92,6 +116,8 @@ class _LanSyncPageState extends ConsumerState<LanSyncPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     if (_attached) _controller.detachPage();
+    _pairing.dispose();
+    _backup.dispose();
     super.dispose();
   }
 
@@ -112,10 +138,26 @@ class _LanSyncPageState extends ConsumerState<LanSyncPage>
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
           ),
-          body: ValueListenableBuilder<LanSyncViewState>(
-            valueListenable: _controller.state,
-            builder: (BuildContext context, LanSyncViewState state, _) =>
-                _buildBody(context, state),
+          body: Stack(
+            children: <Widget>[
+              ValueListenableBuilder<LanSyncViewState>(
+                valueListenable: _controller.state,
+                builder: (BuildContext context, LanSyncViewState state, _) =>
+                    _buildBody(context, state),
+              ),
+              Positioned.fill(
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: _backup.busyText,
+                  builder: (BuildContext context, String? text, _) =>
+                      ActionLoadingOverlay(
+                        visible: text != null,
+                        label: text ?? _backup.lastBusyText,
+                        semanticLabel: l10n.dataMgmtBusyLabel,
+                        revealDelay: DelayedLoadingGate.defaultDelay,
+                      ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -150,9 +192,12 @@ class _LanSyncPageState extends ConsumerState<LanSyncPage>
               },
               onToggleDiscoverable: () =>
                   controller.setDiscoverable(!local.discoverable),
-              onShowQr: controller.issueQrTicket,
+              onShowQr: () => _pairing.showQr(context),
               onManualAddress: () =>
                   connectLanSyncByAddress(context, controller),
+              onScanQr: AppPlatform.supportsQrScan
+                  ? () => scanLanSyncQr(context, controller)
+                  : null,
             ),
             const SizedBox(height: 24),
             if (firstUse)

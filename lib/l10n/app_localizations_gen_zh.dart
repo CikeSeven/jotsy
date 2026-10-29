@@ -9645,4 +9645,172 @@ class AppLocalizationsZh extends AppLocalizations {
   String lanSyncAutoSyncNeedsAttention(String name) {
     return '与「$name」的同步需要你确认';
   }
+
+  @override
+  String lanSyncPairConnecting(String name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String lanSyncPairTitleOutgoing(String name) {
+    return '与「$name」配对';
+  }
+
+  @override
+  String lanSyncPairTitleIncoming(String name) {
+    return '「$name」请求配对';
+  }
+
+  @override
+  String get lanSyncPairSubtitle => '请确认两台设备上显示的数字一致';
+
+  @override
+  String lanSyncPairCodeSemantics(String first, String second) {
+    return '配对码 $first $second';
+  }
+
+  @override
+  String get lanSyncPairSafetyNote =>
+      '配对后两台设备会双向合并全部日记（含私密日记本与回收站）。连接全程加密，不经过任何服务器。';
+
+  @override
+  String get lanSyncPairExportBackup => '先导出完整备份';
+
+  @override
+  String get lanSyncPairMismatch => '不一致';
+
+  @override
+  String get lanSyncPairConfirm => '一致，配对';
+
+  @override
+  String get lanSyncPairTimeoutNote => '60 秒内没有确认会自动取消';
+
+  @override
+  String get lanSyncPairWaitingPeer => '等待对方确认…';
+
+  @override
+  String lanSyncPairSucceeded(String name) {
+    return '已与 $name 配对';
+  }
+
+  @override
+  String get lanSyncPairSyncNow => '立即同步';
+
+  @override
+  String get lanSyncPairLater => '稍后';
+
+  @override
+  String get lanSyncPairFailedTitle => '配对没有完成';
+
+  @override
+  String lanSyncPairAuthReason(String name) {
+    return '验证身份后确认与「$name」配对';
+  }
+
+  @override
+  String get lanSyncPairAuthFailed => '身份验证没有通过，配对还没有确认';
+
+  @override
+  String get lanSyncPairAuthUnsupported =>
+      '这台设备开启了应用锁或有上锁的日记本，但没有设置锁屏密码，无法验证身份。请先在系统里设置锁屏密码。';
+
+  @override
+  String get lanSyncPairFailUnreachable => '连不上对方，请确认两台设备连着同一个 Wi-Fi。';
+
+  @override
+  String get lanSyncPairFailConnectionLost => '连接中断了，请重新配对。';
+
+  @override
+  String get lanSyncPairFailTimedOut => '没有在 60 秒内确认，配对已取消。';
+
+  @override
+  String get lanSyncPairFailDeclined => '对方取消了配对，或两边的数字不一致。';
+
+  @override
+  String get lanSyncPairFailCancelled => '配对已取消。';
+
+  @override
+  String get lanSyncPairFailIncompatible => '两台设备的 Jotsy 版本不兼容，请把旧的那台升级。';
+
+  @override
+  String get lanSyncPairFailUntrusted => '对方拒绝了这次连接，请在两台设备上重新配对。';
+
+  @override
+  String get lanSyncPairFailTicketExpired => '二维码已失效，请让对方换一张新码再扫。';
+
+  @override
+  String get lanSyncPairFailWriteFailed => '保存配对信息失败，请重试。';
+
+  @override
+  String get lanSyncPairFailUnknown => '配对没有完成，请重试。';
+
+  @override
+  String get lanSyncQrTitle => '扫码配对';
+
+  @override
+  String get lanSyncQrSubtitle => '在另一台手机的 Jotsy 里点「扫码连接」';
+
+  @override
+  String get lanSyncQrSemantics => '配对二维码';
+
+  @override
+  String lanSyncQrCountdown(String time) {
+    return '$time 后换一张新码';
+  }
+
+  @override
+  String lanSyncQrDeviceLine(String name, String address) {
+    return '$name · $address';
+  }
+
+  @override
+  String get lanSyncQrSingleUse => '二维码只能用一次，扫过即失效';
+
+  @override
+  String get lanSyncQrUseCode => '改用核对码配对';
+
+  @override
+  String lanSyncQrUseCodeHint(String name) {
+    return '在另一台设备的「附近的设备」里找到「$name」并点「配对」';
+  }
+
+  @override
+  String get lanSyncScanHint => '对准另一台设备上的 Jotsy 二维码';
+
+  @override
+  String get lanSyncScanHintDetail => '在那台设备的同步页点「显示二维码」';
+
+  @override
+  String get lanSyncScanTorchOn => '打开手电筒';
+
+  @override
+  String get lanSyncScanTorchOff => '关闭手电筒';
+
+  @override
+  String get lanSyncScanManual => '没有二维码？手动输入地址';
+
+  @override
+  String get lanSyncScanNotJotsy => '这不是 Jotsy 的配对二维码';
+
+  @override
+  String get lanSyncScanNewerVersion => '这个二维码来自更新版本的 Jotsy，请先升级';
+
+  @override
+  String get lanSyncScanMalformed => '二维码不完整，请让对方换一张新码';
+
+  @override
+  String get lanSyncScanDeniedTitle => '需要相机权限';
+
+  @override
+  String get lanSyncScanDeniedBody =>
+      '扫码连接要用相机读取另一台设备上的二维码。请在系统设置里允许 Jotsy 使用相机，或改用手动输入地址。';
+
+  @override
+  String get lanSyncScanOpenSettings => '去设置';
+
+  @override
+  String get lanSyncScanUnavailableTitle => '相机暂时无法使用';
+
+  @override
+  String get lanSyncScanUnavailableBody => '没有找到可用的相机，或相机正被其他应用占用。可以改用手动输入地址。';
 }

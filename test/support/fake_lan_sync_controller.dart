@@ -36,6 +36,12 @@ class FakeLanSyncController implements LanSyncUiController {
   /// [connectQr] 的返回值。
   bool acceptQr = true;
 
+  /// [issueQrTicket] 签发时间的来源（默认固定在 2026-10-29 12:00）。
+  DateTime Function() ticketClock = () => DateTime(2026, 10, 29, 12);
+
+  /// 已签发的二维码张数。
+  int qrIssued = 0;
+
   void emit(LanSyncUiEvent event) => _events.add(event);
 
   @override
@@ -101,9 +107,12 @@ class FakeLanSyncController implements LanSyncUiController {
   @override
   LanSyncQrTicket issueQrTicket() {
     calls.add('issueQrTicket');
-    final now = DateTime(2026, 10, 29, 12);
+    qrIssued++;
+    final now = ticketClock();
     final ticket = LanSyncQrTicket(
-      payload: 'jotsy-lan:v1:test',
+      payload: qrIssued == 1
+          ? 'jotsy-lan:v1:test'
+          : 'jotsy-lan:v1:test$qrIssued',
       issuedAt: now,
       expiresAt: now.add(const Duration(minutes: 2)),
     );
@@ -127,4 +136,30 @@ class FakeLanSyncController implements LanSyncUiController {
 
   @override
   Future<void> forgetPeer(String peerId) async => calls.add('forget:$peerId');
+}
+
+/// 由测试驱动的一次配对：改 [phase] 推进阶段，[responses] 记下面板给出的
+/// 每次决定（true 为“一致，配对”）。
+class FakeLanSyncPairing {
+  FakeLanSyncPairing({
+    this.direction = LanSyncPairingDirection.outgoing,
+    this.peerName = 'ThinkPad',
+    this.platform = LanSyncPlatform.linux,
+    LanSyncPairingPhase initial = const LanSyncPairingConnecting(),
+  }) : phase = ValueNotifier<LanSyncPairingPhase>(initial);
+
+  final LanSyncPairingDirection direction;
+  final String peerName;
+  final LanSyncPlatform platform;
+  final ValueNotifier<LanSyncPairingPhase> phase;
+  final List<bool> responses = <bool>[];
+
+  /// 对应的界面事件。
+  late final LanSyncPairingEvent event = LanSyncPairingEvent(
+    direction: direction,
+    peerName: peerName,
+    platform: platform,
+    phase: phase,
+    respond: (bool accept) async => responses.add(accept),
+  );
 }

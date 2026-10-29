@@ -10807,4 +10807,190 @@ class AppLocalizationsEn extends AppLocalizations {
   String lanSyncAutoSyncNeedsAttention(String name) {
     return 'Sync with “$name” needs your confirmation';
   }
+
+  @override
+  String lanSyncPairConnecting(String name) {
+    return 'Connecting to $name…';
+  }
+
+  @override
+  String lanSyncPairTitleOutgoing(String name) {
+    return 'Pair with “$name”';
+  }
+
+  @override
+  String lanSyncPairTitleIncoming(String name) {
+    return '“$name” wants to pair';
+  }
+
+  @override
+  String get lanSyncPairSubtitle =>
+      'Check that both devices show the same number';
+
+  @override
+  String lanSyncPairCodeSemantics(String first, String second) {
+    return 'Pairing code $first $second';
+  }
+
+  @override
+  String get lanSyncPairSafetyNote =>
+      'After pairing, both devices merge all their diaries both ways (including private notebooks and the trash). The connection is encrypted end to end and never goes through a server.';
+
+  @override
+  String get lanSyncPairExportBackup => 'Export a full backup first';
+
+  @override
+  String get lanSyncPairMismatch => 'Doesn\'t match';
+
+  @override
+  String get lanSyncPairConfirm => 'Matches, pair';
+
+  @override
+  String get lanSyncPairTimeoutNote =>
+      'Cancels automatically if not confirmed within 60 seconds';
+
+  @override
+  String get lanSyncPairWaitingPeer => 'Waiting for the other device…';
+
+  @override
+  String lanSyncPairSucceeded(String name) {
+    return 'Paired with $name';
+  }
+
+  @override
+  String get lanSyncPairSyncNow => 'Sync now';
+
+  @override
+  String get lanSyncPairLater => 'Later';
+
+  @override
+  String get lanSyncPairFailedTitle => 'Pairing didn\'t finish';
+
+  @override
+  String lanSyncPairAuthReason(String name) {
+    return 'Verify it\'s you to pair with “$name”';
+  }
+
+  @override
+  String get lanSyncPairAuthFailed =>
+      'Identity check didn\'t pass; the pairing isn\'t confirmed yet';
+
+  @override
+  String get lanSyncPairAuthUnsupported =>
+      'This device uses app lock or has locked notebooks but no screen lock, so your identity can\'t be verified. Set a screen lock in system settings first.';
+
+  @override
+  String get lanSyncPairFailUnreachable =>
+      'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi.';
+
+  @override
+  String get lanSyncPairFailConnectionLost =>
+      'The connection dropped. Please pair again.';
+
+  @override
+  String get lanSyncPairFailTimedOut =>
+      'Not confirmed within 60 seconds, so pairing was cancelled.';
+
+  @override
+  String get lanSyncPairFailDeclined =>
+      'The other device cancelled, or the numbers didn\'t match.';
+
+  @override
+  String get lanSyncPairFailCancelled => 'Pairing was cancelled.';
+
+  @override
+  String get lanSyncPairFailIncompatible =>
+      'The two devices run incompatible versions of Jotsy. Update the older one.';
+
+  @override
+  String get lanSyncPairFailUntrusted =>
+      'The other device refused the connection. Pair again on both devices.';
+
+  @override
+  String get lanSyncPairFailTicketExpired =>
+      'The QR code has expired. Ask for a new one and scan again.';
+
+  @override
+  String get lanSyncPairFailWriteFailed =>
+      'Couldn\'t save the pairing. Please try again.';
+
+  @override
+  String get lanSyncPairFailUnknown =>
+      'Pairing didn\'t finish. Please try again.';
+
+  @override
+  String get lanSyncQrTitle => 'Pair by QR code';
+
+  @override
+  String get lanSyncQrSubtitle =>
+      'On the other phone, tap “Scan to connect” in Jotsy';
+
+  @override
+  String get lanSyncQrSemantics => 'Pairing QR code';
+
+  @override
+  String lanSyncQrCountdown(String time) {
+    return 'New code in $time';
+  }
+
+  @override
+  String lanSyncQrDeviceLine(String name, String address) {
+    return '$name · $address';
+  }
+
+  @override
+  String get lanSyncQrSingleUse =>
+      'Each code works once and expires once scanned';
+
+  @override
+  String get lanSyncQrUseCode => 'Pair with a code instead';
+
+  @override
+  String lanSyncQrUseCodeHint(String name) {
+    return 'On the other device, find “$name” under Nearby devices and tap Pair';
+  }
+
+  @override
+  String get lanSyncScanHint =>
+      'Point at the Jotsy QR code on the other device';
+
+  @override
+  String get lanSyncScanHintDetail =>
+      'On that device, tap “Show QR code” on the sync page';
+
+  @override
+  String get lanSyncScanTorchOn => 'Turn on flashlight';
+
+  @override
+  String get lanSyncScanTorchOff => 'Turn off flashlight';
+
+  @override
+  String get lanSyncScanManual => 'No QR code? Enter the address';
+
+  @override
+  String get lanSyncScanNotJotsy => 'This isn\'t a Jotsy pairing code';
+
+  @override
+  String get lanSyncScanNewerVersion =>
+      'This code is from a newer Jotsy. Update first';
+
+  @override
+  String get lanSyncScanMalformed => 'The code is damaged. Ask for a new one';
+
+  @override
+  String get lanSyncScanDeniedTitle => 'Camera access needed';
+
+  @override
+  String get lanSyncScanDeniedBody =>
+      'Scanning uses the camera to read the QR code on the other device. Allow Jotsy to use the camera in system settings, or enter the address instead.';
+
+  @override
+  String get lanSyncScanOpenSettings => 'Open settings';
+
+  @override
+  String get lanSyncScanUnavailableTitle => 'Camera unavailable';
+
+  @override
+  String get lanSyncScanUnavailableBody =>
+      'No usable camera was found, or another app is using it. You can enter the address instead.';
 }

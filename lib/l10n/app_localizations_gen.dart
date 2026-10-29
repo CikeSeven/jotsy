@@ -17677,6 +17677,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sync with “{name}” needs your confirmation'**
   String lanSyncAutoSyncNeedsAttention(String name);
+
+  /// Pairing sheet while the connection is being set up.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to {name}…'**
+  String lanSyncPairConnecting(String name);
+
+  /// Pairing sheet title when this device started the pairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair with “{name}”'**
+  String lanSyncPairTitleOutgoing(String name);
+
+  /// Pairing sheet title when the other device asked to pair.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” wants to pair'**
+  String lanSyncPairTitleIncoming(String name);
+
+  /// Pairing sheet subtitle above the verification code.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that both devices show the same number'**
+  String get lanSyncPairSubtitle;
+
+  /// Screen reader label of the six-digit pairing code, read as two groups of three.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing code {first} {second}'**
+  String lanSyncPairCodeSemantics(String first, String second);
+
+  /// Safety note on the pairing sheet explaining what pairing does.
+  ///
+  /// In en, this message translates to:
+  /// **'After pairing, both devices merge all their diaries both ways (including private notebooks and the trash). The connection is encrypted end to end and never goes through a server.'**
+  String get lanSyncPairSafetyNote;
+
+  /// Text button in the pairing safety note: cancels this pairing and starts the full backup export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export a full backup first'**
+  String get lanSyncPairExportBackup;
+
+  /// Outlined button: the codes on the two devices differ, cancel pairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Doesn\'t match'**
+  String get lanSyncPairMismatch;
+
+  /// Filled button: the codes match, confirm pairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches, pair'**
+  String get lanSyncPairConfirm;
+
+  /// Small note at the bottom of the pairing sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancels automatically if not confirmed within 60 seconds'**
+  String get lanSyncPairTimeoutNote;
+
+  /// Replaces the buttons after this device confirmed the code.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the other device…'**
+  String get lanSyncPairWaitingPeer;
+
+  /// Pairing sheet success title.
+  ///
+  /// In en, this message translates to:
+  /// **'Paired with {name}'**
+  String lanSyncPairSucceeded(String name);
+
+  /// Filled button on the pairing success state.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get lanSyncPairSyncNow;
+
+  /// Text button on the pairing success state that just closes the sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get lanSyncPairLater;
+
+  /// Pairing sheet title when pairing failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing didn\'t finish'**
+  String get lanSyncPairFailedTitle;
+
+  /// System authentication prompt shown before confirming a pairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify it\'s you to pair with “{name}”'**
+  String lanSyncPairAuthReason(String name);
+
+  /// Hint on the pairing sheet when device authentication was cancelled or failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity check didn\'t pass; the pairing isn\'t confirmed yet'**
+  String get lanSyncPairAuthFailed;
+
+  /// Hint on the pairing sheet when authentication is required but the device has no screen lock.
+  ///
+  /// In en, this message translates to:
+  /// **'This device uses app lock or has locked notebooks but no screen lock, so your identity can\'t be verified. Set a screen lock in system settings first.'**
+  String get lanSyncPairAuthUnsupported;
+
+  /// Pairing failure reason: the other device could not be reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi.'**
+  String get lanSyncPairFailUnreachable;
+
+  /// Pairing failure reason: the connection was lost.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection dropped. Please pair again.'**
+  String get lanSyncPairFailConnectionLost;
+
+  /// Pairing failure reason: timeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Not confirmed within 60 seconds, so pairing was cancelled.'**
+  String get lanSyncPairFailTimedOut;
+
+  /// Pairing failure reason: the other side declined.
+  ///
+  /// In en, this message translates to:
+  /// **'The other device cancelled, or the numbers didn\'t match.'**
+  String get lanSyncPairFailDeclined;
+
+  /// Pairing failure reason: cancelled on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing was cancelled.'**
+  String get lanSyncPairFailCancelled;
+
+  /// Pairing failure reason: protocol versions differ.
+  ///
+  /// In en, this message translates to:
+  /// **'The two devices run incompatible versions of Jotsy. Update the older one.'**
+  String get lanSyncPairFailIncompatible;
+
+  /// Pairing failure reason: the other device doesn't trust this one.
+  ///
+  /// In en, this message translates to:
+  /// **'The other device refused the connection. Pair again on both devices.'**
+  String get lanSyncPairFailUntrusted;
+
+  /// Pairing failure reason: the QR ticket expired or was used.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR code has expired. Ask for a new one and scan again.'**
+  String get lanSyncPairFailTicketExpired;
+
+  /// Pairing failure reason: writing the pairing failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the pairing. Please try again.'**
+  String get lanSyncPairFailWriteFailed;
+
+  /// Pairing failure reason: anything else.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing didn\'t finish. Please try again.'**
+  String get lanSyncPairFailUnknown;
+
+  /// QR sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair by QR code'**
+  String get lanSyncQrTitle;
+
+  /// QR sheet subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On the other phone, tap “Scan to connect” in Jotsy'**
+  String get lanSyncQrSubtitle;
+
+  /// Screen reader label of the QR code.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing QR code'**
+  String get lanSyncQrSemantics;
+
+  /// Countdown pill under the QR code; time is m:ss.
+  ///
+  /// In en, this message translates to:
+  /// **'New code in {time}'**
+  String lanSyncQrCountdown(String time);
+
+  /// Device name and address:port under the QR code.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {address}'**
+  String lanSyncQrDeviceLine(String name, String address);
+
+  /// Note under the QR code.
+  ///
+  /// In en, this message translates to:
+  /// **'Each code works once and expires once scanned'**
+  String get lanSyncQrSingleUse;
+
+  /// Text button at the bottom of the QR sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair with a code instead'**
+  String get lanSyncQrUseCode;
+
+  /// Snack bar after choosing to pair with a code instead of the QR code.
+  ///
+  /// In en, this message translates to:
+  /// **'On the other device, find “{name}” under Nearby devices and tap Pair'**
+  String lanSyncQrUseCodeHint(String name);
+
+  /// Scan page hint under the viewfinder.
+  ///
+  /// In en, this message translates to:
+  /// **'Point at the Jotsy QR code on the other device'**
+  String get lanSyncScanHint;
+
+  /// Second hint line on the scan page.
+  ///
+  /// In en, this message translates to:
+  /// **'On that device, tap “Show QR code” on the sync page'**
+  String get lanSyncScanHintDetail;
+
+  /// Tooltip of the torch button when it is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on flashlight'**
+  String get lanSyncScanTorchOn;
+
+  /// Tooltip of the torch button when it is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off flashlight'**
+  String get lanSyncScanTorchOff;
+
+  /// Text button at the bottom of the scan page.
+  ///
+  /// In en, this message translates to:
+  /// **'No QR code? Enter the address'**
+  String get lanSyncScanManual;
+
+  /// Hint when a non-Jotsy code was scanned.
+  ///
+  /// In en, this message translates to:
+  /// **'This isn\'t a Jotsy pairing code'**
+  String get lanSyncScanNotJotsy;
+
+  /// Hint when a Jotsy code of an unsupported version was scanned.
+  ///
+  /// In en, this message translates to:
+  /// **'This code is from a newer Jotsy. Update first'**
+  String get lanSyncScanNewerVersion;
+
+  /// Hint when a Jotsy code could not be decoded.
+  ///
+  /// In en, this message translates to:
+  /// **'The code is damaged. Ask for a new one'**
+  String get lanSyncScanMalformed;
+
+  /// Scan page title when camera permission was denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access needed'**
+  String get lanSyncScanDeniedTitle;
+
+  /// Scan page explanation when camera permission was denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning uses the camera to read the QR code on the other device. Allow Jotsy to use the camera in system settings, or enter the address instead.'**
+  String get lanSyncScanDeniedBody;
+
+  /// Button opening the app's system settings page.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get lanSyncScanOpenSettings;
+
+  /// Scan page title when the camera could not start.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera unavailable'**
+  String get lanSyncScanUnavailableTitle;
+
+  /// Scan page explanation when the camera could not start.
+  ///
+  /// In en, this message translates to:
+  /// **'No usable camera was found, or another app is using it. You can enter the address instead.'**
+  String get lanSyncScanUnavailableBody;
 }
 
 class _AppLocalizationsDelegate

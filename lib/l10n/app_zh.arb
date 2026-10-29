@@ -13414,5 +13414,230 @@
     "placeholders": {
       "name": {"type": "String"}
     }
+  },
+  "lanSyncPairConnecting": "正在连接 {name}…",
+  "@lanSyncPairConnecting": {
+    "description": "Pairing sheet while the connection is being set up.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairTitleOutgoing": "与「{name}」配对",
+  "@lanSyncPairTitleOutgoing": {
+    "description": "Pairing sheet title when this device started the pairing.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairTitleIncoming": "「{name}」请求配对",
+  "@lanSyncPairTitleIncoming": {
+    "description": "Pairing sheet title when the other device asked to pair.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairSubtitle": "请确认两台设备上显示的数字一致",
+  "@lanSyncPairSubtitle": {
+    "description": "Pairing sheet subtitle above the verification code."
+  },
+  "lanSyncPairCodeSemantics": "配对码 {first} {second}",
+  "@lanSyncPairCodeSemantics": {
+    "description": "Screen reader label of the six-digit pairing code, read as two groups of three.",
+    "placeholders": {
+      "first": {"type": "String"},
+      "second": {"type": "String"}
+    }
+  },
+  "lanSyncPairSafetyNote": "配对后两台设备会双向合并全部日记（含私密日记本与回收站）。连接全程加密，不经过任何服务器。",
+  "@lanSyncPairSafetyNote": {
+    "description": "Safety note on the pairing sheet explaining what pairing does."
+  },
+  "lanSyncPairExportBackup": "先导出完整备份",
+  "@lanSyncPairExportBackup": {
+    "description": "Text button in the pairing safety note: cancels this pairing and starts the full backup export."
+  },
+  "lanSyncPairMismatch": "不一致",
+  "@lanSyncPairMismatch": {
+    "description": "Outlined button: the codes on the two devices differ, cancel pairing."
+  },
+  "lanSyncPairConfirm": "一致，配对",
+  "@lanSyncPairConfirm": {
+    "description": "Filled button: the codes match, confirm pairing."
+  },
+  "lanSyncPairTimeoutNote": "60 秒内没有确认会自动取消",
+  "@lanSyncPairTimeoutNote": {
+    "description": "Small note at the bottom of the pairing sheet."
+  },
+  "lanSyncPairWaitingPeer": "等待对方确认…",
+  "@lanSyncPairWaitingPeer": {
+    "description": "Replaces the buttons after this device confirmed the code."
+  },
+  "lanSyncPairSucceeded": "已与 {name} 配对",
+  "@lanSyncPairSucceeded": {
+    "description": "Pairing sheet success title.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairSyncNow": "立即同步",
+  "@lanSyncPairSyncNow": {
+    "description": "Filled button on the pairing success state."
+  },
+  "lanSyncPairLater": "稍后",
+  "@lanSyncPairLater": {
+    "description": "Text button on the pairing success state that just closes the sheet."
+  },
+  "lanSyncPairFailedTitle": "配对没有完成",
+  "@lanSyncPairFailedTitle": {
+    "description": "Pairing sheet title when pairing failed."
+  },
+  "lanSyncPairAuthReason": "验证身份后确认与「{name}」配对",
+  "@lanSyncPairAuthReason": {
+    "description": "System authentication prompt shown before confirming a pairing.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairAuthFailed": "身份验证没有通过，配对还没有确认",
+  "@lanSyncPairAuthFailed": {
+    "description": "Hint on the pairing sheet when device authentication was cancelled or failed."
+  },
+  "lanSyncPairAuthUnsupported": "这台设备开启了应用锁或有上锁的日记本，但没有设置锁屏密码，无法验证身份。请先在系统里设置锁屏密码。",
+  "@lanSyncPairAuthUnsupported": {
+    "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
+  },
+  "lanSyncPairFailUnreachable": "连不上对方，请确认两台设备连着同一个 Wi-Fi。",
+  "@lanSyncPairFailUnreachable": {
+    "description": "Pairing failure reason: the other device could not be reached."
+  },
+  "lanSyncPairFailConnectionLost": "连接中断了，请重新配对。",
+  "@lanSyncPairFailConnectionLost": {
+    "description": "Pairing failure reason: the connection was lost."
+  },
+  "lanSyncPairFailTimedOut": "没有在 60 秒内确认，配对已取消。",
+  "@lanSyncPairFailTimedOut": {
+    "description": "Pairing failure reason: timeout."
+  },
+  "lanSyncPairFailDeclined": "对方取消了配对，或两边的数字不一致。",
+  "@lanSyncPairFailDeclined": {
+    "description": "Pairing failure reason: the other side declined."
+  },
+  "lanSyncPairFailCancelled": "配对已取消。",
+  "@lanSyncPairFailCancelled": {
+    "description": "Pairing failure reason: cancelled on this device."
+  },
+  "lanSyncPairFailIncompatible": "两台设备的 Jotsy 版本不兼容，请把旧的那台升级。",
+  "@lanSyncPairFailIncompatible": {
+    "description": "Pairing failure reason: protocol versions differ."
+  },
+  "lanSyncPairFailUntrusted": "对方拒绝了这次连接，请在两台设备上重新配对。",
+  "@lanSyncPairFailUntrusted": {
+    "description": "Pairing failure reason: the other device doesn't trust this one."
+  },
+  "lanSyncPairFailTicketExpired": "二维码已失效，请让对方换一张新码再扫。",
+  "@lanSyncPairFailTicketExpired": {
+    "description": "Pairing failure reason: the QR ticket expired or was used."
+  },
+  "lanSyncPairFailWriteFailed": "保存配对信息失败，请重试。",
+  "@lanSyncPairFailWriteFailed": {
+    "description": "Pairing failure reason: writing the pairing failed."
+  },
+  "lanSyncPairFailUnknown": "配对没有完成，请重试。",
+  "@lanSyncPairFailUnknown": {
+    "description": "Pairing failure reason: anything else."
+  },
+  "lanSyncQrTitle": "扫码配对",
+  "@lanSyncQrTitle": {
+    "description": "QR sheet title."
+  },
+  "lanSyncQrSubtitle": "在另一台手机的 Jotsy 里点「扫码连接」",
+  "@lanSyncQrSubtitle": {
+    "description": "QR sheet subtitle."
+  },
+  "lanSyncQrSemantics": "配对二维码",
+  "@lanSyncQrSemantics": {
+    "description": "Screen reader label of the QR code."
+  },
+  "lanSyncQrCountdown": "{time} 后换一张新码",
+  "@lanSyncQrCountdown": {
+    "description": "Countdown pill under the QR code; time is m:ss.",
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "lanSyncQrDeviceLine": "{name} · {address}",
+  "@lanSyncQrDeviceLine": {
+    "description": "Device name and address:port under the QR code.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "address": {"type": "String"}
+    }
+  },
+  "lanSyncQrSingleUse": "二维码只能用一次，扫过即失效",
+  "@lanSyncQrSingleUse": {
+    "description": "Note under the QR code."
+  },
+  "lanSyncQrUseCode": "改用核对码配对",
+  "@lanSyncQrUseCode": {
+    "description": "Text button at the bottom of the QR sheet."
+  },
+  "lanSyncQrUseCodeHint": "在另一台设备的「附近的设备」里找到「{name}」并点「配对」",
+  "@lanSyncQrUseCodeHint": {
+    "description": "Snack bar after choosing to pair with a code instead of the QR code.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncScanHint": "对准另一台设备上的 Jotsy 二维码",
+  "@lanSyncScanHint": {
+    "description": "Scan page hint under the viewfinder."
+  },
+  "lanSyncScanHintDetail": "在那台设备的同步页点「显示二维码」",
+  "@lanSyncScanHintDetail": {
+    "description": "Second hint line on the scan page."
+  },
+  "lanSyncScanTorchOn": "打开手电筒",
+  "@lanSyncScanTorchOn": {
+    "description": "Tooltip of the torch button when it is off."
+  },
+  "lanSyncScanTorchOff": "关闭手电筒",
+  "@lanSyncScanTorchOff": {
+    "description": "Tooltip of the torch button when it is on."
+  },
+  "lanSyncScanManual": "没有二维码？手动输入地址",
+  "@lanSyncScanManual": {
+    "description": "Text button at the bottom of the scan page."
+  },
+  "lanSyncScanNotJotsy": "这不是 Jotsy 的配对二维码",
+  "@lanSyncScanNotJotsy": {
+    "description": "Hint when a non-Jotsy code was scanned."
+  },
+  "lanSyncScanNewerVersion": "这个二维码来自更新版本的 Jotsy，请先升级",
+  "@lanSyncScanNewerVersion": {
+    "description": "Hint when a Jotsy code of an unsupported version was scanned."
+  },
+  "lanSyncScanMalformed": "二维码不完整，请让对方换一张新码",
+  "@lanSyncScanMalformed": {
+    "description": "Hint when a Jotsy code could not be decoded."
+  },
+  "lanSyncScanDeniedTitle": "需要相机权限",
+  "@lanSyncScanDeniedTitle": {
+    "description": "Scan page title when camera permission was denied."
+  },
+  "lanSyncScanDeniedBody": "扫码连接要用相机读取另一台设备上的二维码。请在系统设置里允许 Jotsy 使用相机，或改用手动输入地址。",
+  "@lanSyncScanDeniedBody": {
+    "description": "Scan page explanation when camera permission was denied."
+  },
+  "lanSyncScanOpenSettings": "去设置",
+  "@lanSyncScanOpenSettings": {
+    "description": "Button opening the app's system settings page."
+  },
+  "lanSyncScanUnavailableTitle": "相机暂时无法使用",
+  "@lanSyncScanUnavailableTitle": {
+    "description": "Scan page title when the camera could not start."
+  },
+  "lanSyncScanUnavailableBody": "没有找到可用的相机，或相机正被其他应用占用。可以改用手动输入地址。",
+  "@lanSyncScanUnavailableBody": {
+    "description": "Scan page explanation when the camera could not start."
   }
 }

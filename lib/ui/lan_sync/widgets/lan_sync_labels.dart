@@ -62,3 +62,23 @@ String lanSyncStageLabel(AppLocalizations l10n, LanSyncSessionStage stage) {
     LanSyncSessionStage.merging => l10n.lanSyncStageMerging,
   };
 }
+
+/// 配对失败的原因与下一步（配对面板的失败态）。
+String lanSyncPairingFailureText(
+  AppLocalizations l10n,
+  LanSyncFailureReason reason,
+) {
+  return switch (reason) {
+    LanSyncFailureReason.unreachable => l10n.lanSyncPairFailUnreachable,
+    LanSyncFailureReason.connectionLost => l10n.lanSyncPairFailConnectionLost,
+    LanSyncFailureReason.timedOut => l10n.lanSyncPairFailTimedOut,
+    LanSyncFailureReason.declined => l10n.lanSyncPairFailDeclined,
+    LanSyncFailureReason.cancelled => l10n.lanSyncPairFailCancelled,
+    LanSyncFailureReason.incompatibleVersion =>
+      l10n.lanSyncPairFailIncompatible,
+    LanSyncFailureReason.untrusted => l10n.lanSyncPairFailUntrusted,
+    LanSyncFailureReason.ticketExpired => l10n.lanSyncPairFailTicketExpired,
+    LanSyncFailureReason.writeFailed => l10n.lanSyncPairFailWriteFailed,
+    LanSyncFailureReason.unknown => l10n.lanSyncPairFailUnknown,
+  };
+}

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/providers/diary_preview_style_provider.dart';
+import 'package:node_diary/ui/lan_sync/controllers/lan_sync_pairing_auth_gate.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_platform.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_session_view.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_view_state.dart';
@@ -49,6 +52,14 @@ const LanSyncNearbyView lanSyncTestNearby = LanSyncNearbyView(
   address: '192.168.1.50',
 );
 
+/// 不需要验证身份的验证门（平台按不支持处理）。
+final LanSyncPairingAuthGate lanSyncNoAuthGate = LanSyncPairingAuthGate(
+  auth: DeviceAuthService(),
+  loadAppLockEnabled: () async => false,
+  loadNotebooks: () async => const [],
+  platformSupportsAuth: () => false,
+);
+
 /// 挂上同步页。[reduceMotion] 默认开：雷达与“正在寻找…”不循环，
 /// pumpAndSettle 可以收尾；测雷达播放的用例单独关掉。
 Future<void> pumpLanSyncPage(
@@ -59,13 +70,20 @@ Future<void> pumpLanSyncPage(
   double height = 844,
   bool reduceMotion = true,
   bool settle = true,
+  LanSyncPairingAuthGate? authGate,
 }) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [lanSyncControllerProvider.overrideWithValue(controller)],
+      overrides: [
+        lanSyncControllerProvider.overrideWithValue(controller),
+        lanSyncPairingAuthGateProvider.overrideWithValue(
+          authGate ?? lanSyncNoAuthGate,
+        ),
+        appThemeSeedColorProvider.overrideWithValue(const Color(0xff1e6586)),
+      ],
       child: MaterialApp(
         theme: expressiveTestTheme(brightness),
         locale: const Locale('zh'),

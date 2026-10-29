@@ -11,8 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../core/services/app_platform.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../models/lan_sync_ui_controller.dart';
+import '../pages/lan_sync_scan_page.dart';
 import '../widgets/lan_sync_labels.dart';
 import '../widgets/lan_sync_manual_address_sheet.dart';
 import '../widgets/lan_sync_rename_dialog.dart';
@@ -57,6 +59,25 @@ Future<void> connectLanSyncByAddress(
   final address = await showLanSyncManualAddressSheet(context);
   if (address == null) return;
   await controller.connectManual(address.host, address.port);
+}
+
+/// 扫码连接（只在 `AppPlatform.supportsQrScan`）：扫码页认出 Jotsy 码后交给
+/// `connectQr`（随即发出配对事件，由配对面板接手）；扫码页里选了“手动输入
+/// 地址”时接着打开地址面板。扫码页已用同一套校验认过码，`connectQr` 不会
+/// 再返回 false；万一返回 false 也只是什么都不发生。
+Future<void> scanLanSyncQr(
+  BuildContext context,
+  LanSyncUiController controller,
+) async {
+  if (!AppPlatform.supportsQrScan) return;
+  final result = await Navigator.of(context).push(LanSyncScanPage.route());
+  if (result == null || !context.mounted) return;
+  final payload = result.payload;
+  if (payload != null) {
+    controller.connectQr(payload);
+  } else {
+    await connectLanSyncByAddress(context, controller);
+  }
 }
 
 /// “找不到设备？”：排障面板里选了“手动输入地址”时接着打开地址面板。

@@ -9034,6 +9034,31 @@
   "@notebookDragHandle": {
     "description": "Screen-reader label of the drag handle on the management page."
   },
+  "notebookSubCount": "{count, plural, =1{1 sub-notebook} other{{count} sub-notebooks}}",
+  "@notebookSubCount": {
+    "description": "Number of direct sub-notebooks in a management-page row summary.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSubCollapse": "Collapse sub-notebooks",
+  "@notebookSubCollapse": {
+    "description": "Row button on the management page that hides the sub-notebooks (tooltip and screen reader)."
+  },
+  "notebookSubExpand": "Expand sub-notebooks",
+  "@notebookSubExpand": {
+    "description": "Row button on the management page that shows collapsed sub-notebooks (tooltip and screen reader)."
+  },
+  "notebookCollapseAll": "Collapse all",
+  "@notebookCollapseAll": {
+    "description": "Management page top bar button: collapse every notebook's sub-notebooks, leaving the top level."
+  },
+  "notebookExpandAll": "Expand all",
+  "@notebookExpandAll": {
+    "description": "Management page top bar button: expand every collapsed notebook."
+  },
   "notebookStatePinned": "Pinned",
   "@notebookStatePinned": {
     "description": "Notebook state: pinned (management row subtitle)."

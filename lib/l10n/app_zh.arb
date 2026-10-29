@@ -9034,6 +9034,31 @@
   "@notebookDragHandle": {
     "description": "管理页拖动手柄的读屏标签。"
   },
+  "notebookSubCount": "{count} 本子本",
+  "@notebookSubCount": {
+    "description": "管理页有子本的行摘要里的子本数（直接子本）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSubCollapse": "收起子本",
+  "@notebookSubCollapse": {
+    "description": "管理页有子本的行尾按钮：把子本收起来（提示与读屏）。"
+  },
+  "notebookSubExpand": "展开子本",
+  "@notebookSubExpand": {
+    "description": "管理页子本已收起的行尾按钮：展开子本（提示与读屏）。"
+  },
+  "notebookCollapseAll": "全部收起",
+  "@notebookCollapseAll": {
+    "description": "管理页顶栏按钮：收起所有日记本的子本，只留顶层。"
+  },
+  "notebookExpandAll": "全部展开",
+  "@notebookExpandAll": {
+    "description": "管理页顶栏按钮：展开所有收起的子本。"
+  },
   "notebookStatePinned": "置顶",
   "@notebookStatePinned": {
     "description": "日记本状态：已置顶（管理页副标题）。"

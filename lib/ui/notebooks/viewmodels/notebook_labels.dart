@@ -26,16 +26,19 @@ String notebookBadgeLabel(AppLocalizations l10n, NotebookBadge badge) =>
       NotebookBadge.smart => l10n.notebookStateSmart,
     };
 
-/// 管理页行副标题：“23 篇 · 置顶 · 上锁”。[count] 为 null（智能本暂不统计）
-/// 时不写篇数；什么都没有时为空字符串。
+/// 管理页行副标题：“23 篇 · 2 本子本 · 置顶 · 上锁”。[count] 为 null（智能本
+/// 暂不统计）时不写篇数，[childCount]（直接子本数）为 0 时不写子本；什么都
+/// 没有时为空字符串。
 String notebookRowSubtitle(
   AppLocalizations l10n,
   NotebookView notebook,
-  int? count,
-) {
+  int? count, {
+  int childCount = 0,
+}) {
   final badge = notebookBadgeFor(notebook.kind, notebook.effectiveVisibility);
   return <String>[
     if (count != null) l10n.notebookEntryCount(count),
+    if (childCount > 0) l10n.notebookSubCount(childCount),
     if (notebook.isPinned) l10n.notebookStatePinned,
     if (badge != null) notebookBadgeLabel(l10n, badge),
     if (notebook.isClosed) l10n.notebookStateClosed,

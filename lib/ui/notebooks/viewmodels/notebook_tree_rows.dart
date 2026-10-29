@@ -59,6 +59,19 @@ List<NotebookTreeRow> notebookSubtreeRows(
   ],
 ];
 
+/// 管理页里收起后藏起来的本子：上级（任一层）在 [collapsed] 里的。被收起的
+/// 那本自己照常显示，只藏它下面的子孙。
+Set<String> notebookFoldedIds(NotebookTree tree, Set<String> collapsed) {
+  if (collapsed.isEmpty) return const <String>{};
+  return <String>{
+    for (final notebook in tree.notebooks)
+      if (tree
+          .ancestorsOf(notebook.id)
+          .any((ancestor) => collapsed.contains(ancestor.id)))
+        notebook.id,
+  };
+}
+
 /// 管理页拖动排序后，被拖的那本在同一上级的兄弟之间的新顺序。
 ///
 /// [ids] 为拖动前分组里各行的业务 id（树序），[parentOf] 给出每本的上级；

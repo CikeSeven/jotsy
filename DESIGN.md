@@ -535,6 +535,7 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
   | 组件 | 范围 | 模糊 |
   | --- | --- | --- |
   | 二级页顶栏 | 二级页 `AppTopBar` | 只在背景是图片时（auto） |
+  | 二级页顶栏 | 预览页顶栏 `DiaryPreviewTopBar`（固定或随滚动出现，正文从栏下滑过；栏透明，玻璃铺在 `flexibleSpace`，含状态栏区域） | 总是 |
   | 编辑器工具栏 | 悬浮工具栏、录音面板、信息面板 | 总是（always） |
   | 底部面板 | 全部 `showAppModalBottomSheet` | 总是 |
   | 对话框 | 全部 `showAppDialog` | 总是（整页磨砂） |

@@ -20,7 +20,7 @@
 | `lib/core/services/lan_sync/sync/sync_planner.dart`、`sync_plan.dart` | 合并判定，产出双方的写入计划 | 5 |
 | `lib/core/database/app_database_sync_ops.dart` | `_AppDatabaseSyncOps`：读规范行、单事务按原值写入（带前置条件）、关联清理 | 6（读规范行的部分由 4 先建） |
 | `lib/core/services/lan_sync/sync/sync_apply.dart`、`sync_media.dart` | 写入编排、媒体暂存与就位、写入后更新本机状态 | 6 |
-| `lib/core/services/lan_sync/lan_sync_identity.dart`、`lan_sync_crypto.dart`、`lan_sync_handshake.dart`、`lan_sync_channel.dart`、`lan_sync_messages.dart`、`lan_sync_qr_payload.dart` | 身份、握手与配对、加密信道、消息帧、二维码载荷 | 2 |
+| `lib/core/services/lan_sync/lan_sync_identity.dart`、`lan_sync_crypto.dart`、`lan_sync_frames.dart`、`lan_sync_handshake.dart`（+ `_types` / `_flows` / `_sas`）、`lan_sync_channel.dart`（+ `_types` / `_inbound` / `_outlet`）、`lan_sync_messages.dart`、`lan_sync_qr_payload.dart` | 身份、密码学原语、长度前缀帧、握手与配对、加密信道、消息信封、二维码载荷 | 2 |
 | `lib/core/services/lan_sync/lan_sync_discovery.dart`、`lan_sync_network.dart`、`lan_sync_state_directory.dart` | UDP 信标与在线表、本机地址、原生通道、不备份的状态目录 | 3 |
 | `lib/core/services/editing_session_registry.dart` | 编辑会话 / 撤销窗口登记、“同步已写入”事件 | 7 |
 | `lib/core/services/lan_sync/lan_sync_session.dart`、`lan_sync_service.dart`、`lan_sync_store.dart` | 会话状态机、服务端与自动同步、配对设备与偏好、同步记录 | 11 |
@@ -95,7 +95,7 @@ class SyncManifest {
 
 | 文件 | 内容 | 任务 |
 |---|---|---|
-| `identity.json` | deviceId（UUID v4）、Ed25519 / X25519 私钥种子、创建时间 | 2 |
+| `identity.json` | `{v:1, deviceId（UUID v4）, ed25519Seed（base64）, createdAt（UTC 毫秒）}`；不使用静态 X25519（握手只用临时 X25519） | 2 |
 | `store.json` | 偏好（设备名、可被发现、自动同步、同步设置）、已配对设备（deviceId、名称、平台、身份公钥、配对时间、上次同步、上次地址、单设备自动同步）、标记（`restoredPending`） | 11 |
 | `checkpoint.json.gz` | 上次会话时的本机观测：清单 + tags / orderList 分面的当前值（下次进历史时要用旧值）+ 标签名 → 本地 id 映射 + 观测覆盖的实体集合 | 4 |
 | `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；tags 与 orderList 分面同时记录值 | 4 |
@@ -117,7 +117,7 @@ class SyncManifest {
 - 写入后（第 6 节）同一套规则以写入后的清单更新历史、墓碑与检查点：被同步删掉的记录写墓碑，被替换的值进入历史。
 - **哈希缓存**：计算清单时先算每行原始列的指纹（便宜），命中缓存直接取分面哈希，未命中才做规范化（解码正文、归一路径、编码），整体在 `Isolate.run` 中进行；缓存只保留当前存在的行。
 - **覆盖恢复**：`DataArchiveService` 的 replaceAll 成功后删除检查点、历史、墓碑、改名、哈希缓存，并在 `store.json` 置 `restoredPending`（任务 11 接线；任务 4 提供 `resetAfterRestore()`）。之后与每台设备的第一次同步走“以哪边为准”（4.5）。
-- **身份**：`identity.json` 缺失时重新生成，并清空已配对设备与上述同步状态（视为一台新设备）。
+- **身份**：`identity.json` 缺失或内容损坏时重新生成（`LanSyncIdentityStore.loadOrCreate()` 返回 `created: true`），调用方据此清空已配对设备与上述同步状态（视为一台新设备）；读文件本身的 I/O 错误（权限等）照常抛出，不当作损坏。
 
 ## 4. 合并判定（规划器，`sync_planner.dart`）
 
@@ -172,13 +172,20 @@ class SyncManifest {
 
 ### 5.2 连接与加密
 - TCP 服务端优先 47562，占用时随机端口（信标里广播实际端口）。
-- 身份：Ed25519（签名）+ X25519（静态，可选）；指纹 = sha256(Ed25519 公钥) 十六进制。
-- 握手（SIGMA 式）：双方临时 X25519 → 共享密钥；握手记录（transcript）= 双方 hello、临时公钥、静态公钥、随机数的规范串联；双方用 Ed25519 签名 transcript 哈希；HKDF-SHA256（salt = transcript 哈希）派生两个方向的 32 字节密钥与配对用的核对码种子。
-- 帧：`[长度 u32 大端][密文]`，明文 ≤ 64 KiB；AEAD = ChaCha20-Poly1305（实现时做吞吐基准，必要时换 AES-256-GCM 并在本文记录）；nonce = 4 字节方向前缀 + 8 字节递增计数器；帧头作附加数据；解密失败、计数器不连续即断开。
-- 信道承载两类内容：JSON 控制消息；二进制数据块（带 blob id、总长度与结束标记，支持背压：等待套接字可写再发下一帧）。
-- **首次配对（核对码）**：发起方在发送临时公钥前先发承诺 `H(临时公钥 ‖ 随机数)`，收到对方临时公钥后再揭示，对方校验承诺；核对码 = HKDF(共享密钥, transcript, "jotsy-sas") 映射为 6 位十进制（3+3 显示）；双方都由用户确认后交换 `pair.confirm`，任一方拒绝或超时（60 秒）即放弃，不保存任何东西；成功后互存对方 Ed25519 公钥。
-- **扫码配对**：二维码 `jotsy-lan:v1:<base64url(规范 JSON {h:[地址…], p:端口, id, fp, t:令牌, n:名称})>`；扫码方连接后校验对方公钥指纹 == fp，并在握手中出示令牌；显示二维码的一方校验令牌（2 分钟有效、一次性，用后立即作废、刷新二维码），通过即视为已确认，无需核对码。
-- 已配对设备之间：双方静态公钥都已受信 → 直接建立会话；任一方不认识对方 → 返回 `untrusted`，界面提示重新配对。
+- 身份：只有 Ed25519（签名）；不使用静态 X25519（每次会话的临时 X25519 + 对 transcript 的签名已足够认证）。指纹 = sha256(Ed25519 公钥) 十六进制（64 字符），短指纹 = 前 8 字节（16 字符）。
+- 握手（SIGMA 式，三种模式共用同一消息顺序；I = 连接方 / 发起方，R = 监听方 / 响应方）：
+  1. I→R `hs.hello{v, f, intent: sync|pair, method?: sas|qr, id, name, platform, pk, nonce, commit}`（明文）
+  2. R→I `hs.hello{v, f, id, name, platform, pk, nonce, eph}`（明文）
+  3. I→R `hs.reveal{eph}`（明文；R 校验承诺，不符直接断开）——之后全部为密文帧
+  4. R→I `hs.auth{sig}`；5. I→R `hs.auth{sig, token?}`；6. R→I `hs.ok`；
+  7. 仅核对码配对：双方显示核对码，用户确认后互发 `pair.confirm`（拒绝 / 超时发 `pair.reject{reason}`）。
+  任一步可由 `hs.reject{reason}` 代替（reason：version / untrusted / signature / fingerprint / token / protocol …；R 在 1 之后、I 在 2 之后为明文，之后加密）。`v` 是握手协议版本（`kLanSyncProtocolVersion = 1`，不同即 `version` 拒绝，带上本机版本）；`f` 是同步格式版本，由调用方传入、握手只交换不比较（§5.3 由会话层决定）。
+- transcript = 规范串联（每个字段 `u32 长度 ‖ 字节`）：前缀 `jotsy-lan/v1 transcript`，再依次是 I、R 的 hello 字段（v、f、intent、method、id、name、platform、pk、nonce、commit、eph）；签名输入 = `"jotsy-lan/v1 sig <initiator|responder>" ‖ SHA-256(transcript)`（带角色，防反射）。共享密钥全 0（低阶点）即拒绝。HKDF-SHA256(ikm = 共享密钥, salt = transcript 哈希)：info `jotsy-lan/v1 key initiator->responder` / `…responder->initiator` 各 32 字节，`jotsy-sas` 8 字节 → 取前 48 位 mod 10^6 为核对码。
+- 帧：`[长度 u32 大端][密文 ‖ 16 字节标签]`，明文 ≤ 64 KiB；AEAD = ChaCha20-Poly1305（纯 Dart 同步实现）；nonce = 4 字节方向前缀（I→R 为 1、R→I 为 2）+ 8 字节计数器；**计数器不随帧传输**，接收方用自己期望的下一个值构造 nonce，重放、乱序、丢帧都表现为认证失败；帧头作附加数据；认证失败即断开。吞吐基准（本机 x86-64，64 KiB 帧，`test/core/services/lan_sync/lan_sync_aead_benchmark_test.dart`）：ChaCha20-Poly1305 加密 53 / 解密 54 MiB/s（JIT），AOT 48 / 50 MiB/s；同库 AES-256-GCM 约 20 MiB/s（JIT 与 AOT 相同，纯 Dart 无硬件 AES），故保持 ChaCha20-Poly1305。
+- 信道明文的首字节为种类：`0x01` 消息（最后一段）/ `0x02` 消息分段（大消息自动分段，单条 JSON ≤ 32 MiB）/ `0x10` 数据块开始 `[u32 id][u64 长度]` / `0x11` 数据 `[u32 id][字节]` / `0x12` 结束 / `0x13` 发送方放弃 `[u32 id][原因]` / `0x7f` 关闭（经认证的正常结束；没有关闭帧的断开报 `connectionLost`）。背压：发送每帧等 `flush`，数据块按帧加锁、控制消息可插在两帧之间；接收侧消费者没在听或暂停时分发循环停住、读取器缓冲满 256 KiB 即暂停读套接字。使用方必须一直监听 `messages` 与 `blobs`，并对每个数据块读完或取消其 `data`。
+- **首次配对（核对码）**：承诺 = `SHA-256("jotsy-lan/v1 commit" ‖ 临时公钥 ‖ 随机数)`，在 R 发出临时公钥之前送达、R 收到揭示后校验——没有承诺时中间人可以先看一侧的临时公钥再挑选自己的（约 2^20 次尝试）让两侧核对码相同；有了承诺，中间人在每一侧都得先定下自己的值，两侧相同的概率只剩 10^-6。配对意图不看已有信任（重新配对时替换旧公钥）。双方用户都确认才成功；任一方拒绝或超时（默认 60 秒，可注入）即放弃，不保存任何东西；成功后由调用方互存对方 Ed25519 公钥。最后一条 `pair.confirm` 在途中丢失时可能一边成功、一边超时（两军问题），成功的一边之后同步会被 `untrusted` 拒绝、提示重新配对。
+- **扫码配对**：二维码 `jotsy-lan:v1:<base64url 无填充(规范 JSON，键按字典序 {fp, h:[地址…], id, n:名称, p:端口, t:令牌})>`；fp 为**完整**指纹（64 个小写十六进制），令牌为 128 位随机数的 base64url（22 字符），地址 1–8 个、名称 1–100 字符；解码严格校验（未知前缀 / 版本、缺字段、多字段、端口越界、超长一律拒绝）。扫码方在揭示临时公钥前校验对方公钥指纹 == fp，验证对方签名后才在信道里出示令牌；显示方验证扫码方签名后才核销令牌（2 分钟有效、一次性，同步完成检查与作废；不一致的令牌不作废当前码），通过即视为已确认，无需核对码。
+- 已配对设备之间：发起方 intent = sync，双方身份公钥都已受信 → 直接建立会话；任一方不认识对方 → 返回 `untrusted`（对方收到明确原因），界面提示重新配对。
 
 ### 5.3 会话消息（任务 11 定稿）
 `hello`（格式版本、应用版本、deviceId、名称、平台、实体集合、是否同步设置、意图 sync/pair）→ `reject{reason: version|busy|untrusted|declined}` 或继续；`manifest.get` / `manifest`（gzip，含墓碑键列表）；`records.get{keys}` / `records`（分批）；`history.get{keys}` / `history`（分面历史与墓碑详情）；`media.have{keys}` / `media.status`；`media.get{keys}` 与 `media.put`（二进制块，附大小与 sha256）；`apply{writes, mediaKeys}` / `applied{skipped, manifest}`；`done` / `abort{reason}`。双方版本不一致（格式版本或实体集合）即拒绝并提示升级；缺少某类实体、对方不提供设置，从不视为删除。

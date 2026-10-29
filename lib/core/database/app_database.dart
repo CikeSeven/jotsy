@@ -46,6 +46,8 @@ part 'app_database_day_mood_ops.dart';
 part 'app_database_comment_schema.dart';
 part 'app_database_comment_ops.dart';
 part 'app_database_sync_ops.dart';
+part 'app_database_sync_writes.dart';
+part 'app_database_sync_order.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -79,6 +81,8 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseDayMoodOps,
         _AppDatabaseCommentOps,
         _AppDatabaseSyncOps,
+        _AppDatabaseSyncWrites,
+        _AppDatabaseSyncOrder,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 

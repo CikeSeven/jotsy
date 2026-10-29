@@ -18,8 +18,8 @@
 | `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 | 4 |
 | `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 | 4 |
 | `lib/core/services/lan_sync/sync/sync_planner.dart`（+ `_keys` / `_decide` / `_merge` / `_revive` / `_copies` / `_tags` / `_notebooks` / `_lists` / `_output` / `_values`）、`sync_plan.dart`、`sync_plan_side.dart`；本机一侧适配器 `sync_local_plan_side.dart` | 合并判定（纯函数）：按需取数、产出双方的写入计划 | 5 |
-| `lib/core/database/app_database_sync_ops.dart` | `_AppDatabaseSyncOps`：读规范行、单事务按原值写入（带前置条件）、关联清理 | 6（读规范行的部分由 4 先建） |
-| `lib/core/services/lan_sync/sync/sync_apply.dart`、`sync_media.dart` | 写入编排、媒体暂存与就位、写入后更新本机状态 | 6 |
+| `lib/core/database/app_database_sync_ops.dart`（读）、`app_database_sync_writes.dart`（`_AppDatabaseSyncWrites`：按原值写入、关联清理）、`app_database_sync_order.dart`（`_AppDatabaseSyncOrder`：顺序列表重排） | 读规范行；由写入层放进同一个事务的按原值写入与关联清理 | 6（读规范行的部分由 4 先建） |
+| `lib/core/services/lan_sync/sync/sync_apply.dart`（+ `_writes` / `_settings` / `_result`）、`sync_media.dart`、`sync_media_library.dart`、`sync_media_rekey.dart` | 写入编排（`SyncApplier`）、媒体暂存与就位（`SyncMediaStaging`）、发送与改键照做（`SyncMediaLibrary`）、写入后更新本机状态 | 6 |
 | `lib/core/services/lan_sync/lan_sync_identity.dart`、`lan_sync_crypto.dart`、`lan_sync_frames.dart`、`lan_sync_handshake.dart`（+ `_types` / `_flows` / `_sas`）、`lan_sync_channel.dart`（+ `_types` / `_inbound` / `_outlet`）、`lan_sync_messages.dart`、`lan_sync_qr_payload.dart` | 身份、密码学原语、长度前缀帧、握手与配对、加密信道、消息信封、二维码载荷 | 2 |
 | `lib/core/services/lan_sync/lan_sync_discovery.dart`、`lan_sync_network.dart`、`lan_sync_state_directory.dart` | UDP 信标与在线表、本机地址、原生通道、不备份的状态目录 | 3 |
 | `lib/core/services/editing_session_registry.dart` | 编辑会话 / 撤销窗口登记、“同步已写入”事件 | 7 |
@@ -224,21 +224,35 @@ class SyncManifest {
 ### 5.3 会话消息（任务 11 定稿）
 `hello`（格式版本、应用版本、deviceId、名称、平台、实体集合、是否同步设置、意图 sync/pair）→ `reject{reason: version|busy|untrusted|declined}` 或继续；`manifest.get` / `manifest`（gzip，含墓碑键列表）；`records.get{keys}` / `records`（分批）；`history.get{keys}` / `history`（分面历史与墓碑详情）；`media.have{keys}` / `media.status`；`media.get{keys}` 与 `media.put`（二进制块，附大小与 sha256）；`apply{writes, mediaKeys}` / `applied{skipped, manifest}`；`done` / `abort{reason}`。双方版本不一致（格式版本或实体集合）即拒绝并提示升级；缺少某类实体、对方不提供设置，从不视为删除。
 
-## 6. 写入（`_AppDatabaseSyncOps` + `sync_apply.dart`）
+## 6. 写入（`SyncApplier`：`sync_apply.dart` + `_AppDatabaseSyncWrites` / `_AppDatabaseSyncOrder`）
 
-1. 等待撤销窗口结束（`EditingSessionRegistry.waitForUndoWindows`，超时则本次推迟）。
-2. 媒体：需要的文件已流式写入 `<dataRoot>/.lan_sync_staging/<会话>/`（与数据根同一文件系统，保证改名原子），按 sha256 校验；目标键已存在：sha256 相同则直接复用，不同则**不覆盖**，为来件换新键并在本次写入的记录里改写引用（规划器之后的这一步由写入层处理，并把改键告知对方，对方同样改写，保证两边规范形式一致）；文件就位用改名，不沿用发送方的修改时间。
-3. 在 `DataArchiveService.runSerialized` 中开**单个** Drift 事务：
-   - 逐条比对前置条件：本机该记录当前分面哈希 ≠ `expected` → 跳过这一条（记入 `skipped`，下次同步再处理）；
-   - 按原值写入列（业务 id ↔ 本地 id 换算；标签按名称 `ensureTagsByName` 口径但**不改已有标签颜色**，颜色只由 tag 记录决定；删除时手动清理关联行，与 `hardDeleteDiary` 等现有删除路径的清理范围一致：日记 → diary_tags、diary_notebooks、留言、纪念日关联；日记本 → diary_notebooks、书序；标签 → diary_tags）；
-   - 不调用 `deleteNotebook` / `mergeNotebook`（它们的子本上提会覆盖另一边的移动），层级以计划里的精确 `parentId` 为准；
-   - orderList 写入后按列表重排 `sortOrder` / `position` 为 0..n-1，列表里没有的现有项按原相对顺序排在末尾；
+入口：`SyncApplier.apply(sidePlan, {staging, includeSettings})`，结果 `SyncApplyResult{status: applied|deferred, skipped: [{key, reason}], rekeys, manifest（写入后）, counts（实际执行的新增 / 更新 / 删除）, mediaFiles, mediaBytes}`；跳过原因 `precondition` / `invalidRecord` / `missingDependency` / `settingsFailed`。冲突副本数取计划的 `SyncPlan.conflictCopies`。
+
+1. 等待撤销窗口结束（`EditingSessionRegistry.waitForUndoWindows`，默认 15 秒）：超时返回 `deferred`，什么都不写（暂存件一并丢弃，下次重新传）。撤销提示开着时写入，用户点“撤销”会把旧内容写回、覆盖同步刚写入的值。
+2. 媒体（`SyncMediaStaging`，在开事务**之前**就位：记录落库那一刻文件必须已经在）：
+   - 会话层把来件流式写进 `<dataRoot>/.lan_sync_staging/<会话>/<键>`（与数据根同一文件系统，就位用改名、原子），写完按声明的大小与 sha256 `verify`，不符即删除暂存件并拒收；
+   - 就位规则（`place`）：目标键不存在 → 改名就位，修改时间设为现在（不沿用发送方的时间，媒体回收的 24 小时宽限期才对新到的文件生效）；目标键已有同样 sha256 → 复用、丢掉暂存件；目标键已是**另一份文件**（托管目录是随机的 `createTemp('media_')`，几乎只会因巧合出现）→ 绝不覆盖，放到同目录的派生键 `<文件名>.<sha256 前 12 位>.<扩展名>`（`syncDerivedMediaKey`；派生键上已有同样内容即复用，再被占用时改用完整 64 位），并把本次这一侧**所有**写入记录里的 `jotsy-media:<旧键>` 改写为新键（含嵌在 JSON 字符串里的，改过才按规范 JSON 重新编码），改写过的分面不再继承历史时间（不再是另一侧的原值）；
+   - 改键随结果报告（`SyncMediaRekey{old, new, sha256}`），会话层发给来源一侧，来源一侧在**自己的 `apply` 之后**调用 `adoptMediaRekeys`：本机 `oldKey` 仍是那个 sha256 时拷一份到 `newKey`（先写同目录临时文件再改名），再把本机所有引用 `oldKey` 的记录改写为 `newKey`，经同一条写入路径（前置条件 = 现在的哈希、单事务、写入后折叠）。两边由此得到逐字节相同的规范记录；旧文件不删，没人引用后由媒体回收收走；
+   - 设置背景图（`app_backgrounds/<文件名>`）同样在这一步按键就位（文件名须通过 `AppBackgroundStorageService.isValidName`），设置写入时文件已在；
+   - 暂存目录在 `apply` 结束时（成功、失败、推迟）一律删除；进程中途退出留下的由 `SyncMediaStaging.sweepStale`（服务启动时调用）清掉超过 24 小时的。
+3. 还原列值（反向列值类）在开事务之前做完：结构不对的记录记为 `invalidRecord` 跳过，不让一条坏记录使整批（以及之后每一次同步）回滚。然后在 `DataArchiveService.runSerialized` 中开**单个** Drift 事务：
+   - 读行（`readSyncRows`）并经 `SyncLocalState.observeRows` 算出当前清单（哈希缓存命中时很便宜）；
+   - 先逐条比对**全部**前置条件：写入的 `expected` 与当前分面哈希完全相同（null = 必须不存在），改名的 `tag:from` 哈希等于 `expected` 且 `tag:to` 不存在；不符的记入 `skipped`（下次同步再处理）；
+   - 原地改名：更新那一行的 `name` 与颜色，本地 id 不变（编辑器与 `tagOrderRaw` 持有本地 id）；
+   - 其余写入按计划顺序执行，**顺序列表放到最后**：计划按键排序，`orderList:templates` 排在模板写入之前，照原顺序执行时新模板还没插入、重排后会被当作“列表里没有的现有项”排到末尾；重排只看行是否存在，挪到最后与计划的结果相同（这是写入层对 §4.6 第 1 条“按 writes 的顺序写”的执行细节，规划器不变）；
+   - 按原值写入列（业务 id ↔ 本地 id 换算；时间、标志原样，不刷新 `updatedAt`）。日记的标签按名称**精确**匹配（不去空白：规范名就是库里的原名），缺的以中性色 `0xFF9E9E9E` 建出，颜色随后由同一计划里 `tag:` 记录的写入定下（那条被跳过时留着中性色，下次同步照常合并颜色）；已有标签的颜色只由 tag 记录改动；
+   - 删除时的关联清理与现有删除路径一致：日记复用 `hardDeleteDiary`（diary_tags、diary_notebooks、留言、纪念日关联置 null），标签复用 `deleteTag`（diary_tags），日记本删掉它的 diary_notebooks 行；与计划里显式列出的成员 / 留言 / 纪念日写入重复执行无害；
+   - 不调用 `deleteNotebook` / `mergeNotebook`（它们的子本上提会覆盖另一边的移动），`parent_id` 精确取自记录，删除父本不提升子本；智能本改成手动本时先清掉它残留的关联行；新日记本 / 新模板 / 新成员先排在最后，再由顺序列表重排；
+   - 成员关系的日记或日记本不存在（它们的写入被跳过）、或日记本不是手动本时不写，记为 `missingDependency`；
+   - orderList 写入后按列表重排 `sortOrder` / `position` 为 0..n-1，列表里没有的现有项按原相对顺序（与规范化读取同一排序）排在末尾；模板列表只排用户模板，`builtin.*` 的位置不动；书序列表的删除（日记本被删或改成智能本）不需要任何操作；
    - 写入层不因删除模板而改动日记本定义（`NotebookPayload.templateId` 保持原样）：应用自己删除模板（`DiaryTemplatesController.delete` → `deleteDiaryTemplates`）也只清 `DiaryTemplatePrefs` 里的规则、不动日记本，指向已删模板的默认模板在应用里本来就会出现，读取时找不到即回落；写入层若改了日记本定义，写入后的清单就与计划不符，下次同步又判成差异。`DiaryTemplatePrefs` 是设置，由 settings 同步处理；
-   - 事务内算出写入后的清单。
-4. 事务提交后：用写入后的清单更新历史、墓碑与检查点（第 3 节），移动暂存媒体的残留清理，发出 `EditingSessionRegistry.notifyDataReplaced()`。
-5. settings 分面经 `BackupSettings.restore` 只应用本次变化的键（部分节点），背景图从暂存目录拷入 `app_backgrounds/`；失败按 `SettingsServiceBackup` 的快照回滚。部分节点由 `syncSettingsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id）。注意 `BackupSettings.restore` 对若干键的“空值”什么也不做（`tagOrderRaw` 为空串，`diarySortModeRaw` / `diaryLayoutModeRaw` / `diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` / `appLocaleCode` 为 null 或空串时保留本机值），另外它总会顺带 `clearCreateDiaryDraft()`：要把这些键清空时写入层须直接调用对应的 setter，否则本机规范值不变、下次同步会反复判为差异。
+   - 写完在事务里再读一次行，作为写入后状态（提交后的库就是它）。
+   事务里任何异常回滚这一侧的全部数据库写入、不更新同步状态（下次重新规划）；第 2 步已就位的文件留着、没有记录引用，由媒体回收收走。
+4. 事务提交后应用设置（见第 5 条；SharedPreferences 不在 Drift 事务里，放在前面的话数据库回滚时设置已经改了），失败只回滚设置、这条记为 `settingsFailed`，数据库写入保留。
+5. 用写入后的观测（事务里读出的行 + 应用设置之后取的设置值）调用 `recordAppliedState(after, historySeenAt: …)`：`historySeenAt` 取这一侧计划的 `SyncSidePlan.historySeenAt`，只保留真正写成了的键、去掉被媒体改键改写过的分面（跳过的键若因用户编辑而变了，旧值的时间应当是现在）。有任何写入时发出 `EditingSessionRegistry.notifyDataReplaced()`。会话同步设置时调用方应传 `includeSettings: true`（默认只在计划里有设置写入时才观测设置）：标签改名会改变按名称的标签顺序，写入后的观测带上设置才记得准。
+6. settings 分面只应用本次变化的键（`record` 哈希与 `expected` 不同的分面），部分节点由 `syncSettingsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id，背景图引用还原为文件名），经 `BackupSettings.restore(…, clearLegacyDraft: false)` 应用：覆盖恢复会顺带 `clearCreateDiaryDraft()`（只有读不出来、迁移时保留下来的旧版单份草稿才会还在），同步只应用设置变化、不能删掉本机用户的数据。`restore` 对若干键的“空值”什么也不做，写入层直接调用 setter：`tagOrderRaw` 为空串 → `setTagOrderRaw('')`；`diarySortModeRaw` / `diaryLayoutModeRaw` 为空串 → 对应 setter；`diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` 为 null → `clearDiaryToolbarOrderRaw()` / `clearTagPickerSortRaw()` / `clearDiaryLocationPrecisionRaw()`（`SettingsService` 为此新增），为空串 → 对应 setter；`appLocaleCode` 读出来从不为空。否则本机规范值不变、下次同步会反复判为差异。失败按 `SettingsServiceBackup` 的快照回滚（快照补上了之前漏掉的“我的颜色”键）。
 
-标签原地改名：计划里出现 旧名 → 新名 的改名时，更新那一行的 `name`，本地 id 不变（编辑器与 `tagOrderRaw` 持有本地 id）。
+会话层的顺序（任务 11）：发起方规划 → 把 `plan.remote` 需要的媒体（对方 `media.have` 没有或 sha256 不同的）传进对方暂存区 → 对方 `apply(plan.remote, staging)`，回 `applied{skipped, manifest, rekeys}` → 发起方取得 `plan.local` 需要的媒体、`apply(plan.local, staging)` → 发起方 `adoptMediaRekeys(对方的 rekeys)`，把自己的 rekeys 发给对方 → 对方 `adoptMediaRekeys`。只执行了一侧（中断）时下一轮照常收敛：未写的一侧的差异重新规划即可。会话期间同一个 `SyncLocalState` 不能被别处并发调用（写入事务里会调用它的 `observeRows`，它的队列里若排着要读库的操作会与事务互相等待）。
 
 ## 7. 并发安全（任务 7：`EditingSessionRegistry`）
 

@@ -491,6 +491,13 @@ class SettingsService {
     await _writePreference(_prefs.setString(_keyDiaryToolbarOrder, value));
   }
 
+  /// 回到未设置（默认工具栏顺序）。局域网同步把对方“从没设置过”的值写到
+  /// 本机时使用：`BackupSettings.restore` 遇到空值什么也不做。
+  Future<void> clearDiaryToolbarOrderRaw() async {
+    diaryToolbarOrderRawNotifier.value = null;
+    await _writePreference(_prefs.remove(_keyDiaryToolbarOrder));
+  }
+
   Future<void> setDiaryToolbarHiddenItemsRaw(String value) async {
     final normalized = value.trim();
     diaryToolbarHiddenItemsRawNotifier.value = normalized.isEmpty
@@ -730,6 +737,11 @@ class SettingsService {
     await _writePreference(_prefs.setString(_keyTagPickerSort, value));
   }
 
+  /// 回到未设置（同 [clearDiaryToolbarOrderRaw] 的用途）。
+  Future<void> clearTagPickerSortRaw() async {
+    await _writePreference(_prefs.remove(_keyTagPickerSort));
+  }
+
   /// 只供测试构造“升级前留下旧草稿”的状态；应用内不再写入此键。
   @visibleForTesting
   Future<void> setCreateDiaryDraftRaw(String value) async {
@@ -742,6 +754,11 @@ class SettingsService {
 
   Future<void> setDiaryLocationPrecisionRaw(String value) async {
     await _writePreference(_prefs.setString(_keyDiaryLocationPrecision, value));
+  }
+
+  /// 回到未设置（同 [clearDiaryToolbarOrderRaw] 的用途）。
+  Future<void> clearDiaryLocationPrecisionRaw() async {
+    await _writePreference(_prefs.remove(_keyDiaryLocationPrecision));
   }
 
   Future<void> setAppUpdatePreferencesRaw(String value) async {

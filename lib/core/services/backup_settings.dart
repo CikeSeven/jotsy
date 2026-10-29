@@ -44,10 +44,15 @@ class BackupSettings {
     'diaryLocationPrecisionRaw': settingsService.diaryLocationPrecisionRaw,
   };
 
+  /// 按 [settingsNode] 应用设置；只含部分键的节点只改这些键。
+  ///
+  /// [clearLegacyDraft] 为 true（覆盖恢复）时顺带清掉没迁移的旧版单份草稿，
+  /// 见末尾的说明；局域网同步只应用设置变化，传 false，不碰本机草稿。
   static Future<void> restore(
     SettingsService settingsService,
-    Map<String, dynamic>? settingsNode,
-  ) async {
+    Map<String, dynamic>? settingsNode, {
+    bool clearLegacyDraft = true,
+  }) async {
     if (settingsNode == null) return;
     final themeRaw = settingsNode['themeMode']?.toString();
     if (themeRaw != null) {
@@ -313,7 +318,7 @@ class BackupSettings {
     // 草稿随数据库的草稿表恢复（旧备份设置里的那份已在解析时转成草稿行）。
     // 本机若还留着没迁移的旧版单份草稿，覆盖恢复时一并清掉，否则下次启动
     // 会把它迁进刚恢复的草稿箱，多出一份不属于这份备份的草稿。
-    await settingsService.clearCreateDiaryDraft();
+    if (clearLegacyDraft) await settingsService.clearCreateDiaryDraft();
 
     final locationPrecisionRaw = settingsNode['diaryLocationPrecisionRaw']
         ?.toString();

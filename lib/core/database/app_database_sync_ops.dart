@@ -4,7 +4,9 @@ part of 'app_database.dart';
 ///
 /// - 读：[readSyncRows] 在一个事务里读出规范化所需的全部原始行（一致的快照），
 ///   结果是纯 Dart 的 [SyncRawSnapshot]，可以整批送进 `Isolate.run`；
-/// - 写：见文件末尾“写入”一节（任务 6 补上）。
+/// - 写：`app_database_sync_writes.dart`（按原值写入与关联清理）与
+///   `app_database_sync_order.dart`（顺序列表重排），由 `SyncApplier` 放进
+///   同一个事务。
 ///
 /// 读取一律用原始 SQL 而不是 Drift 的 `select`：要的是库里实际存的值（时间是
 /// Unix 秒、布尔是 0/1），原始列指纹按它计算；也省掉一万篇日记逐行构造
@@ -167,11 +169,6 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
       );
     });
   }
-
-  // ---- 写入（任务 6）----
-  //
-  // 单事务、带前置条件的按原值写入与关联清理（规格 §6）放在这里，与上面的
-  // 读取共用同一套列口径：时间按 Unix 秒、布尔按 0/1、业务 id ↔ 本地 id 换算。
 }
 
 /// SQLite 整数列读出来是 int；损坏数据里偶尔是浮点数，按截断取整。

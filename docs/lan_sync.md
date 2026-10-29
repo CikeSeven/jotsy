@@ -15,8 +15,8 @@
 | 路径 | 职责 | 任务 |
 |---|---|---|
 | `lib/core/services/lan_sync/sync/sync_model.dart` | `SyncEntity`、`SyncKey`、`SyncRecord`、`SyncManifest`、规范 JSON 与哈希 | 4 |
-| `lib/core/services/lan_sync/sync/sync_canonical.dart` 等 | 数据库行 ↔ 规范记录、媒体路径归一 | 4 |
-| `lib/core/services/lan_sync/sync/sync_local_state.dart` 等 | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 | 4 |
+| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 | 4 |
+| `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 | 4 |
 | `lib/core/services/lan_sync/sync/sync_planner.dart`、`sync_plan.dart` | 合并判定，产出双方的写入计划 | 5 |
 | `lib/core/database/app_database_sync_ops.dart` | `_AppDatabaseSyncOps`：读规范行、单事务按原值写入（带前置条件）、关联清理 | 6（读规范行的部分由 4 先建） |
 | `lib/core/services/lan_sync/sync/sync_apply.dart`、`sync_media.dart` | 写入编排、媒体暂存与就位、写入后更新本机状态 | 6 |
@@ -58,31 +58,35 @@ class SyncManifest {
 - **规范 JSON**：对象键按 UTF-16 码元升序、无空白（`jsonEncode` 前递归排序）；时间一律为 UTC 毫秒整数（库里是秒，乘 1000）；布尔、整数原样；可空字段显式写 `null`（不省略，保证两边结构一致）。
 - **哈希**：`sha256(utf8(规范 JSON))` 取前 16 字节，小写十六进制（32 字符）。
 - 规范化必须是**幂等且跨设备确定**的：A 的记录写入 B 后，B 读出的规范记录与 A 的逐字节相同（测试兜底，含历史 Delta / 旧节点格式的正文、胶囊、带附件的 metadata）。
+- 规范形式（分面组成、归一规则、哈希）一旦改变必须提升 `kSyncFormatVersion`（版本不同的设备握手时互相拒绝）；只修正本机实现、不改协议时提升 `kSyncCanonicalRevision`（`sync_hash_cache.dart`），让哈希缓存整份作废重算。
 
 ### 2.2 实体与分面
 
 | 实体 | id | 分面：字段 |
 |---|---|---|
-| diary | `diaryId` | **content**：`title`、`content`（正文块文档对象：`decodeStoredDiaryBlocks` 后归一；历史格式由此转为块文档）、`cover`、`metadata`（对象；去掉本机 `tagIds`、去掉 `capsule`）、`createdAt`<br>**stamp**：`updatedAt`<br>**pin**：`pinned`<br>**archive**：`archived`、`archivedAt`<br>**trash**：`deleted`、`deletedAt`<br>**capsule**：`unlockAt`、`lockedAt`、`meta`（`metadata.capsule`，没有为 null）<br>**tags**：`names`（排序后的标签名列表） |
+| diary | `diaryId` | **content**：`title`、`content`（正文块文档对象：`decodeStoredDiaryBlocks` 后再经 `liftHiddenDiaryBlockChildren`（Delta 转换的结果不经过这一步，写回再读时会被提起，必须一开始就提好）、归一；历史格式由此转为块文档）、`cover`、`metadata`（对象；去掉本机 `tagIds`、去掉 `capsule`）、`createdAt`<br>**stamp**：`updatedAt`<br>**pin**：`pinned`<br>**archive**：`archived`、`archivedAt`<br>**trash**：`deleted`、`deletedAt`<br>**capsule**：`unlockAt`、`lockedAt`、`meta`（`metadata.capsule`，没有为 null）<br>**tags**：`names`（排序后的标签名列表） |
 | tag | 标签名 | **color**：`color` |
 | notebook | `notebookId` | **definition**：`name`、`kind`、`visibility`、`payload`（库中原始 JSON 解析后的对象，键排序、封面路径归一；**不要**经 `NotebookPayload.decode` 再编码，它会丢掉认不出的键）、`pinned`、`closed`、`parentId`、`createdAt`、`updatedAt` |
-| membership | `<notebookId>|<diaryId>` | **main**：`chapterId`、`addedAt`（只有手动日记本有成员；位置不在这里） |
-| orderList | `shelf` / `templates` / `book:<notebookId>` | **items**：`ids`（书架：日记本按 `sortOrder` 的业务 id 列表；模板：用户模板按 `sortOrder`；书序：手动日记本内日记按 `position` 再按 `addedAt`、`diaryId` 的业务 id 列表） |
+| membership | `<notebookId>|<diaryId>` | **main**：`chapterId`、`addedAt`（只有手动日记本有成员——按 `kind` 列原始值为 `manual` 判断，与 `acceptsManualEntries` 同一口径；智能本的残留关联行与日记已不在的悬空行忽略；位置不在这里） |
+| orderList | `shelf` / `templates` / `book:<notebookId>` | **items**：`ids`（书架：全部日记本按 `sortOrder`、同值按本地 id（应用的 `_notebookManualOrder`，不看置顶——置顶是 definition 的 `pinned`）；模板：只含用户模板（不含 `builtin.*`：改过的内置模板按内置顺序显示、不看 `sort_order`），按 `sortOrder`、同值按本地 id（`_templateOrder`）；书序：手动日记本内日记按 `position`、`addedAt`、日记本地 id（`_entriesInOrder`）的业务 id 列表。平手只在从未排序过的数据上出现，写入层按列表重排为 0..n-1 后两端不再有平手。`shelf`、`templates` 总是存在（可为空列表），每本手动日记本都有 `book:<id>`（空本为空列表），智能本没有） |
 | comment | `commentId` | **main**：`diaryId`、`content`、`mood`、`createdAt`、`editedAt` |
 | template | `templateId`（含 `builtin.*`） | **main**：`name`、`payload`（库中原始 JSON 解析后的对象，键排序；保存时已经白名单重建，读取时应用自己再经 `sanitizeDiaryTemplateBlocks`，同步层在 core 不引用 UI 模块的清理函数、原样搬运）、`createdAt`、`updatedAt` |
 | anniversary | `anniversaryId` | **main**：全部业务列（含 `metadata` 对象、`linkedDiaryId`、`pinned`、`createdAt`、`updatedAt`） |
 | dayMood | `YYYY-MM-DD` | **main**：`mood`（原始字符串，认不出的枚举名原样）、`updatedAt` |
-| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw`；`tagOrderRaw` 换成分面 `tagOrderNames`（按名称的列表）；`appSurfaceRaw` 里的背景文件名换成媒体引用 `app_backgrounds/<文件名>`。只在两端都开启“同步设置”时参与。 |
+| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw`；`tagOrderRaw` 换成分面 `tagOrderNames`（按名称的列表）；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码。只在两端都开启“同步设置”时参与。 |
 
-- `content_text` 由正文推出、不参与哈希；写入时由正文重新生成（与现有写库口径一致）。
-- 写入时按列长截断：日记标题 200、标签名 40、日记本名 60、纪念日标题 100。
+- `content_text` 由正文推出、不参与哈希；写入时由（还原路径后的）正文经 `diaryBlocksPlainText` 重新生成（与预览页待办保存、导入写库同一口径）。
+- 按列长截断：日记标题 200、标签名 40、日记本名 60、纪念日标题 100（按 UTF-16 码元，不切开代理对）。规范化（读）与写回两个方向都截断：正常数据本来不超长，两边口径一致才能保证超长的坏数据写到对方后规范值仍相同。
+- 应当是 JSON 对象的列（日记 metadata、日记本 / 模板 payload、纪念日 metadata）解析不成对象时，规范值里保留原文字符串、写回时原样写回，不把坏数据“修”成空对象。
 - 日记的 `updatedAt` 单独成 stamp 分面，合并取较大值，从不判为冲突。
 
 ### 2.3 媒体路径归一
 
-- 与 `DiaryMediaReferences`（`lib/core/services/diary_media_references.dart`）同一口径：遍历规范值中的每个字符串；字符串本身是 JSON 对象/数组时解码、递归处理后再按规范 JSON 编码回字符串；**整串**是托管媒体路径（绝对路径或 `file:` URI，且 `diaryMediaKeyOf` 非空）时替换为 `jotsy-media:<键>`（键形如 `diary_images/media_x/a.jpg`）。
+- 与 `DiaryMediaReferences`（`lib/core/services/diary_media_references.dart`）同一口径：遍历规范值中的每个字符串（只有提到托管目录名的字符串才处理）；字符串本身是 JSON 对象/数组时解码、递归处理后再按规范 JSON 编码回字符串；**整串**是托管媒体路径（绝对路径或 `file:` URI，且 `diaryMediaKeyOf` 非空）时替换为 `jotsy-media:<键>`（键形如 `diary_images/media_x/a.jpg`）。
 - 写入时把 `jotsy-media:<键>` 换回本机 `<dataRoot>/<键>`（平台路径分隔符），原来是 `file:` URI 的也写成本机绝对路径。
-- 设置背景：`app_backgrounds/<文件名>` 只在 settings 记录里出现，写入时还原为文件名。
+- 归一只作用于可能存放媒体的列：日记的正文、封面、metadata 与胶囊块，日记本与模板的 payload，纪念日的 metadata，设置值；标题、名称、备注、留言正文这类用户文字不改写。
+- 设置背景：`jotsy-media:app_backgrounds/<文件名>` 只在 settings 记录里出现，写入时还原为文件名（文件名须通过 `AppBackgroundStorageService.isValidName`）。
+- 还原时键必须满足 `diaryMediaKeyOf(键) == 键`（以托管目录开头、无 `..`），否则原样保留，防止拼出数据根之外的路径。
 - 一条记录引用的媒体键集合由同一遍历得出（`SyncRecord` 的派生信息），供传输阶段使用。
 
 ## 3. 本机同步状态（`stateDir`，不随系统备份克隆）
@@ -93,19 +97,23 @@ class SyncManifest {
 |---|---|---|
 | `identity.json` | deviceId（UUID v4）、Ed25519 / X25519 私钥种子、创建时间 | 2 |
 | `store.json` | 偏好（设备名、可被发现、自动同步、同步设置）、已配对设备（deviceId、名称、平台、身份公钥、配对时间、上次同步、上次地址、单设备自动同步）、标记（`restoredPending`） | 11 |
-| `checkpoint.json.gz` | 上次会话时的本机清单 + 标签名 → 本地 id 映射 | 4 |
+| `checkpoint.json.gz` | 上次会话时的本机观测：清单 + tags / orderList 分面的当前值（下次进历史时要用旧值）+ 标签名 → 本地 id 映射 + 观测覆盖的实体集合 | 4 |
 | `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；tags 与 orderList 分面同时记录值 | 4 |
 | `tombstones.json.gz` | 墓碑：`SyncKey → {deletedAt, known: 分面 → [哈希…]}`（删除时的当前哈希 + 历史）；超过 365 天或超过 50 000 条时按时间淘汰 | 4 |
 | `renames.json.gz` | 标签改名记录：旧名 → 新名、时间（随墓碑同样淘汰） | 4 |
-| `hash_cache.json.gz` | 原始列指纹（行原始列值的 sha256）→ 规范分面哈希 | 4 |
+| `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日），其余每次现算 | 4 |
 | `media_index.json.gz` | 媒体键 → 大小、修改时间、sha256（大小或修改时间变了就重算） | 4 |
 | `sessions.json` | 最近 50 次同步记录 | 11 |
 
 - **刷新检查点**（每次会话开始时，在冲刷编辑会话之后）：算出当前清单 C，与检查点 P 比较——
   - P、C 都有且某分面哈希不同：把 P 中的旧哈希（及 tags / orderList 的旧值）插到该分面历史最前，`seenAt` 为当前时间；
   - P 有、C 没有：写墓碑（`known` = P 中各分面哈希 + 各分面历史）；tag 若同一本地 id 在 C 里换了名字，记为改名（旧名 → 新名），旧名仍写墓碑；
-  - C 有、P 没有：新记录，无历史；
+  - C 有、P 没有：新记录，无历史；本机若还有它的墓碑或改名记录（删了又建回同名记录）一并去掉——墓碑只描述本机“现在没有”的记录；
+  - 写墓碑时该键的历史并进 `known`、不再单独保留；历史按哈希去重（同一哈希只留最新的一条）；已有指向旧名的改名（x → 旧名）顺带改指向新名，规划器只需查一跳；
+  - 只比较本次观测到的实体：没请求 settings 时，检查点里 settings 的旧条目原样保留，不当作删除；
   - 然后检查点 := C。
+  - 先写历史、墓碑、改名，最后写检查点：中途失败时检查点仍是旧的，下次刷新把同一份差异再折一遍，结果相同。
+  - 状态文件读不出（不存在、解压或解析失败）一律当作空并 debugPrint：丢了这些“记忆”只会让规划多判冲突、按并集合并，删除不传播，最坏是多出数据、不会丢数据。
 - 写入后（第 6 节）同一套规则以写入后的清单更新历史、墓碑与检查点：被同步删掉的记录写墓碑，被替换的值进入历史。
 - **哈希缓存**：计算清单时先算每行原始列的指纹（便宜），命中缓存直接取分面哈希，未命中才做规范化（解码正文、归一路径、编码），整体在 `Isolate.run` 中进行；缓存只保留当前存在的行。
 - **覆盖恢复**：`DataArchiveService` 的 replaceAll 成功后删除检查点、历史、墓碑、改名、哈希缓存，并在 `store.json` 置 `restoredPending`（任务 11 接线；任务 4 提供 `resetAfterRestore()`）。之后与每台设备的第一次同步走“以哪边为准”（4.5）。
@@ -187,7 +195,7 @@ class SyncManifest {
    - 模板删除时同时移除指向它的日记本默认模板（`NotebookPayload.templateId`）；`DiaryTemplatePrefs` 是设置，由 settings 同步处理；
    - 事务内算出写入后的清单。
 4. 事务提交后：用写入后的清单更新历史、墓碑与检查点（第 3 节），移动暂存媒体的残留清理，发出 `EditingSessionRegistry.notifyDataReplaced()`。
-5. settings 分面经 `BackupSettings.restore` 只应用本次变化的键（部分节点），背景图从暂存目录拷入 `app_backgrounds/`；失败按 `SettingsServiceBackup` 的快照回滚。
+5. settings 分面经 `BackupSettings.restore` 只应用本次变化的键（部分节点），背景图从暂存目录拷入 `app_backgrounds/`；失败按 `SettingsServiceBackup` 的快照回滚。部分节点由 `syncSettingsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id）。注意 `BackupSettings.restore` 对若干键的“空值”什么也不做（`tagOrderRaw` 为空串，`diarySortModeRaw` / `diaryLayoutModeRaw` / `diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` / `appLocaleCode` 为 null 或空串时保留本机值），另外它总会顺带 `clearCreateDiaryDraft()`：要把这些键清空时写入层须直接调用对应的 setter，否则本机规范值不变、下次同步会反复判为差异。
 
 标签原地改名：计划里出现 旧名 → 新名 的改名时，更新那一行的 `name`，本地 id 不变（编辑器与 `tagOrderRaw` 持有本地 id）。
 

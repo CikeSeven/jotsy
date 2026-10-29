@@ -8821,6 +8821,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorDivider => 'Divider';
 
   @override
+  String get diaryEditorCallout => 'Callout';
+
+  @override
+  String get diaryCalloutPlaceholder => 'Callout';
+
+  @override
+  String get diaryCalloutToText => 'Convert to text';
+
+  @override
+  String get diaryCalloutToneDefault => 'Default';
+
+  @override
+  String get diaryCalloutToneYellow => 'Yellow';
+
+  @override
+  String get diaryCalloutToneGreen => 'Green';
+
+  @override
+  String get diaryCalloutToneBlue => 'Blue';
+
+  @override
+  String get diaryCalloutToneRed => 'Red';
+
+  @override
+  String get diaryCalloutTonePurple => 'Purple';
+
+  @override
   String get diaryEditorUnsupportedBlock => 'Unsupported content';
 
   @override

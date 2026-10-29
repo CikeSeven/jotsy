@@ -107,6 +107,7 @@ bool _isFirstBlock(af.Node node) =>
 /// - 列表与待办：上下各 2dp 再补回半个行距（[DiaryMarkerMetrics.halfLeading]），
 ///   相邻两项的间距 = 一个整行 + 4dp，随行距设置变化，又不比项内换行更挤；
 /// - 引用：上下 4dp，文字为 `onSurfaceVariant`，与正文区分而不刺眼；
+/// - 提示块：框外上下 4dp（同引用），框内留白与底色见 `DiaryCalloutBlock`；
 /// - 子块缩进等于行首标记列宽：嵌套列表的标记正好落在上一级的正文起点下。
 af.BlockComponentConfiguration diaryTextBlockConfiguration(
   BuildContext context,
@@ -130,7 +131,9 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
       'bulleted_list' ||
       'numbered_list' ||
       'todo_list' => EdgeInsets.symmetric(vertical: 2 + markers.halfLeading),
-      'quote' => const EdgeInsets.symmetric(vertical: 4),
+      // 提示块的底色框在块内（见 DiaryCalloutBlock），这里只是框外的
+      // 上下间距，与引用相同。
+      'quote' || 'callout' => const EdgeInsets.symmetric(vertical: 4),
       'paragraph' => EdgeInsets.only(
         top: 3,
         bottom: 3 + typography.paragraphSpacing,
@@ -147,8 +150,9 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
     },
     // 段落的占位只在光标停在这个空段落时显示（上游按选区控制）：整篇只有
     // 这一个空段落时是页面的占位（“开始记录…”），正文中间的空行提示 `/`
-    // 命令；只读时不提示。标题与引用、列表的占位上游始终显示：空标题写出
-    // 自己的级别，否则只是一块看不出用途的空白；其余不提示。
+    // 命令；只读时不提示。标题与引用、列表、提示块的占位上游始终显示：
+    // 空标题写出自己的级别，空提示块写“提示”，否则只是一块看不出用途的
+    // 空白；其余不提示。
     placeholderText: (node) => switch (node.type) {
       'heading' => switch (_headingLevel(node)) {
         1 => context.l10n.diaryEditorHeading1,
@@ -158,6 +162,7 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
         5 => context.l10n.diaryEditorHeading5,
         _ => context.l10n.diaryEditorHeading6,
       },
+      'callout' => context.l10n.diaryCalloutPlaceholder,
       'paragraph'
           when node.parent?.type == 'page' &&
               node.parent!.children.length == 1 =>

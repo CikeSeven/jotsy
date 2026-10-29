@@ -11296,6 +11296,42 @@
   "@diaryEditorDivider": {
     "description": "Divider option in the diary editor slash command menu."
   },
+  "diaryEditorCallout": "Callout",
+  "@diaryEditorCallout": {
+    "description": "Callout block tool in the editor toolbar and slash menu; also the title of the callout panel."
+  },
+  "diaryCalloutPlaceholder": "Callout",
+  "@diaryCalloutPlaceholder": {
+    "description": "Placeholder shown in an empty callout block."
+  },
+  "diaryCalloutToText": "Convert to text",
+  "@diaryCalloutToText": {
+    "description": "Callout panel button that turns the callout back into a body paragraph."
+  },
+  "diaryCalloutToneDefault": "Default",
+  "@diaryCalloutToneDefault": {
+    "description": "Callout panel tone option: default (neutral background following the theme), for screen readers and tooltips."
+  },
+  "diaryCalloutToneYellow": "Yellow",
+  "@diaryCalloutToneYellow": {
+    "description": "Callout panel tone option: yellow."
+  },
+  "diaryCalloutToneGreen": "Green",
+  "@diaryCalloutToneGreen": {
+    "description": "Callout panel tone option: green."
+  },
+  "diaryCalloutToneBlue": "Blue",
+  "@diaryCalloutToneBlue": {
+    "description": "Callout panel tone option: blue."
+  },
+  "diaryCalloutToneRed": "Red",
+  "@diaryCalloutToneRed": {
+    "description": "Callout panel tone option: red."
+  },
+  "diaryCalloutTonePurple": "Purple",
+  "@diaryCalloutTonePurple": {
+    "description": "Callout panel tone option: purple."
+  },
   "diaryEditorUnsupportedBlock": "Unsupported content",
   "@diaryEditorUnsupportedBlock": {
     "description": "Placeholder for a preserved editor block from an unsupported format."

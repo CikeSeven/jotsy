@@ -11296,6 +11296,42 @@
   "@diaryEditorDivider": {
     "description": "Divider option in the diary editor slash command menu."
   },
+  "diaryEditorCallout": "提示块",
+  "@diaryEditorCallout": {
+    "description": "编辑器工具栏、斜杠菜单里的提示块（callout）工具名，也是提示块面板的标题。"
+  },
+  "diaryCalloutPlaceholder": "提示",
+  "@diaryCalloutPlaceholder": {
+    "description": "空提示块里显示的占位文字。"
+  },
+  "diaryCalloutToText": "转为正文",
+  "@diaryCalloutToText": {
+    "description": "提示块面板里把提示块转回正文段落的按钮。"
+  },
+  "diaryCalloutToneDefault": "默认",
+  "@diaryCalloutToneDefault": {
+    "description": "提示块面板底色选项：默认（跟随主题的中性底色），读屏与长按提示用。"
+  },
+  "diaryCalloutToneYellow": "黄色",
+  "@diaryCalloutToneYellow": {
+    "description": "提示块面板底色选项：黄色。"
+  },
+  "diaryCalloutToneGreen": "绿色",
+  "@diaryCalloutToneGreen": {
+    "description": "提示块面板底色选项：绿色。"
+  },
+  "diaryCalloutToneBlue": "蓝色",
+  "@diaryCalloutToneBlue": {
+    "description": "提示块面板底色选项：蓝色。"
+  },
+  "diaryCalloutToneRed": "红色",
+  "@diaryCalloutToneRed": {
+    "description": "提示块面板底色选项：红色。"
+  },
+  "diaryCalloutTonePurple": "紫色",
+  "@diaryCalloutTonePurple": {
+    "description": "提示块面板底色选项：紫色。"
+  },
   "diaryEditorUnsupportedBlock": "暂不支持的内容",
   "@diaryEditorUnsupportedBlock": {
     "description": "Placeholder for a preserved editor block from an unsupported format."

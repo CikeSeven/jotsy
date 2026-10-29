@@ -12,10 +12,11 @@ import '../../controllers/diary_editor_controller.dart';
 import 'diary_media_block.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_block_markers.dart';
+import 'diary_callout_block.dart';
 import 'diary_paragraph_block.dart';
 
 /// 原生块组件的单一注册点：共享排版、段落首行缩进、行首标记（列表、待办、
-/// 引用）、代码外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
+/// 引用）、提示块、代码外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
 Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   BuildContext context, {
   required DiaryEditorController controller,
@@ -76,6 +77,7 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
       configuration: text,
       iconBuilder: (context, node) => const DiaryQuoteBar(),
     ),
+    'callout': DiaryCalloutBlockBuilder(configuration: text, markers: markers),
     'todo_list': af.TodoListBlockComponentBuilder(
       configuration: text,
       // 勾选后文字转为次要色并划线，划线与文字同色、不抢眼。

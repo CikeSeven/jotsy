@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
+import '../../controllers/diary_table_editing.dart';
 import 'diary_first_line_indent.dart';
 
 /// 首行缩进的正文段落块：与上游段落块同样的结构与行为，另把首行缩进
@@ -118,11 +119,14 @@ class _DiaryParagraphBlockState extends State<DiaryParagraphBlock>
     }
   }
 
-  /// 本段生效的缩进（逻辑像素，未缩放）；居中、右对齐的段落为 0。两端对齐
-  /// 照常缩进：它与左对齐一样从起始侧排起（上游 [alignment] 认不出
+  /// 本段生效的缩进（逻辑像素，未缩放）；居中、右对齐的段落与表格格子里
+  /// 的段落为 0（格子窄，缩进只会挤掉内容，导出的表格同样不缩进）。两端
+  /// 对齐照常缩进：它与左对齐一样从起始侧排起（上游 [alignment] 认不出
   /// `justify`、为 null），只是把各行拉满，首行的缩进位置不变。
   double get _indent =>
-      alignment == Alignment.center || alignment == Alignment.centerRight
+      alignment == Alignment.center ||
+          alignment == Alignment.centerRight ||
+          diaryNodeInTableCell(node)
       ? 0
       : widget.firstLineIndent;
 

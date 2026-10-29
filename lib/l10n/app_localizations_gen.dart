@@ -14444,6 +14444,60 @@ abstract class AppLocalizations {
   /// **'Divider'**
   String get diaryEditorDivider;
 
+  /// Callout block tool in the editor toolbar and slash menu; also the title of the callout panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Callout'**
+  String get diaryEditorCallout;
+
+  /// Placeholder shown in an empty callout block.
+  ///
+  /// In en, this message translates to:
+  /// **'Callout'**
+  String get diaryCalloutPlaceholder;
+
+  /// Callout panel button that turns the callout back into a body paragraph.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to text'**
+  String get diaryCalloutToText;
+
+  /// Callout panel tone option: default (neutral background following the theme), for screen readers and tooltips.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get diaryCalloutToneDefault;
+
+  /// Callout panel tone option: yellow.
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow'**
+  String get diaryCalloutToneYellow;
+
+  /// Callout panel tone option: green.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get diaryCalloutToneGreen;
+
+  /// Callout panel tone option: blue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get diaryCalloutToneBlue;
+
+  /// Callout panel tone option: red.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get diaryCalloutToneRed;
+
+  /// Callout panel tone option: purple.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get diaryCalloutTonePurple;
+
   /// Placeholder for a preserved editor block from an unsupported format.
   ///
   /// In en, this message translates to:

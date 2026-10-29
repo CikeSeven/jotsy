@@ -6,6 +6,8 @@ import '../../../../core/services/diary_media_storage_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../utils/pinyin/name_index.dart';
 import '../../models/diary_toolbar_preferences.dart';
+import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../../controllers/diary_callout_editing.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_editor_insert.dart';
 
@@ -100,6 +102,14 @@ List<DiaryBlockCommand> diaryBlockCommands(
     group: DiaryBlockCommandGroup.text,
     markdown: '>',
   ),
+  // 提示块没有 Markdown 写法；转换时不写图标与底色（缺省即默认）。
+  DiaryBlockCommand(
+    'callout',
+    DiaryToolbarItem.callout.label(l10n),
+    DiaryToolbarItem.callout.iconData,
+    const ['callout', 'tip', 'note', '提示', '标注', '提醒'],
+    group: DiaryBlockCommandGroup.text,
+  ),
   DiaryBlockCommand(
     'code',
     DiaryToolbarItem.codeBlock.label(l10n),
@@ -188,6 +198,9 @@ void applyDiaryBlockCommand(
   }
   if (command.type == 'divider') {
     insertDiaryEditorNodes(controller: controller, nodes: [af.dividerNode()]);
+  } else if (command.type == kDiaryBlockCallout) {
+    // 与工具栏同一条转换：已是提示块的保留图标与底色。
+    convertDiaryBlocksToCallout(controller);
   } else {
     controller.setBlockType(command.type, attributes: command.attributes);
   }

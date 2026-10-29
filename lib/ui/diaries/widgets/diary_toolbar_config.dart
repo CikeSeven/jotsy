@@ -42,6 +42,9 @@ bool isDiaryToolbarItemActive(
   DiaryToolbarItem.checkList => attributes['type'] == 'todo_list',
   DiaryToolbarItem.codeBlock => attributes['type'] == 'code',
   DiaryToolbarItem.quote => attributes['type'] == 'quote',
+  // 光标在提示块里（选区的块都是提示块）；面板开着时由工具栏经
+  // `panelOpen` 另行点亮。
+  DiaryToolbarItem.callout => attributes['type'] == 'callout',
   DiaryToolbarItem.indent =>
     attributes['depth'] is num && (attributes['depth'] as num) > 0,
   DiaryToolbarItem.link => attributes['href'] != null,

@@ -123,6 +123,14 @@ List<af.CharacterShortcutEvent> diaryBlockCharacterShortcuts() => [
       return true;
     },
   ),
+  // 空提示块里回车：转为正文段落，不再新起一个空段落（见
+  // [_emptyCalloutEnter]）。非空提示块的回车沿用上游：光标后的文字另起
+  // 一个正文段落，所以在末尾回车就是在提示块后面接着写正文。
+  af.CharacterShortcutEvent(
+    key: 'diary_callout_empty_enter',
+    character: '\n',
+    handler: _emptyCalloutEnter,
+  ),
   // 行首 `> ` 转为引用。上游只认 `" `，`/` 菜单却教的是 `>`；排在代码原文
   // 之后，代码块里的 `> ` 已按原文插入，走不到这里。
   af.CharacterShortcutEvent(
@@ -155,6 +163,28 @@ Future<bool> _greaterToQuote(af.EditorState state) => af.formatMarkdownSymbol(
     ...node.children,
   ],
 );
+
+/// 光标停在空提示块里回车：原地转为正文段落（保留对齐），与列表、待办
+/// 在空项上回车即退出同一手感。桌面 Shift + 回车照旧交给上游（在行内
+/// 换行）。整次一个事务、一步撤销。
+Future<bool> _emptyCalloutEnter(af.EditorState state) async {
+  if (HardwareKeyboard.instance.isShiftPressed) return false;
+  final selection = state.selection;
+  if (selection == null || !selection.isCollapsed) return false;
+  final node = state.document.nodeAtPath(selection.end.path);
+  if (node?.type != kDiaryBlockCallout || node!.delta?.isEmpty != true) {
+    return false;
+  }
+  final transaction = state.transaction
+    ..updateNodeType(node, kDiaryBlockParagraph, {
+      kDiaryBlockDeltaKey: <Object?>[],
+      if (node.attributes[kDiaryBlockAlignKey] case final align?)
+        kDiaryBlockAlignKey: align,
+    })
+    ..afterSelection = af.Selection.collapsed(af.Position(path: node.path));
+  await state.apply(transaction, skipHistoryDebounce: true);
+  return true;
+}
 
 Future<bool> _codeFence(af.EditorState state) async {
   final selection = state.selection;

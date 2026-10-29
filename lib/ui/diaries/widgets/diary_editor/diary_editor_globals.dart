@@ -17,9 +17,16 @@ import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 ///   - `supportToggled`：折叠光标上选了字号后接着打的字带上它（上游输入时在
 ///     调试模式下断言“下次输入”的样式键都在这张表里）。选“正文”时写入 null，
 ///     上游把它原样并进新字的属性（与关闭粗体相同），渲染按正文字号。
+/// - 提示块（[kDiaryBlockCallout]）登记进 [af.convertibleBlockTypes]：光标在
+///   提示块开头按退格时转为正文段落（与引用、标题、列表相同），而不是并进
+///   上一块。软键盘的删除走上游输入法回调、直接调用同一条“转为段落”命令，
+///   不经快捷键列表，所以只能在这张全局表里登记。
 void ensureDiaryEditorGlobals() {
   if (_registered) return;
   _registered = true;
+  if (!af.convertibleBlockTypes.contains(kDiaryBlockCallout)) {
+    af.convertibleBlockTypes.add(kDiaryBlockCallout);
+  }
   for (final keys in [
     af.AppFlowyRichTextKeys.supportSliced,
     af.AppFlowyRichTextKeys.supportToggled,

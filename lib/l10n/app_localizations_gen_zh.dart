@@ -7907,6 +7907,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorDivider => '分隔线';
 
   @override
+  String get diaryEditorCallout => '提示块';
+
+  @override
+  String get diaryCalloutPlaceholder => '提示';
+
+  @override
+  String get diaryCalloutToText => '转为正文';
+
+  @override
+  String get diaryCalloutToneDefault => '默认';
+
+  @override
+  String get diaryCalloutToneYellow => '黄色';
+
+  @override
+  String get diaryCalloutToneGreen => '绿色';
+
+  @override
+  String get diaryCalloutToneBlue => '蓝色';
+
+  @override
+  String get diaryCalloutToneRed => '红色';
+
+  @override
+  String get diaryCalloutTonePurple => '紫色';
+
+  @override
   String get diaryEditorUnsupportedBlock => '暂不支持的内容';
 
   @override

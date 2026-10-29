@@ -30,6 +30,7 @@ enum DiaryToolbarItem {
   checkList,
   codeBlock,
   quote,
+  callout,
   indent,
   link,
   currentTime,
@@ -53,6 +54,8 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.attachment,
   DiaryToolbarItem.currentTime,
   DiaryToolbarItem.quote,
+  // 提示块紧跟引用（同为整块的文字样式），已保存过顺序的用户补到末尾。
+  DiaryToolbarItem.callout,
   DiaryToolbarItem.headerStyle,
   // 对齐与字号紧跟标题：新工具排在默认顺序的后半段，不挤进常驻的前几格；
   // 已保存过顺序的用户由 [decodeDiaryToolbarOrder] 补到末尾。
@@ -93,6 +96,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.checkList => 'check_list',
       DiaryToolbarItem.codeBlock => 'code_block',
       DiaryToolbarItem.quote => 'quote',
+      DiaryToolbarItem.callout => 'callout',
       DiaryToolbarItem.indent => 'indent',
       DiaryToolbarItem.link => 'link',
       DiaryToolbarItem.currentTime => 'current_time',
@@ -126,6 +130,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.checkList => FontAwesomeIcons.squareCheck,
       DiaryToolbarItem.codeBlock => FontAwesomeIcons.fileCode,
       DiaryToolbarItem.quote => FontAwesomeIcons.quoteLeft,
+      DiaryToolbarItem.callout => FontAwesomeIcons.lightbulb,
       DiaryToolbarItem.indent => FontAwesomeIcons.indent,
       DiaryToolbarItem.link => FontAwesomeIcons.link,
       DiaryToolbarItem.currentTime => FontAwesomeIcons.clock,
@@ -156,6 +161,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.checkList => l10n.autoT0020,
       DiaryToolbarItem.codeBlock => l10n.autoT0021,
       DiaryToolbarItem.quote => l10n.autoT0022,
+      DiaryToolbarItem.callout => l10n.diaryEditorCallout,
       DiaryToolbarItem.indent => l10n.autoT0023,
       DiaryToolbarItem.link => l10n.autoT0024,
       DiaryToolbarItem.currentTime => l10n.diaryToolbarInsertCurrentTime,

@@ -14444,11 +14444,89 @@ abstract class AppLocalizations {
   /// **'Divider'**
   String get diaryEditorDivider;
 
+  /// Callout block tool in the editor toolbar and slash menu; also the title of the callout panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Callout'**
+  String get diaryEditorCallout;
+
+  /// Placeholder shown in an empty callout block.
+  ///
+  /// In en, this message translates to:
+  /// **'Callout'**
+  String get diaryCalloutPlaceholder;
+
+  /// Callout panel button that turns the callout back into a body paragraph.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to text'**
+  String get diaryCalloutToText;
+
+  /// Callout panel tone option: default (neutral background following the theme), for screen readers and tooltips.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get diaryCalloutToneDefault;
+
+  /// Callout panel tone option: yellow.
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow'**
+  String get diaryCalloutToneYellow;
+
+  /// Callout panel tone option: green.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get diaryCalloutToneGreen;
+
+  /// Callout panel tone option: blue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get diaryCalloutToneBlue;
+
+  /// Callout panel tone option: red.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get diaryCalloutToneRed;
+
+  /// Callout panel tone option: purple.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get diaryCalloutTonePurple;
+
   /// Placeholder for a preserved editor block from an unsupported format.
   ///
   /// In en, this message translates to:
   /// **'Unsupported content'**
   String get diaryEditorUnsupportedBlock;
+
+  /// Name of the toggle block (toggle_list) tool in the editor toolbar and slash menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle'**
+  String get diaryEditorToggleList;
+
+  /// Placeholder shown in a toggle block whose title is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle'**
+  String get diaryToggleListPlaceholder;
+
+  /// Screen reader label of a collapsed toggle block's leading marker: tapping it expands the folded content.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get diaryToggleExpand;
+
+  /// Screen reader label of an expanded toggle block's leading marker: tapping it collapses the folded content.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get diaryToggleCollapse;
 
   /// Image dimension label in the diary image resize sheet.
   ///
@@ -14479,6 +14557,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Heading 3'**
   String get diaryEditorHeading3;
+
+  /// Slash command option that turns the block into a level-4 heading; also the placeholder of an empty level-4 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 4'**
+  String get diaryEditorHeading4;
+
+  /// Slash command option that turns the block into a level-5 heading; also the placeholder of an empty level-5 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 5'**
+  String get diaryEditorHeading5;
+
+  /// Slash command option that turns the block into a level-6 heading; also the placeholder of an empty level-6 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 6'**
+  String get diaryEditorHeading6;
+
+  /// Name of the editor toolbar alignment tool; also the title of the alignment panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alignment'**
+  String get diaryToolbarAlign;
+
+  /// Name of the editor toolbar font size tool; also the title of the font size panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get diaryToolbarFontSize;
+
+  /// Name of the editor toolbar superscript tool: shrinks and raises the selected text (as in x²); tap again to return to normal text.
+  ///
+  /// In en, this message translates to:
+  /// **'Superscript'**
+  String get diaryToolbarSuperscript;
+
+  /// Name of the editor toolbar subscript tool: shrinks and lowers the selected text (as in H₂O); tap again to return to normal text.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscript'**
+  String get diaryToolbarSubscript;
+
+  /// Title of the editor toolbar heading panel (body text and heading levels 1-6).
+  ///
+  /// In en, this message translates to:
+  /// **'Heading'**
+  String get diaryHeadingPanelTitle;
+
+  /// Heading panel option that turns text blocks back into body paragraphs.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get diaryHeadingPanelBody;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Align left'**
+  String get diaryAlignLeft;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Center'**
+  String get diaryAlignCenter;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Align right'**
+  String get diaryAlignRight;
+
+  /// Alignment panel option (screen reader label and long-press tooltip of the icon).
+  ///
+  /// In en, this message translates to:
+  /// **'Justify'**
+  String get diaryAlignJustify;
+
+  /// Font size panel option: small text.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get diaryFontSizeSmall;
+
+  /// Font size panel option: normal body size (no size set).
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get diaryFontSizeNormal;
+
+  /// Font size panel option: large text.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get diaryFontSizeLarge;
+
+  /// Font size panel option: huge text.
+  ///
+  /// In en, this message translates to:
+  /// **'Huge'**
+  String get diaryFontSizeHuge;
 
   /// Slash command group: paragraph, headings, quote and code block.
   ///
@@ -17227,6 +17407,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Comments: {added} added, {replaced} overwritten'**
   String backupImportCommentOverwriteResult(int added, int replaced);
+
+  /// Table tool in the editor toolbar and slash menu; also the title of the table panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Table'**
+  String get diaryEditorTable;
+
+  /// Table panel: insert a row above the caret's row.
+  ///
+  /// In en, this message translates to:
+  /// **'Row above'**
+  String get diaryTableInsertRowAbove;
+
+  /// Table panel: insert a row below the caret's row.
+  ///
+  /// In en, this message translates to:
+  /// **'Row below'**
+  String get diaryTableInsertRowBelow;
+
+  /// Table panel: insert a column to the left of the caret's column.
+  ///
+  /// In en, this message translates to:
+  /// **'Column left'**
+  String get diaryTableInsertColumnLeft;
+
+  /// Table panel: insert a column to the right of the caret's column.
+  ///
+  /// In en, this message translates to:
+  /// **'Column right'**
+  String get diaryTableInsertColumnRight;
+
+  /// Table panel: delete the caret's row.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete row'**
+  String get diaryTableDeleteRow;
+
+  /// Table panel: delete the caret's column.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete column'**
+  String get diaryTableDeleteColumn;
+
+  /// Table panel: toggle whether the first row is a header row.
+  ///
+  /// In en, this message translates to:
+  /// **'Header row'**
+  String get diaryTableHeaderRow;
+
+  /// Table panel: delete the whole table.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete table'**
+  String get diaryTableDelete;
 }
 
 class _AppLocalizationsDelegate

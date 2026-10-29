@@ -8,9 +8,11 @@ import 'diary_blocks_walk.dart';
 
 /// 把块文档投影为平铺的 Quill Delta。
 ///
-/// 供仍按行读取正文的模块使用（PDF 预处理与历史兼容性调用）：嵌套按深度写成 `indent`，与 [diaryBlocksFromQuillOps]
-/// 互逆——由 Delta 转来的文档投影回去逐 op 相同。块文档能表达而 Delta 不能
-/// 的结构（例如引用下挂的列表）按深度缩进展开，读取方看到的是缩进的行。
+/// 供仍按行读取正文的历史兼容性调用使用（导出与分享都已直接读块文档）：
+/// 嵌套按深度写成 `indent`，与 [diaryBlocksFromQuillOps] 互逆——由 Delta
+/// 转来的文档投影回去逐 op 相同。块文档能表达而 Delta 不能的结构（例如
+/// 引用下挂的列表）按深度缩进展开，读取方看到的是缩进的行；标注与折叠
+/// 列表写成普通行，表格逐格写出格内段落。
 ///
 /// 输出的 Delta 以换行结尾；空文档为单个换行。纯函数，无 IO。
 List<Map<String, Object?>> diaryBlocksToQuillOps(

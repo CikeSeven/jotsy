@@ -12,10 +12,13 @@ import '../../controllers/diary_editor_controller.dart';
 import 'diary_media_block.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_block_markers.dart';
+import 'diary_callout_block.dart';
 import 'diary_paragraph_block.dart';
+import 'diary_table_block.dart';
+import 'diary_toggle_block.dart';
 
 /// 原生块组件的单一注册点：共享排版、段落首行缩进、行首标记（列表、待办、
-/// 引用）、代码外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
+/// 引用）、提示块、折叠块、代码外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
 Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   BuildContext context, {
   required DiaryEditorController controller,
@@ -76,6 +79,12 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
       configuration: text,
       iconBuilder: (context, node) => const DiaryQuoteBar(),
     ),
+    'callout': DiaryCalloutBlockBuilder(configuration: text, markers: markers),
+    'toggle_list': DiaryToggleBlockBuilder(
+      configuration: text,
+      markers: markers,
+      controller: controller,
+    ),
     'todo_list': af.TodoListBlockComponentBuilder(
       configuration: text,
       // 勾选后文字转为次要色并划线，划线与文字同色、不抢眼。
@@ -107,6 +116,8 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
         padding: (_) => EdgeInsets.zero,
         textStyle: (_, {textSpan}) => code.codeTextStyle,
         placeholderText: (_) => ' ',
+        // 代码按原文排版，不随两端对齐拉开空格。
+        textAlign: (_) => TextAlign.start,
       ),
     ),
     // 独占一行的 1dp 细线，上下各留 12dp（DESIGN §3.2）。
@@ -117,6 +128,12 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
     ),
     for (final type in ['image', 'video', 'audio', 'attachment', 'quill_embed'])
       type: media,
+    // 表格与格子：格内段落经同一份渲染器构建（见 DiaryTableBlock）。
+    'table': DiaryTableBlockBuilder(
+      configuration: text,
+      editorState: controller.state,
+    ),
+    'table/cell': DiaryTableCellBlockBuilder(editorState: controller.state),
     ...overrides,
   };
   return {

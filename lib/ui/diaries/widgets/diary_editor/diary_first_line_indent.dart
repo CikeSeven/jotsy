@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'diary_editor_styles.dart';
+import 'diary_script_spans.dart';
 
 /// 段落首行缩进的行内片段改写，只由 [DiaryParagraphBlock] 调用。
 ///
@@ -28,6 +29,40 @@ TextSpan diaryIndentFirstGlyph(
   final children = root.children;
   if (indent <= 0 || children == null || children.isEmpty) return root;
   final first = children.first;
+  // 段首是上标 / 下标（`diaryScriptSpan`）：外层片段不带文字，段首的字在它
+  // 里面——已是占位的字在占位里留出缩进，留作文字的字（emoji 等）照常改写。
+  if (first is WidgetSpan && first.child is DiaryScriptGlyph) {
+    return TextSpan(
+      style: root.style,
+      children: <InlineSpan>[
+        WidgetSpan(
+          alignment: first.alignment,
+          baseline: first.baseline,
+          style: first.style,
+          child: Directionality(
+            textDirection: direction,
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(start: indent),
+              child: first.child,
+            ),
+          ),
+        ),
+        ...children.skip(1),
+      ],
+    );
+  }
+  if (first is TextSpan && first.text == null && first.children != null) {
+    final run = diaryIndentFirstGlyph(
+      first,
+      indent: indent,
+      direction: direction,
+    );
+    if (identical(run, first)) return root;
+    return TextSpan(
+      style: root.style,
+      children: <InlineSpan>[run, ...children.skip(1)],
+    );
+  }
   final text = first is TextSpan ? first.text : null;
   if (first is! TextSpan ||
       text == null ||

@@ -11296,9 +11296,61 @@
   "@diaryEditorDivider": {
     "description": "Divider option in the diary editor slash command menu."
   },
+  "diaryEditorCallout": "提示块",
+  "@diaryEditorCallout": {
+    "description": "编辑器工具栏、斜杠菜单里的提示块（callout）工具名，也是提示块面板的标题。"
+  },
+  "diaryCalloutPlaceholder": "提示",
+  "@diaryCalloutPlaceholder": {
+    "description": "空提示块里显示的占位文字。"
+  },
+  "diaryCalloutToText": "转为正文",
+  "@diaryCalloutToText": {
+    "description": "提示块面板里把提示块转回正文段落的按钮。"
+  },
+  "diaryCalloutToneDefault": "默认",
+  "@diaryCalloutToneDefault": {
+    "description": "提示块面板底色选项：默认（跟随主题的中性底色），读屏与长按提示用。"
+  },
+  "diaryCalloutToneYellow": "黄色",
+  "@diaryCalloutToneYellow": {
+    "description": "提示块面板底色选项：黄色。"
+  },
+  "diaryCalloutToneGreen": "绿色",
+  "@diaryCalloutToneGreen": {
+    "description": "提示块面板底色选项：绿色。"
+  },
+  "diaryCalloutToneBlue": "蓝色",
+  "@diaryCalloutToneBlue": {
+    "description": "提示块面板底色选项：蓝色。"
+  },
+  "diaryCalloutToneRed": "红色",
+  "@diaryCalloutToneRed": {
+    "description": "提示块面板底色选项：红色。"
+  },
+  "diaryCalloutTonePurple": "紫色",
+  "@diaryCalloutTonePurple": {
+    "description": "提示块面板底色选项：紫色。"
+  },
   "diaryEditorUnsupportedBlock": "暂不支持的内容",
   "@diaryEditorUnsupportedBlock": {
     "description": "Placeholder for a preserved editor block from an unsupported format."
+  },
+  "diaryEditorToggleList": "折叠块",
+  "@diaryEditorToggleList": {
+    "description": "编辑器工具栏、斜杠菜单里的折叠块（toggle_list）工具名。"
+  },
+  "diaryToggleListPlaceholder": "折叠块",
+  "@diaryToggleListPlaceholder": {
+    "description": "标题为空的折叠块里显示的占位文字。"
+  },
+  "diaryToggleExpand": "展开",
+  "@diaryToggleExpand": {
+    "description": "折叠块行首标记在收起时的读屏标签：点按即展开折叠的内容。"
+  },
+  "diaryToggleCollapse": "收起",
+  "@diaryToggleCollapse": {
+    "description": "折叠块行首标记在展开时的读屏标签：点按即收起折叠的内容。"
   },
   "diaryEditorImageWidth": "图片宽度",
   "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
@@ -11310,6 +11362,40 @@
   "@diaryEditorHeading2": {"description": "正文 / 命令菜单里转为二级标题的选项。"},
   "diaryEditorHeading3": "三级标题",
   "@diaryEditorHeading3": {"description": "正文 / 命令菜单里转为三级标题的选项。"},
+  "diaryEditorHeading4": "四级标题",
+  "@diaryEditorHeading4": {"description": "正文 / 命令菜单里转为四级标题的选项；也是空四级标题的占位提示。"},
+  "diaryEditorHeading5": "五级标题",
+  "@diaryEditorHeading5": {"description": "正文 / 命令菜单里转为五级标题的选项；也是空五级标题的占位提示。"},
+  "diaryEditorHeading6": "六级标题",
+  "@diaryEditorHeading6": {"description": "正文 / 命令菜单里转为六级标题的选项；也是空六级标题的占位提示。"},
+  "diaryToolbarAlign": "对齐",
+  "@diaryToolbarAlign": {"description": "编辑器工具栏的对齐工具名称，也是对齐面板的标题。"},
+  "diaryToolbarFontSize": "字号",
+  "@diaryToolbarFontSize": {"description": "编辑器工具栏的字号工具名称，也是字号面板的标题。"},
+  "diaryToolbarSuperscript": "上标",
+  "@diaryToolbarSuperscript": {"description": "编辑器工具栏的上标工具名称：把选中的文字缩小并抬高（如 x²），再点一次恢复普通文字。"},
+  "diaryToolbarSubscript": "下标",
+  "@diaryToolbarSubscript": {"description": "编辑器工具栏的下标工具名称：把选中的文字缩小并降低（如 H₂O），再点一次恢复普通文字。"},
+  "diaryHeadingPanelTitle": "标题",
+  "@diaryHeadingPanelTitle": {"description": "编辑器工具栏标题面板的标题（正文与一至六级标题）。"},
+  "diaryHeadingPanelBody": "正文",
+  "@diaryHeadingPanelBody": {"description": "标题面板里把文字块转回正文段落的选项。"},
+  "diaryAlignLeft": "左对齐",
+  "@diaryAlignLeft": {"description": "对齐面板的左对齐选项（图标的读屏与长按提示）。"},
+  "diaryAlignCenter": "居中",
+  "@diaryAlignCenter": {"description": "对齐面板的居中选项（图标的读屏与长按提示）。"},
+  "diaryAlignRight": "右对齐",
+  "@diaryAlignRight": {"description": "对齐面板的右对齐选项（图标的读屏与长按提示）。"},
+  "diaryAlignJustify": "两端对齐",
+  "@diaryAlignJustify": {"description": "对齐面板的两端对齐选项（图标的读屏与长按提示）。"},
+  "diaryFontSizeSmall": "小",
+  "@diaryFontSizeSmall": {"description": "字号面板的小号选项。"},
+  "diaryFontSizeNormal": "正文",
+  "@diaryFontSizeNormal": {"description": "字号面板的正文字号选项（不设字号）。"},
+  "diaryFontSizeLarge": "大",
+  "@diaryFontSizeLarge": {"description": "字号面板的大号选项。"},
+  "diaryFontSizeHuge": "特大",
+  "@diaryFontSizeHuge": {"description": "字号面板的特大号选项。"},
   "diaryEditorCommandGroupText": "文本",
   "@diaryEditorCommandGroupText": {"description": "正文 / 命令菜单的分组：段落、标题、引用与代码块。"},
   "diaryEditorCommandGroupList": "列表",
@@ -13080,5 +13166,41 @@
       "added": {"type": "int"},
       "replaced": {"type": "int"}
     }
+  },
+  "diaryEditorTable": "表格",
+  "@diaryEditorTable": {
+    "description": "编辑器工具栏、斜杠菜单里的表格工具名，也是表格面板的标题。"
+  },
+  "diaryTableInsertRowAbove": "上方插入行",
+  "@diaryTableInsertRowAbove": {
+    "description": "表格面板：在光标所在行上方插入一行。"
+  },
+  "diaryTableInsertRowBelow": "下方插入行",
+  "@diaryTableInsertRowBelow": {
+    "description": "表格面板：在光标所在行下方插入一行。"
+  },
+  "diaryTableInsertColumnLeft": "左侧插入列",
+  "@diaryTableInsertColumnLeft": {
+    "description": "表格面板：在光标所在列左侧插入一列。"
+  },
+  "diaryTableInsertColumnRight": "右侧插入列",
+  "@diaryTableInsertColumnRight": {
+    "description": "表格面板：在光标所在列右侧插入一列。"
+  },
+  "diaryTableDeleteRow": "删除行",
+  "@diaryTableDeleteRow": {
+    "description": "表格面板：删除光标所在行。"
+  },
+  "diaryTableDeleteColumn": "删除列",
+  "@diaryTableDeleteColumn": {
+    "description": "表格面板：删除光标所在列。"
+  },
+  "diaryTableHeaderRow": "表头行",
+  "@diaryTableHeaderRow": {
+    "description": "表格面板：首行是否为表头的开关。"
+  },
+  "diaryTableDelete": "删除表格",
+  "@diaryTableDelete": {
+    "description": "表格面板：删除整个表格。"
   }
 }

@@ -408,7 +408,7 @@ void main() {
     ], (_) => null);
 
     expect(writer.lines, [
-      'H | {"header":3}',
+      'H | {"header":5}',
       // 标题不能承载子块，孤立的缩进列表规整到顶层。
       'item | {"list":"bullet"}',
       'one | {"list":"ordered"}',

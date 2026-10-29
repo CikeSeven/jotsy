@@ -11296,9 +11296,61 @@
   "@diaryEditorDivider": {
     "description": "Divider option in the diary editor slash command menu."
   },
+  "diaryEditorCallout": "Callout",
+  "@diaryEditorCallout": {
+    "description": "Callout block tool in the editor toolbar and slash menu; also the title of the callout panel."
+  },
+  "diaryCalloutPlaceholder": "Callout",
+  "@diaryCalloutPlaceholder": {
+    "description": "Placeholder shown in an empty callout block."
+  },
+  "diaryCalloutToText": "Convert to text",
+  "@diaryCalloutToText": {
+    "description": "Callout panel button that turns the callout back into a body paragraph."
+  },
+  "diaryCalloutToneDefault": "Default",
+  "@diaryCalloutToneDefault": {
+    "description": "Callout panel tone option: default (neutral background following the theme), for screen readers and tooltips."
+  },
+  "diaryCalloutToneYellow": "Yellow",
+  "@diaryCalloutToneYellow": {
+    "description": "Callout panel tone option: yellow."
+  },
+  "diaryCalloutToneGreen": "Green",
+  "@diaryCalloutToneGreen": {
+    "description": "Callout panel tone option: green."
+  },
+  "diaryCalloutToneBlue": "Blue",
+  "@diaryCalloutToneBlue": {
+    "description": "Callout panel tone option: blue."
+  },
+  "diaryCalloutToneRed": "Red",
+  "@diaryCalloutToneRed": {
+    "description": "Callout panel tone option: red."
+  },
+  "diaryCalloutTonePurple": "Purple",
+  "@diaryCalloutTonePurple": {
+    "description": "Callout panel tone option: purple."
+  },
   "diaryEditorUnsupportedBlock": "Unsupported content",
   "@diaryEditorUnsupportedBlock": {
     "description": "Placeholder for a preserved editor block from an unsupported format."
+  },
+  "diaryEditorToggleList": "Toggle",
+  "@diaryEditorToggleList": {
+    "description": "Name of the toggle block (toggle_list) tool in the editor toolbar and slash menu."
+  },
+  "diaryToggleListPlaceholder": "Toggle",
+  "@diaryToggleListPlaceholder": {
+    "description": "Placeholder shown in a toggle block whose title is empty."
+  },
+  "diaryToggleExpand": "Expand",
+  "@diaryToggleExpand": {
+    "description": "Screen reader label of a collapsed toggle block's leading marker: tapping it expands the folded content."
+  },
+  "diaryToggleCollapse": "Collapse",
+  "@diaryToggleCollapse": {
+    "description": "Screen reader label of an expanded toggle block's leading marker: tapping it collapses the folded content."
   },
   "diaryEditorImageWidth": "Image width",
   "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
@@ -11310,6 +11362,40 @@
   "@diaryEditorHeading2": {"description": "Slash command option that turns the block into a level-2 heading."},
   "diaryEditorHeading3": "Heading 3",
   "@diaryEditorHeading3": {"description": "Slash command option that turns the block into a level-3 heading."},
+  "diaryEditorHeading4": "Heading 4",
+  "@diaryEditorHeading4": {"description": "Slash command option that turns the block into a level-4 heading; also the placeholder of an empty level-4 heading."},
+  "diaryEditorHeading5": "Heading 5",
+  "@diaryEditorHeading5": {"description": "Slash command option that turns the block into a level-5 heading; also the placeholder of an empty level-5 heading."},
+  "diaryEditorHeading6": "Heading 6",
+  "@diaryEditorHeading6": {"description": "Slash command option that turns the block into a level-6 heading; also the placeholder of an empty level-6 heading."},
+  "diaryToolbarAlign": "Alignment",
+  "@diaryToolbarAlign": {"description": "Name of the editor toolbar alignment tool; also the title of the alignment panel."},
+  "diaryToolbarFontSize": "Font size",
+  "@diaryToolbarFontSize": {"description": "Name of the editor toolbar font size tool; also the title of the font size panel."},
+  "diaryToolbarSuperscript": "Superscript",
+  "@diaryToolbarSuperscript": {"description": "Name of the editor toolbar superscript tool: shrinks and raises the selected text (as in x²); tap again to return to normal text."},
+  "diaryToolbarSubscript": "Subscript",
+  "@diaryToolbarSubscript": {"description": "Name of the editor toolbar subscript tool: shrinks and lowers the selected text (as in H₂O); tap again to return to normal text."},
+  "diaryHeadingPanelTitle": "Heading",
+  "@diaryHeadingPanelTitle": {"description": "Title of the editor toolbar heading panel (body text and heading levels 1-6)."},
+  "diaryHeadingPanelBody": "Body",
+  "@diaryHeadingPanelBody": {"description": "Heading panel option that turns text blocks back into body paragraphs."},
+  "diaryAlignLeft": "Align left",
+  "@diaryAlignLeft": {"description": "Alignment panel option (screen reader label and long-press tooltip of the icon)."},
+  "diaryAlignCenter": "Center",
+  "@diaryAlignCenter": {"description": "Alignment panel option (screen reader label and long-press tooltip of the icon)."},
+  "diaryAlignRight": "Align right",
+  "@diaryAlignRight": {"description": "Alignment panel option (screen reader label and long-press tooltip of the icon)."},
+  "diaryAlignJustify": "Justify",
+  "@diaryAlignJustify": {"description": "Alignment panel option (screen reader label and long-press tooltip of the icon)."},
+  "diaryFontSizeSmall": "Small",
+  "@diaryFontSizeSmall": {"description": "Font size panel option: small text."},
+  "diaryFontSizeNormal": "Normal",
+  "@diaryFontSizeNormal": {"description": "Font size panel option: normal body size (no size set)."},
+  "diaryFontSizeLarge": "Large",
+  "@diaryFontSizeLarge": {"description": "Font size panel option: large text."},
+  "diaryFontSizeHuge": "Huge",
+  "@diaryFontSizeHuge": {"description": "Font size panel option: huge text."},
   "diaryEditorCommandGroupText": "Text",
   "@diaryEditorCommandGroupText": {"description": "Slash command group: paragraph, headings, quote and code block."},
   "diaryEditorCommandGroupList": "Lists",
@@ -13080,5 +13166,41 @@
       "added": {"type": "int"},
       "replaced": {"type": "int"}
     }
+  },
+  "diaryEditorTable": "Table",
+  "@diaryEditorTable": {
+    "description": "Table tool in the editor toolbar and slash menu; also the title of the table panel."
+  },
+  "diaryTableInsertRowAbove": "Row above",
+  "@diaryTableInsertRowAbove": {
+    "description": "Table panel: insert a row above the caret's row."
+  },
+  "diaryTableInsertRowBelow": "Row below",
+  "@diaryTableInsertRowBelow": {
+    "description": "Table panel: insert a row below the caret's row."
+  },
+  "diaryTableInsertColumnLeft": "Column left",
+  "@diaryTableInsertColumnLeft": {
+    "description": "Table panel: insert a column to the left of the caret's column."
+  },
+  "diaryTableInsertColumnRight": "Column right",
+  "@diaryTableInsertColumnRight": {
+    "description": "Table panel: insert a column to the right of the caret's column."
+  },
+  "diaryTableDeleteRow": "Delete row",
+  "@diaryTableDeleteRow": {
+    "description": "Table panel: delete the caret's row."
+  },
+  "diaryTableDeleteColumn": "Delete column",
+  "@diaryTableDeleteColumn": {
+    "description": "Table panel: delete the caret's column."
+  },
+  "diaryTableHeaderRow": "Header row",
+  "@diaryTableHeaderRow": {
+    "description": "Table panel: toggle whether the first row is a header row."
+  },
+  "diaryTableDelete": "Delete table",
+  "@diaryTableDelete": {
+    "description": "Table panel: delete the whole table."
   }
 }

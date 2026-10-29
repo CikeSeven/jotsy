@@ -6,6 +6,7 @@ import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_from_delta.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_walk.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_globals.dart';
 
 Map<String, Object?> _block(
   String type,
@@ -34,6 +35,13 @@ String _outline(Map<String, Object?> document) => [
 void main() {
   test('container block types are exactly the blocks the editor draws '
       'children for', () {
+    // 上游可缩进的四种类型画出子块；折叠块由编辑器的全局登记补进上游的
+    // 可缩进类型表（`ensureDiaryEditorGlobals`，编辑器挂载前调用）。登记
+    // 之后两者必须严格相等：能挂子块的类型就是编辑器画得出子块、Tab 能
+    // 缩进进去的那几种，多一种会留下看不见的子块，少一种会把能显示的子块
+    // 在读取时提出来。
+    ensureDiaryEditorGlobals();
+    expect(af.indentableBlockTypes, contains(kDiaryBlockToggleList));
     expect(kDiaryContainerBlockTypes, af.indentableBlockTypes);
   });
 

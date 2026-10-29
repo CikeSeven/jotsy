@@ -3,13 +3,15 @@ import 'dart:math' as math;
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
+import '../../controllers/diary_table_editing.dart';
 import 'diary_first_line_indent.dart';
 
 /// 首行缩进的正文段落块：与上游段落块同样的结构与行为，另把首行缩进
 /// [firstLineIndent]（逻辑像素，见 `DiaryTypography.firstLineIndentExtent`）。
 ///
 /// 只在缩进大于 0 时注册（[buildDiaryEditorBlocks]），不缩进时仍用上游段落块，
-/// 默认排版与改版前逐像素一致。居中、右对齐的段落不缩进。
+/// 默认排版与改版前逐像素一致。居中、右对齐的段落不缩进，两端对齐的照常
+/// 缩进（对齐经块配置的 `textAlign`，见 `diaryBlockTextAlign`）。
 ///
 /// 缩进的画法见 [diaryIndentFirstGlyph]：段首的字被换成“缩进 + 字”的占位，
 /// 文字偏移与文档一致，但占位框从行首算起。本类在几何查询上把这段缩进当成
@@ -117,9 +119,14 @@ class _DiaryParagraphBlockState extends State<DiaryParagraphBlock>
     }
   }
 
-  /// 本段生效的缩进（逻辑像素，未缩放）；居中、右对齐的段落为 0。
+  /// 本段生效的缩进（逻辑像素，未缩放）；居中、右对齐的段落与表格格子里
+  /// 的段落为 0（格子窄，缩进只会挤掉内容，导出的表格同样不缩进）。两端
+  /// 对齐照常缩进：它与左对齐一样从起始侧排起（上游 [alignment] 认不出
+  /// `justify`、为 null），只是把各行拉满，首行的缩进位置不变。
   double get _indent =>
-      alignment == Alignment.center || alignment == Alignment.centerRight
+      alignment == Alignment.center ||
+          alignment == Alignment.centerRight ||
+          diaryNodeInTableCell(node)
       ? 0
       : widget.firstLineIndent;
 

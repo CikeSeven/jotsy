@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:path/path.dart' as p;
 
 import '../../../core/database/code_block_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
@@ -20,7 +21,9 @@ import 'diary_export_naming.dart';
 ///
 /// 正文按块写出：每个文本行一段（段间空一行，保留原来的分行），列表、
 /// 待办、引用、代码块用标准语法；找不到的图片直接略过，未打包的录音、
-/// 视频、附件写成一行名称。
+/// 视频、附件写成一行名称。标注写成以图标开头的引用（`> 💡 文字`），折叠
+/// 列表展开写成 `▸ 标题` 加照常跟在后面的子块，表格写成 GFM 管道表格，
+/// 上下标写成 `<sup>` / `<sub>`；字号与对齐没有 Markdown 写法，略过。
 ///
 /// 导出成书（[write] 的 `book` 不为 null）时全书写进一个 `<书名>.md`（有
 /// 媒体时同样打包 `media/`）：开头是扉页（`# 书名`、封面、简介、统计行与
@@ -334,6 +337,20 @@ class DiaryMarkdownWriter {
           if (text.trim().isNotEmpty) {
             sections.add(_escapeLineStart(text));
           }
+        case ExportBlockKind.callout:
+          // 标注写成以图标开头的引用；相邻的两个标注各成一段（中间空一
+          // 行），不并成一个引用。
+          flush();
+          final icon = block.calloutIcon ?? kDiaryCalloutDefaultIcon;
+          sections.add('> $icon ${_inlines(block.inlines)}'.trimRight());
+        case ExportBlockKind.toggle:
+          // Markdown 没有折叠写法（`<details>` 里的 Markdown 多数阅读器不
+          // 解析）：导出时一律展开，标题前加 `▸ `，子块照常跟在后面。
+          flush();
+          sections.add('▸ ${_inlines(block.inlines)}'.trimRight());
+        case ExportBlockKind.table:
+          flush();
+          sections.add(_table(block));
         case ExportBlockKind.heading:
           flush();
           final level = (block.level + headingOffset).clamp(1, 6);
@@ -406,12 +423,43 @@ class DiaryMarkdownWriter {
         if (run.italic) core = '*$core*';
         if (run.strike) core = '~~$core~~';
         if (run.underline) core = '<u>$core</u>';
+        // 上下标没有 Markdown 写法，用 HTML 标签（主流阅读器都认）。
+        core = switch (run.script) {
+          ExportScript.superscript => '<sup>$core</sup>',
+          ExportScript.subscript => '<sub>$core</sub>',
+          null => core,
+        };
         if (run.link != null) core = '[$core](${_destination(run.link!)})';
       }
       text = '$leading$core$trailing';
       out.write(text);
     }
     return out.toString();
+  }
+
+  /// GFM 管道表格。没有表头行时先写一行空表头，否则第一行数据会被当成
+  /// 表头加粗；格子里的 `|` 写成 `\|`（GFM 先按 `|` 切格，行内代码里也要
+  /// 转义），一格里的几段以 `<br>` 相连（表格行不能真的换行）。
+  static String _table(ExportBlock block) {
+    String cell(List<ExportInline> runs) => <String>[
+      for (final paragraph in ExportBlock.tableCellParagraphs(runs))
+        _inlines(paragraph).trim(),
+    ].join('<br>').replaceAll('|', r'\|');
+    String row(Iterable<String> cells) => '| ${cells.join(' | ')} |';
+
+    final rows = <List<String>>[
+      for (final cells in block.tableRows)
+        <String>[for (final runs in cells) cell(runs)],
+    ];
+    final columns = rows.isEmpty ? 0 : rows.first.length;
+    final header = block.tableHeaderRow && rows.isNotEmpty
+        ? rows.removeAt(0)
+        : List<String>.filled(columns, '');
+    return <String>[
+      row(header),
+      row(List<String>.filled(columns, '---')),
+      for (final cells in rows) row(cells),
+    ].join('\n');
   }
 
   /// 围栏代码块：信息串为语言 id，纯文本写 `text`，未指定不写；围栏长度

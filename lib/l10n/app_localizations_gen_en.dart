@@ -8821,7 +8821,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorDivider => 'Divider';
 
   @override
+  String get diaryEditorCallout => 'Callout';
+
+  @override
+  String get diaryCalloutPlaceholder => 'Callout';
+
+  @override
+  String get diaryCalloutToText => 'Convert to text';
+
+  @override
+  String get diaryCalloutToneDefault => 'Default';
+
+  @override
+  String get diaryCalloutToneYellow => 'Yellow';
+
+  @override
+  String get diaryCalloutToneGreen => 'Green';
+
+  @override
+  String get diaryCalloutToneBlue => 'Blue';
+
+  @override
+  String get diaryCalloutToneRed => 'Red';
+
+  @override
+  String get diaryCalloutTonePurple => 'Purple';
+
+  @override
   String get diaryEditorUnsupportedBlock => 'Unsupported content';
+
+  @override
+  String get diaryEditorToggleList => 'Toggle';
+
+  @override
+  String get diaryToggleListPlaceholder => 'Toggle';
+
+  @override
+  String get diaryToggleExpand => 'Expand';
+
+  @override
+  String get diaryToggleCollapse => 'Collapse';
 
   @override
   String get diaryEditorImageWidth => 'Image width';
@@ -8837,6 +8876,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorHeading3 => 'Heading 3';
+
+  @override
+  String get diaryEditorHeading4 => 'Heading 4';
+
+  @override
+  String get diaryEditorHeading5 => 'Heading 5';
+
+  @override
+  String get diaryEditorHeading6 => 'Heading 6';
+
+  @override
+  String get diaryToolbarAlign => 'Alignment';
+
+  @override
+  String get diaryToolbarFontSize => 'Font size';
+
+  @override
+  String get diaryToolbarSuperscript => 'Superscript';
+
+  @override
+  String get diaryToolbarSubscript => 'Subscript';
+
+  @override
+  String get diaryHeadingPanelTitle => 'Heading';
+
+  @override
+  String get diaryHeadingPanelBody => 'Body';
+
+  @override
+  String get diaryAlignLeft => 'Align left';
+
+  @override
+  String get diaryAlignCenter => 'Center';
+
+  @override
+  String get diaryAlignRight => 'Align right';
+
+  @override
+  String get diaryAlignJustify => 'Justify';
+
+  @override
+  String get diaryFontSizeSmall => 'Small';
+
+  @override
+  String get diaryFontSizeNormal => 'Normal';
+
+  @override
+  String get diaryFontSizeLarge => 'Large';
+
+  @override
+  String get diaryFontSizeHuge => 'Huge';
 
   @override
   String get diaryEditorCommandGroupText => 'Text';
@@ -10524,4 +10614,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String backupImportCommentOverwriteResult(int added, int replaced) {
     return 'Comments: $added added, $replaced overwritten';
   }
+
+  @override
+  String get diaryEditorTable => 'Table';
+
+  @override
+  String get diaryTableInsertRowAbove => 'Row above';
+
+  @override
+  String get diaryTableInsertRowBelow => 'Row below';
+
+  @override
+  String get diaryTableInsertColumnLeft => 'Column left';
+
+  @override
+  String get diaryTableInsertColumnRight => 'Column right';
+
+  @override
+  String get diaryTableDeleteRow => 'Delete row';
+
+  @override
+  String get diaryTableDeleteColumn => 'Delete column';
+
+  @override
+  String get diaryTableHeaderRow => 'Header row';
+
+  @override
+  String get diaryTableDelete => 'Delete table';
 }

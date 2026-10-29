@@ -1,3 +1,4 @@
+import '../database/diary_blocks/diary_blocks_schema.dart';
 import 'journal_import_block_writer.dart';
 import 'journal_import_style.dart';
 
@@ -13,7 +14,8 @@ import 'journal_import_style.dart';
 ///   网页链接、颜色、背景与字号；颜色按 flutter_quill 的约定，8 位十六进制
 ///   是 `#AARRGGBB`，再经 journal_import_style.dart 规整（默认墨色不导入），
 ///   字号只写 small / large / huge 三档；
-/// - 标题最多 3 级（与正文一致），对齐只保留 center / right / justify。
+/// - 标题 1~6 级（与正文一致），上下标 `script` 只认 super / sub，对齐只保留
+///   center / right / justify。
 ///
 /// [resolveEmbed] 返回这个嵌入对应的媒体（实况照片是静图 + 视频两项），
 /// 空列表即丢弃（文件缺失、认不出的类型），调用方负责统计缺失。纯内存
@@ -119,6 +121,9 @@ Map<String, Object?> _inlineAttributes(Map<Object?, Object?> source) {
     'color': ?color(source['color'], journalTextColor),
     'background': ?color(source['background'], journalBackgroundColor),
     'size': ?_size(source['size']),
+    if (source['script'] case final String script
+        when script == kDiaryScriptSuper || script == kDiaryScriptSub)
+      'script': script,
   };
 }
 
@@ -142,7 +147,7 @@ Map<String, Object?> _blockAttributes(Map<Object?, Object?> source) {
   final indent = source['indent'];
   final code = source['code-block'];
   return {
-    if (header is int && header > 0) 'header': header > 3 ? 3 : header,
+    if (header is int && header > 0) 'header': header.clamp(1, 6),
     if (list case 'ordered' || 'bullet' || 'checked' || 'unchecked')
       'list': list,
     if (source['blockquote'] == true) 'blockquote': true,

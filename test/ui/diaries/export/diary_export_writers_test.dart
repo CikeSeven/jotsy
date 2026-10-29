@@ -168,8 +168,8 @@ void main() {
         images: <Uint8List>[],
       );
       expect(
-        pdfBody!.toJson(),
-        contains(equals(<String, dynamic>{'insert': '———'})),
+        pdfBody!.map((ExportBlock b) => (b.kind, b.plainText)),
+        contains((ExportBlockKind.paragraph, '———')),
       );
     });
   });
@@ -297,8 +297,8 @@ void main() {
       },
     );
 
-    test('pdf body rewrites language values to true so the renderer '
-        'does not crash', () async {
+    test('pdf body keeps every code line whatever its language value and '
+        'renders it', () async {
       final entry = codeEntry(<dynamic>[
         codeLine('x = 1', 'python'),
         codeLine('raw', 'plain'),
@@ -308,7 +308,6 @@ void main() {
           'attributes': <String, dynamic>{'code-block': false},
         },
       ]);
-      final original = jsonEncode(entry.deltaOps);
       final body = await DiaryPdfWriter.prepareBody(
         entry,
         includeImages: false,
@@ -316,15 +315,20 @@ void main() {
         media: DiaryExportMediaLibrary(),
         images: <Uint8List>[],
       );
-      final values = body!
-          .toJson()
-          .map((dynamic op) => (op as Map)['attributes'])
-          .whereType<Map>()
-          .map((Map attrs) => attrs['code-block'])
-          .toList();
-      expect(values, <Object?>[true, true, true, false]);
-      // 不改动调用方的正文。
-      expect(jsonEncode(entry.deltaOps), original);
+      expect(body!.map((ExportBlock b) => b.kind), <ExportBlockKind>[
+        ExportBlockKind.paragraph,
+        ExportBlockKind.code,
+        ExportBlockKind.code,
+        ExportBlockKind.code,
+        ExportBlockKind.paragraph,
+      ]);
+      expect(body.map((ExportBlock b) => b.codeLanguage), <String?>[
+        null,
+        'python',
+        'plain',
+        null,
+        null,
+      ]);
 
       final fonts = await DiaryPdfFonts.load();
       final output = await DiaryPdfWriter.write(
@@ -816,7 +820,6 @@ void main() {
           <String, dynamic>{'insert': '\n'},
         ],
       );
-      final original = jsonEncode(entry.deltaOps);
       final images = <Uint8List>[];
       final body = await DiaryPdfWriter.prepareBody(
         entry,
@@ -825,31 +828,29 @@ void main() {
         media: DiaryExportMediaLibrary(),
         images: images,
       );
-      final ops = body!.toJson();
-      expect(ops.first, <String, dynamic>{
-        'insert': '正文',
-        'attributes': <String, dynamic>{'bold': true},
+      final first = body!.first.inlines.single;
+      expect((first.text, first.bold), ('正文', true));
+      final runs = <(String, String?)>[
+        for (final block in body)
+          for (final run in block.inlines) (run.text, run.link),
+      ];
+      expect(runs, contains(('[视频 trip.mp4]', null)));
+      expect(
+        runs,
+        contains(('[附件 报告.pdf]', 'https://example.invalid/report.pdf')),
+      );
+      expect(body.map((ExportBlock b) => b.kind).toSet(), <ExportBlockKind>{
+        ExportBlockKind.paragraph,
       });
-      // contains 给 Map 时按引用比较，套 equals 才是逐项比较。
-      expect(
-        ops,
-        contains(equals(<String, dynamic>{'insert': '[视频 trip.mp4]'})),
-      );
-      expect(
-        ops,
-        contains(
-          equals(<String, dynamic>{
-            'insert': '[附件 报告.pdf]',
-            'attributes': <String, dynamic>{
-              'link': 'https://example.invalid/report.pdf',
-            },
-          }),
-        ),
-      );
-      expect(jsonEncode(ops), isNot(contains('/private')));
-      // 找不到的图片直接去掉，不交给插件（它会因读文件失败而中断导出）。
+      expect(body.map((ExportBlock b) => b.source).nonNulls, isEmpty);
+      expect(runs.map((run) => run.$1).join(), isNot(contains('/private')));
+      // 找不到的图片直接去掉，不交给绘制（读文件失败会中断导出）。
       expect(images, isEmpty);
-      expect(jsonEncode(entry.deltaOps), original);
+      // 调用方的正文不变：媒体仍是媒体块。
+      expect(
+        entry.blocks.where((ExportBlock b) => b.kind == ExportBlockKind.media),
+        hasLength(2),
+      );
     });
 
     test('routes images through virtual URLs and skips empty bodies', () async {
@@ -863,7 +864,7 @@ void main() {
       );
       expect(images, hasLength(1));
       expect(
-        jsonEncode(body!.toJson()),
+        body!.map((ExportBlock b) => b.source),
         contains('https://jotsy.export/0.png'),
       );
 
@@ -918,7 +919,6 @@ void main() {
           <String, dynamic>{'insert': '\n'},
         ],
       );
-      final original = jsonEncode(entry.deltaOps);
       final body = await DiaryPdfWriter.prepareBody(
         entry,
         includeImages: false,
@@ -926,21 +926,31 @@ void main() {
         media: DiaryExportMediaLibrary(),
         images: <Uint8List>[],
       );
-      final attrs = <Object?>[
-        for (final op in body!.toJson()) (op as Map)['attributes'],
-      ];
-      expect(attrs, <Object?>[
-        <String, dynamic>{'color': '#FFE5484D', 'background': '#FFFFD0D2'},
-        <String, dynamic>{'color': '#FF7F6868', 'background': '#FFFFD0D2'},
-        // 完全透明的背景等于没有背景。
-        <String, dynamic>{'bold': true},
-        <String, dynamic>{'background': '#FFFFD0D2'},
-        // 读不懂的写法原样交给插件。
-        <String, dynamic>{'color': 'red'},
-        null,
-      ]);
-      // 不改动调用方的正文。
-      expect(jsonEncode(entry.deltaOps), original);
+      expect(
+        <(String, int?, int?, bool)>[
+          for (final run in body!.single.inlines)
+            (
+              run.text,
+              run.color?.toARGB32(),
+              run.background?.toARGB32(),
+              run.bold,
+            ),
+        ],
+        <(String, int?, int?, bool)>[
+          ('红', 0xFFE5484D, 0xFFFFD0D2, false),
+          ('灰', 0xFF7F6868, 0xFFFFD0D2, false),
+          // 完全透明的背景等于没有背景。
+          ('透明', null, null, true),
+          ('六位', null, 0xFFFFD0D2, false),
+          // 读不懂的写法在解析时就略过。
+          ('颜色名', null, null, false),
+        ],
+      );
+      // 不改动调用方的正文：背景仍是半透明原色。
+      expect(
+        entry.blocks.single.inlines.first.background,
+        const Color(0x4DFF6369),
+      );
     });
   });
 

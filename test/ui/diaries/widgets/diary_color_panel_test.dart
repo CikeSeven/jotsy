@@ -246,7 +246,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final width in <double>[360, 1200]) {
+  for (final width in <double>[360, 1400]) {
     for (final mode in DiaryColorPanelMode.values) {
       testWidgets(
         'the ${mode.name} page opens in a ${width.toInt()}dp toolbar',

@@ -1,6 +1,7 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import 'diary_editor_controller.dart';
+import 'diary_table_editing.dart';
 
 /// 选区暂时不存在时使用正文末尾；媒体工具保留选中文字，插在选区末端。
 af.Selection diaryEditorInsertionSelection(
@@ -20,6 +21,8 @@ af.Selection diaryEditorInsertionSelection(
 
 /// 在当前块中拆开前后文字，一次事务插入媒体与末尾可编辑段落。
 /// 子树留在原父块中，媒体作为同级块插入；撤销同时恢复文字、媒体与选区。
+/// 光标在表格的格子里时不拆格内文字：格子只能放段落，整组插到表格后面，
+/// 光标落到后面的空段落。
 void insertDiaryEditorNodes({
   required DiaryEditorController controller,
   required List<af.Node> nodes,
@@ -38,7 +41,11 @@ void insertDiaryEditorNodes({
   af.Node? replaced;
   final af.Path insertPath;
   af.Node trailing;
-  if (delta == null) {
+  final table = diaryTableOf(current);
+  if (table != null) {
+    insertPath = table.path.next;
+    trailing = af.paragraphNode();
+  } else if (delta == null) {
     insertPath = current.path.next;
     trailing = af.paragraphNode();
   } else {

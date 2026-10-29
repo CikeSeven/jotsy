@@ -77,6 +77,9 @@ Future<ColorPanelHarness> _pump(
 }
 
 Future<void> _tapCodeTool(WidgetTester tester) async {
+  // 默认顺序里代码块在最后，360dp 下落在「更多」露出的三行之外，先滚到它。
+  await tester.ensureVisible(find.byTooltip(_codeTool));
+  await tester.pumpAndSettle();
   await tester.tap(find.byTooltip(_codeTool));
   await tester.pumpAndSettle();
 }

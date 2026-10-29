@@ -11,15 +11,20 @@ import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
 import '../../controllers/diary_block_editing.dart';
 import '../../controllers/diary_editor_clipboard.dart';
+import '../../controllers/diary_text_style_editing.dart';
 import '../../models/diary_code_block/diary_code_block_style.dart';
+import '../../models/diary_text_style_options.dart';
 import '../../providers/diary_code_block_style_provider.dart';
 import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_blocks.dart';
+import 'diary_editor_globals.dart';
 import 'diary_slash_commands.dart';
 import 'diary_slash_menu.dart';
+import 'diary_table_keyboard_interceptor.dart';
+import 'diary_table_shortcuts.dart';
 import 'diary_block_commands.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_editor_spans.dart';
@@ -27,6 +32,7 @@ import 'diary_editor_styles.dart';
 import 'diary_editor_interaction_layer.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_inline_page.dart';
+import '../diary_link_dialog.dart';
 
 /// 所有正文位置共用 AppFlowy 渲染与主题。编辑页使用原生虚拟滚动，标题等
 /// 非正文 UI 经 header/footer 装配；只读正文可嵌在预览页的现有滚动视图中。
@@ -93,9 +99,16 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   late af.EditorScrollController _scroll;
   late DiaryBlockLanguageTracker _tracker;
   late DiarySlashMenuController _slashMenu;
+
+  /// 表格里的软键盘规则（见 [DiaryTableKeyboardInterceptor]）：上游的键盘
+  /// 服务在编辑器挂载后才有，首帧之后再登记；只读正文没有键盘服务。
+  final DiaryTableKeyboardInterceptor _tableInterceptor =
+      DiaryTableKeyboardInterceptor();
   @override
   void initState() {
     super.initState();
+    // 上游的行内属性登记是全局的，必须先于任何编辑器构建（见该函数）。
+    ensureDiaryEditorGlobals();
     _bind();
   }
 
@@ -110,6 +123,20 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     );
     _tracker = DiaryBlockLanguageTracker.of(widget.controller)
       ..addListener(_rebuild);
+    final state = widget.controller.state;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !state.isDisposed && state == widget.controller.state) {
+        state.service.keyboardService?.registerInterceptor(_tableInterceptor);
+      }
+    });
+  }
+
+  void _unregisterInterceptor(DiaryEditorController controller) {
+    if (!controller.state.isDisposed) {
+      controller.state.service.keyboardService?.unregisterInterceptor(
+        _tableInterceptor,
+      );
+    }
   }
 
   void _onFocus() {
@@ -151,6 +178,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         old.focusNode != widget.focusNode) {
       _scroll.dispose();
       _slashMenu.dispose();
+      _unregisterInterceptor(old.controller);
       old.controller.detachView();
       old.focusNode?.removeListener(_onFocus);
       _tracker.removeListener(_rebuild);
@@ -163,6 +191,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     widget.focusNode?.removeListener(_onFocus);
     _scroll.dispose();
     _slashMenu.dispose();
+    _unregisterInterceptor(widget.controller);
     widget.controller.detachView();
     _tracker.removeListener(_rebuild);
     _headerSlot.dispose();
@@ -273,6 +302,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             onRecording: widget.onRecordingCommand,
           ),
         ),
+        // 表格里的回车与 Markdown 原文先于其他块规则。
+        ...diaryTableCharacterShortcuts(),
         ...diaryBlockCharacterShortcuts(),
       ],
       editorStyle: buildDiaryEditorStyle(
@@ -287,6 +318,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         ),
       ),
       commandShortcutEvents: [
+        // 表格里的退格 / Delete / Tab / 方向键先于上游（见该文件）。
+        ...diaryTableCommandShortcuts(),
         for (final command in ['copy', 'cut', 'paste'])
           af.CommandShortcutEvent(
             key: 'diary_$command',
@@ -314,6 +347,22 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               return KeyEventResult.handled;
             },
           ),
+        // 桌面的 Ctrl / ⌘ + Shift + V 只粘贴原文（不转换 HTML 与
+        // Markdown），排在上游同键的“粘贴为纯文本”之前。手机保持上游行为。
+        if (AppPlatform.isDesktop)
+          af.CommandShortcutEvent(
+            key: 'diary_paste_plain_text',
+            getDescription: () => 'paste as plain text',
+            command: 'ctrl+shift+v',
+            macOSCommand: 'cmd+shift+v',
+            handler: (_) {
+              if (controller.readOnly) return KeyEventResult.ignored;
+              unawaited(
+                DiaryEditorClipboard.paste(controller, plainText: true),
+              );
+              return KeyEventResult.handled;
+            },
+          ),
         // 桌面上 Esc 交给页面（与返回按钮相同，见各编辑页）：上游的
         // “退出编辑”会吞掉 Esc、只清掉选区；斜杠菜单开着时先收起菜单。手机
         // 保持上游行为。
@@ -328,9 +377,59 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               return KeyEventResult.handled;
             },
           ),
+        // 高亮写应用自己的颜色格式（见 toggleDiaryDefaultHighlight）。
+        af.CommandShortcutEvent(
+          key: 'diary_toggle_highlight',
+          getDescription: () => 'toggle highlight',
+          command: 'ctrl+shift+h',
+          macOSCommand: 'cmd+shift+h',
+          handler: (_) => toggleDiaryDefaultHighlight(controller)
+              ? KeyEventResult.handled
+              : KeyEventResult.ignored,
+        ),
+        // 桌面的 Ctrl / ⌘ + . 与 Ctrl / ⌘ + , 切换上标 / 下标，与工具栏同一
+        // 动作；上游与应用都没有占用这两个组合。代码块里不处理（交还按键）。
+        if (AppPlatform.isDesktop)
+          for (final (name, key, script) in [
+            ('superscript', 'period', DiaryScript.superscript),
+            ('subscript', 'comma', DiaryScript.subscript),
+          ])
+            af.CommandShortcutEvent(
+              key: 'diary_toggle_$name',
+              getDescription: () => 'toggle $name',
+              command: 'ctrl+$key',
+              macOSCommand: 'cmd+$key',
+              handler: (_) {
+                if (controller.readOnly ||
+                    diaryTextStyleTargets(controller).isEmpty) {
+                  return KeyEventResult.ignored;
+                }
+                toggleDiaryScript(controller, script);
+                return KeyEventResult.handled;
+              },
+            ),
+        // 桌面的 Ctrl / ⌘ + K 打开与工具栏「链接」相同的对话框，取代上游的
+        // 链接浮层（样式与校验都与应用不一致）。手机保持上游行为。
+        if (AppPlatform.isDesktop)
+          af.CommandShortcutEvent(
+            key: 'diary_edit_link',
+            getDescription: () => 'edit link',
+            command: 'ctrl+k',
+            macOSCommand: 'cmd+k',
+            handler: (_) {
+              if (!mounted || controller.readOnly) {
+                return KeyEventResult.ignored;
+              }
+              unawaited(editDiaryLink(context, controller));
+              return KeyEventResult.handled;
+            },
+          ),
         for (final event in af.standardCommandShortcutEvents)
-          if (!AppPlatform.isDesktop ||
-              !identical(event, af.exitEditingCommand))
+          if (!kUpstreamTableCommandKeys.contains(event.key) &&
+              !identical(event, af.toggleHighlightCommand) &&
+              !(AppPlatform.isDesktop &&
+                  (identical(event, af.exitEditingCommand) ||
+                      identical(event, af.showLinkMenuCommand))))
             event,
       ],
       // 桌面的复制 / 粘贴菜单只在右键时出现（手机为选中后自动浮出，见

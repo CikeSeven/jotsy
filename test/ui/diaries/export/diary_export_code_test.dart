@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_blocks.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_code.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_docx.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_entry.dart';
@@ -192,61 +193,55 @@ void main() {
       ]);
     });
 
-    test('colorDeltaCodeLines colors code text, keeps user colors and '
+    test('colorCodeBlocks colors code text, keeps user colors and '
         'everything else, and never mutates the diary', () {
-      final ops = <dynamic>[
-        <String, dynamic>{'insert': '正文\n'},
-        <String, dynamic>{
-          'insert': 'return',
-          'attributes': <String, dynamic>{'color': '#FF112233'},
-        },
-        <String, dynamic>{'insert': ' 1 # x'},
-        <String, dynamic>{
-          'insert': '\n',
-          'attributes': <String, dynamic>{'code-block': 'python'},
-        },
-        <String, dynamic>{'insert': '后\n'},
-      ];
-      final original = jsonEncode(ops);
-      final colored = code.colorDeltaCodeLines(ops);
-      expect(colored, <Map<String, dynamic>>[
-        <String, dynamic>{'insert': '正文\n'},
-        // 用户手动上的颜色保留。
-        <String, dynamic>{
-          'insert': 'return',
-          'attributes': <String, dynamic>{'color': '#FF112233'},
-        },
-        <String, dynamic>{'insert': ' '},
-        <String, dynamic>{
-          'insert': '1',
-          'attributes': <String, dynamic>{
-            'color': encodeDiaryColor(
-              code.paper.tokens[DiaryCodeTokenRole.number]!,
-            ),
+      final blocks = DiaryExportEntry.parse(
+        diaryId: 'color',
+        title: '',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        deltaOps: <dynamic>[
+          <String, dynamic>{'insert': '正文\n'},
+          <String, dynamic>{
+            'insert': 'return',
+            'attributes': <String, dynamic>{'color': '#FF112233', 'bold': true},
           },
-        },
-        <String, dynamic>{'insert': ' '},
-        <String, dynamic>{
-          'insert': '# x',
-          'attributes': <String, dynamic>{
-            'color': encodeDiaryColor(
-              code.paper.tokens[DiaryCodeTokenRole.comment]!,
-            ),
-            'italic': true,
+          <String, dynamic>{'insert': ' 1 # x'},
+          <String, dynamic>{
+            'insert': '\n',
+            'attributes': <String, dynamic>{'code-block': 'python'},
           },
-        },
-        <String, dynamic>{
-          'insert': '\n',
-          'attributes': <String, dynamic>{'code-block': 'python'},
-        },
-        <String, dynamic>{'insert': '后\n'},
+          <String, dynamic>{'insert': '后\n'},
+        ],
+      ).blocks;
+      final colored = code.colorCodeBlocks(blocks);
+      expect(colored.first, same(blocks.first));
+      expect(colored.last, same(blocks.last));
+      int argb(DiaryCodeTokenRole role) => code.paper.tokens[role]!.toARGB32();
+      expect(
+        <(String, int?, bool, bool)>[
+          for (final run in colored[1].inlines)
+            (run.text, run.color?.toARGB32(), run.italic, run.bold),
+        ],
+        <(String, int?, bool, bool)>[
+          // 用户手动上的颜色与其他格式保留。
+          ('return', 0xFF112233, false, true),
+          (' ', null, false, false),
+          ('1', argb(DiaryCodeTokenRole.number), false, false),
+          (' ', null, false, false),
+          ('# x', argb(DiaryCodeTokenRole.comment), true, false),
+        ],
+      );
+      expect(colored[1].codeLanguage, 'python');
+      // 原来的块不变。
+      expect(blocks[1].inlines.map((run) => run.text), <String>[
+        'return',
+        ' 1 # x',
       ]);
-      expect(jsonEncode(ops), original);
+      expect(blocks[1].inlines.last.color, isNull);
 
-      final prose = <dynamic>[
-        <String, dynamic>{'insert': '没有代码\n'},
-      ];
-      expect(code.colorDeltaCodeLines(prose), same(prose));
+      final prose = <ExportBlock>[blocks.first];
+      expect(code.colorCodeBlocks(prose), same(prose));
     });
   });
 
@@ -263,7 +258,7 @@ void main() {
       lineEnd('python'),
     ]);
 
-    test('PDF colors code tokens before dropping the language', () async {
+    test('PDF colors code tokens by the block language', () async {
       final body = await DiaryPdfWriter.prepareBody(
         entry,
         includeImages: false,
@@ -272,27 +267,20 @@ void main() {
         images: <Uint8List>[],
         code: code,
       );
-      final ops = body!.toJson();
+      final def = body!
+          .expand((ExportBlock block) => block.inlines)
+          .firstWhere((ExportInline run) => run.text == 'def');
       expect(
-        ops,
-        contains(
-          equals(<String, dynamic>{
-            'insert': 'def',
-            'attributes': <String, dynamic>{
-              'color': encodeDiaryColor(
-                code.paper.tokens[DiaryCodeTokenRole.keyword]!,
-              ),
-            },
-          }),
-        ),
+        def.color?.toARGB32(),
+        code.paper.tokens[DiaryCodeTokenRole.keyword]!.toARGB32(),
       );
-      final languages = ops
-          .map((dynamic op) => (op as Map)['attributes'])
-          .whereType<Map>()
-          .map((Map attrs) => attrs['code-block'])
-          .whereType<Object>()
-          .toSet();
-      expect(languages, <Object>{true});
+      expect(
+        body
+            .where((ExportBlock b) => b.kind == ExportBlockKind.code)
+            .map((ExportBlock b) => b.codeLanguage)
+            .toSet(),
+        <String?>{'python'},
+      );
 
       final output = await DiaryPdfWriter.write(
         <DiaryExportEntry>[entry],

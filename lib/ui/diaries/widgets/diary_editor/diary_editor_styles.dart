@@ -2,9 +2,11 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../controllers/diary_table_editing.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
+import 'diary_table_block.dart';
 
 /// 正文的行高分配（与上游默认相同，这里显式写出以便共用）：首行上方与末行
 /// 下方不加行距，块与块的距离只由块的 padding 决定；多出的行距在行内上下
@@ -107,6 +109,8 @@ bool _isFirstBlock(af.Node node) =>
 /// - 列表与待办：上下各 2dp 再补回半个行距（[DiaryMarkerMetrics.halfLeading]），
 ///   相邻两项的间距 = 一个整行 + 4dp，随行距设置变化，又不比项内换行更挤；
 /// - 引用：上下 4dp，文字为 `onSurfaceVariant`，与正文区分而不刺眼；
+/// - 提示块：框外上下 4dp（同引用），框内留白与底色见 `DiaryCalloutBlock`；
+/// - 折叠块：标题行同列表与待办，展开时子块同列表子块的缩进；
 /// - 子块缩进等于行首标记列宽：嵌套列表的标记正好落在上一级的正文起点下。
 af.BlockComponentConfiguration diaryTextBlockConfiguration(
   BuildContext context,
@@ -129,8 +133,12 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
       ),
       'bulleted_list' ||
       'numbered_list' ||
-      'todo_list' => EdgeInsets.symmetric(vertical: 2 + markers.halfLeading),
-      'quote' => const EdgeInsets.symmetric(vertical: 4),
+      'todo_list' ||
+      // 折叠块的标题行与列表项同一节奏（标记格同一套几何）。
+      'toggle_list' => EdgeInsets.symmetric(vertical: 2 + markers.halfLeading),
+      // 提示块的底色框在块内（见 DiaryCalloutBlock），这里只是框外的
+      // 上下间距，与引用相同。
+      'quote' || 'callout' => const EdgeInsets.symmetric(vertical: 4),
       'paragraph' => EdgeInsets.only(
         top: 3,
         bottom: 3 + typography.paragraphSpacing,
@@ -143,26 +151,48 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
         _headingLevel(node),
       ).copyWith(fontFamily: appearance.fontFamily, height: 1.3),
       'quote' => TextStyle(color: colors.onSurfaceVariant),
+      // 表头行的格子加粗只在渲染时，不写进正文。
+      'paragraph' when diaryTableHeaderParagraph(node) => const TextStyle(
+        fontWeight: FontWeight.w700,
+      ),
       _ => const TextStyle(),
     },
     // 段落的占位只在光标停在这个空段落时显示（上游按选区控制）：整篇只有
     // 这一个空段落时是页面的占位（“开始记录…”），正文中间的空行提示 `/`
-    // 命令；只读时不提示。标题与引用、列表的占位上游始终显示：空标题写出
-    // 自己的级别，否则只是一块看不出用途的空白；其余不提示。
+    // 命令；只读时不提示。标题与引用、列表、提示块的占位上游始终显示：
+    // 空标题写出自己的级别，空提示块写“提示”，否则只是一块看不出用途的
+    // 空白；其余不提示。
     placeholderText: (node) => switch (node.type) {
       'heading' => switch (_headingLevel(node)) {
         1 => context.l10n.diaryEditorHeading1,
         2 => context.l10n.diaryEditorHeading2,
-        _ => context.l10n.diaryEditorHeading3,
+        3 => context.l10n.diaryEditorHeading3,
+        4 => context.l10n.diaryEditorHeading4,
+        5 => context.l10n.diaryEditorHeading5,
+        _ => context.l10n.diaryEditorHeading6,
       },
+      'callout' => context.l10n.diaryCalloutPlaceholder,
+      // 空折叠块写“折叠块”，同提示块始终显示。
+      'toggle_list' => context.l10n.diaryToggleListPlaceholder,
       'paragraph'
           when node.parent?.type == 'page' &&
               node.parent!.children.length == 1 =>
         placeholder ?? ' ',
+      // 格子里不能插入区块，`/` 提示只会误导，窄格里还会折成两行。
+      'paragraph' when diaryNodeInTableCell(node) => ' ',
       'paragraph' when editable => context.l10n.diaryEditorEmptyLineHint,
       _ => ' ',
     },
     placeholderTextStyle: (_, {textSpan}) =>
         TextStyle(color: colors.onSurfaceVariant.withValues(alpha: 0.7)),
+    textAlign: diaryBlockTextAlign,
   );
 }
+
+/// 文字块的排版对齐。上游各文字块（段落、标题、列表、待办、引用，以及
+/// [DiaryParagraphBlock]）按 `data.align` 只认 left / center / right，认出时
+/// 直接用它；`justify` 认不出，回落到块配置的 `textAlign`，所以两端对齐只在
+/// 这里给出。其余情况与上游默认（[TextAlign.start]）相同，不设对齐的正文
+/// 排版不变。代码块另行固定为 start（见 `buildDiaryEditorBlocks`）。
+TextAlign diaryBlockTextAlign(af.Node node) =>
+    node.attributes['align'] == 'justify' ? TextAlign.justify : TextAlign.start;

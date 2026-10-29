@@ -12,8 +12,9 @@
 /// 键名与编辑器内置组件一致（paragraph / heading / bulleted_list / …、
 /// `delta` / `level` / `checked` / `align`，行内 `bold` / `strikethrough` /
 /// `href` / `font_color` / `bg_color`），编辑器自带的格式命令与 Markdown
-/// 快捷输入写出的就是这些键。日记特有的块（代码块语言、录音、附件、视频）
-/// 与行内字号档位 `size` 为本应用自定义。颜色值一律为大写 `#AARRGGBB`。
+/// 快捷输入写出的就是这些键；表格沿用上游的 `table` / `table/cell` 结构。
+/// 日记特有的块（代码块语言、录音、附件、视频、标注、折叠列表、表头行）与
+/// 行内字号档位 `size` 为本应用自定义。颜色值一律为大写 `#AARRGGBB`。
 library;
 
 /// 文档根节点类型。
@@ -50,6 +51,25 @@ const String kDiaryBlockAudio = 'audio';
 /// 附件：`data` 为 DiaryFileAttachment 的字段（`path` / `name` / `sizeBytes`）。
 const String kDiaryBlockAttachment = 'attachment';
 
+/// 标注（提示框）：`data.delta` 为文字，[kDiaryCalloutIconKey] 为图标 emoji
+/// （缺省 [kDiaryCalloutDefaultIcon]），[kDiaryCalloutToneKey] 为底色档位
+/// （[kDiaryCalloutTones]，认不出按 [kDiaryCalloutToneDefault]）。文字块，
+/// 从不挂子块。
+const String kDiaryBlockCallout = 'callout';
+
+/// 折叠列表：`data.delta` 为标题行文字，[kDiaryToggleCollapsedKey] 为是否
+/// 收起（缺省展开）。容器块，子块即折叠的内容。
+const String kDiaryBlockToggleList = 'toggle_list';
+
+/// 表格（上游 AppFlowy 的结构，键名与 `TableBlockKeys` / `TableCellBlockKeys`
+/// 相同）：`data` 带 [kDiaryTableColsLenKey] / [kDiaryTableRowsLenKey]（正整数）
+/// 与本应用的 [kDiaryTableHeaderRowKey]（首行为表头，缺省 false）；子块全是
+/// [kDiaryBlockTableCell]，每格 `data` 带 [kDiaryTableRowPositionKey] /
+/// [kDiaryTableColPositionKey]（0 起），每格的子块是段落。结构校验与修正见
+/// diary_blocks_table.dart。
+const String kDiaryBlockTable = 'table';
+const String kDiaryBlockTableCell = 'table/cell';
+
 /// 认不出的 Quill 嵌入原样保留在 `data.value`，投影回 Delta 时还原，
 /// 避免旧数据里未知的嵌入在转换中丢失。
 const String kDiaryBlockUnknownEmbed = 'quill_embed';
@@ -63,18 +83,22 @@ const Set<String> kDiaryTextBlockTypes = <String>{
   kDiaryBlockTodoList,
   kDiaryBlockQuote,
   kDiaryBlockCode,
+  kDiaryBlockCallout,
+  kDiaryBlockToggleList,
 };
 
 /// 可以挂子块的类型：子块在界面上缩进显示在父块之下，必须与编辑器真正
-/// 画出子块的组件一致（上游可缩进的四种类型，测试兜底）。标题、引用、
-/// 代码块与媒体不画子块：旧数据里缩进的行遇到它们时挂到更外层，已存的
-/// 这类子块读取时提到它后面（见 decodeStoredDiaryBlocks），否则会留在
-/// 树里却看不见。
+/// 画出子块的组件一致（上游可缩进的四种类型与折叠列表，测试兜底）。标题、
+/// 引用、代码块、标注与媒体不画子块：旧数据里缩进的行遇到它们时挂到更
+/// 外层，已存的这类子块读取时提到它后面（见 decodeStoredDiaryBlocks），
+/// 否则会留在树里却看不见。表格的格子与格内段落另有规则（见
+/// diary_blocks_table.dart）。
 const Set<String> kDiaryContainerBlockTypes = <String>{
   kDiaryBlockParagraph,
   kDiaryBlockBulletedList,
   kDiaryBlockNumberedList,
   kDiaryBlockTodoList,
+  kDiaryBlockToggleList,
 };
 
 /// 独占一行、没有文字的块（媒体与分隔线）。
@@ -104,6 +128,41 @@ const String kDiaryBlockUrlKey = 'url';
 const String kDiaryBlockPathKey = 'path';
 const String kDiaryBlockValueKey = 'value';
 
+/// 标注的图标（emoji 字符串）与底色档位。
+const String kDiaryCalloutIconKey = 'icon';
+const String kDiaryCalloutToneKey = 'tone';
+
+/// 折叠列表是否收起（bool，缺省 false）。
+const String kDiaryToggleCollapsedKey = 'collapsed';
+
+/// 表格与格子的 data 键（与上游 `TableBlockKeys` / `TableCellBlockKeys` 同名）。
+const String kDiaryTableColsLenKey = 'colsLen';
+const String kDiaryTableRowsLenKey = 'rowsLen';
+const String kDiaryTableRowPositionKey = 'rowPosition';
+const String kDiaryTableColPositionKey = 'colPosition';
+
+/// 表格首行是否为表头（本应用自定义，bool，缺省 false）。
+const String kDiaryTableHeaderRowKey = 'headerRow';
+
+/// 标注缺省图标。
+const String kDiaryCalloutDefaultIcon = '💡';
+
+/// 标注底色档位；认不出的值按 [kDiaryCalloutToneDefault] 显示。
+const String kDiaryCalloutToneDefault = 'default';
+const String kDiaryCalloutToneYellow = 'yellow';
+const String kDiaryCalloutToneGreen = 'green';
+const String kDiaryCalloutToneBlue = 'blue';
+const String kDiaryCalloutToneRed = 'red';
+const String kDiaryCalloutTonePurple = 'purple';
+const List<String> kDiaryCalloutTones = <String>[
+  kDiaryCalloutToneDefault,
+  kDiaryCalloutToneYellow,
+  kDiaryCalloutToneGreen,
+  kDiaryCalloutToneBlue,
+  kDiaryCalloutToneRed,
+  kDiaryCalloutTonePurple,
+];
+
 /// 对齐取值（缺省为起始侧）。
 const String kDiaryAlignCenter = 'center';
 const String kDiaryAlignRight = 'right';
@@ -122,6 +181,12 @@ const String kDiaryInlineBackgroundColor = 'bg_color';
 
 /// 字号档位：small / large / huge（或导入保留下来的数字），相对正文字号换算。
 const String kDiaryInlineSize = 'size';
+
+/// 上标 / 下标：值为 [kDiaryScriptSuper] / [kDiaryScriptSub]，其他值按普通
+/// 文字处理。与 Quill 的行内属性同名，历史正文里的写法原样沿用。
+const String kDiaryInlineScript = 'script';
+const String kDiaryScriptSuper = 'super';
+const String kDiaryScriptSub = 'sub';
 
 /// Quill 行内属性名 → 块文档行内属性名；不在表里的键原样保留。
 const Map<String, String> kQuillToDiaryInlineKeys = <String, String>{

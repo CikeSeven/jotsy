@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../controllers/diary_block_reorder.dart';
 import '../../controllers/diary_editor_controller.dart';
+import '../../controllers/diary_table_editing.dart';
 import 'diary_block_drop_targets.dart';
 import 'diary_block_handle.dart';
 import 'diary_block_marker_metrics.dart';
@@ -252,7 +253,9 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
       return null;
     }
     final node = controller.state.getNodeAtPath(selection.end.path);
-    return node == null ? null : _placementFor(node);
+    if (node == null) return null;
+    // 光标在表格的格子里：把手属于整个表格（格子与格内段落不单独移动）。
+    return _placementFor(diaryTableOf(node) ?? node);
   }
 
   /// [node] 首行那一行、页面左边距里的把手位置；块不在视口里时为 null。

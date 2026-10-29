@@ -6,8 +6,11 @@ import '../../../../core/services/diary_media_storage_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../utils/pinyin/name_index.dart';
 import '../../models/diary_toolbar_preferences.dart';
+import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../../controllers/diary_callout_editing.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_editor_insert.dart';
+import '../../controllers/diary_table_editing.dart';
 
 /// 命令菜单里的分组，按此顺序排列。
 enum DiaryBlockCommandGroup { text, list, insert }
@@ -79,6 +82,9 @@ List<DiaryBlockCommand> diaryBlockCommands(
     (1, l10n.diaryEditorHeading1),
     (2, l10n.diaryEditorHeading2),
     (3, l10n.diaryEditorHeading3),
+    (4, l10n.diaryEditorHeading4),
+    (5, l10n.diaryEditorHeading5),
+    (6, l10n.diaryEditorHeading6),
   ])
     DiaryBlockCommand(
       'heading',
@@ -96,6 +102,22 @@ List<DiaryBlockCommand> diaryBlockCommands(
     const ['quote', 'blockquote', '引用'],
     group: DiaryBlockCommandGroup.text,
     markdown: '>',
+  ),
+  // 提示块没有 Markdown 写法；转换时不写图标与底色（缺省即默认）。
+  DiaryBlockCommand(
+    'callout',
+    DiaryToolbarItem.callout.label(l10n),
+    DiaryToolbarItem.callout.iconData,
+    const ['callout', 'tip', 'note', '提示', '标注', '提醒'],
+    group: DiaryBlockCommandGroup.text,
+  ),
+  // 折叠块没有 Markdown 写法；转换保留文字与对齐，新折叠块展开。
+  DiaryBlockCommand(
+    'toggle_list',
+    DiaryToolbarItem.toggle.label(l10n),
+    DiaryToolbarItem.toggle.iconData,
+    const ['toggle', 'fold', 'collapse', 'details', '折叠', '展开'],
+    group: DiaryBlockCommandGroup.text,
   ),
   DiaryBlockCommand(
     'code',
@@ -126,6 +148,14 @@ List<DiaryBlockCommand> diaryBlockCommands(
     const ['hr', 'divider', 'line', '分隔线', '分割线'],
     group: DiaryBlockCommandGroup.insert,
     markdown: '---',
+  ),
+  // 表格：3 × 3、带表头行，插在当前块后面（与工具栏同一条插入）。
+  DiaryBlockCommand(
+    kDiaryBlockTable,
+    DiaryToolbarItem.table.label(l10n),
+    DiaryToolbarItem.table.iconData,
+    const ['table', 'grid', '表格', '表'],
+    group: DiaryBlockCommandGroup.insert,
   ),
   if (onMedia != null) ...[
     DiaryBlockCommand(
@@ -185,6 +215,11 @@ void applyDiaryBlockCommand(
   }
   if (command.type == 'divider') {
     insertDiaryEditorNodes(controller: controller, nodes: [af.dividerNode()]);
+  } else if (command.type == kDiaryBlockCallout) {
+    // 与工具栏同一条转换：已是提示块的保留图标与底色。
+    convertDiaryBlocksToCallout(controller);
+  } else if (command.type == kDiaryBlockTable) {
+    insertDiaryTable(controller);
   } else {
     controller.setBlockType(command.type, attributes: command.attributes);
   }

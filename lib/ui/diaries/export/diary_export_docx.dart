@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:ui' show Color;
 
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/services/diary_typography.dart';
+import '../models/diary_callout_tone.dart';
 import '../models/diary_code_block/diary_code_theme.dart';
 import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
@@ -36,10 +38,23 @@ import 'diary_export_media.dart';
 /// 正文标题的大纲级别随之顺延（字号不变），Word 的导航窗格按章、篇、小标题
 /// 分层。普通导出的样式表与正文保持原样。
 ///
+/// 标注写成带底色与左侧色条的段落（颜色取 [DiaryCalloutTone] 的纸面配色），
+/// 以图标开头；折叠列表一律展开，标题前加 `▸ `，子块照常缩进跟在后面；表格
+/// 写成铺满版心、等宽列、单线边框的 `w:tbl`（首行为表头时加粗、垫浅灰底并
+/// 标为跨页重复的标题行），格里每段一个 `w:p`。上下标写成 `w:vertAlign`，
+/// 行内字号按正文字号的倍数写 `w:sz`；引用与列表同样带段落对齐。
+///
 /// 注意：Word 严格校验 `w:pPr` / `w:rPr` 子元素的顺序，顺序错了会提示
 /// “无法读取的内容”，下面拼接属性时都按 schema 顺序写出。
 class DiaryDocxWriter {
   const DiaryDocxWriter._();
+
+  /// A4 纸、四边 2.54cm 页边距时的版心宽度（twip），表格按它分列。
+  static const int _textWidthTwips = 11906 - 2 * 1440;
+
+  /// 应用的逻辑像素按 96 DPI 换到纸面（1px = 0.75pt），Word 字号用半磅。
+  static int _bodyHalfPoints(DiaryTypography typography) =>
+      (typography.fontSize * 1.5).round();
 
   /// A4 纸、四边 2.54cm 页边距时的版心宽度（EMU）；图片最大高度留出页眉。
   static const int _maxImageWidthEmu = 5731510;
@@ -71,6 +86,7 @@ class DiaryDocxWriter {
     // 样式的字号、字间距同一口径，缩进两字正好空出两个汉字。
     final builder = _DocxBuilder(
       firstLineTwips: (typography.firstLineIndentExtent * 15).round(),
+      bodyHalfPoints: _bodyHalfPoints(typography),
     );
     if (book != null) {
       await _writeBook(
@@ -310,12 +326,16 @@ class DiaryDocxWriter {
           b.paragraph(style: 'Divider', runs: const <String>[]);
         case ExportBlockKind.heading:
           b.paragraph(
-            style: 'Heading${block.level.clamp(1, 3)}',
+            style: 'Heading${block.level.clamp(1, 6)}',
             align: block.align,
             runs: b.inlines(block.inlines),
           );
         case ExportBlockKind.quote:
-          b.paragraph(style: 'Quote', runs: b.inlines(block.inlines));
+          b.paragraph(
+            style: 'Quote',
+            align: block.align,
+            runs: b.inlines(block.inlines),
+          );
         case ExportBlockKind.code:
           final runs = codeRuns?[index];
           b.paragraph(
@@ -337,8 +357,40 @@ class DiaryDocxWriter {
             style: 'DiaryList',
             indentTwips: 420 * (block.indent + 1),
             hangingTwips: 420,
+            align: block.align,
             runs: <String>[b.run('$marker\t'), ...b.inlines(block.inlines)],
           );
+        case ExportBlockKind.callout:
+          final tone = DiaryCalloutTone.fromId(block.calloutTone);
+          final fill = _hex(tone.paperBackground);
+          // 上、下、右三边是与底色同色的细线，只用来留内边距（同代码块）；
+          // 左边是 3pt 的强调色条。缩进让色条留在版心里，不压到页边距。
+          String edge(String side, int size, int space, String color) =>
+              '<w:$side w:val="single" w:sz="$size" w:space="$space" '
+              'w:color="$color"/>';
+          b.paragraph(
+            style: 'Callout',
+            align: block.align,
+            indentTwips: 240 + 420 * block.indent,
+            border:
+                '${edge('top', 4, 4, fill)}'
+                '${edge('left', 24, 8, _hex(tone.paperAccent))}'
+                '${edge('bottom', 4, 4, fill)}${edge('right', 4, 6, fill)}',
+            fill: fill,
+            runs: <String>[
+              b.run('${block.calloutIcon ?? kDiaryCalloutDefaultIcon} '),
+              ...b.inlines(block.inlines),
+            ],
+          );
+        case ExportBlockKind.toggle:
+          // 导出时一律展开：标题前加 ▸，子块照常缩进跟在后面。
+          b.paragraph(
+            align: block.align,
+            indentTwips: block.indent > 0 ? 420 * block.indent : null,
+            runs: <String>[b.run('▸ '), ...b.inlines(block.inlines)],
+          );
+        case ExportBlockKind.table:
+          b.table(block);
         case ExportBlockKind.paragraph:
           // 与应用一致：居中、右对齐的段落不缩进首行。
           final firstLine =
@@ -478,7 +530,7 @@ class DiaryDocxWriter {
     final codeFill = code == null ? 'F1F3F4' : _hex(code.background);
     // 应用的逻辑像素按 96 DPI 换到纸面：1px = 0.75pt。Word 字号用半磅，
     // 字间距 / 段后间距用 twip（1/20pt），倍数行距用 1/240 行。
-    final size = (typography.fontSize * 1.5).round();
+    final size = _bodyHalfPoints(typography);
     final tracking = (typography.letterSpacing * 15).round();
     final after = (typography.paragraphSpacing * 15).round();
     final line = (typography.lineHeight * 240).round();
@@ -528,9 +580,18 @@ class DiaryDocxWriter {
         '${style('Heading1', 'heading 1', pPr: '<w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${0 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="32"/><w:szCs w:val="32"/>')}'
         '${style('Heading2', 'heading 2', pPr: '<w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="${1 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="28"/><w:szCs w:val="28"/>')}'
         '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="${2 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="24"/><w:szCs w:val="24"/>')}'
+        // 四到六级沿用同一写法，字号逐级再小一档，大纲级别同样顺延。
+        '${style('Heading4', 'heading 4', pPr: '<w:keepNext/><w:spacing w:before="140" w:after="70"/><w:outlineLvl w:val="${3 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="22"/><w:szCs w:val="22"/>')}'
+        '${style('Heading5', 'heading 5', pPr: '<w:keepNext/><w:spacing w:before="120" w:after="60"/><w:outlineLvl w:val="${4 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="21"/><w:szCs w:val="21"/>')}'
+        '${style('Heading6', 'heading 6', pPr: '<w:keepNext/><w:spacing w:before="120" w:after="60"/><w:outlineLvl w:val="${5 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
         // 列表与引用跟随正文字号、行距、字距，但不追加段间距（与编辑器一致）。
         '${style('DiaryList', 'Diary List', basedOnNormal: true, pPr: '<w:spacing w:after="120"/>')}'
         '${style('Quote', 'Quote', basedOnNormal: true, pPr: '<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="C7CCD1"/></w:pBdr><w:spacing w:after="120"/><w:ind w:left="360"/>', rPr: '<w:i/><w:iCs/><w:color w:val="5F6368"/>')}'
+        // 标注的底色、色条与缩进按档位写在段落上，样式只管段间距。
+        '${style('Callout', 'Callout', basedOnNormal: true, pPr: '<w:spacing w:before="120" w:after="120"/>')}'
+        // 表格格子里的段落不追加段间距；表格后的空段落压到很矮。
+        '${style('TableText', 'Table Text', basedOnNormal: true, pPr: '<w:spacing w:after="0"/>')}'
+        '${style('TableAfter', 'Table After', pPr: '<w:spacing w:after="0" w:line="120" w:lineRule="exact"/>', rPr: '<w:sz w:val="12"/><w:szCs w:val="12"/>')}'
         '${style('Divider', 'Divider', pPr: '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="C7CCD1"/></w:pBdr>')}'
         '${style('CodeBlock', 'Code Block', pPr: '$codeBorder<w:shd w:val="clear" w:color="auto" w:fill="$codeFill"/><w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>$codeColor<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
         '${style('InlineCode', 'Inline Code', type: 'character', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:spacing w:val="0"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>')}'
@@ -557,10 +618,13 @@ class DiaryDocxWriter {
 
 /// 拼接 document.xml 与其关系文件；图片与链接按出现顺序分配关系 id。
 class _DocxBuilder {
-  _DocxBuilder({this.firstLineTwips = 0});
+  _DocxBuilder({this.firstLineTwips = 0, this.bodyHalfPoints = 24});
 
   /// 正文段落的首行缩进（twip），0 为不缩进。
   final int firstLineTwips;
+
+  /// 正文字号（半磅）：行内字号按它的倍数写出。
+  final int bodyHalfPoints;
 
   final StringBuffer _body = StringBuffer();
   final List<String> _relationships = <String>[];
@@ -581,9 +645,12 @@ class _DocxBuilder {
     String? characterStyle,
     String? color,
     String? background,
+    int? halfPoints,
+    ExportScript? script,
   }) {
     final rPr = StringBuffer();
-    // CT_RPr 顺序：rStyle → b → i → strike → color → u → shd。
+    // CT_RPr 顺序：rStyle → b → i → strike → color → sz → szCs → u → shd
+    // → vertAlign。
     if (characterStyle != null) {
       rPr.write('<w:rStyle w:val="$characterStyle"/>');
     }
@@ -591,11 +658,22 @@ class _DocxBuilder {
     if (italic) rPr.write('<w:i/><w:iCs/>');
     if (strike) rPr.write('<w:strike/>');
     if (color != null) rPr.write('<w:color w:val="$color"/>');
+    if (halfPoints != null) {
+      rPr.write('<w:sz w:val="$halfPoints"/><w:szCs w:val="$halfPoints"/>');
+    }
     if (underline) rPr.write('<w:u w:val="single"/>');
     // 用 shd 而不是 highlight：highlight 只有 16 种固定颜色。直接格式覆盖
     // 字符样式，行内代码的浅灰底与链接色都让位于用户设的颜色。
     if (background != null) {
       rPr.write('<w:shd w:val="clear" w:color="auto" w:fill="$background"/>');
+    }
+    // Word 自己把上下标缩小并抬高 / 降低基线。
+    switch (script) {
+      case ExportScript.superscript:
+        rPr.write('<w:vertAlign w:val="superscript"/>');
+      case ExportScript.subscript:
+        rPr.write('<w:vertAlign w:val="subscript"/>');
+      case null:
     }
     final props = rPr.isEmpty ? '' : '<w:rPr>$rPr</w:rPr>';
     final parts = text.split('\t');
@@ -609,13 +687,16 @@ class _DocxBuilder {
     return '<w:r>$props$content</w:r>';
   }
 
-  List<String> inlines(List<ExportInline> runs) {
+  /// [bold] 把整段加粗（表头格子）。
+  List<String> inlines(List<ExportInline> runs, {bool bold = false}) {
     return <String>[
-      for (final inline in runs) _withLink(inline.link, _inline(inline)),
+      for (final inline in runs)
+        _withLink(inline.link, _inline(inline, bold: bold)),
     ];
   }
 
-  String _inline(ExportInline inline) {
+  String _inline(ExportInline inline, {bool bold = false}) {
+    final scale = inline.sizeScale;
     final colors = _flatColors(
       inline.color,
       inline.background,
@@ -623,7 +704,7 @@ class _DocxBuilder {
     );
     return run(
       inline.text,
-      bold: inline.bold,
+      bold: bold || inline.bold,
       italic: inline.italic,
       underline: inline.underline && inline.link == null,
       strike: inline.strike,
@@ -634,6 +715,8 @@ class _DocxBuilder {
           : null,
       color: colors.color,
       background: colors.fill,
+      halfPoints: scale == null ? null : (bodyHalfPoints * scale).round(),
+      script: inline.script,
     );
   }
 
@@ -666,11 +749,18 @@ class _DocxBuilder {
     int? firstLineTwips,
     ExportAlign align = ExportAlign.start,
     String? bookmark,
+    String? border,
+    String? fill,
   }) {
-    // CT_PPr 顺序：pStyle → pageBreakBefore → ind → jc。
+    // CT_PPr 顺序：pStyle → pageBreakBefore → pBdr → shd → ind → jc。
+    // [border] 为 w:pBdr 的子元素，[fill] 为段落底色。
     final pPr = StringBuffer();
     if (style != null) pPr.write('<w:pStyle w:val="$style"/>');
     if (pageBreakBefore) pPr.write('<w:pageBreakBefore/>');
+    if (border != null) pPr.write('<w:pBdr>$border</w:pBdr>');
+    if (fill != null) {
+      pPr.write('<w:shd w:val="clear" w:color="auto" w:fill="$fill"/>');
+    }
     // w:hanging 与 w:firstLine 互斥：列表只用前者，正文段落只用后者。
     if (indentTwips != null || firstLineTwips != null) {
       pPr.write(
@@ -698,6 +788,70 @@ class _DocxBuilder {
       '<w:p>$props<w:bookmarkStart w:id="$id" w:name="${_xml(bookmark)}"/>'
       '${runs.join()}<w:bookmarkEnd w:id="$id"/></w:p>',
     );
+  }
+
+  /// 表格：等宽列、单线边框（与分隔线、引用同一灰），格子留内边距；首行
+  /// 为表头时加粗、垫浅灰底（同行内代码的底色）并标为 `w:tblHeader`（跨页
+  /// 时在每页顶部重复）。没有缩进时宽度为版心的 100%（pct 5000）；缩进的
+  /// 表格（折叠列表里的）按缩进让出宽度，不伸进右页边距。格子里每段一个
+  /// `w:p`（Word 要求每格至少一段）。
+  ///
+  /// 表格后面跟一个极矮的空段落：相邻两个表格之间没有段落时 Word 会把它们
+  /// 并成一张，文末也不能以表格收尾。
+  void table(ExportBlock block) {
+    final rows = block.tableRows;
+    final cols = rows.isEmpty ? 0 : rows.first.length;
+    if (cols == 0) return;
+    final indent = 420 * block.indent;
+    final width = DiaryDocxWriter._textWidthTwips - indent;
+    final col = width ~/ cols;
+    String line(String side) =>
+        '<w:$side w:val="single" w:sz="4" w:space="0" w:color="C7CCD1"/>';
+    final out = StringBuffer('<w:tbl><w:tblPr>')
+      // CT_TblPr 顺序：tblW → tblInd → tblBorders → tblLayout → tblCellMar。
+      ..write(
+        indent == 0
+            ? '<w:tblW w:w="5000" w:type="pct"/>'
+            : '<w:tblW w:w="$width" w:type="dxa"/>'
+                  '<w:tblInd w:w="$indent" w:type="dxa"/>',
+      )
+      ..write(
+        '<w:tblBorders>${line('top')}${line('left')}${line('bottom')}'
+        '${line('right')}${line('insideH')}${line('insideV')}</w:tblBorders>',
+      )
+      ..write(
+        '<w:tblLayout w:type="fixed"/><w:tblCellMar>'
+        '<w:top w:w="60" w:type="dxa"/><w:left w:w="100" w:type="dxa"/>'
+        '<w:bottom w:w="60" w:type="dxa"/><w:right w:w="100" w:type="dxa"/>'
+        '</w:tblCellMar></w:tblPr><w:tblGrid>',
+      );
+    for (var i = 0; i < cols; i++) {
+      out.write('<w:gridCol w:w="$col"/>');
+    }
+    out.write('</w:tblGrid>');
+    for (final (index, cells) in rows.indexed) {
+      final header = block.tableHeaderRow && index == 0;
+      out.write(header ? '<w:tr><w:trPr><w:tblHeader/></w:trPr>' : '<w:tr>');
+      for (final cell in cells) {
+        // CT_TcPr 顺序：tcW → shd。
+        out.write(
+          '<w:tc><w:tcPr><w:tcW w:w="$col" w:type="dxa"/>'
+          '${header ? '<w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>' : ''}'
+          '</w:tcPr>',
+        );
+        for (final paragraph in ExportBlock.tableCellParagraphs(cell)) {
+          out.write(
+            '<w:p><w:pPr><w:pStyle w:val="TableText"/></w:pPr>'
+            '${inlines(paragraph, bold: header).join()}</w:p>',
+          );
+        }
+        out.write('</w:tc>');
+      }
+      out.write('</w:tr>');
+    }
+    out.write('</w:tbl>');
+    _body.write(out);
+    paragraph(style: 'TableAfter', runs: const <String>[]);
   }
 
   void imageParagraph(

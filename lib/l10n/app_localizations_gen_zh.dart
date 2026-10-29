@@ -7907,7 +7907,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorDivider => '分隔线';
 
   @override
+  String get diaryEditorCallout => '提示块';
+
+  @override
+  String get diaryCalloutPlaceholder => '提示';
+
+  @override
+  String get diaryCalloutToText => '转为正文';
+
+  @override
+  String get diaryCalloutToneDefault => '默认';
+
+  @override
+  String get diaryCalloutToneYellow => '黄色';
+
+  @override
+  String get diaryCalloutToneGreen => '绿色';
+
+  @override
+  String get diaryCalloutToneBlue => '蓝色';
+
+  @override
+  String get diaryCalloutToneRed => '红色';
+
+  @override
+  String get diaryCalloutTonePurple => '紫色';
+
+  @override
   String get diaryEditorUnsupportedBlock => '暂不支持的内容';
+
+  @override
+  String get diaryEditorToggleList => '折叠块';
+
+  @override
+  String get diaryToggleListPlaceholder => '折叠块';
+
+  @override
+  String get diaryToggleExpand => '展开';
+
+  @override
+  String get diaryToggleCollapse => '收起';
 
   @override
   String get diaryEditorImageWidth => '图片宽度';
@@ -7923,6 +7962,57 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryEditorHeading3 => '三级标题';
+
+  @override
+  String get diaryEditorHeading4 => '四级标题';
+
+  @override
+  String get diaryEditorHeading5 => '五级标题';
+
+  @override
+  String get diaryEditorHeading6 => '六级标题';
+
+  @override
+  String get diaryToolbarAlign => '对齐';
+
+  @override
+  String get diaryToolbarFontSize => '字号';
+
+  @override
+  String get diaryToolbarSuperscript => '上标';
+
+  @override
+  String get diaryToolbarSubscript => '下标';
+
+  @override
+  String get diaryHeadingPanelTitle => '标题';
+
+  @override
+  String get diaryHeadingPanelBody => '正文';
+
+  @override
+  String get diaryAlignLeft => '左对齐';
+
+  @override
+  String get diaryAlignCenter => '居中';
+
+  @override
+  String get diaryAlignRight => '右对齐';
+
+  @override
+  String get diaryAlignJustify => '两端对齐';
+
+  @override
+  String get diaryFontSizeSmall => '小';
+
+  @override
+  String get diaryFontSizeNormal => '正文';
+
+  @override
+  String get diaryFontSizeLarge => '大';
+
+  @override
+  String get diaryFontSizeHuge => '特大';
 
   @override
   String get diaryEditorCommandGroupText => '文本';
@@ -9400,4 +9490,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String backupImportCommentOverwriteResult(int added, int replaced) {
     return '留言：新增 $added 条，覆盖 $replaced 条';
   }
+
+  @override
+  String get diaryEditorTable => '表格';
+
+  @override
+  String get diaryTableInsertRowAbove => '上方插入行';
+
+  @override
+  String get diaryTableInsertRowBelow => '下方插入行';
+
+  @override
+  String get diaryTableInsertColumnLeft => '左侧插入列';
+
+  @override
+  String get diaryTableInsertColumnRight => '右侧插入列';
+
+  @override
+  String get diaryTableDeleteRow => '删除行';
+
+  @override
+  String get diaryTableDeleteColumn => '删除列';
+
+  @override
+  String get diaryTableHeaderRow => '表头行';
+
+  @override
+  String get diaryTableDelete => '删除表格';
 }

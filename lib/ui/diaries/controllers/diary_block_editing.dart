@@ -2,7 +2,10 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/services.dart';
 
 import '../../../core/database/code_block_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_editor_controller.dart';
+import 'diary_table_editing.dart';
+import 'diary_toggle_editing.dart';
 
 /// 代码块的语言、转换、复制与退出都通过原生事务操作节点，保持子树与撤销。
 List<af.Node> selectedDiaryCodeBlocks(DiaryEditorController controller) =>
@@ -54,9 +57,11 @@ Future<void> copyDiaryCodeBlock(af.Node block) =>
     Clipboard.setData(ClipboardData(text: block.delta?.toPlainText() ?? ''));
 
 void toggleDiaryCodeBlockOn(DiaryEditorController controller) {
+  // 表格格子里的段落不转代码块（与 addDiaryBlockTypeChange 同一口径）。
   final nodes = controller.selectedNodes
-      .where((node) => node.delta != null)
+      .where((node) => node.delta != null && !diaryNodeInTableCell(node))
       .toList();
+  if (nodes.isEmpty) return;
   final siblings =
       nodes.length > 1 &&
       nodes.every(
@@ -122,14 +127,81 @@ List<af.CharacterShortcutEvent> diaryBlockCharacterShortcuts() => [
       return true;
     },
   ),
+  // 空提示块里回车：转为正文段落，不再新起一个空段落（见
+  // [_emptyCalloutEnter]）。非空提示块的回车沿用上游：光标后的文字另起
+  // 一个正文段落，所以在末尾回车就是在提示块后面接着写正文。
+  af.CharacterShortcutEvent(
+    key: 'diary_callout_empty_enter',
+    character: '\n',
+    handler: _emptyCalloutEnter,
+  ),
+  // 折叠块标题里回车：空标题转正文，展开时接第一个子块，收起时接同级
+  // 折叠块（见 [diaryToggleEnterEvent]）。
+  diaryToggleEnterEvent,
+  // 行首 `> ` 转为引用。上游只认 `" `，`/` 菜单却教的是 `>`；排在代码原文
+  // 之后，代码块里的 `> ` 已按原文插入，走不到这里。
+  af.CharacterShortcutEvent(
+    key: 'diary_greater_to_quote',
+    character: ' ',
+    handler: _greaterToQuote,
+  ),
   ...af.standardCharacterShortcutEvents,
 ];
+
+/// 文字块（引用、代码块除外）行首只有 `>` 时按空格：去掉 `>` 转为引用，
+/// 对齐随块保留。与上游的列表、标题快捷输入同一个助手：只认折叠光标、光标
+/// 前正好是这个符号，整次转换一个事务。引用不画子块，带缩进子块的块把子块
+/// 提到引用后面（与 `# ` 一致，见 `addDiaryBlockTypeChange`）。
+Future<bool> _greaterToQuote(af.EditorState state) => af.formatMarkdownSymbol(
+  state,
+  (node) =>
+      node.delta != null &&
+      node.type != kDiaryBlockQuote &&
+      node.type != kDiaryBlockCode,
+  (_, text, _) => text == '>',
+  (_, node, delta) => [
+    af.quoteNode(
+      attributes: {
+        kDiaryBlockDeltaKey: delta.compose(af.Delta()..delete(1)).toJson(),
+        if (node.attributes[kDiaryBlockAlignKey] case final align?)
+          kDiaryBlockAlignKey: align,
+      },
+    ),
+    ...node.children,
+  ],
+);
+
+/// 光标停在空提示块里回车：原地转为正文段落（保留对齐），与列表、待办
+/// 在空项上回车即退出同一手感。桌面 Shift + 回车照旧交给上游（在行内
+/// 换行）。整次一个事务、一步撤销。
+Future<bool> _emptyCalloutEnter(af.EditorState state) async {
+  if (HardwareKeyboard.instance.isShiftPressed) return false;
+  final selection = state.selection;
+  if (selection == null || !selection.isCollapsed) return false;
+  final node = state.document.nodeAtPath(selection.end.path);
+  if (node?.type != kDiaryBlockCallout || node!.delta?.isEmpty != true) {
+    return false;
+  }
+  final transaction = state.transaction
+    ..updateNodeType(node, kDiaryBlockParagraph, {
+      kDiaryBlockDeltaKey: <Object?>[],
+      if (node.attributes[kDiaryBlockAlignKey] case final align?)
+        kDiaryBlockAlignKey: align,
+    })
+    ..afterSelection = af.Selection.collapsed(af.Position(path: node.path));
+  await state.apply(transaction, skipHistoryDebounce: true);
+  return true;
+}
 
 Future<bool> _codeFence(af.EditorState state) async {
   final selection = state.selection;
   if (selection == null || !selection.isCollapsed) return false;
   final node = state.document.nodeAtPath(selection.end.path);
-  if (node?.type != 'paragraph' || node!.children.isNotEmpty) return false;
+  if (node?.type != 'paragraph' ||
+      node!.children.isNotEmpty ||
+      diaryNodeInTableCell(node)) {
+    return false;
+  }
   final text = node.delta?.toPlainText() ?? '';
   if (selection.end.offset != text.length) return false;
   final match = RegExp(r'^```([\w+-]*)$').firstMatch(text);

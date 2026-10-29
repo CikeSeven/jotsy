@@ -162,6 +162,19 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     controller.state.service.keyboardService?.enableKeyBoard(selection);
   }
 
+  /// 页头/页尾只借用正文的滚动，焦点仍属于页面。上游把它们放在键盘服务的
+  /// Focus 下面，标题输入框聚焦时正文的 hasFocus 因而仍为 true：选区不清空，
+  /// 键盘升高又按旧光标把页面拉回正文。把插槽接到编辑器外的焦点父节点，
+  /// 由上游正常处理正文失焦、断开输入连接；控制器仍记住原选区以便回来续写。
+  Widget? _slotOutsideBodyFocus(Widget? child) => child == null
+      ? null
+      : Focus(
+          parentNode: Focus.maybeOf(context) ?? FocusScope.of(context),
+          canRequestFocus: false,
+          skipTraversal: true,
+          child: child,
+        );
+
   void _rebuild() {
     if (mounted) {
       _native = null;
@@ -212,20 +225,22 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       appearance: widget.appearance,
       importedFontFamily: family,
     );
-    _headerSlot.value = widget.header;
-    _footerSlot.value = widget.controller.readOnly
-        ? widget.footer
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.footer != null) widget.footer!,
-              SizedBox(
-                height:
-                    widget.appearance.typography.fontSize *
-                    widget.appearance.typography.lineHeight,
-              ),
-            ],
-          );
+    _headerSlot.value = _slotOutsideBodyFocus(widget.header);
+    _footerSlot.value = _slotOutsideBodyFocus(
+      widget.controller.readOnly
+          ? widget.footer
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.footer != null) widget.footer!,
+                SizedBox(
+                  height:
+                      widget.appearance.typography.fontSize *
+                      widget.appearance.typography.lineHeight,
+                ),
+              ],
+            ),
+    );
     // 键盘动画只改变约束，保持上游编辑器 widget 实例以复用其服务子树；
     // 页头与末尾占位通过独立槽更新，避免为小片布局重建整篇正文。
     final inputs = (

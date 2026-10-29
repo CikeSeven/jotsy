@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import '../../../core/services/editing_session_registry.dart';
 import '../../diaries/controllers/diary_editor_controller.dart' as editor;
 
 import '../../diaries/models/diary_meta_draft.dart';
@@ -20,6 +21,9 @@ import 'diary_templates_controller.dart';
 /// 未保存判断拿 [build] 的结果与基线比较：已保存的模板以它本身为基线（经同一
 /// 套编码归一，打开即离开不会误报）；新建与预填的模板以空白模板为基线，预填
 /// 的内容没保存就离开会提示。
+///
+/// 存在期间是局域网同步的阻塞者：保存时整份写回打开时的模板，同步在这期间
+/// 改动同一模板会被覆盖。构造时登记，[dispose] 注销。
 class DiaryTemplateEditorController extends ChangeNotifier {
   DiaryTemplateEditorController(DiaryTemplate? template)
     : _id = template?.id ?? '',
@@ -43,7 +47,10 @@ class DiaryTemplateEditorController extends ChangeNotifier {
       _category = template?.category ?? DiaryTemplateCategory.other,
       _tags = template?.tags ?? const <DiaryTemplateTagRef>[],
       _capsule = template?.capsule,
-      _recommend = template?.recommend ?? DiaryTemplateRecommendRules.none {
+      _recommend = template?.recommend ?? DiaryTemplateRecommendRules.none,
+      _editingLease = EditingSessionRegistry.instance.beginEditing(
+        'template-editor',
+      ) {
     // 空白控制器 build 出的正是这个模板（空正文、默认图标与分类）。
     _baseline = _id.isEmpty ? const DiaryTemplate(id: '', name: '') : build();
     for (final listenable in <Listenable>[
@@ -58,6 +65,7 @@ class DiaryTemplateEditorController extends ChangeNotifier {
   }
 
   String _id;
+  final EditingLease _editingLease;
   final TextEditingController name;
   final TextEditingController description;
   final TextEditingController titlePattern;
@@ -178,6 +186,7 @@ class DiaryTemplateEditorController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _editingLease.end();
     name.dispose();
     description.dispose();
     titlePattern.dispose();

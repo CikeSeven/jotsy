@@ -13,6 +13,7 @@ import '../../../core/services/app_service.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/editing_session_blocker.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/route_entrance_waiter.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
@@ -29,7 +30,8 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 ///
 /// 输入：初始草稿与（编辑时）原纪念日；输出：经 Navigator 带回
 /// [AnniversaryEditResult]，提示由打开方给出。写库经
-/// [AnniversaryEditController]；有未保存的修改时拦截返回并确认。
+/// [AnniversaryEditController]；有未保存的修改时拦截返回并确认。打开期间
+/// 是局域网同步的阻塞者（[EditingSessionBlocker]），保存时整行写回。
 class AnniversaryEditPage extends ConsumerStatefulWidget {
   const AnniversaryEditPage({
     super.key,
@@ -45,7 +47,11 @@ class AnniversaryEditPage extends ConsumerStatefulWidget {
       _AnniversaryEditPageState();
 }
 
-class _AnniversaryEditPageState extends ConsumerState<AnniversaryEditPage> {
+class _AnniversaryEditPageState extends ConsumerState<AnniversaryEditPage>
+    with EditingSessionBlocker<AnniversaryEditPage> {
+  @override
+  String get editingSessionLabel => 'anniversary-editor';
+
   late AnniversaryDraft _draft = widget.initialDraft;
   late final TextEditingController _title = TextEditingController(
     text: widget.initialDraft.title,

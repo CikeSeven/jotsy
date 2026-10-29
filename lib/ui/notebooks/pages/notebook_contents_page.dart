@@ -65,11 +65,24 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
   final Set<String> _selected = <String>{};
   bool _popScheduled = false;
 
-  late final NotebookContentsController _controller =
-      NotebookContentsController(
-        ref.read(appDatabaseProvider),
-        widget.notebookId,
-      );
+  late final NotebookContentsController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 建好：dispose 要结束拖动的阻塞登记，不能在那时才惰性
+    // 创建（销毁期间不能再用 ref）。
+    _controller = NotebookContentsController(
+      ref.read(appDatabaseProvider),
+      widget.notebookId,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +202,11 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                 onReorderItem: (int oldIndex, int newIndex) =>
                     _reorder(chapters, entries, items, oldIndex, newIndex),
                 // 拿起条目即生效的瞬间给一次触觉：手柄是立即拖动，不经过长按。
-                onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
+                onReorderStart: (int index) {
+                  _controller.startDrag(index);
+                  unawaited(HapticFeedback.mediumImpact());
+                },
+                onReorderEnd: _controller.dropped,
                 proxyDecorator: _liftProxy,
                 itemBuilder: (BuildContext context, int index) {
                   final item = items[index];

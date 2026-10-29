@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/editing_session_registry.dart';
 import '../../../core/services/settings_service.dart';
 import '../../diaries/models/style_library/style_code.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
@@ -44,6 +45,16 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
   // 拖动排序后先按新顺序显示，等数据库流推送同样的顺序再交还给它，松手时
   // 列表不会先跳回旧位置。
   List<String>? _pendingOrder;
+
+  // 拖动排序从拿起到新顺序写完是局域网同步的阻塞者：写回的整份顺序来自
+  // 拖动前的列表，期间同步来的顺序会被覆盖（见 ReorderEditingGuard）。
+  final ReorderEditingGuard _drag = ReorderEditingGuard('templates-manage');
+
+  @override
+  void dispose() {
+    _drag.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +136,8 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
                   ),
                   onReorder: (oldIndex, newIndex) =>
                       _reorder(controller, mine, oldIndex, newIndex),
+                  onReorderStart: _drag.start,
+                  onReorderEnd: _drag.dropped,
                 ),
               SliverToBoxAdapter(
                 child: DiaryTemplatesSectionHeader(
@@ -197,11 +210,14 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
     int oldIndex,
     int newIndex,
   ) {
-    if (oldIndex == newIndex) return;
+    if (oldIndex == newIndex) {
+      _drag.end();
+      return;
+    }
     final ids = current.map((t) => t.id).toList();
     ids.insert(newIndex, ids.removeAt(oldIndex));
     setState(() => _pendingOrder = ids);
-    unawaited(controller.reorder(ids));
+    unawaited(_drag.holdUntil(controller.reorder(ids)));
   }
 
   Future<void> _openEditor(DiaryTemplate? template) {

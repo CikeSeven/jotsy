@@ -63,6 +63,12 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     },
   );
 
+  @override
+  void dispose() {
+    _folding.dispose();
+    super.dispose();
+  }
+
   /// 新建日记本。
   Future<void> _create() =>
       Navigator.of(context).push(NotebookEditorPage.route());
@@ -265,7 +271,10 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     int newIndex,
   ) {
     _unfold(tree, moved: true);
-    if (oldIndex == newIndex) return;
+    if (oldIndex == newIndex) {
+      _folding.endDrag();
+      return;
+    }
     final ids = <String>[for (final row in rows) row.notebook.id];
     final parents = <String, String?>{
       for (final row in rows) row.notebook.id: row.notebook.parentId,
@@ -281,7 +290,10 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
       for (final id in ids)
         if (parentOf(id) == parentOf(ids[oldIndex])) id,
     ];
-    if (listEquals(siblings, before)) return;
+    if (listEquals(siblings, before)) {
+      _folding.endDrag();
+      return;
+    }
     final order = notebookOrderAfterReorder(all, siblings);
     setState(() => _pendingOrder = order.shelf);
     unawaited(_writeOrder(order.manual));
@@ -289,7 +301,9 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
 
   Future<void> _writeOrder(List<String> manual) async {
     try {
-      await ref.read(notebooksControllerProvider).reorder(manual);
+      await _folding.holdDragUntil(
+        ref.read(notebooksControllerProvider).reorder(manual),
+      );
     } catch (error) {
       debugPrint('Reordering notebooks failed: $error');
       if (!mounted) return;

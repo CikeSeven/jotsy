@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
+import 'package:node_diary/app/synced_data_refresh.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/app_scroll_behavior.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
@@ -37,7 +38,8 @@ import '../l10n/app_localizations.dart';
 /// 3. 处理启动加载页和最短展示时长，就绪后交给 [AppBootstrapHome] 揭幕；
 /// 4. 提供 MaterialApp 壳与首页入口；
 /// 5. 在启用应用锁时，统一处理前台解锁门禁；
-/// 6. 安排启动后的媒体文件回收。
+/// 6. 安排启动后的媒体文件回收；
+/// 7. 常驻监听局域网同步的写入事件，失效一次性读取（[syncedDataRefreshProvider]）。
 class NodeDiaryApp extends ConsumerStatefulWidget {
   const NodeDiaryApp({super.key, this.launchBrandMark = false});
 
@@ -86,6 +88,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     // 常驻监听正文外观：设置就绪后即开始注册所选的导入字体，打开第一篇日记
     // 时通常已就绪，正文不会先按内置字体排一遍再换字体。
     ref.listenManual(diaryTextAppearanceProvider, (_, _) {});
+    // 局域网同步写库后失效一次性读取的 provider（清单见该 provider）。
+    ref.listenManual(syncedDataRefreshProvider, (_, _) {});
   }
 
   /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。

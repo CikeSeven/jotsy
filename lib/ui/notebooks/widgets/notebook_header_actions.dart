@@ -25,7 +25,7 @@ class NotebookHeaderActions extends StatelessWidget {
   final VoidCallback? onOpenInsights;
 
   /// “新建子本”：只在这本还能放子本、又还没有子本时由调用方给出；有了子本
-  /// 之后入口改在子本条末尾，这里不再重复。
+  /// 之后入口改在子本网格的标题行，这里不再重复。
   final VoidCallback? onCreateChild;
 
   @override

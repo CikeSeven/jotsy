@@ -6131,6 +6131,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookSubCreateShort => '新建子本';
 
   @override
+  String notebookSubMore(int count) {
+    return '还有 $count 本';
+  }
+
+  @override
+  String get notebookSubMoreHint => '展开';
+
+  @override
+  String notebookSubMoreSemantics(int count) {
+    return '展开其余 $count 本子日记本';
+  }
+
+  @override
+  String get notebookSubLess => '收起';
+
+  @override
+  String get notebookSubLessSemantics => '收起子日记本';
+
+  @override
   String get notebookSubCreate => '新建子日记本';
 
   @override

@@ -167,3 +167,22 @@ class NotebookManageCollapsedNotifier extends Notifier<Set<String>> {
     if (next.length != state.length) state = Set<String>.unmodifiable(next);
   }
 }
+
+/// 首页日记本头部展开了全部子本的日记本（业务 id），见 `NotebookChildrenGrid`。
+///
+/// 只在内存里：本次运行期间进了子本再回到上级仍保持展开，重启应用后全部
+/// 折叠，不加设置键。
+final notebookChildrenExpandedProvider =
+    NotifierProvider<NotebookChildrenExpandedNotifier, Set<String>>(
+      NotebookChildrenExpandedNotifier.new,
+    );
+
+class NotebookChildrenExpandedNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => const <String>{};
+
+  /// 展开或收起 [id] 的子本网格。
+  void toggle(String id) => state = state.contains(id)
+      ? Set<String>.unmodifiable(state.difference(<String>{id}))
+      : Set<String>.unmodifiable(<String>{...state, id});
+}

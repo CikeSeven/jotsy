@@ -8678,11 +8678,37 @@
   },
   "notebookSubSectionTitle": "Sub-notebooks",
   "@notebookSubSectionTitle": {
-    "description": "Small title of the sub-notebook row in the home notebook header card."
+    "description": "Small title of the sub-notebook grid in the home notebook header card, followed by the sub-notebook count."
   },
   "notebookSubCreateShort": "New",
   "@notebookSubCreateShort": {
-    "description": "Tile at the end of the header card's sub-notebook row that creates a sub-notebook."
+    "description": "Header card button that creates a sub-notebook: right of the sub-notebook grid title when there are sub-notebooks, otherwise in the action row."
+  },
+  "notebookSubMore": "{count} more",
+  "@notebookSubMore": {
+    "description": "Main text of the last cell of the collapsed sub-notebook grid: how many sub-notebooks are not listed.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notebookSubMoreHint": "Show all",
+  "@notebookSubMoreHint": {
+    "description": "Small second line in the sub-notebook grid's \"N more\" cell; tapping shows every sub-notebook."
+  },
+  "notebookSubMoreSemantics": "Show {count} more sub-notebooks",
+  "@notebookSubMoreSemantics": {
+    "description": "Screen reader label of the \"N more\" cell: expands the remaining sub-notebooks.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notebookSubLess": "Show less",
+  "@notebookSubLess": {
+    "description": "Last cell of the expanded sub-notebook grid; tapping folds it back to two rows."
+  },
+  "notebookSubLessSemantics": "Show fewer sub-notebooks",
+  "@notebookSubLessSemantics": {
+    "description": "Screen reader label of the \"Show less\" cell: folds the sub-notebook grid back to two rows."
   },
   "notebookSubCreate": "New sub-notebook",
   "@notebookSubCreate": {

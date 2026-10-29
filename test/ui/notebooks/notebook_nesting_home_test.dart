@@ -8,7 +8,7 @@ import 'package:node_diary/ui/notebooks/pages/notebook_editor_page.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_breadcrumb.dart';
-import 'package:node_diary/ui/notebooks/widgets/notebook_children_strip.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_children_grid.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_actions.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
@@ -16,7 +16,7 @@ import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
-/// 首页里的嵌套：父本汇总子本、头部的子本条与面包屑、子本里返回先回到
+/// 首页里的嵌套：父本汇总子本、头部的子本网格与面包屑、子本里返回先回到
 /// 上级、同一上锁范围里切换不重复验证、删除所在的子本后回到上级。
 void main() {
   Future<DiaryDraftsHarness> pumpHome(
@@ -56,8 +56,8 @@ void main() {
     await h.settleAll();
   }
 
-  Finder inStrip(Finder finder) =>
-      find.descendant(of: find.byType(NotebookChildrenStrip), matching: finder);
+  Finder inGrid(Finder finder) =>
+      find.descendant(of: find.byType(NotebookChildrenGrid), matching: finder);
 
   Finder headerTitle(String name) => find.descendant(
     of: find.byType(NotebookHeaderCard),
@@ -99,17 +99,17 @@ void main() {
     final h = await pumpHome(tester, seed: seedTravel);
     await openShelfAndPick(h, '旅行');
 
-    // 列表汇总子孙里的日记；头部的子本条只列直接子本。
+    // 列表汇总子孙里的日记；头部的子本网格只列直接子本。
     expect(find.text('出发'), findsOneWidget);
     expect(find.text('浅草寺'), findsOneWidget);
     expect(find.text('上班路上'), findsNothing);
-    expect(inStrip(find.text('2025')), findsOneWidget);
-    expect(inStrip(find.text('东京')), findsNothing);
-    expect(inStrip(find.text('新建子本')), findsOneWidget);
+    expect(inGrid(find.text('2025')), findsOneWidget);
+    expect(inGrid(find.text('东京')), findsNothing);
+    expect(inGrid(find.text('新建子本')), findsOneWidget);
     expect(find.byType(NotebookBreadcrumb), findsNothing);
 
     // 点子本进入：面包屑显示上级，列表只剩它的范围。
-    await tester.tap(inStrip(find.text('2025')));
+    await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
     expect(scopeId(tester), year);
     expect(headerTitle('2025'), findsOneWidget);
@@ -124,10 +124,10 @@ void main() {
     );
 
     // 再进一层，面包屑为“旅行 › 2025”；最深一层不再有“新建子本”。
-    await tester.tap(inStrip(find.text('东京')));
+    await tester.tap(inGrid(find.text('东京')));
     await h.settleAll();
     expect(scopeId(tester), tokyo);
-    expect(find.byType(NotebookChildrenStrip), findsNothing);
+    expect(find.byType(NotebookChildrenGrid), findsNothing);
     final crumbs = find.byType(NotebookBreadcrumb);
     expect(find.descendant(of: crumbs, matching: find.text('旅行')), findsOne);
     expect(find.descendant(of: crumbs, matching: find.text('2025')), findsOne);
@@ -146,9 +146,9 @@ void main() {
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
     await openShelfAndPick(h, '旅行');
-    await tester.tap(inStrip(find.text('2025')));
+    await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
-    await tester.tap(inStrip(find.text('东京')));
+    await tester.tap(inGrid(find.text('东京')));
     await h.settleAll();
     expect(scopeId(tester), tokyo);
 
@@ -165,19 +165,20 @@ void main() {
     await h.unmount();
   });
 
-  testWidgets('the create tile opens the editor with the parent filled in', (
-    tester,
-  ) async {
-    final h = await pumpHome(tester, seed: seedTravel);
-    await openShelfAndPick(h, '旅行');
-    await tester.tap(inStrip(find.text('新建子本')));
-    await h.settleAll();
-    final editor = tester.widget<NotebookEditorPage>(
-      find.byType(NotebookEditorPage),
-    );
-    expect(editor.initialParentId, travel);
-    await h.unmount();
-  });
+  testWidgets(
+    'the grid create button opens the editor with the parent filled in',
+    (tester) async {
+      final h = await pumpHome(tester, seed: seedTravel);
+      await openShelfAndPick(h, '旅行');
+      await tester.tap(inGrid(find.text('新建子本')));
+      await h.settleAll();
+      final editor = tester.widget<NotebookEditorPage>(
+        find.byType(NotebookEditorPage),
+      );
+      expect(editor.initialParentId, travel);
+      await h.unmount();
+    },
+  );
 
   Finder inActions(Finder finder) =>
       find.descendant(of: find.byType(NotebookHeaderActions), matching: finder);
@@ -193,7 +194,7 @@ void main() {
       },
     );
     await openShelfAndPick(h, '读书');
-    expect(find.byType(NotebookChildrenStrip), findsNothing);
+    expect(find.byType(NotebookChildrenGrid), findsNothing);
     await tester.tap(inActions(find.text('新建子本')));
     await h.settleAll();
     expect(
@@ -205,19 +206,99 @@ void main() {
     await h.unmount();
   });
 
-  testWidgets('once children exist only the strip offers a new one', (
+  testWidgets('once children exist only the grid offers a new one', (
     tester,
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
-    // 有子本的父本：入口只在子本条末尾；最深一层两处都没有。
+    // 有子本的父本：入口只在子本网格的标题行；最深一层两处都没有。
     await openShelfAndPick(h, '旅行');
     expect(inActions(find.text('新建子本')), findsNothing);
-    expect(inStrip(find.text('新建子本')), findsOneWidget);
-    await tester.tap(inStrip(find.text('2025')));
+    expect(inGrid(find.text('新建子本')), findsOneWidget);
+    await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
-    await tester.tap(inStrip(find.text('东京')));
+    await tester.tap(inGrid(find.text('东京')));
     await h.settleAll();
     expect(find.text('新建子本'), findsNothing);
+    await h.unmount();
+  });
+
+  testWidgets('many children fold into two rows and expand in place', (
+    tester,
+  ) async {
+    const names = <String>['一月', '二月', '三月', '四月', '五月', '六月'];
+    late List<String> months;
+    final h = await pumpHome(
+      tester,
+      seed: (h) async {
+        travel = await h.notebook('旅行');
+        months = <String>[
+          for (final name in names) await h.notebook(name, parentId: travel),
+        ];
+      },
+    );
+    await openShelfAndPick(h, '旅行');
+
+    // 手机宽度两列：收起时列出前三本，第四格为“还有 3 本”。
+    expect(inGrid(find.text('6')), findsOneWidget);
+    for (final name in names.take(3)) {
+      expect(inGrid(find.text(name)), findsOneWidget);
+    }
+    for (final name in names.skip(3)) {
+      expect(inGrid(find.text(name)), findsNothing);
+    }
+    expect(inGrid(find.text('还有 3 本')), findsOneWidget);
+    expect(inGrid(find.text('收起')), findsNothing);
+    final firstTop = tester.getTopLeft(inGrid(find.text('一月'))).dy;
+    expect(tester.getTopLeft(inGrid(find.text('二月'))).dy, firstTop);
+    expect(
+      tester.getTopLeft(inGrid(find.text('三月'))).dy,
+      greaterThan(firstTop),
+    );
+
+    await tester.tap(inGrid(find.text('还有 3 本')));
+    await h.settleAll();
+    for (final name in names) {
+      expect(inGrid(find.text(name)), findsOneWidget);
+    }
+    expect(inGrid(find.text('还有 3 本')), findsNothing);
+    expect(inGrid(find.text('收起')), findsOneWidget);
+
+    // 进了子本再回来仍是展开的。
+    await tester.tap(inGrid(find.text('六月')));
+    await h.settleAll();
+    expect(scopeId(tester), months.last);
+    await tester.binding.handlePopRoute();
+    await h.settleAll();
+    expect(scopeId(tester), travel);
+    expect(inGrid(find.text('六月')), findsOneWidget);
+
+    await tester.tap(inGrid(find.text('收起')));
+    await h.settleAll();
+    expect(inGrid(find.text('六月')), findsNothing);
+    expect(inGrid(find.text('还有 3 本')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await h.unmount();
+  });
+
+  testWidgets('children that fit in two rows show without a fold cell', (
+    tester,
+  ) async {
+    const names = <String>['春', '夏', '秋', '冬'];
+    final h = await pumpHome(
+      tester,
+      seed: (h) async {
+        travel = await h.notebook('旅行');
+        for (final name in names) {
+          await h.notebook(name, parentId: travel);
+        }
+      },
+    );
+    await openShelfAndPick(h, '旅行');
+    for (final name in names) {
+      expect(inGrid(find.text(name)), findsOneWidget);
+    }
+    expect(inGrid(find.textContaining('还有')), findsNothing);
+    expect(inGrid(find.text('收起')), findsNothing);
     await h.unmount();
   });
 
@@ -226,7 +307,7 @@ void main() {
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
     await openShelfAndPick(h, '旅行');
-    await tester.tap(inStrip(find.text('2025')));
+    await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
     expect(scopeId(tester), year);
 
@@ -247,7 +328,7 @@ void main() {
     expect(scopeId(tester), travel);
     expect(find.text('日记本已删除'), findsNothing);
     // “东京”提到了“旅行”下面。
-    expect(inStrip(find.text('东京')), findsOneWidget);
+    expect(inGrid(find.text('东京')), findsOneWidget);
     expect((await h.notebookRow(tokyo))!.parentId, travel);
     await h.unmount();
   });
@@ -257,7 +338,7 @@ void main() {
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
     await openShelfAndPick(h, '旅行');
-    await tester.tap(inStrip(find.text('2025')));
+    await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
 
     await tester.runAsync(() => h.database.deleteNotebook(year));
@@ -293,7 +374,7 @@ void main() {
       expect(auth.reasons, hasLength(1));
       expect(scopeId(tester), vault);
 
-      await tester.tap(inStrip(find.text('日常')));
+      await tester.tap(inGrid(find.text('日常')));
       await h.settleAll();
       expect(scopeId(tester), daily);
       await tester.binding.handlePopRoute();
@@ -312,12 +393,12 @@ void main() {
       expect(find.text('出发'), findsOneWidget);
       expect(find.text('心里话'), findsNothing);
 
-      await tester.tap(inStrip(find.text('心事')));
+      await tester.tap(inGrid(find.text('心事')));
       await h.settleAll();
       expect(auth.reasons, <String>['解锁「心事」']);
       expect(scopeId(tester), travel);
 
-      await tester.tap(inStrip(find.text('心事')));
+      await tester.tap(inGrid(find.text('心事')));
       await h.settleAll();
       expect(scopeId(tester), diaryBook);
       expect(find.text('心里话'), findsOneWidget);

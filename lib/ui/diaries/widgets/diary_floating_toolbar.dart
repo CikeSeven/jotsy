@@ -479,17 +479,14 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       _ToolbarPanel.heading => DiaryHeadingPanel(
         controller: widget.controller,
         bodyHeight: _bodyHeight(_ToolbarPanel.heading),
-        onClose: _closeTextStylePanel,
       ),
       _ToolbarPanel.align => DiaryAlignPanel(
         controller: widget.controller,
         bodyHeight: _bodyHeight(_ToolbarPanel.align),
-        onClose: _closeTextStylePanel,
       ),
       _ToolbarPanel.fontSize => DiaryFontSizePanel(
         controller: widget.controller,
         bodyHeight: _bodyHeight(_ToolbarPanel.fontSize),
-        onClose: _closeTextStylePanel,
       ),
       _ => DiaryToolbarMorePanel(
         rows: layout.overflowRows,

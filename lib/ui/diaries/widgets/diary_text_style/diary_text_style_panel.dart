@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
     as editor;
 import 'package:node_diary/ui/diaries/controllers/diary_text_style_editing.dart';
@@ -48,12 +46,13 @@ class DiaryTextStyleOption<T extends Object> {
   final Widget child;
 }
 
-/// 悬浮工具栏卡片内的文字样式面板外壳：40dp 表头（标题 + 收起按钮）+ 一排
+/// 悬浮工具栏卡片内的文字样式面板外壳：40dp 表头（只有标题，同列表、代码块
+/// 面板；再点一次工具或「更多」收起）+ 一排
 /// 单选按钮组。标题、对齐、字号三块面板共用（见 `diary_text_style_panels.dart`）。
 ///
 /// - 输入：正文控制器、标题、选项、读出当前取值的 [selectedOf]、写入取值的
 ///   [onSelected]、工具栏给的内容高度 [bodyHeight]（小于自然高度时面板内纵向
-///   滚动）与收起回调 [onClose]；
+///   滚动）；
 /// - 选中哪一段只看正文（随选区与撤销变化）：[selectedOf] 返回 null（选区跨了
 ///   不同取值）时不选中任何一段；选区里没有能改的文字块（光标在代码块里）时
 ///   整排停用，面板保持打开；
@@ -69,7 +68,6 @@ class DiaryTextStylePanel<T extends Object> extends StatelessWidget {
     required this.selectedOf,
     required this.onSelected,
     required this.bodyHeight,
-    required this.onClose,
   });
 
   final editor.DiaryEditorController controller;
@@ -79,7 +77,6 @@ class DiaryTextStylePanel<T extends Object> extends StatelessWidget {
   final void Function(editor.DiaryEditorController controller, T value)
   onSelected;
   final double bodyHeight;
-  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -108,35 +105,22 @@ class DiaryTextStylePanel<T extends Object> extends StatelessWidget {
     );
   }
 
-  /// 标题字号与字重同代码块、列表面板表头；右侧是收起按钮。
+  /// 标题字号与字重同代码块、列表面板表头。
   Widget _buildHeader(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsetsDirectional.only(start: _kInset),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: colors.onSurface,
-              ),
-            ),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
-          IconButton(
-            tooltip: context.l10n.commonClose,
-            onPressed: onClose,
-            constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-            padding: EdgeInsets.zero,
-            visualDensity: VisualDensity.compact,
-            color: colors.onSurfaceVariant,
-            icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
-          ),
-        ],
+        ),
       ),
     );
   }

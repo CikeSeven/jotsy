@@ -18,12 +18,10 @@ class DiaryHeadingPanel extends StatelessWidget {
     super.key,
     required this.controller,
     required this.bodyHeight,
-    required this.onClose,
   });
 
   final editor.DiaryEditorController controller;
   final double bodyHeight;
-  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +53,6 @@ class DiaryHeadingPanel extends StatelessWidget {
       selectedOf: selectedDiaryHeadingLevel,
       onSelected: setDiaryHeadingLevel,
       bodyHeight: bodyHeight,
-      onClose: onClose,
     );
   }
 }
@@ -67,12 +64,10 @@ class DiaryAlignPanel extends StatelessWidget {
     super.key,
     required this.controller,
     required this.bodyHeight,
-    required this.onClose,
   });
 
   final editor.DiaryEditorController controller;
   final double bodyHeight;
-  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +91,6 @@ class DiaryAlignPanel extends StatelessWidget {
       selectedOf: selectedDiaryTextAlign,
       onSelected: setDiaryTextAlign,
       bodyHeight: bodyHeight,
-      onClose: onClose,
     );
   }
 }
@@ -108,12 +102,10 @@ class DiaryFontSizePanel extends StatelessWidget {
     super.key,
     required this.controller,
     required this.bodyHeight,
-    required this.onClose,
   });
 
   final editor.DiaryEditorController controller;
   final double bodyHeight;
-  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +134,6 @@ class DiaryFontSizePanel extends StatelessWidget {
       selectedOf: selectedDiaryFontSize,
       onSelected: setDiaryFontSize,
       bodyHeight: bodyHeight,
-      onClose: onClose,
     );
   }
 }

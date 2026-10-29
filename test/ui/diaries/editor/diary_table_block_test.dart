@@ -284,6 +284,28 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'an empty cell shows no "/" hint, an empty body line still does',
+    (tester) async {
+      final table = _table(2, 2);
+      final cells = table['children']! as List<Object?>;
+      (cells[2]! as Map<String, Object?>)['children'] = [_paragraph('')];
+      final controller = _document([table, _paragraph('')]);
+      await _focus(
+        tester,
+        controller,
+        af.Selection.collapsed(af.Position(path: [0, 2, 0])),
+      );
+      final hint = lookupAppLocalizations(
+        const Locale('zh'),
+      ).diaryEditorEmptyLineHint;
+      expect(find.textContaining(hint, findRichText: true), findsNothing);
+
+      await _select(tester, controller, [1]);
+      expect(find.textContaining(hint, findRichText: true), findsOneWidget);
+    },
+  );
+
   testWidgets('Enter adds a paragraph inside the cell, typing stays in it', (
     tester,
   ) async {

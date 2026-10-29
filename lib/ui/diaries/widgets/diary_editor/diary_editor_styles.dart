@@ -2,6 +2,7 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../controllers/diary_table_editing.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
@@ -177,6 +178,8 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
           when node.parent?.type == 'page' &&
               node.parent!.children.length == 1 =>
         placeholder ?? ' ',
+      // 格子里不能插入区块，`/` 提示只会误导，窄格里还会折成两行。
+      'paragraph' when diaryNodeInTableCell(node) => ' ',
       'paragraph' when editable => context.l10n.diaryEditorEmptyLineHint,
       _ => ' ',
     },

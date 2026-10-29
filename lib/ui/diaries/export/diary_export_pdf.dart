@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart' show Color, TextDirection;
-import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -82,10 +81,11 @@ class DiaryPdfFonts {
 
 /// PDF 写出器：多篇日记连续排版进一个 A4 文档，页脚为页码。
 ///
-/// 正文经 prepareBody 检查图片、把媒体换为可读名称、压平透明色与代码着色，
-/// 再由共用块解析器和 pdf 库直接绘制，保持标题、列表、嵌套、引用与行内格式。
-/// 所有图片先检查/载入后换成虚拟地址，避免缺图中断或泄露私有路径；高亮与
-/// 应用配色同源。中文字体的粗斜体经 DiaryPdfTextEffects 在绘制时补偿。
+/// 正文与其他格式读同一份块（[DiaryExportEntry.blocks]，块文档直接解析，
+/// 保留嵌套深度与列表样式），经 prepareBody 检查图片、把媒体换为可读名称、
+/// 压平透明色与代码着色，再由 pdf 库直接绘制，保持标题、列表、嵌套、引用与
+/// 行内格式。所有图片先检查/载入后换成虚拟地址，避免缺图中断或泄露私有
+/// 路径；高亮与应用配色同源。中文字体的粗斜体经 DiaryPdfTextEffects 在绘制时补偿。
 ///
 /// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。有留言的
 /// 日记在正文之后接留言区（[buildDiaryPdfComments]，同样不写心情）。
@@ -245,10 +245,10 @@ class DiaryPdfWriter {
     );
     if (body != null) {
       widgets.addAll(
-        await _renderBody(
+        buildDiaryPdfBody(
           body,
           theme: theme,
-          fonts: fonts,
+          codeFont: fonts.bundled,
           effects: textEffects,
           images: images,
           textDirection: textDirection,
@@ -569,10 +569,17 @@ class DiaryPdfWriter {
     return widgets;
   }
 
-  /// 改写正文 Delta（见类注释）；没有可见内容时返回 null。给了 [code] 时
-  /// 先为代码行着色：要在下面把语言值改写为 `true` 之前，着色要用到语言。
+  /// 准备要绘制的正文块（见类注释）；没有可见内容时返回 null。除了把图片
+  /// 字节计入 [images]，不改动任何东西：块与片段都不可变，结果是新列表。
+  ///
+  /// 依次：给了 [code] 时先为代码行着色（[DiaryExportCodeTheme.colorCodeBlocks]，
+  /// 按语言整块高亮）；图片读出字节、读不出或关掉图片时整块去掉，否则计入
+  /// [images] 并把来源换成按下标取图的虚拟地址；录音、视频、附件换成一行
+  /// 名称（远程地址保留为链接，本地私有路径不写出）；分隔线写成一行横线；
+  /// 还没有专门画法的标注、折叠列表与表格退化为普通段落
+  /// （[ExportBlock.fallbackLines]）；最后把文字色与背景色压平到白纸上。
   @visibleForTesting
-  static Future<Delta?> prepareBody(
+  static Future<List<ExportBlock>?> prepareBody(
     DiaryExportEntry entry, {
     required bool includeImages,
     required DiaryExportLabels labels,
@@ -580,112 +587,83 @@ class DiaryPdfWriter {
     required List<Uint8List> images,
     DiaryExportCodeTheme? code,
   }) async {
-    final ops = <Map<String, dynamic>>[];
+    final body = <ExportBlock>[];
     var hasContent = false;
-    final source = code?.colorDeltaCodeLines(entry.deltaOps) ?? entry.deltaOps;
-    for (final raw in source) {
-      if (raw is! Map) {
-        continue;
-      }
-      final op = Map<String, dynamic>.from(raw);
-      _normalizeCodeBlockAttribute(op);
-      _flattenColorAttributes(op);
-      final insert = op['insert'];
-      if (insert is String) {
-        hasContent = hasContent || insert.trim().isNotEmpty;
-        ops.add(op);
-        continue;
-      }
-      if (insert is! Map) {
-        continue;
-      }
-      final image = insert['image'];
-      if (image is String) {
-        final bytes = includeImages ? await media.bytesOf(image) : null;
-        if (bytes == null || ExportImageInfo.read(bytes) == null) {
-          continue;
-        }
-        _addImage(images, bytes);
-        op['insert'] = <String, dynamic>{
-          'image': '$_virtualImageHost${images.length - 1}.png',
-        };
-        hasContent = true;
-        ops.add(op);
-        continue;
-      }
-      final label = _embedLabel(insert, labels);
-      if (label != null) {
-        hasContent = true;
-        ops.add(<String, dynamic>{
-          'insert': label.text,
-          if (label.link != null)
-            'attributes': <String, dynamic>{'link': label.link},
-        });
-      }
+    void addText(ExportBlock block) {
+      body.add(block.copyWith(inlines: _flattenColors(block.inlines)));
+      hasContent = hasContent || block.plainText.trim().isNotEmpty;
     }
-    if (!hasContent) {
-      return null;
-    }
-    // Delta 必须以换行结尾，否则最后一行不会成为段落。
-    final last = ops.isEmpty ? null : ops.last['insert'];
-    if (last is! String || !last.endsWith('\n')) {
-      ops.add(<String, dynamic>{'insert': '\n'});
-    }
-    return Delta.fromJson(ops);
-  }
 
-  /// 把代码块的语言值（`'python'`、`'plain'` 等字符串）改写为 `true`。
-  ///
-  /// 代码颜色已按语言计算，后续排版只需“代码行”标记，去掉语言值让准备
-  /// 结果使用同一种行结构；原文及其语言字段不受影响。
-  static void _normalizeCodeBlockAttribute(Map<String, dynamic> op) {
-    final attrs = op['attributes'];
-    if (attrs is! Map) {
-      return;
+    for (final block in code?.colorCodeBlocks(entry.blocks) ?? entry.blocks) {
+      switch (block.kind) {
+        case ExportBlockKind.image:
+          final bytes = includeImages
+              ? await media.bytesOf(block.source!)
+              : null;
+          if (bytes == null || ExportImageInfo.read(bytes) == null) {
+            continue;
+          }
+          _addImage(images, bytes);
+          body.add(
+            block.copyWith(
+              source: '$_virtualImageHost${images.length - 1}.png',
+            ),
+          );
+          hasContent = true;
+        case ExportBlockKind.media:
+          final uri = Uri.tryParse(block.source!);
+          final remote =
+              uri != null && (uri.isScheme('http') || uri.isScheme('https'));
+          body.add(
+            block.paragraphWith(<ExportInline>[
+              ExportInline(
+                labels.mediaLine(block),
+                link: remote ? block.source : null,
+              ),
+            ]),
+          );
+          hasContent = true;
+        case ExportBlockKind.divider:
+          body.add(
+            block.paragraphWith(const <ExportInline>[
+              ExportInline(ExportPlainText.dividerLine),
+            ]),
+          );
+          hasContent = true;
+        case ExportBlockKind.callout ||
+            ExportBlockKind.toggle ||
+            ExportBlockKind.table:
+          for (final line in block.fallbackLines) {
+            addText(block.paragraphWith(line));
+          }
+        default:
+          addText(block);
+      }
     }
-    final value = attrs['code-block'];
-    if (value == null || value is bool) {
-      return;
-    }
-    op['attributes'] = Map<String, dynamic>.from(attrs)..['code-block'] = true;
+    return hasContent ? List<ExportBlock>.unmodifiable(body) : null;
   }
 
   /// PDF 的纸面颜色：页面不画背景，即白纸。
   static const Color _paper = Color(0xFFFFFFFF);
 
   /// 把文字色 / 背景色压平成叠在白纸上的不透明色（pdf 库填色时只写 RGB、
-  /// 丢掉透明度，见 [flattenDiaryColors]）；完全透明的背景直接去掉。只处理
-  /// `#RRGGBB` / `#AARRGGBB`（[parseDiaryColorValue]），其他写法原样交给
-  /// 插件；属性表拷贝一份再改，不动调用方的正文。
-  static void _flattenColorAttributes(Map<String, dynamic> op) {
-    final attrs = op['attributes'];
-    if (attrs is! Map) {
-      return;
-    }
-    Color? parse(Object? value) =>
-        value is String ? parseDiaryColorValue(value) : null;
-    final background = parse(attrs['background']);
-    final text = parse(attrs['color']);
-    if (background == null && text == null) {
-      return;
-    }
-    final flat = flattenDiaryColors(
-      text: text,
-      background: background,
-      paper: _paper,
-    );
-    final flattened = Map<String, dynamic>.from(attrs);
-    if (background != null) {
-      if (flat.background == null) {
-        flattened.remove('background');
-      } else {
-        flattened['background'] = encodeDiaryColor(flat.background!);
+  /// 丢掉透明度，见 [flattenDiaryColors]）。完全透明与读不懂的颜色在解析
+  /// 块时已经去掉（[ExportInline.fromAttributes]）。
+  static List<ExportInline> _flattenColors(List<ExportInline> inlines) {
+    final result = <ExportInline>[];
+    for (final run in inlines) {
+      if (run.color == null && run.background == null) {
+        result.add(run);
+        continue;
       }
+      final flat = flattenDiaryColors(
+        text: run.color,
+        background: run.background,
+        paper: _paper,
+      );
+      result.add(run.copyWith(color: flat.text, background: flat.background));
     }
-    if (flat.text != null) {
-      flattened['color'] = encodeDiaryColor(flat.text!);
-    }
-    op['attributes'] = flattened;
+    return result;
   }
 
   static void _addImage(List<Uint8List> images, Uint8List bytes) {
@@ -694,52 +672,6 @@ class DiaryPdfWriter {
     if (total > maxImageBytes) {
       throw DiaryExportTooLargeException(total);
     }
-  }
-
-  static ({String text, String? link})? _embedLabel(
-    Map<dynamic, dynamic> insert,
-    DiaryExportLabels labels,
-  ) {
-    ({String text, String? link}) labelFor(ExportBlock block, String path) {
-      final uri = Uri.tryParse(path);
-      final remote =
-          uri != null && (uri.isScheme('http') || uri.isScheme('https'));
-      return (text: labels.mediaLine(block), link: remote ? path : null);
-    }
-
-    final blocks = ExportBlockParser.parse(<dynamic>[
-      <String, dynamic>{'insert': insert},
-    ]);
-    final block = blocks.isEmpty ? null : blocks.single;
-    if (block?.kind == ExportBlockKind.divider) {
-      // 插件不认识分隔线嵌入，写成一行横线。
-      return (text: ExportPlainText.dividerLine, link: null);
-    }
-    if (block == null || block.kind != ExportBlockKind.media) {
-      // 其他无文字的嵌入：插件本身也会忽略，这里直接去掉。
-      return null;
-    }
-    return labelFor(block, block.source!);
-  }
-
-  static Future<List<pw.Widget>> _renderBody(
-    Delta body, {
-    required pw.ThemeData theme,
-    required DiaryPdfFonts fonts,
-    required DiaryPdfTextEffects effects,
-    required List<Uint8List> images,
-    required TextDirection textDirection,
-    DiaryExportCodeTheme? code,
-  }) async {
-    return buildDiaryPdfBody(
-      ExportBlockParser.parse(body.toJson()),
-      theme: theme,
-      codeFont: fonts.bundled,
-      effects: effects,
-      images: images,
-      textDirection: textDirection,
-      code: code,
-    );
   }
 }
 

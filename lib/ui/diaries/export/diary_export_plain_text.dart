@@ -31,6 +31,16 @@ class ExportPlainText {
         lines.add(dividerLine);
         continue;
       }
+      if (block.kind == ExportBlockKind.callout ||
+          block.kind == ExportBlockKind.toggle ||
+          block.kind == ExportBlockKind.table) {
+        // 暂按普通段落写（ExportBlock.fallbackLines），内容不丢。
+        for (final line in block.fallbackLines) {
+          final text = line.map(_inlineText).join();
+          lines.add(text.isEmpty ? '' : '${'  ' * block.indent}$text');
+        }
+        continue;
+      }
       final text = block.inlines.map(_inlineText).join();
       final prefix = switch (block.kind) {
         ExportBlockKind.bullet ||

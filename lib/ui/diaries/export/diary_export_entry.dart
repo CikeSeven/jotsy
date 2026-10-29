@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
-import '../../../core/database/diary_blocks/diary_blocks_to_delta.dart';
 import '../../../utils/text_stats.dart';
 import '../models/diary_context_info.dart';
 import 'diary_export_blocks.dart';
@@ -10,8 +9,8 @@ import 'diary_export_book.dart';
 
 /// 一篇待导出日记的全部素材，从详情解析一次，各写出器只读不改。
 ///
-/// 当前正文直接解析为 blocks 并保留嵌套深度；deltaOps 仅为 PDF 预处理的
-/// 纯数据投影，兼容历史导出调用，不创建任何编辑器或旧控制器。
+/// 正文直接解析为 [blocks] 并保留嵌套深度，所有格式（含 PDF）都只读它，
+/// 不创建任何编辑器或旧控制器。
 @immutable
 class DiaryExportEntry {
   const DiaryExportEntry({
@@ -19,7 +18,6 @@ class DiaryExportEntry {
     required this.title,
     required this.createdAt,
     required this.updatedAt,
-    required this.deltaOps,
     required this.blocks,
     required this.wordCount,
     this.tagNames = const <String>[],
@@ -39,7 +37,6 @@ class DiaryExportEntry {
       title: diary.title,
       createdAt: diary.createdAt,
       updatedAt: diary.updatedAt,
-      deltaOps: diaryBlocksToQuillOps(decodeStoredDiaryBlocks(diary.content)),
       wordCount: DiaryWordCounts.of(
         diaryId: diary.diaryId,
         updatedAt: diary.updatedAt,
@@ -53,12 +50,14 @@ class DiaryExportEntry {
     );
   }
 
+  /// 正文给块文档 [blockDocument]；没有时读历史 Delta 的 op 列表
+  /// [deltaOps]（旧调用与以平铺正文写的测试）。
   factory DiaryExportEntry.parse({
     required String diaryId,
     required String title,
     required DateTime createdAt,
     required DateTime updatedAt,
-    required List<dynamic> deltaOps,
+    List<dynamic> deltaOps = const <dynamic>[],
     int? wordCount,
     List<String> tagNames = const <String>[],
     String? cover,
@@ -75,7 +74,6 @@ class DiaryExportEntry {
       title: title.trim(),
       createdAt: createdAt,
       updatedAt: updatedAt,
-      deltaOps: List<dynamic>.unmodifiable(deltaOps),
       blocks: blocks,
       wordCount:
           wordCount ??
@@ -101,7 +99,6 @@ class DiaryExportEntry {
   final String title;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<dynamic> deltaOps;
   final List<ExportBlock> blocks;
 
   /// 正文字数（经 [TextStats]，与卡片、日历、探索页与预览页同一口径）。

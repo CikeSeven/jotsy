@@ -6,23 +6,28 @@ import '../../../core/database/audio_embed_codec.dart';
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/divider_embed_codec.dart';
 import '../../../core/database/file_embed_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../../../core/database/diary_blocks/diary_blocks_table.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
 import '../../../core/database/diary_blocks/diary_list_style.dart';
 import '../models/diary_text_colors.dart';
 
 part 'diary_export_native_blocks.dart';
 
-/// 正文 Delta 的块级中间表示，供 Markdown / HTML / Word / 纯文本写出器共用。
+/// 正文的块级中间表示，供 PDF / Markdown / HTML / Word / 纯文本写出器共用。
 ///
-/// 为什么不让每个写出器各自遍历 Delta：行级属性（列表、标题、引用、对齐）
-/// 挂在换行符上，嵌入与行内样式又散落在文本片段里，各写一遍既重复也容易
+/// 为什么不让每个写出器各自遍历正文：块文档的嵌套、列表序号与样式、代码
+/// 块的行，以及历史 Delta 里挂在换行符上的行级属性，各写一遍既重复也容易
 /// 在边界（只含嵌入的行、跨缩进的编号）上各自出错。这里统一解析一次：
 /// - 每个文本行成为一个 [ExportBlock]，带块类型、缩进与按段计数的序号；
 /// - 图片单独成块（[ExportBlockKind.image]），录音 / 视频 / 附件成块
 ///   （[ExportBlockKind.media]），由写出器决定内嵌还是只写名称；分隔线成块
 ///   （[ExportBlockKind.divider]）；
-/// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接，
-///   以及字号、文字色与背景色（没有对应写法的格式照常略过）。
+/// - 标注（[ExportBlockKind.callout]）带图标与底色档位，折叠列表
+///   （[ExportBlockKind.toggle]）的子块照常以更深的缩进跟在后面，表格
+///   （[ExportBlockKind.table]）整个是一块（[ExportBlock.tableRows]）；
+/// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接、
+///   上下标，以及字号、文字色与背景色（没有对应写法的格式照常略过）。
 /// 纯函数，无 IO。
 enum ExportBlockKind {
   paragraph,
@@ -36,7 +41,13 @@ enum ExportBlockKind {
   image,
   media,
   divider,
+  callout,
+  toggle,
+  table,
 }
+
+/// 行内上标 / 下标（块文档行内属性 [kDiaryInlineScript]）。
+enum ExportScript { superscript, subscript }
 
 enum ExportMediaKind { audio, video, file }
 
@@ -55,6 +66,7 @@ class ExportInline {
     this.color,
     this.background,
     this.size,
+    this.script,
   });
 
   factory ExportInline.fromAttributes(String text, Map<String, dynamic> attrs) {
@@ -75,8 +87,16 @@ class ExportInline {
       color: color(attrs['font_color'] ?? attrs['color']),
       background: background == null || background.a == 0 ? null : background,
       size: size is String || size is num ? size.toString() : null,
+      script: switch (attrs[kDiaryInlineScript]) {
+        kDiaryScriptSuper => ExportScript.superscript,
+        kDiaryScriptSub => ExportScript.subscript,
+        _ => null,
+      },
     );
   }
+
+  /// 表格格子里两段之间的换行（见 [ExportBlock.tableRows]）。
+  static const ExportInline lineBreak = ExportInline('\n');
 
   final String text;
   final bool bold;
@@ -96,6 +116,33 @@ class ExportInline {
 
   /// Quill 行内字号：small / large / huge 或数字；由支持字号的写出器解析。
   final String? size;
+
+  /// 上标 / 下标；普通文字为 null。
+  final ExportScript? script;
+
+  /// 是否为格子里的段间换行（[lineBreak]）。
+  bool get isLineBreak => text == '\n';
+
+  /// 改文字或颜色、补斜体后的副本（PDF 准备正文时压平颜色、给代码着色用）；
+  /// 没给的项保持原样。
+  ExportInline copyWith({
+    String? text,
+    Color? color,
+    Color? background,
+    bool? italic,
+  }) => ExportInline(
+    text ?? this.text,
+    bold: bold,
+    italic: italic ?? this.italic,
+    underline: underline,
+    strike: strike,
+    code: code,
+    link: link,
+    color: color ?? this.color,
+    background: background ?? this.background,
+    size: size,
+    script: script,
+  );
 }
 
 @immutable
@@ -114,6 +161,10 @@ class ExportBlock {
     this.codeLanguage,
     this.orderedStyle,
     this.bulletStyle,
+    this.calloutIcon,
+    this.calloutTone,
+    this.tableRows = const <List<List<ExportInline>>>[],
+    this.tableHeaderRow = false,
   });
 
   final ExportBlockKind kind;
@@ -147,6 +198,21 @@ class ExportBlock {
   final DiaryOrderedListStyle? orderedStyle;
   final DiaryBulletListStyle? bulletStyle;
 
+  /// 标注的图标（emoji，缺省为 [kDiaryCalloutDefaultIcon]）与底色档位
+  /// （[kDiaryCalloutTones] 之一，认不出的已归为 [kDiaryCalloutToneDefault]）；
+  /// 其他块为 null。
+  final String? calloutIcon;
+  final String? calloutTone;
+
+  /// 表格的格子文字：`tableRows[行][列]` 是一格的行内片段。一格里有几段时，
+  /// 段与段之间是一个 [ExportInline.lineBreak]（文字恰为 `\n`、不带格式的
+  /// 片段），其余片段不含换行；空格子为空列表。只有表格块有，行列数与
+  /// 编辑器里一致。
+  final List<List<List<ExportInline>>> tableRows;
+
+  /// 表格首行是否为表头；其他块为 false。
+  final bool tableHeaderRow;
+
   /// 纯文本、PDF、Word 写在行首的列表标记（不含其后的空白）：有序为按样式
   /// 排出的序号（如 `a.`、`一、`、`①`），无序为样式的字符；没有样式时为
   /// `1.` 与 `•`。其他块为空串。
@@ -157,7 +223,104 @@ class ExportBlock {
     _ => '',
   };
 
-  String get plainText => inlines.map((ExportInline run) => run.text).join();
+  /// 块的文字（不含列表标记与标注图标）；表格为每行一行、格间 ` | `
+  /// （与 [fallbackLines] 同一口径）。
+  String get plainText => kind == ExportBlockKind.table
+      ? fallbackLines.map(_joinText).join('\n')
+      : _joinText(inlines);
+
+  static String _joinText(List<ExportInline> runs) =>
+      runs.map((ExportInline run) => run.text).join();
+
+  /// 还没有专门写法的块（标注、折叠列表、表格）退化成的普通段落文字，每项
+  /// 一段：标注以图标开头、折叠列表以 `▸ ` 开头；表格每行一段，格与格之间
+  /// ` | `，一格里的几段以空格相连（空段略过，整行都空时为空段）。其他块
+  /// 就是 [inlines] 一段。各写出器给这三种块补上专门写法之前都按它写，
+  /// 内容不丢。
+  List<List<ExportInline>> get fallbackLines => switch (kind) {
+    ExportBlockKind.callout => <List<ExportInline>>[
+      <ExportInline>[
+        ExportInline('${calloutIcon ?? kDiaryCalloutDefaultIcon} '),
+        ...inlines,
+      ],
+    ],
+    ExportBlockKind.toggle => <List<ExportInline>>[
+      <ExportInline>[const ExportInline('▸ '), ...inlines],
+    ],
+    ExportBlockKind.table => <List<ExportInline>>[
+      for (final row in tableRows) _fallbackRow(row),
+    ],
+    _ => <List<ExportInline>>[inlines],
+  };
+
+  static List<ExportInline> _fallbackRow(List<List<ExportInline>> row) {
+    final cells = <List<ExportInline>>[
+      for (final cell in row) _fallbackCell(cell),
+    ];
+    if (cells.every((List<ExportInline> cell) => cell.isEmpty)) {
+      return const <ExportInline>[];
+    }
+    return <ExportInline>[
+      for (final (index, cell) in cells.indexed) ...<ExportInline>[
+        if (index > 0) const ExportInline(' | '),
+        ...cell,
+      ],
+    ];
+  }
+
+  /// 一格的几段以空格相连，空段略过。
+  static List<ExportInline> _fallbackCell(List<ExportInline> cell) {
+    final paragraphs = <List<ExportInline>>[<ExportInline>[]];
+    for (final run in cell) {
+      if (run.isLineBreak) {
+        paragraphs.add(<ExportInline>[]);
+      } else {
+        paragraphs.last.add(run);
+      }
+    }
+    final kept = paragraphs.where(
+      (List<ExportInline> runs) => _joinText(runs).trim().isNotEmpty,
+    );
+    return <ExportInline>[
+      for (final (index, runs) in kept.indexed) ...<ExportInline>[
+        if (index > 0) const ExportInline(' '),
+        ...runs,
+      ],
+    ];
+  }
+
+  /// 同缩进、同对齐的普通段落，文字换成 [inlines]（写出器把块退化为段落时
+  /// 用，如 [fallbackLines]、PDF 的媒体说明行）。
+  ExportBlock paragraphWith(List<ExportInline> inlines) => ExportBlock._(
+    kind: ExportBlockKind.paragraph,
+    inlines: List<ExportInline>.unmodifiable(inlines),
+    indent: indent,
+    align: align,
+  );
+
+  /// 换掉行内片段或来源后的副本，其余不变（PDF 准备正文时用）。
+  ExportBlock copyWith({List<ExportInline>? inlines, String? source}) =>
+      ExportBlock._(
+        kind: kind,
+        inlines: inlines == null
+            ? this.inlines
+            : List<ExportInline>.unmodifiable(inlines),
+        level: level,
+        indent: indent,
+        ordinal: ordinal,
+        align: align,
+        source: source ?? this.source,
+        mediaKind: mediaKind,
+        mediaName: mediaName,
+        mediaDuration: mediaDuration,
+        codeLanguage: codeLanguage,
+        orderedStyle: orderedStyle,
+        bulletStyle: bulletStyle,
+        calloutIcon: calloutIcon,
+        calloutTone: calloutTone,
+        tableRows: tableRows,
+        tableHeaderRow: tableHeaderRow,
+      );
 
   bool get isListItem =>
       kind == ExportBlockKind.bullet ||
@@ -166,14 +329,16 @@ class ExportBlock {
       kind == ExportBlockKind.unchecked;
 }
 
-/// 解析 Delta ops 为块列表。
+/// 解析正文为块列表。
 class ExportBlockParser {
   const ExportBlockParser._();
 
-  /// 当前正文直接读树；平铺操作列表的 parse 仅供历史格式与导出准备使用。
+  /// 当前正文（块文档）直接读树，所有导出格式与分享都走这里。
   static List<ExportBlock> parseDocument(Map<String, Object?> document) =>
       _parseNativeBlocks(document);
 
+  /// 历史 Delta 的 op 列表（没有块文档的旧调用与以平铺正文写的测试）；
+  /// 没有标注、折叠列表与表格，也没有列表样式。
   static List<ExportBlock> parse(List<dynamic> rawOps) {
     final blocks = <ExportBlock>[];
     var line = <ExportInline>[];
@@ -275,10 +440,21 @@ class ExportBlockParser {
     return List<ExportBlock>.unmodifiable(blocks);
   }
 
-  static ExportBlock? _embed(Map<dynamic, dynamic> insert) {
+  /// 一个 Quill 嵌入（历史 Delta，或块文档里原样保留的未知嵌入
+  /// [kDiaryBlockUnknownEmbed]）对应的块；[indent] / [align] 为它所在的行。
+  static ExportBlock? _embed(
+    Map<dynamic, dynamic> insert, {
+    int indent = 0,
+    ExportAlign align = ExportAlign.start,
+  }) {
     final image = insert['image'];
     if (image is String && image.trim().isNotEmpty) {
-      return ExportBlock._(kind: ExportBlockKind.image, source: image.trim());
+      return ExportBlock._(
+        kind: ExportBlockKind.image,
+        source: image.trim(),
+        indent: indent,
+        align: align,
+      );
     }
     final audio = DiaryAudioAttachment.tryDecode(insert[diaryAudioEmbedType]);
     if (audio != null) {
@@ -288,6 +464,8 @@ class ExportBlockParser {
         mediaKind: ExportMediaKind.audio,
         mediaName: audio.name,
         mediaDuration: audio.duration,
+        indent: indent,
+        align: align,
       );
     }
     final video = DiaryFileAttachment.tryDecode(insert['video']);
@@ -297,6 +475,8 @@ class ExportBlockParser {
         source: video.path,
         mediaKind: ExportMediaKind.video,
         mediaName: video.displayName,
+        indent: indent,
+        align: align,
       );
     }
     for (final type in diaryFileEmbedTypes) {
@@ -307,11 +487,17 @@ class ExportBlockParser {
           source: file.path,
           mediaKind: ExportMediaKind.file,
           mediaName: file.displayName,
+          indent: indent,
+          align: align,
         );
       }
     }
     if (insert.containsKey(diaryDividerEmbedType)) {
-      return const ExportBlock._(kind: ExportBlockKind.divider);
+      return ExportBlock._(
+        kind: ExportBlockKind.divider,
+        indent: indent,
+        align: align,
+      );
     }
     // 其他未知嵌入没有可迁移的内容，直接略过。
     return null;

@@ -2,13 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Brightness, Color, ColorScheme;
-import 'package:dart_quill_delta/dart_quill_delta.dart';
 
 import '../../../core/database/code_block_codec.dart';
 import '../models/diary_code_block/diary_code_block_style.dart';
 import '../models/diary_code_block/diary_code_highlighter.dart';
 import '../models/diary_code_block/diary_code_theme.dart';
-import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
 
 /// 一段同色的代码文字；[role] 为 null 时用配色的正文字色。
@@ -127,8 +125,39 @@ class DiaryExportCodeTheme {
   /// [blocks] 里每个代码行的着色片段，下标与 [blocks] 对应，非代码块为
   /// null。语言相同的相邻代码行合成一块着色（与网页、Markdown 分段的口径
   /// 一致）；用户设过颜色的文字按行内片段的边界切开，带上它的文字色与
-  /// 背景色（Word、网页用；PDF 走 [colorDeltaCodeLines]）。
+  /// 背景色（Word、网页用；PDF 走 [colorCodeBlocks]）。
   List<List<DiaryExportCodeRun>?> highlightBlocks(List<ExportBlock> blocks) {
+    final lines = _roleRuns(blocks);
+    return <List<DiaryExportCodeRun>?>[
+      for (final (index, runs) in lines.indexed)
+        runs == null ? null : _withInlineColors(runs, blocks[index].inlines),
+    ];
+  }
+
+  /// PDF 用：把代码行的行内片段按着色片段切开，记号片段写上纸面配色的
+  /// 不透明文字色、注释另加斜体，交给 PDF 块写出器按行内样式渲染。片段的
+  /// 其余格式原样保留；用户手动设过文字色的片段保留原色、只加注释的斜体，
+  /// 与应用里一致。分组口径同 [highlightBlocks]。没有代码行时直接返回
+  /// [blocks]；块与片段都不可变，结果是新列表，不改动调用方的正文。
+  List<ExportBlock> colorCodeBlocks(List<ExportBlock> blocks) {
+    if (!blocks.any(
+      (ExportBlock block) => block.kind == ExportBlockKind.code,
+    )) {
+      return blocks;
+    }
+    final lines = _roleRuns(blocks);
+    return <ExportBlock>[
+      for (final (index, block) in blocks.indexed)
+        lines[index] == null
+            ? block
+            : block.copyWith(
+                inlines: _colorInlines(block.inlines, lines[index]!),
+              ),
+    ];
+  }
+
+  /// 每个代码行只带角色的着色片段（下标与 [blocks] 对应，非代码块为 null）。
+  List<List<DiaryExportCodeRun>?> _roleRuns(List<ExportBlock> blocks) {
     final result = List<List<DiaryExportCodeRun>?>.filled(blocks.length, null);
     var start = 0;
     while (start < blocks.length) {
@@ -147,11 +176,63 @@ class DiaryExportCodeTheme {
         for (var i = start; i < end; i++) blocks[i].plainText,
       ], language);
       for (var i = start; i < end; i++) {
-        result[i] = _withInlineColors(lines[i - start], blocks[i].inlines);
+        result[i] = lines[i - start];
       }
       start = end;
     }
     return result;
+  }
+
+  /// 把着色片段 [runs] 叠到一行原有的行内片段 [inlines] 上：两边的边界都
+  /// 保留，各段 = 原片段的格式 + 记号的颜色与斜体。两者拼接后是同一行原文
+  /// （[highlightLines] 的约定），按长度对齐即可。
+  List<ExportInline> _colorInlines(
+    List<ExportInline> inlines,
+    List<DiaryExportCodeRun> runs,
+  ) {
+    final result = <ExportInline>[];
+    var runIndex = 0;
+    var runOffset = 0;
+    for (final inline in inlines) {
+      var position = 0;
+      while (position < inline.text.length && runIndex < runs.length) {
+        final run = runs[runIndex];
+        final length = math.min(
+          inline.text.length - position,
+          run.text.length - runOffset,
+        );
+        result.add(
+          _coloredPiece(
+            inline,
+            inline.text.substring(position, position + length),
+            run.role,
+          ),
+        );
+        position += length;
+        runOffset += length;
+        if (runOffset == run.text.length) {
+          runIndex++;
+          runOffset = 0;
+        }
+      }
+    }
+    return result;
+  }
+
+  ExportInline _coloredPiece(
+    ExportInline inline,
+    String text,
+    DiaryCodeTokenRole? role,
+  ) {
+    if (role == null) {
+      return text == inline.text ? inline : inline.copyWith(text: text);
+    }
+    final ownColor = inline.color != null;
+    return inline.copyWith(
+      text: text,
+      color: ownColor ? null : paper.tokens[role],
+      italic: italicFor(role) ? true : null,
+    );
   }
 
   /// 把一行的着色片段 [runs] 按行内片段 [inlines] 的边界切开，带上各自的
@@ -197,128 +278,6 @@ class DiaryExportCodeTheme {
     return result;
   }
 
-  /// PDF 用：把正文 Delta 里代码行的文字按着色片段拆开，记号片段写上纸面
-  /// 配色的不透明 `color`、注释另加 `italic`，交给 PDF 块写出器按行内样式渲染。用户手动设过文字色的片段保留原色、只加注释的斜体，
-  /// 与应用里一致。
-  ///
-  /// 按行拆开时以换行所在的 op 的属性为行属性（Quill 把块属性挂在换行上）；
-  /// 含嵌入的代码行（正常编辑不会出现）原样保留、不着色。输出经 [Delta] 合并
-  /// 相邻同样式的文字，非代码行与原来等价。没有代码行时直接返回 [ops]；
-  /// 不改动 [ops] 里的任何对象。
-  List<dynamic> colorDeltaCodeLines(List<dynamic> ops) {
-    if (!ops.any(_hasCodeBlockAttribute)) {
-      return ops;
-    }
-    final lines = <_DeltaLine>[];
-    var pieces = <_DeltaPiece>[];
-    for (final op in ops) {
-      if (op is! Map) {
-        continue;
-      }
-      final rawAttributes = op['attributes'];
-      final attributes = rawAttributes is Map && rawAttributes.isNotEmpty
-          ? Map<String, dynamic>.from(rawAttributes)
-          : null;
-      final insert = op['insert'];
-      if (insert is String) {
-        final parts = insert.split('\n');
-        for (var i = 0; i < parts.length; i++) {
-          if (parts[i].isNotEmpty) {
-            pieces.add(_DeltaPiece(parts[i], attributes));
-          }
-          if (i < parts.length - 1) {
-            lines.add(_DeltaLine(pieces, attributes));
-            pieces = <_DeltaPiece>[];
-          }
-        }
-      } else if (insert != null) {
-        pieces.add(_DeltaPiece(insert, attributes));
-      }
-    }
-
-    final out = Delta();
-    var start = 0;
-    while (start < lines.length) {
-      final line = lines[start];
-      if (!line.isPlainCode) {
-        line.writeTo(out);
-        start++;
-        continue;
-      }
-      final language = line.language;
-      var end = start + 1;
-      while (end < lines.length &&
-          lines[end].isPlainCode &&
-          lines[end].language == language) {
-        end++;
-      }
-      final colored = highlightLines(<String>[
-        for (var i = start; i < end; i++) lines[i].text,
-      ], language);
-      for (var i = start; i < end; i++) {
-        _writeColoredLine(out, lines[i], colored[i - start]);
-      }
-      start = end;
-    }
-    // 结尾没有换行的残余片段（Delta 不完整时）原样带上。
-    for (final piece in pieces) {
-      out.insert(piece.insert, piece.attributes);
-    }
-    return out.toJson();
-  }
-
-  /// 把 [runs] 叠到这一行原有的片段上：片段边界与着色边界都保留，各段
-  /// 属性 = 原片段属性 + 记号的颜色与斜体。
-  void _writeColoredLine(
-    Delta out,
-    _DeltaLine line,
-    List<DiaryExportCodeRun> runs,
-  ) {
-    var runIndex = 0;
-    var runOffset = 0;
-    for (final piece in line.pieces) {
-      final text = piece.insert as String;
-      var position = 0;
-      while (position < text.length) {
-        final run = runs[runIndex];
-        final length = math.min(
-          text.length - position,
-          run.text.length - runOffset,
-        );
-        out.insert(
-          text.substring(position, position + length),
-          _codeAttributes(piece.attributes, run.role),
-        );
-        position += length;
-        runOffset += length;
-        if (runOffset == run.text.length) {
-          runIndex++;
-          runOffset = 0;
-        }
-      }
-    }
-    out.insert('\n', line.attributes);
-  }
-
-  Map<String, dynamic>? _codeAttributes(
-    Map<String, dynamic>? attributes,
-    DiaryCodeTokenRole? role,
-  ) {
-    if (role == null) {
-      return attributes;
-    }
-    final ownColor = attributes?['color'] != null;
-    final italic = italicFor(role);
-    if (ownColor && !italic) {
-      return attributes;
-    }
-    return <String, dynamic>{
-      ...?attributes,
-      if (!ownColor) 'color': encodeDiaryColor(paper.tokens[role]!),
-      if (italic) 'italic': true,
-    };
-  }
-
   /// 不着色时的结果：不识别、不拼接整块。
   DiaryCodeTokens _tokensFor(List<String> lines, String? language) {
     if (language == kCodeBlockPlain || (language == null && !autoDetect)) {
@@ -339,50 +298,5 @@ class DiaryExportCodeTheme {
     final highlighter = DiaryCodeHighlighter.instance;
     final id = language ?? highlighter.detect(text);
     return id == null ? DiaryCodeTokens.empty : highlighter.tokens(text, id);
-  }
-
-  static bool _hasCodeBlockAttribute(dynamic op) {
-    if (op is! Map) {
-      return false;
-    }
-    final attributes = op['attributes'];
-    return attributes is Map && _isCodeBlockValue(attributes['code-block']);
-  }
-
-  static bool _isCodeBlockValue(Object? value) =>
-      value != null && value != false;
-}
-
-/// 一行里的一段：文字或嵌入，带原有的行内属性。
-class _DeltaPiece {
-  const _DeltaPiece(this.insert, this.attributes);
-
-  final Object insert;
-  final Map<String, dynamic>? attributes;
-}
-
-/// 一行：若干片段加上换行的属性（块属性）。
-class _DeltaLine {
-  _DeltaLine(this.pieces, this.attributes);
-
-  final List<_DeltaPiece> pieces;
-  final Map<String, dynamic>? attributes;
-
-  /// 只含文字的代码行；含嵌入的代码行不着色。
-  bool get isPlainCode =>
-      DiaryExportCodeTheme._isCodeBlockValue(attributes?['code-block']) &&
-      pieces.every((_DeltaPiece piece) => piece.insert is String);
-
-  /// [ExportBlock.codeLanguage] 口径的语言。
-  String? get language => codeBlockExplicitLanguage(attributes?['code-block']);
-
-  String get text =>
-      pieces.map((_DeltaPiece piece) => piece.insert as String).join();
-
-  void writeTo(Delta out) {
-    for (final piece in pieces) {
-      out.insert(piece.insert, piece.attributes);
-    }
-    out.insert('\n', attributes);
   }
 }

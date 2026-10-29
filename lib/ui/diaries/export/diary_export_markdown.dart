@@ -334,6 +334,17 @@ class DiaryMarkdownWriter {
           if (text.trim().isNotEmpty) {
             sections.add(_escapeLineStart(text));
           }
+        // 暂按普通段落写（ExportBlock.fallbackLines），内容不丢。
+        case ExportBlockKind.callout ||
+            ExportBlockKind.toggle ||
+            ExportBlockKind.table:
+          flush();
+          for (final line in block.fallbackLines) {
+            final text = _inlines(line);
+            if (text.trim().isNotEmpty) {
+              sections.add(_escapeLineStart(text));
+            }
+          }
         case ExportBlockKind.heading:
           flush();
           final level = (block.level + headingOffset).clamp(1, 6);

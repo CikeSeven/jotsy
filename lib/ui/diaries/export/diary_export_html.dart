@@ -405,6 +405,18 @@ class DiaryHtmlWriter {
           );
         case ExportBlockKind.divider:
           out.write('<hr>\n');
+        // 暂按普通段落写（ExportBlock.fallbackLines），内容不丢。
+        case ExportBlockKind.callout ||
+            ExportBlockKind.toggle ||
+            ExportBlockKind.table:
+          for (final line in block.fallbackLines) {
+            final html = _inlines(line);
+            out.write(
+              html.trim().isEmpty
+                  ? '<p class="blank"></p>\n'
+                  : '<p${_align(block)}>$html</p>\n',
+            );
+          }
         default:
           final html = _inlines(block.inlines);
           out.write(

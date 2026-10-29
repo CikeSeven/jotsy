@@ -339,6 +339,17 @@ class DiaryDocxWriter {
             hangingTwips: 420,
             runs: <String>[b.run('$marker\t'), ...b.inlines(block.inlines)],
           );
+        // 暂按普通段落写（ExportBlock.fallbackLines），内容不丢。
+        case ExportBlockKind.callout ||
+            ExportBlockKind.toggle ||
+            ExportBlockKind.table:
+          for (final line in block.fallbackLines) {
+            b.paragraph(
+              align: block.align,
+              indentTwips: block.indent > 0 ? 420 * block.indent : null,
+              runs: b.inlines(line),
+            );
+          }
         case ExportBlockKind.paragraph:
           // 与应用一致：居中、右对齐的段落不缩进首行。
           final firstLine =

@@ -182,6 +182,7 @@ class EditDiaryController {
           editor.DiaryEditorController(
             document: restoredDocument,
             selection: editor.Selection.single(path: [0], startOffset: 0),
+            linkSource: _state._linkSource,
           ),
         );
       });

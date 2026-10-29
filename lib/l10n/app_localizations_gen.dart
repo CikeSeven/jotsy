@@ -17461,6 +17461,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete table'**
   String get diaryTableDelete;
+
+  /// 日记链接：没有标题与摘要的日记插入正文时的链接文字。
+  ///
+  /// In en, this message translates to:
+  /// **'Diary of {date}'**
+  String diaryLinkUntitled(String date);
+
+  /// @ 菜单与链接对话框：日记分组的标题 / 对话框里“日记”一页。
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries'**
+  String get diaryLinkGroupDiaries;
+
+  /// @ 菜单与链接对话框：日记本分组的标题 / 对话框里“日记本”一页。
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get diaryLinkGroupNotebooks;
+
+  /// 链接对话框：“网址”一页（填写网页链接）。
+  ///
+  /// In en, this message translates to:
+  /// **'Web'**
+  String get diaryLinkGroupWeb;
+
+  /// @ 菜单与链接对话框：检索词没有匹配项。
+  ///
+  /// In en, this message translates to:
+  /// **'No matching diaries or notebooks'**
+  String get diaryLinkEmpty;
+
+  /// @ 菜单：提示接着输入文字即可搜索。
+  ///
+  /// In en, this message translates to:
+  /// **'Type to search titles and notebooks'**
+  String get diaryLinkMenuHint;
+
+  /// @ 菜单的无障碍标签。
+  ///
+  /// In en, this message translates to:
+  /// **'Link a diary or notebook'**
+  String get diaryLinkMenuLabel;
+
+  /// 链接对话框“日记”一页的搜索框提示。
+  ///
+  /// In en, this message translates to:
+  /// **'Search diary titles'**
+  String get diaryLinkSearchDiaries;
+
+  /// 链接对话框“日记本”一页的搜索框提示。
+  ///
+  /// In en, this message translates to:
+  /// **'Search notebooks'**
+  String get diaryLinkSearchNotebooks;
+
+  /// 链接对话框与卡片菜单：打开链接到的日记或日记本。
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get diaryLinkOpen;
+
+  /// 链接对话框：移除选中文字上的链接。
+  ///
+  /// In en, this message translates to:
+  /// **'Remove link'**
+  String get diaryLinkRemove;
+
+  /// 链接对话框：选中的文字已链接到一篇日记时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Links to a diary'**
+  String get diaryLinkCurrentDiary;
+
+  /// 链接对话框：选中的文字已链接到一本日记本时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Links to a notebook'**
+  String get diaryLinkCurrentNotebook;
+
+  /// 点按日记链接：目标日记已删除或不存在时的提示。
+  ///
+  /// In en, this message translates to:
+  /// **'This diary no longer exists'**
+  String get diaryLinkMissingDiary;
+
+  /// 点按日记本链接：目标日记本已删除或不存在时的提示。
+  ///
+  /// In en, this message translates to:
+  /// **'This notebook no longer exists'**
+  String get diaryLinkMissingNotebook;
+
+  /// / 菜单命令与 @ 菜单标题：插入一张链接到日记的卡片。
+  ///
+  /// In en, this message translates to:
+  /// **'Diary card'**
+  String get diaryEditorDiaryCard;
+
+  /// / 菜单命令与 @ 菜单标题：插入一张链接到日记本的卡片。
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook card'**
+  String get diaryEditorNotebookCard;
+
+  /// 日记卡片：目标日记在私密日记本里时，代替标题显示。
+  ///
+  /// In en, this message translates to:
+  /// **'Private diary'**
+  String get diaryLinkCardPrivate;
+
+  /// 日记卡片：目标是未解封的时间胶囊时显示解封日期。
+  ///
+  /// In en, this message translates to:
+  /// **'Opens {date}'**
+  String diaryLinkCardSealed(String date);
+
+  /// 日记本卡片：本子里的篇数。
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String diaryLinkCardNotebookCount(int count);
+
+  /// 日记卡片菜单：把卡片换成一段链接文字。
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to inline link'**
+  String get diaryLinkCardToInline;
+
+  /// 日记卡片在编辑态点按后弹出菜单的无障碍标签。
+  ///
+  /// In en, this message translates to:
+  /// **'Card options'**
+  String get diaryLinkCardMenu;
+
+  /// 预览页：列出链接到这篇日记的其他日记的区块标题（count 为篇数）。
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Mentioned in 1 diary} other{Mentioned in {count} diaries}}'**
+  String diaryBacklinksTitle(int count);
+
+  /// 预览页反向链接区：条数超过显示上限时打开全部的按钮。
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Show 1} other{Show all {count}}}'**
+  String diaryBacklinksShowAll(int count);
+
+  /// 日记本头部：有日记链接到这本时的胶囊，点按查看。
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Mentioned in 1 diary} other{Mentioned in {count} diaries}}'**
+  String notebookBacklinksChip(int count);
+
+  /// 日记本反向链接面板的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries mentioning this notebook'**
+  String get notebookBacklinksTitle;
 }
 
 class _AppLocalizationsDelegate

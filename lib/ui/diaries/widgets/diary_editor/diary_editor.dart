@@ -5,12 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../core/services/app_platform.dart';
+import '../../../../core/services/app_service.dart';
 import '../../../../core/services/diary_media_storage_service.dart';
+import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
 import '../../controllers/diary_block_editing.dart';
 import '../../controllers/diary_editor_clipboard.dart';
+import '../../controllers/diary_link_open_flow.dart';
+import '../../controllers/diary_link_search.dart';
+import '../../models/diary_link_candidate.dart';
 import '../../controllers/diary_text_style_editing.dart';
 import '../../models/diary_code_block/diary_code_block_style.dart';
 import '../../models/diary_text_style_options.dart';
@@ -21,6 +27,7 @@ import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
+import 'diary_mention_menu.dart';
 import 'diary_slash_commands.dart';
 import 'diary_slash_menu.dart';
 import 'diary_table_keyboard_interceptor.dart';
@@ -99,6 +106,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   late af.EditorScrollController _scroll;
   late DiaryBlockLanguageTracker _tracker;
   late DiarySlashMenuController _slashMenu;
+  late DiaryMentionMenuController _mentionMenu;
 
   /// 表格里的软键盘规则（见 [DiaryTableKeyboardInterceptor]）：上游的键盘
   /// 服务在编辑器挂载后才有，首帧之后再登记；只读正文没有键盘服务。
@@ -115,6 +123,17 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   void _bind() {
     widget.controller.attachView();
     _slashMenu = DiarySlashMenuController(widget.controller);
+    _mentionMenu = DiaryMentionMenuController(
+      widget.controller,
+      search: _searchLinks,
+    );
+    // `/` 与 `@` 两个会话同一时刻只开一个：开一个就收起另一个。
+    _slashMenu.addListener(() {
+      if (_slashMenu.isOpen) _mentionMenu.close();
+    });
+    _mentionMenu.addListener(() {
+      if (_mentionMenu.isOpen) _slashMenu.close();
+    });
     widget.focusNode?.addListener(_onFocus);
     _scroll = af.EditorScrollController(
       editorState: widget.controller.state,
@@ -138,6 +157,43 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       );
     }
   }
+
+  /// `@` 菜单的候选（口径见 [searchDiaryLinkCandidates]）。查询时才读库与
+  /// 书架（会话只在编辑器挂载期间存在）；书架还没加载时等它第一次推送，
+  /// 不让第一次 `@` 漏掉日记本。
+  Future<List<DiaryLinkCandidate>> _searchLinks(
+    String query,
+    Set<DiaryLinkKind> kinds,
+  ) async {
+    final db = ref.read(appDatabaseProvider);
+    final l10n = context.l10n;
+    final tree = await readDiaryLinkNotebookTree(ref, kinds);
+    return searchDiaryLinkCandidates(
+      db: db,
+      tree: tree,
+      l10n: l10n,
+      query: query,
+      kinds: kinds,
+      excludeDiaryId: widget.controller.linkSource?.diaryId,
+    );
+  }
+
+  /// 打开日记链接（行内链接与卡片共用）；编辑态不打开日记本，见
+  /// [openDiaryLinkTarget]。
+  void _openLink(DiaryLinkTarget target) => unawaited(
+    openDiaryLinkTarget(
+      context,
+      ref,
+      target,
+      fromEditor: !widget.controller.readOnly,
+    ),
+  );
+
+  /// 能链接的种类：日记本功能关闭时只有日记。
+  Set<DiaryLinkKind> _linkKinds() => {
+    DiaryLinkKind.diary,
+    if (ref.read(appFeaturesProvider).notebooks) DiaryLinkKind.notebook,
+  };
 
   void _onFocus() {
     if (widget.focusNode?.hasFocus != true || widget.controller.readOnly) {
@@ -191,6 +247,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         old.focusNode != widget.focusNode) {
       _scroll.dispose();
       _slashMenu.dispose();
+      _mentionMenu.dispose();
       _unregisterInterceptor(old.controller);
       old.controller.detachView();
       old.focusNode?.removeListener(_onFocus);
@@ -204,6 +261,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     widget.focusNode?.removeListener(_onFocus);
     _scroll.dispose();
     _slashMenu.dispose();
+    _mentionMenu.dispose();
     _unregisterInterceptor(widget.controller);
     widget.controller.detachView();
     _tracker.removeListener(_rebuild);
@@ -225,6 +283,11 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       appearance: widget.appearance,
       importedFontFamily: family,
     );
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    final linking =
+        !widget.controller.readOnly && widget.controller.linkSource != null;
     _headerSlot.value = _slotOutsideBodyFocus(widget.header);
     _footerSlot.value = _slotOutsideBodyFocus(
       widget.controller.readOnly
@@ -261,6 +324,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       widget.onImageOpen != null,
       widget.header != null,
       widget.blockComponentOverrides,
+      notebooksEnabled,
     );
     if (_native != null && _nativeInputs == inputs) {
       return _decorateNative(_native!);
@@ -293,6 +357,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       onImageOpen: widget.onImageOpen,
       onImageMenu: widget.onImageMenu,
       foldLongImages: widget.foldLongImages,
+      onOpenLink: _openLink,
       overrides: widget.blockComponentOverrides,
     );
     // 上游只在编辑器首次挂载时装入块组件，之后传入新的 builders 不生效：
@@ -307,6 +372,15 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       key: ValueKey(controller.state),
       editorState: controller.state,
       characterShortcutEvents: [
+        // `@` 菜单开着时回车确认候选，先于一切回车规则。
+        if (linking) ...[
+          diaryMentionEnterCommand(_mentionMenu),
+          diaryMentionCommand(
+            controller: controller,
+            menu: _mentionMenu,
+            kinds: _linkKinds,
+          ),
+        ],
         diarySlashCommand(
           controller: controller,
           context: context,
@@ -315,6 +389,10 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             context.l10n,
             onMedia: widget.onMediaCommand,
             onRecording: widget.onRecordingCommand,
+            onLinkCard: linking
+                ? (kind) => unawaited(_mentionMenu.openCardAtCaret({kind}))
+                : null,
+            notebookCards: notebooksEnabled,
           ),
         ),
         // 表格里的回车与 Markdown 原文先于其他块规则。
@@ -330,9 +408,17 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
           code,
           _tracker,
           widget.appearance.typography.fontSize,
+          links: DiaryLinkSpanOptions(
+            state: controller.state,
+            notebooksEnabled: notebooksEnabled,
+            plainColor: diaryEditorBodyStyle(context, widget.appearance).color,
+            onOpen: _openLink,
+          ),
         ),
       ),
       commandShortcutEvents: [
+        // `@` 菜单开着时 ↑ / ↓ / Tab 操作候选，先于表格与上游的同键事件。
+        if (linking) ...diaryMentionCommandShortcuts(_mentionMenu),
         // 表格里的退格 / Delete / Tab / 方向键先于上游（见该文件）。
         ...diaryTableCommandShortcuts(),
         for (final command in ['copy', 'cut', 'paste'])
@@ -379,7 +465,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             },
           ),
         // 桌面上 Esc 交给页面（与返回按钮相同，见各编辑页）：上游的
-        // “退出编辑”会吞掉 Esc、只清掉选区；斜杠菜单开着时先收起菜单。手机
+        // “退出编辑”会吞掉 Esc、只清掉选区；`/` 或 `@` 菜单开着时先收起菜单。手机
         // 保持上游行为。
         if (AppPlatform.isDesktop)
           af.CommandShortcutEvent(
@@ -387,8 +473,11 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             getDescription: () => 'escape',
             command: 'escape',
             handler: (_) {
-              if (!_slashMenu.isOpen) return KeyEventResult.ignored;
+              if (!_slashMenu.isOpen && !_mentionMenu.isOpen) {
+                return KeyEventResult.ignored;
+              }
               _slashMenu.close();
+              _mentionMenu.close();
               return KeyEventResult.handled;
             },
           ),
@@ -491,7 +580,11 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         : DiarySlashMenuHost(
             menu: _slashMenu,
             coveredHeight: widget.autoScrollEdgeOffset,
-            child: layer,
+            child: DiaryMentionMenuHost(
+              menu: _mentionMenu,
+              coveredHeight: widget.autoScrollEdgeOffset,
+              child: layer,
+            ),
           );
   }
 

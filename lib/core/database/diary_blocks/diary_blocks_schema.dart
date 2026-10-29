@@ -13,8 +13,9 @@
 /// `delta` / `level` / `checked` / `align`，行内 `bold` / `strikethrough` /
 /// `href` / `font_color` / `bg_color`），编辑器自带的格式命令与 Markdown
 /// 快捷输入写出的就是这些键；表格沿用上游的 `table` / `table/cell` 结构。
-/// 日记特有的块（代码块语言、录音、附件、视频、标注、折叠列表、表头行）与
-/// 行内字号档位 `size` 为本应用自定义。颜色值一律为大写 `#AARRGGBB`。
+/// 日记特有的块（代码块语言、录音、附件、视频、标注、折叠列表、表头行、
+/// 日记链接卡片）与行内字号档位 `size` 为本应用自定义；`href` 除网址外还可以
+/// 是日记链接的内部地址（diary_link_target.dart）。颜色值一律为大写 `#AARRGGBB`。
 library;
 
 /// 文档根节点类型。
@@ -74,6 +75,12 @@ const String kDiaryBlockTableCell = 'table/cell';
 /// 避免旧数据里未知的嵌入在转换中丢失。
 const String kDiaryBlockUnknownEmbed = 'quill_embed';
 
+/// 日记链接卡片：独占一行、指向另一篇日记或另一本日记本。
+/// [kDiaryLinkCardTargetKey] 为内部地址（见 diary_link_target.dart），
+/// [kDiaryLinkCardTitleKey] 为插入时的标题快照——界面显示目标的实时内容，
+/// 快照只在导出、分享文字与目标已不存在时使用。从不挂子块。
+const String kDiaryBlockLinkCard = 'link_card';
+
 /// 带行内文字（`data.delta`）的块类型。
 const Set<String> kDiaryTextBlockTypes = <String>{
   kDiaryBlockParagraph,
@@ -101,7 +108,7 @@ const Set<String> kDiaryContainerBlockTypes = <String>{
   kDiaryBlockToggleList,
 };
 
-/// 独占一行、没有文字的块（媒体与分隔线）。
+/// 独占一行、没有文字的块（媒体、分隔线与日记链接卡片）。
 const Set<String> kDiaryEmbedBlockTypes = <String>{
   kDiaryBlockDivider,
   kDiaryBlockImage,
@@ -109,6 +116,7 @@ const Set<String> kDiaryEmbedBlockTypes = <String>{
   kDiaryBlockAudio,
   kDiaryBlockAttachment,
   kDiaryBlockUnknownEmbed,
+  kDiaryBlockLinkCard,
 };
 
 // ---- 节点键 ----
@@ -143,6 +151,10 @@ const String kDiaryTableColPositionKey = 'colPosition';
 
 /// 表格首行是否为表头（本应用自定义，bool，缺省 false）。
 const String kDiaryTableHeaderRowKey = 'headerRow';
+
+/// 日记链接卡片的目标地址与标题快照。
+const String kDiaryLinkCardTargetKey = 'target';
+const String kDiaryLinkCardTitleKey = 'title';
 
 /// 标注缺省图标。
 const String kDiaryCalloutDefaultIcon = '💡';

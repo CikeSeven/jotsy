@@ -15,6 +15,7 @@ import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 import '../diary_comments/diary_comments_section.dart';
+import '../diary_link/diary_backlinks_section.dart';
 import 'diary_preview_body.dart';
 import 'diary_preview_header.dart';
 import 'diary_preview_meta.dart';
@@ -79,6 +80,7 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.onOpenNotebook,
     this.onOpenTag,
     this.comments,
+    this.backlinks,
   });
 
   final DiaryWithTags detail;
@@ -120,6 +122,10 @@ class DiaryPreviewContent extends ConsumerWidget {
   /// 分享长图时）。信息栏的留言数也由它给出。
   final DiaryPreviewComments? comments;
 
+  /// 正文之后、留言区之前的“提到这篇的日记”；null 时不显示（日记在回收站、
+  /// 截取分享长图时、没有日记提到它；设置页预览不传）。
+  final DiaryPreviewBacklinks? backlinks;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 版式按这里实际拿到的宽度换算（嵌在双栏里时比屏幕窄，见
@@ -153,6 +159,7 @@ class DiaryPreviewContent extends ConsumerWidget {
     final title = _titleText(l10n, diary, style.title);
     final meta = style.meta;
     final comments = this.comments;
+    final backlinks = this.backlinks;
     final commentCount = comments?.comments.length ?? 0;
     final commentsKey = comments?.sectionKey;
     final hasMeta = DiaryPreviewMeta.hasContent(
@@ -287,6 +294,13 @@ class DiaryPreviewContent extends ConsumerWidget {
                 if (editedLabel != null) ...<Widget>[
                   const SizedBox(height: 16),
                   DiaryPreviewEditedLine(label: editedLabel),
+                ],
+                if (backlinks != null) ...<Widget>[
+                  const SizedBox(height: 28),
+                  DiaryBacklinksSection(
+                    data: backlinks,
+                    textColor: resolved.bodyColor,
+                  ),
                 ],
                 if (comments != null) ...<Widget>[
                   const SizedBox(height: 28),

@@ -21,6 +21,7 @@ import '../diary_video_player.dart';
 import '../diary_video_poster_card.dart';
 import '../../models/diary_image_embed_data.dart';
 import '../../controllers/diary_editor_controller.dart';
+import 'diary_embed_selectable.dart';
 
 /// 媒体保留原生块选区，播放器内部仍接管自己的点按；文字路径不参与选区。
 /// 图片缩放草稿只改变本块的显示约束，确认后才经菜单写入正文事务。
@@ -88,7 +89,7 @@ class _DiaryMediaBlock extends af.BlockComponentStatefulWidget {
 }
 
 class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
-    with af.SelectableMixin {
+    with af.SelectableMixin, DiaryEmbedSelectable {
   BoxConstraints? _imageBoundsPreview;
 
   void _previewImageBounds(BoxConstraints? bounds) {
@@ -96,8 +97,6 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
     if (mounted) setState(() => _imageBoundsPreview = bounds);
   }
 
-  af.Node get node => widget.node;
-  RenderBox? get box => context.findRenderObject() as RenderBox?;
   @override
   Widget build(BuildContext context) {
     final data = node.attributes;
@@ -193,19 +192,9 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
           style: Theme.of(context).textTheme.bodySmall,
         );
     }
-    final state = widget.controller.state;
-    return af.BlockSelectionContainer(
-      node: node,
-      delegate: this,
-      listenable: state.selectionNotifier,
-      remoteSelection: state.remoteSelections,
-      blockColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-      supportTypes: const [
-        af.BlockSelectionType.block,
-        af.BlockSelectionType.selection,
-        af.BlockSelectionType.cursor,
-      ],
-      child: Padding(
+    return buildEmbedSelection(
+      widget.controller.state,
+      Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Align(
           alignment: switch (data['align']) {
@@ -221,38 +210,6 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
       ),
     );
   }
-
-  @override
-  af.Position start() => af.Position(path: node.path);
-  @override
-  af.Position end() => af.Position(path: node.path, offset: 1);
-  @override
-  af.Position getPositionInOffset(Offset offset) => end();
-  @override
-  bool get shouldCursorBlink => false;
-  @override
-  af.CursorStyle get cursorStyle => af.CursorStyle.cover;
-  @override
-  Rect getBlockRect({bool shiftWithBaseOffset = false}) =>
-      Offset.zero & (box?.size ?? Size.zero);
-  @override
-  Rect? getCursorRectInPosition(
-    af.Position position, {
-    bool shiftWithBaseOffset = false,
-  }) => getBlockRect();
-  @override
-  List<Rect> getRectsInSelection(
-    af.Selection selection, {
-    bool shiftWithBaseOffset = false,
-  }) => [getBlockRect()];
-  @override
-  af.Selection getSelectionInRange(Offset start, Offset end) =>
-      af.Selection.single(path: node.path, startOffset: 0, endOffset: 1);
-  @override
-  Offset localToGlobal(Offset offset, {bool shiftWithBaseOffset = false}) =>
-      box?.localToGlobal(offset) ?? offset;
-  @override
-  TextDirection textDirection() => TextDirection.ltr;
 }
 
 ImageViewerHero? _captureImageHero(BuildContext context, Object tag) {

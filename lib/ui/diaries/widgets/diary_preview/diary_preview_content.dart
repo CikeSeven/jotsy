@@ -192,6 +192,8 @@ class DiaryPreviewContent extends ConsumerWidget {
     final metaAtEnd =
         metaWidget != null && meta.position == DiaryPreviewMetaPosition.end;
 
+    final pageColors = diaryPreviewPageColors(context, resolved);
+
     return CustomScrollView(
       controller: scrollController,
       physics: paging == null ? null : const AlwaysScrollableScrollPhysics(),
@@ -213,7 +215,8 @@ class DiaryPreviewContent extends ConsumerWidget {
               : null,
           // 实色顶栏：纸张跟随主题且有页面背景时取实色栏底色（见
           // diaryPreviewPageColors），否则仍是纸色。
-          background: diaryPreviewPageColors(context, resolved).bar,
+          background: pageColors.bar,
+          pageColor: pageColors.page,
           onOpenTypography: actions.onOpenTypography,
           onEdit: actions.onEdit,
           onShare: actions.onShare,

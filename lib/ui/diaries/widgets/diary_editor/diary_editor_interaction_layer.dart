@@ -9,7 +9,7 @@ import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
 import 'diary_read_only_shortcuts.dart';
 
-/// 原生正文外围的交互层：平台选区菜单、软键盘扩选兼容、编辑态段落把手与
+/// 原生正文外围的交互层：手机选区菜单、软键盘扩选兼容、编辑态段落把手与
 /// 光标避让。
 /// 与块注册/主题解析分开，键盘约束变化时只更新这一层。
 class DiaryEditorInteractionLayer extends StatelessWidget {

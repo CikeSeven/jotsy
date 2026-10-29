@@ -11,6 +11,7 @@ import '../../../core/database/diary_blocks/diary_blocks_table.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
 import '../../../core/database/diary_blocks/diary_list_style.dart';
 import '../models/diary_text_colors.dart';
+import '../models/diary_text_style_options.dart';
 
 part 'diary_export_native_blocks.dart';
 
@@ -120,6 +121,14 @@ class ExportInline {
   /// 上标 / 下标；普通文字为 null。
   final ExportScript? script;
 
+  /// 相对正文字号的倍数（small / large / huge，与编辑器
+  /// [DiaryFontSize.scale] 同一口径）；正文、没设与认不出的值（如导入保留
+  /// 下来的数字字号，编辑器同样按正文显示）为 null。Word 与网页按它写字号。
+  double? get sizeScale {
+    final scale = DiaryFontSize.fromAttribute(size)?.scale;
+    return scale == null || scale == 1 ? null : scale;
+  }
+
   /// 是否为格子里的段间换行（[lineBreak]）。
   bool get isLineBreak => text == '\n';
 
@@ -224,38 +233,24 @@ class ExportBlock {
   };
 
   /// 块的文字（不含列表标记与标注图标）；表格为每行一行、格间 ` | `
-  /// （与 [fallbackLines] 同一口径）。
+  /// （与 [tableTextLines] 同一口径）。
   String get plainText => kind == ExportBlockKind.table
-      ? fallbackLines.map(_joinText).join('\n')
+      ? tableTextLines.map(_joinText).join('\n')
       : _joinText(inlines);
 
   static String _joinText(List<ExportInline> runs) =>
       runs.map((ExportInline run) => run.text).join();
 
-  /// 还没有专门写法的块（标注、折叠列表、表格）退化成的普通段落文字，每项
-  /// 一段：标注以图标开头、折叠列表以 `▸ ` 开头；表格每行一段，格与格之间
-  /// ` | `，一格里的几段以空格相连（空段略过，整行都空时为空段）。其他块
-  /// 就是 [inlines] 一段。各写出器给这三种块补上专门写法之前都按它写，
-  /// 内容不丢。
-  List<List<ExportInline>> get fallbackLines => switch (kind) {
-    ExportBlockKind.callout => <List<ExportInline>>[
-      <ExportInline>[
-        ExportInline('${calloutIcon ?? kDiaryCalloutDefaultIcon} '),
-        ...inlines,
-      ],
-    ],
-    ExportBlockKind.toggle => <List<ExportInline>>[
-      <ExportInline>[const ExportInline('▸ '), ...inlines],
-    ],
-    ExportBlockKind.table => <List<ExportInline>>[
-      for (final row in tableRows) _fallbackRow(row),
-    ],
-    _ => <List<ExportInline>>[inlines],
-  };
+  /// 表格写成文字行（纯文本、分享与 CSV 用）：每行一行，格与格之间
+  /// ` | `，一格里的几段以空格相连（空段略过，整行都空时为空行）。其他块
+  /// 为空列表。
+  List<List<ExportInline>> get tableTextLines => <List<ExportInline>>[
+    for (final row in tableRows) _tableTextRow(row),
+  ];
 
-  static List<ExportInline> _fallbackRow(List<List<ExportInline>> row) {
+  static List<ExportInline> _tableTextRow(List<List<ExportInline>> row) {
     final cells = <List<ExportInline>>[
-      for (final cell in row) _fallbackCell(cell),
+      for (final cell in row) _tableTextCell(cell),
     ];
     if (cells.every((List<ExportInline> cell) => cell.isEmpty)) {
       return const <ExportInline>[];
@@ -269,18 +264,10 @@ class ExportBlock {
   }
 
   /// 一格的几段以空格相连，空段略过。
-  static List<ExportInline> _fallbackCell(List<ExportInline> cell) {
-    final paragraphs = <List<ExportInline>>[<ExportInline>[]];
-    for (final run in cell) {
-      if (run.isLineBreak) {
-        paragraphs.add(<ExportInline>[]);
-      } else {
-        paragraphs.last.add(run);
-      }
-    }
-    final kept = paragraphs.where(
-      (List<ExportInline> runs) => _joinText(runs).trim().isNotEmpty,
-    );
+  static List<ExportInline> _tableTextCell(List<ExportInline> cell) {
+    final kept = tableCellParagraphs(
+      cell,
+    ).where((List<ExportInline> runs) => _joinText(runs).trim().isNotEmpty);
     return <ExportInline>[
       for (final (index, runs) in kept.indexed) ...<ExportInline>[
         if (index > 0) const ExportInline(' '),
@@ -289,8 +276,23 @@ class ExportBlock {
     ];
   }
 
+  /// 把一格的行内片段按 [ExportInline.lineBreak] 切成段（至少一段，空格子
+  /// 为一个空段）；按段写出格子的写出器（Word 每段一个 `w:p`）与上面的
+  /// 文字行共用。
+  static List<List<ExportInline>> tableCellParagraphs(List<ExportInline> cell) {
+    final paragraphs = <List<ExportInline>>[<ExportInline>[]];
+    for (final run in cell) {
+      if (run.isLineBreak) {
+        paragraphs.add(<ExportInline>[]);
+      } else {
+        paragraphs.last.add(run);
+      }
+    }
+    return paragraphs;
+  }
+
   /// 同缩进、同对齐的普通段落，文字换成 [inlines]（写出器把块退化为段落时
-  /// 用，如 [fallbackLines]、PDF 的媒体说明行）。
+  /// 用，如 PDF 的媒体说明行）。
   ExportBlock paragraphWith(List<ExportInline> inlines) => ExportBlock._(
     kind: ExportBlockKind.paragraph,
     inlines: List<ExportInline>.unmodifiable(inlines),
@@ -298,29 +300,32 @@ class ExportBlock {
     align: align,
   );
 
-  /// 换掉行内片段或来源后的副本，其余不变（PDF 准备正文时用）。
-  ExportBlock copyWith({List<ExportInline>? inlines, String? source}) =>
-      ExportBlock._(
-        kind: kind,
-        inlines: inlines == null
-            ? this.inlines
-            : List<ExportInline>.unmodifiable(inlines),
-        level: level,
-        indent: indent,
-        ordinal: ordinal,
-        align: align,
-        source: source ?? this.source,
-        mediaKind: mediaKind,
-        mediaName: mediaName,
-        mediaDuration: mediaDuration,
-        codeLanguage: codeLanguage,
-        orderedStyle: orderedStyle,
-        bulletStyle: bulletStyle,
-        calloutIcon: calloutIcon,
-        calloutTone: calloutTone,
-        tableRows: tableRows,
-        tableHeaderRow: tableHeaderRow,
-      );
+  /// 换掉行内片段、来源或表格格子后的副本，其余不变（PDF 准备正文时用）。
+  ExportBlock copyWith({
+    List<ExportInline>? inlines,
+    String? source,
+    List<List<List<ExportInline>>>? tableRows,
+  }) => ExportBlock._(
+    kind: kind,
+    inlines: inlines == null
+        ? this.inlines
+        : List<ExportInline>.unmodifiable(inlines),
+    level: level,
+    indent: indent,
+    ordinal: ordinal,
+    align: align,
+    source: source ?? this.source,
+    mediaKind: mediaKind,
+    mediaName: mediaName,
+    mediaDuration: mediaDuration,
+    codeLanguage: codeLanguage,
+    orderedStyle: orderedStyle,
+    bulletStyle: bulletStyle,
+    calloutIcon: calloutIcon,
+    calloutTone: calloutTone,
+    tableRows: tableRows ?? this.tableRows,
+    tableHeaderRow: tableHeaderRow,
+  );
 
   bool get isListItem =>
       kind == ExportBlockKind.bullet ||

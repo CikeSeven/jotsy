@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:ui' show Color;
 
 import '../../../core/database/code_block_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../models/diary_callout_tone.dart';
 import '../models/diary_code_block/diary_code_theme.dart';
 import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
@@ -36,6 +38,12 @@ import 'diary_export_media.dart';
 ///
 /// 有留言的日记在正文之后多一个 `<section class="comments">`（见
 /// [_writeComments]），样式只在有留言时写出。
+///
+/// 标注写成 `<div class="callout callout-档位">`（图标 + 正文），折叠列表写成
+/// 默认展开的 `<details open>`（后面缩进更深的块都收进去），表格写成
+/// `<table>`（首行为表头时放进 `<thead>`），上下标写成 `<sup>` / `<sub>`，
+/// 行内字号写成以 em 计的 `font-size`；这几样块的样式（[_blocksCss]）只在
+/// 正文里有标注、折叠列表或表格时写出。
 class DiaryHtmlWriter {
   const DiaryHtmlWriter._();
 
@@ -63,6 +71,15 @@ class DiaryHtmlWriter {
             )
         ? code
         : null;
+    // 没有标注、折叠列表与表格时不写它们的样式。
+    final hasRichBlocks = entries.any(
+      (DiaryExportEntry entry) => entry.blocks.any(
+        (ExportBlock block) =>
+            block.kind == ExportBlockKind.callout ||
+            block.kind == ExportBlockKind.toggle ||
+            block.kind == ExportBlockKind.table,
+      ),
+    );
     // 同理，没有留言时不写留言区样式。
     final hasComments = entries.any(
       (DiaryExportEntry entry) => entry.comments.isNotEmpty,
@@ -122,6 +139,7 @@ class DiaryHtmlWriter {
         '<style>$_css${codeTheme == null ? '' : _codeCss(codeTheme)}'
         '${_fontCss(fontFamilies)}'
         '${book == null ? '' : _bookCss}'
+        '${hasRichBlocks ? _blocksCss() : ''}'
         '${hasComments ? _commentsCss : ''}</style>\n',
       )
       ..write('</head>\n<body>\n<main>\n');
@@ -321,7 +339,9 @@ class DiaryHtmlWriter {
     out.write('</section>\n');
   }
 
-  /// [headingOffset] 是日记标题的级别：正文标题从下一级起（最深到 h6）。
+  /// [headingOffset] 是日记标题的级别：正文标题从下一级起。超过 h6 的
+  /// 级别（成书时正文标题顺延）仍写 `<h6>`，但带 `h-level-N` 类名与
+  /// `aria-level`，样式上比真正的 h6 再弱一级，不与它混成同一级。
   static void _writeBlocks(
     StringBuffer out,
     DiaryExportEntry entry, {
@@ -330,35 +350,61 @@ class DiaryHtmlWriter {
     DiaryExportCodeTheme? code,
     int headingOffset = 1,
   }) {
+    _writeRange(
+      out,
+      entry,
+      0,
+      entry.blocks.length,
+      labels: labels,
+      images: images,
+      codeRuns: code?.highlightBlocks(entry.blocks),
+      headingOffset: headingOffset,
+    );
+  }
+
+  /// 写出 `entry.blocks[start, end)`。折叠列表把它后面缩进更深的块（它的
+  /// 子块）收进自己的 `<details>`，递归写出；列表、引用与代码的分组不越过
+  /// [end]，不会从折叠列表里跑出去。[codeRuns] 按整篇的下标给出。
+  static void _writeRange(
+    StringBuffer out,
+    DiaryExportEntry entry,
+    int start,
+    int end, {
+    required DiaryExportLabels labels,
+    required Map<String, String> images,
+    required List<List<DiaryExportCodeRun>?>? codeRuns,
+    required int headingOffset,
+  }) {
     final blocks = entry.blocks;
-    final codeRuns = code?.highlightBlocks(blocks);
-    var i = 0;
-    while (i < blocks.length) {
+    var i = start;
+    while (i < end) {
       final block = blocks[i];
       if (block.isListItem) {
-        final end = _runEnd(blocks, i, (ExportBlock b) => b.isListItem);
-        _writeList(out, blocks.sublist(i, end));
-        i = end;
+        final next = _runEnd(blocks, i, end, (ExportBlock b) => b.isListItem);
+        _writeList(out, blocks.sublist(i, next));
+        i = next;
         continue;
       }
       if (block.kind == ExportBlockKind.quote) {
-        final end = _runEnd(
+        final next = _runEnd(
           blocks,
           i,
+          end,
           (ExportBlock b) => b.kind == ExportBlockKind.quote,
         );
         out.write('<blockquote>');
-        for (final line in blocks.sublist(i, end)) {
-          out.write('<p>${_inlines(line.inlines)}</p>');
+        for (final line in blocks.sublist(i, next)) {
+          out.write('<p${_align(line)}>${_inlines(line.inlines)}</p>');
         }
         out.write('</blockquote>\n');
-        i = end;
+        i = next;
         continue;
       }
       if (block.kind == ExportBlockKind.code) {
-        final end = _runEnd(
+        final next = _runEnd(
           blocks,
           i,
+          end,
           // 语言不同的相邻代码行各成一个 <pre>，保留各自的语言 class。
           (ExportBlock b) =>
               b.kind == ExportBlockKind.code &&
@@ -366,7 +412,7 @@ class DiaryHtmlWriter {
         );
         // highlightBlocks 与这里按同样的口径（语言相同的相邻代码行）分块着色。
         final html = <String>[
-          for (var j = i; j < end; j++)
+          for (var j = i; j < next; j++)
             codeRuns == null
                 ? _text(blocks[j].plainText)
                 : codeRuns[j]!.map(_codeRun).join(),
@@ -380,17 +426,44 @@ class DiaryHtmlWriter {
         };
         final classAttr = language == null ? '' : ' class="language-$language"';
         out.write('<pre><code$classAttr>$html</code></pre>\n');
-        i = end;
+        i = next;
+        continue;
+      }
+      if (block.kind == ExportBlockKind.toggle) {
+        // 导出的页面不保存折叠状态：一律展开，读者仍可点标题收起。
+        final close = _runEnd(
+          blocks,
+          i + 1,
+          end,
+          (ExportBlock b) => b.indent > block.indent,
+        );
+        out.write(
+          '<details open><summary${_align(block)}>'
+          '${_inlines(block.inlines)}</summary>\n',
+        );
+        _writeRange(
+          out,
+          entry,
+          i + 1,
+          close,
+          labels: labels,
+          images: images,
+          codeRuns: codeRuns,
+          headingOffset: headingOffset,
+        );
+        out.write('</details>\n');
+        i = close;
         continue;
       }
       switch (block.kind) {
         case ExportBlockKind.heading:
-          final level = (block.level + headingOffset).clamp(
-            headingOffset + 1,
-            6,
-          );
+          final level = block.level + headingOffset;
+          final html = _inlines(block.inlines);
           out.write(
-            '<h$level${_align(block)}>${_inlines(block.inlines)}</h$level>\n',
+            level <= 6
+                ? '<h$level${_align(block)}>$html</h$level>\n'
+                : '<h6 class="h-level-$level" aria-level="$level"'
+                      '${_align(block)}>$html</h6>\n',
           );
         case ExportBlockKind.image:
           final data = images[block.source!];
@@ -405,18 +478,17 @@ class DiaryHtmlWriter {
           );
         case ExportBlockKind.divider:
           out.write('<hr>\n');
-        // 暂按普通段落写（ExportBlock.fallbackLines），内容不丢。
-        case ExportBlockKind.callout ||
-            ExportBlockKind.toggle ||
-            ExportBlockKind.table:
-          for (final line in block.fallbackLines) {
-            final html = _inlines(line);
-            out.write(
-              html.trim().isEmpty
-                  ? '<p class="blank"></p>\n'
-                  : '<p${_align(block)}>$html</p>\n',
-            );
-          }
+        case ExportBlockKind.callout:
+          final tone = DiaryCalloutTone.fromId(block.calloutTone);
+          out.write(
+            '<div class="callout callout-${tone.id}">'
+            '<span class="callout-icon">'
+            '${_text(block.calloutIcon ?? kDiaryCalloutDefaultIcon)}</span>'
+            '<div class="callout-body"${_align(block)}>'
+            '${_inlines(block.inlines)}</div></div>\n',
+          );
+        case ExportBlockKind.table:
+          _writeTable(out, block);
         default:
           final html = _inlines(block.inlines);
           out.write(
@@ -429,13 +501,38 @@ class DiaryHtmlWriter {
     }
   }
 
+  /// 表格铺满内容宽度；首行为表头时放进 `<thead>`、用 `<th>`。一格里的
+  /// 几段以 `<br>` 相连。
+  static void _writeTable(StringBuffer out, ExportBlock block) {
+    String cell(String tag, List<ExportInline> runs) {
+      final paragraphs = ExportBlock.tableCellParagraphs(runs).map(_inlines);
+      return '<$tag>${paragraphs.join('<br>')}</$tag>';
+    }
+
+    String row(String tag, List<List<ExportInline>> cells) =>
+        '<tr>${cells.map((List<ExportInline> runs) => cell(tag, runs)).join()}</tr>';
+
+    final rows = block.tableRows;
+    final header = block.tableHeaderRow && rows.isNotEmpty;
+    out.write('<table>');
+    if (header) {
+      out.write('<thead>${row('th', rows.first)}</thead>');
+    }
+    out.write('<tbody>');
+    for (final cells in rows.skip(header ? 1 : 0)) {
+      out.write(row('td', cells));
+    }
+    out.write('</tbody></table>\n');
+  }
+
   static int _runEnd(
     List<ExportBlock> blocks,
     int start,
+    int limit,
     bool Function(ExportBlock block) test,
   ) {
     var end = start;
-    while (end < blocks.length && test(blocks[end])) {
+    while (end < limit && test(blocks[end])) {
       end++;
     }
     return end;
@@ -482,9 +579,9 @@ class DiaryHtmlWriter {
       final styleId = item.orderedStyle?.id ?? item.bulletStyle?.id;
       out.write(
         task == null
-            ? '<li${styleId == null ? '' : ' class="ls-$styleId"'}>'
-                  '${_inlines(item.inlines)}'
-            : '<li$task> ${_inlines(item.inlines)}',
+            ? '<li${styleId == null ? '' : ' class="ls-$styleId"'}'
+                  '${_align(item)}>${_inlines(item.inlines)}'
+            : '<li$task${_align(item)}> ${_inlines(item.inlines)}',
       );
       itemOpen = true;
     }
@@ -518,9 +615,21 @@ class DiaryHtmlWriter {
       if (run.italic) html = '<em>$html</em>';
       if (run.underline) html = '<u>$html</u>';
       if (run.strike) html = '<s>$html</s>';
-      if (colors != null && !run.code) {
-        html = '<span style="$colors">$html</span>';
+      // 字号以 em 计，跟着所在块（标题、表格）的字号缩放，与应用里相对
+      // 正文的倍数一致；与颜色写在同一个 span 上。
+      final scale = run.sizeScale;
+      final style = <String>[
+        if (colors != null && !run.code) colors,
+        if (scale != null) 'font-size:${_em(scale)}',
+      ].join(';');
+      if (style.isNotEmpty) {
+        html = '<span style="$style">$html</span>';
       }
+      html = switch (run.script) {
+        ExportScript.superscript => '<sup>$html</sup>',
+        ExportScript.subscript => '<sub>$html</sub>',
+        null => html,
+      };
       final link = run.link;
       if (link != null && _isSafeLink(link)) {
         html = '<a href="${_attr(link)}">$html</a>';
@@ -529,6 +638,10 @@ class DiaryHtmlWriter {
     }
     return out.toString();
   }
+
+  /// 倍数写成 em，去掉多余的零（如 1.25em、1.5em、0.85em）。
+  static String _em(double scale) =>
+      '${scale.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '')}em';
 
   /// 只保留 http(s)、mailto、tel 链接：导出页可能在任意浏览器里打开，
   /// `javascript:` 之类的地址不能变成可点的链接。
@@ -651,6 +764,8 @@ article>header{margin-bottom:16px}
 p{margin:0}
 p.blank{height:1em}
 h2,h3,h4,h5,h6{margin:16px 0 4px;line-height:1.4}
+h6.h-level-7{color:var(--muted)}
+h6.h-level-8{color:var(--muted);font-weight:500}
 figure{margin:12px 0}
 hr{margin:16px 0;border:0;border-top:1px solid var(--line)}
 img{display:block;max-width:100%;height:auto;border-radius:16px}
@@ -683,6 +798,40 @@ a{color:var(--accent)}
 footer{color:var(--muted);font-size:12px;text-align:center}
 @media print{body{background:#fff}article{border:none;padding:0;break-inside:auto;page-break-after:always}footer{display:none}}
 ''';
+
+  /// 标注、折叠列表与表格的样式（只在正文里有这几种块时写出）。标注的
+  /// 底色与色条取 [DiaryCalloutTone] 的纸面配色；深色模式下把强调色按
+  /// [kDiaryCalloutDarkTint] 叠在卡片上（与应用的深色主题同一口径），浅色字
+  /// 在上面仍然看得清。
+  static String _blocksCss() {
+    final light = StringBuffer();
+    final dark = StringBuffer();
+    for (final tone in DiaryCalloutTone.values) {
+      light.write(
+        '.callout-${tone.id}{background:${_cssColor(tone.paperBackground)};'
+        'border-left-color:${_cssColor(tone.paperAccent)}}\n',
+      );
+      final tint = tone.darkAccent.withValues(alpha: kDiaryCalloutDarkTint);
+      dark.write(
+        '.callout-${tone.id}{background:${_cssColor(tint)};'
+        'border-left-color:${_cssColor(tone.darkAccent)}}',
+      );
+    }
+    return '.callout{display:flex;gap:10px;margin:8px 0;padding:10px 14px;'
+        'border-left:3px solid;border-radius:6px}\n'
+        '.callout-icon{flex:none}\n'
+        '.callout-body{flex:1;min-width:0}\n'
+        'details{margin:4px 0}\n'
+        'details>summary{cursor:pointer}\n'
+        'details>:not(summary){margin-left:1.4em}\n'
+        'table{width:100%;border-collapse:collapse;margin:8px 0}\n'
+        'th,td{border:1px solid var(--line);padding:6px 10px;'
+        'text-align:start;vertical-align:top}\n'
+        'th{background:var(--bg);font-weight:600}\n'
+        'td code,th code{background:var(--bg);border-radius:6px;'
+        'padding:1px 5px}\n'
+        '$light@media (prefers-color-scheme:dark){$dark}\n';
+  }
 
   /// 成书附加的样式（只在成书时写出，普通导出的页面保持原样）。
   static const String _bookCss = '''

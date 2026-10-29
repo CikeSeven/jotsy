@@ -7092,6 +7092,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookDragHandle => 'Drag to reorder';
 
   @override
+  String notebookSubCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sub-notebooks',
+      one: '1 sub-notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookSubCollapse => 'Collapse sub-notebooks';
+
+  @override
+  String get notebookSubExpand => 'Expand sub-notebooks';
+
+  @override
+  String get notebookCollapseAll => 'Collapse all';
+
+  @override
+  String get notebookExpandAll => 'Expand all';
+
+  @override
   String get notebookStatePinned => 'Pinned';
 
   @override

@@ -6403,6 +6403,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookDragHandle => '拖动排序';
 
   @override
+  String notebookSubCount(int count) {
+    return '$count 本子本';
+  }
+
+  @override
+  String get notebookSubCollapse => '收起子本';
+
+  @override
+  String get notebookSubExpand => '展开子本';
+
+  @override
+  String get notebookCollapseAll => '全部收起';
+
+  @override
+  String get notebookExpandAll => '全部展开';
+
+  @override
   String get notebookStatePinned => '置顶';
 
   @override

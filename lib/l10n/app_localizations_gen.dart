@@ -11768,6 +11768,36 @@ abstract class AppLocalizations {
   /// **'Drag to reorder'**
   String get notebookDragHandle;
 
+  /// Number of direct sub-notebooks in a management-page row summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 sub-notebook} other{{count} sub-notebooks}}'**
+  String notebookSubCount(int count);
+
+  /// Row button on the management page that hides the sub-notebooks (tooltip and screen reader).
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse sub-notebooks'**
+  String get notebookSubCollapse;
+
+  /// Row button on the management page that shows collapsed sub-notebooks (tooltip and screen reader).
+  ///
+  /// In en, this message translates to:
+  /// **'Expand sub-notebooks'**
+  String get notebookSubExpand;
+
+  /// Management page top bar button: collapse every notebook's sub-notebooks, leaving the top level.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse all'**
+  String get notebookCollapseAll;
+
+  /// Management page top bar button: expand every collapsed notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand all'**
+  String get notebookExpandAll;
+
   /// Notebook state: pinned (management row subtitle).
   ///
   /// In en, this message translates to:

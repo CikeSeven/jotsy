@@ -79,6 +79,20 @@ void main() {
     );
   });
 
+  test('collapsing hides every descendant but not the collapsed book', () {
+    expect(notebookFoldedIds(tree, const <String>{}), isEmpty);
+    expect(notebookFoldedIds(tree, <String>{'旅行'}), <String>{
+      '2025',
+      '东京',
+      '2024',
+      '照片',
+    });
+    // 只收起中间一层：上级照常，孙本藏起。
+    expect(notebookFoldedIds(tree, <String>{'2025'}), <String>{'东京'});
+    // 没有子本的、不存在的 id 不藏任何行。
+    expect(notebookFoldedIds(tree, <String>{'读书', '已删除'}), isEmpty);
+  });
+
   group('sibling order after a drag', () {
     final ids = <String>['旅行', '2025', '东京', '2024', '照片', '读书'];
     String? parentOf(String id) => tree[id]!.parentId;

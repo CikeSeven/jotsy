@@ -25,6 +25,7 @@ import '../../controllers/diary_editor_controller.dart';
 import 'diary_editor_spans.dart';
 import 'diary_editor_styles.dart';
 import 'diary_editor_interaction_layer.dart';
+import 'diary_editor_selection_toolbar.dart';
 import 'diary_inline_page.dart';
 
 /// 所有正文位置共用 AppFlowy 渲染与主题。编辑页使用原生虚拟滚动，标题等
@@ -332,6 +333,11 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               !identical(event, af.exitEditingCommand))
             event,
       ],
+      // 桌面的复制 / 粘贴菜单只在右键时出现（手机为选中后自动浮出，见
+      // DiaryEditorSelectionToolbar）。
+      contextMenuBuilder: AppPlatform.isDesktop
+          ? diaryEditorContextMenuBuilder(controller)
+          : null,
       contentInsertionConfiguration: ContentInsertionConfiguration(
         allowedMimeTypes: const [
           'image/png',

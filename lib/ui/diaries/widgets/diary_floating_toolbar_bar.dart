@@ -118,6 +118,13 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
         onPressed: () => _handleCalloutTool(fromMore: inMorePanel),
         panelOpen: !inMorePanel && _calloutPanelOpen,
       );
+    } else if (item == DiaryToolbarItem.table) {
+      tool = DiaryToolbarTableButton(
+        controller: widget.controller,
+        panelOpen: !inMorePanel && _tablePanelOpen,
+        tooltip: item.label(context.l10n),
+        onPressed: () => _handleTableTool(fromMore: inMorePanel),
+      );
     } else if (item == DiaryToolbarItem.codeBlock) {
       tool = DiaryToolbarCodeBlockButton(
         controller: widget.controller,

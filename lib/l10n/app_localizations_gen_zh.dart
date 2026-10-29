@@ -9490,4 +9490,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String backupImportCommentOverwriteResult(int added, int replaced) {
     return '留言：新增 $added 条，覆盖 $replaced 条';
   }
+
+  @override
+  String get diaryEditorTable => '表格';
+
+  @override
+  String get diaryTableInsertRowAbove => '上方插入行';
+
+  @override
+  String get diaryTableInsertRowBelow => '下方插入行';
+
+  @override
+  String get diaryTableInsertColumnLeft => '左侧插入列';
+
+  @override
+  String get diaryTableInsertColumnRight => '右侧插入列';
+
+  @override
+  String get diaryTableDeleteRow => '删除行';
+
+  @override
+  String get diaryTableDeleteColumn => '删除列';
+
+  @override
+  String get diaryTableHeaderRow => '表头行';
+
+  @override
+  String get diaryTableDelete => '删除表格';
 }

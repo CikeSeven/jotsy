@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
@@ -10,6 +12,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_block_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_callout_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_list_style_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_table_editing.dart';
 import 'package:node_diary/ui/diaries/models/diary_material_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
@@ -22,6 +25,8 @@ import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_toolbar_cod
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_toolbar_color_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_list_style/diary_list_style_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_table/diary_table_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_table/diary_toolbar_table_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_text_style/diary_text_style_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_text_style/diary_text_style_panels.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_config.dart';
@@ -32,6 +37,7 @@ part 'diary_floating_toolbar_bar.dart';
 part 'diary_floating_toolbar_callout.dart';
 part 'diary_floating_toolbar_code.dart';
 part 'diary_floating_toolbar_list.dart';
+part 'diary_floating_toolbar_table.dart';
 part 'diary_floating_toolbar_text_style.dart';
 
 /// 卡片内正在展开的面板。
@@ -45,6 +51,7 @@ enum _ToolbarPanel {
   align,
   fontSize,
   callout,
+  table,
 }
 
 /// 编辑页悬浮工具栏：一排放得下的工具常驻，其余收进「更多」面板就地展开；
@@ -76,6 +83,8 @@ enum _ToolbarPanel {
 ///   diary_floating_toolbar_list.dart）；
 /// - 提示块工具：选区不在提示块里时转为提示块，在时打开提示块面板，路由同
 ///   代码块；面板随选区离开提示块收起（见 diary_floating_toolbar_callout.dart）；
+/// - 表格工具：光标不在表格里时插入表格，在时打开表格面板，路由同代码块；
+///   面板随选区离开表格收起（见 diary_floating_toolbar_table.dart）；
 /// - 标题、对齐、字号工具：点按即打开各自的面板，路由同颜色工具；面板不随
 ///   选区收起，只跟着显示选区当前的取值（见
 ///   diary_floating_toolbar_text_style.dart）；
@@ -221,7 +230,8 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   void _handleSelectionChanged() {
     if (_panel != _ToolbarPanel.code &&
         _panel != _ToolbarPanel.list &&
-        _panel != _ToolbarPanel.callout) {
+        _panel != _ToolbarPanel.callout &&
+        _panel != _ToolbarPanel.table) {
       return;
     }
     if (SchedulerBinding.instance.schedulerPhase ==
@@ -236,6 +246,8 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
         _syncCodePanelWithSelection();
       case _ToolbarPanel.callout:
         _syncCalloutPanelWithSelection();
+      case _ToolbarPanel.table:
+        _syncTablePanelWithSelection();
       default:
         _syncListPanelWithSelection();
     }
@@ -379,6 +391,10 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
         kDiaryCalloutPanelHeight,
         widget.maxPanelExtent,
       ),
+      _ToolbarPanel.table => diaryToolbarPanelBodyLimit(
+        kDiaryTablePanelHeight,
+        widget.maxPanelExtent,
+      ),
     };
   }
 
@@ -518,6 +534,11 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
         controller: widget.controller,
         bodyHeight: _bodyHeight(_ToolbarPanel.callout),
         onClose: _closeCalloutPanel,
+      ),
+      _ToolbarPanel.table => DiaryTablePanel(
+        controller: widget.controller,
+        bodyHeight: _bodyHeight(_ToolbarPanel.table),
+        onClose: _closeTablePanel,
       ),
       _ => DiaryToolbarMorePanel(
         rows: layout.overflowRows,

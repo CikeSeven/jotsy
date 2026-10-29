@@ -10,6 +10,7 @@ import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../controllers/diary_callout_editing.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_editor_insert.dart';
+import '../../controllers/diary_table_editing.dart';
 
 /// 命令菜单里的分组，按此顺序排列。
 enum DiaryBlockCommandGroup { text, list, insert }
@@ -148,6 +149,14 @@ List<DiaryBlockCommand> diaryBlockCommands(
     group: DiaryBlockCommandGroup.insert,
     markdown: '---',
   ),
+  // 表格：3 × 3、带表头行，插在当前块后面（与工具栏同一条插入）。
+  DiaryBlockCommand(
+    kDiaryBlockTable,
+    DiaryToolbarItem.table.label(l10n),
+    DiaryToolbarItem.table.iconData,
+    const ['table', 'grid', '表格', '表'],
+    group: DiaryBlockCommandGroup.insert,
+  ),
   if (onMedia != null) ...[
     DiaryBlockCommand(
       'image',
@@ -209,6 +218,8 @@ void applyDiaryBlockCommand(
   } else if (command.type == kDiaryBlockCallout) {
     // 与工具栏同一条转换：已是提示块的保留图标与底色。
     convertDiaryBlocksToCallout(controller);
+  } else if (command.type == kDiaryBlockTable) {
+    insertDiaryTable(controller);
   } else {
     controller.setBlockType(command.type, attributes: command.attributes);
   }

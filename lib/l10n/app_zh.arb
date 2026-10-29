@@ -13166,5 +13166,41 @@
       "added": {"type": "int"},
       "replaced": {"type": "int"}
     }
+  },
+  "diaryEditorTable": "表格",
+  "@diaryEditorTable": {
+    "description": "编辑器工具栏、斜杠菜单里的表格工具名，也是表格面板的标题。"
+  },
+  "diaryTableInsertRowAbove": "上方插入行",
+  "@diaryTableInsertRowAbove": {
+    "description": "表格面板：在光标所在行上方插入一行。"
+  },
+  "diaryTableInsertRowBelow": "下方插入行",
+  "@diaryTableInsertRowBelow": {
+    "description": "表格面板：在光标所在行下方插入一行。"
+  },
+  "diaryTableInsertColumnLeft": "左侧插入列",
+  "@diaryTableInsertColumnLeft": {
+    "description": "表格面板：在光标所在列左侧插入一列。"
+  },
+  "diaryTableInsertColumnRight": "右侧插入列",
+  "@diaryTableInsertColumnRight": {
+    "description": "表格面板：在光标所在列右侧插入一列。"
+  },
+  "diaryTableDeleteRow": "删除行",
+  "@diaryTableDeleteRow": {
+    "description": "表格面板：删除光标所在行。"
+  },
+  "diaryTableDeleteColumn": "删除列",
+  "@diaryTableDeleteColumn": {
+    "description": "表格面板：删除光标所在列。"
+  },
+  "diaryTableHeaderRow": "表头行",
+  "@diaryTableHeaderRow": {
+    "description": "表格面板：首行是否为表头的开关。"
+  },
+  "diaryTableDelete": "删除表格",
+  "@diaryTableDelete": {
+    "description": "表格面板：删除整个表格。"
   }
 }

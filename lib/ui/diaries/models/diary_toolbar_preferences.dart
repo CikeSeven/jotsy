@@ -31,6 +31,7 @@ enum DiaryToolbarItem {
   bulletList,
   checkList,
   codeBlock,
+  table,
   quote,
   callout,
   toggle,
@@ -77,6 +78,8 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.indent,
   DiaryToolbarItem.inlineCode,
   DiaryToolbarItem.codeBlock,
+  // 表格紧跟代码块（同为整块的插入），已保存过顺序的用户补到末尾。
+  DiaryToolbarItem.table,
 ];
 
 extension DiaryToolbarItemX on DiaryToolbarItem {
@@ -105,6 +108,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.bulletList => 'bullet_list',
       DiaryToolbarItem.checkList => 'check_list',
       DiaryToolbarItem.codeBlock => 'code_block',
+      DiaryToolbarItem.table => 'table',
       DiaryToolbarItem.quote => 'quote',
       DiaryToolbarItem.callout => 'callout',
       DiaryToolbarItem.toggle => 'toggle',
@@ -142,6 +146,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.bulletList => FontAwesomeIcons.listUl,
       DiaryToolbarItem.checkList => FontAwesomeIcons.squareCheck,
       DiaryToolbarItem.codeBlock => FontAwesomeIcons.fileCode,
+      DiaryToolbarItem.table => FontAwesomeIcons.table,
       DiaryToolbarItem.quote => FontAwesomeIcons.quoteLeft,
       DiaryToolbarItem.callout => FontAwesomeIcons.lightbulb,
       DiaryToolbarItem.toggle => FontAwesomeIcons.squareCaretRight,
@@ -176,6 +181,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.bulletList => l10n.autoT0019,
       DiaryToolbarItem.checkList => l10n.autoT0020,
       DiaryToolbarItem.codeBlock => l10n.autoT0021,
+      DiaryToolbarItem.table => l10n.diaryEditorTable,
       DiaryToolbarItem.quote => l10n.autoT0022,
       DiaryToolbarItem.callout => l10n.diaryEditorCallout,
       DiaryToolbarItem.toggle => l10n.diaryEditorToggleList,

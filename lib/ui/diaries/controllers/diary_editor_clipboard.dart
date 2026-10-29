@@ -13,6 +13,8 @@ import '../../../core/services/journal_import_html.dart';
 import 'diary_editor_controller.dart';
 import 'diary_editor_insert.dart';
 import 'diary_markdown_paste.dart';
+import 'diary_table_editing.dart';
+import 'diary_table_selection.dart';
 
 /// 剪贴板只在显式复制/粘贴时访问。原生树的格式快照只留在本进程内，并以
 /// 系统剪贴板的文字或图片摘要核对，避免粘贴到其他应用后来复制的新内容时
@@ -39,7 +41,14 @@ abstract final class DiaryEditorClipboard {
     // 尤其反向跨段选区，未经规整会把两端的偏移用到相反的段落上。
     final selection = controller.selection?.normalized;
     if (selection == null || selection.isCollapsed) return;
-    final nodes = controller.state.getSelectedNodes(selection: selection);
+    // 选区从格子里开始或结束时会带上零散的格子：只留它们的段落，粘到
+    // 别处不会出现没有表格的格子。
+    final nodes = [
+      for (final node in controller.state.getSelectedNodes(
+        selection: selection,
+      ))
+        if (node.type == 'table/cell') ...node.children else node,
+    ];
     final document = {
       'document': {
         'type': 'page',
@@ -58,7 +67,8 @@ abstract final class DiaryEditorClipboard {
     final selection = controller.selection?.normalized;
     if (selection == null || selection.isCollapsed) return;
     await copy(controller);
-    if (!controller.state.isDisposed) {
+    if (controller.state.isDisposed) return;
+    if (!await deleteDiaryTableSelection(controller.state, selection)) {
       await controller.state.deleteSelection(selection);
     }
   }
@@ -111,15 +121,7 @@ abstract final class DiaryEditorClipboard {
     }
     if (controller.state.isDisposed) return;
     if (html != null && html.isNotEmpty) {
-      final writer = JournalBlockWriter();
-      JournalHtmlConverter(
-        writer,
-        resolveEmbed: (source) => {'image': source},
-      ).appendHtml(html);
-      final document = diaryEditorDocument(writer.build().contentJson);
-      await _pasteNodes(controller, [
-        for (final node in document.root.children) node.toJson(),
-      ]);
+      await pasteHtml(controller, html);
     } else if (text != null && text.isNotEmpty) {
       if (!_caretInRawTextBlock(controller) && looksLikeDiaryMarkdown(text)) {
         final nodes = diaryMarkdownPasteNodes(text);
@@ -130,6 +132,25 @@ abstract final class DiaryEditorClipboard {
       }
       await _pastePlain(controller, text);
     }
+  }
+
+  /// 把剪贴板里的 HTML 转为块粘贴（与导入共用 [JournalHtmlConverter]）。
+  /// 单独成方法是因为 pasteboard 只在 Android / Windows 提供 HTML，测试
+  /// 经它直接走同一条路径。
+  static Future<void> pasteHtml(
+    DiaryEditorController controller,
+    String html,
+  ) async {
+    if (controller.readOnly) return;
+    final writer = JournalBlockWriter();
+    JournalHtmlConverter(
+      writer,
+      resolveEmbed: (source) => {'image': source},
+    ).appendHtml(html);
+    final document = diaryEditorDocument(writer.build().contentJson);
+    await _pasteNodes(controller, [
+      for (final node in document.root.children) node.toJson(),
+    ]);
   }
 
   static Future<void> _pastePlain(
@@ -167,8 +188,24 @@ abstract final class DiaryEditorClipboard {
         'document': {'type': 'page', 'children': data},
       }),
     );
-    final nodes = document.root.children.toList();
-    controller.select(diaryEditorInsertionSelection(controller));
+    var nodes = document.root.children.toList();
+    final target = diaryEditorInsertionSelection(controller);
+    controller.select(target);
+    // 触及表格的选区先按本应用的规则删掉（上游的 deleteSelection 会把从
+    // 表格外选进来的整个表格删掉）。
+    if (!target.isCollapsed &&
+        diarySelectionTouchesTable(controller.state, target)) {
+      await deleteDiaryTableSelection(controller.state, target);
+      if (controller.state.isDisposed) return;
+    }
+    // 粘进格子的只能是段落：各块的文字各成一段，媒体与表格结构丢掉。
+    final caret = controller.selection;
+    if (caret != null &&
+        diaryTableCellOf(controller.document.nodeAtPath(caret.end.path)) !=
+            null) {
+      nodes = diaryTableCellParagraphs(nodes);
+      if (nodes.isEmpty) return;
+    }
     if (nodes.any((node) => node.delta == null)) {
       insertDiaryEditorNodes(
         controller: controller,

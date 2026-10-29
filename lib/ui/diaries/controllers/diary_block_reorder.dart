@@ -72,7 +72,10 @@ class DiaryBlockGaps {
         blocks.add(node);
         // 收起的折叠块里的内容看不见、没有几何：不排进阅读顺序，块既不会
         // 落进去，上移 / 下移也把收起的折叠块连同内容当作一格越过。
-        if (!isDiaryToggleCollapsed(node)) visit(node.children);
+        // 表格整个是一块：格子与格内段落之间没有缝。
+        if (!isDiaryToggleCollapsed(node) && node.type != kDiaryBlockTable) {
+          visit(node.children);
+        }
       }
     }
 

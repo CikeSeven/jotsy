@@ -14,6 +14,7 @@ import 'diary_block_marker_metrics.dart';
 import 'diary_block_markers.dart';
 import 'diary_callout_block.dart';
 import 'diary_paragraph_block.dart';
+import 'diary_table_block.dart';
 import 'diary_toggle_block.dart';
 
 /// 原生块组件的单一注册点：共享排版、段落首行缩进、行首标记（列表、待办、
@@ -127,6 +128,12 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
     ),
     for (final type in ['image', 'video', 'audio', 'attachment', 'quill_embed'])
       type: media,
+    // 表格与格子：格内段落经同一份渲染器构建（见 DiaryTableBlock）。
+    'table': DiaryTableBlockBuilder(
+      configuration: text,
+      editorState: controller.state,
+    ),
+    'table/cell': DiaryTableCellBlockBuilder(editorState: controller.state),
     ...overrides,
   };
   return {

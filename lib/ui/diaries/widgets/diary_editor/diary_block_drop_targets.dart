@@ -3,6 +3,7 @@ import 'dart:ui' show Rect;
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import '../../controllers/diary_block_reorder.dart';
+import '../../controllers/diary_toggle_state.dart';
 
 /// 拖动段落的几何判断：手指下的落点，以及预览移动后该停在原处的块。
 /// 只读节点的全局矩形（上一帧的布局），不改文档。
@@ -52,7 +53,10 @@ int? _gapOn(DiaryBlockGaps gaps, af.Node hit, double dy) {
   if (dy >= ownBottom) return null;
   // 被拖的块自己挂在它下面时不算子块：否则手指停在它的下半区，块会在
   // “它之前”与“它的子块”之间来回跳。
-  final hasChildren = hit.children.any((child) => child != gaps.source);
+  // 收起的折叠块按没有子块算：它的内容看不见，“之后”就是下一块之前。
+  final hasChildren =
+      !isDiaryToggleCollapsed(hit) &&
+      hit.children.any((child) => child != gaps.source);
   return !hasChildren && dy >= (rect.top + ownBottom) / 2 ? index + 1 : index;
 }
 

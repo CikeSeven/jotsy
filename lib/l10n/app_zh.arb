@@ -11336,6 +11336,22 @@
   "@diaryEditorUnsupportedBlock": {
     "description": "Placeholder for a preserved editor block from an unsupported format."
   },
+  "diaryEditorToggleList": "折叠块",
+  "@diaryEditorToggleList": {
+    "description": "编辑器工具栏、斜杠菜单里的折叠块（toggle_list）工具名。"
+  },
+  "diaryToggleListPlaceholder": "折叠块",
+  "@diaryToggleListPlaceholder": {
+    "description": "标题为空的折叠块里显示的占位文字。"
+  },
+  "diaryToggleExpand": "展开",
+  "@diaryToggleExpand": {
+    "description": "折叠块行首标记在收起时的读屏标签：点按即展开折叠的内容。"
+  },
+  "diaryToggleCollapse": "收起",
+  "@diaryToggleCollapse": {
+    "description": "折叠块行首标记在展开时的读屏标签：点按即收起折叠的内容。"
+  },
   "diaryEditorImageWidth": "图片宽度",
   "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
   "diaryEditorImageHeight": "图片高度",

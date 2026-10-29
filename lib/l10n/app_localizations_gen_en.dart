@@ -8851,6 +8851,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorUnsupportedBlock => 'Unsupported content';
 
   @override
+  String get diaryEditorToggleList => 'Toggle';
+
+  @override
+  String get diaryToggleListPlaceholder => 'Toggle';
+
+  @override
+  String get diaryToggleExpand => 'Expand';
+
+  @override
+  String get diaryToggleCollapse => 'Collapse';
+
+  @override
   String get diaryEditorImageWidth => 'Image width';
 
   @override

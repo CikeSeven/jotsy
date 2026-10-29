@@ -7937,6 +7937,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorUnsupportedBlock => '暂不支持的内容';
 
   @override
+  String get diaryEditorToggleList => '折叠块';
+
+  @override
+  String get diaryToggleListPlaceholder => '折叠块';
+
+  @override
+  String get diaryToggleExpand => '展开';
+
+  @override
+  String get diaryToggleCollapse => '收起';
+
+  @override
   String get diaryEditorImageWidth => '图片宽度';
 
   @override

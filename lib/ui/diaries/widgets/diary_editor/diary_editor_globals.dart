@@ -24,12 +24,24 @@ import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 ///   提示块开头按退格时转为正文段落（与引用、标题、列表相同），而不是并进
 ///   上一块。软键盘的删除走上游输入法回调、直接调用同一条“转为段落”命令，
 ///   不经快捷键列表，所以只能在这张全局表里登记。
+/// - 折叠块（[kDiaryBlockToggleList]）：
+///   - 登记进 [af.indentableBlockTypes]：上游的缩进 / 取消缩进（Tab、工具栏
+///     「缩进」）只认这张表——折叠块后面的段落缩进即成为它的子块（折叠的
+///     内容），折叠块里的内容也能取消缩进移出来；折叠块自己也能缩进。登记
+///     后这张表与 [kDiaryContainerBlockTypes] 严格相等（测试兜底）：能挂子块的
+///     就是编辑器画得出子块、能缩进进去的那几种；
+///   - 登记进 [af.convertibleBlockTypes]：标题开头按退格原地转为正文段落，
+///     子块（折叠的内容）留在段落下面，理由同提示块。
 void ensureDiaryEditorGlobals() {
   if (_registered) return;
   _registered = true;
   if (!af.convertibleBlockTypes.contains(kDiaryBlockCallout)) {
     af.convertibleBlockTypes.add(kDiaryBlockCallout);
   }
+  if (!af.convertibleBlockTypes.contains(kDiaryBlockToggleList)) {
+    af.convertibleBlockTypes.add(kDiaryBlockToggleList);
+  }
+  af.indentableBlockTypes.add(kDiaryBlockToggleList);
   for (final keys in [
     af.AppFlowyRichTextKeys.supportSliced,
     af.AppFlowyRichTextKeys.supportToggled,

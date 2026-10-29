@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_editor_controller.dart';
+import 'diary_toggle_editing.dart';
 
 /// 代码块的语言、转换、复制与退出都通过原生事务操作节点，保持子树与撤销。
 List<af.Node> selectedDiaryCodeBlocks(DiaryEditorController controller) =>
@@ -131,6 +132,9 @@ List<af.CharacterShortcutEvent> diaryBlockCharacterShortcuts() => [
     character: '\n',
     handler: _emptyCalloutEnter,
   ),
+  // 折叠块标题里回车：空标题转正文，展开时接第一个子块，收起时接同级
+  // 折叠块（见 [diaryToggleEnterEvent]）。
+  diaryToggleEnterEvent,
   // 行首 `> ` 转为引用。上游只认 `" `，`/` 菜单却教的是 `>`；排在代码原文
   // 之后，代码块里的 `> ` 已按原文插入，走不到这里。
   af.CharacterShortcutEvent(

@@ -14504,6 +14504,30 @@ abstract class AppLocalizations {
   /// **'Unsupported content'**
   String get diaryEditorUnsupportedBlock;
 
+  /// Name of the toggle block (toggle_list) tool in the editor toolbar and slash menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle'**
+  String get diaryEditorToggleList;
+
+  /// Placeholder shown in a toggle block whose title is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle'**
+  String get diaryToggleListPlaceholder;
+
+  /// Screen reader label of a collapsed toggle block's leading marker: tapping it expands the folded content.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get diaryToggleExpand;
+
+  /// Screen reader label of an expanded toggle block's leading marker: tapping it collapses the folded content.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get diaryToggleCollapse;
+
   /// Image dimension label in the diary image resize sheet.
   ///
   /// In en, this message translates to:

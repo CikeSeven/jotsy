@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/app/synced_data_refresh.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_link_target.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
+import 'package:node_diary/ui/diaries/providers/diary_link_providers.dart';
 
 class _CountingDatabase extends AppDatabase {
   _CountingDatabase() : super.forTesting(NativeDatabase.memory());
@@ -65,6 +67,38 @@ void main() {
       expect(database.detailReads, 2);
       expect(refreshed!.diary.title, 'After sync');
       expect(detail.read().value?.diary.title, 'After sync');
+    },
+  );
+
+  test(
+    'synced writes make an open preview re-read the diaries mentioning it',
+    () async {
+      final targetId = await createDiary('Target');
+      final sourceId = await createDiary('Source');
+      final target = DiaryLinkTarget.diary(targetId);
+      container.listen(syncedDataRefreshProvider, (_, _) {});
+      final backlinks = container.listen(
+        diaryPreviewBacklinksProvider(target),
+        (_, _) {},
+      );
+      expect(
+        await container.read(diaryPreviewBacklinksProvider(target).future),
+        isEmpty,
+      );
+
+      // 同步带来了一篇提到这篇的日记（直接改写正文，不经 UI 写库函数）。
+      await database.customStatement(
+        'UPDATE diaries SET content = ? WHERE diary_id = ?',
+        ['[{"href":"${target.toHref()}"}]', sourceId],
+      );
+      EditingSessionRegistry.instance.notifyDataReplaced();
+      await Future<void>.delayed(Duration.zero);
+
+      final refreshed = await container.read(
+        diaryPreviewBacklinksProvider(target).future,
+      );
+      expect([for (final link in refreshed) link.diaryId], [sourceId]);
+      expect(backlinks.read().value, hasLength(1));
     },
   );
 

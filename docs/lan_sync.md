@@ -290,7 +290,7 @@ class SyncManifest {
 - **阻塞者**：编辑页与发布页（`DebouncedAutoSaveController`）、纪念日编辑页与日记本编辑页（`EditingSessionBlocker`）、模板编辑页、留言编辑面板、目录页与日记本管理页的拖动排序（`ReorderEditingGuard`：从拿起到新顺序写完，落回原位即结束）。登记期间不发起自动同步，对方的会话请求以 `busy` 拒绝；手动同步提示“请先关闭正在编辑的页面”。
 - **冲刷者**：预览页待办自动保存（`DiaryTodoAutoSaveController`）。会话开始时 `flushAll()`；写入后由 `notifyDataReplaced` 让其文档重新读取。
 - **撤销窗口**：带按钮（撤销）的 `showTrackedSnackBar` 显示期间自动计数（`beginUndoWindow`，随提示关闭结束）；同步写入前等待清零，超时即推迟（§6 第 1 步）。
-- **写入后失效**：`syncedDataRefreshProvider`（`lib/app/synced_data_refresh.dart`，`NodeDiaryApp` 常驻监听）收到 `dataReplaced` 时失效一次性读取的 provider：`diaryDetailProvider` 族、`diaryNotebooksProvider` 族、`userDiaryTemplatesSnapshotProvider`、`tagListProvider`（自定义顺序取自设置、只在标签表推送时套用）。实时查询（`watch…`）由 Drift 自动刷新，设置类 Notifier 经 `SettingsService` 的通知刷新；新增一次性读取同步数据的 provider 必须加进它的清单。
+- **写入后失效**：`syncedDataRefreshProvider`（`lib/app/synced_data_refresh.dart`，`NodeDiaryApp` 常驻监听）收到 `dataReplaced` 时失效一次性读取的 provider：`diaryDetailProvider` 族、`diaryNotebooksProvider` 族、`diaryPreviewBacklinksProvider` 族（预览页的反向链接）、`userDiaryTemplatesSnapshotProvider`、`tagListProvider`（自定义顺序取自设置、只在标签表推送时套用）。实时查询（`watch…`）由 Drift 自动刷新，设置类 Notifier 经 `SettingsService` 的通知刷新；新增一次性读取同步数据的 provider 必须加进它的清单。
 
 ## 8. 安全与隐私
 

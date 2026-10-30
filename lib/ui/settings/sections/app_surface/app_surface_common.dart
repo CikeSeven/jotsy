@@ -7,6 +7,8 @@ import '../../widgets/settings_option_tiles.dart';
 /// “背景与材质”各分组共用的数值滑块行：拖动中经 [onPreview] 只改草稿
 /// （预览即时重绘、不写盘），松手经 [onCommit] 写入。
 ///
+/// [enabled] 为 false 时（如参数跟随来源）滑块停用，只显示 [value]。
+///
 /// 取值先按 [range] 的步进规整（消除 0.35000001 这类浮点尾数，设置才能与
 /// 默认值按 `==` 相等、编码保持稀疏），再交给回调。
 Widget appSurfaceSlider({
@@ -17,6 +19,7 @@ Widget appSurfaceSlider({
   required ValueChanged<double> onPreview,
   required ValueChanged<double> onCommit,
   bool nested = false,
+  bool enabled = true,
 }) {
   double normalize(double raw) {
     final steps = ((raw - range.min) / range.step).round();
@@ -33,8 +36,8 @@ Widget appSurfaceSlider({
     max: range.max,
     divisions: range.divisions,
     valueLabel: valueLabel,
-    onChanged: (double v) => onPreview(normalize(v)),
-    onChangeEnd: (double v) => onCommit(normalize(v)),
+    onChanged: enabled ? (double v) => onPreview(normalize(v)) : null,
+    onChangeEnd: enabled ? (double v) => onCommit(normalize(v)) : null,
   );
 }
 

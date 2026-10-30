@@ -20,6 +20,12 @@ String appSurfaceAreaLabel(AppLocalizations l10n, AppBackgroundArea? area) =>
       AppBackgroundArea.other => l10n.appSurfaceAreaOther,
     };
 
+/// 跟随来源的名字：全局或页面区域名。
+String appSurfaceSourceLabel(
+  AppLocalizations l10n,
+  AppBackgroundSource source,
+) => appSurfaceAreaLabel(l10n, source.area);
+
 String appSurfaceAreaModeLabel(
   AppLocalizations l10n,
   AppAreaBackgroundMode mode,

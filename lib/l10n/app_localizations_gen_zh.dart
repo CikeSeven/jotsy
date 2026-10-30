@@ -8248,7 +8248,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appSurfaceAreaOffNote => '这个区域不显示背景，沿用主题底色。';
 
   @override
-  String get appSurfaceAreaCustomNote => '这个区域使用下面单独设置的背景。';
+  String get appSurfaceAreaCustomNote => '这个区域使用下面单独设置的背景；图片与参数可以分别跟随全局或其他页面。';
 
   @override
   String get appSurfaceAreaPreviewNote => '仅在预览页纸张为“跟随主题”时显示。';
@@ -8314,6 +8314,50 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appSurfaceScrimDark => '深色遮罩';
+
+  @override
+  String get appSurfaceFollowSource => '跟随来源';
+
+  @override
+  String get appSurfaceFollowSourceHint =>
+      '下方“图片”或“参数”打开跟随后，取所选页面当前显示的设置；那边改了，这里跟着变。';
+
+  @override
+  String appSurfaceSourceShows(String kind) {
+    return '当前：$kind';
+  }
+
+  @override
+  String get appSurfaceSourceLoop => '它的跟随来源会绕回这里，不能选';
+
+  @override
+  String get appSurfaceImageGroup => '图片';
+
+  @override
+  String get appSurfaceParamsGroup => '参数';
+
+  @override
+  String appSurfaceFollowImage(String source) {
+    return '跟随「$source」的图片';
+  }
+
+  @override
+  String appSurfaceFollowParams(String source) {
+    return '跟随「$source」的参数';
+  }
+
+  @override
+  String get appSurfaceFollowParamsHint => '焦点、模糊与遮罩一起跟随';
+
+  @override
+  String appSurfaceFollowImageNote(String source) {
+    return '正在使用「$source」的图片';
+  }
+
+  @override
+  String appSurfaceFollowImageNone(String source) {
+    return '「$source」当前没有背景图片';
+  }
 
   @override
   String get appSurfaceGlassStyle => '组件风格';

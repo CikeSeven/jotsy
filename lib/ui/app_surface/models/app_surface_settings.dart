@@ -5,11 +5,13 @@ import 'package:flutter/foundation.dart';
 import '../../diaries/models/style_library/style_json.dart';
 import 'app_area_background.dart';
 import 'app_background.dart';
+import 'app_background_source.dart';
 import 'app_glass_style.dart';
 import 'app_surface_enums.dart';
 
 export 'app_area_background.dart';
 export 'app_background.dart';
+export 'app_background_source.dart';
 export 'app_glass_style.dart';
 export 'app_surface_enums.dart';
 export 'app_surface_limits.dart';
@@ -25,6 +27,13 @@ export 'app_surface_limits.dart';
 ///
 /// 兼容策略：整体坏 JSON 回落默认；各部分逐字段容错（见各子模型），认不出
 /// 的区域键整项忽略；编码稀疏，与默认相同的区域不写。
+///
+/// 跟随（区域单独设置时图片 / 参数取自 `AppAreaBackground.source`）：
+/// - 取的是来源**当前显示**的背景：来源跟随全局即取全局，来源不显示背景即
+///   取默认（没有图片），来源单独设置即取它解析后的结果（它自己也可能在
+///   跟随，沿来源链继续往下）；图片只在来源显示的是图片时才有；
+/// - 界面经 [canFollow] 不让来源链成环；手改的备份仍可能成环，解析时一旦
+///   回到走过的区域就不再跟随，用区域自己的那一份。
 @immutable
 class AppSurfaceSettings {
   const AppSurfaceSettings({
@@ -70,14 +79,83 @@ class AppSurfaceSettings {
       areas[area] ?? AppAreaBackground.defaults;
 
   /// 某个区域实际使用的背景：follow 取全局，off 为无背景，custom 取区域
-  /// 自己的背景。
-  AppBackground backgroundFor(AppBackgroundArea area) {
-    final setting = areaOf(area);
-    return switch (setting.mode) {
+  /// 单独设置的背景（图片 / 参数按跟随取值，见 [resolvedCustom]）。
+  AppBackground backgroundFor(AppBackgroundArea area) =>
+      _resolveArea(area, <AppBackgroundArea>{});
+
+  /// [area] 单独设置的背景按跟随解析后的结果，不看区域当前的取值方式——
+  /// 编辑器在切换取值方式的收起动画里仍按单独设置显示。
+  AppBackground resolvedCustom(AppBackgroundArea area) =>
+      _resolveCustom(area, <AppBackgroundArea>{area});
+
+  /// [source] 当前显示的背景（全局即全局背景，区域同 [backgroundFor]）。
+  AppBackground backgroundOfSource(AppBackgroundSource source) {
+    final area = source.area;
+    return area == null ? global : backgroundFor(area);
+  }
+
+  /// [area] 能否以 [source] 为跟随来源：不能是自己，也不能是来源链（沿各
+  /// 区域保存的来源一路往下）会绕回 [area] 的区域。
+  ///
+  /// 来源链按保存的来源判断，不管那些区域此刻是否单独设置、是否打开了跟随：
+  /// 它们随时可能切回来，到时候不能突然成环。
+  bool canFollow(AppBackgroundArea area, AppBackgroundSource source) {
+    final seen = <AppBackgroundArea>{};
+    var next = source.area;
+    while (next != null) {
+      if (next == area) return false;
+      // 已有的环（只可能来自手改的备份）不会经过 area，走到这里即可停下。
+      if (!seen.add(next)) return true;
+      next = areaOf(next).source.area;
+    }
+    return true;
+  }
+
+  /// [visiting]：这条来源链上已经解析过的区域（防环）。
+  AppBackground _resolveArea(
+    AppBackgroundArea area,
+    Set<AppBackgroundArea> visiting,
+  ) {
+    return switch (areaOf(area).mode) {
       AppAreaBackgroundMode.follow => global,
       AppAreaBackgroundMode.off => AppBackground.defaults,
-      AppAreaBackgroundMode.custom => setting.custom,
+      AppAreaBackgroundMode.custom => _resolveCustom(area, visiting..add(area)),
     };
+  }
+
+  AppBackground _resolveCustom(
+    AppBackgroundArea area,
+    Set<AppBackgroundArea> visiting,
+  ) {
+    final setting = areaOf(area);
+    final own = setting.custom;
+    if (!setting.followsSource) return own;
+    final sourceArea = setting.source.area;
+    final AppBackground from;
+    if (sourceArea == null) {
+      from = global;
+    } else if (visiting.contains(sourceArea)) {
+      // 成环：不再跟随，用自己的那一份。
+      return own;
+    } else {
+      from = _resolveArea(sourceArea, visiting);
+    }
+    var result = own;
+    if (setting.followImage) {
+      result = result.copyWith(
+        image: () => from.kind == AppBackgroundKind.image ? from.image : null,
+      );
+    }
+    if (setting.followParams) {
+      result = result.copyWith(
+        alignX: from.alignX,
+        alignY: from.alignY,
+        blur: from.blur,
+        scrimLight: from.scrimLight,
+        scrimDark: from.scrimDark,
+      );
+    }
+    return result;
   }
 
   /// 设置里提到的全部背景图文件名，供清理托管目录时保留。
@@ -143,14 +221,18 @@ class AppSurfaceSettings {
     glass,
   );
 
-  /// 解码区域表：认不出的区域键整项忽略，与默认相同的项不存。
+  /// 解码区域表：认不出的区域键整项忽略，与默认相同的项不存；以自己为
+  /// 来源的（手改的备份）改回全局。
   static Map<AppBackgroundArea, AppAreaBackground> _decodeAreas(Object? raw) {
     final json = StyleJson.map(raw);
     if (json == null) return const <AppBackgroundArea, AppAreaBackground>{};
     final result = <AppBackgroundArea, AppAreaBackground>{};
     for (final area in AppBackgroundArea.values) {
       if (!json.containsKey(area.name)) continue;
-      final value = AppAreaBackground.fromJson(json[area.name]);
+      var value = AppAreaBackground.fromJson(json[area.name]);
+      if (value.source.area == area) {
+        value = value.copyWith(source: AppBackgroundSource.global);
+      }
       if (!value.isDefault) result[area] = value;
     }
     return Map.unmodifiable(result);

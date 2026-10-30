@@ -10,16 +10,20 @@ import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_reveal.dart';
 import '../../widgets/style_editor/style_color_dialog.dart';
 import '../../widgets/style_editor/style_custom_color_tile.dart';
+import 'app_surface_follow_source.dart';
 import 'app_surface_image_section.dart';
 import 'app_surface_labels.dart';
 
 /// 一块背景的编辑器（全局背景与区域“单独设置”共用）：类型 [无 | 颜色 |
-/// 图片]，颜色时展开颜色行，图片时展开图片、焦点与滑块。
+/// 图片]，颜色时展开颜色行；图片时在下面展开“图片”与“参数”两个分组
+/// （[AppSurfaceImageSection]），区域的类型分组里还多出“跟随来源”一行
+/// （[AppSurfaceFollowSourceTile]），两个分组各自可以跟随它。
 ///
 /// 颜色与图片两组字段都保留：切换类型只改 `kind`，切回来之前调好的颜色、
 /// 图片与焦点都还在（与模型语义一致）。类型相关的行与类型选择器合在分组
 /// 里的同一项，经 [SettingsReveal] 展开收起（分组按位置复用子项，单独增删
-/// 会多出分割线、让后面的行接手前一行的状态）。
+/// 会多出分割线、让后面的行接手前一行的状态）；图片的两个分组连同它们
+/// 上方的间距一起展开收起。
 class AppSurfaceBackgroundEditor extends StatelessWidget {
   const AppSurfaceBackgroundEditor({
     super.key,
@@ -62,9 +66,10 @@ class AppSurfaceBackgroundEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final area = this.area;
     final background = controller.backgroundOf(area);
     final kind = background.kind;
-    return SettingsCardGroup(
+    final group = SettingsCardGroup(
       title: title,
       footer: footer,
       children: <Widget>[
@@ -116,22 +121,33 @@ class AppSurfaceBackgroundEditor extends StatelessWidget {
                 ],
               ),
             ),
-            SettingsReveal(
-              visible: kind == AppBackgroundKind.image,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  const SettingsCardGroupDivider(),
-                  AppSurfaceImageSection(
-                    controller: controller,
-                    area: area,
-                    background: background,
-                  ),
-                ],
+            if (area != null)
+              SettingsReveal(
+                visible: kind == AppBackgroundKind.image,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    const SettingsCardGroupDivider(),
+                    AppSurfaceFollowSourceTile(
+                      controller: controller,
+                      area: area,
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
+        ),
+      ],
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        group,
+        SettingsReveal(
+          visible: kind == AppBackgroundKind.image,
+          child: AppSurfaceImageSection(controller: controller, area: area),
         ),
       ],
     );

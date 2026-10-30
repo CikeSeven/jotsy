@@ -4,10 +4,21 @@
 /// 只能在末尾追加新值，旧版本读到不认识的值时回退该字段的默认值。
 library;
 
-/// 整页配色基调：[app] 跟随应用主题色；[mood] 取这篇日记心情对应的颜色；
-/// [tag] 取首个标签的颜色；[custom] 为自定义色。没有心情、标签或自定义色时
-/// 回到应用主题色。
+/// 整页配色基调：[app] 跟随应用主题色；[mood] 取这篇日记心情对应的颜色
+/// （心情色板，见 `DiaryMoodPalette`）；[tag] 取首个标签的颜色；[custom] 为
+/// 自定义色。没有心情或标签时按 [DiaryPreviewSeedFallback] 回退，没有自定义
+/// 色时回到应用主题色。
 enum DiaryPreviewColorSeed { app, mood, tag, custom }
+
+/// 着色强度：由基调颜色装配整页主题所用的配色方案。[soft] 为 tonalSpot（与
+/// 应用主题同样克制，改版前的样子）；[original] 为 fidelity，贴近基调颜色
+/// 本身的浓淡（偏灰的颜色仍是灰调）；[vivid] 为 vibrant，最饱和。
+enum DiaryPreviewSeedIntensity { soft, original, vivid }
+
+/// 取不到基调颜色时（基调为心情而这篇没选心情，或为首个标签而没有标签）：
+/// [app] 沿用应用主题（改版前的样子）；[neutral] 换成由应用主题色推出的
+/// 低饱和灰调主题。
+enum DiaryPreviewSeedFallback { app, neutral }
 
 /// 纸张（页面底色）：[theme] 为主题底色（改版前的样子），其余为内置纸色与
 /// 自定义色。纸色与主题深浅相反时整页换成同一配色的另一种明暗，保证文字可读。

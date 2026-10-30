@@ -19,6 +19,7 @@ import '../../settings/providers/app_features_provider.dart';
 import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../providers/diary_card_style_provider.dart';
+import '../providers/diary_mood_palette_provider.dart';
 import '../providers/diary_comments_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
@@ -326,8 +327,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                                       cardStyle: ref.watch(
                                         diaryCardStyleProvider,
                                       ),
-                                      moodOptions: ref.watch(
-                                        diaryCardMoodOptionsProvider,
+                                      moodPalette: ref.watch(
+                                        diaryMoodPaletteProvider,
                                       ),
                                       onCreate: () {},
                                       onOpenEditor: (diary, coverHero) =>

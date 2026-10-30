@@ -5,11 +5,17 @@ import 'expressive_surfaces.dart';
 
 part 'theme_color_schemes.dart';
 
-/// 由种子色装配应用的亮/暗主题：tonalSpot 动态配色 + Material 2021 字阶。
+/// 由种子色装配应用的亮/暗主题：动态配色 + Material 2021 字阶。
 ///
 /// 应用外壳与设置页里的明暗预览共用同一装配，预览看到的就是切换主题后的
-/// 真实效果。
-ThemeData buildSeededAppTheme(Color seedColor, Brightness brightness) {
+/// 真实效果。应用外壳始终是 tonalSpot；[variant] 只供预览页“着色强度”与
+/// “中性灰”回退换用别的配色方案（tonalSpot 只取种子色的色相，fidelity 保留
+/// 种子色的浓淡，vibrant 最饱和，neutral 为低饱和的灰调）。
+ThemeData buildSeededAppTheme(
+  Color seedColor,
+  Brightness brightness, {
+  DynamicSchemeVariant variant = DynamicSchemeVariant.tonalSpot,
+}) {
   return MaterialTheme(
     brightness == Brightness.light
         ? Typography.material2021().black
@@ -18,7 +24,7 @@ ThemeData buildSeededAppTheme(Color seedColor, Brightness brightness) {
     ColorScheme.fromSeed(
       seedColor: seedColor,
       brightness: brightness,
-      dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
+      dynamicSchemeVariant: variant,
     ),
   );
 }

@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/models/diary_preview_style/diary_preview_style.dart';
-import '../../../diaries/viewmodels/diary_card_colors.dart';
-import '../../../diaries/viewmodels/diary_preview_resolved_style.dart';
-import '../../../widgets/color_swatch_button.dart';
 import '../../../widgets/expressive_button_group.dart';
-import '../../../widgets/expressive_icon_choice_row.dart';
 import '../../controllers/diary_preview_style_editor_controller.dart';
 import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
-import '../../widgets/style_editor/style_custom_color_tile.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import '../diary_card_style/diary_card_style_labels.dart';
-import 'diary_preview_style_labels.dart';
+import 'diary_preview_style_color_group.dart';
 
 /// “页面”标签页：配色基调、纸张与正文颜色，边距与正文宽度，顶栏，阅读
 /// 辅助（进度线、回到顶部）。
@@ -23,142 +17,19 @@ class DiaryPreviewStylePageTab extends StatelessWidget {
 
   final DiaryPreviewStyleEditorController controller;
 
-  /// 自定义颜色初次打开时的初始值：取当前主题主色。
-  static int _initialColor(BuildContext context) =>
-      Theme.of(context).colorScheme.primary.toARGB32();
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final page = controller.style.page;
-    final scheme = Theme.of(context).colorScheme;
-    final light = scheme.brightness == Brightness.light;
 
     void commit(DiaryPreviewPageStyle next) =>
         controller.commitWith((style) => style.copyWith(page: next));
     void preview(DiaryPreviewPageStyle next) =>
         controller.previewWith((style) => style.copyWith(page: next));
 
-    Color paperSwatch(DiaryPreviewPaper paper) {
-      final preset = DiaryPreviewResolvedStyle.paperColors[paper];
-      if (preset != null) {
-        return Color(light ? preset.$1 : preset.$2);
-      }
-      return scheme.surface;
-    }
-
     return StyleEditorTabList(
       children: <Widget>[
-        SettingsCardGroup(
-          title: l10n.diaryPreviewStyleColorGroup,
-          footer: l10n.diaryPreviewStylePaperHint,
-          children: <Widget>[
-            SettingsChoiceTile(
-              title: l10n.diaryPreviewStyleColorSeed,
-              subtitle: l10n.diaryPreviewStyleSeedHint,
-              child: ExpressiveIconChoiceRow<DiaryPreviewColorSeed>(
-                choices: diaryPreviewSeedChoices(l10n),
-                selected: page.colorSeed,
-                onSelected: (DiaryPreviewColorSeed seed) => commit(
-                  page.copyWith(
-                    colorSeed: seed,
-                    seedColor:
-                        seed == DiaryPreviewColorSeed.custom &&
-                            page.seedColor == null
-                        ? () => _initialColor(context)
-                        : null,
-                  ),
-                ),
-              ),
-            ),
-            if (page.colorSeed == DiaryPreviewColorSeed.custom)
-              StyleCustomColorTile(
-                title: l10n.diaryPreviewStyleSeedColor,
-                light: page.seedColor ?? _initialColor(context),
-                dark: null,
-                role: DiaryCardColorRole.accent,
-                onChanged: (color) =>
-                    commit(page.copyWith(seedColor: () => color.light)),
-              ),
-            SettingsChoiceTile(
-              title: l10n.diaryPreviewStylePaper,
-              child: Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                children: <Widget>[
-                  for (final paper in DiaryPreviewPaper.values)
-                    if (paper == DiaryPreviewPaper.custom)
-                      Tooltip(
-                        message: diaryPreviewPaperLabel(l10n, paper),
-                        child: IconButton.outlined(
-                          isSelected: page.paper == paper,
-                          // 第一次选自定义时从暖白纸起调（浅色值）。
-                          onPressed: () => commit(
-                            page.copyWith(
-                              paper: paper,
-                              paperLight: page.paperLight == null
-                                  ? () => DiaryPreviewResolvedStyle
-                                        .paperColors[DiaryPreviewPaper.warm]!
-                                        .$1
-                                  : null,
-                            ),
-                          ),
-                          icon: const FaIcon(
-                            FontAwesomeIcons.eyeDropper,
-                            size: 16,
-                          ),
-                        ),
-                      )
-                    else
-                      ColorSwatchButton(
-                        color: paperSwatch(paper),
-                        selected: page.paper == paper,
-                        semanticLabel: diaryPreviewPaperLabel(l10n, paper),
-                        onTap: () => commit(page.copyWith(paper: paper)),
-                      ),
-                ],
-              ),
-            ),
-            if (page.paper == DiaryPreviewPaper.custom &&
-                page.paperLight != null)
-              StyleCustomColorTile(
-                title: l10n.diaryPreviewStylePaperColor,
-                light: page.paperLight!,
-                dark: page.paperDark,
-                role: DiaryCardColorRole.surface,
-                onChanged: (color) => commit(
-                  page.copyWith(
-                    paperLight: () => color.light,
-                    paperDark: () => color.dark,
-                  ),
-                ),
-              ),
-            SettingsSwitchTile(
-              title: l10n.diaryPreviewStyleTextColor,
-              subtitle: l10n.diaryPreviewStyleTextColorHint,
-              value: page.textLight != null,
-              onChanged: (bool on) => commit(
-                page.copyWith(
-                  textLight: () => on ? scheme.onSurface.toARGB32() : null,
-                  textDark: () => null,
-                ),
-              ),
-            ),
-            if (page.textLight != null)
-              StyleCustomColorTile(
-                title: l10n.diaryPreviewStyleTextColor,
-                light: page.textLight!,
-                dark: page.textDark,
-                role: DiaryCardColorRole.text,
-                onChanged: (color) => commit(
-                  page.copyWith(
-                    textLight: () => color.light,
-                    textDark: () => color.dark,
-                  ),
-                ),
-              ),
-          ],
-        ),
+        DiaryPreviewStyleColorGroup(controller: controller),
         SettingsCardGroup(
           title: l10n.diaryPreviewStyleLayoutGroup,
           children: <Widget>[

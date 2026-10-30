@@ -361,7 +361,7 @@ extension _CalendarPageSections on _CalendarPageState {
               ref.watch(diaryCardTagLimitProvider).asData?.value ??
               SettingsService.defaultDiaryCardTagLimit,
           cardStyle: ref.watch(diaryCardStyleProvider),
-          moodOptions: ref.watch(diaryCardMoodOptionsProvider),
+          moodPalette: ref.watch(diaryMoodPaletteProvider),
           commentCounts:
               ref.watch(diaryCommentCountsProvider).value ??
               const <String, int>{},

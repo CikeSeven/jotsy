@@ -229,7 +229,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsMoodOptionsTitle => 'Mood emojis';
 
   @override
-  String get settingsMoodOptionsSubtitle => 'Customize 10 mood choices';
+  String get settingsMoodOptionsSubtitle =>
+      'Customize the emoji and color of 10 moods';
 
   @override
   String settingsMoodOptionsSlotLabel(String index) {
@@ -240,6 +241,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsMoodOptionsSlotHelper(String emoji) {
     return 'Default: $emoji';
   }
+
+  @override
+  String settingsMoodOptionsColorLabel(String index) {
+    return 'Color of mood $index';
+  }
+
+  @override
+  String get settingsMoodOptionsColorsHint =>
+      'Colors are used by the Mood color basis on the reading page and by mood colors on diary cards. Tap the swatch next to an emoji to change it.';
 
   @override
   String settingsMoodOptionsSaveFailed(String error) {
@@ -4016,7 +4026,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryCardStyleSourceMoodHint =>
-      'Uses each entry\'s mood, or the default color when there is none';
+      'Uses each entry\'s mood color (editable in Mood emojis), or the default color when there is none';
 
   @override
   String get diaryCardStyleSourceTagHint =>
@@ -4257,7 +4267,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPreviewStylePresetMoodDesc =>
-      'The page takes the entry’s mood color';
+      'The page and paper take the entry’s mood color';
 
   @override
   String get diaryPreviewStylePresetImmersive => 'Immersive';
@@ -4285,11 +4295,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPreviewStyleSeedCustom => 'Custom';
 
   @override
-  String get diaryPreviewStyleSeedHint =>
-      'Entries without a mood or tag use the app color.';
+  String get diaryPreviewStyleSeedColor => 'Basis color';
 
   @override
-  String get diaryPreviewStyleSeedColor => 'Basis color';
+  String get diaryPreviewStyleSeedAppHint => 'Same as the app\'s theme color.';
+
+  @override
+  String get diaryPreviewStyleSeedMoodHint =>
+      'Takes the color of the entry\'s mood; each of the 10 moods has its own.';
+
+  @override
+  String get diaryPreviewStyleSeedTagHint =>
+      'Takes the color of the entry\'s first tag.';
+
+  @override
+  String get diaryPreviewStyleSeedCustomHint =>
+      'Every entry uses the same color.';
+
+  @override
+  String get diaryPreviewStyleSeedIntensity => 'Color intensity';
+
+  @override
+  String get diaryPreviewStyleSeedIntensityHint =>
+      'Soft is as restrained as the app theme; True color follows the color’s own depth; Vivid is the most saturated.';
+
+  @override
+  String get diaryPreviewStyleSeedIntensitySoft => 'Soft';
+
+  @override
+  String get diaryPreviewStyleSeedIntensityOriginal => 'True color';
+
+  @override
+  String get diaryPreviewStyleSeedIntensityVivid => 'Vivid';
+
+  @override
+  String get diaryPreviewStyleSeedFallback => 'When there\'s no color';
+
+  @override
+  String get diaryPreviewStyleSeedFallbackHint =>
+      'Colors for entries without a mood or tag.';
+
+  @override
+  String get diaryPreviewStyleSeedFallbackApp => 'App theme';
+
+  @override
+  String get diaryPreviewStyleSeedFallbackNeutral => 'Neutral gray';
+
+  @override
+  String get diaryPreviewStyleTintPaper => 'Tint the paper';
+
+  @override
+  String get diaryPreviewStyleTintPaperHint =>
+      'The page background takes a light wash of the basis color';
+
+  @override
+  String get diaryPreviewStyleMoodColors => 'Mood colors';
+
+  @override
+  String get diaryPreviewStyleMoodColorsHint =>
+      'Change each mood\'s color in Mood emojis';
+
+  @override
+  String get diaryPreviewStylePreviewMood => 'Preview mood';
+
+  @override
+  String get diaryPreviewStylePreviewMoodHint =>
+      'Only changes the sample’s mood in the preview above';
+
+  @override
+  String get diaryPreviewStylePreviewMoodSample => 'As in sample';
 
   @override
   String get diaryPreviewStylePaper => 'Paper';

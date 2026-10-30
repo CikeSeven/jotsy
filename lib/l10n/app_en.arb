@@ -286,7 +286,7 @@
   "@settingsMoodOptionsTitle": {
     "description": "Setting title for customizing the fixed 10 mood emojis."
   },
-  "settingsMoodOptionsSubtitle": "Customize 10 mood choices",
+  "settingsMoodOptionsSubtitle": "Customize the emoji and color of 10 moods",
   "@settingsMoodOptionsSubtitle": {
     "description": "Subtitle for mood emoji setting entry."
   },
@@ -307,6 +307,19 @@
       }
     },
     "description": "Helper text showing the default emoji for one slot."
+  },
+  "settingsMoodOptionsColorLabel": "Color of mood {index}",
+  "@settingsMoodOptionsColorLabel": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    },
+    "description": "Mood emojis page: semantics label and color dialog title for one mood color."
+  },
+  "settingsMoodOptionsColorsHint": "Colors are used by the Mood color basis on the reading page and by mood colors on diary cards. Tap the swatch next to an emoji to change it.",
+  "@settingsMoodOptionsColorsHint": {
+    "description": "Mood emojis page: note under the mood color strip."
   },
   "settingsMoodOptionsSaveFailed": "Save mood emojis failed: {error}",
   "@settingsMoodOptionsSaveFailed": {
@@ -5115,7 +5128,7 @@
   "@diaryCardStyleSourceCustom": {
     "description": "Diary card style settings: color source: a custom color."
   },
-  "diaryCardStyleSourceMoodHint": "Uses each entry's mood, or the default color when there is none",
+  "diaryCardStyleSourceMoodHint": "Uses each entry's mood color (editable in Mood emojis), or the default color when there is none",
   "@diaryCardStyleSourceMoodHint": {
     "description": "Diary card style settings: note on the mood color source."
   },
@@ -5408,7 +5421,7 @@
   "@diaryPreviewStylePresetMood": {
     "description": "Diary preview style settings: preset name."
   },
-  "diaryPreviewStylePresetMoodDesc": "The page takes the entry’s mood color",
+  "diaryPreviewStylePresetMoodDesc": "The page and paper take the entry’s mood color",
   "@diaryPreviewStylePresetMoodDesc": {
     "description": "Diary preview style settings: preset description."
   },
@@ -5444,13 +5457,89 @@
   "@diaryPreviewStyleSeedCustom": {
     "description": "Diary preview style settings: color basis option."
   },
-  "diaryPreviewStyleSeedHint": "Entries without a mood or tag use the app color.",
-  "@diaryPreviewStyleSeedHint": {
-    "description": "Diary preview style settings: note under the color basis."
-  },
   "diaryPreviewStyleSeedColor": "Basis color",
   "@diaryPreviewStyleSeedColor": {
     "description": "Diary preview style settings: custom color basis picker."
+  },
+  "diaryPreviewStyleSeedAppHint": "Same as the app's theme color.",
+  "@diaryPreviewStyleSeedAppHint": {
+    "description": "Diary preview style settings: note for the App theme color basis."
+  },
+  "diaryPreviewStyleSeedMoodHint": "Takes the color of the entry's mood; each of the 10 moods has its own.",
+  "@diaryPreviewStyleSeedMoodHint": {
+    "description": "Diary preview style settings: note for the Mood color basis."
+  },
+  "diaryPreviewStyleSeedTagHint": "Takes the color of the entry's first tag.",
+  "@diaryPreviewStyleSeedTagHint": {
+    "description": "Diary preview style settings: note for the First tag color basis."
+  },
+  "diaryPreviewStyleSeedCustomHint": "Every entry uses the same color.",
+  "@diaryPreviewStyleSeedCustomHint": {
+    "description": "Diary preview style settings: note for the Custom color basis."
+  },
+  "diaryPreviewStyleSeedIntensity": "Color intensity",
+  "@diaryPreviewStyleSeedIntensity": {
+    "description": "Diary preview style settings: how strongly the basis color tints the page."
+  },
+  "diaryPreviewStyleSeedIntensityHint": "Soft is as restrained as the app theme; True color follows the color’s own depth; Vivid is the most saturated.",
+  "@diaryPreviewStyleSeedIntensityHint": {
+    "description": "Diary preview style settings: note under Color intensity."
+  },
+  "diaryPreviewStyleSeedIntensitySoft": "Soft",
+  "@diaryPreviewStyleSeedIntensitySoft": {
+    "description": "Diary preview style settings: color intensity option (same scheme as the app theme)."
+  },
+  "diaryPreviewStyleSeedIntensityOriginal": "True color",
+  "@diaryPreviewStyleSeedIntensityOriginal": {
+    "description": "Diary preview style settings: color intensity option (follows the color’s own saturation)."
+  },
+  "diaryPreviewStyleSeedIntensityVivid": "Vivid",
+  "@diaryPreviewStyleSeedIntensityVivid": {
+    "description": "Diary preview style settings: color intensity option (most saturated)."
+  },
+  "diaryPreviewStyleSeedFallback": "When there's no color",
+  "@diaryPreviewStyleSeedFallback": {
+    "description": "Diary preview style settings: colors for entries without a mood or tag."
+  },
+  "diaryPreviewStyleSeedFallbackHint": "Colors for entries without a mood or tag.",
+  "@diaryPreviewStyleSeedFallbackHint": {
+    "description": "Diary preview style settings: note under When there's no color."
+  },
+  "diaryPreviewStyleSeedFallbackApp": "App theme",
+  "@diaryPreviewStyleSeedFallbackApp": {
+    "description": "Diary preview style settings: fallback option: keep the app theme."
+  },
+  "diaryPreviewStyleSeedFallbackNeutral": "Neutral gray",
+  "@diaryPreviewStyleSeedFallbackNeutral": {
+    "description": "Diary preview style settings: fallback option: a low-saturation gray scheme."
+  },
+  "diaryPreviewStyleTintPaper": "Tint the paper",
+  "@diaryPreviewStyleTintPaper": {
+    "description": "Diary preview style settings: switch: wash the theme paper with the basis color."
+  },
+  "diaryPreviewStyleTintPaperHint": "The page background takes a light wash of the basis color",
+  "@diaryPreviewStyleTintPaperHint": {
+    "description": "Diary preview style settings: subtitle of Tint the paper."
+  },
+  "diaryPreviewStyleMoodColors": "Mood colors",
+  "@diaryPreviewStyleMoodColors": {
+    "description": "Diary preview style settings: link to the mood emojis page to change mood colors."
+  },
+  "diaryPreviewStyleMoodColorsHint": "Change each mood's color in Mood emojis",
+  "@diaryPreviewStyleMoodColorsHint": {
+    "description": "Diary preview style settings: subtitle of the Mood colors link."
+  },
+  "diaryPreviewStylePreviewMood": "Preview mood",
+  "@diaryPreviewStylePreviewMood": {
+    "description": "Diary preview style settings: which mood the sample in the preview uses."
+  },
+  "diaryPreviewStylePreviewMoodHint": "Only changes the sample’s mood in the preview above",
+  "@diaryPreviewStylePreviewMoodHint": {
+    "description": "Diary preview style settings: note under Preview mood."
+  },
+  "diaryPreviewStylePreviewMoodSample": "As in sample",
+  "@diaryPreviewStylePreviewMoodSample": {
+    "description": "Diary preview style settings: preview mood option: use the sample's own mood."
   },
   "diaryPreviewStylePaper": "Paper",
   "@diaryPreviewStylePaper": {

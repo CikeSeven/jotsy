@@ -23,6 +23,7 @@ import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';
 import '../providers/diary_card_style_provider.dart';
+import '../providers/diary_mood_palette_provider.dart';
 import '../providers/diary_comments_provider.dart';
 import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../sections/diary_head_section.dart';
@@ -298,8 +299,8 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                         cardStyle: ref.watch(
                                           diaryCardStyleProvider,
                                         ),
-                                        moodOptions: ref.watch(
-                                          diaryCardMoodOptionsProvider,
+                                        moodPalette: ref.watch(
+                                          diaryMoodPaletteProvider,
                                         ),
                                         onCreate: _controller.noopCreate,
                                         onOpenEditor: (diary, coverHero) =>

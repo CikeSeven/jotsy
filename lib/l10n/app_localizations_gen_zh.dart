@@ -213,7 +213,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsMoodOptionsTitle => '心情符号';
 
   @override
-  String get settingsMoodOptionsSubtitle => '自定义 10 个心情候选';
+  String get settingsMoodOptionsSubtitle => '自定义 10 个心情的符号与颜色';
 
   @override
   String settingsMoodOptionsSlotLabel(String index) {
@@ -224,6 +224,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String settingsMoodOptionsSlotHelper(String emoji) {
     return '默认：$emoji';
   }
+
+  @override
+  String settingsMoodOptionsColorLabel(String index) {
+    return '心情 $index 的颜色';
+  }
+
+  @override
+  String get settingsMoodOptionsColorsHint =>
+      '颜色用于日记预览页的“心情”配色基调和日记卡片的心情色。点符号左侧的色块修改。';
 
   @override
   String settingsMoodOptionsSaveFailed(String error) {
@@ -3604,7 +3613,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStyleSourceCustom => '自定义';
 
   @override
-  String get diaryCardStyleSourceMoodHint => '按每篇日记的心情取色；没有心情时用默认颜色';
+  String get diaryCardStyleSourceMoodHint =>
+      '按每篇日记的心情取色（颜色可在“心情符号”里修改）；没有心情时用默认颜色';
 
   @override
   String get diaryCardStyleSourceTagHint => '取每篇日记第一个标签的颜色';
@@ -3812,7 +3822,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryPreviewStylePresetMood => '心情色';
 
   @override
-  String get diaryPreviewStylePresetMoodDesc => '整页跟着这篇的心情换颜色';
+  String get diaryPreviewStylePresetMoodDesc => '整页与纸张跟着这篇的心情换颜色';
 
   @override
   String get diaryPreviewStylePresetImmersive => '沉浸';
@@ -3839,10 +3849,68 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryPreviewStyleSeedCustom => '自定义';
 
   @override
-  String get diaryPreviewStyleSeedHint => '没有心情或标签的日记沿用应用主题色。';
+  String get diaryPreviewStyleSeedColor => '基调颜色';
 
   @override
-  String get diaryPreviewStyleSeedColor => '基调颜色';
+  String get diaryPreviewStyleSeedAppHint => '与应用主题色一致。';
+
+  @override
+  String get diaryPreviewStyleSeedMoodHint => '按这篇日记的心情取色，十种心情各有颜色。';
+
+  @override
+  String get diaryPreviewStyleSeedTagHint => '按这篇日记第一个标签的颜色。';
+
+  @override
+  String get diaryPreviewStyleSeedCustomHint => '每篇日记都用同一种颜色。';
+
+  @override
+  String get diaryPreviewStyleSeedIntensity => '着色强度';
+
+  @override
+  String get diaryPreviewStyleSeedIntensityHint =>
+      '柔和与应用主题一样克制；原色贴近颜色本身的浓淡；鲜明最饱和。';
+
+  @override
+  String get diaryPreviewStyleSeedIntensitySoft => '柔和';
+
+  @override
+  String get diaryPreviewStyleSeedIntensityOriginal => '原色';
+
+  @override
+  String get diaryPreviewStyleSeedIntensityVivid => '鲜明';
+
+  @override
+  String get diaryPreviewStyleSeedFallback => '取不到颜色时';
+
+  @override
+  String get diaryPreviewStyleSeedFallbackHint => '没选心情或没有标签的日记用哪种配色。';
+
+  @override
+  String get diaryPreviewStyleSeedFallbackApp => '跟随应用';
+
+  @override
+  String get diaryPreviewStyleSeedFallbackNeutral => '中性灰';
+
+  @override
+  String get diaryPreviewStyleTintPaper => '纸张随基调染色';
+
+  @override
+  String get diaryPreviewStyleTintPaperHint => '页面底色带上一层淡淡的基调色';
+
+  @override
+  String get diaryPreviewStyleMoodColors => '心情颜色';
+
+  @override
+  String get diaryPreviewStyleMoodColorsHint => '在“心情符号”里为每种心情换颜色';
+
+  @override
+  String get diaryPreviewStylePreviewMood => '预览心情';
+
+  @override
+  String get diaryPreviewStylePreviewMoodHint => '只换上方预览里示例的心情，看看每种心情的样子';
+
+  @override
+  String get diaryPreviewStylePreviewMoodSample => '按示例';
 
   @override
   String get diaryPreviewStylePaper => '纸张';

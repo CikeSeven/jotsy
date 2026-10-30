@@ -15,7 +15,10 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_s
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_content.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_surface.dart';
 import 'package:node_diary/ui/settings/pages/diary_preview_style_page.dart';
+import 'package:node_diary/ui/settings/sections/diary_preview_style/diary_preview_style_labels.dart';
+import 'package:node_diary/ui/settings/sections/diary_preview_style/diary_preview_style_mood_picker.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_preview_style_tile.dart';
 import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -390,6 +393,86 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the mood basis reveals its options and previews any mood', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(
+      tester,
+      size: const Size(320, 860),
+    );
+    await _openTab(tester, l10n.diaryPreviewStyleTabPage);
+    expect(find.text(l10n.diaryPreviewStyleSeedIntensity), findsNothing);
+    expect(find.text(l10n.diaryPreviewStylePreviewMood), findsNothing);
+
+    await _tapVisible(tester, find.text(l10n.diaryPreviewStyleSeedMood));
+    expect(
+      _stored(settings).current.page.colorSeed,
+      DiaryPreviewColorSeed.mood,
+    );
+    expect(find.text(l10n.diaryPreviewStyleSeedMoodHint), findsOneWidget);
+
+    await _tapVisible(
+      tester,
+      find.text(l10n.diaryPreviewStyleSeedIntensityVivid),
+    );
+    await _tapVisible(
+      tester,
+      find.text(l10n.diaryPreviewStyleSeedFallbackNeutral),
+    );
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleTintPaper),
+    );
+    var page = _stored(settings).current.page;
+    expect(page.seedIntensity, DiaryPreviewSeedIntensity.vivid);
+    expect(page.seedFallback, DiaryPreviewSeedFallback.neutral);
+    expect(page.tintPaper, isTrue);
+
+    // 预览心情只换预览里的示例，不写设置。
+    Color previewPaper() => tester
+        .widget<Scaffold>(
+          find
+              .descendant(
+                of: find.byType(DiaryPreviewSurface),
+                matching: find.byType(Scaffold),
+              )
+              .first,
+        )
+        .backgroundColor!;
+    final before = previewPaper();
+    final stored = _stored(settings);
+    await _tapVisible(
+      tester,
+      find.descendant(
+        of: find.byType(DiaryPreviewMoodPicker),
+        matching: find.text('😭'),
+      ),
+    );
+    expect(previewPaper(), isNot(before));
+    expect(_stored(settings), stored);
+    await _tapVisible(
+      tester,
+      find.text(l10n.diaryPreviewStylePreviewMoodSample),
+    );
+    expect(previewPaper(), before);
+
+    // 选了纸色时染色开关收起；回到跟随应用时基调的从属项都收起。
+    await _tapVisible(
+      tester,
+      find.bySemanticsLabel(
+        diaryPreviewPaperLabel(l10n, DiaryPreviewPaper.warm),
+      ),
+    );
+    expect(find.text(l10n.diaryPreviewStyleTintPaper), findsNothing);
+    await _tapVisible(tester, find.text(l10n.diaryPreviewStyleSeedApp).first);
+    page = _stored(settings).current.page;
+    expect(page.colorSeed, DiaryPreviewColorSeed.app);
+    expect(find.text(l10n.diaryPreviewStyleSeedIntensity), findsNothing);
+    expect(find.text(l10n.diaryPreviewStyleSeedFallback), findsNothing);
+    expect(find.text(l10n.diaryPreviewStylePreviewMood), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   for (final brightness in Brightness.values) {

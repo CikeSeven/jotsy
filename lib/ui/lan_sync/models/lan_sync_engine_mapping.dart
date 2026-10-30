@@ -102,6 +102,7 @@ LanSyncPeerView lanSyncPeerViewOf(LanSyncPeerState peer) {
     pairedAt: device.pairedAt.toLocal(),
     online: peer.online,
     address: peer.address,
+    lastAddressKnown: device.lastHost != null && device.lastPort != null,
     lastSyncAt: device.lastSyncAt?.toLocal(),
     autoSync: device.autoSync,
     needsAttention: peer.needsAttention,

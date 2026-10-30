@@ -176,7 +176,8 @@ void main() {
       },
     );
 
-    test('reports a closed connection', () async {
+    test('reports a closed connection, noting nothing was received', () async {
+      // 经本机 VPN 时 connect 先成功、随后被断开：对方一个字节都没发过来。
       final (client, server) = await loopbackPair();
       server.destroy();
       await expectLater(
@@ -184,9 +185,35 @@ void main() {
           alice,
           'A',
         ).initiate(client, LanSyncSyncInitiation(isTrusted: (_, _) => true)),
-        throwsA(failsWith(LanSyncHandshakeFailure.connectionClosed)),
+        throwsA(
+          failsWith(
+            LanSyncHandshakeFailure.connectionClosed,
+          ).having((e) => e.nothingReceived, 'nothingReceived', isTrue),
+        ),
       );
     });
+
+    test(
+      'a connection closed after the peer spoke is not “nothing received”',
+      () async {
+        final (client, server) = await loopbackPair();
+        // 对方回了半帧就断开。
+        server.add(<int>[0, 0, 0, 40, 1, 2, 3]);
+        await server.flush();
+        server.destroy();
+        await expectLater(
+          testHandshake(
+            alice,
+            'A',
+          ).initiate(client, LanSyncSyncInitiation(isTrusted: (_, _) => true)),
+          throwsA(
+            failsWith(
+              LanSyncHandshakeFailure.connectionClosed,
+            ).having((e) => e.nothingReceived, 'nothingReceived', isFalse),
+          ),
+        );
+      },
+    );
 
     test('rejects a different protocol version and says which', () async {
       final (client, server) = await loopbackPair();

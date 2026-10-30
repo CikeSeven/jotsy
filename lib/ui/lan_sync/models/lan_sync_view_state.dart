@@ -101,6 +101,7 @@ class LanSyncPeerView {
     this.alias,
     this.online = false,
     this.address,
+    this.lastAddressKnown = false,
     this.lastSyncAt,
     this.autoSync = true,
     this.needsAttention = false,
@@ -122,6 +123,9 @@ class LanSyncPeerView {
 
   /// 在线时的地址；离线时可能是上次见到的地址或 null。
   final String? address;
+
+  /// 知道上次连上它的地址与端口：离线时仍可手动同步（按上次的地址连接）。
+  final bool lastAddressKnown;
   final DateTime pairedAt;
 
   /// 上次成功同步的时间；从没同步过为 null。
@@ -140,6 +144,9 @@ class LanSyncPeerView {
   /// 同步记录，新的在前（设备详情页最多显示 20 条）。
   final List<LanSyncHistoryEntryView> history;
 
+  /// 能不能点“同步”：在线，或离线但知道上次的地址。
+  bool get canSync => online || lastAddressKnown;
+
   /// 界面上显示的名称：本机备注名优先，空白备注按没有处理。
   String get displayName {
     final trimmed = alias?.trim();
@@ -152,6 +159,7 @@ class LanSyncPeerView {
     LanSyncPlatform? platform,
     bool? online,
     String? Function()? address,
+    bool? lastAddressKnown,
     DateTime? pairedAt,
     DateTime? Function()? lastSyncAt,
     bool? autoSync,
@@ -166,6 +174,7 @@ class LanSyncPeerView {
       platform: platform ?? this.platform,
       online: online ?? this.online,
       address: address == null ? this.address : address(),
+      lastAddressKnown: lastAddressKnown ?? this.lastAddressKnown,
       pairedAt: pairedAt ?? this.pairedAt,
       lastSyncAt: lastSyncAt == null ? this.lastSyncAt : lastSyncAt(),
       autoSync: autoSync ?? this.autoSync,
@@ -184,6 +193,7 @@ class LanSyncPeerView {
       other.platform == platform &&
       other.online == online &&
       other.address == address &&
+      other.lastAddressKnown == lastAddressKnown &&
       other.pairedAt == pairedAt &&
       other.lastSyncAt == lastSyncAt &&
       other.autoSync == autoSync &&
@@ -199,6 +209,7 @@ class LanSyncPeerView {
     platform,
     online,
     address,
+    lastAddressKnown,
     pairedAt,
     lastSyncAt,
     autoSync,

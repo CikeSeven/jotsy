@@ -18191,7 +18191,7 @@ abstract class AppLocalizations {
   /// Pairing failure reason: the other device could not be reached.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi.'**
+  /// **'Couldn\'t reach the other device. Check the address and port, and make sure both are on the same Wi-Fi with no VPN on.'**
   String get lanSyncPairFailUnreachable;
 
   /// Pairing failure reason: the connection was lost.
@@ -18575,7 +18575,7 @@ abstract class AppLocalizations {
   /// Failed sync: unreachable, with the next step.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi and Jotsy is open there.'**
+  /// **'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi with no VPN on, and Jotsy is open there.'**
   String get lanSyncSyncFailUnreachable;
 
   /// Failed sync: connection lost, with the next step.
@@ -18949,6 +18949,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Device is offline'**
   String get lanSyncDeviceOffline;
+
+  /// Caption under the sync button on the device page when the peer is offline but its last address is known.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — the last known address will be tried'**
+  String get lanSyncOfflineUseLastAddress;
 
   /// Subtitle of the per-device auto sync switch.
   ///

@@ -161,6 +161,7 @@ class LanSyncHandshakeException implements Exception {
     this.peer,
     this.peerProtocolVersion,
     this.detail,
+    this.nothingReceived = false,
   });
 
   final LanSyncHandshakeFailure reason;
@@ -176,8 +177,16 @@ class LanSyncHandshakeException implements Exception {
 
   final String? detail;
 
+  /// 连接断开（[LanSyncHandshakeFailure.connectionClosed]）时对方一个字节都
+  /// 还没发过来：多半根本没连到对方——本机或对方的 VPN / 代理先接下了连接
+  /// 又断开，或地址、端口指向了别的程序。界面按“连不上”说明，而不是
+  /// “连接中断了”。
+  final bool nothingReceived;
+
   @override
   String toString() =>
       'LanSyncHandshakeException(${reason.name}'
-      '${byPeer ? ', by peer' : ''}${detail == null ? '' : ': $detail'})';
+      '${byPeer ? ', by peer' : ''}'
+      '${nothingReceived ? ', nothing received' : ''}'
+      '${detail == null ? '' : ': $detail'})';
 }

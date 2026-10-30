@@ -1,6 +1,8 @@
 // 设备详情页的英雄卡（DESIGN.md §5.28“设备详情页”）：88dp 九瓣饼干形设备
 // 图标、名称 24 / w800、在线 / 离线与平台胶囊、三格信息（上次同步 / 配对于 /
-// 地址），底部整宽“立即同步”（52 高；离线时不可点并显示“设备不在线”）。
+// 地址），底部整宽“立即同步”（52 高；离线、也不知道上次的地址时不可点并
+// 显示“设备不在线”；离线但知道上次的地址时照常可点，按钮下一行灰字说明会
+// 按上次的地址连接——对方开着 VPN 时可能一直“离线”，却连得上）。
 //
 // 正在同步时按钮位置换成与同步页同一个会话面板，下面一枚灰色文本“取消”
 // （同步页设备行的“取消”在这里没有行可挂）；两种内容交叉淡入，卡片高度
@@ -72,14 +74,33 @@ class LanSyncDeviceHero extends StatelessWidget {
         ],
       );
     } else {
-      action = FilledButton(
+      final button = FilledButton(
         key: const ValueKey<String>('lanSyncDeviceSyncButton'),
         style: FilledButton.styleFrom(minimumSize: const Size(0, 52)),
-        onPressed: peer.online ? onSyncNow : null,
+        onPressed: peer.canSync ? onSyncNow : null,
         child: Text(
-          peer.online ? l10n.lanSyncPairSyncNow : l10n.lanSyncDeviceOffline,
+          peer.canSync ? l10n.lanSyncPairSyncNow : l10n.lanSyncDeviceOffline,
         ),
       );
+      action = peer.online || !peer.canSync
+          ? button
+          : Column(
+              key: const ValueKey<String>('lanSyncDeviceSyncLastAddress'),
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                button,
+                const SizedBox(height: 8),
+                Text(
+                  l10n.lanSyncOfflineUseLastAddress,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 13,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            );
     }
     return AppCardSurface(
       child: Padding(

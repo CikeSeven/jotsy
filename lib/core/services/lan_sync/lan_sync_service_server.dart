@@ -228,6 +228,9 @@ LanSyncFailure _pairingFailure(
     LanSyncHandshakeFailure.timeout => LanSyncFailure.timedOut,
     LanSyncHandshakeFailure.tokenRejected => LanSyncFailure.ticketExpired,
     LanSyncHandshakeFailure.protocolError => LanSyncFailure.protocolError,
-    LanSyncHandshakeFailure.connectionClosed => LanSyncFailure.connectionLost,
+    LanSyncHandshakeFailure.connectionClosed =>
+      error.nothingReceived
+          ? LanSyncFailure.unreachable
+          : LanSyncFailure.connectionLost,
   };
 }

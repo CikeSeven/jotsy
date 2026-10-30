@@ -11119,7 +11119,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lanSyncPairFailUnreachable =>
-      'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi.';
+      'Couldn\'t reach the other device. Check the address and port, and make sure both are on the same Wi-Fi with no VPN on.';
 
   @override
   String get lanSyncPairFailConnectionLost =>
@@ -11394,7 +11394,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lanSyncSyncFailUnreachable =>
-      'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi and Jotsy is open there.';
+      'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi with no VPN on, and Jotsy is open there.';
 
   @override
   String get lanSyncSyncFailConnectionLost =>
@@ -11629,6 +11629,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lanSyncDeviceOffline => 'Device is offline';
+
+  @override
+  String get lanSyncOfflineUseLastAddress =>
+      'Offline — the last known address will be tried';
 
   @override
   String get lanSyncPeerAutoSyncSubtitle =>

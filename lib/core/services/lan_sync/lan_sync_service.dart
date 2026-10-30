@@ -27,6 +27,7 @@
 //   peers[i] ← `LanSyncEngineState.peers[i]`：deviceId / name / alias /
 //     pairedAt / lastSyncAt / autoSync ← `device`（`LanSyncPairedDevice`）；
 //     platform ← `fromName(device.platform)`；online / address 同名；
+//     lastAddressKnown ← `device.lastHost` 与 `lastPort` 都有；
 //     needsAttention ← `LanSyncPeerState.needsAttention`；session ←
 //     `session`（`LanSyncProgress`：stage 按下标对应 `LanSyncSessionStage`，
 //     其余字段同名）；history ← `history`（`LanSyncSessionRecord`：at /

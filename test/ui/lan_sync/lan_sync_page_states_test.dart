@@ -93,6 +93,23 @@ void main() {
     });
   }
 
+  testWidgets('an offline peer with a known address keeps its sync button', (
+    tester,
+  ) async {
+    final controller = FakeLanSyncController(
+      LanSyncViewState(
+        local: lanSyncTestLocal,
+        peers: <LanSyncPeerView>[
+          lanSyncTestPeer(online: false, lastAddressKnown: true),
+        ],
+      ),
+    );
+    await pumpLanSyncPage(tester, controller);
+    expect(_rich('离线 · 还没有同步过'), findsOneWidget);
+    await tester.tap(find.text('同步'));
+    expect(controller.calls, contains('syncNow:peer-1'));
+  });
+
   testWidgets('a syncing peer collapses the hero and gets a bordered card '
       'with the session panel', (tester) async {
     final controller = FakeLanSyncController(

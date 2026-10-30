@@ -202,4 +202,53 @@ void main() {
     expect(status.listening, isFalse);
     expect(status.boundPort, isNot(blocker.port));
   });
+
+  test('按网卡发送：从网卡地址的套接字发出，对方的单播回复也从它收回', () async {
+    // 接收方 R 占住 127.0.0.1 上的端口 P；B 的主套接字因此绑不上 P、退到随机
+    // 端口，信标只能经按网卡发送的套接字（本机地址 127.0.0.1）发往 P。
+    final receiver = await RawDatagramSocket.bind(
+      InternetAddress.loopbackIPv4,
+      0,
+    );
+    addTearDown(receiver.close);
+    final received = StreamController<Datagram>();
+    addTearDown(received.close);
+    receiver.listen((event) {
+      if (event == RawSocketEvent.read) {
+        final datagram = receiver.receive();
+        if (datagram != null) received.add(datagram);
+      }
+    });
+
+    final b = LanSyncDiscovery(
+      port: receiver.port,
+      targets: const [],
+      joinMulticast: false,
+      nativeChannel: LanSyncNativeChannel(isAndroid: false),
+      sweepInterval: _longInterval,
+      interfaces: () async => [
+        (
+          local: InternetAddress.loopbackIPv4,
+          broadcast: InternetAddress.loopbackIPv4,
+        ),
+      ],
+    );
+    addTearDown(b.dispose);
+    await b.start(beacon: () => _beacon('b'), interval: _longInterval);
+    final mainPort = b.status.value.boundPort!;
+
+    final datagram = await received.stream.first.timeout(
+      const Duration(seconds: 3),
+    );
+    expect(LanSyncBeacon.decode(datagram.data)!.deviceId, 'b');
+    expect(datagram.address, InternetAddress.loopbackIPv4);
+    expect(datagram.port, isNot(mainPort));
+
+    receiver.send(
+      _beacon('r').encode(),
+      InternetAddress.loopbackIPv4,
+      datagram.port,
+    );
+    await _until(b.peers, (peers) => peers.containsKey('r'));
+  });
 }

@@ -253,6 +253,7 @@ class _Run {
       throw LanSyncHandshakeException(
         LanSyncHandshakeFailure.connectionClosed,
         peer: peer,
+        nothingReceived: reader.receivedBytes == 0,
       );
     }
     return LanSyncMessage.decode(payload);
@@ -354,6 +355,7 @@ class _Run {
         LanSyncHandshakeFailure.connectionClosed,
         peer: peer,
         detail: '$error',
+        nothingReceived: reader.receivedBytes == 0,
       ),
       _ => LanSyncHandshakeException(
         LanSyncHandshakeFailure.protocolError,

@@ -63,7 +63,12 @@ class E2eDevice {
           if (device.blockOutgoing) {
             throw const SocketException('blocked by the test firewall');
           }
-          final socket = await Socket.connect(host, port, timeout: timeout);
+          final redirect = device.redirectOutgoing;
+          final socket = await Socket.connect(
+            redirect?.$1 ?? host,
+            redirect?.$2 ?? port,
+            timeout: timeout,
+          );
           device.lastSocket = socket;
           return socket;
         },
@@ -100,6 +105,9 @@ class E2eDevice {
   final ValueNotifier<int> editors;
   final List<LanSyncEngineEvent> events = [];
   bool blockOutgoing = false;
+
+  /// 出站连接一律连到这里（模拟本机 VPN 先接下连接）。
+  (String, int)? redirectOutgoing;
   Socket? lastSocket;
 
   /// 服务端绑定过几次（证明没配对、没打开同步页时不碰网络）。

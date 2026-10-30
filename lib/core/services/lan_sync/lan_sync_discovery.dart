@@ -13,7 +13,8 @@ import 'lan_sync_network.dart';
 // - 输出：在线表 [LanSyncDiscovery.peers]（按 deviceId）与运行状态
 //   [LanSyncDiscovery.status]；
 // - 副作用：绑定 UDP 端口、加入组播组、周期性发送广播 / 组播（[LanSyncDiscovery
-//   .advertise] 关闭时只听不发）；Android 上运行期间持有 Wi-Fi 组播锁。
+//   .advertise] 关闭时只听不发）；每块局域网网卡另绑一个发送用的套接字；
+//   Android 上运行期间持有 Wi-Fi 组播锁。
 
 /// 发现端口（信标收发），取值理由见 `kLanSyncPreferredPort`。
 const int kLanSyncDiscoveryPort = 24561;
@@ -29,6 +30,9 @@ const Duration kLanSyncBeaconIntervalAuto = Duration(seconds: 5);
 
 /// 多久没收到信标即视为离线。比自动模式间隔的 1.5 倍略长，丢一个包不掉线。
 const Duration kLanSyncPresenceTimeout = Duration(seconds: 8);
+
+/// 多久重读一次网卡（换了 Wi-Fi、插拔网线后按网卡发送的套接字跟着换）。
+const Duration kLanSyncInterfaceRefreshInterval = Duration(seconds: 30);
 
 /// 信标包的上限；超过的包直接丢弃（正常信标不到 300 字节）。
 const int kLanSyncBeaconMaxBytes = 1024;
@@ -221,12 +225,22 @@ typedef LanSyncDiscoveryTarget = ({InternetAddress address, int port});
 ///   端口被占用、退到随机端口时，这个回复也是它唯一能收到我们的途径；
 /// - 每 [sweepInterval] 清扫一次，超过 [presenceTimeout] 没收到信标的设备移除；
 /// - 自己的 deviceId（广播 / 组播回环收到自己的包）一律忽略；
+/// - 按网卡发送：每块局域网网卡（[interfaces] 给出本机地址与子网广播地址）
+///   另绑一个发送套接字（本机地址 + 随机端口），每拍从它发往子网广播、受限
+///   广播与组播组，与主套接字的发送并行（多一份重复的包无妨）。为什么：
+///   电脑开着 Clash 等 TUN 代理时，策略路由把源地址未定（0.0.0.0）的受限
+///   广播与组播导进 TUN 网卡，信标根本到不了局域网；源地址绑定为网卡地址
+///   的包不走那条规则，子网广播本身也按直连路由走（规格 §5.1）。对方对新
+///   设备的单播回复会回到这个套接字，所以它同样要收包。网卡每
+///   [kLanSyncInterfaceRefreshInterval] 重读一次，绑定失败的网卡跳过；
 /// - [advertise] 关闭时只听不发：照常绑定端口、收信标、维护在线表，但既不
 ///   周期发送，也不给新设备单播回复——别人看不到本机（“不可被发现”），本机
 ///   仍能看到别人。可在运行中切换，打开时立即补发一次。
 ///
 /// 测试注入 [port]（0 为随机端口）、[targets]（如 127.0.0.1:对方端口）、
 /// 关闭组播，并注入时钟 [now] 后用 [sweepNow] 驱动过期，不需要真实等待。
+/// 注入了 [targets] 而没给 [interfaces] 时不按网卡发送（测试不往真实网络
+/// 广播）。
 class LanSyncDiscovery {
   LanSyncDiscovery({
     this.port = kLanSyncDiscoveryPort,
@@ -236,15 +250,26 @@ class LanSyncDiscovery {
     DateTime Function()? now,
     this.presenceTimeout = kLanSyncPresenceTimeout,
     this.sweepInterval = const Duration(seconds: 1),
+    Future<List<LanSyncInterfaceBroadcast>> Function()? interfaces,
     this._advertise = true,
   }) : targets =
            targets ??
            <LanSyncDiscoveryTarget>[
-             (address: InternetAddress('255.255.255.255'), port: port),
+             (address: _limitedBroadcast, port: port),
              (address: kLanSyncMulticastGroup, port: port),
            ],
+       _interfaces =
+           interfaces ??
+           (targets == null ? lanSyncInterfaceBroadcasts : _noInterfaces),
        _nativeChannel = nativeChannel ?? LanSyncNativeChannel.instance,
        _now = now ?? DateTime.now;
+
+  static final InternetAddress _limitedBroadcast = InternetAddress(
+    '255.255.255.255',
+  );
+
+  static Future<List<LanSyncInterfaceBroadcast>> _noInterfaces() async =>
+      const <LanSyncInterfaceBroadcast>[];
 
   /// 期望绑定的端口；0 表示随机端口（测试用）。
   final int port;
@@ -261,6 +286,9 @@ class LanSyncDiscovery {
   final LanSyncNativeChannel _nativeChannel;
   final DateTime Function() _now;
 
+  /// 本机各局域网网卡的地址与子网广播地址（按网卡发送，见类注释）。
+  final Future<List<LanSyncInterfaceBroadcast>> Function() _interfaces;
+
   final ValueNotifier<Map<String, LanSyncPresence>> _peers =
       ValueNotifier<Map<String, LanSyncPresence>>(
         const <String, LanSyncPresence>{},
@@ -271,6 +299,11 @@ class LanSyncDiscovery {
 
   RawDatagramSocket? _socket;
   StreamSubscription<RawSocketEvent>? _socketSubscription;
+
+  /// 按网卡发送的套接字（本机地址字面量 → 发送器）。
+  final Map<String, _InterfaceSender> _senders = <String, _InterfaceSender>{};
+  DateTime? _interfacesReadAt;
+  Future<void>? _refreshingInterfaces;
   Timer? _beaconTimer;
   Timer? _sweepTimer;
   LanSyncBeacon Function()? _beacon;
@@ -367,6 +400,10 @@ class LanSyncDiscovery {
       if (generation != _generation || _disposed) {
         return;
       }
+    }
+    await _refreshInterfaces();
+    if (generation != _generation || _disposed) {
+      return;
     }
     _status.value = LanSyncDiscoveryStatus(
       running: true,
@@ -474,12 +511,18 @@ class LanSyncDiscovery {
     _socketSubscription = null;
     _socket?.close();
     _socket = null;
+    final senders = _senders.values.toList();
+    _senders.clear();
+    _interfacesReadAt = null;
     _loggedSendFailures.clear();
     if (!_disposed) {
       _peers.value = const <String, LanSyncPresence>{};
       _status.value = LanSyncDiscoveryStatus.stopped;
     }
     await subscription?.cancel();
+    for (final sender in senders) {
+      await sender.close();
+    }
     if (_lockHeld) {
       _lockHeld = false;
       await _nativeChannel.releaseMulticastLock();
@@ -508,6 +551,77 @@ class LanSyncDiscovery {
     for (final target in targets) {
       _send(bytes, target.address, target.port);
     }
+    for (final sender in _senders.values) {
+      for (final address in <InternetAddress>[
+        sender.broadcast,
+        _limitedBroadcast,
+        if (joinMulticast) kLanSyncMulticastGroup,
+      ]) {
+        _send(bytes, address, port, via: sender);
+      }
+    }
+    final readAt = _interfacesReadAt;
+    if (readAt == null ||
+        _now().difference(readAt) >= kLanSyncInterfaceRefreshInterval) {
+      unawaited(_refreshInterfaces());
+    }
+  }
+
+  /// 重读网卡，按结果增删按网卡发送的套接字。并发调用合并为一次；期间被
+  /// 停止（[_generation] 变了）时关掉刚绑定的套接字。读失败保留现有的。
+  Future<void> _refreshInterfaces() => _refreshingInterfaces ??=
+      _doRefreshInterfaces().whenComplete(() => _refreshingInterfaces = null);
+
+  Future<void> _doRefreshInterfaces() async {
+    final generation = _generation;
+    _interfacesReadAt = _now();
+    final List<LanSyncInterfaceBroadcast> found;
+    try {
+      found = await _interfaces();
+    } on Object catch (error) {
+      debugPrint('LanSyncDiscovery: list interfaces failed: $error');
+      return;
+    }
+    if (generation != _generation || _disposed) return;
+    final wanted = <String, LanSyncInterfaceBroadcast>{
+      for (final item in found) item.local.address: item,
+    };
+    for (final key in _senders.keys.toList()) {
+      final current = _senders[key]!;
+      if (wanted[key]?.broadcast.address != current.broadcast.address) {
+        _senders.remove(key);
+        await current.close();
+      }
+    }
+    for (final entry in wanted.entries) {
+      if (_senders.containsKey(entry.key)) continue;
+      final RawDatagramSocket socket;
+      try {
+        socket = await RawDatagramSocket.bind(entry.value.local, 0);
+      } on Object catch (error) {
+        debugPrint(
+          'LanSyncDiscovery: bind ${entry.key} for sending failed: $error',
+        );
+        continue;
+      }
+      if (generation != _generation || _disposed) {
+        socket.close();
+        return;
+      }
+      socket.broadcastEnabled = true;
+      _senders[entry.key] = _InterfaceSender(
+        broadcast: entry.value.broadcast,
+        socket: socket,
+        subscription: socket.listen(
+          (event) {
+            if (event == RawSocketEvent.read) _drain(socket);
+          },
+          onError: (Object error) {
+            debugPrint('LanSyncDiscovery sender ${entry.key} error: $error');
+          },
+        ),
+      );
+    }
   }
 
   Uint8List? _currentBeaconBytes() {
@@ -520,8 +634,14 @@ class LanSyncDiscovery {
     return beacon.encode();
   }
 
-  void _send(Uint8List bytes, InternetAddress address, int port) {
-    final socket = _socket;
+  /// 从主套接字发送；[via] 给出时从那块网卡的套接字发送。
+  void _send(
+    Uint8List bytes,
+    InternetAddress address,
+    int port, {
+    _InterfaceSender? via,
+  }) {
+    final socket = via?.socket ?? _socket;
     if (socket == null) {
       return;
     }
@@ -530,9 +650,10 @@ class LanSyncDiscovery {
       socket.send(bytes, address, port);
     } on SocketException catch (error) {
       // 没连网络、没有到广播 / 组播地址的路由时会失败；只记一次。
-      if (_loggedSendFailures.add('${address.address}:$port')) {
+      final from = via == null ? '' : ' from ${socket.address.address}';
+      if (_loggedSendFailures.add('${address.address}:$port$from')) {
         debugPrint(
-          'LanSyncDiscovery: send to ${address.address}:$port failed: '
+          'LanSyncDiscovery: send to ${address.address}:$port$from failed: '
           '${error.message}',
         );
       }
@@ -599,5 +720,23 @@ class LanSyncDiscovery {
     if (kept.length != current.length) {
       _peers.value = kept;
     }
+  }
+}
+
+/// 一块网卡上的发送套接字（绑定在网卡地址上）与它的子网广播地址。
+class _InterfaceSender {
+  _InterfaceSender({
+    required this.broadcast,
+    required this.socket,
+    required this.subscription,
+  });
+
+  final InternetAddress broadcast;
+  final RawDatagramSocket socket;
+  final StreamSubscription<RawSocketEvent> subscription;
+
+  Future<void> close() async {
+    socket.close();
+    await subscription.cancel();
   }
 }

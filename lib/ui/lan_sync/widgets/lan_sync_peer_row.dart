@@ -3,7 +3,8 @@
 // 1. 正在同步：副标题为 `primary` w600 阶段文字，尾部灰色文本“取消”；
 // 2. 需要确认：副标题为 `error` 色“需要你确认”，尾部色调按钮“查看”；
 // 3. 在线：`primary` w600“在线” + “· X 前已同步”，尾部色调按钮“同步”；
-// 4. 离线：“离线 · X 前已同步”，尾部 `angleRight` 14。
+// 4. 离线：“离线 · X 前已同步”；知道上次的地址时尾部仍是“同步”（按上次的
+//    地址连接），否则为 `angleRight` 14。
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -65,28 +66,31 @@ class LanSyncPeerRow extends StatelessWidget {
         label: l10n.lanSyncReview,
         onPressed: onReview,
       );
-    } else if (peer.online) {
-      subtitle = TextSpan(
-        children: <InlineSpan>[
-          TextSpan(
-            text: l10n.lanSyncOnline,
-            style: TextStyle(color: colors.primary, fontWeight: emphasis),
-          ),
-          TextSpan(text: ' · $lastSync'),
-        ],
-      );
-      trailing = LanSyncRowButton(
-        label: l10n.lanSyncSyncButton,
-        icon: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 16),
-        onPressed: onSync,
-      );
     } else {
-      subtitle = TextSpan(text: '${l10n.lanSyncOffline} · $lastSync');
-      trailing = FaIcon(
-        FontAwesomeIcons.angleRight,
-        size: 14,
-        color: colors.onSurfaceVariant,
-      );
+      subtitle = peer.online
+          ? TextSpan(
+              children: <InlineSpan>[
+                TextSpan(
+                  text: l10n.lanSyncOnline,
+                  style: TextStyle(color: colors.primary, fontWeight: emphasis),
+                ),
+                TextSpan(text: ' · $lastSync'),
+              ],
+            )
+          : TextSpan(text: '${l10n.lanSyncOffline} · $lastSync');
+      // 离线但知道上次的地址时照样给“同步”：对方开着 VPN 时发现不了它，
+      // 按上次的地址却可能连得上（连不上时摘要说明原因）。
+      trailing = peer.canSync
+          ? LanSyncRowButton(
+              label: l10n.lanSyncSyncButton,
+              icon: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 16),
+              onPressed: onSync,
+            )
+          : FaIcon(
+              FontAwesomeIcons.angleRight,
+              size: 14,
+              color: colors.onSurfaceVariant,
+            );
     }
 
     return LanSyncDeviceRow(

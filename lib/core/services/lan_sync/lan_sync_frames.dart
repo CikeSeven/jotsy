@@ -71,15 +71,20 @@ class LanSyncFrameReader {
   late final StreamSubscription<Uint8List> _subscription;
   final Queue<Uint8List> _chunks = Queue<Uint8List>();
   int _buffered = 0;
+  int _received = 0;
   bool _done = false;
   bool _cancelled = false;
   Object? _error;
   final List<Completer<void>> _waiters = [];
 
+  /// 从对方收到的字节总数（含还在缓冲里没读走的）。
+  int get receivedBytes => _received;
+
   void _onData(Uint8List chunk) {
     if (chunk.isEmpty) return;
     _chunks.add(chunk);
     _buffered += chunk.length;
+    _received += chunk.length;
     if (_buffered >= _highWater && !_subscription.isPaused) {
       _subscription.pause();
     }

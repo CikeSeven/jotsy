@@ -102,6 +102,75 @@ void main() {
     });
   });
 
+  group('按网卡的子网广播', () {
+    // 本机实测的 /proc/net/route：Wi-Fi /24、docker0 /16、Clash TUN /30。
+    const procNetRoute =
+        'Iface\tDestination\tGateway \tFlags\tRefCnt\tUse\tMetric\tMask'
+        '\t\tMTU\tWindow\tIRTT\n'
+        'wlp131s0f0\t00000000\t0564A8C0\t0003\t0\t0\t20600\t00000000'
+        '\t0\t0\t0\n'
+        'docker0\t000011AC\t00000000\t0001\t0\t0\t0\t0000FFFF\t0\t0\t0\n'
+        'wlp131s0f0\t0064A8C0\t00000000\t0001\t0\t0\t600\t00FFFFFF'
+        '\t0\t0\t0\n'
+        'Meta\t000012C6\t00000000\t0001\t0\t0\t0\tFCFFFFFF\t0\t0\t0\n'
+        'bad line\n';
+
+    test('解析 /proc/net/route 的直连路由（跳过默认路由与坏行）', () {
+      final routes = parseLanSyncProcNetRoute(procNetRoute);
+      expect(
+        [
+          for (final route in routes)
+            '${route.interface} ${route.network.toRadixString(16)}/'
+                '${route.prefixLength}',
+        ],
+        ['docker0 ac110000/16', 'wlp131s0f0 c0a86400/24', 'Meta c6120000/30'],
+      );
+    });
+
+    test('按路由的前缀算广播地址，没有路由时按 /24', () {
+      final result = lanSyncBroadcastsOf(
+        [
+          _iface('wlp131s0f0', ['192.168.100.199']),
+          _iface('eth1', ['10.1.2.3']),
+        ],
+        routes: [
+          ...parseLanSyncProcNetRoute(procNetRoute),
+          const LanSyncOnLinkRoute('eth1', 0x0A000000, 8),
+          const LanSyncOnLinkRoute('eth1', 0x0A010000, 16),
+        ],
+      );
+      expect(
+        [for (final r in result) '${r.local.address} → ${r.broadcast.address}'],
+        ['192.168.100.199 → 192.168.100.255', '10.1.2.3 → 10.1.255.255'],
+      );
+      expect(
+        lanSyncBroadcastsOf([
+          _iface('Wi-Fi', ['172.20.5.9']),
+        ]).single.broadcast.address,
+        '172.20.5.255',
+      );
+    });
+
+    test('跳过 VPN、虚拟网桥、公网地址与 /31 以上的前缀', () {
+      final result = lanSyncBroadcastsOf(
+        [
+          _iface('tun0', ['172.19.0.1']),
+          _iface('docker0', ['172.17.0.1']),
+          _iface('Meta', ['198.18.0.1']),
+          _iface('tailscale0', ['100.126.80.17']),
+          _iface('usb0', ['192.168.42.10']),
+        ],
+        routes: const [LanSyncOnLinkRoute('usb0', 0xC0A82A0A, 32)],
+      );
+      expect(result, isEmpty);
+    });
+
+    test('真实接口不抛错', () async {
+      final result = await lanSyncInterfaceBroadcasts();
+      expect(result.every((r) => isLanSyncPrivateIPv4(r.local)), isTrue);
+    });
+  });
+
   group('设备名', () {
     test('主机名去掉域后缀并截断', () {
       expect(

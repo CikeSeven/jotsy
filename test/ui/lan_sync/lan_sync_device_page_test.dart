@@ -37,6 +37,7 @@ final List<LanSyncHistoryEntryView> _history = <LanSyncHistoryEntryView>[
 
 FakeLanSyncController _controller({
   bool online = true,
+  bool lastAddressKnown = false,
   LanSyncSessionView? session,
   List<LanSyncHistoryEntryView> history = const <LanSyncHistoryEntryView>[],
   String? alias,
@@ -49,6 +50,7 @@ FakeLanSyncController _controller({
       peers: <LanSyncPeerView>[
         lanSyncTestPeer(
           online: online,
+          lastAddressKnown: lastAddressKnown,
           lastSyncAt: lanSyncTestNow.subtract(const Duration(minutes: 5)),
           session: session,
           history: history,
@@ -135,6 +137,19 @@ void main() {
     );
     expect(button.onPressed, isNull);
     expect(find.text('立即同步'), findsNothing);
+  });
+
+  testWidgets('an offline device with a known address can still be synced', (
+    tester,
+  ) async {
+    final controller = _controller(online: false, lastAddressKnown: true);
+    await _openDevice(tester, controller);
+
+    expect(find.text('离线'), findsOneWidget);
+    expect(find.text('192.168.1.40'), findsOneWidget);
+    expect(find.text('对方不在线，会按上次的地址连接'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, '立即同步'));
+    expect(controller.calls, contains('syncNow:peer-1'));
   });
 
   testWidgets('while syncing the hero shows the session panel and cancel', (

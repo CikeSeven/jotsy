@@ -178,6 +178,26 @@ void main() {
     await expectConverged(a, b);
   });
 
+  test('对方离线：按上次连上的地址照样同步', () async {
+    final (a, b) = await pairedPair();
+    await seedDiary(b.data.db, 'b1', title: 'B1');
+    a.discovery.lose(b.id);
+    expect(a.peerState(b)!.online, isFalse);
+    final result = await sync(a, b);
+    expect(result.failure, isNull);
+    expect(await diaryIds(a.data), {'b1'});
+  });
+
+  test('连接被接下后立刻断开、对方一个字节都没发：按“连不上”结束', () async {
+    final (a, b) = await pairedPair();
+    final sink = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(sink.close);
+    sink.listen((socket) => socket.destroy());
+    a.redirectOutgoing = (sink.address.address, sink.port);
+    final result = await sync(a, b);
+    expect(result.failure, LanSyncFailure.unreachable);
+  });
+
   test('传媒体时断线：两边都不写，暂存区清空，重试收敛', () async {
     final (a, b) = await pairedPair();
     final big = await a.data.writeMedia(

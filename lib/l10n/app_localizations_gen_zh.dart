@@ -9929,7 +9929,8 @@ class AppLocalizationsZh extends AppLocalizations {
       '这台设备开启了应用锁或有上锁的日记本，但没有设置锁屏密码，无法验证身份。请先在系统里设置锁屏密码。';
 
   @override
-  String get lanSyncPairFailUnreachable => '连不上对方，请确认两台设备连着同一个 Wi-Fi。';
+  String get lanSyncPairFailUnreachable =>
+      '连不上对方。请检查地址和端口，并确认两台设备连着同一个 Wi-Fi、没有开着 VPN。';
 
   @override
   String get lanSyncPairFailConnectionLost => '连接中断了，请重新配对。';
@@ -10156,7 +10157,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncSyncFailUnreachable =>
-      '连不上对方。请确认两台设备连着同一个 Wi-Fi，且对方打开着 Jotsy。';
+      '连不上对方。请确认两台设备连着同一个 Wi-Fi、没有开着 VPN，且对方打开着 Jotsy。';
 
   @override
   String get lanSyncSyncFailConnectionLost => '连接中断，已写入的部分下次会自动补齐。';
@@ -10357,6 +10358,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncDeviceOffline => '设备不在线';
+
+  @override
+  String get lanSyncOfflineUseLastAddress => '对方不在线，会按上次的地址连接';
 
   @override
   String get lanSyncPeerAutoSyncSubtitle => '应用打开时自动与这台设备同步';

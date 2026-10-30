@@ -13772,7 +13772,7 @@
   "@lanSyncPairAuthUnsupported": {
     "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
   },
-  "lanSyncPairFailUnreachable": "连不上对方，请确认两台设备连着同一个 Wi-Fi。",
+  "lanSyncPairFailUnreachable": "连不上对方。请检查地址和端口，并确认两台设备连着同一个 Wi-Fi、没有开着 VPN。",
   "@lanSyncPairFailUnreachable": {
     "description": "Pairing failure reason: the other device could not be reached."
   },
@@ -14112,7 +14112,7 @@
   "@lanSyncSummaryFailedTitle": {
     "description": "Title of the sync summary sheet when the sync failed."
   },
-  "lanSyncSyncFailUnreachable": "连不上对方。请确认两台设备连着同一个 Wi-Fi，且对方打开着 Jotsy。",
+  "lanSyncSyncFailUnreachable": "连不上对方。请确认两台设备连着同一个 Wi-Fi、没有开着 VPN，且对方打开着 Jotsy。",
   "@lanSyncSyncFailUnreachable": {
     "description": "Failed sync: unreachable, with the next step."
   },
@@ -14403,6 +14403,10 @@
   "lanSyncDeviceOffline": "设备不在线",
   "@lanSyncDeviceOffline": {
     "description": "Disabled sync button label when the paired device is offline."
+  },
+  "lanSyncOfflineUseLastAddress": "对方不在线，会按上次的地址连接",
+  "@lanSyncOfflineUseLastAddress": {
+    "description": "Caption under the sync button on the device page when the peer is offline but its last address is known."
   },
   "lanSyncPeerAutoSyncSubtitle": "应用打开时自动与这台设备同步",
   "@lanSyncPeerAutoSyncSubtitle": {

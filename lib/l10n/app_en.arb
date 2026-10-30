@@ -13772,7 +13772,7 @@
   "@lanSyncPairAuthUnsupported": {
     "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
   },
-  "lanSyncPairFailUnreachable": "Couldn't reach the other device. Make sure both are on the same Wi-Fi.",
+  "lanSyncPairFailUnreachable": "Couldn't reach the other device. Check the address and port, and make sure both are on the same Wi-Fi with no VPN on.",
   "@lanSyncPairFailUnreachable": {
     "description": "Pairing failure reason: the other device could not be reached."
   },
@@ -14112,7 +14112,7 @@
   "@lanSyncSummaryFailedTitle": {
     "description": "Title of the sync summary sheet when the sync failed."
   },
-  "lanSyncSyncFailUnreachable": "Couldn't reach the other device. Make sure both are on the same Wi-Fi and Jotsy is open there.",
+  "lanSyncSyncFailUnreachable": "Couldn't reach the other device. Make sure both are on the same Wi-Fi with no VPN on, and Jotsy is open there.",
   "@lanSyncSyncFailUnreachable": {
     "description": "Failed sync: unreachable, with the next step."
   },
@@ -14403,6 +14403,10 @@
   "lanSyncDeviceOffline": "Device is offline",
   "@lanSyncDeviceOffline": {
     "description": "Disabled sync button label when the paired device is offline."
+  },
+  "lanSyncOfflineUseLastAddress": "Offline — the last known address will be tried",
+  "@lanSyncOfflineUseLastAddress": {
+    "description": "Caption under the sync button on the device page when the peer is offline but its last address is known."
   },
   "lanSyncPeerAutoSyncSubtitle": "Sync with this device automatically while the app is open",
   "@lanSyncPeerAutoSyncSubtitle": {

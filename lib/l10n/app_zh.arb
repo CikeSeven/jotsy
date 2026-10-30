@@ -5521,6 +5521,14 @@
   "@diaryPreviewStyleTintPaperHint": {
     "description": "预览页样式设置：“纸张随基调染色”的说明。"
   },
+  "diaryPreviewStyleTintScrim": "背景遮罩随基调染色",
+  "@diaryPreviewStyleTintScrim": {
+    "description": "预览页样式设置：开关：预览页有背景图片时，遮罩换成这篇日记的基调色。"
+  },
+  "diaryPreviewStyleTintScrimHint": "有背景图片时，遮罩带上这篇的基调色（如心情颜色），深浅仍按背景与材质里的遮罩",
+  "@diaryPreviewStyleTintScrimHint": {
+    "description": "预览页样式设置：“背景遮罩随基调染色”的说明。"
+  },
   "diaryPreviewStyleMoodColors": "心情颜色",
   "@diaryPreviewStyleMoodColors": {
     "description": "预览页样式设置：入口：打开心情符号页修改各心情的颜色。"
@@ -11583,7 +11591,7 @@
   "@appSurfaceAreaFollowNote": {"description": "背景与材质设置：区域跟随全局时的说明，kind 为全局背景的类型名。", "placeholders": {"kind": {"type": "String"}}},
   "appSurfaceAreaOffNote": "这个区域不显示背景，沿用主题底色。",
   "@appSurfaceAreaOffNote": {"description": "背景与材质设置：区域选择不显示时的说明。"},
-  "appSurfaceAreaCustomNote": "这个区域使用下面单独设置的背景。",
+  "appSurfaceAreaCustomNote": "这个区域使用下面单独设置的背景；图片与参数可以分别跟随全局或其他页面。",
   "@appSurfaceAreaCustomNote": {"description": "背景与材质设置：区域选择单独设置时的说明。"},
   "appSurfaceAreaPreviewNote": "仅在预览页纸张为“跟随主题”时显示。",
   "@appSurfaceAreaPreviewNote": {"description": "背景与材质设置：预览区域说明的补充行。"},
@@ -11627,6 +11635,28 @@
   "@appSurfaceScrimLight": {"description": "背景与材质设置：浅色主题下叠在背景图上的遮罩不透明度滑块。"},
   "appSurfaceScrimDark": "深色遮罩",
   "@appSurfaceScrimDark": {"description": "背景与材质设置：深色主题下叠在背景图上的遮罩不透明度滑块。"},
+  "appSurfaceFollowSource": "跟随来源",
+  "@appSurfaceFollowSource": {"description": "背景与材质设置：区域单独设置的图片背景里，图片与参数跟随哪个页面的设置行标题与面板标题。"},
+  "appSurfaceFollowSourceHint": "下方“图片”或“参数”打开跟随后，取所选页面当前显示的设置；那边改了，这里跟着变。",
+  "@appSurfaceFollowSourceHint": {"description": "背景与材质设置：跟随来源面板顶部的说明。"},
+  "appSurfaceSourceShows": "当前：{kind}",
+  "@appSurfaceSourceShows": {"description": "背景与材质设置：跟随来源面板里每个选项的说明，kind 为该页面当前显示的背景类型名。", "placeholders": {"kind": {"type": "String"}}},
+  "appSurfaceSourceLoop": "它的跟随来源会绕回这里，不能选",
+  "@appSurfaceSourceLoop": {"description": "背景与材质设置：跟随来源面板里会形成循环跟随而停用的选项的说明。"},
+  "appSurfaceImageGroup": "图片",
+  "@appSurfaceImageGroup": {"description": "背景与材质设置：图片背景编辑器里“图片”分组的标题。"},
+  "appSurfaceParamsGroup": "参数",
+  "@appSurfaceParamsGroup": {"description": "背景与材质设置：图片背景编辑器里“参数”（焦点、模糊、遮罩）分组的标题。"},
+  "appSurfaceFollowImage": "跟随「{source}」的图片",
+  "@appSurfaceFollowImage": {"description": "背景与材质设置：开关：图片跟随所选来源，source 为来源页面名。", "placeholders": {"source": {"type": "String"}}},
+  "appSurfaceFollowParams": "跟随「{source}」的参数",
+  "@appSurfaceFollowParams": {"description": "背景与材质设置：开关：参数整块跟随所选来源，source 为来源页面名。", "placeholders": {"source": {"type": "String"}}},
+  "appSurfaceFollowParamsHint": "焦点、模糊与遮罩一起跟随",
+  "@appSurfaceFollowParamsHint": {"description": "背景与材质设置：参数跟随开关的说明。"},
+  "appSurfaceFollowImageNote": "正在使用「{source}」的图片",
+  "@appSurfaceFollowImageNote": {"description": "背景与材质设置：图片跟随来源时缩略图旁的说明，source 为来源页面名。", "placeholders": {"source": {"type": "String"}}},
+  "appSurfaceFollowImageNone": "「{source}」当前没有背景图片",
+  "@appSurfaceFollowImageNone": {"description": "背景与材质设置：图片跟随的来源没有显示背景图片时的说明，source 为来源页面名。", "placeholders": {"source": {"type": "String"}}},
   "appSurfaceGlassStyle": "组件风格",
   "@appSurfaceGlassStyle": {"description": "背景与材质设置：整体组件材质分组的标题。"},
   "appSurfaceGlassClassic": "经典",

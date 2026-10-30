@@ -14,7 +14,12 @@ import '../models/app_surface_settings.dart';
 ///
 /// 字段口径：
 /// - [pageColor]：页面 Scaffold / 页面底色 ColoredBox 用。实际画了背景时
-///   透明（露出背景），否则为 `ExpressiveSurfaces.pageBackground`；
+///   透明（露出背景），否则为 `ExpressiveSurfaces.pageBackground`；背景把
+///   图片遮罩交给页面画时（[deferredScrim]）为该遮罩色，照常用它当页面底色
+///   的页面（读取中、出错等）看起来与背景自己画遮罩时一样；
+/// - [deferredScrim]：背景没画、要页面自己画的图片遮罩（已带不透明度），
+///   只有 `AppPageBackground(deferScrim: true)` 且正在显示图片时不为 null。
+///   按页面内容给遮罩换颜色的页面（预览页“背景遮罩随基调染色”）读它；
 /// - [solidBarColor]：实色顶栏 / 侧栏的底。无背景为 surface；纯色背景为该
 ///   颜色（整页仍是同一片颜色，与无背景时“栏色 = 页面色”的观感一致）；
 ///   图片背景为 surface（实色栏保持不透明，不让图片从栏下透出）；
@@ -35,6 +40,7 @@ class AppPageBackdrop {
     required this.solidBarColor,
     required this.estimatedColor,
     this.contentBackdropKey,
+    this.deferredScrim,
     bool? wantsBackground,
   }) : wantsBackground = wantsBackground ?? hasBackground;
 
@@ -78,6 +84,9 @@ class AppPageBackdrop {
   final Color pageColor;
   final Color solidBarColor;
   final Color estimatedColor;
+
+  /// 背景交给页面画的图片遮罩；背景自己画遮罩（默认）时为 null。
+  final Color? deferredScrim;
 
   /// 页面背景持有的共享背景键：后续“内容玻璃”（卡片、分组）经
   /// `BackdropFilter(backdropGroupKey: …)` 共用一次背景读取。没有祖先时为
@@ -189,6 +198,7 @@ class AppPageBackdrop {
         other.pageColor == pageColor &&
         other.solidBarColor == solidBarColor &&
         other.estimatedColor == estimatedColor &&
+        other.deferredScrim == deferredScrim &&
         other.contentBackdropKey == contentBackdropKey;
   }
 
@@ -201,6 +211,7 @@ class AppPageBackdrop {
     pageColor,
     solidBarColor,
     estimatedColor,
+    deferredScrim,
     contentBackdropKey,
   );
 
@@ -208,7 +219,8 @@ class AppPageBackdrop {
   String toString() =>
       'AppPageBackdrop($area, background: $hasBackground, '
       'wants: $wantsBackground, image: $hasImage, '
-      'page: $pageColor, bar: $solidBarColor, estimated: $estimatedColor)';
+      'page: $pageColor, bar: $solidBarColor, estimated: $estimatedColor, '
+      'deferred scrim: $deferredScrim)';
 }
 
 /// 把 [AppPageBackdrop] 交给子树。只由页面背景组件插入，页面不要直接用；

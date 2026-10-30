@@ -38,9 +38,17 @@ class StylePreviewArea extends InheritedWidget {
 /// 取值与预览主题的原页面颜色相同，画面与接入前逐像素一致。区域没有背景时
 /// `AppPageBackground` 同样不画任何东西、给出原页面颜色。
 class StylePreviewBackground extends StatelessWidget {
-  const StylePreviewBackground({super.key, required this.child});
+  const StylePreviewBackground({
+    super.key,
+    required this.child,
+    this.deferScrim = false,
+  });
 
   final Widget child;
+
+  /// 与真实页面一致地把图片遮罩交给预览里的页面画（见
+  /// `AppPageBackground.deferScrim`），如预览页样式的“背景遮罩随基调染色”。
+  final bool deferScrim;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +59,6 @@ class StylePreviewBackground extends StatelessWidget {
         child: child,
       );
     }
-    return AppPageBackground(area: area, child: child);
+    return AppPageBackground(area: area, deferScrim: deferScrim, child: child);
   }
 }

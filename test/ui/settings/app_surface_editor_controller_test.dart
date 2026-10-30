@@ -95,6 +95,60 @@ void main() {
     expect(settings.appSurfaceRaw, contains('"calendar"'));
   });
 
+  test('follow switches show the source but edits keep the own copy', () async {
+    const editor = AppBackgroundArea.editor;
+    await controller.commitBackground(
+      null,
+      const AppBackground(
+        kind: AppBackgroundKind.image,
+        image: 'global.jpg',
+        blur: 9,
+      ),
+    );
+    await controller.commitAreaMode(editor, AppAreaBackgroundMode.custom);
+    await controller.commitBackground(
+      editor,
+      const AppBackground(kind: AppBackgroundKind.image, image: 'own.jpg'),
+    );
+
+    await controller.commitFollowImage(editor, true);
+    expect(stored().areaOf(editor).followImage, isTrue);
+    expect(controller.effectiveBackgroundOf(editor).image, 'global.jpg');
+    expect(controller.effectiveBackgroundOf(editor).blur, 0);
+
+    await controller.commitFollowParams(editor, true);
+    expect(controller.effectiveBackgroundOf(editor).blur, 9);
+    // 编辑仍写自己的那一份：跟随中的值不受影响，关掉跟随后才看得到。
+    await controller.commitBackground(
+      editor,
+      controller.backgroundOf(editor).copyWith(blur: 3),
+    );
+    expect(controller.effectiveBackgroundOf(editor).blur, 9);
+    await controller.commitFollowParams(editor, false);
+    expect(controller.effectiveBackgroundOf(editor).blur, 3);
+    expect(controller.backgroundOf(editor).image, 'own.jpg');
+  });
+
+  test('a source that would loop back is not written', () async {
+    await controller.commitFollowSource(
+      AppBackgroundArea.editor,
+      const AppBackgroundSource.area(AppBackgroundArea.preview),
+    );
+    expect(
+      stored().areaOf(AppBackgroundArea.editor).source,
+      const AppBackgroundSource.area(AppBackgroundArea.preview),
+    );
+
+    await controller.commitFollowSource(
+      AppBackgroundArea.preview,
+      const AppBackgroundSource.area(AppBackgroundArea.editor),
+    );
+    expect(
+      stored().areaOf(AppBackgroundArea.preview).source,
+      AppBackgroundSource.global,
+    );
+  });
+
   test('glass edits encode overrides and texture', () async {
     await controller.commitGlass(
       controller.style.glass

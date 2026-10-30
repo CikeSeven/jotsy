@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../app_surface/models/app_surface_enums.dart';
@@ -6,6 +7,7 @@ import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../models/diary_preview_sequence.dart';
+import '../providers/diary_preview_style_provider.dart';
 import '../widgets/diary_preview/diary_preview_pager.dart';
 import '../widgets/diary_preview/diary_preview_view.dart';
 
@@ -21,7 +23,7 @@ export '../models/diary_preview_sequence.dart';
 /// （[DiaryPreviewPager]）；否则只看这一篇。删除后以
 /// [DiaryPreviewResult.deleted] 返回被删的那一篇，由入口给出撤销提示。
 /// 桌面上 Esc 与返回按钮相同；翻页时的 ←/→ 与悬停按钮在翻页器里。
-class DiaryPreviewPage extends StatelessWidget {
+class DiaryPreviewPage extends ConsumerWidget {
   const DiaryPreviewPage({
     super.key,
     required this.diaryId,
@@ -43,12 +45,19 @@ class DiaryPreviewPage extends StatelessWidget {
   final DiaryPreviewSequence? sequence;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // 预览区域的背景包在翻页器外面：左右翻页时背景不动，只有各篇（纸张
     // 跟随主题时透明）滑过。纸张选了颜色时各篇的纸色盖住背景，见
-    // diaryPreviewPageColors。
+    // diaryPreviewPageColors。开了“背景遮罩随基调染色”时背景不画遮罩，
+    // 由各篇按自己的基调色画（diaryPreviewScaffoldColor），随页面滑动。
+    final deferScrim = ref.watch(
+      diaryPreviewStyleProvider.select(
+        (style) => style.page.tintsBackgroundScrim,
+      ),
+    );
     return AppPageBackground(
       area: AppBackgroundArea.preview,
+      deferScrim: deferScrim,
       child: _buildPage(context),
     );
   }

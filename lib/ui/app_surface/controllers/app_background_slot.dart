@@ -234,10 +234,15 @@ class AppBackgroundSlot extends ChangeNotifier {
   }
 
   /// 由当前层推出交给子树的信息（口径见 [AppPageBackdrop]）。
+  ///
+  /// [deferScrim]：图层不画图片遮罩（见 `AppBackgroundLayersView.drawScrim`），
+  /// 最上层是图片时把它的遮罩交给页面（[AppPageBackdrop.deferredScrim]，页面
+  /// 底色也换成它）。估计色照常按画了遮罩估算——页面总会画上一层遮罩。
   AppPageBackdrop backdrop({
     required AppBackgroundArea area,
     required ColorScheme scheme,
     BackdropKey? contentBackdropKey,
+    bool deferScrim = false,
   }) {
     final visual = front;
     if (visual == null) {
@@ -263,13 +268,15 @@ class AppBackgroundSlot extends ChangeNotifier {
     } else {
       estimated = color ?? scheme.surface;
     }
+    final deferred = deferScrim && background.isImage ? scrim : null;
     return AppPageBackdrop(
       area: area,
       hasBackground: true,
       // 淡出到“无背景”的过程中仍在画，但设置已不要背景。
       wantsBackground: wantsBackground,
       hasImage: background.isImage,
-      pageColor: Colors.transparent,
+      pageColor: deferred ?? Colors.transparent,
+      deferredScrim: deferred,
       solidBarColor: color ?? scheme.surface,
       estimatedColor: estimated,
       contentBackdropKey: contentBackdropKey,

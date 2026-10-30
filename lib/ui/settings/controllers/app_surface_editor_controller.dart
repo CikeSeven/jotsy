@@ -127,9 +127,15 @@ class AppSurfaceEditorController
   /// 是否正在选图（按钮显示等待、防止重复点按）。
   bool get picking => _picking;
 
-  /// 全局或某区域“单独设置”的那一份背景。
+  /// 全局或某区域“单独设置”的那一份背景（自己的值，不含跟随）。编辑一律
+  /// 改这一份：跟随中的那一块照常保存在这里，关掉跟随即回到它。
   AppBackground backgroundOf(AppBackgroundArea? area) =>
       area == null ? style.global : style.areaOf(area).custom;
+
+  /// 全局或某区域单独设置时实际显示的背景：跟随中的图片 / 参数取自来源。
+  /// 编辑器据此显示缩略图、取景与滑块的当前值。
+  AppBackground effectiveBackgroundOf(AppBackgroundArea? area) =>
+      area == null ? style.global : style.resolvedCustom(area);
 
   AppSurfaceSettings _withBackground(
     AppSurfaceSettings base,
@@ -154,6 +160,27 @@ class AppSurfaceEditorController
     AppBackgroundArea area,
     AppAreaBackgroundMode mode,
   ) => commit(style.withArea(area, style.areaOf(area).copyWith(mode: mode)));
+
+  /// 写入 [area] 图片 / 参数的跟随来源；会成环的来源（界面已停用）不写。
+  Future<void> commitFollowSource(
+    AppBackgroundArea area,
+    AppBackgroundSource source,
+  ) {
+    if (!style.canFollow(area, source)) return Future<void>.value();
+    return commit(
+      style.withArea(area, style.areaOf(area).copyWith(source: source)),
+    );
+  }
+
+  /// 写入 [area] 的图片是否跟随来源。
+  Future<void> commitFollowImage(AppBackgroundArea area, bool value) => commit(
+    style.withArea(area, style.areaOf(area).copyWith(followImage: value)),
+  );
+
+  /// 写入 [area] 的参数（焦点、模糊、遮罩）是否整块跟随来源。
+  Future<void> commitFollowParams(AppBackgroundArea area, bool value) => commit(
+    style.withArea(area, style.areaOf(area).copyWith(followParams: value)),
+  );
 
   /// 拖动中的材质预览。
   void previewGlass(AppGlassStyle value) => preview(style.withGlass(value));

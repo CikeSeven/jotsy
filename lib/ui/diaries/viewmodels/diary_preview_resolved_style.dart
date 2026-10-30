@@ -28,6 +28,8 @@ import 'diary_card_colors.dart';
 ///   “中性灰”则换成由应用种子色推出的 neutral 主题（低饱和的灰调）；
 /// - 纸张为主题底色、开了“随基调染色”且取到了基调颜色时，底色在 surface 上
 ///   叠一层同色相的浅色（[tintedPaper]），正文仍是主题 onSurface；
+/// - 纸张跟随主题、开了“背景遮罩随基调染色”且取到了基调颜色时，给出同一种
+///   染过的纸色作为背景遮罩的底色（[scrimTint]，不透明度由页面背景给）；
 /// - 默认样式（跟随应用 + 主题底色）原样返回应用主题，渲染与改版前一致；
 /// - 自定义正文 / 标题颜色按纸色检查对比度（正文 4.5:1、标题 3:1，WCAG 2.x），
 ///   不足时回退为主题色，未设深色值时按色相推导。
@@ -47,6 +49,7 @@ class DiaryPreviewResolvedStyle {
     required this.themed,
     required this.background,
     required this.paperFollowsTheme,
+    required this.scrimTint,
     required this.bodyColor,
     required this.titleColor,
     required this.horizontalPadding,
@@ -149,6 +152,12 @@ class DiaryPreviewResolvedStyle {
       themed: themed,
       background: background,
       paperFollowsTheme: paper == null,
+      // 与纸张染色同一种颜色：染过的纸在两种明暗下色调固定（浅色约 93、
+      // 深色约 16），当遮罩用时与原来的 surface 遮罩一样提亮 / 压暗背景图，
+      // 只多带一点基调的色相，文字可读性不变。
+      scrimTint: page.tintScrim && seed != null && paper == null
+          ? tintedPaper(theme.colorScheme)
+          : null,
       bodyColor: _readable(
         page.textLight,
         page.textDark,
@@ -185,6 +194,7 @@ class DiaryPreviewResolvedStyle {
       themed: themed,
       background: background,
       paperFollowsTheme: paperFollowsTheme,
+      scrimTint: scrimTint,
       bodyColor: bodyColor,
       titleColor: titleColor,
       horizontalPadding: layout.horizontalPadding,
@@ -260,6 +270,10 @@ class DiaryPreviewResolvedStyle {
   /// surface）。只有这时预览页才让位给“背景与材质”的预览区域背景；选了
   /// 纸色时纸色优先。
   final bool paperFollowsTheme;
+
+  /// “背景遮罩随基调染色”时背景遮罩的颜色（不透明，染过的纸色）；没开、
+  /// 取不到基调颜色或选了纸色时为 null（遮罩保持中性）。
+  final Color? scrimTint;
 
   /// 通过对比度检查的自定义正文颜色；null 表示用主题正文色。
   final Color? bodyColor;

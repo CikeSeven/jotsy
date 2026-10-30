@@ -1,7 +1,8 @@
 part of 'diary_preview_style.dart';
 
 /// 页面与顶栏：配色基调（及其着色强度、取不到颜色时的回退）、纸张（及是否
-/// 随基调染色）、正文颜色、边距、正文宽度、顶栏、阅读进度与回到顶部。
+/// 随基调染色、背景遮罩是否随基调染色）、正文颜色、边距、正文宽度、顶栏、
+/// 阅读进度与回到顶部。
 ///
 /// 自定义颜色分浅色与深色两态（不透明 ARGB）：深色为 null 时由渲染层按色相
 /// 推导；正文颜色浅色值为 null 表示“自动”（跟随纸张与主题）。
@@ -14,6 +15,7 @@ class DiaryPreviewPageStyle {
     this.seedFallback = DiaryPreviewSeedFallback.app,
     this.paper = DiaryPreviewPaper.theme,
     this.tintPaper = false,
+    this.tintScrim = false,
     this.paperLight,
     this.paperDark,
     this.textLight,
@@ -46,6 +48,10 @@ class DiaryPreviewPageStyle {
   /// 淡淡的基调色（选了内置或自定义纸色时以纸色为准，不染色）。
   final bool tintPaper;
 
+  /// 纸张跟随主题、预览页画着“背景与材质”的背景图时，图上的遮罩换成这篇
+  /// 的基调色（深浅仍按背景设置里的遮罩），见 [tintsBackgroundScrim]。
+  final bool tintScrim;
+
   /// [DiaryPreviewPaper.custom] 时的纸色（浅色 / 深色）。
   final int? paperLight;
   final int? paperDark;
@@ -66,6 +72,19 @@ class DiaryPreviewPageStyle {
   final DiaryPreviewProgress progress;
   final bool backToTop;
 
+  /// 纸张是否跟随主题（没有纸色）：主题纸张，或选了自定义却还没有颜色。
+  /// 只有这时预览页才让位给“背景与材质”的背景（与
+  /// `DiaryPreviewResolvedStyle.paperFollowsTheme` 同一口径）。
+  bool get paperFollowsTheme =>
+      paper == DiaryPreviewPaper.theme ||
+      (paper == DiaryPreviewPaper.custom && paperLight == null);
+
+  /// “背景遮罩随基调染色”是否生效：开关打开、有基调（不是跟随应用）且纸张
+  /// 让位给背景。生效时预览页的背景不画遮罩，由各篇按自己的基调色画（见
+  /// `AppPageBackground.deferScrim`）。
+  bool get tintsBackgroundScrim =>
+      tintScrim && colorSeed != DiaryPreviewColorSeed.app && paperFollowsTheme;
+
   DiaryPreviewPageStyle copyWith({
     DiaryPreviewColorSeed? colorSeed,
     ValueGetter<int?>? seedColor,
@@ -73,6 +92,7 @@ class DiaryPreviewPageStyle {
     DiaryPreviewSeedFallback? seedFallback,
     DiaryPreviewPaper? paper,
     bool? tintPaper,
+    bool? tintScrim,
     ValueGetter<int?>? paperLight,
     ValueGetter<int?>? paperDark,
     ValueGetter<int?>? textLight,
@@ -95,6 +115,7 @@ class DiaryPreviewPageStyle {
       seedFallback: seedFallback ?? this.seedFallback,
       paper: paper ?? this.paper,
       tintPaper: tintPaper ?? this.tintPaper,
+      tintScrim: tintScrim ?? this.tintScrim,
       paperLight: paperLight == null ? this.paperLight : paperLight(),
       paperDark: paperDark == null ? this.paperDark : paperDark(),
       textLight: textLight == null ? this.textLight : textLight(),
@@ -141,6 +162,7 @@ class DiaryPreviewPageStyle {
         d.paper,
       ),
       tintPaper: StyleJson.boolean(json['tintPaper'], d.tintPaper),
+      tintScrim: StyleJson.boolean(json['tintScrim'], d.tintScrim),
       paperLight: StyleJson.argb(json['paperLight']),
       paperDark: StyleJson.argb(json['paperDark']),
       textLight: StyleJson.argb(json['textLight']),
@@ -196,6 +218,7 @@ class DiaryPreviewPageStyle {
     StyleJson.putEnum(json, 'seedFallback', seedFallback, d.seedFallback);
     StyleJson.putEnum(json, 'paper', paper, d.paper);
     StyleJson.put(json, 'tintPaper', tintPaper, d.tintPaper);
+    StyleJson.put(json, 'tintScrim', tintScrim, d.tintScrim);
     StyleJson.putColor(json, 'paperLight', paperLight, d.paperLight);
     StyleJson.putColor(json, 'paperDark', paperDark, d.paperDark);
     StyleJson.putColor(json, 'textLight', textLight, d.textLight);
@@ -232,6 +255,7 @@ class DiaryPreviewPageStyle {
         other.seedFallback == seedFallback &&
         other.paper == paper &&
         other.tintPaper == tintPaper &&
+        other.tintScrim == tintScrim &&
         other.paperLight == paperLight &&
         other.paperDark == paperDark &&
         other.textLight == textLight &&
@@ -249,13 +273,15 @@ class DiaryPreviewPageStyle {
   }
 
   @override
-  int get hashCode => Object.hash(
+  // 字段超过 Object.hash 的 20 个参数上限，改用 hashAll。
+  int get hashCode => Object.hashAll(<Object?>[
     colorSeed,
     seedColor,
     seedIntensity,
     seedFallback,
     paper,
     tintPaper,
+    tintScrim,
     paperLight,
     paperDark,
     textLight,
@@ -270,5 +296,5 @@ class DiaryPreviewPageStyle {
     showShareButton,
     progress,
     backToTop,
-  );
+  ]);
 }

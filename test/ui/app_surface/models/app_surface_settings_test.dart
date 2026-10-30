@@ -240,6 +240,239 @@ void main() {
     });
   });
 
+  group('AppSurfaceSettings follow source', () {
+    const own = AppBackground(
+      kind: AppBackgroundKind.image,
+      image: 'bg_own.jpg',
+      alignX: 0.3,
+      blur: 2,
+      scrimLight: 0.1,
+      scrimDark: 0.2,
+    );
+    const other = AppBackground(
+      kind: AppBackgroundKind.image,
+      image: 'bg_other.jpg',
+      alignX: -1,
+      alignY: -0.5,
+      blur: 20,
+      scrimLight: 0.6,
+      scrimDark: 0.8,
+    );
+    const otherSource = AppBackgroundSource.area(AppBackgroundArea.other);
+
+    AppAreaBackground custom(
+      AppBackground background, {
+      AppBackgroundSource source = AppBackgroundSource.global,
+      bool image = false,
+      bool params = false,
+    }) => AppAreaBackground(
+      mode: AppAreaBackgroundMode.custom,
+      custom: background,
+      source: source,
+      followImage: image,
+      followParams: params,
+    );
+
+    final base = AppSurfaceSettings.defaults
+        .withGlobal(image)
+        .withArea(AppBackgroundArea.other, custom(other));
+
+    test('round-trips and encodes sparsely', () {
+      final settings = base.withArea(
+        AppBackgroundArea.editor,
+        custom(own, source: otherSource, image: true),
+      );
+      final decoded = AppSurfaceSettings.decode(settings.encode());
+      expect(decoded, settings);
+      final areas = jsonDecode(settings.encode()!)['areas'] as Map;
+      expect(areas['editor'], {
+        'mode': 'custom',
+        'background': own.toJson(),
+        'source': 'other',
+        'followImage': true,
+      });
+      // 来源为全局、两块都不跟随时不写这些键。
+      expect(areas['other'], {'mode': 'custom', 'background': other.toJson()});
+    });
+
+    test('unknown or self sources decode as global', () {
+      final decoded = AppSurfaceSettings.decode(
+        jsonEncode({
+          'areas': {
+            'editor': {'mode': 'custom', 'source': 'editor'},
+            'preview': {'mode': 'custom', 'source': 'nowhere'},
+            'other': {'mode': 'custom', 'source': 3},
+          },
+        }),
+      );
+      for (final area in [
+        AppBackgroundArea.editor,
+        AppBackgroundArea.preview,
+        AppBackgroundArea.other,
+      ]) {
+        expect(decoded.areaOf(area).source, AppBackgroundSource.global);
+      }
+    });
+
+    test('image and parameters follow separately', () {
+      final imageOnly = base.withArea(
+        AppBackgroundArea.editor,
+        custom(own, source: otherSource, image: true),
+      );
+      expect(
+        imageOnly.backgroundFor(AppBackgroundArea.editor),
+        own.copyWith(image: () => 'bg_other.jpg'),
+      );
+
+      final paramsOnly = base.withArea(
+        AppBackgroundArea.editor,
+        custom(own, source: otherSource, params: true),
+      );
+      expect(
+        paramsOnly.backgroundFor(AppBackgroundArea.editor),
+        other.copyWith(image: () => 'bg_own.jpg'),
+      );
+
+      final both = base.withArea(
+        AppBackgroundArea.editor,
+        custom(own, source: otherSource, image: true, params: true),
+      );
+      expect(both.backgroundFor(AppBackgroundArea.editor), other);
+      // 自己的那一份原样保存，关掉跟随即回来。
+      expect(both.areaOf(AppBackgroundArea.editor).custom, own);
+    });
+
+    test('a source is followed by what it currently shows', () {
+      AppBackground followed(AppAreaBackground source) => base
+          .withArea(AppBackgroundArea.other, source)
+          .withArea(
+            AppBackgroundArea.editor,
+            custom(own, source: otherSource, image: true, params: true),
+          )
+          .backgroundFor(AppBackgroundArea.editor);
+
+      // 来源跟随全局：取全局。
+      expect(
+        followed(
+          const AppAreaBackground(
+            mode: AppAreaBackgroundMode.follow,
+            custom: other,
+          ),
+        ),
+        image,
+      );
+      // 来源不显示背景：没有图片，参数为默认。
+      final off = followed(
+        const AppAreaBackground(mode: AppAreaBackgroundMode.off, custom: other),
+      );
+      expect(off.image, isNull);
+      expect(off.scrimLight, AppBackground.defaults.scrimLight);
+      expect(off.isVisible, isFalse);
+      // 来源显示纯色：有保存的图片也不跟过来。
+      expect(
+        followed(custom(other.copyWith(kind: AppBackgroundKind.color))).image,
+        isNull,
+      );
+    });
+
+    test('global source and chains resolve through each step', () {
+      final fromGlobal = base.withArea(
+        AppBackgroundArea.editor,
+        custom(own, image: true, params: true),
+      );
+      expect(fromGlobal.backgroundFor(AppBackgroundArea.editor), image);
+
+      // 预览跟随编辑，编辑的图片又跟随“其他”：预览拿到的是“其他”的图片。
+      final chained = base
+          .withArea(
+            AppBackgroundArea.editor,
+            custom(own, source: otherSource, image: true),
+          )
+          .withArea(
+            AppBackgroundArea.preview,
+            custom(
+              AppBackground.defaults.copyWith(kind: AppBackgroundKind.image),
+              source: const AppBackgroundSource.area(AppBackgroundArea.editor),
+              image: true,
+            ),
+          );
+      expect(
+        chained.backgroundFor(AppBackgroundArea.preview).image,
+        'bg_other.jpg',
+      );
+    });
+
+    test('a loop from a hand-edited backup falls back to own values', () {
+      final looped = AppSurfaceSettings.decode(
+        jsonEncode({
+          'areas': {
+            'editor': {
+              'mode': 'custom',
+              'background': own.toJson(),
+              'source': 'preview',
+              'followImage': true,
+            },
+            'preview': {
+              'mode': 'custom',
+              'background': other.toJson(),
+              'source': 'editor',
+              'followImage': true,
+            },
+          },
+        }),
+      );
+      // 编辑跟随预览；预览再跟随编辑时回到了编辑，就用预览自己的图片。
+      expect(
+        looped.backgroundFor(AppBackgroundArea.editor).image,
+        'bg_other.jpg',
+      );
+      expect(
+        looped.backgroundFor(AppBackgroundArea.preview).image,
+        'bg_own.jpg',
+      );
+    });
+
+    test('canFollow rejects itself and sources that lead back', () {
+      final settings = base
+          .withArea(
+            AppBackgroundArea.editor,
+            // 来源已选、跟随还没打开，也算在来源链里。
+            custom(own, source: otherSource),
+          )
+          .withArea(
+            AppBackgroundArea.preview,
+            const AppAreaBackground(
+              source: AppBackgroundSource.area(AppBackgroundArea.editor),
+            ),
+          );
+      expect(
+        settings.canFollow(AppBackgroundArea.other, AppBackgroundSource.global),
+        isTrue,
+      );
+      expect(settings.canFollow(AppBackgroundArea.other, otherSource), isFalse);
+      // 预览 → 编辑 → 其他：其他不能再跟随预览或编辑。
+      for (final area in [
+        AppBackgroundArea.editor,
+        AppBackgroundArea.preview,
+      ]) {
+        expect(
+          settings.canFollow(
+            AppBackgroundArea.other,
+            AppBackgroundSource.area(area),
+          ),
+          isFalse,
+        );
+      }
+      expect(
+        settings.canFollow(
+          AppBackgroundArea.diaries,
+          const AppBackgroundSource.area(AppBackgroundArea.preview),
+        ),
+        isTrue,
+      );
+    });
+  });
+
   group('AppSurfaceSettings.referencedImages', () {
     test('includes the global image and every area image, active or not', () {
       final settings = AppSurfaceSettings.defaults

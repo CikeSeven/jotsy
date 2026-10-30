@@ -137,6 +137,29 @@ void main() {
     );
   });
 
+  test('the veil tint is the tinted paper color, only when it applies', () {
+    final on = moodSeed.copyWith(tintScrim: true);
+    final tinted = _resolve(on, mood: '😊');
+    expect(
+      tinted.scrimTint,
+      DiaryPreviewResolvedStyle.tintedPaper(tinted.theme.colorScheme),
+    );
+    // 遮罩染色不改纸张本身（那是“纸张随基调染色”的事）。
+    expect(tinted.background, tinted.theme.colorScheme.surface);
+    // 没开、没心情、选了纸色：遮罩保持中性。
+    expect(_resolve(moodSeed, mood: '😊').scrimTint, isNull);
+    expect(_resolve(on).scrimTint, isNull);
+    expect(
+      _resolve(
+        on.copyWith(paper: DiaryPreviewPaper.warm),
+        mood: '😊',
+      ).scrimTint,
+      isNull,
+    );
+    // 换宽度重算版式时保留。
+    expect(tinted.atWidth(900).scrimTint, tinted.scrimTint);
+  });
+
   test('body text stays readable on every tinted paper', () {
     for (final brightness in Brightness.values) {
       for (final intensity in DiaryPreviewSeedIntensity.values) {

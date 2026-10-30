@@ -15,6 +15,7 @@ import 'package:node_diary/ui/settings/sections/app_surface/app_surface_preview.
 import 'package:node_diary/ui/settings/sections/settings_app_surface_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_home_bar_style_tile.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
+import 'package:node_diary/ui/widgets/expressive_choice_tile.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -265,6 +266,128 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('image and parameters each follow the chosen source', (
+    tester,
+  ) async {
+    const editor = AppBackgroundArea.editor;
+    final h = await _pumpPage(
+      tester,
+      initial: AppSurfaceSettings.defaults
+          .withGlobal(
+            const AppBackground(kind: AppBackgroundKind.image, image: 'g.jpg'),
+          )
+          .withArea(
+            AppBackgroundArea.other,
+            const AppAreaBackground(
+              mode: AppAreaBackgroundMode.custom,
+              custom: AppBackground(
+                kind: AppBackgroundKind.image,
+                image: 'o.jpg',
+                blur: 12,
+              ),
+            ),
+          )
+          .withArea(
+            editor,
+            const AppAreaBackground(
+              mode: AppAreaBackgroundMode.custom,
+              custom: AppBackground(
+                kind: AppBackgroundKind.image,
+                image: 'e.jpg',
+              ),
+            ),
+          )
+          // 预览以编辑为来源：编辑不能再选预览（会绕回来）。
+          .withArea(
+            AppBackgroundArea.preview,
+            const AppAreaBackground(
+              source: AppBackgroundSource.area(AppBackgroundArea.editor),
+            ),
+          ),
+    );
+    final l10n = h.l10n;
+    final chip = _chip(l10n.appSurfaceAreaEditor);
+    await tester.dragUntilVisible(
+      chip,
+      find.byType(AppSurfaceAreaChips),
+      const Offset(-120, 0),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+
+    // 自己的图片：有更换按钮，滑块可拖。
+    expect(_inOptions(l10n.appSurfaceImageChange), findsOneWidget);
+    final sourceTile = find.byKey(
+      const ValueKey<String>('appSurfaceFollowSource'),
+    );
+    expect(
+      find.descendant(
+        of: sourceTile,
+        matching: find.text(l10n.appSurfaceAreaGlobal),
+      ),
+      findsOneWidget,
+    );
+
+    // 图片跟随（来源为全局）：显示来源的说明，按钮收起。
+    await tapHomeBarOption(
+      tester,
+      find.byKey(const ValueKey<String>('appSurfaceFollowImage')),
+    );
+    expect(h.stored.areaOf(editor).followImage, isTrue);
+    expect(h.stored.resolvedCustom(editor).image, 'g.jpg');
+    expect(h.stored.areaOf(editor).custom.image, 'e.jpg');
+    expect(
+      _inOptions(l10n.appSurfaceFollowImageNote(l10n.appSurfaceAreaGlobal)),
+      findsOneWidget,
+    );
+    expect(_inOptions(l10n.appSurfaceImageChange), findsNothing);
+
+    // 换来源：会绕回来的“预览”停用，选“其他”。
+    await tapHomeBarOption(tester, sourceTile);
+    final previewOption = tester.widget<ExpressiveChoiceTile>(
+      find.byKey(const ValueKey<String>('appSurfaceSource.preview')),
+    );
+    expect(previewOption.onTap, isNull);
+    expect(previewOption.description, l10n.appSurfaceSourceLoop);
+    expect(
+      find.byKey(const ValueKey<String>('appSurfaceSource.editor')),
+      findsNothing,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('appSurfaceSource.other')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      h.stored.areaOf(editor).source,
+      const AppBackgroundSource.area(AppBackgroundArea.other),
+    );
+    expect(h.stored.resolvedCustom(editor).image, 'o.jpg');
+    expect(
+      _inOptions(l10n.appSurfaceFollowImageNote(l10n.appSurfaceAreaOther)),
+      findsOneWidget,
+    );
+
+    // 参数整块跟随：滑块停用并显示来源的值。
+    Slider blurSlider() => tester.widget<Slider>(
+      find
+          .descendant(
+            of: find.byType(TabBarView),
+            matching: find.byType(Slider),
+          )
+          .first,
+    );
+    expect(blurSlider().onChanged, isNotNull);
+    await tapHomeBarOption(
+      tester,
+      find.byKey(const ValueKey<String>('appSurfaceFollowParams')),
+    );
+    expect(h.stored.areaOf(editor).followParams, isTrue);
+    expect(blurSlider().onChanged, isNull);
+    expect(blurSlider().value, 12);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('image type: failed and unavailable picks show a message', (

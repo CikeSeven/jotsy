@@ -4349,6 +4349,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'The page background takes a light wash of the basis color';
 
   @override
+  String get diaryPreviewStyleTintScrim => 'Tint the background veil';
+
+  @override
+  String get diaryPreviewStyleTintScrimHint =>
+      'With a background image, the veil takes each diary\'s basis color (such as its mood color); its strength still follows Background & Material';
+
+  @override
   String get diaryPreviewStyleMoodColors => 'Mood colors';
 
   @override
@@ -9211,7 +9218,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appSurfaceAreaCustomNote =>
-      'This area uses its own background set below.';
+      'This area uses its own background set below; its image and parameters can each follow the global background or another page.';
 
   @override
   String get appSurfaceAreaPreviewNote =>
@@ -9283,6 +9290,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appSurfaceScrimDark => 'Dark mode veil';
+
+  @override
+  String get appSurfaceFollowSource => 'Follow from';
+
+  @override
+  String get appSurfaceFollowSourceHint =>
+      'When Image or Parameters below follow, they use what the chosen page currently shows and update when it changes.';
+
+  @override
+  String appSurfaceSourceShows(String kind) {
+    return 'Currently: $kind';
+  }
+
+  @override
+  String get appSurfaceSourceLoop => 'Its own source leads back here';
+
+  @override
+  String get appSurfaceImageGroup => 'Image';
+
+  @override
+  String get appSurfaceParamsGroup => 'Parameters';
+
+  @override
+  String appSurfaceFollowImage(String source) {
+    return 'Use the image from $source';
+  }
+
+  @override
+  String appSurfaceFollowParams(String source) {
+    return 'Use the parameters from $source';
+  }
+
+  @override
+  String get appSurfaceFollowParamsHint =>
+      'Focus, blur and veils follow together';
+
+  @override
+  String appSurfaceFollowImageNote(String source) {
+    return 'Using the image from $source';
+  }
+
+  @override
+  String appSurfaceFollowImageNone(String source) {
+    return '$source has no background image right now';
+  }
 
   @override
   String get appSurfaceGlassStyle => 'Component style';

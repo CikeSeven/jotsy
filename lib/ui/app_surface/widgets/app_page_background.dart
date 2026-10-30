@@ -27,9 +27,19 @@ export 'app_page_backdrop.dart';
 ///   垫一层 Stack；页面挂在 GlobalKey 下，两种结构切换时整棵搬过去、不重建
 ///   （滚动位置、输入焦点都保留）。结构只随“设置要不要背景”切换，不随
 ///   解码完成切换，打开页面时图片解码回来不会搬动正在输入的编辑器。
+///
+/// [deferScrim]：图片背景不画遮罩，改经 [AppPageBackdrop.deferredScrim] 交给
+/// 页面自己画（页面底色 [AppPageBackdrop.pageColor] 也换成这层遮罩，普通
+/// 页面不必改动）。用于遮罩颜色随页面内容变化、又要跟着页面一起滑动的
+/// 场景——预览页“背景遮罩随基调染色”：背景图在翻页器外面不动，每篇按
+/// 自己的基调色画遮罩、随页面滑过。[AppPageBackgroundCopy] 同样不画遮罩。
 class AppPageBackground extends ConsumerStatefulWidget {
-  const AppPageBackground({super.key, required this.area, required this.child})
-    : background = null;
+  const AppPageBackground({
+    super.key,
+    required this.area,
+    required this.child,
+    this.deferScrim = false,
+  }) : background = null;
 
   /// 设置页预览用：画给定的 [background]（如编辑中的草稿），不读已保存的
   /// 设置。图片解码、缓存、遮罩与交叉淡入与正式页面同一套管线；解码尺寸
@@ -40,9 +50,13 @@ class AppPageBackground extends ConsumerStatefulWidget {
     required this.area,
     required AppBackground this.background,
     required this.child,
+    this.deferScrim = false,
   });
 
   final AppBackgroundArea area;
+
+  /// 图片遮罩交给页面画（见类注释）。
+  final bool deferScrim;
 
   /// 指定要画的背景；为 null 时读 [area] 已保存的设置。
   final AppBackground? background;
@@ -97,12 +111,19 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
       final layers = _slot.layers;
       // 图层只在画背景的这一支交给子树（AppPageBackgroundCopy 用），默认
       // 设置下的结构不多出节点。
+      final drawScrim = !widget.deferScrim;
       child = _AppPageBackgroundLayersScope(
         layers: layers,
+        drawScrim: drawScrim,
         child: Stack(
           fit: StackFit.passthrough,
           children: <Widget>[
-            Positioned.fill(child: AppBackgroundLayersView(layers: layers)),
+            Positioned.fill(
+              child: AppBackgroundLayersView(
+                layers: layers,
+                drawScrim: drawScrim,
+              ),
+            ),
             child,
           ],
         ),
@@ -113,6 +134,7 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
         area: widget.area,
         scheme: scheme,
         contentBackdropKey: _contentBackdropKey,
+        deferScrim: widget.deferScrim,
       ),
       child: child,
     );
@@ -134,13 +156,17 @@ class AppPageBackgroundCopy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final layers = context
-        .dependOnInheritedWidgetOfExactType<_AppPageBackgroundLayersScope>()
-        ?.layers;
-    if (layers == null || layers.isEmpty) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<_AppPageBackgroundLayersScope>();
+    final layers = scope?.layers;
+    if (scope == null || layers == null || layers.isEmpty) {
       return const SizedBox.expand();
     }
-    return AppBackgroundLayersView(layers: layers, opaque: true);
+    return AppBackgroundLayersView(
+      layers: layers,
+      opaque: true,
+      drawScrim: scope.drawScrim,
+    );
   }
 }
 
@@ -149,12 +175,14 @@ class AppPageBackgroundCopy extends StatelessWidget {
 class _AppPageBackgroundLayersScope extends InheritedWidget {
   const _AppPageBackgroundLayersScope({
     required this.layers,
+    required this.drawScrim,
     required super.child,
   });
 
   final List<AppBackgroundLayer> layers;
+  final bool drawScrim;
 
   @override
   bool updateShouldNotify(_AppPageBackgroundLayersScope oldWidget) =>
-      !listEquals(layers, oldWidget.layers);
+      drawScrim != oldWidget.drawScrim || !listEquals(layers, oldWidget.layers);
 }

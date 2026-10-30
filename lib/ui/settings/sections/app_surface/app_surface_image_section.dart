@@ -16,15 +16,25 @@ import '../../widgets/settings_option_tiles.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import 'app_surface_common.dart';
 import 'app_surface_focus_viewfinder.dart';
+import 'app_surface_labels.dart';
 
-/// 背景编辑器里“图片”类型的内容：缩略图与选图按钮、焦点取景器、模糊与
-/// 浅色 / 深色遮罩三个滑块。
+/// 背景编辑器里“图片”类型的内容：两个分组——“图片”（缩略图与选图按钮）
+/// 与“参数”（焦点取景器、模糊与浅色 / 深色遮罩三个滑块）。
 ///
-/// 输入：编辑控制器、正在编辑的区域（null 为全局）与它当前的背景；副作用：
-/// 经控制器选图 / 移除图片 / 写入焦点与滑块，失败时经
-/// `showTrackedSnackBar` 提示。
+/// 输入：编辑控制器与正在编辑的区域（null 为全局）；副作用：经控制器选图 /
+/// 移除图片 / 写入焦点与滑块 / 切换跟随，失败时经 `showTrackedSnackBar`
+/// 提示。
 ///
-/// 文件名 → 文件 → 原图尺寸的解析是异步的，只在文件名变化时重做一次
+/// 区域（[area] 不为 null）的两个分组顶部各有一个跟随开关，跟随的是背景
+/// 分组里所选的“跟随来源”：
+/// - 图片跟随：缩略图换成来源当前显示的图片，选图 / 移除按钮收起；自己的
+///   图片原样保存在设置里，关掉跟随即回来；
+/// - 参数跟随：焦点、模糊与两档遮罩整块取自来源，取景器收起、滑块停用并
+///   显示来源的值；不能逐项跟随。
+/// 显示一律按“实际生效”的背景（`effectiveBackgroundOf`），编辑一律改自己
+/// 的那一份（`backgroundOf`），跟随中的那一块不会被误写。
+///
+/// 文件名 → 文件 → 原图尺寸的解析是异步的，只在生效的文件名变化时重做一次
 /// （拖动焦点、滑块不会重新读文件）；解析回来时文件名已经又换了就丢弃。
 /// 文件已不存在时显示提示，设置原样保留（恢复备份后文件可能又回来）。
 class AppSurfaceImageSection extends StatefulWidget {
@@ -32,12 +42,10 @@ class AppSurfaceImageSection extends StatefulWidget {
     super.key,
     required this.controller,
     required this.area,
-    required this.background,
   });
 
   final AppSurfaceEditorController controller;
   final AppBackgroundArea? area;
-  final AppBackground background;
 
   @override
   State<AppSurfaceImageSection> createState() => _AppSurfaceImageSectionState();
@@ -51,16 +59,20 @@ class _AppSurfaceImageSectionState extends State<AppSurfaceImageSection> {
   _ResolvedImage? _resolved;
   bool _resolving = false;
 
+  String? get _shownImage =>
+      widget.controller.effectiveBackgroundOf(widget.area).image;
+
   @override
   void initState() {
     super.initState();
-    _resolve(widget.background.image);
+    _resolve(_shownImage);
   }
 
   @override
   void didUpdateWidget(AppSurfaceImageSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.background.image != _name) _resolve(widget.background.image);
+    final name = _shownImage;
+    if (name != _name) _resolve(name);
   }
 
   Future<void> _resolve(String? name) async {
@@ -104,85 +116,136 @@ class _AppSurfaceImageSectionState extends State<AppSurfaceImageSection> {
     final l10n = context.l10n;
     final controller = widget.controller;
     final area = widget.area;
-    final background = widget.background;
-    final hasImage = background.image != null;
+    final own = controller.backgroundOf(area);
+    final shown = controller.effectiveBackgroundOf(area);
+    final setting = area == null ? null : controller.style.areaOf(area);
+    final followImage = setting?.followImage ?? false;
+    final followParams = setting?.followParams ?? false;
+    final sourceLabel = setting == null
+        ? ''
+        : appSurfaceSourceLabel(l10n, setting.source);
+    final hasImage = shown.image != null;
     final resolved = _resolved;
     final missing = hasImage && !_resolving && resolved == null;
     void preview(AppBackground next) =>
         controller.previewBackgroundOf(area, next);
     void commit(AppBackground next) => controller.commitBackground(area, next);
     final size = resolved?.size;
+    final editParams = !followParams;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        _ImageRow(
-          file: resolved?.file,
-          hasImage: hasImage,
-          missing: missing,
-          picking: controller.picking,
-          onPick: _pick,
-          onRemove: () => controller.removeImage(area),
-        ),
-        if (resolved != null && size != null) ...<Widget>[
-          const SettingsCardGroupDivider(),
-          SettingsChoiceTile(
-            title: l10n.appSurfaceFocus,
-            subtitle: l10n.appSurfaceFocusHint,
-            child: AppSurfaceFocusViewfinder(
-              file: resolved.file,
-              imageSize: size,
-              alignX: background.alignX,
-              alignY: background.alignY,
-              onPreview: (double x, double y) =>
-                  preview(background.copyWith(alignX: x, alignY: y)),
-              onCommit: (double x, double y) =>
-                  commit(background.copyWith(alignX: x, alignY: y)),
+        const SizedBox(height: 16),
+        SettingsCardGroup(
+          title: l10n.appSurfaceImageGroup,
+          children: <Widget>[
+            if (area != null)
+              SettingsSwitchTile(
+                key: const ValueKey<String>('appSurfaceFollowImage'),
+                title: l10n.appSurfaceFollowImage(sourceLabel),
+                value: followImage,
+                onChanged: (bool v) => controller.commitFollowImage(area, v),
+              ),
+            _ImageRow(
+              file: resolved?.file,
+              hasImage: hasImage,
+              missing: missing,
+              picking: controller.picking,
+              followNote: !followImage
+                  ? null
+                  : hasImage
+                  ? l10n.appSurfaceFollowImageNote(sourceLabel)
+                  : l10n.appSurfaceFollowImageNone(sourceLabel),
+              onPick: _pick,
+              onRemove: () => controller.removeImage(area),
             ),
-          ),
-        ],
-        const SettingsCardGroupDivider(),
-        appSurfaceSlider(
-          title: l10n.appSurfaceBlur,
-          range: AppSurfaceLimits.blur,
-          value: background.blur,
-          valueLabel: (double v) => '${v.round()}',
-          onPreview: (double v) => preview(background.copyWith(blur: v)),
-          onCommit: (double v) => commit(background.copyWith(blur: v)),
+          ],
         ),
-        const SettingsCardGroupDivider(),
-        appSurfaceSlider(
-          title: l10n.appSurfaceScrimLight,
-          range: AppSurfaceLimits.scrim,
-          value: background.scrimLight,
-          valueLabel: (double v) => appSurfacePercentLabel(l10n, v),
-          onPreview: (double v) => preview(background.copyWith(scrimLight: v)),
-          onCommit: (double v) => commit(background.copyWith(scrimLight: v)),
+        const SizedBox(height: 16),
+        SettingsCardGroup(
+          title: l10n.appSurfaceParamsGroup,
+          children: <Widget>[
+            if (area != null)
+              SettingsSwitchTile(
+                key: const ValueKey<String>('appSurfaceFollowParams'),
+                title: l10n.appSurfaceFollowParams(sourceLabel),
+                subtitle: l10n.appSurfaceFollowParamsHint,
+                value: followParams,
+                onChanged: (bool v) => controller.commitFollowParams(area, v),
+              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                // 跟随时焦点取自来源，取景器没有可改的东西，整行收起。
+                if (editParams && resolved != null && size != null) ...<Widget>[
+                  SettingsChoiceTile(
+                    title: l10n.appSurfaceFocus,
+                    subtitle: l10n.appSurfaceFocusHint,
+                    child: AppSurfaceFocusViewfinder(
+                      file: resolved.file,
+                      imageSize: size,
+                      alignX: own.alignX,
+                      alignY: own.alignY,
+                      onPreview: (double x, double y) =>
+                          preview(own.copyWith(alignX: x, alignY: y)),
+                      onCommit: (double x, double y) =>
+                          commit(own.copyWith(alignX: x, alignY: y)),
+                    ),
+                  ),
+                  const SettingsCardGroupDivider(),
+                ],
+                appSurfaceSlider(
+                  title: l10n.appSurfaceBlur,
+                  range: AppSurfaceLimits.blur,
+                  value: shown.blur,
+                  enabled: editParams,
+                  valueLabel: (double v) => '${v.round()}',
+                  onPreview: (double v) => preview(own.copyWith(blur: v)),
+                  onCommit: (double v) => commit(own.copyWith(blur: v)),
+                ),
+                const SettingsCardGroupDivider(),
+                appSurfaceSlider(
+                  title: l10n.appSurfaceScrimLight,
+                  range: AppSurfaceLimits.scrim,
+                  value: shown.scrimLight,
+                  enabled: editParams,
+                  valueLabel: (double v) => appSurfacePercentLabel(l10n, v),
+                  onPreview: (double v) => preview(own.copyWith(scrimLight: v)),
+                  onCommit: (double v) => commit(own.copyWith(scrimLight: v)),
+                ),
+                const SettingsCardGroupDivider(),
+                appSurfaceSlider(
+                  title: l10n.appSurfaceScrimDark,
+                  range: AppSurfaceLimits.scrim,
+                  value: shown.scrimDark,
+                  enabled: editParams,
+                  valueLabel: (double v) => appSurfacePercentLabel(l10n, v),
+                  onPreview: (double v) => preview(own.copyWith(scrimDark: v)),
+                  onCommit: (double v) => commit(own.copyWith(scrimDark: v)),
+                ),
+                const SizedBox(height: 4),
+              ],
+            ),
+          ],
         ),
-        const SettingsCardGroupDivider(),
-        appSurfaceSlider(
-          title: l10n.appSurfaceScrimDark,
-          range: AppSurfaceLimits.scrim,
-          value: background.scrimDark,
-          valueLabel: (double v) => appSurfacePercentLabel(l10n, v),
-          onPreview: (double v) => preview(background.copyWith(scrimDark: v)),
-          onCommit: (double v) => commit(background.copyWith(scrimDark: v)),
-        ),
-        const SizedBox(height: 4),
       ],
     );
   }
 }
 
 /// 缩略图 + 说明 + 按钮（没有图时“选择图片”，有图时“移除”“更换”）。选图
-/// 进行中按钮内显示等待并禁用，防止重复打开选择器。
+/// 进行中按钮内显示等待并禁用，防止重复打开选择器。图片跟随来源时
+/// （[followNote] 不为 null）只显示来源的图片与这句说明，不显示按钮。
 class _ImageRow extends StatelessWidget {
   const _ImageRow({
     required this.file,
     required this.hasImage,
     required this.missing,
     required this.picking,
+    required this.followNote,
     required this.onPick,
     required this.onRemove,
   });
@@ -193,6 +256,9 @@ class _ImageRow extends StatelessWidget {
   final bool hasImage;
   final bool missing;
   final bool picking;
+
+  /// 图片跟随来源时的说明；null 为用自己的图片。
+  final String? followNote;
   final VoidCallback onPick;
   final VoidCallback onRemove;
 
@@ -232,9 +298,13 @@ class _ImageRow extends StatelessWidget {
               ),
       ),
     );
-    final note = !hasImage
-        ? l10n.appSurfaceImageEmpty
-        : (missing ? l10n.appSurfaceImageMissing : null);
+    final followNote = this.followNote;
+    final following = followNote != null;
+    final note =
+        followNote ??
+        (!hasImage
+            ? l10n.appSurfaceImageEmpty
+            : (missing ? l10n.appSurfaceImageMissing : null));
     final pickLabel = hasImage
         ? l10n.appSurfaceImageChange
         : l10n.appSurfaceImagePick;
@@ -250,24 +320,27 @@ class _ImageRow extends StatelessWidget {
                 : Text(
                     note,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: missing ? scheme.error : scheme.onSurfaceVariant,
+                      color: missing && !following
+                          ? scheme.error
+                          : scheme.onSurfaceVariant,
                     ),
                   ),
           ),
-          if (hasImage) ...<Widget>[
+          if (hasImage && !following) ...<Widget>[
             TextButton(
               onPressed: picking ? null : onRemove,
               child: Text(l10n.appSurfaceImageRemove),
             ),
             const SizedBox(width: 4),
           ],
-          FilledButton.tonal(
-            onPressed: picking ? null : onPick,
-            style: AppGlassField.tonalButtonStyle(context),
-            child: picking
-                ? const ExpressiveLoadingIndicator(size: 20)
-                : Text(pickLabel),
-          ),
+          if (!following)
+            FilledButton.tonal(
+              onPressed: picking ? null : onPick,
+              style: AppGlassField.tonalButtonStyle(context),
+              child: picking
+                  ? const ExpressiveLoadingIndicator(size: 20)
+                  : Text(pickLabel),
+            ),
         ],
       ),
     );

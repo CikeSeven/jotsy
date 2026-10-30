@@ -7172,6 +7172,18 @@ abstract class AppLocalizations {
   /// **'The page background takes a light wash of the basis color'**
   String get diaryPreviewStyleTintPaperHint;
 
+  /// Diary preview style settings: switch: with a background image, the veil takes this diary's basis color.
+  ///
+  /// In en, this message translates to:
+  /// **'Tint the background veil'**
+  String get diaryPreviewStyleTintScrim;
+
+  /// Diary preview style settings: subtitle of Tint the background veil.
+  ///
+  /// In en, this message translates to:
+  /// **'With a background image, the veil takes each diary\'s basis color (such as its mood color); its strength still follows Background & Material'**
+  String get diaryPreviewStyleTintScrimHint;
+
   /// Diary preview style settings: link to the mood emojis page to change mood colors.
   ///
   /// In en, this message translates to:
@@ -15083,7 +15095,7 @@ abstract class AppLocalizations {
   /// 背景与材质设置：区域选择单独设置时的说明。
   ///
   /// In en, this message translates to:
-  /// **'This area uses its own background set below.'**
+  /// **'This area uses its own background set below; its image and parameters can each follow the global background or another page.'**
   String get appSurfaceAreaCustomNote;
 
   /// 背景与材质设置：预览区域说明的补充行。
@@ -15211,6 +15223,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark mode veil'**
   String get appSurfaceScrimDark;
+
+  /// 背景与材质设置：区域单独设置的图片背景里，图片与参数跟随哪个页面的设置行标题与面板标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Follow from'**
+  String get appSurfaceFollowSource;
+
+  /// 背景与材质设置：跟随来源面板顶部的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'When Image or Parameters below follow, they use what the chosen page currently shows and update when it changes.'**
+  String get appSurfaceFollowSourceHint;
+
+  /// 背景与材质设置：跟随来源面板里每个选项的说明，kind 为该页面当前显示的背景类型名。
+  ///
+  /// In en, this message translates to:
+  /// **'Currently: {kind}'**
+  String appSurfaceSourceShows(String kind);
+
+  /// 背景与材质设置：跟随来源面板里会形成循环跟随而停用的选项的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Its own source leads back here'**
+  String get appSurfaceSourceLoop;
+
+  /// 背景与材质设置：图片背景编辑器里“图片”分组的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get appSurfaceImageGroup;
+
+  /// 背景与材质设置：图片背景编辑器里“参数”（焦点、模糊、遮罩）分组的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Parameters'**
+  String get appSurfaceParamsGroup;
+
+  /// 背景与材质设置：开关：图片跟随所选来源，source 为来源页面名。
+  ///
+  /// In en, this message translates to:
+  /// **'Use the image from {source}'**
+  String appSurfaceFollowImage(String source);
+
+  /// 背景与材质设置：开关：参数整块跟随所选来源，source 为来源页面名。
+  ///
+  /// In en, this message translates to:
+  /// **'Use the parameters from {source}'**
+  String appSurfaceFollowParams(String source);
+
+  /// 背景与材质设置：参数跟随开关的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Focus, blur and veils follow together'**
+  String get appSurfaceFollowParamsHint;
+
+  /// 背景与材质设置：图片跟随来源时缩略图旁的说明，source 为来源页面名。
+  ///
+  /// In en, this message translates to:
+  /// **'Using the image from {source}'**
+  String appSurfaceFollowImageNote(String source);
+
+  /// 背景与材质设置：图片跟随的来源没有显示背景图片时的说明，source 为来源页面名。
+  ///
+  /// In en, this message translates to:
+  /// **'{source} has no background image right now'**
+  String appSurfaceFollowImageNone(String source);
 
   /// 背景与材质设置：整体组件材质分组的标题。
   ///

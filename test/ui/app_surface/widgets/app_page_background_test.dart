@@ -87,6 +87,7 @@ Future<_Harness> _pump(
   bool reduceMotion = false,
   FakeBackgroundLoader? loader,
   bool warmImage = false,
+  bool deferScrim = false,
 }) async {
   tester.view.physicalSize = _view;
   tester.view.devicePixelRatio = 1;
@@ -124,6 +125,7 @@ Future<_Harness> _pump(
         ),
         home: AppPageBackground(
           area: AppBackgroundArea.settings,
+          deferScrim: deferScrim,
           child: Builder(
             builder: (BuildContext context) {
               harness.backdrop = AppPageBackdrop.of(context);
@@ -343,6 +345,42 @@ void main() {
       ),
     );
     expect(harness.loader.requests, hasLength(1));
+  });
+
+  testWidgets('deferScrim hands the image scrim to the page', (tester) async {
+    final harness = await _pump(
+      tester,
+      settings: _settings(_image),
+      warmImage: true,
+      deferScrim: true,
+    );
+    final scrim = harness.scheme.surface.withValues(alpha: 0.3);
+    // 背景层只画图，不画遮罩；遮罩经 backdrop 交给页面，页面底色就是它。
+    expect(find.byType(RawImage), findsOneWidget);
+    expect(_layerColors(tester), isNot(contains(scrim)));
+    expect(harness.backdrop.deferredScrim, scrim);
+    expect(harness.backdrop.pageColor, scrim);
+    expect(_scaffoldColor(tester), scrim);
+    // 估计色照常含遮罩：页面总会画上它。
+    expect(
+      harness.backdrop.estimatedColor,
+      Color.alphaBlend(
+        scrim,
+        Color.alphaBlend(harness.loader.color, harness.scheme.surface),
+      ),
+    );
+  });
+
+  testWidgets('deferScrim leaves color backgrounds as they were', (
+    tester,
+  ) async {
+    final harness = await _pump(
+      tester,
+      settings: _color(_colorA),
+      deferScrim: true,
+    );
+    expect(harness.backdrop.deferredScrim, isNull);
+    expect(harness.backdrop.pageColor, Colors.transparent);
   });
 
   testWidgets('an image still decoding keeps the page plain, then fades in', (

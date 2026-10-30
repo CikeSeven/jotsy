@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/lan_sync/models/lan_sync_item_counts.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_ui_events.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_view_state.dart';
 
@@ -13,14 +14,19 @@ FakeLanSyncController _controller() => FakeLanSyncController(
   ),
 );
 
-/// 发一次“以哪边为准”，返回记录回应的列表。
-List<LanSyncSideChoice?> _emitChooseSide(FakeLanSyncController controller) {
+/// 发一次“以哪边为准”（默认 3 篇日记），返回记录回应的列表。
+List<LanSyncSideChoice?> _emitChooseSide(
+  FakeLanSyncController controller, {
+  Map<LanSyncItemKind, int> items = const <LanSyncItemKind, int>{
+    LanSyncItemKind.diaries: 3,
+  },
+}) {
   final responses = <LanSyncSideChoice?>[];
   controller.emit(
     LanSyncChooseSideEvent(
       peerId: 'peer-1',
       peerName: 'ThinkPad',
-      conflicts: 3,
+      items: LanSyncItemCounts(items),
       respond: (LanSyncSideChoice? choice) async => responses.add(choice),
     ),
   );
@@ -66,6 +72,27 @@ void main() {
 
       await _tapContinue(tester);
       expect(responses, <LanSyncSideChoice?>[LanSyncSideChoice.keepBoth]);
+    });
+
+    testWidgets('lists every kind when more than diaries conflict', (
+      tester,
+    ) async {
+      final controller = _controller();
+      await pumpLanSyncPage(tester, controller);
+      _emitChooseSide(
+        controller,
+        items: const <LanSyncItemKind, int>{
+          LanSyncItemKind.settings: 1,
+          LanSyncItemKind.diaries: 2,
+          LanSyncItemKind.tags: 1,
+        },
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('以下内容在本机和「ThinkPad」上都改过：日记 2 · 标签 1 · 设置 1。要怎么合并？'),
+        findsOneWidget,
+      );
     });
 
     for (final (label, choice) in <(String, LanSyncSideChoice)>[

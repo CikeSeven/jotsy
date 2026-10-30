@@ -153,13 +153,14 @@ extension _Responder on LanSyncSession {
   }
 
   /// 发起方告知的计划概况：两边各要收到多少篇日记、要传多少媒体（只用于
-  /// 进度显示）。
+  /// 进度显示），以及它等用户确认花了多久（用时里扣掉，两边口径一致）。
   void _notePlan(LanSyncMessage message) {
     int read(String key) {
       final value = message.fields[key];
       return value is int && value >= 0 ? value : 0;
     }
 
+    _waited += Duration(milliseconds: read('waitedMs'));
     _setProgress(
       (p) => p.copyWith(
         receivedDiaries: read('incoming'),

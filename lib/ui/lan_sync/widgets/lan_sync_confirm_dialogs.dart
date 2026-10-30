@@ -14,22 +14,31 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_choice_tile.dart';
+import '../models/lan_sync_item_counts.dart';
 import '../models/lan_sync_ui_events.dart';
+import 'lan_sync_labels.dart';
 
-/// 以哪边为准：默认选中“保留两份”。
+/// 以哪边为准：默认选中“保留两份”。只有日记时说“有 N 篇日记……”，还有
+/// 别的种类时逐项列出（“日记 2 · 标签 1”）。
 Future<LanSyncSideChoice?> showLanSyncChooseSideDialog(
   BuildContext context, {
   required String peerName,
-  required int conflicts,
+  required LanSyncItemCounts items,
 }) {
   final l10n = context.l10n;
+  final body = items.others == 0
+      ? l10n.lanSyncChooseSideBody(peerName, items.diaries)
+      : l10n.lanSyncChooseSideBodyItems(
+          peerName,
+          lanSyncItemCountsText(l10n, items),
+        );
   return showAppDialog<LanSyncSideChoice>(
     context: context,
     builder: (BuildContext context) => _LanSyncChoiceDialog<LanSyncSideChoice>(
       icon: FontAwesomeIcons.rightLeft,
       danger: false,
       title: l10n.lanSyncChooseSideTitle,
-      body: l10n.lanSyncChooseSideBody(peerName, conflicts),
+      body: body,
       initial: LanSyncSideChoice.keepBoth,
       options: <_ChoiceOption<LanSyncSideChoice>>[
         _ChoiceOption<LanSyncSideChoice>(

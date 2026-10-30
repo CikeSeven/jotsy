@@ -58,6 +58,7 @@ extension _Initiator on LanSyncSession {
       'outgoing': plan.local.stats[SyncEntity.diary]?.total ?? 0,
       'files': media.files,
       'bytes': media.bytes,
+      'waitedMs': _waited.inMilliseconds,
     });
     _setProgress(
       (p) => p.copyWith(
@@ -117,7 +118,7 @@ extension _Initiator on LanSyncSession {
     if (plan.confirmations.sideChoiceNeeded) {
       final request = LanSyncSideChoiceRequest(
         peerId: peer.deviceId,
-        conflicts: plan.confirmations.sideChoiceConflicts,
+        counts: plan.confirmations.sideChoiceCounts,
       );
       choice = await _ask(request, request.answer);
       if (choice != SyncSideChoice.keepBoth) {
@@ -154,6 +155,7 @@ extension _Initiator on LanSyncSession {
       throw const _SessionStop(LanSyncFailure.needsConfirmation);
     }
     _pendingConfirmation = request;
+    final askedAt = _context.clock();
     try {
       _onConfirmation(request);
       final result = await _keepAlive(
@@ -171,6 +173,7 @@ extension _Initiator on LanSyncSession {
       }
       return result;
     } finally {
+      _waited += _context.clock().difference(askedAt);
       _pendingConfirmation = null;
       request.expire();
     }

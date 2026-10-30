@@ -207,6 +207,7 @@ extension _Media on LanSyncSession {
         added: diaries.added,
         updated: diaries.updated,
         deleted: diaries.deleted,
+        others: <SyncEntity, int>{...result.summary}..remove(SyncEntity.diary),
         mediaFiles: result.mediaFiles,
         mediaBytes: result.mediaBytes,
       ),

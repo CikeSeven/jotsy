@@ -72,11 +72,13 @@ class SyncApplyResult {
     this.manifest,
     Map<SyncEntity, SyncEntityCounts> counts =
         const <SyncEntity, SyncEntityCounts>{},
+    Map<SyncEntity, int> summary = const <SyncEntity, int>{},
     this.mediaFiles = 0,
     this.mediaBytes = 0,
   }) : skipped = List<SyncApplySkip>.unmodifiable(skipped),
        rekeys = List<SyncMediaRekey>.unmodifiable(rekeys),
-       counts = Map<SyncEntity, SyncEntityCounts>.unmodifiable(counts);
+       counts = Map<SyncEntity, SyncEntityCounts>.unmodifiable(counts),
+       summary = Map<SyncEntity, int>.unmodifiable(summary);
 
   SyncApplyResult.deferred() : this(status: SyncApplyStatus.deferred);
 
@@ -94,6 +96,10 @@ class SyncApplyResult {
 
   /// 实际执行的写入按实体统计（跳过的不算；原地改名记为标签更新）。
   final Map<SyncEntity, SyncEntityCounts> counts;
+
+  /// 实际执行的写入条数按 [syncSummaryEntityOf] 归类（界面摘要与同步记录
+  /// 的“其他”；原地改名算作标签）。
+  final Map<SyncEntity, int> summary;
 
   /// 新放进托管目录的媒体文件数与字节数（复用本机已有的不算）。
   final int mediaFiles;
@@ -113,11 +119,12 @@ class SyncApplyResult {
 
 /// 事务与设置都完成后的中间结果（[SyncApplier] 内部）。
 class _LockedResult {
-  _LockedResult(this.skipped, this.manifest, this.counts);
+  _LockedResult(this.skipped, this.manifest, this.counts, this.summary);
 
   final List<SyncApplySkip> skipped;
   final SyncManifest manifest;
   final Map<SyncEntity, SyncEntityCounts> counts;
+  final Map<SyncEntity, int> summary;
 }
 
 /// 写入后折叠要继承的历史时间：只取真正写了的键，且去掉被媒体改键改写过的
@@ -166,4 +173,21 @@ Map<SyncEntity, SyncEntityCounts> _countPerformed(
   }
   if (renamed.isNotEmpty) add(SyncEntity.tag, u: renamed.length);
   return counts;
+}
+
+/// 实际执行的写入按 [syncSummaryEntityOf] 计数；原地改名算作标签。
+Map<SyncEntity, int> _summarizePerformed(
+  List<SyncWrite> performed,
+  List<SyncTagRenameOp> renamed,
+) {
+  final summary = <SyncEntity, int>{};
+  void add(SyncEntity entity, int count) {
+    if (count > 0) summary[entity] = (summary[entity] ?? 0) + count;
+  }
+
+  for (final write in performed) {
+    add(syncSummaryEntityOf(write.key), 1);
+  }
+  add(SyncEntity.tag, renamed.length);
+  return summary;
 }

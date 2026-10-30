@@ -49,6 +49,8 @@ void main() {
         duration: const Duration(seconds: 3),
         receivedDiaries: 2,
         sentDiaries: 1,
+        receivedOthers: 3,
+        sentOthers: 4,
         mediaBytes: 99,
         conflictCopies: 1,
         firstSync: true,
@@ -67,6 +69,9 @@ void main() {
     final reopened = await LanSyncStore.open(dir);
     expect(reopened.data.value, store.data.value);
     expect(reopened.sessions.value, store.sessions.value);
+    final first = reopened.sessions.value.singleWhere((r) => r.peerId == 'a');
+    expect(first.receivedOthers, 3);
+    expect(first.sentOthers, 4);
     expect(reopened.prefs.deviceName, 'ThinkPad');
     expect(reopened.peer('a')!.alias, '客厅');
     expect(reopened.peer('a')!.needsAttention, isTrue);

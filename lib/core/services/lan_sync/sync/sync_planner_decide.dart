@@ -30,7 +30,7 @@ extension _Decide on _Planner {
   /// - R ∈ H_L 取本机，L ∈ H_R 取对方；两者同时成立（改回旧值：A → B → A）时
   ///   按当前值的确立时间（历史头条的 seenAt）较晚者，平手按 deviceId；
   /// - 否则真冲突；两侧历史没有任何共同哈希时记为“没有共同祖先”，“以哪边
-  ///   为准”生效且选了一侧时直接取那一侧。
+  ///   为准”生效且选了一侧时直接取那一侧（顺序列表除外，见下）。
   _Pick? decideFacet(SyncKey key, String facet) {
     final lh = local.manifest[key]![facet];
     final rh = remote.manifest[key]![facet];
@@ -59,6 +59,11 @@ extension _Decide on _Planner {
     final localHashes = <String>{for (final entry in hl) entry.hash};
     final common = hr.any((entry) => localHashes.contains(entry.hash));
     if (common) return _Pick.conflict;
+    // 顺序列表两侧总是都有（新设备上是空书架、空模板顺序），与对方的列表
+    // 天然没有共同哈希，却谈不上“两边都改过”：一律按列表规则合并（没有
+    // 祖先时取并集），不计入、也不受“以哪边为准”影响——选了哪一边，最终
+    // 列表都要恰好是两边记录的并集（[_Lists.resolveOrderLists]）。
+    if (key.entity == SyncEntity.orderList) return _Pick.conflict;
     ancestryLess.add(key);
     if (!sideChoiceActive) return _Pick.conflict;
     return switch (options.sideChoice) {

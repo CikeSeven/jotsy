@@ -113,6 +113,7 @@ class LanSyncHistoryEntry extends StatelessWidget {
     final summary = <String>[
       l10n.lanSyncHistoryReceived(entry.receivedDiaries),
       l10n.lanSyncHistorySent(entry.sentDiaries),
+      if (entry.otherChanges > 0) l10n.lanSyncHistoryOthers(entry.otherChanges),
       if (entry.mediaBytes > 0)
         l10n.lanSyncHistoryMedia(l10n.formatByteSize(entry.mediaBytes)),
     ].join(' · ');

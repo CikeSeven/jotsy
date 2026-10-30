@@ -3,11 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/lan_sync/lan_sync_crypto.dart'
     show LanSyncRole;
 import 'package:node_diary/core/services/lan_sync/lan_sync_service.dart';
+import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_plan.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/lan_sync/controllers/engine_lan_sync_ui_controller.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_engine_events.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_engine_mapping.dart';
+import 'package:node_diary/ui/lan_sync/models/lan_sync_item_counts.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_platform.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_session_view.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_ui_events.dart';
@@ -331,16 +333,32 @@ void main() {
     });
 
     test('界面的 respond 换算后交给引擎的请求', () async {
-      final side = LanSyncSideChoiceRequest(peerId: 'peer-1', conflicts: 3);
+      final side = LanSyncSideChoiceRequest(
+        peerId: 'peer-1',
+        counts: const <SyncEntity, int>{
+          SyncEntity.diary: 3,
+          SyncEntity.notebook: 1,
+          SyncEntity.membership: 2,
+        },
+      );
       final event =
           lanSyncConfirmationEventOf(side, peerName: 'ThinkPad')
               as LanSyncChooseSideEvent;
-      expect(event.conflicts, 3);
+      expect(
+        event.items,
+        LanSyncItemCounts(const <LanSyncItemKind, int>{
+          LanSyncItemKind.diaries: 3,
+          LanSyncItemKind.notebooks: 3,
+        }),
+      );
       expect(event.peerName, 'ThinkPad');
       await event.respond(LanSyncSideChoice.preferPeer);
       expect(await side.answer, SyncSideChoice.preferRemote);
 
-      final cancelled = LanSyncSideChoiceRequest(peerId: 'p', conflicts: 1);
+      final cancelled = LanSyncSideChoiceRequest(
+        peerId: 'p',
+        counts: const <SyncEntity, int>{SyncEntity.diary: 1},
+      );
       await (lanSyncConfirmationEventOf(cancelled, peerName: '')
               as LanSyncChooseSideEvent)
           .respond(null);

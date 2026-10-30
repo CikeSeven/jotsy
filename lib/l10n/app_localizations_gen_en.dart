@@ -11347,6 +11347,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get lanSyncSummaryOthers => 'Other';
+
+  @override
   String lanSyncSummaryConflicts(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -11367,6 +11370,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lanSyncSummaryFootnote =>
       'Tags, notebooks, comments and anniversaries were merged too';
+
+  @override
+  String lanSyncSummaryOtherDetail(String items) {
+    return 'Other changes: $items';
+  }
 
   @override
   String get lanSyncSummaryDone => 'Done';
@@ -11492,6 +11500,40 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 diary was',
     );
     return '$_temp0 changed both here and on “$name”. How should they be merged?';
+  }
+
+  @override
+  String lanSyncChooseSideBodyItems(String name, String items) {
+    return 'These were changed both here and on “$name”: $items. How should they be merged?';
+  }
+
+  @override
+  String get lanSyncItemDiaries => 'Diaries';
+
+  @override
+  String get lanSyncItemTags => 'Tags';
+
+  @override
+  String get lanSyncItemNotebooks => 'Notebooks';
+
+  @override
+  String get lanSyncItemComments => 'Comments';
+
+  @override
+  String get lanSyncItemTemplates => 'Templates';
+
+  @override
+  String get lanSyncItemAnniversaries => 'Anniversaries';
+
+  @override
+  String get lanSyncItemDayMoods => 'Day moods';
+
+  @override
+  String get lanSyncItemSettings => 'Settings';
+
+  @override
+  String lanSyncItemCount(String label, int count) {
+    return '$label $count';
   }
 
   @override
@@ -11643,6 +11685,17 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 diary',
     );
     return '↑ Sent $_temp0';
+  }
+
+  @override
+  String lanSyncHistoryOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other changes',
+      one: '1 other change',
+    );
+    return '$_temp0';
   }
 
   @override

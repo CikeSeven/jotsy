@@ -34,6 +34,9 @@ class LanSyncTestClock {
   DateTime _now;
 
   DateTime call() => _now = _now.add(const Duration(seconds: 1));
+
+  /// 时间往前拨（模拟用户在确认对话框前停留）。
+  void advance(Duration duration) => _now = _now.add(duration);
 }
 
 class LanSyncTestDevice {

@@ -141,6 +141,9 @@ class LanSyncSession {
   LanSyncChangeTally _received = LanSyncChangeTally.zero;
   LanSyncChangeTally _sent = LanSyncChangeTally.zero;
   List<LanSyncCopyInfo> _copies = const <LanSyncCopyInfo>[];
+
+  /// 等用户确认的时间（发起方自己量，响应方取自 `plan` 消息），不计入用时。
+  Duration _waited = Duration.zero;
   int _nextBlobId = 1;
   int _bytesDone = 0;
   final _SpeedMeter _speed = _SpeedMeter();
@@ -202,7 +205,7 @@ class LanSyncSession {
       role: role,
       automatic: _automatic,
       startedAt: startedAt,
-      duration: _context.clock().difference(startedAt),
+      duration: _activeDuration(startedAt),
       failure: failure,
       received: _received,
       sent: _sent,
@@ -212,6 +215,12 @@ class LanSyncSession {
       transferredFiles: _progress.value.filesDone,
       transferredBytes: _bytesDone,
     );
+  }
+
+  /// 从 [startedAt] 到现在、扣掉等用户确认的时间（不小于 0）。
+  Duration _activeDuration(DateTime startedAt) {
+    final active = _context.clock().difference(startedAt) - _waited;
+    return active.isNegative ? Duration.zero : active;
   }
 
   LanSyncFailure _failureOf(Object error) {

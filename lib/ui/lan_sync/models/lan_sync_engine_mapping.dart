@@ -9,6 +9,8 @@
 // 界面的日期格式化按本地时区显示，相对时间（“N 分钟前”）不受影响。
 
 import '../../../core/services/lan_sync/lan_sync_service.dart';
+import '../../../core/services/lan_sync/sync/sync_model.dart';
+import 'lan_sync_item_counts.dart';
 import 'lan_sync_platform.dart';
 import 'lan_sync_qr_ticket.dart';
 import 'lan_sync_session_summary.dart';
@@ -80,6 +82,7 @@ LanSyncHistoryEntryView lanSyncHistoryEntryOf(LanSyncSessionRecord record) {
     automatic: record.automatic,
     receivedDiaries: record.receivedDiaries,
     sentDiaries: record.sentDiaries,
+    otherChanges: record.receivedOthers + record.sentOthers,
     mediaBytes: record.mediaBytes,
     conflictCopies: record.conflictCopies,
     firstSync: record.firstSync,
@@ -137,12 +140,40 @@ LanSyncViewState lanSyncViewStateOf(LanSyncEngineState state) {
   );
 }
 
+/// 引擎的实体 → 界面的数据种类（引擎已按 `syncSummaryEntityOf` 把收录、
+/// 顺序列表归到日记本 / 模板；这里再兜一次底）。
+LanSyncItemKind lanSyncItemKindOf(SyncEntity entity) {
+  return switch (entity) {
+    SyncEntity.diary => LanSyncItemKind.diaries,
+    SyncEntity.tag => LanSyncItemKind.tags,
+    SyncEntity.notebook ||
+    SyncEntity.membership ||
+    SyncEntity.orderList => LanSyncItemKind.notebooks,
+    SyncEntity.comment => LanSyncItemKind.comments,
+    SyncEntity.template => LanSyncItemKind.templates,
+    SyncEntity.anniversary => LanSyncItemKind.anniversaries,
+    SyncEntity.dayMood => LanSyncItemKind.dayMoods,
+    SyncEntity.settings => LanSyncItemKind.settings,
+  };
+}
+
+/// 按实体的计数 → 按数据种类的计数（同一种类的相加）。
+LanSyncItemCounts lanSyncItemCountsOf(Map<SyncEntity, int> counts) {
+  final byKind = <LanSyncItemKind, int>{};
+  for (final entry in counts.entries) {
+    final kind = lanSyncItemKindOf(entry.key);
+    byKind[kind] = (byKind[kind] ?? 0) + entry.value;
+  }
+  return LanSyncItemCounts(byKind);
+}
+
 /// 一个方向的变化计数（完成摘要的“收到 / 发出”）。
 LanSyncChangeCounts lanSyncChangeCountsOf(LanSyncChangeTally tally) {
   return LanSyncChangeCounts(
     added: tally.added,
     updated: tally.updated,
     deleted: tally.deleted,
+    others: lanSyncItemCountsOf(tally.others).withoutDiaries,
     mediaCount: tally.mediaFiles,
     mediaBytes: tally.mediaBytes,
   );

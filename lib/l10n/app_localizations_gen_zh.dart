@@ -10117,6 +10117,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get lanSyncSummaryOthers => '其他';
+
+  @override
   String lanSyncSummaryConflicts(int count) {
     return '$count 篇日记两边都改过，已保留两份';
   }
@@ -10129,6 +10132,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncSummaryFootnote => '标签、日记本、留言与纪念日已一并合并';
+
+  @override
+  String lanSyncSummaryOtherDetail(String items) {
+    return '其他变化：$items';
+  }
 
   @override
   String get lanSyncSummaryDone => '完成';
@@ -10235,6 +10243,40 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String lanSyncChooseSideBody(String name, int count) {
     return '有 $count 篇日记在本机和「$name」上都改过，要怎么合并？';
+  }
+
+  @override
+  String lanSyncChooseSideBodyItems(String name, String items) {
+    return '以下内容在本机和「$name」上都改过：$items。要怎么合并？';
+  }
+
+  @override
+  String get lanSyncItemDiaries => '日记';
+
+  @override
+  String get lanSyncItemTags => '标签';
+
+  @override
+  String get lanSyncItemNotebooks => '日记本';
+
+  @override
+  String get lanSyncItemComments => '留言';
+
+  @override
+  String get lanSyncItemTemplates => '模板';
+
+  @override
+  String get lanSyncItemAnniversaries => '纪念日';
+
+  @override
+  String get lanSyncItemDayMoods => '这天的心情';
+
+  @override
+  String get lanSyncItemSettings => '设置';
+
+  @override
+  String lanSyncItemCount(String label, int count) {
+    return '$label $count';
   }
 
   @override
@@ -10351,6 +10393,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String lanSyncHistorySent(int count) {
     return '↑ 发出 $count 篇';
+  }
+
+  @override
+  String lanSyncHistoryOthers(int count) {
+    return '其他 $count 项';
   }
 
   @override

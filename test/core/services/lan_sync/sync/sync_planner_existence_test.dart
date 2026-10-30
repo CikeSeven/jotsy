@@ -270,5 +270,66 @@ void main() {
       );
       expect(plan.remote.writes.where((w) => w.isDelete), isEmpty);
     });
+
+    test('新设备首次同步：空书架与对方的书架不算冲突，书架取并集', () {
+      final a = PlanDevice('a')
+        ..putAll([
+          notebookRecord('n1'),
+          notebookRecord('n2'),
+          listRecord(SyncOrderListId.shelf, ['n2', 'n1']),
+          listRecord(SyncOrderListId.templates, ['t1']),
+          SyncRecord(const SyncKey(SyncEntity.template, 't1'), {
+            SyncFacet.main: {'name': 't1', 'updatedAt': 1000},
+          }),
+        ])
+        ..commit(1);
+      final b = PlanDevice('b')
+        ..putAll([
+          listRecord(SyncOrderListId.shelf, []),
+          listRecord(SyncOrderListId.templates, []),
+        ])
+        ..commit(1);
+      for (final choice in SyncSideChoice.values) {
+        final plan = planBetween(
+          b,
+          a,
+          options: SyncPlanOptions(
+            nowMillis: 0,
+            firstSyncWithPeer: true,
+            sideChoice: choice,
+          ),
+        ).plan;
+        expect(plan.confirmations.sideChoiceNeeded, isFalse, reason: '$choice');
+        expect(plan.remote.writes, isEmpty, reason: '$choice');
+        final shelf =
+            writeFor(
+                  plan,
+                  SyncSideRole.local,
+                  listKey(SyncOrderListId.shelf),
+                )!.record!.facets[SyncFacet.items]!
+                as Map;
+        expect(shelf['ids'], ['n2', 'n1'], reason: '$choice');
+      }
+    });
+
+    test('覆盖恢复后的真实冲突仍需确认，只按日记计数', () {
+      final (a, b) = unrelated();
+      a
+        ..putAll([
+          notebookRecord('n1'),
+          listRecord(SyncOrderListId.shelf, ['n1']),
+        ])
+        ..commit(4);
+      b
+        ..putAll([
+          notebookRecord('n2'),
+          listRecord(SyncOrderListId.shelf, ['n2']),
+        ])
+        ..commit(4);
+      b.restoredPending = true;
+      final confirmations = planBetween(a, b).plan.confirmations;
+      expect(confirmations.sideChoiceCounts, {SyncEntity.diary: 1});
+      expect(confirmations.sideChoiceConflicts, 1);
+    });
   });
 }

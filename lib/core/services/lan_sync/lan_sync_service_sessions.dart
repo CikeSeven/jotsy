@@ -172,6 +172,8 @@ extension _Sessions on LanSyncService {
             automatic: result.automatic,
             receivedDiaries: result.received.diaries,
             sentDiaries: result.sent.diaries,
+            receivedOthers: result.received.otherTotal,
+            sentOthers: result.sent.otherTotal,
             mediaBytes: result.transferredBytes,
             conflictCopies: result.conflictCopies.length,
             firstSync: firstSync,

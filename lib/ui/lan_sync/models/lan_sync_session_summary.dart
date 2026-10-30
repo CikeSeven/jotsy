@@ -3,6 +3,7 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'lan_sync_item_counts.dart';
 import 'lan_sync_session_view.dart';
 
 /// 一个方向上的变化计数（完成摘要的“收到 / 发出”两列）。
@@ -12,6 +13,7 @@ class LanSyncChangeCounts {
     this.added = 0,
     this.updated = 0,
     this.deleted = 0,
+    this.others = LanSyncItemCounts.empty,
     this.mediaCount = 0,
     this.mediaBytes = 0,
   });
@@ -23,6 +25,9 @@ class LanSyncChangeCounts {
   final int updated;
   final int deleted;
 
+  /// 日记以外的变化（不含日记一项）。
+  final LanSyncItemCounts others;
+
   /// 媒体文件个数与字节数。
   final int mediaCount;
   final int mediaBytes;
@@ -30,7 +35,7 @@ class LanSyncChangeCounts {
   /// 这个方向的日记篇数合计（摘要卡片的大号数字）。
   int get diaries => added + updated + deleted;
 
-  bool get isEmpty => diaries == 0 && mediaCount == 0;
+  bool get isEmpty => diaries == 0 && others.isEmpty && mediaCount == 0;
 
   @override
   bool operator ==(Object other) =>
@@ -38,12 +43,13 @@ class LanSyncChangeCounts {
       other.added == added &&
       other.updated == updated &&
       other.deleted == deleted &&
+      other.others == others &&
       other.mediaCount == mediaCount &&
       other.mediaBytes == mediaBytes;
 
   @override
   int get hashCode =>
-      Object.hash(added, updated, deleted, mediaCount, mediaBytes);
+      Object.hash(added, updated, deleted, others, mediaCount, mediaBytes);
 }
 
 /// 一篇冲突副本：两边都改过的日记，较新的留在原日记，另一份存为副本。

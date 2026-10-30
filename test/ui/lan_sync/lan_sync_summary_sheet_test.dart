@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/lan_sync/models/lan_sync_item_counts.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_session_summary.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_session_view.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_ui_events.dart';
@@ -85,6 +86,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('标签、日记本、留言与纪念日已一并合并'), findsOneWidget);
+    expect(find.text('其他'), findsNothing);
     expect(find.textContaining('两边都改过'), findsNothing);
     expect(haptics, contains('HapticFeedbackType.lightImpact'));
 
@@ -134,6 +136,39 @@ void main() {
     await tester.tap(find.text('完成'));
     await tester.pumpAndSettle();
     expect(find.byType(LanSyncSummarySheet), findsNothing);
+  });
+
+  testWidgets('changes other than diaries are not “up to date”', (
+    tester,
+  ) async {
+    final controller = _controller();
+    await pumpLanSyncPage(tester, controller);
+    controller.emit(
+      _finished(
+        LanSyncSessionSummary(
+          peerName: 'ThinkPad',
+          duration: const Duration(seconds: 1),
+          received: LanSyncChangeCounts(
+            others: LanSyncItemCounts(const <LanSyncItemKind, int>{
+              LanSyncItemKind.comments: 2,
+            }),
+          ),
+          sent: LanSyncChangeCounts(
+            others: LanSyncItemCounts(const <LanSyncItemKind, int>{
+              LanSyncItemKind.tags: 1,
+              LanSyncItemKind.comments: 1,
+            }),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('已经是最新的了'), findsNothing);
+    expect(find.text('同步完成'), findsOneWidget);
+    expect(find.text('其他'), findsNWidgets(2));
+    expect(find.text('其他变化：标签 1 · 留言 3'), findsOneWidget);
+    expect(find.text('标签、日记本、留言与纪念日已一并合并'), findsNothing);
   });
 
   testWidgets('tapping a conflict copy closes the sheet and opens the diary', (

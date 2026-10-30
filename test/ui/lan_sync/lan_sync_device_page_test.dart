@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/lan_sync/models/lan_sync_item_counts.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_session_view.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_ui_events.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_view_state.dart';
@@ -17,6 +18,7 @@ final List<LanSyncHistoryEntryView> _history = <LanSyncHistoryEntryView>[
     duration: const Duration(seconds: 4),
     receivedDiaries: 3,
     sentDiaries: 2,
+    otherChanges: 4,
     mediaBytes: 1536 * 1024,
     conflictCopies: 2,
   ),
@@ -207,7 +209,10 @@ void main() {
 
     expect(find.text('同步记录'), findsOneWidget);
     expect(find.byType(LanSyncHistoryEntry), findsNWidgets(3));
-    expect(find.text('↓ 收到 3 篇 · ↑ 发出 2 篇 · 媒体 1.5 MB'), findsOneWidget);
+    expect(
+      find.text('↓ 收到 3 篇 · ↑ 发出 2 篇 · 其他 4 项 · 媒体 1.5 MB'),
+      findsOneWidget,
+    );
     expect(find.text('4 秒'), findsOneWidget);
     expect(find.text('2 篇冲突副本'), findsOneWidget);
     expect(find.text('连接中断'), findsOneWidget);
@@ -321,7 +326,9 @@ void main() {
       LanSyncChooseSideEvent(
         peerId: 'peer-1',
         peerName: 'ThinkPad',
-        conflicts: 1,
+        items: LanSyncItemCounts(const <LanSyncItemKind, int>{
+          LanSyncItemKind.diaries: 1,
+        }),
         respond: (LanSyncSideChoice? choice) async => responses.add(choice),
       ),
     );

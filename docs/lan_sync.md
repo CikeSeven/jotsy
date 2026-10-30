@@ -107,7 +107,7 @@ class SyncManifest {
 | `renames.json.gz` | 标签改名记录：旧名 → 新名、时间（随墓碑同样淘汰） |
 | `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日），其余每次现算 |
 | `media_index.json.gz` | 媒体键 → 大小、修改时间、sha256（大小或修改时间变了就重算） |
-| `sessions.json` | 最近 50 次同步记录 |
+| `sessions.json` | 最近 50 次同步记录（时间、用时（不含等用户确认）、自动与否、收到 / 发出的日记篇数与其他变化条数、媒体字节数、冲突副本数、是否首次、失败原因） |
 
 - **刷新检查点**（每次会话开始时，在冲刷编辑会话之后）：算出当前清单 C，与检查点 P 比较——
   - P、C 都有且某分面哈希不同：把 P 中的旧哈希（及 tags / orderList 的旧值）插到该分面历史最前，`seenAt` 为当前时间；
@@ -179,7 +179,7 @@ class SyncManifest {
 
 ### 4.5 需要用户确认的情况（规划器只报告，会话层决定）
 - **删除保护**：任一侧将彻底删除的日记数 > max(20, 该侧日记总数的 10%)（总数 = 该侧清单里的日记数）。
-- **以哪边为准**：本次与该设备是首次同步、或任一侧 `restoredPending`，且出现没有共同祖先的冲突（两侧该分面历史没有任何共同哈希；stamp 与缺分面不算）时，报告涉及的记录数，请用户选：保留两份（按 4.1 生成副本）/ 以本机为准 / 以对方为准；后两种对这些冲突直接取一方，不生成副本。“不删除任何记录”：选择只作用于这些冲突分面，不把只在一侧的记录变成删除——只在一侧的记录仍按 4.2（覆盖恢复后墓碑已清空，实际都是复制）。不论本次按哪种选择规划都照样报告数量，用户是否已经选过由会话层记住。
+- **以哪边为准**：本次与该设备是首次同步、或任一侧 `restoredPending`，且出现没有共同祖先的冲突（两侧该分面历史没有任何共同哈希；stamp 与缺分面不算）时，按实体报告涉及的记录数（`SyncPendingConfirmations.sideChoiceCounts`），请用户选：保留两份（按 4.1 生成副本）/ 以本机为准 / 以对方为准；后两种对这些冲突直接取一方，不生成副本。顺序列表（`orderList`）不计入、也不受这个选择影响：书架与“我的模板”顺序两侧总是都有，新设备上是空列表，与对方天然没有共同哈希，却谈不上“两边都改过”——没有共同祖先时一律按 4.1 的列表规则取并集（之后再按 4.3 校正为最终集合）。对话框只有日记时说“有 N 篇日记……”，还有别的种类时逐项列出（收录与书架 / 书序归日记本，“我的模板”顺序归模板，见 `syncSummaryEntityOf`）。“不删除任何记录”：选择只作用于这些冲突分面，不把只在一侧的记录变成删除——只在一侧的记录仍按 4.2（覆盖恢复后墓碑已清空，实际都是复制）。不论本次按哪种选择规划都照样报告数量，用户是否已经选过由会话层记住。
 - 自动同步遇到以上任一情况：中止，不写入，在同步页标记“需要确认”。
 
 ### 4.6 产出
@@ -190,7 +190,7 @@ class SyncManifest {
   - `mediaNeeded`：该方需要从另一方取得的媒体键候选（写入记录里哈希有变化的分面引用的媒体键；写入层经 `media.have` 按 sha256 核对后只传缺的）；
   - `stats`：每类实体的新增 / 更新 / 删除（原地改名记为标签更新）；
   - `historySeenAt`：写入后折叠用的继承时间（4.1.1）。
-- `conflictCopies`：新生成的冲突副本（原 id、副本 id、标题、败方），按原 id 排序；`confirmations`：删除保护（0–2 项）与“以哪边为准”的冲突数。
+- `conflictCopies`：新生成的冲突副本（原 id、副本 id、标题、败方），按原 id 排序；`confirmations`：删除保护（0–2 项）与“以哪边为准”按实体的冲突数。
 - 写入层须知（第 6 节）：
   1. 事务开始时先逐条比对**全部**前置条件（写入的 `expected`；改名的 from 哈希等于 `expected` 且 to 不存在），不符的跳过；再执行原地改名；再按 `writes` 的顺序写——引用旧名的日记写入里 tags 已是新名，它的 `expected` 是改名前的哈希。
   2. 日记排在标签之前：日记的标签按名称（`ensureTagsByName` 口径）建出后，颜色由同一计划里 `tag:` 记录的写入定下；计划保证每个最终日记引用的标签名都有最终的 tag 记录（不被删除）。
@@ -240,11 +240,11 @@ class SyncManifest {
 | 4′ | I→R / R→I | `sync.records.get{keys}` / `sync.records{records:[{k,f}…], more}` | 每条请求 ≤ 2000 键；应答按 JSON 大小分段（每段约 4 MiB，单条记录超过时独占一段），`more:false` 为最后一段 |
 | 5 | I | — | `planSyncFetch` 直到为空（每轮取回后核对要过的数据都到手，没到齐说明期间数据变了，中止为 `unknown`），`planSync`，再处理 §4.5 的确认 |
 | 6 | I→R / R→I | `sync.media.have{keys}` / `sync.media.status{files:{键:{size, sha256}}}` | 两个方向候选（`plan.remote.mediaNeeded` ∪ `plan.local.mediaNeeded`）一起问；接收方已有同样 sha256 的不传 |
-| 7 | I→R | `sync.plan{incoming, outgoing, files, bytes}` | 只供 R 显示进度：R / I 各要收到的日记篇数、两个方向合计的媒体文件数与字节数 |
+| 7 | I→R | `sync.plan{incoming, outgoing, files, bytes, waitedMs}` | 只供 R 显示进度：R / I 各要收到的日记篇数、两个方向合计的媒体文件数与字节数；`waitedMs` 为 I 等用户确认（§4.5）花的毫秒数，两边的用时都扣掉它（摘要与同步记录的“用时”只算真正同步的时间） |
 | 8 | I→R | `sync.media.put{key, size, sha256, blob}` + 数据块 × N | 推给 R 的文件，R 流式写进暂存区并按大小与 sha256 校验，不符即 `abort{transferFailed}` |
 | 8′ | I→R / R→I | `sync.media.get{keys}` / `sync.media.put` × N + `sync.media.end` | 从 R 取的文件（R 已没有的键略过）；I 同样暂存、校验 |
 | 9 | I→R | `sync.apply.part{writes:[{k, e, r}…]}` × N + `sync.apply{renames, seenAt, stats, copies}` | 写入列表分段（每段约 4 MiB；`e` 规划时的分面哈希或 null，`r` 最终分面或 null = 删除），收尾带原地改名 `[{from,to,e,r}]`、历史时间继承 `{键:{分面:毫秒}}`、统计 `{实体:[增,改,删]}` 与冲突副本 `[{id,title}]` |
-| 10 | R→I | `sync.applied{counts, rekeys}` | R 执行 `apply(plan.remote, staging, includeSettings)` 后：日记计数与就位的媒体 `{a,u,d,mf,mb}`、媒体改键 `[{old,new,sha256}]`。不回传写入后的清单（早先草案有，发起方用不到，下次同步重新交换） |
+| 10 | R→I | `sync.applied{counts, rekeys}` | R 执行 `apply(plan.remote, staging, includeSettings)` 后：日记计数、日记以外的变化条数与就位的媒体 `{a,u,d,o:{实体:条数},mf,mb}`（`o` 按 `syncSummaryEntityOf` 归类，没有时省略）、媒体改键 `[{old,new,sha256}]`。不回传写入后的清单（早先草案有，发起方用不到，下次同步重新交换） |
 | 11 | I→R | `sync.finish{counts, rekeys}` | I 执行 `apply(plan.local, staging)`、照做 R 的改键之后：I 的计数与改键 |
 | 12 | R→I | `sync.done` | R 照做 I 的改键之后；随后关闭信道（关闭帧） |
 | * | 双方 | `sync.ping{}` | 做耗时的本机步骤（刷新检查点、构建记录、写入、等用户确认）时每 5 秒一次，只重置对方的静默计时 |
@@ -257,7 +257,7 @@ class SyncManifest {
 
 ## 6. 写入（`SyncApplier`：`sync_apply.dart` + `_AppDatabaseSyncWrites` / `_AppDatabaseSyncOrder`）
 
-入口：`SyncApplier.apply(sidePlan, {staging, includeSettings})`，结果 `SyncApplyResult{status: applied|deferred, skipped: [{key, reason}], rekeys, manifest（写入后）, counts（实际执行的新增 / 更新 / 删除）, mediaFiles, mediaBytes}`；跳过原因 `precondition` / `invalidRecord` / `missingDependency` / `settingsFailed`。冲突副本数取计划的 `SyncPlan.conflictCopies`。
+入口：`SyncApplier.apply(sidePlan, {staging, includeSettings})`，结果 `SyncApplyResult{status: applied|deferred, skipped: [{key, reason}], rekeys, manifest（写入后）, counts（实际执行的新增 / 更新 / 删除）, summary（实际执行的条数按 `syncSummaryEntityOf` 归类，界面的“其他”）, mediaFiles, mediaBytes}`；跳过原因 `precondition` / `invalidRecord` / `missingDependency` / `settingsFailed`。冲突副本数取计划的 `SyncPlan.conflictCopies`。
 
 1. 等待撤销窗口结束（`EditingSessionRegistry.waitForUndoWindows`，默认 15 秒）：超时返回 `deferred`，什么都不写（暂存件一并丢弃，下次重新传）。撤销提示开着时写入，用户点“撤销”会把旧内容写回、覆盖同步刚写入的值。
 2. 媒体（`SyncMediaStaging`，在开事务**之前**就位：记录落库那一刻文件必须已经在）：

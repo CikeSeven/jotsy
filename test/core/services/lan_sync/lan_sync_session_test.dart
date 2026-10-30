@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/core/services/lan_sync/lan_sync_messages.dart';
 import 'package:node_diary/core/services/lan_sync/lan_sync_session.dart';
 import 'package:node_diary/core/services/lan_sync/lan_sync_session_protocol.dart';
+import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
 
 import '../../../support/lan_sync_two_devices.dart';
 import 'lan_sync_fake_channel.dart';
@@ -79,6 +80,18 @@ void main() {
     expect(again.initiatorResult.sent.isEmpty, isTrue);
     expect(again.initiatorChannel.blobsSent, 0);
     expect(again.responderChannel.blobsSent, 1, reason: '只有清单');
+  });
+
+  test('只有日记以外的变化时，计数按种类报告，两边口径一致', () async {
+    await expectConverged();
+    await a.db.addDiaryComment(diaryId: 'b1', content: '读后感');
+    final run = await runSession(a, b, clock);
+    expect(run.initiatorResult.failure, isNull);
+    expect(run.initiatorResult.sent.diaries, 0);
+    expect(run.initiatorResult.sent.others, {SyncEntity.comment: 1});
+    expect(run.initiatorResult.sent.isEmpty, isFalse);
+    expect(run.responderResult.received, run.initiatorResult.sent);
+    expect(run.initiatorResult.received.isEmpty, isTrue);
   });
 
   test('响应方收到不兼容的 hello：回 version 拒绝并关闭', () async {

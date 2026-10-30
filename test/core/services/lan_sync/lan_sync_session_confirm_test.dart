@@ -79,6 +79,32 @@ void main() {
       expect(await a.canonical(), await b.canonical());
     });
 
+    test('等用户确认的时间不计入用时，两边口径一致', () async {
+      const waited = Duration(minutes: 5);
+      final run = await runSession(
+        a,
+        b,
+        clock,
+        firstSync: true,
+        answer: (request) {
+          clock.advance(waited);
+          (request as LanSyncSideChoiceRequest).respond(
+            SyncSideChoice.keepBoth,
+          );
+        },
+      );
+      expect(run.initiatorResult.failure, isNull);
+      expect(
+        run.initiatorResult.duration,
+        lessThan(const Duration(minutes: 1)),
+      );
+      expect(
+        run.responderResult.duration,
+        lessThan(const Duration(minutes: 1)),
+      );
+      expect(run.initiatorResult.duration, greaterThan(Duration.zero));
+    });
+
     test('取消确认：发起方 cancelled、对方 declined，什么都不写', () async {
       final run = await runSession(
         a,

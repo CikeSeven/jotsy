@@ -11,7 +11,8 @@ import '../models/lan_sync_session_summary.dart';
 import 'lan_sync_well_color.dart';
 
 /// 一列统计卡：彩色标签（“↓ 收到”为 `tertiary`、“↑ 发出”为 `primary`）、
-/// 34 / w800 等宽篇数与下方的 新增 / 更新 / 删除 / 媒体 四行。
+/// 34 / w800 等宽篇数与下方的 新增 / 更新 / 删除 / 媒体 四行；[showOthers]
+/// 时在媒体之前多一行“其他”（日记以外的变化条数，两列同时出现以免行错位）。
 ///
 /// 篇数首次出现时从 0 递增（`long` + `effects`，同 DESIGN §4.3 探索页数字），
 /// 等宽数字避免递增时宽度抖动；读屏只读最终值；减少动画时直接显示。
@@ -22,11 +23,13 @@ class LanSyncSummaryStatCard extends StatelessWidget {
     required this.label,
     required this.accent,
     required this.counts,
+    this.showOthers = false,
   });
 
   final String label;
   final Color accent;
   final LanSyncChangeCounts counts;
+  final bool showOthers;
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +136,8 @@ class LanSyncSummaryStatCard extends StatelessWidget {
           row(l10n.lanSyncSummaryAdded, '${counts.added}'),
           row(l10n.lanSyncSummaryUpdated, '${counts.updated}'),
           row(l10n.lanSyncSummaryDeleted, '${counts.deleted}'),
+          if (showOthers)
+            row(l10n.lanSyncSummaryOthers, '${counts.others.total}'),
           row(l10n.lanSyncSummaryMedia, media),
         ],
       ),

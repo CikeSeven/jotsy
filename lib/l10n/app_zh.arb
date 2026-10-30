@@ -14060,6 +14060,10 @@
       }
     }
   },
+  "lanSyncSummaryOthers": "其他",
+  "@lanSyncSummaryOthers": {
+    "description": "Summary stat row label: changes other than diaries (tags, notebooks, comments, settings…)."
+  },
   "lanSyncSummaryConflicts": "{count} 篇日记两边都改过，已保留两份",
   "@lanSyncSummaryConflicts": {
     "description": "Conflict notice in the sync summary sheet.",
@@ -14080,6 +14084,13 @@
   "lanSyncSummaryFootnote": "标签、日记本、留言与纪念日已一并合并",
   "@lanSyncSummaryFootnote": {
     "description": "Footnote in the sync summary sheet."
+  },
+  "lanSyncSummaryOtherDetail": "其他变化：{items}",
+  "@lanSyncSummaryOtherDetail": {
+    "description": "Footnote in the sync summary listing non-diary changes of both directions, e.g. “Comments 2 · Tags 1”.",
+    "placeholders": {
+      "items": {"type": "String"}
+    }
   },
   "lanSyncSummaryDone": "完成",
   "@lanSyncSummaryDone": {
@@ -14226,6 +14237,54 @@
       "count": {
         "type": "int"
       }
+    }
+  },
+  "lanSyncChooseSideBodyItems": "以下内容在本机和「{name}」上都改过：{items}。要怎么合并？",
+  "@lanSyncChooseSideBodyItems": {
+    "description": "Body of the which-side dialog when more than diaries conflict; items is a list such as “Diaries 2 · Tags 1”.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "items": {"type": "String"}
+    }
+  },
+  "lanSyncItemDiaries": "日记",
+  "@lanSyncItemDiaries": {
+    "description": "Kind of data in LAN sync counts (which-side dialog, summary): diaries."
+  },
+  "lanSyncItemTags": "标签",
+  "@lanSyncItemTags": {
+    "description": "Kind of data in LAN sync counts: tags."
+  },
+  "lanSyncItemNotebooks": "日记本",
+  "@lanSyncItemNotebooks": {
+    "description": "Kind of data in LAN sync counts: notebooks (including which diaries they hold and their order)."
+  },
+  "lanSyncItemComments": "留言",
+  "@lanSyncItemComments": {
+    "description": "Kind of data in LAN sync counts: diary comments."
+  },
+  "lanSyncItemTemplates": "模板",
+  "@lanSyncItemTemplates": {
+    "description": "Kind of data in LAN sync counts: diary templates."
+  },
+  "lanSyncItemAnniversaries": "纪念日",
+  "@lanSyncItemAnniversaries": {
+    "description": "Kind of data in LAN sync counts: anniversaries."
+  },
+  "lanSyncItemDayMoods": "这天的心情",
+  "@lanSyncItemDayMoods": {
+    "description": "Kind of data in LAN sync counts: moods set on calendar days."
+  },
+  "lanSyncItemSettings": "设置",
+  "@lanSyncItemSettings": {
+    "description": "Kind of data in LAN sync counts: settings (tag order, feature switches, synced preferences)."
+  },
+  "lanSyncItemCount": "{label} {count}",
+  "@lanSyncItemCount": {
+    "description": "One kind of data with its count in a LAN sync list, e.g. “Tags 2”.",
+    "placeholders": {
+      "label": {"type": "String"},
+      "count": {"type": "int"}
     }
   },
   "lanSyncChooseKeepBoth": "保留两份（推荐）",
@@ -14403,6 +14462,13 @@
       "count": {
         "type": "int"
       }
+    }
+  },
+  "lanSyncHistoryOthers": "其他 {count} 项",
+  "@lanSyncHistoryOthers": {
+    "description": "Chip in a sync history entry: number of non-diary changes in both directions.",
+    "placeholders": {
+      "count": {"type": "int"}
     }
   },
   "lanSyncHistoryMedia": "媒体 {size}",

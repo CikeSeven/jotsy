@@ -1,9 +1,11 @@
-// 局域网同步界面的文案换算（平台名、相对时间、会话阶段、失败原因、设备图标）。
+// 局域网同步界面的文案换算（平台名、相对时间、会话阶段、失败原因、设备图标、
+// 按数据种类的计数）。
 // 纯函数，同步页、设备详情页与设置入口共用，说法一致。
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../models/lan_sync_item_counts.dart';
 import '../models/lan_sync_platform.dart';
 import '../models/lan_sync_session_view.dart';
 
@@ -51,6 +53,28 @@ String lanSyncLastSyncLabel(
 ) {
   if (lastSyncAt == null) return l10n.lanSyncNeverSynced;
   return l10n.lanSyncSyncedAgo(lanSyncRelativeTime(l10n, lastSyncAt, now));
+}
+
+/// 数据种类的名称（“以哪边为准”的明细、完成摘要的“其他变化”）。
+String lanSyncItemKindLabel(AppLocalizations l10n, LanSyncItemKind kind) {
+  return switch (kind) {
+    LanSyncItemKind.diaries => l10n.lanSyncItemDiaries,
+    LanSyncItemKind.tags => l10n.lanSyncItemTags,
+    LanSyncItemKind.notebooks => l10n.lanSyncItemNotebooks,
+    LanSyncItemKind.comments => l10n.lanSyncItemComments,
+    LanSyncItemKind.templates => l10n.lanSyncItemTemplates,
+    LanSyncItemKind.anniversaries => l10n.lanSyncItemAnniversaries,
+    LanSyncItemKind.dayMoods => l10n.lanSyncItemDayMoods,
+    LanSyncItemKind.settings => l10n.lanSyncItemSettings,
+  };
+}
+
+/// “日记 2 · 标签 1”：按显示顺序列出非零的种类。
+String lanSyncItemCountsText(AppLocalizations l10n, LanSyncItemCounts counts) {
+  return [
+    for (final entry in counts.entries)
+      l10n.lanSyncItemCount(lanSyncItemKindLabel(l10n, entry.key), entry.value),
+  ].join(' · ');
 }
 
 /// 用时（整秒，向上取整）：不足一秒按 1 秒写，不出现“用时 0 秒”。

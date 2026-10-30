@@ -87,6 +87,18 @@ abstract final class SyncOrderListId {
       : null;
 }
 
+/// 向用户报告变化时 [key] 归在哪一种数据下（完成摘要、同步记录、“以哪边
+/// 为准”的明细）：收录与书架 / 书序归日记本，“我的模板”的顺序归模板，
+/// 其余即自身的实体。
+SyncEntity syncSummaryEntityOf(SyncKey key) => switch (key.entity) {
+  SyncEntity.membership => SyncEntity.notebook,
+  SyncEntity.orderList =>
+    key.id == SyncOrderListId.templates
+        ? SyncEntity.template
+        : SyncEntity.notebook,
+  _ => key.entity,
+};
+
 /// settings 记录的唯一 id。
 const String kSyncSettingsId = 'settings';
 

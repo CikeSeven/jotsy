@@ -133,6 +133,7 @@ class LanSyncHistoryEntryView {
     this.automatic = false,
     this.receivedDiaries = 0,
     this.sentDiaries = 0,
+    this.otherChanges = 0,
     this.mediaBytes = 0,
     this.conflictCopies = 0,
     this.firstSync = false,
@@ -149,6 +150,9 @@ class LanSyncHistoryEntryView {
   final bool automatic;
   final int receivedDiaries;
   final int sentDiaries;
+
+  /// 两个方向合计的日记以外的变化条数（标签、日记本、留言、设置等）。
+  final int otherChanges;
 
   /// 两个方向合计传输的媒体字节数。
   final int mediaBytes;
@@ -172,6 +176,7 @@ class LanSyncHistoryEntryView {
       other.automatic == automatic &&
       other.receivedDiaries == receivedDiaries &&
       other.sentDiaries == sentDiaries &&
+      other.otherChanges == otherChanges &&
       other.mediaBytes == mediaBytes &&
       other.conflictCopies == conflictCopies &&
       other.firstSync == firstSync &&
@@ -184,6 +189,7 @@ class LanSyncHistoryEntryView {
     automatic,
     receivedDiaries,
     sentDiaries,
+    otherChanges,
     mediaBytes,
     conflictCopies,
     firstSync,

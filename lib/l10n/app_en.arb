@@ -14060,6 +14060,10 @@
       }
     }
   },
+  "lanSyncSummaryOthers": "Other",
+  "@lanSyncSummaryOthers": {
+    "description": "Summary stat row label: changes other than diaries (tags, notebooks, comments, settings…)."
+  },
   "lanSyncSummaryConflicts": "{count, plural, =1{1 diary was} other{{count} diaries were}} changed on both devices — both versions were kept",
   "@lanSyncSummaryConflicts": {
     "description": "Conflict notice in the sync summary sheet.",
@@ -14080,6 +14084,13 @@
   "lanSyncSummaryFootnote": "Tags, notebooks, comments and anniversaries were merged too",
   "@lanSyncSummaryFootnote": {
     "description": "Footnote in the sync summary sheet."
+  },
+  "lanSyncSummaryOtherDetail": "Other changes: {items}",
+  "@lanSyncSummaryOtherDetail": {
+    "description": "Footnote in the sync summary listing non-diary changes of both directions, e.g. “Comments 2 · Tags 1”.",
+    "placeholders": {
+      "items": {"type": "String"}
+    }
   },
   "lanSyncSummaryDone": "Done",
   "@lanSyncSummaryDone": {
@@ -14226,6 +14237,54 @@
       "count": {
         "type": "int"
       }
+    }
+  },
+  "lanSyncChooseSideBodyItems": "These were changed both here and on “{name}”: {items}. How should they be merged?",
+  "@lanSyncChooseSideBodyItems": {
+    "description": "Body of the which-side dialog when more than diaries conflict; items is a list such as “Diaries 2 · Tags 1”.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "items": {"type": "String"}
+    }
+  },
+  "lanSyncItemDiaries": "Diaries",
+  "@lanSyncItemDiaries": {
+    "description": "Kind of data in LAN sync counts (which-side dialog, summary): diaries."
+  },
+  "lanSyncItemTags": "Tags",
+  "@lanSyncItemTags": {
+    "description": "Kind of data in LAN sync counts: tags."
+  },
+  "lanSyncItemNotebooks": "Notebooks",
+  "@lanSyncItemNotebooks": {
+    "description": "Kind of data in LAN sync counts: notebooks (including which diaries they hold and their order)."
+  },
+  "lanSyncItemComments": "Comments",
+  "@lanSyncItemComments": {
+    "description": "Kind of data in LAN sync counts: diary comments."
+  },
+  "lanSyncItemTemplates": "Templates",
+  "@lanSyncItemTemplates": {
+    "description": "Kind of data in LAN sync counts: diary templates."
+  },
+  "lanSyncItemAnniversaries": "Anniversaries",
+  "@lanSyncItemAnniversaries": {
+    "description": "Kind of data in LAN sync counts: anniversaries."
+  },
+  "lanSyncItemDayMoods": "Day moods",
+  "@lanSyncItemDayMoods": {
+    "description": "Kind of data in LAN sync counts: moods set on calendar days."
+  },
+  "lanSyncItemSettings": "Settings",
+  "@lanSyncItemSettings": {
+    "description": "Kind of data in LAN sync counts: settings (tag order, feature switches, synced preferences)."
+  },
+  "lanSyncItemCount": "{label} {count}",
+  "@lanSyncItemCount": {
+    "description": "One kind of data with its count in a LAN sync list, e.g. “Tags 2”.",
+    "placeholders": {
+      "label": {"type": "String"},
+      "count": {"type": "int"}
     }
   },
   "lanSyncChooseKeepBoth": "Keep both (recommended)",
@@ -14403,6 +14462,13 @@
       "count": {
         "type": "int"
       }
+    }
+  },
+  "lanSyncHistoryOthers": "{count, plural, =1{1 other change} other{{count} other changes}}",
+  "@lanSyncHistoryOthers": {
+    "description": "Chip in a sync history entry: number of non-diary changes in both directions.",
+    "placeholders": {
+      "count": {"type": "int"}
     }
   },
   "lanSyncHistoryMedia": "Media {size}",

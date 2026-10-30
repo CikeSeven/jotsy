@@ -31,7 +31,9 @@ extension _Output on _Planner {
       conflictCopies: sorted,
       confirmations: SyncPendingConfirmations(
         deletionGuards: guards,
-        sideChoiceConflicts: sideChoiceActive ? ancestryLess.length : 0,
+        sideChoiceCounts: sideChoiceActive
+            ? _countByEntity(ancestryLess)
+            : const <SyncEntity, int>{},
       ),
     );
   }
@@ -124,4 +126,13 @@ extension _Output on _Planner {
     if (count <= 20 || count * 10 <= total) return null;
     return SyncDeletionGuard(side: side.role, count: count, total: total);
   }
+}
+
+/// 按实体计数（“以哪边为准”的明细）。
+Map<SyncEntity, int> _countByEntity(Iterable<SyncKey> keys) {
+  final counts = <SyncEntity, int>{};
+  for (final key in keys) {
+    counts[key.entity] = (counts[key.entity] ?? 0) + 1;
+  }
+  return counts;
 }

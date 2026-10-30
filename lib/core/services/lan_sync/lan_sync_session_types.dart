@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 
 import 'lan_sync_crypto.dart';
 import 'lan_sync_failure.dart';
+import 'sync/sync_model.dart';
 import 'sync/sync_plan.dart';
 
 /// 会话阶段，按发生顺序（界面的阶段条按下标判断）。
@@ -88,13 +89,15 @@ class LanSyncProgress {
   );
 }
 
-/// 一个方向上实际写入的变化：日记的新增 / 更新 / 删除与新放进托管目录的媒体。
+/// 一个方向上实际写入的变化：日记的新增 / 更新 / 删除、其余数据的条数与
+/// 新放进托管目录的媒体。
 @immutable
 class LanSyncChangeTally {
   const LanSyncChangeTally({
     this.added = 0,
     this.updated = 0,
     this.deleted = 0,
+    this.others = const <SyncEntity, int>{},
     this.mediaFiles = 0,
     this.mediaBytes = 0,
   });
@@ -108,10 +111,19 @@ class LanSyncChangeTally {
       return value is int && value >= 0 ? value : 0;
     }
 
+    final others = json is Map ? json['o'] : null;
     return LanSyncChangeTally(
       added: read('a'),
       updated: read('u'),
       deleted: read('d'),
+      others: <SyncEntity, int>{
+        if (others is Map)
+          for (final entry in others.entries)
+            if (SyncEntity.tryParse('${entry.key}') case final entity?)
+              if (entity != SyncEntity.diary)
+                if (entry.value case final int count when count > 0)
+                  entity: count,
+      },
       mediaFiles: read('mf'),
       mediaBytes: read('mb'),
     );
@@ -120,17 +132,27 @@ class LanSyncChangeTally {
   final int added;
   final int updated;
   final int deleted;
+
+  /// 日记以外的变化条数，按 [syncSummaryEntityOf] 归到的实体（只含大于 0
+  /// 的项，不含日记）。
+  final Map<SyncEntity, int> others;
   final int mediaFiles;
   final int mediaBytes;
 
   int get diaries => added + updated + deleted;
 
-  bool get isEmpty => diaries == 0 && mediaFiles == 0;
+  int get otherTotal => others.values.fold(0, (sum, count) => sum + count);
+
+  bool get isEmpty => diaries == 0 && otherTotal == 0 && mediaFiles == 0;
 
   Map<String, Object?> toJson() => <String, Object?>{
     'a': added,
     'u': updated,
     'd': deleted,
+    if (others.isNotEmpty)
+      'o': <String, int>{
+        for (final entry in others.entries) entry.key.name: entry.value,
+      },
     'mf': mediaFiles,
     'mb': mediaBytes,
   };
@@ -141,12 +163,21 @@ class LanSyncChangeTally {
       other.added == added &&
       other.updated == updated &&
       other.deleted == deleted &&
+      mapEquals(other.others, others) &&
       other.mediaFiles == mediaFiles &&
       other.mediaBytes == mediaBytes;
 
   @override
-  int get hashCode =>
-      Object.hash(added, updated, deleted, mediaFiles, mediaBytes);
+  int get hashCode => Object.hash(
+    added,
+    updated,
+    deleted,
+    Object.hashAllUnordered(
+      others.entries.map((entry) => Object.hash(entry.key, entry.value)),
+    ),
+    mediaFiles,
+    mediaBytes,
+  );
 }
 
 /// 本次生成的一份冲突副本（摘要里可点开）。
@@ -243,11 +274,18 @@ sealed class LanSyncConfirmationRequest {
   void expire();
 }
 
-/// 以哪边为准：[conflicts] 条记录两边都改过、且没有共同祖先。
+/// 以哪边为准：[counts] 里的记录两边都改过、且没有共同祖先。
 final class LanSyncSideChoiceRequest extends LanSyncConfirmationRequest {
-  LanSyncSideChoiceRequest({required super.peerId, required this.conflicts});
+  LanSyncSideChoiceRequest({
+    required super.peerId,
+    required Map<SyncEntity, int> counts,
+  }) : counts = Map<SyncEntity, int>.unmodifiable(counts);
 
-  final int conflicts;
+  /// 按实体的记录数（`SyncPendingConfirmations.sideChoiceCounts`）。
+  final Map<SyncEntity, int> counts;
+
+  /// 合计。
+  int get conflicts => counts.values.fold(0, (sum, count) => sum + count);
   final Completer<SyncSideChoice?> _answer = Completer<SyncSideChoice?>();
 
   @override

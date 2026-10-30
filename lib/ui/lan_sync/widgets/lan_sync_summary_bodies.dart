@@ -29,6 +29,8 @@ Widget _doneButton(BuildContext context, VoidCallback onDone) {
 }
 
 /// 成功且有变化：徽章、标题、用时、两列统计卡、冲突副本、脚注与“完成”。
+/// 有日记以外的变化时，两列都多一行“其他”，脚注换成按种类的明细（两个
+/// 方向相加）。
 class LanSyncSummarySuccessBody extends StatelessWidget {
   const LanSyncSummarySuccessBody({
     super.key,
@@ -46,6 +48,7 @@ class LanSyncSummarySuccessBody extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final l10n = context.l10n;
+    final others = summary.received.others + summary.sent.others;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,6 +84,7 @@ class LanSyncSummarySuccessBody extends StatelessWidget {
                   label: l10n.lanSyncSummaryReceived,
                   accent: colors.tertiary,
                   counts: summary.received,
+                  showOthers: !others.isEmpty,
                 ),
               ),
               const SizedBox(width: 10),
@@ -89,6 +93,7 @@ class LanSyncSummarySuccessBody extends StatelessWidget {
                   label: l10n.lanSyncSummarySent,
                   accent: colors.primary,
                   counts: summary.sent,
+                  showOthers: !others.isEmpty,
                 ),
               ),
             ],
@@ -103,7 +108,11 @@ class LanSyncSummarySuccessBody extends StatelessWidget {
         ],
         const SizedBox(height: 16),
         Text(
-          l10n.lanSyncSummaryFootnote,
+          others.isEmpty
+              ? l10n.lanSyncSummaryFootnote
+              : l10n.lanSyncSummaryOtherDetail(
+                  lanSyncItemCountsText(l10n, others),
+                ),
           textAlign: TextAlign.center,
           style: _captionStyle(theme, 13),
         ),

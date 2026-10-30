@@ -232,16 +232,22 @@ class SyncDeletionGuard {
 class SyncPendingConfirmations {
   SyncPendingConfirmations({
     required List<SyncDeletionGuard> deletionGuards,
-    required this.sideChoiceConflicts,
-  }) : deletionGuards = List<SyncDeletionGuard>.unmodifiable(deletionGuards);
+    Map<SyncEntity, int> sideChoiceCounts = const <SyncEntity, int>{},
+  }) : deletionGuards = List<SyncDeletionGuard>.unmodifiable(deletionGuards),
+       sideChoiceCounts = Map<SyncEntity, int>.unmodifiable(sideChoiceCounts);
 
   /// 超过删除保护阈值的一侧（0–2 项）。
   final List<SyncDeletionGuard> deletionGuards;
 
-  /// “以哪边为准”生效时，没有共同祖先的冲突涉及的记录数；不生效时为 0。
-  /// 不论本次用哪种 [SyncSideChoice] 规划都照样报告：用户是否已经选过由
-  /// 会话层记住，规划器不知道。
-  final int sideChoiceConflicts;
+  /// “以哪边为准”生效时，没有共同祖先的冲突涉及的记录数，按实体分开（只含
+  /// 数量大于 0 的实体；顺序列表从不计入）；不生效时为空。不论本次用哪种
+  /// [SyncSideChoice] 规划都照样报告：用户是否已经选过由会话层记住，规划器
+  /// 不知道。
+  final Map<SyncEntity, int> sideChoiceCounts;
+
+  /// [sideChoiceCounts] 的合计。
+  int get sideChoiceConflicts =>
+      sideChoiceCounts.values.fold(0, (sum, count) => sum + count);
 
   bool get sideChoiceNeeded => sideChoiceConflicts > 0;
 

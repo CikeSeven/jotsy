@@ -172,7 +172,7 @@ LanSyncConfirmationEvent lanSyncConfirmationEventOf(
     LanSyncSideChoiceRequest() => LanSyncChooseSideEvent(
       peerId: request.peerId,
       peerName: peerName,
-      conflicts: request.conflicts,
+      items: lanSyncItemCountsOf(request.counts),
       respond: (LanSyncSideChoice? choice) => _guard(
         () async => request.respond(lanSyncEngineSideChoiceOf(choice)),
       ),

@@ -19,6 +19,8 @@ class LanSyncSessionRecord {
     this.automatic = false,
     this.receivedDiaries = 0,
     this.sentDiaries = 0,
+    this.receivedOthers = 0,
+    this.sentOthers = 0,
     this.mediaBytes = 0,
     this.conflictCopies = 0,
     this.firstSync = false,
@@ -41,6 +43,8 @@ class LanSyncSessionRecord {
       automatic: _bool(json['automatic'], false),
       receivedDiaries: _count(json['received']),
       sentDiaries: _count(json['sent']),
+      receivedOthers: _count(json['receivedOthers']),
+      sentOthers: _count(json['sentOthers']),
       mediaBytes: _count(json['mediaBytes']),
       conflictCopies: _count(json['conflictCopies']),
       firstSync: _bool(json['firstSync'], false),
@@ -61,6 +65,10 @@ class LanSyncSessionRecord {
   final int receivedDiaries;
   final int sentDiaries;
 
+  /// 本机收到 / 对方收到的日记以外的变化条数（标签、日记本、留言、设置等）。
+  final int receivedOthers;
+  final int sentOthers;
+
   /// 两个方向合计传输的媒体字节数。
   final int mediaBytes;
   final int conflictCopies;
@@ -80,6 +88,8 @@ class LanSyncSessionRecord {
     'automatic': automatic,
     'received': receivedDiaries,
     'sent': sentDiaries,
+    'receivedOthers': receivedOthers,
+    'sentOthers': sentOthers,
     'mediaBytes': mediaBytes,
     'conflictCopies': conflictCopies,
     'firstSync': firstSync,

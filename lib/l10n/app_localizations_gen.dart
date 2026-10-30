@@ -18506,6 +18506,12 @@ abstract class AppLocalizations {
   /// **'{count} · {size}'**
   String lanSyncSummaryMediaValue(int count, String size);
 
+  /// Summary stat row label: changes other than diaries (tags, notebooks, comments, settings…).
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get lanSyncSummaryOthers;
+
   /// Conflict notice in the sync summary sheet.
   ///
   /// In en, this message translates to:
@@ -18529,6 +18535,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tags, notebooks, comments and anniversaries were merged too'**
   String get lanSyncSummaryFootnote;
+
+  /// Footnote in the sync summary listing non-diary changes of both directions, e.g. “Comments 2 · Tags 1”.
+  ///
+  /// In en, this message translates to:
+  /// **'Other changes: {items}'**
+  String lanSyncSummaryOtherDetail(String items);
 
   /// Button closing the sync summary sheet.
   ///
@@ -18734,6 +18746,66 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 diary was} other{{count} diaries were}} changed both here and on “{name}”. How should they be merged?'**
   String lanSyncChooseSideBody(String name, int count);
 
+  /// Body of the which-side dialog when more than diaries conflict; items is a list such as “Diaries 2 · Tags 1”.
+  ///
+  /// In en, this message translates to:
+  /// **'These were changed both here and on “{name}”: {items}. How should they be merged?'**
+  String lanSyncChooseSideBodyItems(String name, String items);
+
+  /// Kind of data in LAN sync counts (which-side dialog, summary): diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries'**
+  String get lanSyncItemDiaries;
+
+  /// Kind of data in LAN sync counts: tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get lanSyncItemTags;
+
+  /// Kind of data in LAN sync counts: notebooks (including which diaries they hold and their order).
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get lanSyncItemNotebooks;
+
+  /// Kind of data in LAN sync counts: diary comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get lanSyncItemComments;
+
+  /// Kind of data in LAN sync counts: diary templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Templates'**
+  String get lanSyncItemTemplates;
+
+  /// Kind of data in LAN sync counts: anniversaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries'**
+  String get lanSyncItemAnniversaries;
+
+  /// Kind of data in LAN sync counts: moods set on calendar days.
+  ///
+  /// In en, this message translates to:
+  /// **'Day moods'**
+  String get lanSyncItemDayMoods;
+
+  /// Kind of data in LAN sync counts: settings (tag order, feature switches, synced preferences).
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get lanSyncItemSettings;
+
+  /// One kind of data with its count in a LAN sync list, e.g. “Tags 2”.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} {count}'**
+  String lanSyncItemCount(String label, int count);
+
   /// Which-side option: keep both versions.
   ///
   /// In en, this message translates to:
@@ -18937,6 +19009,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'↑ Sent {count, plural, =1{1 diary} other{{count} diaries}}'**
   String lanSyncHistorySent(int count);
+
+  /// Chip in a sync history entry: number of non-diary changes in both directions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 other change} other{{count} other changes}}'**
+  String lanSyncHistoryOthers(int count);
 
   /// History summary part: media size.
   ///

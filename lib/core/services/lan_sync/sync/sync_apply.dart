@@ -140,6 +140,7 @@ class SyncApplier {
         rekeys: placement.rekeys,
         manifest: result.manifest,
         counts: result.counts,
+        summary: result.summary,
         mediaFiles: placement.placedFiles,
         mediaBytes: placement.placedBytes,
       );
@@ -296,6 +297,11 @@ class SyncApplier {
     );
     final counts = _countPerformed(performed, outcome.renamed);
     if (counts.isNotEmpty) registry.notifyDataReplaced();
-    return _LockedResult(skipped, after.manifest, counts);
+    return _LockedResult(
+      skipped,
+      after.manifest,
+      counts,
+      _summarizePerformed(performed, outcome.renamed),
+    );
   }
 }

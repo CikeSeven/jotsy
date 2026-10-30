@@ -92,7 +92,7 @@ class LanSyncSessionFlow {
           final choice = await showLanSyncChooseSideDialog(
             context,
             peerName: event.peerName,
-            conflicts: event.conflicts,
+            items: event.items,
           );
           await respond(choice);
         case LanSyncDeletionGuardEvent(:final respond):

@@ -7,6 +7,7 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'lan_sync_item_counts.dart';
 import 'lan_sync_platform.dart';
 import 'lan_sync_session_summary.dart';
 import 'lan_sync_session_view.dart';
@@ -169,16 +170,17 @@ sealed class LanSyncConfirmationEvent extends LanSyncUiEvent {
   final String peerName;
 }
 
-/// 以哪边为准：有 [conflicts] 篇日记两边都改过、且无法自动判断。
+/// 以哪边为准：[items] 里的内容两边都改过、且无法自动判断。
 final class LanSyncChooseSideEvent extends LanSyncConfirmationEvent {
   const LanSyncChooseSideEvent({
     required super.peerId,
     required super.peerName,
-    required this.conflicts,
+    required this.items,
     required this.respond,
   });
 
-  final int conflicts;
+  /// 按数据种类的条数（日记为篇数）。
+  final LanSyncItemCounts items;
 
   /// 用户的选择；null 为“取消”（这次同步放弃，什么都不写入）。
   final Future<void> Function(LanSyncSideChoice? choice) respond;

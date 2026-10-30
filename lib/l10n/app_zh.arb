@@ -13546,6 +13546,10 @@
   "@lanSyncPairFailUnknown": {
     "description": "Pairing failure reason: anything else."
   },
+  "lanSyncPairFailBusy": "正在进行另一次配对，请先完成或关闭它再试。",
+  "@lanSyncPairFailBusy": {
+    "description": "Pairing failure reason: another pairing is already in progress on this device."
+  },
   "lanSyncQrTitle": "扫码配对",
   "@lanSyncQrTitle": {
     "description": "QR sheet title."
@@ -13576,6 +13580,10 @@
   "lanSyncQrSingleUse": "二维码只能用一次，扫过即失效",
   "@lanSyncQrSingleUse": {
     "description": "Note under the QR code."
+  },
+  "lanSyncQrPreparing": "正在准备二维码…",
+  "@lanSyncQrPreparing": {
+    "description": "Shown inside the QR board while the sync service cannot issue a code yet (it is starting or has no LAN address)."
   },
   "lanSyncQrUseCode": "改用核对码配对",
   "@lanSyncQrUseCode": {
@@ -13867,6 +13875,22 @@
   "@lanSyncSyncFailUnknown": {
     "description": "Failed sync: unknown reason."
   },
+  "lanSyncSyncFailBusy": "对方正在编辑日记。等对方关闭编辑页后再同步。",
+  "@lanSyncSyncFailBusy": {
+    "description": "Failed sync: the other device is editing (or syncing with another device), with the next step."
+  },
+  "lanSyncSyncFailLocalEditing": "这台设备上有正在编辑的页面。请先关闭正在编辑的页面，再同步。",
+  "@lanSyncSyncFailLocalEditing": {
+    "description": "Failed sync: a page is being edited on this device, so a manual sync does not start; with the next step."
+  },
+  "lanSyncSyncFailDeferred": "有一条可撤销的提示还开着，这次什么都没有写入。等提示消失后再同步。",
+  "@lanSyncSyncFailDeferred": {
+    "description": "Failed sync: an undo snack bar was still open, so nothing was written; with the next step."
+  },
+  "lanSyncSyncFailNeedsConfirmation": "这次同步需要你确认。在设备列表里点“查看”继续。",
+  "@lanSyncSyncFailNeedsConfirmation": {
+    "description": "Failed sync: an automatic sync stopped because it needs the user to confirm; with the next step."
+  },
   "lanSyncSyncReasonUnreachable": "连不上对方",
   "@lanSyncSyncReasonUnreachable": {
     "description": "Short failure reason in the sync history: unreachable."
@@ -13906,6 +13930,29 @@
   "lanSyncSyncReasonUnknown": "同步失败",
   "@lanSyncSyncReasonUnknown": {
     "description": "Short failure reason in the sync history: unknown."
+  },
+  "lanSyncSyncReasonBusy": "对方正在编辑",
+  "@lanSyncSyncReasonBusy": {
+    "description": "Short failure reason in the sync history: the other device was editing."
+  },
+  "lanSyncSyncReasonLocalEditing": "本机正在编辑",
+  "@lanSyncSyncReasonLocalEditing": {
+    "description": "Short failure reason in the sync history: this device was editing."
+  },
+  "lanSyncSyncReasonDeferred": "撤销提示还开着",
+  "@lanSyncSyncReasonDeferred": {
+    "description": "Short failure reason in the sync history: an undo snack bar was still open."
+  },
+  "lanSyncSyncReasonNeedsConfirmation": "需要确认",
+  "@lanSyncSyncReasonNeedsConfirmation": {
+    "description": "Short failure reason in the sync history: the automatic sync needs confirmation."
+  },
+  "lanSyncConflictCopySuffix": "（冲突副本 · {device}）",
+  "@lanSyncConflictCopySuffix": {
+    "description": "Appended to the title of a conflict copy created by LAN sync; device is the name of the device whose version the copy keeps.",
+    "placeholders": {
+      "device": {"type": "String"}
+    }
   },
   "lanSyncChooseSideTitle": "以哪边为准",
   "@lanSyncChooseSideTitle": {

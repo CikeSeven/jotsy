@@ -13546,6 +13546,10 @@
   "@lanSyncPairFailUnknown": {
     "description": "Pairing failure reason: anything else."
   },
+  "lanSyncPairFailBusy": "A different pairing is already in progress. Finish or close it, then try again.",
+  "@lanSyncPairFailBusy": {
+    "description": "Pairing failure reason: another pairing is already in progress on this device."
+  },
   "lanSyncQrTitle": "Pair by QR code",
   "@lanSyncQrTitle": {
     "description": "QR sheet title."
@@ -13576,6 +13580,10 @@
   "lanSyncQrSingleUse": "Each code works once and expires once scanned",
   "@lanSyncQrSingleUse": {
     "description": "Note under the QR code."
+  },
+  "lanSyncQrPreparing": "Preparing the QR code…",
+  "@lanSyncQrPreparing": {
+    "description": "Shown inside the QR board while the sync service cannot issue a code yet (it is starting or has no LAN address)."
   },
   "lanSyncQrUseCode": "Pair with a code instead",
   "@lanSyncQrUseCode": {
@@ -13867,6 +13875,22 @@
   "@lanSyncSyncFailUnknown": {
     "description": "Failed sync: unknown reason."
   },
+  "lanSyncSyncFailBusy": "The other device is editing a diary. Sync again after it closes the editor.",
+  "@lanSyncSyncFailBusy": {
+    "description": "Failed sync: the other device is editing (or syncing with another device), with the next step."
+  },
+  "lanSyncSyncFailLocalEditing": "A page is being edited on this device. Close the page you are editing, then sync.",
+  "@lanSyncSyncFailLocalEditing": {
+    "description": "Failed sync: a page is being edited on this device, so a manual sync does not start; with the next step."
+  },
+  "lanSyncSyncFailDeferred": "An undo notice was still open, so nothing was written. Sync again once it disappears.",
+  "@lanSyncSyncFailDeferred": {
+    "description": "Failed sync: an undo snack bar was still open, so nothing was written; with the next step."
+  },
+  "lanSyncSyncFailNeedsConfirmation": "This sync needs your confirmation. Tap “View” in the device list to continue.",
+  "@lanSyncSyncFailNeedsConfirmation": {
+    "description": "Failed sync: an automatic sync stopped because it needs the user to confirm; with the next step."
+  },
   "lanSyncSyncReasonUnreachable": "Couldn't reach the device",
   "@lanSyncSyncReasonUnreachable": {
     "description": "Short failure reason in the sync history: unreachable."
@@ -13906,6 +13930,29 @@
   "lanSyncSyncReasonUnknown": "Sync failed",
   "@lanSyncSyncReasonUnknown": {
     "description": "Short failure reason in the sync history: unknown."
+  },
+  "lanSyncSyncReasonBusy": "The other device was editing",
+  "@lanSyncSyncReasonBusy": {
+    "description": "Short failure reason in the sync history: the other device was editing."
+  },
+  "lanSyncSyncReasonLocalEditing": "This device was editing",
+  "@lanSyncSyncReasonLocalEditing": {
+    "description": "Short failure reason in the sync history: this device was editing."
+  },
+  "lanSyncSyncReasonDeferred": "An undo notice was open",
+  "@lanSyncSyncReasonDeferred": {
+    "description": "Short failure reason in the sync history: an undo snack bar was still open."
+  },
+  "lanSyncSyncReasonNeedsConfirmation": "Needed confirmation",
+  "@lanSyncSyncReasonNeedsConfirmation": {
+    "description": "Short failure reason in the sync history: the automatic sync needs confirmation."
+  },
+  "lanSyncConflictCopySuffix": " (conflict copy · {device})",
+  "@lanSyncConflictCopySuffix": {
+    "description": "Appended to the title of a conflict copy created by LAN sync; device is the name of the device whose version the copy keeps.",
+    "placeholders": {
+      "device": {"type": "String"}
+    }
   },
   "lanSyncChooseSideTitle": "Which version wins?",
   "@lanSyncChooseSideTitle": {

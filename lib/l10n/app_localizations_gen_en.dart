@@ -10919,6 +10919,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pairing didn\'t finish. Please try again.';
 
   @override
+  String get lanSyncPairFailBusy =>
+      'A different pairing is already in progress. Finish or close it, then try again.';
+
+  @override
   String get lanSyncQrTitle => 'Pair by QR code';
 
   @override
@@ -10941,6 +10945,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lanSyncQrSingleUse =>
       'Each code works once and expires once scanned';
+
+  @override
+  String get lanSyncQrPreparing => 'Preparing the QR code…';
 
   @override
   String get lanSyncQrUseCode => 'Pair with a code instead';
@@ -11179,6 +11186,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'The sync didn\'t finish. Please try again.';
 
   @override
+  String get lanSyncSyncFailBusy =>
+      'The other device is editing a diary. Sync again after it closes the editor.';
+
+  @override
+  String get lanSyncSyncFailLocalEditing =>
+      'A page is being edited on this device. Close the page you are editing, then sync.';
+
+  @override
+  String get lanSyncSyncFailDeferred =>
+      'An undo notice was still open, so nothing was written. Sync again once it disappears.';
+
+  @override
+  String get lanSyncSyncFailNeedsConfirmation =>
+      'This sync needs your confirmation. Tap “View” in the device list to continue.';
+
+  @override
   String get lanSyncSyncReasonUnreachable => 'Couldn\'t reach the device';
 
   @override
@@ -11208,6 +11231,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lanSyncSyncReasonUnknown => 'Sync failed';
+
+  @override
+  String get lanSyncSyncReasonBusy => 'The other device was editing';
+
+  @override
+  String get lanSyncSyncReasonLocalEditing => 'This device was editing';
+
+  @override
+  String get lanSyncSyncReasonDeferred => 'An undo notice was open';
+
+  @override
+  String get lanSyncSyncReasonNeedsConfirmation => 'Needed confirmation';
+
+  @override
+  String lanSyncConflictCopySuffix(String device) {
+    return ' (conflict copy · $device)';
+  }
 
   @override
   String get lanSyncChooseSideTitle => 'Which version wins?';

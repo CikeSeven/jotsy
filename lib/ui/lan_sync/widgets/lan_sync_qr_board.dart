@@ -11,6 +11,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/seeded_theme_cache.dart';
 import '../../app_surface/widgets/on_glass.dart';
 import '../../diaries/providers/diary_preview_style_provider.dart';
+import '../../widgets/expressive_loading_indicator.dart';
 import '../models/lan_sync_qr_matrix.dart';
 import '../models/lan_sync_qr_ticket.dart';
 import 'lan_sync_qr_painter.dart';
@@ -49,15 +50,22 @@ class LanSyncQrBoardMetrics {
 
 /// 底板 + 二维码 + 中心 40dp 品牌块；尺寸见 [LanSyncQrBoardMetrics]，配色见
 /// 文件头注释。
+///
+/// [pending]（准备中的占位码，见 `LanSyncQrTicket.pending`）时底板里不画码，
+/// 居中显示加载与“正在准备二维码…”；真码到来时经 [AnimatedSwitcher] 交叉
+/// 淡入（`ExpressiveMotion.fast`）。两种内容都放在同一个码区里，底板尺寸
+/// 不变，面板不跳动。换成下一张真码时不淡入（同一个 key），直接重绘。
 class LanSyncQrBoard extends ConsumerWidget {
   const LanSyncQrBoard({
     super.key,
     required this.matrix,
     this.metrics = LanSyncQrBoardMetrics.compact,
+    this.pending = false,
   });
 
   final LanSyncQrMatrix? matrix;
   final LanSyncQrBoardMetrics metrics;
+  final bool pending;
 
   /// 中心品牌块的边长（两档相同）。
   static const double markExtent = 40;
@@ -89,8 +97,8 @@ class LanSyncQrBoard extends ConsumerWidget {
     return Theme(
       data: boardTheme,
       child: Semantics(
-        image: true,
-        label: context.l10n.lanSyncQrSemantics,
+        image: !pending,
+        label: pending ? null : context.l10n.lanSyncQrSemantics,
         child: Container(
           width: metrics.boardExtent,
           height: metrics.boardExtent,
@@ -101,37 +109,87 @@ class LanSyncQrBoard extends ConsumerWidget {
           ),
           child: SizedBox.square(
             dimension: metrics.codeExtent,
-            child: matrix == null
-                ? null
-                : Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: LanSyncQrPainter(
-                            matrix: matrix,
-                            dotColor: colors.onSurface,
-                            finderColor: colors.primary,
+            child: AnimatedSwitcher(
+              duration: ExpressiveMotion.duration(
+                context,
+                ExpressiveMotion.fast,
+              ),
+              switchInCurve: ExpressiveMotion.effects,
+              switchOutCurve: ExpressiveMotion.exit,
+              // 默认布局用宽松约束的 Stack，码会缩成品牌块大小；这里让新旧
+              // 两层都铺满码区。
+              layoutBuilder: (Widget? current, List<Widget> previous) => Stack(
+                fit: StackFit.expand,
+                children: <Widget>[...previous, ?current],
+              ),
+              child: pending
+                  ? _LanSyncQrPreparing(
+                      key: const ValueKey<String>('preparing'),
+                      textColor: colors.onSurfaceVariant,
+                    )
+                  : matrix == null
+                  ? const SizedBox.expand(key: ValueKey<String>('code'))
+                  : Stack(
+                      key: const ValueKey<String>('code'),
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: LanSyncQrPainter(
+                              matrix: matrix,
+                              dotColor: colors.onSurface,
+                              finderColor: colors.primary,
+                            ),
                           ),
                         ),
-                      ),
-                      Container(
-                        width: LanSyncQrBoard.markExtent,
-                        height: LanSyncQrBoard.markExtent,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: colors.primaryContainer,
-                          borderRadius: BorderRadius.circular(12),
+                        Container(
+                          width: LanSyncQrBoard.markExtent,
+                          height: LanSyncQrBoard.markExtent,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: colors.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const SizedBox(
+                            height: 24,
+                            child: FittedBox(child: LaunchBrandMark()),
+                          ),
                         ),
-                        child: const SizedBox(
-                          height: 24,
-                          child: FittedBox(child: LaunchBrandMark()),
-                        ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// 准备中：40dp 加载 + 一行 13 号灰字“正在准备二维码…”。
+class _LanSyncQrPreparing extends StatelessWidget {
+  const _LanSyncQrPreparing({super.key, required this.textColor});
+
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          ExpressiveLoadingIndicator(semanticLabel: l10n.lanSyncQrPreparing),
+          const SizedBox(height: 12),
+          Text(
+            l10n.lanSyncQrPreparing,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontSize: 13, color: textColor),
+          ),
+        ],
       ),
     );
   }

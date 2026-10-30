@@ -42,6 +42,10 @@ class FakeLanSyncController implements LanSyncUiController {
   /// 已签发的二维码张数。
   int qrIssued = 0;
 
+  /// 为 true 时 [issueQrTicket] 返回准备中的占位码（不推给 [qrTicket]），
+  /// 模拟同步服务还没起来；测试随后经 [qrTicketNotifier] 推送真码。
+  bool issuePending = false;
+
   void emit(LanSyncUiEvent event) => _events.add(event);
 
   @override
@@ -109,6 +113,12 @@ class FakeLanSyncController implements LanSyncUiController {
     calls.add('issueQrTicket');
     qrIssued++;
     final now = ticketClock();
+    if (issuePending) {
+      return LanSyncQrTicket.pending(
+        issuedAt: now,
+        expiresAt: now.add(const Duration(minutes: 2)),
+      );
+    }
     final ticket = LanSyncQrTicket(
       payload: qrIssued == 1
           ? 'jotsy-lan:v1:test'

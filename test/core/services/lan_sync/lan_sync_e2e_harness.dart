@@ -25,6 +25,7 @@ class E2eDevice {
     SettingsService? settings,
     bool autoSync = false,
     bool attach = true,
+    String Function(String deviceName)? conflictTitleSuffix,
     Duration sasTimeout = const Duration(seconds: 5),
     LanSyncSessionTimeouts session = const LanSyncSessionTimeouts(
       silence: Duration(seconds: 5),
@@ -44,7 +45,7 @@ class E2eDevice {
       dataRoot: data.dataRoot,
       stateDir: data.stateDir,
       settings: settings,
-      conflictTitleSuffix: (peer) => ' (copy · $peer)',
+      conflictTitleSuffix: conflictTitleSuffix ?? (peer) => ' (copy · $peer)',
       appVersion: 'test',
       editing: LanSyncEditingGate(
         isEditing: () => editors.value > 0,

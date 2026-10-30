@@ -1,5 +1,5 @@
-// 不联网的同步控制器：同步引擎接入之前 `lanSyncControllerProvider` 的默认
-// 实现。
+// 不联网的同步控制器：不支持局域网同步的平台（`AppPlatform.supportsLanSync`
+// 为 false，即 iOS）上 `lanSyncControllerProvider` 给出的实现。
 //
 // - 输入：无（本机平台取自 `AppPlatform`）；
 // - 输出：没有已配对与附近设备的状态，本机名为空（界面显示默认名）；

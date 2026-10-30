@@ -85,6 +85,11 @@ String lanSyncPairingFailureText(
     LanSyncFailureReason.untrusted => l10n.lanSyncPairFailUntrusted,
     LanSyncFailureReason.ticketExpired => l10n.lanSyncPairFailTicketExpired,
     LanSyncFailureReason.writeFailed => l10n.lanSyncPairFailWriteFailed,
+    LanSyncFailureReason.busy => l10n.lanSyncPairFailBusy,
+    // 下面三种只出现在同步会话里，配对不会走到；兜底按“没有完成”说明。
+    LanSyncFailureReason.localEditing ||
+    LanSyncFailureReason.deferred ||
+    LanSyncFailureReason.needsConfirmation ||
     LanSyncFailureReason.unknown => l10n.lanSyncPairFailUnknown,
   };
 }
@@ -105,6 +110,12 @@ String lanSyncSyncFailureText(
     LanSyncFailureReason.untrusted => l10n.lanSyncSyncFailUntrusted,
     LanSyncFailureReason.ticketExpired => l10n.lanSyncSyncFailTicketExpired,
     LanSyncFailureReason.writeFailed => l10n.lanSyncSyncFailWriteFailed,
+    LanSyncFailureReason.busy => l10n.lanSyncSyncFailBusy,
+    LanSyncFailureReason.localEditing => l10n.lanSyncSyncFailLocalEditing,
+    LanSyncFailureReason.deferred => l10n.lanSyncSyncFailDeferred,
+    // 完成摘要只给手动同步，正常走不到；兜底说明怎么继续。
+    LanSyncFailureReason.needsConfirmation =>
+      l10n.lanSyncSyncFailNeedsConfirmation,
     LanSyncFailureReason.unknown => l10n.lanSyncSyncFailUnknown,
   };
 }
@@ -125,6 +136,11 @@ String lanSyncSyncReasonText(
     LanSyncFailureReason.untrusted => l10n.lanSyncSyncReasonUntrusted,
     LanSyncFailureReason.ticketExpired => l10n.lanSyncSyncReasonTicketExpired,
     LanSyncFailureReason.writeFailed => l10n.lanSyncSyncReasonWriteFailed,
+    LanSyncFailureReason.busy => l10n.lanSyncSyncReasonBusy,
+    LanSyncFailureReason.localEditing => l10n.lanSyncSyncReasonLocalEditing,
+    LanSyncFailureReason.deferred => l10n.lanSyncSyncReasonDeferred,
+    LanSyncFailureReason.needsConfirmation =>
+      l10n.lanSyncSyncReasonNeedsConfirmation,
     LanSyncFailureReason.unknown => l10n.lanSyncSyncReasonUnknown,
   };
 }

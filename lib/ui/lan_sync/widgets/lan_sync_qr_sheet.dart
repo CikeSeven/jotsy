@@ -6,7 +6,10 @@
 // - 每秒走一次倒计时（非动画计时）；到期那一刻若控制器还没有换码，面板
 //   自己再调一次 `issueQrTicket()`（每张码只补一次，避免与控制器的换发
 //   重复）；
-// - 关闭（含被配对面板替换）时 `revokeQrTicket()`，当前的码立即作废。
+// - 关闭（含被配对面板替换）时 `revokeQrTicket()`，当前的码立即作废；
+// - 准备中的码（`LanSyncQrTicket.isPending`：控制器还不能签发）：底板里只
+//   显示加载与“正在准备二维码…”，倒计时胶囊隐藏，真码经 `qrTicket` 到来后
+//   交叉淡入（见 `LanSyncQrBoard.pending`）。
 //
 // 扫码对比度：二维码一律画成“浅底深点”。ML Kit（本应用的扫码器）不识别
 // 浅点深底的反色码（mobile_scanner 的 `invertImage` 会整帧反色，正常的码
@@ -130,7 +133,7 @@ class _LanSyncQrSheetState extends ConsumerState<LanSyncQrSheet> {
   /// 按载荷与码的边长缓存矩阵：换码或面板跨过宽 / 窄档时才重算（挖空的
   /// 模块数随码的边长变化）。
   LanSyncQrMatrix? _matrixFor(LanSyncQrTicket? ticket, double codeExtent) {
-    if (ticket == null) return null;
+    if (ticket == null || ticket.isPending) return null;
     if (_matrixPayload != ticket.payload || _matrixCodeExtent != codeExtent) {
       _matrixPayload = ticket.payload;
       _matrixCodeExtent = codeExtent;
@@ -191,13 +194,24 @@ class _LanSyncQrSheetState extends ConsumerState<LanSyncQrSheet> {
                 child: LanSyncQrBoard(
                   matrix: _matrixFor(ticket, metrics.codeExtent),
                   metrics: metrics,
+                  pending: ticket?.isPending ?? false,
                 ),
               );
             },
           ),
           const SizedBox(height: 16),
+          // 准备中隐藏倒计时，但保留它的位置：真码到来时下面几行不跳动。
           if (ticket != null)
-            LanSyncQrCountdownPill(ticket: ticket, now: widget.clock()),
+            Visibility(
+              visible: !ticket.isPending,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: LanSyncQrCountdownPill(
+                ticket: ticket,
+                now: widget.clock(),
+              ),
+            ),
           const SizedBox(height: 12),
           Text(
             address == null

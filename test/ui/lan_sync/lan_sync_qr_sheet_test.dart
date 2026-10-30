@@ -9,6 +9,7 @@ import 'package:node_diary/ui/lan_sync/models/lan_sync_qr_ticket.dart';
 import 'package:node_diary/ui/lan_sync/widgets/lan_sync_qr_board.dart';
 import 'package:node_diary/ui/lan_sync/widgets/lan_sync_qr_painter.dart';
 import 'package:node_diary/ui/lan_sync/widgets/lan_sync_qr_sheet.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:qr/qr.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -191,6 +192,41 @@ void main() {
 
     await tester.pumpWidget(const SizedBox());
     expect(controller.calls.last, 'revokeQrTicket');
+  });
+
+  testWidgets('shows a preparing state until the real code arrives', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 10, 29, 12);
+    final controller = FakeLanSyncController()
+      ..ticketClock = (() => now)
+      ..issuePending = true;
+    await _pumpSheet(tester, controller, clock: () => now);
+
+    Finder qrPainter() => find.byWidgetPredicate(
+      (Widget widget) =>
+          widget is CustomPaint && widget.painter is LanSyncQrPainter,
+    );
+    final boardSize = tester.getSize(find.byType(LanSyncQrBoard));
+    expect(find.byType(ExpressiveLoadingIndicator), findsOneWidget);
+    expect(find.text('正在准备二维码…'), findsOneWidget);
+    expect(qrPainter(), findsNothing);
+    expect(find.text('2:00 后换一张新码').hitTestable(), findsNothing);
+    // 设备名 · 地址与“改用核对码配对”照常显示。
+    expect(find.text('Pixel 9 · 192.168.1.23:47562'), findsOneWidget);
+    expect(find.text('改用核对码配对'), findsOneWidget);
+
+    controller.qrTicketNotifier.value = LanSyncQrTicket(
+      payload: _realisticPayload(),
+      issuedAt: now,
+      expiresAt: now.add(const Duration(minutes: 2)),
+    );
+    await tester.pumpAndSettle();
+    expect(qrPainter(), findsOneWidget);
+    expect(find.byType(ExpressiveLoadingIndicator), findsNothing);
+    expect(find.text('正在准备二维码…'), findsNothing);
+    expect(find.text('2:00 后换一张新码').hitTestable(), findsOneWidget);
+    expect(tester.getSize(find.byType(LanSyncQrBoard)), boardSize);
   });
 
   testWidgets('re-issues the code at expiry when the controller has not', (

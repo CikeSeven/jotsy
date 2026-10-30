@@ -9745,6 +9745,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lanSyncPairFailUnknown => '配对没有完成，请重试。';
 
   @override
+  String get lanSyncPairFailBusy => '正在进行另一次配对，请先完成或关闭它再试。';
+
+  @override
   String get lanSyncQrTitle => '扫码配对';
 
   @override
@@ -9765,6 +9768,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncQrSingleUse => '二维码只能用一次，扫过即失效';
+
+  @override
+  String get lanSyncQrPreparing => '正在准备二维码…';
 
   @override
   String get lanSyncQrUseCode => '改用核对码配对';
@@ -9958,6 +9964,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lanSyncSyncFailUnknown => '同步没有完成，请重试。';
 
   @override
+  String get lanSyncSyncFailBusy => '对方正在编辑日记。等对方关闭编辑页后再同步。';
+
+  @override
+  String get lanSyncSyncFailLocalEditing => '这台设备上有正在编辑的页面。请先关闭正在编辑的页面，再同步。';
+
+  @override
+  String get lanSyncSyncFailDeferred => '有一条可撤销的提示还开着，这次什么都没有写入。等提示消失后再同步。';
+
+  @override
+  String get lanSyncSyncFailNeedsConfirmation => '这次同步需要你确认。在设备列表里点“查看”继续。';
+
+  @override
   String get lanSyncSyncReasonUnreachable => '连不上对方';
 
   @override
@@ -9986,6 +10004,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncSyncReasonUnknown => '同步失败';
+
+  @override
+  String get lanSyncSyncReasonBusy => '对方正在编辑';
+
+  @override
+  String get lanSyncSyncReasonLocalEditing => '本机正在编辑';
+
+  @override
+  String get lanSyncSyncReasonDeferred => '撤销提示还开着';
+
+  @override
+  String get lanSyncSyncReasonNeedsConfirmation => '需要确认';
+
+  @override
+  String lanSyncConflictCopySuffix(String device) {
+    return '（冲突副本 · $device）';
+  }
 
   @override
   String get lanSyncChooseSideTitle => '以哪边为准';

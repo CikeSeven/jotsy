@@ -17846,6 +17846,12 @@ abstract class AppLocalizations {
   /// **'Pairing didn\'t finish. Please try again.'**
   String get lanSyncPairFailUnknown;
 
+  /// Pairing failure reason: another pairing is already in progress on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'A different pairing is already in progress. Finish or close it, then try again.'**
+  String get lanSyncPairFailBusy;
+
   /// QR sheet title.
   ///
   /// In en, this message translates to:
@@ -17881,6 +17887,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Each code works once and expires once scanned'**
   String get lanSyncQrSingleUse;
+
+  /// Shown inside the QR board while the sync service cannot issue a code yet (it is starting or has no LAN address).
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing the QR code…'**
+  String get lanSyncQrPreparing;
 
   /// Text button at the bottom of the QR sheet.
   ///
@@ -18206,6 +18218,30 @@ abstract class AppLocalizations {
   /// **'The sync didn\'t finish. Please try again.'**
   String get lanSyncSyncFailUnknown;
 
+  /// Failed sync: the other device is editing (or syncing with another device), with the next step.
+  ///
+  /// In en, this message translates to:
+  /// **'The other device is editing a diary. Sync again after it closes the editor.'**
+  String get lanSyncSyncFailBusy;
+
+  /// Failed sync: a page is being edited on this device, so a manual sync does not start; with the next step.
+  ///
+  /// In en, this message translates to:
+  /// **'A page is being edited on this device. Close the page you are editing, then sync.'**
+  String get lanSyncSyncFailLocalEditing;
+
+  /// Failed sync: an undo snack bar was still open, so nothing was written; with the next step.
+  ///
+  /// In en, this message translates to:
+  /// **'An undo notice was still open, so nothing was written. Sync again once it disappears.'**
+  String get lanSyncSyncFailDeferred;
+
+  /// Failed sync: an automatic sync stopped because it needs the user to confirm; with the next step.
+  ///
+  /// In en, this message translates to:
+  /// **'This sync needs your confirmation. Tap “View” in the device list to continue.'**
+  String get lanSyncSyncFailNeedsConfirmation;
+
   /// Short failure reason in the sync history: unreachable.
   ///
   /// In en, this message translates to:
@@ -18265,6 +18301,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sync failed'**
   String get lanSyncSyncReasonUnknown;
+
+  /// Short failure reason in the sync history: the other device was editing.
+  ///
+  /// In en, this message translates to:
+  /// **'The other device was editing'**
+  String get lanSyncSyncReasonBusy;
+
+  /// Short failure reason in the sync history: this device was editing.
+  ///
+  /// In en, this message translates to:
+  /// **'This device was editing'**
+  String get lanSyncSyncReasonLocalEditing;
+
+  /// Short failure reason in the sync history: an undo snack bar was still open.
+  ///
+  /// In en, this message translates to:
+  /// **'An undo notice was open'**
+  String get lanSyncSyncReasonDeferred;
+
+  /// Short failure reason in the sync history: the automatic sync needs confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed confirmation'**
+  String get lanSyncSyncReasonNeedsConfirmation;
+
+  /// Appended to the title of a conflict copy created by LAN sync; device is the name of the device whose version the copy keeps.
+  ///
+  /// In en, this message translates to:
+  /// **' (conflict copy · {device})'**
+  String lanSyncConflictCopySuffix(String device);
 
   /// Title of the dialog asking how to merge diaries changed on both devices.
   ///

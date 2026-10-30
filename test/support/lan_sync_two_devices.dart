@@ -18,9 +18,11 @@ import 'package:path/path.dart' as p;
 /// 局域网同步端到端测试的两台（或多台）“设备”与一轮同步的完整流程。
 ///
 /// 每台设备有自己的内存数据库、数据根目录、状态目录、[SyncLocalState]、
-/// 媒体索引与 [SyncApplier]；不经网络，按会话层（任务 11）的顺序直接调用：
-/// 刷新检查点 → 取数循环 → `planSync` → 传媒体 → 对方写入 → 本机写入 →
-/// 双方照做对方的改键。任务 11 的端到端测试可以在这上面换成真正的会话。
+/// 媒体索引与 [SyncApplier]；不经网络，按会话层（docs/lan_sync.md §5.3）的
+/// 顺序直接调用：刷新检查点 → 取数循环 → `planSync` → 传媒体 → 对方写入 →
+/// 本机写入 → 双方照做对方的改键。经真正会话与服务的端到端测试见
+/// test/core/services/lan_sync/lan_sync_session_harness.dart 与
+/// lan_sync_e2e_harness.dart（它们复用这里的数据库与目录）。
 ///
 /// 不含设置：同一进程里的两个 `SettingsService` 共用 SharedPreferences 单例。
 

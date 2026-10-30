@@ -125,7 +125,7 @@ class SyncLocalState {
   /// 覆盖恢复（`DataArchiveService` 的 replaceAll）成功后调用：删除检查点、
   /// 历史、墓碑、改名与哈希缓存。恢复进来的数据与本机之前的同步记忆无关，
   /// 留着旧检查点会把整份恢复误记成本机的编辑与删除。`restoredPending`
-  /// 标记由会话层写在 `store.json`（任务 11）。
+  /// 标记由服务层写在 `store.json`（docs/lan_sync.md §3“覆盖恢复”）。
   Future<void> resetAfterRestore() {
     return _serialized(() async {
       for (final name in <String>[

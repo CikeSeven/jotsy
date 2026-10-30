@@ -17,7 +17,9 @@
 // 5 秒）与附近设备列表；[dispose] 全部关闭。
 // 同一时刻最多一个会话（任一方向）：会话期间同一个 `SyncLocalState` 只被它用。
 //
-// ─── 给界面适配层的对照（任务 11 之后接线 `LanSyncUiController`）───
+// ─── 给界面适配层的对照（`EngineLanSyncUiController`）───
+// 换算在 lib/ui/lan_sync/models/lan_sync_engine_mapping.dart 与
+// lan_sync_engine_events.dart。
 // 状态 `LanSyncViewState` ← [state]：
 //   local.name / addresses / port / discoverable / discoveryListening
 //     ← `LanSyncEngineState.local` 同名字段；platform ← `LanSyncPlatform
@@ -48,10 +50,9 @@
 //     conflictCopies ← `result.conflictCopies`，duration 同名；
 //   LanSyncAutoSyncAppliedEvent ← [LanSyncAutoSyncApplied]；
 //   LanSyncAutoSyncNeedsAttentionEvent ← [LanSyncAttentionNeeded]。
-// 失败原因 `LanSyncFailureReason` ← [LanSyncFailure]：同名的直接对应；
-//   peerCancelled / busy → declined，localEditing / needsConfirmation /
-//   deferred → 界面另行提示（没有对应项时 unknown），transferFailed →
-//   connectionLost，protocolError → unknown。
+// 失败原因 `LanSyncFailureReason` ← [LanSyncFailure]：同名的直接对应（含
+//   busy / localEditing / deferred / needsConfirmation）；peerCancelled →
+//   declined，transferFailed → connectionLost，protocolError → unknown。
 // 构造参数 conflictTitleSuffix ← 界面层用本地化文案生成“（冲突副本 · X）”：
 //   X 是副本所保存版本那一台的设备名——引擎按败方传入本机设备名或对方的
 //   显示名（备注名优先），界面层只负责拼文字。

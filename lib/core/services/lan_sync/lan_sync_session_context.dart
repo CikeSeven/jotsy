@@ -1,7 +1,7 @@
 // 会话的输入：本机的同步部件与对方信息（由 lan_sync_session.dart 导出）。
 //
-// 纯数据，无副作用。服务每次会话按当前状态新建一份；测试直接用任务 6 的
-// 两台设备拼出来。
+// 纯数据，无副作用。服务每次会话按当前状态新建一份；测试直接用
+// test/support/lan_sync_two_devices.dart 的两台设备拼出来。
 import 'dart:io';
 
 import 'sync/sync_apply.dart';

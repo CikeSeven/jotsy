@@ -13,9 +13,9 @@ import 'lan_sync_fake_timers.dart';
 
 /// 端到端测试的一台“设备”：真实的 [LanSyncService]（回环 TCP、真实握手与
 /// 信道、真实写入层），发现换成可控的 [FakeLanSyncDiscovery]，自动同步的
-/// 时钟与计时器用共享的 [FakeTimers]。数据库、目录与比较工具来自任务 6 的
-/// [LanSyncTestDevice]——只用它的 db / 目录 / `canonical()`，不碰它自带的
-/// `state` / `applier`（服务有自己的一份，两份同时用会让缓存过期）。
+/// 时钟与计时器用共享的 [FakeTimers]。数据库、目录与比较工具来自
+/// test/support/lan_sync_two_devices.dart 的 [LanSyncTestDevice]——只用它的
+/// db / 目录 / `canonical()`，不碰它自带的 `state` / `applier`（服务有自己的一份，两份同时用会让缓存过期）。
 class E2eDevice {
   E2eDevice._(this.data, this.service, this.discovery, this.editors);
 

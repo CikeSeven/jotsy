@@ -27,8 +27,9 @@ import 'lan_sync_network.dart';
 ///   里，也不会被应用自己的备份打包。
 /// - 其他平台（iOS 不支持局域网同步，仅为完整性）：应用支持目录。
 ///
-/// 只供生产装配处（`lan_sync_service.dart`）调用；同步引擎各类一律由构造参数
-/// 注入 `stateDir`，测试传临时目录。
+/// 只供生产装配处（`lib/ui/lan_sync/providers/lan_sync_engine_assembly.dart`
+/// 的 `createAppLanSyncService`）调用；同步引擎各类一律由构造参数注入
+/// `stateDir`，测试传临时目录。
 Future<Directory> lanSyncStateDirectory({LanSyncNativeChannel? channel}) async {
   final Directory base;
   if (AppPlatform.isAndroid) {

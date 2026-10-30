@@ -1,6 +1,6 @@
 # 局域网同步（LAN Sync）设计规格
 
-> 状态：实现中（分支 `worktree-lan-sync`）。本文是各模块的共同依据：数据模型、合并规则、协议与状态存储以此为准；实现中如需偏离，先改本文再改代码。界面规格定稿后写入 DESIGN.md §5.27。
+> 状态：已实现（Android、Linux、Windows；macOS 可编译）。本文是各模块的共同依据：数据模型、合并规则、协议与状态存储以此为准；改动实现前先改本文再改代码。协作规则见 AGENTS.md §6“局域网同步”，界面规格见 DESIGN.md §5.27。
 
 ## 0. 目标与边界
 
@@ -12,22 +12,26 @@
 
 ## 1. 模块与文件归属
 
-| 路径 | 职责 | 任务 |
-|---|---|---|
-| `lib/core/services/lan_sync/sync/sync_model.dart` | `SyncEntity`、`SyncKey`、`SyncRecord`、`SyncManifest`、规范 JSON 与哈希 | 4 |
-| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 | 4 |
-| `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 | 4 |
-| `lib/core/services/lan_sync/sync/sync_planner.dart`（+ `_keys` / `_decide` / `_merge` / `_revive` / `_copies` / `_tags` / `_notebooks` / `_lists` / `_output` / `_values`）、`sync_plan.dart`、`sync_plan_side.dart`；本机一侧适配器 `sync_local_plan_side.dart` | 合并判定（纯函数）：按需取数、产出双方的写入计划 | 5 |
-| `lib/core/database/app_database_sync_ops.dart`（读）、`app_database_sync_writes.dart`（`_AppDatabaseSyncWrites`：按原值写入、关联清理）、`app_database_sync_order.dart`（`_AppDatabaseSyncOrder`：顺序列表重排） | 读规范行；由写入层放进同一个事务的按原值写入与关联清理 | 6（读规范行的部分由 4 先建） |
-| `lib/core/services/lan_sync/sync/sync_apply.dart`（+ `_writes` / `_settings` / `_result`）、`sync_media.dart`、`sync_media_library.dart`、`sync_media_rekey.dart` | 写入编排（`SyncApplier`）、媒体暂存与就位（`SyncMediaStaging`）、发送与改键照做（`SyncMediaLibrary`）、写入后更新本机状态 | 6 |
-| `lib/core/services/lan_sync/lan_sync_identity.dart`、`lan_sync_crypto.dart`、`lan_sync_frames.dart`、`lan_sync_handshake.dart`（+ `_types` / `_flows` / `_sas`）、`lan_sync_channel.dart`（+ `_types` / `_inbound` / `_outlet`）、`lan_sync_messages.dart`、`lan_sync_qr_payload.dart` | 身份、密码学原语、长度前缀帧、握手与配对、加密信道、消息信封、二维码载荷 | 2 |
-| `lib/core/services/lan_sync/lan_sync_discovery.dart`、`lan_sync_network.dart`、`lan_sync_state_directory.dart` | UDP 信标与在线表、本机地址、原生通道、不备份的状态目录 | 3 |
-| `lib/core/services/editing_session_registry.dart` | 编辑会话 / 撤销窗口登记、“同步已写入”事件 | 7 |
-| `lib/core/services/lan_sync/lan_sync_session.dart`（+ `_inbox` / `_initiator` / `_planning` / `_media` / `_responder`）、`lan_sync_session_{types,context,protocol,plan_wire}.dart`、`lan_sync_failure.dart`；`lan_sync_service.dart`（+ `_lifecycle` / `_server` / `_outgoing` / `_pairing` / `_sessions` / `_discovery` / `_types`）、`lan_sync_service_config.dart`、`lan_sync_auto_scheduler.dart`；`lan_sync_store.dart`、`lan_sync_store_models.dart`、`lan_sync_session_record.dart` | 会话状态机与消息（§5.3）、服务端 / 发现 / 配对 / 自动同步（§9）、配对设备与偏好、同步记录 | 11 |
-| `lib/ui/lan_sync/` | 界面（pages / controllers / providers / models / sections / widgets） | 8、9、10、11 |
-| `android/app/src/main/kotlin/com/jotsy/diary/LanSyncChannel.kt` | `com.jotsy.diary/lan_sync`：组播锁、设备名、`noBackupFilesDir` | 3 |
+| 路径 | 职责 |
+|---|---|
+| `lib/core/services/lan_sync/sync/sync_model.dart` | `SyncEntity`、`SyncKey`、`SyncRecord`、`SyncManifest`、规范 JSON 与哈希 |
+| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 |
+| `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 |
+| `lib/core/services/lan_sync/sync/sync_planner.dart`（+ `_keys` / `_decide` / `_merge` / `_revive` / `_copies` / `_tags` / `_notebooks` / `_lists` / `_output` / `_values`）、`sync_plan.dart`、`sync_plan_side.dart`；本机一侧适配器 `sync_local_plan_side.dart` | 合并判定（纯函数）：按需取数、产出双方的写入计划 |
+| `lib/core/database/app_database_sync_ops.dart`（读）、`app_database_sync_writes.dart`（`_AppDatabaseSyncWrites`：按原值写入、关联清理）、`app_database_sync_order.dart`（`_AppDatabaseSyncOrder`：顺序列表重排） | 读规范行；由写入层放进同一个事务的按原值写入与关联清理 |
+| `lib/core/services/lan_sync/sync/sync_apply.dart`（+ `_writes` / `_settings` / `_result`）、`sync_media.dart`、`sync_media_library.dart`、`sync_media_rekey.dart` | 写入编排（`SyncApplier`）、媒体暂存与就位（`SyncMediaStaging`）、发送与改键照做（`SyncMediaLibrary`）、写入后更新本机状态 |
+| `lib/core/services/lan_sync/lan_sync_identity.dart`、`lan_sync_crypto.dart`、`lan_sync_frames.dart`、`lan_sync_handshake.dart`（+ `_types` / `_flows` / `_sas`）、`lan_sync_channel.dart`（+ `_types` / `_inbound` / `_outlet`）、`lan_sync_messages.dart`、`lan_sync_qr_payload.dart` | 身份、密码学原语、长度前缀帧、握手与配对、加密信道、消息信封、二维码载荷 |
+| `lib/core/services/lan_sync/lan_sync_discovery.dart`、`lan_sync_network.dart`、`lan_sync_state_directory.dart` | UDP 信标与在线表、本机地址、原生通道、不备份的状态目录 |
+| `lib/core/services/editing_session_registry.dart`（`EditingSessionRegistry`、拖动排序用的 `ReorderEditingGuard`）、`lib/ui/widgets/editing_session_blocker.dart`（`EditingSessionBlocker`）、`lib/app/synced_data_refresh.dart`（`syncedDataRefreshProvider`） | 编辑会话 / 冲刷者 / 撤销窗口登记、“同步已写入”事件与写入后的失效（§7） |
+| `lib/core/services/lan_sync/lan_sync_session.dart`（+ `_inbox` / `_initiator` / `_planning` / `_media` / `_responder`）、`lan_sync_session_{types,context,protocol,plan_wire}.dart`、`lan_sync_failure.dart`；`lan_sync_service.dart`（+ `_lifecycle` / `_server` / `_outgoing` / `_pairing` / `_sessions` / `_discovery` / `_types`）、`lan_sync_service_config.dart`、`lan_sync_auto_scheduler.dart`；`lan_sync_store.dart`、`lan_sync_store_models.dart`、`lan_sync_session_record.dart` | 会话状态机与消息（§5.3）、服务端 / 发现 / 配对 / 自动同步（§9）、配对设备与偏好、同步记录 |
+| `lib/ui/lan_sync/models/lan_sync_ui_controller.dart`（`LanSyncUiController`）、`lan_sync_view_state.dart`、`lan_sync_ui_events.dart`、`lan_sync_session_view.dart`、`lan_sync_session_summary.dart`、`lan_sync_qr_ticket.dart`、`lan_sync_platform.dart`、`lan_sync_address_input.dart`、`lan_sync_pairing_auth.dart`、`lan_sync_qr_matrix.dart` | 界面接口与视图模型（界面只认这些类型，不直接引用引擎） |
+| `lib/ui/lan_sync/models/lan_sync_engine_mapping.dart`、`lan_sync_engine_events.dart` | 引擎状态 / 事件 / 失败原因 → 界面模型的纯换算（对照见 `lan_sync_service.dart` 顶部） |
+| `lib/ui/lan_sync/controllers/engine_lan_sync_ui_controller.dart`（+ `_link`）、`inert_lan_sync_ui_controller.dart` | 真正的控制器（包着 `LanSyncService`，异步启动窗口内排队指令）；不支持的平台为不联网的空实现 |
+| `lib/ui/lan_sync/providers/lan_sync_providers.dart`、`lan_sync_engine_assembly.dart` | `lanSyncControllerProvider`（挂 `AppLifecycleListener` 跟随前后台，`NodeDiaryApp` 启动时即常驻监听）；生产装配 `createAppLanSyncService`（解析数据根与状态目录、应用版本、本地化的冲突副本后缀） |
+| `lib/ui/lan_sync/controllers/`（其余）、`pages/`、`sections/`、`widgets/`；入口 `lib/ui/settings/sections/settings_lan_sync_tile.dart` | 页面可见性与 attach / detach、配对 / 会话 / 页面流程、配对前身份验证、自动同步提示；同步页、设备详情页、扫码页及其区块（DESIGN.md §5.27） |
+| `android/app/src/main/kotlin/com/jotsy/diary/LanSyncChannel.kt` | `com.jotsy.diary/lan_sync`：组播锁、设备名、`noBackupFilesDir` |
 
-所有同步引擎类都通过构造参数注入数据库（`AppDatabase`）、数据根目录（`Directory dataRoot`，对应 `appDataRootDirectory()`）、状态目录（`Directory stateDir`）与 `SettingsService`，**不在引擎内部调用 `appDataRootDirectory()` / path_provider**：端到端测试要在一个进程里跑两台“设备”。只有 `lan_sync_service.dart` 的生产装配处解析真实目录。
+所有同步引擎类都通过构造参数注入数据库（`AppDatabase`）、数据根目录（`Directory dataRoot`，对应 `appDataRootDirectory()`）、状态目录（`Directory stateDir`）与 `SettingsService`，**不在引擎内部调用 `appDataRootDirectory()` / path_provider**：端到端测试要在一个进程里跑两台“设备”。只有生产装配 `createAppLanSyncService`（`lib/ui/lan_sync/providers/lan_sync_engine_assembly.dart`）解析真实目录（`appDataRootDirectory()` 与 `lanSyncStateDirectory()`）。
 
 ## 2. 规范记录
 
@@ -93,17 +97,17 @@ class SyncManifest {
 
 `stateDir`：Android 为 `noBackupFilesDir/lan_sync/`（原生通道取得），桌面为应用支持目录下 `lan_sync/`；测试注入临时目录。全部文件写临时文件后原子改名。
 
-| 文件 | 内容 | 任务 |
-|---|---|---|
-| `identity.json` | `{v:1, deviceId（UUID v4）, ed25519Seed（base64）, createdAt（UTC 毫秒）}`；不使用静态 X25519（握手只用临时 X25519） | 2 |
-| `store.json` | 偏好（设备名、可被发现、自动同步、同步设置）、已配对设备（deviceId、名称、平台、身份公钥、配对时间、上次同步、上次地址与端口、单设备自动同步、备注名，以及按设备的标记 `needsAttention`（自动同步遇到需要确认）与 `restoredPending`（覆盖恢复之后还没和它成功同步过））；不放 SharedPreferences、不进备份 | 11 |
-| `checkpoint.json.gz` | 上次会话时的本机观测：清单 + tags / orderList 分面的当前值（下次进历史时要用旧值）+ 标签名 → 本地 id 映射 + 观测覆盖的实体集合 | 4 |
-| `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；tags 与 orderList 分面同时记录值 | 4 |
-| `tombstones.json.gz` | 墓碑：`SyncKey → {deletedAt, known: 分面 → [哈希…]}`（删除时的当前哈希 + 历史）；超过 365 天或超过 50 000 条时按时间淘汰 | 4 |
-| `renames.json.gz` | 标签改名记录：旧名 → 新名、时间（随墓碑同样淘汰） | 4 |
-| `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日），其余每次现算 | 4 |
-| `media_index.json.gz` | 媒体键 → 大小、修改时间、sha256（大小或修改时间变了就重算） | 4 |
-| `sessions.json` | 最近 50 次同步记录 | 11 |
+| 文件 | 内容 |
+|---|---|
+| `identity.json` | `{v:1, deviceId（UUID v4）, ed25519Seed（base64）, createdAt（UTC 毫秒）}`；不使用静态 X25519（握手只用临时 X25519） |
+| `store.json` | 偏好（设备名、可被发现、自动同步、同步设置）、已配对设备（deviceId、名称、平台、身份公钥、配对时间、上次同步、上次地址与端口、单设备自动同步、备注名，以及按设备的标记 `needsAttention`（自动同步遇到需要确认）与 `restoredPending`（覆盖恢复之后还没和它成功同步过））；不放 SharedPreferences、不进备份 |
+| `checkpoint.json.gz` | 上次会话时的本机观测：清单 + tags / orderList 分面的当前值（下次进历史时要用旧值）+ 标签名 → 本地 id 映射 + 观测覆盖的实体集合 |
+| `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；tags 与 orderList 分面同时记录值 |
+| `tombstones.json.gz` | 墓碑：`SyncKey → {deletedAt, known: 分面 → [哈希…]}`（删除时的当前哈希 + 历史）；超过 365 天或超过 50 000 条时按时间淘汰 |
+| `renames.json.gz` | 标签改名记录：旧名 → 新名、时间（随墓碑同样淘汰） |
+| `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日），其余每次现算 |
+| `media_index.json.gz` | 媒体键 → 大小、修改时间、sha256（大小或修改时间变了就重算） |
+| `sessions.json` | 最近 50 次同步记录 |
 
 - **刷新检查点**（每次会话开始时，在冲刷编辑会话之后）：算出当前清单 C，与检查点 P 比较——
   - P、C 都有且某分面哈希不同：把 P 中的旧哈希（及 tags / orderList 的旧值）插到该分面历史最前，`seenAt` 为当前时间；
@@ -222,7 +226,7 @@ class SyncManifest {
 - 已配对设备之间：发起方 intent = sync，双方身份公钥都已受信 → 直接建立会话；任一方不认识对方 → 返回 `untrusted`（对方收到明确原因），界面提示重新配对。
 - 传入的配对请求只在本机同步页打开（`attachPage` 期间）时接受，否则引擎直接拒绝（没有人在场核对数字，留着只会等到超时）；界面一侧对同步页不是当前路由时收到的配对事件同样 `respond(false)`。
 
-### 5.3 会话消息（任务 11 定稿）
+### 5.3 会话消息
 
 握手成功、已配对设备之间（intent = sync）在同一条加密信道上运行一次会话（`lan_sync_session*.dart`，编解码在 `lan_sync_session_protocol.dart` / `lan_sync_session_plan_wire.dart`）。信封同 §5.2（`{"type": …}` JSON，信道自动分段，单条 ≤ 32 MiB），清单与媒体走数据块。I = 发起方（唯一规划者），R = 响应方（只应答，不主动请求）。
 
@@ -279,27 +283,28 @@ class SyncManifest {
 5. 用写入后的观测（事务里读出的行 + 应用设置之后取的设置值）调用 `recordAppliedState(after, historySeenAt: …)`：`historySeenAt` 取这一侧计划的 `SyncSidePlan.historySeenAt`，只保留真正写成了的键、去掉被媒体改键改写过的分面（跳过的键若因用户编辑而变了，旧值的时间应当是现在）。有任何写入时发出 `EditingSessionRegistry.notifyDataReplaced()`。会话同步设置时调用方应传 `includeSettings: true`（默认只在计划里有设置写入时才观测设置）：标签改名会改变按名称的标签顺序，写入后的观测带上设置才记得准。
 6. settings 分面只应用本次变化的键（`record` 哈希与 `expected` 不同的分面），部分节点由 `syncSettingsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id，背景图引用还原为文件名），经 `BackupSettings.restore(…, clearLegacyDraft: false)` 应用：覆盖恢复会顺带 `clearCreateDiaryDraft()`（只有读不出来、迁移时保留下来的旧版单份草稿才会还在），同步只应用设置变化、不能删掉本机用户的数据。`restore` 对若干键的“空值”什么也不做，写入层直接调用 setter：`tagOrderRaw` 为空串 → `setTagOrderRaw('')`；`diarySortModeRaw` / `diaryLayoutModeRaw` 为空串 → 对应 setter；`diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` 为 null → `clearDiaryToolbarOrderRaw()` / `clearTagPickerSortRaw()` / `clearDiaryLocationPrecisionRaw()`（`SettingsService` 为此新增），为空串 → 对应 setter；`appLocaleCode` 读出来从不为空。否则本机规范值不变、下次同步会反复判为差异。失败按 `SettingsServiceBackup` 的快照回滚（快照补上了之前漏掉的“我的颜色”键）。
 
-会话层的顺序（任务 11，§5.3）：发起方规划 → 两个方向的媒体协商（`media.have`，接收方已有同样 sha256 的不传）→ 把 `plan.remote` 需要的媒体传进对方暂存区、从对方取 `plan.local` 需要的媒体进本机暂存区（都在任何写入之前，传输失败两边都不写）→ 对方 `apply(plan.remote, staging)`，回 `applied{counts, rekeys}` → 发起方 `apply(plan.local, staging)` → 发起方 `adoptMediaRekeys(对方的 rekeys)`，把自己的 rekeys 发给对方 → 对方 `adoptMediaRekeys`。某一侧的计划为空时不调用写入层（不必等撤销窗口）。只执行了一侧（中断）时下一轮照常收敛：未写的一侧的差异重新规划即可。会话期间同一个 `SyncLocalState` 不能被别处并发调用（写入事务里会调用它的 `observeRows`，它的队列里若排着要读库的操作会与事务互相等待）。
+会话层的顺序（§5.3）：发起方规划 → 两个方向的媒体协商（`media.have`，接收方已有同样 sha256 的不传）→ 把 `plan.remote` 需要的媒体传进对方暂存区、从对方取 `plan.local` 需要的媒体进本机暂存区（都在任何写入之前，传输失败两边都不写）→ 对方 `apply(plan.remote, staging)`，回 `applied{counts, rekeys}` → 发起方 `apply(plan.local, staging)` → 发起方 `adoptMediaRekeys(对方的 rekeys)`，把自己的 rekeys 发给对方 → 对方 `adoptMediaRekeys`。某一侧的计划为空时不调用写入层（不必等撤销窗口）。只执行了一侧（中断）时下一轮照常收敛：未写的一侧的差异重新规划即可。会话期间同一个 `SyncLocalState` 不能被别处并发调用（写入事务里会调用它的 `observeRows`，它的队列里若排着要读库的操作会与事务互相等待）。
 
-## 7. 并发安全（任务 7：`EditingSessionRegistry`）
+## 7. 并发安全（`EditingSessionRegistry`）
 
-- **阻塞者**：编辑页与发布页（`DebouncedAutoSaveController`）、纪念日编辑页、日记本编辑页、模板编辑页、留言编辑面板、目录页与日记本管理页的拖动排序进行中。登记期间不发起自动同步，对方的会话请求以 `busy` 拒绝；手动同步提示“请先关闭正在编辑的页面”。
+- **阻塞者**：编辑页与发布页（`DebouncedAutoSaveController`）、纪念日编辑页与日记本编辑页（`EditingSessionBlocker`）、模板编辑页、留言编辑面板、目录页与日记本管理页的拖动排序（`ReorderEditingGuard`：从拿起到新顺序写完，落回原位即结束）。登记期间不发起自动同步，对方的会话请求以 `busy` 拒绝；手动同步提示“请先关闭正在编辑的页面”。
 - **冲刷者**：预览页待办自动保存（`DiaryTodoAutoSaveController`）。会话开始时 `flushAll()`；写入后由 `notifyDataReplaced` 让其文档重新读取。
-- **撤销窗口**：带按钮（撤销）的 `showTrackedSnackBar` 显示期间计数；同步写入前等待清零。
-- **写入后失效**：界面层监听 `dataReplaced`，失效一次性读取的 provider（`diaryDetailProvider` 族、`userDiaryTemplatesSnapshotProvider`、日记本相关的一次性读取等）。实时查询（`watch…`）由 Drift 自动刷新。
+- **撤销窗口**：带按钮（撤销）的 `showTrackedSnackBar` 显示期间自动计数（`beginUndoWindow`，随提示关闭结束）；同步写入前等待清零，超时即推迟（§6 第 1 步）。
+- **写入后失效**：`syncedDataRefreshProvider`（`lib/app/synced_data_refresh.dart`，`NodeDiaryApp` 常驻监听）收到 `dataReplaced` 时失效一次性读取的 provider：`diaryDetailProvider` 族、`diaryNotebooksProvider` 族、`userDiaryTemplatesSnapshotProvider`、`tagListProvider`（自定义顺序取自设置、只在标签表推送时套用）。实时查询（`watch…`）由 Drift 自动刷新，设置类 Notifier 经 `SettingsService` 的通知刷新；新增一次性读取同步数据的 provider 必须加进它的清单。
 
 ## 8. 安全与隐私
 
 - 只有已配对设备能建立同步会话；配对需双方确认（核对码）或扫码（一次性令牌）。
-- 本机开启了应用锁、或存在上锁日记本，且 `AppPlatform.supportsDeviceAuth` 时，确认配对前先经 `DeviceAuthService` 验证；Linux 不支持身份验证，只提示。
+- 本机开启了应用锁、或存在上锁日记本，且 `AppPlatform.supportsDeviceAuth` 时，用户点“一致，配对”时先经 `DeviceAuthService` 验证（`LanSyncPairingAuthGate`）：没有通过、或设备没有设置锁屏密码弹不出验证时不确认配对，面板上提示原因；平台不支持身份验证（Linux）时不验证、也不额外提示（安全说明块已写明会合并私密日记本）。
 - 首次配对时说明：同步会双向合并两台设备的全部数据（含私密日记本与回收站），建议先导出完整备份（提供入口）。
 - 所有传输端到端加密；身份私钥只在 `stateDir`，不进备份、不进 SharedPreferences。
-- 隐私政策（`docs/privacy.html`）补充局域网同步与相机权限说明。
+- 隐私政策（`docs/privacy.html`）写明局域网同步的联网方式（只与已配对设备、端到端加密、不经服务器；只在同步页打开或配对后应用在前台时联网；可被发现时在局域网广播设备名）与相机、局域网 / 组播权限。
 
-## 9. 服务与自动同步（任务 11：`lan_sync_service*.dart`、`lan_sync_auto_scheduler.dart`）
+## 9. 服务与自动同步（`lan_sync_service*.dart`、`lan_sync_auto_scheduler.dart`）
 
 `LanSyncService` 是应用生命周期内的一份编排，界面适配层只经它的 `state` / `events` / `qrTicket` 与指令方法（对照见 `lan_sync_service.dart` 顶部）。全部外部能力经构造注入（数据库、数据根、状态目录、设置服务、编辑会话接口、套接字 / 发现 / 地址 / 时钟 / 计时器），测试在一个进程里跑两三台。
 
+- **界面接线**：`lanSyncControllerProvider` 在支持的平台上建 `EngineLanSyncUiController`，由 `createAppLanSyncService` 装配引擎；应用根组件 `NodeDiaryApp` 启动时就常驻监听这个 provider，所以引擎随应用创建并启动（读身份与 store），不等用户打开同步页——已配对设备的自动同步与对方发起的手动同步都要本机在前台时连得上。创建引擎本身不碰网络：什么时候起服务端与发现由下面的规则决定。provider 挂一个 `AppLifecycleListener`，resumed 为前台，paused / hidden / detached 为后台（`setForeground`），inactive 不改变。引擎异步启动完成之前，界面指令排队、页面引用计数与前后台先记下，启动后补给引擎（前后台在 `start` 之前交给引擎，后台启动的应用不会先开端口再关）；二维码面板先拿到准备中的占位码，引擎能签发时再换上真码。不支持的平台（iOS）为不联网的 `InertLanSyncUiController`。
 - **启动**：读身份（`created` → 清空已配对设备、同步记录与同步状态）→ 打开 `store.json` → 建同步部件（`SyncLocalState`、媒体索引 / 库、`SyncApplier`）→ `SyncMediaStaging.sweepStale` → 按下面的规则决定是否起服务端（优先 47562，占用时上次的端口，再随机）与发现；登记覆盖恢复监听（§3）。
 - **什么时候碰网络**：没有已配对设备时，服务端与发现只在同步页打开（`attachPage`，二维码面板也只在同步页上）期间运行，离开即全部停掉——从没用过局域网同步的用户不该在应用启动时就开 TCP 端口、向局域网广播带设备名的信标（隐私，也费电）。有至少一台已配对设备且在前台时，服务端与发现保持运行，不管自动同步开没开：对方的手动同步也要连得上本机。后台一律停掉。配对成功、取消配对、页面进出、前后台切换后立即按新的状态重新判定（串行执行，避免交错起两个服务端）；服务端停下时作废正在显示的二维码。
 - **前后台与页面**：后台停服务端与发现、取消全部自动同步计时（不做后台常驻）；回到前台恢复。`attachPage` / `detachPage` 按引用计数：页面打开时信标 2 秒一拍、列出附近（未配对）设备、接受传入的核对码配对，并每 15 秒重读本机地址（另在启动、回到前台、打开页面时读）；没有页面时 5 秒一拍。发现跟随服务端运行。

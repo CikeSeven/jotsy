@@ -496,7 +496,7 @@ Future<void> seedEveryEntity(SyncTestDevice device) async {
 
 /// 测试里的最小写入：按反向列值把规范记录逐条插进一个空库（顺序列表的位置
 /// 按列表下标写，与写入层“按列表重排为 0..n-1”的口径一致）。真正的写入层
-/// （任务 6）带前置条件、更新与删除；这里只验证列值本身。
+/// （`SyncApplier`）带前置条件、更新与删除；这里只验证列值本身。
 Future<void> writeRecordsForTest(
   SyncTestDevice device,
   List<SyncRecord> records,

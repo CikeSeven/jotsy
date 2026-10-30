@@ -93,7 +93,7 @@
         <h1 class="display" data-en="Jotsy Privacy Policy">Jotsy 隐私政策</h1>
         <p class="lead" data-en="Your diary stays on your device. Jotsy has no account system and no servers of its own.">你的日记只保存在你的设备上。Jotsy 没有账号体系，也没有开发者运营的服务器。</p>
         <div class="doc-meta">
-          <span>生效日期 / Effective date: 2026-10-17</span>
+          <span>生效日期 / Effective date: 2026-10-30</span>
           <div class="seg" role="radiogroup" aria-label="语言" data-en-aria-label="Language" data-lang-seg>
             <button type="button" role="radio" aria-checked="true" data-value="zh">简体中文</button>
             <button type="button" role="radio" aria-checked="false" data-value="en">English</button>
@@ -137,7 +137,7 @@
           <p>Jotsy 是一款开源的本地日记应用。Jotsy 没有账号体系，也没有开发者运营的服务器；开发者不会收集、接收或存储你的任何日记内容或个人信息。</p>
 
           <h2 id="zh-storage">你的数据保存在哪里</h2>
-          <p>日记、标签、纪念日、图片、视频、录音和附件都保存在你设备上应用的私有目录中，设置保存在设备本机。卸载应用或清除应用数据会删除这些内容。你可以随时导出完整备份（可加密）。</p>
+          <p>日记、标签、纪念日、图片、视频、录音和附件都保存在你设备上应用的私有目录中，设置保存在设备本机。卸载应用或清除应用数据会删除这些内容。你可以随时导出完整备份（可加密）。如果你使用局域网同步，这些数据还会经加密连接同步到你配对的其他设备上，并保存在那些设备上；同步用的设备身份密钥只保存在本机，不会写入备份。</p>
 
           <h2 id="zh-network">何时会联网</h2>
           <p>以下是 Jotsy 会联网的全部场景，每次只发送完成该功能所必需的内容：</p>
@@ -149,10 +149,12 @@
               <tr><td>网盘备份与恢复</td><td>你自己配置的 WebDAV / S3 服务，或你授权的网盘（Google Drive、OneDrive、Dropbox、百度网盘、阿里云盘）</td><td>你选择上传的备份文件</td></tr>
               <tr><td>检查与下载更新</td><td>GitHub Releases 及其镜像</td><td>不含任何日记数据</td></tr>
               <tr><td>从手机厂商或 WPS 云端导入笔记</td><td>对应厂商的官方网站</td><td>你在其官网完成的登录；登录状态只用于本次读取，导入结束后即清除</td></tr>
+              <tr><td>局域网同步（配对后在你的设备之间同步日记）</td><td>同一局域网内你亲自配对过的设备；不经过任何服务器</td><td>端到端加密的日记数据与媒体（含私密日记本与回收站，设置只在两台都开启时同步）；「可被发现」开启时，在局域网内广播你设置的设备名</td></tr>
               </tbody>
             </table>
           </div>
-          <p>检查更新默认在打开或回到应用时自动进行，每 2 小时最多一次，只读取版本信息，可以在 <strong>设置 › 关于 › 检查更新</strong> 中关闭；其余几项只在你使用对应功能时才会联网。</p>
+          <p>检查更新默认在打开或回到应用时自动进行，每 2 小时最多一次，只读取版本信息，可以在 <strong>设置 › 关于 › 检查更新</strong> 中关闭；局域网同步见下一段；其余几项只在你使用对应功能时才会联网。</p>
+          <p>局域网同步只在你打开 <strong>设置 › 数据与隐私 › 局域网同步</strong> 时，或配对之后应用在前台时联网，切到后台即停止，不在后台运行；从没配对过设备时，不打开同步页就不会监听端口或在局域网广播。只有你在两台设备上都确认核对码、或用一次性二维码配对过的设备才能同步，连接全程端到端加密。「可被发现」开启时，Jotsy 会在局域网内广播你设置的设备名，让附近的 Jotsy 找到你；可以在同步页关闭，关闭后不再广播，已配对的设备仍可同步。</p>
 
           <h2 id="zh-backup">网盘备份</h2>
           <p>网盘备份上传的是你的完整备份 ZIP（可选加密），存放在你自己的网盘或服务器上。</p>
@@ -178,6 +180,8 @@
             <li>照片、视频与文件：仅在你选择插入或导入时访问你选中的内容。</li>
             <li>相册图片（可选）：补写过去某天的日记时，在你点按「允许访问」后列出相册里那天拍的照片；只申请图片读取权限，不读取视频、音频与照片的位置信息，也不会改动相册中的原图。</li>
             <li>安装应用：仅用于应用内更新，把通过大小、校验值与签名核对的安装包交给系统安装器。</li>
+            <li>相机（可选，仅 Android）：只在你扫描局域网同步的配对二维码时使用；画面只在设备上识别，不会保存或发送。</li>
+            <li>Wi-Fi 状态与组播（局域网）：仅用于局域网同步时发现同一网络里的 Jotsy 设备。</li>
           </ul>
 
           <h2 id="zh-third">第三方服务</h2>
@@ -198,7 +202,7 @@
           <p>Jotsy is an open-source, local-first diary app. Jotsy has no account system and no developer-operated servers. The developer does not collect, receive or store any of your diary content or personal information.</p>
 
           <h2 id="en-storage">Where your data lives</h2>
-          <p>Entries, tags, anniversaries, photos, videos, recordings and attachments are stored in the app's private directory on your device, and settings stay on the device. Uninstalling the app or clearing its data deletes them. You can export a full (optionally encrypted) backup at any time.</p>
+          <p>Entries, tags, anniversaries, photos, videos, recordings and attachments are stored in the app's private directory on your device, and settings stay on the device. Uninstalling the app or clearing its data deletes them. You can export a full (optionally encrypted) backup at any time. If you use LAN sync, the same data is also synced over an encrypted connection to the other devices you paired, and stored on them; the device identity key used for syncing stays on the device and is never written into backups.</p>
 
           <h2 id="en-network">When Jotsy goes online</h2>
           <p>These are all the cases in which Jotsy goes online, and each one sends only what that feature needs:</p>
@@ -210,10 +214,12 @@
               <tr><td>Cloud backup and restore</td><td>The WebDAV / S3 service you configure, or a drive you authorize (Google Drive, OneDrive, Dropbox, Baidu Netdisk, Alipan)</td><td>The backup files you choose to upload</td></tr>
               <tr><td>Checking for and downloading updates</td><td>GitHub Releases and mirrors</td><td>No diary data</td></tr>
               <tr><td>Import notes from phone-maker or WPS clouds</td><td>The vendor's official website</td><td>The sign-in you complete on that site; the session is used only for this import and cleared afterwards</td></tr>
+              <tr><td>LAN sync (syncing entries between your devices after pairing)</td><td>Devices on your local network that you paired yourself; no server is involved</td><td>End-to-end encrypted diary data and media (including private notebooks and the trash; settings only when both devices turn them on); while "Discoverable" is on, the device name you set is broadcast on the local network</td></tr>
               </tbody>
             </table>
           </div>
-          <p>Update checks run automatically when you open or return to the app, at most once every 2 hours, read only version information, and can be turned off in <strong>Settings › About › Check for updates</strong>. Everything else goes online only when you use that feature.</p>
+          <p>Update checks run automatically when you open or return to the app, at most once every 2 hours, read only version information, and can be turned off in <strong>Settings › About › Check for updates</strong>. LAN sync is described in the next paragraph. Everything else goes online only when you use that feature.</p>
+          <p>LAN sync goes online only while <strong>Settings › Data &amp; Privacy › LAN sync</strong> is open or, once you have paired a device, while the app is in the foreground. It stops when the app goes to the background and never runs in the background; until you pair a device, Jotsy opens no port and broadcasts nothing unless the sync page is open. Only devices you paired by confirming the matching code on both devices, or by scanning a one-time QR code, can sync, and the connection is end-to-end encrypted. While "Discoverable" is on, Jotsy broadcasts the device name you set on the local network so nearby Jotsy apps can find you; you can turn it off on the sync page, after which nothing is broadcast and paired devices can still sync.</p>
 
           <h2 id="en-backup">Cloud backup</h2>
           <p>Cloud backup uploads your full backup ZIP (optionally encrypted) to your own drive or server.</p>
@@ -238,6 +244,8 @@
             <li>Photos, videos and files: only the items you pick to insert or import.</li>
             <li>Photo library (optional): when you write an entry for a past day, Jotsy lists the photos you took that day, only after you tap "Allow access". It asks for image access only, never reads videos, audio or photo locations, and never changes the originals.</li>
             <li>Install apps: only for in-app updates, to hand a package that passed the size, checksum and signature checks to the system installer.</li>
+            <li>Camera (optional, Android only): only while you scan a LAN sync pairing QR code. Frames are processed on the device and never stored or sent.</li>
+            <li>Wi-Fi state and multicast (local network): only for LAN sync, to find Jotsy devices on the same network.</li>
           </ul>
 
           <h2 id="en-third">Third-party services</h2>

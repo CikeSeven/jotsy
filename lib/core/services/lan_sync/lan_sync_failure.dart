@@ -1,9 +1,9 @@
 // 局域网同步引擎的失败原因（会话、配对与同步记录共用）。
 //
 // 纯数据，无副作用。引擎在 core 里、不引用界面模块，所以这里自成一套枚举；
-// 界面适配层（任务 11 之后）把它换算成 `LanSyncFailureReason`，对照见
-// lan_sync_service.dart 顶部的映射说明。枚举名即 sessions.json 里存的字符串，
-// 改名会让旧记录读成 [LanSyncFailure.unknown]。
+// 界面层把它换算成 `LanSyncFailureReason`（`lanSyncFailureReasonOf`，在
+// lib/ui/lan_sync/models/lan_sync_engine_mapping.dart）。枚举名即
+// sessions.json 里存的字符串，改名会让旧记录读成 [LanSyncFailure.unknown]。
 
 /// 同步或配对失败的原因。
 enum LanSyncFailure {

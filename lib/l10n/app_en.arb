@@ -13594,6 +13594,14 @@
   "@lanSyncTipWifiBody": {
     "description": "Troubleshooting tip body: same network."
   },
+  "lanSyncTipVpnTitle": "VPN or proxy",
+  "@lanSyncTipVpnTitle": {
+    "description": "Troubleshooting tip title: a VPN or proxy app can block LAN sync."
+  },
+  "lanSyncTipVpnBody": "A VPN or proxy (such as Clash) on either device may route LAN traffic into its tunnel, so the devices can't see or reach each other. Turn the VPN off for now, or enable “Bypass private networks / LAN” in the proxy app.",
+  "@lanSyncTipVpnBody": {
+    "description": "Troubleshooting tip body for VPN or proxy apps."
+  },
   "lanSyncTipOpenPageTitle": "Open this page on the other device",
   "@lanSyncTipOpenPageTitle": {
     "description": "Troubleshooting tip title: open the sync page on the other device."

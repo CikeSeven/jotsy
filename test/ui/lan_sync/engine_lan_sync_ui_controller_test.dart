@@ -256,7 +256,7 @@ void main() {
     await c.setAutoSync(false);
     expect(c.state.value.local.name, isEmpty);
     await c.pairWith('nobody');
-    await c.connectManual(' 192.168.1.20 ', 47562);
+    await c.connectManual(' 192.168.1.20 ', 24562);
     await waitUntil(() => events.length == 2);
     final manual = events.last as LanSyncPairingEvent;
     expect(manual.peerName, '192.168.1.20');

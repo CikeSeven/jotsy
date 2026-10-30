@@ -1,6 +1,7 @@
 // 局域网同步界面里的设备平台与端口常量（纯数据，无副作用）。
 
 import '../../../core/services/lan_sync/lan_sync_discovery.dart';
+import '../../../core/services/lan_sync/lan_sync_service_config.dart';
 
 /// 设备所在的平台：决定设备图标与“本机 · 平台”里的平台名。
 ///
@@ -35,5 +36,5 @@ abstract final class LanSyncPorts {
   /// TCP 同步端口的首选值：“手动输入地址”的默认端口，排障面板里提示放行。
   /// 被占用时服务端会改用随机端口，实际端口以本机 [LanSyncLocalDeviceView.port]
   /// 为准。
-  static const int preferredSync = 47562;
+  static const int preferredSync = kLanSyncPreferredPort;
 }

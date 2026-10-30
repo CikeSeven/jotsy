@@ -19,7 +19,7 @@ import 'lan_sync_test_harness.dart';
 /// 真实大小的载荷：UUID 设备 id、完整指纹、令牌、一个地址与设备名。
 String _realisticPayload() => LanSyncQrPayload(
   hosts: <String>['192.168.1.23'],
-  port: 47562,
+  port: 24562,
   deviceId: 'b7f3c2a1-9d84-4e6f-a0c5-1e2d3f4a5b6c',
   fingerprint: List<String>.filled(64, 'a').join(),
   token: List<String>.filled(22, 'Q').join(),
@@ -182,7 +182,7 @@ void main() {
     expect(controller.calls, <String>['issueQrTicket']);
     expect(find.text('2:00 后换一张新码'), findsOneWidget);
     expect(find.text('扫码配对'), findsOneWidget);
-    expect(find.text('Pixel 9 · 192.168.1.23:47562'), findsOneWidget);
+    expect(find.text('Pixel 9 · 192.168.1.23:24562'), findsOneWidget);
     expect(find.text('二维码只能用一次，扫过即失效'), findsOneWidget);
     expect(find.bySemanticsLabel('配对二维码'), findsOneWidget);
 
@@ -213,7 +213,7 @@ void main() {
     expect(qrPainter(), findsNothing);
     expect(find.text('2:00 后换一张新码').hitTestable(), findsNothing);
     // 设备名 · 地址与“改用核对码配对”照常显示。
-    expect(find.text('Pixel 9 · 192.168.1.23:47562'), findsOneWidget);
+    expect(find.text('Pixel 9 · 192.168.1.23:24562'), findsOneWidget);
     expect(find.text('改用核对码配对'), findsOneWidget);
 
     controller.qrTicketNotifier.value = LanSyncQrTicket(

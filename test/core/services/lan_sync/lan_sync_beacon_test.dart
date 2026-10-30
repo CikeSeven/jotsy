@@ -7,7 +7,7 @@ LanSyncBeacon _beacon({String name = '书房的电脑'}) => LanSyncBeacon(
   deviceId: '6f1c2b8e-1d2a-4e5f-9a0b-1c2d3e4f5a6b',
   name: name,
   platform: 'linux',
-  port: 47562,
+  port: 24562,
   fingerprint: '0123456789abcdef',
   formatVersion: 1,
 );
@@ -25,7 +25,7 @@ void main() {
       'id': beacon.deviceId,
       'n': '书房的电脑',
       'p': 'linux',
-      'port': 47562,
+      'port': 24562,
       'fp': '0123456789abcdef',
       'f': 1,
     });

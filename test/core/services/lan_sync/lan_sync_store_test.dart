@@ -36,7 +36,7 @@ void main() {
       peer('a').copyWith(
         lastSyncAt: () => DateTime.utc(2026, 10, 2),
         lastHost: () => '192.168.1.5',
-        lastPort: () => 47562,
+        lastPort: () => 24562,
         alias: () => '客厅',
         needsAttention: true,
       ),

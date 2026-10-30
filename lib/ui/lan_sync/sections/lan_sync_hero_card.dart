@@ -124,7 +124,7 @@ class LanSyncHeroCard extends StatelessWidget {
         runSpacing: 8,
         children: <Widget>[
           LanSyncAddressChip(
-            address: local.primaryAddress,
+            address: local.displayAddress,
             onCopy: onCopyAddress,
           ),
           LanSyncDiscoverableChip(

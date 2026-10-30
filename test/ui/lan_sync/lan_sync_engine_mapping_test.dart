@@ -158,7 +158,7 @@ void main() {
         name: 'Pixel',
         platform: 'android',
         addresses: const ['192.168.1.5'],
-        port: 47562,
+        port: 24562,
         discoverable: false,
         discoveryListening: false,
       ),
@@ -199,7 +199,7 @@ void main() {
     expect(view.local.name, 'Pixel');
     expect(view.local.platform, LanSyncPlatform.android);
     expect(view.local.primaryAddress, '192.168.1.5');
-    expect(view.local.port, 47562);
+    expect(view.local.port, 24562);
     expect(view.local.discoverable, isFalse);
     expect(view.local.discoveryListening, isFalse);
     final peer = view.peers.single;

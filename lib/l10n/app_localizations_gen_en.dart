@@ -10972,6 +10972,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Both devices need to be on the same network. Guest networks and routers with AP isolation block discovery.';
 
   @override
+  String get lanSyncTipVpnTitle => 'VPN or proxy';
+
+  @override
+  String get lanSyncTipVpnBody =>
+      'A VPN or proxy (such as Clash) on either device may route LAN traffic into its tunnel, so the devices can\'t see or reach each other. Turn the VPN off for now, or enable “Bypass private networks / LAN” in the proxy app.';
+
+  @override
   String get lanSyncTipOpenPageTitle => 'Open this page on the other device';
 
   @override

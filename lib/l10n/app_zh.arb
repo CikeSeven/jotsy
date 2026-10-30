@@ -13594,6 +13594,14 @@
   "@lanSyncTipWifiBody": {
     "description": "Troubleshooting tip body: same network."
   },
+  "lanSyncTipVpnTitle": "VPN / 代理",
+  "@lanSyncTipVpnTitle": {
+    "description": "Troubleshooting tip title: a VPN or proxy app can block LAN sync."
+  },
+  "lanSyncTipVpnBody": "任一台开着 VPN 或代理（如 Clash）时，局域网的连接可能被转进隧道，互相看不到或连不上。请暂时关闭 VPN，或在代理应用里打开“绕过私有网络 / 局域网”。",
+  "@lanSyncTipVpnBody": {
+    "description": "Troubleshooting tip body for VPN or proxy apps."
+  },
   "lanSyncTipOpenPageTitle": "另一台也打开同步页",
   "@lanSyncTipOpenPageTitle": {
     "description": "Troubleshooting tip title: open the sync page on the other device."

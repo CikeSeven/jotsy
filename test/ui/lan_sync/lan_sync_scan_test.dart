@@ -15,7 +15,7 @@ import 'lan_sync_test_harness.dart';
 
 final String _jotsyCode = LanSyncQrPayload(
   hosts: <String>['192.168.1.23'],
-  port: 47562,
+  port: 24562,
   deviceId: 'dev-1',
   fingerprint: List<String>.filled(64, 'a').join(),
   token: List<String>.filled(22, 'Q').join(),

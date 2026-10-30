@@ -13,6 +13,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/services/app_platform.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../models/lan_sync_platform.dart';
 import '../models/lan_sync_ui_controller.dart';
 import '../models/lan_sync_view_state.dart';
 import '../pages/lan_sync_scan_page.dart';
@@ -87,9 +88,11 @@ Future<void> showLanSyncTroubleshooting(
   BuildContext context,
   LanSyncUiController controller,
 ) async {
+  final local = controller.state.value.local;
   final action = await showLanSyncTroubleshootSheet(
     context,
-    discoveryListening: controller.state.value.local.discoveryListening,
+    discoveryListening: local.discoveryListening,
+    syncPort: local.port ?? LanSyncPorts.preferredSync,
   );
   if (action == null || !context.mounted) return;
   switch (action) {

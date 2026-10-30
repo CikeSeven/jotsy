@@ -15,8 +15,8 @@ import 'lan_sync_network.dart';
 // - 副作用：绑定 UDP 端口、加入组播组、周期性发送广播 / 组播（[LanSyncDiscovery
 //   .advertise] 关闭时只听不发）；Android 上运行期间持有 Wi-Fi 组播锁。
 
-/// 发现端口（信标收发）。
-const int kLanSyncDiscoveryPort = 47561;
+/// 发现端口（信标收发），取值理由见 `kLanSyncPreferredPort`。
+const int kLanSyncDiscoveryPort = 24561;
 
 /// 发现用的组播组（管理范围组播 239/8，只在本地网络内有效）。
 final InternetAddress kLanSyncMulticastGroup = InternetAddress('239.255.47.61');

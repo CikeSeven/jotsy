@@ -18,8 +18,10 @@ class LanSyncManualAddress {
 }
 
 /// “手动输入地址”面板（只负责收集与校验）：地址与端口两个输入框，端口默认
-/// [LanSyncPorts.preferredSync]。点“连接”且两项都合法时返回结果，取消返回
-/// null；不合法时在对应输入框下提示，面板不关闭。
+/// [LanSyncPorts.preferredSync]。地址框里粘贴“地址:端口”时自动拆到两个框里
+/// （逐字输入时不拆，免得打到一半就被拆走；点“连接”时再拆一次兜底）。点
+/// “连接”且两项都合法时返回结果，取消返回 null；不合法时在对应输入框下
+/// 提示，面板不关闭。
 Future<LanSyncManualAddress?> showLanSyncManualAddressSheet(
   BuildContext context,
 ) {
@@ -53,6 +55,9 @@ class _ManualAddressSheetState extends State<_ManualAddressSheet> {
   bool _hostError = false;
   bool _portError = false;
 
+  /// 地址框上一次的长度：一次多出不止一个字即视为粘贴。
+  int _hostLength = 0;
+
   @override
   void dispose() {
     _host.dispose();
@@ -60,7 +65,29 @@ class _ManualAddressSheetState extends State<_ManualAddressSheet> {
     super.dispose();
   }
 
+  void _onHostChanged(String text) {
+    final pasted = text.length - _hostLength > 1;
+    _hostLength = text.length;
+    if (pasted) _splitHostPort();
+    if (_hostError) setState(() => _hostError = false);
+  }
+
+  /// 地址框是“地址:端口”时拆到两个框里；拆了返回 true。
+  bool _splitHostPort() {
+    final split = splitLanSyncHostPort(_host.text);
+    if (split == null) return false;
+    _host.value = TextEditingValue(
+      text: split.host,
+      selection: TextSelection.collapsed(offset: split.host.length),
+    );
+    _hostLength = split.host.length;
+    _port.text = '${split.port}';
+    if (_portError) setState(() => _portError = false);
+    return true;
+  }
+
   void _submit() {
+    _splitHostPort();
     final host = normalizeLanSyncHost(_host.text);
     final port = parseLanSyncPort(_port.text);
     if (host == null || port == null) {
@@ -113,9 +140,7 @@ class _ManualAddressSheetState extends State<_ManualAddressSheet> {
               autocorrect: false,
               keyboardType: TextInputType.url,
               textInputAction: TextInputAction.next,
-              onChanged: (_) {
-                if (_hostError) setState(() => _hostError = false);
-              },
+              onChanged: _onHostChanged,
               decoration: InputDecoration(
                 labelText: l10n.lanSyncManualHostLabel,
                 hintText: l10n.lanSyncManualHostHint,

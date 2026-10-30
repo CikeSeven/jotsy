@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/lan_sync/lan_sync_discovery.dart';
 import 'package:node_diary/core/services/lan_sync/lan_sync_network.dart';
 
-LanSyncBeacon _beacon(String id, {int port = 47562}) => LanSyncBeacon(
+LanSyncBeacon _beacon(String id, {int port = 24562}) => LanSyncBeacon(
   deviceId: id,
   name: 'device-$id',
   platform: 'linux',

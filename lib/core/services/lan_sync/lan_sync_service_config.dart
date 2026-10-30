@@ -14,7 +14,11 @@ import 'lan_sync_network.dart';
 import 'lan_sync_session_types.dart';
 
 /// TCP 同步端口的首选值（占用时改用随机端口，信标里广播实际端口）。
-const int kLanSyncPreferredPort = 47562;
+///
+/// 与发现端口（[kLanSyncDiscoveryPort]）一起取在所有平台的临时端口范围之外
+/// （Linux / Android 32768–60999，Windows / macOS 49152–65535），不会被别的
+/// 程序的出站连接临时占用；24555–24576 在 IANA 未分配。
+const int kLanSyncPreferredPort = 24562;
 
 /// 计时器工厂（测试换成可手动推进的假计时器）。
 typedef LanSyncTimerFactory =

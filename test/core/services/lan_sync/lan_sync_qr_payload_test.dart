@@ -9,7 +9,7 @@ void main() {
 
   LanSyncQrPayload payload({
     List<String> hosts = const ['192.168.1.20', 'fe80::1'],
-    int port = 47562,
+    int port = 24562,
     String name = '书房的电脑',
   }) {
     return LanSyncQrPayload(
@@ -36,7 +36,7 @@ void main() {
     'h': ['10.0.0.2'],
     'id': 'device-1',
     'n': 'Pixel',
-    'p': 47562,
+    'p': 24562,
     't': token,
   };
 
@@ -55,7 +55,7 @@ void main() {
     expect(json, isNot(contains(' ')));
     final decoded = LanSyncQrPayload.decode(code);
     expect(decoded.hosts, ['192.168.1.20', 'fe80::1']);
-    expect(decoded.port, 47562);
+    expect(decoded.port, 24562);
     expect(decoded.fingerprint, fingerprint);
     expect(decoded.token, token);
     expect(decoded.name, '书房的电脑');
@@ -81,7 +81,7 @@ void main() {
       {...validJson(), 'extra': 1},
       {...validJson(), 'p': 0},
       {...validJson(), 'p': 65536},
-      {...validJson(), 'p': '47562'},
+      {...validJson(), 'p': '24562'},
       {...validJson(), 'h': <String>[]},
       {
         ...validJson(),

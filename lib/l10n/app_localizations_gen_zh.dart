@@ -9797,6 +9797,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lanSyncTipWifiBody => '两台设备要在同一个网络里。访客网络或开启了 AP 隔离的路由器会挡住发现。';
 
   @override
+  String get lanSyncTipVpnTitle => 'VPN / 代理';
+
+  @override
+  String get lanSyncTipVpnBody =>
+      '任一台开着 VPN 或代理（如 Clash）时，局域网的连接可能被转进隧道，互相看不到或连不上。请暂时关闭 VPN，或在代理应用里打开“绕过私有网络 / 局域网”。';
+
+  @override
   String get lanSyncTipOpenPageTitle => '另一台也打开同步页';
 
   @override

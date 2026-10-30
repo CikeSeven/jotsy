@@ -13,13 +13,15 @@ enum LanSyncTroubleshootAction { manualAddress }
 
 /// “找不到设备？”排障面板（只负责展示与挑选，DESIGN.md §5.28）。
 ///
-/// 逐条说明：同一个 Wi-Fi、另一台也打开同步页、Windows / Linux 防火墙、仍
-/// 不行时手动输入地址或扫码。两种防火墙都列出（另一台可能是电脑）。本机
-/// 发现端口被占用（[discoveryListening] 为 false）时顶部另有说明块。返回
-/// 用户点的操作，直接关闭为 null。
+/// 逐条说明：同一个 Wi-Fi、VPN / 代理、另一台也打开同步页、Windows / Linux
+/// 防火墙、仍不行时手动输入地址或扫码。两种防火墙都列出（另一台可能是
+/// 电脑），Linux 一条写本机实际的同步端口 [syncPort]（默认端口被占用时服务端
+/// 会退到别的端口）。本机发现端口被占用（[discoveryListening] 为 false）时
+/// 顶部另有说明块。返回用户点的操作，直接关闭为 null。
 Future<LanSyncTroubleshootAction?> showLanSyncTroubleshootSheet(
   BuildContext context, {
   required bool discoveryListening,
+  required int syncPort,
 }) {
   return showAppModalBottomSheet<LanSyncTroubleshootAction>(
     context: context,
@@ -33,14 +35,21 @@ Future<LanSyncTroubleshootAction?> showLanSyncTroubleshootSheet(
     sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
         ? AnimationStyle.noAnimation
         : null,
-    builder: (_) => _TroubleshootSheet(discoveryListening: discoveryListening),
+    builder: (_) => _TroubleshootSheet(
+      discoveryListening: discoveryListening,
+      syncPort: syncPort,
+    ),
   );
 }
 
 class _TroubleshootSheet extends StatelessWidget {
-  const _TroubleshootSheet({required this.discoveryListening});
+  const _TroubleshootSheet({
+    required this.discoveryListening,
+    required this.syncPort,
+  });
 
   final bool discoveryListening;
+  final int syncPort;
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +114,11 @@ class _TroubleshootSheet extends StatelessWidget {
           body: l10n.lanSyncTipWifiBody,
         ),
         _Tip(
+          icon: FontAwesomeIcons.shieldHalved,
+          title: l10n.lanSyncTipVpnTitle,
+          body: l10n.lanSyncTipVpnBody,
+        ),
+        _Tip(
           icon: FontAwesomeIcons.towerBroadcast,
           title: l10n.lanSyncTipOpenPageTitle,
           body: l10n.lanSyncTipOpenPageBody,
@@ -117,10 +131,7 @@ class _TroubleshootSheet extends StatelessWidget {
         _Tip(
           icon: FontAwesomeIcons.linux,
           title: l10n.lanSyncTipLinuxTitle,
-          body: l10n.lanSyncTipLinuxBody(
-            LanSyncPorts.discovery,
-            LanSyncPorts.preferredSync,
-          ),
+          body: l10n.lanSyncTipLinuxBody(LanSyncPorts.discovery, syncPort),
         ),
         _Tip(
           icon: FontAwesomeIcons.keyboard,

@@ -7,10 +7,16 @@ import 'package:node_diary/ui/lan_sync/widgets/lan_sync_qr_sheet.dart';
 import '../../support/fake_lan_sync_controller.dart';
 import 'lan_sync_test_harness.dart';
 
-FakeLanSyncController _pairedController({bool discoveryListening = true}) {
+FakeLanSyncController _pairedController({
+  bool discoveryListening = true,
+  int port = 24562,
+}) {
   return FakeLanSyncController(
     LanSyncViewState(
-      local: lanSyncTestLocal.copyWith(discoveryListening: discoveryListening),
+      local: lanSyncTestLocal.copyWith(
+        discoveryListening: discoveryListening,
+        port: port,
+      ),
       peers: <LanSyncPeerView>[lanSyncTestPeer(lastSyncAt: lanSyncTestNow)],
       nearby: const <LanSyncNearbyView>[lanSyncTestNearby],
     ),
@@ -112,7 +118,53 @@ void main() {
     await pumpLanSyncPage(tester, controller);
     await tester.tap(find.text('192.168.1.23'));
     await tester.pump();
-    expect(copied, <String>['192.168.1.23:47562']);
+    expect(copied, <String>['192.168.1.23:24562']);
+  });
+
+  testWidgets('a non-default port is shown and copied as ip:port', (
+    tester,
+  ) async {
+    final copied = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (MethodCall call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied.add((call.arguments as Map)['text'] as String);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    final controller = _pairedController(port: 38457);
+    await pumpLanSyncPage(tester, controller);
+    expect(find.text('192.168.1.23'), findsNothing);
+    await tester.tap(find.text('192.168.1.23:38457'));
+    await tester.pump();
+    expect(copied, <String>['192.168.1.23:38457']);
+  });
+
+  testWidgets('pasting ip:port into the address field fills both fields', (
+    tester,
+  ) async {
+    final controller = _pairedController();
+    await pumpLanSyncPage(tester, controller);
+    await _openFooter(tester, '手动输入地址');
+
+    final host = find.byKey(const ValueKey<String>('lanSyncManualHost'));
+    final port = find.byKey(const ValueKey<String>('lanSyncManualPort'));
+    await tester.enterText(host, '192.168.1.5:38457');
+    await tester.pump();
+    expect(tester.widget<TextField>(host).controller!.text, '192.168.1.5');
+    expect(tester.widget<TextField>(port).controller!.text, '38457');
+
+    await tester.tap(find.text('连接'));
+    await tester.pumpAndSettle();
+    expect(controller.calls, contains('manual:192.168.1.5:38457'));
   });
 
   testWidgets('manual address validates host and port before connecting', (
@@ -124,7 +176,7 @@ void main() {
 
     final host = find.byKey(const ValueKey<String>('lanSyncManualHost'));
     final port = find.byKey(const ValueKey<String>('lanSyncManualPort'));
-    expect(tester.widget<TextField>(port).controller!.text, '47562');
+    expect(tester.widget<TextField>(port).controller!.text, '24562');
 
     await tester.enterText(host, '192.168.1');
     await tester.enterText(port, '70000');
@@ -135,10 +187,10 @@ void main() {
     expect(controller.calls.where((c) => c.startsWith('manual')), isEmpty);
 
     await tester.enterText(host, ' 192.168.1.5 ');
-    await tester.enterText(port, '47562');
+    await tester.enterText(port, '24562');
     await tester.tap(find.text('连接'));
     await tester.pumpAndSettle();
-    expect(controller.calls, contains('manual:192.168.1.5:47562'));
+    expect(controller.calls, contains('manual:192.168.1.5:24562'));
     expect(find.text('连接'), findsNothing);
   });
 
@@ -148,8 +200,9 @@ void main() {
     await pumpLanSyncPage(tester, controller);
     await _openFooter(tester, '找不到设备？');
 
-    expect(find.textContaining('发现端口 47561 被其他程序占用'), findsOneWidget);
-    expect(find.text('如果开着防火墙，请放行 UDP 47561 与 TCP 47562。'), findsOneWidget);
+    expect(find.textContaining('发现端口 24561 被其他程序占用'), findsOneWidget);
+    expect(find.text('如果开着防火墙，请放行 UDP 24561 与 TCP 24562。'), findsOneWidget);
+    expect(find.text('VPN / 代理'), findsOneWidget);
 
     final manual = find.widgetWithText(FilledButton, '手动输入地址');
     await tester.scrollUntilVisible(
@@ -163,6 +216,15 @@ void main() {
       find.byKey(const ValueKey<String>('lanSyncManualHost')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the Linux firewall tip names the port actually in use', (
+    tester,
+  ) async {
+    final controller = _pairedController(port: 38457);
+    await pumpLanSyncPage(tester, controller);
+    await _openFooter(tester, '找不到设备？');
+    expect(find.text('如果开着防火墙，请放行 UDP 24561 与 TCP 38457。'), findsOneWidget);
   });
 
   testWidgets('troubleshooting hides the port notice when discovery works', (

@@ -18,7 +18,7 @@ class FakeLanSyncController implements LanSyncUiController {
                 name: 'Pixel 9',
                 platform: LanSyncPlatform.android,
                 addresses: <String>['192.168.1.23'],
-                port: 47562,
+                port: 24562,
               ),
             ),
       );

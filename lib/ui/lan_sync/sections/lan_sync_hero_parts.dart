@@ -166,7 +166,7 @@ class LanSyncHeroCollapsedRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  local.primaryAddress ?? l10n.lanSyncNoNetwork,
+                  local.displayAddress ?? l10n.lanSyncNoNetwork,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(

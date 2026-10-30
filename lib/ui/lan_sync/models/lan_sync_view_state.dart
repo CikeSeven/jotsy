@@ -37,8 +37,19 @@ class LanSyncLocalDeviceView {
   /// 发现端口是否绑定成功；false 表示被其他程序占用，排障面板顶部说明。
   final bool discoveryListening;
 
-  /// 英雄卡上显示的地址；没有地址时为 null。
+  /// 本机的首选地址；没有地址时为 null。
   String? get primaryAddress => addresses.isEmpty ? null : addresses.first;
+
+  /// 英雄卡上显示的地址：实际端口不是默认端口时（默认端口被占用、服务端
+  /// 退到了别的端口）写成 `ip:port`，否则只写 ip——别人照着输入时，端口框
+  /// 的默认值就对。没有地址时为 null。
+  String? get displayAddress {
+    final address = primaryAddress;
+    final port = this.port;
+    if (address == null) return null;
+    if (port == null || port == LanSyncPorts.preferredSync) return address;
+    return '$address:$port';
+  }
 
   LanSyncLocalDeviceView copyWith({
     String? name,

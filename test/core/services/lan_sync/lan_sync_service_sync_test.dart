@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/core/services/lan_sync/lan_sync_service.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_plan.dart';
@@ -272,6 +273,41 @@ void main() {
       settingsA.themeModeNotifier.value,
       settingsB.themeModeNotifier.value,
     );
+  });
+
+  test('数据类功能开关不开“同步设置”也同步，而且只同步开启', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    // 功能开关取自各自的通知器，两个 SettingsService 可以不同。
+    final settingsA = await SettingsService.create();
+    final settingsB = await SettingsService.create();
+    await settingsA.setAppFeaturesRaw(
+      AppFeatures.defaults.copyWith(comments: true, calendar: false).encode(),
+    );
+    final a = await device('alpha', settings: settingsA);
+    final b = await device('beta', settings: settingsB);
+    await pairDevices(a, b);
+    var result = await sync(a, b);
+    expect(result.failure, isNull);
+    expect(result.settingsIncluded, isFalse);
+    var featuresB = AppFeatures.decode(settingsB.appFeaturesRaw);
+    expect(featuresB.comments, isTrue);
+    expect(featuresB.calendar, isTrue, reason: '界面类开关随“同步设置”');
+
+    // a 关掉留言：b 不跟着关，再同步也不来回改。
+    await settingsA.setAppFeaturesRaw(
+      AppFeatures.decode(
+        settingsA.appFeaturesRaw,
+      ).copyWith(comments: false).encode(),
+    );
+    result = await sync(a, b);
+    expect(result.failure, isNull);
+    expect(result.sent.isEmpty && result.received.isEmpty, isTrue);
+    featuresB = AppFeatures.decode(settingsB.appFeaturesRaw);
+    expect(featuresB.comments, isTrue);
+    expect(AppFeatures.decode(settingsA.appFeaturesRaw).comments, isFalse);
+    result = await sync(b, a);
+    expect(result.sent.isEmpty && result.received.isEmpty, isTrue);
   });
 
   test('编辑中：响应方回 busy；本机编辑时手动同步不开始', () async {

@@ -79,7 +79,10 @@ int simApply(SimReplica replica, SyncSidePlan plan) {
         record == null
             ? replica.anniversaries.remove(write.key.id)
             : _putAnniversary(replica, record);
-      case SyncEntity.template || SyncEntity.dayMood || SyncEntity.settings:
+      case SyncEntity.template ||
+          SyncEntity.dayMood ||
+          SyncEntity.settings ||
+          SyncEntity.prefs:
         throw UnsupportedError('模拟里没有 ${write.key.entity}');
     }
   }

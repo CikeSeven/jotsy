@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_plan.dart';
-import 'package:node_diary/core/services/lan_sync/sync/sync_planner.dart';
 
 import 'sync_planner_fixtures.dart';
 
@@ -159,55 +158,47 @@ void main() {
     });
   });
 
-  test('设置里的标签顺序按改名换名、去掉最终不存在的标签', () {
+  test('标签顺序按改名换名、去掉最终不存在的标签', () {
     final (a, b) = both([
       diaryRecord('d', tags: ['work']),
       tagRecord('work'),
       tagRecord('gone'),
-      settingsRecord({
-        kSyncPlannerTagOrderFacet: ['gone', 'work'],
-      }),
-    ], settings: true);
+      prefsRecord(tagOrder: ['gone', 'work']),
+    ]);
     a
       ..renameTag('work', 'job')
       ..remove(tagKey('gone'))
       ..put(diaryRecord('d', tags: ['job']))
-      ..put(
-        settingsRecord({
-          kSyncPlannerTagOrderFacet: ['job'],
-        }),
-      )
+      ..put(prefsRecord(tagOrder: ['job']))
       ..commit(2000);
     final plan = planBetween(a, b).plan;
-    final settings = writeFor(plan, SyncSideRole.remote, settingsKey)!;
-    expect(settings.record!.facets[kSyncPlannerTagOrderFacet], {
+    final prefs = writeFor(plan, SyncSideRole.remote, prefsKey)!;
+    expect(prefs.record!.facets[SyncPrefsFacet.tagOrder], {
       'value': ['job'],
     });
     applyBoth(a, b, plan);
     expect(a.manifest.toJson(), b.manifest.toJson());
   });
 
-  test('设置两侧原样、只有一侧删了标签时，按最终标签校正（读本机记录）', () {
+  test('标签顺序两侧原样、只有一侧删了标签时，按最终标签校正（读本机记录）', () {
     final (a, b) = both([
       tagRecord('keep'),
       tagRecord('gone'),
-      settingsRecord({
-        kSyncPlannerTagOrderFacet: ['gone', 'keep'],
-      }),
-    ], settings: true);
-    // b 删了标签，但设置的规范值还没来得及变（坏数据）：规划仍校正两侧。
+      prefsRecord(tagOrder: ['gone', 'keep']),
+    ]);
+    // b 删了标签，但标签顺序的规范值还没来得及变（坏数据）：规划仍校正两侧。
     b
       ..remove(tagKey('gone'))
       ..commit(2000);
     final run = planBetween(a, b);
-    expect(run.localRecords, contains(settingsKey));
+    expect(run.localRecords, contains(prefsKey));
     for (final role in SyncSideRole.values) {
       expect(
         writeFor(
           run.plan,
           role,
-          settingsKey,
-        )!.record!.facets[kSyncPlannerTagOrderFacet],
+          prefsKey,
+        )!.record!.facets[SyncPrefsFacet.tagOrder],
         {
           'value': ['keep'],
         },

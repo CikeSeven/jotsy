@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_apply.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_settings.dart';
@@ -47,17 +48,35 @@ void main() {
   tearDown(() => device.dispose());
 
   const settingsKey = SyncKey(SyncEntity.settings, kSyncSettingsId);
+  const prefsKey = SyncKey(SyncEntity.prefs, kSyncPrefsId);
+
+  SyncSettingsCapture capture() =>
+      syncCaptureSettings(settings, includeSettings: true);
 
   /// 本机现在的设置记录，[changes] 覆盖其中的分面值。
   Future<SyncRecord> settingsRecord([
     Map<String, Object?> changes = const {},
   ]) async {
-    final current = (await rig.records(
-      settings: syncCaptureSettings(settings),
-    ))[settingsKey]!;
+    final current = (await rig.records(settings: capture()))[settingsKey]!;
     return SyncRecord(settingsKey, {
       ...current.facets,
       for (final entry in changes.entries) entry.key: {'value': entry.value},
+    });
+  }
+
+  /// 本机现在的 prefs 记录，[tagOrder] / [features] 覆盖其中的分面。
+  Future<SyncRecord> prefsRecord({
+    List<String>? tagOrder,
+    Map<String, bool> features = const {},
+  }) async {
+    final current = (await rig.records(settings: capture()))[prefsKey]!;
+    return SyncRecord(prefsKey, {
+      ...current.facets,
+      if (tagOrder != null) SyncPrefsFacet.tagOrder: {'value': tagOrder},
+      for (final entry in features.entries)
+        SyncPrefsFacet.feature(entry.key): SyncPrefsFacet.featureValue(
+          entry.value,
+        ),
     });
   }
 
@@ -65,7 +84,7 @@ void main() {
     SyncRecord target, {
     SyncMediaStaging? staging,
   }) async => rig.applier.apply(
-    await rig.planFor([target], settings: syncCaptureSettings(settings)),
+    await rig.planFor([target], settings: capture()),
     staging: staging,
     includeSettings: true,
   );
@@ -98,28 +117,79 @@ void main() {
       'diaryToolbarOrderRaw': null,
       'tagPickerSortRaw': null,
       'diaryLocationPrecisionRaw': null,
-      kSyncTagOrderNamesFacet: <String>[],
     });
     final result = await applySettings(target);
+    final prefs = await prefsRecord(tagOrder: <String>[]);
+    final prefsResult = await applySettings(prefs);
 
     expect(result.skipped, isEmpty);
+    expect(prefsResult.skipped, isEmpty);
     expect(settings.diaryToolbarOrderRaw, isNull);
     expect(settings.tagPickerSortRaw, isNull);
     expect(settings.diaryLocationPrecisionRaw, isNull);
     expect(decodeTagOrder(settings.tagOrderRaw), isEmpty);
     expect(settings.createDiaryDraftRaw, 'not json {');
     expect((await settingsRecord()).hashes, target.hashes);
+    expect((await prefsRecord()).hashes, prefs.hashes);
   });
 
-  test('按名称的标签顺序换回本机 id', () async {
-    final target = await settingsRecord({
-      kSyncTagOrderNamesFacet: ['beta', 'alpha', 'missing'],
-    });
-    await applySettings(target);
+  test('按名称的标签顺序换回本机 id（prefs，不必开启同步设置）', () async {
+    final target = await prefsRecord(tagOrder: ['beta', 'alpha', 'missing']);
+    final result = await rig.applier.apply(
+      await rig.planFor([target], settings: capture()),
+    );
+    expect(result.skipped, isEmpty);
     expect(decodeTagOrder(settings.tagOrderRaw), [
       tagIds['beta'],
       tagIds['alpha'],
     ]);
+  });
+
+  test('数据类功能开关只打开、不关闭；界面类开关不受影响', () async {
+    await settings.setAppFeaturesRaw(
+      AppFeatures.defaults.copyWith(calendar: false).encode(),
+    );
+    final target = await prefsRecord(
+      features: {'comments': true, 'notebooks': false},
+    );
+    final result = await applySettings(target);
+
+    expect(result.skipped, isEmpty);
+    final features = AppFeatures.decode(settings.appFeaturesRaw);
+    expect(features.comments, isTrue);
+    expect(features.notebooks, isTrue, reason: '关闭不会同步过来');
+    expect(features.calendar, isFalse);
+  });
+
+  test('没存过功能开关、也没有要打开的：保持“没存过”', () async {
+    expect(settings.appFeaturesRaw, isNull);
+    final target = await prefsRecord(
+      tagOrder: ['alpha'],
+      features: {'notebooks': true},
+    );
+    await applySettings(target);
+    expect(settings.appFeaturesRaw, isNull);
+  });
+
+  test('同步设置里的界面类开关合进本机开关，数据类开关保持本机值', () async {
+    await settings.setAppFeaturesRaw(
+      AppFeatures.defaults.copyWith(comments: true).encode(),
+    );
+    final target = await settingsRecord({
+      'appFeaturesRaw': {
+        'calendar': false,
+        'explore': true,
+        'swipeArchive': false,
+      },
+    });
+    final result = await applySettings(target);
+
+    expect(result.skipped, isEmpty);
+    final features = AppFeatures.decode(settings.appFeaturesRaw);
+    expect(features.calendar, isFalse);
+    expect(features.swipeArchive, isFalse);
+    expect(features.comments, isTrue);
+    expect((await settingsRecord()).hashes, target.hashes);
   });
 
   test('设置写入失败：按快照回滚设置，这条记为 settingsFailed，数据库写入保留', () async {
@@ -136,10 +206,7 @@ void main() {
       SyncFacet.main: {'mood': 'good', 'updatedAt': 1700000000000},
     });
     final result = await rig.applier.apply(
-      await rig.planFor([
-        target,
-        mood,
-      ], settings: syncCaptureSettings(settings)),
+      await rig.planFor([target, mood], settings: capture()),
       includeSettings: true,
     );
 
@@ -157,13 +224,8 @@ void main() {
       'v': 1,
       'global': {'kind': 'image', 'image': 'bg_9.jpg'},
     });
-    final captured = {
-      ...syncCaptureSettings(settings),
-      'appSurfaceRaw': appSurface,
-    };
-    final target = syncSettingsRecord(captured, {
-      for (final entry in tagIds.entries) entry.value: entry.key,
-    });
+    final captured = {...capture().values, 'appSurfaceRaw': appSurface};
+    final target = syncSettingsRecord(captured);
     expect(target.mediaKeys, {'app_backgrounds/bg_9.jpg'});
     final staging = SyncMediaStaging(
       dataRoot: device.dataRoot,

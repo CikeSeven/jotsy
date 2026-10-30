@@ -154,7 +154,7 @@ LanSyncItemKind lanSyncItemKindOf(SyncEntity entity) {
     SyncEntity.template => LanSyncItemKind.templates,
     SyncEntity.anniversary => LanSyncItemKind.anniversaries,
     SyncEntity.dayMood => LanSyncItemKind.dayMoods,
-    SyncEntity.settings => LanSyncItemKind.settings,
+    SyncEntity.settings || SyncEntity.prefs => LanSyncItemKind.settings,
   };
 }
 

@@ -7,6 +7,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_diary.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_misc.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_notebook.dart';
+import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_settings.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_manifest_builder.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
 import 'package:path/path.dart' as p;
@@ -43,7 +44,7 @@ class SyncTestDevice {
   String media(String key) =>
       p.joinAll(<String>[dataRoot.path, ...key.split('/')]);
 
-  Future<List<SyncRecord>> records({Map<String, Object?>? settings}) async =>
+  Future<List<SyncRecord>> records({SyncSettingsCapture? settings}) async =>
       syncBuildRecords(await db.readSyncRows(), settings: settings);
 }
 

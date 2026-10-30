@@ -17837,7 +17837,7 @@ abstract class AppLocalizations {
   /// Subtitle of the sync settings switch.
   ///
   /// In en, this message translates to:
-  /// **'Appearance, editor and other settings sync too when both devices turn this on'**
+  /// **'Appearance, editor and other settings sync too when both devices turn this on. Tag order and turning on features like comments or notebooks always sync'**
   String get lanSyncSyncSettingsSubtitle;
 
   /// Paired device status: online.

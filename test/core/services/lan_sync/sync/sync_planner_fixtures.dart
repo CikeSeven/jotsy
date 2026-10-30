@@ -56,13 +56,13 @@ class PlanDevice {
     manifest: manifest,
     trackedValues: <SyncKey, Map<String, Object?>>{
       for (final record in records.values)
-        if (record.key.entity == SyncEntity.diary)
+        if (record.facets.keys.any(
+          (facet) => SyncFacet.tracksValue(record.key.entity, facet),
+        ))
           record.key: <String, Object?>{
-            SyncFacet.tags: record.facets[SyncFacet.tags],
-          }
-        else if (record.key.entity == SyncEntity.orderList)
-          record.key: <String, Object?>{
-            SyncFacet.items: record.facets[SyncFacet.items],
+            for (final facet in record.facets.entries)
+              if (SyncFacet.tracksValue(record.key.entity, facet.key))
+                facet.key: facet.value,
           },
     },
     tagLocalIds: Map<String, int>.of(_tagIds),

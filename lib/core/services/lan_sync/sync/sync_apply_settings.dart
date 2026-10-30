@@ -1,10 +1,12 @@
 part of 'sync_apply.dart';
 
 /// 设置的应用（规格 §6 第 5 步）：数据库事务提交之后，只应用本次变化的
-/// 分面，失败时按快照回滚。
+/// 分面，失败时按快照回滚。settings 与 prefs 两种记录都走这里。
 ///
-/// - 部分节点由 [syncSettingsRestoreNode] 生成（`tagOrderNames` 按写入后的
-///   标签表换回本地 id，背景图引用还原为文件名——文件在写入前已就位）；
+/// - 部分节点由 [syncSettingsRestoreNode] / [syncPrefsRestoreNode] 生成
+///   （`tagOrderNames` 按写入后的标签表换回本地 id，背景图引用还原为文件名
+///   ——文件在写入前已就位；功能开关与本机此刻的开关合并成整份原文，数据类
+///   开关只打开不关闭）；
 /// - 经 [BackupSettings.restore] 应用，`clearLegacyDraft: false`：覆盖恢复会
 ///   顺带清掉没迁移的旧版单份草稿（只有读不出来的旧草稿才会一直留着），
 ///   同步只是应用设置变化，不能删掉本机用户的数据；
@@ -20,12 +22,19 @@ Future<bool> _applySyncSettings(
   required Map<String, int> tagIdsByName,
   required String dataRoot,
 }) async {
-  final node = syncSettingsRestoreNode(
-    record,
-    facets: facets,
-    tagIdsByName: tagIdsByName,
-    dataRoot: dataRoot,
-  );
+  final node = record.key.entity == SyncEntity.prefs
+      ? syncPrefsRestoreNode(
+          record,
+          facets: facets,
+          tagIdsByName: tagIdsByName,
+          localAppFeaturesRaw: settings.appFeaturesRaw,
+        )
+      : syncSettingsRestoreNode(
+          record,
+          facets: facets,
+          dataRoot: dataRoot,
+          localAppFeaturesRaw: settings.appFeaturesRaw,
+        );
   final snapshot = settings.captureBackupSnapshot();
   try {
     await BackupSettings.restore(settings, node, clearLegacyDraft: false);

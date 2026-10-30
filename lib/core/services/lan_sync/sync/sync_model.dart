@@ -33,7 +33,12 @@ enum SyncEntity {
   template,
   anniversary,
   dayMood,
-  settings;
+
+  /// 只在两端都开启“同步设置”时参与的设置（界面与编辑器偏好）。
+  settings,
+
+  /// 始终同步的数据偏好：标签顺序与数据类功能开关（规格 §2.2）。
+  prefs;
 
   static SyncEntity? tryParse(String name) => values.asNameMap()[name];
 }
@@ -65,8 +70,35 @@ abstract final class SyncFacet {
   /// （规格 §3、§4.1）。
   static bool tracksValue(SyncEntity entity, String facet) =>
       (entity == SyncEntity.diary && facet == tags) ||
-      (entity == SyncEntity.orderList && facet == items);
+      (entity == SyncEntity.orderList && facet == items) ||
+      (entity == SyncEntity.prefs && facet == SyncPrefsFacet.tagOrder);
 }
+
+/// prefs 记录的分面（规格 §2.2）。
+abstract final class SyncPrefsFacet {
+  /// 标签顺序：`{"value": [标签名…]}`（按名称，本地 id 两台不同）。按列表
+  /// 三方合并，没有共同祖先时取并集（§4.1）。
+  static const String tagOrder = 'tagOrderNames';
+
+  /// 数据类功能开关的分面前缀：`feature.<AppFeatures 字段名>` →
+  /// `{"on": bool}`。只同步“开启”（§4.1）。
+  static const String featurePrefix = 'feature.';
+
+  static bool isFeature(String facet) => facet.startsWith(featurePrefix);
+
+  static String feature(String name) => '$featurePrefix$name';
+
+  /// 功能开关的规范值。
+  static Map<String, Object?> featureValue(bool on) => <String, Object?>{
+    'on': on,
+  };
+
+  /// “开启”的分面哈希：规划器不读记录就能判断哪一侧是开着的。
+  static final String onHash = syncHashValue(featureValue(true));
+}
+
+/// prefs 记录的唯一 id。
+const String kSyncPrefsId = 'prefs';
 
 /// orderList 记录的 id。
 abstract final class SyncOrderListId {
@@ -89,9 +121,10 @@ abstract final class SyncOrderListId {
 
 /// 向用户报告变化时 [key] 归在哪一种数据下（完成摘要、同步记录、“以哪边
 /// 为准”的明细）：收录与书架 / 书序归日记本，“我的模板”的顺序归模板，
-/// 其余即自身的实体。
+/// 标签顺序与功能开关（prefs）归设置，其余即自身的实体。
 SyncEntity syncSummaryEntityOf(SyncKey key) => switch (key.entity) {
   SyncEntity.membership => SyncEntity.notebook,
+  SyncEntity.prefs => SyncEntity.settings,
   SyncEntity.orderList =>
     key.id == SyncOrderListId.templates
         ? SyncEntity.template

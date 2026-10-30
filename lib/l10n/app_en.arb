@@ -13496,7 +13496,7 @@
   "@lanSyncSyncSettings": {
     "description": "Switch: also sync app settings."
   },
-  "lanSyncSyncSettingsSubtitle": "Appearance, editor and other settings sync too when both devices turn this on",
+  "lanSyncSyncSettingsSubtitle": "Appearance, editor and other settings sync too when both devices turn this on. Tag order and turning on features like comments or notebooks always sync",
   "@lanSyncSyncSettingsSubtitle": {
     "description": "Subtitle of the sync settings switch."
   },

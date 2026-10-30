@@ -38,13 +38,25 @@ void main() {
           .insert(TagsCompanion(name: Value(name), color: const Value(1))),
   };
 
-  SyncRecord settingsRecord(
+  SyncRecord recordOf(
+    SyncEntity entity,
     SyncRawSnapshot rows,
-    Map<String, Object?> captured,
+    SyncSettingsCapture captured,
   ) => syncBuildRecords(
     rows,
     settings: captured,
-  ).singleWhere((record) => record.key.entity == SyncEntity.settings);
+  ).singleWhere((record) => record.key.entity == entity);
+
+  SyncRecord settingsRecord(
+    SyncRawSnapshot rows,
+    SyncSettingsCapture captured,
+  ) => recordOf(SyncEntity.settings, rows, captured);
+
+  SyncRecord prefsRecord(SyncRawSnapshot rows, SyncSettingsCapture captured) =>
+      recordOf(SyncEntity.prefs, rows, captured);
+
+  SyncSettingsCapture capture(SettingsService settings) =>
+      syncCaptureSettings(settings, includeSettings: true);
 
   test(
     'settings restored on another device read back byte-for-byte equal',
@@ -77,13 +89,20 @@ void main() {
           },
         }),
       );
-      final capturedA = syncCaptureSettings(settingsA);
-      expect(capturedA.containsKey('appLockEnabled'), isFalse);
-      expect(capturedA.containsKey('rememberedTagFilterIdsRaw'), isFalse);
-      final recordA = settingsRecord(await a.db.readSyncRows(), capturedA);
+      final capturedA = capture(settingsA);
+      expect(capturedA.values.containsKey('appLockEnabled'), isFalse);
+      expect(
+        capturedA.values.containsKey('rememberedTagFilterIdsRaw'),
+        isFalse,
+      );
+      final rowsA = await a.db.readSyncRows();
+      final recordA = settingsRecord(rowsA, capturedA);
+      final prefsA = prefsRecord(rowsA, capturedA);
 
+      // 标签顺序在 prefs 里（始终同步），不在 settings 里。
       expect(recordA.facets.containsKey('tagOrderRaw'), isFalse);
-      expect(recordA.facets[kSyncTagOrderNamesFacet], <String, Object?>{
+      expect(recordA.facets.containsKey(SyncPrefsFacet.tagOrder), isFalse);
+      expect(prefsA.facets[SyncPrefsFacet.tagOrder], <String, Object?>{
         'value': <String>['gamma', 'alpha'],
       });
       expect(recordA.mediaKeys, <String>{
@@ -98,26 +117,30 @@ void main() {
       final settingsB = await SettingsService.create();
       final node = syncSettingsRestoreNode(
         recordA,
-        tagIdsByName: idsB,
         dataRoot: b.dataRoot.path,
+        localAppFeaturesRaw: settingsB.appFeaturesRaw,
+      );
+      final prefsNode = syncPrefsRestoreNode(
+        prefsA,
+        tagIdsByName: idsB,
+        localAppFeaturesRaw: settingsB.appFeaturesRaw,
       );
       expect(
-        node['tagOrderRaw'],
+        prefsNode['tagOrderRaw'],
         encodeTagOrder(<int>[idsB['gamma']!, idsB['alpha']!]),
       );
       expect(node['appSurfaceRaw'], contains('"image":"bg_1.jpg"'));
       expect(node['appSurfaceRaw'], isNot(contains('jotsy-media:')));
-      await BackupSettings.restore(settingsB, node);
+      await BackupSettings.restore(settingsB, {...node, ...prefsNode});
 
-      final recordB = settingsRecord(
-        await b.db.readSyncRows(),
-        syncCaptureSettings(settingsB),
-      );
+      final rowsB = await b.db.readSyncRows();
+      final recordB = settingsRecord(rowsB, capture(settingsB));
       expect(
         syncCanonicalJson(recordB.facets),
         syncCanonicalJson(recordA.facets),
       );
       expect(recordB.hashes, recordA.hashes);
+      expect(prefsRecord(rowsB, capture(settingsB)).hashes, prefsA.hashes);
       // 应用锁与筛选记忆不随同步过来。
       expect(settingsB.isAppLockEnabled, isFalse);
       expect(settingsB.rememberedTagFilterIdsRaw, isNull);
@@ -127,17 +150,62 @@ void main() {
   test('restore node only carries the requested facets', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final settings = await SettingsService.create();
-    final record = settingsRecord(
-      await a.db.readSyncRows(),
-      syncCaptureSettings(settings),
-    );
+    final rows = await a.db.readSyncRows();
+    final record = settingsRecord(rows, capture(settings));
     final node = syncSettingsRestoreNode(
       record,
-      facets: <String>['themeMode', kSyncTagOrderNamesFacet],
-      tagIdsByName: const <String, int>{},
+      facets: <String>['themeMode'],
       dataRoot: a.dataRoot.path,
+      localAppFeaturesRaw: null,
     );
-    expect(node.keys.toSet(), <String>{'themeMode', 'tagOrderRaw'});
-    expect(node['tagOrderRaw'], '');
+    expect(node.keys.toSet(), <String>{'themeMode'});
+    final prefsNode = syncPrefsRestoreNode(
+      prefsRecord(rows, capture(settings)),
+      facets: <String>[SyncPrefsFacet.tagOrder],
+      tagIdsByName: const <String, int>{},
+      localAppFeaturesRaw: null,
+    );
+    expect(prefsNode, <String, Object?>{'tagOrderRaw': ''});
+  });
+
+  test('功能开关：数据类在 prefs（每项一个分面），界面类留在 settings', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final settings = await SettingsService.create();
+    await settings.setAppFeaturesRaw(
+      jsonEncode(<String, Object?>{'comments': true, 'calendar': false}),
+    );
+    final rows = await a.db.readSyncRows();
+    final prefs = prefsRecord(rows, capture(settings));
+    expect(prefs.facets[SyncPrefsFacet.feature('comments')], {'on': true});
+    expect(prefs.facets[SyncPrefsFacet.feature('notebooks')], {'on': true});
+    expect(prefs.facets[SyncPrefsFacet.feature('anniversaries')], {
+      'on': false,
+    });
+    expect(
+      prefs.facets.containsKey(SyncPrefsFacet.feature('calendar')),
+      isFalse,
+    );
+    final record = settingsRecord(rows, capture(settings));
+    expect(record.facets['appFeaturesRaw'], {
+      'value': {'calendar': false, 'explore': true, 'swipeArchive': true},
+    });
+  });
+
+  test('不同步设置时只有 prefs，没有 settings', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final settings = await SettingsService.create();
+    final observation = syncObserveRows(
+      await a.db.readSyncRows(),
+      settings: syncCaptureSettings(settings, includeSettings: false),
+    ).observation;
+    expect(
+      observation.manifest.keys.where(
+        (key) =>
+            key.entity == SyncEntity.settings || key.entity == SyncEntity.prefs,
+      ),
+      [const SyncKey(SyncEntity.prefs, kSyncPrefsId)],
+    );
+    expect(observation.observed, contains(SyncEntity.prefs));
+    expect(observation.observed, isNot(contains(SyncEntity.settings)));
   });
 }

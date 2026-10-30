@@ -1,5 +1,6 @@
 import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_apply.dart';
+import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_settings.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_local_state.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_manifest_builder.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_media.dart';
@@ -43,7 +44,7 @@ class SyncApplyRig {
   late final SyncApplier applier;
 
   /// 设备现在的清单（不含设置，除非给了 [settings] 的原值）。
-  Future<SyncManifest> manifest({Map<String, Object?>? settings}) async =>
+  Future<SyncManifest> manifest({SyncSettingsCapture? settings}) async =>
       syncObserveRows(
         await device.db.readSyncRows(),
         settings: settings,
@@ -51,7 +52,7 @@ class SyncApplyRig {
 
   /// 现在的记录（[only] 为空时全部）。
   Future<Map<SyncKey, SyncRecord>> records({
-    Map<String, Object?>? settings,
+    SyncSettingsCapture? settings,
   }) async => <SyncKey, SyncRecord>{
     for (final record in await device.records(settings: settings))
       record.key: record,
@@ -62,7 +63,7 @@ class SyncApplyRig {
     Iterable<SyncRecord> records, {
     Iterable<SyncKey> deletes = const <SyncKey>[],
     List<SyncTagRenameOp> renames = const <SyncTagRenameOp>[],
-    Map<String, Object?>? settings,
+    SyncSettingsCapture? settings,
     Map<SyncKey, Map<String, int>> historySeenAt =
         const <SyncKey, Map<String, int>>{},
   }) async {

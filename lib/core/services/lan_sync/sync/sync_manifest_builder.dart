@@ -10,7 +10,8 @@ import 'sync_state_model.dart';
 /// 由原始行算出清单（带哈希缓存）或完整规范记录。
 ///
 /// - 输入：一致快照 [SyncRawSnapshot]、可选的设置原值（[syncCaptureSettings]
-///   的结果，null 表示本次不含 settings）、上一份哈希缓存；
+///   的结果：有就生成 prefs 记录，`includeSettings` 时再生成 settings 记录；
+///   null 表示两者都不含——没有设置服务的测试）、上一份哈希缓存；
 /// - 输出：[SyncObserveResult]（观测 + 新缓存）或记录列表；
 /// - 纯同步计算、无 I/O，参数与结果都是可以跨 isolate 传递的普通对象，由
 ///   `SyncLocalState` 放进 `Isolate.run` 执行。
@@ -18,7 +19,8 @@ import 'sync_state_model.dart';
 /// 每条记录拆成“缓存部分”（按行指纹缓存哈希：日记的行分面、日记本、模板、
 /// 纪念日，这些要解码正文或 JSON 列）与“现算部分”（每次都算：日记的 tags、
 /// 标签、成员关系、顺序列表、留言、心情、设置，都很便宜）。需要记录值的分面
-/// （diary.tags、orderList.items）一律在现算部分，值随手可得，不必进缓存。
+/// （diary.tags、orderList.items、prefs.tagOrderNames）一律在现算部分，值随手
+/// 可得，不必进缓存。
 
 class SyncObserveResult {
   const SyncObserveResult({
@@ -36,11 +38,12 @@ class SyncObserveResult {
   final int cacheMisses;
 }
 
-/// 算出本次观测。[settings] 为 null 时不含 settings 记录，观测的实体集合里
-/// 也不含 [SyncEntity.settings]（折叠时不会把它当成被删除）。
+/// 算出本次观测。没生成的记录（[settings] 为 null 时的 prefs 与 settings、
+/// 不 `includeSettings` 时的 settings）的实体也不算“观测过”（折叠时不会把
+/// 它当成被删除）。
 SyncObserveResult syncObserveRows(
   SyncRawSnapshot rows, {
-  Map<String, Object?>? settings,
+  SyncSettingsCapture? settings,
   Map<String, SyncHashCacheEntry> cache = const <String, SyncHashCacheEntry>{},
 }) {
   final index = _SyncRowIndex(rows);
@@ -88,7 +91,12 @@ SyncObserveResult syncObserveRows(
       tagLocalIds: index.tagLocalIds,
       observed: <SyncEntity>{
         for (final entity in SyncEntity.values)
-          if (entity != SyncEntity.settings || settings != null) entity,
+          if (switch (entity) {
+            SyncEntity.settings => settings?.includeSettings ?? false,
+            SyncEntity.prefs => settings != null,
+            _ => true,
+          })
+            entity,
       },
     ),
     cache: nextCache,
@@ -98,10 +106,10 @@ SyncObserveResult syncObserveRows(
 }
 
 /// 完整规范记录。[only] 非 null 时只构建这些键（其余记录连规范化都不做）；
-/// 查不到的键直接不出现在结果里。[settings] 为 null 时不含 settings 记录。
+/// 查不到的键直接不出现在结果里。[settings] 的口径同 [syncObserveRows]。
 List<SyncRecord> syncBuildRecords(
   SyncRawSnapshot rows, {
-  Map<String, Object?>? settings,
+  SyncSettingsCapture? settings,
   Set<SyncKey>? only,
 }) {
   final index = _SyncRowIndex(rows);
@@ -175,7 +183,7 @@ class _SyncRowIndex {
     for (final tag in rows.tags) syncTagRecordName(tag): tag.localId,
   };
 
-  Iterable<_SyncSource> sources(Map<String, Object?>? settings) sync* {
+  Iterable<_SyncSource> sources(SyncSettingsCapture? settings) sync* {
     for (final diary in rows.diaries) {
       yield _SyncSource(
         SyncKey(SyncEntity.diary, diary.diaryId),
@@ -258,9 +266,15 @@ class _SyncRowIndex {
         for (final tag in rows.tags) tag.localId: syncTagRecordName(tag),
       };
       yield _SyncSource(
-        const SyncKey(SyncEntity.settings, kSyncSettingsId),
-        fresh: () => syncSettingsRecord(settings, tagNames).facets,
+        const SyncKey(SyncEntity.prefs, kSyncPrefsId),
+        fresh: () => syncPrefsRecord(settings.values, tagNames).facets,
       );
+      if (settings.includeSettings) {
+        yield _SyncSource(
+          const SyncKey(SyncEntity.settings, kSyncSettingsId),
+          fresh: () => syncSettingsRecord(settings.values).facets,
+        );
+      }
     }
   }
 

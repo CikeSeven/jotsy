@@ -59,11 +59,18 @@ extension _Decide on _Planner {
     final localHashes = <String>{for (final entry in hl) entry.hash};
     final common = hr.any((entry) => localHashes.contains(entry.hash));
     if (common) return _Pick.conflict;
-    // 顺序列表两侧总是都有（新设备上是空书架、空模板顺序），与对方的列表
-    // 天然没有共同哈希，却谈不上“两边都改过”：一律按列表规则合并（没有
-    // 祖先时取并集），不计入、也不受“以哪边为准”影响——选了哪一边，最终
-    // 列表都要恰好是两边记录的并集（[_Lists.resolveOrderLists]）。
+    // 顺序列表与 prefs 两侧总是都有（新设备上是空书架、空标签顺序、默认的
+    // 功能开关），与对方天然没有共同哈希，却谈不上“两边都改过”：不计入、
+    // 也不受“以哪边为准”影响。列表（含标签顺序）按列表规则合并（没有祖先
+    // 时取并集，选了哪一边最终都要恰好是两边记录的并集，见
+    // [_Lists.resolveOrderLists]）；功能开关开着的一侧胜出（只同步“开启”）。
     if (key.entity == SyncEntity.orderList) return _Pick.conflict;
+    if (key.entity == SyncEntity.prefs) {
+      if (facet == SyncPrefsFacet.tagOrder) return _Pick.conflict;
+      if (SyncPrefsFacet.isFeature(facet)) {
+        return lh == SyncPrefsFacet.onHash ? _Pick.local : _Pick.remote;
+      }
+    }
     ancestryLess.add(key);
     if (!sideChoiceActive) return _Pick.conflict;
     return switch (options.sideChoice) {
@@ -158,7 +165,10 @@ int _recordTime(SyncEntity entity, String facet, Map<String, Object?> facets) {
     SyncEntity.template ||
     SyncEntity.anniversary ||
     SyncEntity.dayMood => field(SyncFacet.main, 'updatedAt'),
-    SyncEntity.tag || SyncEntity.orderList || SyncEntity.settings => null,
+    SyncEntity.tag ||
+    SyncEntity.orderList ||
+    SyncEntity.settings ||
+    SyncEntity.prefs => null,
   };
   return time ?? 0;
 }

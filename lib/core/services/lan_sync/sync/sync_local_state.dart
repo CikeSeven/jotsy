@@ -59,7 +59,8 @@ class SyncLocalState {
   /// C 与查询入口。会话开始时（冲刷编辑会话之后）调用。
   ///
   /// [includeSettings] 为 true 时 settings 也参与（需要构造时给了 [settings]）；
-  /// 为 false 时检查点里 settings 的旧条目原样保留，不会被当成删除。
+  /// 为 false 时检查点里 settings 的旧条目原样保留，不会被当成删除。prefs
+  /// （标签顺序与数据类功能开关）只要构造时给了 [settings] 就总是参与。
   Future<SyncLocalSnapshot> refreshCheckpoint({bool includeSettings = false}) {
     return _serialized(() async {
       final current = await _observeNow(includeSettings: includeSettings);
@@ -91,10 +92,10 @@ class SyncLocalState {
 
   /// 由调用方读出的行（如写入事务里 `readSyncRows` 的结果）算出观测，更新
   /// 哈希缓存，不折叠。[settingsCaptured] 为 [syncCaptureSettings] 的结果，
-  /// null 表示不含 settings。
+  /// null 表示不含 prefs 与 settings。
   Future<SyncObservation> observeRows(
     SyncRawSnapshot rows, {
-    Map<String, Object?>? settingsCaptured,
+    SyncSettingsCapture? settingsCaptured,
   }) {
     return _serialized(
       () => _observe(rows, settingsCaptured: settingsCaptured),
@@ -102,14 +103,18 @@ class SyncLocalState {
   }
 
   /// 当前数据库里 [keys] 的完整规范记录（不存在的键不出现在结果里）。
-  /// 含 settings 键时需要构造时给了 [settings]。
+  /// 含 settings 或 prefs 键时需要构造时给了 [settings]。
   Future<List<SyncRecord>> buildRecords(Iterable<SyncKey> keys) async {
     final wanted = keys.toSet();
     if (wanted.isEmpty) return const <SyncRecord>[];
     final rows = await database.readSyncRows();
+    final withSettings = wanted.contains(
+      const SyncKey(SyncEntity.settings, kSyncSettingsId),
+    );
     final captured =
-        wanted.contains(const SyncKey(SyncEntity.settings, kSyncSettingsId))
-        ? syncCaptureSettings(_requireSettings())
+        withSettings ||
+            wanted.contains(const SyncKey(SyncEntity.prefs, kSyncPrefsId))
+        ? syncCaptureSettings(_requireSettings(), includeSettings: withSettings)
         : null;
     return _buildInIsolate(rows, captured, wanted);
   }
@@ -157,15 +162,16 @@ class SyncLocalState {
 
   Future<SyncObservation> _observeNow({required bool includeSettings}) async {
     final rows = await database.readSyncRows();
-    final captured = includeSettings
-        ? syncCaptureSettings(_requireSettings())
-        : null;
+    final service = includeSettings ? _requireSettings() : settings;
+    final captured = service == null
+        ? null
+        : syncCaptureSettings(service, includeSettings: includeSettings);
     return _observe(rows, settingsCaptured: captured);
   }
 
   Future<SyncObservation> _observe(
     SyncRawSnapshot rows, {
-    Map<String, Object?>? settingsCaptured,
+    SyncSettingsCapture? settingsCaptured,
   }) async {
     final cache = syncHashCacheFromJson(await _files.readJson(hashCacheFile));
     final result = await _observeInIsolate(rows, settingsCaptured, cache);
@@ -226,13 +232,13 @@ class SyncLocalState {
 /// 带过去。
 Future<SyncObserveResult> _observeInIsolate(
   SyncRawSnapshot rows,
-  Map<String, Object?>? settings,
+  SyncSettingsCapture? settings,
   Map<String, SyncHashCacheEntry> cache,
 ) => Isolate.run(() => syncObserveRows(rows, settings: settings, cache: cache));
 
 Future<List<SyncRecord>> _buildInIsolate(
   SyncRawSnapshot rows,
-  Map<String, Object?>? settings,
+  SyncSettingsCapture? settings,
   Set<SyncKey> keys,
 ) => Isolate.run(() => syncBuildRecords(rows, settings: settings, only: keys));
 

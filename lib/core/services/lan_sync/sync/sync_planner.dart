@@ -37,7 +37,7 @@ part 'sync_planner_values.dart';
 /// 2. 跨键补充（`_revive`、`_copies`、`_notebooks`）：留言复活日记、复活记录
 ///    的从属、冲突副本及其成员关系、日记本层级要用的定义；
 /// 3. 从属收尾（`_tags`、`_notebooks`、`_lists`）：标签改名与引用、层级修复、
-///    成员与章节、留言 / 纪念日的悬空引用、顺序列表、设置里的标签顺序。
+///    成员与章节、留言 / 纪念日的悬空引用、顺序列表、prefs 里的标签顺序。
 /// 之后由 `_output` 对比每侧现状产出写入。典型同步（只有编辑）需要两次网络
 /// 往返（历史与墓碑 → 记录）；复活与冲突副本最多再各加一次。
 SyncFetchRequest planSyncFetch({
@@ -67,10 +67,6 @@ const int kSyncNotebookMaxDepth = 3;
 /// 内置模板 id 的前缀，与 `builtInDiaryTemplateIdPrefix` 一致（测试兜底）：
 /// 模板顺序列表只含用户模板。
 const String kSyncBuiltInTemplatePrefix = 'builtin.';
-
-/// settings 记录里按名称存标签顺序的分面，与 `kSyncTagOrderNamesFacet`
-/// （`sync_canonical_settings.dart`，牵涉设置服务、不是纯 Dart）一致，测试兜底。
-const String kSyncPlannerTagOrderFacet = 'tagOrderNames';
 
 /// 日记 `updatedAt` 必须抬高时的步长：库里按秒存、规范值是毫秒，抬 1 毫秒
 /// 写回后会被截掉，必须整整 1 秒。
@@ -181,7 +177,7 @@ class _Planner {
     resolveMemberships();
     resolveCommentsAndAnniversaries();
     resolveOrderLists();
-    resolveSettingsTagOrder();
+    resolvePrefsTagOrder();
   }
 
   SyncFetchRequest fetchRequest() => SyncFetchRequest(

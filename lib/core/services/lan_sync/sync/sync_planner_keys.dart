@@ -120,15 +120,19 @@ extension _Keys on _Planner {
     return (winner == _Side.local ? lf : rf)[facet];
   }
 
-  /// tags / orderList 的三方合并；值形如 `{"names": […]}` / `{"ids": […]}`，
-  /// 其余键（目前没有）沿用主侧的。
+  /// tags / orderList / prefs 标签顺序的三方合并；值形如 `{"names": […]}` /
+  /// `{"ids": […]}` / `{"value": […]}`，其余键（目前没有）沿用主侧的。
   Object? _mergeTracked(
     SyncKey key,
     String facet,
     Map<String, Object?> lf,
     Map<String, Object?> rf,
   ) {
-    final field = key.entity == SyncEntity.diary ? 'names' : 'ids';
+    final field = switch (key.entity) {
+      SyncEntity.diary => 'names',
+      SyncEntity.prefs => 'value',
+      _ => 'ids',
+    };
     final ancestor = commonAncestor(key, facet);
     final ancestorList = ancestor.found
         ? _stringList(_mapOf(ancestor.value)?[field])

@@ -77,7 +77,8 @@ class SyncManifest {
 | template | `templateId`（含 `builtin.*`） | **main**：`name`、`payload`（库中原始 JSON 解析后的对象，键排序；保存时已经白名单重建，读取时应用自己再经 `sanitizeDiaryTemplateBlocks`，同步层在 core 不引用 UI 模块的清理函数、原样搬运）、`createdAt`、`updatedAt` |
 | anniversary | `anniversaryId` | **main**：全部业务列（含 `metadata` 对象、`linkedDiaryId`、`pinned`、`createdAt`、`updatedAt`） |
 | dayMood | `YYYY-MM-DD` | **main**：`mood`（原始字符串，认不出的枚举名原样）、`updatedAt` |
-| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw`；`tagOrderRaw` 换成分面 `tagOrderNames`（按名称的列表）；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码。只在两端都开启“同步设置”时参与。 |
+| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw` 与 `tagOrderRaw`（在 prefs 里）；`appFeaturesRaw` 只留界面类开关（日历 Tab `calendar`、探索 Tab `explore`、侧滑归档 `swipeArchive`），值为字段 → bool 的对象（取 `AppFeatures.decode` 之后的值），写入时合进本机开关、数据类开关保持本机值；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码。只在两端都开启“同步设置”时参与。 |
+| prefs | `prefs` | 始终参与（不受“同步设置”控制）。**tagOrderNames**：`value`（标签顺序：`tagOrderRaw` 的本地 id 换成标签名，查不到的丢掉；历史记录值，按列表三方合并）<br>**feature.&lt;字段&gt;**（`notebooks` / `anniversaries` / `templates` / `timeCapsules` / `comments`，即数据类功能开关）：`on`（`AppFeatures.decode` 之后的值，没存过开关时为默认值）。为什么拆出来：标签顺序与这些开关决定同步过来的数据看不看得到——“同步设置”默认关闭时，两边标签栏顺序不同，对方没开留言就看不到同步过去的留言。 |
 
 - `content_text` 由正文推出、不参与哈希；写入时由（还原路径后的）正文经 `diaryBlocksPlainText` 重新生成（与预览页待办保存、导入写库同一口径）。
 - 按列长截断：日记标题 200、标签名 40、日记本名 60、纪念日标题 100（按 UTF-16 码元，不切开代理对）。规范化（读）与写回两个方向都截断：正常数据本来不超长，两边口径一致才能保证超长的坏数据写到对方后规范值仍相同。
@@ -102,7 +103,7 @@ class SyncManifest {
 | `identity.json` | `{v:1, deviceId（UUID v4）, ed25519Seed（base64）, createdAt（UTC 毫秒）}`；不使用静态 X25519（握手只用临时 X25519） |
 | `store.json` | 偏好（设备名、可被发现、自动同步、同步设置）、已配对设备（deviceId、名称、平台、身份公钥、配对时间、上次同步、上次地址与端口、单设备自动同步、备注名，以及按设备的标记 `needsAttention`（自动同步遇到需要确认）与 `restoredPending`（覆盖恢复之后还没和它成功同步过））；不放 SharedPreferences、不进备份 |
 | `checkpoint.json.gz` | 上次会话时的本机观测：清单 + tags / orderList 分面的当前值（下次进历史时要用旧值）+ 标签名 → 本地 id 映射 + 观测覆盖的实体集合 |
-| `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；tags 与 orderList 分面同时记录值 |
+| `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；diary.tags、orderList.items 与 prefs.tagOrderNames 分面同时记录值 |
 | `tombstones.json.gz` | 墓碑：`SyncKey → {deletedAt, known: 分面 → [哈希…]}`（删除时的当前哈希 + 历史）；超过 365 天或超过 50 000 条时按时间淘汰 |
 | `renames.json.gz` | 标签改名记录：旧名 → 新名、时间（随墓碑同样淘汰） |
 | `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日），其余每次现算 |
@@ -148,6 +149,7 @@ class SyncManifest {
 5. 否则真冲突：
    - diary.content：stamp 较新者（平手按 deviceId 字典序较大者）留在原 id；另一份写成**冲突副本**：新 `diaryId = UUIDv5(kSyncConflictCopyNamespace, 原 diaryId + 败方 content 哈希)`（两串直接拼接；只由数据决定，中断重试、换一台发起方都得到同一个 id）；标题 = 原标题 + 本地化后缀（由调用方传入，按败方选：败方是本机（发起方）用 `SyncPlanOptions.localLoserTitleSuffix`，是对方用 `remoteLoserTitleSuffix`，写的是副本所保存版本那一台的设备名，如“（冲突副本 · ThinkPad）”；后缀不影响副本 id），截断到 200 个 UTF-16 码元、不切开代理对；metadata 加 `sync.conflictOf = 原 diaryId`（metadata 是坏数据原文时原样保留）；副本继承**败方**的 stamp、tags、日记本成员（含章节）、capsule、archive、trash、pin 分面——私密日记本里的内容不能因副本而出现在全部日记，未解封的胶囊不能提前解封。副本 id 在任一侧已存在（上次同步只写了一侧）或任一侧有它的墓碑（用户看过并删掉了）时不再生成，已存在的作为普通记录照常复制。副本与它的成员关系两侧都是新增；书序里新副本排在原日记之后。原 id 的其余分面照常逐分面判定。
    - diary.tags、orderList.items：取双方历史中最近的共同祖先值（同一哈希出现在两边历史里且带值，取两边 `seenAt` 中较大者最新的，再平手按哈希）做三方合并。集合：祖先 ∪ 双方新增 − 任一方删除。列表：去掉任一方删除的项；双方都保留的项的相对顺序——只有一方调整过（与祖先不同）就用那一方的，双方都调整过用主侧的，都没调整即祖先顺序；再依次把主侧、次侧的新增项按各自的相对位置插入（插在它在自己列表里最近的、已在结果中的前一项之后，没有就放最前）。找不到共同祖先时取并集（集合直接并；列表：主侧顺序 + 次侧独有项按次侧顺序追加）。主侧 = 变化时间较新的一侧（规则同下面“其他分面”，平手按 deviceId），与谁发起同步无关。（原文“保留祖先顺序”“按 L / R 的相对位置”在只有一方拖动过时会丢掉那次拖动、且结果随发起方而变，故作此解释。）
+   - prefs：`tagOrderNames` 与 orderList.items 一样做列表三方合并；功能开关**只同步“开启”**：按上面的规则判定，但最终是“关”而某一侧现在是“开”时，那一侧不写（规划器产出时保持它开着，`_keepFeaturesOn`），两侧这个分面可以一直不同，每次同步判定结果相同、照样不写；写入层合并开关时也只打开、不关闭。为什么：对方关掉某个功能不该连带藏起本机的内容；关闭“日记本”在本机有私密本子时必须先确认，同步过程中弹不了确认。
    - diary.stamp：取较大值（不是冲突）。content 的最终值与某一侧当前值不同、而最终 stamp 恰等于那一侧的当前值时 +1000 毫秒（库里按秒存），保证各处按 `diaryId + updatedAt` 的缓存失效；抬高后大于两侧。
    - 其他分面：取该分面“变化时间”较新的一方——历史头条的 `seenAt`；没有历史时用记录自身时间字段（日记：archive 用 `archivedAt`、trash 用 `deletedAt`、capsule 用 `lockedAt`，缺省及其余分面用 stamp；日记本 `definition.updatedAt`；成员 `addedAt`；留言 `editedAt ?? createdAt`；模板、纪念日、心情 `updatedAt`；标签、顺序列表、设置为 0）——平手按 deviceId 较大者。
 
@@ -165,7 +167,7 @@ class SyncManifest {
 - tag：
   - 还被任何最终日记引用的标签名不删（改判保留并复制）。“最终日记”指不是两侧原样的日记（含复活的、冲突副本）；两侧原样的日记引用的标签两侧都有，不会被判删除。
   - 改名：一侧 X 的 `renames` 有 旧名 → 新名，且 X 已经没有旧名、有新名时生效（两侧把同一个旧名改成不同新名时取改名时间较新者，平手按 deviceId；跨侧的链 a → b、b → c 沿链解析为 a → c，成环的整条不生效）。生效的改名作用于全部最终日记的 tags 分面（旧名换成新名，包括对方在改名之后才打上旧名的日记——否则旧名会被它们“引用”而重新出现）；对方 Y 还有旧名、没有新名，且最终只剩新名时，Y **原地改名**（`SyncTagRenameOp`，保持本地 id，见 6.3），代替 Y 上“删旧名 + 建新名”两条写入。Y 在改名之后改过旧名的颜色时，旧名作为“删除后改过”的记录保留，Y 另建新名、不原地改名，日记上的旧名照样换成新名。
-  - settings 的 `tagOrderNames`：写入后各侧由本机标签表重新推出（本地 id → 名称，查不到的丢掉），所以最终值按改名换名、只留最终存在的标签、去重；只在有标签只在一侧时才可能变化。
+  - prefs 的 `tagOrderNames`：写入后各侧由本机标签表重新推出（本地 id → 名称，查不到的丢掉），所以最终值按改名换名、只留最终存在的标签、去重；只在有标签只在一侧时才可能变化。
 
 ### 4.3 从属与复活
 - 复活（4.2 中缺失一侧有墓碑却“保留并复制”的记录）时，它的从属按保留一方为准：日记 → 它在保留一侧的成员关系、留言（被墓碑覆盖的也改判保留）、指向它的纪念日关联（最终值里恢复 `linkedDiaryId`）；tags 分面随记录本身；日记本 → 它在保留一侧的成员关系、书序列表、在保留一侧挂在它下面的子本的 `parentId`。没有墓碑的新记录不必特殊处理：它的从属在缺失一侧本来就没有墓碑。
@@ -179,7 +181,7 @@ class SyncManifest {
 
 ### 4.5 需要用户确认的情况（规划器只报告，会话层决定）
 - **删除保护**：任一侧将彻底删除的日记数 > max(20, 该侧日记总数的 10%)（总数 = 该侧清单里的日记数）。
-- **以哪边为准**：本次与该设备是首次同步、或任一侧 `restoredPending`，且出现没有共同祖先的冲突（两侧该分面历史没有任何共同哈希；stamp 与缺分面不算）时，按实体报告涉及的记录数（`SyncPendingConfirmations.sideChoiceCounts`），请用户选：保留两份（按 4.1 生成副本）/ 以本机为准 / 以对方为准；后两种对这些冲突直接取一方，不生成副本。顺序列表（`orderList`）不计入、也不受这个选择影响：书架与“我的模板”顺序两侧总是都有，新设备上是空列表，与对方天然没有共同哈希，却谈不上“两边都改过”——没有共同祖先时一律按 4.1 的列表规则取并集（之后再按 4.3 校正为最终集合）。对话框只有日记时说“有 N 篇日记……”，还有别的种类时逐项列出（收录与书架 / 书序归日记本，“我的模板”顺序归模板，见 `syncSummaryEntityOf`）。“不删除任何记录”：选择只作用于这些冲突分面，不把只在一侧的记录变成删除——只在一侧的记录仍按 4.2（覆盖恢复后墓碑已清空，实际都是复制）。不论本次按哪种选择规划都照样报告数量，用户是否已经选过由会话层记住。
+- **以哪边为准**：本次与该设备是首次同步、或任一侧 `restoredPending`，且出现没有共同祖先的冲突（两侧该分面历史没有任何共同哈希；stamp 与缺分面不算）时，按实体报告涉及的记录数（`SyncPendingConfirmations.sideChoiceCounts`），请用户选：保留两份（按 4.1 生成副本）/ 以本机为准 / 以对方为准；后两种对这些冲突直接取一方，不生成副本。顺序列表（`orderList`）与 prefs 不计入、也不受这个选择影响：书架、“我的模板”顺序、标签顺序与功能开关两侧总是都有，新设备上是空列表与默认开关，与对方天然没有共同哈希，却谈不上“两边都改过”——没有共同祖先时列表一律按 4.1 的列表规则取并集（顺序列表之后再按 4.3 校正为最终集合），功能开关取开着的一侧。对话框只有日记时说“有 N 篇日记……”，还有别的种类时逐项列出（收录与书架 / 书序归日记本，“我的模板”顺序归模板，见 `syncSummaryEntityOf`）。“不删除任何记录”：选择只作用于这些冲突分面，不把只在一侧的记录变成删除——只在一侧的记录仍按 4.2（覆盖恢复后墓碑已清空，实际都是复制）。不论本次按哪种选择规划都照样报告数量，用户是否已经选过由会话层记住。
 - 自动同步遇到以上任一情况：中止，不写入，在同步页标记“需要确认”。
 
 ### 4.6 产出
@@ -233,7 +235,7 @@ class SyncManifest {
 
 | # | 方向 | 消息 | 字段 / 说明 |
 |---|---|---|---|
-| 1 | I→R | `sync.hello` | `f` 同步格式版本、`app` 应用版本、`entities` 实体名（排序，不含 settings）、`settings` 是否开启“同步设置”、`restored` 本方对对方的 `restoredPending`、`auto` 是否自动同步 |
+| 1 | I→R | `sync.hello` | `f` 同步格式版本、`app` 应用版本、`entities` 实体名（排序，不含 settings；含 prefs）、`settings` 是否开启“同步设置”、`restored` 本方对对方的 `restoredPending`、`auto` 是否自动同步 |
 | 1′ | R→I | `sync.hello` 或 `sync.reject{reason}` | 同上（无 `auto`）。R 依次判定：`f` 或实体集合不同 → `version`；R 有编辑页或正与别的设备同步 → `busy`；`auto` 而 R 关了全局 / 这台设备的自动同步、或这台设备还有未处理的“需要确认” → `declined`。拒绝后关闭。I 同样比较，不同即 `abort{incompatibleVersion}`。`untrusted` 在握手里（`hs.reject`），不在这里 |
 | 2 | 双方 | — | `flushAll()` → `refreshCheckpoint(includeSettings: 两边 settings 都为 true)` |
 | 3 | I→R / R→I | `sync.manifest.get` / `sync.manifest{blob, size}` + 数据块 | gzip JSON `{manifest, tombstones:[键…], renames:{旧名:{to,t}}}`，≤ 64 MiB |
@@ -282,7 +284,7 @@ class SyncManifest {
    事务里任何异常回滚这一侧的全部数据库写入、不更新同步状态（下次重新规划）；第 2 步已就位的文件留着、没有记录引用，由媒体回收收走。
 4. 事务提交后应用设置（见第 5 条；SharedPreferences 不在 Drift 事务里，放在前面的话数据库回滚时设置已经改了），失败只回滚设置、这条记为 `settingsFailed`，数据库写入保留。
 5. 用写入后的观测（事务里读出的行 + 应用设置之后取的设置值）调用 `recordAppliedState(after, historySeenAt: …)`：`historySeenAt` 取这一侧计划的 `SyncSidePlan.historySeenAt`，只保留真正写成了的键、去掉被媒体改键改写过的分面（跳过的键若因用户编辑而变了，旧值的时间应当是现在）。有任何写入时发出 `EditingSessionRegistry.notifyDataReplaced()`。会话同步设置时调用方应传 `includeSettings: true`（默认只在计划里有设置写入时才观测设置）：标签改名会改变按名称的标签顺序，写入后的观测带上设置才记得准。
-6. settings 分面只应用本次变化的键（`record` 哈希与 `expected` 不同的分面），部分节点由 `syncSettingsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id，背景图引用还原为文件名），经 `BackupSettings.restore(…, clearLegacyDraft: false)` 应用：覆盖恢复会顺带 `clearCreateDiaryDraft()`（只有读不出来、迁移时保留下来的旧版单份草稿才会还在），同步只应用设置变化、不能删掉本机用户的数据。`restore` 对若干键的“空值”什么也不做，写入层直接调用 setter：`tagOrderRaw` 为空串 → `setTagOrderRaw('')`；`diarySortModeRaw` / `diaryLayoutModeRaw` 为空串 → 对应 setter；`diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` 为 null → `clearDiaryToolbarOrderRaw()` / `clearTagPickerSortRaw()` / `clearDiaryLocationPrecisionRaw()`（`SettingsService` 为此新增），为空串 → 对应 setter；`appLocaleCode` 读出来从不为空。否则本机规范值不变、下次同步会反复判为差异。失败按 `SettingsServiceBackup` 的快照回滚（快照补上了之前漏掉的“我的颜色”键）。
+6. settings 与 prefs 分面只应用本次变化的键（`record` 哈希与 `expected` 不同的分面），部分节点由 `syncSettingsRestoreNode` / `syncPrefsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id，背景图引用还原为文件名；功能开关与本机此刻的开关合并成整份 `appFeaturesRaw`：settings 只改界面类开关，prefs 只打开数据类开关、从不关闭，合并后与本机相同就不写——没存过开关的设备保持“没存过”，`keepLegacyAnniversariesVisible` 在冷启动与导入备份时照旧判断），先 settings 后 prefs，经 `BackupSettings.restore(…, clearLegacyDraft: false)` 应用：覆盖恢复会顺带 `clearCreateDiaryDraft()`（只有读不出来、迁移时保留下来的旧版单份草稿才会还在），同步只应用设置变化、不能删掉本机用户的数据。`restore` 对若干键的“空值”什么也不做，写入层直接调用 setter：`tagOrderRaw` 为空串 → `setTagOrderRaw('')`；`diarySortModeRaw` / `diaryLayoutModeRaw` 为空串 → 对应 setter；`diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` 为 null → `clearDiaryToolbarOrderRaw()` / `clearTagPickerSortRaw()` / `clearDiaryLocationPrecisionRaw()`（`SettingsService` 为此新增），为空串 → 对应 setter；`appLocaleCode` 读出来从不为空。否则本机规范值不变、下次同步会反复判为差异。失败按 `SettingsServiceBackup` 的快照回滚（快照补上了之前漏掉的“我的颜色”键）。
 
 会话层的顺序（§5.3）：发起方规划 → 两个方向的媒体协商（`media.have`，接收方已有同样 sha256 的不传）→ 把 `plan.remote` 需要的媒体传进对方暂存区、从对方取 `plan.local` 需要的媒体进本机暂存区（都在任何写入之前，传输失败两边都不写）→ 对方 `apply(plan.remote, staging)`，回 `applied{counts, rekeys}` → 发起方 `apply(plan.local, staging)` → 发起方 `adoptMediaRekeys(对方的 rekeys)`，把自己的 rekeys 发给对方 → 对方 `adoptMediaRekeys`。某一侧的计划为空时不调用写入层（不必等撤销窗口）。只执行了一侧（中断）时下一轮照常收敛：未写的一侧的差异重新规划即可。会话期间同一个 `SyncLocalState` 不能被别处并发调用（写入事务里会调用它的 `observeRows`，它的队列里若排着要读库的操作会与事务互相等待）。
 
@@ -321,4 +323,4 @@ class SyncManifest {
 - **离线设备的手动同步**：连接候选为在线时信标的地址与端口，其次上次连上的地址与端口（`lastHost` / `lastPort`），所以对方离线但有上次的地址时界面照样给“同步”（设备行与设备详情页，`LanSyncPeerView.lastAddressKnown`）。连不上即 `unreachable`；握手阶段连接断开而对方一个字节都没发过来（`LanSyncHandshakeException.nothingReceived`：本机或对方的 VPN / 代理先接下连接又断开，或地址、端口指向了别的程序）同样按 `unreachable` 说明（“连不上对方。请检查地址和端口……”），收到过对方的数据才算 `connectionLost`。
 - **手动确认**：会话把请求经 `LanSyncConfirmationRequested` 交给界面并等应答，期间每 5 秒 ping 对方，上限 10 分钟；以哪边为准选了以某边为准就按它重新规划；删除保护选“保留并恢复”时，把导致删除的那一侧的日记墓碑当作“删除之后又改过”重新规划，这些日记连同成员关系、留言与纪念日关联按复活规则保留并复制回去（规划器不变，经 `SyncPlanSide` 视角实现）。
 - **同步记录**：hello 之后的会话（两个角色）都记一条，之前就失败的只记本机手动发起的（本机在编辑的不记）；成功时更新上次同步时间、清除 `needsAttention` 与 `restoredPending`。
-- **设置**：两端“同步设置”都开启（且装配时给了 `SettingsService`）才参与，`includeSettings` 同时传给刷新、写入与改键照做。
+- **设置**：两端“同步设置”都开启（且装配时给了 `SettingsService`）才参与，`includeSettings` 同时传给刷新、写入与改键照做。prefs（标签顺序与数据类功能开关）只要装配时给了 `SettingsService` 就总是参与（`SyncSettingsCapture`：有设置服务就生成 prefs，`includeSettings` 时再生成 settings）。

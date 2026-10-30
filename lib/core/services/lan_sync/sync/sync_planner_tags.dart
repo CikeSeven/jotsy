@@ -96,12 +96,12 @@ extension _Tags on _Planner {
     }
   }
 
-  /// settings 的 `tagOrderNames`：写入后各侧由本机标签表重新推出（本地 id →
+  /// prefs 的 `tagOrderNames`：写入后各侧由本机标签表重新推出（本地 id →
   /// 名称，查不到的丢掉），所以最终值必须按改名换名、只留最终存在的标签、
   /// 去重，否则写入后的清单与计划不符，下次同步又判成差异。只在有标签只在
   /// 一侧（增删或改名）时才可能变化。
-  void resolveSettingsTagOrder() {
-    const key = SyncKey(SyncEntity.settings, kSyncSettingsId);
+  void resolvePrefsTagOrder() {
+    const key = SyncKey(SyncEntity.prefs, kSyncPrefsId);
     if (!isPresent(key)) return;
     final tagsMoved = keys.any(
       (tag) =>
@@ -110,7 +110,7 @@ extension _Tags on _Planner {
     );
     if (!tagsMoved) return;
     final facets = finalFacets(key);
-    final order = _mapOf(facets?[kSyncPlannerTagOrderFacet]);
+    final order = _mapOf(facets?[SyncPrefsFacet.tagOrder]);
     if (facets == null || order == null || order['value'] is! List) return;
     final names = _stringList(order['value']);
     final seen = <String>{};
@@ -122,7 +122,7 @@ extension _Tags on _Planner {
     ];
     if (_listEquals(mapped, names)) return;
     finals[key] = _Final.value(
-      _withField(facets, kSyncPlannerTagOrderFacet, 'value', mapped),
+      _withField(facets, SyncPrefsFacet.tagOrder, 'value', mapped),
     );
   }
 }

@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
-import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_settings.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_plan.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_planner.dart';
@@ -15,7 +14,6 @@ void main() {
   test('规划器里的常量与数据库 / 设置层一致', () {
     expect(kSyncNotebookMaxDepth, kNotebookMaxDepth);
     expect(kSyncBuiltInTemplatePrefix, builtInDiaryTemplateIdPrefix);
-    expect(kSyncPlannerTagOrderFacet, kSyncTagOrderNamesFacet);
   });
 
   String? parentIn(SyncWrite? write) =>

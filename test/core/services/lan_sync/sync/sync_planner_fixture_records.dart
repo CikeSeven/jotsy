@@ -12,6 +12,7 @@ SyncKey listKey(String id) => SyncKey(SyncEntity.orderList, id);
 SyncKey commentKey(String id) => SyncKey(SyncEntity.comment, id);
 SyncKey anniversaryKey(String id) => SyncKey(SyncEntity.anniversary, id);
 const SyncKey settingsKey = SyncKey(SyncEntity.settings, kSyncSettingsId);
+const SyncKey prefsKey = SyncKey(SyncEntity.prefs, kSyncPrefsId);
 
 SyncRecord diaryRecord(
   String id, {
@@ -141,3 +142,13 @@ SyncRecord settingsRecord(Map<String, Object?> values) =>
       for (final entry in values.entries)
         entry.key: <String, Object?>{'value': entry.value},
     });
+
+/// prefs 记录：标签顺序与数据类功能开关（没给的开关不出现）。
+SyncRecord prefsRecord({
+  List<String> tagOrder = const <String>[],
+  Map<String, bool> features = const <String, bool>{},
+}) => SyncRecord(prefsKey, <String, Object?>{
+  SyncPrefsFacet.tagOrder: <String, Object?>{'value': tagOrder},
+  for (final entry in features.entries)
+    SyncPrefsFacet.feature(entry.key): SyncPrefsFacet.featureValue(entry.value),
+});

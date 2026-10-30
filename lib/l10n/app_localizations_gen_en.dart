@@ -10896,7 +10896,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lanSyncSyncSettingsSubtitle =>
-      'Appearance, editor and other settings sync too when both devices turn this on';
+      'Appearance, editor and other settings sync too when both devices turn this on. Tag order and turning on features like comments or notebooks always sync';
 
   @override
   String get lanSyncOnline => 'Online';

@@ -122,7 +122,10 @@ class SyncApplier {
       final withSettings =
           includeSettings ??
           writes.any((write) => write.key.entity == SyncEntity.settings);
-      if (withSettings && settings == null) {
+      final touchesSettings =
+          withSettings ||
+          writes.any((write) => write.key.entity == SyncEntity.prefs);
+      if (touchesSettings && settings == null) {
         throw StateError('同步设置需要在构造 SyncApplier 时传入 SettingsService');
       }
 
@@ -168,12 +171,9 @@ class SyncApplier {
     final map = <String, String>{
       for (final rekey in adoptable) rekey.oldKey: rekey.newKey,
     };
-    final settingsService = settings;
     final observed = await state.observeRows(
       await database.readSyncRows(),
-      settingsCaptured: includeSettings && settingsService != null
-          ? syncCaptureSettings(settingsService)
-          : null,
+      settingsCaptured: _capture(includeSettings),
     );
     final records = await state.buildRecords(observed.manifest.keys);
     final writes = <SyncWrite>[];
@@ -194,6 +194,15 @@ class SyncApplier {
       ),
       includeSettings: includeSettings,
     );
+  }
+
+  /// 本次观测要带的设置原值：有设置服务就带（prefs 总是参与），
+  /// [includeSettings] 时连 settings 一起；没有设置服务（测试）为 null。
+  SyncSettingsCapture? _capture(bool includeSettings) {
+    final service = settings;
+    return service == null
+        ? null
+        : syncCaptureSettings(service, includeSettings: includeSettings);
   }
 
   /// 第 3–5 步，在 [DataArchiveService.runSerialized] 里执行：与备份导入、
@@ -243,9 +252,7 @@ class SyncApplier {
     final outcome = await database.transaction(() async {
       final current = await state.observeRows(
         await database.readSyncRows(),
-        settingsCaptured: withSettings
-            ? syncCaptureSettings(settingsService!)
-            : null,
+        settingsCaptured: _capture(withSettings),
       );
       return _runWrites(
         database,
@@ -256,11 +263,14 @@ class SyncApplier {
     });
     skipped.addAll(outcome.skipped);
 
-    // 4. 设置在提交之后应用：SharedPreferences 不在 Drift 事务里，放在前面
-    //    的话数据库回滚时设置已经改了。设置失败只回滚设置。
+    // 4. 设置（settings 与 prefs）在提交之后应用：SharedPreferences 不在
+    //    Drift 事务里，放在前面的话数据库回滚时设置已经改了。设置失败只回滚
+    //    设置。两条都可能改功能开关，各自按应用那一刻的本机开关合并，先后
+    //    执行即可（settings 在前，按 SyncKey 排序）。
     final performed = <SyncWrite>[];
     for (final write in outcome.performed) {
-      if (write.key.entity != SyncEntity.settings) {
+      final entity = write.key.entity;
+      if (entity != SyncEntity.settings && entity != SyncEntity.prefs) {
         performed.add(write);
         continue;
       }
@@ -287,9 +297,7 @@ class SyncApplier {
     //    现在，不能套用另一侧的确立时间（规格 §4.1.1）。
     final after = await state.observeRows(
       outcome.rowsAfter,
-      settingsCaptured: withSettings
-          ? syncCaptureSettings(settingsService!)
-          : null,
+      settingsCaptured: _capture(withSettings),
     );
     await state.recordAppliedState(
       after,

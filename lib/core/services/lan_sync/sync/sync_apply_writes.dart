@@ -117,6 +117,9 @@ _PreparedWrite _prepareWrite(
       final columns = SyncDayMoodColumns.fromRecord(record);
       return op((db) => db.syncWriteDayMood(columns.toCompanion()));
     case SyncEntity.settings:
+    case SyncEntity.prefs:
+      // 设置不在数据库里：事务里只核对前置条件，提交之后再应用（sync_apply
+      // _settings.dart）。
       if (record == null) throw const FormatException('不能删除设置记录');
       return _PreparedWrite(write, null);
   }

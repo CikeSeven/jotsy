@@ -1,4 +1,4 @@
-// 同步完成摘要里的区块（DESIGN.md §5.27“同步完成摘要”）：两列统计卡与
+// 同步完成摘要里的区块（DESIGN.md §5.28“同步完成摘要”）：两列统计卡与
 // 冲突副本提示块。只负责画与转发点按，面板骨架在 lan_sync_summary_sheet.dart。
 
 import 'package:flutter/material.dart';

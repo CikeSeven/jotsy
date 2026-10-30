@@ -1,4 +1,4 @@
-// 配对面板（DESIGN.md §5.27“配对面板”）：随 `LanSyncPairingEvent.phase`
+// 配对面板（DESIGN.md §5.28“配对面板”）：随 `LanSyncPairingEvent.phase`
 // 切换内容的底部面板，只负责展示与收集点按。
 //
 // 状态机（phase → 内容）：

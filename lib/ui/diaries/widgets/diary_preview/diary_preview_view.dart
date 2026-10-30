@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
@@ -29,11 +30,13 @@ import '../../pages/locked_diary_page.dart';
 import '../../providers/diary_card_style_provider.dart';
 import '../../providers/diary_comments_provider.dart';
 import '../../providers/diary_detail_provider.dart';
+import '../../providers/diary_link_providers.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../../sections/diary_typography_sheet.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 import '../diary_comments/diary_comments_section.dart';
+import '../diary_link/diary_backlinks_section.dart';
 import 'diary_preview_actions_sheet.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
@@ -279,6 +282,18 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     );
   }
 
+  /// “提到这篇的日记”；日记在回收站、截取分享长图期间或没有日记提到它时
+  /// 为 null（不显示）。未解封的胶囊不建正文，这一块随正文一起不出现。
+  DiaryPreviewBacklinks? _resolveBacklinks(Diary diary) {
+    if (diary.isDeleted) return null;
+    final target = DiaryLinkTarget.diary(widget.diaryId);
+    final items = ref.watch(diaryPreviewBacklinksProvider(target)).value;
+    if (items == null || items.isEmpty || _export.capturingLongImage) {
+      return null;
+    }
+    return DiaryPreviewBacklinks(target: target, items: items);
+  }
+
   Future<void> _deleteDiary() async {
     final shouldDelete = await confirmDiaryPreviewDelete(context);
     if (!mounted || !shouldDelete) {
@@ -429,6 +444,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           paging: widget.paging,
           notebooks: notebooks,
           comments: comments,
+          backlinks: _resolveBacklinks(detail.diary),
           onOpenNotebook: notebooksEnabled
               ? (NotebookView notebook) =>
                     unawaited(openNotebookFromAnywhere(context, ref, notebook))

@@ -1,5 +1,7 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
+import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
@@ -12,10 +14,15 @@ import '../../controllers/diary_editor_controller.dart';
 import 'diary_media_block.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_block_markers.dart';
+import 'diary_callout_block.dart';
+import 'diary_link_card_block.dart';
 import 'diary_paragraph_block.dart';
+import 'diary_table_block.dart';
+import 'diary_toggle_block.dart';
 
 /// 原生块组件的单一注册点：共享排版、段落首行缩进、行首标记（列表、待办、
-/// 引用）、代码外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
+/// 引用）、提示块、折叠块、代码外壳、媒体与日记链接卡片（[onOpenLink] 打开
+/// 卡片的目标）。段落把手不在块里，见 [DiaryBlockHandleLayer]。
 Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   BuildContext context, {
   required DiaryEditorController controller,
@@ -28,6 +35,7 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   void Function(String, ImageViewerHero?)? onImageOpen,
   void Function(BuildContext, af.Node)? onImageMenu,
   required bool foldLongImages,
+  ValueChanged<DiaryLinkTarget>? onOpenLink,
   Map<String, af.BlockComponentBuilder> overrides = const {},
 }) {
   final body = diaryEditorBodyStyle(context, appearance);
@@ -76,6 +84,12 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
       configuration: text,
       iconBuilder: (context, node) => const DiaryQuoteBar(),
     ),
+    'callout': DiaryCalloutBlockBuilder(configuration: text, markers: markers),
+    'toggle_list': DiaryToggleBlockBuilder(
+      configuration: text,
+      markers: markers,
+      controller: controller,
+    ),
     'todo_list': af.TodoListBlockComponentBuilder(
       configuration: text,
       // 勾选后文字转为次要色并划线，划线与文字同色、不抢眼。
@@ -107,6 +121,8 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
         padding: (_) => EdgeInsets.zero,
         textStyle: (_, {textSpan}) => code.codeTextStyle,
         placeholderText: (_) => ' ',
+        // 代码按原文排版，不随两端对齐拉开空格。
+        textAlign: (_) => TextAlign.start,
       ),
     ),
     // 独占一行的 1dp 细线，上下各留 12dp（DESIGN §3.2）。
@@ -117,6 +133,16 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
     ),
     for (final type in ['image', 'video', 'audio', 'attachment', 'quill_embed'])
       type: media,
+    kDiaryBlockLinkCard: DiaryLinkCardBlockBuilder(
+      controller: controller,
+      onOpen: onOpenLink ?? (_) {},
+    ),
+    // 表格与格子：格内段落经同一份渲染器构建（见 DiaryTableBlock）。
+    'table': DiaryTableBlockBuilder(
+      configuration: text,
+      editorState: controller.state,
+    ),
+    'table/cell': DiaryTableCellBlockBuilder(editorState: controller.state),
     ...overrides,
   };
   return {

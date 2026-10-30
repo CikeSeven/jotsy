@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 
 /// 同步页的分组标题：14 / w700 `onSurfaceVariant`，右侧可带 13 灰字或
-/// “正在寻找…”（DESIGN.md §5.27 页面结构）。
+/// “正在寻找…”（DESIGN.md §5.28 页面结构）。
 ///
 /// 标题直接画在页面背景上：有背景图时经 `onBackgroundTextStyle` 保证可读。
 class LanSyncSectionHeader extends StatelessWidget {

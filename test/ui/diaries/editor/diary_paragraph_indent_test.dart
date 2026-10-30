@@ -121,6 +121,54 @@ void main() {
     });
   }
 
+  testWidgets('paragraphs inside table cells never indent their first line', (
+    tester,
+  ) async {
+    final controller = controllerOf([
+      block('paragraph', '正文段落'),
+      {
+        'type': 'table',
+        'data': {'rowsLen': 1, 'colsLen': 2},
+        'children': [
+          for (var col = 0; col < 2; col++)
+            {
+              'type': 'table/cell',
+              'data': {'rowPosition': 0, 'colPosition': col},
+              'children': [
+                block('paragraph', col == 0 ? '格子文字' : '第二格'),
+                block('paragraph', col == 0 ? '格内二段' : ''),
+              ],
+            },
+        ],
+      },
+    ]);
+    await pump(tester, controller);
+
+    // 正文段照常缩进；格内各段（含空段的占位）不换成段首占位。
+    expect(
+      tester.getTopLeft(firstGlyph('正')).dx - blockLeft(tester),
+      closeTo(indent, 0.5),
+    );
+    for (final glyph in ['格', '第']) {
+      expect(firstGlyph(glyph), findsNothing, reason: glyph);
+    }
+    final texts = tester
+        .widgetList<RichText>(find.byType(RichText))
+        .map((w) => w.text.toPlainText())
+        .toList();
+    expect(texts, containsAll(['格子文字', '格内二段', '第二格']));
+
+    // 段首的光标贴着格子里的文字起点，不右移一个缩进。
+    final caret = selectableAt(controller, [
+      1,
+      0,
+      0,
+    ]).getCursorRectInPosition(af.Position(path: [1, 0, 0]))!;
+    expect(caret.center.dx, lessThan(indent / 2));
+    expect(tester.takeException(), isNull);
+    await tearDownEditor(tester, controller);
+  });
+
   testWidgets('text offsets stay aligned with the document, emoji included', (
     tester,
   ) async {

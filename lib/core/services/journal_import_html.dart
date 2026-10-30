@@ -3,8 +3,11 @@ import 'package:html/parser.dart' as html_parser;
 
 import '../database/code_block_codec.dart';
 import '../database/divider_embed_codec.dart';
+import '../database/diary_blocks/diary_blocks_walk.dart';
 import 'journal_import_block_writer.dart';
+import 'journal_import_blocks.dart';
 import 'journal_import_html_style.dart';
+import 'journal_import_html_table.dart';
 import 'journal_import_style.dart';
 
 /// 粗略判断导出正文是不是 HTML（Journey、Daylio 等的旧版本存纯文本）。
@@ -17,9 +20,11 @@ bool looksLikeJournalHtml(String text) => RegExp(
 ///
 /// 保留本应用正文能渲染的格式：粗体、斜体、下划线、删除线、行内代码、链接、
 /// 文字颜色与背景色（`color` / `background-color`、`<font color>`、`<mark>`）、
-/// 字号（`font-size`、`<font size>`、`<big>` / `<small>`，换算成三档）、标题
-/// （最多三级）、有序/无序/待办列表与缩进、引用、代码块、段落对齐（
-/// `text-align`、`align` 属性、`<center>`）与分隔线（`<hr>`）。颜色、字号与
+/// 字号（`font-size`、`<font size>`、`<big>` / `<small>`，换算成三档）、上下标
+/// （`<sup>` / `<sub>`）、标题（1~6 级）、有序/无序/待办列表与缩进、引用、
+/// 代码块、段落对齐（`text-align`、`align` 属性、`<center>`）、分隔线
+/// （`<hr>`）、折叠列表（带 `<summary>` 的 `<details>`）与规整的表格（规则
+/// 见 [_appendTable]，不规整的表格按格写成文字）。颜色、字号与
 /// 对齐的换算规则见 journal_import_style.dart（来源的默认墨色不导入，全文
 /// 占比最大的字号视为正文字号）；字体一律丢弃，正文字体只跟随本应用的排版
 /// 设置。
@@ -37,6 +42,10 @@ class JournalHtmlConverter {
 
   /// 本次转换的正文字号（见 journalDominantFontSizeRatio）。
   double _baseRatio = 1;
+
+  /// 正在按格展开成文字的表格层数：不规整的表格里嵌套的表格同样展开，
+  /// 不在文字中间冒出表格块。
+  int _flatteningTables = 0;
 
   void appendHtml(String html) {
     appendNodes(html_parser.parseFragment(html).nodes);
@@ -142,7 +151,7 @@ class JournalHtmlConverter {
               : styled,
           block,
         );
-      case 'span' || 'font' || 'mark' || 'big' || 'small':
+      case 'span' || 'font' || 'mark' || 'big' || 'small' || 'sup' || 'sub':
         _visitChildren(node, _styled(node, inline), block);
       case 'ul' || 'ol':
         _visitBlock(
@@ -164,7 +173,7 @@ class JournalHtmlConverter {
           node,
           _styled(node, inline),
           block,
-          _aligned(node, block).withAttribute('header', level > 3 ? 3 : level),
+          _aligned(node, block).withAttribute('header', level),
         );
       case 'blockquote':
         _visitBlock(
@@ -180,6 +189,32 @@ class JournalHtmlConverter {
           block,
           block.preformattedBlock(_preLanguage(node)),
         );
+      case 'details':
+        final summary = node.children
+            .where((dom.Element child) => child.localName == 'summary')
+            .firstOrNull;
+        if (summary == null) {
+          // 没有标题的 <details> 无从折叠，与 <div> 一样展开。
+          _visitBlock(
+            node,
+            _styled(node, inline),
+            block,
+            _aligned(node, block),
+          );
+        } else {
+          _appendDetails(node, summary, inline, block);
+        }
+      case 'table':
+        if (_flatteningTables > 0 || !_appendTable(node, inline, block)) {
+          _flatteningTables++;
+          _visitBlock(
+            node,
+            _styled(node, inline),
+            block,
+            _aligned(node, block),
+          );
+          _flatteningTables--;
+        }
       case 'td' || 'th':
         _visitChildren(node, inline, block);
         writer.text(' ', inline);
@@ -206,14 +241,12 @@ class JournalHtmlConverter {
           'dl' ||
           'dt' ||
           'dd' ||
-          'table' ||
           'thead' ||
           'tbody' ||
           'tfoot' ||
           'tr' ||
           'form' ||
           'fieldset' ||
-          'details' ||
           'summary' ||
           'body' ||
           'html':
@@ -243,6 +276,103 @@ class JournalHtmlConverter {
         writer.endLine(block.attributes);
       }
     }
+  }
+
+  /// 带 `<summary>` 的 `<details>`：标题写成折叠列表的标题行（没有 `open`
+  /// 属性时收起），其余内容写成它的子块（缩进多一级，内部的列表照常
+  /// 嵌套）。折叠列表与外层块同级：在列表项里时与列表项并列，不挂到它
+  /// 下面（`<li>` 后面紧跟 `<details>` 时没有可挂的父行）。
+  void _appendDetails(
+    dom.Element details,
+    dom.Element summary,
+    Map<String, Object?> inline,
+    _Block block,
+  ) {
+    final styled = _styled(details, inline);
+    final toggle = _aligned(
+      details,
+      block,
+    ).toggle(collapsed: !details.attributes.containsKey('open'));
+    _visitBlock(
+      summary,
+      _styled(summary, styled),
+      block,
+      _aligned(summary, toggle),
+      blankWhenEmpty: true,
+    );
+    final content = toggle.toggleContent();
+    for (final child in details.nodes) {
+      if (identical(child, summary)) continue;
+      _visit(child, styled, content);
+    }
+    if (writer.lineHasContent) {
+      writer.endLine(content.attributes);
+    } else {
+      writer.closeLine();
+    }
+  }
+
+  /// 规整的表格写成表格块，写出时返回 true；不规整时什么都不写、返回
+  /// false，由调用方照旧按格展开成文字。规整即：
+  /// - 行只来自 `<thead>` / `<tbody>` / `<tfoot>` / `<tr>`（`<colgroup>` 忽略），
+  ///   格子只有 `<td>` / `<th>`，中间不夹文字、`<caption>` 或别的元素；
+  /// - 没有 `rowspan` / `colspan` 大于 1 的格子，每行格数相同，行列数在
+  ///   上限内（[journalImportTableFits]）；
+  /// - 格子里只有行内格式、`<br>` 与 `<p>`（没有图片、列表、嵌套表格等
+  ///   块级结构），也不含要经解析器换成媒体或附件的引用（解析器可能有
+  ///   副作用，试写时一律不调用，遇到即按不规整处理）。
+  /// 首行在 `<thead>` 里或全是 `<th>` 时首行为表头。格子的对齐写在格内
+  /// 段落上，行内格式照常保留。
+  bool _appendTable(
+    dom.Element table,
+    Map<String, Object?> inline,
+    _Block block,
+  ) {
+    final parsed = journalHtmlTableRows(table);
+    if (parsed == null) return false;
+    final rows = parsed.rows;
+    final cols = rows.first.length;
+    if (!journalImportTableFits(rows.length, cols) ||
+        rows.any((row) => row.length != cols)) {
+      return false;
+    }
+    var trapped = false;
+    Map<String, Object?>? trap(String _) {
+      trapped = true;
+      return null;
+    }
+
+    final tableInline = _styled(table, inline);
+    final cells = <List<List<Map<String, Object?>>>>[];
+    for (final row in rows) {
+      final rowInline = _styled(row.first.parent!, tableInline);
+      final rowBlock = _aligned(row.first.parent!, const _Block());
+      final cellRow = <List<Map<String, Object?>>>[];
+      for (final cell in row) {
+        if (!journalHtmlCellIsInline(cell)) return false;
+        final sub = JournalBlockWriter();
+        final converter = JournalHtmlConverter(
+          sub,
+          resolveEmbed: trap,
+          resolveLink: trap,
+        ).._baseRatio = _baseRatio;
+        converter._visitBlock(
+          cell,
+          converter._styled(cell, rowInline),
+          const _Block(),
+          _aligned(cell, rowBlock),
+        );
+        final body = diaryBlockChildren(diaryBlocksRoot(sub.buildDocument())!);
+        if (trapped || !journalImportCellIsInline(body)) return false;
+        cellRow.add(body);
+      }
+      cells.add(cellRow);
+    }
+    writer.node(
+      journalImportTableNode(cells, headerRow: parsed.headerRow),
+      block.attributes,
+    );
+    return true;
   }
 
   void _text(String raw, Map<String, Object?> inline, _Block block) {
@@ -341,6 +471,7 @@ class _Block {
     this.listType,
     this.listDepth = -1,
     this.preformatted = false,
+    this.indentBase = 0,
   });
 
   final Map<String, Object?> attributes;
@@ -352,11 +483,22 @@ class _Block {
   final int listDepth;
   final bool preformatted;
 
+  /// 所在折叠列表内容的层级（不在折叠列表里为 0）：这里的行至少缩进这么
+  /// 多级，列表项在此基础上再按嵌套深度缩进。
+  final int indentBase;
+
+  /// 本块的行缩进层级。
+  int get _indent => switch (attributes['indent']) {
+    final int indent when indent > 0 => indent,
+    _ => 0,
+  };
+
   _Block withAttribute(String key, Object value) => _Block(
     attributes: {...attributes, key: value},
     listType: listType,
     listDepth: listDepth,
     preformatted: preformatted,
+    indentBase: indentBase,
   );
 
   _Block list(String type) => _Block(
@@ -364,25 +506,48 @@ class _Block {
     listType: type,
     listDepth: listDepth + 1,
     preformatted: preformatted,
+    indentBase: indentBase,
   );
 
   _Block listItem(bool? checked) {
     final type = listType ?? 'bullet';
+    final level = indentBase + (listDepth < 0 ? 0 : listDepth);
     return _Block(
       attributes: {
-        ...attributes,
+        for (final entry in attributes.entries)
+          if (entry.key != 'indent') entry.key: entry.value,
         'list': checked == null
             ? type
             : checked
             ? 'checked'
             : 'unchecked',
-        if (listDepth > 0) 'indent': listDepth,
+        if (level > 0) 'indent': level,
       },
       listType: listType,
       listDepth: listDepth < 0 ? 0 : listDepth,
       preformatted: preformatted,
+      indentBase: indentBase,
     );
   }
+
+  /// 折叠列表的标题行：与本块同级，不带列表、标题、引用与代码块格式，
+  /// 保留对齐。
+  _Block toggle({required bool collapsed}) => _Block(
+    attributes: {
+      'toggle': true,
+      'collapsed': collapsed,
+      'align': ?attributes['align'],
+      if (_indent > 0) 'indent': _indent,
+    },
+    indentBase: _indent,
+  );
+
+  /// 折叠列表（本块为它的标题行）的内容：缩进比标题多一级，重新开始
+  /// 列表嵌套，沿用标题的对齐。
+  _Block toggleContent() => _Block(
+    attributes: {'align': ?attributes['align'], 'indent': _indent + 1},
+    indentBase: _indent + 1,
+  );
 
   /// 设置（[align] 为 null 时取消）行对齐。
   _Block aligned(String? align) => _Block(
@@ -394,6 +559,7 @@ class _Block {
     listType: listType,
     listDepth: listDepth,
     preformatted: preformatted,
+    indentBase: indentBase,
   );
 
   /// 代码块不带对齐：编辑器里代码块按原样左对齐显示。[codeBlock] 为
@@ -407,5 +573,6 @@ class _Block {
     listType: listType,
     listDepth: listDepth,
     preformatted: true,
+    indentBase: indentBase,
   );
 }

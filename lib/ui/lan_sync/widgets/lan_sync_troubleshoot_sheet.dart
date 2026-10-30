@@ -11,7 +11,7 @@ import '../models/lan_sync_platform.dart';
 /// 排障面板里用户选的下一步。
 enum LanSyncTroubleshootAction { manualAddress }
 
-/// “找不到设备？”排障面板（只负责展示与挑选，DESIGN.md §5.27）。
+/// “找不到设备？”排障面板（只负责展示与挑选，DESIGN.md §5.28）。
 ///
 /// 逐条说明：同一个 Wi-Fi、另一台也打开同步页、Windows / Linux 防火墙、仍
 /// 不行时手动输入地址或扫码。两种防火墙都列出（另一台可能是电脑）。本机

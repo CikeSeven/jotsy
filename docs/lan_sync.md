@@ -1,6 +1,6 @@
 # 局域网同步（LAN Sync）设计规格
 
-> 状态：已实现（Android、Linux、Windows；macOS 可编译）。本文是各模块的共同依据：数据模型、合并规则、协议与状态存储以此为准；改动实现前先改本文再改代码。协作规则见 AGENTS.md §6“局域网同步”，界面规格见 DESIGN.md §5.27。
+> 状态：已实现（Android、Linux、Windows；macOS 可编译）。本文是各模块的共同依据：数据模型、合并规则、协议与状态存储以此为准；改动实现前先改本文再改代码。协作规则见 AGENTS.md §6“局域网同步”，界面规格见 DESIGN.md §5.28。
 
 ## 0. 目标与边界
 
@@ -28,7 +28,7 @@
 | `lib/ui/lan_sync/models/lan_sync_engine_mapping.dart`、`lan_sync_engine_events.dart` | 引擎状态 / 事件 / 失败原因 → 界面模型的纯换算（对照见 `lan_sync_service.dart` 顶部） |
 | `lib/ui/lan_sync/controllers/engine_lan_sync_ui_controller.dart`（+ `_link`）、`inert_lan_sync_ui_controller.dart` | 真正的控制器（包着 `LanSyncService`，异步启动窗口内排队指令）；不支持的平台为不联网的空实现 |
 | `lib/ui/lan_sync/providers/lan_sync_providers.dart`、`lan_sync_engine_assembly.dart` | `lanSyncControllerProvider`（挂 `AppLifecycleListener` 跟随前后台，`NodeDiaryApp` 启动时即常驻监听）；生产装配 `createAppLanSyncService`（解析数据根与状态目录、应用版本、本地化的冲突副本后缀） |
-| `lib/ui/lan_sync/controllers/`（其余）、`pages/`、`sections/`、`widgets/`；入口 `lib/ui/settings/sections/settings_lan_sync_tile.dart` | 页面可见性与 attach / detach、配对 / 会话 / 页面流程、配对前身份验证、自动同步提示；同步页、设备详情页、扫码页及其区块（DESIGN.md §5.27） |
+| `lib/ui/lan_sync/controllers/`（其余）、`pages/`、`sections/`、`widgets/`；入口 `lib/ui/settings/sections/settings_lan_sync_tile.dart` | 页面可见性与 attach / detach、配对 / 会话 / 页面流程、配对前身份验证、自动同步提示；同步页、设备详情页、扫码页及其区块（DESIGN.md §5.28） |
 | `android/app/src/main/kotlin/com/jotsy/diary/LanSyncChannel.kt` | `com.jotsy.diary/lan_sync`：组播锁、设备名、`noBackupFilesDir` |
 
 所有同步引擎类都通过构造参数注入数据库（`AppDatabase`）、数据根目录（`Directory dataRoot`，对应 `appDataRootDirectory()`）、状态目录（`Directory stateDir`）与 `SettingsService`，**不在引擎内部调用 `appDataRootDirectory()` / path_provider**：端到端测试要在一个进程里跑两台“设备”。只有生产装配 `createAppLanSyncService`（`lib/ui/lan_sync/providers/lan_sync_engine_assembly.dart`）解析真实目录（`appDataRootDirectory()` 与 `lanSyncStateDirectory()`）。

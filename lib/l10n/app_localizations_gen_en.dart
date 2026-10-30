@@ -8821,7 +8821,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorDivider => 'Divider';
 
   @override
+  String get diaryEditorCallout => 'Callout';
+
+  @override
+  String get diaryCalloutPlaceholder => 'Callout';
+
+  @override
+  String get diaryCalloutToText => 'Convert to text';
+
+  @override
+  String get diaryCalloutToneDefault => 'Default';
+
+  @override
+  String get diaryCalloutToneYellow => 'Yellow';
+
+  @override
+  String get diaryCalloutToneGreen => 'Green';
+
+  @override
+  String get diaryCalloutToneBlue => 'Blue';
+
+  @override
+  String get diaryCalloutToneRed => 'Red';
+
+  @override
+  String get diaryCalloutTonePurple => 'Purple';
+
+  @override
   String get diaryEditorUnsupportedBlock => 'Unsupported content';
+
+  @override
+  String get diaryEditorToggleList => 'Toggle';
+
+  @override
+  String get diaryToggleListPlaceholder => 'Toggle';
+
+  @override
+  String get diaryToggleExpand => 'Expand';
+
+  @override
+  String get diaryToggleCollapse => 'Collapse';
 
   @override
   String get diaryEditorImageWidth => 'Image width';
@@ -8837,6 +8876,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorHeading3 => 'Heading 3';
+
+  @override
+  String get diaryEditorHeading4 => 'Heading 4';
+
+  @override
+  String get diaryEditorHeading5 => 'Heading 5';
+
+  @override
+  String get diaryEditorHeading6 => 'Heading 6';
+
+  @override
+  String get diaryToolbarAlign => 'Alignment';
+
+  @override
+  String get diaryToolbarFontSize => 'Font size';
+
+  @override
+  String get diaryToolbarSuperscript => 'Superscript';
+
+  @override
+  String get diaryToolbarSubscript => 'Subscript';
+
+  @override
+  String get diaryHeadingPanelTitle => 'Heading';
+
+  @override
+  String get diaryHeadingPanelBody => 'Body';
+
+  @override
+  String get diaryAlignLeft => 'Align left';
+
+  @override
+  String get diaryAlignCenter => 'Center';
+
+  @override
+  String get diaryAlignRight => 'Align right';
+
+  @override
+  String get diaryAlignJustify => 'Justify';
+
+  @override
+  String get diaryFontSizeSmall => 'Small';
+
+  @override
+  String get diaryFontSizeNormal => 'Normal';
+
+  @override
+  String get diaryFontSizeLarge => 'Large';
+
+  @override
+  String get diaryFontSizeHuge => 'Huge';
 
   @override
   String get diaryEditorCommandGroupText => 'Text';
@@ -10524,6 +10614,147 @@ class AppLocalizationsEn extends AppLocalizations {
   String backupImportCommentOverwriteResult(int added, int replaced) {
     return 'Comments: $added added, $replaced overwritten';
   }
+
+  @override
+  String get diaryEditorTable => 'Table';
+
+  @override
+  String get diaryTableInsertRowAbove => 'Row above';
+
+  @override
+  String get diaryTableInsertRowBelow => 'Row below';
+
+  @override
+  String get diaryTableInsertColumnLeft => 'Column left';
+
+  @override
+  String get diaryTableInsertColumnRight => 'Column right';
+
+  @override
+  String get diaryTableDeleteRow => 'Delete row';
+
+  @override
+  String get diaryTableDeleteColumn => 'Delete column';
+
+  @override
+  String get diaryTableHeaderRow => 'Header row';
+
+  @override
+  String get diaryTableDelete => 'Delete table';
+
+  @override
+  String diaryLinkUntitled(String date) {
+    return 'Diary of $date';
+  }
+
+  @override
+  String get diaryLinkGroupDiaries => 'Diaries';
+
+  @override
+  String get diaryLinkGroupNotebooks => 'Notebooks';
+
+  @override
+  String get diaryLinkGroupWeb => 'Web';
+
+  @override
+  String get diaryLinkEmpty => 'No matching diaries or notebooks';
+
+  @override
+  String get diaryLinkMenuHint => 'Type to search titles and notebooks';
+
+  @override
+  String get diaryLinkMenuLabel => 'Link a diary or notebook';
+
+  @override
+  String get diaryLinkSearchDiaries => 'Search diary titles';
+
+  @override
+  String get diaryLinkSearchNotebooks => 'Search notebooks';
+
+  @override
+  String get diaryLinkOpen => 'Open';
+
+  @override
+  String get diaryLinkRemove => 'Remove link';
+
+  @override
+  String get diaryLinkCurrentDiary => 'Links to a diary';
+
+  @override
+  String get diaryLinkCurrentNotebook => 'Links to a notebook';
+
+  @override
+  String get diaryLinkMissingDiary => 'This diary no longer exists';
+
+  @override
+  String get diaryLinkMissingNotebook => 'This notebook no longer exists';
+
+  @override
+  String get diaryEditorDiaryCard => 'Diary card';
+
+  @override
+  String get diaryEditorNotebookCard => 'Notebook card';
+
+  @override
+  String get diaryLinkCardPrivate => 'Private diary';
+
+  @override
+  String diaryLinkCardSealed(String date) {
+    return 'Opens $date';
+  }
+
+  @override
+  String diaryLinkCardNotebookCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryLinkCardToInline => 'Convert to inline link';
+
+  @override
+  String get diaryLinkCardMenu => 'Card options';
+
+  @override
+  String diaryBacklinksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mentioned in $count diaries',
+      one: 'Mentioned in 1 diary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryBacklinksShowAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show all $count',
+      one: 'Show 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookBacklinksChip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mentioned in $count diaries',
+      one: 'Mentioned in 1 diary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookBacklinksTitle => 'Diaries mentioning this notebook';
 
   @override
   String get lanSyncTitle => 'LAN sync';

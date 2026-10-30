@@ -8,7 +8,7 @@ import 'm3e_cookie_shape.dart';
 /// （`onPrimary`，即设计稿里的“白色”对勾，暗色主题下随主题取值）。
 ///
 /// 挂载时对勾以 `spatial` 弹性从 0 放大到 1（`medium`）；减少动画时直接显示。
-/// 配对成功与同步完成摘要共用（DESIGN.md §5.27）。触觉反馈由调用方在
+/// 配对成功与同步完成摘要共用（DESIGN.md §5.28）。触觉反馈由调用方在
 /// “生效”的那一刻触发，徽章本身只管画。
 class LanSyncSuccessBadge extends StatelessWidget {
   const LanSyncSuccessBadge({super.key});

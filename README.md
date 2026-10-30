@@ -233,7 +233,7 @@ Jotsy 免费开源，没有广告。如果它对你有帮助，欢迎扫码打�
 
 感谢以下朋友的支持：
 
-ParadiseGrass · 氢妹Ti · MR.CHEN · 白禹和Kamiko Kristo · Hongda · AXID · \*\*民 · 泽墨 · 霖
+ParadiseGrass · 氢妹Ti · MR.CHEN · 白禹和Kamiko Kristo · Hongda · AXID · \*\*民 · 泽墨 · 霖 · 望¹CHun_F
 
 ## 📄 开源许可
 

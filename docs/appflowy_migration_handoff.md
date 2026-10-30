@@ -7,7 +7,7 @@
 - 目标：彻底替换 flutter_quill，获得手机软键盘 Markdown 输入、`/` 命令、段落拖动与嵌套块。用户已明确本次完成全部阶段。
 - AppFlowy 使用固定 git 提交 `01eccc6ee36bd07698bd80915289fe7070478cd2`。pub 的 6.2.0 缺少 Flutter ≥ 3.44 的输入接口修复（上游 #1204）；项目 Flutter 版本仍只取 `.github/actions/setup-flutter/action.yml`。
 - 正文写 `Document.toJson()` 同构的 `{"document":{"type":"page","children":[…]}}`，节点 id 不落盘。没有一次性数据库 schema 迁移；历史 Delta、旧节点、纯文本在读取时兼容转换，写入统一块文档。
-- 已删除 flutter_quill、flutter_quill_extensions、flutter_quill_to_pdf 及其原生桥接依赖。`dart_quill_delta` 仅作为 PDF 准备与历史 Delta 的纯数据处理库，不提供编辑器或平台插件。
+- 已删除 flutter_quill、flutter_quill_extensions、flutter_quill_to_pdf 及其原生桥接依赖。`dart_quill_delta` 曾作为 PDF 准备与历史 Delta 的纯数据处理库；PDF 改读原生块树后 `lib/` 已不再引用它，依赖仍留在 `pubspec.yaml`，待单独清理。
 - **降级风险仍存在**：基于迁移前 main 的包无法读新正文格式，读出空正文后再次编辑可能覆盖内容。装机前应先保留完整备份；尚未给旧 main 合入块文档只读兼容补丁。本次没有安装或改动设备数据。
 
 ## 2. 各阶段结果
@@ -39,7 +39,7 @@
 - 模板正文改为块树，代码/载荷版本 v2，兼容读 v1 Delta；白名单按允许的节点与属性重建，保留嵌套，剔除媒体、额外路径 metadata 与本地文件链接。变量逐个原生文字片段替换，不再摊平子树。
 - 内置模板仍从 ARB 与块描述生成，用户模板仍用原 Drift 表和既有备份/合并策略；模板偏好没有新增设置键。
 - `JournalBlockWriter`（`journal_import_block_writer.dart`）直接组装原生块树，复用样式、媒体映射与树构建规则；第三方各解析器仍走原只读预检与备份写入路径。
-- 各导出格式/分享直接读取原生树和深度；PDF 使用 pdf 库按共用块模型绘制，保留标题、行内格式、代码颜色、字体、媒体说明、成书目录与书签。
+- 各导出格式/分享直接读取原生树和深度；PDF 使用 pdf 库直接读原生块树、按共用块模型绘制（不再经 Delta 投影），保留标题、行内格式、代码颜色、字体、媒体说明、成书目录与书签。
 - 图片系统剪贴板由 pasteboard 接管。应用内复制的树快照只在内存保留，并核对系统文字/图片摘要；新复制的外部内容不会误用旧快照。系统图片粘贴复制进托管目录。
 - AGENTS.md、DESIGN.md、目录说明与源码约束测试已更新到原生组件。
 

@@ -1,4 +1,4 @@
-// 配对面板的静态区块：顶部插图与安全说明块（DESIGN.md §5.27“配对面板”）。
+// 配对面板的静态区块：顶部插图与安全说明块（DESIGN.md §5.28“配对面板”）。
 // 只负责画与转发点按；阶段切换与按钮在 lan_sync_pairing_sheet.dart。
 
 import 'package:flutter/material.dart';

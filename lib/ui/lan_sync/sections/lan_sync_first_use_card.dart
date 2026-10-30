@@ -3,7 +3,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../app_surface/widgets/app_card_surface.dart';
 
-/// 首次使用（没有已配对设备）时英雄卡下方的说明卡（DESIGN.md §5.27）：
+/// 首次使用（没有已配对设备）时英雄卡下方的说明卡（DESIGN.md §5.28）：
 /// 标题、一句加密与不经服务器的说明，以及三步编号。
 class LanSyncFirstUseCard extends StatelessWidget {
   const LanSyncFirstUseCard({super.key});

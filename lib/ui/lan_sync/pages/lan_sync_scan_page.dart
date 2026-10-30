@@ -1,4 +1,4 @@
-// 扫码页（“扫码连接”，DESIGN.md §5.27“扫码页”）：装配相机、识别与结果。
+// 扫码页（“扫码连接”，DESIGN.md §5.28“扫码页”）：装配相机、识别与结果。
 //
 // 只在 `AppPlatform.supportsQrScan`（Android，mobile_scanner 自带 ML Kit）时
 // 可达，入口在同步页英雄卡；结果经 Navigator 返回给打开者

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import 'lan_sync_device_tile.dart';
 
-/// 设备卡片里的一行：图标块 + 标题 / 副标题 + 尾部控件（DESIGN.md §5.27）。
+/// 设备卡片里的一行：图标块 + 标题 / 副标题 + 尾部控件（DESIGN.md §5.28）。
 ///
 /// 内边距 14 × 16、图标与文字间距 14，与 `SettingsCardGroup` 的行同规格；
 /// 分组卡片里行间分割线的起点为 [textStart]（文字起点）。

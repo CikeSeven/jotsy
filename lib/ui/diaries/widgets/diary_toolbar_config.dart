@@ -4,16 +4,21 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_table_editing.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_text_style_editing.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_toggle_editing.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
+import 'package:node_diary/ui/diaries/models/diary_text_style_options.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_time_format.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
-import '../../widgets/app_modal/app_dialog.dart';
+import 'diary_link_dialog.dart';
 
 /// 工具栏保持同一套尺寸与图标，动作直接作用于 AppFlowy 选区和节点。
 const BoxConstraints kDiaryToolbarButtonConstraints = BoxConstraints.tightFor(
@@ -29,15 +34,27 @@ bool isDiaryToolbarItemActive(
   DiaryToolbarItem.italic => attributes['italic'] == true,
   DiaryToolbarItem.underline => attributes['underline'] == true,
   DiaryToolbarItem.strikeThrough => attributes['strikethrough'] == true,
+  DiaryToolbarItem.superscript =>
+    attributes[kDiaryInlineScript] == kDiaryScriptSuper,
+  DiaryToolbarItem.subscript =>
+    attributes[kDiaryInlineScript] == kDiaryScriptSub,
   DiaryToolbarItem.inlineCode => attributes['code'] == true,
   DiaryToolbarItem.textColor => attributes['font_color'] != null,
   DiaryToolbarItem.backgroundColor => attributes['bg_color'] != null,
   DiaryToolbarItem.headerStyle => attributes['type'] == 'heading',
+  DiaryToolbarItem.align =>
+    DiaryTextAlign.fromAttribute(attributes['align']) != DiaryTextAlign.left,
+  DiaryToolbarItem.fontSize => attributes['size'] != null,
   DiaryToolbarItem.orderedList => attributes['type'] == 'numbered_list',
   DiaryToolbarItem.bulletList => attributes['type'] == 'bulleted_list',
   DiaryToolbarItem.checkList => attributes['type'] == 'todo_list',
   DiaryToolbarItem.codeBlock => attributes['type'] == 'code',
   DiaryToolbarItem.quote => attributes['type'] == 'quote',
+  // 光标在提示块里（选区的块都是提示块）；面板开着时由工具栏经
+  // `panelOpen` 另行点亮。
+  DiaryToolbarItem.callout => attributes['type'] == 'callout',
+  // 光标在折叠块的标题里（选区的块都是折叠块）。
+  DiaryToolbarItem.toggle => attributes['type'] == 'toggle_list',
   DiaryToolbarItem.indent =>
     attributes['depth'] is num && (attributes['depth'] as num) > 0,
   DiaryToolbarItem.link => attributes['href'] != null,
@@ -45,8 +62,9 @@ bool isDiaryToolbarItemActive(
 };
 
 /// 构建一个工具按钮。[onPressed] 给出时取代默认动作（有序 / 无序列表由
-/// 工具栏决定转为列表还是打开列表面板），[panelOpen] 为它的面板正开着，
-/// 与“选区正处在这种格式里”一样显示选中态。
+/// 工具栏决定转为列表还是打开列表面板，标题、对齐、字号打开各自的面板），
+/// [panelOpen] 为它的面板正开着，与“选区正处在这种格式里”一样显示选中态。
+/// 对齐按钮的图标随选区当前的对齐变化。
 Widget buildDiaryToolbarItem(
   BuildContext context,
   DiaryToolbarItem item,
@@ -85,10 +103,16 @@ Widget buildDiaryToolbarItem(
                 DiaryToolbarItem.video ||
                 DiaryToolbarItem.attachment =>
                   !mediaImportBusy && !recordingOpen && onMediaPressed != null,
+                // 格子里只能放段落，不缩进（缩进即成为上一段的子块）。
                 DiaryToolbarItem.indent =>
-                  outdent
-                      ? af.isOutdentable(controller.state)
-                      : af.isIndentable(controller.state),
+                  !diarySelectionInTable(controller) &&
+                      (outdent
+                          ? af.isOutdentable(controller.state)
+                          : af.isIndentable(controller.state)),
+                // 代码块里的文字是原文，不写上下标：选区只落在代码块里时停用。
+                DiaryToolbarItem.superscript || DiaryToolbarItem.subscript =>
+                  controller.selection == null ||
+                      diaryTextStyleTargets(controller).isNotEmpty,
                 _ => true,
               };
           return ExpressiveStateBlend(
@@ -124,7 +148,7 @@ Widget buildDiaryToolbarItem(
                           return;
                         }
                         if (tool == DiaryToolbarItem.link) {
-                          unawaited(_editLink(context, controller));
+                          unawaited(editDiaryLink(context, controller));
                           return;
                         }
                         _apply(tool, controller, outdent: outdent);
@@ -149,7 +173,15 @@ Widget buildDiaryToolbarItem(
                         semanticLabel: context.l10n.diaryMediaImporting,
                       )
                     : FaIcon(
-                        outdent ? FontAwesomeIcons.outdent : tool.iconData,
+                        outdent
+                            ? FontAwesomeIcons.outdent
+                            : tool == DiaryToolbarItem.align
+                            ? diaryTextAlignIcon(
+                                DiaryTextAlign.fromAttribute(
+                                  controller.activeAttributes['align'],
+                                ),
+                              )
+                            : tool.iconData,
                         size: 14,
                       ),
               );
@@ -200,16 +232,17 @@ void _apply(
     return;
   }
   switch (item) {
+    case DiaryToolbarItem.superscript:
+      toggleDiaryScript(controller, DiaryScript.superscript);
+    case DiaryToolbarItem.subscript:
+      toggleDiaryScript(controller, DiaryScript.subscript);
+    case DiaryToolbarItem.toggle:
+      // 不全是折叠块时转为折叠块，全是时转回正文（代码块除外）。
+      toggleDiaryToggleBlocks(controller);
     case DiaryToolbarItem.undo:
       controller.undo();
     case DiaryToolbarItem.redo:
       controller.redo();
-    case DiaryToolbarItem.headerStyle:
-      final level = controller.activeAttributes['level'];
-      controller.setBlockType(
-        level == 3 ? 'paragraph' : 'heading',
-        attributes: {'level': level is int && level < 3 ? level + 1 : 1},
-      );
     case DiaryToolbarItem.indent:
       (outdent ? af.outdentCommand : af.indentCommand).handler(
         controller.state,
@@ -233,64 +266,10 @@ void _apply(
   }
 }
 
-Future<void> _editLink(
-  BuildContext context,
-  DiaryEditorController controller,
-) async {
-  final selection = controller.selection;
-  if (selection == null) return;
-  final initial = controller.selectionAttributes['href'];
-  final input = TextEditingController(text: initial is String ? initial : '');
-  final l10n = context.l10n;
-  String? error;
-  final url = await showAppDialog<String>(
-    context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
-        title: Text(l10n.autoT0024),
-        content: TextField(
-          controller: input,
-          autofocus: true,
-          keyboardType: TextInputType.url,
-          decoration: InputDecoration(
-            labelText: l10n.diaryEditorLinkUrl,
-            errorText: error,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () {
-              var value = input.text.trim();
-              if (value.isNotEmpty) {
-                if (!(Uri.tryParse(value)?.hasScheme ?? false)) {
-                  value = 'https://$value';
-                }
-                final uri = Uri.tryParse(value);
-                if (uri == null ||
-                    !['https', 'http', 'mailto', 'tel'].contains(uri.scheme) ||
-                    (['https', 'http'].contains(uri.scheme) &&
-                        uri.host.isEmpty)) {
-                  setState(() => error = l10n.diaryEditorInvalidLink);
-                  return;
-                }
-              }
-              Navigator.pop(context, value);
-            },
-            child: Text(l10n.commonConfirm),
-          ),
-        ],
-      ),
-    ),
-  );
-  input.dispose();
-  if (url == null || controller.state.isDisposed) return;
-  controller.select(selection);
-  controller.format('href', url.isEmpty ? null : url);
-}
+/// 对齐的图标：工具栏「对齐」按钮（按选区当前的对齐）与对齐面板共用。
+FaIconData diaryTextAlignIcon(DiaryTextAlign align) => switch (align) {
+  DiaryTextAlign.left => FontAwesomeIcons.alignLeft,
+  DiaryTextAlign.center => FontAwesomeIcons.alignCenter,
+  DiaryTextAlign.right => FontAwesomeIcons.alignRight,
+  DiaryTextAlign.justify => FontAwesomeIcons.alignJustify,
+};

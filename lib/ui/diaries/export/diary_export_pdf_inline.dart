@@ -29,11 +29,23 @@ pw.TextSpan buildDiaryPdfInline(
       : null;
   final bold = run.bold || base.fontWeight == pw.FontWeight.bold;
   final italic = run.italic || base.fontStyle == pw.FontStyle.italic;
+  // 上下标：按所在字号缩到 0.7 倍，基线抬高 / 降低（pdf 库的 baseline
+  // 为正时向上）。
+  final size = _fontSize(run.size, bodyFontSize) ?? base.fontSize;
+  final script = run.script;
+  final fontSize = script == null || size == null ? size : size * 0.7;
+  final baseline = size == null
+      ? 0.0
+      : switch (script) {
+          ExportScript.superscript => size * 0.33,
+          ExportScript.subscript => -size * 0.12,
+          null => 0.0,
+        };
   final style = effects.apply(
     base.copyWith(
       fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
       fontStyle: italic ? pw.FontStyle.italic : pw.FontStyle.normal,
-      fontSize: _fontSize(run.size, bodyFontSize),
+      fontSize: fontSize,
       color: color,
       background: background == null
           ? null
@@ -55,6 +67,7 @@ pw.TextSpan buildDiaryPdfInline(
   return pw.TextSpan(
     text: run.text,
     style: style,
+    baseline: baseline,
     annotation: run.link == null ? null : pw.AnnotationUrl(run.link!),
   );
 }

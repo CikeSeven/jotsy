@@ -59,7 +59,7 @@ class LanSyncHeroName extends StatelessWidget {
 /// 英雄卡底部的操作按钮（48 高、全圆角、等宽）。
 ///
 /// 能扫码的平台（[onScanQr] 非空）为“扫码连接 + 显示二维码”两枚色调按钮；
-/// 否则为色调“显示二维码”+ 文本按钮“手动输入地址”（DESIGN §5.27 桌面）。
+/// 否则为色调“显示二维码”+ 文本按钮“手动输入地址”（DESIGN §5.28 桌面）。
 class LanSyncHeroActions extends StatelessWidget {
   const LanSyncHeroActions({
     super.key,

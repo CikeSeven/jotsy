@@ -3,7 +3,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../widgets/app_modal/app_dialog.dart';
 
-/// 设备名的长度上限（DESIGN.md §5.27）。
+/// 设备名的长度上限（DESIGN.md §5.28）。
 const int kLanSyncDeviceNameMaxLength = 40;
 
 /// 修改名称的对话框（只负责收集输入）：本机设备名与已配对设备的备注名共用。

@@ -6,7 +6,7 @@ import '../../widgets/expressive_state_blend.dart';
 import '../models/lan_sync_platform.dart';
 import 'lan_sync_labels.dart';
 
-/// 设备行前的 48dp 图标块（DESIGN.md §5.27 设备行）。
+/// 设备行前的 48dp 图标块（DESIGN.md §5.28 设备行）。
 ///
 /// - [active]（已配对且在线）：`primaryContainer` 底 + `onPrimaryContainer`
 ///   图标，右下角 14dp `primary` 在线点（2.5dp 卡片色描边）；

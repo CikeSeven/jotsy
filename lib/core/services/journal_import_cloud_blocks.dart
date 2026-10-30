@@ -150,7 +150,7 @@ void writeCloudBlocks(
 Map<String, Object?> _attributes(CloudBlock block) {
   final indent = block.level - 1;
   final attributes = switch (block.kind) {
-    CloudBlockKind.heading => {'header': block.level.clamp(1, 3)},
+    CloudBlockKind.heading => {'header': block.level.clamp(1, 6)},
     CloudBlockKind.list => {
       'list': block.ordered ? 'ordered' : 'bullet',
       if (indent > 0) 'indent': indent.clamp(1, 5),

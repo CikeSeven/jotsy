@@ -8,11 +8,13 @@ import 'diary_export_blocks.dart';
 import 'diary_export_code.dart';
 import 'diary_export_pdf_heading.dart';
 import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_rich_blocks.dart';
 import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 正文直接使用共用块模型渲染，不再调用编辑器插件。图片已在准备阶段
 /// 载入并替换为虚拟地址，媒体已换为说明文字；这里不做 IO、不改原文。
 /// 按段/代码行返回可分页的组件，避免把整篇长文放进一个不可分页的容器。
+/// 标注、折叠列表与表格的画法见 `diary_export_pdf_rich_blocks.dart`。
 List<pw.Widget> buildDiaryPdfBody(
   List<ExportBlock> blocks, {
   required pw.ThemeData theme,
@@ -52,6 +54,30 @@ List<pw.Widget> buildDiaryPdfBody(
       );
     } else if (block.kind == ExportBlockKind.divider) {
       content = pw.Divider(color: PdfColors.grey500, thickness: 0.7);
+    } else if (block.kind == ExportBlockKind.table) {
+      // 一行一个组件（见 buildDiaryPdfTableRows），长表格能在行间换页；
+      // 上下留白只加在首行之上、末行之下。
+      final rows = buildDiaryPdfTableRows(
+        block,
+        base: theme.defaultTextStyle,
+        effects: effects,
+        textDirection: direction,
+      );
+      for (final (index, row) in rows.indexed) {
+        result.add(
+          effects.wrap(
+            pw.Padding(
+              padding: pw.EdgeInsetsDirectional.only(
+                start: block.indent * 18.0,
+                top: index == 0 ? 6 : 0,
+                bottom: index == rows.length - 1 ? 6 : 0,
+              ),
+              child: row,
+            ),
+          ),
+        );
+      }
+      continue;
     } else if (block.kind == ExportBlockKind.heading) {
       content = DiaryPdfHeading.build(
         block,
@@ -128,6 +154,14 @@ List<pw.Widget> buildDiaryPdfBody(
             ],
           ),
         );
+      } else if (block.kind == ExportBlockKind.toggle) {
+        content = buildDiaryPdfToggle(
+          content,
+          fontSize: base.fontSize ?? 12,
+          textDirection: direction,
+        );
+      } else if (block.kind == ExportBlockKind.callout) {
+        content = buildDiaryPdfCallout(block, content);
       } else if (block.kind == ExportBlockKind.quote) {
         content = pw.Container(
           padding: const pw.EdgeInsetsDirectional.only(start: 10),

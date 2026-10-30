@@ -6,7 +6,9 @@ import 'package:flutter/foundation.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/content_codec.dart';
+import '../models/diary_link_candidate.dart';
 import 'diary_block_convert.dart';
+import 'diary_toggle_state.dart';
 
 export 'package:appflowy_editor/appflowy_editor.dart'
     show Document, Node, Selection, Position, Delta;
@@ -19,6 +21,7 @@ class DiaryEditorController extends ChangeNotifier {
     af.Document? document,
     af.Selection? selection,
     bool readOnly = false,
+    this.linkSource,
   }) : state = af.EditorState(
          document: document ?? af.Document.blank(withInitialText: true),
        ) {
@@ -38,18 +41,24 @@ class DiaryEditorController extends ChangeNotifier {
       }
     });
     state.selectionNotifier.addListener(_onSelection);
-    state.toggledStyleNotifier.addListener(notifyListeners);
+    state.toggledStyleNotifier.addListener(_onToggledStyle);
   }
 
   factory DiaryEditorController.fromContent(
     String content, {
     bool readOnly = false,
+    DiaryLinkSource? linkSource,
   }) => DiaryEditorController(
     document: diaryEditorDocument(content),
     readOnly: readOnly,
+    linkSource: linkSource,
   );
 
   final af.EditorState state;
+
+  /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；
+  /// null 即不能（模板编辑页、只读正文）。见 [DiaryLinkSource]。
+  final DiaryLinkSource? linkSource;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
 
@@ -60,6 +69,7 @@ class DiaryEditorController extends ChangeNotifier {
   bool _disposeRequested = false;
   bool get isDisposed => _disposeRequested;
   af.Selection? _lastSelection;
+  Map<String, dynamic> _lastToggledStyle = const {};
   af.Document get document => state.document;
   af.Selection? get selection {
     final current = state.selection ?? _lastSelection;
@@ -78,8 +88,41 @@ class DiaryEditorController extends ChangeNotifier {
       });
       return;
     }
-    if (state.selection != null) _lastSelection = state.selection;
+    if (state.selection != null) {
+      _lastSelection = state.selection;
+      _lastToggledStyle = Map.of(state.toggledStyle);
+    }
+    _revealCollapsedSelection();
     notifyListeners();
+  }
+
+  void _onToggledStyle() {
+    // 上游在失焦、选区变为 null 时先清空待输入格式。保留最后一次实际设置，
+    // 只在恢复同一插入点时取回；失焦期间颜色面板的新设置覆盖对应属性。
+    _lastToggledStyle = {
+      if (state.selection == null) ..._lastToggledStyle,
+      ...state.toggledStyle,
+    };
+    notifyListeners();
+  }
+
+  /// 选区落进已收起的折叠块里（撤销 / 重做、程序设的选区、方向键越过
+  /// 标题等）时展开它，光标才画得出来；展开不进撤销栈，见
+  /// [expandDiaryTogglesAroundSelection]。推到微任务里执行：选区通知常在
+  /// 上游 `apply` 的中途发出，不在里面再套一次事务；微任务赶在下一帧之前，
+  /// 收起的内容随即建好。只读正文没有光标，不展开；拖动段落时块本来就
+  /// 不会落进收起的内容。
+  void _revealCollapsedSelection() {
+    if (readOnly ||
+        draggingBlock ||
+        !diarySelectionInsideCollapsedToggle(state)) {
+      return;
+    }
+    scheduleMicrotask(() {
+      if (!state.isDisposed && !readOnly) {
+        expandDiaryTogglesAroundSelection(state);
+      }
+    });
   }
 
   /// 只读时不该出现的折叠选区。拖动选区把手或长按扩选途中选区可能暂时
@@ -161,7 +204,7 @@ class DiaryEditorController extends ChangeNotifier {
   void select(af.Selection? selection) {
     final restoreToggled =
         state.selection == null && selection == _lastSelection
-        ? Map<String, dynamic>.of(state.toggledStyle)
+        ? {..._lastToggledStyle, ...state.toggledStyle}
         : const <String, dynamic>{};
     unawaited(state.updateSelectionWithReason(selection));
     // 颜色代码输入框和正文交接焦点时，上游会暂时清空选区。恢复同一选区
@@ -203,6 +246,11 @@ class DiaryEditorController extends ChangeNotifier {
 
   Map<String, Object?> get activeAttributes {
     final nodes = selectedNodes;
+    // 对齐按选区里第一个非代码文字块（工具栏「对齐」按钮的图标与选中态），
+    // 与对齐面板的作用范围一致。
+    final firstText = nodes
+        .where((node) => node.delta != null && node.type != kDiaryBlockCode)
+        .firstOrNull;
     return {
       ...selectionAttributes,
       if (nodes.isNotEmpty &&
@@ -210,6 +258,7 @@ class DiaryEditorController extends ChangeNotifier {
         'type': nodes.first.type,
       if (nodes.isNotEmpty) 'depth': nodes.first.path.length - 1,
       if (nodes.isNotEmpty) 'level': nodes.first.attributes['level'],
+      kDiaryBlockAlignKey: firstText?.attributes[kDiaryBlockAlignKey],
     };
   }
 
@@ -283,7 +332,7 @@ class DiaryEditorController extends ChangeNotifier {
     if (_disposeRequested) return;
     _disposeRequested = true;
     state.selectionNotifier.removeListener(_onSelection);
-    state.toggledStyleNotifier.removeListener(notifyListeners);
+    state.toggledStyleNotifier.removeListener(_onToggledStyle);
     unawaited(_subscription.cancel());
     _releaseStateIfUnused();
     super.dispose();

@@ -8,7 +8,7 @@ import '../../lan_sync/pages/lan_sync_page.dart';
 import '../../lan_sync/providers/lan_sync_providers.dart';
 import '../../lan_sync/widgets/lan_sync_labels.dart';
 
-/// 设置 → 数据与隐私里的“局域网同步”入口（DESIGN.md §5.27）。
+/// 设置 → 数据与隐私里的“局域网同步”入口（DESIGN.md §5.28）。
 ///
 /// 副标题随同步状态：有同步等待确认时为 `error` 色“有一次同步需要你确认”；
 /// 已配对时为“已配对 N 台 · X 前已同步”（都没同步过为“还没有同步过”）；

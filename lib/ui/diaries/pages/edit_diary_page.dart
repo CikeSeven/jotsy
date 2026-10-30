@@ -9,6 +9,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import '../controllers/diary_editor_controller.dart' as editor;
+import '../models/diary_link_candidate.dart';
 import '../widgets/diary_editor/diary_editor.dart';
 import '../widgets/diary_editor/diary_editor_caret.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -318,6 +319,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _contentController = editor.DiaryEditorController(
       document: editor.diaryEditorDocument(''),
       selection: editor.Selection.single(path: [0], startOffset: 0),
+      linkSource: _linkSource,
     );
     _toolbarOrder = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
     _controller = EditDiaryController(this);
@@ -388,6 +390,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   /// 模板变量按哪天展开、推荐按哪天判断：补写时是那一天，否则是今天。
   DateTime get _templateDiaryDate => _createDateOverride ?? _templateClock();
+
+  /// 正文能插入日记链接；正在编辑的这篇不出现在候选里。
+  DiaryLinkSource get _linkSource => DiaryLinkSource(diaryId: widget.diaryId);
 
   bool get _isCreateEntry =>
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
@@ -930,6 +935,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                       path: [0],
                       startOffset: 0,
                     ),
+                    linkSource: _linkSource,
                   ),
                 );
                 try {

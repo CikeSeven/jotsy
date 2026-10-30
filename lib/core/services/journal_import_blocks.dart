@@ -4,11 +4,15 @@ import '../database/code_block_codec.dart';
 import '../database/diary_blocks/diary_blocks_builder.dart';
 import '../database/diary_blocks/diary_blocks_embed.dart';
 import '../database/diary_blocks/diary_blocks_schema.dart';
+import '../database/diary_blocks/diary_blocks_table.dart';
 
+/// 一行导入内容：文字行（[delta] + 块属性）、媒体行（[embed]）或调用方
+/// 建好的结构块（[node]，如表格，原样进入文档）。
 typedef JournalBlockLine = ({
   List<Map<String, Object?>> delta,
   Map<String, Object?> attributes,
   Map<String, Object?>? embed,
+  Map<String, Object?>? node,
 });
 
 /// 导入器已经按行整理过空白与媒体；直接产出节点，避免先生成整份历史 Delta
@@ -23,6 +27,11 @@ Map<String, Object?> buildJournalImportBlocks(List<JournalBlockLine> lines) {
     final indent = rawIndent is num && rawIndent.isFinite
         ? rawIndent.toInt()
         : 0;
+    if (line.node != null) {
+      builder.add(line.node!, indent);
+      index++;
+      continue;
+    }
     if (line.embed != null) {
       builder.add(
         diaryBlockFromQuillEmbed(line.embed!, const {}, attributes),
@@ -40,6 +49,7 @@ Map<String, Object?> buildJournalImportBlocks(List<JournalBlockLine> lines) {
         final next = lines[index];
         final nextCode = next.attributes['code-block'];
         if (next.embed != null ||
+            next.node != null ||
             nextCode == null ||
             nextCode == false ||
             codeBlockExplicitLanguage(nextCode) != language ||
@@ -67,7 +77,9 @@ Map<String, Object?> buildJournalImportBlocks(List<JournalBlockLine> lines) {
     }
     final header = attributes['header'];
     final list = attributes['list'];
+    final toggle = attributes['toggle'] == true;
     final type = switch (list) {
+      _ when toggle => kDiaryBlockToggleList,
       'bullet' => 'bulleted_list',
       'ordered' => 'numbered_list',
       'checked' || 'unchecked' => 'todo_list',
@@ -91,6 +103,7 @@ Map<String, Object?> buildJournalImportBlocks(List<JournalBlockLine> lines) {
         'delta': delta,
         if (type == 'heading') 'level': (header as num).toInt().clamp(1, 6),
         if (type == 'todo_list') 'checked': list == 'checked',
+        if (toggle) kDiaryToggleCollapsedKey: attributes['collapsed'] == true,
         if (attributes['align'] case final String align) 'align': align,
       },
     }, indent);
@@ -119,3 +132,47 @@ void _append(
     });
   }
 }
+
+/// 由导入来源里规整的表格建表格节点（结构见 diary_blocks_schema.dart 的
+/// [kDiaryBlockTable]）：[rows] 为 `[行][列]` → 这一格的段落（至少一个，
+/// 不带子块）。格子按行优先排列。调用方保证每行列数相同、行列数不超过
+/// [journalImportTableFits]，这样读取时 DiaryTableGrid 认得、原样保留。
+Map<String, Object?> journalImportTableNode(
+  List<List<List<Map<String, Object?>>>> rows, {
+  bool headerRow = false,
+}) => {
+  kDiaryBlockTypeKey: kDiaryBlockTable,
+  kDiaryBlockChildrenKey: <Map<String, Object?>>[
+    for (final (row, cells) in rows.indexed)
+      for (final (col, body) in cells.indexed)
+        {
+          kDiaryBlockTypeKey: kDiaryBlockTableCell,
+          kDiaryBlockChildrenKey: body,
+          kDiaryBlockDataKey: <String, Object?>{
+            kDiaryTableRowPositionKey: row,
+            kDiaryTableColPositionKey: col,
+          },
+        },
+  ],
+  kDiaryBlockDataKey: <String, Object?>{
+    kDiaryTableColsLenKey: rows.first.length,
+    kDiaryTableRowsLenKey: rows.length,
+    if (headerRow) kDiaryTableHeaderRowKey: true,
+  },
+};
+
+/// 行列数是否能建成表格（至少一行一列，不超过 [kDiaryTableMaxRows] /
+/// [kDiaryTableMaxCols]）；超出的按原来的方式写成文字。
+bool journalImportTableFits(int rows, int cols) =>
+    rows >= 1 &&
+    cols >= 1 &&
+    rows <= kDiaryTableMaxRows &&
+    cols <= kDiaryTableMaxCols;
+
+/// 一格的内容是否都是可放进格子的段落（没有子块）：媒体、列表、标题等
+/// 块级结构出现时整个表格不规整。
+bool journalImportCellIsInline(List<Map<String, Object?>> body) => body.every(
+  (node) =>
+      node[kDiaryBlockTypeKey] == kDiaryBlockParagraph &&
+      node[kDiaryBlockChildrenKey] == null,
+);

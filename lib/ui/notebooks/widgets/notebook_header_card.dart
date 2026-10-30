@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,10 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/database/diary_blocks/diary_link_target.dart';
+import '../../diaries/controllers/diary_link_open_flow.dart';
+import '../../diaries/providers/diary_link_providers.dart';
+import '../../diaries/widgets/diary_link/diary_backlinks_section.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../diary_templates/viewmodels/diary_template_accent.dart';
@@ -87,6 +92,10 @@ class NotebookHeaderCard extends ConsumerWidget {
             now: DateTime.now(),
           );
     final isPrivate = notebook.isPrivate;
+    // 提到这本的日记（反向链接），有才显示胶囊。
+    final backlinkTarget = DiaryLinkTarget.notebook(notebook.id);
+    final backlinks =
+        ref.watch(diaryBacklinksProvider(backlinkTarget)).value?.length ?? 0;
     final description = notebook.payload.description;
     final metaStyle = theme.textTheme.bodySmall?.copyWith(
       fontSize: 13,
@@ -168,7 +177,7 @@ class NotebookHeaderCard extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 style: metaStyle,
               ),
-              if (notebook.isSmart || isPrivate) ...<Widget>[
+              if (notebook.isSmart || isPrivate || backlinks > 0) ...<Widget>[
                 const SizedBox(height: AppSpacing.s),
                 Wrap(
                   spacing: AppSpacing.s,
@@ -189,6 +198,26 @@ class NotebookHeaderCard extends ConsumerWidget {
                             : FontAwesomeIcons.eyeSlash,
                         label: l10n.notebookHeaderPrivateBadge,
                         accent: accent,
+                      ),
+                    if (backlinks > 0)
+                      _StateCapsule(
+                        icon: FontAwesomeIcons.link,
+                        label: l10n.notebookBacklinksChip(backlinks),
+                        accent: accent,
+                        onTap: () => unawaited(
+                          showDiaryBacklinksSheet(
+                            context,
+                            target: backlinkTarget,
+                            title: l10n.notebookBacklinksTitle,
+                            onOpen: (diaryId) => unawaited(
+                              openDiaryLinkTarget(
+                                context,
+                                ref,
+                                DiaryLinkTarget.diary(diaryId),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -299,20 +328,22 @@ class _StateCapsule extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.accent,
+    this.onTap,
   });
 
   final FaIconData icon;
   final String label;
   final DiaryTemplateAccentColors accent;
 
+  /// 可点的胶囊（反向链接）；null 时只是标记。
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: accent.container,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    final radius = BorderRadius.circular(12);
+    final capsule = DecoratedBox(
+      decoration: BoxDecoration(color: accent.container, borderRadius: radius),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         child: Row(
@@ -333,6 +364,15 @@ class _StateCapsule extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+    final onTap = this.onTap;
+    if (onTap == null) return capsule;
+    return Semantics(
+      button: true,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(onTap: onTap, borderRadius: radius, child: capsule),
       ),
     );
   }

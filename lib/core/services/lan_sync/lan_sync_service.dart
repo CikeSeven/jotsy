@@ -32,6 +32,7 @@
 //     `session`（`LanSyncProgress`：stage 按下标对应 `LanSyncSessionStage`，
 //     其余字段同名）；history ← `history`（`LanSyncSessionRecord`：at /
 //     duration / automatic / receivedDiaries / sentDiaries / mediaBytes /
+//     otherChanges（receivedOthers + sentOthers）/
 //     conflictCopies / firstSync 同名，failureReason ← failure 换算）；
 //   nearby / autoSyncEnabled / syncSettingsEnabled / searching ← nearby /
 //     autoSync / syncSettings / searching。
@@ -39,15 +40,18 @@
 //   LanSyncPairingEvent ← [LanSyncPairingStarted]（direction ← incoming，
 //     peerName / platform 同名，phase ← `pairing.state` 换算：connecting /
 //     awaitingUser(code) / awaitingPeer(code) / succeeded(peerId) /
-//     failed(reason)，respond ← `pairing.respond`）；
+//     failed(reason)，后三种另带 `pairing.peerName`（握手后对方自报的名字），
+//     respond ← `pairing.respond`）；
 //   LanSyncChooseSideEvent / LanSyncDeletionGuardEvent ←
-//     [LanSyncConfirmationRequested]（`LanSyncSideChoiceRequest.conflicts`、
+//     [LanSyncConfirmationRequested]（`LanSyncSideChoiceRequest.counts` 经
+//     `lanSyncItemCountsOf` 换成按种类的 items、
 //     `LanSyncDeletionGuardRequest.count / onLocalSide`；respond 换算后调用
 //     请求的 respond：preferLocal / preferPeer ↔ `SyncSideChoice.preferLocal /
 //     preferRemote`）；
 //   LanSyncSessionFinishedEvent ← [LanSyncSessionEnded] 中本机发起的手动
 //     会话（`result.role == initiator && !result.automatic`）：summary 的
-//     received / sent ← `result.received / sent`（mediaCount ← mediaFiles），
+//     received / sent ← `result.received / sent`（mediaCount ← mediaFiles，
+//     others ← `others` 经 `lanSyncItemCountsOf`），
 //     conflictCopies ← `result.conflictCopies`，duration 同名；
 //   LanSyncAutoSyncAppliedEvent ← [LanSyncAutoSyncApplied]；
 //   LanSyncAutoSyncNeedsAttentionEvent ← [LanSyncAttentionNeeded]。

@@ -43,16 +43,25 @@ af.TextSpanDecoratorForAttribute diaryEditorSpanDecorator(
               before,
               after,
             );
+      // 链接的线色由链接自己定（[_plainLinkStyle]），其余线条随文字色。
+      final ink = insert.attributes?[kDiaryInlineHref] == null
+          ? after.style?.color
+          : null;
       // 正文档（没有 size）与认不出的值都不改字号；倍数与「字号」面板共用。
       final level = DiaryFontSize.fromAttribute(insert.attributes?['size']);
-      final sized = level == null || level == DiaryFontSize.normal
+      final style = _decorationInk(
+        level == null || level == DiaryFontSize.normal
+            ? decorated.style
+            : decorated.style?.copyWith(fontSize: fontSize * level.scale) ??
+                  TextStyle(fontSize: fontSize * level.scale),
+        ink,
+      );
+      final sized = identical(style, decorated.style)
           ? decorated
           : TextSpan(
               text: decorated.text,
               children: decorated.children,
-              style:
-                  decorated.style?.copyWith(fontSize: fontSize * level.scale) ??
-                  TextStyle(fontSize: fontSize * level.scale),
+              style: style,
               recognizer: decorated.recognizer,
             );
       final script = DiaryScript.fromAttribute(
@@ -62,7 +71,7 @@ af.TextSpanDecoratorForAttribute diaryEditorSpanDecorator(
       return diaryScriptSpan(
         insert.text,
         script: script,
-        style: _scriptGlyphStyle(node, sized, before, after),
+        style: _scriptGlyphStyle(node, sized, before, after, ink),
         containerStyle: sized.style,
         recognizer: decorated.recognizer,
         mouseCursor: decorated.mouseCursor,
@@ -193,32 +202,55 @@ TextStyle? _plainLinkStyle(
     if (attributes?[kDiaryInlineStrikethrough] == true)
       TextDecoration.lineThrough,
   ];
+  final color = attributes?[kDiaryInlineTextColor] != null
+      ? style.color
+      : plainColor;
   return style.copyWith(
-    color: attributes?[kDiaryInlineTextColor] != null
-        ? style.color
-        : plainColor,
+    color: color,
     decoration: TextDecoration.combine(decorations),
-    decorationColor: plainColor,
+    // 线条随文字色，同正文（见 [_decorationInk]）。
+    decorationColor: color,
   );
 }
 
 /// 上下标字最终的样式。块随后在整段片段上叠的样式（引用的次要色、已勾选
 /// 待办的划线、标题的字号与字重）叠不进占位里的字，[after]（上游已按块叠好
 /// 的同一片段）里有，这里取它；字号档位 `size` 只在块不另定字号时生效——
-/// 标题按标题字号，与同一行的普通文字一致。
+/// 标题按标题字号，与同一行的普通文字一致。线条颜色同正文（[_decorationInk]）。
 TextStyle _scriptGlyphStyle(
   af.Node node,
   TextSpan sized,
   TextSpan before,
   TextSpan after,
+  Color? ink,
 ) {
   final style = after.style ?? sized.style ?? const TextStyle();
   final blockSetsSize =
       node.type == kDiaryBlockHeading ||
       after.style?.fontSize != before.style?.fontSize;
-  return blockSetsSize || sized.style?.fontSize == null
+  final resolved = blockSetsSize || sized.style?.fontSize == null
       ? style
       : style.copyWith(fontSize: sized.style!.fontSize);
+  return _decorationInk(resolved, ink) ?? resolved;
+}
+
+/// 下划线与删除线的颜色跟随文字色 [ink]（这段文字最终的颜色，已叠上引用
+/// 等块样式），[style] 没有线条或 [ink] 为空时原样返回。
+///
+/// 正文样式继承自 Material 3 的排版，它把 decorationColor 定成了墨色：不改
+/// 的话换了文字色，线条仍是墨色。只把它清空也不行：decorationColor 为空时
+/// 引擎把相邻、线型相同的几段文字并成一条线，整条按第一段的颜色画。所以
+/// 逐段显式写上。块随后在整段上另定的线色（已勾选待办的划线）仍会覆盖它。
+TextStyle? _decorationInk(TextStyle? style, Color? ink) {
+  final decoration = style?.decoration;
+  if (style == null ||
+      ink == null ||
+      decoration == null ||
+      decoration == TextDecoration.none ||
+      style.decorationColor == ink) {
+    return style;
+  }
+  return style.copyWith(decorationColor: ink);
 }
 
 String? diaryBlockHighlightLanguage(

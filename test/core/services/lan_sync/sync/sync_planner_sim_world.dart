@@ -77,7 +77,8 @@ class SimWorld {
     final options = SyncPlanOptions(
       nowMillis: now,
       firstSyncWithPeer: first,
-      conflictTitleSuffix: ' [copy]',
+      localLoserTitleSuffix: ' [copy · ${a.name}]',
+      remoteLoserTitleSuffix: ' [copy · ${b.name}]',
       sideChoice: first
           ? SyncSideChoice.values[random.nextInt(SyncSideChoice.values.length)]
           : SyncSideChoice.keepBoth,

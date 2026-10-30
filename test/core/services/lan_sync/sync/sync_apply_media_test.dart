@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -110,6 +111,27 @@ void main() {
     expect((await staging.place()).placedFiles, 0);
     expect(await File(a.mediaPath(key)).exists(), isFalse);
     expect(() => staging.openSink('../escape.jpg'), throwsArgumentError);
+  });
+
+  test('来流中途报错：抛出原来的错误，删掉半截文件，不会就位', () async {
+    final staging = stagingOf(a);
+    const key = 'diary_images/media_n/broken.jpg';
+    Stream<List<int>> failing() async* {
+      yield [1, 2, 3];
+      throw TimeoutException('peer silent');
+    }
+
+    await expectLater(
+      staging.receive(key, failing(), size: 10, sha256: sha([1])),
+      throwsA(isA<TimeoutException>()),
+    );
+    expect(staging.verifiedKeys, isEmpty);
+    final leftovers = await staging.directory
+        .list(recursive: true)
+        .where((entry) => entry is File)
+        .toList();
+    expect(leftovers, isEmpty);
+    expect((await staging.place()).placedFiles, 0);
   });
 
   test('同键不同文件：放到派生键，并改写本次写入记录里的引用', () async {

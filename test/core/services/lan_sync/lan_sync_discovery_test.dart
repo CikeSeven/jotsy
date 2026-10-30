@@ -23,6 +23,7 @@ const Duration _longInterval = Duration(hours: 1);
 LanSyncDiscovery _loopback({
   List<int> targetPorts = const [],
   DateTime Function()? now,
+  bool advertise = true,
 }) => LanSyncDiscovery(
   port: 0,
   targets: [
@@ -33,6 +34,7 @@ LanSyncDiscovery _loopback({
   nativeChannel: LanSyncNativeChannel(isAndroid: false),
   now: now,
   sweepInterval: _longInterval,
+  advertise: advertise,
 );
 
 /// 等到 [listenable] 的值满足 [predicate]；超时即失败（不是固定等待）。
@@ -80,6 +82,35 @@ void main() {
     expect(seenByB.beacon, _beacon('a', port: 50000));
     expect(seenByB.address, InternetAddress.loopbackIPv4);
     expect(a.peers.value['b']!.beacon.name, 'device-b');
+  });
+
+  test('只听不发：照常收信标、更新在线表，不发也不回；打开后立即补发', () async {
+    final a = _loopback();
+    addTearDown(a.dispose);
+    await a.start(beacon: () => _beacon('a'), interval: _longInterval);
+    final aPort = a.status.value.boundPort!;
+
+    // B 只听不发：知道 A 的端口，但启动时不发信标。
+    final b = _loopback(targetPorts: [aPort], advertise: false);
+    addTearDown(b.dispose);
+    await b.start(beacon: () => _beacon('b'), interval: _longInterval);
+    expect(b.status.value.running, isTrue);
+    final bPort = b.status.value.boundPort!;
+
+    // C 主动发信标给 B：B 记入在线表，但不回复。
+    final c = _loopback(targetPorts: [bPort]);
+    addTearDown(c.dispose);
+    await c.start(beacon: () => _beacon('c'), interval: _longInterval);
+    await _until(b.peers, (peers) => peers.containsKey('c'));
+    expect(a.peers.value, isEmpty, reason: 'B 启动时没有发信标');
+
+    // 打开后立即给目标（A）补发；A 收到新设备会回复，B 照常记入。
+    b.advertise = true;
+    await _until(a.peers, (peers) => peers.containsKey('b'));
+    await _until(b.peers, (peers) => peers.containsKey('a'));
+    // B 认识 C 是在只听不发期间，那时没有回复：C 一直看不到 B。
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(c.peers.value, isEmpty);
   });
 
   test('忽略自己的信标', () async {

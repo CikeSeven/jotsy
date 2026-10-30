@@ -23,7 +23,7 @@
 | `lib/core/services/lan_sync/lan_sync_identity.dart`、`lan_sync_crypto.dart`、`lan_sync_frames.dart`、`lan_sync_handshake.dart`（+ `_types` / `_flows` / `_sas`）、`lan_sync_channel.dart`（+ `_types` / `_inbound` / `_outlet`）、`lan_sync_messages.dart`、`lan_sync_qr_payload.dart` | 身份、密码学原语、长度前缀帧、握手与配对、加密信道、消息信封、二维码载荷 | 2 |
 | `lib/core/services/lan_sync/lan_sync_discovery.dart`、`lan_sync_network.dart`、`lan_sync_state_directory.dart` | UDP 信标与在线表、本机地址、原生通道、不备份的状态目录 | 3 |
 | `lib/core/services/editing_session_registry.dart` | 编辑会话 / 撤销窗口登记、“同步已写入”事件 | 7 |
-| `lib/core/services/lan_sync/lan_sync_session.dart`、`lan_sync_service.dart`、`lan_sync_store.dart` | 会话状态机、服务端与自动同步、配对设备与偏好、同步记录 | 11 |
+| `lib/core/services/lan_sync/lan_sync_session.dart`（+ `_inbox` / `_initiator` / `_planning` / `_media` / `_responder`）、`lan_sync_session_{types,context,protocol,plan_wire}.dart`、`lan_sync_failure.dart`；`lan_sync_service.dart`（+ `_lifecycle` / `_server` / `_outgoing` / `_pairing` / `_sessions` / `_discovery` / `_types`）、`lan_sync_service_config.dart`、`lan_sync_auto_scheduler.dart`；`lan_sync_store.dart`、`lan_sync_store_models.dart`、`lan_sync_session_record.dart` | 会话状态机与消息（§5.3）、服务端 / 发现 / 配对 / 自动同步（§9）、配对设备与偏好、同步记录 | 11 |
 | `lib/ui/lan_sync/` | 界面（pages / controllers / providers / models / sections / widgets） | 8、9、10、11 |
 | `android/app/src/main/kotlin/com/jotsy/diary/LanSyncChannel.kt` | `com.jotsy.diary/lan_sync`：组播锁、设备名、`noBackupFilesDir` | 3 |
 
@@ -96,7 +96,7 @@ class SyncManifest {
 | 文件 | 内容 | 任务 |
 |---|---|---|
 | `identity.json` | `{v:1, deviceId（UUID v4）, ed25519Seed（base64）, createdAt（UTC 毫秒）}`；不使用静态 X25519（握手只用临时 X25519） | 2 |
-| `store.json` | 偏好（设备名、可被发现、自动同步、同步设置）、已配对设备（deviceId、名称、平台、身份公钥、配对时间、上次同步、上次地址、单设备自动同步）、标记（`restoredPending`） | 11 |
+| `store.json` | 偏好（设备名、可被发现、自动同步、同步设置）、已配对设备（deviceId、名称、平台、身份公钥、配对时间、上次同步、上次地址与端口、单设备自动同步、备注名，以及按设备的标记 `needsAttention`（自动同步遇到需要确认）与 `restoredPending`（覆盖恢复之后还没和它成功同步过））；不放 SharedPreferences、不进备份 | 11 |
 | `checkpoint.json.gz` | 上次会话时的本机观测：清单 + tags / orderList 分面的当前值（下次进历史时要用旧值）+ 标签名 → 本地 id 映射 + 观测覆盖的实体集合 | 4 |
 | `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；tags 与 orderList 分面同时记录值 | 4 |
 | `tombstones.json.gz` | 墓碑：`SyncKey → {deletedAt, known: 分面 → [哈希…]}`（删除时的当前哈希 + 历史）；超过 365 天或超过 50 000 条时按时间淘汰 | 4 |
@@ -116,7 +116,7 @@ class SyncManifest {
   - 状态文件读不出（不存在、解压或解析失败）一律当作空并 debugPrint：丢了这些“记忆”只会让规划多判冲突、按并集合并，删除不传播，最坏是多出数据、不会丢数据。
 - 写入后（第 6 节）同一套规则以写入后的清单更新历史、墓碑与检查点：被同步删掉的记录写墓碑，被替换的值进入历史。被替换的值进历史时的 `seenAt` 一般为当前时间，但直接采纳了另一侧值的分面继承那个值在来源一侧的确立时间（§4.1.1）：`foldSyncObservation` 的 `seenAtOverrides` 已支持，`SyncLocalState.recordAppliedState(after, historySeenAt: …)` 传下去，写入层负责把这一侧计划的 `SyncSidePlan.historySeenAt` 原样传入。
 - **哈希缓存**：计算清单时先算每行原始列的指纹（便宜），命中缓存直接取分面哈希，未命中才做规范化（解码正文、归一路径、编码），整体在 `Isolate.run` 中进行；缓存只保留当前存在的行。
-- **覆盖恢复**：`DataArchiveService` 的 replaceAll 成功后删除检查点、历史、墓碑、改名、哈希缓存，并在 `store.json` 置 `restoredPending`（任务 11 接线；任务 4 提供 `resetAfterRestore()`）。之后与每台设备的第一次同步走“以哪边为准”（4.5）。
+- **覆盖恢复**：`DataArchiveService` 的 replaceAll 成功后通知 `DataArchiveService.replacedAllListeners`（`LanSyncService` 启动时登记 `noteDataReplacedByRestore`，不支持局域网同步的平台不登记）：取消正在进行的会话，删除检查点、历史、墓碑、改名、哈希缓存（`resetAfterRestore()`），并给当时全部已配对设备置 `restoredPending`（按设备记，与那台成功同步一次后清除）。之后与每台设备的第一次同步走“以哪边为准”（4.5）；恢复之后才配对的设备本来就是首次同步。
 - **身份**：`identity.json` 缺失或内容损坏时重新生成（`LanSyncIdentityStore.loadOrCreate()` 返回 `created: true`），调用方据此清空已配对设备与上述同步状态（视为一台新设备）；读文件本身的 I/O 错误（权限等）照常抛出，不当作损坏。
 
 ## 4. 合并判定（规划器，`sync_planner*.dart`）
@@ -142,7 +142,7 @@ class SyncManifest {
 3. R ∈ H_L 而 L ∉ H_R：L 是 R 的后代 → 取 L（推给对方）；L ∈ H_R 而 R ∉ H_L：取 R（写到本机）。
 4. R ∈ H_L 且 L ∈ H_R（来回改过：A → B → A）：取**当前值确立时间**（历史头条的 `seenAt`）较晚的一侧，平手按 deviceId 较大者。见 4.1.1。
 5. 否则真冲突：
-   - diary.content：stamp 较新者（平手按 deviceId 字典序较大者）留在原 id；另一份写成**冲突副本**：新 `diaryId = UUIDv5(kSyncConflictCopyNamespace, 原 diaryId + 败方 content 哈希)`（两串直接拼接；只由数据决定，中断重试、换一台发起方都得到同一个 id）；标题 = 原标题 + 本地化后缀（由调用方传入，如“（冲突副本 · ThinkPad）”），截断到 200 个 UTF-16 码元、不切开代理对；metadata 加 `sync.conflictOf = 原 diaryId`（metadata 是坏数据原文时原样保留）；副本继承**败方**的 stamp、tags、日记本成员（含章节）、capsule、archive、trash、pin 分面——私密日记本里的内容不能因副本而出现在全部日记，未解封的胶囊不能提前解封。副本 id 在任一侧已存在（上次同步只写了一侧）或任一侧有它的墓碑（用户看过并删掉了）时不再生成，已存在的作为普通记录照常复制。副本与它的成员关系两侧都是新增；书序里新副本排在原日记之后。原 id 的其余分面照常逐分面判定。
+   - diary.content：stamp 较新者（平手按 deviceId 字典序较大者）留在原 id；另一份写成**冲突副本**：新 `diaryId = UUIDv5(kSyncConflictCopyNamespace, 原 diaryId + 败方 content 哈希)`（两串直接拼接；只由数据决定，中断重试、换一台发起方都得到同一个 id）；标题 = 原标题 + 本地化后缀（由调用方传入，按败方选：败方是本机（发起方）用 `SyncPlanOptions.localLoserTitleSuffix`，是对方用 `remoteLoserTitleSuffix`，写的是副本所保存版本那一台的设备名，如“（冲突副本 · ThinkPad）”；后缀不影响副本 id），截断到 200 个 UTF-16 码元、不切开代理对；metadata 加 `sync.conflictOf = 原 diaryId`（metadata 是坏数据原文时原样保留）；副本继承**败方**的 stamp、tags、日记本成员（含章节）、capsule、archive、trash、pin 分面——私密日记本里的内容不能因副本而出现在全部日记，未解封的胶囊不能提前解封。副本 id 在任一侧已存在（上次同步只写了一侧）或任一侧有它的墓碑（用户看过并删掉了）时不再生成，已存在的作为普通记录照常复制。副本与它的成员关系两侧都是新增；书序里新副本排在原日记之后。原 id 的其余分面照常逐分面判定。
    - diary.tags、orderList.items：取双方历史中最近的共同祖先值（同一哈希出现在两边历史里且带值，取两边 `seenAt` 中较大者最新的，再平手按哈希）做三方合并。集合：祖先 ∪ 双方新增 − 任一方删除。列表：去掉任一方删除的项；双方都保留的项的相对顺序——只有一方调整过（与祖先不同）就用那一方的，双方都调整过用主侧的，都没调整即祖先顺序；再依次把主侧、次侧的新增项按各自的相对位置插入（插在它在自己列表里最近的、已在结果中的前一项之后，没有就放最前）。找不到共同祖先时取并集（集合直接并；列表：主侧顺序 + 次侧独有项按次侧顺序追加）。主侧 = 变化时间较新的一侧（规则同下面“其他分面”，平手按 deviceId），与谁发起同步无关。（原文“保留祖先顺序”“按 L / R 的相对位置”在只有一方拖动过时会丢掉那次拖动、且结果随发起方而变，故作此解释。）
    - diary.stamp：取较大值（不是冲突）。content 的最终值与某一侧当前值不同、而最终 stamp 恰等于那一侧的当前值时 +1000 毫秒（库里按秒存），保证各处按 `diaryId + updatedAt` 的缓存失效；抬高后大于两侧。
    - 其他分面：取该分面“变化时间”较新的一方——历史头条的 `seenAt`；没有历史时用记录自身时间字段（日记：archive 用 `archivedAt`、trash 用 `deletedAt`、capsule 用 `lockedAt`，缺省及其余分面用 stamp；日记本 `definition.updatedAt`；成员 `addedAt`；留言 `editedAt ?? createdAt`；模板、纪念日、心情 `updatedAt`；标签、顺序列表、设置为 0）——平手按 deviceId 较大者。
@@ -200,6 +200,7 @@ class SyncManifest {
 ### 5.1 发现（UDP）
 - 信标 JSON：`{"j":"jotsy-lan","v":1,"id":deviceId,"n":名称,"p":平台,"port":TCP端口,"fp":身份公钥指纹前 8 字节十六进制,"f":kSyncFormatVersion}`。
 - 发送到 255.255.255.255:47561 与组播 239.255.47.61:47561；同步页打开时每 2 秒，前台自动模式每 5 秒；收到他人信标即记入在线表，8 秒没收到即离线；忽略自己的 deviceId。
+- 只听不发（`LanSyncDiscovery.advertise = false`，“可被发现”关闭时）：照常绑定端口、收信标、维护在线表，但不周期发送、也不给新设备单播回复——别人看不到本机，本机仍能看到已配对设备在线；可在运行中切换，打开时立即补发一次。
 - Android 发现期间持有 `MulticastLock`（原生通道 `acquireMulticastLock` / `releaseMulticastLock`）。
 - 本机地址：私有 IPv4、非回环、优先 Wi-Fi / 以太网接口；供二维码与英雄卡显示。
 
@@ -222,7 +223,33 @@ class SyncManifest {
 - 传入的配对请求只在本机同步页打开（`attachPage` 期间）时接受，否则引擎直接拒绝（没有人在场核对数字，留着只会等到超时）；界面一侧对同步页不是当前路由时收到的配对事件同样 `respond(false)`。
 
 ### 5.3 会话消息（任务 11 定稿）
-`hello`（格式版本、应用版本、deviceId、名称、平台、实体集合、是否同步设置、意图 sync/pair）→ `reject{reason: version|busy|untrusted|declined}` 或继续；`manifest.get` / `manifest`（gzip，含墓碑键列表）；`records.get{keys}` / `records`（分批）；`history.get{keys}` / `history`（分面历史与墓碑详情）；`media.have{keys}` / `media.status`；`media.get{keys}` 与 `media.put`（二进制块，附大小与 sha256）；`apply{writes, mediaKeys}` / `applied{skipped, manifest}`；`done` / `abort{reason}`。双方版本不一致（格式版本或实体集合）即拒绝并提示升级；缺少某类实体、对方不提供设置，从不视为删除。
+
+握手成功、已配对设备之间（intent = sync）在同一条加密信道上运行一次会话（`lan_sync_session*.dart`，编解码在 `lan_sync_session_protocol.dart` / `lan_sync_session_plan_wire.dart`）。信封同 §5.2（`{"type": …}` JSON，信道自动分段，单条 ≤ 32 MiB），清单与媒体走数据块。I = 发起方（唯一规划者），R = 响应方（只应答，不主动请求）。
+
+| # | 方向 | 消息 | 字段 / 说明 |
+|---|---|---|---|
+| 1 | I→R | `sync.hello` | `f` 同步格式版本、`app` 应用版本、`entities` 实体名（排序，不含 settings）、`settings` 是否开启“同步设置”、`restored` 本方对对方的 `restoredPending`、`auto` 是否自动同步 |
+| 1′ | R→I | `sync.hello` 或 `sync.reject{reason}` | 同上（无 `auto`）。R 依次判定：`f` 或实体集合不同 → `version`；R 有编辑页或正与别的设备同步 → `busy`；`auto` 而 R 关了全局 / 这台设备的自动同步、或这台设备还有未处理的“需要确认” → `declined`。拒绝后关闭。I 同样比较，不同即 `abort{incompatibleVersion}`。`untrusted` 在握手里（`hs.reject`），不在这里 |
+| 2 | 双方 | — | `flushAll()` → `refreshCheckpoint(includeSettings: 两边 settings 都为 true)` |
+| 3 | I→R / R→I | `sync.manifest.get` / `sync.manifest{blob, size}` + 数据块 | gzip JSON `{manifest, tombstones:[键…], renames:{旧名:{to,t}}}`，≤ 64 MiB |
+| 4 | I→R / R→I | `sync.history.get{history:[键…]}` 或 `{tombstones:[键…]}` / `sync.history{history, tombstones}` | 状态文件同一 JSON 形态（`syncEncodeHistory` / `syncEncodeTombstones`）；每条请求 ≤ 2000 键，没有历史的键不出现在应答里（I 记为“问过、没有”） |
+| 4′ | I→R / R→I | `sync.records.get{keys}` / `sync.records{records:[{k,f}…], more}` | 每条请求 ≤ 2000 键；应答按 JSON 大小分段（每段约 4 MiB，单条记录超过时独占一段），`more:false` 为最后一段 |
+| 5 | I | — | `planSyncFetch` 直到为空（每轮取回后核对要过的数据都到手，没到齐说明期间数据变了，中止为 `unknown`），`planSync`，再处理 §4.5 的确认 |
+| 6 | I→R / R→I | `sync.media.have{keys}` / `sync.media.status{files:{键:{size, sha256}}}` | 两个方向候选（`plan.remote.mediaNeeded` ∪ `plan.local.mediaNeeded`）一起问；接收方已有同样 sha256 的不传 |
+| 7 | I→R | `sync.plan{incoming, outgoing, files, bytes}` | 只供 R 显示进度：R / I 各要收到的日记篇数、两个方向合计的媒体文件数与字节数 |
+| 8 | I→R | `sync.media.put{key, size, sha256, blob}` + 数据块 × N | 推给 R 的文件，R 流式写进暂存区并按大小与 sha256 校验，不符即 `abort{transferFailed}` |
+| 8′ | I→R / R→I | `sync.media.get{keys}` / `sync.media.put` × N + `sync.media.end` | 从 R 取的文件（R 已没有的键略过）；I 同样暂存、校验 |
+| 9 | I→R | `sync.apply.part{writes:[{k, e, r}…]}` × N + `sync.apply{renames, seenAt, stats, copies}` | 写入列表分段（每段约 4 MiB；`e` 规划时的分面哈希或 null，`r` 最终分面或 null = 删除），收尾带原地改名 `[{from,to,e,r}]`、历史时间继承 `{键:{分面:毫秒}}`、统计 `{实体:[增,改,删]}` 与冲突副本 `[{id,title}]` |
+| 10 | R→I | `sync.applied{counts, rekeys}` | R 执行 `apply(plan.remote, staging, includeSettings)` 后：日记计数与就位的媒体 `{a,u,d,mf,mb}`、媒体改键 `[{old,new,sha256}]`。不回传写入后的清单（早先草案有，发起方用不到，下次同步重新交换） |
+| 11 | I→R | `sync.finish{counts, rekeys}` | I 执行 `apply(plan.local, staging)`、照做 R 的改键之后：I 的计数与改键 |
+| 12 | R→I | `sync.done` | R 照做 I 的改键之后；随后关闭信道（关闭帧） |
+| * | 双方 | `sync.ping{}` | 做耗时的本机步骤（刷新检查点、构建记录、写入、等用户确认）时每 5 秒一次，只重置对方的静默计时 |
+| * | 双方 | `sync.abort{reason}` | 任何时候；`reason` 为发送方的失败原因名（`cancelled` / `declined`（用户取消了确认）/ `needsConfirmation`（自动同步遇到确认）/ `deferred`（撤销提示没关）/ `timedOut` / `writeFailed` / `transferFailed` / `protocolError` / `incompatibleVersion` / `unknown`），接收方把 `cancelled` 读作“对方取消”。发出后关闭；之后排队的消息一律不再处理 |
+
+- 顺序：R 只检查 `sync.apply` 至多一次、`sync.finish` 在它之后，其余由 I 驱动。两个方向的媒体都在任何写入之前传完，传输失败两边都不写。
+- 计时：等对方消息时 30 秒内没有任何消息、ping 或数据块数据即 `timedOut`（衡量“对方没声音”，不是某一步的总时长）；手动同步等用户确认的上限 10 分钟。取消（任一方）立即发 `sync.abort{cancelled}` 并关闭信道；正在执行的本机步骤（刷新、写入事务）执行完才结束。
+- 失败点与已写入的内容：写入之前的任何失败（含自动同步遇到确认、用户取消确认、推迟）两边都不写；R 写入后、I 写入前失败只有 R 写了；I 写入后、照做改键前失败两边都写了、只差改键——都由下一轮同步收敛（`lan_sync_session.dart` 顶部有逐项说明）。
+- 缺少某类实体、对方不提供设置，从不视为删除；双方版本不一致（格式版本或实体集合）即拒绝并提示升级。
 
 ## 6. 写入（`SyncApplier`：`sync_apply.dart` + `_AppDatabaseSyncWrites` / `_AppDatabaseSyncOrder`）
 
@@ -252,7 +279,7 @@ class SyncManifest {
 5. 用写入后的观测（事务里读出的行 + 应用设置之后取的设置值）调用 `recordAppliedState(after, historySeenAt: …)`：`historySeenAt` 取这一侧计划的 `SyncSidePlan.historySeenAt`，只保留真正写成了的键、去掉被媒体改键改写过的分面（跳过的键若因用户编辑而变了，旧值的时间应当是现在）。有任何写入时发出 `EditingSessionRegistry.notifyDataReplaced()`。会话同步设置时调用方应传 `includeSettings: true`（默认只在计划里有设置写入时才观测设置）：标签改名会改变按名称的标签顺序，写入后的观测带上设置才记得准。
 6. settings 分面只应用本次变化的键（`record` 哈希与 `expected` 不同的分面），部分节点由 `syncSettingsRestoreNode` 生成（`tagOrderNames` 按写入后的标签表换回本地 id，背景图引用还原为文件名），经 `BackupSettings.restore(…, clearLegacyDraft: false)` 应用：覆盖恢复会顺带 `clearCreateDiaryDraft()`（只有读不出来、迁移时保留下来的旧版单份草稿才会还在），同步只应用设置变化、不能删掉本机用户的数据。`restore` 对若干键的“空值”什么也不做，写入层直接调用 setter：`tagOrderRaw` 为空串 → `setTagOrderRaw('')`；`diarySortModeRaw` / `diaryLayoutModeRaw` 为空串 → 对应 setter；`diaryToolbarOrderRaw` / `tagPickerSortRaw` / `diaryLocationPrecisionRaw` 为 null → `clearDiaryToolbarOrderRaw()` / `clearTagPickerSortRaw()` / `clearDiaryLocationPrecisionRaw()`（`SettingsService` 为此新增），为空串 → 对应 setter；`appLocaleCode` 读出来从不为空。否则本机规范值不变、下次同步会反复判为差异。失败按 `SettingsServiceBackup` 的快照回滚（快照补上了之前漏掉的“我的颜色”键）。
 
-会话层的顺序（任务 11）：发起方规划 → 把 `plan.remote` 需要的媒体（对方 `media.have` 没有或 sha256 不同的）传进对方暂存区 → 对方 `apply(plan.remote, staging)`，回 `applied{skipped, manifest, rekeys}` → 发起方取得 `plan.local` 需要的媒体、`apply(plan.local, staging)` → 发起方 `adoptMediaRekeys(对方的 rekeys)`，把自己的 rekeys 发给对方 → 对方 `adoptMediaRekeys`。只执行了一侧（中断）时下一轮照常收敛：未写的一侧的差异重新规划即可。会话期间同一个 `SyncLocalState` 不能被别处并发调用（写入事务里会调用它的 `observeRows`，它的队列里若排着要读库的操作会与事务互相等待）。
+会话层的顺序（任务 11，§5.3）：发起方规划 → 两个方向的媒体协商（`media.have`，接收方已有同样 sha256 的不传）→ 把 `plan.remote` 需要的媒体传进对方暂存区、从对方取 `plan.local` 需要的媒体进本机暂存区（都在任何写入之前，传输失败两边都不写）→ 对方 `apply(plan.remote, staging)`，回 `applied{counts, rekeys}` → 发起方 `apply(plan.local, staging)` → 发起方 `adoptMediaRekeys(对方的 rekeys)`，把自己的 rekeys 发给对方 → 对方 `adoptMediaRekeys`。某一侧的计划为空时不调用写入层（不必等撤销窗口）。只执行了一侧（中断）时下一轮照常收敛：未写的一侧的差异重新规划即可。会话期间同一个 `SyncLocalState` 不能被别处并发调用（写入事务里会调用它的 `observeRows`，它的队列里若排着要读库的操作会与事务互相等待）。
 
 ## 7. 并发安全（任务 7：`EditingSessionRegistry`）
 
@@ -268,3 +295,23 @@ class SyncManifest {
 - 首次配对时说明：同步会双向合并两台设备的全部数据（含私密日记本与回收站），建议先导出完整备份（提供入口）。
 - 所有传输端到端加密；身份私钥只在 `stateDir`，不进备份、不进 SharedPreferences。
 - 隐私政策（`docs/privacy.html`）补充局域网同步与相机权限说明。
+
+## 9. 服务与自动同步（任务 11：`lan_sync_service*.dart`、`lan_sync_auto_scheduler.dart`）
+
+`LanSyncService` 是应用生命周期内的一份编排，界面适配层只经它的 `state` / `events` / `qrTicket` 与指令方法（对照见 `lan_sync_service.dart` 顶部）。全部外部能力经构造注入（数据库、数据根、状态目录、设置服务、编辑会话接口、套接字 / 发现 / 地址 / 时钟 / 计时器），测试在一个进程里跑两三台。
+
+- **启动**：读身份（`created` → 清空已配对设备、同步记录与同步状态）→ 打开 `store.json` → 建同步部件（`SyncLocalState`、媒体索引 / 库、`SyncApplier`）→ `SyncMediaStaging.sweepStale` → 按下面的规则决定是否起服务端（优先 47562，占用时上次的端口，再随机）与发现；登记覆盖恢复监听（§3）。
+- **什么时候碰网络**：没有已配对设备时，服务端与发现只在同步页打开（`attachPage`，二维码面板也只在同步页上）期间运行，离开即全部停掉——从没用过局域网同步的用户不该在应用启动时就开 TCP 端口、向局域网广播带设备名的信标（隐私，也费电）。有至少一台已配对设备且在前台时，服务端与发现保持运行，不管自动同步开没开：对方的手动同步也要连得上本机。后台一律停掉。配对成功、取消配对、页面进出、前后台切换后立即按新的状态重新判定（串行执行，避免交错起两个服务端）；服务端停下时作废正在显示的二维码。
+- **前后台与页面**：后台停服务端与发现、取消全部自动同步计时（不做后台常驻）；回到前台恢复。`attachPage` / `detachPage` 按引用计数：页面打开时信标 2 秒一拍、列出附近（未配对）设备、接受传入的核对码配对，并每 15 秒重读本机地址（另在启动、回到前台、打开页面时读）；没有页面时 5 秒一拍。发现跟随服务端运行。
+- **不可被发现**：发现只听不发（§5.1）。已配对设备照样显示在线、上线照样触发自动同步；对方看不到本机，若对方是先发起的一方（deviceId 较小），10 秒的双向重试让本机发起。
+- **会话**：同一时刻最多一个（任一方向）。会话进行中，传入的同步以 `busy` 拒绝、出站同步不开始；会话期间的表更新视为同步自己的写入，不触发自动同步。手动同步时本机有编辑页即以 `localEditing` 结束、不连接；自动同步静默跳过。连接候选：信标里的地址与端口优先，其次上次连上的。
+- **配对**：同一时刻一个。传入的核对码配对只在页面打开时交给用户，否则立即拒绝；扫码令牌 2 分钟一次性，用掉或到期立即换发（经 `qrTicket` 通知），关闭二维码面板时作废。按地址连接先按已配对设备握手，任一方不认识（`untrusted`）再改走核对码配对。配对成功只保存对方公钥（重新配对同一身份保留同步记忆，换了身份按首次同步），之后由界面决定是否立即同步。
+- **自动同步**（前台、全局与单设备开关都开、对方在线、没有未处理的“需要确认”、不在编辑）：
+  - 触发：已配对设备上线；应用回到前台；本机同步范围内的表变化——每次变化重新计时 20 秒，到点时还在编辑就等编辑结束再计 20 秒；
+  - 谁发起：deviceId 较小的一方立即发起；较大的一方等 10 秒，期间没有与对方的会话到达才自己发起（某个方向被防火墙拦住时另一个方向仍能同步）；
+  - 节流：同一台设备两次自动同步（两个方向合计）至少相隔 60 秒，没到时间就排到时间到了；较大的一方到点后仍先等 10 秒（两边的节流常同时到期，同时发起会互相以 `busy` 拒绝）；正忙时 10 秒后再试一次；
+  - 结果：写入了本机日记 → `LanSyncAutoSyncApplied`（篇数）；没有变化不提示；遇到需要确认 → 中止、什么都不写，两边都标记 `needsAttention` 并发 `LanSyncAttentionNeeded`；用户“查看”时，若有正在等的手动确认就把同一个请求再交一次，否则发起一次手动同步（重新规划后再问）。自动同步之前就失败（连不上、被拒绝）的不记同步记录；
+  - 响应方拒绝自动同步（`declined`）：本机关了全局或这台设备的自动同步，或这台设备还有未处理的“需要确认”。
+- **手动确认**：会话把请求经 `LanSyncConfirmationRequested` 交给界面并等应答，期间每 5 秒 ping 对方，上限 10 分钟；以哪边为准选了以某边为准就按它重新规划；删除保护选“保留并恢复”时，把导致删除的那一侧的日记墓碑当作“删除之后又改过”重新规划，这些日记连同成员关系、留言与纪念日关联按复活规则保留并复制回去（规划器不变，经 `SyncPlanSide` 视角实现）。
+- **同步记录**：hello 之后的会话（两个角色）都记一条，之前就失败的只记本机手动发起的（本机在编辑的不记）；成功时更新上次同步时间、清除 `needsAttention` 与 `restoredPending`。
+- **设置**：两端“同步设置”都开启（且装配时给了 `SettingsService`）才参与，`includeSettings` 同时传给刷新、写入与改键照做。

@@ -127,6 +127,10 @@ class SyncMediaStaging {
   }
 
   /// [openSink] + 写完 [data] + [verify]。
+  ///
+  /// [data] 中途报错（断线、超时）时抛出**原来的**错误并删掉写了一半的
+  /// `.part` 文件：IOSink 在 addStream 失败时已随之关闭，再 close 会抛
+  /// FileSystemException，不能让它盖掉真正的原因（会话据此区分断线与超时）。
   Future<void> receive(
     String key,
     Stream<List<int>> data, {
@@ -136,10 +140,27 @@ class SyncMediaStaging {
     final sink = await openSink(key);
     try {
       await sink.addStream(data);
-    } finally {
-      await sink.close();
+    } catch (error, stack) {
+      try {
+        await sink.close();
+      } on Object {
+        // 见上：sink 可能已经关闭。
+      }
+      await _deletePart(key);
+      Error.throwWithStackTrace(error, stack);
     }
+    await sink.close();
     await verify(key, size: size, sha256: sha256);
+  }
+
+  Future<void> _deletePart(String key) async {
+    final part = File('${_stagedPath(key)}.part');
+    try {
+      if (await part.exists()) await part.delete();
+    } on FileSystemException catch (error) {
+      // 删不掉的随暂存目录在 [dispose] / [sweepStale] 时清掉。
+      debugPrint('LAN sync staging part cleanup failed: $error');
+    }
   }
 
   /// 把已校验的来件放进托管目录（规格 §6 第 2 步）：

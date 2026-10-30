@@ -12,8 +12,8 @@ import 'lan_sync_network.dart';
 //   下一拍就生效）与发送间隔；
 // - 输出：在线表 [LanSyncDiscovery.peers]（按 deviceId）与运行状态
 //   [LanSyncDiscovery.status]；
-// - 副作用：绑定 UDP 端口、加入组播组、周期性发送广播 / 组播；Android 上
-//   运行期间持有 Wi-Fi 组播锁。
+// - 副作用：绑定 UDP 端口、加入组播组、周期性发送广播 / 组播（[LanSyncDiscovery
+//   .advertise] 关闭时只听不发）；Android 上运行期间持有 Wi-Fi 组播锁。
 
 /// 发现端口（信标收发）。
 const int kLanSyncDiscoveryPort = 47561;
@@ -220,7 +220,10 @@ typedef LanSyncDiscoveryTarget = ({InternetAddress address, int port});
 ///   地址与源端口单播回复一次本机信标：双方不必等下一拍就能互相看到；对方
 ///   端口被占用、退到随机端口时，这个回复也是它唯一能收到我们的途径；
 /// - 每 [sweepInterval] 清扫一次，超过 [presenceTimeout] 没收到信标的设备移除；
-/// - 自己的 deviceId（广播 / 组播回环收到自己的包）一律忽略。
+/// - 自己的 deviceId（广播 / 组播回环收到自己的包）一律忽略；
+/// - [advertise] 关闭时只听不发：照常绑定端口、收信标、维护在线表，但既不
+///   周期发送，也不给新设备单播回复——别人看不到本机（“不可被发现”），本机
+///   仍能看到别人。可在运行中切换，打开时立即补发一次。
 ///
 /// 测试注入 [port]（0 为随机端口）、[targets]（如 127.0.0.1:对方端口）、
 /// 关闭组播，并注入时钟 [now] 后用 [sweepNow] 驱动过期，不需要真实等待。
@@ -233,6 +236,7 @@ class LanSyncDiscovery {
     DateTime Function()? now,
     this.presenceTimeout = kLanSyncPresenceTimeout,
     this.sweepInterval = const Duration(seconds: 1),
+    this._advertise = true,
   }) : targets =
            targets ??
            <LanSyncDiscoveryTarget>[
@@ -274,6 +278,7 @@ class LanSyncDiscovery {
   String? _selfId;
   bool _lockHeld = false;
   bool _disposed = false;
+  bool _advertise;
 
   /// 每次 [stop] 递增；[start] 的异步步骤之间据此判断是否已被停止，
   /// 避免“启动到一半被停止”后又把套接字挂上去。
@@ -291,6 +296,15 @@ class LanSyncDiscovery {
 
   /// 当前的信标间隔。
   Duration get interval => _interval;
+
+  /// 是否发本机信标（周期发送与对新设备的单播回复）；见类注释。
+  bool get advertise => _advertise;
+
+  set advertise(bool value) {
+    if (value == _advertise) return;
+    _advertise = value;
+    if (value && _socket != null) _sendBeacon();
+  }
 
   /// 每处理完一个收到的数据包（无论是否接受）触发一次，供测试确定性地等待。
   @visibleForTesting
@@ -486,6 +500,7 @@ class LanSyncDiscovery {
   }
 
   void _sendBeacon() {
+    if (!_advertise) return;
     final bytes = _currentBeaconBytes();
     if (bytes == null) {
       return;
@@ -559,7 +574,7 @@ class LanSyncDiscovery {
         lastSeen: _now(),
       ),
     };
-    if (isNew) {
+    if (isNew && _advertise) {
       final bytes = _currentBeaconBytes();
       if (bytes != null) {
         _send(bytes, datagram.address, datagram.port);

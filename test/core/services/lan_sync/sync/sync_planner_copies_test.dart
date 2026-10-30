@@ -8,7 +8,11 @@ import 'sync_planner_fixtures.dart';
 /// 冲突副本（规格 §4.1 diary.content）：败方另存、继承败方的私密与状态、
 /// id 稳定、不重复生成。
 void main() {
-  const options = SyncPlanOptions(nowMillis: 0, conflictTitleSuffix: '（冲突副本）');
+  const options = SyncPlanOptions(
+    nowMillis: 0,
+    localLoserTitleSuffix: '（冲突副本 · 本机）',
+    remoteLoserTitleSuffix: '（冲突副本 · 对方）',
+  );
 
   /// 共有：私密日记本 h（章节 c1）里的日记 d，带标签 t。之后 a、b 各改一次
   /// 正文（b 的 stamp 较新，a 是败方）；a 另外把 d 放进回收站、设成胶囊。
@@ -53,14 +57,14 @@ void main() {
     expect(plan.conflictCopies.single.originalId, 'd');
     expect(plan.conflictCopies.single.copyId, copyId);
     expect(plan.conflictCopies.single.loser, SyncSideRole.local);
-    expect(plan.conflictCopies.single.title, 'mine（冲突副本）');
+    expect(plan.conflictCopies.single.title, 'mine（冲突副本 · 本机）');
 
     for (final role in SyncSideRole.values) {
       final copy = writeFor(plan, role, diaryKey(copyId))!;
       expect(copy.isInsert, isTrue);
       final facets = copy.record!.facets;
       final content = facets[SyncFacet.content]! as Map;
-      expect(content['title'], 'mine（冲突副本）');
+      expect(content['title'], 'mine（冲突副本 · 本机）');
       expect(content['metadata'], {
         'sync': {'conflictOf': 'd'},
       });
@@ -129,6 +133,19 @@ void main() {
     expect(second.conflictCopies.single.loser, SyncSideRole.remote);
   });
 
+  test('副本标题按败方选后缀：败方是对方时用对方的后缀，副本 id 不变', () {
+    final (a, b) = conflicted();
+    final asInitiator = planBetween(a, b, options: options).plan;
+    final asResponder = planBetween(b, a, options: options).plan;
+    // a 是败方：a 发起时它是本机，b 发起时它是对方。
+    expect(asInitiator.conflictCopies.single.title, 'mine（冲突副本 · 本机）');
+    expect(asResponder.conflictCopies.single.title, 'mine（冲突副本 · 对方）');
+    expect(
+      asResponder.conflictCopies.single.copyId,
+      asInitiator.conflictCopies.single.copyId,
+    );
+  });
+
   for (final applied in SyncSideRole.values) {
     test('中断（只有 ${applied.name} 一侧写入）后重新同步不重复生成副本', () {
       final (a, b) = conflicted();
@@ -180,7 +197,7 @@ void main() {
       return planBetween(
         a,
         b,
-        options: SyncPlanOptions(nowMillis: 0, conflictTitleSuffix: suffix),
+        options: SyncPlanOptions(nowMillis: 0, localLoserTitleSuffix: suffix),
       ).plan.conflictCopies.single.title;
     }
 

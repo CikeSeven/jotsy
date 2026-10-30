@@ -26,7 +26,8 @@ class SyncPlanOptions {
   const SyncPlanOptions({
     required this.nowMillis,
     this.firstSyncWithPeer = false,
-    this.conflictTitleSuffix = '',
+    this.localLoserTitleSuffix = '',
+    this.remoteLoserTitleSuffix = '',
     this.sideChoice = SyncSideChoice.keepBoth,
   });
 
@@ -37,10 +38,14 @@ class SyncPlanOptions {
   /// 本次是不是与这台设备的第一次同步。
   final bool firstSyncWithPeer;
 
-  /// 冲突副本标题的后缀，由界面层本地化后传入（如“（冲突副本 · ThinkPad）”）。
+  /// 冲突副本标题的后缀，按副本保存的是哪一侧的版本（败方）选用：本机
+  /// （发起方）败时用 [localLoserTitleSuffix]，对方败时用
+  /// [remoteLoserTitleSuffix]。由界面层本地化后传入，写明那一侧的设备名
+  /// （如“（冲突副本 · ThinkPad）”），用户一看就知道副本是哪台上的版本。
   /// 只影响副本的标题，不影响副本 id：换一台发起方、换一种语言重新规划，
   /// 副本 id 仍然相同。
-  final String conflictTitleSuffix;
+  final String localLoserTitleSuffix;
+  final String remoteLoserTitleSuffix;
 
   /// 只在“以哪边为准”生效时（首次同步或任一侧刚做过覆盖恢复）作用于没有
   /// 共同祖先的冲突；其余情况一律按 [SyncSideChoice.keepBoth] 的规则处理。

@@ -67,7 +67,13 @@ extension _Copies on _Planner {
         if (value != null) values[membership] = value;
       }
       if (values.length != memberships.length) continue;
-      final copy = _copyFacets(facets, key.id);
+      final copy = _copyFacets(
+        facets,
+        key.id,
+        loser == _Side.local
+            ? options.localLoserTitleSuffix
+            : options.remoteLoserTitleSuffix,
+      );
       finals[copyKey] = _Final.value(copy);
       createdKeys.add(copyKey);
       copyOriginals[copyKey.id] = key.id;
@@ -113,11 +119,12 @@ extension _Copies on _Planner {
   Map<String, Object?> _copyFacets(
     Map<String, Object?> loser,
     String originalId,
+    String titleSuffix,
   ) {
     final content = <String, Object?>{...?_mapOf(loser[SyncFacet.content])};
     final title = content['title'];
     content['title'] = syncTruncate(
-      '${title is String ? title : ''}${options.conflictTitleSuffix}',
+      '${title is String ? title : ''}$titleSuffix',
       kSyncCopyTitleLimit,
     );
     final metadata = content['metadata'];

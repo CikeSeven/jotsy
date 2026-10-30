@@ -15,6 +15,10 @@ import 'diary_script_spans.dart';
 ///
 /// [indent] 为未缩放的逻辑像素：占位里的内容与正文一起随字体缩放放大
 /// （[WidgetSpan] 会按所在字号的缩放倍数整体缩放）。
+///
+/// 下划线、删除线与背景色只画在字下面：外层段落会给占位按它的样式画线条与
+/// 背景，连缩进那一段一起，所以外层占位的样式去掉这几项（[_slotStyle]），
+/// 改由占位里的字自己画。
 
 /// 把根片段 [root] 的第一个字换成带缩进的占位；没有文字（空段落）或第一段
 /// 不是普通文字片段时原样返回。
@@ -38,12 +42,20 @@ TextSpan diaryIndentFirstGlyph(
         WidgetSpan(
           alignment: first.alignment,
           baseline: first.baseline,
-          style: first.style,
+          style: _slotStyle(first.style),
           child: Directionality(
             textDirection: direction,
             child: Padding(
               padding: EdgeInsetsDirectional.only(start: indent),
-              child: first.child,
+              // 原来的占位原样套一层段落：线条与背景照常画在这个字下面。
+              child: RichText(
+                text: TextSpan(children: <InlineSpan>[first]),
+                textDirection: direction,
+                textScaler: TextScaler.noScaling,
+                textHeightBehavior: kDiaryTextHeightBehavior,
+                softWrap: false,
+                maxLines: 1,
+              ),
             ),
           ),
         ),
@@ -85,7 +97,7 @@ TextSpan diaryIndentFirstGlyph(
       WidgetSpan(
         alignment: PlaceholderAlignment.baseline,
         baseline: TextBaseline.alphabetic,
-        style: first.style,
+        style: _slotStyle(first.style),
         child: _DiaryFirstGlyph(
           indent: indent,
           direction: direction,
@@ -99,6 +111,15 @@ TextSpan diaryIndentFirstGlyph(
     ],
   );
 }
+
+/// 外层占位的样式：只用来按字号换算缩放，去掉线条与背景色（见文件开头）。
+/// copyWith 不能把颜色置空，背景改成透明。
+TextStyle? _slotStyle(TextStyle? style) => style?.copyWith(
+  decoration: TextDecoration.none,
+  backgroundColor: style.backgroundColor == null
+      ? null
+      : const Color(0x00000000),
+);
 
 /// 空段落的占位提示（“开始记录…”、`/` 命令提示）同样缩进：与之后输入的
 /// 第一个字对齐。也按段首的字改写而不是在前面垫一段空白：段首光标取自

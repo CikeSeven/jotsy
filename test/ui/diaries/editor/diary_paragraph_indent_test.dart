@@ -12,6 +12,7 @@ import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_paragraph_block.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_script_spans.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
@@ -274,6 +275,89 @@ void main() {
     expect((tapped.start.offset, tapped.end.offset), (0, 5));
     await tearDownEditor(tester, controller);
   });
+
+  testWidgets(
+    'lines and highlights under the first character skip the indent',
+    (tester) async {
+      const highlight = Color(0xFFFFEB3B);
+      final controller = controllerOf([
+        {
+          'type': 'paragraph',
+          'data': {
+            'delta': [
+              {
+                'insert': '今天',
+                'attributes': {
+                  'underline': true,
+                  'strikethrough': true,
+                  'bg_color': '#FFFFEB3B',
+                },
+              },
+              {'insert': '天气'},
+            ],
+          },
+        },
+        // 段首是上标：上标的字本就画在占位里。
+        {
+          'type': 'paragraph',
+          'data': {
+            'delta': [
+              {
+                'insert': 'ab',
+                'attributes': {'underline': true, 'script': 'super'},
+              },
+              {'insert': '天气'},
+            ],
+          },
+        },
+      ]);
+      await pump(tester, controller);
+
+      /// 段落正文里的第一个占位，即段首那个“缩进 + 字”。
+      WidgetSpan leadSlot(String text) {
+        final paragraph = tester.widget<RichText>(
+          find.byWidgetPredicate(
+            (w) => w is RichText && w.text.toPlainText() == text,
+          ),
+        );
+        WidgetSpan? slot;
+        paragraph.text.visitChildren((span) {
+          if (span is! WidgetSpan) return true;
+          slot = span;
+          return false;
+        });
+        return slot!;
+      }
+
+      // 外层段落按占位的样式画线条与背景，会连缩进一起画：占位不带它们。
+      for (final text in ['￼天天气', '￼￼天气']) {
+        final style = leadSlot(text).style!;
+        expect(style.decoration, TextDecoration.none, reason: text);
+        expect(style.backgroundColor?.a ?? 0, 0, reason: text);
+      }
+      // 字自己照常带着，线条与背景只在字下面。
+      final glyph = tester.widget<RichText>(firstGlyph('今')).text.style!;
+      expect(glyph.decoration!.contains(TextDecoration.underline), isTrue);
+      expect(glyph.decoration!.contains(TextDecoration.lineThrough), isTrue);
+      expect(glyph.backgroundColor, highlight);
+      final script = tester
+          .widgetList<RichText>(find.byType(RichText))
+          .map((w) => w.text)
+          .whereType<TextSpan>()
+          .where(
+            (span) =>
+                span.text == null &&
+                span.children?.length == 1 &&
+                span.children!.single is WidgetSpan,
+          )
+          .map((span) => span.children!.single as WidgetSpan)
+          .single;
+      expect(script.child, isA<DiaryScriptGlyph>());
+      expect(script.style!.decoration, TextDecoration.underline);
+      expect(tester.takeException(), isNull);
+      await tearDownEditor(tester, controller);
+    },
+  );
 
   testWidgets('typography changes re-lay out the blocks of an open editor', (
     tester,

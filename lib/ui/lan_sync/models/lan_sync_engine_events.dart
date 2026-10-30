@@ -24,17 +24,23 @@ import 'lan_sync_ui_events.dart';
 ///
 /// 核对码缺失（不该出现）时按空串显示；成功缺 peerId 同理——界面成功态的
 /// “立即同步”对空 id 不产生效果。失败缺原因按其他原因说明。
-LanSyncPairingPhase lanSyncPairingPhaseOf(LanSyncPairingState state) {
+LanSyncPairingPhase lanSyncPairingPhaseOf(
+  LanSyncPairingState state, {
+  String? peerName,
+}) {
   return switch (state.status) {
     LanSyncPairingStatus.connecting => const LanSyncPairingConnecting(),
     LanSyncPairingStatus.awaitingUser => LanSyncPairingAwaitingUser(
       state.code ?? '',
+      peerName: peerName,
     ),
     LanSyncPairingStatus.awaitingPeer => LanSyncPairingAwaitingPeer(
       state.code ?? '',
+      peerName: peerName,
     ),
     LanSyncPairingStatus.succeeded => LanSyncPairingSucceeded(
       state.peerId ?? '',
+      peerName: peerName,
     ),
     LanSyncPairingStatus.failed => LanSyncPairingFailed(
       lanSyncFailureReasonOf(state.failure ?? LanSyncFailure.unknown),
@@ -44,13 +50,19 @@ LanSyncPairingPhase lanSyncPairingPhaseOf(LanSyncPairingState state) {
 
 /// 引擎配对状态的界面视图：监听者直接挂在引擎的通知器上，[value] 每次现算。
 /// 不持有资源，不需要释放；引擎的配对对象结束后不再变化，它也随之不再变化。
+///
+/// [peerName] 取引擎配对对象的当前名字：引擎在握手收到对方 hello 之后、
+/// 推进到核对码阶段之前更新它，所以核对码与成功两个阶段带的是对方自报的
+/// 设备名（按地址连接时开始只知道 IP）。
 class LanSyncPairingPhaseView implements ValueListenable<LanSyncPairingPhase> {
-  LanSyncPairingPhaseView(this._source);
+  LanSyncPairingPhaseView(this._source, {this._peerName});
 
   final ValueListenable<LanSyncPairingState> _source;
+  final String Function()? _peerName;
 
   @override
-  LanSyncPairingPhase get value => lanSyncPairingPhaseOf(_source.value);
+  LanSyncPairingPhase get value =>
+      lanSyncPairingPhaseOf(_source.value, peerName: _peerName?.call());
 
   @override
   void addListener(VoidCallback listener) => _source.addListener(listener);
@@ -158,7 +170,10 @@ LanSyncPairingEvent lanSyncPairingEventOf(LanSyncPairing pairing) {
         : LanSyncPairingDirection.outgoing,
     peerName: pairing.peerName,
     platform: LanSyncPlatform.fromName(pairing.platform),
-    phase: LanSyncPairingPhaseView(pairing.state),
+    phase: LanSyncPairingPhaseView(
+      pairing.state,
+      peerName: () => pairing.peerName,
+    ),
     respond: (bool accept) => _guard(() => pairing.respond(accept)),
   );
 }

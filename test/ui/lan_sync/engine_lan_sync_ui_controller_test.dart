@@ -142,7 +142,7 @@ void main() {
     var phaseNotifications = 0;
     pa.phase.addListener(() => phaseNotifications++);
     await pa.respond(true);
-    expect(pa.phase.value, LanSyncPairingAwaitingPeer(code));
+    expect(pa.phase.value, LanSyncPairingAwaitingPeer(code, peerName: 'beta'));
     await pb.respond(true);
     await waitUntil(
       () =>
@@ -265,6 +265,27 @@ void main() {
       const LanSyncPairingFailed(LanSyncFailureReason.unknown),
     );
     expect(c.issueQrTicket().isPending, isTrue);
+  });
+
+  test('按地址配对：握手之后面板换上对方自报的名字', () async {
+    final a = await device('alpha');
+    final b = await device('beta');
+    final ca = wrap(() async => a.service);
+    final cb = wrap(() async => b.service);
+    expect(await ca.ready, isTrue);
+    expect(await cb.ready, isTrue);
+    final eventsA = <LanSyncUiEvent>[];
+    ca.events.listen(eventsA.add);
+    cb.attachPage();
+    await waitUntil(() => b.port != null);
+
+    await ca.connectManual('127.0.0.1', b.port!);
+    final event = await eventIn<LanSyncPairingEvent>(eventsA);
+    expect(event.peerName, '127.0.0.1');
+    await waitUntil(() => event.phase.value is LanSyncPairingAwaitingUser);
+    expect(event.phase.value.peerName, 'beta');
+    await event.respond(false);
+    cb.detachPage();
   });
 
   test('附近设备已离开时配对立即以“连不上”失败', () async {

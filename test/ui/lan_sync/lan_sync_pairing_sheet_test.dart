@@ -16,8 +16,13 @@ Future<FakeLanSyncPairing> _startPairing(
   FakeLanSyncController controller, {
   LanSyncPairingDirection direction = LanSyncPairingDirection.outgoing,
   LanSyncPairingPhase initial = const LanSyncPairingConnecting(),
+  String peerName = 'ThinkPad',
 }) async {
-  final pairing = FakeLanSyncPairing(direction: direction, initial: initial);
+  final pairing = FakeLanSyncPairing(
+    direction: direction,
+    initial: initial,
+    peerName: peerName,
+  );
   controller.emit(pairing.event);
   await tester.pumpAndSettle();
   return pairing;
@@ -82,6 +87,35 @@ void main() {
     expect(controller.calls, contains('syncNow:peer-9'));
     // 配对已经成功，关闭面板不再放弃。
     expect(pairing.responses, <bool>[true]);
+  });
+
+  testWidgets('pairing by address switches from the IP to the peer name', (
+    tester,
+  ) async {
+    final controller = FakeLanSyncController();
+    await pumpLanSyncPage(tester, controller);
+
+    final pairing = await _startPairing(
+      tester,
+      controller,
+      peerName: '192.168.100.199',
+    );
+    expect(find.text('正在连接 192.168.100.199…'), findsOneWidget);
+
+    await _setPhase(
+      tester,
+      pairing,
+      const LanSyncPairingAwaitingUser('482916', peerName: 'ThinkPad'),
+    );
+    expect(find.text('与「ThinkPad」配对'), findsOneWidget);
+    expect(find.textContaining('192.168.100.199'), findsNothing);
+
+    await _setPhase(
+      tester,
+      pairing,
+      const LanSyncPairingSucceeded('peer-9', peerName: 'ThinkPad'),
+    );
+    expect(find.text('已与 ThinkPad 配对'), findsOneWidget);
   });
 
   testWidgets('incoming request shows its title and 不一致 declines', (

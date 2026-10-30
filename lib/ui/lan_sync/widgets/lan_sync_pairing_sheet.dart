@@ -112,6 +112,8 @@ class _LanSyncPairingSheetState extends State<LanSyncPairingSheet> {
   Widget _bodyFor(LanSyncPairingPhase phase) {
     final event = widget.event;
     final l10n = context.l10n;
+    // 握手之后用对方自报的名字（按地址连接时开始只知道 IP）。
+    final peerName = phase.peerName ?? event.peerName;
     switch (phase) {
       case LanSyncPairingConnecting():
         return LanSyncPairingConnectingBody(
@@ -123,8 +125,8 @@ class _LanSyncPairingSheetState extends State<LanSyncPairingSheet> {
         return LanSyncPairingCodeBody(
           key: const ValueKey<String>('code'),
           title: event.direction == LanSyncPairingDirection.incoming
-              ? l10n.lanSyncPairTitleIncoming(event.peerName)
-              : l10n.lanSyncPairTitleOutgoing(event.peerName),
+              ? l10n.lanSyncPairTitleIncoming(peerName)
+              : l10n.lanSyncPairTitleOutgoing(peerName),
           code: code,
           localPlatform: widget.localPlatform,
           peerPlatform: event.platform,
@@ -138,7 +140,7 @@ class _LanSyncPairingSheetState extends State<LanSyncPairingSheet> {
       case LanSyncPairingSucceeded():
         return LanSyncPairingSuccessBody(
           key: const ValueKey<String>('succeeded'),
-          peerName: event.peerName,
+          peerName: peerName,
           onSyncNow: () => _close(LanSyncPairingSheetAction.syncNow),
           onLater: _close,
         );

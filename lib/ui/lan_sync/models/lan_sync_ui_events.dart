@@ -31,6 +31,10 @@ enum LanSyncPairingDirection {
 @immutable
 sealed class LanSyncPairingPhase {
   const LanSyncPairingPhase();
+
+  /// 握手里对方自报的设备名；还没握手（连接中、失败）时为 null，界面用
+  /// [LanSyncPairingEvent.peerName]（按地址连接时那只是 IP）。
+  String? get peerName => null;
 }
 
 /// 正在连接对方、建立加密信道（面板显示“正在连接 X…”）。
@@ -46,46 +50,61 @@ final class LanSyncPairingConnecting extends LanSyncPairingPhase {
 
 /// 核对码已算出，等本机用户确认两边数字一致。
 final class LanSyncPairingAwaitingUser extends LanSyncPairingPhase {
-  const LanSyncPairingAwaitingUser(this.code);
+  const LanSyncPairingAwaitingUser(this.code, {this.peerName});
 
   /// 6 位十进制核对码（显示为 3 + 3）。
   final String code;
 
   @override
-  bool operator ==(Object other) =>
-      other is LanSyncPairingAwaitingUser && other.code == code;
+  final String? peerName;
 
   @override
-  int get hashCode => code.hashCode;
+  bool operator ==(Object other) =>
+      other is LanSyncPairingAwaitingUser &&
+      other.code == code &&
+      other.peerName == peerName;
+
+  @override
+  int get hashCode => Object.hash(code, peerName);
 }
 
 /// 本机已确认，等对方确认（按钮区换成“等待对方确认…”）。
 final class LanSyncPairingAwaitingPeer extends LanSyncPairingPhase {
-  const LanSyncPairingAwaitingPeer(this.code);
+  const LanSyncPairingAwaitingPeer(this.code, {this.peerName});
 
   final String code;
 
   @override
-  bool operator ==(Object other) =>
-      other is LanSyncPairingAwaitingPeer && other.code == code;
+  final String? peerName;
 
   @override
-  int get hashCode => code.hashCode;
+  bool operator ==(Object other) =>
+      other is LanSyncPairingAwaitingPeer &&
+      other.code == code &&
+      other.peerName == peerName;
+
+  @override
+  int get hashCode => Object.hash(code, peerName);
 }
 
 /// 双方都已确认（或扫码令牌校验通过），对方已记为已配对设备。
 final class LanSyncPairingSucceeded extends LanSyncPairingPhase {
-  const LanSyncPairingSucceeded(this.peerId);
+  const LanSyncPairingSucceeded(this.peerId, {this.peerName});
 
   /// 新配对设备的 id：成功态的“立即同步”经 `syncNow(peerId)`。
   final String peerId;
 
   @override
-  bool operator ==(Object other) =>
-      other is LanSyncPairingSucceeded && other.peerId == peerId;
+  final String? peerName;
 
   @override
-  int get hashCode => peerId.hashCode;
+  bool operator ==(Object other) =>
+      other is LanSyncPairingSucceeded &&
+      other.peerId == peerId &&
+      other.peerName == peerName;
+
+  @override
+  int get hashCode => Object.hash(peerId, peerName);
 }
 
 /// 配对没有完成：任一方拒绝、超时或连接失败；什么都不会保存。
@@ -117,7 +136,8 @@ final class LanSyncPairingEvent extends LanSyncUiEvent {
 
   final LanSyncPairingDirection direction;
 
-  /// 对方的设备名（连接前取自信标或二维码，可能随握手更新到 [phase] 之前）。
+  /// 开始时知道的对方设备名（信标或二维码里的名字；按地址连接时是 IP）。
+  /// 握手之后以 [LanSyncPairingPhase.peerName] 为准。
   final String peerName;
   final LanSyncPlatform platform;
 

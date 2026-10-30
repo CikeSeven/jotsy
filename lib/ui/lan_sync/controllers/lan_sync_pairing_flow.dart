@@ -134,7 +134,9 @@ class LanSyncPairingFlow {
     BuildContext sheetContext,
     LanSyncPairingEvent event,
   ) async {
-    final reason = sheetContext.l10n.lanSyncPairAuthReason(event.peerName);
+    final reason = sheetContext.l10n.lanSyncPairAuthReason(
+      event.phase.value.peerName ?? event.peerName,
+    );
     final outcome = await _authGate().authorize(reason: reason);
     if (outcome == LanSyncPairingAuthOutcome.allowed) {
       await event.respond(true);

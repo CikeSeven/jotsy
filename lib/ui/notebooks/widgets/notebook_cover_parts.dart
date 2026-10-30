@@ -14,7 +14,8 @@ export 'notebook_cover/notebook_cover_image.dart';
 /// 日记本强调色在当前明暗主题下的容器色与前景色。
 ///
 /// 与模板强调色同一套换算（`ColorScheme.fromSeed` 后取 primaryContainer /
-/// onPrimaryContainer，带缓存），这里只是按日记本的语义起个名字。
+/// onPrimaryContainer，灰色这类无彩色种子换成同深浅的中性灰，带缓存），这里
+/// 只是按日记本的语义起个名字。
 DiaryTemplateAccentColors notebookAccentColors(int? seed, ColorScheme scheme) =>
     diaryTemplateAccentColors(seed, scheme);
 

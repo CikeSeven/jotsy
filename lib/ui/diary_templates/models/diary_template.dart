@@ -99,7 +99,7 @@ class DiaryTemplate {
   final DiaryTemplateIcon icon;
 
   /// 强调色的种子（不透明 ARGB），null 时跟随主题色；渲染时经
-  /// `ColorScheme.fromSeed` 换算成明暗主题各自的容器色，不直接涂这个值。
+  /// `diaryTemplateAccentColors` 换算成明暗主题各自的容器色，不直接涂这个值。
   final int? accent;
   final DiaryTemplateCategory category;
   final String titlePattern;

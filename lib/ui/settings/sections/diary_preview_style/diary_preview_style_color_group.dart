@@ -27,7 +27,8 @@ import 'diary_preview_style_mood_picker.dart';
 /// - 不是“跟随应用”：着色强度；
 /// - 心情 / 首个标签：取不到颜色时的回退。
 ///
-/// 纸张为“主题”且基调不是“跟随应用”时，纸张行下展开“纸张随基调染色”。
+/// 纸张为“主题”且基调不是“跟随应用”时，纸张行下展开“纸张随基调染色”与
+/// “背景遮罩随基调染色”（后者只在预览页画着背景与材质的背景图时可见效果）。
 /// 样式改动经 [DiaryPreviewStyleEditorController.commitWith] 立即写入；预览
 /// 心情只改控制器里的内存状态。
 class DiaryPreviewStyleColorGroup extends StatelessWidget {
@@ -219,18 +220,36 @@ class DiaryPreviewStyleColorGroup extends StatelessWidget {
                 ],
               ),
             ),
-            // 选了内置或自定义纸色时以纸色为准，染色只作用于主题纸张。
+            // 选了内置或自定义纸色时以纸色为准，染色只作用于主题纸张；背景图
+            // 也只在主题纸张时露出来，遮罩染色随之同样的条件。
             SettingsReveal(
               visible:
                   seed != DiaryPreviewColorSeed.app &&
                   page.paper == DiaryPreviewPaper.theme,
               child: _nested(
-                SettingsSwitchTile(
-                  nested: true,
-                  title: l10n.diaryPreviewStyleTintPaper,
-                  subtitle: l10n.diaryPreviewStyleTintPaperHint,
-                  value: page.tintPaper,
-                  onChanged: (bool v) => commit(page.copyWith(tintPaper: v)),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    SettingsSwitchTile(
+                      nested: true,
+                      title: l10n.diaryPreviewStyleTintPaper,
+                      subtitle: l10n.diaryPreviewStyleTintPaperHint,
+                      value: page.tintPaper,
+                      onChanged: (bool v) =>
+                          commit(page.copyWith(tintPaper: v)),
+                    ),
+                    settingsNestedDivider,
+                    SettingsSwitchTile(
+                      key: const ValueKey<String>('previewTintScrim'),
+                      nested: true,
+                      title: l10n.diaryPreviewStyleTintScrim,
+                      subtitle: l10n.diaryPreviewStyleTintScrimHint,
+                      value: page.tintScrim,
+                      onChanged: (bool v) =>
+                          commit(page.copyWith(tintScrim: v)),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -14,15 +14,20 @@ import '../controllers/app_background_slot.dart';
 ///
 /// [opaque] 为 true 时，即使没有层也画一层页面底色——首页按页位置插值时
 /// 下层必须始终不透明（见 `AppPagedBackground`）。
+///
+/// [drawScrim] 为 false 时图片层不画遮罩：遮罩交给页面自己画（见
+/// `AppPageBackground.deferScrim`）。
 class AppBackgroundLayersView extends StatelessWidget {
   const AppBackgroundLayersView({
     super.key,
     required this.layers,
     this.opaque = false,
+    this.drawScrim = true,
   });
 
   final List<AppBackgroundLayer> layers;
   final bool opaque;
+  final bool drawScrim;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +47,7 @@ class AppBackgroundLayersView extends StatelessWidget {
             child: _AppBackgroundVisualView(
               visual: layer.visual,
               pageColor: pageColor,
+              drawScrim: drawScrim,
             ),
           ),
       ],
@@ -53,17 +59,19 @@ class _AppBackgroundVisualView extends StatelessWidget {
   const _AppBackgroundVisualView({
     required this.visual,
     required this.pageColor,
+    required this.drawScrim,
   });
 
   final AppBackgroundVisual visual;
   final Color pageColor;
+  final bool drawScrim;
 
   @override
   Widget build(BuildContext context) {
     final background = visual.background;
     final image = visual.image;
     if (background.isImage && image != null) {
-      final scrim = background.scrimColor;
+      final scrim = drawScrim ? background.scrimColor : null;
       return RepaintBoundary(
         child: ColoredBox(
           color: pageColor,

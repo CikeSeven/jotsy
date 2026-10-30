@@ -425,10 +425,16 @@ void main() {
       tester,
       find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleTintPaper),
     );
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleTintScrim),
+    );
     var page = _stored(settings).current.page;
     expect(page.seedIntensity, DiaryPreviewSeedIntensity.vivid);
     expect(page.seedFallback, DiaryPreviewSeedFallback.neutral);
     expect(page.tintPaper, isTrue);
+    expect(page.tintScrim, isTrue);
+    expect(page.tintsBackgroundScrim, isTrue);
 
     // 预览心情只换预览里的示例，不写设置。
     Color previewPaper() => tester

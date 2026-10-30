@@ -4349,6 +4349,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'The page background takes a light wash of the basis color';
 
   @override
+  String get diaryPreviewStyleTintScrim => 'Tint the background veil';
+
+  @override
+  String get diaryPreviewStyleTintScrimHint =>
+      'With a background image, the veil takes each diary\'s basis color (such as its mood color); its strength still follows Background & Material';
+
+  @override
   String get diaryPreviewStyleMoodColors => 'Mood colors';
 
   @override

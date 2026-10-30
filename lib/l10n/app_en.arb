@@ -5521,6 +5521,14 @@
   "@diaryPreviewStyleTintPaperHint": {
     "description": "Diary preview style settings: subtitle of Tint the paper."
   },
+  "diaryPreviewStyleTintScrim": "Tint the background veil",
+  "@diaryPreviewStyleTintScrim": {
+    "description": "Diary preview style settings: switch: with a background image, the veil takes this diary's basis color."
+  },
+  "diaryPreviewStyleTintScrimHint": "With a background image, the veil takes each diary's basis color (such as its mood color); its strength still follows Background & Material",
+  "@diaryPreviewStyleTintScrimHint": {
+    "description": "Diary preview style settings: subtitle of Tint the background veil."
+  },
   "diaryPreviewStyleMoodColors": "Mood colors",
   "@diaryPreviewStyleMoodColors": {
     "description": "Diary preview style settings: link to the mood emojis page to change mood colors."

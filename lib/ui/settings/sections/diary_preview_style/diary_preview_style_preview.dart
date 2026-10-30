@@ -74,6 +74,7 @@ class DiaryPreviewStylePreview extends ConsumerWidget {
               // 背景、翻页器不铺“桌面”，选了纸色时仍是纸色（见
               // diaryPreviewPageColors 与 DiaryPagerView）。
               child: StylePreviewBackground(
+                deferScrim: controller.style.page.tintsBackgroundScrim,
                 child: DiaryPagerView(
                   itemCount: samples.length,
                   initialPage: page.value.clamp(0, samples.length - 1),

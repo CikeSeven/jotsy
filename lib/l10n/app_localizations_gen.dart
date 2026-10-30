@@ -7172,6 +7172,18 @@ abstract class AppLocalizations {
   /// **'The page background takes a light wash of the basis color'**
   String get diaryPreviewStyleTintPaperHint;
 
+  /// Diary preview style settings: switch: with a background image, the veil takes this diary's basis color.
+  ///
+  /// In en, this message translates to:
+  /// **'Tint the background veil'**
+  String get diaryPreviewStyleTintScrim;
+
+  /// Diary preview style settings: subtitle of Tint the background veil.
+  ///
+  /// In en, this message translates to:
+  /// **'With a background image, the veil takes each diary\'s basis color (such as its mood color); its strength still follows Background & Material'**
+  String get diaryPreviewStyleTintScrimHint;
+
   /// Diary preview style settings: link to the mood emojis page to change mood colors.
   ///
   /// In en, this message translates to:

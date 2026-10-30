@@ -355,6 +355,53 @@ void main() {
       expect(surfaceScaffold(tester), Colors.transparent);
     });
 
+    testWidgets('a tinted veil is painted by each page in its basis color', (
+      tester,
+    ) async {
+      String moodStyle({required bool tintScrim}) => DiaryPreviewSettings(
+        current: DiaryPreviewStyle(
+          page: DiaryPreviewPageStyle(
+            colorSeed: DiaryPreviewColorSeed.mood,
+            tintScrim: tintScrim,
+          ),
+        ),
+      ).encode()!;
+
+      // 关着：背景自己画中性遮罩，页面透明。
+      await _pump(
+        tester,
+        (s) => DiaryPreviewStylePage(settingsService: s),
+        surface: _imageIn(AppBackgroundArea.preview),
+        prefs: <String, Object>{
+          'app.settings.diary_preview_style': moodStyle(tintScrim: false),
+        },
+      );
+      await _settleImage(tester, preview);
+      final scheme = Theme.of(
+        tester.element(_previewBackground(preview)),
+      ).colorScheme;
+      final neutral = scheme.surface.withValues(alpha: 0.2);
+      expect(_layerColors(tester, preview), contains(neutral));
+      expect(surfaceScaffold(tester), Colors.transparent);
+
+      // 打开：背景只画图，示例日记（有心情）的页面画染过色的遮罩，
+      // 不透明度仍是背景设置里的 0.2。先卸下页面，换一份设置重新打开。
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pump(
+        tester,
+        (s) => DiaryPreviewStylePage(settingsService: s),
+        surface: _imageIn(AppBackgroundArea.preview),
+        prefs: <String, Object>{
+          'app.settings.diary_preview_style': moodStyle(tintScrim: true),
+        },
+      );
+      await _settleImage(tester, preview);
+      expect(_layerColors(tester, preview), isNot(contains(neutral)));
+      final veil = surfaceScaffold(tester);
+      expect(veil.a, closeTo(0.2, 0.01));
+      expect(veil, isNot(neutral));
+    });
+
     testWidgets('a chosen paper color stays opaque on the background', (
       tester,
     ) async {

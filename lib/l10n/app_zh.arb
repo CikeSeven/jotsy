@@ -5521,6 +5521,14 @@
   "@diaryPreviewStyleTintPaperHint": {
     "description": "预览页样式设置：“纸张随基调染色”的说明。"
   },
+  "diaryPreviewStyleTintScrim": "背景遮罩随基调染色",
+  "@diaryPreviewStyleTintScrim": {
+    "description": "预览页样式设置：开关：预览页有背景图片时，遮罩换成这篇日记的基调色。"
+  },
+  "diaryPreviewStyleTintScrimHint": "有背景图片时，遮罩带上这篇的基调色（如心情颜色），深浅仍按背景与材质里的遮罩",
+  "@diaryPreviewStyleTintScrimHint": {
+    "description": "预览页样式设置：“背景遮罩随基调染色”的说明。"
+  },
   "diaryPreviewStyleMoodColors": "心情颜色",
   "@diaryPreviewStyleMoodColors": {
     "description": "预览页样式设置：入口：打开心情符号页修改各心情的颜色。"

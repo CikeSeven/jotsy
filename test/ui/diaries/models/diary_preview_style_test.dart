@@ -18,6 +18,7 @@ const _everything = DiaryPreviewStyle(
     seedFallback: DiaryPreviewSeedFallback.neutral,
     paper: DiaryPreviewPaper.custom,
     tintPaper: true,
+    tintScrim: true,
     paperLight: 0xFFF4ECD8,
     paperDark: 0xFF2B261E,
     textLight: 0xFF333333,
@@ -240,6 +241,7 @@ void main() {
         'seedIntensity': 'loud',
         'seedFallback': 7,
         'tintPaper': 'yes',
+        'tintScrim': 1,
       },
       'cover': <String, Object?>{'height': 9999, 'mode': 'inset'},
       'title': <String, Object?>{'scale': double.nan, 'align': 'center'},
@@ -252,6 +254,7 @@ void main() {
     expect(style.page.seedIntensity, DiaryPreviewSeedIntensity.soft);
     expect(style.page.seedFallback, DiaryPreviewSeedFallback.app);
     expect(style.page.tintPaper, isFalse);
+    expect(style.page.tintScrim, isFalse);
     // 越界夹到边界。
     expect(style.cover.height, DiaryPreviewStyleLimits.coverHeight.max);
     expect(style.cover.mode, DiaryPreviewCoverMode.inset);
@@ -301,6 +304,37 @@ void main() {
     expect(
       DiaryPreviewStyleCode.decode(cardCode).status,
       StyleCodeStatus.invalid,
+    );
+  });
+
+  test('the background veil is tinted only with a basis on theme paper', () {
+    const on = DiaryPreviewPageStyle(
+      colorSeed: DiaryPreviewColorSeed.mood,
+      tintScrim: true,
+    );
+    expect(on.tintsBackgroundScrim, isTrue);
+    expect(on.copyWith(tintScrim: false).tintsBackgroundScrim, isFalse);
+    expect(
+      on.copyWith(colorSeed: DiaryPreviewColorSeed.app).tintsBackgroundScrim,
+      isFalse,
+    );
+    // 选了纸色时背景不露出来；自定义纸色还没有颜色时仍算主题纸张。
+    expect(
+      on.copyWith(paper: DiaryPreviewPaper.warm).tintsBackgroundScrim,
+      isFalse,
+    );
+    expect(
+      on.copyWith(paper: DiaryPreviewPaper.custom).tintsBackgroundScrim,
+      isTrue,
+    );
+    expect(
+      on
+          .copyWith(
+            paper: DiaryPreviewPaper.custom,
+            paperLight: () => 0xFFEEEEEE,
+          )
+          .tintsBackgroundScrim,
+      isFalse,
     );
   });
 }

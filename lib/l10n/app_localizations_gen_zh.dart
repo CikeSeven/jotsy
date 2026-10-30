@@ -3898,6 +3898,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryPreviewStyleTintPaperHint => '页面底色带上一层淡淡的基调色';
 
   @override
+  String get diaryPreviewStyleTintScrim => '背景遮罩随基调染色';
+
+  @override
+  String get diaryPreviewStyleTintScrimHint =>
+      '有背景图片时，遮罩带上这篇的基调色（如心情颜色），深浅仍按背景与材质里的遮罩';
+
+  @override
   String get diaryPreviewStyleMoodColors => '心情颜色';
 
   @override

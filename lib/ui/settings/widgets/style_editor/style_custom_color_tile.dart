@@ -17,6 +17,7 @@ class StyleCustomColorTile extends StatelessWidget {
     this.subtitle,
     this.nested = false,
     this.deep = false,
+    this.showDarkVariant = true,
   });
 
   final String title;
@@ -34,8 +35,12 @@ class StyleCustomColorTile extends StatelessWidget {
   final DiaryCardColorRole role;
   final ValueChanged<StyleCustomColor> onChanged;
 
+  /// 取色对话框里是否有浅色 / 深色切换，见 [showStyleColorDialog]。
+  final bool showDarkVariant;
+
   Color _shown(Brightness brightness) {
-    if (brightness == Brightness.light) {
+    // 只有一个颜色（种子色）时两种明暗下都显示原色。
+    if (brightness == Brightness.light || !showDarkVariant) {
       return Color(light);
     }
     final dark = this.dark;
@@ -51,6 +56,7 @@ class StyleCustomColorTile extends StatelessWidget {
       light: light,
       dark: dark,
       role: role,
+      showDarkVariant: showDarkVariant,
     );
     if (result != null) {
       onChanged(result);

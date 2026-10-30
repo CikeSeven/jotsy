@@ -12,6 +12,7 @@ import 'package:node_diary/ui/app_surface/models/app_surface_settings.dart';
 import 'package:node_diary/ui/app_surface/providers/app_surface_settings_provider.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_background_layers_view.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import 'package:node_diary/ui/diaries/models/diary_mood_palette.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_preview_resolved_style.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_host.dart';
@@ -224,7 +225,7 @@ void main() {
           appSeed: const Color(0xff1e6586),
           screenSize: const Size(400, 800),
           reduceMotion: false,
-          moodOptions: const <String>[],
+          moodPalette: DiaryMoodPalette.defaults,
         );
 
     final followsTheme = resolve(const DiaryPreviewStyle());

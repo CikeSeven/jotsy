@@ -49,7 +49,8 @@ final diaryCardStyleProvider = Provider<DiaryCardStyle>((Ref ref) {
   );
 });
 
-/// 卡片按“心情色”着色时换算心情档位所需的心情配置。
+/// 当前的心情符号配置；与心情颜色合成心情色板（`diaryMoodPaletteProvider`），
+/// 卡片心情色与预览页配色基调都经色板取色。
 ///
 /// 心情配置的 StreamProvider 首帧处于 loading，这里同步回退到设置服务里的
 /// 当前配置（settings 已就绪时），与 [diaryCardStyleSettingsProvider] 一样

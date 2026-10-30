@@ -485,7 +485,7 @@ abstract class AppLocalizations {
   /// Subtitle for mood emoji setting entry.
   ///
   /// In en, this message translates to:
-  /// **'Customize 10 mood choices'**
+  /// **'Customize the emoji and color of 10 moods'**
   String get settingsMoodOptionsSubtitle;
 
   /// Label for one mood emoji input slot.
@@ -499,6 +499,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Default: {emoji}'**
   String settingsMoodOptionsSlotHelper(String emoji);
+
+  /// Mood emojis page: semantics label and color dialog title for one mood color.
+  ///
+  /// In en, this message translates to:
+  /// **'Color of mood {index}'**
+  String settingsMoodOptionsColorLabel(String index);
+
+  /// Mood emojis page: note under the mood color strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors are used by the Mood color basis on the reading page and by mood colors on diary cards. Tap the swatch next to an emoji to change it.'**
+  String get settingsMoodOptionsColorsHint;
 
   /// Error message when saving mood emoji settings fails.
   ///
@@ -6623,7 +6635,7 @@ abstract class AppLocalizations {
   /// Diary card style settings: note on the mood color source.
   ///
   /// In en, this message translates to:
-  /// **'Uses each entry\'s mood, or the default color when there is none'**
+  /// **'Uses each entry\'s mood color (editable in Mood emojis), or the default color when there is none'**
   String get diaryCardStyleSourceMoodHint;
 
   /// Diary card style settings: note on the first-tag color source.
@@ -7013,7 +7025,7 @@ abstract class AppLocalizations {
   /// Diary preview style settings: preset description.
   ///
   /// In en, this message translates to:
-  /// **'The page takes the entry’s mood color'**
+  /// **'The page and paper take the entry’s mood color'**
   String get diaryPreviewStylePresetMoodDesc;
 
   /// Diary preview style settings: preset name.
@@ -7064,17 +7076,131 @@ abstract class AppLocalizations {
   /// **'Custom'**
   String get diaryPreviewStyleSeedCustom;
 
-  /// Diary preview style settings: note under the color basis.
-  ///
-  /// In en, this message translates to:
-  /// **'Entries without a mood or tag use the app color.'**
-  String get diaryPreviewStyleSeedHint;
-
   /// Diary preview style settings: custom color basis picker.
   ///
   /// In en, this message translates to:
   /// **'Basis color'**
   String get diaryPreviewStyleSeedColor;
+
+  /// Diary preview style settings: note for the App theme color basis.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as the app\'s theme color.'**
+  String get diaryPreviewStyleSeedAppHint;
+
+  /// Diary preview style settings: note for the Mood color basis.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes the color of the entry\'s mood; each of the 10 moods has its own.'**
+  String get diaryPreviewStyleSeedMoodHint;
+
+  /// Diary preview style settings: note for the First tag color basis.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes the color of the entry\'s first tag.'**
+  String get diaryPreviewStyleSeedTagHint;
+
+  /// Diary preview style settings: note for the Custom color basis.
+  ///
+  /// In en, this message translates to:
+  /// **'Every entry uses the same color.'**
+  String get diaryPreviewStyleSeedCustomHint;
+
+  /// Diary preview style settings: how strongly the basis color tints the page.
+  ///
+  /// In en, this message translates to:
+  /// **'Color intensity'**
+  String get diaryPreviewStyleSeedIntensity;
+
+  /// Diary preview style settings: note under Color intensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft is as restrained as the app theme; True color follows the color’s own depth; Vivid is the most saturated.'**
+  String get diaryPreviewStyleSeedIntensityHint;
+
+  /// Diary preview style settings: color intensity option (same scheme as the app theme).
+  ///
+  /// In en, this message translates to:
+  /// **'Soft'**
+  String get diaryPreviewStyleSeedIntensitySoft;
+
+  /// Diary preview style settings: color intensity option (follows the color’s own saturation).
+  ///
+  /// In en, this message translates to:
+  /// **'True color'**
+  String get diaryPreviewStyleSeedIntensityOriginal;
+
+  /// Diary preview style settings: color intensity option (most saturated).
+  ///
+  /// In en, this message translates to:
+  /// **'Vivid'**
+  String get diaryPreviewStyleSeedIntensityVivid;
+
+  /// Diary preview style settings: colors for entries without a mood or tag.
+  ///
+  /// In en, this message translates to:
+  /// **'When there\'s no color'**
+  String get diaryPreviewStyleSeedFallback;
+
+  /// Diary preview style settings: note under When there's no color.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors for entries without a mood or tag.'**
+  String get diaryPreviewStyleSeedFallbackHint;
+
+  /// Diary preview style settings: fallback option: keep the app theme.
+  ///
+  /// In en, this message translates to:
+  /// **'App theme'**
+  String get diaryPreviewStyleSeedFallbackApp;
+
+  /// Diary preview style settings: fallback option: a low-saturation gray scheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral gray'**
+  String get diaryPreviewStyleSeedFallbackNeutral;
+
+  /// Diary preview style settings: switch: wash the theme paper with the basis color.
+  ///
+  /// In en, this message translates to:
+  /// **'Tint the paper'**
+  String get diaryPreviewStyleTintPaper;
+
+  /// Diary preview style settings: subtitle of Tint the paper.
+  ///
+  /// In en, this message translates to:
+  /// **'The page background takes a light wash of the basis color'**
+  String get diaryPreviewStyleTintPaperHint;
+
+  /// Diary preview style settings: link to the mood emojis page to change mood colors.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood colors'**
+  String get diaryPreviewStyleMoodColors;
+
+  /// Diary preview style settings: subtitle of the Mood colors link.
+  ///
+  /// In en, this message translates to:
+  /// **'Change each mood\'s color in Mood emojis'**
+  String get diaryPreviewStyleMoodColorsHint;
+
+  /// Diary preview style settings: which mood the sample in the preview uses.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview mood'**
+  String get diaryPreviewStylePreviewMood;
+
+  /// Diary preview style settings: note under Preview mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Only changes the sample’s mood in the preview above'**
+  String get diaryPreviewStylePreviewMoodHint;
+
+  /// Diary preview style settings: preview mood option: use the sample's own mood.
+  ///
+  /// In en, this message translates to:
+  /// **'As in sample'**
+  String get diaryPreviewStylePreviewMoodSample;
 
   /// Diary preview style settings: setting title: page background.
   ///

@@ -100,6 +100,35 @@ List<ExpressiveIconChoice<DiaryPreviewColorSeed>> diaryPreviewSeedChoices(
   ),
 ];
 
+/// 配色基调下方的说明：随所选基调换成这一种的取色方式。
+String diaryPreviewSeedHint(
+  AppLocalizations l10n,
+  DiaryPreviewColorSeed seed,
+) => switch (seed) {
+  DiaryPreviewColorSeed.app => l10n.diaryPreviewStyleSeedAppHint,
+  DiaryPreviewColorSeed.mood => l10n.diaryPreviewStyleSeedMoodHint,
+  DiaryPreviewColorSeed.tag => l10n.diaryPreviewStyleSeedTagHint,
+  DiaryPreviewColorSeed.custom => l10n.diaryPreviewStyleSeedCustomHint,
+};
+
+String diaryPreviewSeedIntensityLabel(
+  AppLocalizations l10n,
+  DiaryPreviewSeedIntensity intensity,
+) => switch (intensity) {
+  DiaryPreviewSeedIntensity.soft => l10n.diaryPreviewStyleSeedIntensitySoft,
+  DiaryPreviewSeedIntensity.original =>
+    l10n.diaryPreviewStyleSeedIntensityOriginal,
+  DiaryPreviewSeedIntensity.vivid => l10n.diaryPreviewStyleSeedIntensityVivid,
+};
+
+String diaryPreviewSeedFallbackLabel(
+  AppLocalizations l10n,
+  DiaryPreviewSeedFallback fallback,
+) => switch (fallback) {
+  DiaryPreviewSeedFallback.app => l10n.diaryPreviewStyleSeedFallbackApp,
+  DiaryPreviewSeedFallback.neutral => l10n.diaryPreviewStyleSeedFallbackNeutral,
+};
+
 String diaryPreviewPaperLabel(AppLocalizations l10n, DiaryPreviewPaper paper) =>
     switch (paper) {
       DiaryPreviewPaper.theme => l10n.diaryPreviewStylePaperTheme,

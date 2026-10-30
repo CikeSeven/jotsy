@@ -1,20 +1,18 @@
 import 'dart:collection';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
-import '../../../core/services/settings_service.dart';
-import '../../widgets/mood_band_palette.dart';
 import '../models/diary_card_style/diary_card_style.dart';
+import '../models/diary_mood_palette.dart';
 import 'diary_card_appearance.dart';
 
 /// 某一布局模式下、已落到具体数值的卡片样式。
 ///
 /// 输入：[DiaryCardStyle]、布局模式、主题、列表可用宽度（[screenWidth]）、
-/// 系统字号、心情配置、瀑布流最少列数（[minColumns]）与卡片所在的页面颜色
+/// 系统字号、心情色板、瀑布流最少列数（[minColumns]）与卡片所在的页面颜色
 /// （[pageBackground]）；输出：间距、封面尺寸、
 /// 有效列数、不含颜色的基础文字样式，以及按卡片类别缓存的颜色
 /// （[appearanceFor]）。无副作用。
@@ -33,7 +31,7 @@ class DiaryCardResolvedStyle {
     required this.theme,
     required this.screenWidth,
     required this.textScale,
-    required this.moodOptions,
+    required this.moodPalette,
     required this.minColumns,
     required this.pageBackground,
   }) : modeStyle = style.mode(mode) {
@@ -156,12 +154,13 @@ class DiaryCardResolvedStyle {
     required ThemeData theme,
     required double screenWidth,
     double textScale = 1,
-    List<String> moodOptions = SettingsService.defaultMoodOptions,
+    DiaryMoodPalette? moodPalette,
     int minColumns = 0,
     Color? pageBackground,
   }) {
     final page =
         pageBackground ?? ExpressiveSurfaces.pageBackground(theme.colorScheme);
+    final palette = moodPalette ?? DiaryMoodPalette.defaults;
     for (final candidate in _recent) {
       if (candidate.mode == mode &&
           candidate.pageBackground == page &&
@@ -170,7 +169,7 @@ class DiaryCardResolvedStyle {
           candidate.textScale == textScale &&
           candidate.minColumns == minColumns &&
           candidate.style == style &&
-          listEquals(candidate.moodOptions, moodOptions)) {
+          candidate.moodPalette == palette) {
         return candidate;
       }
     }
@@ -180,7 +179,7 @@ class DiaryCardResolvedStyle {
       theme: theme,
       screenWidth: screenWidth,
       textScale: textScale,
-      moodOptions: moodOptions,
+      moodPalette: palette,
       minColumns: minColumns,
       pageBackground: page,
     );
@@ -214,7 +213,9 @@ class DiaryCardResolvedStyle {
   /// 屏宽；宽窗口里是日记页内容列或双栏左栏的宽度。
   final double screenWidth;
   final double textScale;
-  final List<String> moodOptions;
+
+  /// 心情色板：样式用到“心情”颜色来源或心情块时由心情取色。
+  final DiaryMoodPalette moodPalette;
 
   /// 瀑布流至少的列数（按可用宽度加列时给出）；0 表示只用样式里的列数。
   final int minColumns;
@@ -267,9 +268,6 @@ class DiaryCardResolvedStyle {
 
   late final bool _usesMoodColor = _usesSource(DiaryCardColorSource.mood);
   late final bool _usesTagColor = _usesSource(DiaryCardColorSource.firstTag);
-  late final Map<String, int> _moodWeights = SettingsService.buildMoodWeightMap(
-    moodOptions,
-  );
   late final DiaryCardAppearanceResolver _resolver =
       DiaryCardAppearanceResolver(
         style,
@@ -279,7 +277,7 @@ class DiaryCardResolvedStyle {
   final LinkedHashMap<Object, DiaryCardAppearance> _appearances =
       LinkedHashMap<Object, DiaryCardAppearance>();
 
-  /// 某张卡片的颜色。按（置顶、胶囊、心情段、首个标签色）缓存：只有样式
+  /// 某张卡片的颜色。按（置顶、胶囊、心情槽位、首个标签色）缓存：只有样式
   /// 真正用到心情色/标签色时，这两项才参与区分，默认样式只有两种外观。
   DiaryCardAppearance appearanceFor({
     required bool pinned,
@@ -287,11 +285,13 @@ class DiaryCardResolvedStyle {
     String? moodEmoji,
     List<Tag> tags = const <Tag>[],
   }) {
-    final moodBand = _usesMoodColor && !locked ? _moodBand(moodEmoji) : null;
+    final moodSlot = _usesMoodColor && !locked
+        ? moodPalette.slotOf(moodEmoji)
+        : null;
     final tagColor = _usesTagColor && !locked && tags.isNotEmpty
         ? tags.first.color
         : null;
-    final key = (pinned, locked, moodBand, tagColor);
+    final key = (pinned, locked, moodSlot, tagColor);
     final cached = _appearances[key];
     if (cached != null) {
       return cached;
@@ -300,7 +300,9 @@ class DiaryCardResolvedStyle {
       DiaryCardAppearanceContext(
         pinned: pinned,
         locked: locked,
-        moodColor: moodBand == null ? null : moodColorFor(moodEmoji),
+        moodColor: moodSlot == null
+            ? null
+            : moodPalette.accentForSlot(moodSlot, colorScheme.brightness),
         tagColor: tagColor == null ? null : Color(tagColor),
       ),
     );
@@ -311,22 +313,10 @@ class DiaryCardResolvedStyle {
     return appearance;
   }
 
-  /// 心情对应的分段颜色（不透明）；没有心情或不在心情配置里时为 null。
-  Color? moodColorFor(String? moodEmoji) {
-    final band = _moodBand(moodEmoji);
-    return band == null
-        ? null
-        : MoodBandPalette.color(colorScheme, band).withValues(alpha: 1);
-  }
-
-  int? _moodBand(String? moodEmoji) {
-    final mood = moodEmoji?.trim();
-    if (mood == null || mood.isEmpty) {
-      return null;
-    }
-    final weight = _moodWeights[mood];
-    return weight == null ? null : MoodBandPalette.bandForWeight(weight);
-  }
+  /// 心情在当前明暗下的颜色（心情色板的强调色，见
+  /// [DiaryMoodPalette.accentOf]）；没有心情或不在心情配置里时为 null。
+  Color? moodColorFor(String? moodEmoji) =>
+      moodPalette.accentOf(moodEmoji, colorScheme.brightness);
 
   bool _usesSource(DiaryCardColorSource source) {
     final surface = style.surface;

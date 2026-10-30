@@ -147,9 +147,13 @@ abstract final class DiaryPreviewPresets {
     ),
   );
 
-  /// 心情色：整页按这篇日记的心情着色，其余保持默认。
+  /// 心情色：整页按这篇日记的心情着色，纸张也染上淡淡的心情色，其余保持
+  /// 默认。
   static const _mood = DiaryPreviewStyle(
-    page: DiaryPreviewPageStyle(colorSeed: DiaryPreviewColorSeed.mood),
+    page: DiaryPreviewPageStyle(
+      colorSeed: DiaryPreviewColorSeed.mood,
+      tintPaper: true,
+    ),
   );
 
   /// 沉浸：铺满的头图、无顶栏标题、进度线与回到顶部。

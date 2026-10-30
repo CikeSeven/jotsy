@@ -5,21 +5,29 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/seeded_theme_cache.dart';
-import '../../../core/services/settings_service.dart';
-import '../../widgets/mood_band_palette.dart';
+import '../models/diary_mood_palette.dart';
 import '../models/diary_preview_style/diary_preview_style.dart';
 import 'diary_card_colors.dart';
 
 /// 预览页样式在当前主题、屏幕与这篇日记下的具体取值。
 ///
-/// 输入：样式、应用主题与种子色、屏幕尺寸、是否减少动画，以及这篇日记的心情
-/// 与首个标签色（配色基调用）。输出：页面主题、底色、正文与标题颜色、实际
-/// 边距、正文最大宽度与头图高度。纯计算；主题实例经 [SeededThemeCache] 复用。
+/// 输入：样式、应用主题与种子色、屏幕尺寸、是否减少动画、心情色板，以及这篇
+/// 日记的心情与首个标签色（配色基调用）。输出：页面主题、底色、正文与标题
+/// 颜色、实际边距、正文最大宽度与头图高度。纯计算；主题实例经
+/// [SeededThemeCache] 复用。
 ///
 /// 着色规则：
 /// - 配色基调不是“跟随应用”、或纸色与应用主题深浅相反时，整页换成由种子色
 ///   装配的另一套主题（深色纸上是深色主题），信息栏、胶囊、引用条、勾选框等
 ///   所有语义色一起变化，不会出现深色纸上的深色文字；
+/// - 基调颜色：心情取心情色板的原色（[DiaryMoodPalette.seedOf]，十档各有
+///   色相），标签取首个标签色，自定义取用户的颜色；装配主题的配色方案按
+///   “着色强度”（[DiaryPreviewSeedIntensity]）换用 tonalSpot / fidelity /
+///   vibrant；
+/// - 心情 / 首个标签取不到颜色时：回退为“跟随应用”则沿用应用主题，回退为
+///   “中性灰”则换成由应用种子色推出的 neutral 主题（低饱和的灰调）；
+/// - 纸张为主题底色、开了“随基调染色”且取到了基调颜色时，底色在 surface 上
+///   叠一层同色相的浅色（[tintedPaper]），正文仍是主题 onSurface；
 /// - 默认样式（跟随应用 + 主题底色）原样返回应用主题，渲染与改版前一致；
 /// - 自定义正文 / 标题颜色按纸色检查对比度（正文 4.5:1、标题 3:1，WCAG 2.x），
 ///   不足时回退为主题色，未设深色值时按色相推导。
@@ -67,6 +75,13 @@ class DiaryPreviewResolvedStyle {
   /// 标题（大字）与背景的最低对比度。
   static const double titleContrast = 3;
 
+  /// 纸张随基调染色时叠在 surface 上的浅色层不透明度：浅色主题叠
+  /// `primaryFixed`（色调 90），深色主题叠 `onPrimaryFixedVariant`（色调
+  /// 30）。两者在各配色方案里色调固定，只随基调的色相与浓淡变化，染出来的
+  /// 纸始终是浅色约 93、深色约 16 的色调，正文对比度不受着色强度影响。
+  static const double paperTintLight = 0.55;
+  static const double paperTintDark = 0.45;
+
   /// 内置纸色：（浅色主题，深色主题）。墨色两种主题下都是深色纸。
   static const Map<DiaryPreviewPaper, (int, int)> paperColors =
       <DiaryPreviewPaper, (int, int)>{
@@ -83,7 +98,7 @@ class DiaryPreviewResolvedStyle {
     required Color appSeed,
     required Size screenSize,
     required bool reduceMotion,
-    required List<String> moodOptions,
+    required DiaryMoodPalette moodPalette,
     String? moodEmoji,
     int? firstTagColor,
   }) {
@@ -95,25 +110,37 @@ class DiaryPreviewResolvedStyle {
         : ThemeData.estimateBrightnessForColor(paper);
     final seed = switch (page.colorSeed) {
       DiaryPreviewColorSeed.app => null,
-      DiaryPreviewColorSeed.mood => _moodColor(
-        appTheme.colorScheme,
-        moodEmoji,
-        moodOptions,
-      ),
+      DiaryPreviewColorSeed.mood => moodPalette.seedOf(moodEmoji),
       DiaryPreviewColorSeed.tag =>
         firstTagColor == null ? null : Color(firstTagColor),
       DiaryPreviewColorSeed.custom =>
         page.seedColor == null ? null : Color(page.seedColor!),
     };
-    final themed = seed != null || pageBrightness != appBrightness;
+    // 心情 / 首个标签是逐篇取色的基调，取不到时才看回退；自定义色没设时
+    // 与改版前一样沿用应用主题。
+    final neutral =
+        seed == null &&
+        page.seedFallback == DiaryPreviewSeedFallback.neutral &&
+        (page.colorSeed == DiaryPreviewColorSeed.mood ||
+            page.colorSeed == DiaryPreviewColorSeed.tag);
+    final themed = seed != null || neutral || pageBrightness != appBrightness;
     final theme = themed
         ? SeededThemeCache.of(
             seed ?? appSeed,
             pageBrightness,
             reduceMotion: reduceMotion,
+            variant: neutral
+                ? DynamicSchemeVariant.neutral
+                : seed != null
+                ? _variantFor(page.seedIntensity)
+                : DynamicSchemeVariant.tonalSpot,
           )
         : appTheme;
-    final background = paper ?? theme.colorScheme.surface;
+    final background =
+        paper ??
+        (page.tintPaper && seed != null
+            ? tintedPaper(theme.colorScheme)
+            : theme.colorScheme.surface);
 
     final layout = _layoutFor(style, screenSize.width, screenSize.height);
     return DiaryPreviewResolvedStyle._(
@@ -226,11 +253,12 @@ class DiaryPreviewResolvedStyle {
   final ThemeData theme;
   final bool themed;
 
-  /// 页面底色（纸色，或主题 surface）。
+  /// 页面底色（纸色，或主题 surface；随基调染色时为染过的 surface）。
   final Color background;
 
-  /// 纸张是否“跟随主题”（没有纸色，[background] 取主题 surface）。只有这时
-  /// 预览页才让位给“背景与材质”的预览区域背景；选了纸色时纸色优先。
+  /// 纸张是否“跟随主题”（没有纸色，[background] 取主题 surface 或染过的
+  /// surface）。只有这时预览页才让位给“背景与材质”的预览区域背景；选了
+  /// 纸色时纸色优先。
   final bool paperFollowsTheme;
 
   /// 通过对比度检查的自定义正文颜色；null 表示用主题正文色。
@@ -289,23 +317,23 @@ class DiaryPreviewResolvedStyle {
     return Color(light ? preset.$1 : preset.$2);
   }
 
-  static Color? _moodColor(
-    ColorScheme scheme,
-    String? moodEmoji,
-    List<String> moodOptions,
-  ) {
-    final mood = moodEmoji?.trim();
-    if (mood == null || mood.isEmpty) {
-      return null;
-    }
-    final weight = SettingsService.buildMoodWeightMap(moodOptions)[mood];
-    if (weight == null) {
-      return null;
-    }
-    return MoodBandPalette.color(
-      scheme,
-      MoodBandPalette.bandForWeight(weight),
-    ).withValues(alpha: 1);
+  static DynamicSchemeVariant _variantFor(
+    DiaryPreviewSeedIntensity intensity,
+  ) => switch (intensity) {
+    DiaryPreviewSeedIntensity.soft => DynamicSchemeVariant.tonalSpot,
+    DiaryPreviewSeedIntensity.original => DynamicSchemeVariant.fidelity,
+    DiaryPreviewSeedIntensity.vivid => DynamicSchemeVariant.vibrant,
+  };
+
+  /// 随基调染色的纸：在 [scheme] 的 surface 上叠一层同色相的浅色，见
+  /// [paperTintLight]。
+  static Color tintedPaper(ColorScheme scheme) {
+    final light = scheme.brightness == Brightness.light;
+    final tint = light ? scheme.primaryFixed : scheme.onPrimaryFixedVariant;
+    return Color.alphaBlend(
+      tint.withValues(alpha: light ? paperTintLight : paperTintDark),
+      scheme.surface,
+    );
   }
 
   static Color? _readable(

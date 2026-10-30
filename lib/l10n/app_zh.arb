@@ -286,7 +286,7 @@
   "@settingsMoodOptionsTitle": {
     "description": "设置项：自定义发布/编辑面板中固定 10 个心情符号。"
   },
-  "settingsMoodOptionsSubtitle": "自定义 10 个心情候选",
+  "settingsMoodOptionsSubtitle": "自定义 10 个心情的符号与颜色",
   "@settingsMoodOptionsSubtitle": {
     "description": "心情符号设置入口副标题。"
   },
@@ -307,6 +307,19 @@
       }
     },
     "description": "心情符号输入框帮助文案。"
+  },
+  "settingsMoodOptionsColorLabel": "心情 {index} 的颜色",
+  "@settingsMoodOptionsColorLabel": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    },
+    "description": "心情符号页：某个心情颜色色块的读屏标签与取色对话框标题。"
+  },
+  "settingsMoodOptionsColorsHint": "颜色用于日记预览页的“心情”配色基调和日记卡片的心情色。点符号左侧的色块修改。",
+  "@settingsMoodOptionsColorsHint": {
+    "description": "心情符号页：顶部心情色谱下方的说明。"
   },
   "settingsMoodOptionsSaveFailed": "保存心情符号失败: {error}",
   "@settingsMoodOptionsSaveFailed": {
@@ -5115,7 +5128,7 @@
   "@diaryCardStyleSourceCustom": {
     "description": "日记卡片样式设置页：颜色来源：自定义颜色。"
   },
-  "diaryCardStyleSourceMoodHint": "按每篇日记的心情取色；没有心情时用默认颜色",
+  "diaryCardStyleSourceMoodHint": "按每篇日记的心情取色（颜色可在“心情符号”里修改）；没有心情时用默认颜色",
   "@diaryCardStyleSourceMoodHint": {
     "description": "日记卡片样式设置页：心情颜色来源的说明。"
   },
@@ -5408,7 +5421,7 @@
   "@diaryPreviewStylePresetMood": {
     "description": "预览页样式设置：预设名。"
   },
-  "diaryPreviewStylePresetMoodDesc": "整页跟着这篇的心情换颜色",
+  "diaryPreviewStylePresetMoodDesc": "整页与纸张跟着这篇的心情换颜色",
   "@diaryPreviewStylePresetMoodDesc": {
     "description": "预览页样式设置：预设说明。"
   },
@@ -5444,13 +5457,89 @@
   "@diaryPreviewStyleSeedCustom": {
     "description": "预览页样式设置：配色基调选项。"
   },
-  "diaryPreviewStyleSeedHint": "没有心情或标签的日记沿用应用主题色。",
-  "@diaryPreviewStyleSeedHint": {
-    "description": "预览页样式设置：配色基调下方的说明。"
-  },
   "diaryPreviewStyleSeedColor": "基调颜色",
   "@diaryPreviewStyleSeedColor": {
     "description": "预览页样式设置：自定义基调颜色。"
+  },
+  "diaryPreviewStyleSeedAppHint": "与应用主题色一致。",
+  "@diaryPreviewStyleSeedAppHint": {
+    "description": "预览页样式设置：配色基调为“跟随应用”时的说明。"
+  },
+  "diaryPreviewStyleSeedMoodHint": "按这篇日记的心情取色，十种心情各有颜色。",
+  "@diaryPreviewStyleSeedMoodHint": {
+    "description": "预览页样式设置：配色基调为“心情”时的说明。"
+  },
+  "diaryPreviewStyleSeedTagHint": "按这篇日记第一个标签的颜色。",
+  "@diaryPreviewStyleSeedTagHint": {
+    "description": "预览页样式设置：配色基调为“首个标签”时的说明。"
+  },
+  "diaryPreviewStyleSeedCustomHint": "每篇日记都用同一种颜色。",
+  "@diaryPreviewStyleSeedCustomHint": {
+    "description": "预览页样式设置：配色基调为“自定义”时的说明。"
+  },
+  "diaryPreviewStyleSeedIntensity": "着色强度",
+  "@diaryPreviewStyleSeedIntensity": {
+    "description": "预览页样式设置：设置项：由基调颜色装配整页配色的方式。"
+  },
+  "diaryPreviewStyleSeedIntensityHint": "柔和与应用主题一样克制；原色贴近颜色本身的浓淡；鲜明最饱和。",
+  "@diaryPreviewStyleSeedIntensityHint": {
+    "description": "预览页样式设置：着色强度下方的说明。"
+  },
+  "diaryPreviewStyleSeedIntensitySoft": "柔和",
+  "@diaryPreviewStyleSeedIntensitySoft": {
+    "description": "预览页样式设置：着色强度选项（与应用主题同样的配色方案）。"
+  },
+  "diaryPreviewStyleSeedIntensityOriginal": "原色",
+  "@diaryPreviewStyleSeedIntensityOriginal": {
+    "description": "预览页样式设置：着色强度选项（贴近颜色本身的浓淡）。"
+  },
+  "diaryPreviewStyleSeedIntensityVivid": "鲜明",
+  "@diaryPreviewStyleSeedIntensityVivid": {
+    "description": "预览页样式设置：着色强度选项（最饱和）。"
+  },
+  "diaryPreviewStyleSeedFallback": "取不到颜色时",
+  "@diaryPreviewStyleSeedFallback": {
+    "description": "预览页样式设置：设置项：没选心情或没有标签的日记用哪种配色。"
+  },
+  "diaryPreviewStyleSeedFallbackHint": "没选心情或没有标签的日记用哪种配色。",
+  "@diaryPreviewStyleSeedFallbackHint": {
+    "description": "预览页样式设置：“取不到颜色时”下方的说明。"
+  },
+  "diaryPreviewStyleSeedFallbackApp": "跟随应用",
+  "@diaryPreviewStyleSeedFallbackApp": {
+    "description": "预览页样式设置：取不到颜色时的选项：沿用应用主题。"
+  },
+  "diaryPreviewStyleSeedFallbackNeutral": "中性灰",
+  "@diaryPreviewStyleSeedFallbackNeutral": {
+    "description": "预览页样式设置：取不到颜色时的选项：低饱和的灰调配色。"
+  },
+  "diaryPreviewStyleTintPaper": "纸张随基调染色",
+  "@diaryPreviewStyleTintPaper": {
+    "description": "预览页样式设置：开关：主题纸张叠上一层淡淡的基调色。"
+  },
+  "diaryPreviewStyleTintPaperHint": "页面底色带上一层淡淡的基调色",
+  "@diaryPreviewStyleTintPaperHint": {
+    "description": "预览页样式设置：“纸张随基调染色”的说明。"
+  },
+  "diaryPreviewStyleMoodColors": "心情颜色",
+  "@diaryPreviewStyleMoodColors": {
+    "description": "预览页样式设置：入口：打开心情符号页修改各心情的颜色。"
+  },
+  "diaryPreviewStyleMoodColorsHint": "在“心情符号”里为每种心情换颜色",
+  "@diaryPreviewStyleMoodColorsHint": {
+    "description": "预览页样式设置：“心情颜色”入口的说明。"
+  },
+  "diaryPreviewStylePreviewMood": "预览心情",
+  "@diaryPreviewStylePreviewMood": {
+    "description": "预览页样式设置：设置项：上方预览里示例日记改用的心情。"
+  },
+  "diaryPreviewStylePreviewMoodHint": "只换上方预览里示例的心情，看看每种心情的样子",
+  "@diaryPreviewStylePreviewMoodHint": {
+    "description": "预览页样式设置：“预览心情”的说明。"
+  },
+  "diaryPreviewStylePreviewMoodSample": "按示例",
+  "@diaryPreviewStylePreviewMoodSample": {
+    "description": "预览页样式设置：预览心情选项：用示例日记自己的心情。"
   },
   "diaryPreviewStylePaper": "纸张",
   "@diaryPreviewStylePaper": {

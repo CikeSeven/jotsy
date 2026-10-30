@@ -27,10 +27,10 @@ import '../../controllers/diary_todo_autosave_controller.dart';
 import '../../models/diary_preview_result.dart';
 import '../../models/time_capsule.dart';
 import '../../pages/locked_diary_page.dart';
-import '../../providers/diary_card_style_provider.dart';
 import '../../providers/diary_comments_provider.dart';
 import '../../providers/diary_detail_provider.dart';
 import '../../providers/diary_link_providers.dart';
+import '../../providers/diary_mood_palette_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../../sections/diary_typography_sheet.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
@@ -407,7 +407,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       appSeed: ref.watch(appThemeSeedColorProvider),
       screenSize: MediaQuery.sizeOf(context),
       reduceMotion: MediaQuery.disableAnimationsOf(context),
-      moodOptions: ref.watch(diaryCardMoodOptionsProvider),
+      moodPalette: ref.watch(diaryMoodPaletteProvider),
       moodEmoji: viewData.moodEmoji,
       firstTagColor: detail.tags.isEmpty ? null : detail.tags.first.color,
     );

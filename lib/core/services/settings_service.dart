@@ -70,6 +70,7 @@ class SettingsService {
     required String? diaryToolbarHiddenItemsRaw,
     required String? diaryToolbarCurrentTimeFormatRaw,
     required String? moodOptionsRaw,
+    required String? moodColorsRaw,
     required String? calendarDisplayOptionsRaw,
     required String? diaryCardStyleRaw,
     required String? diaryPreviewStyleRaw,
@@ -114,6 +115,7 @@ class SettingsService {
          diaryToolbarCurrentTimeFormatRaw,
        ),
        moodOptionsRawNotifier = ValueNotifier<String?>(moodOptionsRaw),
+       moodColorsRawNotifier = ValueNotifier<String?>(moodColorsRaw),
        calendarDisplayOptionsRawNotifier = ValueNotifier<String?>(
          calendarDisplayOptionsRaw,
        ),
@@ -163,6 +165,11 @@ class SettingsService {
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
   final ValueNotifier<String?> diaryToolbarCurrentTimeFormatRawNotifier;
   final ValueNotifier<String?> moodOptionsRawNotifier;
+
+  /// 心情颜色（单个 JSON 字符串，按心情槽位稀疏记录用户改过的颜色）；解析
+  /// 与默认色板由 `DiaryMoodColors` 负责，服务层只保存原文。与心情符号同为
+  /// 本机偏好，不随备份导出。
+  final ValueNotifier<String?> moodColorsRawNotifier;
 
   /// 日历页显示选项（单个 JSON 字符串）；解析与默认值由日历模块负责，
   /// 服务层只保存原文，不依赖 UI 模型。
@@ -227,6 +234,7 @@ class SettingsService {
   static const _keyDiaryToolbarCurrentTimeFormat =
       'app.settings.diary_toolbar_current_time_format';
   static const _keyMoodOptions = 'app.settings.mood_options';
+  static const _keyMoodColors = 'app.settings.mood_colors';
   static const _keyTagFilterMemoryEnabled =
       'app.settings.tag_filter_memory_enabled';
   static const _keyDayPhotoSuggestionsEnabled =
@@ -345,6 +353,7 @@ class SettingsService {
           prefs.getString(_keyDiaryToolbarCurrentTimeFormat) ??
           _defaultDiaryToolbarCurrentTimeFormat,
       moodOptionsRaw: prefs.getString(_keyMoodOptions),
+      moodColorsRaw: prefs.getString(_keyMoodColors),
       calendarDisplayOptionsRaw: prefs.getString(_keyCalendarDisplayOptions),
       diaryCardStyleRaw: storedDiaryCardStyle is String
           ? storedDiaryCardStyle
@@ -418,6 +427,7 @@ class SettingsService {
   String? get diaryToolbarCurrentTimeFormatRaw =>
       diaryToolbarCurrentTimeFormatRawNotifier.value;
   String? get moodOptionsRaw => moodOptionsRawNotifier.value;
+  String? get moodColorsRaw => moodColorsRawNotifier.value;
   String? get calendarDisplayOptionsRaw =>
       calendarDisplayOptionsRawNotifier.value;
   String? get diaryCardStyleRaw => diaryCardStyleRawNotifier.value;
@@ -531,6 +541,18 @@ class SettingsService {
   Future<void> resetMoodOptions() async {
     moodOptionsRawNotifier.value = null;
     await _prefs.remove(_keyMoodOptions);
+  }
+
+  /// 保存心情颜色；空值（全部为默认色）时移除该键。
+  Future<void> setMoodColorsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      moodColorsRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyMoodColors));
+      return;
+    }
+    moodColorsRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyMoodColors, normalized));
   }
 
   /// 保存日历显示选项；空值移除该键，回到默认选项。

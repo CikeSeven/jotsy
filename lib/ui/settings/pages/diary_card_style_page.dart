@@ -118,7 +118,6 @@ class _DiaryCardStylePageState extends State<DiaryCardStylePage> {
               DiaryCardStylePreview(
                 controller: _controller,
                 samples: _samples!,
-                moodOptions: widget.settingsService.moodOptions,
                 showToolbar: showToolbar,
                 bottomPadding: bottomPadding,
               ),

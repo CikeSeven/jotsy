@@ -7,6 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../../diaries/providers/diary_comments_provider.dart';
+import '../../../diaries/providers/diary_mood_palette_provider.dart';
 import '../../../diaries/sections/diaries_list_section.dart';
 import '../../../diaries/sections/diary_head_section.dart';
 import '../../../widgets/expressive_button_group.dart';
@@ -35,14 +36,12 @@ class DiaryCardStylePreview extends ConsumerStatefulWidget {
     super.key,
     required this.controller,
     required this.samples,
-    required this.moodOptions,
     this.showToolbar = true,
     this.bottomPadding = 0,
   });
 
   final DiaryCardStyleEditorController controller;
   final List<DiaryWithTags> samples;
-  final List<String> moodOptions;
 
   /// 是否在预览上方显示工具条。
   final bool showToolbar;
@@ -135,7 +134,7 @@ class _DiaryCardStylePreviewState extends ConsumerState<DiaryCardStylePreview> {
                               _toggle(diary.diary.diaryId),
                           onToggleSelection: (diaryId, _) => _toggle(diaryId),
                           cardStyle: controller.style,
-                          moodOptions: widget.moodOptions,
+                          moodPalette: ref.watch(diaryMoodPaletteProvider),
                           enableCoverHero: false,
                           opensLockedCapsulePage: false,
                         ),

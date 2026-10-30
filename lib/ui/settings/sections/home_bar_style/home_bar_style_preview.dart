@@ -10,6 +10,7 @@ import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../diaries/providers/diary_card_style_provider.dart';
+import '../../../diaries/providers/diary_mood_palette_provider.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
 import '../../../diaries/sections/diaries_list_section.dart';
 import '../../../diaries/sections/diary_head_section.dart';
@@ -363,7 +364,7 @@ class _SampleList extends ConsumerWidget {
           onOpenEditor: (_, _) {},
           onToggleSelection: (_, _) {},
           cardStyle: ref.watch(diaryCardStyleProvider),
-          moodOptions: ref.watch(diaryCardMoodOptionsProvider),
+          moodPalette: ref.watch(diaryMoodPaletteProvider),
           enableCoverHero: false,
           opensLockedCapsulePage: false,
         ),

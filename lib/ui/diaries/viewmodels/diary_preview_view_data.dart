@@ -93,6 +93,25 @@ class DiaryPreviewViewData {
   /// 头图来源：显式封面，否则正文第一张图；都没有时为 null。
   String? get coverSource => images.firstOrNull;
 
+  /// 换掉心情的副本（设置页预览的“预览心情”用）；心情相同时返回自身。
+  DiaryPreviewViewData withMood(String moodEmoji) {
+    if (moodEmoji == this.moodEmoji) {
+      return this;
+    }
+    return DiaryPreviewViewData._(
+      _content,
+      _contentText,
+      _cover,
+      _metadata,
+      images: images,
+      moodEmoji: moodEmoji,
+      energyLevel: energyLevel,
+      location: location,
+      weather: weather,
+      weatherIconCode: weatherIconCode,
+    );
+  }
+
   static Map<String, dynamic>? _decodeContext(String metadata) {
     try {
       final decoded = jsonDecode(metadata);

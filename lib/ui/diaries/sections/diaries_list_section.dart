@@ -4,9 +4,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
-import '../../../core/services/settings_service.dart';
 import '../controllers/diary_pointer_selection.dart';
 import '../models/diary_card_style/diary_card_style.dart';
+import '../models/diary_mood_palette.dart';
 import '../viewmodels/diary_card_resolved_style.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_card/diary_card.dart';
@@ -62,7 +62,7 @@ class DiariesListSection extends StatelessWidget {
     this.isSearchResultEmpty = false,
     this.emptyState,
     this.cardStyle = DiaryCardStyle.defaults,
-    this.moodOptions = SettingsService.defaultMoodOptions,
+    this.moodPalette,
     this.enableCoverHero = true,
     this.opensLockedCapsulePage = true,
     this.sectionHeaderBuilder,
@@ -126,8 +126,9 @@ class DiariesListSection extends StatelessWidget {
   /// 用户的卡片样式；默认即改版前的经典外观。
   final DiaryCardStyle cardStyle;
 
-  /// 心情配置：卡片按“心情色”着色时用它把心情换算成档位。
-  final List<String> moodOptions;
+  /// 心情色板：卡片按“心情色”着色或画心情块时由心情取色；null 为默认心情
+  /// 符号与内置色。
+  final DiaryMoodPalette? moodPalette;
 
   /// 封面是否作为预览页头图的共享元素来源（设置页预览关闭）。
   final bool enableCoverHero;
@@ -252,7 +253,7 @@ class DiariesListSection extends StatelessWidget {
       theme: Theme.of(context),
       screenWidth: availableWidth ?? MediaQuery.sizeOf(context).width,
       textScale: MediaQuery.textScalerOf(context).scale(1),
-      moodOptions: moodOptions,
+      moodPalette: moodPalette,
       minColumns: isWaterfall ? minWaterfallColumns : 0,
       // 半透明 / 玻璃卡片的文字对比度按卡片实际叠在的颜色（页面背景色或
       // 背景图的估计色）计算；没有页面背景时就是主题页面底色。

@@ -55,6 +55,7 @@ import '../controllers/diary_preview_edit_flow.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../models/time_capsule.dart';
 import '../providers/diary_card_style_provider.dart';
+import '../providers/diary_mood_palette_provider.dart';
 import '../providers/diary_comments_provider.dart';
 import '../viewmodels/diaries_page_layout.dart';
 import '../viewmodels/diary_view_preferences.dart';
@@ -856,8 +857,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         revealProgress: glassCards
                                             ? _listRefreshPulseController
                                             : null,
-                                        moodOptions: ref.watch(
-                                          diaryCardMoodOptionsProvider,
+                                        moodPalette: ref.watch(
+                                          diaryMoodPaletteProvider,
                                         ),
                                         pendingHideDiaryIds:
                                             _pendingHideDiaryIds,

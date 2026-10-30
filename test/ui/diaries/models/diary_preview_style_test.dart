@@ -14,7 +14,10 @@ const _everything = DiaryPreviewStyle(
   page: DiaryPreviewPageStyle(
     colorSeed: DiaryPreviewColorSeed.custom,
     seedColor: 0xFF336699,
+    seedIntensity: DiaryPreviewSeedIntensity.vivid,
+    seedFallback: DiaryPreviewSeedFallback.neutral,
     paper: DiaryPreviewPaper.custom,
+    tintPaper: true,
     paperLight: 0xFFF4ECD8,
     paperDark: 0xFF2B261E,
     textLight: 0xFF333333,
@@ -234,6 +237,9 @@ void main() {
         'horizontalPadding': 'wide',
         'paper': 'sepia',
         'seedColor': '#12',
+        'seedIntensity': 'loud',
+        'seedFallback': 7,
+        'tintPaper': 'yes',
       },
       'cover': <String, Object?>{'height': 9999, 'mode': 'inset'},
       'title': <String, Object?>{'scale': double.nan, 'align': 'center'},
@@ -243,6 +249,9 @@ void main() {
     expect(style.page.horizontalPadding, 16);
     expect(style.page.paper, DiaryPreviewPaper.sepia);
     expect(style.page.seedColor, isNull);
+    expect(style.page.seedIntensity, DiaryPreviewSeedIntensity.soft);
+    expect(style.page.seedFallback, DiaryPreviewSeedFallback.app);
+    expect(style.page.tintPaper, isFalse);
     // 越界夹到边界。
     expect(style.cover.height, DiaryPreviewStyleLimits.coverHeight.max);
     expect(style.cover.mode, DiaryPreviewCoverMode.inset);

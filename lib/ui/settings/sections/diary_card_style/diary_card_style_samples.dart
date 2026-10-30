@@ -123,7 +123,7 @@ List<DiaryWithTags> buildDiaryCardStyleSamples(
         createdAt: now.subtract(const Duration(days: 3, hours: 5)),
         extraEmbeds: const <Object>[],
         context: const <String, Object>{
-          'moodEmoji': '😐',
+          'moodEmoji': '😕',
           'weatherIconCode': '305',
         },
       ),

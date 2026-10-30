@@ -4,8 +4,8 @@ import 'package:flutter/rendering.dart' show SliverConstraints;
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/sections/diary_head_section.dart' show DiaryLayoutMode;
-import '../../../core/services/settings_service.dart';
 import '../../diaries/models/diary_card_style/diary_card_style.dart';
+import '../../diaries/models/diary_mood_palette.dart';
 import '../../diaries/sections/diaries_list_section.dart';
 
 /// 选中日日记的“卡片”展示：直接复用日记列表的单列卡片（封面、标签、置顶
@@ -29,7 +29,7 @@ class CalendarDayCardsSliver extends StatefulWidget {
     required this.onOpenDiary,
     required this.onCreate,
     this.cardStyle = DiaryCardStyle.defaults,
-    this.moodOptions = SettingsService.defaultMoodOptions,
+    this.moodPalette,
     this.commentCounts = const <String, int>{},
   });
 
@@ -41,7 +41,9 @@ class CalendarDayCardsSliver extends StatefulWidget {
 
   /// 与日记列表相同的用户卡片样式。
   final DiaryCardStyle cardStyle;
-  final List<String> moodOptions;
+
+  /// 卡片按“心情色”着色时的心情色板（null 为默认）。
+  final DiaryMoodPalette? moodPalette;
 
   /// 每篇的留言条数（卡片底栏的留言数，见 `DiariesListSection.commentCounts`）。
   final Map<String, int> commentCounts;
@@ -118,7 +120,7 @@ class _CalendarDayCardsSliverState extends State<CalendarDayCardsSliver>
             onOpenEditor: widget.onOpenDiary,
             onToggleSelection: (_, __) {},
             cardStyle: widget.cardStyle,
-            moodOptions: widget.moodOptions,
+            moodPalette: widget.moodPalette,
             commentCounts: widget.commentCounts,
             availableWidth: width,
           );

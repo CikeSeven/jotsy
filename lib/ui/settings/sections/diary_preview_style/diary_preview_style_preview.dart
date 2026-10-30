@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../diaries/providers/diary_card_style_provider.dart';
 import '../../../diaries/providers/diary_comments_provider.dart';
+import '../../../diaries/providers/diary_mood_palette_provider.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
 import '../../../diaries/viewmodels/diary_preview_resolved_style.dart';
 import '../../../diaries/viewmodels/diary_preview_view_data.dart';
@@ -27,7 +27,8 @@ import 'diary_preview_style_samples.dart';
 ///
 /// 预览不写库：示例的待办只在本地勾选；顶栏按钮、返回与点按图片都不做事，
 /// 免得在设置页里误触离开。明暗可在工具条单独切换（[previewBrightness] 为
-/// null 时跟随应用）。
+/// null 时跟随应用）；“页面”标签里选的预览心情（`previewMood`）替换各篇
+/// 示例的心情，配色基调与信息栏的心情胶囊一起变。
 class DiaryPreviewStylePreview extends ConsumerWidget {
   const DiaryPreviewStylePreview({
     super.key,
@@ -135,6 +136,20 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
     widget.detail.diary,
   );
 
+  /// 换了“预览心情”的那一份；同一心情沿用同一实例，正文统计不重算。
+  DiaryPreviewViewData? _moodViewData;
+
+  DiaryPreviewViewData _viewDataFor(String? previewMood) {
+    if (previewMood == null) {
+      return _viewData;
+    }
+    final cached = _moodViewData;
+    if (cached != null && cached.moodEmoji == previewMood) {
+      return cached;
+    }
+    return _moodViewData = _viewData.withMood(previewMood);
+  }
+
   @override
   void dispose() {
     _body.dispose();
@@ -170,14 +185,15 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final detail = widget.detail;
+    final viewData = _viewDataFor(controller.previewMood);
     final resolved = DiaryPreviewResolvedStyle.resolve(
       style: controller.style,
       appTheme: Theme.of(context),
       appSeed: widget.appSeed,
       screenSize: MediaQuery.sizeOf(context),
       reduceMotion: MediaQuery.disableAnimationsOf(context),
-      moodOptions: ref.watch(diaryCardMoodOptionsProvider),
-      moodEmoji: _viewData.moodEmoji,
+      moodPalette: ref.watch(diaryMoodPaletteProvider),
+      moodEmoji: viewData.moodEmoji,
       firstTagColor: detail.tags.isEmpty ? null : detail.tags.first.color,
     );
     void ignore() {}
@@ -186,7 +202,7 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
       scrollController: _scroll,
       content: DiaryPreviewContent(
         detail: detail,
-        viewData: _viewData,
+        viewData: viewData,
         controller: _body,
         scrollController: _scroll,
         resolved: resolved,

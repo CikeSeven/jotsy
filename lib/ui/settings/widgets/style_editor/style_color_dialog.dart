@@ -21,20 +21,26 @@ class StyleCustomColor {
 ///
 /// 深色默认“自动配色”：按 [DiaryCardColors.deriveDark] 由浅色值推导，关闭后
 /// 可单独指定。颜色来自调色板或 6 位 HEX 输入；取消返回 null。
+///
+/// [showDarkVariant] 为 false 时只选一个颜色（没有浅色 / 深色切换，结果的
+/// `dark` 恒为 null）：用作种子色的颜色（预览页基调颜色、心情色）在两种明暗
+/// 下都由配色算法推出，单独指定深色没有意义。
 Future<StyleCustomColor?> showStyleColorDialog(
   BuildContext context, {
   required String title,
   required int light,
   required int? dark,
   required DiaryCardColorRole role,
+  bool showDarkVariant = true,
 }) {
   return showAppDialog<StyleCustomColor>(
     context: context,
     builder: (BuildContext context) => _StyleColorDialog(
       title: title,
       initialLight: light,
-      initialDark: dark,
+      initialDark: showDarkVariant ? dark : null,
       role: role,
+      showDarkVariant: showDarkVariant,
     ),
   );
 }
@@ -45,12 +51,14 @@ class _StyleColorDialog extends StatefulWidget {
     required this.initialLight,
     required this.initialDark,
     required this.role,
+    required this.showDarkVariant,
   });
 
   final String title;
   final int initialLight;
   final int? initialDark;
   final DiaryCardColorRole role;
+  final bool showDarkVariant;
 
   @override
   State<_StyleColorDialog> createState() => _StyleColorDialogState();
@@ -150,17 +158,22 @@ class _StyleColorDialogState extends State<_StyleColorDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            ExpressiveButtonGroup<bool>(
-              minSegmentWidth: 88,
-              segments: <ButtonSegment<bool>>[
-                ButtonSegment<bool>(value: false, label: Text(l10n.autoT0047)),
-                ButtonSegment<bool>(value: true, label: Text(l10n.autoT0048)),
-              ],
-              selected: <bool>{_editingDark},
-              onSelectionChanged: (Set<bool> value) =>
-                  _switchTarget(value.single),
-            ),
-            const SizedBox(height: 12),
+            if (widget.showDarkVariant) ...<Widget>[
+              ExpressiveButtonGroup<bool>(
+                minSegmentWidth: 88,
+                segments: <ButtonSegment<bool>>[
+                  ButtonSegment<bool>(
+                    value: false,
+                    label: Text(l10n.autoT0047),
+                  ),
+                  ButtonSegment<bool>(value: true, label: Text(l10n.autoT0048)),
+                ],
+                selected: <bool>{_editingDark},
+                onSelectionChanged: (Set<bool> value) =>
+                    _switchTarget(value.single),
+              ),
+              const SizedBox(height: 12),
+            ],
             if (_editingDark) ...<Widget>[
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,

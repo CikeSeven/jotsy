@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style.dart';
+import 'package:node_diary/ui/diaries/models/diary_mood_palette.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_card_resolved_style.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -324,6 +326,51 @@ void main() {
         tags: const <Tag>[Tag(id: 1, name: 'a', color: 0xFF4CAF50)],
       );
       expect(tagged.surface.borderColor, const Color(0xFF4CAF50));
+    });
+
+    test('neighboring happy moods get different colors in both themes', () {
+      // 改版前 😊 与 😄、😀 与 🤩 两两同色（都落在 primary 那一段）。
+      for (final brightness in Brightness.values) {
+        final resolved = _resolve(
+          moodStyle,
+          DiaryCardMode.list,
+          brightness: brightness,
+        );
+        final colors = <Color?>[
+          for (final mood in <String>['🙂', '😊', '😄', '😀', '🤩'])
+            resolved
+                .appearanceFor(pinned: false, locked: false, moodEmoji: mood)
+                .surface
+                .color,
+        ];
+        expect(colors.toSet(), hasLength(colors.length), reason: '$brightness');
+        expect(
+          resolved.moodColorFor('😊'),
+          DiaryMoodPalette.defaults.accentOf('😊', brightness),
+        );
+      }
+    });
+
+    test('mood colors follow the palette the caller passes in', () {
+      final custom = DiaryMoodPalette(
+        moodOptions: SettingsService.defaultMoodOptions,
+        colors: DiaryMoodColors.defaults.withColor(10, 0xFF2E7D32),
+      );
+      final resolved = DiaryCardResolvedStyle.resolve(
+        style: moodStyle,
+        mode: DiaryCardMode.list,
+        theme: expressiveTestTheme(Brightness.light),
+        screenWidth: 360,
+        moodPalette: custom,
+      );
+      expect(
+        resolved.moodColorFor('🤩'),
+        DiaryMoodPalette.accentFor(const Color(0xFF2E7D32), Brightness.light),
+      );
+      expect(
+        resolved.moodColorFor('🤩'),
+        isNot(_resolve(moodStyle, DiaryCardMode.list).moodColorFor('🤩')),
+      );
     });
 
     test('dark custom backgrounds flip the text to inverse colors', () {

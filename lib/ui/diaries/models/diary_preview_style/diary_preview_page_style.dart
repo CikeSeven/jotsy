@@ -1,7 +1,7 @@
 part of 'diary_preview_style.dart';
 
-/// 页面与顶栏：配色基调、纸张、正文颜色、边距、正文宽度、顶栏、阅读进度与
-/// 回到顶部。
+/// 页面与顶栏：配色基调（及其着色强度、取不到颜色时的回退）、纸张（及是否
+/// 随基调染色）、正文颜色、边距、正文宽度、顶栏、阅读进度与回到顶部。
 ///
 /// 自定义颜色分浅色与深色两态（不透明 ARGB）：深色为 null 时由渲染层按色相
 /// 推导；正文颜色浅色值为 null 表示“自动”（跟随纸张与主题）。
@@ -10,7 +10,10 @@ class DiaryPreviewPageStyle {
   const DiaryPreviewPageStyle({
     this.colorSeed = DiaryPreviewColorSeed.app,
     this.seedColor,
+    this.seedIntensity = DiaryPreviewSeedIntensity.soft,
+    this.seedFallback = DiaryPreviewSeedFallback.app,
     this.paper = DiaryPreviewPaper.theme,
+    this.tintPaper = false,
     this.paperLight,
     this.paperDark,
     this.textLight,
@@ -31,7 +34,17 @@ class DiaryPreviewPageStyle {
 
   /// [DiaryPreviewColorSeed.custom] 时的种子色。
   final int? seedColor;
+
+  /// 基调不是“跟随应用”时整页主题的配色方案。
+  final DiaryPreviewSeedIntensity seedIntensity;
+
+  /// 基调为心情 / 首个标签而这篇取不到颜色时的整页主题。
+  final DiaryPreviewSeedFallback seedFallback;
   final DiaryPreviewPaper paper;
+
+  /// 纸张为 [DiaryPreviewPaper.theme] 且取到了基调颜色时，页面底色叠上一层
+  /// 淡淡的基调色（选了内置或自定义纸色时以纸色为准，不染色）。
+  final bool tintPaper;
 
   /// [DiaryPreviewPaper.custom] 时的纸色（浅色 / 深色）。
   final int? paperLight;
@@ -56,7 +69,10 @@ class DiaryPreviewPageStyle {
   DiaryPreviewPageStyle copyWith({
     DiaryPreviewColorSeed? colorSeed,
     ValueGetter<int?>? seedColor,
+    DiaryPreviewSeedIntensity? seedIntensity,
+    DiaryPreviewSeedFallback? seedFallback,
     DiaryPreviewPaper? paper,
+    bool? tintPaper,
     ValueGetter<int?>? paperLight,
     ValueGetter<int?>? paperDark,
     ValueGetter<int?>? textLight,
@@ -75,7 +91,10 @@ class DiaryPreviewPageStyle {
     return DiaryPreviewPageStyle(
       colorSeed: colorSeed ?? this.colorSeed,
       seedColor: seedColor == null ? this.seedColor : seedColor(),
+      seedIntensity: seedIntensity ?? this.seedIntensity,
+      seedFallback: seedFallback ?? this.seedFallback,
       paper: paper ?? this.paper,
+      tintPaper: tintPaper ?? this.tintPaper,
       paperLight: paperLight == null ? this.paperLight : paperLight(),
       paperDark: paperDark == null ? this.paperDark : paperDark(),
       textLight: textLight == null ? this.textLight : textLight(),
@@ -106,11 +125,22 @@ class DiaryPreviewPageStyle {
         d.colorSeed,
       ),
       seedColor: StyleJson.argb(json['seedColor']),
+      seedIntensity: StyleJson.enumByName(
+        DiaryPreviewSeedIntensity.values,
+        json['seedIntensity'],
+        d.seedIntensity,
+      ),
+      seedFallback: StyleJson.enumByName(
+        DiaryPreviewSeedFallback.values,
+        json['seedFallback'],
+        d.seedFallback,
+      ),
       paper: StyleJson.enumByName(
         DiaryPreviewPaper.values,
         json['paper'],
         d.paper,
       ),
+      tintPaper: StyleJson.boolean(json['tintPaper'], d.tintPaper),
       paperLight: StyleJson.argb(json['paperLight']),
       paperDark: StyleJson.argb(json['paperDark']),
       textLight: StyleJson.argb(json['textLight']),
@@ -162,7 +192,10 @@ class DiaryPreviewPageStyle {
     final json = <String, Object>{};
     StyleJson.putEnum(json, 'colorSeed', colorSeed, d.colorSeed);
     StyleJson.putColor(json, 'seedColor', seedColor, d.seedColor);
+    StyleJson.putEnum(json, 'seedIntensity', seedIntensity, d.seedIntensity);
+    StyleJson.putEnum(json, 'seedFallback', seedFallback, d.seedFallback);
     StyleJson.putEnum(json, 'paper', paper, d.paper);
+    StyleJson.put(json, 'tintPaper', tintPaper, d.tintPaper);
     StyleJson.putColor(json, 'paperLight', paperLight, d.paperLight);
     StyleJson.putColor(json, 'paperDark', paperDark, d.paperDark);
     StyleJson.putColor(json, 'textLight', textLight, d.textLight);
@@ -195,7 +228,10 @@ class DiaryPreviewPageStyle {
     return other is DiaryPreviewPageStyle &&
         other.colorSeed == colorSeed &&
         other.seedColor == seedColor &&
+        other.seedIntensity == seedIntensity &&
+        other.seedFallback == seedFallback &&
         other.paper == paper &&
+        other.tintPaper == tintPaper &&
         other.paperLight == paperLight &&
         other.paperDark == paperDark &&
         other.textLight == textLight &&
@@ -216,7 +252,10 @@ class DiaryPreviewPageStyle {
   int get hashCode => Object.hash(
     colorSeed,
     seedColor,
+    seedIntensity,
+    seedFallback,
     paper,
+    tintPaper,
     paperLight,
     paperDark,
     textLight,

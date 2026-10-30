@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../core/services/editing_session_registry.dart';
+
 import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
@@ -17,6 +19,10 @@ import '../viewmodels/notebook_view.dart';
 /// 时列表不会再报告放下，松手就放出来（[dropsInPlace]）；移动了的等放下动画
 /// 结束、按新顺序重建时再放出来——松手时就展开会把落点前的行往下推，正在落下
 /// 的那一行会落到错位的地方。
+///
+/// 拖动同时是局域网同步的阻塞者（[ReorderEditingGuard]）：从拿起到新顺序写完
+/// （[holdDragUntil]）或确定不写（落回原位、[endDrag]）为止，写回的书架顺序
+/// 来自拖动前的列表，期间同步来的顺序会被覆盖。页面销毁时调 [dispose]。
 class NotebookManageFolding {
   NotebookManageFolding({required this.onReveal});
 
@@ -25,6 +31,9 @@ class NotebookManageFolding {
 
   String? _dragFolded;
   int? _dragIndex;
+  final ReorderEditingGuard _dragLease = ReorderEditingGuard(
+    'notebooks-manage',
+  );
 
   // 上一次构建时每本的上级；首次构建前为 null，只记录。
   Map<String, String?>? _lastParents;
@@ -81,6 +90,7 @@ class NotebookManageFolding {
   /// 拿起分组里的第 [index] 行；返回 true 时页面须重建（子孙要收进来）。
   bool startDrag(NotebookView notebook, int index) {
     _dragIndex = index;
+    _dragLease.start(index);
     final folded = notebook.hasChildren ? notebook.id : null;
     if (folded == _dragFolded) return false;
     _dragFolded = folded;
@@ -92,8 +102,18 @@ class NotebookManageFolding {
   bool dropsInPlace(int insertIndex) {
     final start = _dragIndex;
     _dragIndex = null;
+    _dragLease.dropped(insertIndex);
     return start == null || insertIndex == start || insertIndex == start + 1;
   }
+
+  /// 移动了且要写库：把这次拖动的阻塞交给 [write]，写完才结束。
+  Future<void> holdDragUntil(Future<void> write) => _dragLease.holdUntil(write);
+
+  /// 移动了但兄弟顺序没变、不写库时结束这次拖动的阻塞。
+  void endDrag() => _dragLease.end();
+
+  /// 页面销毁：结束仍在进行的拖动登记（进行中的写入写完自行结束）。
+  void dispose() => _dragLease.dispose();
 
   /// 放出拖动时收进来的子孙；没有收进来的时返回 null。[moved] 时返回这些
   /// 子孙：它们在新位置重新挂载（列表按行号区分条目），页面标成“出现”从

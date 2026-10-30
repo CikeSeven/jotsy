@@ -27,6 +27,8 @@ const Map<String, String> _exempt = <String, String>{
   'lib/ui/diaries/pages/diary_video_fullscreen_page.dart':
       '全屏视频播放：内容铺满整页，不是阅读或设置页面',
   'lib/ui/widgets/image_viewer_page.dart': '看图页：图片铺满整页，底色随下拉关闭渐隐',
+  'lib/ui/lan_sync/pages/lan_sync_scan_page.dart':
+      '扫码页：相机画面铺满整页，整页固定按暗色绘制在相机画面上',
 };
 
 /// 不经 `AppGlassField.tonalButtonStyle` 的色调按钮所在文件与原因。

@@ -12,6 +12,7 @@ import '../../settings/providers/app_features_provider.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
+import '../../widgets/editing_session_blocker.dart';
 import '../../widgets/empty_hint.dart';
 import '../../widgets/route_entrance_waiter.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
@@ -79,7 +80,13 @@ class NotebookEditorPage extends ConsumerStatefulWidget {
   ConsumerState<NotebookEditorPage> createState() => _NotebookEditorPageState();
 }
 
-class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
+// 页面（而不是 NotebookEditorController）持有同步阻塞登记：编辑时控制器在
+// 读完数据库行之后才创建，读取期间也必须挡住同步，否则表单初值就是旧的。
+class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage>
+    with EditingSessionBlocker<NotebookEditorPage> {
+  @override
+  String get editingSessionLabel => 'notebook-editor';
+
   final FocusNode _nameFocus = FocusNode();
   final RouteEntranceWaiter _entrance = RouteEntranceWaiter();
   NotebookEditorController? _editor;

@@ -6,6 +6,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_todo_autosave_controller.dart';
 
@@ -40,6 +41,7 @@ void main() {
   var savedCalls = 0;
 
   setUp(() async {
+    EditingSessionRegistry.instance.debugReset();
     debugDefaultTargetPlatformOverride = TargetPlatform.linux;
     database = _DelayedTodoDatabase();
     document = DiaryEditorController.fromContent(
@@ -81,6 +83,7 @@ void main() {
     document.dispose();
     await database.close();
     debugDefaultTargetPlatformOverride = null;
+    EditingSessionRegistry.instance.debugReset();
   });
 
   void check(bool checked) {
@@ -182,4 +185,65 @@ void main() {
       expect(savedCalls, 0);
     },
   );
+
+  test('registers as a sync flusher, not as a blocker', () {
+    final registry = EditingSessionRegistry.instance;
+    expect(registry.flusherCount, 1);
+    // 宽窗口右栏的预览一直开着：只冲刷，不能挡住同步。
+    expect(registry.isEditing, isFalse);
+    autosave.dispose();
+    expect(registry.flusherCount, 0);
+  });
+
+  test('flushAll writes a pending tick before sync starts', () async {
+    check(true);
+    expect(database.written, isEmpty);
+    await EditingSessionRegistry.instance.flushAll();
+    expect(await stored(), document.contentJson);
+    expect(savedCalls, 1);
+  });
+
+  test('stays registered until the write captured on dispose lands', () async {
+    final registry = EditingSessionRegistry.instance;
+    database.firstWrite = Completer<void>();
+    check(true);
+    final saving = autosave.flush();
+    check(false);
+    final latest = document.contentJson;
+    autosave.dispose();
+    // 销毁时的补写还没落盘：同步的冲刷仍要等它。
+    expect(registry.flusherCount, 1);
+    final flushing = registry.flushAll();
+    database.firstWrite!.complete();
+    await saving;
+    await flushing;
+    expect(await stored(), latest);
+    expect(registry.flusherCount, 0);
+  });
+
+  test('after synced data replaces the diary, the stored detail decides '
+      'whether a tick needs writing', () async {
+    final original = await stored();
+    check(true);
+    await autosave.flush();
+    final ticked = document.contentJson;
+    expect(await stored(), ticked);
+
+    // 同步把库里的正文换回对方未勾选的版本（与详情相同）。
+    await database.updateDiaryContent(
+      diaryId: id,
+      contentDocJson: original,
+      contentText: document.plainText,
+    );
+    database.written.clear();
+    EditingSessionRegistry.instance.notifyDataReplaced();
+    await Future<void>.delayed(Duration.zero);
+
+    // 页面按新正文重建后用户再勾上：与“上次写入”相同，但库里已是对方的
+    // 版本，必须写回，不能当作已存跳过。
+    autosave.schedule();
+    await autosave.flush();
+    expect(database.written, [ticked]);
+    expect(await stored(), ticked);
+  });
 }

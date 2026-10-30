@@ -1,4 +1,5 @@
 import '../../../core/database/app_database.dart';
+import '../../../core/services/editing_session_registry.dart';
 import '../viewmodels/notebook_book_layout.dart';
 
 /// 目录页的写操作：章节的增、改名、上下移、删除，日记的排序、换章、移出与
@@ -8,11 +9,24 @@ import '../viewmodels/notebook_book_layout.dart';
 /// 页面上较旧的快照覆盖掉别处（编辑页、另一次操作）刚写入的字段。删除章节
 /// 时 `updateNotebook` 在同一事务里把这一章的日记放回“未分章”。失败一律抛给
 /// 页面提示。
+///
+/// 拖动排序从拿起到新顺序写完是局域网同步的阻塞者（[ReorderEditingGuard]）：
+/// 写回的整份顺序来自拖动前的列表，期间同步来的顺序会被覆盖。页面在列表的
+/// 拿起 / 松手回调里调 [startDrag] / [dropped]，销毁时调 [dispose]。
 class NotebookContentsController {
   NotebookContentsController(this._database, this.notebookId);
 
   final AppDatabase _database;
   final String notebookId;
+  final ReorderEditingGuard _drag = ReorderEditingGuard('notebook-contents');
+
+  /// 列表拿起第 [index] 行（`onReorderStart`）。
+  void startDrag(int index) => _drag.start(index);
+
+  /// 列表松手（`onReorderEnd`）；落回原位时结束阻塞。
+  void dropped(int insertIndex) => _drag.dropped(insertIndex);
+
+  void dispose() => _drag.dispose();
 
   Future<NotebookPayload> _payload() async {
     final row = await _database.getNotebook(notebookId);
@@ -70,9 +84,11 @@ class NotebookContentsController {
     );
   }
 
-  /// 保存拖动后的完整顺序（一次写入）。
+  /// 保存拖动后的完整顺序（一次写入），写完才结束这次拖动的阻塞。
   Future<void> reorder(List<NotebookEntryPlacement> placements) {
-    return _database.reorderNotebookEntries(notebookId, placements);
+    return _drag.holdUntil(
+      _database.reorderNotebookEntries(notebookId, placements),
+    );
   }
 
   /// 把日记放进 [chapterId]（null 为未分章）。

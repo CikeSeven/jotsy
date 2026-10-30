@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../core/services/desktop_exit_guard.dart';
+import '../../../core/services/editing_session_registry.dart';
 
 /// 接收快照并串行自动写入；不访问页面或数据库。
 ///
@@ -9,13 +10,20 @@ import '../../../core/services/desktop_exit_guard.dart';
 /// 桌面关闭窗口时经 DesktopExitGuard 等待同一保存链路，失败则取消关闭。
 /// 快照靠 `==` 判断是否已存，类型必须有值相等语义。失败时保留上次成功的
 /// 快照，供下一次编辑或返回操作重试，不会把失败内容标为已存。
+///
+/// 构造即登记为同步的阻塞者（[EditingSessionRegistry.beginEditing]）：页面
+/// 握着一份可编辑的内存副本，同步写入后再自动保存会把旧副本写回去。销毁时
+/// 注销；还有写入在进行时等它写完再注销，免得同步趁这次写入开始。
 class DebouncedAutoSaveController<T> {
   DebouncedAutoSaveController({
     required this.debounce,
     required this.readSnapshot,
     required this.writeSnapshot,
     required this.onError,
-  }) {
+    String editingLabel = 'diary-autosave',
+  }) : _editingLease = EditingSessionRegistry.instance.beginEditing(
+         editingLabel,
+       ) {
     _exitGuard = DesktopExitGuard(onExit: flush);
   }
 
@@ -24,6 +32,7 @@ class DebouncedAutoSaveController<T> {
   final Future<void> Function(T snapshot) writeSnapshot;
   final void Function(Object error) onError;
   late final DesktopExitGuard _exitGuard;
+  final EditingLease _editingLease;
 
   T? _savedSnapshot;
   bool _initialized = false;
@@ -86,5 +95,15 @@ class DebouncedAutoSaveController<T> {
     _disposed = true;
     _timer?.cancel();
     _exitGuard.dispose();
+    final pending = _pendingSave;
+    if (pending == null) {
+      _editingLease.end();
+    } else {
+      // 这条派生的 future 无人等待：异常由原调用方处理，这里吞掉，只负责
+      // 在写入结束后注销。
+      unawaited(
+        pending.catchError((Object _) => false).whenComplete(_editingLease.end),
+      );
+    }
   }
 }

@@ -112,6 +112,8 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
     required this.onTap,
     required this.onAction,
     required this.onReorder,
+    this.onReorderStart,
+    this.onReorderEnd,
   });
 
   final List<DiaryTemplate> templates;
@@ -122,6 +124,12 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
   /// onReorderItem 语义：[newIndex] 已按移除 [oldIndex] 后的列表修正。
   final void Function(int oldIndex, int newIndex) onReorder;
 
+  /// 拿起第 index 行（`SliverReorderableList.onReorderStart`）。
+  final ValueChanged<int>? onReorderStart;
+
+  /// 松手，参数为未修正的插入位置（`SliverReorderableList.onReorderEnd`）。
+  final ValueChanged<int>? onReorderEnd;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -131,7 +139,11 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
         itemCount: templates.length,
         onReorderItem: onReorder,
         // 拿起条目即生效的瞬间给一次触觉：手柄是立即拖动，不经过长按。
-        onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
+        onReorderStart: (int index) {
+          onReorderStart?.call(index);
+          unawaited(HapticFeedback.mediumImpact());
+        },
+        onReorderEnd: onReorderEnd,
         proxyDecorator: _liftProxy,
         itemBuilder: (BuildContext context, int index) {
           final template = templates[index];

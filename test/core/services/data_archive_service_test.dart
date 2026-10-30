@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
+import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/data_archive_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:path/path.dart' as p;
@@ -75,6 +76,30 @@ void main() {
     expect(settingsService.diaryCardTagLimit, 7);
     final recreatedSettings = await SettingsService.create();
     expect(recreatedSettings.diaryCardTagLimit, 7);
+  });
+
+  test('覆盖恢复成功后通知 replacedAllListeners，合并导入不通知', () async {
+    var notified = 0;
+    Future<void> listener() async => notified++;
+    DataArchiveService.replacedAllListeners.add(listener);
+    addTearDown(() => DataArchiveService.replacedAllListeners.remove(listener));
+    final backup = await DataArchiveService.exportToZip(
+      database: database,
+      settingsService: settingsService,
+    );
+    await DataArchiveService.importFromZip(
+      database: database,
+      settingsService: settingsService,
+      zipPath: backup.path,
+      mode: BackupImportMode.merge,
+    );
+    expect(notified, 0);
+    await DataArchiveService.importFromZip(
+      database: database,
+      settingsService: settingsService,
+      zipPath: backup.path,
+    );
+    expect(notified, 1);
   });
 
   test('export and import round-trips the remembered address detail', () async {

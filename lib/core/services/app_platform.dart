@@ -62,4 +62,14 @@ abstract final class AppPlatform {
   /// 所以 Linux 按不支持处理。
   static bool get supportsAudioRecording =>
       isAndroid || isIOS || isWindows || isMacOS;
+
+  /// 局域网同步：Android 与桌面都能开组播发现、监听端口。iOS 14+ 需要受限的
+  /// 组播权限（com.apple.developer.networking.multicast）与本地网络权限说明，
+  /// 本项目没有配置，所以不列入。
+  static bool get supportsLanSync =>
+      isAndroid || isLinux || isWindows || isMacOS;
+
+  /// 扫码配对：mobile_scanner 没有 Linux / Windows 实现，桌面只负责显示二维码，
+  /// 由手机来扫。
+  static bool get supportsQrScan => isAndroid;
 }

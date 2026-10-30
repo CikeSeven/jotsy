@@ -9607,4 +9607,829 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookBacklinksTitle => '提到这本的日记';
+
+  @override
+  String get lanSyncTitle => '局域网同步';
+
+  @override
+  String get lanSyncEntrySubtitleUnpaired => '在同一 Wi-Fi 下的设备之间同步日记';
+
+  @override
+  String lanSyncEntrySubtitlePaired(int count, String ago) {
+    return '已配对 $count 台 · $ago已同步';
+  }
+
+  @override
+  String lanSyncEntrySubtitlePairedNever(int count) {
+    return '已配对 $count 台 · 还没有同步过';
+  }
+
+  @override
+  String get lanSyncEntrySubtitleAttention => '有一次同步需要你确认';
+
+  @override
+  String get lanSyncDefaultDeviceName => '这台设备';
+
+  @override
+  String lanSyncLocalPlatform(String platform) {
+    return '本机 · $platform';
+  }
+
+  @override
+  String get lanSyncPlatformAndroid => 'Android';
+
+  @override
+  String get lanSyncPlatformIos => 'iOS';
+
+  @override
+  String get lanSyncPlatformLinux => 'Linux';
+
+  @override
+  String get lanSyncPlatformWindows => 'Windows';
+
+  @override
+  String get lanSyncPlatformMacos => 'macOS';
+
+  @override
+  String get lanSyncPlatformUnknown => '其他设备';
+
+  @override
+  String get lanSyncRenameTooltip => '修改设备名';
+
+  @override
+  String get lanSyncRenameTitle => '设备名称';
+
+  @override
+  String get lanSyncRenameHint => '附近的设备会看到这个名字';
+
+  @override
+  String get lanSyncDiscoverable => '可被发现';
+
+  @override
+  String get lanSyncNotDiscoverable => '不可被发现';
+
+  @override
+  String get lanSyncDiscoverableToggleHint => '切换是否可被附近的设备发现';
+
+  @override
+  String get lanSyncNoNetwork => '未连接局域网';
+
+  @override
+  String get lanSyncCopyAddressHint => '复制地址';
+
+  @override
+  String get lanSyncAddressCopied => '地址已复制';
+
+  @override
+  String get lanSyncScanQr => '扫码连接';
+
+  @override
+  String get lanSyncShowQr => '显示二维码';
+
+  @override
+  String get lanSyncManualAddress => '手动输入地址';
+
+  @override
+  String get lanSyncTroubleshoot => '找不到设备？';
+
+  @override
+  String get lanSyncSearchingNearbyJotsy => '正在寻找附近的 Jotsy…';
+
+  @override
+  String get lanSyncSectionMyDevices => '我的设备';
+
+  @override
+  String lanSyncDeviceCount(int count) {
+    return '$count 台';
+  }
+
+  @override
+  String get lanSyncSectionNearby => '附近的设备';
+
+  @override
+  String get lanSyncSearching => '正在寻找';
+
+  @override
+  String get lanSyncNearbyEmpty => '附近还没有发现其他 Jotsy，请在另一台设备上也打开这个页面。';
+
+  @override
+  String get lanSyncSectionOptions => '同步选项';
+
+  @override
+  String get lanSyncAutoSync => '自动同步';
+
+  @override
+  String get lanSyncAutoSyncSubtitle => '应用打开时与已配对的设备自动同步';
+
+  @override
+  String get lanSyncSyncSettings => '同步设置';
+
+  @override
+  String get lanSyncSyncSettingsSubtitle =>
+      '两台设备都开启时，外观、编辑器等设置也一并同步。标签顺序和留言、日记本等功能的开启总会同步';
+
+  @override
+  String get lanSyncOnline => '在线';
+
+  @override
+  String get lanSyncOffline => '离线';
+
+  @override
+  String lanSyncSyncedAgo(String ago) {
+    return '$ago已同步';
+  }
+
+  @override
+  String get lanSyncNeverSynced => '还没有同步过';
+
+  @override
+  String lanSyncNearbySubtitle(String platform, String address) {
+    return '$platform · $address';
+  }
+
+  @override
+  String get lanSyncNeedsAttention => '需要你确认';
+
+  @override
+  String get lanSyncReview => '查看';
+
+  @override
+  String get lanSyncSyncButton => '同步';
+
+  @override
+  String get lanSyncPair => '配对';
+
+  @override
+  String get lanSyncStageConnecting => '正在连接…';
+
+  @override
+  String get lanSyncStageComparing => '正在比对…';
+
+  @override
+  String get lanSyncStageTransferring => '正在传输…';
+
+  @override
+  String get lanSyncStageMerging => '正在合并…';
+
+  @override
+  String get lanSyncFirstUseTitle => '还没有配对的设备';
+
+  @override
+  String get lanSyncFirstUseBody => '日记在同一局域网的设备之间直接传输，全程加密，不经过任何服务器。';
+
+  @override
+  String get lanSyncFirstUseStep1 => '两台设备连上同一个 Wi-Fi';
+
+  @override
+  String get lanSyncFirstUseStep2 => '在另一台设备上打开 设置 › 数据与隐私 › 局域网同步';
+
+  @override
+  String get lanSyncFirstUseStep3 => '在「附近的设备」里点「配对」，或扫码连接';
+
+  @override
+  String lanSyncPortBusyNotice(int port) {
+    return '发现端口 $port 被其他程序占用，这台设备暂时找不到别的设备，也无法被发现。仍可手动输入地址或扫码连接。';
+  }
+
+  @override
+  String get lanSyncTipWifiTitle => '连上同一个 Wi-Fi';
+
+  @override
+  String get lanSyncTipWifiBody => '两台设备要在同一个网络里。访客网络或开启了 AP 隔离的路由器会挡住发现。';
+
+  @override
+  String get lanSyncTipVpnTitle => 'VPN / 代理';
+
+  @override
+  String get lanSyncTipVpnBody =>
+      '任一台开着 VPN 或代理（如 Clash）时，局域网的连接可能被转进隧道，互相看不到或连不上。请暂时关闭 VPN，或在代理应用里打开“绕过私有网络 / 局域网”。';
+
+  @override
+  String get lanSyncTipOpenPageTitle => '另一台也打开同步页';
+
+  @override
+  String get lanSyncTipOpenPageBody => '同步页打开时设备会更频繁地广播自己，更快被找到。';
+
+  @override
+  String get lanSyncTipWindowsTitle => 'Windows 防火墙';
+
+  @override
+  String get lanSyncTipWindowsBody => '第一次打开时如果弹出防火墙提示，请允许 Jotsy 访问“专用网络”。';
+
+  @override
+  String get lanSyncTipLinuxTitle => 'Linux 防火墙';
+
+  @override
+  String lanSyncTipLinuxBody(int udpPort, int tcpPort) {
+    return '如果开着防火墙，请放行 UDP $udpPort 与 TCP $tcpPort。';
+  }
+
+  @override
+  String get lanSyncTipFallbackTitle => '还是找不到？';
+
+  @override
+  String get lanSyncTipFallbackBody => '直接输入另一台设备的地址，或扫描它显示的二维码。';
+
+  @override
+  String get lanSyncManualIntro => '在另一台设备的同步页上可以看到它的地址。连接后需要在两台设备上确认配对。';
+
+  @override
+  String get lanSyncManualHostLabel => '地址';
+
+  @override
+  String get lanSyncManualHostHint => '例如 192.168.1.23';
+
+  @override
+  String get lanSyncManualPortLabel => '端口';
+
+  @override
+  String get lanSyncManualHostInvalid => '请输入有效的 IP 地址或主机名';
+
+  @override
+  String get lanSyncManualPortInvalid => '端口应在 1–65535 之间';
+
+  @override
+  String get lanSyncManualConnect => '连接';
+
+  @override
+  String lanSyncAutoSyncApplied(String name, int count) {
+    return '已从「$name」同步 $count 篇日记';
+  }
+
+  @override
+  String lanSyncAutoSyncNeedsAttention(String name) {
+    return '与「$name」的同步需要你确认';
+  }
+
+  @override
+  String lanSyncPairConnecting(String name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String lanSyncPairTitleOutgoing(String name) {
+    return '与「$name」配对';
+  }
+
+  @override
+  String lanSyncPairTitleIncoming(String name) {
+    return '「$name」请求配对';
+  }
+
+  @override
+  String get lanSyncPairSubtitle => '请确认两台设备上显示的数字一致';
+
+  @override
+  String lanSyncPairCodeSemantics(String first, String second) {
+    return '配对码 $first $second';
+  }
+
+  @override
+  String get lanSyncPairSafetyNote =>
+      '配对后两台设备会双向合并全部日记（含私密日记本与回收站）。连接全程加密，不经过任何服务器。';
+
+  @override
+  String get lanSyncPairExportBackup => '先导出完整备份';
+
+  @override
+  String get lanSyncPairMismatch => '不一致';
+
+  @override
+  String get lanSyncPairConfirm => '一致，配对';
+
+  @override
+  String get lanSyncPairTimeoutNote => '60 秒内没有确认会自动取消';
+
+  @override
+  String get lanSyncPairWaitingPeer => '等待对方确认…';
+
+  @override
+  String lanSyncPairSucceeded(String name) {
+    return '已与 $name 配对';
+  }
+
+  @override
+  String get lanSyncPairSyncNow => '立即同步';
+
+  @override
+  String get lanSyncPairLater => '稍后';
+
+  @override
+  String get lanSyncPairFailedTitle => '配对没有完成';
+
+  @override
+  String lanSyncPairAuthReason(String name) {
+    return '验证身份后确认与「$name」配对';
+  }
+
+  @override
+  String get lanSyncPairAuthFailed => '身份验证没有通过，配对还没有确认';
+
+  @override
+  String get lanSyncPairAuthUnsupported =>
+      '这台设备开启了应用锁或有上锁的日记本，但没有设置锁屏密码，无法验证身份。请先在系统里设置锁屏密码。';
+
+  @override
+  String get lanSyncPairFailUnreachable =>
+      '连不上对方。请检查地址和端口，并确认两台设备连着同一个 Wi-Fi、没有开着 VPN。';
+
+  @override
+  String get lanSyncPairFailConnectionLost => '连接中断了，请重新配对。';
+
+  @override
+  String get lanSyncPairFailTimedOut => '没有在 60 秒内确认，配对已取消。';
+
+  @override
+  String get lanSyncPairFailDeclined => '对方取消了配对，或两边的数字不一致。';
+
+  @override
+  String get lanSyncPairFailCancelled => '配对已取消。';
+
+  @override
+  String get lanSyncPairFailIncompatible => '两台设备的 Jotsy 版本不兼容，请把旧的那台升级。';
+
+  @override
+  String get lanSyncPairFailUntrusted => '对方拒绝了这次连接，请在两台设备上重新配对。';
+
+  @override
+  String get lanSyncPairFailTicketExpired => '二维码已失效，请让对方换一张新码再扫。';
+
+  @override
+  String get lanSyncPairFailWriteFailed => '保存配对信息失败，请重试。';
+
+  @override
+  String get lanSyncPairFailUnknown => '配对没有完成，请重试。';
+
+  @override
+  String get lanSyncPairFailBusy => '正在进行另一次配对，请先完成或关闭它再试。';
+
+  @override
+  String get lanSyncQrTitle => '扫码配对';
+
+  @override
+  String get lanSyncQrSubtitle => '在另一台手机的 Jotsy 里点「扫码连接」';
+
+  @override
+  String get lanSyncQrSemantics => '配对二维码';
+
+  @override
+  String lanSyncQrCountdown(String time) {
+    return '$time 后换一张新码';
+  }
+
+  @override
+  String lanSyncQrDeviceLine(String name, String address) {
+    return '$name · $address';
+  }
+
+  @override
+  String get lanSyncQrSingleUse => '二维码只能用一次，扫过即失效';
+
+  @override
+  String get lanSyncQrPreparing => '正在准备二维码…';
+
+  @override
+  String get lanSyncQrUseCode => '改用核对码配对';
+
+  @override
+  String lanSyncQrUseCodeHint(String name) {
+    return '在另一台设备的「附近的设备」里找到「$name」并点「配对」';
+  }
+
+  @override
+  String get lanSyncScanHint => '对准另一台设备上的 Jotsy 二维码';
+
+  @override
+  String get lanSyncScanHintDetail => '在那台设备的同步页点「显示二维码」';
+
+  @override
+  String get lanSyncScanTorchOn => '打开手电筒';
+
+  @override
+  String get lanSyncScanTorchOff => '关闭手电筒';
+
+  @override
+  String get lanSyncScanManual => '没有二维码？手动输入地址';
+
+  @override
+  String get lanSyncScanNotJotsy => '这不是 Jotsy 的配对二维码';
+
+  @override
+  String get lanSyncScanNewerVersion => '这个二维码来自更新版本的 Jotsy，请先升级';
+
+  @override
+  String get lanSyncScanMalformed => '二维码不完整，请让对方换一张新码';
+
+  @override
+  String get lanSyncScanDeniedTitle => '需要相机权限';
+
+  @override
+  String get lanSyncScanDeniedBody =>
+      '扫码连接要用相机读取另一台设备上的二维码。请在系统设置里允许 Jotsy 使用相机，或改用手动输入地址。';
+
+  @override
+  String get lanSyncScanOpenSettings => '去设置';
+
+  @override
+  String get lanSyncScanUnavailableTitle => '相机暂时无法使用';
+
+  @override
+  String get lanSyncScanUnavailableBody => '没有找到可用的相机，或相机正被其他应用占用。可以改用手动输入地址。';
+
+  @override
+  String get lanSyncFlowLocal => '本机';
+
+  @override
+  String lanSyncFlowSent(int count) {
+    return '↑ 发送 $count 篇';
+  }
+
+  @override
+  String lanSyncFlowReceived(int count) {
+    return '↓ 接收 $count 篇';
+  }
+
+  @override
+  String get lanSyncStepConnect => '连接';
+
+  @override
+  String get lanSyncStepCompare => '比对';
+
+  @override
+  String get lanSyncStepTransfer => '传输';
+
+  @override
+  String get lanSyncStepMerge => '合并';
+
+  @override
+  String get lanSyncMediaTransferring => '正在传输图片与录音';
+
+  @override
+  String lanSyncMediaFiles(int done, int total) {
+    return '$done / $total 个文件';
+  }
+
+  @override
+  String lanSyncMediaBytes(String done, String total) {
+    return '$done / $total';
+  }
+
+  @override
+  String lanSyncMediaBytesSpeed(String done, String total, String speed) {
+    return '$done / $total · $speed/s';
+  }
+
+  @override
+  String lanSyncSessionSemantics(String stage, int percent) {
+    return '$stage，已完成 $percent%';
+  }
+
+  @override
+  String get lanSyncSummaryTitle => '同步完成';
+
+  @override
+  String lanSyncSummarySubtitle(String name, int seconds) {
+    return '与 $name · 用时 $seconds 秒';
+  }
+
+  @override
+  String get lanSyncSummaryReceived => '↓ 收到';
+
+  @override
+  String get lanSyncSummarySent => '↑ 发出';
+
+  @override
+  String lanSyncSummaryDiaryUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '篇',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lanSyncSummaryAdded => '新增';
+
+  @override
+  String get lanSyncSummaryUpdated => '更新';
+
+  @override
+  String get lanSyncSummaryDeleted => '删除';
+
+  @override
+  String get lanSyncSummaryMedia => '媒体';
+
+  @override
+  String lanSyncSummaryMediaValue(int count, String size) {
+    return '$count 个 · $size';
+  }
+
+  @override
+  String get lanSyncSummaryOthers => '其他';
+
+  @override
+  String lanSyncSummaryConflicts(int count) {
+    return '$count 篇日记两边都改过，已保留两份';
+  }
+
+  @override
+  String get lanSyncSummaryConflictHint => '原日记保留较新的版本';
+
+  @override
+  String get lanSyncUntitled => '无标题';
+
+  @override
+  String get lanSyncSummaryFootnote => '标签、日记本、留言与纪念日已一并合并';
+
+  @override
+  String lanSyncSummaryOtherDetail(String items) {
+    return '其他变化：$items';
+  }
+
+  @override
+  String get lanSyncSummaryDone => '完成';
+
+  @override
+  String get lanSyncSummaryUpToDate => '已经是最新的了';
+
+  @override
+  String get lanSyncSummaryFailedTitle => '同步没有完成';
+
+  @override
+  String get lanSyncSyncFailUnreachable =>
+      '连不上对方。请确认两台设备连着同一个 Wi-Fi、没有开着 VPN，且对方打开着 Jotsy。';
+
+  @override
+  String get lanSyncSyncFailConnectionLost => '连接中断，已写入的部分下次会自动补齐。';
+
+  @override
+  String get lanSyncSyncFailTimedOut => '对方长时间没有回应，已写入的部分下次会自动补齐。';
+
+  @override
+  String get lanSyncSyncFailDeclined => '对方拒绝了这次同步。';
+
+  @override
+  String get lanSyncSyncFailCancelled => '同步已取消，已写入的部分下次会自动补齐。';
+
+  @override
+  String get lanSyncSyncFailIncompatible => '两台设备的 Jotsy 版本不兼容，请把旧的那台升级后再同步。';
+
+  @override
+  String get lanSyncSyncFailUntrusted => '对方已不再认识这台设备，请取消配对后重新配对。';
+
+  @override
+  String get lanSyncSyncFailTicketExpired => '二维码已失效，请重新扫码连接。';
+
+  @override
+  String get lanSyncSyncFailWriteFailed => '写入本机失败，可能是存储空间不足。请清理空间后重试。';
+
+  @override
+  String get lanSyncSyncFailUnknown => '同步没有完成，请重试。';
+
+  @override
+  String get lanSyncSyncFailBusy => '对方正在编辑日记。等对方关闭编辑页后再同步。';
+
+  @override
+  String get lanSyncSyncFailLocalEditing => '这台设备上有正在编辑的页面。请先关闭正在编辑的页面，再同步。';
+
+  @override
+  String get lanSyncSyncFailDeferred => '有一条可撤销的提示还开着，这次什么都没有写入。等提示消失后再同步。';
+
+  @override
+  String get lanSyncSyncFailNeedsConfirmation => '这次同步需要你确认。在设备列表里点“查看”继续。';
+
+  @override
+  String get lanSyncSyncReasonUnreachable => '连不上对方';
+
+  @override
+  String get lanSyncSyncReasonConnectionLost => '连接中断';
+
+  @override
+  String get lanSyncSyncReasonTimedOut => '对方没有回应';
+
+  @override
+  String get lanSyncSyncReasonDeclined => '对方拒绝了同步';
+
+  @override
+  String get lanSyncSyncReasonCancelled => '已取消';
+
+  @override
+  String get lanSyncSyncReasonIncompatible => '版本不兼容';
+
+  @override
+  String get lanSyncSyncReasonUntrusted => '对方不再认识本机';
+
+  @override
+  String get lanSyncSyncReasonTicketExpired => '二维码已失效';
+
+  @override
+  String get lanSyncSyncReasonWriteFailed => '写入本机失败';
+
+  @override
+  String get lanSyncSyncReasonUnknown => '同步失败';
+
+  @override
+  String get lanSyncSyncReasonBusy => '对方正在编辑';
+
+  @override
+  String get lanSyncSyncReasonLocalEditing => '本机正在编辑';
+
+  @override
+  String get lanSyncSyncReasonDeferred => '撤销提示还开着';
+
+  @override
+  String get lanSyncSyncReasonNeedsConfirmation => '需要确认';
+
+  @override
+  String lanSyncConflictCopySuffix(String device) {
+    return '（冲突副本 · $device）';
+  }
+
+  @override
+  String get lanSyncChooseSideTitle => '以哪边为准';
+
+  @override
+  String lanSyncChooseSideBody(String name, int count) {
+    return '有 $count 篇日记在本机和「$name」上都改过，要怎么合并？';
+  }
+
+  @override
+  String lanSyncChooseSideBodyItems(String name, String items) {
+    return '以下内容在本机和「$name」上都改过：$items。要怎么合并？';
+  }
+
+  @override
+  String get lanSyncItemDiaries => '日记';
+
+  @override
+  String get lanSyncItemTags => '标签';
+
+  @override
+  String get lanSyncItemNotebooks => '日记本';
+
+  @override
+  String get lanSyncItemComments => '留言';
+
+  @override
+  String get lanSyncItemTemplates => '模板';
+
+  @override
+  String get lanSyncItemAnniversaries => '纪念日';
+
+  @override
+  String get lanSyncItemDayMoods => '这天的心情';
+
+  @override
+  String get lanSyncItemSettings => '设置';
+
+  @override
+  String lanSyncItemCount(String label, int count) {
+    return '$label $count';
+  }
+
+  @override
+  String get lanSyncChooseKeepBoth => '保留两份（推荐）';
+
+  @override
+  String get lanSyncChooseKeepBothDesc => '较新的版本留在原日记，另一份存为冲突副本';
+
+  @override
+  String get lanSyncChoosePreferLocal => '以本机为准';
+
+  @override
+  String get lanSyncChoosePreferLocalDesc => '用本机的版本覆盖对方的改动';
+
+  @override
+  String get lanSyncChoosePreferPeer => '以对方为准';
+
+  @override
+  String lanSyncChoosePreferPeerDesc(String name) {
+    return '用「$name」的版本覆盖本机的改动';
+  }
+
+  @override
+  String get lanSyncChooseSideNote => '三种方式都不会删除任何日记';
+
+  @override
+  String get lanSyncContinueSync => '继续同步';
+
+  @override
+  String get lanSyncDeletionTitle => '要彻底删除日记吗';
+
+  @override
+  String lanSyncDeletionBodyPeer(String name, int count) {
+    return '这次同步会在「$name」上彻底删除 $count 篇日记（它们已在本机的回收站里清空）';
+  }
+
+  @override
+  String lanSyncDeletionBodyLocal(String name, int count) {
+    return '这次同步会在本机上彻底删除 $count 篇日记（它们已在「$name」的回收站里清空）';
+  }
+
+  @override
+  String get lanSyncDeletionSync => '同步删除';
+
+  @override
+  String get lanSyncDeletionSyncDesc => '两台设备上都不再保留这些日记';
+
+  @override
+  String get lanSyncDeletionKeep => '保留，并恢复到另一台';
+
+  @override
+  String get lanSyncDeletionKeepDesc => '这些日记会恢复到清空它们的那台设备上';
+
+  @override
+  String get lanSyncDeviceTitle => '设备详情';
+
+  @override
+  String get lanSyncInfoLastSync => '上次同步';
+
+  @override
+  String get lanSyncInfoPairedAt => '配对于';
+
+  @override
+  String get lanSyncInfoAddress => '地址';
+
+  @override
+  String get lanSyncInfoNever => '还没有';
+
+  @override
+  String get lanSyncInfoNoAddress => '未知';
+
+  @override
+  String get lanSyncDeviceOffline => '设备不在线';
+
+  @override
+  String get lanSyncOfflineUseLastAddress => '对方不在线，会按上次的地址连接';
+
+  @override
+  String get lanSyncPeerAutoSyncSubtitle => '应用打开时自动与这台设备同步';
+
+  @override
+  String get lanSyncPeerAutoSyncGlobalOff => '“同步选项”里的自动同步已关闭，这里暂不生效';
+
+  @override
+  String get lanSyncAliasTitle => '备注名';
+
+  @override
+  String get lanSyncAliasNotSet => '未设置';
+
+  @override
+  String get lanSyncAliasLocalOnly => '只在本机显示';
+
+  @override
+  String lanSyncAliasDialogHint(String name) {
+    return '留空则显示「$name」';
+  }
+
+  @override
+  String get lanSyncHistoryTitle => '同步记录';
+
+  @override
+  String get lanSyncHistoryEmpty => '还没有与这台设备同步过';
+
+  @override
+  String get lanSyncHistoryAutomatic => '自动';
+
+  @override
+  String lanSyncHistoryDuration(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String lanSyncHistoryReceived(int count) {
+    return '↓ 收到 $count 篇';
+  }
+
+  @override
+  String lanSyncHistorySent(int count) {
+    return '↑ 发出 $count 篇';
+  }
+
+  @override
+  String lanSyncHistoryOthers(int count) {
+    return '其他 $count 项';
+  }
+
+  @override
+  String lanSyncHistoryMedia(String size) {
+    return '媒体 $size';
+  }
+
+  @override
+  String lanSyncHistoryConflicts(int count) {
+    return '$count 篇冲突副本';
+  }
+
+  @override
+  String get lanSyncForget => '取消配对';
+
+  @override
+  String lanSyncForgetTitle(String name) {
+    return '取消与「$name」的配对？';
+  }
+
+  @override
+  String get lanSyncForgetBody => '两台设备上的日记都不会被删除。之后要同步需要重新配对。';
 }

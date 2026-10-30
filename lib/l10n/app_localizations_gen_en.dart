@@ -10755,4 +10755,985 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookBacklinksTitle => 'Diaries mentioning this notebook';
+
+  @override
+  String get lanSyncTitle => 'LAN sync';
+
+  @override
+  String get lanSyncEntrySubtitleUnpaired =>
+      'Sync diaries between devices on the same Wi-Fi';
+
+  @override
+  String lanSyncEntrySubtitlePaired(int count, String ago) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count devices paired',
+      one: '1 device paired',
+    );
+    return '$_temp0 · synced $ago';
+  }
+
+  @override
+  String lanSyncEntrySubtitlePairedNever(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count devices paired',
+      one: '1 device paired',
+    );
+    return '$_temp0 · not synced yet';
+  }
+
+  @override
+  String get lanSyncEntrySubtitleAttention => 'A sync needs your confirmation';
+
+  @override
+  String get lanSyncDefaultDeviceName => 'This device';
+
+  @override
+  String lanSyncLocalPlatform(String platform) {
+    return 'This device · $platform';
+  }
+
+  @override
+  String get lanSyncPlatformAndroid => 'Android';
+
+  @override
+  String get lanSyncPlatformIos => 'iOS';
+
+  @override
+  String get lanSyncPlatformLinux => 'Linux';
+
+  @override
+  String get lanSyncPlatformWindows => 'Windows';
+
+  @override
+  String get lanSyncPlatformMacos => 'macOS';
+
+  @override
+  String get lanSyncPlatformUnknown => 'Other device';
+
+  @override
+  String get lanSyncRenameTooltip => 'Rename this device';
+
+  @override
+  String get lanSyncRenameTitle => 'Device name';
+
+  @override
+  String get lanSyncRenameHint => 'Nearby devices will see this name';
+
+  @override
+  String get lanSyncDiscoverable => 'Discoverable';
+
+  @override
+  String get lanSyncNotDiscoverable => 'Not discoverable';
+
+  @override
+  String get lanSyncDiscoverableToggleHint =>
+      'Change whether nearby devices can find this one';
+
+  @override
+  String get lanSyncNoNetwork => 'Not on a local network';
+
+  @override
+  String get lanSyncCopyAddressHint => 'Copy address';
+
+  @override
+  String get lanSyncAddressCopied => 'Address copied';
+
+  @override
+  String get lanSyncScanQr => 'Scan QR code';
+
+  @override
+  String get lanSyncShowQr => 'Show QR code';
+
+  @override
+  String get lanSyncManualAddress => 'Enter address';
+
+  @override
+  String get lanSyncTroubleshoot => 'Can\'t find a device?';
+
+  @override
+  String get lanSyncSearchingNearbyJotsy => 'Looking for Jotsy nearby…';
+
+  @override
+  String get lanSyncSectionMyDevices => 'My devices';
+
+  @override
+  String lanSyncDeviceCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count devices',
+      one: '1 device',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lanSyncSectionNearby => 'Nearby devices';
+
+  @override
+  String get lanSyncSearching => 'Searching';
+
+  @override
+  String get lanSyncNearbyEmpty =>
+      'No other Jotsy has shown up yet. Open this page on the other device too.';
+
+  @override
+  String get lanSyncSectionOptions => 'Sync options';
+
+  @override
+  String get lanSyncAutoSync => 'Auto sync';
+
+  @override
+  String get lanSyncAutoSyncSubtitle =>
+      'Sync with paired devices automatically while Jotsy is open';
+
+  @override
+  String get lanSyncSyncSettings => 'Sync settings';
+
+  @override
+  String get lanSyncSyncSettingsSubtitle =>
+      'Appearance, editor and other settings sync too when both devices turn this on. Tag order and turning on features like comments or notebooks always sync';
+
+  @override
+  String get lanSyncOnline => 'Online';
+
+  @override
+  String get lanSyncOffline => 'Offline';
+
+  @override
+  String lanSyncSyncedAgo(String ago) {
+    return 'synced $ago';
+  }
+
+  @override
+  String get lanSyncNeverSynced => 'not synced yet';
+
+  @override
+  String lanSyncNearbySubtitle(String platform, String address) {
+    return '$platform · $address';
+  }
+
+  @override
+  String get lanSyncNeedsAttention => 'Needs your confirmation';
+
+  @override
+  String get lanSyncReview => 'View';
+
+  @override
+  String get lanSyncSyncButton => 'Sync';
+
+  @override
+  String get lanSyncPair => 'Pair';
+
+  @override
+  String get lanSyncStageConnecting => 'Connecting…';
+
+  @override
+  String get lanSyncStageComparing => 'Comparing…';
+
+  @override
+  String get lanSyncStageTransferring => 'Transferring…';
+
+  @override
+  String get lanSyncStageMerging => 'Merging…';
+
+  @override
+  String get lanSyncFirstUseTitle => 'No paired devices yet';
+
+  @override
+  String get lanSyncFirstUseBody =>
+      'Diaries go straight between your devices on the local network, encrypted all the way and never through a server.';
+
+  @override
+  String get lanSyncFirstUseStep1 => 'Connect both devices to the same Wi-Fi';
+
+  @override
+  String get lanSyncFirstUseStep2 =>
+      'On the other device, open Settings › Data & Privacy › LAN sync';
+
+  @override
+  String get lanSyncFirstUseStep3 =>
+      'Tap Pair under Nearby devices, or scan the QR code';
+
+  @override
+  String lanSyncPortBusyNotice(int port) {
+    return 'Port $port is used by another app, so this device can\'t find others or be found. You can still enter an address or scan a QR code.';
+  }
+
+  @override
+  String get lanSyncTipWifiTitle => 'Use the same Wi-Fi';
+
+  @override
+  String get lanSyncTipWifiBody =>
+      'Both devices need to be on the same network. Guest networks and routers with AP isolation block discovery.';
+
+  @override
+  String get lanSyncTipVpnTitle => 'VPN or proxy';
+
+  @override
+  String get lanSyncTipVpnBody =>
+      'A VPN or proxy (such as Clash) on either device may route LAN traffic into its tunnel, so the devices can\'t see or reach each other. Turn the VPN off for now, or enable “Bypass private networks / LAN” in the proxy app.';
+
+  @override
+  String get lanSyncTipOpenPageTitle => 'Open this page on the other device';
+
+  @override
+  String get lanSyncTipOpenPageBody =>
+      'Devices announce themselves more often while this page is open, so they show up faster.';
+
+  @override
+  String get lanSyncTipWindowsTitle => 'Windows firewall';
+
+  @override
+  String get lanSyncTipWindowsBody =>
+      'If Windows asks about the firewall the first time, allow Jotsy on private networks.';
+
+  @override
+  String get lanSyncTipLinuxTitle => 'Linux firewall';
+
+  @override
+  String lanSyncTipLinuxBody(int udpPort, int tcpPort) {
+    return 'If a firewall is on, allow UDP $udpPort and TCP $tcpPort.';
+  }
+
+  @override
+  String get lanSyncTipFallbackTitle => 'Still can\'t find it?';
+
+  @override
+  String get lanSyncTipFallbackBody =>
+      'Enter the other device\'s address directly, or scan the QR code it shows.';
+
+  @override
+  String get lanSyncManualIntro =>
+      'You can see the other device\'s address on its sync page. After connecting, confirm the pairing on both devices.';
+
+  @override
+  String get lanSyncManualHostLabel => 'Address';
+
+  @override
+  String get lanSyncManualHostHint => 'e.g. 192.168.1.23';
+
+  @override
+  String get lanSyncManualPortLabel => 'Port';
+
+  @override
+  String get lanSyncManualHostInvalid =>
+      'Enter a valid IP address or host name';
+
+  @override
+  String get lanSyncManualPortInvalid => 'Port must be between 1 and 65535';
+
+  @override
+  String get lanSyncManualConnect => 'Connect';
+
+  @override
+  String lanSyncAutoSyncApplied(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return 'Synced $_temp0 from “$name”';
+  }
+
+  @override
+  String lanSyncAutoSyncNeedsAttention(String name) {
+    return 'Sync with “$name” needs your confirmation';
+  }
+
+  @override
+  String lanSyncPairConnecting(String name) {
+    return 'Connecting to $name…';
+  }
+
+  @override
+  String lanSyncPairTitleOutgoing(String name) {
+    return 'Pair with “$name”';
+  }
+
+  @override
+  String lanSyncPairTitleIncoming(String name) {
+    return '“$name” wants to pair';
+  }
+
+  @override
+  String get lanSyncPairSubtitle =>
+      'Check that both devices show the same number';
+
+  @override
+  String lanSyncPairCodeSemantics(String first, String second) {
+    return 'Pairing code $first $second';
+  }
+
+  @override
+  String get lanSyncPairSafetyNote =>
+      'After pairing, both devices merge all their diaries both ways (including private notebooks and the trash). The connection is encrypted end to end and never goes through a server.';
+
+  @override
+  String get lanSyncPairExportBackup => 'Export a full backup first';
+
+  @override
+  String get lanSyncPairMismatch => 'Doesn\'t match';
+
+  @override
+  String get lanSyncPairConfirm => 'Matches, pair';
+
+  @override
+  String get lanSyncPairTimeoutNote =>
+      'Cancels automatically if not confirmed within 60 seconds';
+
+  @override
+  String get lanSyncPairWaitingPeer => 'Waiting for the other device…';
+
+  @override
+  String lanSyncPairSucceeded(String name) {
+    return 'Paired with $name';
+  }
+
+  @override
+  String get lanSyncPairSyncNow => 'Sync now';
+
+  @override
+  String get lanSyncPairLater => 'Later';
+
+  @override
+  String get lanSyncPairFailedTitle => 'Pairing didn\'t finish';
+
+  @override
+  String lanSyncPairAuthReason(String name) {
+    return 'Verify it\'s you to pair with “$name”';
+  }
+
+  @override
+  String get lanSyncPairAuthFailed =>
+      'Identity check didn\'t pass; the pairing isn\'t confirmed yet';
+
+  @override
+  String get lanSyncPairAuthUnsupported =>
+      'This device uses app lock or has locked notebooks but no screen lock, so your identity can\'t be verified. Set a screen lock in system settings first.';
+
+  @override
+  String get lanSyncPairFailUnreachable =>
+      'Couldn\'t reach the other device. Check the address and port, and make sure both are on the same Wi-Fi with no VPN on.';
+
+  @override
+  String get lanSyncPairFailConnectionLost =>
+      'The connection dropped. Please pair again.';
+
+  @override
+  String get lanSyncPairFailTimedOut =>
+      'Not confirmed within 60 seconds, so pairing was cancelled.';
+
+  @override
+  String get lanSyncPairFailDeclined =>
+      'The other device cancelled, or the numbers didn\'t match.';
+
+  @override
+  String get lanSyncPairFailCancelled => 'Pairing was cancelled.';
+
+  @override
+  String get lanSyncPairFailIncompatible =>
+      'The two devices run incompatible versions of Jotsy. Update the older one.';
+
+  @override
+  String get lanSyncPairFailUntrusted =>
+      'The other device refused the connection. Pair again on both devices.';
+
+  @override
+  String get lanSyncPairFailTicketExpired =>
+      'The QR code has expired. Ask for a new one and scan again.';
+
+  @override
+  String get lanSyncPairFailWriteFailed =>
+      'Couldn\'t save the pairing. Please try again.';
+
+  @override
+  String get lanSyncPairFailUnknown =>
+      'Pairing didn\'t finish. Please try again.';
+
+  @override
+  String get lanSyncPairFailBusy =>
+      'A different pairing is already in progress. Finish or close it, then try again.';
+
+  @override
+  String get lanSyncQrTitle => 'Pair by QR code';
+
+  @override
+  String get lanSyncQrSubtitle =>
+      'On the other phone, tap “Scan to connect” in Jotsy';
+
+  @override
+  String get lanSyncQrSemantics => 'Pairing QR code';
+
+  @override
+  String lanSyncQrCountdown(String time) {
+    return 'New code in $time';
+  }
+
+  @override
+  String lanSyncQrDeviceLine(String name, String address) {
+    return '$name · $address';
+  }
+
+  @override
+  String get lanSyncQrSingleUse =>
+      'Each code works once and expires once scanned';
+
+  @override
+  String get lanSyncQrPreparing => 'Preparing the QR code…';
+
+  @override
+  String get lanSyncQrUseCode => 'Pair with a code instead';
+
+  @override
+  String lanSyncQrUseCodeHint(String name) {
+    return 'On the other device, find “$name” under Nearby devices and tap Pair';
+  }
+
+  @override
+  String get lanSyncScanHint =>
+      'Point at the Jotsy QR code on the other device';
+
+  @override
+  String get lanSyncScanHintDetail =>
+      'On that device, tap “Show QR code” on the sync page';
+
+  @override
+  String get lanSyncScanTorchOn => 'Turn on flashlight';
+
+  @override
+  String get lanSyncScanTorchOff => 'Turn off flashlight';
+
+  @override
+  String get lanSyncScanManual => 'No QR code? Enter the address';
+
+  @override
+  String get lanSyncScanNotJotsy => 'This isn\'t a Jotsy pairing code';
+
+  @override
+  String get lanSyncScanNewerVersion =>
+      'This code is from a newer Jotsy. Update first';
+
+  @override
+  String get lanSyncScanMalformed => 'The code is damaged. Ask for a new one';
+
+  @override
+  String get lanSyncScanDeniedTitle => 'Camera access needed';
+
+  @override
+  String get lanSyncScanDeniedBody =>
+      'Scanning uses the camera to read the QR code on the other device. Allow Jotsy to use the camera in system settings, or enter the address instead.';
+
+  @override
+  String get lanSyncScanOpenSettings => 'Open settings';
+
+  @override
+  String get lanSyncScanUnavailableTitle => 'Camera unavailable';
+
+  @override
+  String get lanSyncScanUnavailableBody =>
+      'No usable camera was found, or another app is using it. You can enter the address instead.';
+
+  @override
+  String get lanSyncFlowLocal => 'This device';
+
+  @override
+  String lanSyncFlowSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return '↑ Sent $_temp0';
+  }
+
+  @override
+  String lanSyncFlowReceived(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return '↓ Received $_temp0';
+  }
+
+  @override
+  String get lanSyncStepConnect => 'Connect';
+
+  @override
+  String get lanSyncStepCompare => 'Compare';
+
+  @override
+  String get lanSyncStepTransfer => 'Transfer';
+
+  @override
+  String get lanSyncStepMerge => 'Merge';
+
+  @override
+  String get lanSyncMediaTransferring => 'Transferring photos and recordings';
+
+  @override
+  String lanSyncMediaFiles(int done, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total files',
+      one: '1 file',
+    );
+    return '$done / $_temp0';
+  }
+
+  @override
+  String lanSyncMediaBytes(String done, String total) {
+    return '$done / $total';
+  }
+
+  @override
+  String lanSyncMediaBytesSpeed(String done, String total, String speed) {
+    return '$done / $total · $speed/s';
+  }
+
+  @override
+  String lanSyncSessionSemantics(String stage, int percent) {
+    return '$stage, $percent% done';
+  }
+
+  @override
+  String get lanSyncSummaryTitle => 'Sync complete';
+
+  @override
+  String lanSyncSummarySubtitle(String name, int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds seconds',
+      one: '1 second',
+    );
+    return 'With $name · took $_temp0';
+  }
+
+  @override
+  String get lanSyncSummaryReceived => '↓ Received';
+
+  @override
+  String get lanSyncSummarySent => '↑ Sent';
+
+  @override
+  String lanSyncSummaryDiaryUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'diaries',
+      one: 'diary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lanSyncSummaryAdded => 'Added';
+
+  @override
+  String get lanSyncSummaryUpdated => 'Updated';
+
+  @override
+  String get lanSyncSummaryDeleted => 'Deleted';
+
+  @override
+  String get lanSyncSummaryMedia => 'Media';
+
+  @override
+  String lanSyncSummaryMediaValue(int count, String size) {
+    return '$count · $size';
+  }
+
+  @override
+  String get lanSyncSummaryOthers => 'Other';
+
+  @override
+  String lanSyncSummaryConflicts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries were',
+      one: '1 diary was',
+    );
+    return '$_temp0 changed on both devices — both versions were kept';
+  }
+
+  @override
+  String get lanSyncSummaryConflictHint =>
+      'The original keeps the newer version';
+
+  @override
+  String get lanSyncUntitled => 'Untitled';
+
+  @override
+  String get lanSyncSummaryFootnote =>
+      'Tags, notebooks, comments and anniversaries were merged too';
+
+  @override
+  String lanSyncSummaryOtherDetail(String items) {
+    return 'Other changes: $items';
+  }
+
+  @override
+  String get lanSyncSummaryDone => 'Done';
+
+  @override
+  String get lanSyncSummaryUpToDate => 'Already up to date';
+
+  @override
+  String get lanSyncSummaryFailedTitle => 'Sync didn\'t finish';
+
+  @override
+  String get lanSyncSyncFailUnreachable =>
+      'Couldn\'t reach the other device. Make sure both are on the same Wi-Fi with no VPN on, and Jotsy is open there.';
+
+  @override
+  String get lanSyncSyncFailConnectionLost =>
+      'The connection dropped. What was already written will be completed next time.';
+
+  @override
+  String get lanSyncSyncFailTimedOut =>
+      'The other device stopped responding. What was already written will be completed next time.';
+
+  @override
+  String get lanSyncSyncFailDeclined => 'The other device declined this sync.';
+
+  @override
+  String get lanSyncSyncFailCancelled =>
+      'The sync was cancelled. What was already written will be completed next time.';
+
+  @override
+  String get lanSyncSyncFailIncompatible =>
+      'The two devices run incompatible versions of Jotsy. Update the older one, then sync again.';
+
+  @override
+  String get lanSyncSyncFailUntrusted =>
+      'The other device no longer recognizes this one. Unpair, then pair again.';
+
+  @override
+  String get lanSyncSyncFailTicketExpired =>
+      'The QR code has expired. Scan a new one to connect.';
+
+  @override
+  String get lanSyncSyncFailWriteFailed =>
+      'Couldn\'t write to this device, possibly because storage is full. Free up space and try again.';
+
+  @override
+  String get lanSyncSyncFailUnknown =>
+      'The sync didn\'t finish. Please try again.';
+
+  @override
+  String get lanSyncSyncFailBusy =>
+      'The other device is editing a diary. Sync again after it closes the editor.';
+
+  @override
+  String get lanSyncSyncFailLocalEditing =>
+      'A page is being edited on this device. Close the page you are editing, then sync.';
+
+  @override
+  String get lanSyncSyncFailDeferred =>
+      'An undo notice was still open, so nothing was written. Sync again once it disappears.';
+
+  @override
+  String get lanSyncSyncFailNeedsConfirmation =>
+      'This sync needs your confirmation. Tap “View” in the device list to continue.';
+
+  @override
+  String get lanSyncSyncReasonUnreachable => 'Couldn\'t reach the device';
+
+  @override
+  String get lanSyncSyncReasonConnectionLost => 'Connection dropped';
+
+  @override
+  String get lanSyncSyncReasonTimedOut => 'No response';
+
+  @override
+  String get lanSyncSyncReasonDeclined => 'Declined by the other device';
+
+  @override
+  String get lanSyncSyncReasonCancelled => 'Cancelled';
+
+  @override
+  String get lanSyncSyncReasonIncompatible => 'Incompatible versions';
+
+  @override
+  String get lanSyncSyncReasonUntrusted =>
+      'No longer paired on the other device';
+
+  @override
+  String get lanSyncSyncReasonTicketExpired => 'QR code expired';
+
+  @override
+  String get lanSyncSyncReasonWriteFailed => 'Couldn\'t write to this device';
+
+  @override
+  String get lanSyncSyncReasonUnknown => 'Sync failed';
+
+  @override
+  String get lanSyncSyncReasonBusy => 'The other device was editing';
+
+  @override
+  String get lanSyncSyncReasonLocalEditing => 'This device was editing';
+
+  @override
+  String get lanSyncSyncReasonDeferred => 'An undo notice was open';
+
+  @override
+  String get lanSyncSyncReasonNeedsConfirmation => 'Needed confirmation';
+
+  @override
+  String lanSyncConflictCopySuffix(String device) {
+    return ' (conflict copy · $device)';
+  }
+
+  @override
+  String get lanSyncChooseSideTitle => 'Which version wins?';
+
+  @override
+  String lanSyncChooseSideBody(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries were',
+      one: '1 diary was',
+    );
+    return '$_temp0 changed both here and on “$name”. How should they be merged?';
+  }
+
+  @override
+  String lanSyncChooseSideBodyItems(String name, String items) {
+    return 'These were changed both here and on “$name”: $items. How should they be merged?';
+  }
+
+  @override
+  String get lanSyncItemDiaries => 'Diaries';
+
+  @override
+  String get lanSyncItemTags => 'Tags';
+
+  @override
+  String get lanSyncItemNotebooks => 'Notebooks';
+
+  @override
+  String get lanSyncItemComments => 'Comments';
+
+  @override
+  String get lanSyncItemTemplates => 'Templates';
+
+  @override
+  String get lanSyncItemAnniversaries => 'Anniversaries';
+
+  @override
+  String get lanSyncItemDayMoods => 'Day moods';
+
+  @override
+  String get lanSyncItemSettings => 'Settings';
+
+  @override
+  String lanSyncItemCount(String label, int count) {
+    return '$label $count';
+  }
+
+  @override
+  String get lanSyncChooseKeepBoth => 'Keep both (recommended)';
+
+  @override
+  String get lanSyncChooseKeepBothDesc =>
+      'The newer version stays in the diary, the other is saved as a conflict copy';
+
+  @override
+  String get lanSyncChoosePreferLocal => 'Use this device\'s version';
+
+  @override
+  String get lanSyncChoosePreferLocalDesc =>
+      'This device\'s version replaces the other device\'s changes';
+
+  @override
+  String get lanSyncChoosePreferPeer => 'Use the other device\'s version';
+
+  @override
+  String lanSyncChoosePreferPeerDesc(String name) {
+    return 'The version on “$name” replaces the changes on this device';
+  }
+
+  @override
+  String get lanSyncChooseSideNote => 'None of these deletes any diary';
+
+  @override
+  String get lanSyncContinueSync => 'Continue sync';
+
+  @override
+  String get lanSyncDeletionTitle => 'Delete diaries for good?';
+
+  @override
+  String lanSyncDeletionBodyPeer(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return 'This sync will permanently delete $_temp0 on “$name” (they were already emptied from this device\'s trash).';
+  }
+
+  @override
+  String lanSyncDeletionBodyLocal(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return 'This sync will permanently delete $_temp0 on this device (they were already emptied from the trash on “$name”).';
+  }
+
+  @override
+  String get lanSyncDeletionSync => 'Delete them too';
+
+  @override
+  String get lanSyncDeletionSyncDesc => 'Neither device keeps these diaries';
+
+  @override
+  String get lanSyncDeletionKeep => 'Keep, and restore on the other device';
+
+  @override
+  String get lanSyncDeletionKeepDesc =>
+      'They come back on the device that emptied them';
+
+  @override
+  String get lanSyncDeviceTitle => 'Device details';
+
+  @override
+  String get lanSyncInfoLastSync => 'Last sync';
+
+  @override
+  String get lanSyncInfoPairedAt => 'Paired';
+
+  @override
+  String get lanSyncInfoAddress => 'Address';
+
+  @override
+  String get lanSyncInfoNever => 'Never';
+
+  @override
+  String get lanSyncInfoNoAddress => 'Unknown';
+
+  @override
+  String get lanSyncDeviceOffline => 'Device is offline';
+
+  @override
+  String get lanSyncOfflineUseLastAddress =>
+      'Offline — the last known address will be tried';
+
+  @override
+  String get lanSyncPeerAutoSyncSubtitle =>
+      'Sync with this device automatically while the app is open';
+
+  @override
+  String get lanSyncPeerAutoSyncGlobalOff =>
+      'Auto sync is off in Sync options, so this has no effect for now';
+
+  @override
+  String get lanSyncAliasTitle => 'Nickname';
+
+  @override
+  String get lanSyncAliasNotSet => 'Not set';
+
+  @override
+  String get lanSyncAliasLocalOnly => 'Only shown on this device';
+
+  @override
+  String lanSyncAliasDialogHint(String name) {
+    return 'Leave empty to show “$name”';
+  }
+
+  @override
+  String get lanSyncHistoryTitle => 'Sync history';
+
+  @override
+  String get lanSyncHistoryEmpty => 'No syncs with this device yet';
+
+  @override
+  String get lanSyncHistoryAutomatic => 'Auto';
+
+  @override
+  String lanSyncHistoryDuration(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds sec',
+      one: '1 sec',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lanSyncHistoryReceived(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return '↓ Received $_temp0';
+  }
+
+  @override
+  String lanSyncHistorySent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return '↑ Sent $_temp0';
+  }
+
+  @override
+  String lanSyncHistoryOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other changes',
+      one: '1 other change',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lanSyncHistoryMedia(String size) {
+    return 'Media $size';
+  }
+
+  @override
+  String lanSyncHistoryConflicts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count conflict copies',
+      one: '1 conflict copy',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lanSyncForget => 'Unpair';
+
+  @override
+  String lanSyncForgetTitle(String name) {
+    return 'Unpair “$name”?';
+  }
+
+  @override
+  String get lanSyncForgetBody =>
+      'No diary is deleted on either device. To sync again you\'ll need to pair again.';
 }

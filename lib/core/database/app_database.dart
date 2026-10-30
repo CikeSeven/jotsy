@@ -12,12 +12,14 @@ import 'content_codec.dart';
 import 'diary_blocks/diary_link_target.dart';
 import 'diary_list_scope.dart';
 import 'notebook_payload.dart';
+import 'sync_rows.dart';
 import '../services/app_data_directory.dart';
 
 export 'diary_list_scope.dart';
 export 'notebook_cover_style.dart';
 export 'notebook_payload.dart';
 export 'notebook_rules.dart';
+export 'sync_rows.dart';
 
 part 'app_database.g.dart';
 part 'app_database_schema.dart';
@@ -44,6 +46,9 @@ part 'app_database_day_mood_schema.dart';
 part 'app_database_day_mood_ops.dart';
 part 'app_database_comment_schema.dart';
 part 'app_database_comment_ops.dart';
+part 'app_database_sync_ops.dart';
+part 'app_database_sync_writes.dart';
+part 'app_database_sync_order.dart';
 part 'app_database_diary_link_ops.dart';
 
 @DriftDatabase(
@@ -77,6 +82,9 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseExploreOps,
         _AppDatabaseDayMoodOps,
         _AppDatabaseCommentOps,
+        _AppDatabaseSyncOps,
+        _AppDatabaseSyncWrites,
+        _AppDatabaseSyncOrder,
         _AppDatabaseDiaryLinkOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());

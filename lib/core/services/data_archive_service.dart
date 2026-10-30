@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show countAll;
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -27,6 +28,14 @@ class DataArchiveService {
   DataArchiveService._();
 
   static Future<void> _pending = Future<void>.value();
+
+  /// 覆盖恢复成功之后要通知的监听者：局域网同步据此删掉同步状态、把已配对
+  /// 设备的下一次同步改为“以哪边为准”（docs/lan_sync.md §3）。由
+  /// `LanSyncService.start` 登记、`dispose` 注销；不支持局域网同步的平台
+  /// 从不登记，这里就是空的。监听者在恢复的串行队列里执行，不能再经
+  /// [runSerialized] 排队（会互相等待）；抛错只记日志——恢复本身已经成功。
+  static final Set<Future<void> Function()> replacedAllListeners =
+      <Future<void> Function()>{};
 
   static Future<T> _run<T>(Future<T> Function() action) {
     final result = _pending.then((_) => action());
@@ -367,6 +376,13 @@ class DataArchiveService {
           );
         }
         Error.throwWithStackTrace(error, stack);
+      }
+      for (final listener in List.of(replacedAllListeners)) {
+        try {
+          await listener();
+        } catch (error, stack) {
+          debugPrint('replaceAll listener failed: $error\n$stack');
+        }
       }
       return BackupImportResult(
         mode: mode,

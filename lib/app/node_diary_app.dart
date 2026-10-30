@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
+import 'package:node_diary/app/synced_data_refresh.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/app_scroll_behavior.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
@@ -24,6 +25,7 @@ import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
 
 import '../core/services/settings_service.dart';
@@ -37,7 +39,10 @@ import '../l10n/app_localizations.dart';
 /// 3. 处理启动加载页和最短展示时长，就绪后交给 [AppBootstrapHome] 揭幕；
 /// 4. 提供 MaterialApp 壳与首页入口；
 /// 5. 在启用应用锁时，统一处理前台解锁门禁；
-/// 6. 安排启动后的媒体文件回收。
+/// 6. 安排启动后的媒体文件回收；
+/// 7. 常驻监听局域网同步的写入事件，失效一次性读取（[syncedDataRefreshProvider]）；
+/// 8. 启动时建好局域网同步控制器（[lanSyncControllerProvider]），引擎随应用
+///    启动、跟随前后台。
 class NodeDiaryApp extends ConsumerStatefulWidget {
   const NodeDiaryApp({super.key, this.launchBrandMark = false});
 
@@ -86,6 +91,14 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     // 常驻监听正文外观：设置就绪后即开始注册所选的导入字体，打开第一篇日记
     // 时通常已就绪，正文不会先按内置字体排一遍再换字体。
     ref.listenManual(diaryTextAppearanceProvider, (_, _) {});
+    // 局域网同步写库后失效一次性读取的 provider（清单见该 provider）。
+    ref.listenManual(syncedDataRefreshProvider, (_, _) {});
+    // 局域网同步引擎随应用启动（而不是等用户打开同步页）：已配对设备的
+    // 自动同步与对方发起的手动同步都要本机在前台时连得上。常驻监听让
+    // provider 在整个应用生命周期里只建一份；引擎自己决定何时碰网络（没有
+    // 已配对设备时只在同步页打开期间，docs/lan_sync.md §9），不支持的平台
+    // 是不联网的空实现。
+    ref.listenManual(lanSyncControllerProvider, (_, _) {});
   }
 
   /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。

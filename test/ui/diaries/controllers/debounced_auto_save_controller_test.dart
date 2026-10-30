@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/ui/diaries/controllers/debounced_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
 
@@ -15,6 +16,46 @@ EditDiarySnapshot snapshot(String title) => EditDiarySnapshot(
 );
 
 void main() {
+  final registry = EditingSessionRegistry.instance;
+  setUp(registry.debugReset);
+  tearDown(registry.debugReset);
+
+  test('blocks sync from construction until dispose', () {
+    final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
+      readSnapshot: () => snapshot('a'),
+      writeSnapshot: (_) async {},
+      onError: (error) => fail('$error'),
+      editingLabel: 'edit-page',
+    );
+    expect(registry.activeEditorLabels, ['edit-page']);
+    controller.dispose();
+    expect(registry.isEditing, isFalse);
+    // 重复 dispose（close 之后页面再 dispose）不会出错，也不影响计数。
+    controller.dispose();
+    expect(registry.activeEditorCount, 0);
+  });
+
+  test('keeps blocking sync until a save in flight finishes', () async {
+    final write = Completer<void>();
+    var current = snapshot('original');
+    final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
+      readSnapshot: () => current,
+      writeSnapshot: (_) => write.future,
+      onError: (error) => fail('$error'),
+    );
+    controller.initialize(current);
+    current = snapshot('edit');
+    final saving = controller.flush();
+    controller.dispose();
+    expect(registry.isEditing, isTrue);
+    write.complete();
+    await saving;
+    await Future<void>.value();
+    expect(registry.isEditing, isFalse);
+  });
+
   test(
     'flush serializes writes and includes edits made during a save',
     () async {

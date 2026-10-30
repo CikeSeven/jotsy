@@ -52,6 +52,13 @@ void main() {
     'createTag(',
   ]);
   guard(filesUnder('lib/ui/anniversaries'), [...common, animation]);
+  // 局域网同步界面：循环动画的周期也只取 ExpressiveMotion（pulseLoop 等）。
+  guard(filesUnder('lib/ui/lan_sync'), [
+    ...common,
+    ...fixedColors,
+    animation,
+    'Icon(Icons.',
+  ]);
   guard(filesUnder('lib/ui/calendar'), ['.showSnackBar(']);
 
   guard(

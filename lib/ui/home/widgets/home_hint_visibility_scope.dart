@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/services/editing_session_registry.dart';
+
 /// Home 范围内提示可见状态控制器。
 ///
 /// 使用引用计数避免提示切换时出现错误归零。
@@ -85,6 +87,11 @@ class HomeHintVisibilityScope extends InheritedWidget {
   /// 必须显式传 `persist: false`（下方断言与源码测试兜底）。此前靠调用方另传
   /// 强制关闭时长、在这里起计时器关闭，漏传的提示（日历删除撤销、纪念日创建）
   /// 就一直停在屏幕上；改由 SnackBar 自带的计时，它从入场动画结束才开始计。
+  ///
+  /// 带按钮（撤销）的提示显示期间登记一个撤销窗口
+  /// （[EditingSessionRegistry.beginUndoWindow]）：撤销按删除前的整行恢复，
+  /// 局域网同步要等它关闭再写库，否则撤销会盖掉同步写入。窗口随 `closed`
+  /// 结束——到时、点按钮、被下一条提示替换或移除都会完成这个 future。
   static Future<SnackBarClosedReason> showTrackedSnackBar({
     required BuildContext context,
     required SnackBar snackBar,
@@ -106,6 +113,9 @@ class HomeHintVisibilityScope extends InheritedWidget {
     }
 
     controller?.onHintShown();
+    final undoWindow = snackBar.action == null
+        ? null
+        : EditingSessionRegistry.instance.beginUndoWindow();
     final featureController = messenger.showSnackBar(snackBar);
     var closed = false;
     if (controller != null) {
@@ -119,7 +129,12 @@ class HomeHintVisibilityScope extends InheritedWidget {
       );
     }
 
-    final reason = await featureController.closed;
+    final SnackBarClosedReason reason;
+    try {
+      reason = await featureController.closed;
+    } finally {
+      undoWindow?.end();
+    }
     closed = true;
     controller?.onHintClosed();
     return reason;

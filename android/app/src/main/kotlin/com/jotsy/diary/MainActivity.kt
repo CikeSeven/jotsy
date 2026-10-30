@@ -36,6 +36,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var shareLauncher: DiaryShareLauncher? = null
   private var longImageSlicer: DiaryLongImageSlicer? = null
   private var appUpdateInstaller: AppUpdateInstaller? = null
+  private var lanSyncChannel: LanSyncChannel? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
   private val launchBrandMarkArg = "--launch-brand-mark"
 
@@ -198,6 +199,8 @@ class MainActivity : FlutterFragmentActivity() {
     longImageSlicer = DiaryLongImageSlicer(this, flutterEngine.dartExecutor.binaryMessenger)
     appUpdateInstaller?.dispose()
     appUpdateInstaller = AppUpdateInstaller(this, flutterEngine.dartExecutor.binaryMessenger)
+    lanSyncChannel?.dispose()
+    lanSyncChannel = LanSyncChannel(this, flutterEngine.dartExecutor.binaryMessenger)
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, configChannelName)
       .setMethodCallHandler { call, result ->
         when (call.method) {
@@ -360,6 +363,8 @@ class MainActivity : FlutterFragmentActivity() {
     longImageSlicer = null
     appUpdateInstaller?.dispose()
     appUpdateInstaller = null
+    lanSyncChannel?.dispose()
+    lanSyncChannel = null
     pendingBackupSaveResult?.success(null)
     clearPendingBackupSave()
     setPredictiveBackProgressEnabled(false)

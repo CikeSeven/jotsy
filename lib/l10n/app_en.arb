@@ -13338,5 +13338,1184 @@
   "notebookBacklinksTitle": "Diaries mentioning this notebook",
   "@notebookBacklinksTitle": {
     "description": "日记本反向链接面板的标题。"
+  },
+  "lanSyncTitle": "LAN sync",
+  "@lanSyncTitle": {
+    "description": "Title of the LAN sync page and its settings entry."
+  },
+  "lanSyncEntrySubtitleUnpaired": "Sync diaries between devices on the same Wi-Fi",
+  "@lanSyncEntrySubtitleUnpaired": {
+    "description": "Settings entry subtitle when no device is paired yet."
+  },
+  "lanSyncEntrySubtitlePaired": "{count, plural, =1{1 device paired} other{{count} devices paired}} · synced {ago}",
+  "@lanSyncEntrySubtitlePaired": {
+    "description": "Settings entry subtitle: number of paired devices and how long ago the latest sync was (ago is a relative time such as '5 min ago').",
+    "placeholders": {
+      "count": {"type": "int"},
+      "ago": {"type": "String"}
+    }
+  },
+  "lanSyncEntrySubtitlePairedNever": "{count, plural, =1{1 device paired} other{{count} devices paired}} · not synced yet",
+  "@lanSyncEntrySubtitlePairedNever": {
+    "description": "Settings entry subtitle: devices are paired but none has synced yet.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncEntrySubtitleAttention": "A sync needs your confirmation",
+  "@lanSyncEntrySubtitleAttention": {
+    "description": "Settings entry subtitle (error color) when a sync waits for the user's confirmation."
+  },
+  "lanSyncDefaultDeviceName": "This device",
+  "@lanSyncDefaultDeviceName": {
+    "description": "Name shown for this device before it has a name."
+  },
+  "lanSyncLocalPlatform": "This device · {platform}",
+  "@lanSyncLocalPlatform": {
+    "description": "Line under this device's name in the hero card, with its platform name.",
+    "placeholders": {
+      "platform": {"type": "String"}
+    }
+  },
+  "lanSyncPlatformAndroid": "Android",
+  "@lanSyncPlatformAndroid": {
+    "description": "Platform name: Android."
+  },
+  "lanSyncPlatformIos": "iOS",
+  "@lanSyncPlatformIos": {
+    "description": "Platform name: iOS."
+  },
+  "lanSyncPlatformLinux": "Linux",
+  "@lanSyncPlatformLinux": {
+    "description": "Platform name: Linux."
+  },
+  "lanSyncPlatformWindows": "Windows",
+  "@lanSyncPlatformWindows": {
+    "description": "Platform name: Windows."
+  },
+  "lanSyncPlatformMacos": "macOS",
+  "@lanSyncPlatformMacos": {
+    "description": "Platform name: macOS."
+  },
+  "lanSyncPlatformUnknown": "Other device",
+  "@lanSyncPlatformUnknown": {
+    "description": "Platform name when the platform is not recognized."
+  },
+  "lanSyncRenameTooltip": "Rename this device",
+  "@lanSyncRenameTooltip": {
+    "description": "Tooltip of the pencil button next to this device's name."
+  },
+  "lanSyncRenameTitle": "Device name",
+  "@lanSyncRenameTitle": {
+    "description": "Title of the rename-this-device dialog."
+  },
+  "lanSyncRenameHint": "Nearby devices will see this name",
+  "@lanSyncRenameHint": {
+    "description": "Hint text of the device name field in the rename dialog."
+  },
+  "lanSyncDiscoverable": "Discoverable",
+  "@lanSyncDiscoverable": {
+    "description": "Hero card chip when nearby devices can find this one."
+  },
+  "lanSyncNotDiscoverable": "Not discoverable",
+  "@lanSyncNotDiscoverable": {
+    "description": "Hero card chip when this device is hidden from nearby devices."
+  },
+  "lanSyncDiscoverableToggleHint": "Change whether nearby devices can find this one",
+  "@lanSyncDiscoverableToggleHint": {
+    "description": "Screen reader hint of the discoverable chip, which toggles discovery when tapped."
+  },
+  "lanSyncNoNetwork": "Not on a local network",
+  "@lanSyncNoNetwork": {
+    "description": "Hero card address chip when this device has no local network address."
+  },
+  "lanSyncCopyAddressHint": "Copy address",
+  "@lanSyncCopyAddressHint": {
+    "description": "Screen reader hint of the address chip, which copies the address when tapped."
+  },
+  "lanSyncAddressCopied": "Address copied",
+  "@lanSyncAddressCopied": {
+    "description": "Snack bar after copying this device's address."
+  },
+  "lanSyncScanQr": "Scan QR code",
+  "@lanSyncScanQr": {
+    "description": "Hero card button: scan another device's QR code to pair."
+  },
+  "lanSyncShowQr": "Show QR code",
+  "@lanSyncShowQr": {
+    "description": "Hero card button: show a QR code for another device to scan."
+  },
+  "lanSyncManualAddress": "Enter address",
+  "@lanSyncManualAddress": {
+    "description": "Button and sheet title: connect by typing the other device's address."
+  },
+  "lanSyncTroubleshoot": "Can't find a device?",
+  "@lanSyncTroubleshoot": {
+    "description": "Footer link and sheet title: tips when nearby devices don't show up."
+  },
+  "lanSyncSearchingNearbyJotsy": "Looking for Jotsy nearby…",
+  "@lanSyncSearchingNearbyJotsy": {
+    "description": "Hero card line on first use while looking for nearby devices."
+  },
+  "lanSyncSectionMyDevices": "My devices",
+  "@lanSyncSectionMyDevices": {
+    "description": "Section title of the paired devices."
+  },
+  "lanSyncDeviceCount": "{count, plural, =1{1 device} other{{count} devices}}",
+  "@lanSyncDeviceCount": {
+    "description": "Gray count next to the My devices section title.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncSectionNearby": "Nearby devices",
+  "@lanSyncSectionNearby": {
+    "description": "Section title of nearby devices that are not paired yet."
+  },
+  "lanSyncSearching": "Searching",
+  "@lanSyncSearching": {
+    "description": "Text next to the Nearby devices title while searching; three animated dots follow it."
+  },
+  "lanSyncNearbyEmpty": "No other Jotsy has shown up yet. Open this page on the other device too.",
+  "@lanSyncNearbyEmpty": {
+    "description": "Hint under the Nearby devices title when nothing has been found."
+  },
+  "lanSyncSectionOptions": "Sync options",
+  "@lanSyncSectionOptions": {
+    "description": "Section title of the sync options."
+  },
+  "lanSyncAutoSync": "Auto sync",
+  "@lanSyncAutoSync": {
+    "description": "Switch: sync with paired devices automatically."
+  },
+  "lanSyncAutoSyncSubtitle": "Sync with paired devices automatically while Jotsy is open",
+  "@lanSyncAutoSyncSubtitle": {
+    "description": "Subtitle of the auto sync switch."
+  },
+  "lanSyncSyncSettings": "Sync settings",
+  "@lanSyncSyncSettings": {
+    "description": "Switch: also sync app settings."
+  },
+  "lanSyncSyncSettingsSubtitle": "Appearance, editor and other settings sync too when both devices turn this on. Tag order and turning on features like comments or notebooks always sync",
+  "@lanSyncSyncSettingsSubtitle": {
+    "description": "Subtitle of the sync settings switch."
+  },
+  "lanSyncOnline": "Online",
+  "@lanSyncOnline": {
+    "description": "Paired device status: online."
+  },
+  "lanSyncOffline": "Offline",
+  "@lanSyncOffline": {
+    "description": "Paired device status: offline."
+  },
+  "lanSyncSyncedAgo": "synced {ago}",
+  "@lanSyncSyncedAgo": {
+    "description": "After the online/offline status: how long ago this device last synced (ago is a relative time such as '5 min ago').",
+    "placeholders": {
+      "ago": {"type": "String"}
+    }
+  },
+  "lanSyncNeverSynced": "not synced yet",
+  "@lanSyncNeverSynced": {
+    "description": "After the online/offline status when the device has never synced."
+  },
+  "lanSyncNearbySubtitle": "{platform} · {address}",
+  "@lanSyncNearbySubtitle": {
+    "description": "Subtitle of a nearby device: platform and address.",
+    "placeholders": {
+      "platform": {"type": "String"},
+      "address": {"type": "String"}
+    }
+  },
+  "lanSyncNeedsAttention": "Needs your confirmation",
+  "@lanSyncNeedsAttention": {
+    "description": "Paired device subtitle (error color) when a sync waits for confirmation."
+  },
+  "lanSyncReview": "View",
+  "@lanSyncReview": {
+    "description": "Button to look at a sync that needs confirmation, also the snack bar action."
+  },
+  "lanSyncSyncButton": "Sync",
+  "@lanSyncSyncButton": {
+    "description": "Small button on an online paired device: sync now."
+  },
+  "lanSyncPair": "Pair",
+  "@lanSyncPair": {
+    "description": "Small button on a nearby device: start pairing."
+  },
+  "lanSyncStageConnecting": "Connecting…",
+  "@lanSyncStageConnecting": {
+    "description": "Sync stage: connecting."
+  },
+  "lanSyncStageComparing": "Comparing…",
+  "@lanSyncStageComparing": {
+    "description": "Sync stage: comparing the two devices' data."
+  },
+  "lanSyncStageTransferring": "Transferring…",
+  "@lanSyncStageTransferring": {
+    "description": "Sync stage: transferring diaries and media."
+  },
+  "lanSyncStageMerging": "Merging…",
+  "@lanSyncStageMerging": {
+    "description": "Sync stage: writing the merged data."
+  },
+  "lanSyncFirstUseTitle": "No paired devices yet",
+  "@lanSyncFirstUseTitle": {
+    "description": "Title of the first-use explainer card."
+  },
+  "lanSyncFirstUseBody": "Diaries go straight between your devices on the local network, encrypted all the way and never through a server.",
+  "@lanSyncFirstUseBody": {
+    "description": "Body of the first-use explainer card."
+  },
+  "lanSyncFirstUseStep1": "Connect both devices to the same Wi-Fi",
+  "@lanSyncFirstUseStep1": {
+    "description": "First-use step 1."
+  },
+  "lanSyncFirstUseStep2": "On the other device, open Settings › Data & Privacy › LAN sync",
+  "@lanSyncFirstUseStep2": {
+    "description": "First-use step 2."
+  },
+  "lanSyncFirstUseStep3": "Tap Pair under Nearby devices, or scan the QR code",
+  "@lanSyncFirstUseStep3": {
+    "description": "First-use step 3."
+  },
+  "lanSyncPortBusyNotice": "Port {port} is used by another app, so this device can't find others or be found. You can still enter an address or scan a QR code.",
+  "@lanSyncPortBusyNotice": {
+    "description": "Notice at the top of the troubleshooting sheet when the discovery port is busy.",
+    "placeholders": {
+      "port": {"type": "int"}
+    }
+  },
+  "lanSyncTipWifiTitle": "Use the same Wi-Fi",
+  "@lanSyncTipWifiTitle": {
+    "description": "Troubleshooting tip title: both devices on the same network."
+  },
+  "lanSyncTipWifiBody": "Both devices need to be on the same network. Guest networks and routers with AP isolation block discovery.",
+  "@lanSyncTipWifiBody": {
+    "description": "Troubleshooting tip body: same network."
+  },
+  "lanSyncTipVpnTitle": "VPN or proxy",
+  "@lanSyncTipVpnTitle": {
+    "description": "Troubleshooting tip title: a VPN or proxy app can block LAN sync."
+  },
+  "lanSyncTipVpnBody": "A VPN or proxy (such as Clash) on either device may route LAN traffic into its tunnel, so the devices can't see or reach each other. Turn the VPN off for now, or enable “Bypass private networks / LAN” in the proxy app.",
+  "@lanSyncTipVpnBody": {
+    "description": "Troubleshooting tip body for VPN or proxy apps."
+  },
+  "lanSyncTipOpenPageTitle": "Open this page on the other device",
+  "@lanSyncTipOpenPageTitle": {
+    "description": "Troubleshooting tip title: open the sync page on the other device."
+  },
+  "lanSyncTipOpenPageBody": "Devices announce themselves more often while this page is open, so they show up faster.",
+  "@lanSyncTipOpenPageBody": {
+    "description": "Troubleshooting tip body: open the sync page."
+  },
+  "lanSyncTipWindowsTitle": "Windows firewall",
+  "@lanSyncTipWindowsTitle": {
+    "description": "Troubleshooting tip title: Windows firewall."
+  },
+  "lanSyncTipWindowsBody": "If Windows asks about the firewall the first time, allow Jotsy on private networks.",
+  "@lanSyncTipWindowsBody": {
+    "description": "Troubleshooting tip body: Windows firewall."
+  },
+  "lanSyncTipLinuxTitle": "Linux firewall",
+  "@lanSyncTipLinuxTitle": {
+    "description": "Troubleshooting tip title: Linux firewall."
+  },
+  "lanSyncTipLinuxBody": "If a firewall is on, allow UDP {udpPort} and TCP {tcpPort}.",
+  "@lanSyncTipLinuxBody": {
+    "description": "Troubleshooting tip body: Linux firewall ports.",
+    "placeholders": {
+      "udpPort": {"type": "int"},
+      "tcpPort": {"type": "int"}
+    }
+  },
+  "lanSyncTipFallbackTitle": "Still can't find it?",
+  "@lanSyncTipFallbackTitle": {
+    "description": "Troubleshooting tip title: fall back to address or QR code."
+  },
+  "lanSyncTipFallbackBody": "Enter the other device's address directly, or scan the QR code it shows.",
+  "@lanSyncTipFallbackBody": {
+    "description": "Troubleshooting tip body: fall back to address or QR code."
+  },
+  "lanSyncManualIntro": "You can see the other device's address on its sync page. After connecting, confirm the pairing on both devices.",
+  "@lanSyncManualIntro": {
+    "description": "Explanation at the top of the enter-address sheet."
+  },
+  "lanSyncManualHostLabel": "Address",
+  "@lanSyncManualHostLabel": {
+    "description": "Label of the address field."
+  },
+  "lanSyncManualHostHint": "e.g. 192.168.1.23",
+  "@lanSyncManualHostHint": {
+    "description": "Hint of the address field."
+  },
+  "lanSyncManualPortLabel": "Port",
+  "@lanSyncManualPortLabel": {
+    "description": "Label of the port field."
+  },
+  "lanSyncManualHostInvalid": "Enter a valid IP address or host name",
+  "@lanSyncManualHostInvalid": {
+    "description": "Error under the address field."
+  },
+  "lanSyncManualPortInvalid": "Port must be between 1 and 65535",
+  "@lanSyncManualPortInvalid": {
+    "description": "Error under the port field."
+  },
+  "lanSyncManualConnect": "Connect",
+  "@lanSyncManualConnect": {
+    "description": "Confirm button of the enter-address sheet."
+  },
+  "lanSyncAutoSyncApplied": "Synced {count, plural, =1{1 diary} other{{count} diaries}} from “{name}”",
+  "@lanSyncAutoSyncApplied": {
+    "description": "Snack bar after a foreground auto sync wrote changes.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncAutoSyncNeedsAttention": "Sync with “{name}” needs your confirmation",
+  "@lanSyncAutoSyncNeedsAttention": {
+    "description": "Snack bar when a foreground auto sync stopped to wait for confirmation.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairConnecting": "Connecting to {name}…",
+  "@lanSyncPairConnecting": {
+    "description": "Pairing sheet while the connection is being set up.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairTitleOutgoing": "Pair with “{name}”",
+  "@lanSyncPairTitleOutgoing": {
+    "description": "Pairing sheet title when this device started the pairing.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairTitleIncoming": "“{name}” wants to pair",
+  "@lanSyncPairTitleIncoming": {
+    "description": "Pairing sheet title when the other device asked to pair.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairSubtitle": "Check that both devices show the same number",
+  "@lanSyncPairSubtitle": {
+    "description": "Pairing sheet subtitle above the verification code."
+  },
+  "lanSyncPairCodeSemantics": "Pairing code {first} {second}",
+  "@lanSyncPairCodeSemantics": {
+    "description": "Screen reader label of the six-digit pairing code, read as two groups of three.",
+    "placeholders": {
+      "first": {"type": "String"},
+      "second": {"type": "String"}
+    }
+  },
+  "lanSyncPairSafetyNote": "After pairing, both devices merge all their diaries both ways (including private notebooks and the trash). The connection is encrypted end to end and never goes through a server.",
+  "@lanSyncPairSafetyNote": {
+    "description": "Safety note on the pairing sheet explaining what pairing does."
+  },
+  "lanSyncPairExportBackup": "Export a full backup first",
+  "@lanSyncPairExportBackup": {
+    "description": "Text button in the pairing safety note: cancels this pairing and starts the full backup export."
+  },
+  "lanSyncPairMismatch": "Doesn't match",
+  "@lanSyncPairMismatch": {
+    "description": "Outlined button: the codes on the two devices differ, cancel pairing."
+  },
+  "lanSyncPairConfirm": "Matches, pair",
+  "@lanSyncPairConfirm": {
+    "description": "Filled button: the codes match, confirm pairing."
+  },
+  "lanSyncPairTimeoutNote": "Cancels automatically if not confirmed within 60 seconds",
+  "@lanSyncPairTimeoutNote": {
+    "description": "Small note at the bottom of the pairing sheet."
+  },
+  "lanSyncPairWaitingPeer": "Waiting for the other device…",
+  "@lanSyncPairWaitingPeer": {
+    "description": "Replaces the buttons after this device confirmed the code."
+  },
+  "lanSyncPairSucceeded": "Paired with {name}",
+  "@lanSyncPairSucceeded": {
+    "description": "Pairing sheet success title.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairSyncNow": "Sync now",
+  "@lanSyncPairSyncNow": {
+    "description": "Filled button on the pairing success state."
+  },
+  "lanSyncPairLater": "Later",
+  "@lanSyncPairLater": {
+    "description": "Text button on the pairing success state that just closes the sheet."
+  },
+  "lanSyncPairFailedTitle": "Pairing didn't finish",
+  "@lanSyncPairFailedTitle": {
+    "description": "Pairing sheet title when pairing failed."
+  },
+  "lanSyncPairAuthReason": "Verify it's you to pair with “{name}”",
+  "@lanSyncPairAuthReason": {
+    "description": "System authentication prompt shown before confirming a pairing.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncPairAuthFailed": "Identity check didn't pass; the pairing isn't confirmed yet",
+  "@lanSyncPairAuthFailed": {
+    "description": "Hint on the pairing sheet when device authentication was cancelled or failed."
+  },
+  "lanSyncPairAuthUnsupported": "This device uses app lock or has locked notebooks but no screen lock, so your identity can't be verified. Set a screen lock in system settings first.",
+  "@lanSyncPairAuthUnsupported": {
+    "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
+  },
+  "lanSyncPairFailUnreachable": "Couldn't reach the other device. Check the address and port, and make sure both are on the same Wi-Fi with no VPN on.",
+  "@lanSyncPairFailUnreachable": {
+    "description": "Pairing failure reason: the other device could not be reached."
+  },
+  "lanSyncPairFailConnectionLost": "The connection dropped. Please pair again.",
+  "@lanSyncPairFailConnectionLost": {
+    "description": "Pairing failure reason: the connection was lost."
+  },
+  "lanSyncPairFailTimedOut": "Not confirmed within 60 seconds, so pairing was cancelled.",
+  "@lanSyncPairFailTimedOut": {
+    "description": "Pairing failure reason: timeout."
+  },
+  "lanSyncPairFailDeclined": "The other device cancelled, or the numbers didn't match.",
+  "@lanSyncPairFailDeclined": {
+    "description": "Pairing failure reason: the other side declined."
+  },
+  "lanSyncPairFailCancelled": "Pairing was cancelled.",
+  "@lanSyncPairFailCancelled": {
+    "description": "Pairing failure reason: cancelled on this device."
+  },
+  "lanSyncPairFailIncompatible": "The two devices run incompatible versions of Jotsy. Update the older one.",
+  "@lanSyncPairFailIncompatible": {
+    "description": "Pairing failure reason: protocol versions differ."
+  },
+  "lanSyncPairFailUntrusted": "The other device refused the connection. Pair again on both devices.",
+  "@lanSyncPairFailUntrusted": {
+    "description": "Pairing failure reason: the other device doesn't trust this one."
+  },
+  "lanSyncPairFailTicketExpired": "The QR code has expired. Ask for a new one and scan again.",
+  "@lanSyncPairFailTicketExpired": {
+    "description": "Pairing failure reason: the QR ticket expired or was used."
+  },
+  "lanSyncPairFailWriteFailed": "Couldn't save the pairing. Please try again.",
+  "@lanSyncPairFailWriteFailed": {
+    "description": "Pairing failure reason: writing the pairing failed."
+  },
+  "lanSyncPairFailUnknown": "Pairing didn't finish. Please try again.",
+  "@lanSyncPairFailUnknown": {
+    "description": "Pairing failure reason: anything else."
+  },
+  "lanSyncPairFailBusy": "A different pairing is already in progress. Finish or close it, then try again.",
+  "@lanSyncPairFailBusy": {
+    "description": "Pairing failure reason: another pairing is already in progress on this device."
+  },
+  "lanSyncQrTitle": "Pair by QR code",
+  "@lanSyncQrTitle": {
+    "description": "QR sheet title."
+  },
+  "lanSyncQrSubtitle": "On the other phone, tap “Scan to connect” in Jotsy",
+  "@lanSyncQrSubtitle": {
+    "description": "QR sheet subtitle."
+  },
+  "lanSyncQrSemantics": "Pairing QR code",
+  "@lanSyncQrSemantics": {
+    "description": "Screen reader label of the QR code."
+  },
+  "lanSyncQrCountdown": "New code in {time}",
+  "@lanSyncQrCountdown": {
+    "description": "Countdown pill under the QR code; time is m:ss.",
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "lanSyncQrDeviceLine": "{name} · {address}",
+  "@lanSyncQrDeviceLine": {
+    "description": "Device name and address:port under the QR code.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "address": {"type": "String"}
+    }
+  },
+  "lanSyncQrSingleUse": "Each code works once and expires once scanned",
+  "@lanSyncQrSingleUse": {
+    "description": "Note under the QR code."
+  },
+  "lanSyncQrPreparing": "Preparing the QR code…",
+  "@lanSyncQrPreparing": {
+    "description": "Shown inside the QR board while the sync service cannot issue a code yet (it is starting or has no LAN address)."
+  },
+  "lanSyncQrUseCode": "Pair with a code instead",
+  "@lanSyncQrUseCode": {
+    "description": "Text button at the bottom of the QR sheet."
+  },
+  "lanSyncQrUseCodeHint": "On the other device, find “{name}” under Nearby devices and tap Pair",
+  "@lanSyncQrUseCodeHint": {
+    "description": "Snack bar after choosing to pair with a code instead of the QR code.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncScanHint": "Point at the Jotsy QR code on the other device",
+  "@lanSyncScanHint": {
+    "description": "Scan page hint under the viewfinder."
+  },
+  "lanSyncScanHintDetail": "On that device, tap “Show QR code” on the sync page",
+  "@lanSyncScanHintDetail": {
+    "description": "Second hint line on the scan page."
+  },
+  "lanSyncScanTorchOn": "Turn on flashlight",
+  "@lanSyncScanTorchOn": {
+    "description": "Tooltip of the torch button when it is off."
+  },
+  "lanSyncScanTorchOff": "Turn off flashlight",
+  "@lanSyncScanTorchOff": {
+    "description": "Tooltip of the torch button when it is on."
+  },
+  "lanSyncScanManual": "No QR code? Enter the address",
+  "@lanSyncScanManual": {
+    "description": "Text button at the bottom of the scan page."
+  },
+  "lanSyncScanNotJotsy": "This isn't a Jotsy pairing code",
+  "@lanSyncScanNotJotsy": {
+    "description": "Hint when a non-Jotsy code was scanned."
+  },
+  "lanSyncScanNewerVersion": "This code is from a newer Jotsy. Update first",
+  "@lanSyncScanNewerVersion": {
+    "description": "Hint when a Jotsy code of an unsupported version was scanned."
+  },
+  "lanSyncScanMalformed": "The code is damaged. Ask for a new one",
+  "@lanSyncScanMalformed": {
+    "description": "Hint when a Jotsy code could not be decoded."
+  },
+  "lanSyncScanDeniedTitle": "Camera access needed",
+  "@lanSyncScanDeniedTitle": {
+    "description": "Scan page title when camera permission was denied."
+  },
+  "lanSyncScanDeniedBody": "Scanning uses the camera to read the QR code on the other device. Allow Jotsy to use the camera in system settings, or enter the address instead.",
+  "@lanSyncScanDeniedBody": {
+    "description": "Scan page explanation when camera permission was denied."
+  },
+  "lanSyncScanOpenSettings": "Open settings",
+  "@lanSyncScanOpenSettings": {
+    "description": "Button opening the app's system settings page."
+  },
+  "lanSyncScanUnavailableTitle": "Camera unavailable",
+  "@lanSyncScanUnavailableTitle": {
+    "description": "Scan page title when the camera could not start."
+  },
+  "lanSyncScanUnavailableBody": "No usable camera was found, or another app is using it. You can enter the address instead.",
+  "@lanSyncScanUnavailableBody": {
+    "description": "Scan page explanation when the camera could not start."
+  },
+  "lanSyncFlowLocal": "This device",
+  "@lanSyncFlowLocal": {
+    "description": "Label under this device's block in the sync flow panel."
+  },
+  "lanSyncFlowSent": "↑ Sent {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncFlowSent": {
+    "description": "Counter below the sync flow panel: diaries sent so far.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncFlowReceived": "↓ Received {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncFlowReceived": {
+    "description": "Counter below the sync flow panel: diaries received so far.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncStepConnect": "Connect",
+  "@lanSyncStepConnect": {
+    "description": "Stage bar label: connecting."
+  },
+  "lanSyncStepCompare": "Compare",
+  "@lanSyncStepCompare": {
+    "description": "Stage bar label: comparing."
+  },
+  "lanSyncStepTransfer": "Transfer",
+  "@lanSyncStepTransfer": {
+    "description": "Stage bar label: transferring."
+  },
+  "lanSyncStepMerge": "Merge",
+  "@lanSyncStepMerge": {
+    "description": "Stage bar label: merging."
+  },
+  "lanSyncMediaTransferring": "Transferring photos and recordings",
+  "@lanSyncMediaTransferring": {
+    "description": "Progress area label while media files are transferred."
+  },
+  "lanSyncMediaFiles": "{done} / {total, plural, =1{1 file} other{{total} files}}",
+  "@lanSyncMediaFiles": {
+    "description": "Media file progress, e.g. 23 / 48 files.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncMediaBytes": "{done} / {total}",
+  "@lanSyncMediaBytes": {
+    "description": "Transferred bytes over total bytes, sizes already formatted.",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncMediaBytesSpeed": "{done} / {total} · {speed}/s",
+  "@lanSyncMediaBytesSpeed": {
+    "description": "Transferred bytes over total bytes plus the current speed, sizes already formatted.",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncSessionSemantics": "{stage}, {percent}% done",
+  "@lanSyncSessionSemantics": {
+    "description": "Screen reader text for the session progress: stage and percentage.",
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryTitle": "Sync complete",
+  "@lanSyncSummaryTitle": {
+    "description": "Title of the sync summary sheet."
+  },
+  "lanSyncSummarySubtitle": "With {name} · took {seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "@lanSyncSummarySubtitle": {
+    "description": "Subtitle of the sync summary sheet: peer name and duration.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryReceived": "↓ Received",
+  "@lanSyncSummaryReceived": {
+    "description": "Summary stat card label: changes received."
+  },
+  "lanSyncSummarySent": "↑ Sent",
+  "@lanSyncSummarySent": {
+    "description": "Summary stat card label: changes sent."
+  },
+  "lanSyncSummaryDiaryUnit": "{count, plural, =1{diary} other{diaries}}",
+  "@lanSyncSummaryDiaryUnit": {
+    "description": "Unit after the big diary count in a summary stat card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryAdded": "Added",
+  "@lanSyncSummaryAdded": {
+    "description": "Summary stat row: diaries added."
+  },
+  "lanSyncSummaryUpdated": "Updated",
+  "@lanSyncSummaryUpdated": {
+    "description": "Summary stat row: diaries updated."
+  },
+  "lanSyncSummaryDeleted": "Deleted",
+  "@lanSyncSummaryDeleted": {
+    "description": "Summary stat row: diaries deleted."
+  },
+  "lanSyncSummaryMedia": "Media",
+  "@lanSyncSummaryMedia": {
+    "description": "Summary stat row: media files."
+  },
+  "lanSyncSummaryMediaValue": "{count} · {size}",
+  "@lanSyncSummaryMediaValue": {
+    "description": "Summary stat row value: media file count and formatted size.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncSummaryOthers": "Other",
+  "@lanSyncSummaryOthers": {
+    "description": "Summary stat row label: changes other than diaries (tags, notebooks, comments, settings…)."
+  },
+  "lanSyncSummaryConflicts": "{count, plural, =1{1 diary was} other{{count} diaries were}} changed on both devices — both versions were kept",
+  "@lanSyncSummaryConflicts": {
+    "description": "Conflict notice in the sync summary sheet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncSummaryConflictHint": "The original keeps the newer version",
+  "@lanSyncSummaryConflictHint": {
+    "description": "Second line of a conflict copy row in the sync summary sheet."
+  },
+  "lanSyncUntitled": "Untitled",
+  "@lanSyncUntitled": {
+    "description": "Title shown for a conflict copy without a title."
+  },
+  "lanSyncSummaryFootnote": "Tags, notebooks, comments and anniversaries were merged too",
+  "@lanSyncSummaryFootnote": {
+    "description": "Footnote in the sync summary sheet."
+  },
+  "lanSyncSummaryOtherDetail": "Other changes: {items}",
+  "@lanSyncSummaryOtherDetail": {
+    "description": "Footnote in the sync summary listing non-diary changes of both directions, e.g. “Comments 2 · Tags 1”.",
+    "placeholders": {
+      "items": {"type": "String"}
+    }
+  },
+  "lanSyncSummaryDone": "Done",
+  "@lanSyncSummaryDone": {
+    "description": "Button closing the sync summary sheet."
+  },
+  "lanSyncSummaryUpToDate": "Already up to date",
+  "@lanSyncSummaryUpToDate": {
+    "description": "Sync summary when nothing changed on either side."
+  },
+  "lanSyncSummaryFailedTitle": "Sync didn't finish",
+  "@lanSyncSummaryFailedTitle": {
+    "description": "Title of the sync summary sheet when the sync failed."
+  },
+  "lanSyncSyncFailUnreachable": "Couldn't reach the other device. Make sure both are on the same Wi-Fi with no VPN on, and Jotsy is open there.",
+  "@lanSyncSyncFailUnreachable": {
+    "description": "Failed sync: unreachable, with the next step."
+  },
+  "lanSyncSyncFailConnectionLost": "The connection dropped. What was already written will be completed next time.",
+  "@lanSyncSyncFailConnectionLost": {
+    "description": "Failed sync: connection lost, with the next step."
+  },
+  "lanSyncSyncFailTimedOut": "The other device stopped responding. What was already written will be completed next time.",
+  "@lanSyncSyncFailTimedOut": {
+    "description": "Failed sync: timed out, with the next step."
+  },
+  "lanSyncSyncFailDeclined": "The other device declined this sync.",
+  "@lanSyncSyncFailDeclined": {
+    "description": "Failed sync: declined by the peer."
+  },
+  "lanSyncSyncFailCancelled": "The sync was cancelled. What was already written will be completed next time.",
+  "@lanSyncSyncFailCancelled": {
+    "description": "Failed sync: cancelled."
+  },
+  "lanSyncSyncFailIncompatible": "The two devices run incompatible versions of Jotsy. Update the older one, then sync again.",
+  "@lanSyncSyncFailIncompatible": {
+    "description": "Failed sync: incompatible versions, with the next step."
+  },
+  "lanSyncSyncFailUntrusted": "The other device no longer recognizes this one. Unpair, then pair again.",
+  "@lanSyncSyncFailUntrusted": {
+    "description": "Failed sync: the peer forgot this device, with the next step."
+  },
+  "lanSyncSyncFailTicketExpired": "The QR code has expired. Scan a new one to connect.",
+  "@lanSyncSyncFailTicketExpired": {
+    "description": "Failed sync: QR ticket expired, with the next step."
+  },
+  "lanSyncSyncFailWriteFailed": "Couldn't write to this device, possibly because storage is full. Free up space and try again.",
+  "@lanSyncSyncFailWriteFailed": {
+    "description": "Failed sync: local write failed, with the next step."
+  },
+  "lanSyncSyncFailUnknown": "The sync didn't finish. Please try again.",
+  "@lanSyncSyncFailUnknown": {
+    "description": "Failed sync: unknown reason."
+  },
+  "lanSyncSyncFailBusy": "The other device is editing a diary. Sync again after it closes the editor.",
+  "@lanSyncSyncFailBusy": {
+    "description": "Failed sync: the other device is editing (or syncing with another device), with the next step."
+  },
+  "lanSyncSyncFailLocalEditing": "A page is being edited on this device. Close the page you are editing, then sync.",
+  "@lanSyncSyncFailLocalEditing": {
+    "description": "Failed sync: a page is being edited on this device, so a manual sync does not start; with the next step."
+  },
+  "lanSyncSyncFailDeferred": "An undo notice was still open, so nothing was written. Sync again once it disappears.",
+  "@lanSyncSyncFailDeferred": {
+    "description": "Failed sync: an undo snack bar was still open, so nothing was written; with the next step."
+  },
+  "lanSyncSyncFailNeedsConfirmation": "This sync needs your confirmation. Tap “View” in the device list to continue.",
+  "@lanSyncSyncFailNeedsConfirmation": {
+    "description": "Failed sync: an automatic sync stopped because it needs the user to confirm; with the next step."
+  },
+  "lanSyncSyncReasonUnreachable": "Couldn't reach the device",
+  "@lanSyncSyncReasonUnreachable": {
+    "description": "Short failure reason in the sync history: unreachable."
+  },
+  "lanSyncSyncReasonConnectionLost": "Connection dropped",
+  "@lanSyncSyncReasonConnectionLost": {
+    "description": "Short failure reason in the sync history: connection lost."
+  },
+  "lanSyncSyncReasonTimedOut": "No response",
+  "@lanSyncSyncReasonTimedOut": {
+    "description": "Short failure reason in the sync history: timed out."
+  },
+  "lanSyncSyncReasonDeclined": "Declined by the other device",
+  "@lanSyncSyncReasonDeclined": {
+    "description": "Short failure reason in the sync history: declined."
+  },
+  "lanSyncSyncReasonCancelled": "Cancelled",
+  "@lanSyncSyncReasonCancelled": {
+    "description": "Short failure reason in the sync history: cancelled."
+  },
+  "lanSyncSyncReasonIncompatible": "Incompatible versions",
+  "@lanSyncSyncReasonIncompatible": {
+    "description": "Short failure reason in the sync history: incompatible versions."
+  },
+  "lanSyncSyncReasonUntrusted": "No longer paired on the other device",
+  "@lanSyncSyncReasonUntrusted": {
+    "description": "Short failure reason in the sync history: untrusted."
+  },
+  "lanSyncSyncReasonTicketExpired": "QR code expired",
+  "@lanSyncSyncReasonTicketExpired": {
+    "description": "Short failure reason in the sync history: ticket expired."
+  },
+  "lanSyncSyncReasonWriteFailed": "Couldn't write to this device",
+  "@lanSyncSyncReasonWriteFailed": {
+    "description": "Short failure reason in the sync history: write failed."
+  },
+  "lanSyncSyncReasonUnknown": "Sync failed",
+  "@lanSyncSyncReasonUnknown": {
+    "description": "Short failure reason in the sync history: unknown."
+  },
+  "lanSyncSyncReasonBusy": "The other device was editing",
+  "@lanSyncSyncReasonBusy": {
+    "description": "Short failure reason in the sync history: the other device was editing."
+  },
+  "lanSyncSyncReasonLocalEditing": "This device was editing",
+  "@lanSyncSyncReasonLocalEditing": {
+    "description": "Short failure reason in the sync history: this device was editing."
+  },
+  "lanSyncSyncReasonDeferred": "An undo notice was open",
+  "@lanSyncSyncReasonDeferred": {
+    "description": "Short failure reason in the sync history: an undo snack bar was still open."
+  },
+  "lanSyncSyncReasonNeedsConfirmation": "Needed confirmation",
+  "@lanSyncSyncReasonNeedsConfirmation": {
+    "description": "Short failure reason in the sync history: the automatic sync needs confirmation."
+  },
+  "lanSyncConflictCopySuffix": " (conflict copy · {device})",
+  "@lanSyncConflictCopySuffix": {
+    "description": "Appended to the title of a conflict copy created by LAN sync; device is the name of the device whose version the copy keeps.",
+    "placeholders": {
+      "device": {"type": "String"}
+    }
+  },
+  "lanSyncChooseSideTitle": "Which version wins?",
+  "@lanSyncChooseSideTitle": {
+    "description": "Title of the dialog asking how to merge diaries changed on both devices."
+  },
+  "lanSyncChooseSideBody": "{count, plural, =1{1 diary was} other{{count} diaries were}} changed both here and on “{name}”. How should they be merged?",
+  "@lanSyncChooseSideBody": {
+    "description": "Body of the which-side dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncChooseSideBodyItems": "These were changed both here and on “{name}”: {items}. How should they be merged?",
+  "@lanSyncChooseSideBodyItems": {
+    "description": "Body of the which-side dialog when more than diaries conflict; items is a list such as “Diaries 2 · Tags 1”.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "items": {"type": "String"}
+    }
+  },
+  "lanSyncItemDiaries": "Diaries",
+  "@lanSyncItemDiaries": {
+    "description": "Kind of data in LAN sync counts (which-side dialog, summary): diaries."
+  },
+  "lanSyncItemTags": "Tags",
+  "@lanSyncItemTags": {
+    "description": "Kind of data in LAN sync counts: tags."
+  },
+  "lanSyncItemNotebooks": "Notebooks",
+  "@lanSyncItemNotebooks": {
+    "description": "Kind of data in LAN sync counts: notebooks (including which diaries they hold and their order)."
+  },
+  "lanSyncItemComments": "Comments",
+  "@lanSyncItemComments": {
+    "description": "Kind of data in LAN sync counts: diary comments."
+  },
+  "lanSyncItemTemplates": "Templates",
+  "@lanSyncItemTemplates": {
+    "description": "Kind of data in LAN sync counts: diary templates."
+  },
+  "lanSyncItemAnniversaries": "Anniversaries",
+  "@lanSyncItemAnniversaries": {
+    "description": "Kind of data in LAN sync counts: anniversaries."
+  },
+  "lanSyncItemDayMoods": "Day moods",
+  "@lanSyncItemDayMoods": {
+    "description": "Kind of data in LAN sync counts: moods set on calendar days."
+  },
+  "lanSyncItemSettings": "Settings",
+  "@lanSyncItemSettings": {
+    "description": "Kind of data in LAN sync counts: settings (tag order, feature switches, synced preferences)."
+  },
+  "lanSyncItemCount": "{label} {count}",
+  "@lanSyncItemCount": {
+    "description": "One kind of data with its count in a LAN sync list, e.g. “Tags 2”.",
+    "placeholders": {
+      "label": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncChooseKeepBoth": "Keep both (recommended)",
+  "@lanSyncChooseKeepBoth": {
+    "description": "Which-side option: keep both versions."
+  },
+  "lanSyncChooseKeepBothDesc": "The newer version stays in the diary, the other is saved as a conflict copy",
+  "@lanSyncChooseKeepBothDesc": {
+    "description": "Explanation of the keep-both option."
+  },
+  "lanSyncChoosePreferLocal": "Use this device's version",
+  "@lanSyncChoosePreferLocal": {
+    "description": "Which-side option: this device wins."
+  },
+  "lanSyncChoosePreferLocalDesc": "This device's version replaces the other device's changes",
+  "@lanSyncChoosePreferLocalDesc": {
+    "description": "Explanation of the this-device-wins option."
+  },
+  "lanSyncChoosePreferPeer": "Use the other device's version",
+  "@lanSyncChoosePreferPeer": {
+    "description": "Which-side option: the other device wins."
+  },
+  "lanSyncChoosePreferPeerDesc": "The version on “{name}” replaces the changes on this device",
+  "@lanSyncChoosePreferPeerDesc": {
+    "description": "Explanation of the other-device-wins option.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncChooseSideNote": "None of these deletes any diary",
+  "@lanSyncChooseSideNote": {
+    "description": "Footnote of the which-side dialog."
+  },
+  "lanSyncContinueSync": "Continue sync",
+  "@lanSyncContinueSync": {
+    "description": "Confirm button of the sync confirmation dialogs."
+  },
+  "lanSyncDeletionTitle": "Delete diaries for good?",
+  "@lanSyncDeletionTitle": {
+    "description": "Title of the deletion protection dialog."
+  },
+  "lanSyncDeletionBodyPeer": "This sync will permanently delete {count, plural, =1{1 diary} other{{count} diaries}} on “{name}” (they were already emptied from this device's trash).",
+  "@lanSyncDeletionBodyPeer": {
+    "description": "Deletion protection body when diaries would be deleted on the other device.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncDeletionBodyLocal": "This sync will permanently delete {count, plural, =1{1 diary} other{{count} diaries}} on this device (they were already emptied from the trash on “{name}”).",
+  "@lanSyncDeletionBodyLocal": {
+    "description": "Deletion protection body when diaries would be deleted on this device.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncDeletionSync": "Delete them too",
+  "@lanSyncDeletionSync": {
+    "description": "Deletion protection option: delete on the other device as well."
+  },
+  "lanSyncDeletionSyncDesc": "Neither device keeps these diaries",
+  "@lanSyncDeletionSyncDesc": {
+    "description": "Explanation of the delete option."
+  },
+  "lanSyncDeletionKeep": "Keep, and restore on the other device",
+  "@lanSyncDeletionKeep": {
+    "description": "Deletion protection option: keep the diaries and restore them."
+  },
+  "lanSyncDeletionKeepDesc": "They come back on the device that emptied them",
+  "@lanSyncDeletionKeepDesc": {
+    "description": "Explanation of the keep-and-restore option."
+  },
+  "lanSyncDeviceTitle": "Device details",
+  "@lanSyncDeviceTitle": {
+    "description": "Title of the paired device detail page."
+  },
+  "lanSyncInfoLastSync": "Last sync",
+  "@lanSyncInfoLastSync": {
+    "description": "Device detail info cell label: last sync time."
+  },
+  "lanSyncInfoPairedAt": "Paired",
+  "@lanSyncInfoPairedAt": {
+    "description": "Device detail info cell label: pairing date."
+  },
+  "lanSyncInfoAddress": "Address",
+  "@lanSyncInfoAddress": {
+    "description": "Device detail info cell label: network address."
+  },
+  "lanSyncInfoNever": "Never",
+  "@lanSyncInfoNever": {
+    "description": "Device detail info cell value when the device never synced."
+  },
+  "lanSyncInfoNoAddress": "Unknown",
+  "@lanSyncInfoNoAddress": {
+    "description": "Device detail info cell value when the address is unknown."
+  },
+  "lanSyncDeviceOffline": "Device is offline",
+  "@lanSyncDeviceOffline": {
+    "description": "Disabled sync button label when the paired device is offline."
+  },
+  "lanSyncOfflineUseLastAddress": "Offline — the last known address will be tried",
+  "@lanSyncOfflineUseLastAddress": {
+    "description": "Caption under the sync button on the device page when the peer is offline but its last address is known."
+  },
+  "lanSyncPeerAutoSyncSubtitle": "Sync with this device automatically while the app is open",
+  "@lanSyncPeerAutoSyncSubtitle": {
+    "description": "Subtitle of the per-device auto sync switch."
+  },
+  "lanSyncPeerAutoSyncGlobalOff": "Auto sync is off in Sync options, so this has no effect for now",
+  "@lanSyncPeerAutoSyncGlobalOff": {
+    "description": "Subtitle of the per-device auto sync switch while global auto sync is off."
+  },
+  "lanSyncAliasTitle": "Nickname",
+  "@lanSyncAliasTitle": {
+    "description": "Device detail row and dialog title: local nickname for the device."
+  },
+  "lanSyncAliasNotSet": "Not set",
+  "@lanSyncAliasNotSet": {
+    "description": "Nickname row value when no nickname is set."
+  },
+  "lanSyncAliasLocalOnly": "Only shown on this device",
+  "@lanSyncAliasLocalOnly": {
+    "description": "Hint that the nickname is only shown on this device."
+  },
+  "lanSyncAliasDialogHint": "Leave empty to show “{name}”",
+  "@lanSyncAliasDialogHint": {
+    "description": "Hint text of the nickname field.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncHistoryTitle": "Sync history",
+  "@lanSyncHistoryTitle": {
+    "description": "Section title of the sync history timeline."
+  },
+  "lanSyncHistoryEmpty": "No syncs with this device yet",
+  "@lanSyncHistoryEmpty": {
+    "description": "Empty state of the sync history."
+  },
+  "lanSyncHistoryAutomatic": "Auto",
+  "@lanSyncHistoryAutomatic": {
+    "description": "Gray text in a history entry for an automatic sync."
+  },
+  "lanSyncHistoryDuration": "{seconds, plural, =1{1 sec} other{{seconds} sec}}",
+  "@lanSyncHistoryDuration": {
+    "description": "Gray duration text in a history entry.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistoryReceived": "↓ Received {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncHistoryReceived": {
+    "description": "History summary part: diaries received.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistorySent": "↑ Sent {count, plural, =1{1 diary} other{{count} diaries}}",
+  "@lanSyncHistorySent": {
+    "description": "History summary part: diaries sent.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncHistoryOthers": "{count, plural, =1{1 other change} other{{count} other changes}}",
+  "@lanSyncHistoryOthers": {
+    "description": "Chip in a sync history entry: number of non-diary changes in both directions.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lanSyncHistoryMedia": "Media {size}",
+  "@lanSyncHistoryMedia": {
+    "description": "History summary part: media size.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncHistoryConflicts": "{count, plural, =1{1 conflict copy} other{{count} conflict copies}}",
+  "@lanSyncHistoryConflicts": {
+    "description": "Chip in a history entry that created conflict copies.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lanSyncForget": "Unpair",
+  "@lanSyncForget": {
+    "description": "Button and confirm action for forgetting a paired device."
+  },
+  "lanSyncForgetTitle": "Unpair “{name}”?",
+  "@lanSyncForgetTitle": {
+    "description": "Title of the unpair confirmation dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lanSyncForgetBody": "No diary is deleted on either device. To sync again you'll need to pair again.",
+  "@lanSyncForgetBody": {
+    "description": "Body of the unpair confirmation dialog."
   }
 }

@@ -31,7 +31,7 @@ void main() {
         final header = decoder.directory.fileHeaders.singleWhere(
           (header) => header.filename.endsWith('clip.mp4'),
         );
-        final local = header.localHeaderOffset!;
+        final local = header.localHeaderOffset;
         final fields = ByteData.sublistView(bytes);
         final dataOffset =
             local +
@@ -42,7 +42,7 @@ void main() {
         // so that a plaintext CRC alone would incorrectly accept this entry.
         final offset = password == null
             ? dataOffset + 2
-            : dataOffset + header.compressedSize! - 1;
+            : dataOffset + header.compressedSize - 1;
         bytes[offset] ^= 1;
         await zip.writeAsBytes(bytes);
         await expectLater(

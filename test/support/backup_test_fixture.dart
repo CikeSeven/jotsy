@@ -120,7 +120,7 @@ class BackupTestFixture {
       final file = archive.files.singleWhere(
         (file) => file.name == backupPayloadFileName,
       );
-      return (jsonDecode(utf8.decode(file.content as List<int>)) as Map)
+      return (jsonDecode(utf8.decode(file.content)) as Map)
           .cast<String, Object?>();
     } finally {
       archive.clearSync();
@@ -143,12 +143,12 @@ class BackupTestFixture {
     final archive = Archive()
       ..addFile(
         ArchiveFile(backupPayloadFileName, bytes.length, bytes)
-          ..compress = false,
+          ..compression = CompressionType.none,
       );
     for (final entry in files.entries) {
       archive.addFile(
         ArchiveFile(entry.key, entry.value.length, entry.value)
-          ..compress = false,
+          ..compression = CompressionType.none,
       );
     }
     final target = File(
@@ -157,7 +157,7 @@ class BackupTestFixture {
         'probe_${DateTime.now().microsecondsSinceEpoch}.zip',
       ),
     );
-    await target.writeAsBytes(ZipEncoder(password: password).encode(archive)!);
+    await target.writeAsBytes(ZipEncoder(password: password).encode(archive));
     return target;
   }
 

@@ -196,7 +196,7 @@ void main() {
         .decodeBytes(bytes!)
         .files
         .singleWhere((f) => f.name == 'word/styles.xml');
-    final xml = utf8.decode(styles.content as List<int>);
+    final xml = utf8.decode(styles.content);
     expect(
       xml,
       contains('<w:spacing w:after="240" w:line="480" w:lineRule="auto"/>'),

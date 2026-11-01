@@ -49,7 +49,7 @@ void main() {
             (entry) => entry.name.endsWith('.mp4'),
           );
           expect(restored.size, bytes.length);
-          expect(getCrc32(restored.content as List<int>), getCrc32(bytes));
+          expect(getCrc32(restored.content), getCrc32(bytes));
           expect(await video.readAsBytes(), bytes);
           expect(await payload.readAsString(), '{"formatVersion":1}');
           expect(await empty.length(), 0);

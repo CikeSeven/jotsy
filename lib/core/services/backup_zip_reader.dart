@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart' hide ZLibDecoder;
 import 'package:path/path.dart' as p;
@@ -26,7 +27,7 @@ class BackupZipReader {
   }) {
     final input = InputFileStream(zipPath);
     try {
-      final directory = ZipDirectory.read(input, password: password);
+      final directory = ZipDirectory()..read(input, password: password);
       if (directory.fileHeaders.length !=
               directory.totalCentralDirectoryEntries ||
           directory.numberOfThisDisk != 0 ||
@@ -36,7 +37,7 @@ class BackupZipReader {
       final paths = <String>{};
       for (final header in directory.fileHeaders) {
         final name = _safeName(header.filename);
-        final mode = (header.externalFileAttributes ?? 0) >> 16;
+        final mode = header.externalFileAttributes >> 16;
         if (header.versionMadeBy >> 8 == 3 && mode & 0xf000 == 0xa000) {
           throw const FormatException('Backup ZIP contains symbolic links');
         }
@@ -58,7 +59,7 @@ class BackupZipReader {
           throw const FormatException('Duplicate ZIP file path');
         }
         file.parent.createSync(recursive: true);
-        _extractEntry(header, file, password, onChunkRead);
+        _extractEntry(input, header, file, password, onChunkRead);
         if (keepModifiedTimes) _restoreModifiedTime(header, file);
       }
     } finally {
@@ -104,18 +105,27 @@ class BackupZipReader {
   }
 
   static void _extractEntry(
+    InputStream input,
     ZipFileHeader header,
     File file,
     String? password,
     void Function(int)? onChunkRead,
   ) {
-    final compression = header.file!.compressionMethod;
+    final payload = _payload(input, header);
+    final encryption = BackupZipEncryption(
+      header,
+      password,
+      payload.extra,
+      payload.raw,
+      payload.method,
+    );
+    // 不关闭 payload.raw：它和 [input] 共用文件句柄，关掉会把后续条目一起关掉。
+    final compression = encryption.contentCompression;
     if (compression != ZipFile.zipCompressionStore &&
         compression != ZipFile.zipCompressionDeflate) {
       throw const FormatException('Unsupported backup ZIP compression');
     }
-    final encryption = BackupZipEncryption(header, password);
-    final output = _CheckedFileSink(file, header.uncompressedSize!);
+    final output = _CheckedFileSink(file, header.uncompressedSize);
     ByteConversionSink? inflate;
     try {
       if (compression == ZipFile.zipCompressionDeflate) {
@@ -141,7 +151,7 @@ class BackupZipReader {
   static bool isPasswordProtected(String zipPath) {
     final input = InputFileStream(zipPath);
     try {
-      final directory = ZipDirectory.read(input);
+      final directory = ZipDirectory()..read(input);
       return directory.fileHeaders.any(
         (header) =>
             header.generalPurposeBitFlag & 1 != 0 ||
@@ -151,6 +161,40 @@ class BackupZipReader {
       input.closeSync();
     }
   }
+}
+
+/// 本地头之后的原始数据。archive 4.x 不再公开 `ZipFile.rawContent`，
+/// 而读 `file` 会把整段密文留在 ZipFile 里；这里只按中央目录的长度切一个窗口。
+({InputStream raw, Uint8List extra, int method}) _payload(
+  InputStream input,
+  ZipFileHeader header,
+) {
+  input.setPosition(header.localHeaderOffset);
+  if (input.length < 30 || input.readUint32() != ZipFile.zipSignature) {
+    throw const FormatException('Invalid ZIP local header');
+  }
+  // 签名之后：版本、标志、方式、时间、日期、CRC、两个长度，再是两个长度字段。
+  if (input.length < 26) {
+    throw const FormatException('Invalid ZIP local header');
+  }
+  input.skip(4);
+  final method = input.readUint16();
+  input.skip(16);
+  final nameLength = input.readUint16();
+  final extraLength = input.readUint16();
+  if (nameLength > input.length || extraLength > input.length - nameLength) {
+    throw const FormatException('Invalid ZIP local header');
+  }
+  input.skip(nameLength);
+  final extra = input.readBytes(extraLength).toUint8List();
+  if (header.compressedSize > input.length) {
+    throw const FormatException('Truncated ZIP entry');
+  }
+  return (
+    raw: input.readBytes(header.compressedSize),
+    extra: extra,
+    method: method,
+  );
 }
 
 class _CheckedFileSink implements Sink<List<int>> {

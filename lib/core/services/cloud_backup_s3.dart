@@ -155,7 +155,10 @@ class S3BackupRemote implements CloudBackupRemote {
       );
       _ensureSuccess(response);
       final document = _parseXml(response);
-      for (final item in document.findAllElements('Contents', namespace: '*')) {
+      for (final item in document.findAllElements(
+        'Contents',
+        namespaceUri: '*',
+      )) {
         final key = _child(item, 'Key');
         if (key == null) continue;
         final fileName = key.substring(key.lastIndexOf('/') + 1);
@@ -430,7 +433,7 @@ class S3BackupRemote implements CloudBackupRemote {
   }
 
   static String? _child(XmlElement element, String name) =>
-      element.getElement(name, namespace: '*')?.innerText.trim();
+      element.getElement(name, namespaceUri: '*')?.innerText.trim();
 
   static String _escapeXml(String value) => value
       .replaceAll('&', '&amp;')

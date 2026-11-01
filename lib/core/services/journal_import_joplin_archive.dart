@@ -21,7 +21,7 @@ String? extractJoplinArchive(String path, String stagingPath) {
   final root = p.join(stagingPath, 'jex');
   try {
     final decoder = TarDecoder();
-    final archive = decoder.decodeBuffer(input);
+    final archive = decoder.decodeStream(input);
     final names = <String>{};
     // Archive 会按名称覆盖重复项；先查 decoder 的完整记录，避免内容悄悄
     // 被后面同名的文件替换，随后仍从 archive 流式写出普通文件。
@@ -92,8 +92,9 @@ class _FileSink implements Sink<List<int>> {
   void close() {}
 }
 
-/// archive 3.x 的 TarDecoder 没有真正执行 verify，也会容忍截断内容。
-/// 在交给它处理 GNU/PAX 扩展名之前，先逐头校验并确认数据在文件边界内。
+/// archive 4.x 的 TarDecoder.decodeStream 在未要求 verify 时不因截断抛错，
+/// 和 3.x 一样会容忍损坏内容。在交给它处理 GNU/PAX 扩展名之前，先逐头校验
+/// 并确认数据在文件边界内。
 void _validateTar(File tar) {
   final input = tar.openSync();
   try {

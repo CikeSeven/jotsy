@@ -11,9 +11,11 @@ import '../../controllers/diary_editor_controller.dart';
 /// 原生块选区的复制/剪切/粘贴入口。使用 Flutter 平台文本菜单和 AppFlowy
 /// 选区几何，编辑页的格式工具仍留在既有底部卡片中，不另造一套格式工具。
 ///
-/// 手机在选出一段文字后自动浮在选区上方；桌面与系统文本框一致，选中时不
-/// 出现（否则盖住文字与指针），只在右键时经 [diaryEditorContextMenuBuilder]
-/// 出现在指针处。
+/// 手机在选出一段文字后自动浮在选区上方；可编辑正文里长按松手（或拖完
+/// 把手）只落下光标时——空段落、行尾空白，以及 iOS 上任意位置的长按——
+/// 浮在光标上方，只有粘贴与全选（见 `_trackCaretMenu`）。桌面与系统
+/// 文本框一致，选中时不出现（否则盖住文字与指针），只在右键时经
+/// [diaryEditorContextMenuBuilder] 出现在指针处。
 class DiaryEditorSelectionToolbar extends StatefulWidget {
   const DiaryEditorSelectionToolbar({
     super.key,
@@ -58,11 +60,13 @@ class _DiaryEditorSelectionToolbarState
     if (old.controller != widget.controller) {
       old.controller.removeListener(_schedule);
       widget.controller.addListener(_schedule);
+      _caretMenu = null;
       _hide();
     }
   }
 
   void _schedule() {
+    _trackCaretMenu();
     if (_scheduled) return;
     _scheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -72,12 +76,51 @@ class _DiaryEditorSelectionToolbarState
       if (!widget.enabled ||
           AppPlatform.isDesktop ||
           selection == null ||
-          selection.isCollapsed) {
+          (selection.isCollapsed && selection != _caretMenu)) {
         _hide();
       } else {
         _show();
       }
     });
+  }
+
+  /// 长按松手后落下的光标；非 null 时手机在光标上方出菜单（粘贴、全选）。
+  af.Selection? _caretMenu;
+
+  /// 每次控制器通知时同步更新 [_caretMenu]（不等到下一帧：期间可能还有
+  /// 别的选区更新覆盖掉判定依据）。
+  ///
+  /// 上游手机选区服务在长按结束（Android 与 iOS）和拖完选区把手时，都以
+  /// uiEvent 原因、`doNotAttachTextService: false` 交还选区，且不带“禁止
+  /// 浮动工具栏”；点按、横滑移动光标（带禁止标记）、输入与程序设的选区
+  /// 都不满足。长按空段落时上游取到的词边界是空的（折叠选区），过去手机
+  /// 菜单只认非折叠选区，因此不出菜单、无从粘贴（#119）。
+  ///
+  /// 正文原本没有焦点时，长按松手才连接输入法并取得焦点，`DiaryEditor`
+  /// 的 `_onFocus` 随即以 transaction 原因把同一选区重设一次，覆盖掉这组
+  /// 信息；所以记住这次请求，只在选区变化（输入、粘贴、程序换选区）或
+  /// 又有一次手势（点按等 uiEvent）时清除。只读正文没有插入点，不出菜单。
+  void _trackCaretMenu() {
+    final controller = widget.controller;
+    if (controller.readOnly || controller.state.isDisposed) {
+      _caretMenu = null;
+      return;
+    }
+    final state = controller.state;
+    final selection = state.selection;
+    final uiEvent =
+        state.selectionUpdateReason == af.SelectionUpdateReason.uiEvent;
+    final info = state.selectionExtraInfo;
+    final released =
+        uiEvent &&
+        info != null &&
+        info[af.selectionExtraInfoDoNotAttachTextService] == false &&
+        info[af.selectionExtraInfoDisableFloatingToolbar] != true;
+    if (released && selection != null && selection.isCollapsed) {
+      _caretMenu = selection;
+    } else if (selection != _caretMenu || (uiEvent && !released)) {
+      _caretMenu = null;
+    }
   }
 
   void _hide() {
@@ -112,9 +155,15 @@ class _DiaryEditorSelectionToolbarState
             ),
             buttonItems: _menuItems(
               controller,
-              dismiss: _hide,
+              // 点过菜单项就不再是“刚长按”：粘贴空剪贴板时选区不变，也不能
+              // 在下一次通知时把菜单弹回来。
+              dismiss: () {
+                _caretMenu = null;
+                _hide();
+              },
               // 与系统文本框一致，手机复制后把选区收成光标。
               afterCopy: () {
+                _caretMenu = null;
                 _hide();
                 if (!controller.state.isDisposed) {
                   controller.select(af.Selection.collapsed(selection.end));

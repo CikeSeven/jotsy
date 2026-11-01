@@ -27,11 +27,13 @@ void main() {
           final archive = Archive()
             ..addFile(
               ArchiveFile('diary_videos/clip..mp4', bytes.length, bytes)
-                ..compress = compressed,
+                ..compression = compressed
+                    ? CompressionType.deflate
+                    : CompressionType.none,
             );
           final zip = await File(
             p.join(root.path, 'backup.zip'),
-          ).writeAsBytes(ZipEncoder(password: password).encode(archive)!);
+          ).writeAsBytes(ZipEncoder(password: password).encode(archive));
           final output = await Directory(p.join(root.path, 'output')).create();
           var maximumChunk = 0;
           var reads = 0;
@@ -74,7 +76,7 @@ void main() {
         final archive = Archive()..addFile(ArchiveFile(path, 1, [1]));
         final zip = await File(
           p.join(root.path, 'unsafe.zip'),
-        ).writeAsBytes(ZipEncoder().encode(archive)!);
+        ).writeAsBytes(ZipEncoder().encode(archive));
         final output = await Directory(p.join(root.path, 'output')).create();
         expect(
           () => BackupZipReader.extract(zip.path, output.path),
@@ -93,7 +95,7 @@ void main() {
         ..addFile(ArchiveFile('diary_videos/./clip.mp4', 1, [2]));
       final zip = await File(
         p.join(root.path, 'duplicates.zip'),
-      ).writeAsBytes(ZipEncoder().encode(archive)!);
+      ).writeAsBytes(ZipEncoder().encode(archive));
       final output = await Directory(p.join(root.path, 'output')).create();
       expect(
         () => BackupZipReader.extract(zip.path, output.path),

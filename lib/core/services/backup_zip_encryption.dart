@@ -6,19 +6,36 @@ import 'backup_aes_cipher.dart';
 
 const backupZipChunkSize = 64 * 1024;
 
-/// 复用 archive 的 AES 与密码派生，逐块解密 ZIP 内容并校验认证码。
-/// 不调用 ZipFile.content，避免把整个录音/视频条目缓存到内存。
+/// 逐块解密 ZIP 内容并校验认证码。
+///
+/// [raw] 是本地头之后的原始字节窗口（仍可能加密、仍可能压缩），由调用方
+/// 从文件流切出。`ZipFile.getStream` 会整段解密进内存，录音和视频不能走那条路。
 class BackupZipEncryption {
-  BackupZipEncryption(this.header, this.password);
+  BackupZipEncryption(
+    this.header,
+    this.password,
+    this._extraField,
+    this.raw,
+    this._localMethod,
+  );
 
   final ZipFileHeader header;
   final String? password;
+  final Uint8List _extraField;
+  final InputStream raw;
+
+  /// 本地头里的压缩方式。AES 条目这里是 99，真正的方式在扩展头。
+  final int _localMethod;
 
   bool get isAes =>
       header.compressionMethod == ZipFile.zipCompressionAexEncryption;
 
-  ({int version, int strength}) get _aesMetadata {
-    final extra = InputStream(header.file!.extraField);
+  /// 正文实际的 STORE / DEFLATE。AES 时中央目录记 99，真正的方式写在
+  /// 本地扩展头里，和 archive 3.x 读 `ZipFile.compressionMethod` 的口径一致。
+  int get contentCompression => isAes ? _aesMetadata.compression : _localMethod;
+
+  ({int version, int strength, int compression}) get _aesMetadata {
+    final extra = InputMemoryStream(_extraField);
     while (extra.length >= 4) {
       final id = extra.readUint16();
       final length = extra.readUint16();
@@ -29,11 +46,12 @@ class BackupZipEncryption {
       final version = field.readUint16();
       final vendor = field.readString(size: 2);
       final strength = field.readByte();
+      final compression = field.readUint16();
       if ((version == 1 || version == 2) &&
           vendor == 'AE' &&
           strength >= 1 &&
           strength <= 3) {
-        return (version: version, strength: strength);
+        return (version: version, strength: strength, compression: compression);
       }
       break;
     }
@@ -45,7 +63,6 @@ class BackupZipEncryption {
   bool get requiresCrc => !isAes || _aesMetadata.version == 1;
 
   Iterable<Uint8List> decode({void Function(int)? onChunkRead}) sync* {
-    final raw = header.file!.rawContent!;
     raw.reset();
     final encrypted = header.generalPurposeBitFlag & 1 != 0;
     if (!encrypted) {
@@ -64,7 +81,7 @@ class BackupZipEncryption {
       final check = cipher.decrypt(raw.readBytes(12).toUint8List());
       final expected = header.generalPurposeBitFlag & 8 != 0
           ? header.lastModifiedFileTime >> 8
-          : header.crc32! >> 24;
+          : header.crc32 >> 24;
       if (check.last != (expected & 0xff)) {
         throw const FormatException('Incorrect ZIP password');
       }
@@ -82,26 +99,24 @@ class BackupZipEncryption {
     }
     final salt = raw.readBytes(saltSize).toUint8List();
     final check = raw.readBytes(2).toUint8List();
-    // 保持 archive 3.x 的密码编码，兼容已经导出的加密备份。
     final cipher = BackupAesCipher(password!, salt, keySize);
-    if (!Uint8ListEquality.equals(check, cipher.passwordVerifier)) {
+    if (!_bytesEqual(check, cipher.passwordVerifier)) {
       throw const FormatException('Incorrect ZIP password');
     }
-    // 除最后一块外固定为 16 的倍数，使 archive AES 的 counter 连续。
-    // Aes.processData 会逐次重置内部 MAC，因此另外累计整条目的认证码。
+    // 认证码按整段密文累计；每块原地解密，不把录音或视频留在内存里。
     for (final bytes in _chunks(raw, raw.length - 10, onChunkRead)) {
       cipher.processChunk(bytes);
       yield bytes;
     }
     final actualMac = cipher.finishAuthentication();
     final expectedMac = raw.readBytes(10).toUint8List();
-    if (!Uint8ListEquality.equals(expectedMac, actualMac)) {
+    if (!_bytesEqual(expectedMac, actualMac)) {
       throw const FormatException('Invalid ZIP authentication code');
     }
   }
 
   Iterable<Uint8List> _chunks(
-    InputStreamBase raw,
+    InputStream raw,
     int remaining,
     void Function(int)? onChunkRead,
   ) sync* {
@@ -133,9 +148,10 @@ class _ZipCrypto {
   int _key2 = 0x34567890;
 
   void _update(int byte) {
-    _key0 = CRC32(_key0, byte);
+    // 传统 ZIP 口令用的是不取反的单字节 CRC，不是 getCrc32 的整段校验。
+    _key0 = getCrc32Byte(_key0, byte);
     _key1 = ((_key1 + (_key0 & 0xff)) * 134775813 + 1) & 0xffffffff;
-    _key2 = CRC32(_key2, _key1 >> 24);
+    _key2 = getCrc32Byte(_key2, _key1 >> 24);
   }
 
   Uint8List decrypt(Uint8List bytes) {
@@ -147,4 +163,14 @@ class _ZipCrypto {
     }
     return bytes;
   }
+}
+
+/// 常量时间比较，避免认证码按第一个不同字节提前返回。
+bool _bytesEqual(Uint8List a, Uint8List b) {
+  if (a.length != b.length) return false;
+  var difference = 0;
+  for (var i = 0; i < a.length; i++) {
+    difference |= a[i] ^ b[i];
+  }
+  return difference == 0;
 }

@@ -49,7 +49,7 @@ void main() {
       ..addFile(ArchiveFile('Journal.json', journal.length, journal))
       ..addFile(ArchiveFile('photos/abc.jpeg', photo.length, photo));
     final file = File(p.join(fixture.temporary.path, 'dayone.zip'));
-    return file.writeAsBytes(ZipEncoder().encode(archive)!);
+    return file.writeAsBytes(ZipEncoder().encode(archive));
   }
 
   List<Directory> stagingDirectories() => fixture.documents
@@ -189,7 +189,7 @@ void main() {
       archive.addFile(ArchiveFile('$name.json', bytes.length, bytes));
     }
     final file = File(p.join(fixture.temporary.path, 'journals.zip'));
-    return file.writeAsBytes(ZipEncoder().encode(archive)!);
+    return file.writeAsBytes(ZipEncoder().encode(archive));
   }
 
   Future<void> importJournals(BackupImportMode mode) async {
@@ -445,7 +445,7 @@ void main() {
               DateTime(2023, 6, 1, 7, 30).millisecondsSinceEpoch ~/ 1000,
       );
     final zip = File(p.join(fixture.temporary.path, 'vault.zip'))
-      ..writeAsBytesSync(ZipEncoder().encode(archive)!);
+      ..writeAsBytesSync(ZipEncoder().encode(archive));
 
     final session = await JournalImportService.prepare(
       database: fixture.database,

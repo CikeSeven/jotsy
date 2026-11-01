@@ -138,6 +138,6 @@ class DurianBackupFixture {
     );
     files.forEach(add);
     return File(p.join(directory.path, name))
-      ..writeAsBytesSync(ZipEncoder().encode(archive)!);
+      ..writeAsBytesSync(ZipEncoder().encode(archive));
   }
 }

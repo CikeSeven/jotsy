@@ -186,7 +186,7 @@ Future<File> writeJournalExportSample(
     // gzip 外壳同样出现在用户保存的 JEX 中，验证解压不会把整包留在内存。
     raw = extension == 'jex'
         ? gzip.encode(TarEncoder().encode(archive))
-        : ZipEncoder().encode(archive)!;
+        : ZipEncoder().encode(archive);
   }
   return File(
     p.join(directory.path, '${source.name}.$extension'),

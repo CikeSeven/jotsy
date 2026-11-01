@@ -110,10 +110,10 @@ class BackupArchiveIO {
             .replaceAll('\\', '/');
         final input = InputFileStream(entity.path);
         try {
-          final entry =
-              ArchiveFile.stream(relativePath, entity.lengthSync(), input)
-                ..lastModTime =
-                    entity.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
+          // 4.x 的 ArchiveFile.stream 从流的剩余长度取大小，不再另传长度。
+          final entry = ArchiveFile.stream(relativePath, input)
+            ..lastModTime =
+                entity.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
           // 视频和常见附件多已压缩，STORE 可保持文件流，避免 Deflate 整条目
           // 缓冲。加密包走独立的流式 AES 编码，不保留整条目的加密缓存。
           if (relativePath.startsWith(
@@ -122,9 +122,10 @@ class BackupArchiveIO {
               relativePath.startsWith(
                 '${DiaryMediaStorageService.attachmentsDirectoryName}/',
               )) {
-            entry.compress = false;
+            entry.compression = CompressionType.none;
           }
-          encoder.addFile(entry);
+          // 流由这里关闭。add 的默认 autoClose 会先关掉同一句柄。
+          encoder.add(entry, autoClose: false);
         } finally {
           input.closeSync();
         }

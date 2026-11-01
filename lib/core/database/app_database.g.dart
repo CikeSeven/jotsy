@@ -5000,7 +5000,7 @@ final class $$DiariesTableReferences
   static MultiTypedResultKey<$DiaryTagsTable, List<DiaryTag>>
   _diaryTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.diaryTags,
-    aliasName: $_aliasNameGenerator(db.diaries.id, db.diaryTags.diaryId),
+    aliasName: 'diaries__id__diary_tags__diary_id',
   );
 
   $$DiaryTagsTableProcessedTableManager get diaryTagsRefs {
@@ -5415,7 +5415,7 @@ class $$DiariesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DiariesTable, Diary>(table),
                   $$DiariesTableReferences(db, table, e),
                 ),
               )
@@ -5428,14 +5428,19 @@ class $$DiariesTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (diaryTagsRefs)
-                    await $_getPrefetchedData<Diary, $DiariesTable, DiaryTag>(
+                    await $_getPrefetchedDataByColumns<
+                      Diary,
+                      $DiariesTable,
+                      DiaryTag,
+                      $DiaryTagsTable
+                    >(
                       currentTable: table,
                       referencedTable: $$DiariesTableReferences
                           ._diaryTagsRefsTable(db),
                       managerFromTypedResult: (p0) =>
                           $$DiariesTableReferences(db, table, p0).diaryTagsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.diaryId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'diary_id',
                       typedResults: items,
                     ),
                 ];
@@ -5480,7 +5485,7 @@ final class $$TagsTableReferences
   static MultiTypedResultKey<$DiaryTagsTable, List<DiaryTag>>
   _diaryTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.diaryTags,
-    aliasName: $_aliasNameGenerator(db.tags.id, db.diaryTags.tagId),
+    aliasName: 'tags__id__diary_tags__tag_id',
   );
 
   $$DiaryTagsTableProcessedTableManager get diaryTagsRefs {
@@ -5653,8 +5658,10 @@ class $$TagsTableTableManager
               }) => TagsCompanion.insert(id: id, name: name, color: color),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$TagsTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$TagsTable, Tag>(table),
+                  $$TagsTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: ({diaryTagsRefs = false}) {
@@ -5665,14 +5672,19 @@ class $$TagsTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (diaryTagsRefs)
-                    await $_getPrefetchedData<Tag, $TagsTable, DiaryTag>(
+                    await $_getPrefetchedDataByColumns<
+                      Tag,
+                      $TagsTable,
+                      DiaryTag,
+                      $DiaryTagsTable
+                    >(
                       currentTable: table,
                       referencedTable: $$TagsTableReferences
                           ._diaryTagsRefsTable(db),
                       managerFromTypedResult: (p0) =>
                           $$TagsTableReferences(db, table, p0).diaryTagsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.tagId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'tag_id',
                       typedResults: items,
                     ),
                 ];
@@ -5714,8 +5726,8 @@ final class $$DiaryTagsTableReferences
     extends BaseReferences<_$AppDatabase, $DiaryTagsTable, DiaryTag> {
   $$DiaryTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $DiariesTable _diaryIdTable(_$AppDatabase db) => db.diaries
-      .createAlias($_aliasNameGenerator(db.diaryTags.diaryId, db.diaries.id));
+  static $DiariesTable _diaryIdTable(_$AppDatabase db) =>
+      db.diaries.createAlias('diary_tags__diary_id__diaries__id');
 
   $$DiariesTableProcessedTableManager get diaryId {
     final $_column = $_itemColumn<int>('diary_id')!;
@@ -5732,7 +5744,7 @@ final class $$DiaryTagsTableReferences
   }
 
   static $TagsTable _tagIdTable(_$AppDatabase db) =>
-      db.tags.createAlias($_aliasNameGenerator(db.diaryTags.tagId, db.tags.id));
+      db.tags.createAlias('diary_tags__tag_id__tags__id');
 
   $$TagsTableProcessedTableManager get tagId {
     final $_column = $_itemColumn<int>('tag_id')!;
@@ -5966,7 +5978,7 @@ class $$DiaryTagsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DiaryTagsTable, DiaryTag>(table),
                   $$DiaryTagsTableReferences(db, table, e),
                 ),
               )
@@ -6392,7 +6404,16 @@ class $$AnniversariesTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$AnniversariesTable, Anniversary>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $AnniversariesTable,
+                    Anniversary
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -6626,7 +6647,16 @@ class $$DiaryDraftsTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$DiaryDraftsTable, DiaryDraftRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DiaryDraftsTable,
+                    DiaryDraftRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -6866,7 +6896,16 @@ class $$DiaryTemplatesTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$DiaryTemplatesTable, DiaryTemplateRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DiaryTemplatesTable,
+                    DiaryTemplateRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -7197,7 +7236,16 @@ class $$NotebooksTableTableManager
                 parentId: parentId,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$NotebooksTable, NotebookRow>(table),
+                  BaseReferences<_$AppDatabase, $NotebooksTable, NotebookRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -7405,7 +7453,16 @@ class $$DiaryNotebooksTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$DiaryNotebooksTable, DiaryNotebookRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DiaryNotebooksTable,
+                    DiaryNotebookRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -7567,7 +7624,16 @@ class $$DayMoodsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$DayMoodsTable, DayMoodRow>(table),
+                  BaseReferences<_$AppDatabase, $DayMoodsTable, DayMoodRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -7796,7 +7862,16 @@ class $$DiaryCommentsTableTableManager
                 editedAt: editedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$DiaryCommentsTable, DiaryCommentRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DiaryCommentsTable,
+                    DiaryCommentRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

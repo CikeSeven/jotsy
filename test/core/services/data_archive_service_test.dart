@@ -409,9 +409,6 @@ Future<File> _writeMinimalBackup({
       ArchiveFile('backup_data.json', payloadBytes.length, payloadBytes),
     );
   final zipBytes = ZipEncoder().encode(archive);
-  if (zipBytes == null) {
-    throw StateError('Failed to encode test backup.');
-  }
   return File(
     p.join(directory.path, fileName),
   ).writeAsBytes(zipBytes, flush: true);

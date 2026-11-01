@@ -8,6 +8,7 @@ import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_paragraph_indent_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_table_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_text_style_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_toggle_editing.dart';
@@ -56,7 +57,8 @@ bool isDiaryToolbarItemActive(
   // 光标在折叠块的标题里（选区的块都是折叠块）。
   DiaryToolbarItem.toggle => attributes['type'] == 'toggle_list',
   DiaryToolbarItem.indent =>
-    attributes['depth'] is num && (attributes['depth'] as num) > 0,
+    attributes[kDiaryParagraphIndentKey] == true ||
+        (attributes['depth'] is num && (attributes['depth'] as num) > 0),
   DiaryToolbarItem.link => attributes['href'] != null,
   _ => false,
 };
@@ -104,11 +106,19 @@ Widget buildDiaryToolbarItem(
                 DiaryToolbarItem.attachment =>
                   !mediaImportBusy && !recordingOpen && onMediaPressed != null,
                 // 格子里只能放段落，不缩进（缩进即成为上一段的子块）。
+                // 正文段落只缩进首行（见 diary_paragraph_indent_editing）。
                 DiaryToolbarItem.indent =>
                   !diarySelectionInTable(controller) &&
-                      (outdent
-                          ? af.isOutdentable(controller.state)
-                          : af.isIndentable(controller.state)),
+                      switch (diaryFirstLineIndentTargets(controller)) {
+                        final targets? =>
+                          outdent
+                              ? canOutdentDiaryFirstLine(controller, targets)
+                              : canIndentDiaryFirstLine(targets),
+                        null =>
+                          outdent
+                              ? af.isOutdentable(controller.state)
+                              : af.isIndentable(controller.state),
+                      },
                 // 代码块里的文字是原文，不写上下标：选区只落在代码块里时停用。
                 DiaryToolbarItem.superscript || DiaryToolbarItem.subscript =>
                   controller.selection == null ||
@@ -244,9 +254,18 @@ void _apply(
     case DiaryToolbarItem.redo:
       controller.redo();
     case DiaryToolbarItem.indent:
-      (outdent ? af.outdentCommand : af.indentCommand).handler(
-        controller.state,
-      );
+      // 正文段落：只缩进首行，多行段落折行后的各行仍顶格；列表、待办等
+      // 仍是真实的嵌套层级。
+      final paragraphs = diaryFirstLineIndentTargets(controller);
+      if (paragraphs != null) {
+        outdent
+            ? outdentDiaryFirstLine(controller, paragraphs)
+            : indentDiaryFirstLine(controller, paragraphs);
+      } else {
+        (outdent ? af.outdentCommand : af.indentCommand).handler(
+          controller.state,
+        );
+      }
     case DiaryToolbarItem.clearFormat:
       final transaction = controller.state.transaction;
       for (final node in controller.selectedNodes) {

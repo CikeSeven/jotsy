@@ -181,6 +181,7 @@ class ExportBlock {
     this.calloutTone,
     this.tableRows = const <List<List<ExportInline>>>[],
     this.tableHeaderRow = false,
+    this.firstLineIndent = false,
   });
 
   final ExportBlockKind kind;
@@ -191,6 +192,10 @@ class ExportBlock {
 
   /// 列表与段落缩进级别（0 起）。
   final int indent;
+
+  /// 正文段落带工具栏「缩进」写入的首行缩进标记（`kDiaryParagraphIndentKey`）：
+  /// 只有 Word 写成首行缩进（与全局首行缩进同一口径，两字与全局取较大者）。
+  final bool firstLineIndent;
 
   /// 有序列表在同一缩进层级内的序号（1 起），其他块为 0。
   final int ordinal;

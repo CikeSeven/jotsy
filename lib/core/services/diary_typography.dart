@@ -79,6 +79,16 @@ class DiaryTypography {
   double get firstLineIndentExtent =>
       firstLineIndent * math.max(0.0, fontSize + letterSpacing);
 
+  /// 工具栏「缩进」给单个段落的首行缩进字数（段落带 `firstLineIndent` 标记）。
+  static const double paragraphFirstLineIndent = 2;
+
+  /// 带首行缩进标记的段落实际缩进的宽度：两个字与全局首行缩进取较大的一个，
+  /// 全局已缩进得更多时不反而变窄。
+  double get paragraphFirstLineIndentExtent => math.max(
+    firstLineIndentExtent,
+    paragraphFirstLineIndent * math.max(0.0, fontSize + letterSpacing),
+  );
+
   bool get usesImportedFont =>
       fontId != bundledFontId && fontId != systemFontId;
 

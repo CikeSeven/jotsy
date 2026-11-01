@@ -259,6 +259,8 @@ class DiaryEditorController extends ChangeNotifier {
       if (nodes.isNotEmpty) 'depth': nodes.first.path.length - 1,
       if (nodes.isNotEmpty) 'level': nodes.first.attributes['level'],
       kDiaryBlockAlignKey: firstText?.attributes[kDiaryBlockAlignKey],
+      // 工具栏「缩进」的选中态：第一个文字块缩进了首行。
+      kDiaryParagraphIndentKey: firstText?.attributes[kDiaryParagraphIndentKey],
     };
   }
 

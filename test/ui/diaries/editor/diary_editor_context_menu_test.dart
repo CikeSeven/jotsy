@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -260,6 +262,109 @@ void main() {
       af.Selection.single(path: [0], startOffset: 0, endOffset: 5),
     );
     expect(find.byType(AdaptiveTextSelectionToolbar), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await unmount(tester, controller);
+  });
+
+  // 测试环境里上游按宿主机（Linux）装的是桌面选区服务，这里照手机选区
+  // 服务长按松手时的方式交还选区。
+  Future<void> releaseLongPress(
+    WidgetTester tester,
+    DiaryEditorController controller,
+    af.Selection selection,
+  ) async {
+    unawaited(
+      controller.state.updateSelectionWithReason(
+        selection,
+        reason: af.SelectionUpdateReason.uiEvent,
+        extraInfo: {af.selectionExtraInfoDoNotAttachTextService: false},
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('long pressing an empty paragraph on phones offers paste', (
+    tester,
+  ) async {
+    final controller = DiaryEditorController(
+      document: af.Document.blank(withInitialText: true),
+    );
+    await pump(tester, controller);
+    final caret = af.Selection.collapsed(af.Position(path: [0]));
+    await releaseLongPress(tester, controller, caret);
+    final l10n = labels(tester);
+    expect(menuLabels(tester), [
+      l10n.pasteButtonLabel,
+      l10n.selectAllButtonLabel,
+    ]);
+
+    // 正文此时才取得焦点、按原选区重设一次（iOS），菜单不受影响。
+    controller.select(caret);
+    await tester.pumpAndSettle();
+    expect(find.byType(AdaptiveTextSelectionToolbar), findsOneWidget);
+
+    // 之后的点按只放光标，菜单随之收起。
+    unawaited(
+      controller.state.updateSelectionWithReason(
+        caret,
+        reason: af.SelectionUpdateReason.uiEvent,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(AdaptiveTextSelectionToolbar), findsNothing);
+    expect(tester.takeException(), isNull);
+    await unmount(tester, controller);
+  });
+
+  testWidgets('pasting from the caret menu closes it', (tester) async {
+    final controller = DiaryEditorController(
+      document: af.Document.blank(withInitialText: true),
+    );
+    await pump(tester, controller);
+    await releaseLongPress(
+      tester,
+      controller,
+      af.Selection.collapsed(af.Position(path: [0])),
+    );
+    await tester.tap(find.text(labels(tester).pasteButtonLabel));
+    await tester.pumpAndSettle();
+    expect(find.byType(AdaptiveTextSelectionToolbar), findsNothing);
+
+    // 剪贴板为空时选区不变，之后的通知也不会把菜单弹回来。
+    controller.state.updateToggledStyle('bold', true);
+    await tester.pumpAndSettle();
+    expect(find.byType(AdaptiveTextSelectionToolbar), findsNothing);
+    expect(tester.takeException(), isNull);
+    await unmount(tester, controller);
+  });
+
+  testWidgets('long pressing a readonly body on phones shows no caret menu', (
+    tester,
+  ) async {
+    final controller = DiaryEditorController.fromContent(
+      'alpha bravo',
+      readOnly: true,
+    );
+    await pump(tester, controller);
+    await releaseLongPress(
+      tester,
+      controller,
+      af.Selection.collapsed(af.Position(path: [0], offset: 3)),
+    );
+    expect(find.byType(AdaptiveTextSelectionToolbar), findsNothing);
+    expect(tester.takeException(), isNull);
+    await unmount(tester, controller);
+  });
+
+  testWidgets('a programmatic caret on phones shows no menu', (tester) async {
+    final controller = DiaryEditorController.fromContent('alpha bravo');
+    await pump(tester, controller);
+    await select(
+      tester,
+      controller,
+      af.Selection.collapsed(af.Position(path: [0], offset: 3)),
+    );
+    expect(find.byType(AdaptiveTextSelectionToolbar), findsNothing);
     expect(tester.takeException(), isNull);
     await unmount(tester, controller);
   });

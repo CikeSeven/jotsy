@@ -92,13 +92,17 @@ void main() {
     test(
       'replaces an empty paragraph with a 3×3 header table, caret in (0,0)',
       () {
-        final controller = _document([_paragraph('')]);
+        final controller = _document([_paragraph(''), _paragraph('after')]);
         _caretIn(controller, [0]);
         final before = controller.contentJson;
 
         insertDiaryTable(controller);
 
-        expect(_types(controller), ['table']);
+        expect(_types(controller), ['table', 'paragraph']);
+        expect(
+          controller.document.nodeAtPath([1])!.delta!.toPlainText(),
+          'after',
+        );
         final grid = _grid(_tableAt(controller, 0));
         expect((grid.rows, grid.cols, grid.headerRow), (3, 3, true));
         expect(controller.selection!.end.path, [0, 0, 0]);
@@ -121,6 +125,25 @@ void main() {
       expect(controller.selection!.end.path, [2, 0, 0]);
       _grid(_tableAt(controller, 1));
       _grid(_tableAt(controller, 2));
+    });
+
+    test('always leaves a writable paragraph after a table at the end', () {
+      // issue #117：文末插表格后表格下面要有能打字的段落。
+      final empty = _document([_paragraph('')]);
+      _caretIn(empty, [0]);
+      final before = empty.contentJson;
+      insertDiaryTable(empty);
+      expect(_types(empty), ['table', 'paragraph']);
+      expect(empty.document.nodeAtPath([1])!.delta!.isEmpty, isTrue);
+      expect(empty.selection!.end.path, [0, 0, 0]);
+      empty.undo();
+      expect(empty.contentJson, before);
+
+      final text = _document([_paragraph('text')]);
+      _caretIn(text, [0], 4);
+      insertDiaryTable(text);
+      expect(_types(text), ['paragraph', 'table', 'paragraph']);
+      expect(text.selection!.end.path, [1, 0, 0]);
     });
   });
 

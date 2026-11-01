@@ -207,6 +207,11 @@ af.Node diaryTableNode({
 
 /// 在光标所在块后面插入一个新表格（光标在空段落上时取代它；光标已在表格
 /// 里时插到那个表格后面），光标进第一格。一步撤销。
+///
+/// 表格后面总要留一个能打字的块：表格是一整块，光标出不了格子就写不了
+/// 表格下面的内容（issue #117：在文末插入表格后无法转行）。所以后面没有
+/// 块、或紧跟的是媒体 / 分隔线 / 卡片这类没有文字的块时，在表格后面补一个
+/// 空段落；取代空段落时，若它后面没有文字块就保留它当作这个空段落。
 void insertDiaryTable(
   DiaryEditorController controller, {
   int rows = kDiaryTableDefaultRows,
@@ -221,23 +226,58 @@ void insertDiaryTable(
   final transaction = controller.state.transaction;
   final enclosing = diaryTableOf(current);
   final af.Path insertPath;
-  if (enclosing != null) {
-    insertPath = enclosing.path.next;
-    transaction.insertNode(insertPath, table);
-  } else if (current.type == kDiaryBlockParagraph &&
+  if (enclosing == null &&
+      current.type == kDiaryBlockParagraph &&
       current.children.isEmpty &&
       (current.delta?.isEmpty ?? true)) {
-    // 先插后删：同一路径先删再插会被事务换算成 -1（见 insertDiaryEditorNodes）。
     insertPath = current.path;
-    transaction
-      ..insertNode(insertPath, table)
-      ..deleteNode(current);
-  } else {
-    insertPath = current.path.next;
     transaction.insertNode(insertPath, table);
+    if (_isTextBlock(current.next)) {
+      // 先插后删：同一路径先删再插会被事务换算成 -1（见 insertDiaryEditorNodes）。
+      transaction.deleteNode(current);
+    }
+  } else {
+    final anchor = enclosing ?? current;
+    insertPath = anchor.path.next;
+    // 表格与补上的空段落一次插入：分两次插入时第二次的路径会被事务换算。
+    transaction.insertNodes(insertPath, [
+      table,
+      if (!_isTextBlock(anchor.next)) af.paragraphNode(),
+    ]);
   }
   transaction.afterSelection = af.Selection.collapsed(
     af.Position(path: [...insertPath, 0, 0]),
   );
   controller.apply(transaction);
+}
+
+/// [node] 是能直接打字的块（有 delta）。
+bool _isTextBlock(af.Node? node) => node != null && node.delta != null;
+
+/// 光标离开 [table] 到它后面的块的开头：后面没有能打字的块时先补一个空
+/// 段落（老数据里文末的表格）。[removing] 给出时在同一事务里删掉它（格子
+/// 最后一段的空行回车退出时，那个空行不留在格子里）。一步撤销。
+Future<void> leaveDiaryTableBelow(
+  af.EditorState state,
+  af.Node table, {
+  af.Node? removing,
+}) async {
+  final next = table.next;
+  final transaction = state.transaction;
+  if (_isTextBlock(next)) {
+    if (removing == null) {
+      await state.updateSelectionWithReason(
+        af.Selection.collapsed(af.Position(path: next!.path)),
+      );
+      return;
+    }
+  } else {
+    transaction.insertNode(table.path.next, af.paragraphNode());
+  }
+  if (removing != null) transaction.deleteNode(removing);
+  // 删掉的是表格里的段落，表格自身的路径不变，紧跟它的块仍在 path.next。
+  transaction.afterSelection = af.Selection.collapsed(
+    af.Position(path: table.path.next),
+  );
+  await state.apply(transaction, skipHistoryDebounce: true);
 }

@@ -10,8 +10,12 @@ import '../../controllers/diary_table_selection.dart';
 /// 表格里的键盘规则，排在上游的快捷键之前：
 ///
 /// - 回车：沿用上游，在同一格里另起一段（上游“回车跳到下一格”的表格命令
-///   不装入，见 [kUpstreamTableCommandKeys]）；选区跨出表格时先按本应用
-///   的规则删掉选区（[deleteDiaryTableSelection]）再另起一段；
+///   不装入，见 [kUpstreamTableCommandKeys]）；最后一行格子里、在格子末尾
+///   的空段落（不是格子唯一的一段）上回车离开表格：删掉这个空段落，光标到
+///   表格后面的块（没有能打字的块时补一个空段落），与代码块“块尾空行回车
+///   退出”同理，手机上没有方向键也能写表格下面的内容（issue #117）；选区
+///   跨出表格时先按本应用的规则删掉选区（[deleteDiaryTableSelection]）再
+///   另起一段；
 /// - 退格：格子第一段开头什么都不做（不并进上一格、不并出表格），其余段
 ///   开头并进同格的上一段；非折叠选区触及表格时按本应用的规则删除；
 /// - Delete：格子最后一段末尾什么都不做，其余段末尾把同格的下一段并进来；
@@ -19,10 +23,12 @@ import '../../controllers/diary_table_selection.dart';
 ///   一格按 Tab 在表格末尾追加一行并进入新行第一格，第一格按 Shift + Tab
 ///   不动；
 /// - ← / →：第一段开头按 ← 到上一格末尾（第一格到表格前一块的末尾），最后
-///   一段末尾按 → 到下一格开头（最后一格到表格后一块的开头）；格内段落之间
+///   一段末尾按 → 到下一格开头（最后一格到表格后一块的开头，表格在文末
+///   时补一个空段落）；格内段落之间
 ///   与段内移动沿用上游；
 /// - ↑ / ↓：第一段的首行按 ↑ 到上一行同列格子的最后一段（首行到表格前一块），
-///   最后一段的末行按 ↓ 到下一行同列格子的第一段（末行到表格后一块），偏移
+///   最后一段的末行按 ↓ 到下一行同列格子的第一段（末行到表格后一块，同样
+///   在文末时补空段落），偏移
 ///   尽量保持；段内其他行沿用上游；
 /// - Markdown 快捷输入（`# `、`- `、`1. `、`[] `、`> `、`---`……）在格子里按
 ///   原文插入：格子只能放段落；
@@ -96,6 +102,26 @@ List<af.CommandShortcutEvent> diaryTableCommandShortcuts() => [
 ];
 
 List<af.CharacterShortcutEvent> diaryTableCharacterShortcuts() => [
+  // 最后一行格子末尾的空段落上回车：离开表格。
+  af.CharacterShortcutEvent(
+    key: 'diary_table_exit_newline',
+    character: '\n',
+    handler: (state) async {
+      final found = diaryTableCaretParagraph(state);
+      if (found == null) return false;
+      final (node: node, caret: caret) = found;
+      if (caret.row != caret.rows - 1 ||
+          !caret.isLastParagraph ||
+          caret.isFirstParagraph ||
+          node.parent != caret.cell ||
+          node.children.isNotEmpty ||
+          !(node.delta?.isEmpty ?? false)) {
+        return false;
+      }
+      await leaveDiaryTableBelow(state, caret.table, removing: node);
+      return true;
+    },
+  ),
   // 选区跨出表格（或跨格）时回车：先按本应用的规则删，再另起一段。
   af.CharacterShortcutEvent(
     key: 'diary_table_newline',
@@ -282,7 +308,11 @@ KeyEventResult _horizontal(af.EditorState state, {required bool forward}) {
       return KeyEventResult.ignored;
     }
     final next = _neighbourCell(caret, forward: true);
-    _select(state, next != null ? _cellStart(next) : _afterTable(caret.table));
+    if (next != null) {
+      _select(state, _cellStart(next));
+    } else {
+      _leaveBelow(state, caret.table);
+    }
   } else {
     if (offset != 0 || !caret.isFirstParagraph) return KeyEventResult.ignored;
     final previous = _neighbourCell(caret, forward: false);
@@ -305,7 +335,11 @@ KeyEventResult _vertical(af.EditorState state, {required bool up}) {
   final offset = state.selection!.end.offset;
   final targetRow = up ? caret.row - 1 : caret.row + 1;
   if (targetRow < 0 || targetRow >= caret.rows) {
-    _select(state, up ? _beforeTable(caret.table) : _afterTable(caret.table));
+    if (up) {
+      _select(state, _beforeTable(caret.table));
+    } else {
+      _leaveBelow(state, caret.table);
+    }
     return KeyEventResult.handled;
   }
   final cell = caret.table.children.elementAtOrNull(
@@ -359,6 +393,16 @@ af.Selection? _afterTable(af.Node table) {
   if (next == null) return null;
   final start = next.selectable?.start();
   return af.Selection.collapsed(start ?? af.Position(path: next.path));
+}
+
+/// 到表格后一块的开头（[_afterTable]）；表格后面没有块（文末的表格）时
+/// 补一个空段落，否则光标出不了表格。
+void _leaveBelow(af.EditorState state, af.Node table) {
+  if (table.next == null) {
+    unawaited(leaveDiaryTableBelow(state, table));
+  } else {
+    _select(state, _afterTable(table));
+  }
 }
 
 void _select(af.EditorState state, af.Selection? selection) {

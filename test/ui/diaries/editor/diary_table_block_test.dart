@@ -328,6 +328,70 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'Enter on a trailing empty line in the last row leaves the table',
+    (tester) async {
+      // issue #117：表格在文末时，最后一行格子里连按两次回车写到表格下面。
+      final controller = _document([_table(2, 2)]);
+      await _focus(
+        tester,
+        controller,
+        af.Selection.collapsed(af.Position(path: [0, 3, 0], offset: 4)),
+      );
+      final before = controller.contentJson;
+      await _type(tester, '\n');
+      expect(controller.document.nodeAtPath([0, 3])!.children.length, 2);
+      expect(controller.selection!.end.path, [0, 3, 1]);
+
+      await _type(tester, '\n');
+      expect(controller.document.nodeAtPath([0, 3])!.children.length, 1);
+      expect(controller.document.root.children.length, 2);
+      expect(controller.selection!.end, af.Position(path: [1]));
+      await _type(tester, 'next');
+      expect(controller.document.nodeAtPath([1])!.delta!.toPlainText(), 'next');
+      _expectValid(_tableNode(controller));
+
+      // 不在最后一行：空行回车仍在格子里另起一段。
+      await _select(tester, controller, [0, 0, 0], 4);
+      await _type(tester, '\n');
+      await _type(tester, '\n');
+      expect(controller.document.nodeAtPath([0, 0])!.children.length, 3);
+      expect(controller.selection!.end.path, [0, 0, 2]);
+
+      controller
+        ..undo()
+        ..undo()
+        ..undo()
+        ..undo()
+        ..undo();
+      await tester.pumpAndSettle();
+      expect(controller.contentJson, before);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('arrow keys leave a table at the end of the document', (
+    tester,
+  ) async {
+    final controller = _document([_table(2, 2)]);
+    await _focus(
+      tester,
+      controller,
+      af.Selection.collapsed(af.Position(path: [0, 3, 0], offset: 4)),
+    );
+    await _key(tester, LogicalKeyboardKey.arrowRight);
+    expect(controller.document.root.children.length, 2);
+    expect(controller.selection!.end, af.Position(path: [1]));
+
+    // 已有段落时 ↓ 直接过去，不再补。
+    await _select(tester, controller, [0, 2, 0], 2);
+    await _key(tester, LogicalKeyboardKey.arrowDown);
+    expect(controller.document.root.children.length, 2);
+    expect(controller.selection!.end.path, [1]);
+    _expectValid(_tableNode(controller));
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
   testWidgets('Backspace and Delete never leave the cell', (tester) async {
     final controller = _document([
       _paragraph('before'),
@@ -608,7 +672,11 @@ void main() {
     final controller = _document([_paragraph('')]);
     controller.select(af.Selection.collapsed(af.Position(path: [0])));
     applyDiaryBlockCommand(controller, table);
-    expect(controller.document.root.children.single.type, 'table');
+    // 表格后面留一个空段落，能接着往下写（issue #117）。
+    expect(controller.document.root.children.map((node) => node.type), [
+      'table',
+      'paragraph',
+    ]);
     final grid = DiaryTableGrid.of(_tableNode(controller).toJson())!;
     expect((grid.rows, grid.cols, grid.headerRow), (3, 3, true));
     expect(controller.selection!.end.path, [0, 0, 0]);

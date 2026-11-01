@@ -86,6 +86,8 @@ class DiaryDocxWriter {
     // 样式的字号、字间距同一口径，缩进两字正好空出两个汉字。
     final builder = _DocxBuilder(
       firstLineTwips: (typography.firstLineIndentExtent * 15).round(),
+      markedFirstLineTwips: (typography.paragraphFirstLineIndentExtent * 15)
+          .round(),
       bodyHalfPoints: _bodyHalfPoints(typography),
     );
     if (book != null) {
@@ -392,11 +394,14 @@ class DiaryDocxWriter {
         case ExportBlockKind.table:
           b.table(block);
         case ExportBlockKind.paragraph:
-          // 与应用一致：居中、右对齐的段落不缩进首行。
+          // 与应用一致：居中、右对齐的段落不缩进首行；带工具栏首行缩进
+          // 标记的段落按两字与全局取较大者。
           final firstLine =
               block.align == ExportAlign.start ||
                   block.align == ExportAlign.justify
-              ? b.firstLineTwips
+              ? (block.firstLineIndent
+                    ? b.markedFirstLineTwips
+                    : b.firstLineTwips)
               : 0;
           b.paragraph(
             align: block.align,
@@ -618,10 +623,17 @@ class DiaryDocxWriter {
 
 /// 拼接 document.xml 与其关系文件；图片与链接按出现顺序分配关系 id。
 class _DocxBuilder {
-  _DocxBuilder({this.firstLineTwips = 0, this.bodyHalfPoints = 24});
+  _DocxBuilder({
+    this.firstLineTwips = 0,
+    this.markedFirstLineTwips = 0,
+    this.bodyHalfPoints = 24,
+  });
 
   /// 正文段落的首行缩进（twip），0 为不缩进。
   final int firstLineTwips;
+
+  /// 带首行缩进标记的段落的首行缩进（twip）。
+  final int markedFirstLineTwips;
 
   /// 正文字号（半磅）：行内字号按它的倍数写出。
   final int bodyHalfPoints;

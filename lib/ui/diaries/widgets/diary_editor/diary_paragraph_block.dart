@@ -3,14 +3,19 @@ import 'dart:math' as math;
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
+import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../controllers/diary_table_editing.dart';
 import 'diary_first_line_indent.dart';
 
 /// 首行缩进的正文段落块：与上游段落块同样的结构与行为，另把首行缩进
 /// [firstLineIndent]（逻辑像素，见 `DiaryTypography.firstLineIndentExtent`）。
 ///
-/// 只在缩进大于 0 时注册（[buildDiaryEditorBlocks]），不缩进时仍用上游段落块，
-/// 默认排版与改版前逐像素一致。居中、右对齐的段落不缩进，两端对齐的照常
+/// 段落带工具栏写入的首行缩进标记（`kDiaryParagraphIndentKey`）时改用
+/// [markedFirstLineIndent]（两个字与全局取较大者）。只缩进第一行，折行后的
+/// 各行顶格——这与上游嵌套缩进（整块右移）不同。
+///
+/// 全局不缩进、段落也没有标记时 [DiaryParagraphBlockBuilder] 仍交给上游段落
+/// 块构建，默认排版与改版前逐像素一致。居中、右对齐的段落不缩进，两端对齐的照常
 /// 缩进（对齐经块配置的 `textAlign`，见 `diaryBlockTextAlign`）。
 ///
 /// 缩进的画法见 [diaryIndentFirstGlyph]：段首的字被换成“缩进 + 字”的占位，
@@ -26,20 +31,31 @@ class DiaryParagraphBlockBuilder extends af.BlockComponentBuilder {
   DiaryParagraphBlockBuilder({
     super.configuration,
     required this.firstLineIndent,
-  });
+    double? markedFirstLineIndent,
+  }) : markedFirstLineIndent = markedFirstLineIndent ?? firstLineIndent;
 
   final double firstLineIndent;
+
+  /// 带首行缩进标记的段落的缩进宽度（逻辑像素）。
+  final double markedFirstLineIndent;
 
   @override
   af.BlockComponentWidget build(
     af.BlockComponentContext blockComponentContext,
   ) {
     final node = blockComponentContext.node;
+    final marked = node.attributes[kDiaryParagraphIndentKey] == true;
+    if (firstLineIndent <= 0 && !marked) {
+      return af.ParagraphBlockComponentBuilder(
+        configuration: configuration,
+      ).build(blockComponentContext);
+    }
     return DiaryParagraphBlock(
       key: node.key,
       node: node,
       configuration: configuration,
       firstLineIndent: firstLineIndent,
+      markedFirstLineIndent: markedFirstLineIndent,
     );
   }
 
@@ -54,9 +70,13 @@ class DiaryParagraphBlock extends af.BlockComponentStatefulWidget {
     required super.node,
     super.configuration = const af.BlockComponentConfiguration(),
     required this.firstLineIndent,
-  });
+    double? markedFirstLineIndent,
+  }) : markedFirstLineIndent = markedFirstLineIndent ?? firstLineIndent;
 
   final double firstLineIndent;
+
+  /// 带首行缩进标记（`kDiaryParagraphIndentKey`）时的缩进宽度。
+  final double markedFirstLineIndent;
 
   @override
   State<DiaryParagraphBlock> createState() => _DiaryParagraphBlockState();
@@ -119,15 +139,18 @@ class _DiaryParagraphBlockState extends State<DiaryParagraphBlock>
     }
   }
 
-  /// 本段生效的缩进（逻辑像素，未缩放）；居中、右对齐的段落与表格格子里
-  /// 的段落为 0（格子窄，缩进只会挤掉内容，导出的表格同样不缩进）。两端
-  /// 对齐照常缩进：它与左对齐一样从起始侧排起（上游 [alignment] 认不出
+  /// 本段生效的缩进（逻辑像素，未缩放）：带首行缩进标记时取
+  /// [DiaryParagraphBlock.markedFirstLineIndent]，否则为全局缩进；居中、
+  /// 右对齐的段落与表格格子里的段落为 0（格子窄，缩进只会挤掉内容，导出的
+  /// 表格同样不缩进）。两端对齐照常缩进：它与左对齐一样从起始侧排起（上游 [alignment] 认不出
   /// `justify`、为 null），只是把各行拉满，首行的缩进位置不变。
   double get _indent =>
       alignment == Alignment.center ||
           alignment == Alignment.centerRight ||
           diaryNodeInTableCell(node)
       ? 0
+      : node.attributes[kDiaryParagraphIndentKey] == true
+      ? widget.markedFirstLineIndent
       : widget.firstLineIndent;
 
   /// 缩进在屏幕上的位移：占位里的内容随正文字体缩放，从行首起向书写方向。

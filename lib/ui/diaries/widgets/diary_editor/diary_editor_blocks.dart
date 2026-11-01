@@ -59,13 +59,14 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   );
   final builders = <String, af.BlockComponentBuilder>{
     'page': page,
-    // 不缩进时用上游段落块，默认排版与改版前逐像素一致。
-    'paragraph': appearance.typography.firstLineIndentExtent > 0
-        ? DiaryParagraphBlockBuilder(
-            configuration: text,
-            firstLineIndent: appearance.typography.firstLineIndentExtent,
-          )
-        : af.ParagraphBlockComponentBuilder(configuration: text),
+    // 不缩进的段落（全局不缩进、也没有工具栏的首行缩进标记）用上游段落块，
+    // 默认排版与改版前逐像素一致。
+    'paragraph': DiaryParagraphBlockBuilder(
+      configuration: text,
+      firstLineIndent: appearance.typography.firstLineIndentExtent,
+      markedFirstLineIndent:
+          appearance.typography.paragraphFirstLineIndentExtent,
+    ),
     'heading': af.HeadingBlockComponentBuilder(
       configuration: text,
       textStyleBuilder: (level) => diaryHeadingTextStyle(appearance, level),

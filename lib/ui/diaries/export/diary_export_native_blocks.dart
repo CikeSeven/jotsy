@@ -135,6 +135,9 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
               : kDiaryCalloutTones.contains(tone)
               ? tone as String
               : kDiaryCalloutToneDefault,
+          firstLineIndent:
+              type == kDiaryBlockParagraph &&
+              data[kDiaryParagraphIndentKey] == true,
         ),
       );
     }

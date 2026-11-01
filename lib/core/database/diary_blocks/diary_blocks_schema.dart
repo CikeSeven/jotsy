@@ -131,6 +131,11 @@ const String kDiaryBlockDeltaKey = 'delta';
 const String kDiaryBlockLevelKey = 'level';
 const String kDiaryBlockCheckedKey = 'checked';
 const String kDiaryBlockAlignKey = 'align';
+
+/// 正文段落的首行缩进标记（工具栏「缩进」写入，只认 `true`，取消时删键）：
+/// 只缩进这一段的第一行（两个字），折行后的各行顶格。与排版设置的全局首行
+/// 缩进取较大的一个；只对 `paragraph` 生效，表格格子里的段落不缩进。
+const String kDiaryParagraphIndentKey = 'firstLineIndent';
 const String kDiaryBlockLanguageKey = 'language';
 const String kDiaryBlockUrlKey = 'url';
 const String kDiaryBlockPathKey = 'path';

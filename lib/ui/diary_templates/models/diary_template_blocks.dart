@@ -56,6 +56,9 @@ Map<String, Object?> sanitizeDiaryTemplateBlocks(Object? raw) {
           if (source['align'] case final String align
               when ['center', 'right', 'justify'].contains(align))
             'align': align,
+          if (type == kDiaryBlockParagraph &&
+              source[kDiaryParagraphIndentKey] == true)
+            kDiaryParagraphIndentKey: true,
           if (type == 'code' && source['language'] is String)
             'language': source['language'],
           if (sanitizeDiaryListStyleId(type, source[kDiaryListStyleKey])

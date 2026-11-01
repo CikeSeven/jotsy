@@ -20,11 +20,11 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.2.1
   font_awesome_flutter: ^11.0.0
-  drift: ^2.32.0
+  drift: ^2.35.3
   sqlite3_flutter_libs: ^0.6.0+eol
-  path_provider: ^2.1.5
+  path_provider: ^2.1.6
   path: ^1.9.1
-  shared_preferences: ^2.5.4
+  shared_preferences: ^2.5.6
   intl: ^0.20.2
   flutter_staggered_grid_view: ^0.7.0
   # 块编辑器（嵌套块、/ 菜单、Markdown 输入、拖动排序）。pub 上的 6.2.0 在
@@ -39,29 +39,29 @@ dependencies:
   geolocator: ^14.0.2
   loading_indicator_m3e: ^0.1.1
   share_plus: ^10.1.4
-  widget_screenshot_plus: ^0.0.7
-  table_calendar: ^3.2.0
-  flutter_svg: ^2.2.4
-  url_launcher: ^6.3.2
+  widget_screenshot_plus: ^0.0.9
+  table_calendar: ^3.3.0
+  flutter_svg: ^2.3.2
+  url_launcher: ^6.3.3
   package_info_plus: ^9.0.0
-  archive: ^3.6.1
-  local_auth: ^3.0.1
-  pdf: ^3.11.3
-  xml: ^6.6.1
+  archive: ^4.6.0
+  local_auth: ^3.0.2
+  pdf: ^3.13.1
+  xml: ^7.0.1
   meta: ^1.15.0
-  gal: ^2.3.2
+  gal: ^2.3.3
   record: ^6.2.0
   audioplayers: ^6.5.0
   open_filex: ^4.7.0
-  video_player: ^2.11.1
+  video_player: ^2.14.1
   # 以下均为已有传递依赖的显式声明，用于导入其他日记应用的导出：
   # html 解析 HTML 正文，markdown 解析 Day One 的行内语法，crypto 生成稳定
   # 的导入日记 ID，sqlite3 只读打开 Diarium 的 .diary 备份；highlight 为正文
   # 代码块做语法高亮与语言识别（只注册应用支持的语言）。
-  crypto: ^3.0.7
+  crypto: ^3.0.8
   highlight: ^0.7.0
-  html: ^0.15.6
-  markdown: ^7.3.0
+  html: ^0.15.7
+  markdown: ^7.3.1
   sqlite3: ^3.2.0
   tyme: ^1.5.0
   # 从手机厂商与 WPS 云端导入笔记：在官方网页中登录，登录状态（Cookie）只用
@@ -75,7 +75,7 @@ dependencies:
   google_sign_in: ^7.2.0
   photo_manager: ^3.12.0
   photo_manager_image_provider: ^2.2.0
-  pasteboard: ^0.5.0
+  pasteboard: ^0.6.0
   dart_quill_delta: ^10.8.3
   # 桌面上把文件拖进编辑页正文（Linux / Windows / macOS 的原生拖放）。0.9 起要求
   # Flutter 3.47.7，暂停在 0.8.x。
@@ -95,11 +95,11 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
-  build_runner: ^2.12.2
+  build_runner: ^2.17.1
   drift_dev: ^2.32.0
   flutter_launcher_icons: ^0.14.4
   # 模拟备份恢复时偏好写入返回 false 或异常，验证跨数据库/媒体回滚。
-  shared_preferences_platform_interface: ^2.4.1
+  shared_preferences_platform_interface: ^2.4.2
 
 flutter:
   generate: true

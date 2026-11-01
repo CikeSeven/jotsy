@@ -280,13 +280,13 @@ class WebDavClient {
   List<WebDavRemoteFile> _parsePropfind(String rawXml, String requestPath) {
     final document = XmlDocument.parse(rawXml);
     final responses = document
-        .findAllElements('response', namespace: '*')
+        .findAllElements('response', namespaceUri: '*')
         .toList(growable: false);
     final files = <WebDavRemoteFile>[];
     final normalizedRequestPath = _normalizeResponsePath(requestPath);
     for (final response in responses) {
       final href = response
-          .getElement('href', namespace: '*')
+          .getElement('href', namespaceUri: '*')
           ?.innerText
           .trim();
       if (href == null || href.isEmpty) {
@@ -298,7 +298,7 @@ class WebDavClient {
         continue;
       }
       final resourceType = response
-          .findAllElements('resourcetype', namespace: '*')
+          .findAllElements('resourcetype', namespaceUri: '*')
           .map((node) => node.innerXml)
           .join();
       final isDirectory =
@@ -314,18 +314,18 @@ class WebDavClient {
           isDirectory: isDirectory,
           size: _parseInt(
             response
-                .findAllElements('getcontentlength', namespace: '*')
+                .findAllElements('getcontentlength', namespaceUri: '*')
                 .firstOrNull
                 ?.innerText,
           ),
           lastModified: _parseHttpDate(
             response
-                .findAllElements('getlastmodified', namespace: '*')
+                .findAllElements('getlastmodified', namespaceUri: '*')
                 .firstOrNull
                 ?.innerText,
           ),
           etag: response
-              .findAllElements('getetag', namespace: '*')
+              .findAllElements('getetag', namespaceUri: '*')
               .firstOrNull
               ?.innerText
               .trim(),

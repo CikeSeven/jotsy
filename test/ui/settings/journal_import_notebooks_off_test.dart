@@ -54,7 +54,7 @@ void main() {
       archive.addFile(ArchiveFile('$name.json', bytes.length, bytes));
     }
     final file = File(p.join(fixture.temporary.path, 'journals.zip'));
-    await file.writeAsBytes(ZipEncoder().encode(archive)!);
+    await file.writeAsBytes(ZipEncoder().encode(archive));
     return file.path;
   }
 

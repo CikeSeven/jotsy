@@ -42,14 +42,15 @@ void main() {
     () async {
       final archive = Archive()
         ..addFile(
-          ArchiveFile('file.bin', 5, [1, 2, 3, 4, 5])..compress = false,
+          ArchiveFile('file.bin', 5, [1, 2, 3, 4, 5])
+            ..compression = CompressionType.none,
         );
       final bytes = Uint8List.fromList(
-        ZipEncoder(password: 'password').encode(archive)!,
+        ZipEncoder(password: 'password').encode(archive),
       );
       final decoder = ZipDecoder()..decodeBytes(bytes);
       final fields = ByteData.sublistView(bytes);
-      final local = decoder.directory.fileHeaders.single.localHeaderOffset!;
+      final local = decoder.directory.fileHeaders.single.localHeaderOffset;
       final central = decoder.directory.centralDirectoryOffset;
       fields.setUint32(local + 14, 0, Endian.little);
       fields.setUint32(central + 16, 0, Endian.little);
@@ -78,10 +79,13 @@ void main() {
 
   test('empty encrypted attachments retain their zero length', () async {
     final archive = Archive()
-      ..addFile(ArchiveFile('empty.txt', 0, <int>[])..compress = false);
+      ..addFile(
+        ArchiveFile('empty.txt', 0, <int>[])
+          ..compression = CompressionType.none,
+      );
     final zip = await File(
       p.join(root.path, 'empty.zip'),
-    ).writeAsBytes(ZipEncoder(password: 'password').encode(archive)!);
+    ).writeAsBytes(ZipEncoder(password: 'password').encode(archive));
     final output = await Directory(p.join(root.path, 'output')).create();
     BackupZipReader.extract(zip.path, output.path, password: 'password');
     expect(await File(p.join(output.path, 'empty.txt')).length(), 0);

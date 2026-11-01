@@ -345,7 +345,7 @@ void main() {
         .files
         .firstWhere((ArchiveFile f) => f.name == 'word/styles.xml');
     expect(
-      utf8.decode(styles.content as List<int>),
+      utf8.decode(styles.content),
       contains('<w:rFonts w:ascii="LXGW WenKai"'),
     );
     final html = await build(DiaryExportFormat.html);
@@ -376,7 +376,7 @@ void main() {
           .decodeBytes(await artifact.file.readAsBytes())
           .files
           .singleWhere((f) => f.name == 'word/styles.xml');
-      final xml = utf8.decode(styles.content as List<int>);
+      final xml = utf8.decode(styles.content);
       expect(
         xml,
         contains('<w:spacing w:after="240" w:line="480" w:lineRule="auto"/>'),

@@ -203,8 +203,15 @@ class LanSyncStore {
     return _setData(LanSyncStoreData(prefs: prefs), sessionsChanged: true);
   }
 
-  /// 等排队中的写入全部完成（测试与退出前用）。
-  Future<void> flush() => _writes;
+  /// 等排队中的写入全部完成（测试与退出前用）。等的期间又排了新的写入时
+  /// 接着等，直到队尾不再变化。
+  Future<void> flush() async {
+    Future<void> tail;
+    do {
+      tail = _writes;
+      await tail;
+    } while (!identical(tail, _writes));
+  }
 
   void dispose() {
     _data.dispose();

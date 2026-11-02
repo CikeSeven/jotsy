@@ -86,7 +86,9 @@ void main() {
     expect(auto.result.role, LanSyncRole.initiator);
     expect(auto.result.automatic, isTrue);
     expect(auto.result.failure, isNull);
-    expect(small.endedSessions.single.result.role, LanSyncRole.responder);
+    // 两台各自结束会话、各自记账，谁先发出“会话结束”没有先后：等它自己的。
+    final responded = await nthSession(small, 1);
+    expect(responded.result.role, LanSyncRole.responder);
   });
 
   test('较小一方的方向被拦：较大的一方等 10 秒后自己发起', () async {

@@ -179,6 +179,7 @@ class LanSyncService {
   String _defaultName = '';
   bool _started = false;
   bool _disposed = false;
+  Future<void>? _disposing;
   bool _foreground = true;
   int _attachments = 0;
   StreamSubscription<Set<TableUpdate>>? _tableUpdates;
@@ -198,6 +199,22 @@ class LanSyncService {
   Timer? _addressTimer;
   LanSyncQrToken? _token;
   Timer? _qrTimer;
+
+  /// 进行中、可能写状态目录的后台任务（入站连接、出站同步、出站配对、按地址
+  /// 连接、覆盖恢复的清理），经 [_track] 登记、结束时自动移除；[dispose] 等
+  /// 它们全部结束后才写完 store 返回（见 lifecycle 的 `_dispose`）。
+  final Set<Future<void>> _tasks = <Future<void>>{};
+
+  /// 还在握手的连接（入站，以及按地址连接的出站）：握手不归 `_active` 管，
+  /// [dispose] 直接断开它们，免得为一个慢吞吞的对方等满握手超时。出站配对
+  /// 与出站同步的握手不在这里：它们各自经 `LanSyncPairing.respond` /
+  /// `_ActiveSession.cancel` 取消。
+  final Set<Socket> _handshaking = <Socket>{};
+
+  /// 正以 busy 回绝的响应方会话（本机已有会话时又来一个）：不占 `_active`，
+  /// 但要等对方的 hello 才能回绝，[dispose] 取消它们，免得为一个不出声的
+  /// 对方等满会话的静默超时。
+  final Set<LanSyncSession> _rejecting = <LanSyncSession>{};
 
   /// 整体状态（每次变化给出新快照）。
   ValueListenable<LanSyncEngineState> get state => _state;
@@ -220,8 +237,10 @@ class LanSyncService {
   /// 清理过期暂存区；前台时起服务端与发现。重复调用无效。
   Future<void> start() => _start();
 
-  /// 关闭：取消会话、停服务端与发现、写完 store。
-  Future<void> dispose() => _dispose();
+  /// 关闭：取消会话与配对、等进行中的后台任务（含会话结束后的记账）落盘、
+  /// 停服务端与发现、写完 store。返回之后不再写状态目录；重复调用返回同一个
+  /// Future（第二个调用方同样等到真正关完）。
+  Future<void> dispose() => _disposing ??= _dispose();
 
   /// 应用前后台（`AppLifecycleState`）：后台停服务端与发现、取消自动同步
   /// 计时；回到前台恢复并按“回到前台”触发自动同步。
@@ -324,11 +343,13 @@ class LanSyncService {
   /// 队列里，等它就会互相等待。若会话已排队等写入，恢复之后它的写入照常经
   /// 前置条件比对——更新与删除因哈希不符被跳过、新增照写，不会丢数据；标记
   /// 保留到下一次成功同步。
-  Future<void> noteDataReplacedByRestore() async {
-    if (!_started || _disposed) return;
+  Future<void> noteDataReplacedByRestore() {
+    if (!_started || _disposed) return Future<void>.value();
     _active?.cancel();
-    await _syncState.resetAfterRestore();
-    await _store.markRestoredPending();
+    return _track(() async {
+      await _syncState.resetAfterRestore();
+      await _store.markRestoredPending();
+    }());
   }
 
   void _emit(LanSyncEngineEvent event) {

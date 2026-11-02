@@ -219,4 +219,53 @@ void main() {
       isFalse,
     );
   });
+
+  test('the title divider is a faint copy of the text color on any paper', () {
+    for (final brightness in Brightness.values) {
+      for (final page in <DiaryPreviewPageStyle>[
+        const DiaryPreviewPageStyle(),
+        const DiaryPreviewPageStyle(paper: DiaryPreviewPaper.sepia),
+        // 墨色纸在浅色应用里换成深色主题，线跟着换成浅色的淡线。
+        const DiaryPreviewPageStyle(paper: DiaryPreviewPaper.ink),
+        const DiaryPreviewPageStyle(
+          paper: DiaryPreviewPaper.custom,
+          paperLight: 0xFFCDBFA8,
+        ),
+        moodSeed.copyWith(tintPaper: true),
+      ]) {
+        final resolved = _resolve(page, brightness: brightness, mood: '😊');
+        final line = resolved.titleDividerColor;
+        final ink = resolved.theme.colorScheme.onSurface;
+        // 按页面本身的明暗取不透明度（墨色纸在浅色应用里是深色页）。
+        final opacity = resolved.theme.brightness == Brightness.light
+            ? DiaryPreviewResolvedStyle.titleDividerOpacityLight
+            : DiaryPreviewResolvedStyle.titleDividerOpacityDark;
+        expect(line, ink.withValues(alpha: opacity));
+        // 叠到纸上：看得见，但远比正文淡。
+        final onPaper = Color.alphaBlend(line, resolved.background);
+        final contrast = DiaryCardColors.contrastOver(
+          onPaper,
+          resolved.background,
+        );
+        expect(contrast, greaterThan(1.25), reason: '$brightness $page');
+        expect(contrast, lessThan(2.2), reason: '$brightness $page');
+      }
+    }
+  });
+
+  test('the title divider follows a custom text color', () {
+    final resolved = _resolve(
+      const DiaryPreviewPageStyle(
+        paper: DiaryPreviewPaper.sepia,
+        textLight: 0xFF4A3420,
+      ),
+    );
+    expect(resolved.bodyColor, const Color(0xFF4A3420));
+    expect(
+      resolved.titleDividerColor,
+      const Color(
+        0xFF4A3420,
+      ).withValues(alpha: DiaryPreviewResolvedStyle.titleDividerOpacityLight),
+    );
+  });
 }

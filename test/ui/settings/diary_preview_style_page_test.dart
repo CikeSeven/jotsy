@@ -79,6 +79,15 @@ Future<(SettingsService, AppLocalizations)> _pumpPage(
 DiaryPreviewSettings _stored(SettingsService settings) =>
     DiaryPreviewSettings.decode(settings.diaryPreviewStyleRaw);
 
+/// 实时预览里各篇示例拿到的标题样式。
+Iterable<DiaryPreviewTitleStyle> _previewTitles(WidgetTester tester) {
+  final contents = tester.widgetList<DiaryPreviewContent>(
+    find.byType(DiaryPreviewContent),
+  );
+  expect(contents, isNotEmpty);
+  return contents.map((content) => content.resolved.style.title);
+}
+
 Future<void> _openTab(WidgetTester tester, String label) async {
   final tab = find.widgetWithText(Tab, label);
   await tester.ensureVisible(tab);
@@ -266,6 +275,71 @@ void main() {
     tile.onChangeEnd!(30);
     await tester.pumpAndSettle();
     expect(_stored(settings).current.page.horizontalPadding, 30);
+  });
+
+  testWidgets('the title tab adds a divider and spaces the text', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    expect(_previewTitles(tester).every((t) => !t.divider), isTrue);
+    await _openTab(tester, l10n.diaryPreviewStyleTabTitle);
+
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleTitleDivider),
+    );
+    expect(_stored(settings).current.title.divider, isTrue);
+    // 实时预览用正式页面的组件（示例有头图，线在预览视口之外，这里看它
+    // 拿到的样式）。
+    expect(_previewTitles(tester).every((t) => t.divider), isTrue);
+
+    // 间距滑块：拖动中只改预览，松手才写入。
+    final finder = find.widgetWithText(
+      SettingsSliderTile,
+      l10n.diaryPreviewStyleTitleBodyGap,
+    );
+    await _scrollTo(tester, finder);
+    final tile = tester.widget<SettingsSliderTile>(finder);
+    expect(tile.value, DiaryPreviewTitleStyle.defaultBodyGap);
+    expect(tile.min, DiaryPreviewStyleLimits.titleBodyGap.min);
+    expect(tile.max, DiaryPreviewStyleLimits.titleBodyGap.max);
+    tile.onChanged!(30);
+    await tester.pump();
+    expect(_stored(settings).current.title.bodyGap, 14);
+    expect(find.text(l10n.diaryCardStyleValueDp('30')), findsOneWidget);
+    expect(_previewTitles(tester).every((t) => t.bodyGap == 30), isTrue);
+
+    tile.onChangeEnd!(30);
+    await tester.pumpAndSettle();
+    final stored = _stored(settings).current.title;
+    expect(stored.bodyGap, 30);
+    expect(stored.divider, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the divider options hide only when there is no title area', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryPreviewStyleTabTitle);
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleTitleVisible),
+    );
+    expect(_stored(settings).current.title.visible, isFalse);
+    // 信息栏默认在标题下方，仍有标题区：分隔线选项保留。
+    await _scrollTo(tester, find.text(l10n.diaryPreviewStyleTitleDivider));
+    expect(find.text(l10n.diaryPreviewStyleTitleDivider), findsOneWidget);
+
+    await _openTab(tester, l10n.diaryPreviewStyleTabMeta);
+    await _tapVisible(tester, find.text(l10n.diaryPreviewStyleMetaEnd));
+    expect(
+      _stored(settings).current.meta.position,
+      DiaryPreviewMetaPosition.end,
+    );
+    await _openTab(tester, l10n.diaryPreviewStyleTabTitle);
+    expect(find.text(l10n.diaryPreviewStyleTitleDivider), findsNothing);
+    expect(find.text(l10n.diaryPreviewStyleTitleBodyGap), findsNothing);
   });
 
   testWidgets('a preset changes the look but keeps the reading behavior', (

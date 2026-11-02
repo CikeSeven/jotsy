@@ -1,7 +1,7 @@
 part of 'diary_preview_style.dart';
 
-/// 标题：显隐、“无标题”占位、字号缩放、字重、对齐与颜色。字体跟随正文字体
-/// 设置（`DiaryTypography`），这里不另设。
+/// 标题：显隐、“无标题”占位、字号缩放、字重、对齐与颜色，以及标题区与正文
+/// 之间的分隔线和距离。字体跟随正文字体设置（`DiaryTypography`），这里不另设。
 @immutable
 class DiaryPreviewTitleStyle {
   const DiaryPreviewTitleStyle({
@@ -12,7 +12,13 @@ class DiaryPreviewTitleStyle {
     this.align = DiaryPreviewAlign.start,
     this.colorLight,
     this.colorDark,
+    this.divider = false,
+    this.bodyGap = defaultBodyGap,
   });
+
+  /// 标题区与正文之间的默认距离：改版前正文区固定的上边距。没有标题区（无
+  /// 标题且信息栏不在标题旁）时正文区始终用它，不受 [bodyGap] 影响。
+  static const double defaultBodyGap = 14;
 
   final bool visible;
 
@@ -28,6 +34,13 @@ class DiaryPreviewTitleStyle {
   final int? colorLight;
   final int? colorDark;
 
+  /// 在标题区与正文之间画一条浅色细线（默认关，即改版前）。
+  final bool divider;
+
+  /// 标题区下缘到正文的距离；开启 [divider] 时线上、线下各留这么多。范围见
+  /// [DiaryPreviewStyleLimits.titleBodyGap]。
+  final double bodyGap;
+
   DiaryPreviewTitleStyle copyWith({
     bool? visible,
     bool? showUntitled,
@@ -36,6 +49,8 @@ class DiaryPreviewTitleStyle {
     DiaryPreviewAlign? align,
     ValueGetter<int?>? colorLight,
     ValueGetter<int?>? colorDark,
+    bool? divider,
+    double? bodyGap,
   }) {
     return DiaryPreviewTitleStyle(
       visible: visible ?? this.visible,
@@ -45,6 +60,8 @@ class DiaryPreviewTitleStyle {
       align: align ?? this.align,
       colorLight: colorLight == null ? this.colorLight : colorLight(),
       colorDark: colorDark == null ? this.colorDark : colorDark(),
+      divider: divider ?? this.divider,
+      bodyGap: bodyGap ?? this.bodyGap,
     );
   }
 
@@ -74,6 +91,12 @@ class DiaryPreviewTitleStyle {
       ),
       colorLight: StyleJson.argb(json['colorLight']),
       colorDark: StyleJson.argb(json['colorDark']),
+      divider: StyleJson.boolean(json['divider'], d.divider),
+      bodyGap: StyleJson.number(
+        json['bodyGap'],
+        d.bodyGap,
+        DiaryPreviewStyleLimits.titleBodyGap,
+      ),
     );
   }
 
@@ -87,6 +110,8 @@ class DiaryPreviewTitleStyle {
     StyleJson.putEnum(json, 'align', align, d.align);
     StyleJson.putColor(json, 'colorLight', colorLight, d.colorLight);
     StyleJson.putColor(json, 'colorDark', colorDark, d.colorDark);
+    StyleJson.put(json, 'divider', divider, d.divider);
+    StyleJson.put(json, 'bodyGap', bodyGap, d.bodyGap);
     return json;
   }
 
@@ -99,7 +124,9 @@ class DiaryPreviewTitleStyle {
         other.weight == weight &&
         other.align == align &&
         other.colorLight == colorLight &&
-        other.colorDark == colorDark;
+        other.colorDark == colorDark &&
+        other.divider == divider &&
+        other.bodyGap == bodyGap;
   }
 
   @override
@@ -111,5 +138,7 @@ class DiaryPreviewTitleStyle {
     align,
     colorLight,
     colorDark,
+    divider,
+    bodyGap,
   );
 }

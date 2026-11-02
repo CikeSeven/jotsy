@@ -7556,6 +7556,30 @@ abstract class AppLocalizations {
   /// **'Custom title color'**
   String get diaryPreviewStyleTitleColor;
 
+  /// Diary preview style settings: switch title for a thin line between the title and the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Line below title'**
+  String get diaryPreviewStyleTitleDivider;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A light, thin line between the title and the text'**
+  String get diaryPreviewStyleTitleDividerSubtitle;
+
+  /// Diary preview style settings: slider title for the space between the title area and the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Space before text'**
+  String get diaryPreviewStyleTitleBodyGap;
+
+  /// Diary preview style settings: slider subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'With the line on, this space is kept above and below it'**
+  String get diaryPreviewStyleTitleBodyGapSubtitle;
+
   /// Diary preview style settings: setting title.
   ///
   /// In en, this message translates to:

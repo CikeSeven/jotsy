@@ -203,6 +203,13 @@ class DiaryPreviewContent extends ConsumerWidget {
         meta.position == DiaryPreviewMetaPosition.belowTitle;
     final metaAtEnd =
         metaWidget != null && meta.position == DiaryPreviewMetaPosition.end;
+    // 标题区（信息栏在上 / 标题 / 信息栏在下里实际出现的部分）与正文之间按
+    // 样式留距离，开分隔线时线上、线下各一份；没有标题区时正文区沿用原来的
+    // 上边距、不画线。默认样式下距离就是原来的 14。
+    final hasTitleRegion = metaAbove || title != null || metaBelow;
+    final bodyTop = hasTitleRegion
+        ? style.title.bodyGap
+        : DiaryPreviewTitleStyle.defaultBodyGap;
 
     final pageColors = diaryPreviewPageColors(context, resolved);
 
@@ -259,9 +266,11 @@ class DiaryPreviewContent extends ConsumerWidget {
             top: title == null ? 14 : 10,
             child: metaWidget,
           ),
+        if (hasTitleRegion && style.title.divider)
+          DiaryPreviewTitleDivider(resolved: resolved, top: bodyTop),
         DiaryPreviewSection(
           resolved: resolved,
-          top: 14,
+          top: bodyTop,
           bottom: 28 + extraBottomPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

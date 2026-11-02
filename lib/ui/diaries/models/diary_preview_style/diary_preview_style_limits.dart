@@ -14,6 +14,9 @@ abstract final class DiaryPreviewStyleLimits {
   static const coverRadius = StyleRange(0, 40, 1);
   static const titleScale = StyleRange(0.7, 1.8, 0.05);
 
+  /// 标题区与正文之间的距离；开启标题下分隔线时为线上、线下各自的距离。
+  static const titleBodyGap = StyleRange(8, 48, 2);
+
   /// 头图最多占屏幕高度的比例：再高就看不到标题了。
   static const double coverMaxScreenFraction = 0.7;
 

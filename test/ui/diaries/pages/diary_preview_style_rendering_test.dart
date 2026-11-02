@@ -14,6 +14,10 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_b
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_preview_resolved_style.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_body.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_header.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_overlays.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -106,6 +110,26 @@ Future<void> _pump(
 
 double _top(WidgetTester tester, Finder finder) =>
     tester.getTopLeft(finder.first).dy;
+
+/// 手机宽度：正文列不收窄，左右边距就是样式里的 16。
+void _phoneView(WidgetTester tester) {
+  tester.view.physicalSize = const Size(400, 800);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+}
+
+final _dividerLine = find.descendant(
+  of: find.byType(DiaryPreviewTitleDivider),
+  matching: find.byType(ColoredBox),
+);
+
+Rect _dividerRect(WidgetTester tester) => tester.getRect(_dividerLine);
+
+Rect _metaRect(WidgetTester tester) =>
+    tester.getRect(find.byType(DiaryPreviewMeta));
+
+double _bodyTop(WidgetTester tester) =>
+    tester.getTopLeft(find.byType(DiaryPreviewBody)).dy;
 
 void main() {
   testWidgets('the default look keeps the original top bar and details', (
@@ -269,6 +293,107 @@ void main() {
       ),
     );
     expect(find.text('海边的一天'), findsNothing);
+  });
+
+  testWidgets('the default look keeps the text 14 below the title area', (
+    tester,
+  ) async {
+    _phoneView(tester);
+    await _pump(tester);
+    expect(find.byType(DiaryPreviewTitleDivider), findsNothing);
+    // 改版前正文区固定 14 的上边距：标题区（这里以信息栏收尾）到正文仍是 14。
+    expect(_bodyTop(tester) - _metaRect(tester).bottom, closeTo(14, 0.01));
+
+    await _pump(
+      tester,
+      style: const DiaryPreviewStyle(
+        title: DiaryPreviewTitleStyle(bodyGap: 30),
+      ),
+    );
+    expect(find.byType(DiaryPreviewTitleDivider), findsNothing);
+    expect(_bodyTop(tester) - _metaRect(tester).bottom, closeTo(30, 0.01));
+  });
+
+  testWidgets('the title divider sits between the title area and the text', (
+    tester,
+  ) async {
+    _phoneView(tester);
+    await _pump(
+      tester,
+      style: const DiaryPreviewStyle(
+        title: DiaryPreviewTitleStyle(divider: true, bodyGap: 20),
+      ),
+    );
+    var line = _dividerRect(tester);
+    expect(line.height, DiaryPreviewTitleDivider.thickness);
+    // 线上、线下各留一份间距。
+    expect(line.top - _metaRect(tester).bottom, closeTo(20, 0.01));
+    expect(_bodyTop(tester) - line.bottom, closeTo(20, 0.01));
+    // 横跨正文列：左右边距与正文相同（手机宽度下为 16）。
+    expect(line.left, 16);
+    expect(line.right, 400 - 16);
+    final box = tester.widget<ColoredBox>(_dividerLine);
+    final scheme = Theme.of(tester.element(_dividerLine)).colorScheme;
+    expect(
+      box.color,
+      scheme.onSurface.withValues(
+        alpha: DiaryPreviewResolvedStyle.titleDividerOpacityLight,
+      ),
+    );
+
+    // 信息栏在标题上方时，线紧跟标题；默认间距为 14 + 14。
+    await _pump(
+      tester,
+      style: const DiaryPreviewStyle(
+        title: DiaryPreviewTitleStyle(divider: true),
+        meta: DiaryPreviewMetaStyle(
+          position: DiaryPreviewMetaPosition.aboveTitle,
+        ),
+      ),
+    );
+    line = _dividerRect(tester);
+    final title = tester.getRect(find.text('海边的一天'));
+    expect(line.top - title.bottom, closeTo(14, 0.01));
+    expect(_bodyTop(tester) - line.bottom, closeTo(14, 0.01));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('without a title area there is no divider and no extra gap', (
+    tester,
+  ) async {
+    _phoneView(tester);
+    // 标题隐藏、信息栏在正文之后：没有标题区，分隔线与间距都不起作用。
+    const bare = DiaryPreviewStyle(
+      title: DiaryPreviewTitleStyle(visible: false),
+      meta: DiaryPreviewMetaStyle(position: DiaryPreviewMetaPosition.end),
+    );
+    await _pump(tester, style: bare);
+    final plainTop = _bodyTop(tester);
+    await _pump(
+      tester,
+      style: bare.copyWith(
+        title: const DiaryPreviewTitleStyle(
+          visible: false,
+          divider: true,
+          bodyGap: 40,
+        ),
+      ),
+    );
+    expect(find.byType(DiaryPreviewTitleDivider), findsNothing);
+    expect(_bodyTop(tester), plainTop);
+
+    // 标题隐藏但信息栏在标题下方：信息栏就是标题区，照常画线。
+    await _pump(
+      tester,
+      style: const DiaryPreviewStyle(
+        title: DiaryPreviewTitleStyle(visible: false, divider: true),
+      ),
+    );
+    expect(find.byType(DiaryPreviewTitleDivider), findsOneWidget);
+    expect(
+      _dividerRect(tester).top - _metaRect(tester).bottom,
+      closeTo(14, 0.01),
+    );
   });
 
   testWidgets('ink paper turns a light app page dark and stays readable', (

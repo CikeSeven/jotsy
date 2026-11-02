@@ -4091,6 +4091,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryPreviewStyleTitleColor => '自定义标题颜色';
 
   @override
+  String get diaryPreviewStyleTitleDivider => '标题下分隔线';
+
+  @override
+  String get diaryPreviewStyleTitleDividerSubtitle => '在标题与正文之间画一条浅色细线';
+
+  @override
+  String get diaryPreviewStyleTitleBodyGap => '标题与正文间距';
+
+  @override
+  String get diaryPreviewStyleTitleBodyGapSubtitle => '开启分隔线时，线的上下各留这段距离';
+
+  @override
   String get diaryPreviewStyleMetaPosition => '位置';
 
   @override

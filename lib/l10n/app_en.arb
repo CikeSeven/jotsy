@@ -5777,6 +5777,22 @@
   "@diaryPreviewStyleTitleColor": {
     "description": "Diary preview style settings: switch for a custom title color."
   },
+  "diaryPreviewStyleTitleDivider": "Line below title",
+  "@diaryPreviewStyleTitleDivider": {
+    "description": "Diary preview style settings: switch title for a thin line between the title and the text."
+  },
+  "diaryPreviewStyleTitleDividerSubtitle": "A light, thin line between the title and the text",
+  "@diaryPreviewStyleTitleDividerSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleTitleBodyGap": "Space before text",
+  "@diaryPreviewStyleTitleBodyGap": {
+    "description": "Diary preview style settings: slider title for the space between the title area and the text."
+  },
+  "diaryPreviewStyleTitleBodyGapSubtitle": "With the line on, this space is kept above and below it",
+  "@diaryPreviewStyleTitleBodyGapSubtitle": {
+    "description": "Diary preview style settings: slider subtitle."
+  },
   "diaryPreviewStyleMetaPosition": "Position",
   "@diaryPreviewStyleMetaPosition": {
     "description": "Diary preview style settings: setting title."

@@ -87,4 +87,15 @@ Name: "{autoprograms}\Jotsy"; Filename: "{app}\jotsy.exe"
 Name: "{autodesktop}\Jotsy"; Filename: "{app}\jotsy.exe"; Tasks: desktopicon
 
 [Run]
+; LAN sync needs inbound UDP discovery and inbound TCP sessions. Restrict the
+; exception to private networks and this executable; TCP uses any local port
+; because the service falls back to a random port when 24562 is occupied.
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Jotsy LAN Sync UDP"""; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Jotsy LAN Sync TCP"""; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""Jotsy LAN Sync UDP"" dir=in action=allow program=""{app}\jotsy.exe"" enable=yes profile=private protocol=UDP localport=24561"; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""Jotsy LAN Sync TCP"" dir=in action=allow program=""{app}\jotsy.exe"" enable=yes profile=private protocol=TCP localport=any"; Flags: runhidden
 Filename: "{app}\jotsy.exe"; Description: "{cm:LaunchProgram,Jotsy}"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Jotsy LAN Sync UDP"""; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Jotsy LAN Sync TCP"""; Flags: runhidden

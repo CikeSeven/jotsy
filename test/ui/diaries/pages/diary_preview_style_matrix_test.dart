@@ -37,7 +37,12 @@ const _extreme = DiaryPreviewStyle(
     fit: DiaryPreviewCoverFit.cover,
     radius: 40,
   ),
-  title: DiaryPreviewTitleStyle(scale: 1.8, align: DiaryPreviewAlign.center),
+  title: DiaryPreviewTitleStyle(
+    scale: 1.8,
+    align: DiaryPreviewAlign.center,
+    divider: true,
+    bodyGap: 48,
+  ),
   meta: DiaryPreviewMetaStyle(
     position: DiaryPreviewMetaPosition.aboveTitle,
     layout: DiaryPreviewMetaLayout.card,

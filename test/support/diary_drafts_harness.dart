@@ -30,12 +30,17 @@ class DiaryDraftsHarness {
   final FakeDiaryMediaCleanupService mediaCleanup =
       FakeDiaryMediaCleanupService();
 
-  static Future<DiaryDraftsHarness> create(WidgetTester tester) async {
+  /// [database] 给出时用它（如在某个查询上加闸门的子类），否则新建内存库；
+  /// 两种都在测试结束时关闭。
+  static Future<DiaryDraftsHarness> create(
+    WidgetTester tester, {
+    AppDatabase? database,
+  }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     SharedPreferences.setMockInitialValues(<String, Object>{});
-    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    database ??= AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     final settings = await SettingsService.create();
     return DiaryDraftsHarness._(tester, database, settings);

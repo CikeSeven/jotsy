@@ -9,6 +9,7 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../../widgets/select_all_button.dart';
 
 /// 日记列表布局模式。
 enum DiaryLayoutMode { list, waterfall }
@@ -18,9 +19,13 @@ enum DiaryLayoutMode { list, waterfall }
 /// 布局职责：
 /// - 普通态：搜索条占满左侧，右侧为草稿箱（有草稿时带份数角标）、归档列表
 ///   与视图选项入口；
-/// - 多选态：取消 · 已选数量 · 收进日记本 · 归档 · 删除 · 更多（置顶或取消
-///   置顶、设置标签、导出；在普通日记本里另有“从本日记本移出”“移动到…”，
-///   最多 5 项、都是单行动作，仍用弹出菜单而不是底部面板）。
+/// - 多选态：取消 · 全选开关（勾选框 + 已选数量） · 收进日记本 · 归档 ·
+///   删除 · 更多（置顶或取消置顶、设置标签、导出；在普通日记本里另有“从
+///   本日记本移出”“移动到…”，最多 5 项、都是单行动作，仍用弹出菜单而不是
+///   底部面板）。全选开关不另占一个图标按钮位（320dp 宽时放不下第 6 个
+///   按钮），而是把“已选数量”整块做成开关，点按在全选 / 取消全选之间切换；
+///   全选的范围与“已全选”的判断由页面给出（见 DiariesSelectAllController）。
+///   取消全选后选中为 0、仍在多选，此时批量操作停用。
 class DiaryHeadSection extends StatelessWidget {
   // ==================== 头部过渡动画常量 ====================
   static const double _headerContentHeight = 52;
@@ -31,6 +36,8 @@ class DiaryHeadSection extends StatelessWidget {
     required this.isSelectionMode,
     required this.selectedCount,
     required this.onCancelSelection,
+    required this.allSelected,
+    required this.onToggleSelectAll,
     required this.isPinActionUnpin,
     required this.onPinSelected,
     required this.onArchiveSelected,
@@ -51,6 +58,12 @@ class DiaryHeadSection extends StatelessWidget {
   final bool isSelectionMode;
   final int selectedCount;
   final VoidCallback onCancelSelection;
+
+  /// 当前列表的全部日记（含还没分页加载的）都已选中：全选开关为实心。
+  final bool allSelected;
+
+  /// 点按全选开关：已全选时取消全选（留在多选），否则全选。
+  final VoidCallback onToggleSelectAll;
   final bool isPinActionUnpin;
   final VoidCallback onPinSelected;
   final VoidCallback onArchiveSelected;
@@ -119,13 +132,16 @@ class DiaryHeadSection extends StatelessWidget {
     );
   }
 
-  /// 多选态：取消 + 已选数量 + 常用批量操作，其余收进“更多”菜单。
+  /// 多选态：取消 + 全选开关（已选数量） + 常用批量操作，其余收进“更多”
+  /// 菜单。
   ///
   /// 与改版前同样是 5 个图标按钮 + 数量，320dp 宽也放得下；数量文字放不下
-  /// 时按比例缩小而不是省略（“已选择 1…”读不出数量）。
+  /// 时按比例缩小而不是省略（“已选择 1…”读不出数量）。一篇都没选（取消
+  /// 全选后）时批量操作停用。
   Widget _buildSelectionRow(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
+    final hasSelection = selectedCount > 0;
     final onRemove = onRemoveFromNotebookSelected;
     final onMove = onMoveToNotebookSelected;
     return Row(
@@ -137,40 +153,38 @@ class DiaryHeadSection extends StatelessWidget {
           icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
         ),
         Expanded(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
+          child: Align(
             alignment: AlignmentDirectional.centerStart,
-            child: Text(
-              l10n.autoT0099(selectedCount.toString()),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-              ),
-              maxLines: 1,
+            child: _SelectAllCount(
+              selectedCount: selectedCount,
+              allSelected: allSelected,
+              onToggle: onToggleSelectAll,
             ),
           ),
         ),
         if (onAddToNotebookSelected case final onAddToNotebook?)
           IconButton(
             tooltip: l10n.notebookPickerTitle,
-            onPressed: onAddToNotebook,
+            onPressed: hasSelection ? onAddToNotebook : null,
             icon: const FaIcon(FontAwesomeIcons.bookBookmark, size: 18),
           ),
         IconButton(
           tooltip: l10n.autoT0140,
-          onPressed: onArchiveSelected,
+          onPressed: hasSelection ? onArchiveSelected : null,
           icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
         ),
         IconButton(
           tooltip: l10n.commonDelete,
-          onPressed: onDeleteSelected,
+          onPressed: hasSelection ? onDeleteSelected : null,
+          // 停用时不用错误色，交给 IconButton 的停用色。
           icon: FaIcon(
             FontAwesomeIcons.trashCan,
             size: 18,
-            color: colorScheme.error,
+            color: hasSelection ? colorScheme.error : null,
           ),
         ),
         ExpressiveMenuButton(
+          enabled: hasSelection,
           tooltip: l10n.notebookSelectionMore,
           icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
           items: <Widget>[
@@ -238,6 +252,119 @@ class DiaryHeadSection extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// 多选顶栏的全选开关：勾选框图形（与草稿箱、回收站的全选按钮同一套，
+/// 见 [SelectAllIcon]）+ 已选数量，整块可点。
+///
+/// 数量文字放不下时按比例缩小（FittedBox）而不是省略。勾选框占去了原本
+/// 给数量的一截宽度：窄窗口（360dp 宽且多选栏有 5 个按钮时只剩约 55dp）里
+/// “已选择 N 项”要缩到不足原字号的 [_minTextScale]、几乎读不出来，这时改为
+/// 只显示数字（“☑ 25”）。按哪种显示只看可用宽度（以三位数的文案量），不随
+/// 数量位数来回切换；读屏的值始终是完整的“已选择 N 项”。触控区高度至少
+/// 48dp。读屏为按钮：标签是“全选 / 取消全选”，值是已选数量。
+class _SelectAllCount extends StatelessWidget {
+  const _SelectAllCount({
+    required this.selectedCount,
+    required this.allSelected,
+    required this.onToggle,
+  });
+
+  static const double _minTouchExtent = 48;
+
+  /// 勾选框图形的宽度（[SelectAllIcon] 为 18dp 的图标）。
+  static const double _iconExtent = 18;
+  static const double _minTextScale = 0.5;
+
+  final int selectedCount;
+  final bool allSelected;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final action = allSelected ? l10n.commonDeselectAll : l10n.commonSelectAll;
+    final countText = l10n.autoT0099(selectedCount.toString());
+    final style = theme.textTheme.titleLarge?.copyWith(
+      fontSize: 22,
+      fontWeight: FontWeight.w700,
+    );
+    return Tooltip(
+      message: action,
+      excludeFromSemantics: true,
+      child: Semantics(
+        button: true,
+        label: action,
+        value: countText,
+        onTap: onToggle,
+        excludeSemantics: true,
+        child: InkWell(
+          key: const ValueKey<String>('head_select_all'),
+          onTap: onToggle,
+          borderRadius: BorderRadius.circular(AppRadii.nav),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: _minTouchExtent),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AppSpacing.xs,
+              ),
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final budget =
+                      constraints.maxWidth - _iconExtent - AppSpacing.s;
+                  final shown =
+                      _fitsAtReadableSize(
+                        context,
+                        l10n.autoT0099('000'),
+                        style,
+                        budget: budget,
+                      )
+                      ? countText
+                      : selectedCount.toString();
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      SelectAllIcon(
+                        allSelected: allSelected,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppSpacing.s),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(shown, style: style, maxLines: 1),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// [text] 缩放到 [budget] 宽时是否仍不小于原字号的 [_minTextScale]。
+  static bool _fitsAtReadableSize(
+    BuildContext context,
+    String text,
+    TextStyle? style, {
+    required double budget,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width <= 0 || budget >= width * _minTextScale;
   }
 }
 

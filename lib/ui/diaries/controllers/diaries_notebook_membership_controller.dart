@@ -150,7 +150,7 @@ class DiariesNotebookMembershipController {
     required String message,
   }) async {
     if (fromSelection) {
-      _state.setState(_state._selectedDiaryIds.clear);
+      _state.setState(_state._resetSelection);
     }
     if (animateOut) {
       transitionCoordinator.startHideAnimations(targetIds);

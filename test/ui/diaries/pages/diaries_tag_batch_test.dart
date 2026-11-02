@@ -11,6 +11,15 @@ import '../../notebooks/notebook_test_support.dart';
 /// 首页多选的批量标签：更多 → 设置标签 → 三态面板 → 写入 → 可撤销；
 /// 去掉正在筛选的标签时卡片收起离开，撤销后回来。
 void main() {
+  /// 多选顶栏的全选开关（已选数量那一块）。
+  final selectAllToggle = find.byKey(const ValueKey<String>('head_select_all'));
+
+  /// 顶栏的已选数量。按读屏值断言：测试字体比真实字体宽，400dp 宽的夹具里
+  /// 顶栏只显示数字，读屏值始终是完整的“已选择 N 项”。
+  void expectSelected(WidgetTester tester, int count) {
+    expect(tester.getSemantics(selectAllToggle).value, '已选择 $count 项');
+  }
+
   Future<DiaryDraftsHarness> pumpHome(
     WidgetTester tester,
     Future<void> Function(DiaryDraftsHarness h) seed,
@@ -77,7 +86,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(card('在大阪'));
     await tester.pumpAndSettle();
-    expect(find.text('已选择 2 项'), findsOneWidget);
+    expectSelected(tester, 2);
     await openTagSheet(h);
 
     expect(find.text('给 2 篇日记设置标签'), findsOneWidget);
@@ -107,7 +116,7 @@ void main() {
     });
     expect(find.text('已更新 2 篇日记的标签'), findsOneWidget);
     // 退出了多选，两张卡片都还在。
-    expect(find.text('已选择 2 项'), findsNothing);
+    expect(selectAllToggle, findsNothing);
     expect(card('在京都'), findsOneWidget);
     expect(card('在大阪'), findsOneWidget);
 
@@ -137,7 +146,7 @@ void main() {
     await h.settleAll();
 
     expect((await tagsOf(h, <String>[kyoto]))[kyoto], isEmpty);
-    expect(find.text('已选择 1 项'), findsOneWidget);
+    expectSelected(tester, 1);
     await h.unmount();
   });
 

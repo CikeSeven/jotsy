@@ -120,6 +120,17 @@ class WideDiaryDatabase extends AppDatabase {
     store.softDelete(diaryId);
   }
 
+  /// 日记页的删除（多选、右键菜单、右栏 Delete 键）经批量写入。
+  @override
+  Future<void> softDeleteDiaries(Iterable<String> diaryIds) async {
+    diaryIds.forEach(store.softDelete);
+  }
+
+  @override
+  Future<void> restoreDiaries(Iterable<String> diaryIds) async {
+    diaryIds.forEach(store.restore);
+  }
+
   @override
   Future<void> pinDiary(String diaryId, {bool touchUpdatedAt = false}) async {
     store.pinned.add(diaryId);

@@ -40,6 +40,33 @@ Color _renderedColor(WidgetTester tester, String text) {
   return color ?? line.text.style!.color!;
 }
 
+/// 正文放在 [Scaffold] 里的最小应用；[duration] 为 MaterialApp 的主题补间时长。
+Widget _app({
+  required DiaryEditorController controller,
+  required Brightness brightness,
+  Duration duration = ExpressiveMotion.fast,
+  FocusNode? focusNode,
+}) => ProviderScope(
+  overrides: [diaryCodeBlockStyleProvider.overrideWith(() => _CodeStyle())],
+  child: MaterialApp(
+    themeAnimationDuration: duration,
+    theme: expressiveTestTheme(brightness),
+    locale: const Locale('zh'),
+    localizationsDelegates: const [
+      ...AppLocalizations.localizationsDelegates,
+      af.AppFlowyEditorLocalizations.delegate,
+    ],
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(
+      body: DiaryEditor(
+        controller: controller,
+        focusNode: focusNode,
+        appearance: const DiaryTextAppearance(typography: DiaryTypography()),
+      ),
+    ),
+  ),
+);
+
 void main() {
   // 应用切换明暗时 MaterialApp 按 themeAnimationDuration 补间主题（减少动画时
   // 为 0，直接换），而 Scaffold 的 Material 另用 AnimatedDefaultTextStyle 把
@@ -59,28 +86,10 @@ void main() {
       addTearDown(controller.dispose);
       Future<void> pump(Brightness brightness) async {
         await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              diaryCodeBlockStyleProvider.overrideWith(() => _CodeStyle()),
-            ],
-            child: MaterialApp(
-              themeAnimationDuration: duration,
-              theme: expressiveTestTheme(brightness),
-              locale: const Locale('zh'),
-              localizationsDelegates: const [
-                ...AppLocalizations.localizationsDelegates,
-                af.AppFlowyEditorLocalizations.delegate,
-              ],
-              supportedLocales: AppLocalizations.supportedLocales,
-              home: Scaffold(
-                body: DiaryEditor(
-                  controller: controller,
-                  appearance: const DiaryTextAppearance(
-                    typography: DiaryTypography(),
-                  ),
-                ),
-              ),
-            ),
+          _app(
+            controller: controller,
+            brightness: brightness,
+            duration: duration,
           ),
         );
         await tester.pumpAndSettle();
@@ -100,4 +109,118 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  // 补间期间每帧换上新的上游编辑器 widget：它必须就地更新（同一个
+  // EditorState、同一组服务 State），编辑页开着时切换明暗不能丢掉光标、
+  // 输入法连接与撤销记录。
+  testWidgets('switching the theme keeps the caret, input and undo history', (
+    tester,
+  ) async {
+    final focus = FocusNode();
+    final controller = DiaryEditorController.fromContent('正文 body text');
+    final caret = af.Selection.collapsed(af.Position(path: [0], offset: 3));
+    controller.select(caret);
+    await tester.pumpWidget(
+      _app(
+        controller: controller,
+        brightness: Brightness.light,
+        focusNode: focus,
+      ),
+    );
+    await tester.pumpAndSettle();
+    focus.requestFocus();
+    await tester.pump();
+    expect(tester.testTextInput.hasAnyClients, isTrue);
+
+    // 经输入法打字。编辑值由输入法自己记着（上游打完字不回写，测试的
+    // editingState 只反映框架发出的值），这里像真的键盘一样自己累积：换
+    // 主题期间连接若被重建或回写了别的值，之后的输入就会对不上。
+    final attached = tester.testTextInput.editingState!;
+    var ime = TextEditingValue(
+      text: attached['text'] as String,
+      selection: TextSelection.collapsed(
+        offset: attached['selectionBase'] as int,
+      ),
+    );
+    void type(String text) {
+      final at = ime.selection.baseOffset;
+      ime = TextEditingValue(
+        text: ime.text.replaceRange(at, at, text),
+        selection: TextSelection.collapsed(offset: at + text.length),
+      );
+      tester.testTextInput.updateEditingValue(ime);
+    }
+
+    // 先打一个字：有了撤销记录，光标停在它后面。
+    type('A');
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(controller.plainText, '正文 Abody text');
+    final typed = af.Selection.collapsed(af.Position(path: [0], offset: 4));
+    expect(controller.selection, typed);
+    final undoDepth = controller.state.undoManager.undoStack.length;
+    expect(undoDepth, greaterThan(0));
+
+    final editorState = tester.state(find.byType(af.AppFlowyEditor));
+    final keyboard = controller.state.service.keyboardServiceKey.currentState;
+    final selection = controller.state.service.selectionServiceKey.currentState;
+    expect(keyboard, isNotNull);
+    tester.testTextInput.log.clear();
+
+    await tester.pumpWidget(
+      _app(
+        controller: controller,
+        brightness: Brightness.dark,
+        focusNode: focus,
+      ),
+    );
+    // 逐帧走完主题与正文样式两段补间（光标闪烁让 pumpAndSettle 停不下来），
+    // 并确认补间期间确实换过多次上游编辑器 widget（否则本用例没测到什么）。
+    final editors = Set<Widget>.identity();
+    for (var frame = 0; frame < 40; frame++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      editors.add(tester.widget(find.byType(af.AppFlowyEditor)));
+      expect(controller.selection, typed);
+      expect(focus.hasFocus, isTrue);
+    }
+    expect(editors.length, greaterThan(2));
+    final dark = expressiveTestTheme(Brightness.dark).colorScheme;
+    expect(_renderedColor(tester, '正文'), dark.onSurface);
+
+    // 上游编辑器与它的服务都是就地更新，不是重新挂载。
+    expect(tester.state(find.byType(af.AppFlowyEditor)), same(editorState));
+    expect(
+      controller.state.service.keyboardServiceKey.currentState,
+      same(keyboard),
+    );
+    expect(
+      controller.state.service.selectionServiceKey.currentState,
+      same(selection),
+    );
+    // 输入法连接没有断开重连，撤销记录原样。
+    expect(
+      tester.testTextInput.log.map((call) => call.method),
+      isNot(
+        anyOf(
+          contains('TextInput.clearClient'),
+          contains('TextInput.setClient'),
+        ),
+      ),
+    );
+    expect(tester.testTextInput.hasAnyClients, isTrue);
+    expect(controller.state.undoManager.undoStack.length, undoDepth);
+
+    // 换完主题接着打字仍落在光标处，撤销照常。
+    type('B');
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(controller.plainText, '正文 ABbody text');
+    controller.undo();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(controller.plainText, isNot(contains('B')));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+    controller.dispose();
+    focus.dispose();
+    expect(tester.takeException(), isNull);
+  });
 }

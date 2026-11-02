@@ -315,8 +315,11 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     // 不受减少动画影响），主题换掉的那一帧它还是旧主题的墨色，之后几帧只有
     // DefaultTextStyle 在变。只看 Theme 时缓存的编辑器停在那一帧：应用切换
     // 明暗、预览页换纸色或配色基调（墨色纸、设置页实时预览）后，正文仍是
-    // 上一种主题的字色，深纸深字 / 浅纸浅字。补间期间按帧重建上游编辑器，
-    // 只发生在换主题的约 200ms 里。
+    // 上一种主题的字色，深纸深字 / 浅纸浅字。补间期间每帧换上新的上游编辑器
+    // widget：key 与 EditorState 不变，上游就地更新（服务 State 由 GlobalKey
+    // 保住），光标、输入法连接与撤销记录都不受影响（见
+    // diary_editor_theme_change_test）。只发生在换主题后的几百毫秒里：应用
+    // 切换明暗为主题补间加上随后约 200ms 的正文样式补间。
     final inputs = (
       widget.controller,
       Theme.of(context),

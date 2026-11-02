@@ -36,14 +36,18 @@ extension EditDiaryAiFlow on EditDiaryController {
     final ref = _state.ref;
     if (ref.read(aiPreferencesProvider).privacy.allowPrivate) return true;
     var allowed = await aiDiaryAllowed(ref, _state.widget.diaryId);
+    if (!_state.mounted) return false;
     if (allowed && _state.widget.diaryId == null) {
       final notebookIds = _state._meta.value.notebookIds;
       if (notebookIds.isNotEmpty) {
-        final notebooks = await ref.read(notebooksProvider.future);
-        allowed = !notebooks.any(
-          (notebook) =>
-              notebookIds.contains(notebook.id) &&
-              notebook.effectiveVisibility != NotebookVisibility.normal,
+        // 日记本功能关闭时书架流无人监听，Riverpod 会暂停它；权限判断直接
+        // 查一次数据库，同时按层级计算继承的私密性，不能等待流的 future。
+        final hierarchy = NotebookHierarchy(
+          await ref.read(appDatabaseProvider).getNotebooks(),
+        );
+        allowed = notebookIds.every(
+          (id) =>
+              hierarchy.effectiveVisibilityOf(id) == NotebookVisibility.normal,
         );
       }
     }
@@ -51,6 +55,13 @@ extension EditDiaryAiFlow on EditDiaryController {
       _showHint(_state.context.l10n.aiPanelPrivateBlocked);
     }
     return allowed;
+  }
+
+  /// 图片与文字共用单篇权限判断，包含草稿的日记本与继承的私密性；在读取
+  /// 图片和发请求之前拦截，避免图片菜单只看模块开关就上传私密内容。
+  Future<String?> describeImageWithAi(String source) async {
+    if (!await _aiAllowed() || !_state.mounted) return null;
+    return describeAiImage(_state.context, _state.ref, source);
   }
 
   /// 打开 / 关闭 AI 写作面板。[action] 给出时打开后立即执行它（`/` 菜单的

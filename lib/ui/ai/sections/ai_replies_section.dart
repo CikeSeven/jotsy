@@ -19,6 +19,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../diaries/controllers/diary_comment_flows.dart';
 import '../../diaries/providers/diary_comments_provider.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/expressive_loading_indicator.dart';
@@ -215,13 +216,18 @@ class _ReplyCardState extends ConsumerState<_ReplyCard> {
 
   Future<void> _saveAsComment() async {
     final l10n = context.l10n;
-    final text = widget.row.content.trim();
-    final content = text.length > kDiaryCommentMaxLength
-        ? text.substring(0, kDiaryCommentMaxLength)
-        : text;
-    await ref
+    final row = await ref
         .read(appDatabaseProvider)
-        .addDiaryComment(diaryId: widget.row.diaryId!, content: content);
+        .watchActiveDiaryWithTags(widget.row.diaryId!)
+        .first;
+    if (row == null || !mounted) return;
+    final saved = await writeDiaryComment(
+      context,
+      ref,
+      diary: row.diary,
+      initialContent: widget.row.content,
+    );
+    if (!saved) return;
     if (!mounted) return;
     await HomeHintVisibilityScope.showTrackedSnackBar(
       context: context,

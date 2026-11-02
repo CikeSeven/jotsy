@@ -202,7 +202,22 @@ void replaceDiaryAiTarget(
       for (final node in controller.state.getNodesInSelection(selection))
         if (!identical(node, first) && !_isAncestorOf(node, first)) node,
     ];
-    transaction.deleteNodes(_topMost(middle));
+    final deleted = _topMost(middle);
+    for (final node in deleted) {
+      if (identical(node, last) || _isAncestorOf(node, last)) {
+        // 终点只选到父块文字，子树与沿途祖先里后面的兄弟块都不在选区。
+        // 提升副本再删除整节点，原子树留给撤销，避免挪走原节点破坏逆操作。
+        final remaining = <af.Node>[...last.children];
+        for (var end = last; !identical(end, node); end = end.parent!) {
+          remaining.addAll(end.parent!.children.skip(end.path.last + 1));
+        }
+        transaction.insertNodes(node.path.next, [
+          for (final child in remaining) child.deepCopy(),
+        ]);
+        break;
+      }
+    }
+    transaction.deleteNodes(deleted);
   }
 
   final nodes = _rawTextBlock(first)

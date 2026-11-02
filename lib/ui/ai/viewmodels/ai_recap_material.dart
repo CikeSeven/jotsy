@@ -4,7 +4,7 @@
 //   结构化上下文发给模型，也显示在结果顶部；
 // - [aiPlanRecap]：按字数预算决定一次写完还是“先分块总结、再汇总”。日记
 //   按时间顺序编号 `[D1]…`（全局编号，分块总结里保留编号，汇总时仍能
-//   引用）；篇数多到分块也装不下时按比例压低每篇的字数，最多
+//   引用）；篇数多到分块也装不下时压低每篇的字数，最多
 //   [kAiRecapMaxChunks] 块；
 // - [aiRecapChunkRequest] / [aiRecapRequest]：两步各自的请求。
 
@@ -20,7 +20,7 @@ import 'ai_context_budget.dart';
 import 'ai_labels.dart';
 import 'ai_prompt_builder.dart';
 
-/// 分块总结最多几块（再多就压低每篇的字数）。
+/// 分块总结最多几块（再多就压低每篇的字数，极端篇数时按时间均匀取样）。
 const int kAiRecapMaxChunks = 16;
 
 /// 一段时间的本地统计。
@@ -134,47 +134,68 @@ AiRecapPlan aiPlanRecap(
   int maxChunks = kAiRecapMaxChunks,
 }) {
   final safeBudget = budget < 200 ? 200 : budget;
-  final allowed = <int>[
+  final safeMaxChunks = maxChunks < 1 ? 1 : maxChunks;
+  var material = [
     for (final diary in diaries)
-      _min(
-        TextStats.countWords(diary.contentText) +
-            TextStats.countWords(diary.title),
-        perDiary,
-      ),
-  ];
-  final total = allowed.fold<int>(0, (sum, value) => sum + value);
-  final capacity = safeBudget * maxChunks;
-  if (total > capacity) {
-    // 篇数太多：按比例压低每篇，至少留 40 字（一两句话）。
-    final factor = capacity / total;
-    for (var i = 0; i < allowed.length; i++) {
-      final scaled = (allowed[i] * factor).floor();
-      allowed[i] = _min(allowed[i], scaled < 40 ? 40 : scaled);
-    }
-  }
-  final numbered = <AiBudgetedDiary>[
-    for (var i = 0; i < diaries.length; i++)
-      if (allowed[i] > 0)
-        AiBudgetedDiary(
-          diary: diaries[i],
-          ref: 'D${i + 1}',
-          maxWords: allowed[i],
+      (
+        diary: diary,
+        words: _min(
+          TextStats.countWords(diary.contentText) +
+              TextStats.countWords(diary.title),
+          _min(perDiary, safeBudget),
         ),
-  ];
-  final chunks = <List<AiBudgetedDiary>>[];
-  var current = <AiBudgetedDiary>[];
-  var used = 0;
-  for (final diary in numbered) {
-    if (current.isNotEmpty && used + diary.maxWords > safeBudget) {
-      chunks.add(current);
-      current = <AiBudgetedDiary>[];
-      used = 0;
-    }
-    current.add(diary);
-    used += diary.maxWords;
+      ),
+  ].where((item) => item.words > 0).toList();
+  final capacity = safeBudget * safeMaxChunks;
+  if (material.length > capacity) {
+    // 连每篇 1 字都装不下时，均匀保留整个时段的样本（含首尾）。不能
+    // 为了每篇至少 40 字而突破请求次数上限，也不能只留下时段开头。
+    material = [
+      for (var i = 0; i < capacity; i++)
+        material[i * (material.length - 1) ~/ (capacity - 1)],
+    ];
   }
-  if (current.isNotEmpty) chunks.add(current);
-  return AiRecapPlan(diaries: numbered, chunks: chunks);
+
+  AiRecapPlan pack(int ceiling) {
+    final numbered = [
+      for (var i = 0; i < material.length; i++)
+        AiBudgetedDiary(
+          diary: material[i].diary,
+          ref: 'D${i + 1}',
+          maxWords: _min(material[i].words, ceiling),
+        ),
+    ];
+    final chunks = <List<AiBudgetedDiary>>[];
+    var current = <AiBudgetedDiary>[];
+    var used = 0;
+    for (final diary in numbered) {
+      if (current.isNotEmpty && used + diary.maxWords > safeBudget) {
+        chunks.add(current);
+        current = <AiBudgetedDiary>[];
+        used = 0;
+      }
+      current.add(diary);
+      used += diary.maxWords;
+    }
+    if (current.isNotEmpty) chunks.add(current);
+    return AiRecapPlan(diaries: numbered, chunks: chunks);
+  }
+
+  final full = pack(safeBudget);
+  if (full.chunks.length <= safeMaxChunks) return full;
+  // 总字数装得下不代表整篇装箱装得下。按实际分块数二分每篇上限，
+  // 保留能满足次数上限的最大值；1 字方案必定可行（上面已限制篇数）。
+  var low = 1;
+  var high = safeBudget;
+  while (low < high) {
+    final middle = (low + high + 1) ~/ 2;
+    if (pack(middle).chunks.length <= safeMaxChunks) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return pack(low);
 }
 
 int _min(int a, int b) => a < b ? a : b;
@@ -222,11 +243,11 @@ AiRequest aiRecapRequest(
     l10n.aiPromptRecapRules,
     [
       l10n.aiPromptRecapStats(stats.entries, stats.words),
-      if (stats.moods.isNotEmpty)
+      if (kit.prefs.privacy.sendMood && stats.moods.isNotEmpty)
         l10n.aiPromptRecapMoods(
           [for (final (mood, count) in stats.moods) '$mood×$count'].join(', '),
         ),
-      if (stats.tags.isNotEmpty)
+      if (kit.prefs.privacy.sendTags && stats.tags.isNotEmpty)
         l10n.aiPromptRecapTopTags(
           [for (final (tag, count) in stats.tags) '$tag×$count'].join(', '),
         ),

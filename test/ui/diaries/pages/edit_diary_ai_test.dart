@@ -11,7 +11,9 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_ai/diary_ai_writing_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -57,7 +59,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> pumpPage(WidgetTester tester) async {
+  Future<void> pumpPage(WidgetTester tester, {EditDiaryPage? page}) async {
     tester.view.physicalSize = const Size(420, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -83,7 +85,7 @@ void main() {
             quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: EditDiaryPage(diaryId: diaryId),
+          home: page ?? EditDiaryPage(diaryId: diaryId),
         ),
       ),
     );
@@ -145,4 +147,147 @@ void main() {
     expect(saved!.contentText, 'the sentence');
     await unmount(tester);
   });
+
+  const image =
+      'data:image/png;base64,'
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6l1sAAAAASUVORK5CYII=';
+
+  for (final visibility in [
+    NotebookVisibility.hidden,
+    NotebookVisibility.locked,
+  ]) {
+    testWidgets('image description blocks inherited $visibility diaries', (
+      tester,
+    ) async {
+      await settings.setAppFeaturesRaw('{"ai":true}');
+      await settings.setAiPrefsRaw('{"on":["vision"]}');
+      await tester.runAsync(() async {
+        await seedFakeAiProvider(store);
+        final parent = await database.createNotebook(
+          name: 'private',
+          visibility: visibility,
+        );
+        final child = await database.createNotebook(
+          name: 'child',
+          parentId: parent,
+        );
+        await database.updateDiary(
+          diaryId: diaryId,
+          title: '',
+          contentDocJson: '',
+          contentText: '正文',
+          metadataJson: '{}',
+          notebookIds: [child],
+        );
+      });
+      await pumpPage(tester);
+      final editor = tester
+          .widget<DiaryEditor>(find.byType(DiaryEditor))
+          .controller;
+      expect(editor.aiImageDescriber, isNotNull);
+      final result = await tester.runAsync(
+        () => editor.aiImageDescriber!(image),
+      );
+      await settle(tester);
+      expect(result, isNull);
+      expect(requests, isEmpty);
+      expect(find.text(l10n.aiPanelPrivateBlocked), findsOneWidget);
+      await unmount(tester);
+    });
+  }
+
+  testWidgets('explicit private permission allows image description', (
+    tester,
+  ) async {
+    await settings.setAppFeaturesRaw('{"ai":true}');
+    await settings.setAiPrefsRaw(
+      '{"on":["vision"],"privacy":{"allowPrivate":true}}',
+    );
+    await tester.runAsync(() async {
+      await seedFakeAiProvider(store);
+      final notebook = await database.createNotebook(
+        name: 'private',
+        visibility: NotebookVisibility.hidden,
+      );
+      await database.updateDiary(
+        diaryId: diaryId,
+        title: '',
+        contentDocJson: '',
+        contentText: '正文',
+        metadataJson: '{}',
+        notebookIds: [notebook],
+      );
+    });
+    await pumpPage(tester);
+    final editor = tester
+        .widget<DiaryEditor>(find.byType(DiaryEditor))
+        .controller;
+    final result = editor.aiImageDescriber!(image);
+    await settle(tester);
+    expect(requests, hasLength(1));
+    expect(await result, 'the sentence');
+    expect(
+      requests.single.messages.single.parts.whereType<AiImagePart>(),
+      hasLength(1),
+    );
+    await unmount(tester);
+  });
+
+  for (final private in [false, true]) {
+    testWidgets(
+      'a draft can check notebook privacy with the feature off, private=$private',
+      (tester) async {
+        await settings.setAppFeaturesRaw('{"ai":true,"notebooks":false}');
+        await tester.runAsync(() => seedFakeAiProvider(store));
+        final draftId = (await tester.runAsync(() async {
+          final parent = await database.createNotebook(
+            name: 'parent',
+            visibility: private
+                ? NotebookVisibility.hidden
+                : NotebookVisibility.normal,
+          );
+          final child = await database.createNotebook(
+            name: 'child',
+            parentId: parent,
+          );
+          final draft = NewDiaryDraft(
+            title: 'draft',
+            contentDocJson: '[{"insert":"draft text\\n"}]',
+            contentText: 'draft text',
+            notebookIds: [child],
+          ).toSnapshot();
+          return database.saveDiaryDraft(
+            title: draft.title,
+            contentText: draft.contentText,
+            payload: draft.payload,
+          );
+        }))!;
+        await pumpPage(
+          tester,
+          page: EditDiaryPage(
+            entryMode: EditDiaryEntryMode.create,
+            createDraftId: draftId,
+          ),
+        );
+        await tester.tap(aiTool());
+        await settle(tester);
+        expect(
+          find.byType(DiaryAiWritingPanel),
+          private ? findsNothing : findsOneWidget,
+        );
+        if (private) {
+          expect(find.text(l10n.aiPanelPrivateBlocked), findsOneWidget);
+        } else {
+          await tester.tap(find.byTooltip(l10n.commonClose));
+          await settle(tester);
+          await tester.tap(find.byTooltip(l10n.diaryEditorMoreActions));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(l10n.aiSuggestTitle));
+          await settle(tester);
+          expect(requests, hasLength(1));
+        }
+        await unmount(tester);
+      },
+    );
+  }
 }

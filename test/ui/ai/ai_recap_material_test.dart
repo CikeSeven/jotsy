@@ -161,9 +161,99 @@ void main() {
         perDiary: 2000,
         maxChunks: 4,
       );
-      expect(plan.chunks.length, lessThanOrEqualTo(5));
+      expect(plan.chunks.length, lessThanOrEqualTo(4));
       expect(plan.diaries, hasLength(28));
       expect(plan.diaries.first.maxWords, lessThan(2000));
+    });
+
+    test('whole-diary packing respects the exact chunk cap', () {
+      final diaries = [
+        for (var i = 1; i <= 50; i++) _diary(i, text: '字' * 3500),
+      ];
+      final plan = aiPlanRecap(diaries, budget: 8000, perDiary: 4000);
+      expect(plan.chunks.length, lessThanOrEqualTo(16));
+      expect(plan.diaries, hasLength(50));
+      expect(plan.diaries.last.ref, 'D50');
+      for (final chunk in plan.chunks) {
+        expect(
+          chunk.fold<int>(0, (sum, d) => sum + d.maxWords),
+          lessThanOrEqualTo(8000),
+        );
+      }
+    });
+
+    test(
+      'extreme entry counts still respect both caps and span the period',
+      () {
+        final diaries = [
+          for (var i = 1; i <= 501; i++) _diary(i, text: '字' * 80),
+        ];
+        final plan = aiPlanRecap(
+          diaries,
+          budget: 200,
+          perDiary: 4000,
+          maxChunks: 2,
+        );
+        expect(plan.chunks, hasLength(2));
+        expect(plan.diaries.length, lessThanOrEqualTo(400));
+        expect(plan.diaries.first.diary.diaryId, 'd1');
+        expect(plan.diaries.last.diary.diaryId, 'd501');
+        for (final chunk in plan.chunks) {
+          expect(
+            chunk.fold<int>(0, (sum, d) => sum + d.maxWords),
+            lessThanOrEqualTo(200),
+          );
+        }
+      },
+    );
+
+    test('a diary larger than the budget fits in a single allowed chunk', () {
+      final plan = aiPlanRecap(
+        [_diary(1, text: '字' * 1000)],
+        budget: 200,
+        perDiary: 4000,
+        maxChunks: 1,
+      );
+      expect(plan.chunks, hasLength(1));
+      expect(plan.words, 200);
+    });
+
+    test('outbound stats obey mood and tag privacy independently', () {
+      final stats = AiRecapStats.of([
+        _diary(1, mood: '😊', tags: ['私密标签']),
+      ]);
+      for (final sendMood in [false, true]) {
+        for (final sendTags in [false, true]) {
+          final prefs = AiPreferences.defaults.copyWith(
+            privacy: AiPreferences.defaults.privacy.copyWith(
+              sendMood: sendMood,
+              sendTags: sendTags,
+            ),
+          );
+          final kit = AiPromptKit.resolve(
+            prefs: prefs,
+            appLocale: const Locale('zh'),
+          );
+          for (final summaries in [
+            <String>[],
+            ['摘要'],
+          ]) {
+            final request = aiRecapRequest(
+              kit,
+              period: '本周',
+              sections: [AiRecapSection.mood],
+              stats: stats,
+              persona: aiPersonaFor(kit.l10n, prefs, AiPersonaUse.recap),
+              summaries: summaries,
+            );
+            expect(request.messages.single.text.contains('😊'), sendMood);
+            expect(request.messages.single.text.contains('私密标签'), sendTags);
+          }
+        }
+      }
+      // 发送过滤不能删去本地展示与已保存结果的完整统计。
+      expect(stats.moods, [('😊', 1)]);
+      expect(stats.tags, [('私密标签', 1)]);
     });
 
     test(

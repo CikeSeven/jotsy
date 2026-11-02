@@ -164,9 +164,10 @@ ${_diaryScopeJoinSql(scope)}WHERE d.is_deleted = 0
     ];
   }
 
-  /// 读一篇日记（含块文档原文），回收站里的与不存在的返回 null。不过滤
-  /// 私密：单篇功能由调用方按 AI 隐私设置（`allowPrivate`）决定能否发送。
-  Future<AiContextDiary?> getAiDiary(String diaryId) async {
+  /// 读一篇日记（含块文档原文），回收站、未解封胶囊与不存在的返回 null。
+  /// 每次发送都重新检查封存状态，已有的固定单篇对话也不能提前读取正文。
+  /// 不过滤私密：单篇功能由调用方按 `allowPrivate` 决定能否发送。
+  Future<AiContextDiary?> getAiDiary(String diaryId, {DateTime? now}) async {
     final row = await customSelect(
       '''
 SELECT
@@ -186,8 +187,12 @@ SELECT
   ) AS tag_names
 FROM diaries d
 WHERE d.diary_id = ? AND d.is_deleted = 0
+  AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)
 ''',
-      variables: <Variable<Object>>[Variable<String>(diaryId)],
+      variables: <Variable<Object>>[
+        Variable<String>(diaryId),
+        Variable<DateTime>(now ?? DateTime.now()),
+      ],
       readsFrom: <ResultSetImplementation<HasResultSet, dynamic>>{
         diaries,
         diaryTags,

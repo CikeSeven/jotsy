@@ -92,7 +92,6 @@ import 'package:node_diary/ui/diaries/widgets/diary_ai/diary_ai_prompts_strip.da
 import 'package:node_diary/ui/diaries/controllers/diary_ai_editing.dart';
 import 'package:node_diary/ui/ai/controllers/ai_prompts_flow.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_commands.dart';
-import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_persistence_controller.dart';
@@ -900,7 +899,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         : null;
     _contentController.aiImageDescriber =
         ref.watch(aiModuleAvailableProvider(AiModule.vision))
-        ? (source) => describeAiImage(context, ref, source)
+        ? _controller.describeImageWithAi
         : null;
     final settingsAsync = ref.watch(settingsServiceProvider);
     // 先绑定设置再判断显示条件：首次绑定在本次构建里同步读入“始终显示工具栏”。

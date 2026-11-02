@@ -6,8 +6,8 @@
 //    - 固定一篇（预览页“继续聊聊”）：只读那一篇，私密日记只在用户允许时；
 //    - 时间范围 / 最近 N 天：读这段时间的日记，按问题的关键词排序；
 //    - 全部 / 关键词：按本地关键词查，查不到时退回最近 N 天；
-//    - 智能：先让“快速模型”把问题转成检索计划（关键词 + 可能的日期范围），
-//      读不出计划或请求失败时退回本地关键词；
+//    - 智能：先确认“快速模型”的实际主机，再把问题转成检索计划（关键词
+//      + 可能的日期范围）；取消确认即结束，读不出计划或请求失败退回本地关键词；
 //    多篇一律经 `getAiContextDiaries`（排除回收站、未解封的胶囊、私密日记与
 //    用户排除的本子和标签），按相关程度取前 N 篇（“最多引用”）、放进字数
 //    预算，再按时间先后编号 `[D1]…`；
@@ -15,7 +15,7 @@
 // 4. 流式回答；结束时把回答落库（完成 / 停止 / 出错，出错的原因记在 meta），
 //    引用只记回答里真的用到的那几篇；
 // 5. 第一轮结束后给对话起标题：先用问题开头，开了“自动起标题”再请快速
-//    模型起一个（失败就保留问题开头）。
+//    模型起一个（另行确认实际主机，取消或失败就保留问题开头）。
 //
 // 状态边界：[phase] idle → planning（只在智能检索）→ searching → answering
 // → idle；[stop] 取消检索计划或回答；页面离开（[dispose]）时正在生成的
@@ -32,7 +32,6 @@ import '../../../core/services/ai/ai_failure.dart';
 import '../../../core/services/ai/ai_provider_config.dart';
 import '../../../core/services/ai/ai_service.dart';
 import '../../../core/services/http_cancel_token.dart';
-import '../../../l10n/app_localizations.dart';
 import '../../../utils/text_stats.dart';
 import '../models/ai_built_ins.dart';
 import '../models/ai_chat_scope.dart';
@@ -74,6 +73,7 @@ class AiChatController extends ChangeNotifier {
   List<AiCitation> _citations = const <AiCitation>[];
   AiResolvedModel? _model;
   HttpCancelToken? _planToken;
+  HttpCancelToken? _titleToken;
   int _generation = 0;
   bool _disposed = false;
 
@@ -129,6 +129,7 @@ class AiChatController extends ChangeNotifier {
       appLocale: locale,
       sample: text,
     );
+    if (!context.mounted) return;
     _set(
       prefs.retrieval == AiRetrievalMode.smart &&
               scope.kind == AiChatScopeKind.auto
@@ -138,6 +139,8 @@ class AiChatController extends ChangeNotifier {
     final List<AiBudgetedDiary> diaries;
     try {
       diaries = await _retrieve(
+        context,
+        ref,
         service,
         kit,
         prefs,
@@ -175,7 +178,6 @@ class AiChatController extends ChangeNotifier {
       _set(AiChatPhase.idle);
       return;
     }
-    final l10n = context.l10n;
     final persona = aiPersonaById(
       kit.l10n,
       prefs,
@@ -208,7 +210,20 @@ class AiChatController extends ChangeNotifier {
     if (!current()) return;
     _set(AiChatPhase.idle);
     if (history.isEmpty) {
-      unawaited(_title(id, service, kit, prefs, text, l10n));
+      if (!context.mounted) return;
+      unawaited(
+        _title(
+          context,
+          ref,
+          id,
+          service,
+          kit,
+          prefs,
+          text,
+          diaries.length,
+          current,
+        ),
+      );
     }
   }
 
@@ -276,12 +291,15 @@ class AiChatController extends ChangeNotifier {
   void stop() {
     _planToken?.cancel();
     _planToken = null;
+    _titleToken?.cancel();
     run.stop();
   }
 
   // ------------------------------------------------------------ 检索
 
   Future<List<AiBudgetedDiary>> _retrieve(
+    BuildContext context,
+    WidgetRef ref,
     AiService service,
     AiPromptKit kit,
     AiPreferences prefs,
@@ -355,7 +373,16 @@ class AiChatController extends ChangeNotifier {
           case AiRetrievalMode.keyword:
             candidates = await byKeywords(keywords);
           case AiRetrievalMode.smart:
-            final plan = await _plan(service, kit, question, model);
+            if (!context.mounted) return const <AiBudgetedDiary>[];
+            final plan = await _plan(
+              context,
+              ref,
+              service,
+              kit,
+              question,
+              model,
+              current,
+            );
             if (!current()) return const <AiBudgetedDiary>[];
             _set(AiChatPhase.searching);
             if (plan != null) {
@@ -393,17 +420,40 @@ class AiChatController extends ChangeNotifier {
 
   /// 智能检索的计划；读不出或请求失败（取消除外）时为 null。
   Future<AiRetrievalPlan?> _plan(
+    BuildContext context,
+    WidgetRef ref,
     AiService service,
     AiPromptKit kit,
     String question,
     AiResolvedModel model,
+    bool Function() current,
   ) async {
     final utility = service.resolve(AiTaskKind.utility) ?? model;
     final token = _planToken = HttpCancelToken();
     try {
+      final request = aiRetrievalPlanRequest(
+        kit,
+        question: question,
+        today: DateTime.now(),
+      );
+      // 检索计划同样包含问题与“关于我”，必须在第一字节发出前确认它的
+      // 实际模型。取消不能当成计划失败后继续检索，否则仍可能发送回答请求。
+      final ok = await confirmAiSend(
+        context,
+        ref,
+        model: utility,
+        summary: AiSendSummary(
+          words: TextStats.countWords(
+            '${request.system}\n${request.messages.single.text}',
+          ),
+        ),
+      );
+      if (!ok || !current() || !context.mounted || token.isCancelled) {
+        throw const AiException(AiFailureKind.cancelled);
+      }
       final completion = await service.complete(
         utility,
-        aiRetrievalPlanRequest(kit, question: question, today: DateTime.now()),
+        request,
         cancelToken: token,
       );
       return AiRetrievalPlan.parse(completion.text);
@@ -498,12 +548,15 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> _title(
+    BuildContext context,
+    WidgetRef ref,
     String conversationId,
     AiService service,
     AiPromptKit kit,
     AiPreferences prefs,
     String question,
-    AppLocalizations l10n,
+    int entries,
+    bool Function() current,
   ) async {
     final row = await database.getAiConversation(conversationId);
     if (row == null || row.title.trim().isNotEmpty) return;
@@ -512,22 +565,38 @@ class AiChatController extends ChangeNotifier {
       conversationId,
       title: fallback.length > 24 ? '${fallback.substring(0, 24)}…' : fallback,
     );
-    if (!prefs.autoTitle) return;
+    if (!prefs.autoTitle || !current()) return;
     final model = service.resolve(AiTaskKind.utility);
     if (model == null) return;
+    final token = _titleToken = HttpCancelToken();
     try {
       final messages = await database.getAiMessages(conversationId);
+      if (!current() || !context.mounted || token.isCancelled) return;
       final answer = messages.lastWhere(
         (m) => m.role == AiMessageRole.assistant,
         orElse: () => messages.last,
       );
+      final request = aiConversationTitleRequest(
+        kit,
+        question: question,
+        answer: answer.content,
+      );
+      final ok = await confirmAiSend(
+        context,
+        ref,
+        model: model,
+        summary: AiSendSummary(
+          words: TextStats.countWords(
+            '${request.system}\n${request.messages.single.text}',
+          ),
+          entries: entries,
+        ),
+      );
+      if (!ok || !current() || !context.mounted || token.isCancelled) return;
       final completion = await service.complete(
         model,
-        aiConversationTitleRequest(
-          kit,
-          question: question,
-          answer: answer.content,
-        ),
+        request,
+        cancelToken: token,
       );
       final title = aiCleanOutput(
         completion.text,
@@ -536,6 +605,8 @@ class AiChatController extends ChangeNotifier {
       await database.updateAiConversation(conversationId, title: title);
     } catch (_) {
       // 起标题失败不打扰用户，保留问题开头。
+    } finally {
+      if (identical(_titleToken, token)) _titleToken = null;
     }
   }
 
@@ -570,6 +641,7 @@ class AiChatController extends ChangeNotifier {
     _disposed = true;
     _generation++;
     _planToken?.cancel();
+    _titleToken?.cancel();
     run.dispose();
     super.dispose();
   }

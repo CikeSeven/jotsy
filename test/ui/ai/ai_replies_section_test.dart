@@ -9,9 +9,11 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/controllers/ai_reply_flow.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
 import 'package:node_diary/ui/ai/sections/ai_replies_section.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_comments/diary_comment_sheet.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import '../../support/fake_ai.dart';
+import '../../support/expressive_test_theme.dart';
 
 /// 预览页的 AI 回应：选人设后流式生成、完成即保存；删除可撤销；自动回应
 /// 只在服务商确认过时发送。
@@ -157,4 +159,92 @@ void main() {
     expect(requests, hasLength(1));
     await h.unmount();
   });
+
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'saving a long reflection requires editing and confirmation in $brightness',
+      (tester) async {
+        final h = await setUpHarness(tester);
+        await h.settings.setAppFeaturesRaw('{"ai":true,"comments":true}');
+        await tester.runAsync(() => seedFakeAiProvider(store));
+        final diaryId = await seedDiary(h);
+        final long = '${'字' * (kDiaryCommentMaxLength + 20)}重要结尾';
+        await tester.runAsync(
+          () => h.database.addAiResult(
+            kind: AiResultKind.reply,
+            diaryId: diaryId,
+            content: long,
+            metaJson: '{"personaName":"倾听者","personaEmoji":"🫶"}',
+          ),
+        );
+        await h.pump(
+          Theme(
+            data: expressiveTestTheme(brightness),
+            child: Scaffold(
+              body: SingleChildScrollView(
+                child: AiRepliesSection(
+                  diaryId: diaryId,
+                  textColor: expressiveTestTheme(
+                    brightness,
+                  ).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+          overrides: overrides(),
+        );
+        await tester.pumpAndSettle();
+
+        Future<void> openSheet() async {
+          await tester.tap(find.byTooltip('倾听者'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(h.l10n.aiReplySaveAsComment));
+          await h.settle();
+          await tester.pumpAndSettle();
+        }
+
+        await openSheet();
+        expect(find.byType(DiaryCommentSheet), findsOneWidget);
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).controller!.text,
+          long,
+        );
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, h.l10n.commonSave),
+              )
+              .onPressed,
+          isNull,
+        );
+        expect(
+          await tester.runAsync(
+            () => h.database.watchDiaryComments(diaryId).first,
+          ),
+          isEmpty,
+        );
+        await tester.tap(find.text(h.l10n.commonCancel));
+        await h.settle();
+        await tester.pumpAndSettle();
+        expect(
+          await tester.runAsync(
+            () => h.database.watchDiaryComments(diaryId).first,
+          ),
+          isEmpty,
+        );
+
+        await openSheet();
+        const edited = '用户选择保留的重要结尾';
+        await tester.enterText(find.byType(TextField), edited);
+        await tester.pump();
+        await tester.tap(find.text(h.l10n.commonSave));
+        await h.settle();
+        final comments = (await tester.runAsync(
+          () => h.database.watchDiaryComments(diaryId).first,
+        ))!;
+        expect(comments.single.content, edited);
+        await h.unmount();
+      },
+    );
+  }
 }

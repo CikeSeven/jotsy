@@ -151,6 +151,81 @@ void main() {
     controller.dispose();
   });
 
+  test(
+    'cross-block replacement preserves unselected endpoint children and undo',
+    () {
+      for (final type in ['bulleted_list', 'toggle_list']) {
+        for (final output in ['new text', '- one\n- two', '']) {
+          final controller = controllerWith([
+            block('paragraph', 'before old'),
+            {
+              ...block(type, 'selected tail'),
+              'children': [
+                {
+                  ...block('paragraph', 'unselected child'),
+                  'children': [block('paragraph', 'unselected grandchild')],
+                },
+              ],
+            },
+            block('paragraph', 'after'),
+          ]);
+          final original = controller.document.toJson();
+          final target = diaryAiTarget(
+            controller,
+            DiaryAiScope.selection,
+            selection: af.Selection(
+              start: af.Position(path: [0], offset: 7),
+              end: af.Position(path: [1], offset: 8),
+            ),
+          )!;
+          replaceDiaryAiTarget(controller, target, output);
+          expect(
+            texts(controller),
+            containsAllInOrder([
+              'unselected child',
+              'unselected grandchild',
+              'after',
+            ]),
+          );
+          expect(texts(controller).join('\n'), contains('tail'));
+          controller.undo();
+          expect(controller.document.toJson(), original);
+          controller.dispose();
+        }
+      }
+    },
+  );
+
+  test('ending inside a deleted subtree also preserves following siblings', () {
+    final controller = controllerWith([
+      block('paragraph', 'start'),
+      {
+        ...block('bulleted_list', 'selected parent'),
+        'children': [
+          {
+            ...block('toggle_list', 'selected child'),
+            'children': [block('paragraph', 'keep grandchild')],
+          },
+          block('paragraph', 'keep sibling'),
+        ],
+      },
+    ]);
+    final original = controller.document.toJson();
+    final target = diaryAiTarget(
+      controller,
+      DiaryAiScope.selection,
+      selection: af.Selection(
+        start: af.Position(path: [0], offset: 0),
+        end: af.Position(path: [1, 0], offset: 14),
+      ),
+    )!;
+    replaceDiaryAiTarget(controller, target, 'new');
+    expect(texts(controller), ['new', 'keep grandchild', 'keep sibling']);
+    controller.undo();
+    expect(controller.document.toJson(), original);
+    controller.dispose();
+  });
+
   test('a writing prompt goes in as the chosen block, ready to answer', () {
     for (final (style, type) in [
       (AiPromptInsertStyle.callout, 'callout'),

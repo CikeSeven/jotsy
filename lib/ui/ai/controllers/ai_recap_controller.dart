@@ -2,9 +2,10 @@
 //
 // 顺序：解析模型 → 一次性读出范围里的日记（`getAiContextDiaries`，排除
 // 回收站、未解封的胶囊、私密日记与用户在 AI 隐私里排除的本子和标签）→
-// 本地统计 → 按字数预算规划（[aiPlanRecap]）→ 发送前确认 → 分块时先用
-// “快速模型”逐块总结（显示“正在读第 i 部分”）→ 流式写最终回顾 → 完成即
+// 本地统计 → 按字数预算规划（[aiPlanRecap]）→ 分块时先用“快速模型”逐块
+// 总结（显示“正在读第 i 部分”）→ 流式写最终回顾 → 完成即
 // 存进 `ai_results`（kind recap）。
+// 每个阶段都在实际请求前确认实际模型，主模型的确认不授权辅助服务商。
 //
 // 状态边界：[phase] 从 idle 进入 reading（只在分块时）/ writing，结束于
 // done / stopped / failed / empty；[stop] 取消当前请求（分块总结或最终
@@ -146,17 +147,6 @@ class AiRecapController extends ChangeNotifier {
     };
     _notify();
     if (!context.mounted) return;
-    final ok = await confirmAiSend(
-      context,
-      ref,
-      model: model,
-      summary: AiSendSummary(words: plan.words, entries: diaries.length),
-    );
-    if (!current()) return;
-    if (!ok || !context.mounted) {
-      _set(AiRecapPhase.idle);
-      return;
-    }
     final kit = AiPromptKit.resolve(
       prefs: prefs,
       appLocale: locale,
@@ -185,9 +175,25 @@ class AiRecapController extends ChangeNotifier {
         _set(AiRecapPhase.reading);
         final token = _chunkToken = HttpCancelToken();
         try {
+          if (!context.mounted) return;
+          final chunk = plan.chunks[i];
+          final ok = await confirmAiSend(
+            context,
+            ref,
+            model: utility,
+            summary: AiSendSummary(
+              words: chunk.fold<int>(0, (sum, diary) => sum + diary.maxWords),
+              entries: chunk.length,
+            ),
+          );
+          if (!current()) return;
+          if (!ok || !context.mounted || token.isCancelled) {
+            _set(token.isCancelled ? AiRecapPhase.stopped : AiRecapPhase.idle);
+            return;
+          }
           final completion = await service.complete(
             utility,
-            aiRecapChunkRequest(kit, plan.chunks[i]),
+            aiRecapChunkRequest(kit, chunk),
             cancelToken: token,
           );
           if (!current()) return;
@@ -210,7 +216,21 @@ class AiRecapController extends ChangeNotifier {
       }
     }
 
+    if (!current() || !context.mounted) return;
     _set(AiRecapPhase.writing);
+    final token = _chunkToken = HttpCancelToken();
+    final ok = await confirmAiSend(
+      context,
+      ref,
+      model: model,
+      summary: AiSendSummary(words: plan.words, entries: plan.diaries.length),
+    );
+    if (identical(_chunkToken, token)) _chunkToken = null;
+    if (!current()) return;
+    if (!ok || !context.mounted || token.isCancelled) {
+      _set(token.isCancelled ? AiRecapPhase.stopped : AiRecapPhase.idle);
+      return;
+    }
     final request = aiRecapRequest(
       kit,
       period: aiRecapRangeText(kit.l10n, spec.range),

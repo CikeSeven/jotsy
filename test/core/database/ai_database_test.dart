@@ -39,6 +39,24 @@ void main() {
   };
 
   group('context diaries', () {
+    test(
+      'single-entry reads recheck capsules and unlock at the boundary',
+      () async {
+        final unlock = DateTime(2026, 11, 10);
+        final id = await diary('sealed', unlockAt: unlock);
+        expect(
+          await db.getAiDiary(
+            id,
+            now: unlock.subtract(const Duration(seconds: 1)),
+          ),
+          isNull,
+        );
+        expect((await db.getAiDiary(id, now: unlock))!.contentText, 'sealed');
+        await db.softDeleteDiary(id);
+        expect(await db.getAiDiary(id, now: unlock), isNull);
+      },
+    );
+
     test('never include trash, sealed capsules or private diaries', () async {
       final secret = await db.createNotebook(
         name: 'secret',

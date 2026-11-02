@@ -1163,7 +1163,7 @@ abstract class AppLocalizations {
   /// Body message for privacy description dialog.
   ///
   /// In en, this message translates to:
-  /// **'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default.'**
+  /// **'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default. The AI assistant is off by default; when on, it sends only what an AI feature needs, directly to the AI service you configure, and your key stays on this device.'**
   String get aboutPrivacyDialogMessage;
 
   /// Action title to open Flutter license page.

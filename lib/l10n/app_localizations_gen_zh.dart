@@ -590,7 +590,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutPrivacyDialogTitle => '隐私与数据安全';
 
   @override
-  String get aboutPrivacyDialogMessage => '你的日记、标签与媒体文件仅保存在本地设备，不会默认上传到云端。';
+  String get aboutPrivacyDialogMessage =>
+      '你的日记、标签与媒体文件仅保存在本地设备，不会默认上传到云端。AI 助手默认关闭；开启后，只在你使用 AI 功能时把所需内容直接发给你自己配置的 AI 服务，密钥只保存在本机。';
 
   @override
   String get aboutOpenSourceLicenses => '第三方开源组件与协议';

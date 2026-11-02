@@ -631,7 +631,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutPrivacyDialogMessage =>
-      'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default.';
+      'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default. The AI assistant is off by default; when on, it sends only what an AI feature needs, directly to the AI service you configure, and your key stays on this device.';
 
   @override
   String get aboutOpenSourceLicenses => 'Third-party open-source licenses';

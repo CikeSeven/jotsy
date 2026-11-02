@@ -16226,5 +16226,38 @@
   "aiUsageFooter": "只统计从这台设备发出的请求，实际费用以服务商账单为准。",
   "@aiUsageFooter": {
     "description": "用量页的附注。"
+  },
+  "aiPrivacyRecordsGroup": "AI 记录",
+  "@aiPrivacyRecordsGroup": {
+    "description": "AI 记录分组标题。"
+  },
+  "aiPrivacyRecordsFooter": "对话、读后回应与回顾保存在这台设备上，随完整备份导出，不参与局域网同步。",
+  "@aiPrivacyRecordsFooter": {
+    "description": "说明 AI 记录保存位置的附注。"
+  },
+  "aiPrivacyClearRecords": "清除全部 AI 记录",
+  "@aiPrivacyClearRecords": {
+    "description": "清除全部 AI 记录的一行。"
+  },
+  "aiPrivacyClearRecordsSubtitle": "共 {count} 条对话与结果",
+  "@aiPrivacyClearRecordsSubtitle": {
+    "description": "已保存的 AI 记录数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPrivacyClearRecordsTitle": "清除全部 AI 记录？",
+  "@aiPrivacyClearRecordsTitle": {
+    "description": "清除 AI 记录对话框的标题。"
+  },
+  "aiPrivacyClearRecordsBody": "所有对话、读后回应与回顾都会从这台设备删除，不能撤销。日记本身不受影响。",
+  "@aiPrivacyClearRecordsBody": {
+    "description": "清除 AI 记录对话框的正文。"
+  },
+  "aiPrivacyClearRecordsDone": "已清除全部 AI 记录",
+  "@aiPrivacyClearRecordsDone": {
+    "description": "清除 AI 记录后的提示。"
   }
 }

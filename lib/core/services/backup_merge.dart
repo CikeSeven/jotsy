@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show InsertMode, Value;
 import 'package:path/path.dart' as p;
 
 import '../database/app_database.dart';
@@ -175,6 +175,7 @@ class BackupMerge {
     final addedTemplates = await _mergeTemplates(db, payload.diaryTemplates);
     final dayMoods = await _mergeDayMoods(db, payload.dayMoods, mode);
     final comments = await _mergeDiaryComments(db, payload.diaryComments, mode);
+    await _mergeAiRecords(db, payload, mode);
 
     return BackupImportResult(
       mode: mode,
@@ -231,6 +232,84 @@ class BackupMerge {
       }
     }
     return (added: added, replaced: replaced);
+  }
+
+  /// AI 记录并入本机，与留言同一口径：
+  /// - 对话按 conversationId 匹配：本机没有的连同它的消息新增；本机已有的，
+  ///   合并保留本机（文件里这次对话的消息一并跳过，不把两份对话混在一起），
+  ///   合并并覆盖整行换成文件里的、消息整份换成文件里的；
+  /// - 回应与回顾按 resultId 匹配，规则同留言。
+  /// 文件里的本地 id 一律去掉，由本机重新分配。
+  Future<void> _mergeAiRecords(
+    AppDatabase db,
+    BackupPayload payload,
+    BackupImportMode mode,
+  ) async {
+    final overwrite = mode == BackupImportMode.mergeOverwrite;
+    if (payload.aiConversations.isNotEmpty) {
+      final table = db.aiConversations;
+      final localIds = <String, int>{
+        for (final row in await (db.selectOnly(
+          table,
+        )..addColumns([table.id, table.conversationId])).get())
+          row.read(table.conversationId)!: row.read(table.id)!,
+      };
+      final messagesByConversation = <String, List<AiMessageRow>>{};
+      for (final message in payload.aiMessages) {
+        (messagesByConversation[message.conversationId] ??= <AiMessageRow>[])
+            .add(message);
+      }
+      for (final row in payload.aiConversations) {
+        final localId = localIds[row.conversationId];
+        if (localId != null && !overwrite) continue;
+        final companion = row
+            .toCompanion(false)
+            .copyWith(id: const Value.absent());
+        if (localId == null) {
+          await db.into(table).insert(companion);
+        } else {
+          await (db.update(
+            table,
+          )..where((t) => t.id.equals(localId))).write(companion);
+          await (db.delete(
+            db.aiMessages,
+          )..where((t) => t.conversationId.equals(row.conversationId))).go();
+        }
+        for (final message
+            in messagesByConversation[row.conversationId] ??
+                const <AiMessageRow>[]) {
+          // 业务 id 撞上本机别的对话里的消息（不该发生）时跳过这一条。
+          await db
+              .into(db.aiMessages)
+              .insert(
+                message.toCompanion(false).copyWith(id: const Value.absent()),
+                mode: InsertMode.insertOrIgnore,
+              );
+        }
+      }
+    }
+    if (payload.aiResults.isNotEmpty) {
+      final table = db.aiResults;
+      final localIds = <String, int>{
+        for (final row in await (db.selectOnly(
+          table,
+        )..addColumns([table.id, table.resultId])).get())
+          row.read(table.resultId)!: row.read(table.id)!,
+      };
+      for (final row in payload.aiResults) {
+        final companion = row
+            .toCompanion(false)
+            .copyWith(id: const Value.absent());
+        final localId = localIds[row.resultId];
+        if (localId == null) {
+          await db.into(table).insert(companion);
+        } else if (overwrite) {
+          await (db.update(
+            table,
+          )..where((t) => t.id.equals(localId))).write(companion);
+        }
+      }
+    }
   }
 
   /// 这天的心情并入本机：按日期匹配，本机没有的那天新增；本机那天已有心情

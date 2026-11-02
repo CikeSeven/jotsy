@@ -4866,6 +4866,1815 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
   }
 }
 
+class $AiConversationsTable extends AiConversations
+    with TableInfo<$AiConversationsTable, AiConversationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AiConversationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _conversationIdMeta = const VerificationMeta(
+    'conversationId',
+  );
+  @override
+  late final GeneratedColumn<String> conversationId = GeneratedColumn<String>(
+    'conversation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _personaIdMeta = const VerificationMeta(
+    'personaId',
+  );
+  @override
+  late final GeneratedColumn<String> personaId = GeneratedColumn<String>(
+    'persona_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scopeMeta = const VerificationMeta('scope');
+  @override
+  late final GeneratedColumn<String> scope = GeneratedColumn<String>(
+    'scope',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _pinnedMeta = const VerificationMeta('pinned');
+  @override
+  late final GeneratedColumn<bool> pinned = GeneratedColumn<bool>(
+    'pinned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pinned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    conversationId,
+    title,
+    personaId,
+    scope,
+    pinned,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ai_conversations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AiConversationRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('conversation_id')) {
+      context.handle(
+        _conversationIdMeta,
+        conversationId.isAcceptableOrUnknown(
+          data['conversation_id']!,
+          _conversationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_conversationIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('persona_id')) {
+      context.handle(
+        _personaIdMeta,
+        personaId.isAcceptableOrUnknown(data['persona_id']!, _personaIdMeta),
+      );
+    }
+    if (data.containsKey('scope')) {
+      context.handle(
+        _scopeMeta,
+        scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta),
+      );
+    }
+    if (data.containsKey('pinned')) {
+      context.handle(
+        _pinnedMeta,
+        pinned.isAcceptableOrUnknown(data['pinned']!, _pinnedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AiConversationRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AiConversationRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      conversationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conversation_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      personaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}persona_id'],
+      ),
+      scope: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scope'],
+      )!,
+      pinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pinned'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AiConversationsTable createAlias(String alias) {
+    return $AiConversationsTable(attachedDatabase, alias);
+  }
+}
+
+class AiConversationRow extends DataClass
+    implements Insertable<AiConversationRow> {
+  final int id;
+  final String conversationId;
+
+  /// 标题（用户改名或自动起名）；空为“新对话”。
+  final String title;
+
+  /// 对话使用的人设 id；null 为对话的默认人设。
+  final String? personaId;
+
+  /// 检索范围 JSON（时间、日记本、标签、固定的日记、检索方式、模型）。
+  final String scope;
+  final bool pinned;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const AiConversationRow({
+    required this.id,
+    required this.conversationId,
+    required this.title,
+    this.personaId,
+    required this.scope,
+    required this.pinned,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['conversation_id'] = Variable<String>(conversationId);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || personaId != null) {
+      map['persona_id'] = Variable<String>(personaId);
+    }
+    map['scope'] = Variable<String>(scope);
+    map['pinned'] = Variable<bool>(pinned);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AiConversationsCompanion toCompanion(bool nullToAbsent) {
+    return AiConversationsCompanion(
+      id: Value(id),
+      conversationId: Value(conversationId),
+      title: Value(title),
+      personaId: personaId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(personaId),
+      scope: Value(scope),
+      pinned: Value(pinned),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AiConversationRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AiConversationRow(
+      id: serializer.fromJson<int>(json['id']),
+      conversationId: serializer.fromJson<String>(json['conversationId']),
+      title: serializer.fromJson<String>(json['title']),
+      personaId: serializer.fromJson<String?>(json['personaId']),
+      scope: serializer.fromJson<String>(json['scope']),
+      pinned: serializer.fromJson<bool>(json['pinned']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'conversationId': serializer.toJson<String>(conversationId),
+      'title': serializer.toJson<String>(title),
+      'personaId': serializer.toJson<String?>(personaId),
+      'scope': serializer.toJson<String>(scope),
+      'pinned': serializer.toJson<bool>(pinned),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AiConversationRow copyWith({
+    int? id,
+    String? conversationId,
+    String? title,
+    Value<String?> personaId = const Value.absent(),
+    String? scope,
+    bool? pinned,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => AiConversationRow(
+    id: id ?? this.id,
+    conversationId: conversationId ?? this.conversationId,
+    title: title ?? this.title,
+    personaId: personaId.present ? personaId.value : this.personaId,
+    scope: scope ?? this.scope,
+    pinned: pinned ?? this.pinned,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AiConversationRow copyWithCompanion(AiConversationsCompanion data) {
+    return AiConversationRow(
+      id: data.id.present ? data.id.value : this.id,
+      conversationId: data.conversationId.present
+          ? data.conversationId.value
+          : this.conversationId,
+      title: data.title.present ? data.title.value : this.title,
+      personaId: data.personaId.present ? data.personaId.value : this.personaId,
+      scope: data.scope.present ? data.scope.value : this.scope,
+      pinned: data.pinned.present ? data.pinned.value : this.pinned,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiConversationRow(')
+          ..write('id: $id, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('title: $title, ')
+          ..write('personaId: $personaId, ')
+          ..write('scope: $scope, ')
+          ..write('pinned: $pinned, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    conversationId,
+    title,
+    personaId,
+    scope,
+    pinned,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AiConversationRow &&
+          other.id == this.id &&
+          other.conversationId == this.conversationId &&
+          other.title == this.title &&
+          other.personaId == this.personaId &&
+          other.scope == this.scope &&
+          other.pinned == this.pinned &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
+  final Value<int> id;
+  final Value<String> conversationId;
+  final Value<String> title;
+  final Value<String?> personaId;
+  final Value<String> scope;
+  final Value<bool> pinned;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const AiConversationsCompanion({
+    this.id = const Value.absent(),
+    this.conversationId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.personaId = const Value.absent(),
+    this.scope = const Value.absent(),
+    this.pinned = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  AiConversationsCompanion.insert({
+    this.id = const Value.absent(),
+    required String conversationId,
+    this.title = const Value.absent(),
+    this.personaId = const Value.absent(),
+    this.scope = const Value.absent(),
+    this.pinned = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : conversationId = Value(conversationId),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<AiConversationRow> custom({
+    Expression<int>? id,
+    Expression<String>? conversationId,
+    Expression<String>? title,
+    Expression<String>? personaId,
+    Expression<String>? scope,
+    Expression<bool>? pinned,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (conversationId != null) 'conversation_id': conversationId,
+      if (title != null) 'title': title,
+      if (personaId != null) 'persona_id': personaId,
+      if (scope != null) 'scope': scope,
+      if (pinned != null) 'pinned': pinned,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  AiConversationsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? conversationId,
+    Value<String>? title,
+    Value<String?>? personaId,
+    Value<String>? scope,
+    Value<bool>? pinned,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return AiConversationsCompanion(
+      id: id ?? this.id,
+      conversationId: conversationId ?? this.conversationId,
+      title: title ?? this.title,
+      personaId: personaId ?? this.personaId,
+      scope: scope ?? this.scope,
+      pinned: pinned ?? this.pinned,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (conversationId.present) {
+      map['conversation_id'] = Variable<String>(conversationId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (personaId.present) {
+      map['persona_id'] = Variable<String>(personaId.value);
+    }
+    if (scope.present) {
+      map['scope'] = Variable<String>(scope.value);
+    }
+    if (pinned.present) {
+      map['pinned'] = Variable<bool>(pinned.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiConversationsCompanion(')
+          ..write('id: $id, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('title: $title, ')
+          ..write('personaId: $personaId, ')
+          ..write('scope: $scope, ')
+          ..write('pinned: $pinned, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AiMessagesTable extends AiMessages
+    with TableInfo<$AiMessagesTable, AiMessageRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AiMessagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _messageIdMeta = const VerificationMeta(
+    'messageId',
+  );
+  @override
+  late final GeneratedColumn<String> messageId = GeneratedColumn<String>(
+    'message_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _conversationIdMeta = const VerificationMeta(
+    'conversationId',
+  );
+  @override
+  late final GeneratedColumn<String> conversationId = GeneratedColumn<String>(
+    'conversation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+    'role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _reasoningMeta = const VerificationMeta(
+    'reasoning',
+  );
+  @override
+  late final GeneratedColumn<String> reasoning = GeneratedColumn<String>(
+    'reasoning',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _citationsMeta = const VerificationMeta(
+    'citations',
+  );
+  @override
+  late final GeneratedColumn<String> citations = GeneratedColumn<String>(
+    'citations',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _metaMeta = const VerificationMeta('meta');
+  @override
+  late final GeneratedColumn<String> meta = GeneratedColumn<String>(
+    'meta',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('done'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    messageId,
+    conversationId,
+    role,
+    content,
+    reasoning,
+    citations,
+    meta,
+    status,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ai_messages';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AiMessageRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('message_id')) {
+      context.handle(
+        _messageIdMeta,
+        messageId.isAcceptableOrUnknown(data['message_id']!, _messageIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_messageIdMeta);
+    }
+    if (data.containsKey('conversation_id')) {
+      context.handle(
+        _conversationIdMeta,
+        conversationId.isAcceptableOrUnknown(
+          data['conversation_id']!,
+          _conversationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_conversationIdMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+        _roleMeta,
+        role.isAcceptableOrUnknown(data['role']!, _roleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    }
+    if (data.containsKey('reasoning')) {
+      context.handle(
+        _reasoningMeta,
+        reasoning.isAcceptableOrUnknown(data['reasoning']!, _reasoningMeta),
+      );
+    }
+    if (data.containsKey('citations')) {
+      context.handle(
+        _citationsMeta,
+        citations.isAcceptableOrUnknown(data['citations']!, _citationsMeta),
+      );
+    }
+    if (data.containsKey('meta')) {
+      context.handle(
+        _metaMeta,
+        meta.isAcceptableOrUnknown(data['meta']!, _metaMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AiMessageRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AiMessageRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      messageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message_id'],
+      )!,
+      conversationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conversation_id'],
+      )!,
+      role: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      reasoning: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reasoning'],
+      )!,
+      citations: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}citations'],
+      )!,
+      meta: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}meta'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AiMessagesTable createAlias(String alias) {
+    return $AiMessagesTable(attachedDatabase, alias);
+  }
+}
+
+class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
+  final int id;
+  final String messageId;
+  final String conversationId;
+
+  /// `user` 或 `assistant`。
+  final String role;
+
+  /// Markdown 正文。
+  final String content;
+
+  /// 模型的思考过程（有的话）。
+  final String reasoning;
+
+  /// 这条回答参考的日记 JSON 数组（业务 id、标题、日期、编号）。
+  final String citations;
+
+  /// 服务商名、模型、用量、错误等 JSON。
+  final String meta;
+
+  /// `done` / `error` / `stopped`。
+  final String status;
+  final DateTime createdAt;
+  const AiMessageRow({
+    required this.id,
+    required this.messageId,
+    required this.conversationId,
+    required this.role,
+    required this.content,
+    required this.reasoning,
+    required this.citations,
+    required this.meta,
+    required this.status,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['message_id'] = Variable<String>(messageId);
+    map['conversation_id'] = Variable<String>(conversationId);
+    map['role'] = Variable<String>(role);
+    map['content'] = Variable<String>(content);
+    map['reasoning'] = Variable<String>(reasoning);
+    map['citations'] = Variable<String>(citations);
+    map['meta'] = Variable<String>(meta);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AiMessagesCompanion toCompanion(bool nullToAbsent) {
+    return AiMessagesCompanion(
+      id: Value(id),
+      messageId: Value(messageId),
+      conversationId: Value(conversationId),
+      role: Value(role),
+      content: Value(content),
+      reasoning: Value(reasoning),
+      citations: Value(citations),
+      meta: Value(meta),
+      status: Value(status),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AiMessageRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AiMessageRow(
+      id: serializer.fromJson<int>(json['id']),
+      messageId: serializer.fromJson<String>(json['messageId']),
+      conversationId: serializer.fromJson<String>(json['conversationId']),
+      role: serializer.fromJson<String>(json['role']),
+      content: serializer.fromJson<String>(json['content']),
+      reasoning: serializer.fromJson<String>(json['reasoning']),
+      citations: serializer.fromJson<String>(json['citations']),
+      meta: serializer.fromJson<String>(json['meta']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'messageId': serializer.toJson<String>(messageId),
+      'conversationId': serializer.toJson<String>(conversationId),
+      'role': serializer.toJson<String>(role),
+      'content': serializer.toJson<String>(content),
+      'reasoning': serializer.toJson<String>(reasoning),
+      'citations': serializer.toJson<String>(citations),
+      'meta': serializer.toJson<String>(meta),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AiMessageRow copyWith({
+    int? id,
+    String? messageId,
+    String? conversationId,
+    String? role,
+    String? content,
+    String? reasoning,
+    String? citations,
+    String? meta,
+    String? status,
+    DateTime? createdAt,
+  }) => AiMessageRow(
+    id: id ?? this.id,
+    messageId: messageId ?? this.messageId,
+    conversationId: conversationId ?? this.conversationId,
+    role: role ?? this.role,
+    content: content ?? this.content,
+    reasoning: reasoning ?? this.reasoning,
+    citations: citations ?? this.citations,
+    meta: meta ?? this.meta,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AiMessageRow copyWithCompanion(AiMessagesCompanion data) {
+    return AiMessageRow(
+      id: data.id.present ? data.id.value : this.id,
+      messageId: data.messageId.present ? data.messageId.value : this.messageId,
+      conversationId: data.conversationId.present
+          ? data.conversationId.value
+          : this.conversationId,
+      role: data.role.present ? data.role.value : this.role,
+      content: data.content.present ? data.content.value : this.content,
+      reasoning: data.reasoning.present ? data.reasoning.value : this.reasoning,
+      citations: data.citations.present ? data.citations.value : this.citations,
+      meta: data.meta.present ? data.meta.value : this.meta,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiMessageRow(')
+          ..write('id: $id, ')
+          ..write('messageId: $messageId, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('role: $role, ')
+          ..write('content: $content, ')
+          ..write('reasoning: $reasoning, ')
+          ..write('citations: $citations, ')
+          ..write('meta: $meta, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    messageId,
+    conversationId,
+    role,
+    content,
+    reasoning,
+    citations,
+    meta,
+    status,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AiMessageRow &&
+          other.id == this.id &&
+          other.messageId == this.messageId &&
+          other.conversationId == this.conversationId &&
+          other.role == this.role &&
+          other.content == this.content &&
+          other.reasoning == this.reasoning &&
+          other.citations == this.citations &&
+          other.meta == this.meta &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt);
+}
+
+class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
+  final Value<int> id;
+  final Value<String> messageId;
+  final Value<String> conversationId;
+  final Value<String> role;
+  final Value<String> content;
+  final Value<String> reasoning;
+  final Value<String> citations;
+  final Value<String> meta;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  const AiMessagesCompanion({
+    this.id = const Value.absent(),
+    this.messageId = const Value.absent(),
+    this.conversationId = const Value.absent(),
+    this.role = const Value.absent(),
+    this.content = const Value.absent(),
+    this.reasoning = const Value.absent(),
+    this.citations = const Value.absent(),
+    this.meta = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  AiMessagesCompanion.insert({
+    this.id = const Value.absent(),
+    required String messageId,
+    required String conversationId,
+    required String role,
+    this.content = const Value.absent(),
+    this.reasoning = const Value.absent(),
+    this.citations = const Value.absent(),
+    this.meta = const Value.absent(),
+    this.status = const Value.absent(),
+    required DateTime createdAt,
+  }) : messageId = Value(messageId),
+       conversationId = Value(conversationId),
+       role = Value(role),
+       createdAt = Value(createdAt);
+  static Insertable<AiMessageRow> custom({
+    Expression<int>? id,
+    Expression<String>? messageId,
+    Expression<String>? conversationId,
+    Expression<String>? role,
+    Expression<String>? content,
+    Expression<String>? reasoning,
+    Expression<String>? citations,
+    Expression<String>? meta,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (messageId != null) 'message_id': messageId,
+      if (conversationId != null) 'conversation_id': conversationId,
+      if (role != null) 'role': role,
+      if (content != null) 'content': content,
+      if (reasoning != null) 'reasoning': reasoning,
+      if (citations != null) 'citations': citations,
+      if (meta != null) 'meta': meta,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  AiMessagesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? messageId,
+    Value<String>? conversationId,
+    Value<String>? role,
+    Value<String>? content,
+    Value<String>? reasoning,
+    Value<String>? citations,
+    Value<String>? meta,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+  }) {
+    return AiMessagesCompanion(
+      id: id ?? this.id,
+      messageId: messageId ?? this.messageId,
+      conversationId: conversationId ?? this.conversationId,
+      role: role ?? this.role,
+      content: content ?? this.content,
+      reasoning: reasoning ?? this.reasoning,
+      citations: citations ?? this.citations,
+      meta: meta ?? this.meta,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (messageId.present) {
+      map['message_id'] = Variable<String>(messageId.value);
+    }
+    if (conversationId.present) {
+      map['conversation_id'] = Variable<String>(conversationId.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (reasoning.present) {
+      map['reasoning'] = Variable<String>(reasoning.value);
+    }
+    if (citations.present) {
+      map['citations'] = Variable<String>(citations.value);
+    }
+    if (meta.present) {
+      map['meta'] = Variable<String>(meta.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiMessagesCompanion(')
+          ..write('id: $id, ')
+          ..write('messageId: $messageId, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('role: $role, ')
+          ..write('content: $content, ')
+          ..write('reasoning: $reasoning, ')
+          ..write('citations: $citations, ')
+          ..write('meta: $meta, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AiResultsTable extends AiResults
+    with TableInfo<$AiResultsTable, AiResultRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AiResultsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _resultIdMeta = const VerificationMeta(
+    'resultId',
+  );
+  @override
+  late final GeneratedColumn<String> resultId = GeneratedColumn<String>(
+    'result_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _diaryIdMeta = const VerificationMeta(
+    'diaryId',
+  );
+  @override
+  late final GeneratedColumn<String> diaryId = GeneratedColumn<String>(
+    'diary_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _periodStartMeta = const VerificationMeta(
+    'periodStart',
+  );
+  @override
+  late final GeneratedColumn<DateTime> periodStart = GeneratedColumn<DateTime>(
+    'period_start',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _periodEndMeta = const VerificationMeta(
+    'periodEnd',
+  );
+  @override
+  late final GeneratedColumn<DateTime> periodEnd = GeneratedColumn<DateTime>(
+    'period_end',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scopeMeta = const VerificationMeta('scope');
+  @override
+  late final GeneratedColumn<String> scope = GeneratedColumn<String>(
+    'scope',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _personaIdMeta = const VerificationMeta(
+    'personaId',
+  );
+  @override
+  late final GeneratedColumn<String> personaId = GeneratedColumn<String>(
+    'persona_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _metaMeta = const VerificationMeta('meta');
+  @override
+  late final GeneratedColumn<String> meta = GeneratedColumn<String>(
+    'meta',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    resultId,
+    kind,
+    diaryId,
+    periodStart,
+    periodEnd,
+    scope,
+    title,
+    content,
+    personaId,
+    meta,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ai_results';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AiResultRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('result_id')) {
+      context.handle(
+        _resultIdMeta,
+        resultId.isAcceptableOrUnknown(data['result_id']!, _resultIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_resultIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('diary_id')) {
+      context.handle(
+        _diaryIdMeta,
+        diaryId.isAcceptableOrUnknown(data['diary_id']!, _diaryIdMeta),
+      );
+    }
+    if (data.containsKey('period_start')) {
+      context.handle(
+        _periodStartMeta,
+        periodStart.isAcceptableOrUnknown(
+          data['period_start']!,
+          _periodStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('period_end')) {
+      context.handle(
+        _periodEndMeta,
+        periodEnd.isAcceptableOrUnknown(data['period_end']!, _periodEndMeta),
+      );
+    }
+    if (data.containsKey('scope')) {
+      context.handle(
+        _scopeMeta,
+        scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('persona_id')) {
+      context.handle(
+        _personaIdMeta,
+        personaId.isAcceptableOrUnknown(data['persona_id']!, _personaIdMeta),
+      );
+    }
+    if (data.containsKey('meta')) {
+      context.handle(
+        _metaMeta,
+        meta.isAcceptableOrUnknown(data['meta']!, _metaMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AiResultRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AiResultRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      resultId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result_id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      diaryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}diary_id'],
+      ),
+      periodStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}period_start'],
+      ),
+      periodEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}period_end'],
+      ),
+      scope: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scope'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      personaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}persona_id'],
+      ),
+      meta: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}meta'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AiResultsTable createAlias(String alias) {
+    return $AiResultsTable(attachedDatabase, alias);
+  }
+}
+
+class AiResultRow extends DataClass implements Insertable<AiResultRow> {
+  final int id;
+  final String resultId;
+
+  /// `reply`（读后回应）或 `recap`（回顾）。
+  final String kind;
+
+  /// 回应所属日记的业务 id；回顾为 null。
+  final String? diaryId;
+
+  /// 回顾覆盖的时间范围（含起点、不含终点）。
+  final DateTime? periodStart;
+  final DateTime? periodEnd;
+
+  /// 回顾的范围 JSON（日记本、章节选择、篇数等）。
+  final String scope;
+  final String title;
+
+  /// Markdown 正文。
+  final String content;
+  final String? personaId;
+
+  /// 服务商名、模型、用量、人设名快照等 JSON。
+  final String meta;
+  final DateTime createdAt;
+  const AiResultRow({
+    required this.id,
+    required this.resultId,
+    required this.kind,
+    this.diaryId,
+    this.periodStart,
+    this.periodEnd,
+    required this.scope,
+    required this.title,
+    required this.content,
+    this.personaId,
+    required this.meta,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['result_id'] = Variable<String>(resultId);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || diaryId != null) {
+      map['diary_id'] = Variable<String>(diaryId);
+    }
+    if (!nullToAbsent || periodStart != null) {
+      map['period_start'] = Variable<DateTime>(periodStart);
+    }
+    if (!nullToAbsent || periodEnd != null) {
+      map['period_end'] = Variable<DateTime>(periodEnd);
+    }
+    map['scope'] = Variable<String>(scope);
+    map['title'] = Variable<String>(title);
+    map['content'] = Variable<String>(content);
+    if (!nullToAbsent || personaId != null) {
+      map['persona_id'] = Variable<String>(personaId);
+    }
+    map['meta'] = Variable<String>(meta);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AiResultsCompanion toCompanion(bool nullToAbsent) {
+    return AiResultsCompanion(
+      id: Value(id),
+      resultId: Value(resultId),
+      kind: Value(kind),
+      diaryId: diaryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(diaryId),
+      periodStart: periodStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(periodStart),
+      periodEnd: periodEnd == null && nullToAbsent
+          ? const Value.absent()
+          : Value(periodEnd),
+      scope: Value(scope),
+      title: Value(title),
+      content: Value(content),
+      personaId: personaId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(personaId),
+      meta: Value(meta),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AiResultRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AiResultRow(
+      id: serializer.fromJson<int>(json['id']),
+      resultId: serializer.fromJson<String>(json['resultId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      diaryId: serializer.fromJson<String?>(json['diaryId']),
+      periodStart: serializer.fromJson<DateTime?>(json['periodStart']),
+      periodEnd: serializer.fromJson<DateTime?>(json['periodEnd']),
+      scope: serializer.fromJson<String>(json['scope']),
+      title: serializer.fromJson<String>(json['title']),
+      content: serializer.fromJson<String>(json['content']),
+      personaId: serializer.fromJson<String?>(json['personaId']),
+      meta: serializer.fromJson<String>(json['meta']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'resultId': serializer.toJson<String>(resultId),
+      'kind': serializer.toJson<String>(kind),
+      'diaryId': serializer.toJson<String?>(diaryId),
+      'periodStart': serializer.toJson<DateTime?>(periodStart),
+      'periodEnd': serializer.toJson<DateTime?>(periodEnd),
+      'scope': serializer.toJson<String>(scope),
+      'title': serializer.toJson<String>(title),
+      'content': serializer.toJson<String>(content),
+      'personaId': serializer.toJson<String?>(personaId),
+      'meta': serializer.toJson<String>(meta),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AiResultRow copyWith({
+    int? id,
+    String? resultId,
+    String? kind,
+    Value<String?> diaryId = const Value.absent(),
+    Value<DateTime?> periodStart = const Value.absent(),
+    Value<DateTime?> periodEnd = const Value.absent(),
+    String? scope,
+    String? title,
+    String? content,
+    Value<String?> personaId = const Value.absent(),
+    String? meta,
+    DateTime? createdAt,
+  }) => AiResultRow(
+    id: id ?? this.id,
+    resultId: resultId ?? this.resultId,
+    kind: kind ?? this.kind,
+    diaryId: diaryId.present ? diaryId.value : this.diaryId,
+    periodStart: periodStart.present ? periodStart.value : this.periodStart,
+    periodEnd: periodEnd.present ? periodEnd.value : this.periodEnd,
+    scope: scope ?? this.scope,
+    title: title ?? this.title,
+    content: content ?? this.content,
+    personaId: personaId.present ? personaId.value : this.personaId,
+    meta: meta ?? this.meta,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AiResultRow copyWithCompanion(AiResultsCompanion data) {
+    return AiResultRow(
+      id: data.id.present ? data.id.value : this.id,
+      resultId: data.resultId.present ? data.resultId.value : this.resultId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      diaryId: data.diaryId.present ? data.diaryId.value : this.diaryId,
+      periodStart: data.periodStart.present
+          ? data.periodStart.value
+          : this.periodStart,
+      periodEnd: data.periodEnd.present ? data.periodEnd.value : this.periodEnd,
+      scope: data.scope.present ? data.scope.value : this.scope,
+      title: data.title.present ? data.title.value : this.title,
+      content: data.content.present ? data.content.value : this.content,
+      personaId: data.personaId.present ? data.personaId.value : this.personaId,
+      meta: data.meta.present ? data.meta.value : this.meta,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiResultRow(')
+          ..write('id: $id, ')
+          ..write('resultId: $resultId, ')
+          ..write('kind: $kind, ')
+          ..write('diaryId: $diaryId, ')
+          ..write('periodStart: $periodStart, ')
+          ..write('periodEnd: $periodEnd, ')
+          ..write('scope: $scope, ')
+          ..write('title: $title, ')
+          ..write('content: $content, ')
+          ..write('personaId: $personaId, ')
+          ..write('meta: $meta, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    resultId,
+    kind,
+    diaryId,
+    periodStart,
+    periodEnd,
+    scope,
+    title,
+    content,
+    personaId,
+    meta,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AiResultRow &&
+          other.id == this.id &&
+          other.resultId == this.resultId &&
+          other.kind == this.kind &&
+          other.diaryId == this.diaryId &&
+          other.periodStart == this.periodStart &&
+          other.periodEnd == this.periodEnd &&
+          other.scope == this.scope &&
+          other.title == this.title &&
+          other.content == this.content &&
+          other.personaId == this.personaId &&
+          other.meta == this.meta &&
+          other.createdAt == this.createdAt);
+}
+
+class AiResultsCompanion extends UpdateCompanion<AiResultRow> {
+  final Value<int> id;
+  final Value<String> resultId;
+  final Value<String> kind;
+  final Value<String?> diaryId;
+  final Value<DateTime?> periodStart;
+  final Value<DateTime?> periodEnd;
+  final Value<String> scope;
+  final Value<String> title;
+  final Value<String> content;
+  final Value<String?> personaId;
+  final Value<String> meta;
+  final Value<DateTime> createdAt;
+  const AiResultsCompanion({
+    this.id = const Value.absent(),
+    this.resultId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.diaryId = const Value.absent(),
+    this.periodStart = const Value.absent(),
+    this.periodEnd = const Value.absent(),
+    this.scope = const Value.absent(),
+    this.title = const Value.absent(),
+    this.content = const Value.absent(),
+    this.personaId = const Value.absent(),
+    this.meta = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  AiResultsCompanion.insert({
+    this.id = const Value.absent(),
+    required String resultId,
+    required String kind,
+    this.diaryId = const Value.absent(),
+    this.periodStart = const Value.absent(),
+    this.periodEnd = const Value.absent(),
+    this.scope = const Value.absent(),
+    this.title = const Value.absent(),
+    required String content,
+    this.personaId = const Value.absent(),
+    this.meta = const Value.absent(),
+    required DateTime createdAt,
+  }) : resultId = Value(resultId),
+       kind = Value(kind),
+       content = Value(content),
+       createdAt = Value(createdAt);
+  static Insertable<AiResultRow> custom({
+    Expression<int>? id,
+    Expression<String>? resultId,
+    Expression<String>? kind,
+    Expression<String>? diaryId,
+    Expression<DateTime>? periodStart,
+    Expression<DateTime>? periodEnd,
+    Expression<String>? scope,
+    Expression<String>? title,
+    Expression<String>? content,
+    Expression<String>? personaId,
+    Expression<String>? meta,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (resultId != null) 'result_id': resultId,
+      if (kind != null) 'kind': kind,
+      if (diaryId != null) 'diary_id': diaryId,
+      if (periodStart != null) 'period_start': periodStart,
+      if (periodEnd != null) 'period_end': periodEnd,
+      if (scope != null) 'scope': scope,
+      if (title != null) 'title': title,
+      if (content != null) 'content': content,
+      if (personaId != null) 'persona_id': personaId,
+      if (meta != null) 'meta': meta,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  AiResultsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? resultId,
+    Value<String>? kind,
+    Value<String?>? diaryId,
+    Value<DateTime?>? periodStart,
+    Value<DateTime?>? periodEnd,
+    Value<String>? scope,
+    Value<String>? title,
+    Value<String>? content,
+    Value<String?>? personaId,
+    Value<String>? meta,
+    Value<DateTime>? createdAt,
+  }) {
+    return AiResultsCompanion(
+      id: id ?? this.id,
+      resultId: resultId ?? this.resultId,
+      kind: kind ?? this.kind,
+      diaryId: diaryId ?? this.diaryId,
+      periodStart: periodStart ?? this.periodStart,
+      periodEnd: periodEnd ?? this.periodEnd,
+      scope: scope ?? this.scope,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      personaId: personaId ?? this.personaId,
+      meta: meta ?? this.meta,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (resultId.present) {
+      map['result_id'] = Variable<String>(resultId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (diaryId.present) {
+      map['diary_id'] = Variable<String>(diaryId.value);
+    }
+    if (periodStart.present) {
+      map['period_start'] = Variable<DateTime>(periodStart.value);
+    }
+    if (periodEnd.present) {
+      map['period_end'] = Variable<DateTime>(periodEnd.value);
+    }
+    if (scope.present) {
+      map['scope'] = Variable<String>(scope.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (personaId.present) {
+      map['persona_id'] = Variable<String>(personaId.value);
+    }
+    if (meta.present) {
+      map['meta'] = Variable<String>(meta.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiResultsCompanion(')
+          ..write('id: $id, ')
+          ..write('resultId: $resultId, ')
+          ..write('kind: $kind, ')
+          ..write('diaryId: $diaryId, ')
+          ..write('periodStart: $periodStart, ')
+          ..write('periodEnd: $periodEnd, ')
+          ..write('scope: $scope, ')
+          ..write('title: $title, ')
+          ..write('content: $content, ')
+          ..write('personaId: $personaId, ')
+          ..write('meta: $meta, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4879,6 +6688,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DiaryNotebooksTable diaryNotebooks = $DiaryNotebooksTable(this);
   late final $DayMoodsTable dayMoods = $DayMoodsTable(this);
   late final $DiaryCommentsTable diaryComments = $DiaryCommentsTable(this);
+  late final $AiConversationsTable aiConversations = $AiConversationsTable(
+    this,
+  );
+  late final $AiMessagesTable aiMessages = $AiMessagesTable(this);
+  late final $AiResultsTable aiResults = $AiResultsTable(this);
   late final Index idxDiariesUpdatedAt = Index(
     'idx_diaries_updated_at',
     'CREATE INDEX idx_diaries_updated_at ON diaries (updated_at)',
@@ -4911,6 +6725,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_diary_comments_diary',
     'CREATE INDEX idx_diary_comments_diary ON diary_comments (diary_id, created_at)',
   );
+  late final Index idxAiConversationsUpdated = Index(
+    'idx_ai_conversations_updated',
+    'CREATE INDEX idx_ai_conversations_updated ON ai_conversations (updated_at)',
+  );
+  late final Index idxAiMessagesConversation = Index(
+    'idx_ai_messages_conversation',
+    'CREATE INDEX idx_ai_messages_conversation ON ai_messages (conversation_id, created_at)',
+  );
+  late final Index idxAiResultsDiary = Index(
+    'idx_ai_results_diary',
+    'CREATE INDEX idx_ai_results_diary ON ai_results (diary_id, created_at)',
+  );
+  late final Index idxAiResultsKind = Index(
+    'idx_ai_results_kind',
+    'CREATE INDEX idx_ai_results_kind ON ai_results (kind, created_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4926,6 +6756,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     diaryNotebooks,
     dayMoods,
     diaryComments,
+    aiConversations,
+    aiMessages,
+    aiResults,
     idxDiariesUpdatedAt,
     idxDiariesCreatedAt,
     idxDiariesCapsuleUnlockAt,
@@ -4934,6 +6767,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxDiaryTagsTagId,
     idxDiaryNotebooksNotebook,
     idxDiaryCommentsDiary,
+    idxAiConversationsUpdated,
+    idxAiMessagesConversation,
+    idxAiResultsDiary,
+    idxAiResultsKind,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -7895,6 +9732,912 @@ typedef $$DiaryCommentsTableProcessedTableManager =
       DiaryCommentRow,
       PrefetchHooks Function()
     >;
+typedef $$AiConversationsTableCreateCompanionBuilder =
+    AiConversationsCompanion Function({
+      Value<int> id,
+      required String conversationId,
+      Value<String> title,
+      Value<String?> personaId,
+      Value<String> scope,
+      Value<bool> pinned,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$AiConversationsTableUpdateCompanionBuilder =
+    AiConversationsCompanion Function({
+      Value<int> id,
+      Value<String> conversationId,
+      Value<String> title,
+      Value<String?> personaId,
+      Value<String> scope,
+      Value<bool> pinned,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+class $$AiConversationsTableFilterComposer
+    extends Composer<_$AppDatabase, $AiConversationsTable> {
+  $$AiConversationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get personaId => $composableBuilder(
+    column: $table.personaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pinned => $composableBuilder(
+    column: $table.pinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AiConversationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AiConversationsTable> {
+  $$AiConversationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get personaId => $composableBuilder(
+    column: $table.personaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pinned => $composableBuilder(
+    column: $table.pinned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AiConversationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AiConversationsTable> {
+  $$AiConversationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get personaId =>
+      $composableBuilder(column: $table.personaId, builder: (column) => column);
+
+  GeneratedColumn<String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => column);
+
+  GeneratedColumn<bool> get pinned =>
+      $composableBuilder(column: $table.pinned, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AiConversationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AiConversationsTable,
+          AiConversationRow,
+          $$AiConversationsTableFilterComposer,
+          $$AiConversationsTableOrderingComposer,
+          $$AiConversationsTableAnnotationComposer,
+          $$AiConversationsTableCreateCompanionBuilder,
+          $$AiConversationsTableUpdateCompanionBuilder,
+          (
+            AiConversationRow,
+            BaseReferences<
+              _$AppDatabase,
+              $AiConversationsTable,
+              AiConversationRow
+            >,
+          ),
+          AiConversationRow,
+          PrefetchHooks Function()
+        > {
+  $$AiConversationsTableTableManager(
+    _$AppDatabase db,
+    $AiConversationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AiConversationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AiConversationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AiConversationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> conversationId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> personaId = const Value.absent(),
+                Value<String> scope = const Value.absent(),
+                Value<bool> pinned = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => AiConversationsCompanion(
+                id: id,
+                conversationId: conversationId,
+                title: title,
+                personaId: personaId,
+                scope: scope,
+                pinned: pinned,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String conversationId,
+                Value<String> title = const Value.absent(),
+                Value<String?> personaId = const Value.absent(),
+                Value<String> scope = const Value.absent(),
+                Value<bool> pinned = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => AiConversationsCompanion.insert(
+                id: id,
+                conversationId: conversationId,
+                title: title,
+                personaId: personaId,
+                scope: scope,
+                pinned: pinned,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AiConversationsTable, AiConversationRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $AiConversationsTable,
+                    AiConversationRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AiConversationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AiConversationsTable,
+      AiConversationRow,
+      $$AiConversationsTableFilterComposer,
+      $$AiConversationsTableOrderingComposer,
+      $$AiConversationsTableAnnotationComposer,
+      $$AiConversationsTableCreateCompanionBuilder,
+      $$AiConversationsTableUpdateCompanionBuilder,
+      (
+        AiConversationRow,
+        BaseReferences<_$AppDatabase, $AiConversationsTable, AiConversationRow>,
+      ),
+      AiConversationRow,
+      PrefetchHooks Function()
+    >;
+typedef $$AiMessagesTableCreateCompanionBuilder =
+    AiMessagesCompanion Function({
+      Value<int> id,
+      required String messageId,
+      required String conversationId,
+      required String role,
+      Value<String> content,
+      Value<String> reasoning,
+      Value<String> citations,
+      Value<String> meta,
+      Value<String> status,
+      required DateTime createdAt,
+    });
+typedef $$AiMessagesTableUpdateCompanionBuilder =
+    AiMessagesCompanion Function({
+      Value<int> id,
+      Value<String> messageId,
+      Value<String> conversationId,
+      Value<String> role,
+      Value<String> content,
+      Value<String> reasoning,
+      Value<String> citations,
+      Value<String> meta,
+      Value<String> status,
+      Value<DateTime> createdAt,
+    });
+
+class $$AiMessagesTableFilterComposer
+    extends Composer<_$AppDatabase, $AiMessagesTable> {
+  $$AiMessagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get messageId => $composableBuilder(
+    column: $table.messageId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reasoning => $composableBuilder(
+    column: $table.reasoning,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get citations => $composableBuilder(
+    column: $table.citations,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get meta => $composableBuilder(
+    column: $table.meta,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AiMessagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $AiMessagesTable> {
+  $$AiMessagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get messageId => $composableBuilder(
+    column: $table.messageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reasoning => $composableBuilder(
+    column: $table.reasoning,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get citations => $composableBuilder(
+    column: $table.citations,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get meta => $composableBuilder(
+    column: $table.meta,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AiMessagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AiMessagesTable> {
+  $$AiMessagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get messageId =>
+      $composableBuilder(column: $table.messageId, builder: (column) => column);
+
+  GeneratedColumn<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get reasoning =>
+      $composableBuilder(column: $table.reasoning, builder: (column) => column);
+
+  GeneratedColumn<String> get citations =>
+      $composableBuilder(column: $table.citations, builder: (column) => column);
+
+  GeneratedColumn<String> get meta =>
+      $composableBuilder(column: $table.meta, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$AiMessagesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AiMessagesTable,
+          AiMessageRow,
+          $$AiMessagesTableFilterComposer,
+          $$AiMessagesTableOrderingComposer,
+          $$AiMessagesTableAnnotationComposer,
+          $$AiMessagesTableCreateCompanionBuilder,
+          $$AiMessagesTableUpdateCompanionBuilder,
+          (
+            AiMessageRow,
+            BaseReferences<_$AppDatabase, $AiMessagesTable, AiMessageRow>,
+          ),
+          AiMessageRow,
+          PrefetchHooks Function()
+        > {
+  $$AiMessagesTableTableManager(_$AppDatabase db, $AiMessagesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AiMessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AiMessagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AiMessagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> messageId = const Value.absent(),
+                Value<String> conversationId = const Value.absent(),
+                Value<String> role = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<String> reasoning = const Value.absent(),
+                Value<String> citations = const Value.absent(),
+                Value<String> meta = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AiMessagesCompanion(
+                id: id,
+                messageId: messageId,
+                conversationId: conversationId,
+                role: role,
+                content: content,
+                reasoning: reasoning,
+                citations: citations,
+                meta: meta,
+                status: status,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String messageId,
+                required String conversationId,
+                required String role,
+                Value<String> content = const Value.absent(),
+                Value<String> reasoning = const Value.absent(),
+                Value<String> citations = const Value.absent(),
+                Value<String> meta = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                required DateTime createdAt,
+              }) => AiMessagesCompanion.insert(
+                id: id,
+                messageId: messageId,
+                conversationId: conversationId,
+                role: role,
+                content: content,
+                reasoning: reasoning,
+                citations: citations,
+                meta: meta,
+                status: status,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AiMessagesTable, AiMessageRow>(table),
+                  BaseReferences<_$AppDatabase, $AiMessagesTable, AiMessageRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AiMessagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AiMessagesTable,
+      AiMessageRow,
+      $$AiMessagesTableFilterComposer,
+      $$AiMessagesTableOrderingComposer,
+      $$AiMessagesTableAnnotationComposer,
+      $$AiMessagesTableCreateCompanionBuilder,
+      $$AiMessagesTableUpdateCompanionBuilder,
+      (
+        AiMessageRow,
+        BaseReferences<_$AppDatabase, $AiMessagesTable, AiMessageRow>,
+      ),
+      AiMessageRow,
+      PrefetchHooks Function()
+    >;
+typedef $$AiResultsTableCreateCompanionBuilder =
+    AiResultsCompanion Function({
+      Value<int> id,
+      required String resultId,
+      required String kind,
+      Value<String?> diaryId,
+      Value<DateTime?> periodStart,
+      Value<DateTime?> periodEnd,
+      Value<String> scope,
+      Value<String> title,
+      required String content,
+      Value<String?> personaId,
+      Value<String> meta,
+      required DateTime createdAt,
+    });
+typedef $$AiResultsTableUpdateCompanionBuilder =
+    AiResultsCompanion Function({
+      Value<int> id,
+      Value<String> resultId,
+      Value<String> kind,
+      Value<String?> diaryId,
+      Value<DateTime?> periodStart,
+      Value<DateTime?> periodEnd,
+      Value<String> scope,
+      Value<String> title,
+      Value<String> content,
+      Value<String?> personaId,
+      Value<String> meta,
+      Value<DateTime> createdAt,
+    });
+
+class $$AiResultsTableFilterComposer
+    extends Composer<_$AppDatabase, $AiResultsTable> {
+  $$AiResultsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultId => $composableBuilder(
+    column: $table.resultId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get diaryId => $composableBuilder(
+    column: $table.diaryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get periodStart => $composableBuilder(
+    column: $table.periodStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get periodEnd => $composableBuilder(
+    column: $table.periodEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get personaId => $composableBuilder(
+    column: $table.personaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get meta => $composableBuilder(
+    column: $table.meta,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AiResultsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AiResultsTable> {
+  $$AiResultsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultId => $composableBuilder(
+    column: $table.resultId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get diaryId => $composableBuilder(
+    column: $table.diaryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get periodStart => $composableBuilder(
+    column: $table.periodStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get periodEnd => $composableBuilder(
+    column: $table.periodEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get personaId => $composableBuilder(
+    column: $table.personaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get meta => $composableBuilder(
+    column: $table.meta,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AiResultsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AiResultsTable> {
+  $$AiResultsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get resultId =>
+      $composableBuilder(column: $table.resultId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get diaryId =>
+      $composableBuilder(column: $table.diaryId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get periodStart => $composableBuilder(
+    column: $table.periodStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get periodEnd =>
+      $composableBuilder(column: $table.periodEnd, builder: (column) => column);
+
+  GeneratedColumn<String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get personaId =>
+      $composableBuilder(column: $table.personaId, builder: (column) => column);
+
+  GeneratedColumn<String> get meta =>
+      $composableBuilder(column: $table.meta, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$AiResultsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AiResultsTable,
+          AiResultRow,
+          $$AiResultsTableFilterComposer,
+          $$AiResultsTableOrderingComposer,
+          $$AiResultsTableAnnotationComposer,
+          $$AiResultsTableCreateCompanionBuilder,
+          $$AiResultsTableUpdateCompanionBuilder,
+          (
+            AiResultRow,
+            BaseReferences<_$AppDatabase, $AiResultsTable, AiResultRow>,
+          ),
+          AiResultRow,
+          PrefetchHooks Function()
+        > {
+  $$AiResultsTableTableManager(_$AppDatabase db, $AiResultsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AiResultsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AiResultsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AiResultsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> resultId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> diaryId = const Value.absent(),
+                Value<DateTime?> periodStart = const Value.absent(),
+                Value<DateTime?> periodEnd = const Value.absent(),
+                Value<String> scope = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<String?> personaId = const Value.absent(),
+                Value<String> meta = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AiResultsCompanion(
+                id: id,
+                resultId: resultId,
+                kind: kind,
+                diaryId: diaryId,
+                periodStart: periodStart,
+                periodEnd: periodEnd,
+                scope: scope,
+                title: title,
+                content: content,
+                personaId: personaId,
+                meta: meta,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String resultId,
+                required String kind,
+                Value<String?> diaryId = const Value.absent(),
+                Value<DateTime?> periodStart = const Value.absent(),
+                Value<DateTime?> periodEnd = const Value.absent(),
+                Value<String> scope = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                required String content,
+                Value<String?> personaId = const Value.absent(),
+                Value<String> meta = const Value.absent(),
+                required DateTime createdAt,
+              }) => AiResultsCompanion.insert(
+                id: id,
+                resultId: resultId,
+                kind: kind,
+                diaryId: diaryId,
+                periodStart: periodStart,
+                periodEnd: periodEnd,
+                scope: scope,
+                title: title,
+                content: content,
+                personaId: personaId,
+                meta: meta,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AiResultsTable, AiResultRow>(table),
+                  BaseReferences<_$AppDatabase, $AiResultsTable, AiResultRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AiResultsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AiResultsTable,
+      AiResultRow,
+      $$AiResultsTableFilterComposer,
+      $$AiResultsTableOrderingComposer,
+      $$AiResultsTableAnnotationComposer,
+      $$AiResultsTableCreateCompanionBuilder,
+      $$AiResultsTableUpdateCompanionBuilder,
+      (
+        AiResultRow,
+        BaseReferences<_$AppDatabase, $AiResultsTable, AiResultRow>,
+      ),
+      AiResultRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7918,4 +10661,10 @@ class $AppDatabaseManager {
       $$DayMoodsTableTableManager(_db, _db.dayMoods);
   $$DiaryCommentsTableTableManager get diaryComments =>
       $$DiaryCommentsTableTableManager(_db, _db.diaryComments);
+  $$AiConversationsTableTableManager get aiConversations =>
+      $$AiConversationsTableTableManager(_db, _db.aiConversations);
+  $$AiMessagesTableTableManager get aiMessages =>
+      $$AiMessagesTableTableManager(_db, _db.aiMessages);
+  $$AiResultsTableTableManager get aiResults =>
+      $$AiResultsTableTableManager(_db, _db.aiResults);
 }

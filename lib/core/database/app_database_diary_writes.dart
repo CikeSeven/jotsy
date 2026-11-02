@@ -312,7 +312,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
   ///
   /// 显式清理 diary_tags 与 diary_notebooks：本库不开启外键，diary_tags 声明
   /// 的级联不会生效，diary_notebooks 则根本没有声明外键；关联这篇日记的
-  /// 纪念日同时解除关联、留言一并删除（两者都只存日记业务 id、没有外键）。
+  /// 纪念日同时解除关联、留言与 AI 读后回应一并删除（都只存日记业务 id、
+  /// 没有外键）。
   /// 软删除不动关联与留言，从回收站恢复后都还在。
   /// 只删除数据库记录：正文媒体可能被其他日记或草稿复用（复制粘贴图片），
   /// 文件由 DiaryMediaCleanupService 确认无人引用后再回收。
@@ -341,6 +342,13 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
       await (delete(
         diaryComments,
       )..where((t) => t.diaryId.equals(diaryId))).go();
+      // 这篇的 AI 读后回应同理（只存业务 id）；对话里引用它的历史消息不改，
+      // 打开引用时显示“不存在或已删除”。
+      await (delete(aiResults)..where(
+            (t) =>
+                t.kind.equals(AiResultKind.reply) & t.diaryId.equals(diaryId),
+          ))
+          .go();
     });
   }
 

@@ -11726,4 +11726,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiUsageFooter => '只统计从这台设备发出的请求，实际费用以服务商账单为准。';
+
+  @override
+  String get aiPrivacyRecordsGroup => 'AI 记录';
+
+  @override
+  String get aiPrivacyRecordsFooter => '对话、读后回应与回顾保存在这台设备上，随完整备份导出，不参与局域网同步。';
+
+  @override
+  String get aiPrivacyClearRecords => '清除全部 AI 记录';
+
+  @override
+  String aiPrivacyClearRecordsSubtitle(int count) {
+    return '共 $count 条对话与结果';
+  }
+
+  @override
+  String get aiPrivacyClearRecordsTitle => '清除全部 AI 记录？';
+
+  @override
+  String get aiPrivacyClearRecordsBody =>
+      '所有对话、读后回应与回顾都会从这台设备删除，不能撤销。日记本身不受影响。';
+
+  @override
+  String get aiPrivacyClearRecordsDone => '已清除全部 AI 记录';
 }

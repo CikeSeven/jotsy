@@ -21475,6 +21475,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Counts only requests sent from this device. Check the provider\'s billing for actual costs.'**
   String get aiUsageFooter;
+
+  /// Group title for stored AI records.
+  ///
+  /// In en, this message translates to:
+  /// **'AI records'**
+  String get aiPrivacyRecordsGroup;
+
+  /// Footer explaining where AI records are kept.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats, reflections and recaps are saved on this device and in full backups. They are never synced over the local network.'**
+  String get aiPrivacyRecordsFooter;
+
+  /// Row that clears all AI records.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all AI records'**
+  String get aiPrivacyClearRecords;
+
+  /// Number of stored AI records.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing saved yet} =1{1 chat or result} other{{count} chats and results}}'**
+  String aiPrivacyClearRecordsSubtitle(int count);
+
+  /// Title of the clear-records dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all AI records?'**
+  String get aiPrivacyClearRecordsTitle;
+
+  /// Body of the clear-records dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Every chat, reflection and recap is deleted from this device. This can\'t be undone. Your diary entries are not affected.'**
+  String get aiPrivacyClearRecordsBody;
+
+  /// Snackbar after clearing AI records.
+  ///
+  /// In en, this message translates to:
+  /// **'AI records cleared'**
+  String get aiPrivacyClearRecordsDone;
 }
 
 class _AppLocalizationsDelegate

@@ -21,6 +21,8 @@ import '../../../widgets/expressive_button_group.dart';
 import '../../models/ai_preference_parts.dart';
 import '../../models/ai_privacy_options.dart';
 import '../../providers/ai_providers.dart';
+import '../../providers/ai_records_providers.dart';
+import '../../widgets/ai_dialogs.dart';
 import '../../widgets/ai_page_scaffold.dart';
 
 class AiPrivacyPage extends ConsumerWidget {
@@ -46,7 +48,9 @@ class AiPrivacyPage extends ConsumerWidget {
         title: l10n.aiPrivacyPickNotebooks,
         options: <String, String>{
           for (final notebook in notebooks)
-            if (notebook.effectiveVisibility == NotebookVisibility.normal)
+            // 只有手动本有成员行可以排除；私密本本来就永远不会发送。
+            if (notebook.kind == NotebookKind.manual &&
+                notebook.effectiveVisibility == NotebookVisibility.normal)
               notebook.id: notebook.name,
         },
         selected: privacy.excludedNotebookIds,
@@ -199,7 +203,55 @@ class AiPrivacyPage extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        SettingsCardGroup(
+          title: l10n.aiPrivacyRecordsGroup,
+          footer: l10n.aiPrivacyRecordsFooter,
+          children: <Widget>[
+            Consumer(
+              builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                final count = ref.watch(aiRecordCountProvider).value ?? 0;
+                final colors = Theme.of(context).colorScheme;
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  leading: FaIcon(
+                    FontAwesomeIcons.trashCan,
+                    size: 16,
+                    color: colors.error,
+                  ),
+                  title: Text(
+                    l10n.aiPrivacyClearRecords,
+                    style: TextStyle(color: colors.error),
+                  ),
+                  subtitle: Text(l10n.aiPrivacyClearRecordsSubtitle(count)),
+                  onTap: count == 0 ? null : () => _clearRecords(context, ref),
+                );
+              },
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  Future<void> _clearRecords(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final confirmed = await confirmAiAction(
+      context,
+      title: l10n.aiPrivacyClearRecordsTitle,
+      content: l10n.aiPrivacyClearRecordsBody,
+      action: l10n.aiPrivacyClearRecords,
+      destructive: true,
+    );
+    if (!confirmed) return;
+    await ref.read(appDatabaseProvider).clearAllAiRecords();
+    if (!context.mounted) return;
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: SnackBar(content: Text(l10n.aiPrivacyClearRecordsDone)),
     );
   }
 }

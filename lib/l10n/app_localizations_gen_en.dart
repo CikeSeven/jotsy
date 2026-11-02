@@ -13169,4 +13169,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiUsageFooter =>
       'Counts only requests sent from this device. Check the provider\'s billing for actual costs.';
+
+  @override
+  String get aiPrivacyRecordsGroup => 'AI records';
+
+  @override
+  String get aiPrivacyRecordsFooter =>
+      'Chats, reflections and recaps are saved on this device and in full backups. They are never synced over the local network.';
+
+  @override
+  String get aiPrivacyClearRecords => 'Clear all AI records';
+
+  @override
+  String aiPrivacyClearRecordsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count chats and results',
+      one: '1 chat or result',
+      zero: 'Nothing saved yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiPrivacyClearRecordsTitle => 'Clear all AI records?';
+
+  @override
+  String get aiPrivacyClearRecordsBody =>
+      'Every chat, reflection and recap is deleted from this device. This can\'t be undone. Your diary entries are not affected.';
+
+  @override
+  String get aiPrivacyClearRecordsDone => 'AI records cleared';
 }

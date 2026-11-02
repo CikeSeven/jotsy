@@ -14,6 +14,7 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_b
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_card_colors.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_preview_resolved_style.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_body.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_header.dart';
@@ -62,7 +63,9 @@ class _PendingDetailDatabase extends AppDatabase {
       Completer<DiaryWithTags?>().future;
 }
 
-Future<void> _pump(
+/// 装配预览页；返回设置服务，用例可以在页面打开期间改写样式（与设置页
+/// 写入同一条路径）。
+Future<SettingsService> _pump(
   WidgetTester tester, {
   DiaryPreviewStyle style = DiaryPreviewStyle.defaults,
   DiaryPreviewBehavior behavior = DiaryPreviewBehavior.defaults,
@@ -106,6 +109,7 @@ Future<void> _pump(
     ),
   );
   await tester.pumpAndSettle();
+  return settings;
 }
 
 double _top(WidgetTester tester, Finder finder) =>
@@ -130,6 +134,58 @@ Rect _metaRect(WidgetTester tester) =>
 
 double _bodyTop(WidgetTester tester) =>
     tester.getTopLeft(find.byType(DiaryPreviewBody)).dy;
+
+/// 正文、列表项与待办各一行：检查正文颜色时覆盖不同的文字块。
+const _mixedBody =
+    '[{"insert":"晚霞把整片海都染成了橘色\\n"},'
+    '{"insert":"带上相机"},{"insert":"\\n","attributes":{"list":"bullet"}},'
+    '{"insert":"看日落"},{"insert":"\\n","attributes":{"list":"unchecked"}}]';
+
+const _mixedBodyLines = <String>['晚霞把整片海都染成了橘色', '带上相机', '看日落'];
+
+/// 正文里包含 [text] 的那一行实际绘制的文字颜色：取写着这段文字的片段的
+/// 颜色，片段没设时取整行的。读的是画出来的 RichText，而不是 EditorStyle，
+/// 编辑器缓存了过期样式时也能发现。
+Color _renderedBodyColor(WidgetTester tester, String text) {
+  final line = tester
+      .widgetList<RichText>(
+        find.descendant(
+          of: find.byType(DiaryEditor),
+          matching: find.byType(RichText),
+        ),
+      )
+      .firstWhere((rich) => rich.text.toPlainText().contains(text));
+  Color? color;
+  line.text.visitChildren((span) {
+    if (span is TextSpan && (span.text?.contains(text) ?? false)) {
+      color = span.style?.color;
+      return false;
+    }
+    return true;
+  });
+  return color ?? line.text.style!.color!;
+}
+
+/// 页面纸色（预览页 Scaffold 的底色）。
+Color _paper(WidgetTester tester) =>
+    tester.widget<Scaffold>(find.byType(Scaffold).first).backgroundColor!;
+
+/// 正文各行都按页面主题的正文色绘制，且与纸色的对比度不低于 4.5:1。
+void _expectReadableBody(WidgetTester tester, Iterable<String> lines) {
+  final paper = _paper(tester);
+  final ink = Theme.of(
+    tester.element(find.byType(DiaryEditor)),
+  ).colorScheme.onSurface;
+  for (final text in lines) {
+    final color = _renderedBodyColor(tester, text);
+    expect(color, ink, reason: text);
+    expect(
+      DiaryCardColors.contrastOver(color, paper),
+      greaterThanOrEqualTo(DiaryPreviewResolvedStyle.bodyContrast),
+      reason: text,
+    );
+  }
+}
 
 void main() {
   testWidgets('the default look keeps the original top bar and details', (
@@ -404,11 +460,66 @@ void main() {
       style: const DiaryPreviewStyle(
         page: DiaryPreviewPageStyle(paper: DiaryPreviewPaper.ink),
       ),
+      detail: _diary(content: _mixedBody),
     );
-    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-    expect(scaffold.backgroundColor, const Color(0xFF1E2126));
+    expect(_paper(tester), const Color(0xFF1E2126));
     final pageTheme = Theme.of(tester.element(find.text('海边的一天')));
     expect(pageTheme.brightness, Brightness.dark);
+    // 正文（含列表项与待办）也换成深色页的浅色字，不是应用浅色主题的墨色。
+    _expectReadableBody(tester, _mixedBodyLines);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a light paper turns a dark app page light and stays readable', (
+    tester,
+  ) async {
+    // 内置纸色在深色应用里都有深色值；只有自定义纸色能在深色应用里仍是
+    // 浅色纸。
+    await _pump(
+      tester,
+      brightness: Brightness.dark,
+      style: const DiaryPreviewStyle(
+        page: DiaryPreviewPageStyle(
+          paper: DiaryPreviewPaper.custom,
+          paperLight: 0xFFFBF7EE,
+          paperDark: 0xFFF4ECD8,
+        ),
+      ),
+      detail: _diary(content: _mixedBody),
+    );
+    expect(_paper(tester), const Color(0xFFF4ECD8));
+    final pageTheme = Theme.of(tester.element(find.byType(DiaryEditor)));
+    expect(pageTheme.brightness, Brightness.light);
+    _expectReadableBody(tester, _mixedBodyLines);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('switching the paper while the page is open repaints the body', (
+    tester,
+  ) async {
+    // 与设置页写入同一路径：页面开着时换纸色（预览页“更多 → 页面样式”改完
+    // 返回、宽窗口右栏、设置页实时预览都是这样），正文跟着新主题重画。
+    final settings = await _pump(tester, detail: _diary(content: _mixedBody));
+    final appInk = expressiveTestTheme(Brightness.light).colorScheme.onSurface;
+    expect(_renderedBodyColor(tester, '带上相机'), appInk);
+
+    await settings.setDiaryPreviewStyleRaw(
+      const DiaryPreviewSettings(
+        current: DiaryPreviewStyle(
+          page: DiaryPreviewPageStyle(paper: DiaryPreviewPaper.ink),
+        ),
+      ).encode(),
+    );
+    await tester.pumpAndSettle();
+    expect(_paper(tester), const Color(0xFF1E2126));
+    _expectReadableBody(tester, _mixedBodyLines);
+
+    // 换回默认样式：正文回到应用主题的正文色，与从没换过一样。
+    await settings.setDiaryPreviewStyleRaw(null);
+    await tester.pumpAndSettle();
+    for (final text in _mixedBodyLines) {
+      expect(_renderedBodyColor(tester, text), appInk, reason: text);
+    }
     expect(tester.takeException(), isNull);
   });
 

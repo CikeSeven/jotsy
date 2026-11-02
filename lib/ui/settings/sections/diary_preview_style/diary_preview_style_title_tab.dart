@@ -11,8 +11,8 @@ import '../../widgets/style_editor/style_custom_color_tile.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import '../diary_card_style/diary_card_style_labels.dart';
 
-/// “标题”标签页：显隐、“无标题”占位、大小、字重、对齐与颜色。标题字体
-/// 跟随正文字体设置，这里不另设。
+/// “标题”标签页：显隐、“无标题”占位、大小、字重、对齐与颜色，以及标题下
+/// 分隔线与标题和正文的间距。标题字体跟随正文字体设置，这里不另设。
 class DiaryPreviewStyleTitleTab extends StatelessWidget {
   const DiaryPreviewStyleTitleTab({super.key, required this.controller});
 
@@ -134,6 +134,32 @@ class DiaryPreviewStyleTitleTab extends StatelessWidget {
             ],
           ],
         ),
+        // 标题区与正文之间：标题隐藏但信息栏在标题上方 / 下方时仍有标题区，
+        // 所以不随“显示标题”收起；标题隐藏且信息栏在正文之后时没有标题区，
+        // 这两项不起作用，一并收起。
+        if (title.visible ||
+            controller.style.meta.position != DiaryPreviewMetaPosition.end)
+          SettingsCardGroup(
+            children: <Widget>[
+              SettingsSwitchTile(
+                title: l10n.diaryPreviewStyleTitleDivider,
+                subtitle: l10n.diaryPreviewStyleTitleDividerSubtitle,
+                value: title.divider,
+                onChanged: (bool v) => commit(title.copyWith(divider: v)),
+              ),
+              SettingsSliderTile(
+                title: l10n.diaryPreviewStyleTitleBodyGap,
+                subtitle: l10n.diaryPreviewStyleTitleBodyGapSubtitle,
+                value: title.bodyGap,
+                min: DiaryPreviewStyleLimits.titleBodyGap.min,
+                max: DiaryPreviewStyleLimits.titleBodyGap.max,
+                divisions: DiaryPreviewStyleLimits.titleBodyGap.divisions,
+                valueLabel: (double v) => diaryCardDpLabel(l10n, v),
+                onChanged: (double v) => preview(title.copyWith(bodyGap: v)),
+                onChangeEnd: (double v) => commit(title.copyWith(bodyGap: v)),
+              ),
+            ],
+          ),
       ],
     );
   }

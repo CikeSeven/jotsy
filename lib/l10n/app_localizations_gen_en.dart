@@ -4554,6 +4554,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPreviewStyleTitleColor => 'Custom title color';
 
   @override
+  String get diaryPreviewStyleTitleDivider => 'Line below title';
+
+  @override
+  String get diaryPreviewStyleTitleDividerSubtitle =>
+      'A light, thin line between the title and the text';
+
+  @override
+  String get diaryPreviewStyleTitleBodyGap => 'Space before text';
+
+  @override
+  String get diaryPreviewStyleTitleBodyGapSubtitle =>
+      'With the line on, this space is kept above and below it';
+
+  @override
   String get diaryPreviewStyleMetaPosition => 'Position';
 
   @override

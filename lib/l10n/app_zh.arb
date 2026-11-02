@@ -5777,6 +5777,22 @@
   "@diaryPreviewStyleTitleColor": {
     "description": "预览页样式设置：开关：自定义标题颜色。"
   },
+  "diaryPreviewStyleTitleDivider": "标题下分隔线",
+  "@diaryPreviewStyleTitleDivider": {
+    "description": "预览页样式设置：开关标题：在标题与正文之间画一条细线。"
+  },
+  "diaryPreviewStyleTitleDividerSubtitle": "在标题与正文之间画一条浅色细线",
+  "@diaryPreviewStyleTitleDividerSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleTitleBodyGap": "标题与正文间距",
+  "@diaryPreviewStyleTitleBodyGap": {
+    "description": "预览页样式设置：滑块标题：标题区与正文之间的距离。"
+  },
+  "diaryPreviewStyleTitleBodyGapSubtitle": "开启分隔线时，线的上下各留这段距离",
+  "@diaryPreviewStyleTitleBodyGapSubtitle": {
+    "description": "预览页样式设置：滑块说明。"
+  },
   "diaryPreviewStyleMetaPosition": "位置",
   "@diaryPreviewStyleMetaPosition": {
     "description": "预览页样式设置：设置项标题。"

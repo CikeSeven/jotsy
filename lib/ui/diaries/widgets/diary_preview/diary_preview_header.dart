@@ -232,6 +232,36 @@ class DiaryPreviewTitle extends StatelessWidget {
   }
 }
 
+/// 标题区与正文之间的分隔线（sliver）：横跨正文列（左右边距与正文相同），
+/// 粗 [thickness]，颜色见 [DiaryPreviewResolvedStyle.titleDividerColor]。上方
+/// 留 [top]（标题区下缘到线），线到正文的距离由正文区的上边距给出。
+class DiaryPreviewTitleDivider extends StatelessWidget {
+  const DiaryPreviewTitleDivider({
+    super.key,
+    required this.resolved,
+    required this.top,
+  });
+
+  /// 与正文里的分隔线块同粗（DESIGN §3.2 的 1dp 细线）。
+  static const double thickness = 1;
+
+  final DiaryPreviewResolvedStyle resolved;
+  final double top;
+
+  @override
+  Widget build(BuildContext context) {
+    return DiaryPreviewSection(
+      resolved: resolved,
+      top: top,
+      child: SizedBox(
+        width: double.infinity,
+        height: thickness,
+        child: ColoredBox(color: resolved.titleDividerColor),
+      ),
+    );
+  }
+}
+
 /// 预览页里的一段内容（sliver）：左右按样式留边，开启“限制正文宽度”时在
 /// 宽屏上居中排到最大宽度。
 class DiaryPreviewSection extends StatelessWidget {

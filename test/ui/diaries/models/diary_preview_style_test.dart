@@ -50,6 +50,8 @@ const _everything = DiaryPreviewStyle(
     align: DiaryPreviewAlign.center,
     colorLight: 0xFF112233,
     colorDark: 0xFFCCDDEE,
+    divider: true,
+    bodyGap: 30,
   ),
   meta: DiaryPreviewMetaStyle(
     position: DiaryPreviewMetaPosition.end,
@@ -336,5 +338,98 @@ void main() {
           .tintsBackgroundScrim,
       isFalse,
     );
+  });
+
+  test('the title divider is off and the gap to the text is 14 by default', () {
+    const title = DiaryPreviewTitleStyle();
+    expect(title.divider, isFalse);
+    expect(title.bodyGap, DiaryPreviewTitleStyle.defaultBodyGap);
+    expect(DiaryPreviewTitleStyle.defaultBodyGap, 14);
+    final gap = DiaryPreviewStyleLimits.titleBodyGap;
+    expect(gap.min <= 14 && 14 <= gap.max, isTrue);
+  });
+
+  test('the title divider and gap are written only when changed', () {
+    // 与默认相同的值不写键：默认标题整组都不写。
+    expect(
+      const DiaryPreviewStyle(
+        title: DiaryPreviewTitleStyle(divider: false, bodyGap: 14),
+      ).toJson(),
+      isEmpty,
+    );
+    const changed = DiaryPreviewStyle(
+      title: DiaryPreviewTitleStyle(divider: true, bodyGap: 24),
+    );
+    expect(changed.toJson()['title'], <String, Object>{
+      'divider': true,
+      'bodyGap': 24.0,
+    });
+    expect(
+      DiaryPreviewStyle.fromJson(jsonDecode(jsonEncode(changed.toJson()))),
+      changed,
+    );
+    // 只开分隔线时间距不写。
+    expect(
+      const DiaryPreviewStyle(
+        title: DiaryPreviewTitleStyle(divider: true),
+      ).toJson()['title'],
+      <String, Object>{'divider': true},
+    );
+  });
+
+  test(
+    'a broken title divider or gap falls back, an out-of-range gap clamps',
+    () {
+      DiaryPreviewTitleStyle decode(Object? title) =>
+          DiaryPreviewStyle.fromJson(<String, Object?>{'title': title}).title;
+
+      final broken = decode(<String, Object?>{
+        'divider': 'yes',
+        'bodyGap': 'wide',
+        'scale': 1.2,
+      });
+      expect(broken.divider, isFalse);
+      expect(broken.bodyGap, 14);
+      // 坏掉的字段不连累同组的其他字段。
+      expect(broken.scale, 1.2);
+      expect(decode(<String, Object?>{'bodyGap': double.nan}).bodyGap, 14);
+      expect(
+        decode(<String, Object?>{'bodyGap': 999}).bodyGap,
+        DiaryPreviewStyleLimits.titleBodyGap.max,
+      );
+      expect(
+        decode(<String, Object?>{'bodyGap': -3}).bodyGap,
+        DiaryPreviewStyleLimits.titleBodyGap.min,
+      );
+      expect(decode(<String, Object?>{'bodyGap': 20}).bodyGap, 20);
+    },
+  );
+
+  test('older styles and codes without the divider keep the old look', () {
+    // 加入分隔线之前保存的样式：标题组里没有这两项。
+    final old = DiaryPreviewStyle.fromJson(<String, Object?>{
+      'title': <String, Object?>{'scale': 1.4, 'align': 'center'},
+    });
+    expect(old.title.divider, isFalse);
+    expect(old.title.bodyGap, 14);
+    expect(old.title.scale, 1.4);
+
+    final code = DiaryPreviewStyleCode.encode(old);
+    expect(DiaryPreviewStyleCode.decode(code).style, old);
+    final settings = DiaryPreviewSettings.decode(
+      jsonEncode(<String, Object?>{
+        'current': <String, Object?>{
+          'title': <String, Object?>{'weight': 'bold'},
+        },
+      }),
+    );
+    expect(settings.current.title.divider, isFalse);
+    expect(settings.current.title.bodyGap, 14);
+    // 预设不带分隔线。
+    for (final id in DiaryPreviewPresetId.values) {
+      final title = DiaryPreviewPresets.styleOf(id).title;
+      expect(title.divider, isFalse);
+      expect(title.bodyGap, 14);
+    }
   });
 }

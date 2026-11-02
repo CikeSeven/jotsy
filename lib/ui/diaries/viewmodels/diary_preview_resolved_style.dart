@@ -32,7 +32,8 @@ import 'diary_card_colors.dart';
 ///   染过的纸色作为背景遮罩的底色（[scrimTint]，不透明度由页面背景给）；
 /// - 默认样式（跟随应用 + 主题底色）原样返回应用主题，渲染与改版前一致；
 /// - 自定义正文 / 标题颜色按纸色检查对比度（正文 4.5:1、标题 3:1，WCAG 2.x），
-///   不足时回退为主题色，未设深色值时按色相推导。
+///   不足时回退为主题色，未设深色值时按色相推导；
+/// - 标题下分隔线取正文色的低不透明度（[titleDividerColor]），不另设颜色。
 ///
 /// 版式（边距、正文列宽、头图）按内容实际可用的宽度换算：[resolve] 先按屏幕
 /// 宽度算一遍，`DiaryPreviewContent` 再经 [atWidth] 按自己拿到的宽度重算
@@ -84,6 +85,10 @@ class DiaryPreviewResolvedStyle {
   /// 纸始终是浅色约 93、深色约 16 的色调，正文对比度不受着色强度影响。
   static const double paperTintLight = 0.55;
   static const double paperTintDark = 0.45;
+
+  /// 标题下分隔线的不透明度（浅色页 / 深色页），见 [titleDividerColor]。
+  static const double titleDividerOpacityLight = 0.16;
+  static const double titleDividerOpacityDark = 0.2;
 
   /// 内置纸色：（浅色主题，深色主题）。墨色两种主题下都是深色纸。
   static const Map<DiaryPreviewPaper, (int, int)> paperColors =
@@ -295,6 +300,24 @@ class DiaryPreviewResolvedStyle {
 
   /// 头图放进正文列、作为圆角卡片显示（宽窗口），而不是通栏。
   final bool coverInColumn;
+
+  /// 标题下分隔线的颜色：正文色（通过对比度检查的自定义正文色，否则页面
+  /// 主题的 onSurface）按 [titleDividerOpacityLight] / [titleDividerOpacityDark]
+  /// 降低不透明度。
+  ///
+  /// 为什么不直接用 `outlineVariant`：它是主题里的固定色调，落在自定义纸色
+  /// （尤其是中间调的纸）上可能和纸几乎同色；正文色已经保证了与纸的对比度，
+  /// 按比例淡化后在任何纸色、染过的纸、背景遮罩与玻璃上都“浅而可见”，色相
+  /// 也跟着自定义正文色走。半透明而不预先叠到 [background] 上：页面让位给
+  /// 背景图时线下面并不是纸色。
+  Color get titleDividerColor {
+    final ink = bodyColor ?? theme.colorScheme.onSurface;
+    return ink.withValues(
+      alpha: theme.brightness == Brightness.light
+          ? titleDividerOpacityLight
+          : titleDividerOpacityDark,
+    );
+  }
 
   /// 列内头图的圆角：内嵌模式沿用用户设定的圆角，通栏模式取卡片圆角。
   double get columnCoverRadius =>

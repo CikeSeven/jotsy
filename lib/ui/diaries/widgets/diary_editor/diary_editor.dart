@@ -304,11 +304,23 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               ],
             ),
     );
+    // 正文基础样式（颜色取所在位置的 DefaultTextStyle）：上游编辑器把它连同
+    // EditorStyle 一起存进 EditorState，只在换上新的编辑器 widget 时更新。
+    final body = diaryEditorBodyStyle(context, widget.appearance);
     // 键盘动画只改变约束，保持上游编辑器 widget 实例以复用其服务子树；
     // 页头与末尾占位通过独立槽更新，避免为小片布局重建整篇正文。
+    //
+    // 正文样式必须单独作为输入，不能指望 Theme 代劳：Scaffold 的 Material 用
+    // AnimatedDefaultTextStyle 把文字样式补间到新主题（kThemeChangeDuration，
+    // 不受减少动画影响），主题换掉的那一帧它还是旧主题的墨色，之后几帧只有
+    // DefaultTextStyle 在变。只看 Theme 时缓存的编辑器停在那一帧：应用切换
+    // 明暗、预览页换纸色或配色基调（墨色纸、设置页实时预览）后，正文仍是
+    // 上一种主题的字色，深纸深字 / 浅纸浅字。补间期间按帧重建上游编辑器，
+    // 只发生在换主题的约 200ms 里。
     final inputs = (
       widget.controller,
       Theme.of(context),
+      body,
       widget.appearance,
       style,
       family,
@@ -411,7 +423,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
           links: DiaryLinkSpanOptions(
             state: controller.state,
             notebooksEnabled: notebooksEnabled,
-            plainColor: diaryEditorBodyStyle(context, widget.appearance).color,
+            plainColor: body.color,
             onOpen: _openLink,
           ),
         ),

@@ -49,6 +49,8 @@ class DiaryTemplateEditorContentTab extends ConsumerStatefulWidget {
     DiaryToolbarItem.attachment,
     DiaryToolbarItem.recording,
     DiaryToolbarItem.currentTime,
+    // 模板正文不发给 AI。
+    DiaryToolbarItem.ai,
   };
 
   @override

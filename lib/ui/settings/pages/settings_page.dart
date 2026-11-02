@@ -20,6 +20,8 @@ import '../../../app/theme/app_effects.dart';
 import '../controllers/app_update_controller.dart';
 import '../providers/app_features_provider.dart';
 import '../widgets/app_update_badge.dart';
+import '../../ai/pages/settings/ai_settings_page.dart';
+import '../../ai/providers/ai_providers.dart';
 
 /// 设置页：按语义分组展示一级入口，降低首屏复杂度。
 class SettingsPage extends StatelessWidget {
@@ -140,6 +142,35 @@ class SettingsPage extends StatelessWidget {
                                   MaterialPageRoute<void>(
                                     builder: (BuildContext context) {
                                       return const NotebooksPage();
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      },
+                ),
+                // AI 助手：功能管理里打开后才出现（连同其后的间距）。
+                Consumer(
+                  builder:
+                      (BuildContext context, WidgetRef ref, Widget? child) {
+                        if (!ref.watch(aiFeatureEnabledProvider)) {
+                          return const SizedBox.shrink();
+                        }
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            _SettingsDestination(
+                              icon: FontAwesomeIcons.wandMagicSparkles,
+                              title: l10n.aiSettingsTitle,
+                              subtitle: l10n.aiSettingsEntrySubtitle,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (BuildContext context) {
+                                      return const AiSettingsPage();
                                     },
                                   ),
                                 );

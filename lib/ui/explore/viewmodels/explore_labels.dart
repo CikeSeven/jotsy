@@ -30,6 +30,7 @@ abstract final class ExploreLabels {
         ExploreModuleId.notebooks => l10n.exploreModuleNotebooks,
         ExploreModuleId.drafts => l10n.exploreModuleDrafts,
         ExploreModuleId.comments => l10n.exploreModuleComments,
+        ExploreModuleId.aiInsight => l10n.exploreModuleAi,
       };
 
   static String moduleDescription(AppLocalizations l10n, ExploreModuleId id) =>
@@ -55,6 +56,7 @@ abstract final class ExploreLabels {
         ExploreModuleId.notebooks => l10n.exploreModuleNotebooksDesc,
         ExploreModuleId.drafts => l10n.exploreModuleDraftsDesc,
         ExploreModuleId.comments => l10n.exploreModuleCommentsDesc,
+        ExploreModuleId.aiInsight => l10n.exploreModuleAiDesc,
       };
 
   static String period(AppLocalizations l10n, ExplorePeriod period) =>

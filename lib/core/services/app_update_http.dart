@@ -1,6 +1,7 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
+import 'http_cancel_token.dart';
 
 /// 更新流程失败的类别，界面按它给出对应的说明与下一步。
 enum AppUpdateFailureKind {
@@ -44,42 +45,14 @@ class AppUpdateException implements Exception {
       : 'AppUpdateException(${kind.name}: $detail)';
 }
 
-/// 取消一组进行中的请求：强制关闭登记的连接，阻塞中的读写随即抛错。
-class AppUpdateCancelToken {
-  final Set<HttpClient> _clients = <HttpClient>{};
-  final Completer<void> _whenCancelled = Completer<void>();
-
-  bool get isCancelled => _whenCancelled.isCompleted;
-
-  /// 取消时完成，用于结束仍在等待的竞速。
-  Future<void> get whenCancelled => _whenCancelled.future;
-
-  void cancel() {
-    if (isCancelled) {
-      return;
-    }
-    _whenCancelled.complete();
-    for (final client in _clients.toList(growable: false)) {
-      client.close(force: true);
-    }
-    _clients.clear();
-  }
-
+/// 更新流程的取消令牌：在通用的 [HttpCancelToken] 上补一个按更新错误类型
+/// 抛出的检查。
+class AppUpdateCancelToken extends HttpCancelToken {
   void throwIfCancelled() {
     if (isCancelled) {
       throw const AppUpdateException(AppUpdateFailureKind.cancelled);
     }
   }
-
-  void _attach(HttpClient client) {
-    if (isCancelled) {
-      client.close(force: true);
-    } else {
-      _clients.add(client);
-    }
-  }
-
-  void _detach(HttpClient client) => _clients.remove(client);
 }
 
 /// 一次文本请求的结果。
@@ -116,7 +89,7 @@ class AppUpdateHttp {
     AppUpdateCancelToken? cancelToken,
   }) async {
     final client = _clientFactory();
-    cancelToken?._attach(client);
+    cancelToken?.attach(client);
     try {
       return await () async {
         client.connectionTimeout = timeout;
@@ -140,7 +113,7 @@ class AppUpdateHttp {
         );
       }().timeout(timeout);
     } finally {
-      cancelToken?._detach(client);
+      cancelToken?.detach(client);
       client.close(force: true);
     }
   }
@@ -154,7 +127,7 @@ class AppUpdateHttp {
     AppUpdateCancelToken? cancelToken,
   }) async {
     final client = _clientFactory();
-    cancelToken?._attach(client);
+    cancelToken?.attach(client);
     try {
       client.connectionTimeout = connectTimeout;
       final request = await client.getUrl(uri).timeout(connectTimeout);
@@ -172,7 +145,7 @@ class AppUpdateHttp {
       final response = await request.close().timeout(connectTimeout);
       return AppUpdateStream._(client, response, cancelToken);
     } catch (_) {
-      cancelToken?._detach(client);
+      cancelToken?.detach(client);
       client.close(force: true);
       rethrow;
     }
@@ -205,7 +178,7 @@ class AppUpdateStream {
       response.contentLength >= 0 ? response.contentLength : null;
 
   void close() {
-    _cancelToken?._detach(_client);
+    _cancelToken?.detach(_client);
     _client.close(force: true);
   }
 }

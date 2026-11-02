@@ -145,8 +145,11 @@ void main() {
 
     await tester.tap(find.widgetWithText(TextButton, '保存'));
     await tester.pumpAndSettle();
+    // AI 写作在 AI 不可用时不列出，但照常留在保存的顺序里原来的位置。
     expect(
-      decodeDiaryToolbarOrder(settings.diaryToolbarOrderRaw).take(7),
+      decodeDiaryToolbarOrder(
+        settings.diaryToolbarOrderRaw,
+      ).where((item) => item != DiaryToolbarItem.ai).take(7),
       <DiaryToolbarItem>[
         DiaryToolbarItem.redo,
         DiaryToolbarItem.recording,

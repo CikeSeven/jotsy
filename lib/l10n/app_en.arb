@@ -816,7 +816,7 @@
   "@aboutPrivacyDialogTitle": {
     "description": "Title for privacy description dialog."
   },
-  "aboutPrivacyDialogMessage": "Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default.",
+  "aboutPrivacyDialogMessage": "Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default. The AI assistant is off by default; when on, it sends only what an AI feature needs, directly to the AI service you configure, and your key stays on this device.",
   "@aboutPrivacyDialogMessage": {
     "description": "Body message for privacy description dialog."
   },
@@ -14682,5 +14682,2568 @@
   "lanSyncForgetBody": "No diary is deleted on either device. To sync again you'll need to pair again.",
   "@lanSyncForgetBody": {
     "description": "Body of the unpair confirmation dialog."
+  },
+  "settingsFeaturesAi": "AI assistant",
+  "@settingsFeaturesAi": {
+    "description": "Feature toggle title for the AI assistant."
+  },
+  "settingsFeaturesAiSubtitle": "Write, reflect, recap and chat with your own AI API",
+  "@settingsFeaturesAiSubtitle": {
+    "description": "Feature toggle subtitle for the AI assistant."
+  },
+  "aiPersonaAssistantName": "Diary assistant",
+  "@aiPersonaAssistantName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaAssistantDesc": "Clear and objective, good for questions and summaries",
+  "@aiPersonaAssistantDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaAssistantPrompt": "You are the user's diary assistant. You can read the diary entries the user shares with you. Base your answers on those entries, and keep them clear, objective and well organised. Say so when you are unsure, and never invent things that are not in the diary.",
+  "@aiPersonaAssistantPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaListenerName": "Warm listener",
+  "@aiPersonaListenerName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaListenerDesc": "Understands first, then answers gently",
+  "@aiPersonaListenerDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaListenerPrompt": "You are a warm, patient listener. After reading the user's diary, first show that you understand and acknowledge the feelings in it, then respond gently. Do not judge or lecture, give little advice, and offer empathy and affirmation instead. You may end with one gentle question that invites the user to reflect a little more.",
+  "@aiPersonaListenerPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaFriendName": "Close friend",
+  "@aiPersonaFriendName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaFriendDesc": "Chats casually like an old friend",
+  "@aiPersonaFriendDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaFriendPrompt": "You are a friend the user has known for years. You talk naturally, casually and sincerely, you can joke and you can be serious. Respond the way a friend would after reading their diary: mention details you noticed, share how you feel, and give practical advice only when it helps.",
+  "@aiPersonaFriendPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaCoachName": "Growth coach",
+  "@aiPersonaCoachName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaCoachDesc": "Spots your progress and the next small step",
+  "@aiPersonaCoachDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaCoachPrompt": "You are a positive, practical growth coach. Find the effort, progress and things worth praising in the diary, point out patterns that could improve, and suggest one to three concrete, doable small actions. Be encouraging without being vague.",
+  "@aiPersonaCoachPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaAnalystName": "Thoughtful analyst",
+  "@aiPersonaAnalystName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaAnalystDesc": "Calmly untangles what happened and why",
+  "@aiPersonaAnalystDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaAnalystPrompt": "You are a calm, rational analyst. Help the user untangle what happened in the diary, the reasons behind it and the options they have. Separate facts from feelings and point out angles they may have missed. Be concise and structured.",
+  "@aiPersonaAnalystPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaCounselorName": "Counselor style",
+  "@aiPersonaCounselorName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaCounselorDesc": "Asks questions that help you see your feelings",
+  "@aiPersonaCounselorDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaCounselorPrompt": "You respond the way a counselor often does: listen, reflect back and clarify, and use open questions to help the user notice their emotions and needs, without rushing to conclusions or advice. You are not professional therapy. If the diary mentions thoughts of hurting themselves or others, gently encourage the user to reach out to people around them or to professional help.",
+  "@aiPersonaCounselorPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaPoetName": "Poet",
+  "@aiPersonaPoetName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaPoetDesc": "Answers your day in poetic language",
+  "@aiPersonaPoetDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaPoetPrompt": "You are a gentle poet. Respond to the user's diary in vivid, poetic but not obscure language. You may write a short prose poem or a few lines of verse that capture the mood and images of the day.",
+  "@aiPersonaPoetPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaPhilosopherName": "Philosopher",
+  "@aiPersonaPhilosopherName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaPhilosopherDesc": "Thinks about it from a wider view",
+  "@aiPersonaPhilosopherDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaPhilosopherPrompt": "You are a friendly philosopher. Start from the small, concrete things in the diary and connect them to bigger questions such as meaning, choice, time and relationships. Use fitting ideas or metaphors, stay approachable, and come back to the user's own life at the end.",
+  "@aiPersonaPhilosopherPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaFutureSelfName": "Future self",
+  "@aiPersonaFutureSelfName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaFutureSelfDesc": "A reply from you, ten years later",
+  "@aiPersonaFutureSelfDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaFutureSelfPrompt": "You are the user ten years from now, rereading this diary entry. Write a short letter to your past self in the first person: gentle, knowing how things unfolded, with the calm and wisdom that time brings, but do not invent specific future events.",
+  "@aiPersonaFutureSelfPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiPersonaRoastName": "Roasting buddy",
+  "@aiPersonaRoastName": {
+    "description": "Built-in AI persona name."
+  },
+  "aiPersonaRoastDesc": "Sharp tongue, soft heart",
+  "@aiPersonaRoastDesc": {
+    "description": "Built-in AI persona description."
+  },
+  "aiPersonaRoastPrompt": "You are a buddy with a sharp tongue and a soft heart. Tease what happened in the diary with humour and exaggeration, but never mock the user's real pain or touch sensitive topics such as appearance or identity. Let your care show at the end.",
+  "@aiPersonaRoastPrompt": {
+    "description": "System prompt of a built-in AI persona (sent to the model)."
+  },
+  "aiActionContinue": "Continue",
+  "@aiActionContinue": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionContinuePrompt": "Continue the diary below in the same voice and tone with one natural paragraph of about 80 to 150 words. Write only the new text and do not repeat what is already there.",
+  "@aiActionContinuePrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionPolish": "Polish",
+  "@aiActionPolish": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionPolishPrompt": "Polish the text below so it reads more smoothly and naturally. Fix awkward phrasing, keep the meaning, tone and first-person voice, and do not make it longer.",
+  "@aiActionPolishPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionExpand": "Expand",
+  "@aiActionExpand": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionExpandPrompt": "Expand the text below with more details, feelings and imagery so it becomes richer, roughly doubling its length. Keep the original tone and point of view.",
+  "@aiActionExpandPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionShorten": "Shorten",
+  "@aiActionShorten": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionShortenPrompt": "Shorten the text below to about half its length. Keep the key information and feelings and remove repetition and filler.",
+  "@aiActionShortenPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionProofread": "Fix errors",
+  "@aiActionProofread": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionProofreadPrompt": "Fix spelling, punctuation and grammar mistakes in the text below. Leave everything else exactly as it is and do not rewrite it.",
+  "@aiActionProofreadPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionToneFormal": "More formal",
+  "@aiActionToneFormal": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionToneFormalPrompt": "Rewrite the text below in a more formal, polished tone while keeping its meaning.",
+  "@aiActionToneFormalPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionToneCasual": "More casual",
+  "@aiActionToneCasual": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionToneCasualPrompt": "Rewrite the text below in a more relaxed, conversational tone, as if chatting with a friend, while keeping its meaning.",
+  "@aiActionToneCasualPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionToneWarm": "Warmer",
+  "@aiActionToneWarm": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionToneWarmPrompt": "Rewrite the text below to sound warmer and gentler, with more kindness and care, while keeping its meaning.",
+  "@aiActionToneWarmPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionToneHumor": "Funnier",
+  "@aiActionToneHumor": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionToneHumorPrompt": "Rewrite the text below to be funnier, with a playful metaphor or a bit of self-deprecation, while keeping its meaning.",
+  "@aiActionToneHumorPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionToneLiterary": "More literary",
+  "@aiActionToneLiterary": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionToneLiteraryPrompt": "Rewrite the text below in a more literary style, with finer description and fitting figures of speech, without piling on ornate words. Keep its meaning.",
+  "@aiActionToneLiteraryPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionTranslate": "Translate",
+  "@aiActionTranslate": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionTranslatePrompt": "Translate the text below. If it is mainly Chinese, translate it into English; otherwise translate it into Simplified Chinese. Output only the translation.",
+  "@aiActionTranslatePrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionSummarize": "Summarize",
+  "@aiActionSummarize": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionSummarizePrompt": "Summarize the main points of the text below in two or three sentences.",
+  "@aiActionSummarizePrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionBulletPoints": "Bullet points",
+  "@aiActionBulletPoints": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionBulletPointsPrompt": "Turn the text below into a clear bullet list (a Markdown unordered list) with short items.",
+  "@aiActionBulletPointsPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionExtractTodos": "Extract to-dos",
+  "@aiActionExtractTodos": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionExtractTodosPrompt": "Find the tasks, plans and follow-ups mentioned in the text below and list them as a Markdown task list, one per line starting with \"- [ ] \". If there are none, reply with one line saying so.",
+  "@aiActionExtractTodosPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiActionPoem": "As a poem",
+  "@aiActionPoem": {
+    "description": "Built-in AI writing action label."
+  },
+  "aiActionPoemPrompt": "Turn the content below into a short modern poem of 4 to 12 lines that keeps its mood and imagery.",
+  "@aiActionPoemPrompt": {
+    "description": "Instruction of a built-in AI writing action (sent to the model)."
+  },
+  "aiErrorNotConfigured": "No AI model is set up yet. Add a provider in Settings → AI assistant.",
+  "@aiErrorNotConfigured": {
+    "description": "AI error message."
+  },
+  "aiErrorNetwork": "Couldn't reach the AI service. Check the network, the address or the proxy.",
+  "@aiErrorNetwork": {
+    "description": "AI error message."
+  },
+  "aiErrorTimeout": "The AI service took too long to respond.",
+  "@aiErrorTimeout": {
+    "description": "AI error message."
+  },
+  "aiErrorUnauthorized": "The API key is invalid or missing.",
+  "@aiErrorUnauthorized": {
+    "description": "AI error message."
+  },
+  "aiErrorForbidden": "This key has no access to the model, or the service isn't available in your region.",
+  "@aiErrorForbidden": {
+    "description": "AI error message."
+  },
+  "aiErrorModelNotFound": "The model or address wasn't found. Check the model name and API address.",
+  "@aiErrorModelNotFound": {
+    "description": "AI error message."
+  },
+  "aiErrorRateLimited": "Too many requests. Please try again in a moment.",
+  "@aiErrorRateLimited": {
+    "description": "AI error message."
+  },
+  "aiErrorQuota": "The account has run out of balance or quota.",
+  "@aiErrorQuota": {
+    "description": "AI error message."
+  },
+  "aiErrorContextTooLong": "Too much content for this model. Lower the word limit in AI privacy settings or pick a model with a longer context.",
+  "@aiErrorContextTooLong": {
+    "description": "AI error message."
+  },
+  "aiErrorContentFiltered": "The AI service declined this request because of its content policy.",
+  "@aiErrorContentFiltered": {
+    "description": "AI error message."
+  },
+  "aiErrorBadRequest": "The AI service rejected the request. Check the provider's advanced settings.",
+  "@aiErrorBadRequest": {
+    "description": "AI error message."
+  },
+  "aiErrorServer": "The AI service is having trouble or is overloaded. Please try again later.",
+  "@aiErrorServer": {
+    "description": "AI error message."
+  },
+  "aiErrorBadResponse": "Couldn't understand the response. The address may point to a web page instead of the API.",
+  "@aiErrorBadResponse": {
+    "description": "AI error message."
+  },
+  "aiErrorCancelled": "Stopped",
+  "@aiErrorCancelled": {
+    "description": "Shown when the user stopped an AI generation."
+  },
+  "aiErrorDetails": "Details",
+  "@aiErrorDetails": {
+    "description": "Button that shows the raw error details."
+  },
+  "aiErrorOpenSettings": "Open settings",
+  "@aiErrorOpenSettings": {
+    "description": "Button that opens AI settings from an error."
+  },
+  "aiSettingsTitle": "AI assistant",
+  "@aiSettingsTitle": {
+    "description": "Title of the AI settings page and its settings entry."
+  },
+  "aiSettingsEntrySubtitle": "Providers, models, personas and privacy",
+  "@aiSettingsEntrySubtitle": {
+    "description": "Subtitle of the AI entry on the settings home."
+  },
+  "aiSettingsFooter": "Nothing goes through the developer: requests go straight from this device to the provider you set up. API keys stay on this device and never enter backups or sync.",
+  "@aiSettingsFooter": {
+    "description": "Footer explaining AI privacy on the AI settings page."
+  },
+  "aiStatusNotConfiguredTitle": "No AI service yet",
+  "@aiStatusNotConfiguredTitle": {
+    "description": "Status card title when no provider is set up."
+  },
+  "aiStatusNotConfiguredBody": "Add a provider and its API key, and AI features will appear in the editor, the reading page and the home screen. Content is only sent to the service you set up.",
+  "@aiStatusNotConfiguredBody": {
+    "description": "Status card body when no provider is set up."
+  },
+  "aiStatusAddProvider": "Add provider",
+  "@aiStatusAddProvider": {
+    "description": "Button to add an AI provider."
+  },
+  "aiStatusDefaultModel": "Default model",
+  "@aiStatusDefaultModel": {
+    "description": "Label of the default model on the status card."
+  },
+  "aiStatusTest": "Test connection",
+  "@aiStatusTest": {
+    "description": "Button that sends a tiny test request."
+  },
+  "aiStatusTesting": "Testing…",
+  "@aiStatusTesting": {
+    "description": "Shown while the test request runs."
+  },
+  "aiStatusTestOk": "Connected · {ms} ms",
+  "@aiStatusTestOk": {
+    "description": "Result of a successful connection test.",
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "aiGroupService": "Service",
+  "@aiGroupService": {
+    "description": "AI settings group title."
+  },
+  "aiProvidersTitle": "Providers",
+  "@aiProvidersTitle": {
+    "description": "Title of the AI providers list."
+  },
+  "aiProvidersCount": "{count, plural, =1{1 provider} other{{count} providers}}",
+  "@aiProvidersCount": {
+    "description": "Number of configured AI providers.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProvidersEmpty": "None yet",
+  "@aiProvidersEmpty": {
+    "description": "Shown when no AI provider exists."
+  },
+  "aiRoutingTitle": "Model assignment",
+  "@aiRoutingTitle": {
+    "description": "Title of the per-task model assignment page."
+  },
+  "aiRoutingSubtitle": "Use different models for different features",
+  "@aiRoutingSubtitle": {
+    "description": "Subtitle of the model assignment entry."
+  },
+  "aiGroupFeatures": "Features",
+  "@aiGroupFeatures": {
+    "description": "AI settings group title."
+  },
+  "aiGroupFeaturesFooter": "Turning a feature off only hides it. Existing AI records are kept.",
+  "@aiGroupFeaturesFooter": {
+    "description": "Footer of the AI features group."
+  },
+  "aiModuleWriting": "Writing assistant",
+  "@aiModuleWriting": {
+    "description": "AI module name."
+  },
+  "aiModuleWritingSubtitle": "Continue, polish, change tone, translate and your own commands in the editor",
+  "@aiModuleWritingSubtitle": {
+    "description": "AI module description."
+  },
+  "aiModuleSuggest": "Smart fill",
+  "@aiModuleSuggest": {
+    "description": "AI module name."
+  },
+  "aiModuleSuggestSubtitle": "Generate titles and suggest tags and moods",
+  "@aiModuleSuggestSubtitle": {
+    "description": "AI module description."
+  },
+  "aiModuleReply": "Reflections",
+  "@aiModuleReply": {
+    "description": "AI module name."
+  },
+  "aiModuleReplySubtitle": "Let AI read an entry and respond to you on the reading page",
+  "@aiModuleReplySubtitle": {
+    "description": "AI module description."
+  },
+  "aiModulePrompts": "Writing prompts",
+  "@aiModulePrompts": {
+    "description": "AI module name."
+  },
+  "aiModulePromptsSubtitle": "A few questions when you don't know what to write",
+  "@aiModulePromptsSubtitle": {
+    "description": "AI module description."
+  },
+  "aiModuleRecap": "Recaps & insights",
+  "@aiModuleRecap": {
+    "description": "AI module name."
+  },
+  "aiModuleRecapSubtitle": "Summaries by week, month, year or notebook",
+  "@aiModuleRecapSubtitle": {
+    "description": "AI module description."
+  },
+  "aiModuleChat": "Chat with your diary",
+  "@aiModuleChat": {
+    "description": "AI module name."
+  },
+  "aiModuleChatSubtitle": "Ask your diary; answers cite the entries they use",
+  "@aiModuleChatSubtitle": {
+    "description": "AI module description."
+  },
+  "aiModuleVision": "Image understanding",
+  "@aiModuleVision": {
+    "description": "AI module name."
+  },
+  "aiModuleVisionSubtitle": "Send the photos in an entry along with the text; text only if the model can't take images",
+  "@aiModuleVisionSubtitle": {
+    "description": "AI module description."
+  },
+  "aiOptionTitleButton": "Show “Generate title” next to the title",
+  "@aiOptionTitleButton": {
+    "description": "AI option under smart fill."
+  },
+  "aiOptionAutoSuggest": "Suggest on the publish page",
+  "@aiOptionAutoSuggest": {
+    "description": "AI option under smart fill."
+  },
+  "aiOptionAutoSuggestSubtitle": "Sends the entry once to suggest a title, tags and mood; nothing is filled in until you tap it",
+  "@aiOptionAutoSuggestSubtitle": {
+    "description": "Explanation of the auto-suggest option."
+  },
+  "aiOptionAutoReply": "Respond after publishing",
+  "@aiOptionAutoReply": {
+    "description": "AI option under reflections."
+  },
+  "aiOptionAutoReplySubtitle": "Each new entry is sent once for a reflection",
+  "@aiOptionAutoReplySubtitle": {
+    "description": "Explanation of the auto-reply option."
+  },
+  "aiOptionPromptsStrip": "Show prompts on new entries",
+  "@aiOptionPromptsStrip": {
+    "description": "AI option under writing prompts."
+  },
+  "aiOptionPromptsStripSubtitle": "Nothing is sent until you tap it",
+  "@aiOptionPromptsStripSubtitle": {
+    "description": "Explanation of the prompts strip option."
+  },
+  "aiOptionPromptsRecent": "Use recent entries",
+  "@aiOptionPromptsRecent": {
+    "description": "AI option under writing prompts."
+  },
+  "aiOptionPromptsRecentSubtitle": "Sends excerpts of your latest entries for more personal prompts",
+  "@aiOptionPromptsRecentSubtitle": {
+    "description": "Explanation of using recent entries for prompts."
+  },
+  "aiOptionPromptStyle": "Insert as",
+  "@aiOptionPromptStyle": {
+    "description": "Choice of how a prompt question is inserted."
+  },
+  "aiPromptStyleCallout": "Callout",
+  "@aiPromptStyleCallout": {
+    "description": "Prompt insert style."
+  },
+  "aiPromptStyleQuote": "Quote",
+  "@aiPromptStyleQuote": {
+    "description": "Prompt insert style."
+  },
+  "aiPromptStyleHeading": "Heading",
+  "@aiPromptStyleHeading": {
+    "description": "Prompt insert style."
+  },
+  "aiOptionRecapSections": "Recaps include",
+  "@aiOptionRecapSections": {
+    "description": "Choice of default recap sections."
+  },
+  "aiRecapSectionMood": "Mood trends",
+  "@aiRecapSectionMood": {
+    "description": "Recap section."
+  },
+  "aiRecapSectionEvents": "Key moments",
+  "@aiRecapSectionEvents": {
+    "description": "Recap section."
+  },
+  "aiRecapSectionPeople": "People around me",
+  "@aiRecapSectionPeople": {
+    "description": "Recap section."
+  },
+  "aiRecapSectionGratitude": "Gratitude",
+  "@aiRecapSectionGratitude": {
+    "description": "Recap section."
+  },
+  "aiRecapSectionGrowth": "Growth & change",
+  "@aiRecapSectionGrowth": {
+    "description": "Recap section."
+  },
+  "aiRecapSectionQuotes": "Memorable lines",
+  "@aiRecapSectionQuotes": {
+    "description": "Recap section."
+  },
+  "aiRecapSectionSuggestions": "Next steps",
+  "@aiRecapSectionSuggestions": {
+    "description": "Recap section."
+  },
+  "aiOptionRetrieval": "Finding entries",
+  "@aiOptionRetrieval": {
+    "description": "Choice of chat retrieval mode."
+  },
+  "aiOptionRetrievalSubtitle": "Smart understands the question first; keywords only match words; recent only reads the latest days",
+  "@aiOptionRetrievalSubtitle": {
+    "description": "Explanation of retrieval modes."
+  },
+  "aiRetrievalSmart": "Smart",
+  "@aiRetrievalSmart": {
+    "description": "Retrieval mode."
+  },
+  "aiRetrievalKeyword": "Keywords",
+  "@aiRetrievalKeyword": {
+    "description": "Retrieval mode."
+  },
+  "aiRetrievalRecent": "Recent",
+  "@aiRetrievalRecent": {
+    "description": "Retrieval mode."
+  },
+  "aiOptionRecentDays": "Recent range",
+  "@aiOptionRecentDays": {
+    "description": "Choice of how many recent days chat reads."
+  },
+  "aiDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@aiDays": {
+    "description": "A number of days.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiOptionMaxCitations": "Read at most",
+  "@aiOptionMaxCitations": {
+    "description": "Choice of how many entries chat may read."
+  },
+  "aiEntries": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@aiEntries": {
+    "description": "A number of diary entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiOptionShowReasoning": "Show reasoning",
+  "@aiOptionShowReasoning": {
+    "description": "Option to show model reasoning."
+  },
+  "aiOptionShowTokens": "Show token usage",
+  "@aiOptionShowTokens": {
+    "description": "Option to show token counts under answers."
+  },
+  "aiOptionAutoTitle": "Name chats automatically",
+  "@aiOptionAutoTitle": {
+    "description": "Option to auto-title conversations."
+  },
+  "aiOptionVisionImages": "Photos per request",
+  "@aiOptionVisionImages": {
+    "description": "Choice of how many photos to send."
+  },
+  "aiPhotos": "{count, plural, =1{1 photo} other{{count} photos}}",
+  "@aiPhotos": {
+    "description": "A number of photos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiOptionVisionSize": "Photo size",
+  "@aiOptionVisionSize": {
+    "description": "Choice of the photo size sent to the model."
+  },
+  "aiVisionSizeSmall": "Small",
+  "@aiVisionSizeSmall": {
+    "description": "Photo size choice."
+  },
+  "aiVisionSizeMedium": "Medium",
+  "@aiVisionSizeMedium": {
+    "description": "Photo size choice."
+  },
+  "aiVisionSizeLarge": "Large",
+  "@aiVisionSizeLarge": {
+    "description": "Photo size choice."
+  },
+  "aiGroupPersonal": "Personal touch",
+  "@aiGroupPersonal": {
+    "description": "AI settings group title."
+  },
+  "aiPersonasTitle": "Personas",
+  "@aiPersonasTitle": {
+    "description": "Title of the personas page."
+  },
+  "aiPersonasSubtitle": "Whose voice reflections, chats and recaps use",
+  "@aiPersonasSubtitle": {
+    "description": "Subtitle of the personas entry."
+  },
+  "aiActionsTitle": "Writing commands",
+  "@aiActionsTitle": {
+    "description": "Title of the writing commands page."
+  },
+  "aiActionsSubtitle": "Reorder, hide, rewrite prompts or add your own",
+  "@aiActionsSubtitle": {
+    "description": "Subtitle of the writing commands entry."
+  },
+  "aiProfileTitle": "About me & style",
+  "@aiProfileTitle": {
+    "description": "Title of the profile page."
+  },
+  "aiProfileSubtitle": "Help AI know you better (optional)",
+  "@aiProfileSubtitle": {
+    "description": "Subtitle of the profile entry."
+  },
+  "aiOutputLanguage": "Answer language",
+  "@aiOutputLanguage": {
+    "description": "Choice of the AI answer language."
+  },
+  "aiLanguageFollowDiary": "Diary",
+  "@aiLanguageFollowDiary": {
+    "description": "Answer language option."
+  },
+  "aiLanguageFollowApp": "App",
+  "@aiLanguageFollowApp": {
+    "description": "Answer language option."
+  },
+  "aiLanguageCustom": "Custom",
+  "@aiLanguageCustom": {
+    "description": "Answer language option."
+  },
+  "aiLanguageCustomHint": "e.g. 日本語, Français",
+  "@aiLanguageCustomHint": {
+    "description": "Hint of the custom answer language field."
+  },
+  "aiResponseLength": "Answer length",
+  "@aiResponseLength": {
+    "description": "Choice of AI answer length."
+  },
+  "aiLengthShort": "Short",
+  "@aiLengthShort": {
+    "description": "Answer length option."
+  },
+  "aiLengthMedium": "Medium",
+  "@aiLengthMedium": {
+    "description": "Answer length option."
+  },
+  "aiLengthLong": "Detailed",
+  "@aiLengthLong": {
+    "description": "Answer length option."
+  },
+  "aiCreativity": "Creativity",
+  "@aiCreativity": {
+    "description": "Choice of AI creativity."
+  },
+  "aiCreativitySubtitle": "Only applies to providers that accept a temperature",
+  "@aiCreativitySubtitle": {
+    "description": "Explanation of the creativity option."
+  },
+  "aiCreativityPrecise": "Precise",
+  "@aiCreativityPrecise": {
+    "description": "Creativity option."
+  },
+  "aiCreativityBalanced": "Balanced",
+  "@aiCreativityBalanced": {
+    "description": "Creativity option."
+  },
+  "aiCreativityCreative": "Creative",
+  "@aiCreativityCreative": {
+    "description": "Creativity option."
+  },
+  "aiGroupPrivacy": "Privacy & usage",
+  "@aiGroupPrivacy": {
+    "description": "AI settings group title."
+  },
+  "aiPrivacyTitle": "Privacy",
+  "@aiPrivacyTitle": {
+    "description": "Title of the AI privacy page."
+  },
+  "aiPrivacySubtitle": "What is sent and which entries are left out",
+  "@aiPrivacySubtitle": {
+    "description": "Subtitle of the AI privacy entry."
+  },
+  "aiUsageTitle": "Usage",
+  "@aiUsageTitle": {
+    "description": "Title of the AI usage page."
+  },
+  "aiUsageSubtitle": "Requests and tokens sent from this device",
+  "@aiUsageSubtitle": {
+    "description": "Subtitle of the AI usage entry."
+  },
+  "aiProvidersFooter": "Without a default model, the first usable provider is used; change it in Model assignment.",
+  "@aiProvidersFooter": {
+    "description": "Footer of the AI providers list."
+  },
+  "aiProviderModelsCount": "{count, plural, =0{No models} =1{1 model} other{{count} models}}",
+  "@aiProviderModelsCount": {
+    "description": "Number of models of a provider.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProviderDisabled": "Off",
+  "@aiProviderDisabled": {
+    "description": "Badge for a disabled provider."
+  },
+  "aiProviderNoKey": "No key",
+  "@aiProviderNoKey": {
+    "description": "Badge for a provider without an API key."
+  },
+  "aiPresetSheetTitle": "Choose a provider",
+  "@aiPresetSheetTitle": {
+    "description": "Title of the preset picker sheet."
+  },
+  "aiPresetGroupChina": "China",
+  "@aiPresetGroupChina": {
+    "description": "Preset group title."
+  },
+  "aiPresetGroupInternational": "International",
+  "@aiPresetGroupInternational": {
+    "description": "Preset group title."
+  },
+  "aiPresetGroupLocal": "Run locally",
+  "@aiPresetGroupLocal": {
+    "description": "Preset group title."
+  },
+  "aiPresetGroupCustom": "Custom API",
+  "@aiPresetGroupCustom": {
+    "description": "Preset group title."
+  },
+  "aiPresetNameDashscope": "Qwen (Alibaba Cloud)",
+  "@aiPresetNameDashscope": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameMoonshot": "Kimi (Moonshot)",
+  "@aiPresetNameMoonshot": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameZhipu": "Zhipu GLM",
+  "@aiPresetNameZhipu": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameVolcengine": "Doubao (Volcengine Ark)",
+  "@aiPresetNameVolcengine": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameSiliconflow": "SiliconFlow",
+  "@aiPresetNameSiliconflow": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameHunyuan": "Tencent Hunyuan",
+  "@aiPresetNameHunyuan": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameCustomOpenAi": "OpenAI-compatible API",
+  "@aiPresetNameCustomOpenAi": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameCustomAnthropic": "Anthropic-compatible API",
+  "@aiPresetNameCustomAnthropic": {
+    "description": "AI provider preset name."
+  },
+  "aiPresetNameCustomGemini": "Gemini API",
+  "@aiPresetNameCustomGemini": {
+    "description": "AI provider preset name."
+  },
+  "aiProtocolOpenAi": "OpenAI compatible",
+  "@aiProtocolOpenAi": {
+    "description": "API protocol name."
+  },
+  "aiProtocolAnthropic": "Anthropic (Claude)",
+  "@aiProtocolAnthropic": {
+    "description": "API protocol name."
+  },
+  "aiProtocolGemini": "Google Gemini",
+  "@aiProtocolGemini": {
+    "description": "API protocol name."
+  },
+  "aiProviderEditTitleNew": "Add provider",
+  "@aiProviderEditTitleNew": {
+    "description": "Title of the provider edit page when creating."
+  },
+  "aiProviderEditTitle": "Edit provider",
+  "@aiProviderEditTitle": {
+    "description": "Title of the provider edit page."
+  },
+  "aiProviderName": "Name",
+  "@aiProviderName": {
+    "description": "Provider name field."
+  },
+  "aiProviderProtocol": "API format",
+  "@aiProviderProtocol": {
+    "description": "Provider protocol choice."
+  },
+  "aiProviderBaseUrl": "API address",
+  "@aiProviderBaseUrl": {
+    "description": "Provider base URL field."
+  },
+  "aiProviderBaseUrlHint": "e.g. https://api.example.com/v1",
+  "@aiProviderBaseUrlHint": {
+    "description": "Hint of the API address field."
+  },
+  "aiProviderApiKey": "API key",
+  "@aiProviderApiKey": {
+    "description": "Provider API key field."
+  },
+  "aiProviderApiKeyOptional": "API key (optional for local services)",
+  "@aiProviderApiKeyOptional": {
+    "description": "API key field label for local presets."
+  },
+  "aiProviderGetKey": "Get a key",
+  "@aiProviderGetKey": {
+    "description": "Button that opens the provider's key page."
+  },
+  "aiProviderLocalHint": "To reach Ollama or LM Studio on a computer from your phone, replace localhost with the computer's LAN address and let the server listen on 0.0.0.0.",
+  "@aiProviderLocalHint": {
+    "description": "Hint for local providers."
+  },
+  "aiProviderModels": "Models",
+  "@aiProviderModels": {
+    "description": "Provider models group title."
+  },
+  "aiProviderFetchModels": "Fetch model list",
+  "@aiProviderFetchModels": {
+    "description": "Button that loads the provider's model list."
+  },
+  "aiProviderAddModel": "Add manually",
+  "@aiProviderAddModel": {
+    "description": "Button that adds a model by name."
+  },
+  "aiProviderModelsEmpty": "No models yet. Fetch the list from the provider or add a model name manually.",
+  "@aiProviderModelsEmpty": {
+    "description": "Shown when a provider has no models."
+  },
+  "aiProviderModelIdHint": "Model name, e.g. deepseek-chat",
+  "@aiProviderModelIdHint": {
+    "description": "Hint for the manual model name field."
+  },
+  "aiModelVision": "Images",
+  "@aiModelVision": {
+    "description": "Badge for a model that accepts images."
+  },
+  "aiModelReasoning": "Reasoning",
+  "@aiModelReasoning": {
+    "description": "Badge for a model with reasoning output enabled."
+  },
+  "aiModelEditTitle": "Model settings",
+  "@aiModelEditTitle": {
+    "description": "Title of the model settings sheet."
+  },
+  "aiModelDisplayName": "Display name (optional)",
+  "@aiModelDisplayName": {
+    "description": "Model display name field."
+  },
+  "aiModelVisionToggle": "Accepts images",
+  "@aiModelVisionToggle": {
+    "description": "Model vision toggle."
+  },
+  "aiModelReasoningToggle": "Request reasoning",
+  "@aiModelReasoningToggle": {
+    "description": "Model reasoning toggle."
+  },
+  "aiModelReasoningSubtitle": "Ask the model for its thinking; retried without it if the model doesn't support it",
+  "@aiModelReasoningSubtitle": {
+    "description": "Explanation of the reasoning toggle."
+  },
+  "aiModelMaxOutput": "Max output tokens",
+  "@aiModelMaxOutput": {
+    "description": "Model max output field."
+  },
+  "aiModelContext": "Context length (tokens)",
+  "@aiModelContext": {
+    "description": "Model context length field."
+  },
+  "aiModelAuto": "Auto",
+  "@aiModelAuto": {
+    "description": "Hint for numeric fields left empty."
+  },
+  "aiModelRemove": "Remove model",
+  "@aiModelRemove": {
+    "description": "Button that removes a model."
+  },
+  "aiModelPickerTitle": "Choose models",
+  "@aiModelPickerTitle": {
+    "description": "Title of the fetched model picker."
+  },
+  "aiModelPickerSearch": "Search models",
+  "@aiModelPickerSearch": {
+    "description": "Search field of the model picker."
+  },
+  "aiModelPickerAdd": "{count, plural, =0{Add} other{Add {count}}}",
+  "@aiModelPickerAdd": {
+    "description": "Button adding the selected models.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiModelPickerEmpty": "The provider returned no models. Add a model name manually.",
+  "@aiModelPickerEmpty": {
+    "description": "Shown when the fetched model list is empty."
+  },
+  "aiProviderAdvanced": "Advanced",
+  "@aiProviderAdvanced": {
+    "description": "Advanced provider settings group."
+  },
+  "aiProviderProxy": "HTTP proxy",
+  "@aiProviderProxy": {
+    "description": "Provider proxy field."
+  },
+  "aiProviderProxyHint": "host:port, e.g. 127.0.0.1:7890; empty for direct",
+  "@aiProviderProxyHint": {
+    "description": "Hint of the proxy field."
+  },
+  "aiProviderHeaders": "Custom headers",
+  "@aiProviderHeaders": {
+    "description": "Provider custom headers field."
+  },
+  "aiProviderHeadersHint": "One per line, as Name: value",
+  "@aiProviderHeadersHint": {
+    "description": "Hint of the custom headers field."
+  },
+  "aiProviderExtraBody": "Extra request fields (JSON)",
+  "@aiProviderExtraBody": {
+    "description": "Provider extra body field."
+  },
+  "aiProviderExtraBodyHint": "A JSON object merged into every request, for provider-specific options",
+  "@aiProviderExtraBodyHint": {
+    "description": "Hint of the extra body field."
+  },
+  "aiProviderExtraBodyInvalid": "Not a valid JSON object",
+  "@aiProviderExtraBodyInvalid": {
+    "description": "Validation error of the extra body field."
+  },
+  "aiProviderStream": "Streaming",
+  "@aiProviderStream": {
+    "description": "Provider streaming toggle."
+  },
+  "aiProviderStreamSubtitle": "Show answers as they are written; turn off if a relay doesn't support it",
+  "@aiProviderStreamSubtitle": {
+    "description": "Explanation of the streaming toggle."
+  },
+  "aiProviderIncludeUsage": "Request usage",
+  "@aiProviderIncludeUsage": {
+    "description": "Provider include-usage toggle."
+  },
+  "aiProviderIncludeUsageSubtitle": "Ask for token usage while streaming; turn off if requests fail",
+  "@aiProviderIncludeUsageSubtitle": {
+    "description": "Explanation of the include-usage toggle."
+  },
+  "aiProviderSendTemperature": "Send temperature",
+  "@aiProviderSendTemperature": {
+    "description": "Provider send-temperature toggle."
+  },
+  "aiProviderSendTemperatureSubtitle": "Newer Claude models reject it, so it's off for Anthropic",
+  "@aiProviderSendTemperatureSubtitle": {
+    "description": "Explanation of the send-temperature toggle."
+  },
+  "aiProviderTimeout": "Wait for first token",
+  "@aiProviderTimeout": {
+    "description": "Provider first-token timeout."
+  },
+  "aiSeconds": "{count, plural, =1{1 second} other{{count} seconds}}",
+  "@aiSeconds": {
+    "description": "A number of seconds.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProviderRetries": "Retries",
+  "@aiProviderRetries": {
+    "description": "Provider retry count."
+  },
+  "aiTimes": "{count, plural, =0{Off} =1{Once} other{{count} times}}",
+  "@aiTimes": {
+    "description": "A number of times.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProviderEnabled": "Enabled",
+  "@aiProviderEnabled": {
+    "description": "Provider enabled toggle."
+  },
+  "aiProviderDelete": "Delete provider",
+  "@aiProviderDelete": {
+    "description": "Button that deletes a provider."
+  },
+  "aiProviderDeleteTitle": "Delete “{name}”?",
+  "@aiProviderDeleteTitle": {
+    "description": "Title of the delete-provider dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiProviderDeleteBody": "Its key and model settings are removed, and features assigned to it go back to the default model.",
+  "@aiProviderDeleteBody": {
+    "description": "Body of the delete-provider dialog."
+  },
+  "aiProviderNameRequired": "Enter a name",
+  "@aiProviderNameRequired": {
+    "description": "Validation error for an empty provider name."
+  },
+  "aiProviderUrlInvalid": "Enter an address starting with http:// or https://",
+  "@aiProviderUrlInvalid": {
+    "description": "Validation error for an invalid API address."
+  },
+  "aiProviderNeedModel": "Add at least one model first",
+  "@aiProviderNeedModel": {
+    "description": "Shown when testing a provider without models."
+  },
+  "aiProviderDiscardTitle": "Discard changes?",
+  "@aiProviderDiscardTitle": {
+    "description": "Title of the discard-changes dialog."
+  },
+  "aiProviderDiscard": "Discard",
+  "@aiProviderDiscard": {
+    "description": "Button that discards unsaved changes."
+  },
+  "aiRoutingDefault": "Default model",
+  "@aiRoutingDefault": {
+    "description": "Default model row."
+  },
+  "aiRoutingDefaultSubtitle": "Used by every feature that has no model of its own",
+  "@aiRoutingDefaultSubtitle": {
+    "description": "Explanation of the default model."
+  },
+  "aiRoutingFast": "Fast model",
+  "@aiRoutingFast": {
+    "description": "Fast model row."
+  },
+  "aiRoutingFastSubtitle": "Preferred for short tasks such as smart fill and prompts; pick something cheap and quick",
+  "@aiRoutingFastSubtitle": {
+    "description": "Explanation of the fast model."
+  },
+  "aiRoutingTasksGroup": "Per feature",
+  "@aiRoutingTasksGroup": {
+    "description": "Group of per-task model rows."
+  },
+  "aiRoutingFollowDefault": "Same as default",
+  "@aiRoutingFollowDefault": {
+    "description": "Option to use the default model."
+  },
+  "aiRoutingFollowFast": "Same as fast model",
+  "@aiRoutingFollowFast": {
+    "description": "Option to use the fast model."
+  },
+  "aiRoutingFirstUsable": "First usable ({name})",
+  "@aiRoutingFirstUsable": {
+    "description": "Default model when none is chosen.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiRoutingNone": "Not set",
+  "@aiRoutingNone": {
+    "description": "Shown when no model is chosen."
+  },
+  "aiRoutingPickTitle": "Choose a model",
+  "@aiRoutingPickTitle": {
+    "description": "Title of the model picker sheet."
+  },
+  "aiTaskWriting": "Writing assistant",
+  "@aiTaskWriting": {
+    "description": "AI task name."
+  },
+  "aiTaskSuggest": "Smart fill",
+  "@aiTaskSuggest": {
+    "description": "AI task name."
+  },
+  "aiTaskReply": "Reflections",
+  "@aiTaskReply": {
+    "description": "AI task name."
+  },
+  "aiTaskPrompts": "Writing prompts",
+  "@aiTaskPrompts": {
+    "description": "AI task name."
+  },
+  "aiTaskRecap": "Recaps",
+  "@aiTaskRecap": {
+    "description": "AI task name."
+  },
+  "aiTaskChat": "Chat",
+  "@aiTaskChat": {
+    "description": "AI task name."
+  },
+  "aiTaskVision": "Describe images",
+  "@aiTaskVision": {
+    "description": "AI task name."
+  },
+  "aiTaskUtility": "Small background tasks",
+  "@aiTaskUtility": {
+    "description": "AI task name."
+  },
+  "aiTaskUtilitySubtitle": "Chat titles, search plans and partial summaries of long recaps",
+  "@aiTaskUtilitySubtitle": {
+    "description": "Explanation of the utility task."
+  },
+  "aiPersonasDefaultsGroup": "Defaults",
+  "@aiPersonasDefaultsGroup": {
+    "description": "Group of default personas per use."
+  },
+  "aiPersonaUseReply": "Reflections",
+  "@aiPersonaUseReply": {
+    "description": "Persona use."
+  },
+  "aiPersonaUseChat": "Chat",
+  "@aiPersonaUseChat": {
+    "description": "Persona use."
+  },
+  "aiPersonaUseRecap": "Recaps",
+  "@aiPersonaUseRecap": {
+    "description": "Persona use."
+  },
+  "aiPersonasBuiltInGroup": "Built-in",
+  "@aiPersonasBuiltInGroup": {
+    "description": "Group of built-in personas."
+  },
+  "aiPersonasMineGroup": "My personas",
+  "@aiPersonasMineGroup": {
+    "description": "Group of custom personas."
+  },
+  "aiPersonasMineEmpty": "No personas of your own yet. Create one, or copy a built-in persona and change it.",
+  "@aiPersonasMineEmpty": {
+    "description": "Shown when there are no custom personas."
+  },
+  "aiPersonaAdd": "New persona",
+  "@aiPersonaAdd": {
+    "description": "Button that creates a persona."
+  },
+  "aiPersonaDuplicate": "Copy as mine",
+  "@aiPersonaDuplicate": {
+    "description": "Menu item copying a built-in persona."
+  },
+  "aiPersonaEditTitleNew": "New persona",
+  "@aiPersonaEditTitleNew": {
+    "description": "Title of the persona editor when creating."
+  },
+  "aiPersonaEditTitle": "Edit persona",
+  "@aiPersonaEditTitle": {
+    "description": "Title of the persona editor."
+  },
+  "aiPersonaName": "Name",
+  "@aiPersonaName": {
+    "description": "Persona name field."
+  },
+  "aiPersonaEmoji": "Emoji",
+  "@aiPersonaEmoji": {
+    "description": "Persona emoji field."
+  },
+  "aiPersonaPrompt": "Prompt",
+  "@aiPersonaPrompt": {
+    "description": "Persona prompt field."
+  },
+  "aiPersonaPromptHint": "Describe who they are, how they talk and how they respond to your diary",
+  "@aiPersonaPromptHint": {
+    "description": "Hint of the persona prompt field."
+  },
+  "aiPersonaLimit": "Up to {count} personas",
+  "@aiPersonaLimit": {
+    "description": "Shown when the persona limit is reached.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPersonaCopySuffix": "{name} (copy)",
+  "@aiPersonaCopySuffix": {
+    "description": "Name of a copied persona.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCommonHidden": "Hidden",
+  "@aiCommonHidden": {
+    "description": "Badge for a hidden AI item."
+  },
+  "aiCommonHide": "Hide",
+  "@aiCommonHide": {
+    "description": "Menu item hiding an AI item."
+  },
+  "aiCommonShow": "Show",
+  "@aiCommonShow": {
+    "description": "Menu item showing a hidden AI item."
+  },
+  "aiCommonRestoreDefault": "Restore default",
+  "@aiCommonRestoreDefault": {
+    "description": "Menu item restoring a built-in prompt."
+  },
+  "aiCommonDeleted": "Deleted “{name}”",
+  "@aiCommonDeleted": {
+    "description": "Snackbar after deleting an AI item.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiActionsFooter": "Drag to reorder. The order here is the order in the editor.",
+  "@aiActionsFooter": {
+    "description": "Footer of the writing commands list."
+  },
+  "aiActionAdd": "New command",
+  "@aiActionAdd": {
+    "description": "Button creating a writing command."
+  },
+  "aiActionCustomized": "Edited",
+  "@aiActionCustomized": {
+    "description": "Badge for a built-in command with an edited prompt."
+  },
+  "aiActionEditTitleNew": "New command",
+  "@aiActionEditTitleNew": {
+    "description": "Title of the command editor when creating."
+  },
+  "aiActionEditTitle": "Edit command",
+  "@aiActionEditTitle": {
+    "description": "Title of the command editor."
+  },
+  "aiActionName": "Name",
+  "@aiActionName": {
+    "description": "Command name field."
+  },
+  "aiActionEmoji": "Icon",
+  "@aiActionEmoji": {
+    "description": "Command emoji field."
+  },
+  "aiActionPrompt": "Prompt",
+  "@aiActionPrompt": {
+    "description": "Command prompt field."
+  },
+  "aiActionPromptHint": "Tell AI what to do with the text",
+  "@aiActionPromptHint": {
+    "description": "Hint of the command prompt field."
+  },
+  "aiActionVariables": "Insert a variable",
+  "@aiActionVariables": {
+    "description": "Label above the variable chips."
+  },
+  "aiActionVariablesHelp": "If the prompt has no “text” variable, the text is added after the prompt automatically.",
+  "@aiActionVariablesHelp": {
+    "description": "Help under the variable chips."
+  },
+  "aiVariableText": "Text",
+  "@aiVariableText": {
+    "description": "Prompt variable: the selected text."
+  },
+  "aiVariableDiary": "Whole entry",
+  "@aiVariableDiary": {
+    "description": "Prompt variable: the whole entry."
+  },
+  "aiVariableTitle": "Title",
+  "@aiVariableTitle": {
+    "description": "Prompt variable: the title."
+  },
+  "aiVariableDate": "Date",
+  "@aiVariableDate": {
+    "description": "Prompt variable: the entry date."
+  },
+  "aiVariableMood": "Mood",
+  "@aiVariableMood": {
+    "description": "Prompt variable: the mood."
+  },
+  "aiActionOutput": "Result",
+  "@aiActionOutput": {
+    "description": "Choice of how a command's result is used."
+  },
+  "aiOutputReplace": "Replace",
+  "@aiOutputReplace": {
+    "description": "Command output option."
+  },
+  "aiOutputInsertBelow": "Insert below",
+  "@aiOutputInsertBelow": {
+    "description": "Command output option."
+  },
+  "aiOutputPreview": "Preview only",
+  "@aiOutputPreview": {
+    "description": "Command output option."
+  },
+  "aiActionLimit": "Up to {count} commands",
+  "@aiActionLimit": {
+    "description": "Shown when the command limit is reached.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiActionResetPromptTitle": "Restore the default prompt?",
+  "@aiActionResetPromptTitle": {
+    "description": "Title of the restore-prompt dialog."
+  },
+  "aiProfileAboutMe": "About me",
+  "@aiProfileAboutMe": {
+    "description": "About-me field."
+  },
+  "aiProfileAboutMeHint": "What you do, your life right now, what matters to you. AI will keep it in mind.",
+  "@aiProfileAboutMeHint": {
+    "description": "Hint of the about-me field."
+  },
+  "aiProfileStyle": "Writing style",
+  "@aiProfileStyle": {
+    "description": "Writing style field."
+  },
+  "aiProfileStyleHint": "e.g. plain and simple, few adjectives, short sentences",
+  "@aiProfileStyleHint": {
+    "description": "Hint of the writing style field."
+  },
+  "aiProfileFooter": "These are sent along with every request. Leave them empty to send nothing.",
+  "@aiProfileFooter": {
+    "description": "Footer of the profile page."
+  },
+  "aiPrivacySendGroup": "Sent with entries",
+  "@aiPrivacySendGroup": {
+    "description": "Group of metadata toggles."
+  },
+  "aiPrivacySendFooter": "Titles and text are always sent. Private notebooks, the recycle bin and sealed time capsules are never sent.",
+  "@aiPrivacySendFooter": {
+    "description": "Footer of the metadata toggles."
+  },
+  "aiPrivacyDate": "Date",
+  "@aiPrivacyDate": {
+    "description": "Metadata toggle."
+  },
+  "aiPrivacyMood": "Mood",
+  "@aiPrivacyMood": {
+    "description": "Metadata toggle."
+  },
+  "aiPrivacyTags": "Tags",
+  "@aiPrivacyTags": {
+    "description": "Metadata toggle."
+  },
+  "aiPrivacyWeather": "Weather",
+  "@aiPrivacyWeather": {
+    "description": "Metadata toggle."
+  },
+  "aiPrivacyLocation": "Location",
+  "@aiPrivacyLocation": {
+    "description": "Metadata toggle."
+  },
+  "aiPrivacyScopeGroup": "Chats and recaps",
+  "@aiPrivacyScopeGroup": {
+    "description": "Group of multi-entry context options."
+  },
+  "aiPrivacyIncludeArchived": "Include archived entries",
+  "@aiPrivacyIncludeArchived": {
+    "description": "Option to include archived entries."
+  },
+  "aiPrivacyExcludedNotebooks": "Excluded notebooks",
+  "@aiPrivacyExcludedNotebooks": {
+    "description": "Row for excluded notebooks."
+  },
+  "aiPrivacyExcludedTags": "Excluded tags",
+  "@aiPrivacyExcludedTags": {
+    "description": "Row for excluded tags."
+  },
+  "aiPrivacyExcludedNone": "None",
+  "@aiPrivacyExcludedNone": {
+    "description": "Shown when nothing is excluded."
+  },
+  "aiPrivacyExcludedCount": "{count} selected",
+  "@aiPrivacyExcludedCount": {
+    "description": "Number of excluded items.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPrivacyPickNotebooks": "Notebooks to leave out",
+  "@aiPrivacyPickNotebooks": {
+    "description": "Title of the notebook exclusion sheet."
+  },
+  "aiPrivacyPickTags": "Tags to leave out",
+  "@aiPrivacyPickTags": {
+    "description": "Title of the tag exclusion sheet."
+  },
+  "aiPrivacyPickEmpty": "Nothing to choose from",
+  "@aiPrivacyPickEmpty": {
+    "description": "Shown when an exclusion sheet has no items."
+  },
+  "aiPrivacyBudget": "Send at most",
+  "@aiPrivacyBudget": {
+    "description": "Choice of the context word budget."
+  },
+  "aiPrivacyPerDiary": "Per entry",
+  "@aiPrivacyPerDiary": {
+    "description": "Choice of the per-entry word limit."
+  },
+  "aiWords": "{count} words",
+  "@aiWords": {
+    "description": "A number of words (characters for CJK).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPrivacyConfirmGroup": "Confirm before sending",
+  "@aiPrivacyConfirmGroup": {
+    "description": "Group of confirmation options."
+  },
+  "aiPrivacyConfirmSubtitle": "First time: once per provider. Multiple entries: chats and recaps always show what will be sent. Always: confirm every request.",
+  "@aiPrivacyConfirmSubtitle": {
+    "description": "Explanation of confirmation modes."
+  },
+  "aiConfirmFirstTime": "First time",
+  "@aiConfirmFirstTime": {
+    "description": "Confirmation mode."
+  },
+  "aiConfirmMultiDiary": "Multiple entries",
+  "@aiConfirmMultiDiary": {
+    "description": "Confirmation mode."
+  },
+  "aiConfirmAlways": "Always",
+  "@aiConfirmAlways": {
+    "description": "Confirmation mode."
+  },
+  "aiPrivacyAllowPrivate": "Allow AI on private entries",
+  "@aiPrivacyAllowPrivate": {
+    "description": "Option allowing single-entry AI on private entries."
+  },
+  "aiPrivacyAllowPrivateSubtitle": "The writing assistant and reflections become available in private notebooks. Chats and recaps still never read them.",
+  "@aiPrivacyAllowPrivateSubtitle": {
+    "description": "Explanation of the private entries option."
+  },
+  "aiPrivacyResetHosts": "Ask again for every provider",
+  "@aiPrivacyResetHosts": {
+    "description": "Button resetting acknowledged hosts."
+  },
+  "aiPrivacyResetHostsSubtitle": "Show the first-time confirmation again",
+  "@aiPrivacyResetHostsSubtitle": {
+    "description": "Explanation of resetting acknowledged hosts."
+  },
+  "aiPrivacyResetHostsDone": "Done. You'll be asked again next time.",
+  "@aiPrivacyResetHostsDone": {
+    "description": "Snackbar after resetting acknowledged hosts."
+  },
+  "aiUsageEmpty": "No usage recorded yet",
+  "@aiUsageEmpty": {
+    "description": "Shown when there is no usage."
+  },
+  "aiUsageRequests": "{count, plural, =1{1 request} other{{count} requests}}",
+  "@aiUsageRequests": {
+    "description": "Number of requests.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiUsageFailures": "{count} failed",
+  "@aiUsageFailures": {
+    "description": "Number of failed requests.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiUsageTokens": "In {input} · Out {output}",
+  "@aiUsageTokens": {
+    "description": "Input and output tokens.",
+    "placeholders": {
+      "input": {
+        "type": "String"
+      },
+      "output": {
+        "type": "String"
+      }
+    }
+  },
+  "aiUsageMonthTotal": "{tokens} tokens",
+  "@aiUsageMonthTotal": {
+    "description": "Total tokens in a month.",
+    "placeholders": {
+      "tokens": {
+        "type": "String"
+      }
+    }
+  },
+  "aiUsageClear": "Clear usage",
+  "@aiUsageClear": {
+    "description": "Button clearing usage records."
+  },
+  "aiUsageClearTitle": "Clear usage records?",
+  "@aiUsageClearTitle": {
+    "description": "Title of the clear-usage dialog."
+  },
+  "aiUsageClearBody": "Only this device's statistics are cleared; the provider's billing isn't affected.",
+  "@aiUsageClearBody": {
+    "description": "Body of the clear-usage dialog."
+  },
+  "aiUsageFooter": "Counts only requests sent from this device. Check the provider's billing for actual costs.",
+  "@aiUsageFooter": {
+    "description": "Footer of the usage page."
+  },
+  "aiPrivacyRecordsGroup": "AI records",
+  "@aiPrivacyRecordsGroup": {
+    "description": "Group title for stored AI records."
+  },
+  "aiPrivacyRecordsFooter": "Chats, reflections and recaps are saved on this device and in full backups. They are never synced over the local network.",
+  "@aiPrivacyRecordsFooter": {
+    "description": "Footer explaining where AI records are kept."
+  },
+  "aiPrivacyClearRecords": "Clear all AI records",
+  "@aiPrivacyClearRecords": {
+    "description": "Row that clears all AI records."
+  },
+  "aiPrivacyClearRecordsSubtitle": "{count, plural, =0{Nothing saved yet} =1{1 chat or result} other{{count} chats and results}}",
+  "@aiPrivacyClearRecordsSubtitle": {
+    "description": "Number of stored AI records.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPrivacyClearRecordsTitle": "Clear all AI records?",
+  "@aiPrivacyClearRecordsTitle": {
+    "description": "Title of the clear-records dialog."
+  },
+  "aiPrivacyClearRecordsBody": "Every chat, reflection and recap is deleted from this device. This can't be undone. Your diary entries are not affected.",
+  "@aiPrivacyClearRecordsBody": {
+    "description": "Body of the clear-records dialog."
+  },
+  "aiPrivacyClearRecordsDone": "AI records cleared",
+  "@aiPrivacyClearRecordsDone": {
+    "description": "Snackbar after clearing AI records."
+  },
+  "aiPromptSystemBase": "You are the AI assistant inside Jotsy, a personal diary app. The person you talk to is the author of the diary. Be sincere and specific, and never invent facts that are not in the diary.",
+  "@aiPromptSystemBase": {
+    "description": "Base system prompt sent to the model."
+  },
+  "aiPromptAboutUser": "About the user: {text}",
+  "@aiPromptAboutUser": {
+    "description": "Prompt line carrying the user's about-me text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptWritingStyle": "The user's preferred writing style: {text}",
+  "@aiPromptWritingStyle": {
+    "description": "Prompt line carrying the preferred writing style.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRespondIn": "Reply in {language}.",
+  "@aiPromptRespondIn": {
+    "description": "Prompt line forcing the answer language.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRespondLikeDiary": "Reply in the same language the diary is written in.",
+  "@aiPromptRespondLikeDiary": {
+    "description": "Prompt line asking to follow the diary language."
+  },
+  "aiPromptLanguageChinese": "Chinese",
+  "@aiPromptLanguageChinese": {
+    "description": "Language name used inside prompts."
+  },
+  "aiPromptLanguageEnglish": "English",
+  "@aiPromptLanguageEnglish": {
+    "description": "Language name used inside prompts."
+  },
+  "aiPromptLengthShort": "Keep the answer short, within a few sentences.",
+  "@aiPromptLengthShort": {
+    "description": "Prompt line for short answers."
+  },
+  "aiPromptLengthMedium": "Keep the answer to a moderate length.",
+  "@aiPromptLengthMedium": {
+    "description": "Prompt line for medium answers."
+  },
+  "aiPromptLengthLong": "Feel free to answer in detail.",
+  "@aiPromptLengthLong": {
+    "description": "Prompt line for detailed answers."
+  },
+  "aiPromptPersona": "Your role: {text}",
+  "@aiPromptPersona": {
+    "description": "Prompt line carrying the persona prompt.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptFieldTitle": "Title",
+  "@aiPromptFieldTitle": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldDate": "Date",
+  "@aiPromptFieldDate": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldMood": "Mood",
+  "@aiPromptFieldMood": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldTags": "Tags",
+  "@aiPromptFieldTags": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldWeather": "Weather",
+  "@aiPromptFieldWeather": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldLocation": "Place",
+  "@aiPromptFieldLocation": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldBody": "Text",
+  "@aiPromptFieldBody": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptTruncated": "(the rest is omitted)",
+  "@aiPromptTruncated": {
+    "description": "Marker appended to truncated diary text in prompts."
+  },
+  "aiPromptImagesAttached": "{count, plural, =1{One photo from the entry is attached.} other{{count} photos from the entry are attached.}}",
+  "@aiPromptImagesAttached": {
+    "description": "Prompt line saying photos are attached.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptWritingSystem": "You are a writing assistant helping the user edit their own diary. Output only the resulting text: no explanations, no quotes, no preface. Keep the first-person point of view. You may use Markdown lists, bold and task lists, but no headings.",
+  "@aiPromptWritingSystem": {
+    "description": "System prompt of the writing assistant."
+  },
+  "aiPromptWritingContext": "For context, this is the whole entry (do not repeat it):",
+  "@aiPromptWritingContext": {
+    "description": "Prompt line introducing the whole entry as context."
+  },
+  "aiPromptCustomInstruction": "Follow this instruction for the text below: {text}",
+  "@aiPromptCustomInstruction": {
+    "description": "Prompt line wrapping a free-form instruction.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptReplyInstruction": "Here is an entry the user wrote. Read it as yourself and respond to the user directly. Do not retell the entry and do not use headings.",
+  "@aiPromptReplyInstruction": {
+    "description": "Instruction for AI reflections."
+  },
+  "aiPromptSuggestInstruction": "Based on the entry below, suggest: a short fitting title of at most 20 characters without quotes; 0 to 3 of the user's existing tags; at most 2 new tags of at most 6 characters each, only if really useful; and the single best mood from the given options, or leave it empty if unsure. Reply with one JSON object only, exactly in this shape:",
+  "@aiPromptSuggestInstruction": {
+    "description": "Instruction for smart-fill suggestions."
+  },
+  "aiPromptSuggestTagsList": "The user's existing tags: {tags}",
+  "@aiPromptSuggestTagsList": {
+    "description": "Prompt line listing existing tags.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptSuggestMoodList": "Mood options: {moods}",
+  "@aiPromptSuggestMoodList": {
+    "description": "Prompt line listing mood options.",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptPromptsInstruction": "Write 3 concrete, gentle questions that make it easy for the user to start today's diary. One question per line, no numbering, nothing else.",
+  "@aiPromptPromptsInstruction": {
+    "description": "Instruction for writing prompts."
+  },
+  "aiPromptPromptsToday": "Today: {date}",
+  "@aiPromptPromptsToday": {
+    "description": "Prompt line with today's date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptPromptsRecent": "Excerpts of the user's recent entries, for a more personal touch:",
+  "@aiPromptPromptsRecent": {
+    "description": "Prompt line introducing recent entries."
+  },
+  "aiPromptRecapInstruction": "Below are the entries the user wrote during {period}. Write a recap organised with Markdown subheadings, covering:",
+  "@aiPromptRecapInstruction": {
+    "description": "Instruction for recaps.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRecapRules": "Only use what is in the entries. Mention dates when you refer to specific days. If an entry is marked [Dn], you may cite it as [Dn].",
+  "@aiPromptRecapRules": {
+    "description": "Rules appended to the recap instruction."
+  },
+  "aiPromptRecapChunk": "Below are entries from part of a period. Summarise in bullet points what happened, the feelings and the thoughts, keeping concrete dates and details, so they can be merged into a recap later.",
+  "@aiPromptRecapChunk": {
+    "description": "Instruction for partial summaries of long recaps."
+  },
+  "aiPromptRecapFromSummaries": "These are summaries of consecutive parts of the period, oldest first:",
+  "@aiPromptRecapFromSummaries": {
+    "description": "Prompt line introducing partial summaries."
+  },
+  "aiPromptRecapStats": "Statistics: {count} entries, {words} words.",
+  "@aiPromptRecapStats": {
+    "description": "Prompt line with recap statistics.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptRecapMoods": "Mood counts: {moods}",
+  "@aiPromptRecapMoods": {
+    "description": "Prompt line with mood counts.",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRecapTopTags": "Most used tags: {tags}",
+  "@aiPromptRecapTopTags": {
+    "description": "Prompt line with top tags.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptChatSystem": "You can read some of the user's diary entries, each marked [Dn]. Answer based on these entries. When you use an entry, cite its marker at the end of the sentence, like [D3]. Do not invent anything that is not in the entries; if you can't find it, say so.",
+  "@aiPromptChatSystem": {
+    "description": "System prompt of chat with diaries."
+  },
+  "aiPromptChatContextHeader": "Relevant diary entries:",
+  "@aiPromptChatContextHeader": {
+    "description": "Header of the diary context in chat."
+  },
+  "aiPromptChatNoDiaries": "(No diary entries matched this question.)",
+  "@aiPromptChatNoDiaries": {
+    "description": "Shown to the model when no entries matched."
+  },
+  "aiPromptChatToday": "Today is {date}.",
+  "@aiPromptChatToday": {
+    "description": "Prompt line with today's date for chat.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptChatTitle": "Summarise the topic of this conversation in at most 8 words. Output only the title.",
+  "@aiPromptChatTitle": {
+    "description": "Instruction for naming a conversation."
+  },
+  "aiPromptRetrievalPlan": "Turn the user's question into a diary search plan. Today is {date}. Give up to 8 short keywords likely to appear in the entries (include synonyms), and a date range only if the question implies one. Reply with one JSON object only, exactly in this shape:",
+  "@aiPromptRetrievalPlan": {
+    "description": "Instruction for building a retrieval plan.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptDescribeImage": "Describe what is in this photo and its mood in one or two sentences, as a caption for a diary. Output only the description.",
+  "@aiPromptDescribeImage": {
+    "description": "Instruction for describing an image."
+  },
+  "aiToolbarLabel": "AI writing",
+  "@aiToolbarLabel": {
+    "description": "Editor toolbar tool that opens the AI writing panel."
+  },
+  "aiPanelTitle": "AI writing",
+  "@aiPanelTitle": {
+    "description": "Title of the AI writing panel."
+  },
+  "aiScopeSelection": "Selection",
+  "@aiScopeSelection": {
+    "description": "AI writing scope."
+  },
+  "aiScopeParagraph": "This paragraph",
+  "@aiScopeParagraph": {
+    "description": "AI writing scope."
+  },
+  "aiScopeBeforeCaret": "Text before the cursor",
+  "@aiScopeBeforeCaret": {
+    "description": "AI writing scope."
+  },
+  "aiScopeDocument": "Whole entry",
+  "@aiScopeDocument": {
+    "description": "AI writing scope."
+  },
+  "aiScopeSummary": "{scope} · {words} words",
+  "@aiScopeSummary": {
+    "description": "Summary of what the AI command works on.",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPanelInstructionHint": "Tell AI what to do, e.g. “make it more casual”",
+  "@aiPanelInstructionHint": {
+    "description": "Hint of the free-form instruction field."
+  },
+  "aiPanelSend": "Send",
+  "@aiPanelSend": {
+    "description": "Button sending a free-form instruction."
+  },
+  "aiPanelThinking": "Thinking…",
+  "@aiPanelThinking": {
+    "description": "Shown before the first output arrives."
+  },
+  "aiPanelReplace": "Replace",
+  "@aiPanelReplace": {
+    "description": "Button replacing the text with the AI result."
+  },
+  "aiPanelInsertBelow": "Insert below",
+  "@aiPanelInsertBelow": {
+    "description": "Button inserting the AI result below."
+  },
+  "aiPanelCopy": "Copy",
+  "@aiPanelCopy": {
+    "description": "Button copying the AI result."
+  },
+  "aiPanelCopied": "Copied",
+  "@aiPanelCopied": {
+    "description": "Snackbar after copying an AI result."
+  },
+  "aiPanelStop": "Stop",
+  "@aiPanelStop": {
+    "description": "Button stopping an AI generation."
+  },
+  "aiPanelEmptyTarget": "Nothing to work on yet. Write something or select some text first.",
+  "@aiPanelEmptyTarget": {
+    "description": "Shown when the AI target is empty."
+  },
+  "aiPanelReasoning": "Reasoning",
+  "@aiPanelReasoning": {
+    "description": "Label of the collapsible reasoning section."
+  },
+  "aiPanelPrivateBlocked": "This entry is in a private notebook. You can allow AI for private entries in AI privacy settings.",
+  "@aiPanelPrivateBlocked": {
+    "description": "Shown when AI is blocked for a private entry."
+  },
+  "aiSlashGroup": "AI",
+  "@aiSlashGroup": {
+    "description": "Slash menu group title for AI commands."
+  },
+  "aiSlashWrite": "AI writing…",
+  "@aiSlashWrite": {
+    "description": "Slash command opening the AI writing panel."
+  },
+  "aiSlashContinue": "AI continue",
+  "@aiSlashContinue": {
+    "description": "Slash command continuing the entry with AI."
+  },
+  "aiSlashPrompts": "Writing prompts",
+  "@aiSlashPrompts": {
+    "description": "Slash command showing AI writing prompts."
+  },
+  "aiSelectionMenu": "AI…",
+  "@aiSelectionMenu": {
+    "description": "Selection menu item opening AI writing for the selected text."
+  },
+  "aiImageDescribe": "Describe with AI",
+  "@aiImageDescribe": {
+    "description": "Image menu item asking AI to caption the image."
+  },
+  "aiImageDescribing": "Describing the photo…",
+  "@aiImageDescribing": {
+    "description": "Shown while AI describes an image."
+  },
+  "aiImageNoVision": "The current model can't see images. Pick a vision model for “Describe images” in Model assignment.",
+  "@aiImageNoVision": {
+    "description": "Shown when the model has no vision."
+  },
+  "aiSuggestTitle": "Generate title with AI",
+  "@aiSuggestTitle": {
+    "description": "Menu item / button generating a title."
+  },
+  "aiSuggestMeta": "Suggest tags & mood with AI",
+  "@aiSuggestMeta": {
+    "description": "Menu item suggesting tags and mood."
+  },
+  "aiSuggesting": "AI is thinking…",
+  "@aiSuggesting": {
+    "description": "Shown while smart fill runs."
+  },
+  "aiSuggestNeedContent": "Write a little first so AI has something to go on.",
+  "@aiSuggestNeedContent": {
+    "description": "Shown when there is no content for suggestions."
+  },
+  "aiSuggestTitleApplied": "Title filled in by AI",
+  "@aiSuggestTitleApplied": {
+    "description": "Snackbar after AI fills the title."
+  },
+  "aiSuggestTagsHeader": "AI suggests",
+  "@aiSuggestTagsHeader": {
+    "description": "Header of AI tag suggestions."
+  },
+  "aiSuggestNewTag": "New “{name}”",
+  "@aiSuggestNewTag": {
+    "description": "Chip creating a suggested new tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSuggestMoodButton": "AI pick",
+  "@aiSuggestMoodButton": {
+    "description": "Button letting AI pick a mood."
+  },
+  "aiSuggestNothing": "No suggestions this time",
+  "@aiSuggestNothing": {
+    "description": "Shown when AI returns no usable suggestion."
+  },
+  "aiSuggestApplied": "Applied AI suggestions",
+  "@aiSuggestApplied": {
+    "description": "Snackbar after applying suggestions."
+  },
+  "aiConfirmSendTitle": "Send to {host}?",
+  "@aiConfirmSendTitle": {
+    "description": "Title of the send confirmation sheet.",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfirmSendModel": "Handled by “{name}”",
+  "@aiConfirmSendModel": {
+    "description": "Line naming the model.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfirmSendEntries": "{count, plural, =1{1 entry} other{{count} entries}}, about {words} words",
+  "@aiConfirmSendEntries": {
+    "description": "Line describing how many entries are sent.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendText": "About {words} words of text",
+  "@aiConfirmSendText": {
+    "description": "Line describing how much text is sent.",
+    "placeholders": {
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendImages": "{count, plural, =1{Plus 1 photo} other{Plus {count} photos}}",
+  "@aiConfirmSendImages": {
+    "description": "Line describing attached photos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendNote": "It goes straight from this device; the developer never sees it. The provider handles it under its own privacy policy.",
+  "@aiConfirmSendNote": {
+    "description": "Privacy note on the send confirmation sheet."
+  },
+  "aiConfirmSendRemember": "Don't ask again for this provider",
+  "@aiConfirmSendRemember": {
+    "description": "Checkbox remembering the provider."
+  },
+  "aiConfirmSendAction": "Send",
+  "@aiConfirmSendAction": {
+    "description": "Button confirming the send."
+  },
+  "aiRepliesHeading": "AI reflections · {count}",
+  "@aiRepliesHeading": {
+    "description": "Heading of the AI reflections section with a count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiReplyAsk": "Ask AI to respond…",
+  "@aiReplyAsk": {
+    "description": "Row that asks AI for a reflection."
+  },
+  "aiReplyMoreItem": "AI reflection",
+  "@aiReplyMoreItem": {
+    "description": "Item in the reading page More sheet."
+  },
+  "aiReplyPickPersona": "Who should respond?",
+  "@aiReplyPickPersona": {
+    "description": "Title of the persona picker for reflections."
+  },
+  "aiReplyWriting": "Reading your entry…",
+  "@aiReplyWriting": {
+    "description": "Shown while a reflection is being written."
+  },
+  "aiReplyRegenerate": "Regenerate",
+  "@aiReplyRegenerate": {
+    "description": "Menu item regenerating a reflection."
+  },
+  "aiReplySaveAsComment": "Save as comment",
+  "@aiReplySaveAsComment": {
+    "description": "Menu item saving a reflection as a comment."
+  },
+  "aiReplyContinueChat": "Talk more",
+  "@aiReplyContinueChat": {
+    "description": "Button opening a chat about this entry."
+  },
+  "aiReplyDeleted": "Reflection deleted",
+  "@aiReplyDeleted": {
+    "description": "Snackbar after deleting a reflection."
+  },
+  "aiReplyExpand": "Show more",
+  "@aiReplyExpand": {
+    "description": "Expands a long reflection."
+  },
+  "aiReplyCollapse": "Show less",
+  "@aiReplyCollapse": {
+    "description": "Collapses a long reflection."
+  },
+  "aiReplyStopped": "Stopped. Try again?",
+  "@aiReplyStopped": {
+    "description": "Shown after a reflection was stopped."
+  },
+  "aiReplyDismiss": "Dismiss",
+  "@aiReplyDismiss": {
+    "description": "Dismisses a failed or stopped reflection."
+  },
+  "aiReplyAutoSkipped": "Auto reflection skipped: confirm this provider once by asking for a reflection manually.",
+  "@aiReplyAutoSkipped": {
+    "description": "Shown when auto reflection needs a first-time confirmation."
+  },
+  "aiPromptsStripLabel": "Need a writing prompt?",
+  "@aiPromptsStripLabel": {
+    "description": "Chip that asks AI for writing prompts."
+  },
+  "aiPromptsLoading": "Thinking of questions…",
+  "@aiPromptsLoading": {
+    "description": "Shown while prompts are generated."
+  },
+  "aiPromptsRefresh": "New set",
+  "@aiPromptsRefresh": {
+    "description": "Button generating new prompts."
+  },
+  "aiPromptsTitle": "Writing prompts",
+  "@aiPromptsTitle": {
+    "description": "Title of the prompts sheet."
+  },
+  "aiPromptsHint": "Tap a question to add it to your entry",
+  "@aiPromptsHint": {
+    "description": "Hint under writing prompts."
+  },
+  "aiPromptsEmpty": "No questions this time. Try again?",
+  "@aiPromptsEmpty": {
+    "description": "Shown when no prompts were produced."
+  },
+  "aiPromptsClose": "Hide prompts",
+  "@aiPromptsClose": {
+    "description": "Button hiding the prompts strip."
+  },
+  "aiReplySavedAsComment": "Saved as a comment",
+  "@aiReplySavedAsComment": {
+    "description": "Snackbar after saving a reflection as a comment."
+  },
+  "aiRecapTitle": "AI recap",
+  "@aiRecapTitle": {
+    "description": "Title of the AI recap page."
+  },
+  "aiRecapRange": "Period",
+  "@aiRecapRange": {
+    "description": "Recap period choice."
+  },
+  "aiRecapThisWeek": "This week",
+  "@aiRecapThisWeek": {
+    "description": "Recap period."
+  },
+  "aiRecapLastWeek": "Last week",
+  "@aiRecapLastWeek": {
+    "description": "Recap period."
+  },
+  "aiRecapThisMonth": "This month",
+  "@aiRecapThisMonth": {
+    "description": "Recap period."
+  },
+  "aiRecapLastMonth": "Last month",
+  "@aiRecapLastMonth": {
+    "description": "Recap period."
+  },
+  "aiRecapThisYear": "This year",
+  "@aiRecapThisYear": {
+    "description": "Recap period."
+  },
+  "aiRecapCustom": "Custom…",
+  "@aiRecapCustom": {
+    "description": "Custom recap period."
+  },
+  "aiRecapNotebook": "Notebook",
+  "@aiRecapNotebook": {
+    "description": "Recap notebook choice."
+  },
+  "aiRecapAllNotebooks": "All entries",
+  "@aiRecapAllNotebooks": {
+    "description": "Recap over all entries."
+  },
+  "aiRecapSections": "Include",
+  "@aiRecapSections": {
+    "description": "Recap section choice."
+  },
+  "aiRecapPersona": "Voice",
+  "@aiRecapPersona": {
+    "description": "Recap persona choice."
+  },
+  "aiRecapGenerate": "Write recap",
+  "@aiRecapGenerate": {
+    "description": "Button generating a recap."
+  },
+  "aiRecapNoEntries": "No entries to recap in this period.",
+  "@aiRecapNoEntries": {
+    "description": "Shown when the period has no entries."
+  },
+  "aiRecapReading": "Reading part {index} of {total}…",
+  "@aiRecapReading": {
+    "description": "Progress of a long recap.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecapWriting": "Writing the recap…",
+  "@aiRecapWriting": {
+    "description": "Shown while the final recap streams."
+  },
+  "aiRecapStats": "{count, plural, =1{1 entry} other{{count} entries}} · {words} words",
+  "@aiRecapStats": {
+    "description": "Recap statistics.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecapSaved": "Saved to your recaps",
+  "@aiRecapSaved": {
+    "description": "Shown after a recap is saved."
+  },
+  "aiRecapSaveAsDiary": "Save as entry",
+  "@aiRecapSaveAsDiary": {
+    "description": "Saves AI text as a new diary draft."
+  },
+  "aiRecapShare": "Share text",
+  "@aiRecapShare": {
+    "description": "Shares the recap text."
+  },
+  "aiRecapDeleted": "Recap deleted",
+  "@aiRecapDeleted": {
+    "description": "Snackbar after deleting a recap."
+  },
+  "aiRecapPeriodRange": "{start} – {end}",
+  "@aiRecapPeriodRange": {
+    "description": "A date range.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "aiRecapDiaryTitle": "{period} recap",
+  "@aiRecapDiaryTitle": {
+    "description": "Title of a recap saved as an entry.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubTitle": "AI assistant",
+  "@aiHubTitle": {
+    "description": "Title of the AI hub page."
+  },
+  "aiHubAskHint": "Ask your diary…",
+  "@aiHubAskHint": {
+    "description": "Hint of the hub question field."
+  },
+  "aiHubQuickMonth": "How has this month been for me?",
+  "@aiHubQuickMonth": {
+    "description": "Quick question."
+  },
+  "aiHubQuickWorry": "What have I been worrying about lately?",
+  "@aiHubQuickWorry": {
+    "description": "Quick question."
+  },
+  "aiHubQuickLastYear": "What was I doing this time last year?",
+  "@aiHubQuickLastYear": {
+    "description": "Quick question."
+  },
+  "aiHubQuickHappy": "What small things made me happy recently?",
+  "@aiHubQuickHappy": {
+    "description": "Quick question."
+  },
+  "aiHubQuickGrowth": "How have I changed over the past half year?",
+  "@aiHubQuickGrowth": {
+    "description": "Quick question."
+  },
+  "aiHubRecapsGroup": "Recaps",
+  "@aiHubRecapsGroup": {
+    "description": "Hub recaps group."
+  },
+  "aiHubRecapMore": "More options…",
+  "@aiHubRecapMore": {
+    "description": "Opens the recap page."
+  },
+  "aiHubNoRecaps": "No recaps yet",
+  "@aiHubNoRecaps": {
+    "description": "Shown when there are no recaps."
+  },
+  "aiHubChatsGroup": "Chats",
+  "@aiHubChatsGroup": {
+    "description": "Hub chats group."
+  },
+  "aiHubNoChats": "No chats yet. Ask a question above to start.",
+  "@aiHubNoChats": {
+    "description": "Shown when there are no chats."
+  },
+  "aiHubSearchChats": "Search chats",
+  "@aiHubSearchChats": {
+    "description": "Hint of the chat search field."
+  },
+  "aiChatUntitled": "New chat",
+  "@aiChatUntitled": {
+    "description": "Title of an unnamed chat."
+  },
+  "aiChatPin": "Pin",
+  "@aiChatPin": {
+    "description": "Pins a chat."
+  },
+  "aiChatUnpin": "Unpin",
+  "@aiChatUnpin": {
+    "description": "Unpins a chat."
+  },
+  "aiChatRename": "Rename",
+  "@aiChatRename": {
+    "description": "Renames a chat."
+  },
+  "aiChatRenameTitle": "Rename chat",
+  "@aiChatRenameTitle": {
+    "description": "Title of the rename dialog."
+  },
+  "aiChatDeleted": "Chat deleted",
+  "@aiChatDeleted": {
+    "description": "Snackbar after deleting a chat."
+  },
+  "aiChatInputHint": "Ask something…",
+  "@aiChatInputHint": {
+    "description": "Hint of the chat input."
+  },
+  "aiChatPlanning": "Understanding the question…",
+  "@aiChatPlanning": {
+    "description": "Shown while a search plan is made."
+  },
+  "aiChatSearching": "Looking for related entries…",
+  "@aiChatSearching": {
+    "description": "Shown while entries are searched."
+  },
+  "aiChatCitations": "{count, plural, =1{Used 1 entry} other{Used {count} entries}}",
+  "@aiChatCitations": {
+    "description": "Number of entries an answer used.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatNoCitations": "No related entries found",
+  "@aiChatNoCitations": {
+    "description": "Shown when an answer used no entries."
+  },
+  "aiChatScope": "Scope",
+  "@aiChatScope": {
+    "description": "Chat scope chip."
+  },
+  "aiChatScopeAuto": "Auto",
+  "@aiChatScopeAuto": {
+    "description": "Chat scope option."
+  },
+  "aiChatScopeRecent": "Last {days} days",
+  "@aiChatScopeRecent": {
+    "description": "Chat scope option.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatScopeAll": "All entries",
+  "@aiChatScopeAll": {
+    "description": "Chat scope option."
+  },
+  "aiChatScopeRange": "Date range…",
+  "@aiChatScopeRange": {
+    "description": "Chat scope option."
+  },
+  "aiChatScopeEntry": "This entry",
+  "@aiChatScopeEntry": {
+    "description": "Chat scope pinned to one entry."
+  },
+  "aiChatPersona": "Persona",
+  "@aiChatPersona": {
+    "description": "Chat persona chip."
+  },
+  "aiChatModel": "Model",
+  "@aiChatModel": {
+    "description": "Chat model chip."
+  },
+  "aiChatModelDefault": "Default ({name})",
+  "@aiChatModelDefault": {
+    "description": "Default model option.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatEditResend": "Edit and resend",
+  "@aiChatEditResend": {
+    "description": "Edits and resends the last question."
+  },
+  "aiChatDeleteMessage": "Delete message",
+  "@aiChatDeleteMessage": {
+    "description": "Deletes a chat message."
+  },
+  "aiChatCitationMissing": "This entry no longer exists",
+  "@aiChatCitationMissing": {
+    "description": "Shown for a missing cited entry."
+  },
+  "aiChatEmptyHint": "Ask about your mood over a period, how something unfolded, or let AI help you remember.",
+  "@aiChatEmptyHint": {
+    "description": "Empty chat hint."
+  },
+  "aiChatAboutEntry": "About “{title}”",
+  "@aiChatAboutEntry": {
+    "description": "Title of a chat about one entry.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubTooltip": "AI assistant",
+  "@aiHubTooltip": {
+    "description": "Tooltip of the AI entry on the home top bar."
+  },
+  "exploreModuleAi": "AI insights",
+  "@exploreModuleAi": {
+    "description": "Explore card name."
+  },
+  "exploreModuleAiDesc": "Your latest recap, and ask your diary",
+  "@exploreModuleAiDesc": {
+    "description": "Explore card description."
+  },
+  "aiExploreNoRecap": "No recap yet. How about one for this week?",
+  "@aiExploreNoRecap": {
+    "description": "Explore AI card without recaps."
+  },
+  "aiExploreWeekly": "This week's recap",
+  "@aiExploreWeekly": {
+    "description": "Explore AI card button."
+  },
+  "aiExploreAsk": "Ask my diary",
+  "@aiExploreAsk": {
+    "description": "Explore AI card button."
+  },
+  "aiExploreNotConfigured": "Set up an AI service to use this",
+  "@aiExploreNotConfigured": {
+    "description": "Explore AI card when not configured."
+  },
+  "aiRecapStopped": "Stopped. The partial recap isn't saved.",
+  "@aiRecapStopped": {
+    "description": "Shown when a recap is stopped."
+  },
+  "aiRecapHistory": "Earlier recaps",
+  "@aiRecapHistory": {
+    "description": "Heading of saved recaps on the recap page."
+  },
+  "aiRecapDeleteTitle": "Delete this recap?",
+  "@aiRecapDeleteTitle": {
+    "description": "Title of the delete recap dialog."
+  },
+  "aiRecapNotebookPick": "Choose a notebook",
+  "@aiRecapNotebookPick": {
+    "description": "Title of the recap notebook sheet."
+  },
+  "aiRecapCustomRange": "Choose dates",
+  "@aiRecapCustomRange": {
+    "description": "Title of the custom recap date picker."
+  },
+  "aiRecapShareUnavailable": "Copied. Paste it wherever you'd like to share.",
+  "@aiRecapShareUnavailable": {
+    "description": "Shown when system share is unavailable and the text was copied."
+  },
+  "aiRecapModel": "Written by {model}",
+  "@aiRecapModel": {
+    "description": "Model credit under a recap.",
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatMore": "More",
+  "@aiChatMore": {
+    "description": "Tooltip of the chat page menu."
+  },
+  "aiChatTokens": "{input} in · {output} out",
+  "@aiChatTokens": {
+    "description": "Token counts under an answer.",
+    "placeholders": {
+      "input": {
+        "type": "String"
+      },
+      "output": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatStoppedLabel": "Stopped",
+  "@aiChatStoppedLabel": {
+    "description": "Label under a stopped answer."
+  },
+  "aiChatDeleteMessageTitle": "Delete this message?",
+  "@aiChatDeleteMessageTitle": {
+    "description": "Title of the delete message dialog."
+  },
+  "aiChatDeleteTitle": "Delete this chat?",
+  "@aiChatDeleteTitle": {
+    "description": "Title of the delete chat dialog."
+  },
+  "aiChatDeleteBody": "Its messages are deleted too. Your entries aren't affected.",
+  "@aiChatDeleteBody": {
+    "description": "Body of the delete chat dialog."
+  },
+  "aiChatRangeTitle": "Choose dates",
+  "@aiChatRangeTitle": {
+    "description": "Title of the chat date range picker."
+  },
+  "aiChatScopeTitle": "Search in",
+  "@aiChatScopeTitle": {
+    "description": "Title of the chat scope sheet."
+  },
+  "aiChatScopeAutoSubtitle": "Follows the search method in AI settings",
+  "@aiChatScopeAutoSubtitle": {
+    "description": "Subtitle of the auto scope."
+  },
+  "aiHubOpenSettings": "AI settings",
+  "@aiHubOpenSettings": {
+    "description": "Tooltip of the settings button on the AI hub."
+  },
+  "aiHubSend": "Ask",
+  "@aiHubSend": {
+    "description": "Tooltip of the hub ask button."
+  },
+  "aiSettingsOpenHub": "Open AI assistant",
+  "@aiSettingsOpenHub": {
+    "description": "Tile on the AI settings page opening the hub."
+  },
+  "aiSettingsOpenHubSubtitle": "Ask your diary and write recaps",
+  "@aiSettingsOpenHubSubtitle": {
+    "description": "Subtitle of the open hub tile."
+  },
+  "aiProtocolOpenAiResponses": "OpenAI Responses",
+  "@aiProtocolOpenAiResponses": {
+    "description": "Name of the OpenAI Responses API protocol."
+  },
+  "aiPresetNameCustomOpenAiResponses": "OpenAI Responses API",
+  "@aiPresetNameCustomOpenAiResponses": {
+    "description": "Custom preset using the OpenAI Responses API."
   }
 }

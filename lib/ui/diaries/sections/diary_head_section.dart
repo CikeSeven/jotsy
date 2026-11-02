@@ -53,6 +53,7 @@ class DiaryHeadSection extends StatelessWidget {
     required this.onOpenViewOptions,
     required this.onOpenSearchPage,
     this.searchHint,
+    this.onOpenAi,
   });
 
   final bool isSelectionMode;
@@ -92,6 +93,9 @@ class DiaryHeadSection extends StatelessWidget {
 
   /// 搜索条占位文字；null 时用默认文案（在日记本里时为“在「旅行」中搜索”）。
   final String? searchHint;
+
+  /// 打开 AI 助手主页；AI 不可用（或对话、回顾都关闭）时为 null，不显示。
+  final VoidCallback? onOpenAi;
 
   @override
   Widget build(BuildContext context) {
@@ -245,6 +249,7 @@ class DiaryHeadSection extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.s),
         _TrailingActions(
+          onOpenAi: onOpenAi,
           onOpenDrafts: onOpenDrafts,
           draftCount: draftCount,
           onOpenArchived: onOpenArchived,
@@ -451,12 +456,14 @@ class _SearchPreview extends StatelessWidget {
 
 class _TrailingActions extends StatelessWidget {
   const _TrailingActions({
+    required this.onOpenAi,
     required this.onOpenDrafts,
     required this.draftCount,
     required this.onOpenArchived,
     required this.onOpenViewOptions,
   });
 
+  final VoidCallback? onOpenAi;
   final VoidCallback onOpenDrafts;
   final int draftCount;
   final VoidCallback onOpenArchived;
@@ -468,6 +475,12 @@ class _TrailingActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (onOpenAi != null)
+          IconButton(
+            tooltip: context.l10n.aiHubTooltip,
+            onPressed: onOpenAi,
+            icon: const FaIcon(FontAwesomeIcons.wandMagicSparkles, size: 18),
+          ),
         IconButton(
           tooltip: context.l10n.diaryDraftsTitle,
           onPressed: onOpenDrafts,

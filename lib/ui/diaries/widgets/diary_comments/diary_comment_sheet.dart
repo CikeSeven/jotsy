@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/expressive_motion.dart';
@@ -22,11 +23,13 @@ class DiaryCommentDraft {
 /// [title] 由调用方给出（新写时带“写下后 N 天”，编辑时为“编辑留言”）；
 /// [moodOptions] 是用户的日记心情选项（与写日记时同一组）；[initial] 为要
 /// 编辑的留言，内容与心情原样带入，没有改动时“保存”不可点。
+/// [initialDraft] 为新留言预填完整内容，仍须用户确认，不受“没有改动”限制。
 Future<DiaryCommentDraft?> showDiaryCommentSheet(
   BuildContext context, {
   required String title,
   required List<String> moodOptions,
   DiaryCommentRow? initial,
+  DiaryCommentDraft? initialDraft,
 }) {
   return showAppModalBottomSheet<DiaryCommentDraft>(
     context: context,
@@ -44,6 +47,7 @@ Future<DiaryCommentDraft?> showDiaryCommentSheet(
       title: title,
       moodOptions: moodOptions,
       initial: initial,
+      initialDraft: initialDraft,
     ),
   );
 }
@@ -59,11 +63,16 @@ class DiaryCommentSheet extends StatefulWidget {
     required this.title,
     required this.moodOptions,
     this.initial,
+    this.initialDraft,
   });
 
   final String title;
   final List<String> moodOptions;
   final DiaryCommentRow? initial;
+
+  /// 新留言的预填内容（例如 AI 回应），不是编辑已有留言。保留完整文字，
+  /// 超出上限时由用户缩短后保存，不在打开面板时静默截断。
+  final DiaryCommentDraft? initialDraft;
 
   @override
   State<DiaryCommentSheet> createState() => _DiaryCommentSheetState();
@@ -71,9 +80,9 @@ class DiaryCommentSheet extends StatefulWidget {
 
 class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
   late final TextEditingController _text = TextEditingController(
-    text: widget.initial?.content ?? '',
+    text: widget.initial?.content ?? widget.initialDraft?.content ?? '',
   )..addListener(_handleTextChanged);
-  late String? _mood = widget.initial?.mood;
+  late String? _mood = widget.initial?.mood ?? widget.initialDraft?.mood;
 
   /// 计数在剩下不到一成时才出现，平时不分散注意力。
   static const int _counterFrom = kDiaryCommentMaxLength * 9 ~/ 10;
@@ -90,7 +99,10 @@ class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
 
   bool get _canSave {
     final content = _text.text.trim();
-    if (content.isEmpty) return false;
+    if (content.isEmpty ||
+        _text.text.characters.length > kDiaryCommentMaxLength) {
+      return false;
+    }
     final initial = widget.initial;
     return initial == null ||
         content != initial.content ||
@@ -107,7 +119,7 @@ class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
   /// 心情选项里没有、但这条留言原来记着的心情（用户后来改了心情选项）也
   /// 列出来，编辑时不会悄悄丢掉。
   List<String> get _moods {
-    final initial = widget.initial?.mood;
+    final initial = widget.initial?.mood ?? widget.initialDraft?.mood;
     return <String>[
       ...widget.moodOptions,
       if (initial != null && !widget.moodOptions.contains(initial)) initial,
@@ -173,6 +185,9 @@ class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
               minLines: 3,
               maxLines: 8,
               maxLength: kDiaryCommentMaxLength,
+              // 允许完整编辑超长预填文字；超过上限时禁用保存，由用户决定
+              // 删掉哪部分，避免第一次改动就被输入格式器截断尾部。
+              maxLengthEnforcement: MaxLengthEnforcement.none,
               keyboardType: TextInputType.multiline,
               textCapitalization: TextCapitalization.sentences,
               buildCounter:

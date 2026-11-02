@@ -174,6 +174,10 @@ void main() {
       final comments = ExploreModuleSpec.of(ExploreModuleId.comments);
       expect(comments.isAvailable(AppFeatures.defaults), isFalse);
       expect(comments.isAvailable(off.copyWith(comments: true)), isTrue);
+      // AI 默认关闭：AI 洞察卡片同理。
+      final ai = ExploreModuleSpec.of(ExploreModuleId.aiInsight);
+      expect(ai.isAvailable(AppFeatures.defaults), isFalse);
+      expect(ai.isAvailable(off.copyWith(ai: true)), isTrue);
     });
 
     test('layouts saved before the comments card append it, shown', () {
@@ -183,8 +187,12 @@ void main() {
           <String, Object>{'id': 'drafts', 'on': true},
         ],
       });
-      final last = layout.modules.last;
-      expect(last.id, ExploreModuleId.comments);
+      // 留言之后又登记了 AI 洞察：两张都按登记顺序补在末尾。
+      expect(
+        layout.modules.reversed.take(2).map((m) => m.id).toList(),
+        <ExploreModuleId>[ExploreModuleId.aiInsight, ExploreModuleId.comments],
+      );
+      final last = layout.module(ExploreModuleId.comments);
       expect(last.visible, isTrue);
       expect(last.count(ExploreOptions.commentsCount), 3);
       expect(

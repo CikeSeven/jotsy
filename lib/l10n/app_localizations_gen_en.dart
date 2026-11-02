@@ -631,7 +631,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutPrivacyDialogMessage =>
-      'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default.';
+      'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default. The AI assistant is off by default; when on, it sends only what an AI feature needs, directly to the AI service you configure, and your key stays on this device.';
 
   @override
   String get aboutOpenSourceLicenses => 'Third-party open-source licenses';
@@ -11907,4 +11907,2021 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lanSyncForgetBody =>
       'No diary is deleted on either device. To sync again you\'ll need to pair again.';
+
+  @override
+  String get settingsFeaturesAi => 'AI assistant';
+
+  @override
+  String get settingsFeaturesAiSubtitle =>
+      'Write, reflect, recap and chat with your own AI API';
+
+  @override
+  String get aiPersonaAssistantName => 'Diary assistant';
+
+  @override
+  String get aiPersonaAssistantDesc =>
+      'Clear and objective, good for questions and summaries';
+
+  @override
+  String get aiPersonaAssistantPrompt =>
+      'You are the user\'s diary assistant. You can read the diary entries the user shares with you. Base your answers on those entries, and keep them clear, objective and well organised. Say so when you are unsure, and never invent things that are not in the diary.';
+
+  @override
+  String get aiPersonaListenerName => 'Warm listener';
+
+  @override
+  String get aiPersonaListenerDesc => 'Understands first, then answers gently';
+
+  @override
+  String get aiPersonaListenerPrompt =>
+      'You are a warm, patient listener. After reading the user\'s diary, first show that you understand and acknowledge the feelings in it, then respond gently. Do not judge or lecture, give little advice, and offer empathy and affirmation instead. You may end with one gentle question that invites the user to reflect a little more.';
+
+  @override
+  String get aiPersonaFriendName => 'Close friend';
+
+  @override
+  String get aiPersonaFriendDesc => 'Chats casually like an old friend';
+
+  @override
+  String get aiPersonaFriendPrompt =>
+      'You are a friend the user has known for years. You talk naturally, casually and sincerely, you can joke and you can be serious. Respond the way a friend would after reading their diary: mention details you noticed, share how you feel, and give practical advice only when it helps.';
+
+  @override
+  String get aiPersonaCoachName => 'Growth coach';
+
+  @override
+  String get aiPersonaCoachDesc =>
+      'Spots your progress and the next small step';
+
+  @override
+  String get aiPersonaCoachPrompt =>
+      'You are a positive, practical growth coach. Find the effort, progress and things worth praising in the diary, point out patterns that could improve, and suggest one to three concrete, doable small actions. Be encouraging without being vague.';
+
+  @override
+  String get aiPersonaAnalystName => 'Thoughtful analyst';
+
+  @override
+  String get aiPersonaAnalystDesc => 'Calmly untangles what happened and why';
+
+  @override
+  String get aiPersonaAnalystPrompt =>
+      'You are a calm, rational analyst. Help the user untangle what happened in the diary, the reasons behind it and the options they have. Separate facts from feelings and point out angles they may have missed. Be concise and structured.';
+
+  @override
+  String get aiPersonaCounselorName => 'Counselor style';
+
+  @override
+  String get aiPersonaCounselorDesc =>
+      'Asks questions that help you see your feelings';
+
+  @override
+  String get aiPersonaCounselorPrompt =>
+      'You respond the way a counselor often does: listen, reflect back and clarify, and use open questions to help the user notice their emotions and needs, without rushing to conclusions or advice. You are not professional therapy. If the diary mentions thoughts of hurting themselves or others, gently encourage the user to reach out to people around them or to professional help.';
+
+  @override
+  String get aiPersonaPoetName => 'Poet';
+
+  @override
+  String get aiPersonaPoetDesc => 'Answers your day in poetic language';
+
+  @override
+  String get aiPersonaPoetPrompt =>
+      'You are a gentle poet. Respond to the user\'s diary in vivid, poetic but not obscure language. You may write a short prose poem or a few lines of verse that capture the mood and images of the day.';
+
+  @override
+  String get aiPersonaPhilosopherName => 'Philosopher';
+
+  @override
+  String get aiPersonaPhilosopherDesc => 'Thinks about it from a wider view';
+
+  @override
+  String get aiPersonaPhilosopherPrompt =>
+      'You are a friendly philosopher. Start from the small, concrete things in the diary and connect them to bigger questions such as meaning, choice, time and relationships. Use fitting ideas or metaphors, stay approachable, and come back to the user\'s own life at the end.';
+
+  @override
+  String get aiPersonaFutureSelfName => 'Future self';
+
+  @override
+  String get aiPersonaFutureSelfDesc => 'A reply from you, ten years later';
+
+  @override
+  String get aiPersonaFutureSelfPrompt =>
+      'You are the user ten years from now, rereading this diary entry. Write a short letter to your past self in the first person: gentle, knowing how things unfolded, with the calm and wisdom that time brings, but do not invent specific future events.';
+
+  @override
+  String get aiPersonaRoastName => 'Roasting buddy';
+
+  @override
+  String get aiPersonaRoastDesc => 'Sharp tongue, soft heart';
+
+  @override
+  String get aiPersonaRoastPrompt =>
+      'You are a buddy with a sharp tongue and a soft heart. Tease what happened in the diary with humour and exaggeration, but never mock the user\'s real pain or touch sensitive topics such as appearance or identity. Let your care show at the end.';
+
+  @override
+  String get aiActionContinue => 'Continue';
+
+  @override
+  String get aiActionContinuePrompt =>
+      'Continue the diary below in the same voice and tone with one natural paragraph of about 80 to 150 words. Write only the new text and do not repeat what is already there.';
+
+  @override
+  String get aiActionPolish => 'Polish';
+
+  @override
+  String get aiActionPolishPrompt =>
+      'Polish the text below so it reads more smoothly and naturally. Fix awkward phrasing, keep the meaning, tone and first-person voice, and do not make it longer.';
+
+  @override
+  String get aiActionExpand => 'Expand';
+
+  @override
+  String get aiActionExpandPrompt =>
+      'Expand the text below with more details, feelings and imagery so it becomes richer, roughly doubling its length. Keep the original tone and point of view.';
+
+  @override
+  String get aiActionShorten => 'Shorten';
+
+  @override
+  String get aiActionShortenPrompt =>
+      'Shorten the text below to about half its length. Keep the key information and feelings and remove repetition and filler.';
+
+  @override
+  String get aiActionProofread => 'Fix errors';
+
+  @override
+  String get aiActionProofreadPrompt =>
+      'Fix spelling, punctuation and grammar mistakes in the text below. Leave everything else exactly as it is and do not rewrite it.';
+
+  @override
+  String get aiActionToneFormal => 'More formal';
+
+  @override
+  String get aiActionToneFormalPrompt =>
+      'Rewrite the text below in a more formal, polished tone while keeping its meaning.';
+
+  @override
+  String get aiActionToneCasual => 'More casual';
+
+  @override
+  String get aiActionToneCasualPrompt =>
+      'Rewrite the text below in a more relaxed, conversational tone, as if chatting with a friend, while keeping its meaning.';
+
+  @override
+  String get aiActionToneWarm => 'Warmer';
+
+  @override
+  String get aiActionToneWarmPrompt =>
+      'Rewrite the text below to sound warmer and gentler, with more kindness and care, while keeping its meaning.';
+
+  @override
+  String get aiActionToneHumor => 'Funnier';
+
+  @override
+  String get aiActionToneHumorPrompt =>
+      'Rewrite the text below to be funnier, with a playful metaphor or a bit of self-deprecation, while keeping its meaning.';
+
+  @override
+  String get aiActionToneLiterary => 'More literary';
+
+  @override
+  String get aiActionToneLiteraryPrompt =>
+      'Rewrite the text below in a more literary style, with finer description and fitting figures of speech, without piling on ornate words. Keep its meaning.';
+
+  @override
+  String get aiActionTranslate => 'Translate';
+
+  @override
+  String get aiActionTranslatePrompt =>
+      'Translate the text below. If it is mainly Chinese, translate it into English; otherwise translate it into Simplified Chinese. Output only the translation.';
+
+  @override
+  String get aiActionSummarize => 'Summarize';
+
+  @override
+  String get aiActionSummarizePrompt =>
+      'Summarize the main points of the text below in two or three sentences.';
+
+  @override
+  String get aiActionBulletPoints => 'Bullet points';
+
+  @override
+  String get aiActionBulletPointsPrompt =>
+      'Turn the text below into a clear bullet list (a Markdown unordered list) with short items.';
+
+  @override
+  String get aiActionExtractTodos => 'Extract to-dos';
+
+  @override
+  String get aiActionExtractTodosPrompt =>
+      'Find the tasks, plans and follow-ups mentioned in the text below and list them as a Markdown task list, one per line starting with \"- [ ] \". If there are none, reply with one line saying so.';
+
+  @override
+  String get aiActionPoem => 'As a poem';
+
+  @override
+  String get aiActionPoemPrompt =>
+      'Turn the content below into a short modern poem of 4 to 12 lines that keeps its mood and imagery.';
+
+  @override
+  String get aiErrorNotConfigured =>
+      'No AI model is set up yet. Add a provider in Settings → AI assistant.';
+
+  @override
+  String get aiErrorNetwork =>
+      'Couldn\'t reach the AI service. Check the network, the address or the proxy.';
+
+  @override
+  String get aiErrorTimeout => 'The AI service took too long to respond.';
+
+  @override
+  String get aiErrorUnauthorized => 'The API key is invalid or missing.';
+
+  @override
+  String get aiErrorForbidden =>
+      'This key has no access to the model, or the service isn\'t available in your region.';
+
+  @override
+  String get aiErrorModelNotFound =>
+      'The model or address wasn\'t found. Check the model name and API address.';
+
+  @override
+  String get aiErrorRateLimited =>
+      'Too many requests. Please try again in a moment.';
+
+  @override
+  String get aiErrorQuota => 'The account has run out of balance or quota.';
+
+  @override
+  String get aiErrorContextTooLong =>
+      'Too much content for this model. Lower the word limit in AI privacy settings or pick a model with a longer context.';
+
+  @override
+  String get aiErrorContentFiltered =>
+      'The AI service declined this request because of its content policy.';
+
+  @override
+  String get aiErrorBadRequest =>
+      'The AI service rejected the request. Check the provider\'s advanced settings.';
+
+  @override
+  String get aiErrorServer =>
+      'The AI service is having trouble or is overloaded. Please try again later.';
+
+  @override
+  String get aiErrorBadResponse =>
+      'Couldn\'t understand the response. The address may point to a web page instead of the API.';
+
+  @override
+  String get aiErrorCancelled => 'Stopped';
+
+  @override
+  String get aiErrorDetails => 'Details';
+
+  @override
+  String get aiErrorOpenSettings => 'Open settings';
+
+  @override
+  String get aiSettingsTitle => 'AI assistant';
+
+  @override
+  String get aiSettingsEntrySubtitle =>
+      'Providers, models, personas and privacy';
+
+  @override
+  String get aiSettingsFooter =>
+      'Nothing goes through the developer: requests go straight from this device to the provider you set up. API keys stay on this device and never enter backups or sync.';
+
+  @override
+  String get aiStatusNotConfiguredTitle => 'No AI service yet';
+
+  @override
+  String get aiStatusNotConfiguredBody =>
+      'Add a provider and its API key, and AI features will appear in the editor, the reading page and the home screen. Content is only sent to the service you set up.';
+
+  @override
+  String get aiStatusAddProvider => 'Add provider';
+
+  @override
+  String get aiStatusDefaultModel => 'Default model';
+
+  @override
+  String get aiStatusTest => 'Test connection';
+
+  @override
+  String get aiStatusTesting => 'Testing…';
+
+  @override
+  String aiStatusTestOk(int ms) {
+    return 'Connected · $ms ms';
+  }
+
+  @override
+  String get aiGroupService => 'Service';
+
+  @override
+  String get aiProvidersTitle => 'Providers';
+
+  @override
+  String aiProvidersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count providers',
+      one: '1 provider',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProvidersEmpty => 'None yet';
+
+  @override
+  String get aiRoutingTitle => 'Model assignment';
+
+  @override
+  String get aiRoutingSubtitle => 'Use different models for different features';
+
+  @override
+  String get aiGroupFeatures => 'Features';
+
+  @override
+  String get aiGroupFeaturesFooter =>
+      'Turning a feature off only hides it. Existing AI records are kept.';
+
+  @override
+  String get aiModuleWriting => 'Writing assistant';
+
+  @override
+  String get aiModuleWritingSubtitle =>
+      'Continue, polish, change tone, translate and your own commands in the editor';
+
+  @override
+  String get aiModuleSuggest => 'Smart fill';
+
+  @override
+  String get aiModuleSuggestSubtitle =>
+      'Generate titles and suggest tags and moods';
+
+  @override
+  String get aiModuleReply => 'Reflections';
+
+  @override
+  String get aiModuleReplySubtitle =>
+      'Let AI read an entry and respond to you on the reading page';
+
+  @override
+  String get aiModulePrompts => 'Writing prompts';
+
+  @override
+  String get aiModulePromptsSubtitle =>
+      'A few questions when you don\'t know what to write';
+
+  @override
+  String get aiModuleRecap => 'Recaps & insights';
+
+  @override
+  String get aiModuleRecapSubtitle =>
+      'Summaries by week, month, year or notebook';
+
+  @override
+  String get aiModuleChat => 'Chat with your diary';
+
+  @override
+  String get aiModuleChatSubtitle =>
+      'Ask your diary; answers cite the entries they use';
+
+  @override
+  String get aiModuleVision => 'Image understanding';
+
+  @override
+  String get aiModuleVisionSubtitle =>
+      'Send the photos in an entry along with the text; text only if the model can\'t take images';
+
+  @override
+  String get aiOptionTitleButton => 'Show “Generate title” next to the title';
+
+  @override
+  String get aiOptionAutoSuggest => 'Suggest on the publish page';
+
+  @override
+  String get aiOptionAutoSuggestSubtitle =>
+      'Sends the entry once to suggest a title, tags and mood; nothing is filled in until you tap it';
+
+  @override
+  String get aiOptionAutoReply => 'Respond after publishing';
+
+  @override
+  String get aiOptionAutoReplySubtitle =>
+      'Each new entry is sent once for a reflection';
+
+  @override
+  String get aiOptionPromptsStrip => 'Show prompts on new entries';
+
+  @override
+  String get aiOptionPromptsStripSubtitle => 'Nothing is sent until you tap it';
+
+  @override
+  String get aiOptionPromptsRecent => 'Use recent entries';
+
+  @override
+  String get aiOptionPromptsRecentSubtitle =>
+      'Sends excerpts of your latest entries for more personal prompts';
+
+  @override
+  String get aiOptionPromptStyle => 'Insert as';
+
+  @override
+  String get aiPromptStyleCallout => 'Callout';
+
+  @override
+  String get aiPromptStyleQuote => 'Quote';
+
+  @override
+  String get aiPromptStyleHeading => 'Heading';
+
+  @override
+  String get aiOptionRecapSections => 'Recaps include';
+
+  @override
+  String get aiRecapSectionMood => 'Mood trends';
+
+  @override
+  String get aiRecapSectionEvents => 'Key moments';
+
+  @override
+  String get aiRecapSectionPeople => 'People around me';
+
+  @override
+  String get aiRecapSectionGratitude => 'Gratitude';
+
+  @override
+  String get aiRecapSectionGrowth => 'Growth & change';
+
+  @override
+  String get aiRecapSectionQuotes => 'Memorable lines';
+
+  @override
+  String get aiRecapSectionSuggestions => 'Next steps';
+
+  @override
+  String get aiOptionRetrieval => 'Finding entries';
+
+  @override
+  String get aiOptionRetrievalSubtitle =>
+      'Smart understands the question first; keywords only match words; recent only reads the latest days';
+
+  @override
+  String get aiRetrievalSmart => 'Smart';
+
+  @override
+  String get aiRetrievalKeyword => 'Keywords';
+
+  @override
+  String get aiRetrievalRecent => 'Recent';
+
+  @override
+  String get aiOptionRecentDays => 'Recent range';
+
+  @override
+  String aiDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiOptionMaxCitations => 'Read at most';
+
+  @override
+  String aiEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiOptionShowReasoning => 'Show reasoning';
+
+  @override
+  String get aiOptionShowTokens => 'Show token usage';
+
+  @override
+  String get aiOptionAutoTitle => 'Name chats automatically';
+
+  @override
+  String get aiOptionVisionImages => 'Photos per request';
+
+  @override
+  String aiPhotos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiOptionVisionSize => 'Photo size';
+
+  @override
+  String get aiVisionSizeSmall => 'Small';
+
+  @override
+  String get aiVisionSizeMedium => 'Medium';
+
+  @override
+  String get aiVisionSizeLarge => 'Large';
+
+  @override
+  String get aiGroupPersonal => 'Personal touch';
+
+  @override
+  String get aiPersonasTitle => 'Personas';
+
+  @override
+  String get aiPersonasSubtitle =>
+      'Whose voice reflections, chats and recaps use';
+
+  @override
+  String get aiActionsTitle => 'Writing commands';
+
+  @override
+  String get aiActionsSubtitle =>
+      'Reorder, hide, rewrite prompts or add your own';
+
+  @override
+  String get aiProfileTitle => 'About me & style';
+
+  @override
+  String get aiProfileSubtitle => 'Help AI know you better (optional)';
+
+  @override
+  String get aiOutputLanguage => 'Answer language';
+
+  @override
+  String get aiLanguageFollowDiary => 'Diary';
+
+  @override
+  String get aiLanguageFollowApp => 'App';
+
+  @override
+  String get aiLanguageCustom => 'Custom';
+
+  @override
+  String get aiLanguageCustomHint => 'e.g. 日本語, Français';
+
+  @override
+  String get aiResponseLength => 'Answer length';
+
+  @override
+  String get aiLengthShort => 'Short';
+
+  @override
+  String get aiLengthMedium => 'Medium';
+
+  @override
+  String get aiLengthLong => 'Detailed';
+
+  @override
+  String get aiCreativity => 'Creativity';
+
+  @override
+  String get aiCreativitySubtitle =>
+      'Only applies to providers that accept a temperature';
+
+  @override
+  String get aiCreativityPrecise => 'Precise';
+
+  @override
+  String get aiCreativityBalanced => 'Balanced';
+
+  @override
+  String get aiCreativityCreative => 'Creative';
+
+  @override
+  String get aiGroupPrivacy => 'Privacy & usage';
+
+  @override
+  String get aiPrivacyTitle => 'Privacy';
+
+  @override
+  String get aiPrivacySubtitle => 'What is sent and which entries are left out';
+
+  @override
+  String get aiUsageTitle => 'Usage';
+
+  @override
+  String get aiUsageSubtitle => 'Requests and tokens sent from this device';
+
+  @override
+  String get aiProvidersFooter =>
+      'Without a default model, the first usable provider is used; change it in Model assignment.';
+
+  @override
+  String aiProviderModelsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count models',
+      one: '1 model',
+      zero: 'No models',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProviderDisabled => 'Off';
+
+  @override
+  String get aiProviderNoKey => 'No key';
+
+  @override
+  String get aiPresetSheetTitle => 'Choose a provider';
+
+  @override
+  String get aiPresetGroupChina => 'China';
+
+  @override
+  String get aiPresetGroupInternational => 'International';
+
+  @override
+  String get aiPresetGroupLocal => 'Run locally';
+
+  @override
+  String get aiPresetGroupCustom => 'Custom API';
+
+  @override
+  String get aiPresetNameDashscope => 'Qwen (Alibaba Cloud)';
+
+  @override
+  String get aiPresetNameMoonshot => 'Kimi (Moonshot)';
+
+  @override
+  String get aiPresetNameZhipu => 'Zhipu GLM';
+
+  @override
+  String get aiPresetNameVolcengine => 'Doubao (Volcengine Ark)';
+
+  @override
+  String get aiPresetNameSiliconflow => 'SiliconFlow';
+
+  @override
+  String get aiPresetNameHunyuan => 'Tencent Hunyuan';
+
+  @override
+  String get aiPresetNameCustomOpenAi => 'OpenAI-compatible API';
+
+  @override
+  String get aiPresetNameCustomAnthropic => 'Anthropic-compatible API';
+
+  @override
+  String get aiPresetNameCustomGemini => 'Gemini API';
+
+  @override
+  String get aiProtocolOpenAi => 'OpenAI compatible';
+
+  @override
+  String get aiProtocolAnthropic => 'Anthropic (Claude)';
+
+  @override
+  String get aiProtocolGemini => 'Google Gemini';
+
+  @override
+  String get aiProviderEditTitleNew => 'Add provider';
+
+  @override
+  String get aiProviderEditTitle => 'Edit provider';
+
+  @override
+  String get aiProviderName => 'Name';
+
+  @override
+  String get aiProviderProtocol => 'API format';
+
+  @override
+  String get aiProviderBaseUrl => 'API address';
+
+  @override
+  String get aiProviderBaseUrlHint => 'e.g. https://api.example.com/v1';
+
+  @override
+  String get aiProviderApiKey => 'API key';
+
+  @override
+  String get aiProviderApiKeyOptional =>
+      'API key (optional for local services)';
+
+  @override
+  String get aiProviderGetKey => 'Get a key';
+
+  @override
+  String get aiProviderLocalHint =>
+      'To reach Ollama or LM Studio on a computer from your phone, replace localhost with the computer\'s LAN address and let the server listen on 0.0.0.0.';
+
+  @override
+  String get aiProviderModels => 'Models';
+
+  @override
+  String get aiProviderFetchModels => 'Fetch model list';
+
+  @override
+  String get aiProviderAddModel => 'Add manually';
+
+  @override
+  String get aiProviderModelsEmpty =>
+      'No models yet. Fetch the list from the provider or add a model name manually.';
+
+  @override
+  String get aiProviderModelIdHint => 'Model name, e.g. deepseek-chat';
+
+  @override
+  String get aiModelVision => 'Images';
+
+  @override
+  String get aiModelReasoning => 'Reasoning';
+
+  @override
+  String get aiModelEditTitle => 'Model settings';
+
+  @override
+  String get aiModelDisplayName => 'Display name (optional)';
+
+  @override
+  String get aiModelVisionToggle => 'Accepts images';
+
+  @override
+  String get aiModelReasoningToggle => 'Request reasoning';
+
+  @override
+  String get aiModelReasoningSubtitle =>
+      'Ask the model for its thinking; retried without it if the model doesn\'t support it';
+
+  @override
+  String get aiModelMaxOutput => 'Max output tokens';
+
+  @override
+  String get aiModelContext => 'Context length (tokens)';
+
+  @override
+  String get aiModelAuto => 'Auto';
+
+  @override
+  String get aiModelRemove => 'Remove model';
+
+  @override
+  String get aiModelPickerTitle => 'Choose models';
+
+  @override
+  String get aiModelPickerSearch => 'Search models';
+
+  @override
+  String aiModelPickerAdd(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count',
+      zero: 'Add',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiModelPickerEmpty =>
+      'The provider returned no models. Add a model name manually.';
+
+  @override
+  String get aiProviderAdvanced => 'Advanced';
+
+  @override
+  String get aiProviderProxy => 'HTTP proxy';
+
+  @override
+  String get aiProviderProxyHint =>
+      'host:port, e.g. 127.0.0.1:7890; empty for direct';
+
+  @override
+  String get aiProviderHeaders => 'Custom headers';
+
+  @override
+  String get aiProviderHeadersHint => 'One per line, as Name: value';
+
+  @override
+  String get aiProviderExtraBody => 'Extra request fields (JSON)';
+
+  @override
+  String get aiProviderExtraBodyHint =>
+      'A JSON object merged into every request, for provider-specific options';
+
+  @override
+  String get aiProviderExtraBodyInvalid => 'Not a valid JSON object';
+
+  @override
+  String get aiProviderStream => 'Streaming';
+
+  @override
+  String get aiProviderStreamSubtitle =>
+      'Show answers as they are written; turn off if a relay doesn\'t support it';
+
+  @override
+  String get aiProviderIncludeUsage => 'Request usage';
+
+  @override
+  String get aiProviderIncludeUsageSubtitle =>
+      'Ask for token usage while streaming; turn off if requests fail';
+
+  @override
+  String get aiProviderSendTemperature => 'Send temperature';
+
+  @override
+  String get aiProviderSendTemperatureSubtitle =>
+      'Newer Claude models reject it, so it\'s off for Anthropic';
+
+  @override
+  String get aiProviderTimeout => 'Wait for first token';
+
+  @override
+  String aiSeconds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count seconds',
+      one: '1 second',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProviderRetries => 'Retries';
+
+  @override
+  String aiTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: 'Once',
+      zero: 'Off',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProviderEnabled => 'Enabled';
+
+  @override
+  String get aiProviderDelete => 'Delete provider';
+
+  @override
+  String aiProviderDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String get aiProviderDeleteBody =>
+      'Its key and model settings are removed, and features assigned to it go back to the default model.';
+
+  @override
+  String get aiProviderNameRequired => 'Enter a name';
+
+  @override
+  String get aiProviderUrlInvalid =>
+      'Enter an address starting with http:// or https://';
+
+  @override
+  String get aiProviderNeedModel => 'Add at least one model first';
+
+  @override
+  String get aiProviderDiscardTitle => 'Discard changes?';
+
+  @override
+  String get aiProviderDiscard => 'Discard';
+
+  @override
+  String get aiRoutingDefault => 'Default model';
+
+  @override
+  String get aiRoutingDefaultSubtitle =>
+      'Used by every feature that has no model of its own';
+
+  @override
+  String get aiRoutingFast => 'Fast model';
+
+  @override
+  String get aiRoutingFastSubtitle =>
+      'Preferred for short tasks such as smart fill and prompts; pick something cheap and quick';
+
+  @override
+  String get aiRoutingTasksGroup => 'Per feature';
+
+  @override
+  String get aiRoutingFollowDefault => 'Same as default';
+
+  @override
+  String get aiRoutingFollowFast => 'Same as fast model';
+
+  @override
+  String aiRoutingFirstUsable(String name) {
+    return 'First usable ($name)';
+  }
+
+  @override
+  String get aiRoutingNone => 'Not set';
+
+  @override
+  String get aiRoutingPickTitle => 'Choose a model';
+
+  @override
+  String get aiTaskWriting => 'Writing assistant';
+
+  @override
+  String get aiTaskSuggest => 'Smart fill';
+
+  @override
+  String get aiTaskReply => 'Reflections';
+
+  @override
+  String get aiTaskPrompts => 'Writing prompts';
+
+  @override
+  String get aiTaskRecap => 'Recaps';
+
+  @override
+  String get aiTaskChat => 'Chat';
+
+  @override
+  String get aiTaskVision => 'Describe images';
+
+  @override
+  String get aiTaskUtility => 'Small background tasks';
+
+  @override
+  String get aiTaskUtilitySubtitle =>
+      'Chat titles, search plans and partial summaries of long recaps';
+
+  @override
+  String get aiPersonasDefaultsGroup => 'Defaults';
+
+  @override
+  String get aiPersonaUseReply => 'Reflections';
+
+  @override
+  String get aiPersonaUseChat => 'Chat';
+
+  @override
+  String get aiPersonaUseRecap => 'Recaps';
+
+  @override
+  String get aiPersonasBuiltInGroup => 'Built-in';
+
+  @override
+  String get aiPersonasMineGroup => 'My personas';
+
+  @override
+  String get aiPersonasMineEmpty =>
+      'No personas of your own yet. Create one, or copy a built-in persona and change it.';
+
+  @override
+  String get aiPersonaAdd => 'New persona';
+
+  @override
+  String get aiPersonaDuplicate => 'Copy as mine';
+
+  @override
+  String get aiPersonaEditTitleNew => 'New persona';
+
+  @override
+  String get aiPersonaEditTitle => 'Edit persona';
+
+  @override
+  String get aiPersonaName => 'Name';
+
+  @override
+  String get aiPersonaEmoji => 'Emoji';
+
+  @override
+  String get aiPersonaPrompt => 'Prompt';
+
+  @override
+  String get aiPersonaPromptHint =>
+      'Describe who they are, how they talk and how they respond to your diary';
+
+  @override
+  String aiPersonaLimit(int count) {
+    return 'Up to $count personas';
+  }
+
+  @override
+  String aiPersonaCopySuffix(String name) {
+    return '$name (copy)';
+  }
+
+  @override
+  String get aiCommonHidden => 'Hidden';
+
+  @override
+  String get aiCommonHide => 'Hide';
+
+  @override
+  String get aiCommonShow => 'Show';
+
+  @override
+  String get aiCommonRestoreDefault => 'Restore default';
+
+  @override
+  String aiCommonDeleted(String name) {
+    return 'Deleted “$name”';
+  }
+
+  @override
+  String get aiActionsFooter =>
+      'Drag to reorder. The order here is the order in the editor.';
+
+  @override
+  String get aiActionAdd => 'New command';
+
+  @override
+  String get aiActionCustomized => 'Edited';
+
+  @override
+  String get aiActionEditTitleNew => 'New command';
+
+  @override
+  String get aiActionEditTitle => 'Edit command';
+
+  @override
+  String get aiActionName => 'Name';
+
+  @override
+  String get aiActionEmoji => 'Icon';
+
+  @override
+  String get aiActionPrompt => 'Prompt';
+
+  @override
+  String get aiActionPromptHint => 'Tell AI what to do with the text';
+
+  @override
+  String get aiActionVariables => 'Insert a variable';
+
+  @override
+  String get aiActionVariablesHelp =>
+      'If the prompt has no “text” variable, the text is added after the prompt automatically.';
+
+  @override
+  String get aiVariableText => 'Text';
+
+  @override
+  String get aiVariableDiary => 'Whole entry';
+
+  @override
+  String get aiVariableTitle => 'Title';
+
+  @override
+  String get aiVariableDate => 'Date';
+
+  @override
+  String get aiVariableMood => 'Mood';
+
+  @override
+  String get aiActionOutput => 'Result';
+
+  @override
+  String get aiOutputReplace => 'Replace';
+
+  @override
+  String get aiOutputInsertBelow => 'Insert below';
+
+  @override
+  String get aiOutputPreview => 'Preview only';
+
+  @override
+  String aiActionLimit(int count) {
+    return 'Up to $count commands';
+  }
+
+  @override
+  String get aiActionResetPromptTitle => 'Restore the default prompt?';
+
+  @override
+  String get aiProfileAboutMe => 'About me';
+
+  @override
+  String get aiProfileAboutMeHint =>
+      'What you do, your life right now, what matters to you. AI will keep it in mind.';
+
+  @override
+  String get aiProfileStyle => 'Writing style';
+
+  @override
+  String get aiProfileStyleHint =>
+      'e.g. plain and simple, few adjectives, short sentences';
+
+  @override
+  String get aiProfileFooter =>
+      'These are sent along with every request. Leave them empty to send nothing.';
+
+  @override
+  String get aiPrivacySendGroup => 'Sent with entries';
+
+  @override
+  String get aiPrivacySendFooter =>
+      'Titles and text are always sent. Private notebooks, the recycle bin and sealed time capsules are never sent.';
+
+  @override
+  String get aiPrivacyDate => 'Date';
+
+  @override
+  String get aiPrivacyMood => 'Mood';
+
+  @override
+  String get aiPrivacyTags => 'Tags';
+
+  @override
+  String get aiPrivacyWeather => 'Weather';
+
+  @override
+  String get aiPrivacyLocation => 'Location';
+
+  @override
+  String get aiPrivacyScopeGroup => 'Chats and recaps';
+
+  @override
+  String get aiPrivacyIncludeArchived => 'Include archived entries';
+
+  @override
+  String get aiPrivacyExcludedNotebooks => 'Excluded notebooks';
+
+  @override
+  String get aiPrivacyExcludedTags => 'Excluded tags';
+
+  @override
+  String get aiPrivacyExcludedNone => 'None';
+
+  @override
+  String aiPrivacyExcludedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get aiPrivacyPickNotebooks => 'Notebooks to leave out';
+
+  @override
+  String get aiPrivacyPickTags => 'Tags to leave out';
+
+  @override
+  String get aiPrivacyPickEmpty => 'Nothing to choose from';
+
+  @override
+  String get aiPrivacyBudget => 'Send at most';
+
+  @override
+  String get aiPrivacyPerDiary => 'Per entry';
+
+  @override
+  String aiWords(int count) {
+    return '$count words';
+  }
+
+  @override
+  String get aiPrivacyConfirmGroup => 'Confirm before sending';
+
+  @override
+  String get aiPrivacyConfirmSubtitle =>
+      'First time: once per provider. Multiple entries: chats and recaps always show what will be sent. Always: confirm every request.';
+
+  @override
+  String get aiConfirmFirstTime => 'First time';
+
+  @override
+  String get aiConfirmMultiDiary => 'Multiple entries';
+
+  @override
+  String get aiConfirmAlways => 'Always';
+
+  @override
+  String get aiPrivacyAllowPrivate => 'Allow AI on private entries';
+
+  @override
+  String get aiPrivacyAllowPrivateSubtitle =>
+      'The writing assistant and reflections become available in private notebooks. Chats and recaps still never read them.';
+
+  @override
+  String get aiPrivacyResetHosts => 'Ask again for every provider';
+
+  @override
+  String get aiPrivacyResetHostsSubtitle =>
+      'Show the first-time confirmation again';
+
+  @override
+  String get aiPrivacyResetHostsDone =>
+      'Done. You\'ll be asked again next time.';
+
+  @override
+  String get aiUsageEmpty => 'No usage recorded yet';
+
+  @override
+  String aiUsageRequests(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count requests',
+      one: '1 request',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiUsageFailures(int count) {
+    return '$count failed';
+  }
+
+  @override
+  String aiUsageTokens(String input, String output) {
+    return 'In $input · Out $output';
+  }
+
+  @override
+  String aiUsageMonthTotal(String tokens) {
+    return '$tokens tokens';
+  }
+
+  @override
+  String get aiUsageClear => 'Clear usage';
+
+  @override
+  String get aiUsageClearTitle => 'Clear usage records?';
+
+  @override
+  String get aiUsageClearBody =>
+      'Only this device\'s statistics are cleared; the provider\'s billing isn\'t affected.';
+
+  @override
+  String get aiUsageFooter =>
+      'Counts only requests sent from this device. Check the provider\'s billing for actual costs.';
+
+  @override
+  String get aiPrivacyRecordsGroup => 'AI records';
+
+  @override
+  String get aiPrivacyRecordsFooter =>
+      'Chats, reflections and recaps are saved on this device and in full backups. They are never synced over the local network.';
+
+  @override
+  String get aiPrivacyClearRecords => 'Clear all AI records';
+
+  @override
+  String aiPrivacyClearRecordsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count chats and results',
+      one: '1 chat or result',
+      zero: 'Nothing saved yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiPrivacyClearRecordsTitle => 'Clear all AI records?';
+
+  @override
+  String get aiPrivacyClearRecordsBody =>
+      'Every chat, reflection and recap is deleted from this device. This can\'t be undone. Your diary entries are not affected.';
+
+  @override
+  String get aiPrivacyClearRecordsDone => 'AI records cleared';
+
+  @override
+  String get aiPromptSystemBase =>
+      'You are the AI assistant inside Jotsy, a personal diary app. The person you talk to is the author of the diary. Be sincere and specific, and never invent facts that are not in the diary.';
+
+  @override
+  String aiPromptAboutUser(String text) {
+    return 'About the user: $text';
+  }
+
+  @override
+  String aiPromptWritingStyle(String text) {
+    return 'The user\'s preferred writing style: $text';
+  }
+
+  @override
+  String aiPromptRespondIn(String language) {
+    return 'Reply in $language.';
+  }
+
+  @override
+  String get aiPromptRespondLikeDiary =>
+      'Reply in the same language the diary is written in.';
+
+  @override
+  String get aiPromptLanguageChinese => 'Chinese';
+
+  @override
+  String get aiPromptLanguageEnglish => 'English';
+
+  @override
+  String get aiPromptLengthShort =>
+      'Keep the answer short, within a few sentences.';
+
+  @override
+  String get aiPromptLengthMedium => 'Keep the answer to a moderate length.';
+
+  @override
+  String get aiPromptLengthLong => 'Feel free to answer in detail.';
+
+  @override
+  String aiPromptPersona(String text) {
+    return 'Your role: $text';
+  }
+
+  @override
+  String get aiPromptFieldTitle => 'Title';
+
+  @override
+  String get aiPromptFieldDate => 'Date';
+
+  @override
+  String get aiPromptFieldMood => 'Mood';
+
+  @override
+  String get aiPromptFieldTags => 'Tags';
+
+  @override
+  String get aiPromptFieldWeather => 'Weather';
+
+  @override
+  String get aiPromptFieldLocation => 'Place';
+
+  @override
+  String get aiPromptFieldBody => 'Text';
+
+  @override
+  String get aiPromptTruncated => '(the rest is omitted)';
+
+  @override
+  String aiPromptImagesAttached(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos from the entry are attached.',
+      one: 'One photo from the entry is attached.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiPromptWritingSystem =>
+      'You are a writing assistant helping the user edit their own diary. Output only the resulting text: no explanations, no quotes, no preface. Keep the first-person point of view. You may use Markdown lists, bold and task lists, but no headings.';
+
+  @override
+  String get aiPromptWritingContext =>
+      'For context, this is the whole entry (do not repeat it):';
+
+  @override
+  String aiPromptCustomInstruction(String text) {
+    return 'Follow this instruction for the text below: $text';
+  }
+
+  @override
+  String get aiPromptReplyInstruction =>
+      'Here is an entry the user wrote. Read it as yourself and respond to the user directly. Do not retell the entry and do not use headings.';
+
+  @override
+  String get aiPromptSuggestInstruction =>
+      'Based on the entry below, suggest: a short fitting title of at most 20 characters without quotes; 0 to 3 of the user\'s existing tags; at most 2 new tags of at most 6 characters each, only if really useful; and the single best mood from the given options, or leave it empty if unsure. Reply with one JSON object only, exactly in this shape:';
+
+  @override
+  String aiPromptSuggestTagsList(String tags) {
+    return 'The user\'s existing tags: $tags';
+  }
+
+  @override
+  String aiPromptSuggestMoodList(String moods) {
+    return 'Mood options: $moods';
+  }
+
+  @override
+  String get aiPromptPromptsInstruction =>
+      'Write 3 concrete, gentle questions that make it easy for the user to start today\'s diary. One question per line, no numbering, nothing else.';
+
+  @override
+  String aiPromptPromptsToday(String date) {
+    return 'Today: $date';
+  }
+
+  @override
+  String get aiPromptPromptsRecent =>
+      'Excerpts of the user\'s recent entries, for a more personal touch:';
+
+  @override
+  String aiPromptRecapInstruction(String period) {
+    return 'Below are the entries the user wrote during $period. Write a recap organised with Markdown subheadings, covering:';
+  }
+
+  @override
+  String get aiPromptRecapRules =>
+      'Only use what is in the entries. Mention dates when you refer to specific days. If an entry is marked [Dn], you may cite it as [Dn].';
+
+  @override
+  String get aiPromptRecapChunk =>
+      'Below are entries from part of a period. Summarise in bullet points what happened, the feelings and the thoughts, keeping concrete dates and details, so they can be merged into a recap later.';
+
+  @override
+  String get aiPromptRecapFromSummaries =>
+      'These are summaries of consecutive parts of the period, oldest first:';
+
+  @override
+  String aiPromptRecapStats(int count, int words) {
+    return 'Statistics: $count entries, $words words.';
+  }
+
+  @override
+  String aiPromptRecapMoods(String moods) {
+    return 'Mood counts: $moods';
+  }
+
+  @override
+  String aiPromptRecapTopTags(String tags) {
+    return 'Most used tags: $tags';
+  }
+
+  @override
+  String get aiPromptChatSystem =>
+      'You can read some of the user\'s diary entries, each marked [Dn]. Answer based on these entries. When you use an entry, cite its marker at the end of the sentence, like [D3]. Do not invent anything that is not in the entries; if you can\'t find it, say so.';
+
+  @override
+  String get aiPromptChatContextHeader => 'Relevant diary entries:';
+
+  @override
+  String get aiPromptChatNoDiaries =>
+      '(No diary entries matched this question.)';
+
+  @override
+  String aiPromptChatToday(String date) {
+    return 'Today is $date.';
+  }
+
+  @override
+  String get aiPromptChatTitle =>
+      'Summarise the topic of this conversation in at most 8 words. Output only the title.';
+
+  @override
+  String aiPromptRetrievalPlan(String date) {
+    return 'Turn the user\'s question into a diary search plan. Today is $date. Give up to 8 short keywords likely to appear in the entries (include synonyms), and a date range only if the question implies one. Reply with one JSON object only, exactly in this shape:';
+  }
+
+  @override
+  String get aiPromptDescribeImage =>
+      'Describe what is in this photo and its mood in one or two sentences, as a caption for a diary. Output only the description.';
+
+  @override
+  String get aiToolbarLabel => 'AI writing';
+
+  @override
+  String get aiPanelTitle => 'AI writing';
+
+  @override
+  String get aiScopeSelection => 'Selection';
+
+  @override
+  String get aiScopeParagraph => 'This paragraph';
+
+  @override
+  String get aiScopeBeforeCaret => 'Text before the cursor';
+
+  @override
+  String get aiScopeDocument => 'Whole entry';
+
+  @override
+  String aiScopeSummary(String scope, int words) {
+    return '$scope · $words words';
+  }
+
+  @override
+  String get aiPanelInstructionHint =>
+      'Tell AI what to do, e.g. “make it more casual”';
+
+  @override
+  String get aiPanelSend => 'Send';
+
+  @override
+  String get aiPanelThinking => 'Thinking…';
+
+  @override
+  String get aiPanelReplace => 'Replace';
+
+  @override
+  String get aiPanelInsertBelow => 'Insert below';
+
+  @override
+  String get aiPanelCopy => 'Copy';
+
+  @override
+  String get aiPanelCopied => 'Copied';
+
+  @override
+  String get aiPanelStop => 'Stop';
+
+  @override
+  String get aiPanelEmptyTarget =>
+      'Nothing to work on yet. Write something or select some text first.';
+
+  @override
+  String get aiPanelReasoning => 'Reasoning';
+
+  @override
+  String get aiPanelPrivateBlocked =>
+      'This entry is in a private notebook. You can allow AI for private entries in AI privacy settings.';
+
+  @override
+  String get aiSlashGroup => 'AI';
+
+  @override
+  String get aiSlashWrite => 'AI writing…';
+
+  @override
+  String get aiSlashContinue => 'AI continue';
+
+  @override
+  String get aiSlashPrompts => 'Writing prompts';
+
+  @override
+  String get aiSelectionMenu => 'AI…';
+
+  @override
+  String get aiImageDescribe => 'Describe with AI';
+
+  @override
+  String get aiImageDescribing => 'Describing the photo…';
+
+  @override
+  String get aiImageNoVision =>
+      'The current model can\'t see images. Pick a vision model for “Describe images” in Model assignment.';
+
+  @override
+  String get aiSuggestTitle => 'Generate title with AI';
+
+  @override
+  String get aiSuggestMeta => 'Suggest tags & mood with AI';
+
+  @override
+  String get aiSuggesting => 'AI is thinking…';
+
+  @override
+  String get aiSuggestNeedContent =>
+      'Write a little first so AI has something to go on.';
+
+  @override
+  String get aiSuggestTitleApplied => 'Title filled in by AI';
+
+  @override
+  String get aiSuggestTagsHeader => 'AI suggests';
+
+  @override
+  String aiSuggestNewTag(String name) {
+    return 'New “$name”';
+  }
+
+  @override
+  String get aiSuggestMoodButton => 'AI pick';
+
+  @override
+  String get aiSuggestNothing => 'No suggestions this time';
+
+  @override
+  String get aiSuggestApplied => 'Applied AI suggestions';
+
+  @override
+  String aiConfirmSendTitle(String host) {
+    return 'Send to $host?';
+  }
+
+  @override
+  String aiConfirmSendModel(String name) {
+    return 'Handled by “$name”';
+  }
+
+  @override
+  String aiConfirmSendEntries(int count, int words) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0, about $words words';
+  }
+
+  @override
+  String aiConfirmSendText(int words) {
+    return 'About $words words of text';
+  }
+
+  @override
+  String aiConfirmSendImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Plus $count photos',
+      one: 'Plus 1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiConfirmSendNote =>
+      'It goes straight from this device; the developer never sees it. The provider handles it under its own privacy policy.';
+
+  @override
+  String get aiConfirmSendRemember => 'Don\'t ask again for this provider';
+
+  @override
+  String get aiConfirmSendAction => 'Send';
+
+  @override
+  String aiRepliesHeading(int count) {
+    return 'AI reflections · $count';
+  }
+
+  @override
+  String get aiReplyAsk => 'Ask AI to respond…';
+
+  @override
+  String get aiReplyMoreItem => 'AI reflection';
+
+  @override
+  String get aiReplyPickPersona => 'Who should respond?';
+
+  @override
+  String get aiReplyWriting => 'Reading your entry…';
+
+  @override
+  String get aiReplyRegenerate => 'Regenerate';
+
+  @override
+  String get aiReplySaveAsComment => 'Save as comment';
+
+  @override
+  String get aiReplyContinueChat => 'Talk more';
+
+  @override
+  String get aiReplyDeleted => 'Reflection deleted';
+
+  @override
+  String get aiReplyExpand => 'Show more';
+
+  @override
+  String get aiReplyCollapse => 'Show less';
+
+  @override
+  String get aiReplyStopped => 'Stopped. Try again?';
+
+  @override
+  String get aiReplyDismiss => 'Dismiss';
+
+  @override
+  String get aiReplyAutoSkipped =>
+      'Auto reflection skipped: confirm this provider once by asking for a reflection manually.';
+
+  @override
+  String get aiPromptsStripLabel => 'Need a writing prompt?';
+
+  @override
+  String get aiPromptsLoading => 'Thinking of questions…';
+
+  @override
+  String get aiPromptsRefresh => 'New set';
+
+  @override
+  String get aiPromptsTitle => 'Writing prompts';
+
+  @override
+  String get aiPromptsHint => 'Tap a question to add it to your entry';
+
+  @override
+  String get aiPromptsEmpty => 'No questions this time. Try again?';
+
+  @override
+  String get aiPromptsClose => 'Hide prompts';
+
+  @override
+  String get aiReplySavedAsComment => 'Saved as a comment';
+
+  @override
+  String get aiRecapTitle => 'AI recap';
+
+  @override
+  String get aiRecapRange => 'Period';
+
+  @override
+  String get aiRecapThisWeek => 'This week';
+
+  @override
+  String get aiRecapLastWeek => 'Last week';
+
+  @override
+  String get aiRecapThisMonth => 'This month';
+
+  @override
+  String get aiRecapLastMonth => 'Last month';
+
+  @override
+  String get aiRecapThisYear => 'This year';
+
+  @override
+  String get aiRecapCustom => 'Custom…';
+
+  @override
+  String get aiRecapNotebook => 'Notebook';
+
+  @override
+  String get aiRecapAllNotebooks => 'All entries';
+
+  @override
+  String get aiRecapSections => 'Include';
+
+  @override
+  String get aiRecapPersona => 'Voice';
+
+  @override
+  String get aiRecapGenerate => 'Write recap';
+
+  @override
+  String get aiRecapNoEntries => 'No entries to recap in this period.';
+
+  @override
+  String aiRecapReading(int index, int total) {
+    return 'Reading part $index of $total…';
+  }
+
+  @override
+  String get aiRecapWriting => 'Writing the recap…';
+
+  @override
+  String aiRecapStats(int count, int words) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0 · $words words';
+  }
+
+  @override
+  String get aiRecapSaved => 'Saved to your recaps';
+
+  @override
+  String get aiRecapSaveAsDiary => 'Save as entry';
+
+  @override
+  String get aiRecapShare => 'Share text';
+
+  @override
+  String get aiRecapDeleted => 'Recap deleted';
+
+  @override
+  String aiRecapPeriodRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String aiRecapDiaryTitle(String period) {
+    return '$period recap';
+  }
+
+  @override
+  String get aiHubTitle => 'AI assistant';
+
+  @override
+  String get aiHubAskHint => 'Ask your diary…';
+
+  @override
+  String get aiHubQuickMonth => 'How has this month been for me?';
+
+  @override
+  String get aiHubQuickWorry => 'What have I been worrying about lately?';
+
+  @override
+  String get aiHubQuickLastYear => 'What was I doing this time last year?';
+
+  @override
+  String get aiHubQuickHappy => 'What small things made me happy recently?';
+
+  @override
+  String get aiHubQuickGrowth => 'How have I changed over the past half year?';
+
+  @override
+  String get aiHubRecapsGroup => 'Recaps';
+
+  @override
+  String get aiHubRecapMore => 'More options…';
+
+  @override
+  String get aiHubNoRecaps => 'No recaps yet';
+
+  @override
+  String get aiHubChatsGroup => 'Chats';
+
+  @override
+  String get aiHubNoChats => 'No chats yet. Ask a question above to start.';
+
+  @override
+  String get aiHubSearchChats => 'Search chats';
+
+  @override
+  String get aiChatUntitled => 'New chat';
+
+  @override
+  String get aiChatPin => 'Pin';
+
+  @override
+  String get aiChatUnpin => 'Unpin';
+
+  @override
+  String get aiChatRename => 'Rename';
+
+  @override
+  String get aiChatRenameTitle => 'Rename chat';
+
+  @override
+  String get aiChatDeleted => 'Chat deleted';
+
+  @override
+  String get aiChatInputHint => 'Ask something…';
+
+  @override
+  String get aiChatPlanning => 'Understanding the question…';
+
+  @override
+  String get aiChatSearching => 'Looking for related entries…';
+
+  @override
+  String aiChatCitations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used $count entries',
+      one: 'Used 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChatNoCitations => 'No related entries found';
+
+  @override
+  String get aiChatScope => 'Scope';
+
+  @override
+  String get aiChatScopeAuto => 'Auto';
+
+  @override
+  String aiChatScopeRecent(int days) {
+    return 'Last $days days';
+  }
+
+  @override
+  String get aiChatScopeAll => 'All entries';
+
+  @override
+  String get aiChatScopeRange => 'Date range…';
+
+  @override
+  String get aiChatScopeEntry => 'This entry';
+
+  @override
+  String get aiChatPersona => 'Persona';
+
+  @override
+  String get aiChatModel => 'Model';
+
+  @override
+  String aiChatModelDefault(String name) {
+    return 'Default ($name)';
+  }
+
+  @override
+  String get aiChatEditResend => 'Edit and resend';
+
+  @override
+  String get aiChatDeleteMessage => 'Delete message';
+
+  @override
+  String get aiChatCitationMissing => 'This entry no longer exists';
+
+  @override
+  String get aiChatEmptyHint =>
+      'Ask about your mood over a period, how something unfolded, or let AI help you remember.';
+
+  @override
+  String aiChatAboutEntry(String title) {
+    return 'About “$title”';
+  }
+
+  @override
+  String get aiHubTooltip => 'AI assistant';
+
+  @override
+  String get exploreModuleAi => 'AI insights';
+
+  @override
+  String get exploreModuleAiDesc => 'Your latest recap, and ask your diary';
+
+  @override
+  String get aiExploreNoRecap => 'No recap yet. How about one for this week?';
+
+  @override
+  String get aiExploreWeekly => 'This week\'s recap';
+
+  @override
+  String get aiExploreAsk => 'Ask my diary';
+
+  @override
+  String get aiExploreNotConfigured => 'Set up an AI service to use this';
+
+  @override
+  String get aiRecapStopped => 'Stopped. The partial recap isn\'t saved.';
+
+  @override
+  String get aiRecapHistory => 'Earlier recaps';
+
+  @override
+  String get aiRecapDeleteTitle => 'Delete this recap?';
+
+  @override
+  String get aiRecapNotebookPick => 'Choose a notebook';
+
+  @override
+  String get aiRecapCustomRange => 'Choose dates';
+
+  @override
+  String get aiRecapShareUnavailable =>
+      'Copied. Paste it wherever you\'d like to share.';
+
+  @override
+  String aiRecapModel(String model) {
+    return 'Written by $model';
+  }
+
+  @override
+  String get aiChatMore => 'More';
+
+  @override
+  String aiChatTokens(String input, String output) {
+    return '$input in · $output out';
+  }
+
+  @override
+  String get aiChatStoppedLabel => 'Stopped';
+
+  @override
+  String get aiChatDeleteMessageTitle => 'Delete this message?';
+
+  @override
+  String get aiChatDeleteTitle => 'Delete this chat?';
+
+  @override
+  String get aiChatDeleteBody =>
+      'Its messages are deleted too. Your entries aren\'t affected.';
+
+  @override
+  String get aiChatRangeTitle => 'Choose dates';
+
+  @override
+  String get aiChatScopeTitle => 'Search in';
+
+  @override
+  String get aiChatScopeAutoSubtitle =>
+      'Follows the search method in AI settings';
+
+  @override
+  String get aiHubOpenSettings => 'AI settings';
+
+  @override
+  String get aiHubSend => 'Ask';
+
+  @override
+  String get aiSettingsOpenHub => 'Open AI assistant';
+
+  @override
+  String get aiSettingsOpenHubSubtitle => 'Ask your diary and write recaps';
+
+  @override
+  String get aiProtocolOpenAiResponses => 'OpenAI Responses';
+
+  @override
+  String get aiPresetNameCustomOpenAiResponses => 'OpenAI Responses API';
 }

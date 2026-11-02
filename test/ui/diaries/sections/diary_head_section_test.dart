@@ -11,6 +11,7 @@ Widget _host({
   bool inManualNotebook = false,
   VoidCallback? onAddToNotebook,
   VoidCallback? onSetTags,
+  VoidCallback? onOpenAi,
 }) => MaterialApp(
   locale: const Locale('zh'),
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -36,6 +37,7 @@ Widget _host({
       draftCount: draftCount,
       onOpenViewOptions: () {},
       onOpenSearchPage: () {},
+      onOpenAi: onOpenAi,
     ),
   ),
 );
@@ -203,5 +205,17 @@ void main() {
     await tester.tap(find.text('设置标签'));
     await tester.pumpAndSettle();
     expect(tapped, 1);
+  });
+
+  testWidgets('the AI button appears only when AI can be opened', (
+    tester,
+  ) async {
+    final l10n = lookupAppLocalizations(const Locale('zh'));
+    await tester.pumpWidget(_host(selection: false));
+    expect(find.byTooltip(l10n.aiHubTooltip), findsNothing);
+    var opened = 0;
+    await tester.pumpWidget(_host(selection: false, onOpenAi: () => opened++));
+    await tester.tap(find.byTooltip(l10n.aiHubTooltip));
+    expect(opened, 1);
   });
 }

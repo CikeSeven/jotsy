@@ -44,10 +44,12 @@ Future<T> _whileEditing<T>(Future<T> Function() body) async {
 
 /// 给 [diary] 写一条留言：打开面板，保存后写库并轻震（动作生效，DESIGN
 /// §4.3）。返回是否写下了；取消或失败为 false（失败时提示）。
+/// [initialContent] 完整预填进面板，过长时由用户编辑，流程不截断文字。
 Future<bool> writeDiaryComment(
   BuildContext context,
   WidgetRef ref, {
   required Diary diary,
+  String initialContent = '',
 }) async {
   final l10n = context.l10n;
   final db = ref.read(appDatabaseProvider);
@@ -62,6 +64,7 @@ Future<bool> writeDiaryComment(
       context,
       title: '${l10n.diaryCommentSheetNew} · $relative',
       moodOptions: moodOptions,
+      initialDraft: DiaryCommentDraft(content: initialContent),
     );
     if (draft == null) return null;
     try {

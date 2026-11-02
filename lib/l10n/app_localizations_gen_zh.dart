@@ -590,7 +590,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutPrivacyDialogTitle => '隐私与数据安全';
 
   @override
-  String get aboutPrivacyDialogMessage => '你的日记、标签与媒体文件仅保存在本地设备，不会默认上传到云端。';
+  String get aboutPrivacyDialogMessage =>
+      '你的日记、标签与媒体文件仅保存在本地设备，不会默认上传到云端。AI 助手默认关闭；开启后，只在你使用 AI 功能时把所需内容直接发给你自己配置的 AI 服务，密钥只保存在本机。';
 
   @override
   String get aboutOpenSourceLicenses => '第三方开源组件与协议';
@@ -10582,4 +10583,1846 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncForgetBody => '两台设备上的日记都不会被删除。之后要同步需要重新配对。';
+
+  @override
+  String get settingsFeaturesAi => 'AI 助手';
+
+  @override
+  String get settingsFeaturesAiSubtitle => '用你自己的 AI 接口写作、回应、回顾与对话';
+
+  @override
+  String get aiPersonaAssistantName => '日记助手';
+
+  @override
+  String get aiPersonaAssistantDesc => '客观清楚，适合问答与总结';
+
+  @override
+  String get aiPersonaAssistantPrompt =>
+      '你是用户的日记助手，可以读到用户提供的日记。回答要以日记内容为依据，客观、清楚、有条理；不确定的地方直说，不要编造日记里没有的事。';
+
+  @override
+  String get aiPersonaListenerName => '温暖倾听者';
+
+  @override
+  String get aiPersonaListenerDesc => '先接住情绪，再温柔回应';
+
+  @override
+  String get aiPersonaListenerPrompt =>
+      '你是一位温暖、耐心的倾听者。读完用户的日记后，先表达理解、接住其中的情绪，再温柔地回应。不评判、不说教，少给建议，多一些共情与肯定；可以在结尾提一个温和的问题，引导用户多想一点。';
+
+  @override
+  String get aiPersonaFriendName => '知心朋友';
+
+  @override
+  String get aiPersonaFriendDesc => '像老朋友一样轻松聊天';
+
+  @override
+  String get aiPersonaFriendPrompt =>
+      '你是用户认识多年的好朋友，说话自然、轻松、真诚，会开玩笑也会认真。像朋友读了对方的日记后回一段话那样回应：聊聊你注意到的细节，说说你的感受，需要时再给点实在的建议。';
+
+  @override
+  String get aiPersonaCoachName => '成长教练';
+
+  @override
+  String get aiPersonaCoachDesc => '看到你的进步，找到下一步';
+
+  @override
+  String get aiPersonaCoachPrompt =>
+      '你是一位积极务实的成长教练。从日记中找出用户的努力、进步与值得肯定的地方，指出可以改进的模式，并给出一到三个具体、可执行的小行动。语气鼓励但不空洞。';
+
+  @override
+  String get aiPersonaAnalystName => '理性分析师';
+
+  @override
+  String get aiPersonaAnalystDesc => '冷静梳理来龙去脉';
+
+  @override
+  String get aiPersonaAnalystPrompt =>
+      '你是一位冷静、理性的分析者。帮助用户梳理日记中事情的来龙去脉、背后的原因与可能的选择，区分事实与感受，指出可能被忽略的角度。表达简洁、有结构。';
+
+  @override
+  String get aiPersonaCounselorName => '心理咨询风格';
+
+  @override
+  String get aiPersonaCounselorDesc => '用提问帮你看清自己的感受';
+
+  @override
+  String get aiPersonaCounselorPrompt =>
+      '你以心理咨询师常用的方式回应：倾听、复述与澄清，用开放式问题帮助用户觉察自己的情绪与需要，不急于下结论或给建议。你不是专业的心理治疗；如果日记中出现伤害自己或他人的想法，要温和地建议用户向身边的人或专业机构求助。';
+
+  @override
+  String get aiPersonaPoetName => '诗人';
+
+  @override
+  String get aiPersonaPoetDesc => '用诗意的语言回应这一天';
+
+  @override
+  String get aiPersonaPoetPrompt =>
+      '你是一位温柔的诗人。用富有意象、有诗意而不晦涩的语言回应用户的日记，可以写一小段散文诗或几行短诗，捕捉这一天的情绪与画面。';
+
+  @override
+  String get aiPersonaPhilosopherName => '哲学家';
+
+  @override
+  String get aiPersonaPhilosopherDesc => '从更大的视角想一想';
+
+  @override
+  String get aiPersonaPhilosopherPrompt =>
+      '你是一位亲切的哲学家。从日记里具体的小事出发，联系到更大的问题（意义、选择、时间、关系），引用恰当的思想或比喻，但保持平易近人，最后回到用户自己的生活。';
+
+  @override
+  String get aiPersonaFutureSelfName => '未来的自己';
+
+  @override
+  String get aiPersonaFutureSelfDesc => '十年后的你写来的回信';
+
+  @override
+  String get aiPersonaFutureSelfPrompt =>
+      '你是十年后的用户本人，正在重读这篇日记。用第一人称“我”给过去的自己写一段回信：温柔、了解一切来龙去脉，带着时间带来的释然与智慧，但不要编造具体的未来事件。';
+
+  @override
+  String get aiPersonaRoastName => '毒舌损友';
+
+  @override
+  String get aiPersonaRoastDesc => '嘴上不饶人，心里向着你';
+
+  @override
+  String get aiPersonaRoastPrompt =>
+      '你是嘴上毒舌、心里向着用户的损友。用幽默、夸张、调侃的方式吐槽日记里的事，但不挖苦用户真正的痛处，不涉及外貌、身份等敏感话题；结尾要露出关心。';
+
+  @override
+  String get aiActionContinue => '续写';
+
+  @override
+  String get aiActionContinuePrompt =>
+      '顺着下面这段日记的内容和语气，自然地往下写一段（约 100 到 200 字）。只写新的内容，不要重复原文。';
+
+  @override
+  String get aiActionPolish => '润色';
+
+  @override
+  String get aiActionPolishPrompt =>
+      '润色下面的文字：让表达更流畅自然，修正不通顺的地方，保留原意、语气和第一人称视角，不要扩写。';
+
+  @override
+  String get aiActionExpand => '扩写';
+
+  @override
+  String get aiActionExpandPrompt =>
+      '扩写下面的文字：补充细节、感受与画面，让内容更丰满，长度大约增加一倍，保持原来的语气和视角。';
+
+  @override
+  String get aiActionShorten => '精简';
+
+  @override
+  String get aiActionShortenPrompt => '精简下面的文字：保留关键信息和情绪，删去重复与啰嗦的部分，长度减半左右。';
+
+  @override
+  String get aiActionProofread => '纠错';
+
+  @override
+  String get aiActionProofreadPrompt => '修正下面文字中的错别字、标点和语法错误，其余内容保持原样，不要改写。';
+
+  @override
+  String get aiActionToneFormal => '正式一点';
+
+  @override
+  String get aiActionToneFormalPrompt => '把下面的文字改写得更正式、得体，保留原意。';
+
+  @override
+  String get aiActionToneCasual => '轻松一点';
+
+  @override
+  String get aiActionToneCasualPrompt => '把下面的文字改写得更轻松、口语化，像在和朋友聊天，保留原意。';
+
+  @override
+  String get aiActionToneWarm => '温暖一点';
+
+  @override
+  String get aiActionToneWarmPrompt => '把下面的文字改写得更温暖、柔和，多一些善意与体贴，保留原意。';
+
+  @override
+  String get aiActionToneHumor => '幽默一点';
+
+  @override
+  String get aiActionToneHumorPrompt => '把下面的文字改写得更幽默风趣，加一点俏皮的比喻或自嘲，保留原意。';
+
+  @override
+  String get aiActionToneLiterary => '文艺一点';
+
+  @override
+  String get aiActionToneLiteraryPrompt =>
+      '把下面的文字改写得更有文学性：用更细腻的描写和恰当的修辞，但不要堆砌辞藻，保留原意。';
+
+  @override
+  String get aiActionTranslate => '翻译';
+
+  @override
+  String get aiActionTranslatePrompt =>
+      '翻译下面的文字。如果原文主要是中文，就翻译成英文；否则翻译成简体中文。只输出译文。';
+
+  @override
+  String get aiActionSummarize => '总结';
+
+  @override
+  String get aiActionSummarizePrompt => '用两三句话总结下面这段文字的要点。';
+
+  @override
+  String get aiActionBulletPoints => '列成要点';
+
+  @override
+  String get aiActionBulletPointsPrompt =>
+      '把下面的文字整理成条理清楚的要点列表（Markdown 无序列表），每条简短。';
+
+  @override
+  String get aiActionExtractTodos => '提取待办';
+
+  @override
+  String get aiActionExtractTodosPrompt =>
+      '找出下面文字中提到的待办、计划或需要跟进的事，整理成 Markdown 任务列表，每行以“- [ ] ”开头。如果没有，就只回复一行说明没有找到。';
+
+  @override
+  String get aiActionPoem => '写成小诗';
+
+  @override
+  String get aiActionPoemPrompt => '把下面的内容写成一首简短的现代诗（4 到 12 行），保留其中的情绪与画面。';
+
+  @override
+  String get aiErrorNotConfigured => '还没有可用的 AI 模型，请先在 设置 → AI 助手 里添加服务商。';
+
+  @override
+  String get aiErrorNetwork => '连不上 AI 服务，请检查网络、接口地址或代理。';
+
+  @override
+  String get aiErrorTimeout => 'AI 服务响应超时。';
+
+  @override
+  String get aiErrorUnauthorized => 'API 密钥无效或没有填写。';
+
+  @override
+  String get aiErrorForbidden => '这个密钥没有该模型的权限，或服务在当前地区不可用。';
+
+  @override
+  String get aiErrorModelNotFound => '找不到模型或接口，请检查模型名与接口地址。';
+
+  @override
+  String get aiErrorRateLimited => '请求太频繁，请稍后再试。';
+
+  @override
+  String get aiErrorQuota => '账户余额或额度不足。';
+
+  @override
+  String get aiErrorContextTooLong =>
+      '内容超过了模型能处理的长度。可以在 AI 隐私设置里调低字数上限，或换一个上下文更长的模型。';
+
+  @override
+  String get aiErrorContentFiltered => 'AI 服务按内容策略拒绝了这次请求。';
+
+  @override
+  String get aiErrorBadRequest => 'AI 服务不接受这次请求，请检查服务商的高级设置。';
+
+  @override
+  String get aiErrorServer => 'AI 服务出错或过载，请稍后再试。';
+
+  @override
+  String get aiErrorBadResponse => '无法识别返回的内容，接口地址可能填成了网页地址。';
+
+  @override
+  String get aiErrorCancelled => '已停止';
+
+  @override
+  String get aiErrorDetails => '查看详情';
+
+  @override
+  String get aiErrorOpenSettings => '去设置';
+
+  @override
+  String get aiSettingsTitle => 'AI 助手';
+
+  @override
+  String get aiSettingsEntrySubtitle => '服务商、模型、人设与隐私';
+
+  @override
+  String get aiSettingsFooter =>
+      '开发者收不到任何内容：请求从这台设备直接发往你配置的服务商；API 密钥只保存在本机，不会进入备份或同步。';
+
+  @override
+  String get aiStatusNotConfiguredTitle => '还没有配置 AI 服务';
+
+  @override
+  String get aiStatusNotConfiguredBody =>
+      '添加一个服务商并填入 API 密钥，AI 功能就会出现在编辑器、预览页和首页。内容只会发到你自己配置的服务。';
+
+  @override
+  String get aiStatusAddProvider => '添加服务商';
+
+  @override
+  String get aiStatusDefaultModel => '默认模型';
+
+  @override
+  String get aiStatusTest => '测试连接';
+
+  @override
+  String get aiStatusTesting => '正在测试…';
+
+  @override
+  String aiStatusTestOk(int ms) {
+    return '连接成功 · $ms 毫秒';
+  }
+
+  @override
+  String get aiGroupService => '服务';
+
+  @override
+  String get aiProvidersTitle => '服务商';
+
+  @override
+  String aiProvidersCount(int count) {
+    return '$count 个服务商';
+  }
+
+  @override
+  String get aiProvidersEmpty => '还没有添加';
+
+  @override
+  String get aiRoutingTitle => '模型分配';
+
+  @override
+  String get aiRoutingSubtitle => '为不同的功能选择不同的模型';
+
+  @override
+  String get aiGroupFeatures => '功能';
+
+  @override
+  String get aiGroupFeaturesFooter => '关闭只隐藏入口，已有的 AI 记录保留。';
+
+  @override
+  String get aiModuleWriting => '写作助手';
+
+  @override
+  String get aiModuleWritingSubtitle => '编辑器里续写、润色、改语气、翻译与自定义指令';
+
+  @override
+  String get aiModuleSuggest => '智能填写';
+
+  @override
+  String get aiModuleSuggestSubtitle => '生成标题，推荐标签与心情';
+
+  @override
+  String get aiModuleReply => '读后回应';
+
+  @override
+  String get aiModuleReplySubtitle => '在预览页让 AI 读完这篇日记后回应你';
+
+  @override
+  String get aiModulePrompts => '写作灵感';
+
+  @override
+  String get aiModulePromptsSubtitle => '不知道写什么时，给你几个问题';
+
+  @override
+  String get aiModuleRecap => '回顾与洞察';
+
+  @override
+  String get aiModuleRecapSubtitle => '按周、月、年或日记本生成总结';
+
+  @override
+  String get aiModuleChat => '与日记对话';
+
+  @override
+  String get aiModuleChatSubtitle => '问问你的日记，回答会引用相关的篇目';
+
+  @override
+  String get aiModuleVision => '图片理解';
+
+  @override
+  String get aiModuleVisionSubtitle => '把日记里的图片一起发给模型；模型不认图片时自动只发文字';
+
+  @override
+  String get aiOptionTitleButton => '标题旁显示“生成标题”';
+
+  @override
+  String get aiOptionAutoSuggest => '进入发布页时自动建议';
+
+  @override
+  String get aiOptionAutoSuggestSubtitle => '会发送一次正文来建议标题、标签与心情；点选后才会填入';
+
+  @override
+  String get aiOptionAutoReply => '发表后自动回应';
+
+  @override
+  String get aiOptionAutoReplySubtitle => '每发表一篇新日记就发送一次，自动生成回应';
+
+  @override
+  String get aiOptionPromptsStrip => '新建日记时显示灵感条';
+
+  @override
+  String get aiOptionPromptsStripSubtitle => '点了才会生成';
+
+  @override
+  String get aiOptionPromptsRecent => '参考最近的日记';
+
+  @override
+  String get aiOptionPromptsRecentSubtitle => '生成时附上最近几篇日记的摘录，问题更贴近你';
+
+  @override
+  String get aiOptionPromptStyle => '插入样式';
+
+  @override
+  String get aiPromptStyleCallout => '提示块';
+
+  @override
+  String get aiPromptStyleQuote => '引用';
+
+  @override
+  String get aiPromptStyleHeading => '小标题';
+
+  @override
+  String get aiOptionRecapSections => '回顾默认包含';
+
+  @override
+  String get aiRecapSectionMood => '心情走势';
+
+  @override
+  String get aiRecapSectionEvents => '重要的事';
+
+  @override
+  String get aiRecapSectionPeople => '身边的人';
+
+  @override
+  String get aiRecapSectionGratitude => '值得感恩';
+
+  @override
+  String get aiRecapSectionGrowth => '成长与变化';
+
+  @override
+  String get aiRecapSectionQuotes => '金句摘录';
+
+  @override
+  String get aiRecapSectionSuggestions => '下一步建议';
+
+  @override
+  String get aiOptionRetrieval => '查找相关日记';
+
+  @override
+  String get aiOptionRetrievalSubtitle =>
+      '智能：先理解问题再查找；关键词：只按问题里的词查找；最近：只看最近一段时间';
+
+  @override
+  String get aiRetrievalSmart => '智能';
+
+  @override
+  String get aiRetrievalKeyword => '关键词';
+
+  @override
+  String get aiRetrievalRecent => '最近';
+
+  @override
+  String get aiOptionRecentDays => '最近多少天';
+
+  @override
+  String aiDays(int count) {
+    return '$count 天';
+  }
+
+  @override
+  String get aiOptionMaxCitations => '最多参考';
+
+  @override
+  String aiEntries(int count) {
+    return '$count 篇';
+  }
+
+  @override
+  String get aiOptionShowReasoning => '显示思考过程';
+
+  @override
+  String get aiOptionShowTokens => '显示用量';
+
+  @override
+  String get aiOptionAutoTitle => '自动给对话起标题';
+
+  @override
+  String get aiOptionVisionImages => '每次最多发送';
+
+  @override
+  String aiPhotos(int count) {
+    return '$count 张';
+  }
+
+  @override
+  String get aiOptionVisionSize => '图片尺寸';
+
+  @override
+  String get aiVisionSizeSmall => '小';
+
+  @override
+  String get aiVisionSizeMedium => '中';
+
+  @override
+  String get aiVisionSizeLarge => '大';
+
+  @override
+  String get aiGroupPersonal => '个性化';
+
+  @override
+  String get aiPersonasTitle => '人设';
+
+  @override
+  String get aiPersonasSubtitle => '回应、对话与回顾用谁的口吻';
+
+  @override
+  String get aiActionsTitle => '写作指令';
+
+  @override
+  String get aiActionsSubtitle => '排序、隐藏、改写提示词，或添加自己的指令';
+
+  @override
+  String get aiProfileTitle => '关于我与文风';
+
+  @override
+  String get aiProfileSubtitle => '让 AI 更了解你（可选）';
+
+  @override
+  String get aiOutputLanguage => '回答语言';
+
+  @override
+  String get aiLanguageFollowDiary => '跟随日记';
+
+  @override
+  String get aiLanguageFollowApp => '跟随界面';
+
+  @override
+  String get aiLanguageCustom => '指定';
+
+  @override
+  String get aiLanguageCustomHint => '如：English、日本語';
+
+  @override
+  String get aiResponseLength => '回答长度';
+
+  @override
+  String get aiLengthShort => '简短';
+
+  @override
+  String get aiLengthMedium => '适中';
+
+  @override
+  String get aiLengthLong => '详细';
+
+  @override
+  String get aiCreativity => '创造力';
+
+  @override
+  String get aiCreativitySubtitle => '只对接受温度参数的服务商生效';
+
+  @override
+  String get aiCreativityPrecise => '严谨';
+
+  @override
+  String get aiCreativityBalanced => '平衡';
+
+  @override
+  String get aiCreativityCreative => '发散';
+
+  @override
+  String get aiGroupPrivacy => '隐私与用量';
+
+  @override
+  String get aiPrivacyTitle => '隐私';
+
+  @override
+  String get aiPrivacySubtitle => '发送哪些信息、排除哪些日记';
+
+  @override
+  String get aiUsageTitle => '用量';
+
+  @override
+  String get aiUsageSubtitle => '本机记录的请求次数与 token';
+
+  @override
+  String get aiProvidersFooter => '没有指定默认模型时，用第一个可用的服务商，可以在“模型分配”里改。';
+
+  @override
+  String aiProviderModelsCount(int count) {
+    return '$count 个模型';
+  }
+
+  @override
+  String get aiProviderDisabled => '已停用';
+
+  @override
+  String get aiProviderNoKey => '未填密钥';
+
+  @override
+  String get aiPresetSheetTitle => '选择服务商';
+
+  @override
+  String get aiPresetGroupChina => '国内服务';
+
+  @override
+  String get aiPresetGroupInternational => '国际服务';
+
+  @override
+  String get aiPresetGroupLocal => '本地运行';
+
+  @override
+  String get aiPresetGroupCustom => '自定义接口';
+
+  @override
+  String get aiPresetNameDashscope => '通义千问（阿里云百炼）';
+
+  @override
+  String get aiPresetNameMoonshot => 'Kimi（月之暗面）';
+
+  @override
+  String get aiPresetNameZhipu => '智谱 GLM';
+
+  @override
+  String get aiPresetNameVolcengine => '豆包（火山方舟）';
+
+  @override
+  String get aiPresetNameSiliconflow => '硅基流动';
+
+  @override
+  String get aiPresetNameHunyuan => '腾讯混元';
+
+  @override
+  String get aiPresetNameCustomOpenAi => 'OpenAI 兼容接口';
+
+  @override
+  String get aiPresetNameCustomAnthropic => 'Anthropic 兼容接口';
+
+  @override
+  String get aiPresetNameCustomGemini => 'Gemini 接口';
+
+  @override
+  String get aiProtocolOpenAi => 'OpenAI 兼容';
+
+  @override
+  String get aiProtocolAnthropic => 'Anthropic（Claude）';
+
+  @override
+  String get aiProtocolGemini => 'Google Gemini';
+
+  @override
+  String get aiProviderEditTitleNew => '添加服务商';
+
+  @override
+  String get aiProviderEditTitle => '编辑服务商';
+
+  @override
+  String get aiProviderName => '名称';
+
+  @override
+  String get aiProviderProtocol => '接口格式';
+
+  @override
+  String get aiProviderBaseUrl => '接口地址';
+
+  @override
+  String get aiProviderBaseUrlHint => '例如 https://api.example.com/v1';
+
+  @override
+  String get aiProviderApiKey => 'API 密钥';
+
+  @override
+  String get aiProviderApiKeyOptional => 'API 密钥（本地服务可不填）';
+
+  @override
+  String get aiProviderGetKey => '获取密钥';
+
+  @override
+  String get aiProviderLocalHint =>
+      '手机上连接电脑里的 Ollama / LM Studio 时，请把 localhost 换成电脑的局域网地址，并让服务监听 0.0.0.0。';
+
+  @override
+  String get aiProviderModels => '模型';
+
+  @override
+  String get aiProviderFetchModels => '获取模型列表';
+
+  @override
+  String get aiProviderAddModel => '手动添加';
+
+  @override
+  String get aiProviderModelsEmpty => '还没有模型。点“获取模型列表”从服务商读取，或手动添加模型名。';
+
+  @override
+  String get aiProviderModelIdHint => '模型名，如 deepseek-chat';
+
+  @override
+  String get aiModelVision => '看图';
+
+  @override
+  String get aiModelReasoning => '思考';
+
+  @override
+  String get aiModelEditTitle => '模型设置';
+
+  @override
+  String get aiModelDisplayName => '显示名（可选）';
+
+  @override
+  String get aiModelVisionToggle => '支持图片输入';
+
+  @override
+  String get aiModelReasoningToggle => '请求思考过程';
+
+  @override
+  String get aiModelReasoningSubtitle => '让模型返回思考过程；模型不支持时自动去掉再试';
+
+  @override
+  String get aiModelMaxOutput => '最多输出（token）';
+
+  @override
+  String get aiModelContext => '上下文长度（token）';
+
+  @override
+  String get aiModelAuto => '自动';
+
+  @override
+  String get aiModelRemove => '移除模型';
+
+  @override
+  String get aiModelPickerTitle => '选择要使用的模型';
+
+  @override
+  String get aiModelPickerSearch => '搜索模型';
+
+  @override
+  String aiModelPickerAdd(int count) {
+    return '添加 $count 个';
+  }
+
+  @override
+  String get aiModelPickerEmpty => '服务商没有返回模型，请手动添加模型名。';
+
+  @override
+  String get aiProviderAdvanced => '高级';
+
+  @override
+  String get aiProviderProxy => 'HTTP 代理';
+
+  @override
+  String get aiProviderProxyHint => '主机:端口，如 127.0.0.1:7890；留空直连';
+
+  @override
+  String get aiProviderHeaders => '自定义请求头';
+
+  @override
+  String get aiProviderHeadersHint => '每行一个，格式为 名称: 值';
+
+  @override
+  String get aiProviderExtraBody => '额外请求参数（JSON）';
+
+  @override
+  String get aiProviderExtraBodyHint => '合并进每次请求的 JSON 对象，用于服务商特有的参数';
+
+  @override
+  String get aiProviderExtraBodyInvalid => '不是有效的 JSON 对象';
+
+  @override
+  String get aiProviderStream => '流式输出';
+
+  @override
+  String get aiProviderStreamSubtitle => '边生成边显示；个别转发服务不支持时关闭';
+
+  @override
+  String get aiProviderIncludeUsage => '请求用量统计';
+
+  @override
+  String get aiProviderIncludeUsageSubtitle => '流式时让服务端返回 token 用量；请求报错时关闭';
+
+  @override
+  String get aiProviderSendTemperature => '发送温度参数';
+
+  @override
+  String get aiProviderSendTemperatureSubtitle =>
+      '较新的 Claude 模型不接受，Anthropic 默认关闭';
+
+  @override
+  String get aiProviderTimeout => '首字等待';
+
+  @override
+  String aiSeconds(int count) {
+    return '$count 秒';
+  }
+
+  @override
+  String get aiProviderRetries => '自动重试';
+
+  @override
+  String aiTimes(int count) {
+    return '$count 次';
+  }
+
+  @override
+  String get aiProviderEnabled => '启用';
+
+  @override
+  String get aiProviderDelete => '删除服务商';
+
+  @override
+  String aiProviderDeleteTitle(String name) {
+    return '删除「$name」？';
+  }
+
+  @override
+  String get aiProviderDeleteBody => '它的密钥与模型设置会一并移除，分配给它的功能恢复为默认模型。';
+
+  @override
+  String get aiProviderNameRequired => '请填写名称';
+
+  @override
+  String get aiProviderUrlInvalid => '请填写以 http:// 或 https:// 开头的地址';
+
+  @override
+  String get aiProviderNeedModel => '请先添加至少一个模型';
+
+  @override
+  String get aiProviderDiscardTitle => '放弃未保存的修改？';
+
+  @override
+  String get aiProviderDiscard => '放弃';
+
+  @override
+  String get aiRoutingDefault => '默认模型';
+
+  @override
+  String get aiRoutingDefaultSubtitle => '没有单独指定的功能都用它';
+
+  @override
+  String get aiRoutingFast => '快速模型';
+
+  @override
+  String get aiRoutingFastSubtitle => '智能填写、写作灵感等短任务优先用它，可以选一个便宜又快的模型';
+
+  @override
+  String get aiRoutingTasksGroup => '按功能指定';
+
+  @override
+  String get aiRoutingFollowDefault => '跟随默认';
+
+  @override
+  String get aiRoutingFollowFast => '跟随快速模型';
+
+  @override
+  String aiRoutingFirstUsable(String name) {
+    return '第一个可用的（$name）';
+  }
+
+  @override
+  String get aiRoutingNone => '未设置';
+
+  @override
+  String get aiRoutingPickTitle => '选择模型';
+
+  @override
+  String get aiTaskWriting => '写作助手';
+
+  @override
+  String get aiTaskSuggest => '智能填写';
+
+  @override
+  String get aiTaskReply => '读后回应';
+
+  @override
+  String get aiTaskPrompts => '写作灵感';
+
+  @override
+  String get aiTaskRecap => '回顾';
+
+  @override
+  String get aiTaskChat => '对话';
+
+  @override
+  String get aiTaskVision => '描述图片';
+
+  @override
+  String get aiTaskUtility => '内部小任务';
+
+  @override
+  String get aiTaskUtilitySubtitle => '对话标题、检索计划、长回顾的分段摘要';
+
+  @override
+  String get aiPersonasDefaultsGroup => '默认人设';
+
+  @override
+  String get aiPersonaUseReply => '读后回应';
+
+  @override
+  String get aiPersonaUseChat => '对话';
+
+  @override
+  String get aiPersonaUseRecap => '回顾';
+
+  @override
+  String get aiPersonasBuiltInGroup => '内置人设';
+
+  @override
+  String get aiPersonasMineGroup => '我的人设';
+
+  @override
+  String get aiPersonasMineEmpty => '还没有自己的人设。可以新建，也可以把内置人设复制过来再改。';
+
+  @override
+  String get aiPersonaAdd => '新建人设';
+
+  @override
+  String get aiPersonaDuplicate => '复制为我的人设';
+
+  @override
+  String get aiPersonaEditTitleNew => '新建人设';
+
+  @override
+  String get aiPersonaEditTitle => '编辑人设';
+
+  @override
+  String get aiPersonaName => '名称';
+
+  @override
+  String get aiPersonaEmoji => '表情';
+
+  @override
+  String get aiPersonaPrompt => '提示词';
+
+  @override
+  String get aiPersonaPromptHint => '描述 TA 是谁、怎么说话、怎么回应你的日记';
+
+  @override
+  String aiPersonaLimit(int count) {
+    return '最多 $count 个人设';
+  }
+
+  @override
+  String aiPersonaCopySuffix(String name) {
+    return '$name（副本）';
+  }
+
+  @override
+  String get aiCommonHidden => '已隐藏';
+
+  @override
+  String get aiCommonHide => '隐藏';
+
+  @override
+  String get aiCommonShow => '显示';
+
+  @override
+  String get aiCommonRestoreDefault => '恢复默认';
+
+  @override
+  String aiCommonDeleted(String name) {
+    return '已删除「$name」';
+  }
+
+  @override
+  String get aiActionsFooter => '拖动调整顺序，这里的顺序就是编辑器里指令的排列。';
+
+  @override
+  String get aiActionAdd => '新建指令';
+
+  @override
+  String get aiActionCustomized => '已改写';
+
+  @override
+  String get aiActionEditTitleNew => '新建指令';
+
+  @override
+  String get aiActionEditTitle => '编辑指令';
+
+  @override
+  String get aiActionName => '名称';
+
+  @override
+  String get aiActionEmoji => '图标';
+
+  @override
+  String get aiActionPrompt => '提示词';
+
+  @override
+  String get aiActionPromptHint => '告诉 AI 怎么处理这段文字';
+
+  @override
+  String get aiActionVariables => '插入变量';
+
+  @override
+  String get aiActionVariablesHelp => '提示词里没有“文字”变量时，作用的文字会自动附在提示词后面。';
+
+  @override
+  String get aiVariableText => '文字';
+
+  @override
+  String get aiVariableDiary => '全文';
+
+  @override
+  String get aiVariableTitle => '标题';
+
+  @override
+  String get aiVariableDate => '日期';
+
+  @override
+  String get aiVariableMood => '心情';
+
+  @override
+  String get aiActionOutput => '结果';
+
+  @override
+  String get aiOutputReplace => '替换原文';
+
+  @override
+  String get aiOutputInsertBelow => '插在下方';
+
+  @override
+  String get aiOutputPreview => '只预览';
+
+  @override
+  String aiActionLimit(int count) {
+    return '最多 $count 个自定义指令';
+  }
+
+  @override
+  String get aiActionResetPromptTitle => '恢复默认提示词？';
+
+  @override
+  String get aiProfileAboutMe => '关于我';
+
+  @override
+  String get aiProfileAboutMeHint => '比如你的身份、生活状态、在意的事，AI 回应时会参考';
+
+  @override
+  String get aiProfileStyle => '文风偏好';
+
+  @override
+  String get aiProfileStyleHint => '比如：简洁朴素、少用形容词、多用短句';
+
+  @override
+  String get aiProfileFooter => '这些内容会随每次请求一起发送；留空则不发送。';
+
+  @override
+  String get aiPrivacySendGroup => '随日记一起发送';
+
+  @override
+  String get aiPrivacySendFooter => '标题与正文总会发送；私密日记本、回收站与未解封的时间胶囊永远不会发送。';
+
+  @override
+  String get aiPrivacyDate => '日期';
+
+  @override
+  String get aiPrivacyMood => '心情';
+
+  @override
+  String get aiPrivacyTags => '标签';
+
+  @override
+  String get aiPrivacyWeather => '天气';
+
+  @override
+  String get aiPrivacyLocation => '地点';
+
+  @override
+  String get aiPrivacyScopeGroup => '对话与回顾的范围';
+
+  @override
+  String get aiPrivacyIncludeArchived => '包含已归档的日记';
+
+  @override
+  String get aiPrivacyExcludedNotebooks => '排除的日记本';
+
+  @override
+  String get aiPrivacyExcludedTags => '排除的标签';
+
+  @override
+  String get aiPrivacyExcludedNone => '无';
+
+  @override
+  String aiPrivacyExcludedCount(int count) {
+    return '已选 $count 项';
+  }
+
+  @override
+  String get aiPrivacyPickNotebooks => '选择要排除的日记本';
+
+  @override
+  String get aiPrivacyPickTags => '选择要排除的标签';
+
+  @override
+  String get aiPrivacyPickEmpty => '没有可选的项目';
+
+  @override
+  String get aiPrivacyBudget => '最多发送';
+
+  @override
+  String get aiPrivacyPerDiary => '每篇最多';
+
+  @override
+  String aiWords(int count) {
+    return '$count 字';
+  }
+
+  @override
+  String get aiPrivacyConfirmGroup => '发送前确认';
+
+  @override
+  String get aiPrivacyConfirmSubtitle =>
+      '首次：每个服务商只问一次；多篇时：对话与回顾每次都显示要发送的篇数与字数；每次：所有请求都先确认。';
+
+  @override
+  String get aiConfirmFirstTime => '首次';
+
+  @override
+  String get aiConfirmMultiDiary => '多篇时';
+
+  @override
+  String get aiConfirmAlways => '每次';
+
+  @override
+  String get aiPrivacyAllowPrivate => '允许对私密日记使用 AI';
+
+  @override
+  String get aiPrivacyAllowPrivateSubtitle =>
+      '打开后，私密日记本里的日记也能用写作助手与读后回应；对话与回顾仍然不会读取它们。';
+
+  @override
+  String get aiPrivacyResetHosts => '重置“不再提示”';
+
+  @override
+  String get aiPrivacyResetHostsSubtitle => '让每个服务商重新确认一次';
+
+  @override
+  String get aiPrivacyResetHostsDone => '已重置，下次发送前会再次确认。';
+
+  @override
+  String get aiUsageEmpty => '还没有用量记录';
+
+  @override
+  String aiUsageRequests(int count) {
+    return '$count 次请求';
+  }
+
+  @override
+  String aiUsageFailures(int count) {
+    return '$count 次失败';
+  }
+
+  @override
+  String aiUsageTokens(String input, String output) {
+    return '输入 $input · 输出 $output';
+  }
+
+  @override
+  String aiUsageMonthTotal(String tokens) {
+    return '共 $tokens token';
+  }
+
+  @override
+  String get aiUsageClear => '清除用量记录';
+
+  @override
+  String get aiUsageClearTitle => '清除用量记录？';
+
+  @override
+  String get aiUsageClearBody => '只清除本机的统计，不影响服务商那边的账单。';
+
+  @override
+  String get aiUsageFooter => '只统计从这台设备发出的请求，实际费用以服务商账单为准。';
+
+  @override
+  String get aiPrivacyRecordsGroup => 'AI 记录';
+
+  @override
+  String get aiPrivacyRecordsFooter => '对话、读后回应与回顾保存在这台设备上，随完整备份导出，不参与局域网同步。';
+
+  @override
+  String get aiPrivacyClearRecords => '清除全部 AI 记录';
+
+  @override
+  String aiPrivacyClearRecordsSubtitle(int count) {
+    return '共 $count 条对话与结果';
+  }
+
+  @override
+  String get aiPrivacyClearRecordsTitle => '清除全部 AI 记录？';
+
+  @override
+  String get aiPrivacyClearRecordsBody =>
+      '所有对话、读后回应与回顾都会从这台设备删除，不能撤销。日记本身不受影响。';
+
+  @override
+  String get aiPrivacyClearRecordsDone => '已清除全部 AI 记录';
+
+  @override
+  String get aiPromptSystemBase =>
+      '你是日记应用 Jotsy 里的 AI 助手，和你对话的是日记的作者本人。真诚、具体，不编造日记里没有的事实。';
+
+  @override
+  String aiPromptAboutUser(String text) {
+    return '关于用户：$text';
+  }
+
+  @override
+  String aiPromptWritingStyle(String text) {
+    return '用户偏好的文风：$text';
+  }
+
+  @override
+  String aiPromptRespondIn(String language) {
+    return '请用$language回答。';
+  }
+
+  @override
+  String get aiPromptRespondLikeDiary => '用日记所用的语言回答。';
+
+  @override
+  String get aiPromptLanguageChinese => '中文';
+
+  @override
+  String get aiPromptLanguageEnglish => '英文';
+
+  @override
+  String get aiPromptLengthShort => '回答尽量简短，三五句以内。';
+
+  @override
+  String get aiPromptLengthMedium => '回答长度适中。';
+
+  @override
+  String get aiPromptLengthLong => '可以写得详细一些。';
+
+  @override
+  String aiPromptPersona(String text) {
+    return '你的身份：$text';
+  }
+
+  @override
+  String get aiPromptFieldTitle => '标题';
+
+  @override
+  String get aiPromptFieldDate => '日期';
+
+  @override
+  String get aiPromptFieldMood => '心情';
+
+  @override
+  String get aiPromptFieldTags => '标签';
+
+  @override
+  String get aiPromptFieldWeather => '天气';
+
+  @override
+  String get aiPromptFieldLocation => '地点';
+
+  @override
+  String get aiPromptFieldBody => '正文';
+
+  @override
+  String get aiPromptTruncated => '（后文省略）';
+
+  @override
+  String aiPromptImagesAttached(int count) {
+    return '日记附有 $count 张照片，一并参考。';
+  }
+
+  @override
+  String get aiPromptWritingSystem =>
+      '你是帮助用户修改自己日记的写作助手。只输出处理后的文字本身，不要解释、不要加引号或开场白；保持第一人称视角。可以使用 Markdown 的列表、加粗与任务列表，不要使用标题。';
+
+  @override
+  String get aiPromptWritingContext => '供参考的日记全文（不要重复它）：';
+
+  @override
+  String aiPromptCustomInstruction(String text) {
+    return '按这条要求处理下面的文字：$text';
+  }
+
+  @override
+  String get aiPromptReplyInstruction =>
+      '下面是用户写下的一篇日记。请以你的身份读完后直接回应用户。不要复述日记内容，不要使用标题。';
+
+  @override
+  String get aiPromptSuggestInstruction =>
+      '根据下面的日记给出建议：一个简短贴切的标题（不超过 20 字，不加引号或书名号）；从用户已有的标签里选 0 到 3 个；确有必要时再建议最多 2 个新标签（每个不超过 6 个字）；从给定的心情选项中选出最符合的一个，拿不准就留空。只输出一个 JSON 对象，严格按下面的格式：';
+
+  @override
+  String aiPromptSuggestTagsList(String tags) {
+    return '用户已有的标签：$tags';
+  }
+
+  @override
+  String aiPromptSuggestMoodList(String moods) {
+    return '心情选项：$moods';
+  }
+
+  @override
+  String get aiPromptPromptsInstruction =>
+      '为用户今天的日记想 3 个具体、温和、容易下笔的问题，帮助用户开始写。每个问题一行，不要编号，不要其他内容。';
+
+  @override
+  String aiPromptPromptsToday(String date) {
+    return '今天：$date';
+  }
+
+  @override
+  String get aiPromptPromptsRecent => '用户最近几篇日记的摘录，可以借此让问题更贴近用户：';
+
+  @override
+  String aiPromptRecapInstruction(String period) {
+    return '下面是用户在$period写下的日记。请写一份回顾，用 Markdown 小标题组织，包含以下部分：';
+  }
+
+  @override
+  String get aiPromptRecapRules =>
+      '只根据日记内容写，不要编造；提到具体的日子时写上日期。日记带有 [D编号] 的，可以在句末用 [D编号] 引用。';
+
+  @override
+  String get aiPromptRecapChunk =>
+      '下面是用户一段时间内的日记。请用要点概括这段时间发生的事、情绪与想法，保留具体的日期与细节，供之后汇总成回顾。';
+
+  @override
+  String get aiPromptRecapFromSummaries => '以下是这段时间各部分的摘要，按时间先后：';
+
+  @override
+  String aiPromptRecapStats(int count, int words) {
+    return '统计：共 $count 篇日记，$words 字。';
+  }
+
+  @override
+  String aiPromptRecapMoods(String moods) {
+    return '心情分布：$moods';
+  }
+
+  @override
+  String aiPromptRecapTopTags(String tags) {
+    return '常用标签：$tags';
+  }
+
+  @override
+  String get aiPromptChatSystem =>
+      '你可以读到用户的部分日记，每篇以 [D编号] 标记。回答用户的问题时以这些日记为依据；用到某篇日记时，在句末写上它的编号，如 [D3]。日记里没有的信息不要编造，找不到就直说。';
+
+  @override
+  String get aiPromptChatContextHeader => '以下是相关的日记：';
+
+  @override
+  String get aiPromptChatNoDiaries => '（没有找到与问题相关的日记。）';
+
+  @override
+  String aiPromptChatToday(String date) {
+    return '今天是 $date。';
+  }
+
+  @override
+  String get aiPromptChatTitle => '用不超过 12 个字概括这次对话的主题，只输出标题本身。';
+
+  @override
+  String aiPromptRetrievalPlan(String date) {
+    return '把用户的问题转成日记检索计划。今天是 $date。给出最多 8 个可能出现在日记里的简短关键词（含近义词），只有问题隐含时间范围时才给出日期范围。只输出一个 JSON 对象，严格按下面的格式：';
+  }
+
+  @override
+  String get aiPromptDescribeImage => '用一两句话描述这张照片的内容与氛围，作为日记里的图片说明。只输出描述本身。';
+
+  @override
+  String get aiToolbarLabel => 'AI 写作';
+
+  @override
+  String get aiPanelTitle => 'AI 写作';
+
+  @override
+  String get aiScopeSelection => '选中的文字';
+
+  @override
+  String get aiScopeParagraph => '当前段落';
+
+  @override
+  String get aiScopeBeforeCaret => '光标前的内容';
+
+  @override
+  String get aiScopeDocument => '全文';
+
+  @override
+  String aiScopeSummary(String scope, int words) {
+    return '$scope · $words 字';
+  }
+
+  @override
+  String get aiPanelInstructionHint => '告诉 AI 怎么改，比如“改得更口语一点”';
+
+  @override
+  String get aiPanelSend => '发送';
+
+  @override
+  String get aiPanelThinking => '正在思考…';
+
+  @override
+  String get aiPanelReplace => '替换';
+
+  @override
+  String get aiPanelInsertBelow => '插在下方';
+
+  @override
+  String get aiPanelCopy => '复制';
+
+  @override
+  String get aiPanelCopied => '已复制';
+
+  @override
+  String get aiPanelStop => '停止';
+
+  @override
+  String get aiPanelEmptyTarget => '还没有可处理的文字，先写一点或选中一段文字。';
+
+  @override
+  String get aiPanelReasoning => '思考过程';
+
+  @override
+  String get aiPanelPrivateBlocked => '这篇日记在私密日记本里。可以在 AI 隐私设置里允许对私密日记使用 AI。';
+
+  @override
+  String get aiSlashGroup => 'AI';
+
+  @override
+  String get aiSlashWrite => 'AI 写作…';
+
+  @override
+  String get aiSlashContinue => 'AI 续写';
+
+  @override
+  String get aiSlashPrompts => '写作灵感';
+
+  @override
+  String get aiSelectionMenu => 'AI…';
+
+  @override
+  String get aiImageDescribe => 'AI 描述图片';
+
+  @override
+  String get aiImageDescribing => '正在描述图片…';
+
+  @override
+  String get aiImageNoVision => '当前模型不支持看图。可以在“模型分配”里为“描述图片”选一个支持视觉的模型。';
+
+  @override
+  String get aiSuggestTitle => 'AI 生成标题';
+
+  @override
+  String get aiSuggestMeta => 'AI 推荐标签与心情';
+
+  @override
+  String get aiSuggesting => 'AI 正在想…';
+
+  @override
+  String get aiSuggestNeedContent => '先写点正文，AI 才好给建议。';
+
+  @override
+  String get aiSuggestTitleApplied => '已填入 AI 生成的标题';
+
+  @override
+  String get aiSuggestTagsHeader => 'AI 推荐';
+
+  @override
+  String aiSuggestNewTag(String name) {
+    return '新建「$name」';
+  }
+
+  @override
+  String get aiSuggestMoodButton => 'AI 识别';
+
+  @override
+  String get aiSuggestNothing => '这次没有合适的建议';
+
+  @override
+  String get aiSuggestApplied => '已应用 AI 的建议';
+
+  @override
+  String aiConfirmSendTitle(String host) {
+    return '发送到 $host？';
+  }
+
+  @override
+  String aiConfirmSendModel(String name) {
+    return '由「$name」处理';
+  }
+
+  @override
+  String aiConfirmSendEntries(int count, int words) {
+    return '$count 篇日记，约 $words 字';
+  }
+
+  @override
+  String aiConfirmSendText(int words) {
+    return '约 $words 字的文字';
+  }
+
+  @override
+  String aiConfirmSendImages(int count) {
+    return '另附 $count 张照片';
+  }
+
+  @override
+  String get aiConfirmSendNote => '内容从这台设备直接发出，开发者收不到；服务商会按它自己的隐私政策处理。';
+
+  @override
+  String get aiConfirmSendRemember => '以后发给这个服务商不再询问';
+
+  @override
+  String get aiConfirmSendAction => '发送';
+
+  @override
+  String aiRepliesHeading(int count) {
+    return 'AI 回应 · $count';
+  }
+
+  @override
+  String get aiReplyAsk => '让 AI 回应…';
+
+  @override
+  String get aiReplyMoreItem => 'AI 回应';
+
+  @override
+  String get aiReplyPickPersona => '请谁来回应？';
+
+  @override
+  String get aiReplyWriting => '正在读你的日记…';
+
+  @override
+  String get aiReplyRegenerate => '重新生成';
+
+  @override
+  String get aiReplySaveAsComment => '存为留言';
+
+  @override
+  String get aiReplyContinueChat => '继续聊聊';
+
+  @override
+  String get aiReplyDeleted => '已删除这条 AI 回应';
+
+  @override
+  String get aiReplyExpand => '展开';
+
+  @override
+  String get aiReplyCollapse => '收起';
+
+  @override
+  String get aiReplyStopped => '已停止，要再试一次吗？';
+
+  @override
+  String get aiReplyDismiss => '关闭';
+
+  @override
+  String get aiReplyAutoSkipped => '自动回应没有发送：请先手动请一次 AI 回应，确认这个服务商。';
+
+  @override
+  String get aiPromptsStripLabel => '来点写作灵感';
+
+  @override
+  String get aiPromptsLoading => '正在想问题…';
+
+  @override
+  String get aiPromptsRefresh => '换一批';
+
+  @override
+  String get aiPromptsTitle => '写作灵感';
+
+  @override
+  String get aiPromptsHint => '点一个问题，插进正文';
+
+  @override
+  String get aiPromptsEmpty => '这次没想出问题，再试一次？';
+
+  @override
+  String get aiPromptsClose => '收起灵感';
+
+  @override
+  String get aiReplySavedAsComment => '已存为留言';
+
+  @override
+  String get aiRecapTitle => 'AI 回顾';
+
+  @override
+  String get aiRecapRange => '范围';
+
+  @override
+  String get aiRecapThisWeek => '本周';
+
+  @override
+  String get aiRecapLastWeek => '上周';
+
+  @override
+  String get aiRecapThisMonth => '本月';
+
+  @override
+  String get aiRecapLastMonth => '上月';
+
+  @override
+  String get aiRecapThisYear => '今年';
+
+  @override
+  String get aiRecapCustom => '自定义…';
+
+  @override
+  String get aiRecapNotebook => '日记本';
+
+  @override
+  String get aiRecapAllNotebooks => '全部日记';
+
+  @override
+  String get aiRecapSections => '包含';
+
+  @override
+  String get aiRecapPersona => '口吻';
+
+  @override
+  String get aiRecapGenerate => '生成回顾';
+
+  @override
+  String get aiRecapNoEntries => '这段时间没有可以回顾的日记。';
+
+  @override
+  String aiRecapReading(int index, int total) {
+    return '正在读第 $index 部分，共 $total 部分…';
+  }
+
+  @override
+  String get aiRecapWriting => '正在写回顾…';
+
+  @override
+  String aiRecapStats(int count, int words) {
+    return '$count 篇 · $words 字';
+  }
+
+  @override
+  String get aiRecapSaved => '已保存到回顾记录';
+
+  @override
+  String get aiRecapSaveAsDiary => '另存为日记';
+
+  @override
+  String get aiRecapShare => '分享文字';
+
+  @override
+  String get aiRecapDeleted => '已删除这份回顾';
+
+  @override
+  String aiRecapPeriodRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String aiRecapDiaryTitle(String period) {
+    return '$period 回顾';
+  }
+
+  @override
+  String get aiHubTitle => 'AI 助手';
+
+  @override
+  String get aiHubAskHint => '问问你的日记…';
+
+  @override
+  String get aiHubQuickMonth => '这个月我过得怎么样？';
+
+  @override
+  String get aiHubQuickWorry => '我最近常为什么事烦恼？';
+
+  @override
+  String get aiHubQuickLastYear => '去年的这个时候我在做什么？';
+
+  @override
+  String get aiHubQuickHappy => '最近有哪些让我开心的小事？';
+
+  @override
+  String get aiHubQuickGrowth => '这半年我有哪些变化？';
+
+  @override
+  String get aiHubRecapsGroup => '回顾';
+
+  @override
+  String get aiHubRecapMore => '更多范围…';
+
+  @override
+  String get aiHubNoRecaps => '还没有回顾';
+
+  @override
+  String get aiHubChatsGroup => '对话';
+
+  @override
+  String get aiHubNoChats => '还没有对话。从上面问一个问题开始吧。';
+
+  @override
+  String get aiHubSearchChats => '搜索对话';
+
+  @override
+  String get aiChatUntitled => '新对话';
+
+  @override
+  String get aiChatPin => '置顶';
+
+  @override
+  String get aiChatUnpin => '取消置顶';
+
+  @override
+  String get aiChatRename => '重命名';
+
+  @override
+  String get aiChatRenameTitle => '重命名对话';
+
+  @override
+  String get aiChatDeleted => '已删除对话';
+
+  @override
+  String get aiChatInputHint => '问点什么…';
+
+  @override
+  String get aiChatPlanning => '正在理解问题…';
+
+  @override
+  String get aiChatSearching => '正在查找相关的日记…';
+
+  @override
+  String aiChatCitations(int count) {
+    return '参考了 $count 篇日记';
+  }
+
+  @override
+  String get aiChatNoCitations => '没有找到相关的日记';
+
+  @override
+  String get aiChatScope => '范围';
+
+  @override
+  String get aiChatScopeAuto => '自动';
+
+  @override
+  String aiChatScopeRecent(int days) {
+    return '最近 $days 天';
+  }
+
+  @override
+  String get aiChatScopeAll => '全部日记';
+
+  @override
+  String get aiChatScopeRange => '时间范围…';
+
+  @override
+  String get aiChatScopeEntry => '这篇日记';
+
+  @override
+  String get aiChatPersona => '人设';
+
+  @override
+  String get aiChatModel => '模型';
+
+  @override
+  String aiChatModelDefault(String name) {
+    return '默认（$name）';
+  }
+
+  @override
+  String get aiChatEditResend => '编辑并重发';
+
+  @override
+  String get aiChatDeleteMessage => '删除这条';
+
+  @override
+  String get aiChatCitationMissing => '这篇日记已不存在';
+
+  @override
+  String get aiChatEmptyHint => '可以问问这段时间的心情、某件事的来龙去脉，或者让 AI 帮你回忆。';
+
+  @override
+  String aiChatAboutEntry(String title) {
+    return '关于「$title」';
+  }
+
+  @override
+  String get aiHubTooltip => 'AI 助手';
+
+  @override
+  String get exploreModuleAi => 'AI 洞察';
+
+  @override
+  String get exploreModuleAiDesc => '最近一次回顾，以及问问你的日记';
+
+  @override
+  String get aiExploreNoRecap => '还没有回顾，来一份本周回顾吧。';
+
+  @override
+  String get aiExploreWeekly => '生成本周回顾';
+
+  @override
+  String get aiExploreAsk => '问问我的日记';
+
+  @override
+  String get aiExploreNotConfigured => '配置好 AI 服务后可用';
+
+  @override
+  String get aiRecapStopped => '已停止，写了一半的回顾不会保存。';
+
+  @override
+  String get aiRecapHistory => '以前的回顾';
+
+  @override
+  String get aiRecapDeleteTitle => '删除这份回顾？';
+
+  @override
+  String get aiRecapNotebookPick => '选择日记本';
+
+  @override
+  String get aiRecapCustomRange => '选择日期';
+
+  @override
+  String get aiRecapShareUnavailable => '已复制，可以粘贴到想分享的地方。';
+
+  @override
+  String aiRecapModel(String model) {
+    return '由 $model 生成';
+  }
+
+  @override
+  String get aiChatMore => '更多';
+
+  @override
+  String aiChatTokens(String input, String output) {
+    return '输入 $input · 输出 $output';
+  }
+
+  @override
+  String get aiChatStoppedLabel => '已停止';
+
+  @override
+  String get aiChatDeleteMessageTitle => '删除这条消息？';
+
+  @override
+  String get aiChatDeleteTitle => '删除这段对话？';
+
+  @override
+  String get aiChatDeleteBody => '其中的消息会一并删除，日记本身不受影响。';
+
+  @override
+  String get aiChatRangeTitle => '选择日期';
+
+  @override
+  String get aiChatScopeTitle => '在哪些日记里找';
+
+  @override
+  String get aiChatScopeAutoSubtitle => '按 AI 设置里的检索方式';
+
+  @override
+  String get aiHubOpenSettings => 'AI 设置';
+
+  @override
+  String get aiHubSend => '提问';
+
+  @override
+  String get aiSettingsOpenHub => '打开 AI 助手';
+
+  @override
+  String get aiSettingsOpenHubSubtitle => '问问你的日记、生成回顾';
+
+  @override
+  String get aiProtocolOpenAiResponses => 'OpenAI Responses';
+
+  @override
+  String get aiPresetNameCustomOpenAiResponses => 'OpenAI Responses 接口';
 }

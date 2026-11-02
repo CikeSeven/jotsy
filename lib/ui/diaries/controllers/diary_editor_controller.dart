@@ -59,6 +59,14 @@ class DiaryEditorController extends ChangeNotifier {
   /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；
   /// null 即不能（模板编辑页、只读正文）。见 [DiaryLinkSource]。
   final DiaryLinkSource? linkSource;
+
+  /// 选区菜单（手机选中后浮出的菜单、桌面右键菜单）里的“AI…”：编辑页在
+  /// AI 写作可用时设置，菜单项只在有选中文字、可编辑且它不为 null 时出现。
+  VoidCallback? aiSelectionHandler;
+
+  /// 图片菜单里的“AI 描述图片”：编辑页在图片理解可用时设置，返回描述文字
+  /// （取消或失败为 null）；为 null 时菜单里没有这一项。
+  Future<String?> Function(String source)? aiImageDescriber;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
 
@@ -140,7 +148,29 @@ class DiaryEditorController extends ChangeNotifier {
   set readOnly(bool value) => state.editable = !value;
   String get contentJson => encodeDiaryBlocks(document.toJson());
   String get plainText => diaryBlocksPlainText(document.toJson());
-  bool get hasContent => diaryBlocksHaveVisibleContent(document.toJson());
+
+  /// 正文是否有看得见的内容（有字的块或媒体等嵌入块），与
+  /// `diaryBlocksHaveVisibleContent` 同一口径。
+  ///
+  /// 直接按先序遍历节点、遇到第一处内容就返回，不把整篇文档转成 JSON：
+  /// 编辑页标题旁的 AI 按钮、写作灵感条等在每次输入时都会问它，长日记里
+  /// 整篇序列化会让打字发卡；有字的日记通常在第一块就能返回。
+  bool get hasContent {
+    bool visit(af.Node node) {
+      if (kDiaryEmbedBlockTypes.contains(node.type)) return true;
+      final delta = node.delta;
+      if (delta != null && delta.toPlainText().trim().isNotEmpty) return true;
+      for (final child in node.children) {
+        if (visit(child)) return true;
+      }
+      return false;
+    }
+
+    for (final node in document.root.children) {
+      if (visit(node)) return true;
+    }
+    return false;
+  }
 
   /// 媒体导入失败时恢复提交前快照；恢复不进入撤销，避免失败的半次插入留下
   /// 无效历史路径。正常编辑、拖动、格式化都必须使用细粒度事务。

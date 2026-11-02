@@ -93,7 +93,7 @@
         <h1 class="display" data-en="Jotsy Privacy Policy">Jotsy 隐私政策</h1>
         <p class="lead" data-en="Your diary stays on your device. Jotsy has no account system and no servers of its own.">你的日记只保存在你的设备上。Jotsy 没有账号体系，也没有开发者运营的服务器。</p>
         <div class="doc-meta">
-          <span>生效日期 / Effective date: 2026-10-30</span>
+          <span>生效日期 / Effective date: 2026-11-02</span>
           <div class="seg" role="radiogroup" aria-label="语言" data-en-aria-label="Language" data-lang-seg>
             <button type="button" role="radio" aria-checked="true" data-value="zh">简体中文</button>
             <button type="button" role="radio" aria-checked="false" data-value="en">English</button>
@@ -111,6 +111,7 @@
           <a href="#zh-network">何时会联网</a>
           <a href="#zh-backup">网盘备份</a>
           <a href="#zh-google">Google 用户数据</a>
+          <a href="#zh-ai">AI 助手</a>
           <a href="#zh-permissions">权限</a>
           <a href="#zh-third">第三方服务</a>
           <a href="#zh-children">儿童</a>
@@ -123,6 +124,7 @@
           <a href="#en-network">When Jotsy goes online</a>
           <a href="#en-backup">Cloud backup</a>
           <a href="#en-google">Google user data</a>
+          <a href="#en-ai">AI assistant</a>
           <a href="#en-permissions">Permissions</a>
           <a href="#en-third">Third-party services</a>
           <a href="#en-children">Children</a>
@@ -137,7 +139,7 @@
           <p>Jotsy 是一款开源的本地日记应用。Jotsy 没有账号体系，也没有开发者运营的服务器；开发者不会收集、接收或存储你的任何日记内容或个人信息。</p>
 
           <h2 id="zh-storage">你的数据保存在哪里</h2>
-          <p>日记、标签、纪念日、图片、视频、录音和附件都保存在你设备上应用的私有目录中，设置保存在设备本机。卸载应用或清除应用数据会删除这些内容。你可以随时导出完整备份（可加密）。如果你使用局域网同步，这些数据还会经加密连接同步到你配对的其他设备上，并保存在那些设备上；同步用的设备身份密钥只保存在本机，不会写入备份。</p>
+          <p>日记、标签、纪念日、图片、视频、录音和附件都保存在你设备上应用的私有目录中，设置保存在设备本机。卸载应用或清除应用数据会删除这些内容。你可以随时导出完整备份（可加密）。如果你使用局域网同步，这些数据还会经加密连接同步到你配对的其他设备上，并保存在那些设备上；同步用的设备身份密钥只保存在本机，不会写入备份。AI 助手生成的内容（读后回应、回顾与对话）同样只保存在本机，随完整备份导出，不参与局域网同步。</p>
 
           <h2 id="zh-network">何时会联网</h2>
           <p>以下是 Jotsy 会联网的全部场景，每次只发送完成该功能所必需的内容：</p>
@@ -149,11 +151,12 @@
               <tr><td>网盘备份与恢复</td><td>你自己配置的 WebDAV / S3 服务，或你授权的网盘（Google Drive、OneDrive、Dropbox、百度网盘、阿里云盘）</td><td>你选择上传的备份文件</td></tr>
               <tr><td>检查与下载更新</td><td>GitHub Releases 及其镜像</td><td>不含任何日记数据</td></tr>
               <tr><td>从手机厂商或 WPS 云端导入笔记</td><td>对应厂商的官方网站</td><td>你在其官网完成的登录；登录状态只用于本次读取，导入结束后即清除</td></tr>
+              <tr><td>AI 助手（默认关闭；开启并配置服务后，只在你使用某项 AI 功能时）</td><td>你自己配置的 AI 服务接口（OpenAI 兼容服务、Anthropic、Google Gemini 等，或本机的 Ollama 等）</td><td>完成这项功能所需的内容：你选中的文字或当前日记，或按范围挑选的多篇日记（私密日记本中的日记不会作为多篇材料发送），以及你在隐私设置里允许的日期、心情、标签、天气、地点；开启图片理解时附上相关图片</td></tr>
               <tr><td>局域网同步（配对后在你的设备之间同步日记）</td><td>同一局域网内你亲自配对过的设备；不经过任何服务器</td><td>端到端加密的日记数据与媒体（含私密日记本与回收站，设置只在两台都开启时同步）；「可被发现」开启时，在局域网内广播你设置的设备名</td></tr>
               </tbody>
             </table>
           </div>
-          <p>检查更新默认在打开或回到应用时自动进行，每 2 小时最多一次，只读取版本信息，可以在 <strong>设置 › 关于 › 检查更新</strong> 中关闭；局域网同步见下一段；其余几项只在你使用对应功能时才会联网。</p>
+          <p>检查更新默认在打开或回到应用时自动进行，每 2 小时最多一次，只读取版本信息，可以在 <strong>设置 › 关于 › 检查更新</strong> 中关闭；局域网同步见下一段；AI 助手见“AI 助手”一节；其余几项只在你使用对应功能时才会联网。</p>
           <p>局域网同步只在你打开 <strong>设置 › 数据与隐私 › 局域网同步</strong> 时，或配对之后应用在前台时联网，切到后台即停止，不在后台运行；从没配对过设备时，不打开同步页就不会监听端口或在局域网广播。只有你在两台设备上都确认核对码、或用一次性二维码配对过的设备才能同步，连接全程端到端加密。「可被发现」开启时，Jotsy 会在局域网内广播你设置的设备名，让附近的 Jotsy 找到你；可以在同步页关闭，关闭后不再广播，已配对的设备仍可同步。</p>
 
           <h2 id="zh-backup">网盘备份</h2>
@@ -172,6 +175,16 @@
           <h3 id="zh-google">Google 用户数据</h3>
           <p>Jotsy 对从 Google API 获取的信息的使用和传输，遵守 <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API 服务用户数据政策</a>，包括其中的「有限使用」要求。Jotsy 只在你的设备上直接与 Google Drive 通信，用于保存和读取你的备份；这些数据不会被传输给开发者或任何第三方，不会用于广告，不会被人工查看，也不会用于训练任何人工智能或机器学习模型。</p>
 
+          <h2 id="zh-ai">AI 助手</h2>
+          <p>AI 助手默认关闭。开启后需要你自己填写 AI 服务的地址与密钥，Jotsy 不提供、也不中转任何 AI 服务。</p>
+          <ul>
+            <li><strong>只在你操作时联网</strong>：写作助手、读后回应、写作灵感、回顾与对话都只在你点按后才发送；“发表后自动回应”默认关闭，开启后也只发给你已经确认过的服务。首次发往某个服务（以及按你的设置发送多篇日记）前会说明发往哪里、发送多少内容，由你确认。</li>
+            <li><strong>直接发出</strong>：内容从你的设备直接发给你配置的服务，开发者收不到。服务商会按它自己的隐私政策处理请求。</li>
+            <li><strong>私密内容</strong>：私密（隐藏或上锁）日记本中的日记、回收站里的日记和未解封的时间胶囊不会作为多篇材料发送；对单篇私密日记使用 AI 需要你在 AI 隐私设置里另行允许。你还可以排除指定的日记本和标签，并关闭随正文发送的日期、心情、标签、天气或地点。</li>
+            <li><strong>凭据只在本机</strong>：AI 服务的地址、密钥与用量统计只保存在你的设备上，不会写入备份，也不参与局域网同步。</li>
+            <li><strong>生成的内容</strong>：回应、回顾与对话保存在本机，随完整备份导出；可以在 AI 隐私设置里一键清除。</li>
+          </ul>
+
           <h2 id="zh-permissions">权限</h2>
           <ul>
             <li>网络：用于上述联网功能。</li>
@@ -185,7 +198,7 @@
           </ul>
 
           <h2 id="zh-third">第三方服务</h2>
-          <p>使用上述联网功能时，相关服务（高德地图、和风天气、GitHub 及其镜像、各网盘与云服务）会按其各自的隐私政策处理请求。Jotsy 不包含广告或第三方统计 SDK。</p>
+          <p>使用上述联网功能时，相关服务（高德地图、和风天气、GitHub 及其镜像、各网盘与云服务、你配置的 AI 服务）会按其各自的隐私政策处理请求。Jotsy 不包含广告或第三方统计 SDK。</p>
 
           <h2 id="zh-children">儿童</h2>
           <p>Jotsy 不面向儿童收集任何信息，也不会收集任何人的个人信息。</p>
@@ -202,7 +215,7 @@
           <p>Jotsy is an open-source, local-first diary app. Jotsy has no account system and no developer-operated servers. The developer does not collect, receive or store any of your diary content or personal information.</p>
 
           <h2 id="en-storage">Where your data lives</h2>
-          <p>Entries, tags, anniversaries, photos, videos, recordings and attachments are stored in the app's private directory on your device, and settings stay on the device. Uninstalling the app or clearing its data deletes them. You can export a full (optionally encrypted) backup at any time. If you use LAN sync, the same data is also synced over an encrypted connection to the other devices you paired, and stored on them; the device identity key used for syncing stays on the device and is never written into backups.</p>
+          <p>Entries, tags, anniversaries, photos, videos, recordings and attachments are stored in the app's private directory on your device, and settings stay on the device. Uninstalling the app or clearing its data deletes them. You can export a full (optionally encrypted) backup at any time. If you use LAN sync, the same data is also synced over an encrypted connection to the other devices you paired, and stored on them; the device identity key used for syncing stays on the device and is never written into backups. Content generated by the AI assistant (reflections, recaps and chats) is also stored only on the device, included in full backups and never synced over LAN.</p>
 
           <h2 id="en-network">When Jotsy goes online</h2>
           <p>These are all the cases in which Jotsy goes online, and each one sends only what that feature needs:</p>
@@ -214,11 +227,12 @@
               <tr><td>Cloud backup and restore</td><td>The WebDAV / S3 service you configure, or a drive you authorize (Google Drive, OneDrive, Dropbox, Baidu Netdisk, Alipan)</td><td>The backup files you choose to upload</td></tr>
               <tr><td>Checking for and downloading updates</td><td>GitHub Releases and mirrors</td><td>No diary data</td></tr>
               <tr><td>Import notes from phone-maker or WPS clouds</td><td>The vendor's official website</td><td>The sign-in you complete on that site; the session is used only for this import and cleared afterwards</td></tr>
+              <tr><td>AI assistant (off by default; once you turn it on and set up a service, only when you use an AI feature)</td><td>The AI service you configure yourself (OpenAI-compatible services, Anthropic, Google Gemini and others, or a local one such as Ollama)</td><td>What that feature needs: the text you selected or the current entry, or several entries picked for a period (entries in private notebooks are never sent as multi-entry material), plus the date, mood, tags, weather and place you allow in the privacy settings; related images when image understanding is on</td></tr>
               <tr><td>LAN sync (syncing entries between your devices after pairing)</td><td>Devices on your local network that you paired yourself; no server is involved</td><td>End-to-end encrypted diary data and media (including private notebooks and the trash; settings only when both devices turn them on); while "Discoverable" is on, the device name you set is broadcast on the local network</td></tr>
               </tbody>
             </table>
           </div>
-          <p>Update checks run automatically when you open or return to the app, at most once every 2 hours, read only version information, and can be turned off in <strong>Settings › About › Check for updates</strong>. LAN sync is described in the next paragraph. Everything else goes online only when you use that feature.</p>
+          <p>Update checks run automatically when you open or return to the app, at most once every 2 hours, read only version information, and can be turned off in <strong>Settings › About › Check for updates</strong>. LAN sync is described in the next paragraph and the AI assistant in its own section. Everything else goes online only when you use that feature.</p>
           <p>LAN sync goes online only while <strong>Settings › Data &amp; Privacy › LAN sync</strong> is open or, once you have paired a device, while the app is in the foreground. It stops when the app goes to the background and never runs in the background; until you pair a device, Jotsy opens no port and broadcasts nothing unless the sync page is open. Only devices you paired by confirming the matching code on both devices, or by scanning a one-time QR code, can sync, and the connection is end-to-end encrypted. While "Discoverable" is on, Jotsy broadcasts the device name you set on the local network so nearby Jotsy apps can find you; you can turn it off on the sync page, after which nothing is broadcast and paired devices can still sync.</p>
 
           <h2 id="en-backup">Cloud backup</h2>
@@ -236,6 +250,16 @@
           <h3 id="en-google">Google user data</h3>
           <p>Jotsy's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. Jotsy talks to Google Drive directly from your device only to store and read your backups. This data is never transferred to the developer or any third party, never used for advertising, never read by humans, and never used to train any AI or machine-learning model.</p>
 
+          <h2 id="en-ai">AI assistant</h2>
+          <p>The AI assistant is off by default. To use it you enter the address and key of an AI service yourself; Jotsy neither provides nor relays any AI service.</p>
+          <ul>
+            <li><strong>Online only when you ask</strong>: the writing assistant, reflections, writing prompts, recaps and chats send something only after you tap. "Reflect after publishing" is off by default and, when on, only sends to a service you have already confirmed. Before the first request to a service (and, depending on your settings, before sending several entries) Jotsy shows where the content goes and how much is sent, and waits for you to confirm.</li>
+            <li><strong>Sent directly</strong>: content goes straight from your device to the service you configured; the developer never receives it. The service handles requests under its own privacy policy.</li>
+            <li><strong>Private content</strong>: entries in private (hidden or locked) notebooks, entries in the trash and sealed time capsules are never sent as multi-entry material; using AI on a single private entry requires a separate permission in the AI privacy settings. You can also exclude notebooks and tags, and stop sending the date, mood, tags, weather or place with the text.</li>
+            <li><strong>Credentials stay on your device</strong>: AI service addresses, keys and usage statistics are stored only on your device, never written into backups and never synced over LAN.</li>
+            <li><strong>Generated content</strong>: reflections, recaps and chats are stored on the device and included in full backups; you can clear them all in the AI privacy settings.</li>
+          </ul>
+
           <h2 id="en-permissions">Permissions</h2>
           <ul>
             <li>Network: for the online features above.</li>
@@ -249,7 +273,7 @@
           </ul>
 
           <h2 id="en-third">Third-party services</h2>
-          <p>When you use the online features above, the services involved (Amap, QWeather, GitHub and its mirrors, and the drives and clouds you use) handle the requests under their own privacy policies. Jotsy contains no advertising or third-party analytics SDKs.</p>
+          <p>When you use the online features above, the services involved (Amap, QWeather, GitHub and its mirrors, the drives and clouds you use, and the AI service you configure) handle the requests under their own privacy policies. Jotsy contains no advertising or third-party analytics SDKs.</p>
 
           <h2 id="en-children">Children</h2>
           <p>Jotsy does not collect information from children, or from anyone else.</p>

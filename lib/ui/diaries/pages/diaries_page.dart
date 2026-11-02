@@ -23,6 +23,8 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style_enums.dart';
 
+import '../../ai/pages/ai_hub_page.dart';
+import '../../ai/providers/ai_providers.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -780,6 +782,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           _controller.openViewOptions,
                                       onOpenSearchPage:
                                           _controller.openSearchPage,
+                                      onOpenAi:
+                                          ref.watch(aiHubAvailableProvider)
+                                          ? () => unawaited(
+                                              Navigator.of(context).push<void>(
+                                                MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const AiHubPage(),
+                                                ),
+                                              ),
+                                            )
+                                          : null,
                                       searchHint: scopeResolution.isAll
                                           ? null
                                           : context.l10n.notebookSearchIn(

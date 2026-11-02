@@ -180,6 +180,7 @@ void main() {
         'calendar': false,
         'explore': true,
         'swipeArchive': false,
+        'ai': true,
       },
     });
     final result = await applySettings(target);
@@ -188,6 +189,7 @@ void main() {
     final features = AppFeatures.decode(settings.appFeaturesRaw);
     expect(features.calendar, isFalse);
     expect(features.swipeArchive, isFalse);
+    expect(features.ai, isTrue);
     expect(features.comments, isTrue);
     expect((await settingsRecord()).hashes, target.hashes);
   });

@@ -1,8 +1,8 @@
 // 功能管理开关（设置 → 功能管理）。
 //
 // 职责：描述用户可整体关闭的功能——日历 Tab、探索 Tab、日记本、纪念日、
-// 日记模板、时间胶囊、侧滑归档、留言——是否开启；纪念日与留言默认关闭（让
-// 初始界面简洁），其余默认开启。关闭只是在各处隐藏入口与展示，数据一律保留，重新开启即恢复原样。
+// 日记模板、时间胶囊、侧滑归档、留言、AI 助手——是否开启；纪念日、留言与
+// AI 助手默认关闭（让初始界面简洁，AI 还需要用户自己的接口），其余默认开启。关闭只是在各处隐藏入口与展示，数据一律保留，重新开启即恢复原样。
 //
 // 存储：单个 JSON 设置键 `app.settings.app_features`（经
 // `SettingsService.setAppFeaturesRaw`），逐字段容错解析，随完整备份导出，
@@ -23,9 +23,10 @@ class AppFeatures {
     this.timeCapsules = true,
     this.swipeArchive = true,
     this.comments = false,
+    this.ai = false,
   });
 
-  /// 默认开关（纪念日与留言关闭，其余开启）：从未设置、读不出或恢复默认时都是它。
+  /// 默认开关（纪念日、留言与 AI 助手关闭，其余开启）：从未设置、读不出或恢复默认时都是它。
   static const AppFeatures defaults = AppFeatures();
 
   /// 日历 Tab。
@@ -54,6 +55,12 @@ class AppFeatures {
   /// 探索页的留言卡片与导出时带留言。默认关闭；关闭只隐藏这些，留言仍在库里。
   final bool comments;
 
+  /// AI 助手：用用户自己配置的 AI 服务接口（OpenAI 兼容 / Claude / Gemini）
+  /// 写作、回应、回顾与对话。默认关闭；开启后还要在设置 → AI 助手里配好
+  /// 服务商，各处入口才会出现（见 `aiAvailableProvider`）。关闭只隐藏入口，
+  /// AI 记录与服务商配置都保留。
+  final bool ai;
+
   /// 纪念日依附日历（列表只能从日历顶栏进入），日历关闭时一并关闭；界面一律
   /// 读这个 getter 判断纪念日是否可用，不直接读 [anniversaries]（它只是用户
   /// 自己的开关值，日历重新开启时恢复）。
@@ -67,6 +74,7 @@ class AppFeatures {
   static const _keyTimeCapsules = 'timeCapsules';
   static const _keySwipeArchive = 'swipeArchive';
   static const _keyComments = 'comments';
+  static const _keyAi = 'ai';
 
   /// 解析设置原文。空值、坏 JSON 或不是对象时回到 [defaults]；每个字段
   /// 单独读取，类型不对只让这一项回到默认，认不出的键忽略——这样新旧版本
@@ -95,6 +103,7 @@ class AppFeatures {
       timeCapsules: read(_keyTimeCapsules, defaults.timeCapsules),
       swipeArchive: read(_keySwipeArchive, defaults.swipeArchive),
       comments: read(_keyComments, defaults.comments),
+      ai: read(_keyAi, defaults.ai),
     );
   }
 
@@ -110,6 +119,7 @@ class AppFeatures {
       _keyTimeCapsules: timeCapsules,
       _keySwipeArchive: swipeArchive,
       _keyComments: comments,
+      _keyAi: ai,
     });
   }
 
@@ -122,6 +132,7 @@ class AppFeatures {
     bool? timeCapsules,
     bool? swipeArchive,
     bool? comments,
+    bool? ai,
   }) {
     return AppFeatures(
       calendar: calendar ?? this.calendar,
@@ -132,6 +143,7 @@ class AppFeatures {
       timeCapsules: timeCapsules ?? this.timeCapsules,
       swipeArchive: swipeArchive ?? this.swipeArchive,
       comments: comments ?? this.comments,
+      ai: ai ?? this.ai,
     );
   }
 
@@ -145,7 +157,8 @@ class AppFeatures {
       other.templates == templates &&
       other.timeCapsules == timeCapsules &&
       other.swipeArchive == swipeArchive &&
-      other.comments == comments;
+      other.comments == comments &&
+      other.ai == ai;
 
   @override
   int get hashCode => Object.hash(
@@ -157,6 +170,7 @@ class AppFeatures {
     timeCapsules,
     swipeArchive,
     comments,
+    ai,
   );
 
   @override
@@ -164,5 +178,5 @@ class AppFeatures {
       'AppFeatures(calendar: $calendar, explore: $explore, '
       'notebooks: $notebooks, anniversaries: $anniversaries, '
       'templates: $templates, timeCapsules: $timeCapsules, '
-      'swipeArchive: $swipeArchive, comments: $comments)';
+      'swipeArchive: $swipeArchive, comments: $comments, ai: $ai)';
 }

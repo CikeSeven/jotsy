@@ -33,6 +33,8 @@ class BackupSettings {
     'diaryExportOptionsRaw': settingsService.diaryExportOptionsRaw,
     'appFeaturesRaw': settingsService.appFeaturesRaw,
     'exploreLayoutRaw': settingsService.exploreLayoutRaw,
+    // AI 偏好不含密钥（服务商与密钥只在本机的 AiProviderStore）。
+    'aiPrefsRaw': settingsService.aiPrefsRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -256,6 +258,17 @@ class BackupSettings {
     if (settingsNode.containsKey('exploreLayoutRaw')) {
       final exploreLayoutRaw = settingsNode['exploreLayoutRaw'];
       await settingsService.setExploreLayoutRaw(switch (exploreLayoutRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // AI 偏好同上：旧版备份没有时保留本机偏好，显式 null 时回到默认。
+    if (settingsNode.containsKey('aiPrefsRaw')) {
+      final aiPrefsRaw = settingsNode['aiPrefsRaw'];
+      await settingsService.setAiPrefsRaw(switch (aiPrefsRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

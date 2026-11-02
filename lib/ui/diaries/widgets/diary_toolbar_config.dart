@@ -77,6 +77,8 @@ Widget buildDiaryToolbarItem(
   String? currentTimeFormatPattern,
   VoidCallback? onRecordingPressed,
   bool recordingOpen = false,
+  VoidCallback? onAiPressed,
+  bool aiOpen = false,
   void Function(DiaryMediaKind)? onMediaPressed,
   DiaryMediaKind? activeMediaKind,
   bool mediaImportBusy = false,
@@ -94,6 +96,7 @@ Widget buildDiaryToolbarItem(
           final active =
               panelOpen ||
               (tool == DiaryToolbarItem.recording && recordingOpen) ||
+              (tool == DiaryToolbarItem.ai && aiOpen) ||
               isDiaryToolbarItemActive(tool, controller.activeAttributes);
           final enabled =
               !controller.readOnly &&
@@ -102,6 +105,7 @@ Widget buildDiaryToolbarItem(
                 DiaryToolbarItem.redo => controller.hasRedo,
                 DiaryToolbarItem.recording =>
                   !mediaImportBusy && onRecordingPressed != null,
+                DiaryToolbarItem.ai => !mediaImportBusy && onAiPressed != null,
                 DiaryToolbarItem.image ||
                 DiaryToolbarItem.video ||
                 DiaryToolbarItem.attachment =>
@@ -148,6 +152,10 @@ Widget buildDiaryToolbarItem(
                         }
                         if (tool == DiaryToolbarItem.recording) {
                           onRecordingPressed!();
+                          return;
+                        }
+                        if (tool == DiaryToolbarItem.ai) {
+                          onAiPressed!();
                           return;
                         }
                         if (tool == DiaryToolbarItem.currentTime) {

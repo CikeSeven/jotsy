@@ -51,6 +51,7 @@ void main() {
         'timeCapsules': true,
         'swipeArchive': true,
         'comments': false,
+        'ai': false,
       });
       expect(AppFeatures.decode(raw), AppFeatures.defaults);
     });
@@ -62,6 +63,7 @@ void main() {
         templates: false,
         swipeArchive: false,
         comments: true,
+        ai: true,
       );
       final raw = features.encode();
 
@@ -74,6 +76,7 @@ void main() {
         'timeCapsules',
         'swipeArchive',
         'comments',
+        'ai',
       ]);
       expect(AppFeatures.decode(raw), features);
     });

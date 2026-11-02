@@ -17,6 +17,7 @@ import 'diary_block_markers.dart';
 import 'diary_callout_block.dart';
 import 'diary_link_card_block.dart';
 import 'diary_paragraph_block.dart';
+import 'diary_quote_bar.dart';
 import 'diary_table_block.dart';
 import 'diary_toggle_block.dart';
 
@@ -81,9 +82,14 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
       iconBuilder: (context, node, _) =>
           DiaryNumberMarker(node: node, metrics: markers, textStyle: body),
     ),
+    // 竖条与相邻的引用相接时画进本块的上下留白（padding + margin），
+    // 连续几行引用连成一条，见 DiaryQuoteBar。
     'quote': af.QuoteBlockComponentBuilder(
       configuration: text,
-      iconBuilder: (context, node) => const DiaryQuoteBar(),
+      iconBuilder: (context, node) => DiaryQuoteBar(
+        node: node,
+        blockInsets: text.padding(node) + text.margin(node),
+      ),
     ),
     'callout': DiaryCalloutBlockBuilder(configuration: text, markers: markers),
     'toggle_list': DiaryToggleBlockBuilder(

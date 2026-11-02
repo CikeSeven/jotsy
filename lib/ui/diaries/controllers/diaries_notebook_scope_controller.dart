@@ -157,8 +157,8 @@ class DiariesNotebookScopeController {
   /// [scopeKey] 为新范围的 [HomeNotebookScope.key]。
   void _switchScope(String? scopeKey, VoidCallback mutation) {
     _expectedNotebookId = scopeKey;
-    if (_state._selectedDiaryIds.isNotEmpty) {
-      _state.setState(_state._selectedDiaryIds.clear);
+    if (_state._isSelectionMode) {
+      _state.setState(_state._resetSelection);
     }
     transitionCoordinator.queueFilterMutation(mutation, scrollToTop: true);
   }
@@ -175,8 +175,8 @@ class DiariesNotebookScopeController {
     Navigator.of(_state.context).popUntil((Route<dynamic> route) {
       return route.isFirst;
     });
-    if (_state._selectedDiaryIds.isNotEmpty) {
-      _state.setState(_state._selectedDiaryIds.clear);
+    if (_state._isSelectionMode) {
+      _state.setState(_state._resetSelection);
     }
     transitionCoordinator.queueFilterMutation(() {}, scrollToTop: true);
   }
@@ -249,8 +249,8 @@ class DiariesNotebookScopeController {
                 (chapterId == null && unassigned))) {
       return;
     }
-    if (_state._selectedDiaryIds.isNotEmpty) {
-      _state.setState(_state._selectedDiaryIds.clear);
+    if (_state._isSelectionMode) {
+      _state.setState(_state._resetSelection);
     }
     transitionCoordinator.queueFilterMutation(
       () => _notifier.selectChapter(

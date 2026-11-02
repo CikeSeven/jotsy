@@ -26,12 +26,13 @@ class DiariesPageController {
   /// 列表过渡协调器，集中控制筛选切换和项目删改时的过渡动画节奏。
   final DiaryListTransitionCoordinator transitionCoordinator;
 
-  /// 清空列表多选状态。
+  /// 退出多选（取消按钮、系统返回）：选中为空但仍在多选（取消全选后）时
+  /// 同样退出。
   void clearSelection() {
-    if (_state._selectedDiaryIds.isEmpty) {
+    if (!_state._isSelectionMode) {
       return;
     }
-    _state.setState(_state._selectedDiaryIds.clear);
+    _state.setState(_state._resetSelection);
   }
 
   /// 打开独立搜索页。
@@ -261,6 +262,8 @@ class DiariesPageController {
   /// 批量置顶所选日记。
   ///
   /// 设计为“仅置顶不改更新时间”，避免只做排序管理时污染“最近编辑”语义。
+  /// 一个事务写完（全选可能含几千篇未加载的日记，见 `setDiariesPinned`），
+  /// 失败时数据不变、保持多选以便重试。
   Future<void> pinSelectedDiaries({bool unpin = false}) async {
     if (_state._selectedDiaryIds.isEmpty) {
       return;
@@ -268,54 +271,20 @@ class DiariesPageController {
 
     final targetIds = _state._selectedDiaryIds.toList(growable: false);
     final db = _state.ref.read(appDatabaseProvider);
-    final failedIds = <String>[];
-
-    for (final diaryId in targetIds) {
-      try {
-        if (unpin) {
-          await db.unpinDiary(diaryId, touchUpdatedAt: false);
-        } else {
-          await db.pinDiary(diaryId, touchUpdatedAt: false);
-        }
-      } catch (_) {
-        failedIds.add(diaryId);
+    try {
+      await db.setDiariesPinned(targetIds, pinned: !unpin);
+    } catch (error) {
+      debugPrint('Pinning selected diaries failed: $error');
+      if (_state.mounted) {
+        await feedback.showInfoSnackBar(_state.context.l10n.commonRetry);
       }
+      return;
     }
 
     if (!_state.mounted) {
       return;
     }
-
-    if (failedIds.isNotEmpty) {
-      await feedback.showInfoSnackBar(_state.context.l10n.commonRetry);
-      return;
-    }
-
     clearSelection();
-  }
-
-  /// 判断当前所选日记是否“全部已置顶”。
-  ///
-  /// 用于控制选择态 AppBar 的置顶按钮图标：
-  /// - 全部已置顶 -> 显示“取消置顶”；
-  /// - 只要有一条未置顶 -> 显示“置顶”。
-  bool areAllSelectedPinned(Iterable<DiaryWithTags> currentItems) {
-    if (_state._selectedDiaryIds.isEmpty) {
-      return false;
-    }
-
-    var selectedCount = 0;
-    for (final item in currentItems) {
-      if (!_state._selectedDiaryIds.contains(item.diary.diaryId)) {
-        continue;
-      }
-      selectedCount += 1;
-      if (!item.diary.isPinned) {
-        return false;
-      }
-    }
-    return selectedCount == _state._selectedDiaryIds.length &&
-        selectedCount > 0;
   }
 
   /// 批量删除所选日记，并提供撤销入口。
@@ -353,38 +322,27 @@ class DiariesPageController {
   }) async {
     // 先在 UI 层启动“收起并隐藏”动画，再执行真实删除。
     if (fromSelection) {
-      _state.setState(() {
-        _state._selectedDiaryIds.clear();
-      });
+      _state.setState(_state._resetSelection);
     }
     transitionCoordinator.startHideAnimations(targetIds);
 
-    // 删除流程不更新 modified 时间，避免撤销后排序错位。
+    // 删除流程不更新 modified 时间，避免撤销后排序错位。一个事务写完全部
+    // （全选可能含几千篇未加载的日记）：失败时整体回滚、数据不变，只需把
+    // 卡片放回来并恢复原选择态。
     final db = _state.ref.read(appDatabaseProvider);
-    final failedIds = <String>[];
-    for (final diaryId in targetIds) {
-      try {
-        await db.softDeleteDiary(diaryId, touchUpdatedAt: false);
-      } catch (_) {
-        failedIds.add(diaryId);
-      }
+    var failed = false;
+    try {
+      await db.softDeleteDiaries(targetIds);
+    } catch (error) {
+      debugPrint('Deleting diaries failed: $error');
+      failed = true;
     }
 
     if (!_state.mounted) {
       return;
     }
 
-    // 任意失败则回滚已成功删除项，并恢复原选择态。
-    if (failedIds.isNotEmpty) {
-      final succeededIds = targetIds
-          .where((id) => !failedIds.contains(id))
-          .toList(growable: false);
-      for (final diaryId in succeededIds) {
-        await db.restoreDiary(diaryId, touchUpdatedAt: false);
-      }
-      if (!_state.mounted) {
-        return;
-      }
+    if (failed) {
       transitionCoordinator.revealDiaries(targetIds, animate: true);
       if (fromSelection) {
         _state.setState(() {
@@ -408,8 +366,10 @@ class DiariesPageController {
     }
 
     if (undoRequested) {
-      for (final diaryId in targetIds) {
-        await db.restoreDiary(diaryId, touchUpdatedAt: false);
+      try {
+        await db.restoreDiaries(targetIds);
+      } catch (error) {
+        debugPrint('Undoing diary deletion failed: $error');
       }
       if (!_state.mounted) {
         return;
@@ -476,20 +436,31 @@ class DiariesPageController {
   }
 
   /// 导出所选日记：按 id 从库中取最新的完整详情（列表项可能只是分页
-  /// 快照），交给共用导出流程；导出不改动数据，保持多选状态，方便接着
-  /// 归档或再导出成别的格式。
+  /// 快照，全选时还有没加载的日记），交给共用导出流程；导出不改动数据，
+  /// 保持多选状态，方便接着归档或再导出成别的格式。
+  ///
+  /// 读取期间盖一层动作遮罩（150ms 内读完不显示）：全选几千篇时逐篇读取
+  /// 要一会儿，遮罩同时挡住重复点按。
   Future<void> exportSelectedDiaries() async {
     if (_state._selectedDiaryIds.isEmpty) {
       return;
     }
     final db = _state.ref.read(appDatabaseProvider);
-    final diaries = <DiaryWithTags>[];
-    for (final diaryId in _state._selectedDiaryIds.toList(growable: false)) {
-      final detail = await db.getDiaryWithTagsByDiaryId(diaryId);
-      if (detail != null) {
-        diaries.add(detail);
-      }
-    }
+    final targetIds = _state._selectedDiaryIds.toList(growable: false);
+    final diaries = await runWithActionLoadingOverlay(
+      _state.context,
+      label: _state.context.l10n.commonLoading,
+      task: () async {
+        final loaded = <DiaryWithTags>[];
+        for (final diaryId in targetIds) {
+          final detail = await db.getDiaryWithTagsByDiaryId(diaryId);
+          if (detail != null) {
+            loaded.add(detail);
+          }
+        }
+        return loaded;
+      },
+    );
     if (!_state.mounted) {
       return;
     }
@@ -557,31 +528,22 @@ class DiariesPageController {
       transitionCoordinator.hideDiariesImmediately(targetIds);
     }
 
+    // 一个事务写完全部（全选可能含几千篇未加载的日记）：失败时整体回滚、
+    // 数据不变，只需回滚界面。
     final db = _state.ref.read(appDatabaseProvider);
-    final failedIds = <String>[];
-    for (final diaryId in targetIds) {
-      try {
-        await db.archiveDiary(diaryId, touchUpdatedAt: false);
-      } catch (_) {
-        failedIds.add(diaryId);
-      }
+    var failed = false;
+    try {
+      await db.setDiariesArchived(targetIds, archived: true);
+    } catch (error) {
+      debugPrint('Archiving diaries failed: $error');
+      failed = true;
     }
 
     if (!_state.mounted) {
       return;
     }
 
-    // 发生部分失败时回滚 UI + 数据，保证用户感知的一致性。
-    if (failedIds.isNotEmpty) {
-      final succeededIds = targetIds
-          .where((id) => !failedIds.contains(id))
-          .toList(growable: false);
-      for (final diaryId in succeededIds) {
-        await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
-      }
-      if (!_state.mounted) {
-        return;
-      }
+    if (failed) {
       _state.setState(() {
         _state._archivingDiaryIds.removeAll(targetIds);
         if (clearSelection) {
@@ -605,8 +567,10 @@ class DiariesPageController {
       }
 
       if (undoRequested) {
-        for (final diaryId in targetIds) {
-          await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
+        try {
+          await db.setDiariesArchived(targetIds, archived: false);
+        } catch (error) {
+          debugPrint('Undoing diary archive failed: $error');
         }
         if (!_state.mounted) {
           return;
@@ -632,15 +596,13 @@ class DiariesPageController {
   /// 切换单条选中状态，支持强制选中（长按进入选择模式时使用）。
   void toggleSelection(String noteId, {bool forceSelect = false}) {
     _state.setState(() {
-      if (forceSelect) {
+      if (forceSelect || !_state._selectedDiaryIds.contains(noteId)) {
         _state._selectedDiaryIds.add(noteId);
+        // 取消全选后又勾上一篇：回到“取消最后一篇即退出多选”。
+        _state._selectionKeptOpen = false;
         return;
       }
-      if (_state._selectedDiaryIds.contains(noteId)) {
-        _state._selectedDiaryIds.remove(noteId);
-      } else {
-        _state._selectedDiaryIds.add(noteId);
-      }
+      _state._selectedDiaryIds.remove(noteId);
     });
   }
 

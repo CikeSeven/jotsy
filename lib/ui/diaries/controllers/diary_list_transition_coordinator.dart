@@ -182,29 +182,36 @@ class DiaryListTransitionCoordinator {
   }
 
   /// 为即将删除/归档的项启动收起动画计时器。
+  ///
+  /// 同一批共用一个计时器（[_HideBatch]）：全选后批量归档 / 删除可能有几千
+  /// 篇（多数还没加载、不会被构建），逐篇各起一个计时器、到点各自 setState
+  /// 没有必要；到点时一次 setState 把这一批仍在等待的都转为隐藏。
   void startHideAnimations(Iterable<String> diaryIds) {
     final targetIds = diaryIds.toSet();
     if (targetIds.isEmpty) {
       return;
     }
 
+    final batch = _HideBatch(<String>{...targetIds});
     for (final diaryId in targetIds) {
       _state._appearingTimers.remove(diaryId)?.cancel();
-      _state._pendingHideTimers[diaryId]?.cancel();
-      _state._pendingHideTimers[diaryId] = Timer(
-        _DiariesPage._listItemTransitionDuration,
-        () {
-          _state._pendingHideTimers.remove(diaryId);
-          if (!_state.mounted) {
-            return;
-          }
-          _state.setState(() {
-            _state._pendingHideDiaryIds.remove(diaryId);
-            _state._optimisticHiddenDiaryIds.add(diaryId);
-          });
-        },
-      );
+      _state._pendingHideTimers.remove(diaryId)?.release(diaryId);
+      _state._pendingHideTimers[diaryId] = batch;
     }
+    batch.timer = Timer(_DiariesPage._listItemTransitionDuration, () {
+      // 期间被撤销 / 清理的 id 已从 batch.ids 里释放，剩下的才转为隐藏。
+      final fired = batch.ids.toList(growable: false);
+      for (final diaryId in fired) {
+        _state._pendingHideTimers.remove(diaryId);
+      }
+      if (!_state.mounted || fired.isEmpty) {
+        return;
+      }
+      _state.setState(() {
+        _state._pendingHideDiaryIds.removeAll(fired);
+        _state._optimisticHiddenDiaryIds.addAll(fired);
+      });
+    });
 
     _state.setState(() {
       _state._appearingDiaryIds.removeAll(targetIds);
@@ -236,7 +243,7 @@ class DiaryListTransitionCoordinator {
     }
 
     for (final diaryId in targetIds) {
-      _state._pendingHideTimers.remove(diaryId)?.cancel();
+      _state._pendingHideTimers.remove(diaryId)?.release(diaryId);
       _state._appearingTimers.remove(diaryId)?.cancel();
     }
 
@@ -307,7 +314,7 @@ class DiaryListTransitionCoordinator {
   /// 清理指定日记项关联的过渡计时器，避免悬挂回调。
   void clearTransitionTimers(Iterable<String> diaryIds) {
     for (final diaryId in diaryIds) {
-      _state._pendingHideTimers.remove(diaryId)?.cancel();
+      _state._pendingHideTimers.remove(diaryId)?.release(diaryId);
       _state._appearingTimers.remove(diaryId)?.cancel();
     }
   }
@@ -350,13 +357,30 @@ class DiaryListTransitionCoordinator {
     if (waiter != null && !waiter.isCompleted) {
       waiter.complete();
     }
-    for (final timer in _state._pendingHideTimers.values) {
-      timer.cancel();
+    for (final batch in _state._pendingHideTimers.values) {
+      batch.timer.cancel();
     }
     _state._pendingHideTimers.clear();
     for (final timer in _state._appearingTimers.values) {
       timer.cancel();
     }
     _state._appearingTimers.clear();
+  }
+}
+
+/// 一批收起动画共用的计时器（见 [DiaryListTransitionCoordinator.startHideAnimations]）。
+///
+/// [ids] 为这一批里仍在等待收起的日记；某篇被撤销或清理时 [release] 把它
+/// 拿出，整批都拿空时取消计时器，不留悬挂回调。
+class _HideBatch {
+  _HideBatch(this.ids);
+
+  final Set<String> ids;
+  late final Timer timer;
+
+  void release(String diaryId) {
+    if (ids.remove(diaryId) && ids.isEmpty) {
+      timer.cancel();
+    }
   }
 }

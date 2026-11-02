@@ -48,6 +48,7 @@ import '../../notebooks/widgets/notebook_header_sliver.dart';
 import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
@@ -57,7 +58,9 @@ import '../models/time_capsule.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../providers/diary_mood_palette_provider.dart';
 import '../providers/diary_comments_provider.dart';
+import '../providers/diary_timeline_provider.dart';
 import '../viewmodels/diaries_page_layout.dart';
+import '../viewmodels/diary_selection_summary.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_tag_batch_sheet.dart';
@@ -81,6 +84,7 @@ part '../controllers/diaries_notebook_scope_controller.dart';
 part '../controllers/diaries_notebook_membership_controller.dart';
 part '../controllers/diaries_tag_batch_controller.dart';
 part '../controllers/diaries_reading_selection_controller.dart';
+part '../controllers/diaries_select_all_controller.dart';
 
 /// 日记列表页。
 ///
@@ -142,11 +146,18 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   // ==================== 列表选择与过渡状态 ====================
   final Set<String> _selectedDiaryIds = <String>{};
+
+  /// 取消全选后选中为空、但仍留在多选模式（见 [DiariesSelectAllController]）。
+  /// 只在选中为空时有意义：一旦又选上了日记即复位，之后取消最后一篇照常
+  /// 退出多选；退出多选一律经 [_resetSelection]。
+  bool _selectionKeptOpen = false;
   final Set<String> _optimisticHiddenDiaryIds = <String>{};
   final Set<String> _pendingHideDiaryIds = <String>{};
   final Set<String> _appearingDiaryIds = <String>{};
   final Set<String> _archivingDiaryIds = <String>{};
-  final Map<String, Timer> _pendingHideTimers = <String, Timer>{};
+
+  /// 等待收起的日记 → 它所在那一批的共用计时器（见 [_HideBatch]）。
+  final Map<String, _HideBatch> _pendingHideTimers = <String, _HideBatch>{};
   final Map<String, Timer> _appearingTimers = <String, Timer>{};
 
   /// 玻璃顶栏（刊头 + 标签栏）共用的背景组 key：保持不变，页面重建时
@@ -232,8 +243,18 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   late final DiariesNotebookMembershipController _membershipController;
   late final DiariesTagBatchController _tagBatchController;
   late final DiariesReadingSelectionController _readingSelection;
+  late final DiariesSelectAllController _selectAll;
 
-  bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
+  bool get _isSelectionMode =>
+      _selectedDiaryIds.isNotEmpty || _selectionKeptOpen;
+
+  /// 退出多选：清空选中、复位“取消全选后留在多选”，并作废进行中的全选读取。
+  /// 只改字段，调用方负责 setState。
+  void _resetSelection() {
+    _selectedDiaryIds.clear();
+    _selectionKeptOpen = false;
+    _selectAll.cancelPending();
+  }
 
   @override
   void initState() {
@@ -261,6 +282,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       transitionCoordinator: _transitionCoordinator,
     );
     _readingSelection = DiariesReadingSelectionController(this);
+    _selectAll = DiariesSelectAllController(this, feedback: _feedback);
     _tagFilterExpansionController = AnimationController(
       vsync: this,
       duration: _tagFilterSnapDuration,
@@ -438,9 +460,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             _heldDisplayedItems ?? latestVisibleItems ?? _cachedVisibleItems;
         _lastDisplayedItems = displayedItems;
         _currentDiaryPageQuery = diaryPageQuery;
-        final shouldUnpinSelected = _controller.areAllSelectedPinned(
-          displayedItems,
-        );
         final hasMoreDiaries = _hasMoreDiaries;
         // 普通日记本里多选才有“移出 / 移动到”；头部卡片与列表卡片同一侧边距。
         // 功能关闭的那一刻范围还没退回全部日记（见 handleFeatureToggled），
@@ -675,75 +694,104 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               ),
                               child: LaunchReveal(
                                 slot: LaunchRevealSlot.masthead,
-                                // 只让顶栏随草稿份数重建，不牵动整页。
+                                // 只让顶栏随草稿份数与（多选时）列表的完整
+                                // 时间轴重建，不牵动整页。
                                 child: Consumer(
-                                  builder: (context, ref, _) => DiaryHeadSection(
-                                    isSelectionMode: _isSelectionMode,
-                                    selectedCount: _selectedDiaryIds.length,
-                                    onCancelSelection:
-                                        _controller.clearSelection,
-                                    isPinActionUnpin: shouldUnpinSelected,
-                                    onPinSelected: () => unawaited(
-                                      _controller.pinSelectedDiaries(
-                                        unpin: shouldUnpinSelected,
+                                  builder: (context, ref, _) {
+                                    // 多选且列表还有没加载的部分时才订阅时间轴
+                                    // （只带键、不带正文），用来判断是否已全选
+                                    // 与所选是否全部已置顶；平时不多一条查询。
+                                    final timeline =
+                                        _isSelectionMode && hasMoreDiaries
+                                        ? ref
+                                              .watch(
+                                                diaryTimelineProvider(
+                                                  diaryPageQuery.timelineKey,
+                                                ),
+                                              )
+                                              .value
+                                        : null;
+                                    final summary = _isSelectionMode
+                                        ? _selectAll.summaryOf(
+                                            loadedItems: displayedItems,
+                                            timeline: timeline,
+                                            hasMore: hasMoreDiaries,
+                                          )
+                                        : DiarySelectionSummary.none;
+                                    return DiaryHeadSection(
+                                      isSelectionMode: _isSelectionMode,
+                                      selectedCount: _selectedDiaryIds.length,
+                                      onCancelSelection:
+                                          _controller.clearSelection,
+                                      allSelected: summary.allSelected,
+                                      onToggleSelectAll: () => unawaited(
+                                        _selectAll.toggle(
+                                          allSelected: summary.allSelected,
+                                        ),
                                       ),
-                                    ),
-                                    onArchiveSelected: () => unawaited(
-                                      _controller.archiveSelectedDiaries(),
-                                    ),
-                                    onSetTagsSelected: () => unawaited(
-                                      _tagBatchController.editSelectedTags(),
-                                    ),
-                                    onExportSelected: () => unawaited(
-                                      _controller.exportSelectedDiaries(),
-                                    ),
-                                    onDeleteSelected: () => unawaited(
-                                      _controller.deleteSelectedDiaries(),
-                                    ),
-                                    // 日记本功能关闭时多选栏不给收录 / 移出 / 移动。
-                                    onAddToNotebookSelected: !notebooksEnabled
-                                        ? null
-                                        : () => unawaited(
-                                            _membershipController
-                                                .addSelectedToNotebooks(),
-                                          ),
-                                    onRemoveFromNotebookSelected:
-                                        manualNotebook == null
-                                        ? null
-                                        : () => unawaited(
-                                            _membershipController
-                                                .removeSelectedFromCurrent(),
-                                          ),
-                                    onMoveToNotebookSelected:
-                                        manualNotebook == null
-                                        ? null
-                                        : () => unawaited(
-                                            _membershipController
-                                                .moveSelectedToNotebook(),
-                                          ),
-                                    onOpenArchived:
-                                        _controller.openArchivedPage,
-                                    onOpenDrafts: _controller.openDraftsPage,
-                                    draftCount:
-                                        ref
-                                            .watch(diaryDraftCountProvider)
-                                            .value ??
-                                        0,
-                                    onOpenViewOptions:
-                                        _controller.openViewOptions,
-                                    onOpenSearchPage:
-                                        _controller.openSearchPage,
-                                    searchHint: scopeResolution.isAll
-                                        ? null
-                                        : context.l10n.notebookSearchIn(
-                                            NotebookSwitcherChip.labelFor(
-                                              context,
-                                              currentNotebook,
-                                              unfiled:
-                                                  scopeResolution.isUnfiled,
+                                      isPinActionUnpin: summary.allPinned,
+                                      onPinSelected: () => unawaited(
+                                        _controller.pinSelectedDiaries(
+                                          unpin: summary.allPinned,
+                                        ),
+                                      ),
+                                      onArchiveSelected: () => unawaited(
+                                        _controller.archiveSelectedDiaries(),
+                                      ),
+                                      onSetTagsSelected: () => unawaited(
+                                        _tagBatchController.editSelectedTags(),
+                                      ),
+                                      onExportSelected: () => unawaited(
+                                        _controller.exportSelectedDiaries(),
+                                      ),
+                                      onDeleteSelected: () => unawaited(
+                                        _controller.deleteSelectedDiaries(),
+                                      ),
+                                      // 日记本功能关闭时多选栏不给收录 / 移出 / 移动。
+                                      onAddToNotebookSelected: !notebooksEnabled
+                                          ? null
+                                          : () => unawaited(
+                                              _membershipController
+                                                  .addSelectedToNotebooks(),
                                             ),
-                                          ),
-                                  ),
+                                      onRemoveFromNotebookSelected:
+                                          manualNotebook == null
+                                          ? null
+                                          : () => unawaited(
+                                              _membershipController
+                                                  .removeSelectedFromCurrent(),
+                                            ),
+                                      onMoveToNotebookSelected:
+                                          manualNotebook == null
+                                          ? null
+                                          : () => unawaited(
+                                              _membershipController
+                                                  .moveSelectedToNotebook(),
+                                            ),
+                                      onOpenArchived:
+                                          _controller.openArchivedPage,
+                                      onOpenDrafts: _controller.openDraftsPage,
+                                      draftCount:
+                                          ref
+                                              .watch(diaryDraftCountProvider)
+                                              .value ??
+                                          0,
+                                      onOpenViewOptions:
+                                          _controller.openViewOptions,
+                                      onOpenSearchPage:
+                                          _controller.openSearchPage,
+                                      searchHint: scopeResolution.isAll
+                                          ? null
+                                          : context.l10n.notebookSearchIn(
+                                              NotebookSwitcherChip.labelFor(
+                                                context,
+                                                currentNotebook,
+                                                unfiled:
+                                                    scopeResolution.isUnfiled,
+                                              ),
+                                            ),
+                                    );
+                                  },
                                 ),
                               ),
                             ),

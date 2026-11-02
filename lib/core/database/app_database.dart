@@ -25,6 +25,7 @@ part 'app_database.g.dart';
 part 'app_database_schema.dart';
 part 'app_database_tag_ops.dart';
 part 'app_database_diary_writes.dart';
+part 'app_database_diary_batch_writes.dart';
 part 'app_database_diary_scope_sql.dart';
 part 'app_database_diary_queries.dart';
 part 'app_database_diary_list_queries.dart';
@@ -73,6 +74,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseDiaryListQueries,
         _AppDatabaseNotebookEntryOps,
         _AppDatabaseDiaryWrites,
+        _AppDatabaseDiaryBatchWrites,
         _AppDatabaseAnniversaryOps,
         _AppDatabaseDraftOps,
         _AppDatabaseTemplateOps,

@@ -11391,7 +11391,7 @@
   },
   "diaryEditorDivider": "Divider",
   "@diaryEditorDivider": {
-    "description": "Divider option in the diary editor slash command menu."
+    "description": "Divider tool in the diary editor floating toolbar and slash command menu."
   },
   "diaryEditorCallout": "Callout",
   "@diaryEditorCallout": {

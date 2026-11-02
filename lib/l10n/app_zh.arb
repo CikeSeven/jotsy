@@ -14682,5 +14682,1549 @@
   "lanSyncForgetBody": "两台设备上的日记都不会被删除。之后要同步需要重新配对。",
   "@lanSyncForgetBody": {
     "description": "Body of the unpair confirmation dialog."
+  },
+  "settingsFeaturesAi": "AI 助手",
+  "@settingsFeaturesAi": {
+    "description": "功能管理：AI 助手开关的标题。"
+  },
+  "settingsFeaturesAiSubtitle": "用你自己的 AI 接口写作、回应、回顾与对话",
+  "@settingsFeaturesAiSubtitle": {
+    "description": "功能管理：AI 助手开关的说明。"
+  },
+  "aiPersonaAssistantName": "日记助手",
+  "@aiPersonaAssistantName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaAssistantDesc": "客观清楚，适合问答与总结",
+  "@aiPersonaAssistantDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaAssistantPrompt": "你是用户的日记助手，可以读到用户提供的日记。回答要以日记内容为依据，客观、清楚、有条理；不确定的地方直说，不要编造日记里没有的事。",
+  "@aiPersonaAssistantPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaListenerName": "温暖倾听者",
+  "@aiPersonaListenerName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaListenerDesc": "先接住情绪，再温柔回应",
+  "@aiPersonaListenerDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaListenerPrompt": "你是一位温暖、耐心的倾听者。读完用户的日记后，先表达理解、接住其中的情绪，再温柔地回应。不评判、不说教，少给建议，多一些共情与肯定；可以在结尾提一个温和的问题，引导用户多想一点。",
+  "@aiPersonaListenerPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaFriendName": "知心朋友",
+  "@aiPersonaFriendName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaFriendDesc": "像老朋友一样轻松聊天",
+  "@aiPersonaFriendDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaFriendPrompt": "你是用户认识多年的好朋友，说话自然、轻松、真诚，会开玩笑也会认真。像朋友读了对方的日记后回一段话那样回应：聊聊你注意到的细节，说说你的感受，需要时再给点实在的建议。",
+  "@aiPersonaFriendPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaCoachName": "成长教练",
+  "@aiPersonaCoachName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaCoachDesc": "看到你的进步，找到下一步",
+  "@aiPersonaCoachDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaCoachPrompt": "你是一位积极务实的成长教练。从日记中找出用户的努力、进步与值得肯定的地方，指出可以改进的模式，并给出一到三个具体、可执行的小行动。语气鼓励但不空洞。",
+  "@aiPersonaCoachPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaAnalystName": "理性分析师",
+  "@aiPersonaAnalystName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaAnalystDesc": "冷静梳理来龙去脉",
+  "@aiPersonaAnalystDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaAnalystPrompt": "你是一位冷静、理性的分析者。帮助用户梳理日记中事情的来龙去脉、背后的原因与可能的选择，区分事实与感受，指出可能被忽略的角度。表达简洁、有结构。",
+  "@aiPersonaAnalystPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaCounselorName": "心理咨询风格",
+  "@aiPersonaCounselorName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaCounselorDesc": "用提问帮你看清自己的感受",
+  "@aiPersonaCounselorDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaCounselorPrompt": "你以心理咨询师常用的方式回应：倾听、复述与澄清，用开放式问题帮助用户觉察自己的情绪与需要，不急于下结论或给建议。你不是专业的心理治疗；如果日记中出现伤害自己或他人的想法，要温和地建议用户向身边的人或专业机构求助。",
+  "@aiPersonaCounselorPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaPoetName": "诗人",
+  "@aiPersonaPoetName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaPoetDesc": "用诗意的语言回应这一天",
+  "@aiPersonaPoetDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaPoetPrompt": "你是一位温柔的诗人。用富有意象、有诗意而不晦涩的语言回应用户的日记，可以写一小段散文诗或几行短诗，捕捉这一天的情绪与画面。",
+  "@aiPersonaPoetPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaPhilosopherName": "哲学家",
+  "@aiPersonaPhilosopherName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaPhilosopherDesc": "从更大的视角想一想",
+  "@aiPersonaPhilosopherDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaPhilosopherPrompt": "你是一位亲切的哲学家。从日记里具体的小事出发，联系到更大的问题（意义、选择、时间、关系），引用恰当的思想或比喻，但保持平易近人，最后回到用户自己的生活。",
+  "@aiPersonaPhilosopherPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaFutureSelfName": "未来的自己",
+  "@aiPersonaFutureSelfName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaFutureSelfDesc": "十年后的你写来的回信",
+  "@aiPersonaFutureSelfDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaFutureSelfPrompt": "你是十年后的用户本人，正在重读这篇日记。用第一人称“我”给过去的自己写一段回信：温柔、了解一切来龙去脉，带着时间带来的释然与智慧，但不要编造具体的未来事件。",
+  "@aiPersonaFutureSelfPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiPersonaRoastName": "毒舌损友",
+  "@aiPersonaRoastName": {
+    "description": "内置人设名称。"
+  },
+  "aiPersonaRoastDesc": "嘴上不饶人，心里向着你",
+  "@aiPersonaRoastDesc": {
+    "description": "内置人设说明。"
+  },
+  "aiPersonaRoastPrompt": "你是嘴上毒舌、心里向着用户的损友。用幽默、夸张、调侃的方式吐槽日记里的事，但不挖苦用户真正的痛处，不涉及外貌、身份等敏感话题；结尾要露出关心。",
+  "@aiPersonaRoastPrompt": {
+    "description": "内置人设的系统提示词（发给模型）。"
+  },
+  "aiActionContinue": "续写",
+  "@aiActionContinue": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionContinuePrompt": "顺着下面这段日记的内容和语气，自然地往下写一段（约 100 到 200 字）。只写新的内容，不要重复原文。",
+  "@aiActionContinuePrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionPolish": "润色",
+  "@aiActionPolish": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionPolishPrompt": "润色下面的文字：让表达更流畅自然，修正不通顺的地方，保留原意、语气和第一人称视角，不要扩写。",
+  "@aiActionPolishPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionExpand": "扩写",
+  "@aiActionExpand": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionExpandPrompt": "扩写下面的文字：补充细节、感受与画面，让内容更丰满，长度大约增加一倍，保持原来的语气和视角。",
+  "@aiActionExpandPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionShorten": "精简",
+  "@aiActionShorten": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionShortenPrompt": "精简下面的文字：保留关键信息和情绪，删去重复与啰嗦的部分，长度减半左右。",
+  "@aiActionShortenPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionProofread": "纠错",
+  "@aiActionProofread": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionProofreadPrompt": "修正下面文字中的错别字、标点和语法错误，其余内容保持原样，不要改写。",
+  "@aiActionProofreadPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionToneFormal": "正式一点",
+  "@aiActionToneFormal": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionToneFormalPrompt": "把下面的文字改写得更正式、得体，保留原意。",
+  "@aiActionToneFormalPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionToneCasual": "轻松一点",
+  "@aiActionToneCasual": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionToneCasualPrompt": "把下面的文字改写得更轻松、口语化，像在和朋友聊天，保留原意。",
+  "@aiActionToneCasualPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionToneWarm": "温暖一点",
+  "@aiActionToneWarm": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionToneWarmPrompt": "把下面的文字改写得更温暖、柔和，多一些善意与体贴，保留原意。",
+  "@aiActionToneWarmPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionToneHumor": "幽默一点",
+  "@aiActionToneHumor": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionToneHumorPrompt": "把下面的文字改写得更幽默风趣，加一点俏皮的比喻或自嘲，保留原意。",
+  "@aiActionToneHumorPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionToneLiterary": "文艺一点",
+  "@aiActionToneLiterary": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionToneLiteraryPrompt": "把下面的文字改写得更有文学性：用更细腻的描写和恰当的修辞，但不要堆砌辞藻，保留原意。",
+  "@aiActionToneLiteraryPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionTranslate": "翻译",
+  "@aiActionTranslate": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionTranslatePrompt": "翻译下面的文字。如果原文主要是中文，就翻译成英文；否则翻译成简体中文。只输出译文。",
+  "@aiActionTranslatePrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionSummarize": "总结",
+  "@aiActionSummarize": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionSummarizePrompt": "用两三句话总结下面这段文字的要点。",
+  "@aiActionSummarizePrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionBulletPoints": "列成要点",
+  "@aiActionBulletPoints": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionBulletPointsPrompt": "把下面的文字整理成条理清楚的要点列表（Markdown 无序列表），每条简短。",
+  "@aiActionBulletPointsPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionExtractTodos": "提取待办",
+  "@aiActionExtractTodos": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionExtractTodosPrompt": "找出下面文字中提到的待办、计划或需要跟进的事，整理成 Markdown 任务列表，每行以“- [ ] ”开头。如果没有，就只回复一行说明没有找到。",
+  "@aiActionExtractTodosPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiActionPoem": "写成小诗",
+  "@aiActionPoem": {
+    "description": "内置写作指令名称。"
+  },
+  "aiActionPoemPrompt": "把下面的内容写成一首简短的现代诗（4 到 12 行），保留其中的情绪与画面。",
+  "@aiActionPoemPrompt": {
+    "description": "内置写作指令的提示词（发给模型）。"
+  },
+  "aiErrorNotConfigured": "还没有可用的 AI 模型，请先在 设置 → AI 助手 里添加服务商。",
+  "@aiErrorNotConfigured": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorNetwork": "连不上 AI 服务，请检查网络、接口地址或代理。",
+  "@aiErrorNetwork": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorTimeout": "AI 服务响应超时。",
+  "@aiErrorTimeout": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorUnauthorized": "API 密钥无效或没有填写。",
+  "@aiErrorUnauthorized": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorForbidden": "这个密钥没有该模型的权限，或服务在当前地区不可用。",
+  "@aiErrorForbidden": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorModelNotFound": "找不到模型或接口，请检查模型名与接口地址。",
+  "@aiErrorModelNotFound": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorRateLimited": "请求太频繁，请稍后再试。",
+  "@aiErrorRateLimited": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorQuota": "账户余额或额度不足。",
+  "@aiErrorQuota": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorContextTooLong": "内容超过了模型能处理的长度。可以在 AI 隐私设置里调低字数上限，或换一个上下文更长的模型。",
+  "@aiErrorContextTooLong": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorContentFiltered": "AI 服务按内容策略拒绝了这次请求。",
+  "@aiErrorContentFiltered": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorBadRequest": "AI 服务不接受这次请求，请检查服务商的高级设置。",
+  "@aiErrorBadRequest": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorServer": "AI 服务出错或过载，请稍后再试。",
+  "@aiErrorServer": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorBadResponse": "无法识别返回的内容，接口地址可能填成了网页地址。",
+  "@aiErrorBadResponse": {
+    "description": "AI 错误提示。"
+  },
+  "aiErrorCancelled": "已停止",
+  "@aiErrorCancelled": {
+    "description": "用户停止生成后的提示。"
+  },
+  "aiErrorDetails": "查看详情",
+  "@aiErrorDetails": {
+    "description": "查看错误原文的按钮。"
+  },
+  "aiErrorOpenSettings": "去设置",
+  "@aiErrorOpenSettings": {
+    "description": "从错误提示跳到 AI 设置的按钮。"
+  },
+  "aiSettingsTitle": "AI 助手",
+  "@aiSettingsTitle": {
+    "description": "AI 设置页标题与设置首页入口。"
+  },
+  "aiSettingsEntrySubtitle": "服务商、模型、人设与隐私",
+  "@aiSettingsEntrySubtitle": {
+    "description": "设置首页 AI 入口的副标题。"
+  },
+  "aiSettingsFooter": "开发者收不到任何内容：请求从这台设备直接发往你配置的服务商；API 密钥只保存在本机，不会进入备份或同步。",
+  "@aiSettingsFooter": {
+    "description": "AI 设置页底部的隐私说明。"
+  },
+  "aiStatusNotConfiguredTitle": "还没有配置 AI 服务",
+  "@aiStatusNotConfiguredTitle": {
+    "description": "未配置服务商时状态卡的标题。"
+  },
+  "aiStatusNotConfiguredBody": "添加一个服务商并填入 API 密钥，AI 功能就会出现在编辑器、预览页和首页。内容只会发到你自己配置的服务。",
+  "@aiStatusNotConfiguredBody": {
+    "description": "未配置服务商时状态卡的说明。"
+  },
+  "aiStatusAddProvider": "添加服务商",
+  "@aiStatusAddProvider": {
+    "description": "添加 AI 服务商的按钮。"
+  },
+  "aiStatusDefaultModel": "默认模型",
+  "@aiStatusDefaultModel": {
+    "description": "状态卡上默认模型的标签。"
+  },
+  "aiStatusTest": "测试连接",
+  "@aiStatusTest": {
+    "description": "发送测试请求的按钮。"
+  },
+  "aiStatusTesting": "正在测试…",
+  "@aiStatusTesting": {
+    "description": "测试请求进行中。"
+  },
+  "aiStatusTestOk": "连接成功 · {ms} 毫秒",
+  "@aiStatusTestOk": {
+    "description": "测试连接成功的结果。",
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "aiGroupService": "服务",
+  "@aiGroupService": {
+    "description": "AI 设置分组标题。"
+  },
+  "aiProvidersTitle": "服务商",
+  "@aiProvidersTitle": {
+    "description": "服务商列表标题。"
+  },
+  "aiProvidersCount": "{count} 个服务商",
+  "@aiProvidersCount": {
+    "description": "已配置的服务商数量。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProvidersEmpty": "还没有添加",
+  "@aiProvidersEmpty": {
+    "description": "没有服务商时显示。"
+  },
+  "aiRoutingTitle": "模型分配",
+  "@aiRoutingTitle": {
+    "description": "按功能分配模型的页面标题。"
+  },
+  "aiRoutingSubtitle": "为不同的功能选择不同的模型",
+  "@aiRoutingSubtitle": {
+    "description": "模型分配入口的说明。"
+  },
+  "aiGroupFeatures": "功能",
+  "@aiGroupFeatures": {
+    "description": "AI 设置分组标题。"
+  },
+  "aiGroupFeaturesFooter": "关闭只隐藏入口，已有的 AI 记录保留。",
+  "@aiGroupFeaturesFooter": {
+    "description": "AI 功能分组的附注。"
+  },
+  "aiModuleWriting": "写作助手",
+  "@aiModuleWriting": {
+    "description": "AI 模块名称。"
+  },
+  "aiModuleWritingSubtitle": "编辑器里续写、润色、改语气、翻译与自定义指令",
+  "@aiModuleWritingSubtitle": {
+    "description": "AI 模块说明。"
+  },
+  "aiModuleSuggest": "智能填写",
+  "@aiModuleSuggest": {
+    "description": "AI 模块名称。"
+  },
+  "aiModuleSuggestSubtitle": "生成标题，推荐标签与心情",
+  "@aiModuleSuggestSubtitle": {
+    "description": "AI 模块说明。"
+  },
+  "aiModuleReply": "读后回应",
+  "@aiModuleReply": {
+    "description": "AI 模块名称。"
+  },
+  "aiModuleReplySubtitle": "在预览页让 AI 读完这篇日记后回应你",
+  "@aiModuleReplySubtitle": {
+    "description": "AI 模块说明。"
+  },
+  "aiModulePrompts": "写作灵感",
+  "@aiModulePrompts": {
+    "description": "AI 模块名称。"
+  },
+  "aiModulePromptsSubtitle": "不知道写什么时，给你几个问题",
+  "@aiModulePromptsSubtitle": {
+    "description": "AI 模块说明。"
+  },
+  "aiModuleRecap": "回顾与洞察",
+  "@aiModuleRecap": {
+    "description": "AI 模块名称。"
+  },
+  "aiModuleRecapSubtitle": "按周、月、年或日记本生成总结",
+  "@aiModuleRecapSubtitle": {
+    "description": "AI 模块说明。"
+  },
+  "aiModuleChat": "与日记对话",
+  "@aiModuleChat": {
+    "description": "AI 模块名称。"
+  },
+  "aiModuleChatSubtitle": "问问你的日记，回答会引用相关的篇目",
+  "@aiModuleChatSubtitle": {
+    "description": "AI 模块说明。"
+  },
+  "aiModuleVision": "图片理解",
+  "@aiModuleVision": {
+    "description": "AI 模块名称。"
+  },
+  "aiModuleVisionSubtitle": "把日记里的图片一起发给支持视觉的模型（默认关闭）",
+  "@aiModuleVisionSubtitle": {
+    "description": "AI 模块说明。"
+  },
+  "aiOptionTitleButton": "标题旁显示“生成标题”",
+  "@aiOptionTitleButton": {
+    "description": "智能填写下的选项。"
+  },
+  "aiOptionAutoSuggest": "进入发布页时自动建议",
+  "@aiOptionAutoSuggest": {
+    "description": "智能填写下的选项。"
+  },
+  "aiOptionAutoSuggestSubtitle": "会发送一次正文来建议标题、标签与心情；点选后才会填入",
+  "@aiOptionAutoSuggestSubtitle": {
+    "description": "自动建议选项的说明。"
+  },
+  "aiOptionAutoReply": "发表后自动回应",
+  "@aiOptionAutoReply": {
+    "description": "读后回应下的选项。"
+  },
+  "aiOptionAutoReplySubtitle": "每发表一篇新日记就发送一次，自动生成回应",
+  "@aiOptionAutoReplySubtitle": {
+    "description": "自动回应选项的说明。"
+  },
+  "aiOptionPromptsStrip": "新建日记时显示灵感条",
+  "@aiOptionPromptsStrip": {
+    "description": "写作灵感下的选项。"
+  },
+  "aiOptionPromptsStripSubtitle": "点了才会生成",
+  "@aiOptionPromptsStripSubtitle": {
+    "description": "灵感条选项的说明。"
+  },
+  "aiOptionPromptsRecent": "参考最近的日记",
+  "@aiOptionPromptsRecent": {
+    "description": "写作灵感下的选项。"
+  },
+  "aiOptionPromptsRecentSubtitle": "生成时附上最近几篇日记的摘录，问题更贴近你",
+  "@aiOptionPromptsRecentSubtitle": {
+    "description": "参考最近日记选项的说明。"
+  },
+  "aiOptionPromptStyle": "插入样式",
+  "@aiOptionPromptStyle": {
+    "description": "灵感问题插入正文的样式。"
+  },
+  "aiPromptStyleCallout": "提示块",
+  "@aiPromptStyleCallout": {
+    "description": "灵感插入样式。"
+  },
+  "aiPromptStyleQuote": "引用",
+  "@aiPromptStyleQuote": {
+    "description": "灵感插入样式。"
+  },
+  "aiPromptStyleHeading": "小标题",
+  "@aiPromptStyleHeading": {
+    "description": "灵感插入样式。"
+  },
+  "aiOptionRecapSections": "回顾默认包含",
+  "@aiOptionRecapSections": {
+    "description": "回顾默认章节的选择。"
+  },
+  "aiRecapSectionMood": "心情走势",
+  "@aiRecapSectionMood": {
+    "description": "回顾章节。"
+  },
+  "aiRecapSectionEvents": "重要的事",
+  "@aiRecapSectionEvents": {
+    "description": "回顾章节。"
+  },
+  "aiRecapSectionPeople": "身边的人",
+  "@aiRecapSectionPeople": {
+    "description": "回顾章节。"
+  },
+  "aiRecapSectionGratitude": "值得感恩",
+  "@aiRecapSectionGratitude": {
+    "description": "回顾章节。"
+  },
+  "aiRecapSectionGrowth": "成长与变化",
+  "@aiRecapSectionGrowth": {
+    "description": "回顾章节。"
+  },
+  "aiRecapSectionQuotes": "金句摘录",
+  "@aiRecapSectionQuotes": {
+    "description": "回顾章节。"
+  },
+  "aiRecapSectionSuggestions": "下一步建议",
+  "@aiRecapSectionSuggestions": {
+    "description": "回顾章节。"
+  },
+  "aiOptionRetrieval": "查找相关日记",
+  "@aiOptionRetrieval": {
+    "description": "对话检索方式的选择。"
+  },
+  "aiOptionRetrievalSubtitle": "智能：先理解问题再查找；关键词：只按问题里的词查找；最近：只看最近一段时间",
+  "@aiOptionRetrievalSubtitle": {
+    "description": "检索方式的说明。"
+  },
+  "aiRetrievalSmart": "智能",
+  "@aiRetrievalSmart": {
+    "description": "检索方式。"
+  },
+  "aiRetrievalKeyword": "关键词",
+  "@aiRetrievalKeyword": {
+    "description": "检索方式。"
+  },
+  "aiRetrievalRecent": "最近",
+  "@aiRetrievalRecent": {
+    "description": "检索方式。"
+  },
+  "aiOptionRecentDays": "最近多少天",
+  "@aiOptionRecentDays": {
+    "description": "对话读取最近多少天的选择。"
+  },
+  "aiDays": "{count} 天",
+  "@aiDays": {
+    "description": "天数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiOptionMaxCitations": "最多参考",
+  "@aiOptionMaxCitations": {
+    "description": "对话最多参考多少篇。"
+  },
+  "aiEntries": "{count} 篇",
+  "@aiEntries": {
+    "description": "日记篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiOptionShowReasoning": "显示思考过程",
+  "@aiOptionShowReasoning": {
+    "description": "显示思考过程的选项。"
+  },
+  "aiOptionShowTokens": "显示用量",
+  "@aiOptionShowTokens": {
+    "description": "在回答下方显示 token 数的选项。"
+  },
+  "aiOptionAutoTitle": "自动给对话起标题",
+  "@aiOptionAutoTitle": {
+    "description": "自动给对话起标题的选项。"
+  },
+  "aiOptionVisionImages": "每次最多发送",
+  "@aiOptionVisionImages": {
+    "description": "每次最多发送几张图片。"
+  },
+  "aiPhotos": "{count} 张",
+  "@aiPhotos": {
+    "description": "图片张数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiOptionVisionSize": "图片尺寸",
+  "@aiOptionVisionSize": {
+    "description": "发送图片的尺寸选择。"
+  },
+  "aiVisionSizeSmall": "小",
+  "@aiVisionSizeSmall": {
+    "description": "图片尺寸选项。"
+  },
+  "aiVisionSizeMedium": "中",
+  "@aiVisionSizeMedium": {
+    "description": "图片尺寸选项。"
+  },
+  "aiVisionSizeLarge": "大",
+  "@aiVisionSizeLarge": {
+    "description": "图片尺寸选项。"
+  },
+  "aiGroupPersonal": "个性化",
+  "@aiGroupPersonal": {
+    "description": "AI 设置分组标题。"
+  },
+  "aiPersonasTitle": "人设",
+  "@aiPersonasTitle": {
+    "description": "人设页标题。"
+  },
+  "aiPersonasSubtitle": "回应、对话与回顾用谁的口吻",
+  "@aiPersonasSubtitle": {
+    "description": "人设入口的说明。"
+  },
+  "aiActionsTitle": "写作指令",
+  "@aiActionsTitle": {
+    "description": "写作指令页标题。"
+  },
+  "aiActionsSubtitle": "排序、隐藏、改写提示词，或添加自己的指令",
+  "@aiActionsSubtitle": {
+    "description": "写作指令入口的说明。"
+  },
+  "aiProfileTitle": "关于我与文风",
+  "@aiProfileTitle": {
+    "description": "关于我与文风页标题。"
+  },
+  "aiProfileSubtitle": "让 AI 更了解你（可选）",
+  "@aiProfileSubtitle": {
+    "description": "关于我入口的说明。"
+  },
+  "aiOutputLanguage": "回答语言",
+  "@aiOutputLanguage": {
+    "description": "回答语言的选择。"
+  },
+  "aiLanguageFollowDiary": "跟随日记",
+  "@aiLanguageFollowDiary": {
+    "description": "回答语言选项。"
+  },
+  "aiLanguageFollowApp": "跟随界面",
+  "@aiLanguageFollowApp": {
+    "description": "回答语言选项。"
+  },
+  "aiLanguageCustom": "指定",
+  "@aiLanguageCustom": {
+    "description": "回答语言选项。"
+  },
+  "aiLanguageCustomHint": "如：English、日本語",
+  "@aiLanguageCustomHint": {
+    "description": "指定回答语言输入框的提示。"
+  },
+  "aiResponseLength": "回答长度",
+  "@aiResponseLength": {
+    "description": "回答长度的选择。"
+  },
+  "aiLengthShort": "简短",
+  "@aiLengthShort": {
+    "description": "回答长度选项。"
+  },
+  "aiLengthMedium": "适中",
+  "@aiLengthMedium": {
+    "description": "回答长度选项。"
+  },
+  "aiLengthLong": "详细",
+  "@aiLengthLong": {
+    "description": "回答长度选项。"
+  },
+  "aiCreativity": "创造力",
+  "@aiCreativity": {
+    "description": "创造力的选择。"
+  },
+  "aiCreativitySubtitle": "只对接受温度参数的服务商生效",
+  "@aiCreativitySubtitle": {
+    "description": "创造力选项的说明。"
+  },
+  "aiCreativityPrecise": "严谨",
+  "@aiCreativityPrecise": {
+    "description": "创造力选项。"
+  },
+  "aiCreativityBalanced": "平衡",
+  "@aiCreativityBalanced": {
+    "description": "创造力选项。"
+  },
+  "aiCreativityCreative": "发散",
+  "@aiCreativityCreative": {
+    "description": "创造力选项。"
+  },
+  "aiGroupPrivacy": "隐私与用量",
+  "@aiGroupPrivacy": {
+    "description": "AI 设置分组标题。"
+  },
+  "aiPrivacyTitle": "隐私",
+  "@aiPrivacyTitle": {
+    "description": "AI 隐私页标题。"
+  },
+  "aiPrivacySubtitle": "发送哪些信息、排除哪些日记",
+  "@aiPrivacySubtitle": {
+    "description": "AI 隐私入口的说明。"
+  },
+  "aiUsageTitle": "用量",
+  "@aiUsageTitle": {
+    "description": "AI 用量页标题。"
+  },
+  "aiUsageSubtitle": "本机记录的请求次数与 token",
+  "@aiUsageSubtitle": {
+    "description": "AI 用量入口的说明。"
+  },
+  "aiProvidersFooter": "没有指定默认模型时，用第一个可用的服务商，可以在“模型分配”里改。",
+  "@aiProvidersFooter": {
+    "description": "服务商列表的附注。"
+  },
+  "aiProviderModelsCount": "{count} 个模型",
+  "@aiProviderModelsCount": {
+    "description": "服务商的模型数量。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProviderDisabled": "已停用",
+  "@aiProviderDisabled": {
+    "description": "已停用服务商的标记。"
+  },
+  "aiProviderNoKey": "未填密钥",
+  "@aiProviderNoKey": {
+    "description": "未填密钥的标记。"
+  },
+  "aiPresetSheetTitle": "选择服务商",
+  "@aiPresetSheetTitle": {
+    "description": "服务商预设面板标题。"
+  },
+  "aiPresetGroupChina": "国内服务",
+  "@aiPresetGroupChina": {
+    "description": "预设分组标题。"
+  },
+  "aiPresetGroupInternational": "国际服务",
+  "@aiPresetGroupInternational": {
+    "description": "预设分组标题。"
+  },
+  "aiPresetGroupLocal": "本地运行",
+  "@aiPresetGroupLocal": {
+    "description": "预设分组标题。"
+  },
+  "aiPresetGroupCustom": "自定义接口",
+  "@aiPresetGroupCustom": {
+    "description": "预设分组标题。"
+  },
+  "aiPresetNameDashscope": "通义千问（阿里云百炼）",
+  "@aiPresetNameDashscope": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameMoonshot": "Kimi（月之暗面）",
+  "@aiPresetNameMoonshot": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameZhipu": "智谱 GLM",
+  "@aiPresetNameZhipu": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameVolcengine": "豆包（火山方舟）",
+  "@aiPresetNameVolcengine": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameSiliconflow": "硅基流动",
+  "@aiPresetNameSiliconflow": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameHunyuan": "腾讯混元",
+  "@aiPresetNameHunyuan": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameCustomOpenAi": "OpenAI 兼容接口",
+  "@aiPresetNameCustomOpenAi": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameCustomAnthropic": "Anthropic 兼容接口",
+  "@aiPresetNameCustomAnthropic": {
+    "description": "服务商预设名称。"
+  },
+  "aiPresetNameCustomGemini": "Gemini 接口",
+  "@aiPresetNameCustomGemini": {
+    "description": "服务商预设名称。"
+  },
+  "aiProtocolOpenAi": "OpenAI 兼容",
+  "@aiProtocolOpenAi": {
+    "description": "接口格式名称。"
+  },
+  "aiProtocolAnthropic": "Anthropic（Claude）",
+  "@aiProtocolAnthropic": {
+    "description": "接口格式名称。"
+  },
+  "aiProtocolGemini": "Google Gemini",
+  "@aiProtocolGemini": {
+    "description": "接口格式名称。"
+  },
+  "aiProviderEditTitleNew": "添加服务商",
+  "@aiProviderEditTitleNew": {
+    "description": "新建服务商时编辑页的标题。"
+  },
+  "aiProviderEditTitle": "编辑服务商",
+  "@aiProviderEditTitle": {
+    "description": "服务商编辑页标题。"
+  },
+  "aiProviderName": "名称",
+  "@aiProviderName": {
+    "description": "服务商名称输入框。"
+  },
+  "aiProviderProtocol": "接口格式",
+  "@aiProviderProtocol": {
+    "description": "服务商接口格式选择。"
+  },
+  "aiProviderBaseUrl": "接口地址",
+  "@aiProviderBaseUrl": {
+    "description": "服务商接口地址输入框。"
+  },
+  "aiProviderBaseUrlHint": "例如 https://api.example.com/v1",
+  "@aiProviderBaseUrlHint": {
+    "description": "接口地址输入框的提示。"
+  },
+  "aiProviderApiKey": "API 密钥",
+  "@aiProviderApiKey": {
+    "description": "API 密钥输入框。"
+  },
+  "aiProviderApiKeyOptional": "API 密钥（本地服务可不填）",
+  "@aiProviderApiKeyOptional": {
+    "description": "本地服务的 API 密钥输入框标签。"
+  },
+  "aiProviderGetKey": "获取密钥",
+  "@aiProviderGetKey": {
+    "description": "打开服务商密钥页面的按钮。"
+  },
+  "aiProviderLocalHint": "手机上连接电脑里的 Ollama / LM Studio 时，请把 localhost 换成电脑的局域网地址，并让服务监听 0.0.0.0。",
+  "@aiProviderLocalHint": {
+    "description": "本地服务的提示。"
+  },
+  "aiProviderModels": "模型",
+  "@aiProviderModels": {
+    "description": "服务商模型分组标题。"
+  },
+  "aiProviderFetchModels": "获取模型列表",
+  "@aiProviderFetchModels": {
+    "description": "读取服务商模型列表的按钮。"
+  },
+  "aiProviderAddModel": "手动添加",
+  "@aiProviderAddModel": {
+    "description": "手动添加模型的按钮。"
+  },
+  "aiProviderModelsEmpty": "还没有模型。点“获取模型列表”从服务商读取，或手动添加模型名。",
+  "@aiProviderModelsEmpty": {
+    "description": "服务商没有模型时显示。"
+  },
+  "aiProviderModelIdHint": "模型名，如 deepseek-chat",
+  "@aiProviderModelIdHint": {
+    "description": "手动添加模型名的提示。"
+  },
+  "aiModelVision": "看图",
+  "@aiModelVision": {
+    "description": "支持图片输入的模型标记。"
+  },
+  "aiModelReasoning": "思考",
+  "@aiModelReasoning": {
+    "description": "开启思考过程的模型标记。"
+  },
+  "aiModelEditTitle": "模型设置",
+  "@aiModelEditTitle": {
+    "description": "模型设置面板标题。"
+  },
+  "aiModelDisplayName": "显示名（可选）",
+  "@aiModelDisplayName": {
+    "description": "模型显示名输入框。"
+  },
+  "aiModelVisionToggle": "支持图片输入",
+  "@aiModelVisionToggle": {
+    "description": "模型是否支持图片输入。"
+  },
+  "aiModelReasoningToggle": "请求思考过程",
+  "@aiModelReasoningToggle": {
+    "description": "请求思考过程的开关。"
+  },
+  "aiModelReasoningSubtitle": "让推理模型返回思考过程（部分模型支持）",
+  "@aiModelReasoningSubtitle": {
+    "description": "思考过程开关的说明。"
+  },
+  "aiModelMaxOutput": "最多输出（token）",
+  "@aiModelMaxOutput": {
+    "description": "模型最多输出输入框。"
+  },
+  "aiModelContext": "上下文长度（token）",
+  "@aiModelContext": {
+    "description": "模型上下文长度输入框。"
+  },
+  "aiModelAuto": "自动",
+  "@aiModelAuto": {
+    "description": "数值留空时的提示。"
+  },
+  "aiModelRemove": "移除模型",
+  "@aiModelRemove": {
+    "description": "移除模型的按钮。"
+  },
+  "aiModelPickerTitle": "选择要使用的模型",
+  "@aiModelPickerTitle": {
+    "description": "拉取到的模型选择面板标题。"
+  },
+  "aiModelPickerSearch": "搜索模型",
+  "@aiModelPickerSearch": {
+    "description": "模型选择面板的搜索框。"
+  },
+  "aiModelPickerAdd": "添加 {count} 个",
+  "@aiModelPickerAdd": {
+    "description": "添加选中模型的按钮。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiModelPickerEmpty": "服务商没有返回模型，请手动添加模型名。",
+  "@aiModelPickerEmpty": {
+    "description": "拉取的模型列表为空时显示。"
+  },
+  "aiProviderAdvanced": "高级",
+  "@aiProviderAdvanced": {
+    "description": "服务商高级设置分组。"
+  },
+  "aiProviderProxy": "HTTP 代理",
+  "@aiProviderProxy": {
+    "description": "服务商代理输入框。"
+  },
+  "aiProviderProxyHint": "主机:端口，如 127.0.0.1:7890；留空直连",
+  "@aiProviderProxyHint": {
+    "description": "代理输入框的提示。"
+  },
+  "aiProviderHeaders": "自定义请求头",
+  "@aiProviderHeaders": {
+    "description": "自定义请求头输入框。"
+  },
+  "aiProviderHeadersHint": "每行一个，格式为 名称: 值",
+  "@aiProviderHeadersHint": {
+    "description": "自定义请求头输入框的提示。"
+  },
+  "aiProviderExtraBody": "额外请求参数（JSON）",
+  "@aiProviderExtraBody": {
+    "description": "额外请求参数输入框。"
+  },
+  "aiProviderExtraBodyHint": "合并进每次请求的 JSON 对象，用于服务商特有的参数",
+  "@aiProviderExtraBodyHint": {
+    "description": "额外请求参数的提示。"
+  },
+  "aiProviderExtraBodyInvalid": "不是有效的 JSON 对象",
+  "@aiProviderExtraBodyInvalid": {
+    "description": "额外请求参数的校验错误。"
+  },
+  "aiProviderStream": "流式输出",
+  "@aiProviderStream": {
+    "description": "流式输出开关。"
+  },
+  "aiProviderStreamSubtitle": "边生成边显示；个别转发服务不支持时关闭",
+  "@aiProviderStreamSubtitle": {
+    "description": "流式输出开关的说明。"
+  },
+  "aiProviderIncludeUsage": "请求用量统计",
+  "@aiProviderIncludeUsage": {
+    "description": "请求用量统计开关。"
+  },
+  "aiProviderIncludeUsageSubtitle": "流式时让服务端返回 token 用量；请求报错时关闭",
+  "@aiProviderIncludeUsageSubtitle": {
+    "description": "请求用量统计开关的说明。"
+  },
+  "aiProviderSendTemperature": "发送温度参数",
+  "@aiProviderSendTemperature": {
+    "description": "发送温度参数开关。"
+  },
+  "aiProviderSendTemperatureSubtitle": "较新的 Claude 模型不接受，Anthropic 默认关闭",
+  "@aiProviderSendTemperatureSubtitle": {
+    "description": "发送温度参数开关的说明。"
+  },
+  "aiProviderTimeout": "首字等待",
+  "@aiProviderTimeout": {
+    "description": "首字等待时间。"
+  },
+  "aiSeconds": "{count} 秒",
+  "@aiSeconds": {
+    "description": "秒数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProviderRetries": "自动重试",
+  "@aiProviderRetries": {
+    "description": "自动重试次数。"
+  },
+  "aiTimes": "{count} 次",
+  "@aiTimes": {
+    "description": "次数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProviderEnabled": "启用",
+  "@aiProviderEnabled": {
+    "description": "服务商启用开关。"
+  },
+  "aiProviderDelete": "删除服务商",
+  "@aiProviderDelete": {
+    "description": "删除服务商的按钮。"
+  },
+  "aiProviderDeleteTitle": "删除「{name}」？",
+  "@aiProviderDeleteTitle": {
+    "description": "删除服务商对话框标题。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiProviderDeleteBody": "它的密钥与模型设置会一并移除，分配给它的功能恢复为默认模型。",
+  "@aiProviderDeleteBody": {
+    "description": "删除服务商对话框正文。"
+  },
+  "aiProviderNameRequired": "请填写名称",
+  "@aiProviderNameRequired": {
+    "description": "服务商名称为空的校验错误。"
+  },
+  "aiProviderUrlInvalid": "请填写以 http:// 或 https:// 开头的地址",
+  "@aiProviderUrlInvalid": {
+    "description": "接口地址无效的校验错误。"
+  },
+  "aiProviderNeedModel": "请先添加至少一个模型",
+  "@aiProviderNeedModel": {
+    "description": "没有模型时测试连接的提示。"
+  },
+  "aiProviderDiscardTitle": "放弃未保存的修改？",
+  "@aiProviderDiscardTitle": {
+    "description": "放弃修改对话框的标题。"
+  },
+  "aiProviderDiscard": "放弃",
+  "@aiProviderDiscard": {
+    "description": "放弃修改的按钮。"
+  },
+  "aiRoutingDefault": "默认模型",
+  "@aiRoutingDefault": {
+    "description": "默认模型一行。"
+  },
+  "aiRoutingDefaultSubtitle": "没有单独指定的功能都用它",
+  "@aiRoutingDefaultSubtitle": {
+    "description": "默认模型的说明。"
+  },
+  "aiRoutingFast": "快速模型",
+  "@aiRoutingFast": {
+    "description": "快速模型一行。"
+  },
+  "aiRoutingFastSubtitle": "智能填写、写作灵感等短任务优先用它，可以选一个便宜又快的模型",
+  "@aiRoutingFastSubtitle": {
+    "description": "快速模型的说明。"
+  },
+  "aiRoutingTasksGroup": "按功能指定",
+  "@aiRoutingTasksGroup": {
+    "description": "按功能指定模型的分组。"
+  },
+  "aiRoutingFollowDefault": "跟随默认",
+  "@aiRoutingFollowDefault": {
+    "description": "跟随默认模型的选项。"
+  },
+  "aiRoutingFollowFast": "跟随快速模型",
+  "@aiRoutingFollowFast": {
+    "description": "跟随快速模型的选项。"
+  },
+  "aiRoutingFirstUsable": "第一个可用的（{name}）",
+  "@aiRoutingFirstUsable": {
+    "description": "未指定默认模型时的说明。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiRoutingNone": "未设置",
+  "@aiRoutingNone": {
+    "description": "未选择模型时显示。"
+  },
+  "aiRoutingPickTitle": "选择模型",
+  "@aiRoutingPickTitle": {
+    "description": "模型选择面板的标题。"
+  },
+  "aiTaskWriting": "写作助手",
+  "@aiTaskWriting": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskSuggest": "智能填写",
+  "@aiTaskSuggest": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskReply": "读后回应",
+  "@aiTaskReply": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskPrompts": "写作灵感",
+  "@aiTaskPrompts": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskRecap": "回顾",
+  "@aiTaskRecap": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskChat": "对话",
+  "@aiTaskChat": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskVision": "描述图片",
+  "@aiTaskVision": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskUtility": "内部小任务",
+  "@aiTaskUtility": {
+    "description": "AI 任务名称。"
+  },
+  "aiTaskUtilitySubtitle": "对话标题、检索计划、长回顾的分段摘要",
+  "@aiTaskUtilitySubtitle": {
+    "description": "内部小任务的说明。"
+  },
+  "aiPersonasDefaultsGroup": "默认人设",
+  "@aiPersonasDefaultsGroup": {
+    "description": "各用途默认人设的分组。"
+  },
+  "aiPersonaUseReply": "读后回应",
+  "@aiPersonaUseReply": {
+    "description": "人设用途。"
+  },
+  "aiPersonaUseChat": "对话",
+  "@aiPersonaUseChat": {
+    "description": "人设用途。"
+  },
+  "aiPersonaUseRecap": "回顾",
+  "@aiPersonaUseRecap": {
+    "description": "人设用途。"
+  },
+  "aiPersonasBuiltInGroup": "内置人设",
+  "@aiPersonasBuiltInGroup": {
+    "description": "内置人设分组。"
+  },
+  "aiPersonasMineGroup": "我的人设",
+  "@aiPersonasMineGroup": {
+    "description": "自建人设分组。"
+  },
+  "aiPersonasMineEmpty": "还没有自己的人设。可以新建，也可以把内置人设复制过来再改。",
+  "@aiPersonasMineEmpty": {
+    "description": "没有自建人设时显示。"
+  },
+  "aiPersonaAdd": "新建人设",
+  "@aiPersonaAdd": {
+    "description": "新建人设的按钮。"
+  },
+  "aiPersonaDuplicate": "复制为我的人设",
+  "@aiPersonaDuplicate": {
+    "description": "复制内置人设的菜单项。"
+  },
+  "aiPersonaEditTitleNew": "新建人设",
+  "@aiPersonaEditTitleNew": {
+    "description": "新建人设时编辑页标题。"
+  },
+  "aiPersonaEditTitle": "编辑人设",
+  "@aiPersonaEditTitle": {
+    "description": "人设编辑页标题。"
+  },
+  "aiPersonaName": "名称",
+  "@aiPersonaName": {
+    "description": "人设名称输入框。"
+  },
+  "aiPersonaEmoji": "表情",
+  "@aiPersonaEmoji": {
+    "description": "人设表情输入框。"
+  },
+  "aiPersonaPrompt": "提示词",
+  "@aiPersonaPrompt": {
+    "description": "人设提示词输入框。"
+  },
+  "aiPersonaPromptHint": "描述 TA 是谁、怎么说话、怎么回应你的日记",
+  "@aiPersonaPromptHint": {
+    "description": "人设提示词的提示。"
+  },
+  "aiPersonaLimit": "最多 {count} 个人设",
+  "@aiPersonaLimit": {
+    "description": "达到人设上限时的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPersonaCopySuffix": "{name}（副本）",
+  "@aiPersonaCopySuffix": {
+    "description": "复制出的人设名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCommonHidden": "已隐藏",
+  "@aiCommonHidden": {
+    "description": "已隐藏的 AI 项目标记。"
+  },
+  "aiCommonHide": "隐藏",
+  "@aiCommonHide": {
+    "description": "隐藏 AI 项目的菜单项。"
+  },
+  "aiCommonShow": "显示",
+  "@aiCommonShow": {
+    "description": "显示已隐藏 AI 项目的菜单项。"
+  },
+  "aiCommonRestoreDefault": "恢复默认",
+  "@aiCommonRestoreDefault": {
+    "description": "恢复内置提示词的菜单项。"
+  },
+  "aiCommonDeleted": "已删除「{name}」",
+  "@aiCommonDeleted": {
+    "description": "删除 AI 项目后的提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiActionsFooter": "拖动调整顺序，这里的顺序就是编辑器里指令的排列。",
+  "@aiActionsFooter": {
+    "description": "写作指令列表的附注。"
+  },
+  "aiActionAdd": "新建指令",
+  "@aiActionAdd": {
+    "description": "新建写作指令的按钮。"
+  },
+  "aiActionCustomized": "已改写",
+  "@aiActionCustomized": {
+    "description": "改写过提示词的内置指令标记。"
+  },
+  "aiActionEditTitleNew": "新建指令",
+  "@aiActionEditTitleNew": {
+    "description": "新建指令时编辑页标题。"
+  },
+  "aiActionEditTitle": "编辑指令",
+  "@aiActionEditTitle": {
+    "description": "指令编辑页标题。"
+  },
+  "aiActionName": "名称",
+  "@aiActionName": {
+    "description": "指令名称输入框。"
+  },
+  "aiActionEmoji": "图标",
+  "@aiActionEmoji": {
+    "description": "指令图标输入框。"
+  },
+  "aiActionPrompt": "提示词",
+  "@aiActionPrompt": {
+    "description": "指令提示词输入框。"
+  },
+  "aiActionPromptHint": "告诉 AI 怎么处理这段文字",
+  "@aiActionPromptHint": {
+    "description": "指令提示词的提示。"
+  },
+  "aiActionVariables": "插入变量",
+  "@aiActionVariables": {
+    "description": "变量胶囊上方的标签。"
+  },
+  "aiActionVariablesHelp": "提示词里没有“文字”变量时，作用的文字会自动附在提示词后面。",
+  "@aiActionVariablesHelp": {
+    "description": "变量胶囊下方的说明。"
+  },
+  "aiVariableText": "文字",
+  "@aiVariableText": {
+    "description": "提示词变量：作用的文字。"
+  },
+  "aiVariableDiary": "全文",
+  "@aiVariableDiary": {
+    "description": "提示词变量：全文。"
+  },
+  "aiVariableTitle": "标题",
+  "@aiVariableTitle": {
+    "description": "提示词变量：标题。"
+  },
+  "aiVariableDate": "日期",
+  "@aiVariableDate": {
+    "description": "提示词变量：日期。"
+  },
+  "aiVariableMood": "心情",
+  "@aiVariableMood": {
+    "description": "提示词变量：心情。"
+  },
+  "aiActionOutput": "结果",
+  "@aiActionOutput": {
+    "description": "指令结果用法的选择。"
+  },
+  "aiOutputReplace": "替换原文",
+  "@aiOutputReplace": {
+    "description": "指令结果选项。"
+  },
+  "aiOutputInsertBelow": "插在下方",
+  "@aiOutputInsertBelow": {
+    "description": "指令结果选项。"
+  },
+  "aiOutputPreview": "只预览",
+  "@aiOutputPreview": {
+    "description": "指令结果选项。"
+  },
+  "aiActionLimit": "最多 {count} 个自定义指令",
+  "@aiActionLimit": {
+    "description": "达到自定义指令上限时的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiActionResetPromptTitle": "恢复默认提示词？",
+  "@aiActionResetPromptTitle": {
+    "description": "恢复默认提示词对话框标题。"
+  },
+  "aiProfileAboutMe": "关于我",
+  "@aiProfileAboutMe": {
+    "description": "关于我输入框。"
+  },
+  "aiProfileAboutMeHint": "比如你的身份、生活状态、在意的事，AI 回应时会参考",
+  "@aiProfileAboutMeHint": {
+    "description": "关于我输入框的提示。"
+  },
+  "aiProfileStyle": "文风偏好",
+  "@aiProfileStyle": {
+    "description": "文风偏好输入框。"
+  },
+  "aiProfileStyleHint": "比如：简洁朴素、少用形容词、多用短句",
+  "@aiProfileStyleHint": {
+    "description": "文风偏好输入框的提示。"
+  },
+  "aiProfileFooter": "这些内容会随每次请求一起发送；留空则不发送。",
+  "@aiProfileFooter": {
+    "description": "关于我页的附注。"
+  },
+  "aiPrivacySendGroup": "随日记一起发送",
+  "@aiPrivacySendGroup": {
+    "description": "元数据开关分组。"
+  },
+  "aiPrivacySendFooter": "标题与正文总会发送；私密日记本、回收站与未解封的时间胶囊永远不会发送。",
+  "@aiPrivacySendFooter": {
+    "description": "元数据开关的附注。"
+  },
+  "aiPrivacyDate": "日期",
+  "@aiPrivacyDate": {
+    "description": "元数据开关。"
+  },
+  "aiPrivacyMood": "心情",
+  "@aiPrivacyMood": {
+    "description": "元数据开关。"
+  },
+  "aiPrivacyTags": "标签",
+  "@aiPrivacyTags": {
+    "description": "元数据开关。"
+  },
+  "aiPrivacyWeather": "天气",
+  "@aiPrivacyWeather": {
+    "description": "元数据开关。"
+  },
+  "aiPrivacyLocation": "地点",
+  "@aiPrivacyLocation": {
+    "description": "元数据开关。"
+  },
+  "aiPrivacyScopeGroup": "对话与回顾的范围",
+  "@aiPrivacyScopeGroup": {
+    "description": "多篇上下文选项的分组。"
+  },
+  "aiPrivacyIncludeArchived": "包含已归档的日记",
+  "@aiPrivacyIncludeArchived": {
+    "description": "包含已归档日记的选项。"
+  },
+  "aiPrivacyExcludedNotebooks": "排除的日记本",
+  "@aiPrivacyExcludedNotebooks": {
+    "description": "排除的日记本一行。"
+  },
+  "aiPrivacyExcludedTags": "排除的标签",
+  "@aiPrivacyExcludedTags": {
+    "description": "排除的标签一行。"
+  },
+  "aiPrivacyExcludedNone": "无",
+  "@aiPrivacyExcludedNone": {
+    "description": "没有排除项时显示。"
+  },
+  "aiPrivacyExcludedCount": "已选 {count} 项",
+  "@aiPrivacyExcludedCount": {
+    "description": "已排除的项目数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPrivacyPickNotebooks": "选择要排除的日记本",
+  "@aiPrivacyPickNotebooks": {
+    "description": "排除日记本面板的标题。"
+  },
+  "aiPrivacyPickTags": "选择要排除的标签",
+  "@aiPrivacyPickTags": {
+    "description": "排除标签面板的标题。"
+  },
+  "aiPrivacyPickEmpty": "没有可选的项目",
+  "@aiPrivacyPickEmpty": {
+    "description": "排除面板没有可选项时显示。"
+  },
+  "aiPrivacyBudget": "最多发送",
+  "@aiPrivacyBudget": {
+    "description": "上下文字数上限的选择。"
+  },
+  "aiPrivacyPerDiary": "每篇最多",
+  "@aiPrivacyPerDiary": {
+    "description": "每篇字数上限的选择。"
+  },
+  "aiWords": "{count} 字",
+  "@aiWords": {
+    "description": "字数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPrivacyConfirmGroup": "发送前确认",
+  "@aiPrivacyConfirmGroup": {
+    "description": "发送前确认的分组。"
+  },
+  "aiPrivacyConfirmSubtitle": "首次：每个服务商只问一次；多篇时：对话与回顾每次都显示要发送的篇数与字数；每次：所有请求都先确认。",
+  "@aiPrivacyConfirmSubtitle": {
+    "description": "确认方式的说明。"
+  },
+  "aiConfirmFirstTime": "首次",
+  "@aiConfirmFirstTime": {
+    "description": "确认方式。"
+  },
+  "aiConfirmMultiDiary": "多篇时",
+  "@aiConfirmMultiDiary": {
+    "description": "确认方式。"
+  },
+  "aiConfirmAlways": "每次",
+  "@aiConfirmAlways": {
+    "description": "确认方式。"
+  },
+  "aiPrivacyAllowPrivate": "允许对私密日记使用 AI",
+  "@aiPrivacyAllowPrivate": {
+    "description": "允许对私密日记使用单篇 AI 功能的选项。"
+  },
+  "aiPrivacyAllowPrivateSubtitle": "打开后，私密日记本里的日记也能用写作助手与读后回应；对话与回顾仍然不会读取它们。",
+  "@aiPrivacyAllowPrivateSubtitle": {
+    "description": "私密日记选项的说明。"
+  },
+  "aiPrivacyResetHosts": "重置“不再提示”",
+  "@aiPrivacyResetHosts": {
+    "description": "重置不再提示的按钮。"
+  },
+  "aiPrivacyResetHostsSubtitle": "让每个服务商重新确认一次",
+  "@aiPrivacyResetHostsSubtitle": {
+    "description": "重置不再提示的说明。"
+  },
+  "aiPrivacyResetHostsDone": "已重置，下次发送前会再次确认。",
+  "@aiPrivacyResetHostsDone": {
+    "description": "重置后的提示。"
+  },
+  "aiUsageEmpty": "还没有用量记录",
+  "@aiUsageEmpty": {
+    "description": "没有用量记录时显示。"
+  },
+  "aiUsageRequests": "{count} 次请求",
+  "@aiUsageRequests": {
+    "description": "请求次数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiUsageFailures": "{count} 次失败",
+  "@aiUsageFailures": {
+    "description": "失败次数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiUsageTokens": "输入 {input} · 输出 {output}",
+  "@aiUsageTokens": {
+    "description": "输入与输出 token。",
+    "placeholders": {
+      "input": {
+        "type": "String"
+      },
+      "output": {
+        "type": "String"
+      }
+    }
+  },
+  "aiUsageMonthTotal": "共 {tokens} token",
+  "@aiUsageMonthTotal": {
+    "description": "一个月的总 token。",
+    "placeholders": {
+      "tokens": {
+        "type": "String"
+      }
+    }
+  },
+  "aiUsageClear": "清除用量记录",
+  "@aiUsageClear": {
+    "description": "清除用量记录的按钮。"
+  },
+  "aiUsageClearTitle": "清除用量记录？",
+  "@aiUsageClearTitle": {
+    "description": "清除用量对话框的标题。"
+  },
+  "aiUsageClearBody": "只清除本机的统计，不影响服务商那边的账单。",
+  "@aiUsageClearBody": {
+    "description": "清除用量对话框的正文。"
+  },
+  "aiUsageFooter": "只统计从这台设备发出的请求，实际费用以服务商账单为准。",
+  "@aiUsageFooter": {
+    "description": "用量页的附注。"
   }
 }

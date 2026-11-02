@@ -275,7 +275,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.byType(SwitchListTile), findsNWidgets(8));
+      expect(find.byType(SwitchListTile), findsNWidgets(9));
     });
   }
 

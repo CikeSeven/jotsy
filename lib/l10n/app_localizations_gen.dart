@@ -19321,6 +19321,2160 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No diary is deleted on either device. To sync again you\'ll need to pair again.'**
   String get lanSyncForgetBody;
+
+  /// Feature toggle title for the AI assistant.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assistant'**
+  String get settingsFeaturesAi;
+
+  /// Feature toggle subtitle for the AI assistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Write, reflect, recap and chat with your own AI API'**
+  String get settingsFeaturesAiSubtitle;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary assistant'**
+  String get aiPersonaAssistantName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear and objective, good for questions and summaries'**
+  String get aiPersonaAssistantDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are the user\'s diary assistant. You can read the diary entries the user shares with you. Base your answers on those entries, and keep them clear, objective and well organised. Say so when you are unsure, and never invent things that are not in the diary.'**
+  String get aiPersonaAssistantPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm listener'**
+  String get aiPersonaListenerName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Understands first, then answers gently'**
+  String get aiPersonaListenerDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are a warm, patient listener. After reading the user\'s diary, first show that you understand and acknowledge the feelings in it, then respond gently. Do not judge or lecture, give little advice, and offer empathy and affirmation instead. You may end with one gentle question that invites the user to reflect a little more.'**
+  String get aiPersonaListenerPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Close friend'**
+  String get aiPersonaFriendName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats casually like an old friend'**
+  String get aiPersonaFriendDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are a friend the user has known for years. You talk naturally, casually and sincerely, you can joke and you can be serious. Respond the way a friend would after reading their diary: mention details you noticed, share how you feel, and give practical advice only when it helps.'**
+  String get aiPersonaFriendPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth coach'**
+  String get aiPersonaCoachName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Spots your progress and the next small step'**
+  String get aiPersonaCoachDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are a positive, practical growth coach. Find the effort, progress and things worth praising in the diary, point out patterns that could improve, and suggest one to three concrete, doable small actions. Be encouraging without being vague.'**
+  String get aiPersonaCoachPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Thoughtful analyst'**
+  String get aiPersonaAnalystName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Calmly untangles what happened and why'**
+  String get aiPersonaAnalystDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are a calm, rational analyst. Help the user untangle what happened in the diary, the reasons behind it and the options they have. Separate facts from feelings and point out angles they may have missed. Be concise and structured.'**
+  String get aiPersonaAnalystPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Counselor style'**
+  String get aiPersonaCounselorName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Asks questions that help you see your feelings'**
+  String get aiPersonaCounselorDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You respond the way a counselor often does: listen, reflect back and clarify, and use open questions to help the user notice their emotions and needs, without rushing to conclusions or advice. You are not professional therapy. If the diary mentions thoughts of hurting themselves or others, gently encourage the user to reach out to people around them or to professional help.'**
+  String get aiPersonaCounselorPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Poet'**
+  String get aiPersonaPoetName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Answers your day in poetic language'**
+  String get aiPersonaPoetDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are a gentle poet. Respond to the user\'s diary in vivid, poetic but not obscure language. You may write a short prose poem or a few lines of verse that capture the mood and images of the day.'**
+  String get aiPersonaPoetPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Philosopher'**
+  String get aiPersonaPhilosopherName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinks about it from a wider view'**
+  String get aiPersonaPhilosopherDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are a friendly philosopher. Start from the small, concrete things in the diary and connect them to bigger questions such as meaning, choice, time and relationships. Use fitting ideas or metaphors, stay approachable, and come back to the user\'s own life at the end.'**
+  String get aiPersonaPhilosopherPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Future self'**
+  String get aiPersonaFutureSelfName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'A reply from you, ten years later'**
+  String get aiPersonaFutureSelfDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are the user ten years from now, rereading this diary entry. Write a short letter to your past self in the first person: gentle, knowing how things unfolded, with the calm and wisdom that time brings, but do not invent specific future events.'**
+  String get aiPersonaFutureSelfPrompt;
+
+  /// Built-in AI persona name.
+  ///
+  /// In en, this message translates to:
+  /// **'Roasting buddy'**
+  String get aiPersonaRoastName;
+
+  /// Built-in AI persona description.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharp tongue, soft heart'**
+  String get aiPersonaRoastDesc;
+
+  /// System prompt of a built-in AI persona (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'You are a buddy with a sharp tongue and a soft heart. Tease what happened in the diary with humour and exaggeration, but never mock the user\'s real pain or touch sensitive topics such as appearance or identity. Let your care show at the end.'**
+  String get aiPersonaRoastPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get aiActionContinue;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Continue the diary below in the same voice and tone with one natural paragraph of about 80 to 150 words. Write only the new text and do not repeat what is already there.'**
+  String get aiActionContinuePrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Polish'**
+  String get aiActionPolish;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Polish the text below so it reads more smoothly and naturally. Fix awkward phrasing, keep the meaning, tone and first-person voice, and do not make it longer.'**
+  String get aiActionPolishPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get aiActionExpand;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Expand the text below with more details, feelings and imagery so it becomes richer, roughly doubling its length. Keep the original tone and point of view.'**
+  String get aiActionExpandPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorten'**
+  String get aiActionShorten;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Shorten the text below to about half its length. Keep the key information and feelings and remove repetition and filler.'**
+  String get aiActionShortenPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix errors'**
+  String get aiActionProofread;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Fix spelling, punctuation and grammar mistakes in the text below. Leave everything else exactly as it is and do not rewrite it.'**
+  String get aiActionProofreadPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'More formal'**
+  String get aiActionToneFormal;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Rewrite the text below in a more formal, polished tone while keeping its meaning.'**
+  String get aiActionToneFormalPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'More casual'**
+  String get aiActionToneCasual;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Rewrite the text below in a more relaxed, conversational tone, as if chatting with a friend, while keeping its meaning.'**
+  String get aiActionToneCasualPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Warmer'**
+  String get aiActionToneWarm;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Rewrite the text below to sound warmer and gentler, with more kindness and care, while keeping its meaning.'**
+  String get aiActionToneWarmPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Funnier'**
+  String get aiActionToneHumor;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Rewrite the text below to be funnier, with a playful metaphor or a bit of self-deprecation, while keeping its meaning.'**
+  String get aiActionToneHumorPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'More literary'**
+  String get aiActionToneLiterary;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Rewrite the text below in a more literary style, with finer description and fitting figures of speech, without piling on ornate words. Keep its meaning.'**
+  String get aiActionToneLiteraryPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get aiActionTranslate;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Translate the text below. If it is mainly Chinese, translate it into English; otherwise translate it into Simplified Chinese. Output only the translation.'**
+  String get aiActionTranslatePrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize'**
+  String get aiActionSummarize;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize the main points of the text below in two or three sentences.'**
+  String get aiActionSummarizePrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Bullet points'**
+  String get aiActionBulletPoints;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the text below into a clear bullet list (a Markdown unordered list) with short items.'**
+  String get aiActionBulletPointsPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract to-dos'**
+  String get aiActionExtractTodos;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Find the tasks, plans and follow-ups mentioned in the text below and list them as a Markdown task list, one per line starting with \"- [ ] \". If there are none, reply with one line saying so.'**
+  String get aiActionExtractTodosPrompt;
+
+  /// Built-in AI writing action label.
+  ///
+  /// In en, this message translates to:
+  /// **'As a poem'**
+  String get aiActionPoem;
+
+  /// Instruction of a built-in AI writing action (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the content below into a short modern poem of 4 to 12 lines that keeps its mood and imagery.'**
+  String get aiActionPoemPrompt;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'No AI model is set up yet. Add a provider in Settings → AI assistant.'**
+  String get aiErrorNotConfigured;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the AI service. Check the network, the address or the proxy.'**
+  String get aiErrorNetwork;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service took too long to respond.'**
+  String get aiErrorTimeout;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'The API key is invalid or missing.'**
+  String get aiErrorUnauthorized;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'This key has no access to the model, or the service isn\'t available in your region.'**
+  String get aiErrorForbidden;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'The model or address wasn\'t found. Check the model name and API address.'**
+  String get aiErrorModelNotFound;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please try again in a moment.'**
+  String get aiErrorRateLimited;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'The account has run out of balance or quota.'**
+  String get aiErrorQuota;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'Too much content for this model. Lower the word limit in AI privacy settings or pick a model with a longer context.'**
+  String get aiErrorContextTooLong;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service declined this request because of its content policy.'**
+  String get aiErrorContentFiltered;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service rejected the request. Check the provider\'s advanced settings.'**
+  String get aiErrorBadRequest;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service is having trouble or is overloaded. Please try again later.'**
+  String get aiErrorServer;
+
+  /// AI error message.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t understand the response. The address may point to a web page instead of the API.'**
+  String get aiErrorBadResponse;
+
+  /// Shown when the user stopped an AI generation.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get aiErrorCancelled;
+
+  /// Button that shows the raw error details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get aiErrorDetails;
+
+  /// Button that opens AI settings from an error.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get aiErrorOpenSettings;
+
+  /// Title of the AI settings page and its settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assistant'**
+  String get aiSettingsTitle;
+
+  /// Subtitle of the AI entry on the settings home.
+  ///
+  /// In en, this message translates to:
+  /// **'Providers, models, personas and privacy'**
+  String get aiSettingsEntrySubtitle;
+
+  /// Footer explaining AI privacy on the AI settings page.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing goes through the developer: requests go straight from this device to the provider you set up. API keys stay on this device and never enter backups or sync.'**
+  String get aiSettingsFooter;
+
+  /// Status card title when no provider is set up.
+  ///
+  /// In en, this message translates to:
+  /// **'No AI service yet'**
+  String get aiStatusNotConfiguredTitle;
+
+  /// Status card body when no provider is set up.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a provider and its API key, and AI features will appear in the editor, the reading page and the home screen. Content is only sent to the service you set up.'**
+  String get aiStatusNotConfiguredBody;
+
+  /// Button to add an AI provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Add provider'**
+  String get aiStatusAddProvider;
+
+  /// Label of the default model on the status card.
+  ///
+  /// In en, this message translates to:
+  /// **'Default model'**
+  String get aiStatusDefaultModel;
+
+  /// Button that sends a tiny test request.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get aiStatusTest;
+
+  /// Shown while the test request runs.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing…'**
+  String get aiStatusTesting;
+
+  /// Result of a successful connection test.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected · {ms} ms'**
+  String aiStatusTestOk(int ms);
+
+  /// AI settings group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get aiGroupService;
+
+  /// Title of the AI providers list.
+  ///
+  /// In en, this message translates to:
+  /// **'Providers'**
+  String get aiProvidersTitle;
+
+  /// Number of configured AI providers.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 provider} other{{count} providers}}'**
+  String aiProvidersCount(int count);
+
+  /// Shown when no AI provider exists.
+  ///
+  /// In en, this message translates to:
+  /// **'None yet'**
+  String get aiProvidersEmpty;
+
+  /// Title of the per-task model assignment page.
+  ///
+  /// In en, this message translates to:
+  /// **'Model assignment'**
+  String get aiRoutingTitle;
+
+  /// Subtitle of the model assignment entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Use different models for different features'**
+  String get aiRoutingSubtitle;
+
+  /// AI settings group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Features'**
+  String get aiGroupFeatures;
+
+  /// Footer of the AI features group.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning a feature off only hides it. Existing AI records are kept.'**
+  String get aiGroupFeaturesFooter;
+
+  /// AI module name.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing assistant'**
+  String get aiModuleWriting;
+
+  /// AI module description.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue, polish, change tone, translate and your own commands in the editor'**
+  String get aiModuleWritingSubtitle;
+
+  /// AI module name.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart fill'**
+  String get aiModuleSuggest;
+
+  /// AI module description.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate titles and suggest tags and moods'**
+  String get aiModuleSuggestSubtitle;
+
+  /// AI module name.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflections'**
+  String get aiModuleReply;
+
+  /// AI module description.
+  ///
+  /// In en, this message translates to:
+  /// **'Let AI read an entry and respond to you on the reading page'**
+  String get aiModuleReplySubtitle;
+
+  /// AI module name.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing prompts'**
+  String get aiModulePrompts;
+
+  /// AI module description.
+  ///
+  /// In en, this message translates to:
+  /// **'A few questions when you don\'t know what to write'**
+  String get aiModulePromptsSubtitle;
+
+  /// AI module name.
+  ///
+  /// In en, this message translates to:
+  /// **'Recaps & insights'**
+  String get aiModuleRecap;
+
+  /// AI module description.
+  ///
+  /// In en, this message translates to:
+  /// **'Summaries by week, month, year or notebook'**
+  String get aiModuleRecapSubtitle;
+
+  /// AI module name.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with your diary'**
+  String get aiModuleChat;
+
+  /// AI module description.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your diary; answers cite the entries they use'**
+  String get aiModuleChatSubtitle;
+
+  /// AI module name.
+  ///
+  /// In en, this message translates to:
+  /// **'Image understanding'**
+  String get aiModuleVision;
+
+  /// AI module description.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the photos in an entry to models that can see (off by default)'**
+  String get aiModuleVisionSubtitle;
+
+  /// AI option under smart fill.
+  ///
+  /// In en, this message translates to:
+  /// **'Show “Generate title” next to the title'**
+  String get aiOptionTitleButton;
+
+  /// AI option under smart fill.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest on the publish page'**
+  String get aiOptionAutoSuggest;
+
+  /// Explanation of the auto-suggest option.
+  ///
+  /// In en, this message translates to:
+  /// **'Sends the entry once to suggest a title, tags and mood; nothing is filled in until you tap it'**
+  String get aiOptionAutoSuggestSubtitle;
+
+  /// AI option under reflections.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond after publishing'**
+  String get aiOptionAutoReply;
+
+  /// Explanation of the auto-reply option.
+  ///
+  /// In en, this message translates to:
+  /// **'Each new entry is sent once for a reflection'**
+  String get aiOptionAutoReplySubtitle;
+
+  /// AI option under writing prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Show prompts on new entries'**
+  String get aiOptionPromptsStrip;
+
+  /// Explanation of the prompts strip option.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is sent until you tap it'**
+  String get aiOptionPromptsStripSubtitle;
+
+  /// AI option under writing prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Use recent entries'**
+  String get aiOptionPromptsRecent;
+
+  /// Explanation of using recent entries for prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Sends excerpts of your latest entries for more personal prompts'**
+  String get aiOptionPromptsRecentSubtitle;
+
+  /// Choice of how a prompt question is inserted.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert as'**
+  String get aiOptionPromptStyle;
+
+  /// Prompt insert style.
+  ///
+  /// In en, this message translates to:
+  /// **'Callout'**
+  String get aiPromptStyleCallout;
+
+  /// Prompt insert style.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote'**
+  String get aiPromptStyleQuote;
+
+  /// Prompt insert style.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading'**
+  String get aiPromptStyleHeading;
+
+  /// Choice of default recap sections.
+  ///
+  /// In en, this message translates to:
+  /// **'Recaps include'**
+  String get aiOptionRecapSections;
+
+  /// Recap section.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood trends'**
+  String get aiRecapSectionMood;
+
+  /// Recap section.
+  ///
+  /// In en, this message translates to:
+  /// **'Key moments'**
+  String get aiRecapSectionEvents;
+
+  /// Recap section.
+  ///
+  /// In en, this message translates to:
+  /// **'People around me'**
+  String get aiRecapSectionPeople;
+
+  /// Recap section.
+  ///
+  /// In en, this message translates to:
+  /// **'Gratitude'**
+  String get aiRecapSectionGratitude;
+
+  /// Recap section.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth & change'**
+  String get aiRecapSectionGrowth;
+
+  /// Recap section.
+  ///
+  /// In en, this message translates to:
+  /// **'Memorable lines'**
+  String get aiRecapSectionQuotes;
+
+  /// Recap section.
+  ///
+  /// In en, this message translates to:
+  /// **'Next steps'**
+  String get aiRecapSectionSuggestions;
+
+  /// Choice of chat retrieval mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding entries'**
+  String get aiOptionRetrieval;
+
+  /// Explanation of retrieval modes.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart understands the question first; keywords only match words; recent only reads the latest days'**
+  String get aiOptionRetrievalSubtitle;
+
+  /// Retrieval mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart'**
+  String get aiRetrievalSmart;
+
+  /// Retrieval mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Keywords'**
+  String get aiRetrievalKeyword;
+
+  /// Retrieval mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get aiRetrievalRecent;
+
+  /// Choice of how many recent days chat reads.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent range'**
+  String get aiOptionRecentDays;
+
+  /// A number of days.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String aiDays(int count);
+
+  /// Choice of how many entries chat may read.
+  ///
+  /// In en, this message translates to:
+  /// **'Read at most'**
+  String get aiOptionMaxCitations;
+
+  /// A number of diary entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String aiEntries(int count);
+
+  /// Option to show model reasoning.
+  ///
+  /// In en, this message translates to:
+  /// **'Show reasoning'**
+  String get aiOptionShowReasoning;
+
+  /// Option to show token counts under answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show token usage'**
+  String get aiOptionShowTokens;
+
+  /// Option to auto-title conversations.
+  ///
+  /// In en, this message translates to:
+  /// **'Name chats automatically'**
+  String get aiOptionAutoTitle;
+
+  /// Choice of how many photos to send.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos per request'**
+  String get aiOptionVisionImages;
+
+  /// A number of photos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo} other{{count} photos}}'**
+  String aiPhotos(int count);
+
+  /// Choice of the photo size sent to the model.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo size'**
+  String get aiOptionVisionSize;
+
+  /// Photo size choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get aiVisionSizeSmall;
+
+  /// Photo size choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get aiVisionSizeMedium;
+
+  /// Photo size choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get aiVisionSizeLarge;
+
+  /// AI settings group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal touch'**
+  String get aiGroupPersonal;
+
+  /// Title of the personas page.
+  ///
+  /// In en, this message translates to:
+  /// **'Personas'**
+  String get aiPersonasTitle;
+
+  /// Subtitle of the personas entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Whose voice reflections, chats and recaps use'**
+  String get aiPersonasSubtitle;
+
+  /// Title of the writing commands page.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing commands'**
+  String get aiActionsTitle;
+
+  /// Subtitle of the writing commands entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder, hide, rewrite prompts or add your own'**
+  String get aiActionsSubtitle;
+
+  /// Title of the profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'About me & style'**
+  String get aiProfileTitle;
+
+  /// Subtitle of the profile entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Help AI know you better (optional)'**
+  String get aiProfileSubtitle;
+
+  /// Choice of the AI answer language.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer language'**
+  String get aiOutputLanguage;
+
+  /// Answer language option.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary'**
+  String get aiLanguageFollowDiary;
+
+  /// Answer language option.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get aiLanguageFollowApp;
+
+  /// Answer language option.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get aiLanguageCustom;
+
+  /// Hint of the custom answer language field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 日本語, Français'**
+  String get aiLanguageCustomHint;
+
+  /// Choice of AI answer length.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer length'**
+  String get aiResponseLength;
+
+  /// Answer length option.
+  ///
+  /// In en, this message translates to:
+  /// **'Short'**
+  String get aiLengthShort;
+
+  /// Answer length option.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get aiLengthMedium;
+
+  /// Answer length option.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed'**
+  String get aiLengthLong;
+
+  /// Choice of AI creativity.
+  ///
+  /// In en, this message translates to:
+  /// **'Creativity'**
+  String get aiCreativity;
+
+  /// Explanation of the creativity option.
+  ///
+  /// In en, this message translates to:
+  /// **'Only applies to providers that accept a temperature'**
+  String get aiCreativitySubtitle;
+
+  /// Creativity option.
+  ///
+  /// In en, this message translates to:
+  /// **'Precise'**
+  String get aiCreativityPrecise;
+
+  /// Creativity option.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get aiCreativityBalanced;
+
+  /// Creativity option.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get aiCreativityCreative;
+
+  /// AI settings group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & usage'**
+  String get aiGroupPrivacy;
+
+  /// Title of the AI privacy page.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get aiPrivacyTitle;
+
+  /// Subtitle of the AI privacy entry.
+  ///
+  /// In en, this message translates to:
+  /// **'What is sent and which entries are left out'**
+  String get aiPrivacySubtitle;
+
+  /// Title of the AI usage page.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get aiUsageTitle;
+
+  /// Subtitle of the AI usage entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests and tokens sent from this device'**
+  String get aiUsageSubtitle;
+
+  /// Footer of the AI providers list.
+  ///
+  /// In en, this message translates to:
+  /// **'Without a default model, the first usable provider is used; change it in Model assignment.'**
+  String get aiProvidersFooter;
+
+  /// Number of models of a provider.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No models} =1{1 model} other{{count} models}}'**
+  String aiProviderModelsCount(int count);
+
+  /// Badge for a disabled provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get aiProviderDisabled;
+
+  /// Badge for a provider without an API key.
+  ///
+  /// In en, this message translates to:
+  /// **'No key'**
+  String get aiProviderNoKey;
+
+  /// Title of the preset picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a provider'**
+  String get aiPresetSheetTitle;
+
+  /// Preset group title.
+  ///
+  /// In en, this message translates to:
+  /// **'China'**
+  String get aiPresetGroupChina;
+
+  /// Preset group title.
+  ///
+  /// In en, this message translates to:
+  /// **'International'**
+  String get aiPresetGroupInternational;
+
+  /// Preset group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Run locally'**
+  String get aiPresetGroupLocal;
+
+  /// Preset group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom API'**
+  String get aiPresetGroupCustom;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Qwen (Alibaba Cloud)'**
+  String get aiPresetNameDashscope;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Kimi (Moonshot)'**
+  String get aiPresetNameMoonshot;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Zhipu GLM'**
+  String get aiPresetNameZhipu;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubao (Volcengine Ark)'**
+  String get aiPresetNameVolcengine;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'SiliconFlow'**
+  String get aiPresetNameSiliconflow;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Tencent Hunyuan'**
+  String get aiPresetNameHunyuan;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI-compatible API'**
+  String get aiPresetNameCustomOpenAi;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Anthropic-compatible API'**
+  String get aiPresetNameCustomAnthropic;
+
+  /// AI provider preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Gemini API'**
+  String get aiPresetNameCustomGemini;
+
+  /// API protocol name.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI compatible'**
+  String get aiProtocolOpenAi;
+
+  /// API protocol name.
+  ///
+  /// In en, this message translates to:
+  /// **'Anthropic (Claude)'**
+  String get aiProtocolAnthropic;
+
+  /// API protocol name.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Gemini'**
+  String get aiProtocolGemini;
+
+  /// Title of the provider edit page when creating.
+  ///
+  /// In en, this message translates to:
+  /// **'Add provider'**
+  String get aiProviderEditTitleNew;
+
+  /// Title of the provider edit page.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit provider'**
+  String get aiProviderEditTitle;
+
+  /// Provider name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get aiProviderName;
+
+  /// Provider protocol choice.
+  ///
+  /// In en, this message translates to:
+  /// **'API format'**
+  String get aiProviderProtocol;
+
+  /// Provider base URL field.
+  ///
+  /// In en, this message translates to:
+  /// **'API address'**
+  String get aiProviderBaseUrl;
+
+  /// Hint of the API address field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://api.example.com/v1'**
+  String get aiProviderBaseUrlHint;
+
+  /// Provider API key field.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get aiProviderApiKey;
+
+  /// API key field label for local presets.
+  ///
+  /// In en, this message translates to:
+  /// **'API key (optional for local services)'**
+  String get aiProviderApiKeyOptional;
+
+  /// Button that opens the provider's key page.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a key'**
+  String get aiProviderGetKey;
+
+  /// Hint for local providers.
+  ///
+  /// In en, this message translates to:
+  /// **'To reach Ollama or LM Studio on a computer from your phone, replace localhost with the computer\'s LAN address and let the server listen on 0.0.0.0.'**
+  String get aiProviderLocalHint;
+
+  /// Provider models group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Models'**
+  String get aiProviderModels;
+
+  /// Button that loads the provider's model list.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch model list'**
+  String get aiProviderFetchModels;
+
+  /// Button that adds a model by name.
+  ///
+  /// In en, this message translates to:
+  /// **'Add manually'**
+  String get aiProviderAddModel;
+
+  /// Shown when a provider has no models.
+  ///
+  /// In en, this message translates to:
+  /// **'No models yet. Fetch the list from the provider or add a model name manually.'**
+  String get aiProviderModelsEmpty;
+
+  /// Hint for the manual model name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Model name, e.g. deepseek-chat'**
+  String get aiProviderModelIdHint;
+
+  /// Badge for a model that accepts images.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get aiModelVision;
+
+  /// Badge for a model with reasoning output enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Reasoning'**
+  String get aiModelReasoning;
+
+  /// Title of the model settings sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Model settings'**
+  String get aiModelEditTitle;
+
+  /// Model display name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name (optional)'**
+  String get aiModelDisplayName;
+
+  /// Model vision toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepts images'**
+  String get aiModelVisionToggle;
+
+  /// Model reasoning toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request reasoning'**
+  String get aiModelReasoningToggle;
+
+  /// Explanation of the reasoning toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask reasoning models to return their thinking (supported by some models)'**
+  String get aiModelReasoningSubtitle;
+
+  /// Model max output field.
+  ///
+  /// In en, this message translates to:
+  /// **'Max output tokens'**
+  String get aiModelMaxOutput;
+
+  /// Model context length field.
+  ///
+  /// In en, this message translates to:
+  /// **'Context length (tokens)'**
+  String get aiModelContext;
+
+  /// Hint for numeric fields left empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get aiModelAuto;
+
+  /// Button that removes a model.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove model'**
+  String get aiModelRemove;
+
+  /// Title of the fetched model picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose models'**
+  String get aiModelPickerTitle;
+
+  /// Search field of the model picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Search models'**
+  String get aiModelPickerSearch;
+
+  /// Button adding the selected models.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Add} other{Add {count}}}'**
+  String aiModelPickerAdd(int count);
+
+  /// Shown when the fetched model list is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'The provider returned no models. Add a model name manually.'**
+  String get aiModelPickerEmpty;
+
+  /// Advanced provider settings group.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get aiProviderAdvanced;
+
+  /// Provider proxy field.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP proxy'**
+  String get aiProviderProxy;
+
+  /// Hint of the proxy field.
+  ///
+  /// In en, this message translates to:
+  /// **'host:port, e.g. 127.0.0.1:7890; empty for direct'**
+  String get aiProviderProxyHint;
+
+  /// Provider custom headers field.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom headers'**
+  String get aiProviderHeaders;
+
+  /// Hint of the custom headers field.
+  ///
+  /// In en, this message translates to:
+  /// **'One per line, as Name: value'**
+  String get aiProviderHeadersHint;
+
+  /// Provider extra body field.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra request fields (JSON)'**
+  String get aiProviderExtraBody;
+
+  /// Hint of the extra body field.
+  ///
+  /// In en, this message translates to:
+  /// **'A JSON object merged into every request, for provider-specific options'**
+  String get aiProviderExtraBodyHint;
+
+  /// Validation error of the extra body field.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a valid JSON object'**
+  String get aiProviderExtraBodyInvalid;
+
+  /// Provider streaming toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaming'**
+  String get aiProviderStream;
+
+  /// Explanation of the streaming toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show answers as they are written; turn off if a relay doesn\'t support it'**
+  String get aiProviderStreamSubtitle;
+
+  /// Provider include-usage toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request usage'**
+  String get aiProviderIncludeUsage;
+
+  /// Explanation of the include-usage toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for token usage while streaming; turn off if requests fail'**
+  String get aiProviderIncludeUsageSubtitle;
+
+  /// Provider send-temperature toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send temperature'**
+  String get aiProviderSendTemperature;
+
+  /// Explanation of the send-temperature toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Newer Claude models reject it, so it\'s off for Anthropic'**
+  String get aiProviderSendTemperatureSubtitle;
+
+  /// Provider first-token timeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for first token'**
+  String get aiProviderTimeout;
+
+  /// A number of seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 second} other{{count} seconds}}'**
+  String aiSeconds(int count);
+
+  /// Provider retry count.
+  ///
+  /// In en, this message translates to:
+  /// **'Retries'**
+  String get aiProviderRetries;
+
+  /// A number of times.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Off} =1{Once} other{{count} times}}'**
+  String aiTimes(int count);
+
+  /// Provider enabled toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get aiProviderEnabled;
+
+  /// Button that deletes a provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete provider'**
+  String get aiProviderDelete;
+
+  /// Title of the delete-provider dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String aiProviderDeleteTitle(String name);
+
+  /// Body of the delete-provider dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Its key and model settings are removed, and features assigned to it go back to the default model.'**
+  String get aiProviderDeleteBody;
+
+  /// Validation error for an empty provider name.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name'**
+  String get aiProviderNameRequired;
+
+  /// Validation error for an invalid API address.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an address starting with http:// or https://'**
+  String get aiProviderUrlInvalid;
+
+  /// Shown when testing a provider without models.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one model first'**
+  String get aiProviderNeedModel;
+
+  /// Title of the discard-changes dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get aiProviderDiscardTitle;
+
+  /// Button that discards unsaved changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get aiProviderDiscard;
+
+  /// Default model row.
+  ///
+  /// In en, this message translates to:
+  /// **'Default model'**
+  String get aiRoutingDefault;
+
+  /// Explanation of the default model.
+  ///
+  /// In en, this message translates to:
+  /// **'Used by every feature that has no model of its own'**
+  String get aiRoutingDefaultSubtitle;
+
+  /// Fast model row.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast model'**
+  String get aiRoutingFast;
+
+  /// Explanation of the fast model.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred for short tasks such as smart fill and prompts; pick something cheap and quick'**
+  String get aiRoutingFastSubtitle;
+
+  /// Group of per-task model rows.
+  ///
+  /// In en, this message translates to:
+  /// **'Per feature'**
+  String get aiRoutingTasksGroup;
+
+  /// Option to use the default model.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as default'**
+  String get aiRoutingFollowDefault;
+
+  /// Option to use the fast model.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as fast model'**
+  String get aiRoutingFollowFast;
+
+  /// Default model when none is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'First usable ({name})'**
+  String aiRoutingFirstUsable(String name);
+
+  /// Shown when no model is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get aiRoutingNone;
+
+  /// Title of the model picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a model'**
+  String get aiRoutingPickTitle;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing assistant'**
+  String get aiTaskWriting;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart fill'**
+  String get aiTaskSuggest;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflections'**
+  String get aiTaskReply;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing prompts'**
+  String get aiTaskPrompts;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Recaps'**
+  String get aiTaskRecap;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get aiTaskChat;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe images'**
+  String get aiTaskVision;
+
+  /// AI task name.
+  ///
+  /// In en, this message translates to:
+  /// **'Small background tasks'**
+  String get aiTaskUtility;
+
+  /// Explanation of the utility task.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat titles, search plans and partial summaries of long recaps'**
+  String get aiTaskUtilitySubtitle;
+
+  /// Group of default personas per use.
+  ///
+  /// In en, this message translates to:
+  /// **'Defaults'**
+  String get aiPersonasDefaultsGroup;
+
+  /// Persona use.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflections'**
+  String get aiPersonaUseReply;
+
+  /// Persona use.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get aiPersonaUseChat;
+
+  /// Persona use.
+  ///
+  /// In en, this message translates to:
+  /// **'Recaps'**
+  String get aiPersonaUseRecap;
+
+  /// Group of built-in personas.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in'**
+  String get aiPersonasBuiltInGroup;
+
+  /// Group of custom personas.
+  ///
+  /// In en, this message translates to:
+  /// **'My personas'**
+  String get aiPersonasMineGroup;
+
+  /// Shown when there are no custom personas.
+  ///
+  /// In en, this message translates to:
+  /// **'No personas of your own yet. Create one, or copy a built-in persona and change it.'**
+  String get aiPersonasMineEmpty;
+
+  /// Button that creates a persona.
+  ///
+  /// In en, this message translates to:
+  /// **'New persona'**
+  String get aiPersonaAdd;
+
+  /// Menu item copying a built-in persona.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as mine'**
+  String get aiPersonaDuplicate;
+
+  /// Title of the persona editor when creating.
+  ///
+  /// In en, this message translates to:
+  /// **'New persona'**
+  String get aiPersonaEditTitleNew;
+
+  /// Title of the persona editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit persona'**
+  String get aiPersonaEditTitle;
+
+  /// Persona name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get aiPersonaName;
+
+  /// Persona emoji field.
+  ///
+  /// In en, this message translates to:
+  /// **'Emoji'**
+  String get aiPersonaEmoji;
+
+  /// Persona prompt field.
+  ///
+  /// In en, this message translates to:
+  /// **'Prompt'**
+  String get aiPersonaPrompt;
+
+  /// Hint of the persona prompt field.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe who they are, how they talk and how they respond to your diary'**
+  String get aiPersonaPromptHint;
+
+  /// Shown when the persona limit is reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} personas'**
+  String aiPersonaLimit(int count);
+
+  /// Name of a copied persona.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (copy)'**
+  String aiPersonaCopySuffix(String name);
+
+  /// Badge for a hidden AI item.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get aiCommonHidden;
+
+  /// Menu item hiding an AI item.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get aiCommonHide;
+
+  /// Menu item showing a hidden AI item.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get aiCommonShow;
+
+  /// Menu item restoring a built-in prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore default'**
+  String get aiCommonRestoreDefault;
+
+  /// Snackbar after deleting an AI item.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted “{name}”'**
+  String aiCommonDeleted(String name);
+
+  /// Footer of the writing commands list.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder. The order here is the order in the editor.'**
+  String get aiActionsFooter;
+
+  /// Button creating a writing command.
+  ///
+  /// In en, this message translates to:
+  /// **'New command'**
+  String get aiActionAdd;
+
+  /// Badge for a built-in command with an edited prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get aiActionCustomized;
+
+  /// Title of the command editor when creating.
+  ///
+  /// In en, this message translates to:
+  /// **'New command'**
+  String get aiActionEditTitleNew;
+
+  /// Title of the command editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit command'**
+  String get aiActionEditTitle;
+
+  /// Command name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get aiActionName;
+
+  /// Command emoji field.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get aiActionEmoji;
+
+  /// Command prompt field.
+  ///
+  /// In en, this message translates to:
+  /// **'Prompt'**
+  String get aiActionPrompt;
+
+  /// Hint of the command prompt field.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell AI what to do with the text'**
+  String get aiActionPromptHint;
+
+  /// Label above the variable chips.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert a variable'**
+  String get aiActionVariables;
+
+  /// Help under the variable chips.
+  ///
+  /// In en, this message translates to:
+  /// **'If the prompt has no “text” variable, the text is added after the prompt automatically.'**
+  String get aiActionVariablesHelp;
+
+  /// Prompt variable: the selected text.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get aiVariableText;
+
+  /// Prompt variable: the whole entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole entry'**
+  String get aiVariableDiary;
+
+  /// Prompt variable: the title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get aiVariableTitle;
+
+  /// Prompt variable: the entry date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get aiVariableDate;
+
+  /// Prompt variable: the mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get aiVariableMood;
+
+  /// Choice of how a command's result is used.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get aiActionOutput;
+
+  /// Command output option.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get aiOutputReplace;
+
+  /// Command output option.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert below'**
+  String get aiOutputInsertBelow;
+
+  /// Command output option.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview only'**
+  String get aiOutputPreview;
+
+  /// Shown when the command limit is reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} commands'**
+  String aiActionLimit(int count);
+
+  /// Title of the restore-prompt dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore the default prompt?'**
+  String get aiActionResetPromptTitle;
+
+  /// About-me field.
+  ///
+  /// In en, this message translates to:
+  /// **'About me'**
+  String get aiProfileAboutMe;
+
+  /// Hint of the about-me field.
+  ///
+  /// In en, this message translates to:
+  /// **'What you do, your life right now, what matters to you. AI will keep it in mind.'**
+  String get aiProfileAboutMeHint;
+
+  /// Writing style field.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing style'**
+  String get aiProfileStyle;
+
+  /// Hint of the writing style field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. plain and simple, few adjectives, short sentences'**
+  String get aiProfileStyleHint;
+
+  /// Footer of the profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'These are sent along with every request. Leave them empty to send nothing.'**
+  String get aiProfileFooter;
+
+  /// Group of metadata toggles.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent with entries'**
+  String get aiPrivacySendGroup;
+
+  /// Footer of the metadata toggles.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles and text are always sent. Private notebooks, the recycle bin and sealed time capsules are never sent.'**
+  String get aiPrivacySendFooter;
+
+  /// Metadata toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get aiPrivacyDate;
+
+  /// Metadata toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get aiPrivacyMood;
+
+  /// Metadata toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get aiPrivacyTags;
+
+  /// Metadata toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get aiPrivacyWeather;
+
+  /// Metadata toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get aiPrivacyLocation;
+
+  /// Group of multi-entry context options.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats and recaps'**
+  String get aiPrivacyScopeGroup;
+
+  /// Option to include archived entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Include archived entries'**
+  String get aiPrivacyIncludeArchived;
+
+  /// Row for excluded notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Excluded notebooks'**
+  String get aiPrivacyExcludedNotebooks;
+
+  /// Row for excluded tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Excluded tags'**
+  String get aiPrivacyExcludedTags;
+
+  /// Shown when nothing is excluded.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get aiPrivacyExcludedNone;
+
+  /// Number of excluded items.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String aiPrivacyExcludedCount(int count);
+
+  /// Title of the notebook exclusion sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks to leave out'**
+  String get aiPrivacyPickNotebooks;
+
+  /// Title of the tag exclusion sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags to leave out'**
+  String get aiPrivacyPickTags;
+
+  /// Shown when an exclusion sheet has no items.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to choose from'**
+  String get aiPrivacyPickEmpty;
+
+  /// Choice of the context word budget.
+  ///
+  /// In en, this message translates to:
+  /// **'Send at most'**
+  String get aiPrivacyBudget;
+
+  /// Choice of the per-entry word limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Per entry'**
+  String get aiPrivacyPerDiary;
+
+  /// A number of words (characters for CJK).
+  ///
+  /// In en, this message translates to:
+  /// **'{count} words'**
+  String aiWords(int count);
+
+  /// Group of confirmation options.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm before sending'**
+  String get aiPrivacyConfirmGroup;
+
+  /// Explanation of confirmation modes.
+  ///
+  /// In en, this message translates to:
+  /// **'First time: once per provider. Multiple entries: chats and recaps always show what will be sent. Always: confirm every request.'**
+  String get aiPrivacyConfirmSubtitle;
+
+  /// Confirmation mode.
+  ///
+  /// In en, this message translates to:
+  /// **'First time'**
+  String get aiConfirmFirstTime;
+
+  /// Confirmation mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple entries'**
+  String get aiConfirmMultiDiary;
+
+  /// Confirmation mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Always'**
+  String get aiConfirmAlways;
+
+  /// Option allowing single-entry AI on private entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow AI on private entries'**
+  String get aiPrivacyAllowPrivate;
+
+  /// Explanation of the private entries option.
+  ///
+  /// In en, this message translates to:
+  /// **'The writing assistant and reflections become available in private notebooks. Chats and recaps still never read them.'**
+  String get aiPrivacyAllowPrivateSubtitle;
+
+  /// Button resetting acknowledged hosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask again for every provider'**
+  String get aiPrivacyResetHosts;
+
+  /// Explanation of resetting acknowledged hosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the first-time confirmation again'**
+  String get aiPrivacyResetHostsSubtitle;
+
+  /// Snackbar after resetting acknowledged hosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Done. You\'ll be asked again next time.'**
+  String get aiPrivacyResetHostsDone;
+
+  /// Shown when there is no usage.
+  ///
+  /// In en, this message translates to:
+  /// **'No usage recorded yet'**
+  String get aiUsageEmpty;
+
+  /// Number of requests.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 request} other{{count} requests}}'**
+  String aiUsageRequests(int count);
+
+  /// Number of failed requests.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} failed'**
+  String aiUsageFailures(int count);
+
+  /// Input and output tokens.
+  ///
+  /// In en, this message translates to:
+  /// **'In {input} · Out {output}'**
+  String aiUsageTokens(String input, String output);
+
+  /// Total tokens in a month.
+  ///
+  /// In en, this message translates to:
+  /// **'{tokens} tokens'**
+  String aiUsageMonthTotal(String tokens);
+
+  /// Button clearing usage records.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear usage'**
+  String get aiUsageClear;
+
+  /// Title of the clear-usage dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear usage records?'**
+  String get aiUsageClearTitle;
+
+  /// Body of the clear-usage dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Only this device\'s statistics are cleared; the provider\'s billing isn\'t affected.'**
+  String get aiUsageClearBody;
+
+  /// Footer of the usage page.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts only requests sent from this device. Check the provider\'s billing for actual costs.'**
+  String get aiUsageFooter;
 }
 
 class _AppLocalizationsDelegate

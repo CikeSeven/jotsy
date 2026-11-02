@@ -187,7 +187,12 @@ void main() {
     );
     final record = settingsRecord(rows, capture(settings));
     expect(record.facets['appFeaturesRaw'], {
-      'value': {'calendar': false, 'explore': true, 'swipeArchive': true},
+      'value': {
+        'calendar': false,
+        'explore': true,
+        'swipeArchive': true,
+        'ai': false,
+      },
     });
   });
 

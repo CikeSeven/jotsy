@@ -60,6 +60,10 @@ void main() {
     'Icon(Icons.',
   ]);
   guard(filesUnder('lib/ui/calendar'), ['.showSnackBar(']);
+  // AI 助手：公共组件、主题色与动效 token 同其他新模块。
+  final ai = filesUnder('lib/ui/ai');
+  guard(ai, [...common, ...fixedColors, 'Icon(Icons.']);
+  guard(ai.where((file) => !file.path.contains('/controllers/')), [animation]);
 
   guard(
     [

@@ -81,6 +81,7 @@ class SettingsService {
     required String? diarySavedColorsRaw,
     required String? appFeaturesRaw,
     required String? exploreLayoutRaw,
+    required String? aiPrefsRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
@@ -135,7 +136,8 @@ class SettingsService {
          diarySavedColorsRaw,
        ),
        appFeaturesRawNotifier = ValueNotifier<String?>(appFeaturesRaw),
-       exploreLayoutRawNotifier = ValueNotifier<String?>(exploreLayoutRaw);
+       exploreLayoutRawNotifier = ValueNotifier<String?>(exploreLayoutRaw),
+       aiPrefsRawNotifier = ValueNotifier<String?>(aiPrefsRaw);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -216,6 +218,12 @@ class SettingsService {
   /// 范围）；解析与默认值由 `ExploreSettings` 负责，服务层只保存原文。
   final ValueNotifier<String?> exploreLayoutRawNotifier;
 
+  /// AI 助手的偏好（单个 JSON 字符串：各模块开关、人设、写作指令、关于我、
+  /// 输出、隐私、回顾与对话的设置）；解析与默认值由 `AiPreferences` 负责，
+  /// 服务层只保存原文。**不含任何密钥**：服务商与 API 密钥只在本机的
+  /// `AiProviderStore`，所以这一项可以随备份导出与“同步设置”同步。
+  final ValueNotifier<String?> aiPrefsRawNotifier;
+
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
@@ -259,6 +267,7 @@ class SettingsService {
   static const _keyDiaryExportOptions = 'app.settings.diary_export_options';
   static const _keyAppFeatures = 'app.settings.app_features';
   static const _keyExploreLayout = 'app.settings.explore_layout';
+  static const _keyAiPrefs = 'app.settings.ai_prefs';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyTagPickerSort = 'app.settings.tag_picker_sort';
@@ -327,6 +336,7 @@ class SettingsService {
     final storedDiarySavedColors = prefs.get(_keyDiarySavedColors);
     final storedAppFeatures = prefs.get(_keyAppFeatures);
     final storedExploreLayout = prefs.get(_keyExploreLayout);
+    final storedAiPrefs = prefs.get(_keyAiPrefs);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -376,6 +386,7 @@ class SettingsService {
       exploreLayoutRaw: storedExploreLayout is String
           ? storedExploreLayout
           : null,
+      aiPrefsRaw: storedAiPrefs is String ? storedAiPrefs : null,
     );
   }
 
@@ -440,6 +451,7 @@ class SettingsService {
   String? get diarySavedColorsRaw => diarySavedColorsRawNotifier.value;
   String? get appFeaturesRaw => appFeaturesRawNotifier.value;
   String? get exploreLayoutRaw => exploreLayoutRawNotifier.value;
+  String? get aiPrefsRaw => aiPrefsRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
@@ -689,6 +701,18 @@ class SettingsService {
     }
     exploreLayoutRawNotifier.value = normalized;
     await _writePreference(_prefs.setString(_keyExploreLayout, normalized));
+  }
+
+  /// 保存 AI 助手偏好；空值移除该键，回到默认。
+  Future<void> setAiPrefsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      aiPrefsRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyAiPrefs));
+      return;
+    }
+    aiPrefsRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyAiPrefs, normalized));
   }
 
   /// 保存颜色面板的“我的颜色”；空值移除该键（什么都没存）。

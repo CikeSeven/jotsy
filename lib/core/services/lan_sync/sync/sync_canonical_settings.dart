@@ -50,10 +50,13 @@ const List<String> kSyncDataFeatures = <String>[
 ];
 
 /// 随“同步设置”同步的界面类功能（`AppFeatures` 的字段名）。
+///
+/// AI 助手算界面类：AI 记录与服务商配置都不同步，开关只决定入口是否出现。
 const List<String> kSyncUiFeatures = <String>[
   'calendar',
   'explore',
   'swipeArchive',
+  'ai',
 ];
 
 const String _kTagOrderRawKey = 'tagOrderRaw';
@@ -239,6 +242,7 @@ Map<String, bool> _decodeFeatures(Object? raw) {
     'timeCapsules': features.timeCapsules,
     'swipeArchive': features.swipeArchive,
     'comments': features.comments,
+    'ai': features.ai,
   };
 }
 
@@ -266,6 +270,7 @@ String? _mergeFeatures(
     timeCapsules: next('timeCapsules', local.timeCapsules),
     swipeArchive: next('swipeArchive', local.swipeArchive),
     comments: next('comments', local.comments),
+    ai: next('ai', local.ai),
   );
   return merged == local ? null : merged.encode();
 }

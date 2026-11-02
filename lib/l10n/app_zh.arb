@@ -11421,7 +11421,7 @@
   },
   "diaryEditorDivider": "分隔线",
   "@diaryEditorDivider": {
-    "description": "Divider option in the diary editor slash command menu."
+    "description": "Divider tool in the diary editor floating toolbar and slash command menu."
   },
   "diaryEditorCallout": "提示块",
   "@diaryEditorCallout": {

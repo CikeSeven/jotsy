@@ -83,6 +83,16 @@ void insertDiaryEditorNodes({
   controller.apply(transaction);
 }
 
+/// 在光标处插入一条分隔线：工具栏「分隔线」工具与 `/` 菜单共用这一条。
+///
+/// 分隔线和媒体一样是不带文字的整块，所以直接走 [insertDiaryEditorNodes]
+/// 的口径而不另写：光标在段落中间时拆开前后文字，分隔线后面接上后半段
+/// （没有后半段时补一个空段落，光标落在那里，可以接着写）；在空段落上时
+/// 取代它；在表格格子里时插到表格后面；在代码块里与插图片一样在光标处
+/// 拆开代码块。保留选中的文字、插在选区末端。一次事务，一步撤销。
+void insertDiaryDivider(DiaryEditorController controller) =>
+    insertDiaryEditorNodes(controller: controller, nodes: [af.dividerNode()]);
+
 /// 替换选区文字由 AppFlowy 自身处理跨块合并，保留它的 Unicode 与树结构规则。
 Future<void> insertDiaryEditorText(
   DiaryEditorController controller,

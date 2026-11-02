@@ -14606,7 +14606,7 @@ abstract class AppLocalizations {
   /// **'Insert block'**
   String get diaryEditorSlashCommands;
 
-  /// Divider option in the diary editor slash command menu.
+  /// Divider tool in the diary editor floating toolbar and slash command menu.
   ///
   /// In en, this message translates to:
   /// **'Divider'**

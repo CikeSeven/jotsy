@@ -8,6 +8,7 @@ import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_editor_insert.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_paragraph_indent_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_table_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_text_style_editing.dart';
@@ -249,6 +250,9 @@ void _apply(
     case DiaryToolbarItem.toggle:
       // 不全是折叠块时转为折叠块，全是时转回正文（代码块除外）。
       toggleDiaryToggleBlocks(controller);
+    case DiaryToolbarItem.divider:
+      // 与 `/` 菜单同一条插入（落点规则见 insertDiaryDivider）。
+      insertDiaryDivider(controller);
     case DiaryToolbarItem.undo:
       controller.undo();
     case DiaryToolbarItem.redo:

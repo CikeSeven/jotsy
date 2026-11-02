@@ -122,7 +122,16 @@ void main() {
         );
         expect(slots, lessThanOrEqualTo(layout.columns));
       }
-      expect(rows, hasLength(3));
+      // 前三行排满 8 格（第三行的「缩进」占两格）才另起一行：默认顺序最后
+      // 加入的「分隔线」独占第四行。
+      expect(rows, hasLength(4));
+      for (final row in rows.take(3)) {
+        expect(
+          row.fold<int>(0, (sum, item) => sum + diaryToolbarItemSlots(item)),
+          layout.columns,
+        );
+      }
+      expect(rows.last, [DiaryToolbarItem.divider]);
     });
 
     test('measures indent as two buttons with the section gap', () {

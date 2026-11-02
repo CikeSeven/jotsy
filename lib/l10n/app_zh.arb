@@ -16730,5 +16730,98 @@
   "aiConfirmSendAction": "发送",
   "@aiConfirmSendAction": {
     "description": "确认发送的按钮。"
+  },
+  "aiRepliesHeading": "AI 回应 · {count}",
+  "@aiRepliesHeading": {
+    "description": "AI 回应区的标题，带条数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiReplyAsk": "让 AI 回应…",
+  "@aiReplyAsk": {
+    "description": "让 AI 回应的一行。"
+  },
+  "aiReplyMoreItem": "AI 回应",
+  "@aiReplyMoreItem": {
+    "description": "预览页“更多”里的一项。"
+  },
+  "aiReplyPickPersona": "请谁来回应？",
+  "@aiReplyPickPersona": {
+    "description": "选择回应人设面板的标题。"
+  },
+  "aiReplyWriting": "正在读你的日记…",
+  "@aiReplyWriting": {
+    "description": "回应生成中的提示。"
+  },
+  "aiReplyRegenerate": "重新生成",
+  "@aiReplyRegenerate": {
+    "description": "重新生成回应的菜单项。"
+  },
+  "aiReplySaveAsComment": "存为留言",
+  "@aiReplySaveAsComment": {
+    "description": "把回应存为留言的菜单项。"
+  },
+  "aiReplyContinueChat": "继续聊聊",
+  "@aiReplyContinueChat": {
+    "description": "就这篇继续对话的按钮。"
+  },
+  "aiReplyDeleted": "已删除这条 AI 回应",
+  "@aiReplyDeleted": {
+    "description": "删除回应后的提示。"
+  },
+  "aiReplyExpand": "展开",
+  "@aiReplyExpand": {
+    "description": "展开较长的回应。"
+  },
+  "aiReplyCollapse": "收起",
+  "@aiReplyCollapse": {
+    "description": "收起较长的回应。"
+  },
+  "aiReplyStopped": "已停止，要再试一次吗？",
+  "@aiReplyStopped": {
+    "description": "回应被停止后的提示。"
+  },
+  "aiReplyDismiss": "关闭",
+  "@aiReplyDismiss": {
+    "description": "关闭失败或停止的回应。"
+  },
+  "aiReplyAutoSkipped": "自动回应没有发送：请先手动请一次 AI 回应，确认这个服务商。",
+  "@aiReplyAutoSkipped": {
+    "description": "自动回应需要先确认服务商时的提示。"
+  },
+  "aiPromptsStripLabel": "来点写作灵感",
+  "@aiPromptsStripLabel": {
+    "description": "请 AI 给写作灵感的胶囊。"
+  },
+  "aiPromptsLoading": "正在想问题…",
+  "@aiPromptsLoading": {
+    "description": "灵感生成中的提示。"
+  },
+  "aiPromptsRefresh": "换一批",
+  "@aiPromptsRefresh": {
+    "description": "换一批灵感的按钮。"
+  },
+  "aiPromptsTitle": "写作灵感",
+  "@aiPromptsTitle": {
+    "description": "写作灵感面板的标题。"
+  },
+  "aiPromptsHint": "点一个问题，插进正文",
+  "@aiPromptsHint": {
+    "description": "写作灵感下方的提示。"
+  },
+  "aiPromptsEmpty": "这次没想出问题，再试一次？",
+  "@aiPromptsEmpty": {
+    "description": "没有生成问题时的提示。"
+  },
+  "aiPromptsClose": "收起灵感",
+  "@aiPromptsClose": {
+    "description": "收起灵感条的按钮。"
+  },
+  "aiReplySavedAsComment": "已存为留言",
+  "@aiReplySavedAsComment": {
+    "description": "把回应存为留言后的提示。"
   }
 }

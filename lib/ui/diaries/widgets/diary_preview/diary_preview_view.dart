@@ -1,4 +1,8 @@
 import 'dart:async';
+import '../../../ai/controllers/ai_reply_flow.dart';
+import '../../../ai/models/ai_preference_parts.dart';
+import '../../../ai/providers/ai_providers.dart';
+import '../../../ai/providers/ai_records_providers.dart';
 
 import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
@@ -282,6 +286,26 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     );
   }
 
+  /// “AI 回应”区与“更多 → AI 回应”是否出现：AI 可用且回应模块开启、日记
+  /// 不在回收站、私密日记只在用户允许时。分享长图期间回应区不显示（由
+  /// [_resolveAiReplies] 另外判断），“更多”里照常有。
+  bool _aiReplyAvailable(Diary diary) {
+    if (diary.isDeleted) return false;
+    if (!ref.watch(aiModuleAvailableProvider(AiModule.reply))) return false;
+    if (ref.watch(
+      aiPreferencesProvider.select((p) => p.privacy.allowPrivate),
+    )) {
+      return true;
+    }
+    final private = ref.watch(aiPrivateDiaryIdsProvider).value;
+    return private != null && !private.contains(widget.diaryId);
+  }
+
+  String? _resolveAiReplies(Diary diary) =>
+      _aiReplyAvailable(diary) && !_export.capturingLongImage
+      ? widget.diaryId
+      : null;
+
   /// “提到这篇的日记”；日记在回收站、截取分享长图期间或没有日记提到它时
   /// 为 null（不显示）。未解封的胶囊不建正文，这一块随正文一起不出现。
   DiaryPreviewBacklinks? _resolveBacklinks(Diary diary) {
@@ -445,6 +469,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           notebooks: notebooks,
           comments: comments,
           backlinks: _resolveBacklinks(detail.diary),
+          aiRepliesFor: _resolveAiReplies(detail.diary),
           onOpenNotebook: notebooksEnabled
               ? (NotebookView notebook) =>
                     unawaited(openNotebookFromAnywhere(context, ref, notebook))
@@ -472,6 +497,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               notebooks: notebooks,
               onWriteComment: canComment
                   ? () => _writeComment(detail.diary, reveal: true)
+                  : null,
+              onAiReply: _aiReplyAvailable(detail.diary)
+                  ? () => requestAiReply(context, ref, diaryId: widget.diaryId)
                   : null,
             ),
           ),

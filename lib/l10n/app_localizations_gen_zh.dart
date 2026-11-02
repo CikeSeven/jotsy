@@ -12066,4 +12066,72 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiConfirmSendAction => '发送';
+
+  @override
+  String aiRepliesHeading(int count) {
+    return 'AI 回应 · $count';
+  }
+
+  @override
+  String get aiReplyAsk => '让 AI 回应…';
+
+  @override
+  String get aiReplyMoreItem => 'AI 回应';
+
+  @override
+  String get aiReplyPickPersona => '请谁来回应？';
+
+  @override
+  String get aiReplyWriting => '正在读你的日记…';
+
+  @override
+  String get aiReplyRegenerate => '重新生成';
+
+  @override
+  String get aiReplySaveAsComment => '存为留言';
+
+  @override
+  String get aiReplyContinueChat => '继续聊聊';
+
+  @override
+  String get aiReplyDeleted => '已删除这条 AI 回应';
+
+  @override
+  String get aiReplyExpand => '展开';
+
+  @override
+  String get aiReplyCollapse => '收起';
+
+  @override
+  String get aiReplyStopped => '已停止，要再试一次吗？';
+
+  @override
+  String get aiReplyDismiss => '关闭';
+
+  @override
+  String get aiReplyAutoSkipped => '自动回应没有发送：请先手动请一次 AI 回应，确认这个服务商。';
+
+  @override
+  String get aiPromptsStripLabel => '来点写作灵感';
+
+  @override
+  String get aiPromptsLoading => '正在想问题…';
+
+  @override
+  String get aiPromptsRefresh => '换一批';
+
+  @override
+  String get aiPromptsTitle => '写作灵感';
+
+  @override
+  String get aiPromptsHint => '点一个问题，插进正文';
+
+  @override
+  String get aiPromptsEmpty => '这次没想出问题，再试一次？';
+
+  @override
+  String get aiPromptsClose => '收起灵感';
+
+  @override
+  String get aiReplySavedAsComment => '已存为留言';
 }

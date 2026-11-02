@@ -16730,5 +16730,98 @@
   "aiConfirmSendAction": "Send",
   "@aiConfirmSendAction": {
     "description": "Button confirming the send."
+  },
+  "aiRepliesHeading": "AI reflections · {count}",
+  "@aiRepliesHeading": {
+    "description": "Heading of the AI reflections section with a count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiReplyAsk": "Ask AI to respond…",
+  "@aiReplyAsk": {
+    "description": "Row that asks AI for a reflection."
+  },
+  "aiReplyMoreItem": "AI reflection",
+  "@aiReplyMoreItem": {
+    "description": "Item in the reading page More sheet."
+  },
+  "aiReplyPickPersona": "Who should respond?",
+  "@aiReplyPickPersona": {
+    "description": "Title of the persona picker for reflections."
+  },
+  "aiReplyWriting": "Reading your entry…",
+  "@aiReplyWriting": {
+    "description": "Shown while a reflection is being written."
+  },
+  "aiReplyRegenerate": "Regenerate",
+  "@aiReplyRegenerate": {
+    "description": "Menu item regenerating a reflection."
+  },
+  "aiReplySaveAsComment": "Save as comment",
+  "@aiReplySaveAsComment": {
+    "description": "Menu item saving a reflection as a comment."
+  },
+  "aiReplyContinueChat": "Talk more",
+  "@aiReplyContinueChat": {
+    "description": "Button opening a chat about this entry."
+  },
+  "aiReplyDeleted": "Reflection deleted",
+  "@aiReplyDeleted": {
+    "description": "Snackbar after deleting a reflection."
+  },
+  "aiReplyExpand": "Show more",
+  "@aiReplyExpand": {
+    "description": "Expands a long reflection."
+  },
+  "aiReplyCollapse": "Show less",
+  "@aiReplyCollapse": {
+    "description": "Collapses a long reflection."
+  },
+  "aiReplyStopped": "Stopped. Try again?",
+  "@aiReplyStopped": {
+    "description": "Shown after a reflection was stopped."
+  },
+  "aiReplyDismiss": "Dismiss",
+  "@aiReplyDismiss": {
+    "description": "Dismisses a failed or stopped reflection."
+  },
+  "aiReplyAutoSkipped": "Auto reflection skipped: confirm this provider once by asking for a reflection manually.",
+  "@aiReplyAutoSkipped": {
+    "description": "Shown when auto reflection needs a first-time confirmation."
+  },
+  "aiPromptsStripLabel": "Need a writing prompt?",
+  "@aiPromptsStripLabel": {
+    "description": "Chip that asks AI for writing prompts."
+  },
+  "aiPromptsLoading": "Thinking of questions…",
+  "@aiPromptsLoading": {
+    "description": "Shown while prompts are generated."
+  },
+  "aiPromptsRefresh": "New set",
+  "@aiPromptsRefresh": {
+    "description": "Button generating new prompts."
+  },
+  "aiPromptsTitle": "Writing prompts",
+  "@aiPromptsTitle": {
+    "description": "Title of the prompts sheet."
+  },
+  "aiPromptsHint": "Tap a question to add it to your entry",
+  "@aiPromptsHint": {
+    "description": "Hint under writing prompts."
+  },
+  "aiPromptsEmpty": "No questions this time. Try again?",
+  "@aiPromptsEmpty": {
+    "description": "Shown when no prompts were produced."
+  },
+  "aiPromptsClose": "Hide prompts",
+  "@aiPromptsClose": {
+    "description": "Button hiding the prompts strip."
+  },
+  "aiReplySavedAsComment": "Saved as a comment",
+  "@aiReplySavedAsComment": {
+    "description": "Snackbar after saving a reflection as a comment."
   }
 }

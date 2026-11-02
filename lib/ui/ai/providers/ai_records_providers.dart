@@ -57,3 +57,9 @@ final aiResultProvider = StreamProvider.family<AiResultRow?, String>((
 ) {
   return ref.watch(appDatabaseProvider).watchAiResult(resultId);
 });
+
+/// 私密日记的业务 id（实时）：决定预览页的单篇 AI 入口是否出现（私密日记
+/// 只在用户允许时可用）。随日记本可见性、收录变化与局域网同步写入刷新。
+final aiPrivateDiaryIdsProvider = StreamProvider<Set<String>>((Ref ref) {
+  return ref.watch(appDatabaseProvider).watchPrivateDiaryIds();
+});

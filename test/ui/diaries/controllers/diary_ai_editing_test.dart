@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/ai/models/ai_preference_parts.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_ai_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 
@@ -148,6 +149,26 @@ void main() {
     controller.undo();
     expect(texts(controller), ['original', 'after']);
     controller.dispose();
+  });
+
+  test('a writing prompt goes in as the chosen block, ready to answer', () {
+    for (final (style, type) in [
+      (AiPromptInsertStyle.callout, 'callout'),
+      (AiPromptInsertStyle.quote, 'quote'),
+      (AiPromptInsertStyle.heading, 'heading'),
+    ]) {
+      final controller = controllerWith([block('paragraph', '')]);
+      controller.select(
+        af.Selection.collapsed(af.Position(path: [0], offset: 0)),
+      );
+      insertDiaryAiPrompt(controller, '今天最开心的事？', style);
+      expect(types(controller), [type, 'paragraph']);
+      expect(texts(controller), ['今天最开心的事？', '']);
+      expect(controller.selection!.end.path, [1]);
+      controller.undo();
+      expect(texts(controller), ['']);
+      controller.dispose();
+    }
   });
 
   test('task list output becomes todo blocks', () {

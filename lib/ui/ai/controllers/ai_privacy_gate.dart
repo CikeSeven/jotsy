@@ -51,10 +51,10 @@ Future<bool> confirmAiSend(
 }) async {
   final mode = ref.read(aiPreferencesProvider).privacy.confirm;
   final host = model.provider.host;
-  final acknowledged = ref
-      .read(aiLocalConfigProvider)
-      .acknowledgedHosts
-      .contains(host);
+  // 直接读存储（等它加载完）：配置 provider 第一次被读时可能还没拿到存储。
+  final store = await ref.read(aiProviderStoreProvider.future);
+  if (!context.mounted) return false;
+  final acknowledged = store.config.acknowledgedHosts.contains(host);
   final ask = switch (mode) {
     AiConfirmMode.always => true,
     AiConfirmMode.multiDiary => !acknowledged || summary.multiDiary,
@@ -75,10 +75,7 @@ Future<bool> confirmAiSend(
     ),
   );
   if (result == null || !result.send) return false;
-  if (result.remember) {
-    final store = await ref.read(aiProviderStoreProvider.future);
-    await store.acknowledgeHost(host);
-  }
+  if (result.remember) await store.acknowledgeHost(host);
   return true;
 }
 

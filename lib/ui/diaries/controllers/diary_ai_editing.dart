@@ -14,7 +14,9 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../../ai/models/ai_preference_parts.dart';
 import 'diary_editor_controller.dart';
+import 'diary_editor_insert.dart';
 import 'diary_markdown_paste.dart';
 import 'diary_table_editing.dart';
 
@@ -301,6 +303,30 @@ void insertDiaryAiBelow(
       ),
     );
   controller.apply(transaction);
+}
+
+/// 把一个写作灵感问题插到光标处（新建空白日记时即正文开头）：按设置写成
+/// 提示块、引用或小标题，后面接一个空段落、光标落在那里，可以直接回答。
+/// 一次事务、一步撤销。
+void insertDiaryAiPrompt(
+  DiaryEditorController controller,
+  String question,
+  AiPromptInsertStyle style,
+) {
+  if (controller.readOnly || question.trim().isEmpty) return;
+  final text = question.trim();
+  final node = switch (style) {
+    AiPromptInsertStyle.callout => af.Node(
+      type: kDiaryBlockCallout,
+      attributes: {'delta': (af.Delta()..insert(text)).toJson()},
+    ),
+    AiPromptInsertStyle.quote => af.quoteNode(delta: af.Delta()..insert(text)),
+    AiPromptInsertStyle.heading => af.headingNode(
+      level: 3,
+      delta: af.Delta()..insert(text),
+    ),
+  };
+  insertDiaryEditorNodes(controller: controller, nodes: [node]);
 }
 
 /// 插在正文末尾（目标失效时的退路）。

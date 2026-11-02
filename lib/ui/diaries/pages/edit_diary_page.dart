@@ -88,6 +88,9 @@ import 'package:node_diary/ui/ai/providers/ai_providers.dart';
 import 'package:node_diary/ui/ai/sections/ai_suggestion_sheet.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_json_output.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_ai/diary_ai_writing_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_ai/diary_ai_prompts_strip.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_ai_editing.dart';
+import 'package:node_diary/ui/ai/controllers/ai_prompts_flow.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_commands.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 
@@ -815,6 +818,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   unawaited(_controller.setDayPhotoCover(photo)),
               onClearCover: _controller.clearDayPhotoCover,
             ),
+          // 写作灵感：新建空白日记、AI 可用且灵感模块与灵感条都开着时出现，
+          // 开始写字后自己收起。
+          if (_isCreateEntry &&
+              ref.watch(aiModuleAvailableProvider(AiModule.prompts)) &&
+              ref.watch(aiPreferencesProvider.select((p) => p.promptsStrip)))
+            DiaryAiPromptsStrip(
+              title: _titleController,
+              content: _contentController,
+              busy:
+                  _saving || _bottomPanelOpen || _mediaImportController.isBusy,
+              onGenerate: _generateAiPrompts,
+              onPick: _insertAiPrompt,
+            ),
         ],
       ),
     );
@@ -829,6 +845,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         onAiCommand: _aiWritingAvailable
             ? (command) => unawaited(_controller.handleAiSlash(command))
             : null,
+        aiPrompts: ref.watch(aiModuleAvailableProvider(AiModule.prompts)),
         placeholder: context.l10n.autoT0133,
         padding: EdgeInsets.symmetric(horizontal: gutter),
         header: header,
@@ -1077,6 +1094,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                     _EditorMenuAction.dayPhotos,
                                   ),
                             child: Text(context.l10n.diaryDayPhotosMenu),
+                          ),
+                        if (ref.watch(
+                          aiModuleAvailableProvider(AiModule.prompts),
+                        ))
+                          ExpressiveMenuItem(
+                            leadingIcon: const FaIcon(
+                              FontAwesomeIcons.lightbulb,
+                            ),
+                            onPressed: _saving || _bottomPanelOpen
+                                ? null
+                                : () => unawaited(_openAiPrompts()),
+                            child: Text(context.l10n.aiSlashPrompts),
                           ),
                         if (aiSuggest) ...<Widget>[
                           ExpressiveMenuItem(
@@ -1518,8 +1547,35 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
   }
 
-  /// 写作灵感（`/` 菜单与 ⋮ 菜单）；灵感条见 DiaryAiPromptsStrip。
-  Future<void> _openAiPrompts() async {}
+  /// 为这篇（新建时按所选日期）生成写作灵感。
+  Future<List<String>?> _generateAiPrompts() => requestAiPrompts(
+    context,
+    ref,
+    date: _isCreateEntry
+        ? _templateDiaryDate
+        : _draftPublishAt ?? DateTime.now(),
+    weather: _meta.value.weather,
+  );
+
+  /// 把选中的问题按设置的样式插进正文（一步撤销）。
+  void _insertAiPrompt(String question) {
+    insertDiaryAiPrompt(
+      _contentController,
+      question,
+      ref.read(aiPreferencesProvider).promptStyle,
+    );
+    _contentFocusNode.requestFocus();
+  }
+
+  /// 写作灵感面板（`/` 菜单与 ⋮ 菜单）：挑一个问题插在光标处。
+  Future<void> _openAiPrompts() async {
+    final question = await showDiaryAiPromptsSheet(
+      context,
+      generate: _generateAiPrompts,
+    );
+    if (question == null || !mounted) return;
+    _insertAiPrompt(question);
+  }
 
   void _toggleRecordingPanel() {
     if (_mediaImportController.isBusy) return;

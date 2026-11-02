@@ -31,6 +31,7 @@ Future<void> showDiaryPreviewMore(
   required Future<void> Function() onDelete,
   List<NotebookView> notebooks = const <NotebookView>[],
   Future<void> Function()? onWriteComment,
+  Future<void> Function()? onAiReply,
 }) {
   final database = ref.read(appDatabaseProvider);
   final l10n = context.l10n;
@@ -50,6 +51,7 @@ Future<void> showDiaryPreviewMore(
     ),
     onExport: () => export.exportDiary(context, ref, detail: detail),
     onWriteComment: onWriteComment,
+    onAiReply: onAiReply,
     notebookSubtitle: notebooks.isEmpty
         ? l10n.notebookPreviewNone
         : notebooks.map((n) => n.name).join(l10n.notebookListSeparator),
@@ -128,6 +130,7 @@ Future<void> showDiaryPreviewActionsSheet(
   Future<void> Function()? onOpenStyle,
   Future<void> Function()? onAddToNotebook,
   Future<void> Function()? onWriteComment,
+  Future<void> Function()? onAiReply,
   String? notebookSubtitle,
 }) {
   final l10n = context.l10n;
@@ -181,6 +184,16 @@ Future<void> showDiaryPreviewActionsSheet(
                   icon: const FaIcon(FontAwesomeIcons.comment, size: 16),
                   title: Text(l10n.diaryCommentSheetNew),
                   action: onWriteComment,
+                ),
+              // AI 读后回应：AI 可用、回应模块开启、这篇允许使用 AI 时才有。
+              if (onAiReply != null)
+                item(
+                  icon: const FaIcon(
+                    FontAwesomeIcons.wandMagicSparkles,
+                    size: 16,
+                  ),
+                  title: Text(l10n.aiReplyMoreItem),
+                  action: onAiReply,
                 ),
               if (onAddToNotebook != null)
                 item(

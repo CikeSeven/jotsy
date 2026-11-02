@@ -18,6 +18,7 @@ import '../../models/ai_preferences.dart';
 import '../../providers/ai_providers.dart';
 import '../../viewmodels/ai_labels.dart';
 import '../../widgets/ai_page_scaffold.dart';
+import '../../widgets/ai_persona_avatar.dart';
 import 'ai_persona_edit_page.dart';
 
 class AiPersonasPage extends ConsumerWidget {
@@ -263,29 +264,6 @@ class _PersonaTile extends StatelessWidget {
         items: menu,
       ),
       onTap: onTap,
-    );
-  }
-}
-
-/// 人设的表情头像（圆形、次要容器色底）。
-class AiPersonaAvatar extends StatelessWidget {
-  const AiPersonaAvatar({super.key, required this.emoji, this.size = 36});
-
-  final String emoji;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: colors.secondaryContainer,
-        shape: BoxShape.circle,
-      ),
-      child: Text(emoji, style: TextStyle(fontSize: size * 0.5, height: 1)),
     );
   }
 }

@@ -22,6 +22,12 @@ import 'package:node_diary/ui/diaries/widgets/publish_status_title.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/diaries/widgets/time_capsule_seal_overlay.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/ai/controllers/ai_privacy_gate.dart';
+import 'package:node_diary/ui/ai/controllers/ai_reply_flow.dart';
+import 'package:node_diary/ui/ai/controllers/ai_writing_flow.dart';
+import 'package:node_diary/ui/ai/models/ai_preference_parts.dart';
+import 'package:node_diary/ui/ai/providers/ai_providers.dart';
+import 'package:node_diary/ui/ai/sections/ai_suggestion_sheet.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
@@ -175,6 +181,71 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
     if (!mounted) return;
     unawaited(HapticFeedback.lightImpact());
     if (capsuleExpired) _hint(l10n.publishCapsuleExpired);
+    // AI：发表后自动回应（打开了才有；胶囊还没解封，不回应）与自动建议
+    // 标签和心情（打开了才有，点选后才写入面板）。
+    if (_meta.value.capsule == null) {
+      unawaited(
+        startAutoAiReply(
+          ref,
+          diaryId: diaryId,
+          locale: Localizations.localeOf(context),
+          l10n: l10n,
+        ),
+      );
+    }
+    unawaited(_suggestWithAi(diaryId));
+  }
+
+  /// 进入发布页时的 AI 建议（AI 设置里“进入发布页时自动建议”）：发一次
+  /// 正文，建议面板里勾选的标签与心情写进面板（随面板自动保存）；标题在
+  /// 编辑页里，这里不改。
+  Future<void> _suggestWithAi(String diaryId) async {
+    final prefs = ref.read(aiPreferencesProvider);
+    if (!prefs.autoSuggestOnPublish ||
+        !ref.read(aiModuleAvailableProvider(AiModule.suggest)) ||
+        !await aiDiaryAllowed(ref, diaryId) ||
+        !mounted) {
+      return;
+    }
+    final draft = widget.initialDraft;
+    final tags = ref.read(tagListProvider).value ?? const <Tag>[];
+    final moods = ref.read(moodOptionsProvider).value ?? const <String>[];
+    final suggestion = await requestAiSuggestion(
+      context,
+      ref,
+      diary: AiContextDiary(
+        diaryId: diaryId,
+        title: draft.title,
+        contentText: draft.contentText,
+        createdAt: draft.createdAtOverride ?? DateTime.now(),
+        isArchived: false,
+        mood: _meta.value.moodEmoji,
+      ),
+      tags: [for (final tag in tags) tag.name],
+      moods: moods,
+    );
+    if (suggestion == null || suggestion.isEmpty || !mounted) return;
+    final choice = await showAiSuggestionSheet(
+      context,
+      suggestion: suggestion,
+      selectedTags: {
+        for (final tag in tags)
+          if (_meta.value.tagIds.contains(tag.id)) tag.name,
+      },
+      includeTitle: false,
+    );
+    if (choice == null || choice.isEmpty || !mounted) return;
+    final names = [...choice.tags, ...choice.newTags];
+    if (names.isNotEmpty) {
+      final color = Theme.of(context).colorScheme.primary.toARGB32();
+      final result = await _database.ensureTagsByName([
+        for (final name in names) (name: name, color: color),
+      ]);
+      for (final id in result.ids.values) {
+        _meta.setTagSelected(id, true);
+      }
+    }
+    if (choice.mood case final mood?) _meta.setMood(mood);
   }
 
   /// 面板改动自动保存失败：提示通用文案（原始错误只进日志），快照保持未存，

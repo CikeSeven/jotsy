@@ -13549,4 +13549,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiConfirmSendAction => 'Send';
+
+  @override
+  String aiRepliesHeading(int count) {
+    return 'AI reflections · $count';
+  }
+
+  @override
+  String get aiReplyAsk => 'Ask AI to respond…';
+
+  @override
+  String get aiReplyMoreItem => 'AI reflection';
+
+  @override
+  String get aiReplyPickPersona => 'Who should respond?';
+
+  @override
+  String get aiReplyWriting => 'Reading your entry…';
+
+  @override
+  String get aiReplyRegenerate => 'Regenerate';
+
+  @override
+  String get aiReplySaveAsComment => 'Save as comment';
+
+  @override
+  String get aiReplyContinueChat => 'Talk more';
+
+  @override
+  String get aiReplyDeleted => 'Reflection deleted';
+
+  @override
+  String get aiReplyExpand => 'Show more';
+
+  @override
+  String get aiReplyCollapse => 'Show less';
+
+  @override
+  String get aiReplyStopped => 'Stopped. Try again?';
+
+  @override
+  String get aiReplyDismiss => 'Dismiss';
+
+  @override
+  String get aiReplyAutoSkipped =>
+      'Auto reflection skipped: confirm this provider once by asking for a reflection manually.';
+
+  @override
+  String get aiPromptsStripLabel => 'Need a writing prompt?';
+
+  @override
+  String get aiPromptsLoading => 'Thinking of questions…';
+
+  @override
+  String get aiPromptsRefresh => 'New set';
+
+  @override
+  String get aiPromptsTitle => 'Writing prompts';
+
+  @override
+  String get aiPromptsHint => 'Tap a question to add it to your entry';
+
+  @override
+  String get aiPromptsEmpty => 'No questions this time. Try again?';
+
+  @override
+  String get aiPromptsClose => 'Hide prompts';
+
+  @override
+  String get aiReplySavedAsComment => 'Saved as a comment';
 }

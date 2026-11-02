@@ -1,4 +1,5 @@
 import 'dart:ui' as ui show Image;
+import '../../../ai/sections/ai_replies_section.dart';
 
 import 'package:flutter/material.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
@@ -81,6 +82,8 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.onOpenTag,
     this.comments,
     this.backlinks,
+    this.aiRepliesFor,
+    this.onAiContinueChat,
   });
 
   final DiaryWithTags detail;
@@ -125,6 +128,14 @@ class DiaryPreviewContent extends ConsumerWidget {
   /// 正文之后、留言区之前的“提到这篇的日记”；null 时不显示（日记在回收站、
   /// 截取分享长图时、没有日记提到它；设置页预览不传）。
   final DiaryPreviewBacklinks? backlinks;
+
+  /// 留言区之后的“AI 回应”：这篇日记的业务 id；null 时不显示（AI 不可用、
+  /// 回应模块关闭、日记在回收站、私密日记未允许、截取分享长图时；设置页
+  /// 预览不传）。
+  final String? aiRepliesFor;
+
+  /// 回应卡片上的“继续聊聊”；对话模块关闭时为 null。
+  final VoidCallback? onAiContinueChat;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -319,6 +330,17 @@ class DiaryPreviewContent extends ConsumerWidget {
                     ),
                     data: comments,
                     textColor: resolved.bodyColor,
+                  ),
+                ],
+                if (aiRepliesFor != null) ...<Widget>[
+                  const SizedBox(height: 28),
+                  AiRepliesSection(
+                    key: ValueKey<String>('ai_replies_$aiRepliesFor'),
+                    diaryId: aiRepliesFor!,
+                    textColor:
+                        resolved.bodyColor ??
+                        Theme.of(context).colorScheme.onSurface,
+                    onContinueChat: onAiContinueChat,
                   ),
                 ],
                 if (neighbors != null) ...<Widget>[

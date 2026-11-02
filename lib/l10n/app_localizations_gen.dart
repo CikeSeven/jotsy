@@ -22045,6 +22045,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send'**
   String get aiConfirmSendAction;
+
+  /// Heading of the AI reflections section with a count.
+  ///
+  /// In en, this message translates to:
+  /// **'AI reflections · {count}'**
+  String aiRepliesHeading(int count);
+
+  /// Row that asks AI for a reflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI to respond…'**
+  String get aiReplyAsk;
+
+  /// Item in the reading page More sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'AI reflection'**
+  String get aiReplyMoreItem;
+
+  /// Title of the persona picker for reflections.
+  ///
+  /// In en, this message translates to:
+  /// **'Who should respond?'**
+  String get aiReplyPickPersona;
+
+  /// Shown while a reflection is being written.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your entry…'**
+  String get aiReplyWriting;
+
+  /// Menu item regenerating a reflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate'**
+  String get aiReplyRegenerate;
+
+  /// Menu item saving a reflection as a comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as comment'**
+  String get aiReplySaveAsComment;
+
+  /// Button opening a chat about this entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk more'**
+  String get aiReplyContinueChat;
+
+  /// Snackbar after deleting a reflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection deleted'**
+  String get aiReplyDeleted;
+
+  /// Expands a long reflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more'**
+  String get aiReplyExpand;
+
+  /// Collapses a long reflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get aiReplyCollapse;
+
+  /// Shown after a reflection was stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped. Try again?'**
+  String get aiReplyStopped;
+
+  /// Dismisses a failed or stopped reflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get aiReplyDismiss;
+
+  /// Shown when auto reflection needs a first-time confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto reflection skipped: confirm this provider once by asking for a reflection manually.'**
+  String get aiReplyAutoSkipped;
+
+  /// Chip that asks AI for writing prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Need a writing prompt?'**
+  String get aiPromptsStripLabel;
+
+  /// Shown while prompts are generated.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking of questions…'**
+  String get aiPromptsLoading;
+
+  /// Button generating new prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'New set'**
+  String get aiPromptsRefresh;
+
+  /// Title of the prompts sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing prompts'**
+  String get aiPromptsTitle;
+
+  /// Hint under writing prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a question to add it to your entry'**
+  String get aiPromptsHint;
+
+  /// Shown when no prompts were produced.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions this time. Try again?'**
+  String get aiPromptsEmpty;
+
+  /// Button hiding the prompts strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide prompts'**
+  String get aiPromptsClose;
+
+  /// Snackbar after saving a reflection as a comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as a comment'**
+  String get aiReplySavedAsComment;
 }
 
 class _AppLocalizationsDelegate

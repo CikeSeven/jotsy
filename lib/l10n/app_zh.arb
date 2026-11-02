@@ -6988,6 +6988,36 @@
   "@diaryExportSelected": {
     "description": "日记列表多选栏：导出选中日记的按钮提示。"
   },
+  "diaryTagBatchAction": "设置标签",
+  "@diaryTagBatchAction": {
+    "description": "日记列表多选栏“更多”菜单：给选中的日记批量加上或去掉标签的菜单项。"
+  },
+  "diaryTagBatchTitle": "给 {count} 篇日记设置标签",
+  "@diaryTagBatchTitle": {
+    "description": "多选日记的标签面板标题；count 为选中的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTagBatchDone": "完成",
+  "@diaryTagBatchDone": {
+    "description": "多选日记的标签面板底部的提交按钮。"
+  },
+  "diaryTagBatchUpdated": "已更新 {count} 篇日记的标签",
+  "@diaryTagBatchUpdated": {
+    "description": "多选日记批量改标签后的撤销提示；count 为标签有变化的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTagBatchFailed": "标签更新失败，请重试",
+  "@diaryTagBatchFailed": {
+    "description": "多选日记批量改标签写入失败的提示。"
+  },
   "dataMgmtExportDiaries": "导出日记",
   "@dataMgmtExportDiaries": {
     "description": "数据管理页：按范围导出日记的入口。"

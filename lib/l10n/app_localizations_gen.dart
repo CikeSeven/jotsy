@@ -9164,6 +9164,36 @@ abstract class AppLocalizations {
   /// **'Export'**
   String get diaryExportSelected;
 
+  /// Diary list selection bar, More menu: item that adds or removes tags on the selected entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Set tags'**
+  String get diaryTagBatchAction;
+
+  /// Title of the tag sheet for selected entries; count is the number of selected entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Tags for 1 entry} other{Tags for {count} entries}}'**
+  String diaryTagBatchTitle(int count);
+
+  /// Submit button at the bottom of the tag sheet for selected entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get diaryTagBatchDone;
+
+  /// Undo hint after changing tags of selected entries; count is the number of entries whose tags changed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Updated tags of 1 entry} other{Updated tags of {count} entries}}'**
+  String diaryTagBatchUpdated(int count);
+
+  /// Hint when writing tags for selected entries fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t update tags. Please try again.'**
+  String get diaryTagBatchFailed;
+
   /// Data management entry that opens diary export.
   ///
   /// In en, this message translates to:

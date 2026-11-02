@@ -5496,6 +5496,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryExportSelected => 'Export';
 
   @override
+  String get diaryTagBatchAction => 'Set tags';
+
+  @override
+  String diaryTagBatchTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tags for $count entries',
+      one: 'Tags for 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryTagBatchDone => 'Done';
+
+  @override
+  String diaryTagBatchUpdated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Updated tags of $count entries',
+      one: 'Updated tags of 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryTagBatchFailed => 'Couldn\'t update tags. Please try again.';
+
+  @override
   String get dataMgmtExportDiaries => 'Export diaries';
 
   @override

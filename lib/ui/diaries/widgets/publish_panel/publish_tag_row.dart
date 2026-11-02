@@ -7,18 +7,25 @@ import 'package:node_diary/ui/app_surface/widgets/on_glass.dart';
 
 /// 标签子页的一行：`#` 色块 + 名称 + 勾选圈，点整行切换选中。
 ///
-/// 选中时行底补间到标签色浅底，勾选圈换成标签色实心勾。
+/// 选中时行底补间到标签色浅底，勾选圈换成标签色实心勾。多选日记的标签
+/// 面板另有“部分有”（[partial]：只有部分所选日记带着这个标签）：行底同样
+/// 是标签色浅底，勾选圈换成标签色的减号（与日记本选本面板的三态同一画法）；
+/// 点按时 [onToggle] 收到 true（部分有 → 全部加上）。
 class PublishTagRow extends StatelessWidget {
   const PublishTagRow({
     super.key,
     required this.tag,
     required this.selected,
     required this.onToggle,
+    this.partial = false,
   });
 
   final Tag tag;
   final bool selected;
   final ValueChanged<bool> onToggle;
+
+  /// 三态里的“部分有”；为 true 时 [selected] 应为 false。
+  final bool partial;
 
   @override
   Widget build(BuildContext context) {
@@ -30,74 +37,81 @@ class PublishTagRow extends StatelessWidget {
     final idle = OnGlass.of(context)
         ? OnGlass.wellColor(colorScheme)
         : colorScheme.surfaceContainerHighest.withValues(alpha: 0.45);
+    final active = selected || partial;
+    final (checkIcon, checkColor) = selected
+        ? (FontAwesomeIcons.solidCircleCheck, tagColor)
+        : partial
+        ? (FontAwesomeIcons.circleMinus, tagColor)
+        : (FontAwesomeIcons.circle, colorScheme.outlineVariant);
     // 选中换色经 ExpressiveStateBlend 补间（Material 不补间颜色）。
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: ExpressiveStateBlend(
-        active: selected,
-        builder: (context, t, child) => Material(
-          color: Color.lerp(
-            idle,
-            tagColor.withValues(alpha: isLight ? 0.12 : 0.22),
-            t,
+      child: Semantics(
+        checked: selected,
+        mixed: partial ? true : null,
+        child: ExpressiveStateBlend(
+          active: active,
+          builder: (context, t, child) => Material(
+            color: Color.lerp(
+              idle,
+              tagColor.withValues(alpha: isLight ? 0.12 : 0.22),
+              t,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            child: child,
           ),
-          borderRadius: BorderRadius.circular(12),
-          child: child,
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => onToggle(!selected),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: tagColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: tagColor.withValues(alpha: 0.45),
-                        width: 1,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => onToggle(!selected),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: tagColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: tagColor.withValues(alpha: 0.45),
+                          width: 1,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '#',
+                        style: TextStyle(
+                          color: tagColor,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '#',
-                      style: TextStyle(
-                        color: tagColor,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        tag.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      tag.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                      ),
+                    ExpressiveIconSwap(
+                      switchKey: (selected, partial),
+                      child: FaIcon(checkIcon, size: 18, color: checkColor),
                     ),
-                  ),
-                  ExpressiveIconSwap(
-                    switchKey: selected,
-                    child: FaIcon(
-                      selected
-                          ? FontAwesomeIcons.solidCircleCheck
-                          : FontAwesomeIcons.circle,
-                      size: 18,
-                      color: selected ? tagColor : colorScheme.outlineVariant,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

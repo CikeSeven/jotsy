@@ -1,16 +1,21 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
-import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/alphabet_index_bar.dart';
-import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 import '../../viewmodels/tag_picker_view.dart';
+import 'publish_panel_tile.dart';
 import 'publish_tag_row.dart';
 
-/// 标签子页的可滚动列表：[header]（新建行与提示）在最前，随列表滚动；
-/// 其后是 [view] 的各组标签。
+/// 标签子页的可滚动列表：[header]（新建行与提示，见 [PublishTagListHeader]）
+/// 在最前，随列表滚动；其后是 [view] 的各组标签，每行由 [rowBuilder] 建出
+/// （发布面板的勾选行、多选日记标签面板的三态行都是 [PublishTagRow]）。
+/// 行的选中状态由调用方持有：调用方重建本组件即刷新各行；也可经
+/// [rowsScope] 把各行包进自己的监听（发布面板只在草稿的标签变化时重建
+/// 各行），不动列表本身与滚动位置。
 ///
 /// [indexed] 为 true（按字母排序）时：每组前有字母标题，右侧留出索引条的
 /// 位置，有两组以上时显示 [AlphabetIndexBar]。
@@ -24,15 +29,21 @@ class PublishTagList extends StatefulWidget {
   const PublishTagList({
     super.key,
     required this.view,
-    required this.selection,
-    required this.onToggle,
+    required this.rowBuilder,
     required this.header,
     required this.indexed,
+    this.rowsScope,
   });
 
   final TagPickerView view;
-  final ValueListenable<DiaryMetaDraft> selection;
-  final void Function(int tagId, bool selected) onToggle;
+
+  /// 建一个标签的一行。
+  final Widget Function(BuildContext context, Tag tag) rowBuilder;
+
+  /// 包住全部标签行：参数 `buildRows` 按当前状态铺出各组标签，调用方把它
+  /// 放进自己的监听里调用；null 时直接铺出。
+  final Widget Function(BuildContext context, WidgetBuilder buildRows)?
+  rowsScope;
   final Widget header;
   final bool indexed;
 
@@ -115,6 +126,17 @@ class _PublishTagListState extends State<PublishTagList> {
     _activeLetter.value = letter;
   }
 
+  Widget _buildRows(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: <Widget>[
+      for (final section in widget.view.sections) ...<Widget>[
+        if (section.letter case final letter?)
+          PublishTagSectionHeader(key: _keyFor(letter), letter: letter),
+        for (final tag in section.tags) widget.rowBuilder(context, tag),
+      ],
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final view = widget.view;
@@ -132,28 +154,7 @@ class _PublishTagListState extends State<PublishTagList> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           widget.header,
-          ValueListenableSelector<DiaryMetaDraft, Set<int>>(
-            valueListenable: widget.selection,
-            selector: (value) => value.tagIds,
-            builder: (context, selectedIds, _) => Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                for (final section in view.sections) ...<Widget>[
-                  if (section.letter case final letter?)
-                    PublishTagSectionHeader(
-                      key: _keyFor(letter),
-                      letter: letter,
-                    ),
-                  for (final tag in section.tags)
-                    PublishTagRow(
-                      tag: tag,
-                      selected: selectedIds.contains(tag.id),
-                      onToggle: (selected) => widget.onToggle(tag.id, selected),
-                    ),
-                ],
-              ],
-            ),
-          ),
+          widget.rowsScope?.call(context, _buildRows) ?? _buildRows(context),
         ],
       ),
     );
@@ -185,6 +186,76 @@ class _PublishTagListState extends State<PublishTagList> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 标签列表最前的“新建”行与空态提示（发布面板标签子页与多选日记的标签
+/// 面板共用）。检索词还没有同名标签时，新建行变成“新建「检索词」”，
+/// [onCreate] 收到预填的名称（不在检索或已有同名标签时为 null）。
+class PublishTagListHeader extends StatelessWidget {
+  const PublishTagListHeader({
+    super.key,
+    required this.view,
+    required this.hasTags,
+    required this.onCreate,
+  });
+
+  final TagPickerView view;
+  final bool hasTags;
+  final ValueChanged<String?> onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final createName = view.createName;
+    final hintStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    final String? hint;
+    if (view.isSearching && view.isEmpty) {
+      hint = l10n.tagPickerSearchEmpty(view.query);
+    } else if (!hasTags) {
+      hint = l10n.autoT0166;
+    } else {
+      hint = null;
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          // 与面板其他行同一表面；检索时带上检索词。
+          PublishPanelTile(
+            onTap: () => onCreate(createName),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const FaIcon(FontAwesomeIcons.plus, size: 12),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    createName == null
+                        ? l10n.autoT0157
+                        : l10n.tagPickerCreateNamed(createName),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (hint != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 12, 4, 0),
+              child: Text(hint, textAlign: TextAlign.center, style: hintStyle),
+            ),
+        ],
+      ),
     );
   }
 }

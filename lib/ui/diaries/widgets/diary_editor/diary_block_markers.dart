@@ -10,11 +10,11 @@ import '../../controllers/diary_list_style_editing.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_styles.dart';
 
-/// 列表、待办与引用的行首标记。
+/// 列表与待办的行首标记（引用竖条见 `diary_quote_bar.dart`）。
 ///
 /// 为什么不用编辑器自带的标记：上游的无序列表用 `●◯□` 字符（正文字体缺
-/// `◯`，二级圆点画不出来）、引用竖条写死亮青色 `#00BCF0`、待办图标交给
-/// IconButton 时会被撑成 48dp 触控尺寸，复选框掉到首行下方并把行距撑开。
+/// `◯`，二级圆点画不出来）、待办图标交给 IconButton 时会被撑成 48dp 触控
+/// 尺寸，复选框掉到首行下方并把行距撑开。
 /// 这里的标记一律自己绘制，几何统一取自 [DiaryMarkerMetrics]
 /// （`diary_block_marker_metrics.dart`）：标记格与文字
 /// 首行等高，圆点与复选框的中心对齐首行字形的中心，序号与文字基线对齐；
@@ -291,21 +291,4 @@ class DiaryTodoCheckbox extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 引用竖条：3dp 圆头竖线，`primary` 55% 透明度，贯穿整个引用块的高度。
-class DiaryQuoteBar extends StatelessWidget {
-  const DiaryQuoteBar({super.key});
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsetsDirectional.only(start: 2, end: 12),
-    child: Container(
-      width: 3,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(1.5),
-      ),
-    ),
-  );
 }

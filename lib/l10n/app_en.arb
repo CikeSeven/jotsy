@@ -8070,6 +8070,14 @@
   "@diaryTemplateVarTimeLabel": {
     "description": "Label of the template variable for the current time."
   },
+  "diaryTemplateVarTime12hLabel": "Time (12-hour)",
+  "@diaryTemplateVarTime12hLabel": {
+    "description": "Name of the common 12-hour time format listed under the time variable in the All variables sheet."
+  },
+  "diaryTemplateVarTime12hFormat": "h:mm a",
+  "@diaryTemplateVarTime12hFormat": {
+    "description": "intl DateFormat pattern written after the colon of the time variable for a 12-hour clock, ordered the way this language writes AM/PM and the time. Must be a pattern the app accepts (only DateFormat field letters; any other letters go in single quotes)."
+  },
   "diaryTemplateVarYearToken": "year",
   "@diaryTemplateVarYearToken": {
     "description": "Template variable name inserted between double braces for the year of the diary's date. Must be one of the aliases the app recognises."
@@ -8653,6 +8661,15 @@
   "diaryTemplateEditorVariablesHint": "Variables are filled in from the entry's date when the template is applied. Lunar dates and solar terms use Chinese names.",
   "@diaryTemplateEditorVariablesHint": {
     "description": "Explanation in the template variable sheet."
+  },
+  "diaryTemplateEditorTimeFormatHint": "Time takes a format after a colon, such as {example}: H for the hour (h for 12-hour), mm for minutes, ss for seconds and a for AM/PM; put any other letters in single quotes. A format that can't be read is left as written.",
+  "@diaryTemplateEditorTimeFormatHint": {
+    "description": "Note below the time rows in the All variables sheet: the time variable accepts a custom format after a colon.",
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
   },
   "diaryTemplateEditorVariableExample": "Today: {example}",
   "@diaryTemplateEditorVariableExample": {

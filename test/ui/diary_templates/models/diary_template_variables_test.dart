@@ -2,12 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_variables.dart';
 
 void main() {
-  String? valueOf(DiaryTemplateVariable variable) => switch (variable) {
-    DiaryTemplateVariable.date => '10月18日',
-    DiaryTemplateVariable.weekday => '星期日',
-    DiaryTemplateVariable.question => '第一行\n第二行',
-    _ => null,
-  };
+  String? valueOf(DiaryTemplateVariable variable, String? format) =>
+      switch ((variable, format)) {
+        (DiaryTemplateVariable.date, null) => '10月18日',
+        (DiaryTemplateVariable.weekday, null) => '星期日',
+        (DiaryTemplateVariable.question, null) => '第一行\n第二行',
+        _ => null,
+      };
+
+  /// 把收到的格式原样写出来，看清楚冒号后哪一段被当成了格式。
+  String? echoFormat(DiaryTemplateVariable variable, String? format) =>
+      '${variable.name}|${format ?? '-'}';
 
   test('Chinese and English names resolve to the same value', () {
     expect(resolveDiaryTemplateText('{{日期}}', valueOf), '10月18日');
@@ -62,5 +67,45 @@ void main() {
       DiaryTemplateVariable.date,
     });
     expect(diaryTemplateVariablesIn('没有变量'), isEmpty);
+  });
+
+  test('a bare time name passes no format', () {
+    expect(resolveDiaryTemplateText('{{时间}}', echoFormat), 'time|-');
+    expect(resolveDiaryTemplateText('{{ Time }}', echoFormat), 'time|-');
+  });
+
+  test('the time format is everything after the first colon', () {
+    expect(resolveDiaryTemplateText('{{时间:HH:mm}}', echoFormat), 'time|HH:mm');
+    expect(
+      resolveDiaryTemplateText('{{time:h:mm a}}', echoFormat),
+      'time|h:mm a',
+    );
+    // 两侧空白不算格式；中文输入法下的全角冒号同样分隔。
+    expect(
+      resolveDiaryTemplateText('{{ 时间 : HH:mm }}', echoFormat),
+      'time|HH:mm',
+    );
+    expect(resolveDiaryTemplateText('{{时间：H点mm分}}', echoFormat), 'time|H点mm分');
+  });
+
+  test('an empty format or a format on another variable stays as written', () {
+    expect(resolveDiaryTemplateText('{{时间:}}', echoFormat), '{{时间:}}');
+    expect(resolveDiaryTemplateText('{{time: }}', echoFormat), '{{time: }}');
+    expect(
+      resolveDiaryTemplateText('{{日期:yyyy-MM-dd}}', echoFormat),
+      '{{日期:yyyy-MM-dd}}',
+    );
+    expect(resolveDiaryTemplateText('{{心情:x}}', echoFormat), '{{心情:x}}');
+  });
+
+  test('a formatted time counts as using the time variable', () {
+    expect(diaryTemplateVariablesIn('{{时间:HH:mm}} {{日期:yyyy}}'), {
+      DiaryTemplateVariable.time,
+    });
+  });
+
+  test('tokens are written with an optional format', () {
+    expect(diaryTemplateToken('时间'), '{{时间}}');
+    expect(diaryTemplateToken('time', 'h:mm a'), '{{time:h:mm a}}');
   });
 }

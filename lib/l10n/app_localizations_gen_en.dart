@@ -6364,6 +6364,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplateVarTimeLabel => 'Time';
 
   @override
+  String get diaryTemplateVarTime12hLabel => 'Time (12-hour)';
+
+  @override
+  String get diaryTemplateVarTime12hFormat => 'h:mm a';
+
+  @override
   String get diaryTemplateVarYearToken => 'year';
 
   @override
@@ -6783,6 +6789,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryTemplateEditorVariablesHint =>
       'Variables are filled in from the entry\'s date when the template is applied. Lunar dates and solar terms use Chinese names.';
+
+  @override
+  String diaryTemplateEditorTimeFormatHint(String example) {
+    return 'Time takes a format after a colon, such as $example: H for the hour (h for 12-hour), mm for minutes, ss for seconds and a for AM/PM; put any other letters in single quotes. A format that can\'t be read is left as written.';
+  }
 
   @override
   String diaryTemplateEditorVariableExample(String example) {

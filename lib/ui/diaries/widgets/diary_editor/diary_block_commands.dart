@@ -1,4 +1,3 @@
-import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -146,10 +145,11 @@ List<DiaryBlockCommand> diaryBlockCommands(
       markdown: markdown,
       attributes: {if (type == 'todo_list') 'checked': false},
     ),
+  // 分隔线：名称与图标取工具栏同一项，插入与工具栏同一条。
   DiaryBlockCommand(
     'divider',
-    l10n.diaryEditorDivider,
-    FontAwesomeIcons.minus,
+    DiaryToolbarItem.divider.label(l10n),
+    DiaryToolbarItem.divider.iconData,
     const ['hr', 'divider', 'line', '分隔线', '分割线'],
     group: DiaryBlockCommandGroup.insert,
     markdown: '---',
@@ -239,7 +239,7 @@ void applyDiaryBlockCommand(
     return;
   }
   if (command.type == 'divider') {
-    insertDiaryEditorNodes(controller: controller, nodes: [af.dividerNode()]);
+    insertDiaryDivider(controller);
   } else if (command.type == kDiaryBlockCallout) {
     // 与工具栏同一条转换：已是提示块的保留图标与底色。
     convertDiaryBlocksToCallout(controller);

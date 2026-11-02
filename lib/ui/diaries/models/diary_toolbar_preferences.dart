@@ -32,6 +32,7 @@ enum DiaryToolbarItem {
   checkList,
   codeBlock,
   table,
+  divider,
   quote,
   callout,
   toggle,
@@ -80,6 +81,9 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.codeBlock,
   // 表格紧跟代码块（同为整块的插入），已保存过顺序的用户补到末尾。
   DiaryToolbarItem.table,
+  // 分隔线紧跟表格（同为整块的插入），在后半段，不挤进常驻的前几格；
+  // 已保存过顺序的用户由 [decodeDiaryToolbarOrder] 补到末尾。
+  DiaryToolbarItem.divider,
 ];
 
 extension DiaryToolbarItemX on DiaryToolbarItem {
@@ -109,6 +113,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.checkList => 'check_list',
       DiaryToolbarItem.codeBlock => 'code_block',
       DiaryToolbarItem.table => 'table',
+      DiaryToolbarItem.divider => 'divider',
       DiaryToolbarItem.quote => 'quote',
       DiaryToolbarItem.callout => 'callout',
       DiaryToolbarItem.toggle => 'toggle',
@@ -147,6 +152,8 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.checkList => FontAwesomeIcons.squareCheck,
       DiaryToolbarItem.codeBlock => FontAwesomeIcons.fileCode,
       DiaryToolbarItem.table => FontAwesomeIcons.table,
+      // 与 `/` 菜单的“分隔线”同一个图标（那里直接取这一项）。
+      DiaryToolbarItem.divider => FontAwesomeIcons.minus,
       DiaryToolbarItem.quote => FontAwesomeIcons.quoteLeft,
       DiaryToolbarItem.callout => FontAwesomeIcons.lightbulb,
       DiaryToolbarItem.toggle => FontAwesomeIcons.squareCaretRight,
@@ -182,6 +189,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.checkList => l10n.autoT0020,
       DiaryToolbarItem.codeBlock => l10n.autoT0021,
       DiaryToolbarItem.table => l10n.diaryEditorTable,
+      DiaryToolbarItem.divider => l10n.diaryEditorDivider,
       DiaryToolbarItem.quote => l10n.autoT0022,
       DiaryToolbarItem.callout => l10n.diaryEditorCallout,
       DiaryToolbarItem.toggle => l10n.diaryEditorToggleList,

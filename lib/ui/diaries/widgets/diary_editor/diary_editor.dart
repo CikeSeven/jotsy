@@ -59,6 +59,8 @@ class DiaryEditor extends ConsumerStatefulWidget {
     this.onMediaCommand,
     this.blockComponentOverrides = const {},
     this.onRecordingCommand,
+    this.onAiCommand,
+    this.aiPrompts = false,
     this.onImageOpen,
     this.onImageMenu,
     this.foldLongImages = true,
@@ -82,6 +84,11 @@ class DiaryEditor extends ConsumerStatefulWidget {
   final void Function(DiaryMediaKind)? onMediaCommand;
   final Map<String, af.BlockComponentBuilder> blockComponentOverrides;
   final VoidCallback? onRecordingCommand;
+
+  /// `/` 菜单里的 AI 命令；null 时不出现 AI 组（AI 不可用、只读正文、模板
+  /// 编辑页）。[aiPrompts] 为 true 时组里多出“写作灵感”。
+  final void Function(DiaryAiSlashCommand)? onAiCommand;
+  final bool aiPrompts;
   final bool todoToggle;
   final bool textSelection;
   final double autoScrollEdgeOffset;
@@ -404,6 +411,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             context.l10n,
             onMedia: widget.onMediaCommand,
             onRecording: widget.onRecordingCommand,
+            onAi: widget.onAiCommand,
+            aiPrompts: widget.aiPrompts,
             onLinkCard: linking
                 ? (kind) => unawaited(_mentionMenu.openCardAtCaret({kind}))
                 : null,

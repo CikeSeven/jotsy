@@ -27,9 +27,17 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 /// 工具常驻在工具栏上，线下方的收进「更多」面板。分界线是列表中的一行（不可
 /// 拖动），拖放下标按含分界线的可见列表计算。
 class DiaryToolbarOrderPage extends StatefulWidget {
-  const DiaryToolbarOrderPage({super.key, required this.settingsService});
+  const DiaryToolbarOrderPage({
+    super.key,
+    required this.settingsService,
+    this.aiAvailable = false,
+  });
 
   final SettingsService settingsService;
+
+  /// AI 写作可用（AI 助手可用且写作模块开启）：为 false 时“AI 写作”工具
+  /// 与录音同样不列出（见 `diaryToolbarUnavailableItems`）。
+  final bool aiAvailable;
 
   @override
   State<DiaryToolbarOrderPage> createState() => _DiaryToolbarOrderPageState();
@@ -66,7 +74,9 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
 
   /// 本平台不提供的工具（Linux 的录音）：照常留在 [_order] 里保存，列表与
   /// 溢出分界都按不含它们的顺序算（与编辑页工具栏一致）。
-  final Set<DiaryToolbarItem> _unavailable = diaryToolbarUnavailableItems();
+  late final Set<DiaryToolbarItem> _unavailable = diaryToolbarUnavailableItems(
+    ai: widget.aiAvailable,
+  );
 
   /// 列表里显示的顺序。
   List<DiaryToolbarItem> get _shownOrder => _unavailable.isEmpty

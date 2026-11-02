@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show KeyDownEvent, LogicalKeyboardKey;
 
 import '../../../../core/services/app_platform.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../controllers/diary_editor_clipboard.dart';
 import '../../controllers/diary_editor_controller.dart';
 
@@ -155,6 +156,7 @@ class _DiaryEditorSelectionToolbarState
             ),
             buttonItems: _menuItems(
               controller,
+              aiLabel: context.l10n.aiSelectionMenu,
               // 点过菜单项就不再是“刚长按”：粘贴空剪贴板时选区不变，也不能
               // 在下一次通知时把菜单弹回来。
               dismiss: () {
@@ -265,6 +267,7 @@ class _DiaryEditorContextMenuState extends State<_DiaryEditorContextMenu> {
       // 桌面复制后保留选区，与系统文本框一致。
       buttonItems: _menuItems(
         widget.controller,
+        aiLabel: context.l10n.aiSelectionMenu,
         dismiss: widget.dismiss,
         afterCopy: widget.dismiss,
       ),
@@ -277,12 +280,23 @@ class _DiaryEditorContextMenuState extends State<_DiaryEditorContextMenu> {
 /// [afterCopy] 在写入剪贴板后执行。
 List<ContextMenuButtonItem> _menuItems(
   DiaryEditorController controller, {
+  required String aiLabel,
   required VoidCallback dismiss,
   required VoidCallback afterCopy,
 }) {
   final selection = controller.selection;
   final ranged = selection != null && !selection.isCollapsed;
+  final ai = controller.aiSelectionHandler;
   return [
+    // AI 写作：对选中的文字使用（编辑页打开 AI 写作面板）。
+    if (ranged && !controller.readOnly && ai != null)
+      ContextMenuButtonItem(
+        label: aiLabel,
+        onPressed: () {
+          dismiss();
+          ai();
+        },
+      ),
     if (ranged)
       ContextMenuButtonItem(
         type: ContextMenuButtonType.copy,

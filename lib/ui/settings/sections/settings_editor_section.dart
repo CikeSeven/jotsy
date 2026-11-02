@@ -21,6 +21,8 @@ import '../widgets/settings_card_group.dart';
 import 'settings_code_block_style_tile.dart';
 import 'settings_open_in_editor_switch.dart';
 import 'settings_toolbar_size_tile.dart';
+import '../../ai/models/ai_preference_parts.dart';
+import '../../ai/providers/ai_providers.dart';
 
 /// 设置页编辑器配置区块。
 class SettingsEditorSection extends ConsumerWidget {
@@ -33,6 +35,7 @@ class SettingsEditorSection extends ConsumerWidget {
     final l10n = context.l10n;
     // 日记模板功能关闭时隐藏入口，数据保留：不放进分组（分组按项数画分隔
     // 线，放一个空占位会多出一条）。
+    final aiWriting = ref.watch(aiModuleAvailableProvider(AiModule.writing));
     final templatesEnabled = ref.watch(
       appFeaturesProvider.select((features) => features.templates),
     );
@@ -59,7 +62,7 @@ class SettingsEditorSection extends ConsumerWidget {
                       order,
                       <DiaryToolbarItem>{
                         ...hiddenItems,
-                        ...diaryToolbarUnavailableItems(),
+                        ...diaryToolbarUnavailableItems(ai: aiWriting),
                       },
                     );
                     final preview = enabledOrder
@@ -120,6 +123,7 @@ class SettingsEditorSection extends ConsumerWidget {
                                           MaterialPageRoute<void>(
                                             builder: (BuildContext context) {
                                               return DiaryToolbarOrderPage(
+                                                aiAvailable: aiWriting,
                                                 settingsService:
                                                     settingsService,
                                               );

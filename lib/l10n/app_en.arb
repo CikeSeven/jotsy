@@ -16259,5 +16259,476 @@
   "aiPrivacyClearRecordsDone": "AI records cleared",
   "@aiPrivacyClearRecordsDone": {
     "description": "Snackbar after clearing AI records."
+  },
+  "aiPromptSystemBase": "You are the AI assistant inside Jotsy, a personal diary app. The person you talk to is the author of the diary. Be sincere and specific, and never invent facts that are not in the diary.",
+  "@aiPromptSystemBase": {
+    "description": "Base system prompt sent to the model."
+  },
+  "aiPromptAboutUser": "About the user: {text}",
+  "@aiPromptAboutUser": {
+    "description": "Prompt line carrying the user's about-me text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptWritingStyle": "The user's preferred writing style: {text}",
+  "@aiPromptWritingStyle": {
+    "description": "Prompt line carrying the preferred writing style.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRespondIn": "Reply in {language}.",
+  "@aiPromptRespondIn": {
+    "description": "Prompt line forcing the answer language.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRespondLikeDiary": "Reply in the same language the diary is written in.",
+  "@aiPromptRespondLikeDiary": {
+    "description": "Prompt line asking to follow the diary language."
+  },
+  "aiPromptLanguageChinese": "Chinese",
+  "@aiPromptLanguageChinese": {
+    "description": "Language name used inside prompts."
+  },
+  "aiPromptLanguageEnglish": "English",
+  "@aiPromptLanguageEnglish": {
+    "description": "Language name used inside prompts."
+  },
+  "aiPromptLengthShort": "Keep the answer short, within a few sentences.",
+  "@aiPromptLengthShort": {
+    "description": "Prompt line for short answers."
+  },
+  "aiPromptLengthMedium": "Keep the answer to a moderate length.",
+  "@aiPromptLengthMedium": {
+    "description": "Prompt line for medium answers."
+  },
+  "aiPromptLengthLong": "Feel free to answer in detail.",
+  "@aiPromptLengthLong": {
+    "description": "Prompt line for detailed answers."
+  },
+  "aiPromptPersona": "Your role: {text}",
+  "@aiPromptPersona": {
+    "description": "Prompt line carrying the persona prompt.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptFieldTitle": "Title",
+  "@aiPromptFieldTitle": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldDate": "Date",
+  "@aiPromptFieldDate": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldMood": "Mood",
+  "@aiPromptFieldMood": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldTags": "Tags",
+  "@aiPromptFieldTags": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldWeather": "Weather",
+  "@aiPromptFieldWeather": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldLocation": "Place",
+  "@aiPromptFieldLocation": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptFieldBody": "Text",
+  "@aiPromptFieldBody": {
+    "description": "Field label inside prompts."
+  },
+  "aiPromptTruncated": "(the rest is omitted)",
+  "@aiPromptTruncated": {
+    "description": "Marker appended to truncated diary text in prompts."
+  },
+  "aiPromptImagesAttached": "{count, plural, =1{One photo from the entry is attached.} other{{count} photos from the entry are attached.}}",
+  "@aiPromptImagesAttached": {
+    "description": "Prompt line saying photos are attached.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptWritingSystem": "You are a writing assistant helping the user edit their own diary. Output only the resulting text: no explanations, no quotes, no preface. Keep the first-person point of view. You may use Markdown lists, bold and task lists, but no headings.",
+  "@aiPromptWritingSystem": {
+    "description": "System prompt of the writing assistant."
+  },
+  "aiPromptWritingContext": "For context, this is the whole entry (do not repeat it):",
+  "@aiPromptWritingContext": {
+    "description": "Prompt line introducing the whole entry as context."
+  },
+  "aiPromptCustomInstruction": "Follow this instruction for the text below: {text}",
+  "@aiPromptCustomInstruction": {
+    "description": "Prompt line wrapping a free-form instruction.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptReplyInstruction": "Here is an entry the user wrote. Read it as yourself and respond to the user directly. Do not retell the entry and do not use headings.",
+  "@aiPromptReplyInstruction": {
+    "description": "Instruction for AI reflections."
+  },
+  "aiPromptSuggestInstruction": "Based on the entry below, suggest: a short fitting title of at most 20 characters without quotes; 0 to 3 of the user's existing tags; at most 2 new tags of at most 6 characters each, only if really useful; and the single best mood from the given options, or leave it empty if unsure. Reply with one JSON object only, exactly in this shape:",
+  "@aiPromptSuggestInstruction": {
+    "description": "Instruction for smart-fill suggestions."
+  },
+  "aiPromptSuggestTagsList": "The user's existing tags: {tags}",
+  "@aiPromptSuggestTagsList": {
+    "description": "Prompt line listing existing tags.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptSuggestMoodList": "Mood options: {moods}",
+  "@aiPromptSuggestMoodList": {
+    "description": "Prompt line listing mood options.",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptPromptsInstruction": "Write 3 concrete, gentle questions that make it easy for the user to start today's diary. One question per line, no numbering, nothing else.",
+  "@aiPromptPromptsInstruction": {
+    "description": "Instruction for writing prompts."
+  },
+  "aiPromptPromptsToday": "Today: {date}",
+  "@aiPromptPromptsToday": {
+    "description": "Prompt line with today's date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptPromptsRecent": "Excerpts of the user's recent entries, for a more personal touch:",
+  "@aiPromptPromptsRecent": {
+    "description": "Prompt line introducing recent entries."
+  },
+  "aiPromptRecapInstruction": "Below are the entries the user wrote during {period}. Write a recap organised with Markdown subheadings, covering:",
+  "@aiPromptRecapInstruction": {
+    "description": "Instruction for recaps.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRecapRules": "Only use what is in the entries. Mention dates when you refer to specific days. If an entry is marked [Dn], you may cite it as [Dn].",
+  "@aiPromptRecapRules": {
+    "description": "Rules appended to the recap instruction."
+  },
+  "aiPromptRecapChunk": "Below are entries from part of a period. Summarise in bullet points what happened, the feelings and the thoughts, keeping concrete dates and details, so they can be merged into a recap later.",
+  "@aiPromptRecapChunk": {
+    "description": "Instruction for partial summaries of long recaps."
+  },
+  "aiPromptRecapFromSummaries": "These are summaries of consecutive parts of the period, oldest first:",
+  "@aiPromptRecapFromSummaries": {
+    "description": "Prompt line introducing partial summaries."
+  },
+  "aiPromptRecapStats": "Statistics: {count} entries, {words} words.",
+  "@aiPromptRecapStats": {
+    "description": "Prompt line with recap statistics.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptRecapMoods": "Mood counts: {moods}",
+  "@aiPromptRecapMoods": {
+    "description": "Prompt line with mood counts.",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRecapTopTags": "Most used tags: {tags}",
+  "@aiPromptRecapTopTags": {
+    "description": "Prompt line with top tags.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptChatSystem": "You can read some of the user's diary entries, each marked [Dn]. Answer based on these entries. When you use an entry, cite its marker at the end of the sentence, like [D3]. Do not invent anything that is not in the entries; if you can't find it, say so.",
+  "@aiPromptChatSystem": {
+    "description": "System prompt of chat with diaries."
+  },
+  "aiPromptChatContextHeader": "Relevant diary entries:",
+  "@aiPromptChatContextHeader": {
+    "description": "Header of the diary context in chat."
+  },
+  "aiPromptChatNoDiaries": "(No diary entries matched this question.)",
+  "@aiPromptChatNoDiaries": {
+    "description": "Shown to the model when no entries matched."
+  },
+  "aiPromptChatToday": "Today is {date}.",
+  "@aiPromptChatToday": {
+    "description": "Prompt line with today's date for chat.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptChatTitle": "Summarise the topic of this conversation in at most 8 words. Output only the title.",
+  "@aiPromptChatTitle": {
+    "description": "Instruction for naming a conversation."
+  },
+  "aiPromptRetrievalPlan": "Turn the user's question into a diary search plan. Today is {date}. Give up to 8 short keywords likely to appear in the entries (include synonyms), and a date range only if the question implies one. Reply with one JSON object only, exactly in this shape:",
+  "@aiPromptRetrievalPlan": {
+    "description": "Instruction for building a retrieval plan.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptDescribeImage": "Describe what is in this photo and its mood in one or two sentences, as a caption for a diary. Output only the description.",
+  "@aiPromptDescribeImage": {
+    "description": "Instruction for describing an image."
+  },
+  "aiToolbarLabel": "AI writing",
+  "@aiToolbarLabel": {
+    "description": "Editor toolbar tool that opens the AI writing panel."
+  },
+  "aiPanelTitle": "AI writing",
+  "@aiPanelTitle": {
+    "description": "Title of the AI writing panel."
+  },
+  "aiScopeSelection": "Selection",
+  "@aiScopeSelection": {
+    "description": "AI writing scope."
+  },
+  "aiScopeParagraph": "This paragraph",
+  "@aiScopeParagraph": {
+    "description": "AI writing scope."
+  },
+  "aiScopeBeforeCaret": "Text before the cursor",
+  "@aiScopeBeforeCaret": {
+    "description": "AI writing scope."
+  },
+  "aiScopeDocument": "Whole entry",
+  "@aiScopeDocument": {
+    "description": "AI writing scope."
+  },
+  "aiScopeSummary": "{scope} · {words} words",
+  "@aiScopeSummary": {
+    "description": "Summary of what the AI command works on.",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPanelInstructionHint": "Tell AI what to do, e.g. “make it more casual”",
+  "@aiPanelInstructionHint": {
+    "description": "Hint of the free-form instruction field."
+  },
+  "aiPanelSend": "Send",
+  "@aiPanelSend": {
+    "description": "Button sending a free-form instruction."
+  },
+  "aiPanelThinking": "Thinking…",
+  "@aiPanelThinking": {
+    "description": "Shown before the first output arrives."
+  },
+  "aiPanelReplace": "Replace",
+  "@aiPanelReplace": {
+    "description": "Button replacing the text with the AI result."
+  },
+  "aiPanelInsertBelow": "Insert below",
+  "@aiPanelInsertBelow": {
+    "description": "Button inserting the AI result below."
+  },
+  "aiPanelCopy": "Copy",
+  "@aiPanelCopy": {
+    "description": "Button copying the AI result."
+  },
+  "aiPanelCopied": "Copied",
+  "@aiPanelCopied": {
+    "description": "Snackbar after copying an AI result."
+  },
+  "aiPanelStop": "Stop",
+  "@aiPanelStop": {
+    "description": "Button stopping an AI generation."
+  },
+  "aiPanelEmptyTarget": "Nothing to work on yet. Write something or select some text first.",
+  "@aiPanelEmptyTarget": {
+    "description": "Shown when the AI target is empty."
+  },
+  "aiPanelReasoning": "Reasoning",
+  "@aiPanelReasoning": {
+    "description": "Label of the collapsible reasoning section."
+  },
+  "aiPanelPrivateBlocked": "This entry is in a private notebook. You can allow AI for private entries in AI privacy settings.",
+  "@aiPanelPrivateBlocked": {
+    "description": "Shown when AI is blocked for a private entry."
+  },
+  "aiSlashGroup": "AI",
+  "@aiSlashGroup": {
+    "description": "Slash menu group title for AI commands."
+  },
+  "aiSlashWrite": "AI writing…",
+  "@aiSlashWrite": {
+    "description": "Slash command opening the AI writing panel."
+  },
+  "aiSlashContinue": "AI continue",
+  "@aiSlashContinue": {
+    "description": "Slash command continuing the entry with AI."
+  },
+  "aiSlashPrompts": "Writing prompts",
+  "@aiSlashPrompts": {
+    "description": "Slash command showing AI writing prompts."
+  },
+  "aiSelectionMenu": "AI…",
+  "@aiSelectionMenu": {
+    "description": "Selection menu item opening AI writing for the selected text."
+  },
+  "aiImageDescribe": "Describe with AI",
+  "@aiImageDescribe": {
+    "description": "Image menu item asking AI to caption the image."
+  },
+  "aiImageDescribing": "Describing the photo…",
+  "@aiImageDescribing": {
+    "description": "Shown while AI describes an image."
+  },
+  "aiImageNoVision": "The current model can't see images. Pick a vision model for “Describe images” in Model assignment.",
+  "@aiImageNoVision": {
+    "description": "Shown when the model has no vision."
+  },
+  "aiSuggestTitle": "Generate title with AI",
+  "@aiSuggestTitle": {
+    "description": "Menu item / button generating a title."
+  },
+  "aiSuggestMeta": "Suggest tags & mood with AI",
+  "@aiSuggestMeta": {
+    "description": "Menu item suggesting tags and mood."
+  },
+  "aiSuggesting": "AI is thinking…",
+  "@aiSuggesting": {
+    "description": "Shown while smart fill runs."
+  },
+  "aiSuggestNeedContent": "Write a little first so AI has something to go on.",
+  "@aiSuggestNeedContent": {
+    "description": "Shown when there is no content for suggestions."
+  },
+  "aiSuggestTitleApplied": "Title filled in by AI",
+  "@aiSuggestTitleApplied": {
+    "description": "Snackbar after AI fills the title."
+  },
+  "aiSuggestTagsHeader": "AI suggests",
+  "@aiSuggestTagsHeader": {
+    "description": "Header of AI tag suggestions."
+  },
+  "aiSuggestNewTag": "New “{name}”",
+  "@aiSuggestNewTag": {
+    "description": "Chip creating a suggested new tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSuggestMoodButton": "AI pick",
+  "@aiSuggestMoodButton": {
+    "description": "Button letting AI pick a mood."
+  },
+  "aiSuggestNothing": "No suggestions this time",
+  "@aiSuggestNothing": {
+    "description": "Shown when AI returns no usable suggestion."
+  },
+  "aiSuggestApplied": "Applied AI suggestions",
+  "@aiSuggestApplied": {
+    "description": "Snackbar after applying suggestions."
+  },
+  "aiConfirmSendTitle": "Send to {host}?",
+  "@aiConfirmSendTitle": {
+    "description": "Title of the send confirmation sheet.",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfirmSendModel": "Handled by “{name}”",
+  "@aiConfirmSendModel": {
+    "description": "Line naming the model.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfirmSendEntries": "{count, plural, =1{1 entry} other{{count} entries}}, about {words} words",
+  "@aiConfirmSendEntries": {
+    "description": "Line describing how many entries are sent.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendText": "About {words} words of text",
+  "@aiConfirmSendText": {
+    "description": "Line describing how much text is sent.",
+    "placeholders": {
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendImages": "{count, plural, =1{Plus 1 photo} other{Plus {count} photos}}",
+  "@aiConfirmSendImages": {
+    "description": "Line describing attached photos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendNote": "It goes straight from this device; the developer never sees it. The provider handles it under its own privacy policy.",
+  "@aiConfirmSendNote": {
+    "description": "Privacy note on the send confirmation sheet."
+  },
+  "aiConfirmSendRemember": "Don't ask again for this provider",
+  "@aiConfirmSendRemember": {
+    "description": "Checkbox remembering the provider."
+  },
+  "aiConfirmSendAction": "Send",
+  "@aiConfirmSendAction": {
+    "description": "Button confirming the send."
   }
 }

@@ -16259,5 +16259,476 @@
   "aiPrivacyClearRecordsDone": "已清除全部 AI 记录",
   "@aiPrivacyClearRecordsDone": {
     "description": "清除 AI 记录后的提示。"
+  },
+  "aiPromptSystemBase": "你是日记应用 Jotsy 里的 AI 助手，和你对话的是日记的作者本人。真诚、具体，不编造日记里没有的事实。",
+  "@aiPromptSystemBase": {
+    "description": "发给模型的基础系统提示词。"
+  },
+  "aiPromptAboutUser": "关于用户：{text}",
+  "@aiPromptAboutUser": {
+    "description": "提示词里“关于我”的一行。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptWritingStyle": "用户偏好的文风：{text}",
+  "@aiPromptWritingStyle": {
+    "description": "提示词里文风偏好的一行。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRespondIn": "请用{language}回答。",
+  "@aiPromptRespondIn": {
+    "description": "指定回答语言的提示词。",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRespondLikeDiary": "用日记所用的语言回答。",
+  "@aiPromptRespondLikeDiary": {
+    "description": "跟随日记语言的提示词。"
+  },
+  "aiPromptLanguageChinese": "中文",
+  "@aiPromptLanguageChinese": {
+    "description": "提示词里的语言名。"
+  },
+  "aiPromptLanguageEnglish": "英文",
+  "@aiPromptLanguageEnglish": {
+    "description": "提示词里的语言名。"
+  },
+  "aiPromptLengthShort": "回答尽量简短，三五句以内。",
+  "@aiPromptLengthShort": {
+    "description": "简短回答的提示词。"
+  },
+  "aiPromptLengthMedium": "回答长度适中。",
+  "@aiPromptLengthMedium": {
+    "description": "适中回答的提示词。"
+  },
+  "aiPromptLengthLong": "可以写得详细一些。",
+  "@aiPromptLengthLong": {
+    "description": "详细回答的提示词。"
+  },
+  "aiPromptPersona": "你的身份：{text}",
+  "@aiPromptPersona": {
+    "description": "提示词里人设的一行。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptFieldTitle": "标题",
+  "@aiPromptFieldTitle": {
+    "description": "提示词里的字段名。"
+  },
+  "aiPromptFieldDate": "日期",
+  "@aiPromptFieldDate": {
+    "description": "提示词里的字段名。"
+  },
+  "aiPromptFieldMood": "心情",
+  "@aiPromptFieldMood": {
+    "description": "提示词里的字段名。"
+  },
+  "aiPromptFieldTags": "标签",
+  "@aiPromptFieldTags": {
+    "description": "提示词里的字段名。"
+  },
+  "aiPromptFieldWeather": "天气",
+  "@aiPromptFieldWeather": {
+    "description": "提示词里的字段名。"
+  },
+  "aiPromptFieldLocation": "地点",
+  "@aiPromptFieldLocation": {
+    "description": "提示词里的字段名。"
+  },
+  "aiPromptFieldBody": "正文",
+  "@aiPromptFieldBody": {
+    "description": "提示词里的字段名。"
+  },
+  "aiPromptTruncated": "（后文省略）",
+  "@aiPromptTruncated": {
+    "description": "提示词里截断正文的标记。"
+  },
+  "aiPromptImagesAttached": "日记附有 {count} 张照片，一并参考。",
+  "@aiPromptImagesAttached": {
+    "description": "提示词里说明附有照片的一行。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptWritingSystem": "你是帮助用户修改自己日记的写作助手。只输出处理后的文字本身，不要解释、不要加引号或开场白；保持第一人称视角。可以使用 Markdown 的列表、加粗与任务列表，不要使用标题。",
+  "@aiPromptWritingSystem": {
+    "description": "写作助手的系统提示词。"
+  },
+  "aiPromptWritingContext": "供参考的日记全文（不要重复它）：",
+  "@aiPromptWritingContext": {
+    "description": "提示词里引出全文作为参考的一行。"
+  },
+  "aiPromptCustomInstruction": "按这条要求处理下面的文字：{text}",
+  "@aiPromptCustomInstruction": {
+    "description": "包住自由指令的提示词。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptReplyInstruction": "下面是用户写下的一篇日记。请以你的身份读完后直接回应用户。不要复述日记内容，不要使用标题。",
+  "@aiPromptReplyInstruction": {
+    "description": "读后回应的指令。"
+  },
+  "aiPromptSuggestInstruction": "根据下面的日记给出建议：一个简短贴切的标题（不超过 20 字，不加引号或书名号）；从用户已有的标签里选 0 到 3 个；确有必要时再建议最多 2 个新标签（每个不超过 6 个字）；从给定的心情选项中选出最符合的一个，拿不准就留空。只输出一个 JSON 对象，严格按下面的格式：",
+  "@aiPromptSuggestInstruction": {
+    "description": "智能填写的指令。"
+  },
+  "aiPromptSuggestTagsList": "用户已有的标签：{tags}",
+  "@aiPromptSuggestTagsList": {
+    "description": "列出已有标签的提示词。",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptSuggestMoodList": "心情选项：{moods}",
+  "@aiPromptSuggestMoodList": {
+    "description": "列出心情选项的提示词。",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptPromptsInstruction": "为用户今天的日记想 3 个具体、温和、容易下笔的问题，帮助用户开始写。每个问题一行，不要编号，不要其他内容。",
+  "@aiPromptPromptsInstruction": {
+    "description": "写作灵感的指令。"
+  },
+  "aiPromptPromptsToday": "今天：{date}",
+  "@aiPromptPromptsToday": {
+    "description": "提示词里今天的日期。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptPromptsRecent": "用户最近几篇日记的摘录，可以借此让问题更贴近用户：",
+  "@aiPromptPromptsRecent": {
+    "description": "引出最近日记的提示词。"
+  },
+  "aiPromptRecapInstruction": "下面是用户在{period}写下的日记。请写一份回顾，用 Markdown 小标题组织，包含以下部分：",
+  "@aiPromptRecapInstruction": {
+    "description": "回顾的指令。",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRecapRules": "只根据日记内容写，不要编造；提到具体的日子时写上日期。日记带有 [D编号] 的，可以在句末用 [D编号] 引用。",
+  "@aiPromptRecapRules": {
+    "description": "回顾指令的附加规则。"
+  },
+  "aiPromptRecapChunk": "下面是用户一段时间内的日记。请用要点概括这段时间发生的事、情绪与想法，保留具体的日期与细节，供之后汇总成回顾。",
+  "@aiPromptRecapChunk": {
+    "description": "长回顾分段摘要的指令。"
+  },
+  "aiPromptRecapFromSummaries": "以下是这段时间各部分的摘要，按时间先后：",
+  "@aiPromptRecapFromSummaries": {
+    "description": "引出分段摘要的提示词。"
+  },
+  "aiPromptRecapStats": "统计：共 {count} 篇日记，{words} 字。",
+  "@aiPromptRecapStats": {
+    "description": "回顾统计的提示词。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptRecapMoods": "心情分布：{moods}",
+  "@aiPromptRecapMoods": {
+    "description": "心情分布的提示词。",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptRecapTopTags": "常用标签：{tags}",
+  "@aiPromptRecapTopTags": {
+    "description": "常用标签的提示词。",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptChatSystem": "你可以读到用户的部分日记，每篇以 [D编号] 标记。回答用户的问题时以这些日记为依据；用到某篇日记时，在句末写上它的编号，如 [D3]。日记里没有的信息不要编造，找不到就直说。",
+  "@aiPromptChatSystem": {
+    "description": "与日记对话的系统提示词。"
+  },
+  "aiPromptChatContextHeader": "以下是相关的日记：",
+  "@aiPromptChatContextHeader": {
+    "description": "对话里日记上下文的标题。"
+  },
+  "aiPromptChatNoDiaries": "（没有找到与问题相关的日记。）",
+  "@aiPromptChatNoDiaries": {
+    "description": "没有找到相关日记时告诉模型的话。"
+  },
+  "aiPromptChatToday": "今天是 {date}。",
+  "@aiPromptChatToday": {
+    "description": "对话提示词里今天的日期。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptChatTitle": "用不超过 12 个字概括这次对话的主题，只输出标题本身。",
+  "@aiPromptChatTitle": {
+    "description": "给对话起标题的指令。"
+  },
+  "aiPromptRetrievalPlan": "把用户的问题转成日记检索计划。今天是 {date}。给出最多 8 个可能出现在日记里的简短关键词（含近义词），只有问题隐含时间范围时才给出日期范围。只输出一个 JSON 对象，严格按下面的格式：",
+  "@aiPromptRetrievalPlan": {
+    "description": "生成检索计划的指令。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptDescribeImage": "用一两句话描述这张照片的内容与氛围，作为日记里的图片说明。只输出描述本身。",
+  "@aiPromptDescribeImage": {
+    "description": "描述图片的指令。"
+  },
+  "aiToolbarLabel": "AI 写作",
+  "@aiToolbarLabel": {
+    "description": "打开 AI 写作面板的工具栏工具。"
+  },
+  "aiPanelTitle": "AI 写作",
+  "@aiPanelTitle": {
+    "description": "AI 写作面板标题。"
+  },
+  "aiScopeSelection": "选中的文字",
+  "@aiScopeSelection": {
+    "description": "写作指令的作用范围。"
+  },
+  "aiScopeParagraph": "当前段落",
+  "@aiScopeParagraph": {
+    "description": "写作指令的作用范围。"
+  },
+  "aiScopeBeforeCaret": "光标前的内容",
+  "@aiScopeBeforeCaret": {
+    "description": "写作指令的作用范围。"
+  },
+  "aiScopeDocument": "全文",
+  "@aiScopeDocument": {
+    "description": "写作指令的作用范围。"
+  },
+  "aiScopeSummary": "{scope} · {words} 字",
+  "@aiScopeSummary": {
+    "description": "作用范围与字数。",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPanelInstructionHint": "告诉 AI 怎么改，比如“改得更口语一点”",
+  "@aiPanelInstructionHint": {
+    "description": "自由指令输入框的提示。"
+  },
+  "aiPanelSend": "发送",
+  "@aiPanelSend": {
+    "description": "发送自由指令的按钮。"
+  },
+  "aiPanelThinking": "正在思考…",
+  "@aiPanelThinking": {
+    "description": "还没有输出时显示。"
+  },
+  "aiPanelReplace": "替换",
+  "@aiPanelReplace": {
+    "description": "用结果替换原文的按钮。"
+  },
+  "aiPanelInsertBelow": "插在下方",
+  "@aiPanelInsertBelow": {
+    "description": "把结果插在下方的按钮。"
+  },
+  "aiPanelCopy": "复制",
+  "@aiPanelCopy": {
+    "description": "复制结果的按钮。"
+  },
+  "aiPanelCopied": "已复制",
+  "@aiPanelCopied": {
+    "description": "复制结果后的提示。"
+  },
+  "aiPanelStop": "停止",
+  "@aiPanelStop": {
+    "description": "停止生成的按钮。"
+  },
+  "aiPanelEmptyTarget": "还没有可处理的文字，先写一点或选中一段文字。",
+  "@aiPanelEmptyTarget": {
+    "description": "作用范围为空时的提示。"
+  },
+  "aiPanelReasoning": "思考过程",
+  "@aiPanelReasoning": {
+    "description": "可折叠的思考过程标签。"
+  },
+  "aiPanelPrivateBlocked": "这篇日记在私密日记本里。可以在 AI 隐私设置里允许对私密日记使用 AI。",
+  "@aiPanelPrivateBlocked": {
+    "description": "私密日记不能用 AI 时的提示。"
+  },
+  "aiSlashGroup": "AI",
+  "@aiSlashGroup": {
+    "description": "斜杠菜单 AI 组的标题。"
+  },
+  "aiSlashWrite": "AI 写作…",
+  "@aiSlashWrite": {
+    "description": "打开 AI 写作面板的斜杠命令。"
+  },
+  "aiSlashContinue": "AI 续写",
+  "@aiSlashContinue": {
+    "description": "用 AI 续写的斜杠命令。"
+  },
+  "aiSlashPrompts": "写作灵感",
+  "@aiSlashPrompts": {
+    "description": "显示写作灵感的斜杠命令。"
+  },
+  "aiSelectionMenu": "AI…",
+  "@aiSelectionMenu": {
+    "description": "选区菜单里对选中文字使用 AI 的一项。"
+  },
+  "aiImageDescribe": "AI 描述图片",
+  "@aiImageDescribe": {
+    "description": "图片菜单里让 AI 描述图片的一项。"
+  },
+  "aiImageDescribing": "正在描述图片…",
+  "@aiImageDescribing": {
+    "description": "AI 描述图片时的提示。"
+  },
+  "aiImageNoVision": "当前模型不支持看图。可以在“模型分配”里为“描述图片”选一个支持视觉的模型。",
+  "@aiImageNoVision": {
+    "description": "模型不支持看图时的提示。"
+  },
+  "aiSuggestTitle": "AI 生成标题",
+  "@aiSuggestTitle": {
+    "description": "生成标题的菜单项与按钮。"
+  },
+  "aiSuggestMeta": "AI 推荐标签与心情",
+  "@aiSuggestMeta": {
+    "description": "推荐标签与心情的菜单项。"
+  },
+  "aiSuggesting": "AI 正在想…",
+  "@aiSuggesting": {
+    "description": "智能填写进行中的提示。"
+  },
+  "aiSuggestNeedContent": "先写点正文，AI 才好给建议。",
+  "@aiSuggestNeedContent": {
+    "description": "没有正文时的提示。"
+  },
+  "aiSuggestTitleApplied": "已填入 AI 生成的标题",
+  "@aiSuggestTitleApplied": {
+    "description": "AI 填入标题后的提示。"
+  },
+  "aiSuggestTagsHeader": "AI 推荐",
+  "@aiSuggestTagsHeader": {
+    "description": "AI 推荐标签的标题。"
+  },
+  "aiSuggestNewTag": "新建「{name}」",
+  "@aiSuggestNewTag": {
+    "description": "新建建议标签的胶囊。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSuggestMoodButton": "AI 识别",
+  "@aiSuggestMoodButton": {
+    "description": "让 AI 选心情的按钮。"
+  },
+  "aiSuggestNothing": "这次没有合适的建议",
+  "@aiSuggestNothing": {
+    "description": "没有可用建议时的提示。"
+  },
+  "aiSuggestApplied": "已应用 AI 的建议",
+  "@aiSuggestApplied": {
+    "description": "应用建议后的提示。"
+  },
+  "aiConfirmSendTitle": "发送到 {host}？",
+  "@aiConfirmSendTitle": {
+    "description": "发送确认面板的标题。",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfirmSendModel": "由「{name}」处理",
+  "@aiConfirmSendModel": {
+    "description": "说明处理模型的一行。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfirmSendEntries": "{count} 篇日记，约 {words} 字",
+  "@aiConfirmSendEntries": {
+    "description": "说明发送日记篇数的一行。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendText": "约 {words} 字的文字",
+  "@aiConfirmSendText": {
+    "description": "说明发送文字量的一行。",
+    "placeholders": {
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendImages": "另附 {count} 张照片",
+  "@aiConfirmSendImages": {
+    "description": "说明附带照片的一行。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConfirmSendNote": "内容从这台设备直接发出，开发者收不到；服务商会按它自己的隐私政策处理。",
+  "@aiConfirmSendNote": {
+    "description": "发送确认面板的隐私说明。"
+  },
+  "aiConfirmSendRemember": "以后发给这个服务商不再询问",
+  "@aiConfirmSendRemember": {
+    "description": "记住服务商的勾选框。"
+  },
+  "aiConfirmSendAction": "发送",
+  "@aiConfirmSendAction": {
+    "description": "确认发送的按钮。"
   }
 }

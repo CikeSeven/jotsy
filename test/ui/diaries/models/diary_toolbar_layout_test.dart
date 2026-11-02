@@ -106,8 +106,11 @@ void main() {
     );
 
     test('flows overflow into rows of the same columns, indent spans two', () {
+      // AI 写作只在 AI 可用时排进工具栏，这里按没有它的默认顺序排布。
       final layout = resolveDiaryToolbarLayout(
-        kDefaultDiaryToolbarOrder,
+        kDefaultDiaryToolbarOrder
+            .where((item) => item != DiaryToolbarItem.ai)
+            .toList(),
         width: _cardWidth(400),
       );
       expect(layout.columns, 8);

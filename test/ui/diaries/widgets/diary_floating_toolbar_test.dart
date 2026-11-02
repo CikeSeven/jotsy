@@ -172,7 +172,10 @@ void main() {
     final quillItems = kDefaultDiaryToolbarOrder
         .where(
           (item) =>
-              !colorItems.contains(item) && item != DiaryToolbarItem.codeBlock,
+              !colorItems.contains(item) &&
+              item != DiaryToolbarItem.codeBlock &&
+              // AI 写作只在宿主给出处理时出现（这里没有）。
+              item != DiaryToolbarItem.ai,
         )
         .toList();
     for (final item in quillItems) {

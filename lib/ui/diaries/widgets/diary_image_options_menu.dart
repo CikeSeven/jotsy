@@ -36,8 +36,10 @@ Future<void> showDiaryImageOptions(
   final style = diaryImageStyleOf(node);
   final action = await showAppDialog<_ImageAction>(
     context: context,
-    builder: (BuildContext dialogContext) =>
-        _DiaryImageOptionsDialog(readOnly: readOnly),
+    builder: (BuildContext dialogContext) => _DiaryImageOptionsDialog(
+      readOnly: readOnly,
+      describe: !readOnly && controller.aiImageDescriber != null,
+    ),
   );
   if (action == null || !context.mounted || controller.isDisposed) {
     return;
@@ -79,6 +81,18 @@ Future<void> showDiaryImageOptions(
       }
     case _ImageAction.delete:
       DiaryImageEmbedActions.remove(controller, node: node);
+    case _ImageAction.describe:
+      final text = await controller.aiImageDescriber?.call(source);
+      if (text == null || controller.isDisposed || controller.readOnly) return;
+      // 描述作为图片下方的一段文字，一次事务、一步撤销。
+      final current = controller.document.nodeAtPath(node.path);
+      if (current == null) return;
+      final transaction = controller.state.transaction
+        ..insertNode(current.path.next, af.paragraphNode(text: text))
+        ..afterSelection = af.Selection.collapsed(
+          af.Position(path: current.path.next, offset: text.length),
+        );
+      controller.apply(transaction);
   }
 }
 
@@ -170,12 +184,18 @@ Future<void> _showResizer(
   }
 }
 
-enum _ImageAction { view, resize, copy, save, delete }
+enum _ImageAction { view, resize, copy, save, describe, delete }
 
 class _DiaryImageOptionsDialog extends StatelessWidget {
-  const _DiaryImageOptionsDialog({required this.readOnly});
+  const _DiaryImageOptionsDialog({
+    required this.readOnly,
+    required this.describe,
+  });
 
   final bool readOnly;
+
+  /// 显示“AI 描述图片”（图片理解可用的编辑页）。
+  final bool describe;
 
   @override
   Widget build(BuildContext context) {
@@ -223,6 +243,12 @@ class _DiaryImageOptionsDialog extends StatelessWidget {
               ? l10n.imageViewerSaveToGallery
               : l10n.desktopSaveAs,
         ),
+        if (describe)
+          item(
+            _ImageAction.describe,
+            FontAwesomeIcons.wandMagicSparkles,
+            l10n.aiImageDescribe,
+          ),
         if (!readOnly)
           item(
             _ImageAction.delete,

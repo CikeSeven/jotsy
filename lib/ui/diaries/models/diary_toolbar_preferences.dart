@@ -40,6 +40,10 @@ enum DiaryToolbarItem {
   link,
   currentTime,
   recording,
+
+  /// AI 写作（只在 AI 助手可用且写作模块开启时出现，见
+  /// [diaryToolbarUnavailableItems]）。
+  ai,
 }
 
 /// 默认工具栏顺序（当用户未配置或配置异常时兜底）。
@@ -48,6 +52,9 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.undo,
   DiaryToolbarItem.redo,
   DiaryToolbarItem.recording,
+  // AI 写作紧跟录音：只在 AI 可用时出现（不可用时整个剔除，工具栏与改版前
+  // 一致）；已保存过顺序的用户由 [decodeDiaryToolbarOrder] 补到末尾。
+  DiaryToolbarItem.ai,
   DiaryToolbarItem.bold,
   DiaryToolbarItem.italic,
   DiaryToolbarItem.underline,
@@ -121,6 +128,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.link => 'link',
       DiaryToolbarItem.currentTime => 'current_time',
       DiaryToolbarItem.recording => 'recording',
+      DiaryToolbarItem.ai => 'ai',
     };
   }
 
@@ -161,6 +169,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.link => FontAwesomeIcons.link,
       DiaryToolbarItem.currentTime => FontAwesomeIcons.clock,
       DiaryToolbarItem.recording => FontAwesomeIcons.microphone,
+      DiaryToolbarItem.ai => FontAwesomeIcons.wandMagicSparkles,
     };
   }
 
@@ -197,6 +206,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.link => l10n.autoT0024,
       DiaryToolbarItem.currentTime => l10n.diaryToolbarInsertCurrentTime,
       DiaryToolbarItem.recording => l10n.diaryToolbarRecording,
+      DiaryToolbarItem.ai => l10n.aiToolbarLabel,
     };
   }
 }
@@ -274,14 +284,17 @@ String encodeDiaryToolbarHiddenItems(Set<DiaryToolbarItem> hiddenItems) {
   return normalized.map((item) => item.storageKey).join(',');
 }
 
-/// 本平台不提供的工具：Linux 不支持录音（见 [AppPlatform.supportsAudioRecording]）。
+/// 现在不提供的工具：Linux 不支持录音（见
+/// [AppPlatform.supportsAudioRecording]）；AI 写作只在 [ai] 为 true（AI 助手
+/// 可用且写作模块开启，见 `aiModuleAvailableProvider`）时提供。
 ///
-/// 它们照常留在保存的顺序与隐藏项里（换到支持的平台、恢复备份时原样生效），
-/// 只是工具栏、斜杠菜单、工具栏设置页与设置预览都不列出。
-Set<DiaryToolbarItem> diaryToolbarUnavailableItems() =>
-    AppPlatform.supportsAudioRecording
-    ? const <DiaryToolbarItem>{}
-    : const <DiaryToolbarItem>{DiaryToolbarItem.recording};
+/// 它们照常留在保存的顺序与隐藏项里（换到支持的平台、恢复备份、打开 AI
+/// 时原样生效），只是工具栏、斜杠菜单、工具栏设置页与设置预览都不列出。
+Set<DiaryToolbarItem> diaryToolbarUnavailableItems({bool ai = false}) =>
+    <DiaryToolbarItem>{
+      if (!AppPlatform.supportsAudioRecording) DiaryToolbarItem.recording,
+      if (!ai) DiaryToolbarItem.ai,
+    };
 
 /// 按用户排序输出启用的工具项。
 List<DiaryToolbarItem> filterEnabledDiaryToolbarOrder(

@@ -142,6 +142,8 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
         currentTimeFormatPattern: widget.currentTimeFormatPattern,
         onRecordingPressed: widget.onRecordingPressed,
         recordingOpen: widget.recordingOpen,
+        onAiPressed: widget.onAiPressed,
+        aiOpen: widget.aiOpen,
         onMediaPressed: widget.onMediaPressed,
         activeMediaKind: mediaImportController?.activeKind,
         mediaImportBusy: mediaImportController?.isBusy ?? false,

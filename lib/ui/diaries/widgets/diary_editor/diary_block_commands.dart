@@ -13,7 +13,19 @@ import '../../controllers/diary_editor_insert.dart';
 import '../../controllers/diary_table_editing.dart';
 
 /// 命令菜单里的分组，按此顺序排列。
-enum DiaryBlockCommandGroup { text, list, insert }
+enum DiaryBlockCommandGroup { text, list, insert, ai }
+
+/// `/` 菜单里的 AI 命令（编辑页在 AI 可用时提供）。
+enum DiaryAiSlashCommand {
+  /// 打开 AI 写作面板。
+  write,
+
+  /// 直接续写光标前的内容。
+  continueWriting,
+
+  /// 显示写作灵感。
+  prompts,
+}
 
 /// 桌面选区菜单和手机 `/` 菜单共用同一份命令定义与事务。
 class DiaryBlockCommand {
@@ -74,6 +86,8 @@ List<DiaryBlockCommand> diaryBlockCommands(
   VoidCallback? onRecording,
   void Function(DiaryLinkKind)? onLinkCard,
   bool notebookCards = false,
+  void Function(DiaryAiSlashCommand)? onAi,
+  bool aiPrompts = false,
 }) => [
   DiaryBlockCommand(
     'paragraph',
@@ -217,6 +231,33 @@ List<DiaryBlockCommand> diaryBlockCommands(
       group: DiaryBlockCommandGroup.insert,
       action: onRecording,
     ),
+  if (onAi != null) ...[
+    DiaryBlockCommand(
+      'ai_write',
+      l10n.aiSlashWrite,
+      FontAwesomeIcons.wandMagicSparkles,
+      const ['ai', 'write', 'polish', '写作', '润色', '改写'],
+      group: DiaryBlockCommandGroup.ai,
+      action: () => onAi(DiaryAiSlashCommand.write),
+    ),
+    DiaryBlockCommand(
+      'ai_continue',
+      l10n.aiSlashContinue,
+      FontAwesomeIcons.penNib,
+      const ['ai', 'continue', '续写', '接着写'],
+      group: DiaryBlockCommandGroup.ai,
+      action: () => onAi(DiaryAiSlashCommand.continueWriting),
+    ),
+    if (aiPrompts)
+      DiaryBlockCommand(
+        'ai_prompts',
+        l10n.aiSlashPrompts,
+        FontAwesomeIcons.lightbulb,
+        const ['ai', 'prompt', 'idea', '灵感', '提问'],
+        group: DiaryBlockCommandGroup.ai,
+        action: () => onAi(DiaryAiSlashCommand.prompts),
+      ),
+  ],
 ];
 
 /// 分组名称。
@@ -227,6 +268,7 @@ String diaryBlockCommandGroupLabel(
   DiaryBlockCommandGroup.text => l10n.diaryEditorCommandGroupText,
   DiaryBlockCommandGroup.list => l10n.diaryEditorCommandGroupList,
   DiaryBlockCommandGroup.insert => l10n.diaryEditorCommandGroupInsert,
+  DiaryBlockCommandGroup.ai => l10n.aiSlashGroup,
 };
 
 void applyDiaryBlockCommand(

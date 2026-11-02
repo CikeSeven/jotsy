@@ -13201,4 +13201,352 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiPrivacyClearRecordsDone => 'AI records cleared';
+
+  @override
+  String get aiPromptSystemBase =>
+      'You are the AI assistant inside Jotsy, a personal diary app. The person you talk to is the author of the diary. Be sincere and specific, and never invent facts that are not in the diary.';
+
+  @override
+  String aiPromptAboutUser(String text) {
+    return 'About the user: $text';
+  }
+
+  @override
+  String aiPromptWritingStyle(String text) {
+    return 'The user\'s preferred writing style: $text';
+  }
+
+  @override
+  String aiPromptRespondIn(String language) {
+    return 'Reply in $language.';
+  }
+
+  @override
+  String get aiPromptRespondLikeDiary =>
+      'Reply in the same language the diary is written in.';
+
+  @override
+  String get aiPromptLanguageChinese => 'Chinese';
+
+  @override
+  String get aiPromptLanguageEnglish => 'English';
+
+  @override
+  String get aiPromptLengthShort =>
+      'Keep the answer short, within a few sentences.';
+
+  @override
+  String get aiPromptLengthMedium => 'Keep the answer to a moderate length.';
+
+  @override
+  String get aiPromptLengthLong => 'Feel free to answer in detail.';
+
+  @override
+  String aiPromptPersona(String text) {
+    return 'Your role: $text';
+  }
+
+  @override
+  String get aiPromptFieldTitle => 'Title';
+
+  @override
+  String get aiPromptFieldDate => 'Date';
+
+  @override
+  String get aiPromptFieldMood => 'Mood';
+
+  @override
+  String get aiPromptFieldTags => 'Tags';
+
+  @override
+  String get aiPromptFieldWeather => 'Weather';
+
+  @override
+  String get aiPromptFieldLocation => 'Place';
+
+  @override
+  String get aiPromptFieldBody => 'Text';
+
+  @override
+  String get aiPromptTruncated => '(the rest is omitted)';
+
+  @override
+  String aiPromptImagesAttached(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos from the entry are attached.',
+      one: 'One photo from the entry is attached.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiPromptWritingSystem =>
+      'You are a writing assistant helping the user edit their own diary. Output only the resulting text: no explanations, no quotes, no preface. Keep the first-person point of view. You may use Markdown lists, bold and task lists, but no headings.';
+
+  @override
+  String get aiPromptWritingContext =>
+      'For context, this is the whole entry (do not repeat it):';
+
+  @override
+  String aiPromptCustomInstruction(String text) {
+    return 'Follow this instruction for the text below: $text';
+  }
+
+  @override
+  String get aiPromptReplyInstruction =>
+      'Here is an entry the user wrote. Read it as yourself and respond to the user directly. Do not retell the entry and do not use headings.';
+
+  @override
+  String get aiPromptSuggestInstruction =>
+      'Based on the entry below, suggest: a short fitting title of at most 20 characters without quotes; 0 to 3 of the user\'s existing tags; at most 2 new tags of at most 6 characters each, only if really useful; and the single best mood from the given options, or leave it empty if unsure. Reply with one JSON object only, exactly in this shape:';
+
+  @override
+  String aiPromptSuggestTagsList(String tags) {
+    return 'The user\'s existing tags: $tags';
+  }
+
+  @override
+  String aiPromptSuggestMoodList(String moods) {
+    return 'Mood options: $moods';
+  }
+
+  @override
+  String get aiPromptPromptsInstruction =>
+      'Write 3 concrete, gentle questions that make it easy for the user to start today\'s diary. One question per line, no numbering, nothing else.';
+
+  @override
+  String aiPromptPromptsToday(String date) {
+    return 'Today: $date';
+  }
+
+  @override
+  String get aiPromptPromptsRecent =>
+      'Excerpts of the user\'s recent entries, for a more personal touch:';
+
+  @override
+  String aiPromptRecapInstruction(String period) {
+    return 'Below are the entries the user wrote during $period. Write a recap organised with Markdown subheadings, covering:';
+  }
+
+  @override
+  String get aiPromptRecapRules =>
+      'Only use what is in the entries. Mention dates when you refer to specific days. If an entry is marked [Dn], you may cite it as [Dn].';
+
+  @override
+  String get aiPromptRecapChunk =>
+      'Below are entries from part of a period. Summarise in bullet points what happened, the feelings and the thoughts, keeping concrete dates and details, so they can be merged into a recap later.';
+
+  @override
+  String get aiPromptRecapFromSummaries =>
+      'These are summaries of consecutive parts of the period, oldest first:';
+
+  @override
+  String aiPromptRecapStats(int count, int words) {
+    return 'Statistics: $count entries, $words words.';
+  }
+
+  @override
+  String aiPromptRecapMoods(String moods) {
+    return 'Mood counts: $moods';
+  }
+
+  @override
+  String aiPromptRecapTopTags(String tags) {
+    return 'Most used tags: $tags';
+  }
+
+  @override
+  String get aiPromptChatSystem =>
+      'You can read some of the user\'s diary entries, each marked [Dn]. Answer based on these entries. When you use an entry, cite its marker at the end of the sentence, like [D3]. Do not invent anything that is not in the entries; if you can\'t find it, say so.';
+
+  @override
+  String get aiPromptChatContextHeader => 'Relevant diary entries:';
+
+  @override
+  String get aiPromptChatNoDiaries =>
+      '(No diary entries matched this question.)';
+
+  @override
+  String aiPromptChatToday(String date) {
+    return 'Today is $date.';
+  }
+
+  @override
+  String get aiPromptChatTitle =>
+      'Summarise the topic of this conversation in at most 8 words. Output only the title.';
+
+  @override
+  String aiPromptRetrievalPlan(String date) {
+    return 'Turn the user\'s question into a diary search plan. Today is $date. Give up to 8 short keywords likely to appear in the entries (include synonyms), and a date range only if the question implies one. Reply with one JSON object only, exactly in this shape:';
+  }
+
+  @override
+  String get aiPromptDescribeImage =>
+      'Describe what is in this photo and its mood in one or two sentences, as a caption for a diary. Output only the description.';
+
+  @override
+  String get aiToolbarLabel => 'AI writing';
+
+  @override
+  String get aiPanelTitle => 'AI writing';
+
+  @override
+  String get aiScopeSelection => 'Selection';
+
+  @override
+  String get aiScopeParagraph => 'This paragraph';
+
+  @override
+  String get aiScopeBeforeCaret => 'Text before the cursor';
+
+  @override
+  String get aiScopeDocument => 'Whole entry';
+
+  @override
+  String aiScopeSummary(String scope, int words) {
+    return '$scope · $words words';
+  }
+
+  @override
+  String get aiPanelInstructionHint =>
+      'Tell AI what to do, e.g. “make it more casual”';
+
+  @override
+  String get aiPanelSend => 'Send';
+
+  @override
+  String get aiPanelThinking => 'Thinking…';
+
+  @override
+  String get aiPanelReplace => 'Replace';
+
+  @override
+  String get aiPanelInsertBelow => 'Insert below';
+
+  @override
+  String get aiPanelCopy => 'Copy';
+
+  @override
+  String get aiPanelCopied => 'Copied';
+
+  @override
+  String get aiPanelStop => 'Stop';
+
+  @override
+  String get aiPanelEmptyTarget =>
+      'Nothing to work on yet. Write something or select some text first.';
+
+  @override
+  String get aiPanelReasoning => 'Reasoning';
+
+  @override
+  String get aiPanelPrivateBlocked =>
+      'This entry is in a private notebook. You can allow AI for private entries in AI privacy settings.';
+
+  @override
+  String get aiSlashGroup => 'AI';
+
+  @override
+  String get aiSlashWrite => 'AI writing…';
+
+  @override
+  String get aiSlashContinue => 'AI continue';
+
+  @override
+  String get aiSlashPrompts => 'Writing prompts';
+
+  @override
+  String get aiSelectionMenu => 'AI…';
+
+  @override
+  String get aiImageDescribe => 'Describe with AI';
+
+  @override
+  String get aiImageDescribing => 'Describing the photo…';
+
+  @override
+  String get aiImageNoVision =>
+      'The current model can\'t see images. Pick a vision model for “Describe images” in Model assignment.';
+
+  @override
+  String get aiSuggestTitle => 'Generate title with AI';
+
+  @override
+  String get aiSuggestMeta => 'Suggest tags & mood with AI';
+
+  @override
+  String get aiSuggesting => 'AI is thinking…';
+
+  @override
+  String get aiSuggestNeedContent =>
+      'Write a little first so AI has something to go on.';
+
+  @override
+  String get aiSuggestTitleApplied => 'Title filled in by AI';
+
+  @override
+  String get aiSuggestTagsHeader => 'AI suggests';
+
+  @override
+  String aiSuggestNewTag(String name) {
+    return 'New “$name”';
+  }
+
+  @override
+  String get aiSuggestMoodButton => 'AI pick';
+
+  @override
+  String get aiSuggestNothing => 'No suggestions this time';
+
+  @override
+  String get aiSuggestApplied => 'Applied AI suggestions';
+
+  @override
+  String aiConfirmSendTitle(String host) {
+    return 'Send to $host?';
+  }
+
+  @override
+  String aiConfirmSendModel(String name) {
+    return 'Handled by “$name”';
+  }
+
+  @override
+  String aiConfirmSendEntries(int count, int words) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0, about $words words';
+  }
+
+  @override
+  String aiConfirmSendText(int words) {
+    return 'About $words words of text';
+  }
+
+  @override
+  String aiConfirmSendImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Plus $count photos',
+      one: 'Plus 1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiConfirmSendNote =>
+      'It goes straight from this device; the developer never sees it. The provider handles it under its own privacy policy.';
+
+  @override
+  String get aiConfirmSendRemember => 'Don\'t ask again for this provider';
+
+  @override
+  String get aiConfirmSendAction => 'Send';
 }

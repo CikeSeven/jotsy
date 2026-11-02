@@ -105,6 +105,8 @@ class DiaryFloatingToolbar extends StatefulWidget {
     this.currentTimeFormatPattern,
     this.onRecordingPressed,
     this.recordingOpen = false,
+    this.onAiPressed,
+    this.aiOpen = false,
     this.mediaImportController,
     this.onMediaPressed,
     this.onPanelExtentChanged,
@@ -123,6 +125,11 @@ class DiaryFloatingToolbar extends StatefulWidget {
   final String? currentTimeFormatPattern;
   final VoidCallback? onRecordingPressed;
   final bool recordingOpen;
+
+  /// AI 写作工具：null 时工具停用（编辑页在 AI 不可用时不传，工具本身也
+  /// 已被剔除）；[aiOpen] 为面板正开着，工具显示选中态。
+  final VoidCallback? onAiPressed;
+  final bool aiOpen;
 
   /// 媒体控制器由编辑页持有：系统选择器收起键盘时工具栏会卸载，导入不能跟着
   /// 取消。这里只读取它的进行中状态。
@@ -205,9 +212,11 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     // 录音面板打开时直接收起、不播收起动画：外层 AnimatedSize 会把“面板消失 +
     // 录音面板插入”当作一次尺寸变化统一补间；若内层同时逐帧收拢，外层只能
     // 逐帧追随内层，录音面板的插入过渡就没了。目标高度在本次 build 里报告。
-    if (widget.recordingOpen &&
-        !oldWidget.recordingOpen &&
-        _panel != _ToolbarPanel.none) {
+    // AI 写作面板打开时同理（它与录音面板在同一位置）。
+    final bottomPanelOpened =
+        (widget.recordingOpen && !oldWidget.recordingOpen) ||
+        (widget.aiOpen && !oldWidget.aiOpen);
+    if (bottomPanelOpened && _panel != _ToolbarPanel.none) {
       _panel = _ToolbarPanel.none;
       _panelController.value = 0;
     }
@@ -419,9 +428,14 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   }
 
   Widget _buildContent(BuildContext context, double width) {
+    // AI 写作工具只在宿主给出处理（AI 可用的编辑页）时出现；模板编辑页等
+    // 不给的地方不画一个点了没反应的按钮，排布也不为它留格子。
     final items = filterEnabledDiaryToolbarOrder(
       widget.order,
-      widget.hiddenItems,
+      <DiaryToolbarItem>{
+        ...widget.hiddenItems,
+        if (widget.onAiPressed == null) DiaryToolbarItem.ai,
+      },
     );
     if (items.isEmpty) {
       _reportExtent(0, deferred: true);

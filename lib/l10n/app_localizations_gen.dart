@@ -21517,6 +21517,534 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AI records cleared'**
   String get aiPrivacyClearRecordsDone;
+
+  /// Base system prompt sent to the model.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the AI assistant inside Jotsy, a personal diary app. The person you talk to is the author of the diary. Be sincere and specific, and never invent facts that are not in the diary.'**
+  String get aiPromptSystemBase;
+
+  /// Prompt line carrying the user's about-me text.
+  ///
+  /// In en, this message translates to:
+  /// **'About the user: {text}'**
+  String aiPromptAboutUser(String text);
+
+  /// Prompt line carrying the preferred writing style.
+  ///
+  /// In en, this message translates to:
+  /// **'The user\'s preferred writing style: {text}'**
+  String aiPromptWritingStyle(String text);
+
+  /// Prompt line forcing the answer language.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply in {language}.'**
+  String aiPromptRespondIn(String language);
+
+  /// Prompt line asking to follow the diary language.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply in the same language the diary is written in.'**
+  String get aiPromptRespondLikeDiary;
+
+  /// Language name used inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese'**
+  String get aiPromptLanguageChinese;
+
+  /// Language name used inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get aiPromptLanguageEnglish;
+
+  /// Prompt line for short answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the answer short, within a few sentences.'**
+  String get aiPromptLengthShort;
+
+  /// Prompt line for medium answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the answer to a moderate length.'**
+  String get aiPromptLengthMedium;
+
+  /// Prompt line for detailed answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Feel free to answer in detail.'**
+  String get aiPromptLengthLong;
+
+  /// Prompt line carrying the persona prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Your role: {text}'**
+  String aiPromptPersona(String text);
+
+  /// Field label inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get aiPromptFieldTitle;
+
+  /// Field label inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get aiPromptFieldDate;
+
+  /// Field label inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get aiPromptFieldMood;
+
+  /// Field label inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get aiPromptFieldTags;
+
+  /// Field label inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get aiPromptFieldWeather;
+
+  /// Field label inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Place'**
+  String get aiPromptFieldLocation;
+
+  /// Field label inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get aiPromptFieldBody;
+
+  /// Marker appended to truncated diary text in prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'(the rest is omitted)'**
+  String get aiPromptTruncated;
+
+  /// Prompt line saying photos are attached.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One photo from the entry is attached.} other{{count} photos from the entry are attached.}}'**
+  String aiPromptImagesAttached(int count);
+
+  /// System prompt of the writing assistant.
+  ///
+  /// In en, this message translates to:
+  /// **'You are a writing assistant helping the user edit their own diary. Output only the resulting text: no explanations, no quotes, no preface. Keep the first-person point of view. You may use Markdown lists, bold and task lists, but no headings.'**
+  String get aiPromptWritingSystem;
+
+  /// Prompt line introducing the whole entry as context.
+  ///
+  /// In en, this message translates to:
+  /// **'For context, this is the whole entry (do not repeat it):'**
+  String get aiPromptWritingContext;
+
+  /// Prompt line wrapping a free-form instruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow this instruction for the text below: {text}'**
+  String aiPromptCustomInstruction(String text);
+
+  /// Instruction for AI reflections.
+  ///
+  /// In en, this message translates to:
+  /// **'Here is an entry the user wrote. Read it as yourself and respond to the user directly. Do not retell the entry and do not use headings.'**
+  String get aiPromptReplyInstruction;
+
+  /// Instruction for smart-fill suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on the entry below, suggest: a short fitting title of at most 20 characters without quotes; 0 to 3 of the user\'s existing tags; at most 2 new tags of at most 6 characters each, only if really useful; and the single best mood from the given options, or leave it empty if unsure. Reply with one JSON object only, exactly in this shape:'**
+  String get aiPromptSuggestInstruction;
+
+  /// Prompt line listing existing tags.
+  ///
+  /// In en, this message translates to:
+  /// **'The user\'s existing tags: {tags}'**
+  String aiPromptSuggestTagsList(String tags);
+
+  /// Prompt line listing mood options.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood options: {moods}'**
+  String aiPromptSuggestMoodList(String moods);
+
+  /// Instruction for writing prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Write 3 concrete, gentle questions that make it easy for the user to start today\'s diary. One question per line, no numbering, nothing else.'**
+  String get aiPromptPromptsInstruction;
+
+  /// Prompt line with today's date.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {date}'**
+  String aiPromptPromptsToday(String date);
+
+  /// Prompt line introducing recent entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Excerpts of the user\'s recent entries, for a more personal touch:'**
+  String get aiPromptPromptsRecent;
+
+  /// Instruction for recaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Below are the entries the user wrote during {period}. Write a recap organised with Markdown subheadings, covering:'**
+  String aiPromptRecapInstruction(String period);
+
+  /// Rules appended to the recap instruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Only use what is in the entries. Mention dates when you refer to specific days. If an entry is marked [Dn], you may cite it as [Dn].'**
+  String get aiPromptRecapRules;
+
+  /// Instruction for partial summaries of long recaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Below are entries from part of a period. Summarise in bullet points what happened, the feelings and the thoughts, keeping concrete dates and details, so they can be merged into a recap later.'**
+  String get aiPromptRecapChunk;
+
+  /// Prompt line introducing partial summaries.
+  ///
+  /// In en, this message translates to:
+  /// **'These are summaries of consecutive parts of the period, oldest first:'**
+  String get aiPromptRecapFromSummaries;
+
+  /// Prompt line with recap statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics: {count} entries, {words} words.'**
+  String aiPromptRecapStats(int count, int words);
+
+  /// Prompt line with mood counts.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood counts: {moods}'**
+  String aiPromptRecapMoods(String moods);
+
+  /// Prompt line with top tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Most used tags: {tags}'**
+  String aiPromptRecapTopTags(String tags);
+
+  /// System prompt of chat with diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'You can read some of the user\'s diary entries, each marked [Dn]. Answer based on these entries. When you use an entry, cite its marker at the end of the sentence, like [D3]. Do not invent anything that is not in the entries; if you can\'t find it, say so.'**
+  String get aiPromptChatSystem;
+
+  /// Header of the diary context in chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Relevant diary entries:'**
+  String get aiPromptChatContextHeader;
+
+  /// Shown to the model when no entries matched.
+  ///
+  /// In en, this message translates to:
+  /// **'(No diary entries matched this question.)'**
+  String get aiPromptChatNoDiaries;
+
+  /// Prompt line with today's date for chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Today is {date}.'**
+  String aiPromptChatToday(String date);
+
+  /// Instruction for naming a conversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarise the topic of this conversation in at most 8 words. Output only the title.'**
+  String get aiPromptChatTitle;
+
+  /// Instruction for building a retrieval plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the user\'s question into a diary search plan. Today is {date}. Give up to 8 short keywords likely to appear in the entries (include synonyms), and a date range only if the question implies one. Reply with one JSON object only, exactly in this shape:'**
+  String aiPromptRetrievalPlan(String date);
+
+  /// Instruction for describing an image.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what is in this photo and its mood in one or two sentences, as a caption for a diary. Output only the description.'**
+  String get aiPromptDescribeImage;
+
+  /// Editor toolbar tool that opens the AI writing panel.
+  ///
+  /// In en, this message translates to:
+  /// **'AI writing'**
+  String get aiToolbarLabel;
+
+  /// Title of the AI writing panel.
+  ///
+  /// In en, this message translates to:
+  /// **'AI writing'**
+  String get aiPanelTitle;
+
+  /// AI writing scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Selection'**
+  String get aiScopeSelection;
+
+  /// AI writing scope.
+  ///
+  /// In en, this message translates to:
+  /// **'This paragraph'**
+  String get aiScopeParagraph;
+
+  /// AI writing scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Text before the cursor'**
+  String get aiScopeBeforeCaret;
+
+  /// AI writing scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole entry'**
+  String get aiScopeDocument;
+
+  /// Summary of what the AI command works on.
+  ///
+  /// In en, this message translates to:
+  /// **'{scope} · {words} words'**
+  String aiScopeSummary(String scope, int words);
+
+  /// Hint of the free-form instruction field.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell AI what to do, e.g. “make it more casual”'**
+  String get aiPanelInstructionHint;
+
+  /// Button sending a free-form instruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get aiPanelSend;
+
+  /// Shown before the first output arrives.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get aiPanelThinking;
+
+  /// Button replacing the text with the AI result.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get aiPanelReplace;
+
+  /// Button inserting the AI result below.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert below'**
+  String get aiPanelInsertBelow;
+
+  /// Button copying the AI result.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get aiPanelCopy;
+
+  /// Snackbar after copying an AI result.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get aiPanelCopied;
+
+  /// Button stopping an AI generation.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get aiPanelStop;
+
+  /// Shown when the AI target is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to work on yet. Write something or select some text first.'**
+  String get aiPanelEmptyTarget;
+
+  /// Label of the collapsible reasoning section.
+  ///
+  /// In en, this message translates to:
+  /// **'Reasoning'**
+  String get aiPanelReasoning;
+
+  /// Shown when AI is blocked for a private entry.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry is in a private notebook. You can allow AI for private entries in AI privacy settings.'**
+  String get aiPanelPrivateBlocked;
+
+  /// Slash menu group title for AI commands.
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get aiSlashGroup;
+
+  /// Slash command opening the AI writing panel.
+  ///
+  /// In en, this message translates to:
+  /// **'AI writing…'**
+  String get aiSlashWrite;
+
+  /// Slash command continuing the entry with AI.
+  ///
+  /// In en, this message translates to:
+  /// **'AI continue'**
+  String get aiSlashContinue;
+
+  /// Slash command showing AI writing prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing prompts'**
+  String get aiSlashPrompts;
+
+  /// Selection menu item opening AI writing for the selected text.
+  ///
+  /// In en, this message translates to:
+  /// **'AI…'**
+  String get aiSelectionMenu;
+
+  /// Image menu item asking AI to caption the image.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe with AI'**
+  String get aiImageDescribe;
+
+  /// Shown while AI describes an image.
+  ///
+  /// In en, this message translates to:
+  /// **'Describing the photo…'**
+  String get aiImageDescribing;
+
+  /// Shown when the model has no vision.
+  ///
+  /// In en, this message translates to:
+  /// **'The current model can\'t see images. Pick a vision model for “Describe images” in Model assignment.'**
+  String get aiImageNoVision;
+
+  /// Menu item / button generating a title.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate title with AI'**
+  String get aiSuggestTitle;
+
+  /// Menu item suggesting tags and mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest tags & mood with AI'**
+  String get aiSuggestMeta;
+
+  /// Shown while smart fill runs.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is thinking…'**
+  String get aiSuggesting;
+
+  /// Shown when there is no content for suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a little first so AI has something to go on.'**
+  String get aiSuggestNeedContent;
+
+  /// Snackbar after AI fills the title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title filled in by AI'**
+  String get aiSuggestTitleApplied;
+
+  /// Header of AI tag suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggests'**
+  String get aiSuggestTagsHeader;
+
+  /// Chip creating a suggested new tag.
+  ///
+  /// In en, this message translates to:
+  /// **'New “{name}”'**
+  String aiSuggestNewTag(String name);
+
+  /// Button letting AI pick a mood.
+  ///
+  /// In en, this message translates to:
+  /// **'AI pick'**
+  String get aiSuggestMoodButton;
+
+  /// Shown when AI returns no usable suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'No suggestions this time'**
+  String get aiSuggestNothing;
+
+  /// Snackbar after applying suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied AI suggestions'**
+  String get aiSuggestApplied;
+
+  /// Title of the send confirmation sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to {host}?'**
+  String aiConfirmSendTitle(String host);
+
+  /// Line naming the model.
+  ///
+  /// In en, this message translates to:
+  /// **'Handled by “{name}”'**
+  String aiConfirmSendModel(String name);
+
+  /// Line describing how many entries are sent.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}, about {words} words'**
+  String aiConfirmSendEntries(int count, int words);
+
+  /// Line describing how much text is sent.
+  ///
+  /// In en, this message translates to:
+  /// **'About {words} words of text'**
+  String aiConfirmSendText(int words);
+
+  /// Line describing attached photos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Plus 1 photo} other{Plus {count} photos}}'**
+  String aiConfirmSendImages(int count);
+
+  /// Privacy note on the send confirmation sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'It goes straight from this device; the developer never sees it. The provider handles it under its own privacy policy.'**
+  String get aiConfirmSendNote;
+
+  /// Checkbox remembering the provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t ask again for this provider'**
+  String get aiConfirmSendRemember;
+
+  /// Button confirming the send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get aiConfirmSendAction;
 }
 
 class _AppLocalizationsDelegate

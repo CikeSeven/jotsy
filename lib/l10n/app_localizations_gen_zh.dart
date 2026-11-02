@@ -11750,4 +11750,320 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPrivacyClearRecordsDone => '已清除全部 AI 记录';
+
+  @override
+  String get aiPromptSystemBase =>
+      '你是日记应用 Jotsy 里的 AI 助手，和你对话的是日记的作者本人。真诚、具体，不编造日记里没有的事实。';
+
+  @override
+  String aiPromptAboutUser(String text) {
+    return '关于用户：$text';
+  }
+
+  @override
+  String aiPromptWritingStyle(String text) {
+    return '用户偏好的文风：$text';
+  }
+
+  @override
+  String aiPromptRespondIn(String language) {
+    return '请用$language回答。';
+  }
+
+  @override
+  String get aiPromptRespondLikeDiary => '用日记所用的语言回答。';
+
+  @override
+  String get aiPromptLanguageChinese => '中文';
+
+  @override
+  String get aiPromptLanguageEnglish => '英文';
+
+  @override
+  String get aiPromptLengthShort => '回答尽量简短，三五句以内。';
+
+  @override
+  String get aiPromptLengthMedium => '回答长度适中。';
+
+  @override
+  String get aiPromptLengthLong => '可以写得详细一些。';
+
+  @override
+  String aiPromptPersona(String text) {
+    return '你的身份：$text';
+  }
+
+  @override
+  String get aiPromptFieldTitle => '标题';
+
+  @override
+  String get aiPromptFieldDate => '日期';
+
+  @override
+  String get aiPromptFieldMood => '心情';
+
+  @override
+  String get aiPromptFieldTags => '标签';
+
+  @override
+  String get aiPromptFieldWeather => '天气';
+
+  @override
+  String get aiPromptFieldLocation => '地点';
+
+  @override
+  String get aiPromptFieldBody => '正文';
+
+  @override
+  String get aiPromptTruncated => '（后文省略）';
+
+  @override
+  String aiPromptImagesAttached(int count) {
+    return '日记附有 $count 张照片，一并参考。';
+  }
+
+  @override
+  String get aiPromptWritingSystem =>
+      '你是帮助用户修改自己日记的写作助手。只输出处理后的文字本身，不要解释、不要加引号或开场白；保持第一人称视角。可以使用 Markdown 的列表、加粗与任务列表，不要使用标题。';
+
+  @override
+  String get aiPromptWritingContext => '供参考的日记全文（不要重复它）：';
+
+  @override
+  String aiPromptCustomInstruction(String text) {
+    return '按这条要求处理下面的文字：$text';
+  }
+
+  @override
+  String get aiPromptReplyInstruction =>
+      '下面是用户写下的一篇日记。请以你的身份读完后直接回应用户。不要复述日记内容，不要使用标题。';
+
+  @override
+  String get aiPromptSuggestInstruction =>
+      '根据下面的日记给出建议：一个简短贴切的标题（不超过 20 字，不加引号或书名号）；从用户已有的标签里选 0 到 3 个；确有必要时再建议最多 2 个新标签（每个不超过 6 个字）；从给定的心情选项中选出最符合的一个，拿不准就留空。只输出一个 JSON 对象，严格按下面的格式：';
+
+  @override
+  String aiPromptSuggestTagsList(String tags) {
+    return '用户已有的标签：$tags';
+  }
+
+  @override
+  String aiPromptSuggestMoodList(String moods) {
+    return '心情选项：$moods';
+  }
+
+  @override
+  String get aiPromptPromptsInstruction =>
+      '为用户今天的日记想 3 个具体、温和、容易下笔的问题，帮助用户开始写。每个问题一行，不要编号，不要其他内容。';
+
+  @override
+  String aiPromptPromptsToday(String date) {
+    return '今天：$date';
+  }
+
+  @override
+  String get aiPromptPromptsRecent => '用户最近几篇日记的摘录，可以借此让问题更贴近用户：';
+
+  @override
+  String aiPromptRecapInstruction(String period) {
+    return '下面是用户在$period写下的日记。请写一份回顾，用 Markdown 小标题组织，包含以下部分：';
+  }
+
+  @override
+  String get aiPromptRecapRules =>
+      '只根据日记内容写，不要编造；提到具体的日子时写上日期。日记带有 [D编号] 的，可以在句末用 [D编号] 引用。';
+
+  @override
+  String get aiPromptRecapChunk =>
+      '下面是用户一段时间内的日记。请用要点概括这段时间发生的事、情绪与想法，保留具体的日期与细节，供之后汇总成回顾。';
+
+  @override
+  String get aiPromptRecapFromSummaries => '以下是这段时间各部分的摘要，按时间先后：';
+
+  @override
+  String aiPromptRecapStats(int count, int words) {
+    return '统计：共 $count 篇日记，$words 字。';
+  }
+
+  @override
+  String aiPromptRecapMoods(String moods) {
+    return '心情分布：$moods';
+  }
+
+  @override
+  String aiPromptRecapTopTags(String tags) {
+    return '常用标签：$tags';
+  }
+
+  @override
+  String get aiPromptChatSystem =>
+      '你可以读到用户的部分日记，每篇以 [D编号] 标记。回答用户的问题时以这些日记为依据；用到某篇日记时，在句末写上它的编号，如 [D3]。日记里没有的信息不要编造，找不到就直说。';
+
+  @override
+  String get aiPromptChatContextHeader => '以下是相关的日记：';
+
+  @override
+  String get aiPromptChatNoDiaries => '（没有找到与问题相关的日记。）';
+
+  @override
+  String aiPromptChatToday(String date) {
+    return '今天是 $date。';
+  }
+
+  @override
+  String get aiPromptChatTitle => '用不超过 12 个字概括这次对话的主题，只输出标题本身。';
+
+  @override
+  String aiPromptRetrievalPlan(String date) {
+    return '把用户的问题转成日记检索计划。今天是 $date。给出最多 8 个可能出现在日记里的简短关键词（含近义词），只有问题隐含时间范围时才给出日期范围。只输出一个 JSON 对象，严格按下面的格式：';
+  }
+
+  @override
+  String get aiPromptDescribeImage => '用一两句话描述这张照片的内容与氛围，作为日记里的图片说明。只输出描述本身。';
+
+  @override
+  String get aiToolbarLabel => 'AI 写作';
+
+  @override
+  String get aiPanelTitle => 'AI 写作';
+
+  @override
+  String get aiScopeSelection => '选中的文字';
+
+  @override
+  String get aiScopeParagraph => '当前段落';
+
+  @override
+  String get aiScopeBeforeCaret => '光标前的内容';
+
+  @override
+  String get aiScopeDocument => '全文';
+
+  @override
+  String aiScopeSummary(String scope, int words) {
+    return '$scope · $words 字';
+  }
+
+  @override
+  String get aiPanelInstructionHint => '告诉 AI 怎么改，比如“改得更口语一点”';
+
+  @override
+  String get aiPanelSend => '发送';
+
+  @override
+  String get aiPanelThinking => '正在思考…';
+
+  @override
+  String get aiPanelReplace => '替换';
+
+  @override
+  String get aiPanelInsertBelow => '插在下方';
+
+  @override
+  String get aiPanelCopy => '复制';
+
+  @override
+  String get aiPanelCopied => '已复制';
+
+  @override
+  String get aiPanelStop => '停止';
+
+  @override
+  String get aiPanelEmptyTarget => '还没有可处理的文字，先写一点或选中一段文字。';
+
+  @override
+  String get aiPanelReasoning => '思考过程';
+
+  @override
+  String get aiPanelPrivateBlocked => '这篇日记在私密日记本里。可以在 AI 隐私设置里允许对私密日记使用 AI。';
+
+  @override
+  String get aiSlashGroup => 'AI';
+
+  @override
+  String get aiSlashWrite => 'AI 写作…';
+
+  @override
+  String get aiSlashContinue => 'AI 续写';
+
+  @override
+  String get aiSlashPrompts => '写作灵感';
+
+  @override
+  String get aiSelectionMenu => 'AI…';
+
+  @override
+  String get aiImageDescribe => 'AI 描述图片';
+
+  @override
+  String get aiImageDescribing => '正在描述图片…';
+
+  @override
+  String get aiImageNoVision => '当前模型不支持看图。可以在“模型分配”里为“描述图片”选一个支持视觉的模型。';
+
+  @override
+  String get aiSuggestTitle => 'AI 生成标题';
+
+  @override
+  String get aiSuggestMeta => 'AI 推荐标签与心情';
+
+  @override
+  String get aiSuggesting => 'AI 正在想…';
+
+  @override
+  String get aiSuggestNeedContent => '先写点正文，AI 才好给建议。';
+
+  @override
+  String get aiSuggestTitleApplied => '已填入 AI 生成的标题';
+
+  @override
+  String get aiSuggestTagsHeader => 'AI 推荐';
+
+  @override
+  String aiSuggestNewTag(String name) {
+    return '新建「$name」';
+  }
+
+  @override
+  String get aiSuggestMoodButton => 'AI 识别';
+
+  @override
+  String get aiSuggestNothing => '这次没有合适的建议';
+
+  @override
+  String get aiSuggestApplied => '已应用 AI 的建议';
+
+  @override
+  String aiConfirmSendTitle(String host) {
+    return '发送到 $host？';
+  }
+
+  @override
+  String aiConfirmSendModel(String name) {
+    return '由「$name」处理';
+  }
+
+  @override
+  String aiConfirmSendEntries(int count, int words) {
+    return '$count 篇日记，约 $words 字';
+  }
+
+  @override
+  String aiConfirmSendText(int words) {
+    return '约 $words 字的文字';
+  }
+
+  @override
+  String aiConfirmSendImages(int count) {
+    return '另附 $count 张照片';
+  }
+
+  @override
+  String get aiConfirmSendNote => '内容从这台设备直接发出，开发者收不到；服务商会按它自己的隐私政策处理。';
+
+  @override
+  String get aiConfirmSendRemember => '以后发给这个服务商不再询问';
+
+  @override
+  String get aiConfirmSendAction => '发送';
 }

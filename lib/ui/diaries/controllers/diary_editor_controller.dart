@@ -59,6 +59,14 @@ class DiaryEditorController extends ChangeNotifier {
   /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；
   /// null 即不能（模板编辑页、只读正文）。见 [DiaryLinkSource]。
   final DiaryLinkSource? linkSource;
+
+  /// 选区菜单（手机选中后浮出的菜单、桌面右键菜单）里的“AI…”：编辑页在
+  /// AI 写作可用时设置，菜单项只在有选中文字、可编辑且它不为 null 时出现。
+  VoidCallback? aiSelectionHandler;
+
+  /// 图片菜单里的“AI 描述图片”：编辑页在图片理解可用时设置，返回描述文字
+  /// （取消或失败为 null）；为 null 时菜单里没有这一项。
+  Future<String?> Function(String source)? aiImageDescriber;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
 

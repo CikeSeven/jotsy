@@ -81,6 +81,8 @@ void main() {
     expect(history.firstSync, isTrue);
     expect(history.conflictCopies, 1);
     expect(history.receivedDiaries, result.received.diaries);
+    // 响应方的记账与发起方的 syncNow 返回没有先后：等它记下这一次。
+    await waitUntil(() => b.peerState(a)!.history.isNotEmpty);
     expect(b.peerState(a)!.history, hasLength(1));
     expect(b.peerState(a)!.device.lastSyncAt, isNotNull);
     await expectConverged(a, b);

@@ -11,7 +11,23 @@ extension _Outgoing on LanSyncService {
   /// 流程：本机在编辑 → 手动同步以 localEditing 结束（不连接）、自动同步
   /// 静默跳过；否则占住会话位置 → 连接（在线地址优先，其次上次的地址）→
   /// 握手 → 会话。连接与握手阶段的取消经销毁套接字生效。
+  ///
+  /// 整个过程（含会话结束后的记账）登记为后台任务，[LanSyncService.dispose]
+  /// 等它写完再返回；已在关闭时不登记、直接返回 null。
   Future<LanSyncSessionResult?> _syncWith(
+    String peerId, {
+    required bool automatic,
+    LanSyncHandshakeResult? established,
+  }) {
+    if (!_started || _disposed) {
+      return Future<LanSyncSessionResult?>.value();
+    }
+    return _track(
+      _runSyncWith(peerId, automatic: automatic, established: established),
+    );
+  }
+
+  Future<LanSyncSessionResult?> _runSyncWith(
     String peerId, {
     required bool automatic,
     LanSyncHandshakeResult? established,
@@ -148,20 +164,31 @@ extension _Outgoing on LanSyncService {
   /// 按地址连接：先当作已配对设备握手——对方认得本机且本机认得对方就直接
   /// 同步；任一方不认得（untrusted）就改走核对码配对；连不上或其他失败以
   /// 失败的配对告知界面。
-  Future<void> _connectManual(String host, int port) async {
-    if (!_started || _disposed) return;
+  Future<void> _connectManual(String host, int port) {
+    if (!_started || _disposed) return Future<void>.value();
+    return _track(_runConnectManual(host, port));
+  }
+
+  Future<void> _runConnectManual(String host, int port) async {
     final connected = await _connectAny([(host, port)], () => _disposed);
     if (connected == null) {
       _emitFailedPairing(host, LanSyncFailure.unreachable);
       return;
     }
+    if (_disposed) {
+      connected.socket.destroy();
+      return;
+    }
     final LanSyncHandshakeResult result;
+    // 握手期间归关闭管：关闭时断开它（与入站握手同一份集合）。
+    _handshaking.add(connected.socket);
     try {
       result = await _handshake().initiate(
         connected.socket,
         LanSyncSyncInitiation(isTrusted: _isTrusted),
       );
     } on LanSyncHandshakeException catch (error) {
+      if (_disposed) return;
       if (error.reason == LanSyncHandshakeFailure.untrusted) {
         final peer = error.peer;
         _startOutgoingPairing(
@@ -174,6 +201,8 @@ extension _Outgoing on LanSyncService {
         _emitFailedPairing(host, _pairingFailure(error, false));
       }
       return;
+    } finally {
+      _handshaking.remove(connected.socket);
     }
     final peerId = result.peer.deviceId;
     await _store.updatePeer(
@@ -209,11 +238,11 @@ extension _Outgoing on LanSyncService {
     );
     _emit(LanSyncPairingStarted(pairing));
     unawaited(
-      _runOutgoingPairing(pairing, targets, initiation(pairing)).whenComplete(
-        () {
-          if (identical(_pairing, pairing)) _pairing = null;
-        },
-      ),
+      _track(
+        _runOutgoingPairing(pairing, targets, initiation(pairing)),
+      ).whenComplete(() {
+        if (identical(_pairing, pairing)) _pairing = null;
+      }),
     );
     return pairing;
   }

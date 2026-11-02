@@ -52,8 +52,10 @@ extension _Server on LanSyncService {
       return;
     }
     _handshakesInFlight++;
+    // 登记为后台任务：握手之后的配对存档、响应方会话与它结束后的记账都在
+    // 里面，[LanSyncService.dispose] 等它写完。
     unawaited(
-      _handleIncoming(socket).whenComplete(() => _handshakesInFlight--),
+      _track(_handleIncoming(socket)).whenComplete(() => _handshakesInFlight--),
     );
   }
 
@@ -66,14 +68,20 @@ extension _Server on LanSyncService {
       remoteHost = null;
     }
     try {
-      final result = await _handshake().respond(
-        socket,
-        LanSyncResponderPolicy(
-          isTrusted: _isTrusted,
-          confirmSas: (code, peer) => _confirmIncomingSas(code, peer, slot),
-          consumeQrToken: _consumeQrToken,
-        ),
-      );
+      final LanSyncHandshakeResult result;
+      _handshaking.add(socket);
+      try {
+        result = await _handshake().respond(
+          socket,
+          LanSyncResponderPolicy(
+            isTrusted: _isTrusted,
+            confirmSas: (code, peer) => _confirmIncomingSas(code, peer, slot),
+            consumeQrToken: _consumeQrToken,
+          ),
+        );
+      } finally {
+        _handshaking.remove(socket);
+      }
       if (result.paired) {
         await _completeIncomingPairing(result, remoteHost, slot);
       } else {
@@ -94,12 +102,16 @@ extension _Server on LanSyncService {
 
   /// 传入的核对码配对：只在同步页打开（且没有别的配对）时交给用户，否则
   /// 直接拒绝——没有人在场核对数字，留着只会等到超时（规格 §5.2）。
+  ///
+  /// 正在关闭时同样拒绝：握手可能在关闭断开套接字之前就读到了对方的消息，
+  /// 之后才走到这里；关闭已经应答过当时的 `_pairing`，这时再登记一个配对
+  /// 只会让界面闪出一个马上失败的核对码面板。
   Future<bool> _confirmIncomingSas(
     String code,
     LanSyncPeerHello peer,
     _IncomingPairing slot,
   ) {
-    if (_attachments == 0 || !_foreground || _pairing != null) {
+    if (_disposed || _attachments == 0 || !_foreground || _pairing != null) {
       return Future<bool>.value(false);
     }
     final pairing = LanSyncPairing._(
@@ -161,7 +173,9 @@ extension _Server on LanSyncService {
   Future<void> _serveSession(LanSyncHandshakeResult result) async {
     final peerId = result.peer.deviceId;
     final device = _store.peer(peerId);
-    if (device == null) {
+    // 握手刚好在关闭期间完成：关闭已经取消过 `_active`，这里再占位就会有一个
+    // 没人取消的会话，关闭得等它跑完。
+    if (device == null || _disposed) {
       await result.channel.close();
       return;
     }
@@ -187,7 +201,12 @@ extension _Server on LanSyncService {
       timeouts: timings.session,
     );
     if (busy) {
-      await session.run();
+      _rejecting.add(session);
+      try {
+        await session.run();
+      } finally {
+        _rejecting.remove(session);
+      }
       return;
     }
     final active = _active = _ActiveSession(

@@ -10936,7 +10936,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModuleVision => '图片理解';
 
   @override
-  String get aiModuleVisionSubtitle => '把日记里的图片一起发给支持视觉的模型（默认关闭）';
+  String get aiModuleVisionSubtitle => '把日记里的图片一起发给模型；模型不认图片时自动只发文字';
 
   @override
   String get aiOptionTitleButton => '标题旁显示“生成标题”';
@@ -11270,7 +11270,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModelReasoningToggle => '请求思考过程';
 
   @override
-  String get aiModelReasoningSubtitle => '让推理模型返回思考过程（部分模型支持）';
+  String get aiModelReasoningSubtitle => '让模型返回思考过程；模型不支持时自动去掉再试';
 
   @override
   String get aiModelMaxOutput => '最多输出（token）';
@@ -12419,4 +12419,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiSettingsOpenHubSubtitle => '问问你的日记、生成回顾';
+
+  @override
+  String get aiProtocolOpenAiResponses => 'OpenAI Responses';
+
+  @override
+  String get aiPresetNameCustomOpenAiResponses => 'OpenAI Responses 接口';
 }

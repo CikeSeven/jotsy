@@ -15129,7 +15129,7 @@
   "@aiModuleVision": {
     "description": "AI module name."
   },
-  "aiModuleVisionSubtitle": "Send the photos in an entry to models that can see (off by default)",
+  "aiModuleVisionSubtitle": "Send the photos in an entry along with the text; text only if the model can't take images",
   "@aiModuleVisionSubtitle": {
     "description": "AI module description."
   },
@@ -15581,7 +15581,7 @@
   "@aiModelReasoningToggle": {
     "description": "Model reasoning toggle."
   },
-  "aiModelReasoningSubtitle": "Ask reasoning models to return their thinking (supported by some models)",
+  "aiModelReasoningSubtitle": "Ask the model for its thinking; retried without it if the model doesn't support it",
   "@aiModelReasoningSubtitle": {
     "description": "Explanation of the reasoning toggle."
   },
@@ -17237,5 +17237,13 @@
   "aiSettingsOpenHubSubtitle": "Ask your diary and write recaps",
   "@aiSettingsOpenHubSubtitle": {
     "description": "Subtitle of the open hub tile."
+  },
+  "aiProtocolOpenAiResponses": "OpenAI Responses",
+  "@aiProtocolOpenAiResponses": {
+    "description": "Name of the OpenAI Responses API protocol."
+  },
+  "aiPresetNameCustomOpenAiResponses": "OpenAI Responses API",
+  "@aiPresetNameCustomOpenAiResponses": {
+    "description": "Custom preset using the OpenAI Responses API."
   }
 }

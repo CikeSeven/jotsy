@@ -39,7 +39,10 @@ class AnthropicChatClient extends AiChatClient {
       if (request.system?.trim().isNotEmpty ?? false) 'system': request.system,
       'messages': [for (final message in request.messages) _message(message)],
       if (stream) 'stream': true,
-      if (config.sendTemperature && request.temperature != null)
+      // 开着思考时 Claude 不接受温度。
+      if (config.sendTemperature &&
+          request.temperature != null &&
+          !request.reasoning)
         'temperature': request.temperature,
       if (request.reasoning)
         'thinking': <String, Object?>{

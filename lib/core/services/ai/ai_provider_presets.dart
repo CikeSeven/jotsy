@@ -6,10 +6,11 @@ import 'ai_provider_config.dart';
 /// 预设在挑选面板里的分组。
 enum AiPresetGroup { china, international, local, custom }
 
-/// 一个服务商预设：只提供地址、协议与少量推荐模型，用户照样可以改任何一项。
+/// 一个服务商预设：只提供地址、协议与几个兼容开关，用户照样可以改任何一项。
 ///
-/// 推荐模型只是起点：模型更新很快，编辑页以“获取模型列表”为主。新增服务商
-/// 只在 [aiProviderPresets] 里加一项（名称经 `ai_labels.dart` 本地化）。
+/// 预设**不带模型**：模型更新太快，写死的推荐很快就过时，新建后由用户在
+/// 编辑页“获取模型列表”勾选（也可以手动添加）。新增服务商只在
+/// [aiProviderPresets] 里加一项（名称经 `ai_labels.dart` 本地化）。
 @immutable
 class AiProviderPreset {
   const AiProviderPreset({
@@ -19,7 +20,6 @@ class AiProviderPreset {
     required this.baseUrl,
     required this.group,
     this.keyUrl,
-    this.models = const <String>[],
     this.includeUsage = true,
     this.sendTemperature = true,
     this.needsKey = true,
@@ -36,13 +36,10 @@ class AiProviderPreset {
   /// “获取 API 密钥”打开的页面。
   final String? keyUrl;
 
-  /// 推荐模型 id（新建时预先加入，用户可删）。
-  final List<String> models;
-
   /// OpenAI 兼容：是否请求流式用量（不认识该字段的服务会报 400）。
   final bool includeUsage;
 
-  /// 是否发送温度（较新的 Claude 模型会拒绝）。
+  /// 是否发送温度（较新的 Claude 与 OpenAI 推理模型会拒绝）。
   final bool sendTemperature;
 
   /// 本地服务不需要密钥。
@@ -58,7 +55,6 @@ class AiProviderPreset {
       baseUrl: baseUrl,
       includeUsage: includeUsage,
       sendTemperature: sendTemperature,
-      models: [for (final model in models) AiModelConfig(id: model)],
     );
   }
 }
@@ -83,6 +79,7 @@ abstract final class AiPresetIds {
   static const String ollama = 'ollama';
   static const String lmstudio = 'lmstudio';
   static const String customOpenAi = 'custom_openai';
+  static const String customOpenAiResponses = 'custom_openai_responses';
   static const String customAnthropic = 'custom_anthropic';
   static const String customGemini = 'custom_gemini';
 }
@@ -95,7 +92,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://api.deepseek.com/v1',
     group: AiPresetGroup.china,
     keyUrl: 'https://platform.deepseek.com/api_keys',
-    models: <String>['deepseek-chat', 'deepseek-reasoner'],
   ),
   AiProviderPreset(
     id: AiPresetIds.dashscope,
@@ -104,7 +100,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     group: AiPresetGroup.china,
     keyUrl: 'https://bailian.console.aliyun.com/',
-    models: <String>['qwen-plus', 'qwen-turbo', 'qwen-vl-plus'],
   ),
   AiProviderPreset(
     id: AiPresetIds.moonshot,
@@ -122,7 +117,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     group: AiPresetGroup.china,
     keyUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
-    models: <String>['glm-4-flash', 'glm-4v-flash'],
     includeUsage: false,
   ),
   AiProviderPreset(
@@ -140,7 +134,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://api.siliconflow.cn/v1',
     group: AiPresetGroup.china,
     keyUrl: 'https://cloud.siliconflow.cn/account/ak',
-    models: <String>['deepseek-ai/DeepSeek-V3', 'Qwen/Qwen2.5-7B-Instruct'],
   ),
   AiProviderPreset(
     id: AiPresetIds.hunyuan,
@@ -149,7 +142,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://api.hunyuan.cloud.tencent.com/v1',
     group: AiPresetGroup.china,
     keyUrl: 'https://console.cloud.tencent.com/hunyuan/api-key',
-    models: <String>['hunyuan-lite'],
     includeUsage: false,
   ),
   AiProviderPreset(
@@ -164,11 +156,11 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
   AiProviderPreset(
     id: AiPresetIds.openai,
     brand: 'OpenAI',
-    protocol: AiProtocol.openAi,
+    protocol: AiProtocol.openAiResponses,
     baseUrl: 'https://api.openai.com/v1',
     group: AiPresetGroup.international,
     keyUrl: 'https://platform.openai.com/api-keys',
-    models: <String>['gpt-4o-mini'],
+    sendTemperature: false,
   ),
   AiProviderPreset(
     id: AiPresetIds.anthropic,
@@ -177,7 +169,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://api.anthropic.com',
     group: AiPresetGroup.international,
     keyUrl: 'https://console.anthropic.com/settings/keys',
-    models: <String>['claude-sonnet-5-5', 'claude-haiku-5-5'],
     sendTemperature: false,
   ),
   AiProviderPreset(
@@ -187,7 +178,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     group: AiPresetGroup.international,
     keyUrl: 'https://aistudio.google.com/apikey',
-    models: <String>['gemini-2.5-flash'],
   ),
   AiProviderPreset(
     id: AiPresetIds.openrouter,
@@ -221,7 +211,6 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: 'https://api.mistral.ai/v1',
     group: AiPresetGroup.international,
     keyUrl: 'https://console.mistral.ai/api-keys',
-    models: <String>['mistral-small-latest'],
     includeUsage: false,
   ),
   AiProviderPreset(
@@ -248,6 +237,14 @@ const List<AiProviderPreset> aiProviderPresets = <AiProviderPreset>[
     baseUrl: '',
     group: AiPresetGroup.custom,
     includeUsage: false,
+  ),
+  AiProviderPreset(
+    id: AiPresetIds.customOpenAiResponses,
+    brand: 'OpenAI Responses API',
+    protocol: AiProtocol.openAiResponses,
+    baseUrl: '',
+    group: AiPresetGroup.custom,
+    sendTemperature: false,
   ),
   AiProviderPreset(
     id: AiPresetIds.customAnthropic,

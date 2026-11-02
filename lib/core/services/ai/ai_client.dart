@@ -4,6 +4,7 @@ import '../http_cancel_token.dart';
 import 'ai_client_anthropic.dart';
 import 'ai_client_gemini.dart';
 import 'ai_client_openai.dart';
+import 'ai_client_openai_responses.dart';
 import 'ai_failure.dart';
 import 'ai_http.dart';
 import 'ai_models.dart';
@@ -25,6 +26,7 @@ abstract class AiChatClient {
     final transport = http ?? AiHttp();
     return switch (config.protocol) {
       AiProtocol.openAi => OpenAiChatClient(config, transport),
+      AiProtocol.openAiResponses => OpenAiResponsesClient(config, transport),
       AiProtocol.anthropic => AnthropicChatClient(config, transport),
       AiProtocol.gemini => GeminiChatClient(config, transport),
     };

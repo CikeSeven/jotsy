@@ -116,14 +116,17 @@ void main() {
     });
   });
 
-  test('guesses vision support from common model names', () {
-    expect(aiModelLooksVisionCapable('qwen-vl-plus'), isTrue);
-    expect(aiModelLooksVisionCapable('claude-sonnet-5-5'), isTrue);
-    expect(aiModelLooksVisionCapable('deepseek-chat'), isFalse);
-    expect(
-      const AiModelConfig(id: 'deepseek-chat', vision: true).supportsVision,
-      isTrue,
-    );
+  test('models take images and think by default, stored sparsely', () {
+    const model = AiModelConfig(id: 'any-model');
+    expect(model.supportsVision, isTrue);
+    expect(model.reasoning, isTrue);
+    expect(model.toJson(), {'id': 'any-model'});
+    // 只记关掉的；旧数据没有这两项时按开启读。
+    const off = AiModelConfig(id: 'm', vision: false, reasoning: false);
+    expect(off.toJson(), {'id': 'm', 'vision': false, 'reasoning': false});
+    expect(AiModelConfig.fromJson(off.toJson()), off);
+    expect(AiModelConfig.fromJson({'id': 'm'})!.reasoning, isTrue);
+    expect(AiModelConfig.fromJson({'id': 'm'})!.supportsVision, isTrue);
   });
 
   test('presets have unique ids and create usable configs', () {
@@ -133,8 +136,19 @@ void main() {
     final config = claude.create(id: 'c', name: 'Claude');
     expect(config.protocol, AiProtocol.anthropic);
     expect(config.sendTemperature, isFalse);
-    expect(config.models, isNotEmpty);
     expect(config.presetId, AiPresetIds.anthropic);
+    // 预设不带模型（写死的推荐很快过时），新建后从服务商获取。
+    for (final preset in aiProviderPresets) {
+      expect(preset.create(id: 'x', name: 'x').models, isEmpty);
+    }
+    // OpenAI 走 Responses 接口，不发温度（推理模型不接受）。
+    final openai = aiProviderPresetById(AiPresetIds.openai)!;
+    expect(openai.protocol, AiProtocol.openAiResponses);
+    expect(openai.sendTemperature, isFalse);
+    expect(
+      aiProviderPresetById(AiPresetIds.customOpenAiResponses)!.protocol,
+      AiProtocol.openAiResponses,
+    );
   });
 
   group('AiUsageLedger', () {

@@ -16,7 +16,11 @@ typedef AiClientFactory =
 /// 职责：
 /// - 解析任务该用哪个服务商与模型（[resolve]，规则见
 ///   [AiLocalConfig.resolveTask]）；
-/// - 补上模型级的设置（最大输出、思考过程），模型不支持图片时去掉图片；
+/// - 补上模型级的设置（最大输出、思考过程），模型标明不支持图片时去掉图片；
+/// - 降级重试：图片与思考默认都发（现在的主流模型几乎都支持）。首块之前
+///   收到 400（请求被拒）时，先去掉图片再试，仍被拒且带了思考参数（Claude、
+///   Gemini、OpenAI Responses 才会发）时再去掉思考试一次；被拒过的模型记在
+///   本服务的内存里，之后的请求直接不带（服务商配置变了会重建本服务）；
 /// - 失败重试：只在**首块之前**、且错误可重试（网络、超时、429、5xx）时
 ///   按服务商的次数退避重试；首块之后再失败就交给调用方（已经显示了一半
 ///   的内容，不能悄悄重来）；
@@ -38,6 +42,18 @@ class AiService {
   final AiHttp _http;
   final AiClientFactory _clientFactory;
   final Duration Function(int attempt, AiFailureKind kind) _backoff;
+
+  /// 拒收过图片 / 思考参数的模型（`服务商 id + 模型 id`）。
+  final Set<String> _rejectsImages = <String>{};
+  final Set<String> _rejectsReasoning = <String>{};
+
+  static String _modelKey(AiResolvedModel target) =>
+      '${target.provider.id}\u0000${target.model.id}';
+
+  /// 这种协议会不会因为“思考”而在请求里多带参数（OpenAI Chat 兼容接口
+  /// 只是读返回里的思考字段，请求不变，去掉也没用）。
+  static bool _sendsReasoningParams(AiProtocol protocol) =>
+      protocol != AiProtocol.openAi;
 
   static AiChatClient _defaultClientFactory(
     AiProviderConfig config,
@@ -72,7 +88,12 @@ class AiService {
     HttpCancelToken? cancelToken,
   }) async* {
     final client = _clientFactory(target.provider, _http);
-    final effective = prepareRequest(target, request);
+    final key = _modelKey(target);
+    var effective = prepareRequest(target, request);
+    if (_rejectsImages.contains(key)) effective = _withoutImages(effective);
+    if (_rejectsReasoning.contains(key)) {
+      effective = effective.copyWith(reasoning: false);
+    }
     var usage = const AiUsage();
     var started = false;
     var failed = false;
@@ -96,6 +117,21 @@ class AiService {
           break;
         } on AiException catch (error) {
           final cancelled = cancelToken?.isCancelled ?? false;
+          if (!started &&
+              !cancelled &&
+              error.kind == AiFailureKind.badRequest) {
+            if (effective.hasImages) {
+              _rejectsImages.add(key);
+              effective = _withoutImages(effective);
+              continue;
+            }
+            if (effective.reasoning &&
+                _sendsReasoningParams(target.provider.protocol)) {
+              _rejectsReasoning.add(key);
+              effective = effective.copyWith(reasoning: false);
+              continue;
+            }
+          }
           if (!started &&
               !cancelled &&
               error.kind.retryable &&
@@ -191,25 +227,31 @@ class AiService {
     );
   }
 
-  /// 补上模型级设置；模型不支持图片时把图片去掉（只留文字，避免 400）。
+  /// 补上模型级设置；模型标明不支持图片时把图片去掉（只留文字，避免 400）。
   static AiRequest prepareRequest(AiResolvedModel target, AiRequest request) {
     final model = target.model;
-    final messages = model.supportsVision || !request.hasImages
-        ? request.messages
-        : [
-            for (final message in request.messages)
-              AiMessage(message.role, [
-                for (final part in message.parts)
-                  if (part is AiTextPart) part,
-              ]),
-          ];
-    return AiRequest(
+    final prepared = AiRequest(
       model: model.id,
       system: request.system,
-      messages: messages,
+      messages: request.messages,
       temperature: request.temperature,
       maxOutputTokens: request.maxOutputTokens ?? model.maxOutputTokens,
       reasoning: request.reasoning || model.reasoning,
+    );
+    return model.supportsVision ? prepared : _withoutImages(prepared);
+  }
+
+  /// 去掉所有图片，只留文字。
+  static AiRequest _withoutImages(AiRequest request) {
+    if (!request.hasImages) return request;
+    return request.copyWith(
+      messages: [
+        for (final message in request.messages)
+          AiMessage(message.role, [
+            for (final part in message.parts)
+              if (part is AiTextPart) part,
+          ]),
+      ],
     );
   }
 

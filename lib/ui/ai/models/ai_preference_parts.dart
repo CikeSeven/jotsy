@@ -20,10 +20,12 @@ enum AiModule {
   /// 与日记对话。
   chat,
 
-  /// 图片理解：把日记里的图片发给支持视觉的模型（默认关）。
+  /// 图片理解：把日记里的图片一起发给模型（模型不认图片时自动只发文字）。
   vision;
 
-  bool get enabledByDefault => this != vision;
+  /// 总开关打开后默认开启的模块。现在全部默认开启；“默认关、需要单独打开”
+  /// 的机制（偏好里的 `on` 列表）保留给以后可能新增的模块。
+  bool get enabledByDefault => true;
 
   static AiModule? fromName(Object? raw) {
     for (final value in values) {

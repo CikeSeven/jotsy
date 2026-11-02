@@ -6,6 +6,7 @@ import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/form_width.dart';
+import 'ai_tap_outside_unfocus.dart';
 
 /// AI 模块各二级页共用的外壳：设置区域背景、`<` 返回、按表单宽度居中的
 /// 滚动列表（滚动视图铺满，留白在两侧，见 AGENTS.md §6 宽窗口规则）。
@@ -42,28 +43,32 @@ class AiPageScaffold extends StatelessWidget {
     final guard = onWillPopGuard;
     Widget page = AppPageBackground(
       area: area,
+      // 点输入框以外的地方即收起键盘：设置页里的输入框多，手机上默认点外面
+      // 不取消焦点，收起键盘后再点别的会把键盘带回来（见 AiTapOutsideUnfocus）。
       child: Builder(
-        builder: (BuildContext context) => Scaffold(
-          backgroundColor: AppPageBackdrop.pageColorOf(context),
-          floatingActionButton: floatingActionButton,
-          appBar: AppTopBar(
-            contentMaxWidth: FormWidth.maxWidth,
-            title: Text(title),
-            actions: actions,
-            leading: IconButton(
-              tooltip: context.l10n.commonBack,
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+        builder: (BuildContext context) => AiTapOutsideUnfocus(
+          child: Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            floatingActionButton: floatingActionButton,
+            appBar: AppTopBar(
+              contentMaxWidth: FormWidth.maxWidth,
+              title: Text(title),
+              actions: actions,
+              leading: IconButton(
+                tooltip: context.l10n.commonBack,
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+              ),
             ),
-          ),
-          body: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final side = FormWidth.extra(constraints.maxWidth);
-              final padding = EdgeInsets.fromLTRB(side, 12, side, 32);
-              final builder = bodyBuilder;
-              if (builder != null) return builder(context, padding);
-              return ListView(padding: padding, children: children);
-            },
+            body: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.extra(constraints.maxWidth);
+                final padding = EdgeInsets.fromLTRB(side, 12, side, 32);
+                final builder = bodyBuilder;
+                if (builder != null) return builder(context, padding);
+                return ListView(padding: padding, children: children);
+              },
+            ),
           ),
         ),
       ),

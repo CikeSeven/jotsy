@@ -69,12 +69,13 @@ void main() {
     await tapCentered(tester, writing);
     expect(prefsOf(h).isModuleEnabled(AiModule.writing), isFalse);
 
-    // 图片理解默认关，从属选项随开关展开。
+    // 图片理解默认开，从属选项随开关收起。
     final vision = find.widgetWithText(SwitchListTile, l10n.aiModuleVision);
-    expect(find.text(l10n.aiOptionVisionSize), findsNothing);
-    await tapCentered(tester, vision);
     expect(prefsOf(h).isModuleEnabled(AiModule.vision), isTrue);
     expect(find.text(l10n.aiOptionVisionSize), findsOneWidget);
+    await tapCentered(tester, vision);
+    expect(prefsOf(h).isModuleEnabled(AiModule.vision), isFalse);
+    expect(find.text(l10n.aiOptionVisionSize), findsNothing);
 
     final autoReply = find.widgetWithText(
       SwitchListTile,
@@ -119,11 +120,34 @@ void main() {
     expect(saved.name, 'DeepSeek');
     expect(saved.apiKey, 'sk-test');
     expect(saved.baseUrl, preset.baseUrl);
-    expect(saved.models.map((m) => m.id), preset.models);
+    // 预设不带模型：新建后从服务商获取。
+    expect(saved.models, isEmpty);
     // 密钥不进备份：设置里没有它，备份字段也没有服务商。
     final captured = BackupSettings.capture(h.settings).toString();
     expect(captured, isNot(contains('sk-test')));
     store.dispose();
+    await h.unmount();
+  });
+
+  testWidgets('tapping outside a field drops its focus on touch', (
+    tester,
+  ) async {
+    // 手机上默认点外面不取消焦点：收起键盘后再点别的（打开面板、切换开关）
+    // 焦点被还给输入框，键盘又弹出来。编辑页点输入框以外的地方即取消焦点。
+    final h = await DiaryDraftsHarness.create(tester);
+    final preset = aiProviderPresetById(AiPresetIds.deepseek)!;
+    await h.pump(AiProviderEditPage.create(preset));
+    await tester.pumpAndSettle();
+    final keyField = find.widgetWithText(TextField, h.l10n.aiProviderApiKey);
+    await tester.tap(keyField);
+    await tester.pump();
+    EditableText editable() => tester.widget<EditableText>(
+      find.descendant(of: keyField, matching: find.byType(EditableText)),
+    );
+    expect(editable().focusNode.hasFocus, isTrue);
+
+    await tapCentered(tester, find.text(h.l10n.aiProviderEnabled));
+    expect(editable().focusNode.hasFocus, isFalse);
     await h.unmount();
   });
 

@@ -100,8 +100,8 @@ void main() {
         }),
       );
       expect(prefs.isModuleEnabled(AiModule.writing), isFalse);
-      // 默认开启的模块不能经 'on' 打开、默认关闭的不能经 'off' 关闭。
-      expect(prefs.isModuleEnabled(AiModule.vision), isTrue);
+      // 模块现在都默认开启：'off' 关掉，'on' 里的名字不起作用。
+      expect(prefs.isModuleEnabled(AiModule.vision), isFalse);
       expect(prefs.isModuleEnabled(AiModule.chat), isTrue);
       expect(prefs.length, AiResponseLength.medium);
       expect(prefs.visionMaxImages, AiPreferences.defaultVisionMaxImages);

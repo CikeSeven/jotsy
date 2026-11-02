@@ -157,4 +157,83 @@ void main() {
     expect(reloaded.config.providers.single.id, 'p1');
     reloaded.dispose();
   });
+
+  test('a 400 drops images, then thinking, and remembers it', () async {
+    final bodies = <Map<String, Object?>>[];
+    server.handler = (request, response) async {
+      final body = request.json;
+      bodies.add(body);
+      final input = (body['input'] as List).cast<Map>();
+      final hasImage = input.any((m) => m['content'] is List);
+      if (hasImage) {
+        await writeJson(response, {
+          'error': {'message': 'Image input is not supported'},
+        }, status: 400);
+        return;
+      }
+      if (body.containsKey('reasoning')) {
+        await writeJson(response, {
+          'error': {'message': "Unsupported parameter: 'reasoning.summary'"},
+        }, status: 400);
+        return;
+      }
+      await writeSse(response, [
+        (null, '{"type":"response.output_text.delta","delta":"ok"}'),
+      ]);
+    };
+    // 模型设置都是默认（看图、思考都开）。
+    final config = AiProviderConfig(
+      id: 'r1',
+      name: 'Responses',
+      protocol: AiProtocol.openAiResponses,
+      baseUrl: server.baseUrl,
+      retries: 0,
+      models: const [AiModelConfig(id: 'text-only')],
+    );
+    final target = AiResolvedModel(config, config.models.single);
+    final ai = service();
+    AiRequest request() => AiRequest(
+      model: 'x',
+      messages: [
+        AiMessage(AiRole.user, [
+          const AiTextPart('describe'),
+          AiImagePart(Uint8List(1), 'image/png'),
+        ]),
+      ],
+    );
+    final first = await ai.complete(target, request());
+    expect(first.text, 'ok');
+    expect(bodies, hasLength(3));
+    expect(bodies[1].containsKey('reasoning'), isTrue);
+    expect(bodies[2].containsKey('reasoning'), isFalse);
+
+    // 同一个模型之后直接不带图片与思考，一次就成。
+    bodies.clear();
+    await ai.complete(target, request());
+    expect(bodies, hasLength(1));
+    expect(bodies.single.containsKey('reasoning'), isFalse);
+  });
+
+  test('other errors are not retried without images or thinking', () async {
+    var calls = 0;
+    server.handler = (request, response) async {
+      calls++;
+      await writeJson(response, {'error': 'bad key'}, status: 401);
+    };
+    final config = provider(retries: 0, vision: true);
+    await expectLater(
+      service().complete(
+        AiResolvedModel(config, config.models.single),
+        AiRequest(
+          model: 'm1',
+          reasoning: true,
+          messages: [
+            AiMessage(AiRole.user, [AiImagePart(Uint8List(1), 'image/png')]),
+          ],
+        ),
+      ),
+      throwsA(isA<AiException>()),
+    );
+    expect(calls, 1);
+  });
 }

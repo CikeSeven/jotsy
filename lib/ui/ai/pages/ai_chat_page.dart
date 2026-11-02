@@ -44,6 +44,7 @@ import '../providers/ai_records_providers.dart';
 import '../sections/ai_chat_message_view.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
+import '../widgets/ai_tap_outside_unfocus.dart';
 import 'settings/ai_model_routing_page.dart';
 import 'settings/ai_personas_page.dart';
 
@@ -293,184 +294,196 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final busy = _controller.busy;
     return AppPageBackground(
       area: AppBackgroundArea.other,
+      // 点输入框以外的地方收起键盘（发送 / 停止按钮算作输入框的一部分）。
       child: Builder(
-        builder: (BuildContext context) => Scaffold(
-          backgroundColor: AppPageBackdrop.pageColorOf(context),
-          appBar: AppTopBar(
-            contentMaxWidth: AppContentWidth.reading,
-            title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-            leading: IconButton(
-              tooltip: l10n.commonBack,
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-            ),
-            actions: <Widget>[
-              if (conversation != null)
-                ExpressiveMenuButton(
-                  tooltip: l10n.aiChatMore,
-                  icon: const FaIcon(
-                    FontAwesomeIcons.ellipsisVertical,
-                    size: 16,
-                  ),
-                  items: <Widget>[
-                    ExpressiveMenuItem(
-                      leadingIcon: const FaIcon(FontAwesomeIcons.pen),
-                      onPressed: () => unawaited(
-                        renameAiConversation(context, ref, conversation),
-                      ),
-                      child: Text(l10n.aiChatRename),
+        builder: (BuildContext context) => AiTapOutsideUnfocus(
+          child: Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            appBar: AppTopBar(
+              contentMaxWidth: AppContentWidth.reading,
+              title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+              leading: IconButton(
+                tooltip: l10n.commonBack,
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+              ),
+              actions: <Widget>[
+                if (conversation != null)
+                  ExpressiveMenuButton(
+                    tooltip: l10n.aiChatMore,
+                    icon: const FaIcon(
+                      FontAwesomeIcons.ellipsisVertical,
+                      size: 16,
                     ),
-                    ExpressiveMenuItem(
-                      leadingIcon: const FaIcon(FontAwesomeIcons.thumbtack),
-                      onPressed: () => unawaited(
-                        ref
-                            .read(appDatabaseProvider)
-                            .updateAiConversation(
-                              conversation.conversationId,
-                              pinned: !conversation.pinned,
+                    items: <Widget>[
+                      ExpressiveMenuItem(
+                        leadingIcon: const FaIcon(FontAwesomeIcons.pen),
+                        onPressed: () => unawaited(
+                          renameAiConversation(context, ref, conversation),
+                        ),
+                        child: Text(l10n.aiChatRename),
+                      ),
+                      ExpressiveMenuItem(
+                        leadingIcon: const FaIcon(FontAwesomeIcons.thumbtack),
+                        onPressed: () => unawaited(
+                          ref
+                              .read(appDatabaseProvider)
+                              .updateAiConversation(
+                                conversation.conversationId,
+                                pinned: !conversation.pinned,
+                              ),
+                        ),
+                        child: Text(
+                          conversation.pinned
+                              ? l10n.aiChatUnpin
+                              : l10n.aiChatPin,
+                        ),
+                      ),
+                      ExpressiveMenuItem(
+                        leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
+                        destructive: true,
+                        onPressed: () {
+                          _controller.stop();
+                          unawaited(
+                            deleteAiConversation(
+                              context,
+                              ref,
+                              conversation,
+                              popPage: true,
                             ),
+                          );
+                        },
+                        child: Text(l10n.commonDelete),
                       ),
-                      child: Text(
-                        conversation.pinned ? l10n.aiChatUnpin : l10n.aiChatPin,
+                    ],
+                  ),
+              ],
+            ),
+            body: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = AppContentWidth.gutter(
+                  constraints.maxWidth,
+                  AppContentWidth.reading,
+                );
+                return Column(
+                  children: <Widget>[
+                    DesktopHorizontalScroll(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.fromLTRB(side, 4, side, 8),
+                        child: Row(
+                          children: <Widget>[
+                            _ChipButton(
+                              icon: FontAwesomeIcons.magnifyingGlass,
+                              label: aiChatScopeLabel(l10n, _controller.scope),
+                              onPressed: busy ? null : _pickScope,
+                            ),
+                            const SizedBox(width: 8),
+                            _ChipButton(
+                              emoji: persona.emoji,
+                              label: persona.name,
+                              onPressed: busy ? null : _pickPersona,
+                            ),
+                            const SizedBox(width: 8),
+                            _ChipButton(
+                              icon: FontAwesomeIcons.microchip,
+                              label: model == null
+                                  ? l10n.aiChatModel
+                                  : model.model.label,
+                              onPressed: busy ? null : _pickModel,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    ExpressiveMenuItem(
-                      leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
-                      destructive: true,
-                      onPressed: () {
-                        _controller.stop();
-                        unawaited(
-                          deleteAiConversation(
-                            context,
-                            ref,
-                            conversation,
-                            popPage: true,
-                          ),
-                        );
-                      },
-                      child: Text(l10n.commonDelete),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          body: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final side = AppContentWidth.gutter(
-                constraints.maxWidth,
-                AppContentWidth.reading,
-              );
-              return Column(
-                children: <Widget>[
-                  DesktopHorizontalScroll(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.fromLTRB(side, 4, side, 8),
-                      child: Row(
+                    Expanded(
+                      child: ListView(
+                        controller: _scroll,
+                        padding: EdgeInsets.fromLTRB(side, 8, side, 24),
                         children: <Widget>[
-                          _ChipButton(
-                            icon: FontAwesomeIcons.magnifyingGlass,
-                            label: aiChatScopeLabel(l10n, _controller.scope),
-                            onPressed: busy ? null : _pickScope,
-                          ),
-                          const SizedBox(width: 8),
-                          _ChipButton(
-                            emoji: persona.emoji,
-                            label: persona.name,
-                            onPressed: busy ? null : _pickPersona,
-                          ),
-                          const SizedBox(width: 8),
-                          _ChipButton(
-                            icon: FontAwesomeIcons.microchip,
-                            label: model == null
-                                ? l10n.aiChatModel
-                                : model.model.label,
-                            onPressed: busy ? null : _pickModel,
-                          ),
+                          if (messages.isEmpty && !busy)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 48),
+                              child: Column(
+                                children: <Widget>[
+                                  FaIcon(
+                                    FontAwesomeIcons.comments,
+                                    size: 32,
+                                    color: colors.primary,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    l10n.aiChatEmptyHint,
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          for (var i = 0; i < messages.length; i++)
+                            AiChatMessageView(
+                              key: ValueKey<String>(messages[i].messageId),
+                              message: messages[i],
+                              showReasoning: prefs.showReasoning,
+                              showTokens: prefs.showTokens,
+                              onCitation: (citations, ref) =>
+                                  _openCitation(citations, ref),
+                              onEdit: !busy && i == lastUser
+                                  ? () => unawaited(
+                                      _editLast(messages[i].content),
+                                    )
+                                  : null,
+                              onRegenerate:
+                                  !busy && i == lastAssistant && i > lastUser
+                                  ? () => unawaited(
+                                      _controller.regenerate(context, ref),
+                                    )
+                                  : null,
+                              onCopy: (text) =>
+                                  unawaited(copyAiText(context, text)),
+                              onSaveAsDiary: (text) => unawaited(
+                                saveAiTextAsDiary(
+                                  context,
+                                  ref,
+                                  title: title,
+                                  markdown: text,
+                                ),
+                              ),
+                              onDelete: busy
+                                  ? null
+                                  : () => unawaited(
+                                      deleteAiChatMessage(
+                                        context,
+                                        ref,
+                                        messages[i],
+                                      ),
+                                    ),
+                            ),
+                          // 每收到一块只重建正在生成的这一条，不动整个列表。
+                          if (busy)
+                            ListenableBuilder(
+                              listenable: _controller.run,
+                              builder: (BuildContext context, Widget? _) =>
+                                  _buildPending(context),
+                            ),
                         ],
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      controller: _scroll,
-                      padding: EdgeInsets.fromLTRB(side, 8, side, 24),
-                      children: <Widget>[
-                        if (messages.isEmpty && !busy)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 48),
-                            child: Column(
-                              children: <Widget>[
-                                FaIcon(
-                                  FontAwesomeIcons.comments,
-                                  size: 32,
-                                  color: colors.primary,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  l10n.aiChatEmptyHint,
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        for (var i = 0; i < messages.length; i++)
-                          AiChatMessageView(
-                            key: ValueKey<String>(messages[i].messageId),
-                            message: messages[i],
-                            showReasoning: prefs.showReasoning,
-                            showTokens: prefs.showTokens,
-                            onCitation: (citations, ref) =>
-                                _openCitation(citations, ref),
-                            onEdit: !busy && i == lastUser
-                                ? () =>
-                                      unawaited(_editLast(messages[i].content))
-                                : null,
-                            onRegenerate:
-                                !busy && i == lastAssistant && i > lastUser
-                                ? () => unawaited(
-                                    _controller.regenerate(context, ref),
-                                  )
-                                : null,
-                            onCopy: (text) =>
-                                unawaited(copyAiText(context, text)),
-                            onSaveAsDiary: (text) => unawaited(
-                              saveAiTextAsDiary(
-                                context,
-                                ref,
-                                title: title,
-                                markdown: text,
-                              ),
-                            ),
-                            onDelete: busy
-                                ? null
-                                : () => unawaited(
-                                    deleteAiChatMessage(
-                                      context,
-                                      ref,
-                                      messages[i],
-                                    ),
-                                  ),
-                          ),
-                        if (busy) _buildPending(context),
-                      ],
+                    _ChatInput(
+                      controller: _input,
+                      focusNode: _inputFocus,
+                      side: side,
+                      busy: busy,
+                      enabled: _ready,
+                      onSend: () => unawaited(_send()),
+                      onStop: _controller.stop,
                     ),
-                  ),
-                  _ChatInput(
-                    controller: _input,
-                    focusNode: _inputFocus,
-                    side: side,
-                    busy: busy,
-                    enabled: _ready,
-                    onSend: () => unawaited(_send()),
-                    onStop: _controller.stop,
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -636,17 +649,20 @@ class _ChatInput extends StatelessWidget {
           children: <Widget>[
             Expanded(child: field),
             const SizedBox(width: 8),
-            busy
-                ? IconButton.outlined(
-                    tooltip: l10n.aiPanelStop,
-                    onPressed: onStop,
-                    icon: const FaIcon(FontAwesomeIcons.stop, size: 16),
-                  )
-                : IconButton.filled(
-                    tooltip: l10n.aiPanelSend,
-                    onPressed: enabled ? onSend : null,
-                    icon: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
-                  ),
+            // 算作输入框的一部分：点发送不收起键盘，接着就能写下一句。
+            TextFieldTapRegion(
+              child: busy
+                  ? IconButton.outlined(
+                      tooltip: l10n.aiPanelStop,
+                      onPressed: onStop,
+                      icon: const FaIcon(FontAwesomeIcons.stop, size: 16),
+                    )
+                  : IconButton.filled(
+                      tooltip: l10n.aiPanelSend,
+                      onPressed: enabled ? onSend : null,
+                      icon: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
+                    ),
+            ),
           ],
         ),
       ),

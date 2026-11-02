@@ -4,9 +4,10 @@
 //   dart run tool/ai_mock_server.dart [--port 8787] [--delay 40]
 //       [--think] [--fail 401|403|404|429|500|context|filtered]
 //
-// 同时实现三种协议（流式与一次性请求、模型列表）：
+// 同时实现四种协议（流式与一次性请求、模型列表）：
 //   OpenAI 兼容：POST /v1/chat/completions、GET /v1/models
 //                 （Jotsy 里地址填 http://127.0.0.1:8787/v1）
+//   OpenAI Responses：POST /v1/responses（地址同上）
 //   Anthropic：   POST /v1/messages、GET /v1/models
 //                 （地址填 http://127.0.0.1:8787）
 //   Gemini：      POST /v1beta/models/<模型>:streamGenerateContent?alt=sse
@@ -87,7 +88,7 @@ class _Options {
   final String? fail;
 }
 
-enum _Protocol { openAi, anthropic, gemini }
+enum _Protocol { openAi, responses, anthropic, gemini }
 
 Future<void> _handle(HttpRequest request, _Options options) async {
   final path = request.uri.path;
@@ -134,6 +135,9 @@ Future<void> _handle(HttpRequest request, _Options options) async {
     final bool stream;
     if (path.endsWith('/chat/completions')) {
       protocol = _Protocol.openAi;
+      stream = false;
+    } else if (path.endsWith('/responses')) {
+      protocol = _Protocol.responses;
       stream = false;
     } else if (path == '/v1/messages') {
       protocol = _Protocol.anthropic;
@@ -206,6 +210,7 @@ String _promptText(_Protocol protocol, Map<String, Object?> json) {
     } else if (value is Map) {
       final type = value['type'];
       if (type == 'image_url' ||
+          type == 'input_image' ||
           type == 'image' ||
           value['inline_data'] != null) {
         images++;
@@ -220,6 +225,9 @@ String _promptText(_Protocol protocol, Map<String, Object?> json) {
   switch (protocol) {
     case _Protocol.openAi:
       collect(json['messages']);
+    case _Protocol.responses:
+      collect(json['instructions']);
+      collect(json['input']);
     case _Protocol.anthropic:
       collect(json['system']);
       collect(json['messages']);
@@ -229,6 +237,7 @@ String _promptText(_Protocol protocol, Map<String, Object?> json) {
   }
   final messages = switch (protocol) {
     _Protocol.openAi => json['messages'],
+    _Protocol.responses => json['input'],
     _Protocol.anthropic => json['messages'],
     _Protocol.gemini => json['contents'],
   };
@@ -281,6 +290,33 @@ Map<String, Object?> _whole(
   required String model,
 }) {
   switch (protocol) {
+    case _Protocol.responses:
+      return <String, Object?>{
+        'id': 'resp_mock',
+        'object': 'response',
+        'model': model,
+        'status': 'completed',
+        'output': <Object?>[
+          if (thinking.isNotEmpty)
+            <String, Object?>{
+              'type': 'reasoning',
+              'summary': <Object?>[
+                <String, Object?>{'type': 'summary_text', 'text': thinking},
+              ],
+            },
+          <String, Object?>{
+            'type': 'message',
+            'role': 'assistant',
+            'content': <Object?>[
+              <String, Object?>{'type': 'output_text', 'text': reply},
+            ],
+          },
+        ],
+        'usage': <String, Object?>{
+          'input_tokens': 120,
+          'output_tokens': reply.length,
+        },
+      };
     case _Protocol.openAi:
       return <String, Object?>{
         'id': 'mock',
@@ -367,6 +403,41 @@ Future<void> _stream(
   }
 
   switch (protocol) {
+    case _Protocol.responses:
+      Future<void> emit(Map<String, Object?> data) =>
+          send(data, event: data['type']! as String);
+      await emit(<String, Object?>{
+        'type': 'response.created',
+        'response': <String, Object?>{'id': 'resp_mock', 'model': model},
+      });
+      for (final piece in _pieces(thinking)) {
+        await emit(<String, Object?>{
+          'type': 'response.reasoning_summary_text.delta',
+          'delta': piece,
+        });
+      }
+      if (thinking.isNotEmpty) {
+        await emit(<String, Object?>{
+          'type': 'response.reasoning_summary_part.done',
+        });
+      }
+      for (final piece in _pieces(reply)) {
+        await emit(<String, Object?>{
+          'type': 'response.output_text.delta',
+          'delta': piece,
+        });
+      }
+      await emit(<String, Object?>{
+        'type': 'response.completed',
+        'response': <String, Object?>{
+          'id': 'resp_mock',
+          'status': 'completed',
+          'usage': <String, Object?>{
+            'input_tokens': 120,
+            'output_tokens': reply.length,
+          },
+        },
+      });
     case _Protocol.openAi:
       Map<String, Object?> chunk(
         Map<String, Object?> delta, {
@@ -514,7 +585,7 @@ Future<void> _fail(HttpResponse response, _Protocol protocol, String kind) {
     _ => (500, 'Internal server error (mock).'),
   };
   final body = switch (protocol) {
-    _Protocol.openAi => <String, Object?>{
+    _Protocol.openAi || _Protocol.responses => <String, Object?>{
       'error': <String, Object?>{
         'message': message,
         'type': kind == 'context' ? 'invalid_request_error' : 'mock_error',

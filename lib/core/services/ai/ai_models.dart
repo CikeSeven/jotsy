@@ -8,7 +8,11 @@ import 'package:meta/meta.dart';
 /// - [anthropic]：Anthropic Messages API（Claude，及提供同格式的转发服务）；
 /// - [gemini]：Google Gemini `generateContent`。
 enum AiProtocol {
+  /// OpenAI Chat Completions 兼容接口（绝大多数服务商）。
   openAi,
+
+  /// OpenAI Responses API（`/responses`，OpenAI 现行的主接口）。
+  openAiResponses,
   anthropic,
   gemini;
 

@@ -20,6 +20,8 @@ String aiPresetLabel(AppLocalizations l10n, AiProviderPreset preset) =>
       AiPresetIds.siliconflow => l10n.aiPresetNameSiliconflow,
       AiPresetIds.hunyuan => l10n.aiPresetNameHunyuan,
       AiPresetIds.customOpenAi => l10n.aiPresetNameCustomOpenAi,
+      AiPresetIds.customOpenAiResponses =>
+        l10n.aiPresetNameCustomOpenAiResponses,
       AiPresetIds.customAnthropic => l10n.aiPresetNameCustomAnthropic,
       AiPresetIds.customGemini => l10n.aiPresetNameCustomGemini,
       _ => preset.brand,
@@ -36,6 +38,7 @@ String aiPresetGroupLabel(AppLocalizations l10n, AiPresetGroup group) =>
 String aiProtocolLabel(AppLocalizations l10n, AiProtocol protocol) =>
     switch (protocol) {
       AiProtocol.openAi => l10n.aiProtocolOpenAi,
+      AiProtocol.openAiResponses => l10n.aiProtocolOpenAiResponses,
       AiProtocol.anthropic => l10n.aiProtocolAnthropic,
       AiProtocol.gemini => l10n.aiProtocolGemini,
     };

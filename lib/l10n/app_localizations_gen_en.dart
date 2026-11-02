@@ -12296,7 +12296,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiModuleVisionSubtitle =>
-      'Send the photos in an entry to models that can see (off by default)';
+      'Send the photos in an entry along with the text; text only if the model can\'t take images';
 
   @override
   String get aiOptionTitleButton => 'Show “Generate title” next to the title';
@@ -12665,7 +12665,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiModelReasoningSubtitle =>
-      'Ask reasoning models to return their thinking (supported by some models)';
+      'Ask the model for its thinking; retried without it if the model doesn\'t support it';
 
   @override
   String get aiModelMaxOutput => 'Max output tokens';
@@ -13918,4 +13918,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiSettingsOpenHubSubtitle => 'Ask your diary and write recaps';
+
+  @override
+  String get aiProtocolOpenAiResponses => 'OpenAI Responses';
+
+  @override
+  String get aiPresetNameCustomOpenAiResponses => 'OpenAI Responses API';
 }

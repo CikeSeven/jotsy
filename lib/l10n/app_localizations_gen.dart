@@ -19979,7 +19979,7 @@ abstract class AppLocalizations {
   /// AI module description.
   ///
   /// In en, this message translates to:
-  /// **'Send the photos in an entry to models that can see (off by default)'**
+  /// **'Send the photos in an entry along with the text; text only if the model can\'t take images'**
   String get aiModuleVisionSubtitle;
 
   /// AI option under smart fill.
@@ -20627,7 +20627,7 @@ abstract class AppLocalizations {
   /// Explanation of the reasoning toggle.
   ///
   /// In en, this message translates to:
-  /// **'Ask reasoning models to return their thinking (supported by some models)'**
+  /// **'Ask the model for its thinking; retried without it if the model doesn\'t support it'**
   String get aiModelReasoningSubtitle;
 
   /// Model max output field.
@@ -22705,6 +22705,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ask your diary and write recaps'**
   String get aiSettingsOpenHubSubtitle;
+
+  /// Name of the OpenAI Responses API protocol.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI Responses'**
+  String get aiProtocolOpenAiResponses;
+
+  /// Custom preset using the OpenAI Responses API.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI Responses API'**
+  String get aiPresetNameCustomOpenAiResponses;
 }
 
 class _AppLocalizationsDelegate

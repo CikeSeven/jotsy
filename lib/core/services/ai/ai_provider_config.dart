@@ -18,7 +18,7 @@ class AiModelConfig {
     this.vision,
     this.contextWindow,
     this.maxOutputTokens,
-    this.reasoning = false,
+    this.reasoning = true,
   });
 
   /// 请求里写的模型名（如 `deepseek-chat`）。
@@ -27,7 +27,9 @@ class AiModelConfig {
   /// 显示名；为空时显示 [id]。
   final String? name;
 
-  /// 是否支持图片输入；null 表示按名称推断（[aiModelLooksVisionCapable]）。
+  /// 是否支持图片输入；null 表示没指定，按支持处理（现在的主流模型几乎都
+  /// 能看图）。模型实际不认图片时服务端回 400，`AiService` 去掉图片再试，
+  /// 不会让请求失败。
   final bool? vision;
 
   /// 上下文长度（token）；null 表示未知，按保守值估算。
@@ -36,12 +38,13 @@ class AiModelConfig {
   /// 单次最多输出（token）；null 时按协议默认值。
   final int? maxOutputTokens;
 
-  /// 请求时让服务端返回思考过程（推理模型）。
+  /// 请求时让服务端返回思考过程，默认开启。模型不支持思考参数时服务端回
+  /// 400，`AiService` 去掉思考再试（见 `AiService.stream`）。
   final bool reasoning;
 
   String get label => (name?.trim().isNotEmpty ?? false) ? name!.trim() : id;
 
-  bool get supportsVision => vision ?? aiModelLooksVisionCapable(id);
+  bool get supportsVision => vision ?? true;
 
   AiModelConfig copyWith({
     String? id,
@@ -71,7 +74,7 @@ class AiModelConfig {
     if (vision != null) 'vision': vision,
     if (contextWindow != null) 'contextWindow': contextWindow,
     if (maxOutputTokens != null) 'maxOutputTokens': maxOutputTokens,
-    if (reasoning) 'reasoning': true,
+    if (!reasoning) 'reasoning': false,
   };
 
   static AiModelConfig? fromJson(Object? raw) {
@@ -84,7 +87,7 @@ class AiModelConfig {
       vision: raw['vision'] is bool ? raw['vision'] as bool : null,
       contextWindow: _positiveInt(raw['contextWindow']),
       maxOutputTokens: _positiveInt(raw['maxOutputTokens']),
-      reasoning: raw['reasoning'] == true,
+      reasoning: raw['reasoning'] != false,
     );
   }
 
@@ -590,47 +593,6 @@ class AiLocalConfig {
 
   @override
   int get hashCode => encode().hashCode;
-}
-
-/// 按模型名推断是否支持图片输入。只用于用户没手动指定时的默认值，宁可
-/// 漏判（用户可以手动打开）也不误判成支持。
-bool aiModelLooksVisionCapable(String modelId) {
-  final id = modelId.toLowerCase();
-  const markers = <String>[
-    'vision',
-    '-vl',
-    'vl-',
-    'qwen-vl',
-    'qwen2-vl',
-    'qwen2.5-vl',
-    'qwen3-vl',
-    'glm-4v',
-    'glm-4.5v',
-    'gpt-4o',
-    'gpt-4.1',
-    'gpt-5',
-    'o3',
-    'o4',
-    'claude',
-    'gemini',
-    'llava',
-    'pixtral',
-    'grok-2-vision',
-    'grok-4',
-    'doubao-seed',
-    'doubao-vision',
-    'doubao-1.5-vision',
-    'kimi-k2.5',
-    'moonshot-v1-8k-vision',
-    'minicpm-v',
-    'internvl',
-    'gemma3',
-    'llama-4',
-  ];
-  for (final marker in markers) {
-    if (id.contains(marker)) return true;
-  }
-  return false;
 }
 
 const Object _unset = Object();

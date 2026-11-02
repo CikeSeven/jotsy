@@ -443,4 +443,161 @@ void main() {
       expect(models.single.contextWindow, 100);
     });
   });
+
+  group('OpenAI Responses', () {
+    test('streams text, reasoning summaries and usage', () async {
+      server.handler = (request, response) => writeSse(response, [
+        (
+          'response.created',
+          '{"type":"response.created","response":{"status":"in_progress"}}',
+        ),
+        (
+          'response.reasoning_summary_text.delta',
+          '{"type":"response.reasoning_summary_text.delta","delta":"think"}',
+        ),
+        (
+          'response.reasoning_summary_part.done',
+          '{"type":"response.reasoning_summary_part.done"}',
+        ),
+        (
+          'response.output_text.delta',
+          '{"type":"response.output_text.delta","delta":"Hel"}',
+        ),
+        (
+          'response.output_text.delta',
+          '{"type":"response.output_text.delta","delta":"lo"}',
+        ),
+        (
+          'response.completed',
+          '{"type":"response.completed","response":{"status":"completed",'
+              '"usage":{"input_tokens":9,"output_tokens":4}}}',
+        ),
+      ]);
+      final client = AiChatClient.forProvider(
+        _provider(server, AiProtocol.openAiResponses, path: '/v1'),
+      );
+      final result = await _collect(
+        client.stream(
+          _request(
+            reasoning: true,
+            parts: [
+              const AiTextPart('look'),
+              AiImagePart(Uint8List.fromList([1, 2, 3]), 'image/png'),
+            ],
+          ),
+        ),
+      );
+      expect(result.text, 'Hello');
+      expect(result.reasoning.trim(), 'think');
+      expect(result.usage, const AiUsage(inputTokens: 9, outputTokens: 4));
+      expect(result.finishReason, AiFinishReason.stop);
+
+      final request = server.requests.single;
+      expect(request.uri.path, '/v1/responses');
+      expect(request.headers.value('authorization'), 'Bearer secret');
+      final body = request.json;
+      expect(body['instructions'], 'be kind');
+      expect(body['store'], isFalse);
+      expect(body['stream'], isTrue);
+      expect(body['reasoning'], {'summary': 'auto'});
+      // 开着思考不发温度（推理模型不接受）。
+      expect(body.containsKey('temperature'), isFalse);
+      expect(body['custom_flag'], isTrue);
+      final input = (body['input'] as List).cast<Map>();
+      final content = (input.single['content'] as List).cast<Map>();
+      expect(content[0], {'type': 'input_text', 'text': 'look'});
+      expect(content[1], {
+        'type': 'input_image',
+        'image_url': 'data:image/png;base64,${base64Encode([1, 2, 3])}',
+      });
+    });
+
+    test('plain text history, temperature without thinking', () async {
+      server.handler = (request, response) => writeSse(response, [
+        (null, '{"type":"response.output_text.delta","delta":"ok"}'),
+        (
+          null,
+          '{"type":"response.incomplete","response":{"status":"incomplete",'
+              '"incomplete_details":{"reason":"max_output_tokens"}}}',
+        ),
+      ]);
+      final client = AiChatClient.forProvider(
+        _provider(server, AiProtocol.openAiResponses),
+      );
+      final result = await _collect(
+        client.stream(
+          const AiRequest(
+            model: 'm',
+            temperature: 0.4,
+            messages: [
+              AiMessage(AiRole.user, [AiTextPart('q1')]),
+              AiMessage(AiRole.assistant, [AiTextPart('a1')]),
+              AiMessage(AiRole.user, [AiTextPart('q2')]),
+            ],
+          ),
+        ),
+      );
+      expect(result.text, 'ok');
+      expect(result.finishReason, AiFinishReason.length);
+      final body = server.requests.single.json;
+      expect(body['temperature'], 0.4);
+      expect(body.containsKey('reasoning'), isFalse);
+      expect(body.containsKey('instructions'), isFalse);
+      expect(body['input'], [
+        {'role': 'user', 'content': 'q1'},
+        {'role': 'assistant', 'content': 'a1'},
+        {'role': 'user', 'content': 'q2'},
+      ]);
+    });
+
+    test('reads a one-shot response when streaming is off', () async {
+      server.handler = (request, response) => writeJson(response, {
+        'status': 'completed',
+        'output': [
+          {
+            'type': 'reasoning',
+            'summary': [
+              {'type': 'summary_text', 'text': 'plan'},
+            ],
+          },
+          {
+            'type': 'message',
+            'content': [
+              {'type': 'output_text', 'text': 'Answer'},
+            ],
+          },
+        ],
+        'usage': {'input_tokens': 5, 'output_tokens': 2},
+      });
+      final client = AiChatClient.forProvider(
+        _provider(server, AiProtocol.openAiResponses, stream: false),
+      );
+      final result = await _collect(client.stream(_request()));
+      expect(result.text, 'Answer');
+      expect(result.reasoning, 'plan');
+      expect(result.usage, const AiUsage(inputTokens: 5, outputTokens: 2));
+      expect(server.requests.single.json['stream'], isFalse);
+    });
+
+    test('maps failure events to errors', () async {
+      server.handler = (request, response) => writeSse(response, [
+        (
+          null,
+          '{"type":"response.failed","response":{"status":"failed",'
+              '"error":{"code":"rate_limit_exceeded","message":"slow down"}}}',
+        ),
+      ]);
+      final client = AiChatClient.forProvider(
+        _provider(server, AiProtocol.openAiResponses),
+      );
+      await expectLater(
+        _collect(client.stream(_request())),
+        throwsA(
+          isA<AiException>()
+              .having((e) => e.kind, 'kind', AiFailureKind.rateLimited)
+              .having((e) => e.providerMessage, 'message', 'slow down'),
+        ),
+      );
+    });
+  });
 }

@@ -15129,7 +15129,7 @@
   "@aiModuleVision": {
     "description": "AI 模块名称。"
   },
-  "aiModuleVisionSubtitle": "把日记里的图片一起发给支持视觉的模型（默认关闭）",
+  "aiModuleVisionSubtitle": "把日记里的图片一起发给模型；模型不认图片时自动只发文字",
   "@aiModuleVisionSubtitle": {
     "description": "AI 模块说明。"
   },
@@ -15581,7 +15581,7 @@
   "@aiModelReasoningToggle": {
     "description": "请求思考过程的开关。"
   },
-  "aiModelReasoningSubtitle": "让推理模型返回思考过程（部分模型支持）",
+  "aiModelReasoningSubtitle": "让模型返回思考过程；模型不支持时自动去掉再试",
   "@aiModelReasoningSubtitle": {
     "description": "思考过程开关的说明。"
   },
@@ -17237,5 +17237,13 @@
   "aiSettingsOpenHubSubtitle": "问问你的日记、生成回顾",
   "@aiSettingsOpenHubSubtitle": {
     "description": "打开 AI 助手一行的说明。"
+  },
+  "aiProtocolOpenAiResponses": "OpenAI Responses",
+  "@aiProtocolOpenAiResponses": {
+    "description": "OpenAI Responses 接口协议的名称。"
+  },
+  "aiPresetNameCustomOpenAiResponses": "OpenAI Responses 接口",
+  "@aiPresetNameCustomOpenAiResponses": {
+    "description": "使用 OpenAI Responses 接口的自定义预设。"
   }
 }

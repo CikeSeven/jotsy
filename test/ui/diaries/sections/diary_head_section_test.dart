@@ -10,6 +10,7 @@ Widget _host({
   VoidCallback? onOpenDrafts,
   bool inManualNotebook = false,
   VoidCallback? onAddToNotebook,
+  VoidCallback? onSetTags,
 }) => MaterialApp(
   locale: const Locale('zh'),
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -22,6 +23,7 @@ Widget _host({
       isPinActionUnpin: false,
       onPinSelected: () {},
       onArchiveSelected: () {},
+      onSetTagsSelected: onSetTags ?? () {},
       onExportSelected: () {},
       onDeleteSelected: () {},
       onAddToNotebookSelected: onAddToNotebook ?? () {},
@@ -138,6 +140,7 @@ void main() {
     await tester.tap(find.byTooltip('更多操作'));
     await tester.pumpAndSettle();
     expect(find.text('置顶'), findsOneWidget);
+    expect(find.text('设置标签'), findsOneWidget);
     expect(find.text('导出'), findsOneWidget);
     expect(find.text('从本日记本移出'), findsNothing);
     expect(find.text('移动到…'), findsNothing);
@@ -150,5 +153,28 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('从本日记本移出'), findsOneWidget);
     expect(find.text('移动到…'), findsOneWidget);
+  });
+
+  testWidgets('set tags sits between pin and export in the more menu', (
+    tester,
+  ) async {
+    var tapped = 0;
+    await tester.pumpWidget(
+      _host(selection: true, inManualNotebook: true, onSetTags: () => tapped++),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('更多操作'));
+    await tester.pumpAndSettle();
+    final pin = tester.getTopLeft(find.text('置顶')).dy;
+    final tags = tester.getTopLeft(find.text('设置标签')).dy;
+    final export = tester.getTopLeft(find.text('导出')).dy;
+    expect(pin < tags && tags < export, isTrue);
+    // 普通日记本里菜单为 5 项，仍放得下。
+    expect(find.text('移动到…'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('设置标签'));
+    await tester.pumpAndSettle();
+    expect(tapped, 1);
   });
 }

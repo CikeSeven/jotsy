@@ -60,6 +60,7 @@ import '../providers/diary_comments_provider.dart';
 import '../viewmodels/diaries_page_layout.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
+import '../sections/diary_tag_batch_sheet.dart';
 import '../sections/diary_view_options_sheet.dart';
 import '../widgets/diaries_fast_scroller.dart';
 import '../widgets/diaries_header_sliver.dart';
@@ -78,6 +79,7 @@ part '../controllers/diary_list_transition_coordinator.dart';
 part '../controllers/diaries_page_controller.dart';
 part '../controllers/diaries_notebook_scope_controller.dart';
 part '../controllers/diaries_notebook_membership_controller.dart';
+part '../controllers/diaries_tag_batch_controller.dart';
 part '../controllers/diaries_reading_selection_controller.dart';
 
 /// 日记列表页。
@@ -228,6 +230,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   late final DiariesPageController _controller;
   late final DiariesNotebookScopeController _scopeController;
   late final DiariesNotebookMembershipController _membershipController;
+  late final DiariesTagBatchController _tagBatchController;
   late final DiariesReadingSelectionController _readingSelection;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
@@ -248,6 +251,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       transitionCoordinator: _transitionCoordinator,
     );
     _membershipController = DiariesNotebookMembershipController(
+      this,
+      feedback: _feedback,
+      transitionCoordinator: _transitionCoordinator,
+    );
+    _tagBatchController = DiariesTagBatchController(
       this,
       feedback: _feedback,
       transitionCoordinator: _transitionCoordinator,
@@ -682,6 +690,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     ),
                                     onArchiveSelected: () => unawaited(
                                       _controller.archiveSelectedDiaries(),
+                                    ),
+                                    onSetTagsSelected: () => unawaited(
+                                      _tagBatchController.editSelectedTags(),
                                     ),
                                     onExportSelected: () => unawaited(
                                       _controller.exportSelectedDiaries(),

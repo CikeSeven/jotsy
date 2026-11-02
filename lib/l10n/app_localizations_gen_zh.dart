@@ -4958,6 +4958,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryExportSelected => '导出';
 
   @override
+  String get diaryTagBatchAction => '设置标签';
+
+  @override
+  String diaryTagBatchTitle(int count) {
+    return '给 $count 篇日记设置标签';
+  }
+
+  @override
+  String get diaryTagBatchDone => '完成';
+
+  @override
+  String diaryTagBatchUpdated(int count) {
+    return '已更新 $count 篇日记的标签';
+  }
+
+  @override
+  String get diaryTagBatchFailed => '标签更新失败，请重试';
+
+  @override
   String get dataMgmtExportDiaries => '导出日记';
 
   @override

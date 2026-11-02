@@ -1,8 +1,30 @@
 part of 'app_database.dart';
 
+/// 一次批量改标签（[_AppDatabaseTagOps.applyDiaryTagBatch]）的撤销信息。
+///
+/// [before] 为本次真正改动过的日记（业务 id）原来的标签 id（升序），[add] /
+/// [remove] 为本次实际加上 / 去掉的标签：撤销时只把这次加上的去掉、去掉的
+/// 放回，结果与 [before] 逐一相等，又不会抹掉撤销窗口里别处对其他标签的
+/// 改动。本次没有任何改动时 [isEmpty]。
+@immutable
+class DiaryTagBatchUndo {
+  const DiaryTagBatchUndo({
+    this.before = const <String, List<int>>{},
+    this.add = const <int>{},
+    this.remove = const <int>{},
+  });
+
+  final Map<String, List<int>> before;
+  final Set<int> add;
+  final Set<int> remove;
+
+  bool get isEmpty => before.isEmpty;
+}
+
 /// 标签相关数据访问实现。
 ///
-/// 这部分只负责标签本身的增删查，不处理日记正文与归档语义。
+/// 这部分负责标签本身的增删查，以及多选日记的批量加减标签（只改
+/// `diary_tags`，不碰日记行）；不处理日记正文与归档语义。
 mixin _AppDatabaseTagOps on _$AppDatabase {
   /// 按名称升序实时监听全部标签。
   Stream<List<Tag>> watchAllTags() {
@@ -116,6 +138,166 @@ mixin _AppDatabaseTagOps on _$AppDatabase {
               ),
         ))
         .go();
+  }
+
+  /// 每篇日记（业务 id）现有的标签 id：每个传入的 id 都有一项，没有标签
+  /// （或日记不存在）时为空集合。多选的标签面板据此算出各标签的三态。
+  Future<Map<String, Set<int>>> getTagIdsForDiaries(
+    Iterable<String> diaryIds,
+  ) async {
+    final ids = diaryIds.toSet();
+    final result = <String, Set<int>>{for (final id in ids) id: <int>{}};
+    final local = await _diaryLocalIdsForTags(ids);
+    final current = await _tagIdsOfLocalDiaries(local.values);
+    for (final MapEntry(key: diaryId, value: localId) in local.entries) {
+      result[diaryId]!.addAll(current[localId] ?? const <int>{});
+    }
+    return result;
+  }
+
+  /// 给一批日记（业务 id）整体加上 [add]、去掉 [remove] 里的标签（多选的
+  /// 批量标签），返回撤销信息（见 [restoreDiaryTagBatch]）。
+  ///
+  /// - 单个事务内只改写 `diary_tags`：不改日记行，`updatedAt` 不变（与多选
+  ///   置顶、日记本收录一致，按更新时间排序的列表不跳动）；首页列表与标签
+  ///   栏的查询都订阅了 `diary_tags`，随之刷新，局域网同步的标签分面也由
+  ///   这张表现算；
+  /// - 去掉只删关联，不删标签本身；[add] 里此刻已不存在的标签（面板打开
+  ///   期间在别处删掉）跳过，不留悬空关联（库里不开外键）；
+  /// - 已有的不重复加、没有的不去删；整批没有任何变化时不写库、不触发
+  ///   数据流，返回空的撤销信息；
+  /// - [add] 与 [remove] 必须不相交（三态面板的结果天然如此）。
+  Future<DiaryTagBatchUndo> applyDiaryTagBatch(
+    Iterable<String> diaryIds, {
+    Set<int> add = const <int>{},
+    Set<int> remove = const <int>{},
+  }) async {
+    if (add.any(remove.contains)) {
+      throw ArgumentError.value(add, 'add', '不能同时加上和去掉同一个标签');
+    }
+    final ids = diaryIds.toSet();
+    if (ids.isEmpty || (add.isEmpty && remove.isEmpty)) {
+      return const DiaryTagBatchUndo();
+    }
+    return transaction(() async {
+      final local = await _diaryLocalIdsForTags(ids);
+      final current = await _tagIdsOfLocalDiaries(local.values);
+      final addable = await _existingTagIds(add);
+      final before = <String, List<int>>{};
+      final added = <int>{};
+      final removed = <int>{};
+      final inserts = <DiaryTagsCompanion>[];
+      for (final MapEntry(key: diaryId, value: localId) in local.entries) {
+        final tags = current[localId] ?? const <int>{};
+        final toAdd = addable.difference(tags);
+        final toRemove = remove.intersection(tags);
+        if (toAdd.isEmpty && toRemove.isEmpty) continue;
+        before[diaryId] = tags.toList()..sort();
+        added.addAll(toAdd);
+        removed.addAll(toRemove);
+        if (toRemove.isNotEmpty) {
+          await (delete(diaryTags)..where(
+                (DiaryTags t) =>
+                    t.diaryId.equals(localId) & t.tagId.isIn(toRemove),
+              ))
+              .go();
+        }
+        for (final tagId in toAdd) {
+          inserts.add(
+            DiaryTagsCompanion.insert(diaryId: localId, tagId: tagId),
+          );
+        }
+      }
+      if (inserts.isNotEmpty) {
+        await batch(
+          (Batch b) =>
+              b.insertAll(diaryTags, inserts, mode: InsertMode.insertOrIgnore),
+        );
+      }
+      return DiaryTagBatchUndo(before: before, add: added, remove: removed);
+    });
+  }
+
+  /// 撤销 [applyDiaryTagBatch]：单个事务内把这次加上的去掉、去掉的放回，
+  /// 同样不改 `updatedAt`。期间被彻底删除的日记跳过；被删掉的标签不再
+  /// 放回（不留悬空关联）。
+  Future<void> restoreDiaryTagBatch(DiaryTagBatchUndo undo) async {
+    if (undo.isEmpty) return;
+    await transaction(() async {
+      final local = await _diaryLocalIdsForTags(undo.before.keys);
+      final restorable = await _existingTagIds(undo.remove);
+      final inserts = <DiaryTagsCompanion>[];
+      for (final MapEntry(key: diaryId, value: tags) in undo.before.entries) {
+        final localId = local[diaryId];
+        if (localId == null) continue;
+        final original = tags.toSet();
+        final takeOut = undo.add.difference(original);
+        if (takeOut.isNotEmpty) {
+          await (delete(diaryTags)..where(
+                (DiaryTags t) =>
+                    t.diaryId.equals(localId) & t.tagId.isIn(takeOut),
+              ))
+              .go();
+        }
+        for (final tagId in restorable.intersection(original)) {
+          inserts.add(
+            DiaryTagsCompanion.insert(diaryId: localId, tagId: tagId),
+          );
+        }
+      }
+      if (inserts.isNotEmpty) {
+        await batch(
+          (Batch b) =>
+              b.insertAll(diaryTags, inserts, mode: InsertMode.insertOrIgnore),
+        );
+      }
+    });
+  }
+
+  /// 日记业务 id → 本地 id；不存在的日记不出现在结果里。
+  Future<Map<String, int>> _diaryLocalIdsForTags(
+    Iterable<String> diaryIds,
+  ) async {
+    final result = <String, int>{};
+    for (final chunk in _chunked(diaryIds.toSet().toList())) {
+      final query = selectOnly(diaries)
+        ..addColumns(<Expression<Object>>[diaries.id, diaries.diaryId])
+        ..where(diaries.diaryId.isIn(chunk));
+      for (final row in await query.get()) {
+        result[row.read(diaries.diaryId)!] = row.read(diaries.id)!;
+      }
+    }
+    return result;
+  }
+
+  /// 本地日记 id → 它现有的标签 id；没有标签的日记不出现在结果里。
+  Future<Map<int, Set<int>>> _tagIdsOfLocalDiaries(
+    Iterable<int> localIds,
+  ) async {
+    final result = <int, Set<int>>{};
+    for (final chunk in _chunked(localIds.toSet().toList())) {
+      final rows = await (select(
+        diaryTags,
+      )..where((DiaryTags t) => t.diaryId.isIn(chunk))).get();
+      for (final row in rows) {
+        (result[row.diaryId] ??= <int>{}).add(row.tagId);
+      }
+    }
+    return result;
+  }
+
+  /// [tagIds] 里此刻仍存在的标签。
+  Future<Set<int>> _existingTagIds(Set<int> tagIds) async {
+    final result = <int>{};
+    for (final chunk in _chunked(tagIds.toList())) {
+      final query = selectOnly(tags)
+        ..addColumns(<Expression<Object>>[tags.id])
+        ..where(tags.id.isIn(chunk));
+      for (final row in await query.get()) {
+        result.add(row.read(tags.id)!);
+      }
+    }
+    return result;
   }
 
   /// 删除标签及其关联，不依赖历史连接是否开启了 SQLite 外键级联。

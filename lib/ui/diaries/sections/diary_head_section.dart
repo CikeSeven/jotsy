@@ -19,8 +19,8 @@ enum DiaryLayoutMode { list, waterfall }
 /// - 普通态：搜索条占满左侧，右侧为草稿箱（有草稿时带份数角标）、归档列表
 ///   与视图选项入口；
 /// - 多选态：取消 · 已选数量 · 收进日记本 · 归档 · 删除 · 更多（置顶或取消
-///   置顶、导出；在普通日记本里另有“从本日记本移出”“移动到…”，不超过 4 项，
-///   用弹出菜单）。
+///   置顶、设置标签、导出；在普通日记本里另有“从本日记本移出”“移动到…”，
+///   最多 5 项、都是单行动作，仍用弹出菜单而不是底部面板）。
 class DiaryHeadSection extends StatelessWidget {
   // ==================== 头部过渡动画常量 ====================
   static const double _headerContentHeight = 52;
@@ -34,6 +34,7 @@ class DiaryHeadSection extends StatelessWidget {
     required this.isPinActionUnpin,
     required this.onPinSelected,
     required this.onArchiveSelected,
+    required this.onSetTagsSelected,
     required this.onExportSelected,
     required this.onDeleteSelected,
     this.onAddToNotebookSelected,
@@ -53,6 +54,9 @@ class DiaryHeadSection extends StatelessWidget {
   final bool isPinActionUnpin;
   final VoidCallback onPinSelected;
   final VoidCallback onArchiveSelected;
+
+  /// 给所选日记批量加上或去掉标签（三态标签面板）。
+  final VoidCallback onSetTagsSelected;
   final VoidCallback onExportSelected;
   final VoidCallback onDeleteSelected;
 
@@ -183,6 +187,11 @@ class DiaryHeadSection extends StatelessWidget {
                     ? l10n.diaryUnpinSelected
                     : l10n.diaryPinSelected,
               ),
+            ),
+            ExpressiveMenuItem(
+              leadingIcon: const FaIcon(FontAwesomeIcons.tags),
+              onPressed: onSetTagsSelected,
+              child: Text(l10n.diaryTagBatchAction),
             ),
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),

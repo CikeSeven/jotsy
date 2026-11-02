@@ -22177,6 +22177,456 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved as a comment'**
   String get aiReplySavedAsComment;
+
+  /// Title of the AI recap page.
+  ///
+  /// In en, this message translates to:
+  /// **'AI recap'**
+  String get aiRecapTitle;
+
+  /// Recap period choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get aiRecapRange;
+
+  /// Recap period.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get aiRecapThisWeek;
+
+  /// Recap period.
+  ///
+  /// In en, this message translates to:
+  /// **'Last week'**
+  String get aiRecapLastWeek;
+
+  /// Recap period.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get aiRecapThisMonth;
+
+  /// Recap period.
+  ///
+  /// In en, this message translates to:
+  /// **'Last month'**
+  String get aiRecapLastMonth;
+
+  /// Recap period.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get aiRecapThisYear;
+
+  /// Custom recap period.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get aiRecapCustom;
+
+  /// Recap notebook choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook'**
+  String get aiRecapNotebook;
+
+  /// Recap over all entries.
+  ///
+  /// In en, this message translates to:
+  /// **'All entries'**
+  String get aiRecapAllNotebooks;
+
+  /// Recap section choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Include'**
+  String get aiRecapSections;
+
+  /// Recap persona choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get aiRecapPersona;
+
+  /// Button generating a recap.
+  ///
+  /// In en, this message translates to:
+  /// **'Write recap'**
+  String get aiRecapGenerate;
+
+  /// Shown when the period has no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries to recap in this period.'**
+  String get aiRecapNoEntries;
+
+  /// Progress of a long recap.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading part {index} of {total}…'**
+  String aiRecapReading(int index, int total);
+
+  /// Shown while the final recap streams.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing the recap…'**
+  String get aiRecapWriting;
+
+  /// Recap statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}} · {words} words'**
+  String aiRecapStats(int count, int words);
+
+  /// Shown after a recap is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to your recaps'**
+  String get aiRecapSaved;
+
+  /// Saves AI text as a new diary draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as entry'**
+  String get aiRecapSaveAsDiary;
+
+  /// Shares the recap text.
+  ///
+  /// In en, this message translates to:
+  /// **'Share text'**
+  String get aiRecapShare;
+
+  /// Snackbar after deleting a recap.
+  ///
+  /// In en, this message translates to:
+  /// **'Recap deleted'**
+  String get aiRecapDeleted;
+
+  /// A date range.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String aiRecapPeriodRange(String start, String end);
+
+  /// Title of a recap saved as an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'{period} recap'**
+  String aiRecapDiaryTitle(String period);
+
+  /// Title of the AI hub page.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assistant'**
+  String get aiHubTitle;
+
+  /// Hint of the hub question field.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your diary…'**
+  String get aiHubAskHint;
+
+  /// Quick question.
+  ///
+  /// In en, this message translates to:
+  /// **'How has this month been for me?'**
+  String get aiHubQuickMonth;
+
+  /// Quick question.
+  ///
+  /// In en, this message translates to:
+  /// **'What have I been worrying about lately?'**
+  String get aiHubQuickWorry;
+
+  /// Quick question.
+  ///
+  /// In en, this message translates to:
+  /// **'What was I doing this time last year?'**
+  String get aiHubQuickLastYear;
+
+  /// Quick question.
+  ///
+  /// In en, this message translates to:
+  /// **'What small things made me happy recently?'**
+  String get aiHubQuickHappy;
+
+  /// Quick question.
+  ///
+  /// In en, this message translates to:
+  /// **'How have I changed over the past half year?'**
+  String get aiHubQuickGrowth;
+
+  /// Hub recaps group.
+  ///
+  /// In en, this message translates to:
+  /// **'Recaps'**
+  String get aiHubRecapsGroup;
+
+  /// Opens the recap page.
+  ///
+  /// In en, this message translates to:
+  /// **'More options…'**
+  String get aiHubRecapMore;
+
+  /// Shown when there are no recaps.
+  ///
+  /// In en, this message translates to:
+  /// **'No recaps yet'**
+  String get aiHubNoRecaps;
+
+  /// Hub chats group.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats'**
+  String get aiHubChatsGroup;
+
+  /// Shown when there are no chats.
+  ///
+  /// In en, this message translates to:
+  /// **'No chats yet. Ask a question above to start.'**
+  String get aiHubNoChats;
+
+  /// Hint of the chat search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search chats'**
+  String get aiHubSearchChats;
+
+  /// Title of an unnamed chat.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get aiChatUntitled;
+
+  /// Pins a chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get aiChatPin;
+
+  /// Unpins a chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get aiChatUnpin;
+
+  /// Renames a chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get aiChatRename;
+
+  /// Title of the rename dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename chat'**
+  String get aiChatRenameTitle;
+
+  /// Snackbar after deleting a chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat deleted'**
+  String get aiChatDeleted;
+
+  /// Hint of the chat input.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask something…'**
+  String get aiChatInputHint;
+
+  /// Shown while a search plan is made.
+  ///
+  /// In en, this message translates to:
+  /// **'Understanding the question…'**
+  String get aiChatPlanning;
+
+  /// Shown while entries are searched.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for related entries…'**
+  String get aiChatSearching;
+
+  /// Number of entries an answer used.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Used 1 entry} other{Used {count} entries}}'**
+  String aiChatCitations(int count);
+
+  /// Shown when an answer used no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'No related entries found'**
+  String get aiChatNoCitations;
+
+  /// Chat scope chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Scope'**
+  String get aiChatScope;
+
+  /// Chat scope option.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get aiChatScopeAuto;
+
+  /// Chat scope option.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {days} days'**
+  String aiChatScopeRecent(int days);
+
+  /// Chat scope option.
+  ///
+  /// In en, this message translates to:
+  /// **'All entries'**
+  String get aiChatScopeAll;
+
+  /// Chat scope option.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range…'**
+  String get aiChatScopeRange;
+
+  /// Chat scope pinned to one entry.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry'**
+  String get aiChatScopeEntry;
+
+  /// Chat persona chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Persona'**
+  String get aiChatPersona;
+
+  /// Chat model chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get aiChatModel;
+
+  /// Default model option.
+  ///
+  /// In en, this message translates to:
+  /// **'Default ({name})'**
+  String aiChatModelDefault(String name);
+
+  /// Edits and resends the last question.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit and resend'**
+  String get aiChatEditResend;
+
+  /// Deletes a chat message.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete message'**
+  String get aiChatDeleteMessage;
+
+  /// Shown for a missing cited entry.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry no longer exists'**
+  String get aiChatCitationMissing;
+
+  /// Empty chat hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about your mood over a period, how something unfolded, or let AI help you remember.'**
+  String get aiChatEmptyHint;
+
+  /// Title of a chat about one entry.
+  ///
+  /// In en, this message translates to:
+  /// **'About “{title}”'**
+  String aiChatAboutEntry(String title);
+
+  /// Tooltip of the AI entry on the home top bar.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assistant'**
+  String get aiHubTooltip;
+
+  /// Explore card name.
+  ///
+  /// In en, this message translates to:
+  /// **'AI insights'**
+  String get exploreModuleAi;
+
+  /// Explore card description.
+  ///
+  /// In en, this message translates to:
+  /// **'Your latest recap, and ask your diary'**
+  String get exploreModuleAiDesc;
+
+  /// Explore AI card without recaps.
+  ///
+  /// In en, this message translates to:
+  /// **'No recap yet. How about one for this week?'**
+  String get aiExploreNoRecap;
+
+  /// Explore AI card button.
+  ///
+  /// In en, this message translates to:
+  /// **'This week\'s recap'**
+  String get aiExploreWeekly;
+
+  /// Explore AI card button.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask my diary'**
+  String get aiExploreAsk;
+
+  /// Explore AI card when not configured.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up an AI service to use this'**
+  String get aiExploreNotConfigured;
+
+  /// Shown when a recap is stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped. The partial recap isn\'t saved.'**
+  String get aiRecapStopped;
+
+  /// Heading of saved recaps on the recap page.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier recaps'**
+  String get aiRecapHistory;
+
+  /// Title of the delete recap dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this recap?'**
+  String get aiRecapDeleteTitle;
+
+  /// Title of the recap notebook sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a notebook'**
+  String get aiRecapNotebookPick;
+
+  /// Title of the custom recap date picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose dates'**
+  String get aiRecapCustomRange;
+
+  /// Shown when system share is unavailable and the text was copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied. Paste it wherever you\'d like to share.'**
+  String get aiRecapShareUnavailable;
+
+  /// Model credit under a recap.
+  ///
+  /// In en, this message translates to:
+  /// **'Written by {model}'**
+  String aiRecapModel(String model);
 }
 
 class _AppLocalizationsDelegate

@@ -1,12 +1,15 @@
 // AI 模块里枚举、预设与错误到界面文案的换算。新增服务商预设时，中英文名
 // 称不同的在 [aiPresetLabel] 里补一行，其余直接用品牌名。
 
+import 'package:intl/intl.dart';
+
 import '../../../core/services/ai/ai_failure.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/ai_provider_config.dart';
 import '../../../core/services/ai/ai_provider_presets.dart';
 import '../../../l10n/app_localizations_gen.dart';
 import '../models/ai_preference_parts.dart';
+import '../models/ai_recap_range.dart';
 
 String aiPresetLabel(AppLocalizations l10n, AiProviderPreset preset) =>
     switch (preset.id) {
@@ -156,4 +159,27 @@ String aiCompactCount(int value) {
     return '${(value / 1000).toStringAsFixed(value < 10000 ? 1 : 0)}k';
   }
   return '${(value / 1000000).toStringAsFixed(1)}M';
+}
+
+/// 回顾预设的名称。
+String aiRecapPresetLabel(AppLocalizations l10n, AiRecapPreset preset) =>
+    switch (preset) {
+      AiRecapPreset.thisWeek => l10n.aiRecapThisWeek,
+      AiRecapPreset.lastWeek => l10n.aiRecapLastWeek,
+      AiRecapPreset.thisMonth => l10n.aiRecapThisMonth,
+      AiRecapPreset.lastMonth => l10n.aiRecapLastMonth,
+      AiRecapPreset.thisYear => l10n.aiRecapThisYear,
+      AiRecapPreset.custom => l10n.aiRecapCustom,
+    };
+
+/// 回顾范围的日期写法：`2026年11月2日 – 11月8日`（一天时只写一个日期）。
+String aiRecapRangeText(AppLocalizations l10n, AiRecapRange range) {
+  final first = range.start;
+  final last = range.lastDay;
+  final full = DateFormat.yMMMd(l10n.localeName);
+  if (first == last) return full.format(first);
+  final end = first.year == last.year
+      ? DateFormat.MMMd(l10n.localeName).format(last)
+      : full.format(last);
+  return l10n.aiRecapPeriodRange(full.format(first), end);
 }

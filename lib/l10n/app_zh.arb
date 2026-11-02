@@ -16823,5 +16823,359 @@
   "aiReplySavedAsComment": "已存为留言",
   "@aiReplySavedAsComment": {
     "description": "把回应存为留言后的提示。"
+  },
+  "aiRecapTitle": "AI 回顾",
+  "@aiRecapTitle": {
+    "description": "AI 回顾页标题。"
+  },
+  "aiRecapRange": "范围",
+  "@aiRecapRange": {
+    "description": "回顾范围的选择。"
+  },
+  "aiRecapThisWeek": "本周",
+  "@aiRecapThisWeek": {
+    "description": "回顾范围。"
+  },
+  "aiRecapLastWeek": "上周",
+  "@aiRecapLastWeek": {
+    "description": "回顾范围。"
+  },
+  "aiRecapThisMonth": "本月",
+  "@aiRecapThisMonth": {
+    "description": "回顾范围。"
+  },
+  "aiRecapLastMonth": "上月",
+  "@aiRecapLastMonth": {
+    "description": "回顾范围。"
+  },
+  "aiRecapThisYear": "今年",
+  "@aiRecapThisYear": {
+    "description": "回顾范围。"
+  },
+  "aiRecapCustom": "自定义…",
+  "@aiRecapCustom": {
+    "description": "自定义回顾范围。"
+  },
+  "aiRecapNotebook": "日记本",
+  "@aiRecapNotebook": {
+    "description": "回顾的日记本选择。"
+  },
+  "aiRecapAllNotebooks": "全部日记",
+  "@aiRecapAllNotebooks": {
+    "description": "回顾全部日记。"
+  },
+  "aiRecapSections": "包含",
+  "@aiRecapSections": {
+    "description": "回顾章节的选择。"
+  },
+  "aiRecapPersona": "口吻",
+  "@aiRecapPersona": {
+    "description": "回顾人设的选择。"
+  },
+  "aiRecapGenerate": "生成回顾",
+  "@aiRecapGenerate": {
+    "description": "生成回顾的按钮。"
+  },
+  "aiRecapNoEntries": "这段时间没有可以回顾的日记。",
+  "@aiRecapNoEntries": {
+    "description": "范围内没有日记时的提示。"
+  },
+  "aiRecapReading": "正在读第 {index} 部分，共 {total} 部分…",
+  "@aiRecapReading": {
+    "description": "长回顾的进度。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecapWriting": "正在写回顾…",
+  "@aiRecapWriting": {
+    "description": "回顾生成中的提示。"
+  },
+  "aiRecapStats": "{count} 篇 · {words} 字",
+  "@aiRecapStats": {
+    "description": "回顾统计。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecapSaved": "已保存到回顾记录",
+  "@aiRecapSaved": {
+    "description": "回顾保存后的提示。"
+  },
+  "aiRecapSaveAsDiary": "另存为日记",
+  "@aiRecapSaveAsDiary": {
+    "description": "把 AI 的文字另存为新日记。"
+  },
+  "aiRecapShare": "分享文字",
+  "@aiRecapShare": {
+    "description": "分享回顾文字。"
+  },
+  "aiRecapDeleted": "已删除这份回顾",
+  "@aiRecapDeleted": {
+    "description": "删除回顾后的提示。"
+  },
+  "aiRecapPeriodRange": "{start} – {end}",
+  "@aiRecapPeriodRange": {
+    "description": "日期范围。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "aiRecapDiaryTitle": "{period} 回顾",
+  "@aiRecapDiaryTitle": {
+    "description": "另存为日记的回顾标题。",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubTitle": "AI 助手",
+  "@aiHubTitle": {
+    "description": "AI 助手主页标题。"
+  },
+  "aiHubAskHint": "问问你的日记…",
+  "@aiHubAskHint": {
+    "description": "主页提问框的提示。"
+  },
+  "aiHubQuickMonth": "这个月我过得怎么样？",
+  "@aiHubQuickMonth": {
+    "description": "快捷问题。"
+  },
+  "aiHubQuickWorry": "我最近常为什么事烦恼？",
+  "@aiHubQuickWorry": {
+    "description": "快捷问题。"
+  },
+  "aiHubQuickLastYear": "去年的这个时候我在做什么？",
+  "@aiHubQuickLastYear": {
+    "description": "快捷问题。"
+  },
+  "aiHubQuickHappy": "最近有哪些让我开心的小事？",
+  "@aiHubQuickHappy": {
+    "description": "快捷问题。"
+  },
+  "aiHubQuickGrowth": "这半年我有哪些变化？",
+  "@aiHubQuickGrowth": {
+    "description": "快捷问题。"
+  },
+  "aiHubRecapsGroup": "回顾",
+  "@aiHubRecapsGroup": {
+    "description": "主页回顾分组。"
+  },
+  "aiHubRecapMore": "更多范围…",
+  "@aiHubRecapMore": {
+    "description": "打开回顾页。"
+  },
+  "aiHubNoRecaps": "还没有回顾",
+  "@aiHubNoRecaps": {
+    "description": "没有回顾时显示。"
+  },
+  "aiHubChatsGroup": "对话",
+  "@aiHubChatsGroup": {
+    "description": "主页对话分组。"
+  },
+  "aiHubNoChats": "还没有对话。从上面问一个问题开始吧。",
+  "@aiHubNoChats": {
+    "description": "没有对话时显示。"
+  },
+  "aiHubSearchChats": "搜索对话",
+  "@aiHubSearchChats": {
+    "description": "搜索对话的提示。"
+  },
+  "aiChatUntitled": "新对话",
+  "@aiChatUntitled": {
+    "description": "未命名对话的标题。"
+  },
+  "aiChatPin": "置顶",
+  "@aiChatPin": {
+    "description": "置顶对话。"
+  },
+  "aiChatUnpin": "取消置顶",
+  "@aiChatUnpin": {
+    "description": "取消置顶对话。"
+  },
+  "aiChatRename": "重命名",
+  "@aiChatRename": {
+    "description": "重命名对话。"
+  },
+  "aiChatRenameTitle": "重命名对话",
+  "@aiChatRenameTitle": {
+    "description": "重命名对话框的标题。"
+  },
+  "aiChatDeleted": "已删除对话",
+  "@aiChatDeleted": {
+    "description": "删除对话后的提示。"
+  },
+  "aiChatInputHint": "问点什么…",
+  "@aiChatInputHint": {
+    "description": "对话输入框的提示。"
+  },
+  "aiChatPlanning": "正在理解问题…",
+  "@aiChatPlanning": {
+    "description": "生成检索计划时的提示。"
+  },
+  "aiChatSearching": "正在查找相关的日记…",
+  "@aiChatSearching": {
+    "description": "查找日记时的提示。"
+  },
+  "aiChatCitations": "参考了 {count} 篇日记",
+  "@aiChatCitations": {
+    "description": "回答参考的日记篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatNoCitations": "没有找到相关的日记",
+  "@aiChatNoCitations": {
+    "description": "没有参考日记时显示。"
+  },
+  "aiChatScope": "范围",
+  "@aiChatScope": {
+    "description": "对话范围胶囊。"
+  },
+  "aiChatScopeAuto": "自动",
+  "@aiChatScopeAuto": {
+    "description": "对话范围选项。"
+  },
+  "aiChatScopeRecent": "最近 {days} 天",
+  "@aiChatScopeRecent": {
+    "description": "对话范围选项。",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatScopeAll": "全部日记",
+  "@aiChatScopeAll": {
+    "description": "对话范围选项。"
+  },
+  "aiChatScopeRange": "时间范围…",
+  "@aiChatScopeRange": {
+    "description": "对话范围选项。"
+  },
+  "aiChatScopeEntry": "这篇日记",
+  "@aiChatScopeEntry": {
+    "description": "固定为一篇日记的范围。"
+  },
+  "aiChatPersona": "人设",
+  "@aiChatPersona": {
+    "description": "对话人设胶囊。"
+  },
+  "aiChatModel": "模型",
+  "@aiChatModel": {
+    "description": "对话模型胶囊。"
+  },
+  "aiChatModelDefault": "默认（{name}）",
+  "@aiChatModelDefault": {
+    "description": "默认模型选项。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatEditResend": "编辑并重发",
+  "@aiChatEditResend": {
+    "description": "编辑并重发最后一个问题。"
+  },
+  "aiChatDeleteMessage": "删除这条",
+  "@aiChatDeleteMessage": {
+    "description": "删除一条消息。"
+  },
+  "aiChatCitationMissing": "这篇日记已不存在",
+  "@aiChatCitationMissing": {
+    "description": "引用的日记不存在时的提示。"
+  },
+  "aiChatEmptyHint": "可以问问这段时间的心情、某件事的来龙去脉，或者让 AI 帮你回忆。",
+  "@aiChatEmptyHint": {
+    "description": "空对话的提示。"
+  },
+  "aiChatAboutEntry": "关于「{title}」",
+  "@aiChatAboutEntry": {
+    "description": "关于某篇日记的对话标题。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubTooltip": "AI 助手",
+  "@aiHubTooltip": {
+    "description": "首页顶栏 AI 入口的提示。"
+  },
+  "exploreModuleAi": "AI 洞察",
+  "@exploreModuleAi": {
+    "description": "探索页卡片名称。"
+  },
+  "exploreModuleAiDesc": "最近一次回顾，以及问问你的日记",
+  "@exploreModuleAiDesc": {
+    "description": "探索页卡片说明。"
+  },
+  "aiExploreNoRecap": "还没有回顾，来一份本周回顾吧。",
+  "@aiExploreNoRecap": {
+    "description": "没有回顾时探索卡片的提示。"
+  },
+  "aiExploreWeekly": "生成本周回顾",
+  "@aiExploreWeekly": {
+    "description": "探索 AI 卡片的按钮。"
+  },
+  "aiExploreAsk": "问问我的日记",
+  "@aiExploreAsk": {
+    "description": "探索 AI 卡片的按钮。"
+  },
+  "aiExploreNotConfigured": "配置好 AI 服务后可用",
+  "@aiExploreNotConfigured": {
+    "description": "未配置 AI 时探索卡片的提示。"
+  },
+  "aiRecapStopped": "已停止，写了一半的回顾不会保存。",
+  "@aiRecapStopped": {
+    "description": "回顾被停止时的提示。"
+  },
+  "aiRecapHistory": "以前的回顾",
+  "@aiRecapHistory": {
+    "description": "回顾页里已保存回顾的小标题。"
+  },
+  "aiRecapDeleteTitle": "删除这份回顾？",
+  "@aiRecapDeleteTitle": {
+    "description": "删除回顾对话框的标题。"
+  },
+  "aiRecapNotebookPick": "选择日记本",
+  "@aiRecapNotebookPick": {
+    "description": "回顾日记本面板的标题。"
+  },
+  "aiRecapCustomRange": "选择日期",
+  "@aiRecapCustomRange": {
+    "description": "自定义回顾日期选择器的标题。"
+  },
+  "aiRecapShareUnavailable": "已复制，可以粘贴到想分享的地方。",
+  "@aiRecapShareUnavailable": {
+    "description": "没有系统分享时改为复制后的提示。"
+  },
+  "aiRecapModel": "由 {model} 生成",
+  "@aiRecapModel": {
+    "description": "回顾下方的模型说明。",
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
   }
 }

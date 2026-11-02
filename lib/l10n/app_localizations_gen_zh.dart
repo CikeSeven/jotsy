@@ -12134,4 +12134,247 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiReplySavedAsComment => '已存为留言';
+
+  @override
+  String get aiRecapTitle => 'AI 回顾';
+
+  @override
+  String get aiRecapRange => '范围';
+
+  @override
+  String get aiRecapThisWeek => '本周';
+
+  @override
+  String get aiRecapLastWeek => '上周';
+
+  @override
+  String get aiRecapThisMonth => '本月';
+
+  @override
+  String get aiRecapLastMonth => '上月';
+
+  @override
+  String get aiRecapThisYear => '今年';
+
+  @override
+  String get aiRecapCustom => '自定义…';
+
+  @override
+  String get aiRecapNotebook => '日记本';
+
+  @override
+  String get aiRecapAllNotebooks => '全部日记';
+
+  @override
+  String get aiRecapSections => '包含';
+
+  @override
+  String get aiRecapPersona => '口吻';
+
+  @override
+  String get aiRecapGenerate => '生成回顾';
+
+  @override
+  String get aiRecapNoEntries => '这段时间没有可以回顾的日记。';
+
+  @override
+  String aiRecapReading(int index, int total) {
+    return '正在读第 $index 部分，共 $total 部分…';
+  }
+
+  @override
+  String get aiRecapWriting => '正在写回顾…';
+
+  @override
+  String aiRecapStats(int count, int words) {
+    return '$count 篇 · $words 字';
+  }
+
+  @override
+  String get aiRecapSaved => '已保存到回顾记录';
+
+  @override
+  String get aiRecapSaveAsDiary => '另存为日记';
+
+  @override
+  String get aiRecapShare => '分享文字';
+
+  @override
+  String get aiRecapDeleted => '已删除这份回顾';
+
+  @override
+  String aiRecapPeriodRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String aiRecapDiaryTitle(String period) {
+    return '$period 回顾';
+  }
+
+  @override
+  String get aiHubTitle => 'AI 助手';
+
+  @override
+  String get aiHubAskHint => '问问你的日记…';
+
+  @override
+  String get aiHubQuickMonth => '这个月我过得怎么样？';
+
+  @override
+  String get aiHubQuickWorry => '我最近常为什么事烦恼？';
+
+  @override
+  String get aiHubQuickLastYear => '去年的这个时候我在做什么？';
+
+  @override
+  String get aiHubQuickHappy => '最近有哪些让我开心的小事？';
+
+  @override
+  String get aiHubQuickGrowth => '这半年我有哪些变化？';
+
+  @override
+  String get aiHubRecapsGroup => '回顾';
+
+  @override
+  String get aiHubRecapMore => '更多范围…';
+
+  @override
+  String get aiHubNoRecaps => '还没有回顾';
+
+  @override
+  String get aiHubChatsGroup => '对话';
+
+  @override
+  String get aiHubNoChats => '还没有对话。从上面问一个问题开始吧。';
+
+  @override
+  String get aiHubSearchChats => '搜索对话';
+
+  @override
+  String get aiChatUntitled => '新对话';
+
+  @override
+  String get aiChatPin => '置顶';
+
+  @override
+  String get aiChatUnpin => '取消置顶';
+
+  @override
+  String get aiChatRename => '重命名';
+
+  @override
+  String get aiChatRenameTitle => '重命名对话';
+
+  @override
+  String get aiChatDeleted => '已删除对话';
+
+  @override
+  String get aiChatInputHint => '问点什么…';
+
+  @override
+  String get aiChatPlanning => '正在理解问题…';
+
+  @override
+  String get aiChatSearching => '正在查找相关的日记…';
+
+  @override
+  String aiChatCitations(int count) {
+    return '参考了 $count 篇日记';
+  }
+
+  @override
+  String get aiChatNoCitations => '没有找到相关的日记';
+
+  @override
+  String get aiChatScope => '范围';
+
+  @override
+  String get aiChatScopeAuto => '自动';
+
+  @override
+  String aiChatScopeRecent(int days) {
+    return '最近 $days 天';
+  }
+
+  @override
+  String get aiChatScopeAll => '全部日记';
+
+  @override
+  String get aiChatScopeRange => '时间范围…';
+
+  @override
+  String get aiChatScopeEntry => '这篇日记';
+
+  @override
+  String get aiChatPersona => '人设';
+
+  @override
+  String get aiChatModel => '模型';
+
+  @override
+  String aiChatModelDefault(String name) {
+    return '默认（$name）';
+  }
+
+  @override
+  String get aiChatEditResend => '编辑并重发';
+
+  @override
+  String get aiChatDeleteMessage => '删除这条';
+
+  @override
+  String get aiChatCitationMissing => '这篇日记已不存在';
+
+  @override
+  String get aiChatEmptyHint => '可以问问这段时间的心情、某件事的来龙去脉，或者让 AI 帮你回忆。';
+
+  @override
+  String aiChatAboutEntry(String title) {
+    return '关于「$title」';
+  }
+
+  @override
+  String get aiHubTooltip => 'AI 助手';
+
+  @override
+  String get exploreModuleAi => 'AI 洞察';
+
+  @override
+  String get exploreModuleAiDesc => '最近一次回顾，以及问问你的日记';
+
+  @override
+  String get aiExploreNoRecap => '还没有回顾，来一份本周回顾吧。';
+
+  @override
+  String get aiExploreWeekly => '生成本周回顾';
+
+  @override
+  String get aiExploreAsk => '问问我的日记';
+
+  @override
+  String get aiExploreNotConfigured => '配置好 AI 服务后可用';
+
+  @override
+  String get aiRecapStopped => '已停止，写了一半的回顾不会保存。';
+
+  @override
+  String get aiRecapHistory => '以前的回顾';
+
+  @override
+  String get aiRecapDeleteTitle => '删除这份回顾？';
+
+  @override
+  String get aiRecapNotebookPick => '选择日记本';
+
+  @override
+  String get aiRecapCustomRange => '选择日期';
+
+  @override
+  String get aiRecapShareUnavailable => '已复制，可以粘贴到想分享的地方。';
+
+  @override
+  String aiRecapModel(String model) {
+    return '由 $model 生成';
+  }
 }

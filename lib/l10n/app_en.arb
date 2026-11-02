@@ -16823,5 +16823,359 @@
   "aiReplySavedAsComment": "Saved as a comment",
   "@aiReplySavedAsComment": {
     "description": "Snackbar after saving a reflection as a comment."
+  },
+  "aiRecapTitle": "AI recap",
+  "@aiRecapTitle": {
+    "description": "Title of the AI recap page."
+  },
+  "aiRecapRange": "Period",
+  "@aiRecapRange": {
+    "description": "Recap period choice."
+  },
+  "aiRecapThisWeek": "This week",
+  "@aiRecapThisWeek": {
+    "description": "Recap period."
+  },
+  "aiRecapLastWeek": "Last week",
+  "@aiRecapLastWeek": {
+    "description": "Recap period."
+  },
+  "aiRecapThisMonth": "This month",
+  "@aiRecapThisMonth": {
+    "description": "Recap period."
+  },
+  "aiRecapLastMonth": "Last month",
+  "@aiRecapLastMonth": {
+    "description": "Recap period."
+  },
+  "aiRecapThisYear": "This year",
+  "@aiRecapThisYear": {
+    "description": "Recap period."
+  },
+  "aiRecapCustom": "Custom…",
+  "@aiRecapCustom": {
+    "description": "Custom recap period."
+  },
+  "aiRecapNotebook": "Notebook",
+  "@aiRecapNotebook": {
+    "description": "Recap notebook choice."
+  },
+  "aiRecapAllNotebooks": "All entries",
+  "@aiRecapAllNotebooks": {
+    "description": "Recap over all entries."
+  },
+  "aiRecapSections": "Include",
+  "@aiRecapSections": {
+    "description": "Recap section choice."
+  },
+  "aiRecapPersona": "Voice",
+  "@aiRecapPersona": {
+    "description": "Recap persona choice."
+  },
+  "aiRecapGenerate": "Write recap",
+  "@aiRecapGenerate": {
+    "description": "Button generating a recap."
+  },
+  "aiRecapNoEntries": "No entries to recap in this period.",
+  "@aiRecapNoEntries": {
+    "description": "Shown when the period has no entries."
+  },
+  "aiRecapReading": "Reading part {index} of {total}…",
+  "@aiRecapReading": {
+    "description": "Progress of a long recap.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecapWriting": "Writing the recap…",
+  "@aiRecapWriting": {
+    "description": "Shown while the final recap streams."
+  },
+  "aiRecapStats": "{count, plural, =1{1 entry} other{{count} entries}} · {words} words",
+  "@aiRecapStats": {
+    "description": "Recap statistics.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecapSaved": "Saved to your recaps",
+  "@aiRecapSaved": {
+    "description": "Shown after a recap is saved."
+  },
+  "aiRecapSaveAsDiary": "Save as entry",
+  "@aiRecapSaveAsDiary": {
+    "description": "Saves AI text as a new diary draft."
+  },
+  "aiRecapShare": "Share text",
+  "@aiRecapShare": {
+    "description": "Shares the recap text."
+  },
+  "aiRecapDeleted": "Recap deleted",
+  "@aiRecapDeleted": {
+    "description": "Snackbar after deleting a recap."
+  },
+  "aiRecapPeriodRange": "{start} – {end}",
+  "@aiRecapPeriodRange": {
+    "description": "A date range.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "aiRecapDiaryTitle": "{period} recap",
+  "@aiRecapDiaryTitle": {
+    "description": "Title of a recap saved as an entry.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubTitle": "AI assistant",
+  "@aiHubTitle": {
+    "description": "Title of the AI hub page."
+  },
+  "aiHubAskHint": "Ask your diary…",
+  "@aiHubAskHint": {
+    "description": "Hint of the hub question field."
+  },
+  "aiHubQuickMonth": "How has this month been for me?",
+  "@aiHubQuickMonth": {
+    "description": "Quick question."
+  },
+  "aiHubQuickWorry": "What have I been worrying about lately?",
+  "@aiHubQuickWorry": {
+    "description": "Quick question."
+  },
+  "aiHubQuickLastYear": "What was I doing this time last year?",
+  "@aiHubQuickLastYear": {
+    "description": "Quick question."
+  },
+  "aiHubQuickHappy": "What small things made me happy recently?",
+  "@aiHubQuickHappy": {
+    "description": "Quick question."
+  },
+  "aiHubQuickGrowth": "How have I changed over the past half year?",
+  "@aiHubQuickGrowth": {
+    "description": "Quick question."
+  },
+  "aiHubRecapsGroup": "Recaps",
+  "@aiHubRecapsGroup": {
+    "description": "Hub recaps group."
+  },
+  "aiHubRecapMore": "More options…",
+  "@aiHubRecapMore": {
+    "description": "Opens the recap page."
+  },
+  "aiHubNoRecaps": "No recaps yet",
+  "@aiHubNoRecaps": {
+    "description": "Shown when there are no recaps."
+  },
+  "aiHubChatsGroup": "Chats",
+  "@aiHubChatsGroup": {
+    "description": "Hub chats group."
+  },
+  "aiHubNoChats": "No chats yet. Ask a question above to start.",
+  "@aiHubNoChats": {
+    "description": "Shown when there are no chats."
+  },
+  "aiHubSearchChats": "Search chats",
+  "@aiHubSearchChats": {
+    "description": "Hint of the chat search field."
+  },
+  "aiChatUntitled": "New chat",
+  "@aiChatUntitled": {
+    "description": "Title of an unnamed chat."
+  },
+  "aiChatPin": "Pin",
+  "@aiChatPin": {
+    "description": "Pins a chat."
+  },
+  "aiChatUnpin": "Unpin",
+  "@aiChatUnpin": {
+    "description": "Unpins a chat."
+  },
+  "aiChatRename": "Rename",
+  "@aiChatRename": {
+    "description": "Renames a chat."
+  },
+  "aiChatRenameTitle": "Rename chat",
+  "@aiChatRenameTitle": {
+    "description": "Title of the rename dialog."
+  },
+  "aiChatDeleted": "Chat deleted",
+  "@aiChatDeleted": {
+    "description": "Snackbar after deleting a chat."
+  },
+  "aiChatInputHint": "Ask something…",
+  "@aiChatInputHint": {
+    "description": "Hint of the chat input."
+  },
+  "aiChatPlanning": "Understanding the question…",
+  "@aiChatPlanning": {
+    "description": "Shown while a search plan is made."
+  },
+  "aiChatSearching": "Looking for related entries…",
+  "@aiChatSearching": {
+    "description": "Shown while entries are searched."
+  },
+  "aiChatCitations": "{count, plural, =1{Used 1 entry} other{Used {count} entries}}",
+  "@aiChatCitations": {
+    "description": "Number of entries an answer used.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatNoCitations": "No related entries found",
+  "@aiChatNoCitations": {
+    "description": "Shown when an answer used no entries."
+  },
+  "aiChatScope": "Scope",
+  "@aiChatScope": {
+    "description": "Chat scope chip."
+  },
+  "aiChatScopeAuto": "Auto",
+  "@aiChatScopeAuto": {
+    "description": "Chat scope option."
+  },
+  "aiChatScopeRecent": "Last {days} days",
+  "@aiChatScopeRecent": {
+    "description": "Chat scope option.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatScopeAll": "All entries",
+  "@aiChatScopeAll": {
+    "description": "Chat scope option."
+  },
+  "aiChatScopeRange": "Date range…",
+  "@aiChatScopeRange": {
+    "description": "Chat scope option."
+  },
+  "aiChatScopeEntry": "This entry",
+  "@aiChatScopeEntry": {
+    "description": "Chat scope pinned to one entry."
+  },
+  "aiChatPersona": "Persona",
+  "@aiChatPersona": {
+    "description": "Chat persona chip."
+  },
+  "aiChatModel": "Model",
+  "@aiChatModel": {
+    "description": "Chat model chip."
+  },
+  "aiChatModelDefault": "Default ({name})",
+  "@aiChatModelDefault": {
+    "description": "Default model option.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatEditResend": "Edit and resend",
+  "@aiChatEditResend": {
+    "description": "Edits and resends the last question."
+  },
+  "aiChatDeleteMessage": "Delete message",
+  "@aiChatDeleteMessage": {
+    "description": "Deletes a chat message."
+  },
+  "aiChatCitationMissing": "This entry no longer exists",
+  "@aiChatCitationMissing": {
+    "description": "Shown for a missing cited entry."
+  },
+  "aiChatEmptyHint": "Ask about your mood over a period, how something unfolded, or let AI help you remember.",
+  "@aiChatEmptyHint": {
+    "description": "Empty chat hint."
+  },
+  "aiChatAboutEntry": "About “{title}”",
+  "@aiChatAboutEntry": {
+    "description": "Title of a chat about one entry.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubTooltip": "AI assistant",
+  "@aiHubTooltip": {
+    "description": "Tooltip of the AI entry on the home top bar."
+  },
+  "exploreModuleAi": "AI insights",
+  "@exploreModuleAi": {
+    "description": "Explore card name."
+  },
+  "exploreModuleAiDesc": "Your latest recap, and ask your diary",
+  "@exploreModuleAiDesc": {
+    "description": "Explore card description."
+  },
+  "aiExploreNoRecap": "No recap yet. How about one for this week?",
+  "@aiExploreNoRecap": {
+    "description": "Explore AI card without recaps."
+  },
+  "aiExploreWeekly": "This week's recap",
+  "@aiExploreWeekly": {
+    "description": "Explore AI card button."
+  },
+  "aiExploreAsk": "Ask my diary",
+  "@aiExploreAsk": {
+    "description": "Explore AI card button."
+  },
+  "aiExploreNotConfigured": "Set up an AI service to use this",
+  "@aiExploreNotConfigured": {
+    "description": "Explore AI card when not configured."
+  },
+  "aiRecapStopped": "Stopped. The partial recap isn't saved.",
+  "@aiRecapStopped": {
+    "description": "Shown when a recap is stopped."
+  },
+  "aiRecapHistory": "Earlier recaps",
+  "@aiRecapHistory": {
+    "description": "Heading of saved recaps on the recap page."
+  },
+  "aiRecapDeleteTitle": "Delete this recap?",
+  "@aiRecapDeleteTitle": {
+    "description": "Title of the delete recap dialog."
+  },
+  "aiRecapNotebookPick": "Choose a notebook",
+  "@aiRecapNotebookPick": {
+    "description": "Title of the recap notebook sheet."
+  },
+  "aiRecapCustomRange": "Choose dates",
+  "@aiRecapCustomRange": {
+    "description": "Title of the custom recap date picker."
+  },
+  "aiRecapShareUnavailable": "Copied. Paste it wherever you'd like to share.",
+  "@aiRecapShareUnavailable": {
+    "description": "Shown when system share is unavailable and the text was copied."
+  },
+  "aiRecapModel": "Written by {model}",
+  "@aiRecapModel": {
+    "description": "Model credit under a recap.",
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
   }
 }

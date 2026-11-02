@@ -6,6 +6,9 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../ai/pages/ai_recap_page.dart';
+import '../../ai/pages/ai_recap_view_page.dart';
+import '../../ai/pages/settings/ai_settings_page.dart';
 import '../../anniversaries/controllers/anniversary_navigation.dart'
     as anniversary_navigation;
 import '../../anniversaries/models/anniversary_draft.dart';
@@ -75,6 +78,13 @@ abstract class ExploreModuleActions {
 
   /// 隐藏一张卡（带撤销）。
   void hideModule(ExploreModuleId id);
+
+  /// 打开 AI 回顾：[resultId] 给出时为那份已保存的回顾，否则为回顾页
+  /// （[weekly] 时进入即生成本周回顾）。默认什么都不做（预览与测试）。
+  void openAiRecap({String? resultId, bool weekly = false}) {}
+
+  /// 打开 AI 设置（还没配好服务时）。
+  void openAiSettings() {}
 }
 
 /// 把 [ExploreModuleActions] 交给探索页里的卡片。
@@ -293,6 +303,27 @@ class ExplorePageActions extends ExploreModuleActions {
 
   @override
   void customize({ExploreModuleId? focus}) => onCustomize(focus);
+
+  @override
+  void openAiRecap({String? resultId, bool weekly = false}) {
+    final id = resultId;
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => id != null
+              ? AiRecapViewPage(resultId: id)
+              : AiRecapPage(autoStart: weekly),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void openAiSettings() => unawaited(
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AiSettingsPage())),
+  );
 
   @override
   void hideModule(ExploreModuleId id) => unawaited(_hideModule(id));

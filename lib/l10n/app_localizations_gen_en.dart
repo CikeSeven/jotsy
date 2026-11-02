@@ -13618,4 +13618,261 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiReplySavedAsComment => 'Saved as a comment';
+
+  @override
+  String get aiRecapTitle => 'AI recap';
+
+  @override
+  String get aiRecapRange => 'Period';
+
+  @override
+  String get aiRecapThisWeek => 'This week';
+
+  @override
+  String get aiRecapLastWeek => 'Last week';
+
+  @override
+  String get aiRecapThisMonth => 'This month';
+
+  @override
+  String get aiRecapLastMonth => 'Last month';
+
+  @override
+  String get aiRecapThisYear => 'This year';
+
+  @override
+  String get aiRecapCustom => 'Custom…';
+
+  @override
+  String get aiRecapNotebook => 'Notebook';
+
+  @override
+  String get aiRecapAllNotebooks => 'All entries';
+
+  @override
+  String get aiRecapSections => 'Include';
+
+  @override
+  String get aiRecapPersona => 'Voice';
+
+  @override
+  String get aiRecapGenerate => 'Write recap';
+
+  @override
+  String get aiRecapNoEntries => 'No entries to recap in this period.';
+
+  @override
+  String aiRecapReading(int index, int total) {
+    return 'Reading part $index of $total…';
+  }
+
+  @override
+  String get aiRecapWriting => 'Writing the recap…';
+
+  @override
+  String aiRecapStats(int count, int words) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0 · $words words';
+  }
+
+  @override
+  String get aiRecapSaved => 'Saved to your recaps';
+
+  @override
+  String get aiRecapSaveAsDiary => 'Save as entry';
+
+  @override
+  String get aiRecapShare => 'Share text';
+
+  @override
+  String get aiRecapDeleted => 'Recap deleted';
+
+  @override
+  String aiRecapPeriodRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String aiRecapDiaryTitle(String period) {
+    return '$period recap';
+  }
+
+  @override
+  String get aiHubTitle => 'AI assistant';
+
+  @override
+  String get aiHubAskHint => 'Ask your diary…';
+
+  @override
+  String get aiHubQuickMonth => 'How has this month been for me?';
+
+  @override
+  String get aiHubQuickWorry => 'What have I been worrying about lately?';
+
+  @override
+  String get aiHubQuickLastYear => 'What was I doing this time last year?';
+
+  @override
+  String get aiHubQuickHappy => 'What small things made me happy recently?';
+
+  @override
+  String get aiHubQuickGrowth => 'How have I changed over the past half year?';
+
+  @override
+  String get aiHubRecapsGroup => 'Recaps';
+
+  @override
+  String get aiHubRecapMore => 'More options…';
+
+  @override
+  String get aiHubNoRecaps => 'No recaps yet';
+
+  @override
+  String get aiHubChatsGroup => 'Chats';
+
+  @override
+  String get aiHubNoChats => 'No chats yet. Ask a question above to start.';
+
+  @override
+  String get aiHubSearchChats => 'Search chats';
+
+  @override
+  String get aiChatUntitled => 'New chat';
+
+  @override
+  String get aiChatPin => 'Pin';
+
+  @override
+  String get aiChatUnpin => 'Unpin';
+
+  @override
+  String get aiChatRename => 'Rename';
+
+  @override
+  String get aiChatRenameTitle => 'Rename chat';
+
+  @override
+  String get aiChatDeleted => 'Chat deleted';
+
+  @override
+  String get aiChatInputHint => 'Ask something…';
+
+  @override
+  String get aiChatPlanning => 'Understanding the question…';
+
+  @override
+  String get aiChatSearching => 'Looking for related entries…';
+
+  @override
+  String aiChatCitations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used $count entries',
+      one: 'Used 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChatNoCitations => 'No related entries found';
+
+  @override
+  String get aiChatScope => 'Scope';
+
+  @override
+  String get aiChatScopeAuto => 'Auto';
+
+  @override
+  String aiChatScopeRecent(int days) {
+    return 'Last $days days';
+  }
+
+  @override
+  String get aiChatScopeAll => 'All entries';
+
+  @override
+  String get aiChatScopeRange => 'Date range…';
+
+  @override
+  String get aiChatScopeEntry => 'This entry';
+
+  @override
+  String get aiChatPersona => 'Persona';
+
+  @override
+  String get aiChatModel => 'Model';
+
+  @override
+  String aiChatModelDefault(String name) {
+    return 'Default ($name)';
+  }
+
+  @override
+  String get aiChatEditResend => 'Edit and resend';
+
+  @override
+  String get aiChatDeleteMessage => 'Delete message';
+
+  @override
+  String get aiChatCitationMissing => 'This entry no longer exists';
+
+  @override
+  String get aiChatEmptyHint =>
+      'Ask about your mood over a period, how something unfolded, or let AI help you remember.';
+
+  @override
+  String aiChatAboutEntry(String title) {
+    return 'About “$title”';
+  }
+
+  @override
+  String get aiHubTooltip => 'AI assistant';
+
+  @override
+  String get exploreModuleAi => 'AI insights';
+
+  @override
+  String get exploreModuleAiDesc => 'Your latest recap, and ask your diary';
+
+  @override
+  String get aiExploreNoRecap => 'No recap yet. How about one for this week?';
+
+  @override
+  String get aiExploreWeekly => 'This week\'s recap';
+
+  @override
+  String get aiExploreAsk => 'Ask my diary';
+
+  @override
+  String get aiExploreNotConfigured => 'Set up an AI service to use this';
+
+  @override
+  String get aiRecapStopped => 'Stopped. The partial recap isn\'t saved.';
+
+  @override
+  String get aiRecapHistory => 'Earlier recaps';
+
+  @override
+  String get aiRecapDeleteTitle => 'Delete this recap?';
+
+  @override
+  String get aiRecapNotebookPick => 'Choose a notebook';
+
+  @override
+  String get aiRecapCustomRange => 'Choose dates';
+
+  @override
+  String get aiRecapShareUnavailable =>
+      'Copied. Paste it wherever you\'d like to share.';
+
+  @override
+  String aiRecapModel(String model) {
+    return 'Written by $model';
+  }
 }

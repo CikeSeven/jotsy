@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../ai/pages/ai_chat_page.dart';
 import '../../../ai/controllers/ai_reply_flow.dart';
 import '../../../ai/models/ai_preference_parts.dart';
 import '../../../ai/providers/ai_providers.dart';
@@ -470,6 +471,15 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           comments: comments,
           backlinks: _resolveBacklinks(detail.diary),
           aiRepliesFor: _resolveAiReplies(detail.diary),
+          onAiContinueChat: ref.watch(aiModuleAvailableProvider(AiModule.chat))
+              ? (AiResultRow reply) => unawaited(
+                  Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AiChatPage(seedReply: reply),
+                    ),
+                  ),
+                )
+              : null,
           onOpenNotebook: notebooksEnabled
               ? (NotebookView notebook) =>
                     unawaited(openNotebookFromAnywhere(context, ref, notebook))

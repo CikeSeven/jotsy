@@ -48,8 +48,9 @@ class AiRepliesSection extends ConsumerWidget {
   /// 预览页样式的正文色。
   final Color textColor;
 
-  /// “继续聊聊”：以这篇为固定上下文打开对话；对话模块关闭时为 null。
-  final VoidCallback? onContinueChat;
+  /// “继续聊聊”：以这篇为固定上下文、接着这条回应打开对话；对话模块关闭
+  /// 时为 null。
+  final ValueChanged<AiResultRow>? onContinueChat;
 
   Future<void> _ask(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
@@ -199,7 +200,7 @@ class _ReplyCard extends ConsumerStatefulWidget {
   final AiResultRow row;
   final Color textColor;
   final VoidCallback onRegenerate;
-  final VoidCallback? onContinueChat;
+  final ValueChanged<AiResultRow>? onContinueChat;
 
   @override
   ConsumerState<_ReplyCard> createState() => _ReplyCardState();
@@ -318,7 +319,7 @@ class _ReplyCardState extends ConsumerState<_ReplyCard> {
                       ),
                     if (widget.onContinueChat != null)
                       TextButton.icon(
-                        onPressed: widget.onContinueChat,
+                        onPressed: () => widget.onContinueChat!(widget.row),
                         icon: const FaIcon(FontAwesomeIcons.comments, size: 12),
                         label: Text(l10n.aiReplyContinueChat),
                         style: TextButton.styleFrom(

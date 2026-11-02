@@ -13875,4 +13875,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String aiRecapModel(String model) {
     return 'Written by $model';
   }
+
+  @override
+  String get aiChatMore => 'More';
+
+  @override
+  String aiChatTokens(String input, String output) {
+    return '$input in · $output out';
+  }
+
+  @override
+  String get aiChatStoppedLabel => 'Stopped';
+
+  @override
+  String get aiChatDeleteMessageTitle => 'Delete this message?';
+
+  @override
+  String get aiChatDeleteTitle => 'Delete this chat?';
+
+  @override
+  String get aiChatDeleteBody =>
+      'Its messages are deleted too. Your entries aren\'t affected.';
+
+  @override
+  String get aiChatRangeTitle => 'Choose dates';
+
+  @override
+  String get aiChatScopeTitle => 'Search in';
+
+  @override
+  String get aiChatScopeAutoSubtitle =>
+      'Follows the search method in AI settings';
+
+  @override
+  String get aiHubOpenSettings => 'AI settings';
+
+  @override
+  String get aiHubSend => 'Ask';
+
+  @override
+  String get aiSettingsOpenHub => 'Open AI assistant';
+
+  @override
+  String get aiSettingsOpenHubSubtitle => 'Ask your diary and write recaps';
 }

@@ -19,6 +19,7 @@ import '../../providers/ai_providers.dart';
 import '../../sections/settings/ai_modules_group.dart';
 import '../../sections/settings/ai_status_card.dart';
 import '../../widgets/ai_page_scaffold.dart';
+import '../ai_hub_page.dart';
 import 'ai_actions_page.dart';
 import 'ai_model_routing_page.dart';
 import 'ai_personas_page.dart';
@@ -48,6 +49,19 @@ class AiSettingsPage extends ConsumerWidget {
       children: <Widget>[
         const AiStatusCard(),
         const SizedBox(height: 20),
+        if (ref.watch(aiHubAvailableProvider)) ...<Widget>[
+          SettingsCardGroup(
+            children: <Widget>[
+              AiNavTile(
+                icon: FontAwesomeIcons.wandMagicSparkles,
+                title: l10n.aiSettingsOpenHub,
+                subtitle: l10n.aiSettingsOpenHubSubtitle,
+                onTap: () => push(const AiHubPage()),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
         SettingsCardGroup(
           title: l10n.aiGroupService,
           children: <Widget>[

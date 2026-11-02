@@ -17177,5 +17177,65 @@
         "type": "String"
       }
     }
+  },
+  "aiChatMore": "More",
+  "@aiChatMore": {
+    "description": "Tooltip of the chat page menu."
+  },
+  "aiChatTokens": "{input} in · {output} out",
+  "@aiChatTokens": {
+    "description": "Token counts under an answer.",
+    "placeholders": {
+      "input": {
+        "type": "String"
+      },
+      "output": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatStoppedLabel": "Stopped",
+  "@aiChatStoppedLabel": {
+    "description": "Label under a stopped answer."
+  },
+  "aiChatDeleteMessageTitle": "Delete this message?",
+  "@aiChatDeleteMessageTitle": {
+    "description": "Title of the delete message dialog."
+  },
+  "aiChatDeleteTitle": "Delete this chat?",
+  "@aiChatDeleteTitle": {
+    "description": "Title of the delete chat dialog."
+  },
+  "aiChatDeleteBody": "Its messages are deleted too. Your entries aren't affected.",
+  "@aiChatDeleteBody": {
+    "description": "Body of the delete chat dialog."
+  },
+  "aiChatRangeTitle": "Choose dates",
+  "@aiChatRangeTitle": {
+    "description": "Title of the chat date range picker."
+  },
+  "aiChatScopeTitle": "Search in",
+  "@aiChatScopeTitle": {
+    "description": "Title of the chat scope sheet."
+  },
+  "aiChatScopeAutoSubtitle": "Follows the search method in AI settings",
+  "@aiChatScopeAutoSubtitle": {
+    "description": "Subtitle of the auto scope."
+  },
+  "aiHubOpenSettings": "AI settings",
+  "@aiHubOpenSettings": {
+    "description": "Tooltip of the settings button on the AI hub."
+  },
+  "aiHubSend": "Ask",
+  "@aiHubSend": {
+    "description": "Tooltip of the hub ask button."
+  },
+  "aiSettingsOpenHub": "Open AI assistant",
+  "@aiSettingsOpenHub": {
+    "description": "Tile on the AI settings page opening the hub."
+  },
+  "aiSettingsOpenHubSubtitle": "Ask your diary and write recaps",
+  "@aiSettingsOpenHubSubtitle": {
+    "description": "Subtitle of the open hub tile."
   }
 }

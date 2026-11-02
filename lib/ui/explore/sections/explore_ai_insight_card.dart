@@ -12,7 +12,8 @@ import '../../ai/viewmodels/ai_labels.dart';
 import '../controllers/explore_module_actions.dart';
 import '../widgets/explore_shared_widgets.dart';
 
-/// AI 洞察：最近一次回顾的摘录（点按打开），下面是“生成本周回顾”。
+/// AI 洞察：最近一次回顾的摘录（点按打开），下面是“生成本周回顾”与
+/// “问问我的日记”（各自的模块关闭时不出现）。
 ///
 /// 渲染时不联网，只读已保存的回顾（[aiRecapsProvider]）；生成经回顾页
 /// （进入即生成，仍经发送前确认）。AI 开关关闭时整张不显示（见
@@ -29,6 +30,7 @@ class ExploreAiInsightCard extends ConsumerWidget {
     final actions = ExploreActionsScope.of(context);
     final available = ref.watch(aiAvailableProvider);
     final recapOn = ref.watch(aiModuleAvailableProvider(AiModule.recap));
+    final chatOn = ref.watch(aiModuleAvailableProvider(AiModule.chat));
     final recaps = ref.watch(aiRecapsProvider).value;
     final latest = recaps == null || recaps.isEmpty ? null : recaps.first;
     final children = <Widget>[
@@ -87,17 +89,27 @@ class ExploreAiInsightCard extends ConsumerWidget {
       } else if (recaps != null) {
         children.add(ExploreInlineHint(message: l10n.aiExploreNoRecap));
       }
-      if (recapOn) {
+      if (recapOn || chatOn) {
         children.add(
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
-                onPressed: () => actions.openAiRecap(weekly: true),
-                icon: const FaIcon(FontAwesomeIcons.calendarWeek, size: 14),
-                label: Text(l10n.aiExploreWeekly),
-              ),
+            child: Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: <Widget>[
+                if (recapOn)
+                  TextButton.icon(
+                    onPressed: () => actions.openAiRecap(weekly: true),
+                    icon: const FaIcon(FontAwesomeIcons.calendarWeek, size: 14),
+                    label: Text(l10n.aiExploreWeekly),
+                  ),
+                if (chatOn)
+                  TextButton.icon(
+                    onPressed: actions.openAiHub,
+                    icon: const FaIcon(FontAwesomeIcons.comments, size: 14),
+                    label: Text(l10n.aiExploreAsk),
+                  ),
+              ],
             ),
           ),
         );

@@ -140,3 +140,11 @@ final aiServiceProvider = FutureProvider<AiService>((Ref ref) async {
   final store = await ref.watch(aiProviderStoreProvider.future);
   return AiService(store: store);
 });
+
+/// AI 助手主页的入口（日记 Tab 顶栏、探索卡片、AI 设置页）是否出现：对话
+/// 或回顾至少有一个可用。
+final aiHubAvailableProvider = Provider<bool>(
+  (Ref ref) =>
+      ref.watch(aiModuleAvailableProvider(AiModule.chat)) ||
+      ref.watch(aiModuleAvailableProvider(AiModule.recap)),
+);

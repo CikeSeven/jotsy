@@ -12377,4 +12377,45 @@ class AppLocalizationsZh extends AppLocalizations {
   String aiRecapModel(String model) {
     return '由 $model 生成';
   }
+
+  @override
+  String get aiChatMore => '更多';
+
+  @override
+  String aiChatTokens(String input, String output) {
+    return '输入 $input · 输出 $output';
+  }
+
+  @override
+  String get aiChatStoppedLabel => '已停止';
+
+  @override
+  String get aiChatDeleteMessageTitle => '删除这条消息？';
+
+  @override
+  String get aiChatDeleteTitle => '删除这段对话？';
+
+  @override
+  String get aiChatDeleteBody => '其中的消息会一并删除，日记本身不受影响。';
+
+  @override
+  String get aiChatRangeTitle => '选择日期';
+
+  @override
+  String get aiChatScopeTitle => '在哪些日记里找';
+
+  @override
+  String get aiChatScopeAutoSubtitle => '按 AI 设置里的检索方式';
+
+  @override
+  String get aiHubOpenSettings => 'AI 设置';
+
+  @override
+  String get aiHubSend => '提问';
+
+  @override
+  String get aiSettingsOpenHub => '打开 AI 助手';
+
+  @override
+  String get aiSettingsOpenHubSubtitle => '问问你的日记、生成回顾';
 }

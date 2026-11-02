@@ -35,7 +35,7 @@ class AiModelRoutingPage extends ConsumerWidget {
       required String followLabel,
       required AiLocalConfig Function(AiLocalConfig c, AiModelRef? ref) apply,
     }) async {
-      final result = await _showModelPicker(
+      final result = await showAiModelChoiceSheet(
         context,
         title: title,
         models: config.usableModels,
@@ -174,20 +174,20 @@ class _RoutingTile extends StatelessWidget {
 }
 
 /// 模型选择面板的结果：选中的模型，或“跟随”（ref 为 null）。
-class _PickResult {
-  const _PickResult(this.ref);
+class AiModelChoice {
+  const AiModelChoice(this.ref);
 
   final AiModelRef? ref;
 }
 
-Future<_PickResult?> _showModelPicker(
+Future<AiModelChoice?> showAiModelChoiceSheet(
   BuildContext context, {
   required String title,
   required List<AiResolvedModel> models,
   required AiModelRef? current,
   required String followLabel,
 }) {
-  return showAppModalBottomSheet<_PickResult>(
+  return showAppModalBottomSheet<AiModelChoice>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
@@ -221,7 +221,7 @@ Future<_PickResult?> _showModelPicker(
               title: Text(followLabel),
               trailing: check(current == null),
               onTap: () =>
-                  Navigator.of(sheetContext).pop(const _PickResult(null)),
+                  Navigator.of(sheetContext).pop(const AiModelChoice(null)),
             ),
             for (final model in models)
               ListTile(
@@ -230,7 +230,7 @@ Future<_PickResult?> _showModelPicker(
                 subtitle: Text(model.provider.name),
                 trailing: check(model.ref == current),
                 onTap: () =>
-                    Navigator.of(sheetContext).pop(_PickResult(model.ref)),
+                    Navigator.of(sheetContext).pop(AiModelChoice(model.ref)),
               ),
           ],
         ),

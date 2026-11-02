@@ -22627,6 +22627,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Written by {model}'**
   String aiRecapModel(String model);
+
+  /// Tooltip of the chat page menu.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get aiChatMore;
+
+  /// Token counts under an answer.
+  ///
+  /// In en, this message translates to:
+  /// **'{input} in · {output} out'**
+  String aiChatTokens(String input, String output);
+
+  /// Label under a stopped answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get aiChatStoppedLabel;
+
+  /// Title of the delete message dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this message?'**
+  String get aiChatDeleteMessageTitle;
+
+  /// Title of the delete chat dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this chat?'**
+  String get aiChatDeleteTitle;
+
+  /// Body of the delete chat dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Its messages are deleted too. Your entries aren\'t affected.'**
+  String get aiChatDeleteBody;
+
+  /// Title of the chat date range picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose dates'**
+  String get aiChatRangeTitle;
+
+  /// Title of the chat scope sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in'**
+  String get aiChatScopeTitle;
+
+  /// Subtitle of the auto scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Follows the search method in AI settings'**
+  String get aiChatScopeAutoSubtitle;
+
+  /// Tooltip of the settings button on the AI hub.
+  ///
+  /// In en, this message translates to:
+  /// **'AI settings'**
+  String get aiHubOpenSettings;
+
+  /// Tooltip of the hub ask button.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get aiHubSend;
+
+  /// Tile on the AI settings page opening the hub.
+  ///
+  /// In en, this message translates to:
+  /// **'Open AI assistant'**
+  String get aiSettingsOpenHub;
+
+  /// Subtitle of the open hub tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your diary and write recaps'**
+  String get aiSettingsOpenHubSubtitle;
 }
 
 class _AppLocalizationsDelegate

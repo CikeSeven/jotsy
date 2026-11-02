@@ -135,7 +135,7 @@ class DiaryPreviewContent extends ConsumerWidget {
   final String? aiRepliesFor;
 
   /// 回应卡片上的“继续聊聊”；对话模块关闭时为 null。
-  final VoidCallback? onAiContinueChat;
+  final ValueChanged<AiResultRow>? onAiContinueChat;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

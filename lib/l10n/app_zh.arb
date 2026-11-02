@@ -17177,5 +17177,65 @@
         "type": "String"
       }
     }
+  },
+  "aiChatMore": "更多",
+  "@aiChatMore": {
+    "description": "对话页菜单的提示。"
+  },
+  "aiChatTokens": "输入 {input} · 输出 {output}",
+  "@aiChatTokens": {
+    "description": "回答下方的 token 数。",
+    "placeholders": {
+      "input": {
+        "type": "String"
+      },
+      "output": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatStoppedLabel": "已停止",
+  "@aiChatStoppedLabel": {
+    "description": "停止的回答下方的标签。"
+  },
+  "aiChatDeleteMessageTitle": "删除这条消息？",
+  "@aiChatDeleteMessageTitle": {
+    "description": "删除消息对话框的标题。"
+  },
+  "aiChatDeleteTitle": "删除这段对话？",
+  "@aiChatDeleteTitle": {
+    "description": "删除对话对话框的标题。"
+  },
+  "aiChatDeleteBody": "其中的消息会一并删除，日记本身不受影响。",
+  "@aiChatDeleteBody": {
+    "description": "删除对话对话框的说明。"
+  },
+  "aiChatRangeTitle": "选择日期",
+  "@aiChatRangeTitle": {
+    "description": "对话日期范围选择器的标题。"
+  },
+  "aiChatScopeTitle": "在哪些日记里找",
+  "@aiChatScopeTitle": {
+    "description": "对话范围面板的标题。"
+  },
+  "aiChatScopeAutoSubtitle": "按 AI 设置里的检索方式",
+  "@aiChatScopeAutoSubtitle": {
+    "description": "自动范围的说明。"
+  },
+  "aiHubOpenSettings": "AI 设置",
+  "@aiHubOpenSettings": {
+    "description": "AI 助手主页设置按钮的提示。"
+  },
+  "aiHubSend": "提问",
+  "@aiHubSend": {
+    "description": "主页提问按钮的提示。"
+  },
+  "aiSettingsOpenHub": "打开 AI 助手",
+  "@aiSettingsOpenHub": {
+    "description": "AI 设置页里打开 AI 助手主页的一行。"
+  },
+  "aiSettingsOpenHubSubtitle": "问问你的日记、生成回顾",
+  "@aiSettingsOpenHubSubtitle": {
+    "description": "打开 AI 助手一行的说明。"
   }
 }

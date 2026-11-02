@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../ai/pages/ai_hub_page.dart';
 import '../../ai/pages/ai_recap_page.dart';
 import '../../ai/pages/ai_recap_view_page.dart';
 import '../../ai/pages/settings/ai_settings_page.dart';
@@ -85,6 +86,9 @@ abstract class ExploreModuleActions {
 
   /// 打开 AI 设置（还没配好服务时）。
   void openAiSettings() {}
+
+  /// 打开 AI 助手主页（问问我的日记）。
+  void openAiHub() {}
 }
 
 /// 把 [ExploreModuleActions] 交给探索页里的卡片。
@@ -317,6 +321,13 @@ class ExplorePageActions extends ExploreModuleActions {
       ),
     );
   }
+
+  @override
+  void openAiHub() => unawaited(
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AiHubPage())),
+  );
 
   @override
   void openAiSettings() => unawaited(

@@ -12,18 +12,19 @@
     <!-- 扫码配对只是可选能力，没有摄像头的设备照样可以安装 -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- 附件从系统选择器复制到私有目录，FileProvider 打开无需读取整个媒体库。
-         移除 open_filex 的视频/音频读取声明，保留现有相册写入权限。 -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+         移除 open_filex 的音频读取声明，保留现有相册写入权限。 -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
-    <!-- 补写日记时列出“这天拍的照片”（photo_manager 按拍摄日期查询相册）：
-         只读图片，且只在用户点“允许访问”时才申请。Android 13+ 为
-         READ_MEDIA_IMAGES，14+ 可只授权部分照片，12 及以下为读外部存储。
+    <!-- 补写日记时列出“这天拍的照片”与视频（photo_manager 按拍摄日期查询
+         相册）：只读，且只在用户点“允许访问”时才申请。Android 13+ 为
+         READ_MEDIA_IMAGES 与 READ_MEDIA_VIDEO（同属“照片和视频”，系统只弹
+         一次），14+ 可只授权部分照片和视频，12 及以下为读外部存储。
          replace 覆盖其他库不带 maxSdkVersion 的同名声明。 -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"
         tools:node="replace" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <!-- 应用内更新：把从 GitHub Release 下载并校验过的安装包交给系统安装器。
          Android 8+ 还需用户在系统设置里为本应用开启“安装未知应用”。 -->

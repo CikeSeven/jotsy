@@ -138,10 +138,15 @@ class DiaryVideoPlayerController extends ChangeNotifier
     super.dispose();
   }
 
+  /// [source] 可以是本地路径、`file://` / `http(s)://` 地址，或 Android 的
+  /// `content://` 地址（“这天的照片”预览直接播放相册里的视频，不复制）。
   static VideoPlayerController _createPlayer(String source) {
     final uri = Uri.tryParse(source);
     if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
       return VideoPlayerController.networkUrl(uri);
+    }
+    if (uri != null && uri.scheme == 'content') {
+      return VideoPlayerController.contentUri(uri);
     }
     return VideoPlayerController.file(
       uri?.scheme == 'file' ? File.fromUri(uri!) : File(source),

@@ -7312,7 +7312,7 @@
   "@diaryDayPhotosAccessTitle": {
     "description": "Backfill photo strip title before photo access is granted."
   },
-  "diaryDayPhotosAccessBody": "Allow photo access to see the photos you took on this day and add some to this entry.",
+  "diaryDayPhotosAccessBody": "Allow photo access to see the photos and videos you took on this day and add some to this entry.",
   "@diaryDayPhotosAccessBody": {
     "description": "Backfill photo strip: explanation for requesting photo access."
   },
@@ -7362,7 +7362,7 @@
       }
     }
   },
-  "diaryDayPhotosLimited": "Showing only photos you allowed",
+  "diaryDayPhotosLimited": "Showing only photos and videos you allowed",
   "@diaryDayPhotosLimited": {
     "description": "Photos from this day: note shown when photo access is limited."
   },
@@ -7397,9 +7397,9 @@
       }
     }
   },
-  "diaryDayPhotosMissing": "{count, plural, =1{1 photo couldn't be read and was skipped} other{{count} photos couldn't be read and were skipped}}",
+  "diaryDayPhotosMissing": "{count, plural, =1{1 item couldn't be read and was skipped} other{{count} items couldn't be read and were skipped}}",
   "@diaryDayPhotosMissing": {
-    "description": "Hint when some photos from that day couldn't be read while inserting.",
+    "description": "Hint when some photos or videos from that day couldn't be read while inserting or setting the cover.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -7463,9 +7463,105 @@
   "@diaryDayPhotosMenu": {
     "description": "Editor top-bar menu item: opens the panel of photos taken on the diary's day."
   },
-  "diaryDayPhotosEmpty": "No photos taken this day",
+  "diaryDayPhotosEmpty": "No photos or videos taken this day",
   "@diaryDayPhotosEmpty": {
-    "description": "Photos from this day panel: shown when the gallery has no photos from that day."
+    "description": "Photos from this day panel: shown when the gallery has no photos or videos from that day."
+  },
+  "diaryDayPhotosTitleVideos": "{count, plural, =1{1 video} other{{count} videos}} from this day",
+  "@diaryDayPhotosTitleVideos": {
+    "description": "Backfill photo strip title when that day only has videos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosTitleMixed": "{photos, plural, =1{1 photo} other{{photos} photos}} and {videos, plural, =1{1 video} other{{videos} videos}} from this day",
+  "@diaryDayPhotosTitleMixed": {
+    "description": "Backfill photo strip title when that day has both photos and videos.",
+    "placeholders": {
+      "photos": {
+        "type": "int"
+      },
+      "videos": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosSheetTitleMedia": "Photos and videos from {date}",
+  "@diaryDayPhotosSheetTitleMedia": {
+    "description": "Photos from this day sheet title when that day has videos; date is the day.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosSelectedItems": "{count} selected",
+  "@diaryDayPhotosSelectedItems": {
+    "description": "Photos from this day: number of selected items when the selection includes videos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosInsertCountItems": "Insert {count}",
+  "@diaryDayPhotosInsertCountItems": {
+    "description": "Photos from this day: insert button with the number of selected items when the selection includes videos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosVideoLabel": "Video taken at {time}, {duration} long",
+  "@diaryDayPhotosVideoLabel": {
+    "description": "Photos from this day: screen reader label of a video; duration is m:ss.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosVideoInsertedLabel": "Video taken at {time}, {duration} long, added",
+  "@diaryDayPhotosVideoInsertedLabel": {
+    "description": "Photos from this day: screen reader label of a video already inserted.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosVideoAccess": "Videos from this day aren't available yet",
+  "@diaryDayPhotosVideoAccess": {
+    "description": "Photos from this day: note shown when only image access was granted (followed by an Allow access button)."
+  },
+  "diaryDayPhotosSelect": "Select",
+  "@diaryDayPhotosSelect": {
+    "description": "Photos from this day: label and tooltip of the selection circle on a thumbnail and in the preview."
+  },
+  "diaryDayPhotosDeselect": "Deselect",
+  "@diaryDayPhotosDeselect": {
+    "description": "Photos from this day preview: tooltip of the selection circle when the item is selected."
+  },
+  "diaryDayPhotosInserted": "Added",
+  "@diaryDayPhotosInserted": {
+    "description": "Photos from this day: label and tooltip of the selection circle of an item already inserted."
+  },
+  "diaryDayPhotosPreview": "Preview",
+  "@diaryDayPhotosPreview": {
+    "description": "Photos from this day: screen reader hint for tapping a thumbnail to open the preview."
+  },
+  "diaryDayPhotosPreviewFailed": "This photo can't be shown",
+  "@diaryDayPhotosPreviewFailed": {
+    "description": "Photos from this day preview: shown when the large image cannot be loaded."
   },
   "diaryLongImageBadge": "Long image",
   "@diaryLongImageBadge": {

@@ -9581,7 +9581,7 @@ abstract class AppLocalizations {
   /// Backfill photo strip: explanation for requesting photo access.
   ///
   /// In en, this message translates to:
-  /// **'Allow photo access to see the photos you took on this day and add some to this entry.'**
+  /// **'Allow photo access to see the photos and videos you took on this day and add some to this entry.'**
   String get diaryDayPhotosAccessBody;
 
   /// Backfill photo strip: explanation after photo access was denied.
@@ -9641,7 +9641,7 @@ abstract class AppLocalizations {
   /// Photos from this day: note shown when photo access is limited.
   ///
   /// In en, this message translates to:
-  /// **'Showing only photos you allowed'**
+  /// **'Showing only photos and videos you allowed'**
   String get diaryDayPhotosLimited;
 
   /// Photos from this day: button that lets the user allow more photos under limited access.
@@ -9668,10 +9668,10 @@ abstract class AppLocalizations {
   /// **'Photos from {date}'**
   String diaryDayPhotosSheetTitle(String date);
 
-  /// Hint when some photos from that day couldn't be read while inserting.
+  /// Hint when some photos or videos from that day couldn't be read while inserting or setting the cover.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 photo couldn\'t be read and was skipped} other{{count} photos couldn\'t be read and were skipped}}'**
+  /// **'{count, plural, =1{1 item couldn\'t be read and was skipped} other{{count} items couldn\'t be read and were skipped}}'**
   String diaryDayPhotosMissing(int count);
 
   /// Editor settings: title of the switch that automatically shows that day's photos under the title when backfilling.
@@ -9752,11 +9752,89 @@ abstract class AppLocalizations {
   /// **'Photos from this day'**
   String get diaryDayPhotosMenu;
 
-  /// Photos from this day panel: shown when the gallery has no photos from that day.
+  /// Photos from this day panel: shown when the gallery has no photos or videos from that day.
   ///
   /// In en, this message translates to:
-  /// **'No photos taken this day'**
+  /// **'No photos or videos taken this day'**
   String get diaryDayPhotosEmpty;
+
+  /// Backfill photo strip title when that day only has videos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 video} other{{count} videos}} from this day'**
+  String diaryDayPhotosTitleVideos(int count);
+
+  /// Backfill photo strip title when that day has both photos and videos.
+  ///
+  /// In en, this message translates to:
+  /// **'{photos, plural, =1{1 photo} other{{photos} photos}} and {videos, plural, =1{1 video} other{{videos} videos}} from this day'**
+  String diaryDayPhotosTitleMixed(int photos, int videos);
+
+  /// Photos from this day sheet title when that day has videos; date is the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and videos from {date}'**
+  String diaryDayPhotosSheetTitleMedia(String date);
+
+  /// Photos from this day: number of selected items when the selection includes videos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String diaryDayPhotosSelectedItems(int count);
+
+  /// Photos from this day: insert button with the number of selected items when the selection includes videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert {count}'**
+  String diaryDayPhotosInsertCountItems(int count);
+
+  /// Photos from this day: screen reader label of a video; duration is m:ss.
+  ///
+  /// In en, this message translates to:
+  /// **'Video taken at {time}, {duration} long'**
+  String diaryDayPhotosVideoLabel(String time, String duration);
+
+  /// Photos from this day: screen reader label of a video already inserted.
+  ///
+  /// In en, this message translates to:
+  /// **'Video taken at {time}, {duration} long, added'**
+  String diaryDayPhotosVideoInsertedLabel(String time, String duration);
+
+  /// Photos from this day: note shown when only image access was granted (followed by an Allow access button).
+  ///
+  /// In en, this message translates to:
+  /// **'Videos from this day aren\'t available yet'**
+  String get diaryDayPhotosVideoAccess;
+
+  /// Photos from this day: label and tooltip of the selection circle on a thumbnail and in the preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get diaryDayPhotosSelect;
+
+  /// Photos from this day preview: tooltip of the selection circle when the item is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect'**
+  String get diaryDayPhotosDeselect;
+
+  /// Photos from this day: label and tooltip of the selection circle of an item already inserted.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get diaryDayPhotosInserted;
+
+  /// Photos from this day: screen reader hint for tapping a thumbnail to open the preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get diaryDayPhotosPreview;
+
+  /// Photos from this day preview: shown when the large image cannot be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo can\'t be shown'**
+  String get diaryDayPhotosPreviewFailed;
 
   /// Badge in the corner of a folded long image (much taller than wide) in the diary body.
   ///

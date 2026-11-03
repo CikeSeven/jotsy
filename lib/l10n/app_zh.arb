@@ -7312,7 +7312,7 @@
   "@diaryDayPhotosAccessTitle": {
     "description": "补写日记时提示条在未授权相册时的标题。"
   },
-  "diaryDayPhotosAccessBody": "允许读取相册后，这里会列出这天拍的照片，可以挑几张插进日记。",
+  "diaryDayPhotosAccessBody": "允许读取相册后，这里会列出这天拍的照片和视频，可以挑一些插进日记。",
   "@diaryDayPhotosAccessBody": {
     "description": "补写日记时提示条：申请相册权限的说明。"
   },
@@ -7362,7 +7362,7 @@
       }
     }
   },
-  "diaryDayPhotosLimited": "只显示你允许访问的照片",
+  "diaryDayPhotosLimited": "只显示你允许访问的照片和视频",
   "@diaryDayPhotosLimited": {
     "description": "这天拍的照片：相册为部分授权时的说明。"
   },
@@ -7397,9 +7397,9 @@
       }
     }
   },
-  "diaryDayPhotosMissing": "{count} 张照片已无法读取，没有插入",
+  "diaryDayPhotosMissing": "{count} 项已无法读取，没有插入",
   "@diaryDayPhotosMissing": {
-    "description": "插入这天拍的照片时部分照片读取失败的提示。",
+    "description": "插入这天拍的照片（含视频）或设为封面时部分条目读取失败的提示。",
     "placeholders": {
       "count": {
         "type": "int"
@@ -7463,9 +7463,105 @@
   "@diaryDayPhotosMenu": {
     "description": "编辑页顶栏菜单项：打开日记那天拍的照片面板。"
   },
-  "diaryDayPhotosEmpty": "这天没有拍照片",
+  "diaryDayPhotosEmpty": "这天没有拍照片或视频",
   "@diaryDayPhotosEmpty": {
-    "description": "这天的照片面板：相册里这天没有照片时的说明。"
+    "description": "这天的照片面板：相册里这天没有照片和视频时的说明。"
+  },
+  "diaryDayPhotosTitleVideos": "这天拍的 {count} 段视频",
+  "@diaryDayPhotosTitleVideos": {
+    "description": "补写日记的照片提示条标题：这天只拍了视频时的段数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosTitleMixed": "这天拍的 {photos} 张照片、{videos} 段视频",
+  "@diaryDayPhotosTitleMixed": {
+    "description": "补写日记的照片提示条标题：这天既有照片也有视频时分别写出数量。",
+    "placeholders": {
+      "photos": {
+        "type": "int"
+      },
+      "videos": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosSheetTitleMedia": "{date} 拍的照片和视频",
+  "@diaryDayPhotosSheetTitleMedia": {
+    "description": "这天的照片面板标题（这天有视频时）；date 为日期。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosSelectedItems": "已选 {count} 项",
+  "@diaryDayPhotosSelectedItems": {
+    "description": "这天的照片：勾选里有视频时的已选数量。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosInsertCountItems": "插入 {count} 项",
+  "@diaryDayPhotosInsertCountItems": {
+    "description": "这天的照片：勾选里有视频时带数量的插入按钮。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosVideoLabel": "{time} 拍的视频，时长 {duration}",
+  "@diaryDayPhotosVideoLabel": {
+    "description": "这天的照片：一段视频的读屏文案；duration 为 m:ss 形式的时长。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosVideoInsertedLabel": "{time} 拍的视频，时长 {duration}，已插入",
+  "@diaryDayPhotosVideoInsertedLabel": {
+    "description": "这天的照片：已插入正文的视频的读屏文案。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosVideoAccess": "还不能读取这天的视频",
+  "@diaryDayPhotosVideoAccess": {
+    "description": "这天的照片：只授权过图片、视频未授权时的一行说明（后面跟“允许访问”按钮）。"
+  },
+  "diaryDayPhotosSelect": "选择",
+  "@diaryDayPhotosSelect": {
+    "description": "这天的照片：缩略图与预览页右上角勾选圈的读屏文案与提示。"
+  },
+  "diaryDayPhotosDeselect": "取消选择",
+  "@diaryDayPhotosDeselect": {
+    "description": "这天的照片预览页：已勾选时右上角勾选圈的提示。"
+  },
+  "diaryDayPhotosInserted": "已插入",
+  "@diaryDayPhotosInserted": {
+    "description": "这天的照片：已插入正文的条目的勾选圈读屏文案与提示。"
+  },
+  "diaryDayPhotosPreview": "预览",
+  "@diaryDayPhotosPreview": {
+    "description": "这天的照片：点按缩略图打开预览页的读屏操作提示。"
+  },
+  "diaryDayPhotosPreviewFailed": "无法显示这张照片",
+  "@diaryDayPhotosPreviewFailed": {
+    "description": "这天的照片预览页：读不出大图时的说明。"
   },
   "diaryLongImageBadge": "长图",
   "@diaryLongImageBadge": {

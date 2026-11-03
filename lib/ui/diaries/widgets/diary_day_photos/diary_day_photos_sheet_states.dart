@@ -90,7 +90,8 @@ class DiaryDayPhotosSheetAccess extends StatelessWidget {
   }
 }
 
-/// 这天没有照片；部分授权时可能只是没被允许访问，给出“选择更多”。
+/// 这天没有照片或视频；部分授权时可能只是没被允许访问，给出“选择更多”；
+/// 只授权过图片时可能是这天只拍了视频，给出“允许访问视频”。
 class DiaryDayPhotosSheetEmpty extends StatelessWidget {
   const DiaryDayPhotosSheetEmpty({super.key, required this.controller});
 
@@ -102,6 +103,11 @@ class DiaryDayPhotosSheetEmpty extends StatelessWidget {
       message: context.l10n.diaryDayPhotosEmpty,
       action: controller.isLimited
           ? DiaryDayPhotosLimitedHint(
+              controller: controller,
+              mainAxisAlignment: MainAxisAlignment.center,
+            )
+          : controller.needsVideoAccess
+          ? DiaryDayPhotosVideoAccessHint(
               controller: controller,
               mainAxisAlignment: MainAxisAlignment.center,
             )

@@ -60,12 +60,16 @@ extension EditDiaryMediaFlow on EditDiaryController {
 }
 
 extension EditDiaryDayPhotosFlow on EditDiaryController {
-  /// 把“这天拍的照片”里勾选的照片插入正文光标处。
+  /// 把“这天拍的照片”里勾选的照片与视频插入正文光标处。
   ///
   /// 复用媒体导入链路（复制到日记私有目录 → 插入 → 失败回滚），只是文件
-  /// 来源换成相册里已选好的照片，不再打开系统选择器。照片在打开页面后
-  /// 被删掉时跳过并提示；全部成功插入的照片在提示条里标为“已插入”。
-  /// 无论成败都释放插件为读取原图生成的缓存副本。
+  /// 来源换成相册里已选好的条目，不再打开系统选择器。勾选按拍摄时间排列，
+  /// 相邻的同类条目分成一段（图片一段、视频一段），逐段经 pickAndInsert
+  /// 插入，每段从上一段插完后的光标处接着插，正文里的先后与拍摄时间一致
+  /// （与桌面拖放多个文件同一做法）。某段失败或被取消就停下，已插入的段
+  /// 保留；一段里全部读不到（打开页面后被删掉）时跳过这段继续。读不到的
+  /// 条目跳过并提示；成功插入的在提示条里标为“已插入”。无论成败都释放
+  /// 插件为读取原文件生成的缓存副本。
   Future<void> insertDayPhotos() async {
     if (_state._saving || _state._recordingPanelOpen) return;
     final dayPhotos = _state._dayPhotos;
@@ -74,37 +78,59 @@ extension EditDiaryDayPhotosFlow on EditDiaryController {
     final library = dayPhotos.library;
     final controller = _state._contentController;
     final route = ModalRoute.of(_state.context);
+    final runs = <(DiaryMediaKind, List<DayPhoto>)>[];
+    for (final photo in photos) {
+      final kind = photo.isVideo ? DiaryMediaKind.video : DiaryMediaKind.image;
+      if (runs.isNotEmpty && runs.last.$1 == kind) {
+        runs.last.$2.add(photo);
+      } else {
+        runs.add((kind, <DayPhoto>[photo]));
+      }
+    }
     final missing = <DayPhoto>{};
-    final DiaryMediaImportOutcome outcome;
+    var outcome = DiaryMediaImportOutcome.cancelled;
     try {
-      outcome = await _state._mediaImportController.pickAndInsert(
-        controller: controller,
-        kind: DiaryMediaKind.image,
-        isCurrent: () =>
-            _state.mounted &&
-            identical(_state._contentController, controller) &&
-            !_state._saving &&
-            (route?.isCurrent ?? true),
-        picker: (_) async {
-          final files = <PlatformFile>[];
-          for (final photo in photos) {
-            final file = await library.fileOf(photo);
-            if (file == null) {
-              missing.add(photo);
-            } else {
-              files.add(file);
+      for (final (kind, run) in runs) {
+        final runMissing = <DayPhoto>{};
+        outcome = await _state._mediaImportController.pickAndInsert(
+          controller: controller,
+          kind: kind,
+          isCurrent: () =>
+              _state.mounted &&
+              identical(_state._contentController, controller) &&
+              !_state._saving &&
+              (route?.isCurrent ?? true),
+          picker: (_) async {
+            final files = <PlatformFile>[];
+            for (final photo in run) {
+              final file = await library.fileOf(photo);
+              if (file == null) {
+                runMissing.add(photo);
+              } else {
+                files.add(file);
+              }
             }
+            return files;
+          },
+        );
+        missing.addAll(runMissing);
+        if (outcome == DiaryMediaImportOutcome.inserted) {
+          if (_state.mounted) {
+            dayPhotos.markInserted(run.where((p) => !runMissing.contains(p)));
           }
-          return files;
-        },
-      );
+          continue;
+        }
+        // 这一段全部读不到：pickAndInsert 按“没有文件”报取消，跳过接着插。
+        if (outcome == DiaryMediaImportOutcome.cancelled &&
+            runMissing.length == run.length) {
+          continue;
+        }
+        break;
+      }
     } finally {
       await library.releaseFiles();
     }
     if (!_state.mounted) return;
-    if (outcome == DiaryMediaImportOutcome.inserted) {
-      dayPhotos.markInserted(photos.where((p) => !missing.contains(p)));
-    }
     final l10n = _state.context.l10n;
     final message = switch (outcome) {
       DiaryMediaImportOutcome.failed => l10n.diaryMediaImportFailed,
@@ -156,7 +182,10 @@ extension EditDiaryDayPhotosFlow on EditDiaryController {
   /// 后释放插件为读取原图生成的缓存副本。
   Future<void> setDayPhotoCover(DayPhoto photo) async {
     final actions = _state._metaActions;
-    if (_state._saving || actions.importingCover.value) return;
+    // 视频不能当封面（界面上也不提供），防御性地忽略。
+    if (photo.isVideo || _state._saving || actions.importingCover.value) {
+      return;
+    }
     final dayPhotos = _state._dayPhotos;
     final library = dayPhotos.library;
     var applied = false;

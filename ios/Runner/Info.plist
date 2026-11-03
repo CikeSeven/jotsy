@@ -46,7 +46,7 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>补写日记时，列出相册里那一天拍的照片供你挑选插入。</string>
+	<string>补写日记时，列出相册里那一天拍的照片和视频供你挑选插入。</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
 	<key>NSPhotoLibraryAddUsageDescription</key>

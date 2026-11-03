@@ -92,7 +92,7 @@ class DiaryVideoControls extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: _VideoProgressBar(
+                child: DiaryVideoProgressBar(
                   controller: controller,
                   enabled: !controller.isLoading && !controller.hasFailed,
                 ),
@@ -105,22 +105,26 @@ class DiaryVideoControls extends StatelessWidget {
   }
 }
 
-/// 视频进度条 + 时间文字。
+/// 视频进度条 + 时间文字（正文播放器与“这天的照片”预览页共用）。
 ///
 /// 拖动期间只更新本地值（滑块与时间文字跟手），松手时才 seek 一次：若在
 /// onChanged 中逐帧 seek，原生播放器会收到成串请求，滑块还会被尚未完成的
 /// 播放位置拉回。seek 完成前保留拖动值，避免松手瞬间回跳。
-class _VideoProgressBar extends StatefulWidget {
-  const _VideoProgressBar({required this.controller, required this.enabled});
+class DiaryVideoProgressBar extends StatefulWidget {
+  const DiaryVideoProgressBar({
+    super.key,
+    required this.controller,
+    required this.enabled,
+  });
 
   final DiaryVideoPlayerController controller;
   final bool enabled;
 
   @override
-  State<_VideoProgressBar> createState() => _VideoProgressBarState();
+  State<DiaryVideoProgressBar> createState() => _DiaryVideoProgressBarState();
 }
 
-class _VideoProgressBarState extends State<_VideoProgressBar> {
+class _DiaryVideoProgressBarState extends State<DiaryVideoProgressBar> {
   double? _dragMilliseconds;
 
   Future<void> _commitSeek(double milliseconds) async {

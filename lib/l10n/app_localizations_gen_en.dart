@@ -5751,7 +5751,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryDayPhotosAccessBody =>
-      'Allow photo access to see the photos you took on this day and add some to this entry.';
+      'Allow photo access to see the photos and videos you took on this day and add some to this entry.';
 
   @override
   String get diaryDayPhotosDeniedBody =>
@@ -5786,7 +5786,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryDayPhotosLimited => 'Showing only photos you allowed';
+  String get diaryDayPhotosLimited =>
+      'Showing only photos and videos you allowed';
 
   @override
   String get diaryDayPhotosManageLimited => 'Select more';
@@ -5811,8 +5812,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count photos couldn\'t be read and were skipped',
-      one: '1 photo couldn\'t be read and was skipped',
+      other: '$count items couldn\'t be read and were skipped',
+      one: '1 item couldn\'t be read and was skipped',
     );
     return '$_temp0';
   }
@@ -5864,7 +5865,79 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDayPhotosMenu => 'Photos from this day';
 
   @override
-  String get diaryDayPhotosEmpty => 'No photos taken this day';
+  String get diaryDayPhotosEmpty => 'No photos or videos taken this day';
+
+  @override
+  String diaryDayPhotosTitleVideos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count videos',
+      one: '1 video',
+    );
+    return '$_temp0 from this day';
+  }
+
+  @override
+  String diaryDayPhotosTitleMixed(int photos, int videos) {
+    String _temp0 = intl.Intl.pluralLogic(
+      photos,
+      locale: localeName,
+      other: '$photos photos',
+      one: '1 photo',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      videos,
+      locale: localeName,
+      other: '$videos videos',
+      one: '1 video',
+    );
+    return '$_temp0 and $_temp1 from this day';
+  }
+
+  @override
+  String diaryDayPhotosSheetTitleMedia(String date) {
+    return 'Photos and videos from $date';
+  }
+
+  @override
+  String diaryDayPhotosSelectedItems(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String diaryDayPhotosInsertCountItems(int count) {
+    return 'Insert $count';
+  }
+
+  @override
+  String diaryDayPhotosVideoLabel(String time, String duration) {
+    return 'Video taken at $time, $duration long';
+  }
+
+  @override
+  String diaryDayPhotosVideoInsertedLabel(String time, String duration) {
+    return 'Video taken at $time, $duration long, added';
+  }
+
+  @override
+  String get diaryDayPhotosVideoAccess =>
+      'Videos from this day aren\'t available yet';
+
+  @override
+  String get diaryDayPhotosSelect => 'Select';
+
+  @override
+  String get diaryDayPhotosDeselect => 'Deselect';
+
+  @override
+  String get diaryDayPhotosInserted => 'Added';
+
+  @override
+  String get diaryDayPhotosPreview => 'Preview';
+
+  @override
+  String get diaryDayPhotosPreviewFailed => 'This photo can\'t be shown';
 
   @override
   String get diaryLongImageBadge => 'Long image';

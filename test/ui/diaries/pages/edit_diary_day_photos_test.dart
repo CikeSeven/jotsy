@@ -14,6 +14,7 @@ import 'package:node_diary/core/services/day_photo_library.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/pages/diary_day_photo_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_day_photos/diary_day_photo_tile.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_day_photos/diary_day_photos_sheet.dart';
@@ -160,6 +161,18 @@ void main() {
     ];
   }
 
+  /// 某个拍摄时间的那一格（读屏文案里带时间）。
+  Finder tileAt(String time) => find.ancestor(
+    of: find.bySemanticsLabel(RegExp(time)),
+    matching: find.byType(DiaryDayPhotoTile),
+  );
+
+  /// 点格子右上角的勾选圈（点缩略图本身是打开预览）。
+  Future<void> toggleTile(WidgetTester tester, Finder tile) async {
+    await tester.tapAt(tester.getTopRight(tile) + const Offset(-12, 12));
+    await tester.pump();
+  }
+
   /// 复制原图是真实文件 IO：离开假时钟推进，直到正文里出现图片。
   Future<void> waitForImages(WidgetTester tester, int count) async {
     for (var i = 0; i < 60 && imageEmbeds(tester).length < count; i++) {
@@ -185,7 +198,7 @@ void main() {
     expect(find.byType(DiaryDayPhotoTile), findsNWidgets(2));
     expect(library.requestCount, 0);
 
-    await tester.tap(find.bySemanticsLabel(RegExp('14:00')));
+    await toggleTile(tester, tileAt('14:00'));
     await tester.pumpAndSettle();
     expect(find.text(l10n.diaryDayPhotosSelected(1)), findsOneWidget);
 
@@ -240,8 +253,8 @@ void main() {
     );
     expect(inSheet, findsNWidgets(2));
 
-    await tester.tap(inSheet.at(0));
-    await tester.tap(inSheet.at(1));
+    await toggleTile(tester, inSheet.at(0));
+    await toggleTile(tester, inSheet.at(1));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.diaryDayPhotosInsertCount(2)));
     await tester.pumpAndSettle();
@@ -290,7 +303,7 @@ void main() {
     );
     await tester.enterText(find.byType(TextField).first, 'Hike day');
 
-    await tester.tap(find.bySemanticsLabel(RegExp('14:00')));
+    await toggleTile(tester, tileAt('14:00'));
     await tester.pumpAndSettle();
     // 只选一张时次要按钮是“设为封面”，不是“取消选择”。
     expect(find.text(l10n.diaryDayPhotosClear), findsNothing);
@@ -328,7 +341,7 @@ void main() {
       createDate: backfillDay,
     );
 
-    await tester.tap(find.bySemanticsLabel(RegExp('08:00')));
+    await toggleTile(tester, tileAt('08:00'));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.diaryDayPhotosInsert));
     await waitForImages(tester, 1);
@@ -361,8 +374,8 @@ void main() {
     await tester.runAsync(() => library.files.remove('breakfast')!.delete());
 
     final tiles = find.byType(DiaryDayPhotoTile);
-    await tester.tap(tiles.at(0));
-    await tester.tap(tiles.at(1));
+    await toggleTile(tester, tiles.at(0));
+    await toggleTile(tester, tiles.at(1));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.diaryDayPhotosInsert));
     await waitForImages(tester, 1);
@@ -485,7 +498,7 @@ void main() {
       expect(sheetTiles(), findsNWidgets(2));
       expect(library.requestCount, 0);
 
-      await tester.tap(sheetTiles().at(1));
+      await toggleTile(tester, sheetTiles().at(1));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.diaryDayPhotosInsertCount(1)));
       await tester.pumpAndSettle();
@@ -583,7 +596,7 @@ void main() {
       );
       expect(sheetTiles(), findsNWidgets(2));
 
-      await tester.tap(sheetTiles().at(0));
+      await toggleTile(tester, sheetTiles().at(0));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.diaryDayPhotosInsertCount(1)));
       await tester.pumpAndSettle();
@@ -604,7 +617,7 @@ void main() {
       );
 
       await openDayPhotos(tester, l10n);
-      await tester.tap(sheetTiles().at(1));
+      await toggleTile(tester, sheetTiles().at(1));
       await tester.pumpAndSettle();
       await tester.tap(
         find.descendant(
@@ -638,6 +651,284 @@ void main() {
       expect(p.isWithin(p.join(appRoot.path, 'diary_covers'), cover!), isTrue);
 
       await unmount(tester);
+    });
+  });
+
+  group('videos and the preview', () {
+    final clip = DayPhoto(
+      id: 'clip',
+      takenAt: backfillDay.add(const Duration(hours: 12)),
+      width: 1920,
+      height: 1080,
+      isVideo: true,
+      duration: const Duration(seconds: 23),
+    );
+
+    /// 早餐照片 08:00、视频 12:00、徒步照片 14:00；视频是一份假的 mp4。
+    Future<FakeDayPhotoLibrary> mixedLibrary(
+      WidgetTester tester, {
+      DayPhotoAccess access = DayPhotoAccess.granted,
+    }) async {
+      final library = FakeDayPhotoLibrary(
+        access: access,
+        photosByDay: {
+          backfillDay: [breakfast, clip, hike],
+        },
+      );
+      await tester.runAsync(() async {
+        for (final (photo, name) in [
+          (breakfast, 'breakfast.png'),
+          (clip, 'clip.mp4'),
+          (hike, 'hike.png'),
+        ]) {
+          final file = File(p.join(gallery.path, name));
+          await file.writeAsBytes(kTinyPng);
+          library.files[photo.id] = file;
+        }
+      });
+      return library;
+    }
+
+    /// 正文里的图片与视频块（类型:文件名），按文档顺序。
+    List<String> mediaBlocks(WidgetTester tester) {
+      final document = tester
+          .widget<DiaryEditor>(find.byType(DiaryEditor))
+          .controller
+          .document;
+      return <String>[
+        for (final node in walkDiaryEditorNodes(document))
+          if (node.type == 'image' || node.type == 'video')
+            '${node.type}:${p.basename(node.attributes['url'] as String)}',
+      ];
+    }
+
+    Future<void> waitForMedia(WidgetTester tester, int count) async {
+      for (var i = 0; i < 80 && mediaBlocks(tester).length < count; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      await tester.pumpAndSettle();
+    }
+
+    Finder inPreview(Finder finder) => find.descendant(
+      of: find.byType(DiaryDayPhotoPreviewPage),
+      matching: finder,
+    );
+
+    testWidgets('videos are listed with their length and inserted in order', (
+      tester,
+    ) async {
+      final library = await mixedLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+      );
+
+      expect(find.text(l10n.diaryDayPhotosTitleMixed(2, 1)), findsOneWidget);
+      expect(find.byType(DiaryDayPhotoTile), findsNWidgets(3));
+      expect(find.text('0:23'), findsOneWidget);
+      expect(library.queriedWithVideos, [true]);
+
+      // 只选了视频：次要按钮仍是“取消选择”，视频不能当封面。
+      await toggleTile(tester, tileAt('12:00'));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.diaryDayPhotosSelectedItems(1)), findsOneWidget);
+      expect(find.text(l10n.diaryDayPhotosClear), findsOneWidget);
+      expect(find.text(l10n.diaryDayPhotosSetCover), findsNothing);
+
+      await toggleTile(tester, tileAt('08:00'));
+      await toggleTile(tester, tileAt('14:00'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.diaryDayPhotosInsert));
+      await waitForMedia(tester, 3);
+
+      // 按拍摄时间：照片、视频、照片，视频插成视频块。
+      expect(mediaBlocks(tester), [
+        'image:breakfast.png',
+        'video:clip.mp4',
+        'image:hike.png',
+      ]);
+      final videosRoot = p.join(
+        appRoot.path,
+        DiaryMediaStorageService.videosDirectoryName,
+      );
+      final video = walkDiaryEditorNodes(
+        tester
+            .widget<DiaryEditor>(find.byType(DiaryEditor))
+            .controller
+            .document,
+      ).singleWhere((node) => node.type == 'video');
+      expect(p.isWithin(videosRoot, video.attributes['url'] as String), isTrue);
+      // 只读相册：原视频仍在。
+      expect(
+        await tester.runAsync(() => library.files['clip']!.exists()),
+        isTrue,
+      );
+      expect(library.releaseCount, 1);
+      expect(find.bySemanticsLabel(RegExp('12:00.*added')), findsOneWidget);
+    });
+
+    testWidgets('tapping a thumbnail previews it; select and insert there', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+      );
+
+      await tester.tap(tileAt('08:00'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryDayPhotoPreviewPage), findsOneWidget);
+      expect(find.bySemanticsLabel('1 / 2'), findsOneWidget);
+      // 点缩略图只是打开预览，不勾选。
+      expect(library.requestCount, 0);
+      expect(
+        tester
+            .widget<FilledButton>(inPreview(find.byType(FilledButton)))
+            .onPressed,
+        isNull,
+      );
+
+      // 翻到下一张，勾选，然后在预览页里插入。
+      await tester.fling(find.byType(PageView), const Offset(-300, 0), 1000);
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('2 / 2'), findsOneWidget);
+      await tester.tap(inPreview(find.byTooltip(l10n.diaryDayPhotosSelect)));
+      await tester.pumpAndSettle();
+      expect(
+        inPreview(find.byTooltip(l10n.diaryDayPhotosDeselect)),
+        findsOneWidget,
+      );
+      await tester.tap(inPreview(find.text(l10n.diaryDayPhotosInsertCount(1))));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DiaryDayPhotoPreviewPage), findsNothing);
+      await waitForImages(tester, 1);
+      expect(imageEmbeds(tester).map(p.basename), ['hike.png']);
+    });
+
+    testWidgets('selection made in the preview carries back to the strip', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+      );
+
+      await tester.tap(tileAt('14:00'));
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('2 / 2'), findsOneWidget);
+      await tester.tap(inPreview(find.byTooltip(l10n.diaryDayPhotosSelect)));
+      await tester.pumpAndSettle();
+      await tester.tap(inPreview(find.byTooltip(l10n.commonBack)));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DiaryDayPhotoPreviewPage), findsNothing);
+      expect(find.text(l10n.diaryDayPhotosSelected(1)), findsOneWidget);
+      // 只选一张图片：操作行可以设为封面。
+      expect(find.text(l10n.diaryDayPhotosSetCover), findsOneWidget);
+      expect(imageEmbeds(tester), isEmpty);
+    });
+
+    testWidgets('a video previews with a player and has no cover menu', (
+      tester,
+    ) async {
+      final library = await mixedLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+      );
+
+      // 长按视频没有“设为封面”菜单。
+      await tester.longPress(tileAt('12:00'));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.diaryDayPhotosSetCover), findsNothing);
+
+      await tester.tap(tileAt('12:00'));
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('2 / 3'), findsOneWidget);
+      // 底栏写出拍摄时间与时长；读不到播放地址时说明放不了。
+      expect(inPreview(find.text('12:00 · 0:23')), findsOneWidget);
+      expect(inPreview(find.text(l10n.videoPlaybackFailed)), findsOneWidget);
+      expect(inPreview(find.byTooltip(l10n.videoPlay)), findsOneWidget);
+    });
+
+    testWidgets('inserting from a preview opened in the sheet closes both', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+      );
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DiaryDayPhotosStrip),
+          matching: find.text(l10n.diaryDayPhotosShowAll),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final inSheet = find.descendant(
+        of: find.byType(DiaryDayPhotosSheet),
+        matching: find.byType(DiaryDayPhotoTile),
+      );
+
+      await tester.tap(inSheet.at(0));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryDayPhotoPreviewPage), findsOneWidget);
+      await tester.tap(inPreview(find.byTooltip(l10n.diaryDayPhotosSelect)));
+      await tester.pumpAndSettle();
+      await tester.tap(inPreview(find.text(l10n.diaryDayPhotosInsertCount(1))));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DiaryDayPhotoPreviewPage), findsNothing);
+      expect(find.byType(DiaryDayPhotosSheet), findsNothing);
+      await waitForImages(tester, 1);
+      expect(imageEmbeds(tester).map(p.basename), ['breakfast.png']);
+    });
+
+    testWidgets('with only image access, videos wait for a tap on allow', (
+      tester,
+    ) async {
+      final library = await mixedLibrary(
+        tester,
+        access: DayPhotoAccess.imagesOnly,
+      );
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+      );
+
+      // 照片照常列出，视频不查，另有一行说明。
+      expect(find.text(l10n.diaryDayPhotosTitle(2)), findsOneWidget);
+      expect(find.byType(DiaryDayPhotoTile), findsNWidgets(2));
+      expect(find.text(l10n.diaryDayPhotosVideoAccess), findsOneWidget);
+      expect(library.queriedWithVideos, [false]);
+      expect(library.requestCount, 0);
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DiaryDayPhotosStrip),
+          matching: find.text(l10n.diaryDayPhotosAllowAccess),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(library.requestCount, 1);
+      expect(library.queriedWithVideos.last, isTrue);
+      expect(find.byType(DiaryDayPhotoTile), findsNWidgets(3));
+      expect(find.text(l10n.diaryDayPhotosTitleMixed(2, 1)), findsOneWidget);
+      expect(find.text(l10n.diaryDayPhotosVideoAccess), findsNothing);
     });
   });
 }

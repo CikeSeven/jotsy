@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/day_photo_library.dart';
+import 'package:node_diary/core/services/day_photo_library_photo_manager.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.dart';
 
 import '../../../support/fake_day_photo_library.dart';
@@ -521,5 +522,179 @@ void main() {
     final range = dayPhotoRange(DateTime(2026, 12, 31, 18, 45));
     expect(range.start, DateTime(2026, 12, 31));
     expect(range.end, DateTime(2027, 1, 1));
+  });
+
+  group('videos', () {
+    final clip = DayPhoto(
+      id: 'v',
+      takenAt: DateTime(2026, 10, 12, 10),
+      isVideo: true,
+      duration: const Duration(seconds: 42),
+    );
+
+    test('combineDayPhotoAccess merges image and video access', () {
+      DayPhotoAccess combine(DayPhotoAccess images, DayPhotoAccess videos) =>
+          combineDayPhotoAccess(images: images, videos: videos);
+      const granted = DayPhotoAccess.granted;
+      const limited = DayPhotoAccess.limited;
+      const denied = DayPhotoAccess.denied;
+      expect(combine(granted, granted), granted);
+      expect(combine(limited, limited), limited);
+      expect(combine(denied, denied), denied);
+      // Android 13+ 升级上来、只授权过图片。
+      expect(combine(granted, denied), DayPhotoAccess.imagesOnly);
+      expect(combine(granted, limited), limited);
+      expect(combine(limited, denied), limited);
+      expect(combine(denied, granted), limited);
+      expect(DayPhotoAccess.imagesOnly.canRead, isTrue);
+      expect(DayPhotoAccess.imagesOnly.canReadVideos, isFalse);
+      expect(DayPhotoAccess.limited.canReadVideos, isTrue);
+    });
+
+    test('lists videos with photos and counts them', () async {
+      final library = FakeDayPhotoLibrary(
+        photosByDay: {
+          day: [morning, clip, noon],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+
+      controller.configure(day: day, autoShow: true);
+      await settle();
+
+      expect(controller.photos, [morning, clip, noon]);
+      expect(controller.videoCount, 1);
+      expect(library.queriedWithVideos, [true]);
+      expect(controller.needsVideoAccess, isFalse);
+
+      controller.toggle(morning);
+      expect(controller.selectionHasVideo, isFalse);
+      controller.toggle(clip);
+      expect(controller.selectionHasVideo, isTrue);
+      expect(controller.selectedPhotos, [morning, clip]);
+    });
+
+    test('with image access only, videos are skipped until allowed', () async {
+      final library = FakeDayPhotoLibrary(
+        access: DayPhotoAccess.imagesOnly,
+        photosByDay: {
+          day: [morning, clip, noon],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+
+      controller.configure(day: day, autoShow: true);
+      await settle();
+
+      expect(controller.phase, DiaryDayPhotosPhase.ready);
+      expect(controller.photos, [morning, noon]);
+      expect(controller.needsVideoAccess, isTrue);
+      expect(controller.isLimited, isFalse);
+      expect(library.queriedWithVideos, [false]);
+      expect(library.requestCount, 0);
+
+      await controller.requestAccess();
+      await settle();
+
+      expect(library.requestCount, 1);
+      expect(controller.needsVideoAccess, isFalse);
+      expect(controller.photos, [morning, clip, noon]);
+      expect(library.queriedWithVideos.last, isTrue);
+    });
+
+    test('declining videos again turns the button into settings', () async {
+      final library = FakeDayPhotoLibrary(
+        access: DayPhotoAccess.imagesOnly,
+        accessAfterRequest: DayPhotoAccess.imagesOnly,
+        photosByDay: {
+          day: [morning, clip],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+
+      controller.configure(day: day, autoShow: true);
+      await settle();
+      expect(controller.shouldOpenSettings, isFalse);
+
+      await controller.requestAccess();
+      await settle();
+      expect(controller.needsVideoAccess, isTrue);
+      expect(controller.shouldOpenSettings, isTrue);
+      // 照片仍在，没有因为拒绝视频而清空。
+      expect(controller.photos, [morning]);
+
+      await controller.requestAccess();
+      expect(library.requestCount, 1);
+      expect(library.openSettingsCount, 1);
+    });
+
+    test('a video never becomes the cover', () async {
+      final library = FakeDayPhotoLibrary(
+        photosByDay: {
+          day: [clip],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: true);
+      await settle();
+
+      controller.markCover(clip, '/covers/clip.jpg');
+      expect(controller.isCover(clip), isFalse);
+    });
+
+    test('items no longer listed cannot be selected', () async {
+      final library = FakeDayPhotoLibrary(
+        photosByDay: {
+          day: [morning],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: true);
+      await settle();
+
+      // 预览页翻的是打开时的列表；重新读取后不在列表里的不再勾选。
+      controller.toggle(evening);
+      expect(controller.selectedCount, 0);
+      controller.toggle(morning);
+      expect(controller.selectedCount, 1);
+    });
+  });
+
+  group('dayPhotoPreviewSize', () {
+    test('keeps the aspect ratio and caps the longer side', () {
+      final size = dayPhotoPreviewSize(
+        DayPhoto(id: 'p', takenAt: day, width: 6000, height: 4000),
+        3000,
+      );
+      expect(size.width, 3000);
+      expect(size.height, 2000);
+    });
+
+    test('never upscales and handles unknown sizes', () {
+      final small = dayPhotoPreviewSize(
+        DayPhoto(id: 's', takenAt: day, width: 800, height: 1200),
+        3000,
+      );
+      expect((small.width, small.height), (800, 1200));
+      final unknown = dayPhotoPreviewSize(
+        DayPhoto(id: 'u', takenAt: day),
+        3000,
+      );
+      expect((unknown.width, unknown.height), (3000, 3000));
+    });
+
+    test('a very long screenshot keeps at least one pixel of width', () {
+      final size = dayPhotoPreviewSize(
+        DayPhoto(id: 'l', takenAt: day, width: 1, height: 90000),
+        3000,
+      );
+      expect(size.width, 1);
+      expect(size.height, 3000);
+    });
   });
 }

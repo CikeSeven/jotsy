@@ -94,6 +94,30 @@ void main() {
     });
   });
 
+  group('AppPlatform text selection menu', () {
+    test('only phones share selected text', () {
+      for (final platform in TargetPlatform.values) {
+        debugDefaultTargetPlatformOverride = platform;
+        expect(
+          AppPlatform.supportsTextShare,
+          platform == TargetPlatform.android || platform == TargetPlatform.iOS,
+          reason: '$platform',
+        );
+      }
+    });
+
+    test('only Android offers process text actions', () {
+      for (final platform in TargetPlatform.values) {
+        debugDefaultTargetPlatformOverride = platform;
+        expect(
+          AppPlatform.supportsProcessText,
+          platform == TargetPlatform.android,
+          reason: '$platform',
+        );
+      }
+    });
+  });
+
   group('appDataRootDirectory', () {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     late Directory sandbox;

@@ -12680,4 +12680,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudIncrementalErrorMediaChanged => '备份期间有照片或附件发生了变化，请再试一次';
+
+  @override
+  String get textSelectionMenuMore => '更多';
+
+  @override
+  String get textSelectionMenuLess => '收起';
 }

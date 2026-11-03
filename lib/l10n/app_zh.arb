@@ -17627,5 +17627,13 @@
   "cloudIncrementalErrorMediaChanged": "备份期间有照片或附件发生了变化，请再试一次",
   "@cloudIncrementalErrorMediaChanged": {
     "description": "增量备份期间媒体文件被改动。"
+  },
+  "textSelectionMenuMore": "更多",
+  "@textSelectionMenuMore": {
+    "description": "文字选区菜单末尾的按钮：展开其余操作（分享、翻译等）。"
+  },
+  "textSelectionMenuLess": "收起",
+  "@textSelectionMenuLess": {
+    "description": "文字选区菜单展开后末尾的按钮：收起其余操作。"
   }
 }

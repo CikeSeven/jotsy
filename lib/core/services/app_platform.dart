@@ -82,4 +82,14 @@ abstract final class AppPlatform {
   /// `diary_camera_capture_service.dart`）。桌面没有可调用的相机应用，iOS
   /// 没有接这条通道，那里的图片 / 视频按钮仍直接打开选择器。
   static bool get supportsCameraCapture => isAndroid;
+
+  /// 文字选区菜单里的“分享”：手机上 share_plus 把选中的文字交给系统分享
+  /// 面板。桌面不提供——Linux 没有系统分享，桌面的右键菜单按习惯只放剪切 /
+  /// 复制 / 粘贴这类编辑操作，要分享时复制后粘贴到别的应用。
+  static bool get supportsTextShare => isMobile;
+
+  /// 文字选区菜单里其他应用提供的文字处理（翻译、添加到笔记等）：只有
+  /// Android 的 `ACTION_PROCESS_TEXT`（Flutter 的 `DefaultProcessTextService`）
+  /// 能查询并调用，其他平台的查询总是返回空列表。
+  static bool get supportsProcessText => isAndroid;
 }

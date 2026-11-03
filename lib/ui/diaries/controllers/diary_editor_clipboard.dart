@@ -73,8 +73,8 @@ abstract final class DiaryEditorClipboard {
     }
   }
 
-  /// 粘贴的优先级：图片 → 本应用复制的格式快照 → HTML → 看起来是
-  /// Markdown 的纯文字（[looksLikeDiaryMarkdown]）→ 每行一段的纯文字。
+  /// 粘贴的优先级：图片 → 本应用复制的格式快照 → 剪贴板的文字与 HTML
+  /// （Markdown、HTML 与纯文字之间怎么取舍见 [pasteText]）。
   ///
   /// [plainText] 为 true（桌面 Ctrl / ⌘ + Shift + V）时跳过前面所有转换，
   /// 只按每行一段粘贴原文。光标在代码块或表格格子里时同样不转换 Markdown：
@@ -120,23 +120,69 @@ abstract final class DiaryEditorClipboard {
       /* 不同系统支持的剪贴板格式不同。 */
     }
     if (controller.state.isDisposed) return;
-    if (html != null && html.isNotEmpty) {
-      await pasteHtml(controller, html);
-    } else if (text != null && text.isNotEmpty) {
-      if (!_caretInRawTextBlock(controller) && looksLikeDiaryMarkdown(text)) {
-        final nodes = diaryMarkdownPasteNodes(text);
-        if (nodes.isNotEmpty) {
-          await _pasteNodes(controller, nodes);
-          return;
-        }
+    await pasteText(controller, text: text, html: html);
+  }
+
+  /// 剪贴板里的文字与 HTML 怎么粘（[paste] 读完剪贴板后的最后一步）：
+  /// 1. 纯文字看起来是 Markdown（[looksLikeDiaryMarkdown]）、光标不在代码块
+  ///    或表格格子里，且没有 HTML 或 HTML 只是包着原文（[htmlOnlyWrapsText]）
+  ///    → 按 Markdown 转换。以前 HTML 一律优先：Android / Windows 上附带
+  ///    HTML 的来源（代码编辑器、笔记与聊天应用）粘进来，Markdown 原文就原样
+  ///    落成纯文本；
+  /// 2. 否则有 HTML → [pasteHtml]（网页、文档里渲染好的格式）；
+  /// 3. 否则每行一段的纯文字。
+  ///
+  /// pasteboard 只在 Android / Windows 提供 HTML，测试经这里模拟各平台的
+  /// 剪贴板内容。
+  static Future<void> pasteText(
+    DiaryEditorController controller, {
+    String? text,
+    String? html,
+  }) async {
+    if (controller.readOnly) return;
+    final hasHtml = html != null && html.isNotEmpty;
+    if (text != null && text.isNotEmpty) {
+      final nodes = _markdownNodes(controller, text);
+      if (nodes != null && (!hasHtml || htmlOnlyWrapsText(html))) {
+        await _pasteNodes(controller, nodes);
+        return;
       }
-      await _pastePlain(controller, text);
+      if (!hasHtml) {
+        await _pastePlain(controller, text);
+        return;
+      }
     }
+    if (hasHtml) await pasteHtml(controller, html);
+  }
+
+  /// 输入法一次上屏的多行文字看起来是 Markdown 时按粘贴转换（见
+  /// `DiaryMarkdownInputInterceptor`）。不是 Markdown、光标在代码块或格子里
+  /// 时返回 false，交给上游按原文插入。
+  static Future<bool> pasteMarkdown(
+    DiaryEditorController controller,
+    String text,
+  ) async {
+    if (controller.readOnly) return false;
+    final nodes = _markdownNodes(controller, text);
+    if (nodes == null) return false;
+    await _pasteNodes(controller, nodes);
+    return true;
+  }
+
+  /// [text] 按 Markdown 转换后的块；不该转换（不像 Markdown、光标在代码块
+  /// 或格子里）或转换后没有内容时为 null。
+  static List<Map<String, dynamic>>? _markdownNodes(
+    DiaryEditorController controller,
+    String text,
+  ) {
+    if (_caretInRawTextBlock(controller) || !looksLikeDiaryMarkdown(text)) {
+      return null;
+    }
+    final nodes = diaryMarkdownPasteNodes(text);
+    return nodes.isEmpty ? null : nodes;
   }
 
   /// 把剪贴板里的 HTML 转为块粘贴（与导入共用 [JournalHtmlConverter]）。
-  /// 单独成方法是因为 pasteboard 只在 Android / Windows 提供 HTML，测试
-  /// 经它直接走同一条路径。
   static Future<void> pasteHtml(
     DiaryEditorController controller,
     String html,

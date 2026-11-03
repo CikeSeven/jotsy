@@ -27,6 +27,7 @@ import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
+import 'diary_markdown_input_interceptor.dart';
 import 'diary_mention_menu.dart';
 import 'diary_slash_commands.dart';
 import 'diary_slash_menu.dart';
@@ -119,6 +120,10 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   /// 服务在编辑器挂载后才有，首帧之后再登记；只读正文没有键盘服务。
   final DiaryTableKeyboardInterceptor _tableInterceptor =
       DiaryTableKeyboardInterceptor();
+
+  /// 输入法剪贴板一次上屏的多行 Markdown（见 [DiaryMarkdownInputInterceptor]），
+  /// 排在表格拦截器之后；随控制器在 [_bind] 里重建。
+  late DiaryMarkdownInputInterceptor _markdownInterceptor;
   @override
   void initState() {
     super.initState();
@@ -129,6 +134,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
 
   void _bind() {
     widget.controller.attachView();
+    _markdownInterceptor = DiaryMarkdownInputInterceptor(widget.controller);
     _slashMenu = DiarySlashMenuController(widget.controller);
     _mentionMenu = DiaryMentionMenuController(
       widget.controller,
@@ -152,16 +158,18 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     final state = widget.controller.state;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !state.isDisposed && state == widget.controller.state) {
-        state.service.keyboardService?.registerInterceptor(_tableInterceptor);
+        state.service.keyboardService
+          ?..registerInterceptor(_tableInterceptor)
+          ..registerInterceptor(_markdownInterceptor);
       }
     });
   }
 
   void _unregisterInterceptor(DiaryEditorController controller) {
     if (!controller.state.isDisposed) {
-      controller.state.service.keyboardService?.unregisterInterceptor(
-        _tableInterceptor,
-      );
+      controller.state.service.keyboardService
+        ?..unregisterInterceptor(_tableInterceptor)
+        ..unregisterInterceptor(_markdownInterceptor);
     }
   }
 

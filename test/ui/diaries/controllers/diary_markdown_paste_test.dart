@@ -78,6 +78,41 @@ void main() {
     }
   });
 
+  group('joinSpacedMarkdownLinks', () {
+    test('joins web links with a gap between ] and (', () {
+      expect(
+        joinSpacedMarkdownLinks(
+          '[English] (https://example.com/a.md) | 简体中文\n'
+          '[信] \t(mailto:a@b.c)',
+        ),
+        '[English](https://example.com/a.md) | 简体中文\n'
+        '[信](mailto:a@b.c)',
+      );
+    });
+
+    test('leaves code, relative paths and task boxes alone', () {
+      const text =
+          '`[a] (https://x.com)` [b] (./b.md)\n'
+          '- [ ] (https://x.com) 待办\n'
+          '- [x] (https://x.com) 完成\n'
+          '```\n[c] (https://x.com)\n```';
+      expect(joinSpacedMarkdownLinks(text), text);
+    });
+
+    test('a spaced link alone counts as markdown and pastes as a link', () {
+      const text = '[English] (https://example.com/en.md) | 简体中文';
+      expect(looksLikeDiaryMarkdown(text), isTrue);
+      final nodes = diaryMarkdownPasteNodes(text);
+      expect(_document(nodes).root.children.single.delta!.toJson(), [
+        {
+          'insert': 'English',
+          'attributes': {'href': 'https://example.com/en.md'},
+        },
+        {'insert': ' | 简体中文'},
+      ]);
+    });
+  });
+
   group('escapeLocalMarkdownImages', () {
     test('keeps remote images and code, escapes local images', () {
       expect(
@@ -106,6 +141,36 @@ void main() {
       );
       expect(nodes.map((node) => node['type']), contains('image'));
     });
+  });
+
+  group('htmlOnlyWrapsText', () {
+    for (final html in [
+      // VS Code 一类代码编辑器：每行一个带语法着色的 span。
+      '<div style="color: #ccc; white-space: pre;"><div>'
+          '<span style="color: #569cd6; font-weight: bold;"># 标题</span>'
+          '</div><div><span>- a</span></div></div>',
+      // 笔记与聊天应用：每行一个 div / p，或整段 pre-wrap 的 span。
+      '<div>**粗**</div><div><br></div><p>- a</p>',
+      '<meta charset="utf-8"><span style="white-space: pre-wrap;">'
+          '# 标题\n- a</span>',
+    ]) {
+      test('true for ${jsonEncode(html)}', () {
+        expect(htmlOnlyWrapsText(html), isTrue);
+      });
+    }
+    for (final html in [
+      '<h1>标题</h1>',
+      '<p><strong>粗</strong>体</p>',
+      '<ul><li>a</li></ul>',
+      '<pre># 注释\nls</pre>',
+      '<p>运行 <code>ls</code></p>',
+      '<a href="https://example.com">链接</a>',
+      '<img src="https://example.com/a.png">',
+    ]) {
+      test('false for ${jsonEncode(html)}', () {
+        expect(htmlOnlyWrapsText(html), isFalse);
+      });
+    }
   });
 
   DiaryEditorController editor([String text = '']) {
@@ -144,6 +209,77 @@ void main() {
     controller.undo();
     expect(controller.plainText, isEmpty);
     expect(controller.document.root.children, hasLength(1));
+  });
+
+  group('clipboard text with HTML', () {
+    const markdown = '# 标题\n**粗**体\n- a\n- b';
+
+    test('HTML that only wraps the raw markdown yields to markdown', () async {
+      final controller = editor();
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await DiaryEditorClipboard.pasteText(
+        controller,
+        text: markdown,
+        html: [
+          for (final line in markdown.split('\n'))
+            '<div><span style="color: #569cd6;">$line</span></div>',
+        ].join(),
+      );
+      expect(controller.document.root.children.map((node) => node.type), [
+        'heading',
+        'paragraph',
+        'bulleted_list',
+        'bulleted_list',
+      ]);
+      expect(controller.plainText, '标题\n粗体\na\nb');
+      controller.undo();
+      expect(controller.plainText, isEmpty);
+    });
+
+    test('rendered HTML keeps its own formatting', () async {
+      final controller = editor();
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await DiaryEditorClipboard.pasteText(
+        controller,
+        text: '标题\n粗体',
+        html: '<h2>标题</h2><p><strong>粗</strong>体</p>',
+      );
+      final children = controller.document.root.children.toList();
+      expect(children.map((node) => node.type), ['heading', 'paragraph']);
+      expect(children.first.attributes['level'], 2);
+      expect(children.last.delta!.toJson().first['attributes'], {'bold': true});
+    });
+
+    test('a code snippet from a web page stays a code block', () async {
+      final controller = editor();
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await DiaryEditorClipboard.pasteText(
+        controller,
+        text: '# 安装\n- 不是列表',
+        html: '<pre><code># 安装\n- 不是列表</code></pre>',
+      );
+      expect(
+        controller.document.root.children.map((node) => node.type),
+        contains('code'),
+      );
+      expect(controller.plainText, contains('# 安装'));
+    });
+
+    test('non-markdown text still pastes through the HTML', () async {
+      final controller = editor();
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await DiaryEditorClipboard.pasteText(
+        controller,
+        text: '红字',
+        html: '<span style="color: #ff0000;">红字</span>',
+      );
+      final delta = controller.document.root.children.first.delta!.toJson();
+      expect(controller.plainText, '红字');
+      expect(
+        (delta.single['attributes'] as Map?)?.keys,
+        contains('font_color'),
+      );
+    });
   });
 
   test('a pipe table pastes as a valid table block', () async {

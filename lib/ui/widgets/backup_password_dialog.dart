@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../l10n/app_localizations.dart';
 import 'app_modal/app_dialog.dart';
 import 'expressive_icon_swap.dart';
+import 'text_selection_menu/app_text_context_menu.dart';
 
 /// 密码弹窗的用途：导出时密码可选，导入时用于解开已加密的文件。
 enum BackupPasswordPurpose { export, import }
@@ -97,6 +98,7 @@ class _BackupPasswordDialogState extends State<_BackupPasswordDialog> {
                   ),
                 ),
               ),
+              contextMenuBuilder: appTextContextMenuBuilder,
             ),
             if (isExport) ...<Widget>[
               const SizedBox(height: 12),

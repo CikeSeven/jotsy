@@ -8,6 +8,7 @@ import '../../../widgets/color_palette_families.dart';
 import '../../../widgets/color_swatch_button.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../../widgets/palette_color_picker.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 自定义颜色对话框的结果：浅色值与可选的深色值（null 表示自动推导）。
 class StyleCustomColor {
@@ -250,6 +251,7 @@ class _StyleColorDialogState extends State<_StyleColorDialog> {
                   FilteringTextInputFormatter.allow(RegExp('[#0-9a-fA-F]')),
                 ],
                 onChanged: _onHexChanged,
+                contextMenuBuilder: appTextContextMenuBuilder,
               ),
             ],
           ],

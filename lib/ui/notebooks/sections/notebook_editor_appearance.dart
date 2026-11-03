@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
@@ -71,6 +72,7 @@ class NotebookEditorTextFields extends StatelessWidget {
                 maxLength: NotebookEditorController.maxNameLength,
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(hintText: l10n.notebookNameHint),
+                contextMenuBuilder: appTextContextMenuBuilder,
               ),
               const SizedBox(height: AppSpacing.xs),
               CalendarOptionsFieldLabel(text: l10n.notebookDescriptionLabel),
@@ -82,6 +84,7 @@ class NotebookEditorTextFields extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: l10n.notebookDescriptionHint,
                 ),
+                contextMenuBuilder: appTextContextMenuBuilder,
               ),
             ],
           ),

@@ -20,6 +20,7 @@ import 'diary_code_block_style_page.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 ///
@@ -526,6 +527,7 @@ class _CurrentTimeFormatDialogState extends State<_CurrentTimeFormatDialog> {
               errorText: _errorText,
             ),
             onChanged: (_) => setState(() => _errorText = null),
+            contextMenuBuilder: appTextContextMenuBuilder,
           ),
           const SizedBox(height: 12),
           Text(

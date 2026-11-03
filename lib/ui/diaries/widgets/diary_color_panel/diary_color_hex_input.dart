@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 颜色代码最多几位：六位 RGB（三位简写同样接受，见 [parseDiaryHexInput]）。
 const int _kHexDigits = 6;
@@ -95,6 +96,7 @@ class DiaryColorHexField extends StatelessWidget {
           enabledBorder: pill(restingSide),
           focusedBorder: pill(BorderSide(color: colors.primary, width: 1.5)),
         ),
+        contextMenuBuilder: appTextContextMenuBuilder,
       ),
     );
   }

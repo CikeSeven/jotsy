@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../settings/widgets/settings_card_group.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../models/ai_built_ins.dart';
 import '../../models/ai_ids.dart';
 import '../../models/ai_preference_parts.dart';
@@ -136,6 +137,7 @@ class _AiPersonaEditPageState extends ConsumerState<AiPersonaEditPage> {
                             labelText: l10n.aiPersonaEmoji,
                             counterText: '',
                           ),
+                          contextMenuBuilder: appTextContextMenuBuilder,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -148,6 +150,7 @@ class _AiPersonaEditPageState extends ConsumerState<AiPersonaEditPage> {
                             labelText: l10n.aiPersonaName,
                             counterText: '',
                           ),
+                          contextMenuBuilder: appTextContextMenuBuilder,
                         ),
                       ),
                     ],
@@ -164,6 +167,7 @@ class _AiPersonaEditPageState extends ConsumerState<AiPersonaEditPage> {
                       hintText: l10n.aiPersonaPromptHint,
                       alignLabelWithHint: true,
                     ),
+                    contextMenuBuilder: appTextContextMenuBuilder,
                   ),
                 ],
               ),

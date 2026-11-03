@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../widgets/form_width.dart';
@@ -49,6 +50,7 @@ class DiaryTemplateEditorSettingsTab extends StatelessWidget {
                       ? l10n.diaryTemplateEditorNameRequired
                       : null,
                 ),
+                contextMenuBuilder: appTextContextMenuBuilder,
               ),
               const SizedBox(height: AppSpacing.s),
               CalendarOptionsFieldLabel(
@@ -58,6 +60,7 @@ class DiaryTemplateEditorSettingsTab extends StatelessWidget {
                 controller: controller.description,
                 maxLength: DiaryTemplate.maxDescriptionLength,
                 textInputAction: TextInputAction.done,
+                contextMenuBuilder: appTextContextMenuBuilder,
               ),
               const _GroupHeader.look(),
               CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorCategory),

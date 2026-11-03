@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../widgets/color_swatch_button.dart';
 
@@ -57,6 +58,7 @@ class MoodOptionRow extends StatelessWidget {
               helperText: l10n.settingsMoodOptionsSlotHelper(defaultEmoji),
               counterText: '',
             ),
+            contextMenuBuilder: appTextContextMenuBuilder,
           ),
         ),
       ],

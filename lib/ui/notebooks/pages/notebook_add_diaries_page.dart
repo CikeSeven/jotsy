@@ -21,6 +21,7 @@ import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 从已有日记里挑选、批量加进一本普通日记本（头部卡片“添加日记”与空日记本
 /// 的“从已有日记挑选”）。
@@ -311,6 +312,7 @@ class _NotebookAddDiariesPageState
                         borderSide: BorderSide.none,
                       ),
                     ),
+                    contextMenuBuilder: appTextContextMenuBuilder,
                   ),
                 ),
               ),

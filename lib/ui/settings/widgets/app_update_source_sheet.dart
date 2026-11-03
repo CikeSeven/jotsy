@@ -7,6 +7,7 @@ import '../../../core/services/app_update_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_choice_tile.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import 'app_update_labels.dart';
 
 /// 下载线路面板的选择结果。
@@ -197,6 +198,7 @@ class _AppUpdateSourceSheetState extends State<AppUpdateSourceSheet> {
                                   ? l10n.appUpdateSourceCustomInvalid
                                   : null,
                             ),
+                            contextMenuBuilder: appTextContextMenuBuilder,
                           ),
                         )
                       : const SizedBox(width: double.infinity),

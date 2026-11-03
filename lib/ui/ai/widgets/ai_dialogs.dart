@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_modal/app_dialog.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// AI 模块的确认对话框：左侧灰色“取消”，右侧主色确认；[destructive] 时
 /// 右侧为 error 色（AGENTS.md §6 对话框按钮规则）。
@@ -62,6 +63,7 @@ Future<void> showAiDetailDialog(
                 fontFamily: 'monospace',
                 color: theme.colorScheme.onSurfaceVariant,
               ),
+              contextMenuBuilder: appTextContextMenuBuilder,
             ),
           ),
         ),

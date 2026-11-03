@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../settings/widgets/settings_card_group.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../models/ai_preferences.dart';
 import '../../providers/ai_providers.dart';
 import '../../widgets/ai_page_scaffold.dart';
@@ -73,6 +74,7 @@ class _AiProfilePageState extends ConsumerState<AiProfilePage> {
                       hintText: l10n.aiProfileAboutMeHint,
                       alignLabelWithHint: true,
                     ),
+                    contextMenuBuilder: appTextContextMenuBuilder,
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -85,6 +87,7 @@ class _AiProfilePageState extends ConsumerState<AiProfilePage> {
                       hintText: l10n.aiProfileStyleHint,
                       alignLabelWithHint: true,
                     ),
+                    contextMenuBuilder: appTextContextMenuBuilder,
                   ),
                 ],
               ),

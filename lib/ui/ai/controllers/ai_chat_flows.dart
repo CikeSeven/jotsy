@@ -14,6 +14,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../models/ai_chat_scope.dart';
 import '../widgets/ai_dialogs.dart';
 
@@ -273,6 +274,7 @@ class _TextDialogState extends State<_TextDialog> {
         minLines: 1,
         maxLines: widget.maxLines,
         keyboardType: multiline ? TextInputType.multiline : TextInputType.text,
+        contextMenuBuilder: appTextContextMenuBuilder,
       ),
       actions: <Widget>[
         TextButton(

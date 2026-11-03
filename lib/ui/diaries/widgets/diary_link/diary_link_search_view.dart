@@ -6,6 +6,7 @@ import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/diary_link_search.dart';
 import '../../models/diary_link_candidate.dart';
 import '../diary_editor/diary_caret_menu.dart';
@@ -103,6 +104,7 @@ class _DiaryLinkSearchViewState extends ConsumerState<DiaryLinkSearchView> {
             final first = _search.results?.firstOrNull;
             if (first != null) widget.onPick(first);
           },
+          contextMenuBuilder: appTextContextMenuBuilder,
         ),
         const SizedBox(height: 8),
         SizedBox(

@@ -25,6 +25,7 @@ import '../widgets/anniversary_link_field.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 纪念日编辑页（新建 / 编辑）。
 ///
@@ -225,6 +226,7 @@ class _AnniversaryEditPageState extends ConsumerState<AnniversaryEditPage>
                         _update(_draft.copyWith(title: value));
                       },
                       onSubmitted: (_) => _titleFocus.unfocus(),
+                      contextMenuBuilder: appTextContextMenuBuilder,
                     ),
                     const SizedBox(height: AppSpacing.s),
                     CalendarOptionsFieldLabel(text: l10n.anniversaryFieldDate),
@@ -296,6 +298,7 @@ class _AnniversaryEditPageState extends ConsumerState<AnniversaryEditPage>
                       ),
                       onChanged: (String value) =>
                           _update(_draft.copyWith(note: value)),
+                      contextMenuBuilder: appTextContextMenuBuilder,
                     ),
                     CalendarOptionSwitch(
                       label: l10n.anniversaryPin,

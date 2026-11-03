@@ -8,6 +8,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../settings/widgets/settings_option_tiles.dart';
 import '../../../widgets/app_modal/app_dialog.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../widgets/ai_tap_outside_unfocus.dart';
 
 /// 从拉取到的模型列表里勾选要用的模型（只负责挑选）。已添加的模型不再列出。
@@ -93,6 +94,7 @@ class _ModelPickerState extends State<_ModelPicker> {
                     ),
                   ),
                   onChanged: (String value) => setState(() => _query = value),
+                  contextMenuBuilder: appTextContextMenuBuilder,
                 ),
               ),
               const SizedBox(height: 8),
@@ -182,6 +184,7 @@ Future<String?> showAiAddModelDialog(BuildContext context) {
           autocorrect: false,
           decoration: InputDecoration(hintText: l10n.aiProviderModelIdHint),
           onSubmitted: (_) => submit(),
+          contextMenuBuilder: appTextContextMenuBuilder,
         ),
         actions: <Widget>[
           TextButton(
@@ -308,6 +311,7 @@ class _ModelSettingsState extends State<_ModelSettings> {
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
+                  contextMenuBuilder: appTextContextMenuBuilder,
                 ),
               ),
               Padding(
@@ -317,6 +321,7 @@ class _ModelSettingsState extends State<_ModelSettings> {
                   decoration: InputDecoration(
                     labelText: l10n.aiModelDisplayName,
                   ),
+                  contextMenuBuilder: appTextContextMenuBuilder,
                 ),
               ),
               const SizedBox(height: 8),
@@ -345,6 +350,7 @@ class _ModelSettingsState extends State<_ModelSettings> {
                           labelText: l10n.aiModelMaxOutput,
                           hintText: l10n.aiModelAuto,
                         ),
+                        contextMenuBuilder: appTextContextMenuBuilder,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -357,6 +363,7 @@ class _ModelSettingsState extends State<_ModelSettings> {
                           labelText: l10n.aiModelContext,
                           hintText: l10n.aiModelAuto,
                         ),
+                        contextMenuBuilder: appTextContextMenuBuilder,
                       ),
                     ),
                   ],

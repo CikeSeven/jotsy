@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 模板面板的搜索框：放大镜 + “搜索模板”占位，有字时右侧出现清空按钮。
 ///
@@ -61,6 +62,7 @@ class DiaryTemplateSearchField extends StatelessWidget {
       onChanged: onChanged,
       // 结果随输入实时筛选，提交只是收起键盘，便于浏览结果。
       onSubmitted: (_) => focusNode.unfocus(),
+      contextMenuBuilder: appTextContextMenuBuilder,
     );
   }
 }

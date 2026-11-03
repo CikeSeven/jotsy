@@ -39,6 +39,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_saved_colors_provider.dart';
@@ -745,6 +746,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
+      contextMenuBuilder: appTextContextMenuBuilder,
     );
   }
 

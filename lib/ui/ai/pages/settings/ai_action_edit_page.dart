@@ -14,6 +14,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../settings/widgets/settings_card_group.dart';
 import '../../../settings/widgets/settings_option_tiles.dart';
 import '../../../widgets/expressive_button_group.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../models/ai_built_ins.dart';
 import '../../models/ai_ids.dart';
 import '../../models/ai_preference_parts.dart';
@@ -188,6 +189,7 @@ class _AiActionEditPageState extends ConsumerState<AiActionEditPage> {
                             labelText: l10n.aiActionEmoji,
                             counterText: '',
                           ),
+                          contextMenuBuilder: appTextContextMenuBuilder,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -201,6 +203,7 @@ class _AiActionEditPageState extends ConsumerState<AiActionEditPage> {
                             labelText: l10n.aiActionName,
                             counterText: '',
                           ),
+                          contextMenuBuilder: appTextContextMenuBuilder,
                         ),
                       ),
                     ],
@@ -217,6 +220,7 @@ class _AiActionEditPageState extends ConsumerState<AiActionEditPage> {
                       hintText: l10n.aiActionPromptHint,
                       alignLabelWithHint: true,
                     ),
+                    contextMenuBuilder: appTextContextMenuBuilder,
                   ),
                   if (builtIn != null)
                     Align(

@@ -8,6 +8,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../../widgets/expressive_state_blend.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 写留言面板的结果：去掉首尾空白的文字与可选心情。
 @immutable
@@ -200,6 +201,7 @@ class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
                   ? null
                   : Text('$currentLength/$maxLength'),
               decoration: InputDecoration(hintText: l10n.diaryCommentHint),
+              contextMenuBuilder: appTextContextMenuBuilder,
             ),
             const SizedBox(height: AppSpacing.m),
             Row(

@@ -543,7 +543,8 @@ void main() {
       expect(combine(denied, denied), denied);
       // Android 13+ 升级上来、只授权过图片。
       expect(combine(granted, denied), DayPhotoAccess.imagesOnly);
-      expect(combine(granted, limited), limited);
+      // Android 14+ 授予全部照片时连带授予部分授权，视频因此报成部分授权。
+      expect(combine(granted, limited), DayPhotoAccess.imagesOnly);
       expect(combine(limited, denied), limited);
       expect(combine(denied, granted), limited);
       expect(DayPhotoAccess.imagesOnly.canRead, isTrue);

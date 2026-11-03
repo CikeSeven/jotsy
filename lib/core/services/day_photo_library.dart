@@ -81,21 +81,21 @@ enum DayPhotoAccess {
 /// 把图片与视频各自的授权状态合成一个 [DayPhotoAccess]。
 ///
 /// iOS 的相册授权与 Android 12 及以下的读外部存储本就一项管两种，两边总是
-/// 相同；只有 Android 13+ 会出现“图片已授权、视频没有”（[imagesOnly]）。
-/// 两边都读不了才算 [DayPhotoAccess.denied]；其余不一致的组合（任一边部分
-/// 授权、只授权了视频）都按部分授权处理：能读到什么就列出什么，并给出
-/// “选择更多”。
+/// 相同；只有 Android 13+ 会出现“图片已全部授权、视频没有”（[imagesOnly]）。
+/// Android 14+ 授予全部照片时系统同时授予部分授权那一项，插件因此把没授权
+/// 的视频报成“部分授权”，所以图片已全部授权时，视频只要不是全部授权都按
+/// [imagesOnly] 处理（只查图片，给出“允许访问视频”）。两边都读不了才算
+/// [DayPhotoAccess.denied]；其余不一致的组合（图片部分授权、只授权了视频）
+/// 都按部分授权处理：能读到什么就列出什么，并给出“选择更多”。
 DayPhotoAccess combineDayPhotoAccess({
   required DayPhotoAccess images,
   required DayPhotoAccess videos,
 }) {
   if (!images.canRead && !videos.canRead) return DayPhotoAccess.denied;
   if (images == DayPhotoAccess.granted) {
-    return switch (videos) {
-      DayPhotoAccess.granted => DayPhotoAccess.granted,
-      DayPhotoAccess.denied => DayPhotoAccess.imagesOnly,
-      _ => DayPhotoAccess.limited,
-    };
+    return videos == DayPhotoAccess.granted
+        ? DayPhotoAccess.granted
+        : DayPhotoAccess.imagesOnly;
   }
   return DayPhotoAccess.limited;
 }

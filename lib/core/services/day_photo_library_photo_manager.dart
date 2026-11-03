@@ -79,6 +79,20 @@ class PhotoManagerDayPhotoLibrary implements DayPhotoLibrary {
     // 插件把“图片已授权、视频被拒”合并报成部分授权，与本类的口径不同：
     // 申请完按两项分别重新读取。
     await PhotoManager.requestPermissionExtend(requestOption: _permission);
+    final access = await checkAccess();
+    if (access != DayPhotoAccess.imagesOnly ||
+        defaultTargetPlatform != TargetPlatform.android) {
+      return access;
+    }
+    // Android 14+ 授予“全部照片”时系统同时授予 READ_MEDIA_VISUAL_USER_SELECTED，
+    // 插件见到它就直接报已授权、不向系统申请：只申请过图片的旧用户点“允许
+    // 访问视频”会毫无反应。presentLimited 总是真正发起请求（图片 + 视频 +
+    // 部分授权），由系统弹框；Android 13 上它什么也不做，上面的申请已经弹过。
+    try {
+      await PhotoManager.presentLimited(type: RequestType.common);
+    } catch (error) {
+      debugPrint('Day photo video permission request failed: $error');
+    }
     return checkAccess();
   }
 

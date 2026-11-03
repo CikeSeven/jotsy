@@ -61,7 +61,12 @@ class AiPreferences {
   static const int maxAboutMeLength = 1000;
   static const int maxWritingStyleLength = 500;
   static const int defaultVisionMaxImages = 3;
-  static const int maxVisionImages = 6;
+  static const int maxVisionImages = 20;
+
+  /// 「每次最多发送」滑块的可选张数：1 到 [maxVisionImages]，每张一档。
+  static final List<int> visionMaxImagesChoices = List<int>.unmodifiable(<int>[
+    for (var n = 1; n <= maxVisionImages; n++) n,
+  ]);
   static const int defaultVisionMaxSide = 1024;
   static const List<int> visionMaxSideChoices = <int>[512, 1024, 1536];
   static const int defaultRecentDays = 30;

@@ -81,6 +81,28 @@ void main() {
       expect(decoded.privacy.excludedTagNames, {'work'});
     });
 
+    test('photos per request accepts 1 to 20', () {
+      AiPreferences decodeImages(Object? value) => AiPreferences.decode(
+        jsonEncode(<String, Object?>{'visionImages': value}),
+      );
+      expect(AiPreferences.maxVisionImages, 20);
+      expect(AiPreferences.visionMaxImagesChoices.first, 1);
+      expect(AiPreferences.visionMaxImagesChoices.last, 20);
+      expect(AiPreferences.visionMaxImagesChoices, hasLength(20));
+      expect(decodeImages(20).visionMaxImages, 20);
+      expect(decodeImages(1).visionMaxImages, 1);
+      for (final bad in <Object?>[0, 21, 'many', 2.5]) {
+        expect(
+          decodeImages(bad).visionMaxImages,
+          AiPreferences.defaultVisionMaxImages,
+        );
+      }
+      final roundTrip = AiPreferences.decode(
+        AiPreferences.defaults.copyWith(visionMaxImages: 20).encode(),
+      );
+      expect(roundTrip.visionMaxImages, 20);
+    });
+
     test('falls back per field on bad values', () {
       final prefs = AiPreferences.decode(
         jsonEncode(<String, Object?>{

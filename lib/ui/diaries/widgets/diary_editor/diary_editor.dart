@@ -27,6 +27,7 @@ import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
+import 'diary_embed_keys.dart';
 import 'diary_markdown_input_interceptor.dart';
 import 'diary_mention_menu.dart';
 import 'diary_slash_commands.dart';
@@ -126,6 +127,11 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   final DiaryTableKeyboardInterceptor _tableInterceptor =
       DiaryTableKeyboardInterceptor();
 
+  /// 软键盘在嵌入块旁的退格（见 [DiaryEmbedKeyboardInterceptor]），排在
+  /// 表格拦截器之后。
+  final DiaryEmbedKeyboardInterceptor _embedInterceptor =
+      DiaryEmbedKeyboardInterceptor();
+
   /// 输入法剪贴板一次上屏的多行 Markdown（见 [DiaryMarkdownInputInterceptor]），
   /// 排在表格拦截器之后；随控制器在 [_bind] 里重建。
   late DiaryMarkdownInputInterceptor _markdownInterceptor;
@@ -165,6 +171,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       if (mounted && !state.isDisposed && state == widget.controller.state) {
         state.service.keyboardService
           ?..registerInterceptor(_tableInterceptor)
+          ..registerInterceptor(_embedInterceptor)
           ..registerInterceptor(_markdownInterceptor);
       }
     });
@@ -174,6 +181,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     if (!controller.state.isDisposed) {
       controller.state.service.keyboardService
         ?..unregisterInterceptor(_tableInterceptor)
+        ..unregisterInterceptor(_embedInterceptor)
         ..unregisterInterceptor(_markdownInterceptor);
     }
   }
@@ -571,8 +579,15 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               !identical(event, af.toggleHighlightCommand) &&
               !(AppPlatform.isDesktop &&
                   (identical(event, af.exitEditingCommand) ||
-                      identical(event, af.showLinkMenuCommand))))
+                      identical(event, af.showLinkMenuCommand)))) ...[
+            // 嵌入块旁的退格 / Delete 紧排在上游同键命令之前：上游会越过
+            // 嵌入块合并文字（见 diary_embed_editing.dart）。“段首转正文”
+            // 排在上游退格之前，仍先于这里。
+            if (identical(event, af.backspaceCommand))
+              diaryEmbedBackspaceCommand,
+            if (identical(event, af.deleteCommand)) diaryEmbedDeleteCommand,
             event,
+          ],
       ],
       // 桌面的复制 / 粘贴菜单只在右键时出现（手机为选中后自动浮出，见
       // DiaryEditorSelectionToolbar）。

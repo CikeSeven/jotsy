@@ -17,11 +17,9 @@ import 'diary_toggle_state.dart';
 /// 规则（硬键盘经 diary_embed_keys.dart 的快捷键，排在上游“段首转正文”
 /// 之后、上游退格 / Delete 之前；软键盘经同一文件的输入法拦截器）：
 /// - 退格：插入点在文字块开头、显示上紧挨着的上一块是嵌入块 → 删掉嵌入块，
-///   本行接到它原来的位置，插入点不动。例外：本行是空段落（没有字、没有
-///   子块）且后面紧跟着文字块时，先删掉这个空行、插入点到下一行开头——
-///   视觉上仍在嵌入块正下方，再按一次才删嵌入块。与常见编辑器“先删空行、
-///   再删图片”一致，清理空行时多按一下不会误删照片；空行是最后一块（或
-///   后面是嵌入块、表格）时不删它，否则嵌入块后面又没有能写字的行了；
+///   本行接到它原来的位置，插入点不动。本行是空行时同样如此：不先删空行
+///   ——嵌入块下面连着几个空行时，那样每按一次都删掉当前空行、下面的空行
+///   顶上来，看上去是在删光标下方的空行，删完才轮到嵌入块；
 /// - Delete（桌面）：插入点在文字块末尾、紧接着的下一块是嵌入块 → 删掉
 ///   嵌入块，插入点不动；
 /// - 每次一个事务、一步撤销。标题、列表等在段首退格仍先转为正文（上游
@@ -93,26 +91,14 @@ bool deleteDiaryEmbedBeforeCaret(af.EditorState state) {
   if (node == null || state.selection!.end.offset != 0) return false;
   final embed = _shownBefore(node);
   if (!_isEmbed(embed)) return false;
-  final transaction = state.transaction;
-  final next = node.next;
-  if (node.type == kDiaryBlockParagraph &&
-      node.delta!.isEmpty &&
-      node.children.isEmpty &&
-      next?.delta != null) {
-    // 先删空行：下一行接到这里，插入点到它开头。
-    transaction
-      ..deleteNode(node)
-      ..afterSelection = af.Selection.collapsed(af.Position(path: node.path));
-  } else {
-    // 嵌入块从不挂子块：它要么是本行的上一兄弟（删掉后本行前移一位），
-    // 要么在上一兄弟的子树里（本行的路径不变）。
-    final sibling = embed!.parent == node.parent;
-    transaction
-      ..deleteNode(embed)
-      ..afterSelection = af.Selection.collapsed(
-        af.Position(path: sibling ? node.path.previous : node.path),
-      );
-  }
+  // 嵌入块从不挂子块：它要么是本行的上一兄弟（删掉后本行前移一位），要么
+  // 在上一兄弟的子树里（本行的路径不变）。
+  final sibling = embed!.parent == node.parent;
+  final transaction = state.transaction
+    ..deleteNode(embed)
+    ..afterSelection = af.Selection.collapsed(
+      af.Position(path: sibling ? node.path.previous : node.path),
+    );
   unawaited(state.apply(transaction, skipHistoryDebounce: true));
   return true;
 }

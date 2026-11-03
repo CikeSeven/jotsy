@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
@@ -83,7 +84,9 @@ af.Selection _caret(af.Path path, [int offset = 0]) =>
 
 void main() {
   group('backspace at the start of a line after an embed', () {
-    for (final type in ['divider', 'image', 'video', 'audio', 'link_card']) {
+    // 所有嵌入块类型（图片、视频、音频、附件、分隔线、卡片、未识别的旧
+    // 嵌入）同一条规则；以后新增的类型登记进集合即自动覆盖。
+    for (final type in kDiaryEmbedBlockTypes) {
       test('deletes the $type in place instead of moving it', () {
         final controller = _document([_p('before'), _embed(type), _p('after')]);
         final before = controller.contentJson;
@@ -108,24 +111,29 @@ void main() {
       expect(controller.state.selection, _caret([1]));
     });
 
-    test('removes an empty line between the embed and more text first', () {
-      final controller = _document([
-        _p('a'),
-        _embed('divider'),
-        _p(''),
-        _p('b'),
-      ]);
-      controller.state.selection = _caret([2]);
+    for (final type in kDiaryEmbedBlockTypes) {
+      test('on an empty line deletes the $type, not the empty lines below', () {
+        // 嵌入块下面连着几个空行：在紧挨着的那一行退格删的是嵌入块，
+        // 下面的空行一个不少。
+        final controller = _document([
+          _p('a'),
+          _embed(type),
+          _p(''),
+          _p(''),
+          _p(''),
+          _p('b'),
+        ]);
+        controller.state.selection = _caret([2]);
 
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
-      // 空行没了，插入点到下一行开头，仍在分隔线正下方。
-      expect(_outline(controller), 'paragraph:a\ndivider\nparagraph:b');
-      expect(controller.state.selection, _caret([2]));
+        expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
 
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
-      expect(_outline(controller), 'paragraph:a\nparagraph:b');
-      expect(controller.state.selection, _caret([1]));
-    });
+        expect(
+          _outline(controller),
+          'paragraph:a\nparagraph:\nparagraph:\nparagraph:\nparagraph:b',
+        );
+        expect(controller.state.selection, _caret([1]));
+      });
+    }
 
     test('an empty line followed by another embed deletes the embed above', () {
       final controller = _document([_embed('image'), _p(''), _embed('video')]);
@@ -366,6 +374,29 @@ void main() {
       );
       await unmount(tester);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+    testWidgets('the keyboard backspace below an image followed by empty lines '
+        'deletes the image', (tester) async {
+      final controller = _document([
+        _p('a'),
+        _embed('image'),
+        _p(''),
+        _p(''),
+        _p(''),
+        _p('b'),
+      ]);
+      await pump(tester, controller, _caret([2]));
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.pump();
+
+      expect(
+        _outline(controller),
+        'paragraph:a\nparagraph:\nparagraph:\nparagraph:\nparagraph:b',
+      );
+      expect(controller.selection, _caret([1]));
+      await unmount(tester);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
     testWidgets('a heading after an embed becomes a paragraph first', (
       tester,

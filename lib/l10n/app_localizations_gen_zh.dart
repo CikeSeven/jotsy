@@ -5199,7 +5199,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryDayPhotosAccessTitle => '这天拍的照片';
 
   @override
-  String get diaryDayPhotosAccessBody => '允许读取相册后，这里会列出这天拍的照片，可以挑几张插进日记。';
+  String get diaryDayPhotosAccessBody => '允许读取相册后，这里会列出这天拍的照片和视频，可以挑一些插进日记。';
 
   @override
   String get diaryDayPhotosDeniedBody => '相册权限已关闭，可以在系统设置里开启。';
@@ -5233,7 +5233,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diaryDayPhotosLimited => '只显示你允许访问的照片';
+  String get diaryDayPhotosLimited => '只显示你允许访问的照片和视频';
 
   @override
   String get diaryDayPhotosManageLimited => '选择更多';
@@ -5255,7 +5255,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String diaryDayPhotosMissing(int count) {
-    return '$count 张照片已无法读取，没有插入';
+    return '$count 项已无法读取，没有插入';
   }
 
   @override
@@ -5302,7 +5302,60 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryDayPhotosMenu => '这天的照片';
 
   @override
-  String get diaryDayPhotosEmpty => '这天没有拍照片';
+  String get diaryDayPhotosEmpty => '这天没有拍照片或视频';
+
+  @override
+  String diaryDayPhotosTitleVideos(int count) {
+    return '这天拍的 $count 段视频';
+  }
+
+  @override
+  String diaryDayPhotosTitleMixed(int photos, int videos) {
+    return '这天拍的 $photos 张照片、$videos 段视频';
+  }
+
+  @override
+  String diaryDayPhotosSheetTitleMedia(String date) {
+    return '$date 拍的照片和视频';
+  }
+
+  @override
+  String diaryDayPhotosSelectedItems(int count) {
+    return '已选 $count 项';
+  }
+
+  @override
+  String diaryDayPhotosInsertCountItems(int count) {
+    return '插入 $count 项';
+  }
+
+  @override
+  String diaryDayPhotosVideoLabel(String time, String duration) {
+    return '$time 拍的视频，时长 $duration';
+  }
+
+  @override
+  String diaryDayPhotosVideoInsertedLabel(String time, String duration) {
+    return '$time 拍的视频，时长 $duration，已插入';
+  }
+
+  @override
+  String get diaryDayPhotosVideoAccess => '还不能读取这天的视频';
+
+  @override
+  String get diaryDayPhotosSelect => '选择';
+
+  @override
+  String get diaryDayPhotosDeselect => '取消选择';
+
+  @override
+  String get diaryDayPhotosInserted => '已插入';
+
+  @override
+  String get diaryDayPhotosPreview => '预览';
+
+  @override
+  String get diaryDayPhotosPreviewFailed => '无法显示这张照片';
 
   @override
   String get diaryLongImageBadge => '长图';

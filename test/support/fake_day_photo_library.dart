@@ -39,8 +39,15 @@ class FakeDayPhotoLibrary implements DayPhotoLibrary {
   final Map<DateTime, Completer<List<DayPhoto>>> pendingQueries =
       <DateTime, Completer<List<DayPhoto>>>{};
 
+  /// 视频 id → 播放地址；没有登记的视频 [videoSourceOf] 返回 null。
+  final Map<String, String> videoSources = <String, String>{};
+
   Object? queryError;
   final List<DateTime> queriedDays = <DateTime>[];
+
+  /// 每次 [photosOn] 是否带上视频（与 [queriedDays] 一一对应）。
+  final List<bool> queriedWithVideos = <bool>[];
+  final List<int> previewExtents = <int>[];
   int checkCount = 0;
   int requestCount = 0;
   int openSettingsCount = 0;
@@ -66,18 +73,37 @@ class FakeDayPhotoLibrary implements DayPhotoLibrary {
   @override
   Future<void> manageLimitedSelection() async => manageLimitedCount++;
 
+  /// 与真实相册一样：不带视频时只返回图片。
   @override
-  Future<List<DayPhoto>> photosOn(DateTime day) async {
+  Future<List<DayPhoto>> photosOn(
+    DateTime day, {
+    bool includeVideos = true,
+  }) async {
     queriedDays.add(day);
+    queriedWithVideos.add(includeVideos);
     final error = queryError;
     if (error != null) throw error;
     final pending = pendingQueries[day];
-    if (pending != null) return pending.future;
-    return photosByDay[day] ?? const <DayPhoto>[];
+    final photos = pending != null
+        ? await pending.future
+        : photosByDay[day] ?? const <DayPhoto>[];
+    return includeVideos
+        ? photos
+        : photos.where((photo) => !photo.isVideo).toList();
   }
 
   @override
   ImageProvider thumbnailOf(DayPhoto photo) => MemoryImage(kTinyPng);
+
+  @override
+  ImageProvider previewOf(DayPhoto photo, {required int maxExtent}) {
+    previewExtents.add(maxExtent);
+    return MemoryImage(kTinyPng);
+  }
+
+  @override
+  Future<String?> videoSourceOf(DayPhoto photo) async =>
+      photo.isVideo ? videoSources[photo.id] : null;
 
   @override
   Future<PlatformFile?> fileOf(DayPhoto photo) async {

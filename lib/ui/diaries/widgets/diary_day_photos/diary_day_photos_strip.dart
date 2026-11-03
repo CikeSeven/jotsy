@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -13,17 +15,20 @@ import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../app_surface/widgets/app_glass_scope.dart';
 import '../../../app_surface/widgets/app_glass_surface.dart';
 import '../../../widgets/glass/glass_reveal.dart';
+import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_day_photos_controller.dart';
+import '../../pages/diary_day_photo_preview_page.dart';
 import 'diary_day_photo_tile.dart';
 import 'diary_day_photos_limited_hint.dart';
 import 'diary_day_photos_sheet.dart';
 import '../../../widgets/desktop_horizontal_scroll.dart';
 
-/// 补写日记时放在标题与正文之间的“这天拍的照片”提示条。
+/// 补写日记时放在标题与正文之间的“这天拍的照片”（含视频）提示条。
 ///
 /// - 未授权：说明 + “允许访问”（拒绝过后改为“去设置”）；
-/// - 有照片：横向缩略图，点按勾选；选中后底部出现“插入”；“全部”打开大图
-///   网格面板（与提示条共用同一份勾选）；
+/// - 有照片：横向缩略图，点缩略图打开预览页、点勾选圈勾选；选中后底部出现
+///   “插入”；“全部”打开大图网格面板（与提示条、预览页共用同一份勾选）；
+///   只授权过图片时缩略图下多一行“允许访问视频”；
 /// - 其余情况（读取中、这天没照片、已关掉、不自动显示）整块收起，不占位置。
 ///
 /// 出现与收起经 [AnimatedSize] 展开/折叠，正文平滑下移而不是一帧跳动。
@@ -265,6 +270,20 @@ class _PhotosCard extends StatelessWidget {
   final ValueChanged<DayPhoto> onSetCover;
   final VoidCallback onClearCover;
 
+  Future<void> _preview(
+    BuildContext context,
+    int index,
+    ImageViewerHero? hero,
+  ) async {
+    final insert = await openDiaryDayPhotoPreview(
+      context,
+      controller: controller,
+      initialIndex: index,
+      hero: hero,
+    );
+    if (insert == true) onInsert();
+  }
+
   Future<void> _showAll(BuildContext context) async {
     final insert = await showDiaryDayPhotosSheet(
       context,
@@ -288,7 +307,7 @@ class _PhotosCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           _StripHeader(
-            title: l10n.diaryDayPhotosTitle(photos.length),
+            title: dayPhotosTitle(l10n, controller),
             onDismiss: controller.dismiss,
             action: TextButton(
               onPressed: () => _showAll(context),
@@ -312,6 +331,8 @@ class _PhotosCard extends StatelessWidget {
                       image: controller.thumbnailOf(photo),
                       selected: controller.isSelected(photo),
                       inserted: controller.isInserted(photo),
+                      heroTag: photo.isVideo ? null : dayPhotoHeroTag(photo),
+                      videoDuration: photo.isVideo ? photo.duration : null,
                       isCover: controller.isCover(photo),
                       onSetCover: () => onSetCover(photo),
                       onClearCover: onClearCover,
@@ -321,7 +342,9 @@ class _PhotosCard extends StatelessWidget {
                         timeFormat,
                         inserted: controller.isInserted(photo),
                       ),
-                      onTap: () => controller.toggle(photo),
+                      onToggle: () => controller.toggle(photo),
+                      onPreview: (hero) =>
+                          unawaited(_preview(context, index, hero)),
                     ),
                   );
                 },
@@ -332,6 +355,11 @@ class _PhotosCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xs),
               child: DiaryDayPhotosLimitedHint(controller: controller),
+            ),
+          if (controller.needsVideoAccess)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: DiaryDayPhotosVideoAccessHint(controller: controller),
             ),
           // 有勾选时展开操作行；勾选清空后收起，缩略图不跳。
           AnimatedSize(
@@ -352,7 +380,7 @@ class _PhotosCard extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                           child: Text(
-                            l10n.diaryDayPhotosSelected(selectedCount),
+                            dayPhotosSelectedLabel(l10n, controller),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(

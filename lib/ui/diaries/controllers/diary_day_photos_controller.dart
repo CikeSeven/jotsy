@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:node_diary/core/services/day_photo_library.dart';
 
-/// 补写日记时“这天拍的照片”提示条的状态。
+/// 补写日记时“这天拍的照片”（含视频）提示条的状态。
 enum DiaryDayPhotosPhase {
   /// 不显示：不自动显示（非补写或开关关闭）、已关掉、平台不支持、读取中或
   /// 这天没照片。
@@ -11,7 +11,7 @@ enum DiaryDayPhotosPhase {
   /// 未授权读取相册：显示一行说明与“允许访问”按钮。
   needsAccess,
 
-  /// 有照片可选。
+  /// 有照片或视频可选。
   ready,
 }
 
@@ -33,13 +33,14 @@ enum DiaryDayPhotosSheetPhase {
   ready,
 }
 
-/// 编排“这天拍的照片”：读取授权 → 查询当天照片 → 勾选 → 记录已插入。
+/// 编排“这天拍的照片”：读取授权 → 查询当天照片与视频 → 勾选 → 记录已插入。
 ///
-/// 两个入口共用这一份状态（勾选、已插入、封面角标都共享）：
+/// 提示条、面板与预览页三处共用这一份状态（勾选、已插入、封面角标都共享）：
 /// - 提示条：只在 [configure] 的 `autoShow` 为 true（新建、补写过去某天且
 ///   编辑器设置开着）且本次没关掉时自动读取并显示；
 /// - 面板：用户从编辑页顶栏菜单打开时调用 [browse]，不论开关、模式与是否
-///   关掉过提示条，都读取日记那天的照片。
+///   关掉过提示条，都读取日记那天的照片；
+/// - 预览页：从提示条或面板点开某一张，左右翻看、勾选，与这里同一份勾选。
 ///
 /// 职责边界：
 /// - 输入：日记那天、是否自动显示（[configure]）、用户点按；
@@ -50,7 +51,9 @@ enum DiaryDayPhotosSheetPhase {
 ///
 /// 时序约束：
 /// - 进入页面与打开面板都只“查询”授权状态，绝不主动弹系统权限框；弹框
-///   只发生在用户点按“允许访问”时（[requestAccess]）。
+///   只发生在用户点按“允许访问”时（[requestAccess]）。只授权过图片的
+///   Android 13+ 设备（[DayPhotoAccess.imagesOnly]）照常列出图片、不查视频，
+///   另给一行“允许访问视频”，同样点按才申请。
 /// - 只有“需要照片”（自动显示且没关掉，或本次换日期后打开过面板）时才读取；
 ///   [refresh]（回到前台，例如从系统设置开了权限回来）在同一条件下重新读取，
 ///   面板开着时授权后立即更新。
@@ -95,16 +98,29 @@ class DiaryDayPhotosController extends ChangeNotifier {
   List<DayPhoto> get photos => _photos;
   bool get isLimited => _access == DayPhotoAccess.limited;
 
-  /// 已请求过权限仍被拒绝：按钮改为“去设置”。
+  /// 已请求过权限仍被拒绝（完全拒绝，或视频仍未授权）：按钮改为“去设置”。
   bool get shouldOpenSettings =>
-      _requestedAccess && _access == DayPhotoAccess.denied;
+      _requestedAccess &&
+      (_access == DayPhotoAccess.denied ||
+          _access == DayPhotoAccess.imagesOnly);
+
+  /// 图片可读、视频未授权：列表下方给一行“允许访问视频”。
+  bool get needsVideoAccess => _access == DayPhotoAccess.imagesOnly;
+
+  /// 这天的视频段数（其余为图片）。
+  int get videoCount => _photos.where((photo) => photo.isVideo).length;
+
+  /// 勾选里有视频：数量文案从“张”换成“项”。
+  bool get selectionHasVideo =>
+      _photos.any((photo) => photo.isVideo && _selected.contains(photo.id));
 
   int get selectedCount => _selected.length;
   bool isSelected(DayPhoto photo) => _selected.contains(photo.id);
   bool isInserted(DayPhoto photo) => _inserted.contains(photo.id);
   bool isCover(DayPhoto photo) => _coverPhotoId == photo.id;
 
-  /// 只勾选了一张时的那张：操作行据此提供“设为封面 / 取消封面”。
+  /// 只勾选了一项时的那一项：是图片时操作行据此提供“设为封面 / 取消封面”
+  /// （视频不能当封面，仍为“取消选择”）。
   DayPhoto? get singleSelection {
     if (_selected.length != 1) return null;
     final id = _selected.single;
@@ -159,6 +175,10 @@ class DiaryDayPhotosController extends ChangeNotifier {
   }
 
   ImageProvider thumbnailOf(DayPhoto photo) => library.thumbnailOf(photo);
+
+  /// 预览页的大图（视频为封面帧），见 [DayPhotoLibrary.previewOf]。
+  ImageProvider previewOf(DayPhoto photo, {required int maxExtent}) =>
+      library.previewOf(photo, maxExtent: maxExtent);
 
   /// 补写的日子：日期严格早于今天才算补写；今天与未来（时间胶囊）都不算。
   static DateTime? backfillDay(DateTime? date, {DateTime? now}) {
@@ -226,7 +246,8 @@ class DiaryDayPhotosController extends ChangeNotifier {
     _reload();
   }
 
-  /// 用户点按“允许访问”：首次弹系统权限框，之后改为打开系统设置。
+  /// 用户点按“允许访问”（未授权时的说明卡片，或只授权过图片时的“允许访问
+  /// 视频”）：首次弹系统权限框，申请后仍没有全部授权时改为打开系统设置。
   Future<void> requestAccess() async {
     if (_disposed) return;
     if (shouldOpenSettings) {
@@ -258,7 +279,8 @@ class DiaryDayPhotosController extends ChangeNotifier {
   }
 
   void toggle(DayPhoto photo) {
-    if (_inserted.contains(photo.id)) return;
+    // 预览页翻看的是打开时的列表：回到前台重新读取后已不在列表里的，不再勾选。
+    if (_inserted.contains(photo.id) || !_photos.contains(photo)) return;
     if (!_selected.remove(photo.id)) _selected.add(photo.id);
     _notify();
   }
@@ -278,8 +300,10 @@ class DiaryDayPhotosController extends ChangeNotifier {
     _notify();
   }
 
-  /// [photo] 已拷贝为封面 [coverPath] 后调用，显示封面角标。
+  /// [photo] 已拷贝为封面 [coverPath] 后调用，显示封面角标。视频不能当
+  /// 封面，忽略。
   void markCover(DayPhoto photo, String coverPath) {
+    if (photo.isVideo) return;
     _coverPhotoId = photo.id;
     _coverPath = coverPath;
     _notify();
@@ -329,10 +353,14 @@ class DiaryDayPhotosController extends ChangeNotifier {
     final day = _day;
     if (day == null) return;
     try {
-      final photos = await library.photosOn(day);
+      // 视频未授权（只授权过图片）时只查图片：不依赖平台替我们过滤。
+      final photos = await library.photosOn(
+        day,
+        includeVideos: _access?.canReadVideos ?? true,
+      );
       if (_disposed || generation != _generation) return;
       _photos = List<DayPhoto>.unmodifiable(photos);
-      // 照片可能已在相册里被删掉：勾选只保留仍然存在的。
+      // 照片可能已在相册里被删掉（或视频权限被收回）：勾选只保留仍然存在的。
       final ids = {for (final photo in photos) photo.id};
       _selected.removeWhere((id) => !ids.contains(id));
       _finishLoad(generation);

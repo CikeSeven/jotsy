@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/core/services/day_photo_library.dart';
@@ -7,20 +9,24 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
+import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_day_photos_controller.dart';
+import '../../pages/diary_day_photo_preview_page.dart';
 import 'diary_day_photo_tile.dart';
 import 'diary_day_photos_limited_hint.dart';
 import 'diary_day_photos_sheet_states.dart';
 
-/// “这天拍的照片”全部网格：比提示条的缩略图大，带拍摄时间，方便认出要哪张。
+/// “这天拍的照片”（含视频）全部网格：比提示条的缩略图大，带拍摄时间，方便
+/// 认出要哪张；点缩略图打开预览页，点勾选圈勾选。
 ///
 /// 两个入口：提示条的“全部”（已有照片）与编辑页顶栏菜单“这天的照片”（打开
 /// 前调用 [DiaryDayPhotosController.browse]，可能还在读取、未授权或这天没有
 /// 照片）。主体按 [DiaryDayPhotosController.sheetPhase] 在读取中 / 未授权 /
 /// 没有照片 / 网格之间 `fast` 交叉淡入，底栏只在有照片时出现。
 ///
-/// 与提示条共用同一个 [DiaryDayPhotosController]，在这里勾选的照片关掉面板后
-/// 仍保持勾选。点“插入”返回 true，由打开者执行插入（面板只负责挑选）；
+/// 与提示条、预览页共用同一个 [DiaryDayPhotosController]，在这里勾选的照片
+/// 关掉面板后仍保持勾选。点“插入”（面板底栏或预览页里）返回 true，由打开者
+/// 执行插入（面板只负责挑选）；
 /// 设封面不关面板，立即回调 [onSetCover] / [onClearCover]，结果以角标呈现。
 Future<bool?> showDiaryDayPhotosSheet(
   BuildContext context, {
@@ -28,6 +34,9 @@ Future<bool?> showDiaryDayPhotosSheet(
   required ValueChanged<DayPhoto> onSetCover,
   required VoidCallback onClearCover,
 }) {
+  // 先让标题 / 正文失去焦点并清掉焦点记录：否则面板关闭时路由把焦点还给
+  // 打开前的输入框，看完照片键盘会自己弹出来。
+  FocusManager.instance.primaryFocus?.unfocus();
   return showAppModalBottomSheet<bool>(
     context: context,
     useSafeArea: true,
@@ -90,6 +99,10 @@ class DiaryDayPhotosSheet extends StatelessWidget {
                         child: Text(
                           day == null
                               ? l10n.diaryDayPhotosAccessTitle
+                              : controller.videoCount > 0
+                              ? l10n.diaryDayPhotosSheetTitleMedia(
+                                  l10n.formatEyebrowDate(day),
+                                )
                               : l10n.diaryDayPhotosSheetTitle(
                                   l10n.formatEyebrowDate(day),
                                 ),
@@ -166,6 +179,8 @@ class DiaryDayPhotosSheet extends StatelessWidget {
                 if (ready)
                   _SheetActionBar(
                     selectedCount: selectedCount,
+                    selectedLabel: dayPhotosSelectedLabel(l10n, controller),
+                    insertLabel: dayPhotosInsertCountLabel(l10n, controller),
                     secondary: selectedCount == 0
                         ? null
                         : DiaryDayPhotosSecondaryAction(
@@ -184,7 +199,8 @@ class DiaryDayPhotosSheet extends StatelessWidget {
   }
 }
 
-/// 有照片：部分授权时先列出说明与“选择更多”，下面是大图网格。
+/// 有照片：部分授权时先列出说明与“选择更多”（只授权过图片时为“允许访问
+/// 视频”），下面是大图网格。
 class _SheetGrid extends StatelessWidget {
   const _SheetGrid({
     super.key,
@@ -198,6 +214,23 @@ class _SheetGrid extends StatelessWidget {
   final ScrollController scrollController;
   final ValueChanged<DayPhoto> onSetCover;
   final VoidCallback onClearCover;
+
+  /// 打开预览页；在那里点“插入”时连面板一起关掉，交给打开者插入。弹出层
+  /// 不是页面路由，从这里打开不会飞行，[hero] 只用来在大图解码前先显示
+  /// 缩略图画面。
+  Future<void> _preview(
+    BuildContext context,
+    int index,
+    ImageViewerHero? hero,
+  ) async {
+    final insert = await openDiaryDayPhotoPreview(
+      context,
+      controller: controller,
+      initialIndex: index,
+      hero: hero,
+    );
+    if (insert == true && context.mounted) Navigator.of(context).pop(true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +248,16 @@ class _SheetGrid extends StatelessWidget {
               AppSpacing.s,
             ),
             child: DiaryDayPhotosLimitedHint(controller: controller),
+          ),
+        if (controller.needsVideoAccess)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              0,
+              AppSpacing.m,
+              AppSpacing.s,
+            ),
+            child: DiaryDayPhotosVideoAccessHint(controller: controller),
           ),
         Expanded(
           child: GridView.builder(
@@ -238,6 +281,8 @@ class _SheetGrid extends StatelessWidget {
                 image: controller.thumbnailOf(photo),
                 selected: controller.isSelected(photo),
                 inserted: inserted,
+                heroTag: photo.isVideo ? null : dayPhotoHeroTag(photo),
+                videoDuration: photo.isVideo ? photo.duration : null,
                 isCover: controller.isCover(photo),
                 onSetCover: () => onSetCover(photo),
                 onClearCover: onClearCover,
@@ -248,7 +293,8 @@ class _SheetGrid extends StatelessWidget {
                   timeFormat,
                   inserted: inserted,
                 ),
-                onTap: () => controller.toggle(photo),
+                onToggle: () => controller.toggle(photo),
+                onPreview: (hero) => unawaited(_preview(context, index, hero)),
               );
             },
           ),
@@ -263,11 +309,17 @@ class _SheetGrid extends StatelessWidget {
 class _SheetActionBar extends StatelessWidget {
   const _SheetActionBar({
     required this.selectedCount,
+    required this.selectedLabel,
+    required this.insertLabel,
     required this.secondary,
     required this.onInsert,
   });
 
   final int selectedCount;
+
+  /// “已选 N 张 / 项”与“插入 N 张 / 项”（量词随勾选里有没有视频而变）。
+  final String selectedLabel;
+  final String insertLabel;
   final Widget? secondary;
   final VoidCallback onInsert;
 
@@ -299,7 +351,7 @@ class _SheetActionBar extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  l10n.diaryDayPhotosSelected(selectedCount),
+                  selectedLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -312,9 +364,7 @@ class _SheetActionBar extends StatelessWidget {
               FilledButton(
                 onPressed: hasSelection ? onInsert : null,
                 child: Text(
-                  hasSelection
-                      ? l10n.diaryDayPhotosInsertCount(selectedCount)
-                      : l10n.diaryDayPhotosInsert,
+                  hasSelection ? insertLabel : l10n.diaryDayPhotosInsert,
                 ),
               ),
             ],

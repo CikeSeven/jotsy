@@ -128,19 +128,24 @@ void main() {
     });
 
     test('everything fits: one chunk, numbered in time order', () {
-      final plan = aiPlanRecap(
-        [_diary(1), _diary(2), _diary(3)],
-        budget: 1000,
-        perDiary: 500,
-      );
+      final plan = aiPlanRecap([_diary(1), _diary(2), _diary(3)], budget: 1000);
       expect(plan.chunked, isFalse);
       expect([for (final d in plan.diaries) d.ref], ['D1', 'D2', 'D3']);
+    });
+
+    test('long entries go in whole when the budget allows', () {
+      final plan = aiPlanRecap([
+        _diary(1, text: '字' * 9000),
+        _diary(2, text: '字' * 6000),
+      ], budget: 100000);
+      expect(plan.chunked, isFalse);
+      expect(plan.diaries.map((d) => d.maxWords), [9000, 6000]);
     });
 
     test('too much: chunks stay within the budget, numbering is global', () {
       final long = '字' * 300;
       final diaries = [for (var i = 1; i <= 6; i++) _diary(i, text: long)];
-      final plan = aiPlanRecap(diaries, budget: 700, perDiary: 1000);
+      final plan = aiPlanRecap(diaries, budget: 700);
       expect(plan.chunked, isTrue);
       expect(plan.chunks, hasLength(3));
       for (final chunk in plan.chunks) {
@@ -155,12 +160,7 @@ void main() {
     test('far too much: diaries shrink so the chunk count is capped', () {
       final long = '字' * 2000;
       final diaries = [for (var i = 1; i <= 28; i++) _diary(i, text: long)];
-      final plan = aiPlanRecap(
-        diaries,
-        budget: 1000,
-        perDiary: 2000,
-        maxChunks: 4,
-      );
+      final plan = aiPlanRecap(diaries, budget: 1000, maxChunks: 4);
       expect(plan.chunks.length, lessThanOrEqualTo(4));
       expect(plan.diaries, hasLength(28));
       expect(plan.diaries.first.maxWords, lessThan(2000));
@@ -170,7 +170,7 @@ void main() {
       final diaries = [
         for (var i = 1; i <= 50; i++) _diary(i, text: '字' * 3500),
       ];
-      final plan = aiPlanRecap(diaries, budget: 8000, perDiary: 4000);
+      final plan = aiPlanRecap(diaries, budget: 8000);
       expect(plan.chunks.length, lessThanOrEqualTo(16));
       expect(plan.diaries, hasLength(50));
       expect(plan.diaries.last.ref, 'D50');
@@ -188,12 +188,7 @@ void main() {
         final diaries = [
           for (var i = 1; i <= 501; i++) _diary(i, text: '字' * 80),
         ];
-        final plan = aiPlanRecap(
-          diaries,
-          budget: 200,
-          perDiary: 4000,
-          maxChunks: 2,
-        );
+        final plan = aiPlanRecap(diaries, budget: 200, maxChunks: 2);
         expect(plan.chunks, hasLength(2));
         expect(plan.diaries.length, lessThanOrEqualTo(400));
         expect(plan.diaries.first.diary.diaryId, 'd1');
@@ -211,7 +206,6 @@ void main() {
       final plan = aiPlanRecap(
         [_diary(1, text: '字' * 1000)],
         budget: 200,
-        perDiary: 4000,
         maxChunks: 1,
       );
       expect(plan.chunks, hasLength(1));
@@ -270,11 +264,7 @@ void main() {
           AiPersonaUse.recap,
         );
         final stats = AiRecapStats.of([_diary(1, mood: '😊')]);
-        final plan = aiPlanRecap(
-          [_diary(1, text: '去了海边')],
-          budget: 1000,
-          perDiary: 500,
-        );
+        final plan = aiPlanRecap([_diary(1, text: '去了海边')], budget: 1000);
         final direct = aiRecapRequest(
           kit,
           period: '本周',

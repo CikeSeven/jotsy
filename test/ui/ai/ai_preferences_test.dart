@@ -51,8 +51,7 @@ void main() {
               sendLocation: true,
               excludedNotebookIds: {'nb'},
               excludedTagNames: {'work'},
-              contextBudget: 48000,
-              perDiaryLimit: 4000,
+              contextBudget: 200000,
               includeArchived: false,
               confirm: AiConfirmMode.always,
               allowPrivate: true,
@@ -102,6 +101,39 @@ void main() {
       );
       expect(roundTrip.visionMaxImages, 20);
     });
+
+    test(
+      'old budget choices map to the nearest new one, perDiary is dropped',
+      () {
+        AiPrivacyOptions decodePrivacy(Map<String, Object?> privacy) =>
+            AiPreferences.decode(
+              jsonEncode(<String, Object?>{'privacy': privacy}),
+            ).privacy;
+        expect(AiPrivacyOptions.defaultContextBudget, 100000);
+        expect(AiPrivacyOptions.contextBudgetChoices.last, 1000000);
+        const legacy = <int, int>{
+          8000: 10000,
+          16000: 20000,
+          48000: 50000,
+          96000: 100000,
+        };
+        legacy.forEach((old, now) {
+          expect(
+            decodePrivacy({'budget': old, 'perDiary': 4000}).contextBudget,
+            now,
+          );
+        });
+        for (final bad in <Object?>[1, 30000, -5, '100000']) {
+          expect(
+            decodePrivacy({'budget': bad}).contextBudget,
+            AiPrivacyOptions.defaultContextBudget,
+          );
+        }
+        // 旧版的“每篇最多”读取时忽略，再写出时不再出现。
+        final old = decodePrivacy({'budget': 48000, 'perDiary': 500});
+        expect(old.toJson(), {'budget': 50000});
+      },
+    );
 
     test('falls back per field on bad values', () {
       final prefs = AiPreferences.decode(

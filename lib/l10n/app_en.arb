@@ -16260,16 +16260,17 @@
   "@aiPrivacyBudget": {
     "description": "Choice of the context word budget."
   },
-  "aiPrivacyPerDiary": "Per entry",
-  "@aiPrivacyPerDiary": {
-    "description": "Choice of the per-entry word limit."
+  "aiPrivacyBudgetSubtitle": "Entries are sent in full; text is cut only when one request would go over this.",
+  "@aiPrivacyBudgetSubtitle": {
+    "description": "Explains “Send at most”: no per-entry limit, only the total of one request is capped."
   },
   "aiWords": "{count} words",
   "@aiWords": {
-    "description": "A number of words (characters for CJK).",
+    "description": "A number of words (characters for CJK), large numbers abbreviated (100K).",
     "placeholders": {
       "count": {
-        "type": "int"
+        "type": "int",
+        "format": "compact"
       }
     }
   },

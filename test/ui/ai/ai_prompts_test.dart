@@ -215,13 +215,75 @@ void main() {
       expect(aiTruncateWords('short', 10), 'short');
     });
 
-    test('fills the budget in order and numbers the entries', () {
+    test('fills the budget in order with whole entries', () {
       final diaries = [
         for (var i = 0; i < 5; i++) _diary(title: '', text: '字' * 300),
       ];
-      final picked = aiBudgetDiaries(diaries, budget: 700, perDiary: 250);
+      final picked = aiBudgetDiaries(diaries, budget: 700);
       expect(picked.map((d) => d.ref), ['D1', 'D2', 'D3']);
-      expect(picked.map((d) => d.maxWords), [250, 250, 200]);
+      // 前两篇整篇，第三篇截到剩下的 100 字，之后不再放。
+      expect(picked.map((d) => d.maxWords), [300, 300, 100]);
+    });
+
+    test('a long entry is never cut by a per-entry cap', () {
+      final picked = aiBudgetDiaries([
+        _diary(title: '', text: '字' * 12000),
+        _diary(title: '', text: '字' * 30),
+      ], budget: AiPrivacyOptions.defaultContextBudget);
+      expect(picked.map((d) => d.maxWords), [12000, 30]);
+    });
+
+    test('single-entry tasks send the whole entry up to the budget', () {
+      final long = '一' * 9000 + '尾';
+      final kit = AiPromptKit.resolve(
+        prefs: AiPreferences.defaults,
+        appLocale: zhLocale,
+      );
+      String text(AiRequest request) =>
+          (request.messages.single.parts.last as AiTextPart).text;
+      final persona = aiPersonaFor(
+        kit.l10n,
+        AiPreferences.defaults,
+        AiPersonaUse.reply,
+      );
+      final reply = text(
+        aiReplyRequest(
+          kit,
+          diary: _diary(text: long),
+          persona: persona,
+        ),
+      );
+      final suggest = text(
+        aiSuggestRequest(
+          kit,
+          diary: _diary(text: long),
+          tags: const [],
+          moods: const [],
+        ),
+      );
+      for (final user in [reply, suggest]) {
+        expect(user, contains(long));
+        expect(user, isNot(contains(kit.l10n.aiPromptTruncated)));
+      }
+
+      // 超过“最多发送”时才截断。
+      final small = AiPromptKit.resolve(
+        prefs: AiPreferences.defaults.copyWith(
+          privacy: AiPreferences.defaults.privacy.copyWith(
+            contextBudget: 10000,
+          ),
+        ),
+        appLocale: zhLocale,
+      );
+      final cut = text(
+        aiReplyRequest(
+          small,
+          diary: _diary(text: '字' * 15000),
+          persona: persona,
+        ),
+      );
+      expect(cut, contains(small.l10n.aiPromptTruncated));
+      expect(cut, isNot(contains('字' * 10001)));
     });
   });
 

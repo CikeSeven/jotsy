@@ -13198,11 +13198,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiPrivacyBudget => 'Send at most';
 
   @override
-  String get aiPrivacyPerDiary => 'Per entry';
+  String get aiPrivacyBudgetSubtitle =>
+      'Entries are sent in full; text is cut only when one request would go over this.';
 
   @override
   String aiWords(int count) {
-    return '$count words';
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString words';
   }
 
   @override

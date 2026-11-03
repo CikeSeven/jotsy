@@ -236,6 +236,45 @@ void main() {
     await h.unmount();
   });
 
+  for (final (locale, label) in const [
+    (Locale('zh'), '10万字'),
+    (Locale('en'), '100K words'),
+  ]) {
+    testWidgets(
+      'privacy page abbreviates the budget and has no per-entry limit '
+      'in ${locale.languageCode}',
+      (tester) async {
+        final h = await DiaryDraftsHarness.create(tester);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              appDatabaseProvider.overrideWithValue(h.database),
+              settingsServiceProvider.overrideWith((ref) async => h.settings),
+            ],
+            child: MaterialApp(
+              locale: locale,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const AiPrivacyPage(),
+            ),
+          ),
+        );
+        await h.settle();
+        await tester.pumpAndSettle();
+        final l10n = lookupAppLocalizations(locale);
+        await tester.scrollUntilVisible(
+          find.text(l10n.aiPrivacyBudget),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.text(label), findsOneWidget);
+        expect(find.text(l10n.aiPrivacyBudgetSubtitle), findsOneWidget);
+        expect(find.byType(Slider), findsOneWidget);
+        await h.unmount();
+      },
+    );
+  }
+
   for (final locale in const [Locale('zh'), Locale('en')]) {
     for (final entry in <String, Widget Function()>{
       'settings': () => const AiSettingsPage(),

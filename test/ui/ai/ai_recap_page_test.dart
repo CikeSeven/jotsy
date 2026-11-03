@@ -43,7 +43,7 @@ void main() {
     await h.settings.setAppFeaturesRaw('{"ai":true}');
     // 只在首次确认：主机已确认过，多篇上下文也不再弹面板。
     await h.settings.setAiPrefsRaw(
-      '{"privacy":{"confirm":"firstTime","perDiary":4000,"budget":8000}}',
+      '{"privacy":{"confirm":"firstTime","budget":10000}}',
     );
     await tester.runAsync(() async {
       await seedFakeAiProvider(store);
@@ -117,7 +117,7 @@ void main() {
     await h.pump(const AiRecapPage(), overrides: overrides());
     await tapGenerate(h);
 
-    // 8000 字的预算放不下 3 × 3500：两块分别总结，再汇总一次。
+    // 1 万字的预算放不下 3 × 3500：两块分别总结，再汇总一次。
     expect(requests, hasLength(3));
     String text(AiRequest r) =>
         (r.messages.single.parts.single as AiTextPart).text;

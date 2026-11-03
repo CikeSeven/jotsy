@@ -4,8 +4,8 @@
 //   结构化上下文发给模型，也显示在结果顶部；
 // - [aiPlanRecap]：按字数预算决定一次写完还是“先分块总结、再汇总”。日记
 //   按时间顺序编号 `[D1]…`（全局编号，分块总结里保留编号，汇总时仍能
-//   引用）；篇数多到分块也装不下时压低每篇的字数，最多
-//   [kAiRecapMaxChunks] 块；
+//   引用）。每篇整篇放入（只有比一块还长的那篇截到一块的大小）；
+//   篇数多到 [kAiRecapMaxChunks] 块也装不下时才压低每篇的字数；
 // - [aiRecapChunkRequest] / [aiRecapRequest]：两步各自的请求。
 
 import 'package:flutter/foundation.dart';
@@ -125,12 +125,12 @@ class AiRecapPlan {
   int get words => diaries.fold<int>(0, (sum, d) => sum + d.maxWords);
 }
 
-/// 规划回顾：[diaries] 按时间旧 → 新。每篇最多 [perDiary] 字；总数不超过
-/// [budget] 时一块，否则按顺序切成每块不超过 [budget] 的若干块。
+/// 规划回顾：[diaries] 按时间旧 → 新，每篇整篇（比 [budget] 还长的截到
+/// [budget]）；总数不超过 [budget] 时一块，否则按顺序切成每块不超过
+/// [budget] 的若干块。
 AiRecapPlan aiPlanRecap(
   List<AiContextDiary> diaries, {
   required int budget,
-  required int perDiary,
   int maxChunks = kAiRecapMaxChunks,
 }) {
   final safeBudget = budget < 200 ? 200 : budget;
@@ -142,7 +142,7 @@ AiRecapPlan aiPlanRecap(
         words: _min(
           TextStats.countWords(diary.contentText) +
               TextStats.countWords(diary.title),
-          _min(perDiary, safeBudget),
+          safeBudget,
         ),
       ),
   ].where((item) => item.words > 0).toList();

@@ -132,17 +132,11 @@ class AiPrivacyPage extends ConsumerWidget {
             ),
             _ChoiceSlider(
               title: l10n.aiPrivacyBudget,
+              subtitle: l10n.aiPrivacyBudgetSubtitle,
               choices: AiPrivacyOptions.contextBudgetChoices,
               value: privacy.contextBudget,
               label: l10n.aiWords,
               onChanged: (int v) => update((p) => p.copyWith(contextBudget: v)),
-            ),
-            _ChoiceSlider(
-              title: l10n.aiPrivacyPerDiary,
-              choices: AiPrivacyOptions.perDiaryLimitChoices,
-              value: privacy.perDiaryLimit,
-              label: l10n.aiWords,
-              onChanged: (int v) => update((p) => p.copyWith(perDiaryLimit: v)),
             ),
           ],
         ),
@@ -260,6 +254,7 @@ class AiPrivacyPage extends ConsumerWidget {
 class _ChoiceSlider extends StatefulWidget {
   const _ChoiceSlider({
     required this.title,
+    this.subtitle,
     required this.choices,
     required this.value,
     required this.label,
@@ -267,6 +262,7 @@ class _ChoiceSlider extends StatefulWidget {
   });
 
   final String title;
+  final String? subtitle;
   final List<int> choices;
   final int value;
   final String Function(int value) label;
@@ -284,6 +280,7 @@ class _ChoiceSliderState extends State<_ChoiceSlider> {
     final index = widget.choices.indexOf(widget.value);
     return SettingsSliderTile(
       title: widget.title,
+      subtitle: widget.subtitle,
       value: _dragging ?? (index < 0 ? 0 : index).toDouble(),
       min: 0,
       max: (widget.choices.length - 1).toDouble(),

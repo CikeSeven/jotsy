@@ -1,5 +1,8 @@
 // 各任务的请求构建（纯函数）：拿 [AiPromptKit] 与这次的材料，返回
 // [AiRequest]。模型名由 `AiService` 换成实际模型，这里留空。
+//
+// 日记一律整篇发送，不设每篇上限；唯一的上限是 AI 隐私里的“最多发送”
+// （`AiPrivacyOptions.contextBudget`），超过时才截断（`_budget`）。
 
 import 'dart:convert';
 
@@ -10,6 +13,9 @@ import '../models/ai_built_ins.dart';
 import '../models/ai_prompt_variables.dart';
 import 'ai_context_budget.dart';
 import 'ai_prompt_builder.dart';
+
+/// 一次请求最多发送的日记字数。
+int _budget(AiPromptKit kit) => kit.prefs.privacy.contextBudget;
 
 /// 把要处理的文字包进标签，模型更容易分清“指令”与“材料”。
 String _textBlock(String text) => '<text>\n${text.trim()}\n</text>';
@@ -32,7 +38,7 @@ AiRequest aiWritingRequest(
   if (action != null && usesVariables) {
     final filled = fillAiPromptVariables(template, {
       AiPromptVariable.text: targetText.trim(),
-      AiPromptVariable.diary: aiTruncateWords(diary.contentText, 3000),
+      AiPromptVariable.diary: aiTruncateWords(diary.contentText, _budget(kit)),
       AiPromptVariable.title: diary.title,
       AiPromptVariable.date: kit.date(diary.createdAt),
       AiPromptVariable.mood: diary.mood ?? '',
@@ -79,7 +85,7 @@ AiRequest aiSuggestRequest(
     if (tags.isNotEmpty)
       l10n.aiPromptSuggestTagsList(tags.take(200).join(', ')),
     if (moods.isNotEmpty) l10n.aiPromptSuggestMoodList(moods.join(' ')),
-    kit.diary(diary, maxWords: 3000),
+    kit.diary(diary, maxWords: _budget(kit)),
   ].join('\n\n');
   return AiRequest(
     model: '',
@@ -117,7 +123,7 @@ AiRequest aiReplyRequest(
   final text = <String>[
     l10n.aiPromptReplyInstruction,
     if (images.isNotEmpty) l10n.aiPromptImagesAttached(images.length),
-    kit.diary(diary, maxWords: 6000),
+    kit.diary(diary, maxWords: _budget(kit)),
   ].join('\n\n');
   return AiRequest(
     model: '',
@@ -129,7 +135,8 @@ AiRequest aiReplyRequest(
   );
 }
 
-/// 写作灵感：今天的日期（含节气等）、可选天气与最近日记的摘录。
+/// 写作灵感：今天的日期（含节气等）、可选天气与最近几篇日记（整篇，
+/// 合计不超过“最多发送”）。
 AiRequest aiPromptsRequest(
   AiPromptKit kit, {
   required String todayLine,
@@ -141,7 +148,8 @@ AiRequest aiPromptsRequest(
     l10n.aiPromptPromptsToday(todayLine),
     if (recent.isNotEmpty) ...[
       l10n.aiPromptPromptsRecent,
-      for (final diary in recent) kit.diary(diary, maxWords: 200),
+      for (final item in aiBudgetDiaries(recent, budget: _budget(kit)))
+        kit.diary(item.diary, maxWords: item.maxWords),
     ],
   ];
   return AiRequest(

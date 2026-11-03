@@ -137,11 +137,7 @@ class AiRecapController extends ChangeNotifier {
       return;
     }
     final stats = _stats = AiRecapStats.of(diaries);
-    final plan = aiPlanRecap(
-      diaries,
-      budget: prefs.privacy.contextBudget,
-      perDiary: prefs.privacy.perDiaryLimit,
-    );
+    final plan = aiPlanRecap(diaries, budget: prefs.privacy.contextBudget);
     _refs = <String, String>{
       for (final item in plan.diaries) item.ref: item.diary.diaryId,
     };

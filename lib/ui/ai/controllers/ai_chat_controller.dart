@@ -353,11 +353,18 @@ class AiChatController extends ChangeNotifier {
             (privacy.allowPrivate ||
                 !(await database.isDiaryPrivate(diary.diaryId)));
         if (!allowed) return const <AiBudgetedDiary>[];
+        // 整篇发送，只受总字数限制；maxWords 取实际字数，确认面板里的
+        // “发送字数”才不会显示成整个预算。
+        final words =
+            TextStats.countWords(diary.contentText) +
+            TextStats.countWords(diary.title);
         return [
           AiBudgetedDiary(
             diary: diary,
             ref: 'D1',
-            maxWords: privacy.contextBudget,
+            maxWords: words < privacy.contextBudget
+                ? words
+                : privacy.contextBudget,
           ),
         ];
       case AiChatScopeKind.range:
@@ -403,11 +410,8 @@ class AiChatController extends ChangeNotifier {
       keywords,
       now: now,
     ).take(prefs.maxCitations).toList();
-    final kept = aiBudgetDiaries(
-      ranked,
-      budget: privacy.contextBudget,
-      perDiary: privacy.perDiaryLimit,
-    )..sort((a, b) => a.diary.createdAt.compareTo(b.diary.createdAt));
+    final kept = aiBudgetDiaries(ranked, budget: privacy.contextBudget)
+      ..sort((a, b) => a.diary.createdAt.compareTo(b.diary.createdAt));
     return [
       for (var i = 0; i < kept.length; i++)
         AiBudgetedDiary(

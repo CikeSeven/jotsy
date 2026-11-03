@@ -21494,13 +21494,13 @@ abstract class AppLocalizations {
   /// **'Send at most'**
   String get aiPrivacyBudget;
 
-  /// Choice of the per-entry word limit.
+  /// Explains “Send at most”: no per-entry limit, only the total of one request is capped.
   ///
   /// In en, this message translates to:
-  /// **'Per entry'**
-  String get aiPrivacyPerDiary;
+  /// **'Entries are sent in full; text is cut only when one request would go over this.'**
+  String get aiPrivacyBudgetSubtitle;
 
-  /// A number of words (characters for CJK).
+  /// A number of words (characters for CJK), large numbers abbreviated (100K).
   ///
   /// In en, this message translates to:
   /// **'{count} words'**

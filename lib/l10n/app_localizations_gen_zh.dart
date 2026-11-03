@@ -11744,11 +11744,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPrivacyBudget => '最多发送';
 
   @override
-  String get aiPrivacyPerDiary => '每篇最多';
+  String get aiPrivacyBudgetSubtitle => '每篇日记都整篇发送，一次请求合计超过这个字数时才截断。';
 
   @override
   String aiWords(int count) {
-    return '$count 字';
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString字';
   }
 
   @override

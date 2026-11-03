@@ -15,7 +15,6 @@ class AiPrivacyOptions {
     this.excludedNotebookIds = const <String>{},
     this.excludedTagNames = const <String>{},
     this.contextBudget = defaultContextBudget,
-    this.perDiaryLimit = defaultPerDiaryLimit,
     this.includeArchived = true,
     this.confirm = AiConfirmMode.multiDiary,
     this.allowPrivate = false,
@@ -23,9 +22,27 @@ class AiPrivacyOptions {
 
   static const AiPrivacyOptions defaults = AiPrivacyOptions();
 
-  /// 多篇上下文最多发送的字数（`TextStats` 口径）。
-  static const int defaultContextBudget = 24000;
+  /// 一次请求最多发送的日记字数（`TextStats` 口径）。这是唯一的上限：
+  /// 每篇日记都整篇发送，只有总数超过它时，放不下的那篇才截到剩余字数
+  /// （多篇上下文、回顾的每一块、单篇操作都按它）。
+  ///
+  /// 默认 10 万字：主流模型的上下文已在 128K token 以上（很多是 1M），
+  /// 10 万个汉字在常见分词器下约 6–13 万 token，128K 的模型也放得下；
+  /// 想把更多日记一次交给 1M 上下文的模型时可调到 100 万字。
+  static const int defaultContextBudget = 100000;
   static const List<int> contextBudgetChoices = <int>[
+    10000,
+    20000,
+    50000,
+    100000,
+    200000,
+    500000,
+    1000000,
+  ];
+
+  /// 旧版的档位（当时最高 96000 字）。读到它们时换成最接近的新档位，
+  /// 用户调过的设置不至于退回默认；其余不认识的值仍按默认。
+  static const List<int> _legacyContextBudgets = <int>[
     8000,
     16000,
     24000,
@@ -33,9 +50,16 @@ class AiPrivacyOptions {
     96000,
   ];
 
-  /// 多篇上下文里每篇最多保留的字数；单篇操作（回应、写作）不受此限。
-  static const int defaultPerDiaryLimit = 2000;
-  static const List<int> perDiaryLimitChoices = <int>[500, 1000, 2000, 4000];
+  static int _readContextBudget(Object? value) {
+    if (value is! int) return defaultContextBudget;
+    if (contextBudgetChoices.contains(value)) return value;
+    if (!_legacyContextBudgets.contains(value)) return defaultContextBudget;
+    var best = contextBudgetChoices.first;
+    for (final choice in contextBudgetChoices) {
+      if ((choice - value).abs() < (best - value).abs()) best = choice;
+    }
+    return best;
+  }
 
   final bool sendDate;
   final bool sendMood;
@@ -52,7 +76,6 @@ class AiPrivacyOptions {
   final Set<String> excludedTagNames;
 
   final int contextBudget;
-  final int perDiaryLimit;
 
   /// 多篇上下文是否包含已归档的日记。
   final bool includeArchived;
@@ -72,7 +95,6 @@ class AiPrivacyOptions {
     Set<String>? excludedNotebookIds,
     Set<String>? excludedTagNames,
     int? contextBudget,
-    int? perDiaryLimit,
     bool? includeArchived,
     AiConfirmMode? confirm,
     bool? allowPrivate,
@@ -86,7 +108,6 @@ class AiPrivacyOptions {
       excludedNotebookIds: excludedNotebookIds ?? this.excludedNotebookIds,
       excludedTagNames: excludedTagNames ?? this.excludedTagNames,
       contextBudget: contextBudget ?? this.contextBudget,
-      perDiaryLimit: perDiaryLimit ?? this.perDiaryLimit,
       includeArchived: includeArchived ?? this.includeArchived,
       confirm: confirm ?? this.confirm,
       allowPrivate: allowPrivate ?? this.allowPrivate,
@@ -107,7 +128,6 @@ class AiPrivacyOptions {
       if (excludedTagNames.isNotEmpty)
         'excludedTags': excludedTagNames.toList()..sort(),
       if (contextBudget != d.contextBudget) 'budget': contextBudget,
-      if (perDiaryLimit != d.perDiaryLimit) 'perDiary': perDiaryLimit,
       if (includeArchived != d.includeArchived) 'archived': includeArchived,
       if (confirm != d.confirm) 'confirm': confirm.name,
       if (allowPrivate != d.allowPrivate) 'allowPrivate': allowPrivate,
@@ -119,10 +139,8 @@ class AiPrivacyOptions {
     const d = defaults;
     bool read(String key, bool fallback) =>
         raw[key] is bool ? raw[key] as bool : fallback;
-    int choice(String key, List<int> choices, int fallback) {
-      final value = raw[key];
-      return value is int && choices.contains(value) ? value : fallback;
-    }
+    // 旧版另有“每篇最多”（'perDiary'），现在每篇不设上限：读取时忽略，
+    // 下次写出时自然去掉。
 
     Set<String> strings(String key) => <String>{
       if (raw[key] case final List<Object?> list)
@@ -138,8 +156,7 @@ class AiPrivacyOptions {
       sendLocation: read('location', d.sendLocation),
       excludedNotebookIds: strings('excludedNotebooks'),
       excludedTagNames: strings('excludedTags'),
-      contextBudget: choice('budget', contextBudgetChoices, d.contextBudget),
-      perDiaryLimit: choice('perDiary', perDiaryLimitChoices, d.perDiaryLimit),
+      contextBudget: _readContextBudget(raw['budget']),
       includeArchived: read('archived', d.includeArchived),
       confirm: enumByName(AiConfirmMode.values, raw['confirm'], d.confirm),
       allowPrivate: read('allowPrivate', d.allowPrivate),

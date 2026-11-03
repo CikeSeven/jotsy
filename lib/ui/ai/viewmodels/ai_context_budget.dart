@@ -1,8 +1,8 @@
 // 多篇上下文的字数预算（纯函数）。
 //
 // 字数一律按 `TextStats` 口径（中文按字、其他按词），与界面上“最多发送
-// N 字”的说法一致。每篇先截到“每篇上限”，再按顺序放进总预算，放不下的
-// 那篇截到剩余字数（太短就不放），之后的不再放。
+// N 字”的说法一致。每篇都整篇放（不设每篇上限），按顺序放进总预算，
+// 放不下的那篇截到剩余字数（太短就不放），之后的不再放。
 
 import 'package:meta/meta.dart';
 
@@ -29,12 +29,11 @@ class AiBudgetedDiary {
   String get marker => '[$ref]';
 }
 
-/// 在 [budget] 字以内依次放入 [diaries]（调用方决定先后顺序），每篇最多
-/// [perDiary] 字。少于 [minWords] 的剩余预算不再放半篇。
+/// 在 [budget] 字以内依次放入 [diaries]（调用方决定先后顺序），每篇整篇
+/// 放入。少于 [minWords] 的剩余预算不再放半篇。
 List<AiBudgetedDiary> aiBudgetDiaries(
   List<AiContextDiary> diaries, {
   required int budget,
-  required int perDiary,
   int minWords = 80,
 }) {
   final result = <AiBudgetedDiary>[];
@@ -44,8 +43,7 @@ List<AiBudgetedDiary> aiBudgetDiaries(
     final words =
         TextStats.countWords(diary.contentText) +
         TextStats.countWords(diary.title);
-    final allowed = words < perDiary ? words : perDiary;
-    final take = allowed < remaining ? allowed : remaining;
+    final take = words < remaining ? words : remaining;
     if (take <= 0) continue;
     result.add(
       AiBudgetedDiary(

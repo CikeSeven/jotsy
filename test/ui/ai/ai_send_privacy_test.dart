@@ -46,7 +46,7 @@ void main() {
         'autoTitle': autoTitle,
         'retrieval': retrieval,
         'aboutMe': '尚未授权的个人信息',
-        'privacy': {'confirm': mode, 'perDiary': 4000, 'budget': 8000},
+        'privacy': {'confirm': mode, 'budget': 10000},
       }),
     );
     await tester.runAsync(() => store.saveProvider(fakeAiProvider));

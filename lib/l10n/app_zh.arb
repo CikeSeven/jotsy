@@ -16260,16 +16260,17 @@
   "@aiPrivacyBudget": {
     "description": "上下文字数上限的选择。"
   },
-  "aiPrivacyPerDiary": "每篇最多",
-  "@aiPrivacyPerDiary": {
-    "description": "每篇字数上限的选择。"
+  "aiPrivacyBudgetSubtitle": "每篇日记都整篇发送，一次请求合计超过这个字数时才截断。",
+  "@aiPrivacyBudgetSubtitle": {
+    "description": "“最多发送”的说明：每篇不设上限，只有一次请求的总字数受限。"
   },
-  "aiWords": "{count} 字",
+  "aiWords": "{count}字",
   "@aiWords": {
-    "description": "字数。",
+    "description": "字数（大数按“万”简写，如 10万字）。",
     "placeholders": {
       "count": {
-        "type": "int"
+        "type": "int",
+        "format": "compact"
       }
     }
   },

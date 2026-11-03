@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
@@ -82,58 +83,123 @@ af.Selection _caret(af.Path path, [int offset = 0]) =>
     af.Selection.collapsed(af.Position(path: path, offset: offset));
 
 void main() {
+  af.Node? armed(DiaryEditorController controller) =>
+      DiaryArmedEmbed.of(controller.state).node.value;
+
   group('backspace at the start of a line after an embed', () {
-    for (final type in ['divider', 'image', 'video', 'audio', 'link_card']) {
-      test('deletes the $type in place instead of moving it', () {
+    // 所有嵌入块类型（图片、视频、音频、附件、分隔线、卡片、未识别的旧
+    // 嵌入）同一条规则；以后新增的类型登记进集合即自动覆盖。
+    for (final type in kDiaryEmbedBlockTypes) {
+      test('selects the $type first, then deletes it in place', () {
         final controller = _document([_p('before'), _embed(type), _p('after')]);
         final before = controller.contentJson;
+        final embed = controller.document.root.children[1];
         controller.state.selection = _caret([2]);
 
-        expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
+        // 第一次：只选中，正文与插入点都不动。
+        expect(backspaceDiaryEmbed(controller.state), isTrue);
+        expect(controller.contentJson, before);
+        expect(controller.state.selection, _caret([2]));
+        expect(armed(controller), same(embed));
 
+        // 第二次：删掉它，本行原地上移，选中随之取消。
+        expect(backspaceDiaryEmbed(controller.state), isTrue);
         expect(_outline(controller), 'paragraph:before\nparagraph:after');
         expect(controller.state.selection, _caret([1]));
+        expect(armed(controller), isNull);
         controller.undo();
         expect(controller.contentJson, before);
       });
     }
 
-    test('deletes the embed and keeps the last empty line writable', () {
-      final controller = _document([_p('before'), _embed('image'), _p('')]);
-      controller.state.selection = _caret([2]);
+    for (final type in kDiaryEmbedBlockTypes) {
+      test('on an empty line removes that line and selects the $type', () {
+        // 嵌入块下面连着几个空行：第一次退格删掉紧挨着的空行并选中嵌入块，
+        // 第二次删掉嵌入块，下面的空行原样留着。
+        final controller = _document([
+          _p('a'),
+          _embed(type),
+          _p(''),
+          _p(''),
+          _p(''),
+          _p('b'),
+        ]);
+        final embed = controller.document.root.children[1];
+        controller.state.selection = _caret([2]);
 
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
+        expect(backspaceDiaryEmbed(controller.state), isTrue);
+        expect(
+          _outline(controller),
+          'paragraph:a\n$type\nparagraph:\nparagraph:\nparagraph:b',
+        );
+        expect(controller.state.selection, _caret([2]));
+        expect(armed(controller), same(embed));
 
-      expect(_outline(controller), 'paragraph:before\nparagraph:');
-      expect(controller.state.selection, _caret([1]));
+        expect(backspaceDiaryEmbed(controller.state), isTrue);
+        expect(
+          _outline(controller),
+          'paragraph:a\nparagraph:\nparagraph:\nparagraph:b',
+        );
+        expect(controller.state.selection, _caret([1]));
+        expect(armed(controller), isNull);
+      });
+    }
+
+    test('keeps the empty line when nothing writable follows it', () {
+      for (final tail in [
+        <Map<String, Object?>>[],
+        [_embed('video')],
+      ]) {
+        final controller = _document([
+          _p('before'),
+          _embed('image'),
+          _p(''),
+          ...tail,
+        ]);
+        controller.state.selection = _caret([2]);
+
+        // 空行是插入点唯一能放的地方：不删，只选中上面的图片。
+        expect(backspaceDiaryEmbed(controller.state), isTrue);
+        expect(controller.document.root.children, hasLength(3 + tail.length));
+        expect(armed(controller)?.type, 'image');
+
+        expect(backspaceDiaryEmbed(controller.state), isTrue);
+        expect(
+          _outline(controller),
+          [
+            'paragraph:before',
+            'paragraph:',
+            ...tail.map((_) => 'video'),
+          ].join('\n'),
+        );
+        expect(controller.state.selection, _caret([1]));
+      }
     });
 
-    test('removes an empty line between the embed and more text first', () {
-      final controller = _document([
-        _p('a'),
-        _embed('divider'),
-        _p(''),
-        _p('b'),
-      ]);
+    test('anything else in between cancels the selection', () {
+      final controller = _document([_p('a'), _embed('image'), _p('after')]);
       controller.state.selection = _caret([2]);
 
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
-      // 空行没了，插入点到下一行开头，仍在分隔线正下方。
-      expect(_outline(controller), 'paragraph:a\ndivider\nparagraph:b');
-      expect(controller.state.selection, _caret([2]));
+      // 插入点挪开再回来：重新选中，不删除。
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      controller.state.selection = _caret([2], 3);
+      expect(armed(controller), isNull);
+      controller.state.selection = _caret([2]);
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(controller.document.root.children, hasLength(3));
 
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
-      expect(_outline(controller), 'paragraph:a\nparagraph:b');
-      expect(controller.state.selection, _caret([1]));
-    });
+      // 上游重设同一选区不算挪开。
+      controller.state.selection = _caret([2]);
+      expect(armed(controller)?.type, 'image');
 
-    test('an empty line followed by another embed deletes the embed above', () {
-      final controller = _document([_embed('image'), _p(''), _embed('video')]);
-      controller.state.selection = _caret([1]);
-
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
-      expect(_outline(controller), 'paragraph:\nvideo');
-      expect(controller.state.selection, _caret([0]));
+      // 正文有改动（打字）即取消。
+      final transaction = controller.state.transaction
+        ..insertText(controller.document.root.children[0], 1, 'x');
+      controller.apply(transaction, updateSelection: false);
+      expect(armed(controller), isNull);
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(controller.document.root.children, hasLength(3));
+      expect(armed(controller)?.type, 'image');
     });
 
     test('reaches an embed nested as the last child of the block above', () {
@@ -143,7 +209,8 @@ void main() {
       ]);
       controller.state.selection = _caret([1]);
 
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isTrue);
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
       expect(_outline(controller), 'bulleted_list:item\nparagraph:after');
       expect(controller.state.selection, _caret([1]));
     });
@@ -164,40 +231,44 @@ void main() {
       final before = controller.contentJson;
       // 不在行首。
       controller.state.selection = _caret([2], 2);
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isFalse);
+      expect(backspaceDiaryEmbed(controller.state), isFalse);
       // 上一块是文字，或在文档开头。
       controller.state.selection = _caret([3]);
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isFalse);
+      expect(backspaceDiaryEmbed(controller.state), isFalse);
       controller.state.selection = _caret([0]);
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isFalse);
+      expect(backspaceDiaryEmbed(controller.state), isFalse);
       // 收起的折叠块里的图片看不见，不算紧挨着。
       controller.state.selection = _caret([4]);
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isFalse);
+      expect(backspaceDiaryEmbed(controller.state), isFalse);
       // 插入点盖在嵌入块上（上游删掉它）与非折叠选区。
       controller.state.selection = _caret([1]);
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isFalse);
+      expect(backspaceDiaryEmbed(controller.state), isFalse);
       controller.state.selection = af.Selection(
         start: af.Position(path: [2]),
         end: af.Position(path: [2], offset: 3),
       );
-      expect(deleteDiaryEmbedBeforeCaret(controller.state), isFalse);
+      expect(backspaceDiaryEmbed(controller.state), isFalse);
       expect(controller.contentJson, before);
+      expect(armed(controller), isNull);
     });
   });
 
-  test('Delete at the end of a line removes the embed below it', () {
+  test('Delete at the end of a line selects, then removes the embed below', () {
     final controller = _document([_p('a'), _embed('image'), _p('b')]);
     controller.state.selection = _caret([0], 1);
 
-    expect(deleteDiaryEmbedAfterCaret(controller.state), isTrue);
+    expect(deleteForwardDiaryEmbed(controller.state), isTrue);
+    expect(controller.document.root.children, hasLength(3));
+    expect(armed(controller)?.type, 'image');
+    expect(deleteForwardDiaryEmbed(controller.state), isTrue);
     expect(_outline(controller), 'paragraph:a\nparagraph:b');
     expect(controller.state.selection, _caret([0], 1));
 
     // 不在行末、下一块是文字：交给上游。
     controller.state.selection = _caret([0]);
-    expect(deleteDiaryEmbedAfterCaret(controller.state), isFalse);
+    expect(deleteForwardDiaryEmbed(controller.state), isFalse);
     controller.state.selection = _caret([0], 1);
-    expect(deleteDiaryEmbedAfterCaret(controller.state), isFalse);
+    expect(deleteForwardDiaryEmbed(controller.state), isFalse);
   });
 
   group('soft keyboard deletion', () {
@@ -208,16 +279,20 @@ void main() {
       composing: TextRange.empty,
     );
 
-    test('deletes the embed above a line', () async {
+    test('selects, then deletes the embed above a line', () async {
       final controller = _document([_embed('divider'), _p('after')]);
       controller.state.selection = _caret([1]);
+      final interceptor = DiaryEmbedKeyboardInterceptor();
 
-      final handled = await DiaryEmbedKeyboardInterceptor().interceptDelete(
-        deletion('after'),
-        controller.state,
+      expect(
+        await interceptor.interceptDelete(deletion('after'), controller.state),
+        isTrue,
       );
-
-      expect(handled, isTrue);
+      expect(armed(controller)?.type, 'divider');
+      expect(
+        await interceptor.interceptDelete(deletion('after'), controller.state),
+        isTrue,
+      );
       expect(_outline(controller), 'paragraph:after');
     });
 
@@ -235,6 +310,7 @@ void main() {
 
       expect(handled, isFalse);
       expect(_outline(controller), 'divider\nheading:title');
+      expect(armed(controller), isNull);
     });
   });
 
@@ -336,7 +412,24 @@ void main() {
       await tester.pump(Duration.zero);
     }
 
-    testWidgets('Backspace and Delete keys run before the upstream merge', (
+    /// 嵌入块上选中样式的不透明度（0 为没有选中）。
+    double selectedLook(WidgetTester tester, af.Node node) => tester
+        .widget<AnimatedOpacity>(
+          find
+              .ancestor(
+                of: find.byKey(ValueKey('diary-armed-embed-${node.id}')),
+                matching: find.byType(AnimatedOpacity),
+              )
+              .first,
+        )
+        .opacity;
+
+    Future<void> press(WidgetTester tester, LogicalKeyboardKey key) async {
+      await tester.sendKeyEvent(key);
+      await tester.pump();
+    }
+
+    testWidgets('Backspace and Delete keys select, then delete the embed', (
       tester,
     ) async {
       final controller = _document([
@@ -346,10 +439,16 @@ void main() {
         _embed('divider'),
         _p('end'),
       ]);
+      final first = controller.document.root.children[1];
       await pump(tester, controller, _caret([2]));
+      expect(selectedLook(tester, first), 0);
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
-      await tester.pump();
+      await press(tester, LogicalKeyboardKey.backspace);
+      expect(controller.document.root.children, hasLength(5));
+      expect(controller.selection, _caret([2]));
+      expect(selectedLook(tester, first), 1);
+
+      await press(tester, LogicalKeyboardKey.backspace);
       expect(
         _outline(controller),
         'paragraph:before\nparagraph:after\ndivider\nparagraph:end',
@@ -358,14 +457,134 @@ void main() {
 
       controller.select(_caret([1], 5));
       await tester.pump();
-      await tester.sendKeyEvent(LogicalKeyboardKey.delete);
-      await tester.pump();
+      await press(tester, LogicalKeyboardKey.delete);
+      expect(controller.document.root.children, hasLength(4));
+      await press(tester, LogicalKeyboardKey.delete);
       expect(
         _outline(controller),
         'paragraph:before\nparagraph:after\nparagraph:end',
       );
       await unmount(tester);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+    // 手机上的软键盘：上游在输入法的编辑值前垫了一个空格占位，段首退格删的
+    // 是这个占位，经输入法删除（拦截器）而不是退格键。这里照输入法的做法
+    // 改编辑值。
+    Map<String, dynamic> ime(WidgetTester tester) =>
+        tester.testTextInput.editingState!;
+
+    Future<void> imeEdit(
+      WidgetTester tester,
+      String Function(String text, int caret) edit,
+      int Function(int caret) caretAfter,
+    ) async {
+      final text = ime(tester)['text'] as String;
+      final caret = ime(tester)['selectionBase'] as int;
+      tester.testTextInput.updateEditingValue(
+        TextEditingValue(
+          text: edit(text, caret),
+          selection: TextSelection.collapsed(offset: caretAfter(caret)),
+        ),
+      );
+      // 拦截后的输入法同步是零时长计时器：pump 要带时长才会推进假时钟。
+      await tester.pump(Duration.zero);
+      await tester.pump(Duration.zero);
+    }
+
+    Future<void> imeBackspace(WidgetTester tester) => imeEdit(
+      tester,
+      (text, caret) => text.replaceRange(caret - 1, caret, ''),
+      (caret) => caret - 1,
+    );
+
+    Future<void> imeType(WidgetTester tester, String typed) => imeEdit(
+      tester,
+      (text, caret) => text.replaceRange(caret, caret, typed),
+      (caret) => caret + typed.length,
+    );
+
+    testWidgets(
+      'soft keyboard: below an image followed by empty lines the first '
+      'backspace removes the line and selects the image',
+      (tester) async {
+        final controller = _document([
+          _p('a'),
+          _embed('image'),
+          _p(''),
+          _p(''),
+          _p(''),
+          _p('b'),
+        ]);
+        final image = controller.document.root.children[1];
+        await pump(tester, controller, _caret([2]));
+        expect(ime(tester)['text'], ' ');
+
+        await imeBackspace(tester);
+        expect(
+          _outline(controller),
+          'paragraph:a\nimage\nparagraph:\nparagraph:\nparagraph:b',
+        );
+        expect(controller.selection, _caret([2]));
+        await tester.pumpAndSettle(const Duration(milliseconds: 50));
+        expect(selectedLook(tester, image), 1);
+
+        // 插入点一直在文字行里，输入法连着它：打字照常写进这一行并取消
+        // 选中。
+        await imeType(tester, 'n');
+        expect(
+          _outline(controller),
+          'paragraph:a\nimage\nparagraph:n\nparagraph:\nparagraph:b',
+        );
+        expect(controller.selection, _caret([2], 1));
+        await tester.pumpAndSettle(const Duration(milliseconds: 50));
+        expect(selectedLook(tester, image), 0);
+
+        // 删掉刚打的字、回到行首：这一行又是空行，再退格同样删掉它并选中
+        // 图片；再按一次删掉图片，剩下的空行原样留着。
+        await imeBackspace(tester);
+        expect(controller.selection, _caret([2]));
+        expect(DiaryArmedEmbed.of(controller.state).node.value, isNull);
+        await imeBackspace(tester);
+        expect(DiaryArmedEmbed.of(controller.state).node.value, same(image));
+        expect(
+          _outline(controller),
+          'paragraph:a\nimage\nparagraph:\nparagraph:b',
+        );
+        await imeBackspace(tester);
+        expect(_outline(controller), 'paragraph:a\nparagraph:\nparagraph:b');
+        expect(controller.selection, _caret([1]));
+        expect(ime(tester)['text'], ' ');
+        await unmount(tester);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+
+    testWidgets(
+      'soft keyboard: after the empty line goes the input follows the next '
+      'line',
+      (tester) async {
+        final controller = _document([
+          _p('a'),
+          _embed('divider'),
+          _p(''),
+          _p('world'),
+        ]);
+        await pump(tester, controller, _caret([2]));
+
+        await imeBackspace(tester);
+        expect(_outline(controller), 'paragraph:a\ndivider\nparagraph:world');
+        expect(controller.selection, _caret([2]));
+        // 拦截后上游把输入法退回了空行的编辑值，随后按新的一行重新同步。
+        expect(ime(tester)['text'], ' world');
+        expect(ime(tester)['selectionBase'], 1);
+
+        await imeType(tester, 'n');
+        expect(_outline(controller), 'paragraph:a\ndivider\nparagraph:nworld');
+        expect(controller.selection, _caret([2], 1));
+        await unmount(tester);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
 
     testWidgets('a heading after an embed becomes a paragraph first', (
       tester,
@@ -376,11 +595,11 @@ void main() {
       ]);
       await pump(tester, controller, _caret([1]));
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
-      await tester.pump();
+      await press(tester, LogicalKeyboardKey.backspace);
       expect(_outline(controller), 'divider\nparagraph:title');
-      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
-      await tester.pump();
+      await press(tester, LogicalKeyboardKey.backspace);
+      expect(_outline(controller), 'divider\nparagraph:title');
+      await press(tester, LogicalKeyboardKey.backspace);
       expect(_outline(controller), 'paragraph:title');
       await unmount(tester);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));

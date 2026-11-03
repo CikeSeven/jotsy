@@ -4344,13 +4344,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudBackupEmpty =>
-      '还没有备份位置。添加一个网盘、WebDAV 或对象存储，即可把完整备份上传到云端，换机或重装后从那里恢复。';
+      '还没有备份位置。添加一个网盘、WebDAV 或对象存储，即可把数据备份到云端，换机或重装后从那里恢复。';
 
   @override
   String get cloudBackupAdd => '添加备份位置';
 
   @override
-  String get cloudBackupHint => '地址、密码与网盘授权只保存在本机，不会写入备份文件；上传的是完整备份 ZIP，可选加密。';
+  String get cloudBackupHint =>
+      '地址、密码与网盘授权只保存在本机，不会写入备份文件。“备份”是增量的：只上传新增与变化的内容，省流量；也可以上传一份完整 ZIP，可选加密。';
 
   @override
   String get cloudBackupSheetTitle => '选择备份位置';
@@ -4549,7 +4550,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudBackupTestConnection => '测试连接';
 
   @override
-  String get cloudBackupUploadBackup => '上传当前备份';
+  String get cloudBackupUploadBackup => '上传完整 ZIP';
 
   @override
   String get cloudBackupRefreshBackups => '刷新列表';
@@ -12436,4 +12437,169 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPresetNameCustomOpenAiResponses => 'OpenAI Responses 接口';
+
+  @override
+  String get cloudBackupBackupNow => '备份';
+
+  @override
+  String get cloudIncrementalBusyScan => '正在检查变化…';
+
+  @override
+  String get cloudIncrementalBusyCheck => '正在读取网盘上的备份…';
+
+  @override
+  String get cloudIncrementalBusyPrune => '正在清理旧备份…';
+
+  @override
+  String cloudIncrementalUploaded(String size) {
+    return '已备份，本次上传 $size';
+  }
+
+  @override
+  String get cloudIncrementalUnchanged => '数据没有变化，网盘上已是最新的备份';
+
+  @override
+  String get cloudIncrementalNewPasswordMessage =>
+      '设置的密码会记在本机，之后的备份与自动备份都用它；换设备恢复时需要输入。留空则不加密。';
+
+  @override
+  String get cloudIncrementalExistingEncryptedMessage =>
+      '网盘上已有加密的增量备份。输入它的密码接着备份，已上传的照片与媒体不用重传。';
+
+  @override
+  String get cloudIncrementalContinue => '继续';
+
+  @override
+  String get cloudIncrementalWrongPasswordTitle => '密码不对';
+
+  @override
+  String get cloudIncrementalWrongPasswordContent =>
+      '这个密码打不开网盘上的增量备份。可以重新输入，或者开始新的一串增量备份（需要重新上传全部照片与媒体）。';
+
+  @override
+  String get cloudIncrementalRetry => '重新输入';
+
+  @override
+  String get cloudIncrementalStartNew => '开始新的一串';
+
+  @override
+  String get cloudIncrementalExistingPlainTitle => '接着已有的增量备份？';
+
+  @override
+  String get cloudIncrementalExistingPlainContent =>
+      '网盘上已有不加密的增量备份。接着备份只上传新增的内容；想加密的话可以开始新的一串（需要重新上传全部照片与媒体）。';
+
+  @override
+  String get cloudIncrementalContinueExisting => '接着备份';
+
+  @override
+  String get cloudIncrementalRememberedMismatchContent =>
+      '本机记住的密码打不开网盘上的增量备份，可能在另一台设备上换过密码。重新设置后，可以输入原来的密码接着备份，或开始新的一串。';
+
+  @override
+  String get cloudIncrementalRestorePasswordMessage => '这份增量备份已加密，请输入备份时设置的密码。';
+
+  @override
+  String get cloudIncrementalEntryTitle => '增量备份';
+
+  @override
+  String get cloudIncrementalEntryMissing => '快照文件缺失，无法恢复';
+
+  @override
+  String get cloudIncrementalDeleteTitle => '删除这份增量备份？';
+
+  @override
+  String cloudIncrementalDeleteContent(String time) {
+    return '将删除 $time 的增量备份；只被它用到的照片与媒体会一并从网盘删除，其他备份不受影响。此操作不可撤销。';
+  }
+
+  @override
+  String get cloudIncrementalSectionTitle => '增量备份';
+
+  @override
+  String get cloudIncrementalSectionHint =>
+      '“备份”只上传新增的照片与变化的数据，已在网盘上的内容不再重复上传；在本机恢复时也只下载缺少的部分，省下网盘的流量额度。';
+
+  @override
+  String get cloudIncrementalKeepTitle => '保留份数';
+
+  @override
+  String get cloudIncrementalKeepSubtitle => '更早的增量备份自动删除，只被它们用到的照片与媒体一并清理';
+
+  @override
+  String get cloudIncrementalKeepAll => '全部';
+
+  @override
+  String cloudIncrementalKeepCount(int count) {
+    return '$count 份';
+  }
+
+  @override
+  String get cloudAutoBackupTitle => '自动备份';
+
+  @override
+  String get cloudAutoBackupSubtitle =>
+      '打开或离开应用时，到时间就在后台静默备份；新增内容超过 50 MB 时留给你手动备份';
+
+  @override
+  String get cloudAutoBackupNeedsChain => '先点“备份”手动备份一次，之后才能开启';
+
+  @override
+  String get cloudAutoBackupIntervalTitle => '频率';
+
+  @override
+  String get cloudAutoBackupDaily => '每天';
+
+  @override
+  String get cloudAutoBackupWeekly => '每周';
+
+  @override
+  String cloudAutoBackupLastUploaded(String time, String size) {
+    return '上次自动备份：$time，上传 $size';
+  }
+
+  @override
+  String cloudAutoBackupLastUnchanged(String time) {
+    return '上次自动备份：$time，数据没有变化';
+  }
+
+  @override
+  String cloudAutoBackupLastNeedsManual(String time, String size) {
+    return '$time：有 $size 新内容，请手动备份';
+  }
+
+  @override
+  String cloudAutoBackupLastFailed(String time, String reason) {
+    return '$time 自动备份失败：$reason';
+  }
+
+  @override
+  String cloudAutoBackupTileOk(String time) {
+    return '自动备份 · $time';
+  }
+
+  @override
+  String get cloudAutoBackupTileNeedsManual => '需要手动备份';
+
+  @override
+  String get cloudAutoBackupTileFailed => '自动备份失败';
+
+  @override
+  String get cloudIncrementalForgetChain => '重新设置密码';
+
+  @override
+  String get cloudIncrementalForgetTitle => '重新设置增量备份密码？';
+
+  @override
+  String get cloudIncrementalForgetContent =>
+      '本机会忘记现在的增量备份密码，自动备份随之暂停。下次备份时可以输入原来的密码接着备份，也可以设新密码重新开始（需要重新上传全部照片与媒体）。';
+
+  @override
+  String get cloudIncrementalForgotten => '已忘记增量备份密码';
+
+  @override
+  String get cloudIncrementalErrorPassword => '密码打不开这份增量备份';
+
+  @override
+  String get cloudIncrementalErrorMediaChanged => '备份期间有照片或附件发生了变化，请再试一次';
 }

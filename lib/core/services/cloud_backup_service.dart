@@ -4,10 +4,16 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../database/app_database.dart';
+import 'app_data_directory.dart';
 import 'backup_import_models.dart';
 import 'cloud_backup_drive.dart';
 import 'cloud_backup_drives.dart';
 import 'cloud_backup_http.dart';
+import 'cloud_backup_incremental.dart';
+import 'cloud_backup_incremental_io.dart';
+import 'cloud_backup_incremental_prune.dart';
+import 'cloud_backup_incremental_restore.dart';
+import 'cloud_backup_incremental_state.dart';
 import 'cloud_backup_models.dart';
 import 'cloud_backup_oauth.dart';
 import 'cloud_backup_s3.dart';
@@ -19,10 +25,15 @@ import 'settings_service.dart';
 import 'webdav_client.dart';
 import 'webdav_models.dart';
 
+part 'cloud_backup_service_incremental.dart';
+
 /// 网盘备份编排服务。
 ///
 /// 职责边界：
 /// - 复用 [DataArchiveService] 生成/预检/恢复完整备份 ZIP，不直接操作数据库；
+/// - 增量备份与自动备份经 [CloudIncrementalBackup] / [CloudIncrementalRestore]
+///   编排，本机状态在 [CloudBackupLocalState]；同一备份位置的增量操作（手动与
+///   自动）经 [_locked] 排队，同一时间只跑一个；
 /// - 按备份位置的类型创建网盘客户端（[openRemote]），每次操作用完即关闭；
 /// - 授权类网盘：发起授权、授权完成后校验并保存备份位置，令牌刷新后经
 ///   [CloudBackupSettingsService.updateConfig] 落盘；
@@ -36,9 +47,16 @@ class CloudBackupService {
     CloudBackupHttp Function()? httpFactory,
     this._webDavClientFactory,
     Future<Directory> Function()? temporaryDirectory,
+    Future<Directory> Function()? dataRoot,
+    CloudSleep? sleep,
+    DateTime Function()? clock,
+    this._autoUploadLimit = CloudIncrementalBackup.defaultAutoUploadLimit,
   }) : _drives = drives ?? defaultCloudDriveProviders(),
        _httpFactory = httpFactory ?? CloudBackupHttp.new,
-       _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
+       _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory,
+       _dataRoot = dataRoot ?? appDataRootDirectory,
+       _sleep = sleep ?? Future<void>.delayed,
+       _clock = clock ?? DateTime.now;
 
   final AppDatabase _database;
   final SettingsService _settingsService;
@@ -47,8 +65,23 @@ class CloudBackupService {
   final CloudBackupHttp Function() _httpFactory;
   final WebDavClient Function(WebDavConfig config)? _webDavClientFactory;
   final Future<Directory> Function() _temporaryDirectory;
+  final Future<Directory> Function() _dataRoot;
+  final CloudSleep _sleep;
+  final DateTime Function() _clock;
+  final int _autoUploadLimit;
+  final Map<String, Future<void>> _locks = <String, Future<void>>{};
+  Future<CloudBackupLocalState>? _localState;
 
   CloudBackupSettingsService get targets => _targets;
+
+  /// 增量备份的本机状态（`<数据根>/cloud_backup_state/`），首次使用时建立。
+  Future<CloudBackupLocalState> localState() => _localState ??= () async {
+    final root = await _dataRoot();
+    return CloudBackupLocalState(
+      root: Directory(p.join(root.path, CloudBackupLocalState.directoryName)),
+      dataRoot: root,
+    );
+  }();
 
   /// 此安装包配置了应用密钥、可以添加的授权类网盘。
   bool isDriveAvailable(CloudBackupKind kind) =>
@@ -87,8 +120,32 @@ class CloudBackupService {
   Future<void> testConnection(CloudBackupTarget target) =>
       _withRemote(target, (remote) => remote.prepare());
 
-  Future<List<CloudBackupEntry>> listBackups(CloudBackupTarget target) =>
-      _withRemote(target, (remote) => remote.list());
+  /// 列出完整备份 ZIP 与增量备份（一次列表请求）。
+  Future<CloudBackupListing> listBackups(CloudBackupTarget target) =>
+      _withRemote(target, (remote) async {
+        final files = await withCloudRetry(
+          (_) => remote.listFiles(),
+          sleep: _sleep,
+        );
+        return CloudBackupListing(
+          zips: cloudZipBackupsOf(files),
+          incremental: IncrementalRemoteListing.of(files),
+        );
+      });
+
+  /// 删除备份位置时一并删掉它在本机的增量状态（远程文件不动）。
+  Future<void> removeTarget(String targetId) async {
+    await _targets.removeTarget(targetId);
+    await (await localState()).removeTarget(targetId);
+  }
+
+  /// 同一备份位置的增量操作排队执行；前一个失败不影响后一个。
+  Future<T> _locked<T>(String targetId, Future<T> Function() action) {
+    final previous = _locks[targetId] ?? Future<void>.value();
+    final result = previous.then((_) => action());
+    _locks[targetId] = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
 
   /// 导出当前数据为 ZIP 并上传；无论成败都删除本地临时 ZIP。
   Future<CloudBackupEntry> uploadCurrentBackup(
@@ -240,6 +297,14 @@ class CloudBackupService {
       remote.close();
     }
   }
+}
+
+/// 备份目录里的完整备份 ZIP 与增量备份。
+class CloudBackupListing {
+  const CloudBackupListing({required this.zips, required this.incremental});
+
+  final List<CloudBackupEntry> zips;
+  final IncrementalRemoteListing incremental;
 }
 
 /// 一次进行中的授权；持有本次授权请求用的连接。

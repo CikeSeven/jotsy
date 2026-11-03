@@ -144,7 +144,11 @@ class S3BackupRemote implements CloudBackupRemote {
   }
 
   @override
-  Future<List<CloudBackupEntry>> list() async {
+  Future<List<CloudBackupEntry>> list() async =>
+      cloudZipBackupsOf(await listFiles());
+
+  @override
+  Future<List<CloudBackupEntry>> listFiles() async {
     final entries = <CloudBackupEntry>[];
     String? continuation;
     do {
@@ -162,7 +166,8 @@ class S3BackupRemote implements CloudBackupRemote {
         final key = _child(item, 'Key');
         if (key == null) continue;
         final fileName = key.substring(key.lastIndexOf('/') + 1);
-        if (!isCloudBackupFileName(fileName)) continue;
+        // 以 / 结尾的键是控制台建的“文件夹”占位，不是文件。
+        if (fileName.isEmpty) continue;
         final modified = DateTime.tryParse(_child(item, 'LastModified') ?? '');
         entries.add(
           CloudBackupEntry(
@@ -180,7 +185,7 @@ class S3BackupRemote implements CloudBackupRemote {
           ? _child(document.rootElement, 'NextContinuationToken')
           : null;
     } while (continuation != null);
-    return sortCloudBackups(entries);
+    return entries;
   }
 
   @override

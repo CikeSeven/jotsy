@@ -290,6 +290,15 @@ void main() {
           expect(page.query[r'$top'], '200');
           expect(page.headers['authorization'], 'Bearer a1');
         }
+
+        // listFiles 不按 .zip 过滤（增量备份的快照、索引与媒体包都不是 ZIP
+        // 名），但文件夹仍不算文件。
+        final files = [
+          for (final entry in await remote().listFiles()) entry.fileName,
+        ];
+        expect(files, contains('notes.txt'));
+        expect(files.where((name) => name.endsWith('.zip')), isNotEmpty);
+        expect(files, isNot(contains('Archive')));
       },
     );
 

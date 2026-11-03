@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/cloud_backup_drive.dart';
 import 'package:node_diary/core/services/cloud_backup_models.dart';
+import 'package:node_diary/core/services/cloud_backup_options.dart';
 import 'package:node_diary/core/services/cloud_backup_presets.dart';
 import 'package:node_diary/core/services/cloud_backup_service.dart';
 import 'package:node_diary/core/services/cloud_backup_settings_service.dart';
@@ -30,21 +33,31 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     targets = await CloudBackupSettingsService.create();
     database = AppDatabase.forTesting(NativeDatabase.memory());
+    final dataRoot = Directory.systemTemp.createTempSync('cloud_backup_ui_');
     service = CloudBackupService(
       database: database,
       settingsService: await SettingsService.create(),
       targets: targets,
       // 测试包没有配置任何网盘的应用密钥。
       drives: const <CloudBackupKind, CloudDriveProvider>{},
+      dataRoot: () async => dataRoot,
     );
     addTearDown(() async {
       targets.dispose();
       await database.close();
+      dataRoot.deleteSync(recursive: true);
     });
   }
 
-  Future<void> pumpPage(WidgetTester tester, Widget home) async {
+  Future<void> pumpPage(
+    WidgetTester tester,
+    Widget home, {
+    List<CloudBackupTarget> saved = const <CloudBackupTarget>[],
+  }) async {
     await createServices();
+    for (final target in saved) {
+      await targets.saveTarget(target);
+    }
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -197,5 +210,81 @@ void main() {
     expect(find.text(l10n.cloudBackupGroupDrives), findsNothing);
     expect(find.text('Google Drive'), findsNothing);
     expect(find.text(l10n.cloudBackupJianguoyun), findsOneWidget);
+  });
+
+  CloudBackupTarget savedWebDav([CloudBackupOptions? options]) =>
+      CloudBackupTarget.create(
+        kind: CloudBackupKind.webDav,
+        presetId: 'jianguoyun',
+        config: const {
+          'serverUrl': 'https://dav.jianguoyun.com/dav/',
+          'username': 'me@example.com',
+          'password': 'app-password',
+          'remoteDirectory': '/Jotsy/',
+        },
+      ).copyWith(options: options);
+
+  Finder switchTile(String title) => find.ancestor(
+    of: find.text(title),
+    matching: find.byType(SwitchListTile),
+  );
+
+  testWidgets('saved location backs up incrementally and still offers a ZIP', (
+    tester,
+  ) async {
+    final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+    final target = savedWebDav();
+    await pumpPage(
+      tester,
+      CloudBackupTargetPage(target: target),
+      saved: [target],
+    );
+
+    expect(find.text(l10n.cloudBackupBackupNow), findsOneWidget);
+    expect(find.text(l10n.cloudBackupUploadBackup), findsOneWidget);
+    expect(find.text(l10n.cloudIncrementalSectionTitle), findsOneWidget);
+    // 还没有增量备份：自动备份开关停用并说明原因，也没有“重新设置密码”。
+    expect(
+      tester
+          .widget<SwitchListTile>(switchTile(l10n.cloudAutoBackupTitle))
+          .onChanged,
+      isNull,
+    );
+    expect(find.text(l10n.cloudAutoBackupNeedsChain), findsOneWidget);
+    expect(find.text(l10n.cloudIncrementalForgetChain), findsNothing);
+  });
+
+  testWidgets('automatic backup can be turned on once a chain exists', (
+    tester,
+  ) async {
+    final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+    final target = savedWebDav(
+      const CloudBackupOptions().withChain('0a1b2c3d', ''),
+    );
+    await pumpPage(
+      tester,
+      CloudBackupTargetPage(target: target),
+      saved: [target],
+    );
+    expect(find.text(l10n.cloudIncrementalForgetChain), findsOneWidget);
+    expect(find.text(l10n.cloudAutoBackupIntervalTitle), findsNothing);
+
+    await tester.ensureVisible(switchTile(l10n.cloudAutoBackupTitle));
+    await tester.pumpAndSettle();
+    await tester.tap(switchTile(l10n.cloudAutoBackupTitle));
+    await tester.pumpAndSettle();
+
+    expect(targets.targetById(target.id)!.options.autoBackup, isTrue);
+    expect(find.text(l10n.cloudAutoBackupIntervalTitle), findsOneWidget);
+    await tester.ensureVisible(find.text(l10n.cloudAutoBackupWeekly));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.cloudAutoBackupWeekly));
+    await tester.pumpAndSettle();
+    expect(
+      targets.targetById(target.id)!.options.autoInterval,
+      CloudAutoBackupInterval.weekly,
+    );
+    // 选项与连接配置分开存：保存表单不会冲掉记住的链。
+    expect(targets.targetById(target.id)!.options.chain, '0a1b2c3d');
   });
 }

@@ -162,7 +162,11 @@ class AliyunDriveRemote implements CloudBackupRemote {
   Future<void> prepare() => _folder();
 
   @override
-  Future<List<CloudBackupEntry>> list() async {
+  Future<List<CloudBackupEntry>> list() async =>
+      cloudZipBackupsOf(await listFiles());
+
+  @override
+  Future<List<CloudBackupEntry>> listFiles() async {
     final (driveId, folderId) = await _folder();
     final entries = <CloudBackupEntry>[];
     String? marker;
@@ -177,9 +181,7 @@ class AliyunDriveRemote implements CloudBackupRemote {
         if (item is! Map || item['type'] != 'file') continue;
         final id = jsonString(item['file_id']);
         final name = jsonString(item['name']);
-        if (id == null || name == null || !isCloudBackupFileName(name)) {
-          continue;
-        }
+        if (id == null || name == null) continue;
         final modified = jsonDateTime(item['updated_at']);
         entries.add(
           CloudBackupEntry(
@@ -196,7 +198,7 @@ class AliyunDriveRemote implements CloudBackupRemote {
       }
       marker = jsonString(json['next_marker']);
     } while (marker != null);
-    return sortCloudBackups(entries);
+    return entries;
   }
 
   @override

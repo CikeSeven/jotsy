@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../../../core/services/cloud_backup_incremental_io.dart';
+import '../../../core/services/cloud_backup_incremental_packs.dart';
 import '../../../core/services/cloud_backup_models.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -9,7 +11,14 @@ import '../../../l10n/app_localizations.dart';
 /// （可能含地址、令牌片段，也看不懂）。备份文件本身的问题（密码错误、
 /// 文件损坏）来自恢复前的预检，单独说明。
 String describeCloudBackupError(AppLocalizations l10n, Object error) {
-  final detail = switch (error) {
+  return l10n.cloudBackupOperationFailed(
+    describeCloudBackupFailure(l10n, error),
+  );
+}
+
+/// 失败原因本身（不带“操作失败”前缀），自动备份的状态行也用它。
+String describeCloudBackupFailure(AppLocalizations l10n, Object error) {
+  return switch (error) {
     CloudBackupException(:final failure) => switch (failure) {
       CloudBackupFailure.config => l10n.cloudBackupErrorConfig,
       CloudBackupFailure.appKeyMissing => l10n.cloudBackupErrorAppKeyMissing,
@@ -28,6 +37,9 @@ String describeCloudBackupError(AppLocalizations l10n, Object error) {
       CloudBackupFailure.network => l10n.cloudBackupErrorNetwork,
       CloudBackupFailure.protocol => l10n.cloudBackupErrorProtocol,
     },
+    CloudIncrementalPasswordException() => l10n.cloudIncrementalErrorPassword,
+    IncrementalMediaChangedException() =>
+      l10n.cloudIncrementalErrorMediaChanged,
     FormatException(:final message)
         when message.toLowerCase().contains('password') =>
       l10n.cloudBackupErrorPassword,
@@ -35,7 +47,6 @@ String describeCloudBackupError(AppLocalizations l10n, Object error) {
     FileSystemException() => l10n.cloudBackupErrorLocalFile,
     _ => l10n.cloudBackupErrorUnknown,
   };
-  return l10n.cloudBackupOperationFailed(detail);
 }
 
 /// 需要重新授权才能继续的失败（界面据此突出“重新授权”）。

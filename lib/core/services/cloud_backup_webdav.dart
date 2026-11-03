@@ -26,16 +26,28 @@ class WebDavBackupRemote implements CloudBackupRemote {
 
   String get _directory => _config.normalizedRemoteDirectory;
 
+  /// 本实例已确认过备份目录存在。增量备份在同一个实例里连续上传多个文件，
+  /// 每个文件都逐级 MKCOL 会白白多耗请求次数（坚果云每 30 分钟限 600 次）。
+  bool _directoryReady = false;
+
+  Future<void> _ensureDirectory() async {
+    if (_directoryReady) return;
+    await _webDav.ensureDirectory(_directory);
+    _directoryReady = true;
+  }
+
   @override
   Future<void> prepare() => _guard(() async {
-    await _webDav.ensureDirectory(_directory);
+    await _ensureDirectory();
     await _webDav.listFiles(_directory);
   });
 
   @override
   Future<List<CloudBackupEntry>> list() => _guard(() async {
-    await _webDav.ensureDirectory(_directory);
-    final files = await _webDav.listFiles(_directory);
+    final files = await _listFiles();
+    if (!files.any((file) => isCloudBackupFileName(file.fileName))) {
+      return const <CloudBackupEntry>[];
+    }
     final manifest = await _readManifest();
     final manifestByName = <String, WebDavBackupEntry>{
       for (final entry in manifest.backups) entry.fileName: entry,
@@ -52,12 +64,25 @@ class WebDavBackupRemote implements CloudBackupRemote {
   });
 
   @override
+  Future<List<CloudBackupEntry>> listFiles() => _guard(() async {
+    return [
+      for (final file in await _listFiles())
+        _toCloudEntry(WebDavBackupEntry.fromRemoteFile(file)),
+    ];
+  });
+
+  Future<List<WebDavRemoteFile>> _listFiles() async {
+    await _ensureDirectory();
+    return _webDav.listFiles(_directory);
+  }
+
+  @override
   Future<CloudBackupEntry> upload({
     required File file,
     required String fileName,
     CloudBackupProgress? onProgress,
   }) => _guard(() async {
-    await _webDav.ensureDirectory(_directory);
+    await _ensureDirectory();
     final remotePath = joinWebDavRemotePath(_directory, fileName);
     await _webDav.putFile(
       remotePath: remotePath,
@@ -70,7 +95,11 @@ class WebDavBackupRemote implements CloudBackupRemote {
       size: await file.length(),
       createdAt: cloudBackupCreatedAtFromFileName(fileName) ?? DateTime.now(),
     );
-    await _updateManifest((manifest) => manifest.upsertBackup(entry));
+    // manifest 只记完整备份 ZIP 的创建时间；增量备份的文件名自带时间，
+    // 再为每个媒体包读写一次 manifest 只会多耗两次请求。
+    if (isCloudBackupFileName(fileName)) {
+      await _updateManifest((manifest) => manifest.upsertBackup(entry));
+    }
     return _toCloudEntry(entry);
   });
 
@@ -90,7 +119,11 @@ class WebDavBackupRemote implements CloudBackupRemote {
   @override
   Future<void> delete(CloudBackupEntry entry) => _guard(() async {
     await _webDav.deleteFile(entry.remoteId);
-    await _updateManifest((manifest) => manifest.removeBackup(entry.fileName));
+    if (isCloudBackupFileName(entry.fileName)) {
+      await _updateManifest(
+        (manifest) => manifest.removeBackup(entry.fileName),
+      );
+    }
   });
 
   @override

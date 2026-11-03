@@ -272,6 +272,12 @@ class _FakeRemote implements CloudBackupRemote {
   }
 
   @override
+  Future<List<CloudBackupEntry>> listFiles() async {
+    await session.accessToken();
+    return const [];
+  }
+
+  @override
   Future<CloudBackupEntry> upload({
     required File file,
     required String fileName,

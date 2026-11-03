@@ -123,7 +123,11 @@ class OneDriveRemote implements CloudBackupRemote {
   }
 
   @override
-  Future<List<CloudBackupEntry>> list() async {
+  Future<List<CloudBackupEntry>> list() async =>
+      cloudZipBackupsOf(await listFiles());
+
+  @override
+  Future<List<CloudBackupEntry>> listFiles() async {
     final entries = <CloudBackupEntry>[];
     Uri? next = _graph(
       'me/drive/special/approot/children'
@@ -138,9 +142,7 @@ class OneDriveRemote implements CloudBackupRemote {
         if (item is! Map || item['file'] == null) continue;
         final id = jsonString(item['id']);
         final name = jsonString(item['name']);
-        if (id == null || name == null || !isCloudBackupFileName(name)) {
-          continue;
-        }
+        if (id == null || name == null) continue;
         final modified = jsonDateTime(item['lastModifiedDateTime']);
         entries.add(
           CloudBackupEntry(
@@ -158,7 +160,7 @@ class OneDriveRemote implements CloudBackupRemote {
       final link = jsonString(json['@odata.nextLink']);
       next = link == null ? null : Uri.tryParse(link);
     }
-    return sortCloudBackups(entries);
+    return entries;
   }
 
   @override

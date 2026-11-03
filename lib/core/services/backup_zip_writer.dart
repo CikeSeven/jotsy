@@ -20,14 +20,36 @@ class BackupZipWriter {
     String zipPath,
     String password,
   ) {
+    writeEncryptedEntries(
+      [
+        for (final file in Directory(
+          rootPath,
+        ).listSync(recursive: true, followLinks: false).whereType<File>())
+          (
+            p.relative(file.path, from: rootPath).replaceAll('\\', '/'),
+            file.path,
+          ),
+      ],
+      zipPath,
+      password,
+    );
+  }
+
+  /// 把 [entries]（条目名, 本地文件路径）逐个写进加密 ZIP，条目名原样使用。
+  /// 增量备份的媒体包据此把散落在各托管目录里的文件直接写成以哈希命名的
+  /// 条目，不必先复制到工作目录。
+  static void writeEncryptedEntries(
+    List<(String, String)> entries,
+    String zipPath,
+    String password,
+  ) {
     final output = OutputFileStream(zipPath);
     final random = Random.secure();
-    final entries = <_ZipEntry>[];
+    final written = <_ZipEntry>[];
     try {
-      for (final file in Directory(
-        rootPath,
-      ).listSync(recursive: true, followLinks: false).whereType<File>()) {
-        final input = InputFileStream(file.path);
+      for (final (name, path) in entries) {
+        final file = File(path);
+        final input = InputFileStream(path);
         try {
           var crc = 0;
           for (final bytes in _chunks(input)) {
@@ -35,9 +57,7 @@ class BackupZipWriter {
           }
           input.reset();
           final entry = _ZipEntry(
-            utf8.encode(
-              p.relative(file.path, from: rootPath).replaceAll('\\', '/'),
-            ),
+            utf8.encode(name),
             file.lengthSync(),
             output.length,
             crc,
@@ -55,16 +75,16 @@ class BackupZipWriter {
             output.writeBytes(bytes);
           }
           output.writeBytes(cipher.finishAuthentication());
-          entries.add(entry);
+          written.add(entry);
         } finally {
           input.closeSync();
         }
       }
       final directoryOffset = output.length;
-      for (final entry in entries) {
+      for (final entry in written) {
         _writeCentralHeader(output, entry);
       }
-      _writeEndRecords(output, entries.length, directoryOffset);
+      _writeEndRecords(output, written.length, directoryOffset);
     } catch (_) {
       output.closeSync();
       File(zipPath).deleteSync();

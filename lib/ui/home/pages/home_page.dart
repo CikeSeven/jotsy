@@ -35,6 +35,7 @@ import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
 import 'package:node_diary/ui/lan_sync/controllers/lan_sync_auto_sync_notices.dart';
 import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
 import 'package:node_diary/ui/settings/controllers/app_update_auto_check.dart';
+import 'package:node_diary/ui/settings/controllers/cloud_backup_auto_scheduler.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/core/services/app_platform.dart';
@@ -99,6 +100,10 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   /// 冷启动与回到前台时自动检查更新（时机与间隔见 [AppUpdateAutoChecker]）。
   late final AppUpdateAutoChecker _updateAutoChecker;
+
+  /// 网盘自动备份：冷启动、切到后台与前台定时检查（见
+  /// [CloudBackupAutoScheduler]），全程静默。
+  late final CloudBackupAutoScheduler _cloudAutoBackup;
 
   /// 前台自动同步的提示条（只在支持局域网同步的平台订阅，见
   /// [LanSyncAutoSyncNotices]）。
@@ -203,6 +208,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         await runAutoUpdateCheck(context, ref);
       }
     })..start();
+    _cloudAutoBackup = CloudBackupAutoScheduler(() => runCloudAutoBackups(ref))
+      ..start();
     if (AppPlatform.supportsLanSync) {
       _lanSyncNotices = LanSyncAutoSyncNotices(
         ref.read(lanSyncControllerProvider).events,
@@ -234,6 +241,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void dispose() {
     _updateAutoChecker.dispose();
+    _cloudAutoBackup.dispose();
     _lanSyncNotices?.dispose();
     widget.homeHintVisibleListenable.removeListener(_handleHomeHintVisibility);
     _pagePosition.dispose();

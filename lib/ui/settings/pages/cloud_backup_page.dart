@@ -18,6 +18,7 @@ import '../controllers/cloud_backup_controller.dart';
 import '../controllers/cloud_backup_failure.dart';
 import '../widgets/cloud_backup_labels.dart';
 import '../widgets/cloud_backup_provider_sheet.dart';
+import '../widgets/cloud_backup_state_builder.dart';
 import '../widgets/settings_card_group.dart';
 import 'cloud_backup_target_page.dart';
 import '../../widgets/form_width.dart';
@@ -159,6 +160,7 @@ class _CloudBackupPageState extends ConsumerState<CloudBackupPage>
 
   Widget _buildContent(BuildContext context, List<CloudBackupTarget> targets) {
     final l10n = context.l10n;
+    final service = ref.watch(cloudBackupServiceProvider).value;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return LayoutBuilder(
@@ -194,10 +196,23 @@ class _CloudBackupPageState extends ConsumerState<CloudBackupPage>
                       ),
                       leading: FaIcon(cloudBackupTargetIcon(target), size: 16),
                       title: Text(cloudBackupTargetName(l10n, target)),
-                      subtitle: Text(
-                        cloudBackupTargetSummary(l10n, target),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            cloudBackupTargetSummary(l10n, target),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          // 开着自动备份时多一行上次结果；失败要在这里就看得见，
+                          // 不必点进每个位置。
+                          if (service != null && target.options.autoBackup)
+                            CloudAutoBackupTileStatus(
+                              service: service,
+                              targetId: target.id,
+                            ),
+                        ],
                       ),
                       trailing: const FaIcon(
                         FontAwesomeIcons.angleRight,

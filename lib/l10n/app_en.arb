@@ -2360,6 +2360,26 @@
   "@diaryMediaImportUnsupported": {
     "description": "Shown when local diary media import is requested on an unsupported platform."
   },
+  "diaryMediaFromLibrary": "Choose from gallery",
+  "@diaryMediaFromLibrary": {
+    "description": "Editor toolbar image/video menu item: pick existing photos or videos with the system picker."
+  },
+  "diaryMediaTakePhoto": "Take photo",
+  "@diaryMediaTakePhoto": {
+    "description": "Editor toolbar image menu item and slash command: take a photo with the system camera and insert it."
+  },
+  "diaryMediaRecordVideo": "Record video",
+  "@diaryMediaRecordVideo": {
+    "description": "Editor toolbar video menu item and slash command: record a video with the system camera and insert it."
+  },
+  "diaryMediaCameraPermissionDenied": "Camera access is off. Allow Jotsy to use the camera in system settings.",
+  "@diaryMediaCameraPermissionDenied": {
+    "description": "Shown when taking a photo or video fails because camera permission was denied."
+  },
+  "diaryMediaCameraUnavailable": "No camera is available on this device.",
+  "@diaryMediaCameraUnavailable": {
+    "description": "Shown when taking a photo or video fails because the device has no camera or camera app."
+  },
   "attachmentOpen": "Open attachment",
   "@attachmentOpen": {
     "description": "Tooltip for opening a diary attachment with the system file handler."

@@ -16,6 +16,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const channel = MethodChannel('plugins.flutter.io/path_provider');
   const galleryChannel = MethodChannel('com.jotsy.diary/video_gallery');
+  const cameraChannel = MethodChannel('com.jotsy.diary/camera_capture');
   late Directory root;
   late File pickedFile;
   late DiaryEditorController documentController;
@@ -35,6 +36,8 @@ void main() {
         .setMockMethodCallHandler(channel, null);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(galleryChannel, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(cameraChannel, null);
     debugDefaultTargetPlatformOverride = null;
     await root.delete(recursive: true);
   });
@@ -476,6 +479,162 @@ void main() {
         DiaryMediaImportOutcome.cancelled,
       );
       expect(documentController.document.toPlainText(), '\n');
+    });
+  });
+
+  group('captureAndInsert (camera)', () {
+    /// 模拟系统相机：把拍到的文件写进 `cache/diary_camera/<批次>/`（与原生
+    /// 一致；path_provider 的 mock 让临时目录为 root），返回它。
+    Future<File> stageCapture(String name) async {
+      final file = File(p.join(root.path, 'diary_camera', 'batch', name));
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes([7, 7, 7]);
+      return file;
+    }
+
+    for (final (kind, type, name) in [
+      (DiaryMediaKind.image, 'image', 'IMG_20261103_101500.jpg'),
+      (DiaryMediaKind.video, 'video', 'VID_20261103_101500.mp4'),
+    ]) {
+      test('a captured ${kind.name} is copied into the diary, inserted and its '
+          'camera copy discarded', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        final captured = await stageCapture(name);
+        MethodCall? request;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(cameraChannel, (call) async {
+              request = call;
+              return [
+                {'name': name, 'path': captured.path, 'size': 3},
+              ];
+            });
+        var pickerOpened = false;
+        final importer = DiaryMediaImportController(
+          picker: (_) async {
+            pickerOpened = true;
+            return null;
+          },
+        );
+        addTearDown(importer.dispose);
+
+        expect(
+          await importer.captureAndInsert(
+            controller: documentController,
+            kind: kind,
+            isCurrent: () => true,
+          ),
+          DiaryMediaImportOutcome.inserted,
+        );
+        expect(pickerOpened, isFalse);
+        expect(request?.method, 'capture');
+        expect(request?.arguments, {'kind': type});
+        final nodes = walkDiaryEditorNodes(
+          documentController.document,
+        ).where((node) => node.type == type).toList();
+        expect(nodes, hasLength(1));
+        final stored = nodes.single.attributes['url'] as String;
+        expect(p.basename(stored), name);
+        expect(await File(stored).readAsBytes(), [7, 7, 7]);
+        // 暂存在相机目录里的那一份用完即删，目录本身保留。
+        expect(await captured.exists(), isFalse);
+        expect(await captured.parent.exists(), isFalse);
+        expect(
+          await Directory(p.join(root.path, 'diary_camera')).exists(),
+          isTrue,
+        );
+      });
+    }
+
+    test(
+      'closing the camera without a shot leaves the document as is',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(cameraChannel, (_) async => null);
+        final importer = DiaryMediaImportController();
+        addTearDown(importer.dispose);
+        final original = documentController.contentJson;
+        expect(
+          await importer.captureAndInsert(
+            controller: documentController,
+            kind: DiaryMediaKind.image,
+            isCurrent: () => true,
+          ),
+          DiaryMediaImportOutcome.cancelled,
+        );
+        expect(documentController.contentJson, original);
+        expect(importer.isBusy, isFalse);
+      },
+    );
+
+    for (final (code, expected) in [
+      (
+        'camera_permission_denied',
+        DiaryMediaImportOutcome.cameraPermissionDenied,
+      ),
+      ('camera_unavailable', DiaryMediaImportOutcome.cameraUnavailable),
+      ('capture_failed', DiaryMediaImportOutcome.failed),
+    ]) {
+      test(
+        'camera $code is reported and the next capture still works',
+        () async {
+          debugDefaultTargetPlatformOverride = TargetPlatform.android;
+          final captured = await stageCapture('IMG_retry.jpg');
+          var attempts = 0;
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(cameraChannel, (_) async {
+                if (attempts++ == 0) throw PlatformException(code: code);
+                return [
+                  {'name': 'IMG_retry.jpg', 'path': captured.path, 'size': 3},
+                ];
+              });
+          final importer = DiaryMediaImportController();
+          addTearDown(importer.dispose);
+          final original = documentController.contentJson;
+          expect(
+            await importer.captureAndInsert(
+              controller: documentController,
+              kind: DiaryMediaKind.image,
+              isCurrent: () => true,
+            ),
+            expected,
+          );
+          expect(documentController.contentJson, original);
+          expect(importer.isBusy, isFalse);
+          expect(
+            await importer.captureAndInsert(
+              controller: documentController,
+              kind: DiaryMediaKind.image,
+              isCurrent: () => true,
+            ),
+            DiaryMediaImportOutcome.inserted,
+          );
+        },
+      );
+    }
+
+    test('platforms without camera capture never reach the camera', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      var calls = 0;
+      final importer = DiaryMediaImportController(
+        capturer: (_) async {
+          calls++;
+          return null;
+        },
+      );
+      addTearDown(importer.dispose);
+      for (final kind in DiaryMediaKind.values) {
+        expect(
+          await importer.captureAndInsert(
+            controller: documentController,
+            kind: kind,
+            isCurrent: () => true,
+          ),
+          DiaryMediaImportOutcome.unsupported,
+        );
+      }
+      expect(calls, 0);
+      expect(importer.isBusy, isFalse);
     });
   });
 }

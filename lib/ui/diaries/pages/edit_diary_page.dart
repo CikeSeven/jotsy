@@ -840,6 +840,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         appearance: appearance,
         focusNode: _contentFocusNode,
         onMediaCommand: (kind) => unawaited(_controller.importMedia(kind)),
+        onCameraCommand: AppPlatform.supportsCameraCapture
+            ? (kind) => unawaited(_controller.captureMedia(kind))
+            : null,
         onRecordingCommand: _recordingAvailable ? _toggleRecordingPanel : null,
         onAiCommand: _aiWritingAvailable
             ? (command) => unawaited(_controller.handleAiSlash(command))
@@ -1473,6 +1476,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       aiOpen: _aiPanelOpen,
       mediaImportController: _mediaImportController,
       onMediaPressed: (kind) => unawaited(_controller.importMedia(kind)),
+      onCameraPressed: AppPlatform.supportsCameraCapture
+          ? (kind) => unawaited(_controller.captureMedia(kind))
+          : null,
       onPanelExtentChanged: _handleToolbarPanelExtentChanged,
       maxPanelExtent: maxPanelExtent,
       savedColors: ref.watch(diarySavedColorsProvider),

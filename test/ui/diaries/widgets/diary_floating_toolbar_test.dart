@@ -26,6 +26,7 @@ Future<void> _pumpToolbar(
   List<DiaryToolbarItem> order = kDefaultDiaryToolbarOrder,
   bool recordingOpen = false,
   void Function(DiaryMediaKind)? onMediaPressed,
+  void Function(DiaryMediaKind)? onCameraPressed,
   ValueChanged<double>? onPanelExtentChanged,
   double maxPanelExtent = double.infinity,
   DiaryToolbarSize size = DiaryToolbarSize.standard,
@@ -54,6 +55,7 @@ Future<void> _pumpToolbar(
               order: order,
               recordingOpen: recordingOpen,
               onMediaPressed: onMediaPressed,
+              onCameraPressed: onCameraPressed,
               onPanelExtentChanged: onPanelExtentChanged,
               maxPanelExtent: maxPanelExtent,
               size: size,
@@ -125,6 +127,102 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byTooltip('插入图片'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  group('camera capture', () {
+    const order = <DiaryToolbarItem>[
+      DiaryToolbarItem.undo,
+      DiaryToolbarItem.image,
+      DiaryToolbarItem.video,
+      DiaryToolbarItem.attachment,
+    ];
+
+    testWidgets('image and video ask for the source before opening anything', (
+      tester,
+    ) async {
+      final picked = <DiaryMediaKind>[];
+      final captured = <DiaryMediaKind>[];
+      await _pumpToolbar(
+        tester,
+        controller: _controller(),
+        order: order,
+        onMediaPressed: picked.add,
+        onCameraPressed: captured.add,
+      );
+
+      await tester.tap(find.byTooltip('插入图片'));
+      await tester.pumpAndSettle();
+      expect(picked, isEmpty);
+      expect(find.text('从相册选择'), findsOneWidget);
+      expect(find.text('录像'), findsNothing);
+      // 菜单落在工具栏上方（工具栏贴底，下方是键盘）。
+      expect(
+        tester.getBottomLeft(find.text('拍照')).dy,
+        lessThan(tester.getTopLeft(find.byTooltip('插入图片')).dy),
+      );
+      await tester.tap(find.text('拍照'));
+      await tester.pumpAndSettle();
+      expect(captured, [DiaryMediaKind.image]);
+      expect(find.text('拍照'), findsNothing);
+
+      await tester.tap(find.byTooltip('插入视频'));
+      await tester.pumpAndSettle();
+      expect(find.text('拍照'), findsNothing);
+      await tester.tap(find.text('从相册选择'));
+      await tester.pumpAndSettle();
+      expect(picked, [DiaryMediaKind.video]);
+      expect(find.text('录像'), findsNothing);
+
+      await tester.tap(find.byTooltip('插入视频'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('录像'));
+      await tester.pumpAndSettle();
+      expect(captured, [DiaryMediaKind.image, DiaryMediaKind.video]);
+
+      // 附件不能拍摄，仍直接打开选择器。
+      await tester.tap(find.byTooltip('插入附件'));
+      await tester.pumpAndSettle();
+      expect(picked, [DiaryMediaKind.video, DiaryMediaKind.attachment]);
+      expect(find.text('从相册选择'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the source menu also opens from inside More', (tester) async {
+      final captured = <DiaryMediaKind>[];
+      await _pumpToolbar(
+        tester,
+        controller: _controller(),
+        onMediaPressed: (_) {},
+        onCameraPressed: captured.add,
+      );
+      await tester.tap(find.byTooltip(_moreTooltip));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('插入图片'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('拍照'));
+      await tester.pumpAndSettle();
+      expect(captured, [DiaryMediaKind.image]);
+      // 选完来源，「更多」面板原样开着。
+      expect(find.byTooltip(_hideMoreTooltip), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('without camera capture the tools open the picker at once', (
+      tester,
+    ) async {
+      final picked = <DiaryMediaKind>[];
+      await _pumpToolbar(
+        tester,
+        controller: _controller(),
+        order: order,
+        onMediaPressed: picked.add,
+      );
+      await tester.tap(find.byTooltip('插入图片'));
+      await tester.tap(find.byTooltip('插入视频'));
+      await tester.pumpAndSettle();
+      expect(picked, [DiaryMediaKind.image, DiaryMediaKind.video]);
+      expect(find.text('从相册选择'), findsNothing);
+    });
   });
 
   testWidgets('reports the expanded panel height and zero after collapsing', (

@@ -79,10 +79,12 @@ class DiaryBlockCommand {
 }
 
 /// [onLinkCard] 给出时（正文能插入日记链接）插入组多出“日记卡片”，
-/// [notebookCards] 再多出“日记本卡片”（日记本功能开启时）。
+/// [notebookCards] 再多出“日记本卡片”（日记本功能开启时）。[onCamera] 给出时
+/// （能用系统相机拍摄的平台）插入组在视频之后多出“拍照 / 录像”。
 List<DiaryBlockCommand> diaryBlockCommands(
   AppLocalizations l10n, {
   void Function(DiaryMediaKind)? onMedia,
+  void Function(DiaryMediaKind)? onCamera,
   VoidCallback? onRecording,
   void Function(DiaryLinkKind)? onLinkCard,
   bool notebookCards = false,
@@ -193,6 +195,24 @@ List<DiaryBlockCommand> diaryBlockCommands(
       group: DiaryBlockCommandGroup.insert,
       action: () => onMedia(DiaryMediaKind.video),
     ),
+    if (onCamera != null) ...[
+      DiaryBlockCommand(
+        'camera_photo',
+        l10n.diaryMediaTakePhoto,
+        FontAwesomeIcons.camera,
+        const ['camera', 'photo', 'shoot', '拍照', '相机', '拍摄'],
+        group: DiaryBlockCommandGroup.insert,
+        action: () => onCamera(DiaryMediaKind.image),
+      ),
+      DiaryBlockCommand(
+        'camera_video',
+        l10n.diaryMediaRecordVideo,
+        FontAwesomeIcons.video,
+        const ['camera', 'record', 'video', '录像', '拍视频', '相机', '拍摄'],
+        group: DiaryBlockCommandGroup.insert,
+        action: () => onCamera(DiaryMediaKind.video),
+      ),
+    ],
     DiaryBlockCommand(
       'attachment',
       l10n.diaryToolbarInsertAttachment,

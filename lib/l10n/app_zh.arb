@@ -2360,6 +2360,26 @@
   "@diaryMediaImportUnsupported": {
     "description": "Shown when local diary media import is requested on an unsupported platform."
   },
+  "diaryMediaFromLibrary": "从相册选择",
+  "@diaryMediaFromLibrary": {
+    "description": "Editor toolbar image/video menu item: pick existing photos or videos with the system picker."
+  },
+  "diaryMediaTakePhoto": "拍照",
+  "@diaryMediaTakePhoto": {
+    "description": "Editor toolbar image menu item and slash command: take a photo with the system camera and insert it."
+  },
+  "diaryMediaRecordVideo": "录像",
+  "@diaryMediaRecordVideo": {
+    "description": "Editor toolbar video menu item and slash command: record a video with the system camera and insert it."
+  },
+  "diaryMediaCameraPermissionDenied": "没有相机权限，请在系统设置里允许 Jotsy 使用相机",
+  "@diaryMediaCameraPermissionDenied": {
+    "description": "Shown when taking a photo or video fails because camera permission was denied."
+  },
+  "diaryMediaCameraUnavailable": "没有找到可用的相机",
+  "@diaryMediaCameraUnavailable": {
+    "description": "Shown when taking a photo or video fails because the device has no camera or camera app."
+  },
   "attachmentOpen": "打开附件",
   "@attachmentOpen": {
     "description": "Tooltip for opening a diary attachment with the system file handler."

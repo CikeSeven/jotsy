@@ -1765,6 +1765,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'File import is not available on this platform.';
 
   @override
+  String get diaryMediaFromLibrary => 'Choose from gallery';
+
+  @override
+  String get diaryMediaTakePhoto => 'Take photo';
+
+  @override
+  String get diaryMediaRecordVideo => 'Record video';
+
+  @override
+  String get diaryMediaCameraPermissionDenied =>
+      'Camera access is off. Allow Jotsy to use the camera in system settings.';
+
+  @override
+  String get diaryMediaCameraUnavailable =>
+      'No camera is available on this device.';
+
+  @override
   String get attachmentOpen => 'Open attachment';
 
   @override

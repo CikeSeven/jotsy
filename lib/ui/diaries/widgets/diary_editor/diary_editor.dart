@@ -57,6 +57,7 @@ class DiaryEditor extends ConsumerStatefulWidget {
     this.padding = EdgeInsets.zero,
     this.codeBlockStyle,
     this.onMediaCommand,
+    this.onCameraCommand,
     this.blockComponentOverrides = const {},
     this.onRecordingCommand,
     this.onAiCommand,
@@ -82,6 +83,10 @@ class DiaryEditor extends ConsumerStatefulWidget {
   final void Function(BuildContext context, af.Node node)? onImageMenu;
   final bool foldLongImages;
   final void Function(DiaryMediaKind)? onMediaCommand;
+
+  /// `/` 菜单里的“拍照 / 录像”（图片 / 视频）；null 时不出现（不支持拍摄的
+  /// 平台、只读正文、模板编辑页）。
+  final void Function(DiaryMediaKind)? onCameraCommand;
   final Map<String, af.BlockComponentBuilder> blockComponentOverrides;
   final VoidCallback? onRecordingCommand;
 
@@ -410,6 +415,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
           commands: diaryBlockCommands(
             context.l10n,
             onMedia: widget.onMediaCommand,
+            onCamera: widget.onCameraCommand,
             onRecording: widget.onRecordingCommand,
             onAi: widget.onAiCommand,
             aiPrompts: widget.aiPrompts,

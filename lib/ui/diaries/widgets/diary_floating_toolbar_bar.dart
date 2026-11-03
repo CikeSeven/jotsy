@@ -133,6 +133,27 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
         tooltip: item.label(context.l10n),
         onPressed: () => _handleCodeBlockTool(fromMore: inMorePanel),
       );
+    } else if (_cameraKindFor(item) case final kind?) {
+      // 能拍摄时图片 / 视频先选来源；按钮本身（停用、导入中的加载图标）
+      // 照旧由 buildDiaryToolbarItem 画，点按改为开合菜单。
+      final mediaImportController = widget.mediaImportController;
+      final onMediaPressed = widget.onMediaPressed;
+      tool = DiaryToolbarMediaSourceButton(
+        kind: kind,
+        onPickFromLibrary: () => onMediaPressed?.call(kind),
+        onCapture: () => widget.onCameraPressed!(kind),
+        builder: (context, onPressed, menuOpen) => buildDiaryToolbarItem(
+          context,
+          item,
+          widget.controller,
+          onPressed: onPressed,
+          panelOpen: menuOpen,
+          recordingOpen: widget.recordingOpen,
+          onMediaPressed: onMediaPressed,
+          activeMediaKind: mediaImportController?.activeKind,
+          mediaImportBusy: mediaImportController?.isBusy ?? false,
+        ),
+      );
     } else {
       final mediaImportController = widget.mediaImportController;
       tool = buildDiaryToolbarItem(
@@ -153,6 +174,17 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
       key: ValueKey('diary-toolbar-tool-${item.storageKey}'),
       child: _scaledTool(tool, width: diaryToolbarItemExtent(item)),
     );
+  }
+
+  /// 图片 / 视频工具在能拍摄时（给了 [DiaryFloatingToolbar.onCameraPressed]）
+  /// 对应的媒体类型；其余工具为 null。
+  DiaryMediaKind? _cameraKindFor(DiaryToolbarItem item) {
+    if (widget.onCameraPressed == null) return null;
+    return switch (item) {
+      DiaryToolbarItem.image => DiaryMediaKind.image,
+      DiaryToolbarItem.video => DiaryMediaKind.video,
+      _ => null,
+    };
   }
 
   /// 把标准尺寸（[width] × 一格高）的工具按工具栏大小缩放：图标、可见按钮、

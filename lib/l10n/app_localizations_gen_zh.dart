@@ -1710,6 +1710,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get imageLoadFailed => '图片文件不存在或无法加载';
 
   @override
+  String get imageHeifUnsupported => '这台电脑显示不了 HEIC 格式的图片';
+
+  @override
+  String get imageHeifUnsupportedHint =>
+      '在手机上打开 Jotsy，它会自动把这张图转成 JPEG，再同步一次就能看到了。';
+
+  @override
+  String get imageOpenInOtherApp => '用其他应用打开';
+
+  @override
   String get attachmentNoApp => '手机上没有可打开此文件的应用';
 
   @override

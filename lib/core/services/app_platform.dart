@@ -72,4 +72,9 @@ abstract final class AppPlatform {
   /// 扫码配对：mobile_scanner 没有 Linux / Windows 实现，桌面只负责显示二维码，
   /// 由手机来扫。
   static bool get supportsQrScan => isAndroid;
+
+  /// 把 HEIF 系图片（HEIC / HEIF / AVIF）转成 JPEG：只有 Android 原生通道
+  /// （系统 ImageDecoder，Android 9+）。桌面的 Flutter 解码器不认这些格式，
+  /// 所以由手机在图片进库时转码、并修复已存的旧图（`heif_image_converter.dart`）。
+  static bool get supportsHeifToJpeg => isAndroid;
 }

@@ -3188,6 +3188,24 @@ abstract class AppLocalizations {
   /// **'The image is missing or can\'t be loaded.'**
   String get imageLoadFailed;
 
+  /// Placeholder title in the diary body on desktop when an embedded image is a HEIC/HEIF/AVIF photo that the desktop decoder cannot read.
+  ///
+  /// In en, this message translates to:
+  /// **'HEIC photos can\'t be shown on this computer'**
+  String get imageHeifUnsupported;
+
+  /// Explains under imageHeifUnsupported how the photo gets fixed: the Android app converts it to JPEG on startup, then a sync brings it to the desktop.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Jotsy on your phone and it converts this photo to JPEG automatically. Sync again and it will show up here.'**
+  String get imageHeifUnsupportedHint;
+
+  /// Button on the desktop HEIC placeholder that opens the image file with the system's default app.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in another app'**
+  String get imageOpenInOtherApp;
+
   /// Shown when the system has no application for the attachment file type.
   ///
   /// In en, this message translates to:

@@ -35,6 +35,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var galleryVideoPicker: DiaryGalleryVideoPicker? = null
   private var shareLauncher: DiaryShareLauncher? = null
   private var longImageSlicer: DiaryLongImageSlicer? = null
+  private var imageTranscoder: DiaryImageTranscoder? = null
   private var appUpdateInstaller: AppUpdateInstaller? = null
   private var lanSyncChannel: LanSyncChannel? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
@@ -197,6 +198,8 @@ class MainActivity : FlutterFragmentActivity() {
     shareLauncher = DiaryShareLauncher(this, flutterEngine.dartExecutor.binaryMessenger)
     longImageSlicer?.dispose()
     longImageSlicer = DiaryLongImageSlicer(this, flutterEngine.dartExecutor.binaryMessenger)
+    imageTranscoder?.dispose()
+    imageTranscoder = DiaryImageTranscoder(this, flutterEngine.dartExecutor.binaryMessenger)
     appUpdateInstaller?.dispose()
     appUpdateInstaller = AppUpdateInstaller(this, flutterEngine.dartExecutor.binaryMessenger)
     lanSyncChannel?.dispose()
@@ -361,6 +364,8 @@ class MainActivity : FlutterFragmentActivity() {
     shareLauncher = null
     longImageSlicer?.dispose()
     longImageSlicer = null
+    imageTranscoder?.dispose()
+    imageTranscoder = null
     appUpdateInstaller?.dispose()
     appUpdateInstaller = null
     lanSyncChannel?.dispose()

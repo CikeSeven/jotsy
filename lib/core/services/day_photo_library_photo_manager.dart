@@ -173,7 +173,8 @@ class PhotoManagerDayPhotoLibrary implements DayPhotoLibrary {
     final entity = _entities[photo.id] ?? await AssetEntity.fromId(photo.id);
     if (entity == null) return null;
     // `file` 在 iOS 上把 HEIC 转成 JPEG（必要时从 iCloud 下载），Android 上
-    // 直接给出原文件；两端都保证应用能解码显示。视频同样给出可读的文件。
+    // 直接给出原文件（可能是 HEIC，插入时由 DiaryMediaStorageService 转成
+    // JPEG，桌面版才显示得了）。视频同样给出可读的文件。
     final file = await entity.file;
     if (file == null || !await file.exists()) return null;
     return PlatformFile(

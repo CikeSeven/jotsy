@@ -2380,6 +2380,18 @@
   "@imageLoadFailed": {
     "description": "Placeholder shown inside the diary body when an embedded image file is missing or cannot be decoded."
   },
+  "imageHeifUnsupported": "这台电脑显示不了 HEIC 格式的图片",
+  "@imageHeifUnsupported": {
+    "description": "Placeholder title in the diary body on desktop when an embedded image is a HEIC/HEIF/AVIF photo that the desktop decoder cannot read."
+  },
+  "imageHeifUnsupportedHint": "在手机上打开 Jotsy，它会自动把这张图转成 JPEG，再同步一次就能看到了。",
+  "@imageHeifUnsupportedHint": {
+    "description": "Explains under imageHeifUnsupported how the photo gets fixed: the Android app converts it to JPEG on startup, then a sync brings it to the desktop."
+  },
+  "imageOpenInOtherApp": "用其他应用打开",
+  "@imageOpenInOtherApp": {
+    "description": "Button on the desktop HEIC placeholder that opens the image file with the system's default app."
+  },
   "attachmentNoApp": "手机上没有可打开此文件的应用",
   "@attachmentNoApp": {
     "description": "Shown when the system has no application for the attachment file type."

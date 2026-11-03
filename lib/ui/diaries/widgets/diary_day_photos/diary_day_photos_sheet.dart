@@ -34,6 +34,9 @@ Future<bool?> showDiaryDayPhotosSheet(
   required ValueChanged<DayPhoto> onSetCover,
   required VoidCallback onClearCover,
 }) {
+  // 先让标题 / 正文失去焦点并清掉焦点记录：否则面板关闭时路由把焦点还给
+  // 打开前的输入框，看完照片键盘会自己弹出来。
+  FocusManager.instance.primaryFocus?.unfocus();
   return showAppModalBottomSheet<bool>(
     context: context,
     useSafeArea: true,

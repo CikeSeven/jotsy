@@ -896,6 +896,47 @@ void main() {
       expect(imageEmbeds(tester).map(p.basename), ['breakfast.png']);
     });
 
+    testWidgets('closing the preview or the sheet keeps the keyboard down', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+      );
+      final title = find.byType(TextField).first;
+
+      // 正在写标题时点开预览，关闭后键盘不再自己弹出来。
+      await tester.tap(title);
+      await tester.pump();
+      expect(tester.testTextInput.hasAnyClients, isTrue);
+      await tester.tap(tileAt('08:00'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryDayPhotoPreviewPage), findsOneWidget);
+      await tester.tap(inPreview(find.byTooltip(l10n.commonBack)));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryDayPhotoPreviewPage), findsNothing);
+      expect(tester.testTextInput.hasAnyClients, isFalse);
+
+      // “全部”面板同理：点空白处关闭后也不弹键盘。
+      await tester.tap(title);
+      await tester.pump();
+      expect(tester.testTextInput.hasAnyClients, isTrue);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DiaryDayPhotosStrip),
+          matching: find.text(l10n.diaryDayPhotosShowAll),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryDayPhotosSheet), findsOneWidget);
+      await tester.tapAt(const Offset(200, 40));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryDayPhotosSheet), findsNothing);
+      expect(tester.testTextInput.hasAnyClients, isFalse);
+    });
+
     testWidgets('with only image access, videos wait for a tap on allow', (
       tester,
     ) async {

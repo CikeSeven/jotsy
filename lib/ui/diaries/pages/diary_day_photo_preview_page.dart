@@ -46,9 +46,14 @@ Future<bool?> openDiaryDayPhotoPreview(
     context,
     ExpressiveMotion.standard,
   );
+  // 先让标题 / 正文失去焦点并清掉焦点记录：否则关闭预览时路由把焦点还给
+  // 打开前的输入框，键盘会自己弹出来。预览页本身不需要焦点（同正文的全屏
+  // 视频）。
+  FocusManager.instance.primaryFocus?.unfocus();
   return Navigator.of(context).push<bool>(
     PageRouteBuilder<bool>(
       opaque: false,
+      requestFocus: false,
       transitionDuration: duration,
       reverseTransitionDuration: duration,
       pageBuilder: (context, animation, secondaryAnimation) =>

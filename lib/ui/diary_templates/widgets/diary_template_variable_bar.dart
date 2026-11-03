@@ -11,8 +11,9 @@ import '../viewmodels/diary_template_variable_values.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 模板编辑页的“插入变量”条：常用的几个变量直接点，其余在“全部变量”面板
-/// 里（附按今天算出的示例）。点按回调 [onInsert] 当前界面语言的占位写法，
-/// 插到哪个输入框由编辑页决定。
+/// 里（附按今天算出的示例；时间下方另有一行 12 小时制的带格式写法与格式
+/// 说明）。点按回调 [onInsert] 当前界面语言的占位写法，插到哪个输入框由
+/// 编辑页决定。
 class DiaryTemplateVariableBar extends StatelessWidget {
   const DiaryTemplateVariableBar({super.key, required this.onInsert});
 
@@ -60,6 +61,10 @@ class DiaryTemplateVariableBar extends StatelessWidget {
   }
 }
 
+/// 格式说明里举的例子（`{{时间:HH:mm:ss}}`）：与 12 小时制那一行不同，
+/// 顺带示范秒。图案是语法而不是文案，两种界面语言相同，所以不进 ARB。
+const String _timeFormatExample = 'HH:mm:ss';
+
 Future<String?> _showAllVariables(BuildContext context) {
   return showAppModalBottomSheet<String>(
     context: context,
@@ -78,6 +83,8 @@ Future<String?> _showAllVariables(BuildContext context) {
         diaryDate: now,
         now: now,
       );
+      final time12hFormat = l10n.diaryTemplateVarTime12hFormat;
+      void pick(String token) => Navigator.of(sheetContext).pop(token);
       return DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.7,
@@ -116,33 +123,88 @@ Future<String?> _showAllVariables(BuildContext context) {
                   ),
                 ),
               ),
-              for (final variable in DiaryTemplateVariable.values)
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                  ),
-                  title: Text(diaryTemplateVariableLabel(l10n, variable)),
-                  subtitle: Text(
-                    l10n.diaryTemplateEditorVariableExample(
-                      values[variable] ?? '',
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: Text(
-                    diaryTemplateVariableToken(l10n, variable),
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  onTap: () => Navigator.of(
-                    sheetContext,
-                  ).pop(diaryTemplateVariableToken(l10n, variable)),
+              for (final variable in DiaryTemplateVariable.values) ...<Widget>[
+                _VariableTile(
+                  label: diaryTemplateVariableLabel(l10n, variable),
+                  example: values[variable] ?? '',
+                  token: diaryTemplateVariableToken(l10n, variable),
+                  onPick: pick,
                 ),
+                // 时间可以带格式：紧跟一行常用的 12 小时制（图案按界面语言的
+                // 习惯，取自 ARB），再用一句说明告诉用户可以自己写。
+                if (variable == DiaryTemplateVariable.time) ...<Widget>[
+                  _VariableTile(
+                    label: l10n.diaryTemplateVarTime12hLabel,
+                    example: values.valueOf(variable, time12hFormat) ?? '',
+                    token: diaryTemplateVariableToken(
+                      l10n,
+                      variable,
+                      format: time12hFormat,
+                    ),
+                    onPick: pick,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xs,
+                      0,
+                      AppSpacing.xs,
+                      AppSpacing.s,
+                    ),
+                    child: Text(
+                      l10n.diaryTemplateEditorTimeFormatHint(
+                        diaryTemplateVariableToken(
+                          l10n,
+                          variable,
+                          format: _timeFormatExample,
+                        ),
+                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ],
           );
         },
       );
     },
   );
+}
+
+/// 面板里的一个变量：名称、按今天算出的示例与占位写法，点按挑选这个写法。
+class _VariableTile extends StatelessWidget {
+  const _VariableTile({
+    required this.label,
+    required this.example,
+    required this.token,
+    required this.onPick,
+  });
+
+  final String label;
+  final String example;
+  final String token;
+  final ValueChanged<String> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      title: Text(label),
+      subtitle: Text(
+        context.l10n.diaryTemplateEditorVariableExample(example),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Text(
+        token,
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: theme.colorScheme.primary,
+        ),
+      ),
+      onTap: () => onPick(token),
+    );
+  }
 }

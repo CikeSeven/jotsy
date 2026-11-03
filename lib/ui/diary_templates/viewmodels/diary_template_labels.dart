@@ -46,11 +46,14 @@ String diaryTemplateVariableLabel(
   DiaryTemplateVariable.question => l10n.diaryTemplateVarQuestionLabel,
 };
 
-/// 插入时写进正文的占位（当前界面语言的写法，如 `{{日期}}`）。
+/// 插入时写进正文的占位（当前界面语言的写法，如 `{{日期}}`）；带 [format]
+/// 时为 `{{时间:HH:mm}}`（只对 [DiaryTemplateVariable.acceptsFormat] 的变量
+/// 有意义，其余变量带格式的写法套用时原样保留）。
 String diaryTemplateVariableToken(
   AppLocalizations l10n,
-  DiaryTemplateVariable variable,
-) => diaryTemplateToken(switch (variable) {
+  DiaryTemplateVariable variable, {
+  String? format,
+}) => diaryTemplateToken(switch (variable) {
   DiaryTemplateVariable.date => l10n.diaryTemplateVarDateToken,
   DiaryTemplateVariable.weekday => l10n.diaryTemplateVarWeekdayToken,
   DiaryTemplateVariable.time => l10n.diaryTemplateVarTimeToken,
@@ -63,4 +66,4 @@ String diaryTemplateVariableToken(
   DiaryTemplateVariable.lunar => l10n.diaryTemplateVarLunarToken,
   DiaryTemplateVariable.solarTerm => l10n.diaryTemplateVarSolarTermToken,
   DiaryTemplateVariable.question => l10n.diaryTemplateVarQuestionToken,
-});
+}, format);

@@ -10502,6 +10502,18 @@ abstract class AppLocalizations {
   /// **'Time'**
   String get diaryTemplateVarTimeLabel;
 
+  /// Name of the common 12-hour time format listed under the time variable in the All variables sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Time (12-hour)'**
+  String get diaryTemplateVarTime12hLabel;
+
+  /// intl DateFormat pattern written after the colon of the time variable for a 12-hour clock, ordered the way this language writes AM/PM and the time. Must be a pattern the app accepts (only DateFormat field letters; any other letters go in single quotes).
+  ///
+  /// In en, this message translates to:
+  /// **'h:mm a'**
+  String get diaryTemplateVarTime12hFormat;
+
   /// Template variable name inserted between double braces for the year of the diary's date. Must be one of the aliases the app recognises.
   ///
   /// In en, this message translates to:
@@ -11197,6 +11209,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Variables are filled in from the entry\'s date when the template is applied. Lunar dates and solar terms use Chinese names.'**
   String get diaryTemplateEditorVariablesHint;
+
+  /// Note below the time rows in the All variables sheet: the time variable accepts a custom format after a colon.
+  ///
+  /// In en, this message translates to:
+  /// **'Time takes a format after a colon, such as {example}: H for the hour (h for 12-hour), mm for minutes, ss for seconds and a for AM/PM; put any other letters in single quotes. A format that can\'t be read is left as written.'**
+  String diaryTemplateEditorTimeFormatHint(String example);
 
   /// Example value of a template variable, computed for today.
   ///

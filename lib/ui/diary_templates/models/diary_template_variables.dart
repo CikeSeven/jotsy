@@ -1,5 +1,10 @@
 /// 模板变量：标题与正文里的 `{{日期}}`、`{{date}}` 这类占位，套用时按日记
 /// 的日期替换成具体文字（取值见 `DiaryTemplateVariableValues`）。
+///
+/// 写法有两种：只写变量名 `{{时间}}`，或在变量名后加冒号与格式
+/// `{{时间:HH:mm}}`。格式只对 [acceptsFormat] 的变量有效，其余变量带冒号的
+/// 写法一律认不出、原样保留——这样以后给别的变量加格式时，已有模板里的
+/// 写法不会突然变了含义。
 enum DiaryTemplateVariable {
   date,
   weekday,
@@ -12,8 +17,18 @@ enum DiaryTemplateVariable {
   yearProgress,
   lunar,
   solarTerm,
-  question,
+  question;
+
+  /// 能否在冒号后写格式。目前只有时间：格式是 intl `DateFormat` 图案，按
+  /// 当下时刻格式化（图案能否使用由取值一侧判断，见
+  /// `formatDiaryTemplateMoment`）。
+  bool get acceptsFormat => this == DiaryTemplateVariable.time;
 }
+
+/// 变量取值的回调：[format] 为冒号后写的格式（已去掉两侧空白、非空），
+/// 只写变量名时为 null。返回 null 表示这一处原样保留。
+typedef DiaryTemplateValueOf =
+    String? Function(DiaryTemplateVariable variable, String? format);
 
 /// 变量名的全部写法（比较前转小写），中英文等价。
 ///
@@ -58,23 +73,44 @@ const Map<String, DiaryTemplateVariable> _aliases =
 /// `{{` 与 `}}` 之间、不含花括号与换行的一段，两侧空白不计。
 final RegExp _tokenPattern = RegExp(r'\{\{\s*([^{}\n]+?)\s*\}\}');
 
+/// 变量名与格式之间的冒号。全角冒号同样认：中文输入法下冒号默认是全角，
+/// `{{时间：HH:mm}}` 不该因此失效。
+final RegExp _formatSeparator = RegExp('[:：]');
+
+/// 变量名（不含冒号与格式）对应的变量，认不出为 null。
 DiaryTemplateVariable? parseDiaryTemplateVariable(String name) =>
     _aliases[name.trim().toLowerCase()];
 
-/// 一个变量的占位写法，如 `{{日期}}`。
-String diaryTemplateToken(String name) => '{{$name}}';
+/// 花括号里的一整段（如 `时间:HH:mm`）→ 变量与格式；认不出为 null。
+///
+/// 只按第一个冒号拆：格式里常有冒号（`HH:mm`），变量名里从来没有。冒号后
+/// 是空白、或这个变量不收格式时整段认不出，由调用方原样保留。
+(DiaryTemplateVariable, String?)? _parseVariableUse(String inner) {
+  final separator = inner.indexOf(_formatSeparator);
+  if (separator < 0) {
+    final variable = parseDiaryTemplateVariable(inner);
+    return variable == null ? null : (variable, null);
+  }
+  final variable = parseDiaryTemplateVariable(inner.substring(0, separator));
+  final format = inner.substring(separator + 1).trim();
+  if (variable == null || !variable.acceptsFormat || format.isEmpty) {
+    return null;
+  }
+  return (variable, format);
+}
+
+/// 一个变量的占位写法，如 `{{日期}}`；带 [format] 时为 `{{时间:HH:mm}}`。
+String diaryTemplateToken(String name, [String? format]) =>
+    format == null ? '{{$name}}' : '{{$name:$format}}';
 
 /// 替换 [text] 里认得的变量；认不出的写法、[valueOf] 返回 null 的变量原样
 /// 保留（用户可能本来就想写花括号）。取值里的换行折成空格：变量在一行文字
 /// 中间，换行会把那一行的段落格式拆到两行上。
-String resolveDiaryTemplateText(
-  String text,
-  String? Function(DiaryTemplateVariable variable) valueOf,
-) {
+String resolveDiaryTemplateText(String text, DiaryTemplateValueOf valueOf) {
   if (!text.contains('{{')) return text;
   return text.replaceAllMapped(_tokenPattern, (match) {
-    final variable = parseDiaryTemplateVariable(match.group(1)!);
-    final value = variable == null ? null : valueOf(variable);
+    final use = _parseVariableUse(match.group(1)!);
+    final value = use == null ? null : valueOf(use.$1, use.$2);
     if (value == null) return match.group(0)!;
     return value.replaceAll(RegExp(r'[\r\n]+'), ' ');
   });
@@ -84,7 +120,7 @@ String resolveDiaryTemplateText(
 /// 里时不会被识别——编辑页“插入变量”总是把它作为同一段文字插入。
 List<Map<String, Object?>> resolveDiaryTemplateOps(
   List<Map<String, Object?>> ops,
-  String? Function(DiaryTemplateVariable variable) valueOf,
+  DiaryTemplateValueOf valueOf,
 ) {
   return <Map<String, Object?>>[
     for (final op in ops)
@@ -98,11 +134,11 @@ List<Map<String, Object?>> resolveDiaryTemplateOps(
   ];
 }
 
-/// [text] 里用到的全部变量。
+/// [text] 里用到的全部变量（带格式的写法同样算用到了这个变量）。
 Set<DiaryTemplateVariable> diaryTemplateVariablesIn(String text) {
   if (!text.contains('{{')) return const <DiaryTemplateVariable>{};
   return <DiaryTemplateVariable>{
     for (final match in _tokenPattern.allMatches(text))
-      ?parseDiaryTemplateVariable(match.group(1)!),
+      ?_parseVariableUse(match.group(1)!)?.$1,
   };
 }

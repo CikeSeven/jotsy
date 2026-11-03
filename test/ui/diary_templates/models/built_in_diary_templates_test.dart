@@ -12,6 +12,7 @@ import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_que
 import 'package:node_diary/ui/diary_templates/models/diary_template_body.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_variables.dart';
 import 'package:node_diary/ui/diary_templates/viewmodels/diary_template_application.dart';
+import 'package:node_diary/ui/diary_templates/viewmodels/diary_template_labels.dart';
 import 'package:node_diary/ui/diary_templates/viewmodels/diary_template_variable_values.dart';
 
 void main() {
@@ -195,6 +196,24 @@ void main() {
       tokens.forEach((token, variable) {
         expect(parseDiaryTemplateVariable(token), variable, reason: token);
       });
+    }
+  });
+
+  test('the 12-hour time format in the variables sheet resolves', () {
+    for (final l10n in [zh, en]) {
+      final values = DiaryTemplateVariableValues.compute(
+        l10n: l10n,
+        diaryDate: DateTime(2026, 10, 18),
+        now: DateTime(2026, 10, 18, 20, 5),
+      );
+      final token = diaryTemplateVariableToken(
+        l10n,
+        DiaryTemplateVariable.time,
+        format: l10n.diaryTemplateVarTime12hFormat,
+      );
+      final resolved = values.resolve(token);
+      expect(resolved, isNot(contains('{{')), reason: token);
+      expect(resolved, contains('8:05'), reason: token);
     }
   });
 

@@ -92,6 +92,37 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('the variables sheet inserts the 12-hour time format', (
+    tester,
+  ) async {
+    final h = await openEditor(tester);
+    await tester.tap(find.byType(TextField).first);
+    await tester.pump();
+    // “全部变量”在横向滚动条的末尾，窄屏上要先滚过去。
+    final allVariables = find.widgetWithText(
+      ActionChip,
+      h.l10n.diaryTemplateEditorAllVariables,
+    );
+    await tester.ensureVisible(allVariables);
+    await tester.pumpAndSettle();
+    await tester.tap(allVariables);
+    await tester.pumpAndSettle();
+    final row = find.text(h.l10n.diaryTemplateVarTime12hLabel);
+    await tester.ensureVisible(row);
+    await tester.pumpAndSettle();
+    expect(
+      find.text(h.l10n.diaryTemplateEditorTimeFormatHint('{{时间:HH:mm:ss}}')),
+      findsOneWidget,
+    );
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller!.text,
+      '{{时间:ah:mm}}',
+    );
+    await h.unmount();
+  });
+
   testWidgets('leaving with unsaved changes asks first', (tester) async {
     final h = await openEditor(tester);
     await tester.enterText(find.byType(TextField).first, '没保存的标题');

@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'app_data_directory.dart';
+import 'heif_image_converter.dart';
 
 /// 发布页封面文件存储服务。
 ///
 /// 约束：
 /// - 只管理应用私有目录下的封面文件；
-/// - 删除操作仅作用于本服务生成的文件，避免误删用户原始图片。
+/// - 删除操作仅作用于本服务生成的文件，避免误删用户原始图片；
+/// - HEIC / HEIF / AVIF 封面在能转码的平台转成 JPEG（见 [HeifImageConverter]），
+///   同步或备份到桌面后同样能显示。
 class DiaryCoverStorageService {
   const DiaryCoverStorageService._();
 
@@ -27,7 +30,7 @@ class DiaryCoverStorageService {
     final targetPath = p.join(coversDirectory.path, targetName);
 
     await sourceFile.copy(targetPath);
-    return targetPath;
+    return HeifImageConverter.convertImported(targetPath);
   }
 
   static Future<void> deleteManagedCover(String? path) async {

@@ -54,6 +54,7 @@ part 'app_database_diary_link_ops.dart';
 part 'app_database_ai_schema.dart';
 part 'app_database_ai_ops.dart';
 part 'app_database_ai_context_ops.dart';
+part 'app_database_media_repair_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -96,6 +97,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseDiaryLinkOps,
         _AppDatabaseAiOps,
         _AppDatabaseAiContextOps,
+        _AppDatabaseMediaRepairOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 

@@ -1,11 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
-import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_image_fallback.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -143,47 +142,8 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
           wasSynchronouslyLoaded,
         );
       },
-      errorBuilder: (context, error, stackTrace) => const _DiaryImageFallback(),
-    );
-  }
-}
-
-/// 文件被删除或来源失效时的占位，避免正文里出现空白或框架默认错误块。
-class _DiaryImageFallback extends StatelessWidget {
-  const _DiaryImageFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadii.input),
-        border: Border.fromBorderSide(
-          ExpressiveSurfaces.cardBorderSide(colors),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FaIcon(
-            FontAwesomeIcons.image,
-            size: 18,
-            color: colors.onSurfaceVariant,
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              context.l10n.imageLoadFailed,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
-            ),
-          ),
-        ],
-      ),
+      errorBuilder: (context, error, stackTrace) =>
+          DiaryImageFallback(source: widget.source),
     );
   }
 }

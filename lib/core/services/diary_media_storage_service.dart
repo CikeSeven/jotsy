@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../database/file_embed_codec.dart';
 import 'app_data_directory.dart';
+import 'heif_image_converter.dart';
 
 enum DiaryMediaKind { image, video, attachment }
 
@@ -14,6 +15,8 @@ enum DiaryMediaKind { image, video, attachment }
 /// 约束：
 /// - 外部路径/文件流复制到私有目录后才允许写入正文；
 /// - 每次导入使用独立子目录，保留文件名及扩展名且不覆盖同名文件；
+/// - 图片若是 HEIC / HEIF / AVIF，能转码的平台（Android 9+）复制后转成同名
+///   `.jpg` 再交给正文：桌面版解码不了这些格式（见 [HeifImageConverter]）；
 /// - 删除操作只针对托管文件，避免误删用户外部路径；
 /// - 这里的删除只用于从未交给正文的文件（导入失败/取消）。已写入正文的文件
 ///   可能被撤销、放弃修改或其他日记复用，统一由 DiaryMediaCleanupService
@@ -73,10 +76,14 @@ class DiaryMediaStorageService {
       } else {
         throw FileSystemException('Selected file is unavailable', sourcePath);
       }
+      final stored = kind == DiaryMediaKind.image
+          ? await HeifImageConverter.convertImported(target.path)
+          : target.path;
       return DiaryFileAttachment(
-        path: target.path,
-        name: fileName,
-        sizeBytes: await target.length(),
+        path: stored,
+        // 转成 JPEG 后显示名跟着换扩展名。
+        name: stored == target.path ? fileName : p.basename(stored),
+        sizeBytes: await File(stored).length(),
       );
     } catch (_) {
       // 复制失败不能留下可被备份打包的半成品。

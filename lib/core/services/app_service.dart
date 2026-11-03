@@ -13,6 +13,7 @@ import 'cloud_backup_settings_service.dart';
 import 'diary_draft_legacy.dart';
 import 'diary_font_storage_service.dart';
 import 'diary_media_cleanup_service.dart';
+import 'heif_media_repair_service.dart';
 import 'location_resolver_service.dart';
 import 'qweather_weather_service.dart';
 import 'settings_service.dart';
@@ -80,6 +81,20 @@ final diaryMediaCleanupServiceProvider = Provider<DiaryMediaCleanupService>((
   Ref ref,
 ) {
   final service = DiaryMediaCleanupService(
+    database: ref.watch(appDatabaseProvider),
+    settings: () => ref.read(settingsServiceProvider.future),
+  );
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+/// 已存的 HEIC / HEIF / AVIF 图片转 JPEG 的修复服务（见
+/// [HeifMediaRepairService]）；只在能转码的平台（Android）安排启动修复，随
+/// 容器销毁取消尚未触发的修复。
+final heifMediaRepairServiceProvider = Provider<HeifMediaRepairService>((
+  Ref ref,
+) {
+  final service = HeifMediaRepairService(
     database: ref.watch(appDatabaseProvider),
     settings: () => ref.read(settingsServiceProvider.future),
   );

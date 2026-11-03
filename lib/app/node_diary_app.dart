@@ -84,6 +84,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     _loaderShowTimer = Timer(_loaderShowDelay, _handleLoaderShowDelayElapsed);
     // 编辑期不删除媒体文件，冷启动后延迟回收无人引用的文件与选择器缓存。
     ref.read(diaryMediaCleanupServiceProvider).scheduleStartupSweep();
+    // 手机上把已存的 HEIC 图片转成 JPEG，同步 / 备份到桌面后才显示得了。
+    ref.read(heifMediaRepairServiceProvider).scheduleStartupRepair();
     // 旧版本的单份新建草稿搬进草稿箱；新建入口与草稿箱读取前也会等它完成。
     unawaited(ref.read(diaryDraftLegacyMigrationProvider.future));
     // 已经建过纪念日的老用户升级后保留纪念日（新默认关闭）。

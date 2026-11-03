@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 
 import 'app_data_directory.dart';
 import 'diary_media_storage_service.dart';
+import 'heif_image_converter.dart';
 
 /// 应用背景图（“背景与材质”）的文件存储。
 ///
@@ -49,6 +50,9 @@ class AppBackgroundStorageService {
   ///
   /// 每次都生成新名字而不是覆盖旧图：设置写入失败或用户撤销时，旧设置指向
   /// 的文件仍然完好。
+  ///
+  /// HEIC / HEIF / AVIF 在能转码的平台转成 JPEG（名字换成 `.jpg`）：背景随
+  /// “同步设置”与备份到桌面后，桌面版解码不了这些格式（见 [HeifImageConverter]）。
   static Future<String> importImage(String sourcePath) async {
     final source = File(sourcePath);
     if (!await source.exists()) {
@@ -59,8 +63,9 @@ class AppBackgroundStorageService {
     final name =
         'bg_${DateTime.now().microsecondsSinceEpoch}'
         '${extension.isEmpty ? '.jpg' : extension}';
-    await source.copy(p.join(directory.path, name));
-    return name;
+    final copied = p.join(directory.path, name);
+    await source.copy(copied);
+    return p.basename(await HeifImageConverter.convertImported(copied));
   }
 
   /// 解析文件名对应的托管文件；名字不合法或文件已不存在时返回 null

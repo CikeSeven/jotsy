@@ -1781,6 +1781,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageLoadFailed => 'The image is missing or can\'t be loaded.';
 
   @override
+  String get imageHeifUnsupported =>
+      'HEIC photos can\'t be shown on this computer';
+
+  @override
+  String get imageHeifUnsupportedHint =>
+      'Open Jotsy on your phone and it converts this photo to JPEG automatically. Sync again and it will show up here.';
+
+  @override
+  String get imageOpenInOtherApp => 'Open in another app';
+
+  @override
   String get attachmentNoApp => 'No installed app can open this file.';
 
   @override

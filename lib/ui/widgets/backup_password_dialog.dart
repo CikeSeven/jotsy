@@ -12,24 +12,34 @@ enum BackupPasswordPurpose { export, import }
 ///
 /// 返回值：`null` 表示取消整个导出/导入；导出时空串表示不加密。导出会强调
 /// 密码无法找回（文件在本机端到端加密）。[confirmLabel] 覆盖默认的确认按钮
-/// 文案，供“导出数据”之外的入口（如导出日记文件）使用。
+/// 文案，供“导出数据”之外的入口（如导出日记文件）使用；[message] 是输入框
+/// 上方的一段说明（网盘增量备份说明密码会记在本机等）。
 Future<String?> showBackupPasswordDialog(
   BuildContext context, {
   required BackupPasswordPurpose purpose,
   String? confirmLabel,
+  String? message,
 }) {
   return showAppDialog<String?>(
     context: context,
-    builder: (BuildContext dialogContext) =>
-        _BackupPasswordDialog(purpose: purpose, confirmLabel: confirmLabel),
+    builder: (BuildContext dialogContext) => _BackupPasswordDialog(
+      purpose: purpose,
+      confirmLabel: confirmLabel,
+      message: message,
+    ),
   );
 }
 
 class _BackupPasswordDialog extends StatefulWidget {
-  const _BackupPasswordDialog({required this.purpose, this.confirmLabel});
+  const _BackupPasswordDialog({
+    required this.purpose,
+    this.confirmLabel,
+    this.message,
+  });
 
   final BackupPasswordPurpose purpose;
   final String? confirmLabel;
+  final String? message;
 
   @override
   State<_BackupPasswordDialog> createState() => _BackupPasswordDialogState();
@@ -55,6 +65,15 @@ class _BackupPasswordDialogState extends State<_BackupPasswordDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            if (widget.message != null) ...<Widget>[
+              Text(
+                widget.message!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             TextFormField(
               obscureText: _obscureText,
               onChanged: (String value) => _password = value,

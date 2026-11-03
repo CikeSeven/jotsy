@@ -181,7 +181,11 @@ class BaiduPanRemote implements CloudBackupRemote {
   });
 
   @override
-  Future<List<CloudBackupEntry>> list() async {
+  Future<List<CloudBackupEntry>> list() async =>
+      cloudZipBackupsOf(await listFiles());
+
+  @override
+  Future<List<CloudBackupEntry>> listFiles() async {
     const limit = 1000;
     final entries = <CloudBackupEntry>[];
     for (var start = 0; ; start += limit) {
@@ -206,12 +210,7 @@ class BaiduPanRemote implements CloudBackupRemote {
         final name = jsonString(item['server_filename']);
         final path = jsonString(item['path']);
         final fsId = jsonInt(item['fs_id']);
-        if (name == null ||
-            path == null ||
-            fsId == null ||
-            !isCloudBackupFileName(name)) {
-          continue;
-        }
+        if (name == null || path == null || fsId == null) continue;
         final modified = _epoch(item['server_mtime']);
         entries.add(
           CloudBackupEntry(
@@ -228,7 +227,7 @@ class BaiduPanRemote implements CloudBackupRemote {
       }
       if (items.length < limit) break;
     }
-    return sortCloudBackups(entries);
+    return entries;
   }
 
   @override

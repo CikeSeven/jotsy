@@ -6138,7 +6138,7 @@
   "@cloudBackupTitle": {
     "description": "Cloud backup page title."
   },
-  "cloudBackupEmpty": "No backup locations yet. Add a cloud drive, WebDAV server or object storage to upload full backups and restore them on a new device.",
+  "cloudBackupEmpty": "No backup locations yet. Add a cloud drive, WebDAV server or object storage to back up your data and restore it on a new device.",
   "@cloudBackupEmpty": {
     "description": "Cloud backup page empty state."
   },
@@ -6146,7 +6146,7 @@
   "@cloudBackupAdd": {
     "description": "Cloud backup page: add location button."
   },
-  "cloudBackupHint": "Addresses, passwords and drive authorizations stay on this device and are never written into backups. Uploads are full backup ZIPs, optionally encrypted.",
+  "cloudBackupHint": "Addresses, passwords and drive authorizations stay on this device and are never written into backups. “Back up” is incremental and uploads only what is new or changed; you can also upload a full ZIP, optionally encrypted.",
   "@cloudBackupHint": {
     "description": "Cloud backup page footer note."
   },
@@ -6382,7 +6382,7 @@
   "@cloudBackupTestConnection": {
     "description": "Test connection button."
   },
-  "cloudBackupUploadBackup": "Upload backup",
+  "cloudBackupUploadBackup": "Upload full ZIP",
   "@cloudBackupUploadBackup": {
     "description": "Upload current backup button."
   },
@@ -17358,5 +17358,242 @@
   "aiPresetNameCustomOpenAiResponses": "OpenAI Responses API",
   "@aiPresetNameCustomOpenAiResponses": {
     "description": "Custom preset using the OpenAI Responses API."
+  },
+  "cloudBackupBackupNow": "Back up",
+  "@cloudBackupBackupNow": {
+    "description": "Primary button on a backup location: incremental backup."
+  },
+  "cloudIncrementalBusyScan": "Checking for changes…",
+  "@cloudIncrementalBusyScan": {
+    "description": "Incremental backup: scanning local data."
+  },
+  "cloudIncrementalBusyCheck": "Reading backups on the drive…",
+  "@cloudIncrementalBusyCheck": {
+    "description": "Incremental backup: reading existing backups."
+  },
+  "cloudIncrementalBusyPrune": "Cleaning up old backups…",
+  "@cloudIncrementalBusyPrune": {
+    "description": "Incremental backup: pruning old backups."
+  },
+  "cloudIncrementalUploaded": "Backed up. Uploaded {size} this time",
+  "@cloudIncrementalUploaded": {
+    "description": "Incremental backup succeeded, with the uploaded size.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudIncrementalUnchanged": "Nothing changed. The backup on the drive is up to date",
+  "@cloudIncrementalUnchanged": {
+    "description": "Incremental backup: nothing changed, nothing uploaded."
+  },
+  "cloudIncrementalNewPasswordMessage": "This password is remembered on this device and used for later and automatic backups. You will need it to restore on another device. Leave empty for no encryption.",
+  "@cloudIncrementalNewPasswordMessage": {
+    "description": "Explanation in the password dialog for the first incremental backup."
+  },
+  "cloudIncrementalExistingEncryptedMessage": "There are encrypted incremental backups on this drive. Enter their password to continue them without re-uploading photos and media.",
+  "@cloudIncrementalExistingEncryptedMessage": {
+    "description": "Explanation when continuing an existing encrypted incremental backup."
+  },
+  "cloudIncrementalContinue": "Continue",
+  "@cloudIncrementalContinue": {
+    "description": "Confirm button when continuing an existing incremental backup."
+  },
+  "cloudIncrementalWrongPasswordTitle": "Wrong password",
+  "@cloudIncrementalWrongPasswordTitle": {
+    "description": "Title when the password does not open the incremental backups."
+  },
+  "cloudIncrementalWrongPasswordContent": "This password does not open the incremental backups on the drive. Try again, or start a new series of incremental backups (all photos and media will be uploaded again).",
+  "@cloudIncrementalWrongPasswordContent": {
+    "description": "Explanation when the incremental backup password is wrong."
+  },
+  "cloudIncrementalRetry": "Try again",
+  "@cloudIncrementalRetry": {
+    "description": "Wrong incremental password: try again."
+  },
+  "cloudIncrementalStartNew": "Start a new series",
+  "@cloudIncrementalStartNew": {
+    "description": "Start a new series of incremental backups."
+  },
+  "cloudIncrementalExistingPlainTitle": "Continue the existing backups?",
+  "@cloudIncrementalExistingPlainTitle": {
+    "description": "Title when unencrypted incremental backups already exist."
+  },
+  "cloudIncrementalExistingPlainContent": "There are unencrypted incremental backups on this drive. Continuing uploads only what is new. To encrypt, start a new series instead (all photos and media will be uploaded again).",
+  "@cloudIncrementalExistingPlainContent": {
+    "description": "Explanation when unencrypted incremental backups already exist."
+  },
+  "cloudIncrementalContinueExisting": "Continue",
+  "@cloudIncrementalContinueExisting": {
+    "description": "Continue the existing incremental backups."
+  },
+  "cloudIncrementalRememberedMismatchContent": "The password remembered on this device no longer opens the incremental backups on the drive; it may have been changed on another device. Reset it to enter the original password or start a new series.",
+  "@cloudIncrementalRememberedMismatchContent": {
+    "description": "Explanation when the remembered incremental password no longer works."
+  },
+  "cloudIncrementalRestorePasswordMessage": "This incremental backup is encrypted. Enter the password set when it was made.",
+  "@cloudIncrementalRestorePasswordMessage": {
+    "description": "Explanation in the password dialog when restoring an encrypted incremental backup."
+  },
+  "cloudIncrementalEntryTitle": "Incremental backup",
+  "@cloudIncrementalEntryTitle": {
+    "description": "Title of an incremental backup in the remote list."
+  },
+  "cloudIncrementalEntryMissing": "Snapshot file missing; cannot be restored",
+  "@cloudIncrementalEntryMissing": {
+    "description": "The snapshot file of an incremental backup is missing."
+  },
+  "cloudIncrementalDeleteTitle": "Delete this incremental backup?",
+  "@cloudIncrementalDeleteTitle": {
+    "description": "Title of the delete-incremental-backup confirmation."
+  },
+  "cloudIncrementalDeleteContent": "The incremental backup from {time} will be deleted. Photos and media used only by it are removed from the drive too; other backups are not affected. This cannot be undone.",
+  "@cloudIncrementalDeleteContent": {
+    "description": "Content of the delete-incremental-backup confirmation.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudIncrementalSectionTitle": "Incremental backup",
+  "@cloudIncrementalSectionTitle": {
+    "description": "Title of the incremental backup group on a backup location."
+  },
+  "cloudIncrementalSectionHint": "“Back up” uploads only new photos and changed data; anything already on the drive is never uploaded again. Restoring on this device downloads only what is missing, saving your drive’s traffic quota.",
+  "@cloudIncrementalSectionHint": {
+    "description": "Explanation of the incremental backup group."
+  },
+  "cloudIncrementalKeepTitle": "Keep",
+  "@cloudIncrementalKeepTitle": {
+    "description": "How many incremental backups to keep."
+  },
+  "cloudIncrementalKeepSubtitle": "Older incremental backups are deleted automatically, along with photos and media used only by them",
+  "@cloudIncrementalKeepSubtitle": {
+    "description": "Explanation of the keep setting."
+  },
+  "cloudIncrementalKeepAll": "All",
+  "@cloudIncrementalKeepAll": {
+    "description": "Keep all incremental backups."
+  },
+  "cloudIncrementalKeepCount": "{count}",
+  "@cloudIncrementalKeepCount": {
+    "description": "Keep option for incremental backups.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudAutoBackupTitle": "Automatic backup",
+  "@cloudAutoBackupTitle": {
+    "description": "Automatic backup switch."
+  },
+  "cloudAutoBackupSubtitle": "Backs up quietly when you open or leave the app once it is due. If more than 50 MB is new, it waits for you to back up manually",
+  "@cloudAutoBackupSubtitle": {
+    "description": "Automatic backup switch subtitle."
+  },
+  "cloudAutoBackupNeedsChain": "Back up manually once before turning this on",
+  "@cloudAutoBackupNeedsChain": {
+    "description": "Automatic backup subtitle before the first incremental backup."
+  },
+  "cloudAutoBackupIntervalTitle": "Frequency",
+  "@cloudAutoBackupIntervalTitle": {
+    "description": "Automatic backup frequency."
+  },
+  "cloudAutoBackupDaily": "Daily",
+  "@cloudAutoBackupDaily": {
+    "description": "Automatic backup frequency: daily."
+  },
+  "cloudAutoBackupWeekly": "Weekly",
+  "@cloudAutoBackupWeekly": {
+    "description": "Automatic backup frequency: weekly."
+  },
+  "cloudAutoBackupLastUploaded": "Last automatic backup: {time}, uploaded {size}",
+  "@cloudAutoBackupLastUploaded": {
+    "description": "Automatic backup status: uploaded.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupLastUnchanged": "Last automatic backup: {time}, nothing changed",
+  "@cloudAutoBackupLastUnchanged": {
+    "description": "Automatic backup status: unchanged.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupLastNeedsManual": "{time}: {size} is new. Please back up manually",
+  "@cloudAutoBackupLastNeedsManual": {
+    "description": "Automatic backup status: too much new content.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupLastFailed": "Automatic backup failed at {time}: {reason}",
+  "@cloudAutoBackupLastFailed": {
+    "description": "Automatic backup status: failed.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupTileOk": "Auto backup · {time}",
+  "@cloudAutoBackupTileOk": {
+    "description": "Auto backup status on the location list.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupTileNeedsManual": "Back up manually",
+  "@cloudAutoBackupTileNeedsManual": {
+    "description": "Location list: auto backup waiting for a manual backup."
+  },
+  "cloudAutoBackupTileFailed": "Auto backup failed",
+  "@cloudAutoBackupTileFailed": {
+    "description": "Location list: auto backup failed."
+  },
+  "cloudIncrementalForgetChain": "Reset password",
+  "@cloudIncrementalForgetChain": {
+    "description": "Forget the remembered incremental backup password."
+  },
+  "cloudIncrementalForgetTitle": "Reset the incremental backup password?",
+  "@cloudIncrementalForgetTitle": {
+    "description": "Title of the reset-password confirmation."
+  },
+  "cloudIncrementalForgetContent": "This device forgets the current incremental backup password and automatic backup pauses. Next time you back up, enter the original password to continue, or set a new one to start over (all photos and media will be uploaded again).",
+  "@cloudIncrementalForgetContent": {
+    "description": "Content of the reset-password confirmation."
+  },
+  "cloudIncrementalForgotten": "Incremental backup password forgotten",
+  "@cloudIncrementalForgotten": {
+    "description": "Shown after forgetting the incremental password."
+  },
+  "cloudIncrementalErrorPassword": "The password does not open this incremental backup",
+  "@cloudIncrementalErrorPassword": {
+    "description": "Incremental backup password is wrong."
+  },
+  "cloudIncrementalErrorMediaChanged": "A photo or attachment changed during the backup. Please try again",
+  "@cloudIncrementalErrorMediaChanged": {
+    "description": "A media file changed during the incremental backup."
   }
 }

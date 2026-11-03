@@ -25,6 +25,55 @@ class BackupArchiveIO {
     ),
   );
 
+  /// 把 [entries]（条目名, 本地文件路径）写成一个 ZIP，条目一律 STORE：
+  /// 增量备份的媒体包与快照里放的都是已压缩的内容（照片、视频、gzip），
+  /// 再 Deflate 只费时间。有 [password] 时为 WinZip AES，与完整备份同一套。
+  static Future<void> encodeEntries(
+    List<(String, String)> entries, {
+    required String outputZipPath,
+    String? password,
+  }) => Isolate.run<void>(
+    () => _encodeEntriesSync(
+      entries,
+      outputZipPath: outputZipPath,
+      password: password,
+    ),
+  );
+
+  static void _encodeEntriesSync(
+    List<(String, String)> entries, {
+    required String outputZipPath,
+    String? password,
+  }) {
+    if (password != null) {
+      BackupZipWriter.writeEncryptedEntries(entries, outputZipPath, password);
+      return;
+    }
+    final output = OutputFileStream(outputZipPath);
+    final encoder = ZipEncoder()..startEncode(output);
+    try {
+      for (final (name, path) in entries) {
+        final input = InputFileStream(path);
+        try {
+          final entry = ArchiveFile.stream(name, input)
+            ..lastModTime =
+                File(path).lastModifiedSync().millisecondsSinceEpoch ~/ 1000
+            ..compression = CompressionType.none;
+          encoder.add(entry, autoClose: false);
+        } finally {
+          input.closeSync();
+        }
+      }
+      encoder.endEncode();
+    } catch (_) {
+      output.closeSync();
+      File(outputZipPath).deleteSync();
+      rethrow;
+    } finally {
+      output.closeSync();
+    }
+  }
+
   static Future<void> extract(
     String zipPath,
     Directory directory, {

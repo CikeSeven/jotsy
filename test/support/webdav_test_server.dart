@@ -55,6 +55,15 @@ Future<HttpServer> startWebDavFixture(Directory root) async {
           );
         }
         request.response.write('$xml</D:multistatus>');
+      case 'DELETE':
+        await request.drain<void>();
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+          request.response.statusCode = 204;
+        } else {
+          request.response.statusCode = 404;
+        }
       default:
         await request.drain<void>();
         request.response.statusCode = 405;

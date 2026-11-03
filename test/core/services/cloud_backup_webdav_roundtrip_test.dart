@@ -7,6 +7,7 @@ import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
+import 'package:node_diary/core/services/cloud_backup_incremental.dart';
 import 'package:node_diary/core/services/cloud_backup_models.dart';
 import 'package:node_diary/core/services/cloud_backup_service.dart';
 import 'package:node_diary/core/services/cloud_backup_settings_service.dart';
@@ -133,7 +134,7 @@ void main() {
           target,
           zipPassword: password,
         );
-        final listed = await sync.listBackups(target);
+        final listed = (await sync.listBackups(target)).zips;
         expect(listed.map((backup) => backup.fileName), [entry.fileName]);
         // manifest 记录的创建时间与文件名推断一致，manifest 本身不算备份。
         expect(
@@ -192,4 +193,97 @@ void main() {
       },
     );
   }
+
+  test(
+    'WebDAV incremental backup restores on a fresh install without a manifest',
+    () async {
+      final remoteRoot = await Directory(
+        p.join(fixture.root.path, 'remote'),
+      ).create();
+      final server = await startWebDavFixture(remoteRoot);
+      final targets = await CloudBackupSettingsService.create();
+      addTearDown(() async {
+        targets.dispose();
+        await server.close(force: true);
+      });
+      final target = CloudBackupTarget.create(
+        kind: CloudBackupKind.webDav,
+        config: {
+          'serverUrl': 'http://${server.address.host}:${server.port}/',
+          'username': 'audit',
+          'password': 'local-fixture-only',
+          'remoteDirectory': '/backups/',
+        },
+      );
+      await targets.saveTarget(target);
+      CloudBackupService service() => CloudBackupService(
+        database: fixture.database,
+        settingsService: fixture.settings,
+        targets: targets,
+        webDavClientFactory: (config) =>
+            WebDavClient(config: config, clientFactory: realFixtureHttpClient),
+      );
+      await fixture.seedCurrentData();
+      final media = {
+        for (final entry in fixture.originalMedia.entries)
+          p.relative(entry.key, from: fixture.documents.path): entry.value,
+      };
+
+      final first = service();
+      final result = await first.backupIncremental(
+        target,
+        resolveChain: (context) async => CloudIncrementalChainChoice(
+          chain: context.newChainId(),
+          password: 'audit-password',
+        ),
+      );
+      expect(result.outcome, CloudIncrementalBackupOutcome.uploaded);
+      final remoteNames = Directory(
+        p.join(remoteRoot.path, 'backups'),
+      ).listSync().map((entity) => p.basename(entity.path)).toSet();
+      expect(remoteNames.where((name) => name.endsWith('.pack')), hasLength(1));
+      // manifest 只为完整备份 ZIP 而写，增量文件不多耗请求。
+      expect(remoteNames, isNot(contains('manifest.json')));
+      expect(
+        (await first.backupIncremental(target)).outcome,
+        CloudIncrementalBackupOutcome.unchanged,
+      );
+
+      await targets.updateOptions(target.id, (o) => o.withoutChain());
+      fixture.documents = await Directory(
+        p.join(fixture.root.path, 'fresh_install'),
+      ).create();
+      final second = service();
+      final listing = await second.listBackups(target);
+      expect(listing.zips, isEmpty);
+      final snapshot = listing.incremental.snapshots.single;
+      final opened = await second.openIncrementalSnapshot(
+        target,
+        snapshot,
+        password: 'audit-password',
+      );
+      addTearDown(opened.dispose);
+      await second.restoreIncremental(
+        target,
+        opened,
+        mode: BackupImportMode.replaceAll,
+      );
+      for (final MapEntry(key: relative, value: bytes) in media.entries) {
+        expect(
+          await File(p.join(fixture.documents.path, relative)).readAsBytes(),
+          bytes,
+          reason: relative,
+        );
+      }
+
+      await second.deleteIncrementalSnapshot(target, snapshot);
+      final left = Directory(
+        p.join(remoteRoot.path, 'backups'),
+      ).listSync().map((entity) => p.basename(entity.path));
+      expect(
+        left.where((name) => name.endsWith('.idx') || name.endsWith('.snap')),
+        isEmpty,
+      );
+    },
+  );
 }

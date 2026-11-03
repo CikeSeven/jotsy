@@ -6,8 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/services/app_service.dart';
+import '../../../core/services/cloud_backup_incremental_prune.dart';
 import '../../../core/services/cloud_backup_models.dart';
 import '../../../core/services/cloud_backup_presets.dart';
+import '../../../core/services/cloud_backup_service.dart';
 import '../../../core/services/cloud_backup_target.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
@@ -16,17 +19,21 @@ import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_gate.dart';
 import '../controllers/cloud_backup_controller.dart';
 import '../controllers/cloud_backup_failure.dart';
+import '../controllers/cloud_backup_incremental_flows.dart';
 import '../sections/cloud_backup_account_section.dart';
 import '../sections/cloud_backup_config_forms.dart';
+import '../sections/cloud_backup_incremental_section.dart';
 import '../sections/cloud_backup_remote_list.dart';
 import '../widgets/cloud_backup_labels.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
-/// 单个备份位置的页面：连接配置（或授权账号）、上传、远程备份列表与恢复。
+/// 单个备份位置的页面：连接配置（或授权账号）、备份（增量）与上传完整 ZIP、
+/// 增量备份与自动备份选项、远程备份列表与恢复。
 ///
-/// 只负责装配与忙碌/提示出口，流程见 [CloudBackupController]。
+/// 只负责装配与忙碌/提示出口，流程见 [CloudBackupController] 与
+/// [CloudIncrementalController]。
 /// - [isNew] 为 true 时 [target] 是尚未保存的草稿（刚从预设创建）：保存、
 ///   测试连接、上传或刷新时才写入，直接返回则不留下任何配置；
 /// - 填写式位置每次发起网络操作前，若表单与已保存的配置不同则先保存；
@@ -49,13 +56,15 @@ class CloudBackupTargetPage extends ConsumerStatefulWidget {
 class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
     implements CloudBackupHost {
   late final CloudBackupController _controller = CloudBackupController(this);
+  late final CloudIncrementalController _incremental =
+      CloudIncrementalController(this);
   late CloudBackupTarget _target = widget.target;
   late bool _saved = !widget.isNew;
   late final CloudBackupFormFields? _form = CloudBackupFormFields.forKind(
     widget.target.kind,
     widget.target.config,
   );
-  List<CloudBackupEntry> _backups = const <CloudBackupEntry>[];
+  CloudBackupListing? _listing;
   bool _listLoading = false;
   String? _listError;
   bool _busy = false;
@@ -136,8 +145,8 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
       _listError = null;
     });
     try {
-      final backups = await _controller.listBackups(target, showBusy: false);
-      if (mounted) setState(() => _backups = backups ?? const []);
+      final listing = await _controller.listBackups(target, showBusy: false);
+      if (listing != null && mounted) setState(() => _listing = listing);
     } catch (error) {
       if (mounted) {
         setState(
@@ -152,10 +161,10 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
   Future<void> _refresh() async {
     final target = await _ensureSaved();
     if (target == null || !mounted) return;
-    final backups = await _controller.listBackups(target);
-    if (backups != null && mounted) {
+    final listing = await _controller.listBackups(target);
+    if (listing != null && mounted) {
       setState(() {
-        _backups = backups;
+        _listing = listing;
         _listError = null;
       });
     }
@@ -172,8 +181,18 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
     if (await _controller.upload(target)) await _loadList();
   }
 
+  Future<void> _backupIncremental() async {
+    final target = await _ensureSaved();
+    if (target == null) return;
+    if (await _incremental.backup(target)) await _loadList();
+  }
+
   Future<void> _delete(CloudBackupEntry entry) async {
     if (await _controller.delete(_target, entry)) await _loadList();
+  }
+
+  Future<void> _deleteIncremental(IncrementalSnapshotRef snapshot) async {
+    if (await _incremental.delete(_target, snapshot)) await _loadList();
   }
 
   Future<void> _reauthorize() async {
@@ -192,6 +211,7 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final service = ref.watch(cloudBackupServiceProvider).value;
     // 上传/恢复进行中禁止返回：恢复会改写本地数据，中途离开无法得知结果。
     return PopScope(
       canPop: !_busy,
@@ -242,9 +262,17 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
                           runSpacing: AppSpacing.s,
                           children: <Widget>[
                             FilledButton.icon(
-                              onPressed: _upload,
+                              onPressed: _backupIncremental,
                               icon: const FaIcon(
                                 FontAwesomeIcons.cloudArrowUp,
+                                size: 14,
+                              ),
+                              label: Text(l10n.cloudBackupBackupNow),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: _upload,
+                              icon: const FaIcon(
+                                FontAwesomeIcons.fileZipper,
                                 size: 14,
                               ),
                               label: Text(l10n.cloudBackupUploadBackup),
@@ -259,14 +287,26 @@ class _CloudBackupTargetPageState extends ConsumerState<CloudBackupTargetPage>
                             ),
                           ],
                         ),
+                        if (_saved && service != null) ...<Widget>[
+                          const SizedBox(height: AppSpacing.xl),
+                          CloudBackupIncrementalSection(
+                            service: service,
+                            targetId: _target.id,
+                            onUpdateOptions: _incremental.updateOptions,
+                            onForgetChain: _incremental.forgetChain,
+                          ),
+                        ],
                         const SizedBox(height: AppSpacing.xl),
                         CloudBackupRemoteList(
-                          backups: _backups,
+                          listing: _listing,
                           loading: _listLoading,
                           error: _listError,
                           onRestore: (entry) =>
                               _controller.restore(_target, entry),
                           onDelete: _delete,
+                          onRestoreIncremental: (snapshot) =>
+                              _incremental.restore(_target, snapshot),
+                          onDeleteIncremental: _deleteIncremental,
                         ),
                       ],
                     );

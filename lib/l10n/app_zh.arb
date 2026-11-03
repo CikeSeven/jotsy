@@ -6138,7 +6138,7 @@
   "@cloudBackupTitle": {
     "description": "网盘备份页标题。"
   },
-  "cloudBackupEmpty": "还没有备份位置。添加一个网盘、WebDAV 或对象存储，即可把完整备份上传到云端，换机或重装后从那里恢复。",
+  "cloudBackupEmpty": "还没有备份位置。添加一个网盘、WebDAV 或对象存储，即可把数据备份到云端，换机或重装后从那里恢复。",
   "@cloudBackupEmpty": {
     "description": "网盘备份页没有备份位置时的说明。"
   },
@@ -6146,7 +6146,7 @@
   "@cloudBackupAdd": {
     "description": "网盘备份页添加备份位置按钮。"
   },
-  "cloudBackupHint": "地址、密码与网盘授权只保存在本机，不会写入备份文件；上传的是完整备份 ZIP，可选加密。",
+  "cloudBackupHint": "地址、密码与网盘授权只保存在本机，不会写入备份文件。“备份”是增量的：只上传新增与变化的内容，省流量；也可以上传一份完整 ZIP，可选加密。",
   "@cloudBackupHint": {
     "description": "网盘备份页底部说明。"
   },
@@ -6382,7 +6382,7 @@
   "@cloudBackupTestConnection": {
     "description": "测试备份位置连接按钮。"
   },
-  "cloudBackupUploadBackup": "上传当前备份",
+  "cloudBackupUploadBackup": "上传完整 ZIP",
   "@cloudBackupUploadBackup": {
     "description": "上传当前数据备份按钮。"
   },
@@ -17358,5 +17358,242 @@
   "aiPresetNameCustomOpenAiResponses": "OpenAI Responses 接口",
   "@aiPresetNameCustomOpenAiResponses": {
     "description": "使用 OpenAI Responses 接口的自定义预设。"
+  },
+  "cloudBackupBackupNow": "备份",
+  "@cloudBackupBackupNow": {
+    "description": "备份位置页的主按钮：增量备份当前数据。"
+  },
+  "cloudIncrementalBusyScan": "正在检查变化…",
+  "@cloudIncrementalBusyScan": {
+    "description": "增量备份：扫描本机数据。"
+  },
+  "cloudIncrementalBusyCheck": "正在读取网盘上的备份…",
+  "@cloudIncrementalBusyCheck": {
+    "description": "增量备份：读取网盘上已有的备份。"
+  },
+  "cloudIncrementalBusyPrune": "正在清理旧备份…",
+  "@cloudIncrementalBusyPrune": {
+    "description": "增量备份：按保留份数清理。"
+  },
+  "cloudIncrementalUploaded": "已备份，本次上传 {size}",
+  "@cloudIncrementalUploaded": {
+    "description": "增量备份成功，带本次上传量。",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudIncrementalUnchanged": "数据没有变化，网盘上已是最新的备份",
+  "@cloudIncrementalUnchanged": {
+    "description": "增量备份：数据没变化，没有上传。"
+  },
+  "cloudIncrementalNewPasswordMessage": "设置的密码会记在本机，之后的备份与自动备份都用它；换设备恢复时需要输入。留空则不加密。",
+  "@cloudIncrementalNewPasswordMessage": {
+    "description": "第一次增量备份时密码弹窗里的说明。"
+  },
+  "cloudIncrementalExistingEncryptedMessage": "网盘上已有加密的增量备份。输入它的密码接着备份，已上传的照片与媒体不用重传。",
+  "@cloudIncrementalExistingEncryptedMessage": {
+    "description": "接上已有加密增量备份时密码弹窗里的说明。"
+  },
+  "cloudIncrementalContinue": "继续",
+  "@cloudIncrementalContinue": {
+    "description": "接上已有增量备份时密码弹窗的确认按钮。"
+  },
+  "cloudIncrementalWrongPasswordTitle": "密码不对",
+  "@cloudIncrementalWrongPasswordTitle": {
+    "description": "增量备份密码打不开已有备份时的对话框标题。"
+  },
+  "cloudIncrementalWrongPasswordContent": "这个密码打不开网盘上的增量备份。可以重新输入，或者开始新的一串增量备份（需要重新上传全部照片与媒体）。",
+  "@cloudIncrementalWrongPasswordContent": {
+    "description": "增量备份密码错误时的说明。"
+  },
+  "cloudIncrementalRetry": "重新输入",
+  "@cloudIncrementalRetry": {
+    "description": "增量备份密码错误时：重新输入。"
+  },
+  "cloudIncrementalStartNew": "开始新的一串",
+  "@cloudIncrementalStartNew": {
+    "description": "开始一串新的增量备份（不再沿用已有的）。"
+  },
+  "cloudIncrementalExistingPlainTitle": "接着已有的增量备份？",
+  "@cloudIncrementalExistingPlainTitle": {
+    "description": "网盘上已有不加密的增量备份时的对话框标题。"
+  },
+  "cloudIncrementalExistingPlainContent": "网盘上已有不加密的增量备份。接着备份只上传新增的内容；想加密的话可以开始新的一串（需要重新上传全部照片与媒体）。",
+  "@cloudIncrementalExistingPlainContent": {
+    "description": "网盘上已有不加密的增量备份时的说明。"
+  },
+  "cloudIncrementalContinueExisting": "接着备份",
+  "@cloudIncrementalContinueExisting": {
+    "description": "接着已有的增量备份。"
+  },
+  "cloudIncrementalRememberedMismatchContent": "本机记住的密码打不开网盘上的增量备份，可能在另一台设备上换过密码。重新设置后，可以输入原来的密码接着备份，或开始新的一串。",
+  "@cloudIncrementalRememberedMismatchContent": {
+    "description": "本机记住的增量备份密码失效时的说明。"
+  },
+  "cloudIncrementalRestorePasswordMessage": "这份增量备份已加密，请输入备份时设置的密码。",
+  "@cloudIncrementalRestorePasswordMessage": {
+    "description": "恢复加密的增量备份时密码弹窗里的说明。"
+  },
+  "cloudIncrementalEntryTitle": "增量备份",
+  "@cloudIncrementalEntryTitle": {
+    "description": "远程备份列表里增量备份的标题。"
+  },
+  "cloudIncrementalEntryMissing": "快照文件缺失，无法恢复",
+  "@cloudIncrementalEntryMissing": {
+    "description": "增量备份的快照文件不在网盘上。"
+  },
+  "cloudIncrementalDeleteTitle": "删除这份增量备份？",
+  "@cloudIncrementalDeleteTitle": {
+    "description": "删除增量备份确认标题。"
+  },
+  "cloudIncrementalDeleteContent": "将删除 {time} 的增量备份；只被它用到的照片与媒体会一并从网盘删除，其他备份不受影响。此操作不可撤销。",
+  "@cloudIncrementalDeleteContent": {
+    "description": "删除增量备份确认内容。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudIncrementalSectionTitle": "增量备份",
+  "@cloudIncrementalSectionTitle": {
+    "description": "备份位置页增量备份分组标题。"
+  },
+  "cloudIncrementalSectionHint": "“备份”只上传新增的照片与变化的数据，已在网盘上的内容不再重复上传；在本机恢复时也只下载缺少的部分，省下网盘的流量额度。",
+  "@cloudIncrementalSectionHint": {
+    "description": "增量备份分组的说明。"
+  },
+  "cloudIncrementalKeepTitle": "保留份数",
+  "@cloudIncrementalKeepTitle": {
+    "description": "增量备份保留份数。"
+  },
+  "cloudIncrementalKeepSubtitle": "更早的增量备份自动删除，只被它们用到的照片与媒体一并清理",
+  "@cloudIncrementalKeepSubtitle": {
+    "description": "增量备份保留份数的说明。"
+  },
+  "cloudIncrementalKeepAll": "全部",
+  "@cloudIncrementalKeepAll": {
+    "description": "增量备份保留份数：全部保留。"
+  },
+  "cloudIncrementalKeepCount": "{count} 份",
+  "@cloudIncrementalKeepCount": {
+    "description": "增量备份保留份数选项。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudAutoBackupTitle": "自动备份",
+  "@cloudAutoBackupTitle": {
+    "description": "自动备份开关。"
+  },
+  "cloudAutoBackupSubtitle": "打开或离开应用时，到时间就在后台静默备份；新增内容超过 50 MB 时留给你手动备份",
+  "@cloudAutoBackupSubtitle": {
+    "description": "自动备份开关说明。"
+  },
+  "cloudAutoBackupNeedsChain": "先点“备份”手动备份一次，之后才能开启",
+  "@cloudAutoBackupNeedsChain": {
+    "description": "还没有增量备份时自动备份开关的说明。"
+  },
+  "cloudAutoBackupIntervalTitle": "频率",
+  "@cloudAutoBackupIntervalTitle": {
+    "description": "自动备份频率。"
+  },
+  "cloudAutoBackupDaily": "每天",
+  "@cloudAutoBackupDaily": {
+    "description": "自动备份频率：每天。"
+  },
+  "cloudAutoBackupWeekly": "每周",
+  "@cloudAutoBackupWeekly": {
+    "description": "自动备份频率：每周。"
+  },
+  "cloudAutoBackupLastUploaded": "上次自动备份：{time}，上传 {size}",
+  "@cloudAutoBackupLastUploaded": {
+    "description": "自动备份状态：上传成功。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupLastUnchanged": "上次自动备份：{time}，数据没有变化",
+  "@cloudAutoBackupLastUnchanged": {
+    "description": "自动备份状态：没有变化。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupLastNeedsManual": "{time}：有 {size} 新内容，请手动备份",
+  "@cloudAutoBackupLastNeedsManual": {
+    "description": "自动备份状态：新内容太多，需要手动备份。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupLastFailed": "{time} 自动备份失败：{reason}",
+  "@cloudAutoBackupLastFailed": {
+    "description": "自动备份状态：失败。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupTileOk": "自动备份 · {time}",
+  "@cloudAutoBackupTileOk": {
+    "description": "备份位置列表里自动备份成功的状态。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudAutoBackupTileNeedsManual": "需要手动备份",
+  "@cloudAutoBackupTileNeedsManual": {
+    "description": "备份位置列表里：自动备份等用户手动备份。"
+  },
+  "cloudAutoBackupTileFailed": "自动备份失败",
+  "@cloudAutoBackupTileFailed": {
+    "description": "备份位置列表里：自动备份失败。"
+  },
+  "cloudIncrementalForgetChain": "重新设置密码",
+  "@cloudIncrementalForgetChain": {
+    "description": "忘记本机记住的增量备份密码。"
+  },
+  "cloudIncrementalForgetTitle": "重新设置增量备份密码？",
+  "@cloudIncrementalForgetTitle": {
+    "description": "重新设置增量备份密码的确认标题。"
+  },
+  "cloudIncrementalForgetContent": "本机会忘记现在的增量备份密码，自动备份随之暂停。下次备份时可以输入原来的密码接着备份，也可以设新密码重新开始（需要重新上传全部照片与媒体）。",
+  "@cloudIncrementalForgetContent": {
+    "description": "重新设置增量备份密码的确认内容。"
+  },
+  "cloudIncrementalForgotten": "已忘记增量备份密码",
+  "@cloudIncrementalForgotten": {
+    "description": "重新设置增量备份密码后的提示。"
+  },
+  "cloudIncrementalErrorPassword": "密码打不开这份增量备份",
+  "@cloudIncrementalErrorPassword": {
+    "description": "增量备份密码错误。"
+  },
+  "cloudIncrementalErrorMediaChanged": "备份期间有照片或附件发生了变化，请再试一次",
+  "@cloudIncrementalErrorMediaChanged": {
+    "description": "增量备份期间媒体文件被改动。"
   }
 }

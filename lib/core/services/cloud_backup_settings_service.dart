@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cloud_backup_models.dart';
+import 'cloud_backup_options.dart';
 import 'cloud_backup_target.dart';
 
 /// 网盘备份位置的持久化服务。
@@ -49,13 +50,17 @@ class CloudBackupSettingsService {
   }
 
   /// 新增或按 id 替换一个备份位置，保持原有顺序。
+  ///
+  /// 替换时沿用已保存的 [CloudBackupTarget.options]：页面手里的位置可能是
+  /// 打开页面时的旧副本，期间自动备份可能已记下新的增量链；选项只经
+  /// [updateOptions] 改写。
   Future<void> saveTarget(CloudBackupTarget target) {
     return _serialized(() async {
       final next = <CloudBackupTarget>[];
       var replaced = false;
       for (final existing in targets) {
         if (existing.id == target.id) {
-          next.add(target);
+          next.add(target.copyWith(options: existing.options));
           replaced = true;
         } else {
           next.add(existing);
@@ -77,6 +82,22 @@ class CloudBackupSettingsService {
         for (final target in targets)
           target.id == id
               ? target.copyWith(config: update(target.config))
+              : target,
+      ];
+      await _write(next);
+    });
+  }
+
+  /// 只改写某个位置的增量 / 自动备份选项；位置已被删除时什么都不做。
+  Future<void> updateOptions(
+    String id,
+    CloudBackupOptions Function(CloudBackupOptions options) update,
+  ) {
+    return _serialized(() async {
+      final next = [
+        for (final target in targets)
+          target.id == id
+              ? target.copyWith(options: update(target.options))
               : target,
       ];
       await _write(next);

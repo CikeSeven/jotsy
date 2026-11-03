@@ -150,7 +150,11 @@ class DropboxRemote implements CloudBackupRemote {
   }
 
   @override
-  Future<List<CloudBackupEntry>> list() async {
+  Future<List<CloudBackupEntry>> list() async =>
+      cloudZipBackupsOf(await listFiles());
+
+  @override
+  Future<List<CloudBackupEntry>> listFiles() async {
     final entries = <CloudBackupEntry>[];
     var response = await _rpc('2/files/list_folder', {'path': ''});
     while (true) {
@@ -160,9 +164,7 @@ class DropboxRemote implements CloudBackupRemote {
         if (item is! Map || item['.tag'] != 'file') continue;
         final name = jsonString(item['name']);
         final path = jsonString(item['path_lower']) ?? jsonString(item['id']);
-        if (name == null || path == null || !isCloudBackupFileName(name)) {
-          continue;
-        }
+        if (name == null || path == null) continue;
         final modified = jsonDateTime(item['server_modified']);
         entries.add(
           CloudBackupEntry(
@@ -178,7 +180,7 @@ class DropboxRemote implements CloudBackupRemote {
       if (json['has_more'] != true || cursor == null) break;
       response = await _rpc('2/files/list_folder/continue', {'cursor': cursor});
     }
-    return sortCloudBackups(entries);
+    return entries;
   }
 
   @override

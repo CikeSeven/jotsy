@@ -2,12 +2,16 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'cloud_backup_models.dart';
+import 'cloud_backup_options.dart';
 
 /// 一个已配置的备份位置（某个网盘账号或某个 WebDAV / S3 连接）。
 ///
 /// [config] 是该类型客户端自己解析的配置：WebDAV 为 `WebDavConfig`、S3 为
 /// `S3BackupConfig`、授权类网盘为 `CloudDriveCredentials` 的 JSON。凭据与
 /// 配置同存，只保存在本机偏好里，不进入备份 ZIP。
+///
+/// [options] 是增量备份与自动备份的选项（含记住的链密码），与 [config]
+/// 分开存放：表单保存与重新授权会整份重建 [config]。
 class CloudBackupTarget {
   const CloudBackupTarget({
     required this.id,
@@ -15,6 +19,7 @@ class CloudBackupTarget {
     required this.config,
     this.presetId,
     this.createdAt,
+    this.options = const CloudBackupOptions(),
   });
 
   /// 新建一个备份位置，id 随机生成，避免删除后重建复用旧 id。
@@ -55,6 +60,7 @@ class CloudBackupTarget {
       createdAt: raw['createdAt'] is String
           ? DateTime.tryParse(raw['createdAt'] as String)
           : null,
+      options: CloudBackupOptions.fromJson(raw['options']),
     );
   }
 
@@ -66,24 +72,33 @@ class CloudBackupTarget {
   /// 图标；连接参数以 [config] 为准。
   final String? presetId;
   final DateTime? createdAt;
+  final CloudBackupOptions options;
 
-  CloudBackupTarget copyWith({Map<String, Object?>? config}) {
+  CloudBackupTarget copyWith({
+    Map<String, Object?>? config,
+    CloudBackupOptions? options,
+  }) {
     return CloudBackupTarget(
       id: id,
       kind: kind,
       config: config ?? this.config,
       presetId: presetId,
       createdAt: createdAt,
+      options: options ?? this.options,
     );
   }
 
-  Map<String, Object?> toJson() => <String, Object?>{
-    'id': id,
-    'kind': kind.id,
-    if (presetId != null) 'preset': presetId,
-    if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
-    'config': config,
-  };
+  Map<String, Object?> toJson() {
+    final options = this.options.toJson();
+    return <String, Object?>{
+      'id': id,
+      'kind': kind.id,
+      if (presetId != null) 'preset': presetId,
+      if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
+      'config': config,
+      if (options.isNotEmpty) 'options': options,
+    };
+  }
 
   static String encodeList(List<CloudBackupTarget> targets) =>
       jsonEncode(targets.map((target) => target.toJson()).toList());

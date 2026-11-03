@@ -8033,7 +8033,7 @@ abstract class AppLocalizations {
   /// Cloud backup page empty state.
   ///
   /// In en, this message translates to:
-  /// **'No backup locations yet. Add a cloud drive, WebDAV server or object storage to upload full backups and restore them on a new device.'**
+  /// **'No backup locations yet. Add a cloud drive, WebDAV server or object storage to back up your data and restore it on a new device.'**
   String get cloudBackupEmpty;
 
   /// Cloud backup page: add location button.
@@ -8045,7 +8045,7 @@ abstract class AppLocalizations {
   /// Cloud backup page footer note.
   ///
   /// In en, this message translates to:
-  /// **'Addresses, passwords and drive authorizations stay on this device and are never written into backups. Uploads are full backup ZIPs, optionally encrypted.'**
+  /// **'Addresses, passwords and drive authorizations stay on this device and are never written into backups. “Back up” is incremental and uploads only what is new or changed; you can also upload a full ZIP, optionally encrypted.'**
   String get cloudBackupHint;
 
   /// Add-location sheet title.
@@ -8399,7 +8399,7 @@ abstract class AppLocalizations {
   /// Upload current backup button.
   ///
   /// In en, this message translates to:
-  /// **'Upload backup'**
+  /// **'Upload full ZIP'**
   String get cloudBackupUploadBackup;
 
   /// Refresh remote list button.
@@ -22813,6 +22813,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OpenAI Responses API'**
   String get aiPresetNameCustomOpenAiResponses;
+
+  /// Primary button on a backup location: incremental backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up'**
+  String get cloudBackupBackupNow;
+
+  /// Incremental backup: scanning local data.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for changes…'**
+  String get cloudIncrementalBusyScan;
+
+  /// Incremental backup: reading existing backups.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading backups on the drive…'**
+  String get cloudIncrementalBusyCheck;
+
+  /// Incremental backup: pruning old backups.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning up old backups…'**
+  String get cloudIncrementalBusyPrune;
+
+  /// Incremental backup succeeded, with the uploaded size.
+  ///
+  /// In en, this message translates to:
+  /// **'Backed up. Uploaded {size} this time'**
+  String cloudIncrementalUploaded(String size);
+
+  /// Incremental backup: nothing changed, nothing uploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing changed. The backup on the drive is up to date'**
+  String get cloudIncrementalUnchanged;
+
+  /// Explanation in the password dialog for the first incremental backup.
+  ///
+  /// In en, this message translates to:
+  /// **'This password is remembered on this device and used for later and automatic backups. You will need it to restore on another device. Leave empty for no encryption.'**
+  String get cloudIncrementalNewPasswordMessage;
+
+  /// Explanation when continuing an existing encrypted incremental backup.
+  ///
+  /// In en, this message translates to:
+  /// **'There are encrypted incremental backups on this drive. Enter their password to continue them without re-uploading photos and media.'**
+  String get cloudIncrementalExistingEncryptedMessage;
+
+  /// Confirm button when continuing an existing incremental backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get cloudIncrementalContinue;
+
+  /// Title when the password does not open the incremental backups.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong password'**
+  String get cloudIncrementalWrongPasswordTitle;
+
+  /// Explanation when the incremental backup password is wrong.
+  ///
+  /// In en, this message translates to:
+  /// **'This password does not open the incremental backups on the drive. Try again, or start a new series of incremental backups (all photos and media will be uploaded again).'**
+  String get cloudIncrementalWrongPasswordContent;
+
+  /// Wrong incremental password: try again.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get cloudIncrementalRetry;
+
+  /// Start a new series of incremental backups.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a new series'**
+  String get cloudIncrementalStartNew;
+
+  /// Title when unencrypted incremental backups already exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue the existing backups?'**
+  String get cloudIncrementalExistingPlainTitle;
+
+  /// Explanation when unencrypted incremental backups already exist.
+  ///
+  /// In en, this message translates to:
+  /// **'There are unencrypted incremental backups on this drive. Continuing uploads only what is new. To encrypt, start a new series instead (all photos and media will be uploaded again).'**
+  String get cloudIncrementalExistingPlainContent;
+
+  /// Continue the existing incremental backups.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get cloudIncrementalContinueExisting;
+
+  /// Explanation when the remembered incremental password no longer works.
+  ///
+  /// In en, this message translates to:
+  /// **'The password remembered on this device no longer opens the incremental backups on the drive; it may have been changed on another device. Reset it to enter the original password or start a new series.'**
+  String get cloudIncrementalRememberedMismatchContent;
+
+  /// Explanation in the password dialog when restoring an encrypted incremental backup.
+  ///
+  /// In en, this message translates to:
+  /// **'This incremental backup is encrypted. Enter the password set when it was made.'**
+  String get cloudIncrementalRestorePasswordMessage;
+
+  /// Title of an incremental backup in the remote list.
+  ///
+  /// In en, this message translates to:
+  /// **'Incremental backup'**
+  String get cloudIncrementalEntryTitle;
+
+  /// The snapshot file of an incremental backup is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Snapshot file missing; cannot be restored'**
+  String get cloudIncrementalEntryMissing;
+
+  /// Title of the delete-incremental-backup confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this incremental backup?'**
+  String get cloudIncrementalDeleteTitle;
+
+  /// Content of the delete-incremental-backup confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'The incremental backup from {time} will be deleted. Photos and media used only by it are removed from the drive too; other backups are not affected. This cannot be undone.'**
+  String cloudIncrementalDeleteContent(String time);
+
+  /// Title of the incremental backup group on a backup location.
+  ///
+  /// In en, this message translates to:
+  /// **'Incremental backup'**
+  String get cloudIncrementalSectionTitle;
+
+  /// Explanation of the incremental backup group.
+  ///
+  /// In en, this message translates to:
+  /// **'“Back up” uploads only new photos and changed data; anything already on the drive is never uploaded again. Restoring on this device downloads only what is missing, saving your drive’s traffic quota.'**
+  String get cloudIncrementalSectionHint;
+
+  /// How many incremental backups to keep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get cloudIncrementalKeepTitle;
+
+  /// Explanation of the keep setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Older incremental backups are deleted automatically, along with photos and media used only by them'**
+  String get cloudIncrementalKeepSubtitle;
+
+  /// Keep all incremental backups.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get cloudIncrementalKeepAll;
+
+  /// Keep option for incremental backups.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String cloudIncrementalKeepCount(int count);
+
+  /// Automatic backup switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic backup'**
+  String get cloudAutoBackupTitle;
+
+  /// Automatic backup switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backs up quietly when you open or leave the app once it is due. If more than 50 MB is new, it waits for you to back up manually'**
+  String get cloudAutoBackupSubtitle;
+
+  /// Automatic backup subtitle before the first incremental backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up manually once before turning this on'**
+  String get cloudAutoBackupNeedsChain;
+
+  /// Automatic backup frequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get cloudAutoBackupIntervalTitle;
+
+  /// Automatic backup frequency: daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get cloudAutoBackupDaily;
+
+  /// Automatic backup frequency: weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get cloudAutoBackupWeekly;
+
+  /// Automatic backup status: uploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Last automatic backup: {time}, uploaded {size}'**
+  String cloudAutoBackupLastUploaded(String time, String size);
+
+  /// Automatic backup status: unchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Last automatic backup: {time}, nothing changed'**
+  String cloudAutoBackupLastUnchanged(String time);
+
+  /// Automatic backup status: too much new content.
+  ///
+  /// In en, this message translates to:
+  /// **'{time}: {size} is new. Please back up manually'**
+  String cloudAutoBackupLastNeedsManual(String time, String size);
+
+  /// Automatic backup status: failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic backup failed at {time}: {reason}'**
+  String cloudAutoBackupLastFailed(String time, String reason);
+
+  /// Auto backup status on the location list.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto backup · {time}'**
+  String cloudAutoBackupTileOk(String time);
+
+  /// Location list: auto backup waiting for a manual backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up manually'**
+  String get cloudAutoBackupTileNeedsManual;
+
+  /// Location list: auto backup failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto backup failed'**
+  String get cloudAutoBackupTileFailed;
+
+  /// Forget the remembered incremental backup password.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get cloudIncrementalForgetChain;
+
+  /// Title of the reset-password confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset the incremental backup password?'**
+  String get cloudIncrementalForgetTitle;
+
+  /// Content of the reset-password confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'This device forgets the current incremental backup password and automatic backup pauses. Next time you back up, enter the original password to continue, or set a new one to start over (all photos and media will be uploaded again).'**
+  String get cloudIncrementalForgetContent;
+
+  /// Shown after forgetting the incremental password.
+  ///
+  /// In en, this message translates to:
+  /// **'Incremental backup password forgotten'**
+  String get cloudIncrementalForgotten;
+
+  /// Incremental backup password is wrong.
+  ///
+  /// In en, this message translates to:
+  /// **'The password does not open this incremental backup'**
+  String get cloudIncrementalErrorPassword;
+
+  /// A media file changed during the incremental backup.
+  ///
+  /// In en, this message translates to:
+  /// **'A photo or attachment changed during the backup. Please try again'**
+  String get cloudIncrementalErrorMediaChanged;
 }
 
 class _AppLocalizationsDelegate

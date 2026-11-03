@@ -154,7 +154,11 @@ class GoogleDriveRemote implements CloudBackupRemote {
   Future<void> prepare() => _folder();
 
   @override
-  Future<List<CloudBackupEntry>> list() async {
+  Future<List<CloudBackupEntry>> list() async =>
+      cloudZipBackupsOf(await listFiles());
+
+  @override
+  Future<List<CloudBackupEntry>> listFiles() async {
     final folderId = await _folder();
     final entries = <CloudBackupEntry>[];
     String? pageToken;
@@ -178,7 +182,7 @@ class GoogleDriveRemote implements CloudBackupRemote {
       }
       pageToken = jsonString(json['nextPageToken']);
     } while (pageToken != null);
-    return sortCloudBackups(entries);
+    return entries;
   }
 
   @override
@@ -335,10 +339,7 @@ class GoogleDriveRemote implements CloudBackupRemote {
   static CloudBackupEntry? _entry(Map<String, Object?> file) {
     final id = jsonString(file['id']);
     final name = jsonString(file['name']);
-    if (id == null ||
-        name == null ||
-        file['mimeType'] == _folderMime ||
-        !isCloudBackupFileName(name)) {
+    if (id == null || name == null || file['mimeType'] == _folderMime) {
       return null;
     }
     final modified = jsonDateTime(file['modifiedTime']);

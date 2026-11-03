@@ -1,5 +1,6 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../core/services/cloud_backup_incremental_state.dart';
 import '../../../core/services/cloud_backup_models.dart';
 import '../../../core/services/cloud_backup_oauth.dart';
 import '../../../core/services/cloud_backup_presets.dart';
@@ -7,6 +8,7 @@ import '../../../core/services/cloud_backup_s3.dart';
 import '../../../core/services/cloud_backup_target.dart';
 import '../../../core/services/webdav_models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../controllers/cloud_backup_failure.dart';
 
 /// 网盘、预设与备份位置的展示名称、图标和填写说明。
 ///
@@ -188,4 +190,51 @@ String cloudBackupTargetSummary(
       return CloudDriveCredentials.accountOf(target.config) ??
           l10n.cloudBackupAccountAuthorized;
   }
+}
+
+/// 备份大小（B / KB / MB / GB，一位小数）。
+String formatCloudBackupBytes(int bytes) {
+  if (bytes < 1024) return '$bytes B';
+  final kb = bytes / 1024;
+  if (kb < 1024) return '${kb.toStringAsFixed(1)} KB';
+  final mb = kb / 1024;
+  if (mb < 1024) return '${mb.toStringAsFixed(1)} MB';
+  return '${(mb / 1024).toStringAsFixed(1)} GB';
+}
+
+/// 备份时间（本地时间，精确到分钟）。
+String formatCloudBackupTime(DateTime value) {
+  final local = value.toLocal();
+  String two(int v) => v.toString().padLeft(2, '0');
+  return '${local.year}-${two(local.month)}-${two(local.day)} '
+      '${two(local.hour)}:${two(local.minute)}';
+}
+
+/// 自动备份上一次的结果（单个位置页的状态行）；从没自动备份过为 null。
+String? cloudAutoBackupStatusText(
+  AppLocalizations l10n,
+  CloudAutoBackupStatus? status,
+) {
+  if (status == null) return null;
+  final time = formatCloudBackupTime(status.at);
+  return switch (status.outcome) {
+    CloudAutoBackupOutcome.uploaded => l10n.cloudAutoBackupLastUploaded(
+      time,
+      formatCloudBackupBytes(status.bytes ?? 0),
+    ),
+    CloudAutoBackupOutcome.unchanged => l10n.cloudAutoBackupLastUnchanged(time),
+    CloudAutoBackupOutcome.needsManual => l10n.cloudAutoBackupLastNeedsManual(
+      time,
+      formatCloudBackupBytes(status.bytes ?? 0),
+    ),
+    CloudAutoBackupOutcome.failed => l10n.cloudAutoBackupLastFailed(
+      time,
+      status.failure == null
+          ? l10n.cloudBackupErrorUnknown
+          : describeCloudBackupFailure(
+              l10n,
+              CloudBackupException(status.failure!),
+            ),
+    ),
+  };
 }

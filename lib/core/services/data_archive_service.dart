@@ -304,17 +304,60 @@ class DataArchiveService {
     if (!await File(zipPath).exists()) {
       throw const FileSystemException('备份文件不存在');
     }
-    final documents = await appDataRootDirectory();
-    await documents.create(recursive: true);
-    // 位于相同文件系统，换入/回滚大媒体仅需 rename，避免额外复制或空间不足。
-    final working = await documents.createTemp('.backup_import_');
-    var cleanup = true;
+    final (documents, working) = await _createStaging();
     try {
       await BackupArchiveIO.extract(
         zipPath,
         working,
         password: _password(password),
       );
+    } catch (_) {
+      await _cleanWorkingDirectory(working);
+      rethrow;
+    }
+    return _importStaging(database, settingsService, documents, working, mode);
+  }
+
+  /// 从由 [fill] 备好的暂存目录导入（网盘增量备份的恢复）：[fill] 往空的
+  /// 暂存目录里放 `backup_data.json` 与 `<托管目录>/<相对路径>` 的媒体，布局与
+  /// 解开完整备份 ZIP 后完全一致，之后的合并 / 覆盖与 [importFromZip] 同一条
+  /// 路径。整个过程（含 [fill]）在恢复的串行队列里执行，[fill] 读到的本机
+  /// 媒体不会被同时进行的另一次恢复换走；暂存目录由这里创建与清理，[fill]
+  /// 抛错时删除暂存并原样抛出，本机数据不受影响。
+  static Future<BackupImportResult> importFromPreparedStaging({
+    required AppDatabase database,
+    required SettingsService settingsService,
+    required BackupImportMode mode,
+    required Future<void> Function(Directory staging) fill,
+  }) => _run(() async {
+    final (documents, working) = await _createStaging();
+    try {
+      await fill(working);
+    } catch (_) {
+      await _cleanWorkingDirectory(working);
+      rethrow;
+    }
+    return _importStaging(database, settingsService, documents, working, mode);
+  });
+
+  static Future<(Directory, Directory)> _createStaging() async {
+    final documents = await appDataRootDirectory();
+    await documents.create(recursive: true);
+    // 位于相同文件系统，换入/回滚大媒体仅需 rename，避免额外复制或空间不足。
+    return (documents, await documents.createTemp('.backup_import_'));
+  }
+
+  /// 暂存目录已备好后的导入；暂存目录由这里接管，结束后删除（回滚失败时
+  /// 保留，见下）。
+  static Future<BackupImportResult> _importStaging(
+    AppDatabase database,
+    SettingsService settingsService,
+    Directory documents,
+    Directory working,
+    BackupImportMode mode,
+  ) async {
+    var cleanup = true;
+    try {
       final (kind, payload) = await _readPayload(working);
       if (mode != BackupImportMode.replaceAll) {
         final merged = await BackupMerge(

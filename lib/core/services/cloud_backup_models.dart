@@ -155,9 +155,17 @@ DateTime? cloudBackupCreatedAtFromFileName(String fileName) {
   );
 }
 
-/// 备份目录里只把 ZIP 当作备份展示，manifest 与其他文件忽略。
+/// 备份目录里只把 ZIP 当作完整备份展示，manifest、增量备份的快照 / 索引 /
+/// 媒体包与其他文件忽略（增量备份另经 [CloudBackupRemote.listFiles] 读取）。
 bool isCloudBackupFileName(String fileName) =>
     fileName.toLowerCase().endsWith('.zip');
+
+/// 从 [CloudBackupRemote.listFiles] 的结果里挑出完整备份 ZIP，新的在前。
+/// 各网盘的 [CloudBackupRemote.list] 一律经它实现，口径只有这一处。
+List<CloudBackupEntry> cloudZipBackupsOf(Iterable<CloudBackupEntry> files) =>
+    sortCloudBackups(
+      files.where((file) => isCloudBackupFileName(file.fileName)),
+    );
 
 /// 新的在前；时间相同按文件名倒序，保证列表顺序稳定。
 List<CloudBackupEntry> sortCloudBackups(Iterable<CloudBackupEntry> entries) {
@@ -180,8 +188,14 @@ abstract interface class CloudBackupRemote {
   /// 校验凭据并确保备份目录存在；“测试连接”即调用它。
   Future<void> prepare();
 
-  /// 备份目录里的 ZIP，新的在前。
+  /// 备份目录里的 ZIP，新的在前；实现一律为
+  /// `cloudZipBackupsOf(await listFiles())`。
   Future<List<CloudBackupEntry>> list();
+
+  /// 备份目录里的全部普通文件（不含子目录），不过滤、不排序。增量备份据此
+  /// 找快照、索引与媒体包；[CloudBackupEntry.createdAt] 只对能从文件名还原
+  /// 时间的 ZIP 有意义，其余为网盘返回的时间。
+  Future<List<CloudBackupEntry>> listFiles();
 
   /// 把本地 [file] 以 [fileName] 上传到备份目录，返回远程条目。文件名精确到
   /// 秒，同名几乎不会发生；真遇到时按各网盘语义覆盖或自动改名。

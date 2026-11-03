@@ -4816,14 +4816,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudBackupEmpty =>
-      'No backup locations yet. Add a cloud drive, WebDAV server or object storage to upload full backups and restore them on a new device.';
+      'No backup locations yet. Add a cloud drive, WebDAV server or object storage to back up your data and restore it on a new device.';
 
   @override
   String get cloudBackupAdd => 'Add backup location';
 
   @override
   String get cloudBackupHint =>
-      'Addresses, passwords and drive authorizations stay on this device and are never written into backups. Uploads are full backup ZIPs, optionally encrypted.';
+      'Addresses, passwords and drive authorizations stay on this device and are never written into backups. “Back up” is incremental and uploads only what is new or changed; you can also upload a full ZIP, optionally encrypted.';
 
   @override
   String get cloudBackupSheetTitle => 'Choose a backup location';
@@ -5035,7 +5035,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cloudBackupTestConnection => 'Test connection';
 
   @override
-  String get cloudBackupUploadBackup => 'Upload backup';
+  String get cloudBackupUploadBackup => 'Upload full ZIP';
 
   @override
   String get cloudBackupRefreshBackups => 'Refresh';
@@ -14008,4 +14008,179 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiPresetNameCustomOpenAiResponses => 'OpenAI Responses API';
+
+  @override
+  String get cloudBackupBackupNow => 'Back up';
+
+  @override
+  String get cloudIncrementalBusyScan => 'Checking for changes…';
+
+  @override
+  String get cloudIncrementalBusyCheck => 'Reading backups on the drive…';
+
+  @override
+  String get cloudIncrementalBusyPrune => 'Cleaning up old backups…';
+
+  @override
+  String cloudIncrementalUploaded(String size) {
+    return 'Backed up. Uploaded $size this time';
+  }
+
+  @override
+  String get cloudIncrementalUnchanged =>
+      'Nothing changed. The backup on the drive is up to date';
+
+  @override
+  String get cloudIncrementalNewPasswordMessage =>
+      'This password is remembered on this device and used for later and automatic backups. You will need it to restore on another device. Leave empty for no encryption.';
+
+  @override
+  String get cloudIncrementalExistingEncryptedMessage =>
+      'There are encrypted incremental backups on this drive. Enter their password to continue them without re-uploading photos and media.';
+
+  @override
+  String get cloudIncrementalContinue => 'Continue';
+
+  @override
+  String get cloudIncrementalWrongPasswordTitle => 'Wrong password';
+
+  @override
+  String get cloudIncrementalWrongPasswordContent =>
+      'This password does not open the incremental backups on the drive. Try again, or start a new series of incremental backups (all photos and media will be uploaded again).';
+
+  @override
+  String get cloudIncrementalRetry => 'Try again';
+
+  @override
+  String get cloudIncrementalStartNew => 'Start a new series';
+
+  @override
+  String get cloudIncrementalExistingPlainTitle =>
+      'Continue the existing backups?';
+
+  @override
+  String get cloudIncrementalExistingPlainContent =>
+      'There are unencrypted incremental backups on this drive. Continuing uploads only what is new. To encrypt, start a new series instead (all photos and media will be uploaded again).';
+
+  @override
+  String get cloudIncrementalContinueExisting => 'Continue';
+
+  @override
+  String get cloudIncrementalRememberedMismatchContent =>
+      'The password remembered on this device no longer opens the incremental backups on the drive; it may have been changed on another device. Reset it to enter the original password or start a new series.';
+
+  @override
+  String get cloudIncrementalRestorePasswordMessage =>
+      'This incremental backup is encrypted. Enter the password set when it was made.';
+
+  @override
+  String get cloudIncrementalEntryTitle => 'Incremental backup';
+
+  @override
+  String get cloudIncrementalEntryMissing =>
+      'Snapshot file missing; cannot be restored';
+
+  @override
+  String get cloudIncrementalDeleteTitle => 'Delete this incremental backup?';
+
+  @override
+  String cloudIncrementalDeleteContent(String time) {
+    return 'The incremental backup from $time will be deleted. Photos and media used only by it are removed from the drive too; other backups are not affected. This cannot be undone.';
+  }
+
+  @override
+  String get cloudIncrementalSectionTitle => 'Incremental backup';
+
+  @override
+  String get cloudIncrementalSectionHint =>
+      '“Back up” uploads only new photos and changed data; anything already on the drive is never uploaded again. Restoring on this device downloads only what is missing, saving your drive’s traffic quota.';
+
+  @override
+  String get cloudIncrementalKeepTitle => 'Keep';
+
+  @override
+  String get cloudIncrementalKeepSubtitle =>
+      'Older incremental backups are deleted automatically, along with photos and media used only by them';
+
+  @override
+  String get cloudIncrementalKeepAll => 'All';
+
+  @override
+  String cloudIncrementalKeepCount(int count) {
+    return '$count';
+  }
+
+  @override
+  String get cloudAutoBackupTitle => 'Automatic backup';
+
+  @override
+  String get cloudAutoBackupSubtitle =>
+      'Backs up quietly when you open or leave the app once it is due. If more than 50 MB is new, it waits for you to back up manually';
+
+  @override
+  String get cloudAutoBackupNeedsChain =>
+      'Back up manually once before turning this on';
+
+  @override
+  String get cloudAutoBackupIntervalTitle => 'Frequency';
+
+  @override
+  String get cloudAutoBackupDaily => 'Daily';
+
+  @override
+  String get cloudAutoBackupWeekly => 'Weekly';
+
+  @override
+  String cloudAutoBackupLastUploaded(String time, String size) {
+    return 'Last automatic backup: $time, uploaded $size';
+  }
+
+  @override
+  String cloudAutoBackupLastUnchanged(String time) {
+    return 'Last automatic backup: $time, nothing changed';
+  }
+
+  @override
+  String cloudAutoBackupLastNeedsManual(String time, String size) {
+    return '$time: $size is new. Please back up manually';
+  }
+
+  @override
+  String cloudAutoBackupLastFailed(String time, String reason) {
+    return 'Automatic backup failed at $time: $reason';
+  }
+
+  @override
+  String cloudAutoBackupTileOk(String time) {
+    return 'Auto backup · $time';
+  }
+
+  @override
+  String get cloudAutoBackupTileNeedsManual => 'Back up manually';
+
+  @override
+  String get cloudAutoBackupTileFailed => 'Auto backup failed';
+
+  @override
+  String get cloudIncrementalForgetChain => 'Reset password';
+
+  @override
+  String get cloudIncrementalForgetTitle =>
+      'Reset the incremental backup password?';
+
+  @override
+  String get cloudIncrementalForgetContent =>
+      'This device forgets the current incremental backup password and automatic backup pauses. Next time you back up, enter the original password to continue, or set a new one to start over (all photos and media will be uploaded again).';
+
+  @override
+  String get cloudIncrementalForgotten =>
+      'Incremental backup password forgotten';
+
+  @override
+  String get cloudIncrementalErrorPassword =>
+      'The password does not open this incremental backup';
+
+  @override
+  String get cloudIncrementalErrorMediaChanged =>
+      'A photo or attachment changed during the backup. Please try again';
 }

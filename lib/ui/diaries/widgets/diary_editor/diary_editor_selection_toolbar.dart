@@ -1,16 +1,21 @@
 import 'dart:async';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show KeyDownEvent, LogicalKeyboardKey;
+import 'package:flutter/services.dart' show ProcessTextAction;
 
 import '../../../../core/services/app_platform.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../controllers/diary_editor_clipboard.dart';
+import '../../../../core/services/text_process_actions_service.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/diary_editor_controller.dart';
+import 'diary_editor_selection_menu_items.dart';
 
-/// 原生块选区的复制/剪切/粘贴入口。使用 Flutter 平台文本菜单和 AppFlowy
-/// 选区几何，编辑页的格式工具仍留在既有底部卡片中，不另造一套格式工具。
+/// 原生块选区的复制/剪切/粘贴入口。使用应用统一的文字选区菜单（手机为
+/// 玻璃胶囊 [AppTextSelectionToolbar]、桌面为竖排菜单 [AppTextContextMenuPanel]，
+/// `lib/ui/widgets/text_selection_menu/`）和 AppFlowy 选区几何，菜单项见
+/// [diaryEditorSelectionMenuItems]；编辑页的格式工具仍留在既有底部卡片中，
+/// 不另造一套格式工具。
 ///
 /// 手机在选出一段文字后自动浮在选区上方；可编辑正文里长按松手（或拖完
 /// 把手）只落下光标时——空段落、行尾空白，以及 iOS 上任意位置的长按——
@@ -124,11 +129,19 @@ class _DiaryEditorSelectionToolbarState
     }
   }
 
+  /// 菜单开着期间监听的“其他应用的文字处理”列表（见 [_show]）。
+  ValueListenable<List<ProcessTextAction>>? _processActions;
+
   void _hide() {
+    _processActions?.removeListener(_onProcessActions);
+    _processActions = null;
     _entry?.remove();
     _entry = null;
     if (identical(_active, this)) _active = null;
   }
+
+  /// 查询在菜单开着时返回：重建一次，补上新查到的动作。
+  void _onProcessActions() => _entry?.markNeedsBuild();
 
   void _show() {
     if (_active != this) _active?._hide();
@@ -137,6 +150,11 @@ class _DiaryEditorSelectionToolbarState
       _entry!.markNeedsBuild();
       return;
     }
+    // 每次显示时在后台重新查询其他应用的文字处理（装卸了应用下次即可看到），
+    // 先用上次的结果画出菜单，不等查询；监听只在菜单开着期间，收起即撤掉。
+    final processText = TextProcessActionsService.instance;
+    _processActions = processText.actions..addListener(_onProcessActions);
+    unawaited(processText.refresh());
     _entry = OverlayEntry(
       builder: (_) {
         if (!mounted || widget.controller.state.isDisposed) {
@@ -149,14 +167,17 @@ class _DiaryEditorSelectionToolbarState
         if (selection == null) return const SizedBox.shrink();
         return Theme(
           data: Theme.of(context),
-          child: AdaptiveTextSelectionToolbar.buttonItems(
+          child: AppTextSelectionToolbar(
+            // 选区变了，展开的「更多」就收起；胶囊本身不重建（拖动把手时
+            // 选区每帧都在变，换 key 会每帧重播入场动画）。
+            collapseScope: selection,
             anchors: TextSelectionToolbarAnchors(
               primaryAnchor: rects.first.topCenter,
               secondaryAnchor: rects.last.bottomCenter,
             ),
-            buttonItems: _menuItems(
+            actions: diaryEditorSelectionMenuItems(
+              context,
               controller,
-              aiLabel: context.l10n.aiSelectionMenu,
               // 点过菜单项就不再是“刚长按”：粘贴空剪贴板时选区不变，也不能
               // 在下一次通知时把菜单弹回来。
               dismiss: () {
@@ -229,18 +250,40 @@ class _DiaryEditorContextMenu extends StatefulWidget {
 class _DiaryEditorContextMenuState extends State<_DiaryEditorContextMenu> {
   final FocusNode _focus = FocusNode(debugLabel: 'diary_editor_context_menu');
   FocusNode? _previous;
+  final TextProcessActionsService _processText =
+      TextProcessActionsService.instance;
+  bool _dismissed = false;
 
   @override
   void initState() {
     super.initState();
-    // 菜单开着时上游让正文失焦；焦点移到菜单上，Esc 才会先收起菜单，而不是
-    // 落到页面（编辑页的 Esc 是返回）。
+    // 菜单开着时上游让正文失焦；焦点移到菜单上，开着期间的按键不落到正文或
+    // 页面。Esc / ↑ / ↓ / Enter 由 AppTextContextMenuPanel 的早期按键处理器
+    // 在分发给焦点之前拦下（Esc 收起菜单并返回 handled，不会落到页面——编辑页
+    // 的 Esc 是返回），这里不再另设 Esc 分支，免得同一次按键收起两次。
     _previous = primaryFocus;
     _focus.requestFocus();
+    // 桌面目前不提供其他应用的文字处理（查询总为空），仍与手机同一口径：
+    // 打开时刷新，结果在菜单开着时到达就重建。
+    _processText.actions.addListener(_onProcessActions);
+    unawaited(_processText.refresh());
+  }
+
+  void _onProcessActions() {
+    if (mounted) setState(() {});
+  }
+
+  /// 只收起一次：Esc 的连发事件或点按后又按 Esc，都不会让上游的 dismiss
+  /// 在菜单已移除后再跑一遍。
+  void _dismiss() {
+    if (_dismissed) return;
+    _dismissed = true;
+    widget.dismiss();
   }
 
   @override
   void dispose() {
+    _processText.actions.removeListener(_onProcessActions);
     // 编辑态收起时上游会重新聚焦正文，菜单此时已不持有焦点；只读正文没有
     // 上游键盘服务，由这里把焦点还给打开菜单前的位置。
     final previous = _previous;
@@ -254,79 +297,16 @@ class _DiaryEditorContextMenuState extends State<_DiaryEditorContextMenu> {
   @override
   Widget build(BuildContext context) => Focus(
     focusNode: _focus,
-    onKeyEvent: (_, event) {
-      if (event is KeyDownEvent &&
-          event.logicalKey == LogicalKeyboardKey.escape) {
-        widget.dismiss();
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    },
-    child: AdaptiveTextSelectionToolbar.buttonItems(
-      anchors: TextSelectionToolbarAnchors(primaryAnchor: widget.anchor),
+    child: AppTextContextMenuPanel(
+      anchor: widget.anchor,
+      onDismiss: _dismiss,
       // 桌面复制后保留选区，与系统文本框一致。
-      buttonItems: _menuItems(
+      actions: diaryEditorSelectionMenuItems(
+        context,
         widget.controller,
-        aiLabel: context.l10n.aiSelectionMenu,
-        dismiss: widget.dismiss,
-        afterCopy: widget.dismiss,
+        dismiss: _dismiss,
+        afterCopy: _dismiss,
       ),
     ),
   );
-}
-
-/// 两端共用的菜单项：有选中文字时才有复制 / 剪切，可编辑时才有剪切 /
-/// 粘贴（桌面右键可落在光标上，此时只有粘贴与全选）。[dismiss] 收起菜单，
-/// [afterCopy] 在写入剪贴板后执行。
-List<ContextMenuButtonItem> _menuItems(
-  DiaryEditorController controller, {
-  required String aiLabel,
-  required VoidCallback dismiss,
-  required VoidCallback afterCopy,
-}) {
-  final selection = controller.selection;
-  final ranged = selection != null && !selection.isCollapsed;
-  final ai = controller.aiSelectionHandler;
-  return [
-    // AI 写作：对选中的文字使用（编辑页打开 AI 写作面板）。
-    if (ranged && !controller.readOnly && ai != null)
-      ContextMenuButtonItem(
-        label: aiLabel,
-        onPressed: () {
-          dismiss();
-          ai();
-        },
-      ),
-    if (ranged)
-      ContextMenuButtonItem(
-        type: ContextMenuButtonType.copy,
-        onPressed: () => unawaited(
-          DiaryEditorClipboard.copy(controller).then((_) => afterCopy()),
-        ),
-      ),
-    if (!controller.readOnly) ...[
-      if (ranged)
-        ContextMenuButtonItem(
-          type: ContextMenuButtonType.cut,
-          onPressed: () {
-            dismiss();
-            unawaited(DiaryEditorClipboard.cut(controller));
-          },
-        ),
-      ContextMenuButtonItem(
-        type: ContextMenuButtonType.paste,
-        onPressed: () {
-          dismiss();
-          unawaited(DiaryEditorClipboard.paste(controller));
-        },
-      ),
-    ],
-    ContextMenuButtonItem(
-      type: ContextMenuButtonType.selectAll,
-      onPressed: () {
-        dismiss();
-        af.selectAllCommand.handler(controller.state);
-      },
-    ),
-  ];
 }

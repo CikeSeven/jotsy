@@ -18,6 +18,7 @@ import 'package:node_diary/ui/ai/pages/settings/ai_provider_edit_page.dart';
 import 'package:node_diary/ui/ai/pages/settings/ai_settings_page.dart';
 import 'package:node_diary/ui/ai/pages/settings/ai_usage_page.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
 
 import '../../support/diary_drafts_harness.dart';
 
@@ -83,6 +84,54 @@ void main() {
     );
     await tapCentered(tester, autoReply);
     expect(prefsOf(h).autoReply, isTrue);
+    await h.unmount();
+  });
+
+  testWidgets('photos-per-request slider drags up to 20 and saves on release', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(const AiSettingsPage());
+    final l10n = h.l10n;
+
+    final tile = find.ancestor(
+      of: find.text(l10n.aiOptionVisionImages),
+      matching: find.byType(SettingsSliderTile),
+    );
+    final slider = find.descendant(of: tile, matching: find.byType(Slider));
+    await tester.runAsync(
+      () => Scrollable.ensureVisible(tester.element(slider), alignment: 0.5),
+    );
+    await tester.pumpAndSettle();
+    // 曾经 onChanged 为 null，滑块停用，拖不动、一直是默认的 3 张。
+    expect(tester.widget<Slider>(slider).onChanged, isNotNull);
+    expect(
+      find.descendant(of: tile, matching: find.text(l10n.aiPhotos(3))),
+      findsOneWidget,
+    );
+
+    // 拖动中只改本地预览，不写偏好。
+    final gesture = await tester.startGesture(tester.getCenter(slider));
+    await gesture.moveBy(const Offset(2000, 0));
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: tile,
+        matching: find.text(l10n.aiPhotos(AiPreferences.maxVisionImages)),
+      ),
+      findsOneWidget,
+    );
+    expect(prefsOf(h).visionMaxImages, AiPreferences.defaultVisionMaxImages);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(AiPreferences.maxVisionImages, 20);
+    expect(prefsOf(h).visionMaxImages, 20);
+
+    // 拖回最左是 1 张。
+    await tester.drag(slider, const Offset(-2000, 0));
+    await tester.pumpAndSettle();
+    expect(prefsOf(h).visionMaxImages, 1);
     await h.unmount();
   });
 

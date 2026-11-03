@@ -225,17 +225,16 @@ class AiModulesGroup extends ConsumerWidget {
         module(
           AiModule.vision,
           options: <Widget>[
-            SettingsSliderTile(
-              nested: true,
+            // 与上面两个滑块同一写法：拖动中只改本地预览、松手才写入。
+            // 不能直接把 onChanged 设为 null 来“只在松手时提交”——Slider 的
+            // onChanged 为 null 即停用，整条滑块拖不动。
+            _IndexSlider(
               title: l10n.aiOptionVisionImages,
-              value: prefs.visionMaxImages.toDouble(),
-              min: 1,
-              max: AiPreferences.maxVisionImages.toDouble(),
-              divisions: AiPreferences.maxVisionImages - 1,
-              valueLabel: (double v) => l10n.aiPhotos(v.round()),
-              onChanged: null,
-              onChangeEnd: (double v) =>
-                  update((p) => p.copyWith(visionMaxImages: v.round())),
+              choices: AiPreferences.visionMaxImagesChoices,
+              value: prefs.visionMaxImages,
+              label: l10n.aiPhotos,
+              onChanged: (int v) =>
+                  update((p) => p.copyWith(visionMaxImages: v)),
             ),
             SettingsChoiceTile(
               nested: true,

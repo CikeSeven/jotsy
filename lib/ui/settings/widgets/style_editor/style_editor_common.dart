@@ -6,6 +6,7 @@ import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../diaries/models/style_library/saved_style.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../widgets/app_modal/app_dialog.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/style_draft_controller.dart';
 
 // 样式编辑页（卡片样式、预览页样式、代码块样式）各标签页共用的外壳、预览
@@ -174,6 +175,7 @@ class _StyleNameDialogState extends State<_StyleNameDialog> {
         decoration: InputDecoration(labelText: l10n.styleEditorNameLabel),
         textInputAction: TextInputAction.done,
         onSubmitted: (_) => _submit(),
+        contextMenuBuilder: appTextContextMenuBuilder,
       ),
       actions: <Widget>[
         TextButton(

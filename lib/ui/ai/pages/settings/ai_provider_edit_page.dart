@@ -23,6 +23,7 @@ import '../../../settings/widgets/settings_card_group.dart';
 import '../../../settings/widgets/settings_option_tiles.dart';
 import '../../../settings/widgets/settings_reveal.dart';
 import '../../../widgets/expressive_button_group.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/ai_provider_edit_controller.dart';
 import '../../providers/ai_providers.dart';
 import '../../sections/settings/ai_model_sheets.dart';
@@ -576,6 +577,7 @@ class _AdvancedSection extends StatelessWidget {
                   hintText: l10n.aiProviderHeadersHint,
                   alignLabelWithHint: true,
                 ),
+                contextMenuBuilder: appTextContextMenuBuilder,
               ),
               const SizedBox(height: 12),
               TextField(
@@ -591,6 +593,7 @@ class _AdvancedSection extends StatelessWidget {
                   errorText: extraBodyError,
                   alignLabelWithHint: true,
                 ),
+                contextMenuBuilder: appTextContextMenuBuilder,
               ),
             ],
           ),

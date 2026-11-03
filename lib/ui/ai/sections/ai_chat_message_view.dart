@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../viewmodels/ai_citations.dart';
 import '../viewmodels/ai_labels.dart';
@@ -100,6 +101,7 @@ class AiChatMessageView extends StatelessWidget {
                       color: colors.onPrimaryContainer,
                       height: 1.5,
                     ),
+                    contextMenuBuilder: appTextContextMenuBuilder,
                   ),
                 ),
               ),

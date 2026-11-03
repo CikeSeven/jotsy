@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/expressive_loading_indicator.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/cloud_backup_failure.dart';
 
 /// 授权对话框里发生的失败，由调用方按失败分类提示。取消不算失败（返回 null）。
@@ -169,6 +170,7 @@ class _DeviceCodeDialogState extends State<_DeviceCodeDialog> {
                         letterSpacing: 2,
                         color: colorScheme.primary,
                       ),
+                      contextMenuBuilder: appTextContextMenuBuilder,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.m),
@@ -311,6 +313,7 @@ class _CodePasteDialogState extends State<_CodePasteDialog> {
                 errorText: error,
                 errorMaxLines: 3,
               ),
+              contextMenuBuilder: appTextContextMenuBuilder,
             ),
           ],
         ),

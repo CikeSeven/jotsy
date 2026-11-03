@@ -32,6 +32,7 @@ import '../../widgets/desktop_horizontal_scroll.dart';
 import '../../widgets/expressive_loading_indicator.dart';
 import '../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../widgets/expressive_menu/expressive_menu_item.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_chat_flows.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
@@ -630,6 +631,7 @@ class _ChatInput extends StatelessWidget {
           borderSide: glass?.border ?? BorderSide.none,
         ),
       ),
+      contextMenuBuilder: appTextContextMenuBuilder,
     );
     if (AppPlatform.isDesktop) {
       field = CallbackShortcuts(

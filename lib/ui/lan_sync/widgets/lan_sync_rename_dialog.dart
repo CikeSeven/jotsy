@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../widgets/app_modal/app_dialog.dart';
 
@@ -83,6 +84,7 @@ class _LanSyncRenameDialogState extends State<_LanSyncRenameDialog> {
         ),
         onChanged: (_) => setState(() {}),
         onSubmitted: (_) => _submit(),
+        contextMenuBuilder: appTextContextMenuBuilder,
       ),
       actions: <Widget>[
         TextButton(

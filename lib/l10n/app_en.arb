@@ -17627,5 +17627,13 @@
   "cloudIncrementalErrorMediaChanged": "A photo or attachment changed during the backup. Please try again",
   "@cloudIncrementalErrorMediaChanged": {
     "description": "A media file changed during the incremental backup."
+  },
+  "textSelectionMenuMore": "More",
+  "@textSelectionMenuMore": {
+    "description": "Last button of the text selection menu: shows the remaining actions (share, translate and so on)."
+  },
+  "textSelectionMenuLess": "Less",
+  "@textSelectionMenuLess": {
+    "description": "Last button of the expanded text selection menu: hides the remaining actions."
   }
 }

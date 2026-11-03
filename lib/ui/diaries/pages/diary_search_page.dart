@@ -35,6 +35,7 @@ import '../../widgets/desktop_horizontal_scroll.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 日记搜索页（独立覆盖层）。
 ///
@@ -781,6 +782,7 @@ class _SearchInputBar extends StatelessWidget {
                         hintStyle: Theme.of(context).textTheme.bodyMedium
                             ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
+                      contextMenuBuilder: appTextContextMenuBuilder,
                     )
                   : DesktopHorizontalScroll(
                       child: SingleChildScrollView(
@@ -845,6 +847,7 @@ class _SearchInputBar extends StatelessWidget {
                                           color: colorScheme.onSurfaceVariant,
                                         ),
                                   ),
+                                  contextMenuBuilder: appTextContextMenuBuilder,
                                 ),
                               ),
                             ),

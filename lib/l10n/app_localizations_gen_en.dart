@@ -14211,4 +14211,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cloudIncrementalErrorMediaChanged =>
       'A photo or attachment changed during the backup. Please try again';
+
+  @override
+  String get textSelectionMenuMore => 'More';
+
+  @override
+  String get textSelectionMenuLess => 'Less';
 }

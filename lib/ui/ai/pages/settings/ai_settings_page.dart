@@ -14,6 +14,7 @@ import '../../../settings/widgets/settings_card_group.dart';
 import '../../../settings/widgets/settings_option_tiles.dart';
 import '../../../settings/widgets/settings_reveal.dart';
 import '../../../widgets/expressive_button_group.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../models/ai_preference_parts.dart';
 import '../../providers/ai_providers.dart';
 import '../../sections/settings/ai_modules_group.dart';
@@ -273,6 +274,7 @@ class _CustomLanguageFieldState extends ConsumerState<_CustomLanguageField> {
           ref,
           (p) => p.copyWith(customLanguage: value.trim()),
         ),
+        contextMenuBuilder: appTextContextMenuBuilder,
       ),
     );
   }

@@ -9,6 +9,7 @@ import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_s
 import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_body.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
@@ -192,7 +193,7 @@ void main() {
     await tester.longPressAt(point);
     await tester.pumpAndSettle();
     expect(controller.state.selection, isNull);
-    expect(find.byType(AdaptiveTextSelectionToolbar), findsNothing);
+    expect(find.byType(AppTextSelectionToolbar), findsNothing);
     await tester.dragFrom(point, const Offset(0, -120));
     await tester.pumpAndSettle();
     expect(scroll.offset, greaterThan(0));

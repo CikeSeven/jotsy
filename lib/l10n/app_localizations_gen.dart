@@ -23143,6 +23143,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A photo or attachment changed during the backup. Please try again'**
   String get cloudIncrementalErrorMediaChanged;
+
+  /// Last button of the text selection menu: shows the remaining actions (share, translate and so on).
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get textSelectionMenuMore;
+
+  /// Last button of the expanded text selection menu: hides the remaining actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get textSelectionMenuLess;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/color_palette_picker.dart';
@@ -158,6 +159,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(labelText: l10n.autoT0150),
               onSubmitted: (_) => _submit(),
+              contextMenuBuilder: appTextContextMenuBuilder,
             ),
             if (_nameController.text.trim().isNotEmpty) ...[
               const SizedBox(height: 10),

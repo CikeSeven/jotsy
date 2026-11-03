@@ -21,6 +21,7 @@ import '../../app_surface/widgets/app_glass_field.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../widgets/expressive_menu/expressive_menu_item.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/ai_chat_flows.dart';
 import '../models/ai_preference_parts.dart';
 import '../models/ai_recap_range.dart';
@@ -125,6 +126,7 @@ class _AiHubPageState extends ConsumerState<AiHubPage> {
                             borderSide: glass?.border ?? BorderSide.none,
                           ),
                         ),
+                        contextMenuBuilder: appTextContextMenuBuilder,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -230,6 +232,7 @@ class _AiHubPageState extends ConsumerState<AiHubPage> {
                       borderSide: glass?.border ?? BorderSide.none,
                     ),
                   ),
+                  contextMenuBuilder: appTextContextMenuBuilder,
                 ),
               ),
               if (chats != null && chats.isEmpty)

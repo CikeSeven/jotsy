@@ -5,6 +5,7 @@ import '../../diaries/widgets/diary_editor/diary_editor.dart';
 import '../../diaries/controllers/diary_editor_insert.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -225,6 +226,7 @@ class _DiaryTemplateEditorContentTabState
                 ),
               ),
             ),
+            contextMenuBuilder: appTextContextMenuBuilder,
           ),
         ),
         // 变量条自带 16 的左右边距，宽窗口里只补多出来的留白。

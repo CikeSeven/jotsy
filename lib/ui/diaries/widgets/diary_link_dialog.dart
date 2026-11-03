@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../widgets/app_modal/app_dialog.dart';
@@ -174,6 +175,7 @@ class _DiaryLinkDialogState extends State<_DiaryLinkDialog> {
           labelText: l10n.diaryEditorLinkUrl,
           errorText: _error,
         ),
+        contextMenuBuilder: appTextContextMenuBuilder,
       ),
       _LinkPage.diary || _LinkPage.notebook => DiaryLinkSearchView(
         kind: _page == _LinkPage.notebook

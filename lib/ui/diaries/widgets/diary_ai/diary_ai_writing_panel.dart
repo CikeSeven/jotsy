@@ -27,6 +27,7 @@ import '../../../widgets/expressive_loading_indicator.dart';
 import '../../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../../widgets/expressive_menu/expressive_menu_item.dart';
 import '../../../widgets/expressive_menu/expressive_menu_layout.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/diary_ai_editing.dart';
 
 class DiaryAiWritingPanel extends StatefulWidget {
@@ -226,6 +227,7 @@ class _DiaryAiWritingPanelState extends State<DiaryAiWritingPanel> {
                       icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 14),
                     ),
                   ),
+                  contextMenuBuilder: appTextContextMenuBuilder,
                 ),
               ),
               AnimatedSize(

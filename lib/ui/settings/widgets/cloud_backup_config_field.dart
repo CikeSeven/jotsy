@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/expressive_icon_swap.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 
 /// 备份位置配置表单的输入框。
 ///
@@ -71,6 +72,7 @@ class _CloudBackupConfigFieldState extends State<CloudBackupConfigField> {
               )
             : null,
       ),
+      contextMenuBuilder: appTextContextMenuBuilder,
     );
   }
 }

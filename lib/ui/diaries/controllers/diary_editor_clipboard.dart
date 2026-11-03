@@ -37,30 +37,44 @@ abstract final class DiaryEditorClipboard {
   }
 
   static Future<void> copy(DiaryEditorController controller) async {
-    // 上游按选择方向返回节点，但首尾裁切与落入剪贴板的文档都必须按正文顺序。
-    // 尤其反向跨段选区，未经规整会把两端的偏移用到相反的段落上。
     final selection = controller.selection?.normalized;
     if (selection == null || selection.isCollapsed) return;
-    // 选区从格子里开始或结束时会带上零散的格子：只留它们的段落，粘到
-    // 别处不会出现没有表格的格子。
-    final nodes = [
-      for (final node in controller.state.getSelectedNodes(
-        selection: selection,
-      ))
-        if (node.type == 'table/cell') ...node.children else node,
-    ];
-    final document = {
-      'document': {
-        'type': 'page',
-        'children': [for (final node in nodes) node.toJson()],
-      },
-    };
-    _text = diaryBlocksPlainText(document);
+    final nodes = _selectedNodes(controller, selection);
+    _text = _plainTextOf(nodes);
     _nodes = [for (final node in nodes) node.toJson()];
     _imageDigest = null;
     _imageData = null;
     await Clipboard.setData(ClipboardData(text: _text!));
   }
+
+  /// 选中内容的纯文本，与 [copy] 写进系统剪贴板的文字同一口径（选区菜单的
+  /// 分享、其他应用的文字处理也用它）；没有选区或只是光标时为 null。
+  static String? selectedPlainText(DiaryEditorController controller) {
+    final selection = controller.selection?.normalized;
+    if (selection == null || selection.isCollapsed) return null;
+    return _plainTextOf(_selectedNodes(controller, selection));
+  }
+
+  /// [selection]（已按正文顺序规整）覆盖到的块。
+  ///
+  /// 上游按选择方向返回节点，但首尾裁切与落入剪贴板的文档都必须按正文顺序。
+  /// 尤其反向跨段选区，未经规整会把两端的偏移用到相反的段落上。选区从格子
+  /// 里开始或结束时会带上零散的格子：只留它们的段落，粘到别处不会出现没有
+  /// 表格的格子。
+  static List<af.Node> _selectedNodes(
+    DiaryEditorController controller,
+    af.Selection selection,
+  ) => [
+    for (final node in controller.state.getSelectedNodes(selection: selection))
+      if (node.type == 'table/cell') ...node.children else node,
+  ];
+
+  static String _plainTextOf(List<af.Node> nodes) => diaryBlocksPlainText({
+    'document': {
+      'type': 'page',
+      'children': [for (final node in nodes) node.toJson()],
+    },
+  });
 
   static Future<void> cut(DiaryEditorController controller) async {
     if (controller.readOnly) return;
@@ -197,6 +211,23 @@ abstract final class DiaryEditorClipboard {
     await _pasteNodes(controller, [
       for (final node in document.root.children) node.toJson(),
     ]);
+  }
+
+  /// 以纯文本 [text] 替换当前选区（其他应用的文字处理回写结果时用）：与
+  /// 桌面“粘贴原文”同一条路径——每行一段、不转换 Markdown，代码块与表格
+  /// 格子里的行为也与粘贴原文一致。
+  ///
+  /// 一步撤销：删除选区与插入文字是两个事务（触及表格时先按本应用的规则删，
+  /// 否则由上游 `deleteSelectionIfNeeded` 删），但都是用户编辑、中间只隔
+  /// 微任务（不等计时器或平台通道）接连提交，落在上游撤销栈同一条尚未封存的
+  /// 记录里（上游在最后一次用户编辑 50ms 后才封存），与粘贴一样撤销一次即
+  /// 恢复原文。
+  static Future<void> replaceSelectionWithPlainText(
+    DiaryEditorController controller,
+    String text,
+  ) async {
+    if (controller.readOnly || controller.state.isDisposed) return;
+    await _pastePlain(controller, text);
   }
 
   static Future<void> _pastePlain(

@@ -5,6 +5,7 @@ import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../models/tag_picker_sort.dart';
 import 'publish_panel_tile.dart';
@@ -129,6 +130,7 @@ class _SearchField extends StatelessWidget {
                   ),
                   onChanged: onChanged,
                   onSubmitted: (_) => focusNode.unfocus(),
+                  contextMenuBuilder: appTextContextMenuBuilder,
                 ),
               ),
               // 有字时才出现清空按钮；交叉缩放淡入，不推动输入框宽度以外的布局。

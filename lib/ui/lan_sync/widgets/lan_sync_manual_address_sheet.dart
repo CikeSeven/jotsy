@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -146,6 +147,7 @@ class _ManualAddressSheetState extends State<_ManualAddressSheet> {
                 hintText: l10n.lanSyncManualHostHint,
                 errorText: _hostError ? l10n.lanSyncManualHostInvalid : null,
               ),
+              contextMenuBuilder: appTextContextMenuBuilder,
             ),
             const SizedBox(height: AppSpacing.m),
             TextField(
@@ -165,6 +167,7 @@ class _ManualAddressSheetState extends State<_ManualAddressSheet> {
                 labelText: l10n.lanSyncManualPortLabel,
                 errorText: _portError ? l10n.lanSyncManualPortInvalid : null,
               ),
+              contextMenuBuilder: appTextContextMenuBuilder,
             ),
             const SizedBox(height: AppSpacing.l),
             Row(

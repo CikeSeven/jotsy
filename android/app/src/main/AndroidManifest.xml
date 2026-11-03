@@ -71,6 +71,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/diary_share_paths" />
         </provider>
+        <!-- 正文拍照 / 录像：只暴露 cacheDir/diary_camera/，系统相机把拍到的文件写进来。 -->
+        <provider
+            android:name=".DiaryCameraFileProvider"
+            android:authorities="${applicationId}.diary_camera"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/diary_camera_paths" />
+        </provider>
         <!-- 应用内更新：只暴露 cacheDir/app_update/ 下校验过的安装包。 -->
         <provider
             android:name=".AppUpdateFileProvider"

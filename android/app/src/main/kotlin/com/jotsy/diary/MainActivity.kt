@@ -33,6 +33,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var pendingBackupSaveResult: MethodChannel.Result? = null
   private var pendingBackupSourcePath: String? = null
   private var galleryVideoPicker: DiaryGalleryVideoPicker? = null
+  private var cameraCapture: DiaryCameraCapture? = null
   private var shareLauncher: DiaryShareLauncher? = null
   private var longImageSlicer: DiaryLongImageSlicer? = null
   private var imageTranscoder: DiaryImageTranscoder? = null
@@ -194,6 +195,8 @@ class MainActivity : FlutterFragmentActivity() {
       this,
       flutterEngine.dartExecutor.binaryMessenger,
     )
+    cameraCapture?.dispose()
+    cameraCapture = DiaryCameraCapture(this, flutterEngine.dartExecutor.binaryMessenger)
     shareLauncher?.dispose()
     shareLauncher = DiaryShareLauncher(this, flutterEngine.dartExecutor.binaryMessenger)
     longImageSlicer?.dispose()
@@ -301,6 +304,9 @@ class MainActivity : FlutterFragmentActivity() {
     if (galleryVideoPicker?.onActivityResult(requestCode, resultCode, data) == true) {
       return
     }
+    if (cameraCapture?.onActivityResult(requestCode, resultCode, data) == true) {
+      return
+    }
     if (requestCode != backupFileSaverRequestCode) {
       super.onActivityResult(requestCode, resultCode, data)
       return
@@ -334,6 +340,17 @@ class MainActivity : FlutterFragmentActivity() {
     }.start()
   }
 
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<String>,
+    grantResults: IntArray,
+  ) {
+    if (cameraCapture?.onRequestPermissionsResult(requestCode, grantResults) == true) {
+      return
+    }
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+  }
+
   private fun copyBackupFileToUri(sourcePath: String, targetUri: Uri) {
     val outputStream = contentResolver.openOutputStream(targetUri)
       ?: throw IOException("Cannot open backup save target.")
@@ -360,6 +377,8 @@ class MainActivity : FlutterFragmentActivity() {
   override fun onDestroy() {
     galleryVideoPicker?.dispose()
     galleryVideoPicker = null
+    cameraCapture?.dispose()
+    cameraCapture = null
     shareLauncher?.dispose()
     shareLauncher = null
     longImageSlicer?.dispose()

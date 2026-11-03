@@ -29,11 +29,13 @@ class DiaryMediaStorageService {
   static const String attachmentsDirectoryName = 'diary_attachments';
 
   /// 选择器在应用缓存里生成的中转副本目录：file_picker 的
-  /// `cache/file_picker/<时间戳>/`，以及 Android 相册视频入口的
-  /// `cache/diary_video_gallery/selection_*/<序号>/`。
+  /// `cache/file_picker/<时间戳>/`，Android 相册视频入口的
+  /// `cache/diary_video_gallery/selection_*/<序号>/`，以及正文拍照 / 录像的
+  /// `cache/diary_camera/<批次>/`。
   static const List<String> pickerCacheDirectoryNames = [
     'file_picker',
     'diary_video_gallery',
+    'diary_camera',
   ];
 
   static String directoryNameFor(DiaryMediaKind kind) => switch (kind) {

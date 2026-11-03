@@ -3158,6 +3158,36 @@ abstract class AppLocalizations {
   /// **'File import is not available on this platform.'**
   String get diaryMediaImportUnsupported;
 
+  /// Editor toolbar image/video menu item: pick existing photos or videos with the system picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get diaryMediaFromLibrary;
+
+  /// Editor toolbar image menu item and slash command: take a photo with the system camera and insert it.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get diaryMediaTakePhoto;
+
+  /// Editor toolbar video menu item and slash command: record a video with the system camera and insert it.
+  ///
+  /// In en, this message translates to:
+  /// **'Record video'**
+  String get diaryMediaRecordVideo;
+
+  /// Shown when taking a photo or video fails because camera permission was denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is off. Allow Jotsy to use the camera in system settings.'**
+  String get diaryMediaCameraPermissionDenied;
+
+  /// Shown when taking a photo or video fails because the device has no camera or camera app.
+  ///
+  /// In en, this message translates to:
+  /// **'No camera is available on this device.'**
+  String get diaryMediaCameraUnavailable;
+
   /// Tooltip for opening a diary attachment with the system file handler.
   ///
   /// In en, this message translates to:

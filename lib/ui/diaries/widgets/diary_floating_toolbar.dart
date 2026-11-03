@@ -30,6 +30,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_table/diary_toolbar_table_bu
 import 'package:node_diary/ui/diaries/widgets/diary_text_style/diary_text_style_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_text_style/diary_text_style_panels.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_config.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_toolbar_media_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_panel.dart';
 
@@ -109,6 +110,7 @@ class DiaryFloatingToolbar extends StatefulWidget {
     this.aiOpen = false,
     this.mediaImportController,
     this.onMediaPressed,
+    this.onCameraPressed,
     this.onPanelExtentChanged,
     this.maxPanelExtent = double.infinity,
     this.savedColors = DiarySavedColors.empty,
@@ -135,6 +137,11 @@ class DiaryFloatingToolbar extends StatefulWidget {
   /// 取消。这里只读取它的进行中状态。
   final DiaryMediaImportController? mediaImportController;
   final void Function(DiaryMediaKind)? onMediaPressed;
+
+  /// 拍照（图片）/ 录像（视频）。给出时图片与视频按钮点按先弹出来源菜单
+  /// （[DiaryToolbarMediaSourceButton]）；null（不支持拍摄的平台）时按钮
+  /// 仍直接打开选择器。
+  final void Function(DiaryMediaKind)? onCameraPressed;
 
   /// 面板目标高度（含分隔线）变化时回调：展开为面板高度，收起或卸载后为 0。
   final ValueChanged<double>? onPanelExtentChanged;

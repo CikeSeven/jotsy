@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只暴露正文拍照 / 录像的暂存目录：系统相机经这里的单个 URI 写入拍到的文件，
+     Dart 侧复制进日记私有目录后即删除，其余缓存与日记原图不对外开放。 -->
+<paths>
+    <cache-path name="diary_camera" path="diary_camera/" />
+</paths>

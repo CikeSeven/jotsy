@@ -77,4 +77,9 @@ abstract final class AppPlatform {
   /// （系统 ImageDecoder，Android 9+）。桌面的 Flutter 解码器不认这些格式，
   /// 所以由手机在图片进库时转码、并修复已存的旧图（`heif_image_converter.dart`）。
   static bool get supportsHeifToJpeg => isAndroid;
+
+  /// 正文里直接拍照 / 录像：只有 Android 原生通道（交给系统相机应用，
+  /// `diary_camera_capture_service.dart`）。桌面没有可调用的相机应用，iOS
+  /// 没有接这条通道，那里的图片 / 视频按钮仍直接打开选择器。
+  static bool get supportsCameraCapture => isAndroid;
 }

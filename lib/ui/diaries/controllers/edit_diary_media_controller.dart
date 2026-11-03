@@ -19,6 +19,26 @@ extension EditDiaryMediaFlow on EditDiaryController {
     await _reportMediaOutcome(outcome);
   }
 
+  /// 工具栏图片 / 视频按钮菜单里的“拍照 / 录像”与 `/` 命令：打开系统相机，
+  /// 拍到的照片或视频插在光标处（[DiaryMediaImportController.captureAndInsert]，
+  /// 与选文件同一条链路与同样的失败提示）。保存中、录音面板开着或已有导入
+  /// 在进行时忽略。
+  Future<void> captureMedia(DiaryMediaKind kind) async {
+    if (_state._saving || _state._recordingPanelOpen) return;
+    final controller = _state._contentController;
+    final route = ModalRoute.of(_state.context);
+    final outcome = await _state._mediaImportController.captureAndInsert(
+      controller: controller,
+      kind: kind,
+      isCurrent: () =>
+          _state.mounted &&
+          identical(_state._contentController, controller) &&
+          !_state._saving &&
+          (route?.isCurrent ?? true),
+    );
+    await _reportMediaOutcome(outcome);
+  }
+
   /// 桌面上把文件拖进正文：插在光标处（没有选区时接在正文末尾），与工具栏
   /// 选文件同一条链路与同样的失败提示（见
   /// [DiaryMediaImportController.insertFiles]）。保存中、录音面板开着或已有
@@ -49,6 +69,10 @@ extension EditDiaryMediaFlow on EditDiaryController {
       DiaryMediaImportOutcome.pickerUnavailable =>
         l10n.diaryMediaPickerUnavailable,
       DiaryMediaImportOutcome.unsupported => l10n.diaryMediaImportUnsupported,
+      DiaryMediaImportOutcome.cameraPermissionDenied =>
+        l10n.diaryMediaCameraPermissionDenied,
+      DiaryMediaImportOutcome.cameraUnavailable =>
+        l10n.diaryMediaCameraUnavailable,
       _ => null,
     };
     if (message == null) return;

@@ -1695,6 +1695,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryMediaImportUnsupported => '当前平台暂不支持文件导入';
 
   @override
+  String get diaryMediaFromLibrary => '从相册选择';
+
+  @override
+  String get diaryMediaTakePhoto => '拍照';
+
+  @override
+  String get diaryMediaRecordVideo => '录像';
+
+  @override
+  String get diaryMediaCameraPermissionDenied => '没有相机权限，请在系统设置里允许 Jotsy 使用相机';
+
+  @override
+  String get diaryMediaCameraUnavailable => '没有找到可用的相机';
+
+  @override
   String get attachmentOpen => '打开附件';
 
   @override

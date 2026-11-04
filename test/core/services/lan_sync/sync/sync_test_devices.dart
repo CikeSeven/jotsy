@@ -418,6 +418,26 @@ Future<void> seedEveryEntity(SyncTestDevice device) async {
           editedAt: Value(at(1700002200)),
         ),
       );
+  // 只有图片的留言：同一个文件写成绝对路径与 file: URI 两种形式（归一后
+  // 是同一个键，规范值里只留一项），另有一张远程图片原样保留。
+  await db
+      .into(db.diaryComments)
+      .insert(
+        DiaryCommentsCompanion.insert(
+          commentId: 'comment-photos',
+          diaryId: 'diary-rich',
+          content: '',
+          createdAt: at(1700002300),
+          images: Value(
+            encodeDiaryCommentImages(<String>[
+              device.media('diary_images/media_c/p.jpg'),
+              Uri.file(device.media('diary_images/media_c/p.jpg')).toString(),
+              'https://example.com/diary_images/remote.jpg',
+              device.media('diary_images/media_c/q.jpg'),
+            ]),
+          ),
+        ),
+      );
 
   Future<void> template(String id, int sortOrder) => db
       .into(db.diaryTemplates)
@@ -565,7 +585,12 @@ Future<void> writeRecordsForTest(
     for (final record in of(SyncEntity.comment)) {
       await db
           .into(db.diaryComments)
-          .insert(SyncCommentColumns.fromRecord(record).toCompanion());
+          .insert(
+            SyncCommentColumns.fromRecord(
+              record,
+              dataRoot: dataRoot,
+            ).toCompanion(),
+          );
     }
     final templates = order(SyncOrderListId.templates);
     for (final record in of(SyncEntity.template)) {

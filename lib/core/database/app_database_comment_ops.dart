@@ -2,7 +2,8 @@ part of 'app_database.dart';
 
 /// 日记留言的读写与回看查询。
 ///
-/// 输入：预览页写下 / 编辑 / 删除的留言，卡片、搜索、探索与导出的读取；
+/// 输入：预览页写下 / 编辑 / 删除的留言（文字、心情与图片），卡片、搜索、
+/// 探索与导出的读取；
 /// 输出：drift watch 流与一次性读取。删除是硬删除，撤销由调用方持有被删的
 /// 整行、经 [restoreDiaryComment] 原样写回（与纪念日、这天的心情同一做法）。
 ///
@@ -27,46 +28,73 @@ mixin _AppDatabaseCommentOps
 
   /// 给 [diaryId] 写一条留言，返回新留言的业务 id。
   ///
-  /// [content] 去掉首尾空白后为空时抛 [FormatException]；[mood] 为空串按
-  /// 没选心情处理。
+  /// [content] 去掉首尾空白；[images] 为已复制进托管目录的图片路径（按添加
+  /// 顺序，经 [encodeDiaryCommentImages] 规整）。文字为空且没有图片时抛
+  /// [FormatException]；[mood] 为空串按没选心情处理。
   Future<String> addDiaryComment({
     required String diaryId,
     required String content,
     String? mood,
+    List<String> images = const <String>[],
   }) async {
     final commentId = _newBusinessUuid();
+    final encodedImages = encodeDiaryCommentImages(images);
     await into(diaryComments).insert(
       DiaryCommentsCompanion.insert(
         commentId: commentId,
         diaryId: diaryId,
-        content: _normalizeDiaryComment(content),
+        content: _normalizeDiaryComment(
+          content,
+          hasImages: encodedImages != null,
+        ),
         mood: Value(_normalizeCommentMood(mood)),
         createdAt: DateTime.now(),
+        images: Value(encodedImages),
       ),
     );
     return commentId;
   }
 
-  /// 改写一条留言的文字与心情；有变化时记下编辑时间（显示“已编辑”），
+  /// 改写一条留言的文字、心情与图片；有变化时记下编辑时间（显示“已编辑”），
   /// 原样保存不算编辑。返回是否真的改动了。
+  ///
+  /// [images] 为 null 时保留原有图片（只改文字与心情的调用方不会误删图片）；
+  /// 给出列表（可为空）即整份替换。去掉的图片不在这里删文件：撤销与其他
+  /// 引用由媒体回收按引用处理（与日记正文删图同一做法）。文字为空且改写后
+  /// 没有图片时抛 [FormatException]。
   Future<bool> updateDiaryComment(
     String commentId, {
     required String content,
     String? mood,
+    List<String>? images,
   }) {
-    final text = _normalizeDiaryComment(content);
     final normalizedMood = _normalizeCommentMood(mood);
     return transaction(() async {
       final row = await (select(
         diaryComments,
       )..where((t) => t.commentId.equals(commentId))).getSingleOrNull();
-      if (row == null || (row.content == text && row.mood == normalizedMood)) {
+      // 比较规整后的值：库里的坏数据或旧格式不算“改过”。
+      final currentImages = row == null
+          ? null
+          : encodeDiaryCommentImages(row.imagePaths);
+      final encodedImages = images == null
+          ? currentImages
+          : encodeDiaryCommentImages(images);
+      final text = _normalizeDiaryComment(
+        content,
+        hasImages: encodedImages != null,
+      );
+      if (row == null ||
+          (row.content == text &&
+              row.mood == normalizedMood &&
+              currentImages == encodedImages)) {
         return false;
       }
       await (update(diaryComments)..where((t) => t.id.equals(row.id))).write(
         DiaryCommentsCompanion(
           content: Value(text),
           mood: Value(normalizedMood),
+          images: Value(encodedImages),
           editedAt: Value(DateTime.now()),
         ),
       );
@@ -150,6 +178,7 @@ SELECT
   c.mood,
   c.created_at,
   c.edited_at,
+  c.images,
   d.title AS diary_title,
   d.created_at AS diary_created_at
 FROM diary_comments c
@@ -175,6 +204,9 @@ JOIN diaries d ON d.diary_id = c.diary_id
             mood: row.readNullable<String>('mood'),
             createdAt: _readDateTime(row, 'created_at'),
             editedAt: _readNullableDateTime(row, 'edited_at'),
+            images: decodeDiaryCommentImages(
+              row.readNullable<String>('images'),
+            ),
             diaryTitle: row.read<String>('diary_title'),
             diaryCreatedAt: _readDateTime(row, 'diary_created_at'),
           ),
@@ -264,9 +296,10 @@ WHERE d.is_deleted = 0
     _writeDiaryScopeFilter(sql, variables, DiaryListScope.all);
   }
 
-  String _normalizeDiaryComment(String raw) {
+  /// 去掉首尾空白；只有图片的留言文字可以为空，文字与图片都没有时拒绝。
+  String _normalizeDiaryComment(String raw, {required bool hasImages}) {
     final text = raw.trim();
-    if (text.isEmpty) {
+    if (text.isEmpty && !hasImages) {
       throw const FormatException('留言不能为空');
     }
     return text;
@@ -290,14 +323,20 @@ class DiaryCommentSummary {
     required this.diaryCreatedAt,
     this.mood,
     this.editedAt,
+    this.images = const <String>[],
   });
 
   final String commentId;
   final String diaryId;
+
+  /// 留言文字；只有图片的留言为空串。
   final String content;
   final String? mood;
   final DateTime createdAt;
   final DateTime? editedAt;
+
+  /// 附带的图片路径（已解码），按添加顺序。
+  final List<String> images;
   final String diaryTitle;
   final DateTime diaryCreatedAt;
 }

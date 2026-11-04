@@ -38,7 +38,7 @@
 ### 2.1 基本类型（`sync_model.dart`）
 
 ```dart
-const int kSyncFormatVersion = 1;
+const int kSyncFormatVersion = 2;
 
 enum SyncEntity { diary, tag, notebook, membership, orderList, comment, template, anniversary, dayMood, settings }
 
@@ -63,6 +63,7 @@ class SyncManifest {
 - **哈希**：`sha256(utf8(规范 JSON))` 取前 16 字节，小写十六进制（32 字符）。
 - 规范化必须是**幂等且跨设备确定**的：A 的记录写入 B 后，B 读出的规范记录与 A 的逐字节相同（测试兜底，含历史 Delta / 旧节点格式的正文、胶囊、带附件的 metadata）。
 - 规范形式（分面组成、归一规则、哈希）一旦改变必须提升 `kSyncFormatVersion`（版本不同的设备握手时互相拒绝）；只修正本机实现、不改协议时提升 `kSyncCanonicalRevision`（`sync_hash_cache.dart`），让哈希缓存整份作废重算。
+- 格式版本历史：1 为首版；2 为留言多出 `images`。新字段只在有值时出现，已有记录的规范值不变，升级后历史哈希仍有效；提升版本只为让认不出新字段的旧版设备拒绝同步（它写入时会丢掉图片，下次再把丢了图片的版本当作冲突一方传回来）。
 
 ### 2.2 实体与分面
 
@@ -73,7 +74,7 @@ class SyncManifest {
 | notebook | `notebookId` | **definition**：`name`、`kind`、`visibility`、`payload`（库中原始 JSON 解析后的对象，键排序、封面路径归一；**不要**经 `NotebookPayload.decode` 再编码，它会丢掉认不出的键）、`pinned`、`closed`、`parentId`、`createdAt`、`updatedAt` |
 | membership | `<notebookId>|<diaryId>` | **main**：`chapterId`、`addedAt`（只有手动日记本有成员——按 `kind` 列原始值为 `manual` 判断，与 `acceptsManualEntries` 同一口径；智能本的残留关联行与日记已不在的悬空行忽略；位置不在这里） |
 | orderList | `shelf` / `templates` / `book:<notebookId>` | **items**：`ids`（书架：全部日记本按 `sortOrder`、同值按本地 id（应用的 `_notebookManualOrder`，不看置顶——置顶是 definition 的 `pinned`）；模板：只含用户模板（不含 `builtin.*`：改过的内置模板按内置顺序显示、不看 `sort_order`），按 `sortOrder`、同值按本地 id（`_templateOrder`）；书序：手动日记本内日记按 `position`、`addedAt`、日记本地 id（`_entriesInOrder`）的业务 id 列表。平手只在从未排序过的数据上出现，写入层按列表重排为 0..n-1 后两端不再有平手。`shelf`、`templates` 总是存在（可为空列表），每本手动日记本都有 `book:<id>`（空本为空列表），智能本没有） |
-| comment | `commentId` | **main**：`diaryId`、`content`、`mood`、`createdAt`、`editedAt` |
+| comment | `commentId` | **main**：`diaryId`、`content`、`mood`、`createdAt`、`editedAt`、`images`（留言图片：列值经 `decodeDiaryCommentImages` 规整、路径归一后再按首次出现去重的列表；**只在有图片时出现**，没有图片的留言与格式版本 1 的规范值逐字节相同；列里的坏数据按没有图片处理） |
 | template | `templateId`（含 `builtin.*`） | **main**：`name`、`payload`（库中原始 JSON 解析后的对象，键排序；保存时已经白名单重建，读取时应用自己再经 `sanitizeDiaryTemplateBlocks`，同步层在 core 不引用 UI 模块的清理函数、原样搬运）、`createdAt`、`updatedAt` |
 | anniversary | `anniversaryId` | **main**：全部业务列（含 `metadata` 对象、`linkedDiaryId`、`pinned`、`createdAt`、`updatedAt`） |
 | dayMood | `YYYY-MM-DD` | **main**：`mood`（原始字符串，认不出的枚举名原样）、`updatedAt` |
@@ -89,7 +90,7 @@ class SyncManifest {
 
 - 与 `DiaryMediaReferences`（`lib/core/services/diary_media_references.dart`）同一口径：遍历规范值中的每个字符串（只有提到托管目录名的字符串才处理）；字符串本身是 JSON 对象/数组时解码、递归处理后再按规范 JSON 编码回字符串；**整串**是托管媒体路径（绝对路径或 `file:` URI，且 `diaryMediaKeyOf` 非空）时替换为 `jotsy-media:<键>`（键形如 `diary_images/media_x/a.jpg`）。
 - 写入时把 `jotsy-media:<键>` 换回本机 `<dataRoot>/<键>`（平台路径分隔符），原来是 `file:` URI 的也写成本机绝对路径。
-- 归一只作用于可能存放媒体的列：日记的正文、封面、metadata 与胶囊块，日记本与模板的 payload，纪念日的 metadata，设置值；标题、名称、备注、留言正文这类用户文字不改写。
+- 归一只作用于可能存放媒体的列：日记的正文、封面、metadata 与胶囊块，日记本与模板的 payload，纪念日的 metadata，留言的图片，设置值；标题、名称、备注、留言正文这类用户文字不改写。
 - 设置背景：`jotsy-media:app_backgrounds/<文件名>` 只在 settings 记录里出现，写入时还原为文件名（文件名须通过 `AppBackgroundStorageService.isValidName`）。
 - 还原时键必须满足 `diaryMediaKeyOf(键) == 键`（以托管目录开头、无 `..`），否则原样保留，防止拼出数据根之外的路径。
 - 一条记录引用的媒体键集合由同一遍历得出（`SyncRecord` 的派生信息），供传输阶段使用。

@@ -143,6 +143,114 @@ void main() {
     );
   });
 
+  group('comment images', () {
+    test(
+      'a comment can be just photos; neither text nor photos is rejected',
+      () async {
+        final id = await diary('a');
+        await db.addDiaryComment(
+          diaryId: id,
+          content: '  ',
+          images: const <String>[
+            ' /m/diary_images/b/1.jpg ',
+            '/m/diary_images/b/1.jpg',
+            '/m/diary_images/b/2.jpg',
+          ],
+        );
+        final row = (await comments(id)).single;
+        expect(row.content, '');
+        expect(row.hasText, isFalse);
+        // 去掉空白、按首次出现去重，保持顺序。
+        expect(row.imagePaths, <String>[
+          '/m/diary_images/b/1.jpg',
+          '/m/diary_images/b/2.jpg',
+        ]);
+
+        await expectLater(
+          db.addDiaryComment(
+            diaryId: id,
+            content: ' ',
+            images: const <String>['  '],
+          ),
+          throwsFormatException,
+        );
+      },
+    );
+
+    test('a comment without photos stores NULL like before', () async {
+      final id = await diary('a');
+      await db.addDiaryComment(diaryId: id, content: '只有字');
+      expect((await comments(id)).single.images, isNull);
+    });
+
+    test(
+      'editing photos counts as an edit; omitting them keeps them',
+      () async {
+        final id = await diary('a');
+        final commentId = await db.addDiaryComment(
+          diaryId: id,
+          content: '原话',
+          images: const <String>['/r/diary_images/x/a.jpg'],
+        );
+
+        // 不传图片：只改文字，图片保留。
+        expect(await db.updateDiaryComment(commentId, content: '原话'), isFalse);
+        expect(await db.updateDiaryComment(commentId, content: '改了'), isTrue);
+        expect((await comments(id)).single.imagePaths, <String>[
+          '/r/diary_images/x/a.jpg',
+        ]);
+
+        // 原样的图片列表不算编辑；换顺序、去掉都算。
+        final before = (await comments(id)).single.editedAt;
+        expect(
+          await db.updateDiaryComment(
+            commentId,
+            content: '改了',
+            images: const <String>['/r/diary_images/x/a.jpg'],
+          ),
+          isFalse,
+        );
+        expect((await comments(id)).single.editedAt, before);
+        expect(
+          await db.updateDiaryComment(
+            commentId,
+            content: '改了',
+            images: const <String>[],
+          ),
+          isTrue,
+        );
+        expect((await comments(id)).single.images, isNull);
+
+        // 去掉全部图片又没有文字：拒绝，原行不变。
+        final photoOnly = await db.addDiaryComment(
+          diaryId: id,
+          content: '',
+          images: const <String>['/r/diary_images/x/b.jpg'],
+        );
+        await expectLater(
+          db.updateDiaryComment(
+            photoOnly,
+            content: '',
+            images: const <String>[],
+          ),
+          throwsFormatException,
+        );
+      },
+    );
+
+    test('recent comments carry their photos', () async {
+      final id = await diary('a');
+      await db.addDiaryComment(
+        diaryId: id,
+        content: '',
+        images: const <String>['/r/diary_images/x/a.jpg'],
+      );
+      final recent = await db.watchRecentDiaryComments(limit: 5).first;
+      expect(recent.single.images, <String>['/r/diary_images/x/a.jpg']);
+      expect(recent.single.content, '');
+    });
+  });
+
   group('looking back across diaries', () {
     test(
       'recent comments and timings skip trash, sealed and private diaries',
@@ -279,5 +387,67 @@ void main() {
         await migrated.close();
       }
     });
+  });
+
+  group('schema v18 migration', () {
+    /// v17 的留言表没有 images 列：用 v17 的定义重建表，写一条旧留言。
+    Future<File> v17DatabaseFile({required bool keepImagesColumn}) async {
+      final root = await Directory.systemTemp.createTemp('jotsy_v18_images');
+      addTearDown(() => root.delete(recursive: true));
+      final file = File('${root.path}/v17.sqlite');
+      final original = AppDatabase.forTesting(NativeDatabase(file));
+      late String diaryId;
+      try {
+        diaryId = await original.createDiary(
+          title: '升级前',
+          contentDocJson: '[{"insert":"正文\\n"}]',
+          contentText: '正文',
+          metadataJson: '{}',
+        );
+        await original.addDiaryComment(diaryId: diaryId, content: '旧留言');
+      } finally {
+        await original.close();
+      }
+      final legacy = sqlite3.open(file.path);
+      if (!keepImagesColumn) {
+        legacy.execute('ALTER TABLE diary_comments DROP COLUMN images');
+      }
+      legacy.execute('PRAGMA user_version = 17');
+      legacy.close();
+      return file;
+    }
+
+    for (final keep in <bool>[false, true]) {
+      test(
+        'v17 upgrade ${keep ? 'over a column a downgrade left' : 'adds the images column'} '
+        'and keeps the comments',
+        () async {
+          final file = await v17DatabaseFile(keepImagesColumn: keep);
+          final migrated = AppDatabase.forTesting(NativeDatabase(file));
+          try {
+            final old = await migrated
+                .select(migrated.diaryComments)
+                .getSingle();
+            expect(old.content, '旧留言');
+            expect(old.images, isNull);
+            final commentId = await migrated.addDiaryComment(
+              diaryId: old.diaryId,
+              content: '',
+              images: const <String>['/r/diary_images/m/a.jpg'],
+            );
+            final added = await (migrated.select(
+              migrated.diaryComments,
+            )..where((t) => t.commentId.equals(commentId))).getSingle();
+            expect(added.imagePaths, <String>['/r/diary_images/m/a.jpg']);
+            final version = await migrated
+                .customSelect('PRAGMA user_version')
+                .getSingle();
+            expect(version.read<int>('user_version'), 18);
+          } finally {
+            await migrated.close();
+          }
+        },
+      );
+    }
   });
 }

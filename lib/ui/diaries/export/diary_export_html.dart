@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:ui' show Color;
 
+import '../../../core/database/app_database.dart'
+    show DiaryCommentRow, DiaryCommentRowImages;
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../models/diary_callout_tone.dart';
@@ -126,6 +128,13 @@ class DiaryHtmlWriter {
         }
       }
     }
+    // 留言图片的样式只在真有一张写成图片时才写（不带媒体、文件缺失时
+    // 只有文字占位）。
+    final hasCommentImages = entries.any(
+      (DiaryExportEntry entry) => entry.comments.any(
+        (DiaryCommentRow comment) => comment.imagePaths.any(images.containsKey),
+      ),
+    );
 
     final out = StringBuffer()
       ..write('<!DOCTYPE html>\n<html lang="${_attr(languageTag)}">\n<head>\n')
@@ -140,7 +149,8 @@ class DiaryHtmlWriter {
         '${_fontCss(fontFamilies)}'
         '${book == null ? '' : _bookCss}'
         '${hasRichBlocks ? _blocksCss() : ''}'
-        '${hasComments ? _commentsCss : ''}</style>\n',
+        '${hasComments ? _commentsCss : ''}'
+        '${hasCommentImages ? _commentImagesCss : ''}</style>\n',
       )
       ..write('</head>\n<body>\n<main>\n');
     if (book != null) {
@@ -309,16 +319,25 @@ class DiaryHtmlWriter {
       code: code,
       headingOffset: titleLevel,
     );
-    _writeComments(out, entry, labels: labels, level: titleLevel + 1);
+    _writeComments(
+      out,
+      entry,
+      labels: labels,
+      images: images,
+      level: titleLevel + 1,
+    );
     out.write('</article>\n');
   }
 
   /// 留言区（没有留言时不写）：标题比日记标题低一级，每条留言为一行说明
   /// 加心情与文字；文字按原样换行（`pre-wrap`），不必把换行改写成 `<br>`。
+  /// 留言图片在文字下面排成一行方形缩略图（[images] 里有的，即开启了媒体且
+  /// 读得到的），其余在文字里写成占位（[DiaryExportLabels.commentText]）。
   static void _writeComments(
     StringBuffer out,
     DiaryExportEntry entry, {
     required DiaryExportLabels labels,
+    required Map<String, String> images,
     required int level,
   }) {
     if (entry.comments.isEmpty) {
@@ -329,12 +348,27 @@ class DiaryHtmlWriter {
       '<h$level>${_text(labels.commentsHeading)}</h$level>\n',
     );
     for (final comment in entry.comments) {
+      final sources = comment.imagePaths;
+      final shown = <String>[for (final source in sources) ?images[source]];
+      final text = labels.commentText(
+        comment,
+        unrenderedImages: sources.length - shown.length,
+      );
       out.write(
         '<div class="comment">'
-        '<p class="meta">${_text(labels.commentMetaLine(entry, comment))}</p>'
-        '<p class="comment-text">${_text(labels.commentText(comment))}</p>'
-        '</div>\n',
+        '<p class="meta">${_text(labels.commentMetaLine(entry, comment))}</p>',
       );
+      if (text.isNotEmpty) {
+        out.write('<p class="comment-text">${_text(text)}</p>');
+      }
+      if (shown.isNotEmpty) {
+        out.write('<div class="comment-images">');
+        for (final src in shown) {
+          out.write('<img src="${_attr(src)}" alt="">');
+        }
+        out.write('</div>');
+      }
+      out.write('</div>\n');
     }
     out.write('</section>\n');
   }
@@ -856,6 +890,11 @@ article>header h2{margin:0 0 4px;font-size:24px;line-height:1.35}
 
   /// 留言区的样式（只在有留言时写出，没有留言的页面保持原样）：以一条
   /// 细线与正文隔开，标题与说明行用次要色，文字保留原来的换行。
+  static const String _commentImagesCss = '''
+.comment-images{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.comment-images img{width:112px;height:112px;object-fit:cover;border-radius:10px;margin:0}
+''';
+
   static const String _commentsCss = '''
 .comments{margin-top:20px;padding-top:12px;border-top:1px solid var(--line)}
 .comments>h2,.comments>h3{margin:0 0 8px;font-size:16px;line-height:1.4;color:var(--muted)}

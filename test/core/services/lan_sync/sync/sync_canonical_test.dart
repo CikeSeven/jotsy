@@ -76,6 +76,40 @@ void main() {
       expect(written!.diary.contentText, 'plain line one\nline two');
     });
 
+    test('comment photos are normalized, deduplicated and only present when '
+        'there are some', () async {
+      await seedEveryEntity(a);
+      final records = await a.records();
+
+      final plain = recordOf(records, SyncEntity.comment, 'comment-1');
+      expect(
+        (plain.facets[SyncFacet.main]! as Map).containsKey('images'),
+        isFalse,
+      );
+      expect(plain.mediaKeys, isEmpty);
+
+      final photos = recordOf(records, SyncEntity.comment, 'comment-photos');
+      expect((photos.facets[SyncFacet.main]! as Map)['images'], <String>[
+        'jotsy-media:diary_images/media_c/p.jpg',
+        'https://example.com/diary_images/remote.jpg',
+        'jotsy-media:diary_images/media_c/q.jpg',
+      ]);
+      expect(photos.mediaKeys, <String>{
+        'diary_images/media_c/p.jpg',
+        'diary_images/media_c/q.jpg',
+      });
+
+      await writeRecordsForTest(b, records);
+      final written = await (b.db.select(
+        b.db.diaryComments,
+      )..where((t) => t.commentId.equals('comment-photos'))).getSingle();
+      expect(written.imagePaths, <String>[
+        b.media('diary_images/media_c/p.jpg'),
+        'https://example.com/diary_images/remote.jpg',
+        b.media('diary_images/media_c/q.jpg'),
+      ]);
+    });
+
     test('canonical form strips local fields and keeps unknown data', () async {
       await seedEveryEntity(a);
       final records = await a.records();

@@ -132,8 +132,8 @@ class DataArchiveService {
         flush: true,
       );
       // 与媒体回收共用同一套引用识别：正文、封面与 metadata 里提到的托管文件
-      // 都会带上，包里日记本的封面（在载荷 JSON 里）同样带上，导入端再按与
-      // 完整备份相同的规则重绑。
+      // 都会带上，包里日记本的封面（在载荷 JSON 里）与留言图片同样带上，
+      // 导入端再按与完整备份相同的规则重绑。
       final references = DiaryMediaReferences([
         for (final diary in captured.diaries) ...[
           diary.content,
@@ -141,6 +141,7 @@ class DataArchiveService {
           diary.metadata,
         ],
         for (final notebook in captured.notebooks) notebook.payload,
+        for (final comment in captured.comments) comment.images,
       ]);
       await BackupArchiveIO.copyMediaFiles(
         await appDataRootDirectory(),

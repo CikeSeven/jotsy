@@ -118,7 +118,8 @@ class SyncRawMembership {
   final int addedAt;
 }
 
-/// `diary_comments` 表的一行。`diaryId` 是日记业务 id；时间为 Unix 秒。
+/// `diary_comments` 表的一行。`diaryId` 是日记业务 id；时间为 Unix 秒；
+/// [images] 为图片列原值（JSON 路径数组，没有图片为 null）。
 class SyncRawComment {
   const SyncRawComment({
     required this.localId,
@@ -128,6 +129,7 @@ class SyncRawComment {
     required this.mood,
     required this.createdAt,
     required this.editedAt,
+    this.images,
   });
 
   final int localId;
@@ -137,6 +139,7 @@ class SyncRawComment {
   final String? mood;
   final int createdAt;
   final int? editedAt;
+  final String? images;
 }
 
 /// `diary_templates` 表的一行。时间为 Unix 秒。

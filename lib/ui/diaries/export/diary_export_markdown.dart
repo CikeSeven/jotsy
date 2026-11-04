@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:path/path.dart' as p;
 
+import '../../../core/database/app_database.dart'
+    show DiaryCommentRow, DiaryCommentRowImages;
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_export_blocks.dart';
@@ -175,7 +177,14 @@ class DiaryMarkdownWriter {
     }
     body.addAll(_renderBlocks(entry, labels: labels, mediaPathOf: mediaPathOf));
     // 单篇的标题只在 front matter 里，相当于一级，留言区用二级。
-    body.addAll(_renderComments(entry, labels: labels, level: 2));
+    body.addAll(
+      _renderComments(
+        entry,
+        labels: labels,
+        mediaPathOf: mediaPathOf,
+        level: 2,
+      ),
+    );
     if (body.isNotEmpty) {
       out
         ..writeln()
@@ -257,7 +266,14 @@ class DiaryMarkdownWriter {
             headingOffset: 2,
           ),
         );
-        sections.addAll(_renderComments(entry, labels: labels, level: 3));
+        sections.addAll(
+          _renderComments(
+            entry,
+            labels: labels,
+            mediaPathOf: mediaPathOf,
+            level: 3,
+          ),
+        );
       }
     }
     return '${sections.join('\n\n')}\n';
@@ -265,10 +281,13 @@ class DiaryMarkdownWriter {
 
   /// 留言区：[level] 级标题 + 每条留言一个列表项。说明行（斜体）在前，
   /// 心情与文字随后；留言里的每一行各成一段（与正文的分行写法一致，不靠
-  /// 行尾空格或反斜杠换行，各种阅读器都显示为分开的行）。没有留言时为空。
+  /// 行尾空格或反斜杠换行，各种阅读器都显示为分开的行）。留言图片已打包
+  /// 的（[mediaPathOf] 给出相对路径）在文字后面写成一段并排的图片，其余在
+  /// 文字里写成占位。没有留言时为空。
   static List<String> _renderComments(
     DiaryExportEntry entry, {
     required DiaryExportLabels labels,
+    required String? Function(String source) mediaPathOf,
     required int level,
   }) {
     if (entry.comments.isEmpty) {
@@ -276,18 +295,41 @@ class DiaryMarkdownWriter {
     }
     final items = <String>[
       for (final comment in entry.comments)
-        <String>[
-          '- *${_escape(labels.commentMetaLine(entry, comment))}*',
-          for (final line in labels.commentText(comment).split('\n'))
-            if (line.trim().isNotEmpty)
-              // 续行缩进两格，仍属于这一项。
-              '  ${_escapeLineStart(_escape(line.trimRight()))}',
-        ].join('\n\n'),
+        _renderComment(
+          entry,
+          comment,
+          labels: labels,
+          mediaPathOf: mediaPathOf,
+        ),
     ];
     return <String>[
       '${'#' * level} ${_escape(labels.commentsHeading)}',
       items.join('\n\n'),
     ];
+  }
+
+  /// 一条留言的列表项（见 [_renderComments]）。
+  static String _renderComment(
+    DiaryExportEntry entry,
+    DiaryCommentRow comment, {
+    required DiaryExportLabels labels,
+    required String? Function(String source) mediaPathOf,
+  }) {
+    final sources = comment.imagePaths;
+    final paths = <String>[for (final source in sources) ?mediaPathOf(source)];
+    final text = labels.commentText(
+      comment,
+      unrenderedImages: sources.length - paths.length,
+    );
+    return <String>[
+      '- *${_escape(labels.commentMetaLine(entry, comment))}*',
+      for (final line in text.split('\n'))
+        if (line.trim().isNotEmpty)
+          // 续行缩进两格，仍属于这一项。
+          '  ${_escapeLineStart(_escape(line.trimRight()))}',
+      if (paths.isNotEmpty)
+        '  ${paths.map((String path) => '![](${_destination(path)})').join(' ')}',
+    ].join('\n\n');
   }
 
   /// 每组相邻的同类块（列表、引用、代码）合成一段，段与段之间空一行。

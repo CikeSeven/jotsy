@@ -9673,6 +9673,41 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCommentActionsHint => '编辑、复制或删除';
 
   @override
+  String get diaryCommentAddImages => '添加图片';
+
+  @override
+  String diaryCommentImagesFull(int max) {
+    return '最多 $max 张图片';
+  }
+
+  @override
+  String diaryCommentImagesTruncated(int max) {
+    return '一条留言最多 $max 张图片，多选的没有加上';
+  }
+
+  @override
+  String get diaryCommentImageAddFailed => '图片没有添加成功，请重试';
+
+  @override
+  String get diaryCommentImagePermissionDenied => '没有读取图片的权限';
+
+  @override
+  String get diaryCommentImageRemove => '移除这张图片';
+
+  @override
+  String get diaryCommentImageAdding => '正在添加图片';
+
+  @override
+  String diaryCommentImageCount(int count) {
+    return '$count 张图片';
+  }
+
+  @override
+  String diaryCommentImageLabel(int index, int count) {
+    return '图片 $index/$count';
+  }
+
+  @override
   String diaryCommentsCount(int count) {
     return '$count 条留言';
   }

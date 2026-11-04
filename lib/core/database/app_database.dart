@@ -10,11 +10,13 @@ import 'package:path/path.dart' as p;
 import '../../utils/text_stats.dart';
 import 'content_codec.dart';
 import 'diary_blocks/diary_link_target.dart';
+import 'diary_comment_images.dart';
 import 'diary_list_scope.dart';
 import 'notebook_payload.dart';
 import 'sync_rows.dart';
 import '../services/app_data_directory.dart';
 
+export 'diary_comment_images.dart';
 export 'diary_list_scope.dart';
 export 'notebook_cover_style.dart';
 export 'notebook_payload.dart';
@@ -112,7 +114,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -155,6 +157,11 @@ class AppDatabase extends _$AppDatabase
       // 分支之前。
       if (from < 17) {
         await _migrateAddAiTables(m);
+      }
+      // v18 留言加图片列，只动留言表，同样排在 v1 分支之前；必须在 v16 分支
+      // 之后：从 v16 之前升级时那里已按最新定义建表、自带此列。
+      if (from < 18) {
+        await _migrateDiaryCommentsAddImages(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

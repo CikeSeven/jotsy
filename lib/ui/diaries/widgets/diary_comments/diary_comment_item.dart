@@ -9,13 +9,16 @@ import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/expressive_menu/expressive_menu.dart';
 import '../../viewmodels/diary_comment_timeline.dart';
+import 'diary_comment_images.dart';
 import 'diary_comments_section.dart';
 
 /// 留言时间线上的一条：左侧节点（心情 emoji 或小圆点）与向下延伸的竖线，
-/// 右侧“写下后 N 天 · 时间 · 已编辑”与留言文字。
+/// 右侧“写下后 N 天 · 时间 · 已编辑”、留言文字与附带的图片（相册拼贴，
+/// [DiaryCommentImages]，点按一格进看图页）。只有图片的留言没有文字一行。
 ///
-/// 长按（桌面右键）在按下处打开菜单：编辑、复制、删除（[ExpressiveMenuAnchor]，
-/// 与探索页卡片菜单同一做法）；[actions] 为 null 时（设置页预览）没有菜单。
+/// 长按（桌面右键）在按下处打开菜单：编辑、复制（有文字时）、删除
+/// （[ExpressiveMenuAnchor]，与探索页卡片菜单同一做法），在图片上长按同样
+/// 打开它；[actions] 为 null 时（设置页预览）没有菜单，图片也不可点。
 /// [appearing] 为 true 时（本次打开后新写下或撤销删除回来的）淡入。
 class DiaryCommentItem extends StatefulWidget {
   const DiaryCommentItem({
@@ -77,6 +80,7 @@ class _DiaryCommentItemState extends State<DiaryCommentItem>
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final comment = widget.comment;
+    final images = comment.imagePaths;
     final meta = <String>[
       diaryCommentRelativeLabel(l10n, widget.diaryCreatedAt, comment.createdAt),
       l10n.formatPreciseDateTime(comment.createdAt, DateTime.now()),
@@ -122,14 +126,27 @@ class _DiaryCommentItemState extends State<DiaryCommentItem>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      comment.content,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: widget.textColor ?? scheme.onSurface,
-                        height: 1.55,
+                    if (comment.hasText) ...<Widget>[
+                      const SizedBox(height: 4),
+                      Text(
+                        comment.content,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: widget.textColor ?? scheme.onSurface,
+                          height: 1.55,
+                        ),
                       ),
-                    ),
+                    ],
+                    if (images.isNotEmpty) ...<Widget>[
+                      // 跟在文字后面多留一点，图片不贴着上一行的行距；只有
+                      // 图片时紧跟说明行。
+                      SizedBox(height: comment.hasText ? 10 : 8),
+                      DiaryCommentImages(
+                        commentId: comment.commentId,
+                        images: images,
+                        interactive: widget.actions != null,
+                      ),
+                      const SizedBox(height: 2),
+                    ],
                   ],
                 ),
               ),
@@ -148,11 +165,12 @@ class _DiaryCommentItemState extends State<DiaryCommentItem>
           onPressed: () => actions.onEdit(comment),
           child: Text(l10n.commonEdit),
         ),
-        ExpressiveMenuItem(
-          leadingIcon: const FaIcon(FontAwesomeIcons.copy),
-          onPressed: () => actions.onCopy(comment),
-          child: Text(l10n.diaryCommentCopy),
-        ),
+        if (comment.hasText)
+          ExpressiveMenuItem(
+            leadingIcon: const FaIcon(FontAwesomeIcons.copy),
+            onPressed: () => actions.onCopy(comment),
+            child: Text(l10n.diaryCommentCopy),
+          ),
         ExpressiveMenuItem(
           leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
           destructive: true,

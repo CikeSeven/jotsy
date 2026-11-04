@@ -15,8 +15,9 @@ import '../widgets/explore_shared_widgets.dart';
 
 /// 最近的留言：顶部一行回看统计（共几条、回应了几篇、平均隔几天回看），
 /// 下面是最近写下的几条留言（条数可选 3 / 5 / 8）。每条为心情（没选时一个
-/// 小圆点）+ 一行留言摘录，下一行是所属日记的标题与“写下后 N 天”；点按经
-/// 打开日记的流程进入那篇日记，可在这几篇之间左右翻。
+/// 小圆点）+ 一行留言摘录，下一行是所属日记的标题与“写下后 N 天”；带图片
+/// 的留言在行尾放第一张图的小缩略图，只有图片的留言摘录为“N 张图片”。点按
+/// 经打开日记的流程进入那篇日记，可在这几篇之间左右翻。
 ///
 /// 数据来自留言表（[exploreRecentCommentsProvider] / [exploreCommentStatsProvider]，
 /// 只在卡片显示时订阅）；留言功能关闭时页面整张不显示（见 ExploreModuleSpec）。
@@ -110,7 +111,8 @@ class _CommentStatsLine extends StatelessWidget {
   }
 }
 
-/// 一条留言：心情 + 一行摘录，下一行“日记标题 · 写下后 N 天”。
+/// 一条留言：心情 + 一行摘录，下一行“日记标题 · 写下后 N 天”，有图片时
+/// 行尾一张 [_thumbExtent] 见方的缩略图。
 class _CommentRow extends StatelessWidget {
   const _CommentRow({required this.comment, required this.onTap});
 
@@ -127,7 +129,8 @@ class _CommentRow extends StatelessWidget {
     final title = comment.diaryTitle.trim();
     // 留言可以有多行，这里只要一句摘录：换行与连续空白收成一个空格，
     // 省略号落在一行的末尾而不是第一行换行处。
-    final excerpt = comment.content.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final text = comment.content.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final images = comment.images;
     final metaStyle = theme.textTheme.bodySmall?.copyWith(
       color: scheme.onSurfaceVariant,
     );
@@ -170,11 +173,15 @@ class _CommentRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    excerpt,
+                    text.isNotEmpty
+                        ? text
+                        : l10n.diaryCommentImageCount(images.length),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
+                      // 只有图片时摘录只是说明，用次要色，与真正的文字区分开。
+                      color: text.isNotEmpty ? null : scheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -190,11 +197,23 @@ class _CommentRow extends StatelessWidget {
                 ],
               ),
             ),
+            if (images.isNotEmpty) ...<Widget>[
+              const SizedBox(width: 10),
+              ExploreMediaThumb(
+                source: images.first,
+                width: _thumbExtent,
+                height: _thumbExtent,
+                radius: 10,
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+
+  /// 行尾缩略图的边长：与摘录 + 说明两行的高度相当。
+  static const double _thumbExtent = 40;
 }
 
 /// “日记标题 · 写下后 N 天”：标题过长时先省略标题，间隔留在行尾。

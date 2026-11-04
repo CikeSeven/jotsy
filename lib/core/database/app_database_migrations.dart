@@ -226,6 +226,22 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     }
   }
 
+  /// v18 留言表加 `images`（可空，留言图片的 JSON 路径数组）。
+  ///
+  /// 与 [_migrateNotebooksAddParent] 同理，列已存在时跳过：从 v16 之前升级时
+  /// [_migrateAddDiaryComments] 按最新定义建表已带上它；降级后再升级时旧构建
+  /// 不会删列。可空、不带默认值：旧行与降级后旧构建写入的行都是 NULL，即
+  /// “没有图片”。
+  Future<void> _migrateDiaryCommentsAddImages(Migrator migrator) async {
+    final columns = await customSelect(
+      'PRAGMA table_info(diary_comments)',
+    ).get();
+    final present = columns.any((row) => row.read<String>('name') == 'images');
+    if (!present) {
+      await migrator.addColumn(diaryComments, diaryComments.images);
+    }
+  }
+
   Future<void> _createTableIfMissing(
     Migrator migrator,
     TableInfo<Table, Object?> table,

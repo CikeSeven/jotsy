@@ -13394,6 +13394,55 @@
   "@diaryCommentActionsHint": {
     "description": "读屏：长按一条留言可以做的操作。"
   },
+  "diaryCommentAddImages": "添加图片",
+  "@diaryCommentAddImages": {
+    "description": "写留言面板：添加图片的按钮；已有图片时后面接“张数/上限”。"
+  },
+  "diaryCommentImagesFull": "最多 {max} 张图片",
+  "@diaryCommentImagesFull": {
+    "description": "写留言面板：图片已满时添加按钮的提示。",
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "diaryCommentImagesTruncated": "一条留言最多 {max} 张图片，多选的没有加上",
+  "@diaryCommentImagesTruncated": {
+    "description": "写留言面板：一次选的图片超过剩余张数时的提示。",
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "diaryCommentImageAddFailed": "图片没有添加成功，请重试",
+  "@diaryCommentImageAddFailed": {
+    "description": "写留言面板：选择器不可用或复制图片失败时的提示。"
+  },
+  "diaryCommentImagePermissionDenied": "没有读取图片的权限",
+  "@diaryCommentImagePermissionDenied": {
+    "description": "写留言面板：没有读取相册 / 文件的权限时的提示。"
+  },
+  "diaryCommentImageRemove": "移除这张图片",
+  "@diaryCommentImageRemove": {
+    "description": "写留言面板：缩略图角上的移除按钮（读屏与提示）。"
+  },
+  "diaryCommentImageAdding": "正在添加图片",
+  "@diaryCommentImageAdding": {
+    "description": "读屏：写留言面板里正在复制的图片占位格。"
+  },
+  "diaryCommentImageCount": "{count} 张图片",
+  "@diaryCommentImageCount": {
+    "description": "留言附带的图片张数：只有图片的留言在探索页的摘录、读屏文字。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentImageLabel": "图片 {index}/{count}",
+  "@diaryCommentImageLabel": {
+    "description": "读屏：留言里的第几张图片，共几张。",
+    "placeholders": {
+      "index": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
   "diaryCommentsCount": "{count} 条留言",
   "@diaryCommentsCount": {
     "description": "留言条数：预览页信息栏与日记卡片的读屏文字、探索页统计。",

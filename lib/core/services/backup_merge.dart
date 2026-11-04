@@ -34,7 +34,8 @@ import 'backup_payload.dart';
 ///   的日记本里与文件一致，本机独有日记本里的成员关系保留；跳过的日记不动。
 ///   章节只认目标日记本现有的章节，否则归到“未分章”；写进本机原有日记本的
 ///   排到末尾，写进新增日记本的保留文件中的位置；智能日记本从不写关联行；
-/// - 媒体：只搬运实际写入的日记引用到的文件，统一放进各托管目录下的新批次
+/// - 媒体：只搬运实际写入的日记、日记本与留言引用到的文件（留言图片随留言
+///   走：本机保留了自己版本的留言不搬），统一放进各托管目录下的新批次
 ///   子目录（`<托管目录>/import_…/<原相对路径>`），不覆盖、不移动本机已有
 ///   文件；
 /// - 不修改应用设置与新建日记草稿。
@@ -115,6 +116,13 @@ class BackupMerge {
       mode: mode,
       paths: paths,
     );
+    // 留言图片也一样；只改写本次真正写入的留言，跳过的不搬它的文件。
+    final comments = await _prepareDiaryComments(
+      db,
+      payload.diaryComments,
+      mode,
+      paths,
+    );
 
     for (final entry in paths.boundFiles.entries) {
       final target = File(entry.value);
@@ -174,7 +182,7 @@ class BackupMerge {
     );
     final addedTemplates = await _mergeTemplates(db, payload.diaryTemplates);
     final dayMoods = await _mergeDayMoods(db, payload.dayMoods, mode);
-    final comments = await _mergeDiaryComments(db, payload.diaryComments, mode);
+    final commentCounts = await _writeDiaryComments(db, comments);
     await _mergeAiRecords(db, payload, mode);
 
     return BackupImportResult(
@@ -189,24 +197,26 @@ class BackupMerge {
       addedNotebooks: addedNotebooks,
       addedDayMoods: dayMoods.added,
       replacedDayMoods: dayMoods.replaced,
-      addedComments: comments.added,
-      replacedComments: comments.replaced,
+      addedComments: commentCounts.added,
+      replacedComments: commentCounts.replaced,
     );
   }
 
-  /// 日记留言并入本机：按 commentId 匹配，本机没有的新增（去掉文件里的本地
-  /// id）；本机已有的，合并保留本机的，合并并覆盖整行换成文件里的（保留
-  /// 本机 id）。
+  /// 日记留言并入本机的第一步：按 commentId 匹配，挑出要写的行并改写其中
+  /// 的图片路径（登记进 [paths] 的 boundFiles，随后与日记媒体一起搬运）。
+  /// 本机没有的新增（去掉文件里的本地 id）；本机已有的，合并保留本机的
+  /// （不写、不搬它的图片），合并并覆盖整行换成文件里的（保留本机 id）。
   ///
   /// 载荷里的留言都属于载荷里的日记（见 `BackupPayload._withRestorableRelations`），
   /// 而载荷里的每篇日记合并后在本机都有——新增、替换或保留本机版本——所以
   /// 每条留言都有地方显示，不必再按日记过滤。
-  Future<({int added, int replaced})> _mergeDiaryComments(
+  Future<_CommentMergePlan> _prepareDiaryComments(
     AppDatabase db,
     List<DiaryCommentRow> incoming,
     BackupImportMode mode,
+    BackupMediaPaths paths,
   ) async {
-    if (incoming.isEmpty) return (added: 0, replaced: 0);
+    if (incoming.isEmpty) return const _CommentMergePlan.empty();
     final table = db.diaryComments;
     final localIds = <String, int>{
       for (final row in await (db.selectOnly(
@@ -214,24 +224,45 @@ class BackupMerge {
       )..addColumns([table.id, table.commentId])).get())
         row.read(table.commentId)!: row.read(table.id)!,
     };
-    var added = 0;
-    var replaced = 0;
+    final inserts = <DiaryCommentsCompanion>[];
+    final replacements = <int, DiaryCommentsCompanion>{};
     for (final row in incoming) {
+      final localId = localIds[row.commentId];
+      if (localId != null && mode != BackupImportMode.mergeOverwrite) {
+        continue;
+      }
       final companion = row
           .toCompanion(false)
-          .copyWith(id: const Value.absent());
-      final localId = localIds[row.commentId];
+          .copyWith(
+            id: const Value.absent(),
+            images: Value(
+              await BackupPayload.rebindCommentImages(row.images, paths),
+            ),
+          );
       if (localId == null) {
-        await db.into(table).insert(companion);
-        added++;
-      } else if (mode == BackupImportMode.mergeOverwrite) {
-        await (db.update(
-          table,
-        )..where((t) => t.id.equals(localId))).write(companion);
-        replaced++;
+        inserts.add(companion);
+      } else {
+        replacements[localId] = companion;
       }
     }
-    return (added: added, replaced: replaced);
+    return _CommentMergePlan(inserts: inserts, replacements: replacements);
+  }
+
+  /// 日记留言并入本机的第二步：按 [_prepareDiaryComments] 挑好的行写库。
+  Future<({int added, int replaced})> _writeDiaryComments(
+    AppDatabase db,
+    _CommentMergePlan plan,
+  ) async {
+    final table = db.diaryComments;
+    for (final companion in plan.inserts) {
+      await db.into(table).insert(companion);
+    }
+    for (final entry in plan.replacements.entries) {
+      await (db.update(
+        table,
+      )..where((t) => t.id.equals(entry.key))).write(entry.value);
+    }
+    return (added: plan.inserts.length, replaced: plan.replacements.length);
   }
 
   /// AI 记录并入本机，与留言同一口径：
@@ -473,4 +504,16 @@ class BackupMerge {
       }
     }
   }
+}
+
+/// 合并导入里要写的留言：新增的行与按本机 id 替换的行（图片路径已改写）。
+class _CommentMergePlan {
+  const _CommentMergePlan({required this.inserts, required this.replacements});
+
+  const _CommentMergePlan.empty()
+    : inserts = const <DiaryCommentsCompanion>[],
+      replacements = const <int, DiaryCommentsCompanion>{};
+
+  final List<DiaryCommentsCompanion> inserts;
+  final Map<int, DiaryCommentsCompanion> replacements;
 }

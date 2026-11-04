@@ -9,9 +9,11 @@ part of 'app_database.dart';
 ///    同理）：备份恢复与合并时日记的本地 id 会变、业务 id 不变，合并时不必
 ///    换算；彻底删除日记时由删除事务一并删掉它的留言，软删除不动（从回收站
 ///    恢复后留言还在）；
-/// 3. 只存纯文本与可选心情：`mood` 为日记心情选项里的 emoji 原文（与日记
-///    metadata 的心情同一口径），用户之后改了心情选项，旧留言仍显示原来的
-///    emoji；
+/// 3. 文字、可选心情与可选图片：`mood` 为日记心情选项里的 emoji 原文（与
+///    日记 metadata 的心情同一口径），用户之后改了心情选项，旧留言仍显示原来
+///    的 emoji；`images`（v18）为托管图片路径的 JSON 数组，没有图片为 NULL，
+///    编解码只经 `diary_comment_images.dart`。文字与图片至少有一样：只有图片
+///    的留言 `content` 为空串；
 /// 4. `createdAt` 是写下的时间，编辑不改它（时间线按它排序、相对时间从它
 ///    算起）；`editedAt` 非空即“已编辑”；
 /// 5. 预览页按日记读、卡片按日记计数、搜索按日记 EXISTS，都以 `diary_id`
@@ -35,8 +37,19 @@ class DiaryComments extends Table {
   DateTimeColumn get createdAt => dateTime().named('created_at')();
 
   DateTimeColumn get editedAt => dateTime().named('edited_at').nullable()();
+
+  TextColumn get images => text().nullable()();
 }
 
 /// 一条留言最多的字数（输入框 `maxLength`，按字形簇计）。只在写留言的面板
-/// 限制：数据库层只拒绝空白留言，备份里更长的留言原样恢复。
+/// 限制：数据库层只拒绝既没有文字也没有图片的留言，备份里更长的留言原样恢复。
 const int kDiaryCommentMaxLength = 1000;
+
+/// 留言行的图片与文字读取（解码只经 [decodeDiaryCommentImages]）。
+extension DiaryCommentRowImages on DiaryCommentRow {
+  /// 附带的图片路径，按添加顺序；没有图片时为空列表。
+  List<String> get imagePaths => decodeDiaryCommentImages(images);
+
+  /// 是否写了文字（只有图片的留言为 false）。
+  bool get hasText => content.trim().isNotEmpty;
+}

@@ -216,6 +216,28 @@ void main() {
     },
   );
 
+  test(
+    'comment photos are kept while referenced and go with the comment',
+    () async {
+      final photo = await put(documents, 'diary_images/media_c/photo.jpg');
+      final diaryId = await createDiary(const <Map<String, Object?>>[]);
+      final commentId = await database.addDiaryComment(
+        diaryId: diaryId,
+        content: '',
+        images: <String>[stored('diary_images/media_c/photo.jpg')],
+      );
+      final cleanup = service();
+
+      await cleanup.sweep();
+      expect(await photo.exists(), isTrue);
+
+      // 删除留言（撤销窗口过后）或彻底删除日记，图片随下一轮回收删掉。
+      await database.deleteDiaryComment(commentId);
+      await cleanup.sweep();
+      expect(await photo.exists(), isFalse);
+    },
+  );
+
   test('a failed reference read deletes nothing', () async {
     final orphan = await put(documents, 'diary_images/media_1/orphan.jpg');
 

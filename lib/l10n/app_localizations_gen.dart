@@ -17726,6 +17726,60 @@ abstract class AppLocalizations {
   /// **'edit, copy or delete'**
   String get diaryCommentActionsHint;
 
+  /// Comment sheet: button that adds photos; followed by “count/limit” once some are added.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get diaryCommentAddImages;
+
+  /// Comment sheet: tooltip of the add button when the photo limit is reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {max} photos'**
+  String diaryCommentImagesFull(int max);
+
+  /// Comment sheet: more photos were picked than there was room for.
+  ///
+  /// In en, this message translates to:
+  /// **'A comment can have up to {max} photos — the extra ones weren’t added'**
+  String diaryCommentImagesTruncated(int max);
+
+  /// Comment sheet: the picker was unavailable or copying a photo failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t add the photo. Please try again.'**
+  String get diaryCommentImageAddFailed;
+
+  /// Comment sheet: no permission to read the photo library or files.
+  ///
+  /// In en, this message translates to:
+  /// **'No permission to read photos'**
+  String get diaryCommentImagePermissionDenied;
+
+  /// Comment sheet: remove button on a thumbnail (tooltip and screen reader).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get diaryCommentImageRemove;
+
+  /// Screen reader: placeholder tile for a photo still being copied in the comment sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding photos'**
+  String get diaryCommentImageAdding;
+
+  /// Number of photos in a comment: excerpt of a photo-only comment in Explore, screen reader text.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo} other{{count} photos}}'**
+  String diaryCommentImageCount(int count);
+
+  /// Screen reader: which photo of a comment this is.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo {index} of {count}'**
+  String diaryCommentImageLabel(int index, int count);
+
   /// Number of comments: preview meta item, card semantics and explore stats.
   ///
   /// In en, this message translates to:

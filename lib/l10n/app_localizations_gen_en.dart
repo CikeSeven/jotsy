@@ -10823,6 +10823,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCommentActionsHint => 'edit, copy or delete';
 
   @override
+  String get diaryCommentAddImages => 'Add photos';
+
+  @override
+  String diaryCommentImagesFull(int max) {
+    return 'Up to $max photos';
+  }
+
+  @override
+  String diaryCommentImagesTruncated(int max) {
+    return 'A comment can have up to $max photos — the extra ones weren’t added';
+  }
+
+  @override
+  String get diaryCommentImageAddFailed =>
+      'Couldn’t add the photo. Please try again.';
+
+  @override
+  String get diaryCommentImagePermissionDenied =>
+      'No permission to read photos';
+
+  @override
+  String get diaryCommentImageRemove => 'Remove photo';
+
+  @override
+  String get diaryCommentImageAdding => 'Adding photos';
+
+  @override
+  String diaryCommentImageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryCommentImageLabel(int index, int count) {
+    return 'Photo $index of $count';
+  }
+
+  @override
   String diaryCommentsCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

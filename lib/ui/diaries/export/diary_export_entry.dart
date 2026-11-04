@@ -111,13 +111,19 @@ class DiaryExportEntry {
   /// 产物与没有留言功能时逐字节相同（功能关闭、开关关闭或这篇没有留言）。
   final List<DiaryCommentRow> comments;
 
-  /// 封面与正文图片，按出现顺序去重；封面在最前。
+  /// 封面、正文图片与要写出的留言图片，按出现顺序去重；封面在最前。
+  /// 网页与 Markdown 据此收集要内嵌 / 打包的图片。
   List<String> get imageSources {
     final sources = <String>[?cover];
     for (final block in blocks) {
       if (block.kind == ExportBlockKind.image &&
           !sources.contains(block.source)) {
         sources.add(block.source!);
+      }
+    }
+    for (final comment in comments) {
+      for (final source in comment.imagePaths) {
+        if (!sources.contains(source)) sources.add(source);
       }
     }
     return sources;
@@ -259,13 +265,36 @@ class DiaryExportLabels {
 
   /// 一条留言的文字，心情 emoji 在前、空一格。[includeMood] 为 false 时
   /// 省略心情（PDF 字体不含 emoji，与 [metaLine] 同一处理）。
-  String commentText(DiaryCommentRow comment, {bool includeMood = true}) {
+  ///
+  /// 留言带图片时，没有以图片写出的那几张在文字后另起一行写成
+  /// “[图片]” / “[图片 ×N]”（[commentImagesNote]），只有图片的留言就只有这
+  /// 一行：[unrenderedImages] 为这几张的张数，缺省为全部（纯文本、表格这类
+  /// 写不了图片的格式）；能写图片的格式传入没写成的张数（关闭了媒体、文件
+  /// 缺失或格式不支持）。没有图片的留言与加图片之前逐字节相同。
+  String commentText(
+    DiaryCommentRow comment, {
+    bool includeMood = true,
+    int? unrenderedImages,
+  }) {
     final mood = includeMood ? comment.mood : null;
-    return mood == null ? comment.content : '$mood ${comment.content}';
+    final text = <String>[
+      ?mood,
+      if (comment.hasText) comment.content,
+    ].join(' ');
+    final missing = unrenderedImages ?? comment.imagePaths.length;
+    return <String>[
+      if (text.isNotEmpty) text,
+      if (missing > 0) commentImagesNote(missing),
+    ].join('\n');
   }
 
-  /// 一篇的全部留言写成纯文本：每条为说明行 + 心情与文字，条与条之间空
-  /// 一行。纯文本导出的留言区与表格的留言一格共用；没有留言时为空串。
+  /// 留言里没有以图片写出的 [count] 张图片的占位：“[图片]”或“[图片 ×N]”。
+  String commentImagesNote(int count) =>
+      count == 1 ? '[$image]' : '[$image ×$count]';
+
+  /// 一篇的全部留言写成纯文本：每条为说明行 + 心情与文字（带图片时再加
+  /// 一行占位），条与条之间空一行。纯文本导出的留言区与表格的留言一格共用；
+  /// 没有留言时为空串。
   String commentsPlainText(DiaryExportEntry entry) {
     return entry.comments
         .map(

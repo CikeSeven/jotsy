@@ -16,8 +16,9 @@ import 'app_data_directory.dart';
 /// 修改，已保存的日记也还指向旧文件；复制粘贴还会让多篇日记共用同一文件。
 /// 所以编辑期只改文档，文件统一在这里回收：
 /// - 引用来源：全部日记（含归档、回收站、时间胶囊）的正文/封面/metadata，
-///   新建日记草稿，以及日记本载荷（封面放在 `diary_covers/`，只被日记本
-///   引用）；
+///   新建日记草稿，日记本载荷（封面放在 `diary_covers/`，只被日记本
+///   引用），以及留言的图片列（留言图片与正文图片同在 `diary_images/`；
+///   删除留言或彻底删除日记后，图片在这里按宽限期回收，撤销期间不受影响）；
 /// - 宽限期：[gracePeriod] 内写入的文件一律保留，覆盖“刚导入还没保存”的会话；
 /// - 触发：启动后延迟一次（[scheduleStartupSweep]）、回收站彻底删除后一次。
 ///   请求串行执行，后一次一定读取到前一次之后的引用快照。
@@ -96,6 +97,11 @@ class DiaryMediaCleanupService {
     final notebookRows = await (_database.selectOnly(
       notebooks,
     )..addColumns([notebooks.payload])).get();
+    // 留言图片只出现在 diary_comments.images 的 JSON 数组里。
+    final comments = _database.diaryComments;
+    final commentRows = await (_database.selectOnly(
+      comments,
+    )..addColumns([comments.images])).get();
     final settings = await _settings();
     return DiaryMediaSweepRequest(
       documentsPath: (await _documentsDirectory()).path,
@@ -108,6 +114,7 @@ class DiaryMediaCleanupService {
         ],
         for (final row in draftRows) row.read(drafts.payload),
         for (final row in notebookRows) row.read(notebooks.payload),
+        for (final row in commentRows) row.read(comments.images),
         // 旧版本的单份草稿迁进草稿箱前仍算引用（迁移成功后此键清空）。
         settings.createDiaryDraftRaw,
       ],

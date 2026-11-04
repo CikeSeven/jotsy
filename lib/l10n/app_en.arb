@@ -13402,6 +13402,55 @@
   "@diaryCommentActionsHint": {
     "description": "Screen reader: what long-pressing a comment does."
   },
+  "diaryCommentAddImages": "Add photos",
+  "@diaryCommentAddImages": {
+    "description": "Comment sheet: button that adds photos; followed by “count/limit” once some are added."
+  },
+  "diaryCommentImagesFull": "Up to {max} photos",
+  "@diaryCommentImagesFull": {
+    "description": "Comment sheet: tooltip of the add button when the photo limit is reached.",
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "diaryCommentImagesTruncated": "A comment can have up to {max} photos — the extra ones weren’t added",
+  "@diaryCommentImagesTruncated": {
+    "description": "Comment sheet: more photos were picked than there was room for.",
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "diaryCommentImageAddFailed": "Couldn’t add the photo. Please try again.",
+  "@diaryCommentImageAddFailed": {
+    "description": "Comment sheet: the picker was unavailable or copying a photo failed."
+  },
+  "diaryCommentImagePermissionDenied": "No permission to read photos",
+  "@diaryCommentImagePermissionDenied": {
+    "description": "Comment sheet: no permission to read the photo library or files."
+  },
+  "diaryCommentImageRemove": "Remove photo",
+  "@diaryCommentImageRemove": {
+    "description": "Comment sheet: remove button on a thumbnail (tooltip and screen reader)."
+  },
+  "diaryCommentImageAdding": "Adding photos",
+  "@diaryCommentImageAdding": {
+    "description": "Screen reader: placeholder tile for a photo still being copied in the comment sheet."
+  },
+  "diaryCommentImageCount": "{count, plural, =1{1 photo} other{{count} photos}}",
+  "@diaryCommentImageCount": {
+    "description": "Number of photos in a comment: excerpt of a photo-only comment in Explore, screen reader text.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "diaryCommentImageLabel": "Photo {index} of {count}",
+  "@diaryCommentImageLabel": {
+    "description": "Screen reader: which photo of a comment this is.",
+    "placeholders": {
+      "index": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
   "diaryCommentsCount": "{count, plural, =1{1 comment} other{{count} comments}}",
   "@diaryCommentsCount": {
     "description": "Number of comments: preview meta item, card semantics and explore stats.",

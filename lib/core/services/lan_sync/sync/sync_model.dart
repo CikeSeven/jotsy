@@ -17,7 +17,12 @@ import 'package:meta/meta.dart';
 /// 规范形式一旦改变（分面的组成、归一规则、哈希算法），两端算出的哈希就对不上，
 /// 必须同时提升 [kSyncFormatVersion]：版本不同的设备在握手时互相拒绝，而不是
 /// 把每条记录都判成冲突。
-const int kSyncFormatVersion = 1;
+///
+/// - 2：留言记录多出 `images`（留言图片，只在有图片时出现）。没有图片的留言
+///   与版本 1 的规范值逐字节相同，升级后已有的历史哈希仍然有效；提升版本只
+///   为让旧版设备拒绝同步——它认不出这个字段，写入时会丢掉图片，下次同步再
+///   把“没有图片”的版本当作冲突的一方传回来。
+const int kSyncFormatVersion = 2;
 
 /// 规范值里托管媒体引用的前缀：`jotsy-media:diary_images/media_x/a.jpg`。
 const String kSyncMediaRefPrefix = 'jotsy-media:';

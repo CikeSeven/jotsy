@@ -96,7 +96,7 @@ _PreparedWrite _prepareWrite(
       return _PreparedWrite(write, _orderListRunner(write), deferred: true);
     case SyncEntity.comment:
       if (record == null) return op((db) => db.syncDeleteComment(id));
-      final columns = SyncCommentColumns.fromRecord(record);
+      final columns = SyncCommentColumns.fromRecord(record, dataRoot: dataRoot);
       return op((db) => db.syncWriteComment(columns.toCompanion()));
     case SyncEntity.template:
       if (record == null) return op((db) => db.syncDeleteTemplate(id));

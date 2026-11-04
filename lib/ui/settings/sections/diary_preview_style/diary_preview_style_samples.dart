@@ -138,6 +138,9 @@ List<DiaryWithTags> buildDiaryPreviewStyleSamples(
   ];
 }
 
+/// 示例图片所在的资源目录。
+const String _sampleImageBase = 'assets/img/diary_card_samples';
+
 /// 示例日记 id 的前缀（见 [buildDiaryPreviewStyleSamples]）。
 const String _sampleIdPrefix = '__preview_style_sample_';
 
@@ -146,7 +149,8 @@ bool isDiaryPreviewStyleSample(String diaryId) =>
     diaryId.startsWith(_sampleIdPrefix);
 
 /// 示例日记的两条示例留言（开启留言功能时显示在示例正文末尾）：一条没选
-/// 心情、一条带心情，时间在日记之后、[now] 之前，读作“写下后 N 天”。
+/// 心情、一条带心情与两张示例图片（看得到留言图片的拼贴），时间在日记之后、
+/// [now] 之前，读作“写下后 N 天”。
 List<DiaryCommentRow> buildDiaryPreviewStyleSampleComments(
   AppLocalizations l10n,
   Diary diary, {
@@ -169,6 +173,10 @@ List<DiaryCommentRow> buildDiaryPreviewStyleSampleComments(
       content: l10n.diaryPreviewSampleComment2,
       mood: '😊',
       createdAt: second.isAfter(diary.createdAt) ? second : diary.createdAt,
+      images: encodeDiaryCommentImages(const <String>[
+        '$diaryAssetImageScheme$_sampleImageBase/hiking.webp',
+        '$diaryAssetImageScheme$_sampleImageBase/cafe.webp',
+      ]),
     ),
   ];
 }

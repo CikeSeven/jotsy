@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart' show Color, TextDirection;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../core/database/app_database.dart' show DiaryCommentRowImages;
 import '../../../core/services/font_file_info.dart';
 import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
@@ -256,7 +257,20 @@ class DiaryPdfWriter {
         ),
       );
     }
-    widgets.addAll(buildDiaryPdfComments(entry, labels));
+    // 留言图片与正文图片同样计入总量上限；不带媒体或读不出的写成占位。
+    final commentImages = <String, Uint8List>{};
+    if (options.includeMedia) {
+      for (final comment in entry.comments) {
+        for (final source in comment.imagePaths) {
+          if (commentImages.containsKey(source)) continue;
+          final bytes = await media.bytesOf(source);
+          if (bytes == null || ExportImageInfo.read(bytes) == null) continue;
+          _addImage(images, bytes);
+          commentImages[source] = bytes;
+        }
+      }
+    }
+    widgets.addAll(buildDiaryPdfComments(entry, labels, images: commentImages));
     return widgets;
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui' show Color;
 
+import '../../../core/database/app_database.dart' show DiaryCommentRowImages;
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/services/diary_typography.dart';
 import '../models/diary_callout_tone.dart';
@@ -255,13 +256,23 @@ class DiaryDocxWriter {
     DiaryExportMediaLibrary media, {
     int maxHeightEmu = _maxImageHeightEmu,
   }) async {
+    final image = await _loadImage(source, media);
+    if (image == null) return false;
+    b.imageParagraph(image.$1, image.$2, maxHeightEmu: maxHeightEmu);
+    return true;
+  }
+
+  /// 找到一张能内嵌的图片；找不到或 Word 不支持的格式（WebP）为 null。
+  static Future<(DiaryExportMediaFile, ExportImageInfo)?> _loadImage(
+    String source,
+    DiaryExportMediaLibrary media,
+  ) async {
     final file = await media.resolve(source);
     final info = file == null ? null : await media.imageInfoOf(source);
     if (file == null || info == null || info.mimeType == 'image/webp') {
-      return false;
+      return null;
     }
-    b.imageParagraph(file, info, maxHeightEmu: maxHeightEmu);
-    return true;
+    return (file, info);
   }
 
   static Future<void> _writeEntry(
@@ -411,20 +422,32 @@ class DiaryDocxWriter {
           );
       }
     }
-    _writeComments(b, entry, labels);
+    await _writeComments(
+      b,
+      entry,
+      labels,
+      media: options.includeMedia ? media : null,
+    );
   }
 
+  /// 留言图片的最大高度（约 1.6 英寸）：比正文图片小得多，几张图不会占满
+  /// 好几页。
+  static const int _commentImageHeightEmu = 1463040;
+
   /// 留言区（没有留言时不写）：一条分隔线、加粗的“留言”，每条留言为一段
-  /// 说明行（DiaryMeta）加一段心情与文字。
+  /// 说明行（DiaryMeta）加一段心情与文字，带图片时文字后面逐张内嵌（最高
+  /// [_commentImageHeightEmu]）；[media] 为 null（不带媒体）或图片写不进去
+  /// 时，这几张在文字里写成占位。
   ///
   /// 只用已有样式：样式表不随有没有留言变化，没有留言时文档逐字节不变。
   /// 标题不用 Heading 样式，免得每篇的“留言”都进 Word 的导航窗格；留言里的
   /// 换行写成 `w:br`，一条留言仍是一段，段间距不会把它拆散。
-  static void _writeComments(
+  static Future<void> _writeComments(
     _DocxBuilder b,
     DiaryExportEntry entry,
-    DiaryExportLabels labels,
-  ) {
+    DiaryExportLabels labels, {
+    required DiaryExportMediaLibrary? media,
+  }) async {
     if (entry.comments.isEmpty) {
       return;
     }
@@ -432,20 +455,36 @@ class DiaryDocxWriter {
       ..paragraph(style: 'Divider', runs: const <String>[])
       ..paragraph(runs: <String>[b.run(labels.commentsHeading, bold: true)]);
     for (final comment in entry.comments) {
-      b
-        ..paragraph(
-          style: 'DiaryMeta',
-          runs: <String>[b.run(labels.commentMetaLine(entry, comment))],
-        )
-        ..paragraph(
+      b.paragraph(
+        style: 'DiaryMeta',
+        runs: <String>[b.run(labels.commentMetaLine(entry, comment))],
+      );
+      // 先数清写得进去的图片：写不进去的在文字里写成占位，文字段落排在
+      // 图片前面。
+      final images = <(DiaryExportMediaFile, ExportImageInfo)>[];
+      if (media != null) {
+        for (final source in comment.imagePaths) {
+          final image = await _loadImage(source, media);
+          if (image != null) images.add(image);
+        }
+      }
+      final text = labels.commentText(
+        comment,
+        unrenderedImages: comment.imagePaths.length - images.length,
+      );
+      if (text.isNotEmpty) {
+        b.paragraph(
           runs: <String>[
-            for (final (index, line)
-                in labels.commentText(comment).split('\n').indexed) ...<String>[
+            for (final (index, line) in text.split('\n').indexed) ...<String>[
               if (index > 0) '<w:r><w:br/></w:r>',
               b.run(line),
             ],
           ],
         );
+      }
+      for (final (file, info) in images) {
+        b.imageParagraph(file, info, maxHeightEmu: _commentImageHeightEmu);
+      }
     }
   }
 

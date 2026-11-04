@@ -36,8 +36,8 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
         'FROM diary_notebooks',
       ).get();
       final commentRows = await customSelect(
-        'SELECT id, comment_id, diary_id, content, mood, created_at, edited_at '
-        'FROM diary_comments',
+        'SELECT id, comment_id, diary_id, content, mood, created_at, edited_at, '
+        'images FROM diary_comments',
       ).get();
       final templateRows = await customSelect(
         'SELECT id, template_id, name, payload, sort_order, created_at, '
@@ -125,6 +125,7 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
               mood: row.data['mood'] as String?,
               createdAt: _syncInt(row.data['created_at']),
               editedAt: _syncIntOrNull(row.data['edited_at']),
+              images: row.data['images'] as String?,
             ),
         ],
         templates: <SyncRawTemplate>[

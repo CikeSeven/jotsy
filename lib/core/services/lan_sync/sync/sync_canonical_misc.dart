@@ -8,14 +8,17 @@ import 'sync_model.dart';
 /// 标签、留言、模板、纪念日与这天的心情 ↔ 规范记录（规格 §2.2）。
 ///
 /// - tag：以名称为 id（各设备的本地 id 不同，名称在库里唯一），只有颜色分面；
-/// - comment / anniversary / dayMood：全部业务列；纪念日的 `metadata`、模板的
+/// - comment / anniversary / dayMood：全部业务列；留言的 `images` 为解码后的
+///   路径列表（经 `decodeDiaryCommentImages` 规整、路径归一），只在有图片时
+///   出现——没有图片的留言与格式版本 1 的规范值相同；纪念日的 `metadata`、模板的
 ///   `payload` 取库中原始 JSON 解析后的对象（解析不了的原文保留，见
-///   [syncDecodeJsonObjectColumn]）；
+///   [syncDecodeJsonObjectColumn]）；留言图片列的坏数据按“没有图片”规整
+///   （与界面读取同一口径），不保留原文；
 /// - template：payload 原样搬运。保存模板时已经过 UI 层的白名单重建，读取时
 ///   应用自己还会再经 `sanitizeDiaryTemplateBlocks`；同步层在 core，不引用 UI
 ///   模块的清理函数，也不该替用户“修”数据；
-/// - 媒体路径归一只作用于可能存放媒体的 JSON 列（metadata、payload），标题、
-///   备注、留言正文这类用户文字不改写（见规格 §2.3 的说明）。
+/// - 媒体路径归一只作用于可能存放媒体的列（metadata、payload、留言图片），
+///   标题、备注、留言正文这类用户文字不改写（见规格 §2.3 的说明）。
 ///
 /// 无副作用。
 
@@ -51,16 +54,28 @@ class SyncTagColumns {
       TagsCompanion(name: Value<String>(name), color: Value<int>(color));
 }
 
-SyncRecord syncCommentRecord(SyncRawComment row) =>
-    SyncRecord(SyncKey(SyncEntity.comment, row.commentId), <String, Object?>{
+SyncRecord syncCommentRecord(SyncRawComment row) {
+  // 归一之后再去重：同一个文件可能被写成绝对路径与 `file:` URI 两种形式，
+  // 归一后是同一个键；写到对方时编码会把它们合成一项，这里先合，两端的规范
+  // 值才相同。
+  final images = normalizeDiaryCommentImages(<String>[
+    for (final image in decodeDiaryCommentImages(row.images))
+      syncNormalizeMediaRefs(image)! as String,
+  ]);
+  return SyncRecord(
+    SyncKey(SyncEntity.comment, row.commentId),
+    <String, Object?>{
       SyncFacet.main: <String, Object?>{
         'diaryId': row.diaryId,
         'content': row.content,
         'mood': row.mood,
         'createdAt': syncMillisOfSeconds(row.createdAt),
         'editedAt': syncMillisOfSecondsOrNull(row.editedAt),
+        if (images.isNotEmpty) 'images': images,
       },
-    });
+    },
+  );
+}
 
 class SyncCommentColumns {
   const SyncCommentColumns({
@@ -70,13 +85,27 @@ class SyncCommentColumns {
     required this.mood,
     required this.createdAt,
     required this.editedAt,
+    this.images,
   });
 
-  factory SyncCommentColumns.fromRecord(SyncRecord record) {
+  /// [dataRoot] 为本机数据根目录：图片的 `jotsy-media:<键>` 在这里换回本机
+  /// 绝对路径。
+  factory SyncCommentColumns.fromRecord(
+    SyncRecord record, {
+    required String dataRoot,
+  }) {
     if (record.key.entity != SyncEntity.comment) {
       throw ArgumentError.value(record.key, 'record', '不是留言记录');
     }
     final value = syncMapOf(record.facets[SyncFacet.main], SyncFacet.main);
+    final rawImages = value['images'];
+    if (rawImages != null && rawImages is! List) {
+      throw FormatException('同步记录字段 images 不是数组', rawImages);
+    }
+    final images = <String>[
+      for (final image in (rawImages as List<Object?>?) ?? const <Object?>[])
+        syncStringOf(syncRebindMediaRefs(image, dataRoot), 'images'),
+    ];
     return SyncCommentColumns(
       commentId: record.key.id,
       diaryId: syncStringOf(value['diaryId'], 'diaryId'),
@@ -84,6 +113,7 @@ class SyncCommentColumns {
       mood: syncStringOrNullOf(value['mood'], 'mood'),
       createdAt: syncDateTimeOf(value['createdAt']),
       editedAt: syncDateTimeOrNullOf(value['editedAt']),
+      images: encodeDiaryCommentImages(images),
     );
   }
 
@@ -94,6 +124,9 @@ class SyncCommentColumns {
   final DateTime createdAt;
   final DateTime? editedAt;
 
+  /// 图片列的值（[encodeDiaryCommentImages]），没有图片为 null。
+  final String? images;
+
   DiaryCommentsCompanion toCompanion() => DiaryCommentsCompanion(
     commentId: Value<String>(commentId),
     diaryId: Value<String>(diaryId),
@@ -101,6 +134,7 @@ class SyncCommentColumns {
     mood: Value<String?>(mood),
     createdAt: Value<DateTime>(createdAt),
     editedAt: Value<DateTime?>(editedAt),
+    images: Value<String?>(images),
   );
 }
 

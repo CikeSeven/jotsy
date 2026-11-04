@@ -7,6 +7,7 @@ import 'backup_constants.dart';
 import 'backup_media_paths.dart';
 import 'backup_settings.dart';
 import 'diary_draft_legacy.dart';
+import 'diary_media_storage_service.dart';
 import 'settings_service.dart';
 
 /// 强类型备份数据及表结构/关联校验；解析、媒体重绑阶段不修改现有数据。
@@ -278,9 +279,10 @@ class BackupPayload {
         throw const FormatException('备份中的心情数据无效');
       }
     }
-    // 空白留言写不进去（写库时同样拒绝），在解析时就按“备份数据无效”拒绝。
+    // 既没有文字也没有图片的留言写不进去（写库时同样拒绝），在解析时就按
+    // “备份数据无效”拒绝。
     for (final row in diaryComments) {
-      if (row.content.trim().isEmpty) {
+      if (!row.hasText && row.imagePaths.isEmpty) {
         throw const FormatException('备份中的留言数据无效');
       }
     }
@@ -422,13 +424,15 @@ class BackupPayload {
   /// 整本日记，只随完整备份走；关联了这些日记的纪念日留在本机。
   ///
   /// 同样在一个事务快照内读取；只导出两端都存在的关联，避免把历史悬空绑定
-  /// 带进包里。一篇都找不到时报错，调用方不应生成空包。同时返回日记行与
-  /// 日记本行，导出方据此收集被引用的媒体文件（日记本封面）。
+  /// 带进包里。一篇都找不到时报错，调用方不应生成空包。同时返回日记行、
+  /// 日记本行与留言行，导出方据此收集被引用的媒体文件（日记本封面、留言
+  /// 图片）。
   static Future<
     ({
       Map<String, Object?> json,
       List<Diary> diaries,
       List<NotebookRow> notebooks,
+      List<DiaryCommentRow> comments,
     })
   >
   captureDiaries({
@@ -492,6 +496,7 @@ class BackupPayload {
         },
         diaries: diaries,
         notebooks: notebooks,
+        comments: comments,
       );
     });
   }
@@ -534,8 +539,13 @@ class BackupPayload {
       notebooks: restoredNotebooks,
       diaryNotebooks: diaryNotebooks,
       dayMoods: dayMoods,
-      // 留言只有文字与心情，没有媒体路径要改写。
-      diaryComments: diaryComments,
+      // 留言的图片列是托管图片路径的数组，与正文图片同样重绑。
+      diaryComments: <DiaryCommentRow>[
+        for (final comment in diaryComments)
+          comment.copyWith(
+            images: Value(await rebindCommentImages(comment.images, paths)),
+          ),
+      ],
       // AI 记录只有文字，没有媒体路径要改写。
       aiConversations: aiConversations,
       aiMessages: aiMessages,
@@ -570,6 +580,28 @@ class BackupPayload {
     if (rebound == cover) return payload;
     json['cover'] = rebound;
     return jsonEncode(json);
+  }
+
+  /// 留言的图片列（`diary_comments.images`）：逐张按正文图片的规则改写，
+  /// 覆盖恢复与合并导入共用。暂存区里没有的文件保留原路径（与正文图片
+  /// 同理），显示为图片缺失，不因此拒绝整份备份；列是坏数据时按“没有
+  /// 图片”规整（[decodeDiaryCommentImages] 的口径）。
+  static Future<String?> rebindCommentImages(
+    String? images,
+    BackupMediaPaths paths,
+  ) async {
+    final sources = decodeDiaryCommentImages(images);
+    if (sources.isEmpty) return encodeDiaryCommentImages(sources);
+    return encodeDiaryCommentImages(<String>[
+      for (final source in sources)
+        await paths.rewritePath(
+              source,
+              directoryNames: const [
+                DiaryMediaStorageService.imagesDirectoryName,
+              ],
+            ) ??
+            source,
+    ]);
   }
 
   /// 草稿载荷是编辑页的草稿 JSON：改写其中正文与封面的媒体路径，其余字段

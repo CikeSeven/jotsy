@@ -5402,6 +5402,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryImageMenuResize => '调整大小';
 
   @override
+  String get diaryImageMenuThumbnail => '显示为小图';
+
+  @override
+  String get diaryImageMenuFullSize => '恢复正常显示';
+
+  @override
   String get diaryImageMenuCopy => '复制';
 
   @override

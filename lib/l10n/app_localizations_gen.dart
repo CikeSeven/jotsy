@@ -9924,6 +9924,18 @@ abstract class AppLocalizations {
   /// **'Resize'**
   String get diaryImageMenuResize;
 
+  /// Image menu: show this image as a small square thumbnail in the diary body; tapping it still opens the full image.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as thumbnail'**
+  String get diaryImageMenuThumbnail;
+
+  /// Image menu: turn off thumbnail display and show the image at its normal size again.
+  ///
+  /// In en, this message translates to:
+  /// **'Show at normal size'**
+  String get diaryImageMenuFullSize;
+
   /// Image menu: copy the image (paste it back into the body or another app).
   ///
   /// In en, this message translates to:

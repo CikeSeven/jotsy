@@ -6126,6 +6126,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryImageMenuResize => 'Изменить размер';
 
   @override
+  String get diaryImageMenuThumbnail => 'Показывать миниатюрой';
+
+  @override
+  String get diaryImageMenuFullSize => 'Показывать в обычном размере';
+
+  @override
   String get diaryImageMenuCopy => 'Копировать';
 
   @override

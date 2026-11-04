@@ -6,15 +6,18 @@ import 'package:flutter/painting.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'diary_editor_controller.dart';
 import 'diary_editor_clipboard.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart'
+    show kDiaryImageThumbnailKey;
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
 import 'package:node_diary/ui/widgets/image_viewer_export_controller.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 
-/// 正文图片菜单（`showDiaryImageOptions`）的动作：调整大小、删除、复制、保存。
+/// 正文图片菜单（`showDiaryImageOptions`）的动作：调整大小、小图显示、删除、
+/// 复制、保存。
 ///
 /// 输入：正文控制器与图片 embed 在文档中的位置（点按时取 `node.documentOffset`，
-/// 不依赖光标停在图片上）。副作用：改写正文（大小、删除）、写系统剪贴板、
+/// 不依赖光标停在图片上）。副作用：改写正文（大小、小图、删除）、写系统剪贴板、
 /// 把原图存进相册。界面（菜单、滑条、提示）由调用方负责。
 abstract final class DiaryImageEmbedActions {
   /// 确认缩放后一次写入宽高（只作显示上限）。保持原选区，避免面板关闭时
@@ -32,6 +35,23 @@ abstract final class DiaryImageEmbedActions {
         ..updateNode(node, {
           'style': diaryImageStyleWithSize(style, width: width, height: height),
         })
+        ..afterSelection = controller.selection,
+      updateSelection: false,
+    );
+  }
+
+  /// 切换小图显示：打开写 `true`，关闭删键（稀疏写入，没开过小图的图片数据
+  /// 不多一个键）；缩放菜单写入的宽高不动，关闭后图片回到原来的大小。一次
+  /// 事务、一步撤销，与缩放同样保持原选区，不因菜单关闭重新请求键盘。
+  static void setThumbnail(
+    DiaryEditorController controller, {
+    required af.Node node,
+    required bool enabled,
+  }) {
+    if (node.parent == null || controller.readOnly) return;
+    controller.apply(
+      controller.state.transaction
+        ..updateNode(node, {kDiaryImageThumbnailKey: enabled ? true : null})
         ..afterSelection = controller.selection,
       updateSelection: false,
     );

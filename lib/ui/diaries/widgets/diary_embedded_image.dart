@@ -5,6 +5,7 @@ import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_fallback.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_image_thumbnail.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -18,6 +19,7 @@ import 'package:node_diary/ui/widgets/long_image/long_image_source_builder.dart'
 /// 长图折叠（[DiaryLongImageFold]），其余按显示宽度保持比例解码
 /// （[boundedImageProvider]）——不再把几千像素的原图整张解码，超过纹理上限的
 /// 一边也不会被引擎单独压扁。尺寸未读出前不占位，与原先图片解码前一样。
+/// 设为小图时整个交给 [DiaryImageThumbnail]（固定方格，不走长图分片）。
 class DiaryEmbeddedImage extends StatefulWidget {
   const DiaryEmbeddedImage({
     super.key,
@@ -25,6 +27,7 @@ class DiaryEmbeddedImage extends StatefulWidget {
     this.bounds = const BoxConstraints(),
     this.heroTag,
     this.foldLongImages = true,
+    this.thumbnail = false,
   });
 
   final String source;
@@ -35,6 +38,10 @@ class DiaryEmbeddedImage extends StatefulWidget {
 
   /// 长图折叠（默认）还是完整展开。
   final bool foldLongImages;
+
+  /// 以方形小图显示（[DiaryImageThumbnail]）：优先于 [bounds] 与长图的
+  /// 折叠 / 完整显示，两者都不生效。
+  final bool thumbnail;
 
   @override
   State<DiaryEmbeddedImage> createState() => _DiaryEmbeddedImageState();
@@ -68,6 +75,13 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.thumbnail) {
+      return DiaryImageThumbnail(
+        source: widget.source,
+        provider: _provider,
+        heroTag: widget.heroTag,
+      );
+    }
     final decodeWidth = _decodeWidth(context);
     return LongImageSourceBuilder(
       source: widget.source,

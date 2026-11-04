@@ -14,13 +14,15 @@ import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 
-/// 点按正文图片弹出的菜单：查看、调整大小、复制、保存到相册、删除。
+/// 点按正文图片弹出的菜单：查看、显示为小图 / 恢复正常显示、调整大小、复制、
+/// 保存到相册、删除。
 ///
 /// 取代上游 `ImageOptionsMenu`：上游的“缩放”打开它自带的 PhotoView 页面，
 /// 长图在那里只是一条细线，也绕开了看图页的统一入口；这里的“查看”经
-/// [openImageViewer] 打开（长图按屏宽竖向滚动）。调整大小沿用上游的宽高滑条，
-/// 复制沿用上游的编辑器内粘贴约定，保存与看图页同一条链路，提示经
-/// [HomeHintVisibilityScope.showTrackedSnackBar]。
+/// [openImageViewer] 打开（长图按屏宽竖向滚动）。小图切换一次写入（
+/// [DiaryImageEmbedActions.setThumbnail]），小图时不提供调整大小。调整大小
+/// 沿用上游的宽高滑条，复制沿用上游的编辑器内粘贴约定，保存与看图页同一条
+/// 链路，提示经 [HomeHintVisibilityScope.showTrackedSnackBar]。
 ///
 /// [readOnly]（发布页预览等只读正文）时只有查看、复制、保存。图片位置在
 /// 点按时从 [node] 取得，菜单期间正文不会被改动。
@@ -34,10 +36,12 @@ Future<void> showDiaryImageOptions(
 }) async {
   final l10n = context.l10n;
   final style = diaryImageStyleOf(node);
+  final thumbnail = diaryImageIsThumbnail(node);
   final action = await showAppDialog<_ImageAction>(
     context: context,
     builder: (BuildContext dialogContext) => _DiaryImageOptionsDialog(
       readOnly: readOnly,
+      thumbnail: thumbnail,
       describe: !readOnly && controller.aiImageDescriber != null,
     ),
   );
@@ -52,6 +56,12 @@ Future<void> showDiaryImageOptions(
           items: <ImageViewerItem>[ImageViewerItem(source: source)],
           initialIndex: 0,
         ),
+      );
+    case _ImageAction.thumbnail:
+      DiaryImageEmbedActions.setThumbnail(
+        controller,
+        node: node,
+        enabled: !thumbnail,
       );
     case _ImageAction.resize:
       await _showResizer(
@@ -184,15 +194,20 @@ Future<void> _showResizer(
   }
 }
 
-enum _ImageAction { view, resize, copy, save, describe, delete }
+enum _ImageAction { view, thumbnail, resize, copy, save, describe, delete }
 
 class _DiaryImageOptionsDialog extends StatelessWidget {
   const _DiaryImageOptionsDialog({
     required this.readOnly,
+    required this.thumbnail,
     required this.describe,
   });
 
   final bool readOnly;
+
+  /// 图片当前是否为小图：决定切换项的文字，小图时不显示“调整大小”（小图
+  /// 尺寸固定，宽高上限不生效，调了也看不出来）。
+  final bool thumbnail;
 
   /// 显示“AI 描述图片”（图片理解可用的编辑页）。
   final bool describe;
@@ -229,6 +244,14 @@ class _DiaryImageOptionsDialog extends StatelessWidget {
           l10n.diaryImageMenuView,
         ),
         if (!readOnly)
+          item(
+            _ImageAction.thumbnail,
+            thumbnail ? FontAwesomeIcons.image : FontAwesomeIcons.compress,
+            thumbnail
+                ? l10n.diaryImageMenuFullSize
+                : l10n.diaryImageMenuThumbnail,
+          ),
+        if (!readOnly && !thumbnail)
           item(
             _ImageAction.resize,
             FontAwesomeIcons.upRightAndDownLeftFromCenter,

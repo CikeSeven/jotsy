@@ -39,7 +39,8 @@ const String kDiaryBlockCode = 'code';
 const String kDiaryBlockDivider = 'divider';
 
 /// 图片：`data.url` 为来源（私有目录路径、http(s) 或 data URI），可带
-/// 显示上限 `width` / `height` / `style`（见 diaryImageEmbedBounds）与 `align`。
+/// 显示上限 `width` / `height` / `style`（见 diaryImageEmbedBounds）、`align`
+/// 与小图标记 [kDiaryImageThumbnailKey]。
 const String kDiaryBlockImage = 'image';
 
 /// 视频：`data.url` 为来源。
@@ -138,6 +139,11 @@ const String kDiaryBlockAlignKey = 'align';
 const String kDiaryParagraphIndentKey = 'firstLineIndent';
 const String kDiaryBlockLanguageKey = 'language';
 const String kDiaryBlockUrlKey = 'url';
+
+/// 图片以方形小图显示（图片菜单写入，只认 `true`，取消时删键）：正文里画成
+/// cover 裁切的缩略图，点按照常查看大图。缩放菜单写入的宽高原样保留，取消后
+/// 恢复原来的大小；只影响应用内的正文显示，导出与分享仍是原图。
+const String kDiaryImageThumbnailKey = 'thumbnail';
 const String kDiaryBlockPathKey = 'path';
 const String kDiaryBlockValueKey = 'value';
 

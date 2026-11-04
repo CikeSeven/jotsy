@@ -39,6 +39,7 @@
 ├─ android/ ios/ web/ macos/  # 各平台工程（Android 为主平台）
 ├─ linux/ windows/  # 桌面 runner 与打包脚本
 ├─ AGENTS.md  # 协作规范（本文件）
+├─ CLAUDE.md  # Claude Code 入口，只导入 AGENTS.md
 └─ DESIGN.md  # UI 设计系统规范
 ```
 - 逐目录、到文件与类名一级的说明见 [docs/rules/structure.md](docs/rules/structure.md)，按需查阅。

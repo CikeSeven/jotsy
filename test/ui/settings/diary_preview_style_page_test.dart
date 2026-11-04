@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -239,6 +240,34 @@ void main() {
     stored = _stored(settings);
     expect(stored.behavior.longImageMode, DiaryPreviewLongImageMode.fold);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the body tab turns double-tap editing off and on', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryPreviewStyleTabBody);
+    expect(_stored(settings).behavior.doubleTapToEdit, isTrue);
+
+    await _tapVisible(tester, find.text(l10n.diaryPreviewStyleDoubleTapEdit));
+    final stored = _stored(settings);
+    expect(stored.behavior.doubleTapToEdit, isFalse);
+    // 属于阅读行为：外观没有变化。
+    expect(stored.current, const DiaryPreviewStyle());
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('desktop hides the double-tap switch', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    try {
+      final (_, l10n) = await _pumpPage(tester);
+      await _openTab(tester, l10n.diaryPreviewStyleTabBody);
+      await _scrollTo(tester, find.text(l10n.diaryPreviewStyleLongImage));
+      expect(find.text(l10n.diaryPreviewStyleTextSelection), findsOneWidget);
+      expect(find.text(l10n.diaryPreviewStyleDoubleTapEdit), findsNothing);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
   });
 
   testWidgets('the live preview swipes between samples', (tester) async {

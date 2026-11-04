@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../../core/services/app_platform.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/models/diary_preview_style/diary_preview_style.dart';
 import '../../../widgets/expressive_button_group.dart';
@@ -109,6 +110,16 @@ class DiaryPreviewStyleBodyTab extends StatelessWidget {
               onChanged: (bool v) =>
                   controller.setBehavior(behavior.copyWith(textSelection: v)),
             ),
+            // 桌面双击正文仍是选词，这个开关只在手机上有意义。
+            if (!AppPlatform.isDesktop)
+              SettingsSwitchTile(
+                title: l10n.diaryPreviewStyleDoubleTapEdit,
+                subtitle: l10n.diaryPreviewStyleDoubleTapEditSubtitle,
+                value: behavior.doubleTapToEdit,
+                onChanged: (bool v) => controller.setBehavior(
+                  behavior.copyWith(doubleTapToEdit: v),
+                ),
+              ),
             SettingsChoiceTile(
               title: l10n.diaryPreviewStyleLongImage,
               subtitle: l10n.diaryPreviewStyleLongImageSubtitle,

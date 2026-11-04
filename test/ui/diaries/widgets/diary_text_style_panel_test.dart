@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_text_style/diary_text_style_panel.dart';
@@ -285,7 +286,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final locale in [const Locale('zh'), const Locale('en')]) {
+  for (final locale in AppLocalizations.supportedLocales) {
     testWidgets('text style panels fit one row at 320dp ($locale)', (
       tester,
     ) async {

@@ -68,6 +68,7 @@
 - 必须：优先复用已有组件与服务，避免重复造轮子。
 - 必须：本地化文案统一走 `gen-l10n + ARB`，代码中使用 `context.l10n.xxxKey`（或参数化 `xxxKey(arg)`），禁止新增硬编码中英分支。
 - 必须：ARB 中每个文案 key 都要有对应 metadata（`@key`），至少包含 `description`；含占位符时必须补 `placeholders`。
+- 必须：界面语言为 `en`（模板）/ `zh` / `ja` / `ru`，清单只在 `appLanguages`（`lib/l10n/app_languages.dart`，设置存储、首次启动挑选与语言选择都从这里取）；新增或修改文案必须同时改全部语言的 ARB（键集合不一致 `check_arb` 失败），俄语复数写全 `one/few/many/other`，日语不用复数分支；新增语言须在 `appLanguages` 登记并补齐全部键。只与中国相关的能力（农历、节气、法定节假日、拼音）不随界面语言改变口径。
 - 必须：ARB placeholder 的 `type` 只能使用 Flutter `gen-l10n` 可接受类型（如 `String/int/double/num/DateTime`），禁止使用 `Object`。
 - 必须：新增或修改 ARB 后同步执行 `flutter gen-l10n` 并提交生成文件，保持源码与生成代码一致。
 - 禁止：继续使用 `context.l10n.tr(...)` 作为常规本地化方案（仅允许临时迁移阶段短期存在，且需在同任务内清理）。

@@ -30,44 +30,73 @@ enum DiaryTemplateVariable {
 typedef DiaryTemplateValueOf =
     String? Function(DiaryTemplateVariable variable, String? format);
 
-/// 变量名的全部写法（比较前转小写），中英文等价。
+/// 变量名的全部写法（比较前转小写），各界面语言的写法等价。
 ///
 /// 这是语法而不是界面文案，所以固定写在代码里、不进 ARB：模板码分享给
-/// 另一种界面语言的设备、或者用户切换了应用语言，`{{日期}}` 与 `{{date}}`
-/// 都必须照样能解析。界面上“插入变量”插入的是当前语言的写法（ARB 里的
-/// `diaryTemplateVar…Token`），测试保证那些写法都在这张表里。
+/// 另一种界面语言的设备、或者用户切换了应用语言，`{{日期}}`、`{{date}}`、
+/// `{{日付}}` 与 `{{дата}}` 都必须照样能解析。界面上“插入变量”插入的是当前
+/// 语言的写法（ARB 里的 `diaryTemplateVar…Token`），测试保证每种界面语言的
+/// 那些写法都在这张表里。日文与中文同形的写法（`年`、`月`、`日`）共用一项；
+/// 俄文多词写法插入时用下划线连接，手写成空格也认。
 const Map<String, DiaryTemplateVariable> _aliases =
     <String, DiaryTemplateVariable>{
       'date': DiaryTemplateVariable.date,
       '日期': DiaryTemplateVariable.date,
+      '日付': DiaryTemplateVariable.date,
+      'дата': DiaryTemplateVariable.date,
       'weekday': DiaryTemplateVariable.weekday,
       '星期': DiaryTemplateVariable.weekday,
+      '曜日': DiaryTemplateVariable.weekday,
+      'день_недели': DiaryTemplateVariable.weekday,
+      'день недели': DiaryTemplateVariable.weekday,
       'time': DiaryTemplateVariable.time,
       '时间': DiaryTemplateVariable.time,
+      '時刻': DiaryTemplateVariable.time,
+      '時間': DiaryTemplateVariable.time,
+      'время': DiaryTemplateVariable.time,
       'year': DiaryTemplateVariable.year,
       '年': DiaryTemplateVariable.year,
       '年份': DiaryTemplateVariable.year,
+      'год': DiaryTemplateVariable.year,
       'month': DiaryTemplateVariable.month,
       '月': DiaryTemplateVariable.month,
       '月份': DiaryTemplateVariable.month,
+      'месяц': DiaryTemplateVariable.month,
       'day': DiaryTemplateVariable.day,
       '日': DiaryTemplateVariable.day,
+      'день': DiaryTemplateVariable.day,
       'week': DiaryTemplateVariable.week,
       'weekofyear': DiaryTemplateVariable.week,
       '周数': DiaryTemplateVariable.week,
       '第几周': DiaryTemplateVariable.week,
+      '週番号': DiaryTemplateVariable.week,
+      'неделя': DiaryTemplateVariable.week,
       'dayofyear': DiaryTemplateVariable.dayOfYear,
       '第几天': DiaryTemplateVariable.dayOfYear,
+      '通算日': DiaryTemplateVariable.dayOfYear,
+      'день_года': DiaryTemplateVariable.dayOfYear,
+      'день года': DiaryTemplateVariable.dayOfYear,
       'yearprogress': DiaryTemplateVariable.yearProgress,
       '年进度': DiaryTemplateVariable.yearProgress,
+      '年間進捗': DiaryTemplateVariable.yearProgress,
+      'прогресс_года': DiaryTemplateVariable.yearProgress,
+      'прогресс года': DiaryTemplateVariable.yearProgress,
       'lunar': DiaryTemplateVariable.lunar,
       '农历': DiaryTemplateVariable.lunar,
+      '旧暦': DiaryTemplateVariable.lunar,
+      'лунная_дата': DiaryTemplateVariable.lunar,
+      'лунная дата': DiaryTemplateVariable.lunar,
       'solarterm': DiaryTemplateVariable.solarTerm,
       'term': DiaryTemplateVariable.solarTerm,
       '节气': DiaryTemplateVariable.solarTerm,
+      '節気': DiaryTemplateVariable.solarTerm,
+      'сезон': DiaryTemplateVariable.solarTerm,
       'question': DiaryTemplateVariable.question,
       '今日一问': DiaryTemplateVariable.question,
       '每日一问': DiaryTemplateVariable.question,
+      '今日の質問': DiaryTemplateVariable.question,
+      'вопрос_дня': DiaryTemplateVariable.question,
+      'вопрос дня': DiaryTemplateVariable.question,
     };
 
 /// `{{` 与 `}}` 之间、不含花括号与换行的一段，两侧空白不计。

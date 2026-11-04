@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
+import 'package:node_diary/l10n/app_languages.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/sections/settings_app_surface_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_card_style_tile.dart';
@@ -75,9 +76,10 @@ class AppearanceLanguagePage extends ConsumerWidget {
           title: Text(l10n.languageDialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            // 选项来自 appLanguages，标签为各语言的自称，不随界面语言翻译。
             children: <Widget>[
-              buildOption('zh', '中文'),
-              buildOption('en', 'English'),
+              for (final language in appLanguages)
+                buildOption(language.code, language.nativeName),
             ],
           ),
         );

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_table.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_table/diary_table_panel.dart';
@@ -313,7 +314,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final locale in const [Locale('zh'), Locale('en')]) {
+  for (final locale in AppLocalizations.supportedLocales) {
     testWidgets('the panel fits a 320dp phone ($locale)', (tester) async {
       final controller = _controller();
       await _pump(tester, controller, screenWidth: 320, locale: locale);
@@ -324,7 +325,7 @@ void main() {
       );
       await _tap(
         tester,
-        find.byTooltip(locale.languageCode == 'zh' ? '表格' : 'Table'),
+        find.byTooltip(lookupAppLocalizations(locale).diaryEditorTable),
       );
       expect(find.byType(DiaryTablePanel), findsOneWidget);
       expect(

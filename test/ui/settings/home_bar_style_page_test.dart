@@ -400,7 +400,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final locale in const <Locale>[Locale('zh'), Locale('en')]) {
+  for (final locale in AppLocalizations.supportedLocales) {
     for (final glass in <bool>[false, true]) {
       testWidgets('every tab fits a 320dp screen in ${locale.languageCode}'
           '${glass ? ' with glass' : ''}', (tester) async {

@@ -11917,6 +11917,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPromptLanguageEnglish => '英文';
 
   @override
+  String get aiPromptLanguageJapanese => '日语';
+
+  @override
+  String get aiPromptLanguageRussian => '俄语';
+
+  @override
   String get aiPromptLengthShort => '回答尽量简短，三五句以内。';
 
   @override

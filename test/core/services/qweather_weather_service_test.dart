@@ -8,11 +8,13 @@ import 'package:node_diary/core/services/qweather_weather_service.dart';
 void main() {
   late HttpServer server;
   var requestCount = 0;
+  final requestedLanguages = <String?>[];
   const apiHost = 'qweather.test';
 
   setUp(() async {
     QWeatherWeatherService.debugClearCache();
     requestCount = 0;
+    requestedLanguages.clear();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     HttpOverrides.global = _RedirectingHttpOverrides(
       host: apiHost,
@@ -21,6 +23,7 @@ void main() {
     unawaited(
       server.forEach((request) async {
         requestCount += 1;
+        requestedLanguages.add(request.uri.queryParameters['lang']);
         request.response.headers.contentType = ContentType.json;
         request.response.write(
           jsonEncode(<String, Object?>{
@@ -72,6 +75,22 @@ void main() {
 
     expect(identical(results[0], results[1]), isTrue);
     expect(requestCount, 1);
+  });
+
+  test('天气描述语言跟随界面语言，和风不支持的语言用英文', () async {
+    final service = QWeatherWeatherService(
+      config: QWeatherConfig(apiKey: 'test-key', apiHost: apiHost),
+    );
+
+    for (final code in <String>['zh-Hans', 'ja-JP', 'ru', 'fr']) {
+      await service.fetchNow(
+        latitude: 31.2304,
+        longitude: 121.4737,
+        languageCode: code,
+      );
+    }
+
+    expect(requestedLanguages, <String>['zh', 'ja', 'ru', 'en']);
   });
 }
 

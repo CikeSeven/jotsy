@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/ai/ai_models.dart';
 import 'package:node_diary/core/services/ai/ai_provider_config.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/controllers/ai_stream_run.dart';
 import 'package:node_diary/ui/ai/models/ai_built_ins.dart';
 import 'package:node_diary/ui/ai/models/ai_preference_parts.dart';
@@ -87,6 +88,34 @@ void main() {
         appLocale: const Locale('en'),
       );
       expect(kit.system(), contains('日本語'));
+    });
+
+    test('following the app language asks for Japanese or Russian in an '
+        'English prompt', () {
+      const followApp = AiOutputLanguage.followApp;
+      for (final (code, name) in const [
+        ('ja', 'Japanese'),
+        ('ru', 'Russian'),
+      ]) {
+        final kit = AiPromptKit.resolve(
+          prefs: AiPreferences.defaults.copyWith(language: followApp),
+          appLocale: Locale(code),
+        );
+        expect(kit.l10n.localeName, 'en', reason: code);
+        expect(kit.system(), contains(kit.l10n.aiPromptRespondIn(name)));
+      }
+
+      final chinese = AiPromptKit.resolve(
+        prefs: AiPreferences.defaults.copyWith(language: followApp),
+        appLocale: zhLocale,
+      );
+      expect(chinese.l10n.localeName, 'zh');
+      expect(
+        chinese.system(),
+        contains(
+          chinese.l10n.aiPromptRespondIn(chinese.l10n.aiPromptLanguageChinese),
+        ),
+      );
     });
 
     test('diary block respects the privacy switches', () {
@@ -203,6 +232,46 @@ void main() {
       expect(parts.first, isA<AiImagePart>());
       expect((parts.last as AiTextPart).text, contains('海边'));
       expect(request.system, contains(kit.l10n.aiPersonaListenerPrompt));
+    });
+
+    test('the built-in translate action pairs the app language with '
+        'English', () {
+      // 内置指令的提示词按界面语言原样发送：日文、俄文界面要在本语言与
+      // 英文之间互译，不能退回中英互译；中文、英文界面保持中英互译。
+      const languages = <String, List<String>>{
+        'zh': ['中文', '英文'],
+        'en': ['Chinese', 'English'],
+        'ja': ['日本語', '英語'],
+        'ru': ['русск', 'английск'],
+      };
+      for (final locale in AppLocalizations.supportedLocales) {
+        final l10n = lookupAppLocalizations(locale);
+        final translate = aiWritingActions(
+          l10n,
+          l10n,
+          AiPreferences.defaults,
+        ).firstWhere((action) => action.id == AiWritingAction.translate.id);
+        for (final word in languages[locale.languageCode]!) {
+          expect(translate.prompt, contains(word), reason: '$locale');
+        }
+        final user = aiWritingRequest(
+          kit,
+          action: translate,
+          targetText: 'text',
+          diary: _diary(title: ''),
+        ).messages.single.text;
+        expect(user, startsWith(translate.prompt), reason: '$locale');
+      }
+      final ja = lookupAppLocalizations(const Locale('ja'));
+      final ru = lookupAppLocalizations(const Locale('ru'));
+      expect(
+        AiWritingAction.translate.defaultPrompt(ja),
+        isNot(contains('中国語')),
+      );
+      expect(
+        AiWritingAction.translate.defaultPrompt(ru),
+        isNot(contains('китайск')),
+      );
     });
   });
 

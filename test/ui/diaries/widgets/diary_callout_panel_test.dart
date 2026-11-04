@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_callout/diary_callout_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_panel.dart';
@@ -351,7 +352,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final locale in [const Locale('zh'), const Locale('en')]) {
+  for (final locale in AppLocalizations.supportedLocales) {
     testWidgets('the panel fits a 320dp phone without overflow ($locale)', (
       tester,
     ) async {
@@ -364,7 +365,7 @@ void main() {
       );
       await _tap(
         tester,
-        find.byTooltip(locale.languageCode == 'zh' ? _calloutTool : 'Callout'),
+        find.byTooltip(lookupAppLocalizations(locale).diaryEditorCallout),
       );
 
       expect(find.byType(DiaryCalloutPanel), findsOneWidget);

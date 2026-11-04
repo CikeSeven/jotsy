@@ -79,7 +79,7 @@ void main() {
     });
 
     test('新加的四种原因在两种语言里都有说明与短原因', () {
-      for (final locale in const [Locale('zh'), Locale('en')]) {
+      for (final locale in AppLocalizations.supportedLocales) {
         final l10n = lookupAppLocalizations(locale);
         final unknown = lanSyncSyncFailureText(
           l10n,

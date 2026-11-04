@@ -128,7 +128,7 @@ void main() {
   });
 
   for (final brightness in Brightness.values) {
-    for (final locale in const <Locale>[Locale('zh'), Locale('en')]) {
+    for (final locale in AppLocalizations.supportedLocales) {
       testWidgets('fits 320dp (${locale.languageCode}, ${brightness.name})', (
         tester,
       ) async {

@@ -247,7 +247,7 @@ void main() {
     await h.unmount();
   });
 
-  for (final locale in const <Locale>[Locale('zh'), Locale('en')]) {
+  for (final locale in AppLocalizations.supportedLocales) {
     testWidgets('renders without overflow at 320dp in ${locale.languageCode}', (
       tester,
     ) async {

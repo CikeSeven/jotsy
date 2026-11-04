@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_gen_en.dart';
+import 'app_localizations_gen_ja.dart';
+import 'app_localizations_gen_ru.dart';
 import 'app_localizations_gen_zh.dart';
 
 // ignore_for_file: type=lint
@@ -95,6 +97,8 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('ja'),
+    Locale('ru'),
     Locale('zh'),
   ];
 
@@ -19850,7 +19854,7 @@ abstract class AppLocalizations {
   /// **'Translate'**
   String get aiActionTranslate;
 
-  /// Instruction of a built-in AI writing action (sent to the model).
+  /// Instruction of the built-in AI translate action (sent to the model as is, in the app language). It translates between the app language and English; Chinese and English builds translate between Chinese and English.
   ///
   /// In en, this message translates to:
   /// **'Translate the text below. If it is mainly Chinese, translate it into English; otherwise translate it into Simplified Chinese. Output only the translation.'**
@@ -21770,6 +21774,18 @@ abstract class AppLocalizations {
   /// **'English'**
   String get aiPromptLanguageEnglish;
 
+  /// Language name used inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese'**
+  String get aiPromptLanguageJapanese;
+
+  /// Language name used inside prompts.
+  ///
+  /// In en, this message translates to:
+  /// **'Russian'**
+  String get aiPromptLanguageRussian;
+
   /// Prompt line for short answers.
   ///
   /// In en, this message translates to:
@@ -23234,7 +23250,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'zh'].contains(locale.languageCode);
+      <String>['en', 'ja', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -23245,6 +23261,10 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'ru':
+      return AppLocalizationsRu();
     case 'zh':
       return AppLocalizationsZh();
   }

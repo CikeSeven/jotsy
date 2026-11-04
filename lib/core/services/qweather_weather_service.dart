@@ -40,9 +40,7 @@ class QWeatherWeatherService {
       );
     }
 
-    final normalizedLanguage = languageCode.toLowerCase().startsWith('zh')
-        ? 'zh'
-        : 'en';
+    final normalizedLanguage = _qweatherLanguage(languageCode);
     final cacheKey = _QWeatherCacheKey(
       host: host,
       apiKey: key,
@@ -73,6 +71,16 @@ class QWeatherWeatherService {
     } finally {
       _pendingFetches.remove(cacheKey);
     }
+  }
+
+  /// 和风天气 `lang` 参数：应用支持的界面语言和风都有对应写法（`zh`、`en`、
+  /// `ja`、`ru`），按语言子标签取；其余语言用英文。天气描述会写进日记，所以
+  /// 跟随界面语言而不是一律中文。
+  static String _qweatherLanguage(String languageCode) {
+    final language = languageCode.toLowerCase().split(RegExp('[-_]')).first;
+    return const <String>{'zh', 'ja', 'ru'}.contains(language)
+        ? language
+        : 'en';
   }
 
   Future<QWeatherNow> _fetchNowFromNetwork({

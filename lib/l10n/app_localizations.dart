@@ -29,14 +29,15 @@ extension AppLocalizationsProjectX on AppLocalizations {
 
   /// 同年日期显示（用于相对时间回退）。
   ///
-  /// 中文示例：`3月12日`
-  /// 英文示例：`Mar 12`
+  /// 中文示例：`3月12日`；英文示例：`Mar 12`；其他语言按 intl 的 `MMMd`
+  /// 骨架（日文 `3月12日`、俄文 `12 мар.`），不手写图案，字段顺序由各语言
+  /// 自己决定。
   String formatMonthDay(DateTime value) {
     final local = value.toLocal();
     if (isZh) {
       return '${local.month}月${local.day}日';
     }
-    return DateFormat('MMM d', localeName).format(local);
+    return DateFormat.MMMd(localeName).format(local);
   }
 
   /// 跨年日期显示（用于相对时间回退）。
@@ -55,7 +56,7 @@ extension AppLocalizationsProjectX on AppLocalizations {
   ///
   /// 规则：
   /// - 同一天：`HH:mm`
-  /// - 同年不同天：中文 `M月d日 HH:mm`，英文 `MMM d HH:mm`
+  /// - 同年不同天：中文 `M月d日 HH:mm`，其他语言 `MMMd` 骨架 + `HH:mm`
   /// - 跨年：中文 `yyyy年M月d日 HH:mm`，英文 `yMMMd HH:mm`
   String formatPreciseDateTime(DateTime target, DateTime now) {
     final localTarget = target.toLocal();
@@ -75,7 +76,7 @@ extension AppLocalizationsProjectX on AppLocalizations {
       if (isZh) {
         return '${localTarget.month}月${localTarget.day}日 $timePart';
       }
-      return '${DateFormat('MMM d', localeName).format(localTarget)} $timePart';
+      return '${DateFormat.MMMd(localeName).format(localTarget)} $timePart';
     }
 
     if (isZh) {
@@ -96,7 +97,10 @@ extension AppLocalizationsProjectX on AppLocalizations {
     return '${NumberFormat('0.#', localeName).format(value)} ${units[unit]}';
   }
 
-  /// 杂志眉线日期格式化（如：10月5日 · 周一 / Oct 5 · Mon）。
+  /// 杂志眉线日期格式化（如：10月5日 · 周一 / Oct 5 · Mon / 10月5日 · 月）。
+  ///
+  /// 非中文按 intl 骨架拼：日期取 `MMMd` / `yMMMd`（英文与改版前的
+  /// `MMM d` / `MMM d, yyyy` 一致），星期取缩写 `E`，中间固定 ` · `。
   String formatEyebrowDate(DateTime value) {
     final local = value.toLocal();
     final now = DateTime.now();
@@ -117,7 +121,9 @@ extension AppLocalizationsProjectX on AppLocalizations {
       }
       return '${local.year}年${local.month}月${local.day}日 · $weekdayStr';
     }
-    final pattern = isSameYear ? 'MMM d · EEE' : 'MMM d, yyyy · EEE';
-    return DateFormat(pattern, localeName).format(local);
+    final date = isSameYear
+        ? DateFormat.MMMd(localeName).format(local)
+        : DateFormat.yMMMd(localeName).format(local);
+    return '$date · ${DateFormat.E(localeName).format(local)}';
   }
 }

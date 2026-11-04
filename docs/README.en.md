@@ -79,7 +79,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 - **Detail page**: 8 presets (Classic, Paper book, Magazine, Minimal, Night, Journal, Mood color, Immersive), with the cover, title, info bar and body adjustable on their own.
 - **My styles**: save up to 12 styles each for cards and the detail page, and share them as style codes or apply someone else's.
 - **Body font and layout**: HarmonyOS Sans built in, or follow the system font, or import TTF / OTF / TTC fonts. Adjust size, line height, letter spacing and paragraph spacing, applied consistently when editing, reading and publishing.
-- **Themes**: 80 theme colors in 10 families, light and dark themes, adjustable UI font size, in English or Chinese.
+- **Themes**: 80 theme colors in 10 families, light and dark themes, adjustable UI font size; the interface is available in Chinese, English, Japanese (日本語) and Russian (Русский).
 - **Features**: turn off the Calendar and Explore pages, or notebooks, anniversaries, diary templates and time capsules, and keep only what you use. A feature that's off disappears everywhere, your data stays, and turning it back on brings it all back.
 
 ### 📅 Calendar: lunar dates, holidays and anniversaries

@@ -54,6 +54,23 @@ class DiaryEditorController extends ChangeNotifier {
     linkSource: linkSource,
   );
 
+  /// 在 [document] 里放在 [caret] 处的插入点：位置所指的块不存在或不是文字块
+  /// 时为 null，偏移按块的文字长度夹取。用于从别处带来的位置（预览页双击
+  /// 处）——那份文档与这里可能略有出入（预览里刚勾了待办还没写回）。
+  static af.Selection? collapsedSelectionAt(
+    af.Document document,
+    af.Position caret,
+  ) {
+    final delta = document.nodeAtPath(caret.path)?.delta;
+    if (delta == null) return null;
+    return af.Selection.collapsed(
+      af.Position(
+        path: caret.path,
+        offset: caret.offset.clamp(0, delta.length),
+      ),
+    );
+  }
+
   final af.EditorState state;
 
   /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；

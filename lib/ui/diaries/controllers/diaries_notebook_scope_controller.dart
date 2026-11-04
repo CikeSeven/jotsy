@@ -17,14 +17,16 @@ class DiariesNotebookScopeController {
     this._state, {
     required this.feedback,
     required this.transitionCoordinator,
-  });
+  }) : _expectedNotebookId = _state.ref.read(homeNotebookScopeProvider).key;
 
   final _DiariesPage _state;
   final DiariesPageFeedback feedback;
   final DiaryListTransitionCoordinator transitionCoordinator;
 
   /// 页面自己最近一次切到的日记本 id（null 为全部日记）：范围变化与它一致
-  /// 说明是页面发起的，否则是外部改的，需要补过渡。
+  /// 说明是页面发起的，否则是外部改的，需要补过渡。初始为页面创建时所在的
+  /// 范围（冷启动可能恢复到了上次的日记本），上锁遮罩里“回到全部日记”因此
+  /// 同样被认作外部改动、补上过渡。
   String? _expectedNotebookId;
 
   HomeNotebookScopeNotifier get _notifier =>
@@ -142,7 +144,7 @@ class DiariesNotebookScopeController {
   /// `popUntil` 关掉设置页；范围本身回到全部日记，不经“本子不见了”的解析，
   /// 也就不会误报“日记本已删除”。新范围不带 relocked，重锁遮罩随之失效。
   /// 放到微任务里执行：监听回调里不直接改 provider。重新开启时不恢复原来的
-  /// 本子（范围本就不跨重启记忆）。
+  /// 本子：回到全部日记的同时记下的范围也已改成全部日记。
   void handleFeatureToggled(bool enabled) {
     if (enabled) {
       return;

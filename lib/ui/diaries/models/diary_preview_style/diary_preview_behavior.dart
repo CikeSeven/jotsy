@@ -16,6 +16,7 @@ class DiaryPreviewBehavior {
     this.textSelection = true,
     this.longImageMode = DiaryPreviewLongImageMode.fold,
     this.openInEditor = false,
+    this.doubleTapToEdit = true,
   });
 
   static const DiaryPreviewBehavior defaults = DiaryPreviewBehavior();
@@ -53,6 +54,10 @@ class DiaryPreviewBehavior {
         json['openInEditor'],
         defaults.openInEditor,
       ),
+      doubleTapToEdit: StyleJson.boolean(
+        json['doubleTapToEdit'],
+        defaults.doubleTapToEdit,
+      ),
     );
   }
 
@@ -78,6 +83,10 @@ class DiaryPreviewBehavior {
   /// 时间胶囊仍先显示封存页）。开关放在编辑器设置里，存在这里是因为它决定
   /// 预览页出不出现，与其他阅读习惯一样随备份导出、不随预设改变。
   final bool openInEditor;
+
+  /// 双击正文进入编辑页，光标放在双击处（只在手机上；桌面双击仍是选词，
+  /// 进入编辑用顶栏按钮或 Enter）。
+  final bool doubleTapToEdit;
 
   bool get isDefault => this == defaults;
 
@@ -105,6 +114,12 @@ class DiaryPreviewBehavior {
       defaults.longImageMode,
     );
     StyleJson.put(json, 'openInEditor', openInEditor, defaults.openInEditor);
+    StyleJson.put(
+      json,
+      'doubleTapToEdit',
+      doubleTapToEdit,
+      defaults.doubleTapToEdit,
+    );
     return json;
   }
 
@@ -116,6 +131,7 @@ class DiaryPreviewBehavior {
     bool? textSelection,
     DiaryPreviewLongImageMode? longImageMode,
     bool? openInEditor,
+    bool? doubleTapToEdit,
   }) {
     return DiaryPreviewBehavior(
       swipeBetweenDiaries: swipeBetweenDiaries ?? this.swipeBetweenDiaries,
@@ -125,6 +141,7 @@ class DiaryPreviewBehavior {
       textSelection: textSelection ?? this.textSelection,
       longImageMode: longImageMode ?? this.longImageMode,
       openInEditor: openInEditor ?? this.openInEditor,
+      doubleTapToEdit: doubleTapToEdit ?? this.doubleTapToEdit,
     );
   }
 
@@ -137,7 +154,8 @@ class DiaryPreviewBehavior {
         other.todoToggle == todoToggle &&
         other.textSelection == textSelection &&
         other.longImageMode == longImageMode &&
-        other.openInEditor == openInEditor;
+        other.openInEditor == openInEditor &&
+        other.doubleTapToEdit == doubleTapToEdit;
   }
 
   @override
@@ -149,5 +167,6 @@ class DiaryPreviewBehavior {
     textSelection,
     longImageMode,
     openInEditor,
+    doubleTapToEdit,
   );
 }

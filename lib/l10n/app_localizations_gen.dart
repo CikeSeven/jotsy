@@ -7856,6 +7856,18 @@ abstract class AppLocalizations {
   /// **'Select and copy parts of the entry'**
   String get diaryPreviewStyleTextSelectionSubtitle;
 
+  /// Diary preview style settings: switch title (double-tap the entry text to open the editor).
+  ///
+  /// In en, this message translates to:
+  /// **'Double-tap to edit'**
+  String get diaryPreviewStyleDoubleTapEdit;
+
+  /// Diary preview style settings: switch subtitle (the cursor lands where you double-tapped).
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the editor with the cursor where you tapped'**
+  String get diaryPreviewStyleDoubleTapEditSubtitle;
+
   /// Diary preview style settings: screen reader label of the sample indicator.
   ///
   /// In en, this message translates to:

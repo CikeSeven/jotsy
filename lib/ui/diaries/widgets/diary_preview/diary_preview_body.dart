@@ -1,6 +1,8 @@
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../diary_editor/diary_editor.dart';
+import 'diary_preview_double_tap.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -27,6 +29,7 @@ class DiaryPreviewBody extends StatelessWidget {
     this.textSelection = true,
     this.longImageMode = DiaryPreviewLongImageMode.fold,
     this.textColor,
+    this.onDoubleTapText,
   });
 
   final DiaryEditorController controller;
@@ -48,6 +51,10 @@ class DiaryPreviewBody extends StatelessWidget {
   /// 通过对比度检查的自定义正文颜色；null 用主题正文色。
   final Color? textColor;
 
+  /// 双击正文文字（参数为双击处的文字位置，见 [DiaryPreviewDoubleTap]）；
+  /// null 时不识别双击。
+  final ValueChanged<af.Position>? onDoubleTapText;
+
   @override
   Widget build(BuildContext context) {
     final hasVisibleContent = controller.hasContent;
@@ -62,6 +69,14 @@ class DiaryPreviewBody extends StatelessWidget {
         onImageOpen: onOpenImage,
         foldLongImages: longImageMode == DiaryPreviewLongImageMode.fold,
       );
+      final onDoubleTap = onDoubleTapText;
+      if (onDoubleTap != null) {
+        body = DiaryPreviewDoubleTap(
+          controller: controller,
+          onDoubleTap: onDoubleTap,
+          child: body,
+        );
+      }
     } else if (showEmptyHint) {
       body = Text(
         context.l10n.autoT0119,

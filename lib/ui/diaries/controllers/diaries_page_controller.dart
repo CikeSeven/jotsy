@@ -54,7 +54,9 @@ class DiariesPageController {
     );
   }
 
-  /// 应用启动后按“标签记忆”设置恢复上次的标签筛选。
+  /// 应用启动后按“标签记忆”设置恢复上次的标签筛选。记的是全部日记里的
+  /// 选择：启动时恢复到了日记本或未收录（上次停在那里）时先交给范围记下，
+  /// 回到全部日记时才生效（见 `HomeNotebookScopeNotifier.restoreAllScopeTags`）。
   Future<void> restoreRememberedTagFiltersOnStartup() async {
     try {
       final settingsService = await _state.ref.read(
@@ -69,7 +71,9 @@ class DiariesPageController {
       if (rememberedTagIds.isEmpty) {
         return;
       }
-      _state.ref.read(diaryFilterProvider.notifier).setTags(rememberedTagIds);
+      _state.ref
+          .read(homeNotebookScopeProvider.notifier)
+          .restoreAllScopeTags(rememberedTagIds);
     } catch (_) {
       // 设置服务加载失败时由页面主体错误态兜底，这里避免启动恢复流程抛出未处理异常。
     }

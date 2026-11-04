@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_view_preferences.dart';
+import 'package:node_diary/ui/notebooks/models/notebook_scope_resolver.dart';
+import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_restore.dart';
+import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/utils/provider_retention.dart';
 
 /// 列表筛选状态：关键词 + 选中的标签集合。
@@ -208,20 +211,35 @@ const int diaryFirstPageSize = 20;
 /// 门控放行时日记页首帧直接命中这个已就绪的 provider 实例，列表随首页一起
 /// 出现。此前预热的是另一条查询（默认排序、不多取一条判断 hasMore），结果被
 /// 直接丢弃，首页还要再查一次并先闪加载指示再硬切成列表。
-/// 只依赖设置服务（加载后实例稳定）：之后的筛选、排序变化不会让它切换到
-/// 新实例，门控一旦放行就保持放行；仍开启标签记忆的用户首帧后会再换一次查询。
-/// 范围固定为全部日记：应用总是从“全部日记”启动。
+/// 只依赖设置服务与启动时恢复的首页范围（两者都只在启动时变化一次）：之后
+/// 的筛选、排序、范围变化不会让它切换到新实例，门控一旦放行就保持放行；仍
+/// 开启标签记忆的用户首帧后会再换一次查询。
+///
+/// 范围取 `homeNotebookScopeRestoreProvider`（上次所在的日记本 / 章节 /
+/// 未收录，本子里按本子的排序）。恢复到某本日记本时还要等书架流
+/// `notebooksProvider` 第一次到达：日记页按它解析范围，书架没到时会先按
+/// “什么都不匹配”查询、闪一下空列表。
 final startupDiariesProvider = Provider<AsyncValue<PagedDiariesResult>>((
   Ref ref,
 ) {
   final settings = ref.watch(settingsServiceProvider).asData?.value;
-  if (settings == null) {
+  final restored = ref.watch(homeNotebookScopeRestoreProvider).value;
+  if (settings == null || restored == null) {
     return const AsyncValue<PagedDiariesResult>.loading();
   }
-  final sortMode = DiaryViewPreferences.fromRaw(
-    sortRaw: settings.diarySortModeRaw,
-    layoutRaw: settings.diaryLayoutModeRaw,
-  ).sortMode;
+  if (restored.state.notebookId != null &&
+      !ref.watch(
+        notebooksProvider.select((async) => async.hasValue || async.hasError),
+      )) {
+    return const AsyncValue<PagedDiariesResult>.loading();
+  }
+  final notebookSort = restored.sort;
+  final sortMode = notebookSort == null
+      ? DiaryViewPreferences.fromRaw(
+          sortRaw: settings.diarySortModeRaw,
+          layoutRaw: settings.diaryLayoutModeRaw,
+        ).sortMode
+      : diarySortModeForNotebook(notebookSort);
   return ref.watch(
     pagedDiariesProvider(
       DiaryPageQuery(
@@ -229,6 +247,7 @@ final startupDiariesProvider = Provider<AsyncValue<PagedDiariesResult>>((
         requiredTagIds: const <int>[],
         limit: diaryFirstPageSize,
         sortMode: sortMode,
+        scope: restored.scope,
       ),
     ),
   );

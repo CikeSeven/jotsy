@@ -100,7 +100,7 @@
 | 打开日记、预览翻页、标签搜索、快速滚动条、标签子页与批量标签 | `diary_list_preview.md` |
 | 草稿与发布页 | `drafts_publish.md` |
 | 日记模板 | `diary_templates.md` |
-| 日记本（私密、上锁、嵌套、封面、章节、备份合并） | `notebooks.md` |
+| 日记本（私密、上锁、嵌套、封面、章节、备份合并、首页范围与启动恢复） | `notebooks.md` |
 | 日历、纪念日、这天的心情、法定节假日 | `calendar.md` |
 | 探索页 | `explore.md` |
 | 留言 | `comments.md` |

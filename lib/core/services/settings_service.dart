@@ -252,6 +252,10 @@ class SettingsService {
   static const _keyDiaryToolbarSize = 'app.settings.diary_toolbar_size';
   static const _keyRememberedTagFilterIds =
       'app.settings.remembered_tag_filter_ids';
+
+  /// 首页“日记”页上次所在的范围（日记本 / 章节 / 未收录），冷启动时恢复。
+  /// 本机偏好：记的是这台设备上的浏览位置，不随备份导出、不参与同步。
+  static const _keyHomeLastScope = 'app.settings.home_last_scope';
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
   static const _keyCalendarDisplayOptions =
       'app.settings.calendar_display_options';
@@ -472,6 +476,9 @@ class SettingsService {
   String? get diaryToolbarSizeRaw => diaryToolbarSizeRawNotifier.value;
   String? get rememberedTagFilterIdsRaw =>
       _prefs.getString(_keyRememberedTagFilterIds);
+
+  /// 上次所在的首页范围原文（格式与容错见 `HomeNotebookScopeMemory`）。
+  String? get homeLastScopeRaw => _prefs.getString(_keyHomeLastScope);
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
 
@@ -773,6 +780,15 @@ class SettingsService {
 
   Future<void> clearRememberedTagFilterIds() async {
     await _writePreference(_prefs.remove(_keyRememberedTagFilterIds));
+  }
+
+  /// 写入上次所在的首页范围；null（回到全部日记）删除键。
+  Future<void> setHomeLastScopeRaw(String? value) async {
+    await _writePreference(
+      value == null
+          ? _prefs.remove(_keyHomeLastScope)
+          : _prefs.setString(_keyHomeLastScope, value),
+    );
   }
 
   Future<void> setTagOrderRaw(String value) async {

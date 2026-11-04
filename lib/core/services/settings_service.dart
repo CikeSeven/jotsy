@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../l10n/app_languages.dart';
 import 'diary_typography.dart';
 
 export 'diary_typography.dart';
@@ -840,7 +841,8 @@ class SettingsService {
   }
 
   Future<void> setAppLocaleCode(String localeCode) async {
-    final normalized = _normalizeLocaleCode(localeCode) ?? 'en';
+    final normalized =
+        _normalizeLocaleCode(localeCode) ?? appFallbackLanguageCode;
     final nextLocale = _localeFromCode(normalized);
     localeNotifier.value = nextLocale;
     await _writePreference(_prefs.setString(_keyAppLocaleCode, normalized));
@@ -859,35 +861,18 @@ class SettingsService {
         return normalized;
       }
     }
-    return 'en';
+    return appFallbackLanguageCode;
   }
 
-  static String? _normalizeLocaleCode(String? rawCode) {
-    final code = rawCode?.trim().toLowerCase();
-    if (code == null || code.isEmpty) {
-      return null;
-    }
-    if (code.startsWith('zh')) {
-      return 'zh';
-    }
-    if (code.startsWith('en')) {
-      return 'en';
-    }
-    return null;
-  }
+  /// 归一为 [appLanguages] 里的语言代码，不支持的语言返回 null。
+  static String? _normalizeLocaleCode(String? rawCode) =>
+      normalizeAppLanguageCode(rawCode);
 
-  static Locale _localeFromCode(String code) {
-    switch (code) {
-      case 'zh':
-        return const Locale('zh');
-      case 'en':
-      default:
-        return const Locale('en');
-    }
-  }
+  static Locale _localeFromCode(String code) =>
+      Locale(normalizeAppLanguageCode(code) ?? appFallbackLanguageCode);
 
   static String _codeFromLocale(Locale locale) {
-    return _normalizeLocaleCode(locale.languageCode) ?? 'en';
+    return _normalizeLocaleCode(locale.languageCode) ?? appFallbackLanguageCode;
   }
 
   static ThemeMode _parseMode(String? modeRaw) {

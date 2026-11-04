@@ -15099,7 +15099,7 @@
   },
   "aiActionTranslatePrompt": "Translate the text below. If it is mainly Chinese, translate it into English; otherwise translate it into Simplified Chinese. Output only the translation.",
   "@aiActionTranslatePrompt": {
-    "description": "Instruction of a built-in AI writing action (sent to the model)."
+    "description": "Instruction of the built-in AI translate action (sent to the model as is, in the app language). It translates between the app language and English; Chinese and English builds translate between Chinese and English."
   },
   "aiActionSummarize": "Summarize",
   "@aiActionSummarize": {
@@ -16504,6 +16504,14 @@
   },
   "aiPromptLanguageEnglish": "English",
   "@aiPromptLanguageEnglish": {
+    "description": "Language name used inside prompts."
+  },
+  "aiPromptLanguageJapanese": "Japanese",
+  "@aiPromptLanguageJapanese": {
+    "description": "Language name used inside prompts."
+  },
+  "aiPromptLanguageRussian": "Russian",
+  "@aiPromptLanguageRussian": {
     "description": "Language name used inside prompts."
   },
   "aiPromptLengthShort": "Keep the answer short, within a few sentences.",

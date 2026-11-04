@@ -43,11 +43,7 @@ class AiPromptKit {
         return AiPromptKit._(
           l10n,
           prefs,
-          l10n.aiPromptRespondIn(
-            appIsZh
-                ? l10n.aiPromptLanguageChinese
-                : l10n.aiPromptLanguageEnglish,
-          ),
+          l10n.aiPromptRespondIn(aiPromptAppLanguageName(l10n, appLocale)),
         );
       case AiOutputLanguage.custom:
         final name = prefs.customLanguage.trim();
@@ -157,3 +153,14 @@ bool aiTextLooksChinese(String text) {
   final stats = TextStats.of(sample);
   return stats.cjk > 0 && stats.cjk >= stats.latinWords;
 }
+
+/// 界面语言 [appLocale] 在提示词 [l10n]（中文或英文）里的名字，用于“跟随
+/// 应用语言”时的“请用某某语言回答”。提示词只有中英两份：日文、俄文等界面
+/// 用英文提示词，靠这一句让模型用界面语言回答；不认识的语言按英文。
+String aiPromptAppLanguageName(AppLocalizations l10n, Locale appLocale) =>
+    switch (appLocale.languageCode) {
+      'zh' => l10n.aiPromptLanguageChinese,
+      'ja' => l10n.aiPromptLanguageJapanese,
+      'ru' => l10n.aiPromptLanguageRussian,
+      _ => l10n.aiPromptLanguageEnglish,
+    };

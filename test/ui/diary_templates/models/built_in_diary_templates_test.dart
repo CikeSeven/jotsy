@@ -18,10 +18,16 @@ import 'package:node_diary/ui/diary_templates/viewmodels/diary_template_variable
 void main() {
   final zh = lookupAppLocalizations(const Locale('zh'));
   final en = lookupAppLocalizations(const Locale('en'));
+  // 每种界面语言：内置模板、变量写法与问题库都来自各自的 ARB。
+  final all = [
+    for (final locale in AppLocalizations.supportedLocales)
+      lookupAppLocalizations(locale),
+  ];
 
   setUpAll(() async {
-    await initializeDateFormatting('zh');
-    await initializeDateFormatting('en');
+    for (final l10n in all) {
+      await initializeDateFormatting(l10n.localeName);
+    }
   });
 
   test('both languages have the same 8 built-in templates in order', () {
@@ -46,19 +52,22 @@ void main() {
     }
   });
 
-  test('zh and en bodies have the same block structure', () {
+  test('every language has the same body block structure as zh', () {
     List<Object?> shape(String bodyJson) => [
       for (final op in diaryContentQuillOps(bodyJson))
         (op as Map)['attributes'] ?? (op['insert'] is Map ? 'embed' : null),
     ];
     final zhTemplates = buildBuiltInDiaryTemplates(zh);
-    final enTemplates = buildBuiltInDiaryTemplates(en);
-    for (var i = 0; i < zhTemplates.length; i++) {
-      expect(
-        shape(zhTemplates[i].bodyJson),
-        shape(enTemplates[i].bodyJson),
-        reason: zhTemplates[i].id,
-      );
+    for (final l10n in all) {
+      final templates = buildBuiltInDiaryTemplates(l10n);
+      expect(templates.map((t) => t.id), zhTemplates.map((t) => t.id));
+      for (var i = 0; i < zhTemplates.length; i++) {
+        expect(
+          shape(templates[i].bodyJson),
+          shape(zhTemplates[i].bodyJson),
+          reason: '${l10n.localeName} ${zhTemplates[i].id}',
+        );
+      }
     }
   });
 
@@ -68,7 +77,7 @@ void main() {
   ];
 
   test('bodies use the body text size: no heading levels', () {
-    for (final l10n in [zh, en]) {
+    for (final l10n in all) {
       for (final template in buildBuiltInDiaryTemplates(l10n)) {
         for (final op in body(template.bodyJson)) {
           final attributes = op['attributes'] as Map? ?? const {};
@@ -91,7 +100,7 @@ void main() {
         if (preset != DiaryColorPreset.white)
           encodeDiaryColor(preset.colorFor(DiaryColorTarget.text)),
     };
-    for (final l10n in [zh, en]) {
+    for (final l10n in all) {
       for (final template in buildBuiltInDiaryTemplates(l10n)) {
         final ops = body(template.bodyJson);
         final headings = [
@@ -135,7 +144,7 @@ void main() {
   }
 
   test('text typed on any empty line starts without bold or color', () {
-    for (final l10n in [zh, en]) {
+    for (final l10n in all) {
       for (final template in buildBuiltInDiaryTemplates(l10n)) {
         expect(
           leakingEmptyLines(body(template.bodyJson)),
@@ -157,7 +166,7 @@ void main() {
   });
 
   test('no variable is left unresolved after applying', () {
-    for (final l10n in [zh, en]) {
+    for (final l10n in all) {
       final values = DiaryTemplateVariableValues.compute(
         l10n: l10n,
         diaryDate: DateTime(2026, 10, 18),
@@ -176,7 +185,7 @@ void main() {
   });
 
   test('every inserted variable token is a recognised alias', () {
-    for (final l10n in [zh, en]) {
+    for (final l10n in all) {
       final tokens = <String, DiaryTemplateVariable>{
         l10n.diaryTemplateVarDateToken: DiaryTemplateVariable.date,
         l10n.diaryTemplateVarWeekdayToken: DiaryTemplateVariable.weekday,
@@ -200,7 +209,7 @@ void main() {
   });
 
   test('the 12-hour time format in the variables sheet resolves', () {
-    for (final l10n in [zh, en]) {
+    for (final l10n in all) {
       final values = DiaryTemplateVariableValues.compute(
         l10n: l10n,
         diaryDate: DateTime(2026, 10, 18),
@@ -218,7 +227,7 @@ void main() {
   });
 
   test('the question bank has 30 questions in each language', () {
-    for (final l10n in [zh, en]) {
+    for (final l10n in all) {
       final questions = diaryTemplateQuestions(l10n);
       expect(questions, hasLength(30));
       expect(questions.toSet(), hasLength(30));

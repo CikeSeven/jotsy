@@ -13400,6 +13400,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiPromptLanguageEnglish => 'English';
 
   @override
+  String get aiPromptLanguageJapanese => 'Japanese';
+
+  @override
+  String get aiPromptLanguageRussian => 'Russian';
+
+  @override
   String get aiPromptLengthShort =>
       'Keep the answer short, within a few sentences.';
 

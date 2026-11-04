@@ -275,7 +275,7 @@ void main() {
     );
   }
 
-  for (final locale in const [Locale('zh'), Locale('en')]) {
+  for (final locale in AppLocalizations.supportedLocales) {
     for (final entry in <String, Widget Function()>{
       'settings': () => const AiSettingsPage(),
       'provider': () =>

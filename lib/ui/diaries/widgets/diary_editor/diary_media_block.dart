@@ -139,6 +139,7 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
               source: source,
               heroTag: tag,
               foldLongImages: widget.foldLongImages,
+              thumbnail: diaryImageIsThumbnail(node),
               bounds: _imageBoundsPreview ?? diaryImageEmbedBounds(node),
             ),
           ),

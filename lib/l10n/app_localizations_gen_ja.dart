@@ -5507,6 +5507,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryImageMenuResize => 'サイズを変更';
 
   @override
+  String get diaryImageMenuThumbnail => 'サムネイルで表示';
+
+  @override
+  String get diaryImageMenuFullSize => '通常の大きさで表示';
+
+  @override
   String get diaryImageMenuCopy => 'コピー';
 
   @override

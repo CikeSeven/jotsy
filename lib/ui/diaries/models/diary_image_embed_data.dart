@@ -5,6 +5,8 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart'
     show AlignmentDirectional, BoxConstraints;
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart'
+    show kDiaryImageThumbnailKey;
 
 /// 把图片 embed 上记录的宽高解析为显示上限，而不是强制尺寸。
 ///
@@ -80,6 +82,15 @@ String? diaryImageStyleOf(af.Node node) {
   final style = node.attributes['style'];
   return style is String ? style : null;
 }
+
+/// 小图的边长（逻辑像素）与圆角：与“这天的照片”网格同一量级，正文里一张
+/// 小图约占三四行字高，不再把整列撑满。
+const double kDiaryImageThumbnailExtent = 120;
+const double kDiaryImageThumbnailRadius = 12;
+
+/// 图片是否以小图显示（[kDiaryImageThumbnailKey] 只认 `true`，其他值按未设置）。
+bool diaryImageIsThumbnail(af.Node node) =>
+    node.attributes[kDiaryImageThumbnailKey] == true;
 
 double? _parseLength(Object? raw) {
   if (raw == null) return null;

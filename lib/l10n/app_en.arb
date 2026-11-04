@@ -7619,6 +7619,14 @@
   "@diaryImageMenuResize": {
     "description": "Image menu: open the width/height sliders to resize the image."
   },
+  "diaryImageMenuThumbnail": "Show as thumbnail",
+  "@diaryImageMenuThumbnail": {
+    "description": "Image menu: show this image as a small square thumbnail in the diary body; tapping it still opens the full image."
+  },
+  "diaryImageMenuFullSize": "Show at normal size",
+  "@diaryImageMenuFullSize": {
+    "description": "Image menu: turn off thumbnail display and show the image at its normal size again."
+  },
   "diaryImageMenuCopy": "Copy",
   "@diaryImageMenuCopy": {
     "description": "Image menu: copy the image (paste it back into the body or another app)."

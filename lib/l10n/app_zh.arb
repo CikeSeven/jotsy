@@ -7619,6 +7619,14 @@
   "@diaryImageMenuResize": {
     "description": "正文图片菜单：打开宽高滑条调整显示大小。"
   },
+  "diaryImageMenuThumbnail": "显示为小图",
+  "@diaryImageMenuThumbnail": {
+    "description": "正文图片菜单：把这张图片在正文里显示为方形小图，点按仍可查看大图。"
+  },
+  "diaryImageMenuFullSize": "恢复正常显示",
+  "@diaryImageMenuFullSize": {
+    "description": "正文图片菜单：取消小图显示，恢复为正常大小。"
+  },
   "diaryImageMenuCopy": "复制",
   "@diaryImageMenuCopy": {
     "description": "正文图片菜单：复制图片（可粘贴回正文或其他应用）。"

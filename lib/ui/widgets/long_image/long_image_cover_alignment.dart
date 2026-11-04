@@ -114,6 +114,7 @@ class CoverCroppedImage extends StatelessWidget {
     this.width,
     this.height,
     this.filterQuality = FilterQuality.low,
+    this.frameBuilder = expressiveImageFrameBuilder,
     this.errorBuilder,
   });
 
@@ -121,6 +122,11 @@ class CoverCroppedImage extends StatelessWidget {
   final double? width;
   final double? height;
   final FilterQuality filterQuality;
+
+  /// 默认首次解码淡入。需要只给画面加裁切与描边、而不套住 [errorBuilder]
+  /// 的失败占位时（[Image] 的失败分支不经 frameBuilder），由调用方传入
+  /// 包了一层的版本，淡入仍应经 [expressiveImageFrameBuilder]。
+  final ImageFrameBuilder frameBuilder;
   final ImageErrorWidgetBuilder? errorBuilder;
 
   @override
@@ -134,7 +140,7 @@ class CoverCroppedImage extends StatelessWidget {
         fit: BoxFit.cover,
         alignment: alignment,
         filterQuality: filterQuality,
-        frameBuilder: expressiveImageFrameBuilder,
+        frameBuilder: frameBuilder,
         errorBuilder: errorBuilder,
       ),
     );

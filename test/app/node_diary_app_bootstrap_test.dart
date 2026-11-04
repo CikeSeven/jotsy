@@ -12,6 +12,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
+import 'package:node_diary/ui/notebooks/models/home_notebook_scope_memory.dart';
 import 'package:node_diary/ui/widgets/launch_reveal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -247,6 +248,69 @@ void main() {
       sawHome = true;
       // 首页出现的同一帧里列表已有数据，不会先空白/转圈再硬切。
       expect(find.text('Warm start'), findsOneWidget);
+    }
+    expect(sawHome, isTrue);
+    await _unmount(tester);
+  });
+
+  testWidgets('a restored notebook is already listed on the first home frame', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final settings = await SettingsService.create();
+    final travel = (await tester.runAsync(
+      () => database.createNotebook(
+        name: 'Travel',
+        kind: NotebookKind.manual,
+        visibility: NotebookVisibility.normal,
+        // 本子自己的排序：预热要按恢复的范围与它的排序查询，才能命中日记页
+        // 首帧的同一实例。
+        payload: NotebookPayload(sort: NotebookSort.createdAsc),
+      ),
+    ))!;
+    await tester.runAsync(() async {
+      await database.createDiary(
+        title: 'In the notebook',
+        contentDocJson: '[{"insert":"body\\n"}]',
+        contentText: 'body',
+        metadataJson: '{}',
+        notebookIds: <String>[travel],
+      );
+      await database.createDiary(
+        title: 'Elsewhere',
+        contentDocJson: '[{"insert":"body\\n"}]',
+        contentText: 'body',
+        metadataJson: '{}',
+      );
+    });
+    await settings.setHomeLastScopeRaw(
+      HomeNotebookScopeMemory.encode(notebookId: travel),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          settingsServiceProvider.overrideWith((ref) async => settings),
+        ],
+        child: const NodeDiaryApp(),
+      ),
+    );
+    var sawHome = false;
+    for (var frame = 0; frame < 120 && !sawHome; frame++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 2)),
+      );
+      await tester.pump(const Duration(milliseconds: 16));
+      if (find.byType(HomePage).evaluate().isEmpty) {
+        continue;
+      }
+      sawHome = true;
+      // 首页一出现就停在上次的本子里，不先闪全部日记或空列表。
+      expect(find.text('In the notebook'), findsOneWidget);
+      expect(find.text('Elsewhere'), findsNothing);
     }
     expect(sawHome, isTrue);
     await _unmount(tester);

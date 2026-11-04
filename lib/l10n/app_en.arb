@@ -5977,6 +5977,14 @@
   "@diaryPreviewStyleTextSelectionSubtitle": {
     "description": "Diary preview style settings: switch subtitle."
   },
+  "diaryPreviewStyleDoubleTapEdit": "Double-tap to edit",
+  "@diaryPreviewStyleDoubleTapEdit": {
+    "description": "Diary preview style settings: switch title (double-tap the entry text to open the editor)."
+  },
+  "diaryPreviewStyleDoubleTapEditSubtitle": "Opens the editor with the cursor where you tapped",
+  "@diaryPreviewStyleDoubleTapEditSubtitle": {
+    "description": "Diary preview style settings: switch subtitle (the cursor lands where you double-tapped)."
+  },
   "diaryPreviewStyleSampleOf": "Sample {index} of {count}",
   "@diaryPreviewStyleSampleOf": {
     "description": "Diary preview style settings: screen reader label of the sample indicator.",

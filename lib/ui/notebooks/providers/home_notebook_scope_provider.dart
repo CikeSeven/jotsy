@@ -1,18 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/providers/diary_filters.dart';
+import '../models/home_notebook_scope_memory.dart';
 import '../models/notebook_scope_resolver.dart';
+import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_view.dart';
+import 'home_notebook_scope_restore.dart';
 import 'notebook_providers.dart';
 
 /// 首页“日记”页当前所在的范围：全部日记、未收录的日记（[unfiled]），或某本
 /// 日记本（含章节选择）。
 ///
-/// 只在内存里：应用总是从“全部日记”启动（启动预热 `startupDiariesProvider`
-/// 也固定为全部日记）。
+/// 跨重启记忆：范围（日记本 / 章节 / 未收录）每次改变都写进本机偏好
+/// `app.settings.home_last_scope`（[HomeNotebookScopeMemory]），冷启动时经
+/// `homeNotebookScopeRestoreProvider` 恢复；启动预热 `startupDiariesProvider`
+/// 预热的就是恢复后的范围。临时排序与上锁会话不记。
 ///
 /// - [chapterId] / [unassignedChapterOnly]：章节筛选（章节界面接入前恒为空）；
 /// - [sortOverride]：在视图选项里改了本子的排序、写库结果还没推送回来时
@@ -98,11 +105,49 @@ class HomeNotebookScope {
 /// 标签筛选按范围分开记：从全部日记进入日记本时先记下全部日记的已选标签，
 /// 本子里从空选择开始；回到全部日记时还原（“记住标签筛选”只记全部日记的
 /// 选择，见日记页控制器）。切换本身不做过渡动画，由日记页经过渡协调器调用。
+///
+/// 启动恢复：初始状态取 `homeNotebookScopeRestoreProvider` 的结果；它还没
+/// 完成时先为全部日记，完成后只在用户还没切换过范围时换上恢复的范围（启动
+/// 门控会等它完成才显示首页，正常情况下首页一出现就是恢复后的范围）。
 class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
   Set<int> _allScopeTagIds = const <int>{};
 
+  /// 本次运行里范围被切换过：之后到达的启动恢复结果不再覆盖它。
+  bool _moved = false;
+
   @override
-  HomeNotebookScope build() => HomeNotebookScope.all;
+  HomeNotebookScope build() {
+    ref.listen<AsyncValue<HomeNotebookScopeResolution>>(
+      homeNotebookScopeRestoreProvider,
+      (_, next) {
+        final restored = next.value?.state;
+        if (restored == null || restored.isAll || _moved || !state.isAll) {
+          return;
+        }
+        // 与 [enter] 同一口径：此前已生效的全部日记筛选（标签记忆可能先一步
+        // 恢复）留到回到全部日记时还原，本子里从空选择开始。
+        final filter = ref.read(diaryFilterProvider.notifier);
+        _allScopeTagIds = <int>{
+          ...ref.read(diaryFilterProvider).selectedTagIds,
+        };
+        state = restored;
+        filter.setTags(const <int>[]);
+      },
+    );
+    return ref.read(homeNotebookScopeRestoreProvider).value?.state ??
+        HomeNotebookScope.all;
+  }
+
+  /// 启动时按“记住标签筛选”恢复的全部日记标签：停在全部日记时直接作为
+  /// 筛选；恢复到了日记本或未收录时先记下，回到全部日记时还原（与从全部
+  /// 日记进入日记本时同一口径，本子里从空选择开始）。
+  void restoreAllScopeTags(Iterable<int> tagIds) {
+    if (state.isAll) {
+      ref.read(diaryFilterProvider.notifier).setTags(tagIds);
+    } else {
+      _allScopeTagIds = <int>{...tagIds};
+    }
+  }
 
   /// 进入 [notebookId]（已在其中时不变）。上锁日记本须由调用方先验证。
   void enter(String notebookId) {
@@ -115,6 +160,7 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
     }
     state = HomeNotebookScope(notebookId: notebookId);
     filter.setTags(const <int>[]);
+    _remember();
   }
 
   /// 进入“未收录”（已在其中时不变）；标签筛选与进入日记本同理。
@@ -128,6 +174,7 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
     }
     state = HomeNotebookScope.unfiledScope;
     filter.setTags(const <int>[]);
+    _remember();
   }
 
   /// 回到全部日记，还原离开时的标签筛选。
@@ -138,6 +185,7 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
     state = HomeNotebookScope.all;
     ref.read(diaryFilterProvider.notifier).setTags(_allScopeTagIds);
     _allScopeTagIds = const <int>{};
+    _remember();
   }
 
   /// 章节筛选（章节界面使用）；全部日记与未收录里无效。
@@ -148,6 +196,31 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
     state = state._copyWith(
       chapterId: () => chapterId,
       unassignedChapterOnly: chapterId == null && unassignedOnly,
+    );
+    _remember();
+  }
+
+  /// 把当前范围写进本机偏好，下次冷启动从这里开始（全部日记删除键）。
+  /// 设置服务还没就绪时跳过（首页显示前它必然已就绪）；写入失败只影响下次
+  /// 启动的位置，不打扰用户。
+  void _remember() {
+    _moved = true;
+    final settings = ref.read(settingsServiceProvider).asData?.value;
+    if (settings == null) return;
+    final current = state;
+    unawaited(
+      settings
+          .setHomeLastScopeRaw(
+            HomeNotebookScopeMemory.encode(
+              notebookId: current.notebookId,
+              unfiled: current.unfiled,
+              chapterId: current.chapterId,
+              unassignedChapterOnly: current.unassignedChapterOnly,
+            ),
+          )
+          .catchError((Object error) {
+            debugPrint('Remembering the home notebook scope failed: $error');
+          }),
     );
   }
 
@@ -247,42 +320,57 @@ DiaryListScope _matchNothingScope(String notebookId) => DiarySmartScope(
 final homeNotebookScopeResolutionProvider =
     Provider<HomeNotebookScopeResolution>((Ref ref) {
       final state = ref.watch(homeNotebookScopeProvider);
-      if (state.unfiled) {
-        return HomeNotebookScopeResolution(
-          state: state,
-          scope: DiaryListScope.unfiled,
-        );
-      }
-      final notebookId = state.notebookId;
-      if (notebookId == null) {
-        return HomeNotebookScopeResolution.all;
-      }
-      final tree = ref.watch(notebookTreeProvider);
-      final notebook = tree?[notebookId];
-      if (notebook == null) {
-        return HomeNotebookScopeResolution(
-          state: state,
-          scope: _matchNothingScope(notebookId),
-          missing: tree != null,
-        );
-      }
-      final sort = effectiveNotebookSort(
-        notebook,
-        state.sortOverride ?? notebook.payload.sort,
-      );
-      return HomeNotebookScopeResolution(
-        state: state,
-        notebook: notebook,
-        sort: sort,
-        scope: resolveNotebookScope(
-          notebook,
-          tree: tree,
-          sort: sort,
-          chapterId: state.chapterId,
-          unassignedChapterOnly: state.unassignedChapterOnly,
-        ),
+      return resolveHomeNotebookScope(
+        state,
+        state.notebookId == null ? null : ref.watch(notebookTreeProvider),
       );
     });
+
+/// 把范围 [state] 解析成查询范围与本子的生效排序。[tree] 为书架（还没加载
+/// 时为 null）；全部日记与未收录用不到它。
+///
+/// 日记页的实时解析与冷启动恢复（`homeNotebookScopeRestoreProvider`，启动
+/// 预热按它的结果查询）共用这一份：两边算出的查询必须相等，首页首帧才能
+/// 命中预热好的列表。
+HomeNotebookScopeResolution resolveHomeNotebookScope(
+  HomeNotebookScope state,
+  NotebookTree? tree,
+) {
+  if (state.unfiled) {
+    return HomeNotebookScopeResolution(
+      state: state,
+      scope: DiaryListScope.unfiled,
+    );
+  }
+  final notebookId = state.notebookId;
+  if (notebookId == null) {
+    return HomeNotebookScopeResolution.all;
+  }
+  final notebook = tree?[notebookId];
+  if (notebook == null) {
+    return HomeNotebookScopeResolution(
+      state: state,
+      scope: _matchNothingScope(notebookId),
+      missing: tree != null,
+    );
+  }
+  final sort = effectiveNotebookSort(
+    notebook,
+    state.sortOverride ?? notebook.payload.sort,
+  );
+  return HomeNotebookScopeResolution(
+    state: state,
+    notebook: notebook,
+    sort: sort,
+    scope: resolveNotebookScope(
+      notebook,
+      tree: tree,
+      sort: sort,
+      chapterId: state.chapterId,
+      unassignedChapterOnly: state.unassignedChapterOnly,
+    ),
+  );
+}
 
 /// 书架上是否有日记本：首页标签栏在没有标签时是否仍要显示（给日记本切换
 /// 入口留位置）。

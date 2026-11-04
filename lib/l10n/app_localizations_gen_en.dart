@@ -4715,6 +4715,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Select and copy parts of the entry';
 
   @override
+  String get diaryPreviewStyleDoubleTapEdit => 'Double-tap to edit';
+
+  @override
+  String get diaryPreviewStyleDoubleTapEditSubtitle =>
+      'Opens the editor with the cursor where you tapped';
+
+  @override
   String diaryPreviewStyleSampleOf(int index, int count) {
     return 'Sample $index of $count';
   }

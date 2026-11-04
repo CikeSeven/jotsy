@@ -229,12 +229,15 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     );
   }
 
-  Future<void> _openEditor() async {
+  /// 打开编辑页；[caret] 为双击正文处的文字位置（编辑页把光标放在那里并
+  /// 弹出键盘），顶栏按钮进入时为 null。
+  Future<void> _openEditor({Position? caret}) async {
     // 编辑页里删除了这一篇：按“已删除”收尾，入口给出撤销。
     final deleted = await openDiaryEditorFromPreview(
       context,
       ref,
       widget.diaryId,
+      caret: caret,
     );
     if (mounted && deleted) {
       _finishDeleted();
@@ -490,6 +493,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           actions: DiaryPreviewActions(
             onOpenTypography: () => showDiaryTypographySheet(context),
             onEdit: _openEditor,
+            onEditAt: (Position caret) => unawaited(_openEditor(caret: caret)),
             onShare: () => openDiaryPreviewShare(
               context,
               ref,

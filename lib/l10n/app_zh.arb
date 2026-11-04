@@ -5977,6 +5977,14 @@
   "@diaryPreviewStyleTextSelectionSubtitle": {
     "description": "预览页样式设置：开关说明。"
   },
+  "diaryPreviewStyleDoubleTapEdit": "双击正文进入编辑",
+  "@diaryPreviewStyleDoubleTapEdit": {
+    "description": "预览页样式设置：开关标题（双击正文进入编辑页）。"
+  },
+  "diaryPreviewStyleDoubleTapEditSubtitle": "光标会停在双击的位置",
+  "@diaryPreviewStyleDoubleTapEditSubtitle": {
+    "description": "预览页样式设置：开关说明（进入编辑后光标在双击处）。"
+  },
   "diaryPreviewStyleSampleOf": "示例 {index}/{count}",
   "@diaryPreviewStyleSampleOf": {
     "description": "预览页样式设置：示例页码的读屏文字。",

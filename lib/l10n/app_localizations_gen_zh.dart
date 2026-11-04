@@ -4243,6 +4243,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryPreviewStyleTextSelectionSubtitle => '选择后可以复制';
 
   @override
+  String get diaryPreviewStyleDoubleTapEdit => '双击正文进入编辑';
+
+  @override
+  String get diaryPreviewStyleDoubleTapEditSubtitle => '光标会停在双击的位置';
+
+  @override
   String diaryPreviewStyleSampleOf(int index, int count) {
     return '示例 $index/$count';
   }

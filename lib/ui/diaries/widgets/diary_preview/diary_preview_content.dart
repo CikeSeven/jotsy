@@ -6,6 +6,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/services/app_platform.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../widgets/image_viewer_hero.dart';
@@ -40,10 +41,16 @@ class DiaryPreviewActions {
     required this.onShare,
     required this.onMore,
     this.onBack,
+    this.onEditAt,
   });
 
   final VoidCallback onOpenTypography;
   final VoidCallback onEdit;
+
+  /// 双击正文进入编辑，光标放在 [Position] 处；null 时双击不进入编辑（设置页
+  /// 预览）。是否识别双击还看阅读行为 `doubleTapToEdit` 与平台，见
+  /// [DiaryPreviewContent]。
+  final ValueChanged<Position>? onEditAt;
   final VoidCallback onShare;
   final VoidCallback onMore;
 
@@ -306,6 +313,12 @@ class DiaryPreviewContent extends ConsumerWidget {
                   textSelection: behavior.textSelection,
                   longImageMode: behavior.longImageMode,
                   textColor: resolved.bodyColor,
+                  // 桌面双击仍是选词（复制原文的习惯），进入编辑用顶栏按钮
+                  // 或 Enter。
+                  onDoubleTapText:
+                      behavior.doubleTapToEdit && !AppPlatform.isDesktop
+                      ? actions.onEditAt
+                      : null,
                 ),
                 if (metaAtEnd) ...<Widget>[
                   const SizedBox(height: 20),

@@ -117,6 +117,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.createTemplate,
     this.createNotebookId,
     this.createNotebookChapterId,
+    this.initialCaret,
   });
 
   final String? diaryId;
@@ -142,6 +143,11 @@ class EditDiaryPage extends ConsumerStatefulWidget {
   /// 与 [createNotebookId] 同时传入：首页正停在这本的某一章时，新日记落在
   /// 这一章（发布时写入，见 `createDiary.notebookChapterIds`）。
   final String? createNotebookChapterId;
+
+  /// 编辑已有日记时打开后的光标位置（预览页双击正文处）：放好光标、等入场
+  /// 转场结束再聚焦弹出键盘。位置在正文里找不到（块已不在、不是文字块）时
+  /// 照常从文首打开、不聚焦。新建模式不使用。
+  final editor.Position? initialCaret;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
@@ -1006,16 +1012,33 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               // 首次拿到详情时回填编辑器与草稿上下文，后续重建不重复执行。
               if (!_initialized && detail != null) {
                 _titleController.text = detail.diary.title;
+                final document = editor.diaryEditorDocument(
+                  detail.diary.content,
+                );
+                final caret = widget.initialCaret;
+                final caretSelection = caret == null
+                    ? null
+                    : editor.DiaryEditorController.collapsedSelectionAt(
+                        document,
+                        caret,
+                      );
                 _controller.replaceContentController(
                   editor.DiaryEditorController(
-                    document: editor.diaryEditorDocument(detail.diary.content),
-                    selection: editor.Selection.single(
-                      path: [0],
-                      startOffset: 0,
-                    ),
+                    document: document,
+                    selection:
+                        caretSelection ??
+                        editor.Selection.single(path: [0], startOffset: 0),
                     linkSource: _linkSource,
                   ),
                 );
+                // 预览页双击进来：光标已放在双击处，转场结束后聚焦弹出键盘，
+                // 正文随键盘升起揭示光标（DiaryEditorViewport）。
+                if (caretSelection != null) {
+                  _routeEntranceWaiter.schedule(
+                    this,
+                    _contentFocusNode.requestFocus,
+                  );
+                }
                 try {
                   _metadataJson = prettyMetadataJson(detail.diary.metadata);
                 } catch (_) {

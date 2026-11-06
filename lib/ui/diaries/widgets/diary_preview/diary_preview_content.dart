@@ -1,5 +1,4 @@
 import 'dart:ui' as ui show Image;
-import '../../../ai/sections/ai_replies_section.dart';
 
 import 'package:flutter/material.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
@@ -24,6 +23,7 @@ import 'diary_preview_meta.dart';
 import 'diary_preview_neighbors.dart';
 import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
+import 'diary_preview_trailing.dart';
 
 /// 打开看图页：本篇的全部图片来源、点按的那一张与抓取的共享元素。
 typedef DiaryPreviewImageOpener =
@@ -347,38 +347,16 @@ class DiaryPreviewContent extends ConsumerWidget {
                   const SizedBox(height: 20),
                   metaWidget,
                 ],
-                if (editedLabel != null) ...<Widget>[
-                  const SizedBox(height: 16),
-                  DiaryPreviewEditedLine(label: editedLabel),
-                ],
-                if (backlinks != null) ...<Widget>[
-                  const SizedBox(height: 28),
-                  DiaryBacklinksSection(
-                    data: backlinks,
-                    textColor: resolved.bodyColor,
-                  ),
-                ],
-                if (comments != null) ...<Widget>[
-                  const SizedBox(height: 28),
-                  DiaryCommentsSection(
-                    key: ValueKey<String>(
-                      'diary_comments_${detail.diary.diaryId}',
-                    ),
-                    data: comments,
-                    textColor: resolved.bodyColor,
-                  ),
-                ],
-                if (aiRepliesFor != null) ...<Widget>[
-                  const SizedBox(height: 28),
-                  AiRepliesSection(
-                    key: ValueKey<String>('ai_replies_$aiRepliesFor'),
-                    diaryId: aiRepliesFor!,
-                    textColor:
-                        resolved.bodyColor ??
-                        Theme.of(context).colorScheme.onSurface,
-                    onContinueChat: onAiContinueChat,
-                  ),
-                ],
+                ...diaryPreviewTrailing(
+                  context,
+                  diaryId: detail.diary.diaryId,
+                  resolved: resolved,
+                  editedLabel: editedLabel,
+                  backlinks: backlinks,
+                  comments: comments,
+                  aiRepliesFor: aiRepliesFor,
+                  onAiContinueChat: onAiContinueChat,
+                ),
                 if (neighbors != null) ...<Widget>[
                   const SizedBox(height: 24),
                   DiaryPreviewNeighborCards(

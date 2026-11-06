@@ -159,6 +159,8 @@ void main() {
     );
     await openRoute(tester, (_) => EditDiaryPage(diaryId: diaryId));
     final panel = PublishPanelDriver(tester);
+    // 编辑页的信息面板平时不挂载，点信息栏打开。
+    await panel.open();
 
     panel.resolveWeather();
     await tester.pump();

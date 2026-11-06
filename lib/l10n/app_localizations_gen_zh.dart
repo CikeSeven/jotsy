@@ -5294,7 +5294,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsOpenDiaryInEditor => '打开日记时直接编辑';
 
   @override
-  String get settingsOpenDiaryInEditorSubtitle => '点开日记直接进入编辑页，不再先打开预览页';
+  String get settingsOpenDiaryInEditorSubtitle => '点开日记直接编辑，版式与预览页相同';
+
+  @override
+  String get diaryReadingEditInfo => '编辑信息';
+
+  @override
+  String get diaryReadingDone => '完成';
 
   @override
   String get diaryDayPhotosSetCover => '设为封面';

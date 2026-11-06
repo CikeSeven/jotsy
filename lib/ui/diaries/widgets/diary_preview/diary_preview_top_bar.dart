@@ -50,6 +50,8 @@ class DiaryPreviewTopBar extends StatelessWidget {
     required this.onMore,
     this.titleSemantics,
     this.onBack,
+    this.sliver = true,
+    this.editSlot,
   });
 
   final DiaryPreviewPageStyle style;
@@ -73,6 +75,15 @@ class DiaryPreviewTopBar extends StatelessWidget {
 
   /// 返回按钮；null 时返回上一页（设置页的预览里换成空操作）。
   final VoidCallback? onBack;
+
+  /// true（默认）时是滚动视图里的 [SliverAppBar]；false 时是普通 [AppBar]，
+  /// 供阅读式编辑页放进 Scaffold 的顶栏位置（正文在编辑器自己的虚拟滚动
+  /// 里，没有 sliver 可放；顶栏常驻，不随滚动隐藏）。
+  final bool sliver;
+
+  /// 不为 null 时代替“编辑”按钮的位置（不看 [DiaryPreviewPageStyle.showEditButton]）：
+  /// 阅读式编辑页在编辑中放“完成”，其余时候放空占位。
+  final Widget? editSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -120,51 +131,77 @@ class DiaryPreviewTopBar extends StatelessWidget {
     final embedded = DiaryPreviewHostScope.isEmbedded(context);
     final title = embedded ? null : this.title;
     final pinned = style.topBar == DiaryPreviewTopBarMode.pinned;
+    final leading = embedded ? null : DiaryPreviewBackButton(onPressed: onBack);
+    final titleWidget = title == null
+        ? null
+        : Text(title, semanticsLabel: titleSemantics);
+    final overlayStyle =
+        theme.appBarTheme.systemOverlayStyle ??
+        SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+          statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: isLight
+              ? Brightness.dark
+              : Brightness.light,
+        );
+    final editSlot = this.editSlot;
+    final actions = <Widget>[
+      if (style.showTypographyButton)
+        IconButton(
+          tooltip: context.l10n.diaryTypographyQuickTooltip,
+          onPressed: onOpenTypography,
+          icon: const FaIcon(FontAwesomeIcons.font, size: 16),
+        ),
+      if (style.showShareButton)
+        IconButton(
+          tooltip: context.l10n.previewShare,
+          onPressed: onShare,
+          icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
+        ),
+      if (editSlot != null)
+        editSlot
+      else if (style.showEditButton)
+        IconButton(
+          tooltip: context.l10n.commonEdit,
+          onPressed: onEdit,
+          icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
+        ),
+      IconButton(
+        tooltip: context.l10n.autoT0125,
+        onPressed: onMore,
+        icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
+      ),
+    ];
+    if (!sliver) {
+      return AppBar(
+        // 与 SliverAppBar 的默认高度一致，不跟随主题里的顶栏高度。
+        toolbarHeight: kToolbarHeight,
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: leading,
+        title: titleWidget,
+        systemOverlayStyle: overlayStyle,
+        actions: actions,
+        flexibleSpace: flexibleSpace,
+        foregroundColor: colorScheme.onSurface,
+        backgroundColor: background,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+      );
+    }
     return SliverAppBar(
       floating: !pinned,
       pinned: pinned,
       centerTitle: true,
       automaticallyImplyLeading: false,
-      leading: embedded ? null : DiaryPreviewBackButton(onPressed: onBack),
-      title: title == null ? null : Text(title, semanticsLabel: titleSemantics),
-      systemOverlayStyle:
-          theme.appBarTheme.systemOverlayStyle ??
-          SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: isLight
-                ? Brightness.dark
-                : Brightness.light,
-            statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
-            systemNavigationBarColor: Colors.transparent,
-            systemNavigationBarIconBrightness: isLight
-                ? Brightness.dark
-                : Brightness.light,
-          ),
-      actions: <Widget>[
-        if (style.showTypographyButton)
-          IconButton(
-            tooltip: context.l10n.diaryTypographyQuickTooltip,
-            onPressed: onOpenTypography,
-            icon: const FaIcon(FontAwesomeIcons.font, size: 16),
-          ),
-        if (style.showShareButton)
-          IconButton(
-            tooltip: context.l10n.previewShare,
-            onPressed: onShare,
-            icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
-          ),
-        if (style.showEditButton)
-          IconButton(
-            tooltip: context.l10n.commonEdit,
-            onPressed: onEdit,
-            icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
-          ),
-        IconButton(
-          tooltip: context.l10n.autoT0125,
-          onPressed: onMore,
-          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
-        ),
-      ],
+      leading: leading,
+      title: titleWidget,
+      systemOverlayStyle: overlayStyle,
+      actions: actions,
       flexibleSpace: flexibleSpace,
       foregroundColor: colorScheme.onSurface,
       backgroundColor: background,

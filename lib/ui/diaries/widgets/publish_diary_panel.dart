@@ -52,6 +52,7 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
     this.showDraftCapsule = true,
     this.fillWidth = false,
     this.onProgressChanged,
+    this.hideWhenCollapsed = false,
   });
 
   final PublishDiaryPanelController? controller;
@@ -77,6 +78,12 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
   /// 收起与展开都铺满宿主给的宽度，不再按收起 / 展开左右内缩。宽窗口里由
   /// 宿主把面板放进与悬浮工具栏相同的居中列，收起栏与工具栏同宽、同边。
   final bool fillWidth;
+
+  /// 收起时整块沉到宿主底边之下、不留收起栏（阅读式编辑页：信息由页头的
+  /// 信息栏展示，点它才打开面板）。展开进度从 0 升到约 0.12
+  /// 的途中从底边升起，收回时同样沉下；完全收起时不接收点按。宿主在面板
+  /// 回到收起后卸载它。
+  final bool hideWhenCollapsed;
 
   /// 收起态从宿主底边算起占用的高度（底部间隙 + 抬升 + 收起栏）。宿主要在
   /// 收起栏上方再叠一层（如常显的悬浮工具栏）时，据此对齐，不必复制内部尺寸。
@@ -140,6 +147,8 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
   static const double _collapsedBottomGap = 10;
   // 展开时与宿主可用区域顶边至少留出的距离，表头不贴着顶栏、不被挤出。
   static const double _expandedTopGap = 24;
+  // 收起即离场时，展开进度到这里面板已完全升出底边（约 50dp 高的展开量）。
+  static const double _hiddenRiseProgress = 0.12;
 
   // ==================== 交互状态机协调器 ====================
   late final PublishPanelCoordinator _panelCoordinator;
@@ -267,13 +276,28 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
               progress,
             )!;
             final extraLift = lerpDouble(_collapsedExtraLift, 0, progress)!;
-            return Padding(
+            final padded = Padding(
               padding: EdgeInsets.only(
                 left: horizontalInset,
                 right: horizontalInset,
                 bottom: _collapsedBottomGap + extraLift,
               ),
               child: child,
+            );
+            if (!widget.hideWhenCollapsed) {
+              return padded;
+            }
+            // 沉下的距离正好是收起态的占用高度：完全收起时收起栏整个在宿主
+            // 底边之下。用平移而不是透明度：玻璃表面不能放进透明度层。
+            final sink =
+                PublishDiaryPanel.collapsedFootprint *
+                (1 - (progress / _hiddenRiseProgress).clamp(0.0, 1.0));
+            return IgnorePointer(
+              ignoring: progress <= 0,
+              child: Transform.translate(
+                offset: Offset(0, sink),
+                child: padded,
+              ),
             );
           },
           child: SizedBox(

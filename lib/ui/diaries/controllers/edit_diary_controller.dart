@@ -253,55 +253,6 @@ class EditDiaryController {
     scheduleEditAutoSave();
   }
 
-  /// 软删除当前日记（仅编辑模式可用）。
-  Future<void> softDelete() async {
-    final diaryId = _state.widget.diaryId;
-    if (diaryId == null || _state._saving) {
-      return;
-    }
-
-    final confirmed = await showAppDialog<bool>(
-      context: _state.context,
-      builder: (BuildContext dialogContext) {
-        final l10n = dialogContext.l10n;
-        return AlertDialog(
-          title: Text(l10n.autoT0094),
-          content: Text(l10n.autoT0206),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(
-                  dialogContext,
-                ).colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.commonDelete),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true) {
-      return;
-    }
-
-    final db = _state.ref.read(appDatabaseProvider);
-    await db.softDeleteDiary(diaryId);
-
-    if (!_state.mounted) {
-      return;
-    }
-    Navigator.of(_state.context).pop(true);
-  }
-
   /// 发布页写库成功时调用：删除这份草稿（见 [_deletePublishedDraft]）。
   ///
   /// 发布页进入即发表，此后编辑页还留在它下面，直到发布页退场

@@ -14,7 +14,8 @@ import 'diary_preview_edit_flow.dart';
 ///
 /// 默认推入预览页 [DiaryPreviewPage]；阅读行为“打开日记时直接编辑”
 /// （`DiaryPreviewBehavior.openInEditor`）开启时改为直接推入编辑页，省去在
-/// 预览页再点一次“编辑”。返回值与预览页一致：在预览页或编辑页里删除了某一
+/// 预览页再点一次“编辑”。编辑页的版式与预览页相同（阅读式编辑），点正文
+/// 就地编辑。返回值与预览页一致：在预览页或编辑页里删除了某一
 /// 篇时为 [DiaryPreviewResult.deleted]，入口据此给出撤销；否则为 null。
 ///
 /// 直接编辑只在这一篇能编辑时生效，其余情况仍推入预览页：
@@ -22,10 +23,11 @@ import 'diary_preview_edit_flow.dart';
 /// - 日记已不存在或查询失败：交给预览页显示“日记不存在”等状态。
 ///
 /// 入口给出 [initialDetail] 时直接用它判断（同步推入，不多等一帧）；否则先按
-/// id 查一次本地库，查询期间入口页面被卸载则什么都不打开。编辑页没有头图共享
-/// 元素，也不左右翻页：入口抓取的 [coverHero] 在这里释放，[sequence] 只交给
-/// 预览页。宽窗口日记页的右栏是页面内的阅读区，选中一篇不算“打开”，不经过
-/// 这里（Enter 与右栏的“编辑”照常进入编辑页）。
+/// id 查一次本地库，查询期间入口页面被卸载则什么都不打开。查到的数据交给
+/// 编辑页首帧渲染，入口抓取的 [coverHero] 交给编辑页头图作共享元素落点；
+/// 编辑页不左右翻页，[sequence] 只交给预览页。宽窗口日记页的右栏是页面内的
+/// 阅读区，选中一篇不算“打开”，不经过这里（Enter 与右栏的“编辑”照常进入
+/// 编辑页）。
 Future<DiaryPreviewResult?> openDiaryPage(
   BuildContext context,
   WidgetRef ref, {
@@ -41,8 +43,13 @@ Future<DiaryPreviewResult?> openDiaryPage(
       return null;
     }
     if (canOpenDiaryInEditor(detail, now: DateTime.now())) {
-      coverHero?.dispose();
-      final deleted = await openDiaryEditorFromPreview(context, ref, diaryId);
+      final deleted = await openDiaryEditorFromPreview(
+        context,
+        ref,
+        diaryId,
+        initialDetail: detail,
+        coverHero: coverHero,
+      );
       return deleted ? DiaryPreviewResult.deleted(diaryId) : null;
     }
   }

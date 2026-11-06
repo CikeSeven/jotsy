@@ -7452,9 +7452,17 @@
   "@settingsOpenDiaryInEditor": {
     "description": "编辑器设置：点开日记时跳过预览页、直接进入编辑页的开关标题。"
   },
-  "settingsOpenDiaryInEditorSubtitle": "点开日记直接进入编辑页，不再先打开预览页",
+  "settingsOpenDiaryInEditorSubtitle": "点开日记直接编辑，版式与预览页相同",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "编辑器设置：打开日记直接编辑开关的说明。"
+  },
+  "diaryReadingEditInfo": "编辑信息",
+  "@diaryReadingEditInfo": {
+    "description": "阅读式编辑页：可点按的信息栏与“更多”里打开信息面板（心情、天气、地点、标签、时间、封面）的一项。"
+  },
+  "diaryReadingDone": "完成",
+  "@diaryReadingDone": {
+    "description": "阅读式编辑页：顶栏上收起键盘、结束编辑的按钮。"
   },
   "diaryDayPhotosSetCover": "设为封面",
   "@diaryDayPhotosSetCover": {

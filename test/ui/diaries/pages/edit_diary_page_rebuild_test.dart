@@ -80,30 +80,35 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets(
-    'dragging the metadata panel updates the spacer without rebuilding Quill',
-    (tester) async {
-      await pumpEditPage(tester);
-      final editorBefore = currentEditor(tester);
-      final paddingBefore = editorBottomPadding(tester);
+  testWidgets('opening and dragging the info panel updates the spacer without '
+      'rebuilding the editor', (tester) async {
+    await pumpEditPage(tester);
+    final editorBefore = currentEditor(tester);
+    final paddingBefore = editorBottomPadding(tester);
 
-      final gesture = await tester.startGesture(
-        tester.getCenter(PublishPanelDriver(tester).collapsedHeader),
-      );
-      for (var i = 0; i < 4; i++) {
-        await gesture.moveBy(const Offset(0, -30));
-        await tester.pump(const Duration(milliseconds: 16));
-      }
+    // 点信息栏打开面板：占位随面板升起而增长，编辑器实例不变。
+    final panel = PublishPanelDriver(tester);
+    await panel.open();
+    final paddingOpen = editorBottomPadding(tester);
+    expect(paddingOpen, greaterThan(paddingBefore));
+    expect(identical(currentEditor(tester), editorBefore), isTrue);
 
-      // 拖到一半（未越过展开阈值）：占位连续增长，Quill 实例不变。
-      expect(editorBottomPadding(tester), greaterThan(paddingBefore));
-      expect(identical(currentEditor(tester), editorBefore), isTrue);
+    final gesture = await tester.startGesture(
+      tester.getCenter(panel.expandedHeader),
+    );
+    for (var i = 0; i < 4; i++) {
+      await gesture.moveBy(const Offset(0, 30));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
 
-      await gesture.up();
-      await tester.pumpAndSettle();
-      await unmount(tester);
-    },
-  );
+    // 往下拖一段（未收到底）：占位连续缩小，编辑器实例不变。
+    expect(editorBottomPadding(tester), lessThan(paddingOpen));
+    expect(identical(currentEditor(tester), editorBefore), isTrue);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await unmount(tester);
+  });
 
   testWidgets(
     'automatic saving preserves the editor and skips a reverted title',

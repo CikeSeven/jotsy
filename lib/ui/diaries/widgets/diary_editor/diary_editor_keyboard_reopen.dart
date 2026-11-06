@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../../../../core/services/app_platform.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_embed_editing.dart';
+import 'diary_editor_trailing_region.dart';
 
 /// 点按正文之后，让插入点与键盘出现在该出现的地方。两种情形：
 ///
@@ -105,6 +106,8 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
     if (box == null || !box.attached || !box.hasSize) return false;
     final bottom = box.localToGlobal(Offset(0, box.size.height)).dy;
     if (position.dy <= bottom) return false;
+    // 页尾里不属于正文的内容（阅读式编辑页的留言区等）不算正文下方的空白。
+    if (DiaryEditorTrailingRegion.isHit(context, position)) return false;
     final keyboardShown = View.of(context).viewInsets.bottom > 0;
     final selection = appendDiaryTrailingLine(state);
     if (selection == null) return false;

@@ -127,38 +127,18 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
         : extentDelta <= 0
         ? 0.0
         : (1 - (shrinkOffset / extentDelta)).clamp(0.0, 1.0).toDouble();
-
-    // 透明度直接作用在图片绘制上，而不是外包 Opacity：滚动收起期间不透明度
-    // 逐帧为小数，Opacity 会每帧为整块封面 saveLayer。底色与页面同为
-    // surface（或同为透明，见 AppPageBackdrop），是否随之淡出在视觉上没有差别。
-    final coverContent = _CoverTapTarget(
-      onTap: onTap,
-      heroTag: heroTag,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: background ?? AppPageBackdrop.pageColorOf(context),
-        ),
-        child: _CoverImage(
-          cover: cover,
-          fillFrame: fillFrame,
-          opacity: collapseProgress * reveal,
-          decodeHeight: maxExtentHeight,
-          heroTag: heroTag,
-          borderRadius: borderRadius.resolve(Directionality.of(context)),
-          placeholder: placeholder,
-        ),
-      ),
-    );
-    return Padding(
+    return PublishDiaryCoverFrame(
+      cover: cover,
+      decodeHeight: maxExtentHeight,
       padding: padding,
-      child: Transform.scale(
-        // 收起阶段同时轻微缩放，降低突兀感。
-        scale: 0.96 + (collapseProgress * 0.04),
-        alignment: Alignment.topCenter,
-        child: borderRadius == BorderRadius.zero
-            ? coverContent
-            : ClipRRect(borderRadius: borderRadius, child: coverContent),
-      ),
+      borderRadius: borderRadius,
+      heroTag: heroTag,
+      placeholder: placeholder,
+      onTap: onTap,
+      opacity: collapseProgress * reveal,
+      scale: 0.96 + (collapseProgress * 0.04),
+      background: background,
+      fillFrame: fillFrame,
     );
   }
 
@@ -175,6 +155,77 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.background != background ||
         oldDelegate.fillFrame != fillFrame ||
         oldDelegate.collapseEffect != collapseEffect;
+  }
+}
+
+/// 头图的画面本身：留边、圆角、底色、点按与共享元素，按 [opacity] 淡出、
+/// 按 [scale] 缩小（顶边对齐）。[PublishDiaryCoverSliver] 按滚动收起进度给出
+/// 这两个值；不在 sliver 里的头图（阅读式编辑页，见
+/// `DiaryReadingCover`）由自己量出的滚出比例给出，两处画法一致。
+class PublishDiaryCoverFrame extends StatelessWidget {
+  const PublishDiaryCoverFrame({
+    super.key,
+    required this.cover,
+    required this.decodeHeight,
+    required this.padding,
+    required this.borderRadius,
+    this.heroTag,
+    this.placeholder,
+    this.onTap,
+    this.opacity = 1,
+    this.scale = 1,
+    this.background,
+    this.fillFrame = false,
+  });
+
+  final String cover;
+
+  /// 解码高度上界（头部最大高度），见 [_CoverImage.decodeHeight]。
+  final double decodeHeight;
+  final EdgeInsetsGeometry padding;
+  final BorderRadiusGeometry borderRadius;
+  final Object? heroTag;
+  final ui.Image? placeholder;
+  final ValueChanged<ImageViewerHero?>? onTap;
+  final double opacity;
+  final double scale;
+  final Color? background;
+  final bool fillFrame;
+
+  @override
+  Widget build(BuildContext context) {
+    // 透明度直接作用在图片绘制上，而不是外包 Opacity：滚动收起期间不透明度
+    // 逐帧为小数，Opacity 会每帧为整块封面 saveLayer。底色与页面同为
+    // surface（或同为透明，见 AppPageBackdrop），是否随之淡出在视觉上没有差别。
+    final coverContent = _CoverTapTarget(
+      onTap: onTap,
+      heroTag: heroTag,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: background ?? AppPageBackdrop.pageColorOf(context),
+        ),
+        child: _CoverImage(
+          cover: cover,
+          fillFrame: fillFrame,
+          opacity: opacity,
+          decodeHeight: decodeHeight,
+          heroTag: heroTag,
+          borderRadius: borderRadius.resolve(Directionality.of(context)),
+          placeholder: placeholder,
+        ),
+      ),
+    );
+    return Padding(
+      padding: padding,
+      child: Transform.scale(
+        // 收起阶段同时轻微缩放，降低突兀感。
+        scale: scale,
+        alignment: Alignment.topCenter,
+        child: borderRadius == BorderRadius.zero
+            ? coverContent
+            : ClipRRect(borderRadius: borderRadius, child: coverContent),
+      ),
+    );
   }
 }
 

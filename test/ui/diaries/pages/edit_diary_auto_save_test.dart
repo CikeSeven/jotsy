@@ -152,6 +152,8 @@ void main() {
     final tagId = await database.createTag(name: 'Life', color: 0xff2196f3);
     await openEditor(tester);
     final panel = PublishPanelDriver(tester);
+    // 编辑页的信息面板平时不挂载，点信息栏打开。
+    await panel.open();
     panel.setMood('🙂');
     panel.toggleTag(tagId, true);
     panel.typeLocation('Home');
@@ -210,7 +212,9 @@ void main() {
       ),
     ))!;
     await openEditor(tester);
-    PublishPanelDriver(tester).setMood('🙂');
+    final panel = PublishPanelDriver(tester);
+    await panel.open();
+    panel.setMood('🙂');
     await tester.pump(const Duration(milliseconds: 600));
 
     final metadata =
@@ -227,6 +231,7 @@ void main() {
   ) async {
     await openEditor(tester);
     var panel = PublishPanelDriver(tester);
+    await panel.open();
     expect(panel.precision, DiaryLocationPrecision.township);
     panel.changePrecision(DiaryLocationPrecision.address);
     await tester.pump(const Duration(milliseconds: 600));
@@ -238,6 +243,7 @@ void main() {
     await unmount(tester);
     await openEditor(tester);
     panel = PublishPanelDriver(tester);
+    await panel.open();
     expect(panel.precision, DiaryLocationPrecision.address);
     await unmount(tester);
   });
@@ -274,7 +280,9 @@ void main() {
         ),
       ))!;
       await openEditor(tester);
-      PublishPanelDriver(tester).changePrecision(DiaryLocationPrecision.city);
+      final panel = PublishPanelDriver(tester);
+      await panel.open();
+      panel.changePrecision(DiaryLocationPrecision.city);
       await tester.pump(const Duration(milliseconds: 600));
 
       final saved = await storedDiary(tester);
@@ -316,6 +324,7 @@ void main() {
         await useDatedDiary(tester);
         await openEditor(tester, brightness: brightness);
         final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
+        await editPanel(tester).open();
         expect(editPanel(tester).showsPublishTime, isTrue);
         expect(
           editPanel(tester).publishTimeLabel,
@@ -354,6 +363,7 @@ void main() {
       (tester) async {
         await useDatedDiary(tester);
         await openEditor(tester);
+        await editPanel(tester).open();
         editPanel(tester).pickPublishTime();
         await tester.pumpAndSettle();
         await tester.tap(find.text(cancel ? 'Cancel' : 'OK'));

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/app_database.dart';
+import '../../widgets/image_viewer_hero.dart';
 import '../pages/edit_diary_page.dart';
 import '../providers/diary_detail_provider.dart';
 import 'diary_editor_controller.dart' show Position;
@@ -16,11 +18,17 @@ import 'diary_editor_controller.dart' show Position;
 ///
 /// [caret]：预览页双击正文处的文字位置，编辑页打开后把光标放在那里并弹出
 /// 键盘（见 `EditDiaryPage.initialCaret`）；其余入口不传。
+///
+/// [initialDetail]：入口已持有的同一篇，编辑页查询返回前直接用它渲染（版式
+/// 与预览页相同，路由滑入时就是完整页面）。[coverHero]：入口抓取的封面
+/// 画面，交给编辑页的头图作共享元素落点，所有权随之转给编辑页。
 Future<bool> openDiaryEditorFromPreview(
   BuildContext context,
   WidgetRef ref,
   String diaryId, {
   Position? caret,
+  DiaryWithTags? initialDetail,
+  ImageViewerHero? coverHero,
 }) async {
   final result = await Navigator.of(context).push<Object?>(
     MaterialPageRoute<Object?>(
@@ -29,6 +37,8 @@ Future<bool> openDiaryEditorFromPreview(
           diaryId: diaryId,
           entryMode: EditDiaryEntryMode.edit,
           initialCaret: caret,
+          initialDetail: initialDetail,
+          coverHero: coverHero,
         );
       },
     ),

@@ -12,6 +12,7 @@ import 'package:node_diary/ui/diaries/models/tag_picker_sort.dart';
 import 'package:node_diary/ui/diaries/providers/diary_place_history_provider.dart';
 import 'package:node_diary/ui/diaries/providers/tag_picker_sort_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_reading_editor/diary_reading_editor_header.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_summary_bar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_tag_search_bar.dart';
@@ -47,8 +48,40 @@ class PublishPanelDriver {
   /// 展开态表头。
   Finder get expandedHeader => find.text(l10n.autoT0159);
 
-  /// 点按收起态表头展开面板；已展开时不做任何事。
+  /// 编辑已有日记（阅读式编辑页）的信息栏：点按打开信息面板。
+  Finder get readingMetaButton => find.byType(DiaryReadingMetaButton);
+
+  /// 编辑页的信息面板平时不挂载：点信息栏打开（这篇在当前样式下没有信息栏
+  /// 时经“更多 → 编辑信息”）。面板已挂着时不做任何事。
+  Future<void> open() async {
+    if (panelFinder.evaluate().isNotEmpty) return;
+    final meta = readingMetaButton;
+    if (meta.evaluate().isNotEmpty) {
+      await tester.tap(meta.first);
+    } else {
+      final l10n = tester.element(find.byType(Scaffold).first).l10n;
+      await tester.tap(find.byTooltip(l10n.autoT0125));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.diaryReadingEditInfo));
+    }
+    await tester.pumpAndSettle();
+  }
+
+  /// 编辑页：像系统返回一样收起信息面板，收回到底后面板卸载（正文解锁、
+  /// 可以继续输入）。面板没挂着时不做任何事。
+  Future<void> close() async {
+    if (panelFinder.evaluate().isEmpty) return;
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+  }
+
+  /// 展开面板：编辑页先挂上面板（挂上即展开），发布页点按收起态表头；已
+  /// 展开时不做任何事。
   Future<void> expand() async {
+    if (panelFinder.evaluate().isEmpty) {
+      await open();
+      return;
+    }
     final header = collapsedHeader;
     if (header.evaluate().isEmpty) return;
     await tester.tap(header);

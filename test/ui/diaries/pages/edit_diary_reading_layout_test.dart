@@ -1,0 +1,287 @@
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
+import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/settings_service.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
+import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_preview_resolved_style.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_trailing_region.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_reading_editor/diary_reading_editor_header.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_summary_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../support/diary_content_test_helpers.dart';
+import '../../../support/expressive_test_theme.dart';
+import '../../../support/publish_panel_driver.dart';
+
+/// 编辑已有日记的阅读式版式：页面与预览页同一样式，标题与正文就地可改，
+/// 信息栏打开信息面板。
+void main() {
+  late AppDatabase database;
+  late SettingsService settings;
+  late String diaryId;
+  late int tagId;
+
+  /// 装配：按 [style] 写入预览页样式，建一篇带心情与标签的日记。
+  Future<void> prepare({
+    DiaryPreviewStyle style = DiaryPreviewStyle.defaults,
+  }) async {
+    final encoded = DiaryPreviewSettings(current: style).encode();
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      'app.settings.diary_preview_style': ?encoded,
+    });
+    database = AppDatabase.forTesting(NativeDatabase.memory());
+    settings = await SettingsService.create();
+    tagId = await database.createTag(name: 'Travel', color: 0xFF4CAF50);
+    diaryId = await database.createDiary(
+      title: 'Seaside',
+      contentDocJson: '[{"insert":"Sunset over the sea\\n"}]',
+      contentText: 'Sunset over the sea',
+      metadataJson: '{"context":{"moodEmoji":"😊","location":"West Lake"}}',
+      tagIds: <int>[tagId],
+    );
+  }
+
+  tearDown(() => database.close());
+
+  /// 打开编辑页；返回编辑页结束时的结果（删除时为 true）。
+  Future<Future<Object?>> openEditor(
+    WidgetTester tester, {
+    Brightness brightness = Brightness.light,
+  }) async {
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    late Future<Object?> result;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          settingsServiceProvider.overrideWith((ref) async => settings),
+        ],
+        child: MaterialApp(
+          theme: expressiveTestTheme(brightness),
+          locale: const Locale('en'),
+          localizationsDelegates: const [
+            ...AppLocalizations.localizationsDelegates,
+            quill.AppFlowyEditorLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () {
+                  result = Navigator.of(context).push<Object?>(
+                    MaterialPageRoute<Object?>(
+                      builder: (_) => EditDiaryPage(diaryId: diaryId),
+                    ),
+                  );
+                },
+                child: const Text('Open editor'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open editor'));
+    await tester.pumpAndSettle();
+    return result;
+  }
+
+  AppLocalizations l10nOf(WidgetTester tester) =>
+      tester.element(find.byType(EditDiaryPage)).l10n;
+
+  TextField titleField(WidgetTester tester) =>
+      tester.widget<TextField>(find.byType(TextField).first);
+
+  DiaryEditor editorOf(WidgetTester tester) =>
+      tester.widget<DiaryEditor>(find.byType(DiaryEditor));
+
+  Future<void> unmount(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+  }
+
+  for (final brightness in Brightness.values) {
+    testWidgets('an existing diary opens laid out like the preview page '
+        '(${brightness.name})', (tester) async {
+      await prepare();
+      await openEditor(tester, brightness: brightness);
+
+      // 标题：预览标题的样式（默认特粗），没有下划线；正文左右 16。
+      final title = titleField(tester);
+      expect(title.controller!.text, 'Seaside');
+      expect(title.style?.fontWeight, FontWeight.w800);
+      expect(title.decoration?.border, InputBorder.none);
+      expect(title.maxLength, 200);
+      expect(
+        editorOf(tester).padding,
+        const EdgeInsets.symmetric(horizontal: 16),
+      );
+      // 信息栏显示心情、地点与标签；页面上没有信息面板与收起栏。
+      expect(find.byType(DiaryReadingMetaButton), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(DiaryPreviewMeta),
+          matching: find.textContaining('😊'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Travel'), findsOneWidget);
+      expect(find.byType(PublishDiaryPanel), findsNothing);
+      expect(find.byKey(PublishPanelSummaryBar.summaryKey), findsNothing);
+      // 打开时不聚焦、不弹键盘，也就没有“完成”。
+      expect(title.focusNode!.hasFocus, isFalse);
+      expect(editorOf(tester).focusNode!.hasFocus, isFalse);
+      expect(find.byTooltip(l10nOf(tester).diaryReadingDone), findsNothing);
+      expect(tester.takeException(), isNull);
+      await unmount(tester);
+    });
+  }
+
+  testWidgets('tapping the info bar opens the details panel; '
+      'collapsing it unmounts the panel', (tester) async {
+    await prepare();
+    await openEditor(tester);
+    final driver = PublishPanelDriver(tester);
+
+    await tester.tap(find.byType(DiaryReadingMetaButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(PublishDiaryPanel), findsOneWidget);
+    expect(driver.expandedHeader, findsOneWidget);
+
+    // 返回键先收面板：收回到底后面板卸载，页面还在。
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(PublishDiaryPanel), findsNothing);
+    expect(find.byType(EditDiaryPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
+  testWidgets('a mood changed in the panel shows in the info bar right away '
+      'and is saved', (tester) async {
+    await prepare();
+    await openEditor(tester);
+    final driver = PublishPanelDriver(tester);
+    await driver.expand();
+
+    driver.setMood('😢');
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: find.byType(DiaryPreviewMeta),
+        matching: find.textContaining('😢'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.pump(const Duration(milliseconds: 600));
+    final saved = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!;
+    expect(saved.diary.metadata, contains('😢'));
+    await unmount(tester);
+  });
+
+  testWidgets('a paper colour from the preview style colours the page', (
+    tester,
+  ) async {
+    await prepare(
+      style: DiaryPreviewStyle.defaults.copyWith(
+        page: DiaryPreviewStyle.defaults.page.copyWith(
+          paper: DiaryPreviewPaper.warm,
+        ),
+      ),
+    );
+    await openEditor(tester);
+    final scaffold = tester.widget<Scaffold>(
+      find
+          .descendant(
+            of: find.byType(EditDiaryPage),
+            matching: find.byType(Scaffold),
+          )
+          .first,
+    );
+    final warm = DiaryPreviewResolvedStyle.paperColors[DiaryPreviewPaper.warm]!;
+    expect(scaffold.backgroundColor, Color(warm.$1));
+    await unmount(tester);
+  });
+
+  testWidgets('a hidden preview title still leaves the title editable, and an '
+      'info bar after the body moves to the trailing region', (tester) async {
+    await prepare(
+      style: DiaryPreviewStyle.defaults.copyWith(
+        title: DiaryPreviewStyle.defaults.title.copyWith(visible: false),
+        meta: DiaryPreviewStyle.defaults.meta.copyWith(
+          position: DiaryPreviewMetaPosition.end,
+        ),
+      ),
+    );
+    await openEditor(tester);
+    expect(titleField(tester).controller!.text, 'Seaside');
+    expect(
+      find.descendant(
+        of: find.byType(DiaryEditorTrailingRegion),
+        matching: find.byType(DiaryReadingMetaButton),
+      ),
+      findsOneWidget,
+    );
+    await unmount(tester);
+  });
+
+  testWidgets('editing the body shows Done, which ends editing', (
+    tester,
+  ) async {
+    await prepare();
+    await openEditor(tester);
+    final l10n = l10nOf(tester);
+    editorOf(tester).focusNode!.requestFocus();
+    await tester.pumpAndSettle();
+    expect(find.byTooltip(l10n.diaryReadingDone), findsOneWidget);
+
+    await tester.tap(find.byTooltip(l10n.diaryReadingDone));
+    await tester.pumpAndSettle();
+    expect(editorOf(tester).focusNode!.hasFocus, isFalse);
+    expect(find.byTooltip(l10n.diaryReadingDone), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('More → Delete saves the last edit, moves the diary to the '
+      'recycle bin and ends with true', (tester) async {
+    await prepare();
+    final result = await openEditor(tester);
+    final l10n = l10nOf(tester);
+    await tester.enterText(find.byType(TextField).first, 'Last words');
+
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.diaryReadingEditInfo), findsOneWidget);
+    await tester.tap(find.text(l10n.commonDelete));
+    await tester.pumpAndSettle();
+    // 确认对话框里的“删除”。
+    await tester.tap(find.text(l10n.commonDelete).last);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(await result, isTrue);
+    expect(find.byType(EditDiaryPage), findsNothing);
+    final stored = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!;
+    expect(stored.diary.isDeleted, isTrue);
+    expect(stored.diary.title, 'Last words');
+    await unmount(tester);
+  });
+}

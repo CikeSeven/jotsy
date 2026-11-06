@@ -6032,7 +6032,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsOpenDiaryInEditorSubtitle =>
-      'Нажатие на запись сразу открывает редактор, без страницы просмотра.';
+      'Нажатие на запись сразу открывает её для правки — в том же оформлении, что и просмотр.';
+
+  @override
+  String get diaryReadingEditInfo => 'Изменить сведения';
+
+  @override
+  String get diaryReadingDone => 'Готово';
 
   @override
   String get diaryDayPhotosSetCover => 'Сделать обложкой';

@@ -5401,7 +5401,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsOpenDiaryInEditorSubtitle =>
-      '日記をタップすると、プレビューを経ずにすぐ編集を始められます。';
+      '日記をタップするとすぐ編集できます。レイアウトはプレビューと同じです。';
+
+  @override
+  String get diaryReadingEditInfo => '情報を編集';
+
+  @override
+  String get diaryReadingDone => '完了';
 
   @override
   String get diaryDayPhotosSetCover => '表紙に設定';

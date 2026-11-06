@@ -5868,7 +5868,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsOpenDiaryInEditorSubtitle =>
-      'Tap a diary to start editing right away instead of opening the preview first.';
+      'Tap a diary to edit it right away, laid out just like the preview.';
+
+  @override
+  String get diaryReadingEditInfo => 'Edit details';
+
+  @override
+  String get diaryReadingDone => 'Done';
 
   @override
   String get diaryDayPhotosSetCover => 'Set as cover';

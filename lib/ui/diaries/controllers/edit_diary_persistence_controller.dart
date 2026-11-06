@@ -56,6 +56,8 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
           // null：用户没改过日记本，不动关联（仍在的本子保留章节与位置）。
           notebookIds: snapshot.notebookIds,
         );
+    // 阅读式页头页尾按写下的内容刷新（借用的首图、字数、最后编辑于）。
+    _state._onReadingSaved(snapshot);
   }
 
   Future<void> attemptExit() async {

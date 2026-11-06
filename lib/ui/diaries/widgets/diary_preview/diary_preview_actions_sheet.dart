@@ -115,8 +115,25 @@ Future<void> openDiaryPreviewShare(
   );
 }
 
+/// “更多”面板里由调用方追加的一项（阅读式编辑页的“编辑信息”“编辑器设置”
+/// 等）：图标、文字与动作，排法与内置项相同。
+class DiaryPreviewSheetEntry {
+  const DiaryPreviewSheetEntry({
+    required this.icon,
+    required this.label,
+    required this.action,
+  });
+
+  /// 16 号的图标。
+  final FaIcon icon;
+  final String label;
+  final Future<void> Function() action;
+}
+
 /// 预览页“更多”面板：分享、导出、写留言、收进日记本、设为纪念日、存为
 /// 模板、页面样式与删除。可选项的回调为 null 时不显示这一项（功能关闭或设置未就绪）。
+/// [leadingEntries] 排在最前，[trailingEntries] 排在“删除”之前（阅读式编辑
+/// 页用来放编辑相关的动作）。
 ///
 /// 每一项先关闭面板，再执行对应动作（分享面板里选了长图时，截图要等面板
 /// 完全退场，见 `DiaryPreviewExportController.openShareSheet`）。
@@ -132,6 +149,10 @@ Future<void> showDiaryPreviewActionsSheet(
   Future<void> Function()? onWriteComment,
   Future<void> Function()? onAiReply,
   String? notebookSubtitle,
+  List<DiaryPreviewSheetEntry> leadingEntries =
+      const <DiaryPreviewSheetEntry>[],
+  List<DiaryPreviewSheetEntry> trailingEntries =
+      const <DiaryPreviewSheetEntry>[],
 }) {
   final l10n = context.l10n;
   return showAppModalBottomSheet<void>(
@@ -162,6 +183,12 @@ Future<void> showDiaryPreviewActionsSheet(
         );
       }
 
+      Widget entry(DiaryPreviewSheetEntry entry) => item(
+        icon: entry.icon,
+        title: Text(entry.label),
+        action: entry.action,
+      );
+
       return SafeArea(
         top: false,
         // 面板高度上限约 9/16 屏高，矮屏或横屏放不下全部操作时可滚动。
@@ -169,6 +196,7 @@ Future<void> showDiaryPreviewActionsSheet(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              ...leadingEntries.map(entry),
               item(
                 icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
                 title: Text(l10n.previewShare),
@@ -226,6 +254,7 @@ Future<void> showDiaryPreviewActionsSheet(
                   title: Text(l10n.diaryPreviewStyleMoreEntry),
                   action: onOpenStyle,
                 ),
+              ...trailingEntries.map(entry),
               item(
                 icon: FaIcon(
                   FontAwesomeIcons.trashCan,

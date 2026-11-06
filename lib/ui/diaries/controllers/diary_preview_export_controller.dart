@@ -41,8 +41,8 @@ import 'diary_share_controller.dart';
 /// context 卸载后不再提示，也不再通知。
 class DiaryPreviewExportController extends ChangeNotifier {
   DiaryPreviewExportController({
-    required this.captureKey,
-    required this.scrollController,
+    this.captureKey,
+    this.scrollController,
     required this.onHint,
     this.longImageDelivery = const DiaryLongImageDelivery(),
   });
@@ -50,8 +50,13 @@ class DiaryPreviewExportController extends ChangeNotifier {
   /// 加载遮罩的最短可见时长（防闪，不是动画时长）。
   static const Duration _minLoadingVisible = Duration(milliseconds: 320);
 
-  final GlobalKey captureKey;
-  final ScrollController scrollController;
+  /// 长图的截图节点与正文滚动；都为 null 时（阅读式编辑页：正文在编辑器的
+  /// 虚拟滚动里，没有可整页截取的视图）分享面板不提供长图。
+  final GlobalKey? captureKey;
+  final ScrollController? scrollController;
+
+  /// 能不能截取整页长图。
+  bool get supportsLongImage => captureKey != null && scrollController != null;
   final ValueChanged<String> onHint;
   final DiaryLongImageDelivery longImageDelivery;
 
@@ -89,7 +94,12 @@ class DiaryPreviewExportController extends ChangeNotifier {
     required DiaryLongImageDestination destination,
     Color? background,
   }) async {
-    if (_sharingImage || _showLoading) {
+    final captureKey = this.captureKey;
+    final scrollController = this.scrollController;
+    if (_sharingImage ||
+        _showLoading ||
+        captureKey == null ||
+        scrollController == null) {
       return;
     }
     final sharing = destination == DiaryLongImageDestination.share;
@@ -126,6 +136,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
           }
           final imageBytes = await _captureLongImage(
             renderObject,
+            scrollController: scrollController,
             background: surfaceColor,
             pixelRatio: pixelRatio,
           );
@@ -169,6 +180,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
   /// 都是 22000 逻辑像素。
   Future<Uint8List?> _captureLongImage(
     RenderRepaintBoundary boundary, {
+    required ScrollController scrollController,
     required Color background,
     required double pixelRatio,
   }) {
@@ -230,6 +242,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
             .catchError((Object _) {}),
       ),
       availableTargets: _share.availableTargets(),
+      longImage: supportsLongImage,
     );
     if (!context.mounted || request == null) {
       return;

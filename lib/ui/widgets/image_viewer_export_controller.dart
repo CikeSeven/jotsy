@@ -6,6 +6,8 @@ import 'package:node_diary/ui/diaries/controllers/diary_share_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_share_target.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_share_messages.dart';
 
+import 'image_export_messages.dart';
+
 /// 看图页“保存到相册 / 分享当前图片”的业务编排。
 ///
 /// - 输入：当前图片源、分享目标与本地化文案；
@@ -58,16 +60,7 @@ class ImageViewerExportController extends ChangeNotifier {
           await service.saveToGallery(source);
           return l10n.imageViewerSaveSuccess;
         } on ImageExportException catch (error) {
-          return switch (error.type) {
-            ImageExportErrorType.permissionDenied =>
-              l10n.imageViewerGalleryPermissionDenied,
-            ImageExportErrorType.downloadFailed =>
-              l10n.imageViewerDownloadFailed,
-            ImageExportErrorType.invalidSource ||
-            ImageExportErrorType.unknown => l10n.imageViewerSaveFailed(
-              error.message,
-            ),
-          };
+          return imageExportErrorMessage(l10n, error);
         }
       },
     );

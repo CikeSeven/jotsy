@@ -21,7 +21,6 @@ import 'diary_export_media.dart';
 import 'diary_export_pdf_body.dart';
 import 'diary_export_pdf_comments.dart';
 import 'diary_export_pdf_text_effects.dart';
-import 'diary_export_plain_text.dart';
 
 /// PDF 用的字体，生成时按实际字符做子集嵌入。字体文件各约 8MB 起，加载一次
 /// 后由调用方复用。
@@ -605,8 +604,8 @@ class DiaryPdfWriter {
   /// 依次：给了 [code] 时先为代码行着色（[DiaryExportCodeTheme.colorCodeBlocks]，
   /// 按语言整块高亮）；图片读出字节、读不出或关掉图片时整块去掉，否则计入
   /// [images] 并把来源换成按下标取图的虚拟地址；录音、视频、附件换成一行
-  /// 名称（远程地址保留为链接，本地私有路径不写出）；分隔线写成一行横线；
-  /// 最后把文字色与背景色压平到白纸上（表格逐格压平）。标注、折叠列表与
+  /// 名称（远程地址保留为链接，本地私有路径不写出）；分隔线原样保留（画成
+  /// 横线）；最后把文字色与背景色压平到白纸上（表格逐格压平）。标注、折叠列表与
   /// 表格保持原来的块类型，由 [buildDiaryPdfBody] 专门绘制。
   @visibleForTesting
   static Future<List<ExportBlock>?> prepareBody(
@@ -654,11 +653,8 @@ class DiaryPdfWriter {
           );
           hasContent = true;
         case ExportBlockKind.divider:
-          body.add(
-            block.paragraphWith(const <ExportInline>[
-              ExportInline(ExportPlainText.dividerLine),
-            ]),
-          );
+          // 由 buildDiaryPdfBody 画成横线。
+          body.add(block);
           hasContent = true;
         case ExportBlockKind.table:
           body.add(

@@ -5,8 +5,6 @@ import 'package:flutter/widgets.dart' show TextDirection;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_blocks.dart';
-import 'package:node_diary/ui/diaries/export/diary_export_entry.dart';
-import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_media.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_pdf.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_pdf_body.dart';
@@ -20,8 +18,8 @@ import 'diary_export_test_fixtures.dart';
 /// PDF 正文的段落对齐与首行缩进：按页面流里每个词的实际横坐标验证，而不是
 /// 只看块模型里有没有带上对齐值。
 ///
-/// 正文段落都在版心左缘平移后绘制，`Td` 的横坐标即相对版心左缘的位置；
-/// 标准字体（Helvetica）让 ASCII 文字原样写入，便于按文字找到位置。
+/// 标准字体（Helvetica）让 ASCII 文字原样写入，便于按文字找到位置（见
+/// [exportPdfBlocks] 与 [pdfXsOf]）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -31,87 +29,39 @@ void main() {
   /// PDF 正文字号（pdf 库主题默认），首行缩进按它折算每个字的宽度。
   const bodyFontSize = 12.0;
 
-  Map<String, Object?> block(
-    String type,
-    String text, {
-    Map<String, Object?> data = const <String, Object?>{},
-  }) => <String, Object?>{
-    'type': type,
-    'data': <String, Object?>{
-      'delta': <Object?>[
-        <String, Object?>{'insert': text},
-      ],
-      ...data,
-    },
-  };
-
-  DiaryExportEntry entryOf(List<Map<String, Object?>> children) =>
-      DiaryExportEntry.parse(
-        diaryId: 'align',
-        title: 'Align',
-        createdAt: DateTime(2026),
-        updatedAt: DateTime(2026),
-        blockDocument: <String, Object?>{
-          'document': <String, Object?>{'type': 'page', 'children': children},
-        },
-      );
-
-  Future<String> export(
-    List<Map<String, Object?>> children, {
-    DiaryTypography typography = const DiaryTypography(),
-  }) async {
-    final output = await DiaryPdfWriter.write(
-      <DiaryExportEntry>[entryOf(children)],
-      options: DiaryExportOptions.defaults.copyWith(
-        includeMedia: false,
-        includeMeta: false,
-      ),
-      labels: testExportLabels,
-      media: DiaryExportMediaLibrary(),
-      fonts: await pdfAsciiFonts(),
-      documentTitle: 'Align',
-      typography: typography,
-    );
-    return pdfPageCommands(Uint8List.fromList(output.bytes!));
-  }
-
-  /// 文字恰为 [word] 的各个片段的横坐标，按绘制先后。
-  List<double> xsOf(String commands, String word) => <double>[
-    for (final match in RegExp(
-      '([-\\d.]+) [-\\d.]+ Td \\[\\(${RegExp.escape(word)}\\)\\]TJ',
-    ).allMatches(commands))
-      double.parse(match.group(1)!),
-  ];
-
   test('centered and right-aligned single-line paragraphs sit in the middle '
       'and at the end of the line, not at its start', () async {
-    final commands = await export(<Map<String, Object?>>[
-      block('paragraph', 'Start'),
-      block('paragraph', 'Twin', data: {'align': 'center'}),
-      block('paragraph', 'Twin', data: {'align': 'right'}),
-      block('quote', 'Quoted', data: {'align': 'center'}),
+    final commands = await exportPdfBlocks(<Map<String, Object?>>[
+      pdfTextBlock('paragraph', 'Start'),
+      pdfTextBlock('paragraph', 'Twin', data: {'align': 'center'}),
+      pdfTextBlock('paragraph', 'Twin', data: {'align': 'right'}),
+      pdfTextBlock('quote', 'Quoted', data: {'align': 'center'}),
     ]);
-    expect(xsOf(commands, 'Start'), <double>[0]);
-    final [center, right] = xsOf(commands, 'Twin');
+    expect(pdfXsOf(commands, 'Start'), <double>[0]);
+    final [center, right] = pdfXsOf(commands, 'Twin');
     // 同一个词：居中的空白是右对齐的一半，右对齐的右缘贴着版心右缘。
     expect(center, greaterThan(contentWidth / 3));
     expect(right, closeTo(center * 2, 0.01));
     expect(right, lessThan(contentWidth));
     // 引用块里的文字同样居中（左侧竖条与内边距之后的宽度里居中）。
-    expect(xsOf(commands, 'Quoted').single, greaterThan(contentWidth / 3));
+    expect(pdfXsOf(commands, 'Quoted').single, greaterThan(contentWidth / 3));
   });
 
   test('a paragraph marked with the toolbar indent starts two characters in '
       'and only its first line is indented', () async {
     final filler = List<String>.filled(80, 'xx').join(' ');
-    final commands = await export(<Map<String, Object?>>[
-      block('paragraph', 'Plain'),
-      block('paragraph', 'Marked $filler', data: {'firstLineIndent': true}),
+    final commands = await exportPdfBlocks(<Map<String, Object?>>[
+      pdfTextBlock('paragraph', 'Plain'),
+      pdfTextBlock(
+        'paragraph',
+        'Marked $filler',
+        data: {'firstLineIndent': true},
+      ),
     ]);
-    expect(xsOf(commands, 'Plain'), <double>[0]);
-    expect(xsOf(commands, 'Marked'), <double>[2 * bodyFontSize]);
+    expect(pdfXsOf(commands, 'Plain'), <double>[0]);
+    expect(pdfXsOf(commands, 'Marked'), <double>[2 * bodyFontSize]);
     // 折行后的各行顶格。
-    expect(xsOf(commands, 'xx'), contains(0));
+    expect(pdfXsOf(commands, 'xx'), contains(0));
   });
 
   test('an indented Chinese paragraph without spaces continues on the first '
@@ -125,8 +75,8 @@ void main() {
       bold: fonts.bold,
       fontFallback: <pw.Font>[fonts.bundled],
     );
-    final blocks = entryOf(<Map<String, Object?>>[
-      block(
+    final blocks = pdfEntryOf(<Map<String, Object?>>[
+      pdfTextBlock(
         'paragraph',
         '今天天气很好，我们一起去公园散步。' * 6,
         data: {'firstLineIndent': true},
@@ -179,43 +129,46 @@ void main() {
   test('the global first-line indent applies to body paragraphs; marked ones '
       'take the larger of two characters and the global value', () async {
     final children = <Map<String, Object?>>[
-      block('paragraph', 'Body'),
-      block('paragraph', 'Marked', data: {'firstLineIndent': true}),
-      block('paragraph', 'Justified', data: {'align': 'justify'}),
-      block('bulleted_list', 'Item'),
-      block('heading', 'Title', data: {'level': 2}),
+      pdfTextBlock('paragraph', 'Body'),
+      pdfTextBlock('paragraph', 'Marked', data: {'firstLineIndent': true}),
+      pdfTextBlock('paragraph', 'Justified', data: {'align': 'justify'}),
+      pdfTextBlock('bulleted_list', 'Item'),
+      pdfTextBlock('heading', 'Title', data: {'level': 2}),
     ];
-    final one = await export(
+    final one = await exportPdfBlocks(
       children,
       typography: const DiaryTypography(firstLineIndent: 1),
     );
-    expect(xsOf(one, 'Body'), <double>[bodyFontSize]);
-    expect(xsOf(one, 'Marked'), <double>[2 * bodyFontSize]);
-    expect(xsOf(one, 'Justified'), <double>[bodyFontSize]);
+    expect(pdfXsOf(one, 'Body'), <double>[bodyFontSize]);
+    expect(pdfXsOf(one, 'Marked'), <double>[2 * bodyFontSize]);
+    expect(pdfXsOf(one, 'Justified'), <double>[bodyFontSize]);
     // 列表与标题不是正文段落，不缩进首行。
-    final itemWithoutIndent = xsOf(await export(children), 'Item').single;
-    expect(xsOf(one, 'Item').single, itemWithoutIndent);
-    expect(xsOf(one, 'Title'), <double>[0]);
+    final itemWithoutIndent = pdfXsOf(
+      await exportPdfBlocks(children),
+      'Item',
+    ).single;
+    expect(pdfXsOf(one, 'Item').single, itemWithoutIndent);
+    expect(pdfXsOf(one, 'Title'), <double>[0]);
 
-    final three = await export(
+    final three = await exportPdfBlocks(
       children,
       typography: const DiaryTypography(firstLineIndent: 3),
     );
-    expect(xsOf(three, 'Body'), <double>[3 * bodyFontSize]);
-    expect(xsOf(three, 'Marked'), <double>[3 * bodyFontSize]);
+    expect(pdfXsOf(three, 'Body'), <double>[3 * bodyFontSize]);
+    expect(pdfXsOf(three, 'Marked'), <double>[3 * bodyFontSize]);
   });
 
   test('centered and right-aligned paragraphs never indent their first '
       'line', () async {
-    final commands = await export(<Map<String, Object?>>[
-      block(
+    final commands = await exportPdfBlocks(<Map<String, Object?>>[
+      pdfTextBlock(
         'paragraph',
         'Twin',
         data: {'align': 'center', 'firstLineIndent': true},
       ),
-      block('paragraph', 'Twin', data: {'align': 'right'}),
+      pdfTextBlock('paragraph', 'Twin', data: {'align': 'right'}),
     ], typography: const DiaryTypography(firstLineIndent: 2));
-    final [center, right] = xsOf(commands, 'Twin');
+    final [center, right] = pdfXsOf(commands, 'Twin');
     // 缩进会让两者都多出一段，比例就不再是 2 倍。
     expect(center, greaterThan(contentWidth / 3));
     expect(right, closeTo(center * 2, 0.01));
@@ -229,21 +182,21 @@ void main() {
         'data': <String, Object?>{'url': '/private/diary_videos/trip.mp4'},
       },
     ];
-    final plain = await export(children);
-    final indented = await export(
+    final plain = await exportPdfBlocks(children);
+    final indented = await exportPdfBlocks(
       children,
       typography: const DiaryTypography(firstLineIndent: 2),
     );
-    expect(xsOf(plain, 'trip.mp4]'), hasLength(1));
-    expect(xsOf(indented, 'trip.mp4]'), xsOf(plain, 'trip.mp4]'));
+    expect(pdfXsOf(plain, 'trip.mp4]'), hasLength(1));
+    expect(pdfXsOf(indented, 'trip.mp4]'), pdfXsOf(plain, 'trip.mp4]'));
   });
 
   test('preparing the PDF body keeps the toolbar indent mark and alignment '
       'and marks media lines as stand-ins', () async {
     final body = await DiaryPdfWriter.prepareBody(
-      entryOf(<Map<String, Object?>>[
-        block('paragraph', 'Marked', data: {'firstLineIndent': true}),
-        block('paragraph', 'Centered', data: {'align': 'center'}),
+      pdfEntryOf(<Map<String, Object?>>[
+        pdfTextBlock('paragraph', 'Marked', data: {'firstLineIndent': true}),
+        pdfTextBlock('paragraph', 'Centered', data: {'align': 'center'}),
         <String, Object?>{
           'type': 'video',
           'data': <String, Object?>{'url': '/private/trip.mp4'},

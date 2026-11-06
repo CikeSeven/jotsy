@@ -167,9 +167,10 @@ void main() {
         media: DiaryExportMediaLibrary(),
         images: <Uint8List>[],
       );
+      // PDF 保留分隔线块，由 buildDiaryPdfBody 画成横贯整行的细线。
       expect(
-        pdfBody!.map((ExportBlock b) => (b.kind, b.plainText)),
-        contains((ExportBlockKind.paragraph, '———')),
+        pdfBody!.map((ExportBlock b) => b.kind),
+        contains(ExportBlockKind.divider),
       );
     });
   });

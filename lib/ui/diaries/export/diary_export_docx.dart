@@ -406,10 +406,12 @@ class DiaryDocxWriter {
           b.table(block);
         case ExportBlockKind.paragraph:
           // 与应用一致：居中、右对齐的段落不缩进首行；带工具栏首行缩进
-          // 标记的段落按两字与全局取较大者。
+          // 标记的段落按两字与全局取较大者；链接卡片的标题行（standIn）
+          // 不是正文段落，不缩进。
           final firstLine =
-              block.align == ExportAlign.start ||
-                  block.align == ExportAlign.justify
+              !block.standIn &&
+                  (block.align == ExportAlign.start ||
+                      block.align == ExportAlign.justify)
               ? (block.firstLineIndent
                     ? b.markedFirstLineTwips
                     : b.firstLineTwips)

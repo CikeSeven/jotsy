@@ -138,6 +138,8 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
           firstLineIndent:
               type == kDiaryBlockParagraph &&
               data[kDiaryParagraphIndentKey] == true,
+          // 链接卡片在应用里是一张卡片，导出的标题行不按正文缩进。
+          standIn: type == kDiaryBlockLinkCard,
         ),
       );
     }

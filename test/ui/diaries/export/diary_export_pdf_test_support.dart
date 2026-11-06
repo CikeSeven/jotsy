@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_entry.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_media.dart';
@@ -16,6 +17,66 @@ Future<DiaryPdfFonts> pdfAsciiFonts() async => DiaryPdfFonts(
   pw.Font.helveticaBold(),
   bundled: (await DiaryPdfFonts.load()).regular,
 );
+
+/// 块文档里带一段文字的块；[data] 合并进块的 `data`。
+Map<String, Object?> pdfTextBlock(
+  String type,
+  String text, {
+  Map<String, Object?> data = const <String, Object?>{},
+  List<Map<String, Object?>> children = const <Map<String, Object?>>[],
+}) => <String, Object?>{
+  'type': type,
+  'data': <String, Object?>{
+    'delta': <Object?>[
+      <String, Object?>{'insert': text},
+    ],
+    ...data,
+  },
+  if (children.isNotEmpty) 'children': children,
+};
+
+/// 以 [children] 为顶层块的一篇日记。
+DiaryExportEntry pdfEntryOf(List<Map<String, Object?>> children) =>
+    DiaryExportEntry.parse(
+      diaryId: 'blocks',
+      title: 'Blocks',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+      blockDocument: <String, Object?>{
+        'document': <String, Object?>{'type': 'page', 'children': children},
+      },
+    );
+
+/// 导出 [children] 组成的一篇日记，返回页面流（[pdfPageCommands]）。默认用
+/// 标准字体（[pdfAsciiFonts]），ASCII 文字原样写入，便于按文字找位置。
+Future<String> exportPdfBlocks(
+  List<Map<String, Object?>> children, {
+  DiaryTypography typography = const DiaryTypography(),
+  DiaryPdfFonts? fonts,
+}) async {
+  final output = await DiaryPdfWriter.write(
+    <DiaryExportEntry>[pdfEntryOf(children)],
+    options: DiaryExportOptions.defaults.copyWith(
+      includeMedia: false,
+      includeMeta: false,
+    ),
+    labels: testExportLabels,
+    media: DiaryExportMediaLibrary(),
+    fonts: fonts ?? await pdfAsciiFonts(),
+    documentTitle: 'Blocks',
+    typography: typography,
+  );
+  return pdfPageCommands(Uint8List.fromList(output.bytes!));
+}
+
+/// 页面流里文字恰为 [word] 的各个片段的横坐标，按绘制先后。正文块都在
+/// 版心左缘平移后绘制，横坐标即相对版心左缘的位置。
+List<double> pdfXsOf(String commands, String word) => <double>[
+  for (final match in RegExp(
+    '([-\\d.]+) [-\\d.]+ Td \\[\\(${RegExp.escape(word)}\\)\\]TJ',
+  ).allMatches(commands))
+    double.parse(match.group(1)!),
+];
 
 Future<Uint8List> exportPdfOps(
   List<dynamic> ops, {

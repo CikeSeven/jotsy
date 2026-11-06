@@ -24,7 +24,7 @@ import 'diary_export_pdf_text_effects.dart';
 /// 首行缩进与应用一致（见 `DiaryParagraphBlock`）：[firstLineIndent] 为全局
 /// 首行缩进的字数，[markedFirstLineIndent] 为带工具栏缩进标记的段落的字数
 /// （两字与全局取较大者，由调用方换算好），按正文字号折成宽度；只缩进正文
-/// 段落（媒体、分隔线退化成的说明行不算），居中、右对齐的段落不缩进，
+/// 段落（媒体名称行与链接卡片标题这类 `standIn` 不算），居中、右对齐的段落不缩进，
 /// 两端对齐照常缩进。中文要能在缩进之后接着排、按字换行，文字块经
 /// `diary_export_pdf_line_break.dart` 逐字断行。
 List<pw.Widget> buildDiaryPdfBody(
@@ -67,7 +67,11 @@ List<pw.Widget> buildDiaryPdfBody(
         ),
       );
     } else if (block.kind == ExportBlockKind.divider) {
-      content = pw.Divider(color: PdfColors.grey500, thickness: 0.7);
+      // 与应用一样是一条横贯整行的细线，跟着所在层级缩进。
+      content = pw.Padding(
+        padding: pw.EdgeInsetsDirectional.only(start: block.indent * 18.0),
+        child: pw.Divider(color: PdfColors.grey500, thickness: 0.7),
+      );
     } else if (block.kind == ExportBlockKind.table) {
       // 一行一个组件（见 buildDiaryPdfTableRows），长表格能在行间换页；
       // 上下留白只加在首行之上、末行之下。
@@ -112,21 +116,15 @@ List<pw.Widget> buildDiaryPdfBody(
                   : PdfColor.fromInt(palette.foreground.toARGB32()),
             )
           : theme.defaultTextStyle;
-      final prefix = switch (block.kind) {
-        ExportBlockKind.bullet ||
-        ExportBlockKind.ordered => '${block.listMarker}  ',
-        ExportBlockKind.checked => '[x]  ',
-        ExportBlockKind.unchecked => '[ ]  ',
-        _ => '',
-      };
+      final checked = block.kind == ExportBlockKind.checked;
+      // 已完成的待办与应用一样：没设颜色的文字转灰，整项划线。
+      final style = checked ? base.copyWith(color: PdfColors.grey600) : base;
       final indentChars = _firstLineIndentChars(
         block,
         regular: firstLineIndent,
         marked: markedFirstLineIndent,
       );
       final spans = <pw.InlineSpan>[
-        // 中文序号（如“十一、”）同样逐字断行，须经 diaryPdfTextSpan。
-        if (prefix.isNotEmpty) diaryPdfTextSpan(prefix, style: base),
         // pdf 库没有首行缩进，段首放一个占位宽度的空白组件：只占第一行，
         // 折行后的各行照常顶格；高度为 0，不改变行高。
         if (indentChars > 0)
@@ -135,8 +133,8 @@ List<pw.Widget> buildDiaryPdfBody(
           ),
         for (final run in block.inlines)
           buildDiaryPdfInline(
-            run,
-            base,
+            checked ? run.copyWith(strike: true) : run,
+            style,
             effects: effects,
             bodyFontSize: base.fontSize ?? 12,
             isCodeBlock: isCode,
@@ -185,6 +183,13 @@ List<pw.Widget> buildDiaryPdfBody(
             ],
           ),
         );
+      } else if (block.isListItem) {
+        content = _listItem(
+          block,
+          content,
+          base: base,
+          textDirection: direction,
+        );
       } else if (block.kind == ExportBlockKind.toggle) {
         content = buildDiaryPdfToggle(
           content,
@@ -217,6 +222,98 @@ List<pw.Widget> buildDiaryPdfBody(
   }
   return result;
 }
+
+/// 列表项：行首的标记单独占一列，文字折行后与第一行的文字对齐（与应用
+/// 一致，不会折到标记下面）。列宽、内边距按编辑器的标记列
+/// （`DiaryMarkerMetrics`，以 16 为一个字的设计稿）换算成字号的倍数；
+/// 序号与项目符号写成文字（中文序号经 [diaryPdfTextSpan]），待办画成矢量
+/// 方框（内置字体没有 ☑ / ☐ 字形）。
+pw.Widget _listItem(
+  ExportBlock block,
+  pw.Widget text, {
+  required pw.TextStyle base,
+  required pw.TextDirection textDirection,
+}) {
+  final em = base.fontSize ?? 12;
+  final marker = switch (block.kind) {
+    ExportBlockKind.checked || ExportBlockKind.unchecked => pw.Padding(
+      // 方框的中心大致落在第一行文字的中线上。
+      padding: pw.EdgeInsets.only(top: em * 0.22),
+      child: _checkbox(
+        em * 0.85,
+        checked: block.kind == ExportBlockKind.checked,
+      ),
+    ),
+    _ => pw.RichText(
+      maxLines: 1,
+      textDirection: textDirection,
+      text: diaryPdfTextSpan(block.listMarker, style: base),
+    ),
+  };
+  return pw.Directionality(
+    textDirection: textDirection,
+    child: pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: <pw.Widget>[
+        pw.ConstrainedBox(
+          constraints: pw.BoxConstraints(minWidth: em * 28 / 16),
+          child: pw.Padding(
+            padding: pw.EdgeInsetsDirectional.only(
+              start: em * 2 / 16,
+              end: em * 6 / 16,
+            ),
+            // 标记按自身大小贴着列的起始侧，不被列宽拉伸（方框要保持方形）。
+            child: pw.Align(
+              alignment: textDirection == pw.TextDirection.rtl
+                  ? pw.Alignment.topRight
+                  : pw.Alignment.topLeft,
+              widthFactor: 1,
+              heightFactor: 1,
+              child: marker,
+            ),
+          ),
+        ),
+        pw.Expanded(child: text),
+      ],
+    ),
+  );
+}
+
+/// 待办的方框：圆角描边；已完成时填成深灰并画白色的勾。pdf 画布原点在
+/// 左下。
+pw.Widget _checkbox(double side, {required bool checked}) => pw.CustomPaint(
+  size: PdfPoint(side, side),
+  painter: (PdfGraphics canvas, PdfPoint size) {
+    final stroke = size.x * 0.09;
+    final radius = size.x * 0.22;
+    canvas.drawRRect(
+      stroke / 2,
+      stroke / 2,
+      size.x - stroke,
+      size.y - stroke,
+      radius,
+      radius,
+    );
+    if (!checked) {
+      canvas
+        ..setStrokeColor(PdfColors.grey600)
+        ..setLineWidth(stroke)
+        ..strokePath();
+      return;
+    }
+    canvas
+      ..setFillColor(PdfColors.grey700)
+      ..fillPath()
+      ..setStrokeColor(PdfColors.white)
+      ..setLineWidth(size.x * 0.12)
+      ..setLineCap(PdfLineCap.round)
+      ..setLineJoin(PdfLineJoin.round)
+      ..moveTo(size.x * 0.26, size.y * 0.52)
+      ..lineTo(size.x * 0.43, size.y * 0.33)
+      ..lineTo(size.x * 0.75, size.y * 0.70)
+      ..strokePath();
+  },
+);
 
 /// 本块首行缩进的字数：只有正文段落、且从起始侧排起（左对齐或两端对齐）
 /// 时缩进，带工具栏缩进标记的取 [marked]，否则取全局的 [regular]。

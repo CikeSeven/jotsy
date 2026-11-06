@@ -139,19 +139,20 @@ class ExportInline {
   /// 是否为格子里的段间换行（[lineBreak]）。
   bool get isLineBreak => text == '\n';
 
-  /// 改文字或颜色、补斜体后的副本（PDF 准备正文时压平颜色、给代码着色用）；
-  /// 没给的项保持原样。
+  /// 改文字或颜色、补斜体或删除线后的副本（PDF 准备正文时压平颜色、给代码
+  /// 着色、给已完成的待办划线用）；没给的项保持原样。
   ExportInline copyWith({
     String? text,
     Color? color,
     Color? background,
     bool? italic,
+    bool? strike,
   }) => ExportInline(
     text ?? this.text,
     bold: bold,
     italic: italic ?? this.italic,
     underline: underline,
-    strike: strike,
+    strike: strike ?? this.strike,
     code: code,
     link: link,
     color: color ?? this.color,
@@ -198,8 +199,8 @@ class ExportBlock {
   /// Word 与 PDF 写成首行缩进（与全局首行缩进同一口径，两字与全局取较大者）。
   final bool firstLineIndent;
 
-  /// 写出器把非文字块（媒体、分隔线）退化成的一行说明（[paragraphWith]）：
-  /// 种类是段落，但不是正文段落，不加全局首行缩进。
+  /// 非文字块退化成的一行说明：写出器把媒体退化成的名称行（[paragraphWith]），
+  /// 以及日记链接卡片的快照标题。种类是段落，但不是正文段落，不加首行缩进。
   final bool standIn;
 
   /// 有序列表在同一缩进层级内的序号（1 起），其他块为 0。

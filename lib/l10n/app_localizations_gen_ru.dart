@@ -5571,6 +5571,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Запись целиком в том виде, как на странице просмотра';
 
   @override
+  String get diaryShareLongImageToGallery =>
+      'Сохранить длинное изображение в галерею';
+
+  @override
+  String get diaryShareLongImageToGallerySubtitle =>
+      'То же изображение сразу сохраняется в галерею';
+
+  @override
   String diaryShareRequiresImage(String app) {
     return 'Для $app нужно хотя бы одно изображение';
   }

@@ -9096,6 +9096,18 @@ abstract class AppLocalizations {
   /// **'Renders the diary as it looks in the preview'**
   String get diaryShareLongImageSubtitle;
 
+  /// Share sheet action (phones): render the diary as one long image and save it to the system photo gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Save long image to gallery'**
+  String get diaryShareLongImageToGallery;
+
+  /// Share sheet: subtitle of the save-long-image-to-gallery action.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves the same long image straight to your photo gallery'**
+  String get diaryShareLongImageToGallerySubtitle;
+
   /// Share sheet hint when the target app needs an image.
   ///
   /// In en, this message translates to:

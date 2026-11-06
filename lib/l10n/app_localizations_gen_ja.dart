@@ -5024,6 +5024,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryShareLongImageSubtitle => 'プレビュー画面の見た目のまま1枚の画像にします';
 
   @override
+  String get diaryShareLongImageToGallery => '長い画像をギャラリーに保存';
+
+  @override
+  String get diaryShareLongImageToGallerySubtitle => '同じ長い画像をそのままギャラリーに保存します';
+
+  @override
   String diaryShareRequiresImage(String app) {
     return '$appへの共有には画像が1枚以上必要です';
   }

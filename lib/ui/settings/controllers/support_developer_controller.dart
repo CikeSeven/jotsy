@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/image_export_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/image_export_messages.dart';
 import '../models/support_channel.dart';
 
 /// 交给其他应用打开 [uri]；返回是否有应用接手。
@@ -112,15 +113,7 @@ class SupportDeveloperController extends ChangeNotifier {
         return SupportActionResult(message: l10n.imageViewerSaveSuccess);
       } on ImageExportException catch (error) {
         return SupportActionResult(
-          message: switch (error.type) {
-            ImageExportErrorType.permissionDenied =>
-              l10n.imageViewerGalleryPermissionDenied,
-            ImageExportErrorType.invalidSource ||
-            ImageExportErrorType.downloadFailed ||
-            ImageExportErrorType.unknown => l10n.imageViewerSaveFailed(
-              error.message,
-            ),
-          },
+          message: imageExportErrorMessage(l10n, error),
           isError: true,
         );
       }

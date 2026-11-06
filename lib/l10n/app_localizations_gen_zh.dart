@@ -4929,6 +4929,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryShareLongImageSubtitle => '按预览页的样子生成一整张图片';
 
   @override
+  String get diaryShareLongImageToGallery => '保存长图到相册';
+
+  @override
+  String get diaryShareLongImageToGallerySubtitle => '生成同样的长图，直接存进系统相册';
+
+  @override
   String diaryShareRequiresImage(String app) {
     return '$app需要至少一张图片';
   }

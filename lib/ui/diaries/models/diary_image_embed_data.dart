@@ -18,7 +18,19 @@ import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart'
 /// 本就不会放大小图，作为上限后可见画面尺寸与原先一致。
 /// 只识别纯数字与 px，百分比/vw 等单位按未设置处理，交给布局宽度兜底。
 BoxConstraints diaryImageEmbedBounds(af.Node node) {
-  final attributes = node.attributes;
+  final (:width, :height) = diaryImageSizeLimits(node.attributes);
+  return BoxConstraints(
+    maxWidth: width ?? double.infinity,
+    maxHeight: height ?? double.infinity,
+  );
+}
+
+/// 图片块数据（`node.attributes` / 块文档的 `data`）里记录的显示上限
+/// （逻辑像素），没设的一边为 null；口径见 [diaryImageEmbedBounds]。导出
+/// 按同一份上限排图片（`ExportBlock.imageBox`）。
+({double? width, double? height}) diaryImageSizeLimits(
+  Map<String, Object?> attributes,
+) {
   var width = _parseLength(attributes['width']);
   var height = _parseLength(attributes['height']);
   final style = attributes['style'];
@@ -35,10 +47,7 @@ BoxConstraints diaryImageEmbedBounds(af.Node node) {
       }
     }
   }
-  return BoxConstraints(
-    maxWidth: width ?? double.infinity,
-    maxHeight: height ?? double.infinity,
-  );
+  return (width: width, height: height);
 }
 
 /// 比列宽窄的正文图片在行内的水平位置：默认靠行首（缩放菜单缩小后应贴着

@@ -8,6 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/database/app_database.dart' show DiaryCommentRowImages;
+import '../../../core/services/diary_typography.dart';
 import '../../../core/services/font_file_info.dart';
 import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
@@ -20,7 +21,6 @@ import 'diary_export_media.dart';
 import 'diary_export_pdf_body.dart';
 import 'diary_export_pdf_comments.dart';
 import 'diary_export_pdf_text_effects.dart';
-import 'diary_export_plain_text.dart';
 
 /// PDF 用的字体，生成时按实际字符做子集嵌入。字体文件各约 8MB 起，加载一次
 /// 后由调用方复用。
@@ -87,6 +87,8 @@ class DiaryPdfFonts {
 /// 压平透明色与代码着色，再由 pdf 库直接绘制，保持标题、列表、嵌套、引用与
 /// 行内格式。所有图片先检查/载入后换成虚拟地址，避免缺图中断或泄露私有
 /// 路径；高亮与应用配色同源。中文字体的粗斜体经 DiaryPdfTextEffects 在绘制时补偿。
+/// 段落对齐与首行缩进同应用：首行缩进的字数取 `write` 的 `typography` 快照
+/// （与 Word 同一口径），写出器不自行读取设置。
 ///
 /// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。有留言的
 /// 日记在正文之后接留言区（[buildDiaryPdfComments]，同样不写心情）。
@@ -130,6 +132,7 @@ class DiaryPdfWriter {
     TextDirection textDirection = TextDirection.ltr,
     DiaryExportBookLayout? book,
     DiaryExportCodeTheme? code,
+    DiaryTypography typography = const DiaryTypography(),
   }) async {
     final textEffects = DiaryPdfTextEffects(
       regular: fonts.regular,
@@ -163,6 +166,7 @@ class DiaryPdfWriter {
         images: images,
         textDirection: textDirection,
         code: code,
+        typography: typography,
       );
       return DiaryExportOutput.single(await document.save());
     }
@@ -184,6 +188,7 @@ class DiaryPdfWriter {
           images: images,
           textDirection: textDirection,
           code: code,
+          typography: typography,
         ),
       );
     }
@@ -226,6 +231,7 @@ class DiaryPdfWriter {
     required List<Uint8List> images,
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
+    required DiaryTypography typography,
     pw.Widget Function(pw.Widget title)? wrapTitle,
   }) async {
     final widgets = await _header(
@@ -254,6 +260,13 @@ class DiaryPdfWriter {
           images: images,
           textDirection: textDirection,
           code: code,
+          // 字数与应用同一口径，宽度按 PDF 的正文字号折算（PDF 不跟随
+          // 应用的字号与字间距）。
+          firstLineIndent: typography.firstLineIndent,
+          markedFirstLineIndent: math.max(
+            typography.firstLineIndent,
+            DiaryTypography.paragraphFirstLineIndent,
+          ),
         ),
       );
     }
@@ -287,6 +300,7 @@ class DiaryPdfWriter {
     required List<Uint8List> images,
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
+    required DiaryTypography typography,
   }) async {
     // 锚点 → 页码：正文绘制时由 _BookAnchor 写入，目录绘制时读取。
     final pages = <String, int>{};
@@ -345,6 +359,7 @@ class DiaryPdfWriter {
             images: images,
             textDirection: textDirection,
             code: code,
+            typography: typography,
             wrapTitle: (pw.Widget child) => _BookAnchor(
               name: book.anchorOf(entry),
               title: labels.titleOf(entry),
@@ -589,8 +604,8 @@ class DiaryPdfWriter {
   /// 依次：给了 [code] 时先为代码行着色（[DiaryExportCodeTheme.colorCodeBlocks]，
   /// 按语言整块高亮）；图片读出字节、读不出或关掉图片时整块去掉，否则计入
   /// [images] 并把来源换成按下标取图的虚拟地址；录音、视频、附件换成一行
-  /// 名称（远程地址保留为链接，本地私有路径不写出）；分隔线写成一行横线；
-  /// 最后把文字色与背景色压平到白纸上（表格逐格压平）。标注、折叠列表与
+  /// 名称（远程地址保留为链接，本地私有路径不写出）；分隔线原样保留（画成
+  /// 横线）；最后把文字色与背景色压平到白纸上（表格逐格压平）。标注、折叠列表与
   /// 表格保持原来的块类型，由 [buildDiaryPdfBody] 专门绘制。
   @visibleForTesting
   static Future<List<ExportBlock>?> prepareBody(
@@ -638,11 +653,8 @@ class DiaryPdfWriter {
           );
           hasContent = true;
         case ExportBlockKind.divider:
-          body.add(
-            block.paragraphWith(const <ExportInline>[
-              ExportInline(ExportPlainText.dividerLine),
-            ]),
-          );
+          // 由 buildDiaryPdfBody 画成横线。
+          body.add(block);
           hasContent = true;
         case ExportBlockKind.table:
           body.add(

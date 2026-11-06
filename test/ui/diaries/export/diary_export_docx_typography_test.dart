@@ -188,4 +188,42 @@ void main() {
     final document = await body(const DiaryTypography());
     expect(indentOf(document, '第一段正文'), isNull);
   });
+
+  test('diary link card titles are not indented as body paragraphs', () async {
+    final entry = DiaryExportEntry.parse(
+      diaryId: 'card',
+      title: '卡片',
+      createdAt: DateTime(2026, 4, 3, 9, 5),
+      updatedAt: DateTime(2026, 4, 3, 9, 5),
+      blockDocument: <String, Object?>{
+        'document': <String, Object?>{
+          'type': 'page',
+          'children': <Object?>[
+            <String, Object?>{
+              'type': 'link_card',
+              'data': <String, Object?>{
+                'target': 'jotsy://diary/abc',
+                'title': '另一篇日记',
+              },
+            },
+          ],
+        },
+      },
+    );
+    final output = await DiaryDocxWriter.write(
+      [entry],
+      options: DiaryExportOptions.defaults,
+      labels: testExportLabels,
+      media: DiaryExportMediaLibrary(),
+      documentTitle: 'Card',
+      languageTag: 'zh-CN',
+      typography: const DiaryTypography(firstLineIndent: 2),
+    );
+    final document = XmlDocument.parse(
+      utf8.decode(
+        output.files!.singleWhere((f) => f.path == 'word/document.xml').bytes!,
+      ),
+    );
+    expect(indentOf(document, '另一篇日记'), isNull);
+  });
 }

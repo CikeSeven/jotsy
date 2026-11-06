@@ -8,6 +8,8 @@ import 'diary_export_blocks.dart';
 import 'diary_export_code.dart';
 import 'diary_export_pdf_heading.dart';
 import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_line_break.dart';
+import 'diary_export_pdf_list_item.dart';
 import 'diary_export_pdf_rich_blocks.dart';
 import 'diary_export_pdf_text_effects.dart';
 
@@ -15,6 +17,17 @@ import 'diary_export_pdf_text_effects.dart';
 /// 载入并替换为虚拟地址，媒体已换为说明文字；这里不做 IO、不改原文。
 /// 按段/代码行返回可分页的组件，避免把整篇长文放进一个不可分页的容器。
 /// 标注、折叠列表与表格的画法见 `diary_export_pdf_rich_blocks.dart`。
+///
+/// 文字块一律铺满可用宽度再排版：pdf 库的 [pw.RichText] 在宽松约束下只取
+/// 最长一行的宽度，单行段落的居中 / 右对齐就在这条窄框里“对齐”，落到页面
+/// 上仍贴着左边（标题另经 [DiaryPdfHeading] 的 `alignment` 撑满）。
+///
+/// 首行缩进与应用一致（见 `DiaryParagraphBlock`）：[firstLineIndent] 为全局
+/// 首行缩进的字数，[markedFirstLineIndent] 为带工具栏缩进标记的段落的字数
+/// （两字与全局取较大者，由调用方换算好），按正文字号折成宽度；只缩进正文
+/// 段落（媒体名称行与链接卡片标题这类 `standIn` 不算），居中、右对齐的段落不缩进，
+/// 两端对齐照常缩进。中文要能在缩进之后接着排、按字换行，文字块经
+/// `diary_export_pdf_line_break.dart` 逐字断行。
 List<pw.Widget> buildDiaryPdfBody(
   List<ExportBlock> blocks, {
   required pw.ThemeData theme,
@@ -23,6 +36,8 @@ List<pw.Widget> buildDiaryPdfBody(
   required List<Uint8List> images,
   required TextDirection textDirection,
   DiaryExportCodeTheme? code,
+  double firstLineIndent = 0,
+  double markedFirstLineIndent = 0,
 }) {
   final result = <pw.Widget>[];
   final rtl = textDirection == TextDirection.rtl;
@@ -42,18 +57,19 @@ List<pw.Widget> buildDiaryPdfBody(
         Uri.tryParse(source)?.pathSegments.last.split('.').first ?? '',
       );
       if (index == null || index < 0 || index >= images.length) continue;
-      content = pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 6),
-        child: pw.ConstrainedBox(
-          constraints: const pw.BoxConstraints(maxHeight: 560),
-          child: pw.Image(
-            pw.MemoryImage(images[index]),
-            fit: pw.BoxFit.contain,
-          ),
-        ),
+      final image = buildDiaryPdfImage(
+        block,
+        images[index],
+        textDirection: direction,
       );
+      if (image == null) continue;
+      content = image;
     } else if (block.kind == ExportBlockKind.divider) {
-      content = pw.Divider(color: PdfColors.grey500, thickness: 0.7);
+      // 与应用一样是一条横贯整行的细线，跟着所在层级缩进。
+      content = pw.Padding(
+        padding: pw.EdgeInsetsDirectional.only(start: block.indent * 18.0),
+        child: pw.Divider(color: PdfColors.grey500, thickness: 0.7),
+      );
     } else if (block.kind == ExportBlockKind.table) {
       // 一行一个组件（见 buildDiaryPdfTableRows），长表格能在行间换页；
       // 上下留白只加在首行之上、末行之下。
@@ -98,19 +114,24 @@ List<pw.Widget> buildDiaryPdfBody(
                   : PdfColor.fromInt(palette.foreground.toARGB32()),
             )
           : theme.defaultTextStyle;
-      final prefix = switch (block.kind) {
-        ExportBlockKind.bullet ||
-        ExportBlockKind.ordered => '${block.listMarker}  ',
-        ExportBlockKind.checked => '[x]  ',
-        ExportBlockKind.unchecked => '[ ]  ',
-        _ => '',
-      };
+      final checked = block.kind == ExportBlockKind.checked;
+      // 已完成的待办与应用一样：没设颜色的文字转灰，整项划线。
+      final style = checked ? base.copyWith(color: PdfColors.grey600) : base;
+      final indentChars = block.firstLineIndentOf(
+        regular: firstLineIndent,
+        marked: markedFirstLineIndent,
+      );
       final spans = <pw.InlineSpan>[
-        if (prefix.isNotEmpty) pw.TextSpan(text: prefix, style: base),
+        // pdf 库没有首行缩进，段首放一个占位宽度的空白组件：只占第一行，
+        // 折行后的各行照常顶格；高度为 0，不改变行高。
+        if (indentChars > 0)
+          pw.WidgetSpan(
+            child: pw.SizedBox(width: indentChars * (base.fontSize ?? 12)),
+          ),
         for (final run in block.inlines)
           buildDiaryPdfInline(
-            run,
-            base,
+            checked ? run.copyWith(strike: true) : run,
+            style,
             effects: effects,
             bodyFontSize: base.fontSize ?? 12,
             isCodeBlock: isCode,
@@ -123,12 +144,17 @@ List<pw.Widget> buildDiaryPdfBody(
         ExportAlign.justify => pw.TextAlign.justify,
         ExportAlign.start => rtl ? pw.TextAlign.right : pw.TextAlign.left,
       };
-      content = pw.RichText(
-        text: pw.TextSpan(children: spans),
-        textDirection: direction,
-        textAlign: align,
-        softWrap: true,
-        overflow: pw.TextOverflow.span,
+      // 撑满宽度，对齐才落在整行上（见本函数注释）。
+      content = pw.SizedBox(
+        width: double.infinity,
+        child: pw.RichText(
+          text: pw.TextSpan(children: spans),
+          textDirection: direction,
+          textAlign: align,
+          softWrap: true,
+          overflow: pw.TextOverflow.span,
+          lineSplitter: diaryPdfLineSplitter,
+        ),
       );
       if (isCode) {
         content = pw.Container(
@@ -153,6 +179,13 @@ List<pw.Widget> buildDiaryPdfBody(
               pw.Expanded(child: content),
             ],
           ),
+        );
+      } else if (block.isListItem) {
+        content = buildDiaryPdfListItem(
+          block,
+          content,
+          base: base,
+          textDirection: direction,
         );
       } else if (block.kind == ExportBlockKind.toggle) {
         content = buildDiaryPdfToggle(

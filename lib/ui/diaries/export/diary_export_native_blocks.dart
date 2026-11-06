@@ -92,6 +92,9 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
         (source == null || source.isEmpty)) {
       continue;
     }
+    final imageLimits = kind == ExportBlockKind.image
+        ? diaryImageSizeLimits(data)
+        : null;
     final icon = data[kDiaryCalloutIconKey];
     final tone = data[kDiaryCalloutToneKey];
     final lines = type == kDiaryBlockLinkCard
@@ -138,6 +141,13 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
           firstLineIndent:
               type == kDiaryBlockParagraph &&
               data[kDiaryParagraphIndentKey] == true,
+          // 链接卡片在应用里是一张卡片，导出的标题行不按正文缩进。
+          standIn: type == kDiaryBlockLinkCard,
+          imageMaxWidth: imageLimits?.width,
+          imageMaxHeight: imageLimits?.height,
+          imageThumbnail:
+              kind == ExportBlockKind.image &&
+              data[kDiaryImageThumbnailKey] == true,
         ),
       );
     }

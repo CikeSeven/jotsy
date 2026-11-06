@@ -1,13 +1,17 @@
 import 'package:pdf/widgets.dart' as pw;
 
+import '../models/diary_text_style_options.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 正文标题的局部适配：输入共用解析器读出的标题块（颜色已压平），
 /// 把行内样式叠到标题字阶上；不读取设置、不改写原正文。
 ///
-/// 直接在 PDF 标题字阶上叠加行内片段，沿用既有导出的字阶与缩进规格。
+/// 标题与应用一致：加粗，字号为正文字号乘 [kDiaryHeadingScales]（与编辑器
+/// 同一组倍数，六级依次变小）；行内片段叠在这个字阶上。缩进沿用既有导出
+/// 的规格。
 class DiaryPdfHeading {
   const DiaryPdfHeading._();
 
@@ -18,15 +22,15 @@ class DiaryPdfHeading {
     required bool aligned,
     required DiaryPdfTextEffects effects,
   }) {
-    final base = switch (block.level) {
-      1 => theme.header1,
-      2 => theme.header2,
-      3 => theme.header3,
-      4 => theme.header4,
-      5 => theme.header5,
-      // PDF 主题 只有五级标题；H6 使用其默认的 15pt。
-      _ => theme.defaultTextStyle.copyWith(fontSize: 15),
-    };
+    // 不用 pdf 库主题的 header1–5：它们不加粗、各级只差 0.1 倍，也没有
+    // 第六级。
+    final body = theme.defaultTextStyle;
+    final base = body.copyWith(
+      fontSize:
+          (body.fontSize ?? 12) *
+          kDiaryHeadingScales[block.level.clamp(1, 6) - 1],
+      fontWeight: pw.FontWeight.bold,
+    );
     final rtl = textDirection == pw.TextDirection.rtl;
     final align = switch (block.align) {
       ExportAlign.center => pw.TextAlign.center,
@@ -54,6 +58,8 @@ class DiaryPdfHeading {
             textDirection: textDirection,
             softWrap: true,
             overflow: pw.TextOverflow.span,
+            // 长标题里的中文同样逐字换行（见 diaryPdfLineSplitter）。
+            lineSplitter: diaryPdfLineSplitter,
             text: pw.TextSpan(
               children: <pw.InlineSpan>[
                 for (final run in block.inlines)
@@ -61,7 +67,7 @@ class DiaryPdfHeading {
                     run,
                     base,
                     effects: effects,
-                    bodyFontSize: theme.defaultTextStyle.fontSize ?? 12,
+                    bodyFontSize: body.fontSize ?? 12,
                   ),
               ],
             ),

@@ -1,18 +1,84 @@
+import 'dart:typed_data';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../models/diary_callout_tone.dart';
 import 'diary_export_blocks.dart';
+import 'diary_export_image_box.dart';
+import 'diary_export_media.dart';
 import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
 
-/// PDF 正文里的标注、折叠列表与表格（[buildDiaryPdfBody] 调用）。
+/// PDF 正文里的图片、标注、折叠列表与表格（[buildDiaryPdfBody] 调用）。
 ///
 /// - 输入：共用块模型里的一块（颜色已在 prepareBody 压平到白纸上）与已经
 ///   排好的行内文字；
 /// - 输出：可交给 `MultiPage` 的组件，不做 IO、不读设置；
 /// - 只画矢量形状与文字，不依赖字体里的符号字形：内置的 HarmonyOS Sans SC
 ///   没有 emoji，也没有 ▸ 这类几何符号，写成文字会印成方框。
+
+/// 正文图片：尺寸、小图与对齐与应用一致（口径见 [ExportImageBox]，逻辑
+/// 像素按 96 DPI 折成磅）。原图比版心宽时按比例缩到版心宽，比一页的图片
+/// 上限（560pt）高时缩到这个高度，从不放大；跟着所在层级缩进，按块的对齐
+/// 靠起始侧、居中或靠右。读不出尺寸的图片返回 null（准备正文时已经去掉）。
+pw.Widget? buildDiaryPdfImage(
+  ExportBlock block,
+  Uint8List bytes, {
+  required pw.TextDirection textDirection,
+}) {
+  final info = ExportImageInfo.read(bytes);
+  if (info == null || info.width <= 0 || info.height <= 0) return null;
+  const pt = 0.75;
+  final box = ExportImageBox.of(
+    block,
+    info.width,
+    info.height,
+    maxHeight: 560 / pt,
+  );
+  final memory = pw.MemoryImage(bytes);
+  final pw.Widget picture;
+  if (box.thumbnail) {
+    final radius = box.radius * pt;
+    picture = pw.ClipRRect(
+      horizontalRadius: radius,
+      verticalRadius: radius,
+      child: pw.Image(
+        memory,
+        width: box.width * pt,
+        height: box.height * pt,
+        fit: pw.BoxFit.cover,
+        alignment: box.keepsTop ? pw.Alignment.topCenter : pw.Alignment.center,
+      ),
+    );
+  } else {
+    // 版心宽度在排版时才知道（还要减去缩进）：先给原尺寸，放不下时由
+    // FittedBox 按比例缩小。
+    picture = pw.FittedBox(
+      fit: pw.BoxFit.scaleDown,
+      child: pw.Image(memory, width: box.width * pt, height: box.height * pt),
+    );
+  }
+  final rtl = textDirection == pw.TextDirection.rtl;
+  return pw.Padding(
+    padding: pw.EdgeInsetsDirectional.only(
+      start: block.indent * 18.0,
+      top: 6,
+      bottom: 6,
+    ),
+    child: pw.Align(
+      alignment: switch (block.align) {
+        ExportAlign.center => pw.Alignment.center,
+        ExportAlign.end =>
+          rtl ? pw.Alignment.centerLeft : pw.Alignment.centerRight,
+        _ => rtl ? pw.Alignment.centerRight : pw.Alignment.centerLeft,
+      },
+      heightFactor: 1,
+      child: picture,
+    ),
+  );
+}
 
 /// 标注：圆角浅色底，左侧一条强调色竖条，颜色只取 [DiaryCalloutTone] 的
 /// 纸面配色（导出纸面恒为白底）。
@@ -140,6 +206,8 @@ List<pw.Widget> buildDiaryPdfTableRows(
                     textDirection: textDirection,
                     softWrap: true,
                     overflow: pw.TextOverflow.span,
+                    // 窄格子里的中文逐字换行，不会整段挤到下一行。
+                    lineSplitter: diaryPdfLineSplitter,
                     text: pw.TextSpan(
                       children: <pw.InlineSpan>[
                         for (final run in cell)

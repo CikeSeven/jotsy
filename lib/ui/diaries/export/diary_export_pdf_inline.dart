@@ -1,7 +1,9 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../models/diary_text_style_options.dart';
 import 'diary_export_blocks.dart';
+import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 行内样式：把共用块模型的文字、颜色、装饰和链接叠到当前段落字阶。
@@ -29,18 +31,22 @@ pw.TextSpan buildDiaryPdfInline(
       : null;
   final bold = run.bold || base.fontWeight == pw.FontWeight.bold;
   final italic = run.italic || base.fontStyle == pw.FontStyle.italic;
-  // 上下标：按所在字号缩到 0.7 倍，基线抬高 / 降低（pdf 库的 baseline
-  // 为正时向上）。
-  final size = _fontSize(run.size, bodyFontSize) ?? base.fontSize;
-  final script = run.script;
-  final fontSize = script == null || size == null ? size : size * 0.7;
-  final baseline = size == null
+  // 字号档位按正文字号的倍数（与应用同一口径，认不出的数字字号按所在块
+  // 的字号）；上下标再按所在字号缩小、抬高 / 降低基线，倍数与编辑器共用
+  // [DiaryScript]（pdf 库的 baseline 为正时向上）。
+  final scale = run.sizeScale;
+  final size = scale == null ? base.fontSize : bodyFontSize * scale;
+  final script = switch (run.script) {
+    ExportScript.superscript => DiaryScript.superscript,
+    ExportScript.subscript => DiaryScript.subscript,
+    null => null,
+  };
+  final fontSize = script == null || size == null
+      ? size
+      : size * DiaryScript.scale;
+  final baseline = script == null || size == null
       ? 0.0
-      : switch (script) {
-          ExportScript.superscript => size * 0.33,
-          ExportScript.subscript => -size * 0.12,
-          null => 0.0,
-        };
+      : size * script.baselineShift;
   final style = effects.apply(
     base.copyWith(
       fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
@@ -64,20 +70,11 @@ pw.TextSpan buildDiaryPdfInline(
     isItalic: italic,
     isCodeBlock: isCodeBlock,
   );
-  return pw.TextSpan(
-    text: run.text,
+  // 含中日韩文字时拆成可逐字断行的子片段（见 diaryPdfLineSplitter）。
+  return diaryPdfTextSpan(
+    run.text,
     style: style,
     baseline: baseline,
     annotation: run.link == null ? null : pw.AnnotationUrl(run.link!),
   );
-}
-
-double? _fontSize(String? size, double bodyFontSize) {
-  final value = switch (size) {
-    'small' => bodyFontSize * 0.85,
-    'large' => bodyFontSize * 1.25,
-    'huge' => bodyFontSize * 1.5,
-    _ => double.tryParse(size ?? ''),
-  };
-  return value != null && value.isFinite && value > 0 ? value : null;
 }

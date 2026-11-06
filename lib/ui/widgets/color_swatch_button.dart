@@ -14,7 +14,9 @@ import 'expressive_icon_swap.dart';
 /// - 选中态用 onSurface 外环 + 色块上的勾选：不用 primary 描边，因为主题色
 ///   选择器中 primary 正是由该色块派生，二者几乎同色、难以分辨；
 /// - 按下时色块弹性缩小（spatial，水波纹之外的直接反馈：32dp 色块会盖住大半
-///   墨水），勾选缩放淡入而不是硬切。
+///   墨水），勾选缩放淡入而不是硬切；
+/// - [splitColor] 不为空时右半边画这个颜色（主题色“黑白”画成左黑右白），
+///   描边改到前景再画一遍，不被右半边盖住。
 class ColorSwatchButton extends StatefulWidget {
   const ColorSwatchButton({
     super.key,
@@ -25,6 +27,7 @@ class ColorSwatchButton extends StatefulWidget {
     this.swatchSize = 32,
     this.borderRadius,
     this.showCheck = true,
+    this.splitColor,
   });
 
   static const double tapTargetSize = 48;
@@ -38,6 +41,9 @@ class ColorSwatchButton extends StatefulWidget {
 
   /// 选中时是否在色块上画勾：色系页签类选择只需外环，避免与具体颜色的勾选混淆。
   final bool showCheck;
+
+  /// 右半边的颜色；为空时整块为 [color]。
+  final Color? splitColor;
 
   @override
   State<ColorSwatchButton> createState() => _ColorSwatchButtonState();
@@ -53,16 +59,18 @@ class _ColorSwatchButtonState extends State<ColorSwatchButton> {
     final selected = widget.selected;
     final swatchSize = widget.swatchSize;
     final radius = widget.borderRadius;
+    final split = widget.splitColor;
     final side = BorderSide(
       color: selected ? colors.onSurface : colors.outlineVariant,
       width: selected ? 2.4 : 1.0,
     );
-    final ShapeBorder shape = radius == null
+    ShapeBorder shapeWith(BorderSide side) => radius == null
         ? CircleBorder(side: side)
         : RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
             side: side,
           );
+    final shape = shapeWith(side);
     // 勾选画在任意用户色块上，对比色只能由色块明度决定，不跟随主题
     // （AGENTS §6 例外条款）。
     final checkColor =
@@ -70,6 +78,18 @@ class _ColorSwatchButtonState extends State<ColorSwatchButton> {
         ? Colors.white
         : Colors.black87;
     final showCheck = selected && widget.showCheck;
+    final check = Center(
+      child: ExpressiveIconSwap(
+        switchKey: showCheck,
+        child: showCheck
+            ? FaIcon(
+                FontAwesomeIcons.check,
+                size: swatchSize * 0.4,
+                color: checkColor,
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
     return Semantics(
       button: true,
       selected: selected,
@@ -102,19 +122,34 @@ class _ColorSwatchButtonState extends State<ColorSwatchButton> {
                   curve: ExpressiveMotion.effects,
                   width: swatchSize,
                   height: swatchSize,
-                  decoration: ShapeDecoration(color: color, shape: shape),
-                  child: Center(
-                    child: ExpressiveIconSwap(
-                      switchKey: showCheck,
-                      child: showCheck
-                          ? FaIcon(
-                              FontAwesomeIcons.check,
-                              size: swatchSize * 0.4,
-                              color: checkColor,
-                            )
-                          : const SizedBox.shrink(),
-                    ),
+                  decoration: ShapeDecoration(
+                    color: color,
+                    shape: split == null ? shape : shapeWith(BorderSide.none),
                   ),
+                  foregroundDecoration: split == null
+                      ? null
+                      : ShapeDecoration(shape: shape),
+                  child: split == null
+                      ? check
+                      : Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            ClipPath(
+                              clipper: ShapeBorderClipper(
+                                shape: shapeWith(BorderSide.none),
+                              ),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: FractionallySizedBox(
+                                  widthFactor: 0.5,
+                                  heightFactor: 1,
+                                  child: ColoredBox(color: split),
+                                ),
+                              ),
+                            ),
+                            check,
+                          ],
+                        ),
                 ),
               ),
             ),

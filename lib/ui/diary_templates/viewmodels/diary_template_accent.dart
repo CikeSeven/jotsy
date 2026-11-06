@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_color_scheme.dart';
+
 /// 模板强调色在当前主题下的一对颜色：图标底色与图标色。
 @immutable
 class DiaryTemplateAccentColors {
@@ -16,7 +18,8 @@ class DiaryTemplateAccentColors {
 /// 不直接涂种子色：同一个橙色在暗色主题里会刺眼、文字也难辨认。经
 /// `ColorScheme.fromSeed` 换算出的 primaryContainer / onPrimaryContainer 在
 /// 明暗两种主题下都满足对比度，且与应用其余部分的色调一致。没有强调色的
-/// 模板跟随主题色。灰色这类无彩色种子另走 [_neutralAccentColors]。换算较贵，
+/// 模板跟随主题色。灰色这类无彩色种子（[isAchromaticColor]）不经 fromSeed
+/// （会被染成青蓝色），另走 [_neutralAccentColors]。换算较贵，
 /// 按（种子, 明暗）缓存。
 DiaryTemplateAccentColors diaryTemplateAccentColors(
   int? seed,
@@ -33,7 +36,7 @@ DiaryTemplateAccentColors diaryTemplateAccentColors(
   if (cached != null) return cached;
   if (_cache.length >= 64) _cache.clear();
   final color = Color(seed);
-  if (_isAchromatic(color)) {
+  if (isAchromaticColor(color)) {
     return _cache[key] = _neutralAccentColors(color, scheme.brightness);
   }
   final derived = ColorScheme.fromSeed(
@@ -48,17 +51,6 @@ DiaryTemplateAccentColors diaryTemplateAccentColors(
 
 final Map<(int, Brightness), DiaryTemplateAccentColors> _cache =
     <(int, Brightness), DiaryTemplateAccentColors>{};
-
-/// 三个通道相差不超过 8/255 即视为没有色相：色板的灰色系全部为 0、棕色系
-/// 最浅一格为 6，其余色系最淡的一格也有 13。
-///
-/// 这类颜色不能交给 `ColorScheme.fromSeed`：默认的 tonalSpot 把主色彩度固定
-/// 拉到 36，灰色按 CAM16 算出的色相约 209°，会被染成青蓝色，看起来就像
-/// “跟随主题”；棕色系最浅一格则落在约 111°，被染成黄色。
-bool _isAchromatic(Color color) {
-  final channels = <double>[color.r, color.g, color.b];
-  return channels.reduce(math.max) - channels.reduce(math.min) <= 8 / 255;
-}
 
 /// 浅色主题下灰色的取值范围（明度 25–90）：范围内直接取种子的灰度，选了
 /// 深灰就是深灰；上限与彩色种子换算出的浅色容器色同一明度，再白就和页面

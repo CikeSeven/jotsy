@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/app/theme/app_color_scheme.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_theme.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_card_colors.dart';
@@ -78,6 +79,31 @@ void main() {
         });
       }
     }
+
+    test('gray and black-and-white app themes keep blue-based syntax', () {
+      for (final seed in <Color>[
+        const Color(0xFF9E9E9E),
+        const Color(kMonochromeThemeSeedValue),
+      ]) {
+        for (final schemeBrightness in Brightness.values) {
+          final scheme = appColorSchemeFromSeed(seed, schemeBrightness);
+          for (final brightness in Brightness.values) {
+            final palette = DiaryCodeThemes.palette(
+              DiaryCodeThemeId.app,
+              brightness,
+              scheme,
+            );
+            final label = '$seed/${schemeBrightness.name}/${brightness.name}';
+            _expectReadable(palette, label);
+            // 主色没有色相时不从红色转起：关键字是蓝，不像报错。
+            final keyword = HSLColor.fromColor(
+              palette.tokens[DiaryCodeTokenRole.keyword]!,
+            );
+            expect(keyword.hue, closeTo(200, 20), reason: label);
+          }
+        }
+      }
+    });
 
     test('curated themes keep their official background', () {
       final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF6750A4));

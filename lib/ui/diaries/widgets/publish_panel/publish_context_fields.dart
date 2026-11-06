@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
@@ -24,9 +25,9 @@ import 'publish_resolvable_field.dart';
 ///
 /// 用过的地点：地点输入框行尾的时钟按钮（定位按钮之前）打开“用过的地点”
 /// 子页（[onOpenPlaces]）；地点为空时，输入框下方原本放地址层级的那一格
-/// 换成“最近”条带（[PublishPlaceHistoryStrip]），点一下直接填入。两者在
-/// 同一格里交叉淡入、高度补间，有地点 ↔ 没地点切换时不跳动。正在定位时
-/// 不能选用（定位结果晚到会覆盖刚选的地点）。
+/// 换成“最近”条带（[PublishPlaceHistoryStrip]，面板展开时才建出），点一下
+/// 直接填入。两者在同一格里交叉淡入、高度补间，有地点 ↔ 没地点切换时不
+/// 跳动。正在定位时不能选用（定位结果晚到会覆盖刚选的地点）。
 ///
 /// 自动定位与天气只在 Android 提供（定位解析与高德 / 和风密钥都走 Android
 /// 通道）：其他平台点了只会失败，两行都只留手填输入框。
@@ -37,6 +38,7 @@ class PublishContextFields extends StatelessWidget {
     required this.actions,
     required this.busy,
     required this.onOpenPlaces,
+    required this.panelProgress,
   });
 
   final DiaryMetaDraftController draft;
@@ -44,6 +46,9 @@ class PublishContextFields extends StatelessWidget {
 
   /// 打开“用过的地点”子页。
   final VoidCallback onOpenPlaces;
+
+  /// 面板展开进度（0 = 收起）：“最近”条带只在面板打开时订阅。
+  final ValueListenable<double> panelProgress;
 
   /// 页面忙碌（写库中）时不允许改层级。
   final bool busy;
@@ -109,12 +114,21 @@ class PublishContextFields extends StatelessWidget {
                     ),
               ),
             ),
-            placeHistory: ValueListenableBuilder<bool>(
-              valueListenable: actions.locating,
-              builder: (context, locating, _) => PublishPlaceHistoryStrip(
-                enabled: !locating,
-                onSelect: (place) => actions.selectPlace(context, place),
-                onShowAll: onOpenPlaces,
+            // 面板收起时不建条带、不订阅：主页内容在收起态也在树上，否则
+            // 地点为空的日记每次自动保存（打字防抖）都会重跑一遍汇总查询。
+            // 一开始展开就建出来，详情淡入（进度 0.15）前数据已经到了。
+            placeHistory: ValueListenableSelector<double, bool>(
+              valueListenable: panelProgress,
+              selector: (progress) => progress > 0,
+              builder: (context, open, strip) =>
+                  open ? strip! : const SizedBox(width: double.infinity),
+              child: ValueListenableBuilder<bool>(
+                valueListenable: actions.locating,
+                builder: (context, locating, _) => PublishPlaceHistoryStrip(
+                  enabled: !locating,
+                  onSelect: (place) => actions.selectPlace(context, place),
+                  onShowAll: onOpenPlaces,
+                ),
               ),
             ),
           ),

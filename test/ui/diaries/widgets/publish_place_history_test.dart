@@ -94,6 +94,19 @@ void main() {
     expect(find.byType(PublishPlaceHistoryStrip), findsOneWidget);
   });
 
+  testWidgets('a collapsed panel does not build the strip', (tester) async {
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(publishPanelHost(places: _places));
+    await tester.pumpAndSettle();
+    // 收起态主页内容也在树上：条带不建、不订阅汇总查询。
+    expect(find.byType(PublishPlaceHistoryStrip), findsNothing);
+
+    await PublishPanelDriver(tester).expand();
+    expect(find.byType(PublishPlaceHistoryStrip), findsOneWidget);
+  });
+
   testWidgets('without recent places the strip takes no room', (tester) async {
     final panel = await _mount(tester, places: const <DiaryPlaceUsage>[]);
     expect(find.text('All 0'), findsNothing);
@@ -123,7 +136,10 @@ void main() {
     expect(find.byType(PublishPlaceHistoryPage), findsOneWidget);
     expect(find.byType(PublishPlaceRow), findsNWidgets(3));
     PublishPlaceRow row(String name) => tester.widget<PublishPlaceRow>(
-      find.ancestor(of: find.text(name), matching: find.byType(PublishPlaceRow)),
+      find.ancestor(
+        of: find.text(name),
+        matching: find.byType(PublishPlaceRow),
+      ),
     );
     // 当前地点标为选中；带坐标的行第二行是上级，右侧是篇数。
     expect(row('外婆家').selected, isTrue);
@@ -156,9 +172,7 @@ void main() {
     expect(find.byType(PublishLocationPrecisionPicker), findsOneWidget);
   });
 
-  testWidgets('a long history ends the strip with an All chip', (
-    tester,
-  ) async {
+  testWidgets('a long history ends the strip with an All chip', (tester) async {
     final many = <DiaryPlaceUsage>[
       for (var i = 0; i < 10; i++) _place('Place $i'),
     ];
@@ -200,9 +214,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(
-      tester.widgetList<PublishPlaceRow>(find.byType(PublishPlaceRow)).map(
-        (row) => row.onTap,
-      ),
+      tester
+          .widgetList<PublishPlaceRow>(find.byType(PublishPlaceRow))
+          .map((row) => row.onTap),
       everyElement(isNull),
     );
     panel.actions.locating.value = false;

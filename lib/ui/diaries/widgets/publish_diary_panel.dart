@@ -417,6 +417,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             onOpenTags: _panelCoordinator.openTagPage,
             onOpenCapsule: _openCapsulePage,
             onOpenPlaces: _panelCoordinator.openPlacePage,
+            panelProgress: _progress,
             notebooks: notebooks ?? const <NotebookView>[],
             onOpenNotebooks: notebooksEnabled
                 ? _panelCoordinator.openNotebookPage

@@ -177,7 +177,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAppLockSubtitle => 'オンにすると、アプリを開くたびに認証が必要になります';
 
   @override
-  String get appLockNotSupported => 'この端末はローカル認証に対応していないため、アプリロックを有効にできません。';
+  String get appLockNotSupported =>
+      'この端末には画面ロックが設定されていないため、システム認証ではアプリロックを有効にできません。アプリのパスコードに切り替えてください。';
 
   @override
   String get appLockTitle => 'アプリはロックされています';
@@ -1556,7 +1557,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get videoPosterHint => 'クリックしてシステムのプレーヤーで開く';
 
   @override
-  String get deviceAuthUnavailable => 'この端末にはシステムの認証（指紋、顔、パスワード）がないため、ロックできません';
+  String get deviceAuthUnavailable =>
+      'この端末にはシステムの認証がありません。設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードを設定するとロックできます';
 
   @override
   String get calendarYearSaveImage => 'この1年を画像として保存…';
@@ -6924,7 +6926,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定すると開けるようになります。';
+      'このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードに切り替えると開けるようになります。';
 
   @override
   String get notebookLockUnsupportedAction => 'わかりました';
@@ -12988,4 +12990,198 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get textSelectionMenuLess => '折りたたむ';
+
+  @override
+  String passcodeDotsSemantics(int filled, int total) {
+    return '$total 桁中 $filled 桁入力済み';
+  }
+
+  @override
+  String get passcodeDelete => '削除';
+
+  @override
+  String get passcodePatternSemantics => 'パターン入力：点を線でつないでください';
+
+  @override
+  String get passcodeUseBiometric => '指紋または顔で解除';
+
+  @override
+  String passcodeWrongAttemptsLeft(int count) {
+    return '違います。あと $count 回間違えると待ち時間が発生します';
+  }
+
+  @override
+  String get passcodeWrongPin => 'パスコードが違います。もう一度入力してください';
+
+  @override
+  String get passcodeWrongPattern => 'パターンが違います。もう一度描いてください';
+
+  @override
+  String passcodePatternTooShort(int count) {
+    return '短すぎます。$count 個以上の点をつないでください';
+  }
+
+  @override
+  String passcodeLockedOutSeconds(int seconds) {
+    return '$seconds 秒後にもう一度お試しください';
+  }
+
+  @override
+  String passcodeLockedOutMinutes(int minutes) {
+    return '$minutes 分後にもう一度お試しください';
+  }
+
+  @override
+  String get passcodeUnavailable => 'アプリのパスコードを読み込めませんでした。アプリを再起動してからお試しください';
+
+  @override
+  String get passcodeEnterPinTitle => 'アプリのパスコードを入力';
+
+  @override
+  String get passcodeDrawPatternTitle => 'パターンを描く';
+
+  @override
+  String get passcodeForgot => 'パスコードを忘れた場合';
+
+  @override
+  String get passcodeForgotMessage =>
+      'アプリのパスコードはこの端末にのみ保存され、復元できません。アプリのデータを消去するか再インストールし、バックアップから日記を復元するしかありません。';
+
+  @override
+  String get appLockPasscodeSubtitle => 'アプリのパスコードで確認して続行します';
+
+  @override
+  String get passcodeVerifyTitle => '本人確認';
+
+  @override
+  String passcodeFormPin(int count) {
+    return '$count 桁の数字';
+  }
+
+  @override
+  String get passcodeFormPattern => 'パターン';
+
+  @override
+  String get passcodeConfirmPinTitle => 'もう一度入力';
+
+  @override
+  String get passcodeConfirmPatternTitle => 'もう一度描く';
+
+  @override
+  String get passcodeConfirmMessage => '確認のため、同じものをもう一度';
+
+  @override
+  String get passcodeSetupPinTitle => '数字のパスコードを設定';
+
+  @override
+  String passcodeSetupPinMessage(int count) {
+    return '$count 桁の数字を入力してください';
+  }
+
+  @override
+  String get passcodeSetupPatternTitle => '解除パターンを設定';
+
+  @override
+  String passcodeSetupPatternMessage(int count) {
+    return '$count 個以上の点を一筆でつなぎます';
+  }
+
+  @override
+  String get passcodeMismatch => '一致しませんでした。最初からやり直してください';
+
+  @override
+  String get passcodeSaveFailed => '保存できませんでした。もう一度お試しください';
+
+  @override
+  String get passcodeChangeTitle => 'アプリのパスコードを変更';
+
+  @override
+  String get passcodeSetupTitle => 'アプリのパスコードを設定';
+
+  @override
+  String get passcodeNoRecoveryNote =>
+      'アプリのパスコードはこの端末にのみ保存され、バックアップや同期には含まれません。忘れると復元できません。';
+
+  @override
+  String get appLockSwitchToPasscodeReason => 'アプリのパスコードに切り替えるため本人確認します';
+
+  @override
+  String get appLockSwitchVerifyFailed => '認証できませんでした。認証方法は変更されていません';
+
+  @override
+  String get passcodeSetDone => 'アプリのパスコードを設定しました';
+
+  @override
+  String get appLockSystemUnsupported => 'この端末ではシステム認証を使えません（画面ロックが未設定）';
+
+  @override
+  String get appLockSwitchToSystemReason => 'システム認証に切り替えるため、アプリのパスコードで確認します';
+
+  @override
+  String get appLockSwitchedToSystem => 'システム認証に切り替え、アプリのパスコードを削除しました';
+
+  @override
+  String get passcodeChangeReason => '変更するため、現在のパスコードで確認します';
+
+  @override
+  String get passcodeChangedDone => 'アプリのパスコードを変更しました';
+
+  @override
+  String get passcodeBiometricEnableReason => 'クイック解除をオンにするため、指紋または顔で確認します';
+
+  @override
+  String get passcodeBiometricFailed => '指紋または顔の認証に失敗しました';
+
+  @override
+  String get settingsAppLockAndPasscode => 'アプリロックとパスコード';
+
+  @override
+  String get appLockMethodTitle => '認証方法';
+
+  @override
+  String get appLockMethodFooter =>
+      'アプリロック、ロックした日記帳、LAN ペアリングの確認はすべてこの方法で認証します。';
+
+  @override
+  String get appLockNeedsPasscode =>
+      'この端末にはシステム認証がありません。先に下でアプリのパスコードを設定してください';
+
+  @override
+  String get appLockMethodSystem => 'システム認証';
+
+  @override
+  String get appLockMethodSystemDescription => '指紋、顔、または端末の画面ロック';
+
+  @override
+  String get appLockMethodSystemUnavailable => 'この端末では使えません';
+
+  @override
+  String get appLockMethodPasscode => 'アプリのパスコード';
+
+  @override
+  String get appLockMethodPasscodeDescription => '画面ロックとは別の数字またはパターン';
+
+  @override
+  String passcodeCurrentForm(String form) {
+    return '現在：$form';
+  }
+
+  @override
+  String get passcodeBiometric => '指紋・顔でクイック解除';
+
+  @override
+  String get passcodeBiometricSubtitle =>
+      '解除時にパスコードの代わりに指紋や顔を使えます。アプリロックのオフやパスコードの変更にはパスコードが必要です';
+
+  @override
+  String get appLockStatusPasscode => 'オン・アプリのパスコード';
+
+  @override
+  String get appLockStatusSystem => 'オン・システム認証';
+
+  @override
+  String get appLockStatusOffPasscode => 'オフ・ロックした日記帳はアプリのパスコードを使用';
+
+  @override
+  String get appLockStatusOff => 'オフ';
 }

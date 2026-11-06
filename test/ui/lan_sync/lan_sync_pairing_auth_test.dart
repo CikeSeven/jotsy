@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
@@ -56,26 +56,40 @@ LanSyncPairingAuthGate _gate(
   _FakeAuth auth, {
   bool appLock = false,
   List<NotebookView> notebooks = const <NotebookView>[],
-  bool Function()? platformSupportsAuth,
+  bool canLock = true,
+  Future<bool> Function()? loadAppLockEnabled,
 }) {
   return LanSyncPairingAuthGate(
-    auth: auth,
-    loadAppLockEnabled: () async => appLock,
+    isAvailable: auth.isSupported,
+    verify: (BuildContext context, String reason) =>
+        auth.authenticate(reason: reason, persistAcrossBackgrounding: false),
+    loadAppLockEnabled: loadAppLockEnabled ?? () async => appLock,
     loadNotebooks: () async => notebooks,
-    platformSupportsAuth: platformSupportsAuth ?? () => true,
+    canLockOnThisDevice: () async => canLock,
   );
+}
+
+/// 一个挂在树上的 context（验证门要用它打开应用密码页）。
+Future<BuildContext> _context(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  return tester.element(find.byType(SizedBox));
 }
 
 void main() {
   group('LanSyncPairingAuthGate', () {
-    test('asks for authentication when app lock is on', () async {
+    testWidgets('asks for authentication when app lock is on', (tester) async {
       final auth = _FakeAuth(results: <bool>[true]);
-      final outcome = await _gate(auth, appLock: true).authorize(reason: 'r');
+      final outcome = await _gate(
+        auth,
+        appLock: true,
+      ).authorize(await _context(tester), reason: 'r');
       expect(outcome, LanSyncPairingAuthOutcome.allowed);
       expect(auth.reasons, <String>['r']);
     });
 
-    test('asks for authentication when a locked notebook exists', () async {
+    testWidgets('asks for authentication when a locked notebook exists', (
+      tester,
+    ) async {
       final auth = _FakeAuth(results: <bool>[false]);
       final outcome = await _gate(
         auth,
@@ -83,73 +97,97 @@ void main() {
           _notebook('a', NotebookVisibility.normal),
           _notebook('b', NotebookVisibility.locked),
         ],
-      ).authorize(reason: 'r');
+      ).authorize(await _context(tester), reason: 'r');
       expect(outcome, LanSyncPairingAuthOutcome.failed);
       expect(auth.reasons, hasLength(1));
     });
 
-    test('skips authentication without app lock or locked notebooks', () async {
+    testWidgets('skips authentication without app lock or locked notebooks', (
+      tester,
+    ) async {
       final auth = _FakeAuth();
       final outcome = await _gate(
         auth,
         notebooks: <NotebookView>[_notebook('h', NotebookVisibility.hidden)],
-      ).authorize(reason: 'r');
+      ).authorize(await _context(tester), reason: 'r');
       expect(outcome, LanSyncPairingAuthOutcome.allowed);
       expect(auth.reasons, isEmpty);
     });
 
-    test('reports unsupported when the device has no screen lock', () async {
+    testWidgets('reports unsupported when the device has no screen lock', (
+      tester,
+    ) async {
       final auth = _FakeAuth(supported: false);
-      final outcome = await _gate(auth, appLock: true).authorize(reason: 'r');
+      final outcome = await _gate(
+        auth,
+        appLock: true,
+      ).authorize(await _context(tester), reason: 'r');
       expect(outcome, LanSyncPairingAuthOutcome.unsupported);
       expect(auth.reasons, isEmpty);
     });
 
-    test('requires authentication when the state cannot be read', () async {
+    testWidgets('requires authentication when the state cannot be read', (
+      tester,
+    ) async {
       final auth = _FakeAuth(results: <bool>[true]);
-      final gate = LanSyncPairingAuthGate(
-        auth: auth,
+      final gate = _gate(
+        auth,
         loadAppLockEnabled: () async => throw StateError('settings'),
-        loadNotebooks: () async => const <NotebookView>[],
-        platformSupportsAuth: () => true,
       );
       expect(
-        await gate.authorize(reason: 'r'),
+        await gate.authorize(await _context(tester), reason: 'r'),
         LanSyncPairingAuthOutcome.allowed,
       );
       expect(auth.reasons, hasLength(1));
     });
 
-    test('Linux never authenticates, even with app lock on', () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    testWidgets('a device that cannot lock never authenticates', (
+      tester,
+    ) async {
       final auth = _FakeAuth();
-      final gate = LanSyncPairingAuthGate(
-        auth: auth,
-        loadAppLockEnabled: () async => true,
-        loadNotebooks: () async => <NotebookView>[
-          _notebook('b', NotebookVisibility.locked),
-        ],
+      final gate = _gate(
+        auth,
+        appLock: true,
+        notebooks: <NotebookView>[_notebook('b', NotebookVisibility.locked)],
+        canLock: false,
       );
       expect(
-        await gate.authorize(reason: 'r'),
+        await gate.authorize(await _context(tester), reason: 'r'),
         LanSyncPairingAuthOutcome.allowed,
       );
       expect(auth.reasons, isEmpty);
     });
 
-    test('Android authenticates through the default platform check', () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.android;
-      addTearDown(() => debugDefaultTargetPlatformOverride = null);
-      final auth = _FakeAuth(results: <bool>[true]);
+    testWidgets('Linux without an app passcode never authenticates', (
+      tester,
+    ) async {
+      final auth = _FakeAuth();
       final gate = LanSyncPairingAuthGate(
-        auth: auth,
+        isAvailable: auth.isSupported,
+        verify: (_, String reason) => auth.authenticate(reason: reason),
         loadAppLockEnabled: () async => true,
         loadNotebooks: () async => const <NotebookView>[],
       );
-      await gate.authorize(reason: 'r');
+      expect(
+        await gate.authorize(await _context(tester), reason: 'r'),
+        LanSyncPairingAuthOutcome.allowed,
+      );
+      expect(auth.reasons, isEmpty);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+    testWidgets('Android authenticates through the default platform check', (
+      tester,
+    ) async {
+      final auth = _FakeAuth(results: <bool>[true]);
+      final gate = LanSyncPairingAuthGate(
+        isAvailable: auth.isSupported,
+        verify: (_, String reason) => auth.authenticate(reason: reason),
+        loadAppLockEnabled: () async => true,
+        loadNotebooks: () async => const <NotebookView>[],
+      );
+      await gate.authorize(await _context(tester), reason: 'r');
       expect(auth.reasons, hasLength(1));
-    });
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
   });
 
   testWidgets('a failed authentication keeps the code on screen with a hint', (

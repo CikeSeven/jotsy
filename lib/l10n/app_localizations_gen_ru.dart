@@ -202,7 +202,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get appLockNotSupported =>
-      'Это устройство не поддерживает локальную проверку подлинности, поэтому блокировку приложения включить нельзя.';
+      'На этом устройстве не настроена блокировка экрана, поэтому включить блокировку приложения через системную проверку нельзя. Используйте код приложения.';
 
   @override
   String get appLockTitle => 'Приложение заблокировано';
@@ -1635,7 +1635,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get deviceAuthUnavailable =>
-      'На этом устройстве нет системной проверки (отпечаток, лицо или пароль), поэтому блокировка недоступна';
+      'На этом устройстве нет системной проверки. Чтобы использовать блокировку, задайте код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код';
 
   @override
   String get calendarYearSaveImage => 'Сохранить этот год как изображение…';
@@ -7757,7 +7757,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Чтобы открыть их, настройте блокировку экрана в системных настройках.';
+      'На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Настройте блокировку экрана в системных настройках или перейдите на код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код.';
 
   @override
   String get notebookLockUnsupportedAction => 'Понятно';
@@ -14761,4 +14761,269 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get textSelectionMenuLess => 'Свернуть';
+
+  @override
+  String passcodeDotsSemantics(int filled, int total) {
+    return 'Введено цифр: $filled из $total';
+  }
+
+  @override
+  String get passcodeDelete => 'Удалить';
+
+  @override
+  String get passcodePatternSemantics =>
+      'Поле графического ключа: соедините точки линией';
+
+  @override
+  String get passcodeUseBiometric => 'Использовать отпечаток или лицо';
+
+  @override
+  String passcodeWrongAttemptsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Неверно. Ещё $count ошибки — и придётся подождать',
+      many: 'Неверно. Ещё $count ошибок — и придётся подождать',
+      few: 'Неверно. Ещё $count ошибки — и придётся подождать',
+      one: 'Неверно. Ещё $count ошибка — и придётся подождать',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeWrongPin => 'Неверный код, попробуйте ещё раз';
+
+  @override
+  String get passcodeWrongPattern => 'Неверный ключ, попробуйте ещё раз';
+
+  @override
+  String passcodePatternTooShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Слишком коротко. Соедините не менее $count точки',
+      many: 'Слишком коротко. Соедините не менее $count точек',
+      few: 'Слишком коротко. Соедините не менее $count точек',
+      one: 'Слишком коротко. Соедините не менее $count точки',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String passcodeLockedOutSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'Повторите через $seconds секунды',
+      many: 'Повторите через $seconds секунд',
+      few: 'Повторите через $seconds секунды',
+      one: 'Повторите через $seconds секунду',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String passcodeLockedOutMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Повторите через $minutes минуты',
+      many: 'Повторите через $minutes минут',
+      few: 'Повторите через $minutes минуты',
+      one: 'Повторите через $minutes минуту',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeUnavailable =>
+      'Не удалось прочитать код приложения. Перезапустите приложение и попробуйте снова.';
+
+  @override
+  String get passcodeEnterPinTitle => 'Введите код приложения';
+
+  @override
+  String get passcodeDrawPatternTitle => 'Нарисуйте графический ключ';
+
+  @override
+  String get passcodeForgot => 'Забыли код?';
+
+  @override
+  String get passcodeForgotMessage =>
+      'Код приложения хранится только на этом устройстве и не восстанавливается. Остаётся лишь очистить данные приложения или переустановить его, а затем восстановить дневник из резервной копии.';
+
+  @override
+  String get appLockPasscodeSubtitle =>
+      'Подтвердите кодом приложения, чтобы продолжить';
+
+  @override
+  String get passcodeVerifyTitle => 'Подтверждение личности';
+
+  @override
+  String passcodeFormPin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count цифры',
+      many: '$count цифр',
+      few: '$count цифры',
+      one: '$count цифра',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeFormPattern => 'Графический ключ';
+
+  @override
+  String get passcodeConfirmPinTitle => 'Введите ещё раз';
+
+  @override
+  String get passcodeConfirmPatternTitle => 'Нарисуйте ещё раз';
+
+  @override
+  String get passcodeConfirmMessage =>
+      'Повторите то же самое для подтверждения';
+
+  @override
+  String get passcodeSetupPinTitle => 'Задайте цифровой код';
+
+  @override
+  String passcodeSetupPinMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Введите $count цифры',
+      many: 'Введите $count цифр',
+      few: 'Введите $count цифры',
+      one: 'Введите $count цифру',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeSetupPatternTitle => 'Задайте графический ключ';
+
+  @override
+  String passcodeSetupPatternMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Соедините не менее $count точки одним движением',
+      many: 'Соедините не менее $count точек одним движением',
+      few: 'Соедините не менее $count точек одним движением',
+      one: 'Соедините не менее $count точки одним движением',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeMismatch => 'Не совпадает. Начните заново.';
+
+  @override
+  String get passcodeSaveFailed => 'Не удалось сохранить. Попробуйте ещё раз.';
+
+  @override
+  String get passcodeChangeTitle => 'Изменить код приложения';
+
+  @override
+  String get passcodeSetupTitle => 'Задать код приложения';
+
+  @override
+  String get passcodeNoRecoveryNote =>
+      'Код приложения хранится только на этом устройстве, не попадает в резервные копии и синхронизацию и не восстанавливается, если вы его забудете.';
+
+  @override
+  String get appLockSwitchToPasscodeReason =>
+      'Подтвердите личность, чтобы перейти на код приложения';
+
+  @override
+  String get appLockSwitchVerifyFailed =>
+      'Проверка не пройдена. Способ не изменён.';
+
+  @override
+  String get passcodeSetDone => 'Код приложения задан';
+
+  @override
+  String get appLockSystemUnsupported =>
+      'Системная проверка недоступна на этом устройстве (не настроена блокировка экрана)';
+
+  @override
+  String get appLockSwitchToSystemReason =>
+      'Подтвердите кодом приложения, чтобы перейти на системную проверку';
+
+  @override
+  String get appLockSwitchedToSystem =>
+      'Включена системная проверка, код приложения удалён';
+
+  @override
+  String get passcodeChangeReason =>
+      'Подтвердите текущим кодом, чтобы изменить его';
+
+  @override
+  String get passcodeChangedDone => 'Код приложения изменён';
+
+  @override
+  String get passcodeBiometricEnableReason =>
+      'Подтвердите отпечатком или лицом, чтобы включить быструю разблокировку';
+
+  @override
+  String get passcodeBiometricFailed =>
+      'Проверка по отпечатку или лицу не пройдена';
+
+  @override
+  String get settingsAppLockAndPasscode => 'Блокировка и код';
+
+  @override
+  String get appLockMethodTitle => 'Способ проверки';
+
+  @override
+  String get appLockMethodFooter =>
+      'Этот способ используется для блокировки приложения, заблокированных блокнотов и подтверждения сопряжения по локальной сети.';
+
+  @override
+  String get appLockNeedsPasscode =>
+      'На устройстве нет системной проверки. Сначала задайте код приложения ниже.';
+
+  @override
+  String get appLockMethodSystem => 'Системная проверка';
+
+  @override
+  String get appLockMethodSystemDescription =>
+      'Отпечаток, лицо или блокировка экрана телефона';
+
+  @override
+  String get appLockMethodSystemUnavailable => 'Недоступно на этом устройстве';
+
+  @override
+  String get appLockMethodPasscode => 'Код приложения';
+
+  @override
+  String get appLockMethodPasscodeDescription =>
+      'Отдельный цифровой код или графический ключ, не связанный с блокировкой экрана';
+
+  @override
+  String passcodeCurrentForm(String form) {
+    return 'Сейчас: $form';
+  }
+
+  @override
+  String get passcodeBiometric => 'Быстрая разблокировка отпечатком или лицом';
+
+  @override
+  String get passcodeBiometricSubtitle =>
+      'Разблокировка отпечатком или лицом вместо кода. Для отключения блокировки и смены кода по-прежнему нужен код.';
+
+  @override
+  String get appLockStatusPasscode => 'Вкл. · код приложения';
+
+  @override
+  String get appLockStatusSystem => 'Вкл. · системная проверка';
+
+  @override
+  String get appLockStatusOffPasscode =>
+      'Выкл. · заблокированные блокноты открываются кодом приложения';
+
+  @override
+  String get appLockStatusOff => 'Выкл.';
 }

@@ -191,7 +191,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appLockNotSupported =>
-      'This device does not support local authentication, so app lock cannot be enabled.';
+      'This device has no screen lock, so app lock can\'t use system verification. Switch to an app passcode instead.';
 
   @override
   String get appLockTitle => 'App Locked';
@@ -1607,7 +1607,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deviceAuthUnavailable =>
-      'This device has no system verification (fingerprint, face or password), so locking isn\'t available';
+      'This device has no system verification. Set an app passcode in Settings → Data & Privacy → App lock & passcode to use locking';
 
   @override
   String get calendarYearSaveImage => 'Save this year as an image…';
@@ -7560,7 +7560,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings to open them.';
+      'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → Data & Privacy → App lock & passcode.';
 
   @override
   String get notebookLockUnsupportedAction => 'Got it';
@@ -14292,4 +14292,253 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get textSelectionMenuLess => 'Less';
+
+  @override
+  String passcodeDotsSemantics(int filled, int total) {
+    return '$filled of $total digits entered';
+  }
+
+  @override
+  String get passcodeDelete => 'Delete';
+
+  @override
+  String get passcodePatternSemantics =>
+      'Pattern pad: draw a line through the dots';
+
+  @override
+  String get passcodeUseBiometric => 'Use fingerprint or face';
+
+  @override
+  String passcodeWrongAttemptsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wrong. $count more mistakes and you\'ll have to wait',
+      one: 'Wrong. One more mistake and you\'ll have to wait',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeWrongPin => 'Wrong passcode, try again';
+
+  @override
+  String get passcodeWrongPattern => 'Wrong pattern, try again';
+
+  @override
+  String passcodePatternTooShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Too short. Connect at least $count dots',
+      one: 'Too short. Connect at least $count dot',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String passcodeLockedOutSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'Try again in $seconds seconds',
+      one: 'Try again in $seconds second',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String passcodeLockedOutMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Try again in $minutes minutes',
+      one: 'Try again in $minutes minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeUnavailable =>
+      'Couldn\'t read the app passcode. Restart the app and try again.';
+
+  @override
+  String get passcodeEnterPinTitle => 'Enter app passcode';
+
+  @override
+  String get passcodeDrawPatternTitle => 'Draw your pattern';
+
+  @override
+  String get passcodeForgot => 'Forgot passcode?';
+
+  @override
+  String get passcodeForgotMessage =>
+      'The app passcode is kept only on this device and can\'t be recovered. The only way back in is to clear the app\'s data or reinstall it, then restore your diaries from a backup.';
+
+  @override
+  String get appLockPasscodeSubtitle =>
+      'Verify with your app passcode to continue';
+
+  @override
+  String get passcodeVerifyTitle => 'Verify identity';
+
+  @override
+  String passcodeFormPin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count digits',
+      one: '$count digit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeFormPattern => 'Pattern';
+
+  @override
+  String get passcodeConfirmPinTitle => 'Enter it again';
+
+  @override
+  String get passcodeConfirmPatternTitle => 'Draw it again';
+
+  @override
+  String get passcodeConfirmMessage => 'Same as the first time, to confirm';
+
+  @override
+  String get passcodeSetupPinTitle => 'Set a PIN';
+
+  @override
+  String passcodeSetupPinMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Enter $count digits',
+      one: 'Enter $count digit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeSetupPatternTitle => 'Set an unlock pattern';
+
+  @override
+  String passcodeSetupPatternMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Connect at least $count dots in one stroke',
+      one: 'Connect at least $count dot in one stroke',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get passcodeMismatch => 'They didn\'t match. Start over.';
+
+  @override
+  String get passcodeSaveFailed => 'Couldn\'t save. Try again.';
+
+  @override
+  String get passcodeChangeTitle => 'Change app passcode';
+
+  @override
+  String get passcodeSetupTitle => 'Set app passcode';
+
+  @override
+  String get passcodeNoRecoveryNote =>
+      'The app passcode is stored only on this device. It isn\'t included in backups or sync, and it can\'t be recovered if you forget it.';
+
+  @override
+  String get appLockSwitchToPasscodeReason =>
+      'Verify to switch to an app passcode';
+
+  @override
+  String get appLockSwitchVerifyFailed =>
+      'Verification failed. The method wasn\'t changed.';
+
+  @override
+  String get passcodeSetDone => 'App passcode set';
+
+  @override
+  String get appLockSystemUnsupported =>
+      'System verification isn\'t available on this device (no screen lock is set)';
+
+  @override
+  String get appLockSwitchToSystemReason =>
+      'Enter your app passcode to switch to system verification';
+
+  @override
+  String get appLockSwitchedToSystem =>
+      'Switched to system verification. The app passcode was removed.';
+
+  @override
+  String get passcodeChangeReason => 'Enter your current passcode to change it';
+
+  @override
+  String get passcodeChangedDone => 'App passcode changed';
+
+  @override
+  String get passcodeBiometricEnableReason =>
+      'Verify your fingerprint or face to turn on quick unlock';
+
+  @override
+  String get passcodeBiometricFailed =>
+      'Fingerprint or face verification failed';
+
+  @override
+  String get settingsAppLockAndPasscode => 'App lock & passcode';
+
+  @override
+  String get appLockMethodTitle => 'Verification method';
+
+  @override
+  String get appLockMethodFooter =>
+      'App lock, locked notebooks and LAN pairing confirmation all use this method.';
+
+  @override
+  String get appLockNeedsPasscode =>
+      'This device has no system verification. Set an app passcode below first.';
+
+  @override
+  String get appLockMethodSystem => 'System verification';
+
+  @override
+  String get appLockMethodSystemDescription =>
+      'Fingerprint, face or your phone\'s screen lock';
+
+  @override
+  String get appLockMethodSystemUnavailable => 'Not available on this device';
+
+  @override
+  String get appLockMethodPasscode => 'App passcode';
+
+  @override
+  String get appLockMethodPasscodeDescription =>
+      'A PIN or pattern of its own, separate from your screen lock';
+
+  @override
+  String passcodeCurrentForm(String form) {
+    return 'Current: $form';
+  }
+
+  @override
+  String get passcodeBiometric => 'Fingerprint / face quick unlock';
+
+  @override
+  String get passcodeBiometricSubtitle =>
+      'Unlock with your fingerprint or face instead of the passcode. Turning off app lock or changing the passcode still needs the passcode.';
+
+  @override
+  String get appLockStatusPasscode => 'On · App passcode';
+
+  @override
+  String get appLockStatusSystem => 'On · System verification';
+
+  @override
+  String get appLockStatusOffPasscode =>
+      'Off · Locked notebooks use the app passcode';
+
+  @override
+  String get appLockStatusOff => 'Off';
 }

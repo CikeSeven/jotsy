@@ -238,7 +238,7 @@
   "@settingsAppLockSubtitle": {
     "description": "设置页应用锁开关副标题。"
   },
-  "appLockNotSupported": "当前设备不支持本地身份验证，无法启用应用锁。",
+  "appLockNotSupported": "这台设备没有设置锁屏密码，无法用系统验证启用应用锁。可以改用应用密码。",
   "@appLockNotSupported": {
     "description": "设备不支持应用锁时的提示文案。"
   },
@@ -2162,7 +2162,7 @@
   "@videoOpenExternally": {"description": "不能在日记里直接播放视频的平台（Linux、Windows）：视频卡片的提示与按钮说明。"},
   "videoPosterHint": "点按用系统播放器打开",
   "@videoPosterHint": {"description": "不能在日记里直接播放视频的平台：视频封面卡片下方的说明。"},
-  "deviceAuthUnavailable": "这台设备没有系统身份验证（指纹、面容或系统密码），无法上锁",
+  "deviceAuthUnavailable": "这台设备没有系统身份验证。在 设置 → 数据与隐私 → 应用锁与密码 里设置应用密码后即可上锁",
   "@deviceAuthUnavailable": {"description": "设备不支持系统身份验证（如 Linux）时，应用锁开关与日记本“上锁”选项下方的说明。"},
   "calendarYearSaveImage": "保存这一年的图片…",
   "@calendarYearSaveImage": {"description": "不能调起系统分享的平台（如 Linux）上，年视图导出按钮的提示：把年视图保存为图片。"},
@@ -9662,7 +9662,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "设备没有锁屏密码、无法打开上锁日记本时的对话框标题。"
   },
-  "notebookLockUnsupportedMessage": "这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码后就能打开。",
+  "notebookLockUnsupportedMessage": "这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码，或在 设置 → 数据与隐私 → 应用锁与密码 里改用应用密码后就能打开。",
   "@notebookLockUnsupportedMessage": {
     "description": "设备没有锁屏密码时打开上锁日记本的说明。"
   },
@@ -17717,5 +17717,165 @@
   "textSelectionMenuLess": "收起",
   "@textSelectionMenuLess": {
     "description": "文字选区菜单展开后末尾的按钮：收起其余操作。"
-  }
+  },
+  "passcodeDotsSemantics": "已输入 {filled} 位，共 {total} 位",
+  "@passcodeDotsSemantics": {
+    "description": "数字密码进度圆点的读屏文字。",
+    "placeholders": {
+      "filled": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "passcodeDelete": "删除",
+  "@passcodeDelete": {"description": "数字键盘删除键的读屏文字（长按清空）。"},
+  "passcodePatternSemantics": "图案输入区：在九个点之间连线",
+  "@passcodePatternSemantics": {"description": "3×3 图案输入板的读屏文字。"},
+  "passcodeUseBiometric": "使用指纹或面容",
+  "@passcodeUseBiometric": {"description": "数字键盘左下的指纹键与图案板下方的按钮：用指纹或面容解锁。"},
+  "passcodeWrongAttemptsLeft": "不对，再错 {count} 次需要等待",
+  "@passcodeWrongAttemptsLeft": {
+    "description": "输错应用密码且距离需要等待只剩几次时的提示。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeWrongPin": "密码不对，请重新输入",
+  "@passcodeWrongPin": {"description": "输错数字密码后的提示。"},
+  "passcodeWrongPattern": "图案不对，请重新绘制",
+  "@passcodeWrongPattern": {"description": "画错图案后的提示。"},
+  "passcodePatternTooShort": "点太少了，至少连接 {count} 个点",
+  "@passcodePatternTooShort": {
+    "description": "图案连接的点太少时的提示。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutSeconds": "请 {seconds} 秒后再试",
+  "@passcodeLockedOutSeconds": {
+    "description": "输错太多次后等待中的倒数（不到一分钟）。",
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutMinutes": "请 {minutes} 分钟后再试",
+  "@passcodeLockedOutMinutes": {
+    "description": "输错太多次后等待中的倒数（一分钟以上）。",
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "passcodeUnavailable": "读取不到应用密码，请重启应用后再试",
+  "@passcodeUnavailable": {"description": "读取不到已存的应用密码时的提示。"},
+  "passcodeEnterPinTitle": "输入应用密码",
+  "@passcodeEnterPinTitle": {"description": "数字密码解锁视图的标题。"},
+  "passcodeDrawPatternTitle": "绘制解锁图案",
+  "@passcodeDrawPatternTitle": {"description": "图案密码解锁视图的标题。"},
+  "passcodeForgot": "忘记密码？",
+  "@passcodeForgot": {"description": "解锁视图底部的文字按钮，点按原地展开说明。"},
+  "passcodeForgotMessage": "应用密码只保存在这台设备上，无法找回。只能清除应用数据或重新安装，再从备份恢复日记。",
+  "@passcodeForgotMessage": {"description": "“忘记密码？”展开的说明：应用密码无法找回。"},
+  "appLockPasscodeSubtitle": "验证应用密码后继续使用",
+  "@appLockPasscodeSubtitle": {"description": "验证方式为应用密码时，应用锁遮罩的说明。"},
+  "passcodeVerifyTitle": "验证身份",
+  "@passcodeVerifyTitle": {"description": "应用密码验证页的顶栏标题。"},
+  "passcodeFormPin": "{count} 位数字",
+  "@passcodeFormPin": {
+    "description": "应用密码形式的选项与名称：几位数字。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeFormPattern": "图案",
+  "@passcodeFormPattern": {"description": "应用密码形式的选项与名称：图案。"},
+  "passcodeConfirmPinTitle": "再输入一次",
+  "@passcodeConfirmPinTitle": {"description": "设置数字密码第二步的标题。"},
+  "passcodeConfirmPatternTitle": "再画一次",
+  "@passcodeConfirmPatternTitle": {"description": "设置图案第二步的标题。"},
+  "passcodeConfirmMessage": "与上一步保持一致",
+  "@passcodeConfirmMessage": {"description": "设置应用密码第二步的说明。"},
+  "passcodeSetupPinTitle": "设置数字密码",
+  "@passcodeSetupPinTitle": {"description": "设置数字密码第一步的标题。"},
+  "passcodeSetupPinMessage": "输入 {count} 位数字",
+  "@passcodeSetupPinMessage": {
+    "description": "设置数字密码第一步的说明。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeSetupPatternTitle": "设置解锁图案",
+  "@passcodeSetupPatternTitle": {"description": "设置图案第一步的标题。"},
+  "passcodeSetupPatternMessage": "一笔连接至少 {count} 个点",
+  "@passcodeSetupPatternMessage": {
+    "description": "设置图案第一步的说明。",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeMismatch": "两次不一致，请重新设置",
+  "@passcodeMismatch": {"description": "设置密码时两次输入不一致的提示。"},
+  "passcodeSaveFailed": "保存失败，请重试",
+  "@passcodeSaveFailed": {"description": "保存新密码失败时的提示。"},
+  "passcodeChangeTitle": "修改应用密码",
+  "@passcodeChangeTitle": {"description": "修改应用密码页的标题，以及打开它的设置行。"},
+  "passcodeSetupTitle": "设置应用密码",
+  "@passcodeSetupTitle": {"description": "设置应用密码页的标题。"},
+  "passcodeNoRecoveryNote": "应用密码只保存在这台设备上，不随备份与同步，忘记后无法找回。",
+  "@passcodeNoRecoveryNote": {"description": "设置密码页底部的说明：只存本机、无法找回。"},
+  "appLockSwitchToPasscodeReason": "验证身份以改用应用密码",
+  "@appLockSwitchToPasscodeReason": {"description": "改用应用密码前的系统验证说明。"},
+  "appLockSwitchVerifyFailed": "验证未通过，验证方式没有改变",
+  "@appLockSwitchVerifyFailed": {"description": "切换验证方式前验证未通过的提示条。"},
+  "passcodeSetDone": "已设置应用密码",
+  "@passcodeSetDone": {"description": "设置好应用密码后的提示条。"},
+  "appLockSystemUnsupported": "这台设备不能使用系统验证（没有设置锁屏密码）",
+  "@appLockSystemUnsupported": {"description": "设备没有系统验证时切换到系统验证的提示条。"},
+  "appLockSwitchToSystemReason": "验证应用密码以改用系统验证",
+  "@appLockSwitchToSystemReason": {"description": "改回系统验证前，应用密码页上的说明。"},
+  "appLockSwitchedToSystem": "已改用系统验证，应用密码已清除",
+  "@appLockSwitchedToSystem": {"description": "改用系统验证后的提示条。"},
+  "passcodeChangeReason": "验证当前密码以修改应用密码",
+  "@passcodeChangeReason": {"description": "修改密码前，应用密码页上的说明。"},
+  "passcodeChangedDone": "已修改应用密码",
+  "@passcodeChangedDone": {"description": "修改密码后的提示条。"},
+  "passcodeBiometricEnableReason": "验证指纹或面容以开启快速解锁",
+  "@passcodeBiometricEnableReason": {"description": "开启快速解锁时的指纹验证说明。"},
+  "passcodeBiometricFailed": "指纹或面容验证未通过",
+  "@passcodeBiometricFailed": {"description": "开启快速解锁时指纹验证未通过的提示条。"},
+  "settingsAppLockAndPasscode": "应用锁与密码",
+  "@settingsAppLockAndPasscode": {"description": "数据与隐私里的设置行与页面标题：应用锁与验证方式。"},
+  "appLockMethodTitle": "验证方式",
+  "@appLockMethodTitle": {"description": "选择验证方式的分组标题。"},
+  "appLockMethodFooter": "应用锁、上锁的日记本与局域网配对确认都使用这种方式验证。",
+  "@appLockMethodFooter": {"description": "验证方式分组下方的脚注。"},
+  "appLockNeedsPasscode": "这台设备没有系统验证，请先在下方设置应用密码",
+  "@appLockNeedsPasscode": {"description": "设备没有系统验证、又没设应用密码时，停用的应用锁开关下方的说明。"},
+  "appLockMethodSystem": "系统验证",
+  "@appLockMethodSystem": {"description": "验证方式选项：系统验证。"},
+  "appLockMethodSystemDescription": "指纹、面容或手机锁屏密码",
+  "@appLockMethodSystemDescription": {"description": "系统验证选项的说明。"},
+  "appLockMethodSystemUnavailable": "这台设备没有系统验证",
+  "@appLockMethodSystemUnavailable": {"description": "设备没有系统验证时，停用的系统验证选项的说明。"},
+  "appLockMethodPasscode": "应用密码",
+  "@appLockMethodPasscode": {"description": "验证方式选项：应用密码。"},
+  "appLockMethodPasscodeDescription": "数字密码或图案，与手机锁屏无关",
+  "@appLockMethodPasscodeDescription": {"description": "应用密码选项的说明。"},
+  "passcodeCurrentForm": "当前：{form}",
+  "@passcodeCurrentForm": {
+    "description": "“修改应用密码”行的副标题：当前的密码形式。",
+    "placeholders": {
+      "form": {"type": "String"}
+    }
+  },
+  "passcodeBiometric": "指纹 / 面容快速解锁",
+  "@passcodeBiometric": {"description": "开关标题：允许用指纹或面容代替应用密码。"},
+  "passcodeBiometricSubtitle": "解锁时可以用指纹或面容代替密码；关闭应用锁、修改密码仍需输入密码",
+  "@passcodeBiometricSubtitle": {"description": "指纹快速解锁开关的副标题。"},
+  "appLockStatusPasscode": "已开启 · 应用密码",
+  "@appLockStatusPasscode": {"description": "设置行副标题：应用锁已开启，使用应用密码。"},
+  "appLockStatusSystem": "已开启 · 系统验证",
+  "@appLockStatusSystem": {"description": "设置行副标题：应用锁已开启，使用系统验证。"},
+  "appLockStatusOffPasscode": "未开启 · 上锁的日记本使用应用密码",
+  "@appLockStatusOffPasscode": {"description": "设置行副标题：应用锁未开启，但设了应用密码（上锁的日记本使用）。"},
+  "appLockStatusOff": "未开启",
+  "@appLockStatusOff": {"description": "设置行副标题：应用锁未开启。"}
 }

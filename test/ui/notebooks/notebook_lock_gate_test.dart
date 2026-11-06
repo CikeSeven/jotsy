@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
+import 'package:node_diary/ui/app_lock/pages/passcode_verify_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_editor_page.dart';
 import 'package:node_diary/ui/notebooks/pages/notebooks_page.dart';
@@ -10,6 +12,7 @@ import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.d
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
 
 import '../../support/diary_drafts_harness.dart';
+import '../app_lock/app_lock_test_support.dart';
 import 'notebook_test_support.dart';
 
 /// 上锁日记本的“会露出内容”的操作都要先验证身份：打开编辑页、合并、删除；
@@ -144,6 +147,35 @@ void main() {
     await tester.tap(find.text('编辑日记本'));
     await h.settleAll();
     expect(auth.reasons, isEmpty);
+    expect(find.byType(NotebookEditorPage), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('with an app passcode the editor asks for it instead', (
+    tester,
+  ) async {
+    final auth = FakeDeviceAuth(results: <bool>[true]);
+    final h = await DiaryDraftsHarness.create(tester);
+    vault = await h.notebook('保险箱', visibility: NotebookVisibility.locked);
+    final prefs = await SharedPreferences.getInstance();
+    for (final entry in (await presetPin('2580')).entries) {
+      await prefs.setString(entry.key, entry.value as String);
+    }
+    await h.pump(
+      const NotebooksPage(),
+      overrides: appLockOverrides(auth: auth, clock: TestClock()),
+    );
+    await h.settleAll();
+
+    await tester.tap(find.text('保险箱'));
+    await h.settleAll();
+    expect(auth.reasons, isEmpty);
+    expect(find.byType(PasscodeVerifyPage), findsOneWidget);
+    expect(find.text('解锁「保险箱」'), findsOneWidget);
+
+    await tapDigits(tester, '2580');
+    await h.settleAll();
+    expect(find.byType(PasscodeVerifyPage), findsNothing);
     expect(find.byType(NotebookEditorPage), findsOneWidget);
     await h.unmount();
   });

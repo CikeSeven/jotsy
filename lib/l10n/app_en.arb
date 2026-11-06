@@ -238,7 +238,7 @@
   "@settingsAppLockSubtitle": {
     "description": "Subtitle for app lock switch in settings."
   },
-  "appLockNotSupported": "This device does not support local authentication, so app lock cannot be enabled.",
+  "appLockNotSupported": "This device has no screen lock, so app lock can't use system verification. Switch to an app passcode instead.",
   "@appLockNotSupported": {
     "description": "Prompt shown when local authentication is unsupported."
   },
@@ -2162,7 +2162,7 @@
   "@videoOpenExternally": {"description": "Platforms that cannot play videos inline (Linux, Windows): tooltip of the video card."},
   "videoPosterHint": "Click to open in the system player",
   "@videoPosterHint": {"description": "Platforms that cannot play videos inline: caption under the video poster card."},
-  "deviceAuthUnavailable": "This device has no system verification (fingerprint, face or password), so locking isn't available",
+  "deviceAuthUnavailable": "This device has no system verification. Set an app passcode in Settings → Data & Privacy → App lock & passcode to use locking",
   "@deviceAuthUnavailable": {"description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."},
   "calendarYearSaveImage": "Save this year as an image…",
   "@calendarYearSaveImage": {"description": "Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image."},
@@ -9662,7 +9662,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings to open them.",
+  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → Data & Privacy → App lock & passcode.",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -17717,5 +17717,165 @@
   "textSelectionMenuLess": "Less",
   "@textSelectionMenuLess": {
     "description": "Last button of the expanded text selection menu: hides the remaining actions."
-  }
+  },
+  "passcodeDotsSemantics": "{filled} of {total} digits entered",
+  "@passcodeDotsSemantics": {
+    "description": "Screen reader label of the passcode progress dots.",
+    "placeholders": {
+      "filled": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "passcodeDelete": "Delete",
+  "@passcodeDelete": {"description": "Screen reader label of the keypad delete key (long press clears)."},
+  "passcodePatternSemantics": "Pattern pad: draw a line through the dots",
+  "@passcodePatternSemantics": {"description": "Screen reader label of the 3×3 pattern pad."},
+  "passcodeUseBiometric": "Use fingerprint or face",
+  "@passcodeUseBiometric": {"description": "Fingerprint key on the keypad and button under the pattern pad: unlock with biometrics."},
+  "passcodeWrongAttemptsLeft": "{count, plural, one{Wrong. One more mistake and you'll have to wait} other{Wrong. {count} more mistakes and you'll have to wait}}",
+  "@passcodeWrongAttemptsLeft": {
+    "description": "Status after a wrong passcode when only a few attempts remain before a waiting period.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeWrongPin": "Wrong passcode, try again",
+  "@passcodeWrongPin": {"description": "Status after entering a wrong numeric passcode."},
+  "passcodeWrongPattern": "Wrong pattern, try again",
+  "@passcodeWrongPattern": {"description": "Status after drawing a wrong pattern."},
+  "passcodePatternTooShort": "{count, plural, one{Too short. Connect at least {count} dot} other{Too short. Connect at least {count} dots}}",
+  "@passcodePatternTooShort": {
+    "description": "Status when a drawn pattern connects too few dots.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutSeconds": "{seconds, plural, one{Try again in {seconds} second} other{Try again in {seconds} seconds}}",
+  "@passcodeLockedOutSeconds": {
+    "description": "Countdown while input is blocked after too many wrong attempts (under a minute).",
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutMinutes": "{minutes, plural, one{Try again in {minutes} minute} other{Try again in {minutes} minutes}}",
+  "@passcodeLockedOutMinutes": {
+    "description": "Countdown while input is blocked after too many wrong attempts (a minute or more).",
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "passcodeUnavailable": "Couldn't read the app passcode. Restart the app and try again.",
+  "@passcodeUnavailable": {"description": "Status when the stored app passcode cannot be read."},
+  "passcodeEnterPinTitle": "Enter app passcode",
+  "@passcodeEnterPinTitle": {"description": "Title of the unlock view for a numeric app passcode."},
+  "passcodeDrawPatternTitle": "Draw your pattern",
+  "@passcodeDrawPatternTitle": {"description": "Title of the unlock view for a pattern app passcode."},
+  "passcodeForgot": "Forgot passcode?",
+  "@passcodeForgot": {"description": "Text button at the bottom of the unlock view; expands an explanation in place."},
+  "passcodeForgotMessage": "The app passcode is kept only on this device and can't be recovered. The only way back in is to clear the app's data or reinstall it, then restore your diaries from a backup.",
+  "@passcodeForgotMessage": {"description": "Explanation shown under “Forgot passcode?”: the app passcode cannot be recovered."},
+  "appLockPasscodeSubtitle": "Verify with your app passcode to continue",
+  "@appLockPasscodeSubtitle": {"description": "Subtitle of the app lock screen when the app passcode is the verification method."},
+  "passcodeVerifyTitle": "Verify identity",
+  "@passcodeVerifyTitle": {"description": "Top bar title of the app passcode verification page."},
+  "passcodeFormPin": "{count, plural, one{{count} digit} other{{count} digits}}",
+  "@passcodeFormPin": {
+    "description": "Passcode form option and label: a numeric PIN with this many digits.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeFormPattern": "Pattern",
+  "@passcodeFormPattern": {"description": "Passcode form option and label: a 3×3 unlock pattern."},
+  "passcodeConfirmPinTitle": "Enter it again",
+  "@passcodeConfirmPinTitle": {"description": "Title of the second step when setting a numeric passcode."},
+  "passcodeConfirmPatternTitle": "Draw it again",
+  "@passcodeConfirmPatternTitle": {"description": "Title of the second step when setting a pattern."},
+  "passcodeConfirmMessage": "Same as the first time, to confirm",
+  "@passcodeConfirmMessage": {"description": "Subtitle of the second step when setting the app passcode."},
+  "passcodeSetupPinTitle": "Set a PIN",
+  "@passcodeSetupPinTitle": {"description": "Title of the first step when setting a numeric passcode."},
+  "passcodeSetupPinMessage": "{count, plural, one{Enter {count} digit} other{Enter {count} digits}}",
+  "@passcodeSetupPinMessage": {
+    "description": "Subtitle of the first step when setting a numeric passcode.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeSetupPatternTitle": "Set an unlock pattern",
+  "@passcodeSetupPatternTitle": {"description": "Title of the first step when setting a pattern."},
+  "passcodeSetupPatternMessage": "{count, plural, one{Connect at least {count} dot in one stroke} other{Connect at least {count} dots in one stroke}}",
+  "@passcodeSetupPatternMessage": {
+    "description": "Subtitle of the first step when setting a pattern.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeMismatch": "They didn't match. Start over.",
+  "@passcodeMismatch": {"description": "Status when the two entries while setting the passcode differ."},
+  "passcodeSaveFailed": "Couldn't save. Try again.",
+  "@passcodeSaveFailed": {"description": "Status when saving the new passcode fails."},
+  "passcodeChangeTitle": "Change app passcode",
+  "@passcodeChangeTitle": {"description": "Title of the change-passcode page and the settings row that opens it."},
+  "passcodeSetupTitle": "Set app passcode",
+  "@passcodeSetupTitle": {"description": "Title of the set-passcode page."},
+  "passcodeNoRecoveryNote": "The app passcode is stored only on this device. It isn't included in backups or sync, and it can't be recovered if you forget it.",
+  "@passcodeNoRecoveryNote": {"description": "Note at the bottom of the set-passcode page: local only, no recovery."},
+  "appLockSwitchToPasscodeReason": "Verify to switch to an app passcode",
+  "@appLockSwitchToPasscodeReason": {"description": "System verification prompt before switching to an app passcode."},
+  "appLockSwitchVerifyFailed": "Verification failed. The method wasn't changed.",
+  "@appLockSwitchVerifyFailed": {"description": "Snackbar when verification before changing the method fails."},
+  "passcodeSetDone": "App passcode set",
+  "@passcodeSetDone": {"description": "Snackbar after the app passcode is set."},
+  "appLockSystemUnsupported": "System verification isn't available on this device (no screen lock is set)",
+  "@appLockSystemUnsupported": {"description": "Snackbar when switching to system verification on a device without it."},
+  "appLockSwitchToSystemReason": "Enter your app passcode to switch to system verification",
+  "@appLockSwitchToSystemReason": {"description": "Passcode page reason before switching back to system verification."},
+  "appLockSwitchedToSystem": "Switched to system verification. The app passcode was removed.",
+  "@appLockSwitchedToSystem": {"description": "Snackbar after switching to system verification."},
+  "passcodeChangeReason": "Enter your current passcode to change it",
+  "@passcodeChangeReason": {"description": "Passcode page reason before changing the passcode."},
+  "passcodeChangedDone": "App passcode changed",
+  "@passcodeChangedDone": {"description": "Snackbar after the passcode is changed."},
+  "passcodeBiometricEnableReason": "Verify your fingerprint or face to turn on quick unlock",
+  "@passcodeBiometricEnableReason": {"description": "Biometric prompt reason when turning on quick unlock."},
+  "passcodeBiometricFailed": "Fingerprint or face verification failed",
+  "@passcodeBiometricFailed": {"description": "Snackbar when the biometric check for quick unlock fails."},
+  "settingsAppLockAndPasscode": "App lock & passcode",
+  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & Privacy) and page title for app lock and the verification method."},
+  "appLockMethodTitle": "Verification method",
+  "@appLockMethodTitle": {"description": "Group title for choosing the verification method."},
+  "appLockMethodFooter": "App lock, locked notebooks and LAN pairing confirmation all use this method.",
+  "@appLockMethodFooter": {"description": "Footer under the verification method group."},
+  "appLockNeedsPasscode": "This device has no system verification. Set an app passcode below first.",
+  "@appLockNeedsPasscode": {"description": "Subtitle of the disabled app lock switch on devices without system verification and no app passcode."},
+  "appLockMethodSystem": "System verification",
+  "@appLockMethodSystem": {"description": "Verification method option: system verification."},
+  "appLockMethodSystemDescription": "Fingerprint, face or your phone's screen lock",
+  "@appLockMethodSystemDescription": {"description": "Description of the system verification option."},
+  "appLockMethodSystemUnavailable": "Not available on this device",
+  "@appLockMethodSystemUnavailable": {"description": "Description of the disabled system verification option on devices without it."},
+  "appLockMethodPasscode": "App passcode",
+  "@appLockMethodPasscode": {"description": "Verification method option: the app passcode."},
+  "appLockMethodPasscodeDescription": "A PIN or pattern of its own, separate from your screen lock",
+  "@appLockMethodPasscodeDescription": {"description": "Description of the app passcode option."},
+  "passcodeCurrentForm": "Current: {form}",
+  "@passcodeCurrentForm": {
+    "description": "Subtitle of the change-passcode row: the current passcode form.",
+    "placeholders": {
+      "form": {"type": "String"}
+    }
+  },
+  "passcodeBiometric": "Fingerprint / face quick unlock",
+  "@passcodeBiometric": {"description": "Switch title: allow fingerprint or face instead of the app passcode."},
+  "passcodeBiometricSubtitle": "Unlock with your fingerprint or face instead of the passcode. Turning off app lock or changing the passcode still needs the passcode.",
+  "@passcodeBiometricSubtitle": {"description": "Switch subtitle for biometric quick unlock."},
+  "appLockStatusPasscode": "On · App passcode",
+  "@appLockStatusPasscode": {"description": "Settings row subtitle: app lock on with the app passcode."},
+  "appLockStatusSystem": "On · System verification",
+  "@appLockStatusSystem": {"description": "Settings row subtitle: app lock on with system verification."},
+  "appLockStatusOffPasscode": "Off · Locked notebooks use the app passcode",
+  "@appLockStatusOffPasscode": {"description": "Settings row subtitle: app lock off, but an app passcode is set for locked notebooks."},
+  "appLockStatusOff": "Off",
+  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."}
 }

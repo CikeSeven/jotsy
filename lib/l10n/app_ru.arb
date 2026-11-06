@@ -18436,5 +18436,19 @@
   "dataMgmtBackupGroup": "Резервное копирование",
   "@dataMgmtBackupGroup": {"description": "Data management group title: full backup export, import and cloud backup."},
   "dataMgmtFilesGroup": "Импорт и экспорт",
-  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."}
+  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."},
+  "placeHistoryTitle": "Недавние места",
+  "@placeHistoryTitle": {"description": "Publish panel: title of the recent places sub-page and tooltip of the button that opens it (places used in earlier diaries)."},
+  "placeHistorySearchHint": "Поиск мест",
+  "@placeHistorySearchHint": {"description": "Publish panel recent places page: placeholder of the search field."},
+  "placeHistorySearchEmpty": "Нет мест по запросу «{query}»",
+  "@placeHistorySearchEmpty": {"description": "Publish panel recent places page: hint when the search has no results.", "placeholders": {"query": {"type": "String"}}},
+  "placeHistoryEmptyTitle": "Мест пока нет",
+  "@placeHistoryEmptyTitle": {"description": "Publish panel recent places page: title of the empty state when no diary has a place yet."},
+  "placeHistoryEmptyBody": "Здесь появятся места из ваших записей — в следующий раз выберите их одним касанием.",
+  "@placeHistoryEmptyBody": {"description": "Publish panel recent places page: explanation under the empty-state title."},
+  "placeHistoryUseCount": "{count, plural, one{{count} запись} few{{count} записи} many{{count} записей} other{{count} записи}}",
+  "@placeHistoryUseCount": {"description": "Publish panel recent places: how many diaries were written at this place.", "placeholders": {"count": {"type": "int"}}},
+  "placeHistoryShowAll": "Все {count}",
+  "@placeHistoryShowAll": {"description": "Publish panel: last chip of the recent places strip under an empty place field; opens the full list. count is the total number of places.", "placeholders": {"count": {"type": "int"}}}
 }

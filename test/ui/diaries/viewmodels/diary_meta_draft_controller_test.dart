@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
@@ -87,6 +88,41 @@ void main() {
     meta.setPrecision(DiaryLocationPrecision.city);
     expect(meta.locationText.text, 'My cafe');
     expect(meta.value.locationPrecision, DiaryLocationPrecision.city);
+  });
+
+  test('a located recent place restores its coordinates and precision', () {
+    meta.applyPlace(
+      DiaryPlaceUsage(
+        label: '北京市 · 朝阳区',
+        uses: 3,
+        lastUsedAt: DateTime(2026, 11, 1),
+        precision: 'district',
+        latitude: resolved.latitude,
+        longitude: resolved.longitude,
+        addressComponent: resolved.addressComponent,
+      ),
+    );
+    expect(meta.locationText.text, '北京市 · 朝阳区');
+    expect(meta.value.locationFromAuto, isTrue);
+    expect(meta.value.locationLatitude, resolved.latitude);
+    expect(meta.value.locationPrecision, DiaryLocationPrecision.district);
+    // 仍是自动文案：换层级照常重组。
+    meta.setPrecision(DiaryLocationPrecision.township);
+    expect(meta.locationText.text, '北京市 · 望京街道');
+    expect(notifications, 2);
+  });
+
+  test('a typed recent place stops saving geo but keeps coordinates', () {
+    meta.applyResolvedLocation(resolved);
+    meta.applyPlace(
+      DiaryPlaceUsage(label: '外婆家', uses: 1, lastUsedAt: DateTime(2026)),
+    );
+    expect(meta.locationText.text, '外婆家');
+    expect(meta.value.location, '外婆家');
+    expect(meta.value.locationFromAuto, isFalse);
+    expect(meta.value.autoAddressComponent, isNull);
+    // 内存坐标留给天气查询，不随 metadata 保存。
+    expect(meta.value.hasCoordinates, isTrue);
   });
 
   test('restore fills the fields without counting as user edits', () {

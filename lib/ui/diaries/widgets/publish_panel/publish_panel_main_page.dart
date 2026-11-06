@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -38,6 +39,8 @@ class PublishPanelMainPage extends StatelessWidget {
     this.showDraftCapsule = true,
     required this.onOpenTags,
     required this.onOpenCapsule,
+    required this.onOpenPlaces,
+    required this.panelProgress,
     this.notebooks = const <NotebookView>[],
     this.onOpenNotebooks,
   });
@@ -55,6 +58,12 @@ class PublishPanelMainPage extends StatelessWidget {
   final bool showDraftCapsule;
   final VoidCallback onOpenTags;
   final VoidCallback onOpenCapsule;
+
+  /// 打开“用过的地点”子页。
+  final VoidCallback onOpenPlaces;
+
+  /// 面板展开进度，见 `PublishContextFields.panelProgress`。
+  final ValueListenable<double> panelProgress;
 
   /// 书架上的日记本（解析草稿里的日记本 id）。
   final List<NotebookView> notebooks;
@@ -88,7 +97,13 @@ class PublishPanelMainPage extends StatelessWidget {
             ),
           ],
           gap,
-          PublishContextFields(draft: draft, actions: actions, busy: busy),
+          PublishContextFields(
+            draft: draft,
+            actions: actions,
+            busy: busy,
+            onOpenPlaces: onOpenPlaces,
+            panelProgress: panelProgress,
+          ),
           if (publishTime != null) ...<Widget>[
             gap,
             PublishTimeTile(

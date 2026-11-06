@@ -14559,4 +14559,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataMgmtFilesGroup => 'Import & export';
+
+  @override
+  String get placeHistoryTitle => 'Recent places';
+
+  @override
+  String get placeHistorySearchHint => 'Search places';
+
+  @override
+  String placeHistorySearchEmpty(String query) {
+    return 'No places match “$query”';
+  }
+
+  @override
+  String get placeHistoryEmptyTitle => 'No places yet';
+
+  @override
+  String get placeHistoryEmptyBody =>
+      'Places from your diaries show up here, ready to reuse with one tap.';
+
+  @override
+  String placeHistoryUseCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String placeHistoryShowAll(int count) {
+    return 'All $count';
+  }
 }

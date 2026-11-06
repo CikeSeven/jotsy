@@ -17869,5 +17869,19 @@
   "dataMgmtBackupGroup": "Backup & restore",
   "@dataMgmtBackupGroup": {"description": "Data management group title: full backup export, import and cloud backup."},
   "dataMgmtFilesGroup": "Import & export",
-  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."}
+  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."},
+  "placeHistoryTitle": "Recent places",
+  "@placeHistoryTitle": {"description": "Publish panel: title of the recent places sub-page and tooltip of the button that opens it (places used in earlier diaries)."},
+  "placeHistorySearchHint": "Search places",
+  "@placeHistorySearchHint": {"description": "Publish panel recent places page: placeholder of the search field."},
+  "placeHistorySearchEmpty": "No places match “{query}”",
+  "@placeHistorySearchEmpty": {"description": "Publish panel recent places page: hint when the search has no results.", "placeholders": {"query": {"type": "String"}}},
+  "placeHistoryEmptyTitle": "No places yet",
+  "@placeHistoryEmptyTitle": {"description": "Publish panel recent places page: title of the empty state when no diary has a place yet."},
+  "placeHistoryEmptyBody": "Places from your diaries show up here, ready to reuse with one tap.",
+  "@placeHistoryEmptyBody": {"description": "Publish panel recent places page: explanation under the empty-state title."},
+  "placeHistoryUseCount": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@placeHistoryUseCount": {"description": "Publish panel recent places: how many diaries were written at this place.", "placeholders": {"count": {"type": "int"}}},
+  "placeHistoryShowAll": "All {count}",
+  "@placeHistoryShowAll": {"description": "Publish panel: last chip of the recent places strip under an empty place field; opens the full list. count is the total number of places.", "placeholders": {"count": {"type": "int"}}}
 }

@@ -56,10 +56,10 @@ class AiPreferences {
 
   static const AiPreferences defaults = AiPreferences();
 
-  static const int maxPersonas = 20;
-  static const int maxCustomActions = 30;
-  static const int maxAboutMeLength = 1000;
-  static const int maxWritingStyleLength = 500;
+  static const int maxPersonas = 50;
+  static const int maxCustomActions = 50;
+  static const int maxAboutMeLength = kAiPromptTextMaxLength;
+  static const int maxWritingStyleLength = kAiPromptTextMaxLength;
   static const int defaultVisionMaxImages = 3;
   static const int maxVisionImages = 20;
 

@@ -311,6 +311,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   bool _metaPanelOpen = false;
   bool _metaPanelRaised = false;
   final GlobalKey _readingCommentsKey = GlobalKey();
+  // 按列表下标滚动编辑器：点信息栏的“N 条留言”时先把页尾滚出来。
+  final DiaryEditorScrollHandle _readingScroll = DiaryEditorScrollHandle();
   // 分享与导出（没有长图：编辑页没有可整页截取的阅读视图）。
   late final DiaryPreviewExportController _readingExport;
 
@@ -843,6 +845,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             readingResolved,
             notebooks: reading.notebooks,
             commentCount: reading.comments?.comments.length ?? 0,
+            canRevealComments: reading.comments?.actions != null,
           );
     final readingTrailing = reading == null || readingResolved == null
         ? null
@@ -893,6 +896,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           placeholder: context.l10n.autoT0133,
           padding: EdgeInsets.symmetric(horizontal: gutter),
           header: header,
+          scrollHandle: _readingScroll,
           autoScrollEdgeOffset: _editorBottomCover(),
           footer: Column(
             children: [

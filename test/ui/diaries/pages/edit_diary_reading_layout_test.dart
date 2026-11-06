@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -11,6 +12,7 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_s
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_preview_resolved_style.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_comments/diary_comments_section.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_trailing_region.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_reading_editor/diary_reading_editor_header.dart';
@@ -31,20 +33,32 @@ void main() {
   late int tagId;
 
   /// 装配：按 [style] 写入预览页样式，建一篇带心情与标签的日记。
+  /// [comments] 打开留言功能；[paragraphs] 为正文段落数（长正文时页尾在
+  /// 视口之外、没有构建）。
   Future<void> prepare({
     DiaryPreviewStyle style = DiaryPreviewStyle.defaults,
+    bool comments = false,
+    int paragraphs = 1,
   }) async {
     final encoded = DiaryPreviewSettings(current: style).encode();
     SharedPreferences.setMockInitialValues(<String, Object>{
       'app.settings.diary_preview_style': ?encoded,
+      if (comments)
+        'app.settings.app_features': AppFeatures.defaults
+            .copyWith(comments: true)
+            .encode(),
     });
     database = AppDatabase.forTesting(NativeDatabase.memory());
     settings = await SettingsService.create();
     tagId = await database.createTag(name: 'Travel', color: 0xFF4CAF50);
+    final body = List<String>.generate(
+      paragraphs,
+      (i) => i == 0 ? 'Sunset over the sea' : 'Line $i',
+    );
     diaryId = await database.createDiary(
       title: 'Seaside',
-      contentDocJson: '[{"insert":"Sunset over the sea\\n"}]',
-      contentText: 'Sunset over the sea',
+      contentDocJson: '[{"insert":"${body.join('\\n')}\\n"}]',
+      contentText: body.join('\n'),
       metadataJson: '{"context":{"moodEmoji":"😊","location":"West Lake"}}',
       tagIds: <int>[tagId],
     );
@@ -190,6 +204,33 @@ void main() {
       () => database.getDiaryWithTagsByDiaryId(diaryId),
     ))!;
     expect(saved.diary.metadata, contains('😢'));
+    await unmount(tester);
+  });
+
+  testWidgets('tapping the comment count scrolls down to the comments, like '
+      'the preview page, instead of opening the panel', (tester) async {
+    await prepare(comments: true, paragraphs: 80);
+    await tester.runAsync(
+      () => database.addDiaryComment(diaryId: diaryId, content: 'Looking back'),
+    );
+    await openEditor(tester);
+    final l10n = l10nOf(tester);
+    // 长正文：页尾（留言区）在视口之外，还没构建。
+    expect(find.byType(DiaryCommentsSection), findsNothing);
+
+    await tester.tap(find.text(l10n.diaryCommentsCount(1)));
+    await tester.pumpAndSettle();
+    expect(find.byType(PublishDiaryPanel), findsNothing);
+    final section = find.byType(DiaryCommentsSection);
+    expect(section, findsOneWidget);
+    // 留言区整块进入视口（顶栏之下、屏幕之内）。它在文末，后面没有足够的
+    // 内容把它顶到视口最上方，与预览页相同。
+    final rect = tester.getRect(section);
+    expect(rect.top, greaterThanOrEqualTo(kToolbarHeight));
+    expect(rect.bottom, lessThanOrEqualTo(900));
+    expect(find.text('Looking back'), findsOneWidget);
+
+    expect(tester.takeException(), isNull);
     await unmount(tester);
   });
 

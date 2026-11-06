@@ -133,12 +133,14 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
       );
 
   /// 信息栏（已包好点按，点开信息面板）；这篇在当前样式下没有可显示的信息
-  /// 时为 null。
+  /// 时为 null。“N 条留言”与预览页一样滚到页尾的留言区（[canRevealComments]
+  /// 为 false 时不可点，同预览页）。
   Widget? _buildReadingMeta(
     DiaryReadingSnapshot snapshot,
     DiaryPreviewResolvedStyle resolved, {
     required List<NotebookView> notebooks,
     required int commentCount,
+    required bool canRevealComments,
   }) {
     final style = resolved.style.meta;
     if (!DiaryPreviewMeta.hasContent(
@@ -158,6 +160,9 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
         style: style,
         notebooks: notebooks,
         commentCount: commentCount,
+        onOpenComments: canRevealComments
+            ? () => unawaited(_revealReadingComments())
+            : null,
       ),
     );
   }

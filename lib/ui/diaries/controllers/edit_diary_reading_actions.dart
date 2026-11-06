@@ -42,6 +42,22 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
     }
   }
 
+  /// 滚到页尾的留言区（信息栏的“N 条留言”、“更多 → 写留言”）：[end] 为 true
+  /// 时让留言区末尾进入视口，否则留言区开头对齐视口顶部（同预览页）。
+  ///
+  /// 页尾在编辑器的虚拟列表里，滚出视口时没有构建、按 key 找不到：先按
+  /// 列表下标把页尾滚出来（[DiaryEditorScrollHandle.revealFooter]），下一帧
+  /// 再按留言区对齐。
+  Future<void> _revealReadingComments({bool end = false}) async {
+    if (_readingCommentsKey.currentContext == null) {
+      await _readingScroll.revealFooter();
+      if (!mounted) return;
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+    }
+    await DiaryCommentsSection.reveal(context, _readingCommentsKey, end: end);
+  }
+
   /// 补存，再按库里的最新内容读出这一篇；保存失败或日记已不在时为 null
   /// （保存失败的提示由自动保存给出）。
   Future<DiaryWithTags?> _flushAndReload() async {
@@ -102,11 +118,8 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
       },
       onWriteComment: frame.comments != null
           ? () async {
-              await DiaryCommentsSection.reveal(
-                context,
-                _readingCommentsKey,
-                end: true,
-              );
+              // 同预览页：先滚到留言区末尾再打开面板，写下的那条就在眼前。
+              await _revealReadingComments(end: true);
               if (!mounted) return;
               await writeDiaryComment(context, ref, diary: diary);
             }

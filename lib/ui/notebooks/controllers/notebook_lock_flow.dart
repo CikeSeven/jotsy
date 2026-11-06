@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../core/services/device_auth_service.dart';
+import '../../app_lock/controllers/identity_verifier.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../pages/notebook_editor_page.dart';
 import '../viewmodels/notebook_tree.dart';
@@ -39,12 +39,13 @@ bool notebookSwitchRequiresAuth(
 
 /// 进入日记本前的身份验证（只有上锁的需要）。
 ///
-/// 流程：
+/// 流程（验证经 [IdentityVerifier]，按全局验证方式走系统验证或应用密码）：
 /// 1. 不需要验证 → 直接放行；
-/// 2. 设备不能验证身份（没有锁屏密码）→ 不放行，弹框说明上锁的日记本在这台
-///    设备上打不开、建议先设置锁屏密码。弹框只有“知道了”：此前的“去设置”
-///    直接打开编辑页，等于绕过验证就能把隐私改回正常；
-/// 3. 弹出系统验证，取消或失败 → 不放行，调用方停留在原处。
+/// 2. 不能验证身份（系统验证方式、设备没有锁屏密码）→ 不放行，弹框说明上锁
+///    的日记本在这台设备上打不开、建议设置锁屏密码或改用应用密码。弹框只有
+///    “知道了”：此前的“去设置”直接打开编辑页，等于绕过验证就能把隐私改回
+///    正常；
+/// 3. 弹出系统验证或应用密码页，取消或失败 → 不放行，调用方停留在原处。
 ///
 /// 不只是“进入”：打开上锁日记本的编辑页、合并、删除（两种删法都会让日记
 /// 重新出现在全部日记里）同样先经过这里，见 `runNotebookAction` 与
@@ -60,8 +61,8 @@ Future<bool> authorizeNotebookEntry(
   if (!notebookRequiresAuth(notebook)) {
     return true;
   }
-  final auth = ref.read(deviceAuthServiceProvider);
-  final supported = await auth.isSupported();
+  final verifier = ref.read(identityVerifierProvider);
+  final supported = await verifier.isAvailable();
   if (!context.mounted) {
     return false;
   }
@@ -69,9 +70,9 @@ Future<bool> authorizeNotebookEntry(
     await _showUnsupportedDialog(context);
     return false;
   }
-  return auth.authenticate(
+  return verifier.verify(
+    context,
     reason: context.l10n.notebookUnlockReason(notebook.name),
-    persistAcrossBackgrounding: false,
   );
 }
 

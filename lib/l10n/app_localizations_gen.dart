@@ -417,7 +417,7 @@ abstract class AppLocalizations {
   /// Prompt shown when local authentication is unsupported.
   ///
   /// In en, this message translates to:
-  /// **'This device does not support local authentication, so app lock cannot be enabled.'**
+  /// **'Your identity can\'t be verified right now. Set a screen lock or switch to an app password, then turn on app lock.'**
   String get appLockNotSupported;
 
   /// Title in app lock overlay.
@@ -2877,7 +2877,7 @@ abstract class AppLocalizations {
   /// Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux).
   ///
   /// In en, this message translates to:
-  /// **'This device has no system verification (fingerprint, face or password), so locking isn\'t available'**
+  /// **'This device has no system verification. Set an app password in Data & Privacy → App lock & password to use locking'**
   String get deviceAuthUnavailable;
 
   /// Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image.
@@ -12447,7 +12447,7 @@ abstract class AppLocalizations {
   /// Explanation when opening a locked notebook on a device without a screen lock.
   ///
   /// In en, this message translates to:
-  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings to open them.'**
+  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app password in Data & Privacy → App lock & password, to open them.'**
   String get notebookLockUnsupportedMessage;
 
   /// Dialog button that opens the notebook settings when a locked notebook can't be verified.
@@ -18669,7 +18669,7 @@ abstract class AppLocalizations {
   /// Hint on the pairing sheet when authentication is required but the device has no screen lock.
   ///
   /// In en, this message translates to:
-  /// **'This device uses app lock or has locked notebooks but no screen lock, so your identity can\'t be verified. Set a screen lock in system settings first.'**
+  /// **'This device uses app lock or has locked notebooks but no screen lock, so your identity can\'t be verified. Set a screen lock in system settings or switch to an app password first.'**
   String get lanSyncPairAuthUnsupported;
 
   /// Pairing failure reason: the other device could not be reached.
@@ -23249,6 +23249,324 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Less'**
   String get textSelectionMenuLess;
+
+  /// Data & privacy entry and page title for app lock and verification method.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock & password'**
+  String get settingsAppLockAndPassword;
+
+  /// Entry subtitle: app lock on, using system verification.
+  ///
+  /// In en, this message translates to:
+  /// **'On · System verification'**
+  String get appLockStatusSystem;
+
+  /// Entry subtitle: app lock on, using the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'On · App password'**
+  String get appLockStatusPassword;
+
+  /// Entry subtitle: app lock off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get appLockStatusOff;
+
+  /// Entry subtitle: app lock off but an app password is set (used by locked notebooks).
+  ///
+  /// In en, this message translates to:
+  /// **'Off · Locked notebooks use the app password'**
+  String get appLockStatusOffPassword;
+
+  /// App lock switch subtitle when the device cannot lock (e.g. Linux without an app password).
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no system verification. Set an app password to turn on app lock.'**
+  String get appLockNeedsPassword;
+
+  /// Section title for choosing system verification or the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification method'**
+  String get appLockMethodTitle;
+
+  /// Footer under the verification method choices.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock, locked notebooks and LAN sync pairing confirmation all use this method.'**
+  String get appLockMethodFooter;
+
+  /// Verification method option: fingerprint, face or screen lock.
+  ///
+  /// In en, this message translates to:
+  /// **'System verification'**
+  String get appLockMethodSystem;
+
+  /// Description of the system verification option.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint, face or your device\'s screen lock'**
+  String get appLockMethodSystemDescription;
+
+  /// Description of the disabled system verification option (e.g. Linux).
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no system verification'**
+  String get appLockMethodSystemUnavailable;
+
+  /// Verification method option: a password just for this app.
+  ///
+  /// In en, this message translates to:
+  /// **'App password'**
+  String get appLockMethodPassword;
+
+  /// Description of the app password option.
+  ///
+  /// In en, this message translates to:
+  /// **'A password only for this app, separate from your screen lock'**
+  String get appLockMethodPasswordDescription;
+
+  /// Settings row that changes the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Change app password'**
+  String get appPasswordChange;
+
+  /// Switch: allow fingerprint or face as a shortcut for the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint / face unlock'**
+  String get appPasswordBiometric;
+
+  /// Subtitle of the fingerprint / face unlock switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Use fingerprint or face instead of the app password when unlocking'**
+  String get appPasswordBiometricSubtitle;
+
+  /// System prompt reason when turning on fingerprint / face unlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your fingerprint or face to turn on quick unlock'**
+  String get appPasswordBiometricEnableReason;
+
+  /// Snack bar when fingerprint / face verification fails while turning it on.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t verify your fingerprint or face'**
+  String get appPasswordBiometricFailed;
+
+  /// System prompt reason before switching to the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to switch to an app password'**
+  String get appLockSwitchToPasswordReason;
+
+  /// Password page message before switching back to system verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the app password to switch to system verification'**
+  String get appLockSwitchToSystemReason;
+
+  /// Snack bar when verification fails while switching the method.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. The method was not changed.'**
+  String get appLockSwitchVerifyFailed;
+
+  /// Snack bar when switching to system verification on a device without it.
+  ///
+  /// In en, this message translates to:
+  /// **'This device can\'t use system verification (no screen lock is set).'**
+  String get appLockSystemUnsupported;
+
+  /// Snack bar after switching back to system verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to system verification'**
+  String get appLockSwitchedToSystem;
+
+  /// Password page message before changing the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current app password'**
+  String get appPasswordChangeReason;
+
+  /// Snack bar after setting the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'App password set'**
+  String get appPasswordSetDone;
+
+  /// Snack bar after changing the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'App password changed'**
+  String get appPasswordChangedDone;
+
+  /// App lock screen message in app password mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the app password to continue'**
+  String get appLockPasswordSubtitle;
+
+  /// Title of the app password verification page.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify identity'**
+  String get appPasswordVerifyTitle;
+
+  /// Hint text inside the app password field.
+  ///
+  /// In en, this message translates to:
+  /// **'App password'**
+  String get appPasswordHint;
+
+  /// Tooltip of the button that reveals the password.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get appPasswordShow;
+
+  /// Tooltip of the button that hides the password.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get appPasswordHide;
+
+  /// Button that checks the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get appPasswordUnlock;
+
+  /// Button that unlocks with fingerprint or face instead of the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Use fingerprint or face'**
+  String get appPasswordUseBiometric;
+
+  /// Shown under the field after a wrong app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong password. Try again.'**
+  String get appPasswordWrong;
+
+  /// Wrong app password; count is how many more mistakes before a wait.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Wrong password. 1 more mistake and you will have to wait.} other{Wrong password. {count} more mistakes and you will have to wait.}}'**
+  String appPasswordWrongAttemptsLeft(int count);
+
+  /// Lockout countdown in seconds after too many wrong app passwords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Too many attempts. Try again in 1 second.} other{Too many attempts. Try again in {count} seconds.}}'**
+  String appPasswordLockedOutSeconds(int count);
+
+  /// Lockout countdown in minutes (rounded up) after too many wrong app passwords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Too many attempts. Try again in 1 minute.} other{Too many attempts. Try again in {count} minutes.}}'**
+  String appPasswordLockedOutMinutes(int count);
+
+  /// Shown if the app password disappeared while the lock screen was open.
+  ///
+  /// In en, this message translates to:
+  /// **'No app password is set'**
+  String get appPasswordUnavailable;
+
+  /// Text button on the lock screen that explains the app password cannot be recovered.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get appPasswordForgot;
+
+  /// Explanation shown after tapping “Forgot password?”.
+  ///
+  /// In en, this message translates to:
+  /// **'The app password can\'t be recovered. You can only clear the app\'s data or reinstall it, then restore your diaries from a backup.'**
+  String get appPasswordForgotMessage;
+
+  /// Title of the page that sets a new app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Set app password'**
+  String get appPasswordSetupTitle;
+
+  /// Title of the page that changes the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Change app password'**
+  String get appPasswordChangeTitle;
+
+  /// First step heading when setting the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a new password'**
+  String get appPasswordNewTitle;
+
+  /// Rules shown under the first step heading.
+  ///
+  /// In en, this message translates to:
+  /// **'{min}–{max} characters, case-sensitive, no spaces'**
+  String appPasswordRulesHint(int min, int max);
+
+  /// Second step heading when setting the app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter it again'**
+  String get appPasswordConfirmTitle;
+
+  /// Second step description.
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure both entries match'**
+  String get appPasswordConfirmSubtitle;
+
+  /// Button that moves to the confirmation step.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get appPasswordNext;
+
+  /// Button that saves the new app password.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get appPasswordDone;
+
+  /// Error when the new app password is too short.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{At least 1 character} other{At least {count} characters}}'**
+  String appPasswordTooShort(int count);
+
+  /// Error when the new app password is too long.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{At most 1 character} other{At most {count} characters}}'**
+  String appPasswordTooLong(int count);
+
+  /// Error when the new app password contains whitespace.
+  ///
+  /// In en, this message translates to:
+  /// **'No spaces allowed'**
+  String get appPasswordWhitespace;
+
+  /// Error when the confirmation does not match the first entry.
+  ///
+  /// In en, this message translates to:
+  /// **'The two entries don\'t match. Start again.'**
+  String get appPasswordMismatch;
+
+  /// Note on the set-password page that the app password cannot be recovered.
+  ///
+  /// In en, this message translates to:
+  /// **'The app password is stored only on this device and can\'t be recovered. If you forget it, you can only clear the app\'s data or reinstall it, then restore your diaries from a backup.'**
+  String get appPasswordNoRecoveryNote;
 }
 
 class _AppLocalizationsDelegate

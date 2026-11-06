@@ -202,7 +202,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get appLockNotSupported =>
-      'Это устройство не поддерживает локальную проверку подлинности, поэтому блокировку приложения включить нельзя.';
+      'Сейчас нельзя подтвердить личность. Настройте блокировку экрана или перейдите на пароль приложения, затем включите блокировку.';
 
   @override
   String get appLockTitle => 'Приложение заблокировано';
@@ -1635,7 +1635,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get deviceAuthUnavailable =>
-      'На этом устройстве нет системной проверки (отпечаток, лицо или пароль), поэтому блокировка недоступна';
+      'На этом устройстве нет системной проверки. Задайте пароль приложения в разделе «Данные и конфиденциальность → Блокировка и пароль», чтобы пользоваться блокировкой';
 
   @override
   String get calendarYearSaveImage => 'Сохранить этот год как изображение…';
@@ -7750,7 +7750,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Чтобы открыть их, настройте блокировку экрана в системных настройках.';
+      'На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Чтобы открыть их, настройте блокировку экрана в системных настройках или перейдите на пароль приложения в разделе «Данные и конфиденциальность → Блокировка и пароль».';
 
   @override
   String get notebookLockUnsupportedAction => 'Понятно';
@@ -11800,7 +11800,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get lanSyncPairAuthUnsupported =>
-      'На этом устройстве включена блокировка приложения или есть заблокированные блокноты, но не настроена блокировка экрана, поэтому подтвердить личность невозможно. Сначала настройте блокировку экрана в системных настройках.';
+      'На этом устройстве включена блокировка приложения или есть заблокированные блокноты, но не настроена блокировка экрана, поэтому подтвердить личность невозможно. Сначала настройте блокировку экрана в системных настройках или перейдите на пароль приложения.';
 
   @override
   String get lanSyncPairFailUnreachable =>
@@ -14754,4 +14754,231 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get textSelectionMenuLess => 'Свернуть';
+
+  @override
+  String get settingsAppLockAndPassword => 'Блокировка и пароль';
+
+  @override
+  String get appLockStatusSystem => 'Включена · системная проверка';
+
+  @override
+  String get appLockStatusPassword => 'Включена · пароль приложения';
+
+  @override
+  String get appLockStatusOff => 'Выключена';
+
+  @override
+  String get appLockStatusOffPassword =>
+      'Выключена · заблокированные блокноты открываются паролем приложения';
+
+  @override
+  String get appLockNeedsPassword =>
+      'На этом устройстве нет системной проверки. Задайте пароль приложения, чтобы включить блокировку.';
+
+  @override
+  String get appLockMethodTitle => 'Способ проверки';
+
+  @override
+  String get appLockMethodFooter =>
+      'Этот способ используется для блокировки приложения, заблокированных блокнотов и подтверждения сопряжения при синхронизации по локальной сети.';
+
+  @override
+  String get appLockMethodSystem => 'Системная проверка';
+
+  @override
+  String get appLockMethodSystemDescription =>
+      'Отпечаток, лицо или блокировка экрана устройства';
+
+  @override
+  String get appLockMethodSystemUnavailable =>
+      'На этом устройстве нет системной проверки';
+
+  @override
+  String get appLockMethodPassword => 'Пароль приложения';
+
+  @override
+  String get appLockMethodPasswordDescription =>
+      'Пароль только для этого приложения, не связанный с блокировкой экрана';
+
+  @override
+  String get appPasswordChange => 'Изменить пароль приложения';
+
+  @override
+  String get appPasswordBiometric => 'Разблокировка отпечатком / лицом';
+
+  @override
+  String get appPasswordBiometricSubtitle =>
+      'При разблокировке можно использовать отпечаток или лицо вместо пароля';
+
+  @override
+  String get appPasswordBiometricEnableReason =>
+      'Подтвердите отпечаток или лицо, чтобы включить быструю разблокировку';
+
+  @override
+  String get appPasswordBiometricFailed =>
+      'Не удалось подтвердить отпечаток или лицо';
+
+  @override
+  String get appLockSwitchToPasswordReason =>
+      'Подтвердите личность, чтобы перейти на пароль приложения';
+
+  @override
+  String get appLockSwitchToSystemReason =>
+      'Введите пароль приложения, чтобы перейти на системную проверку';
+
+  @override
+  String get appLockSwitchVerifyFailed =>
+      'Проверка не пройдена. Способ не изменён.';
+
+  @override
+  String get appLockSystemUnsupported =>
+      'На этом устройстве нельзя использовать системную проверку (не задана блокировка экрана).';
+
+  @override
+  String get appLockSwitchedToSystem => 'Включена системная проверка';
+
+  @override
+  String get appPasswordChangeReason => 'Введите текущий пароль приложения';
+
+  @override
+  String get appPasswordSetDone => 'Пароль приложения задан';
+
+  @override
+  String get appPasswordChangedDone => 'Пароль приложения изменён';
+
+  @override
+  String get appLockPasswordSubtitle =>
+      'Введите пароль приложения, чтобы продолжить';
+
+  @override
+  String get appPasswordVerifyTitle => 'Подтверждение личности';
+
+  @override
+  String get appPasswordHint => 'Пароль приложения';
+
+  @override
+  String get appPasswordShow => 'Показать пароль';
+
+  @override
+  String get appPasswordHide => 'Скрыть пароль';
+
+  @override
+  String get appPasswordUnlock => 'Разблокировать';
+
+  @override
+  String get appPasswordUseBiometric => 'Отпечаток или лицо';
+
+  @override
+  String get appPasswordWrong => 'Неверный пароль. Попробуйте ещё раз.';
+
+  @override
+  String appPasswordWrongAttemptsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Неверный пароль. Ещё $count ошибки — и придётся подождать.',
+      many: 'Неверный пароль. Ещё $count ошибок — и придётся подождать.',
+      few: 'Неверный пароль. Ещё $count ошибки — и придётся подождать.',
+      one: 'Неверный пароль. Ещё $count ошибка — и придётся подождать.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appPasswordLockedOutSeconds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Слишком много попыток. Повторите через $count секунды.',
+      many: 'Слишком много попыток. Повторите через $count секунд.',
+      few: 'Слишком много попыток. Повторите через $count секунды.',
+      one: 'Слишком много попыток. Повторите через $count секунду.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appPasswordLockedOutMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Слишком много попыток. Повторите через $count минуты.',
+      many: 'Слишком много попыток. Повторите через $count минут.',
+      few: 'Слишком много попыток. Повторите через $count минуты.',
+      one: 'Слишком много попыток. Повторите через $count минуту.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appPasswordUnavailable => 'Пароль приложения не задан';
+
+  @override
+  String get appPasswordForgot => 'Забыли пароль?';
+
+  @override
+  String get appPasswordForgotMessage =>
+      'Пароль приложения нельзя восстановить. Можно только очистить данные приложения или переустановить его, а затем восстановить дневник из резервной копии.';
+
+  @override
+  String get appPasswordSetupTitle => 'Задать пароль приложения';
+
+  @override
+  String get appPasswordChangeTitle => 'Изменить пароль приложения';
+
+  @override
+  String get appPasswordNewTitle => 'Введите новый пароль';
+
+  @override
+  String appPasswordRulesHint(int min, int max) {
+    return 'От $min до $max символов, с учётом регистра, без пробелов';
+  }
+
+  @override
+  String get appPasswordConfirmTitle => 'Введите ещё раз';
+
+  @override
+  String get appPasswordConfirmSubtitle => 'Убедитесь, что оба ввода совпадают';
+
+  @override
+  String get appPasswordNext => 'Далее';
+
+  @override
+  String get appPasswordDone => 'Готово';
+
+  @override
+  String appPasswordTooShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Не меньше $count символа',
+      many: 'Не меньше $count символов',
+      few: 'Не меньше $count символов',
+      one: 'Не меньше $count символа',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appPasswordTooLong(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Не больше $count символа',
+      many: 'Не больше $count символов',
+      few: 'Не больше $count символов',
+      one: 'Не больше $count символа',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appPasswordWhitespace => 'Пробелы не допускаются';
+
+  @override
+  String get appPasswordMismatch => 'Вводы не совпадают. Начните заново.';
+
+  @override
+  String get appPasswordNoRecoveryNote =>
+      'Пароль приложения хранится только на этом устройстве и не восстанавливается. Если вы его забудете, останется только очистить данные приложения или переустановить его и восстановить дневник из резервной копии.';
 }

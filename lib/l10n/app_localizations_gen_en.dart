@@ -191,7 +191,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appLockNotSupported =>
-      'This device does not support local authentication, so app lock cannot be enabled.';
+      'Your identity can\'t be verified right now. Set a screen lock or switch to an app password, then turn on app lock.';
 
   @override
   String get appLockTitle => 'App Locked';
@@ -1607,7 +1607,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deviceAuthUnavailable =>
-      'This device has no system verification (fingerprint, face or password), so locking isn\'t available';
+      'This device has no system verification. Set an app password in Data & Privacy → App lock & password to use locking';
 
   @override
   String get calendarYearSaveImage => 'Save this year as an image…';
@@ -7553,7 +7553,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings to open them.';
+      'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app password in Data & Privacy → App lock & password, to open them.';
 
   @override
   String get notebookLockUnsupportedAction => 'Got it';
@@ -11454,7 +11454,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lanSyncPairAuthUnsupported =>
-      'This device uses app lock or has locked notebooks but no screen lock, so your identity can\'t be verified. Set a screen lock in system settings first.';
+      'This device uses app lock or has locked notebooks but no screen lock, so your identity can\'t be verified. Set a screen lock in system settings or switch to an app password first.';
 
   @override
   String get lanSyncPairFailUnreachable =>
@@ -14285,4 +14285,221 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get textSelectionMenuLess => 'Less';
+
+  @override
+  String get settingsAppLockAndPassword => 'App lock & password';
+
+  @override
+  String get appLockStatusSystem => 'On · System verification';
+
+  @override
+  String get appLockStatusPassword => 'On · App password';
+
+  @override
+  String get appLockStatusOff => 'Off';
+
+  @override
+  String get appLockStatusOffPassword =>
+      'Off · Locked notebooks use the app password';
+
+  @override
+  String get appLockNeedsPassword =>
+      'This device has no system verification. Set an app password to turn on app lock.';
+
+  @override
+  String get appLockMethodTitle => 'Verification method';
+
+  @override
+  String get appLockMethodFooter =>
+      'App lock, locked notebooks and LAN sync pairing confirmation all use this method.';
+
+  @override
+  String get appLockMethodSystem => 'System verification';
+
+  @override
+  String get appLockMethodSystemDescription =>
+      'Fingerprint, face or your device\'s screen lock';
+
+  @override
+  String get appLockMethodSystemUnavailable =>
+      'This device has no system verification';
+
+  @override
+  String get appLockMethodPassword => 'App password';
+
+  @override
+  String get appLockMethodPasswordDescription =>
+      'A password only for this app, separate from your screen lock';
+
+  @override
+  String get appPasswordChange => 'Change app password';
+
+  @override
+  String get appPasswordBiometric => 'Fingerprint / face unlock';
+
+  @override
+  String get appPasswordBiometricSubtitle =>
+      'Use fingerprint or face instead of the app password when unlocking';
+
+  @override
+  String get appPasswordBiometricEnableReason =>
+      'Verify your fingerprint or face to turn on quick unlock';
+
+  @override
+  String get appPasswordBiometricFailed =>
+      'Couldn\'t verify your fingerprint or face';
+
+  @override
+  String get appLockSwitchToPasswordReason =>
+      'Verify your identity to switch to an app password';
+
+  @override
+  String get appLockSwitchToSystemReason =>
+      'Enter the app password to switch to system verification';
+
+  @override
+  String get appLockSwitchVerifyFailed =>
+      'Verification failed. The method was not changed.';
+
+  @override
+  String get appLockSystemUnsupported =>
+      'This device can\'t use system verification (no screen lock is set).';
+
+  @override
+  String get appLockSwitchedToSystem => 'Switched to system verification';
+
+  @override
+  String get appPasswordChangeReason => 'Enter your current app password';
+
+  @override
+  String get appPasswordSetDone => 'App password set';
+
+  @override
+  String get appPasswordChangedDone => 'App password changed';
+
+  @override
+  String get appLockPasswordSubtitle => 'Enter the app password to continue';
+
+  @override
+  String get appPasswordVerifyTitle => 'Verify identity';
+
+  @override
+  String get appPasswordHint => 'App password';
+
+  @override
+  String get appPasswordShow => 'Show password';
+
+  @override
+  String get appPasswordHide => 'Hide password';
+
+  @override
+  String get appPasswordUnlock => 'Unlock';
+
+  @override
+  String get appPasswordUseBiometric => 'Use fingerprint or face';
+
+  @override
+  String get appPasswordWrong => 'Wrong password. Try again.';
+
+  @override
+  String appPasswordWrongAttemptsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wrong password. $count more mistakes and you will have to wait.',
+      one: 'Wrong password. 1 more mistake and you will have to wait.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appPasswordLockedOutSeconds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Too many attempts. Try again in $count seconds.',
+      one: 'Too many attempts. Try again in 1 second.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appPasswordLockedOutMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Too many attempts. Try again in $count minutes.',
+      one: 'Too many attempts. Try again in 1 minute.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appPasswordUnavailable => 'No app password is set';
+
+  @override
+  String get appPasswordForgot => 'Forgot password?';
+
+  @override
+  String get appPasswordForgotMessage =>
+      'The app password can\'t be recovered. You can only clear the app\'s data or reinstall it, then restore your diaries from a backup.';
+
+  @override
+  String get appPasswordSetupTitle => 'Set app password';
+
+  @override
+  String get appPasswordChangeTitle => 'Change app password';
+
+  @override
+  String get appPasswordNewTitle => 'Enter a new password';
+
+  @override
+  String appPasswordRulesHint(int min, int max) {
+    return '$min–$max characters, case-sensitive, no spaces';
+  }
+
+  @override
+  String get appPasswordConfirmTitle => 'Enter it again';
+
+  @override
+  String get appPasswordConfirmSubtitle => 'Make sure both entries match';
+
+  @override
+  String get appPasswordNext => 'Next';
+
+  @override
+  String get appPasswordDone => 'Done';
+
+  @override
+  String appPasswordTooShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'At least $count characters',
+      one: 'At least 1 character',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appPasswordTooLong(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'At most $count characters',
+      one: 'At most 1 character',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appPasswordWhitespace => 'No spaces allowed';
+
+  @override
+  String get appPasswordMismatch =>
+      'The two entries don\'t match. Start again.';
+
+  @override
+  String get appPasswordNoRecoveryNote =>
+      'The app password is stored only on this device and can\'t be recovered. If you forget it, you can only clear the app\'s data or reinstall it, then restore your diaries from a backup.';
 }

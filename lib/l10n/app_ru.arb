@@ -238,7 +238,7 @@
   "@settingsAppLockSubtitle": {
     "description": "Subtitle for app lock switch in settings."
   },
-  "appLockNotSupported": "Это устройство не поддерживает локальную проверку подлинности, поэтому блокировку приложения включить нельзя.",
+  "appLockNotSupported": "Сейчас нельзя подтвердить личность. Настройте блокировку экрана или перейдите на пароль приложения, затем включите блокировку.",
   "@appLockNotSupported": {
     "description": "Prompt shown when local authentication is unsupported."
   },
@@ -2195,7 +2195,7 @@
   "@videoPosterHint": {
     "description": "Platforms that cannot play videos inline: caption under the video poster card."
   },
-  "deviceAuthUnavailable": "На этом устройстве нет системной проверки (отпечаток, лицо или пароль), поэтому блокировка недоступна",
+  "deviceAuthUnavailable": "На этом устройстве нет системной проверки. Задайте пароль приложения в разделе «Данные и конфиденциальность → Блокировка и пароль», чтобы пользоваться блокировкой",
   "@deviceAuthUnavailable": {
     "description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."
   },
@@ -9713,7 +9713,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Чтобы открыть их, настройте блокировку экрана в системных настройках.",
+  "notebookLockUnsupportedMessage": "На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Чтобы открыть их, настройте блокировку экрана в системных настройках или перейдите на пароль приложения в разделе «Данные и конфиденциальность → Блокировка и пароль».",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -14688,7 +14688,7 @@
   "@lanSyncPairAuthFailed": {
     "description": "Hint on the pairing sheet when device authentication was cancelled or failed."
   },
-  "lanSyncPairAuthUnsupported": "На этом устройстве включена блокировка приложения или есть заблокированные блокноты, но не настроена блокировка экрана, поэтому подтвердить личность невозможно. Сначала настройте блокировку экрана в системных настройках.",
+  "lanSyncPairAuthUnsupported": "На этом устройстве включена блокировка приложения или есть заблокированные блокноты, но не настроена блокировка экрана, поэтому подтвердить личность невозможно. Сначала настройте блокировку экрана в системных настройках или перейдите на пароль приложения.",
   "@lanSyncPairAuthUnsupported": {
     "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
   },
@@ -18276,5 +18276,250 @@
   "textSelectionMenuLess": "Свернуть",
   "@textSelectionMenuLess": {
     "description": "Last button of the expanded text selection menu: hides the remaining actions."
+  },
+  "settingsAppLockAndPassword": "Блокировка и пароль",
+  "@settingsAppLockAndPassword": {
+    "description": "Data & privacy entry and page title for app lock and verification method."
+  },
+  "appLockStatusSystem": "Включена · системная проверка",
+  "@appLockStatusSystem": {
+    "description": "Entry subtitle: app lock on, using system verification."
+  },
+  "appLockStatusPassword": "Включена · пароль приложения",
+  "@appLockStatusPassword": {
+    "description": "Entry subtitle: app lock on, using the app password."
+  },
+  "appLockStatusOff": "Выключена",
+  "@appLockStatusOff": {
+    "description": "Entry subtitle: app lock off."
+  },
+  "appLockStatusOffPassword": "Выключена · заблокированные блокноты открываются паролем приложения",
+  "@appLockStatusOffPassword": {
+    "description": "Entry subtitle: app lock off but an app password is set (used by locked notebooks)."
+  },
+  "appLockNeedsPassword": "На этом устройстве нет системной проверки. Задайте пароль приложения, чтобы включить блокировку.",
+  "@appLockNeedsPassword": {
+    "description": "App lock switch subtitle when the device cannot lock (e.g. Linux without an app password)."
+  },
+  "appLockMethodTitle": "Способ проверки",
+  "@appLockMethodTitle": {
+    "description": "Section title for choosing system verification or the app password."
+  },
+  "appLockMethodFooter": "Этот способ используется для блокировки приложения, заблокированных блокнотов и подтверждения сопряжения при синхронизации по локальной сети.",
+  "@appLockMethodFooter": {
+    "description": "Footer under the verification method choices."
+  },
+  "appLockMethodSystem": "Системная проверка",
+  "@appLockMethodSystem": {
+    "description": "Verification method option: fingerprint, face or screen lock."
+  },
+  "appLockMethodSystemDescription": "Отпечаток, лицо или блокировка экрана устройства",
+  "@appLockMethodSystemDescription": {
+    "description": "Description of the system verification option."
+  },
+  "appLockMethodSystemUnavailable": "На этом устройстве нет системной проверки",
+  "@appLockMethodSystemUnavailable": {
+    "description": "Description of the disabled system verification option (e.g. Linux)."
+  },
+  "appLockMethodPassword": "Пароль приложения",
+  "@appLockMethodPassword": {
+    "description": "Verification method option: a password just for this app."
+  },
+  "appLockMethodPasswordDescription": "Пароль только для этого приложения, не связанный с блокировкой экрана",
+  "@appLockMethodPasswordDescription": {
+    "description": "Description of the app password option."
+  },
+  "appPasswordChange": "Изменить пароль приложения",
+  "@appPasswordChange": {
+    "description": "Settings row that changes the app password."
+  },
+  "appPasswordBiometric": "Разблокировка отпечатком / лицом",
+  "@appPasswordBiometric": {
+    "description": "Switch: allow fingerprint or face as a shortcut for the app password."
+  },
+  "appPasswordBiometricSubtitle": "При разблокировке можно использовать отпечаток или лицо вместо пароля",
+  "@appPasswordBiometricSubtitle": {
+    "description": "Subtitle of the fingerprint / face unlock switch."
+  },
+  "appPasswordBiometricEnableReason": "Подтвердите отпечаток или лицо, чтобы включить быструю разблокировку",
+  "@appPasswordBiometricEnableReason": {
+    "description": "System prompt reason when turning on fingerprint / face unlock."
+  },
+  "appPasswordBiometricFailed": "Не удалось подтвердить отпечаток или лицо",
+  "@appPasswordBiometricFailed": {
+    "description": "Snack bar when fingerprint / face verification fails while turning it on."
+  },
+  "appLockSwitchToPasswordReason": "Подтвердите личность, чтобы перейти на пароль приложения",
+  "@appLockSwitchToPasswordReason": {
+    "description": "System prompt reason before switching to the app password."
+  },
+  "appLockSwitchToSystemReason": "Введите пароль приложения, чтобы перейти на системную проверку",
+  "@appLockSwitchToSystemReason": {
+    "description": "Password page message before switching back to system verification."
+  },
+  "appLockSwitchVerifyFailed": "Проверка не пройдена. Способ не изменён.",
+  "@appLockSwitchVerifyFailed": {
+    "description": "Snack bar when verification fails while switching the method."
+  },
+  "appLockSystemUnsupported": "На этом устройстве нельзя использовать системную проверку (не задана блокировка экрана).",
+  "@appLockSystemUnsupported": {
+    "description": "Snack bar when switching to system verification on a device without it."
+  },
+  "appLockSwitchedToSystem": "Включена системная проверка",
+  "@appLockSwitchedToSystem": {
+    "description": "Snack bar after switching back to system verification."
+  },
+  "appPasswordChangeReason": "Введите текущий пароль приложения",
+  "@appPasswordChangeReason": {
+    "description": "Password page message before changing the app password."
+  },
+  "appPasswordSetDone": "Пароль приложения задан",
+  "@appPasswordSetDone": {
+    "description": "Snack bar after setting the app password."
+  },
+  "appPasswordChangedDone": "Пароль приложения изменён",
+  "@appPasswordChangedDone": {
+    "description": "Snack bar after changing the app password."
+  },
+  "appLockPasswordSubtitle": "Введите пароль приложения, чтобы продолжить",
+  "@appLockPasswordSubtitle": {
+    "description": "App lock screen message in app password mode."
+  },
+  "appPasswordVerifyTitle": "Подтверждение личности",
+  "@appPasswordVerifyTitle": {
+    "description": "Title of the app password verification page."
+  },
+  "appPasswordHint": "Пароль приложения",
+  "@appPasswordHint": {
+    "description": "Hint text inside the app password field."
+  },
+  "appPasswordShow": "Показать пароль",
+  "@appPasswordShow": {
+    "description": "Tooltip of the button that reveals the password."
+  },
+  "appPasswordHide": "Скрыть пароль",
+  "@appPasswordHide": {
+    "description": "Tooltip of the button that hides the password."
+  },
+  "appPasswordUnlock": "Разблокировать",
+  "@appPasswordUnlock": {
+    "description": "Button that checks the app password."
+  },
+  "appPasswordUseBiometric": "Отпечаток или лицо",
+  "@appPasswordUseBiometric": {
+    "description": "Button that unlocks with fingerprint or face instead of the app password."
+  },
+  "appPasswordWrong": "Неверный пароль. Попробуйте ещё раз.",
+  "@appPasswordWrong": {
+    "description": "Shown under the field after a wrong app password."
+  },
+  "appPasswordWrongAttemptsLeft": "{count, plural, one{Неверный пароль. Ещё {count} ошибка — и придётся подождать.} few{Неверный пароль. Ещё {count} ошибки — и придётся подождать.} many{Неверный пароль. Ещё {count} ошибок — и придётся подождать.} other{Неверный пароль. Ещё {count} ошибки — и придётся подождать.}}",
+  "@appPasswordWrongAttemptsLeft": {
+    "description": "Wrong app password; count is how many more mistakes before a wait.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordLockedOutSeconds": "{count, plural, one{Слишком много попыток. Повторите через {count} секунду.} few{Слишком много попыток. Повторите через {count} секунды.} many{Слишком много попыток. Повторите через {count} секунд.} other{Слишком много попыток. Повторите через {count} секунды.}}",
+  "@appPasswordLockedOutSeconds": {
+    "description": "Lockout countdown in seconds after too many wrong app passwords.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordLockedOutMinutes": "{count, plural, one{Слишком много попыток. Повторите через {count} минуту.} few{Слишком много попыток. Повторите через {count} минуты.} many{Слишком много попыток. Повторите через {count} минут.} other{Слишком много попыток. Повторите через {count} минуты.}}",
+  "@appPasswordLockedOutMinutes": {
+    "description": "Lockout countdown in minutes (rounded up) after too many wrong app passwords.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordUnavailable": "Пароль приложения не задан",
+  "@appPasswordUnavailable": {
+    "description": "Shown if the app password disappeared while the lock screen was open."
+  },
+  "appPasswordForgot": "Забыли пароль?",
+  "@appPasswordForgot": {
+    "description": "Text button on the lock screen that explains the app password cannot be recovered."
+  },
+  "appPasswordForgotMessage": "Пароль приложения нельзя восстановить. Можно только очистить данные приложения или переустановить его, а затем восстановить дневник из резервной копии.",
+  "@appPasswordForgotMessage": {
+    "description": "Explanation shown after tapping “Forgot password?”."
+  },
+  "appPasswordSetupTitle": "Задать пароль приложения",
+  "@appPasswordSetupTitle": {
+    "description": "Title of the page that sets a new app password."
+  },
+  "appPasswordChangeTitle": "Изменить пароль приложения",
+  "@appPasswordChangeTitle": {
+    "description": "Title of the page that changes the app password."
+  },
+  "appPasswordNewTitle": "Введите новый пароль",
+  "@appPasswordNewTitle": {
+    "description": "First step heading when setting the app password."
+  },
+  "appPasswordRulesHint": "От {min} до {max} символов, с учётом регистра, без пробелов",
+  "@appPasswordRulesHint": {
+    "description": "Rules shown under the first step heading.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordConfirmTitle": "Введите ещё раз",
+  "@appPasswordConfirmTitle": {
+    "description": "Second step heading when setting the app password."
+  },
+  "appPasswordConfirmSubtitle": "Убедитесь, что оба ввода совпадают",
+  "@appPasswordConfirmSubtitle": {
+    "description": "Second step description."
+  },
+  "appPasswordNext": "Далее",
+  "@appPasswordNext": {
+    "description": "Button that moves to the confirmation step."
+  },
+  "appPasswordDone": "Готово",
+  "@appPasswordDone": {
+    "description": "Button that saves the new app password."
+  },
+  "appPasswordTooShort": "{count, plural, one{Не меньше {count} символа} few{Не меньше {count} символов} many{Не меньше {count} символов} other{Не меньше {count} символа}}",
+  "@appPasswordTooShort": {
+    "description": "Error when the new app password is too short.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordTooLong": "{count, plural, one{Не больше {count} символа} few{Не больше {count} символов} many{Не больше {count} символов} other{Не больше {count} символа}}",
+  "@appPasswordTooLong": {
+    "description": "Error when the new app password is too long.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordWhitespace": "Пробелы не допускаются",
+  "@appPasswordWhitespace": {
+    "description": "Error when the new app password contains whitespace."
+  },
+  "appPasswordMismatch": "Вводы не совпадают. Начните заново.",
+  "@appPasswordMismatch": {
+    "description": "Error when the confirmation does not match the first entry."
+  },
+  "appPasswordNoRecoveryNote": "Пароль приложения хранится только на этом устройстве и не восстанавливается. Если вы его забудете, останется только очистить данные приложения или переустановить его и восстановить дневник из резервной копии.",
+  "@appPasswordNoRecoveryNote": {
+    "description": "Note on the set-password page that the app password cannot be recovered."
   }
 }

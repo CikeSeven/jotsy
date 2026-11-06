@@ -77,6 +77,9 @@ abstract final class AppContentWidth {
   /// 网格：瀑布流、日历等可横向多列的内容。
   static const double grid = 1200;
 
+  /// 验证：应用锁、应用密码输入与设置的居中竖列（输入框与按钮不拉得太长）。
+  static const double prompt = 400;
+
   /// 首页左侧导航栏的宽度（宽窗口时取代底栏）。
   static const double navRail = 96;
 

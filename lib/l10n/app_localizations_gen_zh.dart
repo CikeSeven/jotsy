@@ -177,7 +177,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAppLockSubtitle => '开启后每次进入应用都需要身份验证';
 
   @override
-  String get appLockNotSupported => '当前设备不支持本地身份验证，无法启用应用锁。';
+  String get appLockNotSupported => '现在无法验证身份。请先设置锁屏密码，或改用应用密码，再开启应用锁。';
 
   @override
   String get appLockTitle => '应用已锁定';
@@ -1546,7 +1546,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get videoPosterHint => '点按用系统播放器打开';
 
   @override
-  String get deviceAuthUnavailable => '这台设备没有系统身份验证（指纹、面容或系统密码），无法上锁';
+  String get deviceAuthUnavailable =>
+      '这台设备没有系统验证，在 数据与隐私 → 应用锁与密码 里设置应用密码后才能上锁';
 
   @override
   String get calendarYearSaveImage => '保存这一年的图片…';
@@ -6799,7 +6800,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      '这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码后就能打开。';
+      '这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码，或在 数据与隐私 → 应用锁与密码 里改用应用密码后就能打开。';
 
   @override
   String get notebookLockUnsupportedAction => '知道了';
@@ -10215,7 +10216,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncPairAuthUnsupported =>
-      '这台设备开启了应用锁或有上锁的日记本，但没有设置锁屏密码，无法验证身份。请先在系统里设置锁屏密码。';
+      '这台设备开启了应用锁或有上锁的日记本，但没有设置锁屏密码，无法验证身份。请先在系统里设置锁屏密码，或改用应用密码。';
 
   @override
   String get lanSyncPairFailUnreachable =>
@@ -12744,4 +12745,176 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get textSelectionMenuLess => '收起';
+
+  @override
+  String get settingsAppLockAndPassword => '应用锁与密码';
+
+  @override
+  String get appLockStatusSystem => '已开启 · 系统验证';
+
+  @override
+  String get appLockStatusPassword => '已开启 · 应用密码';
+
+  @override
+  String get appLockStatusOff => '未开启';
+
+  @override
+  String get appLockStatusOffPassword => '未开启 · 上锁的日记本使用应用密码';
+
+  @override
+  String get appLockNeedsPassword => '这台设备没有系统验证，设置应用密码后才能开启';
+
+  @override
+  String get appLockMethodTitle => '验证方式';
+
+  @override
+  String get appLockMethodFooter => '应用锁、上锁的日记本与局域网配对确认都用这种方式验证';
+
+  @override
+  String get appLockMethodSystem => '系统验证';
+
+  @override
+  String get appLockMethodSystemDescription => '指纹、面容或手机锁屏密码';
+
+  @override
+  String get appLockMethodSystemUnavailable => '这台设备没有系统验证';
+
+  @override
+  String get appLockMethodPassword => '应用密码';
+
+  @override
+  String get appLockMethodPasswordDescription => '应用自己的密码，与手机锁屏无关';
+
+  @override
+  String get appPasswordChange => '修改应用密码';
+
+  @override
+  String get appPasswordBiometric => '指纹 / 面容解锁';
+
+  @override
+  String get appPasswordBiometricSubtitle => '解锁时可以用指纹或面容代替应用密码';
+
+  @override
+  String get appPasswordBiometricEnableReason => '验证指纹或面容以开启快捷解锁';
+
+  @override
+  String get appPasswordBiometricFailed => '未能验证指纹或面容';
+
+  @override
+  String get appLockSwitchToPasswordReason => '请验证身份后改用应用密码';
+
+  @override
+  String get appLockSwitchToSystemReason => '输入应用密码后改用系统验证';
+
+  @override
+  String get appLockSwitchVerifyFailed => '身份验证未通过，验证方式没有改变。';
+
+  @override
+  String get appLockSystemUnsupported => '这台设备不能使用系统验证（没有设置锁屏密码）。';
+
+  @override
+  String get appLockSwitchedToSystem => '已改用系统验证';
+
+  @override
+  String get appPasswordChangeReason => '输入当前的应用密码';
+
+  @override
+  String get appPasswordSetDone => '应用密码已设置';
+
+  @override
+  String get appPasswordChangedDone => '应用密码已修改';
+
+  @override
+  String get appLockPasswordSubtitle => '输入应用密码继续使用';
+
+  @override
+  String get appPasswordVerifyTitle => '验证身份';
+
+  @override
+  String get appPasswordHint => '应用密码';
+
+  @override
+  String get appPasswordShow => '显示密码';
+
+  @override
+  String get appPasswordHide => '隐藏密码';
+
+  @override
+  String get appPasswordUnlock => '解锁';
+
+  @override
+  String get appPasswordUseBiometric => '使用指纹或面容';
+
+  @override
+  String get appPasswordWrong => '密码不对，请重新输入';
+
+  @override
+  String appPasswordWrongAttemptsLeft(int count) {
+    return '密码不对，再错 $count 次需要等待';
+  }
+
+  @override
+  String appPasswordLockedOutSeconds(int count) {
+    return '输错次数太多，请 $count 秒后再试';
+  }
+
+  @override
+  String appPasswordLockedOutMinutes(int count) {
+    return '输错次数太多，请 $count 分钟后再试';
+  }
+
+  @override
+  String get appPasswordUnavailable => '没有设置应用密码';
+
+  @override
+  String get appPasswordForgot => '忘记密码？';
+
+  @override
+  String get appPasswordForgotMessage => '应用密码无法找回。只能清除应用数据或卸载重装，再从备份恢复日记。';
+
+  @override
+  String get appPasswordSetupTitle => '设置应用密码';
+
+  @override
+  String get appPasswordChangeTitle => '修改应用密码';
+
+  @override
+  String get appPasswordNewTitle => '输入新密码';
+
+  @override
+  String appPasswordRulesHint(int min, int max) {
+    return '$min–$max 位，区分大小写，不能有空格';
+  }
+
+  @override
+  String get appPasswordConfirmTitle => '再输入一次';
+
+  @override
+  String get appPasswordConfirmSubtitle => '确认两次输入一致';
+
+  @override
+  String get appPasswordNext => '下一步';
+
+  @override
+  String get appPasswordDone => '完成';
+
+  @override
+  String appPasswordTooShort(int count) {
+    return '至少 $count 位';
+  }
+
+  @override
+  String appPasswordTooLong(int count) {
+    return '最多 $count 位';
+  }
+
+  @override
+  String get appPasswordWhitespace => '不能包含空格';
+
+  @override
+  String get appPasswordMismatch => '两次输入不一致，请重新设置';
+
+  @override
+  String get appPasswordNoRecoveryNote =>
+      '应用密码只保存在这台设备上，无法找回。忘记后只能清除应用数据或卸载重装，再从备份恢复日记。';
 }

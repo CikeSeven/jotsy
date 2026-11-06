@@ -219,12 +219,18 @@ final appPasswordHasherProvider = Provider<AppPasswordHasher>(
   (Ref ref) => const AppPasswordHasher(),
 );
 
+/// 输错限流用的时钟；界面倒数与存储共用同一个，测试覆盖为假时钟。
+final appPasswordClockProvider = Provider<DateTime Function()>(
+  (Ref ref) => DateTime.now,
+);
+
 /// 应用密码存储。与 SettingsService 分离：内容不进备份、不同步。
 final appPasswordStoreProvider = FutureProvider<AppPasswordStore>((
   Ref ref,
 ) async {
   final store = await AppPasswordStore.create(
     hasher: ref.read(appPasswordHasherProvider),
+    clock: ref.read(appPasswordClockProvider),
   );
   ref.onDispose(store.dispose);
   return store;

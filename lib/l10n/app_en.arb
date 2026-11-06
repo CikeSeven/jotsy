@@ -238,7 +238,7 @@
   "@settingsAppLockSubtitle": {
     "description": "Subtitle for app lock switch in settings."
   },
-  "appLockNotSupported": "This device does not support local authentication, so app lock cannot be enabled.",
+  "appLockNotSupported": "Your identity can't be verified right now. Set a screen lock or switch to an app password, then turn on app lock.",
   "@appLockNotSupported": {
     "description": "Prompt shown when local authentication is unsupported."
   },
@@ -2162,7 +2162,7 @@
   "@videoOpenExternally": {"description": "Platforms that cannot play videos inline (Linux, Windows): tooltip of the video card."},
   "videoPosterHint": "Click to open in the system player",
   "@videoPosterHint": {"description": "Platforms that cannot play videos inline: caption under the video poster card."},
-  "deviceAuthUnavailable": "This device has no system verification (fingerprint, face or password), so locking isn't available",
+  "deviceAuthUnavailable": "This device has no system verification. Set an app password in Data & Privacy → App lock & password to use locking",
   "@deviceAuthUnavailable": {"description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."},
   "calendarYearSaveImage": "Save this year as an image…",
   "@calendarYearSaveImage": {"description": "Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image."},
@@ -9654,7 +9654,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings to open them.",
+  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings, or switch to an app password in Data & Privacy → App lock & password, to open them.",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -14143,7 +14143,7 @@
   "@lanSyncPairAuthFailed": {
     "description": "Hint on the pairing sheet when device authentication was cancelled or failed."
   },
-  "lanSyncPairAuthUnsupported": "This device uses app lock or has locked notebooks but no screen lock, so your identity can't be verified. Set a screen lock in system settings first.",
+  "lanSyncPairAuthUnsupported": "This device uses app lock or has locked notebooks but no screen lock, so your identity can't be verified. Set a screen lock in system settings or switch to an app password first.",
   "@lanSyncPairAuthUnsupported": {
     "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
   },
@@ -17709,5 +17709,250 @@
   "textSelectionMenuLess": "Less",
   "@textSelectionMenuLess": {
     "description": "Last button of the expanded text selection menu: hides the remaining actions."
+  },
+  "settingsAppLockAndPassword": "App lock & password",
+  "@settingsAppLockAndPassword": {
+    "description": "Data & privacy entry and page title for app lock and verification method."
+  },
+  "appLockStatusSystem": "On · System verification",
+  "@appLockStatusSystem": {
+    "description": "Entry subtitle: app lock on, using system verification."
+  },
+  "appLockStatusPassword": "On · App password",
+  "@appLockStatusPassword": {
+    "description": "Entry subtitle: app lock on, using the app password."
+  },
+  "appLockStatusOff": "Off",
+  "@appLockStatusOff": {
+    "description": "Entry subtitle: app lock off."
+  },
+  "appLockStatusOffPassword": "Off · Locked notebooks use the app password",
+  "@appLockStatusOffPassword": {
+    "description": "Entry subtitle: app lock off but an app password is set (used by locked notebooks)."
+  },
+  "appLockNeedsPassword": "This device has no system verification. Set an app password to turn on app lock.",
+  "@appLockNeedsPassword": {
+    "description": "App lock switch subtitle when the device cannot lock (e.g. Linux without an app password)."
+  },
+  "appLockMethodTitle": "Verification method",
+  "@appLockMethodTitle": {
+    "description": "Section title for choosing system verification or the app password."
+  },
+  "appLockMethodFooter": "App lock, locked notebooks and LAN sync pairing confirmation all use this method.",
+  "@appLockMethodFooter": {
+    "description": "Footer under the verification method choices."
+  },
+  "appLockMethodSystem": "System verification",
+  "@appLockMethodSystem": {
+    "description": "Verification method option: fingerprint, face or screen lock."
+  },
+  "appLockMethodSystemDescription": "Fingerprint, face or your device's screen lock",
+  "@appLockMethodSystemDescription": {
+    "description": "Description of the system verification option."
+  },
+  "appLockMethodSystemUnavailable": "This device has no system verification",
+  "@appLockMethodSystemUnavailable": {
+    "description": "Description of the disabled system verification option (e.g. Linux)."
+  },
+  "appLockMethodPassword": "App password",
+  "@appLockMethodPassword": {
+    "description": "Verification method option: a password just for this app."
+  },
+  "appLockMethodPasswordDescription": "A password only for this app, separate from your screen lock",
+  "@appLockMethodPasswordDescription": {
+    "description": "Description of the app password option."
+  },
+  "appPasswordChange": "Change app password",
+  "@appPasswordChange": {
+    "description": "Settings row that changes the app password."
+  },
+  "appPasswordBiometric": "Fingerprint / face unlock",
+  "@appPasswordBiometric": {
+    "description": "Switch: allow fingerprint or face as a shortcut for the app password."
+  },
+  "appPasswordBiometricSubtitle": "Use fingerprint or face instead of the app password when unlocking",
+  "@appPasswordBiometricSubtitle": {
+    "description": "Subtitle of the fingerprint / face unlock switch."
+  },
+  "appPasswordBiometricEnableReason": "Verify your fingerprint or face to turn on quick unlock",
+  "@appPasswordBiometricEnableReason": {
+    "description": "System prompt reason when turning on fingerprint / face unlock."
+  },
+  "appPasswordBiometricFailed": "Couldn't verify your fingerprint or face",
+  "@appPasswordBiometricFailed": {
+    "description": "Snack bar when fingerprint / face verification fails while turning it on."
+  },
+  "appLockSwitchToPasswordReason": "Verify your identity to switch to an app password",
+  "@appLockSwitchToPasswordReason": {
+    "description": "System prompt reason before switching to the app password."
+  },
+  "appLockSwitchToSystemReason": "Enter the app password to switch to system verification",
+  "@appLockSwitchToSystemReason": {
+    "description": "Password page message before switching back to system verification."
+  },
+  "appLockSwitchVerifyFailed": "Verification failed. The method was not changed.",
+  "@appLockSwitchVerifyFailed": {
+    "description": "Snack bar when verification fails while switching the method."
+  },
+  "appLockSystemUnsupported": "This device can't use system verification (no screen lock is set).",
+  "@appLockSystemUnsupported": {
+    "description": "Snack bar when switching to system verification on a device without it."
+  },
+  "appLockSwitchedToSystem": "Switched to system verification",
+  "@appLockSwitchedToSystem": {
+    "description": "Snack bar after switching back to system verification."
+  },
+  "appPasswordChangeReason": "Enter your current app password",
+  "@appPasswordChangeReason": {
+    "description": "Password page message before changing the app password."
+  },
+  "appPasswordSetDone": "App password set",
+  "@appPasswordSetDone": {
+    "description": "Snack bar after setting the app password."
+  },
+  "appPasswordChangedDone": "App password changed",
+  "@appPasswordChangedDone": {
+    "description": "Snack bar after changing the app password."
+  },
+  "appLockPasswordSubtitle": "Enter the app password to continue",
+  "@appLockPasswordSubtitle": {
+    "description": "App lock screen message in app password mode."
+  },
+  "appPasswordVerifyTitle": "Verify identity",
+  "@appPasswordVerifyTitle": {
+    "description": "Title of the app password verification page."
+  },
+  "appPasswordHint": "App password",
+  "@appPasswordHint": {
+    "description": "Hint text inside the app password field."
+  },
+  "appPasswordShow": "Show password",
+  "@appPasswordShow": {
+    "description": "Tooltip of the button that reveals the password."
+  },
+  "appPasswordHide": "Hide password",
+  "@appPasswordHide": {
+    "description": "Tooltip of the button that hides the password."
+  },
+  "appPasswordUnlock": "Unlock",
+  "@appPasswordUnlock": {
+    "description": "Button that checks the app password."
+  },
+  "appPasswordUseBiometric": "Use fingerprint or face",
+  "@appPasswordUseBiometric": {
+    "description": "Button that unlocks with fingerprint or face instead of the app password."
+  },
+  "appPasswordWrong": "Wrong password. Try again.",
+  "@appPasswordWrong": {
+    "description": "Shown under the field after a wrong app password."
+  },
+  "appPasswordWrongAttemptsLeft": "{count, plural, =1{Wrong password. 1 more mistake and you will have to wait.} other{Wrong password. {count} more mistakes and you will have to wait.}}",
+  "@appPasswordWrongAttemptsLeft": {
+    "description": "Wrong app password; count is how many more mistakes before a wait.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordLockedOutSeconds": "{count, plural, =1{Too many attempts. Try again in 1 second.} other{Too many attempts. Try again in {count} seconds.}}",
+  "@appPasswordLockedOutSeconds": {
+    "description": "Lockout countdown in seconds after too many wrong app passwords.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordLockedOutMinutes": "{count, plural, =1{Too many attempts. Try again in 1 minute.} other{Too many attempts. Try again in {count} minutes.}}",
+  "@appPasswordLockedOutMinutes": {
+    "description": "Lockout countdown in minutes (rounded up) after too many wrong app passwords.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordUnavailable": "No app password is set",
+  "@appPasswordUnavailable": {
+    "description": "Shown if the app password disappeared while the lock screen was open."
+  },
+  "appPasswordForgot": "Forgot password?",
+  "@appPasswordForgot": {
+    "description": "Text button on the lock screen that explains the app password cannot be recovered."
+  },
+  "appPasswordForgotMessage": "The app password can't be recovered. You can only clear the app's data or reinstall it, then restore your diaries from a backup.",
+  "@appPasswordForgotMessage": {
+    "description": "Explanation shown after tapping “Forgot password?”."
+  },
+  "appPasswordSetupTitle": "Set app password",
+  "@appPasswordSetupTitle": {
+    "description": "Title of the page that sets a new app password."
+  },
+  "appPasswordChangeTitle": "Change app password",
+  "@appPasswordChangeTitle": {
+    "description": "Title of the page that changes the app password."
+  },
+  "appPasswordNewTitle": "Enter a new password",
+  "@appPasswordNewTitle": {
+    "description": "First step heading when setting the app password."
+  },
+  "appPasswordRulesHint": "{min}–{max} characters, case-sensitive, no spaces",
+  "@appPasswordRulesHint": {
+    "description": "Rules shown under the first step heading.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordConfirmTitle": "Enter it again",
+  "@appPasswordConfirmTitle": {
+    "description": "Second step heading when setting the app password."
+  },
+  "appPasswordConfirmSubtitle": "Make sure both entries match",
+  "@appPasswordConfirmSubtitle": {
+    "description": "Second step description."
+  },
+  "appPasswordNext": "Next",
+  "@appPasswordNext": {
+    "description": "Button that moves to the confirmation step."
+  },
+  "appPasswordDone": "Done",
+  "@appPasswordDone": {
+    "description": "Button that saves the new app password."
+  },
+  "appPasswordTooShort": "{count, plural, =1{At least 1 character} other{At least {count} characters}}",
+  "@appPasswordTooShort": {
+    "description": "Error when the new app password is too short.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordTooLong": "{count, plural, =1{At most 1 character} other{At most {count} characters}}",
+  "@appPasswordTooLong": {
+    "description": "Error when the new app password is too long.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordWhitespace": "No spaces allowed",
+  "@appPasswordWhitespace": {
+    "description": "Error when the new app password contains whitespace."
+  },
+  "appPasswordMismatch": "The two entries don't match. Start again.",
+  "@appPasswordMismatch": {
+    "description": "Error when the confirmation does not match the first entry."
+  },
+  "appPasswordNoRecoveryNote": "The app password is stored only on this device and can't be recovered. If you forget it, you can only clear the app's data or reinstall it, then restore your diaries from a backup.",
+  "@appPasswordNoRecoveryNote": {
+    "description": "Note on the set-password page that the app password cannot be recovered."
   }
 }

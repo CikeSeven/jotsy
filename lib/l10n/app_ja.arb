@@ -238,7 +238,7 @@
   "@settingsAppLockSubtitle": {
     "description": "Subtitle for app lock switch in settings."
   },
-  "appLockNotSupported": "この端末はローカル認証に対応していないため、アプリロックを有効にできません。",
+  "appLockNotSupported": "現在は本人確認ができません。画面ロックを設定するか、アプリのパスワードに切り替えてから、アプリロックをオンにしてください。",
   "@appLockNotSupported": {
     "description": "Prompt shown when local authentication is unsupported."
   },
@@ -2195,7 +2195,7 @@
   "@videoPosterHint": {
     "description": "Platforms that cannot play videos inline: caption under the video poster card."
   },
-  "deviceAuthUnavailable": "この端末にはシステムの認証（指紋、顔、パスワード）がないため、ロックできません",
+  "deviceAuthUnavailable": "この端末にはシステム認証がありません。データとプライバシー → アプリロックとパスワード でアプリのパスワードを設定するとロックできます",
   "@deviceAuthUnavailable": {
     "description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."
   },
@@ -9713,7 +9713,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定すると開けるようになります。",
+  "notebookLockUnsupportedMessage": "このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、データとプライバシー → アプリロックとパスワード でアプリのパスワードに切り替えると開けるようになります。",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -14688,7 +14688,7 @@
   "@lanSyncPairAuthFailed": {
     "description": "Hint on the pairing sheet when device authentication was cancelled or failed."
   },
-  "lanSyncPairAuthUnsupported": "このデバイスではアプリロックまたはロック中の日記帳を使っていますが、画面ロックが設定されていないため本人確認ができません。先にシステム設定で画面ロックを設定してください。",
+  "lanSyncPairAuthUnsupported": "このデバイスではアプリロックまたはロック中の日記帳を使っていますが、画面ロックが設定されていないため本人確認ができません。先にシステム設定で画面ロックを設定するか、アプリのパスワードに切り替えてください。",
   "@lanSyncPairAuthUnsupported": {
     "description": "Hint on the pairing sheet when authentication is required but the device has no screen lock."
   },
@@ -18276,5 +18276,250 @@
   "textSelectionMenuLess": "折りたたむ",
   "@textSelectionMenuLess": {
     "description": "Last button of the expanded text selection menu: hides the remaining actions."
+  },
+  "settingsAppLockAndPassword": "アプリロックとパスワード",
+  "@settingsAppLockAndPassword": {
+    "description": "Data & privacy entry and page title for app lock and verification method."
+  },
+  "appLockStatusSystem": "オン · システム認証",
+  "@appLockStatusSystem": {
+    "description": "Entry subtitle: app lock on, using system verification."
+  },
+  "appLockStatusPassword": "オン · アプリのパスワード",
+  "@appLockStatusPassword": {
+    "description": "Entry subtitle: app lock on, using the app password."
+  },
+  "appLockStatusOff": "オフ",
+  "@appLockStatusOff": {
+    "description": "Entry subtitle: app lock off."
+  },
+  "appLockStatusOffPassword": "オフ · ロック中の日記帳はアプリのパスワードを使用",
+  "@appLockStatusOffPassword": {
+    "description": "Entry subtitle: app lock off but an app password is set (used by locked notebooks)."
+  },
+  "appLockNeedsPassword": "この端末にはシステム認証がありません。アプリのパスワードを設定するとオンにできます",
+  "@appLockNeedsPassword": {
+    "description": "App lock switch subtitle when the device cannot lock (e.g. Linux without an app password)."
+  },
+  "appLockMethodTitle": "認証方法",
+  "@appLockMethodTitle": {
+    "description": "Section title for choosing system verification or the app password."
+  },
+  "appLockMethodFooter": "アプリロック、ロック中の日記帳、LAN 同期のペアリング確認はすべてこの方法で認証します",
+  "@appLockMethodFooter": {
+    "description": "Footer under the verification method choices."
+  },
+  "appLockMethodSystem": "システム認証",
+  "@appLockMethodSystem": {
+    "description": "Verification method option: fingerprint, face or screen lock."
+  },
+  "appLockMethodSystemDescription": "指紋、顔、または端末の画面ロック",
+  "@appLockMethodSystemDescription": {
+    "description": "Description of the system verification option."
+  },
+  "appLockMethodSystemUnavailable": "この端末にはシステム認証がありません",
+  "@appLockMethodSystemUnavailable": {
+    "description": "Description of the disabled system verification option (e.g. Linux)."
+  },
+  "appLockMethodPassword": "アプリのパスワード",
+  "@appLockMethodPassword": {
+    "description": "Verification method option: a password just for this app."
+  },
+  "appLockMethodPasswordDescription": "このアプリだけのパスワード。画面ロックとは別です",
+  "@appLockMethodPasswordDescription": {
+    "description": "Description of the app password option."
+  },
+  "appPasswordChange": "アプリのパスワードを変更",
+  "@appPasswordChange": {
+    "description": "Settings row that changes the app password."
+  },
+  "appPasswordBiometric": "指紋 / 顔でロック解除",
+  "@appPasswordBiometric": {
+    "description": "Switch: allow fingerprint or face as a shortcut for the app password."
+  },
+  "appPasswordBiometricSubtitle": "ロック解除時にパスワードの代わりに指紋や顔を使えます",
+  "@appPasswordBiometricSubtitle": {
+    "description": "Subtitle of the fingerprint / face unlock switch."
+  },
+  "appPasswordBiometricEnableReason": "クイック解除をオンにするには指紋または顔で認証してください",
+  "@appPasswordBiometricEnableReason": {
+    "description": "System prompt reason when turning on fingerprint / face unlock."
+  },
+  "appPasswordBiometricFailed": "指紋または顔を認証できませんでした",
+  "@appPasswordBiometricFailed": {
+    "description": "Snack bar when fingerprint / face verification fails while turning it on."
+  },
+  "appLockSwitchToPasswordReason": "アプリのパスワードに切り替えるには認証してください",
+  "@appLockSwitchToPasswordReason": {
+    "description": "System prompt reason before switching to the app password."
+  },
+  "appLockSwitchToSystemReason": "システム認証に切り替えるにはアプリのパスワードを入力してください",
+  "@appLockSwitchToSystemReason": {
+    "description": "Password page message before switching back to system verification."
+  },
+  "appLockSwitchVerifyFailed": "認証できませんでした。認証方法は変更されていません。",
+  "@appLockSwitchVerifyFailed": {
+    "description": "Snack bar when verification fails while switching the method."
+  },
+  "appLockSystemUnsupported": "この端末ではシステム認証を使えません（画面ロックが設定されていません）。",
+  "@appLockSystemUnsupported": {
+    "description": "Snack bar when switching to system verification on a device without it."
+  },
+  "appLockSwitchedToSystem": "システム認証に切り替えました",
+  "@appLockSwitchedToSystem": {
+    "description": "Snack bar after switching back to system verification."
+  },
+  "appPasswordChangeReason": "現在のアプリのパスワードを入力してください",
+  "@appPasswordChangeReason": {
+    "description": "Password page message before changing the app password."
+  },
+  "appPasswordSetDone": "アプリのパスワードを設定しました",
+  "@appPasswordSetDone": {
+    "description": "Snack bar after setting the app password."
+  },
+  "appPasswordChangedDone": "アプリのパスワードを変更しました",
+  "@appPasswordChangedDone": {
+    "description": "Snack bar after changing the app password."
+  },
+  "appLockPasswordSubtitle": "続けるにはアプリのパスワードを入力してください",
+  "@appLockPasswordSubtitle": {
+    "description": "App lock screen message in app password mode."
+  },
+  "appPasswordVerifyTitle": "本人確認",
+  "@appPasswordVerifyTitle": {
+    "description": "Title of the app password verification page."
+  },
+  "appPasswordHint": "アプリのパスワード",
+  "@appPasswordHint": {
+    "description": "Hint text inside the app password field."
+  },
+  "appPasswordShow": "パスワードを表示",
+  "@appPasswordShow": {
+    "description": "Tooltip of the button that reveals the password."
+  },
+  "appPasswordHide": "パスワードを隠す",
+  "@appPasswordHide": {
+    "description": "Tooltip of the button that hides the password."
+  },
+  "appPasswordUnlock": "ロック解除",
+  "@appPasswordUnlock": {
+    "description": "Button that checks the app password."
+  },
+  "appPasswordUseBiometric": "指紋または顔を使う",
+  "@appPasswordUseBiometric": {
+    "description": "Button that unlocks with fingerprint or face instead of the app password."
+  },
+  "appPasswordWrong": "パスワードが違います。もう一度入力してください",
+  "@appPasswordWrong": {
+    "description": "Shown under the field after a wrong app password."
+  },
+  "appPasswordWrongAttemptsLeft": "パスワードが違います。あと{count}回間違えると待ち時間が発生します",
+  "@appPasswordWrongAttemptsLeft": {
+    "description": "Wrong app password; count is how many more mistakes before a wait.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordLockedOutSeconds": "試行回数が多すぎます。{count}秒後にもう一度お試しください",
+  "@appPasswordLockedOutSeconds": {
+    "description": "Lockout countdown in seconds after too many wrong app passwords.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordLockedOutMinutes": "試行回数が多すぎます。{count}分後にもう一度お試しください",
+  "@appPasswordLockedOutMinutes": {
+    "description": "Lockout countdown in minutes (rounded up) after too many wrong app passwords.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordUnavailable": "アプリのパスワードが設定されていません",
+  "@appPasswordUnavailable": {
+    "description": "Shown if the app password disappeared while the lock screen was open."
+  },
+  "appPasswordForgot": "パスワードを忘れた場合",
+  "@appPasswordForgot": {
+    "description": "Text button on the lock screen that explains the app password cannot be recovered."
+  },
+  "appPasswordForgotMessage": "アプリのパスワードは復元できません。アプリのデータを消去するか再インストールしてから、バックアップから日記を復元してください。",
+  "@appPasswordForgotMessage": {
+    "description": "Explanation shown after tapping “Forgot password?”."
+  },
+  "appPasswordSetupTitle": "アプリのパスワードを設定",
+  "@appPasswordSetupTitle": {
+    "description": "Title of the page that sets a new app password."
+  },
+  "appPasswordChangeTitle": "アプリのパスワードを変更",
+  "@appPasswordChangeTitle": {
+    "description": "Title of the page that changes the app password."
+  },
+  "appPasswordNewTitle": "新しいパスワードを入力",
+  "@appPasswordNewTitle": {
+    "description": "First step heading when setting the app password."
+  },
+  "appPasswordRulesHint": "{min}〜{max}文字、大文字と小文字を区別、スペース不可",
+  "@appPasswordRulesHint": {
+    "description": "Rules shown under the first step heading.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordConfirmTitle": "もう一度入力",
+  "@appPasswordConfirmTitle": {
+    "description": "Second step heading when setting the app password."
+  },
+  "appPasswordConfirmSubtitle": "2回の入力が一致することを確認します",
+  "@appPasswordConfirmSubtitle": {
+    "description": "Second step description."
+  },
+  "appPasswordNext": "次へ",
+  "@appPasswordNext": {
+    "description": "Button that moves to the confirmation step."
+  },
+  "appPasswordDone": "完了",
+  "@appPasswordDone": {
+    "description": "Button that saves the new app password."
+  },
+  "appPasswordTooShort": "{count}文字以上にしてください",
+  "@appPasswordTooShort": {
+    "description": "Error when the new app password is too short.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordTooLong": "{count}文字以内にしてください",
+  "@appPasswordTooLong": {
+    "description": "Error when the new app password is too long.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appPasswordWhitespace": "スペースは使えません",
+  "@appPasswordWhitespace": {
+    "description": "Error when the new app password contains whitespace."
+  },
+  "appPasswordMismatch": "2回の入力が一致しません。最初からやり直してください",
+  "@appPasswordMismatch": {
+    "description": "Error when the confirmation does not match the first entry."
+  },
+  "appPasswordNoRecoveryNote": "アプリのパスワードはこの端末にだけ保存され、復元できません。忘れた場合はアプリのデータを消去するか再インストールし、バックアップから日記を復元するしかありません。",
+  "@appPasswordNoRecoveryNote": {
+    "description": "Note on the set-password page that the app password cannot be recovered."
   }
 }

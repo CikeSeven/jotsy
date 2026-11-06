@@ -7,7 +7,10 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/app_lock_layer.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../core/services/device_auth_service.dart';
+import '../../../core/services/app_password/app_password_store.dart';
+import '../../app_lock/controllers/identity_verifier.dart';
+import '../../app_lock/widgets/app_lock_surface.dart';
+import '../../app_lock/widgets/app_password_view.dart';
 import '../controllers/notebook_lock_flow.dart';
 import '../providers/home_notebook_scope_provider.dart';
 
@@ -26,6 +29,8 @@ import '../providers/home_notebook_scope_provider.dart';
 ///   （`homeNotebookScopeRestoreProvider`），遮罩从首页第一帧起就盖着；
 /// - “解锁”验证通过后揭开；连续两次未通过、或点“回到全部日记”时退回首页
 ///   并回到全部日记（再进入需要重新验证）；
+/// - 验证方式为应用密码时遮罩里直接是密码输入（[AppPasswordView]，可用指纹
+///   但不自动弹）：输错由应用密码统一限流，不按“连续两次”退回；
 /// - 验证进行中系统界面可能让应用暂时进入后台，期间不重复上锁；
 /// - 应用锁只在冷启动与开关时验证，回到前台不会再弹，因此不会与这里连着
 ///   出现两次验证。
@@ -81,11 +86,18 @@ class _NotebookLockLayerState extends ConsumerState<NotebookLockLayer> {
       _backToAll();
       return;
     }
-    final auth = ref.read(deviceAuthServiceProvider);
+    // 只有系统验证方式走到这里（应用密码在遮罩里直接输入）；遮罩在
+    // Navigator 之上，不能经 IdentityVerifier.verify 打开页面。
+    final verifier = ref.read(identityVerifierProvider);
     final reason = context.l10n.notebookUnlockReason(notebook.name);
     setState(() => _authenticating = true);
-    final supported = await auth.isSupported();
-    final passed = supported && await auth.authenticate(reason: reason);
+    final supported = await verifier.systemSupported();
+    final passed =
+        supported &&
+        await verifier.verifySystem(
+          reason: reason,
+          persistAcrossBackgrounding: true,
+        );
     if (!mounted) {
       return;
     }
@@ -107,6 +119,12 @@ class _NotebookLockLayerState extends ConsumerState<NotebookLockLayer> {
     ref.read(homeNotebookScopeProvider.notifier).showAll();
   }
 
+  /// 应用密码（或指纹）通过：揭开遮罩。
+  void _passwordUnlocked() {
+    _failedAttempts = 0;
+    ref.read(homeNotebookScopeProvider.notifier).unlock();
+  }
+
   @override
   Widget build(BuildContext context) {
     final (inNotebook, relocked) = ref.watch(
@@ -124,14 +142,31 @@ class _NotebookLockLayerState extends ConsumerState<NotebookLockLayer> {
               ) ??
               ''
         : '';
+    final password = ref.watch(
+      appPasswordConfigProvider.select((config) => config.hasPassword),
+    );
     return AppLockLayer(
       locked: relocked,
-      overlayBuilder: (_) => _NotebookLockOverlay(
-        name: name,
-        authenticating: _authenticating,
-        onUnlock: () => unawaited(_unlock()),
-        onBackToAll: _backToAll,
-      ),
+      overlayBuilder: (BuildContext context) => password
+          ? AppLockSurface(
+              child: AppPasswordView(
+                title: context.l10n.notebookLockedTitle(name),
+                message: context.l10n.notebookLockedSubtitle,
+                onUnlocked: _passwordUnlocked,
+                secondaryAction: Center(
+                  child: TextButton(
+                    onPressed: _backToAll,
+                    child: Text(context.l10n.notebookLockBackToAll),
+                  ),
+                ),
+              ),
+            )
+          : _NotebookLockOverlay(
+              name: name,
+              authenticating: _authenticating,
+              onUnlock: () => unawaited(_unlock()),
+              onBackToAll: _backToAll,
+            ),
       child: widget.child,
     );
   }

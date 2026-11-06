@@ -177,7 +177,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAppLockSubtitle => 'オンにすると、アプリを開くたびに認証が必要になります';
 
   @override
-  String get appLockNotSupported => 'この端末はローカル認証に対応していないため、アプリロックを有効にできません。';
+  String get appLockNotSupported =>
+      '現在は本人確認ができません。画面ロックを設定するか、アプリのパスワードに切り替えてから、アプリロックをオンにしてください。';
 
   @override
   String get appLockTitle => 'アプリはロックされています';
@@ -1556,7 +1557,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get videoPosterHint => 'クリックしてシステムのプレーヤーで開く';
 
   @override
-  String get deviceAuthUnavailable => 'この端末にはシステムの認証（指紋、顔、パスワード）がないため、ロックできません';
+  String get deviceAuthUnavailable =>
+      'この端末にはシステム認証がありません。データとプライバシー → アプリロックとパスワード でアプリのパスワードを設定するとロックできます';
 
   @override
   String get calendarYearSaveImage => 'この1年を画像として保存…';
@@ -6919,7 +6921,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定すると開けるようになります。';
+      'このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、データとプライバシー → アプリロックとパスワード でアプリのパスワードに切り替えると開けるようになります。';
 
   @override
   String get notebookLockUnsupportedAction => 'わかりました';
@@ -10375,7 +10377,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get lanSyncPairAuthUnsupported =>
-      'このデバイスではアプリロックまたはロック中の日記帳を使っていますが、画面ロックが設定されていないため本人確認ができません。先にシステム設定で画面ロックを設定してください。';
+      'このデバイスではアプリロックまたはロック中の日記帳を使っていますが、画面ロックが設定されていないため本人確認ができません。先にシステム設定で画面ロックを設定するか、アプリのパスワードに切り替えてください。';
 
   @override
   String get lanSyncPairFailUnreachable =>
@@ -12983,4 +12985,180 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get textSelectionMenuLess => '折りたたむ';
+
+  @override
+  String get settingsAppLockAndPassword => 'アプリロックとパスワード';
+
+  @override
+  String get appLockStatusSystem => 'オン · システム認証';
+
+  @override
+  String get appLockStatusPassword => 'オン · アプリのパスワード';
+
+  @override
+  String get appLockStatusOff => 'オフ';
+
+  @override
+  String get appLockStatusOffPassword => 'オフ · ロック中の日記帳はアプリのパスワードを使用';
+
+  @override
+  String get appLockNeedsPassword =>
+      'この端末にはシステム認証がありません。アプリのパスワードを設定するとオンにできます';
+
+  @override
+  String get appLockMethodTitle => '認証方法';
+
+  @override
+  String get appLockMethodFooter =>
+      'アプリロック、ロック中の日記帳、LAN 同期のペアリング確認はすべてこの方法で認証します';
+
+  @override
+  String get appLockMethodSystem => 'システム認証';
+
+  @override
+  String get appLockMethodSystemDescription => '指紋、顔、または端末の画面ロック';
+
+  @override
+  String get appLockMethodSystemUnavailable => 'この端末にはシステム認証がありません';
+
+  @override
+  String get appLockMethodPassword => 'アプリのパスワード';
+
+  @override
+  String get appLockMethodPasswordDescription => 'このアプリだけのパスワード。画面ロックとは別です';
+
+  @override
+  String get appPasswordChange => 'アプリのパスワードを変更';
+
+  @override
+  String get appPasswordBiometric => '指紋 / 顔でロック解除';
+
+  @override
+  String get appPasswordBiometricSubtitle => 'ロック解除時にパスワードの代わりに指紋や顔を使えます';
+
+  @override
+  String get appPasswordBiometricEnableReason =>
+      'クイック解除をオンにするには指紋または顔で認証してください';
+
+  @override
+  String get appPasswordBiometricFailed => '指紋または顔を認証できませんでした';
+
+  @override
+  String get appLockSwitchToPasswordReason => 'アプリのパスワードに切り替えるには認証してください';
+
+  @override
+  String get appLockSwitchToSystemReason => 'システム認証に切り替えるにはアプリのパスワードを入力してください';
+
+  @override
+  String get appLockSwitchVerifyFailed => '認証できませんでした。認証方法は変更されていません。';
+
+  @override
+  String get appLockSystemUnsupported => 'この端末ではシステム認証を使えません（画面ロックが設定されていません）。';
+
+  @override
+  String get appLockSwitchedToSystem => 'システム認証に切り替えました';
+
+  @override
+  String get appPasswordChangeReason => '現在のアプリのパスワードを入力してください';
+
+  @override
+  String get appPasswordSetDone => 'アプリのパスワードを設定しました';
+
+  @override
+  String get appPasswordChangedDone => 'アプリのパスワードを変更しました';
+
+  @override
+  String get appLockPasswordSubtitle => '続けるにはアプリのパスワードを入力してください';
+
+  @override
+  String get appPasswordVerifyTitle => '本人確認';
+
+  @override
+  String get appPasswordHint => 'アプリのパスワード';
+
+  @override
+  String get appPasswordShow => 'パスワードを表示';
+
+  @override
+  String get appPasswordHide => 'パスワードを隠す';
+
+  @override
+  String get appPasswordUnlock => 'ロック解除';
+
+  @override
+  String get appPasswordUseBiometric => '指紋または顔を使う';
+
+  @override
+  String get appPasswordWrong => 'パスワードが違います。もう一度入力してください';
+
+  @override
+  String appPasswordWrongAttemptsLeft(int count) {
+    return 'パスワードが違います。あと$count回間違えると待ち時間が発生します';
+  }
+
+  @override
+  String appPasswordLockedOutSeconds(int count) {
+    return '試行回数が多すぎます。$count秒後にもう一度お試しください';
+  }
+
+  @override
+  String appPasswordLockedOutMinutes(int count) {
+    return '試行回数が多すぎます。$count分後にもう一度お試しください';
+  }
+
+  @override
+  String get appPasswordUnavailable => 'アプリのパスワードが設定されていません';
+
+  @override
+  String get appPasswordForgot => 'パスワードを忘れた場合';
+
+  @override
+  String get appPasswordForgotMessage =>
+      'アプリのパスワードは復元できません。アプリのデータを消去するか再インストールしてから、バックアップから日記を復元してください。';
+
+  @override
+  String get appPasswordSetupTitle => 'アプリのパスワードを設定';
+
+  @override
+  String get appPasswordChangeTitle => 'アプリのパスワードを変更';
+
+  @override
+  String get appPasswordNewTitle => '新しいパスワードを入力';
+
+  @override
+  String appPasswordRulesHint(int min, int max) {
+    return '$min〜$max文字、大文字と小文字を区別、スペース不可';
+  }
+
+  @override
+  String get appPasswordConfirmTitle => 'もう一度入力';
+
+  @override
+  String get appPasswordConfirmSubtitle => '2回の入力が一致することを確認します';
+
+  @override
+  String get appPasswordNext => '次へ';
+
+  @override
+  String get appPasswordDone => '完了';
+
+  @override
+  String appPasswordTooShort(int count) {
+    return '$count文字以上にしてください';
+  }
+
+  @override
+  String appPasswordTooLong(int count) {
+    return '$count文字以内にしてください';
+  }
+
+  @override
+  String get appPasswordWhitespace => 'スペースは使えません';
+
+  @override
+  String get appPasswordMismatch => '2回の入力が一致しません。最初からやり直してください';
+
+  @override
+  String get appPasswordNoRecoveryNote =>
+      'アプリのパスワードはこの端末にだけ保存され、復元できません。忘れた場合はアプリのデータを消去するか再インストールし、バックアップから日記を復元するしかありません。';
 }

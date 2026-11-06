@@ -126,7 +126,7 @@ abstract final class ExpressiveControls {
       iconButtonTheme: IconButtonThemeData(
         style: stop(theme.iconButtonTheme.style),
       ),
-      // 框架默认转场（Android 预测性返回、iOS 侧滑）不读取 disableAnimations；
+      // 页面转场（Android 淡入前推、iOS 侧滑）不读取 disableAnimations；
       // 减少动画时所有平台的 MaterialPageRoute 直接切换页面。
       pageTransitionsTheme: PageTransitionsTheme(
         builders: <TargetPlatform, PageTransitionsBuilder>{

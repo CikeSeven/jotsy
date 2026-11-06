@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import "package:flutter/material.dart";
 
 import 'app_color_scheme.dart';
@@ -28,6 +29,38 @@ ThemeData buildSeededAppTheme(
         : Typography.material2021().white,
     fonts: fonts,
   ).theme(appColorSchemeFromSeed(seedColor, brightness, variant: variant));
+}
+
+/// 应用的页面转场：Android 不做预测性返回（侧滑返回时不再缩小当前页、露出
+/// 上一页的预览），侧滑与返回键一样，松手后才返回。其余平台保持框架默认。
+///
+/// 系统级的返回预览（退回桌面时露出桌面）由 AndroidManifest 的
+/// `enableOnBackInvokedCallback="false"` 关闭。
+const PageTransitionsTheme appPageTransitionsTheme = PageTransitionsTheme(
+  builders: <TargetPlatform, PageTransitionsBuilder>{
+    TargetPlatform.android: NoPredictiveBackPageTransitionsBuilder(),
+    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+    TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+    TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+    TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+  },
+);
+
+/// Android 的页面转场：框架默认 [PredictiveBackPageTransitionsBuilder] 去掉
+/// 侧滑跟手预览后剩下的部分。
+///
+/// 默认转场只在侧滑过程中跟手预览，按钮与代码触发的进出页面本来就走
+/// [FadeForwardsPageTransitionsBuilder]，这里直接沿用它，普通进出页面的动画
+/// 不变。[delegatedTransition] 必须置空：默认转场没有委托转场，而
+/// [FadeForwardsPageTransitionsBuilder] 有；留着它，自定义路由（搜索页、看图页
+/// 等 `PageRouteBuilder`）上再推入普通页面时，下层的自定义页会跟着横移淡出，
+/// 与原来不一致。
+class NoPredictiveBackPageTransitionsBuilder
+    extends FadeForwardsPageTransitionsBuilder {
+  const NoPredictiveBackPageTransitionsBuilder();
+
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition => null;
 }
 
 /// 应用 Material 3 Expressive 主题装配器。
@@ -85,6 +118,7 @@ class MaterialTheme {
       // 输入框等整体压矮 4–8dp，DESIGN.md 的 dp 规格就不再成立。Android/iOS
       // 的默认本来就是 standard，移动端不受影响。
       visualDensity: VisualDensity.standard,
+      pageTransitionsTheme: appPageTransitionsTheme,
       extensions: <ThemeExtension<dynamic>>[fonts],
     );
     final resolvedTextTheme = baseTheme.textTheme

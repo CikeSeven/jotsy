@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'diary_editor_styles.dart';
+import 'diary_glyph_background.dart';
 import 'diary_script_spans.dart';
 
 /// 段落首行缩进的行内片段改写，只由 [DiaryParagraphBlock] 调用。
@@ -17,8 +18,9 @@ import 'diary_script_spans.dart';
 /// （[WidgetSpan] 会按所在字号的缩放倍数整体缩放）。
 ///
 /// 下划线、删除线与背景色只画在字下面：外层段落会给占位按它的样式画线条与
-/// 背景，连缩进那一段一起，所以外层占位的样式去掉这几项（[_slotStyle]），
-/// 改由占位里的字自己画。
+/// 背景，连缩进那一段一起，所以外层占位的样式去掉这几项（[_slotStyle]）。
+/// 线条由占位里的字自己画；背景不能交给字自己画（单字排版的背景比同一行
+/// 其他字高），由 [DiaryFirstGlyphBackground] 按外层段落的规则补画。
 
 /// 把根片段 [root] 的第一个字换成带缩进的占位；没有文字（空段落）或第一段
 /// 不是普通文字片段时原样返回。
@@ -47,7 +49,8 @@ TextSpan diaryIndentFirstGlyph(
             textDirection: direction,
             child: Padding(
               padding: EdgeInsetsDirectional.only(start: indent),
-              // 原来的占位原样套一层段落：线条与背景照常画在这个字下面。
+              // 原来的占位原样套一层段落：线条照常画在这个字下面，背景由
+              // 上下标的占位按外层段落的行补画（DiaryGlyphLineBox）。
               child: RichText(
                 text: TextSpan(children: <InlineSpan>[first]),
                 textDirection: direction,
@@ -83,9 +86,9 @@ TextSpan diaryIndentFirstGlyph(
     return root;
   }
   final glyph = text.characters.first;
-  TextSpan piece(String text) => TextSpan(
+  TextSpan piece(String text, {TextStyle? style}) => TextSpan(
     text: text,
-    style: first.style,
+    style: style ?? first.style,
     recognizer: first.recognizer,
     mouseCursor: first.mouseCursor,
     locale: first.locale,
@@ -101,7 +104,8 @@ TextSpan diaryIndentFirstGlyph(
         child: _DiaryFirstGlyph(
           indent: indent,
           direction: direction,
-          span: piece(glyph),
+          span: piece(glyph, style: _withoutBackground(first.style)),
+          background: first.style?.backgroundColor,
         ),
       ),
       for (var i = 1; i < glyph.length; i++)
@@ -113,13 +117,14 @@ TextSpan diaryIndentFirstGlyph(
 }
 
 /// 外层占位的样式：只用来按字号换算缩放，去掉线条与背景色（见文件开头）。
-/// copyWith 不能把颜色置空，背景改成透明。
-TextStyle? _slotStyle(TextStyle? style) => style?.copyWith(
-  decoration: TextDecoration.none,
-  backgroundColor: style.backgroundColor == null
-      ? null
-      : const Color(0x00000000),
-);
+TextStyle? _slotStyle(TextStyle? style) =>
+    _withoutBackground(style)?.copyWith(decoration: TextDecoration.none);
+
+/// 去掉背景色：copyWith 不能把颜色置空，改成透明。
+TextStyle? _withoutBackground(TextStyle? style) =>
+    style?.backgroundColor == null
+    ? style
+    : style!.copyWith(backgroundColor: const Color(0x00000000));
 
 /// 空段落的占位提示（“开始记录…”、`/` 命令提示）同样缩进：与之后输入的
 /// 第一个字对齐。也按段首的字改写而不是在前面垫一段空白：段首光标取自
@@ -146,31 +151,47 @@ TextSpan diaryIndentPlaceholder(
 ///
 /// 字的样式取自原片段（字体、字号、颜色、行内格式都在里面），行高规则与
 /// 正文一致，首行高度不因换成占位而变化；缩放交给外层占位，这里不再缩放。
+/// 带背景色时字本身不画背景（[span] 的背景已换成透明），由
+/// [DiaryFirstGlyphBackground] 画在字下面，只盖住字、不盖缩进。
 class _DiaryFirstGlyph extends StatelessWidget {
   const _DiaryFirstGlyph({
     required this.indent,
     required this.direction,
     required this.span,
+    required this.background,
   });
 
   final double indent;
   final TextDirection direction;
   final TextSpan span;
 
+  /// 段首这个字原本的背景色；没有背景时为 null。
+  final Color? background;
+
   @override
   Widget build(BuildContext context) {
+    Widget glyph = RichText(
+      text: span,
+      textDirection: direction,
+      textScaler: TextScaler.noScaling,
+      textHeightBehavior: kDiaryTextHeightBehavior,
+      softWrap: false,
+      maxLines: 1,
+    );
+    final background = this.background;
+    if (background != null) {
+      glyph = DiaryFirstGlyphBackground(
+        color: background,
+        glyph: span,
+        textDirection: direction,
+        child: glyph,
+      );
+    }
     return Directionality(
       textDirection: direction,
       child: Padding(
         padding: EdgeInsetsDirectional.only(start: indent),
-        child: RichText(
-          text: span,
-          textDirection: direction,
-          textScaler: TextScaler.noScaling,
-          textHeightBehavior: kDiaryTextHeightBehavior,
-          softWrap: false,
-          maxLines: 1,
-        ),
+        child: glyph,
       ),
     );
   }

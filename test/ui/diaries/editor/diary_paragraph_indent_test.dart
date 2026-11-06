@@ -11,6 +11,7 @@ import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_s
 import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_glyph_background.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_paragraph_block.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_script_spans.dart';
 
@@ -335,11 +336,20 @@ void main() {
         expect(style.decoration, TextDecoration.none, reason: text);
         expect(style.backgroundColor?.a ?? 0, 0, reason: text);
       }
-      // 字自己照常带着，线条与背景只在字下面。
+      // 线条由字自己画，只在字下面。
       final glyph = tester.widget<RichText>(firstGlyph('今')).text.style!;
       expect(glyph.decoration!.contains(TextDecoration.underline), isTrue);
       expect(glyph.decoration!.contains(TextDecoration.lineThrough), isTrue);
-      expect(glyph.backgroundColor, highlight);
+      // 背景不由字自己画（单字排版的背景比旁边的字高），由字外面的
+      // DiaryFirstGlyphBackground 画，同样只在字下面。
+      expect(glyph.backgroundColor?.a ?? 0, 0);
+      final background = tester.widget<DiaryFirstGlyphBackground>(
+        find.ancestor(
+          of: firstGlyph('今'),
+          matching: find.byType(DiaryFirstGlyphBackground),
+        ),
+      );
+      expect(background.color, highlight);
       final script = tester
           .widgetList<RichText>(find.byType(RichText))
           .map((w) => w.text)

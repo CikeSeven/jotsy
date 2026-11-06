@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'diary_editor_styles.dart';
-import 'diary_first_glyph_background.dart';
+import 'diary_glyph_background.dart';
 import 'diary_script_spans.dart';
 
 /// 段落首行缩进的行内片段改写，只由 [DiaryParagraphBlock] 调用。
@@ -49,7 +49,8 @@ TextSpan diaryIndentFirstGlyph(
             textDirection: direction,
             child: Padding(
               padding: EdgeInsetsDirectional.only(start: indent),
-              // 原来的占位原样套一层段落：线条与背景照常画在这个字下面。
+              // 原来的占位原样套一层段落：线条照常画在这个字下面，背景由
+              // 上下标的占位按外层段落的行补画（DiaryGlyphLineBox）。
               child: RichText(
                 text: TextSpan(children: <InlineSpan>[first]),
                 textDirection: direction,

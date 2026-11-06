@@ -11,7 +11,7 @@ import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_s
 import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_first_glyph_background.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_glyph_background.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_paragraph_block.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_script_spans.dart';
 

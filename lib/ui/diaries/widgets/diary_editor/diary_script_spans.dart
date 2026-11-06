@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 
 import '../../models/diary_text_style_options.dart';
 import 'diary_editor_styles.dart';
+import 'diary_glyph_background.dart';
 
 /// 正文上标 / 下标（行内属性 `script`）的渲染，只由 `diaryEditorSpanDecorator`
 /// 调用；代码块不经过这里。
@@ -21,6 +22,10 @@ import 'diary_editor_styles.dart';
 /// 占位框的高度与基线取“这个字按原字号排版”的结果（与正文同一行高规则），
 /// 字本身按 [DiaryScript.scale] 缩小后在框里上移 / 下移，所以夹着上下标的
 /// 一行不变高，光标在上下标旁也是整行高。
+///
+/// 背景色（高亮）只由占位自己画一次，按所在行与两旁正文一样高
+/// （[DiaryGlyphLineBox]）：外层段落给占位画的背景只有占位框高，再叠上占位
+/// 自己画的，半透明的高亮会比正文深一截，所以占位的样式不带背景色。
 ///
 /// 块级样式（引用的次要色、已勾选待办的划线、标题字号）由块在整段片段上
 /// 再叠一层，叠不进占位里的 widget：调用方必须传入叠好块样式的 [style]。
@@ -42,6 +47,9 @@ TextSpan diaryScriptSpan(
 }) {
   final fontSize = style.fontSize ?? kDefaultFontSize;
   final small = TextStyle(fontSize: fontSize * DiaryScript.scale);
+  final slotStyle = style.backgroundColor == null
+      ? style
+      : style.copyWith(backgroundColor: const Color(0x00000000));
   final children = <InlineSpan>[];
   final plain = StringBuffer();
   void flush() {
@@ -67,8 +75,9 @@ TextSpan diaryScriptSpan(
       WidgetSpan(
         alignment: PlaceholderAlignment.baseline,
         baseline: TextBaseline.alphabetic,
-        // 外层按这个字号算字体缩放倍数（占位里的内容整体随正文缩放）。
-        style: style,
+        // 外层按这个字号算字体缩放倍数（占位里的内容整体随正文缩放），并按
+        // 它画下划线 / 删除线（与两旁正文连成一条）；背景由占位自己画。
+        style: slotStyle,
         child: DiaryScriptGlyph(
           glyph: grapheme,
           style: style,
@@ -94,8 +103,8 @@ bool _drawnAsGlyph(String grapheme) {
 /// 一个上标 / 下标字：占位框为这个字按原字号排版的高度与基线，字按
 /// [DiaryScript.scale] 缩小、基线按 [DiaryScript.baselineShift] 上下挪。
 ///
-/// 背景色（高亮）铺满占位框，与两旁正文的高亮连成一片；字的其余样式（颜色、
-/// 粗斜体、下划线、删除线）随缩小的字一起画。链接的点按交给字自己的
+/// 背景色（高亮）按所在行画（[DiaryGlyphLineBox]），与两旁正文的高亮一样高、
+/// 连成一片；字的其余样式（颜色、粗斜体、下划线、删除线）随缩小的字一起画。链接的点按交给字自己的
 /// [RichText]（与普通文字一样由片段的 [recognizer] 处理）。字体缩放交给外层
 /// 占位（[WidgetSpan] 按所在字号整体缩放），这里一律不缩放。
 class DiaryScriptGlyph extends StatelessWidget {
@@ -187,34 +196,32 @@ class _DiaryScriptGlyphBox extends SingleChildRenderObjectWidget {
 }
 
 /// 尺寸：宽为缩小后的字宽，高与基线取 [reference]（原字号的同一个字）单行
-/// 排版的结果。单行排版按正文的行高规则不加行距（[kDiaryTextHeightBehavior]），
-/// 与段落首行、末行的文字一样高，不会把所在行撑高。
+/// 排版的结果（[DiaryGlyphLineBox.box]）。单行排版按正文的行高规则不加行距
+/// （[kDiaryTextHeightBehavior]），与段落首行、末行的文字一样高，不会把所在行
+/// 撑高。
 class _RenderDiaryScriptGlyph extends RenderShiftedBox {
   _RenderDiaryScriptGlyph({
     required TextSpan reference,
     required this._shift,
     required this._background,
     required TextDirection textDirection,
-  }) : _reference = TextPainter(
-         text: reference,
+  }) : _lineBox = DiaryGlyphLineBox(
+         glyph: reference,
          textDirection: textDirection,
-         textScaler: TextScaler.noScaling,
-         textHeightBehavior: kDiaryTextHeightBehavior,
-         maxLines: 1,
        ),
        super(null);
 
-  final TextPainter _reference;
+  final DiaryGlyphLineBox _lineBox;
 
   set reference(TextSpan value) {
-    if (_reference.text == value) return;
-    _reference.text = value;
+    if (_lineBox.box.text == value) return;
+    _lineBox.glyph = value;
     markNeedsLayout();
   }
 
   set textDirection(TextDirection value) {
-    if (_reference.textDirection == value) return;
-    _reference.textDirection = value;
+    if (_lineBox.box.textDirection == value) return;
+    _lineBox.textDirection = value;
     markNeedsLayout();
   }
 
@@ -232,7 +239,7 @@ class _RenderDiaryScriptGlyph extends RenderShiftedBox {
     markNeedsPaint();
   }
 
-  TextPainter get _laidOutReference => _reference..layout();
+  TextPainter get _laidOutReference => (_lineBox..layout()).box;
 
   BoxConstraints _childConstraints(BoxConstraints constraints) =>
       BoxConstraints(maxWidth: constraints.maxWidth);
@@ -293,15 +300,15 @@ class _RenderDiaryScriptGlyph extends RenderShiftedBox {
   @override
   void paint(PaintingContext context, Offset offset) {
     final background = _background;
-    if (background != null && background.a > 0) {
-      context.canvas.drawRect(offset & size, Paint()..color = background);
+    if (background != null) {
+      _lineBox.paint(context.canvas, this, offset, size.width, background);
     }
     super.paint(context, offset);
   }
 
   @override
   void dispose() {
-    _reference.dispose();
+    _lineBox.dispose();
     super.dispose();
   }
 }

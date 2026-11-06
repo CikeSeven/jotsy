@@ -25,6 +25,7 @@
 │  │  ├─ diary_templates/  # 日记模板
 │  │  ├─ notebooks/  # 日记本
 │  │  ├─ ai/  # AI 助手界面
+│  │  ├─ app_lock/  # 应用锁、应用密码与统一验证入口 IdentityVerifier
 │  │  ├─ lan_sync/  # 局域网同步界面
 │  │  ├─ home|calendar|explore|settings/  # 首页与各 Tab、设置页
 │  │  └─ widgets/  # 跨 feature 公共 UI（app_modal/、expressive_menu/、glass/、text_selection_menu/、fast_scroller/ 等）
@@ -107,6 +108,7 @@
 | 留言 | `comments.md` |
 | 日记链接与反向链接 | `diary_links.md` |
 | AI 助手 | `ai_assistant.md` |
+| 应用锁、应用密码、验证身份（系统验证 / 应用密码） | `app_lock.md` |
 | 局域网同步，以及会被同步的数据 | `lan_sync.md` |
 | 导入 / 恢复、其他应用与云端笔记导入、网盘备份 | `backup_import.md` |
 | 分享与导出 | `export_share.md` |

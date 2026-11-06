@@ -59,6 +59,8 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | 功能开关 | `AppFeatures.ai` | 是 | 界面类开关，随“同步设置” |
 | 对话、消息、回应与回顾 | Drift `ai_conversations` / `ai_messages` / `ai_results` | 完整备份（日记包不带） | 否 |
 
+偏好里用户自建的人设与自定义写作指令各最多 50 个；用户自己写的提示词文字（人设提示词、写作指令提示词与内置指令的改写、关于我、文风偏好）共用上限 `kAiPromptTextMaxLength`（10 万字），输入框按它限字，读取时超出部分截掉。
+
 三张表都存业务 id、不建外键：
 
 - `ai_conversations`：conversationId、title、personaId、scope（JSON：自动 / 最近 N 天 / 全部 / 时间范围 / 固定一篇）、pinned、createdAt、updatedAt；

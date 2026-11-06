@@ -35,6 +35,14 @@ enum AiModule {
   }
 }
 
+/// 用户自己写、会注入提示词的文字（人设提示词、写作指令提示词、关于我、
+/// 文风偏好）共用的字数上限。
+///
+/// 这些文字全部存在 `app.settings.ai_prefs` 一个 JSON 键里并随备份导出，
+/// 上限只为防止异常数据把设置撑到无法读写，不应限制正常写作：10 万字与
+/// 发给 AI 的日记默认上限同一量级，足够写很长的角色设定与说明。
+const int kAiPromptTextMaxLength = 100000;
+
 /// 回应 / 对话 / 回顾各自默认用哪个人设。
 enum AiPersonaUse { reply, chat, recap }
 
@@ -49,7 +57,7 @@ class AiPersona {
   });
 
   static const int maxNameLength = 24;
-  static const int maxPromptLength = 2000;
+  static const int maxPromptLength = kAiPromptTextMaxLength;
 
   final String id;
   final String name;
@@ -125,7 +133,7 @@ class AiCustomAction {
   });
 
   static const int maxNameLength = 16;
-  static const int maxPromptLength = 2000;
+  static const int maxPromptLength = kAiPromptTextMaxLength;
 
   final String id;
   final String name;

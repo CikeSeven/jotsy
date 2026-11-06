@@ -166,6 +166,66 @@ void main() {
       // 显式写了空章节就是“都不要”，不回到默认。
       expect(prefs.recapSections, isEmpty);
     });
+
+    test('keeps prompt texts up to 100k chars and clips only beyond', () {
+      const max = kAiPromptTextMaxLength;
+      expect(max, 100000);
+      expect(AiPersona.maxPromptLength, max);
+      expect(AiCustomAction.maxPromptLength, max);
+      expect(AiPreferences.maxAboutMeLength, max);
+      expect(AiPreferences.maxWritingStyleLength, max);
+
+      // 旧上限（人设与指令 2000、关于我 1000、文风 500）以上的长文字原样读回。
+      final long = '设' * 50000;
+      final kept = AiPreferences.decode(
+        jsonEncode(<String, Object?>{
+          'personas': [
+            {'id': 'p', 'name': 'P', 'prompt': long},
+          ],
+          'actions': [
+            {'id': 'a', 'name': 'A', 'prompt': long},
+          ],
+          'aboutMe': long,
+          'style': long,
+        }),
+      );
+      expect(kept.personas.single.prompt, long);
+      expect(kept.customActions.single.prompt, long);
+      expect(kept.aboutMe, long);
+      expect(kept.writingStyle, long);
+
+      // 超过上限的异常数据截到上限。
+      final huge = 'x' * (max + 10);
+      final clipped = AiPreferences.decode(
+        jsonEncode(<String, Object?>{
+          'personas': [
+            {'id': 'p', 'name': 'P', 'prompt': huge},
+          ],
+          'aboutMe': huge,
+        }),
+      );
+      expect(clipped.personas.single.prompt.length, max);
+      expect(clipped.aboutMe.length, max);
+    });
+
+    test('keeps up to 50 personas and 50 custom actions', () {
+      final prefs = AiPreferences.decode(
+        jsonEncode(<String, Object?>{
+          'personas': [
+            for (var i = 0; i < 60; i++)
+              {'id': 'p$i', 'name': 'P$i', 'prompt': 'p'},
+          ],
+          'actions': [
+            for (var i = 0; i < 60; i++)
+              {'id': 'a$i', 'name': 'A$i', 'prompt': 'a'},
+          ],
+        }),
+      );
+      expect(prefs.personas, hasLength(AiPreferences.maxPersonas));
+      expect(prefs.customActions, hasLength(AiPreferences.maxCustomActions));
+      expect(AiPreferences.maxPersonas, 50);
+      expect(AiPreferences.maxCustomActions, 50);
+    });
   });
 
   group('built-ins', () {

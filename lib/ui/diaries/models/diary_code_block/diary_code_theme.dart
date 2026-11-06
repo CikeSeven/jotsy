@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/theme/app_color_scheme.dart';
 import '../../viewmodels/diary_card_colors.dart';
 import 'diary_code_block_style.dart';
 import 'diary_code_theme_palettes.dart';
@@ -250,22 +251,29 @@ abstract final class DiaryCodeThemes {
     );
   }
 
+  /// 主色没有色相时（灰色 / 黑白主题）语法色的起点色相。
+  static const double _achromaticSyntaxHue = 200;
+
   /// 跟随应用配色：底色取表面容器色，语法色由主色在 HSL 中旋转色相得到，
-  /// 与用户选的种子色同一色调家族。
+  /// 与用户选的种子色同一色调家族。明暗与应用相反时以主色为种子另配一套，
+  /// 同样经 [appColorSchemeFromSeed]：灰色 / 黑白主题的主色是灰阶，另配的
+  /// 底色也是灰阶，不被染成青蓝色。
   static DiaryCodePalette _buildApp(Brightness brightness, ColorScheme input) {
     final scheme = input.brightness == brightness
         ? input
-        : ColorScheme.fromSeed(
-            seedColor: input.primary,
-            brightness: brightness,
-          );
+        : appColorSchemeFromSeed(input.primary, brightness);
     final dark = brightness == Brightness.dark;
     final primary = HSLColor.fromColor(scheme.primary);
+    // 灰色 / 黑白主题的主色没有色相（HSL 色相恒为 0），从红色转起关键字像报错；
+    // 改从默认主题色附近的蓝（200°）转起，饱和度照常夹到下限。
+    final hue = isAchromaticColor(scheme.primary)
+        ? _achromaticSyntaxHue
+        : primary.hue;
     final saturation = primary.saturation.clamp(0.35, 0.75).toDouble();
     final lightness = dark ? 0.75 : 0.40;
     Color rotate(double degrees) => HSLColor.fromAHSL(
       1,
-      (primary.hue + degrees) % 360,
+      (hue + degrees) % 360,
       saturation,
       lightness,
     ).toColor();

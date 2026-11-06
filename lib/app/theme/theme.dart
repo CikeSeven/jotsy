@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 
+import 'app_color_scheme.dart';
 import 'app_fonts.dart';
 import 'expressive_controls.dart';
 import 'expressive_surfaces.dart';
@@ -11,8 +12,10 @@ part 'theme_color_schemes.dart';
 /// 应用外壳与设置页里的明暗预览共用同一装配，预览看到的就是切换主题后的
 /// 真实效果。应用外壳始终是 tonalSpot；[variant] 只供预览页“着色强度”与
 /// “中性灰”回退换用别的配色方案（tonalSpot 只取种子色的色相，fidelity 保留
-/// 种子色的浓淡，vibrant 最饱和，neutral 为低饱和的灰调）。[fonts] 为用户选的
-/// 界面字体与日记字体（见 [AppFonts]），缺省为内置字体。
+/// 种子色的浓淡，vibrant 最饱和，neutral 为低饱和的灰调）。配色经
+/// [appColorSchemeFromSeed]：纯黑种子为黑白配色，灰色种子为同明度的灰阶，
+/// 不会被染成青蓝色。[fonts] 为用户选的界面字体与日记字体（见 [AppFonts]），
+/// 缺省为内置字体。
 ThemeData buildSeededAppTheme(
   Color seedColor,
   Brightness brightness, {
@@ -24,13 +27,7 @@ ThemeData buildSeededAppTheme(
         ? Typography.material2021().black
         : Typography.material2021().white,
     fonts: fonts,
-  ).theme(
-    ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: brightness,
-      dynamicSchemeVariant: variant,
-    ),
-  );
+  ).theme(appColorSchemeFromSeed(seedColor, brightness, variant: variant));
 }
 
 /// 应用 Material 3 Expressive 主题装配器。

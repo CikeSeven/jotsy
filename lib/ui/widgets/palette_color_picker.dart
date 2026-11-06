@@ -8,7 +8,8 @@ import 'desktop_horizontal_scroll.dart';
 /// 调色板取色器：当前颜色的 HEX 预览、横向的色系色块与所选色系的八个深浅。
 ///
 /// 只负责展示与回调，选中状态由调用方按 [resolveColorPaletteSelection] 解析
-/// 后传入。主题色设置与日记卡片的自定义颜色共用这一套。
+/// 后传入（与这里同一份 [families]）。主题色设置与日记卡片的自定义颜色共用
+/// 这一套；主题色多一个“黑白”色系（[kThemeColorPaletteFamilies]）。
 class PaletteColorPicker extends StatelessWidget {
   const PaletteColorPicker({
     super.key,
@@ -18,6 +19,7 @@ class PaletteColorPicker extends StatelessWidget {
     required this.selectedFamily,
     required this.onSelectFamily,
     required this.onSelectColor,
+    this.families = kColorPaletteFamilies,
   });
 
   final Color selectedColor;
@@ -26,6 +28,9 @@ class PaletteColorPicker extends StatelessWidget {
   final ColorPaletteFamily selectedFamily;
   final ValueChanged<int> onSelectFamily;
   final ValueChanged<Color> onSelectColor;
+
+  /// 色系一行列出的色系，下标与 [selectedFamilyIndex]、[onSelectFamily] 对应。
+  final List<ColorPaletteFamily> families;
 
   @override
   Widget build(BuildContext context) {
@@ -65,19 +70,18 @@ class PaletteColorPicker extends StatelessWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: List<Widget>.generate(kColorPaletteFamilies.length, (
-                index,
-              ) {
-                final family = kColorPaletteFamilies[index];
+              children: List<Widget>.generate(families.length, (index) {
+                final family = families[index];
                 final selected = selectedFamilyIndex == index;
                 return ColorSwatchButton(
-                  color: family.colors[2],
+                  color: family.swatch,
+                  splitColor: family.swatchSplit,
                   selected: selected,
                   borderRadius: 10,
                   showCheck: false,
                   semanticLabel: context.l10n.colorFamilySwatchLabel(
                     index + 1,
-                    colorSwatchHex(family.colors[2]),
+                    colorSwatchHex(family.swatch),
                   ),
                   onTap: () => onSelectFamily(index),
                 );

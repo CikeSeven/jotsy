@@ -12,7 +12,9 @@ import '../../widgets/palette_color_picker.dart';
 
 /// 设置页主题模式区块。
 ///
-/// 仅负责主题切换 UI，不耦合标签或编辑器设置。
+/// 仅负责主题切换 UI，不耦合标签或编辑器设置。主题色的色系为统一色板加
+/// 末尾的“黑白”（[kThemeColorPaletteFamilies]）；灰色与黑白怎样装配成主题见
+/// `appColorSchemeFromSeed`。
 class SettingsThemeSection extends StatelessWidget {
   const SettingsThemeSection({super.key, required this.settingsAsync});
 
@@ -53,9 +55,10 @@ class SettingsThemeSection extends StatelessWidget {
                                   fallbackFamilyIndex: _fallbackFamilyIndex,
                                   fallbackColorIndex: _fallbackColorIndex,
                                   preserveUnknownColor: false,
+                                  families: kThemeColorPaletteFamilies,
                                 );
                                 final selectedFamily =
-                                    kColorPaletteFamilies[selection
+                                    kThemeColorPaletteFamilies[selection
                                         .familyIndex];
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,9 +141,11 @@ class SettingsThemeSection extends StatelessWidget {
                                             selectedColorIndex:
                                                 selection.colorIndex,
                                             selectedFamily: selectedFamily,
+                                            families:
+                                                kThemeColorPaletteFamilies,
                                             onSelectFamily: (int familyIndex) {
                                               settingsService.setThemeSeedColor(
-                                                kColorPaletteFamilies[familyIndex]
+                                                kThemeColorPaletteFamilies[familyIndex]
                                                     .colors[0],
                                               );
                                             },

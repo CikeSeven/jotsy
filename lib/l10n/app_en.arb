@@ -7464,6 +7464,10 @@
   "@diaryReadingDone": {
     "description": "Reading-style editor: top bar button that hides the keyboard and ends editing."
   },
+  "diaryReadingReloaded": "This diary was changed elsewhere, so the latest version is shown.",
+  "@diaryReadingReloaded": {
+    "description": "Reading-style editor: hint shown when returning to the editor after the same diary was changed on another page; the editor now shows the stored version."
+  },
   "diaryDayPhotosSetCover": "Set as cover",
   "@diaryDayPhotosSetCover": {
     "description": "Photos from this day: button and menu item that makes a photo the entry cover."

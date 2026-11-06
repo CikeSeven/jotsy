@@ -5877,6 +5877,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryReadingDone => 'Done';
 
   @override
+  String get diaryReadingReloaded =>
+      'This diary was changed elsewhere, so the latest version is shown.';
+
+  @override
   String get diaryDayPhotosSetCover => 'Set as cover';
 
   @override

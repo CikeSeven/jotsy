@@ -5410,6 +5410,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryReadingDone => '完了';
 
   @override
+  String get diaryReadingReloaded => 'この日記は別の画面で変更されたため、最新の内容を表示しています。';
+
+  @override
   String get diaryDayPhotosSetCover => '表紙に設定';
 
   @override

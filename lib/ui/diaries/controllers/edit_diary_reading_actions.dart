@@ -8,6 +8,13 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 ///
 /// 副作用都先补存（[_EditDiaryReadingActions._flushAndReload]），再按库里
 /// 的最新内容执行；删除确认后移进回收站，以 true 结束编辑页，入口给撤销。
+///
+/// 别处的修改：编辑页之上还能打开别的页面（标签搜索、提到这篇的日记、
+/// 看图……），从那里可能又打开这一篇并改掉它，而本页手里是改之前的内存
+/// 副本，回来接着写会把那次修改整份覆盖。所以本页被盖住时立即补存，回到
+/// 最上层时先等自己的写入落盘，再看库里这一篇：已删除就提示并退出（继续
+/// 写会经 `updateDiary` 把它从回收站带回来），更新时间或标签与本页知道的
+/// 不同就换成库里的最新内容并提示。
 extension _EditDiaryReadingActions on _EditDiaryPageState {
   /// 打开信息面板：挂上面板，下一帧展开（面板挂上后控制器才连上）。
   void _openMetaPanel() {
@@ -81,6 +88,68 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
     }
     if (!saved || !mounted) return;
     await openNotebookFromAnywhere(context, ref, notebook);
+  }
+
+  /// 本页是否在路由栈最上层的变化（`didChangeDependencies` 经
+  /// `ModalRoute.isCurrentOf` 通知；弹出的面板、对话框同样算盖住）。
+  void _onRouteCurrentChanged(bool current) {
+    final was = _routeIsCurrent;
+    _routeIsCurrent = current;
+    if (was == null || was == current || !_isEditEntry || !_initialized) {
+      return;
+    }
+    if (!current) {
+      // 被盖住：上面的页面可能马上读这一篇，先把防抖窗口里的输入写下去。
+      unawaited(_controller.flushEditAutoSave());
+      return;
+    }
+    unawaited(_checkForChangesElsewhere());
+  }
+
+  /// 回到最上层后检查这一篇在别处有没有改过（见本扩展的说明）。
+  ///
+  /// 先 flush：等本页的写入（被盖住时的补存，或刚关掉的对话框里改的发表
+  /// 时间）落盘，[_knownStoredAt] 随之更新，自己的写入不会被当成别处的修改。
+  /// 标签也比对：多选批量改标签不改更新时间。日记本收录不比对——本页只在
+  /// 用户改过时才写收录（`_notebookIdsDirty`），不会覆盖别处的改动。
+  Future<void> _checkForChangesElsewhere() async {
+    if (_checkingElsewhere || _saving) return;
+    _checkingElsewhere = true;
+    try {
+      final saved = await _controller.flushEditAutoSave();
+      if (!saved || !mounted) return;
+      final stored = await _database.getDiaryWithTagsByDiaryId(widget.diaryId!);
+      if (!mounted) return;
+      final l10n = context.l10n;
+      if (stored == null || stored.diary.isDeleted) {
+        _controller._showHint(l10n.autoT0122);
+        Navigator.of(context).pop();
+        return;
+      }
+      final storedTags = stored.tags.map((Tag tag) => tag.id).toSet();
+      final changed =
+          stored.diary.updatedAt != _knownStoredAt ||
+          !setEquals(storedTags, _meta.value.tagIds);
+      if (!changed) return;
+      _reloadFromElsewhere(stored);
+      _controller._showHint(l10n.diaryReadingReloaded);
+    } finally {
+      _checkingElsewhere = false;
+    }
+  }
+
+  /// 换成库里的最新内容：与首次回填走同一条路径（[_initializeFromDetail]），
+  /// 自动保存以新内容为“已存”，不会把它再写一遍。正文换了一份控制器，手机
+  /// 上先收起正在编辑的焦点，免得键盘对着新正文的文首弹出来。
+  void _reloadFromElsewhere(DiaryWithTags stored) {
+    if (AppPlatform.isMobile && _isEditingNoteText) {
+      FocusManager.instance.primaryFocus?.unfocus();
+    }
+    setState(() {
+      _initialized = false;
+      _notebookIdsDirty = false;
+      _initializeFromDetail(stored, reload: true);
+    });
   }
 
   /// 补存，再按库里的最新内容读出这一篇；保存失败或日记已不在时为 null

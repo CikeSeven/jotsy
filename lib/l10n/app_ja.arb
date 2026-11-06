@@ -7517,6 +7517,10 @@
   "@diaryReadingDone": {
     "description": "Reading-style editor: top bar button that hides the keyboard and ends editing."
   },
+  "diaryReadingReloaded": "この日記は別の画面で変更されたため、最新の内容を表示しています。",
+  "@diaryReadingReloaded": {
+    "description": "Reading-style editor: hint shown when returning to the editor after the same diary was changed on another page; the editor now shows the stored version."
+  },
   "diaryDayPhotosSetCover": "表紙に設定",
   "@diaryDayPhotosSetCover": {
     "description": "Photos from this day: button and menu item that makes a photo the entry cover."

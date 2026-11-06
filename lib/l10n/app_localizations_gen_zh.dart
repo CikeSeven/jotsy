@@ -5303,6 +5303,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryReadingDone => '完成';
 
   @override
+  String get diaryReadingReloaded => '这篇在别处改过，已换成最新内容';
+
+  @override
   String get diaryDayPhotosSetCover => '设为封面';
 
   @override

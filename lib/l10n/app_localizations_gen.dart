@@ -9750,6 +9750,12 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get diaryReadingDone;
 
+  /// Reading-style editor: hint shown when returning to the editor after the same diary was changed on another page; the editor now shows the stored version.
+  ///
+  /// In en, this message translates to:
+  /// **'This diary was changed elsewhere, so the latest version is shown.'**
+  String get diaryReadingReloaded;
+
   /// Photos from this day: button and menu item that makes a photo the entry cover.
   ///
   /// In en, this message translates to:

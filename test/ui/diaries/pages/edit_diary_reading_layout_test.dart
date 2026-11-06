@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -285,6 +287,113 @@ void main() {
       () => database.getDiaryWithTagsByDiaryId(diaryId),
     ))!;
     expect(stored.diary.title, 'Typed just now');
+    await unmount(tester);
+  });
+
+  /// 在编辑页之上压一页（别处的页面），返回它的 Navigator 以便关掉。
+  Future<NavigatorState> coverEditor(WidgetTester tester) async {
+    final navigator = Navigator.of(tester.element(find.byType(EditDiaryPage)));
+    unawaited(
+      navigator.push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('Another page')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    return navigator;
+  }
+
+  Future<void> settleWithDatabase(WidgetTester tester) async {
+    for (var i = 0; i < 3; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pumpAndSettle();
+    }
+  }
+
+  testWidgets('covering the editor saves at once; coming back after the diary '
+      'was changed elsewhere shows the latest version', (tester) async {
+    await prepare();
+    await openEditor(tester);
+    final l10n = l10nOf(tester);
+    await tester.enterText(find.byType(TextField).first, 'Mine');
+
+    // 被盖住：不等防抖，最后的输入立即写进库。
+    final navigator = await coverEditor(tester);
+    await settleWithDatabase(tester);
+    final stored = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!;
+    expect(stored.diary.title, 'Mine');
+
+    // 别处（上面那页里又打开了这一篇）改了它：库里的时间按秒存，隔开一秒。
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 1100));
+      await database.updateDiary(
+        diaryId: diaryId,
+        title: 'Changed elsewhere',
+        contentDocJson: '[{"insert":"Rewritten body\\n"}]',
+        contentText: 'Rewritten body',
+        metadataJson: stored.diary.metadata,
+        tagIds: <int>[tagId],
+      );
+    });
+
+    navigator.pop();
+    await settleWithDatabase(tester);
+    expect(titleField(tester).controller!.text, 'Changed elsewhere');
+    expect(editorOf(tester).controller.plainText, contains('Rewritten body'));
+    expect(find.text(l10n.diaryReadingReloaded), findsOneWidget);
+
+    // 换上的内容算“已存”：不会被自动保存再写一遍成旧内容。
+    await tester.pump(const Duration(milliseconds: 600));
+    await settleWithDatabase(tester);
+    final after = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!;
+    expect(after.diary.title, 'Changed elsewhere');
+    expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
+  testWidgets('coming back with nothing changed elsewhere keeps the editor as '
+      'it was', (tester) async {
+    await prepare();
+    await openEditor(tester);
+    final l10n = l10nOf(tester);
+    final controllerBefore = editorOf(tester).controller;
+    await tester.enterText(find.byType(TextField).first, 'Still mine');
+
+    final navigator = await coverEditor(tester);
+    await settleWithDatabase(tester);
+    navigator.pop();
+    await settleWithDatabase(tester);
+
+    expect(titleField(tester).controller!.text, 'Still mine');
+    expect(identical(editorOf(tester).controller, controllerBefore), isTrue);
+    expect(find.text(l10n.diaryReadingReloaded), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('coming back after the diary was deleted elsewhere leaves the '
+      'editor instead of bringing it back', (tester) async {
+    await prepare();
+    await openEditor(tester);
+    final l10n = l10nOf(tester);
+
+    final navigator = await coverEditor(tester);
+    await tester.runAsync(() => database.softDeleteDiary(diaryId));
+    navigator.pop();
+    await settleWithDatabase(tester);
+
+    expect(find.byType(EditDiaryPage), findsNothing);
+    expect(find.text(l10n.autoT0122), findsOneWidget);
+    final stored = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!;
+    expect(stored.diary.isDeleted, isTrue);
     await unmount(tester);
   });
 

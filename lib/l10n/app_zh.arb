@@ -7464,6 +7464,10 @@
   "@diaryReadingDone": {
     "description": "阅读式编辑页：顶栏上收起键盘、结束编辑的按钮。"
   },
+  "diaryReadingReloaded": "这篇在别处改过，已换成最新内容",
+  "@diaryReadingReloaded": {
+    "description": "阅读式编辑页：从别的页面回来时，这篇已在别处被修改，编辑页换成库里最新内容后的提示。"
+  },
   "diaryDayPhotosSetCover": "设为封面",
   "@diaryDayPhotosSetCover": {
     "description": "这天拍的照片：把照片设为日记封面的按钮与菜单项。"

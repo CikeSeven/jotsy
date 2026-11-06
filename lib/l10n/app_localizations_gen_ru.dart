@@ -6041,6 +6041,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryReadingDone => 'Готово';
 
   @override
+  String get diaryReadingReloaded =>
+      'Запись изменили в другом месте — показана последняя версия.';
+
+  @override
   String get diaryDayPhotosSetCover => 'Сделать обложкой';
 
   @override

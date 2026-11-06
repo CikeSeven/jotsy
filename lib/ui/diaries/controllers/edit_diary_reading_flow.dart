@@ -63,16 +63,27 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
     _readingUpdatedAt = detail.diary.updatedAt;
   }
 
+  /// 详情回填与每次自动保存写库后，库里这一版的更新时间；回到前台时库里的
+  /// 值与它不同，说明别处改过（见 `_checkForChangesElsewhere`）。
+  DateTime? get _knownStoredAt => _readingUpdatedAt;
+
   /// 自动保存写库成功：页头页尾按刚写下的内容刷新（借用的首图、字数、
-  /// “最后编辑于”）。只在一次写库之后重建，不随每次按键。
-  void _onReadingSaved(EditDiarySnapshot snapshot) {
-    if (!mounted || !_isEditEntry) return;
-    setState(() {
+  /// “最后编辑于”）。只在一次写库之后重建，不随每次按键。[storedAt] 为库里
+  /// 存下的更新时间（没改正文、只改了面板同样算编辑）。页面已卸载时（返回
+  /// 时的补存在路由退场后才写完）只记下时间。
+  void _onReadingSaved(EditDiarySnapshot snapshot, DateTime storedAt) {
+    if (!_isEditEntry) return;
+    void apply() {
       _readingContentJson = snapshot.contentDocJson;
       _readingContentText = snapshot.contentText;
-      // 写库时 updated_at 取的就是此刻；没改正文（只改了面板）同样算编辑。
-      _readingUpdatedAt = DateTime.now();
-    });
+      _readingUpdatedAt = storedAt;
+    }
+
+    if (!mounted) {
+      apply();
+      return;
+    }
+    setState(apply);
   }
 
   /// 这一篇此刻的样子（见 [DiaryReadingSnapshotBuilder]）。

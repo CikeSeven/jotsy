@@ -317,6 +317,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   final DiaryEditorScrollHandle _readingScroll = DiaryEditorScrollHandle();
   // 分享与导出（没有长图：编辑页没有可整页截取的阅读视图）。
   late final DiaryPreviewExportController _readingExport;
+  // 本页是不是路由栈最上层（上次看到的值）；被盖住与回到最上层时分别补存、
+  // 检查别处的修改（见 _EditDiaryReadingActions._onRouteCurrentChanged）。
+  bool? _routeIsCurrent;
+  bool _checkingElsewhere = false;
 
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
@@ -436,6 +440,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (widget.diaryId == null) {
       _routeEntranceWaiter.schedule(this, _contentFocusNode.requestFocus);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _onRouteCurrentChanged(ModalRoute.isCurrentOf(context) ?? true);
   }
 
   @override
@@ -994,15 +1004,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     ),
   };
 
-  /// 首次拿到详情时回填编辑器、面板草稿与阅读式版式（只执行一次）。
+  /// 首次拿到详情时回填编辑器、面板草稿与阅读式版式（只执行一次）；
+  /// [reload] 为 true 时是回到前台发现别处改过这篇，换成库里的最新内容
+  /// （见 `_checkForChangesElsewhere`）：不再按入口的光标位置聚焦。
   ///
   /// 在 State 的 build 里调用：改标题文字、恢复面板草稿都会通知监听者，但
   /// 那时 [_initialized] 仍为 false，自动保存与阅读式重建都不响应；需要
-  /// 通知控制器的部分（这天的照片）推到这一帧之后。
-  void _initializeFromDetail(DiaryWithTags detail) {
+  /// 通知控制器的部分（这天的照片）推到这一帧之后。重新载入时调用方先把
+  /// [_initialized] 置回 false，效果相同。
+  void _initializeFromDetail(DiaryWithTags detail, {bool reload = false}) {
     _titleController.text = detail.diary.title;
     final document = editor.diaryEditorDocument(detail.diary.content);
-    final caret = widget.initialCaret;
+    final caret = reload ? null : widget.initialCaret;
     final caretSelection = caret == null
         ? null
         : editor.DiaryEditorController.collapsedSelectionAt(document, caret);

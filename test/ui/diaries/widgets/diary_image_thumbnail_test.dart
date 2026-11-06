@@ -93,7 +93,9 @@ Future<void> _pump(
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
-        body: controller.readOnly ? SingleChildScrollView(child: editor) : editor,
+        body: controller.readOnly
+            ? SingleChildScrollView(child: editor)
+            : editor,
       ),
     ),
   );

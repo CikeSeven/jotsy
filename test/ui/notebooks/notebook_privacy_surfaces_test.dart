@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/anniversaries/pages/anniversary_detail_page.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
@@ -12,6 +12,7 @@ import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import '../../support/expressive_test_theme.dart';
+import '../app_lock/app_lock_test_support.dart';
 import 'notebook_test_support.dart';
 
 /// 私密日记本在首页之外的表现：切到后台后的重新上锁遮罩、回收站占位、
@@ -20,19 +21,26 @@ void main() {
   group('NotebookLockLayer', () {
     Future<(DiaryDraftsHarness, String)> pumpLayer(
       WidgetTester tester,
-      FakeDeviceAuth auth,
-    ) async {
+      FakeDeviceAuth auth, {
+      String? appPassword,
+    }) async {
       final h = await DiaryDraftsHarness.create(tester);
       final vault = await h.notebook(
         '保险箱',
         visibility: NotebookVisibility.locked,
       );
+      if (appPassword != null) {
+        final prefs = await SharedPreferences.getInstance();
+        for (final entry in (await presetPassword(appPassword)).entries) {
+          await prefs.setString(entry.key, entry.value as String);
+        }
+      }
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             appDatabaseProvider.overrideWithValue(h.database),
             settingsServiceProvider.overrideWith((ref) async => h.settings),
-            deviceAuthServiceProvider.overrideWithValue(auth),
+            ...appLockOverrides(auth: auth, clock: TestClock()),
           ],
           child: MaterialApp(
             theme: expressiveTestTheme(Brightness.light),
@@ -125,6 +133,35 @@ void main() {
       await h.settleAll();
       expect(container.read(homeNotebookScopeProvider).isAll, isTrue);
       expect(find.text('「保险箱」已上锁'), findsNothing);
+      await h.unmount();
+    });
+
+    testWidgets('with an app password the overlay asks for it in place', (
+      tester,
+    ) async {
+      final auth = FakeDeviceAuth();
+      final (h, vault) = await pumpLayer(tester, auth, appPassword: 'Secret12');
+      final container = containerOf(tester);
+      container.read(homeNotebookScopeProvider.notifier).enter(vault);
+      await h.settleAll();
+      await background(tester);
+      await h.settleAll();
+      expect(find.text('「保险箱」已上锁'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+
+      // 输错不退回全部日记（由应用密码统一限流）。
+      for (var i = 0; i < 2; i++) {
+        await enterPassword(tester, 'nope');
+        await h.settleAll();
+      }
+      expect(container.read(homeNotebookScopeProvider).notebookId, vault);
+      expect(find.text('「保险箱」已上锁'), findsOneWidget);
+
+      await enterPassword(tester, 'Secret12');
+      await h.settleAll();
+      expect(auth.reasons, isEmpty);
+      expect(find.text('「保险箱」已上锁'), findsNothing);
+      expect(container.read(homeNotebookScopeProvider).notebookId, vault);
       await h.unmount();
     });
 

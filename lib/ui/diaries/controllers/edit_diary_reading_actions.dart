@@ -58,6 +58,31 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
     await DiaryCommentsSection.reveal(context, _readingCommentsKey, end: end);
   }
 
+  /// 信息栏的标签胶囊：与预览页一样按这个标签打开搜索（压在编辑页之上，
+  /// 返回后接着编辑）。先补存：搜索结果里就是刚写下的内容。
+  Future<void> _openReadingTag(int tagId) async {
+    if (_saving) return;
+    final saved = await _controller.flushEditAutoSave();
+    if (!saved || !mounted) return;
+    await openDiaryTagSearch(context, tagId);
+  }
+
+  /// 信息栏的日记本胶囊：与预览页一样回到首页、打开那本。这会直接关掉首页
+  /// 之上的所有页面（编辑页的返回补存不会执行），所以先补存，保存失败时
+  /// 留在本页（自动保存给出提示）。
+  Future<void> _openReadingNotebook(NotebookView notebook) async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final bool saved;
+    try {
+      saved = await _controller.flushEditAutoSave();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+    if (!saved || !mounted) return;
+    await openNotebookFromAnywhere(context, ref, notebook);
+  }
+
   /// 补存，再按库里的最新内容读出这一篇；保存失败或日记已不在时为 null
   /// （保存失败的提示由自动保存给出）。
   Future<DiaryWithTags?> _flushAndReload() async {

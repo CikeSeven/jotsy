@@ -77,9 +77,9 @@ class DiaryReadingEditorHeader extends StatelessWidget {
 
 /// 阅读式编辑页的信息栏：外观与预览页的信息栏相同（[child]），整块可点，
 /// 点按打开信息面板（心情、天气、地点、标签、日记本、发表时间、封面都在
-/// 那里改）。里面的“N 条留言”与预览页一样自己响应（滚到留言区，里层的点按
-/// 先于整块胜出）；标签与日记本胶囊不单独响应（调用方不给它们点按回调），
-/// 按压水波画在整块信息栏上。
+/// 那里改）。里面的胶囊与预览页一样自己响应（里层的点按先于整块胜出）：
+/// “N 条留言”滚到留言区，标签打开搜索，日记本打开那本；点胶囊之外的地方
+/// 打开面板，按压水波画在整块信息栏上。
 class DiaryReadingMetaButton extends StatelessWidget {
   const DiaryReadingMetaButton({
     super.key,

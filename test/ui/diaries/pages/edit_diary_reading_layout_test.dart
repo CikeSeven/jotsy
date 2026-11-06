@@ -10,6 +10,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
+import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_preview_resolved_style.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_comments/diary_comments_section.dart';
@@ -39,6 +40,7 @@ void main() {
     DiaryPreviewStyle style = DiaryPreviewStyle.defaults,
     bool comments = false,
     int paragraphs = 1,
+    bool inNotebook = false,
   }) async {
     final encoded = DiaryPreviewSettings(current: style).encode();
     SharedPreferences.setMockInitialValues(<String, Object>{
@@ -51,6 +53,9 @@ void main() {
     database = AppDatabase.forTesting(NativeDatabase.memory());
     settings = await SettingsService.create();
     tagId = await database.createTag(name: 'Travel', color: 0xFF4CAF50);
+    final notebookId = inNotebook
+        ? await database.createNotebook(name: 'Trips')
+        : null;
     final body = List<String>.generate(
       paragraphs,
       (i) => i == 0 ? 'Sunset over the sea' : 'Line $i',
@@ -61,6 +66,7 @@ void main() {
       contentText: body.join('\n'),
       metadataJson: '{"context":{"moodEmoji":"😊","location":"West Lake"}}',
       tagIds: <int>[tagId],
+      notebookIds: notebookId == null ? null : <String>[notebookId],
     );
   }
 
@@ -231,6 +237,54 @@ void main() {
     expect(find.text('Looking back'), findsOneWidget);
 
     expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
+  testWidgets('tapping a tag chip saves first and opens that tag\'s search, '
+      'like the preview page', (tester) async {
+    await prepare();
+    await openEditor(tester);
+    await tester.enterText(find.byType(TextField).first, 'Typed just now');
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(DiaryPreviewMeta),
+        matching: find.text('Travel'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(PublishDiaryPanel), findsNothing);
+    expect(find.byType(DiarySearchPage), findsOneWidget);
+    final stored = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!;
+    expect(stored.diary.title, 'Typed just now');
+    await unmount(tester);
+  });
+
+  testWidgets('tapping a notebook chip saves first and goes home to that '
+      'notebook, like the preview page', (tester) async {
+    await prepare(inNotebook: true);
+    await openEditor(tester);
+    await tester.enterText(find.byType(TextField).first, 'Typed just now');
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(DiaryPreviewMeta),
+        matching: find.text('Trips'),
+      ),
+    );
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+    // 回到首页（这里是测试的首个路由）：编辑页已关掉，但最后的输入写进了库。
+    expect(find.byType(EditDiaryPage), findsNothing);
+    expect(find.byType(PublishDiaryPanel), findsNothing);
+    final stored = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!;
+    expect(stored.diary.title, 'Typed just now');
     await unmount(tester);
   });
 

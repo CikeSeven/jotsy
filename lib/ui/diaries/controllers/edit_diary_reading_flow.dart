@@ -133,8 +133,9 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
       );
 
   /// 信息栏（已包好点按，点开信息面板）；这篇在当前样式下没有可显示的信息
-  /// 时为 null。“N 条留言”与预览页一样滚到页尾的留言区（[canRevealComments]
-  /// 为 false 时不可点，同预览页）。
+  /// 时为 null。里面的胶囊与预览页一样各自响应：“N 条留言”滚到页尾的留言区
+  /// （[canRevealComments] 为 false 时不可点），标签打开这个标签的搜索，日记本
+  /// 回到首页打开那本（后两者先补存，见 `edit_diary_reading_actions.dart`）。
   Widget? _buildReadingMeta(
     DiaryReadingSnapshot snapshot,
     DiaryPreviewResolvedStyle resolved, {
@@ -163,6 +164,10 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
         onOpenComments: canRevealComments
             ? () => unawaited(_revealReadingComments())
             : null,
+        onOpenTag: (int tagId) => unawaited(_openReadingTag(tagId)),
+        // 日记本功能关闭时胶囊本就不出现（notebooks 为空）。
+        onOpenNotebook: (NotebookView notebook) =>
+            unawaited(_openReadingNotebook(notebook)),
       ),
     );
   }

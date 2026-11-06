@@ -4109,6 +4109,14 @@
   "@diaryTypographyImportFontHint": {
     "description": "Body font & layout: description of the import entry."
   },
+  "diaryTypographyApplyToApp": "Для всего приложения",
+  "@diaryTypographyApplyToApp": {
+    "description": "Body font & layout: switch that makes the selected font the app-wide interface font."
+  },
+  "diaryTypographyApplyToAppHint": "Если выключено, шрифт используется только для заголовков, текста и карточек записей",
+  "@diaryTypographyApplyToAppHint": {
+    "description": "Body font & layout: description under the whole-app font switch."
+  },
   "diaryTypographyImporting": "Импорт шрифта…",
   "@diaryTypographyImporting": {
     "description": "Body font & layout: busy label while importing a font."
@@ -4213,7 +4221,7 @@
   "@diaryTypographyReset": {
     "description": "Body layout: reset size, spacing and first-line indent values to defaults (keeps the font)."
   },
-  "diaryTypographyScopeHint": "Применяется при написании, чтении и публикации записей; шрифт также используется для заголовков.",
+  "diaryTypographyScopeHint": "Размер, интервалы и отступы применяются при написании, чтении и публикации записей.",
   "@diaryTypographyScopeHint": {
     "description": "Body font & layout: footer explaining where the settings apply."
   },

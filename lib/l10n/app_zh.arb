@@ -4064,6 +4064,14 @@
   "@diaryTypographyImportFontHint": {
     "description": "正文字体与排版：导入字体入口的说明。"
   },
+  "diaryTypographyApplyToApp": "用于整个界面",
+  "@diaryTypographyApplyToApp": {
+    "description": "正文字体与排版：让所选字体也用于整个界面的开关。"
+  },
+  "diaryTypographyApplyToAppHint": "关闭时只用于日记标题、正文与日记卡片",
+  "@diaryTypographyApplyToAppHint": {
+    "description": "正文字体与排版：“用于整个界面”开关的说明。"
+  },
   "diaryTypographyImporting": "正在导入字体…",
   "@diaryTypographyImporting": {
     "description": "正文字体与排版：导入字体时的等待提示。"
@@ -4160,7 +4168,7 @@
   "@diaryTypographyReset": {
     "description": "正文排版：把字号、行距、字间距、段间距与首行缩进恢复默认（保留字体）。"
   },
-  "diaryTypographyScopeHint": "作用于日记的编辑、阅读与发布页面；字体也用于日记标题。",
+  "diaryTypographyScopeHint": "字号、行距等排版作用于日记的编辑、阅读与发布页面。",
   "@diaryTypographyScopeHint": {
     "description": "正文字体与排版：排版分组底部的作用范围说明。"
   },

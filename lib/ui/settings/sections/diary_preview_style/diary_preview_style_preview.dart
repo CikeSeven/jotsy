@@ -3,6 +3,7 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/theme/app_fonts.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -55,7 +56,12 @@ class DiaryPreviewStylePreview extends ConsumerWidget {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final previewTheme = brightness == appTheme.brightness
         ? appTheme
-        : SeededThemeCache.of(seed, brightness, reduceMotion: reduceMotion);
+        : SeededThemeCache.of(
+            seed,
+            brightness,
+            reduceMotion: reduceMotion,
+            fonts: AppFonts.of(appTheme),
+          );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[

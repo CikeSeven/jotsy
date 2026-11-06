@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_radii.dart';
+import '../../../app/theme/app_fonts.dart';
 import '../../../app/theme/seeded_theme_cache.dart';
 import '../models/diary_mood_palette.dart';
 import '../models/diary_preview_style/diary_preview_style.dart';
@@ -137,6 +138,7 @@ class DiaryPreviewResolvedStyle {
             seed ?? appSeed,
             pageBrightness,
             reduceMotion: reduceMotion,
+            fonts: AppFonts.of(appTheme),
             variant: neutral
                 ? DynamicSchemeVariant.neutral
                 : seed != null

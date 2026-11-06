@@ -4109,6 +4109,14 @@
   "@diaryTypographyImportFontHint": {
     "description": "Body font & layout: description of the import entry."
   },
+  "diaryTypographyApplyToApp": "アプリ全体に使う",
+  "@diaryTypographyApplyToApp": {
+    "description": "Body font & layout: switch that makes the selected font the app-wide interface font."
+  },
+  "diaryTypographyApplyToAppHint": "オフのときは日記のタイトル・本文・日記カードにだけ使われます",
+  "@diaryTypographyApplyToAppHint": {
+    "description": "Body font & layout: description under the whole-app font switch."
+  },
   "diaryTypographyImporting": "フォントをインポート中…",
   "@diaryTypographyImporting": {
     "description": "Body font & layout: busy label while importing a font."
@@ -4213,7 +4221,7 @@
   "@diaryTypographyReset": {
     "description": "Body layout: reset size, spacing and first-line indent values to defaults (keeps the font)."
   },
-  "diaryTypographyScopeHint": "日記の作成・閲覧・投稿画面に適用されます。フォントは日記のタイトルにも使われます。",
+  "diaryTypographyScopeHint": "文字サイズや行間などは日記の作成・閲覧・投稿画面に適用されます。",
   "@diaryTypographyScopeHint": {
     "description": "Body font & layout: footer explaining where the settings apply."
   },

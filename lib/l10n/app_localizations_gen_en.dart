@@ -3222,6 +3222,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'TTF, OTF or TTC; it becomes the body font once imported';
 
   @override
+  String get diaryTypographyApplyToApp => 'Use for the whole app';
+
+  @override
+  String get diaryTypographyApplyToAppHint =>
+      'When off, the font is used only for diary titles, text and diary cards';
+
+  @override
   String get diaryTypographyImporting => 'Importing font…';
 
   @override
@@ -3300,7 +3307,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTypographyScopeHint =>
-      'Applies when writing, reading and publishing diaries; the font is also used for titles.';
+      'Size, spacing and indent apply when writing, reading and publishing diaries.';
 
   @override
   String get diaryTypographyMoreSettings => 'More settings';

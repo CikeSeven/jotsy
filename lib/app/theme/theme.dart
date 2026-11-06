@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 
+import 'app_fonts.dart';
 import 'expressive_controls.dart';
 import 'expressive_surfaces.dart';
 
@@ -10,16 +11,19 @@ part 'theme_color_schemes.dart';
 /// 应用外壳与设置页里的明暗预览共用同一装配，预览看到的就是切换主题后的
 /// 真实效果。应用外壳始终是 tonalSpot；[variant] 只供预览页“着色强度”与
 /// “中性灰”回退换用别的配色方案（tonalSpot 只取种子色的色相，fidelity 保留
-/// 种子色的浓淡，vibrant 最饱和，neutral 为低饱和的灰调）。
+/// 种子色的浓淡，vibrant 最饱和，neutral 为低饱和的灰调）。[fonts] 为用户选的
+/// 界面字体与日记字体（见 [AppFonts]），缺省为内置字体。
 ThemeData buildSeededAppTheme(
   Color seedColor,
   Brightness brightness, {
   DynamicSchemeVariant variant = DynamicSchemeVariant.tonalSpot,
+  AppFonts fonts = const AppFonts(),
 }) {
   return MaterialTheme(
     brightness == Brightness.light
         ? Typography.material2021().black
         : Typography.material2021().white,
+    fonts: fonts,
   ).theme(
     ColorScheme.fromSeed(
       seedColor: seedColor,
@@ -38,7 +42,10 @@ ThemeData buildSeededAppTheme(
 class MaterialTheme {
   final TextTheme textTheme;
 
-  const MaterialTheme(this.textTheme);
+  /// 界面字体与日记字体；随主题以 [ThemeExtension] 往下传（[AppFonts.of]）。
+  final AppFonts fonts;
+
+  const MaterialTheme(this.textTheme, {this.fonts = const AppFonts()});
 
   static ColorScheme lightScheme() => MaterialThemeSchemes.lightScheme;
   ThemeData light() => theme(lightScheme());
@@ -66,9 +73,13 @@ class MaterialTheme {
     // 页面画布统一取种子色派生的 surface：纯白卡片在其上清爽浮起，换主题色时
     // 底色随之带上同一色调，不再与固定冷灰蓝底色产生色差。
     final scaffoldBg = ExpressiveSurfaces.pageBackground(colorScheme);
+    // 开启“字体用于整个界面”时整份字阶换成用户的字体；不额外指定回退字体：
+    // 缺字（如西文导入字体里的汉字、Android 系统字体的中文）交给系统回退链，
+    // 与日记正文同一口径，系统字体在中文上仍显示厂商字体。
+    final fontFamily = fonts.interface ?? kAppBundledFontFamily;
     final baseTheme = ThemeData(
       useMaterial3: true,
-      fontFamily: 'HarmonyOSSansSC',
+      fontFamily: fontFamily,
       brightness: colorScheme.brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: scaffoldBg,
@@ -77,11 +88,12 @@ class MaterialTheme {
       // 输入框等整体压矮 4–8dp，DESIGN.md 的 dp 规格就不再成立。Android/iOS
       // 的默认本来就是 standard，移动端不受影响。
       visualDensity: VisualDensity.standard,
+      extensions: <ThemeExtension<dynamic>>[fonts],
     );
     final resolvedTextTheme = baseTheme.textTheme
         .merge(textTheme)
         .apply(
-          fontFamily: 'HarmonyOSSansSC',
+          fontFamily: fontFamily,
           bodyColor: colorScheme.onSurface,
           displayColor: colorScheme.onSurface,
         );

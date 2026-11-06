@@ -17,6 +17,7 @@ import '../../widgets/app_top_bar.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../widgets/diary_font_delete_dialog.dart';
 import '../widgets/settings_card_group.dart';
+import '../widgets/settings_option_tiles.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
@@ -26,6 +27,8 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 /// 预览卡固定在列表上方、不随列表滚动：调整下方的滑块时始终看得到效果。
 /// 预览按滑块草稿渲染（拖动中即时变化），松手后才提交到全部日记页面。
 /// 预览卡高度有上限，大字号、大行距时正文在卡内滚动，不挤占设置项。
+/// 字体分组末尾的“用于整个界面”开关只扩大字体的作用范围（见
+/// [DiaryTypography.applyFontToApp]），排版数值始终只作用于日记页面。
 class DiaryTypographyPage extends ConsumerStatefulWidget {
   const DiaryTypographyPage({super.key});
 
@@ -169,6 +172,14 @@ class _DiaryTypographyPageState extends ConsumerState<DiaryTypographyPage> {
                                           context,
                                           onBusyChanged: _setImporting,
                                         ),
+                                ),
+                                SettingsSwitchTile(
+                                  title: l10n.diaryTypographyApplyToApp,
+                                  subtitle: l10n.diaryTypographyApplyToAppHint,
+                                  value: typography.applyFontToApp,
+                                  onChanged: (bool value) => _controller.commit(
+                                    typography.copyWith(applyFontToApp: value),
+                                  ),
                                 ),
                               ],
                             ),

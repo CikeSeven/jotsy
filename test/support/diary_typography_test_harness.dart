@@ -38,7 +38,7 @@ Future<void> pumpDiaryTypographyHarness(
   Brightness brightness = Brightness.light,
 }) async {
   // 足够高的竖屏，设置页的全部分组无需滚动即可点到。
-  tester.view.physicalSize = const Size(1080, 3000);
+  tester.view.physicalSize = const Size(1080, 3400);
   tester.view.devicePixelRatio = 2.75;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(

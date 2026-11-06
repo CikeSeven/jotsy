@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../app/theme/app_radii.dart';
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../../app/theme/app_fonts.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -104,6 +105,7 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
       ref.watch(appThemeSeedColorProvider),
       brightness,
       reduceMotion: MediaQuery.disableAnimationsOf(context),
+      fonts: AppFonts.of(appTheme),
     );
   }
 

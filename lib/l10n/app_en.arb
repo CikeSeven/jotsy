@@ -4064,6 +4064,14 @@
   "@diaryTypographyImportFontHint": {
     "description": "Body font & layout: description of the import entry."
   },
+  "diaryTypographyApplyToApp": "Use for the whole app",
+  "@diaryTypographyApplyToApp": {
+    "description": "Body font & layout: switch that makes the selected font the app-wide interface font."
+  },
+  "diaryTypographyApplyToAppHint": "When off, the font is used only for diary titles, text and diary cards",
+  "@diaryTypographyApplyToAppHint": {
+    "description": "Body font & layout: description under the whole-app font switch."
+  },
   "diaryTypographyImporting": "Importing font…",
   "@diaryTypographyImporting": {
     "description": "Body font & layout: busy label while importing a font."
@@ -4160,7 +4168,7 @@
   "@diaryTypographyReset": {
     "description": "Body layout: reset size, spacing and first-line indent values to defaults (keeps the font)."
   },
-  "diaryTypographyScopeHint": "Applies when writing, reading and publishing diaries; the font is also used for titles.",
+  "diaryTypographyScopeHint": "Size, spacing and indent apply when writing, reading and publishing diaries.",
   "@diaryTypographyScopeHint": {
     "description": "Body font & layout: footer explaining where the settings apply."
   },

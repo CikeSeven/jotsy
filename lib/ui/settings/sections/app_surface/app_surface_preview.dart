@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_radii.dart';
+import '../../../../app/theme/app_fonts.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/models/app_surface_settings.dart';
@@ -67,6 +68,7 @@ class AppSurfacePreview extends ConsumerWidget {
             ref.watch(appThemeSeedColorProvider),
             brightness,
             reduceMotion: MediaQuery.disableAnimationsOf(context),
+            fonts: AppFonts.of(appTheme),
           );
     final phone = phoneSizeOf(context);
     final settings = controller.style;

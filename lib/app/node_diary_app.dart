@@ -11,6 +11,7 @@ import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
 import 'package:node_diary/app/synced_data_refresh.dart';
 import 'package:node_diary/app/theme/theme.dart';
+import 'package:node_diary/app/theme/app_fonts.dart';
 import 'package:node_diary/app/theme/app_scroll_behavior.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
@@ -64,12 +65,17 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   static const Duration _loaderMinVisible = Duration(milliseconds: 500);
 
   Color? _cachedThemeSeedColor;
+  AppFonts? _cachedThemeFonts;
   (ThemeData, ThemeData)? _cachedThemes;
   late final HomeHintVisibilityController _homeHintVisibilityController;
   Timer? _loaderShowTimer;
   Timer? _loaderMinVisibleTimer;
   bool _loaderShown = false;
   bool _loaderHolding = false;
+
+  /// 启动时所选导入字体是否已就绪（见 [appFontsStartupReadyProvider]）。
+  /// 一旦就绪即锁存：揭幕后再换字体（重新注册）不能让首页退回加载态。
+  bool _startupFontsReady = false;
 
   SettingsService? _boundSettingsService;
   VoidCallback? _appLockToggleListener;
@@ -124,7 +130,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   bool _isBootstrapDataReady() {
     final diaries = ref.read(startupDiariesProvider);
     return ref.read(settingsServiceProvider).hasValue &&
-        (diaries.hasValue || diaries.hasError);
+        (diaries.hasValue || diaries.hasError) &&
+        (_startupFontsReady ||
+            !ref.read(appFontsStartupReadyProvider).isLoading);
   }
 
   @override
@@ -154,7 +162,20 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     if (settingsService != null) {
       _bindSettingsForAppLock(settingsService);
     }
-    final bootstrapReady = settingsReady && diariesSettled && !_loaderHolding;
+    // 设置就绪后才知道选了哪款字体，之前的就绪结果不算数。锁存后不再
+    // 订阅就绪状态：之后换导入字体（重新注册）不影响启动门控。
+    if (!_startupFontsReady) {
+      final fontsLoading = ref.watch(appFontsStartupReadyProvider).isLoading;
+      _startupFontsReady = settingsReady && !fontsLoading;
+    }
+    // 界面字体与日记卡片字体随主题下发（见 [AppFonts]）；导入字体注册完成前
+    // 为内置字体，完成后主题换实例。
+    final fonts = ref.watch(appFontsProvider);
+    final bootstrapReady =
+        settingsReady &&
+        diariesSettled &&
+        _startupFontsReady &&
+        !_loaderHolding;
     final startupNotice = bootstrapReady && diariesBootstrapFailed
         ? _bootstrapL10n(settingsService).startupPreloadFailedNotice
         : null;
@@ -218,6 +239,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
                                 locale: locale,
                                 themeSeedColor: themeSeedColor,
                                 fontScale: fontScale,
+                                fonts: fonts,
                               );
                             },
                       );
@@ -232,20 +254,24 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     return _buildAppShell(home: home);
   }
 
-  /// 按种子色缓存明暗 ThemeData。
+  /// 按种子色与字体缓存明暗 ThemeData。
   ///
   /// `ColorScheme.fromSeed` 需要做 HCT 色调板计算，ThemeData 组装也不便宜；
-  /// 字号、语言、主题模式变化都会重建应用壳，但只有种子色变化才需要重算主题。
-  (ThemeData, ThemeData) _themesForSeed(Color seedColor) {
+  /// 字号、语言、主题模式变化都会重建应用壳，但只有种子色或字体变化才需要
+  /// 重算主题。
+  (ThemeData, ThemeData) _themesFor(Color seedColor, AppFonts fonts) {
     final cached = _cachedThemes;
-    if (cached != null && _cachedThemeSeedColor == seedColor) {
+    if (cached != null &&
+        _cachedThemeSeedColor == seedColor &&
+        _cachedThemeFonts == fonts) {
       return cached;
     }
     final themes = (
-      buildSeededAppTheme(seedColor, Brightness.light),
-      buildSeededAppTheme(seedColor, Brightness.dark),
+      buildSeededAppTheme(seedColor, Brightness.light, fonts: fonts),
+      buildSeededAppTheme(seedColor, Brightness.dark, fonts: fonts),
     );
     _cachedThemeSeedColor = seedColor;
+    _cachedThemeFonts = fonts;
     _cachedThemes = themes;
     return themes;
   }
@@ -258,18 +284,23 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       SettingsService.defaultThemeSeedColorValue,
     ),
     double fontScale = SettingsService.defaultFontScale,
+    AppFonts fonts = const AppFonts(),
   }) {
-    final (lightTheme, darkTheme) = _themesForSeed(themeSeedColor);
+    // 字体无法插值：过渡里 TextStyle 的字族要到一半才换，旧字体多留半程、
+    // 再整体重排一次（启动时正好落在首页揭幕的头几帧）。所以字体变化的这一次
+    // 直接换主题，明暗、主题色的切换照旧过渡。按缓存比较而不是记在字段里：
+    // 之后只换颜色的重建不受影响。
+    final fontsChanged = _cachedThemes != null && _cachedThemeFonts != fonts;
+    final (lightTheme, darkTheme) = _themesFor(themeSeedColor, fonts);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // Android 拉伸越界时不让滚动内容里的玻璃失去背景模糊，见 AppScrollBehavior。
       scrollBehavior: const AppScrollBehavior(),
       // 切换明暗/主题色时 AnimatedTheme 会逐帧 lerp 整份 ThemeData；减少动画时
-      // 直接切换，曲线与其余颜色过渡统一为 effects。
-      themeAnimationDuration: ExpressiveMotion.duration(
-        context,
-        ExpressiveMotion.fast,
-      ),
+      // 直接切换，曲线与其余颜色过渡统一为 effects。换字体时直接切换（见上）。
+      themeAnimationDuration: fontsChanged
+          ? Duration.zero
+          : ExpressiveMotion.duration(context, ExpressiveMotion.fast),
       themeAnimationCurve: ExpressiveMotion.effects,
       title: 'Jotsy',
       theme: lightTheme,

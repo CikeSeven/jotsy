@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/theme/app_fonts.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -81,6 +82,7 @@ class _DiaryCardStylePreviewState extends ConsumerState<DiaryCardStylePreview> {
       Color(widget.controller.settingsService.themeSeedColorValue),
       brightness,
       reduceMotion: reduceMotion,
+      fonts: AppFonts.of(appTheme),
     );
   }
 

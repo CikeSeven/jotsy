@@ -23,6 +23,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../../app/theme/app_fonts.dart';
 import '../../../app/theme/seeded_theme_cache.dart';
 import '../../../core/services/day_photo_library.dart';
 import '../../../core/services/lan_sync/lan_sync_qr_payload.dart';
@@ -135,6 +136,7 @@ class _LanSyncScanPageState extends ConsumerState<LanSyncScanPage> {
       ref.watch(appThemeSeedColorProvider),
       Brightness.dark,
       reduceMotion: ExpressiveMotion.reduceMotion(context),
+      fonts: AppFonts.of(Theme.of(context)),
     );
     final scanner = _scanner;
     final cameraBuilder = widget.cameraBuilder;

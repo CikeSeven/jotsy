@@ -2905,6 +2905,12 @@ class AppLocalizationsJa extends AppLocalizations {
       'TTF、OTF、TTC 形式に対応。インポートすると本文フォントに設定されます';
 
   @override
+  String get diaryTypographyApplyToApp => 'アプリ全体に使う';
+
+  @override
+  String get diaryTypographyApplyToAppHint => 'オフのときは日記のタイトル・本文・日記カードにだけ使われます';
+
+  @override
   String get diaryTypographyImporting => 'フォントをインポート中…';
 
   @override
@@ -2975,8 +2981,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryTypographyReset => 'レイアウトをリセット';
 
   @override
-  String get diaryTypographyScopeHint =>
-      '日記の作成・閲覧・投稿画面に適用されます。フォントは日記のタイトルにも使われます。';
+  String get diaryTypographyScopeHint => '文字サイズや行間などは日記の作成・閲覧・投稿画面に適用されます。';
 
   @override
   String get diaryTypographyMoreSettings => 'その他の設定';

@@ -1,8 +1,9 @@
 // 明暗模式与主题色。
 //
 // 明暗：'system'（不写 data-theme，跟随系统）/ 'light' / 'dark'，存 jotsy.theme。
-// 主题色：app 的 80 个种子色之一，配色数据见 assets/data/themes.json（由
-// ColorScheme.fromSeed(tonalSpot) 生成，与 app 一致）。换色时生成与 site.css 同结构的
+// 主题色：app 的 80 个种子色之一，配色数据见 assets/data/themes.json（由 app 的
+// appColorSchemeFromSeed 导出，与 app 一致：灰色系是灰阶而不是 tonalSpot 染出的青蓝；
+// 导出与校验见 test/app/theme/site_theme_export_test.dart）。换色时生成与 site.css 同结构的
 // 三段规则注入 <style id="seed-theme">，并把这段 CSS 存进 jotsy.seedCss，下次访问由
 // <head> 引导脚本在首帧前注入，不闪烁。默认种子色不注入任何覆盖。
 //

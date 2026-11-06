@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_color_scheme.dart';
+
 /// 应用内统一色板家族，供标签与主题色选择复用。
 class ColorPaletteFamily {
-  const ColorPaletteFamily({required this.label, required this.colors});
+  const ColorPaletteFamily({
+    required this.label,
+    required this.colors,
+    this.swatchSplit,
+  });
 
   final String label;
   final List<Color> colors;
+
+  /// 色系一行上的色块右半边另画的颜色；为空时整块画 [swatch]。
+  final Color? swatchSplit;
+
+  /// 色系一行上代表这一系的颜色：第 3 个色（最浅两格在浅色背景上太淡），
+  /// 不足三格的色系取第一个。
+  Color get swatch => colors.length > 2 ? colors[2] : colors.first;
 }
 
 /// 色板中命中的颜色位置。
@@ -154,19 +167,32 @@ const List<ColorPaletteFamily> kColorPaletteFamilies = <ColorPaletteFamily>[
   ),
 ];
 
+/// 主题色专用的“黑白”色系：只有纯黑一个色，选中后主题为黑白配色（浅色下
+/// 主色纯黑、深色下纯白，见 [appColorSchemeFromSeed]）。色系一行上画成左黑
+/// 右白的色块。标签、卡片等其他色板不提供：它们按种子色换算容器色，纯黑与
+/// 灰色系没有区别。
+const ColorPaletteFamily kMonochromeThemeFamily = ColorPaletteFamily(
+  label: '黑白',
+  colors: <Color>[Color(kMonochromeThemeSeedValue)],
+  swatchSplit: Color(0xFFFFFFFF),
+);
+
+/// 主题色选择器的色系：统一色板之后接“黑白”。
+const List<ColorPaletteFamily> kThemeColorPaletteFamilies =
+    <ColorPaletteFamily>[...kColorPaletteFamilies, kMonochromeThemeFamily];
+
+/// 在 [families]（缺省为统一色板）里找 [initialColor]，找不到时回退到
+/// 指定位置；[preserveUnknownColor] 决定回退时颜色值保留原值还是取回退色。
 ColorPaletteSelection resolveColorPaletteSelection({
   required int? initialColor,
   required int fallbackFamilyIndex,
   required int fallbackColorIndex,
   bool preserveUnknownColor = true,
+  List<ColorPaletteFamily> families = kColorPaletteFamilies,
 }) {
   if (initialColor != null) {
-    for (
-      var familyIndex = 0;
-      familyIndex < kColorPaletteFamilies.length;
-      familyIndex++
-    ) {
-      final family = kColorPaletteFamilies[familyIndex];
+    for (var familyIndex = 0; familyIndex < families.length; familyIndex++) {
+      final family = families[familyIndex];
       for (
         var colorIndex = 0;
         colorIndex < family.colors.length;
@@ -183,8 +209,7 @@ ColorPaletteSelection resolveColorPaletteSelection({
     }
   }
 
-  final fallbackColor = kColorPaletteFamilies[fallbackFamilyIndex]
-      .colors[fallbackColorIndex]
+  final fallbackColor = families[fallbackFamilyIndex].colors[fallbackColorIndex]
       .toARGB32();
   return ColorPaletteSelection(
     familyIndex: fallbackFamilyIndex,

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -14,6 +15,7 @@ import 'tag_filter_clear_button.dart';
 import 'tag_filter_collapse_handle.dart';
 import 'tag_filter_expansion_gesture.dart';
 import 'tag_filter_layout.dart';
+import 'tag_filter_pull_hint.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 日记页顶部标签筛选栏。
@@ -27,7 +29,11 @@ import '../../widgets/desktop_horizontal_scroll.dart';
 ///   （有日记本可切换）时保留；
 /// - 收起时横向滚动，展开高度随实际行数变化，最多五行并独立滚动；
 /// - 卡片尺寸和主题样式在两种排列中一致；
-/// - 标签区域的拖动不移交给日记滚动或 Home 切页。
+/// - 标签区域的拖动不移交给日记滚动或 Home 切页；
+/// - 一次性的“下拉展开”提示（[pullHintVisible]）：收着时在标签行下方展开
+///   一行 [TagFilterPullHint]，标签栏按 [pullHintPeek] 往下探一段再弹回；
+///   收起的一行是否放不下全部标签经 [onHiddenTagsChanged] 回报（时序与记录
+///   见 `TagFilterPullHintController`）。
 class DiaryTagFilterBar extends StatefulWidget {
   const DiaryTagFilterBar({
     super.key,
@@ -45,6 +51,10 @@ class DiaryTagFilterBar extends StatefulWidget {
     this.leading,
     this.leadingWidth = 0,
     this.keepVisible = false,
+    this.pullHintVisible = false,
+    this.pullHintPeek,
+    this.onPullHintTap,
+    this.onHiddenTagsChanged,
   });
 
   static const int maxExpandedRows = 5;
@@ -61,11 +71,15 @@ class DiaryTagFilterBar extends StatefulWidget {
       chipExtent * maxExpandedRows +
       _expandedRowSpacing * (maxExpandedRows - 1);
   static const double collapseHandleExtent = 24;
+
+  /// 下拉提示行的高度：与展开后的收起行同高，两者互为镜像。
+  static const double pullHintExtent = collapseHandleExtent;
   static const double maxExpandedBarExtent =
       maxExpandedRowsExtent + collapseHandleExtent + AppSpacing.xs * 2;
   static const collapseHandleKey = ValueKey<String>(
     'diary_tag_collapse_handle',
   );
+  static const pullHintKey = ValueKey<String>('diary_tag_pull_hint');
 
   final List<Tag> tags;
   final ValueListenable<double> expansionProgress;
@@ -92,6 +106,20 @@ class DiaryTagFilterBar extends StatefulWidget {
   /// 没有标签也没有已选筛选时仍然显示（给 [leading] 留位置）。
   final bool keepVisible;
 
+  /// 是否显示下拉提示行；为 true 时由 [ListItemPresence] 从 0 高度展开。
+  final bool pullHintVisible;
+
+  /// 轻推演示的进度（0 → 1 → 0）：收着的标签栏按它往下探最多一段
+  /// 下探距离（约露出第二行的六成），露出被藏起来的标签。
+  final Animation<double>? pullHintPeek;
+
+  /// 点按提示行；为 null 时不挂提示行。
+  final VoidCallback? onPullHintTap;
+
+  /// 收起的一行是否放不下全部标签（排成多行时多于一行）；布局后、值变化时
+  /// 回报。
+  final ValueChanged<bool>? onHiddenTagsChanged;
+
   @override
   State<DiaryTagFilterBar> createState() => _DiaryTagFilterBarState();
 }
@@ -104,6 +132,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
   double _contentWidth = 0;
   double _chipExtent = DiaryTagFilterBar.chipExtent;
   double _expandedRowsExtent = DiaryTagFilterBar.chipExtent;
+  bool _reportedHiddenTags = false;
 
   double get _expandedContentExtent =>
       _expandedRowsExtent + DiaryTagFilterBar.collapseHandleExtent;
@@ -155,17 +184,23 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
           rowSpacing: DiaryTagFilterBar._expandedRowSpacing,
           maxRows: DiaryTagFilterBar.maxExpandedRows,
         );
+        _reportHiddenTags(layout.rows.length > 1);
         final expandedContentExtent = _expandedContentExtent;
+        final expansionTravel = expandedContentExtent - _chipExtent;
+        // 下探到第二行的六成左右：看得出下面还有标签，又不像真的展开了。
+        final peekExtent = math.min(
+          expansionTravel,
+          DiaryTagFilterBar._expandedRowSpacing + _chipExtent * 0.6,
+        );
+        final peek = widget.pullHintPeek;
         return TagFilterExpansionGesture(
           canExpand: () => widget.tags.isNotEmpty && widget.canExpand(),
           canCollapse: _canCollapseFrom,
           allowVerticalScroll: _canScrollVertically,
           allowHorizontalScroll: _canScrollHorizontally,
           onStart: widget.onVerticalDragStart,
-          onUpdate: (delta) => widget.onVerticalDragUpdate(
-            delta,
-            expandedContentExtent - _chipExtent,
-          ),
+          onUpdate: (delta) =>
+              widget.onVerticalDragUpdate(delta, expansionTravel),
           onEnd: widget.onVerticalDragEnd,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -174,35 +209,88 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
               AppSpacing.m,
               AppSpacing.xs,
             ),
-            child: ValueListenableBuilder<double>(
-              valueListenable: widget.expansionProgress,
-              child: _buildExpandedTags(layout),
-              builder: (BuildContext context, double progress, Widget? child) {
-                final normalizedProgress = progress.clamp(0.0, 1.0);
-                final contentHeight =
-                    _chipExtent +
-                    (expandedContentExtent - _chipExtent) * normalizedProgress;
-                final showExpandedLayout = normalizedProgress > 0;
-                return SizedBox(
-                  width: double.infinity,
-                  height: contentHeight,
-                  child: showExpandedLayout
-                      ? ClipRect(
-                          child: OverflowBox(
-                            alignment: Alignment.topCenter,
-                            minHeight: expandedContentExtent,
-                            maxHeight: expandedContentExtent,
-                            child: child,
-                          ),
-                        )
-                      : collapsedTags,
-                );
-              },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListenableBuilder(
+                  listenable: peek == null
+                      ? widget.expansionProgress
+                      : Listenable.merge(<Listenable>[
+                          widget.expansionProgress,
+                          peek,
+                        ]),
+                  child: _buildExpandedTags(layout),
+                  builder: (BuildContext context, Widget? child) {
+                    final normalizedProgress = widget.expansionProgress.value
+                        .clamp(0.0, 1.0);
+                    // 轻推与展开共用同一套“展开排版 + 裁切”：弹簧过冲时下探
+                    // 可能略低于 0 或越过落点，夹在收起与完全展开之间。
+                    final extraHeight =
+                        (expansionTravel * normalizedProgress +
+                                peekExtent * (peek?.value ?? 0))
+                            .clamp(0.0, math.max(0.0, expansionTravel));
+                    final contentHeight = _chipExtent + extraHeight;
+                    final showExpandedLayout = extraHeight > 0;
+                    return SizedBox(
+                      width: double.infinity,
+                      height: contentHeight,
+                      child: showExpandedLayout
+                          ? ClipRect(
+                              child: OverflowBox(
+                                alignment: Alignment.topCenter,
+                                minHeight: expandedContentExtent,
+                                maxHeight: expandedContentExtent,
+                                child: child,
+                              ),
+                            )
+                          : collapsedTags,
+                    );
+                  },
+                ),
+                if (widget.onPullHintTap != null) _buildPullHint(peek),
+              ],
             ),
           ),
         );
       },
     );
+  }
+
+  /// 提示行挂在内容下方：判断拖动起点的几个方法都按距顶部的距离算，
+  /// 不受它影响；收着时在提示行上下拉同样会展开。不可见时不接收指针与
+  /// 焦点，键盘遍历不会停在一行看不见的提示上（淡出到 0 后语义也随之排除）。
+  Widget _buildPullHint(Animation<double>? peek) {
+    final visible = widget.pullHintVisible;
+    return ListItemPresence(
+      visible: visible,
+      appearing: false,
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      child: IgnorePointer(
+        ignoring: !visible,
+        child: ExcludeFocus(
+          excluding: !visible,
+          child: SizedBox(
+            height: DiaryTagFilterBar.pullHintExtent,
+            child: TagFilterPullHint(
+              key: DiaryTagFilterBar.pullHintKey,
+              count: widget.tags.length,
+              peek: peek,
+              onTap: widget.onPullHintTap!,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 布局阶段算出、帧末回报：回调里会改父级状态，不能在布局中途调用。
+  void _reportHiddenTags(bool hasHiddenTags) {
+    final callback = widget.onHiddenTagsChanged;
+    if (callback == null || hasHiddenTags == _reportedHiddenTags) return;
+    _reportedHiddenTags = hasHiddenTags;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onHiddenTagsChanged?.call(_reportedHiddenTags);
+    });
   }
 
   bool _inContentWidth(Offset start) =>

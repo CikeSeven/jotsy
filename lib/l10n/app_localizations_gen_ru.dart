@@ -1759,6 +1759,35 @@ class AppLocalizationsRu extends AppLocalizations {
       'Проведите здесь вверх или нажмите, чтобы свернуть теги';
 
   @override
+  String diaryTagPullHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Потяните вниз, чтобы увидеть все $count тега',
+      many: 'Потяните вниз, чтобы увидеть все $count тегов',
+      few: 'Потяните вниз, чтобы увидеть все $count тега',
+      one: 'Потяните вниз, чтобы увидеть все $count тег',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryTagPullHintDesktop(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Потяните вниз или нажмите, чтобы увидеть все $count тега',
+      many: 'Потяните вниз или нажмите, чтобы увидеть все $count тегов',
+      few: 'Потяните вниз или нажмите, чтобы увидеть все $count тега',
+      one: 'Потяните вниз или нажмите, чтобы увидеть все $count тег',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryTagExpand => 'Развернуть теги';
+
+  @override
   String get diaryPinnedBadge => 'Закреплено';
 
   @override

@@ -1678,6 +1678,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryTagCollapseHint => 'ここを上にスワイプするかタップすると、タグを折りたたみます';
 
   @override
+  String diaryTagPullHint(int count) {
+    return '下に引くと、タグ$count個をすべて表示';
+  }
+
+  @override
+  String diaryTagPullHintDesktop(int count) {
+    return '下にドラッグするかクリックすると、タグ$count個をすべて表示';
+  }
+
+  @override
+  String get diaryTagExpand => 'タグを展開';
+
+  @override
   String get diaryPinnedBadge => 'ピン留め';
 
   @override

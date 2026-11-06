@@ -1666,6 +1666,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTagCollapseHint => '在此处上滑或点击，收起标签列表';
 
   @override
+  String diaryTagPullHint(int count) {
+    return '下拉查看全部 $count 个标签';
+  }
+
+  @override
+  String diaryTagPullHintDesktop(int count) {
+    return '向下拖动或点按，查看全部 $count 个标签';
+  }
+
+  @override
+  String get diaryTagExpand => '展开标签';
+
+  @override
   String get diaryPinnedBadge => '置顶';
 
   @override

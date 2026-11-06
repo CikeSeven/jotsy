@@ -257,6 +257,11 @@ class SettingsService {
   /// 首页“日记”页上次所在的范围（日记本 / 章节 / 未收录），冷启动时恢复。
   /// 本机偏好：记的是这台设备上的浏览位置，不随备份导出、不参与同步。
   static const _keyHomeLastScope = 'app.settings.home_last_scope';
+
+  /// 一次性功能提示的进度（单个 JSON 字符串，格式与容错见 `FeatureTips`）。
+  /// 本机偏好：记的是用这台设备的人见过、用过没有，不随备份导出、不参与
+  /// 同步，所以不在备份快照（`captureBackupSnapshot`）的键列表里。
+  static const _keyFeatureTips = 'app.settings.feature_tips';
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
   static const _keyCalendarDisplayOptions =
       'app.settings.calendar_display_options';
@@ -480,6 +485,12 @@ class SettingsService {
 
   /// 上次所在的首页范围原文（格式与容错见 `HomeNotebookScopeMemory`）。
   String? get homeLastScopeRaw => _prefs.getString(_keyHomeLastScope);
+
+  /// 一次性功能提示的进度原文；类型不符的旧值按未设置处理。
+  String? get featureTipsRaw {
+    final value = _prefs.get(_keyFeatureTips);
+    return value is String ? value : null;
+  }
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
 
@@ -790,6 +801,10 @@ class SettingsService {
           ? _prefs.remove(_keyHomeLastScope)
           : _prefs.setString(_keyHomeLastScope, value),
     );
+  }
+
+  Future<void> setFeatureTipsRaw(String value) async {
+    await _writePreference(_prefs.setString(_keyFeatureTips, value));
   }
 
   Future<void> setTagOrderRaw(String value) async {

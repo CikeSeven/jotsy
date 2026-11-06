@@ -2357,6 +2357,28 @@
   "@diaryTagCollapseHint": {
     "description": "Gesture hint for collapsing tags from the footer without interrupting list scrolling."
   },
+  "diaryTagPullHint": "下に引くと、タグ{count}個をすべて表示",
+  "@diaryTagPullHint": {
+    "description": "One-time hint shown under the collapsed home tag filter bar on touch devices, telling users they can pull the bar down to see every tag; count is the number of tags in the bar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTagPullHintDesktop": "下にドラッグするかクリックすると、タグ{count}個をすべて表示",
+  "@diaryTagPullHintDesktop": {
+    "description": "Desktop variant of the one-time hint under the collapsed home tag filter bar: drag it down or click the hint to see every tag; count is the number of tags in the bar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTagExpand": "タグを展開",
+  "@diaryTagExpand": {
+    "description": "Screen reader hint for the tag bar pull-down hint: activating it expands the tag list."
+  },
   "diaryPinnedBadge": "ピン留め",
   "@diaryPinnedBadge": {
     "description": "Pinned micro-badge text displayed at the top of a diary card"

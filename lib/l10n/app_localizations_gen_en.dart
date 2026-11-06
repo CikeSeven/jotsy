@@ -1731,6 +1731,31 @@ class AppLocalizationsEn extends AppLocalizations {
       'Swipe up here or tap to collapse the tags';
 
   @override
+  String diaryTagPullHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pull down to see all $count tags',
+      one: 'Pull down to see all $count tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryTagPullHintDesktop(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Drag down or click to see all $count tags',
+      one: 'Drag down or click to see all $count tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryTagExpand => 'Expand tags';
+
+  @override
   String get diaryPinnedBadge => 'Pinned';
 
   @override

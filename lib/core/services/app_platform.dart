@@ -28,6 +28,10 @@ abstract final class AppPlatform {
   static bool get supportsDeviceAuth =>
       isAndroid || isIOS || isWindows || isMacOS;
 
+  /// 只认生物识别的验证（应用密码的指纹 / 面容快捷解锁）：Windows Hello 不支持
+  /// `biometricOnly`，Linux 没有 local_auth 实现。
+  static bool get supportsBiometricOnly => isAndroid || isIOS || isMacOS;
+
   /// 按包名直接分享到指定应用（微信、QQ 等）：只有 Android 原生分享通道。
   static bool get supportsShareTargets => isAndroid;
 

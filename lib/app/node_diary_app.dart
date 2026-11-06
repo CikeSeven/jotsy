@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
 import 'package:node_diary/app/synced_data_refresh.dart';
@@ -17,7 +15,9 @@ import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/core/services/device_auth_service.dart';
+import 'package:node_diary/core/services/app_passcode/app_passcode_store.dart';
+import 'package:node_diary/ui/app_lock/controllers/identity_verifier.dart';
+import 'package:node_diary/ui/app_lock/widgets/app_lock_overlay.dart';
 import 'package:node_diary/ui/app_surface/providers/app_surface_settings_provider.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_controls_theme.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
@@ -107,6 +107,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     // 已配对设备时只在同步页打开期间，docs/lan_sync.md §9），不支持的平台
     // 是不联网的空实现。
     ref.listenManual(lanSyncControllerProvider, (_, _) {});
+    // 应用密码存储与设置同时开始加载：应用锁判断验证方式时通常已就绪，
+    // 遮罩不会先闪一下系统验证的加载指示再换成密码输入。
+    ref.listenManual(appPasscodeConfigProvider, (_, _) {});
   }
 
   /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。
@@ -341,28 +344,37 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
                 child: child,
               )
             : child;
+        // 应用锁与上锁日记本的遮罩也在字号缩放之内：密码页的文字与应用其余
+        // 部分一样跟随“字体大小”设置。
         final scaledChild = MediaQuery(
           data: mediaQuery.copyWith(textScaler: effectiveTextScaler),
-          // 桌面窗口（如 Linux GTK）背景是透明的：路由淡入淡出时最底层页面
-          // 半透明，下面又没有不透明的东西，桌面壁纸会透出来。垫一层当前主题
-          // 的 surface 色兜底；移动端窗口自带不透明背景，保持原样不加。
-          child: AppPlatform.isDesktop
-              ? ColoredBox(color: theme.colorScheme.surface, child: themedChild)
-              : themedChild,
+          child: AppLockLayer(
+            locked: _appLocked || _unlockingApp,
+            overlayBuilder: (_) => AppLockOverlay(
+              unlocking: _unlockingApp,
+              onTapUnlock: _handleManualUnlockTap,
+              onPasscodeUnlocked: _handlePasscodeUnlocked,
+            ),
+            // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
+            child: NotebookLockLayer(
+              // 桌面窗口（如 Linux GTK）背景是透明的：路由淡入淡出时最底层
+              // 页面半透明，下面又没有不透明的东西，桌面壁纸会透出来。垫一层
+              // 当前主题的 surface 色兜底；移动端窗口自带不透明背景，保持原样
+              // 不加。
+              child: AppPlatform.isDesktop
+                  ? ColoredBox(
+                      color: theme.colorScheme.surface,
+                      child: themedChild,
+                    )
+                  : themedChild,
+            ),
+          ),
         );
         final region = AnnotatedRegion<SystemUiOverlayStyle>(
           value: systemOverlayStyle,
           child: HomeHintVisibilityScope(
             controller: _homeHintVisibilityController,
-            child: AppLockLayer(
-              locked: _appLocked || _unlockingApp,
-              overlayBuilder: (_) => _AppLockOverlay(
-                unlocking: _unlockingApp,
-                onTapUnlock: _handleManualUnlockTap,
-              ),
-              // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
-              child: NotebookLockLayer(child: scaledChild),
-            ),
+            child: scaledChild,
           ),
         );
         // 组件材质（经典 / 玻璃）在 Theme 之下、Navigator 之上交给全应用：
@@ -483,8 +495,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       });
     }
 
-    final deviceAuth = ref.read(deviceAuthServiceProvider);
-    final supportsAuth = await deviceAuth.isSupported();
+    final verifier = ref.read(identityVerifierProvider);
+    final supportsAuth = await verifier.isAvailable();
     if (!mounted) {
       return;
     }
@@ -500,8 +512,18 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       return;
     }
 
-    final authenticated = await deviceAuth.authenticate(
+    // 应用密码：结束“判断中”，遮罩换成密码输入（含自动弹一次指纹），通过后
+    // 经 [_handlePasscodeUnlocked] 揭开。
+    if (await verifier.method() == AppVerificationMethod.passcode) {
+      if (mounted) {
+        setState(() => _unlockingApp = false);
+      }
+      return;
+    }
+
+    final authenticated = await verifier.verifySystem(
       reason: _bootstrapL10n(settingsService).appLockAuthReason,
+      persistAcrossBackgrounding: true,
     );
 
     if (!mounted) {
@@ -510,6 +532,17 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     setState(() {
       _unlockingApp = false;
       _appLocked = !authenticated;
+    });
+  }
+
+  /// 应用密码（或指纹）通过：揭开遮罩。
+  void _handlePasscodeUnlocked() {
+    if (!mounted || !_appLocked) {
+      return;
+    }
+    setState(() {
+      _appLocked = false;
+      _unlockingApp = false;
     });
   }
 }
@@ -553,89 +586,4 @@ class _AppMultiplierTextScaler implements TextScaler {
 
   @override
   int get hashCode => Object.hash(baseScaler, factor);
-}
-
-/// 应用锁遮罩层。
-///
-/// 设计目标：
-/// - 在应用锁开启时阻断所有交互；
-/// - 自动解锁中给出统一 loading 反馈；
-/// - 解锁失败后提供明确的手动重试入口。
-class _AppLockOverlay extends StatelessWidget {
-  const _AppLockOverlay({required this.unlocking, required this.onTapUnlock});
-
-  final bool unlocking;
-  final VoidCallback onTapUnlock;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    return ColoredBox(
-      color: colorScheme.surface.withValues(alpha: 0.98),
-      child: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                FaIcon(
-                  FontAwesomeIcons.lock,
-                  size: 28,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  l10n.appLockTitle,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.appLockSubtitle,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                // 固定高度的槽位：取消生物识别后 64dp 指示器换回 48dp 按钮时
-                // 整块不再跳动，两者之间淡入淡出。
-                SizedBox(
-                  height: 64,
-                  child: AnimatedSwitcher(
-                    duration: ExpressiveMotion.duration(
-                      context,
-                      ExpressiveMotion.fast,
-                    ),
-                    switchInCurve: ExpressiveMotion.effects,
-                    switchOutCurve: ExpressiveMotion.exit,
-                    child: unlocking
-                        ? ExpressiveLoadingIndicator(
-                            key: const ValueKey<String>('unlocking'),
-                            size: 64,
-                            semanticLabel: l10n.appLockUnlocking,
-                          )
-                        : Center(
-                            key: const ValueKey<String>('unlock'),
-                            child: FilledButton.icon(
-                              onPressed: onTapUnlock,
-                              icon: const FaIcon(
-                                FontAwesomeIcons.key,
-                                size: 14,
-                              ),
-                              label: Text(l10n.appLockUnlockNow),
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

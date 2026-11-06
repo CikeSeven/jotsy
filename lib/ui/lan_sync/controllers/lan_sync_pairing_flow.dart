@@ -5,7 +5,8 @@
 // - 输入：同步控制器（事件流与指令）、取同步页 context 的回调、身份验证门、
 //   “先导出完整备份”的执行回调；
 // - 输出：无；
-// - 副作用：打开 / 关闭底部面板，调用 `respond`、`syncNow`，弹系统验证。
+// - 副作用：打开 / 关闭底部面板，调用 `respond`、`syncNow`，弹系统验证或
+//   应用密码页。
 //
 // 流程（事件 → 面板）：
 // 1. 收到配对事件：页面已销毁、已有一个配对面板、或同步页不是当前路由
@@ -137,7 +138,7 @@ class LanSyncPairingFlow {
     final reason = sheetContext.l10n.lanSyncPairAuthReason(
       event.phase.value.peerName ?? event.peerName,
     );
-    final outcome = await _authGate().authorize(reason: reason);
+    final outcome = await _authGate().authorize(sheetContext, reason: reason);
     if (outcome == LanSyncPairingAuthOutcome.allowed) {
       await event.respond(true);
     }

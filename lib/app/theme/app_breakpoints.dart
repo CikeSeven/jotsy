@@ -71,6 +71,9 @@ abstract final class AppContentWidth {
   /// 表单：设置页、发布面板等成列的选项行。
   static const double form = 720;
 
+  /// 验证：应用锁、应用密码输入与设置的居中竖列（键盘与图案板不拉得太宽）。
+  static const double prompt = 400;
+
   /// 探索页：统计卡片与媒体网格。
   static const double explore = 960;
 

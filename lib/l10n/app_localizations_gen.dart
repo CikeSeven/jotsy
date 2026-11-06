@@ -417,7 +417,7 @@ abstract class AppLocalizations {
   /// Prompt shown when local authentication is unsupported.
   ///
   /// In en, this message translates to:
-  /// **'This device does not support local authentication, so app lock cannot be enabled.'**
+  /// **'This device has no screen lock, so app lock can\'t use system verification. Switch to an app passcode instead.'**
   String get appLockNotSupported;
 
   /// Title in app lock overlay.
@@ -2877,7 +2877,7 @@ abstract class AppLocalizations {
   /// Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux).
   ///
   /// In en, this message translates to:
-  /// **'This device has no system verification (fingerprint, face or password), so locking isn\'t available'**
+  /// **'This device has no system verification. Set an app passcode in Settings → Data & Privacy → App lock & passcode to use locking'**
   String get deviceAuthUnavailable;
 
   /// Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image.
@@ -12459,7 +12459,7 @@ abstract class AppLocalizations {
   /// Explanation when opening a locked notebook on a device without a screen lock.
   ///
   /// In en, this message translates to:
-  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings to open them.'**
+  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → Data & Privacy → App lock & passcode.'**
   String get notebookLockUnsupportedMessage;
 
   /// Dialog button that opens the notebook settings when a locked notebook can't be verified.
@@ -23261,6 +23261,348 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Less'**
   String get textSelectionMenuLess;
+
+  /// Screen reader label of the passcode progress dots.
+  ///
+  /// In en, this message translates to:
+  /// **'{filled} of {total} digits entered'**
+  String passcodeDotsSemantics(int filled, int total);
+
+  /// Screen reader label of the keypad delete key (long press clears).
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get passcodeDelete;
+
+  /// Screen reader label of the 3×3 pattern pad.
+  ///
+  /// In en, this message translates to:
+  /// **'Pattern pad: draw a line through the dots'**
+  String get passcodePatternSemantics;
+
+  /// Fingerprint key on the keypad and button under the pattern pad: unlock with biometrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Use fingerprint or face'**
+  String get passcodeUseBiometric;
+
+  /// Status after a wrong passcode when only a few attempts remain before a waiting period.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Wrong. One more mistake and you\'ll have to wait} other{Wrong. {count} more mistakes and you\'ll have to wait}}'**
+  String passcodeWrongAttemptsLeft(int count);
+
+  /// Status after entering a wrong numeric passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong passcode, try again'**
+  String get passcodeWrongPin;
+
+  /// Status after drawing a wrong pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong pattern, try again'**
+  String get passcodeWrongPattern;
+
+  /// Status when a drawn pattern connects too few dots.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Too short. Connect at least {count} dot} other{Too short. Connect at least {count} dots}}'**
+  String passcodePatternTooShort(int count);
+
+  /// Countdown while input is blocked after too many wrong attempts (under a minute).
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds, plural, one{Try again in {seconds} second} other{Try again in {seconds} seconds}}'**
+  String passcodeLockedOutSeconds(int seconds);
+
+  /// Countdown while input is blocked after too many wrong attempts (a minute or more).
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, one{Try again in {minutes} minute} other{Try again in {minutes} minutes}}'**
+  String passcodeLockedOutMinutes(int minutes);
+
+  /// Status when the stored app passcode cannot be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read the app passcode. Restart the app and try again.'**
+  String get passcodeUnavailable;
+
+  /// Title of the unlock view for a numeric app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter app passcode'**
+  String get passcodeEnterPinTitle;
+
+  /// Title of the unlock view for a pattern app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw your pattern'**
+  String get passcodeDrawPatternTitle;
+
+  /// Text button at the bottom of the unlock view; expands an explanation in place.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot passcode?'**
+  String get passcodeForgot;
+
+  /// Explanation shown under “Forgot passcode?”: the app passcode cannot be recovered.
+  ///
+  /// In en, this message translates to:
+  /// **'The app passcode is kept only on this device and can\'t be recovered. The only way back in is to clear the app\'s data or reinstall it, then restore your diaries from a backup.'**
+  String get passcodeForgotMessage;
+
+  /// Subtitle of the app lock screen when the app passcode is the verification method.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify with your app passcode to continue'**
+  String get appLockPasscodeSubtitle;
+
+  /// Top bar title of the app passcode verification page.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify identity'**
+  String get passcodeVerifyTitle;
+
+  /// Passcode form option and label: a numeric PIN with this many digits.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} digit} other{{count} digits}}'**
+  String passcodeFormPin(int count);
+
+  /// Passcode form option and label: a 3×3 unlock pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Pattern'**
+  String get passcodeFormPattern;
+
+  /// Title of the second step when setting a numeric passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter it again'**
+  String get passcodeConfirmPinTitle;
+
+  /// Title of the second step when setting a pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw it again'**
+  String get passcodeConfirmPatternTitle;
+
+  /// Subtitle of the second step when setting the app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as the first time, to confirm'**
+  String get passcodeConfirmMessage;
+
+  /// Title of the first step when setting a numeric passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a PIN'**
+  String get passcodeSetupPinTitle;
+
+  /// Subtitle of the first step when setting a numeric passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Enter {count} digit} other{Enter {count} digits}}'**
+  String passcodeSetupPinMessage(int count);
+
+  /// Title of the first step when setting a pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Set an unlock pattern'**
+  String get passcodeSetupPatternTitle;
+
+  /// Subtitle of the first step when setting a pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Connect at least {count} dot in one stroke} other{Connect at least {count} dots in one stroke}}'**
+  String passcodeSetupPatternMessage(int count);
+
+  /// Status when the two entries while setting the passcode differ.
+  ///
+  /// In en, this message translates to:
+  /// **'They didn\'t match. Start over.'**
+  String get passcodeMismatch;
+
+  /// Status when saving the new passcode fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Try again.'**
+  String get passcodeSaveFailed;
+
+  /// Title of the change-passcode page and the settings row that opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'Change app passcode'**
+  String get passcodeChangeTitle;
+
+  /// Title of the set-passcode page.
+  ///
+  /// In en, this message translates to:
+  /// **'Set app passcode'**
+  String get passcodeSetupTitle;
+
+  /// Note at the bottom of the set-passcode page: local only, no recovery.
+  ///
+  /// In en, this message translates to:
+  /// **'The app passcode is stored only on this device. It isn\'t included in backups or sync, and it can\'t be recovered if you forget it.'**
+  String get passcodeNoRecoveryNote;
+
+  /// System verification prompt before switching to an app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify to switch to an app passcode'**
+  String get appLockSwitchToPasscodeReason;
+
+  /// Snackbar when verification before changing the method fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. The method wasn\'t changed.'**
+  String get appLockSwitchVerifyFailed;
+
+  /// Snackbar after the app passcode is set.
+  ///
+  /// In en, this message translates to:
+  /// **'App passcode set'**
+  String get passcodeSetDone;
+
+  /// Snackbar when switching to system verification on a device without it.
+  ///
+  /// In en, this message translates to:
+  /// **'System verification isn\'t available on this device (no screen lock is set)'**
+  String get appLockSystemUnsupported;
+
+  /// Passcode page reason before switching back to system verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your app passcode to switch to system verification'**
+  String get appLockSwitchToSystemReason;
+
+  /// Snackbar after switching to system verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to system verification. The app passcode was removed.'**
+  String get appLockSwitchedToSystem;
+
+  /// Passcode page reason before changing the passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current passcode to change it'**
+  String get passcodeChangeReason;
+
+  /// Snackbar after the passcode is changed.
+  ///
+  /// In en, this message translates to:
+  /// **'App passcode changed'**
+  String get passcodeChangedDone;
+
+  /// Biometric prompt reason when turning on quick unlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your fingerprint or face to turn on quick unlock'**
+  String get passcodeBiometricEnableReason;
+
+  /// Snackbar when the biometric check for quick unlock fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint or face verification failed'**
+  String get passcodeBiometricFailed;
+
+  /// Settings row (Data & Privacy) and page title for app lock and the verification method.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock & passcode'**
+  String get settingsAppLockAndPasscode;
+
+  /// Group title for choosing the verification method.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification method'**
+  String get appLockMethodTitle;
+
+  /// Footer under the verification method group.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock, locked notebooks and LAN pairing confirmation all use this method.'**
+  String get appLockMethodFooter;
+
+  /// Subtitle of the disabled app lock switch on devices without system verification and no app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no system verification. Set an app passcode below first.'**
+  String get appLockNeedsPasscode;
+
+  /// Verification method option: system verification.
+  ///
+  /// In en, this message translates to:
+  /// **'System verification'**
+  String get appLockMethodSystem;
+
+  /// Description of the system verification option.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint, face or your phone\'s screen lock'**
+  String get appLockMethodSystemDescription;
+
+  /// Description of the disabled system verification option on devices without it.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available on this device'**
+  String get appLockMethodSystemUnavailable;
+
+  /// Verification method option: the app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'App passcode'**
+  String get appLockMethodPasscode;
+
+  /// Description of the app passcode option.
+  ///
+  /// In en, this message translates to:
+  /// **'A PIN or pattern of its own, separate from your screen lock'**
+  String get appLockMethodPasscodeDescription;
+
+  /// Subtitle of the change-passcode row: the current passcode form.
+  ///
+  /// In en, this message translates to:
+  /// **'Current: {form}'**
+  String passcodeCurrentForm(String form);
+
+  /// Switch title: allow fingerprint or face instead of the app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint / face quick unlock'**
+  String get passcodeBiometric;
+
+  /// Switch subtitle for biometric quick unlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with your fingerprint or face instead of the passcode. Turning off app lock or changing the passcode still needs the passcode.'**
+  String get passcodeBiometricSubtitle;
+
+  /// Settings row subtitle: app lock on with the app passcode.
+  ///
+  /// In en, this message translates to:
+  /// **'On · App passcode'**
+  String get appLockStatusPasscode;
+
+  /// Settings row subtitle: app lock on with system verification.
+  ///
+  /// In en, this message translates to:
+  /// **'On · System verification'**
+  String get appLockStatusSystem;
+
+  /// Settings row subtitle: app lock off, but an app passcode is set for locked notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Off · Locked notebooks use the app passcode'**
+  String get appLockStatusOffPasscode;
+
+  /// Settings row subtitle: app lock off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get appLockStatusOff;
 }
 
 class _AppLocalizationsDelegate

@@ -238,7 +238,7 @@
   "@settingsAppLockSubtitle": {
     "description": "Subtitle for app lock switch in settings."
   },
-  "appLockNotSupported": "この端末はローカル認証に対応していないため、アプリロックを有効にできません。",
+  "appLockNotSupported": "この端末には画面ロックが設定されていないため、システム認証ではアプリロックを有効にできません。アプリのパスコードに切り替えてください。",
   "@appLockNotSupported": {
     "description": "Prompt shown when local authentication is unsupported."
   },
@@ -2195,7 +2195,7 @@
   "@videoPosterHint": {
     "description": "Platforms that cannot play videos inline: caption under the video poster card."
   },
-  "deviceAuthUnavailable": "この端末にはシステムの認証（指紋、顔、パスワード）がないため、ロックできません",
+  "deviceAuthUnavailable": "この端末にはシステムの認証がありません。設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードを設定するとロックできます",
   "@deviceAuthUnavailable": {
     "description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."
   },
@@ -9721,7 +9721,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定すると開けるようになります。",
+  "notebookLockUnsupportedMessage": "このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードに切り替えると開けるようになります。",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -18284,5 +18284,165 @@
   "textSelectionMenuLess": "折りたたむ",
   "@textSelectionMenuLess": {
     "description": "Last button of the expanded text selection menu: hides the remaining actions."
-  }
+  },
+  "passcodeDotsSemantics": "{total} 桁中 {filled} 桁入力済み",
+  "@passcodeDotsSemantics": {
+    "description": "Screen reader label of the passcode progress dots.",
+    "placeholders": {
+      "filled": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "passcodeDelete": "削除",
+  "@passcodeDelete": {"description": "Screen reader label of the keypad delete key (long press clears)."},
+  "passcodePatternSemantics": "パターン入力：点を線でつないでください",
+  "@passcodePatternSemantics": {"description": "Screen reader label of the 3×3 pattern pad."},
+  "passcodeUseBiometric": "指紋または顔で解除",
+  "@passcodeUseBiometric": {"description": "Fingerprint key on the keypad and button under the pattern pad: unlock with biometrics."},
+  "passcodeWrongAttemptsLeft": "違います。あと {count} 回間違えると待ち時間が発生します",
+  "@passcodeWrongAttemptsLeft": {
+    "description": "Status after a wrong passcode when only a few attempts remain before a waiting period.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeWrongPin": "パスコードが違います。もう一度入力してください",
+  "@passcodeWrongPin": {"description": "Status after entering a wrong numeric passcode."},
+  "passcodeWrongPattern": "パターンが違います。もう一度描いてください",
+  "@passcodeWrongPattern": {"description": "Status after drawing a wrong pattern."},
+  "passcodePatternTooShort": "短すぎます。{count} 個以上の点をつないでください",
+  "@passcodePatternTooShort": {
+    "description": "Status when a drawn pattern connects too few dots.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutSeconds": "{seconds} 秒後にもう一度お試しください",
+  "@passcodeLockedOutSeconds": {
+    "description": "Countdown while input is blocked after too many wrong attempts (under a minute).",
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutMinutes": "{minutes} 分後にもう一度お試しください",
+  "@passcodeLockedOutMinutes": {
+    "description": "Countdown while input is blocked after too many wrong attempts (a minute or more).",
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "passcodeUnavailable": "アプリのパスコードを読み込めませんでした。アプリを再起動してからお試しください",
+  "@passcodeUnavailable": {"description": "Status when the stored app passcode cannot be read."},
+  "passcodeEnterPinTitle": "アプリのパスコードを入力",
+  "@passcodeEnterPinTitle": {"description": "Title of the unlock view for a numeric app passcode."},
+  "passcodeDrawPatternTitle": "パターンを描く",
+  "@passcodeDrawPatternTitle": {"description": "Title of the unlock view for a pattern app passcode."},
+  "passcodeForgot": "パスコードを忘れた場合",
+  "@passcodeForgot": {"description": "Text button at the bottom of the unlock view; expands an explanation in place."},
+  "passcodeForgotMessage": "アプリのパスコードはこの端末にのみ保存され、復元できません。アプリのデータを消去するか再インストールし、バックアップから日記を復元するしかありません。",
+  "@passcodeForgotMessage": {"description": "Explanation shown under “Forgot passcode?”: the app passcode cannot be recovered."},
+  "appLockPasscodeSubtitle": "アプリのパスコードで確認して続行します",
+  "@appLockPasscodeSubtitle": {"description": "Subtitle of the app lock screen when the app passcode is the verification method."},
+  "passcodeVerifyTitle": "本人確認",
+  "@passcodeVerifyTitle": {"description": "Top bar title of the app passcode verification page."},
+  "passcodeFormPin": "{count} 桁の数字",
+  "@passcodeFormPin": {
+    "description": "Passcode form option and label: a numeric PIN with this many digits.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeFormPattern": "パターン",
+  "@passcodeFormPattern": {"description": "Passcode form option and label: a 3×3 unlock pattern."},
+  "passcodeConfirmPinTitle": "もう一度入力",
+  "@passcodeConfirmPinTitle": {"description": "Title of the second step when setting a numeric passcode."},
+  "passcodeConfirmPatternTitle": "もう一度描く",
+  "@passcodeConfirmPatternTitle": {"description": "Title of the second step when setting a pattern."},
+  "passcodeConfirmMessage": "確認のため、同じものをもう一度",
+  "@passcodeConfirmMessage": {"description": "Subtitle of the second step when setting the app passcode."},
+  "passcodeSetupPinTitle": "数字のパスコードを設定",
+  "@passcodeSetupPinTitle": {"description": "Title of the first step when setting a numeric passcode."},
+  "passcodeSetupPinMessage": "{count} 桁の数字を入力してください",
+  "@passcodeSetupPinMessage": {
+    "description": "Subtitle of the first step when setting a numeric passcode.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeSetupPatternTitle": "解除パターンを設定",
+  "@passcodeSetupPatternTitle": {"description": "Title of the first step when setting a pattern."},
+  "passcodeSetupPatternMessage": "{count} 個以上の点を一筆でつなぎます",
+  "@passcodeSetupPatternMessage": {
+    "description": "Subtitle of the first step when setting a pattern.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeMismatch": "一致しませんでした。最初からやり直してください",
+  "@passcodeMismatch": {"description": "Status when the two entries while setting the passcode differ."},
+  "passcodeSaveFailed": "保存できませんでした。もう一度お試しください",
+  "@passcodeSaveFailed": {"description": "Status when saving the new passcode fails."},
+  "passcodeChangeTitle": "アプリのパスコードを変更",
+  "@passcodeChangeTitle": {"description": "Title of the change-passcode page and the settings row that opens it."},
+  "passcodeSetupTitle": "アプリのパスコードを設定",
+  "@passcodeSetupTitle": {"description": "Title of the set-passcode page."},
+  "passcodeNoRecoveryNote": "アプリのパスコードはこの端末にのみ保存され、バックアップや同期には含まれません。忘れると復元できません。",
+  "@passcodeNoRecoveryNote": {"description": "Note at the bottom of the set-passcode page: local only, no recovery."},
+  "appLockSwitchToPasscodeReason": "アプリのパスコードに切り替えるため本人確認します",
+  "@appLockSwitchToPasscodeReason": {"description": "System verification prompt before switching to an app passcode."},
+  "appLockSwitchVerifyFailed": "認証できませんでした。認証方法は変更されていません",
+  "@appLockSwitchVerifyFailed": {"description": "Snackbar when verification before changing the method fails."},
+  "passcodeSetDone": "アプリのパスコードを設定しました",
+  "@passcodeSetDone": {"description": "Snackbar after the app passcode is set."},
+  "appLockSystemUnsupported": "この端末ではシステム認証を使えません（画面ロックが未設定）",
+  "@appLockSystemUnsupported": {"description": "Snackbar when switching to system verification on a device without it."},
+  "appLockSwitchToSystemReason": "システム認証に切り替えるため、アプリのパスコードで確認します",
+  "@appLockSwitchToSystemReason": {"description": "Passcode page reason before switching back to system verification."},
+  "appLockSwitchedToSystem": "システム認証に切り替え、アプリのパスコードを削除しました",
+  "@appLockSwitchedToSystem": {"description": "Snackbar after switching to system verification."},
+  "passcodeChangeReason": "変更するため、現在のパスコードで確認します",
+  "@passcodeChangeReason": {"description": "Passcode page reason before changing the passcode."},
+  "passcodeChangedDone": "アプリのパスコードを変更しました",
+  "@passcodeChangedDone": {"description": "Snackbar after the passcode is changed."},
+  "passcodeBiometricEnableReason": "クイック解除をオンにするため、指紋または顔で確認します",
+  "@passcodeBiometricEnableReason": {"description": "Biometric prompt reason when turning on quick unlock."},
+  "passcodeBiometricFailed": "指紋または顔の認証に失敗しました",
+  "@passcodeBiometricFailed": {"description": "Snackbar when the biometric check for quick unlock fails."},
+  "settingsAppLockAndPasscode": "アプリロックとパスコード",
+  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & Privacy) and page title for app lock and the verification method."},
+  "appLockMethodTitle": "認証方法",
+  "@appLockMethodTitle": {"description": "Group title for choosing the verification method."},
+  "appLockMethodFooter": "アプリロック、ロックした日記帳、LAN ペアリングの確認はすべてこの方法で認証します。",
+  "@appLockMethodFooter": {"description": "Footer under the verification method group."},
+  "appLockNeedsPasscode": "この端末にはシステム認証がありません。先に下でアプリのパスコードを設定してください",
+  "@appLockNeedsPasscode": {"description": "Subtitle of the disabled app lock switch on devices without system verification and no app passcode."},
+  "appLockMethodSystem": "システム認証",
+  "@appLockMethodSystem": {"description": "Verification method option: system verification."},
+  "appLockMethodSystemDescription": "指紋、顔、または端末の画面ロック",
+  "@appLockMethodSystemDescription": {"description": "Description of the system verification option."},
+  "appLockMethodSystemUnavailable": "この端末では使えません",
+  "@appLockMethodSystemUnavailable": {"description": "Description of the disabled system verification option on devices without it."},
+  "appLockMethodPasscode": "アプリのパスコード",
+  "@appLockMethodPasscode": {"description": "Verification method option: the app passcode."},
+  "appLockMethodPasscodeDescription": "画面ロックとは別の数字またはパターン",
+  "@appLockMethodPasscodeDescription": {"description": "Description of the app passcode option."},
+  "passcodeCurrentForm": "現在：{form}",
+  "@passcodeCurrentForm": {
+    "description": "Subtitle of the change-passcode row: the current passcode form.",
+    "placeholders": {
+      "form": {"type": "String"}
+    }
+  },
+  "passcodeBiometric": "指紋・顔でクイック解除",
+  "@passcodeBiometric": {"description": "Switch title: allow fingerprint or face instead of the app passcode."},
+  "passcodeBiometricSubtitle": "解除時にパスコードの代わりに指紋や顔を使えます。アプリロックのオフやパスコードの変更にはパスコードが必要です",
+  "@passcodeBiometricSubtitle": {"description": "Switch subtitle for biometric quick unlock."},
+  "appLockStatusPasscode": "オン・アプリのパスコード",
+  "@appLockStatusPasscode": {"description": "Settings row subtitle: app lock on with the app passcode."},
+  "appLockStatusSystem": "オン・システム認証",
+  "@appLockStatusSystem": {"description": "Settings row subtitle: app lock on with system verification."},
+  "appLockStatusOffPasscode": "オフ・ロックした日記帳はアプリのパスコードを使用",
+  "@appLockStatusOffPasscode": {"description": "Settings row subtitle: app lock off, but an app passcode is set for locked notebooks."},
+  "appLockStatusOff": "オフ",
+  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."}
 }

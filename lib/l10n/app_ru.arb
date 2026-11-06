@@ -238,7 +238,7 @@
   "@settingsAppLockSubtitle": {
     "description": "Subtitle for app lock switch in settings."
   },
-  "appLockNotSupported": "Это устройство не поддерживает локальную проверку подлинности, поэтому блокировку приложения включить нельзя.",
+  "appLockNotSupported": "На этом устройстве не настроена блокировка экрана, поэтому включить блокировку приложения через системную проверку нельзя. Используйте код приложения.",
   "@appLockNotSupported": {
     "description": "Prompt shown when local authentication is unsupported."
   },
@@ -2195,7 +2195,7 @@
   "@videoPosterHint": {
     "description": "Platforms that cannot play videos inline: caption under the video poster card."
   },
-  "deviceAuthUnavailable": "На этом устройстве нет системной проверки (отпечаток, лицо или пароль), поэтому блокировка недоступна",
+  "deviceAuthUnavailable": "На этом устройстве нет системной проверки. Чтобы использовать блокировку, задайте код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код",
   "@deviceAuthUnavailable": {
     "description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."
   },
@@ -9721,7 +9721,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Чтобы открыть их, настройте блокировку экрана в системных настройках.",
+  "notebookLockUnsupportedMessage": "На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Настройте блокировку экрана в системных настройках или перейдите на код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код.",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -18284,5 +18284,165 @@
   "textSelectionMenuLess": "Свернуть",
   "@textSelectionMenuLess": {
     "description": "Last button of the expanded text selection menu: hides the remaining actions."
-  }
+  },
+  "passcodeDotsSemantics": "Введено цифр: {filled} из {total}",
+  "@passcodeDotsSemantics": {
+    "description": "Screen reader label of the passcode progress dots.",
+    "placeholders": {
+      "filled": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "passcodeDelete": "Удалить",
+  "@passcodeDelete": {"description": "Screen reader label of the keypad delete key (long press clears)."},
+  "passcodePatternSemantics": "Поле графического ключа: соедините точки линией",
+  "@passcodePatternSemantics": {"description": "Screen reader label of the 3×3 pattern pad."},
+  "passcodeUseBiometric": "Использовать отпечаток или лицо",
+  "@passcodeUseBiometric": {"description": "Fingerprint key on the keypad and button under the pattern pad: unlock with biometrics."},
+  "passcodeWrongAttemptsLeft": "{count, plural, one{Неверно. Ещё {count} ошибка — и придётся подождать} few{Неверно. Ещё {count} ошибки — и придётся подождать} many{Неверно. Ещё {count} ошибок — и придётся подождать} other{Неверно. Ещё {count} ошибки — и придётся подождать}}",
+  "@passcodeWrongAttemptsLeft": {
+    "description": "Status after a wrong passcode when only a few attempts remain before a waiting period.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeWrongPin": "Неверный код, попробуйте ещё раз",
+  "@passcodeWrongPin": {"description": "Status after entering a wrong numeric passcode."},
+  "passcodeWrongPattern": "Неверный ключ, попробуйте ещё раз",
+  "@passcodeWrongPattern": {"description": "Status after drawing a wrong pattern."},
+  "passcodePatternTooShort": "{count, plural, one{Слишком коротко. Соедините не менее {count} точки} few{Слишком коротко. Соедините не менее {count} точек} many{Слишком коротко. Соедините не менее {count} точек} other{Слишком коротко. Соедините не менее {count} точки}}",
+  "@passcodePatternTooShort": {
+    "description": "Status when a drawn pattern connects too few dots.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutSeconds": "{seconds, plural, one{Повторите через {seconds} секунду} few{Повторите через {seconds} секунды} many{Повторите через {seconds} секунд} other{Повторите через {seconds} секунды}}",
+  "@passcodeLockedOutSeconds": {
+    "description": "Countdown while input is blocked after too many wrong attempts (under a minute).",
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "passcodeLockedOutMinutes": "{minutes, plural, one{Повторите через {minutes} минуту} few{Повторите через {minutes} минуты} many{Повторите через {minutes} минут} other{Повторите через {minutes} минуты}}",
+  "@passcodeLockedOutMinutes": {
+    "description": "Countdown while input is blocked after too many wrong attempts (a minute or more).",
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "passcodeUnavailable": "Не удалось прочитать код приложения. Перезапустите приложение и попробуйте снова.",
+  "@passcodeUnavailable": {"description": "Status when the stored app passcode cannot be read."},
+  "passcodeEnterPinTitle": "Введите код приложения",
+  "@passcodeEnterPinTitle": {"description": "Title of the unlock view for a numeric app passcode."},
+  "passcodeDrawPatternTitle": "Нарисуйте графический ключ",
+  "@passcodeDrawPatternTitle": {"description": "Title of the unlock view for a pattern app passcode."},
+  "passcodeForgot": "Забыли код?",
+  "@passcodeForgot": {"description": "Text button at the bottom of the unlock view; expands an explanation in place."},
+  "passcodeForgotMessage": "Код приложения хранится только на этом устройстве и не восстанавливается. Остаётся лишь очистить данные приложения или переустановить его, а затем восстановить дневник из резервной копии.",
+  "@passcodeForgotMessage": {"description": "Explanation shown under “Forgot passcode?”: the app passcode cannot be recovered."},
+  "appLockPasscodeSubtitle": "Подтвердите кодом приложения, чтобы продолжить",
+  "@appLockPasscodeSubtitle": {"description": "Subtitle of the app lock screen when the app passcode is the verification method."},
+  "passcodeVerifyTitle": "Подтверждение личности",
+  "@passcodeVerifyTitle": {"description": "Top bar title of the app passcode verification page."},
+  "passcodeFormPin": "{count, plural, one{{count} цифра} few{{count} цифры} many{{count} цифр} other{{count} цифры}}",
+  "@passcodeFormPin": {
+    "description": "Passcode form option and label: a numeric PIN with this many digits.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeFormPattern": "Графический ключ",
+  "@passcodeFormPattern": {"description": "Passcode form option and label: a 3×3 unlock pattern."},
+  "passcodeConfirmPinTitle": "Введите ещё раз",
+  "@passcodeConfirmPinTitle": {"description": "Title of the second step when setting a numeric passcode."},
+  "passcodeConfirmPatternTitle": "Нарисуйте ещё раз",
+  "@passcodeConfirmPatternTitle": {"description": "Title of the second step when setting a pattern."},
+  "passcodeConfirmMessage": "Повторите то же самое для подтверждения",
+  "@passcodeConfirmMessage": {"description": "Subtitle of the second step when setting the app passcode."},
+  "passcodeSetupPinTitle": "Задайте цифровой код",
+  "@passcodeSetupPinTitle": {"description": "Title of the first step when setting a numeric passcode."},
+  "passcodeSetupPinMessage": "{count, plural, one{Введите {count} цифру} few{Введите {count} цифры} many{Введите {count} цифр} other{Введите {count} цифры}}",
+  "@passcodeSetupPinMessage": {
+    "description": "Subtitle of the first step when setting a numeric passcode.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeSetupPatternTitle": "Задайте графический ключ",
+  "@passcodeSetupPatternTitle": {"description": "Title of the first step when setting a pattern."},
+  "passcodeSetupPatternMessage": "{count, plural, one{Соедините не менее {count} точки одним движением} few{Соедините не менее {count} точек одним движением} many{Соедините не менее {count} точек одним движением} other{Соедините не менее {count} точки одним движением}}",
+  "@passcodeSetupPatternMessage": {
+    "description": "Subtitle of the first step when setting a pattern.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "passcodeMismatch": "Не совпадает. Начните заново.",
+  "@passcodeMismatch": {"description": "Status when the two entries while setting the passcode differ."},
+  "passcodeSaveFailed": "Не удалось сохранить. Попробуйте ещё раз.",
+  "@passcodeSaveFailed": {"description": "Status when saving the new passcode fails."},
+  "passcodeChangeTitle": "Изменить код приложения",
+  "@passcodeChangeTitle": {"description": "Title of the change-passcode page and the settings row that opens it."},
+  "passcodeSetupTitle": "Задать код приложения",
+  "@passcodeSetupTitle": {"description": "Title of the set-passcode page."},
+  "passcodeNoRecoveryNote": "Код приложения хранится только на этом устройстве, не попадает в резервные копии и синхронизацию и не восстанавливается, если вы его забудете.",
+  "@passcodeNoRecoveryNote": {"description": "Note at the bottom of the set-passcode page: local only, no recovery."},
+  "appLockSwitchToPasscodeReason": "Подтвердите личность, чтобы перейти на код приложения",
+  "@appLockSwitchToPasscodeReason": {"description": "System verification prompt before switching to an app passcode."},
+  "appLockSwitchVerifyFailed": "Проверка не пройдена. Способ не изменён.",
+  "@appLockSwitchVerifyFailed": {"description": "Snackbar when verification before changing the method fails."},
+  "passcodeSetDone": "Код приложения задан",
+  "@passcodeSetDone": {"description": "Snackbar after the app passcode is set."},
+  "appLockSystemUnsupported": "Системная проверка недоступна на этом устройстве (не настроена блокировка экрана)",
+  "@appLockSystemUnsupported": {"description": "Snackbar when switching to system verification on a device without it."},
+  "appLockSwitchToSystemReason": "Подтвердите кодом приложения, чтобы перейти на системную проверку",
+  "@appLockSwitchToSystemReason": {"description": "Passcode page reason before switching back to system verification."},
+  "appLockSwitchedToSystem": "Включена системная проверка, код приложения удалён",
+  "@appLockSwitchedToSystem": {"description": "Snackbar after switching to system verification."},
+  "passcodeChangeReason": "Подтвердите текущим кодом, чтобы изменить его",
+  "@passcodeChangeReason": {"description": "Passcode page reason before changing the passcode."},
+  "passcodeChangedDone": "Код приложения изменён",
+  "@passcodeChangedDone": {"description": "Snackbar after the passcode is changed."},
+  "passcodeBiometricEnableReason": "Подтвердите отпечатком или лицом, чтобы включить быструю разблокировку",
+  "@passcodeBiometricEnableReason": {"description": "Biometric prompt reason when turning on quick unlock."},
+  "passcodeBiometricFailed": "Проверка по отпечатку или лицу не пройдена",
+  "@passcodeBiometricFailed": {"description": "Snackbar when the biometric check for quick unlock fails."},
+  "settingsAppLockAndPasscode": "Блокировка и код",
+  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & Privacy) and page title for app lock and the verification method."},
+  "appLockMethodTitle": "Способ проверки",
+  "@appLockMethodTitle": {"description": "Group title for choosing the verification method."},
+  "appLockMethodFooter": "Этот способ используется для блокировки приложения, заблокированных блокнотов и подтверждения сопряжения по локальной сети.",
+  "@appLockMethodFooter": {"description": "Footer under the verification method group."},
+  "appLockNeedsPasscode": "На устройстве нет системной проверки. Сначала задайте код приложения ниже.",
+  "@appLockNeedsPasscode": {"description": "Subtitle of the disabled app lock switch on devices without system verification and no app passcode."},
+  "appLockMethodSystem": "Системная проверка",
+  "@appLockMethodSystem": {"description": "Verification method option: system verification."},
+  "appLockMethodSystemDescription": "Отпечаток, лицо или блокировка экрана телефона",
+  "@appLockMethodSystemDescription": {"description": "Description of the system verification option."},
+  "appLockMethodSystemUnavailable": "Недоступно на этом устройстве",
+  "@appLockMethodSystemUnavailable": {"description": "Description of the disabled system verification option on devices without it."},
+  "appLockMethodPasscode": "Код приложения",
+  "@appLockMethodPasscode": {"description": "Verification method option: the app passcode."},
+  "appLockMethodPasscodeDescription": "Отдельный цифровой код или графический ключ, не связанный с блокировкой экрана",
+  "@appLockMethodPasscodeDescription": {"description": "Description of the app passcode option."},
+  "passcodeCurrentForm": "Сейчас: {form}",
+  "@passcodeCurrentForm": {
+    "description": "Subtitle of the change-passcode row: the current passcode form.",
+    "placeholders": {
+      "form": {"type": "String"}
+    }
+  },
+  "passcodeBiometric": "Быстрая разблокировка отпечатком или лицом",
+  "@passcodeBiometric": {"description": "Switch title: allow fingerprint or face instead of the app passcode."},
+  "passcodeBiometricSubtitle": "Разблокировка отпечатком или лицом вместо кода. Для отключения блокировки и смены кода по-прежнему нужен код.",
+  "@passcodeBiometricSubtitle": {"description": "Switch subtitle for biometric quick unlock."},
+  "appLockStatusPasscode": "Вкл. · код приложения",
+  "@appLockStatusPasscode": {"description": "Settings row subtitle: app lock on with the app passcode."},
+  "appLockStatusSystem": "Вкл. · системная проверка",
+  "@appLockStatusSystem": {"description": "Settings row subtitle: app lock on with system verification."},
+  "appLockStatusOffPasscode": "Выкл. · заблокированные блокноты открываются кодом приложения",
+  "@appLockStatusOffPasscode": {"description": "Settings row subtitle: app lock off, but an app passcode is set for locked notebooks."},
+  "appLockStatusOff": "Выкл.",
+  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."}
 }

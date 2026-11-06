@@ -16,6 +16,7 @@ class BackupSettings {
     'diaryTypography': settingsService.diaryTypography.toJson(),
     'fontScale': settingsService.fontScaleValue,
     'appLocaleCode': settingsService.appLocaleCode,
+    // 应用锁开关随备份；应用密码只在本机的 AppPasscodeStore，不随备份。
     'appLockEnabled': settingsService.isAppLockEnabled,
     'diarySortModeRaw': settingsService.diarySortModeRaw,
     'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,

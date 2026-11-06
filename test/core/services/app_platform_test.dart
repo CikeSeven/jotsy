@@ -17,6 +17,7 @@ void main() {
       expect(AppPlatform.isMobile, isTrue);
       expect(AppPlatform.isDesktop, isFalse);
       expect(AppPlatform.supportsDeviceAuth, isTrue);
+      expect(AppPlatform.supportsBiometricOnly, isTrue);
       expect(AppPlatform.supportsShareTargets, isTrue);
       expect(AppPlatform.supportsSystemFileShare, isTrue);
       expect(AppPlatform.savesImagesToGallery, isTrue);
@@ -34,6 +35,7 @@ void main() {
       expect(AppPlatform.isDesktop, isTrue);
       expect(AppPlatform.isMobile, isFalse);
       expect(AppPlatform.supportsDeviceAuth, isFalse);
+      expect(AppPlatform.supportsBiometricOnly, isFalse);
       expect(AppPlatform.supportsShareTargets, isFalse);
       expect(AppPlatform.supportsSystemFileShare, isFalse);
       expect(AppPlatform.savesImagesToGallery, isFalse);
@@ -50,6 +52,8 @@ void main() {
       expect(AppPlatform.isWindows, isTrue);
       expect(AppPlatform.isDesktop, isTrue);
       expect(AppPlatform.supportsDeviceAuth, isTrue);
+      // Windows Hello 不支持只认生物识别：应用密码的指纹快捷解锁不出现。
+      expect(AppPlatform.supportsBiometricOnly, isFalse);
       expect(AppPlatform.supportsSystemFileShare, isTrue);
       expect(AppPlatform.supportsAudioRecording, isTrue);
       expect(AppPlatform.supportsShareTargets, isFalse);

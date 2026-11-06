@@ -220,18 +220,24 @@ Not yet. Android, Windows and Linux builds are released for now.
 
 Jotsy is free, open source and ad-free. If it helps you, you're welcome to leave a tip. Tips are entirely voluntary and don't unlock anything. For now only WeChat and Alipay are supported. Starring the repo helps too.
 
-<table>
+<table align="center">
   <tr>
     <td align="center"><img src="../assets/img/support/wechat.png" width="200" alt="WeChat tip code"/><br/><sub>Scan with WeChat</sub></td>
     <td align="center"><img src="../assets/img/support/alipay.png" width="200" alt="Alipay payment code"/><br/><sub>Scan with Alipay</sub></td>
   </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <br/>
+      <b>💝 Thank you</b><br/>
+      <sub>To everyone who has supported Jotsy</sub><br/><br/>
+      ParadiseGrass&emsp;氢妹Ti&emsp;MR.CHEN<br/>
+      白禹和Kamiko Kristo&emsp;Hongda&emsp;AXID<br/>
+      **民&emsp;泽墨&emsp;霖&emsp;望¹CHun_F<br/>
+      天晴岚风&emsp;喵了个咪&emsp;*京<br/>
+      <br/>
+    </td>
+  </tr>
 </table>
-
-### 💝 Thank you
-
-Thanks to everyone who has supported Jotsy:
-
-ParadiseGrass · 氢妹Ti · MR.CHEN · 白禹和Kamiko Kristo · Hongda · AXID · \*\*民 · 泽墨 · 霖 · 望¹CHun_F · 天晴岚风
 
 ## 📄 License
 

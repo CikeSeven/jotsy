@@ -222,18 +222,24 @@ Jotsy 没有账号体系，也没有自己的服务器。日记保存在应用�
 
 Jotsy 免费开源，没有广告。如果它对你有帮助，欢迎扫码打赏支持开发者；打赏完全自愿，不会解锁任何功能。给项目点个 Star 也是很大的鼓励。
 
-<table>
+<table align="center">
   <tr>
     <td align="center"><img src="assets/img/support/wechat.png" width="200" alt="微信赞赏码"/><br/><sub>微信扫一扫</sub></td>
     <td align="center"><img src="assets/img/support/alipay.png" width="200" alt="支付宝收款码"/><br/><sub>支付宝扫一扫</sub></td>
   </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <br/>
+      <b>💝 感谢打赏</b><br/>
+      <sub>谢谢每一位支持 Jotsy 的朋友</sub><br/><br/>
+      ParadiseGrass&emsp;氢妹Ti&emsp;MR.CHEN<br/>
+      白禹和Kamiko Kristo&emsp;Hongda&emsp;AXID<br/>
+      **民&emsp;泽墨&emsp;霖&emsp;望¹CHun_F<br/>
+      天晴岚风&emsp;喵了个咪&emsp;*京<br/>
+      <br/>
+    </td>
+  </tr>
 </table>
-
-### 💝 感谢打赏
-
-感谢以下朋友的支持：
-
-ParadiseGrass · 氢妹Ti · MR.CHEN · 白禹和Kamiko Kristo · Hongda · AXID · \*\*民 · 泽墨 · 霖 · 望¹CHun_F · 天晴岚风
 
 ## 📄 开源许可
 

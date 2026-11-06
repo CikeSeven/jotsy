@@ -96,4 +96,18 @@ abstract final class AppPlatform {
   /// Android 的 `ACTION_PROCESS_TEXT`（Flutter 的 `DefaultProcessTextService`）
   /// 能查询并调用，其他平台的查询总是返回空列表。
   static bool get supportsProcessText => isAndroid;
+
+  /// 应用锁的“锁屏时上锁”：只有 Android 原生通道（`AppLockChannel` 监听
+  /// `ACTION_SCREEN_OFF`）能知道手机熄屏。iOS 没有接这条通道；桌面没有可靠
+  /// 的锁屏通知，改用“闲置时上锁”（[supportsIdleLock]）。
+  static bool get supportsScreenOffLock => isAndroid;
+
+  /// 防截屏（窗口 `FLAG_SECURE`：截屏、录屏与最近任务里都只有黑屏）：只有
+  /// Android 有这个窗口标志，其他平台不提供开关。
+  static bool get supportsSecureScreen => isAndroid;
+
+  /// 应用锁的“闲置时上锁”：只在桌面。闲置按指针与实体键盘事件判断，手机上
+  /// 用软键盘写日记不产生这两种事件（输入法直接改输入框），写着写着会被锁上；
+  /// 手机熄屏本身就是闲置，由“锁屏时上锁”负责。
+  static bool get supportsIdleLock => isDesktop;
 }

@@ -29,6 +29,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var imageTranscoder: DiaryImageTranscoder? = null
   private var appUpdateInstaller: AppUpdateInstaller? = null
   private var lanSyncChannel: LanSyncChannel? = null
+  private var appLockChannel: AppLockChannel? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
   private val launchBrandMarkArg = "--launch-brand-mark"
 
@@ -96,6 +97,8 @@ class MainActivity : FlutterFragmentActivity() {
     appUpdateInstaller = AppUpdateInstaller(this, flutterEngine.dartExecutor.binaryMessenger)
     lanSyncChannel?.dispose()
     lanSyncChannel = LanSyncChannel(this, flutterEngine.dartExecutor.binaryMessenger)
+    appLockChannel?.dispose()
+    appLockChannel = AppLockChannel(this, flutterEngine.dartExecutor.binaryMessenger)
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, configChannelName)
       .setMethodCallHandler { call, result ->
         when (call.method) {
@@ -189,6 +192,22 @@ class MainActivity : FlutterFragmentActivity() {
     }
   }
 
+  /**
+   * Every activity this app starts (plugins' pickers, the camera, share sheets, `startActivity`)
+   * ends up here; the app lock uses it to tell such trips apart from the user leaving the app.
+   */
+  @Deprecated("Deprecated in Java")
+  override fun startActivityForResult(intent: Intent, requestCode: Int, options: Bundle?) {
+    appLockChannel?.onActivityLaunched()
+    @Suppress("DEPRECATION")
+    super.startActivityForResult(intent, requestCode, options)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    appLockChannel?.onResumed()
+  }
+
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     if (galleryVideoPicker?.onActivityResult(requestCode, resultCode, data) == true) {
       return
@@ -278,6 +297,8 @@ class MainActivity : FlutterFragmentActivity() {
     appUpdateInstaller = null
     lanSyncChannel?.dispose()
     lanSyncChannel = null
+    appLockChannel?.dispose()
+    appLockChannel = null
     pendingBackupSaveResult?.success(null)
     clearPendingBackupSave()
     super.onDestroy()

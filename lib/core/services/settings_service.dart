@@ -83,6 +83,7 @@ class SettingsService {
     required String? appFeaturesRaw,
     required String? exploreLayoutRaw,
     required String? aiPrefsRaw,
+    required String? appLockOptionsRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
@@ -138,7 +139,8 @@ class SettingsService {
        ),
        appFeaturesRawNotifier = ValueNotifier<String?>(appFeaturesRaw),
        exploreLayoutRawNotifier = ValueNotifier<String?>(exploreLayoutRaw),
-       aiPrefsRawNotifier = ValueNotifier<String?>(aiPrefsRaw);
+       aiPrefsRawNotifier = ValueNotifier<String?>(aiPrefsRaw),
+       appLockOptionsRawNotifier = ValueNotifier<String?>(appLockOptionsRaw);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -225,6 +227,12 @@ class SettingsService {
   /// `AiProviderStore`，所以这一项可以随备份导出与“同步设置”同步。
   final ValueNotifier<String?> aiPrefsRawNotifier;
 
+  /// 应用锁的上锁时机与隐私选项（单个 JSON 字符串：离开后多久上锁、锁屏 /
+  /// 闲置时上锁、自动弹出验证、防截屏）；解析与默认值由 `AppLockOptions`
+  /// 负责，服务层只保存原文。本机偏好：不随备份导出、不参与同步，所以不在
+  /// 备份快照的键列表里。
+  final ValueNotifier<String?> appLockOptionsRawNotifier;
+
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
@@ -292,6 +300,7 @@ class SettingsService {
   static const _keyAppUpdatePreferences = 'app.update.preferences';
   static const _keyAppLocaleCode = 'app.settings.locale_code';
   static const _keyAppLockEnabled = 'app.settings.app_lock_enabled';
+  static const _keyAppLockOptions = 'app.settings.app_lock_options';
 
   static Future<SettingsService> create() async {
     final prefs = await SharedPreferences.getInstance();
@@ -347,6 +356,7 @@ class SettingsService {
     final storedAppFeatures = prefs.get(_keyAppFeatures);
     final storedExploreLayout = prefs.get(_keyExploreLayout);
     final storedAiPrefs = prefs.get(_keyAiPrefs);
+    final storedAppLockOptions = prefs.get(_keyAppLockOptions);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -397,6 +407,9 @@ class SettingsService {
           ? storedExploreLayout
           : null,
       aiPrefsRaw: storedAiPrefs is String ? storedAiPrefs : null,
+      appLockOptionsRaw: storedAppLockOptions is String
+          ? storedAppLockOptions
+          : null,
     );
   }
 
@@ -866,6 +879,12 @@ class SettingsService {
   Future<void> setAppLockEnabled(bool enabled) async {
     appLockEnabledNotifier.value = enabled;
     await _writePreference(_prefs.setBool(_keyAppLockEnabled, enabled));
+  }
+
+  /// 保存应用锁的上锁时机与隐私选项（整份 JSON）。
+  Future<void> setAppLockOptionsRaw(String value) async {
+    appLockOptionsRawNotifier.value = value;
+    await _writePreference(_prefs.setString(_keyAppLockOptions, value));
   }
 
   static String _resolveInitialLocaleCodeFromSystem() {

@@ -387,7 +387,7 @@ abstract class AppLocalizations {
   /// Subtitle for app lock switch in settings.
   ///
   /// In en, this message translates to:
-  /// **'Require authentication every time the app enters foreground'**
+  /// **'Require authentication when opening the app'**
   String get settingsAppLockSubtitle;
 
   /// Prompt shown when local authentication is unsupported.
@@ -23675,6 +23675,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All {count}'**
   String placeHistoryShowAll(int count);
+
+  /// Nested row under the app lock switch and title of its sheet: how long after leaving the app it locks again.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock after leaving'**
+  String get appLockAfterLeaving;
+
+  /// Explanation at the top of the 'lock after leaving' sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching to another app, going to the home screen or minimizing the window counts as leaving; picking photos, taking pictures, choosing files or sharing from the app doesn\'t. Opening the app always needs verification.'**
+  String get appLockAfterLeavingHint;
+
+  /// Lock delay option: lock as soon as the user leaves the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Immediately'**
+  String get appLockDelayImmediately;
+
+  /// Lock delay option: lock after this many minutes (leaving the app or idle).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{After 1 minute} other{After {count} minutes}}'**
+  String appLockDelayMinutes(int count);
+
+  /// Lock delay option: lock after this many hours away from the app.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{After 1 hour} other{After {count} hours}}'**
+  String appLockDelayHours(int count);
+
+  /// Lock delay option: never lock while the app keeps running; only when it is opened again (the default).
+  ///
+  /// In en, this message translates to:
+  /// **'Never (only when the app opens)'**
+  String get appLockAfterLeavingNever;
+
+  /// Nested switch under the app lock switch (Android): lock when the phone locks or the screen turns off.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock when the screen locks'**
+  String get appLockOnScreenOff;
+
+  /// Subtitle of the lock-when-the-screen-locks switch.
+  ///
+  /// In en, this message translates to:
+  /// **'After the phone locks or the screen turns off, coming back needs verification'**
+  String get appLockOnScreenOffSubtitle;
+
+  /// Nested row under the app lock switch (desktop) and title of its sheet: lock when there is no input for a while.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock when idle'**
+  String get appLockWhenIdle;
+
+  /// Explanation at the top of the lock-when-idle sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Locks when the window stays open but the mouse, touchpad and keyboard go unused for a while.'**
+  String get appLockWhenIdleHint;
+
+  /// Lock-when-idle option: do not lock on idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get appLockWhenIdleOff;
+
+  /// Nested switch under the app lock switch: show biometric or system verification as soon as the lock screen appears.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask right away'**
+  String get appLockAutoPrompt;
+
+  /// Subtitle of the ask-right-away switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Show fingerprint, face or system verification as soon as the lock screen appears. When off, tap to verify.'**
+  String get appLockAutoPromptSubtitle;
+
+  /// Title of the privacy group on the app lock settings page (Android).
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get appLockPrivacyTitle;
+
+  /// Switch in the privacy group (Android): block screenshots and screen recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Block screenshots'**
+  String get appLockSecureScreen;
+
+  /// Subtitle of the block-screenshots switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshots and screen recordings show nothing, and recent apps hide the app\'s content'**
+  String get appLockSecureScreenSubtitle;
+
+  /// Verification reason before relaxing app lock (locking later, turning off screen-lock or idle locking, allowing screenshots).
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to relax app lock'**
+  String get appLockLoosenReason;
+
+  /// Snackbar when verification before relaxing app lock fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. The setting wasn\'t changed.'**
+  String get appLockLoosenVerifyFailed;
 }
 
 class _AppLocalizationsDelegate

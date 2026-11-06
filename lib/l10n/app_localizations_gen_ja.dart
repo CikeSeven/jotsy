@@ -13230,4 +13230,66 @@ class AppLocalizationsJa extends AppLocalizations {
   String placeHistoryShowAll(int count) {
     return 'すべて $count';
   }
+
+  @override
+  String get appLockAfterLeaving => 'アプリを離れた後にロック';
+
+  @override
+  String get appLockAfterLeavingHint =>
+      '他のアプリへの切り替え、ホーム画面に戻る、ウィンドウの最小化は「離れた」とみなします。アプリ内での写真の選択・撮影・ファイルの選択・共有は含みません。アプリを開くときは常に認証が必要です。';
+
+  @override
+  String get appLockDelayImmediately => 'すぐに';
+
+  @override
+  String appLockDelayMinutes(int count) {
+    return '$count 分後';
+  }
+
+  @override
+  String appLockDelayHours(int count) {
+    return '$count 時間後';
+  }
+
+  @override
+  String get appLockAfterLeavingNever => 'しない（アプリを開くときのみ）';
+
+  @override
+  String get appLockOnScreenOff => '画面ロック時にロック';
+
+  @override
+  String get appLockOnScreenOffSubtitle => '端末のロックや画面オフの後、アプリに戻るときに認証が必要です';
+
+  @override
+  String get appLockWhenIdle => '操作がないときにロック';
+
+  @override
+  String get appLockWhenIdleHint =>
+      'ウィンドウが開いたまま、マウス・タッチパッド・キーボードが一定時間操作されないとロックします。';
+
+  @override
+  String get appLockWhenIdleOff => 'オフ';
+
+  @override
+  String get appLockAutoPrompt => '認証を自動で表示';
+
+  @override
+  String get appLockAutoPromptSubtitle =>
+      'ロック画面が表示されたらすぐに指紋・顔・システム認証を表示します。オフのときはタップして認証します。';
+
+  @override
+  String get appLockPrivacyTitle => 'プライバシー';
+
+  @override
+  String get appLockSecureScreen => 'スクリーンショットを禁止';
+
+  @override
+  String get appLockSecureScreenSubtitle =>
+      'スクリーンショットと画面録画を禁止し、最近使ったアプリにも内容を表示しません';
+
+  @override
+  String get appLockLoosenReason => 'アプリロックを緩めるには認証が必要です';
+
+  @override
+  String get appLockLoosenVerifyFailed => '認証に失敗しました。設定は変更されていません';
 }

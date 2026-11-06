@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/app_lock_platform.dart';
 import 'package:node_diary/core/services/app_passcode/app_passcode_store.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
@@ -42,6 +45,27 @@ class FakeBiometricAuth extends FakeDeviceAuth {
     biometricReasons.add(reason);
     return biometricResults.isEmpty ? false : biometricResults.removeAt(0);
   }
+}
+
+/// 原生能力的假实现：可推熄屏事件、可设“是不是自己打开的界面”，记录下发的
+/// 开关。
+class FakeAppLockPlatform extends AppLockPlatform {
+  final StreamController<void> screenOff = StreamController<void>.broadcast();
+  bool ownActivity = false;
+  final List<bool> watchCalls = <bool>[];
+  final List<bool> secureCalls = <bool>[];
+
+  @override
+  Stream<void> get screenOffEvents => screenOff.stream;
+
+  @override
+  Future<void> setWatchScreenOff(bool enabled) async => watchCalls.add(enabled);
+
+  @override
+  Future<void> setSecureScreen(bool enabled) async => secureCalls.add(enabled);
+
+  @override
+  Future<bool> leftForOwnActivity() async => ownActivity;
 }
 
 /// 应用密码相关 provider 的覆盖：低迭代摘要、可拨时钟、假设备验证。

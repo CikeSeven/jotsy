@@ -17,6 +17,9 @@
 //   应用密码：拿到已解锁手机的人不能靠主人的指纹改掉密码。
 //
 // 存储加载失败时按系统验证处理：仍然要验证，不会因此放行。
+//
+// 系统验证进行中（[IdentityVerifier.systemPromptActive]）：手机锁屏密码页是
+// 另一个界面，会把应用挤到后台；应用锁据此不把这段时间算作离开应用。
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,8 +37,21 @@ class IdentityVerifier {
   IdentityVerifier(this._ref);
 
   final Ref _ref;
+  int _systemPrompts = 0;
 
   DeviceAuthService get _deviceAuth => _ref.read(deviceAuthServiceProvider);
+
+  /// 是否正在弹系统验证（含指纹 / 面容）。
+  bool get systemPromptActive => _systemPrompts > 0;
+
+  Future<bool> _trackSystemPrompt(Future<bool> Function() run) async {
+    _systemPrompts++;
+    try {
+      return await run();
+    } finally {
+      _systemPrompts--;
+    }
+  }
 
   /// 当前的密码存储；加载失败为 null（按系统验证）。
   Future<AppPasscodeStore?> store() async {
@@ -69,9 +85,11 @@ class IdentityVerifier {
   }) async {
     final passcodeStore = await store();
     if (passcodeStore == null || !passcodeStore.config.hasPasscode) {
-      return _deviceAuth.authenticate(
-        reason: reason,
-        persistAcrossBackgrounding: false,
+      return _trackSystemPrompt(
+        () => _deviceAuth.authenticate(
+          reason: reason,
+          persistAcrossBackgrounding: false,
+        ),
       );
     }
     if (!context.mounted) {
@@ -102,9 +120,11 @@ class IdentityVerifier {
     required String reason,
     bool persistAcrossBackgrounding = false,
   }) async {
-    final passed = await _deviceAuth.authenticateBiometric(
-      reason: reason,
-      persistAcrossBackgrounding: persistAcrossBackgrounding,
+    final passed = await _trackSystemPrompt(
+      () => _deviceAuth.authenticateBiometric(
+        reason: reason,
+        persistAcrossBackgrounding: persistAcrossBackgrounding,
+      ),
     );
     if (passed) {
       await (await store())?.resetFailures();
@@ -117,9 +137,11 @@ class IdentityVerifier {
   Future<bool> verifySystem({
     required String reason,
     bool persistAcrossBackgrounding = false,
-  }) => _deviceAuth.authenticate(
-    reason: reason,
-    persistAcrossBackgrounding: persistAcrossBackgrounding,
+  }) => _trackSystemPrompt(
+    () => _deviceAuth.authenticate(
+      reason: reason,
+      persistAcrossBackgrounding: persistAcrossBackgrounding,
+    ),
   );
 
   /// 系统能否弹出验证（设备设置了锁屏密码）。

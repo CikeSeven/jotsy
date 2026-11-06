@@ -13,10 +13,14 @@ import 'package:node_diary/app/theme/app_fonts.dart';
 import 'package:node_diary/app/theme/app_scroll_behavior.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/core/services/app_lock_platform.dart';
 import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/app_passcode/app_passcode_store.dart';
+import 'package:node_diary/ui/app_lock/controllers/app_lock_controller.dart';
 import 'package:node_diary/ui/app_lock/controllers/identity_verifier.dart';
+import 'package:node_diary/ui/app_lock/models/app_lock_options.dart';
+import 'package:node_diary/ui/app_lock/providers/app_lock_options_provider.dart';
 import 'package:node_diary/ui/app_lock/widgets/app_lock_overlay.dart';
 import 'package:node_diary/ui/app_surface/providers/app_surface_settings_provider.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_controls_theme.dart';
@@ -27,6 +31,7 @@ import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
+import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
 
 import '../core/services/settings_service.dart';
@@ -39,7 +44,8 @@ import '../l10n/app_localizations.dart';
 /// 2. 监听主题模式变化；
 /// 3. 处理启动加载页和最短展示时长，就绪后交给 [AppBootstrapHome] 揭幕；
 /// 4. 提供 MaterialApp 壳与首页入口；
-/// 5. 在启用应用锁时，统一处理前台解锁门禁；
+/// 5. 在启用应用锁时，统一处理解锁门禁（上锁时机与验证见
+///    [AppLockController]，这里只画遮罩、转交指针操作）；
 /// 6. 安排启动后的媒体文件回收；
 /// 7. 常驻监听局域网同步的写入事件，失效一次性读取（[syncedDataRefreshProvider]）；
 /// 8. 启动时建好局域网同步控制器（[lanSyncControllerProvider]），引擎随应用
@@ -77,11 +83,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   /// 一旦就绪即锁存：揭幕后再换字体（重新注册）不能让首页退回加载态。
   bool _startupFontsReady = false;
 
-  SettingsService? _boundSettingsService;
-  VoidCallback? _appLockToggleListener;
-  bool _appLocked = false;
-  bool _unlockingApp = false;
-  bool _initialAppLockChecked = false;
+  /// 应用锁（随第一次就绪的设置服务创建，见 [_bindAppLock]）。
+  AppLockController? _appLock;
+  SettingsService? _appLockSettings;
 
   @override
   void initState() {
@@ -110,6 +114,10 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     // 应用密码存储与设置同时开始加载：应用锁判断验证方式时通常已就绪，
     // 遮罩不会先闪一下系统验证的加载指示再换成密码输入。
     ref.listenManual(appPasscodeConfigProvider, (_, _) {});
+    // 设置页改了上锁时机 / 隐私选项后立即生效。
+    ref.listenManual(appLockOptionsProvider, (_, AppLockOptions next) {
+      _appLock?.options = next;
+    });
   }
 
   /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。
@@ -142,7 +150,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   void dispose() {
     _loaderShowTimer?.cancel();
     _loaderMinVisibleTimer?.cancel();
-    _unbindAppLockListener();
+    _disposeAppLock();
     _homeHintVisibilityController.dispose();
     super.dispose();
   }
@@ -163,8 +171,10 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     final settingsError = settingsAsync.asError?.error;
     final settingsService = settingsAsync.asData?.value;
     if (settingsService != null) {
-      _bindSettingsForAppLock(settingsService);
+      _bindAppLock(settingsService);
     }
+    final appLock = _appLock;
+    final appLockCovering = appLock?.locked ?? false;
     // 设置就绪后才知道选了哪款字体，之前的就绪结果不算数。锁存后不再
     // 订阅就绪状态：之后换导入字体（重新注册）不影响启动门控。
     if (!_startupFontsReady) {
@@ -205,7 +215,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
                 : AppBootstrapPhase.blank),
       showBrandMark: widget.launchBrandMark,
       // 应用锁遮罩盖着时首页入场无人可见，留到解锁时与遮罩淡出一起上演。
-      holdReveal: _appLocked || _unlockingApp,
+      holdReveal: appLockCovering,
       homeBuilder: (BuildContext context) => HomePage(
         startupNotice: startupNotice,
         homeHintVisibleListenable:
@@ -344,16 +354,18 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
                 child: child,
               )
             : child;
+        final appLock = _appLock;
         // 应用锁与上锁日记本的遮罩也在字号缩放之内：密码页的文字与应用其余
         // 部分一样跟随“字体大小”设置。
-        final scaledChild = MediaQuery(
+        Widget scaledChild = MediaQuery(
           data: mediaQuery.copyWith(textScaler: effectiveTextScaler),
           child: AppLockLayer(
-            locked: _appLocked || _unlockingApp,
+            locked: appLock?.locked ?? false,
             overlayBuilder: (_) => AppLockOverlay(
-              unlocking: _unlockingApp,
-              onTapUnlock: _handleManualUnlockTap,
-              onPasscodeUnlocked: _handlePasscodeUnlocked,
+              unlocking: appLock?.unlocking ?? false,
+              autoPrompt: appLock?.options.autoPrompt ?? true,
+              onTapUnlock: () => unawaited(appLock?.manualUnlock()),
+              onPasscodeUnlocked: () => appLock?.passcodeUnlocked(),
             ),
             // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
             child: NotebookLockLayer(
@@ -370,6 +382,19 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
             ),
           ),
         );
+        // 闲置时上锁（桌面）：任何指针操作都算在用。只旁听、不参与命中，
+        // 下面的点按与拖动照常。
+        if (AppPlatform.supportsIdleLock && appLock != null) {
+          void note(PointerEvent _) => appLock.noteActivity();
+          scaledChild = Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: note,
+            onPointerMove: note,
+            onPointerHover: note,
+            onPointerSignal: note,
+            child: scaledChild,
+          );
+        }
         final region = AnnotatedRegion<SystemUiOverlayStyle>(
           value: systemOverlayStyle,
           child: HomeHintVisibilityScope(
@@ -414,136 +439,43 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     );
   }
 
-  void _bindSettingsForAppLock(SettingsService settingsService) {
-    if (identical(_boundSettingsService, settingsService)) {
-      _ensureInitialAppLockCheck(settingsService);
+  /// 随设置服务创建应用锁控制器；首帧之后做一次冷启动检查。设置服务换了
+  /// 实例（只在测试里出现）时重建控制器并重新检查：宁可多锁一次。
+  void _bindAppLock(SettingsService settingsService) {
+    final current = _appLock;
+    if (current != null && identical(_appLockSettings, settingsService)) {
       return;
     }
-
-    _unbindAppLockListener();
-    _boundSettingsService = settingsService;
-    _appLockToggleListener = () {
-      _handleAppLockSettingChanged(
-        enabled: settingsService.isAppLockEnabled,
-        settingsService: settingsService,
-      );
-    };
-    settingsService.appLockEnabledNotifier.addListener(_appLockToggleListener!);
-    _ensureInitialAppLockCheck(settingsService);
-  }
-
-  void _unbindAppLockListener() {
-    final settingsService = _boundSettingsService;
-    final listener = _appLockToggleListener;
-    if (settingsService != null && listener != null) {
-      settingsService.appLockEnabledNotifier.removeListener(listener);
-    }
-    _boundSettingsService = null;
-    _appLockToggleListener = null;
-  }
-
-  void _ensureInitialAppLockCheck(SettingsService settingsService) {
-    if (_initialAppLockChecked) {
-      return;
-    }
-    _initialAppLockChecked = true;
+    _disposeAppLock();
+    _appLockSettings = settingsService;
+    final controller = AppLockController(
+      verifier: ref.read(identityVerifierProvider),
+      settings: settingsService,
+      platform: ref.read(appLockPlatformProvider),
+      options: ref.read(appLockOptionsProvider),
+      authReason: () => _bootstrapL10n(settingsService).appLockAuthReason,
+      // 应用锁与上锁日记本是同一个人、同一种验证方式：解开应用锁时，一并
+      // 解开同时盖着的日记本重锁遮罩，不连着验证两次。
+      onUnlocked: () => ref.read(homeNotebookScopeProvider.notifier).unlock(),
+    )..addListener(_handleAppLockChanged);
+    _appLock = controller;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
+      if (mounted && identical(_appLock, controller)) {
+        controller.start();
       }
-      _handleAppLockSettingChanged(
-        enabled: settingsService.isAppLockEnabled,
-        settingsService: settingsService,
-      );
     });
   }
 
-  void _handleAppLockSettingChanged({
-    required bool enabled,
-    required SettingsService settingsService,
-  }) {
-    if (!enabled) {
-      if (_appLocked || _unlockingApp) {
-        setState(() {
-          _appLocked = false;
-          _unlockingApp = false;
-        });
-      }
-      return;
-    }
-    _lockAndAuthenticate(settingsService: settingsService);
+  void _handleAppLockChanged() {
+    if (mounted) setState(() {});
   }
 
-  Future<void> _handleManualUnlockTap() async {
-    final settingsService = _boundSettingsService;
-    if (settingsService == null) {
-      return;
-    }
-    await _lockAndAuthenticate(settingsService: settingsService);
-  }
-
-  Future<void> _lockAndAuthenticate({
-    required SettingsService settingsService,
-  }) async {
-    if (_unlockingApp || !settingsService.isAppLockEnabled) {
-      return;
-    }
-    if (mounted) {
-      setState(() {
-        _appLocked = true;
-        _unlockingApp = true;
-      });
-    }
-
-    final verifier = ref.read(identityVerifierProvider);
-    final supportsAuth = await verifier.isAvailable();
-    if (!mounted) {
-      return;
-    }
-    if (!supportsAuth) {
-      await settingsService.setAppLockEnabled(false);
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _appLocked = false;
-        _unlockingApp = false;
-      });
-      return;
-    }
-
-    // 应用密码：结束“判断中”，遮罩换成密码输入（含自动弹一次指纹），通过后
-    // 经 [_handlePasscodeUnlocked] 揭开。
-    if (await verifier.method() == AppVerificationMethod.passcode) {
-      if (mounted) {
-        setState(() => _unlockingApp = false);
-      }
-      return;
-    }
-
-    final authenticated = await verifier.verifySystem(
-      reason: _bootstrapL10n(settingsService).appLockAuthReason,
-      persistAcrossBackgrounding: true,
-    );
-
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _unlockingApp = false;
-      _appLocked = !authenticated;
-    });
-  }
-
-  /// 应用密码（或指纹）通过：揭开遮罩。
-  void _handlePasscodeUnlocked() {
-    if (!mounted || !_appLocked) {
-      return;
-    }
-    setState(() {
-      _appLocked = false;
-      _unlockingApp = false;
-    });
+  void _disposeAppLock() {
+    _appLock
+      ?..removeListener(_handleAppLockChanged)
+      ..dispose();
+    _appLock = null;
+    _appLockSettings = null;
   }
 }
 

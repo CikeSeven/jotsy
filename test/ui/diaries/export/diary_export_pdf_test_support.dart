@@ -53,11 +53,12 @@ Future<String> exportPdfBlocks(
   List<Map<String, Object?>> children, {
   DiaryTypography typography = const DiaryTypography(),
   DiaryPdfFonts? fonts,
+  bool includeMedia = false,
 }) async {
   final output = await DiaryPdfWriter.write(
     <DiaryExportEntry>[pdfEntryOf(children)],
     options: DiaryExportOptions.defaults.copyWith(
-      includeMedia: false,
+      includeMedia: includeMedia,
       includeMeta: false,
     ),
     labels: testExportLabels,

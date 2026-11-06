@@ -11,6 +11,7 @@ import '../../../core/database/diary_blocks/diary_blocks_table.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
 import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/diary_blocks/diary_list_style.dart';
+import '../models/diary_image_embed_data.dart';
 import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';
 
@@ -184,6 +185,9 @@ class ExportBlock {
     this.tableHeaderRow = false,
     this.firstLineIndent = false,
     this.standIn = false,
+    this.imageMaxWidth,
+    this.imageMaxHeight,
+    this.imageThumbnail = false,
   });
 
   final ExportBlockKind kind;
@@ -209,6 +213,15 @@ class ExportBlock {
 
   /// 图片 / 媒体的原始来源（本地路径、http(s) 或 data URI）。
   final String? source;
+
+  /// 图片在应用里的显示上限（逻辑像素，缩放菜单或导入写入的宽高，见
+  /// `diaryImageSizeLimits`），没设的一边为 null；只作上限、按原比例缩小。
+  /// 写出器经 `ExportImageBox` 换成显示尺寸。其他块为 null。
+  final double? imageMaxWidth;
+  final double? imageMaxHeight;
+
+  /// 图片以小图（方形缩略）显示（`data.thumbnail`）；其他块为 false。
+  final bool imageThumbnail;
   final ExportMediaKind? mediaKind;
 
   /// 媒体显示名称（附件原文件名、录音名），不含设备路径。
@@ -346,6 +359,9 @@ class ExportBlock {
     tableHeaderRow: tableHeaderRow,
     firstLineIndent: firstLineIndent,
     standIn: standIn,
+    imageMaxWidth: imageMaxWidth,
+    imageMaxHeight: imageMaxHeight,
+    imageThumbnail: imageThumbnail,
   );
 
   bool get isListItem =>

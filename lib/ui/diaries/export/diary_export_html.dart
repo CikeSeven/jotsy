@@ -503,7 +503,8 @@ class DiaryHtmlWriter {
           final data = images[block.source!];
           if (data != null && block.source != entry.cover) {
             out.write(
-              '<figure><img src="${_attr(data)}" alt="" loading="lazy"></figure>\n',
+              '<figure${_figureClass(block)}><img src="${_attr(data)}" '
+              'alt="" loading="lazy"${_imageSize(block)}></figure>\n',
             );
           }
         case ExportBlockKind.media:
@@ -674,6 +675,31 @@ class DiaryHtmlWriter {
   }
 
   /// 倍数写成 em，去掉多余的零（如 1.25em、1.5em、0.85em）。
+  /// 正文图片的对齐（figure 的类）：居中 / 靠右经 CSS 的自动外边距
+  /// （`figure.align-*`），靠起始侧不写。
+  static String _figureClass(ExportBlock block) => switch (block.align) {
+    ExportAlign.center => ' class="align-center"',
+    ExportAlign.end => ' class="align-right"',
+    _ => '',
+  };
+
+  /// 正文图片的尺寸，与应用一致（口径见 `ExportImageBox`）：小图为
+  /// `img.thumb`（120px 见方、cover 裁切）；缩放菜单的宽高只作上限，宽高
+  /// 仍是 auto，浏览器在上限内按原比例缩小；都没有时不写。
+  static String _imageSize(ExportBlock block) {
+    if (block.imageThumbnail) return ' class="thumb"';
+    final width = block.imageMaxWidth;
+    final height = block.imageMaxHeight;
+    final limits = <String>[
+      if (width != null) 'max-width:min(100%,${_px(width)})',
+      if (height != null) 'max-height:${_px(height)}',
+    ];
+    return limits.isEmpty ? '' : ' style="${limits.join(';')}"';
+  }
+
+  static String _px(double value) =>
+      '${value.toStringAsFixed(1).replaceFirst(RegExp(r'\.0$'), '')}px';
+
   static String _em(double scale) =>
       '${scale.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '')}em';
 
@@ -801,8 +827,11 @@ h2,h3,h4,h5,h6{margin:16px 0 4px;line-height:1.4}
 h6.h-level-7{color:var(--muted)}
 h6.h-level-8{color:var(--muted);font-weight:500}
 figure{margin:12px 0}
+figure.align-center img{margin-left:auto;margin-right:auto}
+figure.align-right img{margin-left:auto}
 hr{margin:16px 0;border:0;border-top:1px solid var(--line)}
 img{display:block;max-width:100%;height:auto;border-radius:16px}
+img.thumb{width:120px;height:120px;object-fit:cover;border-radius:12px}
 .cover img{width:100%}
 blockquote{margin:8px 0;padding:4px 0 4px 14px;border-left:3px solid var(--line);color:var(--muted)}
 pre{margin:8px 0;padding:12px 14px;background:var(--bg);border-radius:12px;overflow:auto;font-size:14px;line-height:1.6}

@@ -57,16 +57,13 @@ List<pw.Widget> buildDiaryPdfBody(
         Uri.tryParse(source)?.pathSegments.last.split('.').first ?? '',
       );
       if (index == null || index < 0 || index >= images.length) continue;
-      content = pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 6),
-        child: pw.ConstrainedBox(
-          constraints: const pw.BoxConstraints(maxHeight: 560),
-          child: pw.Image(
-            pw.MemoryImage(images[index]),
-            fit: pw.BoxFit.contain,
-          ),
-        ),
+      final image = buildDiaryPdfImage(
+        block,
+        images[index],
+        textDirection: direction,
       );
+      if (image == null) continue;
+      content = image;
     } else if (block.kind == ExportBlockKind.divider) {
       // 与应用一样是一条横贯整行的细线，跟着所在层级缩进。
       content = pw.Padding(

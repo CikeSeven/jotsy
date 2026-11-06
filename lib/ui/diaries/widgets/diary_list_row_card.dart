@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../app/theme/app_fonts.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -19,7 +20,8 @@ import 'diary_image_source.dart';
 /// 出现（`fast`，退出时收回），选中态的底色与描边经 [ExpressiveStateBlend]
 /// 补间到 `secondaryContainer` / `secondary`。[compact] 用于面板：摘要只留
 /// 一行、行距更紧。只负责展示与点按回调，展示什么（含私密、未解封胶囊时
-/// 隐去摘要与缩略图）由调用方决定。
+/// 隐去摘要与缩略图）由调用方决定。标题与摘要是日记自己的文字，与日记
+/// 卡片一样跟随正文字体（[AppFonts.diary]）。
 class DiaryListRowCard extends StatelessWidget {
   const DiaryListRowCard({
     super.key,
@@ -64,6 +66,7 @@ class DiaryListRowCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final secondary = colorScheme.onSurfaceVariant;
+    final diaryFont = AppFonts.of(theme).diary;
     final titleIcon = this.titleIcon;
     final thumbnail = this.thumbnail;
 
@@ -111,6 +114,7 @@ class DiaryListRowCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.titleMedium?.copyWith(
+                          fontFamily: diaryFont,
                           fontWeight: FontWeight.w600,
                           color: titleMuted ? secondary : null,
                         ),
@@ -125,6 +129,7 @@ class DiaryListRowCard extends StatelessWidget {
                     maxLines: compact ? 1 : 2,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
+                      fontFamily: diaryFont,
                       color: secondary,
                     ),
                   ),

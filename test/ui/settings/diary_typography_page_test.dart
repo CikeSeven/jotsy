@@ -78,6 +78,48 @@ void main() {
     });
   }
 
+  testWidgets('the whole-app switch only widens the font scope', (
+    tester,
+  ) async {
+    await settings.setDiaryTypography(
+      const DiaryTypography().copyWith(fontId: _wenKai.id, fontSize: 20),
+    );
+    await pumpDiaryTypographyHarness(
+      tester,
+      settings: settings,
+      storage: storage,
+      home: const DiaryTypographyPage(),
+    );
+    final l10n = tester.element(find.byType(DiaryTypographyPage)).l10n;
+    final toggle = find.widgetWithText(
+      SwitchListTile,
+      l10n.diaryTypographyApplyToApp,
+    );
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.diaryTypographyApplyToAppHint), findsOneWidget);
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(settings.diaryTypography.applyFontToApp, isTrue);
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+    // 只改作用范围：字体与排版数值不变。
+    expect(settings.diaryTypography.fontId, _wenKai.id);
+    expect(settings.diaryTypography.fontSize, 20);
+
+    // 恢复默认排版不关掉开关。
+    await tester.tap(find.text(l10n.diaryTypographyReset));
+    await tester.pumpAndSettle();
+    expect(settings.diaryTypography.fontSize, DiaryTypography.defaultFontSize);
+    expect(settings.diaryTypography.applyFontToApp, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(settings.diaryTypography.applyFontToApp, isFalse);
+  });
+
   testWidgets('dragging a slider previews the draft and commits on release', (
     tester,
   ) async {

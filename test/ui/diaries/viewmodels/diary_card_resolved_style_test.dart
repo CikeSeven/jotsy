@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/app/theme/app_fonts.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_mood_palette.dart';
+import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_card_resolved_style.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -499,5 +501,45 @@ void main() {
       screenWidth: 360,
     );
     expect(identical(resolve(), resolve()), isTrue);
+  });
+
+  group('diary font', () {
+    for (final mode in DiaryCardMode.values) {
+      test('title and preview follow the diary font in ${mode.name} while '
+          'eyebrow and footer keep the interface font', () {
+        final plain = buildSeededAppTheme(
+          const Color(0xff1e6586),
+          Brightness.light,
+        );
+        final withFont = buildSeededAppTheme(
+          const Color(0xff1e6586),
+          Brightness.light,
+          fonts: const AppFonts(diary: 'JotsyDiaryFont_fwen'),
+        );
+        final base = DiaryCardResolvedStyle.resolve(
+          style: DiaryCardStyle.defaults,
+          mode: mode,
+          theme: plain,
+          screenWidth: 360,
+        );
+        final resolved = DiaryCardResolvedStyle.resolve(
+          style: DiaryCardStyle.defaults,
+          mode: mode,
+          theme: withFont,
+          screenWidth: 360,
+        );
+
+        expect(base.titleStyle?.fontFamily, kAppBundledFontFamily);
+        expect(base.previewStyle?.fontFamily, kAppBundledFontFamily);
+        expect(resolved.titleStyle?.fontFamily, 'JotsyDiaryFont_fwen');
+        expect(resolved.previewStyle?.fontFamily, 'JotsyDiaryFont_fwen');
+        expect(
+          resolved.titleStyle,
+          base.titleStyle?.copyWith(fontFamily: 'JotsyDiaryFont_fwen'),
+        );
+        expect(resolved.eyebrowStyle, base.eyebrowStyle);
+        expect(resolved.footerStyle, base.footerStyle);
+      });
+    }
   });
 }

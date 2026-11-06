@@ -5214,6 +5214,18 @@ abstract class AppLocalizations {
   /// **'TTF, OTF or TTC; it becomes the body font once imported'**
   String get diaryTypographyImportFontHint;
 
+  /// Body font & layout: switch that makes the selected font the app-wide interface font.
+  ///
+  /// In en, this message translates to:
+  /// **'Use for the whole app'**
+  String get diaryTypographyApplyToApp;
+
+  /// Body font & layout: description under the whole-app font switch.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, the font is used only for diary titles, text and diary cards'**
+  String get diaryTypographyApplyToAppHint;
+
   /// Body font & layout: busy label while importing a font.
   ///
   /// In en, this message translates to:
@@ -5331,7 +5343,7 @@ abstract class AppLocalizations {
   /// Body font & layout: footer explaining where the settings apply.
   ///
   /// In en, this message translates to:
-  /// **'Applies when writing, reading and publishing diaries; the font is also used for titles.'**
+  /// **'Size, spacing and indent apply when writing, reading and publishing diaries.'**
   String get diaryTypographyScopeHint;
 
   /// Font & layout quick panel: button opening the full settings page.

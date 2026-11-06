@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/launch_brand_mark.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../app/theme/app_fonts.dart';
 import '../../../app/theme/seeded_theme_cache.dart';
 import '../../app_surface/widgets/on_glass.dart';
 import '../../diaries/providers/diary_preview_style_provider.dart';
@@ -80,6 +81,7 @@ class LanSyncQrBoard extends ConsumerWidget {
             ref.watch(appThemeSeedColorProvider),
             Brightness.light,
             reduceMotion: ExpressiveMotion.reduceMotion(context),
+            fonts: AppFonts.of(appTheme),
           );
     final colors = boardTheme.colorScheme;
     final Color board;

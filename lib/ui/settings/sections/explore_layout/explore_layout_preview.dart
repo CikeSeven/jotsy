@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
+import '../../../../app/theme/app_fonts.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/services/app_service.dart';
@@ -85,6 +86,7 @@ class _ExploreLayoutPreviewState extends ConsumerState<ExploreLayoutPreview> {
       Color(widget.controller.settingsService.themeSeedColorValue),
       brightness,
       reduceMotion: MediaQuery.disableAnimationsOf(context),
+      fonts: AppFonts.of(appTheme),
     );
   }
 

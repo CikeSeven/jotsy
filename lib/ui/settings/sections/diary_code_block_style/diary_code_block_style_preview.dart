@@ -4,6 +4,7 @@ import '../../../diaries/controllers/diary_editor_controller.dart' as editor;
 import '../../../diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/theme/app_fonts.dart';
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
@@ -74,6 +75,7 @@ class _DiaryCodeBlockStylePreviewState
             ref.watch(appThemeSeedColorProvider),
             brightness,
             reduceMotion: MediaQuery.disableAnimationsOf(context),
+            fonts: AppFonts.of(appTheme),
           );
     final appearance = ref.watch(diaryTextAppearanceProvider);
     final editorController = _editor!;

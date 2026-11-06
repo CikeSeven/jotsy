@@ -2855,6 +2855,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTypographyImportFontHint => '支持 TTF、OTF、TTC 格式，导入后即设为正文字体';
 
   @override
+  String get diaryTypographyApplyToApp => '用于整个界面';
+
+  @override
+  String get diaryTypographyApplyToAppHint => '关闭时只用于日记标题、正文与日记卡片';
+
+  @override
   String get diaryTypographyImporting => '正在导入字体…';
 
   @override
@@ -2924,7 +2930,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTypographyReset => '恢复默认排版';
 
   @override
-  String get diaryTypographyScopeHint => '作用于日记的编辑、阅读与发布页面；字体也用于日记标题。';
+  String get diaryTypographyScopeHint => '字号、行距等排版作用于日记的编辑、阅读与发布页面。';
 
   @override
   String get diaryTypographyMoreSettings => '更多设置';

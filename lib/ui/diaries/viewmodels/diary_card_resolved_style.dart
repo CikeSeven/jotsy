@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_fonts.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../models/diary_card_style/diary_card_style.dart';
@@ -18,7 +19,11 @@ import 'diary_card_appearance.dart';
 /// （[appearanceFor]）。无副作用。
 ///
 /// 为什么集中解析：列表每帧可能构建十几张卡片，若每张卡都从样式重新推导
-/// 字号、夹紧封面并计算对比度，开销会落在滚动帧里。这里每次 section build
+/// 字号、夹紧封面并计算对比度，开销会落在滚动帧里。
+///
+/// 字体：标题与摘要是日记自己的文字，跟随“正文字体与排版”选的字体（主题
+/// 里的 [AppFonts.diary]，内置字体时为 null、沿用主题字阶）；眉线、标签与底栏
+/// 是界面文字，仍用主题字体。字体随主题实例变化，复用缓存按主题实例比较。这里每次 section build
 /// 只解析一次（并按参数复用最近几次的结果），卡片只做查表。
 ///
 /// 安全夹紧：侧边封面在窄屏上缩小以给文字列留出至少 [minTextColumnWidth]；
@@ -39,6 +44,7 @@ class DiaryCardResolvedStyle {
     final textTheme = theme.textTheme;
     final typography = style.typography;
     final metaScale = typography.metaScale;
+    final diaryFont = AppFonts.of(theme).diary;
     final titleWeight = switch (typography.titleWeight) {
       DiaryCardTitleWeight.regular => FontWeight.w400,
       DiaryCardTitleWeight.medium => FontWeight.w500,
@@ -56,12 +62,14 @@ class DiaryCardResolvedStyle {
         letterSpacing: 0.1,
       );
       titleStyle = textTheme.titleMedium?.copyWith(
+        fontFamily: diaryFont,
         fontSize: 16.5 * typography.titleScale,
         fontWeight: titleWeight,
         letterSpacing: -0.15,
         height: 1.3,
       );
       previewStyle = textTheme.bodySmall?.copyWith(
+        fontFamily: diaryFont,
         fontSize: _scaledOrNull(
           textTheme.bodySmall?.fontSize,
           12,
@@ -77,12 +85,14 @@ class DiaryCardResolvedStyle {
         letterSpacing: 0.15,
       );
       titleStyle = textTheme.titleLarge?.copyWith(
+        fontFamily: diaryFont,
         fontSize: 18.5 * typography.titleScale,
         fontWeight: titleWeight,
         letterSpacing: -0.2,
         height: 1.25,
       );
       previewStyle = textTheme.bodyMedium?.copyWith(
+        fontFamily: diaryFont,
         fontSize: _scaledOrNull(
           textTheme.bodyMedium?.fontSize,
           14,

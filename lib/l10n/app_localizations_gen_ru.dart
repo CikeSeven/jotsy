@@ -3313,6 +3313,13 @@ class AppLocalizationsRu extends AppLocalizations {
       'TTF, OTF или TTC; после импорта он станет шрифтом текста';
 
   @override
+  String get diaryTypographyApplyToApp => 'Для всего приложения';
+
+  @override
+  String get diaryTypographyApplyToAppHint =>
+      'Если выключено, шрифт используется только для заголовков, текста и карточек записей';
+
+  @override
   String get diaryTypographyImporting => 'Импорт шрифта…';
 
   @override
@@ -3393,7 +3400,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryTypographyScopeHint =>
-      'Применяется при написании, чтении и публикации записей; шрифт также используется для заголовков.';
+      'Размер, интервалы и отступы применяются при написании, чтении и публикации записей.';
 
   @override
   String get diaryTypographyMoreSettings => 'Другие настройки';

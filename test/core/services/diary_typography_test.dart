@@ -116,6 +116,52 @@ void main() {
     });
   });
 
+  group('DiaryTypography whole-app font switch', () {
+    test(
+      'settings saved before the switch existed keep the font in diaries',
+      () {
+        final typography = DiaryTypography.fromRaw(
+          '{"fontId":"system","fontSize":18,"lineHeight":1.6}',
+        );
+
+        expect(typography.applyFontToApp, isFalse);
+        expect(typography.fontId, DiaryTypography.systemFontId);
+      },
+    );
+
+    test('round-trips through the raw json and ignores non-bool values', () {
+      final typography = const DiaryTypography().copyWith(
+        fontId: 'fabc',
+        applyFontToApp: true,
+      );
+
+      expect(DiaryTypography.fromRaw(typography.toRaw()), typography);
+      expect(
+        DiaryTypography.fromRaw('{"applyFontToApp":"true"}').applyFontToApp,
+        isFalse,
+      );
+      expect(
+        DiaryTypography.fromRaw('{"applyFontToApp":1}').applyFontToApp,
+        isFalse,
+      );
+    });
+
+    test('is part of equality but not of the layout metrics', () {
+      final typography = const DiaryTypography().copyWith(
+        applyFontToApp: true,
+        fontSize: 20,
+      );
+
+      expect(typography, isNot(typography.copyWith(applyFontToApp: false)));
+      // 恢复默认排版只重置数值，字体的作用范围保留。
+      expect(typography.withDefaultMetrics().applyFontToApp, isTrue);
+      expect(
+        const DiaryTypography(applyFontToApp: true).hasDefaultMetrics,
+        isTrue,
+      );
+    });
+  });
+
   group('DiaryTypography legacy presets', () {
     test('maps the old three-level presets onto continuous values', () {
       final typography = DiaryTypography.fromLegacyPresets(

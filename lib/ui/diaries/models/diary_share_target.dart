@@ -114,6 +114,13 @@ class DiaryShareRequest {
       text = '',
       images = const <String>[];
 
+  /// 截取预览页生成长图后存进系统相册（只在有相册的手机上提供）。
+  const DiaryShareRequest.saveLongImage()
+    : action = DiaryShareAction.saveLongImage,
+      target = null,
+      text = '',
+      images = const <String>[];
+
   final DiaryShareAction action;
   final DiaryShareTarget? target;
   final String text;
@@ -123,4 +130,4 @@ class DiaryShareRequest {
   final List<String> images;
 }
 
-enum DiaryShareAction { target, copyText, saveImages, longImage }
+enum DiaryShareAction { target, copyText, saveImages, longImage, saveLongImage }

@@ -6920,6 +6920,14 @@
   "@diaryShareLongImageSubtitle": {
     "description": "Share sheet: subtitle of the long-image action."
   },
+  "diaryShareLongImageToGallery": "Save long image to gallery",
+  "@diaryShareLongImageToGallery": {
+    "description": "Share sheet action (phones): render the diary as one long image and save it to the system photo gallery."
+  },
+  "diaryShareLongImageToGallerySubtitle": "Saves the same long image straight to your photo gallery",
+  "@diaryShareLongImageToGallerySubtitle": {
+    "description": "Share sheet: subtitle of the save-long-image-to-gallery action."
+  },
   "diaryShareRequiresImage": "{app} needs at least one image",
   "@diaryShareRequiresImage": {
     "description": "Share sheet hint when the target app needs an image.",

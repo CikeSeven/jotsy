@@ -6920,6 +6920,14 @@
   "@diaryShareLongImageSubtitle": {
     "description": "分享面板：长图分享的说明。"
   },
+  "diaryShareLongImageToGallery": "保存长图到相册",
+  "@diaryShareLongImageToGallery": {
+    "description": "分享面板（手机）：把整篇日记生成长图并保存到系统相册。"
+  },
+  "diaryShareLongImageToGallerySubtitle": "生成同样的长图，直接存进系统相册",
+  "@diaryShareLongImageToGallerySubtitle": {
+    "description": "分享面板：长图存到相册一项的说明。"
+  },
   "diaryShareRequiresImage": "{app}需要至少一张图片",
   "@diaryShareRequiresImage": {
     "description": "分享面板：目标应用必须带图时的提示。",

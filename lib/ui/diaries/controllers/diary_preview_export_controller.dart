@@ -1,18 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
-import '../../../core/services/desktop_save_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/long_image/scrolled_boundary_capture.dart';
@@ -22,6 +17,7 @@ import '../models/diary_share_target.dart';
 import '../sections/diary_share_sheet.dart';
 import '../viewmodels/diary_share_messages.dart';
 import 'diary_export_flow.dart';
+import 'diary_long_image_delivery.dart';
 import 'diary_share_controller.dart';
 
 /// 预览页的分享与导出：分享面板（指定应用、系统分享、复制文字）、长图，以及
@@ -32,10 +28,12 @@ import 'diary_share_controller.dart';
 /// 状态与忙碌态（经 [ChangeNotifier] 通知，翻页器据此暂停翻页），结果提示经
 /// [onHint] 给出。副作用：写临时文件，调起系统分享、目标应用与保存对话框。
 ///
-/// 桌面（Linux / Windows）的长图在 Dart 里逐屏截图拼接
-/// （[captureScrolledBoundary]，插件的原生合并只有手机实现），生成后弹出
-/// 保存对话框而不是系统分享；没有系统分享的平台（Linux）在分享面板里选
-/// “保存图片…”时把勾选的图片保存到文件。
+/// 长图截取期间（[capturingLongImage]）预览页不建顶栏、留言区等不属于日记
+/// 内容的部分。手机上长图可以交给系统分享，也可以直接存进相册；桌面
+/// （Linux / Windows）的长图在 Dart 里逐屏截图拼接（[captureScrolledBoundary]，
+/// 插件的原生合并只有手机实现），生成后弹出保存对话框而不是系统分享；没有
+/// 系统分享的平台（Linux）在分享面板里选“保存图片…”时把勾选的图片保存到
+/// 文件。生成后的去处见 [DiaryLongImageDelivery]。
 ///
 /// 同一时刻只运行一个动作，进行中再次触发直接忽略。分享与长图在本控制器的
 /// 加载遮罩下执行：动作开始前先让遮罩真正绘制出来，并保证最短可见时长，避免
@@ -46,6 +44,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
     required this.captureKey,
     required this.scrollController,
     required this.onHint,
+    this.longImageDelivery = const DiaryLongImageDelivery(),
   });
 
   /// 加载遮罩的最短可见时长（防闪，不是动画时长）。
@@ -54,6 +53,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
   final GlobalKey captureKey;
   final ScrollController scrollController;
   final ValueChanged<String> onHint;
+  final DiaryLongImageDelivery longImageDelivery;
 
   bool _showLoading = false;
   String _loadingLabel = '';
@@ -82,21 +82,20 @@ class DiaryPreviewExportController extends ChangeNotifier {
     }
   }
 
-  /// 分享整页长图（分享面板里选了长图时调用）；[background] 为长图底色
-  /// （页面的纸色），默认取主题 surface。桌面改为保存到文件。
+  /// 生成整页长图并交到 [destination]（分享面板里选了长图时调用）；
+  /// [background] 为长图底色（页面的纸色），默认取主题 surface。
   Future<void> _shareLongImage(
     BuildContext context, {
+    required DiaryLongImageDestination destination,
     Color? background,
   }) async {
     if (_sharingImage || _showLoading) {
       return;
     }
-    final saveToFile = !AppPlatform.supportsNativeLongImageMerge;
+    final sharing = destination == DiaryLongImageDestination.share;
     await _runWithLoading(
       context,
-      label: saveToFile
-          ? context.l10n.imageViewerSaving
-          : context.l10n.autoT0114,
+      label: sharing ? context.l10n.autoT0114 : context.l10n.imageViewerSaving,
       action: () async {
         final l10n = context.l10n;
         final surfaceColor =
@@ -133,35 +132,25 @@ class DiaryPreviewExportController extends ChangeNotifier {
           if (imageBytes == null || imageBytes.isEmpty) {
             throw Exception(l10n.autoT0111);
           }
-          if (saveToFile) {
-            final path = await const DesktopSaveService().saveBytes(
-              imageBytes,
-              fileName:
-                  'jotsy_diary_${DateTime.now().millisecondsSinceEpoch}.png',
-              dialogTitle: l10n.desktopSaveImageDialogTitle,
-            );
-            if (path != null && context.mounted) {
-              onHint(l10n.desktopSavedTo(path));
-            }
-            return;
-          }
-          final tempDirectory = await getTemporaryDirectory();
-          final imagePath = p.join(
-            tempDirectory.path,
-            'diary_share_${DateTime.now().millisecondsSinceEpoch}.png',
+          // 截完就退出截图模式：系统分享面板与保存对话框弹出时，页面已经
+          // 恢复顶栏。
+          _update(() => _capturingLongImage = false);
+          final message = await longImageDelivery.deliver(
+            imageBytes,
+            destination: destination,
+            l10n: l10n,
           );
-          final imageFile = File(imagePath);
-          await imageFile.writeAsBytes(imageBytes, flush: true);
-
-          await Share.shareXFiles(<XFile>[XFile(imageFile.path)]);
+          if (message != null && context.mounted) {
+            onHint(message);
+          }
         } catch (error) {
           if (!context.mounted) {
             return;
           }
           onHint(
-            saveToFile
-                ? context.l10n.imageViewerSaveFailed(error.toString())
-                : context.l10n.autoT0112(error.toString()),
+            sharing
+                ? context.l10n.autoT0112(error.toString())
+                : context.l10n.imageViewerSaveFailed(error.toString()),
           );
         } finally {
           if (context.mounted) {
@@ -202,8 +191,21 @@ class DiaryPreviewExportController extends ChangeNotifier {
     );
   }
 
-  /// 打开分享面板，按用户的选择分享长图、分享到指定应用 / 系统分享、复制
-  /// 文字，或（没有系统分享的平台）把图片保存到文件。
+  /// 长图的去处：桌面一律另存为文件（长图不走系统分享，也没有相册）；手机上
+  /// “存到相册”进相册，“分享为长图”交给系统分享。
+  static DiaryLongImageDestination _longImageDestination(
+    DiaryShareAction action,
+  ) {
+    if (!AppPlatform.supportsNativeLongImageMerge) {
+      return DiaryLongImageDestination.file;
+    }
+    return action == DiaryShareAction.saveLongImage
+        ? DiaryLongImageDestination.gallery
+        : DiaryLongImageDestination.share;
+  }
+
+  /// 打开分享面板，按用户的选择分享长图（手机上也可存到相册）、分享到指定
+  /// 应用 / 系统分享、复制文字，或（没有系统分享的平台）把图片保存到文件。
   ///
   /// 已安装应用的检测与面板打开并行：检测完成前面板先显示系统分享与复制，
   /// 不让原生查询拖慢面板出现。内容开关在面板内每次改动即保存；[background]
@@ -232,8 +234,13 @@ class DiaryPreviewExportController extends ChangeNotifier {
     if (!context.mounted || request == null) {
       return;
     }
-    if (request.action == DiaryShareAction.longImage) {
-      await _shareLongImage(context, background: background);
+    if (request.action == DiaryShareAction.longImage ||
+        request.action == DiaryShareAction.saveLongImage) {
+      await _shareLongImage(
+        context,
+        background: background,
+        destination: _longImageDestination(request.action),
+      );
       return;
     }
     if (request.action == DiaryShareAction.saveImages) {

@@ -5457,6 +5457,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Renders the diary as it looks in the preview';
 
   @override
+  String get diaryShareLongImageToGallery => 'Save long image to gallery';
+
+  @override
+  String get diaryShareLongImageToGallerySubtitle =>
+      'Saves the same long image straight to your photo gallery';
+
+  @override
   String diaryShareRequiresImage(String app) {
     return '$app needs at least one image';
   }

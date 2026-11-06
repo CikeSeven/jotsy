@@ -25,7 +25,9 @@ import '../widgets/diary_sheet_controls.dart';
 ///
 /// 没有系统分享的平台（Linux，[AppPlatform.supportsSystemFileShare] 为
 /// false）不显示系统分享，改为“复制文字”与“保存图片…”；桌面的长图一项
-/// 生成后弹出保存对话框，名称相应改为“保存为长图…”。
+/// 生成后弹出保存对话框，名称相应改为“保存为长图…”。有相册的手机
+/// （[AppPlatform.savesImagesToGallery]）在长图下面另有“长图存到相册”，
+/// 生成同一张长图直接存进系统相册，不经系统分享面板。
 Future<DiaryShareRequest?> showDiaryShareSheet(
   BuildContext context, {
   required DiaryShareContent content,
@@ -215,6 +217,18 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
                 context,
               ).pop(const DiaryShareRequest.longImage()),
             ),
+            if (AppPlatform.savesImagesToGallery)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s,
+                ),
+                leading: const FaIcon(FontAwesomeIcons.download, size: 16),
+                title: Text(l10n.diaryShareLongImageToGallery),
+                subtitle: Text(l10n.diaryShareLongImageToGallerySubtitle),
+                onTap: () => Navigator.of(
+                  context,
+                ).pop(const DiaryShareRequest.saveLongImage()),
+              ),
           ],
         ),
       ),

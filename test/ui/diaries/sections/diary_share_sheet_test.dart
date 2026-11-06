@@ -219,6 +219,35 @@ void main() {
   });
 
   testWidgets(
+    'phones offer saving the long image straight to the gallery',
+    (tester) async {
+      final result = await _openSheet(tester, content: _content());
+
+      final save = find.text('保存长图到相册');
+      await tester.scrollUntilVisible(
+        save,
+        120,
+        scrollable: find
+            .descendant(
+              of: find.byType(DiaryShareSheet),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      // 与“分享为长图”并列，分享那一项仍在。
+      expect(find.text('分享为长图'), findsOneWidget);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(result()!.action, DiaryShareAction.saveLongImage);
+      expect(tester.takeException(), isNull);
+    },
+    variant: const TargetPlatformVariant(<TargetPlatform>{
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
+  );
+
+  testWidgets(
     'Linux offers copy text and save images instead of the system share',
     (tester) async {
       final result = await _openSheet(tester, content: _content());
@@ -248,6 +277,8 @@ void main() {
     expect(save.onTap, isNull);
     // 桌面的长图生成后保存到文件。
     expect(find.text('保存为长图…', skipOffstage: false), findsOneWidget);
+    // 桌面没有相册，不另列“存到相册”。
+    expect(find.text('保存长图到相册', skipOffstage: false), findsNothing);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets('Windows keeps the system share target', (tester) async {

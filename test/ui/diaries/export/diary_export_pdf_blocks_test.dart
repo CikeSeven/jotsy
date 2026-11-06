@@ -1,10 +1,18 @@
+import 'dart:typed_data';
+
+import 'package:flutter/widgets.dart' show TextDirection;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_pdf.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_pdf_body.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_pdf_text_effects.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import 'diary_export_pdf_test_support.dart';
 
-/// PDF 里列表、待办、分隔线与日记链接卡片的画法：按页面流里的位置与绘制
-/// 命令验证，与应用里看到的一致。
+/// PDF 里列表、待办、分隔线、日记链接卡片与表格格子的画法：按页面流里的
+/// 位置与绘制命令验证，与应用里看到的一致。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -73,5 +81,76 @@ void main() {
     ], typography: const DiaryTypography(firstLineIndent: 2));
     expect(pdfXsOf(commands, 'Body'), <double>[24]);
     expect(pdfXsOf(commands, 'Linked'), <double>[0]);
+  });
+
+  test('a table cell with a bold word and a long Chinese run keeps the '
+      'Chinese on the first line instead of pushing it below', () async {
+    // 用内置中文字体直接排一张 1×1 的表格（页面上只有它）：标准字体缺
+    // 中文，缺字回落会把中文另拆成片段，掩盖这个问题。
+    final fonts = await DiaryPdfFonts.load();
+    final theme = pw.ThemeData.withFont(
+      base: fonts.regular,
+      bold: fonts.bold,
+      fontFallback: <pw.Font>[fonts.bundled],
+    );
+    final blocks = pdfEntryOf(<Map<String, Object?>>[
+      <String, Object?>{
+        'type': 'table',
+        'data': <String, Object?>{'rowsLen': 1, 'colsLen': 1},
+        'children': <Object?>[
+          <String, Object?>{
+            'type': 'table/cell',
+            'data': <String, Object?>{'rowPosition': 0, 'colPosition': 0},
+            'children': <Object?>[
+              <String, Object?>{
+                'type': 'paragraph',
+                'data': <String, Object?>{
+                  'delta': <Object?>[
+                    <String, Object?>{
+                      'insert': '粗',
+                      'attributes': <String, Object?>{'bold': true},
+                    },
+                    <String, Object?>{'insert': '今天天气很好，我们一起去公园散步。' * 6},
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ]).blocks;
+    final document = pw.Document()
+      ..addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          theme: theme,
+          build: (_) => buildDiaryPdfBody(
+            blocks,
+            theme: theme,
+            codeFont: fonts.bundled,
+            effects: DiaryPdfTextEffects(
+              regular: fonts.regular,
+              bold: fonts.bold,
+              bundled: fonts.bundled,
+            ),
+            images: const <Uint8List>[],
+            textDirection: TextDirection.ltr,
+          ),
+        ),
+      );
+    final commands = pdfPageCommands(await document.save());
+    // 按基线分组的各行文字片段；PDF 的纵坐标向上，第一行最高。
+    final lines = <double, List<double>>{};
+    for (final run in RegExp(
+      r'([-\d.]+) ([-\d.]+) Td \[',
+    ).allMatches(commands)) {
+      lines
+          .putIfAbsent(double.parse(run.group(2)!), () => <double>[])
+          .add(double.parse(run.group(1)!));
+    }
+    final baselines = lines.keys.toList()..sort();
+    expect(baselines.length, greaterThan(1));
+    // 第一行除了粗体的“粗”，还接着排了中文。
+    expect(lines[baselines.last]!.length, greaterThan(1));
   });
 }

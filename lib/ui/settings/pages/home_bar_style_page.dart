@@ -18,7 +18,7 @@ import '../sections/home_bar_style/home_bar_style_preview_toolbar.dart';
 import '../widgets/style_editor/style_editor_common.dart';
 import '../widgets/style_editor/style_editor_scaffold.dart';
 
-/// 设置 → 外观与语言 → 导航栏样式。
+/// 设置 → 外观 → 导航栏样式。
 ///
 /// 页面壳层：上方是实时预览（一个缩小的首页：顶栏、示例日记列表与底栏），
 /// 下方按标签页分组调整（预设、材质、悬浮栏、导航项、行为）；布局与三档

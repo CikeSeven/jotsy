@@ -6,8 +6,9 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../core/services/app_passcode/app_passcode_store.dart';
 import '../../../core/services/app_service.dart';
 import '../../app_lock/pages/app_lock_settings_page.dart';
+import '../widgets/settings_nav_tile.dart';
 
-/// 设置 → 数据与隐私里的“应用锁与密码”入口（DESIGN.md §5.31）。
+/// 设置首页“数据与安全”组里的“应用锁与密码”入口（DESIGN.md §5.31）。
 ///
 /// 副标题随状态：应用锁开着时为“已开启 · 系统验证 / 应用密码”，关着时为
 /// “未开启”（设了应用密码时补一句“上锁的日记本使用应用密码”，免得以为密码
@@ -22,12 +23,10 @@ class SettingsAppLockTile extends ConsumerWidget {
     final passcode = ref.watch(
       appPasscodeConfigProvider.select((config) => config.hasPasscode),
     );
-    Widget tile(String subtitle) => ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: const FaIcon(FontAwesomeIcons.lock, size: 16),
-      title: Text(l10n.settingsAppLockAndPasscode),
-      subtitle: Text(subtitle),
-      trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+    Widget tile(String subtitle) => SettingsNavTile(
+      icon: FontAwesomeIcons.lock,
+      title: l10n.settingsAppLockAndPasscode,
+      subtitle: subtitle,
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute<void>(

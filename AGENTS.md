@@ -141,7 +141,7 @@
 - 必须：一个功能的设置与偏好收进它自己的单个 JSON 设置键（模型类逐字段容错解析），并明确是否随备份导出（随备份导出的在导入失败时回滚；本机偏好不随备份）；禁止另加零散的设置键。各功能的键名与备份口径见对应专题文档。
 - 必须：界面上的“字数”一律经 `TextStats`（`lib/utils/text_stats.dart`，按日记版本缓存用 `DiaryWordCounts`）计算，口径见 DESIGN.md §3.3；禁止自行用 `.length` 或按空白分词统计字数。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。带按钮（`action`）的 SnackBar 必须显式 `persist: false`：Flutter 3.38 起带 action 的 SnackBar 默认常驻、到时不关，撤销窗口与 FAB 上移会一直不结束（`showTrackedSnackBar` 有断言兜底）；禁止另起计时器强制关闭。
-- 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。
+- 必须：设置首页按语义分组（通用 / 写日记 / 整理 / 数据与安全，末尾 AI 助手与关于，见 DESIGN.md §5.3），只放进入二级页的导航行（`SettingsNavTile`），开关与操作放在二级页。
 - 必须：功能管理的开关只存于 `AppFeatures`（经 `appFeaturesProvider` 读取、`saveAppFeatures` 写入）；关闭只隐藏该功能在应用里的全部入口、选项与自动行为，数据一律保留；首页 Tab 一律按 `HomeTab` 身份判断，禁止按固定下标。新增可关闭的功能必须在 `AppFeatures` 登记、在功能管理页加开关，并补“关闭时入口不出现、开启时照常”的测试。细则见 `docs/rules/app_features.md`。
 - 必须：高风险或高复杂设置项（如数据导入导出、应用锁、回收站）必须下沉到二级页面，不得在设置首页平铺堆叠。
 - 必须：亮色/暗色主题都保证文字和图标可读性，不允许出现暗色模式全黑图标等失配。

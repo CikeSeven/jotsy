@@ -29,6 +29,7 @@ import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 import 'package:node_diary/ui/widgets/page_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -204,10 +205,7 @@ Future<Map<String, double>> _measureGaps(WidgetTester tester) async {
   await _openTab(tester, l10n.navSettings);
   final settings = find.byType(SettingsPage);
   final firstCard = find
-      .ancestor(
-        of: find.text(l10n.settingsAppearanceLanguage),
-        matching: find.byType(Card),
-      )
+      .descendant(of: settings, matching: find.byType(SettingsCardGroup))
       .first;
   gaps['settings'] =
       tester.getRect(firstCard).top -

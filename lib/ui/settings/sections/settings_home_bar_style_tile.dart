@@ -8,7 +8,7 @@ import '../../home/models/home_bar_style/home_bar_settings.dart';
 import '../pages/home_bar_style_page.dart';
 import 'home_bar_style/home_bar_style_labels.dart';
 
-/// 外观与语言页的“导航栏样式”入口。
+/// 外观页“页面样式”组里的“导航栏样式”入口。
 ///
 /// 副标题显示当前外观的名字：内置预设名、我的样式名或“材质（自定义）”，
 /// 跟随 raw notifier 实时更新（从样式页返回、恢复备份后都会刷新）。

@@ -22,7 +22,7 @@ import '../sections/diary_card_style/diary_card_style_texture_tab.dart';
 import '../widgets/style_editor/style_editor_common.dart';
 import '../widgets/style_editor/style_editor_scaffold.dart';
 
-/// 设置 → 外观与语言 → 日记卡片样式。
+/// 设置 → 外观 → 日记卡片样式。
 ///
 /// 页面壳层：上方实时预览，下方按标签页分组调整（预设、布局、封面、内容、
 /// 日期、排序、字体、色彩、质感）；布局与三档面板见 [StyleEditorScaffold]。

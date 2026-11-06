@@ -8,7 +8,7 @@ import '../../diaries/models/diary_preview_style/diary_preview_settings.dart';
 import '../pages/diary_preview_style_page.dart';
 import 'diary_preview_style/diary_preview_style_labels.dart';
 
-/// 外观与语言页的“日记预览页”入口。
+/// 外观页“页面样式”组里的“日记预览页”入口。
 ///
 /// 副标题显示当前外观的名字：内置预设名、我的样式名或“自定义”，跟随 raw
 /// notifier 实时更新（从样式页返回、恢复备份后都会刷新）。

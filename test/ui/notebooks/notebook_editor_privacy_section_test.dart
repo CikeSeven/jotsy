@@ -67,7 +67,7 @@ void main() {
     final controller = await _pump(tester);
     expect(_tile(tester, '上锁').onTap, isNull);
     expect(
-      find.text('这台设备没有系统身份验证。在 设置 → 数据与隐私 → 应用锁与密码 里设置应用密码后即可上锁'),
+      find.text('这台设备没有系统身份验证。在 设置 → 应用锁与密码 里设置应用密码后即可上锁'),
       findsOneWidget,
     );
     await tester.tap(find.text('上锁'));

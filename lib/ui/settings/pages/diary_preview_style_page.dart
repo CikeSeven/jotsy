@@ -19,7 +19,7 @@ import '../sections/diary_preview_style/diary_preview_style_title_tab.dart';
 import '../widgets/style_editor/style_editor_common.dart';
 import '../widgets/style_editor/style_editor_scaffold.dart';
 
-/// 设置 → 外观与语言 → 日记预览页（也可从预览页“更多 → 页面样式”进入）。
+/// 设置 → 外观 → 日记预览页（也可从预览页“更多 → 页面样式”进入）。
 ///
 /// 页面壳层：上方是实时预览（几篇示例，可左右切换；从某篇日记进入时第一页
 /// 就是它），下方按标签页分组调整（预设、页面、头图、标题、信息、正文、

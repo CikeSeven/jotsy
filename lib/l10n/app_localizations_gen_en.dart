@@ -119,12 +119,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
-  String get settingsThemeMode => 'Theme';
-
-  @override
-  String get settingsThemeColor => 'Theme';
-
-  @override
   String get settingsFontScale => 'Font size';
 
   @override
@@ -177,12 +171,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguage => 'Language';
 
   @override
-  String get settingsLanguageSubtitle => 'Switch app language';
-
-  @override
-  String get settingsAppearanceLanguage => 'Appearance & Language';
-
-  @override
   String get settingsAppLock => 'App Lock';
 
   @override
@@ -216,21 +204,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEditorTitle => 'Editor';
 
   @override
-  String get settingsEditorSubtitle =>
-      'Fonts, spacing, toolbar, and mood emojis';
-
-  @override
-  String get settingsEditorGroup => 'Editor';
-
-  @override
-  String get settingsEditorToolsGroup => 'Toolbar & mood';
+  String get settingsEditorSubtitle => 'Fonts, layout, toolbar and code blocks';
 
   @override
   String get settingsMoodOptionsTitle => 'Mood emojis';
-
-  @override
-  String get settingsMoodOptionsSubtitle =>
-      'Customize the emoji and color of 10 moods';
 
   @override
   String settingsMoodOptionsSlotLabel(String index) {
@@ -257,28 +234,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsDataPrivacy => 'Data & Privacy';
-
-  @override
-  String get settingsDataPrivacySubtitle =>
-      'Manage backups, app lock, and recycle bin';
-
-  @override
-  String get settingsDataPrivacyTitle => 'Data & Privacy';
-
-  @override
   String get settingsDataManagement => 'Data Management';
 
   @override
   String get settingsDataManagementSubtitle =>
-      'Import/export backups and diary files';
+      'Backup and restore, import and export, cloud backup';
 
   @override
   String get settingsTagManagement => 'Tag Management';
-
-  @override
-  String get settingsTagManagementSubtitle =>
-      'Deleting a tag only unlinks it from diaries';
 
   @override
   String get settingsTagMemory => 'Tag memory';
@@ -291,14 +254,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsRecycleBin => 'Recycle Bin';
 
   @override
-  String get settingsRecycleBinSubtitle =>
-      'Restore or permanently remove deleted diaries';
-
-  @override
   String get settingsAbout => 'About';
-
-  @override
-  String get settingsAboutSubtitle => 'App info, repo, and version';
 
   @override
   String get languageDialogTitle => 'Select language';
@@ -1607,7 +1563,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deviceAuthUnavailable =>
-      'This device has no system verification. Set an app passcode in Settings → Data & Privacy → App lock & passcode to use locking';
+      'This device has no system verification. Set an app passcode in Settings → App lock & passcode to use locking';
 
   @override
   String get calendarYearSaveImage => 'Save this year as an image…';
@@ -6044,10 +6000,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDraftsTitle => 'Drafts';
 
   @override
-  String get diaryDraftsSettingsSubtitle =>
-      'Unpublished entries you can keep writing or delete';
-
-  @override
   String get diaryDraftsEmpty =>
       'No drafts yet. New entries you leave before publishing are kept here';
 
@@ -7057,10 +7009,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookTitle => 'Notebooks';
 
   @override
-  String get notebookSettingsSubtitle =>
-      'Organize, reorder and merge your notebooks';
-
-  @override
   String get notebookNew => 'New notebook';
 
   @override
@@ -7585,7 +7533,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → Data & Privacy → App lock & passcode.';
+      'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → App lock & passcode.';
 
   @override
   String get notebookLockUnsupportedAction => 'Got it';
@@ -11324,7 +11272,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lanSyncFirstUseStep2 =>
-      'On the other device, open Settings › Data & Privacy › LAN sync';
+      'On the other device, open Settings › LAN sync';
 
   @override
   String get lanSyncFirstUseStep3 =>
@@ -14566,4 +14514,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appLockStatusOff => 'Off';
+
+  @override
+  String get settingsGroupGeneral => 'General';
+
+  @override
+  String get settingsGroupWriting => 'Writing';
+
+  @override
+  String get settingsGroupOrganize => 'Organize';
+
+  @override
+  String get settingsGroupDataSecurity => 'Data & security';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsAppearanceSubtitle => 'Theme, background and page styles';
+
+  @override
+  String get settingsEditor => 'Editor';
+
+  @override
+  String get settingsThemeGroup => 'Theme';
+
+  @override
+  String get settingsInterfaceGroup => 'Interface';
+
+  @override
+  String get settingsPageStylesGroup => 'Page styles';
+
+  @override
+  String get settingsEditorBodyGroup => 'Body text';
+
+  @override
+  String get settingsEditorToolbarGroup => 'Toolbar';
+
+  @override
+  String get settingsEditorBehaviorGroup => 'Behavior';
+
+  @override
+  String get dataMgmtBackupGroup => 'Backup & restore';
+
+  @override
+  String get dataMgmtFilesGroup => 'Import & export';
 }

@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import '../models/diary_callout_tone.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 正文里的标注、折叠列表与表格（[buildDiaryPdfBody] 调用）。
@@ -140,6 +141,8 @@ List<pw.Widget> buildDiaryPdfTableRows(
                     textDirection: textDirection,
                     softWrap: true,
                     overflow: pw.TextOverflow.span,
+                    // 窄格子里的中文逐字换行，不会整段挤到下一行。
+                    lineSplitter: diaryPdfLineSplitter,
                     text: pw.TextSpan(
                       children: <pw.InlineSpan>[
                         for (final run in cell)

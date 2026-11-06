@@ -27,6 +27,10 @@ enum DiaryTextAlign {
   }
 }
 
+/// 标题字号相对正文字号的倍数（h1–h6）。随正文字号缩放，不写绝对像素；
+/// 编辑器（`diaryHeadingTextStyle`）与 PDF 导出共用。
+const List<double> kDiaryHeadingScales = [1.75, 1.45, 1.2, 1.1, 1.0, 0.9];
+
 /// 行内字号档位：存在文字的 `size` 属性（见 [kDiaryInlineSize]），正文档不写。
 ///
 /// [scale] 是相对正文字号的倍数，编辑器渲染（`diaryEditorSpanDecorator`）与

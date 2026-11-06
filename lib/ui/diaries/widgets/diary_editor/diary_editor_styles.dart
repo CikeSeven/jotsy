@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../controllers/diary_table_editing.dart';
+import '../../models/diary_text_style_options.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
@@ -77,9 +78,6 @@ TextStyle diaryEditorBodyStyle(
     fontWeight: FontWeight.normal,
   );
 }
-
-/// 标题字号相对正文字号的倍数（h1–h6）。随正文字号缩放，不写绝对像素。
-const List<double> kDiaryHeadingScales = [1.75, 1.45, 1.2, 1.1, 1.0, 0.9];
 
 /// 标题的字号与字重（[level] 为 1–6）。上游标题块在块样式之后还会叠一层
 /// 自己的默认字号（32 / 28 / 24 / 18…，不随正文字号变化），所以除了块样式，

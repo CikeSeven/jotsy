@@ -81,7 +81,7 @@ class DiaryPreviewContent extends ConsumerWidget {
     required this.onOpenImage,
     this.coverHeroTag,
     this.coverPlaceholder,
-    this.staticCover = false,
+    this.capturingLongImage = false,
     this.extraBottomPadding = 0,
     this.paging,
     this.notebooks = const <NotebookView>[],
@@ -92,6 +92,9 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.aiRepliesFor,
     this.onAiContinueChat,
   });
+
+  /// 截取长图时代替顶栏的上边距：加上标题自带的 14，与页尾的 28 留白相当。
+  static const double _longImageTopGap = 16;
 
   final DiaryWithTags detail;
   final DiaryPreviewViewData viewData;
@@ -110,8 +113,15 @@ class DiaryPreviewContent extends ConsumerWidget {
   /// 列表封面抓取的画面：头图共享元素的落点与占位。
   final ui.Image? coverPlaceholder;
 
-  /// 分享长图期间用静态头图（见 [DiaryPreviewCover]）。
-  final bool staticCover;
+  /// 正在截取分享长图：头图换成静态头图（见 [DiaryPreviewCover]），不渲染
+  /// 顶栏与上一篇 / 下一篇卡片。
+  ///
+  /// 顶栏是滚动视图里的 [SliverAppBar]、在截图边界之内：常驻时每一屏都截到
+  /// 它，逐屏拼接后长图中间会再出现一条顶栏并盖住下面的文字；随滚动隐藏时
+  /// 也会把按钮和状态栏留白带进图片顶部。它与上一篇 / 下一篇都是导航，不是
+  /// 日记内容，截图期间直接不建，正文从图片顶端排起（上方留
+  /// [_longImageTopGap]，头图通栏时贴顶）。
+  final bool capturingLongImage;
 
   /// 页尾额外留白（设置页预览底部被面板圆角压住的高度）。
   final double extraBottomPadding;
@@ -208,9 +218,17 @@ class DiaryPreviewContent extends ConsumerWidget {
     final showInsight = style.body.showCapsuleInsight;
     final paging = this.paging;
     final neighbors =
-        paging != null && paging.hasNeighbors && style.navigation.neighborCards
+        !capturingLongImage &&
+            paging != null &&
+            paging.hasNeighbors &&
+            style.navigation.neighborCards
         ? paging
         : null;
+    // 长图顶端是通栏头图时贴顶，否则留一段与页尾相当的边距。
+    final bannerOnTop =
+        coverSource != null &&
+        style.cover.mode == DiaryPreviewCoverMode.banner &&
+        !resolved.coverInColumn;
 
     // 标题与信息栏的上下顺序：信息栏在上时它先占 14 的上边距，标题收为 10。
     final metaAbove =
@@ -235,37 +253,42 @@ class DiaryPreviewContent extends ConsumerWidget {
       controller: scrollController,
       physics: paging == null ? null : const AlwaysScrollableScrollPhysics(),
       slivers: <Widget>[
-        DiaryPreviewTopBar(
-          style: style.page,
-          title: switch (style.page.topBarTitle) {
-            DiaryPreviewTopBarTitle.label => l10n.autoT0120,
-            DiaryPreviewTopBarTitle.date => l10n.formatFullDate(
-              diary.createdAt.toLocal(),
-            ),
-            DiaryPreviewTopBarTitle.none => null,
-            DiaryPreviewTopBarTitle.position =>
-              paging?.position ?? l10n.autoT0120,
-          },
-          titleSemantics:
-              style.page.topBarTitle == DiaryPreviewTopBarTitle.position
-              ? paging?.positionSemantics
-              : null,
-          // 实色顶栏：纸张跟随主题且有页面背景时取实色栏底色（见
-          // diaryPreviewPageColors），否则仍是纸色。
-          background: pageColors.bar,
-          pageColor: pageColors.page,
-          onOpenTypography: actions.onOpenTypography,
-          onEdit: actions.onEdit,
-          onShare: actions.onShare,
-          onMore: actions.onMore,
-          onBack: actions.onBack,
-        ),
+        if (capturingLongImage)
+          SliverToBoxAdapter(
+            child: SizedBox(height: bannerOnTop ? 0 : _longImageTopGap),
+          )
+        else
+          DiaryPreviewTopBar(
+            style: style.page,
+            title: switch (style.page.topBarTitle) {
+              DiaryPreviewTopBarTitle.label => l10n.autoT0120,
+              DiaryPreviewTopBarTitle.date => l10n.formatFullDate(
+                diary.createdAt.toLocal(),
+              ),
+              DiaryPreviewTopBarTitle.none => null,
+              DiaryPreviewTopBarTitle.position =>
+                paging?.position ?? l10n.autoT0120,
+            },
+            titleSemantics:
+                style.page.topBarTitle == DiaryPreviewTopBarTitle.position
+                ? paging?.positionSemantics
+                : null,
+            // 实色顶栏：纸张跟随主题且有页面背景时取实色栏底色（见
+            // diaryPreviewPageColors），否则仍是纸色。
+            background: pageColors.bar,
+            pageColor: pageColors.page,
+            onOpenTypography: actions.onOpenTypography,
+            onEdit: actions.onEdit,
+            onShare: actions.onShare,
+            onMore: actions.onMore,
+            onBack: actions.onBack,
+          ),
         if (coverSource != null)
           DiaryPreviewCover(
             heroTag: coverHeroTag,
             source: coverSource,
             resolved: resolved,
-            staticCover: staticCover,
+            staticCover: capturingLongImage,
             placeholder: coverPlaceholder,
             onTap: (hero) => onOpenImage(images, coverSource, hero),
           ),

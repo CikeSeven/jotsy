@@ -468,7 +468,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               ? null
               : widget.coverHeroTag ?? diaryCoverHeroTag(widget.diaryId),
           coverPlaceholder: widget.coverHero?.placeholder,
-          staticCover: _export.staticCover,
+          capturingLongImage: _export.capturingLongImage,
           paging: widget.paging,
           notebooks: notebooks,
           comments: comments,

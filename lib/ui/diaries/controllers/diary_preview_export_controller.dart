@@ -58,7 +58,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
   bool _showLoading = false;
   String _loadingLabel = '';
   bool _sharingImage = false;
-  bool _staticCover = false;
+  bool _capturingLongImage = false;
   bool _exporting = false;
   bool _disposed = false;
   final DiaryShareController _share = DiaryShareController();
@@ -67,12 +67,10 @@ class DiaryPreviewExportController extends ChangeNotifier {
   bool get showLoading => _showLoading;
   String get loadingLabel => _loadingLabel;
 
-  /// 分享长图期间用静态头图替换会随滚动折叠的头图，避免长图拼接出现拖影。
-  bool get staticCover => _staticCover;
-
-  /// 正在截取分享长图（与 [staticCover] 同一时段）：预览页据此隐藏留言区，
-  /// 分享不带留言。
-  bool get capturingLongImage => _staticCover;
+  /// 正在截取分享长图：预览页据此不建顶栏、上一篇 / 下一篇与留言区（长图
+  /// 只有日记本身），并用静态头图替换会随滚动折叠的头图，避免长图拼接出现
+  /// 拖影。
+  bool get capturingLongImage => _capturingLongImage;
 
   /// 正在执行任一动作（遮罩、截图或导出中）。
   bool get busy => _showLoading || _sharingImage || _exporting;
@@ -108,11 +106,12 @@ class DiaryPreviewExportController extends ChangeNotifier {
         ).devicePixelRatio.clamp(1.0, 2.2);
         _update(() {
           _sharingImage = true;
-          // 分享截图时禁用封面折叠动画，避免长图拼接出现拖影。
-          _staticCover = true;
+          // 截图模式：不建顶栏等导航，头图换成静态的（见 capturingLongImage）。
+          _capturingLongImage = true;
         });
         try {
-          // 等待 bottom sheet 完全关闭，避免截图带上遮罩层。
+          // 等待 bottom sheet 完全关闭，避免截图带上遮罩层；同时让去掉顶栏
+          // 后的那一帧完成布局。
           await Future<void>.delayed(const Duration(milliseconds: 80));
           if (!context.mounted) {
             return;
@@ -168,7 +167,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
           if (context.mounted) {
             _update(() {
               _sharingImage = false;
-              _staticCover = false;
+              _capturingLongImage = false;
             });
           }
         }

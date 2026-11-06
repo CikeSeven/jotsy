@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/app_lock_layer.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/services/app_lock_platform.dart';
 import '../../../core/services/app_passcode/app_passcode_store.dart';
 import '../../app_lock/controllers/identity_verifier.dart';
 import '../../app_lock/widgets/app_lock_surface.dart';
@@ -24,7 +25,10 @@ import '../providers/home_notebook_scope_provider.dart';
 /// 挂 navigatorKey 会在启动换壳时把旧首页路由一起带走）。
 ///
 /// - 遮罩与内容隔离复用 [AppLockLayer]（排除下层语义与焦点、立即出现、淡出）；
-/// - 切到后台的那一刻就上锁：最近任务的截图里也只有遮罩；
+/// - 切到后台的那一刻就上锁：最近任务的截图里也只有遮罩。应用自己打开的
+///   界面（选图片、拍照、选文件、系统分享面板）不算离开：原生确认那个界面
+///   盖在本应用的任务上后撤回这次上锁（`AppLockPlatform.leftForOwnActivity`，
+///   回答来得比用户回来还晚时保持锁着）；
 /// - 冷启动恢复到上次所在的上锁日记本时，范围以重锁状态恢复
 ///   （`homeNotebookScopeRestoreProvider`），遮罩从首页第一帧起就盖着；
 /// - “解锁”验证通过后揭开；连续两次未通过、或点“回到全部日记”时退回首页
@@ -32,8 +36,8 @@ import '../providers/home_notebook_scope_provider.dart';
 /// - 验证方式为应用密码时遮罩里直接是数字键盘或图案（[PasscodeUnlockView]，
 ///   可用指纹但不自动弹）：输错由应用密码统一限流，不按“连续两次”退回；
 /// - 验证进行中系统界面可能让应用暂时进入后台，期间不重复上锁；
-/// - 应用锁只在冷启动与开关时验证，回到前台不会再弹，因此不会与这里连着
-///   出现两次验证。
+/// - 应用锁同时盖着时（离开后重新上锁、冷启动恢复到上锁的本子）先解应用锁，
+///   解开时一并解开这里（`AppLockController.onUnlocked`），不连着验证两次。
 class NotebookLockLayer extends ConsumerStatefulWidget {
   const NotebookLockLayer({super.key, required this.child});
 
@@ -51,10 +55,33 @@ class _NotebookLockLayerState extends ConsumerState<NotebookLockLayer> {
   bool _authenticating = false;
   int _failedAttempts = 0;
 
+  /// 应用是否在前台可见；切到后台时置 false，回来时置 true。
+  bool _visible = true;
+
+  /// 每次切到后台加一：原生的回答只对应它问的那一次。
+  int _hideSerial = 0;
+
   @override
   void initState() {
     super.initState();
-    _lifecycle = AppLifecycleListener(onHide: _relock, onPause: _relock);
+    _lifecycle = AppLifecycleListener(
+      onHide: _handleHide,
+      onPause: _relock,
+      onShow: () => _visible = true,
+    );
+  }
+
+  void _handleHide() {
+    _visible = false;
+    final serial = ++_hideSerial;
+    if (!_relock()) return;
+    unawaited(
+      ref.read(appLockPlatformProvider).leftForOwnActivity().then((bool own) {
+        if (own && mounted && serial == _hideSerial && !_visible) {
+          ref.read(homeNotebookScopeProvider.notifier).unlock();
+        }
+      }),
+    );
   }
 
   @override
@@ -63,18 +90,22 @@ class _NotebookLockLayerState extends ConsumerState<NotebookLockLayer> {
     super.dispose();
   }
 
-  /// 正在看上锁的日记本时让会话失效。
-  void _relock() {
+  /// 正在看上锁的日记本时让会话失效；这次确实上了锁时返回 true。
+  bool _relock() {
     if (_authenticating) {
-      return;
+      return false;
     }
     final resolution = ref.read(homeNotebookScopeResolutionProvider);
     final notebook = resolution.notebook;
     if (notebook == null || !notebookRequiresAuth(notebook)) {
-      return;
+      return false;
+    }
+    if (ref.read(homeNotebookScopeProvider).relocked) {
+      return false;
     }
     _failedAttempts = 0;
     ref.read(homeNotebookScopeProvider.notifier).relock();
+    return true;
   }
 
   Future<void> _unlock() async {

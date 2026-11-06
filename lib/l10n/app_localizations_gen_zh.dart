@@ -162,7 +162,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAppLock => '应用锁';
 
   @override
-  String get settingsAppLockSubtitle => '开启后每次进入应用都需要身份验证';
+  String get settingsAppLockSubtitle => '开启后打开应用时需要验证身份';
 
   @override
   String get appLockNotSupported => '这台设备没有设置锁屏密码，无法用系统验证启用应用锁。可以改用应用密码。';
@@ -12992,4 +12992,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String placeHistoryShowAll(int count) {
     return '全部 $count';
   }
+
+  @override
+  String get appLockAfterLeaving => '离开应用后上锁';
+
+  @override
+  String get appLockAfterLeavingHint =>
+      '切到其他应用、回到桌面或最小化窗口都算离开；在应用里选图片、拍照、选文件或分享不算。打开应用时总是需要验证。';
+
+  @override
+  String get appLockDelayImmediately => '立即';
+
+  @override
+  String appLockDelayMinutes(int count) {
+    return '$count 分钟后';
+  }
+
+  @override
+  String appLockDelayHours(int count) {
+    return '$count 小时后';
+  }
+
+  @override
+  String get appLockAfterLeavingNever => '从不（只在打开应用时）';
+
+  @override
+  String get appLockOnScreenOff => '锁屏时上锁';
+
+  @override
+  String get appLockOnScreenOffSubtitle => '手机锁屏或熄屏后，回到应用需要验证';
+
+  @override
+  String get appLockWhenIdle => '闲置时上锁';
+
+  @override
+  String get appLockWhenIdleHint => '窗口开着、但一段时间没有用鼠标、触控板或键盘时上锁。';
+
+  @override
+  String get appLockWhenIdleOff => '关闭';
+
+  @override
+  String get appLockAutoPrompt => '自动弹出验证';
+
+  @override
+  String get appLockAutoPromptSubtitle => '锁屏出现时直接弹出指纹、面容或系统验证；关闭后点一下再验证';
+
+  @override
+  String get appLockPrivacyTitle => '隐私';
+
+  @override
+  String get appLockSecureScreen => '防截屏';
+
+  @override
+  String get appLockSecureScreenSubtitle => '禁止截屏和录屏，最近任务里也不显示应用内容';
+
+  @override
+  String get appLockLoosenReason => '验证身份以放宽应用锁';
+
+  @override
+  String get appLockLoosenVerifyFailed => '验证未通过，设置没有改变';
 }

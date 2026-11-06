@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_lock_platform.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/anniversaries/pages/anniversary_detail_page.dart';
@@ -25,6 +26,7 @@ void main() {
       WidgetTester tester,
       FakeDeviceAuth auth, {
       String? appPasscode,
+      FakeAppLockPlatform? platform,
     }) async {
       final h = await DiaryDraftsHarness.create(tester);
       final vault = await h.notebook(
@@ -43,6 +45,8 @@ void main() {
             appDatabaseProvider.overrideWithValue(h.database),
             settingsServiceProvider.overrideWith((ref) async => h.settings),
             ...appLockOverrides(auth: auth, clock: TestClock()),
+            if (platform != null)
+              appLockPlatformProvider.overrideWithValue(platform),
           ],
           child: MaterialApp(
             theme: expressiveTestTheme(Brightness.light),
@@ -100,6 +104,24 @@ void main() {
       expect(auth.reasons, <String>['解锁「保险箱」']);
       expect(find.text('「保险箱」已上锁'), findsNothing);
       expect(container.read(homeNotebookScopeProvider).notebookId, vault);
+      await h.unmount();
+    });
+
+    testWidgets('a picker the app opened itself keeps the notebook open', (
+      tester,
+    ) async {
+      final auth = FakeDeviceAuth();
+      final platform = FakeAppLockPlatform()..ownActivity = true;
+      final (h, vault) = await pumpLayer(tester, auth, platform: platform);
+      final container = containerOf(tester);
+      container.read(homeNotebookScopeProvider.notifier).enter(vault);
+      await h.settleAll();
+
+      await background(tester);
+      await h.settleAll();
+      expect(find.text('「保险箱」已上锁'), findsNothing);
+      expect(container.read(homeNotebookScopeProvider).relocked, isFalse);
+      expect(auth.reasons, isEmpty);
       await h.unmount();
     });
 

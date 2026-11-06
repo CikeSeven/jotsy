@@ -2,6 +2,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'diary_export_blocks.dart';
+import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 行内样式：把共用块模型的文字、颜色、装饰和链接叠到当前段落字阶。
@@ -64,8 +65,9 @@ pw.TextSpan buildDiaryPdfInline(
     isItalic: italic,
     isCodeBlock: isCodeBlock,
   );
-  return pw.TextSpan(
-    text: run.text,
+  // 含中日韩文字时拆成可逐字断行的子片段（见 diaryPdfLineSplitter）。
+  return diaryPdfTextSpan(
+    run.text,
     style: style,
     baseline: baseline,
     annotation: run.link == null ? null : pw.AnnotationUrl(run.link!),

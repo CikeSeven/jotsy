@@ -8,6 +8,7 @@ import 'diary_export_blocks.dart';
 import 'diary_export_code.dart';
 import 'diary_export_pdf_heading.dart';
 import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_rich_blocks.dart';
 import 'diary_export_pdf_text_effects.dart';
 
@@ -15,6 +16,17 @@ import 'diary_export_pdf_text_effects.dart';
 /// 载入并替换为虚拟地址，媒体已换为说明文字；这里不做 IO、不改原文。
 /// 按段/代码行返回可分页的组件，避免把整篇长文放进一个不可分页的容器。
 /// 标注、折叠列表与表格的画法见 `diary_export_pdf_rich_blocks.dart`。
+///
+/// 文字块一律铺满可用宽度再排版：pdf 库的 [pw.RichText] 在宽松约束下只取
+/// 最长一行的宽度，单行段落的居中 / 右对齐就在这条窄框里“对齐”，落到页面
+/// 上仍贴着左边（标题另经 [DiaryPdfHeading] 的 `alignment` 撑满）。
+///
+/// 首行缩进与应用一致（见 `DiaryParagraphBlock`）：[firstLineIndent] 为全局
+/// 首行缩进的字数，[markedFirstLineIndent] 为带工具栏缩进标记的段落的字数
+/// （两字与全局取较大者，由调用方换算好），按正文字号折成宽度；只缩进正文
+/// 段落（媒体、分隔线退化成的说明行不算），居中、右对齐的段落不缩进，
+/// 两端对齐照常缩进。中文要能在缩进之后接着排、按字换行，文字块经
+/// `diary_export_pdf_line_break.dart` 逐字断行。
 List<pw.Widget> buildDiaryPdfBody(
   List<ExportBlock> blocks, {
   required pw.ThemeData theme,
@@ -23,6 +35,8 @@ List<pw.Widget> buildDiaryPdfBody(
   required List<Uint8List> images,
   required TextDirection textDirection,
   DiaryExportCodeTheme? code,
+  double firstLineIndent = 0,
+  double markedFirstLineIndent = 0,
 }) {
   final result = <pw.Widget>[];
   final rtl = textDirection == TextDirection.rtl;
@@ -105,8 +119,20 @@ List<pw.Widget> buildDiaryPdfBody(
         ExportBlockKind.unchecked => '[ ]  ',
         _ => '',
       };
+      final indentChars = _firstLineIndentChars(
+        block,
+        regular: firstLineIndent,
+        marked: markedFirstLineIndent,
+      );
       final spans = <pw.InlineSpan>[
-        if (prefix.isNotEmpty) pw.TextSpan(text: prefix, style: base),
+        // 中文序号（如“十一、”）同样逐字断行，须经 diaryPdfTextSpan。
+        if (prefix.isNotEmpty) diaryPdfTextSpan(prefix, style: base),
+        // pdf 库没有首行缩进，段首放一个占位宽度的空白组件：只占第一行，
+        // 折行后的各行照常顶格；高度为 0，不改变行高。
+        if (indentChars > 0)
+          pw.WidgetSpan(
+            child: pw.SizedBox(width: indentChars * (base.fontSize ?? 12)),
+          ),
         for (final run in block.inlines)
           buildDiaryPdfInline(
             run,
@@ -123,12 +149,17 @@ List<pw.Widget> buildDiaryPdfBody(
         ExportAlign.justify => pw.TextAlign.justify,
         ExportAlign.start => rtl ? pw.TextAlign.right : pw.TextAlign.left,
       };
-      content = pw.RichText(
-        text: pw.TextSpan(children: spans),
-        textDirection: direction,
-        textAlign: align,
-        softWrap: true,
-        overflow: pw.TextOverflow.span,
+      // 撑满宽度，对齐才落在整行上（见本函数注释）。
+      content = pw.SizedBox(
+        width: double.infinity,
+        child: pw.RichText(
+          text: pw.TextSpan(children: spans),
+          textDirection: direction,
+          textAlign: align,
+          softWrap: true,
+          overflow: pw.TextOverflow.span,
+          lineSplitter: diaryPdfLineSplitter,
+        ),
       );
       if (isCode) {
         content = pw.Container(
@@ -185,4 +216,18 @@ List<pw.Widget> buildDiaryPdfBody(
     result.add(effects.wrap(content));
   }
   return result;
+}
+
+/// 本块首行缩进的字数：只有正文段落、且从起始侧排起（左对齐或两端对齐）
+/// 时缩进，带工具栏缩进标记的取 [marked]，否则取全局的 [regular]。
+double _firstLineIndentChars(
+  ExportBlock block, {
+  required double regular,
+  required double marked,
+}) {
+  if (block.kind != ExportBlockKind.paragraph || block.standIn) return 0;
+  if (block.align == ExportAlign.center || block.align == ExportAlign.end) {
+    return 0;
+  }
+  return block.firstLineIndent ? marked : regular;
 }

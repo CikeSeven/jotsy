@@ -8,6 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/database/app_database.dart' show DiaryCommentRowImages;
+import '../../../core/services/diary_typography.dart';
 import '../../../core/services/font_file_info.dart';
 import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
@@ -87,6 +88,8 @@ class DiaryPdfFonts {
 /// 压平透明色与代码着色，再由 pdf 库直接绘制，保持标题、列表、嵌套、引用与
 /// 行内格式。所有图片先检查/载入后换成虚拟地址，避免缺图中断或泄露私有
 /// 路径；高亮与应用配色同源。中文字体的粗斜体经 DiaryPdfTextEffects 在绘制时补偿。
+/// 段落对齐与首行缩进同应用：首行缩进的字数取 `write` 的 `typography` 快照
+/// （与 Word 同一口径），写出器不自行读取设置。
 ///
 /// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。有留言的
 /// 日记在正文之后接留言区（[buildDiaryPdfComments]，同样不写心情）。
@@ -130,6 +133,7 @@ class DiaryPdfWriter {
     TextDirection textDirection = TextDirection.ltr,
     DiaryExportBookLayout? book,
     DiaryExportCodeTheme? code,
+    DiaryTypography typography = const DiaryTypography(),
   }) async {
     final textEffects = DiaryPdfTextEffects(
       regular: fonts.regular,
@@ -163,6 +167,7 @@ class DiaryPdfWriter {
         images: images,
         textDirection: textDirection,
         code: code,
+        typography: typography,
       );
       return DiaryExportOutput.single(await document.save());
     }
@@ -184,6 +189,7 @@ class DiaryPdfWriter {
           images: images,
           textDirection: textDirection,
           code: code,
+          typography: typography,
         ),
       );
     }
@@ -226,6 +232,7 @@ class DiaryPdfWriter {
     required List<Uint8List> images,
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
+    required DiaryTypography typography,
     pw.Widget Function(pw.Widget title)? wrapTitle,
   }) async {
     final widgets = await _header(
@@ -254,6 +261,13 @@ class DiaryPdfWriter {
           images: images,
           textDirection: textDirection,
           code: code,
+          // 字数与应用同一口径，宽度按 PDF 的正文字号折算（PDF 不跟随
+          // 应用的字号与字间距）。
+          firstLineIndent: typography.firstLineIndent,
+          markedFirstLineIndent: math.max(
+            typography.firstLineIndent,
+            DiaryTypography.paragraphFirstLineIndent,
+          ),
         ),
       );
     }
@@ -287,6 +301,7 @@ class DiaryPdfWriter {
     required List<Uint8List> images,
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
+    required DiaryTypography typography,
   }) async {
     // 锚点 → 页码：正文绘制时由 _BookAnchor 写入，目录绘制时读取。
     final pages = <String, int>{};
@@ -345,6 +360,7 @@ class DiaryPdfWriter {
             images: images,
             textDirection: textDirection,
             code: code,
+            typography: typography,
             wrapTitle: (pw.Widget child) => _BookAnchor(
               name: book.anchorOf(entry),
               title: labels.titleOf(entry),

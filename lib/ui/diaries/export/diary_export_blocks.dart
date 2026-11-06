@@ -182,6 +182,7 @@ class ExportBlock {
     this.tableRows = const <List<List<ExportInline>>>[],
     this.tableHeaderRow = false,
     this.firstLineIndent = false,
+    this.standIn = false,
   });
 
   final ExportBlockKind kind;
@@ -194,8 +195,12 @@ class ExportBlock {
   final int indent;
 
   /// 正文段落带工具栏「缩进」写入的首行缩进标记（`kDiaryParagraphIndentKey`）：
-  /// 只有 Word 写成首行缩进（与全局首行缩进同一口径，两字与全局取较大者）。
+  /// Word 与 PDF 写成首行缩进（与全局首行缩进同一口径，两字与全局取较大者）。
   final bool firstLineIndent;
+
+  /// 写出器把非文字块（媒体、分隔线）退化成的一行说明（[paragraphWith]）：
+  /// 种类是段落，但不是正文段落，不加全局首行缩进。
+  final bool standIn;
 
   /// 有序列表在同一缩进层级内的序号（1 起），其他块为 0。
   final int ordinal;
@@ -310,6 +315,7 @@ class ExportBlock {
     inlines: List<ExportInline>.unmodifiable(inlines),
     indent: indent,
     align: align,
+    standIn: true,
   );
 
   /// 换掉行内片段、来源或表格格子后的副本，其余不变（PDF 准备正文时用）。
@@ -337,6 +343,8 @@ class ExportBlock {
     calloutTone: calloutTone,
     tableRows: tableRows ?? this.tableRows,
     tableHeaderRow: tableHeaderRow,
+    firstLineIndent: firstLineIndent,
+    standIn: standIn,
   );
 
   bool get isListItem =>

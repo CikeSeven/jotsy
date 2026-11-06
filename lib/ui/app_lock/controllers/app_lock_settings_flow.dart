@@ -13,7 +13,9 @@
 // - 应用密码 → 系统验证：先输入应用密码，且设备必须能弹出系统验证（否则切过去
 //   应用锁与上锁日记本都打不开），通过后清除密码；
 // - 修改密码（可以换形式）：先输入当前密码；
-// - 打开指纹快捷解锁：先验一次指纹，确认能用；关闭不用验证（更严格了）。
+// - 打开指纹快捷解锁：先验一次指纹，确认能用；关闭不用验证（更严格了）；
+// - 上锁时机与防截屏（[AppLockOptions]）：应用锁开着时，放宽保护（离开后更晚
+//   上锁、关掉锁屏 / 闲置上锁、关掉防截屏）先验证；收紧与“自动弹出验证”不用。
 
 import 'dart:async';
 
@@ -23,7 +25,9 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/services/settings_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../models/app_lock_options.dart';
 import '../pages/passcode_setup_page.dart';
+import '../providers/app_lock_options_provider.dart';
 import 'identity_verifier.dart';
 
 class AppLockSettingsFlow {
@@ -60,6 +64,29 @@ class AppLockSettingsFlow {
       return;
     }
     await settings.setAppLockEnabled(false);
+  }
+
+  /// 改上锁时机或防截屏：放宽保护时先验证（见文件头）。
+  Future<void> updateOptions(
+    BuildContext context,
+    SettingsService settings,
+    AppLockOptions next,
+  ) async {
+    final current = _ref.read(appLockOptionsProvider);
+    if (next == current) return;
+    if (settings.isAppLockEnabled && current.loosenedBy(next)) {
+      final verified = await _verifier.verify(
+        context,
+        reason: context.l10n.appLockLoosenReason,
+        purpose: IdentityPurpose.sensitive,
+      );
+      if (!context.mounted) return;
+      if (!verified) {
+        _hint(context, context.l10n.appLockLoosenVerifyFailed);
+        return;
+      }
+    }
+    await saveAppLockOptions(settings, next);
   }
 
   /// 系统验证 → 应用密码。

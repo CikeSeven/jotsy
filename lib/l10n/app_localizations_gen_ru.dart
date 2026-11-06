@@ -15094,4 +15094,85 @@ class AppLocalizationsRu extends AppLocalizations {
   String placeHistoryShowAll(int count) {
     return 'Все $count';
   }
+
+  @override
+  String get appLockAfterLeaving => 'Блокировать после выхода';
+
+  @override
+  String get appLockAfterLeavingHint =>
+      'Переход в другое приложение, на главный экран или сворачивание окна считается выходом; выбор фото, съёмка, выбор файлов и отправка из приложения — нет. При открытии приложения подтверждение требуется всегда.';
+
+  @override
+  String get appLockDelayImmediately => 'Сразу';
+
+  @override
+  String appLockDelayMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Через $count минуты',
+      many: 'Через $count минут',
+      few: 'Через $count минуты',
+      one: 'Через $count минуту',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appLockDelayHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Через $count часа',
+      many: 'Через $count часов',
+      few: 'Через $count часа',
+      one: 'Через $count час',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appLockAfterLeavingNever => 'Никогда (только при запуске)';
+
+  @override
+  String get appLockOnScreenOff => 'Блокировать при блокировке экрана';
+
+  @override
+  String get appLockOnScreenOffSubtitle =>
+      'После блокировки телефона или отключения экрана для возврата потребуется подтверждение';
+
+  @override
+  String get appLockWhenIdle => 'Блокировать при бездействии';
+
+  @override
+  String get appLockWhenIdleHint =>
+      'Блокирует, если окно открыто, но мышь, тачпад и клавиатура какое-то время не используются.';
+
+  @override
+  String get appLockWhenIdleOff => 'Выкл.';
+
+  @override
+  String get appLockAutoPrompt => 'Сразу запрашивать подтверждение';
+
+  @override
+  String get appLockAutoPromptSubtitle =>
+      'Сразу показывать проверку отпечатка, лица или системную проверку на экране блокировки. Если выключено — нажмите, чтобы подтвердить.';
+
+  @override
+  String get appLockPrivacyTitle => 'Конфиденциальность';
+
+  @override
+  String get appLockSecureScreen => 'Запретить скриншоты';
+
+  @override
+  String get appLockSecureScreenSubtitle =>
+      'Скриншоты и запись экрана будут пустыми, а в недавних приложениях содержимое скрыто';
+
+  @override
+  String get appLockLoosenReason =>
+      'Подтвердите личность, чтобы ослабить блокировку';
+
+  @override
+  String get appLockLoosenVerifyFailed =>
+      'Проверка не пройдена. Настройка не изменена.';
 }

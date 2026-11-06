@@ -175,7 +175,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAppLockSubtitle =>
-      'Require authentication every time the app enters foreground';
+      'Require authentication when opening the app';
 
   @override
   String get appLockNotSupported =>
@@ -14600,4 +14600,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String placeHistoryShowAll(int count) {
     return 'All $count';
   }
+
+  @override
+  String get appLockAfterLeaving => 'Lock after leaving';
+
+  @override
+  String get appLockAfterLeavingHint =>
+      'Switching to another app, going to the home screen or minimizing the window counts as leaving; picking photos, taking pictures, choosing files or sharing from the app doesn\'t. Opening the app always needs verification.';
+
+  @override
+  String get appLockDelayImmediately => 'Immediately';
+
+  @override
+  String appLockDelayMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'After $count minutes',
+      one: 'After 1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String appLockDelayHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'After $count hours',
+      one: 'After 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appLockAfterLeavingNever => 'Never (only when the app opens)';
+
+  @override
+  String get appLockOnScreenOff => 'Lock when the screen locks';
+
+  @override
+  String get appLockOnScreenOffSubtitle =>
+      'After the phone locks or the screen turns off, coming back needs verification';
+
+  @override
+  String get appLockWhenIdle => 'Lock when idle';
+
+  @override
+  String get appLockWhenIdleHint =>
+      'Locks when the window stays open but the mouse, touchpad and keyboard go unused for a while.';
+
+  @override
+  String get appLockWhenIdleOff => 'Off';
+
+  @override
+  String get appLockAutoPrompt => 'Ask right away';
+
+  @override
+  String get appLockAutoPromptSubtitle =>
+      'Show fingerprint, face or system verification as soon as the lock screen appears. When off, tap to verify.';
+
+  @override
+  String get appLockPrivacyTitle => 'Privacy';
+
+  @override
+  String get appLockSecureScreen => 'Block screenshots';
+
+  @override
+  String get appLockSecureScreenSubtitle =>
+      'Screenshots and screen recordings show nothing, and recent apps hide the app\'s content';
+
+  @override
+  String get appLockLoosenReason => 'Verify your identity to relax app lock';
+
+  @override
+  String get appLockLoosenVerifyFailed =>
+      'Verification failed. The setting wasn\'t changed.';
 }

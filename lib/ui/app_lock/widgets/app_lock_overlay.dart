@@ -9,13 +9,14 @@ import '../../widgets/expressive_loading_indicator.dart';
 import 'app_lock_surface.dart';
 import 'passcode_unlock_view.dart';
 
-/// 应用锁遮罩（冷启动时盖在应用之上，见 `NodeDiaryApp`）。
+/// 应用锁遮罩（盖在应用之上，何时盖上见 `AppLockController`）。
 ///
 /// 按验证方式显示两种内容，切换时淡入淡出：
-/// - 应用密码（设了密码且不在判断中）：[PasscodeUnlockView]，开场自动弹一次
-///   指纹（开着且可用时），通过后调用 [onPasscodeUnlocked]；
-/// - 系统验证：锁图标、说明，验证进行中显示加载指示，取消或失败后给出
-///   “立即解锁”重试（改版前的样子，逐像素不变）。
+/// - 应用密码（设了密码且不在判断中）：[PasscodeUnlockView]，开着
+///   [autoPrompt] 时开场自动弹一次指纹（开着且可用时），通过后调用
+///   [onPasscodeUnlocked]；
+/// - 系统验证：锁图标、说明，验证进行中显示加载指示，取消、失败或没有自动
+///   弹出验证时给出“立即解锁”（改版前的样子，逐像素不变）。
 ///
 /// 应用启动时先进入“判断中”（[unlocking]）：读出验证方式之前显示加载指示，
 /// 判断为应用密码后由调用方结束判断，换成密码输入。
@@ -23,12 +24,16 @@ class AppLockOverlay extends ConsumerWidget {
   const AppLockOverlay({
     super.key,
     required this.unlocking,
+    this.autoPrompt = true,
     required this.onTapUnlock,
     required this.onPasscodeUnlocked,
   });
 
   /// 正在判断验证方式或正在进行系统验证。
   final bool unlocking;
+
+  /// 应用密码方式下开场是否自动弹指纹（“自动弹出验证”）。
+  final bool autoPrompt;
   final VoidCallback onTapUnlock;
   final VoidCallback onPasscodeUnlocked;
 
@@ -49,7 +54,7 @@ class AppLockOverlay extends ConsumerWidget {
                   PasscodeUnlockView(
                     title: l10n.appLockTitle,
                     message: l10n.appLockPasscodeSubtitle,
-                    autoBiometric: true,
+                    autoBiometric: autoPrompt,
                     persistBiometricAcrossBackgrounding: true,
                     onUnlocked: onPasscodeUnlocked,
                     viewportHeight: viewportHeight,

@@ -19,17 +19,23 @@ import '../../widgets/expressive_choice_tile.dart';
 import '../../widgets/form_width.dart';
 import '../controllers/app_lock_settings_flow.dart';
 import '../controllers/identity_verifier.dart';
+import '../models/app_lock_options.dart';
+import '../providers/app_lock_options_provider.dart';
+import '../sections/app_lock_options_sections.dart';
 
 /// 设置 → 应用锁与密码（设置首页“数据与安全”组，DESIGN.md §5.31）。
 ///
 /// 页面只装配：开关与选项的改动经 [AppLockSettingsFlow]（先验证再改）。
 ///
-/// - 应用锁：开关；这台设备不能上锁（Linux 且没设应用密码）时停用并说明；
+/// - 应用锁：开关；这台设备不能上锁（Linux 且没设应用密码）时停用并说明。
+///   打开后下方经 [SettingsReveal] 展开从属的上锁时机（离开后多久、锁屏时 /
+///   闲置时、自动弹出验证，见 [AppLockTriggerOptions]）；
 /// - 验证方式：系统验证 / 应用密码两个单选项，脚注说明三处共用；没有系统
 ///   验证的平台（Linux）“系统验证”不可选；
 /// - 应用密码方式下，单选项下方多出“修改应用密码”与“指纹 / 面容解锁”
 ///   （设备有生物识别时），整块经 [SettingsReveal] 展开 / 收起，左侧缩进与
-///   选项文字对齐，视觉上从属于“应用密码”这一项。
+///   选项文字对齐，视觉上从属于“应用密码”这一项；
+/// - 隐私（Android）：防截屏（[AppLockPrivacyGroup]），与应用锁开关无关。
 class AppLockSettingsPage extends ConsumerStatefulWidget {
   const AppLockSettingsPage({super.key});
 
@@ -73,6 +79,12 @@ class _AppLockSettingsPageState extends ConsumerState<AppLockSettingsPage> {
     final l10n = context.l10n;
     final settings = ref.watch(settingsServiceProvider).asData?.value;
     final config = ref.watch(appPasscodeConfigProvider);
+    final options = ref.watch(appLockOptionsProvider);
+    void updateOptions(AppLockOptions next) {
+      if (settings == null) return;
+      _run(() => _flow.updateOptions(context, settings, next));
+    }
+
     return AppPageBackground(
       area: AppBackgroundArea.settings,
       child: Builder(
@@ -98,6 +110,7 @@ class _AppLockSettingsPageState extends ConsumerState<AppLockSettingsPage> {
                       _AppLockSwitch(
                         settings: settings,
                         canLock: identityVerificationPossible(config),
+                        options: options,
                         onChanged: (bool value) => _run(
                           () => _flow.setAppLockEnabled(
                             context,
@@ -105,6 +118,7 @@ class _AppLockSettingsPageState extends ConsumerState<AppLockSettingsPage> {
                             value,
                           ),
                         ),
+                        onOptionsChanged: updateOptions,
                       ),
                     ],
                   ),
@@ -127,6 +141,10 @@ class _AppLockSettingsPageState extends ConsumerState<AppLockSettingsPage> {
                       ),
                     ],
                   ),
+                  AppLockPrivacyGroup(
+                    options: options,
+                    onChanged: updateOptions,
+                  ),
                 ],
               );
             },
@@ -137,17 +155,21 @@ class _AppLockSettingsPageState extends ConsumerState<AppLockSettingsPage> {
   }
 }
 
-/// 应用锁开关；设置服务未就绪时只显示标题。
+/// 应用锁开关与从属的上锁时机；设置服务未就绪时只显示标题。
 class _AppLockSwitch extends StatelessWidget {
   const _AppLockSwitch({
     required this.settings,
     required this.canLock,
+    required this.options,
     required this.onChanged,
+    required this.onOptionsChanged,
   });
 
   final SettingsService? settings;
   final bool canLock;
+  final AppLockOptions options;
   final ValueChanged<bool> onChanged;
+  final ValueChanged<AppLockOptions> onOptionsChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -165,14 +187,26 @@ class _AppLockSwitch extends StatelessWidget {
       valueListenable: settings.appLockEnabledNotifier,
       builder: (BuildContext context, bool enabled, Widget? child) {
         // 不能上锁时开关停用并说明；已开启的锁由启动时的应用锁逻辑自动解除。
-        return SwitchListTile(
-          contentPadding: padding,
-          value: canLock && enabled,
-          title: Text(l10n.settingsAppLock),
-          subtitle: Text(
-            canLock ? l10n.settingsAppLockSubtitle : l10n.appLockNeedsPasscode,
-          ),
-          onChanged: canLock ? onChanged : null,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SwitchListTile(
+              contentPadding: padding,
+              value: canLock && enabled,
+              title: Text(l10n.settingsAppLock),
+              subtitle: Text(
+                canLock
+                    ? l10n.settingsAppLockSubtitle
+                    : l10n.appLockNeedsPasscode,
+              ),
+              onChanged: canLock ? onChanged : null,
+            ),
+            AppLockTriggerOptions(
+              visible: canLock && enabled,
+              options: options,
+              onChanged: onOptionsChanged,
+            ),
+          ],
         );
       },
     );

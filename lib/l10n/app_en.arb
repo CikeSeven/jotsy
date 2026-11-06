@@ -7452,9 +7452,21 @@
   "@settingsOpenDiaryInEditor": {
     "description": "Editor settings: title of the switch that skips the preview page and opens a tapped diary straight in the editor."
   },
-  "settingsOpenDiaryInEditorSubtitle": "Tap a diary to start editing right away instead of opening the preview first.",
+  "settingsOpenDiaryInEditorSubtitle": "Tap a diary to edit it right away, laid out just like the preview.",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "Editor settings: description of the open-in-editor switch."
+  },
+  "diaryReadingEditInfo": "Edit details",
+  "@diaryReadingEditInfo": {
+    "description": "Reading-style editor: the tappable info bar and the More item that open the details panel (mood, weather, place, tags, time, cover)."
+  },
+  "diaryReadingDone": "Done",
+  "@diaryReadingDone": {
+    "description": "Reading-style editor: top bar button that hides the keyboard and ends editing."
+  },
+  "diaryReadingReloaded": "This diary was changed elsewhere, so the latest version is shown.",
+  "@diaryReadingReloaded": {
+    "description": "Reading-style editor: hint shown when returning to the editor after the same diary was changed on another page; the editor now shows the stored version."
   },
   "diaryDayPhotosSetCover": "Set as cover",
   "@diaryDayPhotosSetCover": {

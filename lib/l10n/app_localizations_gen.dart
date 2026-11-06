@@ -9735,8 +9735,26 @@ abstract class AppLocalizations {
   /// Editor settings: description of the open-in-editor switch.
   ///
   /// In en, this message translates to:
-  /// **'Tap a diary to start editing right away instead of opening the preview first.'**
+  /// **'Tap a diary to edit it right away, laid out just like the preview.'**
   String get settingsOpenDiaryInEditorSubtitle;
+
+  /// Reading-style editor: the tappable info bar and the More item that open the details panel (mood, weather, place, tags, time, cover).
+  ///
+  /// In en, this message translates to:
+  /// **'Edit details'**
+  String get diaryReadingEditInfo;
+
+  /// Reading-style editor: top bar button that hides the keyboard and ends editing.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get diaryReadingDone;
+
+  /// Reading-style editor: hint shown when returning to the editor after the same diary was changed on another page; the editor now shows the stored version.
+  ///
+  /// In en, this message translates to:
+  /// **'This diary was changed elsewhere, so the latest version is shown.'**
+  String get diaryReadingReloaded;
 
   /// Photos from this day: button and menu item that makes a photo the entry cover.
   ///

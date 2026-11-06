@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import '../controllers/diary_editor_controller.dart' as editor;
@@ -75,10 +76,8 @@ import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
-import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/expressive_entrance.dart';
-import '../../widgets/glass/glass_reveal.dart';
 import 'package:node_diary/ui/widgets/route_entrance_waiter.dart';
 import 'package:node_diary/ui/ai/controllers/ai_privacy_gate.dart';
 import 'package:node_diary/ui/ai/controllers/ai_writing_flow.dart';
@@ -93,6 +92,38 @@ import 'package:node_diary/ui/diaries/widgets/diary_ai/diary_ai_prompts_strip.da
 import 'package:node_diary/ui/diaries/controllers/diary_ai_editing.dart';
 import 'package:node_diary/ui/ai/controllers/ai_prompts_flow.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_commands.dart';
+import 'package:node_diary/ui/ai/controllers/ai_reply_flow.dart';
+import 'package:node_diary/ui/anniversaries/controllers/anniversary_navigation.dart';
+import 'package:node_diary/ui/anniversaries/models/anniversary_draft.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_comment_flows.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_preview_export_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_preview_extras.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
+import 'package:node_diary/ui/diaries/providers/diary_mood_palette_provider.dart';
+import 'package:node_diary/ui/diaries/providers/diary_preview_style_provider.dart';
+import 'package:node_diary/ui/diaries/sections/diary_typography_sheet.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_preview_resolved_style.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_reading_snapshot.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_comments/diary_comments_section.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_link/diary_backlinks_section.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_trailing_region.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_actions_sheet.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_body.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_dialogs.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_header.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_surface.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_top_bar.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_trailing.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_reading_editor/diary_reading_cover.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_reading_editor/diary_reading_editor_header.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_tag_search_flow.dart';
+import 'package:node_diary/ui/notebooks/controllers/notebook_navigation.dart';
+import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
+import 'package:node_diary/ui/settings/pages/diary_preview_style_page.dart';
+import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_persistence_controller.dart';
@@ -100,12 +131,15 @@ part '../controllers/edit_diary_recording_controller.dart';
 part '../controllers/edit_diary_media_controller.dart';
 part '../controllers/edit_diary_template_flow.dart';
 part '../controllers/edit_diary_ai_flow.dart';
+part '../controllers/edit_diary_reading_flow.dart';
+part '../controllers/edit_diary_reading_actions.dart';
 
 /// 日记编辑页。
 ///
 /// - `diaryId == null`：新建模式（[createDraftId] 为 null 时新建空白，否则续写
 ///   草稿箱里的那一份）；每次新建都是草稿箱里独立的一份，自动保存，发布后删除
-/// - `diaryId != null`：编辑模式
+/// - `diaryId != null`：编辑模式，版式与预览页相同（阅读式编辑，见
+///   `edit_diary_reading_flow.dart`）
 class EditDiaryPage extends ConsumerStatefulWidget {
   const EditDiaryPage({
     super.key,
@@ -118,6 +152,8 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.createNotebookId,
     this.createNotebookChapterId,
     this.initialCaret,
+    this.initialDetail,
+    this.coverHero,
   });
 
   final String? diaryId;
@@ -149,6 +185,13 @@ class EditDiaryPage extends ConsumerStatefulWidget {
   /// 照常从文首打开、不聚焦。新建模式不使用。
   final editor.Position? initialCaret;
 
+  /// 编辑模式下入口已持有的同一篇日记：详情查询返回前直接用它回填，路由
+  /// 滑入时就是完整的页面（头图共享元素才有落点）。
+  final DiaryWithTags? initialDetail;
+
+  /// 入口抓取的封面画面：头图以它为共享元素落点与占位。本页销毁时释放。
+  final ImageViewerHero? coverHero;
+
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
 }
@@ -161,10 +204,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 键盘弹起时光标与悬浮工具栏之间留出的空隙：光标贴着工具栏时下一行没有
   // 余地、读起来像被压住。底部占位同样加上它，最后一行才能被顶到这么高。
   static const double _caretToolbarClearance = 40.0;
-  // 常显工具栏叠在元数据面板收起栏上方时，工具栏底边离 body 底边的距离：
-  // 收起栏占用的高度再隔 8dp。面板本身不避让系统导航条，这里同样不叠加。
-  static const double _toolbarStackedLift =
-      PublishDiaryPanel.collapsedFootprint + 8.0;
+  // 阅读式版式里正文之后的留白（与预览页页尾相同），再加系统导航条高度。
+  static const double _readingBottomGap = 28.0;
 
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
@@ -184,8 +225,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 最近一次构建是否显示了悬浮工具栏：帧末的光标揭示据此取与这一帧布局一致
   // 的遮挡高度（见 [_editorBottomCover]）。
   bool _floatingToolbarShown = false;
-  // 同上，工具栏是否叠在元数据面板收起栏上方（见 [_toolbarStacksOnMetaPanel]）。
-  bool _floatingToolbarStacked = false;
   final DiaryRecordingController _recordingController =
       DiaryRecordingController();
   final DiaryMediaImportController _mediaImportController =
@@ -259,6 +298,29 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   /// AI 写作在这里可用：AI 助手可用且写作模块开启。
   bool get _aiWritingAvailable =>
       ref.read(aiModuleAvailableProvider(AiModule.writing));
+
+  // ==================== 阅读式版式（编辑已有日记） ====================
+  // 详情回填时的原日记（id、归档、胶囊等列）；新建模式为 null。
+  Diary? _readingBase;
+  // 自动保存最近写下的正文与时间：页头页尾（借用的首图、字数、最后编辑于）
+  // 按它们显示，见 [_EditDiaryReadingFlow._onReadingSaved]。
+  String _readingContentJson = '';
+  String _readingContentText = '';
+  DateTime? _readingUpdatedAt;
+  final DiaryReadingSnapshotBuilder _readingSnapshots =
+      DiaryReadingSnapshotBuilder();
+  // 信息面板挂着（点信息栏打开，收回到底后卸载）；升起过才算可以收回。
+  bool _metaPanelOpen = false;
+  bool _metaPanelRaised = false;
+  final GlobalKey _readingCommentsKey = GlobalKey();
+  // 按列表下标滚动编辑器：点信息栏的“N 条留言”时先把页尾滚出来。
+  final DiaryEditorScrollHandle _readingScroll = DiaryEditorScrollHandle();
+  // 分享与导出（没有长图：编辑页没有可整页截取的阅读视图）。
+  late final DiaryPreviewExportController _readingExport;
+  // 本页是不是路由栈最上层（上次看到的值）；被盖住与回到最上层时分别补存、
+  // 检查别处的修改（见 _EditDiaryReadingActions._onRouteCurrentChanged）。
+  bool? _routeIsCurrent;
+  bool _checkingElsewhere = false;
 
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
@@ -360,7 +422,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
     _toolbarOrder = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
     _controller = EditDiaryController(this);
+    _readingExport = DiaryPreviewExportController(
+      onHint: _controller._showHint,
+    );
     _mediaImportController.addListener(_onMediaImportChanged);
+    // 阅读式顶栏在编辑标题或正文时显示“完成”：焦点进出时重建（接实体键盘、
+    // 桌面上没有键盘高度变化来带动重建）。
+    _titleFocusNode.addListener(_onEditingFocusChanged);
+    _contentFocusNode.addListener(_onEditingFocusChanged);
     _titleController.addListener(_controller.onCreateDraftInputChanged);
     _contentController.addListener(_controller.onCreateDraftInputChanged);
     // 新建模式无需等详情查询，直接允许渲染编辑区域。
@@ -374,11 +443,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _onRouteCurrentChanged(ModalRoute.isCurrentOf(context) ?? true);
+  }
+
+  @override
   void dispose() {
     // 必须排在释放输入控制器之前：flush 当场读出快照，写库在页面卸载后完成。
     // 发布后草稿自动保存已关闭，这里不会把刚删除的草稿写回去。
     if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
     _aiSession?.dispose();
+    // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
+    widget.coverHero?.dispose();
+    _readingExport.dispose();
     _routeEntranceWaiter.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
@@ -395,6 +473,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _metaActions.dispose();
     _templates.dispose();
     _meta.dispose();
+    _titleFocusNode.removeListener(_onEditingFocusChanged);
+    _contentFocusNode.removeListener(_onEditingFocusChanged);
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
     _toolbarFocusNode.dispose();
@@ -501,6 +581,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (!_isEditEntry || !_initialized) {
       return;
     }
+    // 阅读式版式：信息栏与配色基调读面板草稿的当前值，改了立刻重建。
+    _rebuildReading();
     final notebooksChanged = !setEquals(
       previous.notebookIds,
       current.notebookIds,
@@ -515,6 +597,26 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     } else if (notebooksChanged && _notebookIdsDirty) {
       _controller.scheduleEditAutoSave();
     }
+  }
+
+  void _onEditingFocusChanged() {
+    if (_isEditEntry) _rebuildReading();
+  }
+
+  /// 阅读式版式重建页面：面板草稿变化（信息栏、头图、配色基调）与编辑焦点
+  /// 进出（顶栏“完成”）。变化可能来自构建期间（极少：回填后的同步恢复），
+  /// 那时推到这一帧之后。
+  void _rebuildReading() {
+    if (!mounted) return;
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
+      return;
+    }
+    setState(() {});
   }
 
   /// 编辑模式读回这篇日记所在的日记本。在详情回填之后进行，读回之前用户
@@ -534,22 +636,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   }
 
   /// 正文滚动容器的底部占位，也就是视口底部被浮层盖住、光标要让开的部分：
-  /// 悬浮工具栏（连同光标上方的空隙）/录音面板优先；否则编辑模式按元数据
-  /// 面板展开进度在 140~460 之间插值。工具栏叠在收起栏上方时两者都要让开，
-  /// 拖动面板后取较高者，占位随面板连续增长。
+  /// 悬浮工具栏（连同光标上方的空隙）/录音面板优先；否则编辑模式在信息
+  /// 面板挂着时按展开进度在 140~460 之间插值，面板不在时只留阅读版式的页尾
+  /// 留白（与预览页相同，再让开系统导航条）。
   double _editorBottomSpacer(
     double panelProgress, {
     required bool showFloatingToolbar,
-    bool toolbarStacked = false,
   }) {
-    if (showFloatingToolbar && toolbarStacked) {
-      return math.max(
-        _toolbarStackedLift +
-            _floatingToolbarReservedSpace +
-            _caretToolbarClearance,
-        _metaPanelBottomSpacer(panelProgress),
-      );
-    }
     if (showFloatingToolbar) {
       if (_recordingPanelOpen) return _recordingPanelReservedSpace;
       if (_aiPanelOpen) {
@@ -561,7 +654,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (!_isEditEntry) {
       return 16.0;
     }
-    return _metaPanelBottomSpacer(panelProgress);
+    if (_metaPanelOpen) return _metaPanelBottomSpacer(panelProgress);
+    return _readingBottomGap + MediaQuery.paddingOf(context).bottom;
   }
 
   /// 悬浮工具栏一排（不含面板）在正文底部占的高度，随工具栏大小变化。
@@ -571,30 +665,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   double _metaPanelBottomSpacer(double panelProgress) =>
       (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
 
-  /// 常显工具栏是否叠在元数据面板收起栏上方。
-  ///
-  /// 编辑模式里，工具栏与元数据面板原本互斥（键盘弹起显示工具栏、收起显示
-  /// 面板）。常显时若照旧互斥，键盘收起后面板就再也露不出来，所以键盘收起时
-  /// 两者同时显示，工具栏挪到收起栏上方。键盘弹起时仍只有工具栏（与默认
-  /// 一致）；焦点在工具栏内时不挪，免得颜色代码输入框交接焦点、键盘短暂归零
-  /// 时工具栏上下跳；录音面板打开时元数据面板照旧让位。
-  bool _toolbarStacksOnMetaPanel({
-    required bool showFloatingToolbar,
-    required double keyboardInset,
-  }) =>
-      _toolbarAlwaysShown &&
-      showFloatingToolbar &&
-      _isEditEntry &&
-      keyboardInset == 0 &&
-      !_toolbarFocusNode.hasFocus &&
-      !_bottomPanelOpen;
-
   /// 此刻被浮层盖住的高度：底部占位再加「更多」面板展开时的额外让位。
   double _editorBottomCover() =>
       _editorBottomSpacer(
         _editPanelExpandProgress.value,
         showFloatingToolbar: _floatingToolbarShown,
-        toolbarStacked: _floatingToolbarStacked,
       ) +
       _toolbarPanelExtent.value;
 
@@ -610,11 +685,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     ),
   );
 
-  /// 编辑模式底部元数据面板（与发布页同一组件）；区块直接写共享草稿，
-  /// 变化经 [_onMetaChanged] 自动保存，这里只做装配。
+  /// 编辑模式的信息面板（与发布页同一组件）；区块直接写共享草稿，变化经
+  /// [_onMetaChanged] 自动保存，这里只做装配。平时不挂载，点信息栏才挂上并
+  /// 展开，收起时整块沉到底边之下、随后卸载（不留收起栏）。
   Widget _buildMetaPanel({required bool fillWidth}) {
     return PublishDiaryPanel(
       fillWidth: fillWidth,
+      hideWhenCollapsed: true,
       controller: _editPanelController,
       draft: _meta,
       actions: _metaActions,
@@ -629,8 +706,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         }
         final wasExpanded = _isEditPanelExpanded;
         // 连续进度只通知底部占位；页面层仅在越过展开阈值时
-        // setState（切换正文锁定、悬浮工具栏等离散状态）。
+        // setState（切换正文锁定、悬浮工具栏等离散状态），收回到底时卸载。
         _editPanelExpandProgress.value = progress;
+        _onMetaPanelProgress(progress);
+        if (!_metaPanelOpen) return;
         final nextExpanded = _isEditPanelExpanded;
         if (wasExpanded == nextExpanded) {
           return;
@@ -659,37 +738,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             maxWidth: AppContentWidth.editor,
             child: Align(alignment: Alignment.bottomCenter, child: panel(wide)),
           ),
-        );
-      },
-    );
-  }
-
-  /// 工具栏叠在收起栏上方时，元数据面板一被拖起或点开就会从下方盖上来：按
-  /// 展开进度淡出并停止接收点按，越过展开阈值后再整个卸载（见 build）。只有
-  /// 这一层随进度重建，工具栏本体作为缓存的 child 传入。
-  ///
-  /// [glass] 为 true（工具栏是玻璃）时用 [GlassReveal] 代替 Opacity：玻璃放进
-  /// 透明度层后背景模糊采不到正文，淡出途中会先变成一块没有模糊的底。整列
-  /// （工具栏卡片、录音面板）都是玻璃表面，由它们按进度一起淡出。
-  Widget _fadeWhileMetaPanelRises({
-    required bool stacked,
-    required bool glass,
-    required Widget child,
-  }) {
-    // 面板长高约 60dp（进度 0.15）时已越过整条工具栏，淡出在此之前完成。
-    const fadeOutProgress = 0.15;
-    return ValueListenableBuilder<double>(
-      valueListenable: _editPanelExpandProgress,
-      child: child,
-      builder: (BuildContext context, double progress, Widget? child) {
-        final opacity = stacked
-            ? (1 - progress / fadeOutProgress).clamp(0.0, 1.0)
-            : 1.0;
-        return IgnorePointer(
-          ignoring: opacity < 1,
-          child: glass
-              ? GlassReveal(progress: opacity, child: child!)
-              : Opacity(opacity: opacity, child: child),
         );
       },
     );
@@ -763,23 +811,30 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     required bool contentLocked,
     required DiaryTextAppearance appearance,
     required bool templatesEnabled,
+    _ReadingFrame? reading,
   }) {
     // 宽窗口里标题与正文收成最宽 760 的一列居中：留白放在编辑器自己的左右
     // 内边距里（滚动视图仍铺满，滚动条留在窗口边缘），页头与正文同一组
     // 边距，段落把手跟着内边距落在列左侧（contentLeft）。手机上为 16。
+    // 阅读式版式（编辑已有日记）改按预览页样式的边距与正文列宽，按编辑器
+    // 实际拿到的宽度换算（与预览页的 atWidth 相同）。
     return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) =>
-          _buildEditorColumn(
-            context,
-            gutter: AppContentWidth.gutter(
-              constraints.maxWidth,
-              AppContentWidth.editor,
-            ),
-            resolveBottomSpacer: resolveBottomSpacer,
-            contentLocked: contentLocked,
-            appearance: appearance,
-            templatesEnabled: templatesEnabled,
-          ),
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final width = constraints.maxWidth;
+        final resolved = reading?.resolved.atWidth(width);
+        return _buildEditorColumn(
+          context,
+          gutter: resolved == null
+              ? AppContentWidth.gutter(width, AppContentWidth.editor)
+              : _readingGutter(resolved, width),
+          resolveBottomSpacer: resolveBottomSpacer,
+          contentLocked: contentLocked,
+          appearance: appearance,
+          templatesEnabled: templatesEnabled,
+          reading: reading,
+          readingResolved: resolved,
+        );
+      },
     );
   }
 
@@ -790,8 +845,98 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     required bool contentLocked,
     required DiaryTextAppearance appearance,
     required bool templatesEnabled,
+    _ReadingFrame? reading,
+    DiaryPreviewResolvedStyle? readingResolved,
   }) {
-    final header = Padding(
+    // 阅读式版式：页头、页尾与正文颜色按预览页样式；信息栏在页头或页尾
+    // （按样式里的位置），只建一份。
+    final readingMeta = reading == null || readingResolved == null
+        ? null
+        : _buildReadingMeta(
+            reading.snapshot,
+            readingResolved,
+            notebooks: reading.notebooks,
+            commentCount: reading.comments?.comments.length ?? 0,
+            canRevealComments: reading.comments?.actions != null,
+          );
+    final readingTrailing = reading == null || readingResolved == null
+        ? null
+        : _buildReadingTrailing(
+            context,
+            frame: reading,
+            resolved: readingResolved,
+            meta: readingMeta,
+          );
+    final header = reading != null && readingResolved != null
+        ? _buildReadingHeader(
+            context,
+            snapshot: reading.snapshot,
+            resolved: readingResolved,
+            appearance: appearance,
+            contentLocked: contentLocked,
+            meta: readingMeta,
+          )
+        : _buildClassicHeader(
+            context,
+            gutter: gutter,
+            contentLocked: contentLocked,
+            appearance: appearance,
+            templatesEnabled: templatesEnabled,
+          );
+    return IgnorePointer(
+      ignoring: contentLocked,
+      // 自定义正文颜色（阅读式版式、通过对比度检查时）经 DefaultTextStyle
+      // 交给正文，与预览页相同；没有时合并一个空样式，不改变什么。始终包
+      // 这一层：颜色有无切换时组件树结构不变，编辑器不会重建。
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: readingResolved?.bodyColor),
+        child: DiaryEditor(
+          controller: _contentController,
+          appearance: appearance,
+          focusNode: _contentFocusNode,
+          onMediaCommand: (kind) => unawaited(_controller.importMedia(kind)),
+          onCameraCommand: AppPlatform.supportsCameraCapture
+              ? (kind) => unawaited(_controller.captureMedia(kind))
+              : null,
+          onRecordingCommand: _recordingAvailable
+              ? _toggleRecordingPanel
+              : null,
+          onAiCommand: _aiWritingAvailable
+              ? (command) => unawaited(_controller.handleAiSlash(command))
+              : null,
+          aiPrompts: ref.watch(aiModuleAvailableProvider(AiModule.prompts)),
+          placeholder: context.l10n.autoT0133,
+          padding: EdgeInsets.symmetric(horizontal: gutter),
+          header: header,
+          scrollHandle: _readingScroll,
+          autoScrollEdgeOffset: _editorBottomCover(),
+          footer: Column(
+            children: [
+              ?readingTrailing,
+              DiaryToolbarPanelReserve(extent: _toolbarPanelExtent),
+              ValueListenableBuilder<double>(
+                valueListenable: _editPanelExpandProgress,
+                builder: (context, progress, _) => SizedBox(
+                  key: const ValueKey('diary-editor-page-reserve'),
+                  height: resolveBottomSpacer(progress),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 新建页的页头：表单式标题、模板建议条、这天的照片与写作灵感。
+  Widget _buildClassicHeader(
+    BuildContext context, {
+    required double gutter,
+    required bool contentLocked,
+    required DiaryTextAppearance appearance,
+    required bool templatesEnabled,
+  }) {
+    return Padding(
       padding: EdgeInsets.fromLTRB(gutter, 4, gutter, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -841,39 +986,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         ],
       ),
     );
-    return IgnorePointer(
-      ignoring: contentLocked,
-      child: DiaryEditor(
-        controller: _contentController,
-        appearance: appearance,
-        focusNode: _contentFocusNode,
-        onMediaCommand: (kind) => unawaited(_controller.importMedia(kind)),
-        onCameraCommand: AppPlatform.supportsCameraCapture
-            ? (kind) => unawaited(_controller.captureMedia(kind))
-            : null,
-        onRecordingCommand: _recordingAvailable ? _toggleRecordingPanel : null,
-        onAiCommand: _aiWritingAvailable
-            ? (command) => unawaited(_controller.handleAiSlash(command))
-            : null,
-        aiPrompts: ref.watch(aiModuleAvailableProvider(AiModule.prompts)),
-        placeholder: context.l10n.autoT0133,
-        padding: EdgeInsets.symmetric(horizontal: gutter),
-        header: header,
-        autoScrollEdgeOffset: _editorBottomCover(),
-        footer: Column(
-          children: [
-            DiaryToolbarPanelReserve(extent: _toolbarPanelExtent),
-            ValueListenableBuilder<double>(
-              valueListenable: _editPanelExpandProgress,
-              builder: (context, progress, _) => SizedBox(
-                key: const ValueKey('diary-editor-page-reserve'),
-                height: resolveBottomSpacer(progress),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   /// 顶栏“更多”菜单的动作；菜单项经 [ExpressiveMenuItem] 先关菜单再调用这里。
@@ -892,10 +1004,65 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     ),
   };
 
+  /// 首次拿到详情时回填编辑器、面板草稿与阅读式版式（只执行一次）；
+  /// [reload] 为 true 时是回到前台发现别处改过这篇，换成库里的最新内容
+  /// （见 `_checkForChangesElsewhere`）：不再按入口的光标位置聚焦。
+  ///
+  /// 在 State 的 build 里调用：改标题文字、恢复面板草稿都会通知监听者，但
+  /// 那时 [_initialized] 仍为 false，自动保存与阅读式重建都不响应；需要
+  /// 通知控制器的部分（这天的照片）推到这一帧之后。重新载入时调用方先把
+  /// [_initialized] 置回 false，效果相同。
+  void _initializeFromDetail(DiaryWithTags detail, {bool reload = false}) {
+    _titleController.text = detail.diary.title;
+    final document = editor.diaryEditorDocument(detail.diary.content);
+    final caret = reload ? null : widget.initialCaret;
+    final caretSelection = caret == null
+        ? null
+        : editor.DiaryEditorController.collapsedSelectionAt(document, caret);
+    _controller.replaceContentController(
+      editor.DiaryEditorController(
+        document: document,
+        selection:
+            caretSelection ??
+            editor.Selection.single(path: [0], startOffset: 0),
+        linkSource: _linkSource,
+      ),
+    );
+    // 预览页双击进来：光标已放在双击处，转场结束后聚焦弹出键盘，
+    // 正文随键盘升起揭示光标（DiaryEditorViewport）。
+    if (caretSelection != null) {
+      _routeEntranceWaiter.schedule(this, _contentFocusNode.requestFocus);
+    }
+    try {
+      _metadataJson = prettyMetadataJson(detail.diary.metadata);
+    } catch (_) {
+      _metadataJson = detail.diary.metadata;
+    }
+    // 面板字段从 metadata 读回；封面与标签以日记表的列为准。
+    _meta.restore(
+      PublishMetadataComposer.parse(detail.diary.metadata).copyWith(
+        cover: normalizeOptionalText(detail.diary.cover),
+        tagIds: Set<int>.unmodifiable(detail.tags.map((Tag tag) => tag.id)),
+      ),
+    );
+    _draftPublishAt = detail.diary.createdAt;
+    _panelMetadataDirty = false;
+    _controller.initializeEditAutoSave();
+    _initialized = true;
+    unawaited(_loadEditNotebooks(detail.diary.diaryId));
+    // “这天的照片”跟随日记的发表日期；configure 会通知监听者，不能在
+    // build 中直接调用，放到这一帧之后。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncDayPhotos();
+    });
+    _initReading(detail);
+  }
+
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
-    final showEditMetaPanel = _isEditEntry;
+    // 信息面板只在点信息栏后挂着（见 _EditDiaryReadingActions._openMetaPanel）。
+    final showEditMetaPanel = _isEditEntry && _metaPanelOpen;
     // 日记模板功能关闭时隐藏入口，数据保留：没有建议条，顶栏菜单里没有
     // “选择模板”与“另存为模板”（自动套用见 applyInitialTemplate）。
     final templatesEnabled = ref.watch(
@@ -920,10 +1087,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     // 代码输入框）时不看键盘高度：焦点从正文交给输入框时，输入法可能先收起
     // 再弹出，键盘高度会短暂归零；此时卸载工具栏会连同面板与输入框一起丢掉。
     // 打开“始终显示工具栏”后不看键盘与焦点（接实体键盘时软键盘不弹出），
-    // 只在元数据面板展开时让位；桌面上一直如此（见 [_toolbarAlwaysShown]）。
+    // 只在信息面板挂着时让位；桌面上一直如此（见 [_toolbarAlwaysShown]）。
     final rawShowFloatingToolbar =
         _hasFloatingToolbar &&
-        !_isEditPanelExpanded &&
+        !_metaPanelOpen &&
         (_toolbarAlwaysShown ||
             ((keyboardInset > 0 || _toolbarFocusNode.hasFocus) &&
                 _isEditingNoteText));
@@ -934,13 +1101,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     final showFloatingToolbar =
         enabledToolbarOrder.isNotEmpty &&
         (rawShowFloatingToolbar ||
-            (_hasFloatingToolbar && _bottomPanelOpen && !_isEditPanelExpanded));
-    final toolbarStacked = _toolbarStacksOnMetaPanel(
-      showFloatingToolbar: showFloatingToolbar,
-      keyboardInset: keyboardInset,
-    );
+            (_hasFloatingToolbar && _bottomPanelOpen && !_metaPanelOpen));
     _floatingToolbarShown = showFloatingToolbar;
-    _floatingToolbarStacked = toolbarStacked;
     // 悬浮工具栏、录音面板与元数据面板同属“工具栏”材质。玻璃时它们外面的
     // 入场与淡出都改用 GlassReveal（见 ExpressiveEntrance.glass），不再套
     // Opacity——透明度层里的玻璃采不到下面的正文。只影响外观，遮挡高度与
@@ -953,12 +1115,26 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         _editorBottomSpacer(
           panelProgress,
           showFloatingToolbar: showFloatingToolbar,
-          toolbarStacked: toolbarStacked,
         );
 
-    final detailAsync = widget.diaryId == null
+    final queried = widget.diaryId == null
         ? const AsyncData<DiaryWithTags?>(null)
         : ref.watch(diaryDetailProvider(widget.diaryId!));
+    // 入口已持有同一篇时，查询返回前直接用它：路由滑入时就是完整页面，头图
+    // 共享元素有落点。
+    final initialDetail = widget.initialDetail;
+    final detailAsync =
+        initialDetail != null && !queried.hasValue && !queried.hasError
+        ? AsyncData<DiaryWithTags?>(initialDetail)
+        : queried;
+    // 首次拿到详情时回填编辑器与草稿上下文（后续重建不重复执行）。放在本
+    // State 的 build 里：阅读式版式这一帧就要用到回填的内容。
+    final loadedDetail = detailAsync.value;
+    if (!_initialized && loadedDetail != null) {
+      _initializeFromDetail(loadedDetail);
+    }
+    // 编辑已有日记：与预览页同一版式（页头、页尾、主题与边距）。
+    final reading = _readingFrame(context);
 
     // 编辑页统一处理三态：加载中 / 加载失败 / 数据可用。三态都画编辑区域的
     // 背景（AppPageBackground 在 Scaffold 外面、按路由尺寸铺满，键盘弹出时
@@ -968,7 +1144,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     // 记录窗口内，在那里 watch 会在每次重建时退订再重订。
     final appearance = ref.watch(diaryTextAppearanceProvider);
     return AppPageBackground(
-      area: AppBackgroundArea.editor,
+      // 阅读式版式与预览页同一背景区域：页面与预览页看起来一样。
+      area: _isEditEntry ? AppBackgroundArea.preview : AppBackgroundArea.editor,
       child: Builder(
         builder: (BuildContext context) {
           final pageColor = AppPageBackdrop.pageColorOf(context);
@@ -1009,185 +1186,148 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 );
               }
 
-              // 首次拿到详情时回填编辑器与草稿上下文，后续重建不重复执行。
-              if (!_initialized && detail != null) {
-                _titleController.text = detail.diary.title;
-                final document = editor.diaryEditorDocument(
-                  detail.diary.content,
-                );
-                final caret = widget.initialCaret;
-                final caretSelection = caret == null
-                    ? null
-                    : editor.DiaryEditorController.collapsedSelectionAt(
-                        document,
-                        caret,
-                      );
-                _controller.replaceContentController(
-                  editor.DiaryEditorController(
-                    document: document,
-                    selection:
-                        caretSelection ??
-                        editor.Selection.single(path: [0], startOffset: 0),
-                    linkSource: _linkSource,
-                  ),
-                );
-                // 预览页双击进来：光标已放在双击处，转场结束后聚焦弹出键盘，
-                // 正文随键盘升起揭示光标（DiaryEditorViewport）。
-                if (caretSelection != null) {
-                  _routeEntranceWaiter.schedule(
-                    this,
-                    _contentFocusNode.requestFocus,
-                  );
-                }
-                try {
-                  _metadataJson = prettyMetadataJson(detail.diary.metadata);
-                } catch (_) {
-                  _metadataJson = detail.diary.metadata;
-                }
-                // 面板字段从 metadata 读回；封面与标签以日记表的列为准。
-                _meta.restore(
-                  PublishMetadataComposer.parse(detail.diary.metadata).copyWith(
-                    cover: normalizeOptionalText(detail.diary.cover),
-                    tagIds: Set<int>.unmodifiable(
-                      detail.tags.map((Tag tag) => tag.id),
-                    ),
-                  ),
-                );
-                _draftPublishAt = detail.diary.createdAt;
-                _panelMetadataDirty = false;
-                _controller.initializeEditAutoSave();
-                _initialized = true;
-                unawaited(_loadEditNotebooks(detail.diary.diaryId));
-                // “这天的照片”跟随日记的发表日期；configure 会通知监听者，不能在
-                // build 中直接调用，放到这一帧之后。
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) _syncDayPhotos();
-                });
-              }
-
               final showDayPhotosMenu =
                   _dayPhotos.library.isSupported && _dayPhotosDay != null;
-              final scaffold = Scaffold(
-                backgroundColor: pageColor,
-                appBar: AppTopBar(
-                  contentMaxWidth: AppContentWidth.editor,
-                  leading: IconButton(
-                    tooltip: context.l10n.commonBack,
-                    onPressed: _controller.attemptExit,
-                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                  ),
-                  title: Text(
-                    widget.entryMode == EditDiaryEntryMode.create
-                        ? context.l10n.autoT0134
-                        : context.l10n.autoT0135,
-                  ),
-                  actions: <Widget>[
-                    ExpressiveMenuButton(
-                      tooltip: context.l10n.diaryEditorMoreActions,
-                      icon: const FaIcon(
-                        FontAwesomeIcons.ellipsisVertical,
-                        size: 18,
-                      ),
-                      items: <Widget>[
-                        // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
-                        if (_templates.enabled && templatesEnabled)
-                          ExpressiveMenuItem(
-                            leadingIcon: const FaIcon(
-                              FontAwesomeIcons.wandMagicSparkles,
-                            ),
-                            onPressed:
-                                _saving ||
-                                    _recordingPanelOpen ||
-                                    _mediaImportController.isBusy
-                                ? null
-                                : () => _onEditorMenuAction(
-                                    _EditorMenuAction.chooseTemplate,
-                                  ),
-                            child: Text(context.l10n.diaryTemplateChoose),
+              // 阅读式版式在整页主题（配色基调、纸张深浅）之下构建：下面的
+              // 组件都按换过的主题取色。始终包 Theme，主题切换时结构不变。
+              Widget buildScaffold(BuildContext context) => Scaffold(
+                backgroundColor: reading == null
+                    ? pageColor
+                    : diaryPreviewScaffoldColor(context, reading.resolved),
+                appBar: reading != null
+                    ? _buildReadingTopBar(context, frame: reading)
+                    : AppTopBar(
+                        contentMaxWidth: AppContentWidth.editor,
+                        leading: IconButton(
+                          tooltip: context.l10n.commonBack,
+                          onPressed: _controller.attemptExit,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.angleLeft,
+                            size: 18,
                           ),
-                        // 新建与编辑都有，与“自动显示当天照片”开关无关；未来日期
-                        // 与不支持读取相册的平台没有。
-                        if (showDayPhotosMenu)
-                          ExpressiveMenuItem(
-                            leadingIcon: const FaIcon(
-                              FontAwesomeIcons.solidImages,
-                            ),
-                            onPressed:
-                                _saving ||
-                                    _recordingPanelOpen ||
-                                    _mediaImportController.isBusy
-                                ? null
-                                : () => _onEditorMenuAction(
-                                    _EditorMenuAction.dayPhotos,
-                                  ),
-                            child: Text(context.l10n.diaryDayPhotosMenu),
-                          ),
-                        if (ref.watch(
-                          aiModuleAvailableProvider(AiModule.prompts),
-                        ))
-                          ExpressiveMenuItem(
-                            leadingIcon: const FaIcon(
-                              FontAwesomeIcons.lightbulb,
-                            ),
-                            onPressed: _saving || _bottomPanelOpen
-                                ? null
-                                : () => unawaited(_openAiPrompts()),
-                            child: Text(context.l10n.aiSlashPrompts),
-                          ),
-                        if (aiSuggest) ...<Widget>[
-                          ExpressiveMenuItem(
-                            leadingIcon: const FaIcon(FontAwesomeIcons.heading),
-                            onPressed: _saving || _aiBusy || _bottomPanelOpen
-                                ? null
-                                : () => unawaited(
-                                    _controller.suggestWithAi(titleOnly: true),
-                                  ),
-                            child: Text(context.l10n.aiSuggestTitle),
-                          ),
-                          ExpressiveMenuItem(
-                            leadingIcon: const FaIcon(
-                              FontAwesomeIcons.wandMagicSparkles,
-                            ),
-                            onPressed: _saving || _aiBusy || _bottomPanelOpen
-                                ? null
-                                : () => unawaited(
-                                    _controller.suggestWithAi(titleOnly: false),
-                                  ),
-                            child: Text(context.l10n.aiSuggestMeta),
-                          ),
-                        ],
-                        if (templatesEnabled)
-                          ExpressiveMenuItem(
-                            leadingIcon: const FaIcon(
-                              FontAwesomeIcons.layerGroup,
-                            ),
-                            onPressed: () => _onEditorMenuAction(
-                              _EditorMenuAction.saveAsTemplate,
-                            ),
-                            child: Text(context.l10n.diaryTemplateSaveAs),
-                          ),
-                        ExpressiveMenuItem(
-                          leadingIcon: const FaIcon(FontAwesomeIcons.penNib),
-                          onPressed: () => _onEditorMenuAction(
-                            _EditorMenuAction.editorSettings,
-                          ),
-                          child: Text(context.l10n.settingsEditorTitle),
                         ),
-                      ],
-                    ),
-                    if (widget.entryMode == EditDiaryEntryMode.create)
-                      IconButton(
-                        onPressed:
-                            _saving ||
-                                _recordingPanelOpen ||
-                                _mediaImportController.isBusy
-                            ? null
-                            : _controller.openPublishPage,
-                        icon: const FaIcon(FontAwesomeIcons.plus),
-                        tooltip: context.l10n.autoT0136,
+                        title: Text(
+                          widget.entryMode == EditDiaryEntryMode.create
+                              ? context.l10n.autoT0134
+                              : context.l10n.autoT0135,
+                        ),
+                        actions: <Widget>[
+                          ExpressiveMenuButton(
+                            tooltip: context.l10n.diaryEditorMoreActions,
+                            icon: const FaIcon(
+                              FontAwesomeIcons.ellipsisVertical,
+                              size: 18,
+                            ),
+                            items: <Widget>[
+                              // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
+                              if (_templates.enabled && templatesEnabled)
+                                ExpressiveMenuItem(
+                                  leadingIcon: const FaIcon(
+                                    FontAwesomeIcons.wandMagicSparkles,
+                                  ),
+                                  onPressed:
+                                      _saving ||
+                                          _recordingPanelOpen ||
+                                          _mediaImportController.isBusy
+                                      ? null
+                                      : () => _onEditorMenuAction(
+                                          _EditorMenuAction.chooseTemplate,
+                                        ),
+                                  child: Text(context.l10n.diaryTemplateChoose),
+                                ),
+                              // 新建与编辑都有，与“自动显示当天照片”开关无关；未来日期
+                              // 与不支持读取相册的平台没有。
+                              if (showDayPhotosMenu)
+                                ExpressiveMenuItem(
+                                  leadingIcon: const FaIcon(
+                                    FontAwesomeIcons.solidImages,
+                                  ),
+                                  onPressed:
+                                      _saving ||
+                                          _recordingPanelOpen ||
+                                          _mediaImportController.isBusy
+                                      ? null
+                                      : () => _onEditorMenuAction(
+                                          _EditorMenuAction.dayPhotos,
+                                        ),
+                                  child: Text(context.l10n.diaryDayPhotosMenu),
+                                ),
+                              if (ref.watch(
+                                aiModuleAvailableProvider(AiModule.prompts),
+                              ))
+                                ExpressiveMenuItem(
+                                  leadingIcon: const FaIcon(
+                                    FontAwesomeIcons.lightbulb,
+                                  ),
+                                  onPressed: _saving || _bottomPanelOpen
+                                      ? null
+                                      : () => unawaited(_openAiPrompts()),
+                                  child: Text(context.l10n.aiSlashPrompts),
+                                ),
+                              if (aiSuggest) ...<Widget>[
+                                ExpressiveMenuItem(
+                                  leadingIcon: const FaIcon(
+                                    FontAwesomeIcons.heading,
+                                  ),
+                                  onPressed:
+                                      _saving || _aiBusy || _bottomPanelOpen
+                                      ? null
+                                      : () => unawaited(
+                                          _controller.suggestWithAi(
+                                            titleOnly: true,
+                                          ),
+                                        ),
+                                  child: Text(context.l10n.aiSuggestTitle),
+                                ),
+                                ExpressiveMenuItem(
+                                  leadingIcon: const FaIcon(
+                                    FontAwesomeIcons.wandMagicSparkles,
+                                  ),
+                                  onPressed:
+                                      _saving || _aiBusy || _bottomPanelOpen
+                                      ? null
+                                      : () => unawaited(
+                                          _controller.suggestWithAi(
+                                            titleOnly: false,
+                                          ),
+                                        ),
+                                  child: Text(context.l10n.aiSuggestMeta),
+                                ),
+                              ],
+                              if (templatesEnabled)
+                                ExpressiveMenuItem(
+                                  leadingIcon: const FaIcon(
+                                    FontAwesomeIcons.layerGroup,
+                                  ),
+                                  onPressed: () => _onEditorMenuAction(
+                                    _EditorMenuAction.saveAsTemplate,
+                                  ),
+                                  child: Text(context.l10n.diaryTemplateSaveAs),
+                                ),
+                              ExpressiveMenuItem(
+                                leadingIcon: const FaIcon(
+                                  FontAwesomeIcons.penNib,
+                                ),
+                                onPressed: () => _onEditorMenuAction(
+                                  _EditorMenuAction.editorSettings,
+                                ),
+                                child: Text(context.l10n.settingsEditorTitle),
+                              ),
+                            ],
+                          ),
+                          if (widget.entryMode == EditDiaryEntryMode.create)
+                            IconButton(
+                              onPressed:
+                                  _saving ||
+                                      _recordingPanelOpen ||
+                                      _mediaImportController.isBusy
+                                  ? null
+                                  : _controller.openPublishPage,
+                              icon: const FaIcon(FontAwesomeIcons.plus),
+                              tooltip: context.l10n.autoT0136,
+                            ),
+                        ],
                       ),
-                  ],
-                ),
                 // 底部键盘弹起时（或打开了“始终显示工具栏”时）显示悬浮工具栏，并对
                 // 正文底部做避让。
                 body: Stack(
@@ -1212,25 +1352,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                               _isEditPanelExpanded || _bottomPanelOpen,
                           appearance: appearance,
                           templatesEnabled: templatesEnabled,
+                          reading: reading,
                         ),
                       ),
                     ),
-                    if (showEditMetaPanel &&
-                        (!showFloatingToolbar ||
-                            _isEditPanelExpanded ||
-                            toolbarStacked))
+                    if (showEditMetaPanel)
                       // 铺满 body、贴底对齐：面板据此拿到可用高度，矮屏时展开高度收缩。
-                      // 两个浮层都带 key：常显时面板会插在已有的工具栏之前，按位置
-                      // 匹配会把工具栏的 Element 交给面板，工具栏重建、丢掉「更多」
-                      // 与颜色面板的状态并重播入场动画。
+                      // 两个浮层都带 key：面板插在已有的工具栏之前时，按位置匹配会
+                      // 把工具栏的 Element 交给面板，工具栏重建、丢掉「更多」与颜色
+                      // 面板的状态并重播入场动画。面板自己从底边升起（收起即离场），
+                      // 不再套入场动画。
                       Positioned.fill(
                         key: const ValueKey<String>('edit-meta-panel'),
                         child: _metaPanelColumn(
-                          // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
-                          (bool wide) => ExpressiveEntrance(
-                            glass: toolbarGlass,
-                            child: _buildMetaPanel(fillWidth: wide),
-                          ),
+                          (bool wide) => _buildMetaPanel(fillWidth: wide),
                         ),
                       ),
                     if (showFloatingToolbar)
@@ -1246,15 +1381,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                               MediaQuery.paddingOf(context).bottom,
                               8.0,
                             );
-                            // 叠在收起栏上方时在安全区之上再抬高到收起栏之上；键盘
-                            // 收起、弹起时随之平滑升降（effects 不越界，内边距不会
-                            // 被弹簧曲线插值成负数）。
-                            final stackedLift = toolbarStacked
-                                ? math.max(
-                                    0.0,
-                                    _toolbarStackedLift - safeBottom,
-                                  )
-                                : 0.0;
                             // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
                             return CenteredContent(
                               maxWidth: AppContentWidth.editor,
@@ -1263,71 +1389,54 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                 child: SafeArea(
                                   top: false,
                                   minimum: const EdgeInsets.only(bottom: 8),
-                                  child: AnimatedPadding(
-                                    padding: EdgeInsets.only(
-                                      bottom: stackedLift,
-                                    ),
-                                    duration: ExpressiveMotion.duration(
+                                  // 录音面板插入/移除时整列高度平滑变化，工具栏随之
+                                  // 上移，不再瞬间跳到 300dp 之上。
+                                  child: AnimatedSize(
+                                    duration: ExpressiveMotion.durationNonZero(
                                       context,
                                       ExpressiveMotion.medium,
                                     ),
                                     curve: ExpressiveMotion.effects,
-                                    child: _fadeWhileMetaPanelRises(
-                                      stacked: toolbarStacked,
-                                      glass: toolbarGlass,
-                                      // 录音面板插入/移除时整列高度平滑变化，工具栏随之
-                                      // 上移，不再瞬间跳到 300dp 之上。
-                                      child: AnimatedSize(
-                                        duration:
-                                            ExpressiveMotion.durationNonZero(
-                                              context,
-                                              ExpressiveMotion.medium,
+                                    alignment: Alignment.bottomCenter,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        DiaryFloatingToolbarSurface(
+                                          child: Focus(
+                                            focusNode: _toolbarFocusNode,
+                                            // 焦点在正文与颜色代码输入框之间交接
+                                            // 时，按新的焦点重新判断工具栏是否显示。
+                                            onFocusChange: (_) =>
+                                                setState(() {}),
+                                            child: _buildFloatingToolbar(
+                                              enabledToolbarOrder,
+                                              // 面板最多铺满工具栏上方的整块正文
+                                              // 区，极矮的窗口里改为面板内滚动而
+                                              // 不溢出。
+                                              maxPanelExtent:
+                                                  constraints.maxHeight -
+                                                  safeBottom -
+                                                  diaryToolbarBarHeight(
+                                                    _toolbarSize.scale,
+                                                  ),
                                             ),
-                                        curve: ExpressiveMotion.effects,
-                                        alignment: Alignment.bottomCenter,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            DiaryFloatingToolbarSurface(
-                                              child: Focus(
-                                                focusNode: _toolbarFocusNode,
-                                                // 焦点在正文与颜色代码输入框之间交接
-                                                // 时，按新的焦点重新判断工具栏是否显示。
-                                                onFocusChange: (_) =>
-                                                    setState(() {}),
-                                                child: _buildFloatingToolbar(
-                                                  enabledToolbarOrder,
-                                                  // 面板最多铺满工具栏上方的整块正文
-                                                  // 区，极矮的窗口里改为面板内滚动而
-                                                  // 不溢出。
-                                                  maxPanelExtent:
-                                                      constraints.maxHeight -
-                                                      safeBottom -
-                                                      stackedLift -
-                                                      diaryToolbarBarHeight(
-                                                        _toolbarSize.scale,
-                                                      ),
-                                                ),
-                                              ),
-                                            ),
-                                            if (_recordingPanelOpen) ...[
-                                              const SizedBox(height: 8),
-                                              ExpressiveEntrance(
-                                                glass: toolbarGlass,
-                                                child: _buildRecordingPanel(),
-                                              ),
-                                            ],
-                                            if (_aiSession
-                                                case final session?) ...[
-                                              const SizedBox(height: 8),
-                                              ExpressiveEntrance(
-                                                glass: toolbarGlass,
-                                                child: _buildAiPanel(session),
-                                              ),
-                                            ],
-                                          ],
+                                          ),
                                         ),
-                                      ),
+                                        if (_recordingPanelOpen) ...[
+                                          const SizedBox(height: 8),
+                                          ExpressiveEntrance(
+                                            glass: toolbarGlass,
+                                            child: _buildRecordingPanel(),
+                                          ),
+                                        ],
+                                        if (_aiSession case final session?) ...[
+                                          const SizedBox(height: 8),
+                                          ExpressiveEntrance(
+                                            glass: toolbarGlass,
+                                            child: _buildAiPanel(session),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -1339,9 +1448,28 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                     DiaryMediaImportOverlay(
                       copying: _mediaImportController.isCopying,
                     ),
+                    // 阅读式版式里分享与导出时的加载遮罩（与预览页相同）。
+                    if (reading != null)
+                      Positioned.fill(
+                        key: const ValueKey<String>('edit-reading-loading'),
+                        child: ListenableBuilder(
+                          listenable: _readingExport,
+                          builder: (BuildContext context, Widget? _) =>
+                              ActionLoadingOverlay(
+                                visible: _readingExport.showLoading,
+                                label: _readingExport.loadingLabel,
+                              ),
+                        ),
+                      ),
                   ],
                 ),
               );
+              final scaffold = reading == null
+                  ? buildScaffold(context)
+                  : Theme(
+                      data: reading.resolved.theme,
+                      child: Builder(builder: buildScaffold),
+                    );
               // 根节点必须恒为 PopScope：若按 `_recordingPanelOpen` 在 Scaffold 与
               // PopScope(Scaffold) 之间切换，根 widget 类型变化会销毁整棵子树，
               // 连带 原生块编辑器、播放器与输入法连接一起重建。只用 canPop 表达差异。

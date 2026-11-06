@@ -11,7 +11,6 @@ import 'package:node_diary/ui/app_surface/models/app_glass_style.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diary_templates/pages/diary_template_editor_page.dart';
@@ -21,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/diary_drafts_harness.dart';
 import '../../../support/expressive_test_theme.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import '../../../support/publish_panel_driver.dart';
 
 const AppGlassStyle _glass = AppGlassStyle(mode: AppGlassMode.glass);
@@ -223,13 +223,26 @@ void main() {
   });
 
   testWidgets(
-    'glass info panel has no outer shadow and enters without an opacity layer',
+    'glass info panel has no outer shadow and rises without an opacity layer',
     (tester) async {
       await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
       final driver = PublishPanelDriver(tester);
-      final header = driver.collapsedHeader;
+      // 阅读式编辑页平时不挂信息面板：点信息栏后面板从底边升起，途中没有
+      // 透明度层包住玻璃（靠平移离场 / 入场，不靠淡入淡出）。
+      await tester.tap(driver.readingMetaButton);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      final panel = find.byType(PublishDiaryPanel);
+      expect(panel, findsOneWidget);
+      var glass = find
+          .descendant(of: panel, matching: find.byType(GlassSurface))
+          .first;
+      expect(fadeLayersBetween(glass, find.byKey(_metaLayer)), isEmpty);
+      await tester.pumpAndSettle();
+
+      final header = driver.expandedHeader;
       expect(header, findsOneWidget);
-      var glass = glassAround(header);
+      glass = glassAround(header);
       expect(blurEnabled(tester, glass), isTrue);
       expect(
         tester.widget<GlassSurface>(glass).shadowColor,
@@ -249,64 +262,34 @@ void main() {
         ),
       );
       expect(boxShadows, findsNothing);
-
-      // 键盘弹起：面板让位给工具栏；键盘收起：面板淡入回来，途中没有透明度层。
-      await tester.tap(find.byType(DiaryEditor));
-      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-      await tester.pumpAndSettle();
-      expect(header, findsNothing);
-      tester.view.viewInsets = FakeViewPadding.zero;
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 40));
-      expect(header, findsOneWidget);
-      glass = glassAround(header);
-      expect(revealOf(tester, glass), inExclusiveRange(0, 1));
       expect(fadeLayersBetween(glass, find.byKey(_metaLayer)), isEmpty);
-      await tester.pumpAndSettle();
-      expect(revealOf(tester, glass), 1);
       expect(tester.takeException(), isNull);
       await unmount(tester);
     },
   );
 
   testWidgets(
-    'stacked glass toolbar fades with the rising info panel via its own glass',
+    'the glass toolbar steps aside while the glass info panel is open, so '
+    'the two never stack',
     (tester) async {
       await settings.setDiaryToolbarAlwaysVisible(true);
       await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
       final driver = PublishPanelDriver(tester);
       final toolbar = find.byType(DiaryFloatingToolbar);
       expect(toolbar, findsOneWidget);
-      expect(driver.collapsedHeader, findsOneWidget);
-      final toolbarGlass = glassAround(toolbar);
-      final panelGlass = glassAround(driver.collapsedHeader);
-      // 叠放时两块玻璃不重叠：不会在同一区域叠两层模糊。
-      expect(
-        tester.getRect(toolbarGlass).overlaps(tester.getRect(panelGlass)),
-        isFalse,
-      );
-      expect(revealOf(tester, toolbarGlass), 1);
+      expect(revealOf(tester, glassAround(toolbar)), 1);
+      expect(find.byType(PublishDiaryPanel), findsNothing);
 
-      // 按住收起栏往上拖一点：面板开始升起，工具栏按进度淡出。
-      final gesture = await tester.startGesture(
-        tester.getCenter(driver.collapsedHeader),
-      );
-      // 越过拖动阈值后每步上移 6dp，停在工具栏淡出的半途（进度 0.15 前）。
-      var moved = 0.0;
-      for (var i = 0; i < 12 && revealOf(tester, toolbarGlass) == 1; i++) {
-        await gesture.moveBy(const Offset(0, -6));
-        moved += 6;
-        await tester.pump(const Duration(milliseconds: 16));
-      }
-      expect(toolbar, findsOneWidget);
-      expect(revealOf(tester, toolbarGlass), inExclusiveRange(0, 1));
-      expect(
-        fadeLayersBetween(toolbarGlass, find.byKey(_toolbarLayer)),
-        isEmpty,
-      );
-      await gesture.moveBy(Offset(0, moved));
-      await gesture.up();
+      // 面板挂上时工具栏让位：同一区域不会叠两层模糊。
+      await tester.tap(driver.readingMetaButton);
       await tester.pumpAndSettle();
+      expect(find.byType(PublishDiaryPanel), findsOneWidget);
+      expect(toolbar, findsNothing);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(PublishDiaryPanel), findsNothing);
+      expect(toolbar, findsOneWidget);
       expect(tester.takeException(), isNull);
       await unmount(tester);
     },

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../core/services/app_platform.dart';
@@ -43,6 +44,20 @@ import 'diary_editor_selection_toolbar.dart';
 import 'diary_inline_page.dart';
 import '../diary_link_dialog.dart';
 
+/// 让页面滚动编辑器的虚拟列表（[DiaryEditor.scrollHandle]）：编辑器挂着时由
+/// 它接上，没挂（或是嵌在页面滚动里的只读正文）时什么也不做。
+///
+/// 为什么需要：编辑页的页头、正文与页尾都在 AppFlowy 的虚拟列表里，滚出视口
+/// 的项不会构建，`Scrollable.ensureVisible` 找不到它们；只能按列表下标滚。
+class DiaryEditorScrollHandle {
+  Future<void> Function()? _revealFooter;
+
+  /// 把页尾（footer）的顶边滚到视口顶部，动画时长与曲线取 [ExpressiveMotion]
+  /// （减少动画时直接跳过去）。阅读式编辑页点信息栏里的“N 条留言”时先经它
+  /// 让页尾构建出来，再对齐到留言区。
+  Future<void> revealFooter() => _revealFooter?.call() ?? Future<void>.value();
+}
+
 /// 所有正文位置共用 AppFlowy 渲染与主题。编辑页使用原生虚拟滚动，标题等
 /// 非正文 UI 经 header/footer 装配；只读正文可嵌在预览页的现有滚动视图中。
 class DiaryEditor extends ConsumerStatefulWidget {
@@ -70,6 +85,7 @@ class DiaryEditor extends ConsumerStatefulWidget {
     this.todoToggle = false,
     this.textSelection = true,
     this.autoScrollEdgeOffset = 80,
+    this.scrollHandle,
   });
   final DiaryEditorController controller;
   final DiaryTextAppearance appearance;
@@ -99,6 +115,10 @@ class DiaryEditor extends ConsumerStatefulWidget {
   final bool todoToggle;
   final bool textSelection;
   final double autoScrollEdgeOffset;
+
+  /// 页面按列表下标滚动编辑器（见 [DiaryEditorScrollHandle]）；不需要时为 null。
+  final DiaryEditorScrollHandle? scrollHandle;
+
   @override
   ConsumerState<DiaryEditor> createState() => _DiaryEditorState();
 }
@@ -138,6 +158,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   @override
   void initState() {
     super.initState();
+    widget.scrollHandle?._revealFooter = _revealFooter;
     // 上游的行内属性登记是全局的，必须先于任何编辑器构建（见该函数）。
     ensureDiaryEditorGlobals();
     _bind();
@@ -269,6 +290,10 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   @override
   void didUpdateWidget(DiaryEditor old) {
     super.didUpdateWidget(old);
+    if (old.scrollHandle != widget.scrollHandle) {
+      _detachScrollHandle(old.scrollHandle);
+      widget.scrollHandle?._revealFooter = _revealFooter;
+    }
     if (old.controller != widget.controller ||
         old.shrinkWrap != widget.shrinkWrap ||
         old.scrollController != widget.scrollController ||
@@ -286,6 +311,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
 
   @override
   void dispose() {
+    _detachScrollHandle(widget.scrollHandle);
     widget.focusNode?.removeListener(_onFocus);
     _scroll.dispose();
     _slashMenu.dispose();
@@ -639,6 +665,31 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               child: layer,
             ),
           );
+  }
+
+  void _detachScrollHandle(DiaryEditorScrollHandle? handle) {
+    if (handle != null && handle._revealFooter == _revealFooter) {
+      handle._revealFooter = null;
+    }
+  }
+
+  /// 页尾在虚拟列表里是最后一项：下标 = 页头（有时）+ 顶层块数。
+  Future<void> _revealFooter() async {
+    final items = _scroll.itemScrollController;
+    if (widget.shrinkWrap || !items.isAttached) return;
+    final index =
+        widget.controller.document.root.children.length +
+        (widget.header == null ? 0 : 1);
+    final duration = ExpressiveMotion.duration(context);
+    if (duration == Duration.zero) {
+      items.jumpTo(index: index);
+      return;
+    }
+    await items.scrollTo(
+      index: index,
+      duration: duration,
+      curve: ExpressiveMotion.effects,
+    );
   }
 
   Widget _interactionLayer(af.AppFlowyEditor editor) =>

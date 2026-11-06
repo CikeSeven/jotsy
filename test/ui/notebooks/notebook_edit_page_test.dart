@@ -54,7 +54,10 @@ void main() {
   testWidgets('editing text leaves notebook memberships alone', (tester) async {
     final h = await open(tester);
     final driver = PublishPanelDriver(tester);
+    // 编辑页的信息面板平时不挂载：打开读草稿，再收起继续改正文。
+    await driver.open();
     expect(driver.draft.value.notebookIds, <String>{travel});
+    await driver.close();
 
     // 编辑期间别处把它收进了美食。
     await tester.runAsync(
@@ -73,6 +76,7 @@ void main() {
   ) async {
     final h = await open(tester);
     final driver = PublishPanelDriver(tester);
+    await driver.open();
     driver.draft.setNotebookSelected(work, true);
     await autosave(h);
 

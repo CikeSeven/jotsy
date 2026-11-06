@@ -156,18 +156,25 @@ void main() {
   }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 
   testWidgets(
-    'the desktop edit page stacks the toolbar above the collapsed panel',
+    'the desktop edit page keeps the toolbar and the opened panel in one '
+    'centred column',
     (tester) async {
       await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
+      // 桌面工具栏常显；阅读式编辑页平时不挂信息面板（没有收起栏）。
       expect(toolbar(), findsOneWidget);
-      expect(find.byType(PublishDiaryPanel), findsOneWidget);
-      final bar = tester.getRect(toolbar());
-      final summary = tester.getRect(
-        PublishPanelDriver(tester).collapsedHeader,
-      );
-      expect(bar.bottom, lessThanOrEqualTo(summary.top - 8));
-      // 面板卡片（圆角裁切那一层）与工具栏卡片同宽同边：都是居中的 760。
-      Rect card() => tester.getRect(
+      expect(find.byType(PublishDiaryPanel), findsNothing);
+      final surface = tester.getRect(find.byType(DiaryFloatingToolbarSurface));
+      expect(surface.width, closeTo(760, 0.5));
+      expect(surface.center.dx, closeTo(640, 0.5));
+
+      // 点信息栏打开面板：工具栏让位，面板卡片（圆角裁切那一层）与工具栏
+      // 卡片同宽同边，都是居中的 760。
+      final panel = PublishPanelDriver(tester);
+      await tester.tap(panel.readingMetaButton);
+      await settle(tester);
+      expect(panel.expandedHeader, findsOneWidget);
+      expect(toolbar(), findsNothing);
+      final card = tester.getRect(
         find
             .descendant(
               of: find.byType(PublishDiaryPanel),
@@ -175,19 +182,8 @@ void main() {
             )
             .first,
       );
-      final surface = tester.getRect(find.byType(DiaryFloatingToolbarSurface));
-      expect(surface.width, closeTo(760, 0.5));
-      expect(surface.center.dx, closeTo(640, 0.5));
-      expect(card().left, closeTo(surface.left, 0.5));
-      expect(card().width, closeTo(surface.width, 0.5));
-
-      // 展开后仍是同一列（工具栏让位）。
-      final panel = PublishPanelDriver(tester);
-      await tester.tap(panel.collapsedHeader);
-      await settle(tester);
-      expect(panel.expandedHeader, findsOneWidget);
-      expect(card().left, closeTo(surface.left, 0.5));
-      expect(card().width, closeTo(760, 0.5));
+      expect(card.left, closeTo(surface.left, 0.5));
+      expect(card.width, closeTo(760, 0.5));
       expect(tester.takeException(), isNull);
       await unmount(tester);
     },

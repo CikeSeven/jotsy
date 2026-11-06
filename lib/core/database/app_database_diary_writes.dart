@@ -73,7 +73,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
   /// [capsule] 为 null 时不动时间胶囊两列（编辑页不管胶囊）；否则两列改写为
   /// 给定值，两者都为 null 即取消胶囊。只有刚发表、仍停在发布页的新日记会
   /// 传它：发布页面板里的胶囊与其他信息一样随改随存。
-  Future<void> updateDiary({
+  Future<DateTime> updateDiary({
     required String diaryId,
     required String title,
     required String contentDocJson,
@@ -90,7 +90,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
     final normalizedCover = _normalizeCover(cover);
     final normalizedTagIds = tagIds.toSet().toList();
 
-    await transaction<void>(() async {
+    return transaction<DateTime>(() async {
       final diary = await (select(
         diaries,
       )..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
@@ -130,6 +130,14 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
           chapterIds: notebookChapterIds,
         );
       }
+      // 返回库里实际存下的更新时间（按库的精度，不是内存里的 DateTime.now()）：
+      // 编辑页据此判断回到前台时这篇有没有被别处改过。
+      final stored =
+          await (selectOnly(diaries)
+                ..addColumns(<Expression<Object>>[diaries.updatedAt])
+                ..where(diaries.diaryId.equals(diaryId)))
+              .getSingle();
+      return stored.read(diaries.updatedAt)!;
     });
   }
 

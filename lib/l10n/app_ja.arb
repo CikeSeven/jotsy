@@ -7505,9 +7505,21 @@
   "@settingsOpenDiaryInEditor": {
     "description": "Editor settings: title of the switch that skips the preview page and opens a tapped diary straight in the editor."
   },
-  "settingsOpenDiaryInEditorSubtitle": "日記をタップすると、プレビューを経ずにすぐ編集を始められます。",
+  "settingsOpenDiaryInEditorSubtitle": "日記をタップするとすぐ編集できます。レイアウトはプレビューと同じです。",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "Editor settings: description of the open-in-editor switch."
+  },
+  "diaryReadingEditInfo": "情報を編集",
+  "@diaryReadingEditInfo": {
+    "description": "Reading-style editor: the tappable info bar and the More item that open the details panel (mood, weather, place, tags, time, cover)."
+  },
+  "diaryReadingDone": "完了",
+  "@diaryReadingDone": {
+    "description": "Reading-style editor: top bar button that hides the keyboard and ends editing."
+  },
+  "diaryReadingReloaded": "この日記は別の画面で変更されたため、最新の内容を表示しています。",
+  "@diaryReadingReloaded": {
+    "description": "Reading-style editor: hint shown when returning to the editor after the same diary was changed on another page; the editor now shows the stored version."
   },
   "diaryDayPhotosSetCover": "表紙に設定",
   "@diaryDayPhotosSetCover": {

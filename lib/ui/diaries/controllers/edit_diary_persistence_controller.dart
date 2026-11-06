@@ -42,7 +42,7 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
     }
     // 已有笔记允许暂时清空标题与正文：编辑中的空内容也属于用户的修改，
     // 不应因新建页的非空校验而悄悄恢复旧文。
-    await _state.ref
+    final storedAt = await _state.ref
         .read(appDatabaseProvider)
         .updateDiary(
           diaryId: _state.widget.diaryId!,
@@ -56,6 +56,9 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
           // null：用户没改过日记本，不动关联（仍在的本子保留章节与位置）。
           notebookIds: snapshot.notebookIds,
         );
+    // 阅读式页头页尾按写下的内容刷新（借用的首图、字数、最后编辑于），并记下
+    // 库里这一版的更新时间（回到前台时据此判断别处有没有改过）。
+    _state._onReadingSaved(snapshot, storedAt);
   }
 
   Future<void> attemptExit() async {

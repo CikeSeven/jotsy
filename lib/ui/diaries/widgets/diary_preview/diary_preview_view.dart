@@ -1,9 +1,5 @@
 import 'dart:async';
-import '../../../ai/pages/ai_chat_page.dart';
 import '../../../ai/controllers/ai_reply_flow.dart';
-import '../../../ai/models/ai_preference_parts.dart';
-import '../../../ai/providers/ai_providers.dart';
-import '../../../ai/providers/ai_records_providers.dart';
 
 import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
@@ -12,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
 import '../../../../core/database/app_database.dart';
-import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
@@ -25,6 +20,7 @@ import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_comment_flows.dart';
+import '../../controllers/diary_preview_extras.dart';
 import '../../controllers/diary_preview_edit_flow.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../controllers/diary_tag_search_flow.dart';
@@ -32,16 +28,13 @@ import '../../controllers/diary_todo_autosave_controller.dart';
 import '../../models/diary_preview_result.dart';
 import '../../models/time_capsule.dart';
 import '../../pages/locked_diary_page.dart';
-import '../../providers/diary_comments_provider.dart';
 import '../../providers/diary_detail_provider.dart';
-import '../../providers/diary_link_providers.dart';
 import '../../providers/diary_mood_palette_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../../sections/diary_typography_sheet.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 import '../diary_comments/diary_comments_section.dart';
-import '../diary_link/diary_backlinks_section.dart';
 import 'diary_preview_actions_sheet.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
@@ -238,6 +231,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       ref,
       widget.diaryId,
       caret: caret,
+      // 编辑页与预览页同一版式：直接用手上的数据渲染首帧，不先出加载页。
+      initialDetail: _currentDetail,
     );
     if (mounted && deleted) {
       _finishDeleted();
@@ -263,63 +258,6 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       if (!mounted) return;
     }
     await writeDiaryComment(context, ref, diary: diary);
-  }
-
-  /// 留言区的数据与动作；留言功能关闭、日记在回收站或首次读取还没返回时为
-  /// null（不显示留言区）。截取分享长图期间同样为 null：分享不带留言。
-  ///
-  /// 截图期间仍然订阅留言：只是不交给正文，截完立刻原样回来，不必重新读取。
-  DiaryPreviewComments? _resolveComments(Diary diary) {
-    if (!ref.watch(diaryCommentsEnabledProvider) || diary.isDeleted) {
-      return null;
-    }
-    final rows = ref.watch(diaryCommentsProvider(widget.diaryId)).value;
-    if (rows == null || _export.capturingLongImage) return null;
-    return DiaryPreviewComments(
-      diaryCreatedAt: diary.createdAt,
-      comments: rows,
-      sectionKey: _commentsKey,
-      actions: DiaryCommentActions(
-        onWrite: () => unawaited(_writeComment(diary)),
-        onEdit: (comment) =>
-            unawaited(editDiaryComment(context, ref, comment: comment)),
-        onCopy: (comment) => unawaited(copyDiaryComment(context, comment)),
-        onDelete: (comment) =>
-            unawaited(deleteDiaryComment(context, ref, comment: comment)),
-      ),
-    );
-  }
-
-  /// “AI 回应”区与“更多 → AI 回应”是否出现：AI 可用且回应模块开启、日记
-  /// 不在回收站、私密日记只在用户允许时。分享长图期间回应区不显示（由
-  /// [_resolveAiReplies] 另外判断），“更多”里照常有。
-  bool _aiReplyAvailable(Diary diary) {
-    if (diary.isDeleted) return false;
-    if (!ref.watch(aiModuleAvailableProvider(AiModule.reply))) return false;
-    if (ref.watch(
-      aiPreferencesProvider.select((p) => p.privacy.allowPrivate),
-    )) {
-      return true;
-    }
-    final private = ref.watch(aiPrivateDiaryIdsProvider).value;
-    return private != null && !private.contains(widget.diaryId);
-  }
-
-  String? _resolveAiReplies(Diary diary) =>
-      _aiReplyAvailable(diary) && !_export.capturingLongImage
-      ? widget.diaryId
-      : null;
-
-  /// “提到这篇的日记”；日记在回收站、截取分享长图期间或没有日记提到它时
-  /// 为 null（不显示）。未解封的胶囊不建正文，这一块随正文一起不出现。
-  DiaryPreviewBacklinks? _resolveBacklinks(Diary diary) {
-    if (diary.isDeleted) return null;
-    final target = DiaryLinkTarget.diary(widget.diaryId);
-    final items = ref.watch(diaryPreviewBacklinksProvider(target)).value;
-    if (items == null || items.isEmpty || _export.capturingLongImage) {
-      return null;
-    }
-    return DiaryPreviewBacklinks(target: target, items: items);
   }
 
   Future<void> _deleteDiary() async {
@@ -448,9 +386,16 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
         ? ref.watch(diaryNotebooksProvider(widget.diaryId)).value ??
               const <NotebookView>[]
         : const <NotebookView>[];
-    final comments = _resolveComments(detail.diary);
-    final canComment =
-        ref.watch(diaryCommentsEnabledProvider) && !detail.diary.isDeleted;
+    final capturing = _export.capturingLongImage;
+    final comments = DiaryPreviewExtras.comments(
+      context,
+      ref,
+      diary: detail.diary,
+      sectionKey: _commentsKey,
+      onWrite: () => unawaited(_writeComment(detail.diary)),
+      suppressed: capturing,
+    );
+    final canComment = DiaryPreviewExtras.canComment(ref, detail.diary);
     return DiaryPreviewSurface(
       resolved: resolved,
       scrollController: _scrollController,
@@ -472,17 +417,17 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           paging: widget.paging,
           notebooks: notebooks,
           comments: comments,
-          backlinks: _resolveBacklinks(detail.diary),
-          aiRepliesFor: _resolveAiReplies(detail.diary),
-          onAiContinueChat: ref.watch(aiModuleAvailableProvider(AiModule.chat))
-              ? (AiResultRow reply) => unawaited(
-                  Navigator.of(context).push<void>(
-                    MaterialPageRoute<void>(
-                      builder: (_) => AiChatPage(seedReply: reply),
-                    ),
-                  ),
-                )
-              : null,
+          backlinks: DiaryPreviewExtras.backlinks(
+            ref,
+            detail.diary,
+            suppressed: capturing,
+          ),
+          aiRepliesFor: DiaryPreviewExtras.aiRepliesFor(
+            ref,
+            detail.diary,
+            suppressed: capturing,
+          ),
+          onAiContinueChat: DiaryPreviewExtras.aiContinueChat(context, ref),
           onOpenNotebook: notebooksEnabled
               ? (NotebookView notebook) =>
                     unawaited(openNotebookFromAnywhere(context, ref, notebook))
@@ -512,7 +457,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               onWriteComment: canComment
                   ? () => _writeComment(detail.diary, reveal: true)
                   : null,
-              onAiReply: _aiReplyAvailable(detail.diary)
+              onAiReply: DiaryPreviewExtras.aiReplyAvailable(ref, detail.diary)
                   ? () => requestAiReply(context, ref, diaryId: widget.diaryId)
                   : null,
             ),

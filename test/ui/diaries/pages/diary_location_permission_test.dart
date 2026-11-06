@@ -105,6 +105,8 @@ void main() {
           await tester.tap(find.text('Open'));
           await tester.pumpAndSettle();
           final panel = PublishPanelDriver(tester);
+          // 编辑页的信息面板平时不挂载（发布页里已挂着，这一步不做什么）。
+          await panel.open();
           final l10n = panel.l10n;
 
           panel.resolveLocation();

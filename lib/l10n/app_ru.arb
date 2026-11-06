@@ -7505,9 +7505,21 @@
   "@settingsOpenDiaryInEditor": {
     "description": "Editor settings: title of the switch that skips the preview page and opens a tapped diary straight in the editor."
   },
-  "settingsOpenDiaryInEditorSubtitle": "Нажатие на запись сразу открывает редактор, без страницы просмотра.",
+  "settingsOpenDiaryInEditorSubtitle": "Нажатие на запись сразу открывает её для правки — в том же оформлении, что и просмотр.",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "Editor settings: description of the open-in-editor switch."
+  },
+  "diaryReadingEditInfo": "Изменить сведения",
+  "@diaryReadingEditInfo": {
+    "description": "Reading-style editor: the tappable info bar and the More item that open the details panel (mood, weather, place, tags, time, cover)."
+  },
+  "diaryReadingDone": "Готово",
+  "@diaryReadingDone": {
+    "description": "Reading-style editor: top bar button that hides the keyboard and ends editing."
+  },
+  "diaryReadingReloaded": "Запись изменили в другом месте — показана последняя версия.",
+  "@diaryReadingReloaded": {
+    "description": "Reading-style editor: hint shown when returning to the editor after the same diary was changed on another page; the editor now shows the stored version."
   },
   "diaryDayPhotosSetCover": "Сделать обложкой",
   "@diaryDayPhotosSetCover": {

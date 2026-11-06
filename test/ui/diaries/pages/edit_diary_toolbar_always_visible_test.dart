@@ -13,6 +13,8 @@ import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
+
 import '../../../support/publish_panel_driver.dart';
 
 /// 编辑器设置“始终显示工具栏”：接实体键盘时软键盘不弹出，工具栏也要在。
@@ -139,46 +141,41 @@ void main() {
   );
 
   testWidgets(
-    'the edit page stacks the toolbar above the collapsed info panel when the keyboard is down',
+    'the edit page keeps the toolbar at the bottom with no panel bar when the keyboard is down',
     (tester) async {
       await settings.setDiaryToolbarAlwaysVisible(true);
       await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
-      final panel = PublishPanelDriver(tester);
 
-      // 键盘收起：工具栏与收起栏同时在，工具栏在收起栏上方、不重叠。
+      // 键盘收起：工具栏常驻底部；阅读式编辑页不留信息面板的收起栏。
       expect(toolbar(), findsOneWidget);
-      expect(panel.collapsedHeader, findsOneWidget);
-      final summaryTop = tester.getTopLeft(panel.collapsedHeader).dy;
+      expect(find.byType(PublishDiaryPanel), findsNothing);
       expect(
         tester.getBottomLeft(toolbar()).dy,
-        lessThanOrEqualTo(summaryTop - 8),
+        moreOrLessEquals(900 - 8, epsilon: 0.5),
       );
-      // 留白同时让开工具栏与光标空隙。
+      // 留白让开工具栏与光标空隙。
       expect(
         editorBottomPadding(tester),
         greaterThanOrEqualTo(900 - tester.getTopLeft(toolbar()).dy + 40),
       );
       final toolbarState = tester.state(toolbar());
 
-      // 点进正文、软键盘弹起：与默认一致，只剩工具栏贴着键盘。
+      // 点进正文、软键盘弹起：工具栏贴着键盘。
       await tester.tap(find.byType(DiaryEditor));
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       await tester.pumpAndSettle();
-      expect(panel.collapsedHeader, findsNothing);
       expect(toolbar(), findsOneWidget);
       expect(
         tester.getBottomLeft(toolbar()).dy,
         moreOrLessEquals(900 - 300 - 8, epsilon: 0.5),
       );
 
-      // 键盘收起：收起栏回来，工具栏升回它上方；工具栏没有被重建（「更多」
-      // 与颜色面板的状态还在）。
+      // 键盘收起：工具栏回到底部，没有被重建（「更多」与颜色面板的状态还在）。
       tester.view.viewInsets = FakeViewPadding.zero;
       await tester.pumpAndSettle();
-      expect(panel.collapsedHeader, findsOneWidget);
       expect(
         tester.getBottomLeft(toolbar()).dy,
-        lessThanOrEqualTo(tester.getTopLeft(panel.collapsedHeader).dy - 8),
+        moreOrLessEquals(900 - 8, epsilon: 0.5),
       );
       expect(identical(tester.state(toolbar()), toolbarState), isTrue);
       expect(tester.takeException(), isNull);
@@ -225,7 +222,7 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('expanding the info panel hides the stacked toolbar', (
+  testWidgets('the info panel hides the toolbar until it is collapsed', (
     tester,
   ) async {
     await settings.setDiaryToolbarAlwaysVisible(true);
@@ -233,27 +230,29 @@ void main() {
     final panel = PublishPanelDriver(tester);
     expect(toolbar(), findsOneWidget);
 
-    await panel.expand();
+    await panel.open();
     expect(panel.expandedHeader, findsOneWidget);
     expect(toolbar(), findsNothing);
 
-    // 系统返回先收起面板。
+    // 系统返回先收起面板：收回到底后面板卸载，工具栏回来。
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(panel.collapsedHeader, findsOneWidget);
+    expect(find.byType(PublishDiaryPanel), findsNothing);
     expect(toolbar(), findsOneWidget);
     expect(tester.takeException(), isNull);
     await unmount(tester);
   });
 
-  testWidgets('by default the edit page keeps only the info panel', (
-    tester,
-  ) async {
-    await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
-    await tester.tap(find.byType(DiaryEditor));
-    await tester.pumpAndSettle();
-    expect(PublishPanelDriver(tester).collapsedHeader, findsOneWidget);
-    expect(toolbar(), findsNothing);
-    await unmount(tester);
-  });
+  testWidgets(
+    'by default the edit page shows neither the toolbar nor a panel bar '
+    'without a keyboard',
+    (tester) async {
+      await pumpPage(tester, EditDiaryPage(diaryId: diaryId));
+      await tester.tap(find.byType(DiaryEditor));
+      await tester.pumpAndSettle();
+      expect(find.byType(PublishDiaryPanel), findsNothing);
+      expect(toolbar(), findsNothing);
+      await unmount(tester);
+    },
+  );
 }

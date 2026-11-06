@@ -34,6 +34,7 @@ Future<DiaryShareRequest?> showDiaryShareSheet(
   required DiaryShareOptions initialOptions,
   required ValueChanged<DiaryShareOptions> onOptionsChanged,
   required Future<Set<DiaryShareTarget>> availableTargets,
+  bool longImage = true,
 }) {
   return showAppModalBottomSheet<DiaryShareRequest>(
     context: context,
@@ -51,6 +52,7 @@ Future<DiaryShareRequest?> showDiaryShareSheet(
       initialOptions: initialOptions,
       onOptionsChanged: onOptionsChanged,
       availableTargets: availableTargets,
+      longImage: longImage,
     ),
   );
 }
@@ -62,12 +64,17 @@ class DiaryShareSheet extends StatefulWidget {
     required this.initialOptions,
     required this.onOptionsChanged,
     required this.availableTargets,
+    this.longImage = true,
   });
 
   final DiaryShareContent content;
   final DiaryShareOptions initialOptions;
   final ValueChanged<DiaryShareOptions> onOptionsChanged;
   final Future<Set<DiaryShareTarget>> availableTargets;
+
+  /// 是否提供“长图”与“长图存到相册”（“更多”一组）。阅读式编辑页没有可
+  /// 截取的整页阅读视图，传 false 时整组不出现。
+  final bool longImage;
 
   @override
   State<DiaryShareSheet> createState() => _DiaryShareSheetState();
@@ -196,39 +203,41 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
                 hasImages: hasImages,
               ),
             ),
-            const SizedBox(height: AppSpacing.l),
-            DiarySheetSectionHeader(
-              icon: FontAwesomeIcons.ellipsis,
-              label: l10n.diaryShareMoreSection,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.s,
+            if (widget.longImage) ...<Widget>[
+              const SizedBox(height: AppSpacing.l),
+              DiarySheetSectionHeader(
+                icon: FontAwesomeIcons.ellipsis,
+                label: l10n.diaryShareMoreSection,
               ),
-              leading: const FaIcon(FontAwesomeIcons.image, size: 16),
-              title: Text(
-                AppPlatform.isDesktop
-                    ? l10n.diaryShareLongImageSave
-                    : l10n.diaryShareLongImage,
-              ),
-              subtitle: Text(l10n.diaryShareLongImageSubtitle),
-              onTap: () => Navigator.of(
-                context,
-              ).pop(const DiaryShareRequest.longImage()),
-            ),
-            if (AppPlatform.savesImagesToGallery)
+              const SizedBox(height: AppSpacing.xs),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.s,
                 ),
-                leading: const FaIcon(FontAwesomeIcons.download, size: 16),
-                title: Text(l10n.diaryShareLongImageToGallery),
-                subtitle: Text(l10n.diaryShareLongImageToGallerySubtitle),
+                leading: const FaIcon(FontAwesomeIcons.image, size: 16),
+                title: Text(
+                  AppPlatform.isDesktop
+                      ? l10n.diaryShareLongImageSave
+                      : l10n.diaryShareLongImage,
+                ),
+                subtitle: Text(l10n.diaryShareLongImageSubtitle),
                 onTap: () => Navigator.of(
                   context,
-                ).pop(const DiaryShareRequest.saveLongImage()),
+                ).pop(const DiaryShareRequest.longImage()),
               ),
+              if (AppPlatform.savesImagesToGallery)
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s,
+                  ),
+                  leading: const FaIcon(FontAwesomeIcons.download, size: 16),
+                  title: Text(l10n.diaryShareLongImageToGallery),
+                  subtitle: Text(l10n.diaryShareLongImageToGallerySubtitle),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).pop(const DiaryShareRequest.saveLongImage()),
+                ),
+            ],
           ],
         ),
       ),

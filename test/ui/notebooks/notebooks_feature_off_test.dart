@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
@@ -330,20 +331,22 @@ void main() {
         await h.settleAll();
         final driver = PublishPanelDriver(tester);
 
-        // 草稿里仍读回所在的本子（数据保留），只是不显示。
-        expect(driver.draft.value.notebookIds, <String>{travel});
+        // 页头信息栏（阅读式编辑页没有收起栏）里的日记本胶囊随功能显隐。
         expect(
           find.descendant(
-            of: driver.collapsedHeader,
+            of: find.byType(DiaryPreviewMeta),
             matching: find.textContaining('旅行'),
           ),
           enabled ? findsOneWidget : findsNothing,
         );
         await driver.expand();
+        // 草稿里仍读回所在的本子（数据保留），只是不显示。
+        expect(driver.draft.value.notebookIds, <String>{travel});
         expect(
           find.byType(PublishNotebookTile),
           enabled ? findsOneWidget : findsNothing,
         );
+        await driver.close();
 
         // 改正文自动保存：收录原样保留。
         await tester.enterText(find.widgetWithText(TextField, '在京都'), '在大阪');

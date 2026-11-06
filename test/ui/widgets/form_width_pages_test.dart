@@ -29,7 +29,7 @@ void main() {
     _PageCase(
       'settings root',
       page: (_) => const Scaffold(body: SettingsPage()),
-      content: () => find.byType(Card).first,
+      content: cardGroupColumn,
       hasTopBar: false,
     ),
     _PageCase(

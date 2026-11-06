@@ -8,7 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/lan_sync/models/lan_sync_view_state.dart';
 import 'package:node_diary/ui/lan_sync/pages/lan_sync_page.dart';
 import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
-import 'package:node_diary/ui/settings/pages/data_privacy_page.dart';
+import 'package:node_diary/ui/settings/sections/settings_home_groups.dart';
 import 'package:node_diary/ui/settings/sections/settings_lan_sync_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,7 +17,7 @@ import '../../support/fake_lan_sync_controller.dart';
 import '../lan_sync/lan_sync_test_harness.dart';
 import '../notebooks/notebook_test_support.dart' show FakeDeviceAuth;
 
-Future<void> _pumpDataPrivacy(
+Future<void> _pumpDataSecurityGroup(
   WidgetTester tester,
   FakeLanSyncController controller,
 ) async {
@@ -39,7 +39,7 @@ Future<void> _pumpDataPrivacy(
           data: MediaQuery.of(context).copyWith(disableAnimations: true),
           child: child!,
         ),
-        home: const DataPrivacyPage(),
+        home: const Scaffold(body: SettingsDataSecurityGroup()),
       ),
     ),
   );
@@ -66,18 +66,18 @@ Future<void> _pumpTile(
 
 void main() {
   testWidgets(
-    'data & privacy lists LAN sync below data management where supported',
+    'data & security lists LAN sync between data management and app lock',
     (tester) async {
       final controller = FakeLanSyncController(
         const LanSyncViewState(local: lanSyncTestLocal),
       );
-      await _pumpDataPrivacy(tester, controller);
+      await _pumpDataSecurityGroup(tester, controller);
 
       expect(find.text('局域网同步'), findsOneWidget);
       final management = tester.getTopLeft(find.text('数据管理'));
       final lanSync = tester.getTopLeft(find.text('局域网同步'));
       expect(lanSync.dy, greaterThan(management.dy));
-      expect(lanSync.dy, lessThan(tester.getTopLeft(find.text('草稿箱')).dy));
+      expect(lanSync.dy, lessThan(tester.getTopLeft(find.text('应用锁与密码')).dy));
 
       await tester.tap(find.text('局域网同步'));
       await tester.pumpAndSettle();
@@ -89,7 +89,7 @@ void main() {
   testWidgets(
     'LAN sync entry also shows on desktop',
     (tester) async {
-      await _pumpDataPrivacy(
+      await _pumpDataSecurityGroup(
         tester,
         FakeLanSyncController(const LanSyncViewState(local: lanSyncTestLocal)),
       );
@@ -102,7 +102,7 @@ void main() {
   );
 
   testWidgets('LAN sync entry is hidden on iOS', (tester) async {
-    await _pumpDataPrivacy(
+    await _pumpDataSecurityGroup(
       tester,
       FakeLanSyncController(const LanSyncViewState(local: lanSyncTestLocal)),
     );

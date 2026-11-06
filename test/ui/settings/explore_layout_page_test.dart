@@ -9,7 +9,7 @@ import 'package:node_diary/ui/app_surface/services/app_background_image_cache.da
 import 'package:node_diary/ui/explore/models/explore_module_id.dart';
 import 'package:node_diary/ui/explore/models/explore_settings.dart';
 import 'package:node_diary/ui/explore/sections/explore_content_view.dart';
-import 'package:node_diary/ui/settings/pages/appearance_language_page.dart';
+import 'package:node_diary/ui/settings/pages/appearance_page.dart';
 import 'package:node_diary/ui/settings/pages/explore_layout_page.dart';
 import 'package:node_diary/ui/settings/sections/explore_layout/explore_layout_cards_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,7 +74,7 @@ void main() {
             theme: expressiveTestTheme(Brightness.light),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const AppearanceLanguagePage(),
+            home: const AppearancePage(),
           ),
         ),
       );

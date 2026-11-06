@@ -11,7 +11,7 @@ import '../sections/app_surface/app_surface_preview.dart';
 import '../widgets/style_editor/style_editor_common.dart';
 import '../widgets/style_editor/style_editor_scaffold.dart';
 
-/// 设置 → 外观与语言 → 背景与材质。
+/// 设置 → 外观 → 背景与材质。
 ///
 /// 页面壳层：上方是实时预览（一块缩小的手机页面，见 [AppSurfacePreview]），
 /// 下方两个标签页——背景（全局与各区域的背景）与玻璃（组件材质）；布局与

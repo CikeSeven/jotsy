@@ -115,12 +115,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTitle => '设置';
 
   @override
-  String get settingsThemeMode => '主题模式';
-
-  @override
-  String get settingsThemeColor => '主题';
-
-  @override
   String get settingsFontScale => '字体大小';
 
   @override
@@ -165,12 +159,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsLanguage => '语言';
 
   @override
-  String get settingsLanguageSubtitle => '切换应用语言';
-
-  @override
-  String get settingsAppearanceLanguage => '外观与语言';
-
-  @override
   String get settingsAppLock => '应用锁';
 
   @override
@@ -201,19 +189,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsEditorTitle => '编辑器设置';
 
   @override
-  String get settingsEditorSubtitle => '字体、行距、工具栏与心情符号';
-
-  @override
-  String get settingsEditorGroup => '编辑器';
-
-  @override
-  String get settingsEditorToolsGroup => '工具栏与心情';
+  String get settingsEditorSubtitle => '字体排版、工具栏与代码块';
 
   @override
   String get settingsMoodOptionsTitle => '心情符号';
-
-  @override
-  String get settingsMoodOptionsSubtitle => '自定义 10 个心情的符号与颜色';
 
   @override
   String settingsMoodOptionsSlotLabel(String index) {
@@ -240,25 +219,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get settingsDataPrivacy => '数据与隐私';
-
-  @override
-  String get settingsDataPrivacySubtitle => '管理备份、应用锁与回收站';
-
-  @override
-  String get settingsDataPrivacyTitle => '数据与隐私';
-
-  @override
   String get settingsDataManagement => '数据管理';
 
   @override
-  String get settingsDataManagementSubtitle => '导入/导出备份与日记文件';
+  String get settingsDataManagementSubtitle => '备份与恢复、导入导出、网盘备份';
 
   @override
   String get settingsTagManagement => '标签管理';
-
-  @override
-  String get settingsTagManagementSubtitle => '删除标签会自动解除与日记的关联关系';
 
   @override
   String get settingsTagMemory => '标签记忆';
@@ -270,13 +237,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsRecycleBin => '回收站';
 
   @override
-  String get settingsRecycleBinSubtitle => '管理已删除日记，可恢复或彻底删除';
-
-  @override
   String get settingsAbout => '关于';
-
-  @override
-  String get settingsAboutSubtitle => '应用信息、项目地址与版本信息';
 
   @override
   String get languageDialogTitle => '选择语言';
@@ -1546,8 +1507,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get videoPosterHint => '点按用系统播放器打开';
 
   @override
-  String get deviceAuthUnavailable =>
-      '这台设备没有系统身份验证。在 设置 → 数据与隐私 → 应用锁与密码 里设置应用密码后即可上锁';
+  String get deviceAuthUnavailable => '这台设备没有系统身份验证。在 设置 → 应用锁与密码 里设置应用密码后即可上锁';
 
   @override
   String get calendarYearSaveImage => '保存这一年的图片…';
@@ -5447,9 +5407,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryDraftsTitle => '草稿箱';
 
   @override
-  String get diaryDraftsSettingsSubtitle => '未发布的新建日记，可继续编辑或删除';
-
-  @override
   String get diaryDraftsEmpty => '还没有草稿。写到一半离开的新日记会自动存在这里';
 
   @override
@@ -6342,9 +6299,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookTitle => '日记本';
 
   @override
-  String get notebookSettingsSubtitle => '整理、排序、合并你的日记本';
-
-  @override
   String get notebookNew => '新建日记本';
 
   @override
@@ -6819,7 +6773,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      '这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码，或在 设置 → 数据与隐私 → 应用锁与密码 里改用应用密码后就能打开。';
+      '这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码，或在 设置 → 应用锁与密码 里改用应用密码后就能打开。';
 
   @override
   String get notebookLockUnsupportedAction => '知道了';
@@ -10089,7 +10043,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lanSyncFirstUseStep1 => '两台设备连上同一个 Wi-Fi';
 
   @override
-  String get lanSyncFirstUseStep2 => '在另一台设备上打开 设置 › 数据与隐私 › 局域网同步';
+  String get lanSyncFirstUseStep2 => '在另一台设备上打开 设置 › 局域网同步';
 
   @override
   String get lanSyncFirstUseStep3 => '在「附近的设备」里点「配对」，或扫码连接';
@@ -12954,4 +12908,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appLockStatusOff => '未开启';
+
+  @override
+  String get settingsGroupGeneral => '通用';
+
+  @override
+  String get settingsGroupWriting => '写日记';
+
+  @override
+  String get settingsGroupOrganize => '整理';
+
+  @override
+  String get settingsGroupDataSecurity => '数据与安全';
+
+  @override
+  String get settingsAppearance => '外观';
+
+  @override
+  String get settingsAppearanceSubtitle => '主题、背景与各页样式';
+
+  @override
+  String get settingsEditor => '编辑器';
+
+  @override
+  String get settingsThemeGroup => '主题';
+
+  @override
+  String get settingsInterfaceGroup => '界面';
+
+  @override
+  String get settingsPageStylesGroup => '页面样式';
+
+  @override
+  String get settingsEditorBodyGroup => '正文';
+
+  @override
+  String get settingsEditorToolbarGroup => '工具栏';
+
+  @override
+  String get settingsEditorBehaviorGroup => '编辑行为';
+
+  @override
+  String get dataMgmtBackupGroup => '备份与恢复';
+
+  @override
+  String get dataMgmtFilesGroup => '导入导出';
 }

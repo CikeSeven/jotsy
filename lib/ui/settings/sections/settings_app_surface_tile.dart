@@ -8,7 +8,7 @@ import '../../app_surface/models/app_surface_settings.dart';
 import '../pages/app_surface_page.dart';
 import 'app_surface/app_surface_labels.dart';
 
-/// 外观与语言页的“背景与材质”入口。
+/// 外观页“页面样式”组里的“背景与材质”入口。
 ///
 /// 副标题概括当前状态（“默认”“图片背景 · 玻璃组件”“经典组件 · 3 个区域
 /// 单独设置”等，见 [appSurfaceEntrySummary]），跟随 raw notifier 实时更新

@@ -14,4 +14,4 @@
 - 必须：输错限流：第 5 次输错起依次要等 30 秒、1 分、5 分，之后每次 15 分。次数与截止时刻写在同一个键里，杀进程不会清零；系统时钟往回调时，截止时刻收回到“现在 + 当前档位”。输对或指纹通过后清零。界面倒数与存储共用 `appPasscodeClockProvider`。上锁日记本的重锁遮罩在应用密码方式下不按“连续两次”退回全部日记，由这里统一限流。
 - 必须：没有找回途径（用户的决定），设置页底部与锁屏上的“忘记密码？”都要明确说明：只能清除应用数据或重装，再从备份恢复。
 - 必须：平台差异只经 `AppPlatform`。`supportsDeviceAuth`（系统验证）不含 Linux；`supportsBiometricOnly`（只认生物识别的快捷解锁）只有 Android、iOS、macOS，Windows Hello 不支持 `biometricOnly`。“这台设备能不能上锁”看 `identityVerificationPossible`：设了应用密码，或平台有系统验证。Linux 设了应用密码后，应用锁与上锁日记本都能用。
-- 必须：设置入口为 设置 → 数据与隐私 → 应用锁与密码（`SettingsAppLockTile` → `AppLockSettingsPage`），操作编排在 `AppLockSettingsFlow`，输入状态在 `PasscodeEntryController`（解锁）与 `PasscodeSetupController`（两步设置），界面规格见 DESIGN.md §5.31。
+- 必须：设置入口为 设置首页「数据与安全」组 → 应用锁与密码（`SettingsAppLockTile` → `AppLockSettingsPage`），操作编排在 `AppLockSettingsFlow`，输入状态在 `PasscodeEntryController`（解锁）与 `PasscodeSetupController`（两步设置），界面规格见 DESIGN.md §5.31。

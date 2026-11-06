@@ -7,7 +7,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diary_templates/widgets/diary_template_strip.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_editor_page.dart';
-import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
+import 'package:node_diary/ui/settings/sections/settings_home_groups.dart';
 import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 
 import '../../support/diary_drafts_harness.dart';
@@ -181,49 +181,45 @@ void main() {
   });
 
   group('settings', () {
-    Future<void> pumpSection(DiaryDraftsHarness h) async {
+    // 日记模板行在设置首页“写日记”组：编辑器、日记模板、草稿箱。
+    Future<void> pumpGroup(DiaryDraftsHarness h) async {
       await h.pump(
         Scaffold(
-          body: ListView(
-            children: <Widget>[
-              SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
-            ],
-          ),
+          body: ListView(children: const <Widget>[SettingsWritingGroup()]),
         ),
       );
       await h.tester.pumpAndSettle();
     }
 
-    Finder editorGroupDividers() => find.descendant(
+    Finder groupDividers() => find.descendant(
       of: find.byType(SettingsCardGroup).first,
       matching: find.byType(Divider),
     );
 
-    testWidgets('templates off: editor settings has no templates entry', (
+    testWidgets('templates off: the settings home has no templates row', (
       tester,
     ) async {
       final h = await harness(tester, featuresRaw: templatesOff);
-      await pumpSection(h);
+      await pumpGroup(h);
 
       expect(find.text(h.l10n.diaryTemplatesTitle), findsNothing);
-      // 同组只剩四项（排版、代码块样式、打开日记时直接编辑、当天照片），
-      // 之间三条分隔线（不留空占位多出来的那条）。
-      expect(editorGroupDividers(), findsNWidgets(3));
+      // 同组只剩编辑器与草稿箱，之间一条分隔线（不留空占位多出来的那条）。
+      expect(groupDividers(), findsNWidgets(1));
       await h.unmount();
     });
 
-    testWidgets('turning templates back on brings the entry back', (
+    testWidgets('turning templates back on brings the row back', (
       tester,
     ) async {
       final h = await harness(tester, featuresRaw: templatesOff);
-      await pumpSection(h);
+      await pumpGroup(h);
       expect(find.text(h.l10n.diaryTemplatesTitle), findsNothing);
 
       await h.settings.setAppFeaturesRaw(null);
       await h.settle();
       await tester.pumpAndSettle();
       expect(find.text(h.l10n.diaryTemplatesTitle), findsOneWidget);
-      expect(editorGroupDividers(), findsNWidgets(4));
+      expect(groupDividers(), findsNWidgets(2));
       await h.unmount();
     });
   });

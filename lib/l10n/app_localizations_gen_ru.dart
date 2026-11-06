@@ -127,12 +127,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsTitle => 'Настройки';
 
   @override
-  String get settingsThemeMode => 'Тема';
-
-  @override
-  String get settingsThemeColor => 'Цвет темы';
-
-  @override
   String get settingsFontScale => 'Размер шрифта';
 
   @override
@@ -188,12 +182,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsLanguage => 'Язык';
 
   @override
-  String get settingsLanguageSubtitle => 'Сменить язык приложения';
-
-  @override
-  String get settingsAppearanceLanguage => 'Оформление и язык';
-
-  @override
   String get settingsAppLock => 'Блокировка приложения';
 
   @override
@@ -229,19 +217,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsEditorSubtitle =>
-      'Шрифты, интервалы, панель инструментов и эмодзи настроения';
-
-  @override
-  String get settingsEditorGroup => 'Редактор';
-
-  @override
-  String get settingsEditorToolsGroup => 'Панель инструментов и настроение';
+      'Шрифты, вёрстка, панель инструментов и блоки кода';
 
   @override
   String get settingsMoodOptionsTitle => 'Эмодзи настроения';
-
-  @override
-  String get settingsMoodOptionsSubtitle => 'Эмодзи и цвета для 10 настроений';
 
   @override
   String settingsMoodOptionsSlotLabel(String index) {
@@ -268,28 +247,14 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get settingsDataPrivacy => 'Данные и конфиденциальность';
-
-  @override
-  String get settingsDataPrivacySubtitle =>
-      'Резервные копии, блокировка приложения и корзина';
-
-  @override
-  String get settingsDataPrivacyTitle => 'Данные и конфиденциальность';
-
-  @override
   String get settingsDataManagement => 'Управление данными';
 
   @override
   String get settingsDataManagementSubtitle =>
-      'Импорт и экспорт резервных копий и файлов записей';
+      'Резервные копии, импорт, экспорт и облако';
 
   @override
   String get settingsTagManagement => 'Управление тегами';
-
-  @override
-  String get settingsTagManagementSubtitle =>
-      'Удаление тега лишь убирает его из записей';
 
   @override
   String get settingsTagMemory => 'Запоминать теги';
@@ -302,14 +267,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsRecycleBin => 'Корзина';
 
   @override
-  String get settingsRecycleBinSubtitle =>
-      'Восстановление или окончательное удаление записей';
-
-  @override
   String get settingsAbout => 'О приложении';
-
-  @override
-  String get settingsAboutSubtitle => 'Информация, репозиторий и версия';
 
   @override
   String get languageDialogTitle => 'Выберите язык';
@@ -1635,7 +1593,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get deviceAuthUnavailable =>
-      'На этом устройстве нет системной проверки. Чтобы использовать блокировку, задайте код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код';
+      'На этом устройстве нет системной проверки. Чтобы использовать блокировку, задайте код приложения в разделе Настройки → Блокировка и код';
 
   @override
   String get calendarYearSaveImage => 'Сохранить этот год как изображение…';
@@ -6187,10 +6145,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryDraftsTitle => 'Черновики';
 
   @override
-  String get diaryDraftsSettingsSubtitle =>
-      'Неопубликованные записи: можно дописать или удалить';
-
-  @override
   String get diaryDraftsEmpty =>
       'Черновиков пока нет. Сюда попадают новые записи, закрытые до публикации';
 
@@ -7229,10 +7183,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notebookTitle => 'Блокноты';
 
   @override
-  String get notebookSettingsSubtitle =>
-      'Упорядочивайте, сортируйте и объединяйте блокноты';
-
-  @override
   String get notebookNew => 'Новый блокнот';
 
   @override
@@ -7786,7 +7736,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Настройте блокировку экрана в системных настройках или перейдите на код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код.';
+      'На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Настройте блокировку экрана в системных настройках или перейдите на код приложения в разделе Настройки → Блокировка и код.';
 
   @override
   String get notebookLockUnsupportedAction => 'Понятно';
@@ -11671,7 +11621,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get lanSyncFirstUseStep2 =>
-      'На другом устройстве откройте «Настройки › Данные и конфиденциальность › Синхронизация по локальной сети»';
+      'На другом устройстве откройте «Настройки › Синхронизация по локальной сети»';
 
   @override
   String get lanSyncFirstUseStep3 =>
@@ -15055,4 +15005,49 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get appLockStatusOff => 'Выкл.';
+
+  @override
+  String get settingsGroupGeneral => 'Общие';
+
+  @override
+  String get settingsGroupWriting => 'Написание';
+
+  @override
+  String get settingsGroupOrganize => 'Организация';
+
+  @override
+  String get settingsGroupDataSecurity => 'Данные и безопасность';
+
+  @override
+  String get settingsAppearance => 'Оформление';
+
+  @override
+  String get settingsAppearanceSubtitle => 'Тема, фон и стили страниц';
+
+  @override
+  String get settingsEditor => 'Редактор';
+
+  @override
+  String get settingsThemeGroup => 'Тема';
+
+  @override
+  String get settingsInterfaceGroup => 'Интерфейс';
+
+  @override
+  String get settingsPageStylesGroup => 'Стили страниц';
+
+  @override
+  String get settingsEditorBodyGroup => 'Текст записи';
+
+  @override
+  String get settingsEditorToolbarGroup => 'Панель инструментов';
+
+  @override
+  String get settingsEditorBehaviorGroup => 'Поведение';
+
+  @override
+  String get dataMgmtBackupGroup => 'Резервное копирование';
+
+  @override
+  String get dataMgmtFilesGroup => 'Импорт и экспорт';
 }

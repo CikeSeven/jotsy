@@ -20,7 +20,7 @@ import '../../widgets/form_width.dart';
 import '../controllers/app_lock_settings_flow.dart';
 import '../controllers/identity_verifier.dart';
 
-/// 设置 → 数据与隐私 → 应用锁与密码（DESIGN.md §5.31）。
+/// 设置 → 应用锁与密码（设置首页“数据与安全”组，DESIGN.md §5.31）。
 ///
 /// 页面只装配：开关与选项的改动经 [AppLockSettingsFlow]（先验证再改）。
 ///

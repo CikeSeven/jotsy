@@ -115,12 +115,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsTitle => '設定';
 
   @override
-  String get settingsThemeMode => '表示モード';
-
-  @override
-  String get settingsThemeColor => 'テーマカラー';
-
-  @override
   String get settingsFontScale => '文字サイズ';
 
   @override
@@ -165,12 +159,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsLanguage => '言語';
 
   @override
-  String get settingsLanguageSubtitle => 'アプリの言語を切り替え';
-
-  @override
-  String get settingsAppearanceLanguage => '外観と言語';
-
-  @override
   String get settingsAppLock => 'アプリロック';
 
   @override
@@ -202,19 +190,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsEditorTitle => 'エディター';
 
   @override
-  String get settingsEditorSubtitle => 'フォント、行間、ツールバー、気分の絵文字';
-
-  @override
-  String get settingsEditorGroup => 'エディター';
-
-  @override
-  String get settingsEditorToolsGroup => 'ツールバーと気分';
+  String get settingsEditorSubtitle => 'フォントとレイアウト、ツールバー、コードブロック';
 
   @override
   String get settingsMoodOptionsTitle => '気分の絵文字';
-
-  @override
-  String get settingsMoodOptionsSubtitle => '10種類の気分の絵文字と色をカスタマイズ';
 
   @override
   String settingsMoodOptionsSlotLabel(String index) {
@@ -241,25 +220,14 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get settingsDataPrivacy => 'データとプライバシー';
-
-  @override
-  String get settingsDataPrivacySubtitle => 'バックアップ、アプリロック、ゴミ箱を管理';
-
-  @override
-  String get settingsDataPrivacyTitle => 'データとプライバシー';
-
-  @override
   String get settingsDataManagement => 'データ管理';
 
   @override
-  String get settingsDataManagementSubtitle => 'バックアップや日記ファイルのインポート／エクスポート';
+  String get settingsDataManagementSubtitle =>
+      'バックアップと復元、インポート／エクスポート、クラウドバックアップ';
 
   @override
   String get settingsTagManagement => 'タグ管理';
-
-  @override
-  String get settingsTagManagementSubtitle => 'タグを削除しても、日記との関連付けが解除されるだけです';
 
   @override
   String get settingsTagMemory => 'タグを記憶';
@@ -271,13 +239,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsRecycleBin => 'ゴミ箱';
 
   @override
-  String get settingsRecycleBinSubtitle => '削除した日記を復元、または完全に削除';
-
-  @override
   String get settingsAbout => 'このアプリについて';
-
-  @override
-  String get settingsAboutSubtitle => 'アプリ情報、リポジトリ、バージョン';
 
   @override
   String get languageDialogTitle => '言語を選択';
@@ -1558,7 +1520,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get deviceAuthUnavailable =>
-      'この端末にはシステムの認証がありません。設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードを設定するとロックできます';
+      'この端末にはシステムの認証がありません。設定 → アプリロックとパスコード でアプリのパスコードを設定するとロックできます';
 
   @override
   String get calendarYearSaveImage => 'この1年を画像として保存…';
@@ -5552,9 +5514,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryDraftsTitle => '下書き';
 
   @override
-  String get diaryDraftsSettingsSubtitle => '投稿前の日記。続きを書いたり削除したりできます';
-
-  @override
   String get diaryDraftsEmpty => '下書きはまだありません。投稿せずに閉じた新しい日記は、ここに自動で保存されます';
 
   @override
@@ -6460,9 +6419,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notebookTitle => '日記帳';
 
   @override
-  String get notebookSettingsSubtitle => '日記帳の整理、並べ替え、統合';
-
-  @override
   String get notebookNew => '新しい日記帳';
 
   @override
@@ -6939,7 +6895,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードに切り替えると開けるようになります。';
+      'このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、設定 → アプリロックとパスコード でアプリのパスコードに切り替えると開けるようになります。';
 
   @override
   String get notebookLockUnsupportedAction => 'わかりました';
@@ -10243,8 +10199,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lanSyncFirstUseStep1 => '両方のデバイスを同じ Wi-Fi に接続します';
 
   @override
-  String get lanSyncFirstUseStep2 =>
-      'もう一方のデバイスで「設定 › データとプライバシー › LAN 同期」を開きます';
+  String get lanSyncFirstUseStep2 => 'もう一方のデバイスで「設定 › LAN 同期」を開きます';
 
   @override
   String get lanSyncFirstUseStep3 => '「近くのデバイス」で「ペアリング」をタップするか、QR コードをスキャンします';
@@ -13197,4 +13152,49 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appLockStatusOff => 'オフ';
+
+  @override
+  String get settingsGroupGeneral => '一般';
+
+  @override
+  String get settingsGroupWriting => '書く';
+
+  @override
+  String get settingsGroupOrganize => '整理';
+
+  @override
+  String get settingsGroupDataSecurity => 'データとセキュリティ';
+
+  @override
+  String get settingsAppearance => '外観';
+
+  @override
+  String get settingsAppearanceSubtitle => 'テーマ、背景、各画面のスタイル';
+
+  @override
+  String get settingsEditor => 'エディター';
+
+  @override
+  String get settingsThemeGroup => 'テーマ';
+
+  @override
+  String get settingsInterfaceGroup => '画面';
+
+  @override
+  String get settingsPageStylesGroup => '画面のスタイル';
+
+  @override
+  String get settingsEditorBodyGroup => '本文';
+
+  @override
+  String get settingsEditorToolbarGroup => 'ツールバー';
+
+  @override
+  String get settingsEditorBehaviorGroup => '動作';
+
+  @override
+  String get dataMgmtBackupGroup => 'バックアップと復元';
+
+  @override
+  String get dataMgmtFilesGroup => 'インポートとエクスポート';
 }

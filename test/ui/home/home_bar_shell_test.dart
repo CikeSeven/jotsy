@@ -30,6 +30,7 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_indicator.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 import 'package:node_diary/ui/widgets/page_header.dart';
@@ -241,13 +242,9 @@ double _tagBarBottom(WidgetTester tester) => tester
     )
     .bottom;
 
-/// 设置页第一张入口卡片（外观与语言）。
-Finder _firstSettingsCard(WidgetTester tester) => find
-    .ancestor(
-      of: find.text(_l10n(tester).settingsAppearanceLanguage),
-      matching: find.byType(Card),
-    )
-    .first;
+/// 设置页第一个分组（通用，含组标题）。
+Finder _firstSettingsCard(WidgetTester tester) =>
+    find.byType(SettingsCardGroup).first;
 
 void main() {
   testWidgets('the default style keeps the solid bar under the body', (

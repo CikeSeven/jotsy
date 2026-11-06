@@ -294,18 +294,6 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTitle;
 
-  /// Auto-generated metadata for settingsThemeMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme'**
-  String get settingsThemeMode;
-
-  /// Title for theme color picker in settings.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme'**
-  String get settingsThemeColor;
-
   /// Title for font size setting in settings.
   ///
   /// In en, this message translates to:
@@ -390,18 +378,6 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get settingsLanguage;
 
-  /// Auto-generated metadata for settingsLanguageSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch app language'**
-  String get settingsLanguageSubtitle;
-
-  /// Settings group title for appearance and language section.
-  ///
-  /// In en, this message translates to:
-  /// **'Appearance & Language'**
-  String get settingsAppearanceLanguage;
-
   /// Title for app lock switch in settings.
   ///
   /// In en, this message translates to:
@@ -465,32 +441,14 @@ abstract class AppLocalizations {
   /// Subtitle for editor settings entry on root settings page.
   ///
   /// In en, this message translates to:
-  /// **'Fonts, spacing, toolbar, and mood emojis'**
+  /// **'Fonts, layout, toolbar and code blocks'**
   String get settingsEditorSubtitle;
-
-  /// Settings group title for editor-related options.
-  ///
-  /// In en, this message translates to:
-  /// **'Editor'**
-  String get settingsEditorGroup;
-
-  /// Settings group title for editor toolbar and mood options.
-  ///
-  /// In en, this message translates to:
-  /// **'Toolbar & mood'**
-  String get settingsEditorToolsGroup;
 
   /// Setting title for customizing the fixed 10 mood emojis.
   ///
   /// In en, this message translates to:
   /// **'Mood emojis'**
   String get settingsMoodOptionsTitle;
-
-  /// Subtitle for mood emoji setting entry.
-  ///
-  /// In en, this message translates to:
-  /// **'Customize the emoji and color of 10 moods'**
-  String get settingsMoodOptionsSubtitle;
 
   /// Label for one mood emoji input slot.
   ///
@@ -522,24 +480,6 @@ abstract class AppLocalizations {
   /// **'Save mood emojis failed: {error}'**
   String settingsMoodOptionsSaveFailed(String error);
 
-  /// Settings entry label for data and privacy section.
-  ///
-  /// In en, this message translates to:
-  /// **'Data & Privacy'**
-  String get settingsDataPrivacy;
-
-  /// Settings entry subtitle for data and privacy section.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage backups, app lock, and recycle bin'**
-  String get settingsDataPrivacySubtitle;
-
-  /// Secondary page title for data and privacy.
-  ///
-  /// In en, this message translates to:
-  /// **'Data & Privacy'**
-  String get settingsDataPrivacyTitle;
-
   /// Auto-generated metadata for settingsDataManagement.
   ///
   /// In en, this message translates to:
@@ -549,7 +489,7 @@ abstract class AppLocalizations {
   /// Auto-generated metadata for settingsDataManagementSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Import/export backups and diary files'**
+  /// **'Backup and restore, import and export, cloud backup'**
   String get settingsDataManagementSubtitle;
 
   /// Auto-generated metadata for settingsTagManagement.
@@ -557,12 +497,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tag Management'**
   String get settingsTagManagement;
-
-  /// Auto-generated metadata for settingsTagManagementSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Deleting a tag only unlinks it from diaries'**
-  String get settingsTagManagementSubtitle;
 
   /// Setting title for enabling or disabling remembered diary tag filters.
   ///
@@ -582,23 +516,11 @@ abstract class AppLocalizations {
   /// **'Recycle Bin'**
   String get settingsRecycleBin;
 
-  /// Auto-generated metadata for settingsRecycleBinSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore or permanently remove deleted diaries'**
-  String get settingsRecycleBinSubtitle;
-
   /// Auto-generated metadata for settingsAbout.
   ///
   /// In en, this message translates to:
   /// **'About'**
   String get settingsAbout;
-
-  /// Auto-generated metadata for settingsAboutSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'App info, repo, and version'**
-  String get settingsAboutSubtitle;
 
   /// Auto-generated metadata for languageDialogTitle.
   ///
@@ -2877,7 +2799,7 @@ abstract class AppLocalizations {
   /// Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux).
   ///
   /// In en, this message translates to:
-  /// **'This device has no system verification. Set an app passcode in Settings → Data & Privacy → App lock & passcode to use locking'**
+  /// **'This device has no system verification. Set an app passcode in Settings → App lock & passcode to use locking'**
   String get deviceAuthUnavailable;
 
   /// Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image.
@@ -10002,12 +9924,6 @@ abstract class AppLocalizations {
   /// **'Drafts'**
   String get diaryDraftsTitle;
 
-  /// Subtitle of the drafts entry in Settings → Data & privacy.
-  ///
-  /// In en, this message translates to:
-  /// **'Unpublished entries you can keep writing or delete'**
-  String get diaryDraftsSettingsSubtitle;
-
   /// Empty state of the drafts page.
   ///
   /// In en, this message translates to:
@@ -11616,12 +11532,6 @@ abstract class AppLocalizations {
   /// **'Notebooks'**
   String get notebookTitle;
 
-  /// Subtitle of the Notebooks entry on the settings home.
-  ///
-  /// In en, this message translates to:
-  /// **'Organize, reorder and merge your notebooks'**
-  String get notebookSettingsSubtitle;
-
   /// Create a notebook: editor title, buttons and the shelf's new tile.
   ///
   /// In en, this message translates to:
@@ -12477,7 +12387,7 @@ abstract class AppLocalizations {
   /// Explanation when opening a locked notebook on a device without a screen lock.
   ///
   /// In en, this message translates to:
-  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → Data & Privacy → App lock & passcode.'**
+  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → App lock & passcode.'**
   String get notebookLockUnsupportedMessage;
 
   /// Dialog button that opens the notebook settings when a locked notebook can't be verified.
@@ -18453,7 +18363,7 @@ abstract class AppLocalizations {
   /// First-use step 2.
   ///
   /// In en, this message translates to:
-  /// **'On the other device, open Settings › Data & Privacy › LAN sync'**
+  /// **'On the other device, open Settings › LAN sync'**
   String get lanSyncFirstUseStep2;
 
   /// First-use step 3.
@@ -23526,7 +23436,7 @@ abstract class AppLocalizations {
   /// **'Fingerprint or face verification failed'**
   String get passcodeBiometricFailed;
 
-  /// Settings row (Data & Privacy) and page title for app lock and the verification method.
+  /// Settings row (Data & security group) and page title for app lock and the verification method.
   ///
   /// In en, this message translates to:
   /// **'App lock & passcode'**
@@ -23621,6 +23531,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Off'**
   String get appLockStatusOff;
+
+  /// Settings home group title: appearance, language and feature toggles.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsGroupGeneral;
+
+  /// Settings home group title: editor, diary templates and drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing'**
+  String get settingsGroupWriting;
+
+  /// Settings home group title: tags, moods, notebooks and recycle bin.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize'**
+  String get settingsGroupOrganize;
+
+  /// Settings home group title: data management, LAN sync and app lock.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & security'**
+  String get settingsGroupDataSecurity;
+
+  /// Settings home row and page title for appearance settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// Settings home row subtitle summarizing the appearance page.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, background and page styles'**
+  String get settingsAppearanceSubtitle;
+
+  /// Settings home row title that opens the editor settings page.
+  ///
+  /// In en, this message translates to:
+  /// **'Editor'**
+  String get settingsEditor;
+
+  /// Appearance page group title: light/dark mode and theme color.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeGroup;
+
+  /// Appearance page group title: font size and tab switch curve.
+  ///
+  /// In en, this message translates to:
+  /// **'Interface'**
+  String get settingsInterfaceGroup;
+
+  /// Appearance page group title: background, navigation bar, diary card, preview page and explore styles.
+  ///
+  /// In en, this message translates to:
+  /// **'Page styles'**
+  String get settingsPageStylesGroup;
+
+  /// Editor settings group title: body font, layout and code block style.
+  ///
+  /// In en, this message translates to:
+  /// **'Body text'**
+  String get settingsEditorBodyGroup;
+
+  /// Editor settings group title: toolbar order, size and visibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Toolbar'**
+  String get settingsEditorToolbarGroup;
+
+  /// Editor settings group title: open diaries in the editor and day photo suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Behavior'**
+  String get settingsEditorBehaviorGroup;
+
+  /// Data management group title: full backup export, import and cloud backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup & restore'**
+  String get dataMgmtBackupGroup;
+
+  /// Data management group title: export diaries and import from other apps.
+  ///
+  /// In en, this message translates to:
+  /// **'Import & export'**
+  String get dataMgmtFilesGroup;
 }
 
 class _AppLocalizationsDelegate

@@ -17,8 +17,9 @@ import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
-/// 数据管理页面：完整备份导出、导入（合并或覆盖）、从其他日记应用导入与
-/// 网盘备份入口。
+/// 数据管理页面（设置首页“数据与安全”组）：「备份与恢复」组为完整备份
+/// 导出、导入（合并或覆盖）与网盘备份入口，「导入导出」组为导出日记与从
+/// 其他日记应用导入。
 ///
 /// 只负责装配与忙碌/提示出口，导出导入流程见 [DataManagementController]，
 /// 其他应用的导入流程见 [JournalImportController]。
@@ -103,6 +104,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                       padding: EdgeInsets.fromLTRB(side, 12, side, 24),
                       children: <Widget>[
                         SettingsCardGroup(
+                          title: context.l10n.dataMgmtBackupGroup,
                           children: <Widget>[
                             ListTile(
                               contentPadding: const EdgeInsets.symmetric(
@@ -123,6 +125,61 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                               ),
                               onTap: _controller.exportAll,
                             ),
+                            ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              leading: const FaIcon(
+                                FontAwesomeIcons.fileImport,
+                                size: 16,
+                              ),
+                              title: Text(context.l10n.dataMgmtImport),
+                              subtitle: Text(
+                                context.l10n.dataMgmtImportSubtitle,
+                              ),
+                              trailing: const FaIcon(
+                                FontAwesomeIcons.angleRight,
+                                size: 14,
+                              ),
+                              onTap: _controller.importData,
+                            ),
+                            ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              leading: const FaIcon(
+                                FontAwesomeIcons.cloudArrowUp,
+                                size: 16,
+                              ),
+                              title: Text(context.l10n.dataMgmtCloudBackup),
+                              subtitle: Text(
+                                context.l10n.dataMgmtCloudBackupSubtitle,
+                              ),
+                              trailing: const FaIcon(
+                                FontAwesomeIcons.angleRight,
+                                size: 14,
+                              ),
+                              onTap: () {
+                                if (_busy) {
+                                  return;
+                                }
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (BuildContext context) {
+                                      return const CloudBackupPage();
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        SettingsCardGroup(
+                          title: context.l10n.dataMgmtFilesGroup,
+                          children: <Widget>[
                             ListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -159,25 +216,6 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                                 vertical: 4,
                               ),
                               leading: const FaIcon(
-                                FontAwesomeIcons.fileImport,
-                                size: 16,
-                              ),
-                              title: Text(context.l10n.dataMgmtImport),
-                              subtitle: Text(
-                                context.l10n.dataMgmtImportSubtitle,
-                              ),
-                              trailing: const FaIcon(
-                                FontAwesomeIcons.angleRight,
-                                size: 14,
-                              ),
-                              onTap: _controller.importData,
-                            ),
-                            ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
-                              ),
-                              leading: const FaIcon(
                                 FontAwesomeIcons.rightToBracket,
                                 size: 16,
                               ),
@@ -190,36 +228,6 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                                 size: 14,
                               ),
                               onTap: _journalImport.importFromApp,
-                            ),
-                            ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
-                              ),
-                              leading: const FaIcon(
-                                FontAwesomeIcons.cloudArrowUp,
-                                size: 16,
-                              ),
-                              title: Text(context.l10n.dataMgmtCloudBackup),
-                              subtitle: Text(
-                                context.l10n.dataMgmtCloudBackupSubtitle,
-                              ),
-                              trailing: const FaIcon(
-                                FontAwesomeIcons.angleRight,
-                                size: 14,
-                              ),
-                              onTap: () {
-                                if (_busy) {
-                                  return;
-                                }
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (BuildContext context) {
-                                      return const CloudBackupPage();
-                                    },
-                                  ),
-                                );
-                              },
                             ),
                           ],
                         ),

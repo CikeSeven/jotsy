@@ -10,7 +10,7 @@ import '../../explore/models/explore_settings.dart';
 import '../pages/explore_layout_page.dart';
 import 'explore_layout/explore_layout_labels.dart';
 
-/// 外观与语言页的“探索页”入口（只在探索 Tab 开启时由页面放进分组）。
+/// 外观页“页面样式”组里的“探索页”入口（只在探索 Tab 开启时由页面放进分组）。
 ///
 /// 副标题显示当前布局的名字：内置布局名、我的布局名或“自定义”，跟随 raw
 /// notifier 实时更新（从自定义页返回、恢复备份后都会刷新）。

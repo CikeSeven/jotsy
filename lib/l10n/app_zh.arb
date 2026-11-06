@@ -153,14 +153,6 @@
   "@settingsTitle": {
     "description": "Auto-generated metadata for settingsTitle."
   },
-  "settingsThemeMode": "主题模式",
-  "@settingsThemeMode": {
-    "description": "Auto-generated metadata for settingsThemeMode."
-  },
-  "settingsThemeColor": "主题",
-  "@settingsThemeColor": {
-    "description": "设置页主题色选择模块标题。"
-  },
   "settingsFontScale": "字体大小",
   "@settingsFontScale": {
     "description": "设置页字体大小设置项标题。"
@@ -222,14 +214,6 @@
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."
   },
-  "settingsLanguageSubtitle": "切换应用语言",
-  "@settingsLanguageSubtitle": {
-    "description": "Auto-generated metadata for settingsLanguageSubtitle."
-  },
-  "settingsAppearanceLanguage": "外观与语言",
-  "@settingsAppearanceLanguage": {
-    "description": "Settings group title for appearance and language section."
-  },
   "settingsAppLock": "应用锁",
   "@settingsAppLock": {
     "description": "设置页应用锁开关标题。"
@@ -270,25 +254,13 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
-  "settingsEditorSubtitle": "字体、行距、工具栏与心情符号",
+  "settingsEditorSubtitle": "字体排版、工具栏与代码块",
   "@settingsEditorSubtitle": {
     "description": "设置首页“编辑器”入口的副标题。"
-  },
-  "settingsEditorGroup": "编辑器",
-  "@settingsEditorGroup": {
-    "description": "Settings group title for editor-related options."
-  },
-  "settingsEditorToolsGroup": "工具栏与心情",
-  "@settingsEditorToolsGroup": {
-    "description": "设置项分组标题：编辑器工具栏排序与心情选项。"
   },
   "settingsMoodOptionsTitle": "心情符号",
   "@settingsMoodOptionsTitle": {
     "description": "设置项：自定义发布/编辑面板中固定 10 个心情符号。"
-  },
-  "settingsMoodOptionsSubtitle": "自定义 10 个心情的符号与颜色",
-  "@settingsMoodOptionsSubtitle": {
-    "description": "心情符号设置入口副标题。"
   },
   "settingsMoodOptionsSlotLabel": "心情 {index}",
   "@settingsMoodOptionsSlotLabel": {
@@ -330,33 +302,17 @@
     },
     "description": "心情符号设置保存失败提示。"
   },
-  "settingsDataPrivacy": "数据与隐私",
-  "@settingsDataPrivacy": {
-    "description": "Settings entry label for data and privacy section."
-  },
-  "settingsDataPrivacySubtitle": "管理备份、应用锁与回收站",
-  "@settingsDataPrivacySubtitle": {
-    "description": "Settings entry subtitle for data and privacy section."
-  },
-  "settingsDataPrivacyTitle": "数据与隐私",
-  "@settingsDataPrivacyTitle": {
-    "description": "Secondary page title for data and privacy."
-  },
   "settingsDataManagement": "数据管理",
   "@settingsDataManagement": {
     "description": "Auto-generated metadata for settingsDataManagement."
   },
-  "settingsDataManagementSubtitle": "导入/导出备份与日记文件",
+  "settingsDataManagementSubtitle": "备份与恢复、导入导出、网盘备份",
   "@settingsDataManagementSubtitle": {
     "description": "Auto-generated metadata for settingsDataManagementSubtitle."
   },
   "settingsTagManagement": "标签管理",
   "@settingsTagManagement": {
     "description": "Auto-generated metadata for settingsTagManagement."
-  },
-  "settingsTagManagementSubtitle": "删除标签会自动解除与日记的关联关系",
-  "@settingsTagManagementSubtitle": {
-    "description": "Auto-generated metadata for settingsTagManagementSubtitle."
   },
   "settingsTagMemory": "标签记忆",
   "@settingsTagMemory": {
@@ -370,17 +326,9 @@
   "@settingsRecycleBin": {
     "description": "Auto-generated metadata for settingsRecycleBin."
   },
-  "settingsRecycleBinSubtitle": "管理已删除日记，可恢复或彻底删除",
-  "@settingsRecycleBinSubtitle": {
-    "description": "Auto-generated metadata for settingsRecycleBinSubtitle."
-  },
   "settingsAbout": "关于",
   "@settingsAbout": {
     "description": "Auto-generated metadata for settingsAbout."
-  },
-  "settingsAboutSubtitle": "应用信息、项目地址与版本信息",
-  "@settingsAboutSubtitle": {
-    "description": "Auto-generated metadata for settingsAboutSubtitle."
   },
   "languageDialogTitle": "选择语言",
   "@languageDialogTitle": {
@@ -2162,7 +2110,7 @@
   "@videoOpenExternally": {"description": "不能在日记里直接播放视频的平台（Linux、Windows）：视频卡片的提示与按钮说明。"},
   "videoPosterHint": "点按用系统播放器打开",
   "@videoPosterHint": {"description": "不能在日记里直接播放视频的平台：视频封面卡片下方的说明。"},
-  "deviceAuthUnavailable": "这台设备没有系统身份验证。在 设置 → 数据与隐私 → 应用锁与密码 里设置应用密码后即可上锁",
+  "deviceAuthUnavailable": "这台设备没有系统身份验证。在 设置 → 应用锁与密码 里设置应用密码后即可上锁",
   "@deviceAuthUnavailable": {"description": "设备不支持系统身份验证（如 Linux）时，应用锁开关与日记本“上锁”选项下方的说明。"},
   "calendarYearSaveImage": "保存这一年的图片…",
   "@calendarYearSaveImage": {"description": "不能调起系统分享的平台（如 Linux）上，年视图导出按钮的提示：把年视图保存为图片。"},
@@ -7681,10 +7629,6 @@
   "@diaryDraftsTitle": {
     "description": "草稿箱页面标题，也是首页顶栏与设置里的入口名称。"
   },
-  "diaryDraftsSettingsSubtitle": "未发布的新建日记，可继续编辑或删除",
-  "@diaryDraftsSettingsSubtitle": {
-    "description": "设置 → 数据与隐私里草稿箱入口的说明。"
-  },
   "diaryDraftsEmpty": "还没有草稿。写到一半离开的新日记会自动存在这里",
   "@diaryDraftsEmpty": {
     "description": "草稿箱为空时的提示。"
@@ -8994,10 +8938,6 @@
   "@notebookTitle": {
     "description": "日记本功能的标题：书架面板、管理页与设置入口。"
   },
-  "notebookSettingsSubtitle": "整理、排序、合并你的日记本",
-  "@notebookSettingsSubtitle": {
-    "description": "设置首页“日记本”入口的副标题。"
-  },
   "notebookNew": "新建日记本",
   "@notebookNew": {
     "description": "新建日记本：编辑页标题、按钮与书架末尾的新建格子。"
@@ -9684,7 +9624,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "设备没有锁屏密码、无法打开上锁日记本时的对话框标题。"
   },
-  "notebookLockUnsupportedMessage": "这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码，或在 设置 → 数据与隐私 → 应用锁与密码 里改用应用密码后就能打开。",
+  "notebookLockUnsupportedMessage": "这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码，或在 设置 → 应用锁与密码 里改用应用密码后就能打开。",
   "@notebookLockUnsupportedMessage": {
     "description": "设备没有锁屏密码时打开上锁日记本的说明。"
   },
@@ -12849,11 +12789,11 @@
   },
   "settingsExploreLayout": "探索页",
   "@settingsExploreLayout": {
-    "description": "设置 → 外观与语言：探索页入口：探索页。"
+    "description": "设置 → 外观：探索页入口：探索页。"
   },
   "settingsExploreLayoutSubtitle": "当前：{name}",
   "@settingsExploreLayoutSubtitle": {
-    "description": "设置 → 外观与语言：探索页入口副标题（当前布局名）。",
+    "description": "设置 → 外观：探索页入口副标题（当前布局名）。",
     "placeholders": {
       "name": {
         "type": "String"
@@ -13976,7 +13916,7 @@
   "@lanSyncFirstUseStep1": {
     "description": "First-use step 1."
   },
-  "lanSyncFirstUseStep2": "在另一台设备上打开 设置 › 数据与隐私 › 局域网同步",
+  "lanSyncFirstUseStep2": "在另一台设备上打开 设置 › 局域网同步",
   "@lanSyncFirstUseStep2": {
     "description": "First-use step 2."
   },
@@ -17864,7 +17804,7 @@
   "passcodeBiometricFailed": "指纹或面容验证未通过",
   "@passcodeBiometricFailed": {"description": "开启快速解锁时指纹验证未通过的提示条。"},
   "settingsAppLockAndPasscode": "应用锁与密码",
-  "@settingsAppLockAndPasscode": {"description": "数据与隐私里的设置行与页面标题：应用锁与验证方式。"},
+  "@settingsAppLockAndPasscode": {"description": "设置首页“数据与安全”组里的设置行与页面标题：应用锁与验证方式。"},
   "appLockMethodTitle": "验证方式",
   "@appLockMethodTitle": {"description": "选择验证方式的分组标题。"},
   "appLockMethodFooter": "应用锁、上锁的日记本与局域网配对确认都使用这种方式验证。",
@@ -17899,5 +17839,35 @@
   "appLockStatusOffPasscode": "未开启 · 上锁的日记本使用应用密码",
   "@appLockStatusOffPasscode": {"description": "设置行副标题：应用锁未开启，但设了应用密码（上锁的日记本使用）。"},
   "appLockStatusOff": "未开启",
-  "@appLockStatusOff": {"description": "设置行副标题：应用锁未开启。"}
+  "@appLockStatusOff": {"description": "设置行副标题：应用锁未开启。"},
+  "settingsGroupGeneral": "通用",
+  "@settingsGroupGeneral": {"description": "Settings home group title: appearance, language and feature toggles."},
+  "settingsGroupWriting": "写日记",
+  "@settingsGroupWriting": {"description": "Settings home group title: editor, diary templates and drafts."},
+  "settingsGroupOrganize": "整理",
+  "@settingsGroupOrganize": {"description": "Settings home group title: tags, moods, notebooks and recycle bin."},
+  "settingsGroupDataSecurity": "数据与安全",
+  "@settingsGroupDataSecurity": {"description": "Settings home group title: data management, LAN sync and app lock."},
+  "settingsAppearance": "外观",
+  "@settingsAppearance": {"description": "Settings home row and page title for appearance settings."},
+  "settingsAppearanceSubtitle": "主题、背景与各页样式",
+  "@settingsAppearanceSubtitle": {"description": "Settings home row subtitle summarizing the appearance page."},
+  "settingsEditor": "编辑器",
+  "@settingsEditor": {"description": "Settings home row title that opens the editor settings page."},
+  "settingsThemeGroup": "主题",
+  "@settingsThemeGroup": {"description": "Appearance page group title: light/dark mode and theme color."},
+  "settingsInterfaceGroup": "界面",
+  "@settingsInterfaceGroup": {"description": "Appearance page group title: font size and tab switch curve."},
+  "settingsPageStylesGroup": "页面样式",
+  "@settingsPageStylesGroup": {"description": "Appearance page group title: background, navigation bar, diary card, preview page and explore styles."},
+  "settingsEditorBodyGroup": "正文",
+  "@settingsEditorBodyGroup": {"description": "Editor settings group title: body font, layout and code block style."},
+  "settingsEditorToolbarGroup": "工具栏",
+  "@settingsEditorToolbarGroup": {"description": "Editor settings group title: toolbar order, size and visibility."},
+  "settingsEditorBehaviorGroup": "编辑行为",
+  "@settingsEditorBehaviorGroup": {"description": "Editor settings group title: open diaries in the editor and day photo suggestions."},
+  "dataMgmtBackupGroup": "备份与恢复",
+  "@dataMgmtBackupGroup": {"description": "Data management group title: full backup export, import and cloud backup."},
+  "dataMgmtFilesGroup": "导入导出",
+  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."}
 }

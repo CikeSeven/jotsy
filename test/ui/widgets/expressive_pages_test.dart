@@ -12,6 +12,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_header.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
+import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,7 +85,7 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          expect(find.byType(Card), findsAtLeastNWidgets(4));
+          expect(find.byType(SettingsCardGroup), findsAtLeastNWidgets(3));
           expect(tester.takeException(), isNull);
           if (locale == 'zh') {
             await _preview(tester, 'settings-${brightness.name}');

@@ -8,7 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_settings.dart';
 import 'package:node_diary/ui/app_surface/services/app_background_image_cache.dart';
 import 'package:node_diary/ui/settings/pages/app_surface_page.dart';
-import 'package:node_diary/ui/settings/pages/appearance_language_page.dart';
+import 'package:node_diary/ui/settings/pages/appearance_page.dart';
 import 'package:node_diary/ui/settings/sections/app_surface/app_surface_area_chips.dart';
 import 'package:node_diary/ui/settings/sections/app_surface/app_surface_labels.dart';
 import 'package:node_diary/ui/settings/sections/app_surface/app_surface_preview.dart';
@@ -109,7 +109,7 @@ void main() {
   ) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final settings = (await tester.runAsync(SettingsService.create))!;
-    await tester.pumpWidget(_app(settings, const AppearanceLanguagePage()));
+    await tester.pumpWidget(_app(settings, const AppearancePage()));
     await tester.pumpAndSettle();
     final l10n = AppLocalizations.of(tester.element(find.byType(Scaffold)));
     final entry = find.byType(SettingsAppSurfaceTile);

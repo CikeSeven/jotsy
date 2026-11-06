@@ -9,13 +9,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/diary_drafts_harness.dart';
 
-/// 编辑器设置分组：“新建时提示选择模板”开关只留在模板管理页，这里只保留
-/// “日记模板”入口；“始终显示工具栏”开关默认关，切换后写入本机偏好；
+/// 编辑器设置：「正文」「工具栏」「编辑行为」三组，日记模板与心情符号在设置
+/// 首页（“新建时提示选择模板”开关只在模板管理页）；“始终显示工具栏”开关默认关，切换后写入本机偏好；
 /// “打开日记时直接编辑”默认关，写进预览页的阅读行为；“工具栏大小”默认
 /// 标准，点选即写入本机偏好，不进备份。
 void main() {
   testWidgets(
-    'editor settings no longer shows the template suggestion switch but keeps the templates entry',
+    'editor settings groups body text, toolbar and behavior; templates and moods live on the settings home',
     (tester) async {
       final h = await DiaryDraftsHarness.create(tester);
       await h.pump(
@@ -29,7 +29,22 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(h.l10n.diaryTemplatesTitle), findsOneWidget);
+      final groups = <String>[
+        h.l10n.settingsEditorBodyGroup,
+        h.l10n.settingsEditorToolbarGroup,
+        h.l10n.settingsEditorBehaviorGroup,
+      ];
+      for (var i = 0; i < groups.length; i++) {
+        expect(find.text(groups[i]), findsOneWidget);
+        if (i > 0) {
+          expect(
+            tester.getTopLeft(find.text(groups[i])).dy,
+            greaterThan(tester.getTopLeft(find.text(groups[i - 1])).dy),
+          );
+        }
+      }
+      expect(find.text(h.l10n.diaryTemplatesTitle), findsNothing);
+      expect(find.text(h.l10n.settingsMoodOptionsTitle), findsNothing);
       expect(
         find.ancestor(
           of: find.text(h.l10n.diaryTemplatesStripSwitch),
@@ -192,7 +207,7 @@ void main() {
       expect(find.text(h.l10n.settingsToolbarAlwaysVisible), findsNothing);
       // Linux 不支持录音：工具栏预览里也没有它。
       expect(find.textContaining(h.l10n.diaryToolbarRecording), findsNothing);
-      expect(find.text(h.l10n.diaryTemplatesTitle), findsOneWidget);
+      expect(find.text(h.l10n.diaryToolbarSizeTitle), findsOneWidget);
       await h.unmount();
     },
     variant: TargetPlatformVariant.only(TargetPlatform.linux),

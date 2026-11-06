@@ -153,14 +153,6 @@
   "@settingsTitle": {
     "description": "Auto-generated metadata for settingsTitle."
   },
-  "settingsThemeMode": "Тема",
-  "@settingsThemeMode": {
-    "description": "Auto-generated metadata for settingsThemeMode."
-  },
-  "settingsThemeColor": "Цвет темы",
-  "@settingsThemeColor": {
-    "description": "Title for theme color picker in settings."
-  },
   "settingsFontScale": "Размер шрифта",
   "@settingsFontScale": {
     "description": "Title for font size setting in settings."
@@ -222,14 +214,6 @@
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."
   },
-  "settingsLanguageSubtitle": "Сменить язык приложения",
-  "@settingsLanguageSubtitle": {
-    "description": "Auto-generated metadata for settingsLanguageSubtitle."
-  },
-  "settingsAppearanceLanguage": "Оформление и язык",
-  "@settingsAppearanceLanguage": {
-    "description": "Settings group title for appearance and language section."
-  },
   "settingsAppLock": "Блокировка приложения",
   "@settingsAppLock": {
     "description": "Title for app lock switch in settings."
@@ -270,25 +254,13 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
-  "settingsEditorSubtitle": "Шрифты, интервалы, панель инструментов и эмодзи настроения",
+  "settingsEditorSubtitle": "Шрифты, вёрстка, панель инструментов и блоки кода",
   "@settingsEditorSubtitle": {
     "description": "Subtitle for editor settings entry on root settings page."
-  },
-  "settingsEditorGroup": "Редактор",
-  "@settingsEditorGroup": {
-    "description": "Settings group title for editor-related options."
-  },
-  "settingsEditorToolsGroup": "Панель инструментов и настроение",
-  "@settingsEditorToolsGroup": {
-    "description": "Settings group title for editor toolbar and mood options."
   },
   "settingsMoodOptionsTitle": "Эмодзи настроения",
   "@settingsMoodOptionsTitle": {
     "description": "Setting title for customizing the fixed 10 mood emojis."
-  },
-  "settingsMoodOptionsSubtitle": "Эмодзи и цвета для 10 настроений",
-  "@settingsMoodOptionsSubtitle": {
-    "description": "Subtitle for mood emoji setting entry."
   },
   "settingsMoodOptionsSlotLabel": "Настроение {index}",
   "@settingsMoodOptionsSlotLabel": {
@@ -330,33 +302,17 @@
     },
     "description": "Error message when saving mood emoji settings fails."
   },
-  "settingsDataPrivacy": "Данные и конфиденциальность",
-  "@settingsDataPrivacy": {
-    "description": "Settings entry label for data and privacy section."
-  },
-  "settingsDataPrivacySubtitle": "Резервные копии, блокировка приложения и корзина",
-  "@settingsDataPrivacySubtitle": {
-    "description": "Settings entry subtitle for data and privacy section."
-  },
-  "settingsDataPrivacyTitle": "Данные и конфиденциальность",
-  "@settingsDataPrivacyTitle": {
-    "description": "Secondary page title for data and privacy."
-  },
   "settingsDataManagement": "Управление данными",
   "@settingsDataManagement": {
     "description": "Auto-generated metadata for settingsDataManagement."
   },
-  "settingsDataManagementSubtitle": "Импорт и экспорт резервных копий и файлов записей",
+  "settingsDataManagementSubtitle": "Резервные копии, импорт, экспорт и облако",
   "@settingsDataManagementSubtitle": {
     "description": "Auto-generated metadata for settingsDataManagementSubtitle."
   },
   "settingsTagManagement": "Управление тегами",
   "@settingsTagManagement": {
     "description": "Auto-generated metadata for settingsTagManagement."
-  },
-  "settingsTagManagementSubtitle": "Удаление тега лишь убирает его из записей",
-  "@settingsTagManagementSubtitle": {
-    "description": "Auto-generated metadata for settingsTagManagementSubtitle."
   },
   "settingsTagMemory": "Запоминать теги",
   "@settingsTagMemory": {
@@ -370,17 +326,9 @@
   "@settingsRecycleBin": {
     "description": "Auto-generated metadata for settingsRecycleBin."
   },
-  "settingsRecycleBinSubtitle": "Восстановление или окончательное удаление записей",
-  "@settingsRecycleBinSubtitle": {
-    "description": "Auto-generated metadata for settingsRecycleBinSubtitle."
-  },
   "settingsAbout": "О приложении",
   "@settingsAbout": {
     "description": "Auto-generated metadata for settingsAbout."
-  },
-  "settingsAboutSubtitle": "Информация, репозиторий и версия",
-  "@settingsAboutSubtitle": {
-    "description": "Auto-generated metadata for settingsAboutSubtitle."
   },
   "languageDialogTitle": "Выберите язык",
   "@languageDialogTitle": {
@@ -2195,7 +2143,7 @@
   "@videoPosterHint": {
     "description": "Platforms that cannot play videos inline: caption under the video poster card."
   },
-  "deviceAuthUnavailable": "На этом устройстве нет системной проверки. Чтобы использовать блокировку, задайте код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код",
+  "deviceAuthUnavailable": "На этом устройстве нет системной проверки. Чтобы использовать блокировку, задайте код приложения в разделе Настройки → Блокировка и код",
   "@deviceAuthUnavailable": {
     "description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."
   },
@@ -7734,10 +7682,6 @@
   "@diaryDraftsTitle": {
     "description": "Title of the drafts page; also the entry name in the home header and settings."
   },
-  "diaryDraftsSettingsSubtitle": "Неопубликованные записи: можно дописать или удалить",
-  "@diaryDraftsSettingsSubtitle": {
-    "description": "Subtitle of the drafts entry in Settings → Data & privacy."
-  },
   "diaryDraftsEmpty": "Черновиков пока нет. Сюда попадают новые записи, закрытые до публикации",
   "@diaryDraftsEmpty": {
     "description": "Empty state of the drafts page."
@@ -9047,10 +8991,6 @@
   "@notebookTitle": {
     "description": "Title of the notebooks feature: shelf sheet, management page and settings entry."
   },
-  "notebookSettingsSubtitle": "Упорядочивайте, сортируйте и объединяйте блокноты",
-  "@notebookSettingsSubtitle": {
-    "description": "Subtitle of the Notebooks entry on the settings home."
-  },
   "notebookNew": "Новый блокнот",
   "@notebookNew": {
     "description": "Create a notebook: editor title, buttons and the shelf's new tile."
@@ -9743,7 +9683,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Настройте блокировку экрана в системных настройках или перейдите на код приложения в разделе Настройки → Данные и конфиденциальность → Блокировка и код.",
+  "notebookLockUnsupportedMessage": "На этом устройстве не настроена блокировка экрана, поэтому подтвердить личность невозможно и заблокированные блокноты не открываются. Настройте блокировку экрана в системных настройках или перейдите на код приложения в разделе Настройки → Блокировка и код.",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -14495,7 +14435,7 @@
   "@lanSyncFirstUseStep1": {
     "description": "First-use step 1."
   },
-  "lanSyncFirstUseStep2": "На другом устройстве откройте «Настройки › Данные и конфиденциальность › Синхронизация по локальной сети»",
+  "lanSyncFirstUseStep2": "На другом устройстве откройте «Настройки › Синхронизация по локальной сети»",
   "@lanSyncFirstUseStep2": {
     "description": "First-use step 2."
   },
@@ -18431,7 +18371,7 @@
   "passcodeBiometricFailed": "Проверка по отпечатку или лицу не пройдена",
   "@passcodeBiometricFailed": {"description": "Snackbar when the biometric check for quick unlock fails."},
   "settingsAppLockAndPasscode": "Блокировка и код",
-  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & Privacy) and page title for app lock and the verification method."},
+  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & security group) and page title for app lock and the verification method."},
   "appLockMethodTitle": "Способ проверки",
   "@appLockMethodTitle": {"description": "Group title for choosing the verification method."},
   "appLockMethodFooter": "Этот способ используется для блокировки приложения, заблокированных блокнотов и подтверждения сопряжения по локальной сети.",
@@ -18466,5 +18406,35 @@
   "appLockStatusOffPasscode": "Выкл. · заблокированные блокноты открываются кодом приложения",
   "@appLockStatusOffPasscode": {"description": "Settings row subtitle: app lock off, but an app passcode is set for locked notebooks."},
   "appLockStatusOff": "Выкл.",
-  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."}
+  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."},
+  "settingsGroupGeneral": "Общие",
+  "@settingsGroupGeneral": {"description": "Settings home group title: appearance, language and feature toggles."},
+  "settingsGroupWriting": "Написание",
+  "@settingsGroupWriting": {"description": "Settings home group title: editor, diary templates and drafts."},
+  "settingsGroupOrganize": "Организация",
+  "@settingsGroupOrganize": {"description": "Settings home group title: tags, moods, notebooks and recycle bin."},
+  "settingsGroupDataSecurity": "Данные и безопасность",
+  "@settingsGroupDataSecurity": {"description": "Settings home group title: data management, LAN sync and app lock."},
+  "settingsAppearance": "Оформление",
+  "@settingsAppearance": {"description": "Settings home row and page title for appearance settings."},
+  "settingsAppearanceSubtitle": "Тема, фон и стили страниц",
+  "@settingsAppearanceSubtitle": {"description": "Settings home row subtitle summarizing the appearance page."},
+  "settingsEditor": "Редактор",
+  "@settingsEditor": {"description": "Settings home row title that opens the editor settings page."},
+  "settingsThemeGroup": "Тема",
+  "@settingsThemeGroup": {"description": "Appearance page group title: light/dark mode and theme color."},
+  "settingsInterfaceGroup": "Интерфейс",
+  "@settingsInterfaceGroup": {"description": "Appearance page group title: font size and tab switch curve."},
+  "settingsPageStylesGroup": "Стили страниц",
+  "@settingsPageStylesGroup": {"description": "Appearance page group title: background, navigation bar, diary card, preview page and explore styles."},
+  "settingsEditorBodyGroup": "Текст записи",
+  "@settingsEditorBodyGroup": {"description": "Editor settings group title: body font, layout and code block style."},
+  "settingsEditorToolbarGroup": "Панель инструментов",
+  "@settingsEditorToolbarGroup": {"description": "Editor settings group title: toolbar order, size and visibility."},
+  "settingsEditorBehaviorGroup": "Поведение",
+  "@settingsEditorBehaviorGroup": {"description": "Editor settings group title: open diaries in the editor and day photo suggestions."},
+  "dataMgmtBackupGroup": "Резервное копирование",
+  "@dataMgmtBackupGroup": {"description": "Data management group title: full backup export, import and cloud backup."},
+  "dataMgmtFilesGroup": "Импорт и экспорт",
+  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."}
 }

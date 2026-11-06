@@ -10,9 +10,10 @@ import '../../widgets/app_modal/app_dialog.dart';
 import '../widgets/settings_card_group.dart';
 import '../../widgets/palette_color_picker.dart';
 
-/// 设置页主题模式区块。
+/// 外观页的「主题」与「界面」两组。
 ///
-/// 仅负责主题切换 UI，不耦合标签或编辑器设置。主题色的色系为统一色板加
+/// 「主题」：明暗模式按钮组与主题色色板；「界面」：字体大小与标签页切换
+/// 曲线。只负责这两组 UI，不耦合标签或编辑器设置。主题色的色系为统一色板加
 /// 末尾的“黑白”（[kThemeColorPaletteFamilies]）；灰色与黑白怎样装配成主题见
 /// `appColorSchemeFromSeed`。
 class SettingsThemeSection extends StatelessWidget {
@@ -64,74 +65,16 @@ class SettingsThemeSection extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     SettingsCardGroup(
-                                      title: l10n.settingsThemeMode,
+                                      title: l10n.settingsThemeGroup,
                                       children: <Widget>[
                                         Padding(
                                           padding: const EdgeInsets.all(16),
-                                          child:
-                                              ExpressiveButtonGroup<ThemeMode>(
-                                                selected: <ThemeMode>{mode},
-                                                onSelectionChanged:
-                                                    (Set<ThemeMode> selection) {
-                                                      final next =
-                                                          selection.firstOrNull;
-                                                      if (next != null) {
-                                                        settingsService
-                                                            .setThemeMode(next);
-                                                      }
-                                                    },
-                                                segments:
-                                                    <ButtonSegment<ThemeMode>>[
-                                                      ButtonSegment<ThemeMode>(
-                                                        value: ThemeMode.system,
-                                                        label: Text(
-                                                          l10n.autoT0046,
-                                                        ),
-                                                        icon: const FaIcon(
-                                                          FontAwesomeIcons
-                                                              .circleHalfStroke,
-                                                          size: 18,
-                                                        ),
-                                                      ),
-                                                      ButtonSegment<ThemeMode>(
-                                                        value: ThemeMode.light,
-                                                        label: Text(
-                                                          l10n.autoT0047,
-                                                        ),
-                                                        icon: const FaIcon(
-                                                          FontAwesomeIcons.sun,
-                                                          size: 18,
-                                                        ),
-                                                      ),
-                                                      ButtonSegment<ThemeMode>(
-                                                        value: ThemeMode.dark,
-                                                        label: Text(
-                                                          l10n.autoT0048,
-                                                        ),
-                                                        icon: const FaIcon(
-                                                          FontAwesomeIcons.moon,
-                                                          size: 18,
-                                                        ),
-                                                      ),
-                                                    ],
-                                              ),
+                                          child: _ThemeModeButtons(
+                                            mode: mode,
+                                            onChanged:
+                                                settingsService.setThemeMode,
+                                          ),
                                         ),
-                                        _TabSwitchCurveSelector(
-                                          selectedCurveType: curveType,
-                                          onChanged: settingsService
-                                              .setHomeTabSwitchCurveType,
-                                        ),
-                                        _FontScaleSelector(
-                                          selectedScale: fontScale,
-                                          onChanged:
-                                              settingsService.setFontScale,
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    SettingsCardGroup(
-                                      title: l10n.settingsThemeColor,
-                                      children: <Widget>[
                                         Padding(
                                           padding: const EdgeInsets.all(16),
                                           child: PaletteColorPicker(
@@ -155,6 +98,22 @@ class SettingsThemeSection extends StatelessWidget {
                                         ),
                                       ],
                                     ),
+                                    const SizedBox(height: 16),
+                                    SettingsCardGroup(
+                                      title: l10n.settingsInterfaceGroup,
+                                      children: <Widget>[
+                                        _FontScaleSelector(
+                                          selectedScale: fontScale,
+                                          onChanged:
+                                              settingsService.setFontScale,
+                                        ),
+                                        _TabSwitchCurveSelector(
+                                          selectedCurveType: curveType,
+                                          onChanged: settingsService
+                                              .setHomeTabSwitchCurveType,
+                                        ),
+                                      ],
+                                    ),
                                   ],
                                 );
                               },
@@ -172,6 +131,45 @@ class SettingsThemeSection extends StatelessWidget {
       ),
       error: (Object error, StackTrace stackTrace) =>
           ListTile(title: Text(l10n.autoT0045(error.toString()))),
+    );
+  }
+}
+
+/// 明暗模式按钮组：跟随系统 / 浅色 / 深色。
+class _ThemeModeButtons extends StatelessWidget {
+  const _ThemeModeButtons({required this.mode, required this.onChanged});
+
+  final ThemeMode mode;
+  final ValueChanged<ThemeMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ExpressiveButtonGroup<ThemeMode>(
+      selected: <ThemeMode>{mode},
+      onSelectionChanged: (Set<ThemeMode> selection) {
+        final next = selection.firstOrNull;
+        if (next != null) {
+          onChanged(next);
+        }
+      },
+      segments: <ButtonSegment<ThemeMode>>[
+        ButtonSegment<ThemeMode>(
+          value: ThemeMode.system,
+          label: Text(l10n.autoT0046),
+          icon: const FaIcon(FontAwesomeIcons.circleHalfStroke, size: 18),
+        ),
+        ButtonSegment<ThemeMode>(
+          value: ThemeMode.light,
+          label: Text(l10n.autoT0047),
+          icon: const FaIcon(FontAwesomeIcons.sun, size: 18),
+        ),
+        ButtonSegment<ThemeMode>(
+          value: ThemeMode.dark,
+          label: Text(l10n.autoT0048),
+          icon: const FaIcon(FontAwesomeIcons.moon, size: 18),
+        ),
+      ],
     );
   }
 }

@@ -10,13 +10,8 @@ import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_font_choices.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_typography_metrics_editor.dart';
-import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_built_ins.dart';
-import 'package:node_diary/ui/diary_templates/pages/diary_templates_page.dart';
-import 'package:node_diary/ui/diary_templates/providers/diary_template_providers.dart';
 import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
 import 'package:node_diary/ui/settings/pages/diary_typography_page.dart';
-import 'package:node_diary/ui/settings/pages/mood_options_page.dart';
-import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
 import 'settings_code_block_style_tile.dart';
 import 'settings_open_in_editor_switch.dart';
@@ -24,7 +19,9 @@ import 'settings_toolbar_size_tile.dart';
 import '../../ai/models/ai_preference_parts.dart';
 import '../../ai/providers/ai_providers.dart';
 
-/// 设置页编辑器配置区块。
+/// 设置 → 编辑器设置的三组：「正文」（正文字体与排版、代码块样式）、
+/// 「工具栏」（按钮排序、大小、始终显示）、「编辑行为」（打开日记时直接
+/// 编辑、自动显示当天照片）。日记模板与心情符号在设置首页。
 class SettingsEditorSection extends ConsumerWidget {
   const SettingsEditorSection({super.key, required this.settingsAsync});
 
@@ -33,147 +30,41 @@ class SettingsEditorSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    // 日记模板功能关闭时隐藏入口，数据保留：不放进分组（分组按项数画分隔
-    // 线，放一个空占位会多出一条）。
     final aiWriting = ref.watch(aiModuleAvailableProvider(AiModule.writing));
-    final templatesEnabled = ref.watch(
-      appFeaturesProvider.select((features) => features.templates),
-    );
     return settingsAsync.when(
       data: (settingsService) {
-        return ValueListenableBuilder<String?>(
-          valueListenable: settingsService.diaryToolbarOrderRawNotifier,
-          builder: (BuildContext context, String? toolbarOrderRaw, Widget? child) {
-            return ValueListenableBuilder<String?>(
-              valueListenable:
-                  settingsService.diaryToolbarHiddenItemsRawNotifier,
-              builder:
-                  (
-                    BuildContext context,
-                    String? toolbarHiddenItemsRaw,
-                    Widget? child,
-                  ) {
-                    final order = decodeDiaryToolbarOrder(toolbarOrderRaw);
-                    final hiddenItems = decodeDiaryToolbarHiddenItems(
-                      toolbarHiddenItemsRaw,
-                    );
-                    // 本平台不提供的工具（Linux 的录音）不出现在预览里。
-                    final enabledOrder = filterEnabledDiaryToolbarOrder(
-                      order,
-                      <DiaryToolbarItem>{
-                        ...hiddenItems,
-                        ...diaryToolbarUnavailableItems(ai: aiWriting),
-                      },
-                    );
-                    final preview = enabledOrder
-                        .take(4)
-                        .map(
-                          (DiaryToolbarItem item) =>
-                              _labelForItem(context, item),
-                        )
-                        .join(' · ');
-                    return ValueListenableBuilder<String?>(
-                      valueListenable: settingsService.moodOptionsRawNotifier,
-                      builder:
-                          (
-                            BuildContext context,
-                            String? moodOptionsRaw,
-                            Widget? child,
-                          ) {
-                            final moodOptions =
-                                SettingsService.decodeMoodOptions(
-                                  moodOptionsRaw,
-                                );
-                            return Column(
-                              children: <Widget>[
-                                SettingsCardGroup(
-                                  title: l10n.settingsEditorGroup,
-                                  children: <Widget>[
-                                    const _DiaryTypographyTile(),
-                                    SettingsCodeBlockStyleTile(
-                                      settingsService: settingsService,
-                                    ),
-                                    if (templatesEnabled)
-                                      const _DiaryTemplatesTile(),
-                                    SettingsOpenInEditorSwitch(
-                                      settingsService: settingsService,
-                                    ),
-                                    _DayPhotoSuggestionsSwitch(
-                                      settings: settingsService,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                SettingsCardGroup(
-                                  title: l10n.settingsEditorToolsGroup,
-                                  children: <Widget>[
-                                    ListTile(
-                                      title: Text(l10n.autoT0043),
-                                      subtitle: Text(
-                                        l10n.autoT0044(
-                                          preview.isEmpty ? '-' : preview,
-                                        ),
-                                      ),
-                                      trailing: const FaIcon(
-                                        FontAwesomeIcons.angleRight,
-                                        size: 14,
-                                      ),
-                                      onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute<void>(
-                                            builder: (BuildContext context) {
-                                              return DiaryToolbarOrderPage(
-                                                aiAvailable: aiWriting,
-                                                settingsService:
-                                                    settingsService,
-                                              );
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    SettingsToolbarSizeTile(
-                                      settings: settingsService,
-                                    ),
-                                    // 桌面没有软键盘，编辑页工具栏一直显示，
-                                    // 这个开关没有意义。
-                                    if (!AppPlatform.isDesktop)
-                                      _ToolbarAlwaysVisibleSwitch(
-                                        settings: settingsService,
-                                      ),
-                                    ListTile(
-                                      title: Text(
-                                        l10n.settingsMoodOptionsTitle,
-                                      ),
-                                      subtitle: Text(
-                                        '${l10n.settingsMoodOptionsSubtitle}\n${moodOptions.join(' ')}',
-                                      ),
-                                      trailing: const FaIcon(
-                                        FontAwesomeIcons.angleRight,
-                                        size: 14,
-                                      ),
-                                      onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute<void>(
-                                            builder: (BuildContext context) {
-                                              return MoodOptionsPage(
-                                                settingsService:
-                                                    settingsService,
-                                              );
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          },
-                    );
-                  },
-            );
-          },
+        return Column(
+          children: <Widget>[
+            SettingsCardGroup(
+              title: l10n.settingsEditorBodyGroup,
+              children: <Widget>[
+                const _DiaryTypographyTile(),
+                SettingsCodeBlockStyleTile(settingsService: settingsService),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SettingsCardGroup(
+              title: l10n.settingsEditorToolbarGroup,
+              children: <Widget>[
+                _ToolbarOrderTile(
+                  settings: settingsService,
+                  aiWriting: aiWriting,
+                ),
+                SettingsToolbarSizeTile(settings: settingsService),
+                // 桌面没有软键盘，编辑页工具栏一直显示，这个开关没有意义。
+                if (!AppPlatform.isDesktop)
+                  _ToolbarAlwaysVisibleSwitch(settings: settingsService),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SettingsCardGroup(
+              title: l10n.settingsEditorBehaviorGroup,
+              children: <Widget>[
+                SettingsOpenInEditorSwitch(settingsService: settingsService),
+                _DayPhotoSuggestionsSwitch(settings: settingsService),
+              ],
+            ),
+          ],
         );
       },
       loading: () => Padding(
@@ -184,9 +75,62 @@ class SettingsEditorSection extends ConsumerWidget {
           ListTile(title: Text(l10n.autoT0045(error.toString()))),
     );
   }
+}
 
-  String _labelForItem(BuildContext context, DiaryToolbarItem item) =>
-      item.label(context.l10n);
+/// “工具栏按钮排序”入口：副标题列出当前前 4 个工具（隐藏的与本平台、本
+/// 配置不提供的不算，如 Linux 的录音、没开 AI 写作时的 AI）。
+class _ToolbarOrderTile extends StatelessWidget {
+  const _ToolbarOrderTile({required this.settings, required this.aiWriting});
+
+  final SettingsService settings;
+  final bool aiWriting;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable>[
+        settings.diaryToolbarOrderRawNotifier,
+        settings.diaryToolbarHiddenItemsRawNotifier,
+      ]),
+      builder: (BuildContext context, Widget? child) {
+        final order = decodeDiaryToolbarOrder(
+          settings.diaryToolbarOrderRawNotifier.value,
+        );
+        final hiddenItems = decodeDiaryToolbarHiddenItems(
+          settings.diaryToolbarHiddenItemsRawNotifier.value,
+        );
+        final enabledOrder = filterEnabledDiaryToolbarOrder(
+          order,
+          <DiaryToolbarItem>{
+            ...hiddenItems,
+            ...diaryToolbarUnavailableItems(ai: aiWriting),
+          },
+        );
+        final preview = enabledOrder
+            .take(4)
+            .map((DiaryToolbarItem item) => item.label(l10n))
+            .join(' · ');
+        return ListTile(
+          title: Text(l10n.autoT0043),
+          subtitle: Text(l10n.autoT0044(preview.isEmpty ? '-' : preview)),
+          trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) {
+                  return DiaryToolbarOrderPage(
+                    aiAvailable: aiWriting,
+                    settingsService: settings,
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 /// “正文字体与排版”入口：副标题概括当前字体、字号与行距。
@@ -221,33 +165,6 @@ class _DiaryTypographyTile extends ConsumerWidget {
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (BuildContext context) => const DiaryTypographyPage(),
-        ),
-      ),
-    );
-  }
-}
-
-/// “日记模板”入口：副标题写内置与我的模板各有几个。我的模板读一次性快照
-/// （管理页写入后会让它失效），设置页不挂数据库的实时查询。
-class _DiaryTemplatesTile extends ConsumerWidget {
-  const _DiaryTemplatesTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final mine = ref.watch(userDiaryTemplatesSnapshotProvider).asData?.value;
-    return ListTile(
-      title: Text(l10n.diaryTemplatesTitle),
-      subtitle: Text(
-        l10n.diaryTemplatesSettingsSubtitle(
-          buildBuiltInDiaryTemplates(l10n).length,
-          mine?.length ?? 0,
-        ),
-      ),
-      trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => const DiaryTemplatesPage(),
         ),
       ),
     );

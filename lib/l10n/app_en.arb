@@ -153,14 +153,6 @@
   "@settingsTitle": {
     "description": "Auto-generated metadata for settingsTitle."
   },
-  "settingsThemeMode": "Theme",
-  "@settingsThemeMode": {
-    "description": "Auto-generated metadata for settingsThemeMode."
-  },
-  "settingsThemeColor": "Theme",
-  "@settingsThemeColor": {
-    "description": "Title for theme color picker in settings."
-  },
   "settingsFontScale": "Font size",
   "@settingsFontScale": {
     "description": "Title for font size setting in settings."
@@ -222,14 +214,6 @@
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."
   },
-  "settingsLanguageSubtitle": "Switch app language",
-  "@settingsLanguageSubtitle": {
-    "description": "Auto-generated metadata for settingsLanguageSubtitle."
-  },
-  "settingsAppearanceLanguage": "Appearance & Language",
-  "@settingsAppearanceLanguage": {
-    "description": "Settings group title for appearance and language section."
-  },
   "settingsAppLock": "App Lock",
   "@settingsAppLock": {
     "description": "Title for app lock switch in settings."
@@ -270,25 +254,13 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
-  "settingsEditorSubtitle": "Fonts, spacing, toolbar, and mood emojis",
+  "settingsEditorSubtitle": "Fonts, layout, toolbar and code blocks",
   "@settingsEditorSubtitle": {
     "description": "Subtitle for editor settings entry on root settings page."
-  },
-  "settingsEditorGroup": "Editor",
-  "@settingsEditorGroup": {
-    "description": "Settings group title for editor-related options."
-  },
-  "settingsEditorToolsGroup": "Toolbar & mood",
-  "@settingsEditorToolsGroup": {
-    "description": "Settings group title for editor toolbar and mood options."
   },
   "settingsMoodOptionsTitle": "Mood emojis",
   "@settingsMoodOptionsTitle": {
     "description": "Setting title for customizing the fixed 10 mood emojis."
-  },
-  "settingsMoodOptionsSubtitle": "Customize the emoji and color of 10 moods",
-  "@settingsMoodOptionsSubtitle": {
-    "description": "Subtitle for mood emoji setting entry."
   },
   "settingsMoodOptionsSlotLabel": "Mood {index}",
   "@settingsMoodOptionsSlotLabel": {
@@ -330,33 +302,17 @@
     },
     "description": "Error message when saving mood emoji settings fails."
   },
-  "settingsDataPrivacy": "Data & Privacy",
-  "@settingsDataPrivacy": {
-    "description": "Settings entry label for data and privacy section."
-  },
-  "settingsDataPrivacySubtitle": "Manage backups, app lock, and recycle bin",
-  "@settingsDataPrivacySubtitle": {
-    "description": "Settings entry subtitle for data and privacy section."
-  },
-  "settingsDataPrivacyTitle": "Data & Privacy",
-  "@settingsDataPrivacyTitle": {
-    "description": "Secondary page title for data and privacy."
-  },
   "settingsDataManagement": "Data Management",
   "@settingsDataManagement": {
     "description": "Auto-generated metadata for settingsDataManagement."
   },
-  "settingsDataManagementSubtitle": "Import/export backups and diary files",
+  "settingsDataManagementSubtitle": "Backup and restore, import and export, cloud backup",
   "@settingsDataManagementSubtitle": {
     "description": "Auto-generated metadata for settingsDataManagementSubtitle."
   },
   "settingsTagManagement": "Tag Management",
   "@settingsTagManagement": {
     "description": "Auto-generated metadata for settingsTagManagement."
-  },
-  "settingsTagManagementSubtitle": "Deleting a tag only unlinks it from diaries",
-  "@settingsTagManagementSubtitle": {
-    "description": "Auto-generated metadata for settingsTagManagementSubtitle."
   },
   "settingsTagMemory": "Tag memory",
   "@settingsTagMemory": {
@@ -370,17 +326,9 @@
   "@settingsRecycleBin": {
     "description": "Auto-generated metadata for settingsRecycleBin."
   },
-  "settingsRecycleBinSubtitle": "Restore or permanently remove deleted diaries",
-  "@settingsRecycleBinSubtitle": {
-    "description": "Auto-generated metadata for settingsRecycleBinSubtitle."
-  },
   "settingsAbout": "About",
   "@settingsAbout": {
     "description": "Auto-generated metadata for settingsAbout."
-  },
-  "settingsAboutSubtitle": "App info, repo, and version",
-  "@settingsAboutSubtitle": {
-    "description": "Auto-generated metadata for settingsAboutSubtitle."
   },
   "languageDialogTitle": "Select language",
   "@languageDialogTitle": {
@@ -2162,7 +2110,7 @@
   "@videoOpenExternally": {"description": "Platforms that cannot play videos inline (Linux, Windows): tooltip of the video card."},
   "videoPosterHint": "Click to open in the system player",
   "@videoPosterHint": {"description": "Platforms that cannot play videos inline: caption under the video poster card."},
-  "deviceAuthUnavailable": "This device has no system verification. Set an app passcode in Settings → Data & Privacy → App lock & passcode to use locking",
+  "deviceAuthUnavailable": "This device has no system verification. Set an app passcode in Settings → App lock & passcode to use locking",
   "@deviceAuthUnavailable": {"description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."},
   "calendarYearSaveImage": "Save this year as an image…",
   "@calendarYearSaveImage": {"description": "Year view export tooltip on platforms without a system share sheet (Linux): saves the year view as an image."},
@@ -7681,10 +7629,6 @@
   "@diaryDraftsTitle": {
     "description": "Title of the drafts page; also the entry name in the home header and settings."
   },
-  "diaryDraftsSettingsSubtitle": "Unpublished entries you can keep writing or delete",
-  "@diaryDraftsSettingsSubtitle": {
-    "description": "Subtitle of the drafts entry in Settings → Data & privacy."
-  },
   "diaryDraftsEmpty": "No drafts yet. New entries you leave before publishing are kept here",
   "@diaryDraftsEmpty": {
     "description": "Empty state of the drafts page."
@@ -8994,10 +8938,6 @@
   "@notebookTitle": {
     "description": "Title of the notebooks feature: shelf sheet, management page and settings entry."
   },
-  "notebookSettingsSubtitle": "Organize, reorder and merge your notebooks",
-  "@notebookSettingsSubtitle": {
-    "description": "Subtitle of the Notebooks entry on the settings home."
-  },
   "notebookNew": "New notebook",
   "@notebookNew": {
     "description": "Create a notebook: editor title, buttons and the shelf's new tile."
@@ -9684,7 +9624,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → Data & Privacy → App lock & passcode.",
+  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings, or switch to an app passcode in Settings → App lock & passcode.",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -13976,7 +13916,7 @@
   "@lanSyncFirstUseStep1": {
     "description": "First-use step 1."
   },
-  "lanSyncFirstUseStep2": "On the other device, open Settings › Data & Privacy › LAN sync",
+  "lanSyncFirstUseStep2": "On the other device, open Settings › LAN sync",
   "@lanSyncFirstUseStep2": {
     "description": "First-use step 2."
   },
@@ -17864,7 +17804,7 @@
   "passcodeBiometricFailed": "Fingerprint or face verification failed",
   "@passcodeBiometricFailed": {"description": "Snackbar when the biometric check for quick unlock fails."},
   "settingsAppLockAndPasscode": "App lock & passcode",
-  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & Privacy) and page title for app lock and the verification method."},
+  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & security group) and page title for app lock and the verification method."},
   "appLockMethodTitle": "Verification method",
   "@appLockMethodTitle": {"description": "Group title for choosing the verification method."},
   "appLockMethodFooter": "App lock, locked notebooks and LAN pairing confirmation all use this method.",
@@ -17899,5 +17839,35 @@
   "appLockStatusOffPasscode": "Off · Locked notebooks use the app passcode",
   "@appLockStatusOffPasscode": {"description": "Settings row subtitle: app lock off, but an app passcode is set for locked notebooks."},
   "appLockStatusOff": "Off",
-  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."}
+  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."},
+  "settingsGroupGeneral": "General",
+  "@settingsGroupGeneral": {"description": "Settings home group title: appearance, language and feature toggles."},
+  "settingsGroupWriting": "Writing",
+  "@settingsGroupWriting": {"description": "Settings home group title: editor, diary templates and drafts."},
+  "settingsGroupOrganize": "Organize",
+  "@settingsGroupOrganize": {"description": "Settings home group title: tags, moods, notebooks and recycle bin."},
+  "settingsGroupDataSecurity": "Data & security",
+  "@settingsGroupDataSecurity": {"description": "Settings home group title: data management, LAN sync and app lock."},
+  "settingsAppearance": "Appearance",
+  "@settingsAppearance": {"description": "Settings home row and page title for appearance settings."},
+  "settingsAppearanceSubtitle": "Theme, background and page styles",
+  "@settingsAppearanceSubtitle": {"description": "Settings home row subtitle summarizing the appearance page."},
+  "settingsEditor": "Editor",
+  "@settingsEditor": {"description": "Settings home row title that opens the editor settings page."},
+  "settingsThemeGroup": "Theme",
+  "@settingsThemeGroup": {"description": "Appearance page group title: light/dark mode and theme color."},
+  "settingsInterfaceGroup": "Interface",
+  "@settingsInterfaceGroup": {"description": "Appearance page group title: font size and tab switch curve."},
+  "settingsPageStylesGroup": "Page styles",
+  "@settingsPageStylesGroup": {"description": "Appearance page group title: background, navigation bar, diary card, preview page and explore styles."},
+  "settingsEditorBodyGroup": "Body text",
+  "@settingsEditorBodyGroup": {"description": "Editor settings group title: body font, layout and code block style."},
+  "settingsEditorToolbarGroup": "Toolbar",
+  "@settingsEditorToolbarGroup": {"description": "Editor settings group title: toolbar order, size and visibility."},
+  "settingsEditorBehaviorGroup": "Behavior",
+  "@settingsEditorBehaviorGroup": {"description": "Editor settings group title: open diaries in the editor and day photo suggestions."},
+  "dataMgmtBackupGroup": "Backup & restore",
+  "@dataMgmtBackupGroup": {"description": "Data management group title: full backup export, import and cloud backup."},
+  "dataMgmtFilesGroup": "Import & export",
+  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."}
 }

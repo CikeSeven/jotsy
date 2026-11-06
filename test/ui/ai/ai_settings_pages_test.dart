@@ -44,12 +44,22 @@ void main() {
     final h = await DiaryDraftsHarness.create(tester);
     await h.pump(const Scaffold(body: SettingsPage()));
     await tester.pumpAndSettle();
+    // AI 助手在末尾一组（关于之上）：先滚到底，确认关闭时那里没有它。
+    await tester.scrollUntilVisible(
+      find.text(h.l10n.settingsAbout),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text(h.l10n.aiSettingsEntrySubtitle), findsNothing);
 
     await h.settings.setAppFeaturesRaw('{"ai":true}');
     await tester.pumpAndSettle();
     final entry = find.text(h.l10n.aiSettingsEntrySubtitle);
     expect(entry, findsOneWidget);
+    expect(
+      tester.getTopLeft(entry).dy,
+      lessThan(tester.getTopLeft(find.text(h.l10n.settingsAbout)).dy),
+    );
 
     await tester.ensureVisible(entry);
     await tester.tap(entry);

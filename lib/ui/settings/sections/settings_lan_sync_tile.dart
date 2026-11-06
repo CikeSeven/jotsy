@@ -7,8 +7,9 @@ import '../../lan_sync/models/lan_sync_view_state.dart';
 import '../../lan_sync/pages/lan_sync_page.dart';
 import '../../lan_sync/providers/lan_sync_providers.dart';
 import '../../lan_sync/widgets/lan_sync_labels.dart';
+import '../widgets/settings_nav_tile.dart';
 
-/// 设置 → 数据与隐私里的“局域网同步”入口（DESIGN.md §5.28）。
+/// 设置首页“数据与安全”组里的“局域网同步”入口（DESIGN.md §5.28）。
 ///
 /// 副标题随同步状态：有同步等待确认时为 `error` 色“有一次同步需要你确认”；
 /// 已配对时为“已配对 N 台 · X 前已同步”（都没同步过为“还没有同步过”）；
@@ -28,10 +29,10 @@ class SettingsLanSyncTile extends ConsumerWidget {
       builder: (BuildContext context, LanSyncViewState state, Widget? child) {
         final colors = Theme.of(context).colorScheme;
         final String subtitle;
-        TextStyle? subtitleStyle;
+        Color? subtitleColor;
         if (state.needsAttention) {
           subtitle = l10n.lanSyncEntrySubtitleAttention;
-          subtitleStyle = TextStyle(color: colors.error);
+          subtitleColor = colors.error;
         } else if (state.peers.isEmpty) {
           subtitle = l10n.lanSyncEntrySubtitleUnpaired;
         } else {
@@ -43,15 +44,11 @@ class SettingsLanSyncTile extends ConsumerWidget {
                   lanSyncRelativeTime(l10n, last, clock()),
                 );
         }
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ),
-          leading: const FaIcon(FontAwesomeIcons.wifi, size: 16),
-          title: Text(l10n.lanSyncTitle),
-          subtitle: Text(subtitle, style: subtitleStyle),
-          trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+        return SettingsNavTile(
+          icon: FontAwesomeIcons.wifi,
+          title: l10n.lanSyncTitle,
+          subtitle: subtitle,
+          subtitleColor: subtitleColor,
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(

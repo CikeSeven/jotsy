@@ -153,14 +153,6 @@
   "@settingsTitle": {
     "description": "Auto-generated metadata for settingsTitle."
   },
-  "settingsThemeMode": "表示モード",
-  "@settingsThemeMode": {
-    "description": "Auto-generated metadata for settingsThemeMode."
-  },
-  "settingsThemeColor": "テーマカラー",
-  "@settingsThemeColor": {
-    "description": "Title for theme color picker in settings."
-  },
   "settingsFontScale": "文字サイズ",
   "@settingsFontScale": {
     "description": "Title for font size setting in settings."
@@ -222,14 +214,6 @@
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."
   },
-  "settingsLanguageSubtitle": "アプリの言語を切り替え",
-  "@settingsLanguageSubtitle": {
-    "description": "Auto-generated metadata for settingsLanguageSubtitle."
-  },
-  "settingsAppearanceLanguage": "外観と言語",
-  "@settingsAppearanceLanguage": {
-    "description": "Settings group title for appearance and language section."
-  },
   "settingsAppLock": "アプリロック",
   "@settingsAppLock": {
     "description": "Title for app lock switch in settings."
@@ -270,25 +254,13 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
-  "settingsEditorSubtitle": "フォント、行間、ツールバー、気分の絵文字",
+  "settingsEditorSubtitle": "フォントとレイアウト、ツールバー、コードブロック",
   "@settingsEditorSubtitle": {
     "description": "Subtitle for editor settings entry on root settings page."
-  },
-  "settingsEditorGroup": "エディター",
-  "@settingsEditorGroup": {
-    "description": "Settings group title for editor-related options."
-  },
-  "settingsEditorToolsGroup": "ツールバーと気分",
-  "@settingsEditorToolsGroup": {
-    "description": "Settings group title for editor toolbar and mood options."
   },
   "settingsMoodOptionsTitle": "気分の絵文字",
   "@settingsMoodOptionsTitle": {
     "description": "Setting title for customizing the fixed 10 mood emojis."
-  },
-  "settingsMoodOptionsSubtitle": "10種類の気分の絵文字と色をカスタマイズ",
-  "@settingsMoodOptionsSubtitle": {
-    "description": "Subtitle for mood emoji setting entry."
   },
   "settingsMoodOptionsSlotLabel": "気分{index}",
   "@settingsMoodOptionsSlotLabel": {
@@ -330,33 +302,17 @@
     },
     "description": "Error message when saving mood emoji settings fails."
   },
-  "settingsDataPrivacy": "データとプライバシー",
-  "@settingsDataPrivacy": {
-    "description": "Settings entry label for data and privacy section."
-  },
-  "settingsDataPrivacySubtitle": "バックアップ、アプリロック、ゴミ箱を管理",
-  "@settingsDataPrivacySubtitle": {
-    "description": "Settings entry subtitle for data and privacy section."
-  },
-  "settingsDataPrivacyTitle": "データとプライバシー",
-  "@settingsDataPrivacyTitle": {
-    "description": "Secondary page title for data and privacy."
-  },
   "settingsDataManagement": "データ管理",
   "@settingsDataManagement": {
     "description": "Auto-generated metadata for settingsDataManagement."
   },
-  "settingsDataManagementSubtitle": "バックアップや日記ファイルのインポート／エクスポート",
+  "settingsDataManagementSubtitle": "バックアップと復元、インポート／エクスポート、クラウドバックアップ",
   "@settingsDataManagementSubtitle": {
     "description": "Auto-generated metadata for settingsDataManagementSubtitle."
   },
   "settingsTagManagement": "タグ管理",
   "@settingsTagManagement": {
     "description": "Auto-generated metadata for settingsTagManagement."
-  },
-  "settingsTagManagementSubtitle": "タグを削除しても、日記との関連付けが解除されるだけです",
-  "@settingsTagManagementSubtitle": {
-    "description": "Auto-generated metadata for settingsTagManagementSubtitle."
   },
   "settingsTagMemory": "タグを記憶",
   "@settingsTagMemory": {
@@ -370,17 +326,9 @@
   "@settingsRecycleBin": {
     "description": "Auto-generated metadata for settingsRecycleBin."
   },
-  "settingsRecycleBinSubtitle": "削除した日記を復元、または完全に削除",
-  "@settingsRecycleBinSubtitle": {
-    "description": "Auto-generated metadata for settingsRecycleBinSubtitle."
-  },
   "settingsAbout": "このアプリについて",
   "@settingsAbout": {
     "description": "Auto-generated metadata for settingsAbout."
-  },
-  "settingsAboutSubtitle": "アプリ情報、リポジトリ、バージョン",
-  "@settingsAboutSubtitle": {
-    "description": "Auto-generated metadata for settingsAboutSubtitle."
   },
   "languageDialogTitle": "言語を選択",
   "@languageDialogTitle": {
@@ -2195,7 +2143,7 @@
   "@videoPosterHint": {
     "description": "Platforms that cannot play videos inline: caption under the video poster card."
   },
-  "deviceAuthUnavailable": "この端末にはシステムの認証がありません。設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードを設定するとロックできます",
+  "deviceAuthUnavailable": "この端末にはシステムの認証がありません。設定 → アプリロックとパスコード でアプリのパスコードを設定するとロックできます",
   "@deviceAuthUnavailable": {
     "description": "Shown under the app lock switch and the notebook “Locked” option when the device has no system verification (e.g. Linux)."
   },
@@ -7734,10 +7682,6 @@
   "@diaryDraftsTitle": {
     "description": "Title of the drafts page; also the entry name in the home header and settings."
   },
-  "diaryDraftsSettingsSubtitle": "投稿前の日記。続きを書いたり削除したりできます",
-  "@diaryDraftsSettingsSubtitle": {
-    "description": "Subtitle of the drafts entry in Settings → Data & privacy."
-  },
   "diaryDraftsEmpty": "下書きはまだありません。投稿せずに閉じた新しい日記は、ここに自動で保存されます",
   "@diaryDraftsEmpty": {
     "description": "Empty state of the drafts page."
@@ -9047,10 +8991,6 @@
   "@notebookTitle": {
     "description": "Title of the notebooks feature: shelf sheet, management page and settings entry."
   },
-  "notebookSettingsSubtitle": "日記帳の整理、並べ替え、統合",
-  "@notebookSettingsSubtitle": {
-    "description": "Subtitle of the Notebooks entry on the settings home."
-  },
   "notebookNew": "新しい日記帳",
   "@notebookNew": {
     "description": "Create a notebook: editor title, buttons and the shelf's new tile."
@@ -9743,7 +9683,7 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、設定 → データとプライバシー → アプリロックとパスコード でアプリのパスコードに切り替えると開けるようになります。",
+  "notebookLockUnsupportedMessage": "このデバイスには画面ロックが設定されていないため、本人確認ができず、ロックされた日記帳を開けません。システム設定で画面ロックを設定するか、設定 → アプリロックとパスコード でアプリのパスコードに切り替えると開けるようになります。",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
@@ -14495,7 +14435,7 @@
   "@lanSyncFirstUseStep1": {
     "description": "First-use step 1."
   },
-  "lanSyncFirstUseStep2": "もう一方のデバイスで「設定 › データとプライバシー › LAN 同期」を開きます",
+  "lanSyncFirstUseStep2": "もう一方のデバイスで「設定 › LAN 同期」を開きます",
   "@lanSyncFirstUseStep2": {
     "description": "First-use step 2."
   },
@@ -18431,7 +18371,7 @@
   "passcodeBiometricFailed": "指紋または顔の認証に失敗しました",
   "@passcodeBiometricFailed": {"description": "Snackbar when the biometric check for quick unlock fails."},
   "settingsAppLockAndPasscode": "アプリロックとパスコード",
-  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & Privacy) and page title for app lock and the verification method."},
+  "@settingsAppLockAndPasscode": {"description": "Settings row (Data & security group) and page title for app lock and the verification method."},
   "appLockMethodTitle": "認証方法",
   "@appLockMethodTitle": {"description": "Group title for choosing the verification method."},
   "appLockMethodFooter": "アプリロック、ロックした日記帳、LAN ペアリングの確認はすべてこの方法で認証します。",
@@ -18466,5 +18406,35 @@
   "appLockStatusOffPasscode": "オフ・ロックした日記帳はアプリのパスコードを使用",
   "@appLockStatusOffPasscode": {"description": "Settings row subtitle: app lock off, but an app passcode is set for locked notebooks."},
   "appLockStatusOff": "オフ",
-  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."}
+  "@appLockStatusOff": {"description": "Settings row subtitle: app lock off."},
+  "settingsGroupGeneral": "一般",
+  "@settingsGroupGeneral": {"description": "Settings home group title: appearance, language and feature toggles."},
+  "settingsGroupWriting": "書く",
+  "@settingsGroupWriting": {"description": "Settings home group title: editor, diary templates and drafts."},
+  "settingsGroupOrganize": "整理",
+  "@settingsGroupOrganize": {"description": "Settings home group title: tags, moods, notebooks and recycle bin."},
+  "settingsGroupDataSecurity": "データとセキュリティ",
+  "@settingsGroupDataSecurity": {"description": "Settings home group title: data management, LAN sync and app lock."},
+  "settingsAppearance": "外観",
+  "@settingsAppearance": {"description": "Settings home row and page title for appearance settings."},
+  "settingsAppearanceSubtitle": "テーマ、背景、各画面のスタイル",
+  "@settingsAppearanceSubtitle": {"description": "Settings home row subtitle summarizing the appearance page."},
+  "settingsEditor": "エディター",
+  "@settingsEditor": {"description": "Settings home row title that opens the editor settings page."},
+  "settingsThemeGroup": "テーマ",
+  "@settingsThemeGroup": {"description": "Appearance page group title: light/dark mode and theme color."},
+  "settingsInterfaceGroup": "画面",
+  "@settingsInterfaceGroup": {"description": "Appearance page group title: font size and tab switch curve."},
+  "settingsPageStylesGroup": "画面のスタイル",
+  "@settingsPageStylesGroup": {"description": "Appearance page group title: background, navigation bar, diary card, preview page and explore styles."},
+  "settingsEditorBodyGroup": "本文",
+  "@settingsEditorBodyGroup": {"description": "Editor settings group title: body font, layout and code block style."},
+  "settingsEditorToolbarGroup": "ツールバー",
+  "@settingsEditorToolbarGroup": {"description": "Editor settings group title: toolbar order, size and visibility."},
+  "settingsEditorBehaviorGroup": "動作",
+  "@settingsEditorBehaviorGroup": {"description": "Editor settings group title: open diaries in the editor and day photo suggestions."},
+  "dataMgmtBackupGroup": "バックアップと復元",
+  "@dataMgmtBackupGroup": {"description": "Data management group title: full backup export, import and cloud backup."},
+  "dataMgmtFilesGroup": "インポートとエクスポート",
+  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."}
 }

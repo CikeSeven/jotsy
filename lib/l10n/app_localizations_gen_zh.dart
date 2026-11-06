@@ -12953,4 +12953,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dataMgmtFilesGroup => '导入导出';
+
+  @override
+  String get placeHistoryTitle => '用过的地点';
+
+  @override
+  String get placeHistorySearchHint => '搜索地点';
+
+  @override
+  String placeHistorySearchEmpty(String query) {
+    return '没有找到「$query」';
+  }
+
+  @override
+  String get placeHistoryEmptyTitle => '还没有用过的地点';
+
+  @override
+  String get placeHistoryEmptyBody => '写了地点的日记发表后，地点会出现在这里，下次点一下就能选用。';
+
+  @override
+  String placeHistoryUseCount(int count) {
+    return '$count 篇';
+  }
+
+  @override
+  String placeHistoryShowAll(int count) {
+    return '全部 $count';
+  }
 }

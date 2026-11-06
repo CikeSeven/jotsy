@@ -25,6 +25,7 @@ import 'publish_panel/publish_notebook_tiles.dart';
 import 'publish_panel/publish_panel_chrome.dart';
 import 'publish_panel/publish_panel_main_page.dart';
 import 'publish_panel/publish_panel_summary_bar.dart';
+import 'publish_panel/publish_place_history_page.dart';
 import 'publish_panel/publish_tag_picker_page.dart';
 
 export 'publish_panel/publish_panel_main_page.dart' show PublishTimeOption;
@@ -37,8 +38,8 @@ export 'publish_panel/publish_panel_main_page.dart' show PublishTimeOption;
 /// [onProgressChanged]。
 ///
 /// 交互：收起态更窄、位置更高；支持上划与点击展开；上划过程中尺寸连续
-/// 变化，松手后吸附到展开/收起。内部 PageView 承载主页、标签页、胶囊页与
-/// 日记本页，只允许代码切页。
+/// 变化，松手后吸附到展开/收起。内部 PageView 承载主页、标签页、胶囊页、
+/// 日记本页与用过的地点页，只允许代码切页。
 class PublishDiaryPanel extends ConsumerStatefulWidget {
   const PublishDiaryPanel({
     super.key,
@@ -415,6 +416,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             showDraftCapsule: widget.showDraftCapsule,
             onOpenTags: _panelCoordinator.openTagPage,
             onOpenCapsule: _openCapsulePage,
+            onOpenPlaces: _panelCoordinator.openPlacePage,
             notebooks: notebooks ?? const <NotebookView>[],
             onOpenNotebooks: notebooksEnabled
                 ? _panelCoordinator.openNotebookPage
@@ -453,6 +455,24 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
           content: PublishNotebookPickerPage(
             draft: widget.draft,
             notebooks: notebooks,
+          ),
+        ),
+        PublishPanelPageScaffold(
+          progress: _progress,
+          headerHeight: _collapsedHeight,
+          header: subHeader(l10n.placeHistoryTitle),
+          content: ValueListenableBuilder<bool>(
+            valueListenable: widget.actions.locating,
+            builder: (context, locating, _) => PublishPlaceHistoryPage(
+              draft: widget.draft,
+              enabled: !locating,
+              // 先写进草稿再回主页：滑回去时行已标为选中、“此时此地”里
+              // 已是刚选的地点。
+              onSelect: (place) {
+                widget.actions.selectPlace(context, place);
+                _popInnerPage();
+              },
+            ),
           ),
         ),
       ],

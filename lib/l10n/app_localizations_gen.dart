@@ -23621,6 +23621,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import & export'**
   String get dataMgmtFilesGroup;
+
+  /// Publish panel: title of the recent places sub-page and tooltip of the button that opens it (places used in earlier diaries).
+  ///
+  /// In en, this message translates to:
+  /// **'Recent places'**
+  String get placeHistoryTitle;
+
+  /// Publish panel recent places page: placeholder of the search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search places'**
+  String get placeHistorySearchHint;
+
+  /// Publish panel recent places page: hint when the search has no results.
+  ///
+  /// In en, this message translates to:
+  /// **'No places match “{query}”'**
+  String placeHistorySearchEmpty(String query);
+
+  /// Publish panel recent places page: title of the empty state when no diary has a place yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No places yet'**
+  String get placeHistoryEmptyTitle;
+
+  /// Publish panel recent places page: explanation under the empty-state title.
+  ///
+  /// In en, this message translates to:
+  /// **'Places from your diaries show up here, ready to reuse with one tap.'**
+  String get placeHistoryEmptyBody;
+
+  /// Publish panel recent places: how many diaries were written at this place.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String placeHistoryUseCount(int count);
+
+  /// Publish panel: last chip of the recent places strip under an empty place field; opens the full list. count is the total number of places.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count}'**
+  String placeHistoryShowAll(int count);
 }
 
 class _AppLocalizationsDelegate

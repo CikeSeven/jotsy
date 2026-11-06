@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/diary_cover_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
@@ -17,7 +18,8 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dar
 import 'package:node_diary/ui/diaries/controllers/tag_create_flow.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
-/// 元数据面板的异步动作：选封面、新建标签、改地址层级、自动定位、取天气。
+/// 元数据面板的异步动作：选封面、新建标签、改地址层级、自动定位、选用用过
+/// 的地点、取天气。
 ///
 /// 发布页与编辑页共用。输入是用户操作与调用方页面的 [BuildContext]；
 /// 结果写进 [draft]，进行中的状态经 [locating] / [weatherLoading] /
@@ -170,6 +172,20 @@ class DiaryMetaActions {
         autoWeatherAfterLocate &&
         draft.value.weather == null &&
         context.mounted) {
+      await resolveWeather(context, silent: true);
+    }
+  }
+
+  /// 选用一个用过的地点（[DiaryMetaDraftController.applyPlace]），代替一次
+  /// 定位：带坐标的地点与定位成功一样，在发布页天气还空着时顺带静默取天气。
+  ///
+  /// 正在定位时忽略：定位结果晚到会把刚选的地点覆盖掉。
+  Future<void> selectPlace(BuildContext context, DiaryPlaceUsage place) async {
+    if (locating.value) return;
+    draft.applyPlace(place);
+    if (place.hasCoordinates &&
+        autoWeatherAfterLocate &&
+        draft.value.weather == null) {
       await resolveWeather(context, silent: true);
     }
   }

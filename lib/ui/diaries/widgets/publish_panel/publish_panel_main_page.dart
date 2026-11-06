@@ -38,6 +38,7 @@ class PublishPanelMainPage extends StatelessWidget {
     this.showDraftCapsule = true,
     required this.onOpenTags,
     required this.onOpenCapsule,
+    required this.onOpenPlaces,
     this.notebooks = const <NotebookView>[],
     this.onOpenNotebooks,
   });
@@ -55,6 +56,9 @@ class PublishPanelMainPage extends StatelessWidget {
   final bool showDraftCapsule;
   final VoidCallback onOpenTags;
   final VoidCallback onOpenCapsule;
+
+  /// 打开“用过的地点”子页。
+  final VoidCallback onOpenPlaces;
 
   /// 书架上的日记本（解析草稿里的日记本 id）。
   final List<NotebookView> notebooks;
@@ -88,7 +92,12 @@ class PublishPanelMainPage extends StatelessWidget {
             ),
           ],
           gap,
-          PublishContextFields(draft: draft, actions: actions, busy: busy),
+          PublishContextFields(
+            draft: draft,
+            actions: actions,
+            busy: busy,
+            onOpenPlaces: onOpenPlaces,
+          ),
           if (publishTime != null) ...<Widget>[
             gap,
             PublishTimeTile(

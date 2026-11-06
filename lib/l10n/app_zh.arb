@@ -17869,5 +17869,19 @@
   "dataMgmtBackupGroup": "备份与恢复",
   "@dataMgmtBackupGroup": {"description": "Data management group title: full backup export, import and cloud backup."},
   "dataMgmtFilesGroup": "导入导出",
-  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."}
+  "@dataMgmtFilesGroup": {"description": "Data management group title: export diaries and import from other apps."},
+  "placeHistoryTitle": "用过的地点",
+  "@placeHistoryTitle": {"description": "Publish panel: title of the recent places sub-page and tooltip of the button that opens it (places used in earlier diaries)."},
+  "placeHistorySearchHint": "搜索地点",
+  "@placeHistorySearchHint": {"description": "Publish panel recent places page: placeholder of the search field."},
+  "placeHistorySearchEmpty": "没有找到「{query}」",
+  "@placeHistorySearchEmpty": {"description": "Publish panel recent places page: hint when the search has no results.", "placeholders": {"query": {"type": "String"}}},
+  "placeHistoryEmptyTitle": "还没有用过的地点",
+  "@placeHistoryEmptyTitle": {"description": "Publish panel recent places page: title of the empty state when no diary has a place yet."},
+  "placeHistoryEmptyBody": "写了地点的日记发表后，地点会出现在这里，下次点一下就能选用。",
+  "@placeHistoryEmptyBody": {"description": "Publish panel recent places page: explanation under the empty-state title."},
+  "placeHistoryUseCount": "{count} 篇",
+  "@placeHistoryUseCount": {"description": "Publish panel recent places: how many diaries were written at this place.", "placeholders": {"count": {"type": "int"}}},
+  "placeHistoryShowAll": "全部 {count}",
+  "@placeHistoryShowAll": {"description": "Publish panel: last chip of the recent places strip under an empty place field; opens the full list. count is the total number of places.", "placeholders": {"count": {"type": "int"}}}
 }

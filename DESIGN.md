@@ -754,6 +754,15 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
   - 两次不一致在提示行说明“两次不一致，请重新设置”并抖动，退回第一步；第二步按返回也回到第一步；保存时圆点保持填满；
   - 底部是 `secondaryContainer` 说明块（16 圆角，`circleInfo`）：“应用密码只保存在这台设备上，不随备份与同步，忘记后无法找回。”
 
+### 5.32 用过的地点（`PublishPlaceHistoryStrip` / `PublishPlaceHistoryPage` / `PublishPlaceRow`）
+
+规则与数据口径见 `docs/rules/drafts_publish.md`。发布页与编辑页的元数据面板共用。
+
+- **入口**：“此时此地”的地点输入框行尾，定位按钮之前（桌面没有定位，是唯一的行尾按钮）为 14px `clockRotateLeft` 图标按钮（提示“用过的地点”），点按进入面板的“用过的地点”子页（与标签子页同高 540、同一子页表头）。
+- **“最近”条带**：地点为空时，输入框下方原本放地址层级入口的那一格换成一行横向滚动的地点胶囊（上 8，34 高，间距 6，桌面经 `DesktopHorizontalScroll`）；有地点后换回地址层级入口。两者在同一格里交叉淡入（`fast`，进 `effects` / 出 `exit`），外层 `AnimatedSize` 补间高度。没有用过的地点时不占高度。最多 8 个，按最近使用；胶囊为输入框填充色（`PublishPanelTile.surfaceColorOf`，玻璃时为凹槽色）全圆角，左右 12：11px `locationDot`（带坐标的地点 `primary`、手填的 `onSurfaceVariant`）+ 6 + `labelLarge` w600 名称（最宽 160，单行省略），长按 / 悬停显示全称。名称只写最具体的一级（同发布面板收起栏摘要的口径，§4.3），同屏有两个最具体一级相同的地点时这几个写全称。第一枚胶囊的定位点与输入框的定位图标同列。超过 8 个时末尾为无底色的 `primary` “全部 N ›”，打开子页。点按胶囊直接填入；正在定位时胶囊按 M3 禁用口径降到 38%、不可点。
+- **子页**：顶部固定的胶囊形搜索框（与标签子页同一个 `PublishPanelSearchField`，左右 16、上 12、下 8，“搜索地点”），按名称或拼音实时筛选（同标签子页的规则），换检索词回到顶部，列表拖动时收起键盘；没有结果为居中的 `bodySmall` `onSurfaceVariant`“没有找到「…」”。还没有用过的地点时不显示搜索框，改为居中说明：56dp `secondaryContainer` 圆底 22px `clockRotateLeft`、16、`titleSmall` w700“还没有用过的地点”、6、`bodySmall` `onSurfaceVariant` 行高 1.5 的一句说明。
+- **地点行**（`PublishPlaceRow`，行间 8，16 圆角，最小高 58，内边距 11 / 8 / 14 / 8）：行底与标签行同口径（`surfaceContainerHighest` 45%，玻璃时 `OnGlass.wellColor`）。行首 36dp 圆形图标：带坐标的地点为 `secondaryContainer` 底 15px `locationDot`，手填的为 `onSurface` 8% 叠色底 12px `pen`。中间第一行为最具体的一级（`bodyMedium` w600），有上级时第二行为上级（`bodySmall` `onSurfaceVariant`，“杭州市 · 西湖区”），各自单行省略。右侧右对齐一列：篇数（`labelMedium` w600 `onSurfaceVariant`）与最近一次（`labelSmall`，相对时间，7 天以上写日期），这一列不伸缩，窄屏只截名称。当前地点就是这一行时：行底经 `ExpressiveStateBlend` 补间到 `primary` 浅底（亮 12% / 暗 22%），名称 w700，图标圆底补间到 `primary`、图标经 `ExpressiveIconSwap` 换成 `onPrimary` 对勾。点按一行即选用并回到面板主页（先写草稿、再滑回）；正在定位时行不可点。
+
 ## 6. 无障碍与跨端屏幕自适应
 
 1. **窄屏极端适配（320dp 逻辑像素基准）**：

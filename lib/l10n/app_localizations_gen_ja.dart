@@ -13197,4 +13197,31 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get dataMgmtFilesGroup => 'インポートとエクスポート';
+
+  @override
+  String get placeHistoryTitle => '使った場所';
+
+  @override
+  String get placeHistorySearchHint => '場所を検索';
+
+  @override
+  String placeHistorySearchEmpty(String query) {
+    return '「$query」に一致する場所はありません';
+  }
+
+  @override
+  String get placeHistoryEmptyTitle => 'まだ場所がありません';
+
+  @override
+  String get placeHistoryEmptyBody => '場所を記録した日記を書くとここに表示され、次からはタップするだけで選べます。';
+
+  @override
+  String placeHistoryUseCount(int count) {
+    return '$count 件';
+  }
+
+  @override
+  String placeHistoryShowAll(int count) {
+    return 'すべて $count';
+  }
 }

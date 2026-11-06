@@ -15050,4 +15050,40 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get dataMgmtFilesGroup => 'Импорт и экспорт';
+
+  @override
+  String get placeHistoryTitle => 'Недавние места';
+
+  @override
+  String get placeHistorySearchHint => 'Поиск мест';
+
+  @override
+  String placeHistorySearchEmpty(String query) {
+    return 'Нет мест по запросу «$query»';
+  }
+
+  @override
+  String get placeHistoryEmptyTitle => 'Мест пока нет';
+
+  @override
+  String get placeHistoryEmptyBody =>
+      'Здесь появятся места из ваших записей — в следующий раз выберите их одним касанием.';
+
+  @override
+  String placeHistoryUseCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count записи',
+      many: '$count записей',
+      few: '$count записи',
+      one: '$count запись',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String placeHistoryShowAll(int count) {
+    return 'Все $count';
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
@@ -10,7 +11,7 @@ import 'package:node_diary/utils/optional_text.dart';
 /// 元数据面板的可监听草稿：持有当前 [DiaryMetaDraft] 与地点/天气两个输入框。
 ///
 /// 输入：面板上的用户操作（选择封面/标签/心情/精力/胶囊、改地址层级、在
-/// 输入框里打字）与异步结果（定位、天气）。
+/// 输入框里打字、选用用过的地点）与异步结果（定位、天气）。
 /// 输出：[value] 与变化通知——只在值确实改变时通知，监听者（页面占位、
 /// 编辑页自动保存）不会被光标移动、选回同一选项等无效变化触发。
 /// 副作用：无（不读写数据库/设置/网络，这些在 DiaryMetaActions）。
@@ -134,6 +135,33 @@ class DiaryMetaDraftController extends ChangeNotifier
         locationLongitude: result.longitude,
         locationFromAuto: true,
       ),
+    );
+  }
+
+  /// 选用一个用过的地点，文案原样填入。
+  ///
+  /// - 带坐标的地点（当时自动定位）连同坐标、地址组件与当时的地址层级一起
+  ///   恢复，与重新打开那篇日记一致：仍是自动文案时可以继续切换层级，天气
+  ///   按它的坐标获取，坐标照常随 metadata 保存；
+  /// - 手填的地点只换文案，并像手动改写一样停止保存 geo——别处的坐标不能
+  ///   安在这个地名上；内存坐标保留给天气查询（同 [_onLocationTextChanged]）。
+  void applyPlace(DiaryPlaceUsage place) {
+    _writeText(locationText, place.label);
+    final precision = place.precision;
+    _set(
+      place.hasCoordinates
+          ? _value.copyWith(
+              location: place.label,
+              locationAddressComponent: place.addressComponent,
+              locationLatitude: place.latitude,
+              locationLongitude: place.longitude,
+              locationFromAuto: true,
+              // 旧日记没存层级时沿用当前层级。
+              locationPrecision: precision == null
+                  ? null
+                  : DiaryLocationPrecision.parse(precision),
+            )
+          : _value.copyWith(location: place.label, locationFromAuto: false),
     );
   }
 

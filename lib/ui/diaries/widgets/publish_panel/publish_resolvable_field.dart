@@ -12,6 +12,7 @@ import 'publish_panel_tile.dart';
 /// [DelayedLoadingGate.defaultDelay] 才把图标换成加载指示器，命中缓存的
 /// 快速返回不会闪一下转圈，切换本身经 [ExpressiveIconSwap] 过渡。
 /// [showResolve] 为 false 时只留手填输入框（平台不支持自动获取时）。
+/// [secondaryAction]（如地点的“用过的地点”）排在自动获取按钮之前。
 class PublishResolvableField extends StatelessWidget {
   const PublishResolvableField({
     super.key,
@@ -24,6 +25,7 @@ class PublishResolvableField extends StatelessWidget {
     required this.onResolve,
     this.leadingGap = 12,
     this.showResolve = true,
+    this.secondaryAction,
   });
 
   final Widget leading;
@@ -35,6 +37,7 @@ class PublishResolvableField extends StatelessWidget {
   final VoidCallback? onResolve;
   final double leadingGap;
   final bool showResolve;
+  final Widget? secondaryAction;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +70,7 @@ class PublishResolvableField extends StatelessWidget {
               contextMenuBuilder: appTextContextMenuBuilder,
             ),
           ),
+          ?secondaryAction,
           if (showResolve)
             IconButton(
               onPressed: resolving ? null : onResolve,

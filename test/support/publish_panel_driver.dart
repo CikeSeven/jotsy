@@ -9,6 +9,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/tag_picker_sort.dart';
+import 'package:node_diary/ui/diaries/providers/diary_place_history_provider.dart';
 import 'package:node_diary/ui/diaries/providers/tag_picker_sort_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
@@ -141,8 +142,8 @@ class PublishPanelDriver {
 }
 
 /// 单独挂载面板的宿主：英文、亮色 Expressive 主题，面板贴底；标签与日记本
-/// 为空、心情为默认候选，不触碰数据库与设置（标签子页的排序方式从
-/// [tagPickerSort] 开始、只记在内存里）。
+/// 为空、心情为默认候选，用过的地点为 [places]，不触碰数据库与设置（标签
+/// 子页的排序方式从 [tagPickerSort] 开始、只记在内存里）。
 ///
 /// [draft] 不传时宿主自建一个（精力 4）。[keyboardLayout] 为 true 时按
 /// 发布/编辑页的真实摆放（铺满 body、左右 16、贴底对齐），用于验证键盘
@@ -157,10 +158,12 @@ Widget publishPanelHost({
   String locale = 'en',
   double textScale = 1,
   TagPickerSort tagPickerSort = TagPickerSort.custom,
+  List<DiaryPlaceUsage> places = const <DiaryPlaceUsage>[],
 }) {
   return ProviderScope(
     overrides: [
       tagListProvider.overrideWith((ref) => Stream.value(tags)),
+      diaryPlaceHistoryProvider.overrideWith((ref) => Stream.value(places)),
       tagPickerSortProvider.overrideWith(
         () => _MemoryTagPickerSort(tagPickerSort),
       ),

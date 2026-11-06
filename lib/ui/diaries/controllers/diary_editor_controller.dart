@@ -8,6 +8,7 @@ import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/content_codec.dart';
 import '../models/diary_link_candidate.dart';
 import 'diary_block_convert.dart';
+import 'diary_link_typing.dart';
 import 'diary_toggle_state.dart';
 
 export 'package:appflowy_editor/appflowy_editor.dart'
@@ -72,6 +73,9 @@ class DiaryEditorController extends ChangeNotifier {
   }
 
   final af.EditorState state;
+
+  /// 折叠光标上设了网址后接着打字的链接输入会话（见 [DiaryLinkTyping]）。
+  late final DiaryLinkTyping linkTyping = DiaryLinkTyping(state);
 
   /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；
   /// null 即不能（模板编辑页、只读正文）。见 [DiaryLinkSource]。
@@ -209,7 +213,8 @@ class DiaryEditorController extends ChangeNotifier {
         : state.getNodesInSelection(selection.normalized);
   }
 
-  /// 选区横跨不同格式时仅返回共同属性；折叠选区同时考虑“接下来输入”的样式。
+  /// 选区横跨不同格式时仅返回共同属性；折叠选区同时考虑“接下来输入”的样式
+  /// 与链接输入会话（接着打的字带上它的 `href`，工具栏「链接」随之高亮）。
   Map<String, dynamic> get selectionAttributes {
     final selection = this.selection;
     if (selection == null) return const {};
@@ -219,6 +224,7 @@ class DiaryEditorController extends ChangeNotifier {
       return {
         ...?delta?.sliceAttributes(normalized.end.offset),
         ...state.toggledStyle,
+        if (linkTyping.href case final href?) kDiaryInlineHref: href,
       };
     }
     final result = <String, dynamic>{};
@@ -380,6 +386,7 @@ class DiaryEditorController extends ChangeNotifier {
   void dispose() {
     if (_disposeRequested) return;
     _disposeRequested = true;
+    linkTyping.end();
     state.selectionNotifier.removeListener(_onSelection);
     state.toggledStyleNotifier.removeListener(_onToggledStyle);
     unawaited(_subscription.cancel());

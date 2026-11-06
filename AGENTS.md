@@ -17,6 +17,7 @@
 │  │  ├─ database/  # Drift 数据库，按职责拆分的 ops（见 §3）；diary_blocks/：正文块文档格式与兼容
 │  │  └─ services/  # 跨模块服务（平台能力 AppPlatform、数据根目录、设置、备份与网盘、导入、媒体、更新等）
 │  │     ├─ ai/  # AI 助手引擎（纯 Dart，docs/ai_assistant.md）
+│  │     ├─ app_passcode/  # 应用密码（数字 / 图案）的本机存储、摘要与限流
 │  │     └─ lan_sync/  # 局域网同步引擎（docs/lan_sync.md）；sync/：同步数据层与纯函数规划器
 │  ├─ ui/
 │  │  ├─ diaries/  # 日记主业务模块：pages / controllers / providers / models|viewmodels / export / sections|widgets（widgets/diary_editor/ 为共用编辑器）
@@ -25,6 +26,7 @@
 │  │  ├─ diary_templates/  # 日记模板
 │  │  ├─ notebooks/  # 日记本
 │  │  ├─ ai/  # AI 助手界面
+│  │  ├─ app_lock/  # 应用锁、应用密码（数字键盘 / 图案）与统一验证入口 IdentityVerifier
 │  │  ├─ lan_sync/  # 局域网同步界面
 │  │  ├─ home|calendar|explore|settings/  # 首页与各 Tab、设置页
 │  │  └─ widgets/  # 跨 feature 公共 UI（app_modal/、expressive_menu/、glass/、text_selection_menu/、fast_scroller/ 等）
@@ -111,6 +113,7 @@
 | 导入 / 恢复、其他应用与云端笔记导入、网盘备份 | `backup_import.md` |
 | 分享与导出 | `export_share.md` |
 | 功能管理开关 | `app_features.md` |
+| 应用锁、应用密码（数字 / 图案）、验证身份（系统验证 / 应用密码） | `app_lock.md` |
 | 应用内更新、更新日志、官网、打赏、发布与下载统计 | `release_website.md` |
 | 某个文件 / 类在哪、各目录放什么 | `structure.md` |
 

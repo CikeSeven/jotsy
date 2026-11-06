@@ -364,6 +364,16 @@ class ExportBlock {
     imageThumbnail: imageThumbnail,
   );
 
+  /// 首行缩进取哪一档（PDF、Word 与网页共用，单位由调用方定）：只有正文
+  /// 段落（不含 [standIn]）、且从起始侧排起（左对齐或两端对齐）时缩进，
+  /// 带工具栏缩进标记（[firstLineIndent]）的取 [marked]，否则取 [regular]；
+  /// 其余为 0。与应用一致：居中、右对齐不缩进。
+  double firstLineIndentOf({required double regular, required double marked}) {
+    if (kind != ExportBlockKind.paragraph || standIn) return 0;
+    if (align == ExportAlign.center || align == ExportAlign.end) return 0;
+    return firstLineIndent ? marked : regular;
+  }
+
   bool get isListItem =>
       kind == ExportBlockKind.bullet ||
       kind == ExportBlockKind.ordered ||

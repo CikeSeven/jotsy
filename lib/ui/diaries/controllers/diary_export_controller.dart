@@ -261,6 +261,7 @@ class DiaryExportController {
           fontFamilies: await _bodyFontFamilies(),
           book: layout,
           code: code,
+          typography: typography,
         ),
         DiaryExportFormat.text => DiaryTextWriter.write(
           entries,

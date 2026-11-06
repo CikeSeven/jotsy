@@ -426,4 +426,32 @@ void main() {
       24,
     );
   });
+
+  test('the web page indents body paragraphs by the typography snapshot '
+      'through the export controller', () async {
+    final a = await diary(
+      'Indent',
+      createdAt: DateTime(2026, 5, 1),
+      content: '[{"insert":"Body\\n"}]',
+    );
+    final artifact =
+        await DiaryExportController(
+          database: fixture.database,
+          now: () => now,
+        ).build(
+          [a],
+          options: const DiaryExportOptions(
+            format: DiaryExportFormat.html,
+            includeMeta: false,
+            includeMedia: false,
+          ),
+          labels: testExportLabels,
+          languageTag: 'en',
+          typography: const DiaryTypography(firstLineIndent: 3),
+        );
+    expect(
+      await artifact.file.readAsString(),
+      contains('<p style="text-indent:3em">Body</p>'),
+    );
+  });
 }

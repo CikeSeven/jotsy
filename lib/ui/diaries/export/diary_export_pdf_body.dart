@@ -117,8 +117,7 @@ List<pw.Widget> buildDiaryPdfBody(
       final checked = block.kind == ExportBlockKind.checked;
       // 已完成的待办与应用一样：没设颜色的文字转灰，整项划线。
       final style = checked ? base.copyWith(color: PdfColors.grey600) : base;
-      final indentChars = _firstLineIndentChars(
-        block,
+      final indentChars = block.firstLineIndentOf(
         regular: firstLineIndent,
         marked: markedFirstLineIndent,
       );
@@ -219,18 +218,4 @@ List<pw.Widget> buildDiaryPdfBody(
     result.add(effects.wrap(content));
   }
   return result;
-}
-
-/// 本块首行缩进的字数：只有正文段落、且从起始侧排起（左对齐或两端对齐）
-/// 时缩进，带工具栏缩进标记的取 [marked]，否则取全局的 [regular]。
-double _firstLineIndentChars(
-  ExportBlock block, {
-  required double regular,
-  required double marked,
-}) {
-  if (block.kind != ExportBlockKind.paragraph || block.standIn) return 0;
-  if (block.align == ExportAlign.center || block.align == ExportAlign.end) {
-    return 0;
-  }
-  return block.firstLineIndent ? marked : regular;
 }

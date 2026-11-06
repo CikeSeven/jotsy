@@ -413,17 +413,14 @@ class DiaryDocxWriter {
         case ExportBlockKind.table:
           b.table(block);
         case ExportBlockKind.paragraph:
-          // 与应用一致：居中、右对齐的段落不缩进首行；带工具栏首行缩进
-          // 标记的段落按两字与全局取较大者；链接卡片的标题行（standIn）
-          // 不是正文段落，不缩进。
-          final firstLine =
-              !block.standIn &&
-                  (block.align == ExportAlign.start ||
-                      block.align == ExportAlign.justify)
-              ? (block.firstLineIndent
-                    ? b.markedFirstLineTwips
-                    : b.firstLineTwips)
-              : 0;
+          // 口径见 ExportBlock.firstLineIndentOf（居中、右对齐与链接卡片的
+          // 标题行不缩进，带工具栏缩进标记的按两字与全局取较大者）。
+          final firstLine = block
+              .firstLineIndentOf(
+                regular: b.firstLineTwips.toDouble(),
+                marked: b.markedFirstLineTwips.toDouble(),
+              )
+              .round();
           b.paragraph(
             align: block.align,
             indentTwips: block.indent > 0 ? 420 * block.indent : null,

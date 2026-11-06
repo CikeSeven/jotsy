@@ -3102,6 +3102,24 @@ abstract class AppLocalizations {
   /// **'Swipe up here or tap to collapse the tags'**
   String get diaryTagCollapseHint;
 
+  /// One-time hint shown under the collapsed home tag filter bar on touch devices, telling users they can pull the bar down to see every tag; count is the number of tags in the bar.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Pull down to see all {count} tag} other{Pull down to see all {count} tags}}'**
+  String diaryTagPullHint(int count);
+
+  /// Desktop variant of the one-time hint under the collapsed home tag filter bar: drag it down or click the hint to see every tag; count is the number of tags in the bar.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Drag down or click to see all {count} tag} other{Drag down or click to see all {count} tags}}'**
+  String diaryTagPullHintDesktop(int count);
+
+  /// Screen reader hint for the tag bar pull-down hint: activating it expands the tag list.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand tags'**
+  String get diaryTagExpand;
+
   /// Pinned micro-badge text displayed at the top of a diary card
   ///
   /// In en, this message translates to:

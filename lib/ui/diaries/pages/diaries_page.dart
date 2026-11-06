@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,6 +56,7 @@ import '../../widgets/app_modal/app_dialog.dart';
 import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';
+import '../controllers/tag_filter_pull_hint_controller.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../models/time_capsule.dart';
 import '../providers/diary_card_style_provider.dart';
@@ -76,6 +78,7 @@ import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../widgets/diary_preview/diary_preview_host.dart';
 import '../widgets/diary_preview/diary_preview_neighbors.dart';
 import '../widgets/diary_tag_filter_bar.dart';
+import '../widgets/tag_filter_pull_hint.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/launch_reveal.dart';
 
@@ -205,6 +208,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// 以更新 PopScope。
   bool _tagFiltersExpanded = false;
 
+  /// 标签栏“下拉展开”的一次性提示（时序与记录见控制器）。
+  late final TagFilterPullHintController _pullHint;
+
   // ==================== 宽窗口双栏 ====================
   /// 右栏正在阅读的日记 id（见 [DiariesReadingSelectionController]）。
   String? _readingDiaryId;
@@ -289,6 +295,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       vsync: this,
       duration: _tagFilterSnapDuration,
     )..addListener(_syncTagFiltersExpanded);
+    _pullHint = TagFilterPullHintController(vsync: this)
+      ..addListener(_handlePullHintChanged);
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
     widget.onSearchActionChanged?.call(_controller.openSearchPage);
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
@@ -326,6 +334,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _keyboardFocusNode.dispose();
     _pagingCooldownTimer?.cancel();
     _tagFilterExpansionController.dispose();
+    _pullHint.dispose();
     _listRefreshPulseController.dispose();
     super.dispose();
   }
@@ -510,37 +519,48 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 top: _tagSectionTopGap,
                 bottom: _tagSectionBottomGap,
               ),
-              child: DiaryTagFilterBar(
-                tags: visibleTagFilters,
-                expansionProgress: _tagFilterExpansionController,
-                canExpand: () => _tagFilterExpansionController.value < 1,
-                canCollapse: () => _tagFilterExpansionController.value > 0,
-                selectedTagFilterIds: filterState.selectedTagIds,
-                onToggleTagFilter: _controller.toggleTagFilter,
-                onClearTagFilters: _controller.clearTagFilters,
-                onVerticalDragStart: (_) => _handleTagFilterDragStart(),
-                onVerticalDragUpdate: _handleTagFilterDragUpdate,
-                onVerticalDragEnd: _handleTagFilterDragEnd,
-                onCollapse: () => _animateTagFiltersTo(false),
-                leading: notebooksEnabled
-                    ? NotebookSwitcherChip(
-                        notebook: currentNotebook,
-                        unfiled: scopeResolution.isUnfiled,
-                        onTap: () => unawaited(_scopeController.openShelf()),
-                      )
-                    : null,
-                leadingWidth: notebooksEnabled
-                    ? NotebookSwitcherChip.measureWidth(
-                        context,
-                        currentNotebook,
-                        unfiled: scopeResolution.isUnfiled,
-                      )
-                    : 0,
-                keepVisible:
-                    notebooksEnabled &&
-                    (hasNotebooks ||
-                        currentNotebook != null ||
-                        scopeResolution.isUnfiled),
+              // 只在不多选、标签栏收着时提示；Tab 可见、路由与入场编排的
+              // 时序由这一小块跟进，不让整页依赖它们。
+              child: TagFilterPullHintSync(
+                controller: _pullHint,
+                settings: settingsService,
+                enabled: !_isSelectionMode && !_tagFiltersExpanded,
+                child: DiaryTagFilterBar(
+                  tags: visibleTagFilters,
+                  expansionProgress: _tagFilterExpansionController,
+                  canExpand: () => _tagFilterExpansionController.value < 1,
+                  canCollapse: () => _tagFilterExpansionController.value > 0,
+                  selectedTagFilterIds: filterState.selectedTagIds,
+                  onToggleTagFilter: _controller.toggleTagFilter,
+                  onClearTagFilters: _controller.clearTagFilters,
+                  onVerticalDragStart: (_) => _handleTagFilterDragStart(),
+                  onVerticalDragUpdate: _handleTagFilterDragUpdate,
+                  onVerticalDragEnd: _handleTagFilterDragEnd,
+                  onCollapse: () => _animateTagFiltersTo(false),
+                  pullHintVisible: _pullHint.visible,
+                  pullHintPeek: _pullHint.peek,
+                  onPullHintTap: () => _animateTagFiltersTo(true),
+                  onHiddenTagsChanged: _pullHint.reportHiddenTags,
+                  leading: notebooksEnabled
+                      ? NotebookSwitcherChip(
+                          notebook: currentNotebook,
+                          unfiled: scopeResolution.isUnfiled,
+                          onTap: () => unawaited(_scopeController.openShelf()),
+                        )
+                      : null,
+                  leadingWidth: notebooksEnabled
+                      ? NotebookSwitcherChip.measureWidth(
+                          context,
+                          currentNotebook,
+                          unfiled: scopeResolution.isUnfiled,
+                        )
+                      : 0,
+                  keepVisible:
+                      notebooksEnabled &&
+                      (hasNotebooks ||
+                          currentNotebook != null ||
+                          scopeResolution.isUnfiled),
+                ),
               ),
             );
           },
@@ -1173,6 +1193,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   }
 
   void _syncTagFiltersExpanded() {
+    if (_tagFilterExpansionController.value >= 1) {
+      _pullHint.handleExpanded();
+    }
     final expanded = _tagFilterExpansionController.value > 0;
     if (expanded != _tagFiltersExpanded && mounted) {
       setState(() => _tagFiltersExpanded = expanded);
@@ -1222,9 +1245,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     await _controller.openCreateEditorWithDraftPrompt();
   }
 
+  void _handlePullHintChanged() {
+    if (mounted) setState(() {});
+  }
+
   bool _handlePrimaryScrollNotification(ScrollNotification notification) {
     if (notification.depth != 0 || notification.metrics.axis != Axis.vertical) {
       return false;
+    }
+
+    // 用户自己滑动列表（拖动或滚轮；快速滚动条的跳转不算）。
+    if (notification is UserScrollNotification &&
+        notification.direction != ScrollDirection.idle) {
+      _pullHint.handleUserInteraction();
     }
 
     if (notification.metrics.extentAfter < _loadMoreTriggerExtent) {
@@ -1265,6 +1298,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   }
 
   void _handleTagFilterDragStart() {
+    _pullHint.handleUserInteraction();
     _tagFilterExpansionController.stop();
     _tagFilterDragDelta = 0;
   }

@@ -12,6 +12,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
+import 'package:node_diary/ui/widgets/launch_reveal.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
@@ -56,6 +57,8 @@ Future<void> pumpTagPage(
   Brightness brightness = Brightness.light,
   List<DiaryWithTags> diaries = const <DiaryWithTags>[],
   double? deviceTouchSlop,
+  Animation<double>? launchReveal,
+  bool disableAnimations = false,
 }) async {
   tester.view.physicalSize = const Size(390, 800);
   tester.view.devicePixelRatio = 1;
@@ -99,20 +102,24 @@ Future<void> pumpTagPage(
             gestureSettings: deviceTouchSlop == null
                 ? null
                 : DeviceGestureSettings(touchSlop: deviceTouchSlop),
+            disableAnimations: disableAnimations,
           ),
           child: child!,
         ),
         locale: const Locale('zh'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: PageView(
-          // Match Home's horizontal page recognizer as well as the real
-          // DiariesPage slivers; a standalone Column misses both conflicts.
-          physics: const PageScrollPhysics(),
-          children: <Widget>[
-            DiariesPage(pageBackgroundColor: theme.colorScheme.surface),
-            ColoredBox(color: theme.colorScheme.surface),
-          ],
+        home: _withLaunchReveal(
+          launchReveal,
+          PageView(
+            // Match Home's horizontal page recognizer as well as the real
+            // DiariesPage slivers; a standalone Column misses both conflicts.
+            physics: const PageScrollPhysics(),
+            children: <Widget>[
+              DiariesPage(pageBackgroundColor: theme.colorScheme.surface),
+              ColoredBox(color: theme.colorScheme.surface),
+            ],
+          ),
         ),
       ),
     ),
@@ -121,6 +128,13 @@ Future<void> pumpTagPage(
   expect(tagBarFinder, findsOneWidget);
   expect(tester.takeException(), isNull);
 }
+
+/// Home always sits under the launch choreography's scope; pages mounted
+/// without it (the default here) never show the one-time pull hint.
+Widget _withLaunchReveal(Animation<double>? progress, Widget child) =>
+    progress == null
+    ? child
+    : LaunchRevealScope(progress: progress, child: child);
 
 List<DiaryWithTags> createGestureDiaries(int count) => <DiaryWithTags>[
   for (var index = 1; index <= count; index++)

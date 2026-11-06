@@ -2320,6 +2320,28 @@
   "@diaryTagCollapseHint": {
     "description": "Gesture hint for collapsing tags from the footer without interrupting list scrolling."
   },
+  "diaryTagPullHint": "{count, plural, one{Pull down to see all {count} tag} other{Pull down to see all {count} tags}}",
+  "@diaryTagPullHint": {
+    "description": "One-time hint shown under the collapsed home tag filter bar on touch devices, telling users they can pull the bar down to see every tag; count is the number of tags in the bar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTagPullHintDesktop": "{count, plural, one{Drag down or click to see all {count} tag} other{Drag down or click to see all {count} tags}}",
+  "@diaryTagPullHintDesktop": {
+    "description": "Desktop variant of the one-time hint under the collapsed home tag filter bar: drag it down or click the hint to see every tag; count is the number of tags in the bar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTagExpand": "Expand tags",
+  "@diaryTagExpand": {
+    "description": "Screen reader hint for the tag bar pull-down hint: activating it expands the tag list."
+  },
   "diaryPinnedBadge": "Pinned",
   "@diaryPinnedBadge": {
     "description": "Pinned micro-badge text displayed at the top of a diary card"

@@ -14,7 +14,7 @@ import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_markers.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_styles.dart';
+import 'package:node_diary/ui/diaries/models/diary_text_style_options.dart';
 
 import '../../../support/expressive_test_theme.dart';
 

@@ -84,8 +84,8 @@ class DiaryExportEmptyException implements Exception {
 /// - 正文字体跟随正文排版：[loadBodyFont] 给出用户选的导入字体（见
 ///   [DiaryExportFont]），PDF 嵌入它，Word 与网页按字族名引用；只在这三种
 ///   格式下读取。没给或读不到时各格式保持原有字体。
-/// - Word 正文数值由 [build] 的 `typography` 快照给出，写出器只换算单位，
-///   不自行读取设置，避免生成途中混入另一份排版参数。
+/// - Word 正文数值与 PDF 的首行缩进由 [build] 的 `typography` 快照给出，
+///   写出器只换算单位，不自行读取设置，避免生成途中混入另一份排版参数。
 /// - 代码高亮跟随代码块样式：[build] 的 `code` 交给 PDF、Word 与网页写出器；
 ///   没给时代码块只是等宽文字。
 /// - 留言：[build] 的 `commentsEnabled`（留言功能开启）、导出选项的“包含
@@ -228,6 +228,7 @@ class DiaryExportController {
           textDirection: textDirection,
           book: layout,
           code: code,
+          typography: typography,
         ),
         DiaryExportFormat.word => await DiaryDocxWriter.write(
           entries,
@@ -260,6 +261,7 @@ class DiaryExportController {
           fontFamilies: await _bodyFontFamilies(),
           book: layout,
           code: code,
+          typography: typography,
         ),
         DiaryExportFormat.text => DiaryTextWriter.write(
           entries,

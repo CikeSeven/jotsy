@@ -11,6 +11,7 @@ import '../../../core/database/diary_blocks/diary_blocks_table.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
 import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/diary_blocks/diary_list_style.dart';
+import '../models/diary_image_embed_data.dart';
 import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';
 
@@ -139,19 +140,20 @@ class ExportInline {
   /// 是否为格子里的段间换行（[lineBreak]）。
   bool get isLineBreak => text == '\n';
 
-  /// 改文字或颜色、补斜体后的副本（PDF 准备正文时压平颜色、给代码着色用）；
-  /// 没给的项保持原样。
+  /// 改文字或颜色、补斜体或删除线后的副本（PDF 准备正文时压平颜色、给代码
+  /// 着色、给已完成的待办划线用）；没给的项保持原样。
   ExportInline copyWith({
     String? text,
     Color? color,
     Color? background,
     bool? italic,
+    bool? strike,
   }) => ExportInline(
     text ?? this.text,
     bold: bold,
     italic: italic ?? this.italic,
     underline: underline,
-    strike: strike,
+    strike: strike ?? this.strike,
     code: code,
     link: link,
     color: color ?? this.color,
@@ -182,6 +184,10 @@ class ExportBlock {
     this.tableRows = const <List<List<ExportInline>>>[],
     this.tableHeaderRow = false,
     this.firstLineIndent = false,
+    this.standIn = false,
+    this.imageMaxWidth,
+    this.imageMaxHeight,
+    this.imageThumbnail = false,
   });
 
   final ExportBlockKind kind;
@@ -194,8 +200,12 @@ class ExportBlock {
   final int indent;
 
   /// 正文段落带工具栏「缩进」写入的首行缩进标记（`kDiaryParagraphIndentKey`）：
-  /// 只有 Word 写成首行缩进（与全局首行缩进同一口径，两字与全局取较大者）。
+  /// Word 与 PDF 写成首行缩进（与全局首行缩进同一口径，两字与全局取较大者）。
   final bool firstLineIndent;
+
+  /// 非文字块退化成的一行说明：写出器把媒体退化成的名称行（[paragraphWith]），
+  /// 以及日记链接卡片的快照标题。种类是段落，但不是正文段落，不加首行缩进。
+  final bool standIn;
 
   /// 有序列表在同一缩进层级内的序号（1 起），其他块为 0。
   final int ordinal;
@@ -203,6 +213,15 @@ class ExportBlock {
 
   /// 图片 / 媒体的原始来源（本地路径、http(s) 或 data URI）。
   final String? source;
+
+  /// 图片在应用里的显示上限（逻辑像素，缩放菜单或导入写入的宽高，见
+  /// `diaryImageSizeLimits`），没设的一边为 null；只作上限、按原比例缩小。
+  /// 写出器经 `ExportImageBox` 换成显示尺寸。其他块为 null。
+  final double? imageMaxWidth;
+  final double? imageMaxHeight;
+
+  /// 图片以小图（方形缩略）显示（`data.thumbnail`）；其他块为 false。
+  final bool imageThumbnail;
   final ExportMediaKind? mediaKind;
 
   /// 媒体显示名称（附件原文件名、录音名），不含设备路径。
@@ -310,6 +329,7 @@ class ExportBlock {
     inlines: List<ExportInline>.unmodifiable(inlines),
     indent: indent,
     align: align,
+    standIn: true,
   );
 
   /// 换掉行内片段、来源或表格格子后的副本，其余不变（PDF 准备正文时用）。
@@ -337,7 +357,22 @@ class ExportBlock {
     calloutTone: calloutTone,
     tableRows: tableRows ?? this.tableRows,
     tableHeaderRow: tableHeaderRow,
+    firstLineIndent: firstLineIndent,
+    standIn: standIn,
+    imageMaxWidth: imageMaxWidth,
+    imageMaxHeight: imageMaxHeight,
+    imageThumbnail: imageThumbnail,
   );
+
+  /// 首行缩进取哪一档（PDF、Word 与网页共用，单位由调用方定）：只有正文
+  /// 段落（不含 [standIn]）、且从起始侧排起（左对齐或两端对齐）时缩进，
+  /// 带工具栏缩进标记（[firstLineIndent]）的取 [marked]，否则取 [regular]；
+  /// 其余为 0。与应用一致：居中、右对齐不缩进。
+  double firstLineIndentOf({required double regular, required double marked}) {
+    if (kind != ExportBlockKind.paragraph || standIn) return 0;
+    if (align == ExportAlign.center || align == ExportAlign.end) return 0;
+    return firstLineIndent ? marked : regular;
+  }
 
   bool get isListItem =>
       kind == ExportBlockKind.bullet ||

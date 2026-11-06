@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui' show Color;
 
 import '../../../core/database/app_database.dart'
     show DiaryCommentRow, DiaryCommentRowImages;
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../../../core/services/diary_typography.dart';
 import '../models/diary_callout_tone.dart';
 import '../models/diary_code_block/diary_code_theme.dart';
 import '../models/diary_text_colors.dart';
@@ -46,6 +48,11 @@ import 'diary_export_media.dart';
 /// `<table>`（首行为表头时放进 `<thead>`），上下标写成 `<sup>` / `<sub>`，
 /// 行内字号写成以 em 计的 `font-size`；这几样块的样式（[_blocksCss]）只在
 /// 正文里有标注、折叠列表或表格时写出。
+///
+/// 段落对齐、首行缩进与嵌套层级同应用：首行缩进的字数取 `write` 的
+/// `typography` 快照（口径见 [ExportBlock.firstLineIndentOf]，写成以 em 计的
+/// `text-indent`）；块比所在容器（正文或折叠列表）多出的层级写成左外边距
+/// （每级 1.5em，[_nestRule]），列表的层级仍由嵌套的 ul / ol 表达。
 class DiaryHtmlWriter {
   const DiaryHtmlWriter._();
 
@@ -61,8 +68,16 @@ class DiaryHtmlWriter {
     List<String> fontFamilies = const <String>[],
     DiaryExportBookLayout? book,
     DiaryExportCodeTheme? code,
+    DiaryTypography typography = const DiaryTypography(),
   }) async {
     final bundle = entries.length > 1;
+    final indent = (
+      regular: typography.firstLineIndent,
+      marked: math.max(
+        typography.firstLineIndent,
+        DiaryTypography.paragraphFirstLineIndent,
+      ),
+    );
     // 没有代码块时不写高亮样式，页面与原来一样。
     final codeTheme =
         code != null &&
@@ -161,6 +176,7 @@ class DiaryHtmlWriter {
         labels: labels,
         images: images,
         code: codeTheme,
+        indent: indent,
       );
     } else {
       for (final entry in entries) {
@@ -171,6 +187,7 @@ class DiaryHtmlWriter {
           labels: labels,
           images: images,
           code: codeTheme,
+          indent: indent,
         );
       }
     }
@@ -194,6 +211,7 @@ class DiaryHtmlWriter {
     required DiaryExportLabels labels,
     required Map<String, String> images,
     DiaryExportCodeTheme? code,
+    required _FirstLineIndent indent,
   }) {
     out.write('<section class="book-title">\n');
     final cover = book.coverPath == null ? null : images[book.coverPath!];
@@ -266,6 +284,7 @@ class DiaryHtmlWriter {
           code: code,
           anchor: book.anchorOf(entry),
           titleLevel: 2,
+          indent: indent,
         );
       }
       out.write('</section>\n');
@@ -282,6 +301,7 @@ class DiaryHtmlWriter {
     DiaryExportCodeTheme? code,
     String? anchor,
     int titleLevel = 1,
+    required _FirstLineIndent indent,
   }) {
     out
       ..write(anchor == null ? '<article>\n' : '<article id="$anchor">\n')
@@ -318,6 +338,7 @@ class DiaryHtmlWriter {
       images: images,
       code: code,
       headingOffset: titleLevel,
+      indent: indent,
     );
     _writeComments(
       out,
@@ -383,6 +404,7 @@ class DiaryHtmlWriter {
     required Map<String, String> images,
     DiaryExportCodeTheme? code,
     int headingOffset = 1,
+    required _FirstLineIndent indent,
   }) {
     _writeRange(
       out,
@@ -393,12 +415,15 @@ class DiaryHtmlWriter {
       images: images,
       codeRuns: code?.highlightBlocks(entry.blocks),
       headingOffset: headingOffset,
+      indent: indent,
     );
   }
 
   /// 写出 `entry.blocks[start, end)`。折叠列表把它后面缩进更深的块（它的
   /// 子块）收进自己的 `<details>`，递归写出；列表、引用与代码的分组不越过
-  /// [end]，不会从折叠列表里跑出去。[codeRuns] 按整篇的下标给出。
+  /// [end]，不会从折叠列表里跑出去。[codeRuns] 按整篇的下标给出。[base]
+  /// 是所在容器的层级（正文为 0，折叠列表里为它的层级 + 1）：块比它深的
+  /// 层级写成左外边距（[_nestRule]）。
   static void _writeRange(
     StringBuffer out,
     DiaryExportEntry entry,
@@ -408,14 +433,17 @@ class DiaryHtmlWriter {
     required Map<String, String> images,
     required List<List<DiaryExportCodeRun>?>? codeRuns,
     required int headingOffset,
+    required _FirstLineIndent indent,
+    int base = 0,
   }) {
     final blocks = entry.blocks;
     var i = start;
     while (i < end) {
       final block = blocks[i];
+      final nest = _nestRule(block, base);
       if (block.isListItem) {
         final next = _runEnd(blocks, i, end, (ExportBlock b) => b.isListItem);
-        _writeList(out, blocks.sublist(i, next));
+        _writeList(out, blocks.sublist(i, next), base: base);
         i = next;
         continue;
       }
@@ -426,7 +454,7 @@ class DiaryHtmlWriter {
           end,
           (ExportBlock b) => b.kind == ExportBlockKind.quote,
         );
-        out.write('<blockquote>');
+        out.write('<blockquote${_styleAttr(<String?>[nest])}>');
         for (final line in blocks.sublist(i, next)) {
           out.write('<p${_align(line)}>${_inlines(line.inlines)}</p>');
         }
@@ -459,7 +487,9 @@ class DiaryHtmlWriter {
           final id => id,
         };
         final classAttr = language == null ? '' : ' class="language-$language"';
-        out.write('<pre><code$classAttr>$html</code></pre>\n');
+        out.write(
+          '<pre${_styleAttr(<String?>[nest])}><code$classAttr>$html</code></pre>\n',
+        );
         i = next;
         continue;
       }
@@ -472,7 +502,7 @@ class DiaryHtmlWriter {
           (ExportBlock b) => b.indent > block.indent,
         );
         out.write(
-          '<details open><summary${_align(block)}>'
+          '<details open${_styleAttr(<String?>[nest])}><summary${_align(block)}>'
           '${_inlines(block.inlines)}</summary>\n',
         );
         _writeRange(
@@ -484,6 +514,8 @@ class DiaryHtmlWriter {
           images: images,
           codeRuns: codeRuns,
           headingOffset: headingOffset,
+          indent: indent,
+          base: block.indent + 1,
         );
         out.write('</details>\n');
         i = close;
@@ -493,51 +525,60 @@ class DiaryHtmlWriter {
         case ExportBlockKind.heading:
           final level = block.level + headingOffset;
           final html = _inlines(block.inlines);
+          final style = _styleAttr(<String?>[_alignRule(block), nest]);
           out.write(
             level <= 6
-                ? '<h$level${_align(block)}>$html</h$level>\n'
+                ? '<h$level$style>$html</h$level>\n'
                 : '<h6 class="h-level-$level" aria-level="$level"'
-                      '${_align(block)}>$html</h6>\n',
+                      '$style>$html</h6>\n',
           );
         case ExportBlockKind.image:
           final data = images[block.source!];
           if (data != null && block.source != entry.cover) {
             out.write(
-              '<figure><img src="${_attr(data)}" alt="" loading="lazy"></figure>\n',
+              '<figure${_figureClass(block)}${_styleAttr(<String?>[nest])}>'
+              '<img src="${_attr(data)}" '
+              'alt="" loading="lazy"${_imageSize(block)}></figure>\n',
             );
           }
         case ExportBlockKind.media:
           out.write(
-            '<p class="attachment">${_text(labels.mediaLine(block))}</p>\n',
+            '<p class="attachment"${_styleAttr(<String?>[nest])}>'
+            '${_text(labels.mediaLine(block))}</p>\n',
           );
         case ExportBlockKind.divider:
-          out.write('<hr>\n');
+          out.write('<hr${_styleAttr(<String?>[nest])}>\n');
         case ExportBlockKind.callout:
           final tone = DiaryCalloutTone.fromId(block.calloutTone);
           out.write(
-            '<div class="callout callout-${tone.id}">'
+            '<div class="callout callout-${tone.id}"'
+            '${_styleAttr(<String?>[nest])}>'
             '<span class="callout-icon">'
             '${_text(block.calloutIcon ?? kDiaryCalloutDefaultIcon)}</span>'
             '<div class="callout-body"${_align(block)}>'
             '${_inlines(block.inlines)}</div></div>\n',
           );
         case ExportBlockKind.table:
-          _writeTable(out, block);
+          _writeTable(out, block, nest: nest);
         default:
           final html = _inlines(block.inlines);
+          final textIndent = block.firstLineIndentOf(
+            regular: indent.regular,
+            marked: indent.marked,
+          );
           out.write(
             html.trim().isEmpty
                 ? '<p class="blank"></p>\n'
-                : '<p${_align(block)}>$html</p>\n',
+                : '<p${_styleAttr(<String?>[_alignRule(block), if (textIndent > 0) 'text-indent:${_em(textIndent)}', nest])}>$html</p>\n',
           );
       }
       i++;
     }
   }
 
-  /// 表格铺满内容宽度；首行为表头时放进 `<thead>`、用 `<th>`。一格里的
-  /// 几段以 `<br>` 相连。
-  static void _writeTable(StringBuffer out, ExportBlock block) {
+  /// 表格铺满内容宽度（嵌套时让出左外边距 [nest]）；首行为表头时放进
+  /// `<thead>`、用 `<th>`。一格里的几段以 `<br>` 相连。
+  static void _writeTable(StringBuffer out, ExportBlock block, {String? nest}) {
     String cell(String tag, List<ExportInline> runs) {
       final paragraphs = ExportBlock.tableCellParagraphs(runs).map(_inlines);
       return '<$tag>${paragraphs.join('<br>')}</$tag>';
@@ -548,7 +589,10 @@ class DiaryHtmlWriter {
 
     final rows = block.tableRows;
     final header = block.tableHeaderRow && rows.isNotEmpty;
-    out.write('<table>');
+    final margin = nest?.substring('margin-left:'.length);
+    out.write(
+      '<table${_styleAttr(<String?>[nest, if (margin != null) 'width:calc(100% - $margin)'])}>',
+    );
     if (header) {
       out.write('<thead>${row('th', rows.first)}</thead>');
     }
@@ -574,7 +618,12 @@ class DiaryHtmlWriter {
 
   /// 把一段连续的列表项写成嵌套的 ul / ol：缩进加深时在上一项里开子列表，
   /// 回退时关闭；同一层级换了列表类型（有序 ↔ 无序 / 待办）时另起一个列表。
-  static void _writeList(StringBuffer out, List<ExportBlock> items) {
+  /// [base] 同 [_writeRange]：最外层的列表比它深时整个列表带左外边距。
+  static void _writeList(
+    StringBuffer out,
+    List<ExportBlock> items, {
+    int base = 0,
+  }) {
     final stack = <({String tag, int indent})>[];
     var itemOpen = false;
     String tagOf(ExportBlock b) =>
@@ -596,7 +645,8 @@ class DiaryHtmlWriter {
         final start = item.kind == ExportBlockKind.ordered && item.ordinal > 1
             ? ' start="${item.ordinal}"'
             : '';
-        out.write('<$tag$start>');
+        final outer = stack.isEmpty ? _nestRule(item, base) : null;
+        out.write('<$tag$start${_styleAttr(<String?>[outer])}>');
         stack.add((tag: tag, indent: item.indent));
       } else if (itemOpen) {
         out.write('</li>');
@@ -625,12 +675,27 @@ class DiaryHtmlWriter {
     out.write('\n');
   }
 
-  static String _align(ExportBlock block) => switch (block.align) {
-    ExportAlign.center => ' style="text-align:center"',
-    ExportAlign.end => ' style="text-align:right"',
-    ExportAlign.justify => ' style="text-align:justify"',
-    ExportAlign.start => '',
+  static String _align(ExportBlock block) =>
+      _styleAttr(<String?>[_alignRule(block)]);
+
+  static String? _alignRule(ExportBlock block) => switch (block.align) {
+    ExportAlign.center => 'text-align:center',
+    ExportAlign.end => 'text-align:right',
+    ExportAlign.justify => 'text-align:justify',
+    ExportAlign.start => null,
   };
+
+  /// 块比所在容器（[base] 层）多出的层级写成左外边距，每级 1.5em（与
+  /// 列表的缩进同一量级）；没有多出时为 null。
+  static String? _nestRule(ExportBlock block, int base) => block.indent > base
+      ? 'margin-left:${_em((block.indent - base) * 1.5)}'
+      : null;
+
+  /// 把几条 CSS 声明合成 style 属性（略过 null）；都没有时为空串。
+  static String _styleAttr(List<String?> rules) {
+    final kept = rules.nonNulls;
+    return kept.isEmpty ? '' : ' style="${kept.join(';')}"';
+  }
 
   static String _inlines(List<ExportInline> runs) {
     final out = StringBuffer();
@@ -674,6 +739,31 @@ class DiaryHtmlWriter {
   }
 
   /// 倍数写成 em，去掉多余的零（如 1.25em、1.5em、0.85em）。
+  /// 正文图片的对齐（figure 的类）：居中 / 靠右经 CSS 的自动外边距
+  /// （`figure.align-*`），靠起始侧不写。
+  static String _figureClass(ExportBlock block) => switch (block.align) {
+    ExportAlign.center => ' class="align-center"',
+    ExportAlign.end => ' class="align-right"',
+    _ => '',
+  };
+
+  /// 正文图片的尺寸，与应用一致（口径见 `ExportImageBox`）：小图为
+  /// `img.thumb`（120px 见方、cover 裁切）；缩放菜单的宽高只作上限，宽高
+  /// 仍是 auto，浏览器在上限内按原比例缩小；都没有时不写。
+  static String _imageSize(ExportBlock block) {
+    if (block.imageThumbnail) return ' class="thumb"';
+    final width = block.imageMaxWidth;
+    final height = block.imageMaxHeight;
+    final limits = <String>[
+      if (width != null) 'max-width:min(100%,${_px(width)})',
+      if (height != null) 'max-height:${_px(height)}',
+    ];
+    return limits.isEmpty ? '' : ' style="${limits.join(';')}"';
+  }
+
+  static String _px(double value) =>
+      '${value.toStringAsFixed(1).replaceFirst(RegExp(r'\.0$'), '')}px';
+
   static String _em(double scale) =>
       '${scale.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '')}em';
 
@@ -801,8 +891,11 @@ h2,h3,h4,h5,h6{margin:16px 0 4px;line-height:1.4}
 h6.h-level-7{color:var(--muted)}
 h6.h-level-8{color:var(--muted);font-weight:500}
 figure{margin:12px 0}
+figure.align-center img{margin-left:auto;margin-right:auto}
+figure.align-right img{margin-left:auto}
 hr{margin:16px 0;border:0;border-top:1px solid var(--line)}
 img{display:block;max-width:100%;height:auto;border-radius:16px}
+img.thumb{width:120px;height:120px;object-fit:cover;border-radius:12px}
 .cover img{width:100%}
 blockquote{margin:8px 0;padding:4px 0 4px 14px;border-left:3px solid var(--line);color:var(--muted)}
 pre{margin:8px 0;padding:12px 14px;background:var(--bg);border-radius:12px;overflow:auto;font-size:14px;line-height:1.6}
@@ -855,9 +948,10 @@ footer{color:var(--muted);font-size:12px;text-align:center}
         'border-left:3px solid;border-radius:6px}\n'
         '.callout-icon{flex:none}\n'
         '.callout-body{flex:1;min-width:0}\n'
-        'details{margin:4px 0}\n'
-        'details>summary{cursor:pointer}\n'
-        'details>:not(summary){margin-left:1.4em}\n'
+        // 子块的缩进放在 details 的内边距上：更深的子块再带自己的左外
+        // 边距（_nestRule），不会被这里覆盖。
+        'details{margin:4px 0;padding-left:1.4em}\n'
+        'details>summary{cursor:pointer;margin-left:-1.4em}\n'
         'table{width:100%;border-collapse:collapse;margin:8px 0}\n'
         'th,td{border:1px solid var(--line);padding:6px 10px;'
         'text-align:start;vertical-align:top}\n'
@@ -903,3 +997,7 @@ article>header h2{margin:0 0 4px;font-size:24px;line-height:1.35}
 .comment-text{white-space:pre-wrap}
 ''';
 }
+
+/// 首行缩进的字数（[DiaryHtmlWriter.write] 由排版快照算出）：正文段落取
+/// `regular`，带工具栏缩进标记的取 `marked`。
+typedef _FirstLineIndent = ({double regular, double marked});

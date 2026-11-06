@@ -13,6 +13,7 @@ import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../support/backup_test_fixture.dart';
+import '../export/diary_export_pdf_test_support.dart';
 import '../export/diary_export_test_fixtures.dart';
 
 /// 导出控制器：格式分发、胶囊过滤、排序、打包与暂存清理。
@@ -384,4 +385,73 @@ void main() {
       expect(xml, contains('<w:spacing w:val="15"/><w:sz w:val="30"/>'));
     },
   );
+
+  test('PDF indents body paragraphs by the typography snapshot through the '
+      'export controller', () async {
+    final a = await diary(
+      'Indent',
+      createdAt: DateTime(2026, 5, 1),
+      content: '[{"insert":"Body\\n"}]',
+    );
+    Future<String> commands(DiaryTypography typography) async {
+      final artifact =
+          await DiaryExportController(
+            database: fixture.database,
+            now: () => now,
+            // 标准字体让 ASCII 正文原样写进页面流，才能按文字找到横坐标。
+            loadFonts: (_) => pdfAsciiFonts(),
+          ).build(
+            [a],
+            options: const DiaryExportOptions(
+              format: DiaryExportFormat.pdf,
+              includeMeta: false,
+              includeMedia: false,
+            ),
+            labels: testExportLabels,
+            languageTag: 'en',
+            typography: typography,
+          );
+      return pdfPageCommands(await artifact.file.readAsBytes());
+    }
+
+    double bodyX(String commands) => double.parse(
+      RegExp(
+        r'([-\d.]+) [-\d.]+ Td \[\(Body\)\]TJ',
+      ).firstMatch(commands)!.group(1)!,
+    );
+    expect(bodyX(await commands(const DiaryTypography())), 0);
+    // 两个字 × PDF 正文字号 12pt。
+    expect(
+      bodyX(await commands(const DiaryTypography(firstLineIndent: 2))),
+      24,
+    );
+  });
+
+  test('the web page indents body paragraphs by the typography snapshot '
+      'through the export controller', () async {
+    final a = await diary(
+      'Indent',
+      createdAt: DateTime(2026, 5, 1),
+      content: '[{"insert":"Body\\n"}]',
+    );
+    final artifact =
+        await DiaryExportController(
+          database: fixture.database,
+          now: () => now,
+        ).build(
+          [a],
+          options: const DiaryExportOptions(
+            format: DiaryExportFormat.html,
+            includeMeta: false,
+            includeMedia: false,
+          ),
+          labels: testExportLabels,
+          languageTag: 'en',
+          typography: const DiaryTypography(firstLineIndent: 3),
+        );
+    expect(
+      await artifact.file.readAsString(),
+      contains('<p style="text-indent:3em">Body</p>'),
+    );
+  });
 }

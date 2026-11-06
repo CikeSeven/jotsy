@@ -8,6 +8,7 @@ import '../models/diary_callout_tone.dart';
 import '../models/diary_code_block/diary_code_theme.dart';
 import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
+import 'diary_export_image_box.dart';
 import 'diary_export_book.dart';
 import 'diary_export_code.dart';
 import 'diary_export_entry.dart';
@@ -255,10 +256,16 @@ class DiaryDocxWriter {
     String source,
     DiaryExportMediaLibrary media, {
     int maxHeightEmu = _maxImageHeightEmu,
+    ExportBlock? block,
   }) async {
     final image = await _loadImage(source, media);
     if (image == null) return false;
-    b.imageParagraph(image.$1, image.$2, maxHeightEmu: maxHeightEmu);
+    b.imageParagraph(
+      image.$1,
+      image.$2,
+      maxHeightEmu: maxHeightEmu,
+      block: block,
+    );
     return true;
   }
 
@@ -311,8 +318,8 @@ class DiaryDocxWriter {
       }
     }
 
-    Future<bool> image(String source) async =>
-        options.includeMedia && await _image(b, source, media);
+    Future<bool> image(String source, {ExportBlock? block}) async =>
+        options.includeMedia && await _image(b, source, media, block: block);
 
     if (entry.cover != null) {
       await image(entry.cover!);
@@ -324,7 +331,8 @@ class DiaryDocxWriter {
           if (block.source == entry.cover) {
             break;
           }
-          if (!await image(block.source!) && options.includeMedia) {
+          if (!await image(block.source!, block: block) &&
+              options.includeMedia) {
             b.paragraph(
               style: 'DiaryMeta',
               runs: <String>[b.run(labels.mediaLine(block))],
@@ -405,15 +413,14 @@ class DiaryDocxWriter {
         case ExportBlockKind.table:
           b.table(block);
         case ExportBlockKind.paragraph:
-          // 与应用一致：居中、右对齐的段落不缩进首行；带工具栏首行缩进
-          // 标记的段落按两字与全局取较大者。
-          final firstLine =
-              block.align == ExportAlign.start ||
-                  block.align == ExportAlign.justify
-              ? (block.firstLineIndent
-                    ? b.markedFirstLineTwips
-                    : b.firstLineTwips)
-              : 0;
+          // 口径见 ExportBlock.firstLineIndentOf（居中、右对齐与链接卡片的
+          // 标题行不缩进，带工具栏缩进标记的按两字与全局取较大者）。
+          final firstLine = block
+              .firstLineIndentOf(
+                regular: b.firstLineTwips.toDouble(),
+                marked: b.markedFirstLineTwips.toDouble(),
+              )
+              .round();
           b.paragraph(
             align: block.align,
             indentTwips: block.indent > 0 ? 420 * block.indent : null,
@@ -905,10 +912,14 @@ class _DocxBuilder {
     paragraph(style: 'TableAfter', runs: const <String>[]);
   }
 
+  /// 一张图片单独成段。正文图片（给了 [block]）的尺寸、小图裁切与对齐
+  /// 与应用一致（[ExportImageBox]，逻辑像素按 96 DPI 换成 EMU），按所在
+  /// 层级缩进；封面与留言图片按原尺寸缩进版心、居中。
   void imageParagraph(
     DiaryExportMediaFile media,
     ExportImageInfo info, {
     int maxHeightEmu = DiaryDocxWriter._maxImageHeightEmu,
+    ExportBlock? block,
   }) {
     final id = _nextRelationshipId();
     final name =
@@ -918,27 +929,56 @@ class _DocxBuilder {
       '<Relationship Id="$id" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
       'Target="media/$name"/>',
     );
-    var cx = info.width * DiaryDocxWriter._emuPerPixel;
-    var cy = info.height * DiaryDocxWriter._emuPerPixel;
+    const perPixel = DiaryDocxWriter._emuPerPixel;
+    final maxWidth = DiaryDocxWriter._maxImageWidthEmu / perPixel;
+    final maxHeight = maxHeightEmu / perPixel;
+    final box = block == null
+        ? null
+        : ExportImageBox.of(
+            block,
+            info.width,
+            info.height,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight,
+          );
     final scale = <double>[
       1,
-      DiaryDocxWriter._maxImageWidthEmu / cx,
-      maxHeightEmu / cy,
+      maxWidth / info.width,
+      maxHeight / info.height,
     ].reduce((a, b) => a < b ? a : b);
-    cx = (cx * scale).round();
-    cy = (cy * scale).round();
+    final cx = ((box?.width ?? info.width * scale) * perPixel).round();
+    final cy = ((box?.height ?? info.height * scale) * perPixel).round();
+    // 小图的 cover 裁切：srcRect 以千分之一个百分点计。
+    int crop(double fraction) => (fraction * 100000).round();
+    final thumbnail = box != null && box.thumbnail;
+    final srcRect = !thumbnail
+        ? ''
+        : '<a:srcRect l="${crop(box.cropLeft)}" t="${crop(box.cropTop)}" '
+              'r="${crop(box.cropRight)}" b="${crop(box.cropBottom)}"/>';
+    final jc = block == null
+        ? 'center'
+        : switch (block.align) {
+            ExportAlign.center => 'center',
+            ExportAlign.end => 'right',
+            _ => null,
+          };
+    final pPr = <String>[
+      if (block != null && block.indent > 0)
+        '<w:ind w:left="${420 * block.indent}"/>',
+      if (jc != null) '<w:jc w:val="$jc"/>',
+    ].join();
     final drawing = ++_drawingId;
     _body.write(
-      '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing>'
+      '<w:p>${pPr.isEmpty ? '' : '<w:pPr>$pPr</w:pPr>'}<w:r><w:drawing>'
       '<wp:inline distT="0" distB="0" distL="0" distR="0">'
       '<wp:extent cx="$cx" cy="$cy"/>'
       '<wp:docPr id="$drawing" name="Picture $drawing"/>'
       '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>'
       '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
       '<pic:pic><pic:nvPicPr><pic:cNvPr id="$drawing" name="$name"/><pic:cNvPicPr/></pic:nvPicPr>'
-      '<pic:blipFill><a:blip r:embed="$id"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+      '<pic:blipFill><a:blip r:embed="$id"/>$srcRect<a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
       '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="$cx" cy="$cy"/></a:xfrm>'
-      '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>'
+      '<a:prstGeom prst="${thumbnail ? 'roundRect' : 'rect'}"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>'
       '</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>',
     );
   }

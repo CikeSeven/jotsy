@@ -54,7 +54,8 @@ void main() {
       RegExp(r'1 0 0\.21256 1 [\d.\-]+ 0 cm').allMatches(commands),
       hasLength(14),
     );
-    expect(RegExp(r'\b2 Tr\b').allMatches(commands), hasLength(14));
+    // 标题整行加粗（四个片段 × 六级），正文里只有 Bold 与 Combined。
+    expect(RegExp(r'\b2 Tr\b').allMatches(commands), hasLength(6 * 4 + 2));
     // 六级标题与正文各一条下划线，以及组合片段的下划线与删除线。
     expect(RegExp(r'\bl\s*S\b').allMatches(commands), hasLength(21));
     final plain = pdfTextRun(commands, 'Unstyled');
@@ -88,7 +89,8 @@ void main() {
     expect(pdfTextRun(commands, 'Sizesmall').size, closeTo(10.2, 0.001));
     expect(pdfTextRun(commands, 'Sizelarge').size, 15);
     expect(pdfTextRun(commands, 'Sizehuge').size, 18);
-    expect(pdfTextRun(commands, 'Size24').size, 24);
+    // 认不出的数字字号与编辑器一样按所在块的字号（一级标题）。
+    expect(pdfTextRun(commands, 'Size24').size, closeTo(12 * 1.75, 0.001));
     expect(pdfTextRun(commands, 'Red').size, 12);
     expect(pdfTextRun(commands, 'Blue').size, 12);
     expect(commands, contains('1 0 0 rg'));

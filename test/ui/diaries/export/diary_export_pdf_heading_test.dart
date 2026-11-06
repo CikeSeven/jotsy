@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:node_diary/ui/diaries/models/diary_text_style_options.dart';
+
 import 'diary_export_pdf_test_support.dart';
 
 void main() {
@@ -76,14 +78,15 @@ void main() {
     final styled = pdfTextRun(commands, 'Styled');
     final link = pdfTextRun(commands, 'Link');
     final body = pdfTextRun(commands, 'Body');
-    expect(plain.size, closeTo(16.8, 0.001));
+    // 二级标题为正文字号的 1.45 倍（与编辑器同一字阶），整行加粗。
+    expect(plain.size, closeTo(12 * 1.45, 0.001));
     expect(styled.size, plain.size);
     expect(link.size, plain.size);
     expect(body.size, 12);
-    expect(styled.font, isNot(plain.font));
-    expect(body.font, plain.font);
+    expect(body.font, isNot(plain.font));
+    expect(pdfFontName(pdf, plain.font), 'Helvetica-Bold');
     expect(pdfFontName(pdf, styled.font), 'Helvetica-Bold');
-    expect(pdfFontName(pdf, plain.font), 'Helvetica');
+    expect(pdfFontName(pdf, body.font), 'Helvetica');
     expect(commands, contains('0 0 1 rg'));
     expect(commands, contains('0 0.50196 0 rg'));
     // 两条样式装饰线 + 链接的下划线；未格式化片段和下一段不多画线。
@@ -107,7 +110,7 @@ void main() {
     ], fonts: await pdfAsciiFonts());
     final commands = pdfPageCommands(bytes);
     expect(pdfTextRun(commands, 'First').size, 12);
-    expect(pdfTextRun(commands, 'Second').size, closeTo(15.6, 0.001));
+    expect(pdfTextRun(commands, 'Second').size, closeTo(12 * 1.2, 0.001));
     expect(pdfTextRun(commands, 'Body').size, 12);
   });
 
@@ -128,5 +131,51 @@ void main() {
     expect(RegExp(r'\(Repeated\)').allMatches(commands), hasLength(2));
     expect(commands, contains('1 0 0 rg'));
     expect(commands, contains('0 0 1 rg'));
+  });
+
+  test('PDF headings are bold and shrink level by level like the editor, '
+      'down to below the body size at H6', () async {
+    final bytes = await exportPdfOps(<dynamic>[
+      for (var level = 1; level <= 6; level++) ...<dynamic>[
+        <String, dynamic>{'insert': 'Level$level'},
+        <String, dynamic>{
+          'insert': '\n',
+          'attributes': <String, dynamic>{'header': level},
+        },
+      ],
+    ], fonts: await pdfAsciiFonts());
+    final commands = pdfPageCommands(bytes);
+    final pdf = latin1.decode(bytes);
+    final runs = <({String font, double size})>[
+      for (var level = 1; level <= 6; level++)
+        pdfTextRun(commands, 'Level$level'),
+    ];
+    expect(
+      <double>[for (final run in runs) run.size],
+      <Matcher>[
+        for (final scale in kDiaryHeadingScales) closeTo(12 * scale, 0.001),
+      ],
+    );
+    for (final run in runs) {
+      expect(pdfFontName(pdf, run.font), 'Helvetica-Bold');
+    }
+  });
+
+  test('PDF sizes text by the size levels and keeps unknown numeric sizes '
+      'at the size of their block, like the editor', () async {
+    final bytes = await exportPdfOps(<dynamic>[
+      <String, dynamic>{
+        'insert': 'Huge',
+        'attributes': <String, dynamic>{'size': 'huge'},
+      },
+      <String, dynamic>{
+        'insert': ' Numeric',
+        'attributes': <String, dynamic>{'size': '30'},
+      },
+      <String, dynamic>{'insert': '\n'},
+    ], fonts: await pdfAsciiFonts());
+    final commands = pdfPageCommands(bytes);
+    expect(pdfTextRun(commands, 'Huge').size, closeTo(18, 0.001));
+    expect(pdfTextRun(commands, 'Numeric').size, 12);
   });
 }

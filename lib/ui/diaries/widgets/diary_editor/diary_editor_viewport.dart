@@ -147,12 +147,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     final bottom =
         math.min(origin.dy + box.size.height, keyboardTop) -
         widget.coveredHeight;
-    final caret = rects.first;
-    final delta = caret.bottom > bottom
-        ? caret.bottom - bottom
-        : caret.top < origin.dy
-        ? caret.top - origin.dy
-        : 0.0;
+    final delta = _revealDelta(rects.first, origin.dy, bottom);
     if (delta.abs() < 0.5) return;
     final target = (position.pixels + delta).clamp(
       position.minScrollExtent,
@@ -164,6 +159,28 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
       // 第一帧的估计高度让光标仍压在工具栏边缘。
       _schedule();
     }
+  }
+
+  /// 让光标矩形 [caret] 进入可见区域 [top]～[bottom]（全局纵坐标）所需的
+  /// 滚动量，正数向下滚。
+  ///
+  /// 图片、视频、日记卡片等整块嵌入的“光标”是整个块（见
+  /// `DiaryEmbedSelectable`）。折叠长图、竖图在键盘升起或窗口较矮时比可见
+  /// 区域还高，上下两头不可能同时露出：若仍按“底边超出就露底、顶边超出就
+  /// 露顶”校正，露底后顶边又超出，下一帧再露顶……每帧来回跳，整页一直闪。
+  /// 这种块只要求铺满可见区域：顶边低于可见区域顶端（块偏下，如光标往下
+  /// 移到它上面）就顶边对齐，底边高于可见区域底端（块偏上）就底边对齐，
+  /// 已经铺满就不动。两种校正之后都落在“已铺满”，再次核对时滚动量为 0；
+  /// 滚动到头被夹住时由 [_reveal] 的“目标与当前相同就不跳”收住。
+  static double _revealDelta(Rect caret, double top, double bottom) {
+    if (caret.height > bottom - top) {
+      if (caret.top > top) return caret.top - top;
+      if (caret.bottom < bottom) return caret.bottom - bottom;
+      return 0;
+    }
+    if (caret.bottom > bottom) return caret.bottom - bottom;
+    if (caret.top < top) return caret.top - top;
+    return 0;
   }
 
   @override

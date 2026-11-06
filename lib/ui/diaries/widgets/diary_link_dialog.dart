@@ -9,6 +9,7 @@ import '../../widgets/app_modal/app_dialog.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../controllers/diary_link_editing.dart';
+import '../controllers/diary_link_typing.dart';
 import '../models/diary_link_candidate.dart';
 import 'diary_link/diary_link_search_view.dart';
 
@@ -19,7 +20,9 @@ import 'diary_link/diary_link_search_view.dart';
 /// 分“网址 / 日记 / 日记本”三页（日记本功能关闭时没有第三页），后两页点选
 /// 候选即写入；否则只有网址。折叠光标在一段链接里或紧挨着它时，先把选区
 /// 扩到整段链接，编辑、移除都作用于整段。确认后恢复打开前的选区再写入，
-/// 空网址移除链接；取消或正文已关闭时不改动。
+/// 空网址移除链接；取消或正文已关闭时不改动。折叠光标处没有链接时，确认
+/// 网址开启链接输入会话（[DiaryLinkTyping]）：接着打的字都写成这条链接，
+/// 打出空格等空白字符即结束。
 Future<void> editDiaryLink(
   BuildContext context,
   DiaryEditorController controller,
@@ -55,9 +58,20 @@ Future<void> editDiaryLink(
   );
   if (choice == null || controller.state.isDisposed) return;
   switch (choice) {
+    case _WebLink(:final url) when selection.isCollapsed:
+      controller.select(selection);
+      if (url.isEmpty) {
+        controller.linkTyping.end();
+      } else {
+        controller.linkTyping.begin(url);
+      }
     case _WebLink(:final url):
       controller.select(selection);
       controller.format('href', url.isEmpty ? null : url);
+    case _RemoveLink() when selection.isCollapsed:
+      // 只有链接输入会话里还没打字时，折叠光标会显示“移除链接”。
+      controller.select(selection);
+      controller.linkTyping.end();
     case _RemoveLink():
       controller.select(selection);
       controller.format('href', null);

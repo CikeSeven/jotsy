@@ -3,6 +3,9 @@ import 'package:local_auth/local_auth.dart';
 
 /// 设备身份验证（指纹、面容或锁屏密码）。
 ///
+/// 界面不直接调用：一律经 `IdentityVerifier`（按“验证方式”走系统验证或应用
+/// 密码，见 docs/rules/app_lock.md）。
+///
 /// 应用锁与上锁的日记本共用：两处的口径必须一致——设备“支持”指系统能弹出
 /// 验证（生物识别或设备凭据任一可用），验证允许回落到锁屏密码
 /// （`biometricOnly: false`）。任何插件异常都按“不支持 / 未通过”处理，
@@ -38,6 +41,37 @@ class DeviceAuthService {
       return await _localAuthentication.authenticate(
         localizedReason: reason,
         biometricOnly: false,
+        sensitiveTransaction: true,
+        persistAcrossBackgrounding: persistAcrossBackgrounding,
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 这台设备是否登记了指纹 / 面容等生物识别（应用密码的快捷解锁用）。
+  Future<bool> canUseBiometrics() async {
+    try {
+      if (!await _localAuthentication.canCheckBiometrics) {
+        return false;
+      }
+      final available = await _localAuthentication.getAvailableBiometrics();
+      return available.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 只用生物识别验证（`biometricOnly: true`，不回落到锁屏密码）：应用密码
+  /// 方式下的快捷解锁。平台须为 `AppPlatform.supportsBiometricOnly`。
+  Future<bool> authenticateBiometric({
+    required String reason,
+    bool persistAcrossBackgrounding = true,
+  }) async {
+    try {
+      return await _localAuthentication.authenticate(
+        localizedReason: reason,
+        biometricOnly: true,
         sensitiveTransaction: true,
         persistAcrossBackgrounding: persistAcrossBackgrounding,
       );

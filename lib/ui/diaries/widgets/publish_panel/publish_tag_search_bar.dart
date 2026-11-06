@@ -5,9 +5,9 @@ import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
-import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../models/tag_picker_sort.dart';
+import 'publish_panel_search_field.dart';
 import 'publish_panel_tile.dart';
 
 /// 标签子页顶部一行：胶囊形搜索框 + 右侧圆形排序按钮（同高、同底色）。
@@ -26,8 +26,8 @@ class PublishTagSearchBar extends StatelessWidget {
     required this.onSortChanged,
   });
 
-  /// 与主题图标按钮的最小尺寸、模板面板的搜索框同高。
-  static const double height = 48;
+  /// 排序按钮与搜索框同高。
+  static const double height = PublishPanelSearchField.height;
 
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -40,127 +40,16 @@ class PublishTagSearchBar extends StatelessWidget {
     return Row(
       children: <Widget>[
         Expanded(
-          child: _SearchField(
+          child: PublishPanelSearchField(
             controller: controller,
             focusNode: focusNode,
             onChanged: onChanged,
+            hintText: context.l10n.tagPickerSearchHint,
           ),
         ),
         const SizedBox(width: 8),
         _SortMenuButton(sort: sort, onSortChanged: onSortChanged),
       ],
-    );
-  }
-}
-
-class _SearchField extends StatelessWidget {
-  const _SearchField({
-    required this.controller,
-    required this.focusNode,
-    required this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final iconColor = colorScheme.onSurfaceVariant;
-    // 玻璃时（“控件”为玻璃，或面板本身是玻璃）换成半透明填充，不模糊；
-    // “控件”为玻璃时静止描边取玻璃描边，聚焦补间照旧。
-    final glassField = AppGlassField.of(context);
-    final fill = glassField?.fill ?? PublishPanelTile.surfaceColor(colorScheme);
-    final idleOutline =
-        glassField?.border?.color ?? PublishPanelTile.outlineColor(colorScheme);
-    // 聚焦时描边补间到 primary（与主题输入框的聚焦描边同色），提示正在输入。
-    return ListenableBuilder(
-      listenable: focusNode,
-      builder: (BuildContext context, Widget? child) => ExpressiveStateBlend(
-        active: focusNode.hasFocus,
-        builder: (BuildContext context, double t, Widget? child) => Material(
-          color: fill,
-          shape: StadiumBorder(
-            side: BorderSide(
-              color: Color.lerp(idleOutline, colorScheme.primary, t)!,
-              width: 1.5,
-            ),
-          ),
-          child: child,
-        ),
-        child: child,
-      ),
-      child: InkWell(
-        // 点在放大镜或空白处也进入输入。
-        customBorder: const StadiumBorder(),
-        onTap: focusNode.requestFocus,
-        child: SizedBox(
-          height: PublishTagSearchBar.height,
-          child: Row(
-            children: <Widget>[
-              const SizedBox(width: 16),
-              FaIcon(
-                FontAwesomeIcons.magnifyingGlass,
-                size: 14,
-                color: iconColor,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  maxLines: 1,
-                  textInputAction: TextInputAction.search,
-                  style: theme.textTheme.bodyMedium,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    // 外层已是输入框填充色与描边，不再叠主题的底色与边框
-                    // （主题给了聚焦描边，只清 border 仍会画在胶囊里面）。
-                    filled: false,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    hintText: context.l10n.tagPickerSearchHint,
-                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                      color: iconColor.withValues(alpha: 0.75),
-                    ),
-                  ),
-                  onChanged: onChanged,
-                  onSubmitted: (_) => focusNode.unfocus(),
-                  contextMenuBuilder: appTextContextMenuBuilder,
-                ),
-              ),
-              // 有字时才出现清空按钮；交叉缩放淡入，不推动输入框宽度以外的布局。
-              ValueListenableBuilder<TextEditingValue>(
-                valueListenable: controller,
-                builder:
-                    (BuildContext context, TextEditingValue value, Widget? _) =>
-                        ExpressiveIconSwap(
-                          switchKey: value.text.isNotEmpty,
-                          child: value.text.isEmpty
-                              ? const SizedBox(width: 12)
-                              : IconButton(
-                                  tooltip: context.l10n.autoT0130,
-                                  visualDensity: VisualDensity.compact,
-                                  onPressed: () {
-                                    controller.clear();
-                                    onChanged('');
-                                  },
-                                  icon: FaIcon(
-                                    FontAwesomeIcons.circleXmark,
-                                    size: 16,
-                                    color: iconColor,
-                                  ),
-                                ),
-                        ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

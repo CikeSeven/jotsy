@@ -110,7 +110,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 
 ## 🔁 Moving from another app
 
-Export your data from the old app first, then open **Settings › Data & Privacy › Data Management › Import from other journal apps** in Jotsy and pick the file. Jotsy previews the contents before importing, and you can choose to merge or overwrite.
+Export your data from the old app first, then open **Settings › Data Management › Import from other journal apps** in Jotsy and pick the file. Jotsy previews the contents before importing, and you can choose to merge or overwrite.
 
 | Type | Supported apps |
 | :-- | :-- |

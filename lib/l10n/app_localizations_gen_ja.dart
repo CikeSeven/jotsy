@@ -13336,12 +13336,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get diarySearchTagSheetTitle => 'タグで検索';
-
-  @override
-  String get diarySearchTagSheetHint => '選んだタグをすべて含む日記を表示します';
-
-  @override
   String get diarySearchSortTooltip => '並べ替え';
 
   @override

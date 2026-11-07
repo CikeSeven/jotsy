@@ -210,9 +210,11 @@ void main() {
     await h.settleAll();
     await tester.tap(find.text('心情'));
     await h.settleAll();
+    // 筛选面板点选即生效，没有“完成”；点遮罩收起。
     await tester.tap(find.text('😊').last);
     await h.settleAll();
-    await tester.tap(find.text('完成'));
+    expect(find.text('完成'), findsNothing);
+    await tester.tapAt(const Offset(4, 4));
     await h.settleAll();
     // “含归档”不进规则：智能日记本没有这一口径。
     await tester.ensureVisible(find.text('含归档'));

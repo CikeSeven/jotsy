@@ -159,7 +159,10 @@ class _RemoveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 不排除子节点语义：点按动作来自 InkResponse，排除后读屏点不动它。
+    // container：胶囊本身不可点（标签条件）时，这里仍是独立的一个按钮节点，
+    // 不会和胶囊名称并成一个。
     return Semantics(
+      container: true,
       button: true,
       label: label,
       child: InkResponse(

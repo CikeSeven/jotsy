@@ -15229,13 +15229,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get diarySearchTagSheetTitle => 'Поиск по тегам';
-
-  @override
-  String get diarySearchTagSheetHint =>
-      'Показываются записи со всеми выбранными тегами';
-
-  @override
   String get diarySearchSortTooltip => 'Сортировка';
 
   @override

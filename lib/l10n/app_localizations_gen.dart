@@ -23856,18 +23856,6 @@ abstract class AppLocalizations {
   /// **'Remove filter {label}'**
   String diarySearchRemoveFilter(String label);
 
-  /// Title of the tag picker sheet opened from the search page tag chip.
-  ///
-  /// In en, this message translates to:
-  /// **'Search by tags'**
-  String get diarySearchTagSheetTitle;
-
-  /// Explanation under the title of the search tag picker sheet.
-  ///
-  /// In en, this message translates to:
-  /// **'Shows entries that have all selected tags'**
-  String get diarySearchTagSheetHint;
-
   /// Tooltip of the sort menu button above the search results.
   ///
   /// In en, this message translates to:

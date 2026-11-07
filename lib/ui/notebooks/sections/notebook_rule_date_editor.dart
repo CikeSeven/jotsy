@@ -19,10 +19,19 @@ import 'notebook_rule_sheets.dart';
 /// 月份胶囊）。各种类的取值互不影响，来回切换不会丢掉已经填好的值。
 ///
 /// 默认值：固定区间为含今天的最近 7 天，最近几天为 30，月份为本月。
+///
+/// 实时模式（[onChanged] 非空，搜索页的筛选）：没有“完成”，选中某种日期或
+/// 调整它的取值都立即回调；没有初值时不预选任何一种。
 class NotebookDateRuleEditor extends StatefulWidget {
-  const NotebookDateRuleEditor({super.key, this.initial, this.now});
+  const NotebookDateRuleEditor({
+    super.key,
+    this.initial,
+    this.now,
+    this.onChanged,
+  });
 
   final NotebookDateRule? initial;
+  final ValueChanged<NotebookRule?>? onChanged;
 
   /// 测试注入的“今天”；缺省为当前时刻。
   final DateTime? now;
@@ -33,8 +42,9 @@ class NotebookDateRuleEditor extends StatefulWidget {
 
 class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
   late final DateTime _now = widget.now ?? DateTime.now();
-  late NotebookDateKind _kind =
-      widget.initial?.kind ?? NotebookDateKind.lastDays;
+  late NotebookDateKind? _kind =
+      widget.initial?.kind ??
+      (widget.onChanged == null ? NotebookDateKind.lastDays : null);
   late DateTime _from =
       widget.initial?.from ?? DateTime(_now.year, _now.month, _now.day - 6);
   late DateTime _to =
@@ -51,7 +61,8 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
     super.dispose();
   }
 
-  NotebookDateRule get _result => switch (_kind) {
+  NotebookDateRule? get _result => switch (_kind) {
+    null => null,
     NotebookDateKind.between => NotebookDateRule.between(_from, _to),
     NotebookDateKind.lastDays => NotebookDateRule.lastDays(_days),
     NotebookDateKind.thisYear => const NotebookDateRule.thisYear(),
@@ -59,12 +70,16 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
     NotebookDateKind.dayEveryYear => const NotebookDateRule.dayEveryYear(),
   };
 
+  /// 实时模式下把当前规则交出去（调用方在 setState 之后调用）。
+  void _changed() => widget.onChanged?.call(_result);
+
   void _setDays(int value) {
     final days = value.clamp(
       NotebookDateRule.minDays,
       NotebookDateRule.maxDays,
     );
     setState(() => _days = days);
+    _changed();
     if (_daysText.text != '$days') {
       _daysText.value = TextEditingValue(
         text: '$days',
@@ -85,6 +100,7 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
       _from = DateUtils.dateOnly(picked.start);
       _to = DateUtils.dateOnly(picked.end);
     });
+    _changed();
   }
 
   @override
@@ -93,6 +109,7 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
     return NotebookRuleSheetFrame(
       title: l10n.notebookRuleTypeDate,
       result: _result,
+      live: widget.onChanged != null,
       children: <Widget>[
         for (final kind in NotebookDateKind.values) ...<Widget>[
           ExpressiveChoiceTile(
@@ -101,7 +118,11 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
                 ? l10n.notebookRuleDateTodayHint
                 : null,
             selected: _kind == kind,
-            onTap: () => setState(() => _kind = kind),
+            onTap: () {
+              if (_kind == kind) return;
+              setState(() => _kind = kind);
+              _changed();
+            },
           ),
           // 选中项的控件展开 / 收起，不在一帧内推开下方选项。
           AnimatedSize(
@@ -180,6 +201,7 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
                           NotebookDateRule.maxDays,
                         ),
                       );
+                      _changed();
                     }
                   },
                   onSubmitted: (_) => _setDays(_days),
@@ -221,7 +243,10 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
                   context,
                   label: notebookMonthShortName(l10n, month),
                   selected: _month == month,
-                  onTap: () => setState(() => _month = month),
+                  onTap: () {
+                    setState(() => _month = month);
+                    _changed();
+                  },
                 ),
             ],
           ),

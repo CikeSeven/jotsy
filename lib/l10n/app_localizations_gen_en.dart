@@ -14728,13 +14728,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diarySearchTagSheetTitle => 'Search by tags';
-
-  @override
-  String get diarySearchTagSheetHint =>
-      'Shows entries that have all selected tags';
-
-  @override
   String get diarySearchSortTooltip => 'Sort results';
 
   @override

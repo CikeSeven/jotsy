@@ -1,40 +1,29 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../notebooks/sections/notebook_rule_sheets.dart';
 import '../models/diary_search_filters.dart';
-import '../sections/diary_search_tag_sheet.dart';
 import 'diary_search_controller.dart';
 
-/// 搜索页筛选胶囊的选择流程：打开对应的面板，把结果写回搜索会话。
+/// 搜索页筛选胶囊的选择流程：打开 [slot] 对应的规则面板，改动实时写回
+/// 搜索会话。
 ///
 /// 时间、心情、媒体、天气、地点直接复用智能日记本的规则编辑面板
-/// （[showNotebookRuleEditorSheet]），选好点“完成”才生效；关闭面板（返回
-/// null）不改动，清除走胶囊行尾的 ×。标签面板点选即生效。
-
-/// 打开 [slot] 的规则面板，以当前规则为初值。
+/// （[showNotebookRuleEditorSheet]）的实时模式：没有“完成”按钮，点选 / 输入
+/// 即生效，草稿不完整（心情全部取消、文字清空）即清除这一项；关闭面板只是
+/// 收起。没有初值时面板不预选，打开面板本身不改变筛选。
 Future<void> pickDiarySearchFilter(
   BuildContext context,
   DiarySearchController session,
   DiarySearchFilterSlot slot,
 ) async {
-  final NotebookRule? picked = await showNotebookRuleEditorSheet(
+  await showNotebookRuleEditorSheet(
     context,
     type: slot.ruleType,
     initial: session.filters.ruleOf(slot),
-  );
-  if (picked == null) return;
-  session.setFilter(slot, picked);
-}
-
-/// 打开标签面板；勾选变化实时写回。
-Future<void> pickDiarySearchTags(
-  BuildContext context,
-  DiarySearchController session,
-) {
-  return showDiarySearchTagSheet(
-    context,
-    selected: session.tagIds,
-    onChanged: session.setTags,
+    onChanged: (rule) {
+      // 面板开着时搜索页不会被弹走；仍防一手页面已释放的情况。
+      if (!context.mounted) return;
+      session.setFilter(slot, rule);
+    },
   );
 }

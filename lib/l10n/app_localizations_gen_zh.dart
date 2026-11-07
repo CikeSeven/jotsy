@@ -13089,12 +13089,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diarySearchTagSheetTitle => '按标签搜索';
-
-  @override
-  String get diarySearchTagSheetHint => '只显示同时带有所选全部标签的日记';
-
-  @override
   String get diarySearchSortTooltip => '结果排序';
 
   @override

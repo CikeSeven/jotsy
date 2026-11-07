@@ -98,6 +98,12 @@ Future<_SearchHarness> _pumpSearch(
   return harness;
 }
 
+/// 收起当前的底部面板（点遮罩）。
+Future<void> _closeSheet(WidgetTester tester) async {
+  await tester.tapAt(const Offset(4, 4));
+  await tester.pumpAndSettle();
+}
+
 /// 输入框里的文字。
 String _fieldText(WidgetTester tester) =>
     tester.widget<TextField>(find.byType(TextField)).controller!.text;
@@ -232,11 +238,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Mood'));
     await tester.pumpAndSettle();
+    // 筛选面板没有“完成”：点选即生效。
+    expect(find.text('Done'), findsNothing);
     await tester.tap(find.text(SettingsService.defaultMoodOptions.first).last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Done'));
-    await tester.pumpAndSettle();
     expect(h.lastQuery.filter, isNotNull);
+    await _closeSheet(tester);
     expect(find.text('Mood'), findsNothing);
     final moodChip = find.byKey(const ValueKey<String>('search_filter_mood'));
     expect(
@@ -253,6 +260,52 @@ void main() {
     expect(h.lastQuery.filter, isNull);
     expect(h.lastQuery.includeArchived, isFalse);
     expect(find.text('Mood'), findsOneWidget);
+  });
+
+  testWidgets('filter sheets apply live and opening alone changes nothing', (
+    tester,
+  ) async {
+    final h = await _pumpSearch(tester, initialKeyword: 'sea');
+
+    // 打开媒体面板不预选任何一项，什么都不点就关掉，筛选不变。
+    await tester.ensureVisible(find.text('Media'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Media'));
+    await tester.pumpAndSettle();
+    expect(find.text('Done'), findsNothing);
+    await _closeSheet(tester);
+    expect(h.lastQuery.filter, isNull);
+
+    // 点一项立即生效，面板仍开着。
+    await tester.tap(find.text('Media'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Has photos'));
+    await tester.pumpAndSettle();
+    expect(h.lastQuery.filter, isNotNull);
+    expect(find.text('Has photos'), findsWidgets);
+    await _closeSheet(tester);
+
+    // 心情全部取消即清除这一项。
+    await tester.tap(find.text('Mood'));
+    await tester.pumpAndSettle();
+    final mood = find.text(SettingsService.defaultMoodOptions.last).last;
+    await tester.tap(mood);
+    await tester.pumpAndSettle();
+    final withMood = h.lastQuery.filter;
+    await tester.tap(mood);
+    await tester.pumpAndSettle();
+    expect(h.lastQuery.filter, isNot(withMood));
+    await _closeSheet(tester);
+    expect(find.text('Mood'), findsOneWidget);
+  });
+
+  testWidgets('there is no separate tag filter chip', (tester) async {
+    await _pumpSearch(tester, initialKeyword: 'sea');
+    expect(
+      find.byKey(const ValueKey<String>('search_filter_tags')),
+      findsNothing,
+    );
+    expect(find.text('Tags'), findsNothing);
   });
 
   testWidgets('desktop: Escape clears the text first, then leaves', (

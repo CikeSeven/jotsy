@@ -1,28 +1,26 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
-import '../../diaries/models/time_capsule.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
-import '../../diaries/viewmodels/diary_card_date_formatter.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/empty_hint.dart';
-import '../../widgets/reorder_handle.dart';
 import '../controllers/notebook_contents_controller.dart';
 import '../providers/notebook_providers.dart';
 import '../sections/notebook_chapter_dialogs.dart';
+import '../sections/notebook_contents_chapter_header.dart';
+import '../sections/notebook_contents_list.dart';
 import '../sections/notebook_contents_rows.dart';
 import '../viewmodels/notebook_book_layout.dart';
 import '../viewmodels/notebook_view.dart';
@@ -34,9 +32,17 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 /// 普通日记本的目录页（首页头部卡片“目录”）。
 ///
 /// 一条扁平的可拖动列表：各章标题行（按章节顺序）后接它的日记，最后是
-/// “未分章”。只有日记行能拖（右侧手柄）；松手时每篇归属它上方最近的标题行，
-/// 整份顺序一次写回（`reorderNotebookEntries`），数据库推送同样的顺序之前先
-/// 按拖完的顺序显示（[_pending]），松手时不会先跳回原位。
+/// “未分章”。日记行与章节标题行（“未分章”除外）都按住右侧手柄即拖：
+/// - 拖日记：松手时每篇归属它上方最近的标题行，整份顺序一次写回
+///   （`reorderNotebookEntries`），数据库推送同样的顺序之前先按拖完的顺序
+///   显示（[_pending]），松手时不会先跳回原位；落进收起着的章节时展开它。
+/// - 拖章节：这一章的日记在拖动期间收进来，放下后按标题行的先后换算章节
+///   顺序写回 payload（[_pendingChapters] 同理先按新顺序显示），日记在新
+///   位置从 0 高度展开。
+///
+/// 点按章节名一带收起 / 展开这一章（`notebookContentsCollapsedProvider`，
+/// 本次运行的内存）；收起的日记仍留在列表里、只收到 0 高度，拖动落点照旧
+/// 按整份书序换算。
 ///
 /// 章节的增删改与上下移经 [NotebookContentsController] 写回 payload；多选
 /// 可把日记移到某章，或从本日记本移出（4 秒撤销）。点日记打开预览页，可按
@@ -62,6 +68,10 @@ class NotebookContentsPage extends ConsumerStatefulWidget {
 
 class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
   List<NotebookEntryPlacement>? _pending;
+  List<String>? _pendingChapters;
+
+  /// 这一帧从 0 高度展开的日记行 key（构建过一次就清掉，见 [_settleAppearing]）。
+  final Set<String> _appearing = <String>{};
   bool _selecting = false;
   final Set<String> _selected = <String>{};
   bool _popScheduled = false;
@@ -161,7 +171,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     NotebookView notebook,
     List<NotebookContentsEntry> entries,
   ) {
-    final chapters = notebook.payload.chapters;
+    final chapters = _orderedChapters(notebook.payload.chapters);
     final items = buildNotebookContents(
       chapters,
       entries,
@@ -188,7 +198,14 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
       );
     }
     final dateMeta = ref.watch(diaryCardStyleProvider).meta;
-    final untitled = context.l10n.autoT0033;
+    final collapsed = ref.watch(
+      notebookContentsCollapsedProvider(widget.notebookId),
+    );
+    final hidden = notebookContentsHiddenRows(items, <String>{
+      ...collapsed,
+      ?_controller.dragFolded,
+    });
+    _settleAppearing();
     final now = DateTime.now();
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -198,66 +215,40 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
             // 宽窗口：每段内容都补上居中留白（各段自带左右 16，手机上补 0）。
             for (final sliver in <Widget>[
               if (hint != null) SliverToBoxAdapter(child: hint),
-              SliverReorderableList(
-                itemCount: items.length,
-                onReorderItem: (int oldIndex, int newIndex) =>
+              NotebookContentsListSliver(
+                items: items,
+                chapters: chapters,
+                collapsed: collapsed,
+                hidden: hidden,
+                appearing: _appearing,
+                selecting: _selecting,
+                selected: _selected,
+                dateMeta: dateMeta,
+                now: now,
+                onReorder: (int oldIndex, int newIndex) =>
                     _reorder(chapters, entries, items, oldIndex, newIndex),
-                // 拿起条目即生效的瞬间给一次触觉：手柄是立即拖动，不经过长按。
                 onReorderStart: (int index) {
-                  _controller.startDrag(index);
-                  unawaited(HapticFeedback.mediumImpact());
-                },
-                onReorderEnd: _controller.dropped,
-                proxyDecorator: _liftProxy,
-                itemBuilder: (BuildContext context, int index) {
-                  final item = items[index];
-                  switch (item) {
-                    case NotebookContentsHeader(:final chapter, :final count):
-                      final chapterIndex = chapter == null
-                          ? -1
-                          : chapters.indexOf(chapter);
-                      return NotebookContentsChapterHeader(
-                        key: ValueKey<String>(item.key),
-                        chapter: chapter,
-                        count: count,
-                        isFirst: chapterIndex == 0,
-                        isLast: chapterIndex == chapters.length - 1,
-                        onAction: chapter == null
-                            ? null
-                            : (action) => unawaited(
-                                _chapterAction(chapter, count, action),
-                              ),
-                      );
-                    case NotebookContentsRow(:final entry):
-                      final sealed = TimeCapsuleState.fromFields(
-                        lockedAt: entry.capsuleLockedAt,
-                        unlockAt: entry.capsuleUnlockAt,
-                        now: now,
-                      ).isLocked;
-                      return NotebookContentsEntryTile(
-                        key: ValueKey<String>(item.key),
-                        dateLabel: DiaryCardDateFormatter.eyebrow(
-                          l10n: context.l10n,
-                          meta: dateMeta,
-                          createdAt: entry.createdAt,
-                          updatedAt: entry.updatedAt,
-                          now: now,
-                        ),
-                        title: entry.title.trim().isEmpty
-                            ? untitled
-                            : entry.title,
-                        archived: entry.isArchived,
-                        sealed: sealed,
-                        selecting: _selecting,
-                        selected: _selected.contains(entry.diaryId),
-                        onTap: _selecting
-                            ? () => _toggle(entry.diaryId)
-                            : () =>
-                                  unawaited(_openPreview(entry.diaryId, items)),
-                        dragHandle: ReorderHandle(index: index),
-                      );
+                  if (_controller.startDrag(index, items[index])) {
+                    setState(() {});
                   }
                 },
+                onReorderEnd: (int insertIndex) {
+                  if (_controller.dropped(insertIndex)) {
+                    _unfoldDrag(items, moved: false);
+                  }
+                },
+                onToggleChapter: (header) => ref
+                    .read(
+                      notebookContentsCollapsedProvider(
+                        widget.notebookId,
+                      ).notifier,
+                    )
+                    .toggle(header.key),
+                onChapterAction: (chapter, count, action) =>
+                    unawaited(_chapterAction(chapter, count, action)),
+                onEntryTap: (String diaryId) => _selecting
+                    ? _toggle(diaryId)
+                    : unawaited(_openPreview(diaryId, items)),
               ),
               SliverToBoxAdapter(
                 child: SizedBox(
@@ -273,6 +264,47 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
         );
       },
     );
+  }
+
+  /// 拖动章节后的临时顺序：日记本推送的章节顺序已与它一致时交还（下一帧
+  /// 清除），否则按它排列（其中没有的章节——拖动途中别处新加的——接在后面）。
+  List<NotebookChapter> _orderedChapters(List<NotebookChapter> chapters) {
+    final pending = _pendingChapters;
+    if (pending == null) return chapters;
+    if (listEquals(<String>[for (final c in chapters) c.id], pending)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && identical(_pendingChapters, pending)) {
+          setState(() => _pendingChapters = null);
+        }
+      });
+      return chapters;
+    }
+    return orderNotebookChapters(chapters, pending);
+  }
+
+  /// 标成“出现”的行构建过一次就清掉：滚出再滚回不会重复播放展开。
+  void _settleAppearing() {
+    if (_appearing.isEmpty) return;
+    final built = _appearing.toSet();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _appearing.removeAll(built);
+    });
+  }
+
+  Set<String> get _collapsed =>
+      ref.read(notebookContentsCollapsedProvider(widget.notebookId));
+
+  /// 放出拖动章节时收进来的日记（见 [NotebookContentsController.unfoldDrag]）。
+  /// [moved] 时这些日记在新位置重新挂载（列表按行号区分条目），标成“出现”
+  /// 从 0 高度展开，而不是直接弹出来；这一章本来就收着的不必。
+  void _unfoldDrag(List<NotebookContentsItem> items, {required bool moved}) {
+    final folded = _controller.unfoldDrag();
+    if (folded == null) return;
+    setState(() {
+      if (moved && !_collapsed.contains(folded)) {
+        _appearing.addAll(notebookContentsRowsUnder(items, folded));
+      }
+    });
   }
 
   /// 拖动后的临时顺序：数据库推送的成书顺序已与它一致时交还给数据库（下一
@@ -303,21 +335,77 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     int oldIndex,
     int newIndex,
   ) {
+    final moved = items[oldIndex];
+    switch (moved) {
+      case NotebookContentsHeader():
+        _reorderChapters(chapters, items, oldIndex, newIndex);
+      case NotebookContentsRow():
+        _reorderEntry(chapters, entries, items, moved, oldIndex, newIndex);
+    }
+  }
+
+  /// 拖完一篇日记：按落点换章、整份顺序写库。落进收起着的章节时展开它
+  /// （其余日记从 0 高度展开），看得见这一篇落在了哪里。
+  void _reorderEntry(
+    List<NotebookChapter> chapters,
+    List<NotebookContentsEntry> entries,
+    List<NotebookContentsItem> items,
+    NotebookContentsRow moved,
+    int oldIndex,
+    int newIndex,
+  ) {
     if (oldIndex == newIndex) return;
     final dropped = resolveNotebookContentsDrop(items, oldIndex, newIndex);
     // 按章节归组后的显示顺序写库：拖到最顶端（归第一章）的那篇排在第一章
     // 开头，与界面一致，数据库推送回来时也能与临时顺序比对上。
+    final next = buildNotebookContents(chapters, entries, pending: dropped);
     final placements = <NotebookEntryPlacement>[
-      for (final item in buildNotebookContents(
-        chapters,
-        entries,
-        pending: dropped,
-      ))
+      for (final item in next)
         if (item is NotebookContentsRow)
           (diaryId: item.entry.diaryId, chapterId: item.chapterId),
     ];
-    setState(() => _pending = placements);
+    final movedId = moved.entry.diaryId;
+    final target = NotebookContentsHeader.keyFor(
+      placements.firstWhere((p) => p.diaryId == movedId).chapterId,
+    );
+    final reveal = _collapsed.contains(target);
+    setState(() {
+      _pending = placements;
+      if (reveal) {
+        _appearing.addAll(
+          notebookContentsRowsUnder(
+            next,
+            target,
+          ).where((key) => key != moved.key),
+        );
+      }
+    });
+    if (reveal) {
+      ref
+          .read(notebookContentsCollapsedProvider(widget.notebookId).notifier)
+          .expand(<String>[target]);
+    }
     unawaited(_run(() => _controller.reorder(placements), revertOrder: true));
+  }
+
+  /// 拖完一个章节：只按标题行的先后换算章节顺序（见
+  /// [resolveNotebookChapterDrop]），顺序没变时不写库。
+  void _reorderChapters(
+    List<NotebookChapter> chapters,
+    List<NotebookContentsItem> items,
+    int oldIndex,
+    int newIndex,
+  ) {
+    _unfoldDrag(items, moved: true);
+    final order = resolveNotebookChapterDrop(items, oldIndex, newIndex);
+    if (listEquals(order, <String>[for (final c in chapters) c.id])) {
+      _controller.endDrag();
+      return;
+    }
+    setState(() => _pendingChapters = order);
+    unawaited(
+      _run(() => _controller.reorderChapters(order), revertOrder: true),
+    );
   }
 
   /// 执行一次写入；失败时提示（拖动失败还要放弃临时顺序，回到数据库的顺序）。
@@ -331,7 +419,12 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     } catch (error) {
       debugPrint('Notebook contents update failed: $error');
       if (!mounted) return false;
-      if (revertOrder) setState(() => _pending = null);
+      if (revertOrder) {
+        setState(() {
+          _pending = null;
+          _pendingChapters = null;
+        });
+      }
       showStyleEditorMessage(context, context.l10n.notebookActionFailed);
       return false;
     }
@@ -468,25 +561,5 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
         Navigator.of(context).pop();
       }
     });
-  }
-
-  /// 拖起时只轻微放大（与模板管理页一致），衬一层页面底色免得透出下方行。
-  static Widget _liftProxy(
-    Widget child,
-    int index,
-    Animation<double> animation,
-  ) {
-    return AnimatedBuilder(
-      animation: animation,
-      child: child,
-      builder: (BuildContext context, Widget? child) => Transform.scale(
-        scale: 1 + 0.02 * ExpressiveMotion.effects.transform(animation.value),
-        child: Material(
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(16),
-          child: ReorderHandleLift(animation: animation, child: child!),
-        ),
-      ),
-    );
   }
 }

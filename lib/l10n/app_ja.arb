@@ -9891,6 +9891,14 @@
   "@notebookChapterMoveDown": {
     "description": "Chapter menu item: move the chapter one place down."
   },
+  "notebookChapterCollapse": "章を折りたたむ",
+  "@notebookChapterCollapse": {
+    "description": "Screen-reader hint for tapping a chapter title on the contents page: hide the diaries of this chapter."
+  },
+  "notebookChapterExpand": "章を展開",
+  "@notebookChapterExpand": {
+    "description": "Screen-reader hint for tapping a collapsed chapter title on the contents page: show the diaries of this chapter again."
+  },
   "notebookChapterTitleLabel": "章の名前",
   "@notebookChapterTitleLabel": {
     "description": "Label of the chapter name field."

@@ -7702,6 +7702,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookChapterMoveDown => 'Move down';
 
   @override
+  String get notebookChapterCollapse => 'Collapse chapter';
+
+  @override
+  String get notebookChapterExpand => 'Expand chapter';
+
+  @override
   String get notebookChapterTitleLabel => 'Chapter name';
 
   @override

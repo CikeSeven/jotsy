@@ -138,4 +138,79 @@ void main() {
     expect(counts.unassigned, 2);
     expect(counts.total, 4);
   });
+
+  group('chapter drag', () {
+    final osaka = NotebookChapter(id: 'c3', title: '大阪');
+    final three = <NotebookChapter>[tokyo, kyoto, osaka];
+    // chapter_c1, entry_a, entry_b, chapter_c2, entry_c, chapter_c3,
+    // chapter__unassigned, entry_d
+    final items = buildNotebookContents(three, <NotebookContentsEntry>[
+      entry('a', 'c1'),
+      entry('b', 'c1'),
+      entry('c', 'c2'),
+      entry('d', null),
+    ]);
+
+    test('only the order of chapter headers counts; landing inside another '
+        'chapter puts the dragged one after it', () {
+      // 东京（0）落在京都的日记“c”下面（移除后下标 3）：排在京都之后。
+      expect(resolveNotebookChapterDrop(items, 0, 3), <String>[
+        'c2',
+        'c1',
+        'c3',
+      ]);
+      // 大阪（5）拖到最顶端：成为第一章。
+      expect(resolveNotebookChapterDrop(items, 5, 0), <String>[
+        'c3',
+        'c1',
+        'c2',
+      ]);
+    });
+
+    test('dropping after the unassigned header makes it the last chapter', () {
+      expect(resolveNotebookChapterDrop(items, 0, 7), <String>[
+        'c2',
+        'c3',
+        'c1',
+      ]);
+    });
+
+    test('dragging an entry or the unassigned header keeps the chapter '
+        'order', () {
+      expect(resolveNotebookChapterDrop(items, 1, 5), <String>[
+        'c1',
+        'c2',
+        'c3',
+      ]);
+      expect(resolveNotebookChapterDrop(items, 6, 0), <String>[
+        'c1',
+        'c2',
+        'c3',
+      ]);
+    });
+
+    test('collapsed chapters hide only their own entries', () {
+      expect(notebookContentsHiddenRows(items, const <String>{}), isEmpty);
+      expect(
+        notebookContentsHiddenRows(items, <String>{
+          NotebookContentsHeader.keyFor('c1'),
+          NotebookContentsHeader.keyFor(null),
+        }),
+        <String>{'entry_a', 'entry_b', 'entry_d'},
+      );
+      expect(notebookContentsRowsUnder(items, 'chapter_c2'), <String>[
+        'entry_c',
+      ]);
+      expect(notebookContentsRowsUnder(items, 'chapter_c3'), isEmpty);
+    });
+
+    test('pending chapter order keeps chapters added meanwhile at the end '
+        'and drops deleted ones', () {
+      final shown = orderNotebookChapters(
+        <NotebookChapter>[tokyo, kyoto, osaka],
+        <String>['c2', 'gone', 'c1'],
+      );
+      expect(shown.map((c) => c.id), <String>['c2', 'c1', 'c3']);
+    });
+  });
 }

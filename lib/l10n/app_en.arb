@@ -9832,6 +9832,14 @@
   "@notebookChapterMoveDown": {
     "description": "Chapter menu item: move the chapter one place down."
   },
+  "notebookChapterCollapse": "Collapse chapter",
+  "@notebookChapterCollapse": {
+    "description": "Screen-reader hint for tapping a chapter title on the contents page: hide the diaries of this chapter."
+  },
+  "notebookChapterExpand": "Expand chapter",
+  "@notebookChapterExpand": {
+    "description": "Screen-reader hint for tapping a collapsed chapter title on the contents page: show the diaries of this chapter again."
+  },
   "notebookChapterTitleLabel": "Chapter name",
   "@notebookChapterTitleLabel": {
     "description": "Label of the chapter name field."

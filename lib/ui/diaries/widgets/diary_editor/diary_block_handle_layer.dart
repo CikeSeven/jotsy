@@ -15,6 +15,7 @@ import '../../controllers/diary_table_editing.dart';
 import 'diary_block_drop_targets.dart';
 import 'diary_block_handle.dart';
 import 'diary_block_marker_metrics.dart';
+import 'diary_edge_auto_scroll.dart';
 
 /// 编辑态的段落把手：整篇正文只有一个，浮在光标所在块的首行左侧。
 ///
@@ -87,12 +88,6 @@ class _HandlePlacement {
   /// 把手中心，本层的局部坐标。
   final Offset center;
 }
-
-/// 块进入可见区域上下这么近时自动滚动。
-const double _autoScrollZone = 48;
-
-/// 自动滚动速度：每步最多 20px、用时 1000 / 它 毫秒，即最快约 400px/s。
-const double _autoScrollVelocity = 20;
 
 class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     with TickerProviderStateMixin, WidgetsBindingObserver {
@@ -496,7 +491,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     );
   }
 
-  /// 块（手指位置加 [_grabOffset]）靠近可见区域上下 [_autoScrollZone] 时
+  /// 块（手指位置加 [_grabOffset]）靠近可见区域上下 [kDiaryAutoScrollZone] 时
   /// 朝那一边自动滚动，越靠外越快；离开边缘即停。每帧（[_trackDrag]）与
   /// 滚动器每滚一步都按当前位置重新给一次目标，手指不动也接着滚：预览移动
   /// 后列表换锚点、滚动范围要到下一次布局才更新，滚动器若恰在这时判断
@@ -508,21 +503,14 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     final scrollable = widget.controller.state.scrollableState;
     final viewport = _viewport();
     if (finger == null || scrollable == null || viewport == null) return;
-    final x = finger.dx;
-    final y = finger.dy + _grabOffset;
     final list = viewport.list;
-    // 拖动目标矩形越出视口边多少就滚多少：向上量 [_autoScrollZone]，向下
-    // 还要越过被盖住的部分才碰到视口底边。
-    final Rect? target = y < viewport.top + _autoScrollZone
-        ? Rect.fromLTRB(x, y - _autoScrollZone, x + 1, y)
-        : y > viewport.bottom - _autoScrollZone
-        ? Rect.fromLTRB(
-            x,
-            y,
-            x + 1,
-            y + _autoScrollZone + list.top + list.height - viewport.bottom,
-          )
-        : null;
+    final target = diaryEdgeAutoScrollTarget(
+      Offset(finger.dx, finger.dy + _grabOffset),
+      visibleTop: viewport.top,
+      visibleBottom: viewport.bottom,
+      viewportTop: list.top,
+      viewportBottom: list.top + list.height,
+    );
     if (target == null) {
       _autoScroller?.stopAutoScroll();
       return;
@@ -530,7 +518,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     final scroller = _autoScroller ??= EdgeDraggingAutoScroller(
       scrollable,
       onScrollViewScrolled: _autoScroll,
-      velocityScalar: _autoScrollVelocity,
+      velocityScalar: kDiaryAutoScrollVelocity,
     );
     scroller.startAutoScrollIfNecessary(target);
   }

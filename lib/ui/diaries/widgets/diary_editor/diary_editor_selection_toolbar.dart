@@ -3,12 +3,17 @@ import 'dart:async';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/services.dart' show ProcessTextAction;
 
 import '../../../../core/services/app_platform.dart';
 import '../../../../core/services/text_process_actions_service.dart';
 import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
+import '../../../widgets/text_selection_menu/app_text_selection_layout.dart';
 import '../../controllers/diary_editor_controller.dart';
+import 'diary_editor_keyboard_hold.dart';
+import 'diary_editor_selection_gestures.dart'
+    show kDiarySelectionHandleOverhang;
 import 'diary_editor_selection_menu_items.dart';
 
 /// 原生块选区的复制/剪切/粘贴入口。使用应用统一的文字选区菜单（手机为
@@ -22,6 +27,10 @@ import 'diary_editor_selection_menu_items.dart';
 /// 浮在光标上方，只有粘贴与全选（见 `_trackCaretMenu`）。桌面与系统
 /// 文本框一致，选中时不出现（否则盖住文字与指针），只在右键时经
 /// [diaryEditorContextMenuBuilder] 出现在指针处。
+///
+/// 手指按着正文、选区又在变（长按选词与扩选、拖动选区把手、横滑移光标）
+/// 时菜单收起，让出上游的放大镜；最后一根手指抬起后再按松手时的选区决定
+/// 是否弹出（#190，与系统文本框一致）。
 class DiaryEditorSelectionToolbar extends StatefulWidget {
   const DiaryEditorSelectionToolbar({
     super.key,
@@ -43,10 +52,21 @@ class _DiaryEditorSelectionToolbarState
   OverlayEntry? _entry;
   ScrollPosition? _parentScroll;
   bool _scheduled = false;
+
+  /// 按在正文上的触点数，经 [build] 里只观察指针、不参与手势竞争的
+  /// [Listener] 统计。
+  int _pointers = 0;
+
+  /// 第一根手指按下时的选区。
+  af.Selection? _pressSelection;
+
+  /// 手指按着期间选区变过：正在选择，菜单收起直到全部抬起。
+  bool _selecting = false;
+
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(_schedule);
+    widget.controller.addListener(_onControllerChanged);
   }
 
   @override
@@ -64,15 +84,44 @@ class _DiaryEditorSelectionToolbarState
   void didUpdateWidget(DiaryEditorSelectionToolbar old) {
     super.didUpdateWidget(old);
     if (old.controller != widget.controller) {
-      old.controller.removeListener(_schedule);
-      widget.controller.addListener(_schedule);
+      old.controller.removeListener(_onControllerChanged);
+      widget.controller.addListener(_onControllerChanged);
       _caretMenu = null;
+      _selecting = false;
+      _pressSelection = null;
       _hide();
     }
   }
 
-  void _schedule() {
+  void _onControllerChanged() {
     _trackCaretMenu();
+    final controller = widget.controller;
+    if (_pointers > 0 &&
+        !_selecting &&
+        !controller.state.isDisposed &&
+        controller.state.selection != _pressSelection) {
+      _selecting = true;
+    }
+    _schedule();
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    if (_pointers++ > 0) return;
+    final state = widget.controller.state;
+    _pressSelection = state.isDisposed ? null : state.selection;
+    _selecting = false;
+  }
+
+  void _onPointerUp(PointerEvent event) {
+    if (_pointers == 0 || --_pointers > 0 || !_selecting) return;
+    _selecting = false;
+    // Listener 先于手势识别器收到抬起：长按 / 拖动结束时上游交还选区的通知
+    // 还没到，交给帧后按最终选区决定。抬起本身不一定触发新帧，主动要一帧。
+    _schedule();
+    SchedulerBinding.instance.ensureVisualUpdate();
+  }
+
+  void _schedule() {
     if (_scheduled) return;
     _scheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -81,6 +130,7 @@ class _DiaryEditorSelectionToolbarState
       final selection = widget.controller.state.selection;
       if (!widget.enabled ||
           AppPlatform.isDesktop ||
+          _selecting ||
           selection == null ||
           (selection.isCollapsed && selection != _caretMenu)) {
         _hide();
@@ -173,7 +223,16 @@ class _DiaryEditorSelectionToolbarState
             collapseScope: selection,
             anchors: TextSelectionToolbarAnchors(
               primaryAnchor: rects.first.topCenter,
-              secondaryAnchor: rects.last.bottomCenter,
+              // 翻到选区下方时让出整块把手触控区（文字下方
+              // kDiarySelectionHandleOverhang），否则选区靠近屏幕顶部时菜单
+              // 正好盖在把手上，按到的是菜单（#190）。
+              secondaryAnchor:
+                  rects.last.bottomCenter +
+                  const Offset(
+                    0,
+                    kDiarySelectionHandleOverhang -
+                        AppTextToolbarGeometry.gapBelow,
+                  ),
             ),
             actions: diaryEditorSelectionMenuItems(
               context,
@@ -188,9 +247,14 @@ class _DiaryEditorSelectionToolbarState
               afterCopy: () {
                 _caretMenu = null;
                 _hide();
-                if (!controller.state.isDisposed) {
-                  controller.select(af.Selection.collapsed(selection.end));
-                }
+                if (controller.state.isDisposed) return;
+                void collapse() =>
+                    controller.select(af.Selection.collapsed(selection.end));
+                // 软键盘收着时不因收成光标把它拉起来。复制写剪贴板是异步的，
+                // 回来时菜单所在的正文可能已经卸载，那时照常收起。
+                mounted
+                    ? holdHiddenKeyboard(context, controller, collapse)
+                    : collapse();
               },
             ),
           ),
@@ -203,13 +267,18 @@ class _DiaryEditorSelectionToolbarState
   @override
   void dispose() {
     _hide();
-    widget.controller.removeListener(_schedule);
+    widget.controller.removeListener(_onControllerChanged);
     _parentScroll?.removeListener(_hide);
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) => Listener(
+    onPointerDown: _onPointerDown,
+    onPointerUp: _onPointerUp,
+    onPointerCancel: _onPointerUp,
+    child: widget.child,
+  );
 }
 
 /// 桌面正文的右键菜单，交给 [af.AppFlowyEditor.contextMenuBuilder]。

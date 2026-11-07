@@ -10,6 +10,7 @@ import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/diary_editor_clipboard.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_text_process_flow.dart';
+import 'diary_editor_keyboard_hold.dart';
 
 /// 日记正文选区菜单（手机胶囊与桌面右键菜单共用）的菜单项组装。
 ///
@@ -65,7 +66,12 @@ List<AppTextMenuAction> diaryEditorSelectionMenuItems(
         type: ContextMenuButtonType.selectAll,
         onPressed: () {
           dismiss();
-          af.selectAllCommand.handler(controller.state);
+          // 软键盘收着时全选不把它拉起来（只是选文字，不是要打字）。
+          holdHiddenKeyboard(
+            context,
+            controller,
+            () => af.selectAllCommand.handler(controller.state),
+          );
         },
       ),
     ]),

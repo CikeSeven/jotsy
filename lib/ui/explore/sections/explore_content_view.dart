@@ -4,14 +4,14 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_features.dart';
-import '../controllers/explore_data_builder.dart';
+import '../controllers/explore_computation_controller.dart';
+import '../models/explore_computation_input.dart';
+import '../../widgets/delayed_loading_indicator.dart';
 import '../controllers/explore_module_actions.dart';
 import '../models/explore_layout.dart';
 import '../models/explore_module_config.dart';
-import '../models/explore_module_data.dart';
 import '../models/explore_module_id.dart';
 import '../models/explore_period.dart';
-import '../viewmodels/explore_entry.dart';
 import '../widgets/explore_appearance_scope.dart';
 import '../widgets/explore_module_menu.dart';
 import '../widgets/explore_shared_widgets.dart';
@@ -26,7 +26,8 @@ import 'explore_period_bar.dart';
 /// 哪些卡片出现：布局里显示的、功能开着的（[ExploreModuleSpec.isAvailable]），
 /// 草稿箱只在有草稿时（[draftCount] > 0）。
 ///
-/// 聚合缓存：条目经 [ExploreEntryCache] 只解析一次；聚合结果按输入的身份 /
+/// 聚合会话经 [ExploreComputationController] 管理；大库在后台计算，条目解析
+/// 结果按版本复用，完整聚合按输入的身份 /
 /// 值缓存（概览列表身份、布局、范围、日期、语言、心情选项、标签顺序、这天的
 /// 心情、照片数、一周首日与可见卡片），数据流没有新推送时重建不再重算。
 /// 动作经外层的 [ExploreActionsScope]；外观经这里放的 [ExploreAppearanceScope]。
@@ -80,72 +81,21 @@ class ExploreContentView extends StatefulWidget {
 }
 
 class _ExploreContentViewState extends State<ExploreContentView> {
-  final ExploreEntryCache _entryCache = ExploreEntryCache();
-  List<ExploreDiaryOverview>? _indexedSource;
-  ExploreEntryIndex? _index;
+  final ExploreComputationController _computation =
+      ExploreComputationController();
 
-  ExploreData? _data;
-  List<Object?>? _dataKey;
-
-  ExploreEntryIndex _indexOf(List<ExploreDiaryOverview> diaries) {
-    final cached = _index;
-    if (cached != null && identical(diaries, _indexedSource)) return cached;
-    _indexedSource = diaries;
-    return _index = _entryCache.index(diaries);
+  @override
+  void initState() {
+    super.initState();
+    _computation.addListener(_onComputed);
   }
 
-  ExploreData _resolve(
-    List<ExploreModuleConfig> shown,
-    DateTime now,
-    AppLocalizations l10n,
-  ) {
-    final index = _indexOf(widget.diaries);
-    final modules = <ExploreModuleId>{for (final config in shown) config.id};
-    final key = <Object?>[
-      index,
-      widget.layout,
-      widget.period,
-      exploreDayKey(now),
-      l10n.localeName,
-      widget.moodOptions.join('\u{1F}'),
-      widget.orderedTagIds.join(','),
-      widget.dayMoods,
-      widget.photoCounts,
-      widget.firstWeekday,
-      (modules.toList()..sort((a, b) => a.index - b.index)).join(','),
-    ];
-    final cached = _data;
-    final previous = _dataKey;
-    if (cached != null && previous != null && _sameKey(previous, key)) {
-      return cached;
-    }
-    _dataKey = key;
-    return _data = ExploreDataBuilder.build(
-      ExploreDataRequest(
-        index: index,
-        layout: widget.layout,
-        modules: modules,
-        period: widget.period,
-        now: now,
-        firstWeekday: widget.firstWeekday,
-        moodOptions: widget.moodOptions,
-        l10n: l10n,
-        orderedTagIds: widget.orderedTagIds,
-        dayMoods: widget.dayMoods,
-        photoCounts: widget.photoCounts,
-      ),
-    );
-  }
+  void _onComputed() => setState(() {});
 
-  /// 索引、这天的心情与照片数按身份比较（流推送才换实例），其余按值。
-  static bool _sameKey(List<Object?> a, List<Object?> b) {
-    for (var i = 0; i < a.length; i++) {
-      final x = a[i];
-      final y = b[i];
-      final byIdentity = x is ExploreEntryIndex || x is Map || y is Map;
-      if (byIdentity ? !identical(x, y) : x != y) return false;
-    }
-    return true;
+  @override
+  void dispose() {
+    _computation.dispose();
+    super.dispose();
   }
 
   @override
@@ -158,24 +108,40 @@ class _ExploreContentViewState extends State<ExploreContentView> {
       widget.features,
       draftCount: widget.draftCount,
     );
-    final data = _resolve(shown, now, l10n);
-    final slots = <ExploreModuleSlot>[];
-    for (final config in shown) {
-      final card = buildExploreModule(
-        context,
-        config: config,
-        data: data,
-        now: now,
+    final data = _computation.resolve(
+      ExploreComputationInput(
+        diaries: widget.diaries,
+        layout: layout,
+        modules: {for (final config in shown) config.id},
         period: widget.period,
+        now: now,
+        firstWeekday: widget.firstWeekday,
         moodOptions: widget.moodOptions,
-      );
-      if (card == null) continue;
-      slots.add(
-        ExploreModuleSlot(
+        l10n: l10n,
+        orderedTagIds: widget.orderedTagIds,
+        dayMoods: widget.dayMoods,
+        photoCounts: widget.photoCounts,
+      ),
+    );
+    final slots = <ExploreModuleSlot>[];
+    if (data != null) {
+      for (final config in shown) {
+        final card = buildExploreModule(
+          context,
           config: config,
-          child: ExploreModuleMenu(id: config.id, child: card),
-        ),
-      );
+          data: data,
+          now: now,
+          period: widget.period,
+          moodOptions: widget.moodOptions,
+        );
+        if (card == null) continue;
+        slots.add(
+          ExploreModuleSlot(
+            config: config,
+            child: ExploreModuleMenu(id: config.id, child: card),
+          ),
+        );
+      }
     }
     return ExploreAppearanceScope(
       appearance: layout.appearance,
@@ -192,7 +158,11 @@ class _ExploreContentViewState extends State<ExploreContentView> {
                 ),
                 SizedBox(height: look.cardGap),
               ],
-              if (slots.isEmpty)
+              if (_computation.error != null)
+                Text(l10n.autoT0059)
+              else if (data == null)
+                const DelayedLoadingIndicator()
+              else if (slots.isEmpty)
                 const _ExploreNoModulesCard()
               else
                 ExploreModulesView(slots: slots),

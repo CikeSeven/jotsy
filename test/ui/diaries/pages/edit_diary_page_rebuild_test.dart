@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -46,6 +47,9 @@ void main() {
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          // 与应用壳相同：键盘是否弹起经 KeyboardVisibility 交给页面。
+          builder: (BuildContext context, Widget? child) =>
+              KeyboardVisibility(child: child!),
           home: EditDiaryPage(diaryId: diaryId),
         ),
       ),
@@ -77,6 +81,39 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
       expect(identical(currentEditor(tester), editorBefore), isTrue);
     }
+    await unmount(tester);
+  });
+
+  testWidgets('keyboard animation rebuilds the page only when the keyboard '
+      'appears and never rebuilds the body blocks', (tester) async {
+    await pumpEditPage(tester);
+    var pageBuilds = 0;
+    var blockBuilds = 0;
+    debugOnRebuildDirtyWidget = (Element element, bool builtOnce) {
+      final widget = element.widget;
+      if (widget is EditDiaryPage) pageBuilds++;
+      if (widget is af.ParagraphBlockComponentWidget) blockBuilds++;
+    };
+    addTearDown(() => debugOnRebuildDirtyWidget = null);
+
+    // 键盘逐帧升起：整页只在“弹起”那一帧重建（悬浮工具栏等按键盘在不在
+    // 切换），之后的逐帧高度变化不再重建整页；正文段落一次都不重建。
+    for (final inset in <double>[60, 120, 180, 240, 300]) {
+      tester.view.viewInsets = FakeViewPadding(bottom: inset);
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(pageBuilds, 1);
+    expect(blockBuilds, 0);
+
+    // 收起同理：只在键盘完全收起的那一帧重建一次。
+    for (final inset in <double>[240, 180, 120, 60, 0]) {
+      tester.view.viewInsets = FakeViewPadding(bottom: inset);
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    debugOnRebuildDirtyWidget = null;
+    expect(pageBuilds, 2);
+    expect(blockBuilds, 0);
+    await tester.pumpAndSettle();
     await unmount(tester);
   });
 

@@ -18,6 +18,7 @@ import '../models/notebook_add_filter.dart';
 import '../sections/notebook_add_diaries_parts.dart';
 import '../viewmodels/notebook_view.dart';
 import '../../widgets/form_width.dart';
+import '../../widgets/width_layout_builder.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
@@ -221,9 +222,11 @@ class _NotebookAddDiariesPageState
     } else {
       body = NotificationListener<ScrollNotification>(
         onNotification: _handleScroll,
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            final side = FormWidth.gutter(constraints.maxWidth);
+        // 只随宽度重建：在搜索框打字时键盘升降，列表区逐帧变矮，不必逐帧
+        // 重建整列日记（见 WidthLayoutBuilder）。
+        child: WidthLayoutBuilder(
+          builder: (BuildContext context, double maxWidth) {
+            final side = FormWidth.gutter(maxWidth);
             return ListView.builder(
               padding: EdgeInsets.fromLTRB(
                 side,

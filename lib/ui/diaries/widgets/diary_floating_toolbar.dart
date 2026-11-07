@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
@@ -112,7 +113,7 @@ class DiaryFloatingToolbar extends StatefulWidget {
     this.onMediaPressed,
     this.onCameraPressed,
     this.onPanelExtentChanged,
-    this.maxPanelExtent = double.infinity,
+    this.maxPanelExtent,
     this.savedColors = DiarySavedColors.empty,
     this.onEditSavedColors,
     this.size = DiaryToolbarSize.standard,
@@ -146,8 +147,12 @@ class DiaryFloatingToolbar extends StatefulWidget {
   /// 面板目标高度（含分隔线）变化时回调：展开为面板高度，收起或卸载后为 0。
   final ValueChanged<double>? onPanelExtentChanged;
 
-  /// 面板（含分隔线）最多占多高，超出部分在面板内纵向滚动。
-  final double maxPanelExtent;
+  /// 面板（含分隔线）最多占多高，超出部分在面板内纵向滚动；null 为不限。
+  ///
+  /// 用可监听的值而不是数值：上限随软键盘升降逐帧变化，作为参数传入时整条
+  /// 工具栏会跟着逐帧重建。面板收着时用不到它，只有面板展开期间才随它
+  /// 重建（由 `DiaryToolbarPanelLimit` 在布局时写入）。
+  final ValueListenable<double>? maxPanelExtent;
 
   /// 跨日记保存的“我的颜色”：色板页预设下方一行，排在本篇用过的颜色之前。
   final DiarySavedColors savedColors;
@@ -203,10 +208,29 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   /// 已经报告给编辑页的高度，避免重复回调。
   double _reportedExtent = 0;
 
+  /// 面板展开期间上限变了、下一帧重建已排上。
+  bool _limitRebuildScheduled = false;
+
+  double get _maxPanelExtent => widget.maxPanelExtent?.value ?? double.infinity;
+
+  /// 上限在布局阶段写入：面板收着时不理会；展开着时排到这一帧之后重建，
+  /// 不在布局中途 setState。
+  void _handleMaxPanelExtentChanged() {
+    final layout = _layout;
+    if (layout == null || _visiblePanel(layout) == _ToolbarPanel.none) return;
+    if (_limitRebuildScheduled) return;
+    _limitRebuildScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _limitRebuildScheduled = false;
+      if (mounted) setState(() {});
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     widget.controller.addListener(_handleSelectionChanged);
+    widget.maxPanelExtent?.addListener(_handleMaxPanelExtentChanged);
   }
 
   @override
@@ -215,6 +239,10 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_handleSelectionChanged);
       widget.controller.addListener(_handleSelectionChanged);
+    }
+    if (oldWidget.maxPanelExtent != widget.maxPanelExtent) {
+      oldWidget.maxPanelExtent?.removeListener(_handleMaxPanelExtentChanged);
+      widget.maxPanelExtent?.addListener(_handleMaxPanelExtentChanged);
     }
     // 录音面板打开时直接收起、不播收起动画：外层 AnimatedSize 会把“面板消失 +
     // 录音面板插入”当作一次尺寸变化统一补间；若内层同时逐帧收拢，外层只能
@@ -234,6 +262,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     // 卸载发生在构建收尾阶段，此时回调会让编辑页在锁定的树上刷新，改到下一帧。
     _reportExtent(0, deferred: true);
     widget.controller.removeListener(_handleSelectionChanged);
+    widget.maxPanelExtent?.removeListener(_handleMaxPanelExtentChanged);
     _panelAnimation.dispose();
     _panelController.dispose();
     super.dispose();
@@ -382,34 +411,30 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       _ToolbarPanel.none => 0,
       _ToolbarPanel.more => diaryToolbarMorePanelBodyHeight(
         layout.overflowRows.length,
-        widget.maxPanelExtent,
+        _maxPanelExtent,
         scale: _scale,
       ),
       _ToolbarPanel.color => diaryToolbarPanelBodyLimit(
         diaryColorPanelNaturalHeight(_colorMode, _colorGrid()),
-        widget.maxPanelExtent,
+        _maxPanelExtent,
       ),
       _ToolbarPanel.code => diaryToolbarPanelBodyLimit(
         kDiaryCodeBlockPanelHeight,
-        widget.maxPanelExtent,
+        _maxPanelExtent,
       ),
       _ToolbarPanel.list => diaryToolbarPanelBodyLimit(
         diaryListStylePanelHeight(_panelInnerWidth, _listType),
-        widget.maxPanelExtent,
+        _maxPanelExtent,
       ),
-      _ToolbarPanel.heading ||
-      _ToolbarPanel.align ||
-      _ToolbarPanel.fontSize => diaryToolbarPanelBodyLimit(
-        kDiaryTextStylePanelHeight,
-        widget.maxPanelExtent,
-      ),
+      _ToolbarPanel.heading || _ToolbarPanel.align || _ToolbarPanel.fontSize =>
+        diaryToolbarPanelBodyLimit(kDiaryTextStylePanelHeight, _maxPanelExtent),
       _ToolbarPanel.callout => diaryToolbarPanelBodyLimit(
         kDiaryCalloutPanelHeight,
-        widget.maxPanelExtent,
+        _maxPanelExtent,
       ),
       _ToolbarPanel.table => diaryToolbarPanelBodyLimit(
         kDiaryTablePanelHeight,
-        widget.maxPanelExtent,
+        _maxPanelExtent,
       ),
     };
   }

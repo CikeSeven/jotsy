@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/derived_theme_cache.dart';
 import 'app_glass_scope.dart';
 
 /// 提示条（SnackBar）的玻璃材质：归入组件类别“小控件”（controls）。
@@ -30,14 +31,25 @@ class AppGlassSnackBarTheme extends StatelessWidget {
   /// 不影响阅读。
   static const double minOpacity = 0.88;
 
+  /// 本组件挂在 `MaterialApp.builder` 里、随 MediaQuery 逐帧重建：输入不变
+  /// 时交回同一份主题，不让 Theme 逐帧通知全应用（见 [DerivedThemeCache]）。
+  /// 里面的 AppGlassControlsTheme 以这里的结果为基础主题，同一实例才能命中
+  /// 它的缓存。
+  static final DerivedThemeCache<AppGlassResolved> _themes =
+      DerivedThemeCache<AppGlassResolved>();
+
   @override
   Widget build(BuildContext context) {
     final glass = AppGlass.of(context);
     if (!glass.isGlass(AppGlassComponent.controls)) return child;
     final theme = Theme.of(context);
     return Theme(
-      data: theme.copyWith(
-        snackBarTheme: themeFor(theme.snackBarTheme, theme, glass),
+      data: _themes.resolve(
+        theme,
+        glass,
+        () => theme.copyWith(
+          snackBarTheme: themeFor(theme.snackBarTheme, theme, glass),
+        ),
       ),
       child: child,
     );

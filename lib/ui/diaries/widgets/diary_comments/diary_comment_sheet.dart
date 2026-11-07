@@ -10,6 +10,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../../widgets/expressive_state_blend.dart';
+import '../../../widgets/keyboard_visibility.dart';
 import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/diary_comment_images_controller.dart';
 import 'diary_comment_image_strip.dart';
@@ -207,8 +208,7 @@ class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+    return KeyboardInsetPadding(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.xl,

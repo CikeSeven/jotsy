@@ -7,6 +7,7 @@ import '../../../core/services/app_update_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_choice_tile.dart';
+import '../../widgets/keyboard_visibility.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import 'app_update_labels.dart';
 
@@ -102,8 +103,7 @@ class _AppUpdateSourceSheetState extends State<AppUpdateSourceSheet> {
     final mirrors = AppUpdateSource.builtInSources.where(
       (source) => !source.isDirect,
     );
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+    return KeyboardInsetPadding(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

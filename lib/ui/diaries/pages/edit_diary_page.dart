@@ -48,6 +48,7 @@ import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor_drop_target.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_toolbar_panel_limit.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
@@ -124,6 +125,8 @@ import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/settings/pages/diary_preview_style_page.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
+import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_persistence_controller.dart';
@@ -222,6 +225,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
   // 悬浮工具栏「更多」面板的目标高度（收起为 0），驱动正文末尾的额外留白。
   final ValueNotifier<double> _toolbarPanelExtent = ValueNotifier<double>(0);
+  // 悬浮工具栏面板最多占的高度，布局时按可用高度写入（见
+  // DiaryToolbarPanelLimit），工具栏只在面板展开时跟随。
+  final ValueNotifier<double> _toolbarMaxPanelExtent = ValueNotifier<double>(
+    double.infinity,
+  );
   // 最近一次构建是否显示了悬浮工具栏：帧末的光标揭示据此取与这一帧布局一致
   // 的遮挡高度（见 [_editorBottomCover]）。
   bool _floatingToolbarShown = false;
@@ -480,6 +488,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _toolbarFocusNode.dispose();
     _editPanelExpandProgress.dispose();
     _toolbarPanelExtent.dispose();
+    _toolbarMaxPanelExtent.dispose();
     _contentController.dispose();
     _recordingController.dispose();
     _unbindToolbarSettingsService();
@@ -655,7 +664,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       return 16.0;
     }
     if (_metaPanelOpen) return _metaPanelBottomSpacer(panelProgress);
-    return _readingBottomGap + MediaQuery.paddingOf(context).bottom;
+    // 用 viewPadding 而不是 padding：padding 底边在键盘盖过导航条的那几帧
+    // 里逐帧变小，读它会让整页在键盘动画开头 / 结尾逐帧重建。键盘收着时
+    // 两者相同。
+    return _readingBottomGap + MediaQuery.viewPaddingOf(context).bottom;
   }
 
   /// 悬浮工具栏一排（不含面板）在正文底部占的高度，随工具栏大小变化。
@@ -817,10 +829,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     // 内边距里（滚动视图仍铺满，滚动条留在窗口边缘），页头与正文同一组
     // 边距，段落把手跟着内边距落在列左侧（contentLeft）。手机上为 16。
     // 阅读式版式（编辑已有日记）改按预览页样式的边距与正文列宽，按编辑器
-    // 实际拿到的宽度换算（与预览页的 atWidth 相同）。
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final width = constraints.maxWidth;
+    // 实际拿到的宽度换算（与预览页的 atWidth 相同）。只随宽度重建：键盘升降
+    // 时正文区逐帧变矮，不必逐帧重建页头与编辑器（见 WidthLayoutBuilder）。
+    return WidthLayoutBuilder(
+      builder: (BuildContext context, double width) {
         final resolved = reading?.resolved.atWidth(width);
         return _buildEditorColumn(
           context,
@@ -1060,7 +1072,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   @override
   Widget build(BuildContext context) {
-    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    // 整页只关心键盘在不在，不读逐帧变化的键盘高度：否则键盘升降动画的每
+    // 一帧都会整页重建（连同正文每个段落块），拉起、收起明显卡顿。正文随
+    // 键盘让位由 Scaffold 缩小 body 完成，光标揭示见 DiaryEditorViewport。
+    final keyboardVisible = KeyboardVisibility.of(context);
     // 信息面板只在点信息栏后挂着（见 _EditDiaryReadingActions._openMetaPanel）。
     final showEditMetaPanel = _isEditEntry && _metaPanelOpen;
     // 日记模板功能关闭时隐藏入口，数据保留：没有建议条，顶栏菜单里没有
@@ -1092,7 +1107,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         _hasFloatingToolbar &&
         !_metaPanelOpen &&
         (_toolbarAlwaysShown ||
-            ((keyboardInset > 0 || _toolbarFocusNode.hasFocus) &&
+            ((keyboardVisible || _toolbarFocusNode.hasFocus) &&
                 _isEditingNoteText));
     final enabledToolbarOrder = filterEnabledDiaryToolbarOrder(
       _toolbarOrder,
@@ -1373,76 +1388,72 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                         key: const ValueKey<String>('edit-floating-toolbar'),
                         left: kDiaryFloatingToolbarInset,
                         right: kDiaryFloatingToolbarInset,
-                        // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
+                        // Scaffold 已根据键盘缩小 body，高度不需要再叠加键盘高度。
                         bottom: 0,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final safeBottom = math.max(
-                              MediaQuery.paddingOf(context).bottom,
-                              8.0,
-                            );
-                            // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
-                            return CenteredContent(
-                              maxWidth: AppContentWidth.editor,
-                              child: ExpressiveEntrance(
-                                glass: toolbarGlass,
-                                child: SafeArea(
-                                  top: false,
-                                  minimum: const EdgeInsets.only(bottom: 8),
-                                  // 录音面板插入/移除时整列高度平滑变化，工具栏随之
-                                  // 上移，不再瞬间跳到 300dp 之上。
-                                  child: AnimatedSize(
-                                    duration: ExpressiveMotion.durationNonZero(
-                                      context,
-                                      ExpressiveMotion.medium,
-                                    ),
-                                    curve: ExpressiveMotion.effects,
-                                    alignment: Alignment.bottomCenter,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        DiaryFloatingToolbarSurface(
-                                          child: Focus(
-                                            focusNode: _toolbarFocusNode,
-                                            // 焦点在正文与颜色代码输入框之间交接
-                                            // 时，按新的焦点重新判断工具栏是否显示。
-                                            onFocusChange: (_) =>
-                                                setState(() {}),
-                                            child: _buildFloatingToolbar(
-                                              enabledToolbarOrder,
-                                              // 面板最多铺满工具栏上方的整块正文
-                                              // 区，极矮的窗口里改为面板内滚动而
-                                              // 不溢出。
-                                              maxPanelExtent:
-                                                  constraints.maxHeight -
-                                                  safeBottom -
-                                                  diaryToolbarBarHeight(
-                                                    _toolbarSize.scale,
-                                                  ),
-                                            ),
+                        // 面板上限按可用高度在布局时写入，工具栏本身不随键盘
+                        // 升降逐帧重建（见 DiaryToolbarPanelLimit）。面板最多
+                        // 铺满工具栏上方的整块正文区，极矮的窗口里改为面板内
+                        // 滚动而不溢出。
+                        child: DiaryToolbarPanelLimit(
+                          limit: _toolbarMaxPanelExtent,
+                          extentOf: (context, constraints) =>
+                              constraints.maxHeight -
+                              math.max(
+                                MediaQuery.paddingOf(context).bottom,
+                                8.0,
+                              ) -
+                              diaryToolbarBarHeight(_toolbarSize.scale),
+                          // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
+                          child: CenteredContent(
+                            maxWidth: AppContentWidth.editor,
+                            child: ExpressiveEntrance(
+                              glass: toolbarGlass,
+                              child: SafeArea(
+                                top: false,
+                                minimum: const EdgeInsets.only(bottom: 8),
+                                // 录音面板插入/移除时整列高度平滑变化，工具栏随之
+                                // 上移，不再瞬间跳到 300dp 之上。
+                                child: AnimatedSize(
+                                  duration: ExpressiveMotion.durationNonZero(
+                                    context,
+                                    ExpressiveMotion.medium,
+                                  ),
+                                  curve: ExpressiveMotion.effects,
+                                  alignment: Alignment.bottomCenter,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      DiaryFloatingToolbarSurface(
+                                        child: Focus(
+                                          focusNode: _toolbarFocusNode,
+                                          // 焦点在正文与颜色代码输入框之间交接
+                                          // 时，按新的焦点重新判断工具栏是否显示。
+                                          onFocusChange: (_) => setState(() {}),
+                                          child: _buildFloatingToolbar(
+                                            enabledToolbarOrder,
                                           ),
                                         ),
-                                        if (_recordingPanelOpen) ...[
-                                          const SizedBox(height: 8),
-                                          ExpressiveEntrance(
-                                            glass: toolbarGlass,
-                                            child: _buildRecordingPanel(),
-                                          ),
-                                        ],
-                                        if (_aiSession case final session?) ...[
-                                          const SizedBox(height: 8),
-                                          ExpressiveEntrance(
-                                            glass: toolbarGlass,
-                                            child: _buildAiPanel(session),
-                                          ),
-                                        ],
+                                      ),
+                                      if (_recordingPanelOpen) ...[
+                                        const SizedBox(height: 8),
+                                        ExpressiveEntrance(
+                                          glass: toolbarGlass,
+                                          child: _buildRecordingPanel(),
+                                        ),
                                       ],
-                                    ),
+                                      if (_aiSession case final session?) ...[
+                                        const SizedBox(height: 8),
+                                        ExpressiveEntrance(
+                                          glass: toolbarGlass,
+                                          child: _buildAiPanel(session),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                          ),
                         ),
                       ),
                     DiaryMediaImportOverlay(
@@ -1612,10 +1623,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     return true;
   }
 
-  Widget _buildFloatingToolbar(
-    List<DiaryToolbarItem> toolbarOrder, {
-    required double maxPanelExtent,
-  }) {
+  Widget _buildFloatingToolbar(List<DiaryToolbarItem> toolbarOrder) {
     return DiaryFloatingToolbar(
       controller: _contentController,
       order: toolbarOrder,
@@ -1633,7 +1641,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           ? (kind) => unawaited(_controller.captureMedia(kind))
           : null,
       onPanelExtentChanged: _handleToolbarPanelExtentChanged,
-      maxPanelExtent: maxPanelExtent,
+      maxPanelExtent: _toolbarMaxPanelExtent,
       savedColors: ref.watch(diarySavedColorsProvider),
       onEditSavedColors: ref.read(diarySavedColorsProvider.notifier).edit,
       size: _toolbarSize,

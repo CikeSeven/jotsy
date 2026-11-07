@@ -13,6 +13,7 @@ import '../../diaries/widgets/tag_filter_chip.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_choice_tile.dart';
+import '../../widgets/keyboard_visibility.dart';
 import '../viewmodels/notebook_rule_labels.dart';
 import 'notebook_rule_date_editor.dart';
 
@@ -157,8 +158,7 @@ class NotebookRuleSheetFrame extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final result = this.result;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+    return KeyboardInsetPadding(
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
           AppSpacing.l,

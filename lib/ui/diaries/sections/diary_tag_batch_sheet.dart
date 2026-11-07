@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +9,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../utils/tri_state_pick.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
+import '../../widgets/keyboard_visibility.dart';
 import '../controllers/tag_create_flow.dart';
 import '../widgets/publish_panel/publish_tag_picker_page.dart';
 import '../widgets/publish_panel/publish_tag_row.dart';
@@ -95,65 +95,63 @@ class _DiaryTagBatchSheetState extends ConsumerState<DiaryTagBatchSheet> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final media = MediaQuery.of(context);
-    final keyboard = media.viewInsets.bottom;
     final tags = ref.watch(tagListProvider);
-    return Padding(
-      padding: EdgeInsets.only(bottom: keyboard),
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) => SizedBox(
-          height: math.min(media.size.height * 0.75, constraints.maxHeight),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xl,
-                  0,
-                  AppSpacing.xl,
-                  AppSpacing.xs,
-                ),
-                child: Text(
-                  l10n.diaryTagBatchTitle(widget.diaryCount),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+    // 键盘高度只交给 KeyboardInsetPadding，搜索标签时键盘升降只有那一层
+    // 逐帧重建。面板高度取屏高的 3/4，键盘之上放不下时 SizedBox 按父级
+    // 约束自动收紧，不必用 LayoutBuilder 逐帧重建整个面板。
+    return KeyboardInsetPadding(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.75,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                0,
+                AppSpacing.xl,
+                AppSpacing.xs,
+              ),
+              child: Text(
+                l10n.diaryTagBatchTitle(widget.diaryCount),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              Expanded(
-                child: PublishTagPickerPane(
-                  tags: tags,
-                  searchPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  onCreateTag: (name) => unawaited(_create(name)),
-                  rowBuilder: (context, tag) {
-                    final state = _selection.stateOf(tag.id);
-                    return PublishTagRow(
-                      key: ValueKey<String>('tag_batch_${tag.id}'),
-                      tag: tag,
-                      selected: state == TriStatePick.all,
-                      partial: state == TriStatePick.some,
-                      onToggle: (_) => _toggle(tag.id),
-                    );
-                  },
-                ),
+            ),
+            Expanded(
+              child: PublishTagPickerPane(
+                tags: tags,
+                searchPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                onCreateTag: (name) => unawaited(_create(name)),
+                rowBuilder: (context, tag) {
+                  final state = _selection.stateOf(tag.id);
+                  return PublishTagRow(
+                    key: ValueKey<String>('tag_batch_${tag.id}'),
+                    tag: tag,
+                    selected: state == TriStatePick.all,
+                    partial: state == TriStatePick.some,
+                    onToggle: (_) => _toggle(tag.id),
+                  );
+                },
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.l,
-                  AppSpacing.s,
-                  AppSpacing.l,
-                  media.padding.bottom + AppSpacing.l,
-                ),
-                child: FilledButton(
-                  onPressed: _done,
-                  child: Text(l10n.diaryTagBatchDone),
-                ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                AppSpacing.s,
+                AppSpacing.l,
+                MediaQuery.paddingOf(context).bottom + AppSpacing.l,
               ),
-            ],
-          ),
+              child: FilledButton(
+                onPressed: _done,
+                child: Text(l10n.diaryTagBatchDone),
+              ),
+            ),
+          ],
         ),
       ),
     );

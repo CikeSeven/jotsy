@@ -29,6 +29,7 @@ import '../../app_surface/widgets/app_page_background.dart';
 import '../../diaries/controllers/diary_link_open_flow.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
+import '../../widgets/width_layout_builder.dart';
 import '../../widgets/expressive_loading_indicator.dart';
 import '../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../widgets/expressive_menu/expressive_menu_item.dart';
@@ -360,10 +361,12 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                   ),
               ],
             ),
-            body: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
+            // 只随宽度重建：在输入框打字时键盘升降，body 逐帧变矮，不必逐帧
+            // 重建整段对话（见 WidthLayoutBuilder）。
+            body: WidthLayoutBuilder(
+              builder: (BuildContext context, double maxWidth) {
                 final side = AppContentWidth.gutter(
-                  constraints.maxWidth,
+                  maxWidth,
                   AppContentWidth.reading,
                 );
                 return Column(

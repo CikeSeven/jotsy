@@ -5,6 +5,7 @@ import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.
 
 import '../../../app/theme/app_spacing.dart';
 import '../../widgets/form_width.dart';
+import '../../widgets/width_layout_builder.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
 import '../../widgets/color_swatch_button.dart';
 import '../../widgets/color_palette_families.dart';
@@ -28,10 +29,11 @@ class DiaryTemplateEditorSettingsTab extends StatelessWidget {
     final l10n = context.l10n;
     return ListenableBuilder(
       listenable: controller,
-      builder: (BuildContext context, Widget? child) => LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
+      // 只随宽度重建，键盘升降时不逐帧重建整张表单（见 WidthLayoutBuilder）。
+      builder: (BuildContext context, Widget? child) => WidthLayoutBuilder(
+        builder: (BuildContext context, double maxWidth) {
           // 宽窗口里表单收成最宽 720 的一列居中（滚动视图仍铺满）；手机上为 16。
-          final side = FormWidth.gutter(constraints.maxWidth);
+          final side = FormWidth.gutter(maxWidth);
           return ListView(
             padding: EdgeInsets.fromLTRB(
               side,

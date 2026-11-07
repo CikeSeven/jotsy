@@ -11,6 +11,7 @@ import 'package:node_diary/app/synced_data_refresh.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/app_fonts.dart';
 import 'package:node_diary/app/theme/app_scroll_behavior.dart';
+import 'package:node_diary/app/theme/derived_theme_cache.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/app_lock_platform.dart';
@@ -33,6 +34,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
+import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
 
 import '../core/services/settings_service.dart';
 import '../l10n/app_localizations.dart';
@@ -73,6 +75,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   Color? _cachedThemeSeedColor;
   AppFonts? _cachedThemeFonts;
   (ThemeData, ThemeData)? _cachedThemes;
+
+  /// 减少动画时去掉动效的主题，按 MaterialApp 给的基础主题记住。
+  final DerivedThemeCache<bool> _noMotionThemes = DerivedThemeCache<bool>();
   late final HomeHintVisibilityController _homeHintVisibilityController;
   Timer? _loaderShowTimer;
   Timer? _loaderMinVisibleTimer;
@@ -216,10 +221,16 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       showBrandMark: widget.launchBrandMark,
       // 应用锁遮罩盖着时首页入场无人可见，留到解锁时与遮罩淡出一起上演。
       holdReveal: appLockCovering,
-      homeBuilder: (BuildContext context) => HomePage(
-        startupNotice: startupNotice,
-        homeHintVisibleListenable:
-            _homeHintVisibilityController.isHintVisibleNotifier,
+      // 首页不为键盘让位（resizeToAvoidBottomInset: false），也没有自己的
+      // 输入框：键盘只会为盖在上面的页面、面板与对话框弹出。始终屏蔽键盘，
+      // 键盘升降时首页连同保活的各 Tab 一次都不重建（见 KeyboardShield）。
+      homeBuilder: (BuildContext context) => KeyboardShield(
+        shielded: true,
+        child: HomePage(
+          startupNotice: startupNotice,
+          homeHintVisibleListenable:
+              _homeHintVisibilityController.isHintVisibleNotifier,
+        ),
       ),
     );
 
@@ -348,9 +359,15 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
           baseScaler: mediaQuery.textScaler,
           factor: fontScale,
         );
+        // 这一层随 MediaQuery 逐帧重建（键盘升降）：去掉动效的主题按基础主题
+        // 记住，不让 Theme 逐帧通知全应用（见 DerivedThemeCache）。
         final themedChild = mediaQuery.disableAnimations
             ? Theme(
-                data: ExpressiveControls.withoutMotion(Theme.of(context)),
+                data: _noMotionThemes.resolve(
+                  theme,
+                  true,
+                  () => ExpressiveControls.withoutMotion(theme),
+                ),
                 child: child,
               )
             : child;
@@ -359,26 +376,30 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         // 部分一样跟随“字体大小”设置。
         Widget scaledChild = MediaQuery(
           data: mediaQuery.copyWith(textScaler: effectiveTextScaler),
-          child: AppLockLayer(
-            locked: appLock?.locked ?? false,
-            overlayBuilder: (_) => AppLockOverlay(
-              unlocking: appLock?.unlocking ?? false,
-              autoPrompt: appLock?.options.autoPrompt ?? true,
-              onTapUnlock: () => unawaited(appLock?.manualUnlock()),
-              onPasscodeUnlocked: () => appLock?.passcodeUnlocked(),
-            ),
-            // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
-            child: NotebookLockLayer(
-              // 桌面窗口（如 Linux GTK）背景是透明的：路由淡入淡出时最底层
-              // 页面半透明，下面又没有不透明的东西，桌面壁纸会透出来。垫一层
-              // 当前主题的 surface 色兜底；移动端窗口自带不透明背景，保持原样
-              // 不加。
-              child: AppPlatform.isDesktop
-                  ? ColoredBox(
-                      color: theme.colorScheme.surface,
-                      child: themedChild,
-                    )
-                  : themedChild,
+          // 键盘升降动画逐帧改变 viewInsets：这一层跟着逐帧重建，下面只关心
+          // “键盘在不在”的页面经 KeyboardVisibility.of 只在切换时重建。
+          child: KeyboardVisibility(
+            child: AppLockLayer(
+              locked: appLock?.locked ?? false,
+              overlayBuilder: (_) => AppLockOverlay(
+                unlocking: appLock?.unlocking ?? false,
+                autoPrompt: appLock?.options.autoPrompt ?? true,
+                onTapUnlock: () => unawaited(appLock?.manualUnlock()),
+                onPasscodeUnlocked: () => appLock?.passcodeUnlocked(),
+              ),
+              // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
+              child: NotebookLockLayer(
+                // 桌面窗口（如 Linux GTK）背景是透明的：路由淡入淡出时最底层
+                // 页面半透明，下面又没有不透明的东西，桌面壁纸会透出来。垫一层
+                // 当前主题的 surface 色兜底；移动端窗口自带不透明背景，保持原样
+                // 不加。
+                child: AppPlatform.isDesktop
+                    ? ColoredBox(
+                        color: theme.colorScheme.surface,
+                        child: themedChild,
+                      )
+                    : themedChild,
+              ),
             ),
           ),
         );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/keyboard_visibility.dart';
 import '../controllers/app_background_slot.dart';
 import '../models/app_surface_settings.dart';
 import '../providers/app_surface_settings_provider.dart';
@@ -106,7 +107,13 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
       animate: _built,
     );
     _built = true;
-    Widget child = KeyedSubtree(key: _childKey, child: widget.child);
+    // 被别的路由盖着时（推上了新页面、底部面板或对话框）页面不跟着键盘动：
+    // 键盘升降不再让看不见的页面逐帧重建、重新布局（见 KeyboardShield）。
+    final covered = !(ModalRoute.isCurrentOf(context) ?? true);
+    Widget child = KeyedSubtree(
+      key: _childKey,
+      child: KeyboardShield(shielded: covered, child: widget.child),
+    );
     if (_slot.wantsBackground || _slot.isPainting) {
       final layers = _slot.layers;
       // 图层只在画背景的这一支交给子树（AppPageBackgroundCopy 用），默认

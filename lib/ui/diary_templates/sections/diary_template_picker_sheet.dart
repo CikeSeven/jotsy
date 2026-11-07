@@ -176,12 +176,6 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
         )
         .toList(growable: false);
     final searching = diaryTemplateSearchTerms(_query).isNotEmpty;
-    // 底部面板不会为软键盘让位，键盘盖在面板下半部分上；把键盘高度计入
-    // 列表底部留白，搜索时结果仍能滚到键盘上方。键盘弹起时系统已把
-    // padding.bottom 扣掉了键盘遮住的部分，两者相加不会重复计算。
-    final bottomInset =
-        MediaQuery.paddingOf(context).bottom +
-        MediaQuery.viewInsetsOf(context).bottom;
     return CustomScrollView(
       key: const ValueKey<String>('list'),
       controller: widget.scrollController,
@@ -243,9 +237,9 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.m)),
         if (items.isEmpty)
-          SliverPadding(
+          _BottomInsetSliverPadding(
             // 空态居中在键盘上方的可见区域里。
-            padding: EdgeInsets.only(bottom: bottomInset),
+            padding: EdgeInsets.zero,
             sliver: SliverFillRemaining(
               hasScrollBody: false,
               child: searching
@@ -262,12 +256,12 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
             ),
           )
         else
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
+          _BottomInsetSliverPadding(
+            padding: const EdgeInsets.fromLTRB(
               AppSpacing.l,
               0,
               AppSpacing.l,
-              AppSpacing.l + bottomInset,
+              AppSpacing.l,
             ),
             sliver: SliverList.separated(
               itemCount: items.length,
@@ -286,4 +280,32 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
       ],
     );
   }
+}
+
+/// 列表底部的 SliverPadding，底边再加上系统导航条与软键盘的高度。
+///
+/// 底部面板不会为软键盘让位，键盘盖在面板下半部分上；把键盘高度计入列表
+/// 底部留白，搜索时结果仍能滚到键盘上方。键盘弹起时系统已把 padding.bottom
+/// 扣掉了键盘遮住的部分，两者相加不会重复计算。只有这一层读键盘高度、随
+/// 键盘动画逐帧重建：[sliver] 由面板构建好传进来，原样交回，模板列表不跟着
+/// 逐帧重建。
+class _BottomInsetSliverPadding extends StatelessWidget {
+  const _BottomInsetSliverPadding({
+    required this.padding,
+    required this.sliver,
+  });
+
+  final EdgeInsets padding;
+  final Widget sliver;
+
+  @override
+  Widget build(BuildContext context) => SliverPadding(
+    padding: padding.copyWith(
+      bottom:
+          padding.bottom +
+          MediaQuery.paddingOf(context).bottom +
+          MediaQuery.viewInsetsOf(context).bottom,
+    ),
+    sliver: sliver,
+  );
 }

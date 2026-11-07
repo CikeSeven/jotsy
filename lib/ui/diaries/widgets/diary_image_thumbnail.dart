@@ -8,10 +8,11 @@ import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_cover_alignment.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 
-/// 正文图片的小图显示（图片块 `data.thumbnail == true`）：
-/// [kDiaryImageThumbnailExtent] 见方、cover 裁切（长图顶部对齐，经
-/// [CoverCroppedImage]），圆角与微边框同正文图片。点按由外层媒体块处理，
-/// 与普通图片相同（只读正文进看图页，编辑页弹出图片菜单）。
+/// 正文图片的小图显示（图片块 `data.thumbnail == true`）：[extent] 见方
+/// （由 [DiaryEmbeddedImage] 按正文列宽或所在那排给出，最大
+/// [kDiaryImageThumbnailExtent]，一排三张放得下）、cover 裁切（长图顶部
+/// 对齐，经 [CoverCroppedImage]），圆角与微边框同正文图片。点按由外层媒体块
+/// 处理，与普通图片相同（只读正文进看图页，编辑页弹出图片菜单）。
 ///
 /// 尺寸固定：一开始就占好方格，解码完成后画面淡入，不会在尺寸读出时把正文
 /// 往下推。长图不折叠、不切片——小格子里只露出开头，整张解码一次即可。
@@ -25,10 +26,14 @@ class DiaryImageThumbnail extends StatefulWidget {
     super.key,
     required this.source,
     required this.provider,
+    this.extent = kDiaryImageThumbnailExtent,
     this.heroTag,
   });
 
   final String source;
+
+  /// 方格边长（逻辑像素）。
+  final double extent;
 
   /// 来源的原始 provider，由 [DiaryEmbeddedImage] 按来源缓存后传入，正文
   /// 重建时缓存键不变，不会重新解码。
@@ -81,9 +86,9 @@ class _DiaryImageThumbnailState extends State<DiaryImageThumbnail> {
 
   @override
   Widget build(BuildContext context) {
-    const extent = kDiaryImageThumbnailExtent;
+    final extent = widget.extent;
     if (!_sizeResolved) {
-      return const SizedBox.square(dimension: extent);
+      return SizedBox.square(dimension: extent);
     }
     final colors = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(kDiaryImageThumbnailRadius);
@@ -129,4 +134,25 @@ class _DiaryImageThumbnailState extends State<DiaryImageThumbnail> {
       ),
     );
   }
+}
+
+/// 并排的一排小图给出的方格边长（见 `DiaryThumbnailRowView`）：一排的几张
+/// 各占一格，按整排的宽度算好后经这里交给每张小图。不在一排里时
+/// [DiaryEmbeddedImage] 按自己的可用宽度算出同一个边长。
+class DiaryThumbnailExtent extends InheritedWidget {
+  const DiaryThumbnailExtent({
+    super.key,
+    required this.extent,
+    required super.child,
+  });
+
+  final double extent;
+
+  static double? maybeOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<DiaryThumbnailExtent>()
+      ?.extent;
+
+  @override
+  bool updateShouldNotify(DiaryThumbnailExtent oldWidget) =>
+      oldWidget.extent != extent;
 }

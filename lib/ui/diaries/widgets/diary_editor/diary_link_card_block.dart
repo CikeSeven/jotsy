@@ -116,7 +116,9 @@ class _DiaryLinkCardBlockState extends State<_DiaryLinkCardBlock>
       controller.state,
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
-        child: DiaryPlaybackInteractionGuard(child: card),
+        child: DiaryEmbedContent(
+          child: DiaryPlaybackInteractionGuard(child: card),
+        ),
       ),
     );
   }

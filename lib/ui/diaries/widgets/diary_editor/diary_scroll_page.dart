@@ -10,6 +10,9 @@ import 'package:appflowy_editor/src/flutter/scrollable_positioned_list/scrollabl
     show ScrollablePositionedList;
 import 'package:flutter/material.dart';
 
+import '../../models/diary_thumbnail_rows.dart';
+import 'diary_thumbnail_row.dart';
+
 /// 可滚动编辑器的页面块：与上游 `PageBlockComponent` 的滚动分支逐项相同，
 /// 只多一层记忆——同一次页面构建内，每一项（页头、各顶层块、页尾）只构建
 /// 一次。
@@ -25,6 +28,10 @@ import 'package:flutter/material.dart';
 /// 新的编辑器）都会生成新的 itemBuilder 闭包，带着空的记忆，所有项照上游
 /// 重建（如有序列表的序号跟着前后块变化）。收缩（shrinkWrap）的编辑器原样
 /// 交给上游页面块。
+///
+/// 与上游唯一的不同：顶层连续的小图三张一排（diary_thumbnail_rows.dart），
+/// 一排画在它第一张那一项里，其余的项为空。分排变了也整页重建
+/// （[DiaryThumbnailRowsBuilder]）。
 class DiaryScrollPageBuilder extends af.BlockComponentBuilder {
   DiaryScrollPageBuilder({required this.state, required this.scroll});
 
@@ -65,9 +72,6 @@ class _DiaryScrollPage extends af.BlockComponentStatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final header = this.header;
-    final footer = this.footer;
-    final wrapper = this.wrapper;
     if (scroll.shrinkWrap) {
       return af.PageBlockComponent(
         node: node,
@@ -76,11 +80,30 @@ class _DiaryScrollPage extends af.BlockComponentStatelessWidget {
         wrapper: wrapper,
       );
     }
+    // 分排变了（某张图片设为 / 取消小图）也要整页重建，见该组件。
+    return DiaryThumbnailRowsBuilder(
+      state: state,
+      root: node,
+      builder: _buildList,
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
+    final header = this.header;
+    final footer = this.footer;
+    final wrapper = this.wrapper;
     final items = node.children;
     final extentCount = (header == null ? 0 : 1) + (footer == null ? 0 : 1);
     final itemCount = items.length + extentCount;
-    // 本次页面构建的记忆：下标 → 已构建的项（见类注释）。
+    // 本次构建的记忆：下标 → 已构建的项（见类注释）。
     final built = <int, Widget>{};
+
+    Widget block(BuildContext context, af.Node node) {
+      final child = state.renderer.build(context, node);
+      return wrapper == null
+          ? child
+          : wrapper(context, node: node, child: child);
+    }
 
     Widget buildItem(BuildContext context, int index) {
       if (header != null && index == 0) {
@@ -89,10 +112,23 @@ class _DiaryScrollPage extends af.BlockComponentStatelessWidget {
       if (footer != null && index == itemCount - 1) {
         return IgnoreEditorSelectionGesture(child: footer);
       }
-      final node = items[index - (header == null ? 0 : 1)];
-      Widget child = state.renderer.build(context, node);
-      if (wrapper != null) {
-        child = wrapper(context, node: node, child: child);
+      final position = index - (header == null ? 0 : 1);
+      final node = items[position];
+      // 并排的小图都画在这一排第一张那一项里（DiaryThumbnailRowView），其余
+      // 的项是空的：列表的下标仍与顶层块一一对应，上游按下标算可见范围、
+      // 跳转都不受影响。
+      final row = diaryThumbnailRowOf(node);
+      if (row != null && row.start != position) return const SizedBox.shrink();
+      final Widget child;
+      if (row != null && row.end - row.start > 1) {
+        child = DiaryThumbnailRowView(
+          align: node.attributes['align'],
+          children: [
+            for (var i = row.start; i < row.end; i++) block(context, items[i]),
+          ],
+        );
+      } else {
+        child = block(context, node);
       }
       return Center(
         child: Container(

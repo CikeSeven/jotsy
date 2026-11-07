@@ -92,8 +92,9 @@ String? diaryImageStyleOf(af.Node node) {
   return style is String ? style : null;
 }
 
-/// 小图的边长（逻辑像素）与圆角：与“这天的照片”网格同一量级，正文里一张
-/// 小图约占三四行字高，不再把整列撑满。
+/// 小图的最大边长（逻辑像素）与圆角：与“这天的照片”网格同一量级，正文里
+/// 一张小图约占三四行字高，不再把整列撑满。实际边长按正文列宽取，一排三张
+/// 放得下（`diaryThumbnailExtentFor`）；导出按这个最大边长。
 const double kDiaryImageThumbnailExtent = 120;
 const double kDiaryImageThumbnailRadius = 12;
 

@@ -1,6 +1,6 @@
 part of 'diary_card_style.dart';
 
-/// 卡片正文的组成：区块顺序、标题/摘要显隐、“无标题”占位、标签样式、
+/// 卡片正文的组成：区块顺序、标题/摘要显隐、没写标题时取正文第一行、标签样式、
 /// 置顶徽章、无封面占位与多图拼贴。两种布局共用。
 ///
 /// 标签显示数量沿用独立的旧设置 `diaryCardTagLimit`（随备份单独导出），
@@ -22,8 +22,10 @@ class DiaryCardContentStyle {
   final List<DiaryCardBlock> blocks;
   final bool showTitle;
 
-  /// 没写标题的日记是否用“无标题”占位；关闭后这类日记不显示标题行。
-  /// 只在 [showTitle] 开启时起作用，未解封胶囊不受影响。
+  /// 没写标题的日记是否取正文第一行当标题（摘要从第二行起；正文没有文字时
+  /// 为“无标题”）；关闭后这类日记不显示标题行。只在 [showTitle] 开启时起
+  /// 作用，未解封胶囊不受影响。JSON 键沿用 `showUntitled`：它原是“无标题”
+  /// 占位开关，含义改为“没写标题时显示标题行”，已存的样式照旧生效。
   final bool showUntitled;
   final bool showPreview;
   final DiaryCardTagStyle tagStyle;

@@ -4724,13 +4724,13 @@
   "@diaryCardStyleShowTitle": {
     "description": "日记卡片样式设置页：是否显示日记标题。"
   },
-  "diaryCardStyleShowUntitled": "没有标题时显示“无标题”",
+  "diaryCardStyleShowUntitled": "没有标题时用正文第一行作标题",
   "@diaryCardStyleShowUntitled": {
-    "description": "日记卡片样式设置页：日记没写标题时是否用“无标题”占位。"
+    "description": "日记卡片样式设置页：日记没写标题时是否取正文第一行当标题（摘要从第二行起；正文没有文字时显示“无标题”）。"
   },
   "diaryCardStyleShowUntitledSubtitle": "关闭后直接省略标题行",
   "@diaryCardStyleShowUntitledSubtitle": {
-    "description": "日记卡片样式设置页：“无标题”占位开关的说明。"
+    "description": "日记卡片样式设置页：“没有标题时用正文第一行作标题”开关的说明。"
   },
   "diaryCardStyleShowPreview": "显示摘要",
   "@diaryCardStyleShowPreview": {
@@ -5212,7 +5212,11 @@
   },
   "diaryCardStyleSampleBody4": "下班路上看见一只橘猫趴在台阶上晒太阳，眯着眼睛的样子让人也跟着放松下来。",
   "@diaryCardStyleSampleBody4": {
-    "description": "日记卡片样式设置页：预览示例日记 4 的正文（这篇没有标题，用来展示“无标题”占位）。"
+    "description": "日记卡片样式设置页：预览示例日记 4 第一行之后的正文（这篇没有标题，用来展示正文第一行当标题）。"
+  },
+  "diaryCardStyleSampleLead4": "台阶上的橘猫",
+  "@diaryCardStyleSampleLead4": {
+    "description": "日记卡片样式设置页：预览示例日记 4 的正文第一行（这篇没有标题，这一行显示在标题位置）。"
   },
   "diaryCardStyleSampleCapsuleTitle": "写给一年后的自己",
   "@diaryCardStyleSampleCapsuleTitle": {

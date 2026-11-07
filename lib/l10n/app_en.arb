@@ -4724,13 +4724,13 @@
   "@diaryCardStyleShowTitle": {
     "description": "Diary card style settings: whether to show the entry title."
   },
-  "diaryCardStyleShowUntitled": "Show “Untitled” when there is no title",
+  "diaryCardStyleShowUntitled": "Use the first line as the title when there is none",
   "@diaryCardStyleShowUntitled": {
-    "description": "Diary card style settings: whether entries without a title show the “Untitled” placeholder."
+    "description": "Diary card style settings: whether entries without a title show the first line of the text as the title (the summary then starts from the second line; “Untitled” when the text is empty)."
   },
   "diaryCardStyleShowUntitledSubtitle": "When off, the title line is left out",
   "@diaryCardStyleShowUntitledSubtitle": {
-    "description": "Diary card style settings: explanation of the “Untitled” placeholder switch."
+    "description": "Diary card style settings: explanation of the first-line-as-title switch."
   },
   "diaryCardStyleShowPreview": "Show excerpt",
   "@diaryCardStyleShowPreview": {
@@ -5212,7 +5212,11 @@
   },
   "diaryCardStyleSampleBody4": "Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.",
   "@diaryCardStyleSampleBody4": {
-    "description": "Diary card style settings: text of preview sample entry 4 (it has no title, to show the “Untitled” placeholder)."
+    "description": "Diary card style settings: text after the first line of preview sample entry 4 (it has no title, to show the first line used as the title)."
+  },
+  "diaryCardStyleSampleLead4": "A ginger cat on the steps",
+  "@diaryCardStyleSampleLead4": {
+    "description": "Diary card style settings: first line of preview sample entry 4 (it has no title, so this line shows in the title position)."
   },
   "diaryCardStyleSampleCapsuleTitle": "A letter to myself next year",
   "@diaryCardStyleSampleCapsuleTitle": {

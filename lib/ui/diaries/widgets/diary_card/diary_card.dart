@@ -114,7 +114,8 @@ class DiaryCard extends StatelessWidget {
     if (isLockedCapsule) {
       content = DiaryCardLockedContent(
         diary: diary,
-        // 未解封胶囊不套用内容类选项：没写标题时始终显示“无标题”。
+        // 未解封胶囊不套用内容类选项：没写标题时始终显示“无标题”，也不取
+        // 正文第一行（封存期间不露出正文）。
         title: entry.title.trim().isEmpty ? l10n.autoT0033 : entry.title,
         previewCover: viewData.previewCover,
         capsuleState: capsuleState,
@@ -129,6 +130,7 @@ class DiaryCard extends StatelessWidget {
       final titleLine = DiaryCardBlocks.titleLine(
         style.content,
         title: entry.title,
+        viewData: viewData,
         untitled: l10n.autoT0033,
       );
       final blocks = DiaryCardBlocks(

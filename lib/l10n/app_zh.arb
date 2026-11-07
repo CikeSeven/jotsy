@@ -17965,5 +17965,9 @@
   "diarySearchSortNewest": "最新发表",
   "@diarySearchSortNewest": {"description": "Search result sort option: by publish time, newest first."},
   "diarySearchSortOldest": "最早发表",
-  "@diarySearchSortOldest": {"description": "Search result sort option: by publish time, oldest first."}
+  "@diarySearchSortOldest": {"description": "Search result sort option: by publish time, oldest first."},
+  "diarySearchTagSheetTitle": "按标签搜索",
+  "@diarySearchTagSheetTitle": {"description": "Title of the tag picker sheet opened from the search page tag chip."},
+  "diarySearchTagSheetHint": "只显示同时带有所选全部标签的日记",
+  "@diarySearchTagSheetHint": {"description": "Explanation under the title of the search tag picker sheet."}
 }

@@ -20,15 +20,15 @@ import '../widgets/diary_search_chip.dart';
 ///
 /// ```
 ///  <  ( 🔍 搜索标题或内容          ⊗ )  ✦
-///  [📕 旅行 ×] [# 美食 ×] [日期 ▾] [心情 ▾] … [含归档]
+///  [📕 旅行 ×] [#旅行 #美食 ×] [日期 ▾] [心情 ▾] … [含归档]
 /// ```
 ///
 /// - 第一行：返回（48dp）+ 胶囊输入框（[SearchPillField]）+ 有条件时的
 ///   “存为智能日记本”；宽窗口按 [FormWidth.gutter] 与结果列对齐；
-/// - 第二行：横向滚动的胶囊，先是已生效的条件（日记本、各个标签），再是
-///   固定顺序的筛选（各筛选槽位、含归档）；已生效的筛选显示取值，行尾 ×
-///   清除，点胶囊重新打开选择器。标签没有单独的筛选胶囊：标签条件来自入口
-///   （点标签进入）或空状态的常用标签，在这里只能移除。
+/// - 第二行：横向滚动的胶囊，先是日记本条件，再是固定顺序的筛选（标签、
+///   各筛选槽位、含归档）。已选的标签不逐个列出，都写在“标签”胶囊上
+///   （“#旅行 #美食”）；已生效的筛选显示取值，行尾 × 清除，点胶囊重新打开
+///   选择器。
 ///
 /// 键盘（输入框为空时）：退格依次移除最后一个标签、日记本条件；桌面上 Esc
 /// 有字时清空、没字时退出。
@@ -46,6 +46,7 @@ class DiarySearchTopBar extends StatelessWidget {
     required this.scopeIcon,
     required this.onClose,
     required this.onSubmitted,
+    required this.onPickTags,
     required this.onPickFilter,
     this.onSaveAsNotebook,
   });
@@ -64,6 +65,7 @@ class DiarySearchTopBar extends StatelessWidget {
 
   final VoidCallback onClose;
   final VoidCallback onSubmitted;
+  final VoidCallback onPickTags;
   final ValueChanged<DiarySearchFilterSlot> onPickFilter;
 
   /// 存为智能日记本；没有条件或日记本功能关闭时为 null（不显示）。
@@ -181,16 +183,7 @@ class DiarySearchTopBar extends StatelessWidget {
           onRemove: session.removeScope,
           removeLabel: l10n.notebookSearchRemoveScope(label),
         ),
-      for (final tag in selectedTags)
-        DiarySearchChip(
-          key: ValueKey<String>('search_tag_chip_${tag.id}'),
-          label: tag.name,
-          active: true,
-          accent: Color(tag.color),
-          leading: _TagHash(color: Color(tag.color)),
-          onRemove: () => session.removeTag(tag.id),
-          removeLabel: l10n.searchRemoveTagCondition(tag.name),
-        ),
+      _tagChip(l10n),
       for (final slot in DiarySearchFilterSlot.values)
         _filterChip(context, slot, filters.ruleOf(slot), now),
       DiarySearchChip(
@@ -207,6 +200,29 @@ class DiarySearchTopBar extends StatelessWidget {
         chips[i],
       ],
     ];
+  }
+
+  /// “标签”胶囊：没选时为普通筛选胶囊；选了以后胶囊上写所选标签
+  /// （“#旅行 #美食”，过长省略），行尾 × 一次清掉全部标签条件。
+  Widget _tagChip(AppLocalizations l10n) {
+    final active = selectedTags.isNotEmpty;
+    final label = active
+        ? selectedTags.map((tag) => '#${tag.name}').join(' ')
+        : notebookRuleTypeLabel(l10n, NotebookRuleType.tags);
+    return DiarySearchChip(
+      key: const ValueKey<String>('search_filter_tags'),
+      label: label,
+      active: active,
+      leading: FaIcon(notebookRuleTypeIcon(NotebookRuleType.tags)),
+      showCaret: !active,
+      onTap: onPickTags,
+      onRemove: active ? () => session.setTags(const <int>{}) : null,
+      removeLabel: !active
+          ? null
+          : selectedTags.length == 1
+          ? l10n.searchRemoveTagCondition(selectedTags.single.name)
+          : l10n.diarySearchRemoveFilter(label),
+    );
   }
 
   Widget _filterChip(
@@ -269,23 +285,5 @@ class DiarySearchTopBar extends StatelessWidget {
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
-  }
-}
-
-/// 标签条件前的彩色 `#`（与日记卡片、标签栏同一写法）。
-class _TagHash extends StatelessWidget {
-  const _TagHash({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '#',
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        color: color,
-        fontWeight: FontWeight.w700,
-      ),
-    );
   }
 }

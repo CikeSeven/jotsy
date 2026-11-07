@@ -18532,5 +18532,9 @@
   "diarySearchSortNewest": "Сначала новые",
   "@diarySearchSortNewest": {"description": "Search result sort option: by publish time, newest first."},
   "diarySearchSortOldest": "Сначала старые",
-  "@diarySearchSortOldest": {"description": "Search result sort option: by publish time, oldest first."}
+  "@diarySearchSortOldest": {"description": "Search result sort option: by publish time, oldest first."},
+  "diarySearchTagSheetTitle": "Поиск по тегам",
+  "@diarySearchTagSheetTitle": {"description": "Title of the tag picker sheet opened from the search page tag chip."},
+  "diarySearchTagSheetHint": "Показываются записи со всеми выбранными тегами",
+  "@diarySearchTagSheetHint": {"description": "Explanation under the title of the search tag picker sheet."}
 }

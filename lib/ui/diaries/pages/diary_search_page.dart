@@ -234,6 +234,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                       scopeIcon: widget.scopeIcon ?? FontAwesomeIcons.book,
                       onClose: _closePage,
                       onSubmitted: _submitSearch,
+                      onPickTags: () =>
+                          unawaited(pickDiarySearchTags(context, session)),
                       onPickFilter: (slot) => unawaited(
                         pickDiarySearchFilter(context, session, slot),
                       ),

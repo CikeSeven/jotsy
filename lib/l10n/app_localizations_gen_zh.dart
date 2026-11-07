@@ -13099,4 +13099,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diarySearchSortOldest => '最早发表';
+
+  @override
+  String get diarySearchTagSheetTitle => '按标签搜索';
+
+  @override
+  String get diarySearchTagSheetHint => '只显示同时带有所选全部标签的日记';
 }

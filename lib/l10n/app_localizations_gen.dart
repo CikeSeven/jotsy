@@ -23879,6 +23879,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Oldest'**
   String get diarySearchSortOldest;
+
+  /// Title of the tag picker sheet opened from the search page tag chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by tags'**
+  String get diarySearchTagSheetTitle;
+
+  /// Explanation under the title of the search tag picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows entries that have all selected tags'**
+  String get diarySearchTagSheetHint;
 }
 
 class _AppLocalizationsDelegate

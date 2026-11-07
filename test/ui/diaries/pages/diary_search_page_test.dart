@@ -299,13 +299,52 @@ void main() {
     expect(find.text('Mood'), findsOneWidget);
   });
 
-  testWidgets('there is no separate tag filter chip', (tester) async {
-    await _pumpSearch(tester, initialKeyword: 'sea');
+  testWidgets('picked tags are written on the tag chip, not listed', (
+    tester,
+  ) async {
+    final h = await _pumpSearch(tester, initialKeyword: 'sea');
+    final tagChip = find.byKey(const ValueKey<String>('search_filter_tags'));
     expect(
-      find.byKey(const ValueKey<String>('search_filter_tags')),
+      find.descendant(of: tagChip, matching: find.text('Tags')),
+      findsOneWidget,
+    );
+
+    // 标签面板点选即生效，没有“完成”。
+    await tester.tap(tagChip);
+    await tester.pumpAndSettle();
+    expect(find.text('Done'), findsNothing);
+    await tester.tap(find.text('# Travel'));
+    await tester.pumpAndSettle();
+    expect(h.lastQuery.requiredTagIds, <int>[1]);
+    await tester.tap(find.text('# Food'));
+    await tester.pumpAndSettle();
+    expect(h.lastQuery.requiredTagIds, <int>[1, 2]);
+    await _closeSheet(tester);
+
+    // 所选标签都写在“标签”胶囊上（按标签列表的顺序），不再逐个列成胶囊。
+    expect(
+      find.descendant(of: tagChip, matching: find.text('#Travel #Food')),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>).value.startsWith(
+              'search_tag_chip_',
+            ),
+      ),
       findsNothing,
     );
-    expect(find.text('Tags'), findsNothing);
+
+    // 行尾 × 一次清掉全部标签。
+    await tester.tap(find.bySemanticsLabel('Remove filter #Travel #Food'));
+    await tester.pumpAndSettle();
+    expect(h.lastQuery.requiredTagIds, isEmpty);
+    expect(
+      find.descendant(of: tagChip, matching: find.text('Tags')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('desktop: Escape clears the text first, then leaves', (

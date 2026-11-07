@@ -17965,5 +17965,9 @@
   "diarySearchSortNewest": "Newest",
   "@diarySearchSortNewest": {"description": "Search result sort option: by publish time, newest first."},
   "diarySearchSortOldest": "Oldest",
-  "@diarySearchSortOldest": {"description": "Search result sort option: by publish time, oldest first."}
+  "@diarySearchSortOldest": {"description": "Search result sort option: by publish time, oldest first."},
+  "diarySearchTagSheetTitle": "Search by tags",
+  "@diarySearchTagSheetTitle": {"description": "Title of the tag picker sheet opened from the search page tag chip."},
+  "diarySearchTagSheetHint": "Shows entries that have all selected tags",
+  "@diarySearchTagSheetHint": {"description": "Explanation under the title of the search tag picker sheet."}
 }

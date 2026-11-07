@@ -15239,4 +15239,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diarySearchSortOldest => 'Сначала старые';
+
+  @override
+  String get diarySearchTagSheetTitle => 'Поиск по тегам';
+
+  @override
+  String get diarySearchTagSheetHint =>
+      'Показываются записи со всеми выбранными тегами';
 }

@@ -9,9 +9,9 @@ import '../../widgets/expressive_state_blend.dart';
 ///
 /// - 未生效：控件底色（玻璃时为 [AppGlassField] 的填充与描边）+ 次要色文字，
 ///   可选行尾 ▾（[showCaret]，点按打开选择器）；
-/// - 已生效：`secondaryContainer` 实底；带 [accent]（标签色）时为标签色浅底
-///   + 标签色描边。行尾 ×（[onRemove]）单独响应，点胶囊其余部分仍是
-///   [onTap]（重新打开选择器）。两态之间经 [ExpressiveStateBlend] 补间。
+/// - 已生效：`secondaryContainer` 实底。行尾 ×（[onRemove]）单独响应，点胶囊
+///   其余部分仍是 [onTap]（重新打开选择器）。两态之间经
+///   [ExpressiveStateBlend] 补间。
 ///
 /// 36 高、12 圆角；名称最宽 [maxLabelWidth]，超出省略，1.3 倍字号下高度随
 /// 文字长高、不截字。
@@ -21,7 +21,6 @@ class DiarySearchChip extends StatelessWidget {
     required this.label,
     required this.active,
     this.leading,
-    this.accent,
     this.onTap,
     this.onRemove,
     this.removeLabel,
@@ -34,11 +33,8 @@ class DiarySearchChip extends StatelessWidget {
   final String label;
   final bool active;
 
-  /// 名称前的小图标（12px）或彩色 `#`。
+  /// 名称前的小图标（12px）。
   final Widget? leading;
-
-  /// 标签色：已生效时以它的浅底与描边代替 `secondaryContainer`。
-  final Color? accent;
   final VoidCallback? onTap;
 
   /// 行尾 × ；null 时不显示。
@@ -52,20 +48,13 @@ class DiarySearchChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final isLight = scheme.brightness == Brightness.light;
     final glassField = AppGlassField.of(context);
     final idleFill = glassField?.fill ?? scheme.surfaceContainerHigh;
     final idleBorder =
         glassField?.border?.color ??
         scheme.outlineVariant.withValues(alpha: 0.6);
-    final accent = this.accent;
-    final activeFill = accent == null
-        ? scheme.secondaryContainer
-        : accent.withValues(alpha: isLight ? 0.2 : 0.34);
-    final activeBorder = accent ?? scheme.secondaryContainer;
-    final activeForeground = accent == null
-        ? scheme.onSecondaryContainer
-        : scheme.onSurface;
+    final activeFill = scheme.secondaryContainer;
+    final activeForeground = scheme.onSecondaryContainer;
     return ExpressiveStateBlend(
       active: active,
       builder: (BuildContext context, double t, Widget? _) {
@@ -84,7 +73,7 @@ class DiarySearchChip extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(
-              color: Color.lerp(idleBorder, activeBorder, t)!,
+              color: Color.lerp(idleBorder, activeFill, t)!,
               width: 1,
             ),
           ),

@@ -144,6 +144,17 @@ class DiarySearchController extends ChangeNotifier {
     if (_tagIds.remove(tagId)) notifyListeners();
   }
 
+  /// 标签面板里勾选的整组标签；空集即清除全部标签条件。
+  void setTags(Set<int> tagIds) {
+    if (tagIds.length == _tagIds.length && _tagIds.containsAll(tagIds)) {
+      return;
+    }
+    _tagIds
+      ..clear()
+      ..addAll(tagIds);
+    notifyListeners();
+  }
+
   /// 移除日记本条件：改为在全部日记中搜索（不影响首页所在的范围）。
   void removeScope() {
     if (_scope == DiaryListScope.all) return;

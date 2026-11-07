@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../../../core/database/app_database.dart';
 import '../../../utils/text_stats.dart';
 import 'diary_card_view_data.dart';
+import 'diary_leading_line.dart';
 
 /// 草稿箱列表与新建面板里一行草稿的展示数据。
 ///
@@ -20,20 +21,16 @@ class DiaryDraftListItem {
 
   factory DiaryDraftListItem.of(DiaryDraftRow row) {
     final title = _singleLine(row.title);
-    final lines = row.contentText
-        .split('\n')
-        .map(_singleLine)
-        .where((line) => line.isNotEmpty)
-        .toList(growable: false);
-    // 没写标题时，正文第一行顶上来当标题，摘要从第二行开始，不重复显示。
-    final usesFirstLine = title.isEmpty && lines.isNotEmpty;
-    final snippetLines = usesFirstLine ? lines.skip(1) : lines;
+    final text = row.contentText;
+    // 没写标题时，正文第一行顶上来当标题，摘要从第二行开始，不重复显示
+    // （与日记卡片同一拆分口径，见 DiaryLeadingLine）。
+    final leading = title.isEmpty ? DiaryLeadingLine.of(text) : null;
     return DiaryDraftListItem._(
       row: row,
-      displayTitle: title.isNotEmpty
-          ? title
-          : (usesFirstLine ? lines.first : null),
-      snippet: _truncate(snippetLines.join(' ')),
+      displayTitle: title.isNotEmpty ? title : leading?.line,
+      snippet: _truncate(
+        _singleLine(leading == null ? text : leading.restOf(text)),
+      ),
     );
   }
 

@@ -3369,7 +3369,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryCardStyleShowTitle => 'タイトルを表示';
 
   @override
-  String get diaryCardStyleShowUntitled => 'タイトルがないときは「無題」と表示';
+  String get diaryCardStyleShowUntitled => 'タイトルがないときは本文の1行目をタイトルにする';
 
   @override
   String get diaryCardStyleShowUntitledSubtitle => 'オフにするとタイトル行を省略します';
@@ -3738,6 +3738,9 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get diaryCardStyleSampleBody4 =>
       '帰り道、茶トラの猫が階段で日向ぼっこをしていた。目を細めている姿を見ていたら、こちらまで肩の力が抜けた。';
+
+  @override
+  String get diaryCardStyleSampleLead4 => '階段の上の茶トラ';
 
   @override
   String get diaryCardStyleSampleCapsuleTitle => '1年後の自分への手紙';

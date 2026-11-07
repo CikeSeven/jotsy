@@ -6030,13 +6030,13 @@ abstract class AppLocalizations {
   /// **'Show title'**
   String get diaryCardStyleShowTitle;
 
-  /// Diary card style settings: whether entries without a title show the “Untitled” placeholder.
+  /// Diary card style settings: whether entries without a title show the first line of the text as the title (the summary then starts from the second line; “Untitled” when the text is empty).
   ///
   /// In en, this message translates to:
-  /// **'Show “Untitled” when there is no title'**
+  /// **'Use the first line as the title when there is none'**
   String get diaryCardStyleShowUntitled;
 
-  /// Diary card style settings: explanation of the “Untitled” placeholder switch.
+  /// Diary card style settings: explanation of the first-line-as-title switch.
   ///
   /// In en, this message translates to:
   /// **'When off, the title line is left out'**
@@ -6744,11 +6744,17 @@ abstract class AppLocalizations {
   /// **'Reworked this week\'s to-dos and jotted down a few ideas. Early night tonight.'**
   String get diaryCardStyleSampleBody3;
 
-  /// Diary card style settings: text of preview sample entry 4 (it has no title, to show the “Untitled” placeholder).
+  /// Diary card style settings: text after the first line of preview sample entry 4 (it has no title, to show the first line used as the title).
   ///
   /// In en, this message translates to:
   /// **'Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.'**
   String get diaryCardStyleSampleBody4;
+
+  /// Diary card style settings: first line of preview sample entry 4 (it has no title, so this line shows in the title position).
+  ///
+  /// In en, this message translates to:
+  /// **'A ginger cat on the steps'**
+  String get diaryCardStyleSampleLead4;
 
   /// Diary card style settings: title of the preview sample time capsule.
   ///

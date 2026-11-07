@@ -55,16 +55,22 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
         textSelection &&
             (Theme.of(context).platform == TargetPlatform.android ||
                 Theme.of(context).platform == TargetPlatform.iOS)
-        ? kMinInteractiveDimension
+        ? kDiarySelectionHandleOverhang
         : 0.0;
     // 始终挂着（只读时自行跳过），只读切换时不改变外层结构、不重建编辑器。
     final reopen = DiaryEditorKeyboardReopen(
       controller: controller,
       child: editor,
     );
-    final native = shrinkWrap && controller.readOnly && handleSpace > 0
-        ? DiaryEditorSelectionGestures(controller: controller, child: reopen)
-        : reopen;
+    // 编辑与只读正文共用放大的把手触控区（#190）；同样始终挂着，不在手机或
+    // 不可选字时不接管触点。
+    final native = DiaryEditorSelectionGestures(
+      controller: controller,
+      enabled: handleSpace > 0,
+      pageScroll: shrinkWrap,
+      coveredHeight: shrinkWrap ? 0 : coveredHeight,
+      child: reopen,
+    );
     final content = SoftKeyboardSelectionKeys(
       onExtendSelection: (key) {
         final focusContext = primaryFocus?.context;

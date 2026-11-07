@@ -23,7 +23,7 @@ class DiaryEditorController extends ChangeNotifier {
     af.Selection? selection,
     bool readOnly = false,
     this.linkSource,
-  }) : state = af.EditorState(
+  }) : state = _KeyboardHoldingEditorState(
          document: document ?? af.Document.blank(withInitialText: true),
        ) {
     state.editable = !readOnly;
@@ -97,6 +97,21 @@ class DiaryEditorController extends ChangeNotifier {
   /// 原生输入、撤销/重做、拖动预览与失败恢复均经同步 transactionStream
   /// 的 after 事件失效；必须先失效再通知，保存监听者才不会读到上一版。
   ({String json, String text})? _contentSnapshot;
+
+  /// 在 [action] 里发生的选区更新不接上输入法，也就不会把收起的软键盘拉起
+  /// 来（上游每次选区变化都重新接上输入法，编辑值一变就 `show()`）。只用于
+  /// 不输入文字的选区操作：软键盘收着时拖选区把手、复制后收成光标、全选；
+  /// 调用方先确认软键盘收着（见 `holdHiddenKeyboard`）。之后点正文打字时
+  /// 上游照常重新接上并弹出键盘。
+  T holdingKeyboard<T>(T Function() action) {
+    final state = this.state as _KeyboardHoldingEditorState;
+    state.holds++;
+    try {
+      return action();
+    } finally {
+      state.holds--;
+    }
+  }
 
   /// 正在拖动段落：块随手指实时挪到落点（`DiaryBlockDragSession`）。期间
   /// 视口不揭示光标——揭示引起的滚动会让手指下的落点继续变化，一路连锁。
@@ -445,5 +460,29 @@ af.Selection diaryEditorSelectionAtOffset(af.Document document, int offset) {
   final last = nodes.last;
   return af.Selection.collapsed(
     af.Position(path: last.path, offset: last.delta?.length ?? 1),
+  );
+}
+
+/// 见 [DiaryEditorController.holdingKeyboard]：上游键盘服务在选区通知里按
+/// `selectionExtraInfoDoNotAttachTextService` 决定是否接上输入法，这里在
+/// 选区写入前补上这个标记；其余信息（拖动方式、是否禁止浮动工具栏）原样。
+class _KeyboardHoldingEditorState extends af.EditorState {
+  _KeyboardHoldingEditorState({required super.document});
+
+  int holds = 0;
+
+  @override
+  Future<void> updateSelectionWithReason(
+    af.Selection? selection, {
+    af.SelectionUpdateReason reason = af.SelectionUpdateReason.transaction,
+    Map? extraInfo,
+    af.SelectionType? customSelectionType,
+  }) => super.updateSelectionWithReason(
+    selection,
+    reason: reason,
+    extraInfo: holds > 0
+        ? {...?extraInfo, af.selectionExtraInfoDoNotAttachTextService: true}
+        : extraInfo,
+    customSelectionType: customSelectionType,
   );
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -17,6 +18,7 @@ class _Harness {
   int cancels = 0;
   int nativePans = 0;
   int longPresses = 0;
+  int nativeTaps = 0;
 }
 
 Future<_Harness> _pump(WidgetTester tester) async {
@@ -58,6 +60,7 @@ Future<_Harness> _pump(WidgetTester tester) async {
                       behavior: HitTestBehavior.opaque,
                       onPanUpdate: (_) => harness.nativePans++,
                       onLongPress: () => harness.longPresses++,
+                      onTap: () => harness.nativeTaps++,
                       child: const SizedBox(
                         height: 1400,
                         child: Stack(
@@ -151,6 +154,43 @@ void main() {
     expect(harness.updates, isNotEmpty);
     expect(harness.ends, 1);
     expect(harness.scroll.offset, 0);
+    await _close(tester, harness);
+  });
+
+  testWidgets('holding a handle past the long-press timeout still drags it', (
+    tester,
+  ) async {
+    final harness = await _pump(tester);
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(_end)),
+    );
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 200));
+    expect(harness.longPresses, 0);
+    for (var i = 0; i < 5; i++) {
+      await gesture.moveBy(const Offset(1, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(harness.starts, [DiarySelectionHandleSide.end]);
+    expect(harness.updates, hasLength(5));
+    expect(harness.ends, 1);
+    expect(harness.longPresses, 0);
+    expect(harness.nativePans, 0);
+    await _close(tester, harness);
+  });
+
+  testWidgets('tapping a handle does not reach the body underneath', (
+    tester,
+  ) async {
+    final harness = await _pump(tester);
+    await tester.tapAt(tester.getCenter(find.byKey(_start)));
+    await tester.pumpAndSettle();
+    expect(harness.nativeTaps, 0);
+    expect(harness.updates, isEmpty);
+    await tester.tapAt(const Offset(300, 500));
+    await tester.pumpAndSettle();
+    expect(harness.nativeTaps, 1);
     await _close(tester, harness);
   });
 

@@ -22,6 +22,11 @@ import 'notebook_rule_date_editor.dart';
 /// 每个编辑面板只维护自己的草稿，点“完成”时返回新规则，关闭面板返回
 /// null（不改动）。草稿不完整（没选标签、没填文字）时“完成”不可用，不会
 /// 产生编译为“不匹配”的空规则。
+///
+/// 实时模式（[showNotebookRuleEditorSheet] 传入 `onChanged`，搜索页的筛选
+/// 用）：没有“完成”按钮，每次点选 / 输入都立即以当前规则回调，草稿不完整
+/// 时回调 null（即清除）；没有初值时不预选任何一项，打开面板本身不改变
+/// 筛选。关闭面板只是收起。
 
 Future<T?> _showRuleSheet<T>(BuildContext context, WidgetBuilder builder) {
   return showAppModalBottomSheet<T>(
@@ -72,40 +77,52 @@ Future<NotebookRuleType?> showNotebookRuleTypeSheet(BuildContext context) {
 
 /// 编辑 [type] 类型的规则；[initial] 为正在编辑的规则（新增时为 null）。
 /// 返回编辑后的规则，关闭面板返回 null。
+///
+/// 传入 [onChanged] 即为实时模式（见文件顶部）：没有“完成”，改动立即回调，
+/// 返回值总是 null。
 Future<NotebookRule?> showNotebookRuleEditorSheet(
   BuildContext context, {
   required NotebookRuleType type,
   NotebookRule? initial,
+  ValueChanged<NotebookRule?>? onChanged,
 }) {
   return _showRuleSheet<NotebookRule>(
     context,
     (BuildContext _) => switch (type) {
       NotebookRuleType.tags => _TagsRuleEditor(
         initial: initial is NotebookTagsRule ? initial : null,
+        onChanged: onChanged,
       ),
       NotebookRuleType.mood => _MoodRuleEditor(
         initial: initial is NotebookMoodRule ? initial : null,
+        onChanged: onChanged,
       ),
       NotebookRuleType.weather => _TextRuleEditor(
         field: NotebookTextField.weather,
         initial: initial is NotebookTextRule ? initial : null,
+        onChanged: onChanged,
       ),
       NotebookRuleType.location => _TextRuleEditor(
         field: NotebookTextField.location,
         initial: initial is NotebookTextRule ? initial : null,
+        onChanged: onChanged,
       ),
       NotebookRuleType.keyword => _TextRuleEditor(
         field: NotebookTextField.keyword,
         initial: initial is NotebookTextRule ? initial : null,
+        onChanged: onChanged,
       ),
       NotebookRuleType.date => NotebookDateRuleEditor(
         initial: initial is NotebookDateRule ? initial : null,
+        onChanged: onChanged,
       ),
       NotebookRuleType.media => _MediaRuleEditor(
         initial: initial is NotebookMediaRule ? initial : null,
+        onChanged: onChanged,
       ),
       NotebookRuleType.flag => _FlagRuleEditor(
         initial: initial is NotebookFlagRule ? initial : null,
+        onChanged: onChanged,
       ),
     },
   );
@@ -140,18 +157,22 @@ class _SheetTitle extends StatelessWidget {
 }
 
 /// 编辑面板的骨架：标题行（右侧“完成”）+ 内容；随键盘上移，内容过高时滚动。
-/// [result] 为 null 时“完成”不可用。
+/// [result] 为 null 时“完成”不可用；实时模式（[live]）不显示“完成”。
 class NotebookRuleSheetFrame extends StatelessWidget {
   const NotebookRuleSheetFrame({
     super.key,
     required this.title,
     required this.result,
     required this.children,
+    this.live = false,
   });
 
   final String title;
   final NotebookRule? result;
   final List<Widget> children;
+
+  /// 实时模式：改动已经即时生效，标题行只有标题。
+  final bool live;
 
   @override
   Widget build(BuildContext context) {
@@ -174,8 +195,11 @@ class NotebookRuleSheetFrame extends StatelessWidget {
               children: <Widget>[
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsetsDirectional.only(
+                    // 实时模式没有“完成”按钮撑高标题行，补足同样的行高。
+                    padding: EdgeInsetsDirectional.only(
                       start: AppSpacing.xs,
+                      top: live ? 12 : 0,
+                      bottom: live ? 12 : 0,
                     ),
                     child: Semantics(
                       header: true,
@@ -189,15 +213,16 @@ class NotebookRuleSheetFrame extends StatelessWidget {
                     ),
                   ),
                 ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                if (!live)
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    onPressed: result == null
+                        ? null
+                        : () => Navigator.of(context).pop(result),
+                    child: Text(l10n.notebookRuleDone),
                   ),
-                  onPressed: result == null
-                      ? null
-                      : () => Navigator.of(context).pop(result),
-                  child: Text(l10n.notebookRuleDone),
-                ),
               ],
             ),
             const SizedBox(height: AppSpacing.m),
@@ -212,9 +237,10 @@ class NotebookRuleSheetFrame extends StatelessWidget {
 /// 标签：所有标签以 `#` 胶囊多选，上方选择“含任一 / 全部都含 / 都不含”。
 /// 规则里已有、但标签已被删除或改名的名称也列出来（选中态），可以取消。
 class _TagsRuleEditor extends ConsumerStatefulWidget {
-  const _TagsRuleEditor({this.initial});
+  const _TagsRuleEditor({this.initial, this.onChanged});
 
   final NotebookTagsRule? initial;
+  final ValueChanged<NotebookRule?>? onChanged;
 
   @override
   ConsumerState<_TagsRuleEditor> createState() => _TagsRuleEditorState();
@@ -224,9 +250,16 @@ class _TagsRuleEditorState extends ConsumerState<_TagsRuleEditor> {
   late NotebookTagMatch _mode = widget.initial?.mode ?? NotebookTagMatch.any;
   late final List<String> _selected = <String>[...?widget.initial?.names];
 
-  void _toggle(String name) => setState(() {
-    if (!_selected.remove(name)) _selected.add(name);
-  });
+  NotebookRule? get _result => _selected.isEmpty
+      ? null
+      : NotebookTagsRule(mode: _mode, names: _selected);
+
+  void _toggle(String name) {
+    setState(() {
+      if (!_selected.remove(name)) _selected.add(name);
+    });
+    widget.onChanged?.call(_result);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,9 +270,8 @@ class _TagsRuleEditorState extends ConsumerState<_TagsRuleEditor> {
     final missing = _selected.where((name) => !known.contains(name)).toList();
     return NotebookRuleSheetFrame(
       title: l10n.notebookRuleTypeTags,
-      result: _selected.isEmpty
-          ? null
-          : NotebookTagsRule(mode: _mode, names: _selected),
+      result: _result,
+      live: widget.onChanged != null,
       children: <Widget>[
         ExpressiveButtonGroup<NotebookTagMatch>(
           minSegmentWidth: 88,
@@ -251,7 +283,10 @@ class _TagsRuleEditorState extends ConsumerState<_TagsRuleEditor> {
               ),
           ],
           selected: <NotebookTagMatch>{_mode},
-          onSelectionChanged: (value) => setState(() => _mode = value.single),
+          onSelectionChanged: (value) {
+            setState(() => _mode = value.single);
+            widget.onChanged?.call(_result);
+          },
         ),
         const SizedBox(height: AppSpacing.l),
         if (tags.isEmpty && missing.isEmpty)
@@ -350,9 +385,10 @@ Widget notebookRuleOptionChip(
 /// 心情：本机心情选项（与发布面板同一来源）多选；规则里已有、但已不在选项
 /// 里的心情也列出来。
 class _MoodRuleEditor extends ConsumerStatefulWidget {
-  const _MoodRuleEditor({this.initial});
+  const _MoodRuleEditor({this.initial, this.onChanged});
 
   final NotebookMoodRule? initial;
+  final ValueChanged<NotebookRule?>? onChanged;
 
   @override
   ConsumerState<_MoodRuleEditor> createState() => _MoodRuleEditorState();
@@ -372,6 +408,7 @@ class _MoodRuleEditorState extends ConsumerState<_MoodRuleEditor> {
     return NotebookRuleSheetFrame(
       title: l10n.notebookRuleTypeMood,
       result: _selected.isEmpty ? null : NotebookMoodRule(emojis: _selected),
+      live: widget.onChanged != null,
       children: <Widget>[
         Wrap(
           spacing: AppSpacing.s,
@@ -382,9 +419,16 @@ class _MoodRuleEditorState extends ConsumerState<_MoodRuleEditor> {
                 context,
                 label: mood,
                 selected: _selected.contains(mood),
-                onTap: () => setState(() {
-                  if (!_selected.remove(mood)) _selected.add(mood);
-                }),
+                onTap: () {
+                  setState(() {
+                    if (!_selected.remove(mood)) _selected.add(mood);
+                  });
+                  widget.onChanged?.call(
+                    _selected.isEmpty
+                        ? null
+                        : NotebookMoodRule(emojis: _selected),
+                  );
+                },
               ),
           ],
         ),
@@ -395,10 +439,11 @@ class _MoodRuleEditorState extends ConsumerState<_MoodRuleEditor> {
 
 /// 天气 / 地点 / 关键词：一个输入框，回车即完成。
 class _TextRuleEditor extends StatefulWidget {
-  const _TextRuleEditor({required this.field, this.initial});
+  const _TextRuleEditor({required this.field, this.initial, this.onChanged});
 
   final NotebookTextField field;
   final NotebookTextRule? initial;
+  final ValueChanged<NotebookRule?>? onChanged;
 
   @override
   State<_TextRuleEditor> createState() => _TextRuleEditorState();
@@ -436,9 +481,11 @@ class _TextRuleEditorState extends State<_TextRuleEditor> {
         l10n.notebookRuleKeywordHint,
       ),
     };
+    final live = widget.onChanged != null;
     return NotebookRuleSheetFrame(
       title: title,
       result: _result,
+      live: live,
       children: <Widget>[
         TextField(
           controller: _text,
@@ -446,7 +493,13 @@ class _TextRuleEditorState extends State<_TextRuleEditor> {
           maxLength: 40,
           textInputAction: TextInputAction.done,
           decoration: InputDecoration(hintText: hint),
+          // 实时模式边输边生效（清空即清除）；回车只是收起面板。
+          onChanged: live ? (_) => widget.onChanged!(_result) : null,
           onSubmitted: (_) {
+            if (live) {
+              Navigator.of(context).pop();
+              return;
+            }
             final result = _result;
             if (result != null) Navigator.of(context).pop(result);
           },
@@ -459,30 +512,40 @@ class _TextRuleEditorState extends State<_TextRuleEditor> {
 
 /// 图片与附件：四选一。
 class _MediaRuleEditor extends StatefulWidget {
-  const _MediaRuleEditor({this.initial});
+  const _MediaRuleEditor({this.initial, this.onChanged});
 
   final NotebookMediaRule? initial;
+  final ValueChanged<NotebookRule?>? onChanged;
 
   @override
   State<_MediaRuleEditor> createState() => _MediaRuleEditorState();
 }
 
 class _MediaRuleEditorState extends State<_MediaRuleEditor> {
-  late NotebookMediaKind _kind =
-      widget.initial?.kind ?? NotebookMediaKind.image;
+  // 实时模式没有初值时不预选：打开面板不应套上“有图片”。
+  late NotebookMediaKind? _kind =
+      widget.initial?.kind ??
+      (widget.onChanged == null ? NotebookMediaKind.image : null);
+
+  void _select(NotebookMediaKind kind) {
+    setState(() => _kind = kind);
+    widget.onChanged?.call(NotebookMediaRule(kind));
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final kind = _kind;
     return NotebookRuleSheetFrame(
       title: l10n.notebookRuleTypeMedia,
-      result: NotebookMediaRule(_kind),
+      result: kind == null ? null : NotebookMediaRule(kind),
+      live: widget.onChanged != null,
       children: <Widget>[
-        for (final kind in NotebookMediaKind.values)
+        for (final option in NotebookMediaKind.values)
           ExpressiveChoiceTile(
-            label: notebookMediaKindLabel(l10n, kind),
-            selected: _kind == kind,
-            onTap: () => setState(() => _kind = kind),
+            label: notebookMediaKindLabel(l10n, option),
+            selected: kind == option,
+            onTap: () => _select(option),
           ),
       ],
     );
@@ -491,30 +554,39 @@ class _MediaRuleEditorState extends State<_MediaRuleEditor> {
 
 /// 封面与置顶：二选一。
 class _FlagRuleEditor extends StatefulWidget {
-  const _FlagRuleEditor({this.initial});
+  const _FlagRuleEditor({this.initial, this.onChanged});
 
   final NotebookFlagRule? initial;
+  final ValueChanged<NotebookRule?>? onChanged;
 
   @override
   State<_FlagRuleEditor> createState() => _FlagRuleEditorState();
 }
 
 class _FlagRuleEditorState extends State<_FlagRuleEditor> {
-  late NotebookFlagKind _kind =
-      widget.initial?.kind ?? NotebookFlagKind.hasCover;
+  late NotebookFlagKind? _kind =
+      widget.initial?.kind ??
+      (widget.onChanged == null ? NotebookFlagKind.hasCover : null);
+
+  void _select(NotebookFlagKind kind) {
+    setState(() => _kind = kind);
+    widget.onChanged?.call(NotebookFlagRule(kind));
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final kind = _kind;
     return NotebookRuleSheetFrame(
       title: l10n.notebookRuleTypeFlag,
-      result: NotebookFlagRule(_kind),
+      result: kind == null ? null : NotebookFlagRule(kind),
+      live: widget.onChanged != null,
       children: <Widget>[
-        for (final kind in NotebookFlagKind.values)
+        for (final option in NotebookFlagKind.values)
           ExpressiveChoiceTile(
-            label: notebookFlagKindLabel(l10n, kind),
-            selected: _kind == kind,
-            onTap: () => setState(() => _kind = kind),
+            label: notebookFlagKindLabel(l10n, option),
+            selected: kind == option,
+            onTap: () => _select(option),
           ),
       ],
     );

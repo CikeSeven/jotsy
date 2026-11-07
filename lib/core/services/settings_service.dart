@@ -270,6 +270,12 @@ class SettingsService {
   /// 本机偏好：记的是用这台设备的人见过、用过没有，不随备份导出、不参与
   /// 同步，所以不在备份快照（`captureBackupSnapshot`）的键列表里。
   static const _keyFeatureTips = 'app.settings.feature_tips';
+
+  /// 搜索页的最近搜索与结果排序（单个 JSON 字符串，格式与容错见
+  /// `DiarySearchPreferences`）。本机偏好：搜过什么只属于这台设备，不随
+  /// 备份导出、不参与同步，所以不在备份快照（`captureBackupSnapshot`）的
+  /// 键列表里。
+  static const _keyDiarySearchPreferences = 'app.search.preferences';
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
   static const _keyCalendarDisplayOptions =
       'app.settings.calendar_display_options';
@@ -502,6 +508,12 @@ class SettingsService {
   /// 一次性功能提示的进度原文；类型不符的旧值按未设置处理。
   String? get featureTipsRaw {
     final value = _prefs.get(_keyFeatureTips);
+    return value is String ? value : null;
+  }
+
+  /// 搜索页偏好原文；类型不符的旧值按未设置处理。
+  String? get diarySearchPreferencesRaw {
+    final value = _prefs.get(_keyDiarySearchPreferences);
     return value is String ? value : null;
   }
 
@@ -818,6 +830,10 @@ class SettingsService {
 
   Future<void> setFeatureTipsRaw(String value) async {
     await _writePreference(_prefs.setString(_keyFeatureTips, value));
+  }
+
+  Future<void> setDiarySearchPreferencesRaw(String value) async {
+    await _writePreference(_prefs.setString(_keyDiarySearchPreferences, value));
   }
 
   Future<void> setTagOrderRaw(String value) async {

@@ -13301,4 +13301,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appLockLoosenVerifyFailed => '認証に失敗しました。設定は変更されていません';
+
+  @override
+  String get diarySearchRecentTitle => '最近の検索';
+
+  @override
+  String get diarySearchClearRecent => '最近の検索を消去';
+
+  @override
+  String diarySearchRecentRemove(String query) {
+    return '「$query」を検索履歴から削除';
+  }
+
+  @override
+  String get diarySearchSuggestedTags => 'よく使うタグ';
+
+  @override
+  String get diarySearchEmptyTip => 'スペースで区切ると、すべての語を含む日記を探します';
+
+  @override
+  String diarySearchResultCount(int count) {
+    return '$count 件';
+  }
+
+  @override
+  String get diarySearchClearFilters => '絞り込みを解除';
+
+  @override
+  String get diarySearchIncludeArchived => 'アーカイブを含む';
+
+  @override
+  String diarySearchRemoveFilter(String label) {
+    return '絞り込み「$label」を解除';
+  }
+
+  @override
+  String get diarySearchSortTooltip => '並べ替え';
+
+  @override
+  String get diarySearchSortUpdated => '更新順';
+
+  @override
+  String get diarySearchSortNewest => '新しい順';
+
+  @override
+  String get diarySearchSortOldest => '古い順';
+
+  @override
+  String get diarySearchTagSheetTitle => 'タグで検索';
+
+  @override
+  String get diarySearchTagSheetHint => '選んだタグをすべて含む日記を表示します';
 }

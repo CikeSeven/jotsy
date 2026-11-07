@@ -50,6 +50,7 @@ class DiaryCard extends StatelessWidget {
     this.opensLockedCapsulePage = true,
     this.onTapIntercept,
     this.commentCount = 0,
+    this.highlightTerms = const <String>[],
   });
 
   /// 选择标记展开、列表项进出的过渡时长。
@@ -78,6 +79,10 @@ class DiaryCard extends StatelessWidget {
   /// 这篇的留言条数（底栏的留言数，见 `DiaryCardMetaStyle.showComments`）；
   /// 留言功能关闭或没有留言时为 0。未解封的胶囊不画底栏，不显示它。
   final int commentCount;
+
+  /// 搜索页的关键词：标题与摘要里的命中处高亮（见 `DiaryCardBlocks`）。
+  /// 未解封的胶囊不显示正文，也不标出。
+  final List<String> highlightTerms;
 
   @override
   Widget build(BuildContext context) {
@@ -138,6 +143,7 @@ class DiaryCard extends StatelessWidget {
         metaPosition: metaPosition,
         selectionMarkDuration: transitionDuration,
         commentCount: commentCount,
+        highlightTerms: highlightTerms,
       );
       final indicators = blocks.buildIndicators(onCover: true);
       content = DiaryCardContent(

@@ -29,6 +29,7 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';
 import 'package:node_diary/ui/home/widgets/home_tab_entrance.dart';
+import 'package:node_diary/ui/widgets/primary_shortcut.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';

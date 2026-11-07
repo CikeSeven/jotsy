@@ -15185,4 +15185,65 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get appLockLoosenVerifyFailed =>
       'Проверка не пройдена. Настройка не изменена.';
+
+  @override
+  String get diarySearchRecentTitle => 'Недавние запросы';
+
+  @override
+  String get diarySearchClearRecent => 'Очистить недавние запросы';
+
+  @override
+  String diarySearchRecentRemove(String query) {
+    return 'Удалить «$query» из недавних запросов';
+  }
+
+  @override
+  String get diarySearchSuggestedTags => 'Частые теги';
+
+  @override
+  String get diarySearchEmptyTip =>
+      'Разделяйте слова пробелами, чтобы найти записи со всеми словами';
+
+  @override
+  String diarySearchResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count записи',
+      many: '$count записей',
+      few: '$count записи',
+      one: '$count запись',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diarySearchClearFilters => 'Сбросить фильтры';
+
+  @override
+  String get diarySearchIncludeArchived => 'С архивом';
+
+  @override
+  String diarySearchRemoveFilter(String label) {
+    return 'Убрать фильтр «$label»';
+  }
+
+  @override
+  String get diarySearchSortTooltip => 'Сортировка';
+
+  @override
+  String get diarySearchSortUpdated => 'Недавно изменённые';
+
+  @override
+  String get diarySearchSortNewest => 'Сначала новые';
+
+  @override
+  String get diarySearchSortOldest => 'Сначала старые';
+
+  @override
+  String get diarySearchTagSheetTitle => 'Поиск по тегам';
+
+  @override
+  String get diarySearchTagSheetHint =>
+      'Показываются записи со всеми выбранными тегами';
 }

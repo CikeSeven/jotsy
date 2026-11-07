@@ -6,13 +6,19 @@ part of 'app_database.dart';
 /// [DiaryListScope]（默认全部日记），范围条件与私密排除由
 /// [_AppDatabaseDiaryScopeSql] 生成，`readsFrom` 一并订阅日记本两表。
 mixin _AppDatabaseDiaryListQueries
-    on _$AppDatabase, _AppDatabaseDiaryScopeSql, _AppDatabaseDiaryQueries {
+    on
+        _$AppDatabase,
+        _AppDatabaseDiaryScopeSql,
+        _AppDatabaseDiarySearchSql,
+        _AppDatabaseDiaryQueries {
   /// 监听日记列表（支持关键词 + 标签 AND 过滤）。
   ///
   /// 查询说明：
   /// 1. 默认仅返回未软删除、未归档记录；
-  /// 2. 关键词匹配 `title` 与 `content_text`；[matchComments] 为 true 时
-  ///    （搜索页且开启了留言功能）也匹配这篇的留言；
+  /// 2. 关键词按空白拆成多个词、每个词都须匹配 `title` 或 `content_text`；
+  ///    [matchComments] 为 true 时（搜索页且开启了留言功能）也匹配这篇的
+  ///    留言；[includeArchived] 与 [filter] 只由搜索页传入（见
+  ///    [_writeActiveDiaryFilter]）；
   /// 3. 多标签过滤采用 AND 语义；
   /// 4. 先在只含 id 的窗口内筛选、排序与分页，再读取正文并聚合标签；
   ///    否则 JOIN + GROUP BY 会先为全部命中项聚合标签与搬运正文，最后才
@@ -28,6 +34,8 @@ mixin _AppDatabaseDiaryListQueries
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
     bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
   }) {
     final normalizedKeyword = keyword.trim();
     final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
@@ -49,6 +57,8 @@ mixin _AppDatabaseDiaryListQueries
       normalizedTagIds: normalizedTagIds,
       scope: scope,
       matchComments: matchComments,
+      includeArchived: includeArchived,
+      filter: filter,
     );
     sql.writeln(
       bookScope != null ? _bookOrderBySql() : _diaryOrderBySql(sortMode),
@@ -101,7 +111,11 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
         diaries,
         diaryTags,
         tags,
-        ..._commentReadsFrom(normalizedKeyword, matchComments),
+        ..._activeFilterReadsFrom(
+          keyword: normalizedKeyword,
+          matchComments: matchComments,
+          filter: filter,
+        ),
       ]),
     ).watch().map(_mapDiaryWithTagsRows);
   }
@@ -117,6 +131,8 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
     bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
   }) async {
     final query = _activeDiaryKeysQuery(
       columns: 'd.diary_id',
@@ -125,6 +141,8 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
       sortMode: sortMode,
       scope: scope,
       matchComments: matchComments,
+      includeArchived: includeArchived,
+      filter: filter,
     );
     final rows = await query.get();
     return rows
@@ -144,6 +162,8 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
     bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
   }) {
     final bookOrder = _bookOrderScope(scope) != null;
     return _activeDiaryKeysQuery(
@@ -153,6 +173,8 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
       sortMode: sortMode,
       scope: scope,
       matchComments: matchComments,
+      includeArchived: includeArchived,
+      filter: filter,
     ).watch().map(
       (rows) => rows
           .map(
@@ -179,6 +201,8 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
     required DiarySortMode sortMode,
     required DiaryListScope scope,
     bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
   }) {
     final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
     final variables = <Variable<Object>>[];
@@ -198,6 +222,8 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
       normalizedTagIds: normalizedTagIds,
       scope: scope,
       matchComments: matchComments,
+      includeArchived: includeArchived,
+      filter: filter,
     );
     sql.writeln(
       bookScope != null ? _bookOrderBySql() : _diaryOrderBySql(sortMode),
@@ -208,9 +234,52 @@ ${bookScope != null ? _bookOrderBySql(prefix: 'page.') : _diaryOrderBySql(sortMo
       readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[
         diaries,
         diaryTags,
-        ..._commentReadsFrom(keyword.trim(), matchComments),
+        ..._activeFilterReadsFrom(
+          keyword: keyword,
+          matchComments: matchComments,
+          filter: filter,
+        ),
       ]),
     );
+  }
+
+  /// 与 [watchDiaries] 同一筛选与范围的篇数（不分页、不排序）：搜索页结果
+  /// 上方的“共 N 篇”。只读，订阅与列表相同的表。
+  Stream<int> watchActiveDiaryCount({
+    String keyword = '',
+    List<int> requiredTagIds = const <int>[],
+    DiaryListScope scope = DiaryListScope.all,
+    bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
+  }) {
+    final variables = <Variable<Object>>[];
+    final sql = StringBuffer(
+      'SELECT COUNT(*) AS c FROM diaries d\n${_diaryScopeJoinSql(scope)}',
+    );
+    _writeActiveDiaryFilter(
+      sql,
+      variables,
+      normalizedKeyword: keyword.trim(),
+      normalizedTagIds: requiredTagIds.toSet().toList()..sort(),
+      scope: scope,
+      matchComments: matchComments,
+      includeArchived: includeArchived,
+      filter: filter,
+    );
+    return customSelect(
+      sql.toString(),
+      variables: variables,
+      readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[
+        diaries,
+        diaryTags,
+        ..._activeFilterReadsFrom(
+          keyword: keyword,
+          matchComments: matchComments,
+          filter: filter,
+        ),
+      ]),
+    ).watch().map((rows) => rows.single.read<int>('c'));
   }
 
   /// 范围内未删除、未归档的日记篇数（含私密排除）：智能日记本的实时篇数与
@@ -261,82 +330,46 @@ ${_diaryScopeJoinSql(scope)}''');
     );
   }
 
-  /// 首页 / 搜索口径的 WHERE：未删除、未归档 + 关键词 + 标签 AND + [scope]
-  /// （含私密排除）。调用方须先在 `FROM diaries d` 后写入
-  /// [_diaryScopeJoinSql]；不限“未归档”的查询（如探索）直接用
-  /// [_writeDiaryScopeFilter]。
-  void _writeActiveDiaryFilter(
-    StringBuffer sql,
-    List<Variable<Object>> variables, {
-    required String normalizedKeyword,
-    required List<int> normalizedTagIds,
-    required DiaryListScope scope,
-    bool matchComments = false,
+  /// 范围内未删除、未归档的日记里各标签的篇数，按篇数降序（同数时按标签
+  /// id）：搜索页空状态的“常用标签”。私密排除同列表；未解封的胶囊不计
+  /// （标签在解封前保密，与智能日记本规则同一口径）。
+  Stream<List<TagUsageCount>> watchTagUsageCounts({
+    DiaryListScope scope = DiaryListScope.all,
   }) {
-    sql.write('''
-WHERE d.is_deleted = 0
-  AND d.is_archived = 0
-''');
-    // 无关键词时不引用 title/content_text：让首屏 id 查询可以只读排序索引，
-    // 不必为一个恒真的 OR 条件访问每篇日记的大文本列。
-    if (normalizedKeyword.isNotEmpty) {
-      final likePattern = '%$normalizedKeyword%';
-      // 留言与正文同属“解封后才看得到”的内容：未解封的胶囊只按标题匹配。
-      final commentMatch = matchComments
-          ? '''
-      OR EXISTS (
-        SELECT 1 FROM diary_comments c
-        WHERE c.diary_id = d.diary_id AND c.content LIKE ?
-      )'''
-          : '';
-      sql.write('''
-  AND (
-    d.title LIKE ?
-    OR ((d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?) AND (
-      d.content_text LIKE ?$commentMatch
-    ))
-  )
-''');
-      variables
-        ..add(Variable<String>(likePattern))
-        ..add(Variable<DateTime>(DateTime.now()))
-        ..add(Variable<String>(likePattern));
-      if (matchComments) variables.add(Variable<String>(likePattern));
-    }
-
-    if (normalizedTagIds.isNotEmpty) {
-      _writeRequiredTagsFilter(sql, variables, normalizedTagIds);
-    }
-    _writeDiaryScopeFilter(sql, variables, scope);
-  }
-
-  /// 关键词也匹配留言时，查询要订阅留言表（写留言后搜索结果随之更新）；
-  /// 其余情况不订阅，写留言不会让首页列表连同正文整页重查。
-  List<TableInfo> _commentReadsFrom(String keyword, bool matchComments) =>
-      matchComments && keyword.isNotEmpty
-      ? <TableInfo>[diaryComments]
-      : const <TableInfo>[];
-
-  /// 多标签 AND：日记须同时带有全部所选标签。
-  void _writeRequiredTagsFilter(
-    StringBuffer sql,
-    List<Variable<Object>> variables,
-    List<int> normalizedTagIds,
-  ) {
-    final placeholders = _placeholders(normalizedTagIds.length);
-    sql.write('''
-  AND d.id IN (
-    SELECT dt2.diary_id
-    FROM diary_tags dt2
-    WHERE dt2.tag_id IN ($placeholders)
-    GROUP BY dt2.diary_id
-    HAVING COUNT(DISTINCT dt2.tag_id) = ?
-  )
-''');
-    variables.addAll(
-      normalizedTagIds.map<Variable<Object>>((int id) => Variable<int>(id)),
+    final variables = <Variable<Object>>[];
+    final sql = StringBuffer('''
+SELECT dt.tag_id AS tag_id, COUNT(*) AS uses
+FROM diary_tags dt
+WHERE dt.diary_id IN (
+  SELECT d.id FROM diaries d
+${_diaryScopeJoinSql(scope)}''');
+    _writeActiveDiaryFilter(
+      sql,
+      variables,
+      normalizedKeyword: '',
+      normalizedTagIds: const <int>[],
+      scope: scope,
     );
-    variables.add(Variable<int>(normalizedTagIds.length));
+    sql.write('''
+  AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)
+)
+GROUP BY dt.tag_id
+ORDER BY uses DESC, dt.tag_id ASC
+''');
+    variables.add(Variable<DateTime>(DateTime.now()));
+    return customSelect(
+      sql.toString(),
+      variables: variables,
+      readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[diaries, diaryTags]),
+    ).watch().map(
+      (rows) => <TagUsageCount>[
+        for (final row in rows)
+          TagUsageCount(
+            tagId: row.read<int>('tag_id'),
+            uses: row.read<int>('uses'),
+          ),
+      ],
+    );
   }
 
   /// 需要按成书顺序排列时返回日记本范围，否则为 null。

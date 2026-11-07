@@ -218,6 +218,15 @@ class DiaryTimelineEntry {
   final int? chapterRank;
 }
 
+/// 一个标签在某个范围里被多少篇日记用到（`watchTagUsageCounts`）：搜索页
+/// 空状态按它挑出“常用标签”。
+class TagUsageCount {
+  const TagUsageCount({required this.tagId, required this.uses});
+
+  final int tagId;
+  final int uses;
+}
+
 /// 日历月份打点聚合模型（轻量版）。
 ///
 /// 用于日历网格渲染与月度概览：只带日期格各种样式要画的标量字段（心情、

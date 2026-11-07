@@ -13,6 +13,8 @@ class DiaryPreviewListQuery {
     this.scope = DiaryListScope.all,
     this.excludedIds = const <String>{},
     this.matchComments = false,
+    this.includeArchived = false,
+    this.filter,
   });
 
   final String keyword;
@@ -27,6 +29,12 @@ class DiaryPreviewListQuery {
 
   /// 关键词是否也匹配留言（搜索页开启留言功能时），与列表同一口径。
   final bool matchComments;
+
+  /// 搜索页勾选“含归档”时为 true，与结果列表同一口径。
+  final bool includeArchived;
+
+  /// 搜索页的筛选谓词（见 `DiaryPageQuery.filter`），null 即不筛选。
+  final DiaryScopePredicate? filter;
 }
 
 /// 预览页左右滑动的顺序：进入时所在列表的日记 id，打开时即冻结。

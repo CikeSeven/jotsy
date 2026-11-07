@@ -21,6 +21,7 @@ import '../../models/diary_link_candidate.dart';
 import '../../controllers/diary_text_style_editing.dart';
 import '../../models/diary_code_block/diary_code_block_style.dart';
 import '../../models/diary_text_style_options.dart';
+import '../../models/diary_thumbnail_rows.dart';
 import '../../providers/diary_code_block_style_provider.dart';
 import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_code_block_look.dart';
@@ -694,6 +695,12 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     );
   }
 
+  /// 第 [block] 个顶层块在页面列表里的下标：并排的小图都画在这一排第一张
+  /// 那一项里（DiaryScrollPage），跳到它们时跳到那一项。
+  int _itemIndexOf(int block) =>
+      diaryThumbnailRowLeader(widget.controller.document.root, block) +
+      (widget.header == null ? 0 : 1);
+
   Widget _interactionLayer(af.AppFlowyEditor editor) =>
       DiaryEditorInteractionLayer(
         controller: widget.controller,
@@ -713,7 +720,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               widget.controller.document.nodeAtPath(path) != null &&
               _scroll.itemScrollController.isAttached) {
             _scroll.itemScrollController.jumpTo(
-              index: path.first + (widget.header == null ? 0 : 1),
+              index: _itemIndexOf(path.first),
               alignment: 0.2,
             );
           }
@@ -727,7 +734,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               alignment <= 1 &&
               _scroll.itemScrollController.isAttached) {
             _scroll.itemScrollController.jumpTo(
-              index: path.first + (widget.header == null ? 0 : 1),
+              index: _itemIndexOf(path.first),
               alignment: alignment,
             );
           }

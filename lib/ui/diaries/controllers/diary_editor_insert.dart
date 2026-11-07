@@ -1,5 +1,7 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../models/diary_thumbnail_rows.dart';
 import 'diary_editor_controller.dart';
 import 'diary_table_editing.dart';
 
@@ -23,11 +25,16 @@ af.Selection diaryEditorInsertionSelection(
 /// 子树留在原父块中，媒体作为同级块插入；撤销同时恢复文字、媒体与选区。
 /// 光标在表格的格子里时不拆格内文字：格子只能放段落，整组插到表格后面，
 /// 光标落到后面的空段落。
+///
+/// [followThumbnails]：紧挨在前面的同级块是小图时，插入的图片也设为小图，
+/// 接着排进那一排（diary_thumbnail_rows.dart）。点小图右侧的空白后插图，
+/// 图片就出现在它右边；想要大图时在图片菜单里恢复正常显示。
 void insertDiaryEditorNodes({
   required DiaryEditorController controller,
   required List<af.Node> nodes,
   af.Selection? selection,
   bool replaceSelection = false,
+  bool followThumbnails = false,
 }) {
   if (nodes.isEmpty || controller.readOnly) return;
   final target = diaryEditorInsertionSelection(
@@ -73,7 +80,20 @@ void insertDiaryEditorNodes({
       transaction.updateNode(current, {'delta': before.toJson()});
     }
   }
-  transaction.insertNodes(insertPath, [...nodes, trailing]);
+  final previous = insertPath.last > 0
+      ? controller.document.nodeAtPath(insertPath.previous)
+      : null;
+  final thumbnails =
+      followThumbnails && previous != null && isDiaryThumbnailImage(previous);
+  transaction.insertNodes(insertPath, [
+    for (final node in nodes)
+      thumbnails && node.type == kDiaryBlockImage
+          ? node.copyWith(
+              attributes: {...node.attributes, kDiaryImageThumbnailKey: true},
+            )
+          : node,
+    trailing,
+  ]);
   // 先插后删：AppFlowy 会把“先删同一路径、再插”的路径变换成 -1，空文档中
   // 会反转节点顺序。原节点的删除路径由前面的插入自动向后平移。
   if (replaced != null) transaction.deleteNode(replaced);

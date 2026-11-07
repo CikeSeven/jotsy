@@ -15,7 +15,9 @@ import 'diary_image_embed_data.dart';
 /// 的块组件竖着排，不在这里并排。
 ///
 /// 数据不变：每张小图仍是独立的图片块，删掉小图标记、拖走或在中间插入别的
-/// 块，这一排就按新的顺序重新分。导出与旧版本按原样一张一行显示。
+/// 块，这一排就按新的顺序重新分。导出（PDF / Word / 网页）读块文档的 JSON，
+/// 经 [diaryThumbnailRowsBy] 按同一口径分排（`ExportBlock.thumbnailRow`）；
+/// 旧版本与 Markdown、纯文本仍一张一行。
 
 /// 一排最多几张小图。
 const int kDiaryThumbnailRowCapacity = 3;
@@ -41,14 +43,22 @@ typedef DiaryThumbnailRow = ({int start, int end});
 
 /// [siblings] 里每一块所在那排的起止：不是小图的块自成一排（只有自己）。
 /// 下标与 [siblings] 一一对应。
-List<DiaryThumbnailRow> diaryThumbnailRows(List<af.Node> siblings) {
+List<DiaryThumbnailRow> diaryThumbnailRows(List<af.Node> siblings) =>
+    diaryThumbnailRowsBy(siblings, isDiaryThumbnailImage);
+
+/// [diaryThumbnailRows] 的通用形式：[isThumbnail] 判断一块是不是小图。编辑器
+/// 传节点，导出传块文档的 JSON（导出不经编辑器），两边分排的口径只在这里。
+List<DiaryThumbnailRow> diaryThumbnailRowsBy<T>(
+  List<T> siblings,
+  bool Function(T block) isThumbnail,
+) {
   final rows = List<DiaryThumbnailRow>.filled(siblings.length, (
     start: 0,
     end: 0,
   ));
   var i = 0;
   while (i < siblings.length) {
-    if (!isDiaryThumbnailImage(siblings[i])) {
+    if (!isThumbnail(siblings[i])) {
       rows[i] = (start: i, end: i + 1);
       i++;
       continue;
@@ -57,7 +67,7 @@ List<DiaryThumbnailRow> diaryThumbnailRows(List<af.Node> siblings) {
     var end = i + 1;
     while (end < siblings.length &&
         end - start < kDiaryThumbnailRowCapacity &&
-        isDiaryThumbnailImage(siblings[end])) {
+        isThumbnail(siblings[end])) {
       end++;
     }
     for (var j = start; j < end; j++) {

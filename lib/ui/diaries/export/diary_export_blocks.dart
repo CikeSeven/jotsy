@@ -14,6 +14,7 @@ import '../../../core/database/diary_blocks/diary_list_style.dart';
 import '../models/diary_image_embed_data.dart';
 import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';
+import '../models/diary_thumbnail_rows.dart';
 
 part 'diary_export_native_blocks.dart';
 
@@ -25,7 +26,9 @@ part 'diary_export_native_blocks.dart';
 /// - 每个文本行成为一个 [ExportBlock]，带块类型、缩进与按段计数的序号；
 /// - 图片单独成块（[ExportBlockKind.image]），录音 / 视频 / 附件成块
 ///   （[ExportBlockKind.media]），由写出器决定内嵌还是只写名称；分隔线成块
-///   （[ExportBlockKind.divider]）；
+///   （[ExportBlockKind.divider]）；正文顶层连续的小图与应用一样三张一排，
+///   同一排的块带同一个 [ExportBlock.thumbnailRow]（写出器经
+///   [exportThumbnailRowEnd] 取一排）；
 /// - 标注（[ExportBlockKind.callout]）带图标与底色档位，折叠列表
 ///   （[ExportBlockKind.toggle]）的子块照常以更深的缩进跟在后面，表格
 ///   （[ExportBlockKind.table]）整个是一块（[ExportBlock.tableRows]）；
@@ -188,6 +191,7 @@ class ExportBlock {
     this.imageMaxWidth,
     this.imageMaxHeight,
     this.imageThumbnail = false,
+    this.thumbnailRow,
   });
 
   final ExportBlockKind kind;
@@ -222,6 +226,12 @@ class ExportBlock {
 
   /// 图片以小图（方形缩略）显示（`data.thumbnail`）；其他块为 false。
   final bool imageThumbnail;
+
+  /// 小图在应用里并排时所在的那一排（`diaryThumbnailRowsBy`，与编辑器同一
+  /// 口径：正文顶层连续的小图从这一串的第一张起每三张一排）：值是这一排第
+  /// 一张在顶层块里的下标，同一排的几块相同。不是小图、或在容器块里（应用
+  /// 里不并排、一张一行）为 null。写出器经 [exportThumbnailRowEnd] 取一排。
+  final int? thumbnailRow;
   final ExportMediaKind? mediaKind;
 
   /// 媒体显示名称（附件原文件名、录音名），不含设备路径。
@@ -362,6 +372,7 @@ class ExportBlock {
     imageMaxWidth: imageMaxWidth,
     imageMaxHeight: imageMaxHeight,
     imageThumbnail: imageThumbnail,
+    thumbnailRow: thumbnailRow,
   );
 
   /// 首行缩进取哪一档（PDF、Word 与网页共用，单位由调用方定）：只有正文
@@ -379,6 +390,25 @@ class ExportBlock {
       kind == ExportBlockKind.ordered ||
       kind == ExportBlockKind.checked ||
       kind == ExportBlockKind.unchecked;
+}
+
+/// [blocks] 里从 [start] 起与它同一排并排的小图到哪里为止（不含，不超过
+/// [limit]，缺省到列表末尾）；不在一排里的块（[ExportBlock.thumbnailRow] 为
+/// null）只有自己，返回 `start + 1`。
+///
+/// 只看相邻的块：同一排的小图在块列表里本来就挨着；写出器准备正文时去掉
+/// 的图片（读不出、关掉了图片）只会让这一排变短，剩下的仍挨着、标记不变。
+int exportThumbnailRowEnd(List<ExportBlock> blocks, int start, [int? limit]) {
+  final row = blocks[start].thumbnailRow;
+  final stop = limit ?? blocks.length;
+  var end = start + 1;
+  if (row == null) return end;
+  while (end < stop &&
+      blocks[end].kind == ExportBlockKind.image &&
+      blocks[end].thumbnailRow == row) {
+    end++;
+  }
+  return end;
 }
 
 /// 解析正文为块列表。

@@ -493,6 +493,20 @@ class DiaryHtmlWriter {
         i = next;
         continue;
       }
+      if (block.kind == ExportBlockKind.image && block.imageThumbnail) {
+        // 小图一律写成一排（_writeThumbnails）：并排的几张在同一个 figure
+        // 里，单独一张（含容器块里的）是只有一张的一排，边长同样随宽度收缩。
+        final next = exportThumbnailRowEnd(blocks, i, end);
+        _writeThumbnails(
+          out,
+          blocks.sublist(i, next),
+          images: images,
+          cover: entry.cover,
+          nest: nest,
+        );
+        i = next;
+        continue;
+      }
       if (block.kind == ExportBlockKind.toggle) {
         // 导出的页面不保存折叠状态：一律展开，读者仍可点标题收起。
         final close = _runEnd(
@@ -574,6 +588,35 @@ class DiaryHtmlWriter {
       }
       i++;
     }
+  }
+
+  /// 一排小图（[exportThumbnailRowEnd] 取出的同一排）：`figure.thumbs` 是一
+  /// 行弹性布局，格间 8px，整排按第一张的对齐靠起始侧 / 居中 / 靠右（与应用
+  /// 的 `DiaryThumbnailRowView` 一致）。每张 `img.thumb` 的边长与应用同一
+  /// 口径：一排三张恰好放下、最大 120px，窄屏上一起收缩、不折行。读不出
+  /// 或与封面相同的图片不写，一张都不剩时整排不写。
+  static void _writeThumbnails(
+    StringBuffer out,
+    List<ExportBlock> row, {
+    required Map<String, String> images,
+    required String? cover,
+    String? nest,
+  }) {
+    final shown = <String>[
+      for (final block in row)
+        if (images[block.source!] case final data? when block.source != cover)
+          '<img src="${_attr(data)}" alt="" loading="lazy" class="thumb">',
+    ];
+    if (shown.isEmpty) return;
+    final align = switch (row.first.align) {
+      ExportAlign.center => ' thumbs-center',
+      ExportAlign.end => ' thumbs-right',
+      _ => '',
+    };
+    out.write(
+      '<figure class="thumbs$align"${_styleAttr(<String?>[nest])}>'
+      '${shown.join()}</figure>\n',
+    );
   }
 
   /// 表格铺满内容宽度（嵌套时让出左外边距 [nest]）；首行为表头时放进
@@ -747,11 +790,10 @@ class DiaryHtmlWriter {
     _ => '',
   };
 
-  /// 正文图片的尺寸，与应用一致（口径见 `ExportImageBox`）：小图为
-  /// `img.thumb`（120px 见方、cover 裁切）；缩放菜单的宽高只作上限，宽高
-  /// 仍是 auto，浏览器在上限内按原比例缩小；都没有时不写。
+  /// 正文图片（小图以外，小图见 [_writeThumbnails]）的尺寸，与应用一致
+  /// （口径见 `ExportImageBox`）：缩放菜单的宽高只作上限，宽高仍是 auto，
+  /// 浏览器在上限内按原比例缩小；都没有时不写。
   static String _imageSize(ExportBlock block) {
-    if (block.imageThumbnail) return ' class="thumb"';
     final width = block.imageMaxWidth;
     final height = block.imageMaxHeight;
     final limits = <String>[
@@ -895,7 +937,10 @@ figure.align-center img{margin-left:auto;margin-right:auto}
 figure.align-right img{margin-left:auto}
 hr{margin:16px 0;border:0;border-top:1px solid var(--line)}
 img{display:block;max-width:100%;height:auto;border-radius:16px}
-img.thumb{width:120px;height:120px;object-fit:cover;border-radius:12px}
+figure.thumbs{display:flex;gap:8px}
+figure.thumbs-center{justify-content:center}
+figure.thumbs-right{justify-content:flex-end}
+img.thumb{flex:none;width:calc((100% - 16px) / 3);max-width:120px;height:auto;aspect-ratio:1;object-fit:cover;border-radius:12px}
 .cover img{width:100%}
 blockquote{margin:8px 0;padding:4px 0 4px 14px;border-left:3px solid var(--line);color:var(--muted)}
 pre{margin:8px 0;padding:12px 14px;background:var(--bg);border-radius:12px;overflow:auto;font-size:14px;line-height:1.6}

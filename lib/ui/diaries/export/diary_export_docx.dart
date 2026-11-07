@@ -321,12 +321,44 @@ class DiaryDocxWriter {
     Future<bool> image(String source, {ExportBlock? block}) async =>
         options.includeMedia && await _image(b, source, media, block: block);
 
+    // 并排的一排小图写成一段（见 _DocxBuilder.thumbnailRowParagraph）；与
+    // 单张一样，与封面相同的那张不再重复，写不进去的写成占位、排在这一排
+    // 后面。
+    Future<void> thumbnailRow(List<ExportBlock> row) async {
+      if (!options.includeMedia) return;
+      final shown = <(DiaryExportMediaFile, ExportImageInfo, ExportBlock)>[];
+      final missing = <ExportBlock>[];
+      for (final block in row) {
+        if (block.source == entry.cover) continue;
+        final loaded = await _loadImage(block.source!, media);
+        if (loaded == null) {
+          missing.add(block);
+        } else {
+          shown.add((loaded.$1, loaded.$2, block));
+        }
+      }
+      if (shown.isNotEmpty) b.thumbnailRowParagraph(shown);
+      for (final block in missing) {
+        b.paragraph(
+          style: 'DiaryMeta',
+          runs: <String>[b.run(labels.mediaLine(block))],
+        );
+      }
+    }
+
     if (entry.cover != null) {
       await image(entry.cover!);
     }
-    final codeRuns = code?.highlightBlocks(entry.blocks);
-    for (final (index, block) in entry.blocks.indexed) {
+    final blocks = entry.blocks;
+    final codeRuns = code?.highlightBlocks(blocks);
+    for (var index = 0; index < blocks.length; index++) {
+      final block = blocks[index];
       switch (block.kind) {
+        case ExportBlockKind.image when block.thumbnailRow != null:
+          final end = exportThumbnailRowEnd(blocks, index);
+          await thumbnailRow(blocks.sublist(index, end));
+          // 这一排其余几块已经写进同一段。
+          index = end - 1;
         case ExportBlockKind.image:
           if (block.source == entry.cover) {
             break;
@@ -921,6 +953,67 @@ class _DocxBuilder {
     int maxHeightEmu = DiaryDocxWriter._maxImageHeightEmu,
     ExportBlock? block,
   }) {
+    _body.write(
+      '<w:p>${_imageParagraphProperties(block)}'
+      '${_drawing(media, info, maxHeightEmu: maxHeightEmu, block: block)}'
+      '</w:p>',
+    );
+  }
+
+  /// 并排的一排小图（[exportThumbnailRowEnd] 取出、已经载入的几张）写成一
+  /// 段：几张行内图片依次排在同一行，中间隔一段 [_thumbnailGap]，段落的
+  /// 对齐取这一排第一张（与应用的 `DiaryThumbnailRowView` 一致）。每张的
+  /// 方框与裁切同 [imageParagraph]；只有一张时与它写出的完全相同。
+  ///
+  /// 为什么不用表格：行内图片在 Word、WPS 与 LibreOffice 里都是同一行里的
+  /// 字符，三张 90pt 的小图加两道间距远小于版心宽度，不会折行；表格还要
+  /// 处理边框、格边距与跨页，打开后也不像应用里的一排图片。
+  void thumbnailRowParagraph(
+    List<(DiaryExportMediaFile, ExportImageInfo, ExportBlock)> images,
+  ) {
+    final drawings = <String>[
+      for (final (media, info, block) in images)
+        _drawing(media, info, block: block),
+    ];
+    _body.write(
+      '<w:p>${_imageParagraphProperties(images.first.$3)}'
+      '${drawings.join(_thumbnailGap)}</w:p>',
+    );
+  }
+
+  /// 一排小图之间的间距（应用的 `kDiaryThumbnailRowGap`，8px = 6pt）：一个
+  /// 1pt 字号的空格（宽约 0.3pt）再加 114 缇（5.7pt）的字符间距。相邻的
+  /// 行内图片之间没有可设的空隙，写成文字间距各家阅读器都认；字号压到
+  /// 1pt，这一行的高度只由图片决定。
+  static const String _thumbnailGap =
+      '<w:r><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/>'
+      '<w:spacing w:val="114"/></w:rPr><w:t xml:space="preserve"> </w:t></w:r>';
+
+  /// 图片段落的缩进与对齐：正文图片按所在层级缩进、取块的对齐（靠起始侧
+  /// 不写）；封面与留言图片（没有 [block]）居中。
+  String _imageParagraphProperties(ExportBlock? block) {
+    final jc = block == null
+        ? 'center'
+        : switch (block.align) {
+            ExportAlign.center => 'center',
+            ExportAlign.end => 'right',
+            _ => null,
+          };
+    final pPr = <String>[
+      if (block != null && block.indent > 0)
+        '<w:ind w:left="${420 * block.indent}"/>',
+      if (jc != null) '<w:jc w:val="$jc"/>',
+    ].join();
+    return pPr.isEmpty ? '' : '<w:pPr>$pPr</w:pPr>';
+  }
+
+  /// 登记一张图片并返回画它的行内图片 run（尺寸与裁切见 [imageParagraph]）。
+  String _drawing(
+    DiaryExportMediaFile media,
+    ExportImageInfo info, {
+    int maxHeightEmu = DiaryDocxWriter._maxImageHeightEmu,
+    ExportBlock? block,
+  }) {
     final id = _nextRelationshipId();
     final name =
         'image${images.length + 1}${info.extension == '.jpg' ? '.jpeg' : info.extension}';
@@ -955,32 +1048,18 @@ class _DocxBuilder {
         ? ''
         : '<a:srcRect l="${crop(box.cropLeft)}" t="${crop(box.cropTop)}" '
               'r="${crop(box.cropRight)}" b="${crop(box.cropBottom)}"/>';
-    final jc = block == null
-        ? 'center'
-        : switch (block.align) {
-            ExportAlign.center => 'center',
-            ExportAlign.end => 'right',
-            _ => null,
-          };
-    final pPr = <String>[
-      if (block != null && block.indent > 0)
-        '<w:ind w:left="${420 * block.indent}"/>',
-      if (jc != null) '<w:jc w:val="$jc"/>',
-    ].join();
     final drawing = ++_drawingId;
-    _body.write(
-      '<w:p>${pPr.isEmpty ? '' : '<w:pPr>$pPr</w:pPr>'}<w:r><w:drawing>'
-      '<wp:inline distT="0" distB="0" distL="0" distR="0">'
-      '<wp:extent cx="$cx" cy="$cy"/>'
-      '<wp:docPr id="$drawing" name="Picture $drawing"/>'
-      '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>'
-      '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
-      '<pic:pic><pic:nvPicPr><pic:cNvPr id="$drawing" name="$name"/><pic:cNvPicPr/></pic:nvPicPr>'
-      '<pic:blipFill><a:blip r:embed="$id"/>$srcRect<a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
-      '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="$cx" cy="$cy"/></a:xfrm>'
-      '<a:prstGeom prst="${thumbnail ? 'roundRect' : 'rect'}"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>'
-      '</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>',
-    );
+    return '<w:r><w:drawing>'
+        '<wp:inline distT="0" distB="0" distL="0" distR="0">'
+        '<wp:extent cx="$cx" cy="$cy"/>'
+        '<wp:docPr id="$drawing" name="Picture $drawing"/>'
+        '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>'
+        '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+        '<pic:pic><pic:nvPicPr><pic:cNvPr id="$drawing" name="$name"/><pic:cNvPicPr/></pic:nvPicPr>'
+        '<pic:blipFill><a:blip r:embed="$id"/>$srcRect<a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+        '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="$cx" cy="$cy"/></a:xfrm>'
+        '<a:prstGeom prst="${thumbnail ? 'roundRect' : 'rect'}"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>'
+        '</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
   }
 
   String document() =>

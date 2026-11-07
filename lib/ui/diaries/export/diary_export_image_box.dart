@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../widgets/long_image/long_image_policy.dart';
 import '../models/diary_image_embed_data.dart';
+import '../models/diary_thumbnail_rows.dart';
 import 'diary_export_blocks.dart';
 
 /// 正文图片在导出里的显示框：PDF、Word 与网页共用同一口径，与应用里看到的
@@ -12,9 +13,12 @@ import 'diary_export_blocks.dart';
 ///
 /// 单位是应用的逻辑像素：应用把原图的像素当逻辑像素显示、不放大小图；纸面
 /// 按 96 DPI 换算（1px = 0.75pt，与 Word 的 EMU 换算同一口径）。
-/// - 小图（[ExportBlock.imageThumbnail]）为 [kDiaryImageThumbnailExtent] 见方、
-///   带圆角，画面按 cover 裁切：长图保留顶部，其余居中，裁去的比例见
-///   [cropLeft] 等（Word 写成 `a:srcRect`）；
+/// - 小图（[ExportBlock.imageThumbnail]）见方、带圆角，边长与应用同一口径
+///   （[diaryThumbnailExtentFor]：版心放得下一排三张，最大
+///   [kDiaryImageThumbnailExtent]，单独一张也取这个边长），画面按 cover
+///   裁切：长图保留顶部，其余居中，裁去的比例见 [cropLeft] 等（Word 写成
+///   `a:srcRect`）；并排的一排由写出器摆放（[exportThumbnailRowEnd]），每张
+///   仍按这里的框画；
 /// - 其余按原始尺寸，缩放菜单或导入写入的宽高（[ExportBlock.imageMaxWidth] /
 ///   [ExportBlock.imageMaxHeight]）与写出器给的版心（`maxWidth` /
 ///   `maxHeight`）都只作上限，按原比例缩小、从不放大。
@@ -41,7 +45,7 @@ class ExportImageBox {
     final w = width.toDouble();
     final h = height.toDouble();
     if (block.imageThumbnail) {
-      final side = math.min(kDiaryImageThumbnailExtent, maxWidth);
+      final side = diaryThumbnailExtentFor(maxWidth);
       if (w > h) {
         final cut = (1 - h / w) / 2;
         return ExportImageBox._(

@@ -16,7 +16,12 @@ import 'diary_export_pdf_text_effects.dart';
 /// PDF 正文直接使用共用块模型渲染，不再调用编辑器插件。图片已在准备阶段
 /// 载入并替换为虚拟地址，媒体已换为说明文字；这里不做 IO、不改原文。
 /// 按段/代码行返回可分页的组件，避免把整篇长文放进一个不可分页的容器。
-/// 标注、折叠列表与表格的画法见 `diary_export_pdf_rich_blocks.dart`。
+/// 图片（含并排的一排小图）、标注、折叠列表与表格的画法见
+/// `diary_export_pdf_rich_blocks.dart`。
+///
+/// 正文顶层连续的小图与应用一样三张一排（[ExportBlock.thumbnailRow]）：
+/// 一排的几块合成一个组件（[buildDiaryPdfThumbnailRow]），读到这一排第一张
+/// 时整排画出、跳过其余几块。
 ///
 /// 文字块一律铺满可用宽度再排版：pdf 库的 [pw.RichText] 在宽松约束下只取
 /// 最长一行的宽度，单行段落的居中 / 右对齐就在这条窄框里“对齐”，落到页面
@@ -43,7 +48,18 @@ List<pw.Widget> buildDiaryPdfBody(
   final rtl = textDirection == TextDirection.rtl;
   final direction = rtl ? pw.TextDirection.rtl : pw.TextDirection.ltr;
   var codeLine = 0;
-  for (final block in blocks) {
+  // 图片在准备阶段换成了按下标取图的虚拟地址（`…/<下标>.png`）。
+  Uint8List? bytesOf(ExportBlock block) {
+    final index = int.tryParse(
+      Uri.tryParse(block.source ?? '')?.pathSegments.last.split('.').first ??
+          '',
+    );
+    if (index == null || index < 0 || index >= images.length) return null;
+    return images[index];
+  }
+
+  for (var i = 0; i < blocks.length; i++) {
+    final block = blocks[i];
     final isCode = block.kind == ExportBlockKind.code;
     if (isCode) {
       codeLine++;
@@ -51,17 +67,20 @@ List<pw.Widget> buildDiaryPdfBody(
       codeLine = 0;
     }
     pw.Widget content;
-    if (block.kind == ExportBlockKind.image) {
-      final source = block.source ?? '';
-      final index = int.tryParse(
-        Uri.tryParse(source)?.pathSegments.last.split('.').first ?? '',
-      );
-      if (index == null || index < 0 || index >= images.length) continue;
-      final image = buildDiaryPdfImage(
-        block,
-        images[index],
-        textDirection: direction,
-      );
+    if (block.kind == ExportBlockKind.image && block.thumbnailRow != null) {
+      final end = exportThumbnailRowEnd(blocks, i);
+      final row = buildDiaryPdfThumbnailRow(<(ExportBlock, Uint8List)>[
+        for (final image in blocks.sublist(i, end))
+          if (bytesOf(image) case final bytes?) (image, bytes),
+      ], textDirection: direction);
+      // 这一排其余几块已经画在里面。
+      i = end - 1;
+      if (row == null) continue;
+      content = row;
+    } else if (block.kind == ExportBlockKind.image) {
+      final bytes = bytesOf(block);
+      if (bytes == null) continue;
+      final image = buildDiaryPdfImage(block, bytes, textDirection: direction);
       if (image == null) continue;
       content = image;
     } else if (block.kind == ExportBlockKind.divider) {

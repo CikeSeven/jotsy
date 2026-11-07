@@ -4,6 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../models/diary_callout_tone.dart';
+import '../models/diary_thumbnail_rows.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_image_box.dart';
 import 'diary_export_media.dart';
@@ -11,7 +12,8 @@ import 'diary_export_pdf_inline.dart';
 import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
 
-/// PDF 正文里的图片、标注、折叠列表与表格（[buildDiaryPdfBody] 调用）。
+/// PDF 正文里的图片（含并排的一排小图）、标注、折叠列表与表格
+/// （[buildDiaryPdfBody] 调用）。
 ///
 /// - 输入：共用块模型里的一块（颜色已在 prepareBody 压平到白纸上）与已经
 ///   排好的行内文字；
@@ -28,38 +30,87 @@ pw.Widget? buildDiaryPdfImage(
   Uint8List bytes, {
   required pw.TextDirection textDirection,
 }) {
+  final picture = _pdfPicture(block, bytes);
+  if (picture == null) return null;
+  return _placePdfImage(block, picture, textDirection: textDirection);
+}
+
+/// 并排的一排小图（[exportThumbnailRowEnd] 取出的同一排，每项是块与它的
+/// 图片字节）：与应用的 `DiaryThumbnailRowView` 一样从起始侧排起、格间
+/// [kDiaryThumbnailRowGap]，整排按第一张的对齐与上下留白摆放；每张仍是
+/// [buildDiaryPdfImage] 的方形 cover 裁切。读不出尺寸的跳过，一张都画不出
+/// 时返回 null。
+///
+/// 一排是一个不可拆分的组件：三张小图同高（90pt），换页时整排一起挪到下
+/// 一页，不会上下页各一半。
+pw.Widget? buildDiaryPdfThumbnailRow(
+  List<(ExportBlock, Uint8List)> images, {
+  required pw.TextDirection textDirection,
+}) {
+  final pictures = <pw.Widget>[
+    for (final (block, bytes) in images) ?_pdfPicture(block, bytes),
+  ];
+  if (pictures.isEmpty) return null;
+  return _placePdfImage(
+    images.first.$1,
+    pictures.length == 1
+        ? pictures.single
+        : pw.Row(
+            mainAxisSize: pw.MainAxisSize.min,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: <pw.Widget>[
+              for (final (index, picture) in pictures.indexed) ...<pw.Widget>[
+                if (index > 0) pw.SizedBox(width: kDiaryThumbnailRowGap * _pt),
+                picture,
+              ],
+            ],
+          ),
+    textDirection: textDirection,
+  );
+}
+
+/// 应用的逻辑像素折成磅（96 DPI）。
+const double _pt = 0.75;
+
+/// 一张图片本身（不含缩进与对齐）；读不出尺寸时为 null。
+pw.Widget? _pdfPicture(ExportBlock block, Uint8List bytes) {
   final info = ExportImageInfo.read(bytes);
   if (info == null || info.width <= 0 || info.height <= 0) return null;
-  const pt = 0.75;
   final box = ExportImageBox.of(
     block,
     info.width,
     info.height,
-    maxHeight: 560 / pt,
+    maxHeight: 560 / _pt,
   );
   final memory = pw.MemoryImage(bytes);
-  final pw.Widget picture;
   if (box.thumbnail) {
-    final radius = box.radius * pt;
-    picture = pw.ClipRRect(
+    final radius = box.radius * _pt;
+    return pw.ClipRRect(
       horizontalRadius: radius,
       verticalRadius: radius,
       child: pw.Image(
         memory,
-        width: box.width * pt,
-        height: box.height * pt,
+        width: box.width * _pt,
+        height: box.height * _pt,
         fit: pw.BoxFit.cover,
         alignment: box.keepsTop ? pw.Alignment.topCenter : pw.Alignment.center,
       ),
     );
-  } else {
-    // 版心宽度在排版时才知道（还要减去缩进）：先给原尺寸，放不下时由
-    // FittedBox 按比例缩小。
-    picture = pw.FittedBox(
-      fit: pw.BoxFit.scaleDown,
-      child: pw.Image(memory, width: box.width * pt, height: box.height * pt),
-    );
   }
+  // 版心宽度在排版时才知道（还要减去缩进）：先给原尺寸，放不下时由
+  // FittedBox 按比例缩小。
+  return pw.FittedBox(
+    fit: pw.BoxFit.scaleDown,
+    child: pw.Image(memory, width: box.width * _pt, height: box.height * _pt),
+  );
+}
+
+/// 按 [block] 的层级缩进、对齐与上下留白摆放 [picture]。
+pw.Widget _placePdfImage(
+  ExportBlock block,
+  pw.Widget picture, {
+  required pw.TextDirection textDirection,
+}) {
   final rtl = textDirection == pw.TextDirection.rtl;
   return pw.Padding(
     padding: pw.EdgeInsetsDirectional.only(

@@ -9,6 +9,10 @@ part of 'diary_export_blocks.dart';
 ///   成块；结构无效的表格（读取时本已展开，只有手改数据才会遇到）按普通
 ///   块往下读，格子里的段落照常导出。
 /// - 日记链接卡片按一段快照标题导出（[diaryLinkCardTitle]）。
+/// - 顶层连续的小图按应用的分排（[diaryThumbnailRowsBy]）标上所在那一排
+///   （[ExportBlock.thumbnailRow]）：分排按顶层块本身算，而不是按导出的块
+///   列表——导出时略过的块（没有快照的链接卡片、认不出又没有文字的块）在
+///   应用里同样隔开前后两串小图。
 /// - 认不出的块类型（更新版本写入的新块）带 `delta` 时按段落导出，不丢文字；
 ///   原样保留的历史嵌入（[kDiaryBlockUnknownEmbed]）按 Quill 嵌入认读。
 List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
@@ -18,7 +22,15 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
   final listStyles = diaryListStylesInOrder(document);
   // 正在跳过的表格所在深度：它的格子与格内段落已经并进表格块。
   int? tableDepth;
+  final root = diaryBlocksRoot(document);
+  final thumbnailRows = diaryThumbnailRowsBy(
+    root == null ? const <Map<String, Object?>>[] : diaryBlockChildren(root),
+    _isThumbnailImage,
+  );
+  // 当前顶层块的下标（walkDiaryBlocks 按同一个列表先序遍历）。
+  var top = -1;
   for (final (visit, (node, depth)) in walkDiaryBlocks(document).indexed) {
+    if (depth == 0) top++;
     if (tableDepth != null) {
       if (depth > tableDepth) continue;
       tableDepth = null;
@@ -148,12 +160,21 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
           imageThumbnail:
               kind == ExportBlockKind.image &&
               data[kDiaryImageThumbnailKey] == true,
+          thumbnailRow: depth == 0 && _isThumbnailImage(node)
+              ? thumbnailRows[top].start
+              : null,
         ),
       );
     }
   }
   return List.unmodifiable(blocks);
 }
+
+/// 与编辑器的 `isDiaryThumbnailImage` 同一口径（图片块且 `data.thumbnail`
+/// 恰为 `true`），读的是块文档的 JSON。
+bool _isThumbnailImage(Map<String, Object?> node) =>
+    node[kDiaryBlockTypeKey] == kDiaryBlockImage &&
+    diaryBlockData(node)[kDiaryImageThumbnailKey] == true;
 
 ExportAlign _exportAlign(Object? value) => switch (value) {
   'center' => ExportAlign.center,

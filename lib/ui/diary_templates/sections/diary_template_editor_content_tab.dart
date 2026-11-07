@@ -18,6 +18,7 @@ import '../../diaries/providers/diary_saved_colors_provider.dart';
 import '../../diaries/providers/diary_typography_provider.dart';
 import '../../diaries/viewmodels/diary_text_appearance.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
+import '../../diaries/widgets/diary_toolbar_panel_limit.dart';
 import '../../diaries/widgets/diary_mobile_toolbar.dart';
 import '../controllers/diary_template_editor_controller.dart';
 import '../widgets/diary_template_variable_bar.dart';
@@ -74,6 +75,11 @@ class _DiaryTemplateEditorContentTabState
   );
   bool _lastFocusedBody = true;
 
+  /// 工具栏面板的上限，布局时按剩余高度写入（见 DiaryToolbarPanelLimit）。
+  final ValueNotifier<double> _maxPanelExtent = ValueNotifier<double>(
+    double.infinity,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +100,7 @@ class _DiaryTemplateEditorContentTabState
     _titleFocus.dispose();
     _bodyFocus.dispose();
     _toolbarFocus.dispose();
+    _maxPanelExtent.dispose();
     super.dispose();
   }
 
@@ -238,16 +245,18 @@ class _DiaryTemplateEditorContentTabState
           child: DiaryTemplateVariableBar(onInsert: _insert),
         ),
         Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // 键盘、标题和变量条都已扣除；按这里的剩余高度限制面板，给正文
-              // 留出至少一行与触控空间，避免展开后把虚拟列表压到零高度。
+          // 键盘、标题和变量条都已扣除；按这里的剩余高度限制面板，给正文
+          // 留出至少一行与触控空间，避免展开后把虚拟列表压到零高度。上限在
+          // 布局时写入，编辑器与工具栏不随键盘升降逐帧重建。
+          child: DiaryToolbarPanelLimit(
+            limit: _maxPanelExtent,
+            extentOf: (context, constraints) {
               final editorMinHeight = math.max(
                 kMinInteractiveDimension,
                 appearance.typography.fontSize *
                     appearance.typography.lineHeight,
               );
-              final maxPanelExtent = math.min(
+              return math.min(
                 MediaQuery.sizeOf(context).height / 3,
                 math.max(
                   0.0,
@@ -257,55 +266,55 @@ class _DiaryTemplateEditorContentTabState
                       editorMinHeight,
                 ),
               );
-              return Column(
-                children: [
-                  Expanded(
-                    // 边距交给编辑器本身：段落把手画在页面左边距里，边距包在
-                    // 外面时把手只能压在文字上。
-                    child: DiaryEditor(
-                      controller: widget.controller.body,
-                      appearance: appearance,
-                      focusNode: _bodyFocus,
-                      placeholder: l10n.diaryTemplateEditorBodyHint,
-                      padding: EdgeInsets.symmetric(horizontal: gutter),
-                      header: const SizedBox(height: 12),
-                      footer: const SizedBox(height: 24),
-                      // 工具栏在正文下方，不遮挡正文。上游移动端仍会自动滚动，
-                      // 沿用悬浮工具栏的 80dp 边缘区时，矮视口放不下目标矩形，
-                      // 零时长滚动就会在微任务里反复换向，阻塞整个 UI。
-                      autoScrollEdgeOffset: 0,
-                    ),
+            },
+            child: Column(
+              children: [
+                Expanded(
+                  // 边距交给编辑器本身：段落把手画在页面左边距里，边距包在
+                  // 外面时把手只能压在文字上。
+                  child: DiaryEditor(
+                    controller: widget.controller.body,
+                    appearance: appearance,
+                    focusNode: _bodyFocus,
+                    placeholder: l10n.diaryTemplateEditorBodyHint,
+                    padding: EdgeInsets.symmetric(horizontal: gutter),
+                    header: const SizedBox(height: 12),
+                    footer: const SizedBox(height: 24),
+                    // 工具栏在正文下方，不遮挡正文。上游移动端仍会自动滚动，
+                    // 沿用悬浮工具栏的 80dp 边缘区时，矮视口放不下目标矩形，
+                    // 零时长滚动就会在微任务里反复换向，阻塞整个 UI。
+                    autoScrollEdgeOffset: 0,
                   ),
-                  if (showToolbar)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        kDiaryFloatingToolbarInset,
-                        0,
-                        kDiaryFloatingToolbarInset,
-                        AppSpacing.s,
-                      ),
-                      child: CenteredContent(
-                        maxWidth: AppContentWidth.editor,
-                        child: DiaryFloatingToolbarSurface(
-                          child: Focus(
-                            focusNode: _toolbarFocus,
-                            child: DiaryFloatingToolbar(
-                              controller: widget.controller.body,
-                              order: order,
-                              maxPanelExtent: maxPanelExtent,
-                              savedColors: savedColors,
-                              onEditSavedColors: ref
-                                  .read(diarySavedColorsProvider.notifier)
-                                  .edit,
-                              size: toolbarSize,
-                            ),
+                ),
+                if (showToolbar)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      kDiaryFloatingToolbarInset,
+                      0,
+                      kDiaryFloatingToolbarInset,
+                      AppSpacing.s,
+                    ),
+                    child: CenteredContent(
+                      maxWidth: AppContentWidth.editor,
+                      child: DiaryFloatingToolbarSurface(
+                        child: Focus(
+                          focusNode: _toolbarFocus,
+                          child: DiaryFloatingToolbar(
+                            controller: widget.controller.body,
+                            order: order,
+                            maxPanelExtent: _maxPanelExtent,
+                            savedColors: savedColors,
+                            onEditSavedColors: ref
+                                .read(diarySavedColorsProvider.notifier)
+                                .edit,
+                            size: toolbarSize,
                           ),
                         ),
                       ),
                     ),
-                ],
-              );
-            },
+                  ),
+              ],
+            ),
           ),
         ),
       ],

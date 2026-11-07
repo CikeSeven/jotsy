@@ -57,7 +57,7 @@ Future<void> _pumpToolbar(
               onMediaPressed: onMediaPressed,
               onCameraPressed: onCameraPressed,
               onPanelExtentChanged: onPanelExtentChanged,
-              maxPanelExtent: maxPanelExtent,
+              maxPanelExtent: ValueNotifier<double>(maxPanelExtent),
               size: size,
             ),
           ),

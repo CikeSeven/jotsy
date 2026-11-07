@@ -33,6 +33,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
+import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
 
 import '../core/services/settings_service.dart';
 import '../l10n/app_localizations.dart';
@@ -359,26 +360,30 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         // 部分一样跟随“字体大小”设置。
         Widget scaledChild = MediaQuery(
           data: mediaQuery.copyWith(textScaler: effectiveTextScaler),
-          child: AppLockLayer(
-            locked: appLock?.locked ?? false,
-            overlayBuilder: (_) => AppLockOverlay(
-              unlocking: appLock?.unlocking ?? false,
-              autoPrompt: appLock?.options.autoPrompt ?? true,
-              onTapUnlock: () => unawaited(appLock?.manualUnlock()),
-              onPasscodeUnlocked: () => appLock?.passcodeUnlocked(),
-            ),
-            // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
-            child: NotebookLockLayer(
-              // 桌面窗口（如 Linux GTK）背景是透明的：路由淡入淡出时最底层
-              // 页面半透明，下面又没有不透明的东西，桌面壁纸会透出来。垫一层
-              // 当前主题的 surface 色兜底；移动端窗口自带不透明背景，保持原样
-              // 不加。
-              child: AppPlatform.isDesktop
-                  ? ColoredBox(
-                      color: theme.colorScheme.surface,
-                      child: themedChild,
-                    )
-                  : themedChild,
+          // 键盘升降动画逐帧改变 viewInsets：这一层跟着逐帧重建，下面只关心
+          // “键盘在不在”的页面经 KeyboardVisibility.of 只在切换时重建。
+          child: KeyboardVisibility(
+            child: AppLockLayer(
+              locked: appLock?.locked ?? false,
+              overlayBuilder: (_) => AppLockOverlay(
+                unlocking: appLock?.unlocking ?? false,
+                autoPrompt: appLock?.options.autoPrompt ?? true,
+                onTapUnlock: () => unawaited(appLock?.manualUnlock()),
+                onPasscodeUnlocked: () => appLock?.passcodeUnlocked(),
+              ),
+              // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
+              child: NotebookLockLayer(
+                // 桌面窗口（如 Linux GTK）背景是透明的：路由淡入淡出时最底层
+                // 页面半透明，下面又没有不透明的东西，桌面壁纸会透出来。垫一层
+                // 当前主题的 surface 色兜底；移动端窗口自带不透明背景，保持原样
+                // 不加。
+                child: AppPlatform.isDesktop
+                    ? ColoredBox(
+                        color: theme.colorScheme.surface,
+                        child: themedChild,
+                      )
+                    : themedChild,
+              ),
             ),
           ),
         );

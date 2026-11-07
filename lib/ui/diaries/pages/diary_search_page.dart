@@ -32,6 +32,7 @@ import '../../widgets/route_entrance_waiter.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import '../../widgets/form_width.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
+import '../../widgets/width_layout_builder.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
@@ -189,7 +190,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final diaryCardTagLimit =
         ref.watch(diaryCardTagLimitProvider).asData?.value ??
         SettingsService.defaultDiaryCardTagLimit;
-    final topSafeInset = MediaQuery.paddingOf(context).top;
+    // 用 viewPadding：padding 的底边在键盘盖过导航条的那几帧里逐帧变小，
+    // 读 padding（哪怕只取顶边）会让整页（连同结果卡片）跟着逐帧重建。
+    final topSafeInset = MediaQuery.viewPaddingOf(context).top;
     final headerOverlayHeight = topSafeInset + _headerContentHeight;
     final query = SearchDiaryQuery(
       keyword: _effectiveSearchKeyword,
@@ -226,6 +229,11 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final commentHits =
         ref.watch(diaryCommentHitsProvider(query.keyword)).value ??
         const <String, DiaryCommentRow>{};
+    // 在页面 build 里订阅，不放进下面只随宽度重建的布局回调。
+    final cardStyle = ref.watch(diaryCardStyleProvider);
+    final moodPalette = ref.watch(diaryMoodPaletteProvider);
+    final commentCounts =
+        ref.watch(diaryCommentCountsProvider).value ?? const <String, int>{};
     final tagListAsync = ref.watch(tagListProvider);
     final selectedTags = tagListAsync.maybeWhen(
       data: (tags) => tags
@@ -258,14 +266,13 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                   color: AppPageBackdrop.pageColorOf(context),
                   child: NotificationListener<ScrollNotification>(
                     onNotification: _handleScrollNotification,
-                    child: LayoutBuilder(
-                      builder: (BuildContext context, BoxConstraints constraints) {
+                    // 只按宽度构建：键盘升降时 body 逐帧变矮，普通 LayoutBuilder
+                    // 会逐帧重建整列结果卡片（见 WidthLayoutBuilder）。
+                    child: WidthLayoutBuilder(
+                      builder: (BuildContext context, double maxWidth) {
                         final side = FormWidth.extra(
-                          constraints.maxWidth,
-                          childInset: ref
-                              .watch(diaryCardStyleProvider)
-                              .list
-                              .sideMargin,
+                          maxWidth,
+                          childInset: cardStyle.list.sideMargin,
                         );
                         return CustomScrollView(
                           slivers: <Widget>[
@@ -306,14 +313,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                                     // 新查询 loading 时继续展示上一份结果，避免输入停顿后整屏闪白。
                                     DiariesListSection(
                                       // 卡片样式按这一列实际的宽度解析。
-                                      availableWidth:
-                                          constraints.maxWidth - side * 2,
+                                      availableWidth: maxWidth - side * 2,
                                       diaries: displayedSearchItems,
-                                      commentCounts:
-                                          ref
-                                              .watch(diaryCommentCountsProvider)
-                                              .value ??
-                                          const <String, int>{},
+                                      commentCounts: commentCounts,
                                       belowCardBuilder:
                                           (BuildContext context, diary) =>
                                               _commentHit(
@@ -325,12 +327,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                                       selectedDiaryIds: const <String>{},
                                       isSelectionMode: false,
                                       maxVisibleTags: diaryCardTagLimit,
-                                      cardStyle: ref.watch(
-                                        diaryCardStyleProvider,
-                                      ),
-                                      moodPalette: ref.watch(
-                                        diaryMoodPaletteProvider,
-                                      ),
+                                      cardStyle: cardStyle,
+                                      moodPalette: moodPalette,
                                       onCreate: () {},
                                       onOpenEditor: (diary, coverHero) =>
                                           unawaited(

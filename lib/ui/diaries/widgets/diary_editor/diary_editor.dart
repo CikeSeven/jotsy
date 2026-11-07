@@ -42,6 +42,7 @@ import 'diary_editor_styles.dart';
 import 'diary_editor_interaction_layer.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_inline_page.dart';
+import 'diary_scroll_page.dart';
 import '../diary_link_dialog.dart';
 
 /// 让页面滚动编辑器的虚拟列表（[DiaryEditor.scrollHandle]）：编辑器挂着时由
@@ -413,7 +414,8 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               }
             },
           )
-        : af.PageBlockComponentBuilder();
+        // 键盘升降逐帧改变视口高度时不重建可见的段落块（见该类）。
+        : DiaryScrollPageBuilder(state: controller.state, scroll: _scroll);
     final builders = buildDiaryEditorBlocks(
       context,
       controller: controller,

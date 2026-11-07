@@ -76,6 +76,7 @@ class DiariesListSection extends StatelessWidget {
     this.revealProgress,
     this.commentCounts = const <String, int>{},
     this.belowCardBuilder,
+    this.highlightTerms = const <String>[],
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -90,6 +91,11 @@ class DiariesListSection extends StatelessWidget {
   /// 表示这篇没有。附加内容与卡片一起进出场、一起左滑。
   final Widget? Function(BuildContext context, DiaryWithTags diary)?
   belowCardBuilder;
+
+  /// 搜索页的关键词（已经 `splitSearchTerms` 拆好）：卡片标题与摘要里的命中
+  /// 处高亮，命中在摘要开头之后时摘要从命中处前开窗。其余列表为空，卡片
+  /// 与改版前一致。
+  final List<String> highlightTerms;
 
   /// 列表布局模式：列表 or 瀑布流。
   final DiaryLayoutMode layoutMode;
@@ -338,6 +344,7 @@ class DiariesListSection extends StatelessWidget {
       enableCoverHero: enableCoverHero,
       opensLockedCapsulePage: opensLockedCapsulePage,
       commentCount: commentCounts[diaryId] ?? 0,
+      highlightTerms: highlightTerms,
       onTapIntercept: anchor == null
           ? null
           : (DiaryWithTags tapped) => handleDiaryModifierTap(

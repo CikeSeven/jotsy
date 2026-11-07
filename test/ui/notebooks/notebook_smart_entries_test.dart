@@ -186,6 +186,57 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('saving a search keeps every word and the filters', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(
+      const DiarySearchPage(initialKeyword: '樱花 京都'),
+      overrides: [
+        tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[])),
+        searchDiariesProvider.overrideWith(
+          (ref, query) => Stream.value(
+            PagedDiariesResult(
+              items: const <DiaryWithTags>[],
+              limit: query.limit,
+              hasMore: false,
+            ),
+          ),
+        ),
+      ],
+    );
+    await h.settleAll();
+    await tester.ensureVisible(find.text('心情'));
+    await h.settleAll();
+    await tester.tap(find.text('心情'));
+    await h.settleAll();
+    await tester.tap(find.text('😊').last);
+    await h.settleAll();
+    await tester.tap(find.text('完成'));
+    await h.settleAll();
+    // “含归档”不进规则：智能日记本没有这一口径。
+    await tester.ensureVisible(find.text('含归档'));
+    await h.settleAll();
+    await tester.tap(find.text('含归档'));
+    await h.settleAll();
+
+    await tester.tap(find.byTooltip('存为智能日记本'));
+    await h.settleAll();
+    expect(find.byType(NotebookEditorPage), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, '保存'));
+    await h.settleAll();
+    final row = (await h.shelf()).single;
+    expect(
+      NotebookRuleSet.decode(row.parsedPayload.rules).rules,
+      <NotebookRule>[
+        NotebookTextRule(field: NotebookTextField.keyword, text: '樱花'),
+        NotebookTextRule(field: NotebookTextField.keyword, text: '京都'),
+        NotebookMoodRule(emojis: <String>['😊']),
+      ],
+    );
+    await h.unmount();
+  });
+
   testWidgets('the search action hides without conditions', (tester) async {
     final h = await DiaryDraftsHarness.create(tester);
     await h.pump(

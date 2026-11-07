@@ -7,9 +7,18 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
+import 'package:node_diary/ui/diaries/providers/diary_search_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
+
+/// 搜索页的常用标签与结果数查询：不接真实数据库（drift 的流会留下计时器）。
+final _searchSideQueries = [
+  tagUsageCountsProvider.overrideWith(
+    (ref, scope) => Stream.value(const <TagUsageCount>[]),
+  ),
+  searchDiaryCountProvider.overrideWith((ref, query) => Stream.value(0)),
+];
 
 void main() {
   testWidgets('search field focuses only after the route transition', (
@@ -23,6 +32,7 @@ void main() {
         overrides: [
           settingsServiceProvider.overrideWith((ref) async => settings),
           tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[])),
+          ..._searchSideQueries,
           pagedDiariesProvider.overrideWith(
             (ref, query) => Stream.value(
               PagedDiariesResult(
@@ -65,6 +75,7 @@ void main() {
         overrides: [
           settingsServiceProvider.overrideWith((ref) async => settings),
           tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[tag])),
+          ..._searchSideQueries,
           searchDiariesProvider.overrideWith(
             (ref, query) => Stream.value(
               PagedDiariesResult(

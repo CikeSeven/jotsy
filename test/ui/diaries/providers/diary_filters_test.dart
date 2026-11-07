@@ -17,6 +17,8 @@ class _EmptyDatabase extends AppDatabase {
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
     bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
   }) => Stream<List<DiaryWithTags>>.value(const <DiaryWithTags>[]);
 }
 
@@ -47,15 +49,33 @@ void main() {
     );
     expect(withComments, isNot(page(DiaryListScope.all)));
     expect(withComments.timelineKey.matchComments, isTrue);
+  });
 
-    expect(
-      SearchDiaryQuery(keyword: 'k', scope: book),
-      SearchDiaryQuery(keyword: ' k ', scope: book),
+  test('search-only fields (archived, filter) take part in equality', () {
+    DiaryPageQuery query({
+      bool includeArchived = false,
+      DiaryScopePredicate? filter,
+    }) => DiaryPageQuery(
+      keyword: 'k',
+      requiredTagIds: const <int>[],
+      limit: 20,
+      sortMode: DiarySortMode.updatedDesc,
+      includeArchived: includeArchived,
+      filter: filter,
     );
+    const predicate = DiaryScopePredicate(sql: 'd.is_pinned = 1');
+    expect(query(), query());
+    expect(query(includeArchived: true), isNot(query()));
+    expect(query(filter: predicate), isNot(query()));
+    // 同样的谓词（值相等）命中同一个查询实例。
     expect(
-      SearchDiaryQuery(keyword: 'k', scope: book),
-      isNot(SearchDiaryQuery(keyword: 'k')),
+      query(filter: predicate),
+      query(filter: const DiaryScopePredicate(sql: 'd.is_pinned = 1')),
     );
+    final key = query(includeArchived: true, filter: predicate).timelineKey;
+    expect(key.limit, 0);
+    expect(key.includeArchived, isTrue);
+    expect(key.filter, predicate);
   });
 
   test('setTags filters non-positive ids and replaces selected tags', () {

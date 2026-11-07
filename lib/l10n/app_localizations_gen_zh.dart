@@ -13054,4 +13054,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appLockLoosenVerifyFailed => '验证未通过，设置没有改变';
+
+  @override
+  String get diarySearchRecentTitle => '最近搜索';
+
+  @override
+  String get diarySearchClearRecent => '清空最近搜索';
+
+  @override
+  String diarySearchRecentRemove(String query) {
+    return '删除搜索记录“$query”';
+  }
+
+  @override
+  String get diarySearchSuggestedTags => '常用标签';
+
+  @override
+  String get diarySearchEmptyTip => '用空格分隔多个词，找出同时包含它们的日记';
+
+  @override
+  String diarySearchResultCount(int count) {
+    return '共 $count 篇';
+  }
+
+  @override
+  String get diarySearchNoResults => '没有找到相关日记';
+
+  @override
+  String get diarySearchClearFilters => '清除筛选';
+
+  @override
+  String get diarySearchIncludeArchived => '含归档';
+
+  @override
+  String diarySearchRemoveFilter(String label) {
+    return '移除筛选 $label';
+  }
+
+  @override
+  String get diarySearchTagSheetTitle => '按标签搜索';
+
+  @override
+  String get diarySearchTagSheetHint => '只显示同时带有所选全部标签的日记';
+
+  @override
+  String get diarySearchSortTooltip => '结果排序';
+
+  @override
+  String get diarySearchSortUpdated => '最近更新';
+
+  @override
+  String get diarySearchSortNewest => '最新发表';
+
+  @override
+  String get diarySearchSortOldest => '最早发表';
 }

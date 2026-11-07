@@ -17,7 +17,8 @@ import '../viewmodels/notebook_rule_labels.dart';
 ///   智能日记本相同），面板二选一：智能（日期区间规则）或普通（保存后按
 ///   发表时间旧→新收进这些日记）；两种都预填同一条区间规则——编辑页里改选
 ///   类型时规则仍在，保存为普通时编辑页不写规则；
-/// - 搜索页：关键词 + 标签（全部都含）规则，名称取关键词或第一个标签。
+/// - 搜索页：关键词（每个词一条）+ 标签（全部都含）+ 搜索筛选的规则，名称取
+///   关键词、第一个标签或第一条筛选的摘要。
 ///
 /// 返回新建的日记本 id；取消或失败为 null（失败时提示）。
 
@@ -83,26 +84,40 @@ Future<String?> runSaveDateRangeAsNotebook(
   return notebookId;
 }
 
-/// 把搜索条件（[keyword] 与必须都带的 [tagNames]）存为智能日记本。两者都
-/// 为空时什么也不做。
+/// 把搜索条件存为智能日记本：[keyword] 按搜索的同一口径拆词，每个词一条
+/// “标题或正文包含”（只有一个词时与改版前相同）；[tagNames] 为“标签全部
+/// 都含”；[filterRules] 是搜索页的筛选（时间、心情、媒体、天气、地点），
+/// 原样接在后面。总数截到 [NotebookRuleSet.maxRules]。都为空时什么也不做。
 Future<String?> runSaveSearchAsSmartNotebook(
   BuildContext context, {
   required String keyword,
   required List<String> tagNames,
+  List<NotebookRule> filterRules = const <NotebookRule>[],
 }) async {
   final text = keyword.trim();
   final rules = <NotebookRule>[
-    if (text.isNotEmpty)
-      NotebookTextRule(field: NotebookTextField.keyword, text: text),
+    for (final term in splitSearchTerms(text))
+      NotebookTextRule(field: NotebookTextField.keyword, text: term),
     if (tagNames.isNotEmpty)
       NotebookTagsRule(mode: NotebookTagMatch.all, names: tagNames),
+    ...filterRules,
   ];
   if (rules.isEmpty) return null;
+  final String seed;
+  if (text.isNotEmpty) {
+    seed = text;
+  } else if (tagNames.isNotEmpty) {
+    seed = tagNames.first;
+  } else {
+    seed = notebookRuleSummary(
+      context.l10n,
+      filterRules.first,
+      now: DateTime.now(),
+    );
+  }
   // 名称框有长度上限，长关键词截到上限（按码点，不切开表情）。
   final name = String.fromCharCodes(
-    (text.isNotEmpty ? text : tagNames.first).runes.take(
-      NotebookEditorController.maxNameLength,
-    ),
+    seed.runes.take(NotebookEditorController.maxNameLength),
   );
   return Navigator.of(context).push(
     NotebookEditorPage.route(

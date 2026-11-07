@@ -14686,4 +14686,66 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appLockLoosenVerifyFailed =>
       'Verification failed. The setting wasn\'t changed.';
+
+  @override
+  String get diarySearchRecentTitle => 'Recent searches';
+
+  @override
+  String get diarySearchClearRecent => 'Clear recent searches';
+
+  @override
+  String diarySearchRecentRemove(String query) {
+    return 'Remove “$query” from recent searches';
+  }
+
+  @override
+  String get diarySearchSuggestedTags => 'Frequent tags';
+
+  @override
+  String get diarySearchEmptyTip =>
+      'Separate words with spaces to find entries containing all of them';
+
+  @override
+  String diarySearchResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diarySearchNoResults => 'No matching entries';
+
+  @override
+  String get diarySearchClearFilters => 'Clear filters';
+
+  @override
+  String get diarySearchIncludeArchived => 'Include archived';
+
+  @override
+  String diarySearchRemoveFilter(String label) {
+    return 'Remove filter $label';
+  }
+
+  @override
+  String get diarySearchTagSheetTitle => 'Search by tags';
+
+  @override
+  String get diarySearchTagSheetHint =>
+      'Shows entries that have all selected tags';
+
+  @override
+  String get diarySearchSortTooltip => 'Sort results';
+
+  @override
+  String get diarySearchSortUpdated => 'Recently updated';
+
+  @override
+  String get diarySearchSortNewest => 'Newest';
+
+  @override
+  String get diarySearchSortOldest => 'Oldest';
 }

@@ -95,7 +95,7 @@
 | 改动涉及 | 先读（`docs/rules/` 下） |
 |---|---|
 | 平台门控与桌面替代、宽窗口与双栏、键鼠快捷键与右键菜单 | `platform_desktop.md` |
-| 文字选区菜单（复制 / 粘贴 / 分享 / 其他应用的文字操作） | `ui_components.md` |
+| 文字选区菜单（复制 / 粘贴 / 分享 / 其他应用的文字操作）、软键盘升降时的重建 | `ui_components.md` |
 | 背景、玻璃材质、页面底色、提示条与小控件的玻璃主题 | `app_surface.md` |
 | 日记卡片样式、心情颜色、预览页样式、导航栏样式、样式编辑页 | `appearance_styles.md` |
 | 编辑器与正文：块文档格式、排版、格式面板、颜色、列表、表格、代码块、工具栏、视口与键盘 | `editor.md` |
@@ -131,6 +131,7 @@
 - 必须：内容少的操作（约 4 项以内、单行文字的动作）用 `ExpressiveMenuButton` / `ExpressiveMenuAnchor`（菜单项为 `ExpressiveMenuItem`，`lib/ui/widgets/expressive_menu/`）弹出菜单；项目多、需要说明文字、预览或分组时用底部面板（如预览页“更多”）。禁止在该目录之外使用 `PopupMenuButton`、`PopupMenuItem` / `PopupMenuEntry`、`showMenu` 或 SDK 的 `MenuAnchor`（`test/ui/widgets/expressive_menu_source_test.dart` 源码检查兜底）。菜单规格见 DESIGN.md §5.4。
 - 例外：桌面日记卡片的右键菜单（编辑、置顶、日记本、归档、删除，最多 5 项）经同一 `ExpressiveMenuAnchor` 的 `openAt` 在指针处打开（键盘为菜单键 / Shift+F10，在卡片中央），不受“约 4 项以内”与锚定位置限制；首页多选顶栏的“更多”菜单（置顶、设置标签、导出，在普通日记本里另有移出、移动到，最多 5 项单行动作）同样仍用弹出菜单。
 - 必须：文字选区菜单只经 `lib/ui/widgets/text_selection_menu/`：输入框一律传 `contextMenuBuilder: appTextContextMenuBuilder`，日记正文经 `AppTextSelectionMenu.adaptive`；禁止在该目录之外使用 `AdaptiveTextSelectionToolbar` / `DesktopTextSelectionToolbar` / `CupertinoTextSelectionToolbar` / `TextSelectionToolbar`（`text_selection_menu_source_test.dart` 兜底）。细则见 `docs/rules/ui_components.md`。
+- 必须：键盘升降时 viewInsets 与 body 高度逐帧变化，大组件不得跟着逐帧重建：只关心键盘在不在经 `KeyboardVisibility.of`，面板为键盘留白经 `KeyboardInsetPadding`，只按宽度构建的 `LayoutBuilder` 改用 `WidthLayoutBuilder`；禁止在页面 / 面板的 build 里直接读 `MediaQuery.viewInsetsOf`。细则见 `docs/rules/ui_components.md`。
 - 必须：用户可感知的耗时等待操作（如启动预热、分页首屏加载、远程请求等待）统一使用 `loading_indicator_m3e` 的加载效果，不再新增 `CircularProgressIndicator` 作为主加载表现；页面首屏 `loading` 分支使用 `DelayedLoadingIndicator`（300ms 内不出现），动作等待遮罩使用 `ActionLoadingOverlay`。
 - 必须：新增展示型图片（`Image.file/network/Image(image:)`）挂 `frameBuilder: expressiveImageFrameBuilder`，首次解码淡入、缓存命中直接显示；仅截图/导出用的静态图片例外。
 - 必须：打开大图统一经 `openImageViewer`；展示型图片解码一律经 `boundedImageProvider` 保持比例缩小（禁止新增只给一边的 `cacheWidth` / `cacheHeight`）；托管图片入库经 `HeifImageConverter.convertImported`（新增图片入库路径须经 `DiaryMediaStorageService` / `DiaryCoverStorageService` / `AppBackgroundStorageService` 之一）。看图页、长图、HEIF 修复、这天的照片与拍摄的细则见 `docs/rules/media.md`。

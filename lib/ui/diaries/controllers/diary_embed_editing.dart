@@ -1,119 +1,69 @@
 import 'dart:async';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
-import 'package:flutter/foundation.dart';
 
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
-import '../models/diary_thumbnail_rows.dart';
 import 'diary_toggle_state.dart';
 
-/// 文字块旁边的嵌入块（图片、视频、音频、附件、分隔线、日记链接卡片，即
-/// [kDiaryEmbedBlockTypes]）怎么删，文末是这类块时怎么接着往下写。
+/// 嵌入块（图片、视频、音频、附件、分隔线、日记链接卡片，即
+/// [kDiaryEmbedBlockTypes]）旁边的插入点、退格、Delete 与回车。
 ///
-/// 为什么要接手：上游的退格在段首找“前面最近的带文字的块”合并
+/// 插入点可以停在嵌入块上：选区折叠在块里，偏移 0 是块的左侧、1 是右侧
+/// （竖线画在画面边上，见 DiaryEmbedSelectable），与图文混排里插入点停在
+/// 图片旁边一样。点块旁的空白、退格 / Delete 越过文字行都会停到这里；输入法
+/// 照常连着（DiaryEmbedCaretInput），键盘照常弹出。没有字的块上不能写字：
+/// 一开始打字（含拼音组字）就在插入点那一侧补一个段落、插入点挪进去，字由
+/// 上游照常写进这一行（[openDiaryLineAtEmbedCaret]）——在此之前正文里不多出
+/// 任何空行。
+///
+/// 为什么要接手：上游把块上的插入点画成盖住整块、不连接输入法，点在块旁边
+/// 键盘不出来；上游的退格在段首找“前面最近的带文字的块”合并
 /// （`previousNodeWhere(delta != null)`），会越过中间的嵌入块——下一行的字
-/// 并进嵌入块上面那段，嵌入块看上去跑到了后面；下一行是最后一段时，它就
-/// 成了全文最后一块，后面再没有能放插入点的地方。Delete 同理，把嵌入块
-/// 后面的字拉到它前面。
+/// 并进嵌入块上面那段，嵌入块看上去跑到了后面。Delete 同理。
 ///
-/// 规则：先选中、再删除（硬键盘经 diary_embed_keys.dart 的快捷键，排在
-/// 上游“段首转正文”之后、上游退格 / Delete 之前；软键盘经同一文件的输入法
+/// 规则（硬键盘经 diary_embed_keys.dart 的快捷键，排在上游“段首转正文”与
+/// 表格规则之后、上游退格 / Delete / 回车之前；软键盘经同一文件的输入法
 /// 拦截器）：
-/// - 退格，插入点在文字块开头、显示上紧挨着的上一块是嵌入块：
-///   - 嵌入块已选中 → 删掉它，本行接到它原来的位置，插入点不动；
-///   - 本行是空段落（没有字、没有子块）且后面紧跟着文字块 → 删掉这个空行，
-///     插入点到下一行开头（仍在嵌入块正下方），并选中嵌入块；
-///   - 其余（本行有字，或空行后面没有能放插入点的文字块）→ 只选中嵌入块，
-///     本行不动；
-/// - Delete（桌面），插入点在文字块末尾、紧接着的下一块是嵌入块：已选中 →
-///   删掉它；否则选中它。插入点都不动；
-/// - 删除是一个事务、一步撤销；选中不改正文、不进撤销栈。标题、列表等在
-///   段首退格仍先转为正文（上游 `convertToParagraphCommand`），之后才轮到
-///   这里；表格格子另有规则（diary_table_shortcuts.dart），格子不是嵌入块。
-///
-/// “选中”不把插入点挪到嵌入块上（[DiaryArmedEmbed]）：嵌入块没有文字，
-/// 上游不会为它更新输入法的编辑值，拦截器处理完按键后又把输入法退回按键前
-/// 的值——插入点停在块上时打字（尤其拼音组字）会与输入法对不上。插入点
-/// 留在原来那行，输入法始终连着真实的文字；嵌入块只是画成选中的样子。
+/// - 退格，插入点在文字块开头、显示上紧挨着的上一块是嵌入块：本行是空段落
+///   （没有字、没有子块）→ 删掉这一行，插入点到嵌入块右侧；否则插入点只是
+///   挪到嵌入块右侧，本行不动（块里没有字可以并进去）；
+/// - 退格，插入点在嵌入块右侧 → 删掉这一块，插入点退到前一个位置（上一块
+///   的末尾：文字末尾或嵌入块右侧；前面没有时到后一块开头；全文删空时补一个
+///   空段落）；在嵌入块左侧 → 同段首退格：上一块是空段落就删掉它，否则插入
+///   点挪到上一块末尾；
+/// - Delete（桌面）左右对称：文字块末尾、下一块是嵌入块 → 空段落删掉、插入
+///   点到嵌入块左侧，否则只挪过去；嵌入块左侧 → 删掉这一块；右侧 → 下一块
+///   是空段落就删掉它，否则挪到下一块开头；
+/// - 回车，插入点在嵌入块右侧 → 后面补一个空段落、插入点进去；左侧 → 前面
+///   补一个空段落、插入点留在块左侧（同文字行首回车）；
+/// - 表格同理（表格外的那一行）：表格下一行开头退格，空段落删掉、插入点进
+///   最后一格最后一段的末尾，否则只挪进去；表格上一行末尾 Delete 对称，
+///   进第一格开头——与表格里的 ← → 一致（diary_table_shortcuts.dart）。
+///   原先这里交给上游，上游什么都不做，插入点卡在表格下面的空行里；
+/// - 每次删除、补行都是一个事务、一步撤销（补行连同随后打的字合成一步）。
+///   标题、列表等在段首退格仍先转为正文（上游 `convertToParagraphCommand`），
+///   之后才轮到这里；格子里的按键另有规则（diary_table_shortcuts.dart）。
 ///
 /// “紧挨着”按显示顺序：上一块是上一兄弟里最后显示的块（不进收起的折叠块
 /// 与表格），没有上一兄弟时是父块；下一块是第一个子块（同样不进收起的
 /// 折叠块），没有子块时是自己或最近祖先的下一兄弟。
 ///
-/// 文末：[appendDiaryTrailingLine] 在正文最后显示的块不能打字（嵌入块或
-/// 表格）时补一个空段落，供点按正文下方空白处时把插入点放进去（见
-/// DiaryEditorKeyboardReopen）。插入媒体本就总在后面补空段落
-/// （insertDiaryEditorNodes），但旧数据、拖动排序与导入的正文仍可能以
-/// 嵌入块结尾。
-///
-/// 块旁的空白：[placeDiaryCaretAfterEmbed] 在点按落在嵌入块的空白处（图片
-/// 右侧、上下留白、分隔线）时把插入点放到它下面一行，同样由
-/// DiaryEditorKeyboardReopen 在点按后调用。
-
-/// 退格 / Delete 选中的嵌入块：插入点留在旁边那行，再按一次才删掉它。
-///
-/// 按编辑状态各一份（[of]，用 Expando 挂在 [af.EditorState] 上，快捷键与
-/// 输入法拦截器只拿得到它）。只在内存里，从不写进正文。选中期间监听选区
-/// 与事务：选区变成别处（点按、方向键、打字后插入点后移、失焦清空）或正文
-/// 有任何改动（打字、撤销、粘贴……）即取消，避免隔了别的操作再按退格时
-/// 删掉一个早先选中的块。嵌入块据 [node] 画出选中的样子（见
-/// diary_editor_blocks.dart）。
-class DiaryArmedEmbed {
-  DiaryArmedEmbed._(this._state);
-
-  static final Expando<DiaryArmedEmbed> _all = Expando('diaryArmedEmbed');
-
-  /// [state] 的选中状态；首次调用时创建。
-  static DiaryArmedEmbed of(af.EditorState state) =>
-      _all[state] ??= DiaryArmedEmbed._(state);
-
-  final af.EditorState _state;
-
-  /// 当前选中的嵌入块；没有时为 null。
-  final ValueNotifier<af.Node?> node = ValueNotifier(null);
-
-  af.Selection? _selection;
-  StreamSubscription<af.EditorTransactionValue>? _edits;
-
-  /// 选中 [embed]，以当前选区为准：之后选区变了或正文改了即取消。
-  void arm(af.Node embed) {
-    disarm();
-    if (_state.isDisposed) return;
-    _selection = _state.selection;
-    _state.selectionNotifier.addListener(_onSelection);
-    // 事务流是同步广播：改动应用的同时就取消，先于任何后续按键。
-    _edits = _state.transactionStream.listen((event) {
-      if (event.$1 == af.TransactionTime.after &&
-          event.$2.operations.isNotEmpty) {
-        disarm();
-      }
-    });
-    node.value = embed;
-  }
-
-  /// 取消选中；没有选中时什么都不做。
-  void disarm() {
-    if (node.value == null && _edits == null) return;
-    if (!_state.isDisposed) {
-      _state.selectionNotifier.removeListener(_onSelection);
-    }
-    unawaited(_edits?.cancel());
-    _edits = null;
-    _selection = null;
-    node.value = null;
-  }
-
-  /// [embed] 是否仍是选中的那块（选中后没有别的操作）。
-  bool holds(af.Node embed) => identical(node.value, embed);
-
-  void _onSelection() {
-    // 选区通知在值相同时也会触发（上游重设同一选区），只看值有没有变。
-    if (_state.selection != _selection) disarm();
-  }
-}
+/// 文末是表格时：[appendDiaryTrailingLine] 补一个空段落，供点按正文下方
+/// 空白处时把插入点放进去（见 DiaryEditorKeyboardReopen）。嵌入块不需要：
+/// 点在它下方，插入点停到它右侧。
 
 bool _isEmbed(af.Node? node) =>
     node != null && kDiaryEmbedBlockTypes.contains(node.type);
+
+/// 越不过去、只能进到里面的块：表格（插入点进最后一格末尾 / 第一格开头，
+/// 同表格里的 ← →，见 diary_table_shortcuts.dart）。
+bool _isTable(af.Node? node) => node != null && node.type == kDiaryBlockTable;
+
+/// 空段落：没有字、没有子块。
+bool _blankLine(af.Node node) =>
+    node.type == kDiaryBlockParagraph &&
+    (node.delta?.isEmpty ?? false) &&
+    node.children.isEmpty;
 
 /// 显示时能往里走的块：有子块、不是收起的折叠块、不是表格（表格整个是
 /// 一块，格子里的段落不算“紧挨着”表格外的块）。
@@ -147,6 +97,46 @@ af.Node? _shownAfter(af.Node node) {
   return null;
 }
 
+af.Selection _caret(af.Path path, [int offset = 0]) =>
+    af.Selection.collapsed(af.Position(path: path, offset: offset));
+
+/// 插入点停在 [node] 末尾时的位置：文字块为文字末尾，嵌入块为右侧，表格
+/// 为最后一格最后一段的末尾；都不是（或表格是空的）时为 null。
+af.Selection? _endOf(af.Node node) {
+  final delta = node.delta;
+  if (delta != null) return _caret(node.path, delta.length);
+  if (_isEmbed(node)) return _caret(node.path, 1);
+  if (!_isTable(node) || node.children.isEmpty) return null;
+  final cell = node.children.last;
+  if (cell.children.isEmpty) return null;
+  final last = cell.children.last;
+  return last.delta == null ? null : _caret(last.path, last.delta!.length);
+}
+
+/// 插入点停在 [node] 开头时的位置路径：文字块与嵌入块为它自己（偏移 0），
+/// 表格为第一格第一段；都不是（或表格是空的）时为 null。
+af.Path? _startPathOf(af.Node node) {
+  if (node.delta != null || _isEmbed(node)) return node.path;
+  if (!_isTable(node) || node.children.isEmpty) return null;
+  final cell = node.children.first;
+  if (cell.children.isEmpty || cell.children.first.delta == null) return null;
+  return cell.children.first.path;
+}
+
+/// 插入点停在其上的嵌入块：可编辑、折叠插入点、行内选区、落在嵌入块里；
+/// 不是时为 null。
+af.Node? diaryEmbedAtCaret(af.EditorState state) {
+  final selection = state.selection;
+  if (!state.editable ||
+      selection == null ||
+      !selection.isCollapsed ||
+      state.selectionType == af.SelectionType.block) {
+    return null;
+  }
+  final node = state.getNodeAtPath(selection.end.path);
+  return _isEmbed(node) ? node : null;
+}
+
 /// 硬键盘与软键盘共用的前提：可编辑、折叠插入点、行内选区、落在文字块里。
 af.Node? _caretTextNode(af.EditorState state) {
   final selection = state.selection;
@@ -160,70 +150,170 @@ af.Node? _caretTextNode(af.EditorState state) {
   return node?.delta == null ? null : node;
 }
 
-/// 删掉 [embed]，插入点放到 [caret]。一步撤销；选中随正文改动取消。
-void _deleteEmbed(af.EditorState state, af.Node embed, af.Position caret) {
-  final transaction = state.transaction
-    ..deleteNode(embed)
-    ..afterSelection = af.Selection.collapsed(caret);
-  unawaited(state.apply(transaction, skipHistoryDebounce: true));
+void _apply(af.EditorState state, af.Transaction transaction) =>
+    unawaited(state.apply(transaction, skipHistoryDebounce: true));
+
+/// 只挪插入点，不改正文、不进撤销栈。
+void _moveCaret(af.EditorState state, af.Selection selection) =>
+    unawaited(state.updateSelectionWithReason(selection));
+
+/// 删掉空行 [line]，插入点设为 [after]（按删除后的正文算）。
+void _deleteLine(af.EditorState state, af.Node line, af.Selection after) {
+  _apply(
+    state,
+    state.transaction
+      ..deleteNode(line)
+      ..afterSelection = after,
+  );
 }
 
-/// 插入点在文字块开头、上一块是嵌入块时按退格规则选中或删除（见文件说明）；
-/// 不适用时返回 false、什么都不做。
+/// 删掉嵌入块 [embed]，插入点退到旁边：[backward]（退格）先找前一块的末尾、
+/// 再找后一块的开头；否则（Delete）反过来。两边都没有块（全文删空）时在
+/// 原处补一个空段落。
+void _deleteEmbed(
+  af.EditorState state,
+  af.Node embed, {
+  required bool backward,
+}) {
+  final path = embed.path;
+  final before = _shownBefore(embed);
+  final after = _shownAfter(embed);
+  af.Selection? previousEnd() => before == null ? null : _endOf(before);
+  af.Selection? nextStart() {
+    final start = after == null ? null : _startPathOf(after);
+    return start == null ? null : _caret(af.transformPath(path, start, -1));
+  }
+
+  final caret = backward
+      ? previousEnd() ?? nextStart()
+      : nextStart() ?? previousEnd();
+  final transaction = state.transaction..deleteNode(embed);
+  if (caret == null) transaction.insertNode(path, af.paragraphNode());
+  transaction.afterSelection = caret ?? _caret(path);
+  _apply(state, transaction);
+}
+
+/// 退格：插入点在文字块开头而上一块是嵌入块，或插入点停在嵌入块上时按
+/// 文件说明的规则处理，返回 true；不适用时返回 false、什么都不做（交给
+/// 上游）。
 bool backspaceDiaryEmbed(af.EditorState state) {
-  final node = _caretTextNode(state);
-  if (node == null || state.selection!.end.offset != 0) return false;
-  final embed = _shownBefore(node);
-  if (!_isEmbed(embed)) return false;
-  final armed = DiaryArmedEmbed.of(state);
-  if (armed.holds(embed!)) {
-    // 嵌入块从不挂子块：它要么是本行的上一兄弟（删掉后本行前移一位），
-    // 要么在上一兄弟的子树里（本行的路径不变）。
-    final sibling = embed.parent == node.parent;
-    _deleteEmbed(
-      state,
-      embed,
-      af.Position(path: sibling ? node.path.previous : node.path),
-    );
+  final embed = diaryEmbedAtCaret(state);
+  if (embed != null) {
+    if (state.selection!.end.offset > 0) {
+      _deleteEmbed(state, embed, backward: true);
+      return true;
+    }
+    // 左侧：同段首退格。文首时什么都不做（也不交给上游：上游会把块当
+    // 文字处理）。
+    final before = _shownBefore(embed);
+    if (before == null) return true;
+    if (_blankLine(before)) {
+      // 上一块是空段落时它就是上一兄弟（父块总有子块，不是空段落）：删掉
+      // 它，块前移一位，插入点仍在块左侧。
+      _deleteLine(
+        state,
+        before,
+        _caret(af.transformPath(before.path, embed.path, -1)),
+      );
+    } else if (_endOf(before) case final end?) {
+      _moveCaret(state, end);
+    }
     return true;
   }
-  if (node.type == kDiaryBlockParagraph &&
-      node.delta!.isEmpty &&
-      node.children.isEmpty &&
-      node.next?.delta != null) {
-    // 删掉空行：下一行接到这里，插入点到它开头。事务同步应用完（事务流
-    // 也已同步通知过），再选中嵌入块。
-    final transaction = state.transaction
-      ..deleteNode(node)
-      ..afterSelection = af.Selection.collapsed(af.Position(path: node.path));
-    unawaited(state.apply(transaction, skipHistoryDebounce: true));
+  final node = _caretTextNode(state);
+  if (node == null || state.selection!.end.offset != 0) return false;
+  final before = _shownBefore(node);
+  if (before == null || !(_isEmbed(before) || _isTable(before))) return false;
+  final end = _endOf(before);
+  if (end == null) return false;
+  // 上一块在本行之前（上一兄弟或它的子树里），删掉本行不改变它的路径。
+  if (_blankLine(node)) {
+    _deleteLine(state, node, end);
+  } else {
+    _moveCaret(state, end);
   }
-  armed.arm(embed);
   return true;
 }
 
-/// 插入点在文字块末尾、下一块是嵌入块时按 Delete 规则选中或删除（见文件
-/// 说明）；不适用时返回 false、什么都不做。
+/// Delete：插入点在文字块末尾而下一块是嵌入块，或插入点停在嵌入块上时按
+/// 文件说明的规则处理，返回 true；不适用时返回 false、什么都不做。
 bool deleteForwardDiaryEmbed(af.EditorState state) {
+  final embed = diaryEmbedAtCaret(state);
+  if (embed != null) {
+    if (state.selection!.end.offset == 0) {
+      _deleteEmbed(state, embed, backward: false);
+      return true;
+    }
+    final after = _shownAfter(embed);
+    if (after == null) return true;
+    if (_blankLine(after)) {
+      // 下一块在块之后，删掉它不改变块的路径。
+      _deleteLine(state, after, state.selection!);
+    } else if (_startPathOf(after) case final start?) {
+      _moveCaret(state, _caret(start));
+    }
+    return true;
+  }
   final node = _caretTextNode(state);
   if (node == null) return false;
-  final selection = state.selection!;
-  if (selection.end.offset != node.delta!.length) return false;
-  final embed = _shownAfter(node);
-  if (!_isEmbed(embed)) return false;
-  final armed = DiaryArmedEmbed.of(state);
-  if (armed.holds(embed!)) {
-    // 嵌入块在本行之后（子块或后面的块），删掉它不改变本行的路径。
-    _deleteEmbed(state, embed, selection.end);
+  if (state.selection!.end.offset != node.delta!.length) return false;
+  final after = _shownAfter(node);
+  if (after == null || !(_isEmbed(after) || _isTable(after))) return false;
+  final start = _startPathOf(after);
+  if (start == null) return false;
+  if (_blankLine(node)) {
+    _deleteLine(state, node, _caret(af.transformPath(node.path, start, -1)));
   } else {
-    armed.arm(embed);
+    _moveCaret(state, _caret(start));
   }
   return true;
 }
 
-/// 正文最后显示的块不能打字（嵌入块或表格；收起的折叠块不往里看）时，在
-/// 末尾补一个空段落、插入点放进去，返回新的插入点；不需要时返回 null、
-/// 什么都不做。一步撤销。
+/// 回车，插入点停在嵌入块上：右侧 → 后面补一个空段落、插入点进去；左侧 →
+/// 前面补一个空段落、插入点留在块左侧。不在嵌入块上时返回 false。
+bool insertDiaryLineAtEmbed(af.EditorState state) {
+  final embed = diaryEmbedAtCaret(state);
+  if (embed == null) return false;
+  final path = embed.path;
+  final right = state.selection!.end.offset > 0;
+  _apply(
+    state,
+    state.transaction
+      ..insertNode(right ? path.next : path, af.paragraphNode())
+      // 两种情形都落在 path.next：右侧是新段落的开头，左侧是被挤下去一位的
+      // 块的左侧。
+      ..afterSelection = _caret(path.next),
+  );
+  return true;
+}
+
+/// 插入点停在嵌入块上时开始打字：在插入点那一侧补一个空段落（右侧补在
+/// 后面、左侧补在前面），插入点放进去，返回 true；不在嵌入块上时返回
+/// false。
+///
+/// 由输入法拦截器在上游写字之前调用：补行的选区更新不让上游重连输入法
+/// （[af.selectionExtraInfoDoNotAttachTextService]），随后上游把这次输入
+/// （含组字中的拼音）照常写进新的一行——输入法那边本就是空行的编辑值，前后
+/// 对得上，组字不受打扰。补行与随后打的字合成一步撤销。
+bool openDiaryLineAtEmbedCaret(af.EditorState state) {
+  final embed = diaryEmbedAtCaret(state);
+  if (embed == null) return false;
+  final path = state.selection!.end.offset > 0 ? embed.path.next : embed.path;
+  final undo = state.undoManager.undoStack;
+  // 不并进之前还在合并的打字：补行从这里单独起一步。
+  if (undo.isNonEmpty) undo.last.seal();
+  final transaction = state.transaction
+    ..insertNode(path, af.paragraphNode())
+    ..afterSelection = _caret(path)
+    ..customSelectionType = af.SelectionType.inline
+    ..selectionExtraInfo = {af.selectionExtraInfoDoNotAttachTextService: true};
+  unawaited(state.apply(transaction));
+  return true;
+}
+
+/// 正文最后显示的块是表格（收起的折叠块不往里看）时，在末尾补一个空段落、
+/// 插入点放进去，返回新的插入点；不需要时返回 null、什么都不做。一步撤销。
+/// 文末是嵌入块时不补：插入点停在它右侧即可。
 ///
 /// 选区以点按（[af.SelectionUpdateReason.uiEvent]）的名义更新：上游键盘
 /// 服务据此请求正文焦点并连接输入法，与点在文字上一样。
@@ -234,59 +324,17 @@ af.Selection? appendDiaryTrailingLine(af.EditorState state) {
   while (_showsChildren(last)) {
     last = last.children.last;
   }
-  // 不往表格里走，表格本身没有文字：也算不能打字（格子里写不到表格下面）。
-  if (last.delta != null) return null;
-  return _insertLineAt(state, root.children.last.path.next);
-}
-
-/// 点按落在嵌入块 [embed] 的空白处时，把插入点放到它下面一行，返回新的
-/// 插入点；只读或 [embed] 不是嵌入块时返回 null、什么都不做。
-///
-/// 为什么：上游把点在嵌入块旁边的点按解释成把光标“盖”在块上
-/// （`DiaryEmbedSelectable`），块里没有文字，输入法不连接——键盘不出来，
-/// 打字也没有去处，插入点像是卡在了图片上。点块旁的空白，用户要的是在块
-/// 后面接着写，与图文混排的编辑器里点在图片右侧一样。
-///
-/// - 紧接着的下一块是空的文字块（没有字、没有子块）→ 插入点放进去，不改
-///   正文；
-/// - 否则在块后面补一个空段落、插入点放进去（一步撤销）。下一块有字时也
-///   补：插入点停在图片和下面那段字之间，接着写的字紧跟在图片后面，不会
-///   写到下一段开头。反复点同一块旁边只会补出一行（第二次就是空行了）；
-/// - 并排的小图按整排算（[diaryThumbnailRowOf]），补在这一排最后一张后面，
-///   不会把一排拆开。
-///
-/// 选区以点按的名义更新（[af.SelectionUpdateReason.uiEvent]），上游据此请求
-/// 焦点并连接输入法，与点在文字上一样。
-af.Selection? placeDiaryCaretAfterEmbed(af.EditorState state, af.Node embed) {
-  if (!state.editable || !_isEmbed(embed)) return null;
-  var anchor = embed;
-  final row = diaryThumbnailRowOf(embed);
-  if (row != null) anchor = embed.parent!.children[row.end - 1];
-  final next = anchor.next;
-  if (next != null &&
-      next.delta != null &&
-      next.delta!.isEmpty &&
-      next.children.isEmpty) {
-    final selection = af.Selection.collapsed(af.Position(path: next.path));
-    unawaited(
-      state.updateSelectionWithReason(
-        selection,
-        reason: af.SelectionUpdateReason.uiEvent,
-      ),
-    );
-    return selection;
-  }
-  return _insertLineAt(state, anchor.path.next);
-}
-
-/// 在 [path] 插入一个空段落，插入点放进去（点按的名义，一步撤销）。
-af.Selection _insertLineAt(af.EditorState state, af.Path path) {
-  final selection = af.Selection.collapsed(af.Position(path: path));
-  final transaction = state.transaction
-    ..insertNode(path, af.paragraphNode())
-    ..afterSelection = selection
-    ..reason = af.SelectionUpdateReason.uiEvent
-    ..customSelectionType = af.SelectionType.inline;
-  unawaited(state.apply(transaction, skipHistoryDebounce: true));
+  // 不往表格里走，表格本身没有文字（格子里写不到表格下面）。
+  if (last.type != kDiaryBlockTable) return null;
+  final path = root.children.last.path.next;
+  final selection = _caret(path);
+  _apply(
+    state,
+    state.transaction
+      ..insertNode(path, af.paragraphNode())
+      ..afterSelection = selection
+      ..reason = af.SelectionUpdateReason.uiEvent
+      ..customSelectionType = af.SelectionType.inline,
+  );
   return selection;
 }

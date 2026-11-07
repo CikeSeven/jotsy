@@ -114,12 +114,15 @@ void main() {
         offsets.add(position.pixels);
       }
       expect(offsets, everyElement(settled));
-      // 停住时块铺满可见区域：顶边对齐可见区域顶端，不是只露出一截。
+      // 停住时画面铺满可见区域：顶边对齐可见区域顶端，不是只露出一截。块上
+      // 的插入点与画面等高（DiaryEmbedSelectable），揭示的是画面而非整块。
       final viewportTop = tester.getTopLeft(find.byType(af.AppFlowyEditor)).dy;
-      final block = controller.document.nodeAtPath(imagePath)!.rect;
-      expect(block.top, moreOrLessEquals(viewportTop, epsilon: 1));
+      expect(
+        tester.getRect(fold).top,
+        moreOrLessEquals(viewportTop, epsilon: 1),
+      );
 
-      // 光标从图片下方往上移回图片：同样停住，块底边对齐可见区域底端。
+      // 光标从图片下方往上移回图片：同样停住，画面底边对齐可见区域底端。
       controller.select(
         af.Selection.collapsed(af.Position(path: imagePath.next)),
       );
@@ -144,7 +147,7 @@ void main() {
       final visibleBottom =
           tester.getBottomLeft(find.byType(af.AppFlowyEditor)).dy - 80;
       expect(
-        controller.document.nodeAtPath(imagePath)!.rect.bottom,
+        tester.getRect(fold).bottom,
         moreOrLessEquals(visibleBottom, epsilon: 1),
       );
 

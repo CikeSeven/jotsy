@@ -8,8 +8,8 @@ import '../../controllers/diary_block_language_tracker.dart';
 import '../../models/diary_toolbar_preferences.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
-import 'diary_armed_embed_frame.dart';
 import 'diary_code_block_surface.dart';
+import 'diary_divider_block.dart';
 import 'diary_editor_styles.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_media_block.dart';
@@ -134,7 +134,8 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
       ),
     ),
     // 独占一行的 1dp 细线，上下各留 12dp（DESIGN §3.2）。
-    'divider': af.DividerBlockComponentBuilder(
+    'divider': DiaryDividerBlockBuilder(
+      controller: controller,
       configuration: text.copyWith(padding: (_) => EdgeInsets.zero),
       lineColor: colors.outlineVariant,
       height: 24,
@@ -157,10 +158,6 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
     for (final entry in builders.entries)
       entry.key: entry.key == 'code'
           ? _CodeBuilder(entry.value, code, tracker)
-          // 退格 / Delete 先选中嵌入块、再按一次才删（diary_embed_editing.dart）；
-          // 只读正文从不选中，不必包。
-          : kDiaryEmbedBlockTypes.contains(entry.key) && !controller.readOnly
-          ? DiaryArmedEmbedBuilder(entry.value, controller.state)
           : entry.value,
   };
 }

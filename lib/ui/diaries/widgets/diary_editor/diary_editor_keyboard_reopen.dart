@@ -4,24 +4,19 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../../core/services/app_platform.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_embed_editing.dart';
 import 'diary_editor_trailing_region.dart';
+import 'diary_embed_caret_input.dart';
 import 'diary_embed_selectable.dart';
 
 /// 点按正文之后，让插入点与键盘出现在该出现的地方。三种情形：
 ///
-/// 1. 点正文最后一块下方的空白处，而最后显示的块不能打字（图片、视频、
-///    音频、附件、分隔线、日记链接卡片、表格）：在末尾补一个空段落、插入点
-///    放进去，键盘随之弹出（[appendDiaryTrailingLine]）。嵌入块没有文字
-///    位置，上游点到它下方时只把光标“盖”在它上面、不连接输入法；图片、
-///    音频与附件外面还有 DiaryPlaybackInteractionGuard（点按期间不让正文
-///    拿焦点，点图片看大图、播放录音时不弹键盘）。文末是这类块时就没有
-///    地方能放出插入点：键盘不出来，既删不掉它也接不着往下写。不改那层
-///    防护（点块本身仍不弹键盘），只给块下方的空白一个可写的去处；不点就
-///    不改正文。手机与桌面都生效（桌面同样没有插入点可写）。
+/// 1. 点正文最后一块下方的空白处，而最后显示的块是表格：在末尾补一个空
+///    段落、插入点放进去，键盘随之弹出（[appendDiaryTrailingLine]）——表格
+///    下面没有能停插入点的地方，否则接不着往下写。最后是嵌入块时不补：上游
+///    把插入点停到它右侧，按情形 3 弹出键盘。手机与桌面都生效。
 ///
 /// 2. 收起软键盘后，点回正文时重新弹出键盘。上游 AppFlowy 只在“编辑值
 ///    变了”时让输入法 show：编辑值是插入点所在段落的文字加偏移，
@@ -36,16 +31,20 @@ import 'diary_embed_selectable.dart';
 ///    先断开再连接。
 ///
 /// 3. 点在嵌入块旁的空白处（图片右侧、并排小图之间与右侧、块的上下留白、
-///    分隔线）：上游把光标盖在块上、不连接输入法，插入点就像卡在了图片
-///    上，键盘也不出来。改把插入点放到块下面一行（下一块是空行就放进去，
-///    否则补一行，见 `placeDiaryCaretAfterEmbed`），键盘随之弹出。点在块的
-///    内容上（[DiaryEmbedContent]：看图、播放、打开卡片）不动它。手机与桌面
-///    都生效（桌面同样没有插入点可写）。
+///    分隔线、最后一块下方）：插入点停在块的左侧或右侧（DiaryEmbedSelectable），
+///    上游却不为没有文字的块连接输入法，这里连上（[DiaryEmbedCaretInput]），
+///    键盘照常弹出。点在块的内容上（[DiaryEmbedContent]：看图、播放、打开
+///    卡片）不连：那是在用内容，DiaryPlaybackInteractionGuard 随后把插入点
+///    还原到点之前的位置。手机与桌面都生效（桌面打字同样经输入法）。
 ///
 /// 只观察指针（[Listener] 不参与手势竞技场，上游的点按、长按选字、拖动把手
 /// 与外层滚动都不受影响）：一次点按（未越过触摸容差、未到长按时长、期间
 /// 没有第二根手指）抬起后，等这一轮指针分发结束——上游在竞技场清场时才处理
 /// 点按——再按上面的顺序检查。只读正文没有插入点，整个跳过。
+///
+/// 不是点按把插入点停到嵌入块上时（退格 / Delete 越过文字行、方向键、撤销、
+/// 插入媒体），同样连上输入法：监听选区，手指都抬起、正文有焦点时连接；
+/// 带“不连接输入法”标记的选区（DiaryPlaybackInteractionGuard 的还原）不连。
 class DiaryEditorKeyboardReopen extends StatefulWidget {
   const DiaryEditorKeyboardReopen({
     super.key,
@@ -63,6 +62,57 @@ class DiaryEditorKeyboardReopen extends StatefulWidget {
 
 class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   int? _pointer;
+
+  /// 正文上按着的手指数（不论是不是点按）；按着时选区的变化交给点按处理。
+  int _pointersDown = 0;
+
+  /// 点按抬起后、[_afterTap] 跑完之前：上游这时才处理点按、改选区。
+  bool _tapPending = false;
+
+  late af.EditorState _state = widget.controller.state;
+
+  @override
+  void initState() {
+    super.initState();
+    _state.selectionNotifier.addListener(_onSelection);
+  }
+
+  @override
+  void didUpdateWidget(DiaryEditorKeyboardReopen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final state = widget.controller.state;
+    if (!identical(state, _state)) {
+      if (!_state.isDisposed) {
+        _state.selectionNotifier.removeListener(_onSelection);
+      }
+      _state = state;
+      _state.selectionNotifier.addListener(_onSelection);
+    }
+  }
+
+  /// 不是点按把插入点停到嵌入块上时连接输入法（见类说明）。
+  void _onSelection() {
+    if (_pointersDown > 0 || _tapPending || !_active) return;
+    final state = _state;
+    if (diaryEmbedAtCaret(state) == null) return;
+    if (state.selectionExtraInfo?[af
+            .selectionExtraInfoDoNotAttachTextService] ==
+        true) {
+      return;
+    }
+    // 等这次选区通知的其余监听（上游键盘服务）跑完再连。
+    scheduleMicrotask(() {
+      if (!mounted || !_active || diaryEmbedAtCaret(state) == null) return;
+      if (!_editorFocused(state)) return;
+      DiaryEmbedCaretInput.attach(state);
+    });
+  }
+
+  bool _editorFocused(af.EditorState state) =>
+      primaryFocus?.context
+          ?.findAncestorWidgetOfExactType<af.AppFlowyEditor>()
+          ?.editorState ==
+      state;
   Offset _downPosition = Offset.zero;
   af.Selection? _downSelection;
 
@@ -77,6 +127,7 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
       !widget.controller.isDisposed && !widget.controller.readOnly;
 
   void _onDown(PointerDownEvent event) {
+    _pointersDown++;
     if (_pointer != null) {
       // 双指（缩放、两指滚动）不是点按，整次手势都不算。
       _reset();
@@ -97,12 +148,17 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   }
 
   void _onUp(PointerUpEvent event) {
+    _pointersDown = (_pointersDown - 1).clamp(0, 1 << 20);
     if (event.pointer != _pointer) return;
     final before = _downSelection;
     final beforeValue = _downValue;
     final position = event.position;
     _reset();
-    scheduleMicrotask(() => _afterTap(before, beforeValue, position));
+    _tapPending = true;
+    scheduleMicrotask(() {
+      _tapPending = false;
+      _afterTap(before, beforeValue, position);
+    });
   }
 
   void _afterTap(
@@ -112,7 +168,7 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   ) {
     if (!mounted || !_active) return;
     if (_appendLineBelow(position)) return;
-    if (_moveOffEmbed(position)) return;
+    if (_attachOnEmbed(position)) return;
     if (before == null || !before.isCollapsed || !AppPlatform.isMobile) return;
     _reopenIfUnchanged(beforeValue);
   }
@@ -148,37 +204,23 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
     return true;
   }
 
-  /// 情形 3：点按后光标盖在嵌入块上，而点的是块旁的空白：插入点挪到块
-  /// 下面一行并弹出键盘。
-  ///
-  /// “盖在块上”两种形态：手机选区服务点按后是块末尾的折叠插入点，桌面
-  /// 选区服务是整块选中（块的开头到末尾）。都只落在这一块里。
-  bool _moveOffEmbed(Offset position) {
+  /// 情形 3：点按后插入点停在嵌入块上，点的不是块的内容：连接输入法。
+  bool _attachOnEmbed(Offset position) {
     final state = widget.controller.state;
-    final selection = state.selection;
-    if (selection == null || !selection.start.path.equals(selection.end.path)) {
-      return false;
-    }
-    final node = state.getNodeAtPath(selection.end.path);
-    if (node == null || !kDiaryEmbedBlockTypes.contains(node.type)) {
-      return false;
-    }
-    final box = node.renderBox;
+    final embed = diaryEmbedAtCaret(state);
+    if (embed == null) return false;
+    final box = embed.renderBox;
     if (box == null || !box.attached || !box.hasSize) return false;
-    // 只认落在这块那一横条里的点按：确是这次点按把光标盖上去的（光标原本
-    // 就在块上、点的是页头等别处时不动）。不要求落在块的矩形里——并排的
-    // 小图每张只占一格，点在一排右侧的空白时上游盖住的是最近的那张。
-    final top = box.localToGlobal(Offset.zero).dy;
-    if (position.dy < top || position.dy > top + box.size.height) return false;
+    // 只认落在块顶以下的点按：页头里的点按不动选区，插入点原本就在块上时
+    // 不该为它抢走页头输入框的输入法。并排的小图每张只占一格，点在一排
+    // 右侧的空白时上游停在最近的那张，不要求落在块的矩形里。
+    if (position.dy < box.localToGlobal(Offset.zero).dy) return false;
+    if (DiaryEditorTrailingRegion.isHit(context, position)) return false;
     if (DiaryEmbedContent.contains(box, position)) return false;
-    final keyboardShown = View.of(context).viewInsets.bottom > 0;
-    final caret = placeDiaryCaretAfterEmbed(state, node);
-    if (caret == null) return false;
-    _showKeyboardAt(caret, keyboardShown: keyboardShown);
-    return true;
+    return DiaryEmbedCaretInput.attach(state);
   }
 
-  /// 情形 1、3 放好插入点之后：新空行的编辑值（空文字、偏移 0）可能与
+  /// 情形 1 放好插入点之后：新空行的编辑值（空文字、偏移 0）可能与
   /// 输入法上次拿到的相同，上游连接时会直接返回、不弹键盘：键盘收着时同
   /// 情形 2 断开重连。
   void _showKeyboardAt(af.Selection selection, {required bool keyboardShown}) {
@@ -189,6 +231,7 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   }
 
   void _onCancel(PointerCancelEvent event) {
+    _pointersDown = (_pointersDown - 1).clamp(0, 1 << 20);
     if (event.pointer == _pointer) _reset();
   }
 
@@ -209,9 +252,7 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
     final value = _editValueOf(selection);
     if (selection == null || value == null || value != beforeValue) return;
     if (View.of(context).viewInsets.bottom > 0) return;
-    final focusedEditor = primaryFocus?.context
-        ?.findAncestorWidgetOfExactType<af.AppFlowyEditor>();
-    if (focusedEditor?.editorState != state) return;
+    if (!_editorFocused(state)) return;
     final keyboard = state.service.keyboardService;
     if (keyboard == null) return;
     // 断开后同步重连：Flutter 的隐藏在微任务里检查到已有新连接，不会先
@@ -224,6 +265,9 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   @override
   void dispose() {
     _reset();
+    if (!_state.isDisposed) {
+      _state.selectionNotifier.removeListener(_onSelection);
+    }
     super.dispose();
   }
 

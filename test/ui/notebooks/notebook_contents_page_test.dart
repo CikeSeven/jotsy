@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_contents_page.dart';
+import 'package:node_diary/ui/notebooks/sections/notebook_contents_chapter_header.dart';
 import 'package:node_diary/ui/notebooks/sections/notebook_contents_rows.dart';
 import 'package:node_diary/ui/widgets/reorder_handle.dart';
 
@@ -296,6 +298,163 @@ void main() {
   testWidgets('an empty notebook shows the empty hint', (tester) async {
     final (h, _, _) = await pumpContents(tester);
     expect(find.text('这本还没有日记'), findsOneWidget);
+    await h.unmount();
+  });
+
+  /// 标题为 [title] 的章节标题行。
+  Finder header(String title) =>
+      find.widgetWithText(NotebookContentsChapterHeader, title);
+
+  /// 日记行 [title] 是否看得见、点得到（收起的行仍在树里，只收到 0 高度）。
+  bool shown(WidgetTester tester, String title) => find
+      .widgetWithText(NotebookContentsEntryTile, title)
+      .hitTestable()
+      .evaluate()
+      .isNotEmpty;
+
+  testWidgets('tapping a chapter title collapses and expands its entries', (
+    tester,
+  ) async {
+    final (h, _, _) = await pumpContents(
+      tester,
+      chapters: <NotebookChapter>[tokyo, kyoto],
+      diaries: <String, String?>{'甲': 'c1', '乙': 'c1', '丙': 'c2'},
+    );
+    expect(shown(tester, '甲'), isTrue);
+    await tester.tap(find.text('东京'));
+    await tester.pumpAndSettle();
+    expect(shown(tester, '甲'), isFalse);
+    expect(shown(tester, '乙'), isFalse);
+    expect(shown(tester, '丙'), isTrue);
+    // 收起后篇数照旧，京都紧跟在东京下面。
+    expect(
+      find.descendant(of: header('东京'), matching: find.text('2 篇')),
+      findsOneWidget,
+    );
+    expect(
+      tester.getTopLeft(header('京都')).dy,
+      closeTo(tester.getBottomLeft(header('东京')).dy, 0.5),
+    );
+
+    await tester.tap(find.text('东京'));
+    await tester.pumpAndSettle();
+    expect(shown(tester, '甲'), isTrue);
+    expect(shown(tester, '乙'), isTrue);
+
+    // 空着的“未分章”没有箭头，点了也不收起（落点提示仍在）。
+    expect(
+      find.descendant(
+        of: header('未分章'),
+        matching: find.byIcon(FontAwesomeIcons.angleDown.data),
+      ),
+      findsNothing,
+    );
+    await tester.tap(find.text('未分章'));
+    await tester.pumpAndSettle();
+    expect(find.text('拖到这里移出章节'), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('dragging a chapter handle moves the whole chapter', (
+    tester,
+  ) async {
+    final (h, travel, ids) = await pumpContents(
+      tester,
+      chapters: <NotebookChapter>[tokyo, kyoto],
+      diaries: <String, String?>{'甲': 'c1', '乙': 'c1', '丙': 'c2'},
+    );
+    final handle = find.descendant(
+      of: header('东京'),
+      matching: find.byType(ReorderHandle),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, 20));
+    await tester.pump();
+    // 拿起后这一章的日记收进来，看起来整章一起移动。
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(shown(tester, '甲'), isFalse);
+    // 拖到京都的日记“丙”下面。
+    final lifted = tester.getRect(header('东京'));
+    final bing = tester.getRect(
+      find.widgetWithText(NotebookContentsEntryTile, '丙'),
+    );
+    final dy = bing.bottom - lifted.bottom + 8;
+    for (var i = 0; i < 10; i++) {
+      await gesture.moveBy(Offset(0, dy / 10));
+      await tester.pump();
+    }
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await h.settleAll();
+
+    expect(visibleOrder(tester), <String>['#京都', '丙', '#东京', '甲', '乙', '#未分章']);
+    expect(shown(tester, '甲'), isTrue);
+    final payload = (await h.notebookRow(travel))!.parsedPayload;
+    expect(payload.chapters.map((c) => c.id), <String>['c2', 'c1']);
+    // 只换章节顺序，日记的归属不变。
+    final rows = await contents(h, travel);
+    expect(rows.firstWhere((r) => r.diaryId == ids['甲']).chapterId, 'c1');
+    expect(rows.firstWhere((r) => r.diaryId == ids['丙']).chapterId, 'c2');
+    await h.unmount();
+  });
+
+  testWidgets('dropping an entry into a collapsed chapter expands it', (
+    tester,
+  ) async {
+    final (h, travel, ids) = await pumpContents(
+      tester,
+      chapters: <NotebookChapter>[tokyo, kyoto],
+      diaries: <String, String?>{'甲': 'c1', '乙': 'c1', '丙': 'c2'},
+    );
+    await tester.tap(find.text('东京'));
+    await tester.pumpAndSettle();
+    expect(shown(tester, '甲'), isFalse);
+    // 把“丙”拖过京都的标题行，落在收起的东京下面。
+    final from = tester.getRect(
+      find.widgetWithText(NotebookContentsEntryTile, '丙'),
+    );
+    final kyotoRect = tester.getRect(header('京都'));
+    await dragEntry(h, '丙', kyotoRect.top - from.top - 12);
+
+    final rows = await contents(h, travel);
+    expect(rows.firstWhere((r) => r.diaryId == ids['丙']).chapterId, 'c1');
+    expect(shown(tester, '甲'), isTrue);
+    expect(shown(tester, '乙'), isTrue);
+    final order = visibleOrder(tester);
+    expect(order.indexOf('丙'), lessThan(order.indexOf('#京都')));
+    expect(order.first, '#东京');
+    await h.unmount();
+  });
+
+  testWidgets('the unassigned header and multi-select show no chapter '
+      'handle', (tester) async {
+    final (h, _, _) = await pumpContents(
+      tester,
+      chapters: <NotebookChapter>[tokyo],
+      diaries: <String, String?>{'甲': 'c1', '乙': null},
+    );
+    Finder handleIn(String title) => find.descendant(
+      of: header(title),
+      matching: find.byType(ReorderHandle),
+    );
+    expect(handleIn('东京'), findsOneWidget);
+    expect(handleIn('未分章'), findsNothing);
+    // 章节的手柄与日记行的手柄在同一列。
+    expect(
+      tester.getCenter(handleIn('东京')).dx,
+      tester
+          .getCenter(
+            find.descendant(
+              of: find.widgetWithText(NotebookContentsEntryTile, '甲'),
+              matching: find.byType(ReorderHandle),
+            ),
+          )
+          .dx,
+    );
+    await tester.tap(find.byTooltip('多选'));
+    await tester.pumpAndSettle();
+    expect(handleIn('东京'), findsNothing);
     await h.unmount();
   });
 }

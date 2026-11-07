@@ -12,7 +12,13 @@ import '../viewmodels/notebook_book_layout.dart';
 ///
 /// 拖动排序从拿起到新顺序写完是局域网同步的阻塞者（[ReorderEditingGuard]）：
 /// 写回的整份顺序来自拖动前的列表，期间同步来的顺序会被覆盖。页面在列表的
-/// 拿起 / 松手回调里调 [startDrag] / [dropped]，销毁时调 [dispose]。
+/// 拿起 / 松手回调里调 [startDrag] / [dropped]，移动了但不写库时调
+/// [endDrag]，销毁时调 [dispose]。
+///
+/// 拖动章节时把这一章的日记收进来（[dragFolded]），看起来整章一起移动。
+/// 落回原位时列表不会再报告放下，松手就放出来（[dropped] 返回 true）；移动了
+/// 的等放下动画结束、`onReorderItem` 里再放出来（[unfoldDrag]）——松手时就
+/// 展开会把落点前的行往下推，正在落下的那一行会落到错位的地方。
 class NotebookContentsController {
   NotebookContentsController(this._database, this.notebookId);
 
@@ -20,11 +26,44 @@ class NotebookContentsController {
   final String notebookId;
   final ReorderEditingGuard _drag = ReorderEditingGuard('notebook-contents');
 
-  /// 列表拿起第 [index] 行（`onReorderStart`）。
-  void startDrag(int index) => _drag.start(index);
+  int? _dragIndex;
+  String? _dragFolded;
 
-  /// 列表松手（`onReorderEnd`）；落回原位时结束阻塞。
-  void dropped(int insertIndex) => _drag.dropped(insertIndex);
+  /// 正在拖动、日记收了进来的章节标题行 key；没有时为 null。
+  String? get dragFolded => _dragFolded;
+
+  /// 列表拿起 [item]（第 [index] 行，`onReorderStart`）。拿起的是有日记的
+  /// 章节时返回 true：页面须重建，把这一章的日记收进来。
+  bool startDrag(int index, NotebookContentsItem item) {
+    _dragIndex = index;
+    _drag.start(index);
+    final folded =
+        item is NotebookContentsHeader && item.chapter != null && item.count > 0
+        ? item.key
+        : null;
+    if (folded == _dragFolded) return false;
+    _dragFolded = folded;
+    return true;
+  }
+
+  /// 列表松手（`onReorderEnd`，[insertIndex] 未修正）。落回原位（之后不会
+  /// 再有 `onReorderItem`）时结束阻塞并返回 true，页面就此 [unfoldDrag]。
+  bool dropped(int insertIndex) {
+    final start = _dragIndex;
+    _dragIndex = null;
+    _drag.dropped(insertIndex);
+    return start == null || insertIndex == start || insertIndex == start + 1;
+  }
+
+  /// 放出拖动时收进来的日记，返回那一章的标题行 key（没有收进来时为 null）。
+  String? unfoldDrag() {
+    final folded = _dragFolded;
+    _dragFolded = null;
+    return folded;
+  }
+
+  /// 移动了但顺序没变、不写库时结束这次拖动的阻塞。
+  void endDrag() => _drag.end();
 
   void dispose() => _drag.dispose();
 
@@ -72,6 +111,14 @@ class NotebookContentsController {
       next.insert(target, next.removeAt(index));
       return next;
     });
+  }
+
+  /// 按拖动后的章节顺序（[ids]）重排章节，写完才结束这次拖动的阻塞。库里
+  /// 的章节不在 [ids] 里的（拖动期间别处新加的）按原来的先后接在后面。
+  Future<void> reorderChapters(List<String> ids) {
+    return _drag.holdUntil(
+      _writeChapters((chapters) => orderNotebookChapters(chapters, ids)),
+    );
   }
 
   /// 删除章节；其中的日记回到“未分章”，日记本身不动。

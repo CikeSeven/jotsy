@@ -12654,6 +12654,18 @@ abstract class AppLocalizations {
   /// **'Move down'**
   String get notebookChapterMoveDown;
 
+  /// Screen-reader hint for tapping a chapter title on the contents page: hide the diaries of this chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse chapter'**
+  String get notebookChapterCollapse;
+
+  /// Screen-reader hint for tapping a collapsed chapter title on the contents page: show the diaries of this chapter again.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand chapter'**
+  String get notebookChapterExpand;
+
   /// Label of the chapter name field.
   ///
   /// In en, this message translates to:

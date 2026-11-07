@@ -68,8 +68,12 @@ final class NotebookContentsHeader extends NotebookContentsItem {
   final NotebookChapter? chapter;
   final int count;
 
+  /// 章节 [chapterId]（null 为“未分章”）的标题行 key；收起状态也按它记。
+  static String keyFor(String? chapterId) =>
+      'chapter_${chapterId ?? '_unassigned'}';
+
   @override
-  String get key => 'chapter_${chapter?.id ?? '_unassigned'}';
+  String get key => keyFor(chapter?.id);
 }
 
 /// 日记行；[chapterId] 为它（有效的）章节，null 为未分章。
@@ -178,7 +182,9 @@ List<NotebookContentsItem> buildNotebookContents(
 /// 列表修正）后，全部日记的新顺序与章节。
 ///
 /// 每篇日记归属它上方最近的标题行（落在列表末尾“未分章”标题之后即移出
-/// 章节）；落在第一个标题行之上（只可能是拖到列表最顶端）时归第一章。标题行本身不能拖，[oldIndex] 不是日记行时原样返回。
+/// 章节）；落在第一个标题行之上（只可能是拖到列表最顶端）时归第一章。
+/// [oldIndex] 不是日记行（拖的是章节，见 [resolveNotebookChapterDrop]）时
+/// 原样返回。
 List<NotebookEntryPlacement> resolveNotebookContentsDrop(
   List<NotebookContentsItem> items,
   int oldIndex,
@@ -211,6 +217,85 @@ List<NotebookEntryPlacement> resolveNotebookContentsDrop(
     }
   }
   return result;
+}
+
+/// 把 [oldIndex] 的章节标题行拖到 [newIndex]（`onReorderItem` 语义）后的章节
+/// 顺序（章节 id）。
+///
+/// 只看标题行的先后：拖动时这一章的日记已收起来、留在原处，落在别的章节
+/// 中间就排在那一章之后，落在“未分章”之后就成为最后一章（“未分章”总在
+/// 最后、不参与排序）。[oldIndex] 不是章节标题行时返回拖动前的章节顺序。
+List<String> resolveNotebookChapterDrop(
+  List<NotebookContentsItem> items,
+  int oldIndex,
+  int newIndex,
+) {
+  final next = <NotebookContentsItem>[...items];
+  final moved = next[oldIndex];
+  if (moved is NotebookContentsHeader && moved.chapter != null) {
+    next.insert(newIndex, next.removeAt(oldIndex));
+  }
+  return <String>[
+    for (final item in next)
+      if (item case NotebookContentsHeader(:final chapter?)) chapter.id,
+  ];
+}
+
+/// 按 [folded]（收起的章节标题行的 key）这一帧要藏起来的日记行的 key。
+///
+/// 藏起来的行仍留在列表里（只收到 0 高度），下标不随收起变化，拖动的落点
+/// 换算照旧按整份书序。
+Set<String> notebookContentsHiddenRows(
+  List<NotebookContentsItem> items,
+  Set<String> folded,
+) {
+  if (folded.isEmpty) return const <String>{};
+  final hidden = <String>{};
+  var hiding = false;
+  for (final item in items) {
+    switch (item) {
+      case NotebookContentsHeader():
+        hiding = folded.contains(item.key);
+      case NotebookContentsRow():
+        if (hiding) hidden.add(item.key);
+    }
+  }
+  return hidden;
+}
+
+/// [items] 里标题行 [headerKey] 下面那一章的日记行 key（按列表顺序）。
+List<String> notebookContentsRowsUnder(
+  List<NotebookContentsItem> items,
+  String headerKey,
+) {
+  final keys = <String>[];
+  var inside = false;
+  for (final item in items) {
+    switch (item) {
+      case NotebookContentsHeader():
+        inside = item.key == headerKey;
+      case NotebookContentsRow():
+        if (inside) keys.add(item.key);
+    }
+  }
+  return keys;
+}
+
+/// 按拖动后的临时章节顺序 [pending]（章节 id）排列 [chapters]；其中没有的
+/// 章节（拖动途中别处新加的）按原来的先后接在后面，[pending] 里已不存在的
+/// 章节忽略。
+List<NotebookChapter> orderNotebookChapters(
+  List<NotebookChapter> chapters,
+  List<String> pending,
+) {
+  final byId = <String, NotebookChapter>{
+    for (final chapter in chapters) chapter.id: chapter,
+  };
+  return <NotebookChapter>[
+    for (final id in pending) ?byId[id],
+    for (final chapter in chapters)
+      if (!pending.contains(chapter.id)) chapter,
+  ];
 }
 
 /// 两组位置是否完全一致（判断数据库是否已推送拖动后的顺序）。

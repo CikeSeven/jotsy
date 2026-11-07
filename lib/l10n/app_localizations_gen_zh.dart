@@ -6918,6 +6918,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookChapterMoveDown => '下移';
 
   @override
+  String get notebookChapterCollapse => '收起本章';
+
+  @override
+  String get notebookChapterExpand => '展开本章';
+
+  @override
   String get notebookChapterTitleLabel => '章节名称';
 
   @override

@@ -7040,6 +7040,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notebookChapterMoveDown => '下へ移動';
 
   @override
+  String get notebookChapterCollapse => '章を折りたたむ';
+
+  @override
+  String get notebookChapterExpand => '章を展開';
+
+  @override
   String get notebookChapterTitleLabel => '章の名前';
 
   @override

@@ -7904,6 +7904,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notebookChapterMoveDown => 'Переместить вниз';
 
   @override
+  String get notebookChapterCollapse => 'Свернуть главу';
+
+  @override
+  String get notebookChapterExpand => 'Развернуть главу';
+
+  @override
   String get notebookChapterTitleLabel => 'Название главы';
 
   @override

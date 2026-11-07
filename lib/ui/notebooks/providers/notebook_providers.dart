@@ -140,15 +140,26 @@ final notebookContentsProvider = StreamProvider.autoDispose
 /// 只在内存里：本次运行期间离开管理页再回来仍保持，重启应用后全部展开，
 /// 不加设置键。已删除的本子留在集合里无害（没有行认它）。
 final notebookManageCollapsedProvider =
-    NotifierProvider<NotebookManageCollapsedNotifier, Set<String>>(
-      NotebookManageCollapsedNotifier.new,
+    NotifierProvider<NotebookCollapsedIdsNotifier, Set<String>>(
+      NotebookCollapsedIdsNotifier.new,
     );
 
-class NotebookManageCollapsedNotifier extends Notifier<Set<String>> {
+/// 目录页里收起了的章节（按日记本业务 id 分开；集合里是章节标题行的 key，
+/// 见 `NotebookContentsHeader.key`，“未分章”也可收起）。
+///
+/// 与管理页同一口径，只在内存里：本次运行期间离开目录页再回来仍保持，
+/// 重启应用后全部展开，不加设置键。已删除的章节留在集合里无害。
+final notebookContentsCollapsedProvider =
+    NotifierProvider.family<NotebookCollapsedIdsNotifier, Set<String>, String>(
+      (String notebookId) => NotebookCollapsedIdsNotifier(),
+    );
+
+/// 一组“收起了的”id（管理页的本子、目录页的章节共用）。
+class NotebookCollapsedIdsNotifier extends Notifier<Set<String>> {
   @override
   Set<String> build() => const <String>{};
 
-  /// 收起或展开 [id] 下面的子本。
+  /// 收起或展开 [id]。
   void toggle(String id) => state = state.contains(id)
       ? Set<String>.unmodifiable(state.difference(<String>{id}))
       : Set<String>.unmodifiable(<String>{...state, id});

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/app_surface/services/app_background_image_cache.dart';
@@ -84,6 +86,59 @@ void main() {
     a.dispose();
     expect(await cache.load(_key('b')), isNull);
   });
+
+  test('pixel budget evicts LRU while the active image stays valid', () async {
+    final loader = FakeBackgroundLoader();
+    final cache = AppBackgroundImageCache(maxBytes: 384, loader: loader.call);
+    addTearDown(cache.dispose);
+    final a = (await cache.load(_key('a')))!;
+    final b = (await cache.load(_key('b')))!;
+    addTearDown(a.dispose);
+    addTearDown(b.dispose);
+    expect(cache.retainedBytes, 256);
+    expect(cache.contains(_key('a')), isFalse);
+    expect(a.image.debugDisposed, isFalse);
+    expect(b.image.width, 8);
+  });
+
+  test('oversized images are delivered without being retained', () async {
+    final loader = FakeBackgroundLoader();
+    final cache = AppBackgroundImageCache(maxBytes: 128, loader: loader.call);
+    addTearDown(cache.dispose);
+    final image = (await cache.load(_key('large')))!;
+    addTearDown(image.dispose);
+    expect(image.image.width, 8);
+    expect(cache.length, 0);
+    expect(cache.retainedBytes, 0);
+    expect(loader.produced.single.debugDisposed, isTrue);
+  });
+
+  test(
+    'memory pressure does not refill the cache with an older pending load',
+    () async {
+      final loader = FakeBackgroundLoader();
+      final gate = Completer<void>();
+      final cache = AppBackgroundImageCache(
+        loader: (key) async {
+          await gate.future;
+          return loader.call(key);
+        },
+      );
+      addTearDown(cache.dispose);
+      final pending = cache.load(_key('a'));
+      cache.clear();
+      gate.complete();
+      final active = (await pending)!;
+      addTearDown(active.dispose);
+      expect(active.image.debugDisposed, isFalse);
+      expect(cache.length, 0);
+      expect(cache.retainedBytes, 0);
+      final fresh = (await cache.load(_key('a')))!;
+      addTearDown(fresh.dispose);
+      expect(loader.requests, hasLength(2));
+      expect(cache.retainedBytes, 256);
+    },
+  );
 
   test('the default loader treats a missing managed file as none', () async {
     final fixture = await BackupTestFixture.create();

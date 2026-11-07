@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../../core/services/app_background_storage_service.dart';
 import 'app_background_image_key.dart';
@@ -35,7 +34,7 @@ class AppBackgroundImage {
 typedef AppBackgroundImageLoader =
     Future<AppBackgroundDecoded?> Function(AppBackgroundImageKey key);
 
-/// 背景图的小型 LRU 缓存（默认 3 项）。
+/// 背景图的小型 LRU 缓存（最多 3 项、合计 32 MiB RGBA 像素）。
 ///
 /// - 输入：[AppBackgroundImageKey]；输出：[AppBackgroundImage] clone，
 ///   调用方负责释放；
@@ -49,10 +48,18 @@ typedef AppBackgroundImageLoader =
 /// 一张或首页几个 Tab 各一张，3 项足以覆盖“返回上一页、来回切 Tab”的重用，
 /// 更多就是常驻的大块内存。
 class AppBackgroundImageCache {
-  AppBackgroundImageCache({this.capacity = 3, AppBackgroundImageLoader? loader})
-    : _loader = loader ?? defaultLoader;
+  AppBackgroundImageCache({
+    this.capacity = 3,
+    this.maxBytes = 32 * 1024 * 1024,
+    AppBackgroundImageLoader? loader,
+  }) : assert(capacity >= 0),
+       assert(maxBytes >= 0),
+       _loader = loader ?? defaultLoader;
 
   final int capacity;
+  final int maxBytes;
+  int _retainedBytes = 0;
+  int _generation = 0;
   final AppBackgroundImageLoader _loader;
   final LinkedHashMap<AppBackgroundImageKey, AppBackgroundImage> _entries =
       LinkedHashMap<AppBackgroundImageKey, AppBackgroundImage>();
@@ -103,6 +110,7 @@ class AppBackgroundImageCache {
   }
 
   Future<void> _run(AppBackgroundImageKey key) async {
+    final generation = _generation;
     AppBackgroundDecoded? decoded;
     try {
       decoded = await _loader(key);
@@ -123,14 +131,43 @@ class AppBackgroundImageCache {
       decoded.averageColor,
       key,
     );
-    _entries.remove(key)?.dispose();
-    _entries[key] = master;
-    while (_entries.length > capacity) {
-      final oldest = _entries.keys.first;
-      _entries.remove(oldest)!.dispose();
-    }
+    // 先给等待者自己的句柄：单张超过缓存预算时仍按原质量交给活动页面，
+    // 只放弃缓存；绝不能先释放 master 再 clone。
     for (final waiter in waiters) {
       waiter.complete(master.clone());
+    }
+    final bytes = _bytesOf(master);
+    if (generation != _generation || capacity == 0 || bytes > maxBytes) {
+      master.dispose();
+      return;
+    }
+    _remove(key);
+    _entries[key] = master;
+    _retainedBytes += bytes;
+    while (_entries.length > capacity || _retainedBytes > maxBytes) {
+      _remove(_entries.keys.first);
+    }
+  }
+
+  static int _bytesOf(AppBackgroundImage entry) =>
+      entry.image.width * entry.image.height * 4;
+
+  void _remove(AppBackgroundImageKey key) {
+    final entry = _entries.remove(key);
+    if (entry == null) return;
+    _retainedBytes -= _bytesOf(entry);
+    entry.dispose();
+  }
+
+  /// 只计缓存自己的句柄；页面仍持有的 clone、解码中间图和 GPU 资源另计。
+  int get retainedBytes => _retainedBytes;
+
+  /// 内存压力时释放可重建的缓存，活动页面的 clone 继续有效。旧的进行中
+  /// 加载仍给等待者结果，但不能在压力处理后又把缓存填回去。
+  void clear() {
+    _generation++;
+    while (_entries.isNotEmpty) {
+      _remove(_entries.keys.first);
     }
   }
 
@@ -146,11 +183,16 @@ class AppBackgroundImageCache {
   /// 直接释放结果。
   void dispose() {
     _disposed = true;
-    for (final entry in _entries.values) {
-      entry.dispose();
-    }
-    _entries.clear();
+    clear();
   }
+}
+
+class _BackgroundCacheMemoryObserver extends WidgetsBindingObserver {
+  _BackgroundCacheMemoryObserver(this.cache);
+  final AppBackgroundImageCache cache;
+
+  @override
+  void didHaveMemoryPressure() => cache.clear();
 }
 
 /// 全应用共用的背景图缓存；随根 ProviderScope 释放。测试可覆盖为注入了
@@ -159,6 +201,11 @@ final appBackgroundImageCacheProvider = Provider<AppBackgroundImageCache>((
   Ref ref,
 ) {
   final cache = AppBackgroundImageCache();
-  ref.onDispose(cache.dispose);
+  final observer = _BackgroundCacheMemoryObserver(cache);
+  WidgetsBinding.instance.addObserver(observer);
+  ref.onDispose(() {
+    WidgetsBinding.instance.removeObserver(observer);
+    cache.dispose();
+  });
   return cache;
 });

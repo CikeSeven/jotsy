@@ -23801,6 +23801,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verification failed. The setting wasn\'t changed.'**
   String get appLockLoosenVerifyFailed;
+
+  /// Section title on the empty search page: recently searched keywords.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches'**
+  String get diarySearchRecentTitle;
+
+  /// Tooltip / screen reader label of the clear button next to the recent searches title.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear recent searches'**
+  String get diarySearchClearRecent;
+
+  /// Screen reader label of the remove button on one recent search chip; query is the saved keyword.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove “{query}” from recent searches'**
+  String diarySearchRecentRemove(String query);
+
+  /// Section title on the empty search page: the most used tags; tapping one adds it as a search condition.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequent tags'**
+  String get diarySearchSuggestedTags;
+
+  /// Hint on the empty search page explaining multi-word search.
+  ///
+  /// In en, this message translates to:
+  /// **'Separate words with spaces to find entries containing all of them'**
+  String get diarySearchEmptyTip;
+
+  /// Number of search results shown above the result list.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String diarySearchResultCount(int count);
+
+  /// Button under the no-results message that removes all search filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get diarySearchClearFilters;
+
+  /// Filter chip on the search page: also search archived entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Include archived'**
+  String get diarySearchIncludeArchived;
+
+  /// Screen reader label of the remove button on an active search filter chip; label is the chip text.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove filter {label}'**
+  String diarySearchRemoveFilter(String label);
+
+  /// Title of the tag picker sheet opened from the search page tag chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by tags'**
+  String get diarySearchTagSheetTitle;
+
+  /// Explanation under the title of the search tag picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows entries that have all selected tags'**
+  String get diarySearchTagSheetHint;
+
+  /// Tooltip of the sort menu button above the search results.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort results'**
+  String get diarySearchSortTooltip;
+
+  /// Search result sort option: by update time, newest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently updated'**
+  String get diarySearchSortUpdated;
+
+  /// Search result sort option: by publish time, newest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get diarySearchSortNewest;
+
+  /// Search result sort option: by publish time, oldest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest'**
+  String get diarySearchSortOldest;
 }
 
 class _AppLocalizationsDelegate

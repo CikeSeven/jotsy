@@ -34,13 +34,8 @@ extension _HomePageShortcuts on _HomePageState {
   ];
 
   Map<ShortcutActivator, VoidCallback> _shortcutBindings() {
-    // 苹果平台的主修饰键是 ⌘，其余平台是 Ctrl。
-    final apple = switch (defaultTargetPlatform) {
-      TargetPlatform.macOS || TargetPlatform.iOS => true,
-      _ => false,
-    };
-    SingleActivator primary(LogicalKeyboardKey key) =>
-        SingleActivator(key, control: !apple, meta: apple);
+    // 苹果平台的主修饰键是 ⌘，其余平台是 Ctrl（见 primaryShortcut）。
+    const primary = primaryShortcut;
     return <ShortcutActivator, VoidCallback>{
       primary(LogicalKeyboardKey.keyN): _createFromShortcut,
       primary(LogicalKeyboardKey.keyF): _searchFromShortcut,

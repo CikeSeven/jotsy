@@ -338,6 +338,8 @@ class _GatedDatabase extends AppDatabase {
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
     DiaryListScope scope = DiaryListScope.all,
     bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
   }) async {
     await gate?.future;
     return super.getActiveDiaryIds(
@@ -346,6 +348,8 @@ class _GatedDatabase extends AppDatabase {
       sortMode: sortMode,
       scope: scope,
       matchComments: matchComments,
+      includeArchived: includeArchived,
+      filter: filter,
     );
   }
 }

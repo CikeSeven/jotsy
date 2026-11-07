@@ -9,7 +9,8 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
-import '../../diaries/pages/diary_search_page.dart' show diarySearchDebounce;
+import '../../diaries/controllers/diary_search_controller.dart'
+    show diarySearchDebounce;
 import '../../diaries/providers/diary_filters.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_top_bar.dart';

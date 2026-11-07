@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
 import 'diary_list_scope.dart';
+import 'diary_search_terms.dart';
 
 /// 智能日记本的规则：模型、JSON 编解码与 SQL 编译（纯函数，无 IO）。
 ///
@@ -499,7 +500,7 @@ String _compileRule(
       );
     case NotebookTextRule(:final field, :final text):
       if (text.isEmpty) return '0';
-      final pattern = '%${_escapeLike(text)}%';
+      final pattern = containsLikePattern(text);
       switch (field) {
         case NotebookTextField.weather:
         case NotebookTextField.location:
@@ -596,10 +597,6 @@ List<String> _mediaPatterns(NotebookMediaKind kind) => switch (kind) {
     '%"type":"file"%',
   ],
 };
-
-/// LIKE 的转义：用户输入里的 `%`、`_` 与转义符本身按字面匹配。
-String _escapeLike(String value) =>
-    value.replaceAll(r'\', r'\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
 
 String _placeholders(int count) => List<String>.filled(count, '?').join(', ');
 

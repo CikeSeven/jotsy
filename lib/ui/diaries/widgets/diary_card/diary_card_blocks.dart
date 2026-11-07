@@ -5,6 +5,7 @@ import '../../models/diary_card_style/diary_card_style.dart';
 import '../../viewmodels/diary_card_appearance.dart';
 import '../../viewmodels/diary_card_resolved_style.dart';
 import '../../viewmodels/diary_card_view_data.dart';
+import '../../viewmodels/search_highlight.dart';
 import '../diary_item_tag_row.dart';
 import 'diary_card_badges.dart';
 import 'diary_card_lines.dart';
@@ -33,6 +34,7 @@ class DiaryCardBlocks extends StatelessWidget {
     required this.metaPosition,
     required this.selectionMarkDuration,
     this.commentCount = 0,
+    this.highlightTerms = const <String>[],
   });
 
   final DiaryWithTags diary;
@@ -52,6 +54,9 @@ class DiaryCardBlocks extends StatelessWidget {
 
   /// 这篇的留言条数（底栏的留言数；留言功能关闭时为 0）。
   final int commentCount;
+
+  /// 搜索页的关键词；为空时标题与摘要是普通 `Text`，与改版前逐项相同。
+  final List<String> highlightTerms;
 
   /// 标题行要显示的文字：样式隐藏标题时为 null；日记没写标题时按
   /// “无标题”占位开关取 [untitled] 或 null（不显示标题行）。
@@ -200,11 +205,9 @@ class DiaryCardBlocks extends StatelessWidget {
           : CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(
+          child: _maybeHighlighted(
             title,
             maxLines: m.titleMaxLines,
-            overflow: TextOverflow.ellipsis,
-            textAlign: resolved.centered ? TextAlign.center : null,
             style: resolved.titleStyle?.copyWith(color: appearance.titleColor),
           ),
         ),
@@ -231,16 +234,58 @@ class DiaryCardBlocks extends StatelessWidget {
   }
 
   Widget? _preview() {
-    final preview = viewData.previewText;
-    if (!resolved.style.content.showPreview || preview.isEmpty) {
+    if (!resolved.style.content.showPreview) {
       return null;
     }
-    return Text(
+    // 搜索时摘要从第一个命中处前开窗（命中就在开头附近时与平时相同），
+    // 否则命中在 240 字之后的日记摘要里看不到关键词。就地计算、不进
+    // DiaryCardViewData 的缓存：缓存按日记版本复用，与关键词无关。
+    final preview = highlightTerms.isEmpty
+        ? viewData.previewText
+        : searchExcerpt(
+                diary.diary.contentText,
+                highlightTerms,
+                maxLength: DiaryCardViewData.previewTextMaxLength,
+              ) ??
+              viewData.previewText;
+    if (preview.isEmpty) {
+      return null;
+    }
+    return _maybeHighlighted(
       preview,
       maxLines: resolved.modeStyle.previewMaxLines,
-      overflow: TextOverflow.ellipsis,
-      textAlign: resolved.centered ? TextAlign.center : null,
       style: resolved.previewStyle?.copyWith(color: appearance.previewColor),
+    );
+  }
+
+  /// 有搜索词时标出命中处，否则就是普通 `Text`。
+  Widget _maybeHighlighted(
+    String text, {
+    required int maxLines,
+    required TextStyle? style,
+  }) {
+    final align = resolved.centered ? TextAlign.center : null;
+    if (highlightTerms.isEmpty) {
+      return Text(
+        text,
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        textAlign: align,
+        style: style,
+      );
+    }
+    return Text.rich(
+      TextSpan(
+        children: searchHighlightSpans(
+          text,
+          highlightTerms,
+          searchHighlightStyle(resolved.colorScheme),
+        ),
+      ),
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
+      textAlign: align,
+      style: style,
     );
   }
 }

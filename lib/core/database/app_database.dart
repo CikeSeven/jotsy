@@ -12,12 +12,14 @@ import 'content_codec.dart';
 import 'diary_blocks/diary_link_target.dart';
 import 'diary_comment_images.dart';
 import 'diary_list_scope.dart';
+import 'diary_search_terms.dart';
 import 'notebook_payload.dart';
 import 'sync_rows.dart';
 import '../services/app_data_directory.dart';
 
 export 'diary_comment_images.dart';
 export 'diary_list_scope.dart';
+export 'diary_search_terms.dart';
 export 'notebook_cover_style.dart';
 export 'notebook_payload.dart';
 export 'notebook_rules.dart';
@@ -29,6 +31,7 @@ part 'app_database_tag_ops.dart';
 part 'app_database_diary_writes.dart';
 part 'app_database_diary_batch_writes.dart';
 part 'app_database_diary_scope_sql.dart';
+part 'app_database_diary_search_sql.dart';
 part 'app_database_diary_queries.dart';
 part 'app_database_diary_list_queries.dart';
 part 'app_database_migrations.dart';
@@ -80,6 +83,7 @@ class AppDatabase extends _$AppDatabase
     with
         _AppDatabaseTagOps,
         _AppDatabaseDiaryScopeSql,
+        _AppDatabaseDiarySearchSql,
         _AppDatabaseDiaryQueries,
         _AppDatabaseDiaryListQueries,
         _AppDatabaseNotebookEntryOps,

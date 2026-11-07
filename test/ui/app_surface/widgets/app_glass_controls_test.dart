@@ -17,6 +17,7 @@ import 'package:node_diary/ui/app_surface/widgets/on_glass.dart';
 import 'package:node_diary/ui/diaries/models/tag_picker_sort.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
+import 'package:node_diary/ui/diaries/providers/diary_search_providers.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_overlays.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_tile.dart';
@@ -341,6 +342,9 @@ void main() {
           overrides: [
             settingsServiceProvider.overrideWith((ref) async => settings),
             tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[])),
+            tagUsageCountsProvider.overrideWith(
+              (ref, scope) => Stream.value(const <TagUsageCount>[]),
+            ),
             pagedDiariesProvider.overrideWith(
               (ref, query) => Stream.value(
                 PagedDiariesResult(
@@ -357,30 +361,35 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    BoxDecoration searchBarDecoration(WidgetTester tester) => tester
-        .widgetList<Container>(
+    // 搜索框是胶囊形的 Material（StadiumBorder），取离输入框最近的那一层。
+    Material searchBarMaterial(WidgetTester tester) => tester
+        .widgetList<Material>(
           find.ancestor(
             of: find.byType(TextField),
-            matching: find.byType(Container),
+            matching: find.byType(Material),
           ),
         )
-        .map((container) => container.decoration)
-        .whereType<BoxDecoration>()
-        .first;
+        .firstWhere((material) => material.shape is StadiumBorder);
 
     testWidgets('the diary search bar is translucent glass without blur', (
       tester,
     ) async {
       await pumpSearchPage(tester);
-      final classic = searchBarDecoration(tester);
+      final classic = searchBarMaterial(tester);
       expect(classic.color!.a, greaterThan(0.9));
 
       await pumpSearchPage(tester, style: _glass);
+      // 页面打开后自动聚焦，聚焦时描边补间到 primary；静止描边要先失焦再看。
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
       final glass = AppGlass.of(tester.element(find.byType(TextField)));
-      final decoration = searchBarDecoration(tester);
-      expect(decoration.color, glass.fill);
-      expect(_translucent(decoration.color!), isTrue);
-      expect((decoration.border! as Border).top.color, glass.border!.color);
+      final material = searchBarMaterial(tester);
+      expect(material.color, glass.fill);
+      expect(_translucent(material.color!), isTrue);
+      expect(
+        (material.shape! as StadiumBorder).side.color,
+        glass.border!.color,
+      );
       expect(
         find.ancestor(
           of: find.byType(TextField),

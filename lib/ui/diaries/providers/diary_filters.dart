@@ -48,12 +48,22 @@ class DiaryPageQuery {
     required this.sortMode,
     this.scope = DiaryListScope.all,
     this.matchComments = false,
+    this.includeArchived = false,
+    this.filter,
   });
 
   final String keyword;
   final List<int> requiredTagIds;
   final int limit;
   final DiarySortMode sortMode;
+
+  /// 是否连归档的日记一起查：只有搜索页勾选“含归档”时为 true。
+  final bool includeArchived;
+
+  /// 搜索页的筛选谓词（由 `DiarySearchFilters` 经智能日记本规则编译），
+  /// null 即不筛选。谓词实现了值相等，同一组筛选重建出的查询命中同一个
+  /// provider 实例。
+  final DiaryScopePredicate? filter;
 
   /// 关键词是否也匹配留言：只有搜索页在开启留言功能时为 true，参与相等
   /// 比较（开关一变即换一个 provider 实例）。
@@ -74,6 +84,8 @@ class DiaryPageQuery {
           sortMode: sortMode,
           scope: scope,
           matchComments: matchComments,
+          includeArchived: includeArchived,
+          filter: filter,
         );
 
   @override
@@ -89,6 +101,8 @@ class DiaryPageQuery {
         sortMode != other.sortMode ||
         scope != other.scope ||
         matchComments != other.matchComments ||
+        includeArchived != other.includeArchived ||
+        filter != other.filter ||
         requiredTagIds.length != other.requiredTagIds.length) {
       return false;
     }
@@ -107,6 +121,8 @@ class DiaryPageQuery {
     sortMode,
     scope,
     matchComments,
+    includeArchived,
+    filter,
     Object.hashAll(requiredTagIds),
   );
 }
@@ -253,63 +269,11 @@ final startupDiariesProvider = Provider<AsyncValue<PagedDiariesResult>>((
   );
 });
 
-/// 搜索页查询参数。
-///
-/// 约束：
-/// - `keyword` 会在构造时自动 trim；
-/// - `requiredTagIds` 会去重并排序，保证 provider family key 稳定。
-class SearchDiaryQuery {
-  SearchDiaryQuery({
-    String keyword = '',
-    Iterable<int> requiredTagIds = const <int>[],
-    this.scope = DiaryListScope.all,
-  }) : keyword = keyword.trim(),
-       requiredTagIds = _normalizeTagIds(requiredTagIds);
-
-  final String keyword;
-  final List<int> requiredTagIds;
-
-  /// 搜索范围：在日记本里搜索时只搜这本（私密规则同列表）。
-  final DiaryListScope scope;
-
-  bool get hasAnyCondition => keyword.isNotEmpty || requiredTagIds.isNotEmpty;
-
-  static List<int> _normalizeTagIds(Iterable<int> source) {
-    final normalized = source.toSet().toList(growable: false)..sort();
-    return normalized;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other is! SearchDiaryQuery) {
-      return false;
-    }
-    if (keyword != other.keyword ||
-        scope != other.scope ||
-        requiredTagIds.length != other.requiredTagIds.length) {
-      return false;
-    }
-    for (var index = 0; index < requiredTagIds.length; index += 1) {
-      if (requiredTagIds[index] != other.requiredTagIds[index]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(keyword, scope, Object.hashAll(requiredTagIds));
-}
-
-/// 搜索页独立数据源（关键词 + 标签条件）。
+/// 搜索页独立数据源（关键词 + 标签 + 筛选 + 范围）。
 ///
 /// 设计目的：
 /// - 与主页 `diaryFilterProvider` 解耦，避免搜索页对主页筛选状态产生副作用；
-/// - 支持搜索页内部以局部状态驱动联合查询。
+/// - 支持搜索页内部以局部状态驱动联合查询（日记本“添加日记”页同样使用）。
 final searchDiariesProvider = StreamProvider.autoDispose
     .family<PagedDiariesResult, DiaryPageQuery>((
       Ref ref,
@@ -326,6 +290,8 @@ final searchDiariesProvider = StreamProvider.autoDispose
             sortMode: query.sortMode,
             scope: query.scope,
             matchComments: query.matchComments,
+            includeArchived: query.includeArchived,
+            filter: query.filter,
           )
           .map((items) {
             final hasMore = items.length > query.limit;
@@ -337,4 +303,20 @@ final searchDiariesProvider = StreamProvider.autoDispose
               hasMore: hasMore,
             );
           });
+    });
+
+/// 搜索结果的总篇数（“共 N 篇”）：与 [searchDiariesProvider] 同一筛选与范围，
+/// key 为不随翻页变化的 [DiaryPageQuery.timelineKey]，加载更多不会重查计数。
+final searchDiaryCountProvider = StreamProvider.autoDispose
+    .family<int, DiaryPageQuery>((Ref ref, DiaryPageQuery query) {
+      retainQueryWhileRecentlyUsed(ref);
+      final db = ref.watch(appDatabaseProvider);
+      return db.watchActiveDiaryCount(
+        keyword: query.keyword,
+        requiredTagIds: query.requiredTagIds,
+        scope: query.scope,
+        matchComments: query.matchComments,
+        includeArchived: query.includeArchived,
+        filter: query.filter,
+      );
     });

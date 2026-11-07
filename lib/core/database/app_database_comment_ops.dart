@@ -246,12 +246,13 @@ JOIN diaries d ON d.diary_id = c.diary_id
     );
   }
 
-  /// 留言里含 [keyword] 的日记各取第一条命中的留言（按写下时间），键为
-  /// 日记业务 id：搜索结果里“只命中留言”的卡片下方显示它。口径同
-  /// [watchRecentDiaryComments]；关键词为空时为空表。
+  /// 留言里含 [keyword] 中任一个词（按 [splitSearchTerms] 拆词）的日记各取
+  /// 第一条命中的留言（按写下时间），键为日记业务 id：搜索结果里“只命中
+  /// 留言”的卡片下方显示它。口径同 [watchRecentDiaryComments]；关键词为空
+  /// 时为空表。
   Stream<Map<String, DiaryCommentRow>> watchDiaryCommentHits(String keyword) {
-    final normalized = keyword.trim();
-    if (normalized.isEmpty) {
+    final terms = splitSearchTerms(keyword);
+    if (terms.isEmpty) {
       return Stream<Map<String, DiaryCommentRow>>.value(
         const <String, DiaryCommentRow>{},
       );
@@ -263,8 +264,13 @@ FROM diary_comments c
 JOIN diaries d ON d.diary_id = c.diary_id
 ''');
     _writeVisibleCommentFilter(sql, variables);
-    sql.write('  AND c.content LIKE ?\nORDER BY c.created_at ASC, c.id ASC\n');
-    variables.add(Variable<String>('%$normalized%'));
+    sql.write(
+      '  AND (${terms.map((_) => "c.content LIKE ? ESCAPE '\\'").join(' OR ')})\n'
+      'ORDER BY c.created_at ASC, c.id ASC\n',
+    );
+    variables.addAll(<Variable<Object>>[
+      for (final term in terms) Variable<String>(containsLikePattern(term)),
+    ]);
     return customSelect(
       sql.toString(),
       variables: variables,

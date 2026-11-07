@@ -47,6 +47,7 @@ mixin _AppDatabaseAiContextOps
     on
         _$AppDatabase,
         _AppDatabaseDiaryScopeSql,
+        _AppDatabaseDiarySearchSql,
         _AppDatabaseDiaryQueries,
         _AppDatabaseDiaryListQueries {
   /// 读取发给 AI 的日记，按发表时间排序（[newestFirst] 决定方向）。

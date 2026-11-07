@@ -194,7 +194,11 @@ final pagedDiariesProvider = StreamProvider.autoDispose
       Ref ref,
       DiaryPageQuery query,
     ) {
-      retainQueryWhileRecentlyUsed(ref);
+      var retainedBytes = 0;
+      final checkBudget = retainQueryWhileRecentlyUsed(
+        ref,
+        estimatedBytes: () => retainedBytes,
+      );
       final db = ref.watch(appDatabaseProvider);
       final fetchLimit = query.limit + 1;
       return db
@@ -207,6 +211,25 @@ final pagedDiariesProvider = StreamProvider.autoDispose
             matchComments: query.matchComments,
           )
           .map((items) {
+            // family 的多个分页窗口会短暂并存；除了 30 秒时限，也限制闲置
+            // 窗口合计的文本。按 UTF-16 两字节和每行/标签的固定开销估计，
+            // 不把活动窗口算进来，更不为省内存截断用户当前看到的正文。
+            retainedBytes = items.fold(0, (total, item) {
+              final diary = item.diary;
+              return total +
+                  256 +
+                  2 *
+                      (diary.title.length +
+                          diary.content.length +
+                          diary.contentText.length +
+                          diary.metadata.length +
+                          (diary.cover?.length ?? 0) +
+                          item.tags.fold(
+                            0,
+                            (units, tag) => units + tag.name.length + 32,
+                          ));
+            });
+            checkBudget();
             final hasMore = items.length > query.limit;
             return PagedDiariesResult(
               items: hasMore

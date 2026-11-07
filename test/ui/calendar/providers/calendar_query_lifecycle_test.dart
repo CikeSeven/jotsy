@@ -5,6 +5,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/calendar/providers/calendar_diary_providers.dart';
 import 'package:node_diary/utils/provider_retention.dart';
+import 'package:node_diary/utils/query_retention_budget.dart';
 
 void main() {
   List<StreamProvider<Object?>> queries(DateTime day) => [
@@ -72,7 +73,10 @@ void main() {
       container.listen(provider, (_, _) {}).close();
     }
     await tester.pump();
-    expect(providers.every(container.exists), isTrue);
+    await tester.pump(const Duration(milliseconds: 20));
+    final budget = container.read(queryRetentionBudgetProvider);
+    expect(budget.idleEntries, lessThanOrEqualTo(budget.maxEntries));
+    expect(providers.every(container.exists), isFalse);
     await tester.pump(queryIdleRetention);
     expect(providers.any(container.exists), isFalse);
   });

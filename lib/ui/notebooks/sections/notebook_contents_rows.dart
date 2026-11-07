@@ -9,6 +9,7 @@ import '../../app_surface/widgets/app_glass_field.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/form_width.dart';
+import '../../widgets/reorder_handle.dart';
 
 /// 目录页章节标题行上的操作。
 enum NotebookChapterAction { rename, moveUp, moveDown, delete }
@@ -177,7 +178,7 @@ class NotebookContentsEntryTile extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  /// 已包好 `ReorderableDragStartListener` 的手柄；多选时不显示。
+  /// 拖动手柄（[ReorderHandle]）；多选时不显示。
   final Widget? dragHandle;
 
   @override
@@ -284,29 +285,6 @@ class NotebookContentsEntryTile extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 目录页拖动手柄的外观：`gripLines`，留足 48dp 的触控区域。
-class NotebookContentsDragGrip extends StatelessWidget {
-  const NotebookContentsDragGrip({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: context.l10n.notebookContentsDragHandle,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.l,
-          vertical: AppSpacing.l,
-        ),
-        child: FaIcon(
-          FontAwesomeIcons.gripLines,
-          size: 14,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );

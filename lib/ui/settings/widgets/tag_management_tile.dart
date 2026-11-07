@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../widgets/reorder_handle.dart';
 
 /// 标签管理列表的一行：色块 + 名称 + 删除 + 拖拽手柄。
 ///
@@ -44,19 +45,8 @@ class TagManagementTile extends StatelessWidget {
             onPressed: onDelete,
             icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
           ),
-          const SizedBox(width: 12),
-          ReorderableDragStartListener(
-            index: index,
-            enabled: dragEnabled,
-            child: const SizedBox(
-              width: 44,
-              height: 40,
-              child: ColoredBox(
-                color: Colors.transparent,
-                child: Center(child: _TagDragHandle()),
-              ),
-            ),
-          ),
+          const SizedBox(width: 8),
+          ReorderHandle(index: index, enabled: dragEnabled),
         ],
       ),
     );
@@ -95,38 +85,6 @@ class _TagSwatch extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _TagDragHandle extends StatelessWidget {
-  const _TagDragHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onSurfaceVariant;
-    return SizedBox(
-      width: 16,
-      height: 18,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _buildBar(color),
-          _buildBar(color),
-          _buildBar(color),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBar(Color color) {
-    return Container(
-      width: 2,
-      height: 16,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(1.2),
-      ),
     );
   }
 }

@@ -19,6 +19,7 @@ import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/empty_hint.dart';
+import '../../widgets/reorder_handle.dart';
 import '../controllers/notebook_contents_controller.dart';
 import '../providers/notebook_providers.dart';
 import '../sections/notebook_chapter_dialogs.dart';
@@ -253,10 +254,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                             ? () => _toggle(entry.diaryId)
                             : () =>
                                   unawaited(_openPreview(entry.diaryId, items)),
-                        dragHandle: ReorderableDragStartListener(
-                          index: index,
-                          child: const NotebookContentsDragGrip(),
-                        ),
+                        dragHandle: ReorderHandle(index: index),
                       );
                   }
                 },
@@ -486,7 +484,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
         child: Material(
           color: Theme.of(context).colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(16),
-          child: child,
+          child: ReorderHandleLift(animation: animation, child: child!),
         ),
       ),
     );

@@ -8,7 +8,7 @@ import '../../../../app/theme/expressive_surfaces.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../../widgets/expressive_reorder_proxy.dart';
-import '../../../widgets/triple_bar_drag_handle.dart';
+import '../../../widgets/reorder_handle.dart';
 import '../../controllers/diary_card_style_editor_controller.dart';
 import 'diary_card_style_labels.dart';
 
@@ -96,19 +96,9 @@ class DiaryCardStyleOrderTab extends StatelessWidget {
               ),
               leading: FaIcon(diaryCardBlockIcon(block), size: 16),
               title: Text(label),
-              trailing: Semantics(
-                label: l10n.diaryCardStyleDragHandle(label),
-                child: ReorderableDragStartListener(
-                  index: index,
-                  child: const SizedBox(
-                    width: 44,
-                    height: 40,
-                    child: ColoredBox(
-                      color: Colors.transparent,
-                      child: Center(child: TripleBarDragHandle()),
-                    ),
-                  ),
-                ),
+              trailing: ReorderHandle(
+                index: index,
+                semanticLabel: l10n.diaryCardStyleDragHandle(label),
               ),
             ),
           ),

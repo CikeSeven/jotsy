@@ -36,6 +36,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonUndo => '撤销';
 
   @override
+  String get commonDragToReorder => '拖动排序';
+
+  @override
   String get commonSelectAll => '全选';
 
   @override
@@ -6088,9 +6091,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplatesMoreActions => '更多操作';
 
   @override
-  String get diaryTemplatesDragHandle => '拖动排序';
-
-  @override
   String get diaryTemplatesDuplicate => '复制';
 
   @override
@@ -6617,9 +6617,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookMoreActions => '更多操作';
 
   @override
-  String get notebookDragHandle => '拖动排序';
-
-  @override
   String notebookSubCount(int count) {
     return '$count 本子本';
   }
@@ -6904,9 +6901,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookContentsSealed => '未解封的时间胶囊';
-
-  @override
-  String get notebookContentsDragHandle => '拖动排序';
 
   @override
   String get notebookContentsChapterActions => '章节操作';

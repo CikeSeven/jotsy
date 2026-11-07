@@ -4,6 +4,7 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
+import '../models/diary_thumbnail_rows.dart';
 import 'diary_toggle_state.dart';
 
 /// 文字块旁边的嵌入块（图片、视频、音频、附件、分隔线、日记链接卡片，即
@@ -44,6 +45,10 @@ import 'diary_toggle_state.dart';
 /// DiaryEditorKeyboardReopen）。插入媒体本就总在后面补空段落
 /// （insertDiaryEditorNodes），但旧数据、拖动排序与导入的正文仍可能以
 /// 嵌入块结尾。
+///
+/// 块旁的空白：[placeDiaryCaretAfterEmbed] 在点按落在嵌入块的空白处（图片
+/// 右侧、上下留白、分隔线）时把插入点放到它下面一行，同样由
+/// DiaryEditorKeyboardReopen 在点按后调用。
 
 /// 退格 / Delete 选中的嵌入块：插入点留在旁边那行，再按一次才删掉它。
 ///
@@ -231,7 +236,51 @@ af.Selection? appendDiaryTrailingLine(af.EditorState state) {
   }
   // 不往表格里走，表格本身没有文字：也算不能打字（格子里写不到表格下面）。
   if (last.delta != null) return null;
-  final path = root.children.last.path.next;
+  return _insertLineAt(state, root.children.last.path.next);
+}
+
+/// 点按落在嵌入块 [embed] 的空白处时，把插入点放到它下面一行，返回新的
+/// 插入点；只读或 [embed] 不是嵌入块时返回 null、什么都不做。
+///
+/// 为什么：上游把点在嵌入块旁边的点按解释成把光标“盖”在块上
+/// （`DiaryEmbedSelectable`），块里没有文字，输入法不连接——键盘不出来，
+/// 打字也没有去处，插入点像是卡在了图片上。点块旁的空白，用户要的是在块
+/// 后面接着写，与图文混排的编辑器里点在图片右侧一样。
+///
+/// - 紧接着的下一块是空的文字块（没有字、没有子块）→ 插入点放进去，不改
+///   正文；
+/// - 否则在块后面补一个空段落、插入点放进去（一步撤销）。下一块有字时也
+///   补：插入点停在图片和下面那段字之间，接着写的字紧跟在图片后面，不会
+///   写到下一段开头。反复点同一块旁边只会补出一行（第二次就是空行了）；
+/// - 并排的小图按整排算（[diaryThumbnailRowOf]），补在这一排最后一张后面，
+///   不会把一排拆开。
+///
+/// 选区以点按的名义更新（[af.SelectionUpdateReason.uiEvent]），上游据此请求
+/// 焦点并连接输入法，与点在文字上一样。
+af.Selection? placeDiaryCaretAfterEmbed(af.EditorState state, af.Node embed) {
+  if (!state.editable || !_isEmbed(embed)) return null;
+  var anchor = embed;
+  final row = diaryThumbnailRowOf(embed);
+  if (row != null) anchor = embed.parent!.children[row.end - 1];
+  final next = anchor.next;
+  if (next != null &&
+      next.delta != null &&
+      next.delta!.isEmpty &&
+      next.children.isEmpty) {
+    final selection = af.Selection.collapsed(af.Position(path: next.path));
+    unawaited(
+      state.updateSelectionWithReason(
+        selection,
+        reason: af.SelectionUpdateReason.uiEvent,
+      ),
+    );
+    return selection;
+  }
+  return _insertLineAt(state, anchor.path.next);
+}
+
+/// 在 [path] 插入一个空段落，插入点放进去（点按的名义，一步撤销）。
+af.Selection _insertLineAt(af.EditorState state, af.Path path) {
   final selection = af.Selection.collapsed(af.Position(path: path));
   final transaction = state.transaction
     ..insertNode(path, af.paragraphNode())

@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderImage;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
@@ -9,6 +11,7 @@ import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/core/services/image_dimensions.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_embed_editing.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
 import 'package:node_diary/ui/diaries/models/diary_thumbnail_rows.dart';
@@ -21,7 +24,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_image_thumbnail.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
-/// 小图并排：顶层连续的小图三张一排。
+/// 小图并排（顶层连续的小图三张一排）与点在嵌入块旁空白处时插入点的去处。
 ///
 /// 图片指向不存在的文件：小图在读出尺寸前先占好方格（读文件头是真实 IO，
 /// 测试的假时钟里不会完成），排版与点按都按方格进行。
@@ -43,6 +46,8 @@ Map<String, Object?> _image(String name, {bool thumbnail = true}) => {
   },
 };
 
+Map<String, Object?> _divider() => {'type': 'divider', 'data': {}};
+
 DiaryEditorController _document(List<Map<String, Object?>> blocks) {
   final controller = DiaryEditorController.fromContent(
     jsonEncode({
@@ -52,6 +57,9 @@ DiaryEditorController _document(List<Map<String, Object?>> blocks) {
   addTearDown(controller.dispose);
   return controller;
 }
+
+/// 4:3 的示例照片。
+final _photo = File('assets/img/diary_card_samples/cafe.webp').absolute.path;
 
 /// 每块一行：`类型:文字`（图片为 `image:文件名`，小图带 `*`）。
 String _outline(DiaryEditorController controller) => [
@@ -319,6 +327,132 @@ void main() {
     });
 
     testWidgets(
+      'tapping the blank right of a row puts the caret below it and shows '
+      'the keyboard',
+      (tester) async {
+        final controller = _document([
+          _p('a'),
+          _image('1'),
+          _image('2'),
+          _p('b'),
+        ]);
+        await pump(tester, controller, selection: _caret([0], 1));
+        // 用户收起了键盘。
+        tester.testTextInput.hide();
+        expect(tester.testTextInput.isVisible, isFalse);
+        final second = _squareOf(tester, controller, 2);
+        final blank = Offset(second.right + 40, second.center.dy);
+
+        await tester.tapAt(blank);
+        await tester.pump();
+
+        // 下一段有字：在这一排后面补一行，插入点放进去。
+        expect(
+          _outline(controller),
+          'paragraph:a\nimage:1*\nimage:2*\nparagraph:\nparagraph:b',
+        );
+        expect(controller.selection, _caret([3]));
+        expect(tester.testTextInput.isVisible, isTrue);
+        expect(tester.testTextInput.hasAnyClients, isTrue);
+
+        // 再点一次：下面已是空行，只把插入点放进去，不再补行。
+        await tester.tapAt(blank);
+        await tester.pump();
+        expect(controller.document.root.children, hasLength(5));
+        expect(controller.selection, _caret([3]));
+
+        // 补的那行是一步撤销。
+        controller.undo();
+        await tester.pump();
+        expect(
+          _outline(controller),
+          'paragraph:a\nimage:1*\nimage:2*\nparagraph:b',
+        );
+        await unmount(tester);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+
+    testWidgets(
+      'tapping the gap between two thumbnails also moves the caret below '
+      'the row',
+      (tester) async {
+        final controller = _document([_image('1'), _image('2'), _p('')]);
+        await pump(tester, controller, selection: _caret([2]));
+        final first = _squareOf(tester, controller, 0);
+
+        await tester.tapAt(
+          Offset(first.right + kDiaryThumbnailRowGap / 2, first.center.dy),
+        );
+        await tester.pump();
+
+        expect(_outline(controller), 'image:1*\nimage:2*\nparagraph:');
+        expect(controller.selection, _caret([2]));
+        await unmount(tester);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.linux),
+    );
+
+    testWidgets(
+      'tapping the thumbnail itself opens the image menu and leaves the '
+      'caret alone',
+      (tester) async {
+        // 真实的照片：方格在画面解码之前只占位、点不中。
+        final controller = _document([
+          _p('a'),
+          {
+            'type': 'image',
+            'data': {'url': _photo, kDiaryImageThumbnailKey: true},
+          },
+          _p('b'),
+        ]);
+        await pump(tester, controller, selection: _caret([0], 1));
+        for (var i = 0; i < 40; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump();
+          final raw = find.byType(RawImage);
+          if (raw.evaluate().isNotEmpty &&
+              tester.renderObject<RenderImage>(raw).image != null) {
+            break;
+          }
+        }
+        final before = controller.contentJson;
+
+        await tester.tapAt(_squareOf(tester, controller, 1).center);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SimpleDialog), findsOneWidget);
+        expect(controller.contentJson, before);
+        expect(controller.selection, isNot(_caret([2])));
+        await unmount(tester);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+
+    testWidgets('tapping a divider puts the caret on a line below it', (
+      tester,
+    ) async {
+      final controller = _document([_p('text'), _divider(), _p('end')]);
+      await pump(tester, controller, selection: _caret([0], 4));
+      final divider = _block(controller, 1).renderBox!;
+
+      await tester.tapAt(
+        divider.localToGlobal(divider.size.center(Offset.zero)),
+      );
+      await tester.pump();
+
+      expect(
+        _outline(controller),
+        'paragraph:text\ndivider\nparagraph:\nparagraph:end',
+      );
+      expect(controller.selection, _caret([2]));
+      expect(tester.testTextInput.hasAnyClients, isTrue);
+      await unmount(tester);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+    testWidgets(
       'dragging a block onto the lower half of a row drops it after the '
       'whole row',
       (tester) async {
@@ -344,6 +478,47 @@ void main() {
         await unmount(tester);
       },
     );
+  });
+
+  group('placeDiaryCaretAfterEmbed', () {
+    test('reuses an empty line below, otherwise adds one', () {
+      final controller = _document([
+        _image('1', thumbnail: false),
+        _p(''),
+        _divider(),
+        _p('after'),
+      ]);
+      final state = controller.state;
+
+      expect(
+        placeDiaryCaretAfterEmbed(state, _block(controller, 0)),
+        _caret([1]),
+      );
+      expect(controller.document.root.children, hasLength(4));
+      expect(state.selection, _caret([1]));
+
+      expect(
+        placeDiaryCaretAfterEmbed(state, _block(controller, 2)),
+        _caret([3]),
+      );
+      expect(
+        _outline(controller),
+        'image:1\nparagraph:\ndivider\nparagraph:\nparagraph:after',
+      );
+      expect(state.selectionUpdateReason, af.SelectionUpdateReason.uiEvent);
+
+      // 文字块不是嵌入块，不处理。
+      expect(placeDiaryCaretAfterEmbed(state, _block(controller, 4)), isNull);
+    });
+
+    test('a thumbnail in a row places the caret after the whole row', () {
+      final controller = _document([_image('1'), _image('2'), _image('3')]);
+      expect(
+        placeDiaryCaretAfterEmbed(controller.state, _block(controller, 0)),
+        _caret([3]),
+      );
+      expect(_outline(controller), 'image:1*\nimage:2*\nimage:3*\nparagraph:');
+    });
   });
 
   group('insertDiaryImages', () {

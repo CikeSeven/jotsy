@@ -619,13 +619,14 @@ void main() {
         expect(tester.testTextInput.isVisible, isFalse);
         final left = tester.getTopLeft(find.byType(af.AppFlowyEditor)).dx;
 
-        // 点在分隔线上不补行。
-        final divider = controller.document.root.children.last.renderBox!;
-        await tester.tapAt(
-          divider.localToGlobal(divider.size.center(Offset.zero)),
-        );
+        // 点在上面那行文字上不补行（点分隔线本身另见
+        // diary_thumbnail_row_test.dart：插入点挪到它下面一行）。点在行的
+        // 中间：行首左边距里浮着段落把手。
+        final text = controller.document.root.children.first.renderBox!;
+        await tester.tapAt(text.localToGlobal(text.size.center(Offset.zero)));
         await tester.pump();
         expect(controller.document.root.children, hasLength(2));
+        expect(controller.selection, _caret([0], 4));
 
         await tester.tapAt(Offset(left + 40, lastBlockBottom(controller) + 60));
         await tester.pump();

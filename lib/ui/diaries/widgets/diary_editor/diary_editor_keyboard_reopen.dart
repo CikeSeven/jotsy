@@ -4,12 +4,14 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../../core/services/app_platform.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_embed_editing.dart';
 import 'diary_editor_trailing_region.dart';
+import 'diary_embed_selectable.dart';
 
-/// 点按正文之后，让插入点与键盘出现在该出现的地方。两种情形：
+/// 点按正文之后，让插入点与键盘出现在该出现的地方。三种情形：
 ///
 /// 1. 点正文最后一块下方的空白处，而最后显示的块不能打字（图片、视频、
 ///    音频、附件、分隔线、日记链接卡片、表格）：在末尾补一个空段落、插入点
@@ -32,6 +34,13 @@ import 'diary_editor_trailing_region.dart';
 ///    显示时也不动它：重新连接会让输入法重置当前面板（符号页回到字母页
 ///    等）。只在手机上生效；桌面没有软键盘，上游桌面选区服务每次点按本就
 ///    先断开再连接。
+///
+/// 3. 点在嵌入块旁的空白处（图片右侧、并排小图之间与右侧、块的上下留白、
+///    分隔线）：上游把光标盖在块上、不连接输入法，插入点就像卡在了图片
+///    上，键盘也不出来。改把插入点放到块下面一行（下一块是空行就放进去，
+///    否则补一行，见 `placeDiaryCaretAfterEmbed`），键盘随之弹出。点在块的
+///    内容上（[DiaryEmbedContent]：看图、播放、打开卡片）不动它。手机与桌面
+///    都生效（桌面同样没有插入点可写）。
 ///
 /// 只观察指针（[Listener] 不参与手势竞技场，上游的点按、长按选字、拖动把手
 /// 与外层滚动都不受影响）：一次点按（未越过触摸容差、未到长按时长、期间
@@ -103,6 +112,7 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   ) {
     if (!mounted || !_active) return;
     if (_appendLineBelow(position)) return;
+    if (_moveOffEmbed(position)) return;
     if (before == null || !before.isCollapsed || !AppPlatform.isMobile) return;
     _reopenIfUnchanged(beforeValue);
   }
@@ -134,14 +144,48 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
     final keyboardShown = View.of(context).viewInsets.bottom > 0;
     final selection = appendDiaryTrailingLine(state);
     if (selection == null) return false;
-    // 新空行的编辑值（空文字、偏移 0）可能与输入法上次拿到的相同，上游
-    // 连接时会直接返回、不弹键盘：键盘收着时同情形 2 断开重连。
-    if (AppPlatform.isMobile && !keyboardShown) {
-      state.service.keyboardService
-        ?..closeKeyboard()
-        ..enableKeyBoard(selection);
-    }
+    _showKeyboardAt(selection, keyboardShown: keyboardShown);
     return true;
+  }
+
+  /// 情形 3：点按后光标盖在嵌入块上，而点的是块旁的空白：插入点挪到块
+  /// 下面一行并弹出键盘。
+  ///
+  /// “盖在块上”两种形态：手机选区服务点按后是块末尾的折叠插入点，桌面
+  /// 选区服务是整块选中（块的开头到末尾）。都只落在这一块里。
+  bool _moveOffEmbed(Offset position) {
+    final state = widget.controller.state;
+    final selection = state.selection;
+    if (selection == null || !selection.start.path.equals(selection.end.path)) {
+      return false;
+    }
+    final node = state.getNodeAtPath(selection.end.path);
+    if (node == null || !kDiaryEmbedBlockTypes.contains(node.type)) {
+      return false;
+    }
+    final box = node.renderBox;
+    if (box == null || !box.attached || !box.hasSize) return false;
+    // 只认落在这块那一横条里的点按：确是这次点按把光标盖上去的（光标原本
+    // 就在块上、点的是页头等别处时不动）。不要求落在块的矩形里——并排的
+    // 小图每张只占一格，点在一排右侧的空白时上游盖住的是最近的那张。
+    final top = box.localToGlobal(Offset.zero).dy;
+    if (position.dy < top || position.dy > top + box.size.height) return false;
+    if (DiaryEmbedContent.contains(box, position)) return false;
+    final keyboardShown = View.of(context).viewInsets.bottom > 0;
+    final caret = placeDiaryCaretAfterEmbed(state, node);
+    if (caret == null) return false;
+    _showKeyboardAt(caret, keyboardShown: keyboardShown);
+    return true;
+  }
+
+  /// 情形 1、3 放好插入点之后：新空行的编辑值（空文字、偏移 0）可能与
+  /// 输入法上次拿到的相同，上游连接时会直接返回、不弹键盘：键盘收着时同
+  /// 情形 2 断开重连。
+  void _showKeyboardAt(af.Selection selection, {required bool keyboardShown}) {
+    if (!AppPlatform.isMobile || keyboardShown) return;
+    widget.controller.state.service.keyboardService
+      ?..closeKeyboard()
+      ..enableKeyBoard(selection);
   }
 
   void _onCancel(PointerCancelEvent event) {

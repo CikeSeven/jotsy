@@ -11,6 +11,7 @@ import 'package:node_diary/app/synced_data_refresh.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/app_fonts.dart';
 import 'package:node_diary/app/theme/app_scroll_behavior.dart';
+import 'package:node_diary/app/theme/derived_theme_cache.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/app_lock_platform.dart';
@@ -74,6 +75,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   Color? _cachedThemeSeedColor;
   AppFonts? _cachedThemeFonts;
   (ThemeData, ThemeData)? _cachedThemes;
+
+  /// 减少动画时去掉动效的主题，按 MaterialApp 给的基础主题记住。
+  final DerivedThemeCache<bool> _noMotionThemes = DerivedThemeCache<bool>();
   late final HomeHintVisibilityController _homeHintVisibilityController;
   Timer? _loaderShowTimer;
   Timer? _loaderMinVisibleTimer;
@@ -217,10 +221,16 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       showBrandMark: widget.launchBrandMark,
       // 应用锁遮罩盖着时首页入场无人可见，留到解锁时与遮罩淡出一起上演。
       holdReveal: appLockCovering,
-      homeBuilder: (BuildContext context) => HomePage(
-        startupNotice: startupNotice,
-        homeHintVisibleListenable:
-            _homeHintVisibilityController.isHintVisibleNotifier,
+      // 首页不为键盘让位（resizeToAvoidBottomInset: false），也没有自己的
+      // 输入框：键盘只会为盖在上面的页面、面板与对话框弹出。始终屏蔽键盘，
+      // 键盘升降时首页连同保活的各 Tab 一次都不重建（见 KeyboardShield）。
+      homeBuilder: (BuildContext context) => KeyboardShield(
+        shielded: true,
+        child: HomePage(
+          startupNotice: startupNotice,
+          homeHintVisibleListenable:
+              _homeHintVisibilityController.isHintVisibleNotifier,
+        ),
       ),
     );
 
@@ -349,9 +359,15 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
           baseScaler: mediaQuery.textScaler,
           factor: fontScale,
         );
+        // 这一层随 MediaQuery 逐帧重建（键盘升降）：去掉动效的主题按基础主题
+        // 记住，不让 Theme 逐帧通知全应用（见 DerivedThemeCache）。
         final themedChild = mediaQuery.disableAnimations
             ? Theme(
-                data: ExpressiveControls.withoutMotion(Theme.of(context)),
+                data: _noMotionThemes.resolve(
+                  theme,
+                  true,
+                  () => ExpressiveControls.withoutMotion(theme),
+                ),
                 child: child,
               )
             : child;

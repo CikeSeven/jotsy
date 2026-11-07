@@ -91,4 +91,81 @@ void main() {
     expect(padding.padding, const EdgeInsets.only(bottom: 240));
     expect(tester.getSize(find.byType(KeyboardInsetPadding)).height, 250);
   });
+
+  group('KeyboardShield', () {
+    late List<EdgeInsets> insets;
+    late List<EdgeInsets> paddings;
+    late List<bool> visible;
+
+    Widget shield({required bool shielded}) => MaterialApp(
+      home: KeyboardShield(
+        shielded: shielded,
+        child: Builder(
+          builder: (BuildContext context) {
+            insets.add(MediaQuery.viewInsetsOf(context));
+            paddings.add(MediaQuery.paddingOf(context));
+            visible.add(KeyboardVisibility.of(context));
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+
+    setUp(() {
+      insets = <EdgeInsets>[];
+      paddings = <EdgeInsets>[];
+      visible = <bool>[];
+    });
+
+    testWidgets('a shielded page never rebuilds for the keyboard', (
+      tester,
+    ) async {
+      tester.view
+        ..devicePixelRatio = 1
+        ..viewPadding = const FakeViewPadding(bottom: 24)
+        ..padding = const FakeViewPadding(bottom: 24);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(shield(shielded: true));
+      expect(insets, <EdgeInsets>[EdgeInsets.zero]);
+
+      // 键盘升起：底边 padding 被盖住逐帧变小，viewInsets 逐帧变大。
+      for (final inset in <double>[12, 60, 180, 300]) {
+        tester.view
+          ..viewInsets = FakeViewPadding(bottom: inset)
+          ..padding = FakeViewPadding(bottom: (24 - inset).clamp(0, 24));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(insets, <EdgeInsets>[EdgeInsets.zero]);
+      expect(paddings, <EdgeInsets>[const EdgeInsets.only(bottom: 24)]);
+      expect(visible, <bool>[false]);
+    });
+
+    testWidgets('lifting the shield follows the real keyboard and freezing '
+        'keeps the value from that moment', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(shield(shielded: false));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 200);
+      await tester.pump();
+      expect(insets.last, const EdgeInsets.only(bottom: 200));
+      expect(visible.last, isTrue);
+      final element = tester.element(find.byType(Builder).last);
+
+      // 盖上别的页面时冻结在此刻：键盘再动也不跟着变，子树不重新挂载。
+      await tester.pumpWidget(shield(shielded: true));
+      final frozenBuilds = insets.length;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+      await tester.pump();
+      expect(insets.length, frozenBuilds);
+      expect(insets.last, const EdgeInsets.only(bottom: 200));
+      expect(
+        identical(tester.element(find.byType(Builder).last), element),
+        isTrue,
+      );
+
+      // 揭开后回到真实的键盘高度。
+      await tester.pumpWidget(shield(shielded: false));
+      expect(insets.last, const EdgeInsets.only(bottom: 320));
+    });
+  });
 }

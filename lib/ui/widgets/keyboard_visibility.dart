@@ -49,6 +49,70 @@ class KeyboardInsetPadding extends StatelessWidget {
   );
 }
 
+/// 让子树不随软键盘升降重建：[shielded] 期间，子树看到的键盘停在变为
+/// [shielded] 的那一刻。
+///
+/// 为什么：被别的页面盖着的路由（首页在搜索页、编辑页之下，预览页在编辑页
+/// 之下）照样依赖 MediaQuery。键盘升起的头几帧盖过导航条时 `padding` 的
+/// 底边逐帧变小，`viewInsets` 更是每帧都变，底下的页面因此逐帧重建、重新
+/// 布局——真机上首页这一项就让键盘动画开头的几帧各卡 17～30ms。盖着的页面
+/// 看不见，没必要跟着键盘动。
+///
+/// 只替换与键盘有关的两项：底部 `viewInsets` 取冻结的键盘高度，底部
+/// `padding` 按 `viewPadding` 减去它重算（与引擎的算法相同，旋转屏幕等
+/// 导航条变化照常生效）；[KeyboardVisibility.of] 同样取冻结值。其余字段
+/// 原样透传。冻结而不是清零：编辑页正打字时盖上一个带输入框的对话框，
+/// 下面的正文保持让开键盘的样子，关掉对话框时不会先撑开再缩回。
+///
+/// 结构恒定：[shielded] 切换时子树不会被重新挂载。
+class KeyboardShield extends StatefulWidget {
+  const KeyboardShield({
+    super.key,
+    required this.shielded,
+    required this.child,
+  });
+
+  final bool shielded;
+  final Widget child;
+
+  @override
+  State<KeyboardShield> createState() => _KeyboardShieldState();
+}
+
+class _KeyboardShieldState extends State<KeyboardShield> {
+  /// 冻结的键盘高度（逻辑像素）；不在屏蔽期间为 null。
+  double? _frozenInset;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = MediaQuery.of(context);
+    if (!widget.shielded) {
+      _frozenInset = null;
+    } else {
+      _frozenInset ??= data.viewInsets.bottom;
+    }
+    final inset = _frozenInset;
+    final shown = inset == null
+        ? data
+        : data.copyWith(
+            viewInsets: data.viewInsets.copyWith(bottom: inset),
+            padding: data.padding.copyWith(
+              bottom: (data.viewPadding.bottom - inset).clamp(
+                0.0,
+                double.infinity,
+              ),
+            ),
+          );
+    return MediaQuery(
+      data: shown,
+      child: _KeyboardVisibilityScope(
+        visible: shown.viewInsets.bottom > 0,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 class _KeyboardVisibilityScope extends InheritedWidget {
   const _KeyboardVisibilityScope({required this.visible, required super.child});
 

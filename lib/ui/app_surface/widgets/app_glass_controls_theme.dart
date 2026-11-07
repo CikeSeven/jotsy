@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/derived_theme_cache.dart';
 import 'app_glass_scope.dart';
 
 /// 主题里自带底色的小控件（标签式 Chip、输入框、开关轨道）的玻璃材质：归入
@@ -24,11 +25,20 @@ class AppGlassControlsTheme extends StatelessWidget {
 
   final Widget child;
 
+  /// 本组件挂在 `MaterialApp.builder` 里、随 MediaQuery 逐帧重建：输入不变
+  /// 时交回同一份主题，不让 Theme 逐帧通知全应用（见 [DerivedThemeCache]）。
+  static final DerivedThemeCache<AppGlassResolved> _themes =
+      DerivedThemeCache<AppGlassResolved>();
+
   @override
   Widget build(BuildContext context) {
     final glass = AppGlass.of(context);
     if (!glass.isGlass(AppGlassComponent.controls)) return child;
-    return Theme(data: themeFor(Theme.of(context), glass), child: child);
+    final base = Theme.of(context);
+    return Theme(
+      data: _themes.resolve(base, glass, () => themeFor(base, glass)),
+      child: child,
+    );
   }
 
   /// 在经典主题 [base] 上换成玻璃的底色与描边；尺寸、圆角、文字样式不变。

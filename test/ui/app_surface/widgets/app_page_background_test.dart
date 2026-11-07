@@ -190,16 +190,24 @@ void main() {
     expect(harness.backdrop.estimatedColor, surface);
     expect(harness.backdrop.contentBackdropKey, isNotNull);
     expect(_scaffoldColor(tester), surface);
-    // 页面与背景组件之间只有不绘制的节点（InheritedWidget、KeyedSubtree）
-    // 和测试自己的 Builder。
+    // 页面与背景组件之间只有不绘制的节点（InheritedWidget、KeyedSubtree、
+    // 被盖住时屏蔽键盘的 KeyboardShield 与它的 MediaQuery）和测试自己的
+    // Builder。
     expect(find.byType(AppBackgroundLayersView), findsNothing);
-    final between = <Type>[];
+    final between = <String>[];
     tester.element(find.byType(Scaffold)).visitAncestorElements((element) {
       if (element.widget is AppPageBackground) return false;
-      between.add(element.widget.runtimeType);
+      between.add(element.widget.runtimeType.toString());
       return true;
     });
-    expect(between, <Type>[Builder, KeyedSubtree, AppPageBackdropScope]);
+    expect(between, <String>[
+      'Builder',
+      '_KeyboardVisibilityScope',
+      'MediaQuery',
+      'KeyboardShield',
+      'KeyedSubtree',
+      'AppPageBackdropScope',
+    ]);
   });
 
   testWidgets('of() without an ancestor falls back to the plain theme values', (

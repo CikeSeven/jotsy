@@ -65,10 +65,12 @@ class DiaryToolbarPanelFrame extends StatelessWidget {
     super.key,
     required this.contentKey,
     required this.child,
+    this.maxBodyHeight = double.infinity,
   });
 
   final Object contentKey;
   final Widget child;
+  final double maxBodyHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -83,31 +85,37 @@ class DiaryToolbarPanelFrame extends StatelessWidget {
             _kPanelBottomPadding,
           ),
           // 0 时长的 AnimatedSize 会在自身布局中重新标脏而断言（DESIGN §4.3）。
-          child: AnimatedSize(
-            duration: ExpressiveMotion.durationNonZero(
-              context,
-              ExpressiveMotion.medium,
-            ),
-            curve: ExpressiveMotion.effects,
-            alignment: Alignment.topCenter,
-            child: AnimatedSwitcher(
-              duration: ExpressiveMotion.duration(
+          // 收矮窗口时 AnimatedSize 仍会短暂保留旧高度。上限必须约束动画本身，
+          // 不能只改内容的目标高度，否则当前帧仍会把正文挤出可用区域。
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxBodyHeight),
+            child: AnimatedSize(
+              duration: ExpressiveMotion.durationNonZero(
                 context,
                 ExpressiveMotion.medium,
               ),
-              switchInCurve: ExpressiveMotion.effects,
-              switchOutCurve: ExpressiveMotion.exit,
-              layoutBuilder: (Widget? current, List<Widget> previous) => Stack(
-                alignment: Alignment.topCenter,
-                children: <Widget>[
-                  for (final child in previous)
-                    Positioned(top: 0, left: 0, right: 0, child: child),
-                  ?current,
-                ],
-              ),
-              child: KeyedSubtree(
-                key: ValueKey<Object>(contentKey),
-                child: child,
+              curve: ExpressiveMotion.effects,
+              alignment: Alignment.topCenter,
+              child: AnimatedSwitcher(
+                duration: ExpressiveMotion.duration(
+                  context,
+                  ExpressiveMotion.medium,
+                ),
+                switchInCurve: ExpressiveMotion.effects,
+                switchOutCurve: ExpressiveMotion.exit,
+                layoutBuilder: (Widget? current, List<Widget> previous) =>
+                    Stack(
+                      alignment: Alignment.topCenter,
+                      children: <Widget>[
+                        for (final child in previous)
+                          Positioned(top: 0, left: 0, right: 0, child: child),
+                        ?current,
+                      ],
+                    ),
+                child: KeyedSubtree(
+                  key: ValueKey<Object>(contentKey),
+                  child: child,
+                ),
               ),
             ),
           ),

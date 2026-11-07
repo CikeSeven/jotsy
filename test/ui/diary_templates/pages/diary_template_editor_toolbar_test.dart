@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -30,6 +31,57 @@ void main() {
   }
 
   for (final brightness in Brightness.values) {
+    testWidgets(
+      'expanded More respects a shorter desktop window in its first frame '
+      '(${brightness.name})',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        final h = await openEditor(tester, brightness);
+        await tester.tap(find.byTooltip(h.l10n.diaryToolbarMoreTools));
+        await tester.pumpAndSettle();
+
+        tester.view.physicalSize = const Size(400, 320);
+        await tester.pump();
+        expect(tester.takeException(), isNull);
+        expect(tester.getSize(find.byType(DiaryEditor)).height, greaterThan(0));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        // 收起动画仍在画旧内容，也必须服从缩窗的新高度。
+        tester.view.physicalSize = const Size(400, 900);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip(h.l10n.diaryToolbarHideMoreTools));
+        await tester.pump(const Duration(milliseconds: 16));
+        tester.view.physicalSize = const Size(400, 320);
+        await tester.pump();
+        expect(tester.takeException(), isNull);
+        await tester.pumpAndSettle();
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+
+    testWidgets(
+      'collapsed toolbar ignores desktop height animation (${brightness.name})',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        await openEditor(tester, brightness);
+        var builds = 0;
+        debugOnRebuildDirtyWidget = (element, builtOnce) {
+          if (element.widget is DiaryFloatingToolbar) builds++;
+        };
+        for (final height in <double>[800, 700, 600, 500]) {
+          tester.view.physicalSize = Size(400, height);
+          await tester.pump();
+        }
+        debugOnRebuildDirtyWidget = null;
+        expect(builds, 0);
+        expect(tester.takeException(), isNull);
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+
     testWidgets(
       'expanding More lets mobile auto scrolling stop in a short viewport '
       '(${brightness.name})',

@@ -401,12 +401,25 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                       ),
                     ),
                     Expanded(
-                      child: ListView(
+                      child: ListView.builder(
                         controller: _scroll,
                         padding: EdgeInsets.fromLTRB(side, 8, side, 24),
-                        children: <Widget>[
-                          if (messages.isEmpty && !busy)
-                            Padding(
+                        itemCount: messages.isEmpty && !busy
+                            ? 1
+                            : messages.length + (busy ? 1 : 0),
+                        findChildIndexCallback: (key) {
+                          if (key is! ValueKey<String>) return null;
+                          if (key.value == 'ai-pending') {
+                            return busy ? messages.length : null;
+                          }
+                          final index = messages.indexWhere(
+                            (message) => message.messageId == key.value,
+                          );
+                          return index < 0 ? null : index;
+                        },
+                        itemBuilder: (context, i) {
+                          if (messages.isEmpty && !busy) {
+                            return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 48),
                               child: Column(
                                 children: <Widget>[
@@ -425,54 +438,54 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                                   ),
                                 ],
                               ),
-                            ),
-                          for (var i = 0; i < messages.length; i++)
-                            AiChatMessageView(
-                              key: ValueKey<String>(messages[i].messageId),
-                              message: messages[i],
-                              showReasoning: prefs.showReasoning,
-                              showTokens: prefs.showTokens,
-                              onCitation: (citations, ref) =>
-                                  _openCitation(citations, ref),
-                              onEdit: !busy && i == lastUser
-                                  ? () => unawaited(
-                                      _editLast(messages[i].content),
-                                    )
-                                  : null,
-                              onRegenerate:
-                                  !busy && i == lastAssistant && i > lastUser
-                                  ? () => unawaited(
-                                      _controller.regenerate(context, ref),
-                                    )
-                                  : null,
-                              onCopy: (text) =>
-                                  unawaited(copyAiText(context, text)),
-                              onSaveAsDiary: (text) => unawaited(
-                                saveAiTextAsDiary(
-                                  context,
-                                  ref,
-                                  title: title,
-                                  markdown: text,
-                                ),
-                              ),
-                              onDelete: busy
-                                  ? null
-                                  : () => unawaited(
-                                      deleteAiChatMessage(
-                                        context,
-                                        ref,
-                                        messages[i],
-                                      ),
-                                    ),
-                            ),
-                          // 每收到一块只重建正在生成的这一条，不动整个列表。
-                          if (busy)
-                            ListenableBuilder(
+                            );
+                          }
+                          if (i == messages.length) {
+                            return ListenableBuilder(
+                              key: const ValueKey<String>('ai-pending'),
                               listenable: _controller.run,
                               builder: (BuildContext context, Widget? _) =>
                                   _buildPending(context),
+                            );
+                          }
+                          return AiChatMessageView(
+                            key: ValueKey<String>(messages[i].messageId),
+                            message: messages[i],
+                            showReasoning: prefs.showReasoning,
+                            showTokens: prefs.showTokens,
+                            onCitation: (citations, ref) =>
+                                _openCitation(citations, ref),
+                            onEdit: !busy && i == lastUser
+                                ? () =>
+                                      unawaited(_editLast(messages[i].content))
+                                : null,
+                            onRegenerate:
+                                !busy && i == lastAssistant && i > lastUser
+                                ? () => unawaited(
+                                    _controller.regenerate(context, ref),
+                                  )
+                                : null,
+                            onCopy: (text) =>
+                                unawaited(copyAiText(context, text)),
+                            onSaveAsDiary: (text) => unawaited(
+                              saveAiTextAsDiary(
+                                context,
+                                ref,
+                                title: title,
+                                markdown: text,
+                              ),
                             ),
-                        ],
+                            onDelete: busy
+                                ? null
+                                : () => unawaited(
+                                    deleteAiChatMessage(
+                                      context,
+                                      ref,
+                                      messages[i],
+                                    ),
+                                  ),
+                          );
+                        },
                       ),
                     ),
                     _ChatInput(

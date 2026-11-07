@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -12,6 +13,24 @@ import 'diary_media_storage_service.dart';
 /// 不修改当前数据库或设置，不把整个 ZIP 的字节跨 isolate 传递。
 class BackupArchiveIO {
   const BackupArchiveIO._();
+
+  /// JSON 编码、UTF-8 和文件写入同处 worker；转换器直接分块写文件，避免在
+  /// UI 同步构造整份 JSON 字符串后再多留一份 UTF-8 字节。载荷是已经取得的
+  /// 一致事务快照，不把数据库或设置服务发送到 isolate。
+  static Future<void> writeJson(String path, Map<String, Object?> payload) =>
+      Isolate.run<void>(() {
+        final output = File(path).openSync(mode: FileMode.write);
+        final encoder = const JsonEncoder.withIndent(
+          '  ',
+        ).fuse(utf8.encoder).startChunkedConversion(_JsonFileSink(output));
+        try {
+          encoder.add(payload);
+          encoder.close();
+          output.flushSync();
+        } finally {
+          output.closeSync();
+        }
+      }, debugName: 'backup.json');
 
   static Future<void> encodeDirectory(
     Directory root, {
@@ -188,4 +207,17 @@ class BackupArchiveIO {
       output.closeSync();
     }
   }
+}
+
+/// 同步写发生在 worker：每块写完再接下一块，避免 IOSink 在同步 JSON 转换
+/// 期间把整份 UTF-8 输出排入内存队列。文件生命周期由 writeJson 的 finally 管。
+class _JsonFileSink implements Sink<List<int>> {
+  _JsonFileSink(this.file);
+  final RandomAccessFile file;
+
+  @override
+  void add(List<int> bytes) => file.writeFromSync(bytes);
+
+  @override
+  void close() {}
 }

@@ -208,22 +208,19 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   /// 已经报告给编辑页的高度，避免重复回调。
   double _reportedExtent = 0;
 
-  /// 面板展开期间上限变了、下一帧重建已排上。
-  bool _limitRebuildScheduled = false;
-
   double get _maxPanelExtent => widget.maxPanelExtent?.value ?? double.infinity;
 
-  /// 上限在布局阶段写入：面板收着时不理会；展开着时排到这一帧之后重建，
-  /// 不在布局中途 setState。
+  /// 上限由祖先 DiaryToolbarPanelLimit 的 LayoutBuilder 写入。该布局构建
+  /// 作用域允许标脏尚未布局的后代，因此展开时要在当前帧刷新；推到帧后会让
+  /// 缩窗首帧沿用旧高度并溢出。收着时仍不重建整条工具栏。
   void _handleMaxPanelExtentChanged() {
     final layout = _layout;
-    if (layout == null || _visiblePanel(layout) == _ToolbarPanel.none) return;
-    if (_limitRebuildScheduled) return;
-    _limitRebuildScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _limitRebuildScheduled = false;
-      if (mounted) setState(() {});
-    });
+    if (layout == null) return;
+    if (_visiblePanel(layout) == _ToolbarPanel.none &&
+        (_panel != _ToolbarPanel.none || _panelController.isDismissed)) {
+      return;
+    }
+    setState(() {});
   }
 
   @override
@@ -443,6 +440,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   double _targetExtent() {
     final layout = _layout;
     if (layout == null) return 0;
+    if (_maxPanelExtent <= kDiaryToolbarPanelChrome) return 0;
     final panel = _visiblePanel(layout);
     if (panel == _ToolbarPanel.none) return 0;
     return kDiaryToolbarPanelChrome + _bodyHeight(panel);
@@ -499,6 +497,9 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   /// 面板区：展开 / 收起由 [_panelController] 驱动（SizeTransition 顶端对齐 +
   /// 淡入），面板之间切换时外框不动，内容高度补间、内容交叉淡入。
   Widget _buildPanelArea(BuildContext context, DiaryToolbarLayout layout) {
+    if (_maxPanelExtent <= kDiaryToolbarPanelChrome) {
+      return const SizedBox.shrink();
+    }
     final visible = _visiblePanel(layout);
     // 「更多」因排布变化暂时没有位置时整块不显示，不播动画。
     if (visible == _ToolbarPanel.none && _panel != _ToolbarPanel.none) {
@@ -512,6 +513,10 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       child: showPanel && content != _ToolbarPanel.none
           ? DiaryToolbarPanelFrame(
               contentKey: content,
+              maxBodyHeight: diaryToolbarPanelBodyLimit(
+                double.infinity,
+                _maxPanelExtent,
+              ),
               child: _buildPanelContent(context, layout, content),
             )
           : null,

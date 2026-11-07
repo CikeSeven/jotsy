@@ -13078,9 +13078,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diarySearchNoResults => '没有找到相关日记';
-
-  @override
   String get diarySearchClearFilters => '清除筛选';
 
   @override

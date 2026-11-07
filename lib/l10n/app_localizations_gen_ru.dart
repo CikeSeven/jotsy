@@ -15218,9 +15218,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get diarySearchNoResults => 'Ничего не найдено';
-
-  @override
   String get diarySearchClearFilters => 'Сбросить фильтры';
 
   @override

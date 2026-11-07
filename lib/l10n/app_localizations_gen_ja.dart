@@ -13325,9 +13325,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get diarySearchNoResults => '一致する日記はありません';
-
-  @override
   String get diarySearchClearFilters => '絞り込みを解除';
 
   @override

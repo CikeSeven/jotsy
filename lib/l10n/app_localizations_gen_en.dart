@@ -14717,9 +14717,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diarySearchNoResults => 'No matching entries';
-
-  @override
   String get diarySearchClearFilters => 'Clear filters';
 
   @override

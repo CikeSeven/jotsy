@@ -23838,12 +23838,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
   String diarySearchResultCount(int count);
 
-  /// Empty state when a search has no results.
-  ///
-  /// In en, this message translates to:
-  /// **'No matching entries'**
-  String get diarySearchNoResults;
-
   /// Button under the no-results message that removes all search filters.
   ///
   /// In en, this message translates to:

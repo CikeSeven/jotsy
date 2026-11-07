@@ -37,6 +37,9 @@ class AiStreamRun extends ChangeNotifier {
   AiRunStatus _status = AiRunStatus.idle;
   final StringBuffer _text = StringBuffer();
   final StringBuffer _reasoning = StringBuffer();
+  String? _textValue;
+  String? _reasoningValue;
+  Timer? _notification;
   AiUsage? _usage;
   AiFinishReason? _finish;
   Object? _error;
@@ -45,8 +48,8 @@ class AiStreamRun extends ChangeNotifier {
   bool _disposed = false;
 
   AiRunStatus get status => _status;
-  String get text => _text.toString();
-  String get reasoning => _reasoning.toString();
+  String get text => _textValue ??= _text.toString();
+  String get reasoning => _reasoningValue ??= _reasoning.toString();
   AiUsage? get usage => _usage;
   AiFinishReason? get finishReason => _finish;
   Object? get error => _error;
@@ -72,6 +75,8 @@ class AiStreamRun extends ChangeNotifier {
     _status = AiRunStatus.running;
     _text.clear();
     _reasoning.clear();
+    _textValue = null;
+    _reasoningValue = null;
     _usage = null;
     _finish = null;
     _error = null;
@@ -82,11 +87,13 @@ class AiStreamRun extends ChangeNotifier {
         if (!current()) return;
         _text.write(chunk.text);
         _reasoning.write(chunk.reasoning);
+        if (chunk.text.isNotEmpty) _textValue = null;
+        if (chunk.reasoning.isNotEmpty) _reasoningValue = null;
         if (chunk.usage case final usage?) {
           _usage = (_usage ?? const AiUsage()).merge(usage);
         }
         _finish = chunk.finishReason ?? _finish;
-        _notify();
+        _scheduleNotification();
       }
       if (!current()) return;
       if (_finish == AiFinishReason.filtered && _text.isEmpty) {
@@ -126,6 +133,8 @@ class AiStreamRun extends ChangeNotifier {
     _status = AiRunStatus.idle;
     _text.clear();
     _reasoning.clear();
+    _textValue = null;
+    _reasoningValue = null;
     _usage = null;
     _finish = null;
     _error = null;
@@ -133,12 +142,25 @@ class AiStreamRun extends ChangeNotifier {
   }
 
   void _notify() {
+    _notification?.cancel();
+    _notification = null;
     if (!_disposed) notifyListeners();
+  }
+
+  /// 网络可能在一帧内送来很多小块。缓冲立即更新（保存/停止始终读到完整
+  /// 结果），只将 UI 通知合并到约一帧一次；开始、完成、失败与重置直接通知
+  /// 并取消旧计时，末块不会等待下一次网络消息，也不会污染下一次生成。
+  void _scheduleNotification() {
+    _notification ??= Timer(const Duration(milliseconds: 16), () {
+      _notification = null;
+      _notify();
+    });
   }
 
   @override
   void dispose() {
     _disposed = true;
+    _notification?.cancel();
     _token?.cancel();
     super.dispose();
   }

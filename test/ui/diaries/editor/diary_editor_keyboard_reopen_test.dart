@@ -23,11 +23,14 @@ void main() {
   final caret = af.Selection.collapsed(af.Position(path: [0], offset: 3));
 
   Future<(DiaryEditorController, FocusNode)> pumpFocused(
-    WidgetTester tester,
-  ) async {
+    WidgetTester tester, {
+    String content = '正文 body text',
+    af.Selection? at,
+  }) async {
+    final start = at ?? caret;
     final focus = FocusNode();
-    final controller = DiaryEditorController.fromContent('正文 body text');
-    controller.select(caret);
+    final controller = DiaryEditorController.fromContent(content);
+    controller.select(start);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -55,7 +58,7 @@ void main() {
     focus.requestFocus();
     await tester.pump();
     expect(tester.testTextInput.hasAnyClients, isTrue);
-    expect(controller.state.selection, caret);
+    expect(controller.state.selection, start);
     return (controller, focus);
   }
 
@@ -173,6 +176,28 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.android),
   );
+
+  testWidgets('tapping another empty line shows the keyboard the user hid', (
+    tester,
+  ) async {
+    // 两个空行的编辑值相同（空文字、偏移 0）：上游比较编辑值后直接返回、
+    // 不弹键盘，虽然插入点换了一行。
+    final (controller, focus) = await pumpFocused(
+      tester,
+      content: 'first\n\nmiddle\n\nlast',
+      at: af.Selection.collapsed(af.Position(path: [1])),
+    );
+    tester.testTextInput.hide();
+    tester.testTextInput.log.clear();
+
+    final other = af.Selection.collapsed(af.Position(path: [3]));
+    await press(tester, between: () => controller.select(other));
+
+    expect(controller.state.selection, other);
+    expect(reconnected(tester), isTrue);
+    expect(tester.testTextInput.isVisible, isTrue);
+    await unmount(tester, controller, focus);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
   testWidgets('desktop taps never reconnect the input', (tester) async {
     final (controller, focus) = await pumpFocused(tester);

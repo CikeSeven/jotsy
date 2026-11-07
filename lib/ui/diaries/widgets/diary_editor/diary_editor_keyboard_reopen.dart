@@ -21,15 +21,17 @@ import 'diary_editor_trailing_region.dart';
 ///    防护（点块本身仍不弹键盘），只给块下方的空白一个可写的去处；不点就
 ///    不改正文。手机与桌面都生效（桌面同样没有插入点可写）。
 ///
-/// 2. 收起软键盘后，点回原来的插入点时重新弹出键盘。上游 AppFlowy 只在
-///    “编辑值变了”时让输入法 show：点按后它照常把选区再设一遍，但
-///    `NonDeltaTextInputService.attach` 发现文字与选区都和上次相同就直接
-///    返回。用户用系统返回手势或输入法自带的按钮收起键盘时，正文的焦点与
-///    输入连接都还在，点回光标所在的位置得到同一个折叠选区，于是键盘不再
-///    弹出，只有点到别处（选区变了）才行。普通输入框点按时总会 show，这里
-///    补上同样的行为。键盘正显示时不动它：重新连接会让输入法重置当前面板
-///    （符号页回到字母页等）。只在手机上生效；桌面没有软键盘，上游桌面
-///    选区服务每次点按本就先断开再连接。
+/// 2. 收起软键盘后，点回正文时重新弹出键盘。上游 AppFlowy 只在“编辑值
+///    变了”时让输入法 show：编辑值是插入点所在段落的文字加偏移，
+///    `NonDeltaTextInputService.attach` 发现它和上次相同就直接返回。用户用
+///    系统返回手势或输入法自带的按钮收起键盘时，正文的焦点与输入连接都
+///    还在，于是点回原来的插入点、或点到另一处编辑值相同的位置（最常见的
+///    是从一个空行点到另一个空行：都是空文字、偏移 0）时键盘不再弹出。
+///    普通输入框点按时总会 show，这里补上同样的行为：点按前后编辑值相同
+///    就断开重连。编辑值变了的点按上游已按新值 show 过，不动它。键盘正
+///    显示时也不动它：重新连接会让输入法重置当前面板（符号页回到字母页
+///    等）。只在手机上生效；桌面没有软键盘，上游桌面选区服务每次点按本就
+///    先断开再连接。
 ///
 /// 只观察指针（[Listener] 不参与手势竞技场，上游的点按、长按选字、拖动把手
 /// 与外层滚动都不受影响）：一次点按（未越过触摸容差、未到长按时长、期间
@@ -55,6 +57,9 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   Offset _downPosition = Offset.zero;
   af.Selection? _downSelection;
 
+  /// 按下时插入点的编辑值（见 [_editValueOf]），与点按后的比较。
+  (String, int)? _downValue;
+
   /// 按住到长按时长即不再算点按；用计时器而非事件时间戳，测试的假时钟
   /// 与真机一致。抬起、取消、第二根手指按下与销毁时都取消。
   Timer? _tapDeadline;
@@ -73,6 +78,7 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
     _pointer = event.pointer;
     _downPosition = event.position;
     _downSelection = widget.controller.state.selection;
+    _downValue = _editValueOf(_downSelection);
     _tapDeadline = Timer(kLongPressTimeout, _reset);
   }
 
@@ -84,16 +90,33 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
   void _onUp(PointerUpEvent event) {
     if (event.pointer != _pointer) return;
     final before = _downSelection;
+    final beforeValue = _downValue;
     final position = event.position;
     _reset();
-    scheduleMicrotask(() => _afterTap(before, position));
+    scheduleMicrotask(() => _afterTap(before, beforeValue, position));
   }
 
-  void _afterTap(af.Selection? before, Offset position) {
+  void _afterTap(
+    af.Selection? before,
+    (String, int)? beforeValue,
+    Offset position,
+  ) {
     if (!mounted || !_active) return;
     if (_appendLineBelow(position)) return;
     if (before == null || !before.isCollapsed || !AppPlatform.isMobile) return;
-    _reopenIfUnchanged(before);
+    _reopenIfUnchanged(beforeValue);
+  }
+
+  /// 折叠插入点交给输入法的编辑值：所在段落的文字与偏移（与上游
+  /// `_getCurrentTextEditingValue` 对折叠选区的取法相同）。不是折叠选区或
+  /// 不在文字块里时为 null。
+  (String, int)? _editValueOf(af.Selection? selection) {
+    if (selection == null || !selection.isCollapsed) return null;
+    final delta = widget.controller.state.document
+        .nodeAtPath(selection.end.path)
+        ?.delta;
+    if (delta == null) return null;
+    return (delta.toPlainText(), selection.end.offset);
   }
 
   /// 情形 1：点按落在最后一个顶层块下方、需要补行时补上并弹出键盘。
@@ -130,16 +153,17 @@ class _DiaryEditorKeyboardReopenState extends State<DiaryEditorKeyboardReopen> {
     _tapDeadline = null;
     _pointer = null;
     _downSelection = null;
+    _downValue = null;
   }
 
   /// 情形 2。
-  void _reopenIfUnchanged(af.Selection before) {
+  void _reopenIfUnchanged((String, int)? beforeValue) {
     final state = widget.controller.state;
     final selection = state.selection;
-    // 选区变了时上游已按新编辑值 show 过。
-    if (selection == null || selection != before) return;
-    // 图片、分隔线等非文字块上游本就不连接输入法。
-    if (state.document.nodeAtPath(selection.end.path)?.delta == null) return;
+    // 图片、分隔线等非文字块上游本就不连接输入法（编辑值为 null）；编辑值
+    // 变了时上游已按新值 show 过。
+    final value = _editValueOf(selection);
+    if (selection == null || value == null || value != beforeValue) return;
     if (View.of(context).viewInsets.bottom > 0) return;
     final focusedEditor = primaryFocus?.context
         ?.findAncestorWidgetOfExactType<af.AppFlowyEditor>();

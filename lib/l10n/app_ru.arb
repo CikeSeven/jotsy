@@ -36,6 +36,10 @@
   "@commonUndo": {
     "description": "Auto-generated metadata for commonUndo."
   },
+  "commonDragToReorder": "Перетащите, чтобы изменить порядок",
+  "@commonDragToReorder": {
+    "description": "Screen-reader label of a reorderable list row's drag handle (hold and move to change the order)."
+  },
   "commonSelectAll": "Выбрать все",
   "@commonSelectAll": {
     "description": "多选列表顶栏的全选按钮提示：选中列表里的全部条目。"
@@ -8689,10 +8693,6 @@
   "@diaryTemplatesMoreActions": {
     "description": "Tooltip of a template row's menu button."
   },
-  "diaryTemplatesDragHandle": "Перетащите, чтобы изменить порядок",
-  "@diaryTemplatesDragHandle": {
-    "description": "Accessibility label of the drag handle on a template row."
-  },
   "diaryTemplatesDuplicate": "Дублировать",
   "@diaryTemplatesDuplicate": {
     "description": "Menu action: make a copy of the template among the user's own templates."
@@ -9437,10 +9437,6 @@
   "@notebookMoreActions": {
     "description": "Tooltip of the more-actions button on a management row."
   },
-  "notebookDragHandle": "Перетащите, чтобы изменить порядок",
-  "@notebookDragHandle": {
-    "description": "Screen-reader label of the drag handle on the management page."
-  },
   "notebookSubCount": "{count, plural, one{{count} вложенный блокнот} few{{count} вложенных блокнота} many{{count} вложенных блокнотов} other{{count} вложенного блокнота}}",
   "@notebookSubCount": {
     "description": "Number of direct sub-notebooks in a management-page row summary.",
@@ -9874,10 +9870,6 @@
   "notebookContentsSealed": "Запечатанная капсула времени",
   "@notebookContentsSealed": {
     "description": "Semantics label of the lock glyph on a contents row."
-  },
-  "notebookContentsDragHandle": "Перетащите, чтобы изменить порядок",
-  "@notebookContentsDragHandle": {
-    "description": "Semantics label of the drag handle on a contents row."
   },
   "notebookContentsChapterActions": "Действия с главой",
   "@notebookContentsChapterActions": {

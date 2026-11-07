@@ -36,6 +36,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonUndo => '元に戻す';
 
   @override
+  String get commonDragToReorder => 'ドラッグして並べ替え';
+
+  @override
   String get commonSelectAll => 'すべて選択';
 
   @override
@@ -6205,9 +6208,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryTemplatesMoreActions => 'その他の操作';
 
   @override
-  String get diaryTemplatesDragHandle => 'ドラッグして並べ替え';
-
-  @override
   String get diaryTemplatesDuplicate => '複製';
 
   @override
@@ -6738,9 +6738,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notebookMoreActions => 'その他の操作';
 
   @override
-  String get notebookDragHandle => 'ドラッグして並べ替え';
-
-  @override
   String notebookSubCount(int count) {
     return 'サブ日記帳$count冊';
   }
@@ -7026,9 +7023,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notebookContentsSealed => '未開封のタイムカプセル';
-
-  @override
-  String get notebookContentsDragHandle => 'ドラッグして並べ替え';
 
   @override
   String get notebookContentsChapterActions => '章の操作';

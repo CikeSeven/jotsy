@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_contents_page.dart';
 import 'package:node_diary/ui/notebooks/sections/notebook_contents_rows.dart';
+import 'package:node_diary/ui/widgets/reorder_handle.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
@@ -258,7 +258,7 @@ void main() {
     );
     await tester.tap(find.byTooltip('多选'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(FontAwesomeIcons.gripLines.data), findsNothing);
+    expect(find.byType(ReorderHandle), findsNothing);
     await tester.tap(find.widgetWithText(NotebookContentsEntryTile, '甲'));
     await tester.pumpAndSettle();
     expect(find.text('已选 1 篇'), findsOneWidget);

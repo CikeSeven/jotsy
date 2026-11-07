@@ -1,4 +1,4 @@
-# 文字选区菜单与软键盘
+# 文字选区菜单、软键盘与拖动手柄
 
 > 从 `AGENTS.md` 拆出的专题约束，与 `AGENTS.md` 同等效力（必须 / 禁止 / 例外）。改动本主题的代码前先读本文件；本主题新增或修改的规则写在这里，不写回 `AGENTS.md`。界面规格见 DESIGN.md §5.4。
 
@@ -19,3 +19,9 @@
 - 必须：悬浮工具栏的面板上限（`DiaryFloatingToolbar.maxPanelExtent`）是可监听的值，由 `DiaryToolbarPanelLimit` 在布局时按可用高度写入，工具栏只在面板展开时跟随；禁止再用 LayoutBuilder 把高度当参数传给工具栏。
 - 必须：编辑器的可滚动正文经 `DiaryScrollPageBuilder`（`diary_editor/diary_scroll_page.dart`）：上游 `ScrollablePositionedList` 在 `LayoutBuilder` 里按视口高度重建整张列表，这里在同一次页面构建内记住各项，键盘动画不重建正文块；页面块重建（顶层块增删、换渲染器或样式）时记忆随之失效。它复刻的是固定版本上游 `PageBlockComponent` 的滚动分支，升级 appflowy_editor 时必须对照上游同步。
 - 兜底：`keyboard_visibility_test.dart`、`width_layout_builder_test.dart`、`diary_scroll_page_test.dart`、`edit_diary_page_rebuild_test.dart`、`diary_search_keyboard_test.dart`、`app_glass_theme_stability_test.dart` 按重建次数检查。只在测试里量重建次数不够：默认的经典样式复现不了玻璃材质下的问题，改动后在真机（profile 包，玻璃 + 背景图）上量一次键盘动画的帧耗时。
+
+## 拖动排序手柄
+
+- 必须：可排序列表（`ReorderableListView` / `SliverReorderableList`）的拖动手柄一律用 `ReorderHandle`（`lib/ui/widgets/reorder_handle.dart`，规格见 DESIGN.md §5.4）；禁止在该文件之外直接写 `ReorderableDragStartListener`（长按后拖的 `ReorderableDelayedDragStartListener` 不在此列）。以前各列表用 `Padding` 包 14px 图标当手柄，`Padding` 的留白不参与命中测试，实际只有图标那十几像素能按到。
+- 必须：可排序列表的 `proxyDecorator` 用 `expressiveReorderProxyDecorator`（加卡片表面与投影）或 `cardRowReorderProxyDecorator`（行本身已是卡片，只轻微放大），自写的必须把拖起的副本包进 `ReorderHandleLift`，拖起的那一行手柄才保持握住状态。拿起时在 `onReorderStart` 里给 `HapticFeedback.mediumImpact()`。
+- 兜底：`reorder_handle_source_test.dart` 查以上两条；`reorder_handle_test.dart` 在两种列表里检查整块 48dp 可拿起、禁用、握住态与读屏标签（`SliverReorderableList` 拖起时原行直接卸载、`ReorderableListView` 的原行 State 会搬进副本，两种都要测）。

@@ -10,9 +10,10 @@ import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../../widgets/expressive_reorder_proxy.dart';
+import '../../widgets/reorder_handle.dart';
 import '../models/diary_template.dart';
 import '../widgets/diary_template_tile.dart';
 
@@ -132,7 +133,6 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
       sliver: SliverReorderableList(
@@ -144,7 +144,7 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
           unawaited(HapticFeedback.mediumImpact());
         },
         onReorderEnd: onReorderEnd,
-        proxyDecorator: _liftProxy,
+        proxyDecorator: cardRowReorderProxyDecorator,
         itemBuilder: (BuildContext context, int index) {
           final template = templates[index];
           return Padding(
@@ -153,23 +153,7 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
             child: DiaryTemplateTile(
               template: template,
               onTap: () => onTap(template),
-              leading: ReorderableDragStartListener(
-                index: index,
-                child: Semantics(
-                  label: l10n.diaryTemplatesDragHandle,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.m,
-                      vertical: AppSpacing.l,
-                    ),
-                    child: FaIcon(
-                      FontAwesomeIcons.gripLines,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
+              leading: ReorderHandle(index: index),
               trailing: DiaryTemplateActionsButton(
                 actions: const <DiaryTemplateAction>[
                   DiaryTemplateAction.edit,
@@ -182,22 +166,6 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-
-  /// 拖起时只轻微放大，不另加卡片：模板行本身就是带描边的卡片。
-  static Widget _liftProxy(
-    Widget child,
-    int index,
-    Animation<double> animation,
-  ) {
-    return AnimatedBuilder(
-      animation: animation,
-      child: child,
-      builder: (BuildContext context, Widget? child) => Transform.scale(
-        scale: 1 + 0.02 * ExpressiveMotion.effects.transform(animation.value),
-        child: Material(type: MaterialType.transparency, child: child),
       ),
     );
   }

@@ -36,6 +36,10 @@
   "@commonUndo": {
     "description": "Auto-generated metadata for commonUndo."
   },
+  "commonDragToReorder": "ドラッグして並べ替え",
+  "@commonDragToReorder": {
+    "description": "Screen-reader label of a reorderable list row's drag handle (hold and move to change the order)."
+  },
   "commonSelectAll": "すべて選択",
   "@commonSelectAll": {
     "description": "多选列表顶栏的全选按钮提示：选中列表里的全部条目。"
@@ -8689,10 +8693,6 @@
   "@diaryTemplatesMoreActions": {
     "description": "Tooltip of a template row's menu button."
   },
-  "diaryTemplatesDragHandle": "ドラッグして並べ替え",
-  "@diaryTemplatesDragHandle": {
-    "description": "Accessibility label of the drag handle on a template row."
-  },
   "diaryTemplatesDuplicate": "複製",
   "@diaryTemplatesDuplicate": {
     "description": "Menu action: make a copy of the template among the user's own templates."
@@ -9437,10 +9437,6 @@
   "@notebookMoreActions": {
     "description": "Tooltip of the more-actions button on a management row."
   },
-  "notebookDragHandle": "ドラッグして並べ替え",
-  "@notebookDragHandle": {
-    "description": "Screen-reader label of the drag handle on the management page."
-  },
   "notebookSubCount": "サブ日記帳{count}冊",
   "@notebookSubCount": {
     "description": "Number of direct sub-notebooks in a management-page row summary.",
@@ -9874,10 +9870,6 @@
   "notebookContentsSealed": "未開封のタイムカプセル",
   "@notebookContentsSealed": {
     "description": "Semantics label of the lock glyph on a contents row."
-  },
-  "notebookContentsDragHandle": "ドラッグして並べ替え",
-  "@notebookContentsDragHandle": {
-    "description": "Semantics label of the drag handle on a contents row."
   },
   "notebookContentsChapterActions": "章の操作",
   "@notebookContentsChapterActions": {

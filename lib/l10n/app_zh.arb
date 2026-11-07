@@ -36,6 +36,10 @@
   "@commonUndo": {
     "description": "Auto-generated metadata for commonUndo."
   },
+  "commonDragToReorder": "拖动排序",
+  "@commonDragToReorder": {
+    "description": "可排序列表行的拖动手柄的读屏标签（按住移动即可调整顺序）。"
+  },
   "commonSelectAll": "全选",
   "@commonSelectAll": {
     "description": "多选列表顶栏的全选按钮提示：选中列表里的全部条目。"
@@ -8636,10 +8640,6 @@
   "@diaryTemplatesMoreActions": {
     "description": "模板行菜单按钮的提示。"
   },
-  "diaryTemplatesDragHandle": "拖动排序",
-  "@diaryTemplatesDragHandle": {
-    "description": "模板行拖动手柄的无障碍说明。"
-  },
   "diaryTemplatesDuplicate": "复制",
   "@diaryTemplatesDuplicate": {
     "description": "菜单项：把模板复制一份为我的模板。"
@@ -9378,10 +9378,6 @@
   "@notebookMoreActions": {
     "description": "管理页行尾“更多”按钮的提示。"
   },
-  "notebookDragHandle": "拖动排序",
-  "@notebookDragHandle": {
-    "description": "管理页拖动手柄的读屏标签。"
-  },
   "notebookSubCount": "{count} 本子本",
   "@notebookSubCount": {
     "description": "管理页有子本的行摘要里的子本数（直接子本）。",
@@ -9815,10 +9811,6 @@
   "notebookContentsSealed": "未解封的时间胶囊",
   "@notebookContentsSealed": {
     "description": "Semantics label of the lock glyph on a contents row."
-  },
-  "notebookContentsDragHandle": "拖动排序",
-  "@notebookContentsDragHandle": {
-    "description": "Semantics label of the drag handle on a contents row."
   },
   "notebookContentsChapterActions": "章节操作",
   "@notebookContentsChapterActions": {

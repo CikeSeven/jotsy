@@ -36,6 +36,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonUndo => 'Undo';
 
   @override
+  String get commonDragToReorder => 'Drag to reorder';
+
+  @override
   String get commonSelectAll => 'Select all';
 
   @override
@@ -6786,9 +6789,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplatesMoreActions => 'More actions';
 
   @override
-  String get diaryTemplatesDragHandle => 'Drag to reorder';
-
-  @override
   String get diaryTemplatesDuplicate => 'Duplicate';
 
   @override
@@ -7356,9 +7356,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookMoreActions => 'More actions';
 
   @override
-  String get notebookDragHandle => 'Drag to reorder';
-
-  @override
   String notebookSubCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -7688,9 +7685,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookContentsSealed => 'Sealed time capsule';
-
-  @override
-  String get notebookContentsDragHandle => 'Drag to reorder';
 
   @override
   String get notebookContentsChapterActions => 'Chapter actions';

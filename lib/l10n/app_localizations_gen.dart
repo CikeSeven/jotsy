@@ -156,6 +156,12 @@ abstract class AppLocalizations {
   /// **'Undo'**
   String get commonUndo;
 
+  /// Screen-reader label of a reorderable list row's drag handle (hold and move to change the order).
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get commonDragToReorder;
+
   /// 多选列表顶栏的全选按钮提示：选中列表里的全部条目。
   ///
   /// In en, this message translates to:
@@ -11154,12 +11160,6 @@ abstract class AppLocalizations {
   /// **'More actions'**
   String get diaryTemplatesMoreActions;
 
-  /// Accessibility label of the drag handle on a template row.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag to reorder'**
-  String get diaryTemplatesDragHandle;
-
   /// Menu action: make a copy of the template among the user's own templates.
   ///
   /// In en, this message translates to:
@@ -12126,12 +12126,6 @@ abstract class AppLocalizations {
   /// **'More actions'**
   String get notebookMoreActions;
 
-  /// Screen-reader label of the drag handle on the management page.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag to reorder'**
-  String get notebookDragHandle;
-
   /// Number of direct sub-notebooks in a management-page row summary.
   ///
   /// In en, this message translates to:
@@ -12629,12 +12623,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sealed time capsule'**
   String get notebookContentsSealed;
-
-  /// Semantics label of the drag handle on a contents row.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag to reorder'**
-  String get notebookContentsDragHandle;
 
   /// Tooltip of the chapter header menu on the contents page.
   ///

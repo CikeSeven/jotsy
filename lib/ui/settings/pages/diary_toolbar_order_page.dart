@@ -11,7 +11,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
-import '../../widgets/triple_bar_drag_handle.dart';
+import '../../widgets/reorder_handle.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -449,17 +449,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
                                     size: 14,
                                   ),
                                 ),
-                              ReorderableDragStartListener(
-                                index: index,
-                                child: const SizedBox(
-                                  width: 44,
-                                  height: 40,
-                                  child: ColoredBox(
-                                    color: Colors.transparent,
-                                    child: Center(child: TripleBarDragHandle()),
-                                  ),
-                                ),
-                              ),
+                              ReorderHandle(index: index),
                             ],
                           ),
                         );

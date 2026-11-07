@@ -12,7 +12,7 @@ import '../../../explore/models/explore_module_id.dart';
 import '../../../explore/models/explore_module_spec.dart';
 import '../../../explore/viewmodels/explore_labels.dart';
 import '../../../widgets/expressive_reorder_proxy.dart';
-import '../../../widgets/triple_bar_drag_handle.dart';
+import '../../../widgets/reorder_handle.dart';
 import '../../controllers/explore_layout_editor_controller.dart';
 import '../../providers/app_features_provider.dart';
 import '../../widgets/settings_reveal.dart';
@@ -202,19 +202,9 @@ class _ExploreLayoutCardsTabState extends ConsumerState<ExploreLayoutCardsTab> {
                               : null,
                         ),
                       ),
-                      Semantics(
-                        label: l10n.exploreLayoutDragHandle(name),
-                        child: ReorderableDragStartListener(
-                          index: index,
-                          child: const SizedBox(
-                            width: 44,
-                            height: 40,
-                            child: ColoredBox(
-                              color: Colors.transparent,
-                              child: Center(child: TripleBarDragHandle()),
-                            ),
-                          ),
-                        ),
+                      ReorderHandle(
+                        index: index,
+                        semanticLabel: l10n.exploreLayoutDragHandle(name),
                       ),
                     ],
                   ),

@@ -36,6 +36,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get commonUndo => 'Отменить';
 
   @override
+  String get commonDragToReorder => 'Перетащите, чтобы изменить порядок';
+
+  @override
   String get commonSelectAll => 'Выбрать все';
 
   @override
@@ -6958,9 +6961,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryTemplatesMoreActions => 'Другие действия';
 
   @override
-  String get diaryTemplatesDragHandle => 'Перетащите, чтобы изменить порядок';
-
-  @override
   String get diaryTemplatesDuplicate => 'Дублировать';
 
   @override
@@ -7552,9 +7552,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notebookMoreActions => 'Другие действия';
 
   @override
-  String get notebookDragHandle => 'Перетащите, чтобы изменить порядок';
-
-  @override
   String notebookSubCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -7890,9 +7887,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notebookContentsSealed => 'Запечатанная капсула времени';
-
-  @override
-  String get notebookContentsDragHandle => 'Перетащите, чтобы изменить порядок';
 
   @override
   String get notebookContentsChapterActions => 'Действия с главой';

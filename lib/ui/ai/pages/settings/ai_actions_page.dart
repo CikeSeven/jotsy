@@ -3,7 +3,10 @@
 // 或恢复默认、新建 / 编辑 / 删除（可撤销）自建指令。写入只经
 // `updateAiPreferences`；排序写整份 `actionOrder`。
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -14,6 +17,8 @@ import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../../widgets/expressive_menu/expressive_menu_item.dart';
+import '../../../widgets/expressive_reorder_proxy.dart';
+import '../../../widgets/reorder_handle.dart';
 import '../../models/ai_built_ins.dart';
 import '../../models/ai_preferences.dart';
 import '../../providers/ai_providers.dart';
@@ -74,7 +79,10 @@ class AiActionsPage extends ConsumerWidget {
         return ReorderableListView.builder(
           padding: padding + const EdgeInsets.symmetric(horizontal: 16),
           buildDefaultDragHandles: false,
+          proxyDecorator: cardRowReorderProxyDecorator,
           itemCount: actions.length,
+          // 手柄按住即拖，不经过长按，系统不会给触觉：拿起时补一次。
+          onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
           onReorderItem: (int oldIndex, int newIndex) {
             final ids = [for (final action in actions) action.id];
             ids.insert(newIndex, ids.removeAt(oldIndex));
@@ -197,22 +205,12 @@ class _ActionTile extends StatelessWidget {
     final l10n = context.l10n;
     final colors = Theme.of(context).colorScheme;
     return ListTile(
-      contentPadding: const EdgeInsetsDirectional.only(start: 4, end: 4),
+      contentPadding: const EdgeInsetsDirectional.only(end: 4),
       titleAlignment: ListTileTitleAlignment.center,
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          ReorderableDragStartListener(
-            index: index,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: FaIcon(
-                FontAwesomeIcons.gripVertical,
-                size: 14,
-                color: colors.onSurfaceVariant.withValues(alpha: 0.7),
-              ),
-            ),
-          ),
+          ReorderHandle(index: index),
           Text(action.emoji, style: const TextStyle(fontSize: 20, height: 1)),
         ],
       ),

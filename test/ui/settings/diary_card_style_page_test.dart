@@ -16,7 +16,7 @@ import 'package:node_diary/ui/settings/pages/diary_card_style_page.dart';
 import 'package:node_diary/ui/settings/sections/diary_card_style/diary_card_style_preview.dart';
 import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
 import 'package:node_diary/ui/widgets/snap_panel.dart';
-import 'package:node_diary/ui/widgets/triple_bar_drag_handle.dart';
+import 'package:node_diary/ui/widgets/reorder_handle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -259,7 +259,7 @@ void main() {
     await _openTab(tester, l10n.diaryCardStyleTabOrder);
     final tabBarTop = tester.getTopLeft(find.byType(TabBar)).dy;
     // 拖动“标题”行（第二行）的手柄（拿起即拖动，不经过长按）到“标签”下方。
-    final handle = find.byType(TripleBarDragHandle).at(1);
+    final handle = find.byType(ReorderHandle).at(1);
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump();
     for (var i = 0; i < 6; i++) {

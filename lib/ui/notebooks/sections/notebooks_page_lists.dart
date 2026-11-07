@@ -13,6 +13,8 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../widgets/list_item_presence.dart';
+import '../../widgets/expressive_reorder_proxy.dart';
+import '../../widgets/reorder_handle.dart';
 import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_labels.dart';
 import '../viewmodels/notebook_tree_rows.dart';
@@ -89,7 +91,7 @@ class NotebooksSectionSliver extends StatelessWidget {
           onReorderStart(index);
         },
         onReorderEnd: onReorderEnd,
-        proxyDecorator: _liftProxy,
+        proxyDecorator: cardRowReorderProxyDecorator,
         itemBuilder: (BuildContext context, int index) {
           final row = rows[index];
           final notebook = row.notebook;
@@ -130,22 +132,6 @@ class NotebooksSectionSliver extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-
-  /// 拖起时只轻微放大，不另加卡片：行本身就是带描边的卡片。
-  static Widget _liftProxy(
-    Widget child,
-    int index,
-    Animation<double> animation,
-  ) {
-    return AnimatedBuilder(
-      animation: animation,
-      child: child,
-      builder: (BuildContext context, Widget? child) => Transform.scale(
-        scale: 1 + 0.02 * ExpressiveMotion.effects.transform(animation.value),
-        child: Material(type: MaterialType.transparency, child: child),
       ),
     );
   }
@@ -204,23 +190,7 @@ class NotebookManageRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
         child: Row(
           children: <Widget>[
-            ReorderableDragStartListener(
-              index: index,
-              child: Semantics(
-                label: l10n.notebookDragHandle,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.m,
-                    vertical: AppSpacing.l,
-                  ),
-                  child: FaIcon(
-                    FontAwesomeIcons.gripLines,
-                    size: 14,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ),
+            ReorderHandle(index: index),
             Expanded(
               child: ReorderableDelayedDragStartListener(
                 index: index,

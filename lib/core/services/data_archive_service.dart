@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show countAll;
@@ -70,9 +69,9 @@ class DataArchiveService {
         database: database,
         settingsService: settingsService,
       );
-      await File(p.join(working.path, backupPayloadFileName)).writeAsString(
-        const JsonEncoder.withIndent('  ').convert(payload),
-        flush: true,
+      await BackupArchiveIO.writeJson(
+        p.join(working.path, backupPayloadFileName),
+        payload,
       );
       final documents = await appDataRootDirectory();
       // 完整备份带上全部托管目录：日记媒体与设置引用的背景图。
@@ -125,11 +124,9 @@ class DataArchiveService {
         database: database,
         diaryIds: diaryIds,
       );
-      await File(
+      await BackupArchiveIO.writeJson(
         p.join(working.path, diaryPackagePayloadFileName),
-      ).writeAsString(
-        const JsonEncoder.withIndent('  ').convert(captured.json),
-        flush: true,
+        captured.json,
       );
       // 与媒体回收共用同一套引用识别：正文、封面与 metadata 里提到的托管文件
       // 都会带上，包里日记本的封面（在载荷 JSON 里）与留言图片同样带上，

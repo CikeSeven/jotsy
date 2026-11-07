@@ -38,6 +38,7 @@ class DiaryEditorController extends ChangeNotifier {
       if (event.$1 == af.TransactionTime.after &&
           event.$2.operations.isNotEmpty) {
         revision++;
+        _contentSnapshot = null;
         notifyListeners();
       }
     });
@@ -90,6 +91,12 @@ class DiaryEditorController extends ChangeNotifier {
   Future<String?> Function(String source)? aiImageDescriber;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
+
+  /// 只保留当前正文版本的两个存储镜像，不保留额外的 JSON 树。选区、待输入
+  /// 格式、标题与 metadata 的变化不会改变正文，不能因此再次扫描长文。
+  /// 原生输入、撤销/重做、拖动预览与失败恢复均经同步 transactionStream
+  /// 的 after 事件失效；必须先失效再通知，保存监听者才不会读到上一版。
+  ({String json, String text})? _contentSnapshot;
 
   /// 正在拖动段落：块随手指实时挪到落点（`DiaryBlockDragSession`）。期间
   /// 视口不揭示光标——揭示引起的滚动会让手指下的落点继续变化，一路连锁。
@@ -167,8 +174,18 @@ class DiaryEditorController extends ChangeNotifier {
 
   bool get readOnly => !state.editable;
   set readOnly(bool value) => state.editable = !value;
-  String get contentJson => encodeDiaryBlocks(document.toJson());
-  String get plainText => diaryBlocksPlainText(document.toJson());
+  ({String json, String text}) get _snapshot {
+    final cached = _contentSnapshot;
+    if (cached != null) return cached;
+    final tree = document.toJson();
+    return _contentSnapshot = (
+      json: encodeDiaryBlocks(tree),
+      text: diaryBlocksPlainText(tree),
+    );
+  }
+
+  String get contentJson => _snapshot.json;
+  String get plainText => _snapshot.text;
 
   /// 正文是否有看得见的内容（有字的块或媒体等嵌入块），与
   /// `diaryBlocksHaveVisibleContent` 同一口径。

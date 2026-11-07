@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
+import 'package:node_diary/ui/diaries/models/diary_thumbnail_rows.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_fallback.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_thumbnail.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
@@ -11,6 +12,7 @@ import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_source_builder.dart';
+import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 
 /// 正文图片本体。provider 按来源缓存在 State 中：编辑器每次改动都会重建
 /// 文本行，若每次构建新 provider，base64 图片会反复解码并闪烁。
@@ -19,7 +21,8 @@ import 'package:node_diary/ui/widgets/long_image/long_image_source_builder.dart'
 /// 长图折叠（[DiaryLongImageFold]），其余按显示宽度保持比例解码
 /// （[boundedImageProvider]）——不再把几千像素的原图整张解码，超过纹理上限的
 /// 一边也不会被引擎单独压扁。尺寸未读出前不占位，与原先图片解码前一样。
-/// 设为小图时整个交给 [DiaryImageThumbnail]（固定方格，不走长图分片）。
+/// 设为小图时整个交给 [DiaryImageThumbnail]（方格，不走长图分片；边长见
+/// [diaryThumbnailExtentFor]）。
 class DiaryEmbeddedImage extends StatefulWidget {
   const DiaryEmbeddedImage({
     super.key,
@@ -76,10 +79,18 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
   @override
   Widget build(BuildContext context) {
     if (widget.thumbnail) {
-      return DiaryImageThumbnail(
+      Widget thumbnail(double extent) => DiaryImageThumbnail(
         source: widget.source,
         provider: _provider,
+        extent: extent,
         heroTag: widget.heroTag,
+      );
+      // 并排时用整排算好的边长；单独一张时按自己的可用宽度算同一个边长，
+      // 与并排的几张大小一致。
+      final rowExtent = DiaryThumbnailExtent.maybeOf(context);
+      if (rowExtent != null) return thumbnail(rowExtent);
+      return WidthLayoutBuilder(
+        builder: (context, width) => thumbnail(diaryThumbnailExtentFor(width)),
       );
     }
     final decodeWidth = _decodeWidth(context);

@@ -5,6 +5,7 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../controllers/diary_block_reorder.dart';
 import '../../controllers/diary_toggle_state.dart';
+import '../../models/diary_thumbnail_rows.dart';
 
 /// 拖动段落的几何判断：手指下的落点，以及预览移动后该停在原处的块。
 /// 只读节点的全局矩形（上一帧的布局），不改文档。
@@ -63,7 +64,24 @@ int? _gapOn(DiaryBlockGaps gaps, af.Node hit, double dy) {
       !atomic &&
       !isDiaryToggleCollapsed(hit) &&
       hit.children.any((child) => child != gaps.source);
-  return !hasChildren && dy >= (rect.top + ownBottom) / 2 ? index + 1 : index;
+  final after = !hasChildren && dy >= (rect.top + ownBottom) / 2;
+  return _rowGap(gaps, hit, after: after) ?? (after ? index + 1 : index);
+}
+
+/// 并排的小图（diary_thumbnail_rows.dart）整排算一块：手指在这一排的上半区
+/// 为整排之前，下半区为整排之后，不落在一排中间（落进去会把一排拆开）。
+/// 拖的是这一排里的一张时即是在排内挪到排首 / 排尾。[hit] 不在多张的
+/// 一排里时为 null。
+int? _rowGap(DiaryBlockGaps gaps, af.Node hit, {required bool after}) {
+  final row = diaryThumbnailRowOf(hit);
+  if (row == null || row.end - row.start < 2) return null;
+  final members = [
+    for (var i = row.start; i < row.end; i++) hit.parent!.children[i],
+  ].where((node) => node != gaps.source);
+  if (members.isEmpty) return null;
+  return after
+      ? gaps.blocks.indexOf(members.last) + 1
+      : gaps.blocks.indexOf(members.first);
 }
 
 /// 下方最近的可见块之前；下方没有时为最后一个可见块之后。
@@ -124,8 +142,11 @@ double? _firstVisibleTop(Iterable<af.Node> nodes) {
   final high = a < b ? b : a;
   (af.Node, double)? below;
   final blocks = root.children.toList();
+  final rows = diaryThumbnailRows(blocks);
   for (var i = 0; i < blocks.length; i++) {
     if (i >= low && i <= high) continue;
+    // 并排的小图画在这一排第一张那一项里，其余几张的项是空的、不能当锚点。
+    if (rows[i].start != i) continue;
     final rect = blocks[i].rect;
     if (rect == Rect.zero) continue;
     final leading = rect.top - itemInset - viewportTop;

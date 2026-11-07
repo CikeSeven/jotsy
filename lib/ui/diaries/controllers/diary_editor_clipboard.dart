@@ -12,6 +12,7 @@ import '../../../core/services/journal_import_block_writer.dart';
 import '../../../core/services/journal_import_html.dart';
 import 'diary_editor_controller.dart';
 import 'diary_editor_insert.dart';
+import 'diary_embed_editing.dart';
 import 'diary_markdown_paste.dart';
 import 'diary_table_editing.dart';
 import 'diary_table_selection.dart';
@@ -283,7 +284,10 @@ abstract final class DiaryEditorClipboard {
       nodes = diaryTableCellParagraphs(nodes);
       if (nodes.isEmpty) return;
     }
-    if (nodes.any((node) => node.delta == null)) {
+    // 有媒体，或插入点停在嵌入块上（块里没有字可以接，上游的整段粘贴会
+    // 落空）：整组插在块旁，见 insertDiaryEditorNodes。
+    if (nodes.any((node) => node.delta == null) ||
+        diaryEmbedAtCaret(controller.state) != null) {
       insertDiaryEditorNodes(
         controller: controller,
         nodes: nodes,

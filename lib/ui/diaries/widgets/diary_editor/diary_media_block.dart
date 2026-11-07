@@ -101,6 +101,8 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
   Widget build(BuildContext context) {
     final data = node.attributes;
     Widget child;
+    // 占位说明不响应点按：点在它上面同点在块旁的空白处（DiaryEmbedContent）。
+    var ownsTaps = true;
     switch (node.type) {
       case 'image':
         final source = data['url'];
@@ -188,6 +190,7 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
         );
       default:
         // 未识别的旧嵌入仍原样保存，提供一个可选中、可删除的占位。
+        ownsTaps = false;
         child = Text(
           context.l10n.diaryEditorUnsupportedBlock,
           style: Theme.of(context).textTheme.bodySmall,
@@ -204,9 +207,13 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
             _ => AlignmentDirectional.centerStart,
           },
           heightFactor: 1,
-          child: node.type == 'video'
-              ? child
-              : DiaryPlaybackInteractionGuard(child: child),
+          child: ownsTaps
+              ? DiaryEmbedContent(
+                  child: node.type == 'video'
+                      ? child
+                      : DiaryPlaybackInteractionGuard(child: child),
+                )
+              : child,
         ),
       ),
     );

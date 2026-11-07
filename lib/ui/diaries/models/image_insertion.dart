@@ -3,6 +3,8 @@ import '../controllers/diary_editor_controller.dart';
 import '../controllers/diary_editor_insert.dart';
 
 /// 图片独占块，替换所选文字；文件已由媒体服务复制，这里只改原生文档。
+/// 紧跟在小图后面插入时也是小图，接着排进那一排（见
+/// [insertDiaryEditorNodes] 的 `followThumbnails`）。
 void insertDiaryImages({
   required DiaryEditorController controller,
   required List<String> imagePaths,
@@ -12,6 +14,7 @@ void insertDiaryImages({
     controller: controller,
     selection: selection,
     replaceSelection: true,
+    followThumbnails: true,
     nodes: [
       for (final path in imagePaths)
         if (path.trim().isNotEmpty)

@@ -19,10 +19,10 @@ import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_embed_keys.dart
 
 import '../../../support/expressive_test_theme.dart';
 
-/// 嵌入块（图片、视频、分隔线、卡片……）旁边的退格 / Delete，以及文末是
-/// 嵌入块时点正文下方空白处补一行可写的段落。上游的退格会越过嵌入块把
-/// 下一行并进它上面那段，嵌入块因此跑到后面（文末时成了最后一块、再也
-/// 删不掉）。
+/// 嵌入块（图片、视频、分隔线、卡片……）上的插入点，以及它旁边的退格 /
+/// Delete / 回车 / 打字（diary_embed_editing.dart）。插入点可以停在块的左右
+/// 两侧，输入法照常连着；上游的退格会越过嵌入块把下一行并进它上面那段，
+/// 嵌入块因此跑到后面。
 
 Map<String, Object?> _text(
   String type,
@@ -83,39 +83,34 @@ af.Selection _caret(af.Path path, [int offset = 0]) =>
     af.Selection.collapsed(af.Position(path: path, offset: offset));
 
 void main() {
-  af.Node? armed(DiaryEditorController controller) =>
-      DiaryArmedEmbed.of(controller.state).node.value;
-
-  group('backspace at the start of a line after an embed', () {
+  group('backspace', () {
     // 所有嵌入块类型（图片、视频、音频、附件、分隔线、卡片、未识别的旧
     // 嵌入）同一条规则；以后新增的类型登记进集合即自动覆盖。
     for (final type in kDiaryEmbedBlockTypes) {
-      test('selects the $type first, then deletes it in place', () {
+      test('a line of text below a $type: the caret moves to its right, '
+          'the next backspace deletes it', () {
         final controller = _document([_p('before'), _embed(type), _p('after')]);
         final before = controller.contentJson;
-        final embed = controller.document.root.children[1];
         controller.state.selection = _caret([2]);
 
-        // 第一次：只选中，正文与插入点都不动。
+        // 第一次：插入点挪到块右侧，正文不动（块里没有字可以并进去）。
         expect(backspaceDiaryEmbed(controller.state), isTrue);
         expect(controller.contentJson, before);
-        expect(controller.state.selection, _caret([2]));
-        expect(armed(controller), same(embed));
+        expect(controller.state.selection, _caret([1], 1));
+        expect(diaryEmbedAtCaret(controller.state)?.type, type);
 
-        // 第二次：删掉它，本行原地上移，选中随之取消。
+        // 第二次：删掉它，插入点退到上一段末尾。
         expect(backspaceDiaryEmbed(controller.state), isTrue);
         expect(_outline(controller), 'paragraph:before\nparagraph:after');
-        expect(controller.state.selection, _caret([1]));
-        expect(armed(controller), isNull);
+        expect(controller.state.selection, _caret([0], 6));
         controller.undo();
         expect(controller.contentJson, before);
       });
     }
 
     for (final type in kDiaryEmbedBlockTypes) {
-      test('on an empty line removes that line and selects the $type', () {
-        // 嵌入块下面连着几个空行：第一次退格删掉紧挨着的空行并选中嵌入块，
-        // 第二次删掉嵌入块，下面的空行原样留着。
+      test('an empty line below a $type is deleted, the caret lands on its '
+          'right', () {
         final controller = _document([
           _p('a'),
           _embed(type),
@@ -124,7 +119,6 @@ void main() {
           _p(''),
           _p('b'),
         ]);
-        final embed = controller.document.root.children[1];
         controller.state.selection = _caret([2]);
 
         expect(backspaceDiaryEmbed(controller.state), isTrue);
@@ -132,74 +126,133 @@ void main() {
           _outline(controller),
           'paragraph:a\n$type\nparagraph:\nparagraph:\nparagraph:b',
         );
-        expect(controller.state.selection, _caret([2]));
-        expect(armed(controller), same(embed));
+        expect(controller.state.selection, _caret([1], 1));
 
         expect(backspaceDiaryEmbed(controller.state), isTrue);
         expect(
           _outline(controller),
           'paragraph:a\nparagraph:\nparagraph:\nparagraph:b',
         );
-        expect(controller.state.selection, _caret([1]));
-        expect(armed(controller), isNull);
+        expect(controller.state.selection, _caret([0], 1));
       });
     }
 
-    test('keeps the empty line when nothing writable follows it', () {
-      for (final tail in [
-        <Map<String, Object?>>[],
-        [_embed('video')],
-      ]) {
-        final controller = _document([
-          _p('before'),
-          _embed('image'),
-          _p(''),
-          ...tail,
-        ]);
-        controller.state.selection = _caret([2]);
+    test('an empty line between two embeds, or at the very end, goes too', () {
+      final between = _document([
+        _p('top'),
+        _embed('image'),
+        _p(''),
+        _embed('video'),
+        _p('end'),
+      ]);
+      between.state.selection = _caret([2]);
+      expect(backspaceDiaryEmbed(between.state), isTrue);
+      expect(_outline(between), 'paragraph:top\nimage\nvideo\nparagraph:end');
+      expect(between.state.selection, _caret([1], 1));
 
-        // 空行是插入点唯一能放的地方：不删，只选中上面的图片。
-        expect(backspaceDiaryEmbed(controller.state), isTrue);
-        expect(controller.document.root.children, hasLength(3 + tail.length));
-        expect(armed(controller)?.type, 'image');
-
-        expect(backspaceDiaryEmbed(controller.state), isTrue);
-        expect(
-          _outline(controller),
-          [
-            'paragraph:before',
-            'paragraph:',
-            ...tail.map((_) => 'video'),
-          ].join('\n'),
-        );
-        expect(controller.state.selection, _caret([1]));
-      }
+      final trailing = _document([_p('before'), _embed('divider'), _p('')]);
+      trailing.state.selection = _caret([2]);
+      expect(backspaceDiaryEmbed(trailing.state), isTrue);
+      expect(_outline(trailing), 'paragraph:before\ndivider');
+      expect(trailing.state.selection, _caret([1], 1));
     });
 
-    test('anything else in between cancels the selection', () {
-      final controller = _document([_p('a'), _embed('image'), _p('after')]);
+    test('at the left of an embed acts like backspace at a line start', () {
+      final controller = _document([
+        _p('a'),
+        _p(''),
+        _embed('image'),
+        _embed('video'),
+      ]);
+      // 上一块是空段落：删掉它，插入点仍在块左侧。
       controller.state.selection = _caret([2]);
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(_outline(controller), 'paragraph:a\nimage\nvideo');
+      expect(controller.state.selection, _caret([1]));
+      // 上一块有字：挪到它末尾。
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(controller.state.selection, _caret([0], 1));
+      // 上一块是嵌入块：挪到它右侧。
+      controller.state.selection = _caret([2]);
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(controller.state.selection, _caret([1], 1));
+      expect(_outline(controller), 'paragraph:a\nimage\nvideo');
 
-      // 插入点挪开再回来：重新选中，不删除。
+      // 文首：什么都不做，也不交给上游。
+      final first = _document([_embed('image')]);
+      first.state.selection = _caret([0]);
+      final before = first.contentJson;
+      expect(backspaceDiaryEmbed(first.state), isTrue);
+      expect(first.contentJson, before);
+    });
+
+    test('deleting an embed with nothing before it moves the caret forward, '
+        'deleting the last block leaves an empty line', () {
+      final controller = _document([_embed('image'), _embed('divider')]);
+      controller.state.selection = _caret([0], 1);
       expect(backspaceDiaryEmbed(controller.state), isTrue);
-      controller.state.selection = _caret([2], 3);
-      expect(armed(controller), isNull);
+      expect(_outline(controller), 'divider');
+      expect(controller.state.selection, _caret([0]));
+
+      controller.state.selection = _caret([0], 1);
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(_outline(controller), 'paragraph:');
+      expect(controller.state.selection, _caret([0]));
+    });
+
+    test('the middle one of three thumbnails in a row can be deleted', () {
+      Map<String, Object?> thumb(String name) => {
+        'type': 'image',
+        'data': {'url': '/missing/$name.jpg', kDiaryImageThumbnailKey: true},
+      };
+      final controller = _document([thumb('1'), thumb('2'), thumb('3')]);
+      controller.state.selection = _caret([1], 1);
+
+      expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(
+        controller.document.root.children.map((n) => n.attributes['url']),
+        ['/missing/1.jpg', '/missing/3.jpg'],
+      );
+      expect(controller.state.selection, _caret([0], 1));
+    });
+
+    test('below a table an empty line is deleted, a line of text only moves '
+        'the caret into the last cell', () {
+      Map<String, Object?> table() => {
+        'type': 'table',
+        'data': {'colsLen': 2, 'rowsLen': 1},
+        'children': [
+          {
+            'type': 'table/cell',
+            'data': {'rowPosition': 0, 'colPosition': 0},
+            'children': [_p('first')],
+          },
+          {
+            'type': 'table/cell',
+            'data': {'rowPosition': 0, 'colPosition': 1},
+            'children': [_p('cell')],
+          },
+        ],
+      };
+      final controller = _document([_p('top'), table(), _p(''), _p('end')]);
       controller.state.selection = _caret([2]);
       expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(_outline(controller).split('\n').last, 'paragraph:end');
       expect(controller.document.root.children, hasLength(3));
+      expect(controller.state.selection, _caret([1, 1, 0], 4));
 
-      // 上游重设同一选区不算挪开。
+      final before = controller.contentJson;
       controller.state.selection = _caret([2]);
-      expect(armed(controller)?.type, 'image');
-
-      // 正文有改动（打字）即取消。
-      final transaction = controller.state.transaction
-        ..insertText(controller.document.root.children[0], 1, 'x');
-      controller.apply(transaction, updateSelection: false);
-      expect(armed(controller), isNull);
       expect(backspaceDiaryEmbed(controller.state), isTrue);
-      expect(controller.document.root.children, hasLength(3));
-      expect(armed(controller)?.type, 'image');
+      expect(controller.contentJson, before);
+      expect(controller.state.selection, _caret([1, 1, 0], 4));
+
+      // Delete 对称：表格上一行的空行删掉，插入点进第一格开头。
+      final above = _document([_p('top'), _p(''), table()]);
+      above.state.selection = _caret([1]);
+      expect(deleteForwardDiaryEmbed(above.state), isTrue);
+      expect(above.document.root.children, hasLength(2));
+      expect(above.state.selection, _caret([1, 0, 0]));
     });
 
     test('reaches an embed nested as the last child of the block above', () {
@@ -210,9 +263,10 @@ void main() {
       controller.state.selection = _caret([1]);
 
       expect(backspaceDiaryEmbed(controller.state), isTrue);
+      expect(controller.state.selection, _caret([0, 0], 1));
       expect(backspaceDiaryEmbed(controller.state), isTrue);
       expect(_outline(controller), 'bulleted_list:item\nparagraph:after');
-      expect(controller.state.selection, _caret([1]));
+      expect(controller.state.selection, _caret([0], 4));
     });
 
     test('leaves everything else to the upstream rules', () {
@@ -240,35 +294,75 @@ void main() {
       // 收起的折叠块里的图片看不见，不算紧挨着。
       controller.state.selection = _caret([4]);
       expect(backspaceDiaryEmbed(controller.state), isFalse);
-      // 插入点盖在嵌入块上（上游删掉它）与非折叠选区。
-      controller.state.selection = _caret([1]);
-      expect(backspaceDiaryEmbed(controller.state), isFalse);
+      // 非折叠选区。
       controller.state.selection = af.Selection(
         start: af.Position(path: [2]),
         end: af.Position(path: [2], offset: 3),
       );
       expect(backspaceDiaryEmbed(controller.state), isFalse);
       expect(controller.contentJson, before);
-      expect(armed(controller), isNull);
     });
   });
 
-  test('Delete at the end of a line selects, then removes the embed below', () {
-    final controller = _document([_p('a'), _embed('image'), _p('b')]);
-    controller.state.selection = _caret([0], 1);
-
+  test('Delete mirrors backspace on the other side', () {
+    final controller = _document([_p('a'), _p(''), _embed('image'), _p('b')]);
+    // 行末、下一块是嵌入块：空段落删掉，插入点到块左侧。
+    controller.state.selection = _caret([1]);
     expect(deleteForwardDiaryEmbed(controller.state), isTrue);
-    expect(controller.document.root.children, hasLength(3));
-    expect(armed(controller)?.type, 'image');
+    expect(_outline(controller), 'paragraph:a\nimage\nparagraph:b');
+    expect(controller.state.selection, _caret([1]));
+    // 有字的行只挪过去。
+    controller.state.selection = _caret([0], 1);
+    expect(deleteForwardDiaryEmbed(controller.state), isTrue);
+    expect(controller.state.selection, _caret([1]));
+    // 块右侧：挪到下一块开头；块左侧：删掉它，插入点到下一块开头。
+    controller.state.selection = _caret([1], 1);
+    expect(deleteForwardDiaryEmbed(controller.state), isTrue);
+    expect(controller.state.selection, _caret([2]));
+    controller.state.selection = _caret([1]);
     expect(deleteForwardDiaryEmbed(controller.state), isTrue);
     expect(_outline(controller), 'paragraph:a\nparagraph:b');
-    expect(controller.state.selection, _caret([0], 1));
+    expect(controller.state.selection, _caret([1]));
 
     // 不在行末、下一块是文字：交给上游。
     controller.state.selection = _caret([0]);
     expect(deleteForwardDiaryEmbed(controller.state), isFalse);
     controller.state.selection = _caret([0], 1);
     expect(deleteForwardDiaryEmbed(controller.state), isFalse);
+  });
+
+  group('enter and typing on an embed', () {
+    test('enter on the right adds a line after it, on the left one before '
+        'it', () {
+      final right = _document([_embed('image')]);
+      right.state.selection = _caret([0], 1);
+      expect(insertDiaryLineAtEmbed(right.state), isTrue);
+      expect(_outline(right), 'image\nparagraph:');
+      expect(right.state.selection, _caret([1]));
+
+      final left = _document([_embed('image')]);
+      left.state.selection = _caret([0]);
+      expect(insertDiaryLineAtEmbed(left.state), isTrue);
+      expect(_outline(left), 'paragraph:\nimage');
+      expect(left.state.selection, _caret([1]));
+    });
+
+    test('typing opens a line on the caret side without reconnecting the '
+        'input', () {
+      final controller = _document([_embed('image'), _p('b')]);
+      controller.state.selection = _caret([0], 1);
+      expect(openDiaryLineAtEmbedCaret(controller.state), isTrue);
+      expect(_outline(controller), 'image\nparagraph:\nparagraph:b');
+      expect(controller.state.selection, _caret([1]));
+      expect(
+        controller.state.selectionExtraInfo?[af
+            .selectionExtraInfoDoNotAttachTextService],
+        isTrue,
+      );
+
+      controller.state.selection = _caret([2], 1);
+      expect(openDiaryLineAtEmbedCaret(controller.state), isFalse);
+    });
   });
 
   group('soft keyboard deletion', () {
@@ -279,7 +373,7 @@ void main() {
       composing: TextRange.empty,
     );
 
-    test('selects, then deletes the embed above a line', () async {
+    test('moves onto the embed above a line, then deletes it', () async {
       final controller = _document([_embed('divider'), _p('after')]);
       controller.state.selection = _caret([1]);
       final interceptor = DiaryEmbedKeyboardInterceptor();
@@ -288,12 +382,13 @@ void main() {
         await interceptor.interceptDelete(deletion('after'), controller.state),
         isTrue,
       );
-      expect(armed(controller)?.type, 'divider');
+      expect(controller.state.selection, _caret([0], 1));
       expect(
-        await interceptor.interceptDelete(deletion('after'), controller.state),
+        await interceptor.interceptDelete(deletion(''), controller.state),
         isTrue,
       );
       expect(_outline(controller), 'paragraph:after');
+      expect(controller.state.selection, _caret([0]));
     });
 
     test('lets upstream turn a heading into a paragraph first', () async {
@@ -310,16 +405,14 @@ void main() {
 
       expect(handled, isFalse);
       expect(_outline(controller), 'divider\nheading:title');
-      expect(armed(controller), isNull);
+      expect(controller.state.selection, _caret([1]));
     });
   });
 
   group('appendDiaryTrailingLine', () {
-    test('adds a writable line after a trailing embed or table', () {
-      for (final last in [
-        _embed('image'),
-        _embed('divider'),
-        _text('bulleted_list', 'item', children: [_embed('video')]),
+    test('adds a writable line after a trailing table', () {
+      final controller = _document([
+        _p('a'),
         {
           'type': 'table',
           'data': {'colsLen': 1, 'rowsLen': 1},
@@ -331,24 +424,25 @@ void main() {
             },
           ],
         },
-      ]) {
-        final controller = _document([_p('a'), last]);
-        final selection = appendDiaryTrailingLine(controller.state);
-        expect(selection, _caret([2]));
-        expect(controller.document.root.children.last.type, 'paragraph');
-        expect(controller.state.selection, selection);
-        expect(
-          controller.state.selectionUpdateReason,
-          af.SelectionUpdateReason.uiEvent,
-        );
-        controller.undo();
-        expect(controller.document.root.children, hasLength(2));
-      }
+      ]);
+      final selection = appendDiaryTrailingLine(controller.state);
+      expect(selection, _caret([2]));
+      expect(controller.document.root.children.last.type, 'paragraph');
+      expect(controller.state.selection, selection);
+      expect(
+        controller.state.selectionUpdateReason,
+        af.SelectionUpdateReason.uiEvent,
+      );
+      controller.undo();
+      expect(controller.document.root.children, hasLength(2));
     });
 
-    test('does nothing when the text already ends with a text block', () {
+    test('does nothing after text or an embed (the caret can stop there)', () {
       for (final last in [
         _p('end'),
+        _embed('image'),
+        _embed('divider'),
+        _text('bulleted_list', 'item', children: [_embed('video')]),
         _text(
           'toggle_list',
           'closed',
@@ -412,24 +506,12 @@ void main() {
       await tester.pump(Duration.zero);
     }
 
-    /// 嵌入块上选中样式的不透明度（0 为没有选中）。
-    double selectedLook(WidgetTester tester, af.Node node) => tester
-        .widget<AnimatedOpacity>(
-          find
-              .ancestor(
-                of: find.byKey(ValueKey('diary-armed-embed-${node.id}')),
-                matching: find.byType(AnimatedOpacity),
-              )
-              .first,
-        )
-        .opacity;
-
     Future<void> press(WidgetTester tester, LogicalKeyboardKey key) async {
       await tester.sendKeyEvent(key);
       await tester.pump();
     }
 
-    testWidgets('Backspace and Delete keys select, then delete the embed', (
+    testWidgets('Backspace and Delete keys move onto, then delete the embed', (
       tester,
     ) async {
       final controller = _document([
@@ -439,26 +521,23 @@ void main() {
         _embed('divider'),
         _p('end'),
       ]);
-      final first = controller.document.root.children[1];
       await pump(tester, controller, _caret([2]));
-      expect(selectedLook(tester, first), 0);
 
       await press(tester, LogicalKeyboardKey.backspace);
       expect(controller.document.root.children, hasLength(5));
-      expect(controller.selection, _caret([2]));
-      expect(selectedLook(tester, first), 1);
+      expect(controller.selection, _caret([1], 1));
 
       await press(tester, LogicalKeyboardKey.backspace);
       expect(
         _outline(controller),
         'paragraph:before\nparagraph:after\ndivider\nparagraph:end',
       );
-      expect(controller.selection, _caret([1]));
+      expect(controller.selection, _caret([0], 6));
 
       controller.select(_caret([1], 5));
       await tester.pump();
       await press(tester, LogicalKeyboardKey.delete);
-      expect(controller.document.root.children, hasLength(4));
+      expect(controller.selection, _caret([2]));
       await press(tester, LogicalKeyboardKey.delete);
       expect(
         _outline(controller),
@@ -473,22 +552,49 @@ void main() {
     Map<String, dynamic> ime(WidgetTester tester) =>
         tester.testTextInput.editingState!;
 
+    // 输入法那边当前的编辑值：测试输入法只记框架发来的值，自己发出去的
+    // （打字、组字）不回写；框架之后没再发新值时，输入法里就是最后发出的那个。
+    TextEditingValue? sent;
+    Map<String, dynamic>? sentOver;
+    TextEditingValue imeValue(WidgetTester tester) {
+      final state = ime(tester);
+      if (sent != null && identical(state, sentOver)) return sent!;
+      return TextEditingValue(
+        text: state['text'] as String,
+        selection: TextSelection.collapsed(
+          offset: state['selectionBase'] as int,
+        ),
+      );
+    }
+
+    Future<void> imeSet(
+      WidgetTester tester,
+      String text,
+      int caret, {
+      TextRange composing = TextRange.empty,
+    }) async {
+      final value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: caret),
+        composing: composing,
+      );
+      sentOver = ime(tester);
+      sent = value;
+      tester.testTextInput.updateEditingValue(value);
+      // 上游合并输入的 10ms 防抖与拦截后的同步（零时长计时器）：pump 要带
+      // 时长才会推进假时钟。
+      await tester.pump(const Duration(milliseconds: 20));
+      await tester.pump(Duration.zero);
+    }
+
     Future<void> imeEdit(
       WidgetTester tester,
       String Function(String text, int caret) edit,
       int Function(int caret) caretAfter,
     ) async {
-      final text = ime(tester)['text'] as String;
-      final caret = ime(tester)['selectionBase'] as int;
-      tester.testTextInput.updateEditingValue(
-        TextEditingValue(
-          text: edit(text, caret),
-          selection: TextSelection.collapsed(offset: caretAfter(caret)),
-        ),
-      );
-      // 拦截后的输入法同步是零时长计时器：pump 要带时长才会推进假时钟。
-      await tester.pump(Duration.zero);
-      await tester.pump(Duration.zero);
+      final current = imeValue(tester);
+      final caret = current.selection.baseOffset;
+      await imeSet(tester, edit(current.text, caret), caretAfter(caret));
     }
 
     Future<void> imeBackspace(WidgetTester tester) => imeEdit(
@@ -504,64 +610,75 @@ void main() {
     );
 
     testWidgets(
-      'soft keyboard: below an image followed by empty lines the first '
-      'backspace removes the line and selects the image',
+      'soft keyboard: backspace below an image removes the empty line and '
+      'stops on the image, typing there starts a new line',
       (tester) async {
         final controller = _document([
           _p('a'),
           _embed('image'),
           _p(''),
           _p(''),
-          _p(''),
           _p('b'),
         ]);
-        final image = controller.document.root.children[1];
         await pump(tester, controller, _caret([2]));
         expect(ime(tester)['text'], ' ');
 
         await imeBackspace(tester);
         expect(
           _outline(controller),
-          'paragraph:a\nimage\nparagraph:\nparagraph:\nparagraph:b',
+          'paragraph:a\nimage\nparagraph:\nparagraph:b',
         );
-        expect(controller.selection, _caret([2]));
-        await tester.pumpAndSettle(const Duration(milliseconds: 50));
-        expect(selectedLook(tester, image), 1);
+        expect(controller.selection, _caret([1], 1));
+        // 输入法连着块上的插入点：空行的编辑值。
+        expect(tester.testTextInput.hasAnyClients, isTrue);
+        expect(ime(tester)['text'], ' ');
+        expect(ime(tester)['selectionBase'], 1);
 
-        // 插入点一直在文字行里，输入法连着它：打字照常写进这一行并取消
-        // 选中。
-        await imeType(tester, 'n');
+        // 拼音组字：第一个字母就补出新的一行，组字照常进行、上屏。
+        await imeSet(
+          tester,
+          ' n',
+          2,
+          composing: const TextRange(start: 1, end: 2),
+        );
         expect(
           _outline(controller),
           'paragraph:a\nimage\nparagraph:n\nparagraph:\nparagraph:b',
         );
+        await imeSet(
+          tester,
+          ' ni',
+          3,
+          composing: const TextRange(start: 1, end: 3),
+        );
+        await imeSet(tester, ' 你', 2);
+        expect(
+          _outline(controller),
+          'paragraph:a\nimage\nparagraph:你\nparagraph:\nparagraph:b',
+        );
         expect(controller.selection, _caret([2], 1));
-        await tester.pumpAndSettle(const Duration(milliseconds: 50));
-        expect(selectedLook(tester, image), 0);
 
-        // 删掉刚打的字、回到行首：这一行又是空行，再退格同样删掉它并选中
-        // 图片；再按一次删掉图片，剩下的空行原样留着。
+        // 删掉刚打的字，再退格：删掉这一行、回到图片右侧；再退格删掉图片。
         await imeBackspace(tester);
         expect(controller.selection, _caret([2]));
-        expect(DiaryArmedEmbed.of(controller.state).node.value, isNull);
         await imeBackspace(tester);
-        expect(DiaryArmedEmbed.of(controller.state).node.value, same(image));
+        expect(controller.selection, _caret([1], 1));
         expect(
           _outline(controller),
           'paragraph:a\nimage\nparagraph:\nparagraph:b',
         );
         await imeBackspace(tester);
         expect(_outline(controller), 'paragraph:a\nparagraph:\nparagraph:b');
-        expect(controller.selection, _caret([1]));
-        expect(ime(tester)['text'], ' ');
+        expect(controller.selection, _caret([0], 1));
+        expect(ime(tester)['text'], ' a');
         await unmount(tester);
       },
       variant: TargetPlatformVariant.only(TargetPlatform.android),
     );
 
     testWidgets(
-      'soft keyboard: after the empty line goes the input follows the next '
-      'line',
+      'soft keyboard: an empty line between a divider and text goes, the '
+      'caret stops on the divider and typing goes right after it',
       (tester) async {
         final controller = _document([
           _p('a'),
@@ -573,14 +690,25 @@ void main() {
 
         await imeBackspace(tester);
         expect(_outline(controller), 'paragraph:a\ndivider\nparagraph:world');
-        expect(controller.selection, _caret([2]));
-        // 拦截后上游把输入法退回了空行的编辑值，随后按新的一行重新同步。
-        expect(ime(tester)['text'], ' world');
-        expect(ime(tester)['selectionBase'], 1);
+        expect(controller.selection, _caret([1], 1));
+        expect(ime(tester)['text'], ' ');
 
         await imeType(tester, 'n');
-        expect(_outline(controller), 'paragraph:a\ndivider\nparagraph:nworld');
+        expect(
+          _outline(controller),
+          'paragraph:a\ndivider\nparagraph:n\nparagraph:world',
+        );
         expect(controller.selection, _caret([2], 1));
+
+        // 回车同样只在块后补一行。
+        controller.select(_caret([1], 1));
+        await tester.pump(Duration.zero);
+        await imeType(tester, '\n');
+        expect(
+          _outline(controller),
+          'paragraph:a\ndivider\nparagraph:\nparagraph:n\nparagraph:world',
+        );
+        expect(controller.selection, _caret([2]));
         await unmount(tester);
       },
       variant: TargetPlatformVariant.only(TargetPlatform.android),
@@ -599,6 +727,7 @@ void main() {
       expect(_outline(controller), 'divider\nparagraph:title');
       await press(tester, LogicalKeyboardKey.backspace);
       expect(_outline(controller), 'divider\nparagraph:title');
+      expect(controller.selection, _caret([0], 1));
       await press(tester, LogicalKeyboardKey.backspace);
       expect(_outline(controller), 'paragraph:title');
       await unmount(tester);
@@ -610,7 +739,8 @@ void main() {
     }
 
     testWidgets(
-      'tapping below a trailing embed adds a line and shows the keyboard',
+      'tapping below a trailing embed stops the caret on its right and shows '
+      'the keyboard, without adding a line',
       (tester) async {
         final controller = _document([_p('text'), _embed('divider')]);
         await pump(tester, controller, _caret([0], 4));
@@ -619,55 +749,49 @@ void main() {
         expect(tester.testTextInput.isVisible, isFalse);
         final left = tester.getTopLeft(find.byType(af.AppFlowyEditor)).dx;
 
-        // 点在分隔线上不补行。
-        final divider = controller.document.root.children.last.renderBox!;
-        await tester.tapAt(
-          divider.localToGlobal(divider.size.center(Offset.zero)),
-        );
-        await tester.pump();
-        expect(controller.document.root.children, hasLength(2));
-
         await tester.tapAt(Offset(left + 40, lastBlockBottom(controller) + 60));
         await tester.pump();
 
-        expect(_outline(controller), 'paragraph:text\ndivider\nparagraph:');
-        expect(controller.selection, _caret([2]));
+        expect(_outline(controller), 'paragraph:text\ndivider');
+        expect(controller.selection, _caret([1], 1));
         expect(tester.testTextInput.isVisible, isTrue);
-        expect(tester.testTextInput.hasAnyClients, isTrue);
+        expect(ime(tester)['text'], ' ');
 
-        // 最后一块已是文字：再点下方只是把插入点放到末尾，不再补行。
-        await tester.tapAt(Offset(left + 40, lastBlockBottom(controller) + 60));
-        await tester.pump();
-        expect(controller.document.root.children, hasLength(3));
+        await imeType(tester, 'x');
+        expect(_outline(controller), 'paragraph:text\ndivider\nparagraph:x');
         await unmount(tester);
       },
       variant: TargetPlatformVariant.only(TargetPlatform.android),
     );
 
-    testWidgets('a desktop click below adds the line, a right click does not', (
-      tester,
-    ) async {
-      final controller = _document([_p('text'), _embed('image')]);
-      await pump(tester, controller, _caret([0], 4));
-      final below = Offset(
-        tester.getTopLeft(find.byType(af.AppFlowyEditor)).dx + 40,
-        lastBlockBottom(controller) + 60,
-      );
+    testWidgets(
+      'a desktop click below an image stops the caret on it, a right click '
+      'does not',
+      (tester) async {
+        final controller = _document([_p('text'), _embed('image')]);
+        await pump(tester, controller, _caret([0], 4));
+        final below = Offset(
+          tester.getTopLeft(find.byType(af.AppFlowyEditor)).dx + 40,
+          lastBlockBottom(controller) + 60,
+        );
 
-      await tester.tapAt(below);
-      await tester.pump();
-      expect(_outline(controller), 'paragraph:text\nimage\nparagraph:');
-      expect(controller.selection, _caret([2]));
+        await tester.tapAt(below);
+        await tester.pump();
+        expect(_outline(controller), 'paragraph:text\nimage');
+        expect(controller.selection, _caret([1], 1));
+        expect(tester.testTextInput.hasAnyClients, isTrue);
 
-      // 右键是打开正文菜单，不补行（菜单的遮罩会吃掉之后的点按，放在最后）。
-      controller.undo();
-      await tester.pump();
-      expect(controller.document.root.children, hasLength(2));
-      await tester.tapAt(below, buttons: kSecondaryMouseButton);
-      await tester.pump();
-      expect(controller.document.root.children, hasLength(2));
-      await unmount(tester);
-    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+        // 右键是打开正文菜单，不动插入点（菜单的遮罩会吃掉之后的点按，放在
+        // 最后）。
+        controller.select(_caret([0], 4));
+        await tester.pump();
+        await tester.tapAt(below, buttons: kSecondaryMouseButton);
+        await tester.pump();
+        expect(controller.selection, _caret([0], 4));
+        await unmount(tester);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.linux),
+    );
   });
 }
 

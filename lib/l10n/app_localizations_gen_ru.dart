@@ -3832,7 +3832,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryCardStyleShowUntitled =>
-      'Показывать «Без названия», если нет заголовка';
+      'Без заголовка показывать первую строку текста';
 
   @override
   String get diaryCardStyleShowUntitledSubtitle =>
@@ -4219,6 +4219,9 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get diaryCardStyleSampleBody4 =>
       'По дороге домой на ступеньках грелся на солнце рыжий кот. От одного взгляда на него становилось спокойнее.';
+
+  @override
+  String get diaryCardStyleSampleLead4 => 'Рыжий кот на ступеньках';
 
   @override
   String get diaryCardStyleSampleCapsuleTitle => 'Письмо себе через год';

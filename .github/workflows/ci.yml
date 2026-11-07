@@ -232,6 +232,19 @@ jobs:
       - name: Build release APK (arm64)
         run: flutter build apk --release --target-platform android-arm64
 
+      # Robolectric 在测试 JVM 里自己从 Maven Central 下载 @Config 列出的各 SDK 的
+      # android-all-instrumented（SDK 29 + 33 约 270 MB），落在 ~/.m2 而不是
+      # ~/.gradle，setup-java 的 Gradle 缓存管不到；下载偶发 IOException 就会让
+      # 整个 job 失败（2026-11-07 main 上的 MavenArtifactFetcher 报错即此）。
+      # 所需 jar 只取决于 Robolectric 版本（build.gradle.kts）与 SDK 列表（测试
+      # 源码），键就取这两处的哈希。不设 restore-keys：键变了就整份重新下载，
+      # 避免旧版本的 jar 随缓存一代代累积（仓库缓存配额 10 GB 已接近用满）。
+      - name: Cache Robolectric Android jars
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/app/src/test/**') }}
+
       # Flutter 构建会先生成仓库未跟踪的 gradlew；原生测试复用这份 wrapper。
       - name: Test Android picker permissions and result handling
         working-directory: android

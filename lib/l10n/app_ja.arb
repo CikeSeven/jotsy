@@ -4777,13 +4777,13 @@
   "@diaryCardStyleShowTitle": {
     "description": "Diary card style settings: whether to show the entry title."
   },
-  "diaryCardStyleShowUntitled": "タイトルがないときは「無題」と表示",
+  "diaryCardStyleShowUntitled": "タイトルがないときは本文の1行目をタイトルにする",
   "@diaryCardStyleShowUntitled": {
-    "description": "Diary card style settings: whether entries without a title show the “Untitled” placeholder."
+    "description": "Diary card style settings: whether entries without a title show the first line of the text as the title (the summary then starts from the second line; “Untitled” when the text is empty)."
   },
   "diaryCardStyleShowUntitledSubtitle": "オフにするとタイトル行を省略します",
   "@diaryCardStyleShowUntitledSubtitle": {
-    "description": "Diary card style settings: explanation of the “Untitled” placeholder switch."
+    "description": "Diary card style settings: explanation of the first-line-as-title switch."
   },
   "diaryCardStyleShowPreview": "抜粋を表示",
   "@diaryCardStyleShowPreview": {
@@ -5265,7 +5265,11 @@
   },
   "diaryCardStyleSampleBody4": "帰り道、茶トラの猫が階段で日向ぼっこをしていた。目を細めている姿を見ていたら、こちらまで肩の力が抜けた。",
   "@diaryCardStyleSampleBody4": {
-    "description": "Diary card style settings: text of preview sample entry 4 (it has no title, to show the “Untitled” placeholder)."
+    "description": "Diary card style settings: text after the first line of preview sample entry 4 (it has no title, to show the first line used as the title)."
+  },
+  "diaryCardStyleSampleLead4": "階段の上の茶トラ",
+  "@diaryCardStyleSampleLead4": {
+    "description": "Diary card style settings: first line of preview sample entry 4 (it has no title, so this line shows in the title position)."
   },
   "diaryCardStyleSampleCapsuleTitle": "1年後の自分への手紙",
   "@diaryCardStyleSampleCapsuleTitle": {

@@ -151,7 +151,8 @@ void main() {
     tester,
   ) async {
     final (settings, l10n) = await _pumpPage(tester);
-    // 预览里第 4 篇示例没写标题：滚到它，默认显示“无标题”。
+    // 预览里第 4 篇示例没写标题：滚到它，默认正文第一行当标题、摘要从
+    // 第二行起。
     await tester.scrollUntilVisible(
       find.text(l10n.diaryCardStyleSampleBody4),
       120,
@@ -162,7 +163,8 @@ void main() {
           )
           .first,
     );
-    expect(find.text(l10n.autoT0033), findsOneWidget);
+    expect(find.text(l10n.diaryCardStyleSampleLead4), findsOneWidget);
+    expect(find.text(l10n.autoT0033), findsNothing);
 
     await _openTab(tester, l10n.diaryCardStyleTabContent);
     final untitledSwitch = find.widgetWithText(
@@ -171,7 +173,14 @@ void main() {
     );
     await _tapVisible(tester, untitledSwitch);
     expect(_stored(settings).current.content.showUntitled, isFalse);
-    expect(find.text(l10n.diaryCardStyleSampleBody4), findsOneWidget);
+    // 关闭后不显示标题行，第一行回到摘要里。
+    expect(find.text(l10n.diaryCardStyleSampleLead4), findsNothing);
+    expect(
+      find.text(
+        '${l10n.diaryCardStyleSampleLead4} ${l10n.diaryCardStyleSampleBody4}',
+      ),
+      findsOneWidget,
+    );
     expect(find.text(l10n.autoT0033), findsNothing);
 
     // 标题整体关闭后这个开关没有意义，随之收起。

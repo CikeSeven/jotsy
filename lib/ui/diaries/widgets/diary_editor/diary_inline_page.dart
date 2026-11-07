@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart' show Drag;
 import 'package:flutter/rendering.dart';
 
+import '../../models/diary_thumbnail_rows.dart';
+import 'diary_thumbnail_row.dart';
+
 /// AppFlowy 的服务 Overlay 要求有限高度；阅读页的正文则在外部滚动视图中。
 /// 此 page 先在有限视口内正常布局完整正文，再报告实际高度给外层编辑器。
 /// 不使用 IntrinsicHeight：图片和长图含 LayoutBuilder，无法进行固有尺寸测量。
@@ -42,6 +45,35 @@ class _InlinePage extends af.BlockComponentStatelessWidget {
   final EdgeInsets padding;
   final Widget? header;
   final Widget? footer;
+
+  /// 顶层块竖着排；连续的小图三张一排（diary_thumbnail_rows.dart），整排
+  /// 放在第一张的位置，其余几张不再单独占行。
+  Widget _buildColumn(BuildContext context) {
+    final children = node.children.toList(growable: false);
+    final rows = diaryThumbnailRows(children);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ?header,
+        for (var i = 0; i < children.length; i++)
+          if (rows[i].start == i)
+            Padding(
+              padding: padding,
+              child: rows[i].end - i > 1
+                  ? DiaryThumbnailRowView(
+                      align: children[i].attributes['align'],
+                      children: [
+                        for (var j = i; j < rows[i].end; j++)
+                          state.renderer.build(context, children[j]),
+                      ],
+                    )
+                  : state.renderer.build(context, children[i]),
+            ),
+        ?footer,
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) => _InlineScrollProxy(
     position: Scrollable.maybeOf(context)?.position,
@@ -52,17 +84,11 @@ class _InlinePage extends af.BlockComponentStatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       child: _MeasureHeight(
         onHeight: onHeight,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ?header,
-            for (final child in node.children)
-              Padding(
-                padding: padding,
-                child: state.renderer.build(context, child),
-              ),
-            ?footer,
-          ],
+        // 分排变了（某张图片设为 / 取消小图）也要重建，见该组件。
+        child: DiaryThumbnailRowsBuilder(
+          state: state,
+          root: node,
+          builder: _buildColumn,
         ),
       ),
     ),

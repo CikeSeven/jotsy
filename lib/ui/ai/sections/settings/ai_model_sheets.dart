@@ -8,6 +8,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../settings/widgets/settings_option_tiles.dart';
 import '../../../widgets/app_modal/app_dialog.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
+import '../../../widgets/keyboard_visibility.dart';
 import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../widgets/ai_tap_outside_unfocus.dart';
 
@@ -58,10 +59,7 @@ class _ModelPickerState extends State<_ModelPicker> {
     ];
     final height = MediaQuery.sizeOf(context).height * 0.8;
     return AiTapOutsideUnfocus(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
+      child: KeyboardInsetPadding(
         child: SizedBox(
           height: height,
           child: Column(
@@ -284,10 +282,7 @@ class _ModelSettingsState extends State<_ModelSettings> {
     final colors = theme.colorScheme;
     final digits = <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     return AiTapOutsideUnfocus(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
+      child: KeyboardInsetPadding(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
           child: Column(

@@ -10,6 +10,7 @@ import '../../../core/services/app_service.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/desktop_page_arrows.dart';
+import '../../widgets/keyboard_visibility.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
 import '../controllers/diary_template_editor_controller.dart';
 import '../controllers/diary_templates_controller.dart';
@@ -92,7 +93,9 @@ class _DiaryTemplateEditorPageState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    // 只在键盘弹起 / 收起时重建整页，不随键盘动画逐帧重建（见
+    // KeyboardVisibility）。
+    final keyboardVisible = KeyboardVisibility.of(context);
     final scaffold = AppPageBackground(
       area: AppBackgroundArea.editor,
       child: Builder(

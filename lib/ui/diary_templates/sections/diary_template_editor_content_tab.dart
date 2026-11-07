@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
+import '../../widgets/width_layout_builder.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
@@ -149,11 +150,13 @@ class _DiaryTemplateEditorContentTabState
             _toolbarFocus.hasFocus) &&
         order.isNotEmpty;
     final savedColors = ref.watch(diarySavedColorsProvider);
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
+    // 只随宽度重建：键盘升降时正文区逐帧变矮，不必逐帧重建整列（见
+    // WidthLayoutBuilder；按高度限制面板的那一层仍是 LayoutBuilder）。
+    return WidthLayoutBuilder(
+      builder: (BuildContext context, double maxWidth) {
         // 正文列每侧的留白；手机上就是原来的 16。
         final gutter = AppContentWidth.gutter(
-          constraints.maxWidth,
+          maxWidth,
           AppContentWidth.editor,
           minGutter: AppSpacing.l,
         );

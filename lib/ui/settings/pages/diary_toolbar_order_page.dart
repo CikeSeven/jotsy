@@ -18,6 +18,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../widgets/diary_toolbar_overflow_divider.dart';
 import 'diary_code_block_style_page.dart';
 import '../../widgets/form_width.dart';
+import '../../widgets/width_layout_builder.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
@@ -354,9 +355,11 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
               switchOutCurve: ExpressiveMotion.exit,
               child: KeyedSubtree(
                 key: ValueKey<int>(_resetGeneration),
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    final side = FormWidth.extra(constraints.maxWidth);
+                // 只随宽度重建，键盘升降时不逐帧重建整张列表（见
+                // WidthLayoutBuilder）。
+                child: WidthLayoutBuilder(
+                  builder: (BuildContext context, double maxWidth) {
+                    final side = FormWidth.extra(maxWidth);
                     return ReorderableListView.builder(
                       padding: EdgeInsets.symmetric(
                         horizontal: side,

@@ -6,6 +6,7 @@ import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
+import '../../widgets/keyboard_visibility.dart';
 import '../models/lan_sync_address_input.dart';
 import '../models/lan_sync_platform.dart';
 
@@ -106,8 +107,7 @@ class _ManualAddressSheetState extends State<_ManualAddressSheet> {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final l10n = context.l10n;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+    return KeyboardInsetPadding(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.xl,

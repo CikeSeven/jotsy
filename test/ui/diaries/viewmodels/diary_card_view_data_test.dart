@@ -99,6 +99,26 @@ void main() {
     expect(data.previewText, isNot(contains('\n')));
   });
 
+  test('splits the first line off for untitled cards', () {
+    final data = DiaryCardViewData.of(
+      _diary(contentText: '\n 第一行 \n第二行\n${'b' * 300}'),
+    );
+    expect(data.leadingLine?.line, '第一行');
+    expect(data.previewTextAfterLeadingLine, startsWith('第二行 b'));
+    expect(
+      data.previewTextAfterLeadingLine.length,
+      DiaryCardViewData.previewTextMaxLength,
+    );
+    // 不当标题时的摘要照旧从头开始。
+    expect(data.previewText, startsWith('第一行'));
+  });
+
+  test('bodies without text have no first line and no remaining preview', () {
+    final data = DiaryCardViewData.of(_diary(contentText: '\n\n'));
+    expect(data.leadingLine, isNull);
+    expect(data.previewTextAfterLeadingLine, isEmpty);
+  });
+
   test('falls back to the first image embedded in the body', () {
     final data = DiaryCardViewData.of(
       _diary(content: '[{"insert":"intro\\n"},{"insert":{"image":"/a.png"}}]'),

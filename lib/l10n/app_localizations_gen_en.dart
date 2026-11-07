@@ -3722,7 +3722,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryCardStyleShowUntitled =>
-      'Show “Untitled” when there is no title';
+      'Use the first line as the title when there is none';
 
   @override
   String get diaryCardStyleShowUntitledSubtitle =>
@@ -4106,6 +4106,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryCardStyleSampleBody4 =>
       'Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.';
+
+  @override
+  String get diaryCardStyleSampleLead4 => 'A ginger cat on the steps';
 
   @override
   String get diaryCardStyleSampleCapsuleTitle => 'A letter to myself next year';

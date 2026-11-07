@@ -4777,13 +4777,13 @@
   "@diaryCardStyleShowTitle": {
     "description": "Diary card style settings: whether to show the entry title."
   },
-  "diaryCardStyleShowUntitled": "Показывать «Без названия», если нет заголовка",
+  "diaryCardStyleShowUntitled": "Без заголовка показывать первую строку текста",
   "@diaryCardStyleShowUntitled": {
-    "description": "Diary card style settings: whether entries without a title show the “Untitled” placeholder."
+    "description": "Diary card style settings: whether entries without a title show the first line of the text as the title (the summary then starts from the second line; “Untitled” when the text is empty)."
   },
   "diaryCardStyleShowUntitledSubtitle": "Если выключено, строка заголовка пропускается",
   "@diaryCardStyleShowUntitledSubtitle": {
-    "description": "Diary card style settings: explanation of the “Untitled” placeholder switch."
+    "description": "Diary card style settings: explanation of the first-line-as-title switch."
   },
   "diaryCardStyleShowPreview": "Показывать отрывок",
   "@diaryCardStyleShowPreview": {
@@ -5265,7 +5265,11 @@
   },
   "diaryCardStyleSampleBody4": "По дороге домой на ступеньках грелся на солнце рыжий кот. От одного взгляда на него становилось спокойнее.",
   "@diaryCardStyleSampleBody4": {
-    "description": "Diary card style settings: text of preview sample entry 4 (it has no title, to show the “Untitled” placeholder)."
+    "description": "Diary card style settings: text after the first line of preview sample entry 4 (it has no title, to show the first line used as the title)."
+  },
+  "diaryCardStyleSampleLead4": "Рыжий кот на ступеньках",
+  "@diaryCardStyleSampleLead4": {
+    "description": "Diary card style settings: first line of preview sample entry 4 (it has no title, so this line shows in the title position)."
   },
   "diaryCardStyleSampleCapsuleTitle": "Письмо себе через год",
   "@diaryCardStyleSampleCapsuleTitle": {

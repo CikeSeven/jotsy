@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -31,7 +33,7 @@ DiaryWithTags _diary({
       id: _idSeed,
       diaryId: id,
       title: title,
-      content: '[$embeds{"insert":"$text\\n"}]',
+      content: '[$embeds{"insert":${jsonEncode('$text\n')}}]',
       contentText: text,
       metadata: metadata,
       cover: cover,
@@ -56,6 +58,7 @@ Future<void> _pump(
   bool selectionMode = false,
   bool opensLockedCapsulePage = true,
   void Function(DiaryWithTags diary)? onOpen,
+  List<String> highlightTerms = const <String>[],
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -77,6 +80,7 @@ Future<void> _pump(
               onToggleSelection: (_, _) {},
               cardStyle: style,
               opensLockedCapsulePage: opensLockedCapsulePage,
+              highlightTerms: highlightTerms,
             ),
           ],
         ),
@@ -315,12 +319,65 @@ void main() {
       expect(_icon(FontAwesomeIcons.solidCircleCheck), findsOneWidget);
     });
 
-    testWidgets('untitled entries show the placeholder by default', (
+    testWidgets('untitled entries use the first line as the title by default', (
       tester,
     ) async {
-      await _pump(tester, diaries: <DiaryWithTags>[_diary(title: '  ')]);
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[
+          _diary(title: '  ', text: '\n  台阶上的橘猫 \n晒着太阳\n眯着眼睛'),
+        ],
+      );
+      expect(find.text('无标题'), findsNothing);
+      final title = find.text('台阶上的橘猫');
+      expect(title, findsOneWidget);
+      // 摘要从第二行起，不重复已当作标题的那一行。
+      final preview = find.text('晒着太阳 眯着眼睛');
+      expect(preview, findsOneWidget);
+      expect(
+        tester.getRect(title).bottom,
+        lessThanOrEqualTo(tester.getRect(preview).top),
+      );
+      // 用标题的字号，而不是摘要的。
+      expect(
+        tester.widget<Text>(title).style?.fontSize,
+        greaterThan(tester.widget<Text>(preview).style?.fontSize ?? 0),
+      );
+    });
+
+    testWidgets('a one-line untitled entry shows that line only once', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[_diary(title: '', text: '只有一行')],
+      );
+      expect(find.text('只有一行'), findsOneWidget);
+      expect(find.text('无标题'), findsNothing);
+    });
+
+    testWidgets('untitled entries without text fall back to the placeholder', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[_diary(title: '', text: '')],
+      );
       expect(find.text('无标题'), findsOneWidget);
     });
+
+    testWidgets(
+      'search hits only in the first line keep the second-line summary',
+      (tester) async {
+        await _pump(
+          tester,
+          diaries: <DiaryWithTags>[_diary(title: '', text: '橘猫\n晒着太阳')],
+          highlightTerms: const <String>['橘猫'],
+        );
+        expect(find.textContaining('橘猫', findRichText: true), findsOneWidget);
+        expect(find.textContaining('晒着太阳', findRichText: true), findsOneWidget);
+      },
+    );
 
     testWidgets('without the placeholder only untitled entries lose the line', (
       tester,

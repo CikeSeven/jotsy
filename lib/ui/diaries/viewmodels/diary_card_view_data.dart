@@ -1,16 +1,19 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 import '../../../utils/text_stats.dart';
 import 'diary_card_media_summary.dart';
+import 'diary_leading_line.dart';
 
 /// 日记卡片 / 日历时间线条目共用的派生展示数据。
 ///
 /// 输入：[Diary] 实体；输出：metadata.context 中的心情、天气、地点、精力，
-/// 单行化并截断的摘要文本、正文字数（惰性计算），预览封面（显式封面优先，否则取正文
-/// 第一张图），以及按需惰性扫描的媒体概况（拼贴图片与媒体角标）。
+/// 单行化并截断的摘要文本、正文字数（惰性计算），没写标题时代替标题的正文第一行
+/// 与去掉这一行的摘要（惰性计算），预览封面（显式封面优先，否则取正文第一张图），
+/// 以及按需惰性扫描的媒体概况（拼贴图片与媒体角标）。
 ///
 /// 为什么缓存：列表滚动、日历选日/翻月、筛选过渡都会高频重建卡片，若每次
 /// build 都 `jsonDecode` metadata、并在无封面时解析整段正文，开销会
@@ -107,6 +110,20 @@ class DiaryCardViewData {
   final String _contentJson;
   final String _contentText;
 
+  /// 正文第一行（单行化，最长 [previewTextMaxLength]）；没写标题的日记用它
+  /// 当标题行。正文没有文字时为 null。懒计算：写了标题的日记用不到。
+  late final DiaryLeadingLine? leadingLine = DiaryLeadingLine.of(
+    _contentText,
+    maxLength: previewTextMaxLength,
+  );
+
+  /// 第一行顶替标题时的摘要：从第二行起，不重复已当作标题的那一行；第一行
+  /// 之后没有文字时为空字符串。
+  late final String previewTextAfterLeadingLine = _buildPreviewText(
+    _contentText,
+    start: leadingLine?.restStart ?? _contentText.length,
+  );
+
   /// 正文字数（口径见 [TextStats]）。懒计算：只有显示字数角标的样式才会
   /// 扫描整段纯文本。
   late final int wordCount = TextStats.countWords(_contentText);
@@ -180,10 +197,9 @@ class DiaryCardViewData {
     return value == null || value.isEmpty ? null : value;
   }
 
-  static String _buildPreviewText(String contentText) {
-    final head = contentText.length > previewTextMaxLength
-        ? contentText.substring(0, previewTextMaxLength)
-        : contentText;
-    return head.replaceAll('\n', ' ').trim();
+  /// 从 [start] 起截取 [previewTextMaxLength] 个码元并单行化。
+  static String _buildPreviewText(String contentText, {int start = 0}) {
+    final end = math.min(contentText.length, start + previewTextMaxLength);
+    return contentText.substring(start, end).replaceAll('\n', ' ').trim();
   }
 }

@@ -11,15 +11,21 @@ import 'diary_card_badges.dart';
 import 'diary_card_lines.dart';
 import 'diary_card_selection_mark.dart';
 
+/// 卡片的标题行：要显示的文字，以及它是否取自正文第一行（是时摘要从第二行
+/// 起，不重复这一行）。
+typedef DiaryCardTitleLine = ({String text, bool fromContent});
+
 /// 卡片正文：按样式中的区块顺序排出眉线、标题、标签、摘要与底栏。
 ///
 /// 输入为已解析的样式与颜色；不持有状态。区块之间用 `elementGap` 分隔，
 /// 底栏前用略大的 `footerGap`；没有内容的区块（隐藏、没有标签或摘要为空）
 /// 连同它前面的间距一起省略。默认样式下产出的部件结构与改版前逐项相同。
 ///
+/// 没写标题的日记取正文第一行当标题行，摘要从第二行起（见 [titleLine]）。
+///
 /// 选择标记挂在标题行末尾；这篇不显示标题行时（样式隐藏标题，或没写标题
-/// 且关闭了“无标题”占位）挂到眉线行，两者都没有时由卡片以浮层显示（见
-/// [selectionMarkHost]）。
+/// 且关闭了“没有标题时用正文第一行作标题”）挂到眉线行，两者都没有时由
+/// 卡片以浮层显示（见 [selectionMarkHost]）。
 class DiaryCardBlocks extends StatelessWidget {
   const DiaryCardBlocks({
     super.key,
@@ -40,8 +46,8 @@ class DiaryCardBlocks extends StatelessWidget {
   final DiaryWithTags diary;
   final DiaryCardViewData viewData;
 
-  /// 标题行文字；null 表示这篇不显示标题行（见 [titleLine]）。
-  final String? title;
+  /// 标题行；null 表示这篇不显示标题行（见 [titleLine]）。
+  final DiaryCardTitleLine? title;
   final DiaryCardResolvedStyle resolved;
   final DiaryCardAppearance appearance;
   final bool selected;
@@ -58,20 +64,29 @@ class DiaryCardBlocks extends StatelessWidget {
   /// 搜索页的关键词；为空时标题与摘要是普通 `Text`，与改版前逐项相同。
   final List<String> highlightTerms;
 
-  /// 标题行要显示的文字：样式隐藏标题时为 null；日记没写标题时按
-  /// “无标题”占位开关取 [untitled] 或 null（不显示标题行）。
-  static String? titleLine(
+  /// 标题行：样式隐藏标题时为 null。日记没写标题时看开关
+  /// [DiaryCardContentStyle.showUntitled]：开启时取正文第一行（像便签那样，
+  /// 摘要随之从第二行起），正文没有文字（如只有图片）时退回 [untitled]；
+  /// 关闭时为 null，不显示标题行。
+  static DiaryCardTitleLine? titleLine(
     DiaryCardContentStyle content, {
     required String title,
+    required DiaryCardViewData viewData,
     required String untitled,
   }) {
     if (!content.showTitle) {
       return null;
     }
     if (title.trim().isNotEmpty) {
-      return title;
+      return (text: title, fromContent: false);
     }
-    return content.showUntitled ? untitled : null;
+    if (!content.showUntitled) {
+      return null;
+    }
+    final leading = viewData.leadingLine;
+    return leading == null
+        ? (text: untitled, fromContent: false)
+        : (text: leading.line, fromContent: true);
   }
 
   /// 选择标记所在的区块；null 表示标题行与眉线都不显示，由卡片以浮层显示。
@@ -144,7 +159,7 @@ class DiaryCardBlocks extends StatelessWidget {
                   mark: markHost == DiaryCardBlock.eyebrow ? mark : null,
                 )
               : null,
-        DiaryCardBlock.title => title == null ? null : _title(title, mark),
+        DiaryCardBlock.title => title == null ? null : _title(title.text, mark),
         DiaryCardBlock.tags => _tags(),
         DiaryCardBlock.preview => _preview(),
         DiaryCardBlock.footer => lines.footer(
@@ -237,17 +252,24 @@ class DiaryCardBlocks extends StatelessWidget {
     if (!resolved.style.content.showPreview) {
       return null;
     }
+    // 正文第一行已当作标题时，摘要（含搜索开窗）只取它之后的文字，不重复
+    // 显示同一行；只命中第一行时，标题里已经标出，摘要照常从第二行起。
+    final leading = title?.fromContent == true ? viewData.leadingLine : null;
+    final fallback = leading == null
+        ? viewData.previewText
+        : viewData.previewTextAfterLeadingLine;
     // 搜索时摘要从第一个命中处前开窗（命中就在开头附近时与平时相同），
     // 否则命中在 240 字之后的日记摘要里看不到关键词。就地计算、不进
     // DiaryCardViewData 的缓存：缓存按日记版本复用，与关键词无关。
+    final text = diary.diary.contentText;
     final preview = highlightTerms.isEmpty
-        ? viewData.previewText
+        ? fallback
         : searchExcerpt(
-                diary.diary.contentText,
+                leading == null ? text : leading.restOf(text),
                 highlightTerms,
                 maxLength: DiaryCardViewData.previewTextMaxLength,
               ) ??
-              viewData.previewText;
+              fallback;
     if (preview.isEmpty) {
       return null;
     }

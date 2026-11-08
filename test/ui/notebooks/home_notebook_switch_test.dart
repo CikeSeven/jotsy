@@ -108,12 +108,14 @@ void main() {
       findsOneWidget,
     );
 
-    // 系统返回先回到全部日记，而不是离开页面。
-    await tester.binding.handlePopRoute();
+    // 顶层本子里系统返回不先回到全部日记：直接离开应用（Android 上退到
+    // 桌面），范围留在这本里（#196）。
+    expect(await systemBackLeavesApp(tester), isTrue);
     await h.settleAll();
-    expect(containerOf(tester).read(homeNotebookScopeProvider).isAll, isTrue);
-    expect(find.byType(NotebookHeaderCard), findsNothing);
-    expect(find.text('上班路上'), findsOneWidget);
+    expect(containerOf(tester).read(homeNotebookScopeProvider).isAll, isFalse);
+    expect(inHeader(find.text('旅行')), findsOneWidget);
+    expect(find.text('在京都'), findsOneWidget);
+    expect(find.text('上班路上'), findsNothing);
     expect(tester.takeException(), isNull);
     await h.unmount();
   });

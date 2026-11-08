@@ -1045,12 +1045,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           resizeToAvoidBottomInset: false,
           body: Stack(
             children: [
-              // 返回键优先处理页面内部状态，再交给路由栈。
+              // 返回键优先处理页面内部状态，再交给路由栈。范围里只有子本拦下
+              // 返回（回到上级）：全部日记、未收录与顶层本子都直接放行，应用
+              // 退到后台、留在这个范围里（#196），冷启动经记住的范围恢复。
               PopScope(
                 canPop:
                     !_isSelectionMode &&
                     !_tagFiltersExpanded &&
-                    scopeResolution.isAll,
+                    scopeResolution.notebook?.parentId == null,
                 onPopInvokedWithResult: (didPop, result) {
                   if (didPop) {
                     return;
@@ -1173,7 +1175,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   }
 
   /// 返回被拦下时的顺序：退出多选 → 收起展开的标签栏 → 子本里回到上级
-  /// 本子 → 顶层本子里回到全部日记。
+  /// 本子。顶层本子与未收录不拦返回，不在这里回到全部日记。
   ///
   /// 日记页在 Home 里保活，切到别的 Tab 后它的 PopScope 仍会收到返回；那时
   /// 返回只用于切回日记页（Home 处理），后两步只在日记页可见时执行。

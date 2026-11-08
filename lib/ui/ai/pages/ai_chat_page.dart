@@ -5,6 +5,10 @@
 // 生成结束落库后由列表接手。宽度取阅读列（`AppContentWidth.reading`），
 // 消息列表铺满、留白在两侧。桌面上 Enter 发送、Shift + Enter 换行。
 //
+// 滚动由 [AiChatScrollController] 管：贴着底部时跟随新内容与键盘，用户往上
+// 翻就放手。输入栏放在 Scaffold 的 bottomNavigationBar（自己让开键盘），
+// 浮动提示条因此停在输入栏上方，不会挡住它。
+//
 // 入口：AI 助手主页（提问、快捷问题、历史对话）与预览页回应卡片的“继续
 // 聊聊”（[seedReply]：以那篇日记为固定范围，把那条回应作为对话的开头）。
 
@@ -35,6 +39,7 @@ import '../../widgets/width_layout_builder.dart';
 import '../../widgets/expressive_loading_indicator.dart';
 import '../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../widgets/expressive_menu/expressive_menu_item.dart';
+import '../../widgets/keyboard_visibility.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/ai_agent_turn.dart';
 import '../controllers/ai_agent_undo_flow.dart';
@@ -53,6 +58,7 @@ import '../tools/ai_destinations.dart';
 import '../tools/ai_tool.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
+import '../widgets/ai_chat_scroll_controller.dart';
 import '../widgets/ai_tap_outside_unfocus.dart';
 import 'settings/ai_model_routing_page.dart';
 import 'settings/ai_personas_page.dart';
@@ -83,7 +89,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   late final AiChatController _controller;
   final TextEditingController _input = TextEditingController();
   final FocusNode _inputFocus = FocusNode();
-  final ScrollController _scroll = ScrollController();
+  final AiChatScrollController _scroll = AiChatScrollController();
 
   /// 对话行读出来之前（打开已有对话时）不让发送，免得用默认范围发出去。
   bool _ready = true;
@@ -98,7 +104,6 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       personaId: ref.read(aiPreferencesProvider).personaFor[AiPersonaUse.chat],
     );
     _controller.addListener(_onControllerChanged);
-    _controller.run.addListener(_followBottom);
     if (widget.conversationId != null) {
       _ready = false;
       unawaited(_loadConversation(widget.conversationId!));
@@ -124,7 +129,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
         ..personaId = row.personaId;
     }
     setState(() => _ready = true);
-    _jumpToBottom();
+    _scroll.jumpToBottom();
   }
 
   /// “继续聊聊”：新建一段固定在那篇日记上的对话，把回应作为第一条回答。
@@ -166,8 +171,6 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   @override
   void dispose() {
     _controller.removeListener(_onControllerChanged);
-    _controller.run.removeListener(_followBottom);
-    _listenedTurn?.removeListener(_followBottom);
     _controller.dispose();
     _input.dispose();
     _inputFocus.dispose();
@@ -175,18 +178,8 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     super.dispose();
   }
 
-  /// 正在监听的智能体一轮（跟随底部用）。
-  AiAgentTurn? _listenedTurn;
-
   void _onControllerChanged() {
-    final turn = _controller.agentTurn;
-    if (!identical(turn, _listenedTurn)) {
-      _listenedTurn?.removeListener(_followBottom);
-      turn?.addListener(_followBottom);
-      _listenedTurn = turn;
-    }
     if (mounted) setState(() {});
-    _followBottom();
     // 用户明确说了“打开…”：这一轮结束后自动打开那个页面。
     if (!_controller.busy) {
       final navigation = _controller.takeAutoOpen();
@@ -215,26 +208,12 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     await destination.open(context, ref, navigation.params);
   }
 
-  /// 生成中贴着底部的话跟到底；用户往上翻了就不打扰。
-  void _followBottom() {
-    if (!_scroll.hasClients) return;
-    final position = _scroll.position;
-    if (position.maxScrollExtent - position.pixels > 160) return;
-    _jumpToBottom();
-  }
-
-  void _jumpToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scroll.hasClients) return;
-      _scroll.jumpTo(_scroll.position.maxScrollExtent);
-    });
-  }
-
   Future<void> _send([String? question]) async {
     final text = (question ?? _input.text).trim();
     if (text.isEmpty || _controller.busy || !_ready) return;
     if (question == null) _input.clear();
-    _jumpToBottom();
+    // 发问就回到底部并重新跟随：随后加入的问题与回答都贴着底部出现。
+    _scroll.jumpToBottom();
     await _controller.send(context, ref, text);
   }
 
@@ -554,18 +533,28 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                         },
                       ),
                     ),
-                    _ChatInput(
-                      controller: _input,
-                      focusNode: _inputFocus,
-                      side: side,
-                      busy: busy,
-                      enabled: _ready,
-                      onSend: () => unawaited(_send()),
-                      onStop: _controller.stop,
-                    ),
                   ],
                 );
               },
+            ),
+            // 输入栏放在 bottomNavigationBar：浮动提示条停在它上方，不会挡住
+            // 输入框。Scaffold 不替底栏让开键盘，由 KeyboardInsetPadding 垫高
+            // （只有这一层随键盘逐帧重建）；body 照常在输入栏上方变矮。
+            bottomNavigationBar: KeyboardInsetPadding(
+              child: WidthLayoutBuilder(
+                builder: (BuildContext context, double maxWidth) => _ChatInput(
+                  controller: _input,
+                  focusNode: _inputFocus,
+                  side: AppContentWidth.gutter(
+                    maxWidth,
+                    AppContentWidth.reading,
+                  ),
+                  busy: busy,
+                  enabled: _ready,
+                  onSend: () => unawaited(_send()),
+                  onStop: _controller.stop,
+                ),
+              ),
             ),
           ),
         ),

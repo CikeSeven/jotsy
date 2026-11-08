@@ -19,6 +19,82 @@ class DiaryTagBatchUndo {
   final Set<int> remove;
 
   bool get isEmpty => before.isEmpty;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'before': before,
+    'add': add.toList(),
+    'remove': remove.toList(),
+  };
+
+  static DiaryTagBatchUndo fromJson(Map<String, Object?> json) {
+    List<int> ints(Object? raw) => [
+      if (raw is List)
+        for (final item in raw)
+          if (item is int) item,
+    ];
+    final before = json['before'];
+    return DiaryTagBatchUndo(
+      before: <String, List<int>>{
+        if (before is Map)
+          for (final entry in before.entries) '${entry.key}': ints(entry.value),
+      },
+      add: ints(json['add']).toSet(),
+      remove: ints(json['remove']).toSet(),
+    );
+  }
+}
+
+/// 删掉的一个标签：标签本身与当时用着它的日记（本地 id）。撤销时原样放回
+/// （见 `restoreTagDeletion`）。
+class TagDeletion {
+  const TagDeletion({required this.tag, required this.diaryIds});
+
+  final Tag tag;
+  final List<int> diaryIds;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'tag': tag.toJson(),
+    'diaries': diaryIds,
+  };
+
+  static TagDeletion fromJson(Map<String, Object?> json) => TagDeletion(
+    tag: Tag.fromJson((json['tag']! as Map).cast<String, dynamic>()),
+    diaryIds: [
+      for (final id in json['diaries']! as List)
+        if (id is int) id,
+    ],
+  );
+}
+
+/// 一次标签合并的撤销记录：删掉的来源标签与合并时新挂上目标标签的日记。
+class TagMerge {
+  const TagMerge({
+    required this.targetId,
+    required this.sources,
+    required this.addedTargetDiaryIds,
+  });
+
+  final int targetId;
+  final List<TagDeletion> sources;
+  final List<int> addedTargetDiaryIds;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'target': targetId,
+    'sources': [for (final source in sources) source.toJson()],
+    'added': addedTargetDiaryIds,
+  };
+
+  static TagMerge fromJson(Map<String, Object?> json) => TagMerge(
+    targetId: json['target']! as int,
+    sources: [
+      for (final source in json['sources']! as List)
+        TagDeletion.fromJson((source as Map).cast<String, Object?>()),
+    ],
+    addedTargetDiaryIds: [
+      for (final id in json['added']! as List)
+        if (id is int) id,
+    ],
+  );
 }
 
 /// 标签相关数据访问实现。
@@ -298,6 +374,111 @@ mixin _AppDatabaseTagOps on _$AppDatabase {
       }
     }
     return result;
+  }
+
+  /// 删除标签并留下快照（标签本身与当时用着它的全部日记，含私密与回收站里
+  /// 的），供撤销时原样放回；标签不存在时返回 null。
+  Future<TagDeletion?> deleteTagWithSnapshot(int tagId) {
+    return transaction(() async {
+      final tag = await (select(
+        tags,
+      )..where((Tags t) => t.id.equals(tagId))).getSingleOrNull();
+      if (tag == null) return null;
+      final links = await (select(
+        diaryTags,
+      )..where((DiaryTags t) => t.tagId.equals(tagId))).get();
+      await deleteTag(tagId);
+      return TagDeletion(
+        tag: tag,
+        diaryIds: [for (final link in links) link.diaryId],
+      );
+    });
+  }
+
+  /// 撤销 [deleteTagWithSnapshot]：以原 id、名称与颜色放回标签，并给仍存在的
+  /// 日记重新挂上。期间又建了同名标签时抛 [StateError]（不能悄悄合并）。
+  Future<void> restoreTagDeletion(TagDeletion deletion) {
+    return transaction(() async {
+      final tag = deletion.tag;
+      final sameName = await (select(
+        tags,
+      )..where((Tags t) => t.name.equals(tag.name))).getSingleOrNull();
+      if (sameName != null && sameName.id != tag.id) {
+        throw StateError('A tag named "${tag.name}" exists again');
+      }
+      if (sameName == null) {
+        await into(tags).insert(
+          TagsCompanion(
+            id: Value<int>(tag.id),
+            name: Value<String>(tag.name),
+            color: Value<int>(tag.color),
+          ),
+        );
+      }
+      final existing =
+          await (selectOnly(diaries)
+                ..addColumns(<Expression<Object>>[diaries.id])
+                ..where(diaries.id.isIn(deletion.diaryIds)))
+              .map((row) => row.read(diaries.id)!)
+              .get();
+      for (final diaryId in existing) {
+        await into(diaryTags).insert(
+          DiaryTagsCompanion.insert(diaryId: diaryId, tagId: tag.id),
+          mode: InsertMode.insertOrIgnore,
+        );
+      }
+    });
+  }
+
+  /// 把 [sourceIds] 合并进 [targetId]：用着来源标签的日记（含私密与回收站
+  /// 里的）都挂上目标标签，再删掉来源标签。返回撤销所需的记录。
+  Future<TagMerge> mergeTags(Iterable<int> sourceIds, int targetId) {
+    return transaction(() async {
+      final had =
+          (await (select(
+                diaryTags,
+              )..where((DiaryTags t) => t.tagId.equals(targetId))).get())
+              .map((link) => link.diaryId)
+              .toSet();
+      final added = <int>{};
+      final sources = <TagDeletion>[];
+      for (final sourceId in sourceIds.toSet()..remove(targetId)) {
+        final links = await (select(
+          diaryTags,
+        )..where((DiaryTags t) => t.tagId.equals(sourceId))).get();
+        for (final link in links) {
+          if (had.contains(link.diaryId) || !added.add(link.diaryId)) continue;
+          await into(diaryTags).insert(
+            DiaryTagsCompanion.insert(diaryId: link.diaryId, tagId: targetId),
+            mode: InsertMode.insertOrIgnore,
+          );
+        }
+        final deletion = await deleteTagWithSnapshot(sourceId);
+        if (deletion != null) sources.add(deletion);
+      }
+      return TagMerge(
+        targetId: targetId,
+        sources: sources,
+        addedTargetDiaryIds: added.toList(),
+      );
+    });
+  }
+
+  /// 撤销 [mergeTags]：去掉合并时新挂的目标标签，放回来源标签与它们的日记。
+  Future<void> restoreTagMerge(TagMerge merge) {
+    return transaction(() async {
+      if (merge.addedTargetDiaryIds.isNotEmpty) {
+        await (delete(diaryTags)..where(
+              (DiaryTags t) =>
+                  t.tagId.equals(merge.targetId) &
+                  t.diaryId.isIn(merge.addedTargetDiaryIds),
+            ))
+            .go();
+      }
+      for (final source in merge.sources) {
+        await restoreTagDeletion(source);
+      }
+    });
   }
 
   /// 删除标签及其关联，不依赖历史连接是否开启了 SQLite 外键级联。

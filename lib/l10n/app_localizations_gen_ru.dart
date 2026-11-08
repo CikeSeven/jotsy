@@ -15261,4 +15261,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String diaryTagFilterMultiSelectTipDesktop(String key) {
     return 'Удерживайте $key и щёлкайте по тегам, чтобы выбрать несколько';
   }
+
+  @override
+  String get settingsPublishOnLeave => 'Публиковать новую запись при возврате';
+
+  @override
+  String get settingsPublishOnLeaveSubtitle =>
+      'При возврате новая запись сохраняется как запись, а не как черновик';
+
+  @override
+  String get publishOnLeaveFailedKeptDraft =>
+      'Не удалось опубликовать запись. Она осталась в черновиках.';
 }

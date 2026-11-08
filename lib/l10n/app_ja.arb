@@ -18546,5 +18546,11 @@
   "diaryTagFilterMultiSelectTip": "タグを長押しすると複数選択できます",
   "@diaryTagFilterMultiSelectTip": {"description": "One-time hint on phones after a tap replaced the selected home tag filter: tapping now switches to one tag, long-press selects several."},
   "diaryTagFilterMultiSelectTipDesktop": "{key} を押しながらタグをクリックすると複数選択できます",
-  "@diaryTagFilterMultiSelectTipDesktop": {"description": "One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}}
+  "@diaryTagFilterMultiSelectTipDesktop": {"description": "One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}},
+  "settingsPublishOnLeave": "戻るときに新しい日記を投稿",
+  "@settingsPublishOnLeave": {"description": "Editor settings switch: going back from a new diary publishes it directly instead of keeping it in Drafts."},
+  "settingsPublishOnLeaveSubtitle": "新しい日記で戻ると、下書きにせず日記として保存します",
+  "@settingsPublishOnLeaveSubtitle": {"description": "Subtitle of the \"Publish new diaries when going back\" switch."},
+  "publishOnLeaveFailedKeptDraft": "日記を投稿できませんでした。下書きに残しています。",
+  "@publishOnLeaveFailedKeptDraft": {"description": "Hint when going back from a new diary failed to publish it; the diary was kept in Drafts instead."}
 }

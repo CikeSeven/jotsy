@@ -645,6 +645,60 @@ void main() {
     );
   });
 
+  group('SettingsService diary create prefs', () {
+    const key = 'app.settings.diary_create_prefs';
+    const raw = '{"leave":"publish"}';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryCreatePrefsRaw, isNull);
+
+      await settings.setDiaryCreatePrefsRaw('  $raw  ');
+      expect(settings.diaryCreatePrefsRaw, raw);
+      expect(settings.diaryCreatePrefsRawNotifier.value, raw);
+      expect((await SettingsService.create()).diaryCreatePrefsRaw, raw);
+
+      await settings.setDiaryCreatePrefsRaw(null);
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.diaryCreatePrefsRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 3});
+      final settings = await SettingsService.create();
+      expect(settings.diaryCreatePrefsRaw, isNull);
+    });
+
+    test(
+      'backups carry the prefs, older backups keep the local ones and null resets',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryCreatePrefsRaw(raw);
+        expect(BackupSettings.capture(settings)['diaryCreatePrefsRaw'], raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.diaryCreatePrefsRaw, raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCreatePrefsRaw': <String, dynamic>{'leave': 'draft'},
+        });
+        expect(settings.diaryCreatePrefsRaw, '{"leave":"draft"}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCreatePrefsRaw': null,
+        });
+        expect(settings.diaryCreatePrefsRaw, isNull);
+      },
+    );
+  });
+
   group('SettingsService feature tips', () {
     setUp(() {
       SharedPreferences.setMockInitialValues(<String, Object>{});

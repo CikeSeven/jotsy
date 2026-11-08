@@ -17979,5 +17979,11 @@
   "diaryTagFilterMultiSelectTip": "Long-press a tag to select more than one",
   "@diaryTagFilterMultiSelectTip": {"description": "One-time hint on phones after a tap replaced the selected home tag filter: tapping now switches to one tag, long-press selects several."},
   "diaryTagFilterMultiSelectTipDesktop": "Hold {key} and click tags to select more than one",
-  "@diaryTagFilterMultiSelectTipDesktop": {"description": "One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}}
+  "@diaryTagFilterMultiSelectTipDesktop": {"description": "One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}},
+  "settingsPublishOnLeave": "Publish new diaries when going back",
+  "@settingsPublishOnLeave": {"description": "Editor settings switch: going back from a new diary publishes it directly instead of keeping it in Drafts."},
+  "settingsPublishOnLeaveSubtitle": "Going back from a new diary saves it as a diary, not a draft",
+  "@settingsPublishOnLeaveSubtitle": {"description": "Subtitle of the \"Publish new diaries when going back\" switch."},
+  "publishOnLeaveFailedKeptDraft": "Couldn't publish the diary. It's kept in Drafts.",
+  "@publishOnLeaveFailedKeptDraft": {"description": "Hint when going back from a new diary failed to publish it; the diary was kept in Drafts instead."}
 }

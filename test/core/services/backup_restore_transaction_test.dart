@@ -88,6 +88,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         await fixture.settings.setExploreLayoutRaw(
           '{"v":1,"behavior":{"period":"week"}}',
         );
+        await fixture.settings.setDiaryCreatePrefsRaw('{"leave":"publish"}');
         // 升级前还没迁移的旧版单份草稿：覆盖恢复会清掉它，失败时须原样回滚。
         await fixture.settings.setCreateDiaryDraftRaw(
           '{"title":"legacy draft"}',
@@ -116,6 +117,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['diaryTemplatePrefsRaw'] = '{"v":1,"auto":"builtin.daily"}';
         settings['appFeaturesRaw'] = '{"explore":false}';
         settings['exploreLayoutRaw'] = '{"v":1,"behavior":{"period":"year"}}';
+        settings['diaryCreatePrefsRaw'] = '{"leave":"draft"}';
         final row =
             ((incoming['database'] as Map)['diaries'] as List).single as Map;
         row['title'] = 'incoming diary';
@@ -181,6 +183,11 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           fixture.settings.exploreLayoutRawNotifier.value,
           '{"v":1,"behavior":{"period":"week"}}',
         );
+        expect(fixture.settings.diaryCreatePrefsRaw, '{"leave":"publish"}');
+        expect(
+          fixture.settings.diaryCreatePrefsRawNotifier.value,
+          '{"leave":"publish"}',
+        );
         expect(await store.getAll(), before);
         final recreated = await SettingsService.create();
         expect(recreated.themeModeNotifier.value, ThemeMode.light);
@@ -203,6 +210,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           recreated.exploreLayoutRaw,
           '{"v":1,"behavior":{"period":"week"}}',
         );
+        expect(recreated.diaryCreatePrefsRaw, '{"leave":"publish"}');
       },
     );
   }

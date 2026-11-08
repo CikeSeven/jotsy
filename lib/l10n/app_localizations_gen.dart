@@ -23915,6 +23915,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hold {key} and click tags to select more than one'**
   String diaryTagFilterMultiSelectTipDesktop(String key);
+
+  /// Editor settings switch: going back from a new diary publishes it directly instead of keeping it in Drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish new diaries when going back'**
+  String get settingsPublishOnLeave;
+
+  /// Subtitle of the "Publish new diaries when going back" switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Going back from a new diary saves it as a diary, not a draft'**
+  String get settingsPublishOnLeaveSubtitle;
+
+  /// Hint when going back from a new diary failed to publish it; the diary was kept in Drafts instead.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t publish the diary. It\'s kept in Drafts.'**
+  String get publishOnLeaveFailedKeptDraft;
 }
 
 class _AppLocalizationsDelegate

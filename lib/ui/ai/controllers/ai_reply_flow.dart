@@ -123,8 +123,7 @@ class AiReplyJobs extends Notifier<Map<String, AiReplyJob>> {
 }
 
 /// 回应用的请求材料：这篇日记与（图片理解开启且模型支持时的）图片。
-Future<({AiRequest request, int words, int images})> _buildReplyRequest(
-  WidgetRef ref, {
+Future<({AiRequest request, int words, int images})> _buildReplyRequest({
   required AiContextDiary diary,
   required AiPersonaInfo persona,
   required AiResolvedModel model,
@@ -198,7 +197,6 @@ Future<void> requestAiReply(
     use: AiPersonaUse.reply,
   );
   final material = await _buildReplyRequest(
-    ref,
     diary: diary,
     persona: promptPersona,
     model: model,
@@ -225,29 +223,34 @@ Future<void> requestAiReply(
 
 /// 发表新日记后的自动回应：只在打开了“发表后自动回应”、AI 可用、服务商
 /// 已经确认过（自动回应弹不了确认面板）且这篇允许使用 AI 时发送。
+///
+/// 在后台跑完：发起它的页面（发布页，或新建页“返回时直接发表”后立即退场）
+/// 可能在等待途中就已关闭，`WidgetRef` 随之不能再用，所以一开始（页面还在
+/// 时）就取出应用的 [ProviderContainer]，之后一律经它读取。
 Future<void> startAutoAiReply(
   WidgetRef ref, {
   required String diaryId,
   required Locale locale,
   required AppLocalizations l10n,
 }) async {
-  final prefs = ref.read(aiPreferencesProvider);
+  final container = ProviderScope.containerOf(ref.context, listen: false);
+  final prefs = container.read(aiPreferencesProvider);
   if (!prefs.autoReply ||
-      !ref.read(aiFeatureEnabledProvider) ||
+      !container.read(aiFeatureEnabledProvider) ||
       !prefs.isModuleEnabled(AiModule.reply)) {
     return;
   }
   // 直接读存储：发表时这些 provider 可能还没被读过、存储还没加载。
-  final store = await ref.read(aiProviderStoreProvider.future);
-  final service = await ref.read(aiServiceProvider.future);
+  final store = await container.read(aiProviderStoreProvider.future);
+  final service = await container.read(aiServiceProvider.future);
   final model = service.resolve(AiTaskKind.reply);
   if (model == null) return;
   final acknowledged = store.config.acknowledgedHosts.contains(
     model.provider.host,
   );
   if (!acknowledged || prefs.privacy.confirm == AiConfirmMode.always) return;
-  if (!await aiDiaryAllowed(ref, diaryId)) return;
-  final diary = await ref.read(appDatabaseProvider).getAiDiary(diaryId);
+  if (!await aiDiaryAllowedIn(container, diaryId)) return;
+  final diary = await container.read(appDatabaseProvider).getAiDiary(diaryId);
   if (diary == null) return;
   final kit = AiPromptKit.resolve(
     prefs: prefs,
@@ -256,14 +259,13 @@ Future<void> startAutoAiReply(
   );
   final promptPersona = aiPersonaFor(kit.l10n, prefs, AiPersonaUse.reply);
   final material = await _buildReplyRequest(
-    ref,
     diary: diary,
     persona: promptPersona,
     model: model,
     prefs: prefs,
     locale: locale,
   );
-  await ref
+  await container
       .read(aiReplyJobsProvider.notifier)
       .start(
         job: AiReplyJob(

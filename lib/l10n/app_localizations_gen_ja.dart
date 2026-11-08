@@ -13366,4 +13366,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String diaryTagFilterMultiSelectTipDesktop(String key) {
     return '$key を押しながらタグをクリックすると複数選択できます';
   }
+
+  @override
+  String get settingsPublishOnLeave => '戻るときに新しい日記を投稿';
+
+  @override
+  String get settingsPublishOnLeaveSubtitle => '新しい日記で戻ると、下書きにせず日記として保存します';
+
+  @override
+  String get publishOnLeaveFailedKeptDraft => '日記を投稿できませんでした。下書きに残しています。';
 }

@@ -18546,5 +18546,11 @@
   "diaryTagFilterMultiSelectTip": "Удерживайте тег, чтобы выбрать несколько",
   "@diaryTagFilterMultiSelectTip": {"description": "One-time hint on phones after a tap replaced the selected home tag filter: tapping now switches to one tag, long-press selects several."},
   "diaryTagFilterMultiSelectTipDesktop": "Удерживайте {key} и щёлкайте по тегам, чтобы выбрать несколько",
-  "@diaryTagFilterMultiSelectTipDesktop": {"description": "One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}}
+  "@diaryTagFilterMultiSelectTipDesktop": {"description": "One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}},
+  "settingsPublishOnLeave": "Публиковать новую запись при возврате",
+  "@settingsPublishOnLeave": {"description": "Editor settings switch: going back from a new diary publishes it directly instead of keeping it in Drafts."},
+  "settingsPublishOnLeaveSubtitle": "При возврате новая запись сохраняется как запись, а не как черновик",
+  "@settingsPublishOnLeaveSubtitle": {"description": "Subtitle of the \"Publish new diaries when going back\" switch."},
+  "publishOnLeaveFailedKeptDraft": "Не удалось опубликовать запись. Она осталась в черновиках.",
+  "@publishOnLeaveFailedKeptDraft": {"description": "Hint when going back from a new diary failed to publish it; the diary was kept in Drafts instead."}
 }

@@ -56,6 +56,47 @@ void main() {
     },
   );
 
+  // #196：“返回时直接发表新日记”默认关（返回存进草稿箱），打开后写进
+  // 新建日记的偏好（随备份）。
+  testWidgets('the publish-on-leave switch is off by default and persists', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(
+      Scaffold(
+        body: ListView(
+          children: <Widget>[
+            SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final tile = find.widgetWithText(
+      SwitchListTile,
+      h.l10n.settingsPublishOnLeave,
+    );
+    await tester.scrollUntilVisible(tile, 200);
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(h.settings.diaryCreatePrefsRaw, isNull);
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+    expect(h.settings.diaryCreatePrefsRaw, '{"leave":"publish"}');
+    expect(
+      BackupSettings.capture(h.settings)['diaryCreatePrefsRaw'],
+      '{"leave":"publish"}',
+    );
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(h.settings.diaryCreatePrefsRaw, isNull);
+    await h.unmount();
+  });
+
   testWidgets('the always-show toolbar switch is off by default and persists', (
     tester,
   ) async {

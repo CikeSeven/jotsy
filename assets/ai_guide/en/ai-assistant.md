@@ -24,13 +24,15 @@ Each can be turned on or off in the "Features" group:
 - **Reflections**: on the preview page, More → AI reflection; a persona of your choice responds, and you can save it as a comment or "Talk more".
 - **Writing prompts**: "Need a writing prompt?" under the title of a new blank entry; nothing is generated until you tap it.
 - **Recaps & insights**: recaps for this week, this month, this year or a custom range, optionally for one notebook; the Explore tab has an "AI insights" card.
-- **Chat & actions**: tap the AI icon in the Diaries tab's top bar to open the AI assistant home and ask your diary questions; answers cite the related entries.
+- **Chat & actions**: tap the AI icon in the Diaries tab's top bar to go straight to a new chat; the welcome screen offers quick questions, recaps and recent chats. Ask your diary questions and the answers cite the related entries. The clock icon in the top bar opens "Chats" (always shown on the left in wide windows), where you can search, rename, pin and delete chats and switch to one in place; the pencil icon starts a new chat. The chips under the input box switch the scope, the persona and "Model and thinking": pick a model or set thinking to Auto, Off, Low, Medium or High. Each chat remembers its own choice, and a new chat starts with the last one.
 - **Image understanding**: sends the photos in an entry along with the text.
 
 ## Let the AI do things
 With "Let the AI use tools" on in chat and a model that supports it, the AI can: search and count entries, check the calendar, to-dos and anniversaries; write new entries, add text to the end of one, change its title, date, mood and other details; add or remove tags, pin, archive, move to the recycle bin, add comments; create, rename, merge and delete tags; create and rename notebooks and put entries in or take them out; manage to-dos, anniversaries and day moods; change the theme, app language, text size and feature switches; and open pages.
 
-Every change can be undone with "Undo", and a reply with several changes also offers "Undo all changes in this reply". Deletions are always confirmed first; with "Confirm every change" on, every change is; with "Let the AI make changes" off, the AI can only look things up and open pages.
+In a reply, thinking, in-between remarks and look-ups such as searching and reading are folded into "Thought for N seconds · Used N tools"; open it to see each step's inputs and results (the entries, notebooks and to-dos involved can be opened directly). Opening pages, changes and actions that need your confirmation show as cards. After a card takes you to a home tab or a notebook, press back to return to the chat.
+
+Every change can be undone with "Undo" on its card, and a reply with several changes also offers "Undo all" at the top of the card. Deletions are always confirmed first; with "Confirm every change" on, every change is; with "Let the AI make changes" off, the AI can only look things up and open pages.
 
 The AI can't permanently delete or empty the recycle bin, back up, restore, import, export, share, use cloud backup, pair for LAN sync, change app lock or passcodes, change private or locked notebook settings, manage providers and keys, clean up storage, or turn off the AI assistant itself. For these it only gives you an "Open" button.
 

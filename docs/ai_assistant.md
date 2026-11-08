@@ -38,6 +38,17 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **图片与思考默认都发，被拒时自动降级**：现在的主流模型几乎都能看图、会思考，所以模型设置里“支持图片输入”“请求思考过程”默认开启。首个块之前收到 400 时，`AiService` 先去掉图片再试；仍被拒、且请求里带了思考参数（Claude、Gemini、OpenAI Responses 才会带；OpenAI Chat 兼容接口只读返回里的思考字段，请求不变）时再去掉思考试一次。被拒过的模型记在本次运行的内存里，之后的请求直接不带。
 
+**思考强度**（`AiThinkingLevel`，对话页“模型与思考”面板，每段对话各自记住）：`AiRequest.thinking` 为 null 时是“自动”，不发任何强度参数（与加入强度之前完全一样）；关 / 低 / 中 / 高的写法：
+
+| 协议 | 低 / 中 / 高 | 关 |
+|---|---|---|
+| OpenAI 兼容 | `reasoning_effort: low / medium / high` | `reasoning_effort: none` |
+| OpenAI Responses | `reasoning.effort`（与 `summary: auto` 同在），不发温度 | `reasoning.effort: none`，不发温度 |
+| Anthropic | `thinking: adaptive` + `output_config.effort`（强度不能写进 `thinking`） | `thinking: {type: disabled}`（新模型不写时默认就会思考） |
+| Gemini | `thinkingConfig.thinkingLevel`（与 `includeThoughts` 同在） | `thinkingConfig.thinkingBudget: 0`（两者不能同时写） |
+
+`prepareRequest`：模型设置里关了“请求思考”时强度一律不发；“关”时不请求思考过程（以前 `request || model` 使模型开着思考时无法关掉）。首个块之前的 400 降级顺序为：去图片 → **去强度**（保留思考本身，记在 `_rejectsEffort`）→ 去思考 → 带工具则记为不支持工具。对话标题与检索计划这两个短小的辅助请求固定为“关”。思考时长由 `AiThinkingClock` 按墙钟计（首个思考增量到首个正文 / 工具增量），检索问答记在消息 meta 的 `thinkingMs`，智能体按步骤记在步骤里、最后一段记在 meta。
+
 **工具调用**（AI 助手直接操作应用用）：`AiRequest.tools` 为 `AiToolSpec`（名称、说明、JSON Schema 参数，只用四家都认的子集 type / properties / required / enum / items / description / minimum / maximum）。一步工具调用在消息里是：助手消息（可选的 `AiReplayPart` + 正文 + 若干 `AiToolCallPart`）后接一条用户消息（与每个调用对应的 `AiToolResultPart`）。
 
 | 协议 | 定义 | 调用 | 结果 | 需要原样带回的数据 |
@@ -78,8 +89,8 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 三张表都存业务 id、不建外键：
 
-- `ai_conversations`：conversationId、title、personaId、scope（JSON：自动 / 最近 N 天 / 全部 / 时间范围 / 固定一篇）、pinned、createdAt、updatedAt；
-- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token、放进上下文的篇数、出错原因；智能体另有 `agent: true` 与没有正常作答的原因 `agentEnd`）、status（done / stopped / error）、steps（v20，智能体的工具步骤，见 §9；普通回答为 `[]`）、createdAt；
+- `ai_conversations`：conversationId、title、personaId、scope（JSON：自动 / 最近 N 天 / 全部 / 时间范围 / 固定一篇）、options（v21，`AiConversationOptions`：换用的模型与思考强度，`{}` 为跟随默认；新对话沿用最近活动的那段对话的选项）、pinned、createdAt、updatedAt；
+- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token、放进上下文的篇数、出错原因、所用思考强度 `thinking` 与思考时长 `thinkingMs`；智能体另有 `agent: true` 与没有正常作答的原因 `agentEnd`）、status（done / stopped / error）、steps（v20，智能体的工具步骤，见 §9；普通回答为 `[]`）、createdAt；
 - `ai_results`：resultId、kind（reply / recap）、diaryId（回应）、periodStart / periodEnd、scope（回顾的预设与日记本快照）、title、content、personaId、meta（人设快照、模型、统计、引用、思考过程、token）、createdAt。
 
 彻底删除日记时在同一事务里删掉它的回应。备份合并按业务 id：本机没有的新增，“合并”保留本机，“合并并覆盖”替换；引用的日记已不存在的回应丢弃。
@@ -170,7 +181,9 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **只给前往、不提供工具的**：彻底删除与清空回收站、备份 / 恢复 / 导入 / 导出 / 分享、网盘、局域网同步配对、应用锁与密码、私密与上锁日记本的设置、AI 服务商与密钥、存储清理，以及关闭 AI 助手本身。
 
-工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示按钮、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`）。
+工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示前往卡片、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`）。`AiDestination` 写明类别、位置（首页 / 设置）、图标与色调；会关掉对话页的目标（首页各 Tab 与日记本，`leavesChat`）打开前登记 `aiChatReturnProvider`，首页与日记页的返回键、以及落地后的提示条据此重新打开那段对话（打开后对话页仍在栈里就撤销登记）。`open_page` 打开具体的一篇 / 一本 / 一项前核对存在且 AI 可以碰（私密与 AI 隐私排除的按找不到），名称只给界面。
+
+**涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、纪念日、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面。
 
 **隐私**：多篇只经 `getAiContextDiaries`；`read_diaries` 比单篇功能更严，私密日记即使打开了“允许对私密日记使用 AI”也不给；日期、心情、标签、天气、地点按“发送”开关给；摘录与正文从本轮“最多发送”预算里扣，用完只给标题与日期。
 

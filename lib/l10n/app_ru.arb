@@ -18540,5 +18540,11 @@
   "diarySearchTagSheetTitle": "Поиск по тегам",
   "@diarySearchTagSheetTitle": {"description": "Title of the tag picker sheet opened from the search page tag chip."},
   "diarySearchTagSheetHint": "Показываются записи со всеми выбранными тегами",
-  "@diarySearchTagSheetHint": {"description": "Explanation under the title of the search tag picker sheet."}
+  "@diarySearchTagSheetHint": {"description": "Explanation under the title of the search tag picker sheet."},
+  "diaryTagFilterMultiSelectSemanticHint": "выбрать несколько тегов",
+  "@diaryTagFilterMultiSelectSemanticHint": {"description": "Screen reader long-press hint on a home tag filter chip: long-pressing adds or removes the tag while keeping the others selected."},
+  "diaryTagFilterMultiSelectTip": "Удерживайте тег, чтобы выбрать несколько",
+  "@diaryTagFilterMultiSelectTip": {"description": "One-time hint on phones after a tap replaced the selected home tag filter: tapping now switches to one tag, long-press selects several."},
+  "diaryTagFilterMultiSelectTipDesktop": "Удерживайте {key} и щёлкайте по тегам, чтобы выбрать несколько",
+  "@diaryTagFilterMultiSelectTipDesktop": {"description": "One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}}
 }

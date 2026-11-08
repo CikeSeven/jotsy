@@ -13355,4 +13355,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diarySearchTagSheetHint => '選んだタグをすべて含む日記を表示します';
+
+  @override
+  String get diaryTagFilterMultiSelectSemanticHint => '複数のタグを選択';
+
+  @override
+  String get diaryTagFilterMultiSelectTip => 'タグを長押しすると複数選択できます';
+
+  @override
+  String diaryTagFilterMultiSelectTipDesktop(String key) {
+    return '$key を押しながらタグをクリックすると複数選択できます';
+  }
 }

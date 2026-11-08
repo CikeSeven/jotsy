@@ -35,6 +35,7 @@ void main() {
             canExpand: () => true,
             canCollapse: () => false,
             selectedTagFilterIds: const <int>{},
+            onSelectTag: (_) {},
             onToggleTagFilter: (_, __) {},
             onClearTagFilters: () {},
             onVerticalDragStart: (_) {},

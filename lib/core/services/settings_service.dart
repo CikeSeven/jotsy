@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../l10n/app_languages.dart';
 import 'diary_typography.dart';
+import 'feature_tips.dart';
 
 export 'diary_typography.dart';
 
@@ -830,6 +831,21 @@ class SettingsService {
 
   Future<void> setFeatureTipsRaw(String value) async {
     await _writePreference(_prefs.setString(_keyFeatureTips, value));
+  }
+
+  /// 读出最新的整份功能提示进度，经 [change] 改动后整份写回；没有变化时
+  /// 不写。几条提示共用一个键、由各自的控制器维护：各自缓存一份再整份
+  /// 写回会互相覆盖，所以写之前一律从这里重新读。读与改都是同步的（偏好
+  /// 有内存缓存），中间不会插进别的写入。
+  Future<void> updateFeatureTips(
+    FeatureTips Function(FeatureTips latest) change,
+  ) async {
+    final latest = FeatureTips.decode(featureTipsRaw);
+    final next = change(latest);
+    if (identical(next, latest)) {
+      return;
+    }
+    await setFeatureTipsRaw(next.encode());
   }
 
   Future<void> setDiarySearchPreferencesRaw(String value) async {

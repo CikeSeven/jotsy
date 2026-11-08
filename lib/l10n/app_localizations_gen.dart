@@ -23897,6 +23897,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shows entries that have all selected tags'**
   String get diarySearchTagSheetHint;
+
+  /// Screen reader long-press hint on a home tag filter chip: long-pressing adds or removes the tag while keeping the others selected.
+  ///
+  /// In en, this message translates to:
+  /// **'select more than one tag'**
+  String get diaryTagFilterMultiSelectSemanticHint;
+
+  /// One-time hint on phones after a tap replaced the selected home tag filter: tapping now switches to one tag, long-press selects several.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press a tag to select more than one'**
+  String get diaryTagFilterMultiSelectTip;
+
+  /// One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).
+  ///
+  /// In en, this message translates to:
+  /// **'Hold {key} and click tags to select more than one'**
+  String diaryTagFilterMultiSelectTipDesktop(String key);
 }
 
 class _AppLocalizationsDelegate

@@ -95,6 +95,7 @@ class TagBarHarnessState extends State<TagBarHarness> {
             canExpand: () => _progress.value < 1,
             canCollapse: () => _progress.value > 0,
             selectedTagFilterIds: widget.selectedTagIds,
+            onSelectTag: (_) {},
             onToggleTagFilter: (_, __) {},
             onClearTagFilters: () {},
             onCollapse: () => setState(() {

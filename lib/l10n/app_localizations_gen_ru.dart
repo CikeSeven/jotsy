@@ -15249,4 +15249,16 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get diarySearchTagSheetHint =>
       'Показываются записи со всеми выбранными тегами';
+
+  @override
+  String get diaryTagFilterMultiSelectSemanticHint => 'выбрать несколько тегов';
+
+  @override
+  String get diaryTagFilterMultiSelectTip =>
+      'Удерживайте тег, чтобы выбрать несколько';
+
+  @override
+  String diaryTagFilterMultiSelectTipDesktop(String key) {
+    return 'Удерживайте $key и щёлкайте по тегам, чтобы выбрать несколько';
+  }
 }

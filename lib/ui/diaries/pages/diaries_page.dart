@@ -29,6 +29,7 @@ import '../../ai/providers/ai_providers.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../core/services/tag_order_codec.dart';
 import '../../notebooks/controllers/notebook_lock_flow.dart';
@@ -56,6 +57,7 @@ import '../../widgets/app_modal/app_dialog.dart';
 import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';
+import '../controllers/tag_filter_multi_select_tip.dart';
 import '../controllers/tag_filter_pull_hint_controller.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../models/time_capsule.dart';
@@ -531,6 +533,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   canExpand: () => _tagFilterExpansionController.value < 1,
                   canCollapse: () => _tagFilterExpansionController.value > 0,
                   selectedTagFilterIds: filterState.selectedTagIds,
+                  onSelectTag: _controller.selectTagFilter,
                   onToggleTagFilter: _controller.toggleTagFilter,
                   onClearTagFilters: _controller.clearTagFilters,
                   onVerticalDragStart: (_) => _handleTagFilterDragStart(),

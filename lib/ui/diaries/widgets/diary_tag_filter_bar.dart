@@ -3,10 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../widgets/list_item_presence.dart';
 import 'expanded_tag_filter_list.dart';
@@ -42,6 +45,7 @@ class DiaryTagFilterBar extends StatefulWidget {
     required this.canExpand,
     required this.canCollapse,
     required this.selectedTagFilterIds,
+    required this.onSelectTag,
     required this.onToggleTagFilter,
     required this.onClearTagFilters,
     required this.onVerticalDragStart,
@@ -86,6 +90,13 @@ class DiaryTagFilterBar extends StatefulWidget {
   final bool Function() canExpand;
   final bool Function() canCollapse;
   final Set<int> selectedTagFilterIds;
+
+  /// 单击标签：只看这一个标签（再点一次取消），见
+  /// `DiaryFilterNotifier.selectOnlyTag`。
+  final ValueChanged<int> onSelectTag;
+
+  /// 长按标签（桌面上也可以按住 Ctrl / ⌘ 点击）：在已选的标签里加上或去掉
+  /// 它，其余保留，多个标签同时满足才显示。
   final void Function(int tagId, bool selected) onToggleTagFilter;
   final VoidCallback onClearTagFilters;
   final ValueChanged<bool> onVerticalDragStart;
@@ -441,7 +452,19 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         animateBorder: true,
         showSelectedShadow: false,
-        onTap: () => widget.onToggleTagFilter(tag.id, !selected),
+        onTap: () {
+          // 键鼠专属：桌面上按住 Ctrl / ⌘ 点击与长按相同（只在桌面生效，
+          // 手机外接键盘时单击照旧只切换）。
+          final keyboard = HardwareKeyboard.instance;
+          if (AppPlatform.isDesktop &&
+              (keyboard.isControlPressed || keyboard.isMetaPressed)) {
+            widget.onToggleTagFilter(tag.id, !selected);
+            return;
+          }
+          widget.onSelectTag(tag.id);
+        },
+        onLongPress: () => widget.onToggleTagFilter(tag.id, !selected),
+        longPressHint: context.l10n.diaryTagFilterMultiSelectSemanticHint,
       ),
     );
   }

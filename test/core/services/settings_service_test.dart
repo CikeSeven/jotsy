@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/backup_settings.dart';
+import 'package:node_diary/core/services/feature_tips.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -642,6 +643,33 @@ void main() {
         expect(settings.exploreLayoutRaw, isNull);
       },
     );
+  });
+
+  group('SettingsService feature tips', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('updates merge into the latest stored progress', () async {
+      final settings = await SettingsService.create();
+      // 两条提示各自改自己那一条：后写的不会抹掉先写的。
+      await settings.updateFeatureTips(
+        (latest) => latest.markShown(FeatureTip.tagFilterPull),
+      );
+      await settings.updateFeatureTips(
+        (latest) => latest.markLearned(FeatureTip.tagFilterMultiSelect),
+      );
+      final tips = FeatureTips.decode(settings.featureTipsRaw);
+      expect(tips.recordOf(FeatureTip.tagFilterPull).shown, 1);
+      expect(tips.recordOf(FeatureTip.tagFilterMultiSelect).learned, isTrue);
+
+      // 没有变化时不写。
+      final before = settings.featureTipsRaw;
+      await settings.updateFeatureTips(
+        (latest) => latest.markLearned(FeatureTip.tagFilterMultiSelect),
+      );
+      expect(settings.featureTipsRaw, same(before));
+    });
   });
 
   group('SettingsService home bar style', () {

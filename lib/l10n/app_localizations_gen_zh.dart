@@ -13108,4 +13108,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diarySearchTagSheetHint => '只显示同时带有所选全部标签的日记';
+
+  @override
+  String get diaryTagFilterMultiSelectSemanticHint => '同时选中多个标签';
+
+  @override
+  String get diaryTagFilterMultiSelectTip => '长按标签可以同时选多个';
+
+  @override
+  String diaryTagFilterMultiSelectTipDesktop(String key) {
+    return '按住 $key 再点标签可以同时选多个';
+  }
 }

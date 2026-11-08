@@ -13121,11 +13121,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storageMgmtTotalLabel => '共占用';
 
   @override
-  String storageMgmtDeviceSpace(String free, String total) {
-    return '设备剩余 $free，共 $total';
-  }
-
-  @override
   String storageMgmtCleanUpAll(String size) {
     return '一键清理 · 可释放 $size';
   }
@@ -13237,11 +13232,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get storageMgmtLargeFiles => '大文件';
-
-  @override
-  String storageMgmtLargeFilesSubtitle(int count) {
-    return '$count 个不小于 10 MB 的文件';
-  }
 
   @override
   String get storageMgmtOtherTitle => '其他数据';
@@ -13567,4 +13557,61 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get publishOnLeaveFailedKeptDraft => '发表失败，这篇已留在草稿箱';
+
+  @override
+  String get storageMgmtAppTitle => '应用占用';
+
+  @override
+  String get storageMgmtCategoryApp => '应用本体';
+
+  @override
+  String get storageMgmtDeviceTitle => '手机存储';
+
+  @override
+  String storageMgmtDeviceTotal(String size) {
+    return '共 $size';
+  }
+
+  @override
+  String get storageMgmtDeviceUsedLabel => '已用';
+
+  @override
+  String get storageMgmtDeviceApp => '本应用';
+
+  @override
+  String get storageMgmtDeviceOther => '其他应用与系统';
+
+  @override
+  String get storageMgmtDeviceFree => '可用';
+
+  @override
+  String storageMgmtShareOfDevice(String percent) {
+    return '占手机 $percent';
+  }
+
+  @override
+  String get storageMgmtDeviceShareLabel => '占手机';
+
+  @override
+  String get storageMgmtReclaimable => '可释放';
+
+  @override
+  String get storageMgmtTopTitle => '占用最多';
+
+  @override
+  String get storageMgmtSeeAll => '查看全部';
+
+  @override
+  String get storageMgmtGrowthTitle => '媒体增长';
+
+  @override
+  String get storageMgmtGrowthByYear => '按日记日期，每年新增';
+
+  @override
+  String get storageMgmtGrowthByMonth => '按日记日期，近 12 个月每月新增';
+
+  @override
+  String storageMgmtGrowthPeak(String period, String size) {
+    return '$period 新增最多，共 $size';
+  }
 }

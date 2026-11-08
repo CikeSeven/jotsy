@@ -24,9 +24,14 @@ class StorageUsageBar extends StatelessWidget {
     this.reveal = 1,
     this.height = 12,
     this.minSegment = 3,
+    this.totalBytes,
   });
 
   final List<StorageBarSegment> segments;
+
+  /// 整条代表的总量；比各段之和大时，多出的部分留作轨道（如手机存储条里
+  /// 的可用空间）。为 null 时各段铺满整条。
+  final int? totalBytes;
   final Color track;
   final double reveal;
   final double height;
@@ -43,6 +48,7 @@ class StorageUsageBar extends StatelessWidget {
           track: track,
           reveal: reveal.clamp(0, 1),
           minSegment: minSegment,
+          totalBytes: totalBytes,
         ),
       ),
     );
@@ -55,6 +61,7 @@ class _StorageUsageBarPainter extends CustomPainter {
     required this.track,
     required this.reveal,
     required this.minSegment,
+    required this.totalBytes,
   });
 
   static const double _gap = 2;
@@ -63,6 +70,7 @@ class _StorageUsageBarPainter extends CustomPainter {
   final Color track;
   final double reveal;
   final double minSegment;
+  final int? totalBytes;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -73,17 +81,21 @@ class _StorageUsageBarPainter extends CustomPainter {
       for (final segment in segments)
         if (segment.bytes > 0) segment,
     ];
-    final total = visible.fold<int>(0, (sum, s) => sum + s.bytes);
-    if (total <= 0 || reveal <= 0) return;
+    final sum = visible.fold<int>(0, (total, s) => total + s.bytes);
+    if (sum <= 0 || reveal <= 0) return;
+    // 留给轨道的剩余部分不画，但同样参与分宽（前面也留一道缝）。
+    final rest = (totalBytes ?? 0) > sum ? totalBytes! - sum : 0;
+    final total = sum + rest;
 
     // 先按比例分宽，再把太窄的段补到 minSegment、从宽段里按比例扣回。
-    final available = size.width - _gap * (visible.length - 1);
+    final available = size.width - _gap * (visible.length - (rest > 0 ? 0 : 1));
     if (available <= 0) return;
     final widths = [
       for (final segment in visible) available * segment.bytes / total,
     ];
     var deficit = 0.0;
-    var spare = 0.0;
+    // 剩余部分也能让出宽度给太窄的段。
+    var spare = available * rest / total;
     for (var i = 0; i < widths.length; i++) {
       if (widths[i] < minSegment) {
         deficit += minSegment - widths[i];
@@ -121,6 +133,7 @@ class _StorageUsageBarPainter extends CustomPainter {
       old.reveal != reveal ||
       old.track != track ||
       old.minSegment != minSegment ||
+      old.totalBytes != totalBytes ||
       !_sameSegments(old.segments, segments);
 
   static bool _sameSegments(

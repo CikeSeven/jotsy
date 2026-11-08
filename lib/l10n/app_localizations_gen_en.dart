@@ -14761,11 +14761,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storageMgmtTotalLabel => 'Total used';
 
   @override
-  String storageMgmtDeviceSpace(String free, String total) {
-    return '$free free of $total on this device';
-  }
-
-  @override
   String storageMgmtCleanUpAll(String size) {
     return 'Clean up · free $size';
   }
@@ -14903,17 +14898,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storageMgmtLargeFiles => 'Large files';
-
-  @override
-  String storageMgmtLargeFilesSubtitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count files of 10 MB or more',
-      one: '1 file of 10 MB or more',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get storageMgmtOtherTitle => 'Other data';
@@ -15362,4 +15346,62 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get publishOnLeaveFailedKeptDraft =>
       'Couldn\'t publish the diary. It\'s kept in Drafts.';
+
+  @override
+  String get storageMgmtAppTitle => 'Used by Jotsy';
+
+  @override
+  String get storageMgmtCategoryApp => 'App';
+
+  @override
+  String get storageMgmtDeviceTitle => 'Device storage';
+
+  @override
+  String storageMgmtDeviceTotal(String size) {
+    return '$size total';
+  }
+
+  @override
+  String get storageMgmtDeviceUsedLabel => 'used';
+
+  @override
+  String get storageMgmtDeviceApp => 'Jotsy';
+
+  @override
+  String get storageMgmtDeviceOther => 'Other apps & system';
+
+  @override
+  String get storageMgmtDeviceFree => 'Available';
+
+  @override
+  String storageMgmtShareOfDevice(String percent) {
+    return '$percent of the device';
+  }
+
+  @override
+  String get storageMgmtDeviceShareLabel => 'Share of device';
+
+  @override
+  String get storageMgmtReclaimable => 'Can be freed';
+
+  @override
+  String get storageMgmtTopTitle => 'Largest files';
+
+  @override
+  String get storageMgmtSeeAll => 'See all';
+
+  @override
+  String get storageMgmtGrowthTitle => 'Media over time';
+
+  @override
+  String get storageMgmtGrowthByYear => 'Added each year, by entry date';
+
+  @override
+  String get storageMgmtGrowthByMonth =>
+      'Added each month over the last 12 months, by entry date';
+
+  @override
+  String storageMgmtGrowthPeak(String period, String size) {
+    return 'Most added in $period: $size';
+  }
 }

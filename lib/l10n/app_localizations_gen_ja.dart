@@ -13368,11 +13368,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storageMgmtTotalLabel => '使用中の容量';
 
   @override
-  String storageMgmtDeviceSpace(String free, String total) {
-    return 'この端末の空き $free / 合計 $total';
-  }
-
-  @override
   String storageMgmtCleanUpAll(String size) {
     return 'まとめて整理・$size 解放';
   }
@@ -13484,11 +13479,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get storageMgmtLargeFiles => '大きなファイル';
-
-  @override
-  String storageMgmtLargeFilesSubtitle(int count) {
-    return '10 MB 以上のファイル $count 個';
-  }
 
   @override
   String get storageMgmtOtherTitle => 'その他のデータ';
@@ -13816,4 +13806,61 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get publishOnLeaveFailedKeptDraft => '日記を投稿できませんでした。下書きに残しています。';
+
+  @override
+  String get storageMgmtAppTitle => 'Jotsy の使用量';
+
+  @override
+  String get storageMgmtCategoryApp => 'アプリ本体';
+
+  @override
+  String get storageMgmtDeviceTitle => '端末のストレージ';
+
+  @override
+  String storageMgmtDeviceTotal(String size) {
+    return '合計 $size';
+  }
+
+  @override
+  String get storageMgmtDeviceUsedLabel => '使用中';
+
+  @override
+  String get storageMgmtDeviceApp => 'このアプリ';
+
+  @override
+  String get storageMgmtDeviceOther => 'ほかのアプリとシステム';
+
+  @override
+  String get storageMgmtDeviceFree => '空き';
+
+  @override
+  String storageMgmtShareOfDevice(String percent) {
+    return '端末の $percent';
+  }
+
+  @override
+  String get storageMgmtDeviceShareLabel => '端末に占める割合';
+
+  @override
+  String get storageMgmtReclaimable => '解放できる容量';
+
+  @override
+  String get storageMgmtTopTitle => '容量の大きいファイル';
+
+  @override
+  String get storageMgmtSeeAll => 'すべて表示';
+
+  @override
+  String get storageMgmtGrowthTitle => 'メディアの推移';
+
+  @override
+  String get storageMgmtGrowthByYear => '日記の日付ごと・年別の追加量';
+
+  @override
+  String get storageMgmtGrowthByMonth => '日記の日付ごと・直近12か月の月別追加量';
+
+  @override
+  String storageMgmtGrowthPeak(String period, String size) {
+    return '最も多いのは $period：$size';
+  }
 }

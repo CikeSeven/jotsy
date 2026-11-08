@@ -1,5 +1,7 @@
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../models/storage_media_filter.dart';
+import '../models/storage_preferences.dart';
+import 'storage_growth.dart';
 import 'storage_media_view.dart';
 
 /// 某个类别的文件数与字节数。
@@ -28,7 +30,12 @@ class StorageOverviewView {
     required this.trash,
     required this.compressible,
     required this.compressibleSaving,
+    required this.top,
+    required this.growth,
   });
+
+  /// “占用最多”列出的条数。
+  static const int topCount = 5;
 
   final StorageUsageReport report;
 
@@ -48,12 +55,32 @@ class StorageOverviewView {
   final StorageCategoryStat compressible;
   final int compressibleSaving;
 
+  /// 最大的几个媒体（私密的打码，同媒体页的默认状态）。
+  final List<StorageMediaItemView> top;
+
+  /// 媒体按日记日期的新增；没有媒体时为 null。
+  final StorageGrowthSeries? growth;
+
   int get total => report.totalBytes;
+
+  /// 全部媒体的数量与大小。
+  StorageCategoryStat get allMedia => StorageCategoryStat(
+    count: report.media.length,
+    bytes: report.media.fold<int>(0, (sum, entry) => sum + entry.bytes),
+  );
+
+  /// 应用占手机存储的比例（0–1）；读不到设备空间时为 null。
+  double? get deviceShare {
+    final space = report.deviceSpace;
+    if (space == null || space.totalBytes <= 0) return null;
+    return total / space.totalBytes;
+  }
 
   static StorageOverviewView of(
     StorageUsageReport report,
-    StorageCompressContext compress,
-  ) {
+    StorageCompressContext compress, {
+    DateTime? now,
+  }) {
     final media = <StorageCategory, StorageCategoryStat>{
       for (final category in StorageMediaFilter.categories)
         category: StorageCategoryStat.empty,
@@ -87,6 +114,14 @@ class StorageOverviewView {
       trash: trash,
       compressible: compressible,
       compressibleSaving: saving,
+      top: StorageMediaListView.of(
+        report,
+        const StorageMediaFilter(),
+        sort: StorageMediaSort.largest,
+        compress: compress,
+        revealPrivate: false,
+      ).items.take(topCount).toList(growable: false),
+      growth: StorageGrowthSeries.of(report.media, now ?? DateTime.now()),
     );
   }
 }

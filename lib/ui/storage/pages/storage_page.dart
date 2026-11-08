@@ -10,6 +10,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
+import '../../diaries/controllers/diary_open_flow.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../settings/pages/app_surface_page.dart';
 import '../../settings/pages/recycle_bin_page.dart';
@@ -23,8 +24,14 @@ import '../../widgets/width_layout_builder.dart';
 import '../controllers/storage_flows.dart';
 import '../models/storage_media_filter.dart';
 import '../providers/storage_providers.dart';
-import '../sections/storage_overview_card.dart';
+import '../sections/storage_app_card.dart';
+import '../sections/storage_category_tiles.dart';
+import '../sections/storage_device_card.dart';
+import '../sections/storage_growth_card.dart';
+import '../sections/storage_media_detail_sheet.dart';
 import '../sections/storage_overview_groups.dart';
+import '../sections/storage_top_files_card.dart';
+import '../viewmodels/storage_media_view.dart';
 import '../viewmodels/storage_overview_view.dart';
 import 'storage_media_page.dart';
 
@@ -89,6 +96,27 @@ class _StoragePageState extends ConsumerState<StoragePage>
     } else if (category == StorageCategory.backgrounds) {
       _openBackgrounds();
     }
+  }
+
+  /// “占用最多”里的一项：与媒体页同一个详情面板，压缩、删除与打开日记
+  /// 都经同一套流程；结束后（含从日记回来）重新扫描。
+  void _showDetail(StorageMediaItemView item, StorageUsageReport report) {
+    unawaited(
+      showStorageMediaDetail(
+        context,
+        item: item,
+        onCompress: item.compressible
+            ? () => unawaited(_flows.compress(context, [item.entry], report))
+            : null,
+        onDelete: () => unawaited(_flows.delete(context, [item.entry])),
+        onOpenDiary: (id) => unawaited(_openDiary(id)),
+      ),
+    );
+  }
+
+  Future<void> _openDiary(String diaryId) async {
+    await openDiaryPage(context, ref, diaryId: diaryId);
+    if (mounted) refreshStorageViews(ref);
   }
 
   bool _canOpenCategory(StorageCategory category) =>
@@ -174,9 +202,16 @@ class _StoragePageState extends ConsumerState<StoragePage>
             AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
           ),
           children: <Widget>[
+            if (view.report.deviceSpace case final space?) ...<Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: StorageDeviceCard(space: space, appBytes: view.total),
+              ),
+              const SizedBox(height: AppSpacing.m),
+            ],
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: StorageOverviewCard(
+              child: StorageAppCard(
                 view: view,
                 onCleanUp: _busy
                     ? null
@@ -221,8 +256,18 @@ class _StoragePageState extends ConsumerState<StoragePage>
             ),
             const SizedBox(height: AppSpacing.l),
             if (view.report.media.isNotEmpty) ...<Widget>[
-              StorageMediaGroup(view: view, onOpen: _openMedia),
+              StorageTopFilesCard(
+                items: view.top,
+                onOpen: (item) => _showDetail(item, view.report),
+                onSeeAll: () => _openMedia(const StorageMediaFilter()),
+              ),
               const SizedBox(height: AppSpacing.l),
+              StorageCategoryTiles(view: view, onOpen: _openMedia),
+              const SizedBox(height: AppSpacing.l),
+              if (view.growth case final growth?) ...<Widget>[
+                StorageGrowthCard(series: growth),
+                const SizedBox(height: AppSpacing.l),
+              ],
             ],
             StorageOtherGroup(view: view, onOpenBackgrounds: _openBackgrounds),
           ],

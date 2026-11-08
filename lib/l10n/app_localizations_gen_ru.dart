@@ -15262,11 +15262,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get storageMgmtTotalLabel => 'Всего занято';
 
   @override
-  String storageMgmtDeviceSpace(String free, String total) {
-    return 'Свободно $free из $total на устройстве';
-  }
-
-  @override
   String storageMgmtCleanUpAll(String size) {
     return 'Очистить · освободить $size';
   }
@@ -15412,19 +15407,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get storageMgmtLargeFiles => 'Большие файлы';
-
-  @override
-  String storageMgmtLargeFilesSubtitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count файла от 10 МБ',
-      many: '$count файлов от 10 МБ',
-      few: '$count файла от 10 МБ',
-      one: '$count файл от 10 МБ',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get storageMgmtOtherTitle => 'Другие данные';
@@ -15909,4 +15891,62 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get publishOnLeaveFailedKeptDraft =>
       'Не удалось опубликовать запись. Она осталась в черновиках.';
+
+  @override
+  String get storageMgmtAppTitle => 'Занято Jotsy';
+
+  @override
+  String get storageMgmtCategoryApp => 'Приложение';
+
+  @override
+  String get storageMgmtDeviceTitle => 'Память устройства';
+
+  @override
+  String storageMgmtDeviceTotal(String size) {
+    return 'Всего $size';
+  }
+
+  @override
+  String get storageMgmtDeviceUsedLabel => 'занято';
+
+  @override
+  String get storageMgmtDeviceApp => 'Jotsy';
+
+  @override
+  String get storageMgmtDeviceOther => 'Другие приложения и система';
+
+  @override
+  String get storageMgmtDeviceFree => 'Свободно';
+
+  @override
+  String storageMgmtShareOfDevice(String percent) {
+    return '$percent памяти устройства';
+  }
+
+  @override
+  String get storageMgmtDeviceShareLabel => 'Доля памяти';
+
+  @override
+  String get storageMgmtReclaimable => 'Можно освободить';
+
+  @override
+  String get storageMgmtTopTitle => 'Самые большие файлы';
+
+  @override
+  String get storageMgmtSeeAll => 'Показать все';
+
+  @override
+  String get storageMgmtGrowthTitle => 'Медиа по времени';
+
+  @override
+  String get storageMgmtGrowthByYear => 'Добавлено по годам, по дате записи';
+
+  @override
+  String get storageMgmtGrowthByMonth =>
+      'Добавлено по месяцам за 12 месяцев, по дате записи';
+
+  @override
+  String storageMgmtGrowthPeak(String period, String size) {
+    return 'Больше всего добавлено — $period: $size';
+  }
 }

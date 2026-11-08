@@ -23916,12 +23916,6 @@ abstract class AppLocalizations {
   /// **'Total used'**
   String get storageMgmtTotalLabel;
 
-  /// Storage overview card (Android): free and total space of the device.
-  ///
-  /// In en, this message translates to:
-  /// **'{free} free of {total} on this device'**
-  String storageMgmtDeviceSpace(String free, String total);
-
   /// Button that clears cache, unused files and database free pages; size is what it frees.
   ///
   /// In en, this message translates to:
@@ -24119,12 +24113,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Large files'**
   String get storageMgmtLargeFiles;
-
-  /// Subtitle of the large files row.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 file of 10 MB or more} other{{count} files of 10 MB or more}}'**
-  String storageMgmtLargeFilesSubtitle(int count);
 
   /// Storage page: title of the other data group.
   ///
@@ -24645,6 +24633,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t publish the diary. It\'s kept in Drafts.'**
   String get publishOnLeaveFailedKeptDraft;
+
+  /// Storage page: heading of the card that breaks down what the app uses.
+  ///
+  /// In en, this message translates to:
+  /// **'Used by Jotsy'**
+  String get storageMgmtAppTitle;
+
+  /// Storage category: the installed app itself (APK and compiled code).
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get storageMgmtCategoryApp;
+
+  /// Heading of the device storage card.
+  ///
+  /// In en, this message translates to:
+  /// **'Device storage'**
+  String get storageMgmtDeviceTitle;
+
+  /// Device storage card: total capacity.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} total'**
+  String storageMgmtDeviceTotal(String size);
+
+  /// Device storage card: follows the used percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'used'**
+  String get storageMgmtDeviceUsedLabel;
+
+  /// Device storage legend: this app.
+  ///
+  /// In en, this message translates to:
+  /// **'Jotsy'**
+  String get storageMgmtDeviceApp;
+
+  /// Device storage legend: everything else that is used.
+  ///
+  /// In en, this message translates to:
+  /// **'Other apps & system'**
+  String get storageMgmtDeviceOther;
+
+  /// Device storage legend: free space.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get storageMgmtDeviceFree;
+
+  /// Device storage legend: the app's share of the device.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent} of the device'**
+  String storageMgmtShareOfDevice(String percent);
+
+  /// App card: label over the share of the device storage.
+  ///
+  /// In en, this message translates to:
+  /// **'Share of device'**
+  String get storageMgmtDeviceShareLabel;
+
+  /// App card: label over the space the one-tap cleanup frees.
+  ///
+  /// In en, this message translates to:
+  /// **'Can be freed'**
+  String get storageMgmtReclaimable;
+
+  /// Storage page: heading of the largest files list.
+  ///
+  /// In en, this message translates to:
+  /// **'Largest files'**
+  String get storageMgmtTopTitle;
+
+  /// Opens the media page.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get storageMgmtSeeAll;
+
+  /// Storage page: heading of the growth chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Media over time'**
+  String get storageMgmtGrowthTitle;
+
+  /// Growth chart caption when grouped by year.
+  ///
+  /// In en, this message translates to:
+  /// **'Added each year, by entry date'**
+  String get storageMgmtGrowthByYear;
+
+  /// Growth chart caption when grouped by month.
+  ///
+  /// In en, this message translates to:
+  /// **'Added each month over the last 12 months, by entry date'**
+  String get storageMgmtGrowthByMonth;
+
+  /// Growth chart: the period with the most media.
+  ///
+  /// In en, this message translates to:
+  /// **'Most added in {period}: {size}'**
+  String storageMgmtGrowthPeak(String period, String size);
 }
 
 class _AppLocalizationsDelegate

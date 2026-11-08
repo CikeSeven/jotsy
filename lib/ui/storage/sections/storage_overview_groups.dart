@@ -5,7 +5,6 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../settings/widgets/settings_nav_tile.dart';
-import '../models/storage_media_filter.dart';
 import '../viewmodels/storage_labels.dart';
 import '../viewmodels/storage_overview_view.dart';
 
@@ -102,54 +101,6 @@ class StorageSuggestionsGroup extends StatelessWidget {
               ),
             ]
           : rows,
-    );
-  }
-}
-
-/// 总览页“媒体文件”分组：各类媒体与大文件的数量和大小，点按进媒体页。
-class StorageMediaGroup extends StatelessWidget {
-  const StorageMediaGroup({
-    super.key,
-    required this.view,
-    required this.onOpen,
-  });
-
-  final StorageOverviewView view;
-  final ValueChanged<StorageMediaFilter> onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final all = view.report.media;
-    final allBytes = all.fold<int>(0, (sum, entry) => sum + entry.bytes);
-    return SettingsCardGroup(
-      title: l10n.storageMgmtMediaTitle,
-      children: <Widget>[
-        SettingsNavTile(
-          icon: FontAwesomeIcons.photoFilm,
-          title: l10n.storageMgmtAllMedia,
-          subtitle: l10n.storageMgmtFileCount(all.length),
-          value: l10n.formatByteSize(allBytes),
-          onTap: () => onOpen(const StorageMediaFilter()),
-        ),
-        for (final category in StorageMediaFilter.categories)
-          if ((view.media[category]?.count ?? 0) > 0)
-            SettingsNavTile(
-              icon: category.icon,
-              title: category.label(l10n),
-              subtitle: l10n.storageMgmtFileCount(view.media[category]!.count),
-              value: l10n.formatByteSize(view.media[category]!.bytes),
-              onTap: () => onOpen(StorageMediaFilter(category: category)),
-            ),
-        if (view.large.count > 0)
-          SettingsNavTile(
-            icon: FontAwesomeIcons.weightHanging,
-            title: l10n.storageMgmtLargeFiles,
-            subtitle: l10n.storageMgmtLargeFilesSubtitle(view.large.count),
-            value: l10n.formatByteSize(view.large.bytes),
-            onTap: () => onOpen(const StorageMediaFilter(largeOnly: true)),
-          ),
-      ],
     );
   }
 }

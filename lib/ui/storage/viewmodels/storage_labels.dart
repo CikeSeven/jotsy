@@ -19,6 +19,7 @@ extension StorageCategoryPresentation on StorageCategory {
     StorageCategory.fonts => l10n.storageMgmtCategoryFonts,
     StorageCategory.database => l10n.storageMgmtCategoryDatabase,
     StorageCategory.cache => l10n.storageMgmtCategoryCache,
+    StorageCategory.app => l10n.storageMgmtCategoryApp,
     StorageCategory.unused => l10n.storageMgmtCategoryUnused,
     StorageCategory.other => l10n.storageMgmtCategoryOther,
   };
@@ -33,6 +34,7 @@ extension StorageCategoryPresentation on StorageCategory {
     StorageCategory.fonts => FontAwesomeIcons.font,
     StorageCategory.database => FontAwesomeIcons.database,
     StorageCategory.cache => FontAwesomeIcons.boxArchive,
+    StorageCategory.app => FontAwesomeIcons.cube,
     StorageCategory.unused => FontAwesomeIcons.fileCircleXmark,
     StorageCategory.other => FontAwesomeIcons.ellipsis,
   };
@@ -50,6 +52,7 @@ extension StorageCategoryPresentation on StorageCategory {
     StorageCategory.fonts => scheme.primary.withValues(alpha: 0.3),
     StorageCategory.database => scheme.outline,
     StorageCategory.cache => scheme.outlineVariant,
+    StorageCategory.app => scheme.tertiary.withValues(alpha: 0.3),
     StorageCategory.unused => scheme.error.withValues(alpha: 0.72),
     StorageCategory.other => scheme.outline.withValues(alpha: 0.5),
   };

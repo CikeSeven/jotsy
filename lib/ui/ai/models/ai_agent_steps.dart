@@ -7,13 +7,24 @@
 // 再更新；重开对话时 executing 且不在进行中的按“已中断”显示，绝不重放。
 //
 // 编解码逐字段容错：认不出的状态按已中断，坏掉的整步丢掉，不影响正文。
+//
+// 下一轮原样回放（`ai_agent_history.dart`）要用的也记在这里：每一步模型的
+// 原始正文（[AiAgentStepRecord.text] 不做清理，显示时才 trim）与协议回放
+// 数据（[AiAgentStepRecord.replay]，如 DeepSeek 的 `reasoning_content`），
+// 每个调用回传给模型的结果原文（[AiAgentCallRecord.result]）。回放的内容与
+// 当时发出去的逐字一致，服务商的前缀缓存才能命中。
 
 import 'dart:convert';
 
 import 'package:meta/meta.dart';
 
+import '../../../core/services/ai/ai_models.dart';
 import '../tools/ai_tool.dart';
 import 'ai_tool_subject.dart';
+
+/// 参数不是 JSON 对象时，调用记录里保存原文用的键（[AiAgentCallRecord.args]
+/// 里只有这一项）。回放时据此按“参数无效”的调用带回。
+const String kAiRawArgumentsKey = '_raw';
 
 /// 一个调用的状态。
 enum AiToolCallStatus {
@@ -56,6 +67,10 @@ class AiAgentCallRecord {
     this.preview,
     this.subjects = const <AiToolSubject>[],
     this.moreSubjects = 0,
+    this.result,
+    this.resultIsError = false,
+    this.providerData,
+    this.idFromProvider = true,
   });
 
   final String id;
@@ -89,6 +104,16 @@ class AiAgentCallRecord {
   final List<AiToolSubject> subjects;
   final int moreSubjects;
 
+  /// 回传给模型的结果原文（成功、失败、被拒都有；旧记录与没有结果的为
+  /// null）。下一轮原样回放。
+  final String? result;
+  final bool resultIsError;
+
+  /// 协议附带在调用上、回放时要原样带回的数据（[AiToolCall.providerData]：
+  /// Gemini 的思考签名、Responses 的条目 id）与调用 id 的来源。
+  final Map<String, Object?>? providerData;
+  final bool idFromProvider;
+
   /// 能不能撤销：成功了、带着撤销数据、还没撤销过。
   bool get canUndo =>
       status == AiToolCallStatus.succeeded && undo != null && !undone;
@@ -102,6 +127,8 @@ class AiAgentCallRecord {
     bool? undone,
     AiToolPreview? preview,
     List<AiToolSubject>? subjects,
+    String? result,
+    bool? resultIsError,
   }) {
     final allSubjects = subjects;
     return AiAgentCallRecord(
@@ -124,6 +151,10 @@ class AiAgentCallRecord {
       moreSubjects: allSubjects == null
           ? moreSubjects
           : (allSubjects.length - AiToolSubject.maxStored).clamp(0, 1 << 30),
+      result: result ?? this.result,
+      resultIsError: resultIsError ?? this.resultIsError,
+      providerData: providerData,
+      idFromProvider: idFromProvider,
     );
   }
 
@@ -142,6 +173,10 @@ class AiAgentCallRecord {
     if (subjects.isNotEmpty)
       'subjects': [for (final subject in subjects) subject.toJson()],
     if (moreSubjects > 0) 'moreSubjects': moreSubjects,
+    'result': ?result,
+    if (resultIsError) 'resultError': true,
+    'providerData': ?providerData,
+    if (!idFromProvider) 'localId': true,
   };
 
   static AiAgentCallRecord? fromJson(Object? raw) {
@@ -155,6 +190,8 @@ class AiAgentCallRecord {
     final undo = raw['undo'];
     final subjects = raw['subjects'];
     final more = raw['moreSubjects'];
+    final result = raw['result'];
+    final providerData = raw['providerData'];
     return AiAgentCallRecord(
       id: id,
       tool: tool,
@@ -173,6 +210,12 @@ class AiAgentCallRecord {
             if (AiToolSubject.fromJson(item) case final subject?) subject,
       ],
       moreSubjects: more is int && more > 0 ? more : 0,
+      result: result is String ? result : null,
+      resultIsError: raw['resultError'] == true,
+      providerData: providerData is Map
+          ? providerData.cast<String, Object?>()
+          : null,
+      idFromProvider: raw['localId'] != true,
     );
   }
 }
@@ -184,11 +227,16 @@ class AiAgentStepRecord {
     this.reasoning = '',
     this.thinkingMs = 0,
     this.calls = const <AiAgentCallRecord>[],
+    this.replay = const <AiReplayPart>[],
   });
 
-  /// 模型在调用工具之前说的话。
+  /// 模型在调用工具之前说的话（原文，显示时 trim）。
   final String text;
   final String reasoning;
+
+  /// 这一步要原样带回服务商的协议数据（思考签名、`reasoning_content`
+  /// 等），只回放给产生它的同一服务商与模型。
+  final List<AiReplayPart> replay;
 
   /// 这一步的思考时长（毫秒，`AiThinkingClock`；没有思考或旧记录为 0）。
   final int thinkingMs;
@@ -198,6 +246,7 @@ class AiAgentStepRecord {
     text: text,
     reasoning: reasoning,
     thinkingMs: thinkingMs,
+    replay: replay,
     calls: [
       for (final existing in calls)
         if (existing.id == call.id) call else existing,
@@ -209,6 +258,11 @@ class AiAgentStepRecord {
     if (reasoning.isNotEmpty) 'reasoning': reasoning,
     if (thinkingMs > 0) 'thinkingMs': thinkingMs,
     'calls': [for (final call in calls) call.toJson()],
+    if (replay.isNotEmpty)
+      'replay': [
+        for (final part in replay)
+          <String, Object?>{'protocol': part.protocol.name, 'data': part.data},
+      ],
   };
 
   static AiAgentStepRecord? fromJson(Object? raw) {
@@ -217,6 +271,7 @@ class AiAgentStepRecord {
     final reasoning = raw['reasoning'];
     final thinkingMs = raw['thinkingMs'];
     final calls = raw['calls'];
+    final replay = raw['replay'];
     return AiAgentStepRecord(
       text: text is String ? text : '',
       reasoning: reasoning is String ? reasoning : '',
@@ -225,6 +280,17 @@ class AiAgentStepRecord {
         if (calls is List)
           for (final item in calls)
             if (AiAgentCallRecord.fromJson(item) case final call?) call,
+      ],
+      replay: [
+        if (replay is List)
+          for (final item in replay)
+            if (item is Map &&
+                AiProtocol.fromName(item['protocol']) != null &&
+                item['data'] is Map)
+              AiReplayPart(
+                AiProtocol.fromName(item['protocol'])!,
+                (item['data'] as Map).cast<String, Object?>(),
+              ),
       ],
     );
   }

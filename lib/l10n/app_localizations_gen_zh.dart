@@ -11418,7 +11418,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String aiPromptAgentGuide(String index) {
-    return '下面是 Jotsy 使用指南的目录。用户问怎么用、在哪里、能不能做某事时，先用 read_guide 读相关文章，按文章回答，不要编造界面上没有的东西；需要时用 open_page 给出前往按钮。\n$index';
+    return '下面是使用指南的目录。用户问怎么用、在哪里、能不能做某事时，先用 read_guide 读相关文章再据实回答，不编造界面上没有的东西。\n$index';
   }
 
   @override
@@ -11759,7 +11759,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPromptAgentSystem =>
-      '你可以调用工具来查找、统计用户的日记，查看日历、待办与纪念日，打开应用里的页面；用户要求时，还可以新建和修改日记、整理标签与日记本、管理待办与纪念日、调整设置。需要用户的数据时先用工具去查，不要凭空回答；互不依赖的查询可以一次调用多个工具。只做用户要求的改动，拿不准要改哪篇、改成什么时先问清楚；改动都可以撤销，删除类会先由用户确认，做完后用一两句话说明做了什么。用到某篇日记时在句末写上它的编号，如 [D3]。用户要做的事需要他自己在页面里完成时（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置、彻底删除等），用 open_page 给他一个前往按钮，并说明怎么做。工具报错时按错误说明改正参数或换个办法；确实做不到就直说。';
+      '你可以调用工具查询和修改用户在 Jotsy 里的数据、打开应用里的页面。\n- 需要用户的数据时先用工具去查，不要凭记忆或猜测回答；互不依赖的调用可以一次发出多个。\n- 只做用户明确要求的改动，拿不准改哪篇、改成什么时先问。改动都可以撤销；删除类工具由应用弹窗请用户确认，目标明确时直接调用，不必先在对话里再问一遍。\n- 回答下方的卡片只能由 open_page 生成，一次调用一张，卡片上写着那篇日记、那个日记本或页面的名字；要让用户点进几个目标，就给每个各调用一次。\n- 只说已经成功做到的事：没有成功调用对应的工具，就不要说“已打开”“已改好”或“卡片在下方”。不要在回答里写工具名、参数、id 或操作记录。\n- 和查询、修改类工具一起写的话会被折叠起来，用户看不到；和 open_page 一起写的话显示在卡片上方。结论、说明与操作步骤写在用户看得到的地方，同样的话不要说两遍。\n- 提到某篇日记时在句末写上工具结果里它的编号，如 [D3]（显示为可点开的小标签）。\n- 用户需要自己在页面里完成的事（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置、彻底删除等），用 open_page 给出前往按钮并说明怎么做。\n- 工具报错时按错误说明改正或换个办法；确实做不到就直说。';
 
   @override
   String aiPromptAgentNow(String time) {
@@ -11772,11 +11772,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String aiPromptAgentScopeRange(String from, String to) {
     return '这次对话只关心 $from 到 $to 之间的日记，查日记时默认用这个范围。';
-  }
-
-  @override
-  String aiPromptAgentActionsDone(String actions) {
-    return '（这一轮做过的操作：\n$actions）';
   }
 
   @override

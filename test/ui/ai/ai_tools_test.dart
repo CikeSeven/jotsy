@@ -156,6 +156,25 @@ void main() {
       expect(more, isNot(contains('list_notebooks')));
     });
 
+    test(
+      'a feature turned on earlier in the turn is usable right away',
+      () async {
+        final ctx = context();
+        expect(ctx.env.features.todos, isFalse);
+        final enable = await run('set_feature_enabled', {
+          'feature': 'todos',
+          'enabled': true,
+        }, with_: ctx);
+        expect(enable.data, isNotNull);
+        // 同一轮里接着打开待办页：环境取最新的开关，不再报“功能已关闭”。
+        expect(ctx.env.features.todos, isTrue);
+        final open = await run('open_page', {
+          'destination': 'tab_todos',
+        }, with_: ctx);
+        expect(open.navigation?.destination, 'tab_todos');
+      },
+    );
+
     test('turning changes off leaves only lookups and open_page', () {
       final readOnly = aiAvailableTools(
         AiToolEnv(

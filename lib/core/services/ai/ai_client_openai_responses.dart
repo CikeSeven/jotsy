@@ -39,6 +39,9 @@ class OpenAiResponsesClient extends AiChatClient {
       'input': [for (final message in request.messages) ..._input(message)],
       'stream': stream,
       'store': false,
+      // 同一对话的请求落到同一份提示缓存（OpenAI 按前缀与这个键路由）。
+      if (request.cacheKey case final key?)
+        'prompt_cache_key': key.length > 64 ? key.substring(0, 64) : key,
       // 推理模型不接受温度：请求思考或指定了强度（含“关”，只有推理模型
       // 才有这个参数）时都不发。
       if (config.sendTemperature &&

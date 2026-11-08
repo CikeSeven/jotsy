@@ -50,6 +50,32 @@ void main() {
     expect((segments.last as AiTextSegment).text, '你去过两次海边。');
   });
 
+  test('what the model says before only opening pages is part of the '
+      'answer', () {
+    const nav = AiToolNavigation(destination: 'settings_notebooks');
+    final segments = buildAiAnswerSegments(
+      steps: [
+        AiAgentStepRecord(text: '我查一下。', calls: [call('a', 'read_guide')]),
+        AiAgentStepRecord(
+          text: '删除要你自己在管理页完成：点“更多 → 删除”。',
+          calls: [call('b', 'open_page', navigation: nav)],
+        ),
+      ],
+      reasoning: '',
+      text: '点上面的卡片就到了。',
+      showReasoning: true,
+    );
+    expect(segments.map((s) => s.runtimeType).toList(), [
+      AiProcessSegment,
+      AiTextSegment,
+      AiNavigationSegment,
+      AiTextSegment,
+    ]);
+    final fold = segments.first as AiProcessSegment;
+    expect(fold.items.whereType<AiNarrationItem>().single.text, '我查一下。');
+    expect((segments[1] as AiTextSegment).text, startsWith('删除要你自己'));
+  });
+
   test('pages and changes stay outside; adjacent changes form a group', () {
     final segments = buildAiAnswerSegments(
       steps: [

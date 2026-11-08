@@ -59,6 +59,7 @@ import '../providers/ai_guide_provider.dart';
 import '../providers/ai_providers.dart';
 import '../tools/ai_tool.dart';
 import '../tools/ai_tool_registry.dart';
+import '../viewmodels/ai_agent_history.dart';
 import '../viewmodels/ai_agent_prompts.dart';
 import '../viewmodels/ai_chat_prompts.dart';
 import '../viewmodels/ai_citations.dart';
@@ -164,14 +165,15 @@ class AiChatController extends ChangeNotifier {
       _notify();
     }
     final history = await database.getAiMessages(id);
+    String? questionId;
     if (!resend) {
-      await database.addAiMessage(
+      questionId = await database.addAiMessage(
         conversationId: id,
         role: AiMessageRole.user,
         content: text,
       );
     } else if (history.isNotEmpty && history.last.role == AiMessageRole.user) {
-      history.removeLast();
+      questionId = history.removeLast().messageId;
     }
     if (!current()) return;
     if (model == null) {
@@ -179,10 +181,15 @@ class AiChatController extends ChangeNotifier {
       return;
     }
 
+    // 提示词语言按这段对话的第一个问题定下来，之后不随每个问题变：系统
+    // 提示词一变，服务商的提示缓存整段失效。
+    final firstQuestion = history
+        .where((row) => row.role == AiMessageRole.user)
+        .firstOrNull;
     final kit = AiPromptKit.resolve(
       prefs: prefs,
       appLocale: locale,
-      sample: text,
+      sample: firstQuestion?.content ?? text,
     );
     if (!context.mounted) return;
     if (prefs.agent.enabled && service.supportsTools(model)) {
@@ -195,6 +202,7 @@ class AiChatController extends ChangeNotifier {
         id,
         history,
         text,
+        questionId: questionId,
         model: model,
         current: current,
       );

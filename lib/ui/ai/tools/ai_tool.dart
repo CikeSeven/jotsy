@@ -25,6 +25,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/http_cancel_token.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../notebooks/viewmodels/notebook_tree.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../models/ai_guide.dart';
 import '../models/ai_preferences.dart';
 import '../models/ai_tool_subject.dart';
@@ -217,9 +218,27 @@ class AiToolNavigation {
   }
 }
 
-/// 一轮之内的日记编号：同一篇日记不论被哪个工具返回，都用同一个 `[Dn]`。
+/// 日记编号：同一篇日记不论被哪个工具返回，都用同一个 `[Dn]`。
+///
+/// 智能体的编号在整段对话里连续：以前各轮原样回放，旧结果里的 [D3] 仍指
+/// 同一篇，所以这一轮从以前用过的编号（[earlier]，见 `aiAgentCitationsOf`）
+/// 接着编，再见到旧的日记沿用旧编号。
 class AiCitationBook {
+  AiCitationBook([Iterable<AiCitation> earlier = const <AiCitation>[]]) {
+    for (final citation in earlier) {
+      _byDiary.putIfAbsent(citation.diaryId, () => citation);
+      final number = int.tryParse(citation.ref.substring(1)) ?? 0;
+      if (number >= _next) _next = number + 1;
+    }
+    _earlier = _byDiary.length;
+  }
+
   final Map<String, AiCitation> _byDiary = <String, AiCitation>{};
+
+  /// 这一轮工具碰到过的日记（含沿用旧编号的）。
+  final Set<String> _touched = <String>{};
+  int _next = 1;
+  int _earlier = 0;
 
   /// [diary] 的编号（第一次见到时分配下一个）。
   String refFor(
@@ -227,9 +246,10 @@ class AiCitationBook {
     required String title,
     required DateTime date,
   }) {
+    _touched.add(diaryId);
     final existing = _byDiary[diaryId];
     if (existing != null) return existing.ref;
-    final ref = 'D${_byDiary.length + 1}';
+    final ref = 'D${_next++}';
     _byDiary[diaryId] = AiCitation(
       ref: ref,
       diaryId: diaryId,
@@ -239,9 +259,15 @@ class AiCitationBook {
     return ref;
   }
 
+  /// 全部编号（含以前各轮的），回答引用时按它找日记。
   List<AiCitation> get all => List<AiCitation>.unmodifiable(_byDiary.values);
 
-  int get length => _byDiary.length;
+  /// 这一轮新分配的编号（落库到回答的 `meta.refs`，下一轮接着编）。
+  List<AiCitation> get fresh =>
+      List<AiCitation>.unmodifiable(_byDiary.values.skip(_earlier));
+
+  /// 这一轮工具碰到过的日记篇数（“参考了 N 篇”）。
+  int get length => _touched.length;
 }
 
 /// 一轮之内还能发给模型多少日记文字（AI 隐私里的“最多发送”，`TextStats`
@@ -268,14 +294,15 @@ class AiToolContext {
     required this.container,
     required this.l10n,
     required this.kit,
-    required this.env,
+    required this._env,
     required this.citations,
     required this.allowance,
     required this.token,
     this.ui,
     AiGuideCatalog? guide,
     DateTime? now,
-  }) : guide = guide ?? AiGuideCatalog.empty,
+  }) : _featuresAtStart = container.read(appFeaturesProvider),
+       guide = guide ?? AiGuideCatalog.empty,
        now = now ?? DateTime.now();
 
   /// 使用指南（提示词语言的那一份）；没加载到时为空目录。
@@ -293,7 +320,18 @@ class AiToolContext {
   /// 提示词语言与偏好（给模型的日记格式、隐私字段）。
   final AiPromptKit kit;
 
-  final AiToolEnv env;
+  final AiToolEnv _env;
+  final AppFeatures _featuresAtStart;
+
+  /// 这次运行的环境。功能开关在这一轮里被改过（`set_feature_enabled`）时
+  /// 取最新值：同一轮里先打开功能再用它（打开它的页面、查询）要能用上，
+  /// 否则模型会看到“已打开”却仍然报“功能已关闭”。
+  AiToolEnv get env {
+    final live = container.read(appFeaturesProvider);
+    if (live == _featuresAtStart) return _env;
+    return AiToolEnv(features: live, prefs: _env.prefs);
+  }
+
   final AiCitationBook citations;
   final AiWordAllowance allowance;
   final HttpCancelToken token;

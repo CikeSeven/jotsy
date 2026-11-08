@@ -117,6 +117,7 @@ class AiRequest {
     this.thinking,
     this.tools = const <AiToolSpec>[],
     this.toolChoice = AiToolChoice.auto,
+    this.cacheKey,
   });
 
   final String model;
@@ -142,6 +143,12 @@ class AiRequest {
   /// 是否允许模型调用 [tools]。
   final AiToolChoice toolChoice;
 
+  /// 提示缓存的会话键（智能体为对话 id）。给出时表示后续请求会以这次的
+  /// 消息为前缀继续，各客户端据此打开显式缓存：Anthropic 打 `cache_control`
+  /// 断点（写缓存要多计费，一次性请求不打），OpenAI 发 `prompt_cache_key`
+  /// 让同一对话落到同一缓存。DeepSeek、Gemini 等自动前缀缓存不需要。
+  final String? cacheKey;
+
   AiRequest copyWith({
     String? model,
     String? system,
@@ -162,6 +169,7 @@ class AiRequest {
       thinking: thinking,
       tools: tools ?? this.tools,
       toolChoice: toolChoice ?? this.toolChoice,
+      cacheKey: cacheKey,
     );
   }
 
@@ -176,6 +184,7 @@ class AiRequest {
     thinking: level,
     tools: tools,
     toolChoice: toolChoice,
+    cacheKey: cacheKey,
   );
 
   bool get hasImages => messages.any((message) => message.hasImages);

@@ -21,6 +21,9 @@ typedef AiClientFactory =
 ///   收到 400（请求被拒）时，先去掉图片再试，仍被拒且带了思考参数（Claude、
 ///   Gemini、OpenAI Responses 才会发）时再去掉思考试一次；被拒过的模型记在
 ///   本服务的内存里，之后的请求直接不带（服务商配置变了会重建本服务）；
+/// - 工具：去掉图片与思考后仍被拒、且请求带着工具时，把这个模型记为不支持
+///   工具并照常抛出错误——不悄悄去掉工具重发（那会变成另一种回答），由
+///   AI 助手据 [supportsTools] 改走检索问答；
 /// - 失败重试：只在**首块之前**、且错误可重试（网络、超时、429、5xx）时
 ///   按服务商的次数退避重试；首块之后再失败就交给调用方（已经显示了一半
 ///   的内容，不能悄悄重来）；
@@ -46,6 +49,7 @@ class AiService {
   /// 拒收过图片 / 思考参数的模型（`服务商 id + 模型 id`）。
   final Set<String> _rejectsImages = <String>{};
   final Set<String> _rejectsReasoning = <String>{};
+  final Set<String> _rejectsTools = <String>{};
 
   static String _modelKey(AiResolvedModel target) =>
       '${target.provider.id}\u0000${target.model.id}';
@@ -72,6 +76,11 @@ class AiService {
     return config.resolveRef(override) ?? config.resolveTask(task);
   }
 
+  /// 这个模型能不能带工具请求：模型设置里没关掉，且本次运行里没被服务端
+  /// 拒过。
+  bool supportsTools(AiResolvedModel target) =>
+      target.model.tools && !_rejectsTools.contains(_modelKey(target));
+
   /// 解析任务的模型，没有可用模型时抛 [AiFailureKind.notConfigured]。
   AiResolvedModel require(AiTaskKind task, {AiModelRef? override}) {
     final model = resolve(task, override: override);
@@ -87,6 +96,12 @@ class AiService {
     AiRequest request, {
     HttpCancelToken? cancelToken,
   }) async* {
+    if (request.hasTools && !supportsTools(target)) {
+      throw const AiException(
+        AiFailureKind.badRequest,
+        detail: 'This model does not accept tools.',
+      );
+    }
     final client = _clientFactory(target.provider, _http);
     final key = _modelKey(target);
     var effective = prepareRequest(target, request);
@@ -131,6 +146,7 @@ class AiService {
               effective = effective.copyWith(reasoning: false);
               continue;
             }
+            if (effective.hasTools) _rejectsTools.add(key);
           }
           if (!started &&
               !cancelled &&
@@ -170,6 +186,8 @@ class AiService {
   }) async {
     final text = StringBuffer();
     final reasoning = StringBuffer();
+    final toolCalls = <AiToolCall>[];
+    final replay = <AiReplayPart>[];
     AiUsage? usage;
     AiFinishReason? finish;
     await for (final chunk in stream(
@@ -179,6 +197,8 @@ class AiService {
     )) {
       text.write(chunk.text);
       reasoning.write(chunk.reasoning);
+      toolCalls.addAll(chunk.toolCalls);
+      replay.addAll(chunk.replay);
       if (chunk.usage case final chunkUsage?) {
         usage = (usage ?? const AiUsage()).merge(chunkUsage);
       }
@@ -192,6 +212,8 @@ class AiService {
       reasoning: reasoning.toString(),
       usage: usage,
       finishReason: finish,
+      toolCalls: toolCalls,
+      replay: replay,
     );
   }
 
@@ -237,11 +259,13 @@ class AiService {
       temperature: request.temperature,
       maxOutputTokens: request.maxOutputTokens ?? model.maxOutputTokens,
       reasoning: request.reasoning || model.reasoning,
+      tools: request.tools,
+      toolChoice: request.toolChoice,
     );
     return model.supportsVision ? prepared : _withoutImages(prepared);
   }
 
-  /// 去掉所有图片，只留文字。
+  /// 去掉所有图片（文字、工具调用与结果、回放数据都保留）。
   static AiRequest _withoutImages(AiRequest request) {
     if (!request.hasImages) return request;
     return request.copyWith(
@@ -249,7 +273,7 @@ class AiService {
         for (final message in request.messages)
           AiMessage(message.role, [
             for (final part in message.parts)
-              if (part is AiTextPart) part,
+              if (part is! AiImagePart) part,
           ]),
       ],
     );

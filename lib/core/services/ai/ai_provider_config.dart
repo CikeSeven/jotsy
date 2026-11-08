@@ -19,6 +19,7 @@ class AiModelConfig {
     this.contextWindow,
     this.maxOutputTokens,
     this.reasoning = true,
+    this.tools = true,
   });
 
   /// 请求里写的模型名（如 `deepseek-chat`）。
@@ -42,6 +43,10 @@ class AiModelConfig {
   /// 400，`AiService` 去掉思考再试（见 `AiService.stream`）。
   final bool reasoning;
 
+  /// 支持工具调用（AI 助手据此直接操作应用），默认开启。模型实际不认工具
+  /// 时服务端回 400，`AiService` 记下来，助手退回检索问答。
+  final bool tools;
+
   String get label => (name?.trim().isNotEmpty ?? false) ? name!.trim() : id;
 
   bool get supportsVision => vision ?? true;
@@ -53,6 +58,7 @@ class AiModelConfig {
     Object? contextWindow = _unset,
     Object? maxOutputTokens = _unset,
     bool? reasoning,
+    bool? tools,
   }) {
     return AiModelConfig(
       id: id ?? this.id,
@@ -65,6 +71,7 @@ class AiModelConfig {
           ? this.maxOutputTokens
           : maxOutputTokens as int?,
       reasoning: reasoning ?? this.reasoning,
+      tools: tools ?? this.tools,
     );
   }
 
@@ -75,6 +82,7 @@ class AiModelConfig {
     if (contextWindow != null) 'contextWindow': contextWindow,
     if (maxOutputTokens != null) 'maxOutputTokens': maxOutputTokens,
     if (!reasoning) 'reasoning': false,
+    if (!tools) 'tools': false,
   };
 
   static AiModelConfig? fromJson(Object? raw) {
@@ -88,6 +96,7 @@ class AiModelConfig {
       contextWindow: _positiveInt(raw['contextWindow']),
       maxOutputTokens: _positiveInt(raw['maxOutputTokens']),
       reasoning: raw['reasoning'] != false,
+      tools: raw['tools'] != false,
     );
   }
 
@@ -99,11 +108,19 @@ class AiModelConfig {
       other.vision == vision &&
       other.contextWindow == contextWindow &&
       other.maxOutputTokens == maxOutputTokens &&
-      other.reasoning == reasoning;
+      other.reasoning == reasoning &&
+      other.tools == tools;
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, vision, contextWindow, maxOutputTokens, reasoning);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    vision,
+    contextWindow,
+    maxOutputTokens,
+    reasoning,
+    tools,
+  );
 }
 
 /// 一个服务商（一组地址 + 密钥 + 模型）。

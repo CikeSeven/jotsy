@@ -214,6 +214,148 @@ void main() {
     expect(bodies.single.containsKey('reasoning'), isFalse);
   });
 
+  group('tools', () {
+    const tool = AiToolSpec(
+      name: 'list_tags',
+      description: 'List tags.',
+      parameters: <String, Object?>{'type': 'object'},
+    );
+
+    test('a 400 after dropping images and thinking marks tools unsupported, '
+        'without silently retrying without them', () async {
+      final bodies = <Map<String, Object?>>[];
+      server.handler = (request, response) async {
+        bodies.add(request.json);
+        await writeJson(response, {
+          'error': {'message': 'tools are not supported'},
+        }, status: 400);
+      };
+      final config = AiProviderConfig(
+        id: 'a1',
+        name: 'Claude-ish',
+        protocol: AiProtocol.anthropic,
+        baseUrl: server.baseUrl,
+        retries: 0,
+        models: const [AiModelConfig(id: 'old-model')],
+      );
+      final target = AiResolvedModel(config, config.models.single);
+      final ai = service();
+      expect(ai.supportsTools(target), isTrue);
+      await expectLater(
+        ai.complete(
+          target,
+          AiRequest(
+            model: 'x',
+            tools: const [tool],
+            messages: [
+              AiMessage(AiRole.user, [
+                const AiTextPart('hi'),
+                AiImagePart(Uint8List(1), 'image/png'),
+              ]),
+            ],
+          ),
+        ),
+        throwsA(
+          isA<AiException>().having(
+            (e) => e.kind,
+            'kind',
+            AiFailureKind.badRequest,
+          ),
+        ),
+      );
+      // 原请求、去掉图片、再去掉思考；之后不再去掉工具重发。
+      expect(bodies, hasLength(3));
+      expect(bodies.every((body) => body.containsKey('tools')), isTrue);
+      expect(ai.supportsTools(target), isFalse);
+
+      // 已知不支持后，带工具的请求不再发出去。
+      bodies.clear();
+      await expectLater(
+        ai.complete(
+          target,
+          AiRequest(
+            model: 'x',
+            tools: const [tool],
+            messages: [AiMessage.text(AiRole.user, 'hi')],
+          ),
+        ),
+        throwsA(isA<AiException>()),
+      );
+      expect(bodies, isEmpty);
+    });
+
+    test('a model with tools turned off does not support them', () {
+      const config = AiProviderConfig(
+        id: 'p',
+        name: 'P',
+        protocol: AiProtocol.openAi,
+        baseUrl: 'http://localhost',
+        models: [AiModelConfig(id: 'm', tools: false)],
+      );
+      final target = AiResolvedModel(config, config.models.single);
+      expect(service().supportsTools(target), isFalse);
+      expect(
+        AiModelConfig.fromJson(config.models.single.toJson())!.tools,
+        false,
+      );
+      expect(const AiModelConfig(id: 'm').toJson().containsKey('tools'), false);
+    });
+
+    test('dropping images keeps tool calls and results', () {
+      final target = AiResolvedModel(provider(), provider().models.first);
+      const call = AiToolCall(
+        id: 'c1',
+        name: 'list_tags',
+        argumentsRaw: '',
+        arguments: <String, Object?>{},
+      );
+      final prepared = AiService.prepareRequest(
+        target,
+        AiRequest(
+          model: 'x',
+          tools: const [tool],
+          messages: [
+            const AiMessage(AiRole.assistant, [AiToolCallPart(call)]),
+            AiMessage(AiRole.user, [
+              const AiToolResultPart(
+                callId: 'c1',
+                name: 'list_tags',
+                content: '[]',
+              ),
+              AiImagePart(Uint8List(1), 'image/png'),
+            ]),
+          ],
+        ),
+      );
+      expect(prepared.hasImages, isFalse);
+      expect(prepared.tools.single.name, 'list_tags');
+      expect(prepared.messages.first.toolCalls.single.id, 'c1');
+      expect(prepared.messages.last.toolResults.single.callId, 'c1');
+    });
+
+    test('complete collects tool calls', () async {
+      server.handler = (request, response) => writeSse(response, [
+        (
+          null,
+          '{"choices":[{"delta":{"tool_calls":[{"index":0,"id":"c1",'
+              '"function":{"name":"list_tags","arguments":"{}"}}]}}]}',
+        ),
+        (null, '{"choices":[{"delta":{},"finish_reason":"tool_calls"}]}'),
+      ]);
+      final target = AiResolvedModel(provider(), provider().models.first);
+      final result = await service().complete(
+        target,
+        AiRequest(
+          model: 'x',
+          tools: const [tool],
+          messages: [AiMessage.text(AiRole.user, 'hi')],
+        ),
+      );
+      expect(result.finishReason, AiFinishReason.toolCalls);
+      expect(result.toolCalls.single.name, 'list_tags');
+    });
+  });
+
   test('other errors are not retried without images or thinking', () async {
     var calls = 0;
     server.handler = (request, response) async {

@@ -36,9 +36,22 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **图片与思考默认都发，被拒时自动降级**：现在的主流模型几乎都能看图、会思考，所以模型设置里“支持图片输入”“请求思考过程”默认开启。首个块之前收到 400 时，`AiService` 先去掉图片再试；仍被拒、且请求里带了思考参数（Claude、Gemini、OpenAI Responses 才会带；OpenAI Chat 兼容接口只读返回里的思考字段，请求不变）时再去掉思考试一次。被拒过的模型记在本次运行的内存里，之后的请求直接不带。
 
+**工具调用**（AI 助手直接操作应用用）：`AiRequest.tools` 为 `AiToolSpec`（名称、说明、JSON Schema 参数，只用四家都认的子集 type / properties / required / enum / items / description / minimum / maximum）。一步工具调用在消息里是：助手消息（可选的 `AiReplayPart` + 正文 + 若干 `AiToolCallPart`）后接一条用户消息（与每个调用对应的 `AiToolResultPart`）。
+
+| 协议 | 定义 | 调用 | 结果 | 需要原样带回的数据 |
+|---|---|---|---|---|
+| OpenAI 兼容 | `tools[].function` | `delta.tool_calls[]` 按 `index` 拼接 | 每个结果一条 `role: tool` | `reasoning_content` / `reasoning` 字段与 OpenRouter 的 `reasoning_details`，只放进带调用的助手消息 |
+| OpenAI Responses | `tools[]`，`strict: false` | `function_call` 条目，参数增量 + `output_item.done` 快照 | `function_call_output` | 本步全部输出条目（开着思考时请求 `include: reasoning.encrypted_content`；没有加密内容的推理条目不带回） |
+| Anthropic | `tools[].input_schema` | `tool_use` 块 + `input_json_delta` | 同一条用户消息里的 `tool_result`（`is_error`） | 带签名的 `thinking` / `redacted_thinking` 块，放在最前；没签名的丢掉 |
+| Gemini | `functionDeclarations` | `functionCall` 部分（整块到达） | 同一条消息里的 `functionResponse`（结果不是 JSON 对象时包成 `{result}` / `{error}`） | 调用上的 `thoughtSignature`；只在服务端给过 id 时回带 id |
+
+参数片段由共用的 `AiToolCallAssembler` 拼接，流结束后才整体解析：不是 JSON 对象的调用带着 `argumentsError` 返回（由调用方把错误回传模型，不执行）；服务商没给 id 或 id 重复时生成本地 id。完整的调用只在流的最后一块里给出，中途只有 `toolCallStarted` 供界面提示。**只有 `AiFinishReason.isComplete`（正常收尾：`stop` / `toolCalls`）时才能执行调用**：截断（`length`）、服务端标为未完成、或流中断没有结束原因时，参数可能是半截的。一轮之内模型固定，回放数据总是同一模型产生的。
+
+模型设置里“支持工具调用”默认开启（只记关掉的）。首个块之前收到 400 时依次去掉图片、思考，仍被拒且带着工具时把该模型记为不支持工具并照常报错——`AiService` 不悄悄去掉工具重发，由调用方据 `supportsTools` 改用不带工具的问答。
+
 ## 4. 服务商与任务路由
 
-`AiProviderConfig`：名称、预设 id、协议、根地址、密钥、代理（按服务商）、自定义请求头、额外请求体 JSON（合并进每个请求）、流式、`include_usage`、是否发送温度、首字超时、重试次数，以及勾选的模型（显示名、是否支持图片、是否请求思考过程（这两项默认开，只记关掉的）、上下文长度、最大输出）。
+`AiProviderConfig`：名称、预设 id、协议、根地址、密钥、代理（按服务商）、自定义请求头、额外请求体 JSON（合并进每个请求）、流式、`include_usage`、是否发送温度、首字超时、重试次数，以及勾选的模型（显示名、是否支持图片、是否请求思考过程、是否支持工具调用（这三项默认开，只记关掉的）、上下文长度、最大输出）。
 
 预设（`ai_provider_presets.dart`，新增服务商只在这里加一项）只给地址、协议与几个兼容开关，**不带模型**——模型更新太快，写死的推荐很快就过时；新建后在编辑页“获取模型列表”勾选，或手动添加模型名：
 
@@ -95,5 +108,5 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 ## 9. 开发与验证
 
-- 单元与 widget 测试用 `test/support/fake_ai.dart` 的 `FakeAiChatClient` / `fakeAiService` 替换 `aiServiceProvider`，不联网；协议客户端的测试在本地 `HttpServer.bind(loopback, 0)` 上回放准备好的流（`test/core/services/ai/`）。
-- 手动验证用 `dart run tool/ai_mock_server.dart`：在本机起一个同时实现四种协议的服务（默认端口 8787），流式回显请求、可注入错误与思考过程，见脚本开头的说明。在 Jotsy 里添加“自定义（OpenAI 兼容）”服务，地址填 `http://127.0.0.1:8787/v1`（OpenAI Responses 同一地址；Anthropic 格式填 `http://127.0.0.1:8787`，Gemini 格式填 `http://127.0.0.1:8787/v1beta`），密钥随便填。
+- 单元与 widget 测试用 `test/support/fake_ai.dart` 的 `FakeAiChatClient` / `fakeAiService` 替换 `aiServiceProvider`，不联网；协议客户端的测试在本地 `HttpServer.bind(loopback, 0)` 上回放准备好的流（`test/core/services/ai/`，工具调用见 `ai_tool_calls_test.dart`）。
+- 手动验证用 `dart run tool/ai_mock_server.dart`：在本机起一个同时实现四种协议的服务（默认端口 8787），流式回显请求、可注入错误与思考过程，见脚本开头的说明。在 Jotsy 里添加“自定义（OpenAI 兼容）”服务，地址填 `http://127.0.0.1:8787/v1`（OpenAI Responses 同一地址；Anthropic 格式填 `http://127.0.0.1:8787`，Gemini 格式填 `http://127.0.0.1:8787/v1beta`），密钥随便填。请求带着工具时，在问题里写 `/tool 工具名 {"参数": 1}` 让它按该协议调用这个工具（参数分两段流式发出），收到工具结果后它回答结果内容。

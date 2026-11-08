@@ -4,6 +4,7 @@ import '../http_cancel_token.dart';
 import 'ai_client.dart';
 import 'ai_failure.dart';
 import 'ai_models.dart';
+import 'ai_tool_call_assembler.dart';
 
 /// Google Gemini `generateContent`。
 ///
@@ -35,24 +36,19 @@ class GeminiChatClient extends AiChatClient {
       if (request.reasoning)
         'thinkingConfig': <String, Object?>{'includeThoughts': true},
     };
+    // 结果只在调用带着服务商给的 id 时才回带 id（本地生成的 id 服务端
+    // 不认识）。
+    final providerIds = <String>{
+      for (final message in request.messages)
+        for (final call in message.toolCalls)
+          if (call.idFromProvider) call.id,
+    };
     return withExtraBody(<String, Object?>{
       'contents': [
         for (final message in request.messages)
           <String, Object?>{
             'role': message.role == AiRole.user ? 'user' : 'model',
-            'parts': [
-              for (final part in message.parts)
-                switch (part) {
-                  AiTextPart(:final text) => <String, Object?>{'text': text},
-                  AiImagePart(:final bytes, :final mimeType) =>
-                    <String, Object?>{
-                      'inline_data': <String, Object?>{
-                        'mime_type': mimeType,
-                        'data': base64Encode(bytes),
-                      },
-                    },
-                },
-            ],
+            'parts': _parts(message, providerIds),
           },
       ],
       if (request.system?.trim().isNotEmpty ?? false)
@@ -62,7 +58,75 @@ class GeminiChatClient extends AiChatClient {
           ],
         },
       if (generation.isNotEmpty) 'generationConfig': generation,
+      if (request.hasTools)
+        'tools': [
+          <String, Object?>{
+            'functionDeclarations': [
+              for (final tool in request.tools)
+                <String, Object?>{
+                  'name': tool.name,
+                  'description': tool.description,
+                  'parameters': tool.parameters,
+                },
+            ],
+          },
+        ],
+      if (request.hasTools && request.toolChoice == AiToolChoice.none)
+        'toolConfig': <String, Object?>{
+          'functionCallingConfig': <String, Object?>{'mode': 'NONE'},
+        },
     });
+  }
+
+  List<Map<String, Object?>> _parts(
+    AiMessage message,
+    Set<String> providerIds,
+  ) {
+    return [
+      // 同一步的全部结果放进同一条消息。
+      for (final result in message.toolResults)
+        <String, Object?>{
+          'functionResponse': <String, Object?>{
+            'name': result.name,
+            if (providerIds.contains(result.callId)) 'id': result.callId,
+            'response': _response(result),
+          },
+        },
+      for (final part in message.parts)
+        // 带调用的助手消息里空的正文部分不发（Gemini 拒收空 text）。
+        if (part is AiTextPart &&
+            (part.text.isNotEmpty || message.toolCalls.isEmpty))
+          <String, Object?>{'text': part.text}
+        else if (part case AiImagePart(:final bytes, :final mimeType))
+          <String, Object?>{
+            'inline_data': <String, Object?>{
+              'mime_type': mimeType,
+              'data': base64Encode(bytes),
+            },
+          },
+      // `thoughtSignature` 挂在调用所在的部分上，必须原样带回（Gemini 3
+      // 起缺了会被拒）。
+      for (final call in message.toolCalls)
+        <String, Object?>{
+          'functionCall': <String, Object?>{
+            'name': call.name,
+            if (call.idFromProvider) 'id': call.id,
+            'args': call.arguments ?? const <String, Object?>{},
+          },
+          if (jsonString(call.providerData?['thoughtSignature'])
+              case final signature?)
+            'thoughtSignature': signature,
+        },
+    ];
+  }
+
+  /// `response` 必须是对象：结果本身是 JSON 对象时直接用，否则包一层。
+  static Map<String, Object?> _response(AiToolResultPart result) {
+    final decoded = decodeJsonObject(result.content);
+    if (result.isError) {
+      return <String, Object?>{'error': decoded ?? result.content};
+    }
+    return decoded ?? <String, Object?>{'result': result.content};
   }
 
   @override
@@ -83,17 +147,20 @@ class GeminiChatClient extends AiChatClient {
     if (!response.isEventStream) {
       final text = await response.readText();
       final decoded = _decode(text);
+      final state = GeminiStreamState();
       // 不带 alt=sse 的流式接口会返回整个 JSON 数组。
       for (final item in decoded) {
-        final chunk = parseResponse(item);
+        final chunk = state.add(item);
         if (!chunk.isEmpty) yield chunk;
       }
+      final end = state.finish();
+      if (!end.isEmpty) yield end;
       return;
     }
-    yield* parseEventStream(
-      response,
-      (_, data) => <AiChunk>[parseResponse(data)],
-    );
+    final state = GeminiStreamState();
+    yield* parseEventStream(response, (_, data) => <AiChunk>[state.add(data)]);
+    final end = state.finish();
+    if (!end.isEmpty) yield end;
   }
 
   static List<Map<String, Object?>> _decode(String text) {
@@ -204,5 +271,60 @@ class GeminiChatClient extends AiChatClient {
       );
     }
     return models;
+  }
+}
+
+/// Gemini 一次流式响应的状态。`functionCall` 部分总是整块到达（未开启
+/// 参数流式），每到一个记一个；`thoughtSignature` 挂在调用上一并记下。
+/// Gemini 有调用时结束原因仍是 `STOP`，由 [finish] 改标为
+/// [AiFinishReason.toolCalls]。
+class GeminiStreamState {
+  final AiToolCallAssembler _calls = AiToolCallAssembler();
+  var _seen = 0;
+  AiFinishReason? _finish;
+
+  AiChunk add(Map<String, Object?> data) {
+    final chunk = GeminiChatClient.parseResponse(data);
+    _finish = chunk.finishReason ?? _finish;
+    final candidates = jsonList(data['candidates']);
+    final candidate = candidates.isEmpty ? null : jsonMap(candidates.first);
+    AiToolCallStart? started;
+    for (final raw in jsonList(jsonMap(candidate?['content'])?['parts'])) {
+      final part = jsonMap(raw);
+      final call = jsonMap(part?['functionCall']);
+      if (part == null || call == null) continue;
+      final signature =
+          jsonString(part['thoughtSignature']) ??
+          jsonString(part['thought_signature']);
+      // 先调用再合并：`??=` 会短路，同一块里的第二个调用就丢了。
+      final start = _calls.add(
+        _seen++,
+        id: jsonString(call['id']),
+        name: jsonString(call['name']),
+        arguments: encodeAiToolArguments(call['args']),
+        providerData: signature == null
+            ? null
+            : <String, Object?>{'thoughtSignature': signature},
+      );
+      started ??= start;
+    }
+    if (started == null) return chunk;
+    return AiChunk(
+      text: chunk.text,
+      reasoning: chunk.reasoning,
+      usage: chunk.usage,
+      finishReason: chunk.finishReason,
+      toolCallStarted: started,
+    );
+  }
+
+  AiChunk finish() {
+    final calls = _calls.finish();
+    return AiChunk(
+      toolCalls: calls,
+      finishReason: calls.isNotEmpty && (_finish?.isComplete ?? false)
+          ? AiFinishReason.toolCalls
+          : null,
+    );
   }
 }

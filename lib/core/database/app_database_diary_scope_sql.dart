@@ -232,11 +232,25 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
 /// - UNION 而不是 UNION ALL：成环的坏数据（备份合并后修复前）也会停下；
 /// - 不相关子查询，SQLite 只执行一次，不随日记数逐行重跑。日记本只有几十行，
 ///   递归的代价可以忽略。
-final String _privateNotebookIdsSql =
+final String _privateNotebookIdsSql = _notebookSubtreeIdsSql(
+  "visibility <> '${NotebookVisibility.normal.name}'",
+);
+
+/// 生效可见性为上锁的日记本的本地 id：自己或某个上级是上锁（或认不出的
+/// 可见性，按 locked 解读）的手动本。口径同 [_privateNotebookIdsSql]，只是
+/// 起点不含隐藏本；存储管理据此决定揭示私密媒体前要不要验证身份。
+final String _lockedNotebookIdsSql = _notebookSubtreeIdsSql(
+  "visibility NOT IN ('${NotebookVisibility.normal.name}', "
+  "'${NotebookVisibility.hidden.name}')",
+);
+
+/// 起点为满足 [visibilityCondition] 的手动本，加上它们沿 `parent_id` 往下
+/// 的全部子孙（只经手动本传递），见 [_privateNotebookIdsSql] 的说明。
+String _notebookSubtreeIdsSql(String visibilityCondition) =>
     'WITH RECURSIVE private_nb(id, notebook_id, kind) AS ('
     'SELECT id, notebook_id, kind FROM notebooks '
     "WHERE kind = '${NotebookKind.manual.name}' "
-    "AND visibility <> '${NotebookVisibility.normal.name}' "
+    'AND $visibilityCondition '
     'UNION '
     'SELECT c.id, c.notebook_id, c.kind FROM notebooks c '
     'JOIN private_nb p ON c.parent_id = p.notebook_id '
@@ -249,11 +263,20 @@ final String _privateNotebookIdsSql =
 /// - 未知类型的本子不算（只有手动本有成员行）；
 /// - `diary_notebooks.diary_id` 非空，NOT IN 不会因子查询含 NULL 而整体为空；
 /// - 不相关子查询，SQLite 只执行一次并建临时索引，不随日记数逐行重跑。
-final String _privateDiaryIdsSql =
+final String _privateDiaryIdsSql = _diaryIdsInNotebooksSql(
+  _privateNotebookIdsSql,
+);
+
+/// 在至少一本生效上锁的手动日记本里的日记（[_lockedNotebookIdsSql]）。
+final String _lockedDiaryIdsSql = _diaryIdsInNotebooksSql(
+  _lockedNotebookIdsSql,
+);
+
+String _diaryIdsInNotebooksSql(String notebookIdsSql) =>
     'SELECT pdn.diary_id FROM diary_notebooks pdn '
     'JOIN notebooks pn ON pn.id = pdn.notebook_id '
     "WHERE pn.kind = '${NotebookKind.manual.name}' "
-    'AND pn.id IN ($_privateNotebookIdsSql)';
+    'AND pn.id IN ($notebookIdsSql)';
 
 /// 收进了日记本的日记的本地 id：在任一存在的日记本里有成员行（只有手动本
 /// 有成员行；连上日记本表，残留的悬空关联不算）。不相关子查询，只执行一次。

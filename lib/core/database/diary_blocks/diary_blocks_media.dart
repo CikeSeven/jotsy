@@ -34,18 +34,22 @@ Iterable<DiaryBlockMedia> diaryBlocksMedia(
       final value = data[kDiaryBlockValueKey];
       if (value is Map) {
         for (final entry in value.entries) {
-          final media = _media(entry.key, entry.value);
+          final media = diaryBlockMediaOf(entry.key, entry.value);
           if (media != null) yield media;
         }
       }
     } else {
-      final media = _media(type, data);
+      final media = diaryBlockMediaOf(type, data);
       if (media != null) yield media;
     }
   }
 }
 
-DiaryBlockMedia? _media(Object? type, Object? data) {
+/// 一个块（或旧版多键嵌入里的一项）的媒体；不是媒体块时为 null。
+///
+/// [type] 为块类型（或旧嵌入的键），[data] 为它的 data；图片没有路径时
+/// 不算媒体，录音 / 附件损坏时仍算（路径为 null）。
+DiaryBlockMedia? diaryBlockMediaOf(Object? type, Object? data) {
   final kind = switch (type) {
     kDiaryBlockImage => DiaryBlockMediaKind.image,
     kDiaryBlockVideo => DiaryBlockMediaKind.video,
@@ -99,7 +103,7 @@ Future<void> rewriteDiaryBlocksMediaPaths(
       if (value is! Map) continue;
       final updated = Map<String, Object?>.from(value);
       for (final entry in updated.entries.toList()) {
-        final media = _media(entry.key, entry.value);
+        final media = diaryBlockMediaOf(entry.key, entry.value);
         if (media?.path case final path?) {
           final target = await rewrite(media!.kind, path);
           if (target != path) {
@@ -111,7 +115,7 @@ Future<void> rewriteDiaryBlocksMediaPaths(
         ..[kDiaryBlockValueKey] = updated;
       continue;
     }
-    final media = _media(node[kDiaryBlockTypeKey], data);
+    final media = diaryBlockMediaOf(node[kDiaryBlockTypeKey], data);
     if (media?.path case final path?) {
       final target = await rewrite(media!.kind, path);
       if (target != path) {

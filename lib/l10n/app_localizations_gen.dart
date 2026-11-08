@@ -26973,6 +26973,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **': {names}'**
   String aiChatExportSubjects(String names);
+
+  /// Export format: JSON (structured, for programs).
+  ///
+  /// In en, this message translates to:
+  /// **'JSON'**
+  String get aiChatExportJson;
 }
 
 class _AppLocalizationsDelegate

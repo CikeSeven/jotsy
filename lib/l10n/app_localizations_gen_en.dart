@@ -17244,4 +17244,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String aiChatExportSubjects(String names) {
     return ': $names';
   }
+
+  @override
+  String get aiChatExportJson => 'JSON';
 }

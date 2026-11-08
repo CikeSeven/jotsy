@@ -1,4 +1,5 @@
-// 导出对话：把选中的消息写成一份 Markdown 或纯文本（纯函数）。
+// 导出对话：把选中的消息写成一份 Markdown、纯文本或 JSON（纯函数，经
+// [aiChatExportContent] 按格式分派）。
 //
 // 结构：标题、“导出于 … · 共 N 条消息”，然后按时间逐条——
 // - 问题：“你 · 时间”与原文；
@@ -7,7 +8,14 @@
 //   失败的照实写），正文（Markdown 原样保留 `[Dn]`；纯文本由块文档转成
 //   纯文字、去掉引用编号），参考的日记，出错 / 已停止的说明。
 //
+// JSON（[aiChatExportJson]）给程序读：对话信息与逐条消息的结构化字段——
+// 角色、时间、状态、正文（Markdown 原文）、引用、模型与思考强度，按选项
+// 带上思考与步骤（每个调用的工具名、界面标题、状态、参数、结果说明与涉及
+// 的对象；撤销用的内部数据不导出）。
+//
 // 只用落库的内容，不联网、不读日记全文。
+
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
@@ -18,6 +26,7 @@ import '../../../l10n/app_localizations.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
 import '../models/ai_agent_steps.dart';
+import '../models/ai_tool_subject.dart';
 import '../tools/ai_tool_registry.dart';
 import 'ai_labels.dart';
 import 'ai_task_prompts.dart';
@@ -25,7 +34,8 @@ import 'ai_tool_facts.dart';
 
 enum AiChatExportFormat {
   markdown('md', 'text/markdown'),
-  text('txt', 'text/plain');
+  text('txt', 'text/plain'),
+  json('json', 'application/json');
 
   const AiChatExportFormat(this.extension, this.mimeType);
 
@@ -76,8 +86,37 @@ String aiChatExportFileName(
   return '${stem.isEmpty ? 'chat' : stem} $date.${format.extension}';
 }
 
-/// 写出导出内容。[messages] 为选中的消息（按时间先后），[assistantName]
-/// 为回答的署名（人设名）。
+/// 按 [options] 的格式写出导出内容。[conversation] 为这段对话（JSON 里的
+/// 对话信息；可为 null）。
+String aiChatExportContent({
+  required AppLocalizations l10n,
+  required String title,
+  required AiConversationRow? conversation,
+  required List<AiMessageRow> messages,
+  required String assistantName,
+  required AiChatExportOptions options,
+  required DateTime now,
+}) => options.format == AiChatExportFormat.json
+    ? aiChatExportJson(
+        l10n: l10n,
+        title: title,
+        conversation: conversation,
+        messages: messages,
+        assistantName: assistantName,
+        options: options,
+        now: now,
+      )
+    : aiChatExportText(
+        l10n: l10n,
+        title: title,
+        messages: messages,
+        assistantName: assistantName,
+        options: options,
+        now: now,
+      );
+
+/// 写出 Markdown 或纯文本。[messages] 为选中的消息（按时间先后），
+/// [assistantName] 为回答的署名（人设名）。
 String aiChatExportText({
   required AppLocalizations l10n,
   required String title,
@@ -181,6 +220,109 @@ String aiChatExportText({
     }
   }
   return '${out.toString().trimRight()}\n';
+}
+
+/// 结构化的 JSON（缩进两格）。时间一律为本地时间的 ISO 8601。
+String aiChatExportJson({
+  required AppLocalizations l10n,
+  required String title,
+  required AiConversationRow? conversation,
+  required List<AiMessageRow> messages,
+  required String assistantName,
+  required AiChatExportOptions options,
+  required DateTime now,
+}) {
+  Map<String, Object?> subject(AiToolSubject value) => <String, Object?>{
+    'kind': value.kind.name,
+    'id': value.id,
+    'name': aiSubjectName(l10n, value),
+    if (value.date case final date?) 'date': date.toIso8601String(),
+    if (value.input) 'input': true,
+  };
+
+  Map<String, Object?> call(AiAgentCallRecord value) {
+    final tool = aiToolByName(value.tool);
+    return <String, Object?>{
+      'tool': value.tool,
+      'title': tool?.labelWith(l10n, value.args, value.subjects) ?? value.tool,
+      'status': value.status.name,
+      if (value.undone) 'undone': true,
+      if (value.args.isNotEmpty) 'args': value.args,
+      'summary': ?value.summary,
+      'error': ?value.error,
+      if (value.subjects.isNotEmpty)
+        'subjects': [for (final item in value.subjects) subject(item)],
+      if (value.moreSubjects > 0) 'moreSubjects': value.moreSubjects,
+    };
+  }
+
+  Map<String, Object?> message(AiMessageRow row) {
+    final user = row.role == AiMessageRole.user;
+    final meta = _decodeMeta(row.meta);
+    final steps = AiAgentStepRecord.decodeList(row.steps);
+    final error = aiMessageError(row);
+    return <String, Object?>{
+      'id': row.messageId,
+      'role': row.role,
+      'author': user ? l10n.aiChatExportYou : assistantName,
+      'createdAt': row.createdAt.toIso8601String(),
+      if (!user) 'status': row.status,
+      'content': row.content,
+      if (!user && options.reasoning && row.reasoning.trim().isNotEmpty)
+        'reasoning': row.reasoning,
+      if (!user && options.steps && steps.isNotEmpty)
+        'steps': [
+          for (final step in steps)
+            <String, Object?>{
+              if (step.text.trim().isNotEmpty) 'text': step.text,
+              if (options.reasoning && step.reasoning.trim().isNotEmpty)
+                'reasoning': step.reasoning,
+              if (step.thinkingMs > 0) 'thinkingMs': step.thinkingMs,
+              'calls': [for (final item in step.calls) call(item)],
+            },
+        ],
+      if (!user)
+        'citations': [
+          for (final citation in AiCitation.decodeList(row.citations))
+            <String, Object?>{
+              'ref': citation.ref,
+              'diaryId': citation.diaryId,
+              'title': citation.title,
+              'date': citation.date.toIso8601String(),
+            },
+        ],
+      if (meta['model'] case final String model) 'model': model,
+      if (meta['thinking'] case final String thinking) 'thinking': thinking,
+      if (error != null) 'error': aiErrorMessage(l10n, error),
+    };
+  }
+
+  final data = <String, Object?>{
+    'format': 'jotsy-ai-chat',
+    'version': 1,
+    'exportedAt': now.toIso8601String(),
+    'conversation': <String, Object?>{
+      'id': ?conversation?.conversationId,
+      'title': title,
+      'assistant': assistantName,
+      if (conversation != null) ...<String, Object?>{
+        'createdAt': conversation.createdAt.toIso8601String(),
+        'updatedAt': conversation.updatedAt.toIso8601String(),
+      },
+    },
+    'messages': [for (final row in messages) message(row)],
+  };
+  return '${const JsonEncoder.withIndent('  ').convert(data)}\n';
+}
+
+Map<String, Object?> _decodeMeta(String raw) {
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map) return decoded.cast<String, Object?>();
+  } on FormatException {
+    // 坏掉的 meta 当作没有。
+  }
+  return const <String, Object?>{};
 }
 
 /// 过程与操作：调用工具前说的话，和每个调用“具体标题 —— 结果：涉及的对象”。

@@ -2,7 +2,7 @@
 // 选项与勾选在本页，写出内容见 `ai_chat_export.dart`，去处见
 // `ai_chat_export_flow.dart`。
 //
-// - 顶部选项卡片：格式（Markdown / 纯文本，`ExpressiveButtonGroup`）与包含
+// - 顶部选项卡片：格式（Markdown / 纯文本 / JSON，`ExpressiveButtonGroup`）与包含
 //   （思考过程、过程与操作，`FilterChip`）；选项本次运行内记住。
 // - “选择消息 · 已选 N / 共 M 条”+ 全选开关；每条一行卡片：勾选框、头像
 //   （问题为 `primaryContainer` 底的“你”，回答为人设 emoji）、署名与时间、
@@ -78,9 +78,10 @@ class _AiChatExportPageState extends ConsumerState<AiChatExportPage> {
     return (
       title: title,
       fileName: aiChatExportFileName(title, now, options.format),
-      text: aiChatExportText(
+      text: aiChatExportContent(
         l10n: l10n,
         title: title,
+        conversation: conversation,
         messages: picked,
         assistantName: persona.name,
         options: options,
@@ -150,7 +151,7 @@ class _AiChatExportPageState extends ConsumerState<AiChatExportPage> {
                           Text(l10n.aiChatExportFormat, style: section),
                           const SizedBox(height: 10),
                           ExpressiveButtonGroup<AiChatExportFormat>(
-                            minSegmentWidth: 96,
+                            minSegmentWidth: 88,
                             segments: <ButtonSegment<AiChatExportFormat>>[
                               ButtonSegment<AiChatExportFormat>(
                                 value: AiChatExportFormat.markdown,
@@ -159,6 +160,10 @@ class _AiChatExportPageState extends ConsumerState<AiChatExportPage> {
                               ButtonSegment<AiChatExportFormat>(
                                 value: AiChatExportFormat.text,
                                 label: Text(l10n.aiChatExportPlain),
+                              ),
+                              ButtonSegment<AiChatExportFormat>(
+                                value: AiChatExportFormat.json,
+                                label: Text(l10n.aiChatExportJson),
                               ),
                             ],
                             selected: <AiChatExportFormat>{options.format},

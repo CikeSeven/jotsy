@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -130,6 +132,56 @@ void main() {
     expect(text, isNot(contains('**')));
     expect(text, isNot(contains('[D1]')));
     expect(text, isNot(contains('我先查一下')));
+  });
+
+  test('JSON is structured and follows the include options', () {
+    final raw = aiChatExportContent(
+      l10n: zh,
+      title: '海边',
+      conversation: null,
+      messages: messages,
+      assistantName: '日记助手',
+      options: const AiChatExportOptions(format: AiChatExportFormat.json),
+      now: DateTime(2026, 11, 9, 8),
+    );
+    final data = jsonDecode(raw) as Map<String, Object?>;
+    expect(data['format'], 'jotsy-ai-chat');
+    expect((data['conversation']! as Map)['title'], '海边');
+    final rows = (data['messages']! as List).cast<Map<String, Object?>>();
+    expect(rows.map((m) => m['role']), ['user', 'assistant']);
+    expect(rows.first['author'], zh.aiChatExportYou);
+    final answer = rows.last;
+    expect(answer['content'], '去过，**周末去海边** [D1] 那次风很大。');
+    expect(answer.containsKey('reasoning'), isFalse);
+    final call =
+        (((answer['steps']! as List).single as Map)['calls']! as List).single
+            as Map;
+    expect(call['tool'], 'search_diaries');
+    expect(call['title'], zh.aiToolSearchDiariesFor('海边'));
+    expect(call['args'], {'query': '海边'});
+    expect(((call['subjects']! as List).single as Map)['name'], '周末去海边');
+    expect(((answer['citations']! as List).single as Map)['diaryId'], 'd1');
+
+    final lean =
+        jsonDecode(
+              aiChatExportContent(
+                l10n: zh,
+                title: '海边',
+                conversation: null,
+                messages: messages,
+                assistantName: '日记助手',
+                options: const AiChatExportOptions(
+                  format: AiChatExportFormat.json,
+                  reasoning: true,
+                  steps: false,
+                ),
+                now: DateTime(2026, 11, 9, 8),
+              ),
+            )
+            as Map<String, Object?>;
+    final leanAnswer = (lean['messages']! as List).last as Map;
+    expect(leanAnswer['reasoning'], '先确认日期范围');
+    expect(leanAnswer.containsKey('steps'), isFalse);
   });
 
   test('file names drop characters that file systems reject', () {

@@ -20248,5 +20248,9 @@
         "type": "String"
       }
     }
+  },
+  "aiChatExportJson": "JSON",
+  "@aiChatExportJson": {
+    "description": "Export format: JSON (structured, for programs)."
   }
 }

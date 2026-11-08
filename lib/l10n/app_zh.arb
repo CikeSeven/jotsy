@@ -19681,5 +19681,9 @@
         "type": "String"
       }
     }
+  },
+  "aiChatExportJson": "JSON",
+  "@aiChatExportJson": {
+    "description": "导出格式：JSON（结构化，给程序读）。"
   }
 }

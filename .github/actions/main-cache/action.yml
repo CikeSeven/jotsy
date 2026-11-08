@@ -1,0 +1,47 @@
+name: Cache saved from main only
+description: >-
+  actions/cache that every ref restores from, but only the default branch
+  writes to. PR, tag and dispatch runs restore read-only, so they never spend
+  the repository's 10 GB cache quota on copies that only they could read, and
+  never evict the main entries that every run falls back to. The entry is saved
+  when the job succeeds and the exact key missed (restore-keys hits included).
+
+inputs:
+  path:
+    description: Files and directories to cache (actions/cache syntax, one per line).
+    required: true
+  key:
+    description: Exact cache key.
+    required: true
+  restore-keys:
+    description: Ordered key prefixes to fall back on when the exact key misses.
+    required: false
+    default: ''
+
+outputs:
+  cache-hit:
+    description: "'true' only when the exact key was restored."
+    value: ${{ steps.save.outputs.cache-hit || steps.restore.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    # 缓存只能被同一 ref 及其基准分支读取：PR 写下的缓存 main 和其他 PR 都用不上，
+    # 却同样计入配额并按最近使用淘汰，会把 main 的 SDK / Gradle 缓存挤掉。
+    - name: Restore and save cache
+      id: save
+      if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key }}
+        restore-keys: ${{ inputs.restore-keys }}
+
+    - name: Restore cache (read-only)
+      id: restore
+      if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key }}
+        restore-keys: ${{ inputs.restore-keys }}

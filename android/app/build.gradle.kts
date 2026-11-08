@@ -72,6 +72,12 @@ android {
             keyPassword = keystoreProperties.getProperty("keyPassword")
             storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
             storePassword = keystoreProperties.getProperty("storePassword")
+            // minSdk ≥ 24 时 AGP 默认只签 v2、不签 v1，但鸿蒙与部分华为机型的
+            // 安装器只认 META-INF 里的 v1 证书，缺了就报“该安装包未包含任何证书”。
+            // 显式打开三种方案；证书不变，已安装的版本照常覆盖升级。
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
         }
     }
 

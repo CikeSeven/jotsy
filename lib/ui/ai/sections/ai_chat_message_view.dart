@@ -1,77 +1,123 @@
-// 对话里的一条消息。
+// 对话里的一条消息（DESIGN §5.29“消息”）。
 //
-// - 用户：靠右的气泡；最后一个问题旁有“编辑并重发”；
-// - 回答：智能体回答先列出工具步骤（`AiAgentStepsView`），再是铺满列宽的
-//   Markdown（`[Dn]` 为可点的引用胶囊，合写的引用先拆开），
-//   可折叠的思考过程、“参考了 N 篇日记”（展开列出被引用的日记，点按打开）、
-//   出错的原因与重试、已停止的标记、可选的 token 数，以及一排操作（复制、
-//   重新生成（只在最后一个回答）、另存为日记、删除）。
+// - 问题：靠右的气泡（`primaryContainer`，20 圆角、右下角 6，最宽 520），
+//   可长按选字（`AppSelectionArea`）；最后一问左侧 12dp 铅笔“编辑并重发”。
+// - 回答：头部（24dp 人设头像 + 名称），分段（`AiAnswerSegmentsView`：思考
+//   过程折叠块、前往 / 改动 / 确认卡片、正文），然后是没有正常作答的说明、
+//   错误与重试、“参考了 N 篇日记”（点按展开为可点的日记胶囊）、一行灰字
+//   （已停止 · 思考强度 · token · 模型）与一排 14dp 图标按钮（复制、另存为
+//   日记、重新生成（只在最后一个回答）、删除）。
 
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/ai/ai_models.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/ai_chat_controller.dart';
+import '../controllers/ai_chat_links.dart';
 import '../models/ai_agent_steps.dart';
-import '../tools/ai_tool.dart';
-import '../viewmodels/ai_citations.dart';
+import '../models/ai_built_ins.dart';
+import '../models/ai_tool_subject.dart';
+import '../viewmodels/ai_answer_segments.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../widgets/ai_error_view.dart';
-import '../widgets/ai_markdown_view.dart';
-import 'ai_agent_steps_view.dart';
+import '../widgets/ai_view_state.dart';
+import 'chat/ai_answer_actions.dart';
+import 'chat/ai_answer_segments_view.dart';
+import 'chat/ai_subject_chips.dart';
 
 class AiChatMessageView extends StatelessWidget {
   const AiChatMessageView({
     super.key,
     required this.message,
+    required this.persona,
     required this.showReasoning,
     required this.showTokens,
-    required this.onCitation,
+    required this.actions,
     required this.onCopy,
     required this.onSaveAsDiary,
-    required this.onOpenPage,
-    this.onUndoCalls,
     this.onEdit,
     this.onRegenerate,
     this.onDelete,
   });
 
   final AiMessageRow message;
+  final AiPersonaInfo persona;
   final bool showReasoning;
   final bool showTokens;
-
-  /// 点了引用胶囊：这条回答的引用与被点的编号。
-  final void Function(List<AiCitation> citations, String ref) onCitation;
+  final AiAnswerActions actions;
   final ValueChanged<String> onCopy;
   final ValueChanged<String> onSaveAsDiary;
-
-  /// 点了步骤里的“前往”按钮。
-  final ValueChanged<AiToolNavigation> onOpenPage;
-
-  /// 撤销这条回答里 AI 做过的改动（null 为全部）；生成中为 null。
-  final void Function(Set<String>? callIds)? onUndoCalls;
   final VoidCallback? onEdit;
   final VoidCallback? onRegenerate;
   final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return message.role == AiMessageRole.user
-        ? _buildQuestion(context)
-        : _buildAnswer(context);
+    if (message.role == AiMessageRole.user) {
+      return AiQuestionBubble(text: message.content, onEdit: onEdit);
+    }
+    final meta = _AnswerMeta.decode(message.meta);
+    final segments = buildAiAnswerSegments(
+      steps: AiAgentStepRecord.decodeList(message.steps),
+      reasoning: message.reasoning,
+      text: message.content,
+      showReasoning: showReasoning,
+      thinkingMs: meta.thinkingMs ?? 0,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          AiAnswerHeader(persona: persona),
+          const SizedBox(height: 10),
+          if (segments.isNotEmpty)
+            AiAnswerSegmentsView(
+              keyPrefix: message.messageId,
+              segments: segments,
+              actions: actions,
+            ),
+          _AnswerFooter(
+            message: message,
+            meta: meta,
+            showTokens: showTokens,
+            actions: actions,
+            onCopy: onCopy,
+            onSaveAsDiary: onSaveAsDiary,
+            onRegenerate: onRegenerate,
+            onDelete: onDelete,
+          ),
+        ],
+      ),
+    );
   }
+}
 
-  Widget _buildQuestion(BuildContext context) {
+/// 问题气泡。
+class AiQuestionBubble extends StatelessWidget {
+  const AiQuestionBubble({super.key, required this.text, this.onEdit});
+
+  final String text;
+  final VoidCallback? onEdit;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    const radius = BorderRadius.only(
+      topLeft: Radius.circular(20),
+      topRight: Radius.circular(20),
+      bottomLeft: Radius.circular(20),
+      bottomRight: Radius.circular(6),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -95,25 +141,22 @@ class AiChatMessageView extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: colors.primaryContainer,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(6),
-                  ),
+                  borderRadius: radius,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  child: SelectableText(
-                    message.content,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colors.onPrimaryContainer,
-                      height: 1.5,
+                // 长按选字，菜单与回答正文同一套（复制、全选、分享）。
+                child: AppSelectionArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
                     ),
-                    contextMenuBuilder: appTextContextMenuBuilder,
+                    child: Text(
+                      text,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colors.onPrimaryContainer,
+                        height: 1.5,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -123,25 +166,87 @@ class AiChatMessageView extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildAnswer(BuildContext context) {
+/// 回答的头部：人设头像与名称。
+class AiAnswerHeader extends StatelessWidget {
+  const AiAnswerHeader({super.key, required this.persona});
+
+  final AiPersonaInfo persona;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Row(
+      children: <Widget>[
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.secondaryContainer,
+            shape: BoxShape.circle,
+          ),
+          child: SizedBox.square(
+            dimension: 26,
+            child: Center(
+              child: Text(persona.emoji, style: const TextStyle(fontSize: 14)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            persona.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AnswerFooter extends StatelessWidget {
+  const _AnswerFooter({
+    required this.message,
+    required this.meta,
+    required this.showTokens,
+    required this.actions,
+    required this.onCopy,
+    required this.onSaveAsDiary,
+    this.onRegenerate,
+    this.onDelete,
+  });
+
+  final AiMessageRow message;
+  final _AnswerMeta meta;
+  final bool showTokens;
+  final AiAnswerActions actions;
+  final ValueChanged<String> onCopy;
+  final ValueChanged<String> onSaveAsDiary;
+  final VoidCallback? onRegenerate;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final citations = AiCitation.decodeList(message.citations);
     final error = aiMessageError(message);
-    final meta = _AnswerMeta.decode(message.meta);
-    final steps = AiAgentStepRecord.decodeList(message.steps);
+    final hasText = message.content.trim().isNotEmpty;
     final endNote = switch (meta.agentEnd) {
       'stepsExhausted' => l10n.aiAgentStepsExhausted,
       'incomplete' => l10n.aiAgentIncomplete,
       _ => null,
     };
-    final metaStyle = theme.textTheme.labelSmall?.copyWith(
-      color: colors.onSurfaceVariant,
-    );
     final footer = <String>[
       if (message.status == AiMessageStatus.stopped) l10n.aiChatStoppedLabel,
+      if (meta.thinking case final level?)
+        l10n.aiChatMetaThinking(aiThinkingLevelLabel(l10n, level)),
       if (showTokens && meta.input != null && meta.output != null)
         l10n.aiChatTokens(
           aiCompactCount(meta.input!),
@@ -149,156 +254,106 @@ class AiChatMessageView extends StatelessWidget {
         ),
       ?meta.model,
     ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          if (steps.isNotEmpty)
-            AiAgentStepsView(
-              steps: steps,
-              live: false,
-              showReasoning: showReasoning,
-              onCitation: (ref) => onCitation(citations, ref),
-              onOpen: onOpenPage,
-              onUndo: onUndoCalls,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (endNote != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              endNote,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
             ),
-          if (message.content.trim().isNotEmpty ||
-              (showReasoning && message.reasoning.trim().isNotEmpty))
-            AiChatAnswerBody(
-              text: message.content,
-              reasoning: showReasoning ? message.reasoning : '',
-              onCitation: (ref) => onCitation(citations, ref),
+          ),
+        if (error != null) ...<Widget>[
+          const SizedBox(height: 8),
+          AiErrorView(error: error, onRetry: onRegenerate),
+        ],
+        if (message.status != AiMessageStatus.error || hasText) ...<Widget>[
+          if (meta.contextEntries != null)
+            _CitationList(
+              citations: citations,
+              contextEntries: meta.contextEntries!,
+              onOpen: actions.onOpenSubject,
+              storageId: '${message.messageId}:citations',
             ),
-          if (endNote != null)
+          if (footer.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                endNote,
-                style: theme.textTheme.bodySmall?.copyWith(
+                footer.join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
                   color: colors.onSurfaceVariant,
                 ),
               ),
             ),
-          if (error != null) ...<Widget>[
-            const SizedBox(height: 8),
-            AiErrorView(error: error, onRetry: onRegenerate),
-          ],
-          if (message.status != AiMessageStatus.error ||
-              message.content.trim().isNotEmpty) ...<Widget>[
-            if (meta.contextEntries != null)
-              _CitationList(
-                citations: citations,
-                contextEntries: meta.contextEntries!,
-                onOpen: (ref) => onCitation(citations, ref),
-              ),
-            if (footer.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  footer.join(' · '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: metaStyle,
+          Wrap(
+            children: <Widget>[
+              if (hasText) ...<Widget>[
+                _ActionIcon(
+                  icon: FontAwesomeIcons.copy,
+                  tooltip: l10n.aiPanelCopy,
+                  onPressed: () => onCopy(message.content),
                 ),
-              ),
-            Wrap(
-              spacing: 0,
-              children: <Widget>[
-                if (message.content.trim().isNotEmpty) ...<Widget>[
-                  _ActionIcon(
-                    icon: FontAwesomeIcons.copy,
-                    tooltip: l10n.aiPanelCopy,
-                    onPressed: () => onCopy(message.content),
-                  ),
-                  _ActionIcon(
-                    icon: FontAwesomeIcons.filePen,
-                    tooltip: l10n.aiRecapSaveAsDiary,
-                    onPressed: () => onSaveAsDiary(message.content),
-                  ),
-                ],
-                if (onRegenerate != null && error == null)
-                  _ActionIcon(
-                    icon: FontAwesomeIcons.rotateRight,
-                    tooltip: l10n.aiReplyRegenerate,
-                    onPressed: onRegenerate!,
-                  ),
-                if (onDelete != null)
-                  _ActionIcon(
-                    icon: FontAwesomeIcons.trashCan,
-                    tooltip: l10n.aiChatDeleteMessage,
-                    onPressed: onDelete!,
-                  ),
+                _ActionIcon(
+                  icon: FontAwesomeIcons.filePen,
+                  tooltip: l10n.aiRecapSaveAsDiary,
+                  onPressed: () => onSaveAsDiary(message.content),
+                ),
               ],
+              if (onRegenerate != null && error == null)
+                _ActionIcon(
+                  icon: FontAwesomeIcons.rotateRight,
+                  tooltip: l10n.aiReplyRegenerate,
+                  onPressed: onRegenerate!,
+                ),
+              if (onDelete != null)
+                _ActionIcon(
+                  icon: FontAwesomeIcons.trashCan,
+                  tooltip: l10n.aiChatDeleteMessage,
+                  onPressed: onDelete!,
+                ),
+            ],
+          ),
+        ] else if (onDelete != null)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: _ActionIcon(
+              icon: FontAwesomeIcons.trashCan,
+              tooltip: l10n.aiChatDeleteMessage,
+              onPressed: onDelete!,
             ),
-          ] else if (onDelete != null)
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: _ActionIcon(
-                icon: FontAwesomeIcons.trashCan,
-                tooltip: l10n.aiChatDeleteMessage,
-                onPressed: onDelete!,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 回答的正文：可折叠的思考过程 + Markdown（流式生成中与落库后共用）。
-class AiChatAnswerBody extends StatelessWidget {
-  const AiChatAnswerBody({
-    super.key,
-    required this.text,
-    required this.reasoning,
-    required this.onCitation,
-  });
-
-  final String text;
-  final String reasoning;
-  final ValueChanged<String> onCitation;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        if (reasoning.trim().isNotEmpty) ...<Widget>[
-          AiReasoningFold(reasoning: reasoning),
-          const SizedBox(height: 6),
-        ],
-        if (text.trim().isNotEmpty)
-          AiMarkdownView(
-            markdown: aiNormalizeCitations(text),
-            onCitation: onCitation,
-            bodyStyle: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
           ),
       ],
     );
   }
 }
 
-/// “参考了 N 篇日记”：点按展开被引用的日记（标题或日期），点一篇打开。
-/// 放进上下文但没被引用的不列出；一篇都没找到时说“没有找到相关的日记”。
+/// “参考了 N 篇日记”：点按展开被引用的日记胶囊（点一篇打开）；放进上下文
+/// 但没被引用的不列出；一篇都没找到时说“没有找到相关的日记”。
 class _CitationList extends StatefulWidget {
   const _CitationList({
     required this.citations,
     required this.contextEntries,
     required this.onOpen,
+    required this.storageId,
   });
 
   final List<AiCitation> citations;
   final int contextEntries;
-  final ValueChanged<String> onOpen;
+  final ValueChanged<AiToolSubject> onOpen;
+  final String storageId;
 
   @override
   State<_CitationList> createState() => _CitationListState();
 }
 
 class _CitationListState extends State<_CitationList> {
-  bool _expanded = false;
+  late bool _expanded = aiReadExpanded(context, widget.storageId);
 
   @override
   Widget build(BuildContext context) {
@@ -310,14 +365,13 @@ class _CitationListState extends State<_CitationList> {
     );
     if (widget.contextEntries == 0) {
       return Padding(
-        padding: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.only(top: 10),
         child: Text(l10n.aiChatNoCitations, style: style),
       );
     }
     final cited = widget.citations;
-    final format = DateFormat.yMMMd(l10n.localeName);
     return Padding(
-      padding: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -325,7 +379,10 @@ class _CitationListState extends State<_CitationList> {
             borderRadius: BorderRadius.circular(8),
             onTap: cited.isEmpty
                 ? null
-                : () => setState(() => _expanded = !_expanded),
+                : () {
+                    setState(() => _expanded = !_expanded);
+                    aiWriteExpanded(context, widget.storageId, _expanded);
+                  },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
@@ -343,12 +400,17 @@ class _CitationListState extends State<_CitationList> {
                   ),
                   if (cited.isNotEmpty) ...<Widget>[
                     const SizedBox(width: 4),
-                    FaIcon(
-                      _expanded
-                          ? FontAwesomeIcons.angleUp
-                          : FontAwesomeIcons.angleDown,
-                      size: 10,
-                      color: colors.onSurfaceVariant,
+                    AnimatedRotation(
+                      turns: _expanded ? 0.5 : 0,
+                      duration: ExpressiveMotion.duration(
+                        context,
+                        ExpressiveMotion.fast,
+                      ),
+                      child: FaIcon(
+                        FontAwesomeIcons.angleDown,
+                        size: 10,
+                        color: colors.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ],
@@ -356,7 +418,7 @@ class _CitationListState extends State<_CitationList> {
             ),
           ),
           AnimatedSize(
-            duration: ExpressiveMotion.duration(
+            duration: ExpressiveMotion.durationNonZero(
               context,
               ExpressiveMotion.medium,
             ),
@@ -364,53 +426,16 @@ class _CitationListState extends State<_CitationList> {
             alignment: Alignment.topLeft,
             child: !_expanded
                 ? const SizedBox(width: double.infinity)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      for (final citation in cited)
-                        InkWell(
-                          borderRadius: BorderRadius.circular(8),
-                          onTap: () => widget.onOpen(citation.ref),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              children: <Widget>[
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: colors.primaryContainer,
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 1,
-                                    ),
-                                    child: Text(
-                                      citation.ref.substring(1),
-                                      style: theme.textTheme.labelSmall
-                                          ?.copyWith(
-                                            color: colors.onPrimaryContainer,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    citation.title.trim().isEmpty
-                                        ? format.format(citation.date)
-                                        : '${citation.title.trim()} · '
-                                              '${format.format(citation.date)}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
+                : Padding(
+                    padding: const EdgeInsets.only(top: 6, bottom: 2),
+                    child: AiSubjectChips(
+                      max: 12,
+                      subjects: [
+                        for (final citation in cited)
+                          aiCitationSubject(citation),
+                      ],
+                      onOpen: widget.onOpen,
+                    ),
                   ),
           ),
         ],
@@ -453,6 +478,8 @@ class _AnswerMeta {
     this.model,
     this.contextEntries,
     this.agentEnd,
+    this.thinking,
+    this.thinkingMs,
   });
 
   factory _AnswerMeta.decode(String raw) {
@@ -469,6 +496,8 @@ class _AnswerMeta {
           agentEnd: json['agentEnd'] is String
               ? json['agentEnd'] as String
               : null,
+          thinking: AiThinkingLevel.parse(json['thinking']),
+          thinkingMs: number('thinkingMs'),
         );
       }
     } on FormatException {
@@ -486,4 +515,8 @@ class _AnswerMeta {
 
   /// 智能体没有正常作答的原因（步数用完 / 响应被截断）。
   final String? agentEnd;
+
+  /// 这一轮用的思考强度（自动时不记）与最后一段的思考时长。
+  final AiThinkingLevel? thinking;
+  final int? thinkingMs;
 }

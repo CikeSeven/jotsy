@@ -16244,10 +16244,6 @@
   "@aiAgentUndo": {
     "description": "Undo one change the AI made."
   },
-  "aiAgentUndoAll": "Undo all changes in this reply",
-  "@aiAgentUndoAll": {
-    "description": "Undo every change the AI made in this reply."
-  },
   "aiAgentStepUndone": "Undone",
   "@aiAgentStepUndone": {
     "description": "The AI step was undone."
@@ -16305,15 +16301,6 @@
   "aiDestinationSearch": "Search entries",
   "@aiDestinationSearch": {
     "description": "AI open-page target: the search page."
-  },
-  "aiAgentStepsSummary": "{count, plural, =1{Used 1 tool} other{Used {count} tools}}",
-  "@aiAgentStepsSummary": {
-    "description": "Title of a collapsed group of AI steps.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "aiAgentPreparing": "Preparing a step…",
   "@aiAgentPreparing": {
@@ -17775,14 +17762,6 @@
       }
     }
   },
-  "aiHubTitle": "AI assistant",
-  "@aiHubTitle": {
-    "description": "Title of the AI hub page."
-  },
-  "aiHubAskHint": "Ask your diary…",
-  "@aiHubAskHint": {
-    "description": "Hint of the hub question field."
-  },
   "aiHubQuickMonth": "How has this month been for me?",
   "@aiHubQuickMonth": {
     "description": "Quick question."
@@ -17803,25 +17782,9 @@
   "@aiHubQuickGrowth": {
     "description": "Quick question."
   },
-  "aiHubRecapsGroup": "Recaps",
-  "@aiHubRecapsGroup": {
-    "description": "Hub recaps group."
-  },
   "aiHubRecapMore": "More options…",
   "@aiHubRecapMore": {
     "description": "Opens the recap page."
-  },
-  "aiHubNoRecaps": "No recaps yet",
-  "@aiHubNoRecaps": {
-    "description": "Shown when there are no recaps."
-  },
-  "aiHubChatsGroup": "Chats",
-  "@aiHubChatsGroup": {
-    "description": "Hub chats group."
-  },
-  "aiHubNoChats": "No chats yet. Ask a question above to start.",
-  "@aiHubNoChats": {
-    "description": "Shown when there are no chats."
   },
   "aiHubSearchChats": "Search chats",
   "@aiHubSearchChats": {
@@ -17933,10 +17896,6 @@
   "aiChatCitationMissing": "This entry no longer exists",
   "@aiChatCitationMissing": {
     "description": "Shown for a missing cited entry."
-  },
-  "aiChatEmptyHint": "Ask about your mood over a period, how something unfolded, or let AI help you remember.",
-  "@aiChatEmptyHint": {
-    "description": "Empty chat hint."
   },
   "aiChatAboutEntry": "About “{title}”",
   "@aiChatAboutEntry": {
@@ -18051,14 +18010,6 @@
   "aiChatScopeAutoSubtitle": "Follows the search method in AI settings",
   "@aiChatScopeAutoSubtitle": {
     "description": "Subtitle of the auto scope."
-  },
-  "aiHubOpenSettings": "AI settings",
-  "@aiHubOpenSettings": {
-    "description": "Tooltip of the settings button on the AI hub."
-  },
-  "aiHubSend": "Ask",
-  "@aiHubSend": {
-    "description": "Tooltip of the hub ask button."
   },
   "aiSettingsOpenHub": "Open AI assistant",
   "@aiSettingsOpenHub": {
@@ -19274,5 +19225,465 @@
   "todoSettingsSmartParse": "Smart recognition",
   "@todoSettingsSmartParse": {"description": "To-do settings switch: recognize dates, lists and priority while typing."},
   "todoSettingsSmartParseSubtitle": "Turn “tomorrow 3pm #Work !!!” into a date, list and priority",
-  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."}
+  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."},
+  "aiToolOpenPageAny": "Open a page",
+  "@aiToolOpenPageAny": {
+    "description": "Card title while the AI is preparing an open-page call and the target is unknown."
+  },
+  "aiToolOpensAfterReply": "Opens after the reply",
+  "@aiToolOpensAfterReply": {
+    "description": "Note on an open-page card: it opens automatically after the reply."
+  },
+  "aiListSeparator": ", ",
+  "@aiListSeparator": {
+    "description": "Separator between names in AI cards."
+  },
+  "aiToolNamesAndMore": "{names} and more ({count} in all)",
+  "@aiToolNamesAndMore": {
+    "description": "Too many names: the first few plus the total.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgRange": "{from} – {to}",
+  "@aiToolArgRange": {
+    "description": "Date range in tool details.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgSince": "From {date}",
+  "@aiToolArgSince": {
+    "description": "Open-ended date range with only a start.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgUntil": "Until {date}",
+  "@aiToolArgUntil": {
+    "description": "Open-ended date range with only an end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgYes": "Yes",
+  "@aiToolArgYes": {
+    "description": "A true flag in tool details."
+  },
+  "aiToolArgNo": "No",
+  "@aiToolArgNo": {
+    "description": "A false flag in tool details."
+  },
+  "aiToolArgMinutes": "{minutes, plural, =1{1 minute} other{{minutes} minutes}}",
+  "@aiToolArgMinutes": {
+    "description": "Minutes in tool details (remind before).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} other{}}",
+  "@aiToolArgName": {
+    "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgValue": "{value, select, sort_relevant{Most relevant} sort_newest{Newest first} sort_oldest{Oldest first} group_by_none{No grouping} group_by_day{By day} group_by_week{By week} group_by_month{By month} group_by_year{By year} status_open{Open} status_completed{Completed} status_all{All} priority_none{None} priority_low{Low} priority_medium{Medium} priority_high{High} repeat_once{Once} repeat_yearly{Every year} repeat_lunar_yearly{Every year (lunar)} mood_awful{Awful} mood_bad{Bad} mood_meh{Meh} mood_good{Good} mood_great{Great} mood_clear{Clear} mode_light{Light} mode_dark{Dark} mode_system{Follow system} other{}}",
+  "@aiToolArgValue": {
+    "description": "Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebookNamed": "{count, plural, =1{Put 1 entry in “{name}”} other{Put {count} entries in “{name}”}}",
+  "@aiToolAddToNotebookNamed": {
+    "description": "The agent puts entries in a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebookNamed": "{count, plural, =1{Take 1 entry out of “{name}”} other{Take {count} entries out of “{name}”}}",
+  "@aiToolRemoveFromNotebookNamed": {
+    "description": "The agent takes entries out of a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatReturnHint": "Press back to return to the chat",
+  "@aiChatReturnHint": {
+    "description": "Snackbar after an AI card took the user to the home screen: back returns to the chat."
+  },
+  "aiChatReturnAction": "Back to chat",
+  "@aiChatReturnAction": {
+    "description": "Snackbar button that reopens the chat."
+  },
+  "aiProcessThoughtFor": "{seconds, plural, =1{Thought for 1 second} other{Thought for {seconds} seconds}}",
+  "@aiProcessThoughtFor": {
+    "description": "Summary of the folded process: how long the model thought.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThinkingFor": "{seconds, plural, =1{Thinking · 1 second} other{Thinking · {seconds} seconds}}",
+  "@aiProcessThinkingFor": {
+    "description": "Live process fold: still thinking, seconds so far.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThought": "Thought it through",
+  "@aiProcessThought": {
+    "description": "Fold summary when there was thinking but no timing (older records)."
+  },
+  "aiProcessTools": "{count, plural, =1{Used 1 tool} other{Used {count} tools}}",
+  "@aiProcessTools": {
+    "description": "Fold summary: number of tool calls.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessFailed": "{count, plural, =1{1 failed} other{{count} failed}}",
+  "@aiProcessFailed": {
+    "description": "Fold summary: failed calls (in error color).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessSteps": "Show the steps",
+  "@aiProcessSteps": {
+    "description": "Fold summary when it only holds in-between remarks."
+  },
+  "aiToolDetailsInputs": "Inputs",
+  "@aiToolDetailsInputs": {
+    "description": "Tool details: heading of the parameters."
+  },
+  "aiToolDetailsResult": "Result",
+  "@aiToolDetailsResult": {
+    "description": "Tool details: heading of the result."
+  },
+  "aiToolDetailsFailed": "This step did not work",
+  "@aiToolDetailsFailed": {
+    "description": "Tool details: failure without its own explanation."
+  },
+  "aiToolDetailsTechnical": "Technical details",
+  "@aiToolDetailsTechnical": {
+    "description": "Tool details: expandable raw error."
+  },
+  "aiCardEntries": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@aiCardEntries": {
+    "description": "Open-page card: number of entries in the notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiCardTodoDue": "Due {date}",
+  "@aiCardTodoDue": {
+    "description": "Open-page card: due date of the to-do.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardTodoDone": "Done",
+  "@aiCardTodoDone": {
+    "description": "Open-page card: the to-do is done."
+  },
+  "aiCardSearchFor": "Search “{query}”",
+  "@aiCardSearchFor": {
+    "description": "Open-page card: search with keywords.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardSectionHome": "Home",
+  "@aiCardSectionHome": {
+    "description": "Open-page card subtitle: a tab of the home screen."
+  },
+  "aiCardMissing": "No longer exists",
+  "@aiCardMissing": {
+    "description": "Open-page card: the target was deleted."
+  },
+  "aiCardFeatureOff": "Feature turned off",
+  "@aiCardFeatureOff": {
+    "description": "Open-page card: the feature of the target is off."
+  },
+  "aiChangeGroupTitle": "{count, plural, =1{Made 1 change} other{Made {count} changes}}",
+  "@aiChangeGroupTitle": {
+    "description": "Header of the change card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChangeUndoAll": "Undo all",
+  "@aiChangeUndoAll": {
+    "description": "Button in the change card header."
+  },
+  "aiChatNewChat": "New chat",
+  "@aiChatNewChat": {
+    "description": "New chat button."
+  },
+  "aiChatHistory": "Chats",
+  "@aiChatHistory": {
+    "description": "Title of the history drawer and its button."
+  },
+  "aiChatHistoryEmpty": "No chats yet",
+  "@aiChatHistoryEmpty": {
+    "description": "History drawer is empty."
+  },
+  "aiChatHistoryNoMatch": "No matching chats",
+  "@aiChatHistoryNoMatch": {
+    "description": "History search found nothing."
+  },
+  "aiChatGroupPinned": "Pinned",
+  "@aiChatGroupPinned": {
+    "description": "History group: pinned."
+  },
+  "aiChatGroupToday": "Today",
+  "@aiChatGroupToday": {
+    "description": "History group: today."
+  },
+  "aiChatGroupYesterday": "Yesterday",
+  "@aiChatGroupYesterday": {
+    "description": "History group: yesterday."
+  },
+  "aiChatGroupWeek": "Previous 7 days",
+  "@aiChatGroupWeek": {
+    "description": "History group: previous 7 days."
+  },
+  "aiChatGroupMonth": "Previous 30 days",
+  "@aiChatGroupMonth": {
+    "description": "History group: previous 30 days."
+  },
+  "aiChatWelcomeTitle": "What would you like to talk about?",
+  "@aiChatWelcomeTitle": {
+    "description": "Greeting on the welcome screen."
+  },
+  "aiChatWelcomeAgent": "Ask about your diary, or let me organize entries, add to-dos and open pages for you.",
+  "@aiChatWelcomeAgent": {
+    "description": "Welcome note when the agent is on."
+  },
+  "aiChatWelcomeRetrieval": "Ask about your diary — I find the related entries first, then answer.",
+  "@aiChatWelcomeRetrieval": {
+    "description": "Welcome note for search-based answers."
+  },
+  "aiChatWelcomeRecaps": "Recaps",
+  "@aiChatWelcomeRecaps": {
+    "description": "Recaps section on the welcome screen."
+  },
+  "aiChatWelcomeRecent": "Recent chats",
+  "@aiChatWelcomeRecent": {
+    "description": "Recent chats section on the welcome screen."
+  },
+  "aiChatWelcomeAllChats": "All chats",
+  "@aiChatWelcomeAllChats": {
+    "description": "Welcome screen: open the history drawer."
+  },
+  "aiChatModelSheetTitle": "Model and thinking",
+  "@aiChatModelSheetTitle": {
+    "description": "Title of the model and thinking sheet."
+  },
+  "aiChatThinking": "Thinking",
+  "@aiChatThinking": {
+    "description": "Thinking level section in the sheet."
+  },
+  "aiThinkingAuto": "Auto",
+  "@aiThinkingAuto": {
+    "description": "Thinking level: auto."
+  },
+  "aiThinkingOff": "Off",
+  "@aiThinkingOff": {
+    "description": "Thinking level: off."
+  },
+  "aiThinkingLow": "Low",
+  "@aiThinkingLow": {
+    "description": "Thinking level: low."
+  },
+  "aiThinkingMedium": "Medium",
+  "@aiThinkingMedium": {
+    "description": "Thinking level: medium."
+  },
+  "aiThinkingHigh": "High",
+  "@aiThinkingHigh": {
+    "description": "Thinking level: high."
+  },
+  "aiThinkingAutoHint": "The model decides whether and how long to think",
+  "@aiThinkingAutoHint": {
+    "description": "Explains the auto thinking level."
+  },
+  "aiThinkingOffHint": "No thinking, answers right away — fastest",
+  "@aiThinkingOffHint": {
+    "description": "Explains the off thinking level."
+  },
+  "aiThinkingLowHint": "A quick think, good for everyday questions",
+  "@aiThinkingLowHint": {
+    "description": "Explains the low thinking level."
+  },
+  "aiThinkingMediumHint": "A balance that suits most questions",
+  "@aiThinkingMediumHint": {
+    "description": "Explains the medium thinking level."
+  },
+  "aiThinkingHighHint": "Careful and thorough, for organizing, recaps and complex changes — slowest",
+  "@aiThinkingHighHint": {
+    "description": "Explains the high thinking level."
+  },
+  "aiThinkingDisabled": "Thinking is turned off for this model in its settings",
+  "@aiThinkingDisabled": {
+    "description": "Shown when the chosen model has thinking turned off."
+  },
+  "aiChatMetaThinking": "Thinking: {level}",
+  "@aiChatMetaThinking": {
+    "description": "Answer footer: the thinking level of this reply.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatOpenSettings": "AI settings",
+  "@aiChatOpenSettings": {
+    "description": "Chat menu and history drawer: open the AI settings."
+  },
+  "aiChatExport": "Export chat",
+  "@aiChatExport": {
+    "description": "Chat menu item and export page title."
+  },
+  "aiChatExportFormat": "Format",
+  "@aiChatExportFormat": {
+    "description": "Export page: format section."
+  },
+  "aiChatExportMarkdown": "Markdown",
+  "@aiChatExportMarkdown": {
+    "description": "Export format: Markdown."
+  },
+  "aiChatExportPlain": "Plain text",
+  "@aiChatExportPlain": {
+    "description": "Export format: plain text."
+  },
+  "aiChatExportInclude": "Include",
+  "@aiChatExportInclude": {
+    "description": "Export page: what to include."
+  },
+  "aiChatExportReasoning": "Thinking",
+  "@aiChatExportReasoning": {
+    "description": "Export option and heading: the thinking process."
+  },
+  "aiChatExportSteps": "Steps and actions",
+  "@aiChatExportSteps": {
+    "description": "Export option and heading: tool calls and actions."
+  },
+  "aiChatExportMessages": "Choose messages",
+  "@aiChatExportMessages": {
+    "description": "Export page: heading of the message list."
+  },
+  "aiChatExportSelected": "{count} of {total} selected",
+  "@aiChatExportSelected": {
+    "description": "Export page: how many messages are selected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportYou": "You",
+  "@aiChatExportYou": {
+    "description": "Name for the user's messages in exports."
+  },
+  "aiChatExportSave": "Save to file",
+  "@aiChatExportSave": {
+    "description": "Export page: save to a file."
+  },
+  "aiChatExportSaved": "Chat exported",
+  "@aiChatExportSaved": {
+    "description": "Shown after the export file is saved."
+  },
+  "aiChatExportFailed": "Couldn't export the chat",
+  "@aiChatExportFailed": {
+    "description": "Shown when exporting fails."
+  },
+  "aiChatExportAt": "{count, plural, =1{Exported {time} · 1 message} other{Exported {time} · {count} messages}}",
+  "@aiChatExportAt": {
+    "description": "The line under the title of an export.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportReferences": "Entries referenced",
+  "@aiChatExportReferences": {
+    "description": "Heading for the entries an answer cited."
+  },
+  "aiChatExportError": "Error: {reason}",
+  "@aiChatExportError": {
+    "description": "Export: an answer that failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportSubjects": ": {names}",
+  "@aiChatExportSubjects": {
+    "description": "Export: the entries or items an action touched, at the end of the line.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportJson": "JSON",
+  "@aiChatExportJson": {
+    "description": "Export format: JSON (structured, for programs)."
+  }
 }

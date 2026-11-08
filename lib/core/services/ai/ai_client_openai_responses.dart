@@ -39,13 +39,21 @@ class OpenAiResponsesClient extends AiChatClient {
       'input': [for (final message in request.messages) ..._input(message)],
       'stream': stream,
       'store': false,
+      // 推理模型不接受温度：请求思考或指定了强度（含“关”，只有推理模型
+      // 才有这个参数）时都不发。
       if (config.sendTemperature &&
           request.temperature != null &&
-          !request.reasoning)
+          !request.reasoning &&
+          request.thinking == null)
         'temperature': request.temperature,
       if (request.maxOutputTokens != null)
         'max_output_tokens': request.maxOutputTokens,
-      if (request.reasoning) 'reasoning': <String, Object?>{'summary': 'auto'},
+      if (request.reasoning || request.thinking != null)
+        'reasoning': <String, Object?>{
+          if (request.thinking case final level?)
+            'effort': level == AiThinkingLevel.off ? 'none' : level.name,
+          if (request.reasoning) 'summary': 'auto',
+        },
       // `store: false` 时推理条目只能靠加密内容带回下一步；只在带工具的
       // 请求里要，普通请求用不上。
       if (request.reasoning && request.hasTools)

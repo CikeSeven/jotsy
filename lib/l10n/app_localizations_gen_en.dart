@@ -13218,9 +13218,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiAgentUndo => 'Undo';
 
   @override
-  String get aiAgentUndoAll => 'Undo all changes in this reply';
-
-  @override
   String get aiAgentStepUndone => 'Undone';
 
   @override
@@ -13268,17 +13265,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiDestinationSearch => 'Search entries';
-
-  @override
-  String aiAgentStepsSummary(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Used $count tools',
-      one: 'Used 1 tool',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get aiAgentPreparing => 'Preparing a step…';
@@ -14394,12 +14380,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get aiHubTitle => 'AI assistant';
-
-  @override
-  String get aiHubAskHint => 'Ask your diary…';
-
-  @override
   String get aiHubQuickMonth => 'How has this month been for me?';
 
   @override
@@ -14415,19 +14395,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiHubQuickGrowth => 'How have I changed over the past half year?';
 
   @override
-  String get aiHubRecapsGroup => 'Recaps';
-
-  @override
   String get aiHubRecapMore => 'More options…';
-
-  @override
-  String get aiHubNoRecaps => 'No recaps yet';
-
-  @override
-  String get aiHubChatsGroup => 'Chats';
-
-  @override
-  String get aiHubNoChats => 'No chats yet. Ask a question above to start.';
 
   @override
   String get aiHubSearchChats => 'Search chats';
@@ -14514,10 +14482,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiChatCitationMissing => 'This entry no longer exists';
 
   @override
-  String get aiChatEmptyHint =>
-      'Ask about your mood over a period, how something unfolded, or let AI help you remember.';
-
-  @override
   String aiChatAboutEntry(String title) {
     return 'About “$title”';
   }
@@ -14597,12 +14561,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiChatScopeAutoSubtitle =>
       'Follows the search method in AI settings';
-
-  @override
-  String get aiHubOpenSettings => 'AI settings';
-
-  @override
-  String get aiHubSend => 'Ask';
 
   @override
   String get aiSettingsOpenHub => 'Open AI assistant';
@@ -16855,4 +16813,438 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get todoSettingsSmartParseSubtitle =>
       'Turn “tomorrow 3pm #Work !!!” into a date, list and priority';
+
+  @override
+  String get aiToolOpenPageAny => 'Open a page';
+
+  @override
+  String get aiToolOpensAfterReply => 'Opens after the reply';
+
+  @override
+  String get aiListSeparator => ', ';
+
+  @override
+  String aiToolNamesAndMore(String names, int count) {
+    return '$names and more ($count in all)';
+  }
+
+  @override
+  String aiToolArgRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String aiToolArgSince(String date) {
+    return 'From $date';
+  }
+
+  @override
+  String aiToolArgUntil(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String get aiToolArgYes => 'Yes';
+
+  @override
+  String get aiToolArgNo => 'No';
+
+  @override
+  String aiToolArgMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgName(String key) {
+    String _temp0 = intl.Intl.selectLogic(key, {
+      'arg_date_range': 'Dates',
+      'arg_due_range': 'Due',
+      'arg_merge_from': 'Tags merged',
+      'arg_query': 'Keywords',
+      'arg_tags': 'Tags',
+      'arg_mood': 'Mood',
+      'arg_include_archived': 'Include archived',
+      'arg_sort': 'Order',
+      'arg_limit': 'At most',
+      'arg_group_by': 'Group by',
+      'arg_date': 'Date',
+      'arg_time': 'Time',
+      'arg_title': 'Title',
+      'arg_name': 'Name',
+      'arg_note': 'Note',
+      'arg_color': 'Color',
+      'arg_weather': 'Weather',
+      'arg_location': 'Place',
+      'arg_text': 'Text',
+      'arg_body': 'Body',
+      'arg_priority': 'Priority',
+      'arg_list': 'List',
+      'arg_status': 'Status',
+      'arg_scale': 'Text size',
+      'arg_repeat': 'Repeat',
+      'arg_remove': 'Tags removed',
+      'arg_add': 'Tags added',
+      'arg_remind_before_minutes': 'Remind before',
+      'arg_parent_id': 'Parent notebook',
+      'arg_offset': 'Start at character',
+      'arg_new_name': 'New name',
+      'arg_mode': 'Appearance',
+      'arg_language': 'Language',
+      'arg_into': 'Merge into',
+      'arg_feature': 'Feature',
+      'arg_enabled': 'On',
+      'arg_clear_due': 'Clear due date',
+      'arg_kind_diary': 'Entry',
+      'arg_kind_notebook': 'Notebook',
+      'arg_kind_tag': 'Tag',
+      'arg_kind_todo': 'To-do',
+      'arg_kind_anniversary': 'Anniversary',
+      'arg_kind_day': 'Day',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgValue(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'sort_relevant': 'Most relevant',
+      'sort_newest': 'Newest first',
+      'sort_oldest': 'Oldest first',
+      'group_by_none': 'No grouping',
+      'group_by_day': 'By day',
+      'group_by_week': 'By week',
+      'group_by_month': 'By month',
+      'group_by_year': 'By year',
+      'status_open': 'Open',
+      'status_completed': 'Completed',
+      'status_all': 'All',
+      'priority_none': 'None',
+      'priority_low': 'Low',
+      'priority_medium': 'Medium',
+      'priority_high': 'High',
+      'repeat_once': 'Once',
+      'repeat_yearly': 'Every year',
+      'repeat_lunar_yearly': 'Every year (lunar)',
+      'mood_awful': 'Awful',
+      'mood_bad': 'Bad',
+      'mood_meh': 'Meh',
+      'mood_good': 'Good',
+      'mood_great': 'Great',
+      'mood_clear': 'Clear',
+      'mode_light': 'Light',
+      'mode_dark': 'Dark',
+      'mode_system': 'Follow system',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolAddToNotebookNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Put $count entries in “$name”',
+      one: 'Put 1 entry in “$name”',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolRemoveFromNotebookNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Take $count entries out of “$name”',
+      one: 'Take 1 entry out of “$name”',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChatReturnHint => 'Press back to return to the chat';
+
+  @override
+  String get aiChatReturnAction => 'Back to chat';
+
+  @override
+  String aiProcessThoughtFor(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'Thought for $seconds seconds',
+      one: 'Thought for 1 second',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiProcessThinkingFor(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'Thinking · $seconds seconds',
+      one: 'Thinking · 1 second',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProcessThought => 'Thought it through';
+
+  @override
+  String aiProcessTools(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used $count tools',
+      one: 'Used 1 tool',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiProcessFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count failed',
+      one: '1 failed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProcessSteps => 'Show the steps';
+
+  @override
+  String get aiToolDetailsInputs => 'Inputs';
+
+  @override
+  String get aiToolDetailsResult => 'Result';
+
+  @override
+  String get aiToolDetailsFailed => 'This step did not work';
+
+  @override
+  String get aiToolDetailsTechnical => 'Technical details';
+
+  @override
+  String aiCardEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiCardTodoDue(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get aiCardTodoDone => 'Done';
+
+  @override
+  String aiCardSearchFor(String query) {
+    return 'Search “$query”';
+  }
+
+  @override
+  String get aiCardSectionHome => 'Home';
+
+  @override
+  String get aiCardMissing => 'No longer exists';
+
+  @override
+  String get aiCardFeatureOff => 'Feature turned off';
+
+  @override
+  String aiChangeGroupTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Made $count changes',
+      one: 'Made 1 change',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChangeUndoAll => 'Undo all';
+
+  @override
+  String get aiChatNewChat => 'New chat';
+
+  @override
+  String get aiChatHistory => 'Chats';
+
+  @override
+  String get aiChatHistoryEmpty => 'No chats yet';
+
+  @override
+  String get aiChatHistoryNoMatch => 'No matching chats';
+
+  @override
+  String get aiChatGroupPinned => 'Pinned';
+
+  @override
+  String get aiChatGroupToday => 'Today';
+
+  @override
+  String get aiChatGroupYesterday => 'Yesterday';
+
+  @override
+  String get aiChatGroupWeek => 'Previous 7 days';
+
+  @override
+  String get aiChatGroupMonth => 'Previous 30 days';
+
+  @override
+  String get aiChatWelcomeTitle => 'What would you like to talk about?';
+
+  @override
+  String get aiChatWelcomeAgent =>
+      'Ask about your diary, or let me organize entries, add to-dos and open pages for you.';
+
+  @override
+  String get aiChatWelcomeRetrieval =>
+      'Ask about your diary — I find the related entries first, then answer.';
+
+  @override
+  String get aiChatWelcomeRecaps => 'Recaps';
+
+  @override
+  String get aiChatWelcomeRecent => 'Recent chats';
+
+  @override
+  String get aiChatWelcomeAllChats => 'All chats';
+
+  @override
+  String get aiChatModelSheetTitle => 'Model and thinking';
+
+  @override
+  String get aiChatThinking => 'Thinking';
+
+  @override
+  String get aiThinkingAuto => 'Auto';
+
+  @override
+  String get aiThinkingOff => 'Off';
+
+  @override
+  String get aiThinkingLow => 'Low';
+
+  @override
+  String get aiThinkingMedium => 'Medium';
+
+  @override
+  String get aiThinkingHigh => 'High';
+
+  @override
+  String get aiThinkingAutoHint =>
+      'The model decides whether and how long to think';
+
+  @override
+  String get aiThinkingOffHint => 'No thinking, answers right away — fastest';
+
+  @override
+  String get aiThinkingLowHint => 'A quick think, good for everyday questions';
+
+  @override
+  String get aiThinkingMediumHint => 'A balance that suits most questions';
+
+  @override
+  String get aiThinkingHighHint =>
+      'Careful and thorough, for organizing, recaps and complex changes — slowest';
+
+  @override
+  String get aiThinkingDisabled =>
+      'Thinking is turned off for this model in its settings';
+
+  @override
+  String aiChatMetaThinking(String level) {
+    return 'Thinking: $level';
+  }
+
+  @override
+  String get aiChatOpenSettings => 'AI settings';
+
+  @override
+  String get aiChatExport => 'Export chat';
+
+  @override
+  String get aiChatExportFormat => 'Format';
+
+  @override
+  String get aiChatExportMarkdown => 'Markdown';
+
+  @override
+  String get aiChatExportPlain => 'Plain text';
+
+  @override
+  String get aiChatExportInclude => 'Include';
+
+  @override
+  String get aiChatExportReasoning => 'Thinking';
+
+  @override
+  String get aiChatExportSteps => 'Steps and actions';
+
+  @override
+  String get aiChatExportMessages => 'Choose messages';
+
+  @override
+  String aiChatExportSelected(int count, int total) {
+    return '$count of $total selected';
+  }
+
+  @override
+  String get aiChatExportYou => 'You';
+
+  @override
+  String get aiChatExportSave => 'Save to file';
+
+  @override
+  String get aiChatExportSaved => 'Chat exported';
+
+  @override
+  String get aiChatExportFailed => 'Couldn\'t export the chat';
+
+  @override
+  String aiChatExportAt(String time, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Exported $time · $count messages',
+      one: 'Exported $time · 1 message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChatExportReferences => 'Entries referenced';
+
+  @override
+  String aiChatExportError(String reason) {
+    return 'Error: $reason';
+  }
+
+  @override
+  String aiChatExportSubjects(String names) {
+    return ': $names';
+  }
+
+  @override
+  String get aiChatExportJson => 'JSON';
 }

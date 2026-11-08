@@ -19,6 +19,7 @@ import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../settings/controllers/tag_cleanup.dart';
 import 'ai_tool.dart';
 import 'ai_tool_writes.dart';
+import '../models/ai_tool_subject.dart';
 
 /// 按名称找标签（不区分大小写）；没有时抛 [AiToolFailure]。
 Future<Tag> _tagNamed(AppDatabase database, String name) async {
@@ -84,6 +85,7 @@ class CreateTagTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDone,
+      subjects: [AiToolSubject.tag(name)],
       undo: <String, Object?>{'created': result.created.toList()},
     );
   }
@@ -150,6 +152,7 @@ class RenameTagTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDone,
+      subjects: [AiToolSubject.tag(newName)],
       undo: <String, Object?>{
         'id': tag.id,
         'name': tag.name,
@@ -251,6 +254,10 @@ class MergeTagsTool extends AiTool {
         'entries_tagged': merge.addedTargetDiaryIds.length,
       },
       summary: context.l10n.aiToolDone,
+      subjects: [
+        for (final tag in tags.from) AiToolSubject.tag(tag.name, input: true),
+        AiToolSubject.tag(tags.into.name),
+      ],
       undo: <String, Object?>{'merge': jsonEncode(merge.toJson())},
     );
   }
@@ -325,6 +332,7 @@ class DeleteTagTool extends AiTool {
         'entries_untagged': deletion.diaryIds.length,
       },
       summary: context.l10n.aiToolDone,
+      subjects: [AiToolSubject.tag(tag.name, input: true)],
       undo: <String, Object?>{'deletion': jsonEncode(deletion.toJson())},
     );
   }
@@ -429,6 +437,7 @@ class CreateNotebookTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'id': id},
       summary: context.l10n.aiToolDone,
+      subjects: [AiToolSubject.notebook(id, (args['name']! as String).trim())],
       undo: <String, Object?>{'id': id},
     );
   }
@@ -503,6 +512,7 @@ class RenameNotebookTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDone,
+      subjects: [AiToolSubject.notebook(id, (args['name']! as String).trim())],
       undo: <String, Object?>{'id': id, 'name': notebook.name},
     );
   }
@@ -553,6 +563,24 @@ class AddToNotebookTool extends AiTool {
   }
 
   @override
+  String labelWith(
+    AppLocalizations l10n,
+    Map<String, Object?> args,
+    List<AiToolSubject> subjects,
+  ) {
+    final notebook = subjects
+        .where((subject) => subject.kind == AiSubjectKind.notebook)
+        .firstOrNull;
+    final ids = args['ids'];
+    return notebook == null
+        ? label(l10n, args)
+        : l10n.aiToolAddToNotebookNamed(
+            ids is List ? ids.length : 1,
+            notebook.title,
+          );
+  }
+
+  @override
   Future<AiToolOutcome> run(
     AiToolContext context,
     Map<String, Object?> args,
@@ -581,6 +609,10 @@ class AddToNotebookTool extends AiTool {
         'already_there': ids.length - added.length,
       },
       summary: context.l10n.aiToolEntriesChanged(added.length),
+      subjects: [
+        AiToolSubject.notebook(notebook.id, notebook.name, input: true),
+        for (final found in diaries) aiDiarySubject(found.diary),
+      ],
       undo: <String, Object?>{'notebook': notebook.id, 'ids': added},
     );
   }
@@ -634,6 +666,24 @@ class RemoveFromNotebookTool extends AiTool {
   }
 
   @override
+  String labelWith(
+    AppLocalizations l10n,
+    Map<String, Object?> args,
+    List<AiToolSubject> subjects,
+  ) {
+    final notebook = subjects
+        .where((subject) => subject.kind == AiSubjectKind.notebook)
+        .firstOrNull;
+    final ids = args['ids'];
+    return notebook == null
+        ? label(l10n, args)
+        : l10n.aiToolRemoveFromNotebookNamed(
+            ids is List ? ids.length : 1,
+            notebook.title,
+          );
+  }
+
+  @override
   Future<AiToolOutcome> run(
     AiToolContext context,
     Map<String, Object?> args,
@@ -655,6 +705,10 @@ class RemoveFromNotebookTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'removed': removed.length},
       summary: context.l10n.aiToolEntriesChanged(removed.length),
+      subjects: [
+        AiToolSubject.notebook(notebook.id, notebook.name, input: true),
+        for (final found in diaries) aiDiarySubject(found.diary),
+      ],
       undo: <String, Object?>{
         'rows': [for (final row in removed) row.toJson()],
         'ids': ids,

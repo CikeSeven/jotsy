@@ -24,6 +24,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
+import 'package:node_diary/ui/diaries/models/edit_diary_create_seed.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
@@ -152,6 +153,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.diaryId,
     this.entryMode = EditDiaryEntryMode.edit,
     this.createDraftId,
+    this.createSeed,
     this.createDateOverride,
     this.createCapsuleUnlockAt,
     this.createTemplate,
@@ -167,6 +169,10 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 
   /// 新建模式下要续写的草稿（草稿表业务 id）；null 为新建空白。
   final String? createDraftId;
+
+  /// 新建模式下带进来的初始标题与正文（AI 的“另存为日记”）：原样未动时不算
+  /// 草稿（见 [EditDiaryCreateSeed]）。续写草稿时不使用。
+  final EditDiaryCreateSeed? createSeed;
   final DateTime? createDateOverride;
 
   /// 新建模式下预设的时间胶囊解封日（按“日期”精度）：日历从未来日期进入
@@ -339,6 +345,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 新建模式对应的草稿（草稿表业务 id）：续写时取入口传入的 id，新建空白在
   // 第一次有内容写入时由数据库生成。草稿写入与发布后的删除都按它进行。
   String? _createDraftId;
+
+  /// 带进来的初始内容填好后的标题与正文（[EditDiaryPage.createSeed]）：
+  /// 当前仍是这两样时不算草稿。没有带内容时为 null。
+  (String, String)? _createSeedBaseline;
   // 进入页面时就取好：返回与 dispose 时补存的草稿在页面卸载后才写完，那时
   // 不能再经 ref 读取 provider。
   late final AppDatabase _database;

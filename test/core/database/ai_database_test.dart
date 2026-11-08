@@ -346,4 +346,67 @@ void main() {
       }
     });
   });
+
+  group('schema v21 migration', () {
+    test(
+      'v20 upgrade adds the options column and keeps old conversations',
+      () async {
+        final root = await Directory.systemTemp.createTemp('jotsy_v21_ai');
+        addTearDown(() => root.delete(recursive: true));
+        final file = File('${root.path}/v20.sqlite');
+        final original = AppDatabase.forTesting(NativeDatabase(file));
+        await original.getAiConversation('none');
+        await original.close();
+        // 按 v20 的结构重建 ai_conversations（没有 options 列），放一段旧对话。
+        final legacy = sqlite3.open(file.path);
+        legacy
+          ..execute('DROP TABLE ai_conversations')
+          ..execute('''
+            CREATE TABLE ai_conversations (
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              conversation_id TEXT NOT NULL UNIQUE,
+              title TEXT NOT NULL DEFAULT '',
+              persona_id TEXT NULL,
+              scope TEXT NOT NULL DEFAULT '{}',
+              pinned INTEGER NOT NULL DEFAULT 0 CHECK (pinned IN (0, 1)),
+              created_at INTEGER NOT NULL,
+              updated_at INTEGER NOT NULL
+            )''')
+          ..execute(
+            "INSERT INTO ai_conversations (conversation_id, title, "
+            "created_at, updated_at) VALUES ('c1', '旧对话', 0, 0)",
+          )
+          ..execute('PRAGMA user_version = 20');
+        legacy.close();
+
+        final migrated = AppDatabase.forTesting(NativeDatabase(file));
+        try {
+          final old = await migrated.getAiConversation('c1');
+          expect(old?.title, '旧对话');
+          expect(old?.options, '{}');
+          final id = await migrated.createAiConversation(
+            optionsJson: '{"thinking":"high"}',
+          );
+          expect(
+            await migrated.latestAiConversationOptions(),
+            '{"thinking":"high"}',
+          );
+          await migrated.updateAiConversation(
+            id,
+            optionsJson: '{"thinking":"off"}',
+          );
+          expect(
+            (await migrated.getAiConversation(id))?.options,
+            '{"thinking":"off"}',
+          );
+          final version = await migrated
+              .customSelect('PRAGMA user_version')
+              .getSingle();
+          expect(version.read<int>('user_version'), migrated.schemaVersion);
+        } finally {
+          await migrated.close();
+        }
+      },
+    );
+  });
 }

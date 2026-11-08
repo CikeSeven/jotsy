@@ -16244,10 +16244,6 @@
   "@aiAgentUndo": {
     "description": "撤销 AI 做过的一项改动。"
   },
-  "aiAgentUndoAll": "撤销本轮全部改动",
-  "@aiAgentUndoAll": {
-    "description": "撤销这条回答里 AI 做过的全部改动。"
-  },
   "aiAgentStepUndone": "已撤销",
   "@aiAgentStepUndone": {
     "description": "AI 步骤已被撤销。"
@@ -16305,15 +16301,6 @@
   "aiDestinationSearch": "搜索日记",
   "@aiDestinationSearch": {
     "description": "AI 前往按钮的目标：搜索页。"
-  },
-  "aiAgentStepsSummary": "执行了 {count} 个操作",
-  "@aiAgentStepsSummary": {
-    "description": "收起的步骤组标题。",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "aiAgentPreparing": "正在准备操作…",
   "@aiAgentPreparing": {
@@ -17775,14 +17762,6 @@
       }
     }
   },
-  "aiHubTitle": "AI 助手",
-  "@aiHubTitle": {
-    "description": "AI 助手主页标题。"
-  },
-  "aiHubAskHint": "问问你的日记…",
-  "@aiHubAskHint": {
-    "description": "主页提问框的提示。"
-  },
   "aiHubQuickMonth": "这个月我过得怎么样？",
   "@aiHubQuickMonth": {
     "description": "快捷问题。"
@@ -17803,25 +17782,9 @@
   "@aiHubQuickGrowth": {
     "description": "快捷问题。"
   },
-  "aiHubRecapsGroup": "回顾",
-  "@aiHubRecapsGroup": {
-    "description": "主页回顾分组。"
-  },
   "aiHubRecapMore": "更多范围…",
   "@aiHubRecapMore": {
     "description": "打开回顾页。"
-  },
-  "aiHubNoRecaps": "还没有回顾",
-  "@aiHubNoRecaps": {
-    "description": "没有回顾时显示。"
-  },
-  "aiHubChatsGroup": "对话",
-  "@aiHubChatsGroup": {
-    "description": "主页对话分组。"
-  },
-  "aiHubNoChats": "还没有对话。从上面问一个问题开始吧。",
-  "@aiHubNoChats": {
-    "description": "没有对话时显示。"
   },
   "aiHubSearchChats": "搜索对话",
   "@aiHubSearchChats": {
@@ -17933,10 +17896,6 @@
   "aiChatCitationMissing": "这篇日记已不存在",
   "@aiChatCitationMissing": {
     "description": "引用的日记不存在时的提示。"
-  },
-  "aiChatEmptyHint": "可以问问这段时间的心情、某件事的来龙去脉，或者让 AI 帮你回忆。",
-  "@aiChatEmptyHint": {
-    "description": "空对话的提示。"
   },
   "aiChatAboutEntry": "关于「{title}」",
   "@aiChatAboutEntry": {
@@ -18051,14 +18010,6 @@
   "aiChatScopeAutoSubtitle": "按 AI 设置里的检索方式",
   "@aiChatScopeAutoSubtitle": {
     "description": "自动范围的说明。"
-  },
-  "aiHubOpenSettings": "AI 设置",
-  "@aiHubOpenSettings": {
-    "description": "AI 助手主页设置按钮的提示。"
-  },
-  "aiHubSend": "提问",
-  "@aiHubSend": {
-    "description": "主页提问按钮的提示。"
   },
   "aiSettingsOpenHub": "打开 AI 助手",
   "@aiSettingsOpenHub": {
@@ -19274,5 +19225,465 @@
   "todoSettingsSmartParse": "智能识别",
   "@todoSettingsSmartParse": {"description": "待办设置开关：输入时识别日期、清单与优先级。"},
   "todoSettingsSmartParseSubtitle": "把“明天下午3点 #工作 !!!”识别为日期、清单与优先级",
-  "@todoSettingsSmartParseSubtitle": {"description": "智能识别开关的说明。"}
+  "@todoSettingsSmartParseSubtitle": {"description": "智能识别开关的说明。"},
+  "aiToolOpenPageAny": "打开页面",
+  "@aiToolOpenPageAny": {
+    "description": "AI 正在准备“前往”调用、还不知道目标时的卡片标题。"
+  },
+  "aiToolOpensAfterReply": "回答后自动打开",
+  "@aiToolOpensAfterReply": {
+    "description": "前往卡片的说明：用户明确要求打开，回答结束后自动打开。"
+  },
+  "aiListSeparator": "、",
+  "@aiListSeparator": {
+    "description": "AI 卡片里连接几个名称的分隔符。"
+  },
+  "aiToolNamesAndMore": "{names} 等 {count} 项",
+  "@aiToolNamesAndMore": {
+    "description": "名称太多时：前几个名称 + 总数。",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgRange": "{from} – {to}",
+  "@aiToolArgRange": {
+    "description": "工具详情里的日期范围。",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgSince": "{date} 起",
+  "@aiToolArgSince": {
+    "description": "工具详情里只有开始日期的范围。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgUntil": "到 {date}",
+  "@aiToolArgUntil": {
+    "description": "工具详情里只有结束日期的范围。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgYes": "是",
+  "@aiToolArgYes": {
+    "description": "工具详情里布尔参数为真。"
+  },
+  "aiToolArgNo": "否",
+  "@aiToolArgNo": {
+    "description": "工具详情里布尔参数为假。"
+  },
+  "aiToolArgMinutes": "{minutes} 分钟",
+  "@aiToolArgMinutes": {
+    "description": "工具详情里的分钟数（提前提醒）。",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} other{}}",
+  "@aiToolArgName": {
+    "description": "工具详情里参数的名称（arg_参数名）；空串表示没有译名，界面显示参数名。",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgValue": "{value, select, sort_relevant{按相关程度} sort_newest{从新到旧} sort_oldest{从旧到新} group_by_none{不分组} group_by_day{按天} group_by_week{按周} group_by_month{按月} group_by_year{按年} status_open{未完成} status_completed{已完成} status_all{全部} priority_none{无} priority_low{低} priority_medium{中} priority_high{高} repeat_once{不重复} repeat_yearly{每年（公历）} repeat_lunar_yearly{每年（农历）} mood_awful{很糟} mood_bad{不好} mood_meh{一般} mood_good{不错} mood_great{很棒} mood_clear{清除} mode_light{浅色} mode_dark{深色} mode_system{跟随系统} other{}}",
+  "@aiToolArgValue": {
+    "description": "工具详情里枚举参数的值（参数名_值）；空串表示没有译名，界面显示原值。",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebookNamed": "把 {count} 篇日记收进「{name}」",
+  "@aiToolAddToNotebookNamed": {
+    "description": "智能体把日记收进某个日记本（写出本子名）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebookNamed": "把 {count} 篇日记移出「{name}」",
+  "@aiToolRemoveFromNotebookNamed": {
+    "description": "智能体把日记移出某个日记本（写出本子名）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatReturnHint": "按返回键即可回到刚才的对话",
+  "@aiChatReturnHint": {
+    "description": "AI 卡片把用户带回首页后的提示条：返回键回到对话。"
+  },
+  "aiChatReturnAction": "回到对话",
+  "@aiChatReturnAction": {
+    "description": "提示条按钮：重新打开刚才的对话。"
+  },
+  "aiProcessThoughtFor": "思考了 {seconds} 秒",
+  "@aiProcessThoughtFor": {
+    "description": "思考过程折叠块的摘要：思考时长。",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThinkingFor": "正在思考 · {seconds} 秒",
+  "@aiProcessThinkingFor": {
+    "description": "进行中的折叠块：正在思考与已用的秒数。",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThought": "已思考",
+  "@aiProcessThought": {
+    "description": "折叠块摘要：有思考但没有计时（旧记录）。"
+  },
+  "aiProcessTools": "调用了 {count} 个工具",
+  "@aiProcessTools": {
+    "description": "折叠块摘要：调用工具的个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessFailed": "{count} 个未成功",
+  "@aiProcessFailed": {
+    "description": "折叠块摘要：失败的调用个数（error 色）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessSteps": "查看过程",
+  "@aiProcessSteps": {
+    "description": "折叠块里只有过渡句时的摘要。"
+  },
+  "aiToolDetailsInputs": "条件",
+  "@aiToolDetailsInputs": {
+    "description": "工具详情：参数一栏的小标题。"
+  },
+  "aiToolDetailsResult": "结果",
+  "@aiToolDetailsResult": {
+    "description": "工具详情：结果一栏的小标题。"
+  },
+  "aiToolDetailsFailed": "这一步没有成功",
+  "@aiToolDetailsFailed": {
+    "description": "工具详情：失败且没有说明时的一句话。"
+  },
+  "aiToolDetailsTechnical": "技术信息",
+  "@aiToolDetailsTechnical": {
+    "description": "工具详情：可展开的原始错误。"
+  },
+  "aiCardEntries": "{count} 篇",
+  "@aiCardEntries": {
+    "description": "前往卡片：日记本的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiCardTodoDue": "{date}截止",
+  "@aiCardTodoDue": {
+    "description": "前往卡片：待办的截止日期。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardTodoDone": "已完成",
+  "@aiCardTodoDone": {
+    "description": "前往卡片：待办已完成。"
+  },
+  "aiCardSearchFor": "搜索「{query}」",
+  "@aiCardSearchFor": {
+    "description": "前往卡片：带关键词的搜索。",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardSectionHome": "首页",
+  "@aiCardSectionHome": {
+    "description": "前往卡片副标题：首页的 Tab。"
+  },
+  "aiCardMissing": "已经不在了",
+  "@aiCardMissing": {
+    "description": "前往卡片：目标已删除。"
+  },
+  "aiCardFeatureOff": "功能已关闭",
+  "@aiCardFeatureOff": {
+    "description": "前往卡片：目标所属的功能已关闭。"
+  },
+  "aiChangeGroupTitle": "做了 {count} 项改动",
+  "@aiChangeGroupTitle": {
+    "description": "改动卡片的卡头。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChangeUndoAll": "全部撤销",
+  "@aiChangeUndoAll": {
+    "description": "改动卡片卡头的按钮。"
+  },
+  "aiChatNewChat": "新对话",
+  "@aiChatNewChat": {
+    "description": "新对话按钮。"
+  },
+  "aiChatHistory": "对话记录",
+  "@aiChatHistory": {
+    "description": "历史抽屉的标题与按钮提示。"
+  },
+  "aiChatHistoryEmpty": "还没有对话",
+  "@aiChatHistoryEmpty": {
+    "description": "历史抽屉为空。"
+  },
+  "aiChatHistoryNoMatch": "没有找到相关的对话",
+  "@aiChatHistoryNoMatch": {
+    "description": "历史搜索没有结果。"
+  },
+  "aiChatGroupPinned": "置顶",
+  "@aiChatGroupPinned": {
+    "description": "历史分组：置顶。"
+  },
+  "aiChatGroupToday": "今天",
+  "@aiChatGroupToday": {
+    "description": "历史分组：今天。"
+  },
+  "aiChatGroupYesterday": "昨天",
+  "@aiChatGroupYesterday": {
+    "description": "历史分组：昨天。"
+  },
+  "aiChatGroupWeek": "最近 7 天",
+  "@aiChatGroupWeek": {
+    "description": "历史分组：最近 7 天。"
+  },
+  "aiChatGroupMonth": "最近 30 天",
+  "@aiChatGroupMonth": {
+    "description": "历史分组：最近 30 天。"
+  },
+  "aiChatWelcomeTitle": "今天想聊点什么？",
+  "@aiChatWelcomeTitle": {
+    "description": "欢迎页的问候。"
+  },
+  "aiChatWelcomeAgent": "可以问我日记里的事，也可以让我帮你整理日记、记待办、打开页面。",
+  "@aiChatWelcomeAgent": {
+    "description": "欢迎页说明（智能体开着）。"
+  },
+  "aiChatWelcomeRetrieval": "可以问我日记里的事，我会先找到相关的日记再回答。",
+  "@aiChatWelcomeRetrieval": {
+    "description": "欢迎页说明（检索问答）。"
+  },
+  "aiChatWelcomeRecaps": "回顾",
+  "@aiChatWelcomeRecaps": {
+    "description": "欢迎页的回顾一栏。"
+  },
+  "aiChatWelcomeRecent": "最近的对话",
+  "@aiChatWelcomeRecent": {
+    "description": "欢迎页的最近对话一栏。"
+  },
+  "aiChatWelcomeAllChats": "全部对话",
+  "@aiChatWelcomeAllChats": {
+    "description": "欢迎页：打开历史抽屉。"
+  },
+  "aiChatModelSheetTitle": "模型与思考",
+  "@aiChatModelSheetTitle": {
+    "description": "输入栏模型胶囊打开的面板标题。"
+  },
+  "aiChatThinking": "思考强度",
+  "@aiChatThinking": {
+    "description": "面板里思考强度一栏。"
+  },
+  "aiThinkingAuto": "自动",
+  "@aiThinkingAuto": {
+    "description": "思考强度：自动。"
+  },
+  "aiThinkingOff": "关",
+  "@aiThinkingOff": {
+    "description": "思考强度：关。"
+  },
+  "aiThinkingLow": "低",
+  "@aiThinkingLow": {
+    "description": "思考强度：低。"
+  },
+  "aiThinkingMedium": "中",
+  "@aiThinkingMedium": {
+    "description": "思考强度：中。"
+  },
+  "aiThinkingHigh": "高",
+  "@aiThinkingHigh": {
+    "description": "思考强度：高。"
+  },
+  "aiThinkingAutoHint": "由模型自己决定要不要思考、想多久",
+  "@aiThinkingAutoHint": {
+    "description": "思考强度“自动”的说明。"
+  },
+  "aiThinkingOffHint": "不思考，直接回答，最快",
+  "@aiThinkingOffHint": {
+    "description": "思考强度“关”的说明。"
+  },
+  "aiThinkingLowHint": "简单想一想，适合日常问答",
+  "@aiThinkingLowHint": {
+    "description": "思考强度“低”的说明。"
+  },
+  "aiThinkingMediumHint": "多数问题的平衡之选",
+  "@aiThinkingMediumHint": {
+    "description": "思考强度“中”的说明。"
+  },
+  "aiThinkingHighHint": "仔细推敲，适合整理、回顾与复杂的改动，最慢",
+  "@aiThinkingHighHint": {
+    "description": "思考强度“高”的说明。"
+  },
+  "aiThinkingDisabled": "这个模型在模型设置里关闭了思考",
+  "@aiThinkingDisabled": {
+    "description": "所选模型关了“请求思考”时的说明。"
+  },
+  "aiChatMetaThinking": "思考：{level}",
+  "@aiChatMetaThinking": {
+    "description": "回答底部灰字：这一轮的思考强度。",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatOpenSettings": "AI 设置",
+  "@aiChatOpenSettings": {
+    "description": "对话页 ⋮ 与历史抽屉底部：打开 AI 设置。"
+  },
+  "aiChatExport": "导出对话",
+  "@aiChatExport": {
+    "description": "对话菜单项与导出页标题。"
+  },
+  "aiChatExportFormat": "格式",
+  "@aiChatExportFormat": {
+    "description": "导出页：格式一栏。"
+  },
+  "aiChatExportMarkdown": "Markdown",
+  "@aiChatExportMarkdown": {
+    "description": "导出格式：Markdown。"
+  },
+  "aiChatExportPlain": "纯文本",
+  "@aiChatExportPlain": {
+    "description": "导出格式：纯文本。"
+  },
+  "aiChatExportInclude": "包含",
+  "@aiChatExportInclude": {
+    "description": "导出页：包含哪些内容。"
+  },
+  "aiChatExportReasoning": "思考过程",
+  "@aiChatExportReasoning": {
+    "description": "导出选项与导出内容里的小标题：思考过程。"
+  },
+  "aiChatExportSteps": "过程与操作",
+  "@aiChatExportSteps": {
+    "description": "导出选项与导出内容里的小标题：工具调用与操作。"
+  },
+  "aiChatExportMessages": "选择消息",
+  "@aiChatExportMessages": {
+    "description": "导出页：消息列表的标题。"
+  },
+  "aiChatExportSelected": "已选 {count} / {total} 条",
+  "@aiChatExportSelected": {
+    "description": "导出页：已选条数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportYou": "你",
+  "@aiChatExportYou": {
+    "description": "导出内容与列表里问题的署名。"
+  },
+  "aiChatExportSave": "保存到文件",
+  "@aiChatExportSave": {
+    "description": "导出页：保存到文件。"
+  },
+  "aiChatExportSaved": "对话已导出",
+  "@aiChatExportSaved": {
+    "description": "导出对话保存成功的提示。"
+  },
+  "aiChatExportFailed": "导出没有成功",
+  "@aiChatExportFailed": {
+    "description": "导出对话失败的提示。"
+  },
+  "aiChatExportAt": "导出于 {time} · 共 {count} 条消息",
+  "@aiChatExportAt": {
+    "description": "导出内容开头的说明行。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportReferences": "参考的日记",
+  "@aiChatExportReferences": {
+    "description": "导出内容里回答引用的日记小标题。"
+  },
+  "aiChatExportError": "出错：{reason}",
+  "@aiChatExportError": {
+    "description": "导出内容里回答出错的说明。",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportSubjects": "：{names}",
+  "@aiChatExportSubjects": {
+    "description": "导出的操作行末尾列出涉及的对象。",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportJson": "JSON",
+  "@aiChatExportJson": {
+    "description": "导出格式：JSON（结构化，给程序读）。"
+  }
 }

@@ -7,6 +7,7 @@ import 'app_text_context_menu_panel.dart';
 import 'app_text_menu_action.dart';
 import 'app_text_selection_toolbar.dart';
 
+export 'app_selection_area.dart';
 export 'app_text_context_menu_panel.dart';
 export 'app_text_menu_action.dart';
 export 'app_text_selection_toolbar.dart';

@@ -4982,6 +4982,18 @@ class $AiConversationsTable extends AiConversations
     requiredDuringInsert: false,
     defaultValue: const Constant('{}'),
   );
+  static const VerificationMeta _optionsMeta = const VerificationMeta(
+    'options',
+  );
+  @override
+  late final GeneratedColumn<String> options = GeneratedColumn<String>(
+    'options',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
   static const VerificationMeta _pinnedMeta = const VerificationMeta('pinned');
   @override
   late final GeneratedColumn<bool> pinned = GeneratedColumn<bool>(
@@ -5024,6 +5036,7 @@ class $AiConversationsTable extends AiConversations
     title,
     personaId,
     scope,
+    options,
     pinned,
     createdAt,
     updatedAt,
@@ -5070,6 +5083,12 @@ class $AiConversationsTable extends AiConversations
       context.handle(
         _scopeMeta,
         scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta),
+      );
+    }
+    if (data.containsKey('options')) {
+      context.handle(
+        _optionsMeta,
+        options.isAcceptableOrUnknown(data['options']!, _optionsMeta),
       );
     }
     if (data.containsKey('pinned')) {
@@ -5123,6 +5142,10 @@ class $AiConversationsTable extends AiConversations
         DriftSqlType.string,
         data['${effectivePrefix}scope'],
       )!,
+      options: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}options'],
+      )!,
       pinned: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}pinned'],
@@ -5155,8 +5178,12 @@ class AiConversationRow extends DataClass
   /// 对话使用的人设 id；null 为对话的默认人设。
   final String? personaId;
 
-  /// 检索范围 JSON（时间、日记本、标签、固定的日记、检索方式、模型）。
+  /// 检索范围 JSON（时间、日记本、标签、固定的日记、检索方式）。
   final String scope;
+
+  /// 这段对话的回答选项 JSON（模型、思考强度；v21）。`{}` 为全部跟随
+  /// 默认。编解码见 `AiConversationOptions`。
+  final String options;
   final bool pinned;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -5166,6 +5193,7 @@ class AiConversationRow extends DataClass
     required this.title,
     this.personaId,
     required this.scope,
+    required this.options,
     required this.pinned,
     required this.createdAt,
     required this.updatedAt,
@@ -5180,6 +5208,7 @@ class AiConversationRow extends DataClass
       map['persona_id'] = Variable<String>(personaId);
     }
     map['scope'] = Variable<String>(scope);
+    map['options'] = Variable<String>(options);
     map['pinned'] = Variable<bool>(pinned);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -5195,6 +5224,7 @@ class AiConversationRow extends DataClass
           ? const Value.absent()
           : Value(personaId),
       scope: Value(scope),
+      options: Value(options),
       pinned: Value(pinned),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -5212,6 +5242,7 @@ class AiConversationRow extends DataClass
       title: serializer.fromJson<String>(json['title']),
       personaId: serializer.fromJson<String?>(json['personaId']),
       scope: serializer.fromJson<String>(json['scope']),
+      options: serializer.fromJson<String>(json['options']),
       pinned: serializer.fromJson<bool>(json['pinned']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -5226,6 +5257,7 @@ class AiConversationRow extends DataClass
       'title': serializer.toJson<String>(title),
       'personaId': serializer.toJson<String?>(personaId),
       'scope': serializer.toJson<String>(scope),
+      'options': serializer.toJson<String>(options),
       'pinned': serializer.toJson<bool>(pinned),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -5238,6 +5270,7 @@ class AiConversationRow extends DataClass
     String? title,
     Value<String?> personaId = const Value.absent(),
     String? scope,
+    String? options,
     bool? pinned,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -5247,6 +5280,7 @@ class AiConversationRow extends DataClass
     title: title ?? this.title,
     personaId: personaId.present ? personaId.value : this.personaId,
     scope: scope ?? this.scope,
+    options: options ?? this.options,
     pinned: pinned ?? this.pinned,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -5260,6 +5294,7 @@ class AiConversationRow extends DataClass
       title: data.title.present ? data.title.value : this.title,
       personaId: data.personaId.present ? data.personaId.value : this.personaId,
       scope: data.scope.present ? data.scope.value : this.scope,
+      options: data.options.present ? data.options.value : this.options,
       pinned: data.pinned.present ? data.pinned.value : this.pinned,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -5274,6 +5309,7 @@ class AiConversationRow extends DataClass
           ..write('title: $title, ')
           ..write('personaId: $personaId, ')
           ..write('scope: $scope, ')
+          ..write('options: $options, ')
           ..write('pinned: $pinned, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -5288,6 +5324,7 @@ class AiConversationRow extends DataClass
     title,
     personaId,
     scope,
+    options,
     pinned,
     createdAt,
     updatedAt,
@@ -5301,6 +5338,7 @@ class AiConversationRow extends DataClass
           other.title == this.title &&
           other.personaId == this.personaId &&
           other.scope == this.scope &&
+          other.options == this.options &&
           other.pinned == this.pinned &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -5312,6 +5350,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
   final Value<String> title;
   final Value<String?> personaId;
   final Value<String> scope;
+  final Value<String> options;
   final Value<bool> pinned;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -5321,6 +5360,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
     this.title = const Value.absent(),
     this.personaId = const Value.absent(),
     this.scope = const Value.absent(),
+    this.options = const Value.absent(),
     this.pinned = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -5331,6 +5371,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
     this.title = const Value.absent(),
     this.personaId = const Value.absent(),
     this.scope = const Value.absent(),
+    this.options = const Value.absent(),
     this.pinned = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -5343,6 +5384,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
     Expression<String>? title,
     Expression<String>? personaId,
     Expression<String>? scope,
+    Expression<String>? options,
     Expression<bool>? pinned,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -5353,6 +5395,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
       if (title != null) 'title': title,
       if (personaId != null) 'persona_id': personaId,
       if (scope != null) 'scope': scope,
+      if (options != null) 'options': options,
       if (pinned != null) 'pinned': pinned,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -5365,6 +5408,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
     Value<String>? title,
     Value<String?>? personaId,
     Value<String>? scope,
+    Value<String>? options,
     Value<bool>? pinned,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -5375,6 +5419,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
       title: title ?? this.title,
       personaId: personaId ?? this.personaId,
       scope: scope ?? this.scope,
+      options: options ?? this.options,
       pinned: pinned ?? this.pinned,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -5399,6 +5444,9 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
     if (scope.present) {
       map['scope'] = Variable<String>(scope.value);
     }
+    if (options.present) {
+      map['options'] = Variable<String>(options.value);
+    }
     if (pinned.present) {
       map['pinned'] = Variable<bool>(pinned.value);
     }
@@ -5419,6 +5467,7 @@ class AiConversationsCompanion extends UpdateCompanion<AiConversationRow> {
           ..write('title: $title, ')
           ..write('personaId: $personaId, ')
           ..write('scope: $scope, ')
+          ..write('options: $options, ')
           ..write('pinned: $pinned, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -11430,6 +11479,7 @@ typedef $$AiConversationsTableCreateCompanionBuilder =
       Value<String> title,
       Value<String?> personaId,
       Value<String> scope,
+      Value<String> options,
       Value<bool> pinned,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -11441,6 +11491,7 @@ typedef $$AiConversationsTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String?> personaId,
       Value<String> scope,
+      Value<String> options,
       Value<bool> pinned,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -11477,6 +11528,11 @@ class $$AiConversationsTableFilterComposer
 
   ColumnFilters<String> get scope => $composableBuilder(
     column: $table.scope,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get options => $composableBuilder(
+    column: $table.options,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11530,6 +11586,11 @@ class $$AiConversationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get options => $composableBuilder(
+    column: $table.options,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get pinned => $composableBuilder(
     column: $table.pinned,
     builder: (column) => ColumnOrderings(column),
@@ -11571,6 +11632,9 @@ class $$AiConversationsTableAnnotationComposer
 
   GeneratedColumn<String> get scope =>
       $composableBuilder(column: $table.scope, builder: (column) => column);
+
+  GeneratedColumn<String> get options =>
+      $composableBuilder(column: $table.options, builder: (column) => column);
 
   GeneratedColumn<bool> get pinned =>
       $composableBuilder(column: $table.pinned, builder: (column) => column);
@@ -11624,6 +11688,7 @@ class $$AiConversationsTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String?> personaId = const Value.absent(),
                 Value<String> scope = const Value.absent(),
+                Value<String> options = const Value.absent(),
                 Value<bool> pinned = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -11633,6 +11698,7 @@ class $$AiConversationsTableTableManager
                 title: title,
                 personaId: personaId,
                 scope: scope,
+                options: options,
                 pinned: pinned,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -11644,6 +11710,7 @@ class $$AiConversationsTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String?> personaId = const Value.absent(),
                 Value<String> scope = const Value.absent(),
+                Value<String> options = const Value.absent(),
                 Value<bool> pinned = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -11653,6 +11720,7 @@ class $$AiConversationsTableTableManager
                 title: title,
                 personaId: personaId,
                 scope: scope,
+                options: options,
                 pinned: pinned,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

@@ -39,6 +39,10 @@ class OpenAiChatClient extends AiChatClient {
         'temperature': request.temperature,
       if (request.maxOutputTokens != null)
         'max_tokens': request.maxOutputTokens,
+      // 思考强度：关掉为 `none`。不认这个参数的兼容服务返回 400 时由
+      // AiService 去掉强度重试。
+      if (request.thinking case final level?)
+        'reasoning_effort': level == AiThinkingLevel.off ? 'none' : level.name,
       if (request.hasTools)
         'tools': [
           for (final tool in request.tools)

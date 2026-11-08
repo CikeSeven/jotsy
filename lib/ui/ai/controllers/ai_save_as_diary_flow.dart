@@ -1,9 +1,9 @@
 // 把 AI 写的文字另存为日记（回顾与对话共用）、复制与分享。
 //
-// 另存为日记不直接写日记表：先按草稿箱同一格式写一份草稿（`NewDiaryDraft`，
-// 正文为 Markdown 转成的块文档），再像草稿箱那样推入新建编辑页
-// （`EditDiaryPage(createDraftId:)`）。用户可以改完再发表，不想要直接返回
-// 就留在草稿箱里，与其他新建入口同一口径（AGENTS.md 草稿规则）。
+// 另存为日记不直接写日记表：带着内容（正文为 Markdown 转成的块文档）推入
+// 新建编辑页（`EditDiaryPage(createSeed:)`），像套用模板一样填好。用户改过再
+// 返回才进草稿箱（与其他新建入口同一口径）；原样未动直接返回什么都不留，
+// 开着“返回时直接发表”也不会发表。
 //
 // 引用编号 `[Dn]` 离开这次回答就没有意义，复制、分享与另存时一律去掉。
 
@@ -16,12 +16,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../diaries/controllers/diary_ai_editing.dart';
-import '../../diaries/models/new_diary_draft.dart';
+import '../../diaries/models/edit_diary_create_seed.dart';
 import '../../diaries/pages/edit_diary_page.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../settings/providers/app_features_provider.dart';
@@ -40,8 +39,8 @@ Map<String, Object?> aiMarkdownDiaryDocument(String markdown) =>
       },
     };
 
-/// 另存为日记：写一份草稿并打开新建编辑页。[notebookId] 给出、日记本功能
-/// 开着且那本仍是可收录的手动本时，预先勾选它。
+/// 另存为日记：带着内容打开新建编辑页。[notebookId] 给出、日记本功能开着且
+/// 那本仍是可收录的手动本时，预先收进它。
 Future<void> saveAiTextAsDiary(
   BuildContext context,
   WidgetRef ref, {
@@ -51,28 +50,21 @@ Future<void> saveAiTextAsDiary(
 }) async {
   final database = ref.read(appDatabaseProvider);
   final document = aiMarkdownDiaryDocument(markdown);
-  var notebooks = const <String>[];
+  String? notebook;
   if (notebookId != null && ref.read(appFeaturesProvider).notebooks) {
     final row = await database.getNotebook(notebookId);
-    if (row != null && row.acceptsManualEntries) notebooks = [notebookId];
+    if (row != null && row.acceptsManualEntries) notebook = notebookId;
   }
-  final draft = NewDiaryDraft(
-    title: title,
-    contentDocJson: jsonEncode(document),
-    contentText: diaryBlocksPlainText(document),
-    notebookIds: notebooks,
-  ).toSnapshot();
-  final draftId = await database.saveDiaryDraft(
-    title: draft.title,
-    contentText: draft.contentText,
-    payload: draft.payload,
-  );
   if (!context.mounted) return;
   await Navigator.of(context).push<Object?>(
     MaterialPageRoute<Object?>(
       builder: (_) => EditDiaryPage(
         entryMode: EditDiaryEntryMode.create,
-        createDraftId: draftId,
+        createSeed: EditDiaryCreateSeed(
+          title: title,
+          contentDocJson: jsonEncode(document),
+        ),
+        createNotebookId: notebook,
       ),
     ),
   );

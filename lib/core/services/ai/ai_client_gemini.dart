@@ -33,8 +33,15 @@ class GeminiChatClient extends AiChatClient {
         'temperature': request.temperature,
       if (request.maxOutputTokens != null)
         'maxOutputTokens': request.maxOutputTokens,
-      if (request.reasoning)
-        'thinkingConfig': <String, Object?>{'includeThoughts': true},
+      // 关掉思考用预算 0（不能关的模型返回 400，由 AiService 去掉强度
+      // 重试）；低 / 中 / 高为 Gemini 3 的 thinkingLevel（两者不能同时写）。
+      if (request.thinking == AiThinkingLevel.off)
+        'thinkingConfig': <String, Object?>{'thinkingBudget': 0}
+      else if (request.reasoning || request.thinking != null)
+        'thinkingConfig': <String, Object?>{
+          if (request.reasoning) 'includeThoughts': true,
+          if (request.thinking case final level?) 'thinkingLevel': level.name,
+        },
     };
     // 结果只在调用带着服务商给的 id 时才回带 id（本地生成的 id 服务端
     // 不认识）。

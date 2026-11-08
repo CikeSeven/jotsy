@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'package:meta/meta.dart';
 
 import '../tools/ai_tool.dart';
+import 'ai_tool_subject.dart';
 
 /// 一个调用的状态。
 enum AiToolCallStatus {
@@ -53,6 +54,8 @@ class AiAgentCallRecord {
     this.undo,
     this.undone = false,
     this.preview,
+    this.subjects = const <AiToolSubject>[],
+    this.moreSubjects = 0,
   });
 
   final String id;
@@ -82,6 +85,10 @@ class AiAgentCallRecord {
   /// 等待确认时给用户看的内容（只在内存里，不落库）。
   final AiToolPreview? preview;
 
+  /// 涉及的对象（最多 [AiToolSubject.maxStored] 个，其余记在 [moreSubjects]）。
+  final List<AiToolSubject> subjects;
+  final int moreSubjects;
+
   /// 能不能撤销：成功了、带着撤销数据、还没撤销过。
   bool get canUndo =>
       status == AiToolCallStatus.succeeded && undo != null && !undone;
@@ -94,7 +101,9 @@ class AiAgentCallRecord {
     Map<String, Object?>? undo,
     bool? undone,
     AiToolPreview? preview,
+    List<AiToolSubject>? subjects,
   }) {
+    final allSubjects = subjects;
     return AiAgentCallRecord(
       id: id,
       tool: tool,
@@ -109,6 +118,12 @@ class AiAgentCallRecord {
       preview: status == null || status == AiToolCallStatus.awaitingConfirmation
           ? preview ?? this.preview
           : null,
+      subjects: allSubjects == null
+          ? this.subjects
+          : allSubjects.take(AiToolSubject.maxStored).toList(growable: false),
+      moreSubjects: allSubjects == null
+          ? moreSubjects
+          : (allSubjects.length - AiToolSubject.maxStored).clamp(0, 1 << 30),
     );
   }
 
@@ -124,6 +139,9 @@ class AiAgentCallRecord {
     if (navigation != null) 'navigation': navigation!.toJson(),
     'undo': ?undo,
     if (undone) 'undone': true,
+    if (subjects.isNotEmpty)
+      'subjects': [for (final subject in subjects) subject.toJson()],
+    if (moreSubjects > 0) 'moreSubjects': moreSubjects,
   };
 
   static AiAgentCallRecord? fromJson(Object? raw) {
@@ -135,6 +153,8 @@ class AiAgentCallRecord {
     final summary = raw['summary'];
     final error = raw['error'];
     final undo = raw['undo'];
+    final subjects = raw['subjects'];
+    final more = raw['moreSubjects'];
     return AiAgentCallRecord(
       id: id,
       tool: tool,
@@ -147,6 +167,12 @@ class AiAgentCallRecord {
       navigation: AiToolNavigation.fromJson(raw['navigation']),
       undo: undo is Map ? undo.cast<String, Object?>() : null,
       undone: raw['undone'] == true,
+      subjects: [
+        if (subjects is List)
+          for (final item in subjects)
+            if (AiToolSubject.fromJson(item) case final subject?) subject,
+      ],
+      moreSubjects: more is int && more > 0 ? more : 0,
     );
   }
 }
@@ -156,17 +182,22 @@ class AiAgentStepRecord {
   const AiAgentStepRecord({
     this.text = '',
     this.reasoning = '',
+    this.thinkingMs = 0,
     this.calls = const <AiAgentCallRecord>[],
   });
 
   /// 模型在调用工具之前说的话。
   final String text;
   final String reasoning;
+
+  /// 这一步的思考时长（毫秒，`AiThinkingClock`；没有思考或旧记录为 0）。
+  final int thinkingMs;
   final List<AiAgentCallRecord> calls;
 
   AiAgentStepRecord withCall(AiAgentCallRecord call) => AiAgentStepRecord(
     text: text,
     reasoning: reasoning,
+    thinkingMs: thinkingMs,
     calls: [
       for (final existing in calls)
         if (existing.id == call.id) call else existing,
@@ -176,6 +207,7 @@ class AiAgentStepRecord {
   Map<String, Object?> toJson() => <String, Object?>{
     if (text.isNotEmpty) 'text': text,
     if (reasoning.isNotEmpty) 'reasoning': reasoning,
+    if (thinkingMs > 0) 'thinkingMs': thinkingMs,
     'calls': [for (final call in calls) call.toJson()],
   };
 
@@ -183,10 +215,12 @@ class AiAgentStepRecord {
     if (raw is! Map) return null;
     final text = raw['text'];
     final reasoning = raw['reasoning'];
+    final thinkingMs = raw['thinkingMs'];
     final calls = raw['calls'];
     return AiAgentStepRecord(
       text: text is String ? text : '',
       reasoning: reasoning is String ? reasoning : '',
+      thinkingMs: thinkingMs is int && thinkingMs > 0 ? thinkingMs : 0,
       calls: [
         if (calls is List)
           for (final item in calls)

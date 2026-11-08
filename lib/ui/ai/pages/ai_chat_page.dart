@@ -1,67 +1,70 @@
-// 与日记对话：顶部三个胶囊（范围、人设、模型）、消息列表、底部输入栏。
+// AI 对话页（DESIGN §5.29“对话页”）：进入 AI 助手的落点。只负责装配——
+// 顶栏、历史抽屉 / 宽屏侧栏、消息列表与输入栏；一轮问答的流程在
+// [AiChatController]，打开页面与对象在 `ai_chat_links.dart`。
 //
-// 消息来自数据库（`aiMessagesProvider`），正在生成的这一轮由
-// [AiChatController] 单独画在末尾（检索中的状态行、流式文字与引用胶囊），
-// 生成结束落库后由列表接手。宽度取阅读列（`AppContentWidth.reading`），
-// 消息列表铺满、留白在两侧。桌面上 Enter 发送、Shift + Enter 换行。
-//
-// 滚动由 [AiChatScrollController] 管：贴着底部时跟随新内容与键盘，用户往上
-// 翻就放手。输入栏放在 Scaffold 的 bottomNavigationBar（自己让开键盘），
-// 浮动提示条因此停在输入栏上方，不会挡住它。
-//
-// 入口：AI 助手主页（提问、快捷问题、历史对话）与预览页回应卡片的“继续
-// 聊聊”（[seedReply]：以那篇日记为固定范围，把那条回应作为对话的开头）。
+// - 顶栏：`<` 返回、对话标题（点按改名）、历史（宽屏常驻侧栏时没有）、新对话
+//   （已是空白新对话时禁用）、⋮（重命名、置顶、删除、AI 设置）。
+// - 历史：手机与中宽为左侧抽屉（只由按钮打开，免得与系统返回手势冲突），
+//   宽窗口（≥ 1024）为左侧 300 宽的常驻栏；点一段对话在本页原地换过去，
+//   生成中先停止（已有的部分按“已停止”保存）。
+// - 消息：空白新对话为欢迎页；回答按 `buildAiAnswerSegments` 分段（思考过程
+//   折叠，前往 / 改动 / 确认卡片与正文露在外面）。滚动由
+//   [AiChatScrollController] 管（贴底跟随，用户往上翻就放手）。
+// - 输入栏放在 Scaffold 的 bottomNavigationBar（`KeyboardInsetPadding` 让开
+//   键盘），浮动提示条停在它上方。胶囊依次为范围、人设、模型 · 思考，改动
+//   写进这段对话。
+// - 进入：新对话在路由入场结束后聚焦输入框（进来就能打字）；打开已有对话
+//   不聚焦。模型与思考强度每段对话各自记住，新对话沿用最近那段的选择。
+// - “继续聊聊”（[seedReply]）：以那篇日记为固定范围，把那条回应作为对话的
+//   开头。
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../core/database/app_database.dart';
-import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/services/ai/ai_provider_config.dart';
-import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/models/app_surface_enums.dart';
-import '../../app_surface/widgets/app_glass_field.dart';
 import '../../app_surface/widgets/app_page_background.dart';
-import '../../diaries/controllers/diary_link_open_flow.dart';
-import '../../home/widgets/home_hint_visibility_scope.dart';
-import '../../settings/providers/app_features_provider.dart';
-import '../../widgets/app_top_bar.dart';
-import '../../widgets/desktop_horizontal_scroll.dart';
-import '../../widgets/width_layout_builder.dart';
-import '../../widgets/expressive_loading_indicator.dart';
-import '../../widgets/expressive_menu/expressive_menu_button.dart';
-import '../../widgets/expressive_menu/expressive_menu_item.dart';
 import '../../widgets/keyboard_visibility.dart';
-import '../../widgets/text_selection_menu/app_text_context_menu.dart';
-import '../controllers/ai_agent_turn.dart';
+import '../../widgets/route_entrance_waiter.dart';
+import '../../widgets/width_layout_builder.dart';
 import '../controllers/ai_agent_undo_flow.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_chat_flows.dart';
+import '../controllers/ai_chat_links.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
-import '../controllers/ai_stream_run.dart';
 import '../models/ai_built_ins.dart';
 import '../models/ai_chat_scope.dart';
+import '../models/ai_conversation_options.dart';
 import '../models/ai_preference_parts.dart';
+import '../models/ai_recap_range.dart';
+import '../providers/ai_chat_return_provider.dart';
+import '../providers/ai_chat_view_memory_provider.dart';
 import '../providers/ai_providers.dart';
 import '../providers/ai_records_providers.dart';
-import '../sections/ai_agent_steps_view.dart';
 import '../sections/ai_chat_message_view.dart';
-import '../tools/ai_destinations.dart';
-import '../tools/ai_tool.dart';
+import '../sections/chat/ai_answer_actions.dart';
+import '../sections/chat/ai_chat_composer.dart';
+import '../sections/chat/ai_chat_history_panel.dart';
+import '../sections/chat/ai_chat_model_sheet.dart';
+import '../sections/chat/ai_chat_welcome.dart';
+import '../sections/chat/ai_pending_answer.dart';
+import '../sections/chat/ai_chat_history_drawer.dart';
+import '../sections/chat/ai_chat_top_bar.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import '../widgets/ai_chat_scroll_controller.dart';
 import '../widgets/ai_tap_outside_unfocus.dart';
-import 'settings/ai_model_routing_page.dart';
+import 'ai_chat_export_page.dart';
+import 'ai_recap_page.dart';
 import 'settings/ai_personas_page.dart';
+import 'settings/ai_settings_page.dart';
 
 class AiChatPage extends ConsumerStatefulWidget {
   const AiChatPage({
@@ -70,106 +73,103 @@ class AiChatPage extends ConsumerStatefulWidget {
     this.scope = const AiChatScope.auto(),
     this.initialQuestion,
     this.seedReply,
+    this.restoreView = false,
   });
 
   final String? conversationId;
   final AiChatScope scope;
 
-  /// 打开后立即发出的问题（主页的提问框与快捷问题）。
+  /// 打开后立即发出的问题（新对话；选项读出来之后再发）。
   final String? initialQuestion;
 
   /// “继续聊聊”：那条回应（`ai_results` 行），对话以它开头。
   final AiResultRow? seedReply;
+
+  /// 回到对话：恢复离开前的滚动位置与展开状态（`aiChatViewMemoryProvider`），
+  /// 而不是从底部开始。
+  final bool restoreView;
 
   @override
   ConsumerState<AiChatPage> createState() => _AiChatPageState();
 }
 
 class _AiChatPageState extends ConsumerState<AiChatPage> {
+  /// 宽窗口常驻历史栏的宽度。
+  static const double _dockWidth = 300;
+
   late final AiChatController _controller;
   final TextEditingController _input = TextEditingController();
   final FocusNode _inputFocus = FocusNode();
   final AiChatScrollController _scroll = AiChatScrollController();
+  final RouteEntranceWaiter _entrance = RouteEntranceWaiter();
+  final GlobalKey<ScaffoldState> _scaffold = GlobalKey<ScaffoldState>();
 
-  /// 对话行读出来之前（打开已有对话时）不让发送，免得用默认范围发出去。
-  bool _ready = true;
+  /// 对话行 / 上次的选项读出来之前不让发送，免得用默认值发出去。
+  bool _ready = false;
 
   @override
   void initState() {
     super.initState();
+    // 回到了对话（或从别处打开了对话）：返回键恢复原来的行为。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(aiChatReturnProvider.notifier).disarm();
+    });
     _controller = AiChatController(
       database: ref.read(appDatabaseProvider),
       conversationId: widget.conversationId,
       scope: widget.scope,
-      personaId: ref.read(aiPreferencesProvider).personaFor[AiPersonaUse.chat],
+      personaId: _defaultPersonaId,
     );
     _controller.addListener(_onControllerChanged);
-    if (widget.conversationId != null) {
-      _ready = false;
-      unawaited(_loadConversation(widget.conversationId!));
+    _scroll.restoreSaved = widget.restoreView;
+    if (widget.conversationId case final id?) {
+      unawaited(_load(id));
     } else if (widget.seedReply != null) {
-      _ready = false;
       // 要用到本地化文案（对话标题），等第一帧之后再建。
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) unawaited(_seed(widget.seedReply!));
       });
-    } else if (widget.initialQuestion case final question?) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) unawaited(_send(question));
-      });
+    } else {
+      unawaited(_prepareNew());
+      // 进来就能打字：路由入场结束后再聚焦，键盘不与页面滑入叠在一起。
+      if (widget.initialQuestion == null) {
+        _entrance.schedule(this, _inputFocus.requestFocus);
+      }
     }
   }
 
-  Future<void> _loadConversation(String id) async {
-    final row = await ref.read(appDatabaseProvider).getAiConversation(id);
+  String? get _defaultPersonaId =>
+      ref.read(aiPreferencesProvider).personaFor[AiPersonaUse.chat];
+
+  /// 准备一段新对话（沿用最近那段的模型与思考强度），带着问题时随即发出。
+  Future<void> _prepareNew() async {
+    await _controller.startNew(defaultPersonaId: _defaultPersonaId);
     if (!mounted) return;
-    if (row != null) {
-      _controller
-        ..scope = AiChatScope.decode(row.scope)
-        ..personaId = row.personaId;
-    }
     setState(() => _ready = true);
-    _scroll.jumpToBottom();
+    if (widget.initialQuestion case final question?) {
+      unawaited(_send(question));
+    }
   }
 
-  /// “继续聊聊”：新建一段固定在那篇日记上的对话，把回应作为第一条回答。
-  Future<void> _seed(AiResultRow reply) async {
-    final l10n = context.l10n;
-    final database = ref.read(appDatabaseProvider);
-    final diaryId = reply.diaryId;
-    if (diaryId == null) {
-      setState(() => _ready = true);
-      return;
-    }
-    final diary = await database.getAiDiary(diaryId);
-    final title = (diary?.title.trim().isNotEmpty ?? false)
-        ? diary!.title.trim()
-        : (diary == null
-              ? ''
-              : DateFormat.yMMMd(l10n.localeName).format(diary.createdAt));
-    final scope = AiChatScope.diary(diaryId: diaryId, diaryTitle: title);
-    final id = await database.createAiConversation(
-      title: title.isEmpty ? '' : l10n.aiChatAboutEntry(title),
-      personaId: reply.personaId,
-      scopeJson: scope.encode(),
-    );
-    await database.addAiMessage(
-      conversationId: id,
-      role: AiMessageRole.assistant,
-      content: reply.content,
-      metaJson: reply.meta,
-    );
+  Future<void> _load(String id) async {
+    await _controller.openConversation(id);
     if (!mounted) return;
-    _controller
-      ..conversationId = id
-      ..scope = scope
-      ..personaId = reply.personaId;
+    setState(() => _ready = true);
+    // 回到对话时由列表按记下的位置恢复；其余（打开、换对话）从底部开始。
+    if (!_scroll.restoreSaved) _scroll.jumpToBottom();
+  }
+
+  /// “继续聊聊”：以那条回应开头的新对话。
+  Future<void> _seed(AiResultRow reply) async {
+    await _controller.seedFromReply(context.l10n, reply);
+    if (!mounted) return;
     setState(() => _ready = true);
     _inputFocus.requestFocus();
   }
 
   @override
   void dispose() {
+    _entrance.dispose();
     _controller.removeListener(_onControllerChanged);
     _controller.dispose();
     _input.dispose();
@@ -185,28 +185,22 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       final navigation = _controller.takeAutoOpen();
       if (navigation != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) unawaited(_openPage(navigation));
+          if (mounted) {
+            unawaited(
+              openAiNavigation(
+                context,
+                ref,
+                navigation,
+                conversationId: _controller.conversationId,
+              ),
+            );
+          }
         });
       }
     }
   }
 
-  /// 步骤里的“前往”：功能已关闭（或换了平台）时只提示不可用。
-  Future<void> _openPage(AiToolNavigation navigation) async {
-    final destination = aiDestinationById(navigation.destination);
-    final env = AiToolEnv(
-      features: ref.read(appFeaturesProvider),
-      prefs: ref.read(aiPreferencesProvider),
-    );
-    if (destination == null || !destination.isAvailable(env)) {
-      await HomeHintVisibilityScope.showTrackedSnackBar(
-        context: context,
-        snackBar: SnackBar(content: Text(context.l10n.aiToolPageUnavailable)),
-      );
-      return;
-    }
-    await destination.open(context, ref, navigation.params);
-  }
+  // ------------------------------------------------------------ 动作
 
   Future<void> _send([String? question]) async {
     final text = (question ?? _input.text).trim();
@@ -217,19 +211,72 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     await _controller.send(context, ref, text);
   }
 
-  void _openCitation(List<AiCitation> citations, String ref) {
-    for (final citation in citations) {
-      if (citation.ref == ref) {
-        unawaited(
-          openDiaryLinkTarget(
-            context,
-            this.ref,
-            DiaryLinkTarget.diary(citation.diaryId),
-          ),
-        );
-        return;
-      }
+  void _closeDrawer() {
+    if (_scaffold.currentState?.isDrawerOpen ?? false) {
+      _scaffold.currentState!.closeDrawer();
     }
+  }
+
+  Future<void> _openConversation(String id) async {
+    _closeDrawer();
+    if (id == _controller.conversationId) return;
+    _scroll.restoreSaved = false;
+    setState(() => _ready = false);
+    await _load(id);
+  }
+
+  Future<void> _startNew() async {
+    _closeDrawer();
+    _scroll.restoreSaved = false;
+    _inputFocus.requestFocus();
+    await _controller.startNew(defaultPersonaId: _defaultPersonaId);
+    if (mounted) setState(() => _ready = true);
+  }
+
+  void _onDeleted(String id) {
+    ref.read(aiChatViewMemoryProvider).forget(id);
+    if (id == _controller.conversationId) unawaited(_startNew());
+  }
+
+  /// 顶栏 ⋮ 的删除：先停下生成，删掉后换成新对话。
+  Future<void> _deleteCurrent(AiConversationRow? row) async {
+    if (row == null) return;
+    _controller.stop();
+    final deleted = await deleteAiConversation(context, ref, row);
+    if (deleted) _onDeleted(row.conversationId);
+  }
+
+  void _openRecap([AiRecapPreset? preset]) {
+    _closeDrawer();
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => preset == null
+              ? const AiRecapPage()
+              : AiRecapPage(initialPreset: preset, autoStart: true),
+        ),
+      ),
+    );
+  }
+
+  void _openExport(String id) {
+    _closeDrawer();
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => AiChatExportPage(conversationId: id),
+        ),
+      ),
+    );
+  }
+
+  void _openSettings() {
+    _closeDrawer();
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(builder: (_) => const AiSettingsPage()),
+      ),
+    );
   }
 
   Future<void> _pickScope() async {
@@ -259,42 +306,169 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     await _controller.updatePersona(picked);
   }
 
-  Future<void> _pickModel() async {
-    final l10n = context.l10n;
+  Future<void> _pickModel() {
     final config = ref.read(aiLocalConfigProvider);
-    final fallback = config.resolveTask(AiTaskKind.chat);
-    final picked = await showAiModelChoiceSheet(
+    return showAiChatModelSheet(
       context,
-      title: l10n.aiChatModel,
       models: config.usableModels,
-      current: config.resolveRef(_controller.modelRef)?.ref,
-      followLabel: l10n.aiChatModelDefault(
-        fallback == null ? '—' : aiModelDisplay(fallback),
-      ),
+      defaultModel: config.resolveTask(AiTaskKind.chat),
+      options: _controller.options,
+      onChanged: (value) => unawaited(_controller.updateOptions(value)),
     );
-    if (!mounted || picked == null) return;
-    _controller.updateModel(picked.ref);
   }
 
   Future<void> _editLast(String question) async {
     final edited = await showAiEditQuestionDialog(context, question);
     if (!mounted || edited == null) return;
-    _input.clear();
     await _controller.editLast(context, ref, edited);
   }
+
+  AiAnswerActions _actions({
+    required List<AiCitation> citations,
+    void Function(String callId, bool approved)? onDecide,
+    void Function(Set<String>? callIds)? onUndo,
+  }) {
+    final id = _controller.conversationId;
+    return AiAnswerActions(
+      onCitation: (refText) {
+        for (final citation in citations) {
+          if (citation.ref == refText) {
+            unawaited(
+              openAiSubject(
+                context,
+                ref,
+                aiCitationSubject(citation),
+                conversationId: id,
+              ),
+            );
+            return;
+          }
+        }
+      },
+      onOpenPage: (navigation) => unawaited(
+        openAiNavigation(context, ref, navigation, conversationId: id),
+      ),
+      onOpenSubject: (subject) =>
+          unawaited(openAiSubject(context, ref, subject, conversationId: id)),
+      onUndo: onUndo,
+      onDecide: onDecide,
+    );
+  }
+
+  // ------------------------------------------------------------ 界面
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
     final id = _controller.conversationId;
     final conversation = id == null
         ? null
         : ref.watch(aiConversationProvider(id)).value;
-    final rows = id == null
-        ? const <AiMessageRow>[]
-        : ref.watch(aiMessagesProvider(id)).value ?? const <AiMessageRow>[];
+    final title = conversation?.title.trim().isNotEmpty ?? false
+        ? conversation!.title
+        : l10n.aiChatUntitled;
+    final busy = _controller.busy;
+    final blank = id == null && !busy;
+    return AppPageBackground(
+      area: AppBackgroundArea.other,
+      child: Builder(
+        // 点输入框以外的地方收起键盘（发送 / 停止按钮算作输入框的一部分）。
+        builder: (BuildContext context) => AiTapOutsideUnfocus(
+          child: WidthLayoutBuilder(
+            builder: (BuildContext context, double width) {
+              final docked =
+                  AppBreakpoints.classOf(width) == AppWindowClass.expanded;
+              final chatWidth = docked ? width - _dockWidth - 1 : width;
+              final side = AppContentWidth.gutter(
+                chatWidth,
+                AppContentWidth.reading,
+              );
+              final panel = AiChatHistoryPanel(
+                currentId: id,
+                onSelect: (value) => unawaited(_openConversation(value)),
+                onNewChat: () => unawaited(_startNew()),
+                onSettings: _openSettings,
+                onDeleted: _onDeleted,
+                onExport: _openExport,
+                onRecaps: ref.watch(aiModuleAvailableProvider(AiModule.recap))
+                    ? _openRecap
+                    : null,
+              );
+              return Scaffold(
+                key: _scaffold,
+                backgroundColor: AppPageBackdrop.pageColorOf(context),
+                drawer: docked
+                    ? null
+                    : AiChatHistoryDrawer(pageWidth: width, child: panel),
+                drawerEnableOpenDragGesture: false,
+                appBar: AiChatTopBar(
+                  title: title,
+                  conversation: conversation,
+                  docked: docked,
+                  blank: blank,
+                  onHistory: () => _scaffold.currentState?.openDrawer(),
+                  onNewChat: () => unawaited(_startNew()),
+                  onDelete: () => unawaited(_deleteCurrent(conversation)),
+                  onExport: () {
+                    if (conversation != null) {
+                      _openExport(conversation.conversationId);
+                    }
+                  },
+                  onSettings: _openSettings,
+                ),
+                body: docked
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          SizedBox(width: _dockWidth, child: panel),
+                          VerticalDivider(
+                            width: 1,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                          ),
+                          Expanded(child: _messages(context, side, docked)),
+                        ],
+                      )
+                    : _messages(context, side, docked),
+                // 输入栏放在 bottomNavigationBar：浮动提示条停在它上方。
+                // Scaffold 不替底栏让开键盘，由 KeyboardInsetPadding 垫高
+                // （只有这一层随键盘逐帧重建）。
+                bottomNavigationBar: KeyboardInsetPadding(
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      start: docked ? _dockWidth + 1 : 0,
+                    ),
+                    child: _composer(context, side, busy),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 消息区放进这段对话的存储桶：滚动位置、展开过的思考过程与工具详情
+  /// 在列表回收、换页回来后都还在。
+  Widget _messages(BuildContext context, double side, bool docked) =>
+      PageStorage(
+        bucket: ref
+            .read(aiChatViewMemoryProvider)
+            .bucketFor(_controller.conversationId),
+        child: _messageList(context, side, docked),
+      );
+
+  Widget _messageList(BuildContext context, double side, bool docked) {
+    final id = _controller.conversationId;
+    final loaded = id == null ? null : ref.watch(aiMessagesProvider(id)).value;
+    // 打开已有对话、消息还没读出来：先什么都不画（不闪欢迎页或空列表；
+    // 回到对话时列表要等内容齐了再建，才能按记下的位置恢复）。
+    if (id != null && loaded == null && !_controller.busy) {
+      return const SizedBox.shrink();
+    }
+    final rows = loaded ?? const <AiMessageRow>[];
     // 智能体这一轮的消息行边做边落库，进行中由末尾的“进行中”一项显示。
     final pendingRow = _controller.agentTurn?.messageId;
     final messages = pendingRow == null
@@ -303,6 +477,109 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
             for (final row in rows)
               if (row.messageId != pendingRow) row,
           ];
+    final l10n = context.l10n;
+    final prefs = ref.watch(aiPreferencesProvider);
+    final persona = aiPersonaById(
+      l10n,
+      prefs,
+      _controller.personaId,
+      use: AiPersonaUse.chat,
+    );
+    final busy = _controller.busy;
+    final lastUser = messages.lastIndexWhere(
+      (m) => m.role == AiMessageRole.user,
+    );
+    final lastAssistant = messages.lastIndexWhere(
+      (m) => m.role == AiMessageRole.assistant,
+    );
+    // 欢迎页只属于还没开始的新对话（打开旧对话、消息还没读出来时不闪一下
+    // 欢迎页）；它从顶部读起，不用贴底跟随的滚动控制器。
+    if (id == null && !busy) {
+      return SingleChildScrollView(
+        key: const ValueKey<String>('chat-welcome'),
+        padding: EdgeInsets.fromLTRB(side, 8, side, 24),
+        child: AiChatWelcome(
+          persona: persona,
+          agent: prefs.agent.enabled,
+          recapOn: ref.watch(aiModuleAvailableProvider(AiModule.recap)),
+          onAsk: (question) => unawaited(_send(question)),
+          onOpenConversation: (value) => unawaited(_openConversation(value)),
+          onShowAll: docked ? null : () => _scaffold.currentState?.openDrawer(),
+          onRecap: _openRecap,
+        ),
+      );
+    }
+    return ListView.builder(
+      // 换对话时整段列表重来（展开状态、元素复用不串到别的对话）。
+      key: PageStorageKey<String>('chat-${id ?? 'new'}'),
+      controller: _scroll,
+      padding: EdgeInsets.fromLTRB(side, 8, side, 24),
+      itemCount: messages.length + (busy ? 1 : 0),
+      findChildIndexCallback: (key) {
+        if (key is! ValueKey<String>) return null;
+        if (key.value == 'ai-pending') return busy ? messages.length : null;
+        final index = messages.indexWhere(
+          (message) => message.messageId == key.value,
+        );
+        return index < 0 ? null : index;
+      },
+      itemBuilder: (context, i) {
+        if (i == messages.length) {
+          return ListenableBuilder(
+            key: const ValueKey<String>('ai-pending'),
+            listenable: Listenable.merge(<Listenable?>[
+              _controller.run,
+              _controller.agentTurn,
+            ]),
+            builder: (context, _) => AiPendingAnswer(
+              controller: _controller,
+              persona: persona,
+              showReasoning: prefs.showReasoning,
+              actionsFor: _actions,
+            ),
+          );
+        }
+        final message = messages[i];
+        final citations = AiCitation.decodeList(message.citations);
+        return AiChatMessageView(
+          key: ValueKey<String>(message.messageId),
+          message: message,
+          persona: persona,
+          showReasoning: prefs.showReasoning,
+          showTokens: prefs.showTokens,
+          actions: _actions(
+            citations: citations,
+            onUndo: busy
+                ? null
+                : (ids) => unawaited(
+                    undoAiAgentCalls(context, ref, message, callIds: ids),
+                  ),
+          ),
+          onCopy: (text) => unawaited(copyAiText(context, text)),
+          onSaveAsDiary: (text) => unawaited(
+            saveAiTextAsDiary(
+              context,
+              ref,
+              title: ref.read(aiConversationProvider(id!)).value?.title ?? '',
+              markdown: text,
+            ),
+          ),
+          onEdit: !busy && i == lastUser
+              ? () => unawaited(_editLast(message.content))
+              : null,
+          onRegenerate: !busy && i == lastAssistant && i > lastUser
+              ? () => unawaited(_controller.regenerate(context, ref))
+              : null,
+          onDelete: busy
+              ? null
+              : () => unawaited(deleteAiChatMessage(context, ref, message)),
+        );
+      },
+    );
+  }
+
+  Widget _composer(BuildContext context, double side, bool busy) {
+    final l10n = context.l10n;
     final prefs = ref.watch(aiPreferencesProvider);
     final config = ref.watch(aiLocalConfigProvider);
     final persona = aiPersonaById(
@@ -311,496 +588,43 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       _controller.personaId,
       use: AiPersonaUse.chat,
     );
+    final options = _controller.options;
     final model =
-        config.resolveRef(_controller.modelRef) ??
-        config.resolveTask(AiTaskKind.chat);
-    final title = conversation?.title.trim().isNotEmpty ?? false
-        ? conversation!.title
-        : l10n.aiChatUntitled;
-    final lastUser = messages.lastIndexWhere(
-      (m) => m.role == AiMessageRole.user,
-    );
-    final lastAssistant = messages.lastIndexWhere(
-      (m) => m.role == AiMessageRole.assistant,
-    );
-    final busy = _controller.busy;
-    return AppPageBackground(
-      area: AppBackgroundArea.other,
-      // 点输入框以外的地方收起键盘（发送 / 停止按钮算作输入框的一部分）。
-      child: Builder(
-        builder: (BuildContext context) => AiTapOutsideUnfocus(
-          child: Scaffold(
-            backgroundColor: AppPageBackdrop.pageColorOf(context),
-            appBar: AppTopBar(
-              contentMaxWidth: AppContentWidth.reading,
-              title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-              leading: IconButton(
-                tooltip: l10n.commonBack,
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-              ),
-              actions: <Widget>[
-                if (conversation != null)
-                  ExpressiveMenuButton(
-                    tooltip: l10n.aiChatMore,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.ellipsisVertical,
-                      size: 16,
-                    ),
-                    items: <Widget>[
-                      ExpressiveMenuItem(
-                        leadingIcon: const FaIcon(FontAwesomeIcons.pen),
-                        onPressed: () => unawaited(
-                          renameAiConversation(context, ref, conversation),
-                        ),
-                        child: Text(l10n.aiChatRename),
-                      ),
-                      ExpressiveMenuItem(
-                        leadingIcon: const FaIcon(FontAwesomeIcons.thumbtack),
-                        onPressed: () => unawaited(
-                          ref
-                              .read(appDatabaseProvider)
-                              .updateAiConversation(
-                                conversation.conversationId,
-                                pinned: !conversation.pinned,
-                              ),
-                        ),
-                        child: Text(
-                          conversation.pinned
-                              ? l10n.aiChatUnpin
-                              : l10n.aiChatPin,
-                        ),
-                      ),
-                      ExpressiveMenuItem(
-                        leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
-                        destructive: true,
-                        onPressed: () {
-                          _controller.stop();
-                          unawaited(
-                            deleteAiConversation(
-                              context,
-                              ref,
-                              conversation,
-                              popPage: true,
-                            ),
-                          );
-                        },
-                        child: Text(l10n.commonDelete),
-                      ),
-                    ],
-                  ),
-              ],
-            ),
-            // 只随宽度重建：在输入框打字时键盘升降，body 逐帧变矮，不必逐帧
-            // 重建整段对话（见 WidthLayoutBuilder）。
-            body: WidthLayoutBuilder(
-              builder: (BuildContext context, double maxWidth) {
-                final side = AppContentWidth.gutter(
-                  maxWidth,
-                  AppContentWidth.reading,
-                );
-                return Column(
-                  children: <Widget>[
-                    DesktopHorizontalScroll(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.fromLTRB(side, 4, side, 8),
-                        child: Row(
-                          children: <Widget>[
-                            _ChipButton(
-                              icon: FontAwesomeIcons.magnifyingGlass,
-                              label: aiChatScopeLabel(l10n, _controller.scope),
-                              onPressed: busy ? null : _pickScope,
-                            ),
-                            const SizedBox(width: 8),
-                            _ChipButton(
-                              emoji: persona.emoji,
-                              label: persona.name,
-                              onPressed: busy ? null : _pickPersona,
-                            ),
-                            const SizedBox(width: 8),
-                            _ChipButton(
-                              icon: FontAwesomeIcons.microchip,
-                              label: model == null
-                                  ? l10n.aiChatModel
-                                  : model.model.label,
-                              onPressed: busy ? null : _pickModel,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        controller: _scroll,
-                        padding: EdgeInsets.fromLTRB(side, 8, side, 24),
-                        itemCount: messages.isEmpty && !busy
-                            ? 1
-                            : messages.length + (busy ? 1 : 0),
-                        findChildIndexCallback: (key) {
-                          if (key is! ValueKey<String>) return null;
-                          if (key.value == 'ai-pending') {
-                            return busy ? messages.length : null;
-                          }
-                          final index = messages.indexWhere(
-                            (message) => message.messageId == key.value,
-                          );
-                          return index < 0 ? null : index;
-                        },
-                        itemBuilder: (context, i) {
-                          if (messages.isEmpty && !busy) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 48),
-                              child: Column(
-                                children: <Widget>[
-                                  FaIcon(
-                                    FontAwesomeIcons.comments,
-                                    size: 32,
-                                    color: colors.primary,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    l10n.aiChatEmptyHint,
-                                    textAlign: TextAlign.center,
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: colors.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                          if (i == messages.length) {
-                            return ListenableBuilder(
-                              key: const ValueKey<String>('ai-pending'),
-                              listenable: Listenable.merge(<Listenable?>[
-                                _controller.run,
-                                _controller.agentTurn,
-                              ]),
-                              builder: (BuildContext context, Widget? _) =>
-                                  _buildPending(context),
-                            );
-                          }
-                          return AiChatMessageView(
-                            key: ValueKey<String>(messages[i].messageId),
-                            message: messages[i],
-                            showReasoning: prefs.showReasoning,
-                            showTokens: prefs.showTokens,
-                            onCitation: (citations, ref) =>
-                                _openCitation(citations, ref),
-                            onEdit: !busy && i == lastUser
-                                ? () =>
-                                      unawaited(_editLast(messages[i].content))
-                                : null,
-                            onRegenerate:
-                                !busy && i == lastAssistant && i > lastUser
-                                ? () => unawaited(
-                                    _controller.regenerate(context, ref),
-                                  )
-                                : null,
-                            onCopy: (text) =>
-                                unawaited(copyAiText(context, text)),
-                            onOpenPage: (navigation) =>
-                                unawaited(_openPage(navigation)),
-                            onUndoCalls: busy
-                                ? null
-                                : (ids) => unawaited(
-                                    undoAiAgentCalls(
-                                      context,
-                                      ref,
-                                      messages[i],
-                                      callIds: ids,
-                                    ),
-                                  ),
-                            onSaveAsDiary: (text) => unawaited(
-                              saveAiTextAsDiary(
-                                context,
-                                ref,
-                                title: title,
-                                markdown: text,
-                              ),
-                            ),
-                            onDelete: busy
-                                ? null
-                                : () => unawaited(
-                                    deleteAiChatMessage(
-                                      context,
-                                      ref,
-                                      messages[i],
-                                    ),
-                                  ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            // 输入栏放在 bottomNavigationBar：浮动提示条停在它上方，不会挡住
-            // 输入框。Scaffold 不替底栏让开键盘，由 KeyboardInsetPadding 垫高
-            // （只有这一层随键盘逐帧重建）；body 照常在输入栏上方变矮。
-            bottomNavigationBar: KeyboardInsetPadding(
-              child: WidthLayoutBuilder(
-                builder: (BuildContext context, double maxWidth) => _ChatInput(
-                  controller: _input,
-                  focusNode: _inputFocus,
-                  side: AppContentWidth.gutter(
-                    maxWidth,
-                    AppContentWidth.reading,
-                  ),
-                  busy: busy,
-                  enabled: _ready,
-                  onSend: () => unawaited(_send()),
-                  onStop: _controller.stop,
-                ),
-              ),
-            ),
-          ),
+        config.resolveRef(options.model) ?? config.resolveTask(AiTaskKind.chat);
+    final thinking = aiThinkingLevelLabel(l10n, options.thinking);
+    return AiChatComposer(
+      controller: _input,
+      focusNode: _inputFocus,
+      side: side,
+      busy: busy,
+      enabled: _ready,
+      onSend: () => unawaited(_send()),
+      onStop: _controller.stop,
+      chips: <Widget>[
+        AiComposerChip(
+          icon: FontAwesomeIcons.magnifyingGlass,
+          label: aiChatScopeLabel(l10n, _controller.scope),
+          custom: _controller.scope.kind != AiChatScopeKind.auto,
+          tooltip: l10n.aiChatScope,
+          onPressed: busy ? null : _pickScope,
         ),
-      ),
-    );
-  }
-
-  /// 正在进行的这一轮：检索中的状态行，或流式的回答。
-  Widget _buildPending(BuildContext context) {
-    final turn = _controller.agentTurn;
-    if (_controller.phase == AiChatPhase.working && turn != null) {
-      return _buildAgentPending(context, turn);
-    }
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final run = _controller.run;
-    final status = switch (_controller.phase) {
-      AiChatPhase.planning => l10n.aiChatPlanning,
-      AiChatPhase.searching => l10n.aiChatSearching,
-      AiChatPhase.answering when !run.hasText => l10n.aiPanelThinking,
-      _ => null,
-    };
-    final citations = _controller.pendingCitations;
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          if (status != null)
-            Row(
-              children: <Widget>[
-                const ExpressiveLoadingIndicator(size: 18),
-                const SizedBox(width: 10),
-                Flexible(
-                  child: Text(
-                    status,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          if (run.hasText || run.reasoning.isNotEmpty)
-            AiChatAnswerBody(
-              text: run.text,
-              reasoning: ref.watch(aiPreferencesProvider).showReasoning
-                  ? run.reasoning
-                  : '',
-              onCitation: (ref) => _openCitation(citations, ref),
-            ),
-          if (_controller.phase == AiChatPhase.answering &&
-              run.status == AiRunStatus.running &&
-              citations.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                l10n.aiChatCitations(citations.length),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  /// 智能体正在进行的这一轮：已执行的步骤、正在流式的文字，以及“正在准备
-  /// 某个操作 / 正在思考”的提示。
-  Widget _buildAgentPending(BuildContext context, AiAgentTurn turn) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final showReasoning = ref.watch(aiPreferencesProvider).showReasoning;
-    final citations = turn.toolContext.citations.all;
-    final waiting =
-        turn.preparingTool == null &&
-        turn.text.isEmpty &&
-        (turn.steps.isEmpty ||
-            turn.steps.last.calls.every((call) => call.status.finished));
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          AiAgentStepsView(
-            steps: turn.steps,
-            live: true,
-            showReasoning: showReasoning,
-            onCitation: (ref) => _openCitation(citations, ref),
-            onOpen: (navigation) => unawaited(_openPage(navigation)),
-            onDecide: (callId, approved) =>
-                turn.decide(callId, approved: approved),
-          ),
-          if (turn.text.isNotEmpty || turn.reasoning.isNotEmpty)
-            AiChatAnswerBody(
-              text: turn.text,
-              reasoning: showReasoning ? turn.reasoning : '',
-              onCitation: (ref) => _openCitation(citations, ref),
-            ),
-          if (turn.preparingTool case final tool?)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: AiAgentPreparingRow(tool: tool),
-            )
-          else if (waiting)
-            Row(
-              children: <Widget>[
-                const ExpressiveLoadingIndicator(size: 18),
-                const SizedBox(width: 10),
-                Flexible(
-                  child: Text(
-                    l10n.aiPanelThinking,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 顶部一枚胶囊按钮（范围 / 人设 / 模型）。
-class _ChipButton extends StatelessWidget {
-  const _ChipButton({
-    required this.label,
-    required this.onPressed,
-    this.icon,
-    this.emoji,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final FaIconData? icon;
-  final String? emoji;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return ActionChip(
-      avatar: emoji != null
-          ? Text(emoji!)
-          : FaIcon(icon, size: 12, color: colors.primary),
-      label: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 180),
-        child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
-      onPressed: onPressed,
-    );
-  }
-}
-
-/// 底部输入栏：多行输入（普通文字键盘）与发送 / 停止按钮。桌面上 Enter
-/// 发送、Shift + Enter 换行；手机上回车换行，点按钮发送。
-class _ChatInput extends StatelessWidget {
-  const _ChatInput({
-    required this.controller,
-    required this.focusNode,
-    required this.side,
-    required this.busy,
-    required this.enabled,
-    required this.onSend,
-    required this.onStop,
-  });
-
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final double side;
-  final bool busy;
-  final bool enabled;
-  final VoidCallback onSend;
-  final VoidCallback onStop;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final colors = Theme.of(context).colorScheme;
-    final glass = AppGlassField.of(context);
-    Widget field = TextField(
-      controller: controller,
-      focusNode: focusNode,
-      enabled: enabled,
-      minLines: 1,
-      maxLines: 6,
-      keyboardType: TextInputType.multiline,
-      textInputAction: TextInputAction.newline,
-      decoration: InputDecoration(
-        hintText: l10n.aiChatInputHint,
-        filled: true,
-        fillColor: glass?.fill ?? colors.surfaceContainerHigh,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+        AiComposerChip(
+          emoji: persona.emoji,
+          label: persona.name,
+          custom: _controller.personaId != _defaultPersonaId,
+          tooltip: l10n.aiChatPersona,
+          onPressed: busy ? null : _pickPersona,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: glass?.border ?? BorderSide.none,
+        AiComposerChip(
+          icon: FontAwesomeIcons.microchip,
+          label: model == null
+              ? l10n.aiChatModel
+              : '${model.model.label} · $thinking',
+          custom: options != AiConversationOptions.defaults,
+          tooltip: l10n.aiChatModelSheetTitle,
+          onPressed: busy ? null : () => unawaited(_pickModel()),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: glass?.border ?? BorderSide.none,
-        ),
-      ),
-      contextMenuBuilder: appTextContextMenuBuilder,
-    );
-    if (AppPlatform.isDesktop) {
-      field = CallbackShortcuts(
-        bindings: <ShortcutActivator, VoidCallback>{
-          const SingleActivator(LogicalKeyboardKey.enter): onSend,
-          const SingleActivator(LogicalKeyboardKey.numpadEnter): onSend,
-        },
-        child: field,
-      );
-    }
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(side, 4, side, 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Expanded(child: field),
-            const SizedBox(width: 8),
-            // 算作输入框的一部分：点发送不收起键盘，接着就能写下一句。
-            TextFieldTapRegion(
-              child: busy
-                  ? IconButton.outlined(
-                      tooltip: l10n.aiPanelStop,
-                      onPressed: onStop,
-                      icon: const FaIcon(FontAwesomeIcons.stop, size: 16),
-                    )
-                  : IconButton.filled(
-                      tooltip: l10n.aiPanelSend,
-                      onPressed: enabled ? onSend : null,
-                      icon: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
-                    ),
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }

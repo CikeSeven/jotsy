@@ -51,6 +51,8 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/bottom_nav.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../../widgets/launch_reveal.dart';
+import '../../ai/controllers/ai_chat_return_flow.dart';
+import '../../ai/providers/ai_chat_return_provider.dart';
 part '../controllers/home_page_controller.dart';
 part 'home_page_chrome.dart';
 part 'home_page_shortcuts.dart';
@@ -192,6 +194,15 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// 快捷键触发的新建流程是否进行中：按住或连按时不重复打开编辑页。
   bool _shortcutCreateRunning = false;
 
+  /// AI 卡片把用户带回首页后，等首页成为当前页再提示“回到对话”。
+  final AiChatReturnHint _aiReturnHint = AiChatReturnHint();
+
+  /// 点底栏 / 侧边栏换 Tab：用户自己去做别的事了，返回键不再回到对话。
+  Future<void> _handleNavTap(int index) {
+    ref.read(aiChatReturnProvider.notifier).disarm();
+    return _controller.onTap(index);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -274,6 +285,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void dispose() {
+    _aiReturnHint.cancel();
     _updateAutoChecker.dispose();
     _cloudAutoBackup.dispose();
     _lanSyncNotices?.dispose();
@@ -455,6 +467,23 @@ class _HomePageState extends ConsumerState<HomePage> {
       unawaited(_controller.switchToHomeTab(request.tab));
     });
 
+    // AI 的前往卡片把对话页关掉、回到了首页：等首页成为当前页（上锁的
+    // 日记本要先验证）再提示一次可以回到对话。
+    ref.listen<String?>(aiChatReturnProvider, (String? previous, String? next) {
+      if (next == null) {
+        _aiReturnHint.cancel();
+        return;
+      }
+      if (next == previous) return;
+      _aiReturnHint.start(
+        isCurrent: () =>
+            mounted && (ModalRoute.of(context)?.isCurrent ?? false),
+        show: () {
+          if (mounted) showAiChatReturnSnackBar(context, ref);
+        },
+      );
+    });
+
     final settingsService = ref.watch(settingsServiceProvider).asData?.value;
     if (settingsService == null) {
       _controller.pageSwitchCurve =
@@ -535,6 +564,13 @@ class _HomePageState extends ConsumerState<HomePage> {
             }
             // 待办页多选时由它自己的 PopScope 退出多选，这里不切 Tab。
             if (_effectiveTab == HomeTab.todos && _todosSelecting) return;
+            // 是 AI 卡片带过来的：返回回到那段对话（日记页由它自己的
+            // PopScope 处理，先让它退出多选、收起标签栏）。
+            if (_effectiveTab != HomeTab.diaries &&
+                ref.read(aiChatReturnProvider) != null) {
+              unawaited(reopenAiChat(context, ref));
+              return;
+            }
             // 其他 tab 按返回时先切回日记页，避免直接退出应用。
             unawaited(_controller.switchToDiariesTab());
           },

@@ -12,6 +12,7 @@ import 'package:node_diary/core/services/ai/ai_service.dart';
 import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/ui/ai/models/ai_agent_steps.dart';
 import 'package:node_diary/ui/ai/pages/ai_chat_page.dart';
+import 'package:node_diary/ui/ai/sections/chat/ai_action_cards.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_task_prompts.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
@@ -79,6 +80,15 @@ void main() {
     }
   }
 
+  /// 展开思考过程折叠块（摘要胶囊为 Text.rich）。只读与失败的调用折在里面。
+  Future<void> expandProcess(DiaryDraftsHarness h, String summary) async {
+    final pill = find.textContaining(summary, findRichText: true);
+    expect(pill, findsOneWidget);
+    await h.tester.tap(pill);
+    await settleMany(h, 2);
+    await h.tester.pump(const Duration(milliseconds: 400));
+  }
+
   Future<List<AiMessageRow>> savedMessages(DiaryDraftsHarness h) async {
     final conversations = (await h.tester.runAsync(
       () => h.database.watchAiConversations().first,
@@ -127,6 +137,9 @@ void main() {
     expect(result.content, contains('傍晚去海边散步'));
     expect(result.content, isNot(contains('开了一整天的会')));
 
+    // 只读的查找折在“思考过程”里，展开才看得到这一步。
+    expect(find.text(h.l10n.aiToolSearchDiariesFor('海边')), findsNothing);
+    await expandProcess(h, h.l10n.aiProcessTools(1));
     expect(find.text(h.l10n.aiToolSearchDiariesFor('海边')), findsOneWidget);
     expect(find.text(h.l10n.aiToolFoundEntries(1)), findsOneWidget);
     expect(find.textContaining('你在海边散步过'), findsOneWidget);
@@ -140,6 +153,65 @@ void main() {
     expect(steps.single.calls.single.status, AiToolCallStatus.succeeded);
     expect(AiCitation.decodeList(answer.citations).single.diaryId, beach);
     expect((jsonDecode(answer.meta) as Map)['agent'], isTrue);
+    await h.unmount();
+  });
+
+  testWidgets('a notebook card names the notebook and follows renames', (
+    tester,
+  ) async {
+    final h = await setUpHarness(tester);
+    final notebook = (await tester.runAsync(
+      () => h.database.createNotebook(name: '旅行手记'),
+    ))!;
+    await seedDiary(h, '海边', '傍晚去海边散步');
+    final entry = (await tester.runAsync(
+      () => h.database.select(h.database.diaries).get(),
+    ))!.single.diaryId;
+    await tester.runAsync(
+      () => h.database.addDiariesToNotebook(notebook, [entry]),
+    );
+    service = scriptedAiService(
+      store,
+      requests: requests,
+      turns: [
+        toolTurn([
+          (
+            id: 'c1',
+            name: 'open_page',
+            args: {'destination': 'notebook', 'notebook_id': notebook},
+          ),
+        ]),
+        textTurn('点下面的卡片打开这本。'),
+      ],
+    );
+    await h.pump(
+      const AiChatPage(initialQuestion: '打开旅行手记'),
+      overrides: overrides(),
+    );
+    await settleMany(h);
+
+    final card = find.byType(AiDestinationCard);
+    expect(card, findsOneWidget);
+    expect(
+      find.descendant(of: card, matching: find.text('旅行手记')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: card,
+        matching: find.textContaining(h.l10n.aiCardEntries(1)),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.runAsync(
+      () => h.database.updateNotebook(notebook, name: '东京之旅'),
+    );
+    await settleMany(h, 3);
+    expect(
+      find.descendant(of: card, matching: find.text('东京之旅')),
+      findsOneWidget,
+    );
     await h.unmount();
   });
 
@@ -165,11 +237,23 @@ void main() {
     );
     await settleMany(h);
 
-    final button = find.text(
-      h.l10n.aiAgentOpenPage(h.l10n.settingsTagManagement),
+    // 前往卡片露在外面：标题是页面名，副标题写出在“设置”里，整卡可点。
+    final card = find.byType(AiDestinationCard);
+    expect(card, findsOneWidget);
+    expect(
+      find.descendant(
+        of: card,
+        matching: find.text(h.l10n.settingsTagManagement),
+      ),
+      findsOneWidget,
     );
-    expect(button, findsOneWidget);
-    await tester.tap(button);
+    expect(
+      find.descendant(of: card, matching: find.text(h.l10n.navSettings)),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byTooltip(h.l10n.aiAgentOpenPage(h.l10n.settingsTagManagement)),
+    );
     await settleMany(h);
     expect(find.byType(TagManagementPage), findsOneWidget);
     await h.unmount();
@@ -338,6 +422,8 @@ void main() {
       final result = requests.last.messages.last.toolResults.single;
       expect(result.isError, isTrue);
       expect(result.content, contains('editing'));
+      // 失败的调用折在过程里，摘要标出“未成功”。
+      await expandProcess(h, h.l10n.aiProcessFailed(1));
       expect(find.text(h.l10n.aiToolBlockedByEditor), findsOneWidget);
       final diaries = (await tester.runAsync(
         () => h.database.select(h.database.diaries).get(),
@@ -382,6 +468,7 @@ void main() {
     await h.pump(AiChatPage(conversationId: id), overrides: overrides());
     await settleMany(h);
 
+    await expandProcess(h, h.l10n.aiProcessTools(1));
     expect(find.text(h.l10n.aiToolListTags), findsOneWidget);
     expect(find.text(h.l10n.aiAgentStepInterrupted), findsOneWidget);
     expect(requests, isEmpty);

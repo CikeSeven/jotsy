@@ -11678,9 +11678,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiAgentUndo => '撤销';
 
   @override
-  String get aiAgentUndoAll => '撤销本轮全部改动';
-
-  @override
   String get aiAgentStepUndone => '已撤销';
 
   @override
@@ -11721,11 +11718,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiDestinationSearch => '搜索日记';
-
-  @override
-  String aiAgentStepsSummary(int count) {
-    return '执行了 $count 个操作';
-  }
 
   @override
   String get aiAgentPreparing => '正在准备操作…';
@@ -12740,12 +12732,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get aiHubTitle => 'AI 助手';
-
-  @override
-  String get aiHubAskHint => '问问你的日记…';
-
-  @override
   String get aiHubQuickMonth => '这个月我过得怎么样？';
 
   @override
@@ -12761,19 +12747,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiHubQuickGrowth => '这半年我有哪些变化？';
 
   @override
-  String get aiHubRecapsGroup => '回顾';
-
-  @override
   String get aiHubRecapMore => '更多范围…';
-
-  @override
-  String get aiHubNoRecaps => '还没有回顾';
-
-  @override
-  String get aiHubChatsGroup => '对话';
-
-  @override
-  String get aiHubNoChats => '还没有对话。从上面问一个问题开始吧。';
 
   @override
   String get aiHubSearchChats => '搜索对话';
@@ -12854,9 +12828,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiChatCitationMissing => '这篇日记已不存在';
 
   @override
-  String get aiChatEmptyHint => '可以问问这段时间的心情、某件事的来龙去脉，或者让 AI 帮你回忆。';
-
-  @override
   String aiChatAboutEntry(String title) {
     return '关于「$title」';
   }
@@ -12933,12 +12904,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiChatScopeAutoSubtitle => '按 AI 设置里的检索方式';
-
-  @override
-  String get aiHubOpenSettings => 'AI 设置';
-
-  @override
-  String get aiHubSend => '提问';
 
   @override
   String get aiSettingsOpenHub => '打开 AI 助手';
@@ -14720,4 +14685,373 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoSettingsSmartParseSubtitle => '把“明天下午3点 #工作 !!!”识别为日期、清单与优先级';
+
+  @override
+  String get aiToolOpenPageAny => '打开页面';
+
+  @override
+  String get aiToolOpensAfterReply => '回答后自动打开';
+
+  @override
+  String get aiListSeparator => '、';
+
+  @override
+  String aiToolNamesAndMore(String names, int count) {
+    return '$names 等 $count 项';
+  }
+
+  @override
+  String aiToolArgRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String aiToolArgSince(String date) {
+    return '$date 起';
+  }
+
+  @override
+  String aiToolArgUntil(String date) {
+    return '到 $date';
+  }
+
+  @override
+  String get aiToolArgYes => '是';
+
+  @override
+  String get aiToolArgNo => '否';
+
+  @override
+  String aiToolArgMinutes(int minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String aiToolArgName(String key) {
+    String _temp0 = intl.Intl.selectLogic(key, {
+      'arg_date_range': '日期',
+      'arg_due_range': '截止日期',
+      'arg_merge_from': '合并这些标签',
+      'arg_query': '关键词',
+      'arg_tags': '标签',
+      'arg_mood': '心情',
+      'arg_include_archived': '包括已归档',
+      'arg_sort': '排序',
+      'arg_limit': '最多',
+      'arg_group_by': '分组',
+      'arg_date': '日期',
+      'arg_time': '时间',
+      'arg_title': '标题',
+      'arg_name': '名称',
+      'arg_note': '备注',
+      'arg_color': '颜色',
+      'arg_weather': '天气',
+      'arg_location': '地点',
+      'arg_text': '内容',
+      'arg_body': '正文',
+      'arg_priority': '优先级',
+      'arg_list': '清单',
+      'arg_status': '状态',
+      'arg_scale': '字体大小',
+      'arg_repeat': '重复',
+      'arg_remove': '去掉的标签',
+      'arg_add': '加上的标签',
+      'arg_remind_before_minutes': '提前提醒',
+      'arg_parent_id': '上级日记本',
+      'arg_offset': '从第几个字读起',
+      'arg_new_name': '新名称',
+      'arg_mode': '外观',
+      'arg_language': '语言',
+      'arg_into': '合并到',
+      'arg_feature': '功能',
+      'arg_enabled': '开启',
+      'arg_clear_due': '清除截止日期',
+      'arg_kind_diary': '日记',
+      'arg_kind_notebook': '日记本',
+      'arg_kind_tag': '标签',
+      'arg_kind_todo': '待办',
+      'arg_kind_anniversary': '纪念日',
+      'arg_kind_day': '日期',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgValue(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'sort_relevant': '按相关程度',
+      'sort_newest': '从新到旧',
+      'sort_oldest': '从旧到新',
+      'group_by_none': '不分组',
+      'group_by_day': '按天',
+      'group_by_week': '按周',
+      'group_by_month': '按月',
+      'group_by_year': '按年',
+      'status_open': '未完成',
+      'status_completed': '已完成',
+      'status_all': '全部',
+      'priority_none': '无',
+      'priority_low': '低',
+      'priority_medium': '中',
+      'priority_high': '高',
+      'repeat_once': '不重复',
+      'repeat_yearly': '每年（公历）',
+      'repeat_lunar_yearly': '每年（农历）',
+      'mood_awful': '很糟',
+      'mood_bad': '不好',
+      'mood_meh': '一般',
+      'mood_good': '不错',
+      'mood_great': '很棒',
+      'mood_clear': '清除',
+      'mode_light': '浅色',
+      'mode_dark': '深色',
+      'mode_system': '跟随系统',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolAddToNotebookNamed(int count, String name) {
+    return '把 $count 篇日记收进「$name」';
+  }
+
+  @override
+  String aiToolRemoveFromNotebookNamed(int count, String name) {
+    return '把 $count 篇日记移出「$name」';
+  }
+
+  @override
+  String get aiChatReturnHint => '按返回键即可回到刚才的对话';
+
+  @override
+  String get aiChatReturnAction => '回到对话';
+
+  @override
+  String aiProcessThoughtFor(int seconds) {
+    return '思考了 $seconds 秒';
+  }
+
+  @override
+  String aiProcessThinkingFor(int seconds) {
+    return '正在思考 · $seconds 秒';
+  }
+
+  @override
+  String get aiProcessThought => '已思考';
+
+  @override
+  String aiProcessTools(int count) {
+    return '调用了 $count 个工具';
+  }
+
+  @override
+  String aiProcessFailed(int count) {
+    return '$count 个未成功';
+  }
+
+  @override
+  String get aiProcessSteps => '查看过程';
+
+  @override
+  String get aiToolDetailsInputs => '条件';
+
+  @override
+  String get aiToolDetailsResult => '结果';
+
+  @override
+  String get aiToolDetailsFailed => '这一步没有成功';
+
+  @override
+  String get aiToolDetailsTechnical => '技术信息';
+
+  @override
+  String aiCardEntries(int count) {
+    return '$count 篇';
+  }
+
+  @override
+  String aiCardTodoDue(String date) {
+    return '$date截止';
+  }
+
+  @override
+  String get aiCardTodoDone => '已完成';
+
+  @override
+  String aiCardSearchFor(String query) {
+    return '搜索「$query」';
+  }
+
+  @override
+  String get aiCardSectionHome => '首页';
+
+  @override
+  String get aiCardMissing => '已经不在了';
+
+  @override
+  String get aiCardFeatureOff => '功能已关闭';
+
+  @override
+  String aiChangeGroupTitle(int count) {
+    return '做了 $count 项改动';
+  }
+
+  @override
+  String get aiChangeUndoAll => '全部撤销';
+
+  @override
+  String get aiChatNewChat => '新对话';
+
+  @override
+  String get aiChatHistory => '对话记录';
+
+  @override
+  String get aiChatHistoryEmpty => '还没有对话';
+
+  @override
+  String get aiChatHistoryNoMatch => '没有找到相关的对话';
+
+  @override
+  String get aiChatGroupPinned => '置顶';
+
+  @override
+  String get aiChatGroupToday => '今天';
+
+  @override
+  String get aiChatGroupYesterday => '昨天';
+
+  @override
+  String get aiChatGroupWeek => '最近 7 天';
+
+  @override
+  String get aiChatGroupMonth => '最近 30 天';
+
+  @override
+  String get aiChatWelcomeTitle => '今天想聊点什么？';
+
+  @override
+  String get aiChatWelcomeAgent => '可以问我日记里的事，也可以让我帮你整理日记、记待办、打开页面。';
+
+  @override
+  String get aiChatWelcomeRetrieval => '可以问我日记里的事，我会先找到相关的日记再回答。';
+
+  @override
+  String get aiChatWelcomeRecaps => '回顾';
+
+  @override
+  String get aiChatWelcomeRecent => '最近的对话';
+
+  @override
+  String get aiChatWelcomeAllChats => '全部对话';
+
+  @override
+  String get aiChatModelSheetTitle => '模型与思考';
+
+  @override
+  String get aiChatThinking => '思考强度';
+
+  @override
+  String get aiThinkingAuto => '自动';
+
+  @override
+  String get aiThinkingOff => '关';
+
+  @override
+  String get aiThinkingLow => '低';
+
+  @override
+  String get aiThinkingMedium => '中';
+
+  @override
+  String get aiThinkingHigh => '高';
+
+  @override
+  String get aiThinkingAutoHint => '由模型自己决定要不要思考、想多久';
+
+  @override
+  String get aiThinkingOffHint => '不思考，直接回答，最快';
+
+  @override
+  String get aiThinkingLowHint => '简单想一想，适合日常问答';
+
+  @override
+  String get aiThinkingMediumHint => '多数问题的平衡之选';
+
+  @override
+  String get aiThinkingHighHint => '仔细推敲，适合整理、回顾与复杂的改动，最慢';
+
+  @override
+  String get aiThinkingDisabled => '这个模型在模型设置里关闭了思考';
+
+  @override
+  String aiChatMetaThinking(String level) {
+    return '思考：$level';
+  }
+
+  @override
+  String get aiChatOpenSettings => 'AI 设置';
+
+  @override
+  String get aiChatExport => '导出对话';
+
+  @override
+  String get aiChatExportFormat => '格式';
+
+  @override
+  String get aiChatExportMarkdown => 'Markdown';
+
+  @override
+  String get aiChatExportPlain => '纯文本';
+
+  @override
+  String get aiChatExportInclude => '包含';
+
+  @override
+  String get aiChatExportReasoning => '思考过程';
+
+  @override
+  String get aiChatExportSteps => '过程与操作';
+
+  @override
+  String get aiChatExportMessages => '选择消息';
+
+  @override
+  String aiChatExportSelected(int count, int total) {
+    return '已选 $count / $total 条';
+  }
+
+  @override
+  String get aiChatExportYou => '你';
+
+  @override
+  String get aiChatExportSave => '保存到文件';
+
+  @override
+  String get aiChatExportSaved => '对话已导出';
+
+  @override
+  String get aiChatExportFailed => '导出没有成功';
+
+  @override
+  String aiChatExportAt(String time, int count) {
+    return '导出于 $time · 共 $count 条消息';
+  }
+
+  @override
+  String get aiChatExportReferences => '参考的日记';
+
+  @override
+  String aiChatExportError(String reason) {
+    return '出错：$reason';
+  }
+
+  @override
+  String aiChatExportSubjects(String names) {
+    return '：$names';
+  }
+
+  @override
+  String get aiChatExportJson => 'JSON';
 }

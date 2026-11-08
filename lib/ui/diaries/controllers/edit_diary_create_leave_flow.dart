@@ -9,7 +9,8 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 /// 返回、桌面 Esc 都经 `attemptExit`，面板与录音仍先收起），交给
 /// [leaveCreateEntryPublishing]：
 ///
-/// 1. 没写东西（只套了模板、原样未动的也算，口径同草稿自动保存）：照常离开，
+/// 1. 没写东西（只套了模板或带进来的内容原样未动的也算，口径同草稿自动
+///    保存）：照常离开，
 ///    空草稿在 pop 回调里补存时删除；
 /// 2. 校验不过（metadata 损坏）：与“发表”键一样提示并留在本页；
 /// 3. 带时间胶囊（且胶囊功能开着）：封存是一次性的仪式，与“发表”键一样经
@@ -27,7 +28,7 @@ extension EditDiaryCreateLeaveFlow on EditDiaryController {
     final context = _state.context;
     final navigator = Navigator.of(context);
     final draft = _state._currentCreateDraft;
-    if (!_state._templates.snapshotFor(draft).hasContent) {
+    if (!createSnapshotOf(draft).hasContent) {
       navigator.pop();
       return;
     }

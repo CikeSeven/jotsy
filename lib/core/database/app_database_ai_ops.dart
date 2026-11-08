@@ -61,6 +61,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
     String title = '',
     String? personaId,
     String scopeJson = '{}',
+    String optionsJson = '{}',
     DateTime? now,
   }) async {
     final id = _newBusinessUuid();
@@ -71,6 +72,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
         title: Value(title),
         personaId: Value(personaId),
         scope: Value(scopeJson),
+        options: Value(optionsJson),
         createdAt: time,
         updatedAt: time,
       ),
@@ -78,13 +80,14 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
     return id;
   }
 
-  /// 改写对话的标题、人设、范围或置顶。改名与置顶不刷新更新时间（不让它
-  /// 跳到列表最前），换人设与范围算一次活动。
+  /// 改写对话的标题、人设、范围、回答选项或置顶。改名、置顶与换模型 /
+  /// 思考强度不刷新更新时间（不让它跳到列表最前），换人设与范围算一次活动。
   Future<void> updateAiConversation(
     String conversationId, {
     String? title,
     Object? personaId = _aiUnset,
     String? scopeJson,
+    String? optionsJson,
     bool? pinned,
   }) {
     final touches = scopeJson != null || !identical(personaId, _aiUnset);
@@ -97,10 +100,27 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
             ? const Value.absent()
             : Value(personaId as String?),
         scope: scopeJson == null ? const Value.absent() : Value(scopeJson),
+        options: optionsJson == null
+            ? const Value.absent()
+            : Value(optionsJson),
         pinned: pinned == null ? const Value.absent() : Value(pinned),
         updatedAt: touches ? Value(DateTime.now()) : const Value.absent(),
       ),
     );
+  }
+
+  /// 最近活动的那段对话的回答选项 JSON（新对话沿用上一次的模型与思考
+  /// 强度）；还没有对话时为 null。
+  Future<String?> latestAiConversationOptions() async {
+    final row =
+        await (select(aiConversations)
+              ..orderBy(<OrderClauseGenerator<$AiConversationsTable>>[
+                (t) => OrderingTerm.desc(t.updatedAt),
+                (t) => OrderingTerm.desc(t.id),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
+    return row?.options;
   }
 
   /// 删除对话与它的消息，返回整份快照（供撤销）；不存在时返回 null。

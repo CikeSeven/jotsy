@@ -16811,10 +16811,6 @@
   "@aiAgentUndo": {
     "description": "Undo one change the AI made."
   },
-  "aiAgentUndoAll": "この回答の変更をすべて元に戻す",
-  "@aiAgentUndoAll": {
-    "description": "Undo every change the AI made in this reply."
-  },
   "aiAgentStepUndone": "元に戻しました",
   "@aiAgentStepUndone": {
     "description": "The AI step was undone."
@@ -16872,15 +16868,6 @@
   "aiDestinationSearch": "日記を検索",
   "@aiDestinationSearch": {
     "description": "AI open-page target: the search page."
-  },
-  "aiAgentStepsSummary": "{count} 件の操作を実行",
-  "@aiAgentStepsSummary": {
-    "description": "Title of a collapsed group of AI steps.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "aiAgentPreparing": "操作を準備中…",
   "@aiAgentPreparing": {
@@ -18342,14 +18329,6 @@
       }
     }
   },
-  "aiHubTitle": "AI アシスタント",
-  "@aiHubTitle": {
-    "description": "Title of the AI hub page."
-  },
-  "aiHubAskHint": "日記に聞いてみる…",
-  "@aiHubAskHint": {
-    "description": "Hint of the hub question field."
-  },
   "aiHubQuickMonth": "今月はどんなふうに過ごしていた？",
   "@aiHubQuickMonth": {
     "description": "Quick question."
@@ -18370,25 +18349,9 @@
   "@aiHubQuickGrowth": {
     "description": "Quick question."
   },
-  "aiHubRecapsGroup": "振り返り",
-  "@aiHubRecapsGroup": {
-    "description": "Hub recaps group."
-  },
   "aiHubRecapMore": "その他のオプション…",
   "@aiHubRecapMore": {
     "description": "Opens the recap page."
-  },
-  "aiHubNoRecaps": "振り返りはまだありません",
-  "@aiHubNoRecaps": {
-    "description": "Shown when there are no recaps."
-  },
-  "aiHubChatsGroup": "チャット",
-  "@aiHubChatsGroup": {
-    "description": "Hub chats group."
-  },
-  "aiHubNoChats": "チャットはまだありません。上の欄から質問して始めましょう。",
-  "@aiHubNoChats": {
-    "description": "Shown when there are no chats."
   },
   "aiHubSearchChats": "チャットを検索",
   "@aiHubSearchChats": {
@@ -18500,10 +18463,6 @@
   "aiChatCitationMissing": "この日記はもう存在しません",
   "@aiChatCitationMissing": {
     "description": "Shown for a missing cited entry."
-  },
-  "aiChatEmptyHint": "ある期間の気分や、出来事のいきさつについて尋ねたり、AI に思い出すのを手伝ってもらったりできます。",
-  "@aiChatEmptyHint": {
-    "description": "Empty chat hint."
   },
   "aiChatAboutEntry": "「{title}」について",
   "@aiChatAboutEntry": {
@@ -18618,14 +18577,6 @@
   "aiChatScopeAutoSubtitle": "AI 設定の検索方法に従います",
   "@aiChatScopeAutoSubtitle": {
     "description": "Subtitle of the auto scope."
-  },
-  "aiHubOpenSettings": "AI 設定",
-  "@aiHubOpenSettings": {
-    "description": "Tooltip of the settings button on the AI hub."
-  },
-  "aiHubSend": "質問",
-  "@aiHubSend": {
-    "description": "Tooltip of the hub ask button."
   },
   "aiSettingsOpenHub": "AI アシスタントを開く",
   "@aiSettingsOpenHub": {
@@ -19841,5 +19792,465 @@
   "todoSettingsSmartParse": "スマート認識",
   "@todoSettingsSmartParse": {"description": "To-do settings switch: recognize dates, lists and priority while typing."},
   "todoSettingsSmartParseSubtitle": "「明日 午後3時 #仕事 !!!」を日付・リスト・優先度として認識",
-  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."}
+  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."},
+  "aiToolOpenPageAny": "ページを開く",
+  "@aiToolOpenPageAny": {
+    "description": "Card title while the AI is preparing an open-page call and the target is unknown."
+  },
+  "aiToolOpensAfterReply": "回答のあとで開きます",
+  "@aiToolOpensAfterReply": {
+    "description": "Note on an open-page card: it opens automatically after the reply."
+  },
+  "aiListSeparator": "、",
+  "@aiListSeparator": {
+    "description": "Separator between names in AI cards."
+  },
+  "aiToolNamesAndMore": "{names} など計 {count} 件",
+  "@aiToolNamesAndMore": {
+    "description": "Too many names: the first few plus the total.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgRange": "{from} – {to}",
+  "@aiToolArgRange": {
+    "description": "Date range in tool details.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgSince": "{date} 以降",
+  "@aiToolArgSince": {
+    "description": "Open-ended date range with only a start.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgUntil": "{date} まで",
+  "@aiToolArgUntil": {
+    "description": "Open-ended date range with only an end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgYes": "はい",
+  "@aiToolArgYes": {
+    "description": "A true flag in tool details."
+  },
+  "aiToolArgNo": "いいえ",
+  "@aiToolArgNo": {
+    "description": "A false flag in tool details."
+  },
+  "aiToolArgMinutes": "{minutes} 分",
+  "@aiToolArgMinutes": {
+    "description": "Minutes in tool details (remind before).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} other{}}",
+  "@aiToolArgName": {
+    "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgValue": "{value, select, sort_relevant{関連度順} sort_newest{新しい順} sort_oldest{古い順} group_by_none{まとめない} group_by_day{日ごと} group_by_week{週ごと} group_by_month{月ごと} group_by_year{年ごと} status_open{未完了} status_completed{完了} status_all{すべて} priority_none{なし} priority_low{低} priority_medium{中} priority_high{高} repeat_once{繰り返さない} repeat_yearly{毎年} repeat_lunar_yearly{毎年（旧暦）} mood_awful{最悪} mood_bad{よくない} mood_meh{ふつう} mood_good{よい} mood_great{最高} mood_clear{クリア} mode_light{ライト} mode_dark{ダーク} mode_system{システムに合わせる} other{}}",
+  "@aiToolArgValue": {
+    "description": "Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebookNamed": "{count} 件の日記を「{name}」に追加",
+  "@aiToolAddToNotebookNamed": {
+    "description": "The agent puts entries in a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebookNamed": "{count} 件の日記を「{name}」から外す",
+  "@aiToolRemoveFromNotebookNamed": {
+    "description": "The agent takes entries out of a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatReturnHint": "戻るボタンで先ほどの会話に戻れます",
+  "@aiChatReturnHint": {
+    "description": "Snackbar after an AI card took the user to the home screen: back returns to the chat."
+  },
+  "aiChatReturnAction": "会話に戻る",
+  "@aiChatReturnAction": {
+    "description": "Snackbar button that reopens the chat."
+  },
+  "aiProcessThoughtFor": "{seconds} 秒考えました",
+  "@aiProcessThoughtFor": {
+    "description": "Summary of the folded process: how long the model thought.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThinkingFor": "考え中 · {seconds} 秒",
+  "@aiProcessThinkingFor": {
+    "description": "Live process fold: still thinking, seconds so far.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThought": "考えました",
+  "@aiProcessThought": {
+    "description": "Fold summary when there was thinking but no timing (older records)."
+  },
+  "aiProcessTools": "{count} 個のツールを使用",
+  "@aiProcessTools": {
+    "description": "Fold summary: number of tool calls.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessFailed": "{count} 件失敗",
+  "@aiProcessFailed": {
+    "description": "Fold summary: failed calls (in error color).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessSteps": "経過を見る",
+  "@aiProcessSteps": {
+    "description": "Fold summary when it only holds in-between remarks."
+  },
+  "aiToolDetailsInputs": "条件",
+  "@aiToolDetailsInputs": {
+    "description": "Tool details: heading of the parameters."
+  },
+  "aiToolDetailsResult": "結果",
+  "@aiToolDetailsResult": {
+    "description": "Tool details: heading of the result."
+  },
+  "aiToolDetailsFailed": "このステップは失敗しました",
+  "@aiToolDetailsFailed": {
+    "description": "Tool details: failure without its own explanation."
+  },
+  "aiToolDetailsTechnical": "技術情報",
+  "@aiToolDetailsTechnical": {
+    "description": "Tool details: expandable raw error."
+  },
+  "aiCardEntries": "{count} 件",
+  "@aiCardEntries": {
+    "description": "Open-page card: number of entries in the notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiCardTodoDue": "{date} 期限",
+  "@aiCardTodoDue": {
+    "description": "Open-page card: due date of the to-do.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardTodoDone": "完了",
+  "@aiCardTodoDone": {
+    "description": "Open-page card: the to-do is done."
+  },
+  "aiCardSearchFor": "「{query}」を検索",
+  "@aiCardSearchFor": {
+    "description": "Open-page card: search with keywords.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardSectionHome": "ホーム",
+  "@aiCardSectionHome": {
+    "description": "Open-page card subtitle: a tab of the home screen."
+  },
+  "aiCardMissing": "もう存在しません",
+  "@aiCardMissing": {
+    "description": "Open-page card: the target was deleted."
+  },
+  "aiCardFeatureOff": "機能がオフです",
+  "@aiCardFeatureOff": {
+    "description": "Open-page card: the feature of the target is off."
+  },
+  "aiChangeGroupTitle": "{count} 件の変更",
+  "@aiChangeGroupTitle": {
+    "description": "Header of the change card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChangeUndoAll": "すべて元に戻す",
+  "@aiChangeUndoAll": {
+    "description": "Button in the change card header."
+  },
+  "aiChatNewChat": "新しい会話",
+  "@aiChatNewChat": {
+    "description": "New chat button."
+  },
+  "aiChatHistory": "会話履歴",
+  "@aiChatHistory": {
+    "description": "Title of the history drawer and its button."
+  },
+  "aiChatHistoryEmpty": "まだ会話はありません",
+  "@aiChatHistoryEmpty": {
+    "description": "History drawer is empty."
+  },
+  "aiChatHistoryNoMatch": "該当する会話はありません",
+  "@aiChatHistoryNoMatch": {
+    "description": "History search found nothing."
+  },
+  "aiChatGroupPinned": "ピン留め",
+  "@aiChatGroupPinned": {
+    "description": "History group: pinned."
+  },
+  "aiChatGroupToday": "今日",
+  "@aiChatGroupToday": {
+    "description": "History group: today."
+  },
+  "aiChatGroupYesterday": "昨日",
+  "@aiChatGroupYesterday": {
+    "description": "History group: yesterday."
+  },
+  "aiChatGroupWeek": "過去 7 日間",
+  "@aiChatGroupWeek": {
+    "description": "History group: previous 7 days."
+  },
+  "aiChatGroupMonth": "過去 30 日間",
+  "@aiChatGroupMonth": {
+    "description": "History group: previous 30 days."
+  },
+  "aiChatWelcomeTitle": "今日は何を話しましょうか？",
+  "@aiChatWelcomeTitle": {
+    "description": "Greeting on the welcome screen."
+  },
+  "aiChatWelcomeAgent": "日記のことを聞いたり、日記の整理や ToDo の追加、ページを開くことを頼んだりできます。",
+  "@aiChatWelcomeAgent": {
+    "description": "Welcome note when the agent is on."
+  },
+  "aiChatWelcomeRetrieval": "日記のことを聞いてください。関連する日記を探してから答えます。",
+  "@aiChatWelcomeRetrieval": {
+    "description": "Welcome note for search-based answers."
+  },
+  "aiChatWelcomeRecaps": "振り返り",
+  "@aiChatWelcomeRecaps": {
+    "description": "Recaps section on the welcome screen."
+  },
+  "aiChatWelcomeRecent": "最近の会話",
+  "@aiChatWelcomeRecent": {
+    "description": "Recent chats section on the welcome screen."
+  },
+  "aiChatWelcomeAllChats": "すべての会話",
+  "@aiChatWelcomeAllChats": {
+    "description": "Welcome screen: open the history drawer."
+  },
+  "aiChatModelSheetTitle": "モデルと思考",
+  "@aiChatModelSheetTitle": {
+    "description": "Title of the model and thinking sheet."
+  },
+  "aiChatThinking": "思考の深さ",
+  "@aiChatThinking": {
+    "description": "Thinking level section in the sheet."
+  },
+  "aiThinkingAuto": "自動",
+  "@aiThinkingAuto": {
+    "description": "Thinking level: auto."
+  },
+  "aiThinkingOff": "オフ",
+  "@aiThinkingOff": {
+    "description": "Thinking level: off."
+  },
+  "aiThinkingLow": "低",
+  "@aiThinkingLow": {
+    "description": "Thinking level: low."
+  },
+  "aiThinkingMedium": "中",
+  "@aiThinkingMedium": {
+    "description": "Thinking level: medium."
+  },
+  "aiThinkingHigh": "高",
+  "@aiThinkingHigh": {
+    "description": "Thinking level: high."
+  },
+  "aiThinkingAutoHint": "モデルが考えるかどうか、どれくらい考えるかを決めます",
+  "@aiThinkingAutoHint": {
+    "description": "Explains the auto thinking level."
+  },
+  "aiThinkingOffHint": "考えずにすぐ答えます。最速です",
+  "@aiThinkingOffHint": {
+    "description": "Explains the off thinking level."
+  },
+  "aiThinkingLowHint": "軽く考えます。日常的な質問向け",
+  "@aiThinkingLowHint": {
+    "description": "Explains the low thinking level."
+  },
+  "aiThinkingMediumHint": "ほとんどの質問にちょうどよいバランス",
+  "@aiThinkingMediumHint": {
+    "description": "Explains the medium thinking level."
+  },
+  "aiThinkingHighHint": "じっくり考えます。整理や振り返り、複雑な変更向け。最も遅いです",
+  "@aiThinkingHighHint": {
+    "description": "Explains the high thinking level."
+  },
+  "aiThinkingDisabled": "このモデルはモデル設定で思考がオフになっています",
+  "@aiThinkingDisabled": {
+    "description": "Shown when the chosen model has thinking turned off."
+  },
+  "aiChatMetaThinking": "思考：{level}",
+  "@aiChatMetaThinking": {
+    "description": "Answer footer: the thinking level of this reply.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatOpenSettings": "AI 設定",
+  "@aiChatOpenSettings": {
+    "description": "Chat menu and history drawer: open the AI settings."
+  },
+  "aiChatExport": "会話をエクスポート",
+  "@aiChatExport": {
+    "description": "Chat menu item and export page title."
+  },
+  "aiChatExportFormat": "形式",
+  "@aiChatExportFormat": {
+    "description": "Export page: format section."
+  },
+  "aiChatExportMarkdown": "Markdown",
+  "@aiChatExportMarkdown": {
+    "description": "Export format: Markdown."
+  },
+  "aiChatExportPlain": "プレーンテキスト",
+  "@aiChatExportPlain": {
+    "description": "Export format: plain text."
+  },
+  "aiChatExportInclude": "含める内容",
+  "@aiChatExportInclude": {
+    "description": "Export page: what to include."
+  },
+  "aiChatExportReasoning": "思考過程",
+  "@aiChatExportReasoning": {
+    "description": "Export option and heading: the thinking process."
+  },
+  "aiChatExportSteps": "経過と操作",
+  "@aiChatExportSteps": {
+    "description": "Export option and heading: tool calls and actions."
+  },
+  "aiChatExportMessages": "メッセージを選択",
+  "@aiChatExportMessages": {
+    "description": "Export page: heading of the message list."
+  },
+  "aiChatExportSelected": "{count} / {total} 件を選択",
+  "@aiChatExportSelected": {
+    "description": "Export page: how many messages are selected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportYou": "あなた",
+  "@aiChatExportYou": {
+    "description": "Name for the user's messages in exports."
+  },
+  "aiChatExportSave": "ファイルに保存",
+  "@aiChatExportSave": {
+    "description": "Export page: save to a file."
+  },
+  "aiChatExportSaved": "会話をエクスポートしました",
+  "@aiChatExportSaved": {
+    "description": "Shown after the export file is saved."
+  },
+  "aiChatExportFailed": "エクスポートできませんでした",
+  "@aiChatExportFailed": {
+    "description": "Shown when exporting fails."
+  },
+  "aiChatExportAt": "{time} にエクスポート · {count} 件のメッセージ",
+  "@aiChatExportAt": {
+    "description": "The line under the title of an export.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportReferences": "参照した日記",
+  "@aiChatExportReferences": {
+    "description": "Heading for the entries an answer cited."
+  },
+  "aiChatExportError": "エラー：{reason}",
+  "@aiChatExportError": {
+    "description": "Export: an answer that failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportSubjects": "：{names}",
+  "@aiChatExportSubjects": {
+    "description": "Export: the entries or items an action touched, at the end of the line.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportJson": "JSON",
+  "@aiChatExportJson": {
+    "description": "Export format: JSON (structured, for programs)."
+  }
 }

@@ -34,6 +34,7 @@ import '../tools/ai_tool_registry.dart';
 import '../viewmodels/ai_citations.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import 'ai_stream_run.dart';
+import 'ai_thinking_clock.dart';
 
 class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
   AiAgentTurn({
@@ -42,6 +43,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     required this.model,
     required this.tools,
     required this.toolContext,
+    this.thinkingLevel,
   });
 
   final AppDatabase database;
@@ -49,6 +51,12 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
   final AiResolvedModel model;
   final Map<String, AiTool> tools;
   final AiToolContext toolContext;
+
+  /// 这一轮请求的思考强度（记进 meta，回答底部显示）；null 为自动。
+  final AiThinkingLevel? thinkingLevel;
+
+  /// 当前这一步的思考计时（每步收齐后清零，时长记进步骤）。
+  final AiThinkingClock thinking = AiThinkingClock();
 
   /// 已收齐的工具步骤（正在执行的那一步也在里面）。
   final List<AiAgentStepRecord> steps = <AiAgentStepRecord>[];
@@ -91,6 +99,10 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
   void onDelta(int step, AiChunk chunk) {
     text += chunk.text;
     reasoning += chunk.reasoning;
+    thinking.onDelta(
+      reasoning: chunk.reasoning.isNotEmpty,
+      output: chunk.text.isNotEmpty || chunk.toolCallStarted != null,
+    );
     if (chunk.toolCallStarted case final started?) {
       preparingTool = started.name;
       _notifyNow();
@@ -104,10 +116,14 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     if (output.usage case final usage?) {
       _usage = _usage == null ? usage : _usage! + usage;
     }
+    thinking.stop();
+    final thinkingMs = thinking.elapsedMs;
+    thinking.reset();
     steps.add(
       AiAgentStepRecord(
         text: aiCleanOutput(output.text),
         reasoning: output.reasoning,
+        thinkingMs: thinkingMs,
         calls: [
           for (final call in output.calls)
             AiAgentCallRecord(
@@ -214,6 +230,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
           summary: outcome.summary,
           navigation: outcome.navigation,
           undo: outcome.undo,
+          subjects: outcome.subjects,
         ),
       );
       if (outcome.navigation case final navigation? when navigation.now) {
@@ -362,6 +379,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     Map<String, Object?> extra = const <String, Object?>{},
   }) async {
     preparingTool = null;
+    thinking.stop();
     final id = messageId;
     if (id == null) return;
     final content = text;
@@ -419,6 +437,9 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
       'agent': true,
       // 本轮工具读到过的日记篇数（“参考了 N 篇”里没被引用的也算）。
       'contextEntries': toolContext.citations.length,
+      if (thinkingLevel != null) 'thinking': thinkingLevel!.name,
+      // 最后一段（作答这一步）的思考时长；各工具步骤的记在步骤里。
+      if (thinking.elapsedMs > 0) 'thinkingMs': thinking.elapsedMs,
       if (usage != null) ...<String, Object?>{
         'inputTokens': usage.inputTokens,
         'outputTokens': usage.outputTokens,

@@ -303,6 +303,55 @@ void main() {
       );
     });
 
+    test('names the diary and notebook it opens', () async {
+      final id = await diary('海边', '去看海');
+      final outcome = await run('open_page', {
+        'destination': 'diary',
+        'diary_id': id,
+      });
+      expect(outcome.subjects.single.title, '海边');
+      expect(
+        aiToolByName(
+          'open_page',
+        )!.labelWith(zh, {'destination': 'diary'}, outcome.subjects),
+        zh.aiToolOpenPage('海边'),
+      );
+      // 回传模型的数据里不带标题。
+      expect('${outcome.data}', isNot(contains('海边')));
+
+      final notebook = await db.createNotebook(name: '旅行手记');
+      final opened = await run('open_page', {
+        'destination': 'notebook',
+        'notebook_id': notebook,
+      });
+      expect(opened.subjects.single.title, '旅行手记');
+    });
+
+    test('refuses ids that do not exist or are private', () async {
+      expect(
+        () => run('open_page', {'destination': 'diary', 'diary_id': 'nope'}),
+        throwsA(isA<AiToolFailure>()),
+      );
+      final hidden = await db.createNotebook(
+        name: '秘密',
+        visibility: NotebookVisibility.hidden,
+      );
+      expect(
+        () => run('open_page', {
+          'destination': 'notebook',
+          'notebook_id': hidden,
+        }),
+        throwsA(isA<AiToolFailure>()),
+      );
+    });
+
+    test('the label never shows null while the target is unknown', () {
+      expect(
+        aiToolByName('open_page')!.label(zh, const {}),
+        zh.aiToolOpenPageAny,
+      );
+    });
+
     test('asks for the id a page needs', () async {
       expect(
         () => run('open_page', {'destination': 'diary'}),

@@ -100,9 +100,14 @@ void main() {
     now: DateTime(2026, 11, 8, 10),
   );
 
-  Future<AiToolOutcome> run(String name, Map<String, Object?> args) {
+  Future<AiToolOutcome> run(String name, Map<String, Object?> args) async {
     final tool = aiToolByName(name)!;
-    return tool.run(context(), tool.schema.validate(args));
+    final outcome = await tool.run(context(), tool.schema.validate(args));
+    // 改动类工具都要说清改了谁（卡片标题与对象胶囊靠它），设置类除外。
+    if (tool.group != AiToolGroup.settings) {
+      expect(outcome.subjects, isNotEmpty, reason: '$name names no subject');
+    }
+    return outcome;
   }
 
   Future<void> undo(String name, AiToolOutcome outcome, {bool force = false}) =>

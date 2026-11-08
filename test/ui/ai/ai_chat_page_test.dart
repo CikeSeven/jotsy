@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/ai/ai_models.dart';
 import 'package:node_diary/core/services/ai/ai_provider_store.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/ai/controllers/ai_assistant_entry.dart';
 import 'package:node_diary/ui/ai/pages/ai_chat_page.dart';
-import 'package:node_diary/ui/ai/pages/ai_hub_page.dart';
+import 'package:node_diary/ui/ai/pages/ai_recap_page.dart';
+import 'package:node_diary/ui/ai/models/ai_conversation_options.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_task_prompts.dart';
 
@@ -133,6 +136,8 @@ void main() {
     expect(find.text(h.l10n.aiChatAboutEntry('海边')), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '为什么会觉得治愈？');
+    // 有了文字发送按钮才可点（下一帧）。
+    await tester.pump();
     await tester.tap(find.byTooltip(h.l10n.aiPanelSend));
     await settleMany(h);
 
@@ -144,22 +149,131 @@ void main() {
     await h.unmount();
   });
 
-  testWidgets('the hub starts chats from quick questions and lists them', (
+  testWidgets('the welcome screen starts a chat and the drawer switches', (
     tester,
   ) async {
     final h = await setUpHarness(tester);
     await seedDiary(h, '海边', '傍晚去海边散步');
-    await h.pump(const AiHubPage(), overrides: overrides());
-    expect(find.text(h.l10n.aiHubNoChats), findsOneWidget);
+    await h.pump(const AiChatPage(), overrides: overrides());
+    await settleMany(h, 3);
+    expect(find.text(h.l10n.aiChatWelcomeTitle), findsOneWidget);
     await tester.tap(find.text(h.l10n.aiHubQuickHappy));
     await settleMany(h);
-    expect(find.byType(AiChatPage), findsOneWidget);
     expect(requests, isNotEmpty);
+    expect(find.textContaining('你在海边走了很久'), findsOneWidget);
 
-    await tester.tap(find.byTooltip(h.l10n.commonBack).last);
-    await settleMany(h, 2);
-    await tester.pumpAndSettle();
+    // 新对话：回到欢迎页，刚才那段在“最近的对话”里。
+    await tester.tap(find.byTooltip(h.l10n.aiChatNewChat));
+    await settleMany(h, 3);
+    expect(find.text(h.l10n.aiChatWelcomeTitle), findsOneWidget);
     expect(find.text('海边的一天'), findsOneWidget);
+
+    // 历史抽屉里点那段对话：原地换过去。
+    await tester.tap(find.byTooltip(h.l10n.aiChatHistory));
+    await settleMany(h, 3);
+    // 抽屉滑入的动画走完。
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text(h.l10n.aiChatGroupToday), findsOneWidget);
+    await tester.tap(
+      find.descendant(of: find.byType(Drawer), matching: find.text('海边的一天')),
+    );
+    await settleMany(h, 3);
+    expect(find.text(h.l10n.aiChatWelcomeTitle), findsNothing);
+    expect(find.textContaining('你在海边走了很久'), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('model and thinking choices stay with the conversation', (
+    tester,
+  ) async {
+    final h = await setUpHarness(tester);
+    await seedDiary(h, '海边', '傍晚去海边散步');
+    await h.pump(const AiChatPage(), overrides: overrides());
+    await settleMany(h, 3);
+
+    await tester.tap(find.byTooltip(h.l10n.aiChatModelSheetTitle));
+    await settleMany(h, 3);
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.text(h.l10n.aiThinkingHigh));
+    await settleMany(h, 2);
+    expect(find.text(h.l10n.aiThinkingHighHint), findsOneWidget);
+    await tester.tapAt(const Offset(10, 10));
+    await settleMany(h, 3);
+    await tester.pump(const Duration(milliseconds: 600));
+
+    await tester.enterText(find.byType(TextField).last, '海边怎么样？');
+    // 有了文字发送按钮才可点（下一帧）。
+    await tester.pump();
+    await tester.tap(find.byTooltip(h.l10n.aiPanelSend));
+    await settleMany(h);
+    final answer = requests.firstWhere(
+      (r) => lastText(r).contains(h.l10n.aiPromptChatContextHeader),
+    );
+    expect(answer.thinking, AiThinkingLevel.high);
+    final conversation = (await tester.runAsync(
+      () => h.database.watchAiConversations().first,
+    ))!.single;
+    expect(
+      AiConversationOptions.decode(conversation.options).thinking,
+      AiThinkingLevel.high,
+    );
+    // 标题、检索计划这类短请求不带思考。
+    expect(requests.first.thinking, AiThinkingLevel.off);
+
+    // 新对话沿用最近那段的选择。
+    await tester.tap(find.byTooltip(h.l10n.aiChatNewChat));
+    await settleMany(h, 3);
+    expect(
+      find.textContaining(h.l10n.aiThinkingHigh, findRichText: true),
+      findsWidgets,
+    );
+    await h.unmount();
+  });
+
+  testWidgets('the assistant entry opens a new chat, or recaps without chat', (
+    tester,
+  ) async {
+    final h = await setUpHarness(tester);
+    // 与真实入口一样：AI 可用（服务读出来）之后才出现。
+    final host = Consumer(
+      builder: (context, ref, _) => ref.watch(aiHubAvailableProvider)
+          ? TextButton(
+              onPressed: () => openAiAssistant(context, ref),
+              child: const Text('open'),
+            )
+          : const SizedBox.shrink(),
+    );
+    await h.pump(host, overrides: overrides());
+    await settleMany(h, 3);
+    await tester.tap(find.text('open'));
+    await settleMany(h, 3);
+    expect(find.byType(AiChatPage), findsOneWidget);
+    expect(find.text(h.l10n.aiChatWelcomeTitle), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('with the chat module off the entry opens recaps', (
+    tester,
+  ) async {
+    final h = await setUpHarness(tester);
+    await h.settings.setAiPrefsRaw(
+      '{"privacy":{"confirm":"firstTime"},"off":["chat"]}',
+    );
+    // 与真实入口一样：AI 可用（服务读出来）之后才出现。
+    final host = Consumer(
+      builder: (context, ref, _) => ref.watch(aiHubAvailableProvider)
+          ? TextButton(
+              onPressed: () => openAiAssistant(context, ref),
+              child: const Text('open'),
+            )
+          : const SizedBox.shrink(),
+    );
+    await h.pump(host, overrides: overrides());
+    await settleMany(h, 3);
+    await tester.tap(find.text('open'));
+    await settleMany(h, 3);
+    expect(find.byType(AiChatPage), findsNothing);
+    expect(find.byType(AiRecapPage), findsOneWidget);
     await h.unmount();
   });
 }

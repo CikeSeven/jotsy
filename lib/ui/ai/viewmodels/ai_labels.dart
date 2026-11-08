@@ -186,3 +186,13 @@ String aiRecapRangeText(AppLocalizations l10n, AiRecapRange range) {
       : full.format(last);
   return l10n.aiRecapPeriodRange(full.format(first), end);
 }
+
+/// 思考强度在界面上的名称（null 为“自动”）。
+String aiThinkingLevelLabel(AppLocalizations l10n, AiThinkingLevel? level) =>
+    switch (level) {
+      null => l10n.aiThinkingAuto,
+      AiThinkingLevel.off => l10n.aiThinkingOff,
+      AiThinkingLevel.low => l10n.aiThinkingLow,
+      AiThinkingLevel.medium => l10n.aiThinkingMedium,
+      AiThinkingLevel.high => l10n.aiThinkingHigh,
+    };

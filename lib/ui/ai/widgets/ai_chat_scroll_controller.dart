@@ -21,6 +21,9 @@ import 'package:flutter/widgets.dart';
 ///   上移，而不是被挡到键盘后面；收起时同理落回。
 /// - 按住、拖动与惯性滚动期间一律不改位置，列表不会从手指下跑开，也不和
 ///   惯性模拟抢位置。
+/// - 每次滚动停下时把位置与是否跟随记进最近的 `PageStorage`（对话页给每段
+///   对话一个常驻本次运行的存储桶）；[restoreSaved] 时（从首页“回到对话”）
+///   新建的列表按记下的位置与跟随状态恢复，否则从底部开始。
 class AiChatScrollController extends ScrollController {
   AiChatScrollController({super.debugLabel});
 
@@ -31,6 +34,13 @@ class AiChatScrollController extends ScrollController {
 
   /// 是否贴着底部跟随新内容。
   bool get following => _following;
+
+  /// 列表建好时按 `PageStorage` 里记下的位置恢复（回到对话），而不是从底部
+  /// 开始。只影响之后新建的滚动位置。
+  bool restoreSaved = false;
+
+  /// 跟随状态在存储桶里的标识（滚动位置本身用列表的 `PageStorageKey`）。
+  static const String _followingId = 'ai-chat-following';
 
   /// 回到底部并重新跟随（发送问题、打开对话时）。还没排版时只记下跟随，
   /// 首次排版就停在底部。
@@ -122,6 +132,31 @@ class _AiChatScrollPosition extends ScrollPositionWithSingleContext {
     return false;
   }
 
+  /// 回到对话时恢复离开前的位置与跟随状态；没记过（一直停在底部）就照常
+  /// 从底部开始。不恢复时什么都不读。
+  @override
+  void restoreScrollOffset() {
+    if (!owner.restoreSaved) return;
+    final storage = PageStorage.maybeOf(context.storageContext);
+    final following = storage?.readState(
+      context.storageContext,
+      identifier: AiChatScrollController._followingId,
+    );
+    if (following is! bool) return;
+    owner._following = following;
+    if (!following) super.restoreScrollOffset();
+  }
+
+  @override
+  void saveScrollOffset() {
+    super.saveScrollOffset();
+    PageStorage.maybeOf(context.storageContext)?.writeState(
+      context.storageContext,
+      owner._following,
+      identifier: AiChatScrollController._followingId,
+    );
+  }
+
   @override
   void updateUserScrollDirection(ScrollDirection value) {
     // forward = 内容往下走、看更早的消息。手指一动就放手，不等松开。
@@ -131,10 +166,11 @@ class _AiChatScrollPosition extends ScrollPositionWithSingleContext {
 
   @override
   void didEndScroll() {
-    super.didEndScroll();
+    // 先定下是否跟随再交给默认实现：它会顺带存下位置与跟随状态。
     if (hasContentDimensions && hasPixels) {
       owner._following =
           maxScrollExtent - pixels <= AiChatScrollController.resumeDistance;
     }
+    super.didEndScroll();
   }
 }

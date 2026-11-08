@@ -8,6 +8,7 @@ import '../../anniversaries/viewmodels/anniversary_countdown.dart';
 import '../../anniversaries/viewmodels/anniversary_rule.dart';
 import '../../calendar/viewmodels/calendar_holiday_day.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
+import '../models/ai_tool_subject.dart';
 import 'ai_tool.dart';
 import 'ai_tools_diaries.dart';
 
@@ -104,6 +105,16 @@ class GetCalendarDayTool extends AiTool {
           'todos_due': [for (final todo in todos) _todoItem(todo, null)],
         if (features.anniversariesEnabled) 'anniversaries': anniversaries,
       },
+      subjects: [
+        AiToolSubject.day(day),
+        for (final diary in diaries) aiContextDiarySubject(diary),
+        for (final todo in todos)
+          AiToolSubject.todo(
+            todo.todoId,
+            todo.title,
+            due: todo.dueDate == null ? null : DateTime.tryParse(todo.dueDate!),
+          ),
+      ],
     );
   }
 }
@@ -189,6 +200,14 @@ class ListTodosTool extends AiTool {
         ],
       },
       summary: context.l10n.aiToolTodoCount(filtered.length),
+      subjects: [
+        for (final row in filtered.take(limit))
+          AiToolSubject.todo(
+            row.todoId,
+            row.title,
+            due: row.dueDate == null ? null : DateTime.tryParse(row.dueDate!),
+          ),
+      ],
     );
   }
 }
@@ -246,6 +265,14 @@ class ListAnniversariesTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'anniversaries': items},
       summary: context.l10n.aiToolAnniversaryCount(items.length),
+      subjects: [
+        for (final row in rows)
+          AiToolSubject.anniversary(
+            row.anniversaryId,
+            row.title,
+            date: parseAnniversaryDate(row.baseDate),
+          ),
+      ],
     );
   }
 }

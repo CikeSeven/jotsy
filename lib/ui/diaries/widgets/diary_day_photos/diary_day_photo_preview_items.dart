@@ -6,7 +6,6 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../widgets/double_tap_zoom_viewer.dart';
-import '../../../widgets/expressive_icon_swap.dart';
 import '../../../widgets/expressive_image_frame.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_video_player_controller.dart';
@@ -179,56 +178,8 @@ class _DiaryDayPhotoPreviewVideoState extends State<DiaryDayPhotoPreviewVideo> {
             ],
           ),
         ),
-        _VideoControls(player: failed ? null : player),
+        DiaryVideoPlaybackBar(player: failed ? null : player),
       ],
-    );
-  }
-}
-
-/// 视频下方的播放 / 暂停与进度条；播放器未就绪或失败时整行停用。
-class _VideoControls extends StatelessWidget {
-  const _VideoControls({required this.player});
-
-  final DiaryVideoPlayerController? player;
-
-  @override
-  Widget build(BuildContext context) {
-    final player = this.player;
-    final l10n = context.l10n;
-    final ready = player != null && !player.isLoading && !player.hasFailed;
-    final playing = player?.isPlaying ?? false;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.s,
-        0,
-        AppSpacing.l,
-        AppSpacing.s,
-      ),
-      child: Row(
-        children: <Widget>[
-          SizedBox.square(
-            dimension: 44,
-            child: IconButton(
-              tooltip: playing ? l10n.videoPause : l10n.videoPlay,
-              onPressed: ready ? () => unawaited(player.toggle()) : null,
-              icon: ExpressiveIconSwap(
-                switchKey: playing,
-                child: FaIcon(
-                  playing ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
-                  size: 16,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: player == null
-                // 还没有播放器（读取地址中、读不到）：留出同样的高度，进度条
-                // 出现时页面不跳。
-                ? const SizedBox(height: 48)
-                : DiaryVideoProgressBar(controller: player, enabled: ready),
-          ),
-        ],
-      ),
     );
   }
 }

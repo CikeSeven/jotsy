@@ -37,7 +37,6 @@ import '../providers/ai_chat_export_provider.dart';
 import '../providers/ai_providers.dart';
 import '../providers/ai_records_providers.dart';
 import '../viewmodels/ai_chat_export.dart';
-import '../viewmodels/ai_citations.dart';
 import '../viewmodels/ai_labels.dart';
 
 class AiChatExportPage extends ConsumerStatefulWidget {
@@ -433,7 +432,7 @@ class _MessageRow extends StatelessWidget {
   /// 两行预览：正文（去掉引用编号、折成一行）；没有正文时写出错原因、
   /// 调用个数或“已停止”。
   String _preview(AppLocalizations l10n) {
-    final text = aiStripCitations(
+    final text = aiMarkdownPlainText(
       message.content,
     ).replaceAll(RegExp(r'\s+'), ' ').trim();
     if (text.isNotEmpty) return text;

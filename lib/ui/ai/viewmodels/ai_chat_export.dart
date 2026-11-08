@@ -157,7 +157,7 @@ String aiChatExportText({
     if (markdown) {
       paragraph(message.content);
     } else {
-      paragraph(_plainText(message.content));
+      paragraph(aiMarkdownPlainText(message.content));
     }
     final citations = AiCitation.decodeList(message.citations);
     if (citations.isNotEmpty) {
@@ -222,8 +222,9 @@ List<String> _stepLines(AppLocalizations l10n, List<AiAgentStepRecord> steps) {
   return lines;
 }
 
-/// Markdown 正文转成纯文字（与另存为日记同一转换，去掉 `[Dn]`）。
-String _plainText(String markdown) {
+/// Markdown 正文转成纯文字（与另存为日记同一转换，去掉 `[Dn]`）；导出的
+/// 纯文本与导出页的预览共用。
+String aiMarkdownPlainText(String markdown) {
   if (markdown.trim().isEmpty) return '';
   final document = aiMarkdownDiaryDocument(markdown);
   final text = diaryBlocksPlainText(document);

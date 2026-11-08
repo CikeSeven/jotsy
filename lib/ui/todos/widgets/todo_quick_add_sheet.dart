@@ -314,6 +314,8 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
                   maxLines: 4,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => unawaited(_submit()),
+                  // 回车不失焦：面板留着接着记，键盘不收起再弹出。
+                  onEditingComplete: () {},
                   contextMenuBuilder: appTextContextMenuBuilder,
                   style: theme.textTheme.titleMedium,
                   decoration: InputDecoration(

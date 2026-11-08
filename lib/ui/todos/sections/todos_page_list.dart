@@ -21,9 +21,9 @@ import 'todo_list_slivers.dart';
 /// 玻璃底栏的空位。还在加载时为延迟出现的加载指示；没有任何一组时，内联
 /// 新建之后是空状态。
 ///
-/// 内联新建在输入时（[inlineEditing]）列表底部让出键盘高度：首页 Scaffold
-/// 不随键盘缩小，不让的话列表末尾的输入框会被键盘盖住；让出后视口变矮，
-/// 输入框由 EditableText 自己滚到可见处。
+/// 内联新建在输入时（[inlineEditing]）列表底部让出被键盘盖住的一段：首页
+/// Scaffold 不随键盘缩小，不让的话列表末尾的输入框会被键盘盖住；让出后视口
+/// 变矮，输入框由 EditableText 自己滚到可见处。
 Widget buildTodosPageList({
   required BuildContext context,
   required TodoView view,
@@ -139,20 +139,68 @@ Widget buildTodosPageList({
   );
 }
 
-/// 内联新建输入时在列表底部让出键盘高度；不输入时不读 viewInsets、不随
-/// 键盘（例如快速新建面板的键盘）重新布局。结构恒定，切换时列表不重建。
-class _KeyboardGap extends StatelessWidget {
+/// 内联新建输入时在列表底部让出被软键盘盖住的那一段。
+///
+/// 键盘高度读窗口本身（`View.viewInsets`，经 [WidgetsBindingObserver] 在
+/// 窗口尺寸变化时更新）：首页挂着 `KeyboardShield`，MediaQuery 里的键盘高度
+/// 恒为打开首页时的值，读它既让不开键盘、也不会随键盘收起复原。只让出盖住
+/// 列表的部分（键盘高度减去列表底边到屏幕底边的距离，如实色底栏），不输入
+/// 时为 0、也不监听。结构恒定，切换时列表不重建。
+class _KeyboardGap extends StatefulWidget {
   const _KeyboardGap({required this.enabled, required this.child});
 
   final bool enabled;
   final Widget child;
 
   @override
+  State<_KeyboardGap> createState() => _KeyboardGapState();
+}
+
+class _KeyboardGapState extends State<_KeyboardGap>
+    with WidgetsBindingObserver {
+  double _gap = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didUpdateWidget(_KeyboardGap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.enabled != widget.enabled) _measure();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() => _measure();
+
+  void _measure() {
+    var gap = 0.0;
+    final box = context.findRenderObject();
+    if (widget.enabled && box is RenderBox && box.hasSize) {
+      final view = View.of(context);
+      final keyboard = view.viewInsets.bottom / view.devicePixelRatio;
+      if (keyboard > 0) {
+        final screenHeight = view.physicalSize.height / view.devicePixelRatio;
+        final bottom = box.localToGlobal(Offset(0, box.size.height)).dy;
+        gap = (keyboard - (screenHeight - bottom)).clamp(0.0, keyboard);
+      }
+    }
+    if (gap != _gap && mounted) setState(() => _gap = gap);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final inset = enabled ? MediaQuery.viewInsetsOf(context).bottom : 0.0;
     return Padding(
-      padding: EdgeInsets.only(bottom: inset),
-      child: child,
+      padding: EdgeInsets.only(bottom: _gap),
+      child: widget.child,
     );
   }
 }

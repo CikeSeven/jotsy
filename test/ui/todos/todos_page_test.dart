@@ -269,6 +269,44 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('closing the keyboard releases the inline field and the gap', (
+    tester,
+  ) async {
+    await _pumpTodos(
+      tester,
+      seed: (db) async {
+        await db.createTodo(TodoInput(title: '今天的', dueDate: _today));
+      },
+    );
+    final l10n = _l10n(tester);
+    double viewportHeight() =>
+        tester.getSize(find.byType(CustomScrollView)).height;
+    final fullHeight = viewportHeight();
+
+    await tester.tap(find.text(l10n.todoInlineAddHint));
+    // 切换在重建的那一帧才开始，再推过 fast 的时长与移除旧子项的一帧。
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    expect(find.text(l10n.todoInlineAddHint), findsNothing);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pump();
+    await tester.pump();
+    expect(viewportHeight(), lessThan(fullHeight), reason: '列表让出键盘');
+
+    // 用返回键 / 手势收起键盘：输入框失焦，空的就收回占位行，列表复原。
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(
+      FocusManager.instance.primaryFocus?.context?.widget,
+      isNot(isA<EditableText>()),
+    );
+    expect(find.text(l10n.todoInlineAddHint), findsOneWidget);
+    expect(viewportHeight(), fullHeight);
+    await _unmount(tester);
+  });
+
   testWidgets('the overdue header moves every overdue todo to today', (
     tester,
   ) async {

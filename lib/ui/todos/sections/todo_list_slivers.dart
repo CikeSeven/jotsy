@@ -131,7 +131,11 @@ List<Widget> buildTodoListSlivers({
         child: child,
       );
     }
+    // 按 updated_at 换 key：滑出后组件一直保持收起，重复待办右滑完成后
+    // 推到下一次、仍留在原位（清单 / 全部视图）时要换一个新的，不然这一行
+    // 一直是 0 高。
     child = DiarySwipeActionItem(
+      key: ValueKey<DateTime>(row.updatedAt),
       diaryId: row.todoId,
       enabled: !state.selectionMode,
       icon: FontAwesomeIcons.trashCan,

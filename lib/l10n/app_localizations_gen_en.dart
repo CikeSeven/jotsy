@@ -12456,11 +12456,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Summaries by week, month, year or notebook';
 
   @override
-  String get aiModuleChat => 'Chat with your diary';
+  String get aiModuleChat => 'Chat & actions';
 
   @override
   String get aiModuleChatSubtitle =>
-      'Ask your diary; answers cite the entries they use';
+      'Ask about your journal, or let the AI look things up, count and open pages';
 
   @override
   String get aiModuleVision => 'Image understanding';
@@ -12844,6 +12844,221 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiModelToolsSubtitle =>
       'Lets the assistant operate the app; falls back to plain Q&A if the model doesn\'t support it';
+
+  @override
+  String get aiToolGetAppContext => 'Check today\'s date and app status';
+
+  @override
+  String aiToolOpenPage(String page) {
+    return 'Open: $page';
+  }
+
+  @override
+  String get aiToolPageUnavailable =>
+      'This page isn\'t available (the feature is off or not supported on this device)';
+
+  @override
+  String get aiToolSearchDiaries => 'Search entries';
+
+  @override
+  String aiToolSearchDiariesFor(String query) {
+    return 'Search entries: $query';
+  }
+
+  @override
+  String aiToolFoundEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries found',
+      one: '1 entry found',
+      zero: 'No entries found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolReadDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Read $count entries',
+      one: 'Read 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolReadEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries read',
+      one: '1 entry read',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolDiaryStats => 'Count entries';
+
+  @override
+  String aiToolStatsEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolListTags => 'List tags';
+
+  @override
+  String aiToolTagCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags',
+      one: '1 tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolListNotebooks => 'List notebooks';
+
+  @override
+  String aiToolNotebookCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count notebooks',
+      one: '1 notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolCalendarDay => 'Check today on the calendar';
+
+  @override
+  String aiToolCalendarDayOf(String date) {
+    return 'Check $date on the calendar';
+  }
+
+  @override
+  String get aiToolListTodos => 'List to-dos';
+
+  @override
+  String aiToolTodoCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos',
+      one: '1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolListAnniversaries => 'List anniversaries';
+
+  @override
+  String aiToolAnniversaryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count anniversaries',
+      one: '1 anniversary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiDestinationDiary => 'This entry';
+
+  @override
+  String get aiDestinationSearch => 'Search entries';
+
+  @override
+  String aiAgentStepsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used $count tools',
+      one: 'Used 1 tool',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiAgentPreparing => 'Preparing a step…';
+
+  @override
+  String get aiAgentStepFailed => 'Didn\'t work';
+
+  @override
+  String get aiAgentStepCancelled => 'Stopped';
+
+  @override
+  String get aiAgentStepInterrupted => 'Interrupted';
+
+  @override
+  String aiAgentOpenPage(String page) {
+    return 'Open $page';
+  }
+
+  @override
+  String get aiAgentStepsExhausted =>
+      'This reply used up its steps. Say \"continue\" to let the AI keep going.';
+
+  @override
+  String get aiAgentIncomplete =>
+      'The reply was cut off, so its steps weren\'t run.';
+
+  @override
+  String get aiConfirmSendAgent =>
+      'The AI will look up and read entries as needed (never private ones) without asking each time';
+
+  @override
+  String get aiOptionAgent => 'Let the AI use tools';
+
+  @override
+  String get aiOptionAgentSubtitle =>
+      'Look up and count entries, check the calendar and to-dos, open pages; when off or unsupported, it only answers from retrieved entries';
+
+  @override
+  String get aiOptionAgentSteps => 'Max steps per reply';
+
+  @override
+  String get aiOptionAgentStepsSubtitle =>
+      'Each step can call several tools; the last step only answers';
+
+  @override
+  String get aiPromptAgentSystem =>
+      'You can call tools to search and count the user\'s diary entries, check the calendar, to-dos and anniversaries, and open pages of the app. Look things up with tools instead of guessing; independent lookups can be called together. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can\'t be done, say so.';
+
+  @override
+  String aiPromptAgentNow(String time) {
+    return 'It is now $time.';
+  }
+
+  @override
+  String get aiPromptAgentScopeDiary =>
+      'This conversation is about the following entry:';
+
+  @override
+  String aiPromptAgentScopeRange(String from, String to) {
+    return 'This conversation is only about entries from $from to $to; use this range when searching unless told otherwise.';
+  }
+
+  @override
+  String aiPromptAgentActionsDone(String actions) {
+    return '(Actions taken in this turn:\n$actions)';
+  }
 
   @override
   String get aiModelMaxOutput => 'Max output tokens';

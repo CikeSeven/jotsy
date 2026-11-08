@@ -15325,11 +15325,11 @@
   "@aiModuleRecapSubtitle": {
     "description": "AI 模块说明。"
   },
-  "aiModuleChat": "与日记对话",
+  "aiModuleChat": "对话与操作",
   "@aiModuleChat": {
     "description": "AI 模块名称。"
   },
-  "aiModuleChatSubtitle": "问问你的日记，回答会引用相关的篇目",
+  "aiModuleChatSubtitle": "问问你的日记，也能让 AI 帮你查找、统计、打开页面",
   "@aiModuleChatSubtitle": {
     "description": "AI 模块说明。"
   },
@@ -15800,6 +15800,249 @@
   "aiModelToolsSubtitle": "让 AI 助手直接操作应用；模型不支持时自动改用检索问答",
   "@aiModelToolsSubtitle": {
     "description": "工具调用开关的说明。"
+  },
+  "aiToolGetAppContext": "查看今天与应用状态",
+  "@aiToolGetAppContext": {
+    "description": "AI 步骤卡片：查看日期与应用状态的工具。"
+  },
+  "aiToolOpenPage": "前往：{page}",
+  "@aiToolOpenPage": {
+    "description": "AI 步骤卡片：给出前往某页面的按钮。",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolPageUnavailable": "这个页面现在不可用（功能已关闭或本设备不支持）",
+  "@aiToolPageUnavailable": {
+    "description": "AI 要打开的页面不可用时的提示。"
+  },
+  "aiToolSearchDiaries": "搜索日记",
+  "@aiToolSearchDiaries": {
+    "description": "AI 步骤卡片：搜索日记。"
+  },
+  "aiToolSearchDiariesFor": "搜索日记：{query}",
+  "@aiToolSearchDiariesFor": {
+    "description": "AI 步骤卡片：按关键词搜索日记。",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFoundEntries": "找到 {count} 篇",
+  "@aiToolFoundEntries": {
+    "description": "AI 步骤卡片：搜索找到的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadDiaries": "读取 {count} 篇日记",
+  "@aiToolReadDiaries": {
+    "description": "AI 步骤卡片：读取日记全文。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadEntries": "读了 {count} 篇",
+  "@aiToolReadEntries": {
+    "description": "AI 步骤卡片：实际读到的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDiaryStats": "统计日记",
+  "@aiToolDiaryStats": {
+    "description": "AI 步骤卡片：统计日记。"
+  },
+  "aiToolStatsEntries": "共 {count} 篇",
+  "@aiToolStatsEntries": {
+    "description": "AI 步骤卡片：统计到的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListTags": "查看标签",
+  "@aiToolListTags": {
+    "description": "AI 步骤卡片：列出标签。"
+  },
+  "aiToolTagCount": "{count} 个标签",
+  "@aiToolTagCount": {
+    "description": "AI 步骤卡片：标签个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListNotebooks": "查看日记本",
+  "@aiToolListNotebooks": {
+    "description": "AI 步骤卡片：列出日记本。"
+  },
+  "aiToolNotebookCount": "{count} 个日记本",
+  "@aiToolNotebookCount": {
+    "description": "AI 步骤卡片：日记本个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCalendarDay": "查看今天的日历",
+  "@aiToolCalendarDay": {
+    "description": "AI 步骤卡片：查看今天的日历。"
+  },
+  "aiToolCalendarDayOf": "查看 {date} 的日历",
+  "@aiToolCalendarDayOf": {
+    "description": "AI 步骤卡片：查看某天的日历（日期为 YYYY-MM-DD）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolListTodos": "查看待办",
+  "@aiToolListTodos": {
+    "description": "AI 步骤卡片：列出待办。"
+  },
+  "aiToolTodoCount": "{count} 项待办",
+  "@aiToolTodoCount": {
+    "description": "AI 步骤卡片：待办个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListAnniversaries": "查看纪念日",
+  "@aiToolListAnniversaries": {
+    "description": "AI 步骤卡片：列出纪念日。"
+  },
+  "aiToolAnniversaryCount": "{count} 个纪念日",
+  "@aiToolAnniversaryCount": {
+    "description": "AI 步骤卡片：纪念日个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiDestinationDiary": "这篇日记",
+  "@aiDestinationDiary": {
+    "description": "AI 前往按钮的目标：一篇日记。"
+  },
+  "aiDestinationSearch": "搜索日记",
+  "@aiDestinationSearch": {
+    "description": "AI 前往按钮的目标：搜索页。"
+  },
+  "aiAgentStepsSummary": "执行了 {count} 个操作",
+  "@aiAgentStepsSummary": {
+    "description": "收起的步骤组标题。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentPreparing": "正在准备操作…",
+  "@aiAgentPreparing": {
+    "description": "AI 正在准备一个工具调用。"
+  },
+  "aiAgentStepFailed": "没有成功",
+  "@aiAgentStepFailed": {
+    "description": "AI 步骤失败。"
+  },
+  "aiAgentStepCancelled": "已停止",
+  "@aiAgentStepCancelled": {
+    "description": "AI 步骤被停止。"
+  },
+  "aiAgentStepInterrupted": "已中断",
+  "@aiAgentStepInterrupted": {
+    "description": "AI 步骤没有完成就中断了（如应用被关闭）。"
+  },
+  "aiAgentOpenPage": "前往{page}",
+  "@aiAgentOpenPage": {
+    "description": "AI 步骤里的前往按钮。",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentStepsExhausted": "这次能用的操作步数用完了，可以说“继续”让 AI 接着做。",
+  "@aiAgentStepsExhausted": {
+    "description": "AI 用完步数时回答下的说明。"
+  },
+  "aiAgentIncomplete": "回答被截断了，其中的操作没有执行。",
+  "@aiAgentIncomplete": {
+    "description": "AI 回答被截断时回答下的说明。"
+  },
+  "aiConfirmSendAgent": "AI 会按需查找、读取你的日记（私密日记除外），之后不再逐次询问",
+  "@aiConfirmSendAgent": {
+    "description": "发送前确认面板：智能体会按需读日记的说明。"
+  },
+  "aiOptionAgent": "让 AI 使用工具",
+  "@aiOptionAgent": {
+    "description": "AI 设置：对话时调用工具的开关。"
+  },
+  "aiOptionAgentSubtitle": "按需查找和统计日记、查看日历与待办、打开页面；关掉或模型不支持时只做检索问答",
+  "@aiOptionAgentSubtitle": {
+    "description": "工具开关的说明。"
+  },
+  "aiOptionAgentSteps": "每次回答最多步数",
+  "@aiOptionAgentSteps": {
+    "description": "AI 设置：一次回答最多调用几轮工具。"
+  },
+  "aiOptionAgentStepsSubtitle": "每一步可以同时调用多个工具；最后一步只作答",
+  "@aiOptionAgentStepsSubtitle": {
+    "description": "最多步数的说明。"
+  },
+  "aiPromptAgentSystem": "你可以调用工具来查找、统计用户的日记，查看日历、待办与纪念日，并打开应用里的页面。需要用户的数据时先用工具去查，不要凭空回答；互不依赖的查询可以一次调用多个工具。用到某篇日记时在句末写上它的编号，如 [D3]。用户要做的事需要他自己在页面里完成时（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置等），用 open_page 给他一个前往按钮，并说明怎么做。工具报错时按错误说明改正参数或换个办法；确实做不到就直说。",
+  "@aiPromptAgentSystem": {
+    "description": "智能体的系统提示词（发给模型；日文、俄文版只为键集合一致）。"
+  },
+  "aiPromptAgentNow": "现在是 {time}。",
+  "@aiPromptAgentNow": {
+    "description": "智能体提示词：当前时间。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentScopeDiary": "这次对话围绕下面这篇日记：",
+  "@aiPromptAgentScopeDiary": {
+    "description": "智能体提示词：对话固定在一篇日记上。"
+  },
+  "aiPromptAgentScopeRange": "这次对话只关心 {from} 到 {to} 之间的日记，查日记时默认用这个范围。",
+  "@aiPromptAgentScopeRange": {
+    "description": "智能体提示词：对话限定的时间范围。",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentActionsDone": "（这一轮做过的操作：\n{actions}）",
+  "@aiPromptAgentActionsDone": {
+    "description": "智能体提示词：历史回答后附的操作记录。",
+    "placeholders": {
+      "actions": {
+        "type": "String"
+      }
+    }
   },
   "aiModelMaxOutput": "最多输出（token）",
   "@aiModelMaxOutput": {

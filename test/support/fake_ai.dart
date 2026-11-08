@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:node_diary/core/services/ai/ai_client.dart';
 import 'package:node_diary/core/services/ai/ai_http.dart';
 import 'package:node_diary/core/services/ai/ai_models.dart';
@@ -40,6 +42,83 @@ class FakeAiChatClient extends AiChatClient {
   Future<List<AiRemoteModel>> listModels({
     HttpCancelToken? cancelToken,
   }) async => const <AiRemoteModel>[AiRemoteModel(id: 'fake-model')];
+}
+
+/// 按队列回放的假客户端（照 Phase 的 `ScriptedProvider`）：每次请求取出
+/// 队首的一段块，用 [textTurn] / [toolTurn] 构造；队列空了再请求就失败，
+/// 免得测试悄悄多发请求。
+class ScriptedAiChatClient extends AiChatClient {
+  ScriptedAiChatClient(this.turns, this.requests)
+    : super(FakeAiChatClient._config, AiHttp());
+
+  final List<List<AiChunk>> turns;
+  final List<AiRequest> requests;
+
+  @override
+  Stream<AiChunk> stream(
+    AiRequest request, {
+    HttpCancelToken? cancelToken,
+  }) async* {
+    requests.add(request);
+    if (turns.isEmpty) {
+      throw StateError('No scripted turn left for request #${requests.length}');
+    }
+    for (final chunk in turns.removeAt(0)) {
+      yield chunk;
+    }
+  }
+
+  @override
+  Future<List<AiRemoteModel>> listModels({
+    HttpCancelToken? cancelToken,
+  }) async => const <AiRemoteModel>[AiRemoteModel(id: 'fake-model')];
+}
+
+/// 一次只回答文字的响应。
+List<AiChunk> textTurn(String text) => <AiChunk>[
+  AiChunk(text: text),
+  const AiChunk(
+    usage: AiUsage(inputTokens: 10, outputTokens: 5),
+    finishReason: AiFinishReason.stop,
+  ),
+];
+
+/// 一次请求工具的响应：可选的正文，然后是完整的调用（与真实客户端一样
+/// 在最后一块给出）。
+List<AiChunk> toolTurn(
+  List<({String id, String name, Map<String, Object?> args})> calls, {
+  String text = '',
+}) => <AiChunk>[
+  if (text.isNotEmpty) AiChunk(text: text),
+  for (var i = 0; i < calls.length; i++)
+    AiChunk(
+      toolCallStarted: AiToolCallStart(index: i, name: calls[i].name),
+    ),
+  AiChunk(
+    toolCalls: [
+      for (final call in calls)
+        AiToolCall(
+          id: call.id,
+          name: call.name,
+          argumentsRaw: jsonEncode(call.args),
+          arguments: call.args,
+        ),
+    ],
+    finishReason: AiFinishReason.toolCalls,
+  ),
+];
+
+/// 用按队列回放的假客户端的 AiService。
+AiService scriptedAiService(
+  AiProviderStore store, {
+  required List<List<AiChunk>> turns,
+  List<AiRequest>? requests,
+}) {
+  final log = requests ?? <AiRequest>[];
+  return AiService(
+    store: store,
+    clientFactory: (config, http) => ScriptedAiChatClient(turns, log),
+  );
 }
 
 /// 一个可用的假服务商（主机已确认过，发送时不弹确认面板）。

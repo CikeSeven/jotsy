@@ -6,6 +6,7 @@ import '../../../settings/widgets/settings_card_group.dart';
 import '../../../settings/widgets/settings_option_tiles.dart';
 import '../../../settings/widgets/settings_reveal.dart';
 import '../../../widgets/expressive_button_group.dart';
+import '../../models/ai_agent_options.dart';
 import '../../models/ai_preference_parts.dart';
 import '../../models/ai_preferences.dart';
 import '../../providers/ai_providers.dart';
@@ -162,6 +163,36 @@ class AiModulesGroup extends ConsumerWidget {
         module(
           AiModule.chat,
           options: <Widget>[
+            SettingsSwitchTile(
+              nested: true,
+              title: l10n.aiOptionAgent,
+              subtitle: l10n.aiOptionAgentSubtitle,
+              value: prefs.agent.enabled,
+              onChanged: (bool v) => update(
+                (p) => p.copyWith(agent: p.agent.copyWith(enabled: v)),
+              ),
+            ),
+            SettingsReveal(
+              visible: prefs.agent.enabled,
+              child: SettingsChoiceTile(
+                nested: true,
+                title: l10n.aiOptionAgentSteps,
+                subtitle: l10n.aiOptionAgentStepsSubtitle,
+                child: ExpressiveButtonGroup<int>(
+                  minSegmentWidth: 64,
+                  segments: <ButtonSegment<int>>[
+                    for (final steps in AiAgentOptions.maxStepsChoices)
+                      ButtonSegment(value: steps, label: Text('$steps')),
+                  ],
+                  selected: {prefs.agent.maxSteps},
+                  onSelectionChanged: (Set<int> value) => update(
+                    (p) => p.copyWith(
+                      agent: p.agent.copyWith(maxSteps: value.single),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             SettingsChoiceTile(
               nested: true,
               title: l10n.aiOptionRetrieval,

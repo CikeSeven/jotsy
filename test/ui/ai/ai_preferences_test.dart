@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/ai/models/ai_agent_options.dart';
 import 'package:node_diary/ui/ai/models/ai_built_ins.dart';
 import 'package:node_diary/ui/ai/models/ai_preference_parts.dart';
 import 'package:node_diary/ui/ai/models/ai_preferences.dart';
@@ -165,6 +166,28 @@ void main() {
       expect(prefs.personas.map((p) => p.id), ['y']);
       // 显式写了空章节就是“都不要”，不回到默认。
       expect(prefs.recapSections, isEmpty);
+    });
+
+    test('agent options are sparse and tolerate bad values', () {
+      final changed = AiPreferences.defaults.copyWith(
+        agent: const AiAgentOptions(enabled: false, maxSteps: 40),
+      );
+      expect(changed.toJson()['agent'], {'enabled': false, 'maxSteps': 40});
+      expect(AiPreferences.decode(changed.encode()).agent, changed.agent);
+      // 只改一项时只写那一项；与默认相同时整个字段都不写。
+      expect(
+        AiPreferences.defaults
+            .copyWith(agent: const AiAgentOptions(maxSteps: 10))
+            .toJson()['agent'],
+        {'maxSteps': 10},
+      );
+      expect(AiPreferences.defaults.toJson().containsKey('agent'), isFalse);
+      final bad = AiPreferences.decode(
+        jsonEncode({
+          'agent': {'enabled': 'no', 'maxSteps': 7},
+        }),
+      );
+      expect(bad.agent, AiAgentOptions.defaults);
     });
 
     test('keeps prompt texts up to 100k chars and clips only beyond', () {

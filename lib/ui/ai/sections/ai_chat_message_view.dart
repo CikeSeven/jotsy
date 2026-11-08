@@ -1,7 +1,8 @@
 // 对话里的一条消息。
 //
 // - 用户：靠右的气泡；最后一个问题旁有“编辑并重发”；
-// - 回答：铺满列宽的 Markdown（`[Dn]` 为可点的引用胶囊，合写的引用先拆开），
+// - 回答：智能体回答先列出工具步骤（`AiAgentStepsView`），再是铺满列宽的
+//   Markdown（`[Dn]` 为可点的引用胶囊，合写的引用先拆开），
 //   可折叠的思考过程、“参考了 N 篇日记”（展开列出被引用的日记，点按打开）、
 //   出错的原因与重试、已停止的标记、可选的 token 数，以及一排操作（复制、
 //   重新生成（只在最后一个回答）、另存为日记、删除）。
@@ -17,11 +18,14 @@ import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/ai_chat_controller.dart';
+import '../models/ai_agent_steps.dart';
+import '../tools/ai_tool.dart';
 import '../viewmodels/ai_citations.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import '../widgets/ai_error_view.dart';
 import '../widgets/ai_markdown_view.dart';
+import 'ai_agent_steps_view.dart';
 
 class AiChatMessageView extends StatelessWidget {
   const AiChatMessageView({
@@ -32,6 +36,7 @@ class AiChatMessageView extends StatelessWidget {
     required this.onCitation,
     required this.onCopy,
     required this.onSaveAsDiary,
+    required this.onOpenPage,
     this.onEdit,
     this.onRegenerate,
     this.onDelete,
@@ -45,6 +50,9 @@ class AiChatMessageView extends StatelessWidget {
   final void Function(List<AiCitation> citations, String ref) onCitation;
   final ValueChanged<String> onCopy;
   final ValueChanged<String> onSaveAsDiary;
+
+  /// 点了步骤里的“前往”按钮。
+  final ValueChanged<AiToolNavigation> onOpenPage;
   final VoidCallback? onEdit;
   final VoidCallback? onRegenerate;
   final VoidCallback? onDelete;
@@ -119,6 +127,12 @@ class AiChatMessageView extends StatelessWidget {
     final citations = AiCitation.decodeList(message.citations);
     final error = aiMessageError(message);
     final meta = _AnswerMeta.decode(message.meta);
+    final steps = AiAgentStepRecord.decodeList(message.steps);
+    final endNote = switch (meta.agentEnd) {
+      'stepsExhausted' => l10n.aiAgentStepsExhausted,
+      'incomplete' => l10n.aiAgentIncomplete,
+      _ => null,
+    };
     final metaStyle = theme.textTheme.labelSmall?.copyWith(
       color: colors.onSurfaceVariant,
     );
@@ -136,12 +150,30 @@ class AiChatMessageView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          if (steps.isNotEmpty)
+            AiAgentStepsView(
+              steps: steps,
+              live: false,
+              showReasoning: showReasoning,
+              onCitation: (ref) => onCitation(citations, ref),
+              onOpen: onOpenPage,
+            ),
           if (message.content.trim().isNotEmpty ||
               (showReasoning && message.reasoning.trim().isNotEmpty))
             AiChatAnswerBody(
               text: message.content,
               reasoning: showReasoning ? message.reasoning : '',
               onCitation: (ref) => onCitation(citations, ref),
+            ),
+          if (endNote != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                endNote,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
             ),
           if (error != null) ...<Widget>[
             const SizedBox(height: 8),
@@ -410,7 +442,13 @@ class _ActionIcon extends StatelessWidget {
 
 /// 回答 meta 里显示用的几项。
 class _AnswerMeta {
-  const _AnswerMeta({this.input, this.output, this.model, this.contextEntries});
+  const _AnswerMeta({
+    this.input,
+    this.output,
+    this.model,
+    this.contextEntries,
+    this.agentEnd,
+  });
 
   factory _AnswerMeta.decode(String raw) {
     try {
@@ -423,6 +461,9 @@ class _AnswerMeta {
           output: number('outputTokens'),
           model: model is String ? model : null,
           contextEntries: number('contextEntries'),
+          agentEnd: json['agentEnd'] is String
+              ? json['agentEnd'] as String
+              : null,
         );
       }
     } on FormatException {
@@ -437,4 +478,7 @@ class _AnswerMeta {
 
   /// 这一轮放进上下文的篇数；“继续聊聊”带进来的回应等没有检索过的为 null。
   final int? contextEntries;
+
+  /// 智能体没有正常作答的原因（步数用完 / 响应被截断）。
+  final String? agentEnd;
 }

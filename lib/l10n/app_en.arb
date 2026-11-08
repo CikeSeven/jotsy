@@ -15325,11 +15325,11 @@
   "@aiModuleRecapSubtitle": {
     "description": "AI module description."
   },
-  "aiModuleChat": "Chat with your diary",
+  "aiModuleChat": "Chat & actions",
   "@aiModuleChat": {
     "description": "AI module name."
   },
-  "aiModuleChatSubtitle": "Ask your diary; answers cite the entries they use",
+  "aiModuleChatSubtitle": "Ask about your journal, or let the AI look things up, count and open pages",
   "@aiModuleChatSubtitle": {
     "description": "AI module description."
   },
@@ -15800,6 +15800,249 @@
   "aiModelToolsSubtitle": "Lets the assistant operate the app; falls back to plain Q&A if the model doesn't support it",
   "@aiModelToolsSubtitle": {
     "description": "Explanation of the tool calling toggle."
+  },
+  "aiToolGetAppContext": "Check today's date and app status",
+  "@aiToolGetAppContext": {
+    "description": "AI step card: the tool that checks the date and app status."
+  },
+  "aiToolOpenPage": "Open: {page}",
+  "@aiToolOpenPage": {
+    "description": "AI step card: offering a button that opens a page.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolPageUnavailable": "This page isn't available (the feature is off or not supported on this device)",
+  "@aiToolPageUnavailable": {
+    "description": "Shown when a page the AI wants to open isn't available."
+  },
+  "aiToolSearchDiaries": "Search entries",
+  "@aiToolSearchDiaries": {
+    "description": "AI step card: searching entries."
+  },
+  "aiToolSearchDiariesFor": "Search entries: {query}",
+  "@aiToolSearchDiariesFor": {
+    "description": "AI step card: searching entries for keywords.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFoundEntries": "{count, plural, =0{No entries found} =1{1 entry found} other{{count} entries found}}",
+  "@aiToolFoundEntries": {
+    "description": "AI step card: how many entries a search found.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadDiaries": "{count, plural, =1{Read 1 entry} other{Read {count} entries}}",
+  "@aiToolReadDiaries": {
+    "description": "AI step card: reading the full text of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadEntries": "{count, plural, =1{1 entry read} other{{count} entries read}}",
+  "@aiToolReadEntries": {
+    "description": "AI step card: how many entries were read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDiaryStats": "Count entries",
+  "@aiToolDiaryStats": {
+    "description": "AI step card: counting entries."
+  },
+  "aiToolStatsEntries": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@aiToolStatsEntries": {
+    "description": "AI step card: how many entries were counted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListTags": "List tags",
+  "@aiToolListTags": {
+    "description": "AI step card: listing tags."
+  },
+  "aiToolTagCount": "{count, plural, =1{1 tag} other{{count} tags}}",
+  "@aiToolTagCount": {
+    "description": "AI step card: number of tags.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListNotebooks": "List notebooks",
+  "@aiToolListNotebooks": {
+    "description": "AI step card: listing notebooks."
+  },
+  "aiToolNotebookCount": "{count, plural, =1{1 notebook} other{{count} notebooks}}",
+  "@aiToolNotebookCount": {
+    "description": "AI step card: number of notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCalendarDay": "Check today on the calendar",
+  "@aiToolCalendarDay": {
+    "description": "AI step card: checking today on the calendar."
+  },
+  "aiToolCalendarDayOf": "Check {date} on the calendar",
+  "@aiToolCalendarDayOf": {
+    "description": "AI step card: checking a day on the calendar (date as YYYY-MM-DD).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolListTodos": "List to-dos",
+  "@aiToolListTodos": {
+    "description": "AI step card: listing to-dos."
+  },
+  "aiToolTodoCount": "{count, plural, =1{1 to-do} other{{count} to-dos}}",
+  "@aiToolTodoCount": {
+    "description": "AI step card: number of to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListAnniversaries": "List anniversaries",
+  "@aiToolListAnniversaries": {
+    "description": "AI step card: listing anniversaries."
+  },
+  "aiToolAnniversaryCount": "{count, plural, =1{1 anniversary} other{{count} anniversaries}}",
+  "@aiToolAnniversaryCount": {
+    "description": "AI step card: number of anniversaries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiDestinationDiary": "This entry",
+  "@aiDestinationDiary": {
+    "description": "AI open-page target: an entry."
+  },
+  "aiDestinationSearch": "Search entries",
+  "@aiDestinationSearch": {
+    "description": "AI open-page target: the search page."
+  },
+  "aiAgentStepsSummary": "{count, plural, =1{Used 1 tool} other{Used {count} tools}}",
+  "@aiAgentStepsSummary": {
+    "description": "Title of a collapsed group of AI steps.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentPreparing": "Preparing a step…",
+  "@aiAgentPreparing": {
+    "description": "The AI is preparing a tool call."
+  },
+  "aiAgentStepFailed": "Didn't work",
+  "@aiAgentStepFailed": {
+    "description": "An AI step failed."
+  },
+  "aiAgentStepCancelled": "Stopped",
+  "@aiAgentStepCancelled": {
+    "description": "An AI step was stopped."
+  },
+  "aiAgentStepInterrupted": "Interrupted",
+  "@aiAgentStepInterrupted": {
+    "description": "An AI step was cut short (for example the app was closed)."
+  },
+  "aiAgentOpenPage": "Open {page}",
+  "@aiAgentOpenPage": {
+    "description": "Button in an AI step that opens a page.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentStepsExhausted": "This reply used up its steps. Say \"continue\" to let the AI keep going.",
+  "@aiAgentStepsExhausted": {
+    "description": "Note under an answer when the AI ran out of steps."
+  },
+  "aiAgentIncomplete": "The reply was cut off, so its steps weren't run.",
+  "@aiAgentIncomplete": {
+    "description": "Note under an answer when the reply was cut off."
+  },
+  "aiConfirmSendAgent": "The AI will look up and read entries as needed (never private ones) without asking each time",
+  "@aiConfirmSendAgent": {
+    "description": "Send confirmation sheet: the assistant reads entries as needed."
+  },
+  "aiOptionAgent": "Let the AI use tools",
+  "@aiOptionAgent": {
+    "description": "AI settings: toggle for tool use in chat."
+  },
+  "aiOptionAgentSubtitle": "Look up and count entries, check the calendar and to-dos, open pages; when off or unsupported, it only answers from retrieved entries",
+  "@aiOptionAgentSubtitle": {
+    "description": "Explanation of the tool-use toggle."
+  },
+  "aiOptionAgentSteps": "Max steps per reply",
+  "@aiOptionAgentSteps": {
+    "description": "AI settings: how many rounds of tool calls one reply may use."
+  },
+  "aiOptionAgentStepsSubtitle": "Each step can call several tools; the last step only answers",
+  "@aiOptionAgentStepsSubtitle": {
+    "description": "Explanation of the max steps option."
+  },
+  "aiPromptAgentSystem": "You can call tools to search and count the user's diary entries, check the calendar, to-dos and anniversaries, and open pages of the app. Look things up with tools instead of guessing; independent lookups can be called together. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can't be done, say so.",
+  "@aiPromptAgentSystem": {
+    "description": "System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete)."
+  },
+  "aiPromptAgentNow": "It is now {time}.",
+  "@aiPromptAgentNow": {
+    "description": "Assistant prompt: the current time.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentScopeDiary": "This conversation is about the following entry:",
+  "@aiPromptAgentScopeDiary": {
+    "description": "Assistant prompt: the conversation is pinned to one entry."
+  },
+  "aiPromptAgentScopeRange": "This conversation is only about entries from {from} to {to}; use this range when searching unless told otherwise.",
+  "@aiPromptAgentScopeRange": {
+    "description": "Assistant prompt: the date range the conversation is limited to.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentActionsDone": "(Actions taken in this turn:\n{actions})",
+  "@aiPromptAgentActionsDone": {
+    "description": "Assistant prompt: the actions appended to an earlier answer.",
+    "placeholders": {
+      "actions": {
+        "type": "String"
+      }
+    }
   },
   "aiModelMaxOutput": "Max output tokens",
   "@aiModelMaxOutput": {

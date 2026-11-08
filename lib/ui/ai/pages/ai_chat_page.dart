@@ -27,6 +27,8 @@ import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../../app_surface/widgets/app_page_background.dart';
 import '../../diaries/controllers/diary_link_open_flow.dart';
+import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
 import '../../widgets/width_layout_builder.dart';
@@ -34,6 +36,7 @@ import '../../widgets/expressive_loading_indicator.dart';
 import '../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../widgets/expressive_menu/expressive_menu_item.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
+import '../controllers/ai_agent_turn.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_chat_flows.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
@@ -43,7 +46,10 @@ import '../models/ai_chat_scope.dart';
 import '../models/ai_preference_parts.dart';
 import '../providers/ai_providers.dart';
 import '../providers/ai_records_providers.dart';
+import '../sections/ai_agent_steps_view.dart';
 import '../sections/ai_chat_message_view.dart';
+import '../tools/ai_destinations.dart';
+import '../tools/ai_tool.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import '../widgets/ai_tap_outside_unfocus.dart';
@@ -160,6 +166,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   void dispose() {
     _controller.removeListener(_onControllerChanged);
     _controller.run.removeListener(_followBottom);
+    _listenedTurn?.removeListener(_followBottom);
     _controller.dispose();
     _input.dispose();
     _inputFocus.dispose();
@@ -167,9 +174,44 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     super.dispose();
   }
 
+  /// 正在监听的智能体一轮（跟随底部用）。
+  AiAgentTurn? _listenedTurn;
+
   void _onControllerChanged() {
+    final turn = _controller.agentTurn;
+    if (!identical(turn, _listenedTurn)) {
+      _listenedTurn?.removeListener(_followBottom);
+      turn?.addListener(_followBottom);
+      _listenedTurn = turn;
+    }
     if (mounted) setState(() {});
     _followBottom();
+    // 用户明确说了“打开…”：这一轮结束后自动打开那个页面。
+    if (!_controller.busy) {
+      final navigation = _controller.takeAutoOpen();
+      if (navigation != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) unawaited(_openPage(navigation));
+        });
+      }
+    }
+  }
+
+  /// 步骤里的“前往”：功能已关闭（或换了平台）时只提示不可用。
+  Future<void> _openPage(AiToolNavigation navigation) async {
+    final destination = aiDestinationById(navigation.destination);
+    final env = AiToolEnv(
+      features: ref.read(appFeaturesProvider),
+      prefs: ref.read(aiPreferencesProvider),
+    );
+    if (destination == null || !destination.isAvailable(env)) {
+      await HomeHintVisibilityScope.showTrackedSnackBar(
+        context: context,
+        snackBar: SnackBar(content: Text(context.l10n.aiToolPageUnavailable)),
+      );
+      return;
+    }
+    await destination.open(context, ref, navigation.params);
   }
 
   /// 生成中贴着底部的话跟到底；用户往上翻了就不打扰。
@@ -270,9 +312,17 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final conversation = id == null
         ? null
         : ref.watch(aiConversationProvider(id)).value;
-    final messages = id == null
+    final rows = id == null
         ? const <AiMessageRow>[]
         : ref.watch(aiMessagesProvider(id)).value ?? const <AiMessageRow>[];
+    // 智能体这一轮的消息行边做边落库，进行中由末尾的“进行中”一项显示。
+    final pendingRow = _controller.agentTurn?.messageId;
+    final messages = pendingRow == null
+        ? rows
+        : [
+            for (final row in rows)
+              if (row.messageId != pendingRow) row,
+          ];
     final prefs = ref.watch(aiPreferencesProvider);
     final config = ref.watch(aiLocalConfigProvider);
     final persona = aiPersonaById(
@@ -443,7 +493,10 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                           if (i == messages.length) {
                             return ListenableBuilder(
                               key: const ValueKey<String>('ai-pending'),
-                              listenable: _controller.run,
+                              listenable: Listenable.merge(<Listenable?>[
+                                _controller.run,
+                                _controller.agentTurn,
+                              ]),
                               builder: (BuildContext context, Widget? _) =>
                                   _buildPending(context),
                             );
@@ -467,6 +520,8 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                                 : null,
                             onCopy: (text) =>
                                 unawaited(copyAiText(context, text)),
+                            onOpenPage: (navigation) =>
+                                unawaited(_openPage(navigation)),
                             onSaveAsDiary: (text) => unawaited(
                               saveAiTextAsDiary(
                                 context,
@@ -509,6 +564,10 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
 
   /// 正在进行的这一轮：检索中的状态行，或流式的回答。
   Widget _buildPending(BuildContext context) {
+    final turn = _controller.agentTurn;
+    if (_controller.phase == AiChatPhase.working && turn != null) {
+      return _buildAgentPending(context, turn);
+    }
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
@@ -559,6 +618,62 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                   color: colors.onSurfaceVariant,
                 ),
               ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 智能体正在进行的这一轮：已执行的步骤、正在流式的文字，以及“正在准备
+  /// 某个操作 / 正在思考”的提示。
+  Widget _buildAgentPending(BuildContext context, AiAgentTurn turn) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final showReasoning = ref.watch(aiPreferencesProvider).showReasoning;
+    final citations = turn.toolContext.citations.all;
+    final waiting =
+        turn.preparingTool == null &&
+        turn.text.isEmpty &&
+        (turn.steps.isEmpty ||
+            turn.steps.last.calls.every((call) => call.status.finished));
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          AiAgentStepsView(
+            steps: turn.steps,
+            live: true,
+            showReasoning: showReasoning,
+            onCitation: (ref) => _openCitation(citations, ref),
+            onOpen: (navigation) => unawaited(_openPage(navigation)),
+          ),
+          if (turn.text.isNotEmpty || turn.reasoning.isNotEmpty)
+            AiChatAnswerBody(
+              text: turn.text,
+              reasoning: showReasoning ? turn.reasoning : '',
+              onCitation: (ref) => _openCitation(citations, ref),
+            ),
+          if (turn.preparingTool case final tool?)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: AiAgentPreparingRow(tool: tool),
+            )
+          else if (waiting)
+            Row(
+              children: <Widget>[
+                const ExpressiveLoadingIndicator(size: 18),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    l10n.aiPanelThinking,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
             ),
         ],
       ),

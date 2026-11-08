@@ -442,7 +442,7 @@ void main() {
             final version = await migrated
                 .customSelect('PRAGMA user_version')
                 .getSingle();
-            expect(version.read<int>('user_version'), 18);
+            expect(version.read<int>('user_version'), migrated.schemaVersion);
           } finally {
             await migrated.close();
           }

@@ -22,8 +22,8 @@ enum BackupImportMode {
   merge,
 
   /// 合并并覆盖：在 [merge] 的基础上，把本机已有的同一篇日记整篇替换为文件
-  /// 中的版本（正文、标签、归档/置顶/回收站状态一并替换）；同一条纪念日同样
-  /// 替换为文件中的版本；同一个日记本的定义替换为文件中的版本（书架顺序保留
+  /// 中的版本（正文、标签、归档/置顶/回收站状态一并替换）；同一条纪念日与
+  /// 待办同样替换为文件中的版本；同一个日记本的定义替换为文件中的版本（书架顺序保留
   /// 本机的）。日记模板仍只新增、不替换本机已有的。
   mergeOverwrite,
 
@@ -58,6 +58,9 @@ class BackupArchivePreview {
     this.existingNotebookCount = 0,
     this.existingDayMoodCount = 0,
     this.localDayMoodCount = 0,
+    this.todoCount = 0,
+    this.existingTodoCount = 0,
+    this.localTodoCount = 0,
   });
 
   final BackupArchiveKind kind;
@@ -124,14 +127,26 @@ class BackupArchivePreview {
   /// 不含心情的旧备份覆盖导入后，本机记下的心情会被清空，警告里要列出来。
   final int localDayMoodCount;
 
+  /// 文件内的待办数（含已完成；只有完整备份带待办）。
+  final int todoCount;
+
+  /// 文件内本机已有（按 todoId）的待办数，即 [BackupImportMode.mergeOverwrite]
+  /// 会替换的条数。
+  final int existingTodoCount;
+
+  /// 本机当前待办总数，即 [BackupImportMode.replaceAll] 会删除的条数——不含
+  /// 待办的旧备份覆盖导入后，本机待办会被清空，警告里要列出来。
+  final int localTodoCount;
+
   /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记、
-  /// 纪念日或心情时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部
+  /// 纪念日、心情或待办时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部
   /// 数据。
   List<BackupImportMode> get availableModes => <BackupImportMode>[
     BackupImportMode.merge,
     if (existingDiaryCount > 0 ||
         existingAnniversaryCount > 0 ||
-        existingDayMoodCount > 0)
+        existingDayMoodCount > 0 ||
+        existingTodoCount > 0)
       BackupImportMode.mergeOverwrite,
     if (kind == BackupArchiveKind.fullBackup) BackupImportMode.replaceAll,
   ];
@@ -153,6 +168,8 @@ class BackupImportResult {
     this.replacedDayMoods = 0,
     this.addedComments = 0,
     this.replacedComments = 0,
+    this.addedTodos = 0,
+    this.replacedTodos = 0,
   });
 
   final BackupImportMode mode;
@@ -188,6 +205,11 @@ class BackupImportResult {
   /// [BackupImportMode.replaceAll] 时新增数为换入的全部留言数。
   final int addedComments;
   final int replacedComments;
+
+  /// 新增与替换的待办条数（合并保留本机而跳过的不计）；
+  /// [BackupImportMode.replaceAll] 时新增数为换入的全部待办数。
+  final int addedTodos;
+  final int replacedTodos;
 
   bool get touchedAnniversaries =>
       addedAnniversaries + replacedAnniversaries + skippedAnniversaries > 0;

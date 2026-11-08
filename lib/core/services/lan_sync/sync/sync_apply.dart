@@ -11,6 +11,7 @@ import 'sync_canonical_diary.dart';
 import 'sync_canonical_misc.dart';
 import 'sync_canonical_notebook.dart';
 import 'sync_canonical_settings.dart';
+import 'sync_canonical_todo.dart';
 import 'sync_local_state.dart';
 import 'sync_media.dart';
 import 'sync_model.dart';

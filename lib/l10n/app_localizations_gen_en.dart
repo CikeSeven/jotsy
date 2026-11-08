@@ -11875,6 +11875,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lanSyncItemDayMoods => 'Day moods';
 
   @override
+  String get lanSyncItemTodos => 'To-dos';
+
+  @override
   String get lanSyncItemSettings => 'Settings';
 
   @override
@@ -14772,4 +14775,628 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get publishOnLeaveFailedKeptDraft =>
       'Couldn\'t publish the diary. It\'s kept in Drafts.';
+
+  @override
+  String backupImportTodoCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos',
+      one: '1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportExistingTodoCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos are already on this device',
+      one: '1 to-do is already on this device',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportModeOverwriteTodosOnly(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Adds new items and replaces the $count to-dos already on this device with the versions in the file',
+      one:
+          'Adds new items and replaces the 1 to-do already on this device with the version in the file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportModeOverwriteTodosExtra(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Also replaces $count to-dos already on this device',
+      one: 'Also replaces 1 to-do already on this device',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupOverwriteAllTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos',
+      one: '1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupOverwriteExistingTodosBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The $count to-dos already on this device will be replaced by the versions in the file.',
+      one:
+          'The 1 to-do already on this device will be replaced by the version in the file.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportTodoMergeResult(int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'To-dos: $added added',
+      one: 'To-dos: 1 added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportTodoOverwriteResult(int added, int replaced) {
+    return 'To-dos: $added added, $replaced overwritten';
+  }
+
+  @override
+  String get navTodos => 'To-dos';
+
+  @override
+  String get appSurfaceAreaTodos => 'To-dos';
+
+  @override
+  String get settingsFeaturesTodosSubtitle =>
+      'To-dos, lists and reminders separate from your diary';
+
+  @override
+  String get todoViewToday => 'Today';
+
+  @override
+  String get todoViewPlanned => 'Planned';
+
+  @override
+  String get todoViewImportant => 'Important';
+
+  @override
+  String get todoViewAll => 'All';
+
+  @override
+  String get todoViewCompleted => 'Completed';
+
+  @override
+  String get todoViewInbox => 'Inbox';
+
+  @override
+  String get todoGroupOverdue => 'Overdue';
+
+  @override
+  String get todoGroupToday => 'Today';
+
+  @override
+  String get todoGroupTomorrow => 'Tomorrow';
+
+  @override
+  String get todoGroupNextDays => 'Next 7 days';
+
+  @override
+  String get todoGroupLater => 'Later';
+
+  @override
+  String get todoGroupNoDate => 'No date';
+
+  @override
+  String todoGroupCompleted(int count) {
+    return 'Completed $count';
+  }
+
+  @override
+  String get todoNew => 'New to-do';
+
+  @override
+  String get todoQuickAddHint => 'What needs doing?';
+
+  @override
+  String get todoQuickAddSubmit => 'Add';
+
+  @override
+  String get todoSearchHint => 'Search to-dos';
+
+  @override
+  String get todoEmptyToday => 'Nothing to do today';
+
+  @override
+  String get todoEmptyList => 'No to-dos here yet';
+
+  @override
+  String get todoEmptyCompleted => 'No completed to-dos yet';
+
+  @override
+  String get todoEmptySearch => 'No matching to-dos';
+
+  @override
+  String todoSortLabel(String mode) {
+    return 'Sort: $mode';
+  }
+
+  @override
+  String get todoSortManual => 'Manual';
+
+  @override
+  String get todoSortDue => 'Due date';
+
+  @override
+  String get todoSortPriority => 'Priority';
+
+  @override
+  String get todoSortCreated => 'Date created';
+
+  @override
+  String get todoSortTitle => 'Sort by';
+
+  @override
+  String get todoShowCompleted => 'Show completed';
+
+  @override
+  String get todoHideCompleted => 'Hide completed';
+
+  @override
+  String get todoClearCompleted => 'Clear completed';
+
+  @override
+  String get todoClearCompletedTitle => 'Clear completed to-dos?';
+
+  @override
+  String todoClearCompletedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count completed to-dos will be deleted. You can undo from the notice.',
+      one: '1 completed to-do will be deleted. You can undo from the notice.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoClearedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cleared $count to-dos',
+      one: 'Cleared 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoCompletedNotice => 'Completed';
+
+  @override
+  String todoCompletedNextNotice(String date) {
+    return 'Completed. Next: $date';
+  }
+
+  @override
+  String get todoDeletedNotice => 'To-do deleted';
+
+  @override
+  String get todoDelete => 'Delete to-do';
+
+  @override
+  String get todoMarkDone => 'Mark as done';
+
+  @override
+  String get todoMarkUndone => 'Mark as not done';
+
+  @override
+  String get todoMore => 'More';
+
+  @override
+  String get todoListsSection => 'Lists';
+
+  @override
+  String get todoListNew => 'New list';
+
+  @override
+  String get todoListEdit => 'Edit list';
+
+  @override
+  String get todoListNameHint => 'List name';
+
+  @override
+  String get todoListManage => 'Manage lists';
+
+  @override
+  String get todoListDelete => 'Delete list';
+
+  @override
+  String todoListDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String todoListDeleteBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Its $count to-dos will be deleted too. You can undo from the notice.',
+      one: 'Its 1 to-do will be deleted too. You can undo from the notice.',
+      zero: 'The list is empty. You can undo from the notice.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoListDeletedNotice => 'List deleted';
+
+  @override
+  String get todoListColor => 'Color';
+
+  @override
+  String get todoListIcon => 'Icon';
+
+  @override
+  String get todoListEmptyManage =>
+      'No lists yet. Group to-dos by work, home and so on to find them faster.';
+
+  @override
+  String get todoDetailTitle => 'To-do';
+
+  @override
+  String get todoNoteHint => 'Add a note';
+
+  @override
+  String get todoStepAdd => 'Add a step';
+
+  @override
+  String get todoStepDelete => 'Delete step';
+
+  @override
+  String todoStepsProgress(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String get todoFieldDue => 'Date';
+
+  @override
+  String get todoFieldDueEmpty => 'Add date';
+
+  @override
+  String get todoFieldReminders => 'Reminders';
+
+  @override
+  String get todoFieldRemindersEmpty => 'Add reminder';
+
+  @override
+  String get todoFieldRepeat => 'Repeat';
+
+  @override
+  String get todoFieldPriority => 'Priority';
+
+  @override
+  String get todoFieldList => 'List';
+
+  @override
+  String get todoFieldDiary => 'Linked diary';
+
+  @override
+  String get todoFieldDiaryEmpty => 'Link a diary';
+
+  @override
+  String get todoFieldDiaryMissing => 'The diary no longer exists';
+
+  @override
+  String get todoRemoveField => 'Clear';
+
+  @override
+  String todoCreatedAt(String time) {
+    return 'Created $time';
+  }
+
+  @override
+  String todoCompletedAt(String time) {
+    return 'Completed $time';
+  }
+
+  @override
+  String get todoNotFound => 'This to-do was deleted';
+
+  @override
+  String get todoPriorityNone => 'None';
+
+  @override
+  String get todoPriorityLow => 'Low';
+
+  @override
+  String get todoPriorityMedium => 'Medium';
+
+  @override
+  String get todoPriorityHigh => 'High';
+
+  @override
+  String get todoDueToday => 'Today';
+
+  @override
+  String get todoDueTomorrow => 'Tomorrow';
+
+  @override
+  String get todoDueYesterday => 'Yesterday';
+
+  @override
+  String get todoDueNextWeek => 'Next Monday';
+
+  @override
+  String get todoDuePickDate => 'Pick a date…';
+
+  @override
+  String get todoDueAllDay => 'All day';
+
+  @override
+  String get todoDueSetTime => 'Set time';
+
+  @override
+  String get todoDueRemove => 'Remove date';
+
+  @override
+  String todoDueWithTime(String date, String time) {
+    return '$date, $time';
+  }
+
+  @override
+  String get todoReminderAtDue => 'At due time';
+
+  @override
+  String todoReminderMinutesBefore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes before',
+      one: '1 minute before',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoReminderHoursBefore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours before',
+      one: '1 hour before',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoReminderDaysBefore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days before',
+      one: '1 day before',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoReminderOnDayAt(String time) {
+    return 'On the day at $time';
+  }
+
+  @override
+  String todoReminderDaysBeforeAt(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days before at $time',
+      one: '1 day before at $time',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoReminderCustom => 'Custom time…';
+
+  @override
+  String todoReminderLimit(int count) {
+    return 'Up to $count reminders';
+  }
+
+  @override
+  String get todoReminderRemove => 'Remove reminder';
+
+  @override
+  String get todoRepeatNone => 'Never';
+
+  @override
+  String get todoRepeatDaily => 'Daily';
+
+  @override
+  String get todoRepeatLegalWorkdays => 'Workdays (China public holidays)';
+
+  @override
+  String todoRepeatWeeklyOn(String days) {
+    return 'Weekly on $days';
+  }
+
+  @override
+  String todoRepeatMonthlyOnDay(int day) {
+    return 'Monthly on day $day';
+  }
+
+  @override
+  String todoRepeatMonthlyOrdinal(String ordinal, String weekday) {
+    String _temp0 = intl.Intl.selectLogic(ordinal, {
+      '1': 'first',
+      '2': 'second',
+      '3': 'third',
+      '4': 'fourth',
+      'other': 'fifth',
+    });
+    return 'Monthly on the $_temp0 $weekday';
+  }
+
+  @override
+  String get todoRepeatMonthlyLastDay => 'Monthly on the last day';
+
+  @override
+  String todoRepeatYearlyOn(String date) {
+    return 'Yearly on $date';
+  }
+
+  @override
+  String todoRepeatEveryDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count days',
+      one: 'Every day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoRepeatEveryWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count weeks',
+      one: 'Every week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoRepeatEveryMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count months',
+      one: 'Every month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoRepeatEveryYears(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count years',
+      one: 'Every year',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoRepeatSummaryJoin(String a, String b) {
+    return '$a · $b';
+  }
+
+  @override
+  String get todoRepeatCustom => 'Custom…';
+
+  @override
+  String get todoRepeatCustomTitle => 'Custom repeat';
+
+  @override
+  String get todoRepeatUnitDay => 'Day';
+
+  @override
+  String get todoRepeatUnitWeek => 'Week';
+
+  @override
+  String get todoRepeatUnitMonth => 'Month';
+
+  @override
+  String get todoRepeatUnitYear => 'Year';
+
+  @override
+  String get todoRepeatInterval => 'Every';
+
+  @override
+  String get todoRepeatOnDays => 'On';
+
+  @override
+  String get todoRepeatFromCompletion => 'Count from completion';
+
+  @override
+  String get todoRepeatFromCompletionSubtitle =>
+      'For things like watering plants: again a while after you do it';
+
+  @override
+  String get todoRepeatEnds => 'Ends';
+
+  @override
+  String get todoRepeatEndsNever => 'Never';
+
+  @override
+  String todoRepeatEndsOn(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String todoRepeatEndsAfter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: '1 time',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoRepeatEndsOnPick => 'On a date';
+
+  @override
+  String get todoRepeatEndsAfterPick => 'After a number of times';
+
+  @override
+  String get todoRepeatNeedsDate => 'Repeating starts today';
+
+  @override
+  String get todoSettingsTitle => 'To-dos';
+
+  @override
+  String get todoSettingsSubtitle => 'Lists, display and reminders';
+
+  @override
+  String get todoSettingsDisplayGroup => 'Display';
+
+  @override
+  String get todoSettingsShowCompletedSubtitle =>
+      'Show completed to-dos at the bottom of lists and the inbox';
+
+  @override
+  String get todoSettingsDefaultList => 'New to-dos go to';
+
+  @override
+  String get todoSettingsDefaultView => 'Open to';
 }

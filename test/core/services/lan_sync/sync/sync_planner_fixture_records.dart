@@ -11,6 +11,8 @@ SyncKey memberKey(String notebook, String diary) =>
 SyncKey listKey(String id) => SyncKey(SyncEntity.orderList, id);
 SyncKey commentKey(String id) => SyncKey(SyncEntity.comment, id);
 SyncKey anniversaryKey(String id) => SyncKey(SyncEntity.anniversary, id);
+SyncKey todoListKey(String id) => SyncKey(SyncEntity.todoList, id);
+SyncKey todoKey(String id) => SyncKey(SyncEntity.todo, id);
 const SyncKey settingsKey = SyncKey(SyncEntity.settings, kSyncSettingsId);
 const SyncKey prefsKey = SyncKey(SyncEntity.prefs, kSyncPrefsId);
 
@@ -131,6 +133,52 @@ SyncRecord anniversaryRecord(
     'linkedDiaryId': linkedDiaryId,
     'note': '',
     'pinned': false,
+    'metadata': <String, Object?>{},
+    'createdAt': 1000,
+    'updatedAt': updatedAt,
+  },
+});
+
+SyncRecord todoListRecord(
+  String id, {
+  String? name,
+  double sortOrder = 0.0,
+  int updatedAt = 1000,
+}) => SyncRecord(todoListKey(id), <String, Object?>{
+  SyncFacet.main: <String, Object?>{
+    'name': name ?? id,
+    'colorKey': '',
+    'iconKey': '',
+    'sortOrder': sortOrder,
+    'metadata': <String, Object?>{},
+    'createdAt': 1000,
+    'updatedAt': updatedAt,
+  },
+});
+
+SyncRecord todoRecord(
+  String id, {
+  String title = 'todo',
+  String? listId,
+  String? linkedDiaryId,
+  int? completedAt,
+  double sortOrder = 0.0,
+  int updatedAt = 1000,
+}) => SyncRecord(todoKey(id), <String, Object?>{
+  SyncFacet.main: <String, Object?>{
+    'listId': listId,
+    'title': title,
+    'note': '',
+    'priority': 0,
+    'dueDate': null,
+    'dueMinute': null,
+    'reminders': <Object?>[],
+    'repeat': null,
+    'steps': <Object?>[],
+    'completedAt': completedAt,
+    'snoozedUntil': null,
+    'linkedDiaryId': linkedDiaryId,
+    'sortOrder': sortOrder,
     'metadata': <String, Object?>{},
     'createdAt': 1000,
     'updatedAt': updatedAt,

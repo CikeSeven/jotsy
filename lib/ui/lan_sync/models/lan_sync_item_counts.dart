@@ -7,7 +7,8 @@ import 'package:flutter/foundation.dart';
 /// 界面上区分的数据种类（显示顺序即声明顺序）。
 ///
 /// 日记本含它的收录（成员与书序）与书架顺序，模板含“我的模板”的顺序；
-/// 设置含标签顺序与功能开关。
+/// 待办含清单（用户眼里清单只是待办的分组，不单列一项）；设置含标签顺序与
+/// 功能开关。
 enum LanSyncItemKind {
   diaries,
   tags,
@@ -16,6 +17,7 @@ enum LanSyncItemKind {
   templates,
   anniversaries,
   dayMoods,
+  todos,
   settings,
 }
 

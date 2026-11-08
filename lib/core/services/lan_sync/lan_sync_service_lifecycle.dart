@@ -54,6 +54,8 @@ extension _Lifecycle on LanSyncService {
             database.diaryTemplates,
             database.anniversaries,
             database.dayMoods,
+            database.todoLists,
+            database.todos,
           ]),
         )
         .listen(_onTablesChanged);

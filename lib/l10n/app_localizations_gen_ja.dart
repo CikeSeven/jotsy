@@ -10738,6 +10738,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lanSyncItemDayMoods => 'この日の気分';
 
   @override
+  String get lanSyncItemTodos => 'ToDo';
+
+  @override
   String get lanSyncItemSettings => '設定';
 
   @override
@@ -13375,4 +13378,496 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get publishOnLeaveFailedKeptDraft => '日記を投稿できませんでした。下書きに残しています。';
+
+  @override
+  String backupImportTodoCount(int count) {
+    return 'ToDo $count件';
+  }
+
+  @override
+  String backupImportExistingTodoCount(int count) {
+    return 'うちToDo $count件はこの端末にすでにあります';
+  }
+
+  @override
+  String backupImportModeOverwriteTodosOnly(int count) {
+    return '新しい項目を追加し、この端末にすでにある$count件のToDoをファイル内の版に置き換えます';
+  }
+
+  @override
+  String backupImportModeOverwriteTodosExtra(int count) {
+    return 'この端末にすでにある$count件のToDoも置き換えます';
+  }
+
+  @override
+  String backupOverwriteAllTodos(int count) {
+    return 'ToDo $count件';
+  }
+
+  @override
+  String backupOverwriteExistingTodosBody(int count) {
+    return 'この端末にすでにある$count件のToDoが、ファイル内の版に置き換えられます。';
+  }
+
+  @override
+  String backupImportTodoMergeResult(int added) {
+    return 'ToDo：$added件を追加';
+  }
+
+  @override
+  String backupImportTodoOverwriteResult(int added, int replaced) {
+    return 'ToDo：$added件を追加、$replaced件を上書き';
+  }
+
+  @override
+  String get navTodos => 'ToDo';
+
+  @override
+  String get appSurfaceAreaTodos => 'ToDo';
+
+  @override
+  String get settingsFeaturesTodosSubtitle => '日記とは別のToDo、リスト、リマインダー';
+
+  @override
+  String get todoViewToday => '今日';
+
+  @override
+  String get todoViewPlanned => '予定';
+
+  @override
+  String get todoViewImportant => '重要';
+
+  @override
+  String get todoViewAll => 'すべて';
+
+  @override
+  String get todoViewCompleted => '完了';
+
+  @override
+  String get todoViewInbox => '受信箱';
+
+  @override
+  String get todoGroupOverdue => '期限切れ';
+
+  @override
+  String get todoGroupToday => '今日';
+
+  @override
+  String get todoGroupTomorrow => '明日';
+
+  @override
+  String get todoGroupNextDays => '今後7日間';
+
+  @override
+  String get todoGroupLater => 'それ以降';
+
+  @override
+  String get todoGroupNoDate => '日付なし';
+
+  @override
+  String todoGroupCompleted(int count) {
+    return '完了 $count';
+  }
+
+  @override
+  String get todoNew => '新しいToDo';
+
+  @override
+  String get todoQuickAddHint => '何をしますか？';
+
+  @override
+  String get todoQuickAddSubmit => '追加';
+
+  @override
+  String get todoSearchHint => 'ToDoを検索';
+
+  @override
+  String get todoEmptyToday => '今日のToDoはありません';
+
+  @override
+  String get todoEmptyList => 'まだToDoはありません';
+
+  @override
+  String get todoEmptyCompleted => '完了したToDoはまだありません';
+
+  @override
+  String get todoEmptySearch => '一致するToDoはありません';
+
+  @override
+  String todoSortLabel(String mode) {
+    return '並べ替え：$mode';
+  }
+
+  @override
+  String get todoSortManual => '手動';
+
+  @override
+  String get todoSortDue => '期限';
+
+  @override
+  String get todoSortPriority => '優先度';
+
+  @override
+  String get todoSortCreated => '作成日';
+
+  @override
+  String get todoSortTitle => '並べ替え';
+
+  @override
+  String get todoShowCompleted => '完了を表示';
+
+  @override
+  String get todoHideCompleted => '完了を非表示';
+
+  @override
+  String get todoClearCompleted => '完了を消去';
+
+  @override
+  String get todoClearCompletedTitle => '完了したToDoを消去しますか？';
+
+  @override
+  String todoClearCompletedBody(int count) {
+    return '完了したToDo $count件を削除します。通知から元に戻せます。';
+  }
+
+  @override
+  String todoClearedCount(int count) {
+    return '$count件を消去しました';
+  }
+
+  @override
+  String get todoCompletedNotice => '完了しました';
+
+  @override
+  String todoCompletedNextNotice(String date) {
+    return '完了しました。次回：$date';
+  }
+
+  @override
+  String get todoDeletedNotice => 'ToDoを削除しました';
+
+  @override
+  String get todoDelete => 'ToDoを削除';
+
+  @override
+  String get todoMarkDone => '完了にする';
+
+  @override
+  String get todoMarkUndone => '未完了に戻す';
+
+  @override
+  String get todoMore => 'その他';
+
+  @override
+  String get todoListsSection => 'リスト';
+
+  @override
+  String get todoListNew => '新しいリスト';
+
+  @override
+  String get todoListEdit => 'リストを編集';
+
+  @override
+  String get todoListNameHint => 'リスト名';
+
+  @override
+  String get todoListManage => 'リストを管理';
+
+  @override
+  String get todoListDelete => 'リストを削除';
+
+  @override
+  String todoListDeleteTitle(String name) {
+    return '「$name」を削除しますか？';
+  }
+
+  @override
+  String todoListDeleteBody(int count) {
+    return 'リスト内のToDo $count件も一緒に削除されます。通知から元に戻せます。';
+  }
+
+  @override
+  String get todoListDeletedNotice => 'リストを削除しました';
+
+  @override
+  String get todoListColor => '色';
+
+  @override
+  String get todoListIcon => 'アイコン';
+
+  @override
+  String get todoListEmptyManage => 'まだリストはありません。仕事・生活などに分けると見つけやすくなります。';
+
+  @override
+  String get todoDetailTitle => 'ToDo';
+
+  @override
+  String get todoNoteHint => 'メモを追加';
+
+  @override
+  String get todoStepAdd => 'ステップを追加';
+
+  @override
+  String get todoStepDelete => 'ステップを削除';
+
+  @override
+  String todoStepsProgress(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String get todoFieldDue => '日付';
+
+  @override
+  String get todoFieldDueEmpty => '日付を設定';
+
+  @override
+  String get todoFieldReminders => 'リマインダー';
+
+  @override
+  String get todoFieldRemindersEmpty => 'リマインダーを追加';
+
+  @override
+  String get todoFieldRepeat => '繰り返し';
+
+  @override
+  String get todoFieldPriority => '優先度';
+
+  @override
+  String get todoFieldList => 'リスト';
+
+  @override
+  String get todoFieldDiary => '関連する日記';
+
+  @override
+  String get todoFieldDiaryEmpty => '日記を関連付け';
+
+  @override
+  String get todoFieldDiaryMissing => '日記が見つからないか削除されています';
+
+  @override
+  String get todoRemoveField => 'クリア';
+
+  @override
+  String todoCreatedAt(String time) {
+    return '$time に作成';
+  }
+
+  @override
+  String todoCompletedAt(String time) {
+    return '$time に完了';
+  }
+
+  @override
+  String get todoNotFound => 'このToDoは削除されました';
+
+  @override
+  String get todoPriorityNone => 'なし';
+
+  @override
+  String get todoPriorityLow => '低';
+
+  @override
+  String get todoPriorityMedium => '中';
+
+  @override
+  String get todoPriorityHigh => '高';
+
+  @override
+  String get todoDueToday => '今日';
+
+  @override
+  String get todoDueTomorrow => '明日';
+
+  @override
+  String get todoDueYesterday => '昨日';
+
+  @override
+  String get todoDueNextWeek => '来週の月曜日';
+
+  @override
+  String get todoDuePickDate => '日付を選択…';
+
+  @override
+  String get todoDueAllDay => '終日';
+
+  @override
+  String get todoDueSetTime => '時刻を設定';
+
+  @override
+  String get todoDueRemove => '日付を削除';
+
+  @override
+  String todoDueWithTime(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get todoReminderAtDue => '期限の時刻';
+
+  @override
+  String todoReminderMinutesBefore(int count) {
+    return '$count分前';
+  }
+
+  @override
+  String todoReminderHoursBefore(int count) {
+    return '$count時間前';
+  }
+
+  @override
+  String todoReminderDaysBefore(int count) {
+    return '$count日前';
+  }
+
+  @override
+  String todoReminderOnDayAt(String time) {
+    return '当日 $time';
+  }
+
+  @override
+  String todoReminderDaysBeforeAt(int count, String time) {
+    return '$count日前 $time';
+  }
+
+  @override
+  String get todoReminderCustom => '時刻を指定…';
+
+  @override
+  String todoReminderLimit(int count) {
+    return 'リマインダーは最大$count件です';
+  }
+
+  @override
+  String get todoReminderRemove => 'リマインダーを削除';
+
+  @override
+  String get todoRepeatNone => '繰り返さない';
+
+  @override
+  String get todoRepeatDaily => '毎日';
+
+  @override
+  String get todoRepeatLegalWorkdays => '法定勤務日（中国の祝日）';
+
+  @override
+  String todoRepeatWeeklyOn(String days) {
+    return '毎週$days';
+  }
+
+  @override
+  String todoRepeatMonthlyOnDay(int day) {
+    return '毎月$day日';
+  }
+
+  @override
+  String todoRepeatMonthlyOrdinal(String ordinal, String weekday) {
+    return '毎月第$ordinal$weekday';
+  }
+
+  @override
+  String get todoRepeatMonthlyLastDay => '毎月末日';
+
+  @override
+  String todoRepeatYearlyOn(String date) {
+    return '毎年$date';
+  }
+
+  @override
+  String todoRepeatEveryDays(int count) {
+    return '$count日ごと';
+  }
+
+  @override
+  String todoRepeatEveryWeeks(int count) {
+    return '$count週ごと';
+  }
+
+  @override
+  String todoRepeatEveryMonths(int count) {
+    return '$countか月ごと';
+  }
+
+  @override
+  String todoRepeatEveryYears(int count) {
+    return '$count年ごと';
+  }
+
+  @override
+  String todoRepeatSummaryJoin(String a, String b) {
+    return '$a · $b';
+  }
+
+  @override
+  String get todoRepeatCustom => 'カスタム…';
+
+  @override
+  String get todoRepeatCustomTitle => '繰り返しのカスタム';
+
+  @override
+  String get todoRepeatUnitDay => '日';
+
+  @override
+  String get todoRepeatUnitWeek => '週';
+
+  @override
+  String get todoRepeatUnitMonth => '月';
+
+  @override
+  String get todoRepeatUnitYear => '年';
+
+  @override
+  String get todoRepeatInterval => '間隔';
+
+  @override
+  String get todoRepeatOnDays => '曜日';
+
+  @override
+  String get todoRepeatFromCompletion => '完了日から数える';
+
+  @override
+  String get todoRepeatFromCompletionSubtitle => '水やりのように「やってから数日後にまた」のこと向け';
+
+  @override
+  String get todoRepeatEnds => '終了';
+
+  @override
+  String get todoRepeatEndsNever => 'なし';
+
+  @override
+  String todoRepeatEndsOn(String date) {
+    return '$dateまで';
+  }
+
+  @override
+  String todoRepeatEndsAfter(int count) {
+    return '$count回';
+  }
+
+  @override
+  String get todoRepeatEndsOnPick => '日付で終了';
+
+  @override
+  String get todoRepeatEndsAfterPick => '回数で終了';
+
+  @override
+  String get todoRepeatNeedsDate => '繰り返しは今日から始まります';
+
+  @override
+  String get todoSettingsTitle => 'ToDo';
+
+  @override
+  String get todoSettingsSubtitle => 'リスト、表示、リマインダー';
+
+  @override
+  String get todoSettingsDisplayGroup => '表示';
+
+  @override
+  String get todoSettingsShowCompletedSubtitle => 'リストと受信箱の下部に完了したToDoを表示';
+
+  @override
+  String get todoSettingsDefaultList => '新しいToDoの追加先';
+
+  @override
+  String get todoSettingsDefaultView => '起動時の表示';
 }

@@ -18,7 +18,7 @@ import 'sync_model.dart';
 /// - prefs 记录（[syncPrefsRecord]，始终同步）：标签顺序 `tagOrderRaw`（本地
 ///   标签 id 串）换成按名称的列表 `tagOrderNames`（经标签表换算，查不到的 id
 ///   丢掉）；数据类功能开关（[kSyncDataFeatures]：日记本、纪念日、日记模板、
-///   时间胶囊、留言）每项一个分面 `feature.<字段>` → `{"on": bool}`，取
+///   时间胶囊、留言、待办）每项一个分面 `feature.<字段>` → `{"on": bool}`，取
 ///   `AppFeatures.decode` 之后的值（没存过开关时即默认值）；
 /// - settings 记录（[syncSettingsRecord]，只在两端都开启“同步设置”时）：其余
 ///   每个键一个分面 `{"value": …}`；`appFeaturesRaw` 只留界面类开关
@@ -47,6 +47,8 @@ const List<String> kSyncDataFeatures = <String>[
   'templates',
   'timeCapsules',
   'comments',
+  // 待办同步过来却因对方没开而整个看不到，与留言同理：只同步“开启”。
+  'todos',
 ];
 
 /// 随“同步设置”同步的界面类功能（`AppFeatures` 的字段名）。
@@ -235,6 +237,7 @@ Map<String, bool> _decodeFeatures(Object? raw) {
   final features = AppFeatures.decode(raw is String ? raw : null);
   return <String, bool>{
     'calendar': features.calendar,
+    'todos': features.todos,
     'explore': features.explore,
     'notebooks': features.notebooks,
     'anniversaries': features.anniversaries,
@@ -263,6 +266,7 @@ String? _mergeFeatures(
 
   final merged = local.copyWith(
     calendar: next('calendar', local.calendar),
+    todos: next('todos', local.todos),
     explore: next('explore', local.explore),
     notebooks: next('notebooks', local.notebooks),
     anniversaries: next('anniversaries', local.anniversaries),

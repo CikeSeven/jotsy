@@ -1,8 +1,9 @@
 // 功能管理开关（设置 → 功能管理）。
 //
-// 职责：描述用户可整体关闭的功能——日历 Tab、探索 Tab、日记本、纪念日、
-// 日记模板、时间胶囊、侧滑归档、留言、AI 助手——是否开启；纪念日、留言与
-// AI 助手默认关闭（让初始界面简洁，AI 还需要用户自己的接口），其余默认开启。关闭只是在各处隐藏入口与展示，数据一律保留，重新开启即恢复原样。
+// 职责：描述用户可整体关闭的功能——日历 Tab、待办 Tab、探索 Tab、日记本、
+// 纪念日、日记模板、时间胶囊、侧滑归档、留言、AI 助手——是否开启；待办、
+// 纪念日、留言与 AI 助手默认关闭（让初始界面简洁，AI 还需要用户自己的
+// 接口），其余默认开启。关闭只是在各处隐藏入口与展示，数据一律保留，重新开启即恢复原样。
 //
 // 存储：单个 JSON 设置键 `app.settings.app_features`（经
 // `SettingsService.setAppFeaturesRaw`），逐字段容错解析，随完整备份导出，
@@ -16,6 +17,7 @@ import 'dart:convert';
 class AppFeatures {
   const AppFeatures({
     this.calendar = true,
+    this.todos = false,
     this.explore = true,
     this.notebooks = true,
     this.anniversaries = false,
@@ -26,11 +28,16 @@ class AppFeatures {
     this.ai = false,
   });
 
-  /// 默认开关（纪念日、留言与 AI 助手关闭，其余开启）：从未设置、读不出或恢复默认时都是它。
+  /// 默认开关（待办、纪念日、留言与 AI 助手关闭，其余开启）：从未设置、读不出或恢复默认时都是它。
   static const AppFeatures defaults = AppFeatures();
 
   /// 日历 Tab。
   final bool calendar;
+
+  /// 待办 Tab：独立于日记的待办、清单与提醒，以及日历上的待办、预览页的
+  /// “添加待办 / 转为独立待办”与相关待办。默认关闭；关闭只隐藏这些入口并
+  /// 停掉提醒，待办仍在库里。
+  final bool todos;
 
   /// 探索 Tab。
   final bool explore;
@@ -67,6 +74,7 @@ class AppFeatures {
   bool get anniversariesEnabled => calendar && anniversaries;
 
   static const _keyCalendar = 'calendar';
+  static const _keyTodos = 'todos';
   static const _keyExplore = 'explore';
   static const _keyNotebooks = 'notebooks';
   static const _keyAnniversaries = 'anniversaries';
@@ -96,6 +104,7 @@ class AppFeatures {
 
     return AppFeatures(
       calendar: read(_keyCalendar, defaults.calendar),
+      todos: read(_keyTodos, defaults.todos),
       explore: read(_keyExplore, defaults.explore),
       notebooks: read(_keyNotebooks, defaults.notebooks),
       anniversaries: read(_keyAnniversaries, defaults.anniversaries),
@@ -112,6 +121,7 @@ class AppFeatures {
   String encode() {
     return jsonEncode(<String, bool>{
       _keyCalendar: calendar,
+      _keyTodos: todos,
       _keyExplore: explore,
       _keyNotebooks: notebooks,
       _keyAnniversaries: anniversaries,
@@ -125,6 +135,7 @@ class AppFeatures {
 
   AppFeatures copyWith({
     bool? calendar,
+    bool? todos,
     bool? explore,
     bool? notebooks,
     bool? anniversaries,
@@ -136,6 +147,7 @@ class AppFeatures {
   }) {
     return AppFeatures(
       calendar: calendar ?? this.calendar,
+      todos: todos ?? this.todos,
       explore: explore ?? this.explore,
       notebooks: notebooks ?? this.notebooks,
       anniversaries: anniversaries ?? this.anniversaries,
@@ -151,6 +163,7 @@ class AppFeatures {
   bool operator ==(Object other) =>
       other is AppFeatures &&
       other.calendar == calendar &&
+      other.todos == todos &&
       other.explore == explore &&
       other.notebooks == notebooks &&
       other.anniversaries == anniversaries &&
@@ -163,6 +176,7 @@ class AppFeatures {
   @override
   int get hashCode => Object.hash(
     calendar,
+    todos,
     explore,
     notebooks,
     anniversaries,
@@ -175,7 +189,7 @@ class AppFeatures {
 
   @override
   String toString() =>
-      'AppFeatures(calendar: $calendar, explore: $explore, '
+      'AppFeatures(calendar: $calendar, todos: $todos, explore: $explore, '
       'notebooks: $notebooks, anniversaries: $anniversaries, '
       'templates: $templates, timeCapsules: $timeCapsules, '
       'swipeArchive: $swipeArchive, comments: $comments, ai: $ai)';

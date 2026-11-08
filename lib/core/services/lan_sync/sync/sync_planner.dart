@@ -35,9 +35,11 @@ part 'sync_planner_values.dart';
 /// 依赖前一段的完整结果，提前往下走只会猜着要数据）：
 /// 1. 逐键判定（`_keys`）：两侧都有的逐分面判定、只有一侧有的看墓碑；
 /// 2. 跨键补充（`_revive`、`_copies`、`_notebooks`）：留言复活日记、复活记录
-///    的从属、冲突副本及其成员关系、日记本层级要用的定义；
+///    的从属（含复活清单里被一并删除的待办）、冲突副本及其成员关系、日记本
+///    层级要用的定义；
 /// 3. 从属收尾（`_tags`、`_notebooks`、`_lists`）：标签改名与引用、层级修复、
-///    成员与章节、留言 / 纪念日的悬空引用、顺序列表、prefs 里的标签顺序。
+///    成员与章节、留言 / 纪念日 / 待办的悬空引用、顺序列表、prefs 里的标签
+///    顺序。
 /// 之后由 `_output` 对比每侧现状产出写入。典型同步（只有编辑）需要两次网络
 /// 往返（历史与墓碑 → 记录）；复活与冲突副本最多再各加一次。
 SyncFetchRequest planSyncFetch({
@@ -175,7 +177,7 @@ class _Planner {
     resolveTags();
     resolveNotebookHierarchy();
     resolveMemberships();
-    resolveCommentsAndAnniversaries();
+    resolveDanglingReferences();
     resolveOrderLists();
     resolvePrefsTagOrder();
   }

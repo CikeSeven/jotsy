@@ -184,9 +184,11 @@ String _modeDescription(
   if (mode != BackupImportMode.mergeOverwrite) {
     return description;
   }
-  // 只有心情重复时基础说明已经写了心情，不再补行。
-  final onlyDayMoods =
+  // 只有心情（或只有待办）重复时基础说明已经写了它，不再补行。
+  final noDiaryOrAnniversary =
       preview.existingDiaryCount == 0 && preview.existingAnniversaryCount == 0;
+  final onlyDayMoods = noDiaryOrAnniversary && preview.existingDayMoodCount > 0;
+  final onlyTodos = noDiaryOrAnniversary && preview.existingDayMoodCount == 0;
   return <String>[
     description,
     // 同一个日记本的定义也会被替换（名称、封面、章节等），在说明末尾补一行；
@@ -197,6 +199,8 @@ String _modeDescription(
       ),
     if (preview.existingDayMoodCount > 0 && !onlyDayMoods)
       l10n.backupImportModeOverwriteDayMoodsExtra(preview.existingDayMoodCount),
+    if (preview.existingTodoCount > 0 && !onlyTodos)
+      l10n.backupImportModeOverwriteTodosExtra(preview.existingTodoCount),
   ].join('\n');
 }
 
@@ -207,8 +211,13 @@ String _baseModeDescription(
 ) {
   return switch (mode) {
     BackupImportMode.merge => l10n.backupImportModeMergeDescription,
-    // 只有纪念日（或只有心情）重复时单独一句；日记与纪念日都有重复时在
-    // 日记说明后补一行。
+    // 只有纪念日（或只有心情、只有待办）重复时单独一句；日记与纪念日都有
+    // 重复时在日记说明后补一行。
+    BackupImportMode.mergeOverwrite
+        when preview.existingDiaryCount == 0 &&
+            preview.existingAnniversaryCount == 0 &&
+            preview.existingDayMoodCount == 0 =>
+      l10n.backupImportModeOverwriteTodosOnly(preview.existingTodoCount),
     BackupImportMode.mergeOverwrite
         when preview.existingDiaryCount == 0 &&
             preview.existingAnniversaryCount == 0 =>
@@ -324,6 +333,19 @@ class _ArchiveSummary extends StatelessWidget {
                   l10n.backupImportExistingAnniversaryCount(
                     preview.existingAnniversaryCount,
                   ),
+                  style: detailStyle?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              if (preview.todoCount > 0)
+                Text(
+                  l10n.backupImportTodoCount(preview.todoCount),
+                  style: detailStyle,
+                ),
+              if (preview.existingTodoCount > 0)
+                Text(
+                  l10n.backupImportExistingTodoCount(preview.existingTodoCount),
                   style: detailStyle?.copyWith(
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,

@@ -120,6 +120,33 @@ void main() {
       expect(featureOf(a, 'anniversaries'), isTrue);
       expect(a.manifest.toJson(), b.manifest.toJson());
     });
+
+    test('待办：打开传过去；之后一台关掉，另一台不跟着关', () {
+      final a = PlanDevice('a')
+        ..put(prefsRecord(features: {'todos': false}))
+        ..commit(1000);
+      final b = PlanDevice('b')
+        ..put(prefsRecord(features: {'todos': false}))
+        ..commit(1000);
+      b
+        ..put(prefsRecord(features: {'todos': true}))
+        ..commit(2000);
+      final first = planBetween(a, b).plan;
+      a.applyAndCommit(first.local, 2500);
+      b.applyAndCommit(first.remote, 2500);
+      expect(featureOf(a, 'todos'), isTrue);
+
+      a
+        ..put(prefsRecord(features: {'todos': false}))
+        ..commit(3000);
+      for (final (local, remote) in [(a, b), (b, a)]) {
+        final plan = planBetween(local, remote).plan;
+        expect(plan.isEmpty, isTrue);
+        applyBoth(local, remote, plan);
+      }
+      expect(featureOf(a, 'todos'), isFalse);
+      expect(featureOf(b, 'todos'), isTrue);
+    });
   });
 
   test('标签顺序三方合并：一边拖动、一边新建标签，两者都保留', () {

@@ -181,6 +181,8 @@ void main() {
     expect(prefs.facets[SyncPrefsFacet.feature('anniversaries')], {
       'on': false,
     });
+    // 待办默认关闭，同样是数据类开关、在 prefs 里。
+    expect(prefs.facets[SyncPrefsFacet.feature('todos')], {'on': false});
     expect(
       prefs.facets.containsKey(SyncPrefsFacet.feature('calendar')),
       isFalse,

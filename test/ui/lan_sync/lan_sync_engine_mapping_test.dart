@@ -466,6 +466,41 @@ void main() {
     });
   });
 
+  test('待办清单与待办归在同一种“待办”；每种数据种类在各语言里都有名称', () {
+    expect(lanSyncItemKindOf(SyncEntity.todoList), LanSyncItemKind.todos);
+    expect(lanSyncItemKindOf(SyncEntity.todo), LanSyncItemKind.todos);
+    expect(
+      lanSyncItemCountsOf(const <SyncEntity, int>{
+        SyncEntity.todoList: 1,
+        SyncEntity.todo: 4,
+        SyncEntity.anniversary: 2,
+      }),
+      LanSyncItemCounts(const <LanSyncItemKind, int>{
+        LanSyncItemKind.anniversaries: 2,
+        LanSyncItemKind.todos: 5,
+      }),
+    );
+    for (final locale in AppLocalizations.supportedLocales) {
+      final l10n = lookupAppLocalizations(locale);
+      final labels = <String>{
+        for (final kind in LanSyncItemKind.values)
+          lanSyncItemKindLabel(l10n, kind),
+      };
+      expect(
+        labels,
+        hasLength(LanSyncItemKind.values.length),
+        reason: '$locale',
+      );
+    }
+    expect(
+      lanSyncItemKindLabel(
+        lookupAppLocalizations(const Locale('zh')),
+        LanSyncItemKind.todos,
+      ),
+      '待办',
+    );
+  });
+
   test('冲突副本后缀按当前语言拼出，不支持的语言按英文', () {
     expect(
       lanSyncConflictTitleSuffix(const Locale('zh'), 'ThinkPad'),

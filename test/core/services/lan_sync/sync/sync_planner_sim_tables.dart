@@ -67,3 +67,29 @@ class SimAnniversary {
   String? linkedDiaryId;
   int updatedAt;
 }
+
+class SimTodoList {
+  SimTodoList(this.name, this.sortOrder, this.updatedAt);
+
+  String name;
+  double sortOrder;
+  int updatedAt;
+}
+
+class SimTodo {
+  SimTodo(
+    this.title,
+    this.listId,
+    this.linkedDiaryId,
+    this.sortOrder,
+    this.updatedAt,
+  );
+
+  String title;
+
+  /// 所在清单；null 为收集箱。
+  String? listId;
+  String? linkedDiaryId;
+  double sortOrder;
+  int updatedAt;
+}

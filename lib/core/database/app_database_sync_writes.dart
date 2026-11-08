@@ -17,7 +17,8 @@ part of 'app_database.dart';
 ///   覆盖另一台设备上的移动，层级以计划里精确的 `parentId` 为准；
 /// - 删除的关联清理与现有删除路径一致：日记复用 [hardDeleteDiary]（标签关联、
 ///   成员关系、留言、纪念日关联），标签复用 [deleteTag]（标签关联），日记本
-///   清掉成员关系；模板删除不动日记本定义（规格 §6）。
+///   清掉成员关系；模板删除不动日记本定义（规格 §6）；待办清单只删这一行，
+///   不连带删其中的待办（每条待办由计划单独给出，见 [syncDeleteTodoList]）。
 mixin _AppDatabaseSyncWrites
     on _$AppDatabase, _AppDatabaseTagOps, _AppDatabaseDiaryWrites {
   /// 按业务 id 插入或按原值更新一篇日记，再按名称重写它的标签关联。
@@ -224,6 +225,32 @@ mixin _AppDatabaseSyncWrites
   Future<void> syncDeleteAnniversary(String anniversaryId) => (delete(
     anniversaries,
   )..where((t) => t.anniversaryId.equals(anniversaryId))).go();
+
+  /// 手动顺序就是行上的 `sort_order`（随记录同步），新行照原值插入即可，
+  /// 不像模板那样先排到最后再由顺序列表重排。
+  Future<void> syncWriteTodoList(TodoListsCompanion row) async {
+    final count = await (update(
+      todoLists,
+    )..where((t) => t.listId.equals(row.listId.value))).write(row);
+    if (count == 0) await into(todoLists).insert(row);
+  }
+
+  /// 只删清单这一行。应用里删清单会连同其中的待办一起删，同步却不能：计划
+  /// 对每条待办单独给出结果——被墓碑覆盖的删除，在另一侧加过或改过的保留并
+  /// 移到收集箱（规格 §4.3），在这里连带删掉就会删掉计划要保留的待办，写入
+  /// 后的清单也与计划不符。
+  Future<void> syncDeleteTodoList(String listId) =>
+      (delete(todoLists)..where((t) => t.listId.equals(listId))).go();
+
+  Future<void> syncWriteTodo(TodosCompanion row) async {
+    final count = await (update(
+      todos,
+    )..where((t) => t.todoId.equals(row.todoId.value))).write(row);
+    if (count == 0) await into(todos).insert(row);
+  }
+
+  Future<void> syncDeleteTodo(String todoId) =>
+      (delete(todos)..where((t) => t.todoId.equals(todoId))).go();
 
   Future<void> syncWriteDayMood(DayMoodsCompanion row) =>
       into(dayMoods).insertOnConflictUpdate(row);

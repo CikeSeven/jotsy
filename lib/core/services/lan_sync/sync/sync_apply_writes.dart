@@ -116,6 +116,16 @@ _PreparedWrite _prepareWrite(
       if (record == null) return op((db) => db.syncDeleteDayMood(id));
       final columns = SyncDayMoodColumns.fromRecord(record);
       return op((db) => db.syncWriteDayMood(columns.toCompanion()));
+    case SyncEntity.todoList:
+      // 删除只删清单这一行，其中的待办由计划逐条给出（见
+      // `syncDeleteTodoList`）。
+      if (record == null) return op((db) => db.syncDeleteTodoList(id));
+      final columns = SyncTodoListColumns.fromRecord(record);
+      return op((db) => db.syncWriteTodoList(columns.toCompanion()));
+    case SyncEntity.todo:
+      if (record == null) return op((db) => db.syncDeleteTodo(id));
+      final columns = SyncTodoColumns.fromRecord(record);
+      return op((db) => db.syncWriteTodo(columns.toCompanion()));
     case SyncEntity.settings:
     case SyncEntity.prefs:
       // 设置不在数据库里：事务里只核对前置条件，提交之后再应用（sync_apply

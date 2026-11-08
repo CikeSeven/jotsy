@@ -3,6 +3,7 @@ import 'sync_canonical_diary.dart';
 import 'sync_canonical_misc.dart';
 import 'sync_canonical_notebook.dart';
 import 'sync_canonical_settings.dart';
+import 'sync_canonical_todo.dart';
 import 'sync_hash_cache.dart';
 import 'sync_model.dart';
 import 'sync_state_model.dart';
@@ -17,7 +18,7 @@ import 'sync_state_model.dart';
 ///   `SyncLocalState` 放进 `Isolate.run` 执行。
 ///
 /// 每条记录拆成“缓存部分”（按行指纹缓存哈希：日记的行分面、日记本、模板、
-/// 纪念日，这些要解码正文或 JSON 列）与“现算部分”（每次都算：日记的 tags、
+/// 纪念日、待办清单、待办，这些要解码正文或 JSON 列）与“现算部分”（每次都算：日记的 tags、
 /// 标签、成员关系、顺序列表、留言、心情、设置，都很便宜）。需要记录值的分面
 /// （diary.tags、orderList.items、prefs.tagOrderNames）一律在现算部分，值随手
 /// 可得，不必进缓存。
@@ -260,6 +261,22 @@ class _SyncRowIndex {
     for (final mood in rows.dayMoods) {
       final record = syncDayMoodRecord(mood);
       yield _SyncSource(record.key, fresh: () => record.facets);
+    }
+    for (final list in rows.todoLists) {
+      yield _SyncSource(
+        SyncKey(SyncEntity.todoList, list.listId),
+        fingerprint: () => syncTodoListFingerprint(list),
+        cached: () => syncTodoListRecord(list).facets,
+        fresh: _none,
+      );
+    }
+    for (final todo in rows.todos) {
+      yield _SyncSource(
+        SyncKey(SyncEntity.todo, todo.todoId),
+        fingerprint: () => syncTodoFingerprint(todo),
+        cached: () => syncTodoRecord(todo).facets,
+        fresh: _none,
+      );
     }
     if (settings != null) {
       final tagNames = <int, String>{

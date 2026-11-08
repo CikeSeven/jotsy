@@ -211,6 +211,17 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     }
   }
 
+  /// v19 新增待办的清单表与待办表，与 AI 表同理：表已存在（降级后再升级）
+  /// 时保留其中的记录；索引先删再建，保证与生成的 schema 一致。
+  Future<void> _migrateAddTodos(Migrator migrator) async {
+    await _createTableIfMissing(migrator, todoLists);
+    await _createTableIfMissing(migrator, todos);
+    for (final index in <Index>[idxTodosCompletedDue, idxTodosList]) {
+      await migrator.drop(index);
+      await migrator.createIndex(index);
+    }
+  }
+
   /// v15 日记本表加 `parent_id`（上级日记本的业务 id）。
   ///
   /// 列已存在时跳过：从 v13 之前升级时 [_migrateAddNotebooks] 按最新定义

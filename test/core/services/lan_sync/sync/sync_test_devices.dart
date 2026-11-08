@@ -8,9 +8,12 @@ import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_diary.dart
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_misc.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_notebook.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_settings.dart';
+import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_todo.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_manifest_builder.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
 import 'package:path/path.dart' as p;
+
+import 'sync_test_todo_seed.dart';
 
 /// 一台测试用的“设备”：内存数据库 + 独立的数据根目录与状态目录。
 ///
@@ -60,7 +63,7 @@ Map<String, String> canonicalByKey(Iterable<SyncRecord> records) {
 DateTime at(int seconds) => DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
 
 /// 在设备 A 上铺满每一种实体（含历史格式正文、媒体、胶囊、归档 / 回收站、
-/// 嵌套与智能日记本、悬空关联、内置模板、认不出的心情）。
+/// 嵌套与智能日记本、悬空关联、内置模板、认不出的心情、待办与清单）。
 Future<void> seedEveryEntity(SyncTestDevice device) async {
   final db = device.db;
   final media = device.media;
@@ -513,6 +516,8 @@ Future<void> seedEveryEntity(SyncTestDevice device) async {
           updatedAt: at(1700005100),
         ),
       );
+
+  await seedTodos(db);
 }
 
 /// 测试里的最小写入：按反向列值把规范记录逐条插进一个空库（顺序列表的位置
@@ -617,6 +622,16 @@ Future<void> writeRecordsForTest(
       await db
           .into(db.dayMoods)
           .insert(SyncDayMoodColumns.fromRecord(record).toCompanion());
+    }
+    for (final record in of(SyncEntity.todoList)) {
+      await db
+          .into(db.todoLists)
+          .insert(SyncTodoListColumns.fromRecord(record).toCompanion());
+    }
+    for (final record in of(SyncEntity.todo)) {
+      await db
+          .into(db.todos)
+          .insert(SyncTodoColumns.fromRecord(record).toCompanion());
     }
   });
 }

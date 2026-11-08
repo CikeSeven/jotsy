@@ -29,6 +29,7 @@ extension SettingsServiceBackup on SettingsService {
       SettingsService._keyAppFeatures,
       SettingsService._keyExploreLayout,
       SettingsService._keyDiaryCreatePrefs,
+      SettingsService._keyTodoSettings,
       SettingsService._keyAiPrefs,
       SettingsService._keyTagOrder,
       SettingsService._keyTagPickerSort,
@@ -66,6 +67,7 @@ extension SettingsServiceBackup on SettingsService {
         _notifierRollback(appFeaturesRawNotifier),
         _notifierRollback(exploreLayoutRawNotifier),
         _notifierRollback(diaryCreatePrefsRawNotifier),
+        _notifierRollback(todoSettingsRawNotifier),
         _notifierRollback(aiPrefsRawNotifier),
       ],
     );

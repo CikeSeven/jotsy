@@ -211,6 +211,76 @@ class SyncRawDayMood {
   final int updatedAt;
 }
 
+/// `todo_lists` 表的一行。时间为 Unix 秒；[sortOrder] 是 REAL 列（读出时
+/// 一律转成浮点数，见 `readSyncRows`）。
+class SyncRawTodoList {
+  const SyncRawTodoList({
+    required this.localId,
+    required this.listId,
+    required this.name,
+    required this.colorKey,
+    required this.iconKey,
+    required this.sortOrder,
+    required this.metadata,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final int localId;
+  final String listId;
+  final String name;
+  final String colorKey;
+  final String iconKey;
+  final double sortOrder;
+  final String metadata;
+  final int createdAt;
+  final int updatedAt;
+}
+
+/// `todos` 表的一行。时间为 Unix 秒；JSON 列（[reminders]、[repeat]、
+/// [steps]、[metadata]）保留库里的原文，规范化时再解析。
+class SyncRawTodo {
+  const SyncRawTodo({
+    required this.localId,
+    required this.todoId,
+    required this.listId,
+    required this.title,
+    required this.note,
+    required this.priority,
+    required this.dueDate,
+    required this.dueMinute,
+    required this.reminders,
+    required this.repeat,
+    required this.steps,
+    required this.completedAt,
+    required this.snoozedUntil,
+    required this.linkedDiaryId,
+    required this.sortOrder,
+    required this.metadata,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final int localId;
+  final String todoId;
+  final String? listId;
+  final String title;
+  final String note;
+  final int priority;
+  final String? dueDate;
+  final int? dueMinute;
+  final String reminders;
+  final String? repeat;
+  final String steps;
+  final int? completedAt;
+  final int? snoozedUntil;
+  final String? linkedDiaryId;
+  final double sortOrder;
+  final String metadata;
+  final int createdAt;
+  final int updatedAt;
+}
+
 /// 同一个事务里读出的全部原始行（一致的快照）。
 class SyncRawSnapshot {
   const SyncRawSnapshot({
@@ -223,6 +293,8 @@ class SyncRawSnapshot {
     required this.templates,
     required this.anniversaries,
     required this.dayMoods,
+    required this.todoLists,
+    required this.todos,
   });
 
   final List<SyncRawDiary> diaries;
@@ -234,4 +306,6 @@ class SyncRawSnapshot {
   final List<SyncRawTemplate> templates;
   final List<SyncRawAnniversary> anniversaries;
   final List<SyncRawDayMood> dayMoods;
+  final List<SyncRawTodoList> todoLists;
+  final List<SyncRawTodo> todos;
 }

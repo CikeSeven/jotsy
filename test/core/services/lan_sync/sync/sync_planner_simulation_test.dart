@@ -13,7 +13,7 @@ import 'sync_planner_sim_world.dart';
 /// (c) 冲突副本从不重复生成（含中断后重新规划）——[SimWorld.sync] 里断言；
 /// (d) 删除沿 A → B → C 传播；
 /// 以及每台设备的引用完整（成员指向存在的日记与手动本、章节有效、留言 /
-/// 纪念日 / 日记标签不悬空、层级合法），写入层从不需要按名称补建标签。
+/// 纪念日 / 待办 / 日记标签不悬空、层级合法），写入层从不需要按名称补建标签。
 ///
 /// 各设备时钟有 ±3 秒偏差；约 10% 的同步只有一侧写入（中断）；约 20% 的同步
 /// 另与全知两侧的规划对拍；“丢失状态”一组随机清空某台设备的检查点、历史、
@@ -141,6 +141,14 @@ void _expectIntegrity(SimReplica r) {
   for (final anniversary in r.anniversaries.values) {
     final linked = anniversary.linkedDiaryId;
     if (linked != null) expect(r.diaries.containsKey(linked), isTrue);
+  }
+  for (final todo in r.todos.values) {
+    final linked = todo.linkedDiaryId;
+    if (linked != null) expect(r.diaries.containsKey(linked), isTrue);
+    final list = todo.listId;
+    if (list != null) {
+      expect(r.todoLists.containsKey(list), isTrue, reason: '待办不挂在不存在的清单上');
+    }
   }
   for (final notebook in r.notebooks.values) {
     var depth = 1;

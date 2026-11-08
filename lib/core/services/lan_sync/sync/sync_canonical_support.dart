@@ -35,6 +35,18 @@ int _asInt(Object? value, String field) {
   throw FormatException('同步记录字段 $field 不是整数', value);
 }
 
+/// REAL 列的规范值：一律是浮点数（JSON 里写作 `1.0`，与整数 `1` 的规范串
+/// 不同，两端都按浮点数写才逐字节一致）。非有限值（坏数据里的 ±Infinity；
+/// SQLite 把 NaN 存成 NULL）`jsonEncode` 编不出来，会让整份清单算不成，
+/// 按 0.0 处理——那一侧的规范值从此就是 0.0，写到另一侧也是 0.0，两端一致。
+double syncRealOf(double value) => value.isFinite ? value : 0.0;
+
+/// 规范值里的 REAL（经 JSON 往返的 `1.0` 仍是 double；防御性地接受整数）。
+double syncDoubleOf(Object? value, String field) {
+  if (value is num) return syncRealOf(value.toDouble());
+  throw FormatException('同步记录字段 $field 不是数字', value);
+}
+
 String syncStringOf(Object? value, String field) {
   if (value is String) return value;
   throw FormatException('同步记录字段 $field 不是字符串', value);
@@ -76,6 +88,30 @@ String syncEncodeJsonObjectColumn(Object? value, String field) {
   throw FormatException('同步记录字段 $field 不是对象或字符串', value);
 }
 
+/// 按库里的原文解析一个“应当是 JSON 数组”的列（待办的 reminders、steps）。
+///
+/// 与 [syncDecodeJsonObjectColumn] 同一口径：解析成数组时返回数组（元素原样，
+/// 认不出的字段与条目都保留），否则返回原文字符串、写回时原样写回。不经
+/// 业务模型（`todo_rules.dart`）解码再编码：模型会丢掉新版本的字段与坏条目，
+/// 同步不该替用户“修”数据。
+Object syncDecodeJsonArrayColumn(String raw) {
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is List) return decoded;
+  } on FormatException {
+    // 落到下面按原文保留。
+  }
+  return raw;
+}
+
+/// [syncDecodeJsonArrayColumn] 的逆运算：数组按规范 JSON 编码（紧凑、对象键
+/// 排序），字符串原样返回。
+String syncEncodeJsonArrayColumn(Object? value, String field) {
+  if (value is List) return syncCanonicalJson(value);
+  if (value is String) return value;
+  throw FormatException('同步记录字段 $field 不是数组或字符串', value);
+}
+
 /// 截断到 [maxLength] 个 UTF-16 码元（Drift `withLength` 的口径），不把代理对
 /// 切成两半。
 ///
@@ -95,4 +131,6 @@ abstract final class SyncColumnLimits {
   static const int tagName = 40;
   static const int notebookName = 60;
   static const int anniversaryTitle = 100;
+  static const int todoListName = 50;
+  static const int todoTitle = 500;
 }

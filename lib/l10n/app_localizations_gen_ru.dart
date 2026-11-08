@@ -16104,14 +16104,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoGroupLater => 'Позже';
 
   @override
-  String get todoGroupNoDate => 'Без даты';
-
-  @override
-  String todoGroupCompleted(int count) {
-    return 'Выполнено: $count';
-  }
-
-  @override
   String get todoNew => 'Новая задача';
 
   @override
@@ -16274,9 +16266,6 @@ class AppLocalizationsRu extends AppLocalizations {
       'Списков пока нет. Разделите задачи по работе, дому и т. д., чтобы находить их быстрее.';
 
   @override
-  String get todoDetailTitle => 'Задача';
-
-  @override
   String get todoNoteHint => 'Добавить заметку';
 
   @override
@@ -16294,13 +16283,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoFieldDue => 'Дата';
 
   @override
-  String get todoFieldDueEmpty => 'Указать дату';
-
-  @override
   String get todoFieldReminders => 'Напоминания';
-
-  @override
-  String get todoFieldRemindersEmpty => 'Добавить напоминание';
 
   @override
   String get todoFieldRepeat => 'Повтор';
@@ -16315,13 +16298,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoFieldDiary => 'Связанная запись';
 
   @override
-  String get todoFieldDiaryEmpty => 'Связать с записью';
-
-  @override
   String get todoFieldDiaryMissing => 'Запись не найдена или удалена';
-
-  @override
-  String get todoRemoveField => 'Очистить';
 
   @override
   String todoCreatedAt(String time) {
@@ -16599,9 +16576,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoRepeatEndsAfterPick => 'После количества повторов';
 
   @override
-  String get todoRepeatNeedsDate => 'Повтор начнётся сегодня';
-
-  @override
   String get todoSettingsTitle => 'Задачи';
 
   @override
@@ -16759,4 +16733,222 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryLinkedTodosTitle => 'Связанные задачи';
+
+  @override
+  String get todoBatchActionComplete => 'Выполнить';
+
+  @override
+  String get todoDuplicate => 'Дублировать';
+
+  @override
+  String todoDuplicateTitle(String title) {
+    return '$title (копия)';
+  }
+
+  @override
+  String get todoDuplicatedNotice => 'Скопировано в новую задачу';
+
+  @override
+  String get todoGroupCompletedTitle => 'Выполнено';
+
+  @override
+  String get todoGroupCompletedToday => 'Выполнено сегодня';
+
+  @override
+  String get todoHeroAllDone => 'На сегодня всё сделано';
+
+  @override
+  String get todoHeroNothing => 'На сегодня ничего не запланировано';
+
+  @override
+  String todoHeroDate(String weekday, String date) {
+    return '$weekday · $date';
+  }
+
+  @override
+  String todoHeroRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Осталось $count задачи',
+      many: 'Осталось $count задач',
+      few: 'Осталось $count задачи',
+      one: 'Осталась $count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoHeroOverdue(int count) {
+    return 'Просрочено: $count';
+  }
+
+  @override
+  String todoHeroDone(int count) {
+    return 'Выполнено: $count';
+  }
+
+  @override
+  String todoHeroListProgress(int done, int total) {
+    return 'Выполнено $done из $total';
+  }
+
+  @override
+  String todoHeroOpenCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Осталось $count задачи',
+      many: 'Осталось $count задач',
+      few: 'Осталось $count задачи',
+      one: 'Осталась $count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoHeroCompletedCount(int count) {
+    return 'Недавно выполнено: $count';
+  }
+
+  @override
+  String get todoInlineAddHint => 'Добавить задачу';
+
+  @override
+  String get todoListManageShort => 'Изменить';
+
+  @override
+  String get todoMoveOverdueToToday => 'Всё на сегодня';
+
+  @override
+  String get todoMoveToToday => 'Перенести на сегодня';
+
+  @override
+  String get todoMoveToList => 'Переместить в список…';
+
+  @override
+  String get todoNoteTitle => 'Заметки';
+
+  @override
+  String get todoStepsTitle => 'Шаги';
+
+  @override
+  String todoStepsTitleProgress(int done, int total) {
+    return 'Шаги $done/$total';
+  }
+
+  @override
+  String get todoOpenDiary => 'Открыть запись';
+
+  @override
+  String get todoQuickParseDismiss => 'Убрать';
+
+  @override
+  String todoRemindersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count напоминания',
+      many: '$count напоминаний',
+      few: '$count напоминания',
+      one: '$count напоминание',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoSelectedCount(int count) {
+    return 'Выбрано: $count';
+  }
+
+  @override
+  String get todoSelectionExit => 'Выйти из выбора';
+
+  @override
+  String get todoViewSheetTitle => 'Выбор вида';
+
+  @override
+  String todoBatchCompleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выполнено $count задачи',
+      many: 'Выполнено $count задач',
+      few: 'Выполнено $count задачи',
+      one: 'Выполнена $count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалено $count задачи',
+      many: 'Удалено $count задач',
+      few: 'Удалено $count задачи',
+      one: 'Удалена $count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchDueRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Дата убрана у $count задачи',
+      many: 'Дата убрана у $count задач',
+      few: 'Дата убрана у $count задач',
+      one: 'Дата убрана у $count задачи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchDueSet(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count задачи перенесено на $date',
+      many: '$count задач перенесено на $date',
+      few: '$count задачи перенесены на $date',
+      one: '$count задача перенесена на $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchMoved(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count задачи перемещено в «$list»',
+      many: '$count задач перемещено в «$list»',
+      few: '$count задачи перемещены в «$list»',
+      one: '$count задача перемещена в «$list»',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchPrioritySet(int count, String priority) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Приоритет «$priority» у $count задачи',
+      many: 'Приоритет «$priority» у $count задач',
+      few: 'Приоритет «$priority» у $count задач',
+      one: 'Приоритет «$priority» у $count задачи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoSettingsSmartParse => 'Умное распознавание';
+
+  @override
+  String get todoSettingsSmartParseSubtitle =>
+      'Распознавать «завтра в 15:00 #Работа !!!» как дату, список и приоритет';
 }

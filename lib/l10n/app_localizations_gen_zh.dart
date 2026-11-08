@@ -13704,14 +13704,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoGroupLater => '更晚';
 
   @override
-  String get todoGroupNoDate => '没有日期';
-
-  @override
-  String todoGroupCompleted(int count) {
-    return '已完成 $count';
-  }
-
-  @override
   String get todoNew => '新待办';
 
   @override
@@ -13841,9 +13833,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoListEmptyManage => '还没有清单。把待办按工作、生活等分开放，会更好找。';
 
   @override
-  String get todoDetailTitle => '待办';
-
-  @override
   String get todoNoteHint => '添加备注';
 
   @override
@@ -13861,13 +13850,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoFieldDue => '日期';
 
   @override
-  String get todoFieldDueEmpty => '设置日期';
-
-  @override
   String get todoFieldReminders => '提醒';
-
-  @override
-  String get todoFieldRemindersEmpty => '添加提醒';
 
   @override
   String get todoFieldRepeat => '重复';
@@ -13882,13 +13865,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoFieldDiary => '关联日记';
 
   @override
-  String get todoFieldDiaryEmpty => '关联一篇日记';
-
-  @override
   String get todoFieldDiaryMissing => '日记不存在或已删除';
-
-  @override
-  String get todoRemoveField => '清除';
 
   @override
   String todoCreatedAt(String time) {
@@ -14093,9 +14070,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoRepeatEndsAfterPick => '重复几次后';
 
   @override
-  String get todoRepeatNeedsDate => '重复会从今天开始';
-
-  @override
   String get todoSettingsTitle => '待办';
 
   @override
@@ -14218,4 +14192,149 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryLinkedTodosTitle => '相关待办';
+
+  @override
+  String get todoBatchActionComplete => '完成';
+
+  @override
+  String get todoDuplicate => '复制为新待办';
+
+  @override
+  String todoDuplicateTitle(String title) {
+    return '$title（副本）';
+  }
+
+  @override
+  String get todoDuplicatedNotice => '已复制为新待办';
+
+  @override
+  String get todoGroupCompletedTitle => '已完成';
+
+  @override
+  String get todoGroupCompletedToday => '今天已完成';
+
+  @override
+  String get todoHeroAllDone => '今天的事都做完了';
+
+  @override
+  String get todoHeroNothing => '今天没有安排';
+
+  @override
+  String todoHeroDate(String weekday, String date) {
+    return '$weekday · $date';
+  }
+
+  @override
+  String todoHeroRemaining(int count) {
+    return '还有 $count 件';
+  }
+
+  @override
+  String todoHeroOverdue(int count) {
+    return '逾期 $count';
+  }
+
+  @override
+  String todoHeroDone(int count) {
+    return '已完成 $count';
+  }
+
+  @override
+  String todoHeroListProgress(int done, int total) {
+    return '已完成 $done / $total';
+  }
+
+  @override
+  String todoHeroOpenCount(int count) {
+    return '$count 条未完成';
+  }
+
+  @override
+  String todoHeroCompletedCount(int count) {
+    return '最近完成 $count 条';
+  }
+
+  @override
+  String get todoInlineAddHint => '添加待办';
+
+  @override
+  String get todoListManageShort => '管理';
+
+  @override
+  String get todoMoveOverdueToToday => '全部改到今天';
+
+  @override
+  String get todoMoveToToday => '改到今天';
+
+  @override
+  String get todoMoveToList => '移到清单…';
+
+  @override
+  String get todoNoteTitle => '备注';
+
+  @override
+  String get todoStepsTitle => '步骤';
+
+  @override
+  String todoStepsTitleProgress(int done, int total) {
+    return '步骤 $done/$total';
+  }
+
+  @override
+  String get todoOpenDiary => '打开日记';
+
+  @override
+  String get todoQuickParseDismiss => '移除';
+
+  @override
+  String todoRemindersCount(int count) {
+    return '$count 个提醒';
+  }
+
+  @override
+  String todoSelectedCount(int count) {
+    return '已选 $count';
+  }
+
+  @override
+  String get todoSelectionExit => '退出多选';
+
+  @override
+  String get todoViewSheetTitle => '切换视图';
+
+  @override
+  String todoBatchCompleted(int count) {
+    return '已完成 $count 条';
+  }
+
+  @override
+  String todoBatchDeleted(int count) {
+    return '已删除 $count 条';
+  }
+
+  @override
+  String todoBatchDueRemoved(int count) {
+    return '已移除 $count 条的日期';
+  }
+
+  @override
+  String todoBatchDueSet(int count, String date) {
+    return '已将 $count 条改到$date';
+  }
+
+  @override
+  String todoBatchMoved(int count, String list) {
+    return '已将 $count 条移到「$list」';
+  }
+
+  @override
+  String todoBatchPrioritySet(int count, String priority) {
+    return '已将 $count 条设为$priority优先级';
+  }
+
+  @override
+  String get todoSettingsSmartParse => '智能识别';
+
+  @override
+  String get todoSettingsSmartParseSubtitle => '把“明天下午3点 #工作 !!!”识别为日期、清单与优先级';
 }

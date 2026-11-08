@@ -6,6 +6,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../widgets/todo_check_box.dart';
+import '../widgets/todo_bare_input.dart';
 
 /// 详情页的步骤（子任务）：每步一行方框 + 可直接改的标题 + 删除；末尾一行
 /// “添加步骤”输入框，回车即加一步并留在输入框里接着加。
@@ -115,10 +116,8 @@ class _TodoStepsSectionState extends State<TodoStepsSection> {
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _submitNew(),
                   contextMenuBuilder: appTextContextMenuBuilder,
-                  decoration: InputDecoration(
+                  decoration: todoBareInputDecoration(
                     hintText: l10n.todoStepAdd,
-                    border: InputBorder.none,
-                    counterText: '',
                   ),
                 ),
               ),
@@ -212,11 +211,7 @@ class _StepRowState extends State<_StepRow> {
               decoration: done ? TextDecoration.lineThrough : null,
               decorationColor: scheme.onSurfaceVariant,
             ),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              counterText: '',
-              isDense: true,
-            ),
+            decoration: todoBareInputDecoration(),
           ),
         ),
         IconButton(

@@ -24880,18 +24880,6 @@ abstract class AppLocalizations {
   /// **'Later'**
   String get todoGroupLater;
 
-  /// To-do group header: no due date.
-  ///
-  /// In en, this message translates to:
-  /// **'No date'**
-  String get todoGroupNoDate;
-
-  /// Header of the collapsible completed group at the bottom of a list.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed {count}'**
-  String todoGroupCompleted(int count);
-
   /// Label of the create button on the To-dos tab.
   ///
   /// In en, this message translates to:
@@ -25126,12 +25114,6 @@ abstract class AppLocalizations {
   /// **'No lists yet. Group to-dos by work, home and so on to find them faster.'**
   String get todoListEmptyManage;
 
-  /// Title of the to-do detail page.
-  ///
-  /// In en, this message translates to:
-  /// **'To-do'**
-  String get todoDetailTitle;
-
   /// Hint of the note field on the to-do detail page.
   ///
   /// In en, this message translates to:
@@ -25162,23 +25144,11 @@ abstract class AppLocalizations {
   /// **'Date'**
   String get todoFieldDue;
 
-  /// Placeholder when a to-do has no due date.
-  ///
-  /// In en, this message translates to:
-  /// **'Add date'**
-  String get todoFieldDueEmpty;
-
   /// To-do detail / quick add: reminders.
   ///
   /// In en, this message translates to:
   /// **'Reminders'**
   String get todoFieldReminders;
-
-  /// Placeholder when a to-do has no reminders.
-  ///
-  /// In en, this message translates to:
-  /// **'Add reminder'**
-  String get todoFieldRemindersEmpty;
 
   /// To-do detail / quick add: repeat.
   ///
@@ -25204,23 +25174,11 @@ abstract class AppLocalizations {
   /// **'Linked diary'**
   String get todoFieldDiary;
 
-  /// Placeholder when a to-do has no linked diary.
-  ///
-  /// In en, this message translates to:
-  /// **'Link a diary'**
-  String get todoFieldDiaryEmpty;
-
   /// Shown when the linked diary cannot be found.
   ///
   /// In en, this message translates to:
   /// **'The diary no longer exists'**
   String get todoFieldDiaryMissing;
-
-  /// To-do detail: tooltip of the button clearing a field (date, repeat, linked diary).
-  ///
-  /// In en, this message translates to:
-  /// **'Clear'**
-  String get todoRemoveField;
 
   /// Creation time at the bottom of the to-do detail page.
   ///
@@ -25546,12 +25504,6 @@ abstract class AppLocalizations {
   /// **'After a number of times'**
   String get todoRepeatEndsAfterPick;
 
-  /// When setting repeat on a to-do without a date: the date becomes today.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeating starts today'**
-  String get todoRepeatNeedsDate;
-
   /// Settings entry and title of the to-do settings page.
   ///
   /// In en, this message translates to:
@@ -25785,6 +25737,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Related to-dos'**
   String get diaryLinkedTodosTitle;
+
+  /// Selection bar button: complete the selected to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get todoBatchActionComplete;
+
+  /// Detail menu: duplicate the to-do as a new one.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get todoDuplicate;
+
+  /// Title of a duplicated to-do; {title} is the original title.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} (copy)'**
+  String todoDuplicateTitle(String title);
+
+  /// Notice after duplicating a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicated as a new to-do'**
+  String get todoDuplicatedNotice;
+
+  /// Header of the collapsible completed group at the bottom of a list (count shown separately).
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get todoGroupCompletedTitle;
+
+  /// Header of the collapsible group of to-dos completed today in the Today view.
+  ///
+  /// In en, this message translates to:
+  /// **'Done today'**
+  String get todoGroupCompletedToday;
+
+  /// Today overview card headline when everything due today is done.
+  ///
+  /// In en, this message translates to:
+  /// **'All done for today'**
+  String get todoHeroAllDone;
+
+  /// Today overview card headline when nothing is due today.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing planned today'**
+  String get todoHeroNothing;
+
+  /// Eyebrow of the Today overview card: weekday and date.
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday} · {date}'**
+  String todoHeroDate(String weekday, String date);
+
+  /// Today overview card headline: to-dos still due today (incl. overdue).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 thing left} other{{count} things left}}'**
+  String todoHeroRemaining(int count);
+
+  /// Today overview card chip: overdue count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} overdue'**
+  String todoHeroOverdue(int count);
+
+  /// Today overview card chip: completed today.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} done'**
+  String todoHeroDone(int count);
+
+  /// List overview card: completed of total.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} done'**
+  String todoHeroListProgress(int done, int total);
+
+  /// Smart view overview card: open to-do count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing left} =1{1 to-do left} other{{count} to-dos left}}'**
+  String todoHeroOpenCount(int count);
+
+  /// Completed view overview card: recently completed count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 completed recently} other{{count} completed recently}}'**
+  String todoHeroCompletedCount(int count);
+
+  /// Placeholder row at the end of a to-do list; tap to type a new to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a to-do'**
+  String get todoInlineAddHint;
+
+  /// Short 'manage' button beside the lists header in the view sheet and sidebar.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get todoListManageShort;
+
+  /// Button on the overdue group header: move all overdue to-dos to today.
+  ///
+  /// In en, this message translates to:
+  /// **'Move all to today'**
+  String get todoMoveOverdueToToday;
+
+  /// Desktop context menu: move the to-do to today.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to today'**
+  String get todoMoveToToday;
+
+  /// Desktop context menu: move the to-do to another list.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to list…'**
+  String get todoMoveToList;
+
+  /// Header of the notes card in to-do details.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get todoNoteTitle;
+
+  /// Header of the steps card in to-do details (no steps yet).
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get todoStepsTitle;
+
+  /// Header of the steps card with progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps {done}/{total}'**
+  String todoStepsTitleProgress(int done, int total);
+
+  /// Pill in to-do details that opens the linked diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Open diary'**
+  String get todoOpenDiary;
+
+  /// Semantics of the x on a recognized or chosen attribute when adding a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get todoQuickParseDismiss;
+
+  /// Number of reminders on a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 reminder} other{{count} reminders}}'**
+  String todoRemindersCount(int count);
+
+  /// Title of the To-dos tab header while selecting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String todoSelectedCount(int count);
+
+  /// Tooltip of the button that leaves selection mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit selection'**
+  String get todoSelectionExit;
+
+  /// Title of the view sheet opened from the To-dos tab title.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch view'**
+  String get todoViewSheetTitle;
+
+  /// Undoable notice after completing several to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Completed 1 to-do} other{Completed {count} to-dos}}'**
+  String todoBatchCompleted(int count);
+
+  /// Undoable notice after deleting several to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Deleted 1 to-do} other{Deleted {count} to-dos}}'**
+  String todoBatchDeleted(int count);
+
+  /// Undoable notice after removing the date from several to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Removed the date from 1 to-do} other{Removed the date from {count} to-dos}}'**
+  String todoBatchDueRemoved(int count);
+
+  /// Undoable notice after moving several to-dos to a date; {date} is like 'Tomorrow'.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Moved 1 to-do to {date}} other{Moved {count} to-dos to {date}}}'**
+  String todoBatchDueSet(int count, String date);
+
+  /// Undoable notice after moving several to-dos to a list.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Moved 1 to-do to “{list}”} other{Moved {count} to-dos to “{list}”}}'**
+  String todoBatchMoved(int count, String list);
+
+  /// Undoable notice after setting the priority of several to-dos; {priority} is like 'High'.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Set 1 to-do to {priority} priority} other{Set {count} to-dos to {priority} priority}}'**
+  String todoBatchPrioritySet(int count, String priority);
+
+  /// To-do settings switch: recognize dates, lists and priority while typing.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart recognition'**
+  String get todoSettingsSmartParse;
+
+  /// Subtitle of the smart recognition switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn “tomorrow 3pm #Work !!!” into a date, list and priority'**
+  String get todoSettingsSmartParseSubtitle;
 }
 
 class _AppLocalizationsDelegate

@@ -22,7 +22,9 @@ extension _HomePageChrome on _HomePageState {
       inlineAction: inlineCreate ? _buildInlineCreateButton(barStyle) : null,
       // 并排按钮与 FAB 一样只属于日记页与待办页（按目标 Tab，点击即生效），
       // 但不跟随日记列表的滚动显隐：它在底栏里，不会挡住列表末尾。
-      showInlineAction: _effectiveTab.hasCreateFab,
+      showInlineAction:
+          _effectiveTab.hasCreateFab &&
+          !(_effectiveTab == HomeTab.todos && _todosSelecting),
       hidden: _barHiddenByScroll,
     );
   }
@@ -155,7 +157,7 @@ extension _HomePageChrome on _HomePageState {
   Widget _buildGlobalCreateFab(HomeBarResolvedStyle barStyle) {
     final shouldShow = switch (_effectiveTab) {
       HomeTab.diaries => _diariesFabVisibleByScroll,
-      HomeTab.todos => true,
+      HomeTab.todos => !_todosSelecting,
       HomeTab.calendar || HomeTab.explore || HomeTab.settings => false,
     };
     final fabBaseBottomOffset = _HomePageState._fabBottomGapAboveNav;

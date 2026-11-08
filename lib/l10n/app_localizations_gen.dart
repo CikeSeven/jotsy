@@ -24609,6 +24609,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Used in 1 place} other{Used in {count} places}}'**
   String storageMgmtUsedIn(int count);
+
+  /// Screen reader long-press hint on a home tag filter chip: long-pressing adds or removes the tag while keeping the others selected.
+  ///
+  /// In en, this message translates to:
+  /// **'select more than one tag'**
+  String get diaryTagFilterMultiSelectSemanticHint;
+
+  /// One-time hint on phones after a tap replaced the selected home tag filter: tapping now switches to one tag, long-press selects several.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press a tag to select more than one'**
+  String get diaryTagFilterMultiSelectTip;
+
+  /// One-time hint on desktop after a click replaced the selected home tag filter. {key} is the modifier key name (Ctrl, or ⌘ on macOS).
+  ///
+  /// In en, this message translates to:
+  /// **'Hold {key} and click tags to select more than one'**
+  String diaryTagFilterMultiSelectTipDesktop(String key);
+
+  /// Editor settings switch: going back from a new diary publishes it directly instead of keeping it in Drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish new diaries when going back'**
+  String get settingsPublishOnLeave;
+
+  /// Subtitle of the "Publish new diaries when going back" switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Going back from a new diary saves it as a diary, not a draft'**
+  String get settingsPublishOnLeaveSubtitle;
+
+  /// Hint when going back from a new diary failed to publish it; the diary was kept in Drafts instead.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t publish the diary. It\'s kept in Drafts.'**
+  String get publishOnLeaveFailedKeptDraft;
 }
 
 class _AppLocalizationsDelegate

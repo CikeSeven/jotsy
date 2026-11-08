@@ -114,10 +114,11 @@ void main() {
     await tester.tapAt(const Offset(5, 5));
     await h.settleAll();
 
-    await tester.binding.handlePopRoute();
+    // 系统返回不先回到全部日记：直接离开应用，仍停在未收录（#196）。
+    expect(await systemBackLeavesApp(tester), isTrue);
     await h.settleAll();
-    expect(scopeOf(tester).isAll, isTrue);
-    expect(find.text('出发'), findsOneWidget);
+    expect(scopeOf(tester).unfiled, isTrue);
+    expect(find.text('出发'), findsNothing);
     expect(find.text('上班路上'), findsOneWidget);
     await h.unmount();
   });

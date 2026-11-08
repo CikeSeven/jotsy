@@ -39,6 +39,37 @@ void main() {
     expect(mainActivity, contains('launchEntrypointArgs()'));
   });
 
+  // #196：第一个路由上返回只退到桌面（与主屏键相同），不结束 Activity：
+  // 引擎、Dart 状态与首页所在的日记本都留着。回调须在 super.onCreate 之前
+  // 注册，排在 FlutterFragment 的回调之下，只接 SystemNavigator.pop 的转发。
+  test('root back sends the task to the background instead of finishing', () {
+    final mainActivity = File(
+      'android/app/src/main/kotlin/com/jotsy/diary/MainActivity.kt',
+    ).readAsStringSync();
+
+    expect(mainActivity, contains('moveTaskToBack(true)'));
+    expect(mainActivity, contains('isTaskRoot'));
+    final register = mainActivity.indexOf(
+      'onBackPressedDispatcher.addCallback(leaveToHomeScreen)',
+    );
+    final superOnCreate = mainActivity.indexOf(
+      'super.onCreate(savedInstanceState)',
+    );
+    expect(register, greaterThan(0));
+    expect(register, lessThan(superOnCreate));
+
+    // Dart 不自己“退出应用”：根路由的返回一律交给上面的原生回调。
+    for (final file in Directory('lib').listSync(recursive: true)) {
+      if (file is! File || !file.path.endsWith('.dart')) continue;
+      final source = file.readAsStringSync();
+      expect(
+        source.contains('SystemNavigator.pop'),
+        isFalse,
+        reason: '${file.path} calls SystemNavigator.pop',
+      );
+    }
+  });
+
   test('Android page transition keeps the fade-forwards motion only', () {
     final builder =
         appTheme().pageTransitionsTheme.builders[TargetPlatform.android];

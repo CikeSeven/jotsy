@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/backup_settings.dart';
+import 'package:node_diary/core/services/feature_tips.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -642,6 +643,87 @@ void main() {
         expect(settings.exploreLayoutRaw, isNull);
       },
     );
+  });
+
+  group('SettingsService diary create prefs', () {
+    const key = 'app.settings.diary_create_prefs';
+    const raw = '{"leave":"publish"}';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryCreatePrefsRaw, isNull);
+
+      await settings.setDiaryCreatePrefsRaw('  $raw  ');
+      expect(settings.diaryCreatePrefsRaw, raw);
+      expect(settings.diaryCreatePrefsRawNotifier.value, raw);
+      expect((await SettingsService.create()).diaryCreatePrefsRaw, raw);
+
+      await settings.setDiaryCreatePrefsRaw(null);
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.diaryCreatePrefsRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 3});
+      final settings = await SettingsService.create();
+      expect(settings.diaryCreatePrefsRaw, isNull);
+    });
+
+    test(
+      'backups carry the prefs, older backups keep the local ones and null resets',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryCreatePrefsRaw(raw);
+        expect(BackupSettings.capture(settings)['diaryCreatePrefsRaw'], raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.diaryCreatePrefsRaw, raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCreatePrefsRaw': <String, dynamic>{'leave': 'draft'},
+        });
+        expect(settings.diaryCreatePrefsRaw, '{"leave":"draft"}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCreatePrefsRaw': null,
+        });
+        expect(settings.diaryCreatePrefsRaw, isNull);
+      },
+    );
+  });
+
+  group('SettingsService feature tips', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('updates merge into the latest stored progress', () async {
+      final settings = await SettingsService.create();
+      // 两条提示各自改自己那一条：后写的不会抹掉先写的。
+      await settings.updateFeatureTips(
+        (latest) => latest.markShown(FeatureTip.tagFilterPull),
+      );
+      await settings.updateFeatureTips(
+        (latest) => latest.markLearned(FeatureTip.tagFilterMultiSelect),
+      );
+      final tips = FeatureTips.decode(settings.featureTipsRaw);
+      expect(tips.recordOf(FeatureTip.tagFilterPull).shown, 1);
+      expect(tips.recordOf(FeatureTip.tagFilterMultiSelect).learned, isTrue);
+
+      // 没有变化时不写。
+      final before = settings.featureTipsRaw;
+      await settings.updateFeatureTips(
+        (latest) => latest.markLearned(FeatureTip.tagFilterMultiSelect),
+      );
+      expect(settings.featureTipsRaw, same(before));
+    });
   });
 
   group('SettingsService home bar style', () {

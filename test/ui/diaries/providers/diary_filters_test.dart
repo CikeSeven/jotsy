@@ -78,6 +78,26 @@ void main() {
     expect(key.filter, predicate);
   });
 
+  test('selectOnlyTag switches to one tag and clears on the same one', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final notifier = container.read(diaryFilterProvider.notifier);
+    Set<int> selected() => container.read(diaryFilterProvider).selectedTagIds;
+
+    notifier.selectOnlyTag(1);
+    expect(selected(), <int>{1});
+    notifier.selectOnlyTag(2);
+    expect(selected(), <int>{2});
+    // 多选时点其中一个：收成只选它。
+    notifier.toggleTag(3, true);
+    expect(selected(), <int>{2, 3});
+    notifier.selectOnlyTag(3);
+    expect(selected(), <int>{3});
+    // 再点唯一选中的那个：取消。
+    notifier.selectOnlyTag(3);
+    expect(selected(), isEmpty);
+  });
+
   test('setTags filters non-positive ids and replaces selected tags', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

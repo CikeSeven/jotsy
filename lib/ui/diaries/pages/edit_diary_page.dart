@@ -40,6 +40,8 @@ import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/ui/diaries/controllers/publish_new_diary_directly.dart';
+import 'package:node_diary/ui/diaries/providers/diary_create_prefs_provider.dart';
 import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
@@ -130,6 +132,7 @@ import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_persistence_controller.dart';
+part '../controllers/edit_diary_create_leave_flow.dart';
 part '../controllers/edit_diary_recording_controller.dart';
 part '../controllers/edit_diary_media_controller.dart';
 part '../controllers/edit_diary_template_flow.dart';
@@ -1094,6 +1097,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         ref.watch(aiModuleAvailableProvider(AiModule.vision))
         ? _controller.describeImageWithAi
         : null;
+    // 新建页“返回时直接发表”（#196）：打开时 PopScope 拦下返回，交给
+    // attemptExit → leaveCreateEntryPublishing 写库后退场。
+    final publishOnLeave =
+        _isCreateEntry &&
+        ref.watch(diaryCreatePrefsProvider.select((p) => p.publishOnLeave));
     final settingsAsync = ref.watch(settingsServiceProvider);
     // 先绑定设置再判断显示条件：首次绑定在本次构建里同步读入“始终显示工具栏”。
     settingsAsync.whenData(_bindToolbarSettingsService);
@@ -1485,8 +1493,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               // PopScope(Scaffold) 之间切换，根 widget 类型变化会销毁整棵子树，
               // 连带 原生块编辑器、播放器与输入法连接一起重建。只用 canPop 表达差异。
               return PopScope(
-                // 编辑模式返回时先补存最后一次输入，面板和录音仍优先收起。
-                canPop: !_isEditEntry && !_bottomPanelOpen,
+                // 编辑模式返回时先补存最后一次输入，面板和录音仍优先收起；
+                // 新建模式设为“返回时直接发表”时同样先拦下（见上）。
+                canPop: !_isEditEntry && !_bottomPanelOpen && !publishOnLeave,
                 onPopInvokedWithResult: (didPop, result) {
                   if (!didPop) {
                     unawaited(_controller.attemptExit());

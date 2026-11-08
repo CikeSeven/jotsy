@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../l10n/app_languages.dart';
 import 'diary_typography.dart';
+import 'feature_tips.dart';
 
 export 'diary_typography.dart';
 
@@ -82,6 +83,7 @@ class SettingsService {
     required String? diarySavedColorsRaw,
     required String? appFeaturesRaw,
     required String? exploreLayoutRaw,
+    required String? diaryCreatePrefsRaw,
     required String? aiPrefsRaw,
     required String? appLockOptionsRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
@@ -139,6 +141,9 @@ class SettingsService {
        ),
        appFeaturesRawNotifier = ValueNotifier<String?>(appFeaturesRaw),
        exploreLayoutRawNotifier = ValueNotifier<String?>(exploreLayoutRaw),
+       diaryCreatePrefsRawNotifier = ValueNotifier<String?>(
+         diaryCreatePrefsRaw,
+       ),
        aiPrefsRawNotifier = ValueNotifier<String?>(aiPrefsRaw),
        appLockOptionsRawNotifier = ValueNotifier<String?>(appLockOptionsRaw);
 
@@ -221,6 +226,10 @@ class SettingsService {
   /// 范围）；解析与默认值由 `ExploreSettings` 负责，服务层只保存原文。
   final ValueNotifier<String?> exploreLayoutRawNotifier;
 
+  /// 新建日记的偏好（单个 JSON 字符串，目前只有“返回时”怎样处理这篇）；
+  /// 解析与默认值由 `DiaryCreatePrefs` 负责，服务层只保存原文。随备份导出。
+  final ValueNotifier<String?> diaryCreatePrefsRawNotifier;
+
   /// AI 助手的偏好（单个 JSON 字符串：各模块开关、人设、写作指令、关于我、
   /// 输出、隐私、回顾与对话的设置）；解析与默认值由 `AiPreferences` 负责，
   /// 服务层只保存原文。**不含任何密钥**：服务商与 API 密钥只在本机的
@@ -296,6 +305,7 @@ class SettingsService {
   static const _keyDiaryExportOptions = 'app.settings.diary_export_options';
   static const _keyAppFeatures = 'app.settings.app_features';
   static const _keyExploreLayout = 'app.settings.explore_layout';
+  static const _keyDiaryCreatePrefs = 'app.settings.diary_create_prefs';
   static const _keyAiPrefs = 'app.settings.ai_prefs';
 
   static const _keyTagOrder = 'app.settings.tag_order';
@@ -366,6 +376,7 @@ class SettingsService {
     final storedDiarySavedColors = prefs.get(_keyDiarySavedColors);
     final storedAppFeatures = prefs.get(_keyAppFeatures);
     final storedExploreLayout = prefs.get(_keyExploreLayout);
+    final storedDiaryCreatePrefs = prefs.get(_keyDiaryCreatePrefs);
     final storedAiPrefs = prefs.get(_keyAiPrefs);
     final storedAppLockOptions = prefs.get(_keyAppLockOptions);
     return SettingsService._(
@@ -416,6 +427,9 @@ class SettingsService {
       appFeaturesRaw: storedAppFeatures is String ? storedAppFeatures : null,
       exploreLayoutRaw: storedExploreLayout is String
           ? storedExploreLayout
+          : null,
+      diaryCreatePrefsRaw: storedDiaryCreatePrefs is String
+          ? storedDiaryCreatePrefs
           : null,
       aiPrefsRaw: storedAiPrefs is String ? storedAiPrefs : null,
       appLockOptionsRaw: storedAppLockOptions is String
@@ -485,6 +499,8 @@ class SettingsService {
   String? get diarySavedColorsRaw => diarySavedColorsRawNotifier.value;
   String? get appFeaturesRaw => appFeaturesRawNotifier.value;
   String? get exploreLayoutRaw => exploreLayoutRawNotifier.value;
+
+  String? get diaryCreatePrefsRaw => diaryCreatePrefsRawNotifier.value;
   String? get aiPrefsRaw => aiPrefsRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
@@ -758,6 +774,18 @@ class SettingsService {
     await _writePreference(_prefs.setString(_keyExploreLayout, normalized));
   }
 
+  /// 保存新建日记的偏好；空值移除该键，回到默认（返回时存进草稿箱）。
+  Future<void> setDiaryCreatePrefsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      diaryCreatePrefsRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyDiaryCreatePrefs));
+      return;
+    }
+    diaryCreatePrefsRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyDiaryCreatePrefs, normalized));
+  }
+
   /// 保存 AI 助手偏好；空值移除该键，回到默认。
   Future<void> setAiPrefsRaw(String? value) async {
     final normalized = value?.trim();
@@ -841,6 +869,21 @@ class SettingsService {
 
   Future<void> setFeatureTipsRaw(String value) async {
     await _writePreference(_prefs.setString(_keyFeatureTips, value));
+  }
+
+  /// 读出最新的整份功能提示进度，经 [change] 改动后整份写回；没有变化时
+  /// 不写。几条提示共用一个键、由各自的控制器维护：各自缓存一份再整份
+  /// 写回会互相覆盖，所以写之前一律从这里重新读。读与改都是同步的（偏好
+  /// 有内存缓存），中间不会插进别的写入。
+  Future<void> updateFeatureTips(
+    FeatureTips Function(FeatureTips latest) change,
+  ) async {
+    final latest = FeatureTips.decode(featureTipsRaw);
+    final next = change(latest);
+    if (identical(next, latest)) {
+      return;
+    }
+    await setFeatureTipsRaw(next.encode());
   }
 
   Future<void> setDiarySearchPreferencesRaw(String value) async {

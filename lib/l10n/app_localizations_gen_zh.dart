@@ -13547,4 +13547,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String storageMgmtUsedIn(int count) {
     return '用在 $count 处';
   }
+
+  @override
+  String get diaryTagFilterMultiSelectSemanticHint => '同时选中多个标签';
+
+  @override
+  String get diaryTagFilterMultiSelectTip => '长按标签可以同时选多个';
+
+  @override
+  String diaryTagFilterMultiSelectTipDesktop(String key) {
+    return '按住 $key 再点标签可以同时选多个';
+  }
+
+  @override
+  String get settingsPublishOnLeave => '返回时直接发表新日记';
+
+  @override
+  String get settingsPublishOnLeaveSubtitle => '写新日记时按返回，直接存成日记，不进草稿箱';
+
+  @override
+  String get publishOnLeaveFailedKeptDraft => '发表失败，这篇已留在草稿箱';
 }

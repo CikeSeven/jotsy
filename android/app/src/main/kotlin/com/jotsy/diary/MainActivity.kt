@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.webkit.CookieManager
+import androidx.activity.OnBackPressedCallback
 import io.flutter.embedding.android.FlutterFragment
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -36,7 +37,37 @@ class MainActivity : FlutterFragmentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     handOffSplashScreenToFlutter()
+    // Registered before super.onCreate so it sits below FlutterFragment's callback; see
+    // [leaveToHomeScreen].
+    onBackPressedDispatcher.addCallback(leaveToHomeScreen)
     super.onCreate(savedInstanceState)
+  }
+
+  /**
+   * Back on the first Flutter route (nothing left for Dart to pop) sends the app to the home
+   * screen instead of finishing the activity, like pressing Home: the engine, the Dart state and
+   * the screen the user was on (the notebook they were reading) stay as they were (#196).
+   *
+   * How a root back gets here: [FlutterFragmentActivity.onBackPressed] hands every back press to
+   * Dart; when Dart has nothing to pop it calls `SystemNavigator.pop`, and FlutterFragment
+   * disables its own callback and re-dispatches through [onBackPressedDispatcher]. With no other
+   * callback the dispatcher's fallback is [Activity.onBackPressed], which finishes the activity
+   * (and with it the engine) on Android 11 and below and on some vendor builds of newer versions.
+   * This callback is the lowest-priority one, so it only ever sees that re-dispatch.
+   *
+   * Only when this activity is the root of its task: moving the task would otherwise also hide
+   * whichever app started us, so then the default (finish, back to that app) runs instead.
+   */
+  private val leaveToHomeScreen = object : OnBackPressedCallback(true) {
+    override fun handleOnBackPressed() {
+      if (isTaskRoot) {
+        moveTaskToBack(true)
+        return
+      }
+      isEnabled = false
+      onBackPressedDispatcher.onBackPressed()
+      isEnabled = true
+    }
   }
 
   /**

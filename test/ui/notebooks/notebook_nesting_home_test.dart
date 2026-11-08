@@ -141,7 +141,7 @@ void main() {
     await h.unmount();
   });
 
-  testWidgets('system back climbs to the parent before leaving to all', (
+  testWidgets('system back climbs to the parent, then leaves the app', (
     tester,
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
@@ -158,10 +158,11 @@ void main() {
     await tester.binding.handlePopRoute();
     await h.settleAll();
     expect(scopeId(tester), travel);
-    await tester.binding.handlePopRoute();
+    // 子本里的返回都留在应用里；到了顶层的本子，返回才离开应用，范围不变。
+    expect(await systemBackLeavesApp(tester), isTrue);
     await h.settleAll();
-    expect(containerOf(tester).read(homeNotebookScopeProvider).isAll, isTrue);
-    expect(find.text('上班路上'), findsOneWidget);
+    expect(scopeId(tester), travel);
+    expect(find.text('上班路上'), findsNothing);
     await h.unmount();
   });
 

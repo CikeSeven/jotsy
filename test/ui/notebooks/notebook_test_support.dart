@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
@@ -61,6 +62,26 @@ extension NotebookHarnessX on DiaryDraftsHarness {
     await settle();
     await tester.pumpAndSettle();
   }
+}
+
+/// 模拟一次系统返回，返回它是否离开了应用：Dart 没有可返回的（路由与
+/// PopScope 都放行）时交给系统的 `SystemNavigator.pop`，Android 上由
+/// `MainActivity` 退到桌面。只在这次返回期间接住平台通道，免得测试里报
+/// MissingPluginException。
+Future<bool> systemBackLeavesApp(WidgetTester tester) async {
+  var left = false;
+  final messenger = tester.binding.defaultBinaryMessenger;
+  messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+    if (call.method == 'SystemNavigator.pop') left = true;
+    return null;
+  });
+  try {
+    final handled = await tester.binding.handlePopRoute();
+    expect(handled, isNot(left), reason: 'handled by Dart and also left');
+  } finally {
+    messenger.setMockMethodCallHandler(SystemChannels.platform, null);
+  }
+  return left;
 }
 
 /// 不需要数据库的组件：套上中文本地化与测试主题。

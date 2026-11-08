@@ -13796,4 +13796,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String storageMgmtUsedIn(int count) {
     return '$count か所で使用';
   }
+
+  @override
+  String get diaryTagFilterMultiSelectSemanticHint => '複数のタグを選択';
+
+  @override
+  String get diaryTagFilterMultiSelectTip => 'タグを長押しすると複数選択できます';
+
+  @override
+  String diaryTagFilterMultiSelectTipDesktop(String key) {
+    return '$key を押しながらタグをクリックすると複数選択できます';
+  }
+
+  @override
+  String get settingsPublishOnLeave => '戻るときに新しい日記を投稿';
+
+  @override
+  String get settingsPublishOnLeaveSubtitle => '新しい日記で戻ると、下書きにせず日記として保存します';
+
+  @override
+  String get publishOnLeaveFailedKeptDraft => '日記を投稿できませんでした。下書きに残しています。';
 }

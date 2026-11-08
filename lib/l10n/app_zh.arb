@@ -18209,5 +18209,17 @@
   "storageMgmtMaskedCapsule": "未解封的时间胶囊里的内容",
   "@storageMgmtMaskedCapsule": {"description": "未解封胶囊里的媒体的占位标题。"},
   "storageMgmtUsedIn": "用在 {count} 处",
-  "@storageMgmtUsedIn": {"description": "详情面板“用在”标题。", "placeholders": {"count": {"type": "int"}}}
+  "@storageMgmtUsedIn": {"description": "详情面板“用在”标题。", "placeholders": {"count": {"type": "int"}}},
+  "diaryTagFilterMultiSelectSemanticHint": "同时选中多个标签",
+  "@diaryTagFilterMultiSelectSemanticHint": {"description": "首页标签筛选胶囊的读屏长按说明：长按在已选的标签里加上或去掉它，其余保留。"},
+  "diaryTagFilterMultiSelectTip": "长按标签可以同时选多个",
+  "@diaryTagFilterMultiSelectTip": {"description": "手机上单击把首页已选的标签换掉时的一次性提示：单击只切换一个，长按才能同时选多个。"},
+  "diaryTagFilterMultiSelectTipDesktop": "按住 {key} 再点标签可以同时选多个",
+  "@diaryTagFilterMultiSelectTipDesktop": {"description": "桌面上单击把首页已选的标签换掉时的一次性提示。{key} 为修饰键名（Ctrl，macOS 为 ⌘）。", "placeholders": {"key": {"type": "String", "example": "Ctrl"}}},
+  "settingsPublishOnLeave": "返回时直接发表新日记",
+  "@settingsPublishOnLeave": {"description": "编辑器设置开关：写新日记时按返回直接发表，而不是存进草稿箱。"},
+  "settingsPublishOnLeaveSubtitle": "写新日记时按返回，直接存成日记，不进草稿箱",
+  "@settingsPublishOnLeaveSubtitle": {"description": "“返回时直接发表新日记”开关的说明。"},
+  "publishOnLeaveFailedKeptDraft": "发表失败，这篇已留在草稿箱",
+  "@publishOnLeaveFailedKeptDraft": {"description": "新建页按返回直接发表失败时的提示：这篇已存在草稿箱里。"}
 }

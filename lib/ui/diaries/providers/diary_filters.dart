@@ -141,7 +141,7 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     state = state.copyWith(keyword: value);
   }
 
-  /// 单个标签开关。
+  /// 单个标签开关，保留其余已选的标签（多选：同时带有这些标签才匹配）。
   void toggleTag(int tagId, bool selected) {
     final next = <int>{...state.selectedTagIds};
     if (selected) {
@@ -150,6 +150,14 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
       next.remove(tagId);
     }
     state = state.copyWith(selectedTagIds: next);
+  }
+
+  /// 单击标签：只选这一个（#196）。它已是唯一选中的标签时取消选择；多选
+  /// 时点其中一个同样收成只选它。多选只经 [toggleTag]（长按）。
+  void selectOnlyTag(int tagId) {
+    final current = state.selectedTagIds;
+    final onlyThis = current.length == 1 && current.contains(tagId);
+    state = state.copyWith(selectedTagIds: onlyThis ? <int>{} : <int>{tagId});
   }
 
   /// 批量替换标签筛选，用于从设置中的“标签记忆”恢复状态。

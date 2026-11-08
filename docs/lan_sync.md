@@ -6,7 +6,7 @@
 
 - 同一局域网内的 Jotsy（Android、Linux、Windows；macOS 可编译，iOS 不支持——`AppPlatform.supportsLanSync`）互相发现、配对后双向同步全部日记数据。
 - 时机：同步页里手动“立即同步”；应用在前台时与已配对设备自动同步（不做后台常驻）。
-- 同步范围：日记（含回收站中的）、标签、日记本（含成员、书序、层级）、留言、日记模板（含改过的内置模板）、纪念日、这天的心情、托管媒体；设置为可选（两端都开启才同步）。
+- 同步范围：日记（含回收站中的）、标签、日记本（含成员、书序、层级）、留言、日记模板（含改过的内置模板）、纪念日、这天的心情、待办（含清单）、托管媒体；设置为可选（两端都开启才同步）。
 - **不同步**：草稿（单台设备上未完成的工作；发布即删除，两台都发布会重复；载荷带本机标签 id）、导入的字体文件（设置里只带字体 id，缺失回落内置字体）、心情选项 `mood_options`、本机偏好（不随备份导出的那些键）、网盘凭据、应用锁开关与应用密码。
 - 同步不是导入：不走 `chooseBackupImportMode`，不复用 `BackupMerge` 的合并/覆盖模式，也不调用 UI 写库函数（它们会改写 `updatedAt`、清掉归档/删除标记等）。
 
@@ -15,7 +15,7 @@
 | 路径 | 职责 |
 |---|---|
 | `lib/core/services/lan_sync/sync/sync_model.dart` | `SyncEntity`、`SyncKey`、`SyncRecord`、`SyncManifest`、规范 JSON 与哈希 |
-| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 |
+| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,todo,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 |
 | `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 |
 | `lib/core/services/lan_sync/sync/sync_planner.dart`（+ `_keys` / `_decide` / `_merge` / `_revive` / `_copies` / `_tags` / `_notebooks` / `_lists` / `_output` / `_values`）、`sync_plan.dart`、`sync_plan_side.dart`；本机一侧适配器 `sync_local_plan_side.dart` | 合并判定（纯函数）：按需取数、产出双方的写入计划 |
 | `lib/core/database/app_database_sync_ops.dart`（读）、`app_database_sync_writes.dart`（`_AppDatabaseSyncWrites`：按原值写入、关联清理）、`app_database_sync_order.dart`（`_AppDatabaseSyncOrder`：顺序列表重排） | 读规范行；由写入层放进同一个事务的按原值写入与关联清理 |
@@ -38,9 +38,9 @@
 ### 2.1 基本类型（`sync_model.dart`）
 
 ```dart
-const int kSyncFormatVersion = 2;
+const int kSyncFormatVersion = 3;
 
-enum SyncEntity { diary, tag, notebook, membership, orderList, comment, template, anniversary, dayMood, settings }
+enum SyncEntity { diary, tag, notebook, membership, orderList, comment, template, anniversary, dayMood, todoList, todo, settings, prefs }
 
 /// 记录身份：实体 + 业务 id。字符串形式 `<entity>:<id>`（entity 用枚举名）。
 class SyncKey { final SyncEntity entity; final String id; }
@@ -63,7 +63,7 @@ class SyncManifest {
 - **哈希**：`sha256(utf8(规范 JSON))` 取前 16 字节，小写十六进制（32 字符）。
 - 规范化必须是**幂等且跨设备确定**的：A 的记录写入 B 后，B 读出的规范记录与 A 的逐字节相同（测试兜底，含历史 Delta / 旧节点格式的正文、胶囊、带附件的 metadata）。
 - 规范形式（分面组成、归一规则、哈希）一旦改变必须提升 `kSyncFormatVersion`（版本不同的设备握手时互相拒绝）；只修正本机实现、不改协议时提升 `kSyncCanonicalRevision`（`sync_hash_cache.dart`），让哈希缓存整份作废重算。
-- 格式版本历史：1 为首版；2 为留言多出 `images`。新字段只在有值时出现，已有记录的规范值不变，升级后历史哈希仍有效；提升版本只为让认不出新字段的旧版设备拒绝同步（它写入时会丢掉图片，下次再把丢了图片的版本当作冲突一方传回来）。
+- 格式版本历史：1 为首版；2 为留言多出 `images`。新字段只在有值时出现，已有记录的规范值不变，升级后历史哈希仍有效；提升版本只为让认不出新字段的旧版设备拒绝同步（它写入时会丢掉图片，下次再把丢了图片的版本当作冲突一方传回来）。3 为新增待办清单 `todoList` 与待办 `todo` 两类实体、prefs 多出 `feature.todos`：已有记录的规范值不变（prefs 多出的分面按 4.1 第 2 条“有值的一侧胜出”），历史哈希仍有效；旧版设备的实体集合本来也对不上，提升版本让双方在 `sync.hello` 就明确拒绝、提示升级。
 
 ### 2.2 实体与分面
 
@@ -78,19 +78,21 @@ class SyncManifest {
 | template | `templateId`（含 `builtin.*`） | **main**：`name`、`payload`（库中原始 JSON 解析后的对象，键排序；保存时已经白名单重建，读取时应用自己再经 `sanitizeDiaryTemplateBlocks`，同步层在 core 不引用 UI 模块的清理函数、原样搬运）、`createdAt`、`updatedAt` |
 | anniversary | `anniversaryId` | **main**：全部业务列（含 `metadata` 对象、`linkedDiaryId`、`pinned`、`createdAt`、`updatedAt`） |
 | dayMood | `YYYY-MM-DD` | **main**：`mood`（原始字符串，认不出的枚举名原样）、`updatedAt` |
+| todoList | `listId` | **main**：全部业务列：`name`、`colorKey`、`iconKey`、`sortOrder`、`metadata`（对象）、`createdAt`、`updatedAt`。手动顺序就是每行的 `sortOrder`（REAL，拖动只改被拖的一行），随记录整条同步，不另设顺序列表 |
+| todo | `todoId` | **main**：全部业务列：`listId`（清单业务 id，null = 收集箱）、`title`、`note`、`priority`、`dueDate`（`YYYY-MM-DD` 原文）、`dueMinute`、`reminders`、`repeat`、`steps`、`completedAt`、`snoozedUntil`、`linkedDiaryId`、`sortOrder`、`metadata`、`createdAt`、`updatedAt`。`reminders` / `steps` 为 JSON 列解析后的数组、`repeat` 与 `metadata` 为解析后的对象（`repeat` 为 null 即不重复）——不经 `todo_rules.dart` 的模型重新编码（它会丢掉认不出的字段与条目）。`sortOrder` 为 JSON 浮点数（`1.0`，与整数 `1` 的规范串不同；读出时一律转成浮点），非有限值按 `0.0` |
 | settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw` 与 `tagOrderRaw`（在 prefs 里）；`appFeaturesRaw` 只留界面类开关（日历 Tab `calendar`、探索 Tab `explore`、侧滑归档 `swipeArchive`、AI 助手 `ai`），值为字段 → bool 的对象（取 `AppFeatures.decode` 之后的值），写入时合进本机开关、数据类开关保持本机值；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码。只在两端都开启“同步设置”时参与。 |
-| prefs | `prefs` | 始终参与（不受“同步设置”控制）。**tagOrderNames**：`value`（标签顺序：`tagOrderRaw` 的本地 id 换成标签名，查不到的丢掉；历史记录值，按列表三方合并）<br>**feature.&lt;字段&gt;**（`notebooks` / `anniversaries` / `templates` / `timeCapsules` / `comments`，即数据类功能开关）：`on`（`AppFeatures.decode` 之后的值，没存过开关时为默认值）。为什么拆出来：标签顺序与这些开关决定同步过来的数据看不看得到——“同步设置”默认关闭时，两边标签栏顺序不同，对方没开留言就看不到同步过去的留言。 |
+| prefs | `prefs` | 始终参与（不受“同步设置”控制）。**tagOrderNames**：`value`（标签顺序：`tagOrderRaw` 的本地 id 换成标签名，查不到的丢掉；历史记录值，按列表三方合并）<br>**feature.&lt;字段&gt;**（`notebooks` / `anniversaries` / `templates` / `timeCapsules` / `comments` / `todos`，即数据类功能开关）：`on`（`AppFeatures.decode` 之后的值，没存过开关时为默认值）。为什么拆出来：标签顺序与这些开关决定同步过来的数据看不看得到——“同步设置”默认关闭时，两边标签栏顺序不同，对方没开留言就看不到同步过去的留言。 |
 
 - `content_text` 由正文推出、不参与哈希；写入时由（还原路径后的）正文经 `diaryBlocksPlainText` 重新生成（与预览页待办保存、导入写库同一口径）。
-- 按列长截断：日记标题 200、标签名 40、日记本名 60、纪念日标题 100（按 UTF-16 码元，不切开代理对）。规范化（读）与写回两个方向都截断：正常数据本来不超长，两边口径一致才能保证超长的坏数据写到对方后规范值仍相同。
-- 应当是 JSON 对象的列（日记 metadata、日记本 / 模板 payload、纪念日 metadata）解析不成对象时，规范值里保留原文字符串、写回时原样写回，不把坏数据“修”成空对象。
+- 按列长截断：日记标题 200、标签名 40、日记本名 60、纪念日标题 100、待办清单名 50、待办标题 500（按 UTF-16 码元，不切开代理对）。待办标题与清单名为空（库里至少 1 个字符，只会来自坏数据）的记录写入时记为 `invalidRecord` 跳过，不让 Drift 的长度校验在事务里抛错回滚整批。规范化（读）与写回两个方向都截断：正常数据本来不超长，两边口径一致才能保证超长的坏数据写到对方后规范值仍相同。
+- 应当是 JSON 对象的列（日记 metadata、日记本 / 模板 payload、纪念日 metadata、待办清单 / 待办 metadata、待办 repeat）解析不成对象时，规范值里保留原文字符串、写回时原样写回，不把坏数据“修”成空对象；应当是 JSON 数组的列（待办 reminders / steps）同理，解析不成数组时保留原文。解析成功的对象 / 数组写回时按规范 JSON 编码（键排序、紧凑），与原文的键顺序不同不要紧：两端读出的规范值逐字节相同，认不出的字段原样保留。
 - 日记的 `updatedAt` 单独成 stamp 分面，合并取较大值，从不判为冲突。
 
 ### 2.3 媒体路径归一
 
 - 与 `DiaryMediaReferences`（`lib/core/services/diary_media_references.dart`）同一口径：遍历规范值中的每个字符串（只有提到托管目录名的字符串才处理）；字符串本身是 JSON 对象/数组时解码、递归处理后再按规范 JSON 编码回字符串；**整串**是托管媒体路径（绝对路径或 `file:` URI，且 `diaryMediaKeyOf` 非空）时替换为 `jotsy-media:<键>`（键形如 `diary_images/media_x/a.jpg`）。
 - 写入时把 `jotsy-media:<键>` 换回本机 `<dataRoot>/<键>`（平台路径分隔符），原来是 `file:` URI 的也写成本机绝对路径。
-- 归一只作用于可能存放媒体的列：日记的正文、封面、metadata 与胶囊块，日记本与模板的 payload，纪念日的 metadata，留言的图片，设置值；标题、名称、备注、留言正文这类用户文字不改写。
+- 归一只作用于可能存放媒体的列：日记的正文、封面、metadata 与胶囊块，日记本与模板的 payload，纪念日的 metadata，留言的图片，设置值；标题、名称、备注、留言正文这类用户文字不改写。待办与清单不存放媒体，整条不做归一（将来加附件时须同时提升格式版本）。
 - 设置背景：`jotsy-media:app_backgrounds/<文件名>` 只在 settings 记录里出现，写入时还原为文件名（文件名须通过 `AppBackgroundStorageService.isValidName`）。
 - 还原时键必须满足 `diaryMediaKeyOf(键) == 键`（以托管目录开头、无 `..`），否则原样保留，防止拼出数据根之外的路径。
 - 一条记录引用的媒体键集合由同一遍历得出（`SyncRecord` 的派生信息），供传输阶段使用。
@@ -107,7 +109,7 @@ class SyncManifest {
 | `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；diary.tags、orderList.items 与 prefs.tagOrderNames 分面同时记录值 |
 | `tombstones.json.gz` | 墓碑：`SyncKey → {deletedAt, known: 分面 → [哈希…]}`（删除时的当前哈希 + 历史）；超过 365 天或超过 50 000 条时按时间淘汰 |
 | `renames.json.gz` | 标签改名记录：旧名 → 新名、时间（随墓碑同样淘汰） |
-| `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日），其余每次现算 |
+| `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日、待办清单、待办），其余每次现算 |
 | `media_index.json.gz` | 媒体键 → 大小、修改时间、sha256（大小或修改时间变了就重算） |
 | `sessions.json` | 最近 50 次同步记录（时间、用时（不含等用户确认）、自动与否、收到 / 发出的日记篇数与其他变化条数、媒体字节数、冲突副本数、是否首次、失败原因） |
 
@@ -138,7 +140,7 @@ class SyncManifest {
   - 两侧都有、某个非 stamp 分面不同：取对方这个键的历史（全部分面）；判定后只取“值确实要用”的一侧记录——全部分面都取同一侧时只取那一侧，stamp 不同或真冲突时两侧都取；
   - 只有本机有：对方有墓碑时先取墓碑详情，覆盖即删除、不再取记录；否则构建本机记录；
   - 只有对方有：本机墓碑覆盖时什么都不取（删除只要清单）；否则取对方记录；
-  - 第二段（跨键）：复活的日记 / 日记本在保留一侧的成员关系、被一并删除的留言（读所属日记）、改过的纪念日；冲突副本败方的成员关系；
+  - 第二段（跨键）：复活的日记 / 日记本在保留一侧的成员关系、被一并删除的留言（读所属日记）、改过的纪念日与待办（日记复活时恢复关联）、复活的待办清单在保留一侧被一并删除的待办（读所属清单）；冲突副本败方的成员关系；
   - 第三段（收尾，多为本机记录）：有日记本变化时两侧原样的日记本（层级校验）、所在日记本有变化时两侧原样的成员关系（章节校验）、集合有变化的两侧原样的顺序列表、有标签只在一侧时的 settings、被引用而改判保留的标签。
   - 两侧原样的值一律读本机记录，不走网络。典型同步（只有编辑）两次网络往返；复活、冲突副本、被引用的标签最多各加一次。
 
@@ -152,7 +154,7 @@ class SyncManifest {
    - diary.tags、orderList.items：取双方历史中最近的共同祖先值（同一哈希出现在两边历史里且带值，取两边 `seenAt` 中较大者最新的，再平手按哈希）做三方合并。集合：祖先 ∪ 双方新增 − 任一方删除。列表：去掉任一方删除的项；双方都保留的项的相对顺序——只有一方调整过（与祖先不同）就用那一方的，双方都调整过用主侧的，都没调整即祖先顺序；再依次把主侧、次侧的新增项按各自的相对位置插入（插在它在自己列表里最近的、已在结果中的前一项之后，没有就放最前）。找不到共同祖先时取并集（集合直接并；列表：主侧顺序 + 次侧独有项按次侧顺序追加）。主侧 = 变化时间较新的一侧（规则同下面“其他分面”，平手按 deviceId），与谁发起同步无关。（原文“保留祖先顺序”“按 L / R 的相对位置”在只有一方拖动过时会丢掉那次拖动、且结果随发起方而变，故作此解释。）
    - prefs：`tagOrderNames` 与 orderList.items 一样做列表三方合并；功能开关**只同步“开启”**：按上面的规则判定，但最终是“关”而某一侧现在是“开”时，那一侧不写（规划器产出时保持它开着，`_keepFeaturesOn`），两侧这个分面可以一直不同，每次同步判定结果相同、照样不写；写入层合并开关时也只打开、不关闭。为什么：对方关掉某个功能不该连带藏起本机的内容；关闭“日记本”在本机有私密本子时必须先确认，同步过程中弹不了确认。
    - diary.stamp：取较大值（不是冲突）。content 的最终值与某一侧当前值不同、而最终 stamp 恰等于那一侧的当前值时 +1000 毫秒（库里按秒存），保证各处按 `diaryId + updatedAt` 的缓存失效；抬高后大于两侧。
-   - 其他分面：取该分面“变化时间”较新的一方——历史头条的 `seenAt`；没有历史时用记录自身时间字段（日记：archive 用 `archivedAt`、trash 用 `deletedAt`、capsule 用 `lockedAt`，缺省及其余分面用 stamp；日记本 `definition.updatedAt`；成员 `addedAt`；留言 `editedAt ?? createdAt`；模板、纪念日、心情 `updatedAt`；标签、顺序列表、设置为 0）——平手按 deviceId 较大者。
+   - 其他分面：取该分面“变化时间”较新的一方——历史头条的 `seenAt`；没有历史时用记录自身时间字段（日记：archive 用 `archivedAt`、trash 用 `deletedAt`、capsule 用 `lockedAt`，缺省及其余分面用 stamp；日记本 `definition.updatedAt`；成员 `addedAt`；留言 `editedAt ?? createdAt`；模板、纪念日、待办清单、待办、心情 `updatedAt`；标签、顺序列表、设置为 0）——平手按 deviceId 较大者。
 
 #### 4.1.1 历史时间继承（收敛性修正）
 - **规则**：同步写入之后折叠时，凡是直接采纳了另一侧原值的分面（取一侧、变化时间较新者、正文胜方、合并结果恰好等于一侧原值），被换掉的旧值进历史时的 `seenAt` 不用写入时刻，而用那个值在来源一侧的确立时间（来源一侧的历史头条 `seenAt`，没有历史时用上面的记录时间字段）；合并出的新值、由从属关系改出的值（章节置 null、关联置 null、层级断开、改名换名、列表校正）照常用写入时刻。规划器在 `SyncSidePlan.historySeenAt`（键 → 分面 → 毫秒）给出，写入后的折叠已支持（`foldSyncObservation` 的 `seenAtOverrides`，经 `SyncLocalState.recordAppliedState(after, historySeenAt: …)`；第 3 节“写入后”），写入层负责把这一侧计划的 `historySeenAt` 原样传入。
@@ -171,9 +173,9 @@ class SyncManifest {
   - prefs 的 `tagOrderNames`：写入后各侧由本机标签表重新推出（本地 id → 名称，查不到的丢掉），所以最终值按改名换名、只留最终存在的标签、去重；只在有标签只在一侧时才可能变化。
 
 ### 4.3 从属与复活
-- 复活（4.2 中缺失一侧有墓碑却“保留并复制”的记录）时，它的从属按保留一方为准：日记 → 它在保留一侧的成员关系、留言（被墓碑覆盖的也改判保留）、指向它的纪念日关联（最终值里恢复 `linkedDiaryId`）；tags 分面随记录本身；日记本 → 它在保留一侧的成员关系、书序列表、在保留一侧挂在它下面的子本的 `parentId`。没有墓碑的新记录不必特殊处理：它的从属在缺失一侧本来就没有墓碑。
-- 给已被对方删除的日记新增或修改留言，算作对日记的修改：保留下来的留言（不是两侧原样的）指向判为删除的日记时，该日记改判复活（连同上面的从属）。成员关系、书序列表、纪念日的改动不复活日记 / 日记本，它们随日记 / 日记本不存在而丢弃。
-- 最终状态里日记或日记本不存在、或日记本不是手动本（`kind` 原始值）的成员关系、书序项一律丢弃；留言所属日记不存在时丢弃；纪念日 `linkedDiaryId` 指向不存在的日记时置 null。只检查不是两侧原样的记录：两侧原样的成员 / 留言 / 纪念日引用的日记与日记本在两侧都在（删除时会一并清理），最终也一定还在。
+- 复活（4.2 中缺失一侧有墓碑却“保留并复制”的记录）时，它的从属按保留一方为准：日记 → 它在保留一侧的成员关系、留言（被墓碑覆盖的也改判保留）、指向它的纪念日与待办关联（最终值里恢复 `linkedDiaryId`）；tags 分面随记录本身；日记本 → 它在保留一侧的成员关系、书序列表、在保留一侧挂在它下面的子本的 `parentId`；待办清单 → 它在保留一侧、被墓碑覆盖的待办（应用里删清单会连同其中的待办一起删，不改判的话清单回来了、里面的待办却随删除传播丢掉）。没有墓碑的新记录不必特殊处理：它的从属在缺失一侧本来就没有墓碑。
+- 给已被对方删除的日记新增或修改留言，算作对日记的修改：保留下来的留言（不是两侧原样的）指向判为删除的日记时，该日记改判复活（连同上面的从属）。成员关系、书序列表、纪念日的改动不复活日记 / 日记本，它们随日记 / 日记本不存在而丢弃；待办的改动不复活日记与清单（见下条：关联置 null、移到收集箱）。
+- 最终状态里日记或日记本不存在、或日记本不是手动本（`kind` 原始值）的成员关系、书序项一律丢弃；留言所属日记不存在时丢弃；纪念日与待办的 `linkedDiaryId` 指向不存在的日记时置 null；待办的 `listId` 指向不存在的清单（被删除、墓碑覆盖）时置 null，移到收集箱——一侧删了清单、另一侧之后又往里加了或改了待办时，待办保留下来，不能挂在不存在的清单上。只检查不是两侧原样的记录：两侧原样的成员 / 留言 / 纪念日 / 待办引用的日记、日记本与清单在两侧都在（删除时会一并清理：删日记清关联，删清单连同其中的待办；同步删清单时计划里同时给出这些待办的写入），最终也一定还在。
 - 智能日记本没有成员与书序；成员的 `chapterId` 不在目标日记本最终章节里时写 null（章节口径同 `NotebookPayload.chapterIds`：id 与标题去掉首尾空白后非空，比较去掉空白后的 id）。检查范围：不是两侧原样的成员关系，以及所在日记本不是两侧原样的全部成员关系（两侧原样的读本机记录）。
 - 顺序列表恰好是最终集合：书架 = 全部最终日记本；我的模板 = 全部最终用户模板（不含 `builtin.*`）；书序 = 这本最终手动本的最终成员。先按 4.1 / 4.2 定出底（复活日记本的书序以保留一侧为准；判为删除但日记本最终仍是手动本的，以在场一侧的列表为底），去掉不在集合里的 id、去重，再补上缺的：新冲突副本插在原日记之后（同一原日记的多份按 id 排序），其余按 id 排序追加到末尾。两侧原样、且最终集合与两侧现有集合（由清单的键算出，不必读值）都相同的列表不动。
 
@@ -197,7 +199,7 @@ class SyncManifest {
 - 写入层须知（第 6 节）：
   1. 事务开始时先逐条比对**全部**前置条件（写入的 `expected`；改名的 from 哈希等于 `expected` 且 to 不存在），不符的跳过；再执行原地改名；再按 `writes` 的顺序写——引用旧名的日记写入里 tags 已是新名，它的 `expected` 是改名前的哈希。
   2. 日记排在标签之前：日记的标签按名称（`ensureTagsByName` 口径）建出后，颜色由同一计划里 `tag:` 记录的写入定下；计划保证每个最终日记引用的标签名都有最终的 tag 记录（不被删除）。
-  3. 删除日记 / 日记本 / 标签时写入层的关联清理，与计划里显式列出的成员、留言、纪念日、书序写入一致（重复执行无害）；删除日记本不提升子本，子本的 `parentId` 由计划精确给出。
+  3. 删除日记 / 日记本 / 标签时写入层的关联清理，与计划里显式列出的成员、留言、纪念日、待办、书序写入一致（重复执行无害）；删除日记本不提升子本，子本的 `parentId` 由计划精确给出；删除待办清单只删这一行、不连带删其中的待办（每条待办由计划单独给出：删除，或 `listId` 置 null 移到收集箱），否则会删掉计划要保留的待办。
   4. 顺序列表写入后按列表重排为 0..n-1；计划给出的列表恰为最终集合，“列表里没有的现有项排在末尾”只在有写入被跳过时才会出现。
   5. 一侧的智能本被改成手动本时，先清掉该本残留的关联行（智能本的残留行不进清单），否则写入后的清单与计划不符。
   6. 写入后调用 `recordAppliedState(after, historySeenAt: plan.historySeenAt)`（4.1.1），漏传则多台设备之间可能不收敛。
@@ -277,7 +279,7 @@ class SyncManifest {
    - 原地改名：更新那一行的 `name` 与颜色，本地 id 不变（编辑器与 `tagOrderRaw` 持有本地 id）；
    - 其余写入按计划顺序执行，**顺序列表放到最后**：计划按键排序，`orderList:templates` 排在模板写入之前，照原顺序执行时新模板还没插入、重排后会被当作“列表里没有的现有项”排到末尾；重排只看行是否存在，挪到最后与计划的结果相同（这是写入层对 §4.6 第 1 条“按 writes 的顺序写”的执行细节，规划器不变）；
    - 按原值写入列（业务 id ↔ 本地 id 换算；时间、标志原样，不刷新 `updatedAt`）。日记的标签按名称**精确**匹配（不去空白：规范名就是库里的原名），缺的以中性色 `0xFF9E9E9E` 建出，颜色随后由同一计划里 `tag:` 记录的写入定下（那条被跳过时留着中性色，下次同步照常合并颜色）；已有标签的颜色只由 tag 记录改动；
-   - 删除时的关联清理与现有删除路径一致：日记复用 `hardDeleteDiary`（diary_tags、diary_notebooks、留言、纪念日关联置 null），标签复用 `deleteTag`（diary_tags），日记本删掉它的 diary_notebooks 行；与计划里显式列出的成员 / 留言 / 纪念日写入重复执行无害；
+   - 删除时的关联清理与现有删除路径一致：日记复用 `hardDeleteDiary`（diary_tags、diary_notebooks、留言、纪念日与待办关联置 null），标签复用 `deleteTag`（diary_tags），日记本删掉它的 diary_notebooks 行，待办清单只删这一行（§4.6 第 3 条）；与计划里显式列出的成员 / 留言 / 纪念日 / 待办写入重复执行无害；
    - 不调用 `deleteNotebook` / `mergeNotebook`（它们的子本上提会覆盖另一边的移动），`parent_id` 精确取自记录，删除父本不提升子本；智能本改成手动本时先清掉它残留的关联行；新日记本 / 新模板 / 新成员先排在最后，再由顺序列表重排；
    - 成员关系的日记或日记本不存在（它们的写入被跳过）、或日记本不是手动本时不写，记为 `missingDependency`；
    - orderList 写入后按列表重排 `sortOrder` / `position` 为 0..n-1，列表里没有的现有项按原相对顺序（与规范化读取同一排序）排在末尾；模板列表只排用户模板，`builtin.*` 的位置不动；书序列表的删除（日记本被删或改成智能本）不需要任何操作；
@@ -292,7 +294,7 @@ class SyncManifest {
 
 ## 7. 并发安全（`EditingSessionRegistry`）
 
-- **阻塞者**：编辑页与发布页（`DebouncedAutoSaveController`）、纪念日编辑页与日记本编辑页（`EditingSessionBlocker`）、模板编辑页、留言编辑面板、目录页与日记本管理页的拖动排序（`ReorderEditingGuard`：从拿起到新顺序写完，落回原位即结束）。登记期间不发起自动同步，对方的会话请求以 `busy` 拒绝；手动同步提示“请先关闭正在编辑的页面”。
+- **阻塞者**：编辑页与发布页（`DebouncedAutoSaveController`）、纪念日编辑页与日记本编辑页（`EditingSessionBlocker`）、模板编辑页、留言编辑面板、目录页与日记本管理页的拖动排序（`ReorderEditingGuard`：从拿起到新顺序写完，落回原位即结束）。待办与清单的编辑界面同理：握着可编辑内存副本、整份写回的（如待办详情、清单编辑）登记为阻塞者；逐项即时写库的操作（勾选完成、拖动只改一行的 `sortOrder`）不必。登记期间不发起自动同步，对方的会话请求以 `busy` 拒绝；手动同步提示“请先关闭正在编辑的页面”。
 - **冲刷者**：预览页待办自动保存（`DiaryTodoAutoSaveController`）。会话开始时 `flushAll()`；写入后由 `notifyDataReplaced` 让其文档重新读取。
 - **撤销窗口**：带按钮（撤销）的 `showTrackedSnackBar` 显示期间自动计数（`beginUndoWindow`，随提示关闭结束）；同步写入前等待清零，超时即推迟（§6 第 1 步）。
 - **写入后失效**：`syncedDataRefreshProvider`（`lib/app/synced_data_refresh.dart`，`NodeDiaryApp` 常驻监听）收到 `dataReplaced` 时失效一次性读取的 provider：`diaryDetailProvider` 族、`diaryNotebooksProvider` 族、`diaryPreviewBacklinksProvider` 族（预览页的反向链接）、`userDiaryTemplatesSnapshotProvider`、`tagListProvider`（自定义顺序取自设置、只在标签表推送时套用）。实时查询（`watch…`）由 Drift 自动刷新，设置类 Notifier 经 `SettingsService` 的通知刷新；新增一次性读取同步数据的 provider 必须加进它的清单。

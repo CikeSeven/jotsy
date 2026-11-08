@@ -6,6 +6,7 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
+import '../../todos/viewmodels/todo_calendar_index.dart';
 import '../models/calendar_display_options.dart';
 import '../models/calendar_range_selection.dart';
 import '../viewmodels/calendar_day_summary.dart';
@@ -37,6 +38,7 @@ class CalendarMonthGrid extends StatefulWidget {
     this.onDayLongPressed,
     this.range,
     this.anniversaryIndex,
+    this.todoIndex,
     this.dayMoods = const <DateTime, DayMood>{},
     this.scaleRowsWithWidth = false,
   });
@@ -90,6 +92,10 @@ class CalendarMonthGrid extends StatefulWidget {
   /// 纪念日按日索引；不显示纪念日时为 null。心情/标签筛选与范围选择都不
   /// 影响纪念日——它们是日期本身的属性，不是日记。
   final AnniversaryCalendarIndex? anniversaryIndex;
+
+  /// 待办按日索引；不显示待办时为 null。与纪念日一样不受筛选与范围选择
+  /// 影响。
+  final TodoCalendarIndex? todoIndex;
 
   /// 这天的心情（按本地零点日期）；不显示时为空。与纪念日一样是日期本身的
   /// 属性，不受心情/标签筛选与范围选择影响。
@@ -183,6 +189,7 @@ class CalendarMonthGrid extends StatefulWidget {
                 lunar: lunar ? CalendarLunarDay.of(day) : null,
                 holiday: holidays ? CalendarHolidayDay.of(day) : null,
                 anniversary: anniversaryIndex?.titleOn(day),
+                hasOpenTodo: todoIndex?.hasOpenOn(day) ?? false,
                 dayMood: dayMoods[dayKey],
                 highlightMaxWidth: gridWidth == null
                     ? null

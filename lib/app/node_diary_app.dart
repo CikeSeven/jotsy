@@ -34,6 +34,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/lan_sync/providers/lan_sync_providers.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
+import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
 import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
 
 import '../core/services/settings_service.dart';
@@ -116,6 +117,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     // 已配对设备时只在同步页打开期间，docs/lan_sync.md §9），不支持的平台
     // 是不联网的空实现。
     ref.listenManual(lanSyncControllerProvider, (_, _) {});
+    // 待办提醒的调度器同样常驻：按库里的待办排系统通知，接住通知上的
+    // 点开与按钮（待办功能关闭时只取消已排的通知）。
+    ref.listenManual(todoReminderSchedulerProvider, (_, _) {});
     // 应用密码存储与设置同时开始加载：应用锁判断验证方式时通常已就绪，
     // 遮罩不会先闪一下系统验证的加载指示再换成密码输入。
     ref.listenManual(appPasscodeConfigProvider, (_, _) {});

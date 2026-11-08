@@ -4,8 +4,9 @@ import 'sync_planner_sim_apply.dart';
 import 'sync_planner_sim_replica.dart';
 
 /// 收敛模拟里用户在一台设备上的操作，带上应用自己的连带效果：删日记清理
-/// 成员 / 留言 / 纪念日关联，删标签从日记上摘掉，删日记本把子本提到上一层、
-/// 删掉成员关系，删章节让其中的日记回到“未分章”，移动日记本前校验层级。
+/// 成员 / 留言 / 纪念日与待办关联，删标签从日记上摘掉，删日记本把子本提到
+/// 上一层、删掉成员关系，删章节让其中的日记回到“未分章”，移动日记本前校验
+/// 层级，删清单连同其中的待办一起删。
 class SimOps {
   SimOps(this.random, this.clock);
 
@@ -40,7 +41,8 @@ class SimOps {
     if (roll < 60) return notebookOp(r);
     if (roll < 72) return memberOp(r);
     if (roll < 84) return commentOp(r);
-    if (roll < 92) return anniversaryOp(r);
+    if (roll < 88) return anniversaryOp(r);
+    if (roll < 95) return todoOp(r);
     return reorderOp(r);
   }
 
@@ -320,6 +322,61 @@ class SimOps {
     }
     anniversary.updatedAt = _now(r);
     return 'editAnniversary $id';
+  }
+
+  /// 待办与清单：顺序是行上的浮点 `sortOrder`，拖动只改被拖的一行。
+  String todoOp(SimReplica r) {
+    final roll = random.nextInt(9);
+    if (roll == 0 || r.todoLists.isEmpty) {
+      final id = '${r.name}-l${++_serial}';
+      r.todoLists[id] = SimTodoList(
+        token(r),
+        r.todoLists.length.toDouble(),
+        _now(r),
+      );
+      return 'newTodoList $id';
+    }
+    if (roll < 3) {
+      final id = _pick(r.todoLists.keys);
+      if (roll == 1) {
+        r.todoLists[id]!
+          ..name = token(r)
+          ..updatedAt = _now(r);
+        return 'renameTodoList $id';
+      }
+      // 应用删清单：连同其中的待办一起删。
+      r.todoLists.remove(id);
+      r.todos.removeWhere((_, todo) => todo.listId == id);
+      return 'deleteTodoList $id';
+    }
+    if (roll == 3 || r.todos.isEmpty) {
+      final id = '${r.name}-t${++_serial}';
+      r.todos[id] = SimTodo(
+        token(r),
+        random.nextBool() ? _pick(r.todoLists.keys) : null,
+        random.nextInt(3) == 0 ? _pick(r.diaries.keys) : null,
+        random.nextInt(40) / 4,
+        _now(r),
+      );
+      return 'newTodo $id';
+    }
+    final id = _pick(r.todos.keys);
+    final todo = r.todos[id]!;
+    switch (roll) {
+      case 4:
+        todo.title = token(r);
+      case 5:
+        todo.listId = random.nextBool() ? _pick(r.todoLists.keys) : null;
+      case 6:
+        todo.sortOrder = random.nextInt(40) / 4;
+      case 7:
+        todo.linkedDiaryId = random.nextBool() ? _pick(r.diaries.keys) : null;
+      default:
+        r.todos.remove(id);
+        return 'deleteTodo $id';
+    }
+    todo.updatedAt = _now(r);
+    return 'editTodo $id';
   }
 
   String reorderOp(SimReplica r) {

@@ -13,17 +13,23 @@ import 'diary_blocks/diary_link_target.dart';
 import 'diary_comment_images.dart';
 import 'diary_list_scope.dart';
 import 'diary_search_terms.dart';
+import 'local_date_text.dart';
 import 'notebook_payload.dart';
 import 'sync_rows.dart';
+import 'todo_recurrence.dart';
+import 'todo_rules.dart';
 import '../services/app_data_directory.dart';
 
 export 'diary_comment_images.dart';
 export 'diary_list_scope.dart';
 export 'diary_search_terms.dart';
+export 'local_date_text.dart';
 export 'notebook_cover_style.dart';
 export 'notebook_payload.dart';
 export 'notebook_rules.dart';
 export 'sync_rows.dart';
+export 'todo_recurrence.dart';
+export 'todo_rules.dart';
 
 part 'app_database.g.dart';
 part 'app_database_schema.dart';
@@ -62,6 +68,11 @@ part 'app_database_ai_ops.dart';
 part 'app_database_ai_context_ops.dart';
 part 'app_database_media_repair_ops.dart';
 part 'app_database_storage_ops.dart';
+part 'app_database_todo_schema.dart';
+part 'app_database_todo_queries.dart';
+part 'app_database_todo_ops.dart';
+part 'app_database_todo_complete_ops.dart';
+part 'app_database_todo_list_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -78,6 +89,8 @@ part 'app_database_storage_ops.dart';
     AiConversations,
     AiMessages,
     AiResults,
+    TodoLists,
+    Todos,
   ],
 )
 class AppDatabase extends _$AppDatabase
@@ -108,6 +121,10 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseAiContextOps,
         _AppDatabaseStorageOps,
         _AppDatabaseMediaRepairOps,
+        _AppDatabaseTodoQueries,
+        _AppDatabaseTodoOps,
+        _AppDatabaseTodoCompleteOps,
+        _AppDatabaseTodoListOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -122,7 +139,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -170,6 +187,11 @@ class AppDatabase extends _$AppDatabase
       // 之后：从 v16 之前升级时那里已按最新定义建表、自带此列。
       if (from < 18) {
         await _migrateDiaryCommentsAddImages(m);
+      }
+      // v19 待办的清单表与待办表独立于日记表（只存日记的业务 id），同样排在
+      // v1 分支之前。
+      if (from < 19) {
+        await _migrateAddTodos(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

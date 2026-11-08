@@ -27,7 +27,7 @@ class AppSurfaceAreaChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final areas = <AppBackgroundArea?>[null, ...AppBackgroundArea.values];
+    final areas = <AppBackgroundArea?>[null, ...appBackgroundAreaDisplayOrder];
     return SizedBox(
       height: 48,
       child: DesktopHorizontalScroll(

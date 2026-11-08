@@ -123,6 +123,28 @@ void main() {
       expect((write.record!.facets[SyncFacet.main]! as Map)['title'], 'new');
     });
 
+    test('待办与清单没有历史时同样按 main.updatedAt', () {
+      final a = PlanDevice('a')
+        ..putAll([
+          todoListRecord('l', name: 'new', updatedAt: 15000),
+          todoRecord('t', title: 'old', updatedAt: 9000),
+        ]);
+      final b = PlanDevice('b')
+        ..putAll([
+          todoListRecord('l', name: 'old', updatedAt: 8000),
+          todoRecord('t', title: 'new', updatedAt: 12000),
+        ]);
+      a.commit(1);
+      b.commit(1);
+      final run = planBetween(a, b);
+      final local = writeFor(run.plan, SyncSideRole.local, todoKey('t'))!;
+      expect((local.record!.facets[SyncFacet.main]! as Map)['title'], 'new');
+      final remote = writeFor(run.plan, SyncSideRole.remote, todoListKey('l'))!;
+      expect((remote.record!.facets[SyncFacet.main]! as Map)['name'], 'new');
+      expect(writeFor(run.plan, SyncSideRole.local, todoListKey('l')), isNull);
+      expect(writeFor(run.plan, SyncSideRole.remote, todoKey('t')), isNull);
+    });
+
     test('平手按 deviceId 字典序较大者', () {
       final a = PlanDevice('zz')..put(tagRecord('t', color: 1));
       final b = PlanDevice('aa')..put(tagRecord('t', color: 2));

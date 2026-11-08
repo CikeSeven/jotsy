@@ -10561,6 +10561,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lanSyncItemDayMoods => '这天的心情';
 
   @override
+  String get lanSyncItemTodos => '待办';
+
+  @override
   String get lanSyncItemSettings => '设置';
 
   @override
@@ -13617,4 +13620,602 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get storageMgmtOpenExternally => '用其他应用打开';
+
+  @override
+  String backupImportTodoCount(int count) {
+    return '待办 $count 条';
+  }
+
+  @override
+  String backupImportExistingTodoCount(int count) {
+    return '其中 $count 条待办本机已存在';
+  }
+
+  @override
+  String backupImportModeOverwriteTodosOnly(int count) {
+    return '添加新内容，并用文件中的版本替换本机已存在的 $count 条待办';
+  }
+
+  @override
+  String backupImportModeOverwriteTodosExtra(int count) {
+    return '同时替换本机已存在的 $count 条待办';
+  }
+
+  @override
+  String backupOverwriteAllTodos(int count) {
+    return '$count 条待办';
+  }
+
+  @override
+  String backupOverwriteExistingTodosBody(int count) {
+    return '本机已存在的 $count 条待办将被文件中的版本替换。';
+  }
+
+  @override
+  String backupImportTodoMergeResult(int added) {
+    return '待办：新增 $added 条';
+  }
+
+  @override
+  String backupImportTodoOverwriteResult(int added, int replaced) {
+    return '待办：新增 $added 条，覆盖 $replaced 条';
+  }
+
+  @override
+  String get navTodos => '待办';
+
+  @override
+  String get appSurfaceAreaTodos => '待办';
+
+  @override
+  String get settingsFeaturesTodosSubtitle => '独立于日记的待办、清单与提醒';
+
+  @override
+  String get todoViewToday => '今天';
+
+  @override
+  String get todoViewPlanned => '计划';
+
+  @override
+  String get todoViewImportant => '重要';
+
+  @override
+  String get todoViewAll => '全部';
+
+  @override
+  String get todoViewCompleted => '已完成';
+
+  @override
+  String get todoViewInbox => '收集箱';
+
+  @override
+  String get todoGroupOverdue => '已逾期';
+
+  @override
+  String get todoGroupToday => '今天';
+
+  @override
+  String get todoGroupTomorrow => '明天';
+
+  @override
+  String get todoGroupNextDays => '未来七天';
+
+  @override
+  String get todoGroupLater => '更晚';
+
+  @override
+  String get todoGroupNoDate => '没有日期';
+
+  @override
+  String todoGroupCompleted(int count) {
+    return '已完成 $count';
+  }
+
+  @override
+  String get todoNew => '新待办';
+
+  @override
+  String get todoQuickAddHint => '要做什么？';
+
+  @override
+  String get todoQuickAddSubmit => '添加';
+
+  @override
+  String get todoSearchHint => '搜索待办';
+
+  @override
+  String get todoEmptyToday => '今天没有要做的事';
+
+  @override
+  String get todoEmptyList => '这里还没有待办';
+
+  @override
+  String get todoEmptyCompleted => '还没有完成的待办';
+
+  @override
+  String get todoEmptySearch => '没有找到相关的待办';
+
+  @override
+  String todoSortLabel(String mode) {
+    return '排序：$mode';
+  }
+
+  @override
+  String get todoSortManual => '手动';
+
+  @override
+  String get todoSortDue => '截止日期';
+
+  @override
+  String get todoSortPriority => '优先级';
+
+  @override
+  String get todoSortCreated => '创建时间';
+
+  @override
+  String get todoSortTitle => '排序方式';
+
+  @override
+  String get todoShowCompleted => '显示已完成';
+
+  @override
+  String get todoHideCompleted => '隐藏已完成';
+
+  @override
+  String get todoClearCompleted => '清除已完成';
+
+  @override
+  String get todoClearCompletedTitle => '清除已完成的待办？';
+
+  @override
+  String todoClearCompletedBody(int count) {
+    return '将删除 $count 条已完成的待办，可以在提示里撤销。';
+  }
+
+  @override
+  String todoClearedCount(int count) {
+    return '已清除 $count 条';
+  }
+
+  @override
+  String get todoCompletedNotice => '已完成';
+
+  @override
+  String todoCompletedNextNotice(String date) {
+    return '已完成，下一次：$date';
+  }
+
+  @override
+  String get todoDeletedNotice => '已删除待办';
+
+  @override
+  String get todoDelete => '删除待办';
+
+  @override
+  String get todoMarkDone => '标为完成';
+
+  @override
+  String get todoMarkUndone => '标为未完成';
+
+  @override
+  String get todoMore => '更多';
+
+  @override
+  String get todoListsSection => '清单';
+
+  @override
+  String get todoListNew => '新建清单';
+
+  @override
+  String get todoListEdit => '编辑清单';
+
+  @override
+  String get todoListNameHint => '清单名称';
+
+  @override
+  String get todoListManage => '管理清单';
+
+  @override
+  String get todoListDelete => '删除清单';
+
+  @override
+  String todoListDeleteTitle(String name) {
+    return '删除「$name」？';
+  }
+
+  @override
+  String todoListDeleteBody(int count) {
+    return '清单里的 $count 条待办会一起删除，可以在提示里撤销。';
+  }
+
+  @override
+  String get todoListDeletedNotice => '已删除清单';
+
+  @override
+  String get todoListColor => '颜色';
+
+  @override
+  String get todoListIcon => '图标';
+
+  @override
+  String get todoListEmptyManage => '还没有清单。把待办按工作、生活等分开放，会更好找。';
+
+  @override
+  String get todoDetailTitle => '待办';
+
+  @override
+  String get todoNoteHint => '添加备注';
+
+  @override
+  String get todoStepAdd => '添加步骤';
+
+  @override
+  String get todoStepDelete => '删除步骤';
+
+  @override
+  String todoStepsProgress(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String get todoFieldDue => '日期';
+
+  @override
+  String get todoFieldDueEmpty => '设置日期';
+
+  @override
+  String get todoFieldReminders => '提醒';
+
+  @override
+  String get todoFieldRemindersEmpty => '添加提醒';
+
+  @override
+  String get todoFieldRepeat => '重复';
+
+  @override
+  String get todoFieldPriority => '优先级';
+
+  @override
+  String get todoFieldList => '清单';
+
+  @override
+  String get todoFieldDiary => '关联日记';
+
+  @override
+  String get todoFieldDiaryEmpty => '关联一篇日记';
+
+  @override
+  String get todoFieldDiaryMissing => '日记不存在或已删除';
+
+  @override
+  String get todoRemoveField => '清除';
+
+  @override
+  String todoCreatedAt(String time) {
+    return '创建于 $time';
+  }
+
+  @override
+  String todoCompletedAt(String time) {
+    return '完成于 $time';
+  }
+
+  @override
+  String get todoNotFound => '这条待办已被删除';
+
+  @override
+  String get todoPriorityNone => '无';
+
+  @override
+  String get todoPriorityLow => '低';
+
+  @override
+  String get todoPriorityMedium => '中';
+
+  @override
+  String get todoPriorityHigh => '高';
+
+  @override
+  String get todoDueToday => '今天';
+
+  @override
+  String get todoDueTomorrow => '明天';
+
+  @override
+  String get todoDueYesterday => '昨天';
+
+  @override
+  String get todoDueNextWeek => '下周一';
+
+  @override
+  String get todoDuePickDate => '选择日期…';
+
+  @override
+  String get todoDueAllDay => '全天';
+
+  @override
+  String get todoDueSetTime => '设置时间';
+
+  @override
+  String get todoDueRemove => '移除日期';
+
+  @override
+  String todoDueWithTime(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get todoReminderAtDue => '准时提醒';
+
+  @override
+  String todoReminderMinutesBefore(int count) {
+    return '提前 $count 分钟';
+  }
+
+  @override
+  String todoReminderHoursBefore(int count) {
+    return '提前 $count 小时';
+  }
+
+  @override
+  String todoReminderDaysBefore(int count) {
+    return '提前 $count 天';
+  }
+
+  @override
+  String todoReminderOnDayAt(String time) {
+    return '当天 $time';
+  }
+
+  @override
+  String todoReminderDaysBeforeAt(int count, String time) {
+    return '提前 $count 天 $time';
+  }
+
+  @override
+  String get todoReminderCustom => '自定义时间…';
+
+  @override
+  String todoReminderLimit(int count) {
+    return '最多 $count 个提醒';
+  }
+
+  @override
+  String get todoReminderRemove => '移除提醒';
+
+  @override
+  String get todoRepeatNone => '不重复';
+
+  @override
+  String get todoRepeatDaily => '每天';
+
+  @override
+  String get todoRepeatLegalWorkdays => '法定工作日';
+
+  @override
+  String todoRepeatWeeklyOn(String days) {
+    return '每周$days';
+  }
+
+  @override
+  String todoRepeatMonthlyOnDay(int day) {
+    return '每月 $day 日';
+  }
+
+  @override
+  String todoRepeatMonthlyOrdinal(String ordinal, String weekday) {
+    return '每月第 $ordinal 个$weekday';
+  }
+
+  @override
+  String get todoRepeatMonthlyLastDay => '每月最后一天';
+
+  @override
+  String todoRepeatYearlyOn(String date) {
+    return '每年 $date';
+  }
+
+  @override
+  String todoRepeatEveryDays(int count) {
+    return '每 $count 天';
+  }
+
+  @override
+  String todoRepeatEveryWeeks(int count) {
+    return '每 $count 周';
+  }
+
+  @override
+  String todoRepeatEveryMonths(int count) {
+    return '每 $count 个月';
+  }
+
+  @override
+  String todoRepeatEveryYears(int count) {
+    return '每 $count 年';
+  }
+
+  @override
+  String todoRepeatSummaryJoin(String a, String b) {
+    return '$a · $b';
+  }
+
+  @override
+  String get todoRepeatCustom => '自定义…';
+
+  @override
+  String get todoRepeatCustomTitle => '自定义重复';
+
+  @override
+  String get todoRepeatUnitDay => '天';
+
+  @override
+  String get todoRepeatUnitWeek => '周';
+
+  @override
+  String get todoRepeatUnitMonth => '月';
+
+  @override
+  String get todoRepeatUnitYear => '年';
+
+  @override
+  String get todoRepeatInterval => '间隔';
+
+  @override
+  String get todoRepeatOnDays => '在这几天';
+
+  @override
+  String get todoRepeatFromCompletion => '从完成那天起算';
+
+  @override
+  String get todoRepeatFromCompletionSubtitle => '适合浇花这类“做完隔几天再做”的事';
+
+  @override
+  String get todoRepeatEnds => '结束';
+
+  @override
+  String get todoRepeatEndsNever => '永不';
+
+  @override
+  String todoRepeatEndsOn(String date) {
+    return '到 $date';
+  }
+
+  @override
+  String todoRepeatEndsAfter(int count) {
+    return '共 $count 次';
+  }
+
+  @override
+  String get todoRepeatEndsOnPick => '到某一天';
+
+  @override
+  String get todoRepeatEndsAfterPick => '重复几次后';
+
+  @override
+  String get todoRepeatNeedsDate => '重复会从今天开始';
+
+  @override
+  String get todoSettingsTitle => '待办';
+
+  @override
+  String get todoSettingsSubtitle => '清单、显示与提醒';
+
+  @override
+  String get todoSettingsDisplayGroup => '显示';
+
+  @override
+  String get todoSettingsShowCompletedSubtitle => '在清单和收集箱底部显示已完成的待办';
+
+  @override
+  String get todoSettingsDefaultList => '新待办默认放进';
+
+  @override
+  String get todoSettingsDefaultView => '打开时显示';
+
+  @override
+  String get todoNotificationChannel => '待办提醒';
+
+  @override
+  String get todoNotificationChannelDescription => '待办到了设定的提醒时间时通知你';
+
+  @override
+  String get todoNotificationComplete => '完成';
+
+  @override
+  String get todoNotificationSnooze => '稍后提醒';
+
+  @override
+  String get todoNotificationOpen => '打开';
+
+  @override
+  String get todoNotificationSnoozedBody => '稍后提醒';
+
+  @override
+  String get todoSettingsRemindersGroup => '提醒';
+
+  @override
+  String get todoSettingsPermission => '通知权限';
+
+  @override
+  String get todoSettingsPermissionOn => '已允许';
+
+  @override
+  String get todoSettingsPermissionOff => '未允许，点按开启';
+
+  @override
+  String get todoSettingsExactOff => '系统限制了准时闹钟，提醒可能晚几分钟';
+
+  @override
+  String get todoSettingsAllDayTime => '全天待办的提醒时刻';
+
+  @override
+  String get todoSettingsSnooze => '稍后提醒';
+
+  @override
+  String todoSettingsSnoozeMinutes(int count) {
+    return '$count 分钟';
+  }
+
+  @override
+  String get todoSettingsHideContent => '锁屏时隐藏内容';
+
+  @override
+  String get todoSettingsHideContentSubtitle => '锁屏上只显示有一条提醒，解锁后才看得到内容';
+
+  @override
+  String get todoSettingsDesktopNote => '电脑上只在 Jotsy 打开时提醒，关掉应用后到点的提醒不会弹出。';
+
+  @override
+  String get todoSettingsReliability => '提醒不准时？';
+
+  @override
+  String get todoSettingsReliabilityBody =>
+      '部分手机系统会限制后台应用。如果提醒经常不响或延迟，请在系统设置里允许 Jotsy 自启动、关闭对 Jotsy 的电池优化，并确认“通知”和“闹钟和提醒”权限已开启。';
+
+  @override
+  String get todoReminderPermissionDenied => '通知权限未开启，提醒不会弹出';
+
+  @override
+  String get todoReminderPermissionAction => '去开启';
+
+  @override
+  String get calendarShowTodos => '显示待办';
+
+  @override
+  String get calendarShowTodosDescription => '在日期上标出有待办的日子，选中时列出这天的待办';
+
+  @override
+  String get calendarAddTodo => '添加待办';
+
+  @override
+  String get calendarTodoSectionTitle => '这天的待办';
+
+  @override
+  String get calendarTodoRepeatHint => '重复待办的这一次，到时候再勾选';
+
+  @override
+  String get diaryPreviewAddTodo => '添加待办';
+
+  @override
+  String get diaryPreviewConvertTodos => '转为独立待办';
+
+  @override
+  String get todoConvertTitle => '转为独立待办';
+
+  @override
+  String get todoConvertHint => '选中的项会加进待办并关联这篇日记，日记正文不变。';
+
+  @override
+  String todoConvertSubmit(int count) {
+    return '添加 $count 条';
+  }
+
+  @override
+  String todoConvertDone(int count) {
+    return '已添加 $count 条待办';
+  }
+
+  @override
+  String get diaryLinkedTodosTitle => '相关待办';
 }

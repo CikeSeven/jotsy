@@ -29,6 +29,17 @@
     <!-- 应用内更新：把从 GitHub Release 下载并校验过的安装包交给系统安装器。
          Android 8+ 还需用户在系统设置里为本应用开启“安装未知应用”。 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- 待办提醒（flutter_local_notifications）：Android 13+ 发通知要用户授权；
+         开机后由插件的 receiver 重新排定已有的提醒。准时提醒：应用不上架
+         Google Play，USE_EXACT_ALARM（Android 13+，安装即授予）不受商店审核
+         限制；Android 12 用 SCHEDULE_EXACT_ALARM（默认授予）。系统收回时插件
+         退回不精确的闹钟（见 docs/rules/todos.md）。 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
     <!-- 保存图片到相册：API <= 29 需要写外部存储权限（gal 插件要求）。 -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -39,6 +50,24 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">
+        <!-- 待办提醒：到点弹出、开机 / 更新后重新排定、通知上的“完成 /
+             稍后提醒”按钮（不打开应用，在后台引擎里处理）。 -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
         <!-- enableOnBackInvokedCallback="false": no predictive back preview. Back (gesture or
              key) only navigates once released, with no peek at the previous page or the home
              screen; Android 16 turns the system preview on by default for targetSdk 36, so the

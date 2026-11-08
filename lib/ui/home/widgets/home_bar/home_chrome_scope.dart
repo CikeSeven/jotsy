@@ -13,11 +13,16 @@ class HomeChromeScope extends InheritedWidget {
     super.key,
     required this.style,
     this.behavior = HomeBarBehavior.defaults,
+    this.wideShell = false,
     required super.child,
   });
 
   final HomeBarResolvedStyle style;
   final HomeBarBehavior behavior;
+
+  /// 首页是否为宽窗口外壳（左侧导航栏，没有全局 FAB）：待办页据此在页头
+  /// 放“新待办”按钮。
+  final bool wideShell;
 
   static HomeChromeScope? _maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<HomeChromeScope>();
@@ -34,7 +39,13 @@ class HomeChromeScope extends InheritedWidget {
   static bool glassTopBarsOf(BuildContext context) =>
       maybeStyleOf(context)?.glassTopBars ?? false;
 
+  /// 首页是否为宽窗口外壳；没有 scope 时为 false。
+  static bool wideShellOf(BuildContext context) =>
+      _maybeOf(context)?.wideShell ?? false;
+
   @override
   bool updateShouldNotify(HomeChromeScope oldWidget) =>
-      style != oldWidget.style || behavior != oldWidget.behavior;
+      style != oldWidget.style ||
+      behavior != oldWidget.behavior ||
+      wideShell != oldWidget.wideShell;
 }

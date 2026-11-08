@@ -38,6 +38,7 @@ class CalendarDisplayOptions {
     this.lunarMode = CalendarLunarMode.locale,
     this.holidayMode = CalendarLunarMode.locale,
     this.showAnniversaries = true,
+    this.showTodos = true,
     this.showDayMoods = true,
   });
 
@@ -103,6 +104,10 @@ class CalendarDisplayOptions {
   /// 在日期格上标出纪念日，并在选中那天时显示纪念日卡片。
   final bool showAnniversaries;
 
+  /// 在日期格上标出有未完成待办的日子，并在选中那天时显示“这天的待办”。
+  /// 只在待办功能开启时生效。
+  final bool showTodos;
+
   /// 记了“这天的心情”的日子整格画成心情（月视图），年视图按心情着色时
   /// 也按它着色；关闭时只是不显示，记下的心情保留，长按面板也不再提供。
   final bool showDayMoods;
@@ -138,6 +143,7 @@ class CalendarDisplayOptions {
     CalendarLunarMode? lunarMode,
     CalendarLunarMode? holidayMode,
     bool? showAnniversaries,
+    bool? showTodos,
     bool? showDayMoods,
   }) {
     return CalendarDisplayOptions(
@@ -160,6 +166,7 @@ class CalendarDisplayOptions {
       lunarMode: lunarMode ?? this.lunarMode,
       holidayMode: holidayMode ?? this.holidayMode,
       showAnniversaries: showAnniversaries ?? this.showAnniversaries,
+      showTodos: showTodos ?? this.showTodos,
       showDayMoods: showDayMoods ?? this.showDayMoods,
     );
   }
@@ -186,11 +193,12 @@ class CalendarDisplayOptions {
         other.lunarMode == lunarMode &&
         other.holidayMode == holidayMode &&
         other.showAnniversaries == showAnniversaries &&
+        other.showTodos == showTodos &&
         other.showDayMoods == showDayMoods;
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll(<Object?>[
     cellStyle,
     heatBasis,
     moodAggregation,
@@ -210,6 +218,7 @@ class CalendarDisplayOptions {
     lunarMode,
     holidayMode,
     showAnniversaries,
+    showTodos,
     showDayMoods,
-  );
+  ]);
 }

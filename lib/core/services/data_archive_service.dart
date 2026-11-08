@@ -233,6 +233,13 @@ class DataArchiveService {
       )..addColumns([dayMoods.day])).get())
         row.read(dayMoods.day)!,
     };
+    final todos = database.todos;
+    final localTodoIds = {
+      for (final row in await (database.selectOnly(
+        todos,
+      )..addColumns([todos.todoId])).get())
+        row.read(todos.todoId)!,
+    };
     final notebooks = database.notebooks;
     final localNotebookIds = {
       for (final row in await (database.selectOnly(
@@ -273,6 +280,11 @@ class DataArchiveService {
           .where((row) => localMoodDays.contains(row.day))
           .length,
       localDayMoodCount: localMoodDays.length,
+      todoCount: payload.todos.length,
+      existingTodoCount: payload.todos
+          .where((row) => localTodoIds.contains(row.todoId))
+          .length,
+      localTodoCount: localTodoIds.length,
     );
   }
 
@@ -435,6 +447,7 @@ class DataArchiveService {
         addedNotebooks: restored.notebooks.length,
         addedDayMoods: restored.dayMoods.length,
         addedComments: restored.diaryComments.length,
+        addedTodos: restored.todos.length,
       );
     } finally {
       if (cleanup) await _cleanWorkingDirectory(working);

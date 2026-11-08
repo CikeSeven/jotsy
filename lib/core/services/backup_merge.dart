@@ -9,6 +9,7 @@ import 'backup_import_models.dart';
 import 'backup_media_paths.dart';
 import 'backup_notebook_merge.dart';
 import 'backup_payload.dart';
+import 'backup_todo_merge.dart';
 
 /// 合并导入：把已解压、已校验的备份或日记包并入本机数据，不删除本机任何
 /// 日记、标签或媒体文件。
@@ -21,6 +22,7 @@ import 'backup_payload.dart';
 /// - 纪念日按 anniversaryId 匹配：本机没有的新增，本机已有的按导入方式保留
 ///   或替换；关联的日记存业务 id，日记换了本地 id 也不影响；
 /// - 这天的心情按日期匹配：本机没有的新增，本机已有的按导入方式保留或替换；
+/// - 待办清单与待办按业务 id 匹配（[BackupTodoMerge]），同纪念日的口径；
 /// - 日记留言按 commentId 匹配：本机没有的新增（包括本机保留了自己版本的
 ///   日记——留言只会越合越全），本机已有的按导入方式保留或替换；所属日记
 ///   存业务 id，日记换了本地 id 也不影响；
@@ -184,6 +186,12 @@ class BackupMerge {
     final dayMoods = await _mergeDayMoods(db, payload.dayMoods, mode);
     final commentCounts = await _writeDiaryComments(db, comments);
     await _mergeAiRecords(db, payload, mode);
+    final todos = await BackupTodoMerge.write(
+      db,
+      lists: payload.todoLists,
+      todos: payload.todos,
+      mode: mode,
+    );
 
     return BackupImportResult(
       mode: mode,
@@ -199,6 +207,8 @@ class BackupMerge {
       replacedDayMoods: dayMoods.replaced,
       addedComments: commentCounts.added,
       replacedComments: commentCounts.replaced,
+      addedTodos: todos.added,
+      replacedTodos: todos.replaced,
     );
   }
 

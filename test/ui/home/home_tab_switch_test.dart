@@ -13,6 +13,7 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -254,6 +255,31 @@ void main() {
       expect(_homePage(tester), 1);
       expect(_selectedNavLabel(tester), l10n.navSettings);
       expect(find.byType(SettingsPage), findsOneWidget);
+      await _unmount(tester);
+    });
+
+    testWidgets('to-dos are off by default and sit second when on', (
+      tester,
+    ) async {
+      await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
+      final l10n = tester.element(find.byType(HomePage)).l10n;
+
+      expect(_navLabels(tester), <String>[
+        l10n.navDiaries,
+        l10n.navTodos,
+        l10n.navCalendar,
+        l10n.navExplore,
+        l10n.navSettings,
+      ]);
+      await tester.tap(_navItem(l10n.navTodos));
+      await tester.pumpAndSettle();
+      expect(find.byType(TodosPage), findsOneWidget);
+      // 待办页上 FAB 新建待办。
+      expect(find.text(l10n.todoNew), findsOneWidget);
+      await _unmount(tester);
+
+      await _pumpHome(tester);
+      expect(_navItem(l10n.navTodos), findsNothing);
       await _unmount(tester);
     });
 

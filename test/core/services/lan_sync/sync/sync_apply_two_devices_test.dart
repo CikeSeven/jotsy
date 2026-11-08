@@ -90,6 +90,18 @@ void main() {
     expect((await diary(b, 'a1'))!.cover, b.mediaPath('diary_covers/a.jpg'));
     final comments = await b.db.select(b.db.diaryComments).get();
     expect(comments.map((c) => c.commentId), unorderedEquals(['c-a', 'c-b']));
+    for (final device in [a, b]) {
+      final todos = {
+        for (final row in await device.db.select(device.db.todos).get())
+          row.todoId: row,
+      };
+      expect(todos.keys, unorderedEquals(['todo-a', 'todo-b']));
+      expect(todos['todo-a']!.listId, 'list-a');
+      expect(todos['todo-a']!.sortOrder, 1.5);
+      expect(todos['todo-b']!.listId, isNull);
+      final lists = await device.db.select(device.db.todoLists).get();
+      expect(lists.single.listId, 'list-a');
+    }
   });
 
   test('两边改了不同的分面：再同步一轮就收敛', () async {
@@ -146,6 +158,10 @@ void main() {
       a.db.anniversaries,
     )..where((t) => t.anniversaryId.equals('ann-a'))).getSingle();
     expect(anniversary.linkedDiaryId, isNull);
+    final todo = await (a.db.select(
+      a.db.todos,
+    )..where((t) => t.todoId.equals('todo-a'))).getSingle();
+    expect(todo.linkedDiaryId, isNull);
   });
 
   test('中断的一轮（只有一边写了）：下一轮照常收敛', () async {
@@ -341,6 +357,29 @@ Future<void> _seedA(LanSyncTestDevice device) async {
         ),
       );
   await db
+      .into(db.todoLists)
+      .insert(
+        TodoListsCompanion.insert(
+          listId: 'list-a',
+          name: 'Errands',
+          createdAt: _at(1700000000),
+          updatedAt: _at(1700000000),
+        ),
+      );
+  await db
+      .into(db.todos)
+      .insert(
+        TodosCompanion.insert(
+          todoId: 'todo-a',
+          listId: const Value('list-a'),
+          title: 'Print photos',
+          linkedDiaryId: const Value('a1'),
+          sortOrder: const Value(1.5),
+          createdAt: _at(1700000000),
+          updatedAt: _at(1700000000),
+        ),
+      );
+  await db
       .into(db.dayMoods)
       .insert(
         DayMoodsCompanion.insert(
@@ -406,6 +445,17 @@ Future<void> _seedB(LanSyncTestDevice device) async {
           anniversaryId: 'ann-b',
           title: 'Home',
           baseDate: '2021-02-02',
+          createdAt: _at(1700000000),
+          updatedAt: _at(1700000000),
+        ),
+      );
+  await db
+      .into(db.todos)
+      .insert(
+        TodosCompanion.insert(
+          todoId: 'todo-b',
+          title: 'Water plants',
+          steps: const Value('[{"id":"s1","title":"Balcony","done":false}]'),
           createdAt: _at(1700000000),
           updatedAt: _at(1700000000),
         ),

@@ -22,6 +22,8 @@ void main() {
       anniversaryRecord('a'),
       anniversaryRecord('a', title: 'edited'),
     ),
+    'todoList': (todoListRecord('l'), todoListRecord('l', name: 'renamed')),
+    'todo': (todoRecord('t'), todoRecord('t', title: 'edited')),
   };
 
   // 留言所属的日记，两侧都有。

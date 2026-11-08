@@ -150,13 +150,14 @@ void main() {
       AppFeatures.defaults.copyWith(calendar: false).encode(),
     );
     final target = await prefsRecord(
-      features: {'comments': true, 'notebooks': false},
+      features: {'comments': true, 'notebooks': false, 'todos': true},
     );
     final result = await applySettings(target);
 
     expect(result.skipped, isEmpty);
     final features = AppFeatures.decode(settings.appFeaturesRaw);
     expect(features.comments, isTrue);
+    expect(features.todos, isTrue);
     expect(features.notebooks, isTrue, reason: '关闭不会同步过来');
     expect(features.calendar, isFalse);
   });

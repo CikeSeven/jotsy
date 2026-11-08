@@ -12,6 +12,7 @@ import 'package:node_diary/ui/calendar/providers/calendar_diary_providers.dart';
 import 'package:node_diary/ui/calendar/providers/day_mood_providers.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
+import 'package:node_diary/ui/todos/providers/todo_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'expressive_test_theme.dart';
@@ -43,6 +44,8 @@ Future<SettingsService> pumpCalendarPage(
   Map<String, DiaryWithTags> linkedDiaries = const <String, DiaryWithTags>{},
   List<NotebookView>? notebooks,
   Map<DateTime, DayMood>? dayMoods = const <DateTime, DayMood>{},
+  List<TodoRow> openTodos = const <TodoRow>[],
+  List<TodoRow> completedTodos = const <TodoRow>[],
   List<Override> extraOverrides = const <Override>[],
 }) async {
   tester.view.physicalSize = Size(width, height);
@@ -88,6 +91,14 @@ Future<SettingsService> pumpCalendarPage(
           notebooksProvider.overrideWith((ref) => Stream.value(notebooks)),
         if (dayMoods != null)
           dayMoodsProvider.overrideWith((ref) => Stream.value(dayMoods)),
+        // 待办只在功能开启时订阅；覆盖掉，免得打开真实数据库。
+        openTodosProvider.overrideWith((ref) => Stream.value(openTodos)),
+        completedTodosProvider.overrideWith(
+          (ref) => Stream.value(completedTodos),
+        ),
+        todoListsProvider.overrideWith(
+          (ref) => Stream.value(const <TodoListRow>[]),
+        ),
         ...extraOverrides,
       ],
       child: MaterialApp(

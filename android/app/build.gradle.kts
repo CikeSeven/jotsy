@@ -45,6 +45,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // flutter_local_notifications 的定时通知用到 java.time，旧系统要靠
+        // 脱糖库补上。
+        isCoreLibraryDesugaringEnabled = true
     }
 
     buildFeatures {
@@ -95,6 +98,7 @@ flutter {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     // 存储管理的视频压缩（DiaryVideoTools）。版本与 video_player_android 带进来的
     // Media3（ExoPlayer）保持一致：不同版本会被 Gradle 统一升到较高的那个，
     // 连带改变视频播放器的实现。升级 video_player 时一并核对。

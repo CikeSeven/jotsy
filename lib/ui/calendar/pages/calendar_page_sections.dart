@@ -83,6 +83,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required AsyncValue<List<DiaryCalendarMarker>> markersAsync,
     required List<String> moodOptions,
     required AnniversaryCalendarIndex anniversaryIndex,
+    required TodoCalendarIndex todoIndex,
     required Map<DateTime, DayMood> dayMoods,
     required DateTime now,
     bool wide = false,
@@ -125,6 +126,7 @@ extension _CalendarPageSections on _CalendarPageState {
               summaries: summaries,
               moodOptions: moodOptions,
               anniversaryIndex: anniversaryIndex,
+              todoIndex: todoIndex,
               dayMoods: dayMoods,
               wide: wide,
             ),
@@ -206,6 +208,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required Map<DateTime, CalendarDaySummary> summaries,
     required List<String> moodOptions,
     required AnniversaryCalendarIndex anniversaryIndex,
+    required TodoCalendarIndex todoIndex,
     required Map<DateTime, DayMood> dayMoods,
     required bool wide,
   }) {
@@ -246,6 +249,7 @@ extension _CalendarPageSections on _CalendarPageState {
             unawaited(_controller.onDayLongPressed(day)),
         range: _range,
         anniversaryIndex: anniversaryIndex.isEmpty ? null : anniversaryIndex,
+        todoIndex: todoIndex.isEmpty ? null : todoIndex,
         dayMoods: dayMoods,
         scaleRowsWithWidth: wide,
       );

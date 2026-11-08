@@ -31,6 +31,10 @@ import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
+import '../../todos/providers/todo_providers.dart';
+import '../../todos/viewmodels/todo_calendar_index.dart';
+import '../../todos/widgets/todo_calendar_section.dart';
+import '../../todos/widgets/todo_quick_add_sheet.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
 import '../../diaries/providers/diary_mood_palette_provider.dart';
 import '../../diaries/providers/diary_comments_provider.dart';
@@ -81,6 +85,7 @@ import '../../../app/theme/app_effects.dart';
 part 'calendar_page_sections.dart';
 part 'calendar_page_range.dart';
 part 'calendar_page_anniversaries.dart';
+part 'calendar_page_todos.dart';
 part 'calendar_page_layout.dart';
 part '../controllers/calendar_anniversary_actions.dart';
 part '../controllers/calendar_page_controller.dart';
@@ -293,6 +298,14 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final anniversaryIndex = options.showAnniversaries && anniversariesEnabled
         ? ref.watch(anniversaryCalendarIndexProvider)
         : AnniversaryCalendarIndex.empty;
+    // 待办与纪念日同理：待办功能开启且显示选项打开时才订阅；不受筛选与
+    // 范围选择影响。
+    final todosEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.todos),
+    );
+    final todoIndex = options.showTodos && todosEnabled
+        ? ref.watch(todoCalendarIndexProvider)
+        : TodoCalendarIndex.empty;
     // 这天的心情与纪念日一样是日期本身的属性：整表订阅，不受筛选与范围选择
     // 影响；显示选项关掉时不订阅，网格与年视图都按没有心情绘制。
     final dayMoods = options.showDayMoods
@@ -342,6 +355,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       markersAsync: markersAsync,
       moodOptions: moodOptions,
       anniversaryIndex: anniversaryIndex,
+      todoIndex: todoIndex,
       dayMoods: dayMoods,
       now: now,
       wide: wide,
@@ -375,6 +389,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         ),
       ),
       _buildAnniversarySliver(anniversaryIndex, now),
+      _buildTodoSliver(todoIndex, now),
       ..._buildDayDiaryContentSlivers(day, options),
       if (options.showOnThisDay) _buildOnThisDaySliver(now),
     ];

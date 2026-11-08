@@ -147,6 +147,11 @@ class _BackupOverwriteWarningDialogState
                           l10n.backupOverwriteAllDayMoods(
                             widget.preview.localDayMoodCount,
                           ),
+                        // 待办同理：不含待办的旧备份会清空本机待办。
+                        if (widget.preview.localTodoCount > 0)
+                          l10n.backupOverwriteAllTodos(
+                            widget.preview.localTodoCount,
+                          ),
                         l10n.backupOverwriteAllMedia,
                         l10n.backupOverwriteAllSettings,
                       ])
@@ -170,6 +175,13 @@ class _BackupOverwriteWarningDialogState
                         Text(
                           l10n.backupOverwriteExistingDayMoodsBody(
                             widget.preview.existingDayMoodCount,
+                          ),
+                          style: bodyStyle,
+                        ),
+                      if (widget.preview.existingTodoCount > 0)
+                        Text(
+                          l10n.backupOverwriteExistingTodosBody(
+                            widget.preview.existingTodoCount,
                           ),
                           style: bodyStyle,
                         ),

@@ -16,6 +16,9 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/todos/controllers/todo_navigation.dart';
+import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
+import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:node_diary/ui/home/controllers/home_bar_scroll_hider.dart';
 import 'package:node_diary/ui/home/controllers/page_position_listenable.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
@@ -120,10 +123,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   String? _shownStartupNotice;
 
   Future<void> Function()? _diariesCreateAction;
+  Future<void> Function()? _todosCreateAction;
   VoidCallback? _diariesSearchAction;
   bool _diariesFabVisibleByScroll = true;
   late final ValueNotifier<int> _tabPageConfigRevision;
   late final ValueChanged<Future<void> Function()?> _diariesCreateActionChanged;
+  late final ValueChanged<Future<void> Function()?> _todosCreateActionChanged;
   late final ValueChanged<VoidCallback?> _diariesSearchActionChanged;
   late final ValueChanged<bool> _diariesFabVisibilityChanged;
   late final _HomePageController _controller;
@@ -188,6 +193,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.initState();
     _tabPageConfigRevision = ValueNotifier<int>(0);
     _diariesCreateActionChanged = (action) => _diariesCreateAction = action;
+    _todosCreateActionChanged = (action) => _todosCreateAction = action;
     _diariesSearchActionChanged = (action) => _diariesSearchAction = action;
     _diariesFabVisibilityChanged = _handleFabVisibilityChanged;
     // settings 在首页构建前已就绪（启动门槛），首帧即是真实的开关，不会先
@@ -217,6 +223,25 @@ class _HomePageState extends ConsumerState<HomePage> {
         () => mounted ? context : null,
       );
     }
+    // 点待办提醒通知打开应用：切到待办 Tab 再打开那条待办的详情（冷启动时
+    // 请求先于首页到达，fireImmediately 接住）。待办功能关闭时只消费掉。
+    ref.listenManual<String?>(
+      todoNotificationOpenRequestProvider,
+      (_, String? todoId) => _openTodoFromNotification(todoId),
+      fireImmediately: true,
+    );
+  }
+
+  void _openTodoFromNotification(String? todoId) {
+    if (todoId == null) return;
+    ref.read(todoNotificationOpenRequestProvider.notifier).consume();
+    final index = _tabs.indexOf(HomeTab.todos);
+    if (index < 0) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await _controller.switchToIndex(index);
+      if (mounted) await openTodoDetail(context, todoId);
+    });
   }
 
   @override
@@ -324,6 +349,10 @@ class _HomePageState extends ConsumerState<HomePage> {
             onCreateActionChanged: _diariesCreateActionChanged,
             onSearchActionChanged: _diariesSearchActionChanged,
             onFabVisibilityChanged: _diariesFabVisibilityChanged,
+          ),
+          HomeTab.todos => TodosPage(
+            key: const PageStorageKey<String>('tab_todos'),
+            onCreateActionChanged: _todosCreateActionChanged,
           ),
           HomeTab.calendar => const CalendarPage(
             key: PageStorageKey<String>('tab_calendar'),
@@ -485,6 +514,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return HomeChromeScope(
       style: barStyle,
       behavior: barBehavior,
+      wideShell: wide,
       child: Theme(
         data: baseTheme.copyWith(snackBarTheme: snackBarTheme),
         child: PopScope(
@@ -657,11 +687,19 @@ class _HomePageState extends ConsumerState<HomePage> {
     setState(() => _diariesFabVisibleByScroll = visible);
   }
 
+  /// 全局 FAB / 玻璃底栏并排按钮：日记 Tab 新建日记，待办 Tab 新建待办。
   Future<void> _openCreateFromGlobalFab() async {
-    if (!_canUseGlobalCreateFab || _effectiveTab != HomeTab.diaries) {
+    if (!_canUseGlobalCreateFab) {
       return;
     }
-    await _openCreate();
+    switch (_effectiveTab) {
+      case HomeTab.diaries:
+        await _openCreate();
+      case HomeTab.todos:
+        await _todosCreateAction?.call();
+      case HomeTab.calendar || HomeTab.explore || HomeTab.settings:
+        return;
+    }
   }
 
   /// 新建日记：优先交给日记页（它知道当前所在的日记本与章节）。侧边栏

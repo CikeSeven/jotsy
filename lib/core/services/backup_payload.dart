@@ -27,6 +27,8 @@ class BackupPayload {
     this.aiConversations = const <AiConversationRow>[],
     this.aiMessages = const <AiMessageRow>[],
     this.aiResults = const <AiResultRow>[],
+    this.todoLists = const <TodoListRow>[],
+    this.todos = const <TodoRow>[],
     this.settings,
   });
 
@@ -69,6 +71,12 @@ class BackupPayload {
   final List<AiConversationRow> aiConversations;
   final List<AiMessageRow> aiMessages;
   final List<AiResultRow> aiResults;
+
+  /// 待办清单与待办（schema v19 起）。只随完整备份导出，日记包不带；旧备份
+  /// 没有这两张表，解析为空列表。所在清单不在载荷里的待办落回收集箱（见
+  /// [_withRestorableRelations]）。
+  final List<TodoListRow> todoLists;
+  final List<TodoRow> todos;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -177,6 +185,31 @@ class BackupPayload {
           database,
           'aiResults',
         ).map(AiResultRow.fromJson).toList(growable: false),
+        todoLists: _optionalRows(database, 'todoLists')
+            .map((row) {
+              return TodoListRow.fromJson({
+                // 有列默认值的字段省略时按默认值补齐，必填列缺失照常报错。
+                'colorKey': '',
+                'iconKey': '',
+                'sortOrder': 0.0,
+                'metadata': '{}',
+                ...row,
+              });
+            })
+            .toList(growable: false),
+        todos: _optionalRows(database, 'todos')
+            .map((row) {
+              return TodoRow.fromJson({
+                'note': '',
+                'priority': 0,
+                'reminders': '[]',
+                'steps': '[]',
+                'sortOrder': 0.0,
+                'metadata': '{}',
+                ...row,
+              });
+            })
+            .toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
@@ -254,6 +287,10 @@ class BackupPayload {
     _unique(aiMessages.map((row) => row.messageId));
     _unique(aiResults.map((row) => row.id));
     _unique(aiResults.map((row) => row.resultId));
+    _unique(todoLists.map((row) => row.id));
+    _unique(todoLists.map((row) => row.listId));
+    _unique(todos.map((row) => row.id));
+    _unique(todos.map((row) => row.todoId));
     // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
     // 才在页面上算不出日子。
     for (final row in anniversaries) {
@@ -262,6 +299,23 @@ class BackupPayload {
           title.isEmpty ||
           title.length > 100) {
         throw const FormatException('备份中的纪念日数据无效');
+      }
+    }
+    // 待办的名称与内容长度是表上的约束；截止日决定它排在哪一天，坏行在
+    // 写库前拒绝。
+    for (final row in todoLists) {
+      final name = row.name.trim();
+      if (name.isEmpty || name.length > 50) {
+        throw const FormatException('备份中的待办清单数据无效');
+      }
+    }
+    for (final row in todos) {
+      final title = row.title.trim();
+      final due = row.dueDate;
+      if (title.isEmpty ||
+          title.length > 500 ||
+          (due != null && parseAnniversaryDate(due) == null)) {
+        throw const FormatException('备份中的待办数据无效');
       }
     }
     // 名称长度是表上的约束，坏行留到写库时才会以数据库异常失败；与纪念日
@@ -307,6 +361,8 @@ class BackupPayload {
     final conversationIds = aiConversations
         .map((row) => row.conversationId)
         .toSet();
+    // 待办所在的清单不在载荷里（手改或损坏的文件）时落回收集箱，不丢待办。
+    final listIds = todoLists.map((row) => row.listId).toSet();
     return BackupPayload(
       diaries: diaries,
       tags: tags,
@@ -342,6 +398,13 @@ class BackupPayload {
                 diaryBusinessIds.contains(row.diaryId),
           )
           .toList(growable: false),
+      todoLists: todoLists,
+      todos: <TodoRow>[
+        for (final row in todos)
+          row.listId == null || listIds.contains(row.listId)
+              ? row
+              : row.copyWith(listId: const Value(null)),
+      ],
       settings: settings,
     );
   }
@@ -403,6 +466,12 @@ class BackupPayload {
         'aiResults': (await database.select(database.aiResults).get())
             .map((row) => row.toJson())
             .toList(),
+        'todoLists': (await database.select(database.todoLists).get())
+            .map((row) => row.toJson())
+            .toList(),
+        'todos': (await database.select(database.todos).get())
+            .map((row) => row.toJson())
+            .toList(),
       },
     );
     return {
@@ -420,7 +489,7 @@ class BackupPayload {
   /// 的日记本与智能日记本：导入端按 notebookId 合并，本机没有的本子随之新增，
   /// 日记仍落在原来的本子与章节里。
   ///
-  /// 也不含纪念日、日记模板、这天的心情与 AI 记录：日记包是“分享这几篇日记”，它们属于
+  /// 也不含纪念日、日记模板、这天的心情、AI 记录与待办：日记包是“分享这几篇日记”，它们属于
   /// 整本日记，只随完整备份走；关联了这些日记的纪念日留在本机。
   ///
   /// 同样在一个事务快照内读取；只导出两端都存在的关联，避免把历史悬空绑定
@@ -546,10 +615,12 @@ class BackupPayload {
             images: Value(await rebindCommentImages(comment.images, paths)),
           ),
       ],
-      // AI 记录只有文字，没有媒体路径要改写。
+      // AI 记录与待办只有文字，没有媒体路径要改写。
       aiConversations: aiConversations,
       aiMessages: aiMessages,
       aiResults: aiResults,
+      todoLists: todoLists,
+      todos: todos,
       settings: settings,
     );
   }
@@ -648,6 +719,8 @@ class BackupPayload {
     await database.delete(database.aiMessages).go();
     await database.delete(database.aiConversations).go();
     await database.delete(database.aiResults).go();
+    await database.delete(database.todos).go();
+    await database.delete(database.todoLists).go();
     await database.batch((batch) {
       batch.insertAll(
         database.tags,
@@ -707,6 +780,15 @@ class BackupPayload {
       batch.insertAll(
         database.aiResults,
         aiResults.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 待办按业务 id 引用清单与日记，没有外键，写入顺序无关。
+      batch.insertAll(
+        database.todoLists,
+        todoLists.map((row) => row.toCompanion(false)).toList(),
+      );
+      batch.insertAll(
+        database.todos,
+        todos.map((row) => row.toCompanion(false)).toList(),
       );
     });
     // 上级按业务 id 引用，文件里的层级可能指向不在文件里的本子（旧版本手改、

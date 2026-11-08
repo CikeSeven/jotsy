@@ -38,7 +38,7 @@ Future<BackupImportMode?> chooseBackupImportMode(
 }
 
 /// 导入结果提示：合并说明新增/跳过的篇数，文件带纪念日时另起一行写纪念日
-/// 的统计，新增了日记模板、日记本、写入了心情或留言时各再起一行；覆盖全部沿用各入口原有的成功文案
+/// 的统计，新增了日记模板、日记本、写入了心情、留言或待办时各再起一行；覆盖全部沿用各入口原有的成功文案
 /// [replaceAllMessage]（本地导入与 WebDAV 恢复不同）。
 String describeBackupImportResult(
   AppLocalizations l10n,
@@ -68,6 +68,13 @@ String describeBackupImportResult(
       )
     else if (result.addedComments > 0)
       l10n.backupImportCommentMergeResult(result.addedComments),
+    if (result.replacedTodos > 0)
+      l10n.backupImportTodoOverwriteResult(
+        result.addedTodos,
+        result.replacedTodos,
+      )
+    else if (result.addedTodos > 0)
+      l10n.backupImportTodoMergeResult(result.addedTodos),
   ].join('\n');
 }
 

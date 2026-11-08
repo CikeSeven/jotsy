@@ -76,6 +76,7 @@ class _CalendarPageController {
       showDayMood: showDayMood,
       showCapsule: features.timeCapsules,
       showAnniversary: features.anniversariesEnabled,
+      showTodo: features.todos,
     );
     if (choice == null || !_state.mounted) {
       return;
@@ -103,6 +104,16 @@ class _CalendarPageController {
         );
       case CalendarDayAction.anniversary:
         await addAnniversary(normalizedDay);
+      case CalendarDayAction.todo:
+        final context = _state.context;
+        if (!context.mounted) return;
+        await showTodoQuickAddSheet(
+          context,
+          preset: TodoQuickAddPreset(
+            dueDate: normalizedDay,
+            listId: _state.ref.read(todoSettingsProvider).defaultListId,
+          ),
+        );
     }
   }
 

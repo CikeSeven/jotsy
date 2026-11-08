@@ -8,6 +8,9 @@ import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../../anniversaries/models/anniversary_draft.dart';
+import '../../../todos/viewmodels/diary_todo_items.dart';
+import '../../../todos/widgets/todo_convert_sheet.dart';
+import '../../../todos/widgets/todo_quick_add_sheet.dart';
 import '../../../diary_templates/controllers/diary_template_save_as.dart';
 import '../../../notebooks/controllers/diary_notebook_pick_flow.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
@@ -40,6 +43,9 @@ Future<void> showDiaryPreviewMore(
   // 日记本”“设为纪念日”“另存为模板”。
   final features = ref.read(appFeaturesProvider);
   final notebooksEnabled = features.notebooks;
+  final todoItems = features.todos
+      ? diaryTodoItems(detail.diary.content)
+      : const <DiaryTodoItem>[];
   return showDiaryPreviewActionsSheet(
     context,
     onShare: () => openDiaryPreviewShare(
@@ -64,6 +70,24 @@ Future<void> showDiaryPreviewMore(
             context,
             database: database,
             draft: AnniversaryDraft.fromDiary(detail.diary),
+          )
+        : null,
+    // 待办功能开启时：添加一条关联这篇的待办（标题预填日记标题）；正文里有
+    // 待办列表项时再给“转为独立待办”。
+    onAddTodo: features.todos
+        ? () => showTodoQuickAddSheet(
+            context,
+            preset: TodoQuickAddPreset(
+              title: detail.diary.title.trim(),
+              linkedDiaryId: detail.diary.diaryId,
+            ),
+          )
+        : null,
+    onConvertTodos: features.todos && todoItems.isNotEmpty
+        ? () => showTodoConvertSheet(
+            context,
+            diaryId: detail.diary.diaryId,
+            items: todoItems,
           )
         : null,
     onSaveAsTemplate: features.templates
@@ -130,8 +154,9 @@ class DiaryPreviewSheetEntry {
   final Future<void> Function() action;
 }
 
-/// 预览页“更多”面板：分享、导出、写留言、收进日记本、设为纪念日、存为
-/// 模板、页面样式与删除。可选项的回调为 null 时不显示这一项（功能关闭或设置未就绪）。
+/// 预览页“更多”面板：分享、导出、写留言、收进日记本、设为纪念日、添加
+/// 待办、转为独立待办、存为模板、页面样式与删除。可选项的回调为 null 时
+/// 不显示这一项（功能关闭或设置未就绪）。
 /// [leadingEntries] 排在最前，[trailingEntries] 排在“删除”之前（阅读式编辑
 /// 页用来放编辑相关的动作）。
 ///
@@ -143,6 +168,8 @@ Future<void> showDiaryPreviewActionsSheet(
   required Future<void> Function() onExport,
   required Future<void> Function() onDelete,
   Future<void> Function()? onSetAsAnniversary,
+  Future<void> Function()? onAddTodo,
+  Future<void> Function()? onConvertTodos,
   Future<void> Function()? onSaveAsTemplate,
   Future<void> Function()? onOpenStyle,
   Future<void> Function()? onAddToNotebook,
@@ -241,6 +268,18 @@ Future<void> showDiaryPreviewActionsSheet(
                   icon: const FaIcon(FontAwesomeIcons.heart, size: 16),
                   title: Text(l10n.previewSetAsAnniversary),
                   action: onSetAsAnniversary,
+                ),
+              if (onAddTodo != null)
+                item(
+                  icon: const FaIcon(FontAwesomeIcons.squareCheck, size: 16),
+                  title: Text(l10n.diaryPreviewAddTodo),
+                  action: onAddTodo,
+                ),
+              if (onConvertTodos != null)
+                item(
+                  icon: const FaIcon(FontAwesomeIcons.listCheck, size: 16),
+                  title: Text(l10n.diaryPreviewConvertTodos),
+                  action: onConvertTodos,
                 ),
               if (onSaveAsTemplate != null)
                 item(

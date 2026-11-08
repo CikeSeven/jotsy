@@ -13,7 +13,7 @@ part of 'app_database.dart';
 /// [DateTime] 与数据类的开销。日记不读 `content_text`（由正文推出，不参与哈希）。
 mixin _AppDatabaseSyncOps on _$AppDatabase {
   /// 在一个事务里读出日记、标签、标签关联、日记本、成员关系、留言、模板、
-  /// 纪念日与这天的心情的原始行。草稿不同步，不读。
+  /// 纪念日、这天的心情、待办清单与待办的原始行。草稿不同步，不读。
   Future<SyncRawSnapshot> readSyncRows() {
     return transaction(() async {
       final diaryRows = await customSelect(
@@ -50,6 +50,16 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
       ).get();
       final dayMoodRows = await customSelect(
         'SELECT day, mood, updated_at FROM day_moods',
+      ).get();
+      final todoListRows = await customSelect(
+        'SELECT id, list_id, name, color_key, icon_key, sort_order, metadata, '
+        'created_at, updated_at FROM todo_lists',
+      ).get();
+      final todoRows = await customSelect(
+        'SELECT id, todo_id, list_id, title, note, priority, due_date, '
+        'due_minute, reminders, "repeat", steps, completed_at, snoozed_until, '
+        'linked_diary_id, sort_order, metadata, created_at, updated_at '
+        'FROM todos',
       ).get();
 
       return SyncRawSnapshot(
@@ -167,6 +177,43 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
               updatedAt: _syncInt(row.data['updated_at']),
             ),
         ],
+        todoLists: <SyncRawTodoList>[
+          for (final row in todoListRows)
+            SyncRawTodoList(
+              localId: _syncInt(row.data['id']),
+              listId: row.data['list_id'] as String,
+              name: row.data['name'] as String,
+              colorKey: row.data['color_key'] as String,
+              iconKey: row.data['icon_key'] as String,
+              sortOrder: _syncReal(row.data['sort_order']),
+              metadata: row.data['metadata'] as String,
+              createdAt: _syncInt(row.data['created_at']),
+              updatedAt: _syncInt(row.data['updated_at']),
+            ),
+        ],
+        todos: <SyncRawTodo>[
+          for (final row in todoRows)
+            SyncRawTodo(
+              localId: _syncInt(row.data['id']),
+              todoId: row.data['todo_id'] as String,
+              listId: row.data['list_id'] as String?,
+              title: row.data['title'] as String,
+              note: row.data['note'] as String,
+              priority: _syncInt(row.data['priority']),
+              dueDate: row.data['due_date'] as String?,
+              dueMinute: _syncIntOrNull(row.data['due_minute']),
+              reminders: row.data['reminders'] as String,
+              repeat: row.data['repeat'] as String?,
+              steps: row.data['steps'] as String,
+              completedAt: _syncIntOrNull(row.data['completed_at']),
+              snoozedUntil: _syncIntOrNull(row.data['snoozed_until']),
+              linkedDiaryId: row.data['linked_diary_id'] as String?,
+              sortOrder: _syncReal(row.data['sort_order']),
+              metadata: row.data['metadata'] as String,
+              createdAt: _syncInt(row.data['created_at']),
+              updatedAt: _syncInt(row.data['updated_at']),
+            ),
+        ],
       );
     });
   }
@@ -176,6 +223,11 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
 int _syncInt(Object? value) => (value as num).toInt();
 
 int? _syncIntOrNull(Object? value) => value == null ? null : _syncInt(value);
+
+/// REAL 列（待办的 `sort_order`）：SQLite 对整值浮点数可能按整数存、读出
+/// 时偶尔是 int（如原始 SQL 写入的整数），一律转成浮点数，规范值才不会
+/// 在 `1` 与 `1.0` 之间摇摆。
+double _syncReal(Object? value) => (value as num).toDouble();
 
 /// Drift 的布尔列存 0/1。
 bool _syncBool(Object? value) => value is bool ? value : _syncInt(value) != 0;

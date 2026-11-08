@@ -6729,6 +6729,1563 @@ class AiResultsCompanion extends UpdateCompanion<AiResultRow> {
   }
 }
 
+class $TodoListsTable extends TodoLists
+    with TableInfo<$TodoListsTable, TodoListRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodoListsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _listIdMeta = const VerificationMeta('listId');
+  @override
+  late final GeneratedColumn<String> listId = GeneratedColumn<String>(
+    'list_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 50,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _colorKeyMeta = const VerificationMeta(
+    'colorKey',
+  );
+  @override
+  late final GeneratedColumn<String> colorKey = GeneratedColumn<String>(
+    'color_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _iconKeyMeta = const VerificationMeta(
+    'iconKey',
+  );
+  @override
+  late final GeneratedColumn<String> iconKey = GeneratedColumn<String>(
+    'icon_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<double> sortOrder = GeneratedColumn<double>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _metadataMeta = const VerificationMeta(
+    'metadata',
+  );
+  @override
+  late final GeneratedColumn<String> metadata = GeneratedColumn<String>(
+    'metadata',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    listId,
+    name,
+    colorKey,
+    iconKey,
+    sortOrder,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'todo_lists';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TodoListRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('list_id')) {
+      context.handle(
+        _listIdMeta,
+        listId.isAcceptableOrUnknown(data['list_id']!, _listIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_listIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('color_key')) {
+      context.handle(
+        _colorKeyMeta,
+        colorKey.isAcceptableOrUnknown(data['color_key']!, _colorKeyMeta),
+      );
+    }
+    if (data.containsKey('icon_key')) {
+      context.handle(
+        _iconKeyMeta,
+        iconKey.isAcceptableOrUnknown(data['icon_key']!, _iconKeyMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('metadata')) {
+      context.handle(
+        _metadataMeta,
+        metadata.isAcceptableOrUnknown(data['metadata']!, _metadataMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodoListRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoListRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      listId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}list_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      colorKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color_key'],
+      )!,
+      iconKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_key'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      metadata: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metadata'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TodoListsTable createAlias(String alias) {
+    return $TodoListsTable(attachedDatabase, alias);
+  }
+}
+
+class TodoListRow extends DataClass implements Insertable<TodoListRow> {
+  final int id;
+  final String listId;
+  final String name;
+
+  /// 强调色的色板键（见界面层的清单色板）；认不出时按默认色显示。
+  final String colorKey;
+
+  /// 图标键（见界面层的清单图标集合）；认不出时按默认图标显示。
+  final String iconKey;
+  final double sortOrder;
+
+  /// 扩展字段（JSON 对象字符串）。
+  final String metadata;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const TodoListRow({
+    required this.id,
+    required this.listId,
+    required this.name,
+    required this.colorKey,
+    required this.iconKey,
+    required this.sortOrder,
+    required this.metadata,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['list_id'] = Variable<String>(listId);
+    map['name'] = Variable<String>(name);
+    map['color_key'] = Variable<String>(colorKey);
+    map['icon_key'] = Variable<String>(iconKey);
+    map['sort_order'] = Variable<double>(sortOrder);
+    map['metadata'] = Variable<String>(metadata);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TodoListsCompanion toCompanion(bool nullToAbsent) {
+    return TodoListsCompanion(
+      id: Value(id),
+      listId: Value(listId),
+      name: Value(name),
+      colorKey: Value(colorKey),
+      iconKey: Value(iconKey),
+      sortOrder: Value(sortOrder),
+      metadata: Value(metadata),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TodoListRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoListRow(
+      id: serializer.fromJson<int>(json['id']),
+      listId: serializer.fromJson<String>(json['listId']),
+      name: serializer.fromJson<String>(json['name']),
+      colorKey: serializer.fromJson<String>(json['colorKey']),
+      iconKey: serializer.fromJson<String>(json['iconKey']),
+      sortOrder: serializer.fromJson<double>(json['sortOrder']),
+      metadata: serializer.fromJson<String>(json['metadata']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'listId': serializer.toJson<String>(listId),
+      'name': serializer.toJson<String>(name),
+      'colorKey': serializer.toJson<String>(colorKey),
+      'iconKey': serializer.toJson<String>(iconKey),
+      'sortOrder': serializer.toJson<double>(sortOrder),
+      'metadata': serializer.toJson<String>(metadata),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TodoListRow copyWith({
+    int? id,
+    String? listId,
+    String? name,
+    String? colorKey,
+    String? iconKey,
+    double? sortOrder,
+    String? metadata,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => TodoListRow(
+    id: id ?? this.id,
+    listId: listId ?? this.listId,
+    name: name ?? this.name,
+    colorKey: colorKey ?? this.colorKey,
+    iconKey: iconKey ?? this.iconKey,
+    sortOrder: sortOrder ?? this.sortOrder,
+    metadata: metadata ?? this.metadata,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TodoListRow copyWithCompanion(TodoListsCompanion data) {
+    return TodoListRow(
+      id: data.id.present ? data.id.value : this.id,
+      listId: data.listId.present ? data.listId.value : this.listId,
+      name: data.name.present ? data.name.value : this.name,
+      colorKey: data.colorKey.present ? data.colorKey.value : this.colorKey,
+      iconKey: data.iconKey.present ? data.iconKey.value : this.iconKey,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      metadata: data.metadata.present ? data.metadata.value : this.metadata,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoListRow(')
+          ..write('id: $id, ')
+          ..write('listId: $listId, ')
+          ..write('name: $name, ')
+          ..write('colorKey: $colorKey, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('metadata: $metadata, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    listId,
+    name,
+    colorKey,
+    iconKey,
+    sortOrder,
+    metadata,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoListRow &&
+          other.id == this.id &&
+          other.listId == this.listId &&
+          other.name == this.name &&
+          other.colorKey == this.colorKey &&
+          other.iconKey == this.iconKey &&
+          other.sortOrder == this.sortOrder &&
+          other.metadata == this.metadata &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TodoListsCompanion extends UpdateCompanion<TodoListRow> {
+  final Value<int> id;
+  final Value<String> listId;
+  final Value<String> name;
+  final Value<String> colorKey;
+  final Value<String> iconKey;
+  final Value<double> sortOrder;
+  final Value<String> metadata;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const TodoListsCompanion({
+    this.id = const Value.absent(),
+    this.listId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.colorKey = const Value.absent(),
+    this.iconKey = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.metadata = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  TodoListsCompanion.insert({
+    this.id = const Value.absent(),
+    required String listId,
+    required String name,
+    this.colorKey = const Value.absent(),
+    this.iconKey = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.metadata = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : listId = Value(listId),
+       name = Value(name),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<TodoListRow> custom({
+    Expression<int>? id,
+    Expression<String>? listId,
+    Expression<String>? name,
+    Expression<String>? colorKey,
+    Expression<String>? iconKey,
+    Expression<double>? sortOrder,
+    Expression<String>? metadata,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (listId != null) 'list_id': listId,
+      if (name != null) 'name': name,
+      if (colorKey != null) 'color_key': colorKey,
+      if (iconKey != null) 'icon_key': iconKey,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (metadata != null) 'metadata': metadata,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  TodoListsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? listId,
+    Value<String>? name,
+    Value<String>? colorKey,
+    Value<String>? iconKey,
+    Value<double>? sortOrder,
+    Value<String>? metadata,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return TodoListsCompanion(
+      id: id ?? this.id,
+      listId: listId ?? this.listId,
+      name: name ?? this.name,
+      colorKey: colorKey ?? this.colorKey,
+      iconKey: iconKey ?? this.iconKey,
+      sortOrder: sortOrder ?? this.sortOrder,
+      metadata: metadata ?? this.metadata,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (listId.present) {
+      map['list_id'] = Variable<String>(listId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (colorKey.present) {
+      map['color_key'] = Variable<String>(colorKey.value);
+    }
+    if (iconKey.present) {
+      map['icon_key'] = Variable<String>(iconKey.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<double>(sortOrder.value);
+    }
+    if (metadata.present) {
+      map['metadata'] = Variable<String>(metadata.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoListsCompanion(')
+          ..write('id: $id, ')
+          ..write('listId: $listId, ')
+          ..write('name: $name, ')
+          ..write('colorKey: $colorKey, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('metadata: $metadata, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _todoIdMeta = const VerificationMeta('todoId');
+  @override
+  late final GeneratedColumn<String> todoId = GeneratedColumn<String>(
+    'todo_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _listIdMeta = const VerificationMeta('listId');
+  @override
+  late final GeneratedColumn<String> listId = GeneratedColumn<String>(
+    'list_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 500,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _dueDateMeta = const VerificationMeta(
+    'dueDate',
+  );
+  @override
+  late final GeneratedColumn<String> dueDate = GeneratedColumn<String>(
+    'due_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dueMinuteMeta = const VerificationMeta(
+    'dueMinute',
+  );
+  @override
+  late final GeneratedColumn<int> dueMinute = GeneratedColumn<int>(
+    'due_minute',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remindersMeta = const VerificationMeta(
+    'reminders',
+  );
+  @override
+  late final GeneratedColumn<String> reminders = GeneratedColumn<String>(
+    'reminders',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _repeatMeta = const VerificationMeta('repeat');
+  @override
+  late final GeneratedColumn<String> repeat = GeneratedColumn<String>(
+    'repeat',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _stepsMeta = const VerificationMeta('steps');
+  @override
+  late final GeneratedColumn<String> steps = GeneratedColumn<String>(
+    'steps',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _snoozedUntilMeta = const VerificationMeta(
+    'snoozedUntil',
+  );
+  @override
+  late final GeneratedColumn<DateTime> snoozedUntil = GeneratedColumn<DateTime>(
+    'snoozed_until',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _linkedDiaryIdMeta = const VerificationMeta(
+    'linkedDiaryId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedDiaryId = GeneratedColumn<String>(
+    'linked_diary_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<double> sortOrder = GeneratedColumn<double>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _metadataMeta = const VerificationMeta(
+    'metadata',
+  );
+  @override
+  late final GeneratedColumn<String> metadata = GeneratedColumn<String>(
+    'metadata',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    todoId,
+    listId,
+    title,
+    note,
+    priority,
+    dueDate,
+    dueMinute,
+    reminders,
+    repeat,
+    steps,
+    completedAt,
+    snoozedUntil,
+    linkedDiaryId,
+    sortOrder,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'todos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TodoRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('todo_id')) {
+      context.handle(
+        _todoIdMeta,
+        todoId.isAcceptableOrUnknown(data['todo_id']!, _todoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_todoIdMeta);
+    }
+    if (data.containsKey('list_id')) {
+      context.handle(
+        _listIdMeta,
+        listId.isAcceptableOrUnknown(data['list_id']!, _listIdMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(
+        _dueDateMeta,
+        dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
+    }
+    if (data.containsKey('due_minute')) {
+      context.handle(
+        _dueMinuteMeta,
+        dueMinute.isAcceptableOrUnknown(data['due_minute']!, _dueMinuteMeta),
+      );
+    }
+    if (data.containsKey('reminders')) {
+      context.handle(
+        _remindersMeta,
+        reminders.isAcceptableOrUnknown(data['reminders']!, _remindersMeta),
+      );
+    }
+    if (data.containsKey('repeat')) {
+      context.handle(
+        _repeatMeta,
+        repeat.isAcceptableOrUnknown(data['repeat']!, _repeatMeta),
+      );
+    }
+    if (data.containsKey('steps')) {
+      context.handle(
+        _stepsMeta,
+        steps.isAcceptableOrUnknown(data['steps']!, _stepsMeta),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('snoozed_until')) {
+      context.handle(
+        _snoozedUntilMeta,
+        snoozedUntil.isAcceptableOrUnknown(
+          data['snoozed_until']!,
+          _snoozedUntilMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_diary_id')) {
+      context.handle(
+        _linkedDiaryIdMeta,
+        linkedDiaryId.isAcceptableOrUnknown(
+          data['linked_diary_id']!,
+          _linkedDiaryIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('metadata')) {
+      context.handle(
+        _metadataMeta,
+        metadata.isAcceptableOrUnknown(data['metadata']!, _metadataMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodoRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      todoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}todo_id'],
+      )!,
+      listId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}list_id'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}due_date'],
+      ),
+      dueMinute: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}due_minute'],
+      ),
+      reminders: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reminders'],
+      )!,
+      repeat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}repeat'],
+      ),
+      steps: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}steps'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      snoozedUntil: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}snoozed_until'],
+      ),
+      linkedDiaryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_diary_id'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      metadata: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metadata'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TodosTable createAlias(String alias) {
+    return $TodosTable(attachedDatabase, alias);
+  }
+}
+
+class TodoRow extends DataClass implements Insertable<TodoRow> {
+  final int id;
+  final String todoId;
+
+  /// 所在清单的业务 id；NULL 为收集箱。
+  final String? listId;
+  final String title;
+
+  /// 备注（纯文本）。
+  final String note;
+
+  /// 优先级（[TodoPriority] 的下标）。
+  final int priority;
+
+  /// 截止日 `YYYY-MM-DD`；NULL 为没有日期。
+  final String? dueDate;
+
+  /// 截止时刻（一天中的分钟数）；NULL 为全天。没有截止日时总是 NULL。
+  final int? dueMinute;
+
+  /// 提醒 JSON 数组（[TodoReminder]）。
+  final String reminders;
+
+  /// 重复规则 JSON（[TodoRepeatRule]）；NULL 为不重复。
+  final String? repeat;
+
+  /// 步骤 JSON 数组（[TodoStep]）。
+  final String steps;
+
+  /// 完成时刻；NULL 为未完成。
+  final DateTime? completedAt;
+
+  /// 稍后提醒到的时刻（通知上点“稍后提醒”）；过了即失效。
+  final DateTime? snoozedUntil;
+  final String? linkedDiaryId;
+  final double sortOrder;
+
+  /// 扩展字段（JSON 对象字符串）：来源日记、重复副本的原待办、已完成次数。
+  final String metadata;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const TodoRow({
+    required this.id,
+    required this.todoId,
+    this.listId,
+    required this.title,
+    required this.note,
+    required this.priority,
+    this.dueDate,
+    this.dueMinute,
+    required this.reminders,
+    this.repeat,
+    required this.steps,
+    this.completedAt,
+    this.snoozedUntil,
+    this.linkedDiaryId,
+    required this.sortOrder,
+    required this.metadata,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['todo_id'] = Variable<String>(todoId);
+    if (!nullToAbsent || listId != null) {
+      map['list_id'] = Variable<String>(listId);
+    }
+    map['title'] = Variable<String>(title);
+    map['note'] = Variable<String>(note);
+    map['priority'] = Variable<int>(priority);
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = Variable<String>(dueDate);
+    }
+    if (!nullToAbsent || dueMinute != null) {
+      map['due_minute'] = Variable<int>(dueMinute);
+    }
+    map['reminders'] = Variable<String>(reminders);
+    if (!nullToAbsent || repeat != null) {
+      map['repeat'] = Variable<String>(repeat);
+    }
+    map['steps'] = Variable<String>(steps);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || snoozedUntil != null) {
+      map['snoozed_until'] = Variable<DateTime>(snoozedUntil);
+    }
+    if (!nullToAbsent || linkedDiaryId != null) {
+      map['linked_diary_id'] = Variable<String>(linkedDiaryId);
+    }
+    map['sort_order'] = Variable<double>(sortOrder);
+    map['metadata'] = Variable<String>(metadata);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TodosCompanion toCompanion(bool nullToAbsent) {
+    return TodosCompanion(
+      id: Value(id),
+      todoId: Value(todoId),
+      listId: listId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(listId),
+      title: Value(title),
+      note: Value(note),
+      priority: Value(priority),
+      dueDate: dueDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDate),
+      dueMinute: dueMinute == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueMinute),
+      reminders: Value(reminders),
+      repeat: repeat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(repeat),
+      steps: Value(steps),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      snoozedUntil: snoozedUntil == null && nullToAbsent
+          ? const Value.absent()
+          : Value(snoozedUntil),
+      linkedDiaryId: linkedDiaryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedDiaryId),
+      sortOrder: Value(sortOrder),
+      metadata: Value(metadata),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TodoRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoRow(
+      id: serializer.fromJson<int>(json['id']),
+      todoId: serializer.fromJson<String>(json['todoId']),
+      listId: serializer.fromJson<String?>(json['listId']),
+      title: serializer.fromJson<String>(json['title']),
+      note: serializer.fromJson<String>(json['note']),
+      priority: serializer.fromJson<int>(json['priority']),
+      dueDate: serializer.fromJson<String?>(json['dueDate']),
+      dueMinute: serializer.fromJson<int?>(json['dueMinute']),
+      reminders: serializer.fromJson<String>(json['reminders']),
+      repeat: serializer.fromJson<String?>(json['repeat']),
+      steps: serializer.fromJson<String>(json['steps']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      snoozedUntil: serializer.fromJson<DateTime?>(json['snoozedUntil']),
+      linkedDiaryId: serializer.fromJson<String?>(json['linkedDiaryId']),
+      sortOrder: serializer.fromJson<double>(json['sortOrder']),
+      metadata: serializer.fromJson<String>(json['metadata']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'todoId': serializer.toJson<String>(todoId),
+      'listId': serializer.toJson<String?>(listId),
+      'title': serializer.toJson<String>(title),
+      'note': serializer.toJson<String>(note),
+      'priority': serializer.toJson<int>(priority),
+      'dueDate': serializer.toJson<String?>(dueDate),
+      'dueMinute': serializer.toJson<int?>(dueMinute),
+      'reminders': serializer.toJson<String>(reminders),
+      'repeat': serializer.toJson<String?>(repeat),
+      'steps': serializer.toJson<String>(steps),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'snoozedUntil': serializer.toJson<DateTime?>(snoozedUntil),
+      'linkedDiaryId': serializer.toJson<String?>(linkedDiaryId),
+      'sortOrder': serializer.toJson<double>(sortOrder),
+      'metadata': serializer.toJson<String>(metadata),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TodoRow copyWith({
+    int? id,
+    String? todoId,
+    Value<String?> listId = const Value.absent(),
+    String? title,
+    String? note,
+    int? priority,
+    Value<String?> dueDate = const Value.absent(),
+    Value<int?> dueMinute = const Value.absent(),
+    String? reminders,
+    Value<String?> repeat = const Value.absent(),
+    String? steps,
+    Value<DateTime?> completedAt = const Value.absent(),
+    Value<DateTime?> snoozedUntil = const Value.absent(),
+    Value<String?> linkedDiaryId = const Value.absent(),
+    double? sortOrder,
+    String? metadata,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => TodoRow(
+    id: id ?? this.id,
+    todoId: todoId ?? this.todoId,
+    listId: listId.present ? listId.value : this.listId,
+    title: title ?? this.title,
+    note: note ?? this.note,
+    priority: priority ?? this.priority,
+    dueDate: dueDate.present ? dueDate.value : this.dueDate,
+    dueMinute: dueMinute.present ? dueMinute.value : this.dueMinute,
+    reminders: reminders ?? this.reminders,
+    repeat: repeat.present ? repeat.value : this.repeat,
+    steps: steps ?? this.steps,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    snoozedUntil: snoozedUntil.present ? snoozedUntil.value : this.snoozedUntil,
+    linkedDiaryId: linkedDiaryId.present
+        ? linkedDiaryId.value
+        : this.linkedDiaryId,
+    sortOrder: sortOrder ?? this.sortOrder,
+    metadata: metadata ?? this.metadata,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TodoRow copyWithCompanion(TodosCompanion data) {
+    return TodoRow(
+      id: data.id.present ? data.id.value : this.id,
+      todoId: data.todoId.present ? data.todoId.value : this.todoId,
+      listId: data.listId.present ? data.listId.value : this.listId,
+      title: data.title.present ? data.title.value : this.title,
+      note: data.note.present ? data.note.value : this.note,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      dueMinute: data.dueMinute.present ? data.dueMinute.value : this.dueMinute,
+      reminders: data.reminders.present ? data.reminders.value : this.reminders,
+      repeat: data.repeat.present ? data.repeat.value : this.repeat,
+      steps: data.steps.present ? data.steps.value : this.steps,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      snoozedUntil: data.snoozedUntil.present
+          ? data.snoozedUntil.value
+          : this.snoozedUntil,
+      linkedDiaryId: data.linkedDiaryId.present
+          ? data.linkedDiaryId.value
+          : this.linkedDiaryId,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      metadata: data.metadata.present ? data.metadata.value : this.metadata,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoRow(')
+          ..write('id: $id, ')
+          ..write('todoId: $todoId, ')
+          ..write('listId: $listId, ')
+          ..write('title: $title, ')
+          ..write('note: $note, ')
+          ..write('priority: $priority, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('dueMinute: $dueMinute, ')
+          ..write('reminders: $reminders, ')
+          ..write('repeat: $repeat, ')
+          ..write('steps: $steps, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('snoozedUntil: $snoozedUntil, ')
+          ..write('linkedDiaryId: $linkedDiaryId, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('metadata: $metadata, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    todoId,
+    listId,
+    title,
+    note,
+    priority,
+    dueDate,
+    dueMinute,
+    reminders,
+    repeat,
+    steps,
+    completedAt,
+    snoozedUntil,
+    linkedDiaryId,
+    sortOrder,
+    metadata,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoRow &&
+          other.id == this.id &&
+          other.todoId == this.todoId &&
+          other.listId == this.listId &&
+          other.title == this.title &&
+          other.note == this.note &&
+          other.priority == this.priority &&
+          other.dueDate == this.dueDate &&
+          other.dueMinute == this.dueMinute &&
+          other.reminders == this.reminders &&
+          other.repeat == this.repeat &&
+          other.steps == this.steps &&
+          other.completedAt == this.completedAt &&
+          other.snoozedUntil == this.snoozedUntil &&
+          other.linkedDiaryId == this.linkedDiaryId &&
+          other.sortOrder == this.sortOrder &&
+          other.metadata == this.metadata &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TodosCompanion extends UpdateCompanion<TodoRow> {
+  final Value<int> id;
+  final Value<String> todoId;
+  final Value<String?> listId;
+  final Value<String> title;
+  final Value<String> note;
+  final Value<int> priority;
+  final Value<String?> dueDate;
+  final Value<int?> dueMinute;
+  final Value<String> reminders;
+  final Value<String?> repeat;
+  final Value<String> steps;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime?> snoozedUntil;
+  final Value<String?> linkedDiaryId;
+  final Value<double> sortOrder;
+  final Value<String> metadata;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const TodosCompanion({
+    this.id = const Value.absent(),
+    this.todoId = const Value.absent(),
+    this.listId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.note = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.dueMinute = const Value.absent(),
+    this.reminders = const Value.absent(),
+    this.repeat = const Value.absent(),
+    this.steps = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.snoozedUntil = const Value.absent(),
+    this.linkedDiaryId = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.metadata = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  TodosCompanion.insert({
+    this.id = const Value.absent(),
+    required String todoId,
+    this.listId = const Value.absent(),
+    required String title,
+    this.note = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.dueMinute = const Value.absent(),
+    this.reminders = const Value.absent(),
+    this.repeat = const Value.absent(),
+    this.steps = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.snoozedUntil = const Value.absent(),
+    this.linkedDiaryId = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.metadata = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : todoId = Value(todoId),
+       title = Value(title),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<TodoRow> custom({
+    Expression<int>? id,
+    Expression<String>? todoId,
+    Expression<String>? listId,
+    Expression<String>? title,
+    Expression<String>? note,
+    Expression<int>? priority,
+    Expression<String>? dueDate,
+    Expression<int>? dueMinute,
+    Expression<String>? reminders,
+    Expression<String>? repeat,
+    Expression<String>? steps,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? snoozedUntil,
+    Expression<String>? linkedDiaryId,
+    Expression<double>? sortOrder,
+    Expression<String>? metadata,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (todoId != null) 'todo_id': todoId,
+      if (listId != null) 'list_id': listId,
+      if (title != null) 'title': title,
+      if (note != null) 'note': note,
+      if (priority != null) 'priority': priority,
+      if (dueDate != null) 'due_date': dueDate,
+      if (dueMinute != null) 'due_minute': dueMinute,
+      if (reminders != null) 'reminders': reminders,
+      if (repeat != null) 'repeat': repeat,
+      if (steps != null) 'steps': steps,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (snoozedUntil != null) 'snoozed_until': snoozedUntil,
+      if (linkedDiaryId != null) 'linked_diary_id': linkedDiaryId,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (metadata != null) 'metadata': metadata,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  TodosCompanion copyWith({
+    Value<int>? id,
+    Value<String>? todoId,
+    Value<String?>? listId,
+    Value<String>? title,
+    Value<String>? note,
+    Value<int>? priority,
+    Value<String?>? dueDate,
+    Value<int?>? dueMinute,
+    Value<String>? reminders,
+    Value<String?>? repeat,
+    Value<String>? steps,
+    Value<DateTime?>? completedAt,
+    Value<DateTime?>? snoozedUntil,
+    Value<String?>? linkedDiaryId,
+    Value<double>? sortOrder,
+    Value<String>? metadata,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return TodosCompanion(
+      id: id ?? this.id,
+      todoId: todoId ?? this.todoId,
+      listId: listId ?? this.listId,
+      title: title ?? this.title,
+      note: note ?? this.note,
+      priority: priority ?? this.priority,
+      dueDate: dueDate ?? this.dueDate,
+      dueMinute: dueMinute ?? this.dueMinute,
+      reminders: reminders ?? this.reminders,
+      repeat: repeat ?? this.repeat,
+      steps: steps ?? this.steps,
+      completedAt: completedAt ?? this.completedAt,
+      snoozedUntil: snoozedUntil ?? this.snoozedUntil,
+      linkedDiaryId: linkedDiaryId ?? this.linkedDiaryId,
+      sortOrder: sortOrder ?? this.sortOrder,
+      metadata: metadata ?? this.metadata,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (todoId.present) {
+      map['todo_id'] = Variable<String>(todoId.value);
+    }
+    if (listId.present) {
+      map['list_id'] = Variable<String>(listId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<String>(dueDate.value);
+    }
+    if (dueMinute.present) {
+      map['due_minute'] = Variable<int>(dueMinute.value);
+    }
+    if (reminders.present) {
+      map['reminders'] = Variable<String>(reminders.value);
+    }
+    if (repeat.present) {
+      map['repeat'] = Variable<String>(repeat.value);
+    }
+    if (steps.present) {
+      map['steps'] = Variable<String>(steps.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (snoozedUntil.present) {
+      map['snoozed_until'] = Variable<DateTime>(snoozedUntil.value);
+    }
+    if (linkedDiaryId.present) {
+      map['linked_diary_id'] = Variable<String>(linkedDiaryId.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<double>(sortOrder.value);
+    }
+    if (metadata.present) {
+      map['metadata'] = Variable<String>(metadata.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodosCompanion(')
+          ..write('id: $id, ')
+          ..write('todoId: $todoId, ')
+          ..write('listId: $listId, ')
+          ..write('title: $title, ')
+          ..write('note: $note, ')
+          ..write('priority: $priority, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('dueMinute: $dueMinute, ')
+          ..write('reminders: $reminders, ')
+          ..write('repeat: $repeat, ')
+          ..write('steps: $steps, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('snoozedUntil: $snoozedUntil, ')
+          ..write('linkedDiaryId: $linkedDiaryId, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('metadata: $metadata, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6747,6 +8304,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $AiMessagesTable aiMessages = $AiMessagesTable(this);
   late final $AiResultsTable aiResults = $AiResultsTable(this);
+  late final $TodoListsTable todoLists = $TodoListsTable(this);
+  late final $TodosTable todos = $TodosTable(this);
   late final Index idxDiariesUpdatedAt = Index(
     'idx_diaries_updated_at',
     'CREATE INDEX idx_diaries_updated_at ON diaries (updated_at)',
@@ -6795,6 +8354,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_ai_results_kind',
     'CREATE INDEX idx_ai_results_kind ON ai_results (kind, created_at)',
   );
+  late final Index idxTodosCompletedDue = Index(
+    'idx_todos_completed_due',
+    'CREATE INDEX idx_todos_completed_due ON todos (completed_at, due_date)',
+  );
+  late final Index idxTodosList = Index(
+    'idx_todos_list',
+    'CREATE INDEX idx_todos_list ON todos (list_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6813,6 +8380,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     aiConversations,
     aiMessages,
     aiResults,
+    todoLists,
+    todos,
     idxDiariesUpdatedAt,
     idxDiariesCreatedAt,
     idxDiariesCapsuleUnlockAt,
@@ -6825,6 +8394,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxAiMessagesConversation,
     idxAiResultsDiary,
     idxAiResultsKind,
+    idxTodosCompletedDue,
+    idxTodosList,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -10711,6 +12282,734 @@ typedef $$AiResultsTableProcessedTableManager =
       AiResultRow,
       PrefetchHooks Function()
     >;
+typedef $$TodoListsTableCreateCompanionBuilder =
+    TodoListsCompanion Function({
+      Value<int> id,
+      required String listId,
+      required String name,
+      Value<String> colorKey,
+      Value<String> iconKey,
+      Value<double> sortOrder,
+      Value<String> metadata,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$TodoListsTableUpdateCompanionBuilder =
+    TodoListsCompanion Function({
+      Value<int> id,
+      Value<String> listId,
+      Value<String> name,
+      Value<String> colorKey,
+      Value<String> iconKey,
+      Value<double> sortOrder,
+      Value<String> metadata,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+class $$TodoListsTableFilterComposer
+    extends Composer<_$AppDatabase, $TodoListsTable> {
+  $$TodoListsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get listId => $composableBuilder(
+    column: $table.listId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get colorKey => $composableBuilder(
+    column: $table.colorKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconKey => $composableBuilder(
+    column: $table.iconKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metadata => $composableBuilder(
+    column: $table.metadata,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TodoListsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodoListsTable> {
+  $$TodoListsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get listId => $composableBuilder(
+    column: $table.listId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get colorKey => $composableBuilder(
+    column: $table.colorKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconKey => $composableBuilder(
+    column: $table.iconKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metadata => $composableBuilder(
+    column: $table.metadata,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TodoListsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodoListsTable> {
+  $$TodoListsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get listId =>
+      $composableBuilder(column: $table.listId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get colorKey =>
+      $composableBuilder(column: $table.colorKey, builder: (column) => column);
+
+  GeneratedColumn<String> get iconKey =>
+      $composableBuilder(column: $table.iconKey, builder: (column) => column);
+
+  GeneratedColumn<double> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get metadata =>
+      $composableBuilder(column: $table.metadata, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$TodoListsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TodoListsTable,
+          TodoListRow,
+          $$TodoListsTableFilterComposer,
+          $$TodoListsTableOrderingComposer,
+          $$TodoListsTableAnnotationComposer,
+          $$TodoListsTableCreateCompanionBuilder,
+          $$TodoListsTableUpdateCompanionBuilder,
+          (
+            TodoListRow,
+            BaseReferences<_$AppDatabase, $TodoListsTable, TodoListRow>,
+          ),
+          TodoListRow,
+          PrefetchHooks Function()
+        > {
+  $$TodoListsTableTableManager(_$AppDatabase db, $TodoListsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodoListsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodoListsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodoListsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> listId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> colorKey = const Value.absent(),
+                Value<String> iconKey = const Value.absent(),
+                Value<double> sortOrder = const Value.absent(),
+                Value<String> metadata = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => TodoListsCompanion(
+                id: id,
+                listId: listId,
+                name: name,
+                colorKey: colorKey,
+                iconKey: iconKey,
+                sortOrder: sortOrder,
+                metadata: metadata,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String listId,
+                required String name,
+                Value<String> colorKey = const Value.absent(),
+                Value<String> iconKey = const Value.absent(),
+                Value<double> sortOrder = const Value.absent(),
+                Value<String> metadata = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => TodoListsCompanion.insert(
+                id: id,
+                listId: listId,
+                name: name,
+                colorKey: colorKey,
+                iconKey: iconKey,
+                sortOrder: sortOrder,
+                metadata: metadata,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TodoListsTable, TodoListRow>(table),
+                  BaseReferences<_$AppDatabase, $TodoListsTable, TodoListRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TodoListsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TodoListsTable,
+      TodoListRow,
+      $$TodoListsTableFilterComposer,
+      $$TodoListsTableOrderingComposer,
+      $$TodoListsTableAnnotationComposer,
+      $$TodoListsTableCreateCompanionBuilder,
+      $$TodoListsTableUpdateCompanionBuilder,
+      (
+        TodoListRow,
+        BaseReferences<_$AppDatabase, $TodoListsTable, TodoListRow>,
+      ),
+      TodoListRow,
+      PrefetchHooks Function()
+    >;
+typedef $$TodosTableCreateCompanionBuilder =
+    TodosCompanion Function({
+      Value<int> id,
+      required String todoId,
+      Value<String?> listId,
+      required String title,
+      Value<String> note,
+      Value<int> priority,
+      Value<String?> dueDate,
+      Value<int?> dueMinute,
+      Value<String> reminders,
+      Value<String?> repeat,
+      Value<String> steps,
+      Value<DateTime?> completedAt,
+      Value<DateTime?> snoozedUntil,
+      Value<String?> linkedDiaryId,
+      Value<double> sortOrder,
+      Value<String> metadata,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$TodosTableUpdateCompanionBuilder =
+    TodosCompanion Function({
+      Value<int> id,
+      Value<String> todoId,
+      Value<String?> listId,
+      Value<String> title,
+      Value<String> note,
+      Value<int> priority,
+      Value<String?> dueDate,
+      Value<int?> dueMinute,
+      Value<String> reminders,
+      Value<String?> repeat,
+      Value<String> steps,
+      Value<DateTime?> completedAt,
+      Value<DateTime?> snoozedUntil,
+      Value<String?> linkedDiaryId,
+      Value<double> sortOrder,
+      Value<String> metadata,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
+  $$TodosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get todoId => $composableBuilder(
+    column: $table.todoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get listId => $composableBuilder(
+    column: $table.listId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dueMinute => $composableBuilder(
+    column: $table.dueMinute,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reminders => $composableBuilder(
+    column: $table.reminders,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get repeat => $composableBuilder(
+    column: $table.repeat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get steps => $composableBuilder(
+    column: $table.steps,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get snoozedUntil => $composableBuilder(
+    column: $table.snoozedUntil,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linkedDiaryId => $composableBuilder(
+    column: $table.linkedDiaryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metadata => $composableBuilder(
+    column: $table.metadata,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TodosTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodosTable> {
+  $$TodosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get todoId => $composableBuilder(
+    column: $table.todoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get listId => $composableBuilder(
+    column: $table.listId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dueMinute => $composableBuilder(
+    column: $table.dueMinute,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reminders => $composableBuilder(
+    column: $table.reminders,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get repeat => $composableBuilder(
+    column: $table.repeat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get steps => $composableBuilder(
+    column: $table.steps,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get snoozedUntil => $composableBuilder(
+    column: $table.snoozedUntil,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linkedDiaryId => $composableBuilder(
+    column: $table.linkedDiaryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metadata => $composableBuilder(
+    column: $table.metadata,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TodosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodosTable> {
+  $$TodosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get todoId =>
+      $composableBuilder(column: $table.todoId, builder: (column) => column);
+
+  GeneratedColumn<String> get listId =>
+      $composableBuilder(column: $table.listId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  GeneratedColumn<int> get dueMinute =>
+      $composableBuilder(column: $table.dueMinute, builder: (column) => column);
+
+  GeneratedColumn<String> get reminders =>
+      $composableBuilder(column: $table.reminders, builder: (column) => column);
+
+  GeneratedColumn<String> get repeat =>
+      $composableBuilder(column: $table.repeat, builder: (column) => column);
+
+  GeneratedColumn<String> get steps =>
+      $composableBuilder(column: $table.steps, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get snoozedUntil => $composableBuilder(
+    column: $table.snoozedUntil,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get linkedDiaryId => $composableBuilder(
+    column: $table.linkedDiaryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get metadata =>
+      $composableBuilder(column: $table.metadata, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$TodosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TodosTable,
+          TodoRow,
+          $$TodosTableFilterComposer,
+          $$TodosTableOrderingComposer,
+          $$TodosTableAnnotationComposer,
+          $$TodosTableCreateCompanionBuilder,
+          $$TodosTableUpdateCompanionBuilder,
+          (TodoRow, BaseReferences<_$AppDatabase, $TodosTable, TodoRow>),
+          TodoRow,
+          PrefetchHooks Function()
+        > {
+  $$TodosTableTableManager(_$AppDatabase db, $TodosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> todoId = const Value.absent(),
+                Value<String?> listId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<String?> dueDate = const Value.absent(),
+                Value<int?> dueMinute = const Value.absent(),
+                Value<String> reminders = const Value.absent(),
+                Value<String?> repeat = const Value.absent(),
+                Value<String> steps = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime?> snoozedUntil = const Value.absent(),
+                Value<String?> linkedDiaryId = const Value.absent(),
+                Value<double> sortOrder = const Value.absent(),
+                Value<String> metadata = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => TodosCompanion(
+                id: id,
+                todoId: todoId,
+                listId: listId,
+                title: title,
+                note: note,
+                priority: priority,
+                dueDate: dueDate,
+                dueMinute: dueMinute,
+                reminders: reminders,
+                repeat: repeat,
+                steps: steps,
+                completedAt: completedAt,
+                snoozedUntil: snoozedUntil,
+                linkedDiaryId: linkedDiaryId,
+                sortOrder: sortOrder,
+                metadata: metadata,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String todoId,
+                Value<String?> listId = const Value.absent(),
+                required String title,
+                Value<String> note = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<String?> dueDate = const Value.absent(),
+                Value<int?> dueMinute = const Value.absent(),
+                Value<String> reminders = const Value.absent(),
+                Value<String?> repeat = const Value.absent(),
+                Value<String> steps = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime?> snoozedUntil = const Value.absent(),
+                Value<String?> linkedDiaryId = const Value.absent(),
+                Value<double> sortOrder = const Value.absent(),
+                Value<String> metadata = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => TodosCompanion.insert(
+                id: id,
+                todoId: todoId,
+                listId: listId,
+                title: title,
+                note: note,
+                priority: priority,
+                dueDate: dueDate,
+                dueMinute: dueMinute,
+                reminders: reminders,
+                repeat: repeat,
+                steps: steps,
+                completedAt: completedAt,
+                snoozedUntil: snoozedUntil,
+                linkedDiaryId: linkedDiaryId,
+                sortOrder: sortOrder,
+                metadata: metadata,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TodosTable, TodoRow>(table),
+                  BaseReferences<_$AppDatabase, $TodosTable, TodoRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TodosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TodosTable,
+      TodoRow,
+      $$TodosTableFilterComposer,
+      $$TodosTableOrderingComposer,
+      $$TodosTableAnnotationComposer,
+      $$TodosTableCreateCompanionBuilder,
+      $$TodosTableUpdateCompanionBuilder,
+      (TodoRow, BaseReferences<_$AppDatabase, $TodosTable, TodoRow>),
+      TodoRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10740,4 +13039,8 @@ class $AppDatabaseManager {
       $$AiMessagesTableTableManager(_db, _db.aiMessages);
   $$AiResultsTableTableManager get aiResults =>
       $$AiResultsTableTableManager(_db, _db.aiResults);
+  $$TodoListsTableTableManager get todoLists =>
+      $$TodoListsTableTableManager(_db, _db.todoLists);
+  $$TodosTableTableManager get todos =>
+      $$TodosTableTableManager(_db, _db.todos);
 }

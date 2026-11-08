@@ -164,7 +164,9 @@ int _recordTime(SyncEntity entity, String facet, Map<String, Object?> facets) {
       field(SyncFacet.main, 'editedAt') ?? field(SyncFacet.main, 'createdAt'),
     SyncEntity.template ||
     SyncEntity.anniversary ||
-    SyncEntity.dayMood => field(SyncFacet.main, 'updatedAt'),
+    SyncEntity.dayMood ||
+    SyncEntity.todoList ||
+    SyncEntity.todo => field(SyncFacet.main, 'updatedAt'),
     SyncEntity.tag ||
     SyncEntity.orderList ||
     SyncEntity.settings ||

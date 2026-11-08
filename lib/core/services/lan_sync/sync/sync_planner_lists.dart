@@ -11,16 +11,27 @@ part of 'sync_planner.dart';
 /// 两侧原样、且最终集合与两侧现有集合（由清单的键算出，不必读值）都相同的
 /// 列表不动；需要读值时两侧原样的读本机记录。
 extension _Lists on _Planner {
-  /// 留言所属日记最终不存在时丢弃；纪念日关联的日记最终不存在时置 null。
-  /// 只看不是两侧原样的记录：两侧原样的留言 / 纪念日所引用的日记在两侧都在
-  /// （删日记时会一并删留言、清关联），最终也一定还在。
-  void resolveCommentsAndAnniversaries() {
+  /// 悬空引用（规格 §4.3）：
+  /// - 留言所属日记最终不存在时丢弃；
+  /// - 纪念日与待办关联的日记最终不存在时置 null；
+  /// - 待办所在清单最终不存在时 `listId` 置 null（移到收集箱）：一侧删了
+  ///   清单、另一侧之后又往里加了或改了待办，待办保留下来，却不能挂在不存在
+  ///   的清单上；待办的改动不复活清单（与成员关系不复活日记本同理）。
+  ///
+  /// 只看不是两侧原样的记录：两侧原样的留言 / 纪念日 / 待办所引用的日记与
+  /// 清单在两侧都在（删日记时会一并删留言、清关联；删清单时连同其中的待办
+  /// 一起删，同步删清单时计划里同时给出这些待办的写入），最终也一定还在。
+  void resolveDanglingReferences() {
     for (final key in keys) {
-      final isComment = key.entity == SyncEntity.comment;
-      if (!isComment && key.entity != SyncEntity.anniversary) continue;
+      final entity = key.entity;
+      if (entity != SyncEntity.comment &&
+          entity != SyncEntity.anniversary &&
+          entity != SyncEntity.todo) {
+        continue;
+      }
       if (identicalOnBoth(key) || finals[key]?.kind != _Kind.value) continue;
-      final facets = finals[key]!.facets!;
-      if (isComment) {
+      var facets = finals[key]!.facets!;
+      if (entity == SyncEntity.comment) {
         final diaryId = _field(facets, SyncFacet.main, 'diaryId');
         if (diaryId is! String ||
             !isPresent(SyncKey(SyncEntity.diary, diaryId))) {
@@ -28,12 +39,19 @@ extension _Lists on _Planner {
         }
         continue;
       }
+      final before = facets;
       final linked = _field(facets, SyncFacet.main, 'linkedDiaryId');
       if (linked is String && !isPresent(SyncKey(SyncEntity.diary, linked))) {
-        finals[key] = _Final.value(
-          _withField(facets, SyncFacet.main, 'linkedDiaryId', null),
-        );
+        facets = _withField(facets, SyncFacet.main, 'linkedDiaryId', null);
       }
+      if (entity == SyncEntity.todo) {
+        final listId = _field(facets, SyncFacet.main, 'listId');
+        if (listId is String &&
+            !isPresent(SyncKey(SyncEntity.todoList, listId))) {
+          facets = _withField(facets, SyncFacet.main, 'listId', null);
+        }
+      }
+      if (!identical(facets, before)) finals[key] = _Final.value(facets);
     }
   }
 

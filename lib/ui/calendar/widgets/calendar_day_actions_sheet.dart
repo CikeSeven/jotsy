@@ -25,6 +25,9 @@ enum CalendarDayAction {
 
   /// 以这一天新建纪念日（未来日期为倒数日）。
   anniversary,
+
+  /// 以这一天为截止日添加待办。
+  todo,
 }
 
 /// 长按面板里的一次选择：执行某个快捷操作，或设定 / 清除这天的心情。
@@ -51,8 +54,8 @@ final class CalendarDayMoodChoice extends CalendarDayChoice {
 /// 返回 null。只负责选择，执行由页面控制器完成。点一个心情即选定并收起
 /// 面板，日期格随即换成这个心情的样子。
 ///
-/// [showCapsule] / [showAnniversary] 为 false 时隐藏对应操作（时间胶囊、
-/// 纪念日功能关闭时隐藏入口，数据保留）；[showDayMood] 为 false（显示选项
+/// [showCapsule] / [showAnniversary] / [showTodo] 为 false 时隐藏对应操作
+/// （时间胶囊、纪念日、待办功能关闭时隐藏入口，数据保留）；[showDayMood] 为 false（显示选项
 /// 关掉了这天的心情）时不提供心情一组。“写日记”与“范围”始终保留，面板
 /// 不会为空。
 Future<CalendarDayChoice?> showCalendarDayActionsSheet(
@@ -64,6 +67,7 @@ Future<CalendarDayChoice?> showCalendarDayActionsSheet(
   bool showDayMood = true,
   bool showCapsule = true,
   bool showAnniversary = true,
+  bool showTodo = false,
 }) {
   final today = DateUtils.dateOnly(now);
   final isFuture = DateUtils.dateOnly(day).isAfter(today);
@@ -160,6 +164,12 @@ Future<CalendarDayChoice?> showCalendarDayActionsSheet(
                   FontAwesomeIcons.hourglassHalf,
                   l10n.calendarDayActionCapsule,
                   description: l10n.calendarDayActionCapsuleDescription,
+                ),
+              if (showTodo)
+                action(
+                  CalendarDayAction.todo,
+                  FontAwesomeIcons.squareCheck,
+                  l10n.calendarAddTodo,
                 ),
               if (showAnniversary)
                 action(

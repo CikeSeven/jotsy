@@ -347,6 +347,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
       await (update(anniversaries)
             ..where((t) => t.linkedDiaryId.equals(diaryId)))
           .write(const AnniversariesCompanion(linkedDiaryId: Value(null)));
+      await (update(todos)..where((t) => t.linkedDiaryId.equals(diaryId)))
+          .write(const TodosCompanion(linkedDiaryId: Value(null)));
       await (delete(
         diaryComments,
       )..where((t) => t.diaryId.equals(diaryId))).go();

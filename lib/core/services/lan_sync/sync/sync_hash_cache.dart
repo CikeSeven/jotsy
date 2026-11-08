@@ -104,6 +104,15 @@ class SyncFingerprint {
 
   void boolean(bool value) => _input.add(<int>[value ? 4 : 3]);
 
+  /// REAL 列：按 [double.toString]（最短往返写法）喂入，与整数分开标记。
+  void real(double value) {
+    final bytes = utf8.encode(value.toString());
+    _input
+      ..add(const <int>[5])
+      ..add(_length(bytes.length))
+      ..add(bytes);
+  }
+
   /// 结束并返回指纹（sha256 前 16 字节的十六进制）。之后不能再写入。
   String finish() {
     _input.close();
@@ -184,6 +193,39 @@ String syncAnniversaryFingerprint(SyncRawAnniversary row) =>
           ..string(row.linkedDiaryId)
           ..string(row.note)
           ..boolean(row.isPinned)
+          ..string(row.metadata)
+          ..integer(row.createdAt)
+          ..integer(row.updatedAt))
+        .finish();
+
+String syncTodoListFingerprint(SyncRawTodoList row) =>
+    (SyncFingerprint()
+          ..string(row.listId)
+          ..string(row.name)
+          ..string(row.colorKey)
+          ..string(row.iconKey)
+          ..real(row.sortOrder)
+          ..string(row.metadata)
+          ..integer(row.createdAt)
+          ..integer(row.updatedAt))
+        .finish();
+
+String syncTodoFingerprint(SyncRawTodo row) =>
+    (SyncFingerprint()
+          ..string(row.todoId)
+          ..string(row.listId)
+          ..string(row.title)
+          ..string(row.note)
+          ..integer(row.priority)
+          ..string(row.dueDate)
+          ..integer(row.dueMinute)
+          ..string(row.reminders)
+          ..string(row.repeat)
+          ..string(row.steps)
+          ..integer(row.completedAt)
+          ..integer(row.snoozedUntil)
+          ..string(row.linkedDiaryId)
+          ..real(row.sortOrder)
           ..string(row.metadata)
           ..integer(row.createdAt)
           ..integer(row.updatedAt))

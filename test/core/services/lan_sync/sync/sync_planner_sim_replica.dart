@@ -10,8 +10,9 @@ export 'sync_planner_sim_tables.dart';
 /// 收敛模拟里的一台“设备”：用几张内存表模拟数据库，按生产的口径推出规范
 /// 记录（tags 分面由标签表推出、书架 / 书序由位置推出、成员只算手动本里
 /// 存在的日记），并模拟写入层：先比对前置条件，再改名、按键序写入，删除时
-/// 清理关联（日记 → 成员、留言、纪念日关联；日记本 → 成员；标签 → 日记标签），
-/// 顺序列表按列表重排位置。同步状态用生产的 `foldSyncObservation` 维护。
+/// 清理关联（日记 → 成员、留言、纪念日与待办关联；日记本 → 成员；标签 →
+/// 日记标签；清单只删自己），顺序列表按列表重排位置。同步状态用生产的
+/// `foldSyncObservation` 维护。
 
 class SimReplica {
   SimReplica(this.name, {this.skew = 0});
@@ -27,6 +28,8 @@ class SimReplica {
   final Map<String, SimMember> members = <String, SimMember>{};
   final Map<String, SimComment> comments = <String, SimComment>{};
   final Map<String, SimAnniversary> anniversaries = <String, SimAnniversary>{};
+  final Map<String, SimTodoList> todoLists = <String, SimTodoList>{};
+  final Map<String, SimTodo> todos = <String, SimTodo>{};
 
   final SyncStateData state = SyncStateData();
   SyncObservation? checkpoint;
@@ -181,6 +184,32 @@ class SimReplica {
             },
           },
         ),
+      );
+    }
+    for (final entry in todoLists.entries) {
+      final l = entry.value;
+      add(
+        SyncRecord(SyncKey(SyncEntity.todoList, entry.key), <String, Object?>{
+          SyncFacet.main: <String, Object?>{
+            'name': l.name,
+            'sortOrder': l.sortOrder,
+            'updatedAt': l.updatedAt,
+          },
+        }),
+      );
+    }
+    for (final entry in todos.entries) {
+      final t = entry.value;
+      add(
+        SyncRecord(SyncKey(SyncEntity.todo, entry.key), <String, Object?>{
+          SyncFacet.main: <String, Object?>{
+            'title': t.title,
+            'listId': t.listId,
+            'linkedDiaryId': t.linkedDiaryId,
+            'sortOrder': t.sortOrder,
+            'updatedAt': t.updatedAt,
+          },
+        }),
       );
     }
     return out;

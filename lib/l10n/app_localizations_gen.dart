@@ -19266,6 +19266,12 @@ abstract class AppLocalizations {
   /// **'Day moods'**
   String get lanSyncItemDayMoods;
 
+  /// Kind of data in LAN sync counts: to-dos and their lists.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos'**
+  String get lanSyncItemTodos;
+
   /// Kind of data in LAN sync counts: settings (tag order, feature switches, synced preferences).
   ///
   /// In en, this message translates to:
@@ -24741,6 +24747,1044 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open in another app'**
   String get storageMgmtOpenExternally;
+
+  /// Import preview: number of to-dos in the file.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 to-do} other{{count} to-dos}}'**
+  String backupImportTodoCount(int count);
+
+  /// Import preview: how many to-dos in the file already exist on this device (matched by id).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 to-do is already on this device} other{{count} to-dos are already on this device}}'**
+  String backupImportExistingTodoCount(int count);
+
+  /// Description of merge-and-overwrite when only to-dos overlap with this device.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Adds new items and replaces the 1 to-do already on this device with the version in the file} other{Adds new items and replaces the {count} to-dos already on this device with the versions in the file}}'**
+  String backupImportModeOverwriteTodosOnly(int count);
+
+  /// Extra line of the merge-and-overwrite description: overlapping to-dos are replaced too.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Also replaces 1 to-do already on this device} other{Also replaces {count} to-dos already on this device}}'**
+  String backupImportModeOverwriteTodosExtra(int count);
+
+  /// Replace-all warning bullet: number of to-dos on this device that will be deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 to-do} other{{count} to-dos}}'**
+  String backupOverwriteAllTodos(int count);
+
+  /// Merge-and-overwrite warning: number of to-dos on this device that will be replaced.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The 1 to-do already on this device will be replaced by the version in the file.} other{The {count} to-dos already on this device will be replaced by the versions in the file.}}'**
+  String backupOverwriteExistingTodosBody(int count);
+
+  /// Extra line of the merge import result: to-dos added.
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{To-dos: 1 added} other{To-dos: {added} added}}'**
+  String backupImportTodoMergeResult(int added);
+
+  /// Extra line of the merge-and-overwrite import result: to-dos added and overwritten.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos: {added} added, {replaced} overwritten'**
+  String backupImportTodoOverwriteResult(int added, int replaced);
+
+  /// Home bottom bar / rail: the To-dos tab.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos'**
+  String get navTodos;
+
+  /// Background & material settings: area chip for the To-dos tab.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos'**
+  String get appSurfaceAreaTodos;
+
+  /// Feature management: subtitle of the To-dos switch.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos, lists and reminders separate from your diary'**
+  String get settingsFeaturesTodosSubtitle;
+
+  /// To-do view: Today (open to-dos due today or earlier).
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todoViewToday;
+
+  /// To-do view: Planned (open to-dos with a date).
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get todoViewPlanned;
+
+  /// To-do view: Important (high priority).
+  ///
+  /// In en, this message translates to:
+  /// **'Important'**
+  String get todoViewImportant;
+
+  /// To-do view: all open to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get todoViewAll;
+
+  /// To-do view: completed to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get todoViewCompleted;
+
+  /// To-do view: Inbox (to-dos not in any list).
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox'**
+  String get todoViewInbox;
+
+  /// To-do group header: past due.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get todoGroupOverdue;
+
+  /// To-do group header: due today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todoGroupToday;
+
+  /// To-do group header: due tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get todoGroupTomorrow;
+
+  /// To-do group header: due within the next seven days (after tomorrow).
+  ///
+  /// In en, this message translates to:
+  /// **'Next 7 days'**
+  String get todoGroupNextDays;
+
+  /// To-do group header: due later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get todoGroupLater;
+
+  /// To-do group header: no due date.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get todoGroupNoDate;
+
+  /// Header of the collapsible completed group at the bottom of a list.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed {count}'**
+  String todoGroupCompleted(int count);
+
+  /// Label of the create button on the To-dos tab.
+  ///
+  /// In en, this message translates to:
+  /// **'New to-do'**
+  String get todoNew;
+
+  /// Hint of the to-do title field (quick add and detail page).
+  ///
+  /// In en, this message translates to:
+  /// **'What needs doing?'**
+  String get todoQuickAddHint;
+
+  /// Submit button of the quick-add to-do sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get todoQuickAddSubmit;
+
+  /// Hint of the to-do search field and tooltip of the search button.
+  ///
+  /// In en, this message translates to:
+  /// **'Search to-dos'**
+  String get todoSearchHint;
+
+  /// Empty state of the Today view.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to do today'**
+  String get todoEmptyToday;
+
+  /// Empty state of a to-do view or list.
+  ///
+  /// In en, this message translates to:
+  /// **'No to-dos here yet'**
+  String get todoEmptyList;
+
+  /// Empty state of the Completed view.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed to-dos yet'**
+  String get todoEmptyCompleted;
+
+  /// Empty state of the to-do search.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching to-dos'**
+  String get todoEmptySearch;
+
+  /// Sort item in the To-dos menu; {mode} is the current sort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort: {mode}'**
+  String todoSortLabel(String mode);
+
+  /// To-do sort: manual drag order.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get todoSortManual;
+
+  /// To-do sort: by due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date'**
+  String get todoSortDue;
+
+  /// To-do sort: by priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get todoSortPriority;
+
+  /// To-do sort: by creation time (newest first).
+  ///
+  /// In en, this message translates to:
+  /// **'Date created'**
+  String get todoSortCreated;
+
+  /// Title of the to-do sort sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get todoSortTitle;
+
+  /// To-dos menu and settings: show completed to-dos at the bottom of lists.
+  ///
+  /// In en, this message translates to:
+  /// **'Show completed'**
+  String get todoShowCompleted;
+
+  /// To-dos menu: hide completed to-dos at the bottom of lists.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide completed'**
+  String get todoHideCompleted;
+
+  /// To-dos menu: delete the completed to-dos in the current view.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear completed'**
+  String get todoClearCompleted;
+
+  /// Title of the clear-completed confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear completed to-dos?'**
+  String get todoClearCompletedTitle;
+
+  /// Body of the clear-completed confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 completed to-do will be deleted. You can undo from the notice.} other{{count} completed to-dos will be deleted. You can undo from the notice.}}'**
+  String todoClearCompletedBody(int count);
+
+  /// Undoable notice after clearing completed to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Cleared 1 to-do} other{Cleared {count} to-dos}}'**
+  String todoClearedCount(int count);
+
+  /// Undoable notice after completing a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get todoCompletedNotice;
+
+  /// Undoable notice after completing a repeating to-do; {date} is the next due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed. Next: {date}'**
+  String todoCompletedNextNotice(String date);
+
+  /// Undoable notice after deleting a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'To-do deleted'**
+  String get todoDeletedNotice;
+
+  /// Delete button on the to-do detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete to-do'**
+  String get todoDelete;
+
+  /// Checkbox semantics and detail button: mark the to-do as done.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as done'**
+  String get todoMarkDone;
+
+  /// Checkbox semantics and detail button: mark the to-do as not done.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as not done'**
+  String get todoMarkUndone;
+
+  /// Tooltip of the More menu in the To-dos header.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get todoMore;
+
+  /// Lists section title in the to-do sidebar and title of the manage page.
+  ///
+  /// In en, this message translates to:
+  /// **'Lists'**
+  String get todoListsSection;
+
+  /// Button and sheet title for creating a to-do list.
+  ///
+  /// In en, this message translates to:
+  /// **'New list'**
+  String get todoListNew;
+
+  /// Sheet title and menu item for editing a to-do list.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit list'**
+  String get todoListEdit;
+
+  /// Hint of the list name field.
+  ///
+  /// In en, this message translates to:
+  /// **'List name'**
+  String get todoListNameHint;
+
+  /// Entry to the manage-lists page.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage lists'**
+  String get todoListManage;
+
+  /// Menu item and confirm button for deleting a list.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete list'**
+  String get todoListDelete;
+
+  /// Title of the delete-list confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String todoListDeleteTitle(String name);
+
+  /// Body of the delete-list dialog: its to-dos (including completed) go too.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{The list is empty. You can undo from the notice.} =1{Its 1 to-do will be deleted too. You can undo from the notice.} other{Its {count} to-dos will be deleted too. You can undo from the notice.}}'**
+  String todoListDeleteBody(int count);
+
+  /// Undoable notice after deleting a list.
+  ///
+  /// In en, this message translates to:
+  /// **'List deleted'**
+  String get todoListDeletedNotice;
+
+  /// List editor sheet: color section title.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get todoListColor;
+
+  /// List editor sheet: icon section title.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get todoListIcon;
+
+  /// Empty state of the manage-lists page.
+  ///
+  /// In en, this message translates to:
+  /// **'No lists yet. Group to-dos by work, home and so on to find them faster.'**
+  String get todoListEmptyManage;
+
+  /// Title of the to-do detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'To-do'**
+  String get todoDetailTitle;
+
+  /// Hint of the note field on the to-do detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note'**
+  String get todoNoteHint;
+
+  /// Hint of the add-step (subtask) field on the to-do detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a step'**
+  String get todoStepAdd;
+
+  /// Tooltip of the delete-step button.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete step'**
+  String get todoStepDelete;
+
+  /// Step progress shown on a to-do row.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total}'**
+  String todoStepsProgress(int done, int total);
+
+  /// To-do detail / quick add: due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get todoFieldDue;
+
+  /// Placeholder when a to-do has no due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Add date'**
+  String get todoFieldDueEmpty;
+
+  /// To-do detail / quick add: reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get todoFieldReminders;
+
+  /// Placeholder when a to-do has no reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Add reminder'**
+  String get todoFieldRemindersEmpty;
+
+  /// To-do detail / quick add: repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get todoFieldRepeat;
+
+  /// To-do detail / quick add: priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get todoFieldPriority;
+
+  /// To-do detail / quick add: the list it belongs to.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get todoFieldList;
+
+  /// To-do detail: linked diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked diary'**
+  String get todoFieldDiary;
+
+  /// Placeholder when a to-do has no linked diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Link a diary'**
+  String get todoFieldDiaryEmpty;
+
+  /// Shown when the linked diary cannot be found.
+  ///
+  /// In en, this message translates to:
+  /// **'The diary no longer exists'**
+  String get todoFieldDiaryMissing;
+
+  /// To-do detail: tooltip of the button clearing a field (date, repeat, linked diary).
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get todoRemoveField;
+
+  /// Creation time at the bottom of the to-do detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Created {time}'**
+  String todoCreatedAt(String time);
+
+  /// Completion time at the bottom of the to-do detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed {time}'**
+  String todoCompletedAt(String time);
+
+  /// The opened to-do no longer exists (e.g. deleted on another device and synced).
+  ///
+  /// In en, this message translates to:
+  /// **'This to-do was deleted'**
+  String get todoNotFound;
+
+  /// To-do priority: none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get todoPriorityNone;
+
+  /// To-do priority: low.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get todoPriorityLow;
+
+  /// To-do priority: medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get todoPriorityMedium;
+
+  /// To-do priority: high.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get todoPriorityHigh;
+
+  /// Due date label / quick option: today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todoDueToday;
+
+  /// Due date label / quick option: tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get todoDueTomorrow;
+
+  /// Due date label: yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get todoDueYesterday;
+
+  /// Due date quick option: next Monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Monday'**
+  String get todoDueNextWeek;
+
+  /// Due date sheet: open the date picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a date…'**
+  String get todoDuePickDate;
+
+  /// Due date sheet: all day (no time).
+  ///
+  /// In en, this message translates to:
+  /// **'All day'**
+  String get todoDueAllDay;
+
+  /// Due date sheet: set a time.
+  ///
+  /// In en, this message translates to:
+  /// **'Set time'**
+  String get todoDueSetTime;
+
+  /// Due date sheet: remove the due date (repeat goes too).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove date'**
+  String get todoDueRemove;
+
+  /// Due date combined with a time.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}, {time}'**
+  String todoDueWithTime(String date, String time);
+
+  /// Reminder: at the due time.
+  ///
+  /// In en, this message translates to:
+  /// **'At due time'**
+  String get todoReminderAtDue;
+
+  /// Reminder: some minutes before the due time.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute before} other{{count} minutes before}}'**
+  String todoReminderMinutesBefore(int count);
+
+  /// Reminder: some hours before the due time.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hour before} other{{count} hours before}}'**
+  String todoReminderHoursBefore(int count);
+
+  /// Reminder: some days before the due time (same time of day).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day before} other{{count} days before}}'**
+  String todoReminderDaysBefore(int count);
+
+  /// Reminder: at a time on the due date.
+  ///
+  /// In en, this message translates to:
+  /// **'On the day at {time}'**
+  String todoReminderOnDayAt(String time);
+
+  /// Reminder: at a time some days before the due date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day before at {time}} other{{count} days before at {time}}}'**
+  String todoReminderDaysBeforeAt(int count, String time);
+
+  /// Reminder sheet: pick a custom reminder date and time.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom time…'**
+  String get todoReminderCustom;
+
+  /// Shown when the reminder limit is reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} reminders'**
+  String todoReminderLimit(int count);
+
+  /// Tooltip of the remove-reminder button.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove reminder'**
+  String get todoReminderRemove;
+
+  /// Repeat: never.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get todoRepeatNone;
+
+  /// Repeat: daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get todoRepeatDaily;
+
+  /// Repeat: China's statutory workdays (skips public holidays, includes make-up workdays).
+  ///
+  /// In en, this message translates to:
+  /// **'Workdays (China public holidays)'**
+  String get todoRepeatLegalWorkdays;
+
+  /// Repeat: weekly on some days; {days} is a list of weekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly on {days}'**
+  String todoRepeatWeeklyOn(String days);
+
+  /// Repeat: monthly on a day of the month.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly on day {day}'**
+  String todoRepeatMonthlyOnDay(int day);
+
+  /// Repeat: monthly on the n-th weekday; {ordinal} is 1–5.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly on the {ordinal, select, 1{first} 2{second} 3{third} 4{fourth} other{fifth}} {weekday}'**
+  String todoRepeatMonthlyOrdinal(String ordinal, String weekday);
+
+  /// Repeat: monthly on the last day.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly on the last day'**
+  String get todoRepeatMonthlyLastDay;
+
+  /// Repeat: yearly on a month and day.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly on {date}'**
+  String todoRepeatYearlyOn(String date);
+
+  /// Repeat: every n days.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every day} other{Every {count} days}}'**
+  String todoRepeatEveryDays(int count);
+
+  /// Repeat: every n weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every week} other{Every {count} weeks}}'**
+  String todoRepeatEveryWeeks(int count);
+
+  /// Repeat: every n months.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every month} other{Every {count} months}}'**
+  String todoRepeatEveryMonths(int count);
+
+  /// Repeat: every n years.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every year} other{Every {count} years}}'**
+  String todoRepeatEveryYears(int count);
+
+  /// Joins two parts of a repeat summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{a} · {b}'**
+  String todoRepeatSummaryJoin(String a, String b);
+
+  /// Repeat sheet: open custom repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get todoRepeatCustom;
+
+  /// Title of the custom repeat sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom repeat'**
+  String get todoRepeatCustomTitle;
+
+  /// Custom repeat: unit day.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get todoRepeatUnitDay;
+
+  /// Custom repeat: unit week.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get todoRepeatUnitWeek;
+
+  /// Custom repeat: unit month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get todoRepeatUnitMonth;
+
+  /// Custom repeat: unit year.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get todoRepeatUnitYear;
+
+  /// Custom repeat: interval.
+  ///
+  /// In en, this message translates to:
+  /// **'Every'**
+  String get todoRepeatInterval;
+
+  /// Custom repeat: which weekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get todoRepeatOnDays;
+
+  /// Custom repeat: switch to count the next time from the completion day.
+  ///
+  /// In en, this message translates to:
+  /// **'Count from completion'**
+  String get todoRepeatFromCompletion;
+
+  /// Subtitle of the count-from-completion switch.
+  ///
+  /// In en, this message translates to:
+  /// **'For things like watering plants: again a while after you do it'**
+  String get todoRepeatFromCompletionSubtitle;
+
+  /// Custom repeat: end condition.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends'**
+  String get todoRepeatEnds;
+
+  /// Repeat end: never.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get todoRepeatEndsNever;
+
+  /// Repeat end: until a date.
+  ///
+  /// In en, this message translates to:
+  /// **'Until {date}'**
+  String todoRepeatEndsOn(String date);
+
+  /// Repeat end: after a number of times.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 time} other{{count} times}}'**
+  String todoRepeatEndsAfter(int count);
+
+  /// Custom repeat: choose to end on a date.
+  ///
+  /// In en, this message translates to:
+  /// **'On a date'**
+  String get todoRepeatEndsOnPick;
+
+  /// Custom repeat: choose to end after a count.
+  ///
+  /// In en, this message translates to:
+  /// **'After a number of times'**
+  String get todoRepeatEndsAfterPick;
+
+  /// When setting repeat on a to-do without a date: the date becomes today.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeating starts today'**
+  String get todoRepeatNeedsDate;
+
+  /// Settings entry and title of the to-do settings page.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos'**
+  String get todoSettingsTitle;
+
+  /// Subtitle of the To-dos entry on the settings home.
+  ///
+  /// In en, this message translates to:
+  /// **'Lists, display and reminders'**
+  String get todoSettingsSubtitle;
+
+  /// To-do settings: display group.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get todoSettingsDisplayGroup;
+
+  /// To-do settings: subtitle of the show-completed switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Show completed to-dos at the bottom of lists and the inbox'**
+  String get todoSettingsShowCompletedSubtitle;
+
+  /// To-do settings: the list new to-dos go to when created from a smart view.
+  ///
+  /// In en, this message translates to:
+  /// **'New to-dos go to'**
+  String get todoSettingsDefaultList;
+
+  /// To-do settings: which view the To-dos tab opens to.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to'**
+  String get todoSettingsDefaultView;
+
+  /// Android notification channel name for to-do reminders (shown in system settings).
+  ///
+  /// In en, this message translates to:
+  /// **'To-do reminders'**
+  String get todoNotificationChannel;
+
+  /// Description of the to-do reminders Android notification channel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies you at the reminder times you set on to-dos'**
+  String get todoNotificationChannelDescription;
+
+  /// Button on a reminder notification: mark the to-do as done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get todoNotificationComplete;
+
+  /// Button on a reminder notification: remind again later.
+  ///
+  /// In en, this message translates to:
+  /// **'Snooze'**
+  String get todoNotificationSnooze;
+
+  /// Default action name of Linux notifications: open the to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get todoNotificationOpen;
+
+  /// Body of a snoozed reminder notification (when the to-do has no due date).
+  ///
+  /// In en, this message translates to:
+  /// **'Snoozed reminder'**
+  String get todoNotificationSnoozedBody;
+
+  /// To-do settings: reminders group.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get todoSettingsRemindersGroup;
+
+  /// To-do settings: the system notification permission row.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission'**
+  String get todoSettingsPermission;
+
+  /// Notification permission is granted.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get todoSettingsPermissionOn;
+
+  /// Notification permission is denied; tap to request it or open system settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed. Tap to turn on'**
+  String get todoSettingsPermissionOff;
+
+  /// Shown when Android does not allow exact alarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact alarms are restricted by the system, so reminders may be a few minutes late'**
+  String get todoSettingsExactOff;
+
+  /// To-do settings: default time of on-the-day reminders for all-day to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'All-day reminder time'**
+  String get todoSettingsAllDayTime;
+
+  /// To-do settings: how long the notification Snooze button waits.
+  ///
+  /// In en, this message translates to:
+  /// **'Snooze for'**
+  String get todoSettingsSnooze;
+
+  /// Snooze duration.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute} other{{count} minutes}}'**
+  String todoSettingsSnoozeMinutes(int count);
+
+  /// To-do settings: reminders on the lock screen don't show the to-do text.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide content on the lock screen'**
+  String get todoSettingsHideContent;
+
+  /// Subtitle of the hide-on-lock-screen switch.
+  ///
+  /// In en, this message translates to:
+  /// **'The lock screen only shows that there\'s a reminder; unlock to see what it is'**
+  String get todoSettingsHideContentSubtitle;
+
+  /// Footer of the reminders group in to-do settings (desktop).
+  ///
+  /// In en, this message translates to:
+  /// **'On computers, reminders only appear while Jotsy is open. Reminders that come due while it\'s closed won\'t pop up.'**
+  String get todoSettingsDesktopNote;
+
+  /// To-do settings: entry to tips about late or missing reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders late or missing?'**
+  String get todoSettingsReliability;
+
+  /// Body of the late-or-missing reminders tips sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Some phone systems restrict apps in the background. If reminders often don\'t ring or arrive late, allow Jotsy to auto-start, turn off battery optimization for Jotsy, and make sure the Notifications and Alarms & reminders permissions are on in system settings.'**
+  String get todoSettingsReliabilityBody;
+
+  /// Shown when a reminder was added but the system doesn't allow notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off, so reminders won\'t appear'**
+  String get todoReminderPermissionDenied;
+
+  /// Button on the notifications-off notice: open system settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get todoReminderPermissionAction;
+
+  /// Calendar display options: show to-dos switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Show to-dos'**
+  String get calendarShowTodos;
+
+  /// Calendar display options: description of the show to-dos switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark days with to-dos and list them when a day is selected'**
+  String get calendarShowTodosDescription;
+
+  /// Calendar day long-press sheet: add a to-do due on this day.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a to-do'**
+  String get calendarAddTodo;
+
+  /// Title of the to-do card below the selected calendar day.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos for this day'**
+  String get calendarTodoSectionTitle;
+
+  /// Screen reader hint on an upcoming repeat occurrence in the calendar that can't be ticked yet.
+  ///
+  /// In en, this message translates to:
+  /// **'An upcoming repeat of this to-do; tick it when it comes'**
+  String get calendarTodoRepeatHint;
+
+  /// Diary preview More sheet: add a to-do linked to this diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a to-do'**
+  String get diaryPreviewAddTodo;
+
+  /// Diary preview More sheet: copy the body's checklist items into to-dos (the body is unchanged).
+  ///
+  /// In en, this message translates to:
+  /// **'Copy checklist to to-dos'**
+  String get diaryPreviewConvertTodos;
+
+  /// Title of the copy-checklist-to-to-dos sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to to-dos'**
+  String get todoConvertTitle;
+
+  /// Explanation in the copy-checklist-to-to-dos sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected items are added as to-dos linked to this diary. The diary itself is unchanged.'**
+  String get todoConvertHint;
+
+  /// Submit button of the copy-checklist-to-to-dos sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1} other{Add {count}}}'**
+  String todoConvertSubmit(int count);
+
+  /// Notice after copying checklist items to to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added 1 to-do} other{Added {count} to-dos}}'**
+  String todoConvertDone(int count);
+
+  /// Title of the related to-dos block after the diary body in preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Related to-dos'**
+  String get diaryLinkedTodosTitle;
 }
 
 class _AppLocalizationsDelegate

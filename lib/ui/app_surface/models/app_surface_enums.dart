@@ -16,7 +16,9 @@ enum AppBackgroundKind { none, color, image }
 /// - [editor]：编辑页、发表页、模板编辑页；
 /// - [preview]：预览页（仅当预览样式的纸张为“跟随主题”时，用户自定义的
 ///   纸张颜色优先）；
-/// - [other]：其余二级页（搜索、日记本、纪念日、草稿箱、归档、回收站等）。
+/// - [other]：其余二级页（搜索、日记本、纪念日、草稿箱、归档、回收站等）；
+/// - [todos]：首页的待办 Tab（后加的，排在末尾；区域胶囊按
+///   [appBackgroundAreaDisplayOrder] 排在日记之后）。
 enum AppBackgroundArea {
   diaries,
   calendar,
@@ -25,7 +27,22 @@ enum AppBackgroundArea {
   editor,
   preview,
   other,
+  todos,
 }
+
+/// 区域在“背景与材质”里的展示顺序：首页 Tab 按底栏顺序在前，二级页在后。
+/// 枚举只能在末尾追加（见文件头），展示顺序另列。
+const List<AppBackgroundArea> appBackgroundAreaDisplayOrder =
+    <AppBackgroundArea>[
+      AppBackgroundArea.diaries,
+      AppBackgroundArea.todos,
+      AppBackgroundArea.calendar,
+      AppBackgroundArea.explore,
+      AppBackgroundArea.settings,
+      AppBackgroundArea.editor,
+      AppBackgroundArea.preview,
+      AppBackgroundArea.other,
+    ];
 
 /// 区域背景的取值方式：[follow] 跟随全局背景；[off] 这个区域不画背景；
 /// [custom] 用区域自己的背景。

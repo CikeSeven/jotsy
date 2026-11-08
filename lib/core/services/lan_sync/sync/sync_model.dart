@@ -22,7 +22,11 @@ import 'package:meta/meta.dart';
 ///   与版本 1 的规范值逐字节相同，升级后已有的历史哈希仍然有效；提升版本只
 ///   为让旧版设备拒绝同步——它认不出这个字段，写入时会丢掉图片，下次同步再
 ///   把“没有图片”的版本当作冲突的一方传回来。
-const int kSyncFormatVersion = 2;
+/// - 3：新增待办清单 `todoList` 与待办 `todo` 两类实体，prefs 多出数据类开关
+///   `feature.todos`。已有记录的规范值不变，历史哈希仍有效；旧版设备的实体
+///   集合本来也对不上，提升版本让 `sync.hello` 明确以“版本不同”拒绝、提示
+///   升级，而不是含糊地报实体集合不符。
+const int kSyncFormatVersion = 3;
 
 /// 规范值里托管媒体引用的前缀：`jotsy-media:diary_images/media_x/a.jpg`。
 const String kSyncMediaRefPrefix = 'jotsy-media:';
@@ -38,6 +42,13 @@ enum SyncEntity {
   template,
   anniversary,
   dayMood,
+
+  /// 待办清单。排在 [todo] 之前：枚举顺序即写入顺序，清单先于其中的待办
+  /// 落库（规格 §4.6）。
+  todoList,
+
+  /// 待办（`listId` 为 null 即收集箱）。
+  todo,
 
   /// 只在两端都开启“同步设置”时参与的设置（界面与编辑器偏好）。
   settings,
@@ -65,7 +76,7 @@ abstract final class SyncFacet {
   // notebook
   static const String definition = 'definition';
 
-  // membership / comment / template / anniversary / dayMood
+  // membership / comment / template / anniversary / dayMood / todoList / todo
   static const String main = 'main';
 
   // orderList

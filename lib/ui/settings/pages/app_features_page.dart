@@ -1,4 +1,4 @@
-// 设置 → 功能管理：整体开关日历、探索两个页面（纪念日随日历放在其下），
+// 设置 → 功能管理：整体开关日历、待办、探索三个页面（纪念日随日历放在其下），
 // 以及日记本、日记模板、时间胶囊、留言、AI 助手、侧滑归档几项功能。侧滑归档只在手机上有
 // （桌面卡片没有左滑，用右键菜单），桌面不显示这一行。
 //
@@ -121,6 +121,12 @@ class AppFeaturesPage extends ConsumerWidget {
                             ),
                           ),
                         ],
+                      ),
+                      SettingsSwitchTile(
+                        title: l10n.navTodos,
+                        subtitle: l10n.settingsFeaturesTodosSubtitle,
+                        value: features.todos,
+                        onChanged: writer((v) => features.copyWith(todos: v)),
                       ),
                       SettingsSwitchTile(
                         title: l10n.navExplore,

@@ -24,6 +24,7 @@
 │  │  ├─ diaries/  # 日记主业务模块：pages / controllers / providers / models|viewmodels / export / sections|widgets（widgets/diary_editor/ 为共用编辑器）
 │  │  ├─ app_surface/  # 背景与材质（玻璃）
 │  │  ├─ anniversaries/  # 纪念日与倒数日
+│  │  ├─ todos/  # 独立待办
 │  │  ├─ diary_templates/  # 日记模板
 │  │  ├─ notebooks/  # 日记本
 │  │  ├─ ai/  # AI 助手界面
@@ -57,7 +58,7 @@
 - 必须：业务流程（异步链路、批量操作、撤销、防抖、发布流程）放 `controllers/`。
 - 必须：数据映射、草稿模型、metadata 组装放 `models/` 或 `viewmodels/`。
 - 必须：可复用 UI 放 `sections/` 或 `widgets/`，避免页面文件膨胀。
-- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / day mood ops / draft ops / template ops / notebook ops / explore ops / place history ops（用过的地点）/ comment ops / diary link ops / diary batch writes（多选的批量状态写入）/ sync ops（同步读行）/ sync writes（同步按原值写入）/ sync order（同步顺序列表重排）/ ai ops（AI 对话、消息与结果）/ ai context ops（发给 AI 的日记）/ media repair ops（托管图片格式修复）/ storage ops（存储管理）/ scope SQL）。
+- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / day mood ops / draft ops / template ops / notebook ops / explore ops / place history ops（用过的地点）/ comment ops / diary link ops / diary batch writes（多选的批量状态写入）/ sync ops（同步读行）/ sync writes（同步按原值写入）/ sync order（同步顺序列表重排）/ ai ops（AI 对话、消息与结果）/ ai context ops（发给 AI 的日记）/ media repair ops（托管图片格式修复）/ storage ops（存储管理）/ todo ops / scope SQL）。
 - 禁止：单文件混杂“页面布局 + 业务编排 + 数据转换”。
 - 例外：极简静态页面可不强制拆 controller。
 - 必须：库里从不开启外键：彻底删除日记、删除日记本、合并日记本与覆盖恢复等每条删除路径都必须在同一事务里手动清理关联行（标签、日记本成员、留言、AI 回应等）。
@@ -106,6 +107,7 @@
 | 草稿与发布页 | `drafts_publish.md` |
 | 日记模板 | `diary_templates.md` |
 | 日记本（私密、上锁、嵌套、封面、章节、备份合并、首页范围与启动恢复） | `notebooks.md` |
+| 待办、提醒与日历 / 日记联动 | `todos.md` |
 | 日历、纪念日、这天的心情、法定节假日 | `calendar.md` |
 | 探索页 | `explore.md` |
 | 留言 | `comments.md` |

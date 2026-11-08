@@ -65,6 +65,7 @@ String lanSyncItemKindLabel(AppLocalizations l10n, LanSyncItemKind kind) {
     LanSyncItemKind.templates => l10n.lanSyncItemTemplates,
     LanSyncItemKind.anniversaries => l10n.lanSyncItemAnniversaries,
     LanSyncItemKind.dayMoods => l10n.lanSyncItemDayMoods,
+    LanSyncItemKind.todos => l10n.lanSyncItemTodos,
     LanSyncItemKind.settings => l10n.lanSyncItemSettings,
   };
 }

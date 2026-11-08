@@ -1,6 +1,8 @@
 import Flutter
 import UIKit
 import WebKit
+// 待办提醒：通知按钮在后台 isolate 里处理，要给它注册插件。
+import flutter_local_notifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -8,6 +10,12 @@ import WebKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // 待办提醒：通知上的“完成 / 稍后提醒”在后台 isolate 里处理，让它也能
+    // 调用插件；应用在前台时照样弹出通知（见 flutter_local_notifications）。
+    FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
+    UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     GeneratedPluginRegistrant.register(with: self)
     if let registrar = registrar(forPlugin: "JotsyBackupFileSaver") {
       BackupFileSaver.register(with: registrar)
@@ -15,7 +23,33 @@ import WebKit
     if let registrar = registrar(forPlugin: "JotsyWebCookies") {
       registerWebCookies(with: registrar)
     }
+    if let registrar = registrar(forPlugin: "JotsyNotifications") {
+      registerNotifications(with: registrar)
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  /// 待办提醒：定时通知按本机时区排，时区名只有原生知道。iOS 的通知设置
+  /// 页由系统设置统一提供，这里打开本应用的设置页。
+  private func registerNotifications(with registrar: FlutterPluginRegistrar) {
+    let channel = FlutterMethodChannel(
+      name: "com.jotsy.diary/notifications",
+      binaryMessenger: registrar.messenger()
+    )
+    channel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "timeZone":
+        result(TimeZone.current.identifier)
+      case "openNotificationSettings":
+        guard let url = URL(string: UIApplication.openSettingsURLString) else {
+          result(false)
+          return
+        }
+        UIApplication.shared.open(url) { opened in result(opened) }
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
   }
 
   /// 云端笔记导入：读取网页视图（默认数据存储）中对某个 https 地址生效的

@@ -20,6 +20,7 @@ class MainActivity : FlutterFragmentActivity() {
   private val configChannelName = "com.jotsy.diary/config"
   private val backupFileSaverChannelName = "com.jotsy.diary/backup_file_saver"
   private val webCookiesChannelName = "com.jotsy.diary/web_cookies"
+  private val notificationsChannelName = "com.jotsy.diary/notifications"
   private val backupFileSaverRequestCode = 7621
   private var pendingBackupSaveResult: MethodChannel.Result? = null
   private var pendingBackupSourcePath: String? = null
@@ -152,6 +153,16 @@ class MainActivity : FlutterFragmentActivity() {
             val value = BuildConfig.QWEATHER_API_HOST.trim()
             result.success(if (value.isEmpty()) null else value)
           }
+          else -> result.notImplemented()
+        }
+      }
+    // 待办提醒：定时通知要按本机时区排（夏令时切换后仍是墙上时钟的那一刻），
+    // 时区名只有原生知道；权限被拒后从设置页跳到系统的应用通知设置。
+    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, notificationsChannelName)
+      .setMethodCallHandler { call, result ->
+        when (call.method) {
+          "timeZone" -> result.success(java.util.TimeZone.getDefault().id)
+          "openNotificationSettings" -> result.success(openNotificationSettings())
           else -> result.notImplemented()
         }
       }
@@ -338,5 +349,26 @@ class MainActivity : FlutterFragmentActivity() {
     pendingBackupSaveResult?.success(null)
     clearPendingBackupSave()
     super.onDestroy()
+  }
+
+  /// 打开系统里本应用的通知设置（Android 8+ 直达通知页，更早的系统打开应用
+  /// 详情页）。经 startActivity → startActivityForResult，应用锁把它当作
+  /// 应用自己打开的页面，回来时不上锁。
+  private fun openNotificationSettings(): Boolean {
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+    } else {
+      Intent(
+        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", packageName, null),
+      )
+    }
+    return try {
+      startActivity(intent)
+      true
+    } catch (_: Exception) {
+      false
+    }
   }
 }

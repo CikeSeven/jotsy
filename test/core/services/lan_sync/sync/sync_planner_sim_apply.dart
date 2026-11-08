@@ -79,6 +79,15 @@ int simApply(SimReplica replica, SyncSidePlan plan) {
         record == null
             ? replica.anniversaries.remove(write.key.id)
             : _putAnniversary(replica, record);
+      case SyncEntity.todoList:
+        // 写入层删清单只删这一行，其中的待办由计划逐条给出。
+        record == null
+            ? replica.todoLists.remove(write.key.id)
+            : _putTodoList(replica, record);
+      case SyncEntity.todo:
+        record == null
+            ? replica.todos.remove(write.key.id)
+            : _putTodo(replica, record);
       case SyncEntity.template ||
           SyncEntity.dayMood ||
           SyncEntity.settings ||
@@ -98,6 +107,9 @@ void simHardDeleteDiary(SimReplica replica, String id) {
   replica.comments.removeWhere((_, comment) => comment.diaryId == id);
   for (final anniversary in replica.anniversaries.values) {
     if (anniversary.linkedDiaryId == id) anniversary.linkedDiaryId = null;
+  }
+  for (final todo in replica.todos.values) {
+    if (todo.linkedDiaryId == id) todo.linkedDiaryId = null;
   }
 }
 
@@ -264,6 +276,26 @@ void _putAnniversary(SimReplica replica, SyncRecord record) {
   replica.anniversaries[record.key.id] = SimAnniversary(
     value['title']! as String,
     value['linkedDiaryId'] as String?,
+    value['updatedAt']! as int,
+  );
+}
+
+void _putTodoList(SimReplica replica, SyncRecord record) {
+  final value = _map(record.facets[SyncFacet.main]);
+  replica.todoLists[record.key.id] = SimTodoList(
+    value['name']! as String,
+    value['sortOrder']! as double,
+    value['updatedAt']! as int,
+  );
+}
+
+void _putTodo(SimReplica replica, SyncRecord record) {
+  final value = _map(record.facets[SyncFacet.main]);
+  replica.todos[record.key.id] = SimTodo(
+    value['title']! as String,
+    value['listId'] as String?,
+    value['linkedDiaryId'] as String?,
+    value['sortOrder']! as double,
     value['updatedAt']! as int,
   );
 }

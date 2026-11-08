@@ -34,7 +34,10 @@ enum NotebookIcon {
   cakeCandles(FontAwesomeIcons.cakeCandles),
   stethoscope(FontAwesomeIcons.stethoscope),
   wallet(FontAwesomeIcons.wallet),
-  gamepad(FontAwesomeIcons.gamepad);
+  gamepad(FontAwesomeIcons.gamepad),
+  // 待办清单的默认图标（清单与日记本共用这套图标）；枚举名即持久化值，只在
+  // 末尾追加。
+  listCheck(FontAwesomeIcons.listCheck);
 
   const NotebookIcon(this.data);
 

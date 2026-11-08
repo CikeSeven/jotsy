@@ -80,9 +80,10 @@ abstract final class CalendarCellSubtitle {
 
 /// 日期数字左上方的角标：一格只放一个，按重要程度取第一个。
 ///
-/// 优先级：未解封胶囊的锁 > 休/班 > 纪念日心形 > 天气。锁关系到内容是否
-/// 可看，最先；休/班是这一天本身的属性，比“当天第一篇的天气”更该一眼
-/// 看到；心形只在不显示农历时出现（显示农历时纪念日名称写在小字行）。
+/// 优先级：未解封胶囊的锁 > 休/班 > 纪念日心形 > 待办 > 天气。锁关系到
+/// 内容是否可看，最先；休/班是这一天本身的属性，比“当天第一篇的天气”更该
+/// 一眼看到；心形只在不显示农历时出现（显示农历时纪念日名称写在小字行）；
+/// 待办是用户要做的事，排在天气之前。
 /// 角标与数字之间的间隙、槽位宽度由 [CalendarCellLayout] 统一负责，这里
 /// 只决定画什么和用什么颜色。
 abstract final class CalendarCellLeadingBadge {
@@ -95,6 +96,7 @@ abstract final class CalendarCellLeadingBadge {
     required CalendarHolidayDay? holiday,
     required bool isOutside,
     bool anniversaryHeart = false,
+    bool todoMark = false,
     Color? onFill,
     bool onPhoto = false,
   }) {
@@ -128,6 +130,19 @@ abstract final class CalendarCellLeadingBadge {
         enabled: onPhoto,
         child: FaIcon(
           FontAwesomeIcons.solidHeart,
+          size: 7.5,
+          color: isOutside && onFill == null
+              ? color.withValues(alpha: 0.45)
+              : color,
+        ),
+      );
+    }
+    if (todoMark) {
+      final color = onFill ?? colorScheme.secondary;
+      return CalendarCellBadgeBackdrop(
+        enabled: onPhoto,
+        child: FaIcon(
+          FontAwesomeIcons.solidSquareCheck,
           size: 7.5,
           color: isOutside && onFill == null
               ? color.withValues(alpha: 0.45)

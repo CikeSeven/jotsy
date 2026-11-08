@@ -12839,6 +12839,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Ask the model for its thinking; retried without it if the model doesn\'t support it';
 
   @override
+  String get aiModelToolsToggle => 'Supports tool calling';
+
+  @override
+  String get aiModelToolsSubtitle =>
+      'Lets the assistant operate the app; falls back to plain Q&A if the model doesn\'t support it';
+
+  @override
   String get aiModelMaxOutput => 'Max output tokens';
 
   @override

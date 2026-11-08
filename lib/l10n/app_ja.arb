@@ -16360,6 +16360,14 @@
   "@aiModelReasoningSubtitle": {
     "description": "Explanation of the reasoning toggle."
   },
+  "aiModelToolsToggle": "ツール呼び出しに対応",
+  "@aiModelToolsToggle": {
+    "description": "Toggle for whether the model supports tool calling (lets the assistant operate the app)."
+  },
+  "aiModelToolsSubtitle": "AI アシスタントがアプリを直接操作できます。非対応のモデルでは通常の質問応答に切り替わります",
+  "@aiModelToolsSubtitle": {
+    "description": "Explanation of the tool calling toggle."
+  },
   "aiModelMaxOutput": "最大出力トークン数",
   "@aiModelMaxOutput": {
     "description": "Model max output field."

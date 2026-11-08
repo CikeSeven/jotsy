@@ -16360,6 +16360,14 @@
   "@aiModelReasoningSubtitle": {
     "description": "Explanation of the reasoning toggle."
   },
+  "aiModelToolsToggle": "Поддерживает вызов инструментов",
+  "@aiModelToolsToggle": {
+    "description": "Toggle for whether the model supports tool calling (lets the assistant operate the app)."
+  },
+  "aiModelToolsSubtitle": "Ассистент сможет сам выполнять действия в приложении; если модель это не поддерживает, остаются обычные ответы на вопросы",
+  "@aiModelToolsSubtitle": {
+    "description": "Explanation of the tool calling toggle."
+  },
   "aiModelMaxOutput": "Максимум токенов в ответе",
   "@aiModelMaxOutput": {
     "description": "Model max output field."

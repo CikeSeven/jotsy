@@ -5,6 +5,7 @@ import 'ai_client.dart';
 import 'ai_client_openai.dart';
 import 'ai_failure.dart';
 import 'ai_models.dart';
+import 'ai_tool_call_assembler.dart';
 
 /// OpenAI Responses API（`/responses`，OpenAI 现行的主接口；也有部分转发
 /// 服务提供同格式接口）。
@@ -35,7 +36,7 @@ class OpenAiResponsesClient extends AiChatClient {
       'model': request.model,
       if (request.system?.trim().isNotEmpty ?? false)
         'instructions': request.system,
-      'input': [for (final message in request.messages) _message(message)],
+      'input': [for (final message in request.messages) ..._input(message)],
       'stream': stream,
       'store': false,
       if (config.sendTemperature &&
@@ -45,7 +46,70 @@ class OpenAiResponsesClient extends AiChatClient {
       if (request.maxOutputTokens != null)
         'max_output_tokens': request.maxOutputTokens,
       if (request.reasoning) 'reasoning': <String, Object?>{'summary': 'auto'},
+      // `store: false` 时推理条目只能靠加密内容带回下一步；只在带工具的
+      // 请求里要，普通请求用不上。
+      if (request.reasoning && request.hasTools)
+        'include': ['reasoning.encrypted_content'],
+      if (request.hasTools)
+        'tools': [
+          for (final tool in request.tools)
+            <String, Object?>{
+              'type': 'function',
+              'name': tool.name,
+              'description': tool.description,
+              'parameters': tool.parameters,
+              // 不让服务端把 schema 自动收紧成“每个参数都必填”。
+              'strict': false,
+            },
+        ],
+      if (request.hasTools && request.toolChoice == AiToolChoice.none)
+        'tool_choice': 'none',
     });
+  }
+
+  /// 一条消息编成若干 input 条目。
+  List<Map<String, Object?>> _input(AiMessage message) {
+    if (message.role == AiRole.user) {
+      final results = message.toolResults.toList();
+      final rest = [
+        for (final part in message.parts)
+          if (part is AiTextPart || part is AiImagePart) part,
+      ];
+      return [
+        for (final result in results)
+          <String, Object?>{
+            'type': 'function_call_output',
+            'call_id': result.callId,
+            'output': result.content,
+          },
+        if (rest.isNotEmpty || results.isEmpty)
+          _message(AiMessage(AiRole.user, rest)),
+      ];
+    }
+    // 有本步的原始输出条目时原样带回：推理条目与紧随其后的消息 / 调用
+    // 条目要成对出现，自己重新拼会对不上。没有加密内容的推理条目在
+    // `store: false` 下无从查起，丢掉。
+    final items = [
+      for (final replay in message.replayFor(AiProtocol.openAiResponses))
+        for (final item in jsonList(replay.data['items']))
+          if (jsonMap(item) case final map?)
+            if (jsonString(map['type']) != 'reasoning' ||
+                jsonString(map['encrypted_content']) != null)
+              map,
+    ];
+    if (items.isNotEmpty) return items;
+    final text = message.text;
+    return [
+      if (text.isNotEmpty || message.toolCalls.isEmpty) _message(message),
+      for (final call in message.toolCalls)
+        <String, Object?>{
+          'type': 'function_call',
+          if (jsonString(call.providerData?['id']) case final id?) 'id': id,
+          'call_id': call.id,
+          'name': call.name,
+          'arguments': jsonEncode(call.arguments ?? const <String, Object?>{}),
+        },
+    ];
   }
 
   Map<String, Object?> _message(AiMessage message) {
@@ -58,16 +122,16 @@ class OpenAiResponsesClient extends AiChatClient {
       'role': role,
       'content': [
         for (final part in message.parts)
-          switch (part) {
-            AiTextPart(:final text) => <String, Object?>{
+          if (part case AiTextPart(:final text))
+            <String, Object?>{
               'type': user ? 'input_text' : 'output_text',
               'text': text,
-            },
-            AiImagePart(:final bytes, :final mimeType) => <String, Object?>{
+            }
+          else if (part case AiImagePart(:final bytes, :final mimeType))
+            <String, Object?>{
               'type': 'input_image',
               'image_url': 'data:$mimeType;base64,${base64Encode(bytes)}',
             },
-          },
       ],
     };
   }
@@ -87,37 +151,14 @@ class OpenAiResponsesClient extends AiChatClient {
       yield parseResponse(await response.readJsonObject());
       return;
     }
-    yield* parseEventStream(response, (_, data) => <AiChunk>[parseEvent(data)]);
+    final state = OpenAiResponsesStreamState();
+    yield* parseEventStream(response, (_, data) => <AiChunk>[state.add(data)]);
+    final end = state.finish();
+    if (!end.isEmpty) yield end;
   }
 
-  /// 流式的一个事件。
-  static AiChunk parseEvent(Map<String, Object?> data) {
-    final type = jsonString(data['type']) ?? '';
-    switch (type) {
-      case 'response.output_text.delta':
-        return AiChunk(text: jsonString(data['delta']) ?? '');
-      case 'response.reasoning_summary_text.delta' ||
-          'response.reasoning_text.delta':
-        return AiChunk(reasoning: jsonString(data['delta']) ?? '');
-      case 'response.reasoning_summary_part.done':
-        // 几段思考摘要之间空一行，读起来不粘在一起。
-        return const AiChunk(reasoning: '\n\n');
-      case 'response.completed' || 'response.incomplete':
-        final body = jsonMap(data['response']);
-        return AiChunk(
-          usage: _usage(body?['usage']),
-          finishReason: _finish(body),
-        );
-      case 'response.failed':
-        final error = jsonMap(jsonMap(data['response'])?['error']);
-        throw _error(error);
-      case 'error':
-        throw _error(data);
-    }
-    return const AiChunk();
-  }
-
-  /// 一次性响应：`output` 里的 `message`（正文）与 `reasoning`（思考摘要）。
+  /// 一次性响应：`output` 里的 `message`（正文）、`reasoning`（思考摘要）与
+  /// `function_call`（工具调用）。
   static AiChunk parseResponse(Map<String, Object?> data) {
     if (data['error'] != null && jsonString(data['status']) != 'completed') {
       final error = jsonMap(data['error']);
@@ -151,11 +192,15 @@ class OpenAiResponsesClient extends AiChatClient {
         providerMessage: jsonEncode(data),
       );
     }
+    final state = OpenAiResponsesStreamState()..addOutput(data['output']);
+    final end = state.finish(finish: _finish(data));
     return AiChunk(
       text: text.toString(),
       reasoning: reasoning.join('\n\n'),
       usage: _usage(data['usage']),
-      finishReason: _finish(data),
+      finishReason: end.finishReason ?? _finish(data),
+      toolCalls: end.toolCalls,
+      replay: end.replay,
     );
   }
 
@@ -209,4 +254,119 @@ class OpenAiResponsesClient extends AiChatClient {
   @override
   Future<List<AiRemoteModel>> listModels({HttpCancelToken? cancelToken}) =>
       OpenAiChatClient(config, http).listModels(cancelToken: cancelToken);
+}
+
+/// Responses 一次流式响应的状态。事件类型以数据里的 `type` 为准：
+/// - 正文 / 思考增量直接吐出；
+/// - `function_call` 条目：`output_item.added` 报告开始，参数增量追加，
+///   `function_call_arguments.done` 与 `output_item.done` 给出完整快照；
+/// - 本步全部输出条目（`output_item.done`，没收到时取 `response.completed`
+///   里的 `output`）攒起来作为回放数据，下一步原样带回。
+class OpenAiResponsesStreamState {
+  final AiToolCallAssembler _calls = AiToolCallAssembler();
+  final Map<int, Map<String, Object?>> _items = <int, Map<String, Object?>>{};
+  AiFinishReason? _finish;
+
+  AiChunk add(Map<String, Object?> data) {
+    final type = jsonString(data['type']) ?? '';
+    switch (type) {
+      case 'response.output_text.delta':
+        return AiChunk(text: jsonString(data['delta']) ?? '');
+      case 'response.reasoning_summary_text.delta' ||
+          'response.reasoning_text.delta':
+        return AiChunk(reasoning: jsonString(data['delta']) ?? '');
+      case 'response.reasoning_summary_part.done':
+        // 几段思考摘要之间空一行，读起来不粘在一起。
+        return const AiChunk(reasoning: '\n\n');
+      case 'response.output_item.added':
+        final item = jsonMap(data['item']);
+        if (jsonString(item?['type']) != 'function_call') break;
+        return AiChunk(
+          toolCallStarted: _calls.add(
+            _key(item?['id'], data['output_index']),
+            id: jsonString(item?['call_id']),
+            name: jsonString(item?['name']),
+            arguments: jsonString(item?['arguments']),
+          ),
+        );
+      case 'response.function_call_arguments.delta':
+        _calls.add(
+          _key(data['item_id'], data['output_index']),
+          arguments: jsonString(data['delta']),
+        );
+      case 'response.function_call_arguments.done':
+        _calls.add(
+          _key(data['item_id'], data['output_index']),
+          arguments: jsonString(data['arguments']),
+          replaceArguments: true,
+        );
+      case 'response.output_item.done':
+        final item = jsonMap(data['item']);
+        if (item != null) _addItem(item, data['output_index']);
+      case 'response.completed' || 'response.incomplete':
+        final body = jsonMap(data['response']);
+        if (_items.isEmpty) addOutput(body?['output']);
+        _finish = OpenAiResponsesClient._finish(body);
+        return AiChunk(
+          usage: OpenAiResponsesClient._usage(body?['usage']),
+          finishReason: _finish,
+        );
+      case 'response.failed':
+        final error = jsonMap(jsonMap(data['response'])?['error']);
+        throw OpenAiResponsesClient._error(error);
+      case 'error':
+        throw OpenAiResponsesClient._error(data);
+    }
+    return const AiChunk();
+  }
+
+  /// 一次性响应或 `response.completed` 里的整份 `output`。
+  void addOutput(Object? output) {
+    final items = jsonList(output);
+    for (var i = 0; i < items.length; i++) {
+      final item = jsonMap(items[i]);
+      if (item != null) _addItem(item, i);
+    }
+  }
+
+  void _addItem(Map<String, Object?> item, Object? outputIndex) {
+    final index = outputIndex is int ? outputIndex : _items.length;
+    _items[index] = item;
+    if (jsonString(item['type']) != 'function_call') return;
+    final id = jsonString(item['id']);
+    _calls.add(
+      _key(item['id'], outputIndex),
+      id: jsonString(item['call_id']),
+      name: jsonString(item['name']),
+      arguments: jsonString(item['arguments']),
+      replaceArguments: true,
+      providerData: id == null ? null : <String, Object?>{'id': id},
+    );
+  }
+
+  /// 条目 id 优先；个别转发服务不给 id 时退回输出下标。
+  static Object _key(Object? itemId, Object? outputIndex) {
+    if (itemId is String && itemId.isNotEmpty) return itemId;
+    return 'output:$outputIndex';
+  }
+
+  /// 流结束：完整的工具调用，以及（有调用时）本步全部输出条目。
+  AiChunk finish({AiFinishReason? finish}) {
+    final ended = finish ?? _finish;
+    final calls = _calls.finish();
+    final ordered = _items.keys.toList()..sort();
+    return AiChunk(
+      toolCalls: calls,
+      replay: calls.isEmpty || ordered.isEmpty
+          ? const <AiReplayPart>[]
+          : <AiReplayPart>[
+              AiReplayPart(AiProtocol.openAiResponses, <String, Object?>{
+                'items': [for (final index in ordered) _items[index]],
+              }),
+            ],
+      finishReason: calls.isNotEmpty && (ended?.isComplete ?? false)
+          ? AiFinishReason.toolCalls
+          : null,
+    );
+  }
 }

@@ -4,6 +4,7 @@ import '../http_cancel_token.dart';
 import 'ai_client.dart';
 import 'ai_failure.dart';
 import 'ai_models.dart';
+import 'ai_tool_call_assembler.dart';
 
 /// Anthropic Messages API（Claude，以及提供同格式接口的转发服务）。
 ///
@@ -49,20 +50,49 @@ class AnthropicChatClient extends AiChatClient {
           'type': 'adaptive',
           'display': 'summarized',
         },
+      if (request.hasTools)
+        'tools': [
+          for (final tool in request.tools)
+            <String, Object?>{
+              'name': tool.name,
+              'description': tool.description,
+              'input_schema': tool.parameters,
+            },
+        ],
+      if (request.hasTools && request.toolChoice == AiToolChoice.none)
+        'tool_choice': <String, Object?>{'type': 'none'},
     });
   }
 
   Map<String, Object?> _message(AiMessage message) {
-    final role = message.role == AiRole.user ? 'user' : 'assistant';
-    if (!message.hasImages) {
+    final user = message.role == AiRole.user;
+    final role = user ? 'user' : 'assistant';
+    final replay = message.replayFor(AiProtocol.anthropic).toList();
+    final plain =
+        !message.hasImages &&
+        replay.isEmpty &&
+        message.toolCalls.isEmpty &&
+        message.toolResults.isEmpty;
+    if (plain) {
       return <String, Object?>{'role': role, 'content': message.text};
     }
-    // 图片放在文字之前，模型理解得更好。
     final images = message.parts.whereType<AiImagePart>();
     final texts = message.parts.whereType<AiTextPart>();
     return <String, Object?>{
       'role': role,
       'content': [
+        // 开着思考带工具时，同一步的思考块（含签名）必须原样放在最前。
+        for (final part in replay)
+          if (jsonMap(part.data['block']) case final block?) block,
+        // 同一步的全部结果放进同一条消息，且排在其他内容之前。
+        for (final result in message.toolResults)
+          <String, Object?>{
+            'type': 'tool_result',
+            'tool_use_id': result.callId,
+            'content': result.content,
+            if (result.isError) 'is_error': true,
+          },
+        // 图片放在文字之前，模型理解得更好。
         for (final image in images)
           <String, Object?>{
             'type': 'image',
@@ -73,7 +103,15 @@ class AnthropicChatClient extends AiChatClient {
             },
           },
         for (final text in texts)
-          <String, Object?>{'type': 'text', 'text': text.text},
+          if (text.text.isNotEmpty)
+            <String, Object?>{'type': 'text', 'text': text.text},
+        for (final call in message.toolCalls)
+          <String, Object?>{
+            'type': 'tool_use',
+            'id': call.id,
+            'name': call.name,
+            'input': call.arguments ?? const <String, Object?>{},
+          },
       ],
     };
   }
@@ -93,62 +131,41 @@ class AnthropicChatClient extends AiChatClient {
       yield parseMessage(await response.readJsonObject());
       return;
     }
+    final state = AnthropicStreamState();
     yield* parseEventStream(
       response,
-      (event, data) => <AiChunk>[parseStreamEvent(event, data)],
+      (event, data) => <AiChunk>[state.add(event, data)],
     );
-  }
-
-  /// 流式事件：
-  /// - `message_start`：`message.usage.input_tokens`；
-  /// - `content_block_delta`：`text_delta.text` / `thinking_delta.thinking`；
-  /// - `message_delta`：`delta.stop_reason`、`usage.output_tokens`；
-  /// - `error`：`error.type` / `error.message`，按错误类别抛出。
-  static AiChunk parseStreamEvent(String? event, Map<String, Object?> data) {
-    final type = jsonString(data['type']) ?? event;
-    switch (type) {
-      case 'error':
-        throw _streamError(data);
-      case 'message_start':
-        final message = jsonMap(data['message']);
-        return AiChunk(usage: _usage(message?['usage']));
-      case 'content_block_delta':
-        final delta = jsonMap(data['delta']);
-        return switch (jsonString(delta?['type'])) {
-          'text_delta' => AiChunk(text: jsonString(delta?['text']) ?? ''),
-          'thinking_delta' => AiChunk(
-            reasoning: jsonString(delta?['thinking']) ?? '',
-          ),
-          _ => const AiChunk(),
-        };
-      case 'message_delta':
-        final delta = jsonMap(data['delta']);
-        return AiChunk(
-          usage: _usage(data['usage']),
-          finishReason: _finish(jsonString(delta?['stop_reason'])),
-        );
-    }
-    return const AiChunk();
+    final end = state.finish();
+    if (!end.isEmpty) yield end;
   }
 
   static AiChunk parseMessage(Map<String, Object?> data) {
     if (jsonString(data['type']) == 'error') throw _streamError(data);
     final text = StringBuffer();
     final reasoning = StringBuffer();
-    for (final block in jsonList(data['content'])) {
-      final map = jsonMap(block);
-      switch (jsonString(map?['type'])) {
+    final state = AnthropicStreamState();
+    final blocks = jsonList(data['content']);
+    for (var index = 0; index < blocks.length; index++) {
+      final map = jsonMap(blocks[index]);
+      if (map == null) continue;
+      switch (jsonString(map['type'])) {
         case 'text':
-          text.write(jsonString(map?['text']) ?? '');
+          text.write(jsonString(map['text']) ?? '');
         case 'thinking':
-          reasoning.write(jsonString(map?['thinking']) ?? '');
+          reasoning.write(jsonString(map['thinking']) ?? '');
       }
+      state.addBlock(index, map);
     }
+    final finish = _finish(jsonString(data['stop_reason']));
+    final end = state.finish(finish: finish);
     return AiChunk(
       text: text.toString(),
       reasoning: reasoning.toString(),
       usage: _usage(data['usage']),
-      finishReason: _finish(jsonString(data['stop_reason'])),
+      finishReason: end.finishReason ?? finish,
+      toolCalls: end.toolCalls,
+      replay: end.replay,
     );
   }
 
@@ -183,6 +200,7 @@ class AnthropicChatClient extends AiChatClient {
   static AiFinishReason? _finish(String? raw) => switch (raw) {
     null => null,
     'end_turn' || 'stop_sequence' => AiFinishReason.stop,
+    'tool_use' => AiFinishReason.toolCalls,
     'max_tokens' => AiFinishReason.length,
     'refusal' => AiFinishReason.filtered,
     _ => AiFinishReason.other,
@@ -213,5 +231,129 @@ class AnthropicChatClient extends AiChatClient {
       );
     }
     return models;
+  }
+}
+
+/// Messages API 一次流式响应的状态。内容块按下标区分：
+/// - `text` / `thinking` 的增量直接吐出；
+/// - `thinking` 块的正文与 `signature_delta` 攒成整块、`redacted_thinking`
+///   原样保留，作为回放数据（开着思考带工具时下一步必须原样带回）；
+/// - `tool_use` 块：块开始报告调用开始（个别转发服务在这里就给出完整
+///   `input`），`input_json_delta` 追加参数片段。
+class AnthropicStreamState {
+  final AiToolCallAssembler _calls = AiToolCallAssembler();
+  final Map<int, Map<String, Object?>> _thinking =
+      <int, Map<String, Object?>>{};
+  AiFinishReason? _finish;
+
+  AiChunk add(String? event, Map<String, Object?> data) {
+    final type = jsonString(data['type']) ?? event;
+    switch (type) {
+      case 'error':
+        throw AnthropicChatClient._streamError(data);
+      case 'message_start':
+        final message = jsonMap(data['message']);
+        return AiChunk(usage: AnthropicChatClient._usage(message?['usage']));
+      case 'content_block_start':
+        final block = jsonMap(data['content_block']);
+        final index = jsonInt(data['index']);
+        if (block == null) break;
+        return AiChunk(
+          text: jsonString(block['type']) == 'text'
+              ? jsonString(block['text']) ?? ''
+              : '',
+          toolCallStarted: addBlock(index, block),
+        );
+      case 'content_block_delta':
+        final index = jsonInt(data['index']);
+        final delta = jsonMap(data['delta']);
+        switch (jsonString(delta?['type'])) {
+          case 'text_delta':
+            return AiChunk(text: jsonString(delta?['text']) ?? '');
+          case 'thinking_delta':
+            final text = jsonString(delta?['thinking']) ?? '';
+            _appendThinking(index, 'thinking', text);
+            return AiChunk(reasoning: text);
+          case 'signature_delta':
+            _appendThinking(
+              index,
+              'signature',
+              jsonString(delta?['signature']),
+            );
+          case 'input_json_delta':
+            _calls.add(index, arguments: jsonString(delta?['partial_json']));
+        }
+      case 'message_delta':
+        final delta = jsonMap(data['delta']);
+        final finish = AnthropicChatClient._finish(
+          jsonString(delta?['stop_reason']),
+        );
+        _finish = finish ?? _finish;
+        return AiChunk(
+          usage: AnthropicChatClient._usage(data['usage']),
+          finishReason: finish,
+        );
+    }
+    return const AiChunk();
+  }
+
+  /// 一个内容块开始（或一次性响应里的完整块）。
+  AiToolCallStart? addBlock(int index, Map<String, Object?> block) {
+    switch (jsonString(block['type'])) {
+      case 'tool_use':
+        return _calls.add(
+          index,
+          id: jsonString(block['id']),
+          name: jsonString(block['name']),
+          arguments: encodeAiToolArguments(block['input']),
+        );
+      case 'thinking':
+        _thinking[index] = <String, Object?>{
+          'type': 'thinking',
+          'thinking': jsonString(block['thinking']) ?? '',
+          'signature': jsonString(block['signature']) ?? '',
+        };
+      case 'redacted_thinking':
+        _thinking[index] = <String, Object?>{...block};
+    }
+    return null;
+  }
+
+  void _appendThinking(int index, String key, String? value) {
+    if (value == null || value.isEmpty) return;
+    final block = _thinking.putIfAbsent(
+      index,
+      () => <String, Object?>{
+        'type': 'thinking',
+        'thinking': '',
+        'signature': '',
+      },
+    );
+    block[key] = '${block[key] ?? ''}$value';
+  }
+
+  /// 流结束：完整的工具调用，以及（有调用时）按顺序的思考块。
+  AiChunk finish({AiFinishReason? finish}) {
+    final ended = finish ?? _finish;
+    final calls = _calls.finish();
+    final order = _thinking.keys.toList()..sort();
+    return AiChunk(
+      toolCalls: calls,
+      replay: calls.isEmpty
+          ? const <AiReplayPart>[]
+          : [
+              for (final index in order)
+                // 没有签名的思考块（个别转发服务不给）发回去会被拒，丢掉。
+                if (_thinking[index]!['type'] != 'thinking' ||
+                    (_thinking[index]!['signature'] as String? ?? '')
+                        .isNotEmpty)
+                  AiReplayPart(AiProtocol.anthropic, <String, Object?>{
+                    'block': _thinking[index],
+                  }),
+            ],
+      finishReason: calls.isNotEmpty && (ended?.isComplete ?? false)
+          ? AiFinishReason.toolCalls
+          : null,
+    );
   }
 }

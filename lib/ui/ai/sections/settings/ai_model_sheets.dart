@@ -214,7 +214,7 @@ class AiModelSheetRemoved extends AiModelSheetResult {
   const AiModelSheetRemoved();
 }
 
-/// 一个模型的设置：显示名、看图、思考过程、最多输出与上下文长度。
+/// 一个模型的设置：显示名、看图、思考过程、工具调用、最多输出与上下文长度。
 Future<AiModelSheetResult?> showAiModelSettingsSheet(
   BuildContext context,
   AiModelConfig model,
@@ -249,6 +249,7 @@ class _ModelSettingsState extends State<_ModelSettings> {
   );
   late bool _vision = widget.model.supportsVision;
   late bool _reasoning = widget.model.reasoning;
+  late bool _tools = widget.model.tools;
 
   @override
   void dispose() {
@@ -272,6 +273,7 @@ class _ModelSettingsState extends State<_ModelSettings> {
       maxOutputTokens: number(_maxOutput),
       contextWindow: number(_context),
       reasoning: _reasoning,
+      tools: _tools,
     );
   }
 
@@ -330,6 +332,12 @@ class _ModelSettingsState extends State<_ModelSettings> {
                 subtitle: l10n.aiModelReasoningSubtitle,
                 value: _reasoning,
                 onChanged: (bool value) => setState(() => _reasoning = value),
+              ),
+              SettingsSwitchTile(
+                title: l10n.aiModelToolsToggle,
+                subtitle: l10n.aiModelToolsSubtitle,
+                value: _tools,
+                onChanged: (bool value) => setState(() => _tools = value),
               ),
               const SizedBox(height: 8),
               Padding(

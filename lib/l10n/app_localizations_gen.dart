@@ -20838,6 +20838,18 @@ abstract class AppLocalizations {
   /// **'Ask the model for its thinking; retried without it if the model doesn\'t support it'**
   String get aiModelReasoningSubtitle;
 
+  /// Toggle for whether the model supports tool calling (lets the assistant operate the app).
+  ///
+  /// In en, this message translates to:
+  /// **'Supports tool calling'**
+  String get aiModelToolsToggle;
+
+  /// Explanation of the tool calling toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets the assistant operate the app; falls back to plain Q&A if the model doesn\'t support it'**
+  String get aiModelToolsSubtitle;
+
   /// Model max output field.
   ///
   /// In en, this message translates to:

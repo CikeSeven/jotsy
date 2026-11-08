@@ -15793,6 +15793,14 @@
   "@aiModelReasoningSubtitle": {
     "description": "Explanation of the reasoning toggle."
   },
+  "aiModelToolsToggle": "Supports tool calling",
+  "@aiModelToolsToggle": {
+    "description": "Toggle for whether the model supports tool calling (lets the assistant operate the app)."
+  },
+  "aiModelToolsSubtitle": "Lets the assistant operate the app; falls back to plain Q&A if the model doesn't support it",
+  "@aiModelToolsSubtitle": {
+    "description": "Explanation of the tool calling toggle."
+  },
   "aiModelMaxOutput": "Max output tokens",
   "@aiModelMaxOutput": {
     "description": "Model max output field."

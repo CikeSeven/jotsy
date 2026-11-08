@@ -21,6 +21,11 @@
 // - 出现智能填写的格式（"newTags"）时返回标题 / 标签 / 心情的 JSON；
 // - 其他请求回显收到了什么（消息数、最后一条的开头、带不带图片），提示词
 //   里有 [D1] 这样的编号时在回答里引用第一个，方便检查引用胶囊。
+// 工具调用（AI 助手智能体）：请求带着工具定义时，
+// - 最后一条用户消息里写了 `/tool 工具名 {"参数": 1}` 就按该协议的格式
+//   调用这个工具（参数分两段流式发出，检查拼装）；没写指令但有
+//   `get_app_context` 工具时调用它；
+// - 最后一条是工具结果时回答“工具返回了什么”，结束这一轮。
 // --think 时先吐一段“思考过程”；--delay 为每块之间的毫秒数（模拟慢网络、
 // 方便试“停止”）；--fail 让每个请求都按该协议的格式返回对应错误。
 //
@@ -161,8 +166,24 @@ Future<void> _handle(HttpRequest request, _Options options) async {
     final fail = options.fail;
     if (fail != null) return await _fail(request.response, protocol, fail);
 
+    final call = _toolCallFor(protocol, json);
+    if (call != null) {
+      final model = _model(protocol, json, path);
+      if (!wantsStream) {
+        return await _json(request.response, _wholeCall(protocol, call, model));
+      }
+      return await _streamCall(
+        request.response,
+        protocol,
+        call,
+        delay: Duration(milliseconds: options.delayMs),
+      );
+    }
     final prompt = _promptText(protocol, json);
-    final reply = _reply(prompt);
+    final toolResult = _lastToolResult(protocol, json);
+    final reply = toolResult != null
+        ? _toolResultReply(toolResult)
+        : _reply(prompt);
     final thinking = options.think ? '先看看用户写了什么……再想想该怎么回答。' : '';
     if (!wantsStream) {
       return await _json(
@@ -216,7 +237,13 @@ String _promptText(_Protocol protocol, Map<String, Object?> json) {
         images++;
         return;
       }
-      for (final key in <String>['text', 'content', 'parts', 'system']) {
+      for (final key in <String>[
+        'text',
+        'content',
+        'parts',
+        'system',
+        'output',
+      ]) {
         if (value.containsKey(key)) collect(value[key]);
       }
     }
@@ -640,3 +667,351 @@ Future<void> _notFound(HttpResponse response) =>
     _json(response, <String, Object?>{
       'error': <String, Object?>{'message': 'not found'},
     }, status: HttpStatus.notFound);
+
+// ---- 工具调用 ----
+
+typedef _MockCall = ({String id, String name, Map<String, Object?> args});
+
+var _callCounter = 0;
+
+/// 收到工具结果后的回答。
+String _toolResultReply(String result) {
+  final shown = result.length > 400 ? '${result.substring(0, 400)}…' : result;
+  return '工具返回了：\n\n```\n$shown\n```';
+}
+
+/// 请求里可用的工具名。
+List<String> _toolNames(_Protocol protocol, Map<String, Object?> json) {
+  final tools = json['tools'];
+  if (tools is! List) return const <String>[];
+  final names = <String>[];
+  for (final tool in tools) {
+    if (tool is! Map) continue;
+    switch (protocol) {
+      case _Protocol.openAi:
+        final function = tool['function'];
+        if (function is Map && function['name'] is String) {
+          names.add(function['name'] as String);
+        }
+      case _Protocol.responses || _Protocol.anthropic:
+        if (tool['name'] is String) names.add(tool['name'] as String);
+      case _Protocol.gemini:
+        final declarations = tool['functionDeclarations'];
+        if (declarations is List) {
+          for (final item in declarations) {
+            if (item is Map && item['name'] is String) {
+              names.add(item['name'] as String);
+            }
+          }
+        }
+    }
+  }
+  return names;
+}
+
+/// 最后一条是工具结果时返回结果文字，否则返回 null。
+String? _lastToolResult(_Protocol protocol, Map<String, Object?> json) {
+  Object? last(Object? list) =>
+      list is List && list.isNotEmpty ? list.last : null;
+  switch (protocol) {
+    case _Protocol.openAi:
+      final message = last(json['messages']);
+      if (message is Map && message['role'] == 'tool') {
+        return '${message['content']}';
+      }
+    case _Protocol.responses:
+      final item = last(json['input']);
+      if (item is Map && item['type'] == 'function_call_output') {
+        return '${item['output']}';
+      }
+    case _Protocol.anthropic:
+      final message = last(json['messages']);
+      final content = message is Map ? message['content'] : null;
+      if (content is List) {
+        final results = [
+          for (final block in content)
+            if (block is Map && block['type'] == 'tool_result')
+              '${block['content']}',
+        ];
+        if (results.isNotEmpty) return results.join('\n');
+      }
+    case _Protocol.gemini:
+      final message = last(json['contents']);
+      final parts = message is Map ? message['parts'] : null;
+      if (parts is List) {
+        final results = [
+          for (final part in parts)
+            if (part is Map && part['functionResponse'] is Map)
+              jsonEncode((part['functionResponse'] as Map)['response']),
+        ];
+        if (results.isNotEmpty) return results.join('\n');
+      }
+  }
+  return null;
+}
+
+/// 这次该不该调用工具、调哪个。
+_MockCall? _toolCallFor(_Protocol protocol, Map<String, Object?> json) {
+  final names = _toolNames(protocol, json);
+  if (names.isEmpty || _lastToolResult(protocol, json) != null) return null;
+  final prompt = _promptText(protocol, json);
+  final directive = RegExp(
+    r'/tool\s+([A-Za-z0-9_]+)\s*(\{.*\})?',
+  ).allMatches(prompt).lastOrNull;
+  String? name;
+  var args = <String, Object?>{};
+  if (directive != null && names.contains(directive.group(1))) {
+    name = directive.group(1);
+    final raw = directive.group(2);
+    if (raw != null) {
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map) args = decoded.cast<String, Object?>();
+      } on FormatException {
+        // 参数写错了就不带参数调用。
+      }
+    }
+  } else if (names.contains('get_app_context')) {
+    name = 'get_app_context';
+  }
+  if (name == null) return null;
+  _callCounter++;
+  return (id: 'mock_$_callCounter', name: name, args: args);
+}
+
+Map<String, Object?> _wholeCall(
+  _Protocol protocol,
+  _MockCall call,
+  String model,
+) {
+  final arguments = jsonEncode(call.args);
+  return switch (protocol) {
+    _Protocol.openAi => <String, Object?>{
+      'id': 'chatcmpl-mock',
+      'object': 'chat.completion',
+      'model': model,
+      'choices': <Object?>[
+        <String, Object?>{
+          'index': 0,
+          'message': <String, Object?>{
+            'role': 'assistant',
+            'content': null,
+            'tool_calls': <Object?>[
+              <String, Object?>{
+                'id': 'call_${call.id}',
+                'type': 'function',
+                'function': <String, Object?>{
+                  'name': call.name,
+                  'arguments': arguments,
+                },
+              },
+            ],
+          },
+          'finish_reason': 'tool_calls',
+        },
+      ],
+    },
+    _Protocol.responses => <String, Object?>{
+      'id': 'resp_mock',
+      'status': 'completed',
+      'model': model,
+      'output': <Object?>[
+        <String, Object?>{
+          'type': 'function_call',
+          'id': 'fc_${call.id}',
+          'call_id': 'call_${call.id}',
+          'name': call.name,
+          'arguments': arguments,
+          'status': 'completed',
+        },
+      ],
+    },
+    _Protocol.anthropic => <String, Object?>{
+      'id': 'msg_mock',
+      'type': 'message',
+      'role': 'assistant',
+      'model': model,
+      'content': <Object?>[
+        <String, Object?>{
+          'type': 'tool_use',
+          'id': 'toolu_${call.id}',
+          'name': call.name,
+          'input': call.args,
+        },
+      ],
+      'stop_reason': 'tool_use',
+    },
+    _Protocol.gemini => <String, Object?>{
+      'candidates': <Object?>[
+        <String, Object?>{
+          'content': <String, Object?>{
+            'role': 'model',
+            'parts': <Object?>[
+              <String, Object?>{
+                'functionCall': <String, Object?>{
+                  'name': call.name,
+                  'args': call.args,
+                },
+                'thoughtSignature': 'mock-signature',
+              },
+            ],
+          },
+          'finishReason': 'STOP',
+        },
+      ],
+    },
+  };
+}
+
+/// 流式地发出一次工具调用；参数切成两段，检查客户端的拼装。
+Future<void> _streamCall(
+  HttpResponse response,
+  _Protocol protocol,
+  _MockCall call, {
+  required Duration delay,
+}) async {
+  response
+    ..statusCode = HttpStatus.ok
+    ..bufferOutput = false
+    ..headers.contentType = ContentType(
+      'text',
+      'event-stream',
+      charset: 'utf-8',
+    )
+    ..headers.set('cache-control', 'no-cache');
+  Future<void> send(Object data, {String? event}) async {
+    if (event != null) response.write('event: $event\n');
+    response.write('data: ${jsonEncode(data)}\n\n');
+    await response.flush();
+    if (delay > Duration.zero) await Future<void>.delayed(delay);
+  }
+
+  final arguments = jsonEncode(call.args);
+  final half = arguments.length ~/ 2;
+  final pieces = <String>[
+    arguments.substring(0, half),
+    arguments.substring(half),
+  ];
+  switch (protocol) {
+    case _Protocol.openAi:
+      Map<String, Object?> delta(Map<String, Object?> toolCall) =>
+          <String, Object?>{
+            'choices': <Object?>[
+              <String, Object?>{
+                'index': 0,
+                'delta': <String, Object?>{
+                  'tool_calls': <Object?>[toolCall],
+                },
+              },
+            ],
+          };
+      await send(
+        delta(<String, Object?>{
+          'index': 0,
+          'id': 'call_${call.id}',
+          'type': 'function',
+          'function': <String, Object?>{'name': call.name, 'arguments': ''},
+        }),
+      );
+      for (final piece in pieces) {
+        await send(
+          delta(<String, Object?>{
+            'index': 0,
+            'function': <String, Object?>{'arguments': piece},
+          }),
+        );
+      }
+      await send(<String, Object?>{
+        'choices': <Object?>[
+          <String, Object?>{
+            'index': 0,
+            'delta': <String, Object?>{},
+            'finish_reason': 'tool_calls',
+          },
+        ],
+      });
+      response.write('data: [DONE]\n\n');
+    case _Protocol.responses:
+      Future<void> emit(Map<String, Object?> data) =>
+          send(data, event: data['type']! as String);
+      final item = <String, Object?>{
+        'type': 'function_call',
+        'id': 'fc_${call.id}',
+        'call_id': 'call_${call.id}',
+        'name': call.name,
+      };
+      await emit(<String, Object?>{
+        'type': 'response.output_item.added',
+        'output_index': 0,
+        'item': <String, Object?>{...item, 'arguments': ''},
+      });
+      for (final piece in pieces) {
+        await emit(<String, Object?>{
+          'type': 'response.function_call_arguments.delta',
+          'item_id': 'fc_${call.id}',
+          'output_index': 0,
+          'delta': piece,
+        });
+      }
+      await emit(<String, Object?>{
+        'type': 'response.output_item.done',
+        'output_index': 0,
+        'item': <String, Object?>{
+          ...item,
+          'arguments': arguments,
+          'status': 'completed',
+        },
+      });
+      await emit(<String, Object?>{
+        'type': 'response.completed',
+        'response': <String, Object?>{
+          'status': 'completed',
+          'output': <Object?>[],
+          'usage': <String, Object?>{'input_tokens': 80, 'output_tokens': 12},
+        },
+      });
+    case _Protocol.anthropic:
+      await send(event: 'message_start', <String, Object?>{
+        'type': 'message_start',
+        'message': <String, Object?>{
+          'id': 'msg_mock',
+          'usage': <String, Object?>{'input_tokens': 80, 'output_tokens': 1},
+        },
+      });
+      await send(event: 'content_block_start', <String, Object?>{
+        'type': 'content_block_start',
+        'index': 0,
+        'content_block': <String, Object?>{
+          'type': 'tool_use',
+          'id': 'toolu_${call.id}',
+          'name': call.name,
+          'input': <String, Object?>{},
+        },
+      });
+      for (final piece in pieces) {
+        await send(event: 'content_block_delta', <String, Object?>{
+          'type': 'content_block_delta',
+          'index': 0,
+          'delta': <String, Object?>{
+            'type': 'input_json_delta',
+            'partial_json': piece,
+          },
+        });
+      }
+      await send(event: 'content_block_stop', <String, Object?>{
+        'type': 'content_block_stop',
+        'index': 0,
+      });
+      await send(event: 'message_delta', <String, Object?>{
+        'type': 'message_delta',
+        'delta': <String, Object?>{'stop_reason': 'tool_use'},
+        'usage': <String, Object?>{'output_tokens': 12},
+      });
+      await send(event: 'message_stop', <String, Object?>{
+        'type': 'message_stop',
+      });
+    case _Protocol.gemini:
+      await send(_wholeCall(protocol, call, 'mock-gemini'));
+  }
+  await response.close();
+}

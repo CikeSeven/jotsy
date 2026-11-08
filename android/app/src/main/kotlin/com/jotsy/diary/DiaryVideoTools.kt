@@ -1,13 +1,16 @@
 package com.jotsy.diary
 
 import android.app.Activity
+import android.app.usage.StorageStatsManager
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.Process
 import android.os.StatFs
+import android.os.storage.StorageManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.effect.Presentation
@@ -43,7 +46,11 @@ import kotlin.math.roundToInt
  *   tone-mapped to SDR so the result plays everywhere, including the desktop builds. Output goes
  *   to a temporary sibling that is renamed into place only on success; the source is never
  *   touched — Dart rewrites the diary references and deletes the original itself;
- * - `deviceSpace`: total and available bytes of the volume holding the app's files.
+ * - `deviceSpace`: total and available bytes of the internal storage, plus this app's own code,
+ *   data and cache bytes. On Android 8+ these come from [StorageStatsManager], the numbers the
+ *   system Settings shows (total rounded to the marketed size, app stats as in App info →
+ *   Storage); an app may always query its own package without extra permissions. Older systems
+ *   fall back to [StatFs] of the data partition and report no app stats.
  *
  * Probing and thumbnails run on one background thread. Transformer must be driven from a thread
  * with a Looper, so transcodes start on the main thread; progress is polled and sent back as
@@ -61,7 +68,7 @@ class DiaryVideoTools(
   init {
     channel.setMethodCallHandler { call, result ->
       when (call.method) {
-        "deviceSpace" -> result.success(deviceSpace())
+        "deviceSpace" -> background(result) { deviceSpace() }
         "probe" -> {
           val paths = call.argument<List<String>>("paths") ?: emptyList()
           background(result) { paths.mapNotNull { path -> probe(path)?.let { path to it.toMap() } }.toMap() }
@@ -106,11 +113,30 @@ class DiaryVideoTools(
     }
   }
 
-  private fun deviceSpace(): Map<String, Long>? = try {
-    val stat = StatFs(activity.filesDir.path)
-    mapOf("total" to stat.totalBytes, "free" to stat.availableBytes)
-  } catch (error: IllegalArgumentException) {
-    null
+  private fun deviceSpace(): Map<String, Long>? {
+    val space = HashMap<String, Long>()
+    try {
+      val stat = StatFs(activity.filesDir.path)
+      space["total"] = stat.totalBytes
+      space["free"] = stat.availableBytes
+    } catch (error: IllegalArgumentException) {
+      // Fall through to the system stats below, or report nothing.
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      try {
+        val stats = activity.getSystemService(StorageStatsManager::class.java)
+        val volume = StorageManager.UUID_DEFAULT
+        space["total"] = stats.getTotalBytes(volume)
+        space["free"] = stats.getFreeBytes(volume)
+        val app = stats.queryStatsForPackage(volume, activity.packageName, Process.myUserHandle())
+        space["appBytes"] = app.appBytes
+        space["dataBytes"] = app.dataBytes
+        space["cacheBytes"] = app.cacheBytes
+      } catch (error: Exception) {
+        // Keep the StatFs numbers; the app stats are optional.
+      }
+    }
+    return if (space.containsKey("total")) space else null
   }
 
   private data class VideoInfo(val width: Int, val height: Int, val durationMs: Long, val bitrate: Int) {

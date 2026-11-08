@@ -22,6 +22,9 @@ enum StorageCategory {
   database,
   cache,
 
+  /// 应用本体（安装包与运行时生成的代码），只有系统统计读得到时才有。
+  app,
+
   /// 托管媒体目录里没有任何引用的文件。
   unused,
 
@@ -230,17 +233,47 @@ class StorageVideoInfo {
 }
 
 /// 设备存储空间（只有 Android 读得到）。
+///
+/// [totalBytes] / [freeBytes] 为内部存储的总量与可用（Android 8+ 取系统的
+/// 存储统计，总量是标称容量，与系统设置一致）；[appCodeBytes] /
+/// [appDataBytes] 为本应用的安装包与数据（含缓存），与系统“应用信息 →
+/// 存储”同一口径，读不到时为 null。
 class StorageDeviceSpace {
-  const StorageDeviceSpace({required this.totalBytes, required this.freeBytes});
+  const StorageDeviceSpace({
+    required this.totalBytes,
+    required this.freeBytes,
+    this.appCodeBytes,
+    this.appDataBytes,
+  });
 
   final int totalBytes;
   final int freeBytes;
+  final int? appCodeBytes;
+  final int? appDataBytes;
+
+  int get usedBytes => math.max(0, totalBytes - freeBytes);
+
+  /// 系统统计里本应用的总占用（安装包 + 数据）；读不到时为 null。
+  int? get appTotalBytes {
+    final code = appCodeBytes;
+    final data = appDataBytes;
+    return code == null || data == null ? null : code + data;
+  }
 }
 
 /// 存储管理清理未使用文件时保留最近这么久写入的：局域网同步在写库前先把
 /// 收到的文件放进媒体目录，导入也是先拷文件后写库，这段时间里文件还没有
 /// 引用。比启动回收的 24 小时短得多，用户点了清理就能马上看到效果。
 const Duration kStorageOrphanGrace = Duration(minutes: 10);
+
+/// 应用总占用：系统统计读得到时为安装包 + 数据（不少于扫描到的），否则为
+/// 扫描到的 [scanned]。总览与设置首页的“已用”同一口径。
+int storageAppTotal(int scanned, StorageDeviceSpace? space) {
+  final code = space?.appCodeBytes;
+  final data = space?.appDataBytes;
+  if (code == null || data == null) return scanned;
+  return code + math.max(data, scanned);
+}
 
 /// 一次扫描的结果。
 class StorageUsageReport {
@@ -299,12 +332,33 @@ class StorageUsageReport {
   int get reclaimableBytes =>
       clearableCacheBytes + clearableOrphanBytes + compactableDatabaseBytes;
 
+  /// 并入系统统计（[StorageDeviceSpace.appTotalBytes] 读得到时）：安装包计入
+  /// “应用本体”，系统算的数据比扫描到的多出来的部分（引擎缓存、偏好、不随
+  /// 备份的同步状态等扫描不到的目录）计入“其他”。之后的总数与系统“应用
+  /// 信息 → 存储”一致，即 [storageAppTotal]。
+  StorageUsageReport withDeviceSpace(StorageDeviceSpace? space) {
+    final code = space?.appCodeBytes;
+    final data = space?.appDataBytes;
+    if (code == null || data == null) return copyWith(deviceSpace: space);
+    final scanned = totalBytes;
+    final bytes = Map<StorageCategory, int>.of(categoryBytes)
+      ..remove(StorageCategory.app);
+    if (code > 0) bytes[StorageCategory.app] = code;
+    final unseen = data - scanned;
+    if (unseen > 0) {
+      bytes[StorageCategory.other] =
+          (bytes[StorageCategory.other] ?? 0) + unseen;
+    }
+    return copyWith(categoryBytes: bytes, deviceSpace: space);
+  }
+
   StorageUsageReport copyWith({
+    Map<StorageCategory, int>? categoryBytes,
     int? databaseFreeBytes,
     StorageDeviceSpace? deviceSpace,
     Map<String, StorageVideoInfo>? videoInfo,
   }) => StorageUsageReport(
-    categoryBytes: categoryBytes,
+    categoryBytes: categoryBytes ?? this.categoryBytes,
     media: media,
     orphanFiles: orphanFiles,
     orphanBytes: orphanBytes,

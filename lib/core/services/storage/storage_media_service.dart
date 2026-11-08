@@ -90,19 +90,24 @@ class StorageMediaService {
     );
     final report = await _scanInBackground(request);
     final stats = await _database.getStorageDatabaseStats();
-    return report.copyWith(
-      databaseFreeBytes: stats.freeBytes,
-      deviceSpace: await compressor.deviceSpace(),
-      videoInfo: await _probeVideos(report.media),
-    );
+    return report
+        .copyWith(
+          databaseFreeBytes: stats.freeBytes,
+          videoInfo: await _probeVideos(report.media),
+        )
+        .withDeviceSpace(await compressor.deviceSpace());
   }
 
-  /// 设置首页的“已用”：只累加文件大小，不解析日记（[quickStorageTotal]）。
-  Future<int> quickTotal() async => _quickTotalInBackground(
-    (await _dataRoot()).path,
-    (await _temporaryDirectory()).path,
-    await _fontsPath(),
-  );
+  /// 设置首页的“已用”：只累加文件大小，不解析日记（[quickStorageTotal]），
+  /// 再按系统统计换算（[storageAppTotal]），与总览的总数一致。
+  Future<int> quickTotal() async {
+    final scanned = await _quickTotalInBackground(
+      (await _dataRoot()).path,
+      (await _temporaryDirectory()).path,
+      await _fontsPath(),
+    );
+    return storageAppTotal(scanned, await compressor.deviceSpace());
+  }
 
   static Future<int> _quickTotalInBackground(
     String dataRoot,

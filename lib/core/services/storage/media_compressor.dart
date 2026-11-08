@@ -158,7 +158,14 @@ class NativeMediaCompressor implements MediaCompressor {
     final total = result?['total'];
     final free = result?['free'];
     if (total is! int || free is! int || total <= 0) return null;
-    return StorageDeviceSpace(totalBytes: total, freeBytes: free);
+    final code = result?['appBytes'];
+    final data = result?['dataBytes'];
+    return StorageDeviceSpace(
+      totalBytes: total,
+      freeBytes: free,
+      appCodeBytes: code is int ? code : null,
+      appDataBytes: data is int ? data : null,
+    );
   }
 
   @override

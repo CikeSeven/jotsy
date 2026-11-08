@@ -406,8 +406,10 @@ class _CallRowState extends State<_CallRow> {
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: TextButton(
+                // 内边距 8 + 外边距 34：文字与上面的标题列（左 42）对齐。
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
                 onPressed: () => widget.onUndo!({call.id}),
                 child: Text(l10n.aiAgentUndo),

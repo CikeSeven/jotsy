@@ -155,6 +155,9 @@ class _DetailBody extends StatelessWidget {
                 ),
               ),
             ),
+          // 能压缩时“压缩 · 约省 X”占去剩余宽度、放不下就折成两行，“删除”
+          // 只取文字宽度：两个按钮平分宽度时省多少会被截掉，那正是用户要看
+          // 的数字。只有删除时它占满整行。
           Row(
             children: <Widget>[
               if (onCompress != null && estimate != null) ...<Widget>[
@@ -167,28 +170,44 @@ class _DetailBody extends StatelessWidget {
                       l10n.storageMgmtCompressSaving(
                         l10n.formatByteSize(entry.bytes - estimate),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.m),
-              ],
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: scheme.errorContainer,
-                    foregroundColor: scheme.onErrorContainer,
+                _DeleteButton(onPressed: entry.isEditable ? onDelete : null),
+              ] else
+                Expanded(
+                  child: _DeleteButton(
+                    onPressed: entry.isEditable ? onDelete : null,
                   ),
-                  onPressed: entry.isEditable ? onDelete : null,
-                  icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
-                  label: Text(l10n.commonDelete),
                 ),
-              ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+/// error 系的“删除”按钮。
+class _DeleteButton extends StatelessWidget {
+  const _DeleteButton({required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return FilledButton.tonalIcon(
+      style: FilledButton.styleFrom(
+        backgroundColor: scheme.errorContainer,
+        foregroundColor: scheme.onErrorContainer,
+      ),
+      onPressed: onPressed,
+      icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
+      label: Text(context.l10n.commonDelete),
     );
   }
 }

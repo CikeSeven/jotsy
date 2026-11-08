@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/services/storage/storage_usage_models.dart';
@@ -175,6 +176,30 @@ void main() {
     expect(find.text(l10n.storageMgmtUsedIn(1)), findsOneWidget);
     expect(find.text('sunset.jpg'), findsOneWidget);
     expect(find.text('日落'), findsWidgets);
+  });
+
+  testWidgets('the compress button never cuts off how much it saves', (
+    tester,
+  ) async {
+    await pumpStoragePage(
+      tester,
+      const StorageMediaPage(
+        initialFilter: StorageMediaFilter(category: StorageCategory.images),
+      ),
+      service: FakeStorageMediaService(sampleStorageReport()),
+      size: const Size(320, 800),
+    );
+
+    await tester.tap(find.text('日落'));
+    await tester.pumpAndSettle();
+
+    final label = find.textContaining('约省');
+    expect(label, findsOneWidget);
+    final paragraph = tester.renderObject<RenderParagraph>(
+      find.descendant(of: label, matching: find.byType(RichText)),
+    );
+    expect(paragraph.didExceedMaxLines, isFalse);
+    expect(find.text(l10n.commonDelete), findsOneWidget);
   });
 
   testWidgets('grid view is remembered for image categories', (tester) async {

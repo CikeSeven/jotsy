@@ -73,6 +73,7 @@ part 'app_database_todo_queries.dart';
 part 'app_database_todo_ops.dart';
 part 'app_database_todo_complete_ops.dart';
 part 'app_database_todo_list_ops.dart';
+part 'app_database_todo_batch_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -125,6 +126,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseTodoOps,
         _AppDatabaseTodoCompleteOps,
         _AppDatabaseTodoListOps,
+        _AppDatabaseTodoBatchOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 

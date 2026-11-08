@@ -33,70 +33,7 @@ mixin _AppDatabaseTodoCompleteOps on _$AppDatabase, _AppDatabaseTodoQueries {
     return transaction(() async {
       final row = await getTodo(todoId);
       if (row == null || row.completedAt != null) return null;
-      final at = now ?? DateTime.now();
-      final rule = decodeTodoRepeat(row.repeat);
-      final dueText = row.dueDate;
-      final due = dueText == null ? null : parseAnniversaryDate(dueText);
-      if (rule == null || due == null || dueText == null) {
-        await _markTodoDone(row, at);
-        return TodoCompletion(before: row);
-      }
-      final metadata = decodeTodoMetadata(row.metadata);
-      final previousDone = metadata[TodoMetadataKeys.repeatDone];
-      final done = (previousDone is int ? previousDone : 0) + 1;
-      metadata[TodoMetadataKeys.repeatDone] = done;
-      final next = TodoRecurrence.nextDueAfterCompletion(
-        rule,
-        currentDue: due,
-        completedOn: DateTime(at.year, at.month, at.day),
-        doneCount: done,
-      );
-      if (next == null) {
-        await _markTodoDone(row, at, metadata: metadata);
-        return TodoCompletion(before: row);
-      }
-      final copyId = todoOccurrenceId(row.todoId, dueText);
-      await into(todos).insertOnConflictUpdate(
-        TodosCompanion.insert(
-          todoId: copyId,
-          listId: Value(row.listId),
-          title: row.title,
-          note: Value(row.note),
-          priority: Value(row.priority),
-          dueDate: Value(dueText),
-          dueMinute: Value(row.dueMinute),
-          steps: Value(row.steps),
-          completedAt: Value(at),
-          linkedDiaryId: Value(row.linkedDiaryId),
-          sortOrder: Value(row.sortOrder),
-          metadata: Value(
-            jsonEncode(<String, Object?>{
-              TodoMetadataKeys.repeatOf: row.todoId,
-            }),
-          ),
-          createdAt: at,
-          updatedAt: at,
-        ),
-      );
-      final nextRule = rule.basis == TodoRepeatBasis.completion
-          ? rule.copyWith(anchor: next)
-          : rule;
-      await (update(todos)..where((t) => t.id.equals(row.id))).write(
-        TodosCompanion(
-          dueDate: Value(formatAnniversaryDate(next)),
-          repeat: Value(encodeTodoRepeat(nextRule)),
-          steps: Value(
-            encodeTodoSteps(<TodoStep>[
-              for (final step in decodeTodoSteps(row.steps))
-                step.copyWith(done: false),
-            ]),
-          ),
-          snoozedUntil: const Value(null),
-          metadata: Value(jsonEncode(metadata)),
-          updatedAt: Value(at),
-        ),
-      );
-      return TodoCompletion(before: row, copyId: copyId, nextDue: next);
+      return _completeTodoRow(row, now ?? DateTime.now());
     });
   }
 
@@ -154,6 +91,74 @@ mixin _AppDatabaseTodoCompleteOps on _$AppDatabase, _AppDatabaseTodoQueries {
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  /// 完成一条未完成的待办（[row] 为刚在同一事务里读出的整行），规则见本
+  /// mixin 的说明。调用方负责开事务并先排除不存在与已完成的：单条的
+  /// [completeTodo] 与批量的 `completeTodos` 共用这一份，两条路径的结果逐字
+  /// 段一致。
+  Future<TodoCompletion> _completeTodoRow(TodoRow row, DateTime at) async {
+    final rule = decodeTodoRepeat(row.repeat);
+    final dueText = row.dueDate;
+    final due = dueText == null ? null : parseAnniversaryDate(dueText);
+    if (rule == null || due == null || dueText == null) {
+      await _markTodoDone(row, at);
+      return TodoCompletion(before: row);
+    }
+    final metadata = decodeTodoMetadata(row.metadata);
+    final previousDone = metadata[TodoMetadataKeys.repeatDone];
+    final done = (previousDone is int ? previousDone : 0) + 1;
+    metadata[TodoMetadataKeys.repeatDone] = done;
+    final next = TodoRecurrence.nextDueAfterCompletion(
+      rule,
+      currentDue: due,
+      completedOn: DateTime(at.year, at.month, at.day),
+      doneCount: done,
+    );
+    if (next == null) {
+      await _markTodoDone(row, at, metadata: metadata);
+      return TodoCompletion(before: row);
+    }
+    final copyId = todoOccurrenceId(row.todoId, dueText);
+    await into(todos).insertOnConflictUpdate(
+      TodosCompanion.insert(
+        todoId: copyId,
+        listId: Value(row.listId),
+        title: row.title,
+        note: Value(row.note),
+        priority: Value(row.priority),
+        dueDate: Value(dueText),
+        dueMinute: Value(row.dueMinute),
+        steps: Value(row.steps),
+        completedAt: Value(at),
+        linkedDiaryId: Value(row.linkedDiaryId),
+        sortOrder: Value(row.sortOrder),
+        metadata: Value(
+          jsonEncode(<String, Object?>{TodoMetadataKeys.repeatOf: row.todoId}),
+        ),
+        createdAt: at,
+        updatedAt: at,
+      ),
+    );
+    final nextRule = rule.basis == TodoRepeatBasis.completion
+        ? rule.copyWith(anchor: next)
+        : rule;
+    await (update(todos)..where((t) => t.id.equals(row.id))).write(
+      TodosCompanion(
+        dueDate: Value(formatAnniversaryDate(next)),
+        repeat: Value(encodeTodoRepeat(nextRule)),
+        steps: Value(
+          encodeTodoSteps(<TodoStep>[
+            for (final step in decodeTodoSteps(row.steps))
+              step.copyWith(done: false),
+          ]),
+        ),
+        snoozedUntil: const Value(null),
+        metadata: Value(jsonEncode(metadata)),
+        updatedAt: Value(at),
+      ),
+    );
+    return TodoCompletion(before: row, copyId: copyId, nextDue: next);
   }
 
   Future<void> _markTodoDone(

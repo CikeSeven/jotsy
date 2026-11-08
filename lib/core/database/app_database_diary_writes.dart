@@ -162,6 +162,43 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
     );
   }
 
+  /// 只改标题、metadata（心情、天气、地点等）与发表时间中给出的几项，以及
+  /// `updatedAt`；返回库里存下的更新时间。
+  ///
+  /// 供 AI 助手改日记信息使用：[updateDiary] 会顺带取消归档、取消删除并重写
+  /// 标签与正文，这里都不碰。日记不存在时返回 null。
+  Future<DateTime?> patchDiaryFields({
+    required String diaryId,
+    String? title,
+    String? metadataJson,
+    DateTime? createdAt,
+  }) async {
+    return transaction<DateTime?>(() async {
+      final changed =
+          await (update(
+            diaries,
+          )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+            DiariesCompanion(
+              title: title == null
+                  ? const Value<String>.absent()
+                  : Value<String>(title.trim()),
+              metadata: metadataJson == null
+                  ? const Value<String>.absent()
+                  : Value<String>(normalizeMetadataJson(metadataJson)),
+              createdAt: Value<DateTime>.absentIfNull(createdAt),
+              updatedAt: Value<DateTime>(DateTime.now()),
+            ),
+          );
+      if (changed == 0) return null;
+      final stored =
+          await (selectOnly(diaries)
+                ..addColumns(<Expression<Object>>[diaries.updatedAt])
+                ..where(diaries.diaryId.equals(diaryId)))
+              .getSingle();
+      return stored.read(diaries.updatedAt);
+    });
+  }
+
   /// 更新时间胶囊解封时间，不触碰正文以避免未解封管理页泄露内容。
   Future<void> updateDiaryCapsuleSchedule({
     required String diaryId,

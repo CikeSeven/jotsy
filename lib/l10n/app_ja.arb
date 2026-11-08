@@ -15896,7 +15896,7 @@
   "@aiModuleChat": {
     "description": "AI module name."
   },
-  "aiModuleChatSubtitle": "日記について質問したり、AI に検索・集計・ページを開くなどを任せたりできます",
+  "aiModuleChatSubtitle": "日記について質問したり、AI に検索・集計・日記の作成・整理・設定の変更などを任せたりできます",
   "@aiModuleChatSubtitle": {
     "description": "AI module description."
   },
@@ -16503,6 +16503,351 @@
       }
     }
   },
+  "aiToolCreateDiary": "日記を新規作成",
+  "@aiToolCreateDiary": {
+    "description": "AI step card: writing a new entry."
+  },
+  "aiToolCreateDiaryNamed": "日記を新規作成：{title}",
+  "@aiToolCreateDiaryNamed": {
+    "description": "AI step card: writing a new entry with a title.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDiaryCreated": "「{name}」を保存しました",
+  "@aiToolDiaryCreated": {
+    "description": "AI step card: the entry was saved (title or date).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAppendDiary": "日記の末尾に追記",
+  "@aiToolAppendDiary": {
+    "description": "AI step card: adding text to the end of an entry."
+  },
+  "aiToolUpdateDiary": "日記の情報を変更",
+  "@aiToolUpdateDiary": {
+    "description": "AI step card: changing an entry's title, date, mood and so on."
+  },
+  "aiToolDiaryChanged": "「{name}」を変更しました",
+  "@aiToolDiaryChanged": {
+    "description": "AI step card: the entry was changed (title or date).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolTagDiaries": "{count} 件の日記のタグを変更",
+  "@aiToolTagDiaries": {
+    "description": "AI step card: changing tags on entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesChanged": "{count} 件を変更しました",
+  "@aiToolEntriesChanged": {
+    "description": "AI step card: how many entries were changed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolPinDiaries": "日記をピン留め",
+  "@aiToolPinDiaries": {
+    "description": "AI step card: pinning entries."
+  },
+  "aiToolUnpinDiaries": "ピン留めを解除",
+  "@aiToolUnpinDiaries": {
+    "description": "AI step card: unpinning entries."
+  },
+  "aiToolArchiveDiaries": "日記をアーカイブ",
+  "@aiToolArchiveDiaries": {
+    "description": "AI step card: archiving entries."
+  },
+  "aiToolUnarchiveDiaries": "アーカイブから戻す",
+  "@aiToolUnarchiveDiaries": {
+    "description": "AI step card: unarchiving entries."
+  },
+  "aiToolTrashDiaries": "{count} 件の日記をごみ箱へ移動",
+  "@aiToolTrashDiaries": {
+    "description": "AI step card: moving entries to the recycle bin.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesTrashed": "{count} 件をごみ箱へ移動しました",
+  "@aiToolEntriesTrashed": {
+    "description": "AI step card: how many entries went to the recycle bin.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolAddComment": "コメントを追加",
+  "@aiToolAddComment": {
+    "description": "AI step card: adding a comment to an entry."
+  },
+  "aiToolCreateTag": "タグを作成：{name}",
+  "@aiToolCreateTag": {
+    "description": "AI step card: creating a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTag": "タグを変更：{name}",
+  "@aiToolRenameTag": {
+    "description": "AI step card: renaming or recoloring a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolMergeTags": "{from} を {into} に統合",
+  "@aiToolMergeTags": {
+    "description": "AI step card: merging tags.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "into": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTag": "タグ {name} を削除",
+  "@aiToolDeleteTag": {
+    "description": "AI step card: deleting a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateNotebook": "日記帳を作成：{name}",
+  "@aiToolCreateNotebook": {
+    "description": "AI step card: creating a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameNotebook": "日記帳の名前を変更：{name}",
+  "@aiToolRenameNotebook": {
+    "description": "AI step card: renaming a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebook": "{count} 件の日記を日記帳に追加",
+  "@aiToolAddToNotebook": {
+    "description": "AI step card: putting entries in a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebook": "{count} 件の日記を日記帳から外す",
+  "@aiToolRemoveFromNotebook": {
+    "description": "AI step card: taking entries out of a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateTodo": "ToDo を追加：{title}",
+  "@aiToolCreateTodo": {
+    "description": "AI step card: adding a to-do.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolUpdateTodos": "ToDo を {count} 件変更",
+  "@aiToolUpdateTodos": {
+    "description": "AI step card: changing to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCompleteTodos": "ToDo を {count} 件完了",
+  "@aiToolCompleteTodos": {
+    "description": "AI step card: completing to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteTodos": "ToDo を {count} 件削除",
+  "@aiToolDeleteTodos": {
+    "description": "AI step card: deleting to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateAnniversary": "記念日を追加：{title}",
+  "@aiToolCreateAnniversary": {
+    "description": "AI step card: adding an anniversary.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteAnniversary": "記念日を削除",
+  "@aiToolDeleteAnniversary": {
+    "description": "AI step card: deleting an anniversary."
+  },
+  "aiToolSetDayMood": "{date} の気分を設定",
+  "@aiToolSetDayMood": {
+    "description": "AI step card: setting the mood of a day (date as YYYY-MM-DD).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetTheme": "テーマを変更",
+  "@aiToolSetTheme": {
+    "description": "AI step card: changing the theme."
+  },
+  "aiToolSetLanguage": "表示言語を {language} に変更",
+  "@aiToolSetLanguage": {
+    "description": "AI step card: changing the app language (its native name).",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetFontScale": "文字サイズを変更",
+  "@aiToolSetFontScale": {
+    "description": "AI step card: changing the interface text size."
+  },
+  "aiToolFeatureOn": "機能をオン：{feature}",
+  "@aiToolFeatureOn": {
+    "description": "AI step card: turning a feature on.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFeatureOff": "機能をオフ：{feature}",
+  "@aiToolFeatureOff": {
+    "description": "AI step card: turning a feature off.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDone": "完了しました",
+  "@aiToolDone": {
+    "description": "AI step card: the change is done."
+  },
+  "aiToolBlockedByEditor": "編集中のページがあります。閉じてからもう一度お試しください",
+  "@aiToolBlockedByEditor": {
+    "description": "AI step card: an editor is open, so the AI did not change data."
+  },
+  "aiAgentConfirmDelete": "削除しますか？",
+  "@aiAgentConfirmDelete": {
+    "description": "Title of a delete confirmation inside an AI step."
+  },
+  "aiAgentConfirmChange": "この変更を行いますか？",
+  "@aiAgentConfirmChange": {
+    "description": "Title of a change confirmation inside an AI step."
+  },
+  "aiAgentDelete": "削除",
+  "@aiAgentDelete": {
+    "description": "Delete button on an AI step confirmation."
+  },
+  "aiAgentProceed": "実行",
+  "@aiAgentProceed": {
+    "description": "Proceed button on an AI step confirmation."
+  },
+  "aiAgentUndo": "元に戻す",
+  "@aiAgentUndo": {
+    "description": "Undo one change the AI made."
+  },
+  "aiAgentUndoAll": "この回答の変更をすべて元に戻す",
+  "@aiAgentUndoAll": {
+    "description": "Undo every change the AI made in this reply."
+  },
+  "aiAgentStepUndone": "元に戻しました",
+  "@aiAgentStepUndone": {
+    "description": "The AI step was undone."
+  },
+  "aiAgentUndone": "{count} 件の変更を元に戻しました",
+  "@aiAgentUndone": {
+    "description": "Snackbar after undoing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentUndoFailed": "元に戻せませんでした：{error}",
+  "@aiAgentUndoFailed": {
+    "description": "Snackbar when undoing failed.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentUndoConflictTitle": "その後に変更されています",
+  "@aiAgentUndoConflictTitle": {
+    "description": "Title of the undo conflict dialog."
+  },
+  "aiAgentUndoConflictBody": "AI の変更のあとにさらに編集されています。元に戻すとその編集も上書きされます。それでも元に戻しますか？",
+  "@aiAgentUndoConflictBody": {
+    "description": "Body of the undo conflict dialog."
+  },
+  "aiAgentUndoConflictAction": "それでも元に戻す",
+  "@aiAgentUndoConflictAction": {
+    "description": "Confirm button of the undo conflict dialog."
+  },
+  "aiOptionAgentChanges": "AI によるデータの変更を許可",
+  "@aiOptionAgentChanges": {
+    "description": "AI settings: toggle that lets the assistant change data."
+  },
+  "aiOptionAgentChangesSubtitle": "日記の作成・編集、タグや日記帳の整理、ToDo の追加、設定の変更など。変更はすべて元に戻せ、削除の前には確認します",
+  "@aiOptionAgentChangesSubtitle": {
+    "description": "Explanation of the allow-changes toggle."
+  },
+  "aiOptionAgentConfirm": "変更のたびに確認",
+  "@aiOptionAgentConfirm": {
+    "description": "AI settings: confirm before every change."
+  },
+  "aiOptionAgentConfirmSubtitle": "オフのときはすぐに実行し、あとから元に戻せます。削除は常に確認します",
+  "@aiOptionAgentConfirmSubtitle": {
+    "description": "Explanation of the confirm-changes toggle."
+  },
   "aiDestinationDiary": "この日記",
   "@aiDestinationDiary": {
     "description": "AI open-page target: an entry."
@@ -16573,7 +16918,7 @@
   "@aiOptionAgentStepsSubtitle": {
     "description": "Explanation of the max steps option."
   },
-  "aiPromptAgentSystem": "ツールを呼び出して、ユーザーの日記の検索・集計、カレンダー・ToDo・記念日の確認、アプリ内のページを開くことができます。ユーザーのデータが必要なときは推測せずツールで調べてください。互いに依存しない検索はまとめて呼び出せます。日記を使ったときは [D3] のように文末にその番号を書いてください。ユーザー自身がページで行う必要がある操作（バックアップ、復元、インポート・エクスポート、共有、アプリロック、パスワード、AI サービスの設定など）は、open_page で移動ボタンを示し、手順を説明してください。ツールがエラーを返したら、内容に従って引数を直すか別の方法を試し、どうしてもできなければそう伝えてください。",
+  "aiPromptAgentSystem": "ツールを呼び出して、ユーザーの日記の検索・集計、カレンダー・ToDo・記念日の確認、アプリ内のページを開くことができます。ユーザーに頼まれたときは、日記の作成・編集、タグや日記帳の整理、ToDo や記念日の管理、設定の変更もできます。ユーザーのデータが必要なときは推測せずツールで調べてください。互いに依存しない検索はまとめて呼び出せます。頼まれた変更だけを行い、どの日記を何に変えるか迷うときは先に確認してください。変更はすべて元に戻せ、削除はユーザーが確認します。終わったら何をしたかを一、二文で伝えてください。日記を使ったときは [D3] のように文末にその番号を書いてください。ユーザー自身がページで行う必要がある操作（バックアップ、復元、インポート・エクスポート、共有、アプリロック、パスワード、AI サービスの設定、完全削除など）は、open_page で移動ボタンを示し、手順を説明してください。ツールがエラーを返したら、内容に従って引数を直すか別の方法を試し、どうしてもできなければそう伝えてください。",
   "@aiPromptAgentSystem": {
     "description": "System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete)."
   },

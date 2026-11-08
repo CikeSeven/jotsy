@@ -170,9 +170,19 @@ void main() {
 
     test('agent options are sparse and tolerate bad values', () {
       final changed = AiPreferences.defaults.copyWith(
-        agent: const AiAgentOptions(enabled: false, maxSteps: 40),
+        agent: const AiAgentOptions(
+          enabled: false,
+          maxSteps: 40,
+          allowChanges: false,
+          confirmChanges: true,
+        ),
       );
-      expect(changed.toJson()['agent'], {'enabled': false, 'maxSteps': 40});
+      expect(changed.toJson()['agent'], {
+        'enabled': false,
+        'maxSteps': 40,
+        'allowChanges': false,
+        'confirmChanges': true,
+      });
       expect(AiPreferences.decode(changed.encode()).agent, changed.agent);
       // 只改一项时只写那一项；与默认相同时整个字段都不写。
       expect(

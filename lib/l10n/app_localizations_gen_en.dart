@@ -12460,7 +12460,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiModuleChatSubtitle =>
-      'Ask about your journal, or let the AI look things up, count and open pages';
+      'Ask about your journal, or let the AI look things up, write entries, organize and change settings';
 
   @override
   String get aiModuleVision => 'Image understanding';
@@ -12978,6 +12978,281 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get aiToolCreateDiary => 'Write a new entry';
+
+  @override
+  String aiToolCreateDiaryNamed(String title) {
+    return 'Write a new entry: $title';
+  }
+
+  @override
+  String aiToolDiaryCreated(String name) {
+    return 'Saved \"$name\"';
+  }
+
+  @override
+  String get aiToolAppendDiary => 'Add text to an entry';
+
+  @override
+  String get aiToolUpdateDiary => 'Change entry details';
+
+  @override
+  String aiToolDiaryChanged(String name) {
+    return 'Changed \"$name\"';
+  }
+
+  @override
+  String aiToolTagDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Change tags on $count entries',
+      one: 'Change tags on 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolEntriesChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries changed',
+      one: '1 entry changed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolPinDiaries => 'Pin entries';
+
+  @override
+  String get aiToolUnpinDiaries => 'Unpin entries';
+
+  @override
+  String get aiToolArchiveDiaries => 'Archive entries';
+
+  @override
+  String get aiToolUnarchiveDiaries => 'Bring entries back from the archive';
+
+  @override
+  String aiToolTrashDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Move $count entries to the recycle bin',
+      one: 'Move 1 entry to the recycle bin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolEntriesTrashed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries moved to the recycle bin',
+      one: '1 entry moved to the recycle bin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolAddComment => 'Add a comment';
+
+  @override
+  String aiToolCreateTag(String name) {
+    return 'Create tag: $name';
+  }
+
+  @override
+  String aiToolRenameTag(String name) {
+    return 'Edit tag: $name';
+  }
+
+  @override
+  String aiToolMergeTags(String from, String into) {
+    return 'Merge $from into $into';
+  }
+
+  @override
+  String aiToolDeleteTag(String name) {
+    return 'Delete tag $name';
+  }
+
+  @override
+  String aiToolCreateNotebook(String name) {
+    return 'Create notebook: $name';
+  }
+
+  @override
+  String aiToolRenameNotebook(String name) {
+    return 'Rename notebook to: $name';
+  }
+
+  @override
+  String aiToolAddToNotebook(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Put $count entries in a notebook',
+      one: 'Put 1 entry in a notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolRemoveFromNotebook(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Take $count entries out of a notebook',
+      one: 'Take 1 entry out of a notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolCreateTodo(String title) {
+    return 'Add to-do: $title';
+  }
+
+  @override
+  String aiToolUpdateTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Change $count to-dos',
+      one: 'Change 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolCompleteTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Complete $count to-dos',
+      one: 'Complete 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolDeleteTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count to-dos',
+      one: 'Delete 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolCreateAnniversary(String title) {
+    return 'Add anniversary: $title';
+  }
+
+  @override
+  String get aiToolDeleteAnniversary => 'Delete an anniversary';
+
+  @override
+  String aiToolSetDayMood(String date) {
+    return 'Set the mood for $date';
+  }
+
+  @override
+  String get aiToolSetTheme => 'Change the theme';
+
+  @override
+  String aiToolSetLanguage(String language) {
+    return 'Switch the app to $language';
+  }
+
+  @override
+  String get aiToolSetFontScale => 'Change text size';
+
+  @override
+  String aiToolFeatureOn(String feature) {
+    return 'Turn on: $feature';
+  }
+
+  @override
+  String aiToolFeatureOff(String feature) {
+    return 'Turn off: $feature';
+  }
+
+  @override
+  String get aiToolDone => 'Done';
+
+  @override
+  String get aiToolBlockedByEditor =>
+      'A page is being edited; close it and try again';
+
+  @override
+  String get aiAgentConfirmDelete => 'Delete this?';
+
+  @override
+  String get aiAgentConfirmChange => 'Make this change?';
+
+  @override
+  String get aiAgentDelete => 'Delete';
+
+  @override
+  String get aiAgentProceed => 'Do it';
+
+  @override
+  String get aiAgentUndo => 'Undo';
+
+  @override
+  String get aiAgentUndoAll => 'Undo all changes in this reply';
+
+  @override
+  String get aiAgentStepUndone => 'Undone';
+
+  @override
+  String aiAgentUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Undid $count changes',
+      one: 'Undid 1 change',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiAgentUndoFailed(String error) {
+    return 'Couldn\'t undo: $error';
+  }
+
+  @override
+  String get aiAgentUndoConflictTitle => 'Changed since then';
+
+  @override
+  String get aiAgentUndoConflictBody =>
+      'This was changed again after the AI\'s edit. Undoing will overwrite those changes too. Undo anyway?';
+
+  @override
+  String get aiAgentUndoConflictAction => 'Undo anyway';
+
+  @override
+  String get aiOptionAgentChanges => 'Let the AI make changes';
+
+  @override
+  String get aiOptionAgentChangesSubtitle =>
+      'Write and edit entries, organize tags and notebooks, add to-dos, change settings; every change can be undone and deletions are confirmed first';
+
+  @override
+  String get aiOptionAgentConfirm => 'Confirm every change';
+
+  @override
+  String get aiOptionAgentConfirmSubtitle =>
+      'When off, changes happen right away and can be undone; deletions are always confirmed';
+
+  @override
   String get aiDestinationDiary => 'This entry';
 
   @override
@@ -13039,7 +13314,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiPromptAgentSystem =>
-      'You can call tools to search and count the user\'s diary entries, check the calendar, to-dos and anniversaries, and open pages of the app. Look things up with tools instead of guessing; independent lookups can be called together. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can\'t be done, say so.';
+      'You can call tools to search and count the user\'s diary entries, check the calendar, to-dos and anniversaries, and open pages of the app; when the user asks, you can also write and edit entries, organize tags and notebooks, manage to-dos and anniversaries, and change settings. Look things up with tools instead of guessing; independent lookups can be called together. Only make the changes the user asked for; if it is unclear which entry or what to change, ask first. Every change can be undone and deletions are confirmed by the user; afterwards, say in a sentence or two what you did. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings, permanent deletion), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can\'t be done, say so.';
 
   @override
   String aiPromptAgentNow(String time) {

@@ -20175,7 +20175,7 @@ abstract class AppLocalizations {
   /// AI module description.
   ///
   /// In en, this message translates to:
-  /// **'Ask about your journal, or let the AI look things up, count and open pages'**
+  /// **'Ask about your journal, or let the AI look things up, write entries, organize and change settings'**
   String get aiModuleChatSubtitle;
 
   /// AI module name.
@@ -20970,6 +20970,324 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 anniversary} other{{count} anniversaries}}'**
   String aiToolAnniversaryCount(int count);
 
+  /// AI step card: writing a new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a new entry'**
+  String get aiToolCreateDiary;
+
+  /// AI step card: writing a new entry with a title.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a new entry: {title}'**
+  String aiToolCreateDiaryNamed(String title);
+
+  /// AI step card: the entry was saved (title or date).
+  ///
+  /// In en, this message translates to:
+  /// **'Saved \"{name}\"'**
+  String aiToolDiaryCreated(String name);
+
+  /// AI step card: adding text to the end of an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Add text to an entry'**
+  String get aiToolAppendDiary;
+
+  /// AI step card: changing an entry's title, date, mood and so on.
+  ///
+  /// In en, this message translates to:
+  /// **'Change entry details'**
+  String get aiToolUpdateDiary;
+
+  /// AI step card: the entry was changed (title or date).
+  ///
+  /// In en, this message translates to:
+  /// **'Changed \"{name}\"'**
+  String aiToolDiaryChanged(String name);
+
+  /// AI step card: changing tags on entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Change tags on 1 entry} other{Change tags on {count} entries}}'**
+  String aiToolTagDiaries(int count);
+
+  /// AI step card: how many entries were changed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry changed} other{{count} entries changed}}'**
+  String aiToolEntriesChanged(int count);
+
+  /// AI step card: pinning entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin entries'**
+  String get aiToolPinDiaries;
+
+  /// AI step card: unpinning entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin entries'**
+  String get aiToolUnpinDiaries;
+
+  /// AI step card: archiving entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive entries'**
+  String get aiToolArchiveDiaries;
+
+  /// AI step card: unarchiving entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring entries back from the archive'**
+  String get aiToolUnarchiveDiaries;
+
+  /// AI step card: moving entries to the recycle bin.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Move 1 entry to the recycle bin} other{Move {count} entries to the recycle bin}}'**
+  String aiToolTrashDiaries(int count);
+
+  /// AI step card: how many entries went to the recycle bin.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry moved to the recycle bin} other{{count} entries moved to the recycle bin}}'**
+  String aiToolEntriesTrashed(int count);
+
+  /// AI step card: adding a comment to an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment'**
+  String get aiToolAddComment;
+
+  /// AI step card: creating a tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Create tag: {name}'**
+  String aiToolCreateTag(String name);
+
+  /// AI step card: renaming or recoloring a tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit tag: {name}'**
+  String aiToolRenameTag(String name);
+
+  /// AI step card: merging tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge {from} into {into}'**
+  String aiToolMergeTags(String from, String into);
+
+  /// AI step card: deleting a tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag {name}'**
+  String aiToolDeleteTag(String name);
+
+  /// AI step card: creating a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Create notebook: {name}'**
+  String aiToolCreateNotebook(String name);
+
+  /// AI step card: renaming a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename notebook to: {name}'**
+  String aiToolRenameNotebook(String name);
+
+  /// AI step card: putting entries in a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Put 1 entry in a notebook} other{Put {count} entries in a notebook}}'**
+  String aiToolAddToNotebook(int count);
+
+  /// AI step card: taking entries out of a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Take 1 entry out of a notebook} other{Take {count} entries out of a notebook}}'**
+  String aiToolRemoveFromNotebook(int count);
+
+  /// AI step card: adding a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to-do: {title}'**
+  String aiToolCreateTodo(String title);
+
+  /// AI step card: changing to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Change 1 to-do} other{Change {count} to-dos}}'**
+  String aiToolUpdateTodos(int count);
+
+  /// AI step card: completing to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Complete 1 to-do} other{Complete {count} to-dos}}'**
+  String aiToolCompleteTodos(int count);
+
+  /// AI step card: deleting to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 to-do} other{Delete {count} to-dos}}'**
+  String aiToolDeleteTodos(int count);
+
+  /// AI step card: adding an anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'Add anniversary: {title}'**
+  String aiToolCreateAnniversary(String title);
+
+  /// AI step card: deleting an anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete an anniversary'**
+  String get aiToolDeleteAnniversary;
+
+  /// AI step card: setting the mood of a day (date as YYYY-MM-DD).
+  ///
+  /// In en, this message translates to:
+  /// **'Set the mood for {date}'**
+  String aiToolSetDayMood(String date);
+
+  /// AI step card: changing the theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the theme'**
+  String get aiToolSetTheme;
+
+  /// AI step card: changing the app language (its native name).
+  ///
+  /// In en, this message translates to:
+  /// **'Switch the app to {language}'**
+  String aiToolSetLanguage(String language);
+
+  /// AI step card: changing the interface text size.
+  ///
+  /// In en, this message translates to:
+  /// **'Change text size'**
+  String get aiToolSetFontScale;
+
+  /// AI step card: turning a feature on.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on: {feature}'**
+  String aiToolFeatureOn(String feature);
+
+  /// AI step card: turning a feature off.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off: {feature}'**
+  String aiToolFeatureOff(String feature);
+
+  /// AI step card: the change is done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get aiToolDone;
+
+  /// AI step card: an editor is open, so the AI did not change data.
+  ///
+  /// In en, this message translates to:
+  /// **'A page is being edited; close it and try again'**
+  String get aiToolBlockedByEditor;
+
+  /// Title of a delete confirmation inside an AI step.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this?'**
+  String get aiAgentConfirmDelete;
+
+  /// Title of a change confirmation inside an AI step.
+  ///
+  /// In en, this message translates to:
+  /// **'Make this change?'**
+  String get aiAgentConfirmChange;
+
+  /// Delete button on an AI step confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get aiAgentDelete;
+
+  /// Proceed button on an AI step confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Do it'**
+  String get aiAgentProceed;
+
+  /// Undo one change the AI made.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get aiAgentUndo;
+
+  /// Undo every change the AI made in this reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo all changes in this reply'**
+  String get aiAgentUndoAll;
+
+  /// The AI step was undone.
+  ///
+  /// In en, this message translates to:
+  /// **'Undone'**
+  String get aiAgentStepUndone;
+
+  /// Snackbar after undoing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Undid 1 change} other{Undid {count} changes}}'**
+  String aiAgentUndone(int count);
+
+  /// Snackbar when undoing failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t undo: {error}'**
+  String aiAgentUndoFailed(String error);
+
+  /// Title of the undo conflict dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed since then'**
+  String get aiAgentUndoConflictTitle;
+
+  /// Body of the undo conflict dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'This was changed again after the AI\'s edit. Undoing will overwrite those changes too. Undo anyway?'**
+  String get aiAgentUndoConflictBody;
+
+  /// Confirm button of the undo conflict dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo anyway'**
+  String get aiAgentUndoConflictAction;
+
+  /// AI settings: toggle that lets the assistant change data.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the AI make changes'**
+  String get aiOptionAgentChanges;
+
+  /// Explanation of the allow-changes toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write and edit entries, organize tags and notebooks, add to-dos, change settings; every change can be undone and deletions are confirmed first'**
+  String get aiOptionAgentChangesSubtitle;
+
+  /// AI settings: confirm before every change.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm every change'**
+  String get aiOptionAgentConfirm;
+
+  /// Explanation of the confirm-changes toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, changes happen right away and can be undone; deletions are always confirmed'**
+  String get aiOptionAgentConfirmSubtitle;
+
   /// AI open-page target: an entry.
   ///
   /// In en, this message translates to:
@@ -21063,7 +21381,7 @@ abstract class AppLocalizations {
   /// System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete).
   ///
   /// In en, this message translates to:
-  /// **'You can call tools to search and count the user\'s diary entries, check the calendar, to-dos and anniversaries, and open pages of the app. Look things up with tools instead of guessing; independent lookups can be called together. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can\'t be done, say so.'**
+  /// **'You can call tools to search and count the user\'s diary entries, check the calendar, to-dos and anniversaries, and open pages of the app; when the user asks, you can also write and edit entries, organize tags and notebooks, manage to-dos and anniversaries, and change settings. Look things up with tools instead of guessing; independent lookups can be called together. Only make the changes the user asked for; if it is unclear which entry or what to change, ask first. Every change can be undone and deletions are confirmed by the user; afterwards, say in a sentence or two what you did. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings, permanent deletion), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can\'t be done, say so.'**
   String get aiPromptAgentSystem;
 
   /// Assistant prompt: the current time.

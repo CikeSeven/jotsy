@@ -16,7 +16,6 @@ import '../../../utils/text_stats.dart';
 import '../../explore/controllers/explore_stats_builder.dart';
 import '../../explore/viewmodels/explore_entry.dart';
 import '../../notebooks/models/notebook_scope_resolver.dart';
-import '../../notebooks/providers/notebook_providers.dart';
 import '../controllers/ai_privacy_gate.dart';
 import '../viewmodels/ai_context_budget.dart';
 import '../viewmodels/ai_recap_material.dart';
@@ -446,8 +445,8 @@ Future<List<AiContextDiary>> _query(
   var scope = DiaryListScope.all;
   final notebookId = args['notebook_id'] as String?;
   if (notebookId != null) {
-    final tree = context.container.read(notebookTreeProvider);
-    final notebook = tree?[notebookId];
+    final tree = await context.notebookTree();
+    final notebook = tree[notebookId];
     if (notebook == null ||
         notebook.isPrivate ||
         privacy.excludedNotebookIds.contains(notebookId)) {

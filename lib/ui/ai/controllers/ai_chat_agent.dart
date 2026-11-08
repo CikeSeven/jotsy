@@ -105,6 +105,7 @@ extension _AiChatAgent on AiChatController {
         citations: citations,
         allowance: allowance,
         token: token,
+        ui: _AgentToolUi(context, ref),
       ),
     );
     _agentTurn = turn;
@@ -172,5 +173,20 @@ extension _AiChatAgent on AiChatController {
       );
     }
     return answered;
+  }
+}
+
+/// 工具需要的界面能力，借对话页的 context 与 ref 实现；页面离开后一律当作
+/// 拒绝（不在已卸载的页面上弹窗）。
+class _AgentToolUi implements AiToolUi {
+  _AgentToolUi(this._context, this._ref);
+
+  final BuildContext _context;
+  final WidgetRef _ref;
+
+  @override
+  Future<void> requestReminderPermission() async {
+    if (!_context.mounted) return;
+    await ensureTodoReminderPermission(_context, _ref);
   }
 }

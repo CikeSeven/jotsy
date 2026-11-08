@@ -43,6 +43,7 @@ import '../../../core/services/http_cancel_token.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/text_stats.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../../todos/controllers/todo_reminder_permission.dart';
 import '../models/ai_built_ins.dart';
 import '../models/ai_chat_scope.dart';
 import '../models/ai_preference_parts.dart';

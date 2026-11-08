@@ -37,6 +37,7 @@ class AiChatMessageView extends StatelessWidget {
     required this.onCopy,
     required this.onSaveAsDiary,
     required this.onOpenPage,
+    this.onUndoCalls,
     this.onEdit,
     this.onRegenerate,
     this.onDelete,
@@ -53,6 +54,9 @@ class AiChatMessageView extends StatelessWidget {
 
   /// 点了步骤里的“前往”按钮。
   final ValueChanged<AiToolNavigation> onOpenPage;
+
+  /// 撤销这条回答里 AI 做过的改动（null 为全部）；生成中为 null。
+  final void Function(Set<String>? callIds)? onUndoCalls;
   final VoidCallback? onEdit;
   final VoidCallback? onRegenerate;
   final VoidCallback? onDelete;
@@ -157,6 +161,7 @@ class AiChatMessageView extends StatelessWidget {
               showReasoning: showReasoning,
               onCitation: (ref) => onCitation(citations, ref),
               onOpen: onOpenPage,
+              onUndo: onUndoCalls,
             ),
           if (message.content.trim().isNotEmpty ||
               (showReasoning && message.reasoning.trim().isNotEmpty))

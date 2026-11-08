@@ -12,6 +12,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/http_cancel_token.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/ai/models/ai_agent_options.dart';
 import 'package:node_diary/ui/ai/models/ai_preferences.dart';
 import 'package:node_diary/ui/ai/models/ai_privacy_options.dart';
 import 'package:node_diary/ui/ai/tools/ai_destinations.dart';
@@ -153,6 +154,26 @@ void main() {
       );
       expect(more, containsAll(['list_todos', 'list_anniversaries']));
       expect(more, isNot(contains('list_notebooks')));
+    });
+
+    test('turning changes off leaves only lookups and open_page', () {
+      final readOnly = aiAvailableTools(
+        AiToolEnv(
+          features: AppFeatures.defaults,
+          prefs: AiPreferences.defaults.copyWith(
+            agent: const AiAgentOptions(allowChanges: false),
+          ),
+        ),
+      );
+      expect(readOnly.any(aiToolChangesData), isFalse);
+      expect(readOnly.map((t) => t.name), contains('open_page'));
+      final all = aiAvailableTools(
+        AiToolEnv(
+          features: AppFeatures.defaults,
+          prefs: AiPreferences.defaults,
+        ),
+      );
+      expect(all.map((t) => t.name), contains('create_diary'));
     });
   });
 

@@ -6,7 +6,6 @@
 import '../../../core/database/notebook_payload.dart';
 import '../../../core/services/ai/agent/ai_tool_schema.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../notebooks/providers/notebook_providers.dart';
 import 'ai_tool.dart';
 
 class ListTagsTool extends AiTool {
@@ -95,16 +94,13 @@ class ListNotebooksTool extends AiTool {
     AiToolContext context,
     Map<String, Object?> args,
   ) async {
-    final container = context.container;
-    // 第一次读时 StreamProvider 可能还没有值：等它出第一帧。
-    await container.read(notebooksProvider.future);
-    final tree = container.read(notebookTreeProvider);
+    final tree = await context.notebookTree();
     final excluded = context.prefs.privacy.excludedNotebookIds;
     final counts = await context.database
         .watchManualNotebookEntryCounts()
         .first;
     final visible = [
-      for (final notebook in tree?.depthFirst ?? const [])
+      for (final notebook in tree.depthFirst)
         if (!notebook.isPrivate && !excluded.contains(notebook.id)) notebook,
     ];
     return AiToolOutcome(

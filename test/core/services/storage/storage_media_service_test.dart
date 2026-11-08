@@ -21,7 +21,12 @@ import '../../../support/fake_media_compressor.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  final now = DateTime(2026, 11, 8, 12);
+  // 测试时钟取“真实时间之后 2 小时”而不是写死的日期：缓存子目录本身的
+  // 修改时间是建目录时的真实时间（dart:io 改不了目录的时间），写死的
+  // 日期一旦早于真实时间，旧缓存所在的目录就比“现在”还新、被当成没闲置。
+  // 往后挪 2 小时（超过 1 小时的闲置门槛），目录本身的时间总算闲置，
+  // 条目是否闲置只取决于测试给文件设的时间。
+  final now = DateTime.now().add(const Duration(hours: 2));
   final old = DateTime(2025, 1, 1);
   late Directory root;
   late Directory temp;

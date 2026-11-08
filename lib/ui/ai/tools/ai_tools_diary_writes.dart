@@ -19,6 +19,7 @@ import '../../diaries/controllers/publish_new_diary_directly.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/publish_metadata_composer.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
+import '../models/ai_tool_subject.dart';
 import 'ai_tool.dart';
 import 'ai_tool_writes.dart';
 
@@ -170,6 +171,7 @@ class CreateDiaryTool extends AiTool {
           'note': 'The date was in the future, so it is dated now.',
       },
       summary: context.l10n.aiToolDiaryCreated(_diaryName(created)),
+      subjects: [aiDiarySubject(created)],
       undo: <String, Object?>{
         'id': id,
         'fingerprint': aiDiaryFingerprint(created),
@@ -258,6 +260,7 @@ class AppendToDiaryTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDiaryChanged(_diaryName(diary)),
+      subjects: [aiDiarySubject(diary)],
       undo: <String, Object?>{
         'id': diary.diaryId,
         'content': diary.content,
@@ -391,6 +394,7 @@ class UpdateDiaryTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDiaryChanged(_diaryName(diary)),
+      subjects: [aiDiarySubject(diary)],
       undo: <String, Object?>{
         'id': diary.diaryId,
         if (title != null) 'title': diary.title,
@@ -496,6 +500,13 @@ class TagDiariesTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'entries': ids.length},
       summary: context.l10n.aiToolEntriesChanged(ids.length),
+      subjects: [
+        for (final name in addNames)
+          AiToolSubject.tag(name.trim(), input: true),
+        for (final name in removeNames)
+          AiToolSubject.tag(name.trim(), input: true),
+        for (final found in diaries) aiDiarySubject(found.diary),
+      ],
       undo: <String, Object?>{
         'batch': batch.toJson(),
         'createdTags': added.created.toList(),
@@ -566,6 +577,7 @@ abstract class _FlagDiariesTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'entries': ids.length},
       summary: context.l10n.aiToolEntriesChanged(ids.length),
+      subjects: [for (final found in diaries) aiDiarySubject(found.diary)],
       undo: <String, Object?>{'before': before},
     );
   }
@@ -707,6 +719,7 @@ class TrashDiariesTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'entries': ids.length},
       summary: context.l10n.aiToolEntriesTrashed(ids.length),
+      subjects: [for (final found in diaries) aiDiarySubject(found.diary)],
       undo: <String, Object?>{'ids': ids},
     );
   }

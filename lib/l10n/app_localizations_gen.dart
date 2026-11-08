@@ -26547,6 +26547,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn “tomorrow 3pm #Work !!!” into a date, list and priority'**
   String get todoSettingsSmartParseSubtitle;
+
+  /// Card title while the AI is preparing an open-page call and the target is unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a page'**
+  String get aiToolOpenPageAny;
+
+  /// Note on an open-page card: it opens automatically after the reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens after the reply'**
+  String get aiToolOpensAfterReply;
+
+  /// Separator between names in AI cards.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get aiListSeparator;
+
+  /// Too many names: the first few plus the total.
+  ///
+  /// In en, this message translates to:
+  /// **'{names} and more ({count} in all)'**
+  String aiToolNamesAndMore(String names, int count);
+
+  /// Date range in tool details.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} – {to}'**
+  String aiToolArgRange(String from, String to);
+
+  /// Open-ended date range with only a start.
+  ///
+  /// In en, this message translates to:
+  /// **'From {date}'**
+  String aiToolArgSince(String date);
+
+  /// Open-ended date range with only an end.
+  ///
+  /// In en, this message translates to:
+  /// **'Until {date}'**
+  String aiToolArgUntil(String date);
+
+  /// A true flag in tool details.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get aiToolArgYes;
+
+  /// A false flag in tool details.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get aiToolArgNo;
+
+  /// Minutes in tool details (remind before).
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{1 minute} other{{minutes} minutes}}'**
+  String aiToolArgMinutes(int minutes);
+
+  /// Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.
+  ///
+  /// In en, this message translates to:
+  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} other{}}'**
+  String aiToolArgName(String key);
+
+  /// Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.
+  ///
+  /// In en, this message translates to:
+  /// **'{value, select, sort_relevant{Most relevant} sort_newest{Newest first} sort_oldest{Oldest first} group_by_none{No grouping} group_by_day{By day} group_by_week{By week} group_by_month{By month} group_by_year{By year} status_open{Open} status_completed{Completed} status_all{All} priority_none{None} priority_low{Low} priority_medium{Medium} priority_high{High} repeat_once{Once} repeat_yearly{Every year} repeat_lunar_yearly{Every year (lunar)} mood_awful{Awful} mood_bad{Bad} mood_meh{Meh} mood_good{Good} mood_great{Great} mood_clear{Clear} mode_light{Light} mode_dark{Dark} mode_system{Follow system} other{}}'**
+  String aiToolArgValue(String value);
+
+  /// The agent puts entries in a named notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Put 1 entry in “{name}”} other{Put {count} entries in “{name}”}}'**
+  String aiToolAddToNotebookNamed(int count, String name);
+
+  /// The agent takes entries out of a named notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Take 1 entry out of “{name}”} other{Take {count} entries out of “{name}”}}'**
+  String aiToolRemoveFromNotebookNamed(int count, String name);
 }
 
 class _AppLocalizationsDelegate

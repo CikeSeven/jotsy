@@ -19841,5 +19841,118 @@
   "todoSettingsSmartParse": "Умное распознавание",
   "@todoSettingsSmartParse": {"description": "To-do settings switch: recognize dates, lists and priority while typing."},
   "todoSettingsSmartParseSubtitle": "Распознавать «завтра в 15:00 #Работа !!!» как дату, список и приоритет",
-  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."}
+  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."},
+  "aiToolOpenPageAny": "Открыть страницу",
+  "@aiToolOpenPageAny": {
+    "description": "Card title while the AI is preparing an open-page call and the target is unknown."
+  },
+  "aiToolOpensAfterReply": "Откроется после ответа",
+  "@aiToolOpensAfterReply": {
+    "description": "Note on an open-page card: it opens automatically after the reply."
+  },
+  "aiListSeparator": ", ",
+  "@aiListSeparator": {
+    "description": "Separator between names in AI cards."
+  },
+  "aiToolNamesAndMore": "{names} и др. (всего {count})",
+  "@aiToolNamesAndMore": {
+    "description": "Too many names: the first few plus the total.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgRange": "{from} – {to}",
+  "@aiToolArgRange": {
+    "description": "Date range in tool details.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgSince": "С {date}",
+  "@aiToolArgSince": {
+    "description": "Open-ended date range with only a start.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgUntil": "До {date}",
+  "@aiToolArgUntil": {
+    "description": "Open-ended date range with only an end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgYes": "Да",
+  "@aiToolArgYes": {
+    "description": "A true flag in tool details."
+  },
+  "aiToolArgNo": "Нет",
+  "@aiToolArgNo": {
+    "description": "A false flag in tool details."
+  },
+  "aiToolArgMinutes": "{minutes, plural, one{{minutes} минута} few{{minutes} минуты} many{{minutes} минут} other{{minutes} минуты}}",
+  "@aiToolArgMinutes": {
+    "description": "Minutes in tool details (remind before).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} other{}}",
+  "@aiToolArgName": {
+    "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgValue": "{value, select, sort_relevant{По релевантности} sort_newest{Сначала новые} sort_oldest{Сначала старые} group_by_none{Без группировки} group_by_day{По дням} group_by_week{По неделям} group_by_month{По месяцам} group_by_year{По годам} status_open{Открытые} status_completed{Выполненные} status_all{Все} priority_none{Нет} priority_low{Низкий} priority_medium{Средний} priority_high{Высокий} repeat_once{Однократно} repeat_yearly{Каждый год} repeat_lunar_yearly{Каждый год (лунный)} mood_awful{Ужасно} mood_bad{Плохо} mood_meh{Так себе} mood_good{Хорошо} mood_great{Отлично} mood_clear{Очистить} mode_light{Светлая} mode_dark{Тёмная} mode_system{Как в системе} other{}}",
+  "@aiToolArgValue": {
+    "description": "Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebookNamed": "{count, plural, one{Добавить {count} запись в «{name}»} few{Добавить {count} записи в «{name}»} many{Добавить {count} записей в «{name}»} other{Добавить {count} записи в «{name}»}}",
+  "@aiToolAddToNotebookNamed": {
+    "description": "The agent puts entries in a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebookNamed": "{count, plural, one{Убрать {count} запись из «{name}»} few{Убрать {count} записи из «{name}»} many{Убрать {count} записей из «{name}»} other{Убрать {count} записи из «{name}»}}",
+  "@aiToolRemoveFromNotebookNamed": {
+    "description": "The agent takes entries out of a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

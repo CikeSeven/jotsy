@@ -19841,5 +19841,118 @@
   "todoSettingsSmartParse": "スマート認識",
   "@todoSettingsSmartParse": {"description": "To-do settings switch: recognize dates, lists and priority while typing."},
   "todoSettingsSmartParseSubtitle": "「明日 午後3時 #仕事 !!!」を日付・リスト・優先度として認識",
-  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."}
+  "@todoSettingsSmartParseSubtitle": {"description": "Subtitle of the smart recognition switch."},
+  "aiToolOpenPageAny": "ページを開く",
+  "@aiToolOpenPageAny": {
+    "description": "Card title while the AI is preparing an open-page call and the target is unknown."
+  },
+  "aiToolOpensAfterReply": "回答のあとで開きます",
+  "@aiToolOpensAfterReply": {
+    "description": "Note on an open-page card: it opens automatically after the reply."
+  },
+  "aiListSeparator": "、",
+  "@aiListSeparator": {
+    "description": "Separator between names in AI cards."
+  },
+  "aiToolNamesAndMore": "{names} など計 {count} 件",
+  "@aiToolNamesAndMore": {
+    "description": "Too many names: the first few plus the total.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgRange": "{from} – {to}",
+  "@aiToolArgRange": {
+    "description": "Date range in tool details.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgSince": "{date} 以降",
+  "@aiToolArgSince": {
+    "description": "Open-ended date range with only a start.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgUntil": "{date} まで",
+  "@aiToolArgUntil": {
+    "description": "Open-ended date range with only an end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgYes": "はい",
+  "@aiToolArgYes": {
+    "description": "A true flag in tool details."
+  },
+  "aiToolArgNo": "いいえ",
+  "@aiToolArgNo": {
+    "description": "A false flag in tool details."
+  },
+  "aiToolArgMinutes": "{minutes} 分",
+  "@aiToolArgMinutes": {
+    "description": "Minutes in tool details (remind before).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} other{}}",
+  "@aiToolArgName": {
+    "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgValue": "{value, select, sort_relevant{関連度順} sort_newest{新しい順} sort_oldest{古い順} group_by_none{まとめない} group_by_day{日ごと} group_by_week{週ごと} group_by_month{月ごと} group_by_year{年ごと} status_open{未完了} status_completed{完了} status_all{すべて} priority_none{なし} priority_low{低} priority_medium{中} priority_high{高} repeat_once{繰り返さない} repeat_yearly{毎年} repeat_lunar_yearly{毎年（旧暦）} mood_awful{最悪} mood_bad{よくない} mood_meh{ふつう} mood_good{よい} mood_great{最高} mood_clear{クリア} mode_light{ライト} mode_dark{ダーク} mode_system{システムに合わせる} other{}}",
+  "@aiToolArgValue": {
+    "description": "Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebookNamed": "{count} 件の日記を「{name}」に追加",
+  "@aiToolAddToNotebookNamed": {
+    "description": "The agent puts entries in a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebookNamed": "{count} 件の日記を「{name}」から外す",
+  "@aiToolRemoveFromNotebookNamed": {
+    "description": "The agent takes entries out of a named notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

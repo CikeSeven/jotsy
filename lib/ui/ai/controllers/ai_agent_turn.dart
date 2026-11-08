@@ -230,6 +230,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
           summary: outcome.summary,
           navigation: outcome.navigation,
           undo: outcome.undo,
+          subjects: outcome.subjects,
         ),
       );
       if (outcome.navigation case final navigation? when navigation.now) {

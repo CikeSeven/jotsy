@@ -17497,4 +17497,164 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get todoSettingsSmartParseSubtitle =>
       'Распознавать «завтра в 15:00 #Работа !!!» как дату, список и приоритет';
+
+  @override
+  String get aiToolOpenPageAny => 'Открыть страницу';
+
+  @override
+  String get aiToolOpensAfterReply => 'Откроется после ответа';
+
+  @override
+  String get aiListSeparator => ', ';
+
+  @override
+  String aiToolNamesAndMore(String names, int count) {
+    return '$names и др. (всего $count)';
+  }
+
+  @override
+  String aiToolArgRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String aiToolArgSince(String date) {
+    return 'С $date';
+  }
+
+  @override
+  String aiToolArgUntil(String date) {
+    return 'До $date';
+  }
+
+  @override
+  String get aiToolArgYes => 'Да';
+
+  @override
+  String get aiToolArgNo => 'Нет';
+
+  @override
+  String aiToolArgMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes минуты',
+      many: '$minutes минут',
+      few: '$minutes минуты',
+      one: '$minutes минута',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgName(String key) {
+    String _temp0 = intl.Intl.selectLogic(key, {
+      'arg_date_range': 'Даты',
+      'arg_due_range': 'Срок',
+      'arg_merge_from': 'Объединяемые теги',
+      'arg_query': 'Ключевые слова',
+      'arg_tags': 'Теги',
+      'arg_mood': 'Настроение',
+      'arg_include_archived': 'Включая архив',
+      'arg_sort': 'Порядок',
+      'arg_limit': 'Не больше',
+      'arg_group_by': 'Группировка',
+      'arg_date': 'Дата',
+      'arg_time': 'Время',
+      'arg_title': 'Заголовок',
+      'arg_name': 'Название',
+      'arg_note': 'Заметка',
+      'arg_color': 'Цвет',
+      'arg_weather': 'Погода',
+      'arg_location': 'Место',
+      'arg_text': 'Текст',
+      'arg_body': 'Текст записи',
+      'arg_priority': 'Приоритет',
+      'arg_list': 'Список',
+      'arg_status': 'Статус',
+      'arg_scale': 'Размер шрифта',
+      'arg_repeat': 'Повтор',
+      'arg_remove': 'Убрать теги',
+      'arg_add': 'Добавить теги',
+      'arg_remind_before_minutes': 'Напомнить заранее',
+      'arg_parent_id': 'Родительский блокнот',
+      'arg_offset': 'Начиная с символа',
+      'arg_new_name': 'Новое название',
+      'arg_mode': 'Оформление',
+      'arg_language': 'Язык',
+      'arg_into': 'Объединить в',
+      'arg_feature': 'Функция',
+      'arg_enabled': 'Включено',
+      'arg_clear_due': 'Убрать срок',
+      'arg_kind_diary': 'Запись',
+      'arg_kind_notebook': 'Блокнот',
+      'arg_kind_tag': 'Тег',
+      'arg_kind_todo': 'Задача',
+      'arg_kind_anniversary': 'Памятная дата',
+      'arg_kind_day': 'День',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgValue(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'sort_relevant': 'По релевантности',
+      'sort_newest': 'Сначала новые',
+      'sort_oldest': 'Сначала старые',
+      'group_by_none': 'Без группировки',
+      'group_by_day': 'По дням',
+      'group_by_week': 'По неделям',
+      'group_by_month': 'По месяцам',
+      'group_by_year': 'По годам',
+      'status_open': 'Открытые',
+      'status_completed': 'Выполненные',
+      'status_all': 'Все',
+      'priority_none': 'Нет',
+      'priority_low': 'Низкий',
+      'priority_medium': 'Средний',
+      'priority_high': 'Высокий',
+      'repeat_once': 'Однократно',
+      'repeat_yearly': 'Каждый год',
+      'repeat_lunar_yearly': 'Каждый год (лунный)',
+      'mood_awful': 'Ужасно',
+      'mood_bad': 'Плохо',
+      'mood_meh': 'Так себе',
+      'mood_good': 'Хорошо',
+      'mood_great': 'Отлично',
+      'mood_clear': 'Очистить',
+      'mode_light': 'Светлая',
+      'mode_dark': 'Тёмная',
+      'mode_system': 'Как в системе',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolAddToNotebookNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавить $count записи в «$name»',
+      many: 'Добавить $count записей в «$name»',
+      few: 'Добавить $count записи в «$name»',
+      one: 'Добавить $count запись в «$name»',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolRemoveFromNotebookNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Убрать $count записи из «$name»',
+      many: 'Убрать $count записей из «$name»',
+      few: 'Убрать $count записи из «$name»',
+      one: 'Убрать $count запись из «$name»',
+    );
+    return '$_temp0';
+  }
 }

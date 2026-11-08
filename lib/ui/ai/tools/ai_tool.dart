@@ -27,6 +27,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../notebooks/viewmodels/notebook_tree.dart';
 import '../models/ai_guide.dart';
 import '../models/ai_preferences.dart';
+import '../models/ai_tool_subject.dart';
 import '../viewmodels/ai_prompt_builder.dart';
 import '../viewmodels/ai_task_prompts.dart';
 
@@ -78,6 +79,18 @@ abstract class AiTool {
   /// 步骤卡片上的一行标题（界面语言）。[args] 为模型给的原始参数。
   String label(AppLocalizations l10n, Map<String, Object?> args);
 
+  /// 执行过后、知道涉及对象时的标题（写出具体名称，如“把 3 篇日记收进
+  /// 「旅行手记」”）；默认同 [label]。[subjects] 为调用记下的涉及对象。
+  String labelWith(
+    AppLocalizations l10n,
+    Map<String, Object?> args,
+    List<AiToolSubject> subjects,
+  ) => label(l10n, args);
+
+  /// 可读详情里某个参数的读法（`aiToolFacts`）：返回 null 用通用格式，
+  /// 返回空串表示不列这一项。
+  String? describeArg(AppLocalizations l10n, String key, Object? value) => null;
+
   /// 执行。[args] 已经过 [schema] 校验与转换（日期为 `DateTime`，时间为
   /// 一天中的分钟数）。
   Future<AiToolOutcome> run(AiToolContext context, Map<String, Object?> args);
@@ -126,6 +139,7 @@ class AiToolOutcome {
     this.summary,
     this.navigation,
     this.undo,
+    this.subjects = const <AiToolSubject>[],
   });
 
   /// 回传模型的数据（JSON 可编码）。
@@ -140,6 +154,10 @@ class AiToolOutcome {
   /// 撤销所需的数据（JSON 可编码，存进步骤记录），交回 [AiTool.undo]。写
   /// 工具必须给。
   final Map<String, Object?>? undo;
+
+  /// 涉及的对象（查到的日记、改动的待办、筛选用的日记本……），界面据此写
+  /// 出具体名称、列出可点的胶囊。写工具成功时必须给。
+  final List<AiToolSubject> subjects;
 }
 
 /// 执行前确认面板的内容：一句标题与几行要点（界面语言）。
@@ -292,6 +310,42 @@ class AiToolContext {
 
   DateTime get today => DateTime(now.year, now.month, now.day);
 }
+
+/// 一篇日记作为涉及对象（标题为空时界面改用日期）。
+AiToolSubject aiDiarySubject(Diary diary, {bool input = false}) =>
+    AiToolSubject.diary(
+      diary.diaryId,
+      title: diary.title.trim(),
+      date: diary.createdAt,
+      input: input,
+    );
+
+/// 发给 AI 的日记（查询工具的结果）作为涉及对象。
+AiToolSubject aiContextDiarySubject(AiContextDiary diary) =>
+    AiToolSubject.diary(
+      diary.diaryId,
+      title: diary.title.trim(),
+      date: diary.createdAt,
+    );
+
+/// 参数里的日记本（筛选条件）作为涉及对象；不存在时为 null。
+Future<AiToolSubject?> aiNotebookParamSubject(
+  AiToolContext context,
+  Object? notebookId,
+) async {
+  if (notebookId is! String || notebookId.isEmpty) return null;
+  final notebook = (await context.notebookTree())[notebookId];
+  if (notebook == null) return null;
+  return AiToolSubject.notebook(notebook.id, notebook.name, input: true);
+}
+
+/// 参数里的标签名（筛选条件）作为涉及对象。
+List<AiToolSubject> aiTagParamSubjects(Object? names) => [
+  if (names is List)
+    for (final name in names)
+      if (name is String && name.trim().isNotEmpty)
+        AiToolSubject.tag(name.trim(), input: true),
+];
 
 /// 工具结果里的日期写法：`2026-11-08`。
 String aiToolDate(DateTime value) =>

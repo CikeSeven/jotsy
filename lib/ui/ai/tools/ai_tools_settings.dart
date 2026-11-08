@@ -133,6 +133,13 @@ class SetAppLanguageTool extends AiTool {
   }
 
   @override
+  String? describeArg(AppLocalizations l10n, String key, Object? value) {
+    if (key != 'language') return null;
+    final language = appLanguages.where((l) => l.code == value).firstOrNull;
+    return language?.nativeName ?? '$value';
+  }
+
+  @override
   Future<AiToolOutcome> run(
     AiToolContext context,
     Map<String, Object?> args,
@@ -257,23 +264,30 @@ class SetFeatureEnabledTool extends AiTool {
 
   @override
   String label(AppLocalizations l10n, Map<String, Object?> args) {
-    // 卡片上用功能管理页里的名称。
-    final feature = switch (args['feature']) {
-      'calendar' => l10n.navCalendar,
-      'todos' => l10n.navTodos,
-      'explore' => l10n.navExplore,
-      'notebooks' => l10n.notebookTitle,
-      'anniversaries' => l10n.settingsFeaturesAnniversaries,
-      'templates' => l10n.settingsFeaturesTemplates,
-      'time_capsules' => l10n.settingsFeaturesTimeCapsules,
-      'swipe_archive' => l10n.settingsFeaturesSwipeArchive,
-      'comments' => l10n.settingsFeaturesComments,
-      final other => '${other ?? ''}',
-    };
+    final feature = _featureName(l10n, args['feature']);
     return args['enabled'] == false
         ? l10n.aiToolFeatureOff(feature)
         : l10n.aiToolFeatureOn(feature);
   }
+
+  @override
+  String? describeArg(AppLocalizations l10n, String key, Object? value) =>
+      key == 'feature' ? _featureName(l10n, value) : null;
+
+  /// 卡片上用功能管理页里的名称。
+  static String _featureName(AppLocalizations l10n, Object? raw) =>
+      switch (raw) {
+        'calendar' => l10n.navCalendar,
+        'todos' => l10n.navTodos,
+        'explore' => l10n.navExplore,
+        'notebooks' => l10n.notebookTitle,
+        'anniversaries' => l10n.settingsFeaturesAnniversaries,
+        'templates' => l10n.settingsFeaturesTemplates,
+        'time_capsules' => l10n.settingsFeaturesTimeCapsules,
+        'swipe_archive' => l10n.settingsFeaturesSwipeArchive,
+        'comments' => l10n.settingsFeaturesComments,
+        final other => '${other ?? ''}',
+      };
 
   @override
   Future<AiToolOutcome> run(

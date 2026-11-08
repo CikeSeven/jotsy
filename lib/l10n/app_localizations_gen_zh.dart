@@ -14720,4 +14720,140 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoSettingsSmartParseSubtitle => '把“明天下午3点 #工作 !!!”识别为日期、清单与优先级';
+
+  @override
+  String get aiToolOpenPageAny => '打开页面';
+
+  @override
+  String get aiToolOpensAfterReply => '回答后自动打开';
+
+  @override
+  String get aiListSeparator => '、';
+
+  @override
+  String aiToolNamesAndMore(String names, int count) {
+    return '$names 等 $count 项';
+  }
+
+  @override
+  String aiToolArgRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String aiToolArgSince(String date) {
+    return '$date 起';
+  }
+
+  @override
+  String aiToolArgUntil(String date) {
+    return '到 $date';
+  }
+
+  @override
+  String get aiToolArgYes => '是';
+
+  @override
+  String get aiToolArgNo => '否';
+
+  @override
+  String aiToolArgMinutes(int minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String aiToolArgName(String key) {
+    String _temp0 = intl.Intl.selectLogic(key, {
+      'arg_date_range': '日期',
+      'arg_due_range': '截止日期',
+      'arg_merge_from': '合并这些标签',
+      'arg_query': '关键词',
+      'arg_tags': '标签',
+      'arg_mood': '心情',
+      'arg_include_archived': '包括已归档',
+      'arg_sort': '排序',
+      'arg_limit': '最多',
+      'arg_group_by': '分组',
+      'arg_date': '日期',
+      'arg_time': '时间',
+      'arg_title': '标题',
+      'arg_name': '名称',
+      'arg_note': '备注',
+      'arg_color': '颜色',
+      'arg_weather': '天气',
+      'arg_location': '地点',
+      'arg_text': '内容',
+      'arg_body': '正文',
+      'arg_priority': '优先级',
+      'arg_list': '清单',
+      'arg_status': '状态',
+      'arg_scale': '字体大小',
+      'arg_repeat': '重复',
+      'arg_remove': '去掉的标签',
+      'arg_add': '加上的标签',
+      'arg_remind_before_minutes': '提前提醒',
+      'arg_parent_id': '上级日记本',
+      'arg_offset': '从第几个字读起',
+      'arg_new_name': '新名称',
+      'arg_mode': '外观',
+      'arg_language': '语言',
+      'arg_into': '合并到',
+      'arg_feature': '功能',
+      'arg_enabled': '开启',
+      'arg_clear_due': '清除截止日期',
+      'arg_kind_diary': '日记',
+      'arg_kind_notebook': '日记本',
+      'arg_kind_tag': '标签',
+      'arg_kind_todo': '待办',
+      'arg_kind_anniversary': '纪念日',
+      'arg_kind_day': '日期',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgValue(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'sort_relevant': '按相关程度',
+      'sort_newest': '从新到旧',
+      'sort_oldest': '从旧到新',
+      'group_by_none': '不分组',
+      'group_by_day': '按天',
+      'group_by_week': '按周',
+      'group_by_month': '按月',
+      'group_by_year': '按年',
+      'status_open': '未完成',
+      'status_completed': '已完成',
+      'status_all': '全部',
+      'priority_none': '无',
+      'priority_low': '低',
+      'priority_medium': '中',
+      'priority_high': '高',
+      'repeat_once': '不重复',
+      'repeat_yearly': '每年（公历）',
+      'repeat_lunar_yearly': '每年（农历）',
+      'mood_awful': '很糟',
+      'mood_bad': '不好',
+      'mood_meh': '一般',
+      'mood_good': '不错',
+      'mood_great': '很棒',
+      'mood_clear': '清除',
+      'mode_light': '浅色',
+      'mode_dark': '深色',
+      'mode_system': '跟随系统',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolAddToNotebookNamed(int count, String name) {
+    return '把 $count 篇日记收进「$name」';
+  }
+
+  @override
+  String aiToolRemoveFromNotebookNamed(int count, String name) {
+    return '把 $count 篇日记移出「$name」';
+  }
 }

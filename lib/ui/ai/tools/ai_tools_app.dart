@@ -9,6 +9,9 @@ import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../calendar/viewmodels/calendar_holiday_day.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
+import '../controllers/ai_privacy_gate.dart';
+import '../models/ai_tool_subject.dart';
+import '../viewmodels/ai_tool_facts.dart';
 import 'ai_destinations.dart';
 import 'ai_tool.dart';
 
@@ -138,7 +141,23 @@ class OpenPageTool extends AiTool {
   String label(AppLocalizations l10n, Map<String, Object?> args) {
     final id = args['destination'];
     final destination = id is String ? aiDestinationById(id) : null;
-    return l10n.aiToolOpenPage(destination?.title(l10n) ?? '$id');
+    // 模型还在准备参数时（没有目标）只说“打开页面”，不写出 null。
+    return destination == null
+        ? l10n.aiToolOpenPageAny
+        : l10n.aiToolOpenPage(destination.title(l10n));
+  }
+
+  /// 打开具体的一篇 / 一本 / 一项时写出它的名称。
+  @override
+  String labelWith(
+    AppLocalizations l10n,
+    Map<String, Object?> args,
+    List<AiToolSubject> subjects,
+  ) {
+    final target = subjects.firstOrNull;
+    return target == null
+        ? label(l10n, args)
+        : l10n.aiToolOpenPage(aiSubjectName(l10n, target));
   }
 
   @override
@@ -162,6 +181,7 @@ class OpenPageTool extends AiTool {
     if (missing.isNotEmpty) {
       throw AiToolFailure('`${missing.first}` is required for this page.');
     }
+    final target = await _target(context, destination, params);
     final now = args['now'] == true;
     return AiToolOutcome(
       data: <String, Object?>{
@@ -170,12 +190,68 @@ class OpenPageTool extends AiTool {
             ? 'The page opens right after your reply.'
             : 'A button that opens the page is shown under your reply.',
       },
+      summary: now ? context.l10n.aiToolOpensAfterReply : null,
       navigation: AiToolNavigation(
         destination: destination.id,
         params: params,
         now: now,
       ),
+      subjects: [?target],
     );
+  }
+
+  /// 具体的一篇 / 一本 / 一项：核对存在且 AI 可以碰（与查询工具同一口径，
+  /// 私密与 AI 隐私排除的一律当作找不到），记下名称给卡片显示。名称只给
+  /// 界面，回传模型的数据里不带。
+  static Future<AiToolSubject?> _target(
+    AiToolContext context,
+    AiDestination destination,
+    Map<String, Object?> params,
+  ) async {
+    final database = context.database;
+    final privacy = context.prefs.privacy;
+    switch (destination.kind) {
+      case AiDestinationKind.diary:
+        final id = params['diary_id']! as String;
+        final found = await database.getDiaryWithTagsByDiaryId(id);
+        if (found == null ||
+            found.diary.isDeleted ||
+            !(await aiDiaryAllowedIn(context.container, id))) {
+          throw const AiToolFailure(
+            'No entry with this id (or it is private). Use an id from '
+            'search_diaries.',
+          );
+        }
+        return aiDiarySubject(found.diary, input: true);
+      case AiDestinationKind.notebook:
+        final id = params['notebook_id']! as String;
+        final notebook = (await context.notebookTree())[id];
+        if (notebook == null ||
+            notebook.isPrivate ||
+            privacy.excludedNotebookIds.contains(id)) {
+          throw const AiToolFailure(
+            'No such notebook. Call list_notebooks to see the notebooks.',
+          );
+        }
+        return AiToolSubject.notebook(id, notebook.name, input: true);
+      case AiDestinationKind.todo:
+        final id = params['todo_id']! as String;
+        final row = await database.getTodo(id);
+        if (row == null) {
+          throw const AiToolFailure(
+            'No to-do with this id. Call list_todos to see the to-dos.',
+          );
+        }
+        return AiToolSubject.todo(
+          id,
+          row.title,
+          due: row.dueDate == null ? null : DateTime.tryParse(row.dueDate!),
+        );
+      case AiDestinationKind.tab ||
+          AiDestinationKind.search ||
+          AiDestinationKind.page:
+        return null;
+    }
   }
 }
 

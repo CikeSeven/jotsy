@@ -20,6 +20,7 @@ import '../controllers/ai_privacy_gate.dart';
 import '../viewmodels/ai_context_budget.dart';
 import '../viewmodels/ai_recap_material.dart';
 import '../viewmodels/ai_retrieval.dart';
+import '../models/ai_tool_subject.dart';
 import 'ai_tool.dart';
 
 /// 搜索结果每篇的摘录上限（字）。
@@ -100,6 +101,7 @@ class SearchDiariesTool extends AiTool {
     };
     final limit = args['limit'] as int? ?? 20;
     final picked = ordered.take(limit).toList();
+    final notebook = await aiNotebookParamSubject(context, args['notebook_id']);
     return AiToolOutcome(
       data: <String, Object?>{
         'matched': filtered.length,
@@ -114,6 +116,11 @@ class SearchDiariesTool extends AiTool {
               'date range, or no filters.',
       },
       summary: context.l10n.aiToolFoundEntries(filtered.length),
+      subjects: [
+        ?notebook,
+        ...aiTagParamSubjects(args['tags']),
+        for (final diary in picked) aiContextDiarySubject(diary),
+      ],
     );
   }
 
@@ -203,6 +210,7 @@ class ReadDiariesTool extends AiTool {
     final database = context.database;
     final privacy = context.prefs.privacy;
     final results = <Map<String, Object?>>[];
+    final subjects = <AiToolSubject>[];
     var read = 0;
     for (final id in ids) {
       final diary = await database.getAiDiary(id, now: context.now);
@@ -252,11 +260,13 @@ class ReadDiariesTool extends AiTool {
           maxWords: granted < words ? granted : null,
         ),
       });
+      subjects.add(aiContextDiarySubject(diary));
       read++;
     }
     return AiToolOutcome(
       data: <String, Object?>{'diaries': results},
       summary: context.l10n.aiToolReadEntries(read),
+      subjects: subjects,
     );
   }
 }
@@ -333,6 +343,7 @@ class DiaryStatsTool extends AiTool {
       }
     }
     final ordered = groups.keys.toList()..sort();
+    final notebook = await aiNotebookParamSubject(context, args['notebook_id']);
     return AiToolOutcome(
       data: <String, Object?>{
         'entries': stats.entries,
@@ -364,6 +375,7 @@ class DiaryStatsTool extends AiTool {
           ],
       },
       summary: context.l10n.aiToolStatsEntries(stats.entries),
+      subjects: [?notebook, ...aiTagParamSubjects(args['tags'])],
     );
   }
 

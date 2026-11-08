@@ -16855,4 +16855,158 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get todoSettingsSmartParseSubtitle =>
       'Turn “tomorrow 3pm #Work !!!” into a date, list and priority';
+
+  @override
+  String get aiToolOpenPageAny => 'Open a page';
+
+  @override
+  String get aiToolOpensAfterReply => 'Opens after the reply';
+
+  @override
+  String get aiListSeparator => ', ';
+
+  @override
+  String aiToolNamesAndMore(String names, int count) {
+    return '$names and more ($count in all)';
+  }
+
+  @override
+  String aiToolArgRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String aiToolArgSince(String date) {
+    return 'From $date';
+  }
+
+  @override
+  String aiToolArgUntil(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String get aiToolArgYes => 'Yes';
+
+  @override
+  String get aiToolArgNo => 'No';
+
+  @override
+  String aiToolArgMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgName(String key) {
+    String _temp0 = intl.Intl.selectLogic(key, {
+      'arg_date_range': 'Dates',
+      'arg_due_range': 'Due',
+      'arg_merge_from': 'Tags merged',
+      'arg_query': 'Keywords',
+      'arg_tags': 'Tags',
+      'arg_mood': 'Mood',
+      'arg_include_archived': 'Include archived',
+      'arg_sort': 'Order',
+      'arg_limit': 'At most',
+      'arg_group_by': 'Group by',
+      'arg_date': 'Date',
+      'arg_time': 'Time',
+      'arg_title': 'Title',
+      'arg_name': 'Name',
+      'arg_note': 'Note',
+      'arg_color': 'Color',
+      'arg_weather': 'Weather',
+      'arg_location': 'Place',
+      'arg_text': 'Text',
+      'arg_body': 'Body',
+      'arg_priority': 'Priority',
+      'arg_list': 'List',
+      'arg_status': 'Status',
+      'arg_scale': 'Text size',
+      'arg_repeat': 'Repeat',
+      'arg_remove': 'Tags removed',
+      'arg_add': 'Tags added',
+      'arg_remind_before_minutes': 'Remind before',
+      'arg_parent_id': 'Parent notebook',
+      'arg_offset': 'Start at character',
+      'arg_new_name': 'New name',
+      'arg_mode': 'Appearance',
+      'arg_language': 'Language',
+      'arg_into': 'Merge into',
+      'arg_feature': 'Feature',
+      'arg_enabled': 'On',
+      'arg_clear_due': 'Clear due date',
+      'arg_kind_diary': 'Entry',
+      'arg_kind_notebook': 'Notebook',
+      'arg_kind_tag': 'Tag',
+      'arg_kind_todo': 'To-do',
+      'arg_kind_anniversary': 'Anniversary',
+      'arg_kind_day': 'Day',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgValue(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'sort_relevant': 'Most relevant',
+      'sort_newest': 'Newest first',
+      'sort_oldest': 'Oldest first',
+      'group_by_none': 'No grouping',
+      'group_by_day': 'By day',
+      'group_by_week': 'By week',
+      'group_by_month': 'By month',
+      'group_by_year': 'By year',
+      'status_open': 'Open',
+      'status_completed': 'Completed',
+      'status_all': 'All',
+      'priority_none': 'None',
+      'priority_low': 'Low',
+      'priority_medium': 'Medium',
+      'priority_high': 'High',
+      'repeat_once': 'Once',
+      'repeat_yearly': 'Every year',
+      'repeat_lunar_yearly': 'Every year (lunar)',
+      'mood_awful': 'Awful',
+      'mood_bad': 'Bad',
+      'mood_meh': 'Meh',
+      'mood_good': 'Good',
+      'mood_great': 'Great',
+      'mood_clear': 'Clear',
+      'mode_light': 'Light',
+      'mode_dark': 'Dark',
+      'mode_system': 'Follow system',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolAddToNotebookNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Put $count entries in “$name”',
+      one: 'Put 1 entry in “$name”',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolRemoveFromNotebookNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Take $count entries out of “$name”',
+      one: 'Take 1 entry out of “$name”',
+    );
+    return '$_temp0';
+  }
 }

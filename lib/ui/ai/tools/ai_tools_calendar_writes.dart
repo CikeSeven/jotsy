@@ -15,6 +15,7 @@ import '../../anniversaries/controllers/anniversary_edit_controller.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
 import 'ai_tool.dart';
 import 'ai_tool_writes.dart';
+import '../models/ai_tool_subject.dart';
 
 /// 按名称找待办清单；null 为收件箱。
 Future<String?> _listId(AppDatabase database, Object? name) async {
@@ -37,6 +38,13 @@ List<TodoRow> _rows(Object? raw) => [
   for (final row in raw as List? ?? const [])
     TodoRow.fromJson((row as Map).cast<String, dynamic>()),
 ];
+
+/// 一项待办作为涉及对象（截止日期按本地日期解析，没有截止为 null）。
+AiToolSubject _todoSubject(TodoRow row, {String? title}) => AiToolSubject.todo(
+  row.todoId,
+  title ?? row.title,
+  due: row.dueDate == null ? null : DateTime.tryParse(row.dueDate!),
+);
 
 class CreateTodoTool extends AiTool {
   const CreateTodoTool();
@@ -121,6 +129,9 @@ class CreateTodoTool extends AiTool {
         if (reminderNote.isNotEmpty) 'note': reminderNote,
       },
       summary: context.l10n.aiToolDone,
+      subjects: [
+        AiToolSubject.todo(id, (args['title']! as String).trim(), due: date),
+      ],
       undo: <String, Object?>{'id': id},
     );
   }
@@ -235,6 +246,10 @@ class UpdateTodosTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'todos': ids.length},
       summary: context.l10n.aiToolDone,
+      subjects: [
+        for (final row in rows)
+          _todoSubject(row, title: args['title'] as String?),
+      ],
       undo: undo,
     );
   }
@@ -310,6 +325,9 @@ class CompleteTodosTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'completed': completions.length},
       summary: context.l10n.aiToolDone,
+      subjects: [
+        for (final completion in completions) _todoSubject(completion.before),
+      ],
       undo: <String, Object?>{
         'completions': [
           for (final completion in completions)
@@ -408,6 +426,7 @@ class DeleteTodosTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'deleted': rows.length},
       summary: context.l10n.aiToolDone,
+      subjects: [for (final row in rows) _todoSubject(row)],
       undo: <String, Object?>{
         'rows': [for (final row in rows) row.toJson()],
       },
@@ -482,6 +501,13 @@ class CreateAnniversaryTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{'ok': true, 'id': id},
       summary: context.l10n.aiToolDone,
+      subjects: [
+        AiToolSubject.anniversary(
+          id,
+          (args['title']! as String).trim(),
+          date: args['date']! as DateTime,
+        ),
+      ],
       undo: <String, Object?>{'id': id},
     );
   }
@@ -557,6 +583,13 @@ class DeleteAnniversaryTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDone,
+      subjects: [
+        AiToolSubject.anniversary(
+          row.anniversaryId,
+          row.title,
+          date: parseAnniversaryDate(row.baseDate),
+        ),
+      ],
       undo: <String, Object?>{'row': row.toJson()},
     );
   }
@@ -628,6 +661,7 @@ class SetDayMoodTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDone,
+      subjects: [AiToolSubject.day(day)],
       undo: <String, Object?>{
         'day': key,
         if (previous != null) 'previous': previous.toJson(),
@@ -701,6 +735,7 @@ class AddCommentTool extends AiTool {
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
       summary: context.l10n.aiToolDone,
+      subjects: [aiDiarySubject(found.diary)],
       undo: <String, Object?>{'id': id},
     );
   }

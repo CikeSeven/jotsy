@@ -19274,5 +19274,118 @@
   "todoSettingsSmartParse": "智能识别",
   "@todoSettingsSmartParse": {"description": "待办设置开关：输入时识别日期、清单与优先级。"},
   "todoSettingsSmartParseSubtitle": "把“明天下午3点 #工作 !!!”识别为日期、清单与优先级",
-  "@todoSettingsSmartParseSubtitle": {"description": "智能识别开关的说明。"}
+  "@todoSettingsSmartParseSubtitle": {"description": "智能识别开关的说明。"},
+  "aiToolOpenPageAny": "打开页面",
+  "@aiToolOpenPageAny": {
+    "description": "AI 正在准备“前往”调用、还不知道目标时的卡片标题。"
+  },
+  "aiToolOpensAfterReply": "回答后自动打开",
+  "@aiToolOpensAfterReply": {
+    "description": "前往卡片的说明：用户明确要求打开，回答结束后自动打开。"
+  },
+  "aiListSeparator": "、",
+  "@aiListSeparator": {
+    "description": "AI 卡片里连接几个名称的分隔符。"
+  },
+  "aiToolNamesAndMore": "{names} 等 {count} 项",
+  "@aiToolNamesAndMore": {
+    "description": "名称太多时：前几个名称 + 总数。",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgRange": "{from} – {to}",
+  "@aiToolArgRange": {
+    "description": "工具详情里的日期范围。",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgSince": "{date} 起",
+  "@aiToolArgSince": {
+    "description": "工具详情里只有开始日期的范围。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgUntil": "到 {date}",
+  "@aiToolArgUntil": {
+    "description": "工具详情里只有结束日期的范围。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgYes": "是",
+  "@aiToolArgYes": {
+    "description": "工具详情里布尔参数为真。"
+  },
+  "aiToolArgNo": "否",
+  "@aiToolArgNo": {
+    "description": "工具详情里布尔参数为假。"
+  },
+  "aiToolArgMinutes": "{minutes} 分钟",
+  "@aiToolArgMinutes": {
+    "description": "工具详情里的分钟数（提前提醒）。",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} other{}}",
+  "@aiToolArgName": {
+    "description": "工具详情里参数的名称（arg_参数名）；空串表示没有译名，界面显示参数名。",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgValue": "{value, select, sort_relevant{按相关程度} sort_newest{从新到旧} sort_oldest{从旧到新} group_by_none{不分组} group_by_day{按天} group_by_week{按周} group_by_month{按月} group_by_year{按年} status_open{未完成} status_completed{已完成} status_all{全部} priority_none{无} priority_low{低} priority_medium{中} priority_high{高} repeat_once{不重复} repeat_yearly{每年（公历）} repeat_lunar_yearly{每年（农历）} mood_awful{很糟} mood_bad{不好} mood_meh{一般} mood_good{不错} mood_great{很棒} mood_clear{清除} mode_light{浅色} mode_dark{深色} mode_system{跟随系统} other{}}",
+  "@aiToolArgValue": {
+    "description": "工具详情里枚举参数的值（参数名_值）；空串表示没有译名，界面显示原值。",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebookNamed": "把 {count} 篇日记收进「{name}」",
+  "@aiToolAddToNotebookNamed": {
+    "description": "智能体把日记收进某个日记本（写出本子名）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebookNamed": "把 {count} 篇日记移出「{name}」",
+  "@aiToolRemoveFromNotebookNamed": {
+    "description": "智能体把日记移出某个日记本（写出本子名）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -14977,4 +14977,140 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get todoSettingsSmartParseSubtitle =>
       '「明日 午後3時 #仕事 !!!」を日付・リスト・優先度として認識';
+
+  @override
+  String get aiToolOpenPageAny => 'ページを開く';
+
+  @override
+  String get aiToolOpensAfterReply => '回答のあとで開きます';
+
+  @override
+  String get aiListSeparator => '、';
+
+  @override
+  String aiToolNamesAndMore(String names, int count) {
+    return '$names など計 $count 件';
+  }
+
+  @override
+  String aiToolArgRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String aiToolArgSince(String date) {
+    return '$date 以降';
+  }
+
+  @override
+  String aiToolArgUntil(String date) {
+    return '$date まで';
+  }
+
+  @override
+  String get aiToolArgYes => 'はい';
+
+  @override
+  String get aiToolArgNo => 'いいえ';
+
+  @override
+  String aiToolArgMinutes(int minutes) {
+    return '$minutes 分';
+  }
+
+  @override
+  String aiToolArgName(String key) {
+    String _temp0 = intl.Intl.selectLogic(key, {
+      'arg_date_range': '日付',
+      'arg_due_range': '期限',
+      'arg_merge_from': '統合するタグ',
+      'arg_query': 'キーワード',
+      'arg_tags': 'タグ',
+      'arg_mood': '気分',
+      'arg_include_archived': 'アーカイブを含む',
+      'arg_sort': '並び順',
+      'arg_limit': '最大',
+      'arg_group_by': 'まとめ方',
+      'arg_date': '日付',
+      'arg_time': '時刻',
+      'arg_title': 'タイトル',
+      'arg_name': '名前',
+      'arg_note': 'メモ',
+      'arg_color': '色',
+      'arg_weather': '天気',
+      'arg_location': '場所',
+      'arg_text': '内容',
+      'arg_body': '本文',
+      'arg_priority': '優先度',
+      'arg_list': 'リスト',
+      'arg_status': '状態',
+      'arg_scale': '文字サイズ',
+      'arg_repeat': '繰り返し',
+      'arg_remove': '外すタグ',
+      'arg_add': '付けるタグ',
+      'arg_remind_before_minutes': '事前通知',
+      'arg_parent_id': '親の日記帳',
+      'arg_offset': '読み始め位置',
+      'arg_new_name': '新しい名前',
+      'arg_mode': '外観',
+      'arg_language': '言語',
+      'arg_into': '統合先',
+      'arg_feature': '機能',
+      'arg_enabled': 'オン',
+      'arg_clear_due': '期限を消す',
+      'arg_kind_diary': '日記',
+      'arg_kind_notebook': '日記帳',
+      'arg_kind_tag': 'タグ',
+      'arg_kind_todo': 'ToDo',
+      'arg_kind_anniversary': '記念日',
+      'arg_kind_day': '日',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolArgValue(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'sort_relevant': '関連度順',
+      'sort_newest': '新しい順',
+      'sort_oldest': '古い順',
+      'group_by_none': 'まとめない',
+      'group_by_day': '日ごと',
+      'group_by_week': '週ごと',
+      'group_by_month': '月ごと',
+      'group_by_year': '年ごと',
+      'status_open': '未完了',
+      'status_completed': '完了',
+      'status_all': 'すべて',
+      'priority_none': 'なし',
+      'priority_low': '低',
+      'priority_medium': '中',
+      'priority_high': '高',
+      'repeat_once': '繰り返さない',
+      'repeat_yearly': '毎年',
+      'repeat_lunar_yearly': '毎年（旧暦）',
+      'mood_awful': '最悪',
+      'mood_bad': 'よくない',
+      'mood_meh': 'ふつう',
+      'mood_good': 'よい',
+      'mood_great': '最高',
+      'mood_clear': 'クリア',
+      'mode_light': 'ライト',
+      'mode_dark': 'ダーク',
+      'mode_system': 'システムに合わせる',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolAddToNotebookNamed(int count, String name) {
+    return '$count 件の日記を「$name」に追加';
+  }
+
+  @override
+  String aiToolRemoveFromNotebookNamed(int count, String name) {
+    return '$count 件の日記を「$name」から外す';
+  }
 }

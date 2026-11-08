@@ -206,3 +206,22 @@ int _fileBytes(String path) {
     return 0;
   }
 }
+
+/// 应用占用的总字节（同步，供后台 isolate 调用）：数据根目录下的一切、
+/// 不在数据根目录里的字体目录与缓存清单。与 [scanStorageUsage] 的合计同一
+/// 口径，只是不解析日记、不读文件头，设置首页显示“已用”时用它。
+int quickStorageTotal(
+  String dataRoot,
+  String temporaryPath,
+  String? fontsPath,
+) {
+  final root = p.normalize(dataRoot);
+  var total = _directoryBytes(root);
+  if (fontsPath != null && !p.isWithin(root, p.normalize(fontsPath))) {
+    total += _directoryBytes(fontsPath);
+  }
+  for (final item in listStorageCacheItems(temporaryPath)) {
+    total += item.bytes;
+  }
+  return total;
+}

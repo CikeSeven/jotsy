@@ -276,6 +276,11 @@ class SettingsService {
   /// 备份导出、不参与同步，所以不在备份快照（`captureBackupSnapshot`）的
   /// 键列表里。
   static const _keyDiarySearchPreferences = 'app.search.preferences';
+
+  /// 存储管理页的排序、视图与压缩档位（单个 JSON 字符串，格式与容错见
+  /// `StoragePreferences`）。本机偏好：不随备份导出、不参与同步，不在备份
+  /// 快照（`captureBackupSnapshot`）的键列表里。
+  static const _keyStoragePreferences = 'app.settings.storage_manager';
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
   static const _keyCalendarDisplayOptions =
       'app.settings.calendar_display_options';
@@ -514,6 +519,12 @@ class SettingsService {
   /// 搜索页偏好原文；类型不符的旧值按未设置处理。
   String? get diarySearchPreferencesRaw {
     final value = _prefs.get(_keyDiarySearchPreferences);
+    return value is String ? value : null;
+  }
+
+  /// 存储管理偏好原文；类型不符的旧值按未设置处理。
+  String? get storagePreferencesRaw {
+    final value = _prefs.get(_keyStoragePreferences);
     return value is String ? value : null;
   }
 
@@ -834,6 +845,10 @@ class SettingsService {
 
   Future<void> setDiarySearchPreferencesRaw(String value) async {
     await _writePreference(_prefs.setString(_keyDiarySearchPreferences, value));
+  }
+
+  Future<void> setStoragePreferencesRaw(String value) async {
+    await _writePreference(_prefs.setString(_keyStoragePreferences, value));
   }
 
   Future<void> setTagOrderRaw(String value) async {

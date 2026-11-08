@@ -15249,4 +15249,641 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get diarySearchTagSheetHint =>
       'Показываются записи со всеми выбранными тегами';
+
+  @override
+  String settingsStorageSubtitle(String size) {
+    return 'Занято $size';
+  }
+
+  @override
+  String get storageMgmtTitle => 'Хранилище';
+
+  @override
+  String get storageMgmtTotalLabel => 'Всего занято';
+
+  @override
+  String storageMgmtDeviceSpace(String free, String total) {
+    return 'Свободно $free из $total на устройстве';
+  }
+
+  @override
+  String storageMgmtCleanUpAll(String size) {
+    return 'Очистить · освободить $size';
+  }
+
+  @override
+  String get storageMgmtRescan => 'Пересчитать';
+
+  @override
+  String get storageMgmtScanFailed =>
+      'Не удалось подсчитать место. Попробуйте позже';
+
+  @override
+  String get storageMgmtCategoryImages => 'Изображения';
+
+  @override
+  String get storageMgmtCategoryVideos => 'Видео';
+
+  @override
+  String get storageMgmtCategoryAudio => 'Записи';
+
+  @override
+  String get storageMgmtCategoryAttachments => 'Вложения';
+
+  @override
+  String get storageMgmtCategoryCovers => 'Обложки';
+
+  @override
+  String get storageMgmtCategoryBackgrounds => 'Фоны';
+
+  @override
+  String get storageMgmtCategoryFonts => 'Шрифты';
+
+  @override
+  String get storageMgmtCategoryDatabase => 'Данные дневника';
+
+  @override
+  String get storageMgmtCategoryCache => 'Кэш';
+
+  @override
+  String get storageMgmtCategoryUnused => 'Неиспользуемые файлы';
+
+  @override
+  String get storageMgmtCategoryOther => 'Прочее';
+
+  @override
+  String get storageMgmtSuggestionsTitle => 'Освободить место';
+
+  @override
+  String get storageMgmtSuggestCache => 'Кэш';
+
+  @override
+  String storageMgmtSuggestCacheSubtitle(String size) {
+    return 'Можно очистить $size. Кэш за последний час сохранится';
+  }
+
+  @override
+  String get storageMgmtSuggestUnused => 'Неиспользуемые файлы';
+
+  @override
+  String storageMgmtSuggestUnusedSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла не используются ни одной записью, $size',
+      many: '$count файлов не используются ни одной записью, $size',
+      few: '$count файла не используются ни одной записью, $size',
+      one: '$count файл не используется ни одной записью, $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtSuggestTrash => 'Записи в корзине';
+
+  @override
+  String storageMgmtSuggestTrashSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла используются только записями в корзине, $size',
+      many: '$count файлов используются только записями в корзине, $size',
+      few: '$count файла используются только записями в корзине, $size',
+      one: '$count файл используется только записями в корзине, $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtSuggestCompress => 'Фото и видео для сжатия';
+
+  @override
+  String storageMgmtSuggestCompressSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла, экономия около $size',
+      many: '$count файлов, экономия около $size',
+      few: '$count файла, экономия около $size',
+      one: '$count файл, экономия около $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtSuggestDatabase => 'Упорядочить данные дневника';
+
+  @override
+  String storageMgmtSuggestDatabaseSubtitle(String size) {
+    return 'Освободит $size, оставшиеся от удалённого';
+  }
+
+  @override
+  String get storageMgmtClear => 'Очистить';
+
+  @override
+  String get storageMgmtCompact => 'Упорядочить';
+
+  @override
+  String get storageMgmtAllClean => 'Всё в порядке';
+
+  @override
+  String get storageMgmtAllCleanSubtitle =>
+      'Сейчас нечего очищать: нет кэша и неиспользуемых файлов';
+
+  @override
+  String get storageMgmtMediaTitle => 'Медиафайлы';
+
+  @override
+  String get storageMgmtAllMedia => 'Все медиафайлы';
+
+  @override
+  String storageMgmtFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла',
+      many: '$count файлов',
+      few: '$count файла',
+      one: '$count файл',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtLargeFiles => 'Большие файлы';
+
+  @override
+  String storageMgmtLargeFilesSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла от 10 МБ',
+      many: '$count файлов от 10 МБ',
+      few: '$count файла от 10 МБ',
+      one: '$count файл от 10 МБ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtOtherTitle => 'Другие данные';
+
+  @override
+  String get storageMgmtFooter =>
+      'Удаление и сжатие попадут на другие устройства при следующей синхронизации по сети. Старые облачные копии хранят исходные файлы, пока не будут удалены по лимиту.';
+
+  @override
+  String get storageMgmtCleaning => 'Очистка…';
+
+  @override
+  String get storageMgmtDeleting => 'Удаление…';
+
+  @override
+  String storageMgmtFreed(String size) {
+    return 'Освобождено $size';
+  }
+
+  @override
+  String get storageMgmtNothingFreed => 'Сейчас нечего очищать';
+
+  @override
+  String get storageMgmtBusyEditing =>
+      'Запись открыта для редактирования. Закройте её и повторите';
+
+  @override
+  String get storageMgmtBusyUndo =>
+      'Дождитесь, пока исчезнет подсказка «Отменить», и повторите';
+
+  @override
+  String get storageMgmtCannotDelete =>
+      'На файл ссылаются другие данные, удалить его здесь нельзя';
+
+  @override
+  String storageMgmtDeleteTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалить $count файла?',
+      many: 'Удалить $count файлов?',
+      few: 'Удалить $count файла?',
+      one: 'Удалить $count файл?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteBody(String size) {
+    return 'Освободится $size. Файлы будут удалены из:';
+  }
+
+  @override
+  String storageMgmtDeleteFromDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count записи',
+      many: '$count записей',
+      few: '$count записей',
+      one: '$count записи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteFromNotebooks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count обложки блокнота',
+      many: '$count обложек блокнотов',
+      few: '$count обложек блокнотов',
+      one: '$count обложки блокнота',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteFromComments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count комментария',
+      many: '$count комментариев',
+      few: '$count комментариев',
+      one: '$count комментария',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteFromDrafts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count черновика',
+      many: '$count черновиков',
+      few: '$count черновиков',
+      one: '$count черновика',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtDeleteCommentNote =>
+      'Комментарии без текста и изображений тоже будут удалены.';
+
+  @override
+  String get storageMgmtDeleteCapsuleNote =>
+      'Среди них есть содержимое ещё не открытых капсул времени.';
+
+  @override
+  String get storageMgmtDeleteIrreversible => 'Это действие нельзя отменить.';
+
+  @override
+  String storageMgmtDeleted(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалено $count файла, освобождено $size',
+      many: 'Удалено $count файлов, освобождено $size',
+      few: 'Удалено $count файла, освобождено $size',
+      one: 'Удалён $count файл, освобождено $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtSkippedRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count места изменились за это время и остались как есть.',
+      many: '$count мест изменились за это время и остались как есть.',
+      few: '$count места изменились за это время и остались как есть.',
+      one: '$count место изменилось за это время и осталось как есть.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompress => 'Сжать';
+
+  @override
+  String storageMgmtCompressTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сжать $count файла',
+      many: 'Сжать $count файлов',
+      few: 'Сжать $count файла',
+      one: 'Сжать $count файл',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompressImages => 'Фото';
+
+  @override
+  String get storageMgmtCompressVideos => 'Видео';
+
+  @override
+  String get storageMgmtPresetHigh => 'Высокое качество';
+
+  @override
+  String get storageMgmtPresetBalanced => 'Сбалансированно';
+
+  @override
+  String get storageMgmtPresetCompact => 'Экономия места';
+
+  @override
+  String storageMgmtImagePresetDetail(
+    int maxSide,
+    int quality,
+    String estimate,
+  ) {
+    return 'Длинная сторона $maxSide пикс. · качество $quality · $estimate';
+  }
+
+  @override
+  String storageMgmtPresetEstimate(String before, String after) {
+    return '$before → около $after';
+  }
+
+  @override
+  String get storageMgmtPresetNoGain => 'Уже достаточно маленькие';
+
+  @override
+  String storageMgmtCompressSummary(String before, String after, String saved) {
+    return '$before → около $after, экономия около $saved';
+  }
+
+  @override
+  String get storageMgmtCompressNothing => 'Эти файлы не нужно сжимать';
+
+  @override
+  String storageMgmtCompressSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count файла уже небольшие или в неподходящем формате и будут пропущены.',
+      many:
+          '$count файлов уже небольшие или в неподходящем формате и будут пропущены.',
+      few:
+          '$count файла уже небольшие или в неподходящем формате и будут пропущены.',
+      one:
+          '$count файл уже небольшой или в неподходящем формате и будет пропущен.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompressNote =>
+      'Сжатые файлы заменят исходные, восстановить их нельзя. У фото сохранятся время и место съёмки.';
+
+  @override
+  String get storageMgmtCompressStart => 'Сжать';
+
+  @override
+  String get storageMgmtCompressing => 'Сжатие';
+
+  @override
+  String get storageMgmtCompressPreparing => 'Подготовка…';
+
+  @override
+  String storageMgmtCompressStep(int index, int total, String name) {
+    return '$index из $total · $name';
+  }
+
+  @override
+  String get storageMgmtCancelling => 'Остановка…';
+
+  @override
+  String get storageMgmtCompressFinished => 'Сжатие завершено';
+
+  @override
+  String get storageMgmtCompressCancelled => 'Сжатие остановлено';
+
+  @override
+  String storageMgmtCompressDone(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сжато $count файла, сэкономлено $size',
+      many: 'Сжато $count файлов, сэкономлено $size',
+      few: 'Сжато $count файла, сэкономлено $size',
+      one: 'Сжат $count файл, сэкономлено $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtCompressUnchanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла не стали меньше — оригиналы сохранены.',
+      many: '$count файлов не стали меньше — оригиналы сохранены.',
+      few: '$count файла не стали меньше — оригиналы сохранены.',
+      one: '$count файл не стал меньше — оригинал сохранён.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtCompressFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Не удалось сжать $count файла.',
+      many: 'Не удалось сжать $count файлов.',
+      few: 'Не удалось сжать $count файла.',
+      one: 'Не удалось сжать $count файл.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompressNoneDone => 'Ничего не сжато.';
+
+  @override
+  String get storageMgmtDone => 'Готово';
+
+  @override
+  String storageMgmtCompressSaving(String size) {
+    return 'Сжать · −$size';
+  }
+
+  @override
+  String storageMgmtSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выбрано $count',
+      many: 'Выбрано $count',
+      few: 'Выбрано $count',
+      one: 'Выбран $count',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtSelectionSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выбрано $count · $size',
+      many: 'Выбрано $count · $size',
+      few: 'Выбрано $count · $size',
+      one: 'Выбран $count · $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtListSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла · $size',
+      many: '$count файлов · $size',
+      few: '$count файла · $size',
+      one: '$count файл · $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtFilterAll => 'Все';
+
+  @override
+  String get storageMgmtFilterLarge => 'Большие';
+
+  @override
+  String get storageMgmtFilterCompressible => 'Можно сжать';
+
+  @override
+  String get storageMgmtFilterTrash => 'Только корзина';
+
+  @override
+  String get storageMgmtSort => 'Сортировка';
+
+  @override
+  String get storageMgmtSortLargest => 'Сначала большие';
+
+  @override
+  String get storageMgmtSortNewest => 'Сначала новые';
+
+  @override
+  String get storageMgmtSortOldest => 'Сначала старые';
+
+  @override
+  String get storageMgmtViewGrid => 'Сеткой';
+
+  @override
+  String get storageMgmtViewList => 'Списком';
+
+  @override
+  String get storageMgmtEmpty => 'Здесь нет файлов';
+
+  @override
+  String storageMgmtPrivateHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count файла из личных записей скрыты',
+      many: '$count файлов из личных записей скрыты',
+      few: '$count файла из личных записей скрыты',
+      one: '$count файл из личных записей скрыт',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtReveal => 'Показать';
+
+  @override
+  String get storageMgmtRevealReason =>
+      'Подтвердите личность, чтобы показать медиа из личных записей';
+
+  @override
+  String get storageMgmtRevealUnavailable =>
+      'На этом устройстве нельзя подтвердить личность. Сначала задайте код приложения';
+
+  @override
+  String get storageMgmtBadgeTrash => 'В корзине';
+
+  @override
+  String storageMgmtBadgeCompressible(String size) {
+    return '−$size';
+  }
+
+  @override
+  String get storageMgmtBadgeCompressShort => 'Сжать';
+
+  @override
+  String storageMgmtBadgeUsedIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'В $count места',
+      many: 'В $count местах',
+      few: 'В $count местах',
+      one: 'В $count месте',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtBadgeLocked => 'Нельзя удалить';
+
+  @override
+  String get storageMgmtUntitledDiary => 'Запись без названия';
+
+  @override
+  String get storageMgmtUntitledDraft => 'Черновик без названия';
+
+  @override
+  String storageMgmtRefComment(String title) {
+    return 'Комментарий · $title';
+  }
+
+  @override
+  String storageMgmtRefDiaryCover(String title) {
+    return 'Обложка · $title';
+  }
+
+  @override
+  String storageMgmtRefNotebookCover(String name) {
+    return 'Обложка блокнота · $name';
+  }
+
+  @override
+  String storageMgmtRefDraft(String title) {
+    return 'Черновик · $title';
+  }
+
+  @override
+  String get storageMgmtRefOther => 'Используется другими данными';
+
+  @override
+  String get storageMgmtMaskedPrivate => 'Содержимое личной записи';
+
+  @override
+  String get storageMgmtMaskedCapsule => 'Содержимое закрытой капсулы времени';
+
+  @override
+  String storageMgmtUsedIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Используется в $count места',
+      many: 'Используется в $count местах',
+      few: 'Используется в $count местах',
+      one: 'Используется в $count месте',
+    );
+    return '$_temp0';
+  }
 }

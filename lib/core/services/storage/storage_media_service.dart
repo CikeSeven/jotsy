@@ -97,6 +97,19 @@ class StorageMediaService {
     );
   }
 
+  /// 设置首页的“已用”：只累加文件大小，不解析日记（[quickStorageTotal]）。
+  Future<int> quickTotal() async => _quickTotalInBackground(
+    (await _dataRoot()).path,
+    (await _temporaryDirectory()).path,
+    await _fontsPath(),
+  );
+
+  static Future<int> _quickTotalInBackground(
+    String dataRoot,
+    String temporaryPath,
+    String? fontsPath,
+  ) => Isolate.run(() => quickStorageTotal(dataRoot, temporaryPath, fontsPath));
+
   static Future<StorageUsageReport> _scanInBackground(
     StorageScanRequest request,
   ) => Isolate.run(() => scanStorageUsage(request));

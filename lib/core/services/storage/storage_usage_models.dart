@@ -225,6 +225,8 @@ class StorageVideoInfo {
   final int bitrate;
 
   int get shortSide => math.min(width, height);
+
+  Duration get duration => Duration(milliseconds: durationMs);
 }
 
 /// 设备存储空间（只有 Android 读得到）。

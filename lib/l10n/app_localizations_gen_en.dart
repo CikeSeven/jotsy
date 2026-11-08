@@ -14748,4 +14748,594 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diarySearchTagSheetHint =>
       'Shows entries that have all selected tags';
+
+  @override
+  String settingsStorageSubtitle(String size) {
+    return '$size used';
+  }
+
+  @override
+  String get storageMgmtTitle => 'Storage';
+
+  @override
+  String get storageMgmtTotalLabel => 'Total used';
+
+  @override
+  String storageMgmtDeviceSpace(String free, String total) {
+    return '$free free of $total on this device';
+  }
+
+  @override
+  String storageMgmtCleanUpAll(String size) {
+    return 'Clean up · free $size';
+  }
+
+  @override
+  String get storageMgmtRescan => 'Rescan';
+
+  @override
+  String get storageMgmtScanFailed =>
+      'Couldn\'t measure storage. Try again later.';
+
+  @override
+  String get storageMgmtCategoryImages => 'Images';
+
+  @override
+  String get storageMgmtCategoryVideos => 'Videos';
+
+  @override
+  String get storageMgmtCategoryAudio => 'Recordings';
+
+  @override
+  String get storageMgmtCategoryAttachments => 'Attachments';
+
+  @override
+  String get storageMgmtCategoryCovers => 'Covers';
+
+  @override
+  String get storageMgmtCategoryBackgrounds => 'Backgrounds';
+
+  @override
+  String get storageMgmtCategoryFonts => 'Fonts';
+
+  @override
+  String get storageMgmtCategoryDatabase => 'Diary data';
+
+  @override
+  String get storageMgmtCategoryCache => 'Cache';
+
+  @override
+  String get storageMgmtCategoryUnused => 'Unused files';
+
+  @override
+  String get storageMgmtCategoryOther => 'Other';
+
+  @override
+  String get storageMgmtSuggestionsTitle => 'Free up space';
+
+  @override
+  String get storageMgmtSuggestCache => 'Cache';
+
+  @override
+  String storageMgmtSuggestCacheSubtitle(String size) {
+    return '$size can be cleared. Cache used in the last hour is kept.';
+  }
+
+  @override
+  String get storageMgmtSuggestUnused => 'Unused files';
+
+  @override
+  String storageMgmtSuggestUnusedSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files no entry uses, $size',
+      one: '1 file no entry uses, $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtSuggestTrash => 'Entries in the trash';
+
+  @override
+  String storageMgmtSuggestTrashSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files are used only by entries in the trash, $size',
+      one: '1 file is used only by entries in the trash, $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtSuggestCompress => 'Photos & videos to compress';
+
+  @override
+  String storageMgmtSuggestCompressSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items, saves about $size',
+      one: '1 item, saves about $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtSuggestDatabase => 'Tidy up diary data';
+
+  @override
+  String storageMgmtSuggestDatabaseSubtitle(String size) {
+    return 'Frees $size left behind by deleted content';
+  }
+
+  @override
+  String get storageMgmtClear => 'Clear';
+
+  @override
+  String get storageMgmtCompact => 'Tidy up';
+
+  @override
+  String get storageMgmtAllClean => 'All tidy';
+
+  @override
+  String get storageMgmtAllCleanSubtitle =>
+      'No cache or unused files to clear right now';
+
+  @override
+  String get storageMgmtMediaTitle => 'Media';
+
+  @override
+  String get storageMgmtAllMedia => 'All media';
+
+  @override
+  String storageMgmtFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files',
+      one: '1 file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtLargeFiles => 'Large files';
+
+  @override
+  String storageMgmtLargeFilesSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files of 10 MB or more',
+      one: '1 file of 10 MB or more',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtOtherTitle => 'Other data';
+
+  @override
+  String get storageMgmtFooter =>
+      'Deleting and compressing reach your other devices with the next LAN sync. Older cloud backups keep the original files until they are pruned.';
+
+  @override
+  String get storageMgmtCleaning => 'Cleaning up…';
+
+  @override
+  String get storageMgmtDeleting => 'Deleting…';
+
+  @override
+  String storageMgmtFreed(String size) {
+    return 'Freed $size';
+  }
+
+  @override
+  String get storageMgmtNothingFreed => 'Nothing to clear right now';
+
+  @override
+  String get storageMgmtBusyEditing =>
+      'An entry is open for editing. Close it and try again.';
+
+  @override
+  String get storageMgmtBusyUndo =>
+      'Wait for the undo prompt to disappear, then try again.';
+
+  @override
+  String get storageMgmtCannotDelete =>
+      'Other data refers to this file, so it can\'t be deleted here.';
+
+  @override
+  String storageMgmtDeleteTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count files?',
+      one: 'Delete 1 file?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteBody(String size) {
+    return 'Frees $size. They will be removed from:';
+  }
+
+  @override
+  String storageMgmtDeleteFromDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteFromNotebooks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count notebook covers',
+      one: '1 notebook cover',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteFromComments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count comments',
+      one: '1 comment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtDeleteFromDrafts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count drafts',
+      one: '1 draft',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtDeleteCommentNote =>
+      'Comments left with no text or images are deleted too.';
+
+  @override
+  String get storageMgmtDeleteCapsuleNote =>
+      'Includes content from sealed time capsules.';
+
+  @override
+  String get storageMgmtDeleteIrreversible => 'This can\'t be undone.';
+
+  @override
+  String storageMgmtDeleted(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Deleted $count files, freed $size',
+      one: 'Deleted 1 file, freed $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtSkippedRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places changed in the meantime and were left as they are.',
+      one: '1 place changed in the meantime and was left as it is.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompress => 'Compress';
+
+  @override
+  String storageMgmtCompressTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Compress $count files',
+      one: 'Compress 1 file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompressImages => 'Photos';
+
+  @override
+  String get storageMgmtCompressVideos => 'Videos';
+
+  @override
+  String get storageMgmtPresetHigh => 'High quality';
+
+  @override
+  String get storageMgmtPresetBalanced => 'Balanced';
+
+  @override
+  String get storageMgmtPresetCompact => 'Save space';
+
+  @override
+  String storageMgmtImagePresetDetail(
+    int maxSide,
+    int quality,
+    String estimate,
+  ) {
+    return 'Longest side $maxSide px · quality $quality · $estimate';
+  }
+
+  @override
+  String storageMgmtPresetEstimate(String before, String after) {
+    return '$before → about $after';
+  }
+
+  @override
+  String get storageMgmtPresetNoGain => 'Already small enough';
+
+  @override
+  String storageMgmtCompressSummary(String before, String after, String saved) {
+    return '$before → about $after, saves about $saved';
+  }
+
+  @override
+  String get storageMgmtCompressNothing =>
+      'None of these files need compressing';
+
+  @override
+  String storageMgmtCompressSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count files are already small or in a format that can\'t be compressed and will be skipped.',
+      one:
+          '1 file is already small or in a format that can\'t be compressed and will be skipped.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompressNote =>
+      'Compressed files replace the originals and can\'t be restored. Photos keep their capture time and location.';
+
+  @override
+  String get storageMgmtCompressStart => 'Compress';
+
+  @override
+  String get storageMgmtCompressing => 'Compressing';
+
+  @override
+  String get storageMgmtCompressPreparing => 'Getting ready…';
+
+  @override
+  String storageMgmtCompressStep(int index, int total, String name) {
+    return '$index of $total · $name';
+  }
+
+  @override
+  String get storageMgmtCancelling => 'Stopping…';
+
+  @override
+  String get storageMgmtCompressFinished => 'Compression finished';
+
+  @override
+  String get storageMgmtCompressCancelled => 'Compression stopped';
+
+  @override
+  String storageMgmtCompressDone(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Compressed $count files, saved $size',
+      one: 'Compressed 1 file, saved $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtCompressUnchanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files didn\'t get smaller; the originals were kept.',
+      one: '1 file didn\'t get smaller; the original was kept.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtCompressFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files couldn\'t be compressed.',
+      one: '1 file couldn\'t be compressed.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtCompressNoneDone => 'Nothing was compressed.';
+
+  @override
+  String get storageMgmtDone => 'Done';
+
+  @override
+  String storageMgmtCompressSaving(String size) {
+    return 'Compress · saves $size';
+  }
+
+  @override
+  String storageMgmtSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected',
+      one: '1 selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtSelectionSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected · $size',
+      one: '1 selected · $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtListSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items · $size',
+      one: '1 item · $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtFilterAll => 'All';
+
+  @override
+  String get storageMgmtFilterLarge => 'Large files';
+
+  @override
+  String get storageMgmtFilterCompressible => 'Compressible';
+
+  @override
+  String get storageMgmtFilterTrash => 'Trash only';
+
+  @override
+  String get storageMgmtSort => 'Sort';
+
+  @override
+  String get storageMgmtSortLargest => 'Largest first';
+
+  @override
+  String get storageMgmtSortNewest => 'Newest first';
+
+  @override
+  String get storageMgmtSortOldest => 'Oldest first';
+
+  @override
+  String get storageMgmtViewGrid => 'Show as grid';
+
+  @override
+  String get storageMgmtViewList => 'Show as list';
+
+  @override
+  String get storageMgmtEmpty => 'No files here';
+
+  @override
+  String storageMgmtPrivateHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items from private entries are hidden',
+      one: '1 item from private entries is hidden',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtReveal => 'Show';
+
+  @override
+  String get storageMgmtRevealReason =>
+      'Verify to show media from private entries';
+
+  @override
+  String get storageMgmtRevealUnavailable =>
+      'Can\'t verify on this device. Set an app passcode first.';
+
+  @override
+  String get storageMgmtBadgeTrash => 'In trash';
+
+  @override
+  String storageMgmtBadgeCompressible(String size) {
+    return 'Can save $size';
+  }
+
+  @override
+  String get storageMgmtBadgeCompressShort => 'Compress';
+
+  @override
+  String storageMgmtBadgeUsedIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used in $count places',
+      one: 'Used once',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtBadgeLocked => 'Can\'t delete';
+
+  @override
+  String get storageMgmtUntitledDiary => 'Untitled entry';
+
+  @override
+  String get storageMgmtUntitledDraft => 'Untitled draft';
+
+  @override
+  String storageMgmtRefComment(String title) {
+    return 'Comment · $title';
+  }
+
+  @override
+  String storageMgmtRefDiaryCover(String title) {
+    return 'Cover · $title';
+  }
+
+  @override
+  String storageMgmtRefNotebookCover(String name) {
+    return 'Notebook cover · $name';
+  }
+
+  @override
+  String storageMgmtRefDraft(String title) {
+    return 'Draft · $title';
+  }
+
+  @override
+  String get storageMgmtRefOther => 'Referenced by other data';
+
+  @override
+  String get storageMgmtMaskedPrivate => 'Content from a private entry';
+
+  @override
+  String get storageMgmtMaskedCapsule => 'Content from a sealed time capsule';
+
+  @override
+  String storageMgmtUsedIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Used in $count places',
+      one: 'Used in 1 place',
+    );
+    return '$_temp0';
+  }
 }

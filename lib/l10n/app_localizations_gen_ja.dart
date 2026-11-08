@@ -13355,4 +13355,445 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diarySearchTagSheetHint => '選んだタグをすべて含む日記を表示します';
+
+  @override
+  String settingsStorageSubtitle(String size) {
+    return '$size 使用中';
+  }
+
+  @override
+  String get storageMgmtTitle => 'ストレージ管理';
+
+  @override
+  String get storageMgmtTotalLabel => '使用中の容量';
+
+  @override
+  String storageMgmtDeviceSpace(String free, String total) {
+    return 'この端末の空き $free / 合計 $total';
+  }
+
+  @override
+  String storageMgmtCleanUpAll(String size) {
+    return 'まとめて整理・$size 解放';
+  }
+
+  @override
+  String get storageMgmtRescan => '再計算';
+
+  @override
+  String get storageMgmtScanFailed => '容量を集計できませんでした。しばらくしてからもう一度お試しください';
+
+  @override
+  String get storageMgmtCategoryImages => '画像';
+
+  @override
+  String get storageMgmtCategoryVideos => '動画';
+
+  @override
+  String get storageMgmtCategoryAudio => '録音';
+
+  @override
+  String get storageMgmtCategoryAttachments => '添付ファイル';
+
+  @override
+  String get storageMgmtCategoryCovers => '表紙';
+
+  @override
+  String get storageMgmtCategoryBackgrounds => '背景画像';
+
+  @override
+  String get storageMgmtCategoryFonts => 'フォント';
+
+  @override
+  String get storageMgmtCategoryDatabase => '日記データ';
+
+  @override
+  String get storageMgmtCategoryCache => 'キャッシュ';
+
+  @override
+  String get storageMgmtCategoryUnused => '未使用のファイル';
+
+  @override
+  String get storageMgmtCategoryOther => 'その他';
+
+  @override
+  String get storageMgmtSuggestionsTitle => '空き容量を増やす';
+
+  @override
+  String get storageMgmtSuggestCache => 'キャッシュ';
+
+  @override
+  String storageMgmtSuggestCacheSubtitle(String size) {
+    return '$size を削除できます。直近1時間に使ったものは残します';
+  }
+
+  @override
+  String get storageMgmtSuggestUnused => '未使用のファイル';
+
+  @override
+  String storageMgmtSuggestUnusedSubtitle(int count, String size) {
+    return 'どの日記にも使われていないファイル $count 個、$size';
+  }
+
+  @override
+  String get storageMgmtSuggestTrash => 'ごみ箱の日記';
+
+  @override
+  String storageMgmtSuggestTrashSubtitle(int count, String size) {
+    return 'ごみ箱の日記だけが使っているファイル $count 個、$size';
+  }
+
+  @override
+  String get storageMgmtSuggestCompress => '圧縮できる写真と動画';
+
+  @override
+  String storageMgmtSuggestCompressSubtitle(int count, String size) {
+    return '$count 件、約 $size 節約できます';
+  }
+
+  @override
+  String get storageMgmtSuggestDatabase => '日記データを最適化';
+
+  @override
+  String storageMgmtSuggestDatabaseSubtitle(String size) {
+    return '削除した内容が残した $size を解放できます';
+  }
+
+  @override
+  String get storageMgmtClear => '削除';
+
+  @override
+  String get storageMgmtCompact => '最適化';
+
+  @override
+  String get storageMgmtAllClean => '整理済みです';
+
+  @override
+  String get storageMgmtAllCleanSubtitle => '今は削除できるキャッシュや未使用のファイルはありません';
+
+  @override
+  String get storageMgmtMediaTitle => 'メディア';
+
+  @override
+  String get storageMgmtAllMedia => 'すべてのメディア';
+
+  @override
+  String storageMgmtFileCount(int count) {
+    return '$count 個のファイル';
+  }
+
+  @override
+  String get storageMgmtLargeFiles => '大きなファイル';
+
+  @override
+  String storageMgmtLargeFilesSubtitle(int count) {
+    return '10 MB 以上のファイル $count 個';
+  }
+
+  @override
+  String get storageMgmtOtherTitle => 'その他のデータ';
+
+  @override
+  String get storageMgmtFooter =>
+      '削除と圧縮は次回のLAN同期でほかの端末にも反映されます。クラウドの古いバックアップには、保持数に応じて整理されるまで元のファイルが残ります。';
+
+  @override
+  String get storageMgmtCleaning => '整理しています…';
+
+  @override
+  String get storageMgmtDeleting => '削除しています…';
+
+  @override
+  String storageMgmtFreed(String size) {
+    return '$size を解放しました';
+  }
+
+  @override
+  String get storageMgmtNothingFreed => '今は削除できるものはありません';
+
+  @override
+  String get storageMgmtBusyEditing => '編集中の日記があります。閉じてからもう一度お試しください';
+
+  @override
+  String get storageMgmtBusyUndo => '「元に戻す」の表示が消えてからもう一度お試しください';
+
+  @override
+  String get storageMgmtCannotDelete => '日記のほかのデータが参照しているため、ここでは削除できません';
+
+  @override
+  String storageMgmtDeleteTitle(int count) {
+    return '$count 個のファイルを削除しますか？';
+  }
+
+  @override
+  String storageMgmtDeleteBody(String size) {
+    return '$size を解放します。次の場所から取り除かれます：';
+  }
+
+  @override
+  String storageMgmtDeleteFromDiaries(int count) {
+    return '日記 $count 件';
+  }
+
+  @override
+  String storageMgmtDeleteFromNotebooks(int count) {
+    return 'ノートの表紙 $count 件';
+  }
+
+  @override
+  String storageMgmtDeleteFromComments(int count) {
+    return 'コメント $count 件';
+  }
+
+  @override
+  String storageMgmtDeleteFromDrafts(int count) {
+    return '下書き $count 件';
+  }
+
+  @override
+  String get storageMgmtDeleteCommentNote => '文字も画像もなくなったコメントは一緒に削除されます。';
+
+  @override
+  String get storageMgmtDeleteCapsuleNote => 'まだ開封されていないタイムカプセルの内容も含まれます。';
+
+  @override
+  String get storageMgmtDeleteIrreversible => '削除すると元に戻せません。';
+
+  @override
+  String storageMgmtDeleted(int count, String size) {
+    return '$count 個のファイルを削除し、$size を解放しました';
+  }
+
+  @override
+  String storageMgmtSkippedRows(int count) {
+    return '$count 件の内容がその間に変更されたため、そのままにしました。';
+  }
+
+  @override
+  String get storageMgmtCompress => '圧縮';
+
+  @override
+  String storageMgmtCompressTitle(int count) {
+    return '$count 個のファイルを圧縮';
+  }
+
+  @override
+  String get storageMgmtCompressImages => '写真';
+
+  @override
+  String get storageMgmtCompressVideos => '動画';
+
+  @override
+  String get storageMgmtPresetHigh => '高画質';
+
+  @override
+  String get storageMgmtPresetBalanced => 'バランス';
+
+  @override
+  String get storageMgmtPresetCompact => '容量優先';
+
+  @override
+  String storageMgmtImagePresetDetail(
+    int maxSide,
+    int quality,
+    String estimate,
+  ) {
+    return '長辺 $maxSide px・画質 $quality・$estimate';
+  }
+
+  @override
+  String storageMgmtPresetEstimate(String before, String after) {
+    return '$before → 約 $after';
+  }
+
+  @override
+  String get storageMgmtPresetNoGain => 'すでに十分小さいです';
+
+  @override
+  String storageMgmtCompressSummary(String before, String after, String saved) {
+    return '$before → 約 $after、約 $saved 節約';
+  }
+
+  @override
+  String get storageMgmtCompressNothing => '圧縮が必要なファイルはありません';
+
+  @override
+  String storageMgmtCompressSkipped(int count) {
+    return '$count 個のファイルはすでに小さいか圧縮できない形式のため、スキップします。';
+  }
+
+  @override
+  String get storageMgmtCompressNote =>
+      '圧縮したファイルは元のファイルを置き換え、元に戻せません。写真の撮影日時と位置情報は残ります。';
+
+  @override
+  String get storageMgmtCompressStart => '圧縮する';
+
+  @override
+  String get storageMgmtCompressing => '圧縮しています';
+
+  @override
+  String get storageMgmtCompressPreparing => '準備しています…';
+
+  @override
+  String storageMgmtCompressStep(int index, int total, String name) {
+    return '$index/$total 件目・$name';
+  }
+
+  @override
+  String get storageMgmtCancelling => '停止しています…';
+
+  @override
+  String get storageMgmtCompressFinished => '圧縮が完了しました';
+
+  @override
+  String get storageMgmtCompressCancelled => '圧縮を停止しました';
+
+  @override
+  String storageMgmtCompressDone(int count, String size) {
+    return '$count 個のファイルを圧縮し、$size 節約しました';
+  }
+
+  @override
+  String storageMgmtCompressUnchanged(int count) {
+    return '$count 個のファイルは小さくならなかったため、元のファイルを残しました。';
+  }
+
+  @override
+  String storageMgmtCompressFailed(int count) {
+    return '$count 個のファイルを圧縮できませんでした。';
+  }
+
+  @override
+  String get storageMgmtCompressNoneDone => '圧縮したファイルはありません。';
+
+  @override
+  String get storageMgmtDone => '完了';
+
+  @override
+  String storageMgmtCompressSaving(String size) {
+    return '圧縮・約 $size 節約';
+  }
+
+  @override
+  String storageMgmtSelectedCount(int count) {
+    return '$count 件を選択';
+  }
+
+  @override
+  String storageMgmtSelectionSummary(int count, String size) {
+    return '$count 件選択・合計 $size';
+  }
+
+  @override
+  String storageMgmtListSummary(int count, String size) {
+    return '$count 件・$size';
+  }
+
+  @override
+  String get storageMgmtFilterAll => 'すべて';
+
+  @override
+  String get storageMgmtFilterLarge => '大きなファイル';
+
+  @override
+  String get storageMgmtFilterCompressible => '圧縮可能';
+
+  @override
+  String get storageMgmtFilterTrash => 'ごみ箱のみ';
+
+  @override
+  String get storageMgmtSort => '並べ替え';
+
+  @override
+  String get storageMgmtSortLargest => '大きい順';
+
+  @override
+  String get storageMgmtSortNewest => '新しい順';
+
+  @override
+  String get storageMgmtSortOldest => '古い順';
+
+  @override
+  String get storageMgmtViewGrid => 'グリッド表示';
+
+  @override
+  String get storageMgmtViewList => 'リスト表示';
+
+  @override
+  String get storageMgmtEmpty => 'ファイルはありません';
+
+  @override
+  String storageMgmtPrivateHidden(int count) {
+    return '非公開の日記の $count 件はプレビューを隠しています';
+  }
+
+  @override
+  String get storageMgmtReveal => '表示';
+
+  @override
+  String get storageMgmtRevealReason => '非公開の日記のメディアを表示するには認証してください';
+
+  @override
+  String get storageMgmtRevealUnavailable =>
+      'この端末では認証できません。先にアプリのパスコードを設定してください';
+
+  @override
+  String get storageMgmtBadgeTrash => 'ごみ箱';
+
+  @override
+  String storageMgmtBadgeCompressible(String size) {
+    return '$size 節約可';
+  }
+
+  @override
+  String get storageMgmtBadgeCompressShort => '圧縮可';
+
+  @override
+  String storageMgmtBadgeUsedIn(int count) {
+    return '$count か所で使用';
+  }
+
+  @override
+  String get storageMgmtBadgeLocked => '削除不可';
+
+  @override
+  String get storageMgmtUntitledDiary => '無題の日記';
+
+  @override
+  String get storageMgmtUntitledDraft => '無題の下書き';
+
+  @override
+  String storageMgmtRefComment(String title) {
+    return 'コメント・$title';
+  }
+
+  @override
+  String storageMgmtRefDiaryCover(String title) {
+    return '表紙・$title';
+  }
+
+  @override
+  String storageMgmtRefNotebookCover(String name) {
+    return 'ノートの表紙・$name';
+  }
+
+  @override
+  String storageMgmtRefDraft(String title) {
+    return '下書き・$title';
+  }
+
+  @override
+  String get storageMgmtRefOther => 'ほかのデータが参照';
+
+  @override
+  String get storageMgmtMaskedPrivate => '非公開の日記の内容';
+
+  @override
+  String get storageMgmtMaskedCapsule => '未開封のタイムカプセルの内容';
+
+  @override
+  String storageMgmtUsedIn(int count) {
+    return '$count か所で使用';
+  }
 }

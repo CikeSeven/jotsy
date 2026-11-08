@@ -13,6 +13,7 @@ import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import '../../support/fake_lan_sync_controller.dart';
+import 'package:node_diary/ui/storage/providers/storage_providers.dart';
 
 /// 设置首页（DESIGN.md §5.3）：通用、写日记、整理、数据与安全四组，末尾
 /// AI 助手与关于；功能关闭时对应的行不出现；语言行显示并切换当前语言。
@@ -34,6 +35,8 @@ void main() {
       const Scaffold(body: SettingsPage()),
       overrides: [
         lanSyncControllerProvider.overrideWithValue(FakeLanSyncController()),
+        // 不去遍历真实的数据目录：“已用”给一个固定值。
+        storageQuickTotalProvider.overrideWith((ref) async => 3 * 1024 * 1024),
       ],
     );
     await tester.pumpAndSettle();
@@ -76,6 +79,7 @@ void main() {
       l10n.settingsRecycleBin,
       l10n.settingsGroupDataSecurity,
       l10n.settingsDataManagement,
+      l10n.storageMgmtTitle,
       l10n.lanSyncTitle,
       l10n.settingsAppLockAndPasscode,
       l10n.aiSettingsTitle,
@@ -94,6 +98,7 @@ void main() {
     // 只是进入列表的行不写副标题；外观、数据管理写内容概括。
     expect(find.text(l10n.settingsAppearanceSubtitle), findsOneWidget);
     expect(find.text(l10n.settingsDataManagementSubtitle), findsOneWidget);
+    expect(find.text(l10n.settingsStorageSubtitle('3 MB')), findsOneWidget);
     expect(dividersIn(tester, l10n.settingsGroupOrganize), 3);
     await h.unmount();
   });

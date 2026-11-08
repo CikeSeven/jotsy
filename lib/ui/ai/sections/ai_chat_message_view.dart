@@ -248,10 +248,16 @@ class _AnswerFooter extends StatelessWidget {
       if (meta.thinking case final level?)
         l10n.aiChatMetaThinking(aiThinkingLevelLabel(l10n, level)),
       if (showTokens && meta.input != null && meta.output != null)
-        l10n.aiChatTokens(
-          aiCompactCount(meta.input!),
-          aiCompactCount(meta.output!),
-        ),
+        (meta.cached ?? 0) > 0
+            ? l10n.aiChatTokensCached(
+                aiCompactCount(meta.input!),
+                aiCompactCount(meta.cached!),
+                aiCompactCount(meta.output!),
+              )
+            : l10n.aiChatTokens(
+                aiCompactCount(meta.input!),
+                aiCompactCount(meta.output!),
+              ),
       ?meta.model,
     ];
     return Column(
@@ -475,6 +481,7 @@ class _AnswerMeta {
   const _AnswerMeta({
     this.input,
     this.output,
+    this.cached,
     this.model,
     this.contextEntries,
     this.agentEnd,
@@ -491,6 +498,7 @@ class _AnswerMeta {
         return _AnswerMeta(
           input: number('inputTokens'),
           output: number('outputTokens'),
+          cached: number('cachedTokens'),
           model: model is String ? model : null,
           contextEntries: number('contextEntries'),
           agentEnd: json['agentEnd'] is String
@@ -508,6 +516,9 @@ class _AnswerMeta {
 
   final int? input;
   final int? output;
+
+  /// 输入里命中提示缓存的部分（服务商不报或没命中时为 null）。
+  final int? cached;
   final String? model;
 
   /// 这一轮放进上下文的篇数；“继续聊聊”带进来的回应等没有检索过的为 null。

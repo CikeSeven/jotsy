@@ -14,6 +14,7 @@ class AiUsageEntry {
     this.failures = 0,
     this.inputTokens = 0,
     this.outputTokens = 0,
+    this.cachedInputTokens = 0,
   });
 
   /// 记账时的服务商名称快照（服务商删掉后仍能看懂）。
@@ -24,6 +25,9 @@ class AiUsageEntry {
   final int inputTokens;
   final int outputTokens;
 
+  /// 输入里命中提示缓存的部分（含在 [inputTokens] 里）。
+  final int cachedInputTokens;
+
   int get totalTokens => inputTokens + outputTokens;
 
   AiUsageEntry add({required bool failed, AiUsage? usage}) => AiUsageEntry(
@@ -33,6 +37,7 @@ class AiUsageEntry {
     failures: failures + (failed ? 1 : 0),
     inputTokens: inputTokens + (usage?.inputTokens ?? 0),
     outputTokens: outputTokens + (usage?.outputTokens ?? 0),
+    cachedInputTokens: cachedInputTokens + (usage?.cachedInputTokens ?? 0),
   );
 
   Map<String, Object?> toJson() => <String, Object?>{
@@ -42,6 +47,7 @@ class AiUsageEntry {
     if (failures > 0) 'f': failures,
     if (inputTokens > 0) 'i': inputTokens,
     if (outputTokens > 0) 'o': outputTokens,
+    if (cachedInputTokens > 0) 'c': cachedInputTokens,
   };
 
   static AiUsageEntry? fromJson(Object? raw) {
@@ -57,6 +63,7 @@ class AiUsageEntry {
       failures: count(raw['f']),
       inputTokens: count(raw['i']),
       outputTokens: count(raw['o']),
+      cachedInputTokens: count(raw['c']),
     );
   }
 }
@@ -112,6 +119,7 @@ class AiUsageLedger {
       failures: current?.failures ?? 0,
       inputTokens: current?.inputTokens ?? 0,
       outputTokens: current?.outputTokens ?? 0,
+      cachedInputTokens: current?.cachedInputTokens ?? 0,
     ).add(failed: failed, usage: usage);
     final keys = next.keys.toList()..sort((a, b) => b.compareTo(a));
     for (final stale in keys.skip(maxMonths)) {

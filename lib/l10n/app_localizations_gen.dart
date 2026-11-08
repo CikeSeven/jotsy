@@ -22230,6 +22230,12 @@ abstract class AppLocalizations {
   /// **'In {input} · Out {output}'**
   String aiUsageTokens(String input, String output);
 
+  /// 输入（其中命中提示缓存的部分）与输出 token。
+  ///
+  /// In en, this message translates to:
+  /// **'In {input} ({cached} cached) · Out {output}'**
+  String aiUsageTokensCached(String input, String cached, String output);
+
   /// Total tokens in a month.
   ///
   /// In en, this message translates to:
@@ -23393,6 +23399,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{input} in · {output} out'**
   String aiChatTokens(String input, String output);
+
+  /// 回答下方的 token 数，含命中提示缓存的输入。
+  ///
+  /// In en, this message translates to:
+  /// **'In {input} ({cached} cached) · Out {output}'**
+  String aiChatTokensCached(String input, String cached, String output);
 
   /// Label under a stopped answer.
   ///

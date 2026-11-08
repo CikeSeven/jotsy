@@ -12224,6 +12224,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String aiUsageTokensCached(String input, String cached, String output) {
+    return '输入 $input（缓存 $cached）· 输出 $output';
+  }
+
+  @override
   String aiUsageMonthTotal(String tokens) {
     return '共 $tokens token';
   }
@@ -12882,6 +12887,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String aiChatTokens(String input, String output) {
     return '输入 $input · 输出 $output';
+  }
+
+  @override
+  String aiChatTokensCached(String input, String cached, String output) {
+    return '输入 $input（缓存 $cached）· 输出 $output';
   }
 
   @override

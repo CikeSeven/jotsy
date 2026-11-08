@@ -14279,6 +14279,11 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String aiUsageTokensCached(String input, String cached, String output) {
+    return 'Ввод $input (из кэша $cached) · Вывод $output';
+  }
+
+  @override
   String aiUsageMonthTotal(String tokens) {
     return 'Токенов: $tokens';
   }
@@ -15049,6 +15054,11 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String aiChatTokens(String input, String output) {
     return 'Вход: $input · Выход: $output';
+  }
+
+  @override
+  String aiChatTokensCached(String input, String cached, String output) {
+    return 'Ввод $input (из кэша $cached) · Вывод $output';
   }
 
   @override

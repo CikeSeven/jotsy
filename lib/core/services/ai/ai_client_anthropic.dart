@@ -200,7 +200,11 @@ class AnthropicChatClient extends AiChatClient {
         jsonInt(usage['cache_creation_input_tokens']);
     final output = jsonInt(usage['output_tokens']);
     if (input == 0 && output == 0) return null;
-    return AiUsage(inputTokens: input, outputTokens: output);
+    return AiUsage(
+      inputTokens: input,
+      outputTokens: output,
+      cachedInputTokens: jsonInt(usage['cache_read_input_tokens']),
+    );
   }
 
   static AiFinishReason? _finish(String? raw) => switch (raw) {

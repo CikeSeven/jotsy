@@ -584,10 +584,7 @@ class AiChatController extends ChangeNotifier {
       'contextEntries': _citations.length,
       if (options.thinking case final level?) 'thinking': level.name,
       if (run.thinking.elapsedMs > 0) 'thinkingMs': run.thinking.elapsedMs,
-      if (usage != null) ...<String, Object?>{
-        'inputTokens': usage.inputTokens,
-        'outputTokens': usage.outputTokens,
-      },
+      if (usage != null) ...usage.toMeta(),
       ...extra,
     });
   }

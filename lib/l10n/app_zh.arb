@@ -17011,6 +17011,21 @@
       }
     }
   },
+  "aiUsageTokensCached": "输入 {input}（缓存 {cached}）· 输出 {output}",
+  "@aiUsageTokensCached": {
+    "description": "输入（其中命中提示缓存的部分）与输出 token。",
+    "placeholders": {
+      "input": {
+        "type": "String"
+      },
+      "cached": {
+        "type": "String"
+      },
+      "output": {
+        "type": "String"
+      }
+    }
+  },
   "aiUsageMonthTotal": "共 {tokens} token",
   "@aiUsageMonthTotal": {
     "description": "一个月的总 token。",
@@ -17976,6 +17991,21 @@
     "description": "回答下方的 token 数。",
     "placeholders": {
       "input": {
+        "type": "String"
+      },
+      "output": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatTokensCached": "输入 {input}（缓存 {cached}）· 输出 {output}",
+  "@aiChatTokensCached": {
+    "description": "回答下方的 token 数，含命中提示缓存的输入。",
+    "placeholders": {
+      "input": {
+        "type": "String"
+      },
+      "cached": {
         "type": "String"
       },
       "output": {

@@ -440,10 +440,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
       if (thinkingLevel != null) 'thinking': thinkingLevel!.name,
       // 最后一段（作答这一步）的思考时长；各工具步骤的记在步骤里。
       if (thinking.elapsedMs > 0) 'thinkingMs': thinking.elapsedMs,
-      if (usage != null) ...<String, Object?>{
-        'inputTokens': usage.inputTokens,
-        'outputTokens': usage.outputTokens,
-      },
+      if (usage != null) ...usage.toMeta(),
       ...extra,
     });
   }

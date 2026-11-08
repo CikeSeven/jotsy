@@ -235,7 +235,14 @@ class GeminiChatClient extends AiChatClient {
         jsonInt(usage['candidatesTokenCount']) +
         jsonInt(usage['thoughtsTokenCount']);
     if (input == 0 && output == 0) return null;
-    return AiUsage(inputTokens: input, outputTokens: output);
+    // 隐式缓存命中的部分（含在 promptTokenCount 里）。
+    return AiUsage(
+      inputTokens: input,
+      outputTokens: output,
+      cachedInputTokens: jsonInt(
+        usage['cachedContentTokenCount'],
+      ).clamp(0, input),
+    );
   }
 
   static AiFinishReason? _finish(String? raw) => switch (raw) {

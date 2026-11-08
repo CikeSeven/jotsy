@@ -241,7 +241,22 @@ class OpenAiChatClient extends AiChatClient {
       usage['completion_tokens'] ?? usage['output_tokens'],
     );
     if (input == 0 && output == 0) return null;
-    return AiUsage(inputTokens: input, outputTokens: output);
+    // 命中缓存的输入：OpenAI 写在 `prompt_tokens_details.cached_tokens`；
+    // DeepSeek 另给 `prompt_cache_hit_tokens`（两者相同）；Kimi 等写在顶层
+    // `cached_tokens`。都算在 prompt_tokens 里。
+    final details = jsonMap(
+      usage['prompt_tokens_details'] ?? usage['input_tokens_details'],
+    );
+    final cached = jsonInt(
+      details?['cached_tokens'] ??
+          usage['prompt_cache_hit_tokens'] ??
+          usage['cached_tokens'],
+    );
+    return AiUsage(
+      inputTokens: input,
+      outputTokens: output,
+      cachedInputTokens: cached.clamp(0, input),
+    );
   }
 
   static AiFinishReason? _finish(String? raw) => switch (raw) {

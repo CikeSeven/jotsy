@@ -96,10 +96,7 @@ class AiReplyJobs extends Notifier<Map<String, AiReplyJob>> {
             'provider': model.provider.name,
             'model': model.model.id,
             if (run.reasoning.trim().isNotEmpty) 'reasoning': run.reasoning,
-            if (run.usage case final usage?) ...<String, Object?>{
-              'inputTokens': usage.inputTokens,
-              'outputTokens': usage.outputTokens,
-            },
+            if (run.usage case final usage?) ...usage.toMeta(),
           }),
         );
     if (identical(state[job.diaryId], job)) dismiss(job.diaryId);

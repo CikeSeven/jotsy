@@ -237,7 +237,15 @@ class OpenAiResponsesClient extends AiChatClient {
     final input = jsonInt(usage['input_tokens']);
     final output = jsonInt(usage['output_tokens']);
     if (input == 0 && output == 0) return null;
-    return AiUsage(inputTokens: input, outputTokens: output);
+    // 命中缓存的部分含在 input_tokens 里。
+    final cached = jsonInt(
+      jsonMap(usage['input_tokens_details'])?['cached_tokens'],
+    );
+    return AiUsage(
+      inputTokens: input,
+      outputTokens: output,
+      cachedInputTokens: cached.clamp(0, input),
+    );
   }
 
   static AiFinishReason? _finish(Map<String, Object?>? response) {

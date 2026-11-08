@@ -13823,6 +13823,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String aiUsageTokensCached(String input, String cached, String output) {
+    return 'In $input ($cached cached) · Out $output';
+  }
+
+  @override
   String aiUsageMonthTotal(String tokens) {
     return '$tokens tokens';
   }
@@ -14537,6 +14542,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String aiChatTokens(String input, String output) {
     return '$input in · $output out';
+  }
+
+  @override
+  String aiChatTokensCached(String input, String cached, String output) {
+    return 'In $input ($cached cached) · Out $output';
   }
 
   @override

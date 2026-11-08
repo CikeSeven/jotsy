@@ -1,6 +1,6 @@
 // 对话页顶栏：`<` 返回、对话标题（点按改名）、历史（宽窗口历史栏常驻时
 // 没有）、新对话（已是空白新对话时禁用）、⋮（重命名、置顶 / 取消置顶、
-// 删除，以及 AI 设置）。宽窗口时顶栏铺满（左侧是历史栏），否则按阅读列居中。
+// 导出对话、删除；空白新对话时为 AI 设置）。宽窗口时顶栏铺满（左侧是历史栏），否则按阅读列居中。
 
 import 'dart:async';
 
@@ -27,6 +27,7 @@ class AiChatTopBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onHistory,
     required this.onNewChat,
     required this.onDelete,
+    required this.onExport,
     required this.onSettings,
   });
 
@@ -43,6 +44,7 @@ class AiChatTopBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback onHistory;
   final VoidCallback onNewChat;
   final VoidCallback onDelete;
+  final VoidCallback onExport;
   final VoidCallback onSettings;
 
   @override
@@ -101,17 +103,23 @@ class AiChatTopBar extends ConsumerWidget implements PreferredSizeWidget {
                 child: Text(row.pinned ? l10n.aiChatUnpin : l10n.aiChatPin),
               ),
               ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
+                onPressed: onExport,
+                child: Text(l10n.aiChatExport),
+              ),
+              ExpressiveMenuItem(
                 leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
                 destructive: true,
                 onPressed: onDelete,
                 child: Text(l10n.commonDelete),
               ),
-            ],
-            ExpressiveMenuItem(
-              leadingIcon: const FaIcon(FontAwesomeIcons.gear),
-              onPressed: onSettings,
-              child: Text(l10n.aiChatOpenSettings),
-            ),
+            ] else
+              // 空白新对话只有 AI 设置（对话里从历史抽屉底部进入）。
+              ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.gear),
+                onPressed: onSettings,
+                child: Text(l10n.aiChatOpenSettings),
+              ),
           ],
         ),
       ],

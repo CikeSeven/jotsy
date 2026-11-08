@@ -5,7 +5,7 @@
 // “新对话”、“AI 回顾”入口（回顾开启时）；然后是分组列表——置顶 / 今天 /
 // 昨天 / 最近 7 天 / 最近 30 天 / 按月份——每行标题与时间，当前对话
 // `secondaryContainer` 16 圆角高亮并在行尾放 ⋮；任意一行长按或右键弹同一
-// 菜单（重命名、置顶 / 取消置顶、删除）。最底下一行“AI 设置”。
+// 菜单（重命名、置顶 / 取消置顶、导出对话、删除）。最底下一行“AI 设置”。
 //
 // 点一行由对话页在原地换到那段对话（不另开页面）。
 
@@ -92,6 +92,7 @@ class AiChatHistoryPanel extends ConsumerStatefulWidget {
     required this.onNewChat,
     required this.onSettings,
     required this.onDeleted,
+    required this.onExport,
     this.onRecaps,
   });
 
@@ -102,6 +103,9 @@ class AiChatHistoryPanel extends ConsumerStatefulWidget {
 
   /// 删掉了一段对话（删的是当前这段时，对话页换成新对话）。
   final ValueChanged<String> onDeleted;
+
+  /// 导出某段对话。
+  final ValueChanged<String> onExport;
 
   /// 打开回顾页；回顾模块关闭时为 null。
   final VoidCallback? onRecaps;
@@ -241,6 +245,7 @@ class _AiChatHistoryPanelState extends ConsumerState<AiChatHistoryPanel> {
                                     pinned: !row.pinned,
                                   ),
                             ),
+                            onExport: () => widget.onExport(row.conversationId),
                             onDelete: () => unawaited(_delete(row)),
                           ),
                       ],
@@ -309,6 +314,7 @@ class _HistoryRow extends StatelessWidget {
     required this.onTap,
     required this.onRename,
     required this.onPin,
+    required this.onExport,
     required this.onDelete,
   });
 
@@ -317,6 +323,7 @@ class _HistoryRow extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onRename;
   final VoidCallback onPin;
+  final VoidCallback onExport;
   final VoidCallback onDelete;
 
   @override
@@ -335,6 +342,11 @@ class _HistoryRow extends StatelessWidget {
           leadingIcon: const FaIcon(FontAwesomeIcons.thumbtack),
           onPressed: onPin,
           child: Text(row.pinned ? l10n.aiChatUnpin : l10n.aiChatPin),
+        ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
+          onPressed: onExport,
+          child: Text(l10n.aiChatExport),
         ),
         ExpressiveMenuItem(
           leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),

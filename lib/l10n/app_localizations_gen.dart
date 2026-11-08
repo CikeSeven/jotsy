@@ -26871,6 +26871,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AI settings'**
   String get aiChatOpenSettings;
+
+  /// Chat menu item and export page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Export chat'**
+  String get aiChatExport;
+
+  /// Export page: format section.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get aiChatExportFormat;
+
+  /// Export format: Markdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Markdown'**
+  String get aiChatExportMarkdown;
+
+  /// Export format: plain text.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain text'**
+  String get aiChatExportPlain;
+
+  /// Export page: what to include.
+  ///
+  /// In en, this message translates to:
+  /// **'Include'**
+  String get aiChatExportInclude;
+
+  /// Export option and heading: the thinking process.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get aiChatExportReasoning;
+
+  /// Export option and heading: tool calls and actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps and actions'**
+  String get aiChatExportSteps;
+
+  /// Export page: heading of the message list.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose messages'**
+  String get aiChatExportMessages;
+
+  /// Export page: how many messages are selected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total} selected'**
+  String aiChatExportSelected(int count, int total);
+
+  /// Name for the user's messages in exports.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get aiChatExportYou;
+
+  /// Export page: save to a file.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to file'**
+  String get aiChatExportSave;
+
+  /// Shown after the export file is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat exported'**
+  String get aiChatExportSaved;
+
+  /// Shown when exporting fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t export the chat'**
+  String get aiChatExportFailed;
+
+  /// The line under the title of an export.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Exported {time} · 1 message} other{Exported {time} · {count} messages}}'**
+  String aiChatExportAt(String time, int count);
+
+  /// Heading for the entries an answer cited.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries referenced'**
+  String get aiChatExportReferences;
+
+  /// Export: an answer that failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {reason}'**
+  String aiChatExportError(String reason);
+
+  /// Export: the entries or items an action touched, at the end of the line.
+  ///
+  /// In en, this message translates to:
+  /// **': {names}'**
+  String aiChatExportSubjects(String names);
 }
 
 class _AppLocalizationsDelegate

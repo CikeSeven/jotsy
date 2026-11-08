@@ -20154,5 +20154,99 @@
   "aiChatOpenSettings": "Настройки ИИ",
   "@aiChatOpenSettings": {
     "description": "Chat menu and history drawer: open the AI settings."
+  },
+  "aiChatExport": "Экспорт чата",
+  "@aiChatExport": {
+    "description": "Chat menu item and export page title."
+  },
+  "aiChatExportFormat": "Формат",
+  "@aiChatExportFormat": {
+    "description": "Export page: format section."
+  },
+  "aiChatExportMarkdown": "Markdown",
+  "@aiChatExportMarkdown": {
+    "description": "Export format: Markdown."
+  },
+  "aiChatExportPlain": "Простой текст",
+  "@aiChatExportPlain": {
+    "description": "Export format: plain text."
+  },
+  "aiChatExportInclude": "Включить",
+  "@aiChatExportInclude": {
+    "description": "Export page: what to include."
+  },
+  "aiChatExportReasoning": "Размышления",
+  "@aiChatExportReasoning": {
+    "description": "Export option and heading: the thinking process."
+  },
+  "aiChatExportSteps": "Шаги и действия",
+  "@aiChatExportSteps": {
+    "description": "Export option and heading: tool calls and actions."
+  },
+  "aiChatExportMessages": "Выберите сообщения",
+  "@aiChatExportMessages": {
+    "description": "Export page: heading of the message list."
+  },
+  "aiChatExportSelected": "Выбрано {count} из {total}",
+  "@aiChatExportSelected": {
+    "description": "Export page: how many messages are selected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportYou": "Вы",
+  "@aiChatExportYou": {
+    "description": "Name for the user's messages in exports."
+  },
+  "aiChatExportSave": "Сохранить в файл",
+  "@aiChatExportSave": {
+    "description": "Export page: save to a file."
+  },
+  "aiChatExportSaved": "Чат экспортирован",
+  "@aiChatExportSaved": {
+    "description": "Shown after the export file is saved."
+  },
+  "aiChatExportFailed": "Не удалось экспортировать чат",
+  "@aiChatExportFailed": {
+    "description": "Shown when exporting fails."
+  },
+  "aiChatExportAt": "{count, plural, one{Экспорт {time} · {count} сообщение} few{Экспорт {time} · {count} сообщения} many{Экспорт {time} · {count} сообщений} other{Экспорт {time} · {count} сообщения}}",
+  "@aiChatExportAt": {
+    "description": "The line under the title of an export.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportReferences": "Использованные записи",
+  "@aiChatExportReferences": {
+    "description": "Heading for the entries an answer cited."
+  },
+  "aiChatExportError": "Ошибка: {reason}",
+  "@aiChatExportError": {
+    "description": "Export: an answer that failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportSubjects": ": {names}",
+  "@aiChatExportSubjects": {
+    "description": "Export: the entries or items an action touched, at the end of the line.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   }
 }

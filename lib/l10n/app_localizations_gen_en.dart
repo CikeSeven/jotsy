@@ -17179,4 +17179,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiChatOpenSettings => 'AI settings';
+
+  @override
+  String get aiChatExport => 'Export chat';
+
+  @override
+  String get aiChatExportFormat => 'Format';
+
+  @override
+  String get aiChatExportMarkdown => 'Markdown';
+
+  @override
+  String get aiChatExportPlain => 'Plain text';
+
+  @override
+  String get aiChatExportInclude => 'Include';
+
+  @override
+  String get aiChatExportReasoning => 'Thinking';
+
+  @override
+  String get aiChatExportSteps => 'Steps and actions';
+
+  @override
+  String get aiChatExportMessages => 'Choose messages';
+
+  @override
+  String aiChatExportSelected(int count, int total) {
+    return '$count of $total selected';
+  }
+
+  @override
+  String get aiChatExportYou => 'You';
+
+  @override
+  String get aiChatExportSave => 'Save to file';
+
+  @override
+  String get aiChatExportSaved => 'Chat exported';
+
+  @override
+  String get aiChatExportFailed => 'Couldn\'t export the chat';
+
+  @override
+  String aiChatExportAt(String time, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Exported $time · $count messages',
+      one: 'Exported $time · 1 message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChatExportReferences => 'Entries referenced';
+
+  @override
+  String aiChatExportError(String reason) {
+    return 'Error: $reason';
+  }
+
+  @override
+  String aiChatExportSubjects(String names) {
+    return ': $names';
+  }
 }

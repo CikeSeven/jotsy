@@ -61,6 +61,7 @@ import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import '../widgets/ai_chat_scroll_controller.dart';
 import '../widgets/ai_tap_outside_unfocus.dart';
+import 'ai_chat_export_page.dart';
 import 'ai_recap_page.dart';
 import 'settings/ai_personas_page.dart';
 import 'settings/ai_settings_page.dart';
@@ -258,6 +259,17 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     );
   }
 
+  void _openExport(String id) {
+    _closeDrawer();
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => AiChatExportPage(conversationId: id),
+        ),
+      ),
+    );
+  }
+
   void _openSettings() {
     _closeDrawer();
     unawaited(
@@ -377,6 +389,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                 onNewChat: () => unawaited(_startNew()),
                 onSettings: _openSettings,
                 onDeleted: _onDeleted,
+                onExport: _openExport,
                 onRecaps: ref.watch(aiModuleAvailableProvider(AiModule.recap))
                     ? _openRecap
                     : null,
@@ -396,6 +409,11 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                   onHistory: () => _scaffold.currentState?.openDrawer(),
                   onNewChat: () => unawaited(_startNew()),
                   onDelete: () => unawaited(_deleteCurrent(conversation)),
+                  onExport: () {
+                    if (conversation != null) {
+                      _openExport(conversation.conversationId);
+                    }
+                  },
                   onSettings: _openSettings,
                 ),
                 body: docked

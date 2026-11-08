@@ -19587,5 +19587,99 @@
   "aiChatOpenSettings": "AI settings",
   "@aiChatOpenSettings": {
     "description": "Chat menu and history drawer: open the AI settings."
+  },
+  "aiChatExport": "Export chat",
+  "@aiChatExport": {
+    "description": "Chat menu item and export page title."
+  },
+  "aiChatExportFormat": "Format",
+  "@aiChatExportFormat": {
+    "description": "Export page: format section."
+  },
+  "aiChatExportMarkdown": "Markdown",
+  "@aiChatExportMarkdown": {
+    "description": "Export format: Markdown."
+  },
+  "aiChatExportPlain": "Plain text",
+  "@aiChatExportPlain": {
+    "description": "Export format: plain text."
+  },
+  "aiChatExportInclude": "Include",
+  "@aiChatExportInclude": {
+    "description": "Export page: what to include."
+  },
+  "aiChatExportReasoning": "Thinking",
+  "@aiChatExportReasoning": {
+    "description": "Export option and heading: the thinking process."
+  },
+  "aiChatExportSteps": "Steps and actions",
+  "@aiChatExportSteps": {
+    "description": "Export option and heading: tool calls and actions."
+  },
+  "aiChatExportMessages": "Choose messages",
+  "@aiChatExportMessages": {
+    "description": "Export page: heading of the message list."
+  },
+  "aiChatExportSelected": "{count} of {total} selected",
+  "@aiChatExportSelected": {
+    "description": "Export page: how many messages are selected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportYou": "You",
+  "@aiChatExportYou": {
+    "description": "Name for the user's messages in exports."
+  },
+  "aiChatExportSave": "Save to file",
+  "@aiChatExportSave": {
+    "description": "Export page: save to a file."
+  },
+  "aiChatExportSaved": "Chat exported",
+  "@aiChatExportSaved": {
+    "description": "Shown after the export file is saved."
+  },
+  "aiChatExportFailed": "Couldn't export the chat",
+  "@aiChatExportFailed": {
+    "description": "Shown when exporting fails."
+  },
+  "aiChatExportAt": "{count, plural, =1{Exported {time} · 1 message} other{Exported {time} · {count} messages}}",
+  "@aiChatExportAt": {
+    "description": "The line under the title of an export.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportReferences": "Entries referenced",
+  "@aiChatExportReferences": {
+    "description": "Heading for the entries an answer cited."
+  },
+  "aiChatExportError": "Error: {reason}",
+  "@aiChatExportError": {
+    "description": "Export: an answer that failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportSubjects": ": {names}",
+  "@aiChatExportSubjects": {
+    "description": "Export: the entries or items an action touched, at the end of the line.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   }
 }

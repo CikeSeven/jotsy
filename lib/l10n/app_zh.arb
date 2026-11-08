@@ -19587,5 +19587,99 @@
   "aiChatOpenSettings": "AI 设置",
   "@aiChatOpenSettings": {
     "description": "对话页 ⋮ 与历史抽屉底部：打开 AI 设置。"
+  },
+  "aiChatExport": "导出对话",
+  "@aiChatExport": {
+    "description": "对话菜单项与导出页标题。"
+  },
+  "aiChatExportFormat": "格式",
+  "@aiChatExportFormat": {
+    "description": "导出页：格式一栏。"
+  },
+  "aiChatExportMarkdown": "Markdown",
+  "@aiChatExportMarkdown": {
+    "description": "导出格式：Markdown。"
+  },
+  "aiChatExportPlain": "纯文本",
+  "@aiChatExportPlain": {
+    "description": "导出格式：纯文本。"
+  },
+  "aiChatExportInclude": "包含",
+  "@aiChatExportInclude": {
+    "description": "导出页：包含哪些内容。"
+  },
+  "aiChatExportReasoning": "思考过程",
+  "@aiChatExportReasoning": {
+    "description": "导出选项与导出内容里的小标题：思考过程。"
+  },
+  "aiChatExportSteps": "过程与操作",
+  "@aiChatExportSteps": {
+    "description": "导出选项与导出内容里的小标题：工具调用与操作。"
+  },
+  "aiChatExportMessages": "选择消息",
+  "@aiChatExportMessages": {
+    "description": "导出页：消息列表的标题。"
+  },
+  "aiChatExportSelected": "已选 {count} / {total} 条",
+  "@aiChatExportSelected": {
+    "description": "导出页：已选条数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportYou": "你",
+  "@aiChatExportYou": {
+    "description": "导出内容与列表里问题的署名。"
+  },
+  "aiChatExportSave": "保存到文件",
+  "@aiChatExportSave": {
+    "description": "导出页：保存到文件。"
+  },
+  "aiChatExportSaved": "对话已导出",
+  "@aiChatExportSaved": {
+    "description": "导出对话保存成功的提示。"
+  },
+  "aiChatExportFailed": "导出没有成功",
+  "@aiChatExportFailed": {
+    "description": "导出对话失败的提示。"
+  },
+  "aiChatExportAt": "导出于 {time} · 共 {count} 条消息",
+  "@aiChatExportAt": {
+    "description": "导出内容开头的说明行。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportReferences": "参考的日记",
+  "@aiChatExportReferences": {
+    "description": "导出内容里回答引用的日记小标题。"
+  },
+  "aiChatExportError": "出错：{reason}",
+  "@aiChatExportError": {
+    "description": "导出内容里回答出错的说明。",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportSubjects": "：{names}",
+  "@aiChatExportSubjects": {
+    "description": "导出的操作行末尾列出涉及的对象。",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   }
 }

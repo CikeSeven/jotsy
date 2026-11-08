@@ -15249,4 +15249,63 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiChatOpenSettings => 'AI 設定';
+
+  @override
+  String get aiChatExport => '会話をエクスポート';
+
+  @override
+  String get aiChatExportFormat => '形式';
+
+  @override
+  String get aiChatExportMarkdown => 'Markdown';
+
+  @override
+  String get aiChatExportPlain => 'プレーンテキスト';
+
+  @override
+  String get aiChatExportInclude => '含める内容';
+
+  @override
+  String get aiChatExportReasoning => '思考過程';
+
+  @override
+  String get aiChatExportSteps => '経過と操作';
+
+  @override
+  String get aiChatExportMessages => 'メッセージを選択';
+
+  @override
+  String aiChatExportSelected(int count, int total) {
+    return '$count / $total 件を選択';
+  }
+
+  @override
+  String get aiChatExportYou => 'あなた';
+
+  @override
+  String get aiChatExportSave => 'ファイルに保存';
+
+  @override
+  String get aiChatExportSaved => '会話をエクスポートしました';
+
+  @override
+  String get aiChatExportFailed => 'エクスポートできませんでした';
+
+  @override
+  String aiChatExportAt(String time, int count) {
+    return '$time にエクスポート · $count 件のメッセージ';
+  }
+
+  @override
+  String get aiChatExportReferences => '参照した日記';
+
+  @override
+  String aiChatExportError(String reason) {
+    return 'エラー：$reason';
+  }
+
+  @override
+  String aiChatExportSubjects(String names) {
+    return '：$names';
+  }
 }

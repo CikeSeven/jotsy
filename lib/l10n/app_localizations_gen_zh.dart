@@ -14992,4 +14992,63 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiChatOpenSettings => 'AI 设置';
+
+  @override
+  String get aiChatExport => '导出对话';
+
+  @override
+  String get aiChatExportFormat => '格式';
+
+  @override
+  String get aiChatExportMarkdown => 'Markdown';
+
+  @override
+  String get aiChatExportPlain => '纯文本';
+
+  @override
+  String get aiChatExportInclude => '包含';
+
+  @override
+  String get aiChatExportReasoning => '思考过程';
+
+  @override
+  String get aiChatExportSteps => '过程与操作';
+
+  @override
+  String get aiChatExportMessages => '选择消息';
+
+  @override
+  String aiChatExportSelected(int count, int total) {
+    return '已选 $count / $total 条';
+  }
+
+  @override
+  String get aiChatExportYou => '你';
+
+  @override
+  String get aiChatExportSave => '保存到文件';
+
+  @override
+  String get aiChatExportSaved => '对话已导出';
+
+  @override
+  String get aiChatExportFailed => '导出没有成功';
+
+  @override
+  String aiChatExportAt(String time, int count) {
+    return '导出于 $time · 共 $count 条消息';
+  }
+
+  @override
+  String get aiChatExportReferences => '参考的日记';
+
+  @override
+  String aiChatExportError(String reason) {
+    return '出错：$reason';
+  }
+
+  @override
+  String aiChatExportSubjects(String names) {
+    return '：$names';
+  }
 }

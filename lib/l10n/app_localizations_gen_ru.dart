@@ -17836,4 +17836,71 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiChatOpenSettings => 'Настройки ИИ';
+
+  @override
+  String get aiChatExport => 'Экспорт чата';
+
+  @override
+  String get aiChatExportFormat => 'Формат';
+
+  @override
+  String get aiChatExportMarkdown => 'Markdown';
+
+  @override
+  String get aiChatExportPlain => 'Простой текст';
+
+  @override
+  String get aiChatExportInclude => 'Включить';
+
+  @override
+  String get aiChatExportReasoning => 'Размышления';
+
+  @override
+  String get aiChatExportSteps => 'Шаги и действия';
+
+  @override
+  String get aiChatExportMessages => 'Выберите сообщения';
+
+  @override
+  String aiChatExportSelected(int count, int total) {
+    return 'Выбрано $count из $total';
+  }
+
+  @override
+  String get aiChatExportYou => 'Вы';
+
+  @override
+  String get aiChatExportSave => 'Сохранить в файл';
+
+  @override
+  String get aiChatExportSaved => 'Чат экспортирован';
+
+  @override
+  String get aiChatExportFailed => 'Не удалось экспортировать чат';
+
+  @override
+  String aiChatExportAt(String time, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Экспорт $time · $count сообщения',
+      many: 'Экспорт $time · $count сообщений',
+      few: 'Экспорт $time · $count сообщения',
+      one: 'Экспорт $time · $count сообщение',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChatExportReferences => 'Использованные записи';
+
+  @override
+  String aiChatExportError(String reason) {
+    return 'Ошибка: $reason';
+  }
+
+  @override
+  String aiChatExportSubjects(String names) {
+    return ': $names';
+  }
 }

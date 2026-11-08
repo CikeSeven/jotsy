@@ -20154,5 +20154,99 @@
   "aiChatOpenSettings": "AI 設定",
   "@aiChatOpenSettings": {
     "description": "Chat menu and history drawer: open the AI settings."
+  },
+  "aiChatExport": "会話をエクスポート",
+  "@aiChatExport": {
+    "description": "Chat menu item and export page title."
+  },
+  "aiChatExportFormat": "形式",
+  "@aiChatExportFormat": {
+    "description": "Export page: format section."
+  },
+  "aiChatExportMarkdown": "Markdown",
+  "@aiChatExportMarkdown": {
+    "description": "Export format: Markdown."
+  },
+  "aiChatExportPlain": "プレーンテキスト",
+  "@aiChatExportPlain": {
+    "description": "Export format: plain text."
+  },
+  "aiChatExportInclude": "含める内容",
+  "@aiChatExportInclude": {
+    "description": "Export page: what to include."
+  },
+  "aiChatExportReasoning": "思考過程",
+  "@aiChatExportReasoning": {
+    "description": "Export option and heading: the thinking process."
+  },
+  "aiChatExportSteps": "経過と操作",
+  "@aiChatExportSteps": {
+    "description": "Export option and heading: tool calls and actions."
+  },
+  "aiChatExportMessages": "メッセージを選択",
+  "@aiChatExportMessages": {
+    "description": "Export page: heading of the message list."
+  },
+  "aiChatExportSelected": "{count} / {total} 件を選択",
+  "@aiChatExportSelected": {
+    "description": "Export page: how many messages are selected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportYou": "あなた",
+  "@aiChatExportYou": {
+    "description": "Name for the user's messages in exports."
+  },
+  "aiChatExportSave": "ファイルに保存",
+  "@aiChatExportSave": {
+    "description": "Export page: save to a file."
+  },
+  "aiChatExportSaved": "会話をエクスポートしました",
+  "@aiChatExportSaved": {
+    "description": "Shown after the export file is saved."
+  },
+  "aiChatExportFailed": "エクスポートできませんでした",
+  "@aiChatExportFailed": {
+    "description": "Shown when exporting fails."
+  },
+  "aiChatExportAt": "{time} にエクスポート · {count} 件のメッセージ",
+  "@aiChatExportAt": {
+    "description": "The line under the title of an export.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChatExportReferences": "参照した日記",
+  "@aiChatExportReferences": {
+    "description": "Heading for the entries an answer cited."
+  },
+  "aiChatExportError": "エラー：{reason}",
+  "@aiChatExportError": {
+    "description": "Export: an answer that failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatExportSubjects": "：{names}",
+  "@aiChatExportSubjects": {
+    "description": "Export: the entries or items an action touched, at the end of the line.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   }
 }

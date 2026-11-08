@@ -20,9 +20,9 @@ extension _HomePageChrome on _HomePageState {
       style: barStyle,
       position: barBehavior.indicatorFollowsSwipe ? _pagePosition : null,
       inlineAction: inlineCreate ? _buildInlineCreateButton(barStyle) : null,
-      // 并排按钮与 FAB 一样只属于日记页（按目标 Tab，点击即生效），但不跟随
-      // 日记列表的滚动显隐：它在底栏里，不会挡住列表末尾。
-      showInlineAction: _effectiveTab == HomeTab.diaries,
+      // 并排按钮与 FAB 一样只属于日记页与待办页（按目标 Tab，点击即生效），
+      // 但不跟随日记列表的滚动显隐：它在底栏里，不会挡住列表末尾。
+      showInlineAction: _effectiveTab.hasCreateFab,
       hidden: _barHiddenByScroll,
     );
   }
@@ -111,7 +111,7 @@ extension _HomePageChrome on _HomePageState {
     final button = Consumer(
       builder: (context, ref, _) => HomeInlineCreateButton(
         style: barStyle,
-        label: _createLabel(context, ref),
+        label: _createLabel(context, ref, fab: true),
         onPressed: () {
           unawaited(_openCreateFromGlobalFab());
         },
@@ -132,24 +132,32 @@ extension _HomePageChrome on _HomePageState {
   }
 
   /// 新建入口的文字随日记页的范围变化：在普通日记本里为“写进「旅行」”，
-  /// 新建的日记预先收进这本；其余为“新建”。
-  String _createLabel(BuildContext context, WidgetRef ref) {
+  /// 新建的日记预先收进这本；其余为“新建”。FAB 与并排按钮（[fab]）在待办
+  /// Tab 为“新待办”；侧边栏按钮始终新建日记，不走待办分支。
+  String _createLabel(BuildContext context, WidgetRef ref, {bool fab = false}) {
+    if (fab && _effectiveTab == HomeTab.todos) {
+      return context.l10n.todoNew;
+    }
     final notebook = ref.watch(homeNotebookScopeResolutionProvider).notebook;
     return notebook != null && notebook.isManual
         ? context.l10n.notebookWriteInto(shortNotebookName(notebook.name))
         : context.l10n.commonNew;
   }
 
-  /// “新建”FAB 只属于日记页：日历页的日期长按菜单已能在任意一天写日记或
-  /// 时间胶囊，再叠一个 FAB 会挡住当天日记列表的末尾。
+  /// “新建”FAB 只属于日记页与待办页（待办页上新建待办）：日历页的日期
+  /// 长按菜单已能在任意一天写日记或时间胶囊，再叠一个 FAB 会挡住当天日记
+  /// 列表的末尾。待办页的 FAB 不随滚动收起（列表末尾留了空位）。
   ///
   /// 实色底栏时 body 止于底栏上沿，FAB 按原样离底栏 10dp；玻璃底栏时 body
   /// 延伸到屏幕底部，再加上悬浮槽位的高度（胶囊 + 底部间距 + 手势条），
   /// 让 FAB 仍在胶囊上方 10dp；底栏被滚动收起时落到手势条上方 10dp。
   /// 提示出现时的上移量在此之上照旧计算（提示同样排在底栏槽位上方）。
   Widget _buildGlobalCreateFab(HomeBarResolvedStyle barStyle) {
-    final shouldShow =
-        _effectiveTab == HomeTab.diaries && _diariesFabVisibleByScroll;
+    final shouldShow = switch (_effectiveTab) {
+      HomeTab.diaries => _diariesFabVisibleByScroll,
+      HomeTab.todos => true,
+      HomeTab.calendar || HomeTab.explore || HomeTab.settings => false,
+    };
     final fabBaseBottomOffset = _HomePageState._fabBottomGapAboveNav;
     final navOffset = !barStyle.isGlass
         ? 0.0
@@ -172,7 +180,7 @@ extension _HomePageChrome on _HomePageState {
           },
           icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
           label: Text(
-            _createLabel(context, ref),
+            _createLabel(context, ref, fab: true),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

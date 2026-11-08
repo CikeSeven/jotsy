@@ -26,6 +26,7 @@ import '../../diary_templates/models/built_in/diary_template_built_ins.dart';
 import '../../diary_templates/pages/diary_templates_page.dart';
 import '../../diary_templates/providers/diary_template_providers.dart';
 import '../../notebooks/pages/notebooks_page.dart';
+import '../../todos/pages/todo_settings_page.dart';
 import '../controllers/app_update_controller.dart';
 import '../pages/about_page.dart';
 import '../pages/app_features_page.dart';
@@ -107,7 +108,8 @@ class SettingsWritingGroup extends ConsumerWidget {
   }
 }
 
-/// 整理：标签管理、心情符号、日记本（日记本功能开启时）、回收站。
+/// 整理：标签管理、心情符号、日记本（日记本功能开启时）、待办（待办功能
+/// 开启时）、回收站。
 class SettingsOrganizeGroup extends ConsumerWidget {
   const SettingsOrganizeGroup({super.key});
 
@@ -116,6 +118,9 @@ class SettingsOrganizeGroup extends ConsumerWidget {
     final l10n = context.l10n;
     final notebooksEnabled = ref.watch(
       appFeaturesProvider.select((features) => features.notebooks),
+    );
+    final todosEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.todos),
     );
     return SettingsCardGroup(
       title: l10n.settingsGroupOrganize,
@@ -131,6 +136,13 @@ class SettingsOrganizeGroup extends ConsumerWidget {
             icon: FontAwesomeIcons.book,
             title: l10n.notebookTitle,
             onTap: () => _push(context, const NotebooksPage()),
+          ),
+        if (todosEnabled)
+          SettingsNavTile(
+            icon: FontAwesomeIcons.squareCheck,
+            title: l10n.todoSettingsTitle,
+            subtitle: l10n.todoSettingsSubtitle,
+            onTap: () => _push(context, const TodoSettingsPage()),
           ),
         SettingsNavTile(
           icon: FontAwesomeIcons.trashCan,

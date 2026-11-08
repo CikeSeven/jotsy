@@ -12,6 +12,7 @@ String appSurfaceAreaLabel(AppLocalizations l10n, AppBackgroundArea? area) =>
     switch (area) {
       null => l10n.appSurfaceAreaGlobal,
       AppBackgroundArea.diaries => l10n.appSurfaceAreaDiaries,
+      AppBackgroundArea.todos => l10n.appSurfaceAreaTodos,
       AppBackgroundArea.calendar => l10n.appSurfaceAreaCalendar,
       AppBackgroundArea.explore => l10n.appSurfaceAreaExplore,
       AppBackgroundArea.settings => l10n.appSurfaceAreaSettings,

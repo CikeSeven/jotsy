@@ -52,6 +52,12 @@ void main() {
     'createTag(',
   ]);
   guard(filesUnder('lib/ui/anniversaries'), [...common, animation]);
+  // 待办：防抖计时在 controllers（TodoDebouncedWriter），不算动画时长。
+  final todos = filesUnder('lib/ui/todos');
+  guard(todos, [...common, ...fixedColors, 'Icon(Icons.']);
+  guard(todos.where((file) => !file.path.contains('/controllers/')), [
+    animation,
+  ]);
   // 局域网同步界面：循环动画的周期也只取 ExpressiveMotion（pulseLoop 等）。
   guard(filesUnder('lib/ui/lan_sync'), [
     ...common,

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../core/database/diary_blocks/diary_list_style.dart';
-import '../../../widgets/expressive_state_blend.dart';
+import '../../../widgets/todo_check_box.dart';
 import '../../controllers/diary_list_style_editing.dart';
 import 'diary_block_marker_metrics.dart';
 import 'diary_editor_styles.dart';
@@ -230,9 +230,9 @@ class DiaryNumberMarker extends StatelessWidget {
   }
 }
 
-/// 待办复选框：18dp 圆角方块，未勾选为 `outline` 描边，勾选后以 `primary`
-/// 填充并显示对勾，状态切换经 [ExpressiveStateBlend] 补间颜色。点按区域是
-/// 整个标记格（列宽 × 首行高度），而不只是方块本身。
+/// 待办复选框：18dp 圆角方块（外观见 [TodoCheckBoxVisual]，与独立待办的
+/// 列表行同一种方框）。点按区域是整个标记格（列宽 × 首行高度），而不只是
+/// 方块本身。
 class DiaryTodoCheckbox extends StatelessWidget {
   const DiaryTodoCheckbox({
     super.key,
@@ -251,7 +251,6 @@ class DiaryTodoCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Semantics(
       checked: checked,
       enabled: onToggle != null,
@@ -265,28 +264,7 @@ class DiaryTodoCheckbox extends StatelessWidget {
           metrics: metrics,
           size: metrics.dp(18),
           start: metrics.dp(2),
-          child: ExpressiveStateBlend(
-            active: checked,
-            builder: (context, t, _) => Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: t),
-                borderRadius: BorderRadius.circular(metrics.dp(5)),
-                border: Border.all(
-                  color: Color.lerp(colors.outline, colors.primary, t)!,
-                  width: metrics.dp(1.6),
-                ),
-              ),
-              child: Opacity(
-                opacity: t,
-                child: FaIcon(
-                  FontAwesomeIcons.check,
-                  size: metrics.dp(11),
-                  color: colors.onPrimary,
-                ),
-              ),
-            ),
-          ),
+          child: TodoCheckBoxVisual(checked: checked, size: metrics.dp(18)),
         ),
       ),
     );

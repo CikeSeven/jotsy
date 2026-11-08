@@ -118,6 +118,27 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('the to-dos row shows only when the feature is on', (
+    tester,
+  ) async {
+    var h = await pumpSettings(tester);
+    expect(find.text(h.l10n.todoSettingsTitle), findsNothing);
+    await h.unmount();
+
+    h = await pumpSettings(tester, featuresRaw: '{"todos":true}');
+    expect(find.text(h.l10n.todoSettingsTitle), findsOneWidget);
+    // 待办排在日记本之后、回收站之前。
+    expect(
+      top(tester, h.l10n.todoSettingsTitle),
+      greaterThan(top(tester, h.l10n.notebookTitle)),
+    );
+    expect(
+      top(tester, h.l10n.todoSettingsTitle),
+      lessThan(top(tester, h.l10n.settingsRecycleBin)),
+    );
+    await h.unmount();
+  });
+
   testWidgets('the language row shows the current language and switches it', (
     tester,
   ) async {

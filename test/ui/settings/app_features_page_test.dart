@@ -27,8 +27,14 @@ void main() {
   AppFeatures stored(DiaryDraftsHarness h) =>
       AppFeatures.decode(h.settings.appFeaturesRaw);
 
+  /// 先把这一行滚到视口中间再点：只滚到边缘时，行的中心可能正好在顶栏
+  /// 下面，点按落到顶栏上。
   Future<void> toggle(WidgetTester tester, String title) async {
-    await tester.ensureVisible(switchTile(title));
+    await Scrollable.ensureVisible(
+      tester.element(switchTile(title)),
+      alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(switchTile(title));
     await tester.pumpAndSettle();
   }
@@ -45,6 +51,9 @@ void main() {
     // 拨回默认也整份写入：有这个键就说明用户保存过，升级迁移不再改动。
     expect(h.settings.appFeaturesRaw, AppFeatures.defaults.encode());
 
+    // 待办默认关闭，拨一下是打开。
+    await toggle(tester, l10n.navTodos);
+    expect(stored(h).todos, isTrue);
     await toggle(tester, l10n.navExplore);
     expect(stored(h).explore, isFalse);
     // 纪念日默认关闭，拨一下是打开。
@@ -275,7 +284,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.byType(SwitchListTile), findsNWidgets(9));
+      expect(find.byType(SwitchListTile), findsNWidgets(10));
     });
   }
 

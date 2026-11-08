@@ -11250,10 +11250,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiModuleRecapSubtitle => '週・月・年、または日記帳ごとにまとめを作成';
 
   @override
-  String get aiModuleChat => '日記と対話';
+  String get aiModuleChat => '会話と操作';
 
   @override
-  String get aiModuleChatSubtitle => '日記に質問できます。回答には参照した日記が引用されます';
+  String get aiModuleChatSubtitle => '日記について質問したり、AI に検索・集計・ページを開くなどを任せたりできます';
 
   @override
   String get aiModuleVision => '画像の理解';
@@ -11612,6 +11612,160 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get aiModelToolsSubtitle =>
       'AI アシスタントがアプリを直接操作できます。非対応のモデルでは通常の質問応答に切り替わります';
+
+  @override
+  String get aiToolGetAppContext => '今日の日付とアプリの状態を確認';
+
+  @override
+  String aiToolOpenPage(String page) {
+    return '移動：$page';
+  }
+
+  @override
+  String get aiToolPageUnavailable => 'このページは現在使えません（機能がオフか、この端末では非対応です）';
+
+  @override
+  String get aiToolSearchDiaries => '日記を検索';
+
+  @override
+  String aiToolSearchDiariesFor(String query) {
+    return '日記を検索：$query';
+  }
+
+  @override
+  String aiToolFoundEntries(int count) {
+    return '$count 件見つかりました';
+  }
+
+  @override
+  String aiToolReadDiaries(int count) {
+    return '日記を $count 件読む';
+  }
+
+  @override
+  String aiToolReadEntries(int count) {
+    return '$count 件読みました';
+  }
+
+  @override
+  String get aiToolDiaryStats => '日記を集計';
+
+  @override
+  String aiToolStatsEntries(int count) {
+    return '合計 $count 件';
+  }
+
+  @override
+  String get aiToolListTags => 'タグを確認';
+
+  @override
+  String aiToolTagCount(int count) {
+    return 'タグ $count 個';
+  }
+
+  @override
+  String get aiToolListNotebooks => '日記帳を確認';
+
+  @override
+  String aiToolNotebookCount(int count) {
+    return '日記帳 $count 冊';
+  }
+
+  @override
+  String get aiToolCalendarDay => '今日のカレンダーを確認';
+
+  @override
+  String aiToolCalendarDayOf(String date) {
+    return '$date のカレンダーを確認';
+  }
+
+  @override
+  String get aiToolListTodos => 'ToDo を確認';
+
+  @override
+  String aiToolTodoCount(int count) {
+    return 'ToDo $count 件';
+  }
+
+  @override
+  String get aiToolListAnniversaries => '記念日を確認';
+
+  @override
+  String aiToolAnniversaryCount(int count) {
+    return '記念日 $count 件';
+  }
+
+  @override
+  String get aiDestinationDiary => 'この日記';
+
+  @override
+  String get aiDestinationSearch => '日記を検索';
+
+  @override
+  String aiAgentStepsSummary(int count) {
+    return '$count 件の操作を実行';
+  }
+
+  @override
+  String get aiAgentPreparing => '操作を準備中…';
+
+  @override
+  String get aiAgentStepFailed => '失敗しました';
+
+  @override
+  String get aiAgentStepCancelled => '停止しました';
+
+  @override
+  String get aiAgentStepInterrupted => '中断されました';
+
+  @override
+  String aiAgentOpenPage(String page) {
+    return '$pageを開く';
+  }
+
+  @override
+  String get aiAgentStepsExhausted => 'この回答で使える操作の回数を使い切りました。「続けて」と送ると続きを行います。';
+
+  @override
+  String get aiAgentIncomplete => '回答が途中で切れたため、その中の操作は実行していません。';
+
+  @override
+  String get aiConfirmSendAgent => 'AI は必要に応じて日記を検索・閲覧します（非公開の日記は除く）。毎回は確認しません';
+
+  @override
+  String get aiOptionAgent => 'AI にツールを使わせる';
+
+  @override
+  String get aiOptionAgentSubtitle =>
+      '日記の検索・集計、カレンダーや ToDo の確認、ページを開くなどを必要に応じて行います。オフまたは非対応のモデルでは検索した日記をもとに答えるだけです';
+
+  @override
+  String get aiOptionAgentSteps => '1 回の回答の最大ステップ数';
+
+  @override
+  String get aiOptionAgentStepsSubtitle => '1 ステップで複数のツールを呼べます。最後のステップは回答のみ';
+
+  @override
+  String get aiPromptAgentSystem =>
+      'ツールを呼び出して、ユーザーの日記の検索・集計、カレンダー・ToDo・記念日の確認、アプリ内のページを開くことができます。ユーザーのデータが必要なときは推測せずツールで調べてください。互いに依存しない検索はまとめて呼び出せます。日記を使ったときは [D3] のように文末にその番号を書いてください。ユーザー自身がページで行う必要がある操作（バックアップ、復元、インポート・エクスポート、共有、アプリロック、パスワード、AI サービスの設定など）は、open_page で移動ボタンを示し、手順を説明してください。ツールがエラーを返したら、内容に従って引数を直すか別の方法を試し、どうしてもできなければそう伝えてください。';
+
+  @override
+  String aiPromptAgentNow(String time) {
+    return '現在は $time です。';
+  }
+
+  @override
+  String get aiPromptAgentScopeDiary => 'この会話は次の日記についてです：';
+
+  @override
+  String aiPromptAgentScopeRange(String from, String to) {
+    return 'この会話は $from から $to までの日記だけが対象です。特に指示がなければ、検索にはこの期間を使ってください。';
+  }
+
+  @override
+  String aiPromptAgentActionsDone(String actions) {
+    return '（この回で行った操作：\n$actions）';
+  }
 
   @override
   String get aiModelMaxOutput => '最大出力トークン数';

@@ -450,9 +450,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       _barScrollHider.reset();
     }
 
-    // 别的页面请求回到日记 Tab（预览页里点日记本胶囊）。
-    ref.listen<int>(homeDiariesTabRequestProvider, (_, _) {
-      unawaited(_controller.switchToDiariesTab());
+    // 别的页面请求切到某个 Tab（预览页里点日记本胶囊、AI 助手的“前往”）。
+    ref.listen<HomeTabRequest>(homeTabRequestProvider, (_, request) {
+      unawaited(_controller.switchToHomeTab(request.tab));
     });
 
     final settingsService = ref.watch(settingsServiceProvider).asData?.value;

@@ -1,0 +1,358 @@
+// AI 助手能带用户去的页面（“前往”按钮与 `open_page` 工具共用的登记表）。
+//
+// 每个目标都经现有的统一入口打开（`openDiaryLinkTarget`、
+// `openNotebookFromAnywhere`、`openTodoDetail`、各设置页的构造函数），不另拼
+// 路由。功能关闭或本平台没有的页面 [AiDestination.isAvailable] 为 false：
+// 模型拿到“不可用”的说明，界面不显示按钮。
+//
+// 新增页面：在 [aiDestinations] 加一项（id 用 snake_case，发布后不改），标题
+// 复用页面自己的标题文案；使用指南的文章用 id 引用它（一致性测试会核对）。
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/database/diary_blocks/diary_link_target.dart';
+import '../../../core/services/app_platform.dart';
+import '../../../core/services/app_service.dart';
+import '../../../core/services/settings_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../anniversaries/controllers/anniversary_navigation.dart';
+import '../../app_lock/pages/app_lock_settings_page.dart';
+import '../../diaries/controllers/diary_link_open_flow.dart';
+import '../../diaries/pages/archived_diaries_page.dart';
+import '../../diaries/pages/diary_drafts_page.dart';
+import '../../diaries/pages/diary_export_page.dart';
+import '../../diaries/pages/diary_search_page.dart';
+import '../../diary_templates/pages/diary_templates_page.dart';
+import '../../home/models/home_tab.dart';
+import '../../home/providers/home_tab_request_provider.dart';
+import '../../lan_sync/pages/lan_sync_page.dart';
+import '../../notebooks/controllers/notebook_navigation.dart';
+import '../../notebooks/pages/notebooks_page.dart';
+import '../../notebooks/providers/notebook_providers.dart';
+import '../../settings/pages/about_page.dart';
+import '../../settings/pages/app_features_page.dart';
+import '../../settings/pages/app_surface_page.dart';
+import '../../settings/pages/app_update_page.dart';
+import '../../settings/pages/appearance_page.dart';
+import '../../settings/pages/changelog_page.dart';
+import '../../settings/pages/cloud_backup_page.dart';
+import '../../settings/pages/data_management_page.dart';
+import '../../settings/pages/diary_card_style_page.dart';
+import '../../settings/pages/diary_code_block_style_page.dart';
+import '../../settings/pages/diary_preview_style_page.dart';
+import '../../settings/pages/diary_typography_page.dart';
+import '../../settings/pages/editor_settings_page.dart';
+import '../../settings/pages/explore_layout_page.dart';
+import '../../settings/pages/home_bar_style_page.dart';
+import '../../settings/pages/mood_options_page.dart';
+import '../../settings/pages/recycle_bin_page.dart';
+import '../../settings/pages/tag_management_page.dart';
+import '../../storage/pages/storage_page.dart';
+import '../../todos/controllers/todo_navigation.dart';
+import '../../todos/pages/todo_settings_page.dart';
+import '../pages/ai_recap_page.dart';
+import '../pages/settings/ai_settings_page.dart';
+import 'ai_tool.dart';
+
+typedef AiDestinationOpener =
+    Future<void> Function(
+      BuildContext context,
+      WidgetRef ref,
+      Map<String, Object?> params,
+    );
+
+/// 一个可以前往的页面。
+@immutable
+class AiDestination {
+  const AiDestination(
+    this.id, {
+    required this.title,
+    required this.open,
+    this.available,
+    this.requires = const <String>{},
+  });
+
+  final String id;
+
+  /// 按钮上的页面名（界面语言）。
+  final String Function(AppLocalizations l10n) title;
+
+  final AiDestinationOpener open;
+
+  /// 功能开关 / 平台条件；为空时总是可用。
+  final bool Function(AiToolEnv env)? available;
+
+  /// 必须给的参数（如打开某篇日记要 `diary_id`）。
+  final Set<String> requires;
+
+  bool isAvailable(AiToolEnv env) => available?.call(env) ?? true;
+}
+
+Future<void> _push(BuildContext context, Widget page) =>
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+
+AiDestinationOpener _page(Widget Function() build) =>
+    (context, ref, params) => _push(context, build());
+
+/// 需要 `SettingsService` 的设置页。
+AiDestinationOpener _settingsPage(
+  Widget Function(SettingsService settings) build,
+) => (context, ref, params) async {
+  final settings = await ref.read(settingsServiceProvider.future);
+  if (!context.mounted) return;
+  await _push(context, build(settings));
+};
+
+/// 回到首页并切到 [tab]。
+AiDestinationOpener _tab(HomeTab tab) => (context, ref, params) async {
+  final tabs = ref.read(homeTabRequestProvider.notifier);
+  Navigator.of(context).popUntil((Route<dynamic> route) => route.isFirst);
+  tabs.request(tab);
+};
+
+String? _param(Map<String, Object?> params, String key) {
+  final value = params[key];
+  return value is String && value.trim().isNotEmpty ? value.trim() : null;
+}
+
+/// 全部可前往的页面（顺序即 `open_page` 说明里的顺序）。
+final List<AiDestination> aiDestinations = <AiDestination>[
+  // ---- 首页各 Tab ----
+  AiDestination(
+    'tab_diaries',
+    title: (l10n) => l10n.navDiaries,
+    open: _tab(HomeTab.diaries),
+  ),
+  AiDestination(
+    'tab_todos',
+    title: (l10n) => l10n.navTodos,
+    open: _tab(HomeTab.todos),
+    available: (env) => env.features.todos,
+  ),
+  AiDestination(
+    'tab_calendar',
+    title: (l10n) => l10n.navCalendar,
+    open: _tab(HomeTab.calendar),
+    available: (env) => env.features.calendar,
+  ),
+  AiDestination(
+    'tab_explore',
+    title: (l10n) => l10n.navExplore,
+    open: _tab(HomeTab.explore),
+    available: (env) => env.features.explore,
+  ),
+  AiDestination(
+    'tab_settings',
+    title: (l10n) => l10n.navSettings,
+    open: _tab(HomeTab.settings),
+  ),
+  // ---- 具体的一篇 / 一本 / 一项 ----
+  AiDestination(
+    'diary',
+    title: (l10n) => l10n.aiDestinationDiary,
+    requires: const <String>{'diary_id'},
+    open: (context, ref, params) => openDiaryLinkTarget(
+      context,
+      ref,
+      DiaryLinkTarget.diary(_param(params, 'diary_id')!),
+    ),
+  ),
+  AiDestination(
+    'notebook',
+    title: (l10n) => l10n.notebookTitle,
+    requires: const <String>{'notebook_id'},
+    available: (env) => env.features.notebooks,
+    open: (context, ref, params) async {
+      final notebook = ref.read(
+        notebookTreeProvider,
+      )?[_param(params, 'notebook_id')!];
+      if (notebook == null) return;
+      await openNotebookFromAnywhere(context, ref, notebook);
+    },
+  ),
+  AiDestination(
+    'todo',
+    title: (l10n) => l10n.navTodos,
+    requires: const <String>{'todo_id'},
+    available: (env) => env.features.todos,
+    open: (context, ref, params) =>
+        openTodoDetail(context, _param(params, 'todo_id')!),
+  ),
+  AiDestination(
+    'search',
+    title: (l10n) => l10n.aiDestinationSearch,
+    open: (context, ref, params) => Navigator.of(context).push(
+      DiarySearchPage.buildRoute(initialKeyword: _param(params, 'query') ?? ''),
+    ),
+  ),
+  AiDestination(
+    'archive',
+    title: (l10n) => l10n.autoT0100,
+    open: _page(() => const ArchivedDiariesPage()),
+  ),
+  AiDestination(
+    'anniversaries',
+    title: (l10n) => l10n.anniversaryListTitle,
+    available: (env) => env.features.anniversariesEnabled,
+    open: (context, ref, params) => openAnniversaryList(context),
+  ),
+  AiDestination(
+    'ai_recap',
+    title: (l10n) => l10n.aiRecapTitle,
+    open: _page(() => const AiRecapPage()),
+  ),
+  // ---- 设置 ----
+  AiDestination(
+    'settings_appearance',
+    title: (l10n) => l10n.settingsAppearance,
+    open: _page(() => const AppearancePage()),
+  ),
+  AiDestination(
+    'settings_background',
+    title: (l10n) => l10n.appSurfaceTitle,
+    open: _settingsPage((s) => AppSurfacePage(settingsService: s)),
+  ),
+  AiDestination(
+    'settings_card_style',
+    title: (l10n) => l10n.diaryCardStyleTitle,
+    open: _settingsPage((s) => DiaryCardStylePage(settingsService: s)),
+  ),
+  AiDestination(
+    'settings_preview_style',
+    title: (l10n) => l10n.diaryPreviewStyleTitle,
+    open: _settingsPage((s) => DiaryPreviewStylePage(settingsService: s)),
+  ),
+  AiDestination(
+    'settings_nav_bar_style',
+    title: (l10n) => l10n.homeBarStyleTitle,
+    open: _settingsPage((s) => HomeBarStylePage(settingsService: s)),
+  ),
+  AiDestination(
+    'settings_explore_layout',
+    title: (l10n) => l10n.settingsExploreLayout,
+    available: (env) => env.features.explore,
+    open: (context, ref, params) async {
+      final settings = await ref.read(settingsServiceProvider.future);
+      if (!context.mounted) return;
+      await Navigator.of(
+        context,
+      ).push(ExploreLayoutPage.route(settingsService: settings));
+    },
+  ),
+  AiDestination(
+    'settings_features',
+    title: (l10n) => l10n.settingsFeaturesTitle,
+    open: _page(() => const AppFeaturesPage()),
+  ),
+  AiDestination(
+    'settings_editor',
+    title: (l10n) => l10n.settingsEditor,
+    open: _page(() => const EditorSettingsPage()),
+  ),
+  AiDestination(
+    'settings_typography',
+    title: (l10n) => l10n.diaryTypographyTitle,
+    open: _page(() => const DiaryTypographyPage()),
+  ),
+  AiDestination(
+    'settings_code_block_style',
+    title: (l10n) => l10n.codeBlockStyleTitle,
+    open: _settingsPage((s) => DiaryCodeBlockStylePage(settingsService: s)),
+  ),
+  AiDestination(
+    'settings_templates',
+    title: (l10n) => l10n.diaryTemplatesTitle,
+    available: (env) => env.features.templates,
+    open: _page(() => const DiaryTemplatesPage()),
+  ),
+  AiDestination(
+    'settings_drafts',
+    title: (l10n) => l10n.diaryDraftsTitle,
+    open: _page(() => const DiaryDraftsPage()),
+  ),
+  AiDestination(
+    'settings_tags',
+    title: (l10n) => l10n.settingsTagManagement,
+    open: _page(() => const TagManagementPage()),
+  ),
+  AiDestination(
+    'settings_moods',
+    title: (l10n) => l10n.settingsMoodOptionsTitle,
+    open: _settingsPage((s) => MoodOptionsPage(settingsService: s)),
+  ),
+  AiDestination(
+    'settings_notebooks',
+    title: (l10n) => l10n.notebookTitle,
+    available: (env) => env.features.notebooks,
+    open: _page(() => const NotebooksPage()),
+  ),
+  AiDestination(
+    'settings_todos',
+    title: (l10n) => l10n.todoSettingsTitle,
+    available: (env) => env.features.todos,
+    open: _page(() => const TodoSettingsPage()),
+  ),
+  AiDestination(
+    'recycle_bin',
+    title: (l10n) => l10n.settingsRecycleBin,
+    open: _page(() => const RecycleBinPage()),
+  ),
+  AiDestination(
+    'data_management',
+    title: (l10n) => l10n.settingsDataManagement,
+    open: _page(() => const DataManagementPage()),
+  ),
+  AiDestination(
+    'cloud_backup',
+    title: (l10n) => l10n.dataMgmtCloudBackup,
+    open: _page(() => const CloudBackupPage()),
+  ),
+  AiDestination(
+    'export_diaries',
+    title: (l10n) => l10n.diaryExportPageTitle,
+    open: _page(() => const DiaryExportPage()),
+  ),
+  AiDestination(
+    'storage',
+    title: (l10n) => l10n.storageMgmtTitle,
+    open: _page(() => const StoragePage()),
+  ),
+  AiDestination(
+    'lan_sync',
+    title: (l10n) => l10n.lanSyncTitle,
+    available: (env) => AppPlatform.supportsLanSync,
+    open: _page(() => const LanSyncPage()),
+  ),
+  AiDestination(
+    'app_lock',
+    title: (l10n) => l10n.settingsAppLockAndPasscode,
+    open: _page(() => const AppLockSettingsPage()),
+  ),
+  AiDestination(
+    'ai_settings',
+    title: (l10n) => l10n.aiSettingsTitle,
+    open: _page(() => const AiSettingsPage()),
+  ),
+  AiDestination(
+    'about',
+    title: (l10n) => l10n.settingsAbout,
+    open: _page(() => const AboutPage()),
+  ),
+  AiDestination(
+    'changelog',
+    title: (l10n) => l10n.changelogTitle,
+    open: _page(() => const ChangelogPage()),
+  ),
+  AiDestination(
+    'app_update',
+    title: (l10n) => l10n.appUpdateTitle,
+    open: _page(() => const AppUpdatePage()),
+  ),
+];
+
+final Map<String, AiDestination> _byId = <String, AiDestination>{
+  for (final destination in aiDestinations) destination.id: destination,
+};
+
+AiDestination? aiDestinationById(String id) => _byId[id];

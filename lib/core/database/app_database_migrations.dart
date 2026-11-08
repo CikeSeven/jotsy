@@ -253,6 +253,20 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     }
   }
 
+  /// v20 AI 消息加 `steps`（智能体的工具步骤 JSON，默认 `[]`）。
+  ///
+  /// 与 [_migrateDiaryCommentsAddImages] 同理，列已存在时跳过：从 v17 之前
+  /// 升级时 [_migrateAddAiTables] 按最新定义建表已带上它；降级后再升级时旧
+  /// 构建不会删列。带默认值 `[]`：旧行与降级后旧构建写入的行都读成“没有
+  /// 工具步骤”。
+  Future<void> _migrateAiMessagesAddSteps(Migrator migrator) async {
+    final columns = await customSelect('PRAGMA table_info(ai_messages)').get();
+    final present = columns.any((row) => row.read<String>('name') == 'steps');
+    if (!present) {
+      await migrator.addColumn(aiMessages, aiMessages.steps);
+    }
+  }
+
   Future<void> _createTableIfMissing(
     Migrator migrator,
     TableInfo<Table, Object?> table,

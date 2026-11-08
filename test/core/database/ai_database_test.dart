@@ -289,4 +289,61 @@ void main() {
       }
     });
   });
+
+  group('schema v20 migration', () {
+    test('v19 upgrade adds the steps column and keeps old messages', () async {
+      final root = await Directory.systemTemp.createTemp('jotsy_v20_ai');
+      addTearDown(() => root.delete(recursive: true));
+      final file = File('${root.path}/v19.sqlite');
+      final original = AppDatabase.forTesting(NativeDatabase(file));
+      final conversation = await original.createAiConversation(title: 'old');
+      await original.close();
+      // 按 v19 的结构重建 ai_messages（没有 steps 列），放一条旧消息。
+      final legacy = sqlite3.open(file.path);
+      legacy
+        ..execute('DROP TABLE ai_messages')
+        ..execute('''
+          CREATE TABLE ai_messages (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            message_id TEXT NOT NULL UNIQUE,
+            conversation_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL DEFAULT '',
+            reasoning TEXT NOT NULL DEFAULT '',
+            citations TEXT NOT NULL DEFAULT '[]',
+            meta TEXT NOT NULL DEFAULT '{}',
+            status TEXT NOT NULL DEFAULT 'done',
+            created_at INTEGER NOT NULL
+          )''')
+        ..execute(
+          "INSERT INTO ai_messages (message_id, conversation_id, role, "
+          "content, created_at) VALUES ('m1', '$conversation', 'assistant', "
+          "'旧回答', 0)",
+        )
+        ..execute('PRAGMA user_version = 19');
+      legacy.close();
+
+      final migrated = AppDatabase.forTesting(NativeDatabase(file));
+      try {
+        final old = (await migrated.getAiMessages(conversation)).single;
+        expect(old.content, '旧回答');
+        expect(old.steps, '[]');
+        final id = await migrated.addAiMessage(
+          conversationId: conversation,
+          role: AiMessageRole.assistant,
+          content: '新回答',
+          stepsJson: '[{"text":"x","calls":[]}]',
+        );
+        await migrated.updateAiMessage(id, stepsJson: '[]');
+        final rows = await migrated.getAiMessages(conversation);
+        expect(rows.last.steps, '[]');
+        final version = await migrated
+            .customSelect('PRAGMA user_version')
+            .getSingle();
+        expect(version.read<int>('user_version'), migrated.schemaVersion);
+      } finally {
+        await migrated.close();
+      }
+    });
+  });
 }

@@ -47,6 +47,8 @@ void main() {
         'retrieval': retrieval,
         'aboutMe': '尚未授权的个人信息',
         'privacy': {'confirm': mode, 'budget': 10000},
+        // 这里验证检索问答各阶段的确认；智能体的确认见 ai_agent_chat_test。
+        'agent': {'enabled': false},
       }),
     );
     await tester.runAsync(() => store.saveProvider(fakeAiProvider));

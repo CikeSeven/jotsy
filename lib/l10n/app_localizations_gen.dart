@@ -20169,13 +20169,13 @@ abstract class AppLocalizations {
   /// AI module name.
   ///
   /// In en, this message translates to:
-  /// **'Chat with your diary'**
+  /// **'Chat & actions'**
   String get aiModuleChat;
 
   /// AI module description.
   ///
   /// In en, this message translates to:
-  /// **'Ask your diary; answers cite the entries they use'**
+  /// **'Ask about your journal, or let the AI look things up, count and open pages'**
   String get aiModuleChatSubtitle;
 
   /// AI module name.
@@ -20849,6 +20849,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lets the assistant operate the app; falls back to plain Q&A if the model doesn\'t support it'**
   String get aiModelToolsSubtitle;
+
+  /// AI step card: the tool that checks the date and app status.
+  ///
+  /// In en, this message translates to:
+  /// **'Check today\'s date and app status'**
+  String get aiToolGetAppContext;
+
+  /// AI step card: offering a button that opens a page.
+  ///
+  /// In en, this message translates to:
+  /// **'Open: {page}'**
+  String aiToolOpenPage(String page);
+
+  /// Shown when a page the AI wants to open isn't available.
+  ///
+  /// In en, this message translates to:
+  /// **'This page isn\'t available (the feature is off or not supported on this device)'**
+  String get aiToolPageUnavailable;
+
+  /// AI step card: searching entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Search entries'**
+  String get aiToolSearchDiaries;
+
+  /// AI step card: searching entries for keywords.
+  ///
+  /// In en, this message translates to:
+  /// **'Search entries: {query}'**
+  String aiToolSearchDiariesFor(String query);
+
+  /// AI step card: how many entries a search found.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No entries found} =1{1 entry found} other{{count} entries found}}'**
+  String aiToolFoundEntries(int count);
+
+  /// AI step card: reading the full text of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Read 1 entry} other{Read {count} entries}}'**
+  String aiToolReadDiaries(int count);
+
+  /// AI step card: how many entries were read.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry read} other{{count} entries read}}'**
+  String aiToolReadEntries(int count);
+
+  /// AI step card: counting entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Count entries'**
+  String get aiToolDiaryStats;
+
+  /// AI step card: how many entries were counted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String aiToolStatsEntries(int count);
+
+  /// AI step card: listing tags.
+  ///
+  /// In en, this message translates to:
+  /// **'List tags'**
+  String get aiToolListTags;
+
+  /// AI step card: number of tags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tag} other{{count} tags}}'**
+  String aiToolTagCount(int count);
+
+  /// AI step card: listing notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'List notebooks'**
+  String get aiToolListNotebooks;
+
+  /// AI step card: number of notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 notebook} other{{count} notebooks}}'**
+  String aiToolNotebookCount(int count);
+
+  /// AI step card: checking today on the calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Check today on the calendar'**
+  String get aiToolCalendarDay;
+
+  /// AI step card: checking a day on the calendar (date as YYYY-MM-DD).
+  ///
+  /// In en, this message translates to:
+  /// **'Check {date} on the calendar'**
+  String aiToolCalendarDayOf(String date);
+
+  /// AI step card: listing to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'List to-dos'**
+  String get aiToolListTodos;
+
+  /// AI step card: number of to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 to-do} other{{count} to-dos}}'**
+  String aiToolTodoCount(int count);
+
+  /// AI step card: listing anniversaries.
+  ///
+  /// In en, this message translates to:
+  /// **'List anniversaries'**
+  String get aiToolListAnniversaries;
+
+  /// AI step card: number of anniversaries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 anniversary} other{{count} anniversaries}}'**
+  String aiToolAnniversaryCount(int count);
+
+  /// AI open-page target: an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry'**
+  String get aiDestinationDiary;
+
+  /// AI open-page target: the search page.
+  ///
+  /// In en, this message translates to:
+  /// **'Search entries'**
+  String get aiDestinationSearch;
+
+  /// Title of a collapsed group of AI steps.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Used 1 tool} other{Used {count} tools}}'**
+  String aiAgentStepsSummary(int count);
+
+  /// The AI is preparing a tool call.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing a step…'**
+  String get aiAgentPreparing;
+
+  /// An AI step failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t work'**
+  String get aiAgentStepFailed;
+
+  /// An AI step was stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get aiAgentStepCancelled;
+
+  /// An AI step was cut short (for example the app was closed).
+  ///
+  /// In en, this message translates to:
+  /// **'Interrupted'**
+  String get aiAgentStepInterrupted;
+
+  /// Button in an AI step that opens a page.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {page}'**
+  String aiAgentOpenPage(String page);
+
+  /// Note under an answer when the AI ran out of steps.
+  ///
+  /// In en, this message translates to:
+  /// **'This reply used up its steps. Say \"continue\" to let the AI keep going.'**
+  String get aiAgentStepsExhausted;
+
+  /// Note under an answer when the reply was cut off.
+  ///
+  /// In en, this message translates to:
+  /// **'The reply was cut off, so its steps weren\'t run.'**
+  String get aiAgentIncomplete;
+
+  /// Send confirmation sheet: the assistant reads entries as needed.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI will look up and read entries as needed (never private ones) without asking each time'**
+  String get aiConfirmSendAgent;
+
+  /// AI settings: toggle for tool use in chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the AI use tools'**
+  String get aiOptionAgent;
+
+  /// Explanation of the tool-use toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up and count entries, check the calendar and to-dos, open pages; when off or unsupported, it only answers from retrieved entries'**
+  String get aiOptionAgentSubtitle;
+
+  /// AI settings: how many rounds of tool calls one reply may use.
+  ///
+  /// In en, this message translates to:
+  /// **'Max steps per reply'**
+  String get aiOptionAgentSteps;
+
+  /// Explanation of the max steps option.
+  ///
+  /// In en, this message translates to:
+  /// **'Each step can call several tools; the last step only answers'**
+  String get aiOptionAgentStepsSubtitle;
+
+  /// System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete).
+  ///
+  /// In en, this message translates to:
+  /// **'You can call tools to search and count the user\'s diary entries, check the calendar, to-dos and anniversaries, and open pages of the app. Look things up with tools instead of guessing; independent lookups can be called together. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can\'t be done, say so.'**
+  String get aiPromptAgentSystem;
+
+  /// Assistant prompt: the current time.
+  ///
+  /// In en, this message translates to:
+  /// **'It is now {time}.'**
+  String aiPromptAgentNow(String time);
+
+  /// Assistant prompt: the conversation is pinned to one entry.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation is about the following entry:'**
+  String get aiPromptAgentScopeDiary;
+
+  /// Assistant prompt: the date range the conversation is limited to.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation is only about entries from {from} to {to}; use this range when searching unless told otherwise.'**
+  String aiPromptAgentScopeRange(String from, String to);
+
+  /// Assistant prompt: the actions appended to an earlier answer.
+  ///
+  /// In en, this message translates to:
+  /// **'(Actions taken in this turn:\n{actions})'**
+  String aiPromptAgentActionsDone(String actions);
 
   /// Model max output field.
   ///

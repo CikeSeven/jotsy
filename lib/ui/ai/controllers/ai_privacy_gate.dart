@@ -5,7 +5,9 @@
 // - [confirmAiSend]：按隐私设置的确认时机决定是否弹确认面板。首次发给某个
 //   主机必问（勾“不再提示”后记进本机配置）；“多篇时”对多篇上下文每次都问；
 //   “每次”任何请求都问。面板说明发往哪个主机、哪个模型、多少篇 / 多少字、
-//   几张图片。
+//   几张图片。智能体的一轮（[AiSendSummary.agent]）只在发问前确认一次：
+//   工具会按需连续读日记，不按工具结果逐次弹，所以“多篇时”按“首次”处理，
+//   “每次”为每轮问一次，面板另说明 AI 会按需读取日记。
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,7 +41,12 @@ Future<bool> aiDiaryAllowedIn(
 
 /// 一次请求要发送的内容，给确认面板展示。
 class AiSendSummary {
-  const AiSendSummary({required this.words, this.entries = 0, this.images = 0});
+  const AiSendSummary({
+    required this.words,
+    this.entries = 0,
+    this.images = 0,
+    this.agent = false,
+  });
 
   /// 发送的字数（`TextStats` 口径）。
   final int words;
@@ -48,6 +55,9 @@ class AiSendSummary {
   final int entries;
 
   final int images;
+
+  /// 智能体的一轮：之后工具还会按需读取日记（不含私密日记）。
+  final bool agent;
 
   bool get multiDiary => entries > 1;
 }
@@ -67,7 +77,8 @@ Future<bool> confirmAiSend(
   final acknowledged = store.config.acknowledgedHosts.contains(host);
   final ask = switch (mode) {
     AiConfirmMode.always => true,
-    AiConfirmMode.multiDiary => !acknowledged || summary.multiDiary,
+    AiConfirmMode.multiDiary =>
+      !acknowledged || (summary.multiDiary && !summary.agent),
     AiConfirmMode.firstTime => !acknowledged,
   };
   if (!ask) return true;
@@ -128,9 +139,10 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
         ],
       ),
     );
+    // 内容放进滚动视图：大号字体的小屏上说明文字折成多行时，按钮仍够得着。
     return SafeArea(
       top: false,
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -158,6 +170,8 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
                 FontAwesomeIcons.image,
                 l10n.aiConfirmSendImages(summary.images),
               ),
+            if (summary.agent)
+              line(FontAwesomeIcons.screwdriverWrench, l10n.aiConfirmSendAgent),
             const SizedBox(height: 14),
             Text(
               l10n.aiConfirmSendNote,

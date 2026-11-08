@@ -15892,11 +15892,11 @@
   "@aiModuleRecapSubtitle": {
     "description": "AI module description."
   },
-  "aiModuleChat": "日記と対話",
+  "aiModuleChat": "会話と操作",
   "@aiModuleChat": {
     "description": "AI module name."
   },
-  "aiModuleChatSubtitle": "日記に質問できます。回答には参照した日記が引用されます",
+  "aiModuleChatSubtitle": "日記について質問したり、AI に検索・集計・ページを開くなどを任せたりできます",
   "@aiModuleChatSubtitle": {
     "description": "AI module description."
   },
@@ -16367,6 +16367,249 @@
   "aiModelToolsSubtitle": "AI アシスタントがアプリを直接操作できます。非対応のモデルでは通常の質問応答に切り替わります",
   "@aiModelToolsSubtitle": {
     "description": "Explanation of the tool calling toggle."
+  },
+  "aiToolGetAppContext": "今日の日付とアプリの状態を確認",
+  "@aiToolGetAppContext": {
+    "description": "AI step card: the tool that checks the date and app status."
+  },
+  "aiToolOpenPage": "移動：{page}",
+  "@aiToolOpenPage": {
+    "description": "AI step card: offering a button that opens a page.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolPageUnavailable": "このページは現在使えません（機能がオフか、この端末では非対応です）",
+  "@aiToolPageUnavailable": {
+    "description": "Shown when a page the AI wants to open isn't available."
+  },
+  "aiToolSearchDiaries": "日記を検索",
+  "@aiToolSearchDiaries": {
+    "description": "AI step card: searching entries."
+  },
+  "aiToolSearchDiariesFor": "日記を検索：{query}",
+  "@aiToolSearchDiariesFor": {
+    "description": "AI step card: searching entries for keywords.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFoundEntries": "{count} 件見つかりました",
+  "@aiToolFoundEntries": {
+    "description": "AI step card: how many entries a search found.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadDiaries": "日記を {count} 件読む",
+  "@aiToolReadDiaries": {
+    "description": "AI step card: reading the full text of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadEntries": "{count} 件読みました",
+  "@aiToolReadEntries": {
+    "description": "AI step card: how many entries were read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDiaryStats": "日記を集計",
+  "@aiToolDiaryStats": {
+    "description": "AI step card: counting entries."
+  },
+  "aiToolStatsEntries": "合計 {count} 件",
+  "@aiToolStatsEntries": {
+    "description": "AI step card: how many entries were counted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListTags": "タグを確認",
+  "@aiToolListTags": {
+    "description": "AI step card: listing tags."
+  },
+  "aiToolTagCount": "タグ {count} 個",
+  "@aiToolTagCount": {
+    "description": "AI step card: number of tags.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListNotebooks": "日記帳を確認",
+  "@aiToolListNotebooks": {
+    "description": "AI step card: listing notebooks."
+  },
+  "aiToolNotebookCount": "日記帳 {count} 冊",
+  "@aiToolNotebookCount": {
+    "description": "AI step card: number of notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCalendarDay": "今日のカレンダーを確認",
+  "@aiToolCalendarDay": {
+    "description": "AI step card: checking today on the calendar."
+  },
+  "aiToolCalendarDayOf": "{date} のカレンダーを確認",
+  "@aiToolCalendarDayOf": {
+    "description": "AI step card: checking a day on the calendar (date as YYYY-MM-DD).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolListTodos": "ToDo を確認",
+  "@aiToolListTodos": {
+    "description": "AI step card: listing to-dos."
+  },
+  "aiToolTodoCount": "ToDo {count} 件",
+  "@aiToolTodoCount": {
+    "description": "AI step card: number of to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListAnniversaries": "記念日を確認",
+  "@aiToolListAnniversaries": {
+    "description": "AI step card: listing anniversaries."
+  },
+  "aiToolAnniversaryCount": "記念日 {count} 件",
+  "@aiToolAnniversaryCount": {
+    "description": "AI step card: number of anniversaries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiDestinationDiary": "この日記",
+  "@aiDestinationDiary": {
+    "description": "AI open-page target: an entry."
+  },
+  "aiDestinationSearch": "日記を検索",
+  "@aiDestinationSearch": {
+    "description": "AI open-page target: the search page."
+  },
+  "aiAgentStepsSummary": "{count} 件の操作を実行",
+  "@aiAgentStepsSummary": {
+    "description": "Title of a collapsed group of AI steps.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentPreparing": "操作を準備中…",
+  "@aiAgentPreparing": {
+    "description": "The AI is preparing a tool call."
+  },
+  "aiAgentStepFailed": "失敗しました",
+  "@aiAgentStepFailed": {
+    "description": "An AI step failed."
+  },
+  "aiAgentStepCancelled": "停止しました",
+  "@aiAgentStepCancelled": {
+    "description": "An AI step was stopped."
+  },
+  "aiAgentStepInterrupted": "中断されました",
+  "@aiAgentStepInterrupted": {
+    "description": "An AI step was cut short (for example the app was closed)."
+  },
+  "aiAgentOpenPage": "{page}を開く",
+  "@aiAgentOpenPage": {
+    "description": "Button in an AI step that opens a page.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentStepsExhausted": "この回答で使える操作の回数を使い切りました。「続けて」と送ると続きを行います。",
+  "@aiAgentStepsExhausted": {
+    "description": "Note under an answer when the AI ran out of steps."
+  },
+  "aiAgentIncomplete": "回答が途中で切れたため、その中の操作は実行していません。",
+  "@aiAgentIncomplete": {
+    "description": "Note under an answer when the reply was cut off."
+  },
+  "aiConfirmSendAgent": "AI は必要に応じて日記を検索・閲覧します（非公開の日記は除く）。毎回は確認しません",
+  "@aiConfirmSendAgent": {
+    "description": "Send confirmation sheet: the assistant reads entries as needed."
+  },
+  "aiOptionAgent": "AI にツールを使わせる",
+  "@aiOptionAgent": {
+    "description": "AI settings: toggle for tool use in chat."
+  },
+  "aiOptionAgentSubtitle": "日記の検索・集計、カレンダーや ToDo の確認、ページを開くなどを必要に応じて行います。オフまたは非対応のモデルでは検索した日記をもとに答えるだけです",
+  "@aiOptionAgentSubtitle": {
+    "description": "Explanation of the tool-use toggle."
+  },
+  "aiOptionAgentSteps": "1 回の回答の最大ステップ数",
+  "@aiOptionAgentSteps": {
+    "description": "AI settings: how many rounds of tool calls one reply may use."
+  },
+  "aiOptionAgentStepsSubtitle": "1 ステップで複数のツールを呼べます。最後のステップは回答のみ",
+  "@aiOptionAgentStepsSubtitle": {
+    "description": "Explanation of the max steps option."
+  },
+  "aiPromptAgentSystem": "ツールを呼び出して、ユーザーの日記の検索・集計、カレンダー・ToDo・記念日の確認、アプリ内のページを開くことができます。ユーザーのデータが必要なときは推測せずツールで調べてください。互いに依存しない検索はまとめて呼び出せます。日記を使ったときは [D3] のように文末にその番号を書いてください。ユーザー自身がページで行う必要がある操作（バックアップ、復元、インポート・エクスポート、共有、アプリロック、パスワード、AI サービスの設定など）は、open_page で移動ボタンを示し、手順を説明してください。ツールがエラーを返したら、内容に従って引数を直すか別の方法を試し、どうしてもできなければそう伝えてください。",
+  "@aiPromptAgentSystem": {
+    "description": "System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete)."
+  },
+  "aiPromptAgentNow": "現在は {time} です。",
+  "@aiPromptAgentNow": {
+    "description": "Assistant prompt: the current time.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentScopeDiary": "この会話は次の日記についてです：",
+  "@aiPromptAgentScopeDiary": {
+    "description": "Assistant prompt: the conversation is pinned to one entry."
+  },
+  "aiPromptAgentScopeRange": "この会話は {from} から {to} までの日記だけが対象です。特に指示がなければ、検索にはこの期間を使ってください。",
+  "@aiPromptAgentScopeRange": {
+    "description": "Assistant prompt: the date range the conversation is limited to.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentActionsDone": "（この回で行った操作：\n{actions}）",
+  "@aiPromptAgentActionsDone": {
+    "description": "Assistant prompt: the actions appended to an earlier answer.",
+    "placeholders": {
+      "actions": {
+        "type": "String"
+      }
+    }
   },
   "aiModelMaxOutput": "最大出力トークン数",
   "@aiModelMaxOutput": {

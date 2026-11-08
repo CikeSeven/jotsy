@@ -15,7 +15,9 @@
 |---|---|
 | `lib/core/services/ai/` | 纯 Dart 引擎：消息模型 `ai_models.dart`、错误分类 `ai_failure.dart`、HTTP 与取消 `ai_http.dart`（`HttpCancelToken`）、SSE 解码 `ai_sse.dart`、四种协议客户端 `ai_client_*.dart`、服务商与任务路由 `ai_provider_config.dart`、预设 `ai_provider_presets.dart`、存储 `ai_provider_store.dart`、用量 `ai_usage_ledger.dart`、图片 `ai_vision.dart`、编排 `ai_service.dart` |
 | `lib/core/database/app_database_ai_*.dart` | 三张表（schema v17）、增删查与撤销、上下文查询 |
+| `lib/core/services/ai/agent/` | 智能体循环 `AiAgentLoop`（只管顺序，经 `AiAgentHost` 落库与执行）、工具参数 schema 与集中校验、结果限长 |
 | `lib/ui/ai/` | 偏好、提示词、检索、各流程与页面（设置、回顾、主页、对话） |
+| `lib/ui/ai/tools/` | 智能体的工具接口 `AiTool`、唯一的工具清单 `ai_tool_registry.dart`、可前往的页面 `ai_destinations.dart`、各领域工具 |
 | `lib/ui/diaries/widgets/diary_ai/` 与 `controllers/diary_ai_editing.dart` | 编辑页的写作面板、灵感条与写回编辑器 |
 | `tool/ai_mock_server.dart` | 本地模拟四种协议的流式接口，手动验证用 |
 
@@ -77,7 +79,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 三张表都存业务 id、不建外键：
 
 - `ai_conversations`：conversationId、title、personaId、scope（JSON：自动 / 最近 N 天 / 全部 / 时间范围 / 固定一篇）、pinned、createdAt、updatedAt；
-- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token、放进上下文的篇数、出错原因）、status（done / stopped / error）、createdAt；
+- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token、放进上下文的篇数、出错原因；智能体另有 `agent: true` 与没有正常作答的原因 `agentEnd`）、status（done / stopped / error）、steps（v20，智能体的工具步骤，见 §9；普通回答为 `[]`）、createdAt；
 - `ai_results`：resultId、kind（reply / recap）、diaryId（回应）、periodStart / periodEnd、scope（回顾的预设与日记本快照）、title、content、personaId、meta（人设快照、模型、统计、引用、思考过程、token）、createdAt。
 
 彻底删除日记时在同一事务里删掉它的回应。备份合并按业务 id：本机没有的新增，“合并”保留本机，“合并并覆盖”替换；引用的日记已不存在的回应丢弃。
@@ -102,11 +104,53 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 `confirmAiSend` 按 AI 隐私里的“发送前确认”决定：首次（第一次发往某个主机时问，可勾“不再询问”）、多篇时（默认：首次之外，多篇上下文每次都问）、每次。面板写明主机、模型、篇数与字数、图片张数。
 
+智能体的一轮（§9）只在发问前确认一次：工具会按需连续读日记，所以“多篇时”按“首次”处理，“每次”为每轮问一次，面板另有一行说明 AI 会按需查找、读取日记（私密日记除外）。
+
 智能检索计划、各块回顾摘要、最终回答 / 回顾和自动起标题都在各自请求前确认实际使用的主机与模型；主模型的确认不授权另一个服务商。取消检索或摘要阶段的确认即停止后续流程，取消起标题则保留问题开头作为标题。固定单篇对话每次发送时重新读取日记，未解封胶囊与回收站中的正文不会读入上下文。编辑页的图片描述与文字功能共用单篇私密权限判断，草稿也检查日记本继承的私密性。
 
 回应“存为留言”会完整预填到现有留言面板，用户确认后才写库；超过 1000 字时保留全文并禁用保存，由用户缩短，取消不写入。
 
-## 9. 开发与验证
+## 9. 智能体（对话与操作）
 
-- 单元与 widget 测试用 `test/support/fake_ai.dart` 的 `FakeAiChatClient` / `fakeAiService` 替换 `aiServiceProvider`，不联网；协议客户端的测试在本地 `HttpServer.bind(loopback, 0)` 上回放准备好的流（`test/core/services/ai/`，工具调用见 `ai_tool_calls_test.dart`）。
+对话模块里“让 AI 使用工具”（`AiAgentOptions.enabled`，默认开）打开、且所用模型支持工具调用（`AiService.supportsTools`：模型设置没关、本次运行里没被服务端拒过）时，对话走智能体：模型按需调用工具查日记、统计、看日历与待办、打开页面；否则走 §7 的检索问答。模型第一步就回 400 并被记为不支持工具（还没有任何输出）时，删掉占位消息，同一个问题改走检索问答。
+
+**一轮的顺序**（`ai_chat_agent.dart` → `AiAgentLoop` → `AiAgentTurn`）：
+
+1. 发送前确认（§8，智能体口径）；固定了一篇日记时把它放进上下文（私密日记只在用户允许时），时间范围写成一句提示，其余由模型调工具去查；
+2. 建好助手消息行（状态 stopped）：进程被杀也看得到已执行的步骤；
+3. 循环：请求（系统提示词 + 稳定顺序的工具定义）→ 收齐正文、思考与完整的调用 → **只有正常收尾才执行**（§3）→ 同一步的调用按顺序串行执行 → 结果回传 → 下一步；最多 `maxSteps` 步（10 / 20 / 40，默认 20），最后一步 `toolChoice: none` 让模型据已有结果作答，服务商无视时以“步数用完”结束并在回答下提示可以说“继续”；
+4. 每一步的输出收齐后写入 `steps`（调用记为 executing），每个调用出结果后再写；写库串行，结束时写正文、引用、用量与状态。
+
+**执行一个调用**：找工具 → 参数是坏 JSON 时直接回传错误 → 经工具的 schema 集中校验与转换（必填、未知参数报错、字符串数字转数字、单值转数组、日期 `YYYY-MM-DD` 转 `DateTime`、时间 `HH:MM` 转分钟）→ 执行 → 结果经 `aiToolResultText` 限长（默认 16000 字符，超出时换成“已截断 + 开头预览 + 缩小范围再查”的提示）。失败一律作为 `isError` 结果回传模型（让它改正或换个做法）；只有停止会中断循环。工具执行不自动重试。
+
+**停止与中断**：停止时取消请求与正在执行的工具，已收到的正文与已完成的步骤保留，未完成的调用记为已停止；离开页面等同停止。落库的 executing 在不进行中的消息里按“已中断”显示，**绝不重放**。
+
+**历史**：以前各轮只回传问题与最终回答（去掉旧编号、截到 1500 字），回答后面附一行本地生成的“这一轮做过的操作”（只列改动与跳转的工具名与参数，查询不列）；不回放旧轮的工具消息与签名，换模型、换协议都不出错。现在几点、对话范围放在最后一条用户消息开头，系统提示词与工具定义保持不变，利于提示缓存。
+
+**引用**：一轮之内同一篇日记不论被哪个工具返回都用同一个 `[Dn]`（`AiCitationBook`）；回答与步骤说明里用到的才记进 citations。
+
+**工具**（`lib/ui/ai/tools/`，清单只在 `ai_tool_registry.dart`）：
+
+| 工具 | 作用 | 数据来源 |
+|---|---|---|
+| `get_app_context` | 今天（含农历、节气、法定节假日）、平台、界面语言、开启的功能、心情选项、本轮剩余字数 | `CalendarLunarDay`、`AppPlatform`、`AppFeatures`、`SettingsService.moodOptions` |
+| `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本找日记，返回编号、id、日期、标题与摘录 | `getAiContextDiaries`、`aiRankDiaries` |
+| `read_diaries` | 按 id 读全文（一次最多 10 篇） | `getAiDiary`；私密日记、排除的本子与标签一律不给 |
+| `diary_stats` | 篇数、字数、记录天数、最长 / 当前连续天数、常用心情与标签，可按日 / 周 / 月 / 年分组 | `getAiContextDiaries`、`AiRecapStats`、`ExploreStatsBuilder` |
+| `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
+| `list_todos` | 未完成 / 已完成 / 全部，可按到期日或关键词（待办功能开启时） | 待办查询 |
+| `list_anniversaries` | 纪念日与下一次日期、还有几天（纪念日功能开启时） | `AnniversaryCountdown` |
+| `list_tags` | 标签与使用篇数（排除的标签不列） | `watchAllTags`、`watchTagUsageCounts` |
+| `list_notebooks` | 日记本树（私密 / 上锁本与排除的本子不列） | `notebookTreeProvider` |
+| `open_page` | 给用户一个“前往”按钮；用户明确说“打开”时（`now`）本轮结束后自动打开 | `AiDestination` |
+
+工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示按钮、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`）。
+
+**隐私**：多篇只经 `getAiContextDiaries`；`read_diaries` 比单篇功能更严，私密日记即使打开了“允许对私密日记使用 AI”也不给；日期、心情、标签、天气、地点按“发送”开关给；摘录与正文从本轮“最多发送”预算里扣，用完只给标题与日期。
+
+**接入新功能**：在对应领域的 `ai_tools_<领域>.dart` 写一个 `AiTool`（功能开关经 `isAvailable`），加进清单；需要页面时在 `aiDestinations` 加一项；补“功能关闭时工具不出现”与主流程测试（`test/ui/ai/ai_tools_test.dart` 会检查名称、schema 与标题）。
+
+## 10. 开发与验证
+
+- 单元与 widget 测试用 `test/support/fake_ai.dart` 的 `FakeAiChatClient` / `fakeAiService` 替换 `aiServiceProvider`，不联网；智能体用按队列回放的 `scriptedAiService` 与 `textTurn` / `toolTurn` 编排每一步（`test/ui/ai/ai_agent_chat_test.dart`、`test/core/services/ai/ai_agent_loop_test.dart`）；协议客户端的测试在本地 `HttpServer.bind(loopback, 0)` 上回放准备好的流（`test/core/services/ai/`，工具调用见 `ai_tool_calls_test.dart`）。
 - 手动验证用 `dart run tool/ai_mock_server.dart`：在本机起一个同时实现四种协议的服务（默认端口 8787），流式回显请求、可注入错误与思考过程，见脚本开头的说明。在 Jotsy 里添加“自定义（OpenAI 兼容）”服务，地址填 `http://127.0.0.1:8787/v1`（OpenAI Responses 同一地址；Anthropic 格式填 `http://127.0.0.1:8787`，Gemini 格式填 `http://127.0.0.1:8787/v1beta`），密钥随便填。请求带着工具时，在问题里写 `/tool 工具名 {"参数": 1}` 让它按该协议调用这个工具（参数分两段流式发出），收到工具结果后它回答结果内容。

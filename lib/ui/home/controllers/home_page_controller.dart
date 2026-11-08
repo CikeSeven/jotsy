@@ -237,11 +237,13 @@ class _HomePageController {
     return _switchToTab(index, allowDuringSwitch: false);
   }
 
-  Future<void> switchToDiariesTab() {
-    return _switchToTab(
-      _state._tabs.indexOf(HomeTab.diaries),
-      allowDuringSwitch: true,
-    );
+  Future<void> switchToDiariesTab() => switchToHomeTab(HomeTab.diaries);
+
+  /// 切到 [tab]；它因功能关闭不可见时什么也不做。
+  Future<void> switchToHomeTab(HomeTab tab) {
+    final index = _state._tabs.indexOf(tab);
+    if (index < 0) return Future<void>.value();
+    return _switchToTab(index, allowDuringSwitch: true);
   }
 
   /// 若存在启动提示并且尚未展示，则在首帧后展示一次。

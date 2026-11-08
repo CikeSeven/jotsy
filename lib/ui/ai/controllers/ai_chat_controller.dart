@@ -1,6 +1,11 @@
 // 与日记对话的一轮问答（对话页持有，页面离开即停止）。
 //
-// 顺序（[AiChatController.send]）：
+// 分流：模型支持工具调用、且 AI 设置里“让 AI 使用工具”开着时走智能体
+// （`ai_chat_agent.dart`：模型按需调工具查日记、统计、打开页面）；否则走下面
+// 的检索问答（`ai_chat_retrieval.dart`）。模型第一步就表明不认工具时，同一个
+// 问题改走检索问答。
+//
+// 检索问答的顺序（[AiChatController.send]）：
 // 1. 还没有对话时新建一行（`ai_conversations`），问题先落库（用户消息）；
 // 2. 检索：按对话范围与 AI 设置的检索方式找日记——
 //    - 固定一篇（预览页“继续聊聊”）：只读那一篇，私密日记只在用户允许时；
@@ -18,8 +23,9 @@
 //    模型起一个（另行确认实际主机，取消或失败就保留问题开头）。
 //
 // 状态边界：[phase] idle → planning（只在智能检索）→ searching → answering
-// → idle；[stop] 取消检索计划或回答；页面离开（[dispose]）时正在生成的
-// 回答按“已停止”保存已经收到的部分。世代号防止旧的异步回调改写新状态。
+// → idle，智能体为 idle → working → idle；[stop] 取消检索计划、回答或智能体
+// 的这一轮；页面离开（[dispose]）时正在生成的回答按“已停止”保存已经收到的
+// 部分（智能体的步骤本来就边做边落库）。世代号防止旧的异步回调改写新状态。
 
 import 'dart:async';
 import 'dart:convert';
@@ -28,26 +34,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/services/ai/agent/ai_agent_loop.dart';
 import '../../../core/services/ai/ai_failure.dart';
 import '../../../core/services/ai/ai_provider_config.dart';
 import '../../../core/services/ai/ai_service.dart';
+import '../../../core/services/app_service.dart';
 import '../../../core/services/http_cancel_token.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../utils/text_stats.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../models/ai_built_ins.dart';
 import '../models/ai_chat_scope.dart';
 import '../models/ai_preference_parts.dart';
 import '../models/ai_preferences.dart';
 import '../providers/ai_providers.dart';
+import '../tools/ai_tool.dart';
+import '../tools/ai_tool_registry.dart';
+import '../viewmodels/ai_agent_prompts.dart';
 import '../viewmodels/ai_chat_prompts.dart';
 import '../viewmodels/ai_citations.dart';
 import '../viewmodels/ai_context_budget.dart';
 import '../viewmodels/ai_prompt_builder.dart';
 import '../viewmodels/ai_retrieval.dart';
 import '../viewmodels/ai_task_prompts.dart';
+import 'ai_agent_turn.dart';
 import 'ai_privacy_gate.dart';
 import 'ai_stream_run.dart';
 
-enum AiChatPhase { idle, planning, searching, answering }
+part 'ai_chat_agent.dart';
+part 'ai_chat_retrieval.dart';
+
+enum AiChatPhase {
+  idle,
+  planning,
+  searching,
+  answering,
+
+  /// 智能体的一轮在进行（调用工具、流式回答）。
+  working,
+}
 
 class AiChatController extends ChangeNotifier {
   AiChatController({
@@ -74,6 +99,9 @@ class AiChatController extends ChangeNotifier {
   AiResolvedModel? _model;
   HttpCancelToken? _planToken;
   HttpCancelToken? _titleToken;
+  HttpCancelToken? _agentToken;
+  AiAgentTurn? _agentTurn;
+  AiToolNavigation? _autoOpen;
   int _generation = 0;
   bool _disposed = false;
 
@@ -82,6 +110,16 @@ class AiChatController extends ChangeNotifier {
 
   /// 正在生成的这一轮放进上下文的日记（引用胶囊用）。
   List<AiCitation> get pendingCitations => _citations;
+
+  /// 正在进行的智能体一轮（界面显示步骤与流式文字）；没有时为 null。
+  AiAgentTurn? get agentTurn => _agentTurn;
+
+  /// 取走上一轮要自动打开的页面（用户明确说了“打开…”）。
+  AiToolNavigation? takeAutoOpen() {
+    final value = _autoOpen;
+    _autoOpen = null;
+    return value;
+  }
 
   /// 发一个问题（[resend] 时问题已经在库里，不再追加用户消息）。
   Future<void> send(
@@ -95,9 +133,12 @@ class AiChatController extends ChangeNotifier {
     final generation = ++_generation;
     bool current() => !_disposed && generation == _generation;
     final locale = Localizations.localeOf(context);
-    final prefs = ref.read(aiPreferencesProvider);
+    // 先等设置读出来：页面带着问题一打开就发送时，偏好可能还是默认值
+    // （AI 隐私里排除的日记本、是否使用工具都会被忽略）。
+    await ref.read(settingsServiceProvider.future);
     final service = await ref.read(aiServiceProvider.future);
     if (!current()) return;
+    final prefs = ref.read(aiPreferencesProvider);
     final model = _model = service.resolve(AiTaskKind.chat, override: modelRef);
 
     var id = conversationId;
@@ -130,6 +171,49 @@ class AiChatController extends ChangeNotifier {
       sample: text,
     );
     if (!context.mounted) return;
+    if (prefs.agent.enabled && service.supportsTools(model)) {
+      final answered = await _sendAgent(
+        context,
+        ref,
+        service,
+        kit,
+        prefs,
+        id,
+        history,
+        text,
+        model: model,
+        current: current,
+      );
+      // 模型第一步就表明不认工具时退回检索问答（同一个问题，不重复落库）。
+      if (answered || !current() || !context.mounted) return;
+    }
+    await _sendRetrieval(
+      context,
+      ref,
+      service,
+      kit,
+      prefs,
+      id,
+      history,
+      text,
+      model: model,
+      current: current,
+    );
+  }
+
+  /// 检索问答的一轮：找日记 → 确认 → 流式回答 → 落库 → 起标题。
+  Future<void> _sendRetrieval(
+    BuildContext context,
+    WidgetRef ref,
+    AiService service,
+    AiPromptKit kit,
+    AiPreferences prefs,
+    String id,
+    List<AiMessageRow> history,
+    String text, {
+    required AiResolvedModel model,
+    required bool Function() current,
+  }) async {
     _set(
       prefs.retrieval == AiRetrievalMode.smart &&
               scope.kind == AiChatScopeKind.auto
@@ -292,183 +376,8 @@ class AiChatController extends ChangeNotifier {
     _planToken?.cancel();
     _planToken = null;
     _titleToken?.cancel();
+    _agentToken?.cancel();
     run.stop();
-  }
-
-  // ------------------------------------------------------------ 检索
-
-  Future<List<AiBudgetedDiary>> _retrieve(
-    BuildContext context,
-    WidgetRef ref,
-    AiService service,
-    AiPromptKit kit,
-    AiPreferences prefs,
-    String question, {
-    required AiResolvedModel model,
-    required bool Function() current,
-  }) async {
-    final privacy = prefs.privacy;
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    Future<List<AiContextDiary>> query({
-      DateTime? start,
-      DateTime? end,
-      List<String> keywords = const <String>[],
-    }) => database.getAiContextDiaries(
-      start: start,
-      end: end,
-      keywords: keywords,
-      excludedNotebookIds: privacy.excludedNotebookIds,
-      excludedTagNames: privacy.excludedTagNames,
-      includeArchived: privacy.includeArchived,
-      newestFirst: true,
-      limit: 400,
-    );
-
-    DateTime daysAgo(int days) =>
-        DateTime(today.year, today.month, today.day - days + 1);
-    DateTime dayAfter(DateTime day) =>
-        DateTime(day.year, day.month, day.day + 1);
-
-    Future<List<AiContextDiary>> recent(int days) =>
-        query(start: daysAgo(days), end: dayAfter(today));
-
-    /// 按关键词查，查不到退回最近 N 天。
-    Future<List<AiContextDiary>> byKeywords(List<String> keywords) async {
-      if (keywords.isNotEmpty) {
-        final found = await query(keywords: keywords);
-        if (found.isNotEmpty) return found;
-      }
-      return recent(prefs.recentDays);
-    }
-
-    var keywords = aiQueryKeywords(question);
-    List<AiContextDiary> candidates;
-    switch (scope.kind) {
-      case AiChatScopeKind.diary:
-        final diary = await database.getAiDiary(scope.diaryId!);
-        final allowed =
-            diary != null &&
-            (privacy.allowPrivate ||
-                !(await database.isDiaryPrivate(diary.diaryId)));
-        if (!allowed) return const <AiBudgetedDiary>[];
-        // 整篇发送，只受总字数限制；maxWords 取实际字数，确认面板里的
-        // “发送字数”才不会显示成整个预算。
-        final words =
-            TextStats.countWords(diary.contentText) +
-            TextStats.countWords(diary.title);
-        return [
-          AiBudgetedDiary(
-            diary: diary,
-            ref: 'D1',
-            maxWords: words < privacy.contextBudget
-                ? words
-                : privacy.contextBudget,
-          ),
-        ];
-      case AiChatScopeKind.range:
-        candidates = await query(start: scope.start, end: dayAfter(scope.end!));
-      case AiChatScopeKind.recent:
-        candidates = await recent(scope.days);
-      case AiChatScopeKind.all:
-        candidates = await byKeywords(keywords);
-      case AiChatScopeKind.auto:
-        switch (prefs.retrieval) {
-          case AiRetrievalMode.recent:
-            candidates = await recent(prefs.recentDays);
-          case AiRetrievalMode.keyword:
-            candidates = await byKeywords(keywords);
-          case AiRetrievalMode.smart:
-            if (!context.mounted) return const <AiBudgetedDiary>[];
-            final plan = await _plan(
-              context,
-              ref,
-              service,
-              kit,
-              question,
-              model,
-              current,
-            );
-            if (!current()) return const <AiBudgetedDiary>[];
-            _set(AiChatPhase.searching);
-            if (plan != null) {
-              keywords = {...plan.keywords, ...keywords}.take(16).toList();
-            }
-            if (plan != null && plan.hasDates) {
-              candidates = await query(
-                start: plan.from,
-                end: plan.to == null ? null : dayAfter(plan.to!),
-              );
-            } else {
-              candidates = await byKeywords(keywords);
-            }
-        }
-    }
-    final ranked = aiRankDiaries(
-      candidates,
-      keywords,
-      now: now,
-    ).take(prefs.maxCitations).toList();
-    final kept = aiBudgetDiaries(ranked, budget: privacy.contextBudget)
-      ..sort((a, b) => a.diary.createdAt.compareTo(b.diary.createdAt));
-    return [
-      for (var i = 0; i < kept.length; i++)
-        AiBudgetedDiary(
-          diary: kept[i].diary,
-          ref: 'D${i + 1}',
-          maxWords: kept[i].maxWords,
-        ),
-    ];
-  }
-
-  /// 智能检索的计划；读不出或请求失败（取消除外）时为 null。
-  Future<AiRetrievalPlan?> _plan(
-    BuildContext context,
-    WidgetRef ref,
-    AiService service,
-    AiPromptKit kit,
-    String question,
-    AiResolvedModel model,
-    bool Function() current,
-  ) async {
-    final utility = service.resolve(AiTaskKind.utility) ?? model;
-    final token = _planToken = HttpCancelToken();
-    try {
-      final request = aiRetrievalPlanRequest(
-        kit,
-        question: question,
-        today: DateTime.now(),
-      );
-      // 检索计划同样包含问题与“关于我”，必须在第一字节发出前确认它的
-      // 实际模型。取消不能当成计划失败后继续检索，否则仍可能发送回答请求。
-      final ok = await confirmAiSend(
-        context,
-        ref,
-        model: utility,
-        summary: AiSendSummary(
-          words: TextStats.countWords(
-            '${request.system}\n${request.messages.single.text}',
-          ),
-        ),
-      );
-      if (!ok || !current() || !context.mounted || token.isCancelled) {
-        throw const AiException(AiFailureKind.cancelled);
-      }
-      final completion = await service.complete(
-        utility,
-        request,
-        cancelToken: token,
-      );
-      return AiRetrievalPlan.parse(completion.text);
-    } on AiException catch (error) {
-      if (error.kind == AiFailureKind.cancelled) rethrow;
-      return null;
-    } catch (_) {
-      return null;
-    } finally {
-      if (identical(_planToken, token)) _planToken = null;
-    }
   }
 
   // ------------------------------------------------------------ 保存
@@ -641,6 +550,12 @@ class AiChatController extends ChangeNotifier {
           status: AiMessageStatus.stopped,
         ),
       );
+    }
+    // 智能体的步骤边做边落库：停掉这一轮，把已有的文字按“已停止”写完。
+    final turn = _agentTurn;
+    if (turn != null) {
+      _agentToken?.cancel();
+      unawaited(turn.stop().whenComplete(turn.dispose));
     }
     _disposed = true;
     _generation++;

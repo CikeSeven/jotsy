@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/home/models/home_tab.dart';
 import 'package:node_diary/ui/home/providers/home_tab_request_provider.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 
@@ -62,7 +63,10 @@ void main() {
       container(tester).read(homeNotebookScopeProvider).notebookId,
       travel,
     );
-    expect(container(tester).read(homeDiariesTabRequestProvider), 1);
+    expect(
+      container(tester).read(homeTabRequestProvider),
+      const HomeTabRequest(1, HomeTab.diaries),
+    );
     await h.unmount();
   });
 

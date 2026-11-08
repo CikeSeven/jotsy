@@ -11059,10 +11059,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModuleRecapSubtitle => '按周、月、年或日记本生成总结';
 
   @override
-  String get aiModuleChat => '与日记对话';
+  String get aiModuleChat => '对话与操作';
 
   @override
-  String get aiModuleChatSubtitle => '问问你的日记，回答会引用相关的篇目';
+  String get aiModuleChatSubtitle => '问问你的日记，也能让 AI 帮你查找、统计、打开页面';
 
   @override
   String get aiModuleVision => '图片理解';
@@ -11409,6 +11409,159 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiModelToolsSubtitle => '让 AI 助手直接操作应用；模型不支持时自动改用检索问答';
+
+  @override
+  String get aiToolGetAppContext => '查看今天与应用状态';
+
+  @override
+  String aiToolOpenPage(String page) {
+    return '前往：$page';
+  }
+
+  @override
+  String get aiToolPageUnavailable => '这个页面现在不可用（功能已关闭或本设备不支持）';
+
+  @override
+  String get aiToolSearchDiaries => '搜索日记';
+
+  @override
+  String aiToolSearchDiariesFor(String query) {
+    return '搜索日记：$query';
+  }
+
+  @override
+  String aiToolFoundEntries(int count) {
+    return '找到 $count 篇';
+  }
+
+  @override
+  String aiToolReadDiaries(int count) {
+    return '读取 $count 篇日记';
+  }
+
+  @override
+  String aiToolReadEntries(int count) {
+    return '读了 $count 篇';
+  }
+
+  @override
+  String get aiToolDiaryStats => '统计日记';
+
+  @override
+  String aiToolStatsEntries(int count) {
+    return '共 $count 篇';
+  }
+
+  @override
+  String get aiToolListTags => '查看标签';
+
+  @override
+  String aiToolTagCount(int count) {
+    return '$count 个标签';
+  }
+
+  @override
+  String get aiToolListNotebooks => '查看日记本';
+
+  @override
+  String aiToolNotebookCount(int count) {
+    return '$count 个日记本';
+  }
+
+  @override
+  String get aiToolCalendarDay => '查看今天的日历';
+
+  @override
+  String aiToolCalendarDayOf(String date) {
+    return '查看 $date 的日历';
+  }
+
+  @override
+  String get aiToolListTodos => '查看待办';
+
+  @override
+  String aiToolTodoCount(int count) {
+    return '$count 项待办';
+  }
+
+  @override
+  String get aiToolListAnniversaries => '查看纪念日';
+
+  @override
+  String aiToolAnniversaryCount(int count) {
+    return '$count 个纪念日';
+  }
+
+  @override
+  String get aiDestinationDiary => '这篇日记';
+
+  @override
+  String get aiDestinationSearch => '搜索日记';
+
+  @override
+  String aiAgentStepsSummary(int count) {
+    return '执行了 $count 个操作';
+  }
+
+  @override
+  String get aiAgentPreparing => '正在准备操作…';
+
+  @override
+  String get aiAgentStepFailed => '没有成功';
+
+  @override
+  String get aiAgentStepCancelled => '已停止';
+
+  @override
+  String get aiAgentStepInterrupted => '已中断';
+
+  @override
+  String aiAgentOpenPage(String page) {
+    return '前往$page';
+  }
+
+  @override
+  String get aiAgentStepsExhausted => '这次能用的操作步数用完了，可以说“继续”让 AI 接着做。';
+
+  @override
+  String get aiAgentIncomplete => '回答被截断了，其中的操作没有执行。';
+
+  @override
+  String get aiConfirmSendAgent => 'AI 会按需查找、读取你的日记（私密日记除外），之后不再逐次询问';
+
+  @override
+  String get aiOptionAgent => '让 AI 使用工具';
+
+  @override
+  String get aiOptionAgentSubtitle => '按需查找和统计日记、查看日历与待办、打开页面；关掉或模型不支持时只做检索问答';
+
+  @override
+  String get aiOptionAgentSteps => '每次回答最多步数';
+
+  @override
+  String get aiOptionAgentStepsSubtitle => '每一步可以同时调用多个工具；最后一步只作答';
+
+  @override
+  String get aiPromptAgentSystem =>
+      '你可以调用工具来查找、统计用户的日记，查看日历、待办与纪念日，并打开应用里的页面。需要用户的数据时先用工具去查，不要凭空回答；互不依赖的查询可以一次调用多个工具。用到某篇日记时在句末写上它的编号，如 [D3]。用户要做的事需要他自己在页面里完成时（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置等），用 open_page 给他一个前往按钮，并说明怎么做。工具报错时按错误说明改正参数或换个办法；确实做不到就直说。';
+
+  @override
+  String aiPromptAgentNow(String time) {
+    return '现在是 $time。';
+  }
+
+  @override
+  String get aiPromptAgentScopeDiary => '这次对话围绕下面这篇日记：';
+
+  @override
+  String aiPromptAgentScopeRange(String from, String to) {
+    return '这次对话只关心 $from 到 $to 之间的日记，查日记时默认用这个范围。';
+  }
+
+  @override
+  String aiPromptAgentActionsDone(String actions) {
+    return '（这一轮做过的操作：\n$actions）';
+  }
 
   @override
   String get aiModelMaxOutput => '最多输出（token）';

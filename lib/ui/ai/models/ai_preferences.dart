@@ -1,7 +1,7 @@
 // AI 助手的偏好（设置 → AI 助手）。
 //
 // 职责：描述各模块开关、人设、写作指令、关于我与文风、输出、隐私、图片、
-// 回应 / 灵感 / 回顾 / 对话的设置。不含任何密钥与服务商——那些只在本机的
+// 回应 / 灵感 / 回顾 / 对话（含调用工具）的设置。不含任何密钥与服务商——那些只在本机的
 // `AiProviderStore`。
 //
 // 存储：单个 JSON 设置键 `app.settings.ai_prefs`（经
@@ -14,6 +14,7 @@ import 'dart:convert';
 
 import 'package:meta/meta.dart';
 
+import 'ai_agent_options.dart';
 import 'ai_preference_parts.dart';
 import 'ai_privacy_options.dart';
 
@@ -52,6 +53,7 @@ class AiPreferences {
     this.autoTitle = true,
     this.titleButton = true,
     this.autoSuggestOnPublish = false,
+    this.agent = AiAgentOptions.defaults,
   });
 
   static const AiPreferences defaults = AiPreferences();
@@ -144,6 +146,9 @@ class AiPreferences {
   /// 进入发布页时自动给出标题、标签与心情的建议。
   final bool autoSuggestOnPublish;
 
+  /// 对话时调用工具（智能体）的设置。
+  final AiAgentOptions agent;
+
   bool isModuleEnabled(AiModule module) => module.enabledByDefault
       ? !disabledModules.contains(module)
       : enabledOptionalModules.contains(module);
@@ -206,6 +211,7 @@ class AiPreferences {
     bool? autoTitle,
     bool? titleButton,
     bool? autoSuggestOnPublish,
+    AiAgentOptions? agent,
   }) {
     return AiPreferences(
       disabledModules: disabledModules ?? this.disabledModules,
@@ -243,6 +249,7 @@ class AiPreferences {
       autoTitle: autoTitle ?? this.autoTitle,
       titleButton: titleButton ?? this.titleButton,
       autoSuggestOnPublish: autoSuggestOnPublish ?? this.autoSuggestOnPublish,
+      agent: agent ?? this.agent,
     );
   }
 
@@ -297,6 +304,7 @@ class AiPreferences {
       if (titleButton != d.titleButton) 'titleButton': titleButton,
       if (autoSuggestOnPublish != d.autoSuggestOnPublish)
         'autoSuggest': autoSuggestOnPublish,
+      if (agent.toJson().isNotEmpty) 'agent': agent.toJson(),
     };
   }
 
@@ -449,6 +457,7 @@ class AiPreferences {
       autoTitle: read('autoTitle', d.autoTitle),
       titleButton: read('titleButton', d.titleButton),
       autoSuggestOnPublish: read('autoSuggest', d.autoSuggestOnPublish),
+      agent: AiAgentOptions.fromJson(map['agent']),
     );
   }
 

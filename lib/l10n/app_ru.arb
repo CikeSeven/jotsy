@@ -15892,11 +15892,11 @@
   "@aiModuleRecapSubtitle": {
     "description": "AI module description."
   },
-  "aiModuleChat": "Чат с дневником",
+  "aiModuleChat": "Чат и действия",
   "@aiModuleChat": {
     "description": "AI module name."
   },
-  "aiModuleChatSubtitle": "Задавайте вопросы дневнику — в ответах есть ссылки на использованные записи",
+  "aiModuleChatSubtitle": "Спрашивайте о дневнике или поручите ИИ найти, посчитать и открыть нужные страницы",
   "@aiModuleChatSubtitle": {
     "description": "AI module description."
   },
@@ -16367,6 +16367,249 @@
   "aiModelToolsSubtitle": "Ассистент сможет сам выполнять действия в приложении; если модель это не поддерживает, остаются обычные ответы на вопросы",
   "@aiModelToolsSubtitle": {
     "description": "Explanation of the tool calling toggle."
+  },
+  "aiToolGetAppContext": "Проверка даты и состояния приложения",
+  "@aiToolGetAppContext": {
+    "description": "AI step card: the tool that checks the date and app status."
+  },
+  "aiToolOpenPage": "Открыть: {page}",
+  "@aiToolOpenPage": {
+    "description": "AI step card: offering a button that opens a page.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolPageUnavailable": "Эта страница недоступна (функция выключена или не поддерживается на этом устройстве)",
+  "@aiToolPageUnavailable": {
+    "description": "Shown when a page the AI wants to open isn't available."
+  },
+  "aiToolSearchDiaries": "Поиск записей",
+  "@aiToolSearchDiaries": {
+    "description": "AI step card: searching entries."
+  },
+  "aiToolSearchDiariesFor": "Поиск записей: {query}",
+  "@aiToolSearchDiariesFor": {
+    "description": "AI step card: searching entries for keywords.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFoundEntries": "{count, plural, =0{Ничего не найдено} one{Найдена {count} запись} few{Найдено {count} записи} many{Найдено {count} записей} other{Найдено {count} записи}}",
+  "@aiToolFoundEntries": {
+    "description": "AI step card: how many entries a search found.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadDiaries": "{count, plural, one{Чтение {count} записи} few{Чтение {count} записей} many{Чтение {count} записей} other{Чтение {count} записи}}",
+  "@aiToolReadDiaries": {
+    "description": "AI step card: reading the full text of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReadEntries": "{count, plural, one{Прочитана {count} запись} few{Прочитано {count} записи} many{Прочитано {count} записей} other{Прочитано {count} записи}}",
+  "@aiToolReadEntries": {
+    "description": "AI step card: how many entries were read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDiaryStats": "Статистика записей",
+  "@aiToolDiaryStats": {
+    "description": "AI step card: counting entries."
+  },
+  "aiToolStatsEntries": "{count, plural, one{{count} запись} few{{count} записи} many{{count} записей} other{{count} записи}}",
+  "@aiToolStatsEntries": {
+    "description": "AI step card: how many entries were counted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListTags": "Список тегов",
+  "@aiToolListTags": {
+    "description": "AI step card: listing tags."
+  },
+  "aiToolTagCount": "{count, plural, one{{count} тег} few{{count} тега} many{{count} тегов} other{{count} тега}}",
+  "@aiToolTagCount": {
+    "description": "AI step card: number of tags.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListNotebooks": "Список блокнотов",
+  "@aiToolListNotebooks": {
+    "description": "AI step card: listing notebooks."
+  },
+  "aiToolNotebookCount": "{count, plural, one{{count} блокнот} few{{count} блокнота} many{{count} блокнотов} other{{count} блокнота}}",
+  "@aiToolNotebookCount": {
+    "description": "AI step card: number of notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCalendarDay": "Календарь на сегодня",
+  "@aiToolCalendarDay": {
+    "description": "AI step card: checking today on the calendar."
+  },
+  "aiToolCalendarDayOf": "Календарь на {date}",
+  "@aiToolCalendarDayOf": {
+    "description": "AI step card: checking a day on the calendar (date as YYYY-MM-DD).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolListTodos": "Список задач",
+  "@aiToolListTodos": {
+    "description": "AI step card: listing to-dos."
+  },
+  "aiToolTodoCount": "{count, plural, one{{count} задача} few{{count} задачи} many{{count} задач} other{{count} задачи}}",
+  "@aiToolTodoCount": {
+    "description": "AI step card: number of to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolListAnniversaries": "Список памятных дат",
+  "@aiToolListAnniversaries": {
+    "description": "AI step card: listing anniversaries."
+  },
+  "aiToolAnniversaryCount": "{count, plural, one{{count} памятная дата} few{{count} памятные даты} many{{count} памятных дат} other{{count} памятной даты}}",
+  "@aiToolAnniversaryCount": {
+    "description": "AI step card: number of anniversaries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiDestinationDiary": "Эта запись",
+  "@aiDestinationDiary": {
+    "description": "AI open-page target: an entry."
+  },
+  "aiDestinationSearch": "Поиск записей",
+  "@aiDestinationSearch": {
+    "description": "AI open-page target: the search page."
+  },
+  "aiAgentStepsSummary": "{count, plural, one{Выполнено {count} действие} few{Выполнено {count} действия} many{Выполнено {count} действий} other{Выполнено {count} действия}}",
+  "@aiAgentStepsSummary": {
+    "description": "Title of a collapsed group of AI steps.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentPreparing": "Подготовка действия…",
+  "@aiAgentPreparing": {
+    "description": "The AI is preparing a tool call."
+  },
+  "aiAgentStepFailed": "Не получилось",
+  "@aiAgentStepFailed": {
+    "description": "An AI step failed."
+  },
+  "aiAgentStepCancelled": "Остановлено",
+  "@aiAgentStepCancelled": {
+    "description": "An AI step was stopped."
+  },
+  "aiAgentStepInterrupted": "Прервано",
+  "@aiAgentStepInterrupted": {
+    "description": "An AI step was cut short (for example the app was closed)."
+  },
+  "aiAgentOpenPage": "Открыть: {page}",
+  "@aiAgentOpenPage": {
+    "description": "Button in an AI step that opens a page.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentStepsExhausted": "Лимит действий для этого ответа исчерпан. Напишите «продолжай», чтобы ИИ продолжил.",
+  "@aiAgentStepsExhausted": {
+    "description": "Note under an answer when the AI ran out of steps."
+  },
+  "aiAgentIncomplete": "Ответ оборвался, поэтому действия из него не выполнены.",
+  "@aiAgentIncomplete": {
+    "description": "Note under an answer when the reply was cut off."
+  },
+  "aiConfirmSendAgent": "ИИ будет при необходимости искать и читать записи (кроме приватных), не спрашивая каждый раз",
+  "@aiConfirmSendAgent": {
+    "description": "Send confirmation sheet: the assistant reads entries as needed."
+  },
+  "aiOptionAgent": "Разрешить ИИ использовать инструменты",
+  "@aiOptionAgent": {
+    "description": "AI settings: toggle for tool use in chat."
+  },
+  "aiOptionAgentSubtitle": "Искать и считать записи, смотреть календарь и задачи, открывать страницы; если выключено или не поддерживается — только ответы по найденным записям",
+  "@aiOptionAgentSubtitle": {
+    "description": "Explanation of the tool-use toggle."
+  },
+  "aiOptionAgentSteps": "Максимум шагов на ответ",
+  "@aiOptionAgentSteps": {
+    "description": "AI settings: how many rounds of tool calls one reply may use."
+  },
+  "aiOptionAgentStepsSubtitle": "За шаг можно вызвать несколько инструментов; последний шаг — только ответ",
+  "@aiOptionAgentStepsSubtitle": {
+    "description": "Explanation of the max steps option."
+  },
+  "aiPromptAgentSystem": "Ты можешь вызывать инструменты: искать и считать записи пользователя, смотреть календарь, задачи и памятные даты, открывать страницы приложения. Когда нужны данные пользователя, ищи их инструментами, а не угадывай; независимые запросы можно вызывать вместе. Если используешь запись, указывай её метку в конце предложения, например [D3]. Если пользователь должен сам сделать что-то на странице (резервная копия, восстановление, импорт и экспорт, отправка, блокировка приложения, пароли, настройки AI-сервиса), дай кнопку через open_page и объясни шаги. Если инструмент вернул ошибку, исправь аргументы или попробуй иначе; если это действительно невозможно, так и скажи.",
+  "@aiPromptAgentSystem": {
+    "description": "System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete)."
+  },
+  "aiPromptAgentNow": "Сейчас {time}.",
+  "@aiPromptAgentNow": {
+    "description": "Assistant prompt: the current time.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentScopeDiary": "Этот разговор посвящён следующей записи:",
+  "@aiPromptAgentScopeDiary": {
+    "description": "Assistant prompt: the conversation is pinned to one entry."
+  },
+  "aiPromptAgentScopeRange": "Этот разговор касается только записей с {from} по {to}; используй этот период при поиске, если не сказано иначе.",
+  "@aiPromptAgentScopeRange": {
+    "description": "Assistant prompt: the date range the conversation is limited to.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptAgentActionsDone": "(Действия, выполненные в этом ответе:\n{actions})",
+  "@aiPromptAgentActionsDone": {
+    "description": "Assistant prompt: the actions appended to an earlier answer.",
+    "placeholders": {
+      "actions": {
+        "type": "String"
+      }
+    }
   },
   "aiModelMaxOutput": "Максимум токенов в ответе",
   "@aiModelMaxOutput": {

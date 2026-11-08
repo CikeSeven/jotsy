@@ -12839,11 +12839,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'Сводки за неделю, месяц, год или по блокноту';
 
   @override
-  String get aiModuleChat => 'Чат с дневником';
+  String get aiModuleChat => 'Чат и действия';
 
   @override
   String get aiModuleChatSubtitle =>
-      'Задавайте вопросы дневнику — в ответах есть ссылки на использованные записи';
+      'Спрашивайте о дневнике или поручите ИИ найти, посчитать и открыть нужные страницы';
 
   @override
   String get aiModuleVision => 'Распознавание изображений';
@@ -13238,6 +13238,239 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get aiModelToolsSubtitle =>
       'Ассистент сможет сам выполнять действия в приложении; если модель это не поддерживает, остаются обычные ответы на вопросы';
+
+  @override
+  String get aiToolGetAppContext => 'Проверка даты и состояния приложения';
+
+  @override
+  String aiToolOpenPage(String page) {
+    return 'Открыть: $page';
+  }
+
+  @override
+  String get aiToolPageUnavailable =>
+      'Эта страница недоступна (функция выключена или не поддерживается на этом устройстве)';
+
+  @override
+  String get aiToolSearchDiaries => 'Поиск записей';
+
+  @override
+  String aiToolSearchDiariesFor(String query) {
+    return 'Поиск записей: $query';
+  }
+
+  @override
+  String aiToolFoundEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Найдено $count записи',
+      many: 'Найдено $count записей',
+      few: 'Найдено $count записи',
+      one: 'Найдена $count запись',
+      zero: 'Ничего не найдено',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolReadDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Чтение $count записи',
+      many: 'Чтение $count записей',
+      few: 'Чтение $count записей',
+      one: 'Чтение $count записи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolReadEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Прочитано $count записи',
+      many: 'Прочитано $count записей',
+      few: 'Прочитано $count записи',
+      one: 'Прочитана $count запись',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolDiaryStats => 'Статистика записей';
+
+  @override
+  String aiToolStatsEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count записи',
+      many: '$count записей',
+      few: '$count записи',
+      one: '$count запись',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolListTags => 'Список тегов';
+
+  @override
+  String aiToolTagCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count тега',
+      many: '$count тегов',
+      few: '$count тега',
+      one: '$count тег',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolListNotebooks => 'Список блокнотов';
+
+  @override
+  String aiToolNotebookCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count блокнота',
+      many: '$count блокнотов',
+      few: '$count блокнота',
+      one: '$count блокнот',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolCalendarDay => 'Календарь на сегодня';
+
+  @override
+  String aiToolCalendarDayOf(String date) {
+    return 'Календарь на $date';
+  }
+
+  @override
+  String get aiToolListTodos => 'Список задач';
+
+  @override
+  String aiToolTodoCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count задачи',
+      many: '$count задач',
+      few: '$count задачи',
+      one: '$count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolListAnniversaries => 'Список памятных дат';
+
+  @override
+  String aiToolAnniversaryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count памятной даты',
+      many: '$count памятных дат',
+      few: '$count памятные даты',
+      one: '$count памятная дата',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiDestinationDiary => 'Эта запись';
+
+  @override
+  String get aiDestinationSearch => 'Поиск записей';
+
+  @override
+  String aiAgentStepsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выполнено $count действия',
+      many: 'Выполнено $count действий',
+      few: 'Выполнено $count действия',
+      one: 'Выполнено $count действие',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiAgentPreparing => 'Подготовка действия…';
+
+  @override
+  String get aiAgentStepFailed => 'Не получилось';
+
+  @override
+  String get aiAgentStepCancelled => 'Остановлено';
+
+  @override
+  String get aiAgentStepInterrupted => 'Прервано';
+
+  @override
+  String aiAgentOpenPage(String page) {
+    return 'Открыть: $page';
+  }
+
+  @override
+  String get aiAgentStepsExhausted =>
+      'Лимит действий для этого ответа исчерпан. Напишите «продолжай», чтобы ИИ продолжил.';
+
+  @override
+  String get aiAgentIncomplete =>
+      'Ответ оборвался, поэтому действия из него не выполнены.';
+
+  @override
+  String get aiConfirmSendAgent =>
+      'ИИ будет при необходимости искать и читать записи (кроме приватных), не спрашивая каждый раз';
+
+  @override
+  String get aiOptionAgent => 'Разрешить ИИ использовать инструменты';
+
+  @override
+  String get aiOptionAgentSubtitle =>
+      'Искать и считать записи, смотреть календарь и задачи, открывать страницы; если выключено или не поддерживается — только ответы по найденным записям';
+
+  @override
+  String get aiOptionAgentSteps => 'Максимум шагов на ответ';
+
+  @override
+  String get aiOptionAgentStepsSubtitle =>
+      'За шаг можно вызвать несколько инструментов; последний шаг — только ответ';
+
+  @override
+  String get aiPromptAgentSystem =>
+      'Ты можешь вызывать инструменты: искать и считать записи пользователя, смотреть календарь, задачи и памятные даты, открывать страницы приложения. Когда нужны данные пользователя, ищи их инструментами, а не угадывай; независимые запросы можно вызывать вместе. Если используешь запись, указывай её метку в конце предложения, например [D3]. Если пользователь должен сам сделать что-то на странице (резервная копия, восстановление, импорт и экспорт, отправка, блокировка приложения, пароли, настройки AI-сервиса), дай кнопку через open_page и объясни шаги. Если инструмент вернул ошибку, исправь аргументы или попробуй иначе; если это действительно невозможно, так и скажи.';
+
+  @override
+  String aiPromptAgentNow(String time) {
+    return 'Сейчас $time.';
+  }
+
+  @override
+  String get aiPromptAgentScopeDiary =>
+      'Этот разговор посвящён следующей записи:';
+
+  @override
+  String aiPromptAgentScopeRange(String from, String to) {
+    return 'Этот разговор касается только записей с $from по $to; используй этот период при поиске, если не сказано иначе.';
+  }
+
+  @override
+  String aiPromptAgentActionsDone(String actions) {
+    return '(Действия, выполненные в этом ответе:\n$actions)';
+  }
 
   @override
   String get aiModelMaxOutput => 'Максимум токенов в ответе';

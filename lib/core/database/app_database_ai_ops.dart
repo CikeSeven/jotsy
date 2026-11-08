@@ -165,6 +165,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
     String citationsJson = '[]',
     String metaJson = '{}',
     String status = AiMessageStatus.done,
+    String stepsJson = '[]',
     DateTime? now,
   }) {
     final id = _newBusinessUuid();
@@ -180,6 +181,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
           citations: Value(citationsJson),
           meta: Value(metaJson),
           status: Value(status),
+          steps: Value(stepsJson),
           createdAt: time,
         ),
       );
@@ -198,6 +200,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
     String? citationsJson,
     String? metaJson,
     String? status,
+    String? stepsJson,
   }) {
     return (update(
       aiMessages,
@@ -210,6 +213,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
             : Value(citationsJson),
         meta: metaJson == null ? const Value.absent() : Value(metaJson),
         status: status == null ? const Value.absent() : Value(status),
+        steps: stepsJson == null ? const Value.absent() : Value(stepsJson),
       ),
     );
   }

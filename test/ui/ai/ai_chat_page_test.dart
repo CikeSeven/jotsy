@@ -39,7 +39,10 @@ void main() {
     addTearDown(store.dispose);
     requests = <AiRequest>[];
     await h.settings.setAppFeaturesRaw('{"ai":true}');
-    await h.settings.setAiPrefsRaw('{"privacy":{"confirm":"firstTime"}}');
+    // 这里验证检索问答：关掉工具（智能体见 ai_agent_chat_test.dart）。
+    await h.settings.setAiPrefsRaw(
+      '{"privacy":{"confirm":"firstTime"},"agent":{"enabled":false}}',
+    );
     await tester.runAsync(() async {
       await seedFakeAiProvider(store);
       await store.acknowledgeHost(fakeAiProvider.host);

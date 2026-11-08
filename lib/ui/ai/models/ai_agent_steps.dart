@@ -156,17 +156,22 @@ class AiAgentStepRecord {
   const AiAgentStepRecord({
     this.text = '',
     this.reasoning = '',
+    this.thinkingMs = 0,
     this.calls = const <AiAgentCallRecord>[],
   });
 
   /// 模型在调用工具之前说的话。
   final String text;
   final String reasoning;
+
+  /// 这一步的思考时长（毫秒，`AiThinkingClock`；没有思考或旧记录为 0）。
+  final int thinkingMs;
   final List<AiAgentCallRecord> calls;
 
   AiAgentStepRecord withCall(AiAgentCallRecord call) => AiAgentStepRecord(
     text: text,
     reasoning: reasoning,
+    thinkingMs: thinkingMs,
     calls: [
       for (final existing in calls)
         if (existing.id == call.id) call else existing,
@@ -176,6 +181,7 @@ class AiAgentStepRecord {
   Map<String, Object?> toJson() => <String, Object?>{
     if (text.isNotEmpty) 'text': text,
     if (reasoning.isNotEmpty) 'reasoning': reasoning,
+    if (thinkingMs > 0) 'thinkingMs': thinkingMs,
     'calls': [for (final call in calls) call.toJson()],
   };
 
@@ -183,10 +189,12 @@ class AiAgentStepRecord {
     if (raw is! Map) return null;
     final text = raw['text'];
     final reasoning = raw['reasoning'];
+    final thinkingMs = raw['thinkingMs'];
     final calls = raw['calls'];
     return AiAgentStepRecord(
       text: text is String ? text : '',
       reasoning: reasoning is String ? reasoning : '',
+      thinkingMs: thinkingMs is int && thinkingMs > 0 ? thinkingMs : 0,
       calls: [
         if (calls is List)
           for (final item in calls)

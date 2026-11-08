@@ -106,6 +106,7 @@ extension _AiChatAgent on AiChatController {
       database: database,
       conversationId: id,
       model: model,
+      thinkingLevel: options.thinking,
       tools: <String, AiTool>{for (final tool in tools) tool.name: tool},
       toolContext: AiToolContext(
         container: container,
@@ -138,7 +139,7 @@ extension _AiChatAgent on AiChatController {
       scopeLine: scopeLine,
       fixedDiary: fixedDiary,
       guideIndex: guide.index,
-    );
+    ).withThinking(options.thinking);
     var answered = true;
     try {
       final result = await AiAgentLoop(
@@ -148,7 +149,7 @@ extension _AiChatAgent on AiChatController {
         maxSteps: prefs.agent.maxSteps,
       ).run(request, token);
       await turn.complete(result);
-      _autoOpen = turn.autoOpen;
+      if (current()) _autoOpen = turn.autoOpen;
     } on AiException catch (error) {
       if (error.kind == AiFailureKind.cancelled || token.isCancelled) {
         await turn.stop();

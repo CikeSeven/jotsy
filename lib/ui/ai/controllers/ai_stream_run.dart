@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/services/ai/ai_failure.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/http_cancel_token.dart';
+import 'ai_thinking_clock.dart';
 
 /// 一次流式生成的状态。
 enum AiRunStatus {
@@ -47,6 +48,9 @@ class AiStreamRun extends ChangeNotifier {
   int _generation = 0;
   bool _disposed = false;
 
+  /// 这次生成的思考计时（对话页的“正在思考 · N 秒 / 思考了 N 秒”）。
+  final AiThinkingClock thinking = AiThinkingClock();
+
   AiRunStatus get status => _status;
   String get text => _textValue ??= _text.toString();
   String get reasoning => _reasoningValue ??= _reasoning.toString();
@@ -80,6 +84,7 @@ class AiStreamRun extends ChangeNotifier {
     _usage = null;
     _finish = null;
     _error = null;
+    thinking.reset();
     _notify();
     bool current() => !_disposed && generation == _generation;
     try {
@@ -87,6 +92,10 @@ class AiStreamRun extends ChangeNotifier {
         if (!current()) return;
         _text.write(chunk.text);
         _reasoning.write(chunk.reasoning);
+        thinking.onDelta(
+          reasoning: chunk.reasoning.isNotEmpty,
+          output: chunk.text.isNotEmpty || chunk.toolCallStarted != null,
+        );
         if (chunk.text.isNotEmpty) _textValue = null;
         if (chunk.reasoning.isNotEmpty) _reasoningValue = null;
         if (chunk.usage case final usage?) {
@@ -115,6 +124,7 @@ class AiStreamRun extends ChangeNotifier {
       _error = error;
       _status = AiRunStatus.failed;
     } finally {
+      thinking.stop();
       if (current()) {
         _token = null;
         _notify();
@@ -138,6 +148,7 @@ class AiStreamRun extends ChangeNotifier {
     _usage = null;
     _finish = null;
     _error = null;
+    thinking.reset();
     _notify();
   }
 

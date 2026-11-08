@@ -24,8 +24,12 @@
 //
 // 状态边界：[phase] idle → planning（只在智能检索）→ searching → answering
 // → idle，智能体为 idle → working → idle；[stop] 取消检索计划、回答或智能体
-// 的这一轮；页面离开（[dispose]）时正在生成的回答按“已停止”保存已经收到的
-// 部分（智能体的步骤本来就边做边落库）。世代号防止旧的异步回调改写新状态。
+// 的这一轮；页面离开（[dispose]）或在抽屉里换到别的对话（[openConversation]
+// / [startNew]）时，正在生成的回答按“已停止”保存已经收到的部分（智能体的
+// 步骤本来就边做边落库）。世代号防止旧的异步回调改写新状态。
+//
+// 回答选项（模型、思考强度，[options]）每段对话各自记住：已有对话时随改
+// 随存进 `ai_conversations.options`，新对话第一次发送时一并写入。
 
 import 'dart:async';
 import 'dart:convert';
@@ -46,6 +50,7 @@ import '../../settings/providers/app_features_provider.dart';
 import '../../todos/controllers/todo_reminder_permission.dart';
 import '../models/ai_built_ins.dart';
 import '../models/ai_chat_scope.dart';
+import '../models/ai_conversation_options.dart';
 import '../models/ai_guide.dart';
 import '../models/ai_preference_parts.dart';
 import '../models/ai_preferences.dart';
@@ -83,6 +88,7 @@ class AiChatController extends ChangeNotifier {
     this.conversationId,
     this.scope = const AiChatScope.auto(),
     this.personaId,
+    this.options = AiConversationOptions.defaults,
   });
 
   final AppDatabase database;
@@ -92,8 +98,8 @@ class AiChatController extends ChangeNotifier {
   AiChatScope scope;
   String? personaId;
 
-  /// 这次打开页面时临时换用的模型（不保存）；null 用“对话”任务的模型。
-  AiModelRef? modelRef;
+  /// 这段对话的模型与思考强度。
+  AiConversationOptions options;
 
   final AiStreamRun run = AiStreamRun();
 
@@ -142,13 +148,17 @@ class AiChatController extends ChangeNotifier {
     final service = await ref.read(aiServiceProvider.future);
     if (!current()) return;
     final prefs = ref.read(aiPreferencesProvider);
-    final model = _model = service.resolve(AiTaskKind.chat, override: modelRef);
+    final model = _model = service.resolve(
+      AiTaskKind.chat,
+      override: options.model,
+    );
 
     var id = conversationId;
     if (id == null) {
       id = conversationId = await database.createAiConversation(
         personaId: personaId,
         scopeJson: scope.encode(),
+        optionsJson: options.encode(),
       );
       _notify();
     }
@@ -288,7 +298,7 @@ class AiChatController extends ChangeNotifier {
       diaries: diaries,
       today: DateTime.now(),
       persona: persona,
-    );
+    ).withThinking(options.thinking);
     await run.start(
       (token) => service.stream(model, request, cancelToken: token),
     );
@@ -369,9 +379,81 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
-  void updateModel(AiModelRef? value) {
-    modelRef = value;
+  /// 换模型 / 思考强度：对话已存在时一并保存（新对话在第一次发送时写入）。
+  Future<void> updateOptions(AiConversationOptions value) async {
+    if (value == options) return;
+    options = value;
     _notify();
+    final id = conversationId;
+    if (id != null) {
+      await database.updateAiConversation(id, optionsJson: value.encode());
+    }
+  }
+
+  /// 在本页换到另一段已有的对话（历史抽屉）：先放下正在进行的这一轮。
+  Future<void> openConversation(String id) async {
+    if (id == conversationId && !busy) return;
+    _abandonTurn();
+    final row = await database.getAiConversation(id);
+    if (_disposed) return;
+    conversationId = id;
+    if (row != null) {
+      scope = AiChatScope.decode(row.scope);
+      personaId = row.personaId;
+      options = AiConversationOptions.decode(row.options);
+    }
+    _set(AiChatPhase.idle);
+  }
+
+  /// 开始一段新对话（顶栏“新对话”）：范围回到自动，人设回到对话的默认，
+  /// 模型与思考强度沿用 [lastOptions]（最近那段对话的选择）。
+  void startNew({
+    required String? defaultPersonaId,
+    required AiConversationOptions lastOptions,
+  }) {
+    _abandonTurn();
+    conversationId = null;
+    scope = const AiChatScope.auto();
+    personaId = defaultPersonaId;
+    options = lastOptions;
+    _set(AiChatPhase.idle);
+  }
+
+  /// 放下正在进行的这一轮（换对话时）：与离开页面同一口径保存已有的部分，
+  /// 旧的异步回调经世代号作废。
+  void _abandonTurn() {
+    _savePartialAsStopped();
+    _generation++;
+    _planToken?.cancel();
+    _planToken = null;
+    _titleToken?.cancel();
+    _autoOpen = null;
+    run.reset();
+  }
+
+  /// 正在生成的检索回答按“已停止”保存；智能体的这一轮停掉并写完。
+  void _savePartialAsStopped() {
+    final id = conversationId;
+    if (_phase == AiChatPhase.answering && run.hasText && id != null) {
+      unawaited(
+        database.addAiMessage(
+          conversationId: id,
+          role: AiMessageRole.assistant,
+          content: aiCleanOutput(run.text),
+          reasoning: run.reasoning,
+          citationsJson: AiCitation.encodeList(_cited(run.text)),
+          metaJson: _meta(),
+          status: AiMessageStatus.stopped,
+        ),
+      );
+    }
+    final turn = _agentTurn;
+    if (turn != null) {
+      _agentToken?.cancel();
+      _agentToken = null;
+      _agentTurn = null;
+      unawaited(turn.stop().whenComplete(turn.dispose));
+    }
   }
 
   /// 停止检索计划或回答（回答已收到的部分会保存）。
@@ -455,6 +537,8 @@ class AiChatController extends ChangeNotifier {
       },
       // 这一轮放进上下文的篇数（“参考了 N 篇”里没被引用的也算）。
       'contextEntries': _citations.length,
+      if (options.thinking case final level?) 'thinking': level.name,
+      if (run.thinking.elapsedMs > 0) 'thinkingMs': run.thinking.elapsedMs,
       if (usage != null) ...<String, Object?>{
         'inputTokens': usage.inputTokens,
         'outputTokens': usage.outputTokens,
@@ -539,27 +623,9 @@ class AiChatController extends ChangeNotifier {
   @override
   void dispose() {
     // 页面离开：正在生成的回答按“已停止”保存已收到的部分（库在应用级，
-    // 页面没了照样能写）。
-    final id = conversationId;
-    if (_phase == AiChatPhase.answering && run.hasText && id != null) {
-      unawaited(
-        database.addAiMessage(
-          conversationId: id,
-          role: AiMessageRole.assistant,
-          content: aiCleanOutput(run.text),
-          reasoning: run.reasoning,
-          citationsJson: AiCitation.encodeList(_cited(run.text)),
-          metaJson: _meta(),
-          status: AiMessageStatus.stopped,
-        ),
-      );
-    }
-    // 智能体的步骤边做边落库：停掉这一轮，把已有的文字按“已停止”写完。
-    final turn = _agentTurn;
-    if (turn != null) {
-      _agentToken?.cancel();
-      unawaited(turn.stop().whenComplete(turn.dispose));
-    }
+    // 页面没了照样能写）；智能体的步骤边做边落库，停掉这一轮把已有的文字
+    // 按“已停止”写完。
+    _savePartialAsStopped();
     _disposed = true;
     _generation++;
     _planToken?.cancel();

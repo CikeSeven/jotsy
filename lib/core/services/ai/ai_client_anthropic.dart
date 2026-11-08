@@ -45,11 +45,17 @@ class AnthropicChatClient extends AiChatClient {
           request.temperature != null &&
           !request.reasoning)
         'temperature': request.temperature,
-      if (request.reasoning)
+      // 关掉思考要显式写 disabled：新模型不写时默认就是 adaptive。
+      if (request.thinking == AiThinkingLevel.off)
+        'thinking': <String, Object?>{'type': 'disabled'}
+      else if (request.reasoning)
         'thinking': <String, Object?>{
           'type': 'adaptive',
           'display': 'summarized',
         },
+      // 强度在 output_config 里（写进 thinking 会被拒）。
+      if (request.thinking case final level? when level != AiThinkingLevel.off)
+        'output_config': <String, Object?>{'effort': level.name},
       if (request.hasTools)
         'tools': [
           for (final tool in request.tools)

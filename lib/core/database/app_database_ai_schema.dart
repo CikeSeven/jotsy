@@ -27,8 +27,12 @@ class AiConversations extends Table {
   /// 对话使用的人设 id；null 为对话的默认人设。
   TextColumn get personaId => text().named('persona_id').nullable()();
 
-  /// 检索范围 JSON（时间、日记本、标签、固定的日记、检索方式、模型）。
+  /// 检索范围 JSON（时间、日记本、标签、固定的日记、检索方式）。
   TextColumn get scope => text().withDefault(const Constant('{}'))();
+
+  /// 这段对话的回答选项 JSON（模型、思考强度；v21）。`{}` 为全部跟随
+  /// 默认。编解码见 `AiConversationOptions`。
+  TextColumn get options => text().withDefault(const Constant('{}'))();
 
   BoolColumn get pinned => boolean().withDefault(const Constant(false))();
 

@@ -49,6 +49,7 @@ import '../controllers/ai_save_as_diary_flow.dart';
 import '../controllers/ai_stream_run.dart';
 import '../models/ai_built_ins.dart';
 import '../models/ai_chat_scope.dart';
+import '../models/ai_conversation_options.dart';
 import '../models/ai_preference_parts.dart';
 import '../providers/ai_providers.dart';
 import '../providers/ai_records_providers.dart';
@@ -126,7 +127,8 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     if (row != null) {
       _controller
         ..scope = AiChatScope.decode(row.scope)
-        ..personaId = row.personaId;
+        ..personaId = row.personaId
+        ..options = AiConversationOptions.decode(row.options);
     }
     setState(() => _ready = true);
     _scroll.jumpToBottom();
@@ -267,13 +269,13 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       context,
       title: l10n.aiChatModel,
       models: config.usableModels,
-      current: config.resolveRef(_controller.modelRef)?.ref,
+      current: config.resolveRef(_controller.options.model)?.ref,
       followLabel: l10n.aiChatModelDefault(
         fallback == null ? '—' : aiModelDisplay(fallback),
       ),
     );
     if (!mounted || picked == null) return;
-    _controller.updateModel(picked.ref);
+    await _controller.updateOptions(_controller.options.withModel(picked.ref));
   }
 
   Future<void> _editLast(String question) async {
@@ -312,7 +314,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       use: AiPersonaUse.chat,
     );
     final model =
-        config.resolveRef(_controller.modelRef) ??
+        config.resolveRef(_controller.options.model) ??
         config.resolveTask(AiTaskKind.chat);
     final title = conversation?.title.trim().isNotEmpty ?? false
         ? conversation!.title

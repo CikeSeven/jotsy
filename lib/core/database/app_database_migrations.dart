@@ -267,6 +267,21 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     }
   }
 
+  /// v21 AI 对话加 `options`（模型与思考强度 JSON，默认 `{}`）。
+  ///
+  /// 与 [_migrateAiMessagesAddSteps] 同理：列已存在时跳过（从 v17 之前升级
+  /// 时按最新定义建表已带上它，降级后再升级时旧构建不会删列）；默认 `{}`
+  /// 让旧行读成“全部跟随默认”。
+  Future<void> _migrateAiConversationsAddOptions(Migrator migrator) async {
+    final columns = await customSelect(
+      'PRAGMA table_info(ai_conversations)',
+    ).get();
+    final present = columns.any((row) => row.read<String>('name') == 'options');
+    if (!present) {
+      await migrator.addColumn(aiConversations, aiConversations.options);
+    }
+  }
+
   Future<void> _createTableIfMissing(
     Migrator migrator,
     TableInfo<Table, Object?> table,

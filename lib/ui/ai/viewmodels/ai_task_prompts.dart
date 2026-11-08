@@ -185,6 +185,8 @@ AiRequest aiRetrievalPlanRequest(
     system: kit.system(),
     temperature: kit.temperature(AiTaskKind.utility),
     maxOutputTokens: 300,
+    // 短小的辅助请求：思考只会吃掉本就很少的输出上限。
+    thinking: AiThinkingLevel.off,
     messages: [
       AiMessage.text(
         AiRole.user,
@@ -206,6 +208,8 @@ AiRequest aiConversationTitleRequest(
     system: kit.system(),
     temperature: kit.temperature(AiTaskKind.utility),
     maxOutputTokens: 60,
+    // 短小的辅助请求：思考只会吃掉本就很少的输出上限。
+    thinking: AiThinkingLevel.off,
     messages: [
       AiMessage.text(
         AiRole.user,

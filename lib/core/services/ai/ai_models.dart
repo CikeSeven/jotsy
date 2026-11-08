@@ -80,6 +80,29 @@ class AiMessage {
       .where((part) => part.protocol == protocol);
 }
 
+/// 思考强度（对话页“模型与思考”面板）。null 表示“自动”：不发任何强度
+/// 参数，由模型自己决定（与加入强度之前的请求完全一样）。
+///
+/// 各协议的写法见各客户端的 `buildBody`：OpenAI Chat 为 `reasoning_effort`，
+/// Responses 为 `reasoning.effort`，Anthropic 为 `output_config.effort`（关为
+/// `thinking.type: disabled`），Gemini 为 `thinkingLevel`（关为
+/// `thinkingBudget: 0`）。服务端不认强度参数（400）时 `AiService` 去掉强度
+/// 重试一次并在本次运行内记住，见 `AiService.stream`。
+enum AiThinkingLevel {
+  /// 明确关掉思考：直接回答，最快。
+  off,
+  low,
+  medium,
+  high;
+
+  static AiThinkingLevel? parse(Object? raw) {
+    for (final value in values) {
+      if (value.name == raw) return value;
+    }
+    return null;
+  }
+}
+
 /// 一次生成请求。协议差异（必填的 `max_tokens`、采样参数是否发送、思考
 /// 开关的写法）由各客户端按服务商配置处理，这里只描述意图。
 @immutable
@@ -91,6 +114,7 @@ class AiRequest {
     this.temperature,
     this.maxOutputTokens,
     this.reasoning = false,
+    this.thinking,
     this.tools = const <AiToolSpec>[],
     this.toolChoice = AiToolChoice.auto,
   });
@@ -107,6 +131,10 @@ class AiRequest {
 
   /// 请服务端返回思考过程（支持的模型才生效）。
   final bool reasoning;
+
+  /// 思考强度；null 为自动（不发强度参数）。为 [AiThinkingLevel.off] 时
+  /// [reasoning] 一定为 false（`AiService.prepareRequest` 保证）。
+  final AiThinkingLevel? thinking;
 
   /// 模型可以调用的工具；为空时请求里不带任何工具字段。
   final List<AiToolSpec> tools;
@@ -131,10 +159,24 @@ class AiRequest {
       temperature: temperature ?? this.temperature,
       maxOutputTokens: maxOutputTokens ?? this.maxOutputTokens,
       reasoning: reasoning ?? this.reasoning,
+      thinking: thinking,
       tools: tools ?? this.tools,
       toolChoice: toolChoice ?? this.toolChoice,
     );
   }
+
+  /// 换一个思考强度（可以换成 null，即“自动”）。
+  AiRequest withThinking(AiThinkingLevel? level) => AiRequest(
+    model: model,
+    system: system,
+    messages: messages,
+    temperature: temperature,
+    maxOutputTokens: maxOutputTokens,
+    reasoning: level == AiThinkingLevel.off ? false : reasoning,
+    thinking: level,
+    tools: tools,
+    toolChoice: toolChoice,
+  );
 
   bool get hasImages => messages.any((message) => message.hasImages);
 

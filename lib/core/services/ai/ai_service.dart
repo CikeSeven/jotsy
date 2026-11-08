@@ -46,8 +46,9 @@ class AiService {
   final AiClientFactory _clientFactory;
   final Duration Function(int attempt, AiFailureKind kind) _backoff;
 
-  /// 拒收过图片 / 思考参数的模型（`服务商 id + 模型 id`）。
+  /// 拒收过图片 / 思考强度 / 思考参数的模型（`服务商 id + 模型 id`）。
   final Set<String> _rejectsImages = <String>{};
+  final Set<String> _rejectsEffort = <String>{};
   final Set<String> _rejectsReasoning = <String>{};
   final Set<String> _rejectsTools = <String>{};
 
@@ -106,6 +107,7 @@ class AiService {
     final key = _modelKey(target);
     var effective = prepareRequest(target, request);
     if (_rejectsImages.contains(key)) effective = _withoutImages(effective);
+    if (_rejectsEffort.contains(key)) effective = effective.withThinking(null);
     if (_rejectsReasoning.contains(key)) {
       effective = effective.copyWith(reasoning: false);
     }
@@ -138,6 +140,13 @@ class AiService {
             if (effective.hasImages) {
               _rejectsImages.add(key);
               effective = _withoutImages(effective);
+              continue;
+            }
+            // 四种协议都会为强度多带参数（关掉思考也是显式参数）：先只去掉
+            // 强度、保留思考本身（模型照常按自己的默认思考）。
+            if (effective.thinking != null) {
+              _rejectsEffort.add(key);
+              effective = effective.withThinking(null);
               continue;
             }
             if (effective.reasoning &&
@@ -250,15 +259,23 @@ class AiService {
   }
 
   /// 补上模型级设置；模型标明不支持图片时把图片去掉（只留文字，避免 400）。
+  ///
+  /// 思考：模型设置里关了“请求思考”时不发任何思考参数（强度也不发）；
+  /// 请求要求关掉思考（[AiThinkingLevel.off]）时不请求思考过程，由客户端
+  /// 显式关闭；其余按“请求或模型任一要求就请求思考过程”。
   static AiRequest prepareRequest(AiResolvedModel target, AiRequest request) {
     final model = target.model;
+    final thinking = model.reasoning ? request.thinking : null;
     final prepared = AiRequest(
       model: model.id,
       system: request.system,
       messages: request.messages,
       temperature: request.temperature,
       maxOutputTokens: request.maxOutputTokens ?? model.maxOutputTokens,
-      reasoning: request.reasoning || model.reasoning,
+      reasoning: thinking == AiThinkingLevel.off
+          ? false
+          : request.reasoning || model.reasoning,
+      thinking: thinking,
       tools: request.tools,
       toolChoice: request.toolChoice,
     );

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,6 +10,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
+import '../controllers/todo_reminder_permission.dart';
 import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import 'todo_due_sheet.dart';
@@ -156,7 +159,12 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
       dueDate: due,
       dueMinute: _dueMinute,
       allDayMinute: settings.allDayReminderMinute,
-      onChanged: (List<TodoReminder> next) => setState(() => _reminders = next),
+      onChanged: (List<TodoReminder> next) {
+        setState(() => _reminders = next);
+        if (next.isNotEmpty) {
+          unawaited(ensureTodoReminderPermission(context, ref));
+        }
+      },
     );
   }
 

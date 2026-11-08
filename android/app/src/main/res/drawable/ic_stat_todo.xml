@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  待办提醒通知的状态栏小图标：品牌图形（带装订环的笔记本）的单色版本。
+
+  状态栏图标只取 alpha 通道（系统着色），所以一律填白色。路径与
+  launch_brand_mark.xml 相同（图形在 288dp 画布里占 110..178 × 104..184），
+  这里按 0.25 缩放、平移 −24 放进 24dp 画布正中（17 × 20dp）。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group
+        android:scaleX="0.25"
+        android:scaleY="0.25"
+        android:translateX="-24"
+        android:translateY="-24">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M122,104 H170 A8,8 0 0 1 178,112 V176 A8,8 0 0 1 170,184 H122 A8,8 0 0 1 114,176 V112 A8,8 0 0 1 122,104 Z M132.4,120 H159.6 A6.4,6.4 0 0 1 166,126.4 V129.6 A6.4,6.4 0 0 1 159.6,136 H132.4 A6.4,6.4 0 0 1 126,129.6 V126.4 A6.4,6.4 0 0 1 132.4,120 Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M110,120 A4,4 0 1 0 118,120 A4,4 0 1 0 110,120 Z M110,136 A4,4 0 1 0 118,136 A4,4 0 1 0 110,136 Z M110,152 A4,4 0 1 0 118,152 A4,4 0 1 0 110,152 Z M110,168 A4,4 0 1 0 118,168 A4,4 0 1 0 110,168 Z" />
+    </group>
+</vector>

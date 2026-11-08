@@ -45,6 +45,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // flutter_local_notifications 的定时通知用到 java.time，旧系统要靠
+        // 脱糖库补上。
+        isCoreLibraryDesugaringEnabled = true
     }
 
     buildFeatures {
@@ -95,6 +98,7 @@ flutter {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.16.1")
 }

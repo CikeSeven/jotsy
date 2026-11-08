@@ -88,6 +88,11 @@ dependencies:
   # 局域网同步：手机扫码配对。Android 用内置的 ML Kit 模型（默认），不开启
   # unbundled 模式：多数国内手机没有 Google Play 服务。
   mobile_scanner: ^7.4.2
+  # 待办提醒：系统通知。手机用系统闹钟定时（应用没在运行也会响），桌面在
+  # 应用运行期间按时弹出（Linux 的插件不支持定时）。
+  flutter_local_notifications: ^22.2.0
+  # 定时通知需要带时区的时刻；本机时区名经原生通道读取，不另加插件。
+  timezone: ^0.11.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

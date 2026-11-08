@@ -13870,4 +13870,73 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get todoSettingsDefaultView => '起動時の表示';
+
+  @override
+  String get todoNotificationChannel => 'ToDoのリマインダー';
+
+  @override
+  String get todoNotificationChannelDescription => 'ToDoに設定したリマインダーの時刻にお知らせします';
+
+  @override
+  String get todoNotificationComplete => '完了';
+
+  @override
+  String get todoNotificationSnooze => 'スヌーズ';
+
+  @override
+  String get todoNotificationOpen => '開く';
+
+  @override
+  String get todoNotificationSnoozedBody => 'スヌーズしたリマインダー';
+
+  @override
+  String get todoSettingsRemindersGroup => 'リマインダー';
+
+  @override
+  String get todoSettingsPermission => '通知の許可';
+
+  @override
+  String get todoSettingsPermissionOn => '許可済み';
+
+  @override
+  String get todoSettingsPermissionOff => '未許可。タップしてオンに';
+
+  @override
+  String get todoSettingsExactOff =>
+      'システムが正確なアラームを制限しているため、リマインダーが数分遅れることがあります';
+
+  @override
+  String get todoSettingsAllDayTime => '終日ToDoの通知時刻';
+
+  @override
+  String get todoSettingsSnooze => 'スヌーズの時間';
+
+  @override
+  String todoSettingsSnoozeMinutes(int count) {
+    return '$count分';
+  }
+
+  @override
+  String get todoSettingsHideContent => 'ロック画面で内容を隠す';
+
+  @override
+  String get todoSettingsHideContentSubtitle =>
+      'ロック画面にはリマインダーがあることだけを表示し、内容はロック解除後に表示します';
+
+  @override
+  String get todoSettingsDesktopNote =>
+      'パソコンではJotsyを開いている間だけ通知します。閉じている間に来たリマインダーは表示されません。';
+
+  @override
+  String get todoSettingsReliability => 'リマインダーが遅れる・届かない？';
+
+  @override
+  String get todoSettingsReliabilityBody =>
+      '一部のスマートフォンはバックグラウンドのアプリを制限します。リマインダーが鳴らない・遅れる場合は、システム設定でJotsyの自動起動を許可し、Jotsyの電池最適化をオフにして、「通知」と「アラームとリマインダー」の許可がオンになっているか確認してください。';
+
+  @override
+  String get todoReminderPermissionDenied => '通知がオフのため、リマインダーは表示されません';
+
+  @override
+  String get todoReminderPermissionAction => 'オンにする';
 }

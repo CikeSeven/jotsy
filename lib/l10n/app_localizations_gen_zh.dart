@@ -13623,4 +13623,70 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoSettingsDefaultView => '打开时显示';
+
+  @override
+  String get todoNotificationChannel => '待办提醒';
+
+  @override
+  String get todoNotificationChannelDescription => '待办到了设定的提醒时间时通知你';
+
+  @override
+  String get todoNotificationComplete => '完成';
+
+  @override
+  String get todoNotificationSnooze => '稍后提醒';
+
+  @override
+  String get todoNotificationOpen => '打开';
+
+  @override
+  String get todoNotificationSnoozedBody => '稍后提醒';
+
+  @override
+  String get todoSettingsRemindersGroup => '提醒';
+
+  @override
+  String get todoSettingsPermission => '通知权限';
+
+  @override
+  String get todoSettingsPermissionOn => '已允许';
+
+  @override
+  String get todoSettingsPermissionOff => '未允许，点按开启';
+
+  @override
+  String get todoSettingsExactOff => '系统限制了准时闹钟，提醒可能晚几分钟';
+
+  @override
+  String get todoSettingsAllDayTime => '全天待办的提醒时刻';
+
+  @override
+  String get todoSettingsSnooze => '稍后提醒';
+
+  @override
+  String todoSettingsSnoozeMinutes(int count) {
+    return '$count 分钟';
+  }
+
+  @override
+  String get todoSettingsHideContent => '锁屏时隐藏内容';
+
+  @override
+  String get todoSettingsHideContentSubtitle => '锁屏上只显示有一条提醒，解锁后才看得到内容';
+
+  @override
+  String get todoSettingsDesktopNote => '电脑上只在 Jotsy 打开时提醒，关掉应用后到点的提醒不会弹出。';
+
+  @override
+  String get todoSettingsReliability => '提醒不准时？';
+
+  @override
+  String get todoSettingsReliabilityBody =>
+      '部分手机系统会限制后台应用。如果提醒经常不响或延迟，请在系统设置里允许 Jotsy 自启动、关闭对 Jotsy 的电池优化，并确认“通知”和“闹钟和提醒”权限已开启。';
+
+  @override
+  String get todoReminderPermissionDenied => '通知权限未开启，提醒不会弹出';
+
+  @override
+  String get todoReminderPermissionAction => '去开启';
 }

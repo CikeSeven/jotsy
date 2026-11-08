@@ -18,7 +18,8 @@
 │  │  └─ services/  # 跨模块服务（平台能力 AppPlatform、数据根目录、设置、备份与网盘、导入、媒体、更新等）
 │  │     ├─ ai/  # AI 助手引擎（纯 Dart，docs/ai_assistant.md）
 │  │     ├─ app_passcode/  # 应用密码（数字 / 图案）的本机存储、摘要与限流
-│  │     └─ lan_sync/  # 局域网同步引擎（docs/lan_sync.md）；sync/：同步数据层与纯函数规划器
+│  │     ├─ lan_sync/  # 局域网同步引擎（docs/lan_sync.md）；sync/：同步数据层与纯函数规划器
+│  │     └─ todo_reminders/  # 待办提醒：规划器、系统通知网关与通知按钮
 │  ├─ ui/
 │  │  ├─ diaries/  # 日记主业务模块：pages / controllers / providers / models|viewmodels / export / sections|widgets（widgets/diary_editor/ 为共用编辑器）
 │  │  ├─ app_surface/  # 背景与材质（玻璃）

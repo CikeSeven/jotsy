@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  release 构建会裁掉代码里没有引用的资源；通知的状态栏图标只在 Dart 里按名字
+  引用（AndroidInitializationSettings('ic_stat_todo')），要显式保留。
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_todo" />

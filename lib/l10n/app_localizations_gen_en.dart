@@ -15399,4 +15399,81 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todoSettingsDefaultView => 'Open to';
+
+  @override
+  String get todoNotificationChannel => 'To-do reminders';
+
+  @override
+  String get todoNotificationChannelDescription =>
+      'Notifies you at the reminder times you set on to-dos';
+
+  @override
+  String get todoNotificationComplete => 'Done';
+
+  @override
+  String get todoNotificationSnooze => 'Snooze';
+
+  @override
+  String get todoNotificationOpen => 'Open';
+
+  @override
+  String get todoNotificationSnoozedBody => 'Snoozed reminder';
+
+  @override
+  String get todoSettingsRemindersGroup => 'Reminders';
+
+  @override
+  String get todoSettingsPermission => 'Notification permission';
+
+  @override
+  String get todoSettingsPermissionOn => 'Allowed';
+
+  @override
+  String get todoSettingsPermissionOff => 'Not allowed. Tap to turn on';
+
+  @override
+  String get todoSettingsExactOff =>
+      'Exact alarms are restricted by the system, so reminders may be a few minutes late';
+
+  @override
+  String get todoSettingsAllDayTime => 'All-day reminder time';
+
+  @override
+  String get todoSettingsSnooze => 'Snooze for';
+
+  @override
+  String todoSettingsSnoozeMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoSettingsHideContent => 'Hide content on the lock screen';
+
+  @override
+  String get todoSettingsHideContentSubtitle =>
+      'The lock screen only shows that there\'s a reminder; unlock to see what it is';
+
+  @override
+  String get todoSettingsDesktopNote =>
+      'On computers, reminders only appear while Jotsy is open. Reminders that come due while it\'s closed won\'t pop up.';
+
+  @override
+  String get todoSettingsReliability => 'Reminders late or missing?';
+
+  @override
+  String get todoSettingsReliabilityBody =>
+      'Some phone systems restrict apps in the background. If reminders often don\'t ring or arrive late, allow Jotsy to auto-start, turn off battery optimization for Jotsy, and make sure the Notifications and Alarms & reminders permissions are on in system settings.';
+
+  @override
+  String get todoReminderPermissionDenied =>
+      'Notifications are off, so reminders won\'t appear';
+
+  @override
+  String get todoReminderPermissionAction => 'Turn on';
 }

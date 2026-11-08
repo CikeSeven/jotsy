@@ -11,6 +11,7 @@ import '../../anniversaries/widgets/anniversary_diary_picker.dart';
 import '../../app_surface/widgets/app_card_surface.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../controllers/todo_reminder_permission.dart';
 import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_list_style.dart';
@@ -87,8 +88,12 @@ class TodoDetailFields extends ConsumerWidget {
         dueDate: dueDate,
         dueMinute: row.dueMinute,
         allDayMinute: settings.allDayReminderMinute,
-        onChanged: (List<TodoReminder> next) =>
-            unawaited(database.setTodoReminders(row.todoId, next)),
+        onChanged: (List<TodoReminder> next) {
+          unawaited(database.setTodoReminders(row.todoId, next));
+          if (next.isNotEmpty && context.mounted) {
+            unawaited(ensureTodoReminderPermission(context, ref));
+          }
+        },
       );
     }
 

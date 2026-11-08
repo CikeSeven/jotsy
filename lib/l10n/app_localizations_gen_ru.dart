@@ -15939,4 +15939,85 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get todoSettingsDefaultView => 'Открывать';
+
+  @override
+  String get todoNotificationChannel => 'Напоминания о задачах';
+
+  @override
+  String get todoNotificationChannelDescription =>
+      'Уведомляет в заданное время напоминаний о задачах';
+
+  @override
+  String get todoNotificationComplete => 'Готово';
+
+  @override
+  String get todoNotificationSnooze => 'Отложить';
+
+  @override
+  String get todoNotificationOpen => 'Открыть';
+
+  @override
+  String get todoNotificationSnoozedBody => 'Отложенное напоминание';
+
+  @override
+  String get todoSettingsRemindersGroup => 'Напоминания';
+
+  @override
+  String get todoSettingsPermission => 'Разрешение на уведомления';
+
+  @override
+  String get todoSettingsPermissionOn => 'Разрешено';
+
+  @override
+  String get todoSettingsPermissionOff =>
+      'Не разрешено. Нажмите, чтобы включить';
+
+  @override
+  String get todoSettingsExactOff =>
+      'Система ограничила точные будильники, напоминания могут опаздывать на несколько минут';
+
+  @override
+  String get todoSettingsAllDayTime => 'Время напоминаний на весь день';
+
+  @override
+  String get todoSettingsSnooze => 'Отложить на';
+
+  @override
+  String todoSettingsSnoozeMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count минуты',
+      many: '$count минут',
+      few: '$count минуты',
+      one: '$count минуту',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoSettingsHideContent => 'Скрывать текст на экране блокировки';
+
+  @override
+  String get todoSettingsHideContentSubtitle =>
+      'На экране блокировки видно только, что есть напоминание; текст — после разблокировки';
+
+  @override
+  String get todoSettingsDesktopNote =>
+      'На компьютере напоминания появляются, только пока Jotsy открыт. Пока приложение закрыто, напоминания не всплывают.';
+
+  @override
+  String get todoSettingsReliability =>
+      'Напоминания опаздывают или не приходят?';
+
+  @override
+  String get todoSettingsReliabilityBody =>
+      'Некоторые системы ограничивают фоновые приложения. Если напоминания часто не срабатывают или опаздывают, разрешите Jotsy автозапуск, отключите для Jotsy оптимизацию батареи и проверьте, что разрешения «Уведомления» и «Будильники и напоминания» включены в настройках системы.';
+
+  @override
+  String get todoReminderPermissionDenied =>
+      'Уведомления выключены, напоминания не появятся';
+
+  @override
+  String get todoReminderPermissionAction => 'Включить';
 }

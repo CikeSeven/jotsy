@@ -16,6 +16,8 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/todos/controllers/todo_navigation.dart';
+import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:node_diary/ui/home/controllers/home_bar_scroll_hider.dart';
 import 'package:node_diary/ui/home/controllers/page_position_listenable.dart';
@@ -221,6 +223,25 @@ class _HomePageState extends ConsumerState<HomePage> {
         () => mounted ? context : null,
       );
     }
+    // 点待办提醒通知打开应用：切到待办 Tab 再打开那条待办的详情（冷启动时
+    // 请求先于首页到达，fireImmediately 接住）。待办功能关闭时只消费掉。
+    ref.listenManual<String?>(
+      todoNotificationOpenRequestProvider,
+      (_, String? todoId) => _openTodoFromNotification(todoId),
+      fireImmediately: true,
+    );
+  }
+
+  void _openTodoFromNotification(String? todoId) {
+    if (todoId == null) return;
+    ref.read(todoNotificationOpenRequestProvider.notifier).consume();
+    final index = _tabs.indexOf(HomeTab.todos);
+    if (index < 0) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await _controller.switchToIndex(index);
+      if (mounted) await openTodoDetail(context, todoId);
+    });
   }
 
   @override

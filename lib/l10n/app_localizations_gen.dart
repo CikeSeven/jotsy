@@ -24779,6 +24779,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open to'**
   String get todoSettingsDefaultView;
+
+  /// Android notification channel name for to-do reminders (shown in system settings).
+  ///
+  /// In en, this message translates to:
+  /// **'To-do reminders'**
+  String get todoNotificationChannel;
+
+  /// Description of the to-do reminders Android notification channel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies you at the reminder times you set on to-dos'**
+  String get todoNotificationChannelDescription;
+
+  /// Button on a reminder notification: mark the to-do as done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get todoNotificationComplete;
+
+  /// Button on a reminder notification: remind again later.
+  ///
+  /// In en, this message translates to:
+  /// **'Snooze'**
+  String get todoNotificationSnooze;
+
+  /// Default action name of Linux notifications: open the to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get todoNotificationOpen;
+
+  /// Body of a snoozed reminder notification (when the to-do has no due date).
+  ///
+  /// In en, this message translates to:
+  /// **'Snoozed reminder'**
+  String get todoNotificationSnoozedBody;
+
+  /// To-do settings: reminders group.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get todoSettingsRemindersGroup;
+
+  /// To-do settings: the system notification permission row.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission'**
+  String get todoSettingsPermission;
+
+  /// Notification permission is granted.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get todoSettingsPermissionOn;
+
+  /// Notification permission is denied; tap to request it or open system settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed. Tap to turn on'**
+  String get todoSettingsPermissionOff;
+
+  /// Shown when Android does not allow exact alarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact alarms are restricted by the system, so reminders may be a few minutes late'**
+  String get todoSettingsExactOff;
+
+  /// To-do settings: default time of on-the-day reminders for all-day to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'All-day reminder time'**
+  String get todoSettingsAllDayTime;
+
+  /// To-do settings: how long the notification Snooze button waits.
+  ///
+  /// In en, this message translates to:
+  /// **'Snooze for'**
+  String get todoSettingsSnooze;
+
+  /// Snooze duration.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute} other{{count} minutes}}'**
+  String todoSettingsSnoozeMinutes(int count);
+
+  /// To-do settings: reminders on the lock screen don't show the to-do text.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide content on the lock screen'**
+  String get todoSettingsHideContent;
+
+  /// Subtitle of the hide-on-lock-screen switch.
+  ///
+  /// In en, this message translates to:
+  /// **'The lock screen only shows that there\'s a reminder; unlock to see what it is'**
+  String get todoSettingsHideContentSubtitle;
+
+  /// Footer of the reminders group in to-do settings (desktop).
+  ///
+  /// In en, this message translates to:
+  /// **'On computers, reminders only appear while Jotsy is open. Reminders that come due while it\'s closed won\'t pop up.'**
+  String get todoSettingsDesktopNote;
+
+  /// To-do settings: entry to tips about late or missing reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders late or missing?'**
+  String get todoSettingsReliability;
+
+  /// Body of the late-or-missing reminders tips sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Some phone systems restrict apps in the background. If reminders often don\'t ring or arrive late, allow Jotsy to auto-start, turn off battery optimization for Jotsy, and make sure the Notifications and Alarms & reminders permissions are on in system settings.'**
+  String get todoSettingsReliabilityBody;
+
+  /// Shown when a reminder was added but the system doesn't allow notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off, so reminders won\'t appear'**
+  String get todoReminderPermissionDenied;
+
+  /// Button on the notifications-off notice: open system settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get todoReminderPermissionAction;
 }
 
 class _AppLocalizationsDelegate

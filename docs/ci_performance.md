@@ -43,7 +43,7 @@ GitHub 按最近使用时间淘汰。其中 setup-java 整份缓存 `~/.gradle/c
 | pub 包 | `PUB_CACHE` | `flutter-pub-…-<版本>-…-<pubspec.lock 哈希>`，未命中时退回同一 Flutter 版本的最近缓存 | `pub get` 之后立即保存 |
 | 构建钩子下载（sqlite3 预编译库） | `.dart_tool/hooks_runner/shared` | `hook-downloads-<os>-<android\|host>-<job>-<pubspec.lock 哈希>` | job 成功结束时 |
 | Gradle 发行版 | `~/.gradle/wrapper/dists` | `gradle-wrapper-<os>-<gradle-wrapper.properties 哈希>` | job 成功结束时 |
-| Gradle 依赖 | `~/.gradle/caches/modules-2` | `gradle-<os>-<Flutter 版本>-<Gradle 脚本与 pubspec.lock 哈希>` | job 成功结束时 |
+| Gradle 依赖、transforms 与构建脚本 | `~/.gradle/caches`（除锁文件与 `gc.properties`） | `gradle-<os>-<Flutter 版本>-<Gradle 脚本与 pubspec.lock 哈希>` | job 成功结束时 |
 | Robolectric 的 Android jar | `~/.m2/repository/org/robolectric` | `robolectric-<os>-<build.gradle.kts 与原生测试源码哈希>` | job 成功结束时 |
 | actionlint | `~/.cache/actionlint` | `actionlint-<版本>-linux-amd64` | job 成功结束时 |
 
@@ -69,12 +69,20 @@ Windows 取 `--windows`）再保存，缓存内容与哪个 job 先存无关。`
 的 job 在 tag 上只读，按 `hook-downloads-<os>-android-` / `-host-` 前缀退回
 CI 里同类 job 的缓存。
 
-**Gradle 只缓存下载来的东西。** transforms、构建缓存等是本机生成的产物，体积是
-依赖的数倍，恢复比重新生成还慢。依赖缓存的键带 Flutter 版本（引擎以 maven 包
-形式提供），只在同一 Flutter 版本内退回旧缓存，避免旧版本的依赖一代代累积；
-Robolectric 的键也不设回退，原因相同。发行版单独缓存、只随 Gradle 版本变：
-services.gradle.org 会跳转到 GitHub Releases 下载，同样会遇到 504，升级 Flutter
-时不必跟着重新下载。
+**Gradle 整份缓存 `~/.gradle/caches`。** 曾试过只缓存依赖 jar（`modules-2`），
+transforms（jetifier、AAR 解包等）与编译好的构建脚本每次重新生成：#197 的一次
+运行里 assembleRelease 从 327 秒涨到 606 秒，原生测试从 73 秒涨到 112 秒（同时
+含冷缓存的下载，无法完全区分），而整份缓存恢复只要约 66 秒，所以仍整份缓存，
+只去掉锁文件与 `gc.properties`。键带 Flutter 版本（引擎以 maven 包形式提供），
+只在同一 Flutter 版本内退回旧缓存，升级 Flutter 时整份重建，旧依赖与旧
+transforms 不会一代代累积；Robolectric 的键不设回退，原因相同。发行版单独
+缓存、只随 Gradle 版本变：services.gradle.org 会跳转到 GitHub Releases 下载，
+同样会遇到 504，升级 Flutter 时不必跟着重新下载。
+
+按 2026-11-08 的大小估算，main 上的缓存约 8.5 GB（两份 SDK 3.5 GB、Gradle
+约 3.7 GB、发行版 0.4 GB、两份 pub 0.6 GB、Robolectric 0.25 GB，其余都在
+几 MB），低于 10 GB 配额。升级 Flutter 时新旧两套并存会超出配额，GitHub 按最近
+使用时间淘汰，被淘汰的正好是不再使用的旧版本。
 
 **缓存未命中时，sqlite3 库先带重试预取。** 钩子自己下载时不重试，失败的 job
 又不写缓存，下载服务故障期间冷缓存的运行每次都从头失败（#197 第一次 CI 运行

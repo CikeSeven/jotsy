@@ -195,12 +195,9 @@ runs:
         distribution: temurin
         java-version: '17'
 
-    # Gradle 只缓存下载来的东西：发行版（wrapper/dists）与依赖 jar（modules-2）。
-    # transforms、build-cache 等是本机产物，体积是依赖的数倍（setup-java 整份缓存
-    # ~/.gradle/caches 时达 3.6 GB，恢复就要一分多钟），重新生成比恢复还快。
-    # 发行版单独一份，只随 Gradle 版本变：services.gradle.org 会跳转到 GitHub
-    # Releases 下载，与 sqlite3 同样会遇到 504（2026-11-08 PR #197），升级 Flutter
-    # 时依赖缓存要重建，发行版不必跟着重新下载。
+    # Gradle 发行版单独一份，只随 Gradle 版本变：services.gradle.org 会跳转到
+    # GitHub Releases 下载，与 sqlite3 同样会遇到 504（2026-11-08 PR #197），升级
+    # Flutter 时 Gradle 缓存要重建，发行版不必跟着重新下载。
     - name: Cache Gradle distribution
       if: inputs.java == 'true'
       uses: ./.github/actions/main-cache
@@ -208,16 +205,21 @@ runs:
         path: ~/.gradle/wrapper/dists
         key: gradle-wrapper-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
 
-    # 依赖由 Gradle 脚本、插件版本（pubspec.lock）与 Flutter 版本（引擎 maven 包）
-    # 决定；只在同一 Flutter 版本内退回旧缓存，避免旧依赖一代代累积。
-    - name: Cache Gradle dependencies
+    # 整份 ~/.gradle/caches：依赖 jar（modules-2）之外，transforms（jetifier、
+    # AAR 解包等，占大头）与编译好的构建脚本也要缓存。只缓存依赖时 #197 的
+    # Android job 里 assembleRelease 从 327 秒涨到 606 秒、原生测试从 73 秒涨到
+    # 112 秒（同时含冷缓存的下载），而整份缓存恢复约 66 秒。锁文件与 gc.properties
+    # 是本机进程状态，不缓存。内容由 Gradle 脚本、插件版本（pubspec.lock）与
+    # Flutter 版本（引擎 maven 包）决定；只在同一 Flutter 版本内退回旧缓存，
+    # 升级 Flutter 时整份重建，旧依赖与旧 transforms 不会一代代累积。
+    - name: Cache Gradle user home
       if: inputs.java == 'true'
       uses: ./.github/actions/main-cache
       with:
         path: |
-          ~/.gradle/caches/modules-2
-          !~/.gradle/caches/modules-2/*.lock
-          !~/.gradle/caches/modules-2/gc.properties
+          ~/.gradle/caches
+          !~/.gradle/caches/**/*.lock
+          !~/.gradle/caches/**/gc.properties
         key: >-
           gradle-${{ runner.os }}-${{ steps.flutter.outputs.VERSION }}-${{ hashFiles('android/**/*.gradle*',
           'android/gradle.properties', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}

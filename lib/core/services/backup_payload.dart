@@ -177,10 +177,12 @@ class BackupPayload {
           database,
           'aiConversations',
         ).map(AiConversationRow.fromJson).toList(growable: false),
-        aiMessages: _optionalRows(
-          database,
-          'aiMessages',
-        ).map(AiMessageRow.fromJson).toList(growable: false),
+        aiMessages: _optionalRows(database, 'aiMessages')
+            .map((row) {
+              // v20 之前的备份没有工具步骤列。
+              return AiMessageRow.fromJson({'steps': '[]', ...row});
+            })
+            .toList(growable: false),
         aiResults: _optionalRows(
           database,
           'aiResults',

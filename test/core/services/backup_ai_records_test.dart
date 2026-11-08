@@ -139,6 +139,21 @@ void main() {
     expect(await db().select(db().aiMessages).get(), isEmpty);
   });
 
+  test('messages from backups before v20 restore without steps', () async {
+    final conversation = await conversationWith('Q', 'hi');
+    final payload = await fixture.capturePayload();
+    final tables = payload['database'] as Map;
+    // 旧版备份的消息行没有 steps 字段。
+    for (final row in (tables['aiMessages'] as List).cast<Map>()) {
+      row.remove('steps');
+    }
+    await db().clearAllAiRecords();
+    await importWith(payload, BackupImportMode.replaceAll);
+    final message = (await db().getAiMessages(conversation)).single;
+    expect(message.content, 'hi');
+    expect(message.steps, '[]');
+  });
+
   test('diary packages never carry AI records', () async {
     await conversationWith('Q', 'hi');
     await db().addAiResult(

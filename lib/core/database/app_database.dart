@@ -141,7 +141,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -194,6 +194,11 @@ class AppDatabase extends _$AppDatabase
       // v1 分支之前。
       if (from < 19) {
         await _migrateAddTodos(m);
+      }
+      // v20 AI 消息加工具步骤列，只动 ai_messages，同样排在 v1 分支之前；
+      // 必须在 v17 分支之后：从 v17 之前升级时那里已按最新定义建表、自带此列。
+      if (from < 20) {
+        await _migrateAiMessagesAddSteps(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

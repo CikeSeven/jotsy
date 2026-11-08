@@ -68,6 +68,10 @@ class AiMessages extends Table {
   /// `done` / `error` / `stopped`。
   TextColumn get status => text().withDefault(const Constant('done'))();
 
+  /// 智能体回答的工具步骤 JSON 数组（每步的说明文字与调用记录，见
+  /// `AiAgentStepRecord`）；普通回答为 `[]`。v20 加入。
+  TextColumn get steps => text().withDefault(const Constant('[]'))();
+
   DateTimeColumn get createdAt => dateTime().named('created_at')();
 }
 

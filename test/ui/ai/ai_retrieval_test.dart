@@ -38,6 +38,7 @@ AiMessageRow _message(String role, String content, {String status = 'done'}) =>
       citations: '[]',
       meta: '{}',
       status: status,
+      steps: '[]',
       createdAt: DateTime(2026),
     );
 

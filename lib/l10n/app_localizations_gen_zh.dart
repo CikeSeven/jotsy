@@ -11062,7 +11062,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModuleChat => '对话与操作';
 
   @override
-  String get aiModuleChatSubtitle => '问问你的日记，也能让 AI 帮你查找、统计、打开页面';
+  String get aiModuleChatSubtitle => '问问你的日记，也能让 AI 帮你查找、统计、写日记、整理与修改设置';
 
   @override
   String get aiModuleVision => '图片理解';
@@ -11493,6 +11493,219 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get aiToolCreateDiary => '新建日记';
+
+  @override
+  String aiToolCreateDiaryNamed(String title) {
+    return '新建日记：$title';
+  }
+
+  @override
+  String aiToolDiaryCreated(String name) {
+    return '已写好「$name」';
+  }
+
+  @override
+  String get aiToolAppendDiary => '在日记末尾添加内容';
+
+  @override
+  String get aiToolUpdateDiary => '修改日记信息';
+
+  @override
+  String aiToolDiaryChanged(String name) {
+    return '已修改「$name」';
+  }
+
+  @override
+  String aiToolTagDiaries(int count) {
+    return '给 $count 篇日记加减标签';
+  }
+
+  @override
+  String aiToolEntriesChanged(int count) {
+    return '改了 $count 篇';
+  }
+
+  @override
+  String get aiToolPinDiaries => '置顶日记';
+
+  @override
+  String get aiToolUnpinDiaries => '取消置顶';
+
+  @override
+  String get aiToolArchiveDiaries => '归档日记';
+
+  @override
+  String get aiToolUnarchiveDiaries => '取消归档';
+
+  @override
+  String aiToolTrashDiaries(int count) {
+    return '把 $count 篇日记移入回收站';
+  }
+
+  @override
+  String aiToolEntriesTrashed(int count) {
+    return '已移入回收站 $count 篇';
+  }
+
+  @override
+  String get aiToolAddComment => '写一条留言';
+
+  @override
+  String aiToolCreateTag(String name) {
+    return '新建标签：$name';
+  }
+
+  @override
+  String aiToolRenameTag(String name) {
+    return '修改标签：$name';
+  }
+
+  @override
+  String aiToolMergeTags(String from, String into) {
+    return '把 $from 合并到 $into';
+  }
+
+  @override
+  String aiToolDeleteTag(String name) {
+    return '删除标签 $name';
+  }
+
+  @override
+  String aiToolCreateNotebook(String name) {
+    return '新建日记本：$name';
+  }
+
+  @override
+  String aiToolRenameNotebook(String name) {
+    return '日记本改名为：$name';
+  }
+
+  @override
+  String aiToolAddToNotebook(int count) {
+    return '把 $count 篇日记收进日记本';
+  }
+
+  @override
+  String aiToolRemoveFromNotebook(int count) {
+    return '把 $count 篇日记移出日记本';
+  }
+
+  @override
+  String aiToolCreateTodo(String title) {
+    return '新建待办：$title';
+  }
+
+  @override
+  String aiToolUpdateTodos(int count) {
+    return '修改 $count 项待办';
+  }
+
+  @override
+  String aiToolCompleteTodos(int count) {
+    return '完成 $count 项待办';
+  }
+
+  @override
+  String aiToolDeleteTodos(int count) {
+    return '删除 $count 项待办';
+  }
+
+  @override
+  String aiToolCreateAnniversary(String title) {
+    return '新建纪念日：$title';
+  }
+
+  @override
+  String get aiToolDeleteAnniversary => '删除纪念日';
+
+  @override
+  String aiToolSetDayMood(String date) {
+    return '设置 $date 的心情';
+  }
+
+  @override
+  String get aiToolSetTheme => '修改主题';
+
+  @override
+  String aiToolSetLanguage(String language) {
+    return '界面语言改为 $language';
+  }
+
+  @override
+  String get aiToolSetFontScale => '修改字体大小';
+
+  @override
+  String aiToolFeatureOn(String feature) {
+    return '打开功能：$feature';
+  }
+
+  @override
+  String aiToolFeatureOff(String feature) {
+    return '关闭功能：$feature';
+  }
+
+  @override
+  String get aiToolDone => '已完成';
+
+  @override
+  String get aiToolBlockedByEditor => '有页面正在编辑，先关掉再试';
+
+  @override
+  String get aiAgentConfirmDelete => '确认删除？';
+
+  @override
+  String get aiAgentConfirmChange => '确认执行这项改动？';
+
+  @override
+  String get aiAgentDelete => '删除';
+
+  @override
+  String get aiAgentProceed => '执行';
+
+  @override
+  String get aiAgentUndo => '撤销';
+
+  @override
+  String get aiAgentUndoAll => '撤销本轮全部改动';
+
+  @override
+  String get aiAgentStepUndone => '已撤销';
+
+  @override
+  String aiAgentUndone(int count) {
+    return '已撤销 $count 项改动';
+  }
+
+  @override
+  String aiAgentUndoFailed(String error) {
+    return '撤销没有成功：$error';
+  }
+
+  @override
+  String get aiAgentUndoConflictTitle => '之后又改过';
+
+  @override
+  String get aiAgentUndoConflictBody =>
+      '这项内容在 AI 改动之后又被修改过，撤销会把这些修改一起覆盖。仍要撤销吗？';
+
+  @override
+  String get aiAgentUndoConflictAction => '仍要撤销';
+
+  @override
+  String get aiOptionAgentChanges => '允许 AI 改动数据';
+
+  @override
+  String get aiOptionAgentChangesSubtitle =>
+      '新建、修改日记，整理标签与日记本，加待办，改设置；改动都能撤销，删除前会先问你';
+
+  @override
+  String get aiOptionAgentConfirm => '每次改动前确认';
+
+  @override
+  String get aiOptionAgentConfirmSubtitle => '关掉时直接执行、事后可撤销；删除类无论如何都会先确认';
+
+  @override
   String get aiDestinationDiary => '这篇日记';
 
   @override
@@ -11543,7 +11756,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPromptAgentSystem =>
-      '你可以调用工具来查找、统计用户的日记，查看日历、待办与纪念日，并打开应用里的页面。需要用户的数据时先用工具去查，不要凭空回答；互不依赖的查询可以一次调用多个工具。用到某篇日记时在句末写上它的编号，如 [D3]。用户要做的事需要他自己在页面里完成时（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置等），用 open_page 给他一个前往按钮，并说明怎么做。工具报错时按错误说明改正参数或换个办法；确实做不到就直说。';
+      '你可以调用工具来查找、统计用户的日记，查看日历、待办与纪念日，打开应用里的页面；用户要求时，还可以新建和修改日记、整理标签与日记本、管理待办与纪念日、调整设置。需要用户的数据时先用工具去查，不要凭空回答；互不依赖的查询可以一次调用多个工具。只做用户要求的改动，拿不准要改哪篇、改成什么时先问清楚；改动都可以撤销，删除类会先由用户确认，做完后用一两句话说明做了什么。用到某篇日记时在句末写上它的编号，如 [D3]。用户要做的事需要他自己在页面里完成时（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置、彻底删除等），用 open_page 给他一个前往按钮，并说明怎么做。工具报错时按错误说明改正参数或换个办法；确实做不到就直说。';
 
   @override
   String aiPromptAgentNow(String time) {

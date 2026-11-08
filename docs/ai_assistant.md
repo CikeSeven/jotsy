@@ -144,11 +144,37 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | `list_notebooks` | 日记本树（私密 / 上锁本与排除的本子不列） | `notebookTreeProvider` |
 | `open_page` | 给用户一个“前往”按钮；用户明确说“打开”时（`now`）本轮结束后自动打开 | `AiDestination` |
 
+**改动类工具**（“允许 AI 改动数据”默认开，关掉后只有查询与前往；“每次改动前确认”默认关）：
+
+| 工具 | 作用 | 写库 | 撤销 |
+|---|---|---|---|
+| `create_diary` | 新建日记（Markdown 正文、日期与时刻、标签（没有的就建）、心情（只能取心情选项）、天气、地点、手动日记本） | `publishNewDiaryDirectly` | 摘掉顺带新建的标签、移入回收站、删掉没人用的新标签 |
+| `append_to_diary` | 在日记末尾追加 Markdown | `updateDiaryContent` | 写回原正文 |
+| `update_diary` | 改标题、日期、时刻、心情、天气、地点（空字符串清空） | `patchDiaryFields`（不碰归档、删除、标签与正文） | 写回原值 |
+| `tag_diaries` | 批量加减标签 | `applyDiaryTagBatch` | `restoreDiaryTagBatch` |
+| `pin_diaries` / `archive_diaries` | 置顶 / 归档（或取消） | batch writes | 按每篇原来的状态写回 |
+| `trash_diaries` | 移入回收站（**确认**） | `softDeleteDiaries` | `restoreDiaries` |
+| `add_comment` | 留言（留言功能开启时） | `addDiaryComment` | 删掉这条 |
+| `create_tag` / `rename_tag` | 新建、改名或改色 | `ensureTagsByName` / `updateTag` | 删掉没人用的新标签 / 改回 |
+| `merge_tags` / `delete_tag` | 合并 / 删除标签（**确认**，覆盖私密与回收站里的日记） | `mergeTags` / `deleteTagWithSnapshot` + `forgetDeletedTags` | 按快照原样放回（期间建了同名标签时报冲突） |
+| `create_notebook` / `rename_notebook` | 新建手动本（可选上级）/ 改名 | `createNotebook` / `updateNotebook` | 删掉（已收了日记时先报冲突）/ 改回 |
+| `add_to_notebook` / `remove_from_notebook` | 收录 / 移出（只动手动、非私密的本子） | 日记本成员 ops | 移出新收的 / 放回原成员行 |
+| `create_todo` / `update_todos` / `complete_todos` / `delete_todos`（**确认**） | 待办（清单按名称，带提醒时按待办页口径申请通知权限） | 待办 ops | 删掉 / `restoreTodoFields` 与改回标题备注 / `undoTodoCompletion` / `restoreTodos` |
+| `create_anniversary` / `delete_anniversary`（**确认**） | 纪念日（不重复 / 每年 / 农历每年） | `AnniversaryEditController.save` / `deleteAnniversary` | 删掉 / `restoreAnniversary` |
+| `set_day_mood` | 这天的心情（或清空） | `setDayMood` / `clearDayMood` | 恢复原来的心情或清空 |
+| `set_theme` / `set_app_language` / `set_font_scale` / `set_feature_enabled` | 明暗与主题色 / 界面语言 / 字体大小 / 功能开关（不含 AI 本身；有私密本时不关日记本） | `SettingsService` / `saveAppFeatures` | 写回原值 |
+
+共同约束：写日记只经 `aiWritableDiary`（私密、回收站、未解封胶囊、AI 隐私排除的一律不写，批量里有一篇不能写就整批不做）；`EditingSessionRegistry` 有编辑页时不写（编辑页整份保存会盖掉改动），执行期间登记为编辑会话；写后一次性 provider 手动失效。
+
+**确认与撤销**：删除类（以及打开“每次改动前确认”时的写操作）执行前，步骤行下展开确认卡（工具的 `preview` 列出要删 / 要改的内容），用户点“删除 / 执行”才继续，点“取消”回传“用户拒绝了，不要换别的方式达成同样效果”；等待期间可停止。成功的改动在保存后的回答里有“撤销”，可撤销的有两个以上时另有“撤销本轮全部改动”（`undoAiAgentCalls`，从后往前撤）。改日记的撤销前按内容指纹（`aiDiaryFingerprint`：标题、正文、元数据、发表与更新时间的 FNV-1a，库里的时间只到秒）核对之后有没有被改过，改过就问用户要不要覆盖。撤过的在步骤记录里标为已撤销。
+
+**只给前往、不提供工具的**：彻底删除与清空回收站、备份 / 恢复 / 导入 / 导出 / 分享、网盘、局域网同步配对、应用锁与密码、私密与上锁日记本的设置、AI 服务商与密钥、存储清理，以及关闭 AI 助手本身。
+
 工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示按钮、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`）。
 
 **隐私**：多篇只经 `getAiContextDiaries`；`read_diaries` 比单篇功能更严，私密日记即使打开了“允许对私密日记使用 AI”也不给；日期、心情、标签、天气、地点按“发送”开关给；摘录与正文从本轮“最多发送”预算里扣，用完只给标题与日期。
 
-**接入新功能**：在对应领域的 `ai_tools_<领域>.dart` 写一个 `AiTool`（功能开关经 `isAvailable`），加进清单；需要页面时在 `aiDestinations` 加一项；补“功能关闭时工具不出现”与主流程测试（`test/ui/ai/ai_tools_test.dart` 会检查名称、schema 与标题）。
+**接入新功能**：在对应领域的 `ai_tools_<领域>.dart` 写一个 `AiTool`（功能开关经 `isAvailable`），加进清单；改动数据的工具同时实现 `undo`（删除类再实现 `preview`），并加进 `test/ui/ai/ai_write_tools_test.dart` 的清单补“执行再撤销”的测试；需要页面时在 `aiDestinations` 加一项；补“功能关闭时工具不出现”与主流程测试（`test/ui/ai/ai_tools_test.dart` 会检查名称、schema 与标题）。
 
 ## 10. 开发与验证
 

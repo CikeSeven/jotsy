@@ -174,23 +174,53 @@ class AiModulesGroup extends ConsumerWidget {
             ),
             SettingsReveal(
               visible: prefs.agent.enabled,
-              child: SettingsChoiceTile(
-                nested: true,
-                title: l10n.aiOptionAgentSteps,
-                subtitle: l10n.aiOptionAgentStepsSubtitle,
-                child: ExpressiveButtonGroup<int>(
-                  minSegmentWidth: 64,
-                  segments: <ButtonSegment<int>>[
-                    for (final steps in AiAgentOptions.maxStepsChoices)
-                      ButtonSegment(value: steps, label: Text('$steps')),
-                  ],
-                  selected: {prefs.agent.maxSteps},
-                  onSelectionChanged: (Set<int> value) => update(
-                    (p) => p.copyWith(
-                      agent: p.agent.copyWith(maxSteps: value.single),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SettingsChoiceTile(
+                    nested: true,
+                    title: l10n.aiOptionAgentSteps,
+                    subtitle: l10n.aiOptionAgentStepsSubtitle,
+                    child: ExpressiveButtonGroup<int>(
+                      minSegmentWidth: 64,
+                      segments: <ButtonSegment<int>>[
+                        for (final steps in AiAgentOptions.maxStepsChoices)
+                          ButtonSegment(value: steps, label: Text('$steps')),
+                      ],
+                      selected: {prefs.agent.maxSteps},
+                      onSelectionChanged: (Set<int> value) => update(
+                        (p) => p.copyWith(
+                          agent: p.agent.copyWith(maxSteps: value.single),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  SettingsSwitchTile(
+                    nested: true,
+                    title: l10n.aiOptionAgentChanges,
+                    subtitle: l10n.aiOptionAgentChangesSubtitle,
+                    value: prefs.agent.allowChanges,
+                    onChanged: (bool v) => update(
+                      (p) =>
+                          p.copyWith(agent: p.agent.copyWith(allowChanges: v)),
+                    ),
+                  ),
+                  // 只在允许改动时有意义：从属于上一项。
+                  SettingsReveal(
+                    visible: prefs.agent.allowChanges,
+                    child: SettingsSwitchTile(
+                      nested: true,
+                      title: l10n.aiOptionAgentConfirm,
+                      subtitle: l10n.aiOptionAgentConfirmSubtitle,
+                      value: prefs.agent.confirmChanges,
+                      onChanged: (bool v) => update(
+                        (p) => p.copyWith(
+                          agent: p.agent.copyWith(confirmChanges: v),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             SettingsChoiceTile(

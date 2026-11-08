@@ -11253,7 +11253,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiModuleChat => '会話と操作';
 
   @override
-  String get aiModuleChatSubtitle => '日記について質問したり、AI に検索・集計・ページを開くなどを任せたりできます';
+  String get aiModuleChatSubtitle =>
+      '日記について質問したり、AI に検索・集計・日記の作成・整理・設定の変更などを任せたりできます';
 
   @override
   String get aiModuleVision => '画像の理解';
@@ -11696,6 +11697,220 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get aiToolCreateDiary => '日記を新規作成';
+
+  @override
+  String aiToolCreateDiaryNamed(String title) {
+    return '日記を新規作成：$title';
+  }
+
+  @override
+  String aiToolDiaryCreated(String name) {
+    return '「$name」を保存しました';
+  }
+
+  @override
+  String get aiToolAppendDiary => '日記の末尾に追記';
+
+  @override
+  String get aiToolUpdateDiary => '日記の情報を変更';
+
+  @override
+  String aiToolDiaryChanged(String name) {
+    return '「$name」を変更しました';
+  }
+
+  @override
+  String aiToolTagDiaries(int count) {
+    return '$count 件の日記のタグを変更';
+  }
+
+  @override
+  String aiToolEntriesChanged(int count) {
+    return '$count 件を変更しました';
+  }
+
+  @override
+  String get aiToolPinDiaries => '日記をピン留め';
+
+  @override
+  String get aiToolUnpinDiaries => 'ピン留めを解除';
+
+  @override
+  String get aiToolArchiveDiaries => '日記をアーカイブ';
+
+  @override
+  String get aiToolUnarchiveDiaries => 'アーカイブから戻す';
+
+  @override
+  String aiToolTrashDiaries(int count) {
+    return '$count 件の日記をごみ箱へ移動';
+  }
+
+  @override
+  String aiToolEntriesTrashed(int count) {
+    return '$count 件をごみ箱へ移動しました';
+  }
+
+  @override
+  String get aiToolAddComment => 'コメントを追加';
+
+  @override
+  String aiToolCreateTag(String name) {
+    return 'タグを作成：$name';
+  }
+
+  @override
+  String aiToolRenameTag(String name) {
+    return 'タグを変更：$name';
+  }
+
+  @override
+  String aiToolMergeTags(String from, String into) {
+    return '$from を $into に統合';
+  }
+
+  @override
+  String aiToolDeleteTag(String name) {
+    return 'タグ $name を削除';
+  }
+
+  @override
+  String aiToolCreateNotebook(String name) {
+    return '日記帳を作成：$name';
+  }
+
+  @override
+  String aiToolRenameNotebook(String name) {
+    return '日記帳の名前を変更：$name';
+  }
+
+  @override
+  String aiToolAddToNotebook(int count) {
+    return '$count 件の日記を日記帳に追加';
+  }
+
+  @override
+  String aiToolRemoveFromNotebook(int count) {
+    return '$count 件の日記を日記帳から外す';
+  }
+
+  @override
+  String aiToolCreateTodo(String title) {
+    return 'ToDo を追加：$title';
+  }
+
+  @override
+  String aiToolUpdateTodos(int count) {
+    return 'ToDo を $count 件変更';
+  }
+
+  @override
+  String aiToolCompleteTodos(int count) {
+    return 'ToDo を $count 件完了';
+  }
+
+  @override
+  String aiToolDeleteTodos(int count) {
+    return 'ToDo を $count 件削除';
+  }
+
+  @override
+  String aiToolCreateAnniversary(String title) {
+    return '記念日を追加：$title';
+  }
+
+  @override
+  String get aiToolDeleteAnniversary => '記念日を削除';
+
+  @override
+  String aiToolSetDayMood(String date) {
+    return '$date の気分を設定';
+  }
+
+  @override
+  String get aiToolSetTheme => 'テーマを変更';
+
+  @override
+  String aiToolSetLanguage(String language) {
+    return '表示言語を $language に変更';
+  }
+
+  @override
+  String get aiToolSetFontScale => '文字サイズを変更';
+
+  @override
+  String aiToolFeatureOn(String feature) {
+    return '機能をオン：$feature';
+  }
+
+  @override
+  String aiToolFeatureOff(String feature) {
+    return '機能をオフ：$feature';
+  }
+
+  @override
+  String get aiToolDone => '完了しました';
+
+  @override
+  String get aiToolBlockedByEditor => '編集中のページがあります。閉じてからもう一度お試しください';
+
+  @override
+  String get aiAgentConfirmDelete => '削除しますか？';
+
+  @override
+  String get aiAgentConfirmChange => 'この変更を行いますか？';
+
+  @override
+  String get aiAgentDelete => '削除';
+
+  @override
+  String get aiAgentProceed => '実行';
+
+  @override
+  String get aiAgentUndo => '元に戻す';
+
+  @override
+  String get aiAgentUndoAll => 'この回答の変更をすべて元に戻す';
+
+  @override
+  String get aiAgentStepUndone => '元に戻しました';
+
+  @override
+  String aiAgentUndone(int count) {
+    return '$count 件の変更を元に戻しました';
+  }
+
+  @override
+  String aiAgentUndoFailed(String error) {
+    return '元に戻せませんでした：$error';
+  }
+
+  @override
+  String get aiAgentUndoConflictTitle => 'その後に変更されています';
+
+  @override
+  String get aiAgentUndoConflictBody =>
+      'AI の変更のあとにさらに編集されています。元に戻すとその編集も上書きされます。それでも元に戻しますか？';
+
+  @override
+  String get aiAgentUndoConflictAction => 'それでも元に戻す';
+
+  @override
+  String get aiOptionAgentChanges => 'AI によるデータの変更を許可';
+
+  @override
+  String get aiOptionAgentChangesSubtitle =>
+      '日記の作成・編集、タグや日記帳の整理、ToDo の追加、設定の変更など。変更はすべて元に戻せ、削除の前には確認します';
+
+  @override
+  String get aiOptionAgentConfirm => '変更のたびに確認';
+
+  @override
+  String get aiOptionAgentConfirmSubtitle =>
+      'オフのときはすぐに実行し、あとから元に戻せます。削除は常に確認します';
+
+  @override
   String get aiDestinationDiary => 'この日記';
 
   @override
@@ -11747,7 +11962,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiPromptAgentSystem =>
-      'ツールを呼び出して、ユーザーの日記の検索・集計、カレンダー・ToDo・記念日の確認、アプリ内のページを開くことができます。ユーザーのデータが必要なときは推測せずツールで調べてください。互いに依存しない検索はまとめて呼び出せます。日記を使ったときは [D3] のように文末にその番号を書いてください。ユーザー自身がページで行う必要がある操作（バックアップ、復元、インポート・エクスポート、共有、アプリロック、パスワード、AI サービスの設定など）は、open_page で移動ボタンを示し、手順を説明してください。ツールがエラーを返したら、内容に従って引数を直すか別の方法を試し、どうしてもできなければそう伝えてください。';
+      'ツールを呼び出して、ユーザーの日記の検索・集計、カレンダー・ToDo・記念日の確認、アプリ内のページを開くことができます。ユーザーに頼まれたときは、日記の作成・編集、タグや日記帳の整理、ToDo や記念日の管理、設定の変更もできます。ユーザーのデータが必要なときは推測せずツールで調べてください。互いに依存しない検索はまとめて呼び出せます。頼まれた変更だけを行い、どの日記を何に変えるか迷うときは先に確認してください。変更はすべて元に戻せ、削除はユーザーが確認します。終わったら何をしたかを一、二文で伝えてください。日記を使ったときは [D3] のように文末にその番号を書いてください。ユーザー自身がページで行う必要がある操作（バックアップ、復元、インポート・エクスポート、共有、アプリロック、パスワード、AI サービスの設定、完全削除など）は、open_page で移動ボタンを示し、手順を説明してください。ツールがエラーを返したら、内容に従って引数を直すか別の方法を試し、どうしてもできなければそう伝えてください。';
 
   @override
   String aiPromptAgentNow(String time) {

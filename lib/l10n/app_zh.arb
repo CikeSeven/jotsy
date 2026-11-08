@@ -15329,7 +15329,7 @@
   "@aiModuleChat": {
     "description": "AI 模块名称。"
   },
-  "aiModuleChatSubtitle": "问问你的日记，也能让 AI 帮你查找、统计、打开页面",
+  "aiModuleChatSubtitle": "问问你的日记，也能让 AI 帮你查找、统计、写日记、整理与修改设置",
   "@aiModuleChatSubtitle": {
     "description": "AI 模块说明。"
   },
@@ -15936,6 +15936,351 @@
       }
     }
   },
+  "aiToolCreateDiary": "新建日记",
+  "@aiToolCreateDiary": {
+    "description": "AI 步骤卡片：新建日记。"
+  },
+  "aiToolCreateDiaryNamed": "新建日记：{title}",
+  "@aiToolCreateDiaryNamed": {
+    "description": "AI 步骤卡片：新建一篇有标题的日记。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDiaryCreated": "已写好「{name}」",
+  "@aiToolDiaryCreated": {
+    "description": "AI 步骤卡片：日记已新建（标题或日期）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAppendDiary": "在日记末尾添加内容",
+  "@aiToolAppendDiary": {
+    "description": "AI 步骤卡片：在日记末尾追加内容。"
+  },
+  "aiToolUpdateDiary": "修改日记信息",
+  "@aiToolUpdateDiary": {
+    "description": "AI 步骤卡片：修改日记的标题、日期、心情等。"
+  },
+  "aiToolDiaryChanged": "已修改「{name}」",
+  "@aiToolDiaryChanged": {
+    "description": "AI 步骤卡片：日记已修改（标题或日期）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolTagDiaries": "给 {count} 篇日记加减标签",
+  "@aiToolTagDiaries": {
+    "description": "AI 步骤卡片：给日记加减标签。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesChanged": "改了 {count} 篇",
+  "@aiToolEntriesChanged": {
+    "description": "AI 步骤卡片：改动的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolPinDiaries": "置顶日记",
+  "@aiToolPinDiaries": {
+    "description": "AI 步骤卡片：置顶日记。"
+  },
+  "aiToolUnpinDiaries": "取消置顶",
+  "@aiToolUnpinDiaries": {
+    "description": "AI 步骤卡片：取消置顶。"
+  },
+  "aiToolArchiveDiaries": "归档日记",
+  "@aiToolArchiveDiaries": {
+    "description": "AI 步骤卡片：归档日记。"
+  },
+  "aiToolUnarchiveDiaries": "取消归档",
+  "@aiToolUnarchiveDiaries": {
+    "description": "AI 步骤卡片：取消归档。"
+  },
+  "aiToolTrashDiaries": "把 {count} 篇日记移入回收站",
+  "@aiToolTrashDiaries": {
+    "description": "AI 步骤卡片：把日记移入回收站。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesTrashed": "已移入回收站 {count} 篇",
+  "@aiToolEntriesTrashed": {
+    "description": "AI 步骤卡片：移入回收站的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolAddComment": "写一条留言",
+  "@aiToolAddComment": {
+    "description": "AI 步骤卡片：给日记写留言。"
+  },
+  "aiToolCreateTag": "新建标签：{name}",
+  "@aiToolCreateTag": {
+    "description": "AI 步骤卡片：新建标签。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTag": "修改标签：{name}",
+  "@aiToolRenameTag": {
+    "description": "AI 步骤卡片：改标签的名称或颜色。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolMergeTags": "把 {from} 合并到 {into}",
+  "@aiToolMergeTags": {
+    "description": "AI 步骤卡片：合并标签。",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "into": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTag": "删除标签 {name}",
+  "@aiToolDeleteTag": {
+    "description": "AI 步骤卡片：删除标签。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateNotebook": "新建日记本：{name}",
+  "@aiToolCreateNotebook": {
+    "description": "AI 步骤卡片：新建日记本。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameNotebook": "日记本改名为：{name}",
+  "@aiToolRenameNotebook": {
+    "description": "AI 步骤卡片：日记本改名。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebook": "把 {count} 篇日记收进日记本",
+  "@aiToolAddToNotebook": {
+    "description": "AI 步骤卡片：把日记收进日记本。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebook": "把 {count} 篇日记移出日记本",
+  "@aiToolRemoveFromNotebook": {
+    "description": "AI 步骤卡片：把日记移出日记本。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateTodo": "新建待办：{title}",
+  "@aiToolCreateTodo": {
+    "description": "AI 步骤卡片：新建待办。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolUpdateTodos": "修改 {count} 项待办",
+  "@aiToolUpdateTodos": {
+    "description": "AI 步骤卡片：修改待办。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCompleteTodos": "完成 {count} 项待办",
+  "@aiToolCompleteTodos": {
+    "description": "AI 步骤卡片：完成待办。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteTodos": "删除 {count} 项待办",
+  "@aiToolDeleteTodos": {
+    "description": "AI 步骤卡片：删除待办。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateAnniversary": "新建纪念日：{title}",
+  "@aiToolCreateAnniversary": {
+    "description": "AI 步骤卡片：新建纪念日。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteAnniversary": "删除纪念日",
+  "@aiToolDeleteAnniversary": {
+    "description": "AI 步骤卡片：删除纪念日。"
+  },
+  "aiToolSetDayMood": "设置 {date} 的心情",
+  "@aiToolSetDayMood": {
+    "description": "AI 步骤卡片：设置某天的心情（日期为 YYYY-MM-DD）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetTheme": "修改主题",
+  "@aiToolSetTheme": {
+    "description": "AI 步骤卡片：修改主题。"
+  },
+  "aiToolSetLanguage": "界面语言改为 {language}",
+  "@aiToolSetLanguage": {
+    "description": "AI 步骤卡片：修改界面语言（语言的自称）。",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetFontScale": "修改字体大小",
+  "@aiToolSetFontScale": {
+    "description": "AI 步骤卡片：修改界面字体大小。"
+  },
+  "aiToolFeatureOn": "打开功能：{feature}",
+  "@aiToolFeatureOn": {
+    "description": "AI 步骤卡片：打开某个功能。",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFeatureOff": "关闭功能：{feature}",
+  "@aiToolFeatureOff": {
+    "description": "AI 步骤卡片：关闭某个功能。",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDone": "已完成",
+  "@aiToolDone": {
+    "description": "AI 步骤卡片：改动已完成。"
+  },
+  "aiToolBlockedByEditor": "有页面正在编辑，先关掉再试",
+  "@aiToolBlockedByEditor": {
+    "description": "AI 步骤卡片：有编辑页开着，AI 不改数据。"
+  },
+  "aiAgentConfirmDelete": "确认删除？",
+  "@aiAgentConfirmDelete": {
+    "description": "AI 步骤里的删除确认标题。"
+  },
+  "aiAgentConfirmChange": "确认执行这项改动？",
+  "@aiAgentConfirmChange": {
+    "description": "AI 步骤里的改动确认标题。"
+  },
+  "aiAgentDelete": "删除",
+  "@aiAgentDelete": {
+    "description": "AI 步骤确认卡上的删除按钮。"
+  },
+  "aiAgentProceed": "执行",
+  "@aiAgentProceed": {
+    "description": "AI 步骤确认卡上的执行按钮。"
+  },
+  "aiAgentUndo": "撤销",
+  "@aiAgentUndo": {
+    "description": "撤销 AI 做过的一项改动。"
+  },
+  "aiAgentUndoAll": "撤销本轮全部改动",
+  "@aiAgentUndoAll": {
+    "description": "撤销这条回答里 AI 做过的全部改动。"
+  },
+  "aiAgentStepUndone": "已撤销",
+  "@aiAgentStepUndone": {
+    "description": "AI 步骤已被撤销。"
+  },
+  "aiAgentUndone": "已撤销 {count} 项改动",
+  "@aiAgentUndone": {
+    "description": "撤销完成的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentUndoFailed": "撤销没有成功：{error}",
+  "@aiAgentUndoFailed": {
+    "description": "撤销失败的提示。",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentUndoConflictTitle": "之后又改过",
+  "@aiAgentUndoConflictTitle": {
+    "description": "撤销冲突对话框的标题。"
+  },
+  "aiAgentUndoConflictBody": "这项内容在 AI 改动之后又被修改过，撤销会把这些修改一起覆盖。仍要撤销吗？",
+  "@aiAgentUndoConflictBody": {
+    "description": "撤销冲突对话框的说明。"
+  },
+  "aiAgentUndoConflictAction": "仍要撤销",
+  "@aiAgentUndoConflictAction": {
+    "description": "撤销冲突对话框的确认按钮。"
+  },
+  "aiOptionAgentChanges": "允许 AI 改动数据",
+  "@aiOptionAgentChanges": {
+    "description": "AI 设置：允许智能体改动数据的开关。"
+  },
+  "aiOptionAgentChangesSubtitle": "新建、修改日记，整理标签与日记本，加待办，改设置；改动都能撤销，删除前会先问你",
+  "@aiOptionAgentChangesSubtitle": {
+    "description": "允许改动开关的说明。"
+  },
+  "aiOptionAgentConfirm": "每次改动前确认",
+  "@aiOptionAgentConfirm": {
+    "description": "AI 设置：每次改动前都确认。"
+  },
+  "aiOptionAgentConfirmSubtitle": "关掉时直接执行、事后可撤销；删除类无论如何都会先确认",
+  "@aiOptionAgentConfirmSubtitle": {
+    "description": "改动前确认开关的说明。"
+  },
   "aiDestinationDiary": "这篇日记",
   "@aiDestinationDiary": {
     "description": "AI 前往按钮的目标：一篇日记。"
@@ -16006,7 +16351,7 @@
   "@aiOptionAgentStepsSubtitle": {
     "description": "最多步数的说明。"
   },
-  "aiPromptAgentSystem": "你可以调用工具来查找、统计用户的日记，查看日历、待办与纪念日，并打开应用里的页面。需要用户的数据时先用工具去查，不要凭空回答；互不依赖的查询可以一次调用多个工具。用到某篇日记时在句末写上它的编号，如 [D3]。用户要做的事需要他自己在页面里完成时（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置等），用 open_page 给他一个前往按钮，并说明怎么做。工具报错时按错误说明改正参数或换个办法；确实做不到就直说。",
+  "aiPromptAgentSystem": "你可以调用工具来查找、统计用户的日记，查看日历、待办与纪念日，打开应用里的页面；用户要求时，还可以新建和修改日记、整理标签与日记本、管理待办与纪念日、调整设置。需要用户的数据时先用工具去查，不要凭空回答；互不依赖的查询可以一次调用多个工具。只做用户要求的改动，拿不准要改哪篇、改成什么时先问清楚；改动都可以撤销，删除类会先由用户确认，做完后用一两句话说明做了什么。用到某篇日记时在句末写上它的编号，如 [D3]。用户要做的事需要他自己在页面里完成时（备份、恢复、导入导出、分享、应用锁、密码、AI 服务商设置、彻底删除等），用 open_page 给他一个前往按钮，并说明怎么做。工具报错时按错误说明改正参数或换个办法；确实做不到就直说。",
   "@aiPromptAgentSystem": {
     "description": "智能体的系统提示词（发给模型；日文、俄文版只为键集合一致）。"
   },

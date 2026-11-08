@@ -37,6 +37,7 @@ import '../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../widgets/expressive_menu/expressive_menu_item.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/ai_agent_turn.dart';
+import '../controllers/ai_agent_undo_flow.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_chat_flows.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
@@ -522,6 +523,16 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                                 unawaited(copyAiText(context, text)),
                             onOpenPage: (navigation) =>
                                 unawaited(_openPage(navigation)),
+                            onUndoCalls: busy
+                                ? null
+                                : (ids) => unawaited(
+                                    undoAiAgentCalls(
+                                      context,
+                                      ref,
+                                      messages[i],
+                                      callIds: ids,
+                                    ),
+                                  ),
                             onSaveAsDiary: (text) => unawaited(
                               saveAiTextAsDiary(
                                 context,
@@ -648,6 +659,8 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
             showReasoning: showReasoning,
             onCitation: (ref) => _openCitation(citations, ref),
             onOpen: (navigation) => unawaited(_openPage(navigation)),
+            onDecide: (callId, approved) =>
+                turn.decide(callId, approved: approved),
           ),
           if (turn.text.isNotEmpty || turn.reasoning.isNotEmpty)
             AiChatAnswerBody(

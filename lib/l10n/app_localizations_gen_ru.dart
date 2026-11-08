@@ -12843,7 +12843,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiModuleChatSubtitle =>
-      'Спрашивайте о дневнике или поручите ИИ найти, посчитать и открыть нужные страницы';
+      'Спрашивайте о дневнике или поручите ИИ искать, писать записи, наводить порядок и менять настройки';
 
   @override
   String get aiModuleVision => 'Распознавание изображений';
@@ -13388,6 +13388,301 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get aiToolCreateDiary => 'Новая запись';
+
+  @override
+  String aiToolCreateDiaryNamed(String title) {
+    return 'Новая запись: $title';
+  }
+
+  @override
+  String aiToolDiaryCreated(String name) {
+    return 'Сохранено: «$name»';
+  }
+
+  @override
+  String get aiToolAppendDiary => 'Дописать в запись';
+
+  @override
+  String get aiToolUpdateDiary => 'Изменить данные записи';
+
+  @override
+  String aiToolDiaryChanged(String name) {
+    return 'Изменено: «$name»';
+  }
+
+  @override
+  String aiToolTagDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Изменить теги $count записи',
+      many: 'Изменить теги $count записей',
+      few: 'Изменить теги $count записей',
+      one: 'Изменить теги $count записи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolEntriesChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Изменено $count записи',
+      many: 'Изменено $count записей',
+      few: 'Изменено $count записи',
+      one: 'Изменена $count запись',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolPinDiaries => 'Закрепить записи';
+
+  @override
+  String get aiToolUnpinDiaries => 'Открепить записи';
+
+  @override
+  String get aiToolArchiveDiaries => 'Архивировать записи';
+
+  @override
+  String get aiToolUnarchiveDiaries => 'Вернуть записи из архива';
+
+  @override
+  String aiToolTrashDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Переместить $count записи в корзину',
+      many: 'Переместить $count записей в корзину',
+      few: 'Переместить $count записи в корзину',
+      one: 'Переместить $count запись в корзину',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolEntriesTrashed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'В корзине $count записи',
+      many: 'В корзине $count записей',
+      few: 'В корзине $count записи',
+      one: 'В корзине $count запись',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolAddComment => 'Добавить комментарий';
+
+  @override
+  String aiToolCreateTag(String name) {
+    return 'Создать тег: $name';
+  }
+
+  @override
+  String aiToolRenameTag(String name) {
+    return 'Изменить тег: $name';
+  }
+
+  @override
+  String aiToolMergeTags(String from, String into) {
+    return 'Объединить $from в $into';
+  }
+
+  @override
+  String aiToolDeleteTag(String name) {
+    return 'Удалить тег $name';
+  }
+
+  @override
+  String aiToolCreateNotebook(String name) {
+    return 'Создать блокнот: $name';
+  }
+
+  @override
+  String aiToolRenameNotebook(String name) {
+    return 'Переименовать блокнот: $name';
+  }
+
+  @override
+  String aiToolAddToNotebook(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавить $count записи в блокнот',
+      many: 'Добавить $count записей в блокнот',
+      few: 'Добавить $count записи в блокнот',
+      one: 'Добавить $count запись в блокнот',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolRemoveFromNotebook(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Убрать $count записи из блокнота',
+      many: 'Убрать $count записей из блокнота',
+      few: 'Убрать $count записи из блокнота',
+      one: 'Убрать $count запись из блокнота',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolCreateTodo(String title) {
+    return 'Новая задача: $title';
+  }
+
+  @override
+  String aiToolUpdateTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Изменить $count задачи',
+      many: 'Изменить $count задач',
+      few: 'Изменить $count задачи',
+      one: 'Изменить $count задачу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolCompleteTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выполнить $count задачи',
+      many: 'Выполнить $count задач',
+      few: 'Выполнить $count задачи',
+      one: 'Выполнить $count задачу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolDeleteTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалить $count задачи',
+      many: 'Удалить $count задач',
+      few: 'Удалить $count задачи',
+      one: 'Удалить $count задачу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolCreateAnniversary(String title) {
+    return 'Новая памятная дата: $title';
+  }
+
+  @override
+  String get aiToolDeleteAnniversary => 'Удалить памятную дату';
+
+  @override
+  String aiToolSetDayMood(String date) {
+    return 'Настроение на $date';
+  }
+
+  @override
+  String get aiToolSetTheme => 'Изменить тему';
+
+  @override
+  String aiToolSetLanguage(String language) {
+    return 'Язык интерфейса: $language';
+  }
+
+  @override
+  String get aiToolSetFontScale => 'Изменить размер текста';
+
+  @override
+  String aiToolFeatureOn(String feature) {
+    return 'Включить: $feature';
+  }
+
+  @override
+  String aiToolFeatureOff(String feature) {
+    return 'Выключить: $feature';
+  }
+
+  @override
+  String get aiToolDone => 'Готово';
+
+  @override
+  String get aiToolBlockedByEditor =>
+      'Открыта страница редактирования — закройте её и повторите';
+
+  @override
+  String get aiAgentConfirmDelete => 'Удалить?';
+
+  @override
+  String get aiAgentConfirmChange => 'Внести это изменение?';
+
+  @override
+  String get aiAgentDelete => 'Удалить';
+
+  @override
+  String get aiAgentProceed => 'Выполнить';
+
+  @override
+  String get aiAgentUndo => 'Отменить';
+
+  @override
+  String get aiAgentUndoAll => 'Отменить все изменения этого ответа';
+
+  @override
+  String get aiAgentStepUndone => 'Отменено';
+
+  @override
+  String aiAgentUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Отменено $count изменения',
+      many: 'Отменено $count изменений',
+      few: 'Отменено $count изменения',
+      one: 'Отменено $count изменение',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiAgentUndoFailed(String error) {
+    return 'Не удалось отменить: $error';
+  }
+
+  @override
+  String get aiAgentUndoConflictTitle => 'Изменено после этого';
+
+  @override
+  String get aiAgentUndoConflictBody =>
+      'После изменения ИИ это редактировали ещё раз. Отмена перезапишет и эти правки. Всё равно отменить?';
+
+  @override
+  String get aiAgentUndoConflictAction => 'Всё равно отменить';
+
+  @override
+  String get aiOptionAgentChanges => 'Разрешить ИИ вносить изменения';
+
+  @override
+  String get aiOptionAgentChangesSubtitle =>
+      'Создавать и править записи, упорядочивать теги и блокноты, добавлять задачи, менять настройки; любое изменение можно отменить, удаление — только после подтверждения';
+
+  @override
+  String get aiOptionAgentConfirm => 'Подтверждать каждое изменение';
+
+  @override
+  String get aiOptionAgentConfirmSubtitle =>
+      'Если выключено, изменения выполняются сразу и их можно отменить; удаление всегда требует подтверждения';
+
+  @override
   String get aiDestinationDiary => 'Эта запись';
 
   @override
@@ -13451,7 +13746,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiPromptAgentSystem =>
-      'Ты можешь вызывать инструменты: искать и считать записи пользователя, смотреть календарь, задачи и памятные даты, открывать страницы приложения. Когда нужны данные пользователя, ищи их инструментами, а не угадывай; независимые запросы можно вызывать вместе. Если используешь запись, указывай её метку в конце предложения, например [D3]. Если пользователь должен сам сделать что-то на странице (резервная копия, восстановление, импорт и экспорт, отправка, блокировка приложения, пароли, настройки AI-сервиса), дай кнопку через open_page и объясни шаги. Если инструмент вернул ошибку, исправь аргументы или попробуй иначе; если это действительно невозможно, так и скажи.';
+      'Ты можешь вызывать инструменты: искать и считать записи пользователя, смотреть календарь, задачи и памятные даты, открывать страницы приложения; по просьбе пользователя — также создавать и править записи, упорядочивать теги и блокноты, управлять задачами и памятными датами, менять настройки. Когда нужны данные пользователя, ищи их инструментами, а не угадывай; независимые запросы можно вызывать вместе. Вноси только те изменения, о которых просили; если неясно, какую запись и на что менять, сначала уточни. Любое изменение можно отменить, удаление пользователь подтверждает сам; после изменений скажи в одном-двух предложениях, что сделано. Если используешь запись, указывай её метку в конце предложения, например [D3]. Если пользователь должен сам сделать что-то на странице (резервная копия, восстановление, импорт и экспорт, отправка, блокировка приложения, пароли, настройки AI-сервиса, окончательное удаление), дай кнопку через open_page и объясни шаги. Если инструмент вернул ошибку, исправь аргументы или попробуй иначе; если это действительно невозможно, так и скажи.';
 
   @override
   String aiPromptAgentNow(String time) {

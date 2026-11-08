@@ -50,6 +50,9 @@ class AiAgentCallRecord {
     this.summary,
     this.error,
     this.navigation,
+    this.undo,
+    this.undone = false,
+    this.preview,
   });
 
   final String id;
@@ -70,11 +73,27 @@ class AiAgentCallRecord {
   /// “前往”按钮。
   final AiToolNavigation? navigation;
 
+  /// 撤销所需的数据（写工具给的 [AiToolOutcome.undo]）；交回 [AiTool.undo]。
+  final Map<String, Object?>? undo;
+
+  /// 已经撤销过。
+  final bool undone;
+
+  /// 等待确认时给用户看的内容（只在内存里，不落库）。
+  final AiToolPreview? preview;
+
+  /// 能不能撤销：成功了、带着撤销数据、还没撤销过。
+  bool get canUndo =>
+      status == AiToolCallStatus.succeeded && undo != null && !undone;
+
   AiAgentCallRecord copyWith({
     AiToolCallStatus? status,
     String? summary,
     String? error,
     AiToolNavigation? navigation,
+    Map<String, Object?>? undo,
+    bool? undone,
+    AiToolPreview? preview,
   }) {
     return AiAgentCallRecord(
       id: id,
@@ -84,6 +103,12 @@ class AiAgentCallRecord {
       summary: summary ?? this.summary,
       error: error ?? this.error,
       navigation: navigation ?? this.navigation,
+      undo: undo ?? this.undo,
+      undone: undone ?? this.undone,
+      // 预览只在等确认时有用，状态一变就丢掉。
+      preview: status == null || status == AiToolCallStatus.awaitingConfirmation
+          ? preview ?? this.preview
+          : null,
     );
   }
 
@@ -97,6 +122,8 @@ class AiAgentCallRecord {
     'summary': ?summary,
     'error': ?error,
     if (navigation != null) 'navigation': navigation!.toJson(),
+    'undo': ?undo,
+    if (undone) 'undone': true,
   };
 
   static AiAgentCallRecord? fromJson(Object? raw) {
@@ -107,6 +134,7 @@ class AiAgentCallRecord {
     final args = raw['args'];
     final summary = raw['summary'];
     final error = raw['error'];
+    final undo = raw['undo'];
     return AiAgentCallRecord(
       id: id,
       tool: tool,
@@ -117,6 +145,8 @@ class AiAgentCallRecord {
       summary: summary is String ? summary : null,
       error: error is String ? error : null,
       navigation: AiToolNavigation.fromJson(raw['navigation']),
+      undo: undo is Map ? undo.cast<String, Object?>() : null,
+      undone: raw['undone'] == true,
     );
   }
 }

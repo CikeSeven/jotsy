@@ -27,8 +27,10 @@ import '../../../core/services/ai/agent/ai_tool_schema.dart';
 import '../../../core/services/ai/ai_failure.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/ai_provider_config.dart';
+import '../../../core/services/editing_session_registry.dart';
 import '../models/ai_agent_steps.dart';
 import '../tools/ai_tool.dart';
+import '../tools/ai_tool_registry.dart';
 import '../viewmodels/ai_citations.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import 'ai_stream_run.dart';
@@ -65,6 +67,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
   AiToolNavigation? autoOpen;
 
   AiUsage? _usage;
+  final Map<String, Completer<bool>> _decisions = <String, Completer<bool>>{};
   Future<void> _writes = Future<void>.value();
   Timer? _notifyTimer;
   bool _disposed = false;
@@ -141,6 +144,65 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     } on AiToolArgumentError catch (error) {
       return _fail(step, call, error.message);
     }
+    final changes = aiToolChangesData(tool);
+    final registry = EditingSessionRegistry.instance;
+    // 编辑页整份保存会盖掉这里的改动：有页面在编辑时不写。
+    if (changes && registry.isEditing) {
+      return _fail(
+        step,
+        call,
+        'Another page is editing data (${registry.activeEditorLabels.join(', ')}). '
+        'Ask the user to close it, then try again.',
+        summary: toolContext.l10n.aiToolBlockedByEditor,
+      );
+    }
+    final confirm =
+        tool.effect == AiToolEffect.destructive ||
+        (tool.effect == AiToolEffect.write &&
+            toolContext.prefs.agent.confirmChanges);
+    if (confirm) {
+      final AiToolPreview? preview;
+      try {
+        preview = await tool.preview(toolContext, args);
+      } on AiToolFailure catch (failure) {
+        return _fail(step, call, failure.message, summary: failure.summary);
+      }
+      _update(
+        step,
+        call.id,
+        (record) => record.copyWith(
+          status: AiToolCallStatus.awaitingConfirmation,
+          preview:
+              preview ??
+              AiToolPreview(title: tool.label(toolContext.l10n, raw)),
+        ),
+      );
+      final approved = await _awaitDecision(call.id);
+      if (!approved) {
+        _update(
+          step,
+          call.id,
+          (record) => record.copyWith(status: AiToolCallStatus.rejected),
+        );
+        await _save();
+        return AiToolResultPart(
+          callId: call.id,
+          name: call.name,
+          content: jsonEncode(<String, Object?>{
+            'error':
+                'The user declined this action. Do not try to get the same '
+                'effect another way; ask what they want instead.',
+          }),
+          isError: true,
+        );
+      }
+      _update(
+        step,
+        call.id,
+        (record) => record.copyWith(status: AiToolCallStatus.executing),
+      );
+    }
+    final lease = changes ? registry.beginEditing('ai-agent') : null;
     try {
       final outcome = await tool.run(toolContext, args);
       if (toolContext.token.isCancelled) throw const _Cancelled();
@@ -151,6 +213,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
           status: AiToolCallStatus.succeeded,
           summary: outcome.summary,
           navigation: outcome.navigation,
+          undo: outcome.undo,
         ),
       );
       if (outcome.navigation case final navigation? when navigation.now) {
@@ -175,6 +238,29 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     } catch (error) {
       // 工具里的意外错误（数据库、解析）：如实回传，模型可以换个做法。
       return _fail(step, call, 'The tool failed: $error');
+    } finally {
+      lease?.end();
+    }
+  }
+
+  /// 等用户在确认卡上点“执行 / 取消”（[decide]）；停止时当作取消并抛出。
+  Future<bool> _awaitDecision(String callId) async {
+    final completer = _decisions[callId] = Completer<bool>();
+    final token = toolContext.token;
+    final decided = await Future.any<bool?>(<Future<bool?>>[
+      completer.future,
+      token.whenCancelled.then((_) => null),
+    ]);
+    _decisions.remove(callId);
+    if (decided == null || token.isCancelled) throw const _Cancelled();
+    return decided;
+  }
+
+  /// 用户对某个等待确认的调用做了决定。
+  void decide(String callId, {required bool approved}) {
+    final completer = _decisions[callId];
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(approved);
     }
   }
 

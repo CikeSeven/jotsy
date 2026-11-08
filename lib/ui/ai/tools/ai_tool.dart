@@ -24,12 +24,13 @@ import '../../../core/services/app_features.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/http_cancel_token.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../notebooks/viewmodels/notebook_tree.dart';
 import '../models/ai_preferences.dart';
 import '../viewmodels/ai_prompt_builder.dart';
 import '../viewmodels/ai_task_prompts.dart';
 
 /// 工具所属的领域：决定卡片图标的分组，也是设置里“可用的工具”的单位。
-enum AiToolGroup { app, diaries, organize, calendar, navigation }
+enum AiToolGroup { app, diaries, organize, calendar, settings, navigation }
 
 /// 工具的效果，决定确认与撤销口径。
 enum AiToolEffect {
@@ -80,6 +81,23 @@ abstract class AiTool {
   /// 一天中的分钟数）。
   Future<AiToolOutcome> run(AiToolContext context, Map<String, Object?> args);
 
+  /// 执行前给用户确认时的内容（删除类，或开了“改动前确认”的写操作）。
+  /// 返回 null 时只显示 [label]。可以读库（例如列出要删的日记标题），不能
+  /// 改动任何数据。
+  Future<AiToolPreview?> preview(
+    AiToolContext context,
+    Map<String, Object?> args,
+  ) async => null;
+
+  /// 撤销 [run] 的结果（[data] 为 [AiToolOutcome.undo]）。数据在那之后又被
+  /// 别处改过、且 [force] 为 false 时抛 [AiUndoConflict]，由界面问过用户再
+  /// 带着 `force: true` 重来。写工具必须实现。
+  Future<void> undo(
+    ProviderContainer container,
+    Map<String, Object?> data, {
+    bool force = false,
+  }) => throw UnsupportedError('$name cannot be undone');
+
   AiToolSpec get spec => AiToolSpec(
     name: name,
     description: description,
@@ -102,7 +120,12 @@ class AiToolFailure implements Exception {
 /// 工具的结果。
 @immutable
 class AiToolOutcome {
-  const AiToolOutcome({required this.data, this.summary, this.navigation});
+  const AiToolOutcome({
+    required this.data,
+    this.summary,
+    this.navigation,
+    this.undo,
+  });
 
   /// 回传模型的数据（JSON 可编码）。
   final Object? data;
@@ -112,6 +135,31 @@ class AiToolOutcome {
 
   /// 要给用户的“前往”按钮。
   final AiToolNavigation? navigation;
+
+  /// 撤销所需的数据（JSON 可编码，存进步骤记录），交回 [AiTool.undo]。写
+  /// 工具必须给。
+  final Map<String, Object?>? undo;
+}
+
+/// 执行前确认面板的内容：一句标题与几行要点（界面语言）。
+@immutable
+class AiToolPreview {
+  const AiToolPreview({required this.title, this.lines = const <String>[]});
+
+  final String title;
+  final List<String> lines;
+}
+
+/// 撤销时发现数据在那之后又被别处改过：界面先问用户要不要覆盖。
+class AiUndoConflict implements Exception {
+  const AiUndoConflict();
+}
+
+/// 工具需要界面帮忙的事（由对话页提供；后台或测试里可以为 null）。
+abstract interface class AiToolUi {
+  /// 加了带提醒的待办后确认系统允许发通知（与待办页同一口径：没允许时请求
+  /// 一次，仍不允许时提示用户去系统设置，提醒本身照样保留）。
+  Future<void> requestReminderPermission();
 }
 
 /// 一个“前往”按钮：目标页面（`AiDestination.id`）与参数。
@@ -205,8 +253,12 @@ class AiToolContext {
     required this.citations,
     required this.allowance,
     required this.token,
+    this.ui,
     DateTime? now,
   }) : now = now ?? DateTime.now();
+
+  /// 界面能力（申请提醒权限等）；没有界面时为 null。
+  final AiToolUi? ui;
 
   /// 应用的 provider 容器（读数据库、设置与各功能的 provider）。
   final ProviderContainer container;
@@ -224,6 +276,11 @@ class AiToolContext {
   final DateTime now;
 
   AppDatabase get database => container.read(appDatabaseProvider);
+
+  /// 现在的日记本树（直接读库：`notebookTreeProvider` 的流可能还没跟上
+  /// 刚刚的改动，例如同一轮里先建本子再往里收日记）。
+  Future<NotebookTree> notebookTree() async =>
+      NotebookTree(await database.getNotebooks());
 
   AiPreferences get prefs => env.prefs;
 

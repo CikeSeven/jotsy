@@ -15329,7 +15329,7 @@
   "@aiModuleChat": {
     "description": "AI module name."
   },
-  "aiModuleChatSubtitle": "Ask about your journal, or let the AI look things up, count and open pages",
+  "aiModuleChatSubtitle": "Ask about your journal, or let the AI look things up, write entries, organize and change settings",
   "@aiModuleChatSubtitle": {
     "description": "AI module description."
   },
@@ -15936,6 +15936,351 @@
       }
     }
   },
+  "aiToolCreateDiary": "Write a new entry",
+  "@aiToolCreateDiary": {
+    "description": "AI step card: writing a new entry."
+  },
+  "aiToolCreateDiaryNamed": "Write a new entry: {title}",
+  "@aiToolCreateDiaryNamed": {
+    "description": "AI step card: writing a new entry with a title.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDiaryCreated": "Saved \"{name}\"",
+  "@aiToolDiaryCreated": {
+    "description": "AI step card: the entry was saved (title or date).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAppendDiary": "Add text to an entry",
+  "@aiToolAppendDiary": {
+    "description": "AI step card: adding text to the end of an entry."
+  },
+  "aiToolUpdateDiary": "Change entry details",
+  "@aiToolUpdateDiary": {
+    "description": "AI step card: changing an entry's title, date, mood and so on."
+  },
+  "aiToolDiaryChanged": "Changed \"{name}\"",
+  "@aiToolDiaryChanged": {
+    "description": "AI step card: the entry was changed (title or date).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolTagDiaries": "{count, plural, =1{Change tags on 1 entry} other{Change tags on {count} entries}}",
+  "@aiToolTagDiaries": {
+    "description": "AI step card: changing tags on entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesChanged": "{count, plural, =1{1 entry changed} other{{count} entries changed}}",
+  "@aiToolEntriesChanged": {
+    "description": "AI step card: how many entries were changed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolPinDiaries": "Pin entries",
+  "@aiToolPinDiaries": {
+    "description": "AI step card: pinning entries."
+  },
+  "aiToolUnpinDiaries": "Unpin entries",
+  "@aiToolUnpinDiaries": {
+    "description": "AI step card: unpinning entries."
+  },
+  "aiToolArchiveDiaries": "Archive entries",
+  "@aiToolArchiveDiaries": {
+    "description": "AI step card: archiving entries."
+  },
+  "aiToolUnarchiveDiaries": "Bring entries back from the archive",
+  "@aiToolUnarchiveDiaries": {
+    "description": "AI step card: unarchiving entries."
+  },
+  "aiToolTrashDiaries": "{count, plural, =1{Move 1 entry to the recycle bin} other{Move {count} entries to the recycle bin}}",
+  "@aiToolTrashDiaries": {
+    "description": "AI step card: moving entries to the recycle bin.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesTrashed": "{count, plural, =1{1 entry moved to the recycle bin} other{{count} entries moved to the recycle bin}}",
+  "@aiToolEntriesTrashed": {
+    "description": "AI step card: how many entries went to the recycle bin.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolAddComment": "Add a comment",
+  "@aiToolAddComment": {
+    "description": "AI step card: adding a comment to an entry."
+  },
+  "aiToolCreateTag": "Create tag: {name}",
+  "@aiToolCreateTag": {
+    "description": "AI step card: creating a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTag": "Edit tag: {name}",
+  "@aiToolRenameTag": {
+    "description": "AI step card: renaming or recoloring a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolMergeTags": "Merge {from} into {into}",
+  "@aiToolMergeTags": {
+    "description": "AI step card: merging tags.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "into": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTag": "Delete tag {name}",
+  "@aiToolDeleteTag": {
+    "description": "AI step card: deleting a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateNotebook": "Create notebook: {name}",
+  "@aiToolCreateNotebook": {
+    "description": "AI step card: creating a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameNotebook": "Rename notebook to: {name}",
+  "@aiToolRenameNotebook": {
+    "description": "AI step card: renaming a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebook": "{count, plural, =1{Put 1 entry in a notebook} other{Put {count} entries in a notebook}}",
+  "@aiToolAddToNotebook": {
+    "description": "AI step card: putting entries in a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebook": "{count, plural, =1{Take 1 entry out of a notebook} other{Take {count} entries out of a notebook}}",
+  "@aiToolRemoveFromNotebook": {
+    "description": "AI step card: taking entries out of a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateTodo": "Add to-do: {title}",
+  "@aiToolCreateTodo": {
+    "description": "AI step card: adding a to-do.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolUpdateTodos": "{count, plural, =1{Change 1 to-do} other{Change {count} to-dos}}",
+  "@aiToolUpdateTodos": {
+    "description": "AI step card: changing to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCompleteTodos": "{count, plural, =1{Complete 1 to-do} other{Complete {count} to-dos}}",
+  "@aiToolCompleteTodos": {
+    "description": "AI step card: completing to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteTodos": "{count, plural, =1{Delete 1 to-do} other{Delete {count} to-dos}}",
+  "@aiToolDeleteTodos": {
+    "description": "AI step card: deleting to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateAnniversary": "Add anniversary: {title}",
+  "@aiToolCreateAnniversary": {
+    "description": "AI step card: adding an anniversary.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteAnniversary": "Delete an anniversary",
+  "@aiToolDeleteAnniversary": {
+    "description": "AI step card: deleting an anniversary."
+  },
+  "aiToolSetDayMood": "Set the mood for {date}",
+  "@aiToolSetDayMood": {
+    "description": "AI step card: setting the mood of a day (date as YYYY-MM-DD).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetTheme": "Change the theme",
+  "@aiToolSetTheme": {
+    "description": "AI step card: changing the theme."
+  },
+  "aiToolSetLanguage": "Switch the app to {language}",
+  "@aiToolSetLanguage": {
+    "description": "AI step card: changing the app language (its native name).",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetFontScale": "Change text size",
+  "@aiToolSetFontScale": {
+    "description": "AI step card: changing the interface text size."
+  },
+  "aiToolFeatureOn": "Turn on: {feature}",
+  "@aiToolFeatureOn": {
+    "description": "AI step card: turning a feature on.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFeatureOff": "Turn off: {feature}",
+  "@aiToolFeatureOff": {
+    "description": "AI step card: turning a feature off.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDone": "Done",
+  "@aiToolDone": {
+    "description": "AI step card: the change is done."
+  },
+  "aiToolBlockedByEditor": "A page is being edited; close it and try again",
+  "@aiToolBlockedByEditor": {
+    "description": "AI step card: an editor is open, so the AI did not change data."
+  },
+  "aiAgentConfirmDelete": "Delete this?",
+  "@aiAgentConfirmDelete": {
+    "description": "Title of a delete confirmation inside an AI step."
+  },
+  "aiAgentConfirmChange": "Make this change?",
+  "@aiAgentConfirmChange": {
+    "description": "Title of a change confirmation inside an AI step."
+  },
+  "aiAgentDelete": "Delete",
+  "@aiAgentDelete": {
+    "description": "Delete button on an AI step confirmation."
+  },
+  "aiAgentProceed": "Do it",
+  "@aiAgentProceed": {
+    "description": "Proceed button on an AI step confirmation."
+  },
+  "aiAgentUndo": "Undo",
+  "@aiAgentUndo": {
+    "description": "Undo one change the AI made."
+  },
+  "aiAgentUndoAll": "Undo all changes in this reply",
+  "@aiAgentUndoAll": {
+    "description": "Undo every change the AI made in this reply."
+  },
+  "aiAgentStepUndone": "Undone",
+  "@aiAgentStepUndone": {
+    "description": "The AI step was undone."
+  },
+  "aiAgentUndone": "{count, plural, =1{Undid 1 change} other{Undid {count} changes}}",
+  "@aiAgentUndone": {
+    "description": "Snackbar after undoing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentUndoFailed": "Couldn't undo: {error}",
+  "@aiAgentUndoFailed": {
+    "description": "Snackbar when undoing failed.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentUndoConflictTitle": "Changed since then",
+  "@aiAgentUndoConflictTitle": {
+    "description": "Title of the undo conflict dialog."
+  },
+  "aiAgentUndoConflictBody": "This was changed again after the AI's edit. Undoing will overwrite those changes too. Undo anyway?",
+  "@aiAgentUndoConflictBody": {
+    "description": "Body of the undo conflict dialog."
+  },
+  "aiAgentUndoConflictAction": "Undo anyway",
+  "@aiAgentUndoConflictAction": {
+    "description": "Confirm button of the undo conflict dialog."
+  },
+  "aiOptionAgentChanges": "Let the AI make changes",
+  "@aiOptionAgentChanges": {
+    "description": "AI settings: toggle that lets the assistant change data."
+  },
+  "aiOptionAgentChangesSubtitle": "Write and edit entries, organize tags and notebooks, add to-dos, change settings; every change can be undone and deletions are confirmed first",
+  "@aiOptionAgentChangesSubtitle": {
+    "description": "Explanation of the allow-changes toggle."
+  },
+  "aiOptionAgentConfirm": "Confirm every change",
+  "@aiOptionAgentConfirm": {
+    "description": "AI settings: confirm before every change."
+  },
+  "aiOptionAgentConfirmSubtitle": "When off, changes happen right away and can be undone; deletions are always confirmed",
+  "@aiOptionAgentConfirmSubtitle": {
+    "description": "Explanation of the confirm-changes toggle."
+  },
   "aiDestinationDiary": "This entry",
   "@aiDestinationDiary": {
     "description": "AI open-page target: an entry."
@@ -16006,7 +16351,7 @@
   "@aiOptionAgentStepsSubtitle": {
     "description": "Explanation of the max steps option."
   },
-  "aiPromptAgentSystem": "You can call tools to search and count the user's diary entries, check the calendar, to-dos and anniversaries, and open pages of the app. Look things up with tools instead of guessing; independent lookups can be called together. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can't be done, say so.",
+  "aiPromptAgentSystem": "You can call tools to search and count the user's diary entries, check the calendar, to-dos and anniversaries, and open pages of the app; when the user asks, you can also write and edit entries, organize tags and notebooks, manage to-dos and anniversaries, and change settings. Look things up with tools instead of guessing; independent lookups can be called together. Only make the changes the user asked for; if it is unclear which entry or what to change, ask first. Every change can be undone and deletions are confirmed by the user; afterwards, say in a sentence or two what you did. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings, permanent deletion), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can't be done, say so.",
   "@aiPromptAgentSystem": {
     "description": "System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete)."
   },

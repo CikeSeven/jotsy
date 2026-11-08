@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/ai/ai_models.dart';
 import 'package:node_diary/core/services/ai/ai_provider_config.dart';
 import 'package:node_diary/core/services/ai/ai_provider_store.dart';
 import 'package:node_diary/core/services/ai/ai_service.dart';
+import 'package:node_diary/core/services/editing_session_registry.dart';
 import 'package:node_diary/ui/ai/models/ai_agent_steps.dart';
 import 'package:node_diary/ui/ai/pages/ai_chat_page.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
@@ -220,6 +221,118 @@ void main() {
     expect(requests, hasLength(1));
     expect(find.text('好的。'), findsOneWidget);
     await h.unmount();
+  });
+
+  group('changes', () {
+    tearDown(EditingSessionRegistry.instance.debugReset);
+
+    Future<String> trashTurn(DiaryDraftsHarness h, String reply) async {
+      final id = await seedDiary(h, '要删的那篇', '正文');
+      service = scriptedAiService(
+        store,
+        requests: requests,
+        turns: [
+          toolTurn([
+            (
+              id: 'c1',
+              name: 'trash_diaries',
+              args: {
+                'ids': [id],
+              },
+            ),
+          ]),
+          textTurn(reply),
+        ],
+      );
+      return id;
+    }
+
+    Future<bool> isDeleted(DiaryDraftsHarness h, String id) async =>
+        (await h.tester.runAsync(
+          () => h.database.getDiaryWithTagsByDiaryId(id),
+        ))!.diary.isDeleted;
+
+    testWidgets('deleting asks first; cancelling tells the model', (
+      tester,
+    ) async {
+      final h = await setUpHarness(tester);
+      final id = await trashTurn(h, '好的，没有删。');
+      await h.pump(
+        const AiChatPage(initialQuestion: '删掉那篇'),
+        overrides: overrides(),
+      );
+      await settleMany(h);
+
+      expect(find.text(h.l10n.aiAgentConfirmDelete), findsOneWidget);
+      expect(find.textContaining('要删的那篇'), findsOneWidget);
+      expect(requests, hasLength(1));
+      await tester.tap(find.text(h.l10n.commonCancel).last);
+      await settleMany(h);
+
+      expect(await isDeleted(h, id), isFalse);
+      final result = requests.last.messages.last.toolResults.single;
+      expect(result.isError, isTrue);
+      expect(result.content, contains('declined'));
+      expect(find.text(h.l10n.aiAgentStepCancelled), findsOneWidget);
+      await h.unmount();
+    });
+
+    testWidgets('a confirmed deletion runs and undo brings it back', (
+      tester,
+    ) async {
+      final h = await setUpHarness(tester);
+      final id = await trashTurn(h, '已经移入回收站。');
+      await h.pump(
+        const AiChatPage(initialQuestion: '删掉那篇'),
+        overrides: overrides(),
+      );
+      await settleMany(h);
+      await tester.tap(find.text(h.l10n.aiAgentDelete));
+      await settleMany(h);
+      expect(await isDeleted(h, id), isTrue);
+      expect(find.text(h.l10n.aiToolEntriesTrashed(1)), findsOneWidget);
+
+      await tester.tap(find.text(h.l10n.aiAgentUndo));
+      await settleMany(h);
+      expect(await isDeleted(h, id), isFalse);
+      expect(find.text(h.l10n.aiAgentStepUndone), findsOneWidget);
+      expect(find.text(h.l10n.aiAgentUndo), findsNothing);
+      final steps = AiAgentStepRecord.decodeList(
+        (await savedMessages(h)).last.steps,
+      );
+      expect(steps.single.calls.single.undone, isTrue);
+      await h.unmount();
+    });
+
+    testWidgets('nothing is written while an editor is open', (tester) async {
+      final h = await setUpHarness(tester);
+      service = scriptedAiService(
+        store,
+        requests: requests,
+        turns: [
+          toolTurn([
+            (id: 'c1', name: 'create_diary', args: const {'body': '新的一篇'}),
+          ]),
+          textTurn('有页面正在编辑。'),
+        ],
+      );
+      EditingSessionRegistry.instance.beginEditing('edit-diary');
+      await h.pump(
+        const AiChatPage(initialQuestion: '帮我记一篇'),
+        overrides: overrides(),
+      );
+      await settleMany(h);
+
+      final result = requests.last.messages.last.toolResults.single;
+      expect(result.isError, isTrue);
+      expect(result.content, contains('editing'));
+      expect(find.text(h.l10n.aiToolBlockedByEditor), findsOneWidget);
+      final diaries = (await tester.runAsync(
+        () => h.database.select(h.database.diaries).get(),
+      ))!;
+      expect(diaries, isEmpty);
+      await h.unmount();
+    });
   });
 
   testWidgets('a call without a result shows as interrupted after reopening', (

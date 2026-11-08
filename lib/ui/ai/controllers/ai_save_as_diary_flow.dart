@@ -27,6 +27,19 @@ import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../viewmodels/ai_citations.dart';
 
+/// AI 输出的 Markdown 转成正文的块文档（去掉 `[Dn]` 引用；与粘贴 Markdown
+/// 同一转换）。“另存为日记”与 AI 助手新建、追加日记共用。
+Map<String, Object?> aiMarkdownDiaryDocument(String markdown) =>
+    <String, Object?>{
+      'document': <String, Object?>{
+        'type': 'page',
+        'children': [
+          for (final node in diaryAiMarkdownNodes(aiStripCitations(markdown)))
+            node.toJson(),
+        ],
+      },
+    };
+
 /// 另存为日记：写一份草稿并打开新建编辑页。[notebookId] 给出、日记本功能
 /// 开着且那本仍是可收录的手动本时，预先勾选它。
 Future<void> saveAiTextAsDiary(
@@ -37,15 +50,7 @@ Future<void> saveAiTextAsDiary(
   String? notebookId,
 }) async {
   final database = ref.read(appDatabaseProvider);
-  final text = aiStripCitations(markdown);
-  final document = <String, Object?>{
-    'document': <String, Object?>{
-      'type': 'page',
-      'children': [
-        for (final node in diaryAiMarkdownNodes(text)) node.toJson(),
-      ],
-    },
-  };
+  final document = aiMarkdownDiaryDocument(markdown);
   var notebooks = const <String>[];
   if (notebookId != null && ref.read(appFeaturesProvider).notebooks) {
     final row = await database.getNotebook(notebookId);

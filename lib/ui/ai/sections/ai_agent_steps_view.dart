@@ -7,6 +7,11 @@
 // 行下放“前往 某页面”色调按钮。一组超过 3 个调用且不在进行中时默认收起成
 // “执行了 N 个操作”。
 //
+// 改动类调用：进行中等待确认时在行下展开确认卡（要点 + 灰色“取消” / 删除类
+// 为 error 色的“删除”，其余为“执行”）；保存后的成功改动在行下有“撤销”，撤
+// 过的显示“已撤销”；一条回答里可撤销的改动有两个以上时，步骤末尾另有
+// “撤销本轮全部改动”。
+//
 // 状态口径：落库的 executing 在不进行中的消息里按“已中断”显示（绝不重放）。
 
 import 'dart:convert';
@@ -33,6 +38,8 @@ class AiAgentStepsView extends StatelessWidget {
     required this.showReasoning,
     required this.onCitation,
     required this.onOpen,
+    this.onDecide,
+    this.onUndo,
   });
 
   final List<AiAgentStepRecord> steps;
@@ -43,8 +50,20 @@ class AiAgentStepsView extends StatelessWidget {
   final ValueChanged<String> onCitation;
   final ValueChanged<AiToolNavigation> onOpen;
 
+  /// 进行中：用户在确认卡上点了执行（true）或取消（false）。
+  final void Function(String callId, bool approved)? onDecide;
+
+  /// 已保存：撤销这些调用（null 为全部可撤销的）。
+  final void Function(Set<String>? callIds)? onUndo;
+
   @override
   Widget build(BuildContext context) {
+    final undoable = onUndo == null
+        ? 0
+        : steps.fold<int>(
+            0,
+            (sum, step) => sum + step.calls.where((c) => c.canUndo).length,
+          );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -59,9 +78,24 @@ class AiAgentStepsView extends StatelessWidget {
           if (step.calls.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: _CallGroup(calls: step.calls, live: live, onOpen: onOpen),
+              child: _CallGroup(
+                calls: step.calls,
+                live: live,
+                onOpen: onOpen,
+                onDecide: onDecide,
+                onUndo: onUndo,
+              ),
             ),
         ],
+        if (undoable > 1)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: () => onUndo!(null),
+              icon: const FaIcon(FontAwesomeIcons.rotateLeft, size: 14),
+              label: Text(context.l10n.aiAgentUndoAll),
+            ),
+          ),
       ],
     );
   }
@@ -103,11 +137,15 @@ class _CallGroup extends StatefulWidget {
     required this.calls,
     required this.live,
     required this.onOpen,
+    this.onDecide,
+    this.onUndo,
   });
 
   final List<AiAgentCallRecord> calls;
   final bool live;
   final ValueChanged<AiToolNavigation> onOpen;
+  final void Function(String callId, bool approved)? onDecide;
+  final void Function(Set<String>? callIds)? onUndo;
 
   @override
   State<_CallGroup> createState() => _CallGroupState();
@@ -149,6 +187,8 @@ class _CallGroupState extends State<_CallGroup> {
                     call: call,
                     live: widget.live,
                     onOpen: widget.onOpen,
+                    onDecide: widget.onDecide,
+                    onUndo: widget.onUndo,
                   ),
             ],
           ),
@@ -207,11 +247,15 @@ class _CallRow extends StatefulWidget {
     required this.call,
     required this.live,
     required this.onOpen,
+    this.onDecide,
+    this.onUndo,
   });
 
   final AiAgentCallRecord call;
   final bool live;
   final ValueChanged<AiToolNavigation> onOpen;
+  final void Function(String callId, bool approved)? onDecide;
+  final void Function(Set<String>? callIds)? onUndo;
 
   @override
   State<_CallRow> createState() => _CallRowState();
@@ -230,6 +274,11 @@ class _CallRowState extends State<_CallRow> {
     final label = tool?.label(l10n, call.args) ?? call.tool;
     final running = !call.status.finished && widget.live;
     final (statusIcon, statusColor, statusText) = switch (call.status) {
+      AiToolCallStatus.succeeded when call.undone => (
+        FontAwesomeIcons.rotateLeft,
+        colors.onSurfaceVariant,
+        l10n.aiAgentStepUndone,
+      ),
       AiToolCallStatus.succeeded => (
         FontAwesomeIcons.check,
         colors.primary,
@@ -251,7 +300,12 @@ class _CallRowState extends State<_CallRow> {
         l10n.aiAgentStepInterrupted,
       ),
     };
-    final note = call.summary ?? statusText;
+    final note = call.undone ? statusText : call.summary ?? statusText;
+    final confirming =
+        widget.live &&
+        call.status == AiToolCallStatus.awaitingConfirmation &&
+        widget.onDecide != null;
+    final destructive = tool?.effect == AiToolEffect.destructive;
     final navigation = call.navigation;
     final destination = navigation == null
         ? null
@@ -314,7 +368,13 @@ class _CallRowState extends State<_CallRow> {
                 const SizedBox(width: 8),
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
-                  child: running
+                  child: confirming
+                      ? FaIcon(
+                          FontAwesomeIcons.circleQuestion,
+                          size: 14,
+                          color: destructive ? colors.error : colors.primary,
+                        )
+                      : running
                       ? const ExpressiveLoadingIndicator(size: 14)
                       : FaIcon(statusIcon, size: 14, color: statusColor),
                 ),
@@ -332,6 +392,26 @@ class _CallRowState extends State<_CallRow> {
                 color: colors.onSurfaceVariant,
               ),
               contextMenuBuilder: appTextContextMenuBuilder,
+            ),
+          ),
+        if (confirming)
+          _ConfirmCard(
+            preview: call.preview,
+            destructive: destructive,
+            onDecide: (approved) => widget.onDecide!(call.id, approved),
+          ),
+        if (call.canUndo && widget.onUndo != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(34, 0, 14, 4),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: () => widget.onUndo!({call.id}),
+                child: Text(l10n.aiAgentUndo),
+              ),
             ),
           ),
         if (destination != null && call.status == AiToolCallStatus.succeeded)
@@ -356,7 +436,79 @@ class _CallRowState extends State<_CallRow> {
     AiToolGroup.diaries => FontAwesomeIcons.bookOpen,
     AiToolGroup.organize => FontAwesomeIcons.tags,
     AiToolGroup.calendar => FontAwesomeIcons.calendarDays,
+    AiToolGroup.settings => FontAwesomeIcons.sliders,
     AiToolGroup.navigation => FontAwesomeIcons.arrowUpRightFromSquare,
     null => FontAwesomeIcons.screwdriverWrench,
   };
+}
+
+/// 等待确认的调用下面的确认卡：要点 + 取消 / 执行（删除类为 error 色的
+/// “删除”）。
+class _ConfirmCard extends StatelessWidget {
+  const _ConfirmCard({
+    required this.preview,
+    required this.destructive,
+    required this.onDecide,
+  });
+
+  final AiToolPreview? preview;
+  final bool destructive;
+  final ValueChanged<bool> onDecide;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final lines = preview?.lines ?? const <String>[];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(42, 0, 14, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(
+            destructive ? l10n.aiAgentConfirmDelete : l10n.aiAgentConfirmChange,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          for (final line in lines)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                line,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: colors.onSurfaceVariant,
+                ),
+                onPressed: () => onDecide(false),
+                child: Text(l10n.commonCancel),
+              ),
+              const SizedBox(width: 4),
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: destructive ? colors.error : colors.primary,
+                ),
+                onPressed: () => onDecide(true),
+                child: Text(
+                  destructive ? l10n.aiAgentDelete : l10n.aiAgentProceed,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

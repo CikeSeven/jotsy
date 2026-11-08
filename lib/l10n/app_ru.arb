@@ -15896,7 +15896,7 @@
   "@aiModuleChat": {
     "description": "AI module name."
   },
-  "aiModuleChatSubtitle": "Спрашивайте о дневнике или поручите ИИ найти, посчитать и открыть нужные страницы",
+  "aiModuleChatSubtitle": "Спрашивайте о дневнике или поручите ИИ искать, писать записи, наводить порядок и менять настройки",
   "@aiModuleChatSubtitle": {
     "description": "AI module description."
   },
@@ -16503,6 +16503,351 @@
       }
     }
   },
+  "aiToolCreateDiary": "Новая запись",
+  "@aiToolCreateDiary": {
+    "description": "AI step card: writing a new entry."
+  },
+  "aiToolCreateDiaryNamed": "Новая запись: {title}",
+  "@aiToolCreateDiaryNamed": {
+    "description": "AI step card: writing a new entry with a title.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDiaryCreated": "Сохранено: «{name}»",
+  "@aiToolDiaryCreated": {
+    "description": "AI step card: the entry was saved (title or date).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAppendDiary": "Дописать в запись",
+  "@aiToolAppendDiary": {
+    "description": "AI step card: adding text to the end of an entry."
+  },
+  "aiToolUpdateDiary": "Изменить данные записи",
+  "@aiToolUpdateDiary": {
+    "description": "AI step card: changing an entry's title, date, mood and so on."
+  },
+  "aiToolDiaryChanged": "Изменено: «{name}»",
+  "@aiToolDiaryChanged": {
+    "description": "AI step card: the entry was changed (title or date).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolTagDiaries": "{count, plural, one{Изменить теги {count} записи} few{Изменить теги {count} записей} many{Изменить теги {count} записей} other{Изменить теги {count} записи}}",
+  "@aiToolTagDiaries": {
+    "description": "AI step card: changing tags on entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesChanged": "{count, plural, one{Изменена {count} запись} few{Изменено {count} записи} many{Изменено {count} записей} other{Изменено {count} записи}}",
+  "@aiToolEntriesChanged": {
+    "description": "AI step card: how many entries were changed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolPinDiaries": "Закрепить записи",
+  "@aiToolPinDiaries": {
+    "description": "AI step card: pinning entries."
+  },
+  "aiToolUnpinDiaries": "Открепить записи",
+  "@aiToolUnpinDiaries": {
+    "description": "AI step card: unpinning entries."
+  },
+  "aiToolArchiveDiaries": "Архивировать записи",
+  "@aiToolArchiveDiaries": {
+    "description": "AI step card: archiving entries."
+  },
+  "aiToolUnarchiveDiaries": "Вернуть записи из архива",
+  "@aiToolUnarchiveDiaries": {
+    "description": "AI step card: unarchiving entries."
+  },
+  "aiToolTrashDiaries": "{count, plural, one{Переместить {count} запись в корзину} few{Переместить {count} записи в корзину} many{Переместить {count} записей в корзину} other{Переместить {count} записи в корзину}}",
+  "@aiToolTrashDiaries": {
+    "description": "AI step card: moving entries to the recycle bin.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEntriesTrashed": "{count, plural, one{В корзине {count} запись} few{В корзине {count} записи} many{В корзине {count} записей} other{В корзине {count} записи}}",
+  "@aiToolEntriesTrashed": {
+    "description": "AI step card: how many entries went to the recycle bin.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolAddComment": "Добавить комментарий",
+  "@aiToolAddComment": {
+    "description": "AI step card: adding a comment to an entry."
+  },
+  "aiToolCreateTag": "Создать тег: {name}",
+  "@aiToolCreateTag": {
+    "description": "AI step card: creating a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTag": "Изменить тег: {name}",
+  "@aiToolRenameTag": {
+    "description": "AI step card: renaming or recoloring a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolMergeTags": "Объединить {from} в {into}",
+  "@aiToolMergeTags": {
+    "description": "AI step card: merging tags.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "into": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTag": "Удалить тег {name}",
+  "@aiToolDeleteTag": {
+    "description": "AI step card: deleting a tag.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateNotebook": "Создать блокнот: {name}",
+  "@aiToolCreateNotebook": {
+    "description": "AI step card: creating a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameNotebook": "Переименовать блокнот: {name}",
+  "@aiToolRenameNotebook": {
+    "description": "AI step card: renaming a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolAddToNotebook": "{count, plural, one{Добавить {count} запись в блокнот} few{Добавить {count} записи в блокнот} many{Добавить {count} записей в блокнот} other{Добавить {count} записи в блокнот}}",
+  "@aiToolAddToNotebook": {
+    "description": "AI step card: putting entries in a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolRemoveFromNotebook": "{count, plural, one{Убрать {count} запись из блокнота} few{Убрать {count} записи из блокнота} many{Убрать {count} записей из блокнота} other{Убрать {count} записи из блокнота}}",
+  "@aiToolRemoveFromNotebook": {
+    "description": "AI step card: taking entries out of a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateTodo": "Новая задача: {title}",
+  "@aiToolCreateTodo": {
+    "description": "AI step card: adding a to-do.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolUpdateTodos": "{count, plural, one{Изменить {count} задачу} few{Изменить {count} задачи} many{Изменить {count} задач} other{Изменить {count} задачи}}",
+  "@aiToolUpdateTodos": {
+    "description": "AI step card: changing to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCompleteTodos": "{count, plural, one{Выполнить {count} задачу} few{Выполнить {count} задачи} many{Выполнить {count} задач} other{Выполнить {count} задачи}}",
+  "@aiToolCompleteTodos": {
+    "description": "AI step card: completing to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteTodos": "{count, plural, one{Удалить {count} задачу} few{Удалить {count} задачи} many{Удалить {count} задач} other{Удалить {count} задачи}}",
+  "@aiToolDeleteTodos": {
+    "description": "AI step card: deleting to-dos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolCreateAnniversary": "Новая памятная дата: {title}",
+  "@aiToolCreateAnniversary": {
+    "description": "AI step card: adding an anniversary.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteAnniversary": "Удалить памятную дату",
+  "@aiToolDeleteAnniversary": {
+    "description": "AI step card: deleting an anniversary."
+  },
+  "aiToolSetDayMood": "Настроение на {date}",
+  "@aiToolSetDayMood": {
+    "description": "AI step card: setting the mood of a day (date as YYYY-MM-DD).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetTheme": "Изменить тему",
+  "@aiToolSetTheme": {
+    "description": "AI step card: changing the theme."
+  },
+  "aiToolSetLanguage": "Язык интерфейса: {language}",
+  "@aiToolSetLanguage": {
+    "description": "AI step card: changing the app language (its native name).",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolSetFontScale": "Изменить размер текста",
+  "@aiToolSetFontScale": {
+    "description": "AI step card: changing the interface text size."
+  },
+  "aiToolFeatureOn": "Включить: {feature}",
+  "@aiToolFeatureOn": {
+    "description": "AI step card: turning a feature on.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolFeatureOff": "Выключить: {feature}",
+  "@aiToolFeatureOff": {
+    "description": "AI step card: turning a feature off.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDone": "Готово",
+  "@aiToolDone": {
+    "description": "AI step card: the change is done."
+  },
+  "aiToolBlockedByEditor": "Открыта страница редактирования — закройте её и повторите",
+  "@aiToolBlockedByEditor": {
+    "description": "AI step card: an editor is open, so the AI did not change data."
+  },
+  "aiAgentConfirmDelete": "Удалить?",
+  "@aiAgentConfirmDelete": {
+    "description": "Title of a delete confirmation inside an AI step."
+  },
+  "aiAgentConfirmChange": "Внести это изменение?",
+  "@aiAgentConfirmChange": {
+    "description": "Title of a change confirmation inside an AI step."
+  },
+  "aiAgentDelete": "Удалить",
+  "@aiAgentDelete": {
+    "description": "Delete button on an AI step confirmation."
+  },
+  "aiAgentProceed": "Выполнить",
+  "@aiAgentProceed": {
+    "description": "Proceed button on an AI step confirmation."
+  },
+  "aiAgentUndo": "Отменить",
+  "@aiAgentUndo": {
+    "description": "Undo one change the AI made."
+  },
+  "aiAgentUndoAll": "Отменить все изменения этого ответа",
+  "@aiAgentUndoAll": {
+    "description": "Undo every change the AI made in this reply."
+  },
+  "aiAgentStepUndone": "Отменено",
+  "@aiAgentStepUndone": {
+    "description": "The AI step was undone."
+  },
+  "aiAgentUndone": "{count, plural, one{Отменено {count} изменение} few{Отменено {count} изменения} many{Отменено {count} изменений} other{Отменено {count} изменения}}",
+  "@aiAgentUndone": {
+    "description": "Snackbar after undoing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAgentUndoFailed": "Не удалось отменить: {error}",
+  "@aiAgentUndoFailed": {
+    "description": "Snackbar when undoing failed.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAgentUndoConflictTitle": "Изменено после этого",
+  "@aiAgentUndoConflictTitle": {
+    "description": "Title of the undo conflict dialog."
+  },
+  "aiAgentUndoConflictBody": "После изменения ИИ это редактировали ещё раз. Отмена перезапишет и эти правки. Всё равно отменить?",
+  "@aiAgentUndoConflictBody": {
+    "description": "Body of the undo conflict dialog."
+  },
+  "aiAgentUndoConflictAction": "Всё равно отменить",
+  "@aiAgentUndoConflictAction": {
+    "description": "Confirm button of the undo conflict dialog."
+  },
+  "aiOptionAgentChanges": "Разрешить ИИ вносить изменения",
+  "@aiOptionAgentChanges": {
+    "description": "AI settings: toggle that lets the assistant change data."
+  },
+  "aiOptionAgentChangesSubtitle": "Создавать и править записи, упорядочивать теги и блокноты, добавлять задачи, менять настройки; любое изменение можно отменить, удаление — только после подтверждения",
+  "@aiOptionAgentChangesSubtitle": {
+    "description": "Explanation of the allow-changes toggle."
+  },
+  "aiOptionAgentConfirm": "Подтверждать каждое изменение",
+  "@aiOptionAgentConfirm": {
+    "description": "AI settings: confirm before every change."
+  },
+  "aiOptionAgentConfirmSubtitle": "Если выключено, изменения выполняются сразу и их можно отменить; удаление всегда требует подтверждения",
+  "@aiOptionAgentConfirmSubtitle": {
+    "description": "Explanation of the confirm-changes toggle."
+  },
   "aiDestinationDiary": "Эта запись",
   "@aiDestinationDiary": {
     "description": "AI open-page target: an entry."
@@ -16573,7 +16918,7 @@
   "@aiOptionAgentStepsSubtitle": {
     "description": "Explanation of the max steps option."
   },
-  "aiPromptAgentSystem": "Ты можешь вызывать инструменты: искать и считать записи пользователя, смотреть календарь, задачи и памятные даты, открывать страницы приложения. Когда нужны данные пользователя, ищи их инструментами, а не угадывай; независимые запросы можно вызывать вместе. Если используешь запись, указывай её метку в конце предложения, например [D3]. Если пользователь должен сам сделать что-то на странице (резервная копия, восстановление, импорт и экспорт, отправка, блокировка приложения, пароли, настройки AI-сервиса), дай кнопку через open_page и объясни шаги. Если инструмент вернул ошибку, исправь аргументы или попробуй иначе; если это действительно невозможно, так и скажи.",
+  "aiPromptAgentSystem": "Ты можешь вызывать инструменты: искать и считать записи пользователя, смотреть календарь, задачи и памятные даты, открывать страницы приложения; по просьбе пользователя — также создавать и править записи, упорядочивать теги и блокноты, управлять задачами и памятными датами, менять настройки. Когда нужны данные пользователя, ищи их инструментами, а не угадывай; независимые запросы можно вызывать вместе. Вноси только те изменения, о которых просили; если неясно, какую запись и на что менять, сначала уточни. Любое изменение можно отменить, удаление пользователь подтверждает сам; после изменений скажи в одном-двух предложениях, что сделано. Если используешь запись, указывай её метку в конце предложения, например [D3]. Если пользователь должен сам сделать что-то на странице (резервная копия, восстановление, импорт и экспорт, отправка, блокировка приложения, пароли, настройки AI-сервиса, окончательное удаление), дай кнопку через open_page и объясни шаги. Если инструмент вернул ошибку, исправь аргументы или попробуй иначе; если это действительно невозможно, так и скажи.",
   "@aiPromptAgentSystem": {
     "description": "System prompt for the assistant with tools (sent to the model; ja/ru only keep the key set complete)."
   },

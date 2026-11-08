@@ -1,6 +1,6 @@
 # 待办（清单、重复、提醒、日历与日记联动）
 
-> 从 `AGENTS.md` 拆出的专题约束，与 `AGENTS.md` 同等效力（必须 / 禁止 / 例外）。改动本主题的代码前先读本文件；本主题新增或修改的规则写在这里，不写回 `AGENTS.md`。界面规格见 DESIGN.md §5.34。
+> 从 `AGENTS.md` 拆出的专题约束，与 `AGENTS.md` 同等效力（必须 / 禁止 / 例外）。改动本主题的代码前先读本文件；本主题新增或修改的规则写在这里，不写回 `AGENTS.md`。界面规格见 DESIGN.md §5.35。
 
 - 必须：待办独立于日记，存 Drift `todo_lists` / `todos` 两张表（schema v19，`app_database_todo_schema.dart`）：业务 id 为 `list_id` / `todo_id`（UUID v4），`list_id` 为 NULL 即收集箱（收集箱不是一行数据），截止日 `due_date` 存本地日期文本 `YYYY-MM-DD`、截止时刻另存 `due_minute`（一天中的分钟数，NULL 为全天），不存时间戳；步骤、提醒、重复与扩展字段是 JSON 文本列，模型与逐字段容错解码只在 `todo_rules.dart`（认不出的提醒 / 步骤跳过、认不出的重复按不重复推算，行里的原文不改写），重复日期推算只经纯函数 `TodoRecurrence`（`todo_recurrence.dart`，月底与 2 月 29 日顺延到月末，法定工作日直接读 tyme `LegalHoliday`）；禁止页面自行换算日期或解析 JSON 列。日记正文里的 `todo_list` 块与独立待办互不相干，禁止自动迁移或双向同步；只提供手动的“转为独立待办”（日记正文不改动）。
 - 必须：读写只经 `_AppDatabaseTodoQueries` / `_AppDatabaseTodoOps` / `_AppDatabaseTodoCompleteOps` / `_AppDatabaseTodoListOps`：逐项修改每次只写一列（外加 `updated_at`），不整行写回；排序 `sort_order` 为 REAL，拖动只把被拖的那一行改为两邻居的中点（`TodoSortOrder`），分不开时才整清单重新编号（重新编号不刷新 `updated_at`），禁止为待办另加同步顺序列表。完成重复待办只经 `completeTodo`：原行推到下一次（`TodoRecurrence.nextDueAfterCompletion`：按截止日时取“当前截止日与完成当天较晚者”之后的下一次，按完成日时从完成当天加一个间隔并把起点挪过去）、步骤重置、稍后提醒作废、`metadata.repeatDone` 加一，另插一条已完成副本（id 只经 `todoOccurrenceId(todoId, 这一次的日期)`，两台设备各自完成同一次只得一条）；次数用完或过了截止日期时只把原行标为完成。撤销只经 `undoTodoCompletion`。

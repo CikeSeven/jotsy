@@ -99,6 +99,12 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // 存储管理的视频压缩（DiaryVideoTools）。版本与 video_player_android 带进来的
+    // Media3（ExoPlayer）保持一致：不同版本会被 Gradle 统一升到较高的那个，
+    // 连带改变视频播放器的实现。升级 video_player 时一并核对。
+    implementation("androidx.media3:media3-transformer:1.9.2")
+    implementation("androidx.media3:media3-effect:1.9.2")
+    implementation("androidx.media3:media3-common:1.9.2")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.16.1")
 }

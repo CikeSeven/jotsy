@@ -67,6 +67,7 @@ part 'app_database_ai_schema.dart';
 part 'app_database_ai_ops.dart';
 part 'app_database_ai_context_ops.dart';
 part 'app_database_media_repair_ops.dart';
+part 'app_database_storage_ops.dart';
 part 'app_database_todo_schema.dart';
 part 'app_database_todo_queries.dart';
 part 'app_database_todo_ops.dart';
@@ -118,6 +119,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseDiaryLinkOps,
         _AppDatabaseAiOps,
         _AppDatabaseAiContextOps,
+        _AppDatabaseStorageOps,
         _AppDatabaseMediaRepairOps,
         _AppDatabaseTodoQueries,
         _AppDatabaseTodoOps,
@@ -223,15 +225,18 @@ class AppDatabase extends _$AppDatabase
   );
 }
 
+/// 数据库文件名（在应用数据根目录下）；存储管理按它统计数据库占用。
+const String appDatabaseFileName = 'node_diary.sqlite';
+
 /// 打开 SQLite 连接。
 ///
 /// 数据库存储在应用数据根目录（[appDataRootDirectory]：手机为文档目录，
-/// 桌面为应用支持目录），文件名固定为 `node_diary.sqlite`。
+/// 桌面为应用支持目录），文件名固定为 [appDatabaseFileName]。
 /// 使用后台 isolate 建库，避免阻塞主线程。
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final root = await appDataRootDirectory();
-    final file = File(p.join(root.path, 'node_diary.sqlite'));
+    final file = File(p.join(root.path, appDatabaseFileName));
     return NativeDatabase.createInBackground(file);
   });
 }

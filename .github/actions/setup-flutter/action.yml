@@ -1,42 +1,226 @@
 name: Set up Flutter project
 description: >-
-  Installs the pinned Flutter SDK (plus JDK 17 for Android builds when asked)
-  and fetches pub dependencies exactly as locked in pubspec.lock. Runs on the
-  Ubuntu and Windows runners alike (the bash steps use Git Bash on Windows).
+  Installs the pinned Flutter SDK with the engine artifacts this runner's
+  builds need, fetches pub dependencies exactly as locked in pubspec.lock and
+  restores the files build hooks download (sqlite3's prebuilt libraries), plus
+  JDK 17 and the Gradle dependency cache for Android builds when asked. Every
+  download is cached; caches are written only from main. Runs on the Ubuntu and
+  Windows runners alike (the bash steps use Git Bash on Windows).
 
 inputs:
   java:
-    description: Also set up Temurin JDK 17 with the Gradle cache, for Android builds.
+    description: Also set up Temurin JDK 17 and the Gradle dependency cache, for Android builds.
     required: false
     default: 'false'
 
 runs:
   using: composite
   steps:
+    # 只解析版本、算出 SDK 与 pub 缓存的路径和键，不安装：缓存由下面固定 SHA 的
+    # actions/cache 管理（flutter-action 自带的缓存引用浮动 tag，且任何 ref 都会写入）。
+    - name: Resolve Flutter SDK
+      id: flutter
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      with:
+        channel: stable
+        # CI 与发布工作流的 Flutter 版本只在这里定义。升级时单独提交，并先让 CI
+        # 在新版本上全绿（含 Android release 构建），再发布签名包。
+        flutter-version: '3.47.5'
+        dry-run: true
+
+    # SDK 缓存含下面预下载的引擎产物，键带上后缀，内容变了就换后缀；换后缀时
+    # 退回同一版本的旧缓存，precache 只补下缺的产物。
+    - name: Restore Flutter SDK
+      id: sdk-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.flutter.outputs.CACHE-PATH }}
+        key: ${{ steps.flutter.outputs.CACHE-KEY }}-artifacts-v1
+        restore-keys: ${{ steps.flutter.outputs.CACHE-KEY }}
+
+    # 键含锁文件哈希；锁文件变了就退回同一 Flutter 版本最近的 pub 缓存，pub get
+    # 只下载新增的包。前缀带 Flutter 版本，升级时整份重建，旧包不会一代代累积。
+    - name: Restore pub cache
+      id: pub-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.flutter.outputs.PUB-CACHE-PATH }}
+        key: ${{ steps.flutter.outputs.PUB-CACHE-KEY }}-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ steps.flutter.outputs.PUB-CACHE-KEY }}-
+
+    # 缓存命中时 SDK 已在原位，这一步只设置 PATH / PUB_CACHE；未命中才下载 SDK。
+    - name: Install Flutter
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      with:
+        channel: ${{ steps.flutter.outputs.CHANNEL }}
+        flutter-version: ${{ steps.flutter.outputs.VERSION }}
+
+    - name: Show Flutter version
+      shell: bash
+      run: flutter --version
+
+    # 先把这台 runner 上的构建要用的引擎产物下载进 SDK，再保存 SDK 缓存：缓存内容
+    # 与哪个 job 先存无关，构建时也不再临时下载。只取 Android 的 gen_snapshot，
+    # 不用 --android：它还会跑一遍 Gradle 依赖解析（那部分在 Gradle 缓存里）。
+    # 已在缓存里时 precache 只核对 stamp，不联网。
+    - name: Precache engine artifacts
+      shell: bash
+      env:
+        RUNNER_OS_NAME: ${{ runner.os }}
+      run: |
+        if [[ "$RUNNER_OS_NAME" == 'Windows' ]]; then
+          flutter precache --windows
+        else
+          flutter precache --android_gen_snapshot --linux
+        fi
+
+    - name: Save Flutter SDK
+      if: >-
+        steps.sdk-cache.outputs.cache-hit != 'true' &&
+        github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.flutter.outputs.CACHE-PATH }}
+        key: ${{ steps.flutter.outputs.CACHE-KEY }}-artifacts-v1
+
+    # --enforce-lockfile：pubspec.yaml 改了依赖却没提交 pubspec.lock 时直接失败，
+    # 而不是在 CI 里悄悄重新解析出一份与本地不同的依赖。pub 缓存未完全命中时要
+    # 从 pub.dev 下载，网络抖动时重试，锁文件不一致这类确定性错误重试也一样失败。
+    - name: Install dependencies
+      shell: bash
+      run: |
+        for attempt in 1 2 3; do
+          if flutter pub get --enforce-lockfile; then
+            exit 0
+          fi
+          if (( attempt < 3 )); then
+            echo "::warning::flutter pub get failed (attempt $attempt of 3); retrying"
+            sleep $((attempt * 15))
+          fi
+        done
+        exit 1
+
+    - name: Save pub cache
+      if: >-
+        steps.pub-cache.outputs.cache-hit != 'true' &&
+        github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.flutter.outputs.PUB-CACHE-PATH }}
+        key: ${{ steps.flutter.outputs.PUB-CACHE-KEY }}-${{ hashFiles('pubspec.lock') }}
+
+    # 构建钩子下载的文件（sqlite3 从 GitHub Releases 下载预编译库）放在
+    # .dart_tool/hooks_runner/shared：sqlite3 按内容哈希命名子目录，复用前校验
+    # SHA-256，所以缓存不会用错版本；锁文件变了就退回旧缓存，同一份库照样复用。
+    # GitHub 的 release 下载服务偶发 504（2026-11-08 main 上 Android、Windows 与
+    # 三个测试分片同时因此失败），没有缓存时整个 job 都会失败。
+    # 键按 job 区分：缓存键一旦写入就不能覆盖，若共用一个键，先结束、却不跑钩子的
+    # job（如静态检查）会抢先存下一份空的或旧的缓存，测试分片之后每次都要重新下载。
+    # Android 构建要 Android 各 ABI 的库，其余 job 只要本机的库：发布工作流的 job
+    # 在 tag 上只读，按这一段前缀退回 CI 里同类 job 的缓存。
+    - name: Cache build hook downloads
+      uses: ./.github/actions/main-cache
+      with:
+        path: .dart_tool/hooks_runner/shared
+        key: >-
+          hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-${{
+          github.job }}-${{ hashFiles('pubspec.lock') }}
+        restore-keys: |
+          hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-${{ github.job }}-
+          hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-
+
+    # 缓存未命中时（sqlite3 升级后、缓存被淘汰后）钩子自己下载，失败不重试，
+    # 失败的 job 又不写缓存，下载服务故障期间每次运行都从头失败（2026-11-08 的
+    # PR #197 即此）。这里先用 curl 带重试下载到钩子会找的位置：文件名、release
+    # tag 与 SHA-256 取自锁定版本的 sqlite3 包（asset_hashes.dart），目录名
+    # download-<哈希前 8 位> 与文件名同钩子（hook/build.dart）。只是尽力而为：
+    # 找不到包、格式变了或下载失败都只告警，交给钩子照常下载。
+    - name: Prefetch sqlite3 libraries
+      shell: bash
+      env:
+        RUNNER_OS_NAME: ${{ runner.os }}
+        ANDROID_BUILD: ${{ inputs.java }}
+      run: |
+        if [[ "$ANDROID_BUILD" == 'true' ]]; then
+          assets=(libsqlite3.arm.android.so libsqlite3.arm64.android.so libsqlite3.x64.android.so)
+        elif [[ "$RUNNER_OS_NAME" == 'Windows' ]]; then
+          assets=(sqlite3.x64.windows.dll)
+        else
+          assets=(libsqlite3.x64.linux.so)
+        fi
+        # Windows 检出时换行是 CRLF，先去掉 \r 再按行匹配。
+        version="$(tr -d '\r' < pubspec.lock |
+          awk '/^  sqlite3:$/ { found = 1 } found && /^    version:/ { gsub(/"/, "", $2); print $2; exit }')"
+        pub_cache="$(cygpath -u "$PUB_CACHE" 2>/dev/null || printf '%s' "$PUB_CACHE")"
+        hashes="$pub_cache/hosted/pub.dev/sqlite3-$version/lib/src/hook/asset_hashes.dart"
+        if [[ -z "$version" || ! -f "$hashes" ]]; then
+          echo "::notice::sqlite3 asset hashes not found ($hashes); leaving downloads to the build hook"
+          exit 0
+        fi
+        tag="$(sed -n "s/^const String? releaseTag = '\([^']*\)';$/\1/p" "$hashes")"
+        for asset in "${assets[@]}"; do
+          hash="$(sed -n "s/^  '${asset//./\\.}': '\([0-9a-f]\{64\}\)',$/\1/p" "$hashes")"
+          if [[ -z "$tag" || -z "$hash" ]]; then
+            echo "::notice::No release tag or hash for $asset in $hashes; leaving it to the build hook"
+            continue
+          fi
+          case "$asset" in
+            *.dll) name=sqlite3.dll ;;
+            *) name=libsqlite3.so ;;
+          esac
+          dir=".dart_tool/hooks_runner/shared/sqlite3/build/download-${hash:0:8}"
+          if [[ -f "$dir/$name" && "$(sha256sum "$dir/$name" | cut -d' ' -f1)" == "$hash" ]]; then
+            echo "$asset: cached"
+            continue
+          fi
+          mkdir -p "$dir"
+          # 故障时下载服务常挂起约 130 秒才回 504（2026-11-08 Windows 上一次预取等了
+          # 4.5 分钟），单次限 30 秒（库不到 2 MB），重试总时长限 3 分钟。
+          if curl -sSfL --connect-timeout 10 --max-time 30 --retry 10 --retry-all-errors \
+              --retry-delay 5 --retry-max-time 180 -o "$dir/$name.part" \
+              "https://github.com/simolus3/sqlite3.dart/releases/download/$tag/$asset" &&
+            [[ "$(sha256sum "$dir/$name.part" | cut -d' ' -f1)" == "$hash" ]]; then
+            mv "$dir/$name.part" "$dir/$name"
+            echo "$asset: downloaded"
+          else
+            rm -f "$dir/$name.part"
+            echo "::warning::Could not prefetch $asset; the build hook will try again"
+          fi
+        done
+
     - name: Set up Java
       if: inputs.java == 'true'
       uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
       with:
         distribution: temurin
         java-version: '17'
-        cache: gradle
 
-    # CI 与发布工作流的 Flutter 版本只在这里定义。升级时单独提交，并先让 CI
-    # 在新版本上全绿（含 Android release 构建），再发布签名包。
-    - name: Set up Flutter
-      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+    # Gradle 发行版单独一份，只随 Gradle 版本变：services.gradle.org 会跳转到
+    # GitHub Releases 下载，与 sqlite3 同样会遇到 504（2026-11-08 PR #197），升级
+    # Flutter 时 Gradle 缓存要重建，发行版不必跟着重新下载。
+    - name: Cache Gradle distribution
+      if: inputs.java == 'true'
+      uses: ./.github/actions/main-cache
       with:
-        channel: stable
-        flutter-version: '3.47.5'
-        # 同时缓存 SDK 与 pub 缓存（pub 缓存键含 pubspec.lock 的哈希）。
-        cache: true
+        path: ~/.gradle/wrapper/dists
+        key: gradle-wrapper-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
 
-    - name: Show Flutter version
-      shell: bash
-      run: flutter --version
-
-    # --enforce-lockfile：pubspec.yaml 改了依赖却没提交 pubspec.lock 时直接失败，
-    # 而不是在 CI 里悄悄重新解析出一份与本地不同的依赖。
-    - name: Install dependencies
-      shell: bash
-      run: flutter pub get --enforce-lockfile
+    # 整份 ~/.gradle/caches：依赖 jar（modules-2）之外，transforms（jetifier、
+    # AAR 解包等，占大头）与编译好的构建脚本也要缓存。只缓存依赖时 #197 的
+    # Android job 里 assembleRelease 从 327 秒涨到 606 秒、原生测试从 73 秒涨到
+    # 112 秒（同时含冷缓存的下载），而整份缓存恢复约 66 秒。锁文件与 gc.properties
+    # 是本机进程状态，不缓存。内容由 Gradle 脚本、插件版本（pubspec.lock）与
+    # Flutter 版本（引擎 maven 包）决定；只在同一 Flutter 版本内退回旧缓存，
+    # 升级 Flutter 时整份重建，旧依赖与旧 transforms 不会一代代累积。
+    - name: Cache Gradle user home
+      if: inputs.java == 'true'
+      uses: ./.github/actions/main-cache
+      with:
+        path: |
+          ~/.gradle/caches
+          !~/.gradle/caches/**/*.lock
+          !~/.gradle/caches/**/gc.properties
+        key: >-
+          gradle-${{ runner.os }}-${{ steps.flutter.outputs.VERSION }}-${{ hashFiles('android/**/*.gradle*',
+          'android/gradle.properties', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+        restore-keys: gradle-${{ runner.os }}-${{ steps.flutter.outputs.VERSION }}-

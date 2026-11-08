@@ -62,13 +62,17 @@ class DiaryMediaCleanupService {
   }
 
   /// 排队执行一轮回收；失败返回 null，不向调用方抛出。
-  Future<DiaryMediaSweepReport?> sweep() =>
-      _tail = _tail.then((_) => _sweepSafely());
+  ///
+  /// [gracePeriod] 默认取构造时的宽限期；存储管理里用户主动清理时传更短的
+  /// 宽限期（仍不为零：局域网同步会在写库前先把收到的文件放进媒体目录，
+  /// 刚放进来、还没有记录引用的文件不能被抢先删掉）。
+  Future<DiaryMediaSweepReport?> sweep({Duration? gracePeriod}) =>
+      _tail = _tail.then((_) => _sweepSafely(gracePeriod ?? this.gracePeriod));
 
-  Future<DiaryMediaSweepReport?> _sweepSafely() async {
+  Future<DiaryMediaSweepReport?> _sweepSafely(Duration gracePeriod) async {
     if (_disposed) return null;
     try {
-      final report = await _runInBackground(await _buildRequest());
+      final report = await _runInBackground(await _buildRequest(gracePeriod));
       if (report.deletedFiles > 0) {
         debugPrint(
           'Diary media cleanup removed ${report.deletedFiles} files '
@@ -82,7 +86,7 @@ class DiaryMediaCleanupService {
     }
   }
 
-  Future<DiaryMediaSweepRequest> _buildRequest() async {
+  Future<DiaryMediaSweepRequest> _buildRequest(Duration gracePeriod) async {
     final diaries = _database.diaries;
     final rows = await (_database.selectOnly(
       diaries,

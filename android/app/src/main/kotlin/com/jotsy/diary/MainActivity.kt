@@ -29,6 +29,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var shareLauncher: DiaryShareLauncher? = null
   private var longImageSlicer: DiaryLongImageSlicer? = null
   private var imageTranscoder: DiaryImageTranscoder? = null
+  private var videoTools: DiaryVideoTools? = null
   private var appUpdateInstaller: AppUpdateInstaller? = null
   private var lanSyncChannel: LanSyncChannel? = null
   private var appLockChannel: AppLockChannel? = null
@@ -125,6 +126,8 @@ class MainActivity : FlutterFragmentActivity() {
     longImageSlicer = DiaryLongImageSlicer(this, flutterEngine.dartExecutor.binaryMessenger)
     imageTranscoder?.dispose()
     imageTranscoder = DiaryImageTranscoder(this, flutterEngine.dartExecutor.binaryMessenger)
+    videoTools?.dispose()
+    videoTools = DiaryVideoTools(this, flutterEngine.dartExecutor.binaryMessenger)
     appUpdateInstaller?.dispose()
     appUpdateInstaller = AppUpdateInstaller(this, flutterEngine.dartExecutor.binaryMessenger)
     lanSyncChannel?.dispose()
@@ -335,6 +338,8 @@ class MainActivity : FlutterFragmentActivity() {
     longImageSlicer = null
     imageTranscoder?.dispose()
     imageTranscoder = null
+    videoTools?.dispose()
+    videoTools = null
     appUpdateInstaller?.dispose()
     appUpdateInstaller = null
     lanSyncChannel?.dispose()

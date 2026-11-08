@@ -19,17 +19,18 @@
 │  │     ├─ ai/  # AI 助手引擎（纯 Dart，docs/ai_assistant.md）
 │  │     ├─ app_passcode/  # 应用密码（数字 / 图案）的本机存储、摘要与限流
 │  │     ├─ lan_sync/  # 局域网同步引擎（docs/lan_sync.md）；sync/：同步数据层与纯函数规划器
-│  │     └─ todo_reminders/  # 待办提醒：规划器、系统通知网关与通知按钮
+│  │     └─ storage/  # 存储管理：占用扫描、媒体删除与压缩
 │  ├─ ui/
 │  │  ├─ diaries/  # 日记主业务模块：pages / controllers / providers / models|viewmodels / export / sections|widgets（widgets/diary_editor/ 为共用编辑器）
 │  │  ├─ app_surface/  # 背景与材质（玻璃）
 │  │  ├─ anniversaries/  # 纪念日与倒数日
-│  │  ├─ todos/  # 独立待办：清单、提醒、日历与日记联动
+│  │  ├─ todos/  # 独立待办
 │  │  ├─ diary_templates/  # 日记模板
 │  │  ├─ notebooks/  # 日记本
 │  │  ├─ ai/  # AI 助手界面
 │  │  ├─ app_lock/  # 应用锁、应用密码（数字键盘 / 图案）与统一验证入口 IdentityVerifier
 │  │  ├─ lan_sync/  # 局域网同步界面
+│  │  ├─ storage/  # 存储管理界面
 │  │  ├─ home|calendar|explore|settings/  # 首页与各 Tab、设置页
 │  │  └─ widgets/  # 跨 feature 公共 UI（app_modal/、expressive_menu/、glass/、text_selection_menu/、fast_scroller/ 等）
 │  ├─ l10n/  # 国际化封装
@@ -57,7 +58,7 @@
 - 必须：业务流程（异步链路、批量操作、撤销、防抖、发布流程）放 `controllers/`。
 - 必须：数据映射、草稿模型、metadata 组装放 `models/` 或 `viewmodels/`。
 - 必须：可复用 UI 放 `sections/` 或 `widgets/`，避免页面文件膨胀。
-- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / day mood ops / draft ops / template ops / notebook ops / explore ops / place history ops（用过的地点）/ comment ops / diary link ops / diary batch writes（多选的批量状态写入）/ sync ops（同步读行）/ sync writes（同步按原值写入）/ sync order（同步顺序列表重排）/ ai ops（AI 对话、消息与结果）/ ai context ops（发给 AI 的日记）/ media repair ops（托管图片格式修复）/ todo ops（待办与清单）/ scope SQL）。
+- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / day mood ops / draft ops / template ops / notebook ops / explore ops / place history ops（用过的地点）/ comment ops / diary link ops / diary batch writes（多选的批量状态写入）/ sync ops（同步读行）/ sync writes（同步按原值写入）/ sync order（同步顺序列表重排）/ ai ops（AI 对话、消息与结果）/ ai context ops（发给 AI 的日记）/ media repair ops（托管图片格式修复）/ storage ops（存储管理）/ todo ops / scope SQL）。
 - 禁止：单文件混杂“页面布局 + 业务编排 + 数据转换”。
 - 例外：极简静态页面可不强制拆 controller。
 - 必须：库里从不开启外键：彻底删除日记、删除日记本、合并日记本与覆盖恢复等每条删除路径都必须在同一事务里手动清理关联行（标签、日记本成员、留言、AI 回应等）。
@@ -106,7 +107,7 @@
 | 草稿与发布页 | `drafts_publish.md` |
 | 日记模板 | `diary_templates.md` |
 | 日记本（私密、上锁、嵌套、封面、章节、备份合并、首页范围与启动恢复） | `notebooks.md` |
-| 待办（清单、重复、提醒通知、日历与日记联动） | `todos.md` |
+| 待办、提醒与日历 / 日记联动 | `todos.md` |
 | 日历、纪念日、这天的心情、法定节假日 | `calendar.md` |
 | 探索页 | `explore.md` |
 | 留言 | `comments.md` |
@@ -115,6 +116,7 @@
 | 局域网同步，以及会被同步的数据 | `lan_sync.md` |
 | 导入 / 恢复、其他应用与云端笔记导入、网盘备份 | `backup_import.md` |
 | 分享与导出 | `export_share.md` |
+| 存储管理：占用、清理、删除与压缩媒体 | `storage.md` |
 | 功能管理开关 | `app_features.md` |
 | 应用锁、应用密码（数字 / 图案）、验证身份（系统验证 / 应用密码） | `app_lock.md` |
 | 应用内更新、更新日志、官网、打赏、发布与下载统计 | `release_website.md` |
@@ -169,7 +171,7 @@
   - `dart run tool/check_arb.dart`（改动 ARB 后）
   - `flutter build linux --release`（桌面改动后本地验证；Windows 包只在 CI / 发布中构建）
 - 必须：本地构建 Linux 需先装 `clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev`，以及 audioplayers_linux 需要的 GStreamer 开发包（`libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`，与 `ci.yml` 同一份）。
-- 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（按文件分片，覆盖率经 `tool/merge_lcov.dart` 合并；`Tests` 门禁须等所有分片通过）、Android 视频选择器原生回归测试、arm64 的 Android release 构建、Linux 与 Windows 的 release 构建（只验证能否编译，产物不上传；发布工作流经 `skip-desktop-builds` 跳过）、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。
+- 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（按文件分片，覆盖率经 `tool/merge_lcov.dart` 合并；`Tests` 门禁须等所有分片通过）、Android 视频选择器原生回归测试、arm64 的 Android release 构建、Linux 与 Windows 的 release 构建（只验证能否编译，产物不上传；发布工作流经 `skip-desktop-builds` 跳过）、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。CI 从网络下载的东西必须有缓存，缓存只由 main 写入（`actions/main-cache`，见 `docs/ci_performance.md`）。
 - 必须：Flutter 版本只定义在 `.github/actions/setup-flutter/action.yml`（CI 与发布共用），升级须单独提交并先让 CI 全绿；依赖以 `pubspec.lock` 为准（CI 用 `flutter pub get --enforce-lockfile`），改动 `pubspec.yaml` 的依赖必须同时提交锁文件。
 - 必须：工作流引用的 action 一律固定到 commit SHA 并在行尾注明版本（由 Dependabot 升级）；工作流默认只读权限，写权限只授予确需写入的 job。
 - 禁止：CI 门禁读取签名材料或任何 secrets（fork 的 PR 也要能跑）；CI 用一次性密钥构建的 APK 不上传（签名与正式版不同，装上后无法覆盖升级）。secrets 只在 `release-apk.yml` 的发布构建 job 中使用：Android 签名构建（签名材料、运行时密钥与网盘应用密钥）与 Linux / Windows 构建（只有网盘应用密钥，权限只读）；网盘应用密钥一律经 `tool/write_cloud_backup_keys.dart` 校验并写入 `cloud_backup_keys.json`（不打印值，桌面构建后删除），禁止各 job 另写一份校验。

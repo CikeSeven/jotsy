@@ -17,7 +17,8 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
- * Re-encodes HEIF-family images (HEIC / HEIF / AVIF) as JPEG.
+ * Re-encodes HEIF-family images (HEIC / HEIF / AVIF) as JPEG, and compresses stored images for
+ * the storage manager.
  *
  * Phones save photos as HEIC and Android decodes them, but the desktop builds draw with Flutter's
  * own codecs, which only read JPEG / PNG / GIF / WebP / BMP. A HEIC picked into a diary on the
@@ -30,6 +31,10 @@ import kotlin.math.sqrt
  * read. Output goes to a temporary sibling that is renamed into place, so a crash never leaves a
  * truncated JPEG at [target]. One background thread does the work so two large photos never
  * compete for memory.
+ *
+ * `compress` is the same pipeline with a caller-chosen longest side and JPEG quality: the storage
+ * manager writes the result to a new file next to the original and rewrites the diary references
+ * itself, so the original is never touched here either.
  */
 class DiaryImageTranscoder(
   private val activity: Activity,
@@ -46,26 +51,14 @@ class DiaryImageTranscoder(
   init {
     channel.setMethodCallHandler { call, result ->
       when (call.method) {
-        "toJpeg" -> {
-          val source = call.argument<String>("source")
-          val target = call.argument<String>("target")
-          if (source.isNullOrBlank() || target.isNullOrBlank()) {
-            result.error("invalid_arguments", "source and target are required.", null)
-          } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            result.error("unsupported", "HEIF decoding needs Android 9.", null)
-          } else {
-            executor.execute {
-              try {
-                val size = toJpeg(File(source), File(target))
-                activity.runOnUiThread { result.success(size) }
-              } catch (error: Exception) {
-                activity.runOnUiThread { result.error("transcode_failed", error.message, null) }
-              } catch (error: OutOfMemoryError) {
-                activity.runOnUiThread { result.error("transcode_failed", "Out of memory.", null) }
-              }
-            }
-          }
-        }
+        "toJpeg" -> encode(call.argument("source"), call.argument("target"), null, jpegQuality, result)
+        "compress" -> encode(
+          call.argument("source"),
+          call.argument("target"),
+          call.argument<Int>("maxSide"),
+          (call.argument<Int>("quality") ?: jpegQuality).coerceIn(30, 100),
+          result,
+        )
         else -> result.notImplemented()
       }
     }
@@ -76,14 +69,41 @@ class DiaryImageTranscoder(
     executor.shutdown()
   }
 
+  private fun encode(
+    source: String?,
+    target: String?,
+    maxSide: Int?,
+    quality: Int,
+    result: MethodChannel.Result,
+  ) {
+    if (source.isNullOrBlank() || target.isNullOrBlank()) {
+      result.error("invalid_arguments", "source and target are required.", null)
+      return
+    }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+      result.error("unsupported", "Image decoding needs Android 9.", null)
+      return
+    }
+    executor.execute {
+      try {
+        val size = toJpeg(File(source), File(target), maxSide, quality)
+        activity.runOnUiThread { result.success(size) }
+      } catch (error: Exception) {
+        activity.runOnUiThread { result.error("transcode_failed", error.message, null) }
+      } catch (error: OutOfMemoryError) {
+        activity.runOnUiThread { result.error("transcode_failed", "Out of memory.", null) }
+      }
+    }
+  }
+
   @RequiresApi(Build.VERSION_CODES.P)
-  private fun toJpeg(source: File, target: File): Map<String, Int> {
+  private fun toJpeg(source: File, target: File, maxSide: Int?, quality: Int): Map<String, Int> {
     if (!source.isFile) throw IllegalArgumentException("Source is missing.")
     val bitmap = try {
-      decode(source, 1.0)
+      decode(source, 1.0, maxSide)
     } catch (error: OutOfMemoryError) {
       // Retry once at half the size (a quarter of the memory) rather than failing outright.
-      decode(source, 0.5)
+      decode(source, 0.5, maxSide)
     }
     val width = bitmap.width
     val height = bitmap.height
@@ -91,7 +111,7 @@ class DiaryImageTranscoder(
     try {
       try {
         FileOutputStream(staging).use { output ->
-          if (!bitmap.compress(Bitmap.CompressFormat.JPEG, jpegQuality, output)) {
+          if (!bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)) {
             throw IllegalStateException("JPEG encode failed.")
           }
         }
@@ -108,8 +128,9 @@ class DiaryImageTranscoder(
     return mapOf("width" to width, "height" to height)
   }
 
+  /** Decodes [source] upright, scaled down to [maxSide] on its longest side when given. */
   @RequiresApi(Build.VERSION_CODES.P)
-  private fun decode(source: File, extraScale: Double): Bitmap =
+  private fun decode(source: File, extraScale: Double, maxSide: Int?): Bitmap =
     ImageDecoder.decodeBitmap(ImageDecoder.createSource(source)) { decoder, info, _ ->
       // Hardware bitmaps cannot be compressed.
       decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
@@ -118,6 +139,10 @@ class DiaryImageTranscoder(
       val height = info.size.height
       val pixels = width.toLong() * height
       var scale = if (pixels > maxPixels) sqrt(maxPixels.toDouble() / pixels) else 1.0
+      val longest = max(width, height)
+      if (maxSide != null && maxSide > 0 && longest > maxSide) {
+        scale = minOf(scale, maxSide.toDouble() / longest)
+      }
       scale *= extraScale
       if (scale < 1.0) {
         decoder.setTargetSize(

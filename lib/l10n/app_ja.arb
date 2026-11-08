@@ -16372,6 +16372,23 @@
   "@aiToolGetAppContext": {
     "description": "AI step card: the tool that checks the date and app status."
   },
+  "aiToolReadGuide": "使い方ガイドを確認",
+  "@aiToolReadGuide": {
+    "description": "AI step card: reading the built-in user guide."
+  },
+  "aiPromptAgentGuide": "以下は Jotsy の使い方ガイドの目次です。使い方や設定の場所、何ができるかを聞かれたら、まず read_guide で関連する記事を読み、その内容に沿って答えてください。アプリにないものを作り上げないでください。必要に応じて open_page で移動ボタンを示してください。\n{index}",
+  "@aiPromptAgentGuide": {
+    "description": "Assistant prompt: the user guide index (sent to the model).",
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubQuickHelp": "Jotsy ではどんなことができますか？",
+  "@aiHubQuickHelp": {
+    "description": "Quick question on the AI hub: ask what the app can do."
+  },
   "aiToolOpenPage": "移動：{page}",
   "@aiToolOpenPage": {
     "description": "AI step card: offering a button that opens a page.",

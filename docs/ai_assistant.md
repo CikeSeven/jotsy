@@ -176,7 +176,15 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **接入新功能**：在对应领域的 `ai_tools_<领域>.dart` 写一个 `AiTool`（功能开关经 `isAvailable`），加进清单；改动数据的工具同时实现 `undo`（删除类再实现 `preview`），并加进 `test/ui/ai/ai_write_tools_test.dart` 的清单补“执行再撤销”的测试；需要页面时在 `aiDestinations` 加一项；补“功能关闭时工具不出现”与主流程测试（`test/ui/ai/ai_tools_test.dart` 会检查名称、schema 与标题）。
 
-## 10. 开发与验证
+## 10. 使用指南
+
+借鉴 Skill 的做法：**目录常驻、正文按需读取**。文章在 `assets/ai_guide/zh/<id>.md` 与 `assets/ai_guide/en/<id>.md`（pubspec 登记这两个目录，加载经资源清单枚举，新文章随构建出现），中英两份 id 一致；日文、俄文界面读英文版、按界面语言回答（与 `aiPrompt*` 同口径：取提示词语言 `kit.l10n.localeName`）。
+
+- 头信息：`id`（与文件名相同）、`title`、`summary`（目录里的一行）、`features`（相关的 `AppFeatures` 字段名）、`platforms`（只在部分平台有的整篇功能，空为全平台）、`destinations`（相关的 `AiDestination` id，不含需要具体 id 的 diary / notebook / todo）、`keywords`；列表写成 `[a, b]`。正文只用 `##` 小标题、段落、列表与粗体，写入口路径（“设置 → 数据管理 → 网盘备份”）、步骤与注意事项，界面文字以 ARB 为准。
+- 智能体每轮把目录（每篇一行“id: 标题 — 摘要”）接在系统提示词里（`aiPromptAgentGuide`，属于稳定前缀），模型回答“怎么用 / 在哪里 / 能不能”前先调 `read_guide` 读正文（一次最多 3 篇，每篇一次最多 8000 字，长文用 `offset` 接着读）；结果按当前功能开关与平台注明“这个功能现在关着 / 本设备没有”，并列出现在能打开的相关页面，模型据此给“前往”按钮。
+- 一致性测试 `test/ui/ai/ai_guide_test.dart`：中英 id 一致且与文件名相同、头信息合法、引用的页面都在登记表里、每个功能开关与设置首页能进的每个页面至少被一篇文章覆盖、目录长度有上限。
+
+## 11. 开发与验证
 
 - 单元与 widget 测试用 `test/support/fake_ai.dart` 的 `FakeAiChatClient` / `fakeAiService` 替换 `aiServiceProvider`，不联网；智能体用按队列回放的 `scriptedAiService` 与 `textTurn` / `toolTurn` 编排每一步（`test/ui/ai/ai_agent_chat_test.dart`、`test/core/services/ai/ai_agent_loop_test.dart`）；协议客户端的测试在本地 `HttpServer.bind(loopback, 0)` 上回放准备好的流（`test/core/services/ai/`，工具调用见 `ai_tool_calls_test.dart`）。
 - 手动验证用 `dart run tool/ai_mock_server.dart`：在本机起一个同时实现四种协议的服务（默认端口 8787），流式回显请求、可注入错误与思考过程，见脚本开头的说明。在 Jotsy 里添加“自定义（OpenAI 兼容）”服务，地址填 `http://127.0.0.1:8787/v1`（OpenAI Responses 同一地址；Anthropic 格式填 `http://127.0.0.1:8787`，Gemini 格式填 `http://127.0.0.1:8787/v1beta`），密钥随便填。请求带着工具时，在问题里写 `/tool 工具名 {"参数": 1}` 让它按该协议调用这个工具（参数分两段流式发出），收到工具结果后它回答结果内容。

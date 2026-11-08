@@ -20856,6 +20856,24 @@ abstract class AppLocalizations {
   /// **'Check today\'s date and app status'**
   String get aiToolGetAppContext;
 
+  /// AI step card: reading the built-in user guide.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the user guide'**
+  String get aiToolReadGuide;
+
+  /// Assistant prompt: the user guide index (sent to the model).
+  ///
+  /// In en, this message translates to:
+  /// **'Below is the index of the Jotsy user guide. When the user asks how to do something, where a setting is, or whether something is possible, first read the relevant article with read_guide and answer from it; do not invent anything the app does not have. Offer an open_page button when it helps.\n{index}'**
+  String aiPromptAgentGuide(String index);
+
+  /// Quick question on the AI hub: ask what the app can do.
+  ///
+  /// In en, this message translates to:
+  /// **'What can Jotsy do for me?'**
+  String get aiHubQuickHelp;
+
   /// AI step card: offering a button that opens a page.
   ///
   /// In en, this message translates to:

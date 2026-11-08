@@ -15805,6 +15805,23 @@
   "@aiToolGetAppContext": {
     "description": "AI 步骤卡片：查看日期与应用状态的工具。"
   },
+  "aiToolReadGuide": "查阅使用指南",
+  "@aiToolReadGuide": {
+    "description": "AI 步骤卡片：读使用指南。"
+  },
+  "aiPromptAgentGuide": "下面是 Jotsy 使用指南的目录。用户问怎么用、在哪里、能不能做某事时，先用 read_guide 读相关文章，按文章回答，不要编造界面上没有的东西；需要时用 open_page 给出前往按钮。\n{index}",
+  "@aiPromptAgentGuide": {
+    "description": "智能体提示词：使用指南的目录（发给模型）。",
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubQuickHelp": "Jotsy 有哪些好用的功能？",
+  "@aiHubQuickHelp": {
+    "description": "AI 主页的快捷问题：问应用有哪些功能。"
+  },
   "aiToolOpenPage": "前往：{page}",
   "@aiToolOpenPage": {
     "description": "AI 步骤卡片：给出前往某页面的按钮。",

@@ -11414,6 +11414,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiToolGetAppContext => '查看今天与应用状态';
 
   @override
+  String get aiToolReadGuide => '查阅使用指南';
+
+  @override
+  String aiPromptAgentGuide(String index) {
+    return '下面是 Jotsy 使用指南的目录。用户问怎么用、在哪里、能不能做某事时，先用 read_guide 读相关文章，按文章回答，不要编造界面上没有的东西；需要时用 open_page 给出前往按钮。\n$index';
+  }
+
+  @override
+  String get aiHubQuickHelp => 'Jotsy 有哪些好用的功能？';
+
+  @override
   String aiToolOpenPage(String page) {
     return '前往：$page';
   }

@@ -34,6 +34,7 @@ AiRequest aiAgentRequest(
   required List<AiTool> tools,
   String? scopeLine,
   String? fixedDiary,
+  String guideIndex = '',
 }) {
   final l10n = kit.l10n;
   final messages = <AiMessage>[];
@@ -86,7 +87,10 @@ AiRequest aiAgentRequest(
   return AiRequest(
     model: '',
     system: kit.system(
-      task: l10n.aiPromptAgentSystem,
+      // 指南目录也是稳定前缀的一部分（只随应用版本变），利于提示缓存。
+      task: guideIndex.isEmpty
+          ? l10n.aiPromptAgentSystem
+          : '${l10n.aiPromptAgentSystem}\n\n${l10n.aiPromptAgentGuide(guideIndex)}',
       persona: persona,
       withLength: true,
     ),

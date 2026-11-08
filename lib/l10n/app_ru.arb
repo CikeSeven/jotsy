@@ -16372,6 +16372,23 @@
   "@aiToolGetAppContext": {
     "description": "AI step card: the tool that checks the date and app status."
   },
+  "aiToolReadGuide": "Справка по приложению",
+  "@aiToolReadGuide": {
+    "description": "AI step card: reading the built-in user guide."
+  },
+  "aiPromptAgentGuide": "Ниже — оглавление справки Jotsy. Когда пользователь спрашивает, как что-то сделать, где находится настройка или возможно ли что-то, сначала прочитай подходящую статью через read_guide и отвечай по ней; не выдумывай того, чего в приложении нет. При необходимости дай кнопку через open_page.\n{index}",
+  "@aiPromptAgentGuide": {
+    "description": "Assistant prompt: the user guide index (sent to the model).",
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    }
+  },
+  "aiHubQuickHelp": "Что умеет Jotsy?",
+  "@aiHubQuickHelp": {
+    "description": "Quick question on the AI hub: ask what the app can do."
+  },
   "aiToolOpenPage": "Открыть: {page}",
   "@aiToolOpenPage": {
     "description": "AI step card: offering a button that opens a page.",

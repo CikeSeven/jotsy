@@ -13243,6 +13243,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiToolGetAppContext => 'Проверка даты и состояния приложения';
 
   @override
+  String get aiToolReadGuide => 'Справка по приложению';
+
+  @override
+  String aiPromptAgentGuide(String index) {
+    return 'Ниже — оглавление справки Jotsy. Когда пользователь спрашивает, как что-то сделать, где находится настройка или возможно ли что-то, сначала прочитай подходящую статью через read_guide и отвечай по ней; не выдумывай того, чего в приложении нет. При необходимости дай кнопку через open_page.\n$index';
+  }
+
+  @override
+  String get aiHubQuickHelp => 'Что умеет Jotsy?';
+
+  @override
   String aiToolOpenPage(String page) {
     return 'Открыть: $page';
   }

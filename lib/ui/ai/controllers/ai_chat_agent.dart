@@ -31,6 +31,16 @@ extension _AiChatAgent on AiChatController {
       prefs: prefs,
     );
     final tools = aiAvailableTools(env);
+    // 使用指南（提示词语言的那一份）：目录放进系统提示词，正文由
+    // read_guide 按需读取。读不出时照常对话，只是没有指南。
+    var guide = AiGuideCatalog.empty;
+    try {
+      guide = await container.read(
+        aiGuideCatalogProvider(aiGuideLanguage(kit.l10n.localeName)).future,
+      );
+    } catch (_) {
+      // 资源缺失或损坏：没有指南也能对话。
+    }
     final citations = AiCitationBook();
     final allowance = AiWordAllowance(prefs.privacy.contextBudget);
 
@@ -106,6 +116,7 @@ extension _AiChatAgent on AiChatController {
         allowance: allowance,
         token: token,
         ui: _AgentToolUi(context, ref),
+        guide: guide,
       ),
     );
     _agentTurn = turn;
@@ -126,6 +137,7 @@ extension _AiChatAgent on AiChatController {
       tools: tools,
       scopeLine: scopeLine,
       fixedDiary: fixedDiary,
+      guideIndex: guide.index,
     );
     var answered = true;
     try {

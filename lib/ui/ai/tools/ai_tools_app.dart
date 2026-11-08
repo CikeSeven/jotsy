@@ -1,8 +1,9 @@
-// 应用层面的工具：今天与应用状态、前往某个页面。
+// 应用层面的工具：今天与应用状态、使用指南、前往某个页面。
 
 import 'package:intl/intl.dart';
 
 import '../../../core/services/ai/agent/ai_tool_schema.dart';
+import '../../../core/services/app_features.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -65,7 +66,7 @@ class GetAppContextTool extends AiTool {
             'name': holiday.name,
             'is_make_up_workday': holiday.isWork,
           },
-        'platform': _platformName(),
+        'platform': aiPlatformName(),
         'app_language': context.l10n.localeName,
         'features': <String, bool>{
           'calendar': features.calendar,
@@ -82,15 +83,16 @@ class GetAppContextTool extends AiTool {
       },
     );
   }
+}
 
-  static String _platformName() {
-    if (AppPlatform.isAndroid) return 'android';
-    if (AppPlatform.isIOS) return 'ios';
-    if (AppPlatform.isWindows) return 'windows';
-    if (AppPlatform.isMacOS) return 'macos';
-    if (AppPlatform.isLinux) return 'linux';
-    return 'other';
-  }
+/// 当前平台在工具结果与指南头信息里的写法。
+String aiPlatformName() {
+  if (AppPlatform.isAndroid) return 'android';
+  if (AppPlatform.isIOS) return 'ios';
+  if (AppPlatform.isWindows) return 'windows';
+  if (AppPlatform.isMacOS) return 'macos';
+  if (AppPlatform.isLinux) return 'linux';
+  return 'other';
 }
 
 /// 给用户一个“前往”按钮，打开应用里的某个页面。
@@ -175,4 +177,112 @@ class OpenPageTool extends AiTool {
       ),
     );
   }
+}
+
+/// 读使用指南的文章（目录在系统提示词里）。结果按当前功能开关与平台注明
+/// “这个功能现在关着 / 本平台没有”，并列出现在能打开的相关页面。
+class ReadGuideTool extends AiTool {
+  const ReadGuideTool();
+
+  /// 一次读取最多返回的正文字数（长文章用 offset 接着读）。
+  static const int pageChars = 8000;
+
+  @override
+  String get name => 'read_guide';
+
+  @override
+  AiToolGroup get group => AiToolGroup.app;
+
+  @override
+  AiToolEffect get effect => AiToolEffect.read;
+
+  @override
+  String get description =>
+      'Read articles of the built-in user guide by id (the index is in the '
+      'system prompt). Read the relevant article before explaining how to '
+      'use the app or where a setting is, and answer from it. Long articles '
+      'continue with `offset`.';
+
+  @override
+  AiObjectSchema get schema => const AiObjectSchema(
+    properties: <String, AiSchema>{
+      'ids': AiArraySchema(items: AiStringSchema(), maxItems: 3),
+      'offset': AiIntegerSchema(minimum: 0),
+    },
+    required: <String>['ids'],
+  );
+
+  @override
+  String label(AppLocalizations l10n, Map<String, Object?> args) =>
+      l10n.aiToolReadGuide;
+
+  @override
+  Future<AiToolOutcome> run(
+    AiToolContext context,
+    Map<String, Object?> args,
+  ) async {
+    final offset = args['offset'] as int? ?? 0;
+    final results = <Map<String, Object?>>[];
+    final titles = <String>[];
+    for (final id in (args['ids']! as List).cast<String>()) {
+      final article = context.guide.byId(id);
+      if (article == null) {
+        results.add(<String, Object?>{
+          'id': id,
+          'error': 'No guide article with this id; see the index.',
+        });
+        continue;
+      }
+      titles.add(article.title);
+      final body = article.body;
+      final start = offset < body.length ? offset : body.length;
+      final end = start + pageChars < body.length
+          ? start + pageChars
+          : body.length;
+      final off = [
+        for (final feature in article.features)
+          if (!_featureOn(context.env.features, feature)) feature,
+      ];
+      final platform = aiPlatformName();
+      results.add(<String, Object?>{
+        'id': article.id,
+        'title': article.title,
+        'text': body.substring(start, end),
+        if (end < body.length) 'next_offset': end,
+        if (off.isNotEmpty)
+          'note_features_off':
+              'These features are turned off now: ${off.join(', ')}. The user '
+              'can turn them on in Settings → Features (open_page '
+              'settings_features).',
+        if (article.platforms.isNotEmpty &&
+            !article.platforms.contains(platform))
+          'note_platform':
+              'Not available on this device ($platform); only on '
+              '${article.platforms.join(', ')}.',
+        'open_pages': [
+          for (final id in article.destinations)
+            if (aiDestinationById(id)?.isAvailable(context.env) ?? false) id,
+        ],
+      });
+    }
+    return AiToolOutcome(
+      data: <String, Object?>{'articles': results},
+      summary: titles.isEmpty ? null : titles.join('、'),
+    );
+  }
+
+  /// 指南头信息里的功能名对应的开关；认不出的当作开着。
+  static bool _featureOn(AppFeatures features, String name) => switch (name) {
+    'calendar' => features.calendar,
+    'todos' => features.todos,
+    'explore' => features.explore,
+    'notebooks' => features.notebooks,
+    'anniversaries' => features.anniversariesEnabled,
+    'templates' => features.templates,
+    'timeCapsules' => features.timeCapsules,
+    'swipeArchive' => features.swipeArchive,
+    'comments' => features.comments,
+    'ai' => features.ai,
+    _ => true,
+  };
 }

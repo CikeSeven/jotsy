@@ -19954,5 +19954,13 @@
         "type": "String"
       }
     }
+  },
+  "aiChatReturnHint": "Нажмите «Назад», чтобы вернуться к чату",
+  "@aiChatReturnHint": {
+    "description": "Snackbar after an AI card took the user to the home screen: back returns to the chat."
+  },
+  "aiChatReturnAction": "К чату",
+  "@aiChatReturnAction": {
+    "description": "Snackbar button that reopens the chat."
   }
 }

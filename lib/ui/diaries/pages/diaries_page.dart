@@ -83,6 +83,8 @@ import '../widgets/diary_tag_filter_bar.dart';
 import '../widgets/tag_filter_pull_hint.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/launch_reveal.dart';
+import '../../ai/controllers/ai_chat_return_flow.dart';
+import '../../ai/providers/ai_chat_return_provider.dart';
 
 part '../controllers/diaries_page_feedback.dart';
 part '../controllers/diary_list_transition_coordinator.dart';
@@ -1055,7 +1057,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 canPop:
                     !_isSelectionMode &&
                     !_tagFiltersExpanded &&
-                    scopeResolution.notebook?.parentId == null,
+                    scopeResolution.notebook?.parentId == null &&
+                    ref.watch(aiChatReturnProvider) == null,
                 onPopInvokedWithResult: (didPop, result) {
                   if (didPop) {
                     return;
@@ -1177,8 +1180,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
   }
 
-  /// 返回被拦下时的顺序：退出多选 → 收起展开的标签栏 → 子本里回到上级
-  /// 本子。顶层本子与未收录不拦返回，不在这里回到全部日记。
+  /// 返回被拦下时的顺序：退出多选 → 收起展开的标签栏 → AI 卡片带过来的
+  /// 回到那段对话（`aiChatReturnProvider`）→ 子本里回到上级本子。顶层本子与
+  /// 未收录不拦返回，不在这里回到全部日记。
   ///
   /// 日记页在 Home 里保活，切到别的 Tab 后它的 PopScope 仍会收到返回；那时
   /// 返回只用于切回日记页（Home 处理），后两步只在日记页可见时执行。
@@ -1192,6 +1196,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     }
     if (_tagFiltersExpanded) {
       _animateTagFiltersTo(false);
+      return;
+    }
+    // 是 AI 卡片带到这本 / 这页来的：返回回到那段对话，而不是上一级日记本
+    // 或退出应用。
+    if (ref.read(aiChatReturnProvider) != null) {
+      unawaited(reopenAiChat(context, ref));
       return;
     }
     _scopeController.back();

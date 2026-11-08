@@ -19387,5 +19387,13 @@
         "type": "String"
       }
     }
+  },
+  "aiChatReturnHint": "按返回键即可回到刚才的对话",
+  "@aiChatReturnHint": {
+    "description": "AI 卡片把用户带回首页后的提示条：返回键回到对话。"
+  },
+  "aiChatReturnAction": "回到对话",
+  "@aiChatReturnAction": {
+    "description": "提示条按钮：重新打开刚才的对话。"
   }
 }

@@ -17657,4 +17657,10 @@ class AppLocalizationsRu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get aiChatReturnHint => 'Нажмите «Назад», чтобы вернуться к чату';
+
+  @override
+  String get aiChatReturnAction => 'К чату';
 }

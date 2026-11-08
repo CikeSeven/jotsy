@@ -16,7 +16,7 @@ extension _HomePageChrome on _HomePageState {
     return HomeBottomBar(
       items: navItems,
       selectedIndex: _effectiveIndex,
-      onTap: _controller.onTap,
+      onTap: _handleNavTap,
       style: barStyle,
       position: barBehavior.indicatorFollowsSwipe ? _pagePosition : null,
       inlineAction: inlineCreate ? _buildInlineCreateButton(barStyle) : null,
@@ -47,7 +47,7 @@ extension _HomePageChrome on _HomePageState {
         HomeNavRail(
           items: navItems,
           selectedIndex: _effectiveIndex,
-          onTap: _controller.onTap,
+          onTap: _handleNavTap,
           style: barStyle,
           leading: _buildRailCreateButton(),
         ),

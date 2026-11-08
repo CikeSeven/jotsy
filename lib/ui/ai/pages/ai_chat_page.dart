@@ -51,6 +51,7 @@ import '../models/ai_built_ins.dart';
 import '../models/ai_chat_scope.dart';
 import '../models/ai_conversation_options.dart';
 import '../models/ai_preference_parts.dart';
+import '../providers/ai_chat_return_provider.dart';
 import '../providers/ai_providers.dart';
 import '../providers/ai_records_providers.dart';
 import '../sections/ai_agent_steps_view.dart';
@@ -98,6 +99,10 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   @override
   void initState() {
     super.initState();
+    // 回到了对话（或从别处打开了对话）：返回键恢复原来的行为。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(aiChatReturnProvider.notifier).disarm();
+    });
     _controller = AiChatController(
       database: ref.read(appDatabaseProvider),
       conversationId: widget.conversationId,
@@ -207,7 +212,16 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       );
       return;
     }
+    // 会关掉对话页的目标（首页的 Tab、日记本范围）：先登记“回到对话”，
+    // 首页的返回键与提示条据此重新打开这段对话；打开后对话页还在（例如上锁
+    // 的日记本没验证通过）就撤销登记。
+    // 关掉与否看路由还在不在栈里（退场动画期间页面仍是 mounted）。
+    final returns = ref.read(aiChatReturnProvider.notifier);
+    final route = ModalRoute.of(context);
+    final id = _controller.conversationId;
+    if (destination.leavesChat && id != null) returns.arm(id);
     await destination.open(context, ref, navigation.params);
+    if (destination.leavesChat && (route?.isActive ?? false)) returns.disarm();
   }
 
   Future<void> _send([String? question]) async {

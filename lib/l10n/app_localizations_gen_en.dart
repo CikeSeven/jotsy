@@ -17009,4 +17009,10 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get aiChatReturnHint => 'Press back to return to the chat';
+
+  @override
+  String get aiChatReturnAction => 'Back to chat';
 }

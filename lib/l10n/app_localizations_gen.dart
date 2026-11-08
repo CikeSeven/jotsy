@@ -26631,6 +26631,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Take 1 entry out of “{name}”} other{Take {count} entries out of “{name}”}}'**
   String aiToolRemoveFromNotebookNamed(int count, String name);
+
+  /// Snackbar after an AI card took the user to the home screen: back returns to the chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Press back to return to the chat'**
+  String get aiChatReturnHint;
+
+  /// Snackbar button that reopens the chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to chat'**
+  String get aiChatReturnAction;
 }
 
 class _AppLocalizationsDelegate

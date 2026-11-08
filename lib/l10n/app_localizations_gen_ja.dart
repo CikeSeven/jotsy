@@ -15113,4 +15113,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String aiToolRemoveFromNotebookNamed(int count, String name) {
     return '$count 件の日記を「$name」から外す';
   }
+
+  @override
+  String get aiChatReturnHint => '戻るボタンで先ほどの会話に戻れます';
+
+  @override
+  String get aiChatReturnAction => '会話に戻る';
 }

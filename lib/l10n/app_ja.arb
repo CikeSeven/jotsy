@@ -19954,5 +19954,13 @@
         "type": "String"
       }
     }
+  },
+  "aiChatReturnHint": "戻るボタンで先ほどの会話に戻れます",
+  "@aiChatReturnHint": {
+    "description": "Snackbar after an AI card took the user to the home screen: back returns to the chat."
+  },
+  "aiChatReturnAction": "会話に戻る",
+  "@aiChatReturnAction": {
+    "description": "Snackbar button that reopens the chat."
   }
 }

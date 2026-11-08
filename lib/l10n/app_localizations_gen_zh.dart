@@ -14856,4 +14856,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String aiToolRemoveFromNotebookNamed(int count, String name) {
     return '把 $count 篇日记移出「$name」';
   }
+
+  @override
+  String get aiChatReturnHint => '按返回键即可回到刚才的对话';
+
+  @override
+  String get aiChatReturnAction => '回到对话';
 }

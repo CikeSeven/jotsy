@@ -19387,5 +19387,13 @@
         "type": "String"
       }
     }
+  },
+  "aiChatReturnHint": "Press back to return to the chat",
+  "@aiChatReturnHint": {
+    "description": "Snackbar after an AI card took the user to the home screen: back returns to the chat."
+  },
+  "aiChatReturnAction": "Back to chat",
+  "@aiChatReturnAction": {
+    "description": "Snackbar button that reopens the chat."
   }
 }

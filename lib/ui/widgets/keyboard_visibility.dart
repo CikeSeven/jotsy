@@ -64,6 +64,11 @@ class KeyboardInsetPadding extends StatelessWidget {
 /// 原样透传。冻结而不是清零：编辑页正打字时盖上一个带输入框的对话框，
 /// 下面的正文保持让开键盘的样子，关掉对话框时不会先撑开再缩回。
 ///
+/// 从第一次构建起就屏蔽（首页：`KeyboardShield(shielded: true)` 常驻）时
+/// 按“没有键盘”冻结，而不是取第一帧读到的值：应用从别的应用切过来、被
+/// `am start` 拉起时，第一帧的 `viewInsets` 可能还带着上一个应用没收起的
+/// 键盘，冻结下来后首页底部的安全区与留白会一直少掉一个键盘高。
+///
 /// 结构恒定：[shielded] 切换时子树不会被重新挂载。
 class KeyboardShield extends StatefulWidget {
   const KeyboardShield({
@@ -83,13 +88,17 @@ class _KeyboardShieldState extends State<KeyboardShield> {
   /// 冻结的键盘高度（逻辑像素）；不在屏蔽期间为 null。
   double? _frozenInset;
 
+  /// 是否有过不屏蔽的时候：从来没有时冻结为 0（见类注释）。
+  bool _everFollowed = false;
+
   @override
   Widget build(BuildContext context) {
     final data = MediaQuery.of(context);
     if (!widget.shielded) {
+      _everFollowed = true;
       _frozenInset = null;
     } else {
-      _frozenInset ??= data.viewInsets.bottom;
+      _frozenInset ??= _everFollowed ? data.viewInsets.bottom : 0;
     }
     final inset = _frozenInset;
     final shown = inset == null

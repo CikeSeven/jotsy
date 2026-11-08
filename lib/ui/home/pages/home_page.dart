@@ -126,11 +126,15 @@ class _HomePageState extends ConsumerState<HomePage> {
   Future<void> Function()? _todosCreateAction;
   VoidCallback? _diariesSearchAction;
   bool _diariesFabVisibleByScroll = true;
+
+  /// 待办页是否在多选：多选时隐藏新建入口，返回键交给待办页退出多选。
+  bool _todosSelecting = false;
   late final ValueNotifier<int> _tabPageConfigRevision;
   late final ValueChanged<Future<void> Function()?> _diariesCreateActionChanged;
   late final ValueChanged<Future<void> Function()?> _todosCreateActionChanged;
   late final ValueChanged<VoidCallback?> _diariesSearchActionChanged;
   late final ValueChanged<bool> _diariesFabVisibilityChanged;
+  late final ValueChanged<bool> _todosSelectionChanged;
   late final _HomePageController _controller;
 
   /// 各 Tab 的页面，第一次出现在可见列表里时才创建；Tab 被关闭时移除，
@@ -196,6 +200,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     _todosCreateActionChanged = (action) => _todosCreateAction = action;
     _diariesSearchActionChanged = (action) => _diariesSearchAction = action;
     _diariesFabVisibilityChanged = _handleFabVisibilityChanged;
+    _todosSelectionChanged = (bool selecting) {
+      if (_todosSelecting == selecting || !mounted) return;
+      setState(() => _todosSelecting = selecting);
+    };
     // settings 在首页构建前已就绪（启动门槛），首帧即是真实的开关，不会先
     // 出现四个 Tab 再收起。
     _tabs = visibleHomeTabs(ref.read(appFeaturesProvider));
@@ -353,6 +361,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           HomeTab.todos => TodosPage(
             key: const PageStorageKey<String>('tab_todos'),
             onCreateActionChanged: _todosCreateActionChanged,
+            onSelectionModeChanged: _todosSelectionChanged,
           ),
           HomeTab.calendar => const CalendarPage(
             key: PageStorageKey<String>('tab_calendar'),
@@ -524,6 +533,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             if (didPop) {
               return;
             }
+            // 待办页多选时由它自己的 PopScope 退出多选，这里不切 Tab。
+            if (_effectiveTab == HomeTab.todos && _todosSelecting) return;
             // 其他 tab 按返回时先切回日记页，避免直接退出应用。
             unawaited(_controller.switchToDiariesTab());
           },

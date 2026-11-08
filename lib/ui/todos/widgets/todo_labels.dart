@@ -31,6 +31,29 @@ abstract final class TodoLabels {
     TodoSmartView.completed => FontAwesomeIcons.circleCheck,
   };
 
+  /// 智能视图的图标底色与图标色（视图面板的方块、概览卡的图标块）：今天
+  /// primary、计划 tertiary、重要 error、全部 secondary 的容器色，收集箱与
+  /// 已完成为 `surfaceContainerHighest`。
+  static (Color, Color) smartViewColors(
+    ColorScheme scheme,
+    TodoSmartView view,
+  ) => switch (view) {
+    TodoSmartView.today => (scheme.primaryContainer, scheme.onPrimaryContainer),
+    TodoSmartView.planned => (
+      scheme.tertiaryContainer,
+      scheme.onTertiaryContainer,
+    ),
+    TodoSmartView.important => (scheme.errorContainer, scheme.onErrorContainer),
+    TodoSmartView.all => (
+      scheme.secondaryContainer,
+      scheme.onSecondaryContainer,
+    ),
+    TodoSmartView.inbox || TodoSmartView.completed => (
+      scheme.surfaceContainerHighest,
+      scheme.onSurfaceVariant,
+    ),
+  };
+
   static String sortMode(AppLocalizations l10n, TodoSortMode mode) =>
       switch (mode) {
         TodoSortMode.manual => l10n.todoSortManual,
@@ -55,6 +78,15 @@ abstract final class TodoLabels {
         TodoPriority.low => scheme.primary,
         TodoPriority.medium => scheme.tertiary,
         TodoPriority.high => scheme.error,
+      };
+
+  /// 与 [priorityColor] 配对的前景色（勾选后方框里的对勾）；无优先级为 null。
+  static Color? priorityOnColor(ColorScheme scheme, TodoPriority priority) =>
+      switch (priority) {
+        TodoPriority.none => null,
+        TodoPriority.low => scheme.onPrimary,
+        TodoPriority.medium => scheme.onTertiary,
+        TodoPriority.high => scheme.onError,
       };
 
   /// 一天中的分钟数 → 按系统 12 / 24 小时制的时刻文字。

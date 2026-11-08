@@ -207,10 +207,13 @@ void main() {
         TodoInput(title: '开会', listId: listId),
       );
       final inbox = await db.createTodo(const TodoInput(title: '收集箱里的'));
-      expect(await db.watchOpenTodoCountsByList().first, <String?, int>{
-        listId: 1,
-        null: 1,
-      });
+      expect(
+        await db.watchTodoListProgress().first,
+        <String?, TodoListProgress>{
+          listId: const TodoListProgress(open: 1, done: 0),
+          null: const TodoListProgress(open: 1, done: 0),
+        },
+      );
       final deletion = (await db.deleteTodoList(listId))!;
       expect(deletion.todos.single.todoId, inList);
       expect(await db.getTodo(inList), isNull);

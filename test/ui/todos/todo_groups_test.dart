@@ -205,8 +205,14 @@ void main() {
       allDayReminderMinute: 8 * 60,
       snoozeMinutes: 30,
       hideContentOnLockScreen: true,
+      smartParse: false,
     );
     expect(TodoSettings.decode(custom.encode()), custom);
+    expect(
+      TodoSettings.decode('{"smartParse":"off"}').smartParse,
+      isTrue,
+      reason: '认不出的值退回默认（开）',
+    );
     expect(
       TodoSettings.decode(
         '{"showCompleted":"no","sort":"weird","snoozeMinutes":7,'
@@ -215,5 +221,58 @@ void main() {
       TodoSettings.defaults,
     );
     expect(TodoSettings.decode('not json'), TodoSettings.defaults);
+  });
+
+  test('today ends with what was completed today unless hidden', () {
+    final open = <TodoRow>[_todo('今天的', due: '2026-11-10')];
+    final completed = <TodoRow>[
+      _todo('刚做完', due: '2026-11-10', completedAt: DateTime(2026, 11, 10, 9)),
+      _todo('昨天做完', due: '2026-11-09', completedAt: DateTime(2026, 11, 9, 22)),
+    ];
+    final shown = groups(TodoView.today, open: open, completed: completed);
+    expect(shown.map((g) => g.kind), <TodoGroupKind>[
+      TodoGroupKind.today,
+      TodoGroupKind.completedToday,
+    ]);
+    expect(_titles(shown.last), <String>['刚做完']);
+    expect(
+      groups(
+        TodoView.today,
+        open: open,
+        completed: completed,
+        showCompleted: false,
+      ).map((g) => g.kind),
+      <TodoGroupKind>[TodoGroupKind.today],
+    );
+    // 今天什么都没有、也没做完什么时没有任何一组。
+    expect(
+      groups(TodoView.today, completed: <TodoRow>[completed.last]),
+      isEmpty,
+    );
+  });
+
+  test('today summary counts remaining, overdue and done today', () {
+    final summary = todoTodaySummary(
+      <TodoRow>[
+        _todo('逾期', due: '2026-11-08'),
+        _todo('今天', due: '2026-11-10'),
+        _todo('明天', due: '2026-11-11'),
+        _todo('没日期'),
+      ],
+      <TodoRow>[
+        _todo('做完', completedAt: DateTime(2026, 11, 10, 8)),
+        _todo('昨天做完', completedAt: DateTime(2026, 11, 9, 8)),
+      ],
+      _today,
+    );
+    expect(summary.remaining, 2);
+    expect(summary.overdue, 1);
+    expect(summary.doneToday, 1);
+    expect(summary.total, 3);
+    expect(summary.fraction, closeTo(1 / 3, 1e-9));
+    expect(
+      todoTodaySummary(const <TodoRow>[], const <TodoRow>[], _today).fraction,
+      0,
+    );
   });
 }

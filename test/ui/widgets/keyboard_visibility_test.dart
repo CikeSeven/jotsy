@@ -167,5 +167,25 @@ void main() {
       await tester.pumpWidget(shield(shielded: false));
       expect(insets.last, const EdgeInsets.only(bottom: 320));
     });
+
+    testWidgets('shielded from the first frame ignores a leftover keyboard', (
+      tester,
+    ) async {
+      // 从别的应用切过来时，第一帧可能还带着上一个应用没收起的键盘。
+      tester.view
+        ..devicePixelRatio = 1
+        ..viewPadding = const FakeViewPadding(bottom: 24)
+        ..padding = FakeViewPadding.zero
+        ..viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(shield(shielded: true));
+      expect(insets.last, EdgeInsets.zero);
+      expect(paddings.last, const EdgeInsets.only(bottom: 24));
+      expect(visible.last, isFalse);
+
+      tester.view.viewInsets = FakeViewPadding.zero;
+      await tester.pump();
+      expect(insets.last, EdgeInsets.zero);
+    });
   });
 }

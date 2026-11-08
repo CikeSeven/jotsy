@@ -35,6 +35,7 @@ class TodoSettings {
     this.allDayReminderMinute = 9 * 60,
     this.snoozeMinutes = 10,
     this.hideContentOnLockScreen = false,
+    this.smartParse = true,
   });
 
   static const TodoSettings defaults = TodoSettings();
@@ -63,6 +64,10 @@ class TodoSettings {
   /// 锁屏上的提醒只写“你有一个待办”，不写内容。
   final bool hideContentOnLockScreen;
 
+  /// 新建待办时从输入里识别日期、时刻、`#清单` 与 `!` 优先级（见
+  /// `parseTodoQuickInput`）。
+  final bool smartParse;
+
   /// 打开时显示的视图；认不出（含清单已删）时由调用方回到“今天”。
   TodoView get defaultView => TodoView.parse(defaultViewKey) ?? TodoView.today;
 
@@ -73,6 +78,7 @@ class TodoSettings {
   static const _keyAllDayReminder = 'allDayReminderMinute';
   static const _keySnooze = 'snoozeMinutes';
   static const _keyHideContent = 'hideContentOnLockScreen';
+  static const _keySmartParse = 'smartParse';
 
   static TodoSettings decode(String? raw) {
     if (raw == null || raw.trim().isEmpty) return defaults;
@@ -106,6 +112,9 @@ class TodoSettings {
       hideContentOnLockScreen: map[_keyHideContent] is bool
           ? map[_keyHideContent] as bool
           : defaults.hideContentOnLockScreen,
+      smartParse: map[_keySmartParse] is bool
+          ? map[_keySmartParse] as bool
+          : defaults.smartParse,
     );
   }
 
@@ -120,6 +129,7 @@ class TodoSettings {
       _keyAllDayReminder: allDayReminderMinute,
       _keySnooze: snoozeMinutes,
       _keyHideContent: hideContentOnLockScreen,
+      _keySmartParse: smartParse,
     });
   }
 
@@ -132,6 +142,7 @@ class TodoSettings {
     int? allDayReminderMinute,
     int? snoozeMinutes,
     bool? hideContentOnLockScreen,
+    bool? smartParse,
   }) {
     return TodoSettings(
       showCompleted: showCompleted ?? this.showCompleted,
@@ -144,6 +155,7 @@ class TodoSettings {
       snoozeMinutes: snoozeMinutes ?? this.snoozeMinutes,
       hideContentOnLockScreen:
           hideContentOnLockScreen ?? this.hideContentOnLockScreen,
+      smartParse: smartParse ?? this.smartParse,
     );
   }
 
@@ -156,7 +168,8 @@ class TodoSettings {
       other.defaultViewKey == defaultViewKey &&
       other.allDayReminderMinute == allDayReminderMinute &&
       other.snoozeMinutes == snoozeMinutes &&
-      other.hideContentOnLockScreen == hideContentOnLockScreen;
+      other.hideContentOnLockScreen == hideContentOnLockScreen &&
+      other.smartParse == smartParse;
 
   @override
   int get hashCode => Object.hash(
@@ -167,5 +180,6 @@ class TodoSettings {
     allDayReminderMinute,
     snoozeMinutes,
     hideContentOnLockScreen,
+    smartParse,
   );
 }

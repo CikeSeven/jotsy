@@ -155,20 +155,6 @@ mixin _AppDatabaseTodoListOps on _$AppDatabase {
     return row.read(count) ?? 0;
   }
 
-  /// 每个清单（键为清单业务 id，收集箱为 null）里未完成的待办数。
-  Stream<Map<String?, int>> watchOpenTodoCountsByList() {
-    final count = todos.id.count();
-    final query = selectOnly(todos)
-      ..addColumns(<Expression<Object>>[todos.listId, count])
-      ..where(todos.completedAt.isNull())
-      ..groupBy(<Expression<Object>>[todos.listId]);
-    return query.watch().map(
-      (rows) => <String?, int>{
-        for (final row in rows) row.read(todos.listId): row.read(count) ?? 0,
-      },
-    );
-  }
-
   String _normalizeTodoListName(String raw) {
     final name = raw.trim();
     if (name.isEmpty) {

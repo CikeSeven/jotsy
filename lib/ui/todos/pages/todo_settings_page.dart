@@ -194,6 +194,16 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
                             ? null
                             : () => unawaited(pickDefaultList()),
                       ),
+                      SettingsSwitchTile(
+                        title: l10n.todoSettingsSmartParse,
+                        subtitle: l10n.todoSettingsSmartParseSubtitle,
+                        value: settings.smartParse,
+                        onChanged: service == null
+                            ? null
+                            : (bool value) => unawaited(
+                                save(settings.copyWith(smartParse: value)),
+                              ),
+                      ),
                     ],
                   ),
                   if (AppPlatform.supportsReminders) ...<Widget>[

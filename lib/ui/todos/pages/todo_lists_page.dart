@@ -23,6 +23,8 @@ import '../../widgets/reorder_handle.dart';
 import '../controllers/todo_list_actions.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_list_style.dart';
+import '../widgets/todo_progress_ring.dart';
+import '../widgets/todo_view_hero.dart';
 
 /// 清单管理：拖动排序、改名 / 颜色 / 图标、删除（连同其中的待办，可撤销），
 /// 右上角“+”新建。
@@ -67,8 +69,9 @@ class _TodoListsPageState extends ConsumerState<TodoListsPage> {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final lists = ref.watch(todoListsProvider).value;
-    final counts =
-        ref.watch(todoOpenCountsByListProvider).value ?? const <String?, int>{};
+    final progress =
+        ref.watch(todoListProgressProvider).value ??
+        const <String?, TodoListProgress>{};
     return AppPageBackground(
       area: AppBackgroundArea.other,
       child: Builder(
@@ -143,14 +146,11 @@ class _TodoListsPageState extends ConsumerState<TodoListsPage> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: <Widget>[
                                         ReorderHandle(index: index),
-                                        CircleAvatar(
-                                          radius: 18,
-                                          backgroundColor: accent.container,
-                                          child: FaIcon(
-                                            TodoListStyle.iconOfRow(list),
-                                            size: 15,
-                                            color: accent.onContainer,
-                                          ),
+                                        TodoIconBlock(
+                                          icon: TodoListStyle.iconOfRow(list),
+                                          background: accent.container,
+                                          foreground: accent.onContainer,
+                                          size: 36,
                                         ),
                                       ],
                                     ),
@@ -159,9 +159,13 @@ class _TodoListsPageState extends ConsumerState<TodoListsPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    subtitle: (counts[list.listId] ?? 0) == 0
-                                        ? null
-                                        : Text('${counts[list.listId]}'),
+                                    subtitle: _ListProgress(
+                                      progress:
+                                          progress[list.listId] ??
+                                          TodoListProgress.empty,
+                                      color: accent.onContainer,
+                                      track: accent.container,
+                                    ),
                                     onTap: () => unawaited(
                                       editTodoListFlow(context, ref, list),
                                     ),
@@ -213,6 +217,45 @@ class _TodoListsPageState extends ConsumerState<TodoListsPage> {
                 ),
         ),
       ),
+    );
+  }
+}
+
+/// 清单行的副标题：“已完成 x / y” + 4dp 进度条（强调色画在其容器色上）。
+class _ListProgress extends StatelessWidget {
+  const _ListProgress({
+    required this.progress,
+    required this.color,
+    required this.track,
+  });
+
+  final TodoListProgress progress;
+  final Color color;
+  final Color track;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(
+          context.l10n.todoHeroListProgress(progress.done, progress.total),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TodoProgressBar(
+          fraction: progress.fraction,
+          color: color,
+          track: track,
+          height: 4,
+        ),
+      ],
     );
   }
 }

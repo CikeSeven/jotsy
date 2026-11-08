@@ -24,12 +24,13 @@ final todoListsProvider = StreamProvider<List<TodoListRow>>((Ref ref) {
   return ref.watch(appDatabaseProvider).watchTodoLists();
 });
 
-/// 每个清单里未完成的待办数（键为清单业务 id，收集箱为 null）。
-final todoOpenCountsByListProvider = StreamProvider<Map<String?, int>>((
-  Ref ref,
-) {
-  return ref.watch(appDatabaseProvider).watchOpenTodoCountsByList();
-});
+/// 每个清单的完成进度（键为清单业务 id，收集箱为 null；没有待办的清单不在
+/// 表里，按 [TodoListProgress.empty] 处理）。
+final todoListProgressProvider = StreamProvider<Map<String?, TodoListProgress>>(
+  (Ref ref) {
+    return ref.watch(appDatabaseProvider).watchTodoListProgress();
+  },
+);
 
 /// 日历用的按日索引。重新加载期间沿用上一份数据，日期格上的角标不会闪
 /// 一下消失；还没有数据时为空索引。只在待办功能开启、日历显示待办时订阅。

@@ -17,17 +17,21 @@ const Duration _undoDuration = Duration(seconds: 5);
 /// 是调用前取好的 [AppDatabase]：提示关闭时页面可能已卸载。
 
 /// 勾选 / 取消勾选一条待办。完成时给出可撤销的提示：重复待办写明下一次的
-/// 日子。取消完成不提示（再点一下就回去了）。
+/// 日子。取消完成不提示（再点一下就回去了）。[onWritten] 在写库之后、弹
+/// 提示之前调用（待办页据此结束“收起中”，不必等提示关闭）。
 Future<void> toggleTodoDone(
   BuildContext context,
   AppDatabase database,
-  TodoRow row,
-) async {
+  TodoRow row, {
+  VoidCallback? onWritten,
+}) async {
   if (row.completedAt != null) {
     await database.uncompleteTodo(row.todoId);
+    onWritten?.call();
     return;
   }
   final completion = await database.completeTodo(row.todoId);
+  onWritten?.call();
   if (completion == null || !context.mounted) return;
   final l10n = context.l10n;
   final next = completion.nextDue;
@@ -36,7 +40,7 @@ Future<void> toggleTodoDone(
       : l10n.todoCompletedNextNotice(
           TodoLabels.relativeDay(l10n, next, _today()),
         );
-  final undone = await _showUndo(context, message);
+  final undone = await showTodoUndoHint(context, message);
   if (undone) await database.undoTodoCompletion(completion);
 }
 
@@ -48,7 +52,10 @@ Future<void> deleteTodoWithUndo(
 ) async {
   final row = await database.deleteTodo(todoId);
   if (row == null || !context.mounted) return;
-  final undone = await _showUndo(context, context.l10n.todoDeletedNotice);
+  final undone = await showTodoUndoHint(
+    context,
+    context.l10n.todoDeletedNotice,
+  );
   if (undone) await database.restoreTodos(<TodoRow>[row]);
 }
 
@@ -99,15 +106,16 @@ Future<void> clearCompletedTodos(
     allLists: allLists,
   );
   if (rows.isEmpty || !context.mounted) return;
-  final undone = await _showUndo(
+  final undone = await showTodoUndoHint(
     context,
     context.l10n.todoClearedCount(rows.length),
   );
   if (undone) await database.restoreTodos(rows);
 }
 
-/// 弹出带“撤销”的提示，返回用户是否点了撤销。
-Future<bool> _showUndo(BuildContext context, String message) async {
+/// 弹出带“撤销”的提示（经 [HomeHintVisibilityScope.showTrackedSnackBar]，
+/// `persist: false`），返回用户是否点了撤销。待办的单条与批量操作共用。
+Future<bool> showTodoUndoHint(BuildContext context, String message) async {
   var undo = false;
   final reason = await HomeHintVisibilityScope.showTrackedSnackBar(
     context: context,

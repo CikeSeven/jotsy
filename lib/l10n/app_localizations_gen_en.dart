@@ -15541,14 +15541,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoGroupLater => 'Later';
 
   @override
-  String get todoGroupNoDate => 'No date';
-
-  @override
-  String todoGroupCompleted(int count) {
-    return 'Completed $count';
-  }
-
-  @override
   String get todoNew => 'New to-do';
 
   @override
@@ -15700,9 +15692,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'No lists yet. Group to-dos by work, home and so on to find them faster.';
 
   @override
-  String get todoDetailTitle => 'To-do';
-
-  @override
   String get todoNoteHint => 'Add a note';
 
   @override
@@ -15720,13 +15709,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoFieldDue => 'Date';
 
   @override
-  String get todoFieldDueEmpty => 'Add date';
-
-  @override
   String get todoFieldReminders => 'Reminders';
-
-  @override
-  String get todoFieldRemindersEmpty => 'Add reminder';
 
   @override
   String get todoFieldRepeat => 'Repeat';
@@ -15741,13 +15724,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoFieldDiary => 'Linked diary';
 
   @override
-  String get todoFieldDiaryEmpty => 'Link a diary';
-
-  @override
   String get todoFieldDiaryMissing => 'The diary no longer exists';
-
-  @override
-  String get todoRemoveField => 'Clear';
 
   @override
   String todoCreatedAt(String time) {
@@ -16014,9 +15991,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoRepeatEndsAfterPick => 'After a number of times';
 
   @override
-  String get todoRepeatNeedsDate => 'Repeating starts today';
-
-  @override
   String get todoSettingsTitle => 'To-dos';
 
   @override
@@ -16166,4 +16140,211 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryLinkedTodosTitle => 'Related to-dos';
+
+  @override
+  String get todoBatchActionComplete => 'Complete';
+
+  @override
+  String get todoDuplicate => 'Duplicate';
+
+  @override
+  String todoDuplicateTitle(String title) {
+    return '$title (copy)';
+  }
+
+  @override
+  String get todoDuplicatedNotice => 'Duplicated as a new to-do';
+
+  @override
+  String get todoGroupCompletedTitle => 'Completed';
+
+  @override
+  String get todoGroupCompletedToday => 'Done today';
+
+  @override
+  String get todoHeroAllDone => 'All done for today';
+
+  @override
+  String get todoHeroNothing => 'Nothing planned today';
+
+  @override
+  String todoHeroDate(String weekday, String date) {
+    return '$weekday · $date';
+  }
+
+  @override
+  String todoHeroRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count things left',
+      one: '1 thing left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoHeroOverdue(int count) {
+    return '$count overdue';
+  }
+
+  @override
+  String todoHeroDone(int count) {
+    return '$count done';
+  }
+
+  @override
+  String todoHeroListProgress(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String todoHeroOpenCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos left',
+      one: '1 to-do left',
+      zero: 'Nothing left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoHeroCompletedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count completed recently',
+      one: '1 completed recently',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoInlineAddHint => 'Add a to-do';
+
+  @override
+  String get todoListManageShort => 'Manage';
+
+  @override
+  String get todoMoveOverdueToToday => 'Move all to today';
+
+  @override
+  String get todoMoveToToday => 'Move to today';
+
+  @override
+  String get todoMoveToList => 'Move to list…';
+
+  @override
+  String get todoNoteTitle => 'Notes';
+
+  @override
+  String get todoStepsTitle => 'Steps';
+
+  @override
+  String todoStepsTitleProgress(int done, int total) {
+    return 'Steps $done/$total';
+  }
+
+  @override
+  String get todoOpenDiary => 'Open diary';
+
+  @override
+  String get todoQuickParseDismiss => 'Remove';
+
+  @override
+  String todoRemindersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reminders',
+      one: '1 reminder',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get todoSelectionExit => 'Exit selection';
+
+  @override
+  String get todoViewSheetTitle => 'Switch view';
+
+  @override
+  String todoBatchCompleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Completed $count to-dos',
+      one: 'Completed 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Deleted $count to-dos',
+      one: 'Deleted 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchDueRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Removed the date from $count to-dos',
+      one: 'Removed the date from 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchDueSet(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Moved $count to-dos to $date',
+      one: 'Moved 1 to-do to $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchMoved(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Moved $count to-dos to “$list”',
+      one: 'Moved 1 to-do to “$list”',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoBatchPrioritySet(int count, String priority) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Set $count to-dos to $priority priority',
+      one: 'Set 1 to-do to $priority priority',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoSettingsSmartParse => 'Smart recognition';
+
+  @override
+  String get todoSettingsSmartParseSubtitle =>
+      'Turn “tomorrow 3pm #Work !!!” into a date, list and priority';
 }

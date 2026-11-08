@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_breakpoints.dart';
+import '../../app/theme/app_radii.dart';
 import '../../app/theme/app_spacing.dart';
 import '../app_surface/widgets/app_page_backdrop.dart';
 import '../home/widgets/home_bar/home_top_bar_surface.dart';
@@ -16,6 +17,9 @@ class PageHeader extends StatelessWidget {
     required this.title,
     this.contentMaxWidth,
     this.actions = const <Widget>[],
+    this.titleTrailing,
+    this.onTitleTap,
+    this.titleTooltip,
   });
 
   // 与日记列表页头部体感高度对齐，避免 Explore/Settings 看起来偏高。
@@ -30,6 +34,17 @@ class PageHeader extends StatelessWidget {
 
   /// 标题右侧的操作按钮（如探索页的“自定义”）。为空时与原来完全一致。
   final List<Widget> actions;
+
+  /// 紧跟标题文字的小部件（如待办页“今天 ▾”的箭头）。为 null 时与原来完全
+  /// 一致。
+  final Widget? titleTrailing;
+
+  /// 点按标题（连同 [titleTrailing]）时的回调，如待办页弹出视图面板。为 null
+  /// 时标题不可点、与原来完全一致。
+  final VoidCallback? onTitleTap;
+
+  /// 可点标题的读屏说明与悬停提示。
+  final String? titleTooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +80,7 @@ class PageHeader extends StatelessWidget {
                       AppSpacing.s,
                     ),
                     child: () {
-                      final text = Text(
+                      Widget text = Text(
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -76,6 +91,7 @@ class PageHeader extends StatelessWidget {
                               letterSpacing: -0.5,
                             ),
                       );
+                      text = _decorateTitle(context, text);
                       if (actions.isEmpty) {
                         return Align(
                           alignment: Alignment.centerLeft,
@@ -84,7 +100,14 @@ class PageHeader extends StatelessWidget {
                       }
                       return Row(
                         children: <Widget>[
-                          Expanded(child: text),
+                          Expanded(
+                            child: onTitleTap == null && titleTrailing == null
+                                ? text
+                                : Align(
+                                    alignment: AlignmentDirectional.centerStart,
+                                    child: text,
+                                  ),
+                          ),
                           ...actions,
                         ],
                       );
@@ -97,5 +120,41 @@ class PageHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 给标题加上 [titleTrailing] 与点按：都没有时原样返回（像素不变）。
+  Widget _decorateTitle(BuildContext context, Widget text) {
+    final trailing = titleTrailing;
+    final onTap = onTitleTap;
+    if (trailing == null && onTap == null) return text;
+    Widget child = trailing == null
+        ? text
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(child: text),
+              const SizedBox(width: AppSpacing.s),
+              trailing,
+            ],
+          );
+    if (onTap == null) return child;
+    child = Semantics(
+      button: true,
+      label: titleTooltip,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.input),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(
+            end: AppSpacing.s,
+            top: AppSpacing.xs,
+            bottom: AppSpacing.xs,
+          ),
+          child: child,
+        ),
+      ),
+    );
+    final tooltip = titleTooltip;
+    return tooltip == null ? child : Tooltip(message: tooltip, child: child);
   }
 }

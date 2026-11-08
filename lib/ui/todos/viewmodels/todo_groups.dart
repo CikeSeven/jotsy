@@ -22,6 +22,9 @@ enum TodoGroupKind {
   /// 清单底部可折叠的已完成。
   completed,
 
+  /// “今天”视图底部可折叠的今天已完成。
+  completedToday,
+
   /// “已完成”视图里按完成日期分的一组（[TodoGroup.day]）。
   completedDay,
 }
@@ -55,7 +58,7 @@ class TodoGroup {
 /// 完成的在前）、清单顺序 [listOrder]、排序方式与“今天” [today]（本地零点）；
 /// 输出：要显示的各组，空组不出现。
 ///
-/// - 今天：逾期 / 今天两组；计划：逾期 / 今天 / 明天 / 未来七天 / 更晚。这两
+/// - 今天：逾期 / 今天两组，[showCompleted] 时底部再加今天完成的一组；计划：逾期 / 今天 / 明天 / 未来七天 / 更晚。这两
 ///   个视图里“手动”排序按截止时刻（全天的在前），其余排序方式照常；
 /// - 重要：高优先级的一组；
 /// - 全部：按清单分组，收集箱在前，清单按拖动顺序，空清单不出现；
@@ -115,7 +118,16 @@ List<TodoGroup> buildTodoGroups({
 
   switch (view.smart) {
     case TodoSmartView.today:
-      return dated(open, future: false);
+      final doneToday = <TodoRow>[
+        if (showCompleted)
+          for (final row in completed)
+            if (_completedOn(row, today)) row,
+      ];
+      return <TodoGroup>[
+        ...dated(open, future: false),
+        if (doneToday.isNotEmpty)
+          TodoGroup(kind: TodoGroupKind.completedToday, rows: doneToday),
+      ];
     case TodoSmartView.planned:
       return dated(open, future: true);
     case TodoSmartView.important:
@@ -182,6 +194,65 @@ List<TodoGroup> buildTodoGroups({
           TodoGroup(kind: TodoGroupKind.completed, listId: listId, rows: done),
       ];
   }
+}
+
+bool _completedOn(TodoRow row, DateTime day) {
+  final at = row.completedAt;
+  return at != null &&
+      at.year == day.year &&
+      at.month == day.month &&
+      at.day == day.day;
+}
+
+/// “今天”概览卡的数字。
+@immutable
+class TodoTodaySummary {
+  const TodoTodaySummary({
+    required this.remaining,
+    required this.overdue,
+    required this.doneToday,
+  });
+
+  /// 截止日不晚于今天、还没完成的（含逾期）。
+  final int remaining;
+
+  /// 其中已逾期的。
+  final int overdue;
+
+  /// 今天完成的。
+  final int doneToday;
+
+  int get total => remaining + doneToday;
+
+  /// 今天的进度（0~1）；今天什么都没有时为 0。
+  double get fraction => total == 0 ? 0 : doneToday / total;
+}
+
+/// 汇总“今天”概览卡的数字（纯函数）：剩余与逾期取未完成的 [open]，今天完成
+/// 的取最近完成的 [completed] 里完成时间落在 [today] 的。
+TodoTodaySummary todoTodaySummary(
+  List<TodoRow> open,
+  List<TodoRow> completed,
+  DateTime today,
+) {
+  final todayText = formatAnniversaryDate(today);
+  var remaining = 0;
+  var overdue = 0;
+  for (final row in open) {
+    final due = row.dueDate;
+    if (due == null || due.compareTo(todayText) > 0) continue;
+    remaining++;
+    if (due.compareTo(todayText) < 0) overdue++;
+  }
+  var doneToday = 0;
+  for (final row in completed) {
+    if (_completedOn(row, today)) doneToday++;
+  }
+  return TodoTodaySummary(
+    remaining: remaining,
+    overdue: overdue,
+    doneToday: doneToday,
+  );
 }
 
 /// 按排序方式排一组未完成的待办（稳定排序：同序时保持输入的拖动顺序）。

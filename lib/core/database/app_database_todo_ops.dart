@@ -130,26 +130,7 @@ mixin _AppDatabaseTodoOps on _$AppDatabase, _AppDatabaseTodoQueries {
     return transaction(() async {
       final row = await getTodo(todoId);
       if (row == null) return;
-      String? repeat = row.repeat;
-      if (date == null) {
-        repeat = null;
-      } else {
-        final rule = decodeTodoRepeat(row.repeat);
-        if (rule != null) {
-          repeat = encodeTodoRepeat(
-            rule.copyWith(anchor: DateTime(date.year, date.month, date.day)),
-          );
-        }
-      }
-      await _writeTodo(
-        todoId,
-        TodosCompanion(
-          dueDate: Value(date == null ? null : formatAnniversaryDate(date)),
-          dueMinute: Value(date == null ? null : minute),
-          repeat: Value(repeat),
-          snoozedUntil: const Value(null),
-        ),
-      );
+      await _writeTodo(todoId, _todoDueChange(row, date: date, minute: minute));
     });
   }
 
@@ -243,6 +224,32 @@ mixin _AppDatabaseTodoOps on _$AppDatabase, _AppDatabaseTodoQueries {
         await into(todos).insertOnConflictUpdate(row.toCompanion(false));
       }
     });
+  }
+
+  /// 把 [row] 的截止日改为 [date]、截止时刻改为 [minute] 时要写的列（不含
+  /// `updated_at`），规则见 [setTodoDue]；单条与批量的 `setTodosDue` 共用。
+  TodosCompanion _todoDueChange(
+    TodoRow row, {
+    required DateTime? date,
+    required int? minute,
+  }) {
+    String? repeat = row.repeat;
+    if (date == null) {
+      repeat = null;
+    } else {
+      final rule = decodeTodoRepeat(row.repeat);
+      if (rule != null) {
+        repeat = encodeTodoRepeat(
+          rule.copyWith(anchor: DateTime(date.year, date.month, date.day)),
+        );
+      }
+    }
+    return TodosCompanion(
+      dueDate: Value(date == null ? null : formatAnniversaryDate(date)),
+      dueMinute: Value(date == null ? null : minute),
+      repeat: Value(repeat),
+      snoozedUntil: const Value(null),
+    );
   }
 
   Future<void> _writeTodo(String todoId, TodosCompanion change) {

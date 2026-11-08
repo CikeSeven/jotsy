@@ -1,5 +1,36 @@
 part of 'app_database.dart';
 
+/// 一个清单（或收集箱）的完成进度，见
+/// [_AppDatabaseTodoQueries.watchTodoListProgress]。
+@immutable
+class TodoListProgress {
+  const TodoListProgress({required this.open, required this.done});
+
+  /// 没有任何待办的清单。
+  static const TodoListProgress empty = TodoListProgress(open: 0, done: 0);
+
+  /// 未完成的条数。
+  final int open;
+
+  /// 已完成的条数（含重复待办每一次的已完成副本）。
+  final int done;
+
+  int get total => open + done;
+
+  /// 已完成的比例（0–1）；清单里没有待办时为 0。
+  double get fraction => total == 0 ? 0 : done / total;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TodoListProgress && other.open == open && other.done == done;
+
+  @override
+  int get hashCode => Object.hash(open, done);
+
+  @override
+  String toString() => 'TodoListProgress(open: $open, done: $done)';
+}
+
 /// 待办查询。
 ///
 /// 输入：筛选条件；输出：drift watch 流或一次性结果，无副作用。
@@ -108,6 +139,28 @@ mixin _AppDatabaseTodoQueries on _$AppDatabase {
           .take(limit)
           .toList(growable: false),
     );
+  }
+
+  /// 每个清单（键为清单业务 id，收集箱为 null）里未完成与已完成的待办数，
+  /// 一条按 `list_id` 分组的查询。已完成的含重复待办每一次的已完成副本（副本
+  /// 与原待办在同一清单）；一条待办都没有的清单不在结果里，按
+  /// [TodoListProgress.empty] 处理。
+  Stream<Map<String?, TodoListProgress>> watchTodoListProgress() {
+    final total = todos.id.count();
+    // COUNT(列) 只数非 NULL 的值：completed_at 不为 NULL 即已完成。
+    final done = todos.completedAt.count();
+    final query = selectOnly(todos)
+      ..addColumns(<Expression<Object>>[todos.listId, total, done])
+      ..groupBy(<Expression<Object>>[todos.listId]);
+    return query.watch().map((rows) {
+      return <String?, TodoListProgress>{
+        for (final row in rows)
+          row.read(todos.listId): TodoListProgress(
+            open: (row.read(total) ?? 0) - (row.read(done) ?? 0),
+            done: row.read(done) ?? 0,
+          ),
+      };
+    });
   }
 
   bool _todoMatchesAll(TodoRow row, List<String> terms) {

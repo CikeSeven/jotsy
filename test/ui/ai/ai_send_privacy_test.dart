@@ -280,6 +280,8 @@ void main() {
     );
     await settle(h);
     await tester.enterText(find.byType(TextField), '现在能告诉我什么？');
+    // 有了文字发送按钮才可点（下一帧）。
+    await tester.pump();
     await tester.tap(find.byTooltip(h.l10n.aiPanelSend));
     await settle(h);
     expect(requests, hasLength(1));

@@ -21240,12 +21240,6 @@ abstract class AppLocalizations {
   /// **'Undo'**
   String get aiAgentUndo;
 
-  /// Undo every change the AI made in this reply.
-  ///
-  /// In en, this message translates to:
-  /// **'Undo all changes in this reply'**
-  String get aiAgentUndoAll;
-
   /// The AI step was undone.
   ///
   /// In en, this message translates to:
@@ -21317,12 +21311,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search entries'**
   String get aiDestinationSearch;
-
-  /// Title of a collapsed group of AI steps.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{Used 1 tool} other{Used {count} tools}}'**
-  String aiAgentStepsSummary(int count);
 
   /// The AI is preparing a tool call.
   ///
@@ -23124,18 +23112,6 @@ abstract class AppLocalizations {
   /// **'{period} recap'**
   String aiRecapDiaryTitle(String period);
 
-  /// Title of the AI hub page.
-  ///
-  /// In en, this message translates to:
-  /// **'AI assistant'**
-  String get aiHubTitle;
-
-  /// Hint of the hub question field.
-  ///
-  /// In en, this message translates to:
-  /// **'Ask your diary…'**
-  String get aiHubAskHint;
-
   /// Quick question.
   ///
   /// In en, this message translates to:
@@ -23166,35 +23142,11 @@ abstract class AppLocalizations {
   /// **'How have I changed over the past half year?'**
   String get aiHubQuickGrowth;
 
-  /// Hub recaps group.
-  ///
-  /// In en, this message translates to:
-  /// **'Recaps'**
-  String get aiHubRecapsGroup;
-
   /// Opens the recap page.
   ///
   /// In en, this message translates to:
   /// **'More options…'**
   String get aiHubRecapMore;
-
-  /// Shown when there are no recaps.
-  ///
-  /// In en, this message translates to:
-  /// **'No recaps yet'**
-  String get aiHubNoRecaps;
-
-  /// Hub chats group.
-  ///
-  /// In en, this message translates to:
-  /// **'Chats'**
-  String get aiHubChatsGroup;
-
-  /// Shown when there are no chats.
-  ///
-  /// In en, this message translates to:
-  /// **'No chats yet. Ask a question above to start.'**
-  String get aiHubNoChats;
 
   /// Hint of the chat search field.
   ///
@@ -23340,12 +23292,6 @@ abstract class AppLocalizations {
   /// **'This entry no longer exists'**
   String get aiChatCitationMissing;
 
-  /// Empty chat hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Ask about your mood over a period, how something unfolded, or let AI help you remember.'**
-  String get aiChatEmptyHint;
-
   /// Title of a chat about one entry.
   ///
   /// In en, this message translates to:
@@ -23489,18 +23435,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Follows the search method in AI settings'**
   String get aiChatScopeAutoSubtitle;
-
-  /// Tooltip of the settings button on the AI hub.
-  ///
-  /// In en, this message translates to:
-  /// **'AI settings'**
-  String get aiHubOpenSettings;
-
-  /// Tooltip of the hub ask button.
-  ///
-  /// In en, this message translates to:
-  /// **'Ask'**
-  String get aiHubSend;
 
   /// Tile on the AI settings page opening the hub.
   ///
@@ -26643,6 +26577,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to chat'**
   String get aiChatReturnAction;
+
+  /// Summary of the folded process: how long the model thought.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds, plural, =1{Thought for 1 second} other{Thought for {seconds} seconds}}'**
+  String aiProcessThoughtFor(int seconds);
+
+  /// Live process fold: still thinking, seconds so far.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds, plural, =1{Thinking · 1 second} other{Thinking · {seconds} seconds}}'**
+  String aiProcessThinkingFor(int seconds);
+
+  /// Fold summary when there was thinking but no timing (older records).
+  ///
+  /// In en, this message translates to:
+  /// **'Thought it through'**
+  String get aiProcessThought;
+
+  /// Fold summary: number of tool calls.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Used 1 tool} other{Used {count} tools}}'**
+  String aiProcessTools(int count);
+
+  /// Fold summary: failed calls (in error color).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 failed} other{{count} failed}}'**
+  String aiProcessFailed(int count);
+
+  /// Fold summary when it only holds in-between remarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the steps'**
+  String get aiProcessSteps;
+
+  /// Tool details: heading of the parameters.
+  ///
+  /// In en, this message translates to:
+  /// **'Inputs'**
+  String get aiToolDetailsInputs;
+
+  /// Tool details: heading of the result.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get aiToolDetailsResult;
+
+  /// Tool details: failure without its own explanation.
+  ///
+  /// In en, this message translates to:
+  /// **'This step did not work'**
+  String get aiToolDetailsFailed;
+
+  /// Tool details: expandable raw error.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical details'**
+  String get aiToolDetailsTechnical;
+
+  /// Open-page card: number of entries in the notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String aiCardEntries(int count);
+
+  /// Open-page card: due date of the to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String aiCardTodoDue(String date);
+
+  /// Open-page card: the to-do is done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get aiCardTodoDone;
+
+  /// Open-page card: search with keywords.
+  ///
+  /// In en, this message translates to:
+  /// **'Search “{query}”'**
+  String aiCardSearchFor(String query);
+
+  /// Open-page card subtitle: a tab of the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get aiCardSectionHome;
+
+  /// Open-page card: the target was deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'No longer exists'**
+  String get aiCardMissing;
+
+  /// Open-page card: the feature of the target is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature turned off'**
+  String get aiCardFeatureOff;
+
+  /// Header of the change card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Made 1 change} other{Made {count} changes}}'**
+  String aiChangeGroupTitle(int count);
+
+  /// Button in the change card header.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo all'**
+  String get aiChangeUndoAll;
+
+  /// New chat button.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get aiChatNewChat;
+
+  /// Title of the history drawer and its button.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats'**
+  String get aiChatHistory;
+
+  /// History drawer is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No chats yet'**
+  String get aiChatHistoryEmpty;
+
+  /// History search found nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching chats'**
+  String get aiChatHistoryNoMatch;
+
+  /// History group: pinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get aiChatGroupPinned;
+
+  /// History group: today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get aiChatGroupToday;
+
+  /// History group: yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get aiChatGroupYesterday;
+
+  /// History group: previous 7 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous 7 days'**
+  String get aiChatGroupWeek;
+
+  /// History group: previous 30 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous 30 days'**
+  String get aiChatGroupMonth;
+
+  /// Greeting on the welcome screen.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to talk about?'**
+  String get aiChatWelcomeTitle;
+
+  /// Welcome note when the agent is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about your diary, or let me organize entries, add to-dos and open pages for you.'**
+  String get aiChatWelcomeAgent;
+
+  /// Welcome note for search-based answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about your diary — I find the related entries first, then answer.'**
+  String get aiChatWelcomeRetrieval;
+
+  /// Recaps section on the welcome screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Recaps'**
+  String get aiChatWelcomeRecaps;
+
+  /// Recent chats section on the welcome screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent chats'**
+  String get aiChatWelcomeRecent;
+
+  /// Welcome screen: open the history drawer.
+  ///
+  /// In en, this message translates to:
+  /// **'All chats'**
+  String get aiChatWelcomeAllChats;
+
+  /// Title of the model and thinking sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Model and thinking'**
+  String get aiChatModelSheetTitle;
+
+  /// Thinking level section in the sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get aiChatThinking;
+
+  /// Thinking level: auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get aiThinkingAuto;
+
+  /// Thinking level: off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get aiThinkingOff;
+
+  /// Thinking level: low.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get aiThinkingLow;
+
+  /// Thinking level: medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get aiThinkingMedium;
+
+  /// Thinking level: high.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get aiThinkingHigh;
+
+  /// Explains the auto thinking level.
+  ///
+  /// In en, this message translates to:
+  /// **'The model decides whether and how long to think'**
+  String get aiThinkingAutoHint;
+
+  /// Explains the off thinking level.
+  ///
+  /// In en, this message translates to:
+  /// **'No thinking, answers right away — fastest'**
+  String get aiThinkingOffHint;
+
+  /// Explains the low thinking level.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick think, good for everyday questions'**
+  String get aiThinkingLowHint;
+
+  /// Explains the medium thinking level.
+  ///
+  /// In en, this message translates to:
+  /// **'A balance that suits most questions'**
+  String get aiThinkingMediumHint;
+
+  /// Explains the high thinking level.
+  ///
+  /// In en, this message translates to:
+  /// **'Careful and thorough, for organizing, recaps and complex changes — slowest'**
+  String get aiThinkingHighHint;
+
+  /// Shown when the chosen model has thinking turned off.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking is turned off for this model in its settings'**
+  String get aiThinkingDisabled;
+
+  /// Answer footer: the thinking level of this reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking: {level}'**
+  String aiChatMetaThinking(String level);
+
+  /// Chat menu and history drawer: open the AI settings.
+  ///
+  /// In en, this message translates to:
+  /// **'AI settings'**
+  String get aiChatOpenSettings;
 }
 
 class _AppLocalizationsDelegate

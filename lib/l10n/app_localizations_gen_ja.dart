@@ -11882,9 +11882,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiAgentUndo => '元に戻す';
 
   @override
-  String get aiAgentUndoAll => 'この回答の変更をすべて元に戻す';
-
-  @override
   String get aiAgentStepUndone => '元に戻しました';
 
   @override
@@ -11926,11 +11923,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiDestinationSearch => '日記を検索';
-
-  @override
-  String aiAgentStepsSummary(int count) {
-    return '$count 件の操作を実行';
-  }
 
   @override
   String get aiAgentPreparing => '操作を準備中…';
@@ -12980,12 +12972,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get aiHubTitle => 'AI アシスタント';
-
-  @override
-  String get aiHubAskHint => '日記に聞いてみる…';
-
-  @override
   String get aiHubQuickMonth => '今月はどんなふうに過ごしていた？';
 
   @override
@@ -13001,19 +12987,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiHubQuickGrowth => 'この半年で、私はどう変わった？';
 
   @override
-  String get aiHubRecapsGroup => '振り返り';
-
-  @override
   String get aiHubRecapMore => 'その他のオプション…';
-
-  @override
-  String get aiHubNoRecaps => '振り返りはまだありません';
-
-  @override
-  String get aiHubChatsGroup => 'チャット';
-
-  @override
-  String get aiHubNoChats => 'チャットはまだありません。上の欄から質問して始めましょう。';
 
   @override
   String get aiHubSearchChats => 'チャットを検索';
@@ -13094,10 +13068,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiChatCitationMissing => 'この日記はもう存在しません';
 
   @override
-  String get aiChatEmptyHint =>
-      'ある期間の気分や、出来事のいきさつについて尋ねたり、AI に思い出すのを手伝ってもらったりできます。';
-
-  @override
   String aiChatAboutEntry(String title) {
     return '「$title」について';
   }
@@ -13174,12 +13144,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiChatScopeAutoSubtitle => 'AI 設定の検索方法に従います';
-
-  @override
-  String get aiHubOpenSettings => 'AI 設定';
-
-  @override
-  String get aiHubSend => '質問';
 
   @override
   String get aiSettingsOpenHub => 'AI アシスタントを開く';
@@ -15119,4 +15083,170 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiChatReturnAction => '会話に戻る';
+
+  @override
+  String aiProcessThoughtFor(int seconds) {
+    return '$seconds 秒考えました';
+  }
+
+  @override
+  String aiProcessThinkingFor(int seconds) {
+    return '考え中 · $seconds 秒';
+  }
+
+  @override
+  String get aiProcessThought => '考えました';
+
+  @override
+  String aiProcessTools(int count) {
+    return '$count 個のツールを使用';
+  }
+
+  @override
+  String aiProcessFailed(int count) {
+    return '$count 件失敗';
+  }
+
+  @override
+  String get aiProcessSteps => '経過を見る';
+
+  @override
+  String get aiToolDetailsInputs => '条件';
+
+  @override
+  String get aiToolDetailsResult => '結果';
+
+  @override
+  String get aiToolDetailsFailed => 'このステップは失敗しました';
+
+  @override
+  String get aiToolDetailsTechnical => '技術情報';
+
+  @override
+  String aiCardEntries(int count) {
+    return '$count 件';
+  }
+
+  @override
+  String aiCardTodoDue(String date) {
+    return '$date 期限';
+  }
+
+  @override
+  String get aiCardTodoDone => '完了';
+
+  @override
+  String aiCardSearchFor(String query) {
+    return '「$query」を検索';
+  }
+
+  @override
+  String get aiCardSectionHome => 'ホーム';
+
+  @override
+  String get aiCardMissing => 'もう存在しません';
+
+  @override
+  String get aiCardFeatureOff => '機能がオフです';
+
+  @override
+  String aiChangeGroupTitle(int count) {
+    return '$count 件の変更';
+  }
+
+  @override
+  String get aiChangeUndoAll => 'すべて元に戻す';
+
+  @override
+  String get aiChatNewChat => '新しい会話';
+
+  @override
+  String get aiChatHistory => '会話履歴';
+
+  @override
+  String get aiChatHistoryEmpty => 'まだ会話はありません';
+
+  @override
+  String get aiChatHistoryNoMatch => '該当する会話はありません';
+
+  @override
+  String get aiChatGroupPinned => 'ピン留め';
+
+  @override
+  String get aiChatGroupToday => '今日';
+
+  @override
+  String get aiChatGroupYesterday => '昨日';
+
+  @override
+  String get aiChatGroupWeek => '過去 7 日間';
+
+  @override
+  String get aiChatGroupMonth => '過去 30 日間';
+
+  @override
+  String get aiChatWelcomeTitle => '今日は何を話しましょうか？';
+
+  @override
+  String get aiChatWelcomeAgent =>
+      '日記のことを聞いたり、日記の整理や ToDo の追加、ページを開くことを頼んだりできます。';
+
+  @override
+  String get aiChatWelcomeRetrieval => '日記のことを聞いてください。関連する日記を探してから答えます。';
+
+  @override
+  String get aiChatWelcomeRecaps => '振り返り';
+
+  @override
+  String get aiChatWelcomeRecent => '最近の会話';
+
+  @override
+  String get aiChatWelcomeAllChats => 'すべての会話';
+
+  @override
+  String get aiChatModelSheetTitle => 'モデルと思考';
+
+  @override
+  String get aiChatThinking => '思考の深さ';
+
+  @override
+  String get aiThinkingAuto => '自動';
+
+  @override
+  String get aiThinkingOff => 'オフ';
+
+  @override
+  String get aiThinkingLow => '低';
+
+  @override
+  String get aiThinkingMedium => '中';
+
+  @override
+  String get aiThinkingHigh => '高';
+
+  @override
+  String get aiThinkingAutoHint => 'モデルが考えるかどうか、どれくらい考えるかを決めます';
+
+  @override
+  String get aiThinkingOffHint => '考えずにすぐ答えます。最速です';
+
+  @override
+  String get aiThinkingLowHint => '軽く考えます。日常的な質問向け';
+
+  @override
+  String get aiThinkingMediumHint => 'ほとんどの質問にちょうどよいバランス';
+
+  @override
+  String get aiThinkingHighHint => 'じっくり考えます。整理や振り返り、複雑な変更向け。最も遅いです';
+
+  @override
+  String get aiThinkingDisabled => 'このモデルはモデル設定で思考がオフになっています';
+
+  @override
+  String aiChatMetaThinking(String level) {
+    return '思考：$level';
+  }
+
+  @override
+  String get aiChatOpenSettings => 'AI 設定';
 }

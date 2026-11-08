@@ -36,6 +36,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/agent/ai_agent_loop.dart';
@@ -390,9 +391,9 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
-  /// 在本页换到另一段已有的对话（历史抽屉）：先放下正在进行的这一轮。
+  /// 读出并换到一段已有的对话（打开页面、历史抽屉）：先放下正在进行的这一
+  /// 轮，再按对话行恢复范围、人设与回答选项。
   Future<void> openConversation(String id) async {
-    if (id == conversationId && !busy) return;
     _abandonTurn();
     final row = await database.getAiConversation(id);
     if (_disposed) return;
@@ -405,18 +406,62 @@ class AiChatController extends ChangeNotifier {
     _set(AiChatPhase.idle);
   }
 
-  /// 开始一段新对话（顶栏“新对话”）：范围回到自动，人设回到对话的默认，
-  /// 模型与思考强度沿用 [lastOptions]（最近那段对话的选择）。
-  void startNew({
-    required String? defaultPersonaId,
-    required AiConversationOptions lastOptions,
-  }) {
+  /// 最近活动的那段对话的模型与思考强度（新对话沿用）。
+  Future<AiConversationOptions> lastOptions() async =>
+      AiConversationOptions.decode(
+        await database.latestAiConversationOptions(),
+      );
+
+  /// 开始一段新对话（进入页面、顶栏“新对话”、删掉了正在看的对话）：范围回到
+  /// 自动，人设回到对话的默认，模型与思考强度沿用最近那段对话的选择。
+  Future<void> startNew({required String? defaultPersonaId}) async {
     _abandonTurn();
     conversationId = null;
     scope = const AiChatScope.auto();
     personaId = defaultPersonaId;
-    options = lastOptions;
     _set(AiChatPhase.idle);
+    final last = await lastOptions();
+    if (_disposed || conversationId != null) return;
+    options = last;
+    _notify();
+  }
+
+  /// “继续聊聊”：新建一段固定在 [reply] 那篇日记上的对话，把回应作为第一条
+  /// 回答（标题“关于「某篇」”；没有标题的用日期）。回应不属于某篇日记时只
+  /// 准备一段普通的新对话。
+  Future<void> seedFromReply(AppLocalizations l10n, AiResultRow reply) async {
+    final last = await lastOptions();
+    final diaryId = reply.diaryId;
+    if (diaryId == null) {
+      options = last;
+      _notify();
+      return;
+    }
+    final diary = await database.getAiDiary(diaryId);
+    final title = (diary?.title.trim().isNotEmpty ?? false)
+        ? diary!.title.trim()
+        : (diary == null
+              ? ''
+              : DateFormat.yMMMd(l10n.localeName).format(diary.createdAt));
+    final fixed = AiChatScope.diary(diaryId: diaryId, diaryTitle: title);
+    final id = await database.createAiConversation(
+      title: title.isEmpty ? '' : l10n.aiChatAboutEntry(title),
+      personaId: reply.personaId,
+      scopeJson: fixed.encode(),
+      optionsJson: last.encode(),
+    );
+    await database.addAiMessage(
+      conversationId: id,
+      role: AiMessageRole.assistant,
+      content: reply.content,
+      metaJson: reply.meta,
+    );
+    if (_disposed) return;
+    conversationId = id;
+    scope = fixed;
+    personaId = reply.personaId;
+    options = last;
+    _notify();
   }
 
   /// 放下正在进行的这一轮（换对话时）：与离开页面同一口径保存已有的部分，

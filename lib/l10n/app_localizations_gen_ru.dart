@@ -13646,9 +13646,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiAgentUndo => 'Отменить';
 
   @override
-  String get aiAgentUndoAll => 'Отменить все изменения этого ответа';
-
-  @override
   String get aiAgentStepUndone => 'Отменено';
 
   @override
@@ -13698,19 +13695,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiDestinationSearch => 'Поиск записей';
-
-  @override
-  String aiAgentStepsSummary(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Выполнено $count действия',
-      many: 'Выполнено $count действий',
-      few: 'Выполнено $count действия',
-      one: 'Выполнено $count действие',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get aiAgentPreparing => 'Подготовка действия…';
@@ -14895,12 +14879,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get aiHubTitle => 'ИИ-помощник';
-
-  @override
-  String get aiHubAskHint => 'Спросите свой дневник…';
-
-  @override
   String get aiHubQuickMonth => 'Как у меня прошёл этот месяц?';
 
   @override
@@ -14917,20 +14895,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiHubQuickGrowth => 'Что во мне изменилось за последние полгода?';
 
   @override
-  String get aiHubRecapsGroup => 'Итоги';
-
-  @override
   String get aiHubRecapMore => 'Другие варианты…';
-
-  @override
-  String get aiHubNoRecaps => 'Итогов пока нет';
-
-  @override
-  String get aiHubChatsGroup => 'Чаты';
-
-  @override
-  String get aiHubNoChats =>
-      'Чатов пока нет. Задайте вопрос выше, чтобы начать.';
 
   @override
   String get aiHubSearchChats => 'Поиск по чатам';
@@ -15027,10 +14992,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiChatCitationMissing => 'Этой записи больше нет';
 
   @override
-  String get aiChatEmptyHint =>
-      'Спросите о настроении за какой-то период, о том, как развивалась та или иная история, или попросите ИИ помочь что-то вспомнить.';
-
-  @override
   String aiChatAboutEntry(String title) {
     return 'О записи «$title»';
   }
@@ -15111,12 +15072,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiChatScopeAutoSubtitle => 'По способу поиска из настроек ИИ';
-
-  @override
-  String get aiHubOpenSettings => 'Настройки ИИ';
-
-  @override
-  String get aiHubSend => 'Спросить';
 
   @override
   String get aiSettingsOpenHub => 'Открыть ИИ-помощника';
@@ -17663,4 +17618,222 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiChatReturnAction => 'К чату';
+
+  @override
+  String aiProcessThoughtFor(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'Думал $seconds секунды',
+      many: 'Думал $seconds секунд',
+      few: 'Думал $seconds секунды',
+      one: 'Думал $seconds секунду',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiProcessThinkingFor(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'Думает · $seconds секунды',
+      many: 'Думает · $seconds секунд',
+      few: 'Думает · $seconds секунды',
+      one: 'Думает · $seconds секунда',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProcessThought => 'Обдумано';
+
+  @override
+  String aiProcessTools(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Использовано $count инструмента',
+      many: 'Использовано $count инструментов',
+      few: 'Использовано $count инструмента',
+      one: 'Использован $count инструмент',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiProcessFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count не удались',
+      many: '$count не удались',
+      few: '$count не удались',
+      one: '$count не удался',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProcessSteps => 'Показать шаги';
+
+  @override
+  String get aiToolDetailsInputs => 'Параметры';
+
+  @override
+  String get aiToolDetailsResult => 'Результат';
+
+  @override
+  String get aiToolDetailsFailed => 'Этот шаг не удался';
+
+  @override
+  String get aiToolDetailsTechnical => 'Технические сведения';
+
+  @override
+  String aiCardEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count записи',
+      many: '$count записей',
+      few: '$count записи',
+      one: '$count запись',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiCardTodoDue(String date) {
+    return 'Срок $date';
+  }
+
+  @override
+  String get aiCardTodoDone => 'Выполнено';
+
+  @override
+  String aiCardSearchFor(String query) {
+    return 'Поиск «$query»';
+  }
+
+  @override
+  String get aiCardSectionHome => 'Главная';
+
+  @override
+  String get aiCardMissing => 'Больше не существует';
+
+  @override
+  String get aiCardFeatureOff => 'Функция выключена';
+
+  @override
+  String aiChangeGroupTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сделано $count изменения',
+      many: 'Сделано $count изменений',
+      few: 'Сделано $count изменения',
+      one: 'Сделано $count изменение',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiChangeUndoAll => 'Отменить все';
+
+  @override
+  String get aiChatNewChat => 'Новый чат';
+
+  @override
+  String get aiChatHistory => 'Чаты';
+
+  @override
+  String get aiChatHistoryEmpty => 'Чатов пока нет';
+
+  @override
+  String get aiChatHistoryNoMatch => 'Подходящих чатов нет';
+
+  @override
+  String get aiChatGroupPinned => 'Закреплённые';
+
+  @override
+  String get aiChatGroupToday => 'Сегодня';
+
+  @override
+  String get aiChatGroupYesterday => 'Вчера';
+
+  @override
+  String get aiChatGroupWeek => 'Последние 7 дней';
+
+  @override
+  String get aiChatGroupMonth => 'Последние 30 дней';
+
+  @override
+  String get aiChatWelcomeTitle => 'О чём поговорим?';
+
+  @override
+  String get aiChatWelcomeAgent =>
+      'Спросите о дневнике или попросите разобрать записи, добавить задачи и открыть нужные страницы.';
+
+  @override
+  String get aiChatWelcomeRetrieval =>
+      'Спросите о дневнике — я найду нужные записи и отвечу.';
+
+  @override
+  String get aiChatWelcomeRecaps => 'Обзоры';
+
+  @override
+  String get aiChatWelcomeRecent => 'Недавние чаты';
+
+  @override
+  String get aiChatWelcomeAllChats => 'Все чаты';
+
+  @override
+  String get aiChatModelSheetTitle => 'Модель и размышление';
+
+  @override
+  String get aiChatThinking => 'Глубина размышления';
+
+  @override
+  String get aiThinkingAuto => 'Авто';
+
+  @override
+  String get aiThinkingOff => 'Выкл.';
+
+  @override
+  String get aiThinkingLow => 'Низк.';
+
+  @override
+  String get aiThinkingMedium => 'Средн.';
+
+  @override
+  String get aiThinkingHigh => 'Высок.';
+
+  @override
+  String get aiThinkingAutoHint => 'Модель сама решает, думать ли и сколько';
+
+  @override
+  String get aiThinkingOffHint =>
+      'Без размышлений, сразу отвечает — быстрее всего';
+
+  @override
+  String get aiThinkingLowHint => 'Немного подумать — для обычных вопросов';
+
+  @override
+  String get aiThinkingMediumHint => 'Баланс для большинства вопросов';
+
+  @override
+  String get aiThinkingHighHint =>
+      'Тщательно — для разбора, обзоров и сложных изменений; медленнее всего';
+
+  @override
+  String get aiThinkingDisabled =>
+      'Для этой модели размышление выключено в её настройках';
+
+  @override
+  String aiChatMetaThinking(String level) {
+    return 'Размышление: $level';
+  }
+
+  @override
+  String get aiChatOpenSettings => 'Настройки ИИ';
 }

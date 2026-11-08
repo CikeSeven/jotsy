@@ -16811,10 +16811,6 @@
   "@aiAgentUndo": {
     "description": "Undo one change the AI made."
   },
-  "aiAgentUndoAll": "Отменить все изменения этого ответа",
-  "@aiAgentUndoAll": {
-    "description": "Undo every change the AI made in this reply."
-  },
   "aiAgentStepUndone": "Отменено",
   "@aiAgentStepUndone": {
     "description": "The AI step was undone."
@@ -16872,15 +16868,6 @@
   "aiDestinationSearch": "Поиск записей",
   "@aiDestinationSearch": {
     "description": "AI open-page target: the search page."
-  },
-  "aiAgentStepsSummary": "{count, plural, one{Выполнено {count} действие} few{Выполнено {count} действия} many{Выполнено {count} действий} other{Выполнено {count} действия}}",
-  "@aiAgentStepsSummary": {
-    "description": "Title of a collapsed group of AI steps.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "aiAgentPreparing": "Подготовка действия…",
   "@aiAgentPreparing": {
@@ -18342,14 +18329,6 @@
       }
     }
   },
-  "aiHubTitle": "ИИ-помощник",
-  "@aiHubTitle": {
-    "description": "Title of the AI hub page."
-  },
-  "aiHubAskHint": "Спросите свой дневник…",
-  "@aiHubAskHint": {
-    "description": "Hint of the hub question field."
-  },
   "aiHubQuickMonth": "Как у меня прошёл этот месяц?",
   "@aiHubQuickMonth": {
     "description": "Quick question."
@@ -18370,25 +18349,9 @@
   "@aiHubQuickGrowth": {
     "description": "Quick question."
   },
-  "aiHubRecapsGroup": "Итоги",
-  "@aiHubRecapsGroup": {
-    "description": "Hub recaps group."
-  },
   "aiHubRecapMore": "Другие варианты…",
   "@aiHubRecapMore": {
     "description": "Opens the recap page."
-  },
-  "aiHubNoRecaps": "Итогов пока нет",
-  "@aiHubNoRecaps": {
-    "description": "Shown when there are no recaps."
-  },
-  "aiHubChatsGroup": "Чаты",
-  "@aiHubChatsGroup": {
-    "description": "Hub chats group."
-  },
-  "aiHubNoChats": "Чатов пока нет. Задайте вопрос выше, чтобы начать.",
-  "@aiHubNoChats": {
-    "description": "Shown when there are no chats."
   },
   "aiHubSearchChats": "Поиск по чатам",
   "@aiHubSearchChats": {
@@ -18500,10 +18463,6 @@
   "aiChatCitationMissing": "Этой записи больше нет",
   "@aiChatCitationMissing": {
     "description": "Shown for a missing cited entry."
-  },
-  "aiChatEmptyHint": "Спросите о настроении за какой-то период, о том, как развивалась та или иная история, или попросите ИИ помочь что-то вспомнить.",
-  "@aiChatEmptyHint": {
-    "description": "Empty chat hint."
   },
   "aiChatAboutEntry": "О записи «{title}»",
   "@aiChatAboutEntry": {
@@ -18618,14 +18577,6 @@
   "aiChatScopeAutoSubtitle": "По способу поиска из настроек ИИ",
   "@aiChatScopeAutoSubtitle": {
     "description": "Subtitle of the auto scope."
-  },
-  "aiHubOpenSettings": "Настройки ИИ",
-  "@aiHubOpenSettings": {
-    "description": "Tooltip of the settings button on the AI hub."
-  },
-  "aiHubSend": "Спросить",
-  "@aiHubSend": {
-    "description": "Tooltip of the hub ask button."
   },
   "aiSettingsOpenHub": "Открыть ИИ-помощника",
   "@aiSettingsOpenHub": {
@@ -19962,5 +19913,246 @@
   "aiChatReturnAction": "К чату",
   "@aiChatReturnAction": {
     "description": "Snackbar button that reopens the chat."
+  },
+  "aiProcessThoughtFor": "{seconds, plural, one{Думал {seconds} секунду} few{Думал {seconds} секунды} many{Думал {seconds} секунд} other{Думал {seconds} секунды}}",
+  "@aiProcessThoughtFor": {
+    "description": "Summary of the folded process: how long the model thought.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThinkingFor": "{seconds, plural, one{Думает · {seconds} секунда} few{Думает · {seconds} секунды} many{Думает · {seconds} секунд} other{Думает · {seconds} секунды}}",
+  "@aiProcessThinkingFor": {
+    "description": "Live process fold: still thinking, seconds so far.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThought": "Обдумано",
+  "@aiProcessThought": {
+    "description": "Fold summary when there was thinking but no timing (older records)."
+  },
+  "aiProcessTools": "{count, plural, one{Использован {count} инструмент} few{Использовано {count} инструмента} many{Использовано {count} инструментов} other{Использовано {count} инструмента}}",
+  "@aiProcessTools": {
+    "description": "Fold summary: number of tool calls.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessFailed": "{count, plural, one{{count} не удался} few{{count} не удались} many{{count} не удались} other{{count} не удались}}",
+  "@aiProcessFailed": {
+    "description": "Fold summary: failed calls (in error color).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessSteps": "Показать шаги",
+  "@aiProcessSteps": {
+    "description": "Fold summary when it only holds in-between remarks."
+  },
+  "aiToolDetailsInputs": "Параметры",
+  "@aiToolDetailsInputs": {
+    "description": "Tool details: heading of the parameters."
+  },
+  "aiToolDetailsResult": "Результат",
+  "@aiToolDetailsResult": {
+    "description": "Tool details: heading of the result."
+  },
+  "aiToolDetailsFailed": "Этот шаг не удался",
+  "@aiToolDetailsFailed": {
+    "description": "Tool details: failure without its own explanation."
+  },
+  "aiToolDetailsTechnical": "Технические сведения",
+  "@aiToolDetailsTechnical": {
+    "description": "Tool details: expandable raw error."
+  },
+  "aiCardEntries": "{count, plural, one{{count} запись} few{{count} записи} many{{count} записей} other{{count} записи}}",
+  "@aiCardEntries": {
+    "description": "Open-page card: number of entries in the notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiCardTodoDue": "Срок {date}",
+  "@aiCardTodoDue": {
+    "description": "Open-page card: due date of the to-do.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardTodoDone": "Выполнено",
+  "@aiCardTodoDone": {
+    "description": "Open-page card: the to-do is done."
+  },
+  "aiCardSearchFor": "Поиск «{query}»",
+  "@aiCardSearchFor": {
+    "description": "Open-page card: search with keywords.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardSectionHome": "Главная",
+  "@aiCardSectionHome": {
+    "description": "Open-page card subtitle: a tab of the home screen."
+  },
+  "aiCardMissing": "Больше не существует",
+  "@aiCardMissing": {
+    "description": "Open-page card: the target was deleted."
+  },
+  "aiCardFeatureOff": "Функция выключена",
+  "@aiCardFeatureOff": {
+    "description": "Open-page card: the feature of the target is off."
+  },
+  "aiChangeGroupTitle": "{count, plural, one{Сделано {count} изменение} few{Сделано {count} изменения} many{Сделано {count} изменений} other{Сделано {count} изменения}}",
+  "@aiChangeGroupTitle": {
+    "description": "Header of the change card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChangeUndoAll": "Отменить все",
+  "@aiChangeUndoAll": {
+    "description": "Button in the change card header."
+  },
+  "aiChatNewChat": "Новый чат",
+  "@aiChatNewChat": {
+    "description": "New chat button."
+  },
+  "aiChatHistory": "Чаты",
+  "@aiChatHistory": {
+    "description": "Title of the history drawer and its button."
+  },
+  "aiChatHistoryEmpty": "Чатов пока нет",
+  "@aiChatHistoryEmpty": {
+    "description": "History drawer is empty."
+  },
+  "aiChatHistoryNoMatch": "Подходящих чатов нет",
+  "@aiChatHistoryNoMatch": {
+    "description": "History search found nothing."
+  },
+  "aiChatGroupPinned": "Закреплённые",
+  "@aiChatGroupPinned": {
+    "description": "History group: pinned."
+  },
+  "aiChatGroupToday": "Сегодня",
+  "@aiChatGroupToday": {
+    "description": "History group: today."
+  },
+  "aiChatGroupYesterday": "Вчера",
+  "@aiChatGroupYesterday": {
+    "description": "History group: yesterday."
+  },
+  "aiChatGroupWeek": "Последние 7 дней",
+  "@aiChatGroupWeek": {
+    "description": "History group: previous 7 days."
+  },
+  "aiChatGroupMonth": "Последние 30 дней",
+  "@aiChatGroupMonth": {
+    "description": "History group: previous 30 days."
+  },
+  "aiChatWelcomeTitle": "О чём поговорим?",
+  "@aiChatWelcomeTitle": {
+    "description": "Greeting on the welcome screen."
+  },
+  "aiChatWelcomeAgent": "Спросите о дневнике или попросите разобрать записи, добавить задачи и открыть нужные страницы.",
+  "@aiChatWelcomeAgent": {
+    "description": "Welcome note when the agent is on."
+  },
+  "aiChatWelcomeRetrieval": "Спросите о дневнике — я найду нужные записи и отвечу.",
+  "@aiChatWelcomeRetrieval": {
+    "description": "Welcome note for search-based answers."
+  },
+  "aiChatWelcomeRecaps": "Обзоры",
+  "@aiChatWelcomeRecaps": {
+    "description": "Recaps section on the welcome screen."
+  },
+  "aiChatWelcomeRecent": "Недавние чаты",
+  "@aiChatWelcomeRecent": {
+    "description": "Recent chats section on the welcome screen."
+  },
+  "aiChatWelcomeAllChats": "Все чаты",
+  "@aiChatWelcomeAllChats": {
+    "description": "Welcome screen: open the history drawer."
+  },
+  "aiChatModelSheetTitle": "Модель и размышление",
+  "@aiChatModelSheetTitle": {
+    "description": "Title of the model and thinking sheet."
+  },
+  "aiChatThinking": "Глубина размышления",
+  "@aiChatThinking": {
+    "description": "Thinking level section in the sheet."
+  },
+  "aiThinkingAuto": "Авто",
+  "@aiThinkingAuto": {
+    "description": "Thinking level: auto."
+  },
+  "aiThinkingOff": "Выкл.",
+  "@aiThinkingOff": {
+    "description": "Thinking level: off."
+  },
+  "aiThinkingLow": "Низк.",
+  "@aiThinkingLow": {
+    "description": "Thinking level: low."
+  },
+  "aiThinkingMedium": "Средн.",
+  "@aiThinkingMedium": {
+    "description": "Thinking level: medium."
+  },
+  "aiThinkingHigh": "Высок.",
+  "@aiThinkingHigh": {
+    "description": "Thinking level: high."
+  },
+  "aiThinkingAutoHint": "Модель сама решает, думать ли и сколько",
+  "@aiThinkingAutoHint": {
+    "description": "Explains the auto thinking level."
+  },
+  "aiThinkingOffHint": "Без размышлений, сразу отвечает — быстрее всего",
+  "@aiThinkingOffHint": {
+    "description": "Explains the off thinking level."
+  },
+  "aiThinkingLowHint": "Немного подумать — для обычных вопросов",
+  "@aiThinkingLowHint": {
+    "description": "Explains the low thinking level."
+  },
+  "aiThinkingMediumHint": "Баланс для большинства вопросов",
+  "@aiThinkingMediumHint": {
+    "description": "Explains the medium thinking level."
+  },
+  "aiThinkingHighHint": "Тщательно — для разбора, обзоров и сложных изменений; медленнее всего",
+  "@aiThinkingHighHint": {
+    "description": "Explains the high thinking level."
+  },
+  "aiThinkingDisabled": "Для этой модели размышление выключено в её настройках",
+  "@aiThinkingDisabled": {
+    "description": "Shown when the chosen model has thinking turned off."
+  },
+  "aiChatMetaThinking": "Размышление: {level}",
+  "@aiChatMetaThinking": {
+    "description": "Answer footer: the thinking level of this reply.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatOpenSettings": "Настройки ИИ",
+  "@aiChatOpenSettings": {
+    "description": "Chat menu and history drawer: open the AI settings."
   }
 }

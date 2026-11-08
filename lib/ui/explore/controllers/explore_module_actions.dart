@@ -6,7 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
-import '../../ai/pages/ai_hub_page.dart';
+import '../../ai/controllers/ai_assistant_entry.dart';
 import '../../ai/pages/ai_recap_page.dart';
 import '../../ai/pages/ai_recap_view_page.dart';
 import '../../ai/pages/settings/ai_settings_page.dart';
@@ -323,11 +323,7 @@ class ExplorePageActions extends ExploreModuleActions {
   }
 
   @override
-  void openAiHub() => unawaited(
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const AiHubPage())),
-  );
+  void openAiHub() => unawaited(openAiAssistant(context, ref));
 
   @override
   void openAiSettings() => unawaited(

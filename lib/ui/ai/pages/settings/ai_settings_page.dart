@@ -4,6 +4,8 @@
 // 输出 / 副作用：各开关与选择即时写入偏好（`updateAiPreferences`）；服务商、
 // 路由在各自的下一级页面里改。没有可用模型时顶部状态卡引导添加服务商。
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -20,7 +22,7 @@ import '../../providers/ai_providers.dart';
 import '../../sections/settings/ai_modules_group.dart';
 import '../../sections/settings/ai_status_card.dart';
 import '../../widgets/ai_page_scaffold.dart';
-import '../ai_hub_page.dart';
+import '../../controllers/ai_assistant_entry.dart';
 import 'ai_actions_page.dart';
 import 'ai_model_routing_page.dart';
 import 'ai_personas_page.dart';
@@ -57,7 +59,7 @@ class AiSettingsPage extends ConsumerWidget {
                 icon: FontAwesomeIcons.wandMagicSparkles,
                 title: l10n.aiSettingsOpenHub,
                 subtitle: l10n.aiSettingsOpenHubSubtitle,
-                onTap: () => push(const AiHubPage()),
+                onTap: () => unawaited(openAiAssistant(context, ref)),
               ),
             ],
           ),

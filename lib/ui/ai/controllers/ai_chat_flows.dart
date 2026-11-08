@@ -167,14 +167,13 @@ Future<String?> showAiEditQuestionDialog(
   return text == null || text.trim().isEmpty ? null : text.trim();
 }
 
-/// 删除整段对话：确认后删除，提示条带撤销。[popPage] 时（在对话页里删）
-/// 删完返回上一页。
-Future<void> deleteAiConversation(
+/// 删除整段对话：确认后删除，提示条带撤销。返回是否真的删了（对话页删的
+/// 是正在看的这段时换成新对话）。
+Future<bool> deleteAiConversation(
   BuildContext context,
   WidgetRef ref,
-  AiConversationRow row, {
-  bool popPage = false,
-}) async {
+  AiConversationRow row,
+) async {
   final l10n = context.l10n;
   final ok = await confirmAiAction(
     context,
@@ -183,11 +182,12 @@ Future<void> deleteAiConversation(
     action: l10n.commonDelete,
     destructive: true,
   );
-  if (!ok || !context.mounted) return;
+  if (!ok || !context.mounted) return false;
   final database = ref.read(appDatabaseProvider);
   final snapshot = await database.deleteAiConversation(row.conversationId);
-  if (snapshot == null || !context.mounted) return;
-  // 提示条在应用级的 ScaffoldMessenger 上，返回上一页后仍在。
+  if (snapshot == null) return false;
+  if (!context.mounted) return true;
+  // 提示条在应用级的 ScaffoldMessenger 上，换页后仍在。
   unawaited(
     HomeHintVisibilityScope.showTrackedSnackBar(
       context: context,
@@ -201,7 +201,7 @@ Future<void> deleteAiConversation(
       ),
     ),
   );
-  if (popPage && context.mounted) Navigator.of(context).maybePop();
+  return true;
 }
 
 /// 删除一条消息（确认后）。

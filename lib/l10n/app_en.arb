@@ -16244,10 +16244,6 @@
   "@aiAgentUndo": {
     "description": "Undo one change the AI made."
   },
-  "aiAgentUndoAll": "Undo all changes in this reply",
-  "@aiAgentUndoAll": {
-    "description": "Undo every change the AI made in this reply."
-  },
   "aiAgentStepUndone": "Undone",
   "@aiAgentStepUndone": {
     "description": "The AI step was undone."
@@ -16305,15 +16301,6 @@
   "aiDestinationSearch": "Search entries",
   "@aiDestinationSearch": {
     "description": "AI open-page target: the search page."
-  },
-  "aiAgentStepsSummary": "{count, plural, =1{Used 1 tool} other{Used {count} tools}}",
-  "@aiAgentStepsSummary": {
-    "description": "Title of a collapsed group of AI steps.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "aiAgentPreparing": "Preparing a step…",
   "@aiAgentPreparing": {
@@ -17775,14 +17762,6 @@
       }
     }
   },
-  "aiHubTitle": "AI assistant",
-  "@aiHubTitle": {
-    "description": "Title of the AI hub page."
-  },
-  "aiHubAskHint": "Ask your diary…",
-  "@aiHubAskHint": {
-    "description": "Hint of the hub question field."
-  },
   "aiHubQuickMonth": "How has this month been for me?",
   "@aiHubQuickMonth": {
     "description": "Quick question."
@@ -17803,25 +17782,9 @@
   "@aiHubQuickGrowth": {
     "description": "Quick question."
   },
-  "aiHubRecapsGroup": "Recaps",
-  "@aiHubRecapsGroup": {
-    "description": "Hub recaps group."
-  },
   "aiHubRecapMore": "More options…",
   "@aiHubRecapMore": {
     "description": "Opens the recap page."
-  },
-  "aiHubNoRecaps": "No recaps yet",
-  "@aiHubNoRecaps": {
-    "description": "Shown when there are no recaps."
-  },
-  "aiHubChatsGroup": "Chats",
-  "@aiHubChatsGroup": {
-    "description": "Hub chats group."
-  },
-  "aiHubNoChats": "No chats yet. Ask a question above to start.",
-  "@aiHubNoChats": {
-    "description": "Shown when there are no chats."
   },
   "aiHubSearchChats": "Search chats",
   "@aiHubSearchChats": {
@@ -17933,10 +17896,6 @@
   "aiChatCitationMissing": "This entry no longer exists",
   "@aiChatCitationMissing": {
     "description": "Shown for a missing cited entry."
-  },
-  "aiChatEmptyHint": "Ask about your mood over a period, how something unfolded, or let AI help you remember.",
-  "@aiChatEmptyHint": {
-    "description": "Empty chat hint."
   },
   "aiChatAboutEntry": "About “{title}”",
   "@aiChatAboutEntry": {
@@ -18051,14 +18010,6 @@
   "aiChatScopeAutoSubtitle": "Follows the search method in AI settings",
   "@aiChatScopeAutoSubtitle": {
     "description": "Subtitle of the auto scope."
-  },
-  "aiHubOpenSettings": "AI settings",
-  "@aiHubOpenSettings": {
-    "description": "Tooltip of the settings button on the AI hub."
-  },
-  "aiHubSend": "Ask",
-  "@aiHubSend": {
-    "description": "Tooltip of the hub ask button."
   },
   "aiSettingsOpenHub": "Open AI assistant",
   "@aiSettingsOpenHub": {
@@ -19395,5 +19346,246 @@
   "aiChatReturnAction": "Back to chat",
   "@aiChatReturnAction": {
     "description": "Snackbar button that reopens the chat."
+  },
+  "aiProcessThoughtFor": "{seconds, plural, =1{Thought for 1 second} other{Thought for {seconds} seconds}}",
+  "@aiProcessThoughtFor": {
+    "description": "Summary of the folded process: how long the model thought.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThinkingFor": "{seconds, plural, =1{Thinking · 1 second} other{Thinking · {seconds} seconds}}",
+  "@aiProcessThinkingFor": {
+    "description": "Live process fold: still thinking, seconds so far.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThought": "Thought it through",
+  "@aiProcessThought": {
+    "description": "Fold summary when there was thinking but no timing (older records)."
+  },
+  "aiProcessTools": "{count, plural, =1{Used 1 tool} other{Used {count} tools}}",
+  "@aiProcessTools": {
+    "description": "Fold summary: number of tool calls.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessFailed": "{count, plural, =1{1 failed} other{{count} failed}}",
+  "@aiProcessFailed": {
+    "description": "Fold summary: failed calls (in error color).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessSteps": "Show the steps",
+  "@aiProcessSteps": {
+    "description": "Fold summary when it only holds in-between remarks."
+  },
+  "aiToolDetailsInputs": "Inputs",
+  "@aiToolDetailsInputs": {
+    "description": "Tool details: heading of the parameters."
+  },
+  "aiToolDetailsResult": "Result",
+  "@aiToolDetailsResult": {
+    "description": "Tool details: heading of the result."
+  },
+  "aiToolDetailsFailed": "This step did not work",
+  "@aiToolDetailsFailed": {
+    "description": "Tool details: failure without its own explanation."
+  },
+  "aiToolDetailsTechnical": "Technical details",
+  "@aiToolDetailsTechnical": {
+    "description": "Tool details: expandable raw error."
+  },
+  "aiCardEntries": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@aiCardEntries": {
+    "description": "Open-page card: number of entries in the notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiCardTodoDue": "Due {date}",
+  "@aiCardTodoDue": {
+    "description": "Open-page card: due date of the to-do.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardTodoDone": "Done",
+  "@aiCardTodoDone": {
+    "description": "Open-page card: the to-do is done."
+  },
+  "aiCardSearchFor": "Search “{query}”",
+  "@aiCardSearchFor": {
+    "description": "Open-page card: search with keywords.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardSectionHome": "Home",
+  "@aiCardSectionHome": {
+    "description": "Open-page card subtitle: a tab of the home screen."
+  },
+  "aiCardMissing": "No longer exists",
+  "@aiCardMissing": {
+    "description": "Open-page card: the target was deleted."
+  },
+  "aiCardFeatureOff": "Feature turned off",
+  "@aiCardFeatureOff": {
+    "description": "Open-page card: the feature of the target is off."
+  },
+  "aiChangeGroupTitle": "{count, plural, =1{Made 1 change} other{Made {count} changes}}",
+  "@aiChangeGroupTitle": {
+    "description": "Header of the change card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChangeUndoAll": "Undo all",
+  "@aiChangeUndoAll": {
+    "description": "Button in the change card header."
+  },
+  "aiChatNewChat": "New chat",
+  "@aiChatNewChat": {
+    "description": "New chat button."
+  },
+  "aiChatHistory": "Chats",
+  "@aiChatHistory": {
+    "description": "Title of the history drawer and its button."
+  },
+  "aiChatHistoryEmpty": "No chats yet",
+  "@aiChatHistoryEmpty": {
+    "description": "History drawer is empty."
+  },
+  "aiChatHistoryNoMatch": "No matching chats",
+  "@aiChatHistoryNoMatch": {
+    "description": "History search found nothing."
+  },
+  "aiChatGroupPinned": "Pinned",
+  "@aiChatGroupPinned": {
+    "description": "History group: pinned."
+  },
+  "aiChatGroupToday": "Today",
+  "@aiChatGroupToday": {
+    "description": "History group: today."
+  },
+  "aiChatGroupYesterday": "Yesterday",
+  "@aiChatGroupYesterday": {
+    "description": "History group: yesterday."
+  },
+  "aiChatGroupWeek": "Previous 7 days",
+  "@aiChatGroupWeek": {
+    "description": "History group: previous 7 days."
+  },
+  "aiChatGroupMonth": "Previous 30 days",
+  "@aiChatGroupMonth": {
+    "description": "History group: previous 30 days."
+  },
+  "aiChatWelcomeTitle": "What would you like to talk about?",
+  "@aiChatWelcomeTitle": {
+    "description": "Greeting on the welcome screen."
+  },
+  "aiChatWelcomeAgent": "Ask about your diary, or let me organize entries, add to-dos and open pages for you.",
+  "@aiChatWelcomeAgent": {
+    "description": "Welcome note when the agent is on."
+  },
+  "aiChatWelcomeRetrieval": "Ask about your diary — I find the related entries first, then answer.",
+  "@aiChatWelcomeRetrieval": {
+    "description": "Welcome note for search-based answers."
+  },
+  "aiChatWelcomeRecaps": "Recaps",
+  "@aiChatWelcomeRecaps": {
+    "description": "Recaps section on the welcome screen."
+  },
+  "aiChatWelcomeRecent": "Recent chats",
+  "@aiChatWelcomeRecent": {
+    "description": "Recent chats section on the welcome screen."
+  },
+  "aiChatWelcomeAllChats": "All chats",
+  "@aiChatWelcomeAllChats": {
+    "description": "Welcome screen: open the history drawer."
+  },
+  "aiChatModelSheetTitle": "Model and thinking",
+  "@aiChatModelSheetTitle": {
+    "description": "Title of the model and thinking sheet."
+  },
+  "aiChatThinking": "Thinking",
+  "@aiChatThinking": {
+    "description": "Thinking level section in the sheet."
+  },
+  "aiThinkingAuto": "Auto",
+  "@aiThinkingAuto": {
+    "description": "Thinking level: auto."
+  },
+  "aiThinkingOff": "Off",
+  "@aiThinkingOff": {
+    "description": "Thinking level: off."
+  },
+  "aiThinkingLow": "Low",
+  "@aiThinkingLow": {
+    "description": "Thinking level: low."
+  },
+  "aiThinkingMedium": "Medium",
+  "@aiThinkingMedium": {
+    "description": "Thinking level: medium."
+  },
+  "aiThinkingHigh": "High",
+  "@aiThinkingHigh": {
+    "description": "Thinking level: high."
+  },
+  "aiThinkingAutoHint": "The model decides whether and how long to think",
+  "@aiThinkingAutoHint": {
+    "description": "Explains the auto thinking level."
+  },
+  "aiThinkingOffHint": "No thinking, answers right away — fastest",
+  "@aiThinkingOffHint": {
+    "description": "Explains the off thinking level."
+  },
+  "aiThinkingLowHint": "A quick think, good for everyday questions",
+  "@aiThinkingLowHint": {
+    "description": "Explains the low thinking level."
+  },
+  "aiThinkingMediumHint": "A balance that suits most questions",
+  "@aiThinkingMediumHint": {
+    "description": "Explains the medium thinking level."
+  },
+  "aiThinkingHighHint": "Careful and thorough, for organizing, recaps and complex changes — slowest",
+  "@aiThinkingHighHint": {
+    "description": "Explains the high thinking level."
+  },
+  "aiThinkingDisabled": "Thinking is turned off for this model in its settings",
+  "@aiThinkingDisabled": {
+    "description": "Shown when the chosen model has thinking turned off."
+  },
+  "aiChatMetaThinking": "Thinking: {level}",
+  "@aiChatMetaThinking": {
+    "description": "Answer footer: the thinking level of this reply.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatOpenSettings": "AI settings",
+  "@aiChatOpenSettings": {
+    "description": "Chat menu and history drawer: open the AI settings."
   }
 }

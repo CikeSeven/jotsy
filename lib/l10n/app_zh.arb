@@ -16244,10 +16244,6 @@
   "@aiAgentUndo": {
     "description": "撤销 AI 做过的一项改动。"
   },
-  "aiAgentUndoAll": "撤销本轮全部改动",
-  "@aiAgentUndoAll": {
-    "description": "撤销这条回答里 AI 做过的全部改动。"
-  },
   "aiAgentStepUndone": "已撤销",
   "@aiAgentStepUndone": {
     "description": "AI 步骤已被撤销。"
@@ -16305,15 +16301,6 @@
   "aiDestinationSearch": "搜索日记",
   "@aiDestinationSearch": {
     "description": "AI 前往按钮的目标：搜索页。"
-  },
-  "aiAgentStepsSummary": "执行了 {count} 个操作",
-  "@aiAgentStepsSummary": {
-    "description": "收起的步骤组标题。",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "aiAgentPreparing": "正在准备操作…",
   "@aiAgentPreparing": {
@@ -17775,14 +17762,6 @@
       }
     }
   },
-  "aiHubTitle": "AI 助手",
-  "@aiHubTitle": {
-    "description": "AI 助手主页标题。"
-  },
-  "aiHubAskHint": "问问你的日记…",
-  "@aiHubAskHint": {
-    "description": "主页提问框的提示。"
-  },
   "aiHubQuickMonth": "这个月我过得怎么样？",
   "@aiHubQuickMonth": {
     "description": "快捷问题。"
@@ -17803,25 +17782,9 @@
   "@aiHubQuickGrowth": {
     "description": "快捷问题。"
   },
-  "aiHubRecapsGroup": "回顾",
-  "@aiHubRecapsGroup": {
-    "description": "主页回顾分组。"
-  },
   "aiHubRecapMore": "更多范围…",
   "@aiHubRecapMore": {
     "description": "打开回顾页。"
-  },
-  "aiHubNoRecaps": "还没有回顾",
-  "@aiHubNoRecaps": {
-    "description": "没有回顾时显示。"
-  },
-  "aiHubChatsGroup": "对话",
-  "@aiHubChatsGroup": {
-    "description": "主页对话分组。"
-  },
-  "aiHubNoChats": "还没有对话。从上面问一个问题开始吧。",
-  "@aiHubNoChats": {
-    "description": "没有对话时显示。"
   },
   "aiHubSearchChats": "搜索对话",
   "@aiHubSearchChats": {
@@ -17933,10 +17896,6 @@
   "aiChatCitationMissing": "这篇日记已不存在",
   "@aiChatCitationMissing": {
     "description": "引用的日记不存在时的提示。"
-  },
-  "aiChatEmptyHint": "可以问问这段时间的心情、某件事的来龙去脉，或者让 AI 帮你回忆。",
-  "@aiChatEmptyHint": {
-    "description": "空对话的提示。"
   },
   "aiChatAboutEntry": "关于「{title}」",
   "@aiChatAboutEntry": {
@@ -18051,14 +18010,6 @@
   "aiChatScopeAutoSubtitle": "按 AI 设置里的检索方式",
   "@aiChatScopeAutoSubtitle": {
     "description": "自动范围的说明。"
-  },
-  "aiHubOpenSettings": "AI 设置",
-  "@aiHubOpenSettings": {
-    "description": "AI 助手主页设置按钮的提示。"
-  },
-  "aiHubSend": "提问",
-  "@aiHubSend": {
-    "description": "主页提问按钮的提示。"
   },
   "aiSettingsOpenHub": "打开 AI 助手",
   "@aiSettingsOpenHub": {
@@ -19395,5 +19346,246 @@
   "aiChatReturnAction": "回到对话",
   "@aiChatReturnAction": {
     "description": "提示条按钮：重新打开刚才的对话。"
+  },
+  "aiProcessThoughtFor": "思考了 {seconds} 秒",
+  "@aiProcessThoughtFor": {
+    "description": "思考过程折叠块的摘要：思考时长。",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThinkingFor": "正在思考 · {seconds} 秒",
+  "@aiProcessThinkingFor": {
+    "description": "进行中的折叠块：正在思考与已用的秒数。",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessThought": "已思考",
+  "@aiProcessThought": {
+    "description": "折叠块摘要：有思考但没有计时（旧记录）。"
+  },
+  "aiProcessTools": "调用了 {count} 个工具",
+  "@aiProcessTools": {
+    "description": "折叠块摘要：调用工具的个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessFailed": "{count} 个未成功",
+  "@aiProcessFailed": {
+    "description": "折叠块摘要：失败的调用个数（error 色）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProcessSteps": "查看过程",
+  "@aiProcessSteps": {
+    "description": "折叠块里只有过渡句时的摘要。"
+  },
+  "aiToolDetailsInputs": "条件",
+  "@aiToolDetailsInputs": {
+    "description": "工具详情：参数一栏的小标题。"
+  },
+  "aiToolDetailsResult": "结果",
+  "@aiToolDetailsResult": {
+    "description": "工具详情：结果一栏的小标题。"
+  },
+  "aiToolDetailsFailed": "这一步没有成功",
+  "@aiToolDetailsFailed": {
+    "description": "工具详情：失败且没有说明时的一句话。"
+  },
+  "aiToolDetailsTechnical": "技术信息",
+  "@aiToolDetailsTechnical": {
+    "description": "工具详情：可展开的原始错误。"
+  },
+  "aiCardEntries": "{count} 篇",
+  "@aiCardEntries": {
+    "description": "前往卡片：日记本的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiCardTodoDue": "{date}截止",
+  "@aiCardTodoDue": {
+    "description": "前往卡片：待办的截止日期。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardTodoDone": "已完成",
+  "@aiCardTodoDone": {
+    "description": "前往卡片：待办已完成。"
+  },
+  "aiCardSearchFor": "搜索「{query}」",
+  "@aiCardSearchFor": {
+    "description": "前往卡片：带关键词的搜索。",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "aiCardSectionHome": "首页",
+  "@aiCardSectionHome": {
+    "description": "前往卡片副标题：首页的 Tab。"
+  },
+  "aiCardMissing": "已经不在了",
+  "@aiCardMissing": {
+    "description": "前往卡片：目标已删除。"
+  },
+  "aiCardFeatureOff": "功能已关闭",
+  "@aiCardFeatureOff": {
+    "description": "前往卡片：目标所属的功能已关闭。"
+  },
+  "aiChangeGroupTitle": "做了 {count} 项改动",
+  "@aiChangeGroupTitle": {
+    "description": "改动卡片的卡头。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiChangeUndoAll": "全部撤销",
+  "@aiChangeUndoAll": {
+    "description": "改动卡片卡头的按钮。"
+  },
+  "aiChatNewChat": "新对话",
+  "@aiChatNewChat": {
+    "description": "新对话按钮。"
+  },
+  "aiChatHistory": "对话记录",
+  "@aiChatHistory": {
+    "description": "历史抽屉的标题与按钮提示。"
+  },
+  "aiChatHistoryEmpty": "还没有对话",
+  "@aiChatHistoryEmpty": {
+    "description": "历史抽屉为空。"
+  },
+  "aiChatHistoryNoMatch": "没有找到相关的对话",
+  "@aiChatHistoryNoMatch": {
+    "description": "历史搜索没有结果。"
+  },
+  "aiChatGroupPinned": "置顶",
+  "@aiChatGroupPinned": {
+    "description": "历史分组：置顶。"
+  },
+  "aiChatGroupToday": "今天",
+  "@aiChatGroupToday": {
+    "description": "历史分组：今天。"
+  },
+  "aiChatGroupYesterday": "昨天",
+  "@aiChatGroupYesterday": {
+    "description": "历史分组：昨天。"
+  },
+  "aiChatGroupWeek": "最近 7 天",
+  "@aiChatGroupWeek": {
+    "description": "历史分组：最近 7 天。"
+  },
+  "aiChatGroupMonth": "最近 30 天",
+  "@aiChatGroupMonth": {
+    "description": "历史分组：最近 30 天。"
+  },
+  "aiChatWelcomeTitle": "今天想聊点什么？",
+  "@aiChatWelcomeTitle": {
+    "description": "欢迎页的问候。"
+  },
+  "aiChatWelcomeAgent": "可以问我日记里的事，也可以让我帮你整理日记、记待办、打开页面。",
+  "@aiChatWelcomeAgent": {
+    "description": "欢迎页说明（智能体开着）。"
+  },
+  "aiChatWelcomeRetrieval": "可以问我日记里的事，我会先找到相关的日记再回答。",
+  "@aiChatWelcomeRetrieval": {
+    "description": "欢迎页说明（检索问答）。"
+  },
+  "aiChatWelcomeRecaps": "回顾",
+  "@aiChatWelcomeRecaps": {
+    "description": "欢迎页的回顾一栏。"
+  },
+  "aiChatWelcomeRecent": "最近的对话",
+  "@aiChatWelcomeRecent": {
+    "description": "欢迎页的最近对话一栏。"
+  },
+  "aiChatWelcomeAllChats": "全部对话",
+  "@aiChatWelcomeAllChats": {
+    "description": "欢迎页：打开历史抽屉。"
+  },
+  "aiChatModelSheetTitle": "模型与思考",
+  "@aiChatModelSheetTitle": {
+    "description": "输入栏模型胶囊打开的面板标题。"
+  },
+  "aiChatThinking": "思考强度",
+  "@aiChatThinking": {
+    "description": "面板里思考强度一栏。"
+  },
+  "aiThinkingAuto": "自动",
+  "@aiThinkingAuto": {
+    "description": "思考强度：自动。"
+  },
+  "aiThinkingOff": "关",
+  "@aiThinkingOff": {
+    "description": "思考强度：关。"
+  },
+  "aiThinkingLow": "低",
+  "@aiThinkingLow": {
+    "description": "思考强度：低。"
+  },
+  "aiThinkingMedium": "中",
+  "@aiThinkingMedium": {
+    "description": "思考强度：中。"
+  },
+  "aiThinkingHigh": "高",
+  "@aiThinkingHigh": {
+    "description": "思考强度：高。"
+  },
+  "aiThinkingAutoHint": "由模型自己决定要不要思考、想多久",
+  "@aiThinkingAutoHint": {
+    "description": "思考强度“自动”的说明。"
+  },
+  "aiThinkingOffHint": "不思考，直接回答，最快",
+  "@aiThinkingOffHint": {
+    "description": "思考强度“关”的说明。"
+  },
+  "aiThinkingLowHint": "简单想一想，适合日常问答",
+  "@aiThinkingLowHint": {
+    "description": "思考强度“低”的说明。"
+  },
+  "aiThinkingMediumHint": "多数问题的平衡之选",
+  "@aiThinkingMediumHint": {
+    "description": "思考强度“中”的说明。"
+  },
+  "aiThinkingHighHint": "仔细推敲，适合整理、回顾与复杂的改动，最慢",
+  "@aiThinkingHighHint": {
+    "description": "思考强度“高”的说明。"
+  },
+  "aiThinkingDisabled": "这个模型在模型设置里关闭了思考",
+  "@aiThinkingDisabled": {
+    "description": "所选模型关了“请求思考”时的说明。"
+  },
+  "aiChatMetaThinking": "思考：{level}",
+  "@aiChatMetaThinking": {
+    "description": "回答底部灰字：这一轮的思考强度。",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "aiChatOpenSettings": "AI 设置",
+  "@aiChatOpenSettings": {
+    "description": "对话页 ⋮ 与历史抽屉底部：打开 AI 设置。"
   }
 }

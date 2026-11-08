@@ -35,6 +35,7 @@ import '../../tools/ai_tool.dart';
 import '../../tools/ai_tool_registry.dart';
 import '../../viewmodels/ai_tool_facts.dart';
 import '../../widgets/ai_tint_badge.dart';
+import '../../widgets/ai_view_state.dart';
 import 'ai_answer_actions.dart';
 import 'ai_subject_chips.dart';
 import 'ai_tool_details_view.dart';
@@ -265,11 +266,15 @@ class AiChangeGroupCard extends StatelessWidget {
     required this.calls,
     required this.live,
     required this.actions,
+    this.storagePrefix,
   });
 
   final List<AiAgentCallRecord> calls;
   final bool live;
   final AiAnswerActions actions;
+
+  /// 行展开状态在对话存储桶里的前缀（这条回答的 id）；进行中为 null。
+  final String? storagePrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -328,6 +333,9 @@ class AiChangeGroupCard extends StatelessWidget {
                 call: call,
                 live: live,
                 actions: actions,
+                storageId: storagePrefix == null
+                    ? null
+                    : '$storagePrefix:change:${call.id}',
               ),
             ],
           ],
@@ -343,18 +351,20 @@ class _ChangeRow extends StatefulWidget {
     required this.call,
     required this.live,
     required this.actions,
+    this.storageId,
   });
 
   final AiAgentCallRecord call;
   final bool live;
   final AiAnswerActions actions;
+  final String? storageId;
 
   @override
   State<_ChangeRow> createState() => _ChangeRowState();
 }
 
 class _ChangeRowState extends State<_ChangeRow> {
-  bool _details = false;
+  late bool _details = aiReadExpanded(context, widget.storageId);
 
   @override
   Widget build(BuildContext context) {
@@ -385,7 +395,12 @@ class _ChangeRowState extends State<_ChangeRow> {
     final undo = widget.actions.onUndo;
     final expandable = AiToolDetailsView.hasDetails(l10n, call);
     return InkWell(
-      onTap: expandable ? () => setState(() => _details = !_details) : null,
+      onTap: expandable
+          ? () {
+              setState(() => _details = !_details);
+              aiWriteExpanded(context, widget.storageId, _details);
+            }
+          : null,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
         child: Row(

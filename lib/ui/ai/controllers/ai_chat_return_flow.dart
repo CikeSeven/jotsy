@@ -6,7 +6,8 @@
 //    验证，可能停留几秒），是了就弹一次提示条“按返回键即可回到对话”+“回到
 //    对话”（桌面没有返回键也能回去）；最多等 12 秒，登记撤销即停；
 // 3. 返回键（首页 / 日记页的 PopScope 让位）或提示条按钮经 [reopenAiChat]
-//    重新打开这段对话：淡入 + 由 0.96 放大，读起来是“回到”而不是“前进”。
+//    重新打开这段对话：淡入 + 由 0.96 放大，读起来是“回到”而不是“前进”；
+//    滚动位置与展开过的内容按离开前恢复（`aiChatViewMemoryProvider`）。
 
 import 'dart:async';
 
@@ -30,7 +31,8 @@ Future<void> reopenAiChat(BuildContext context, WidgetRef ref) async {
     PageRouteBuilder<void>(
       transitionDuration: duration,
       reverseTransitionDuration: duration,
-      pageBuilder: (_, _, _) => AiChatPage(conversationId: id),
+      pageBuilder: (_, _, _) =>
+          AiChatPage(conversationId: id, restoreView: true),
       transitionsBuilder: (_, animation, _, child) {
         final fade = CurvedAnimation(
           parent: animation,

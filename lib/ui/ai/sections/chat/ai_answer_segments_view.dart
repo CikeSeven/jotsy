@@ -50,6 +50,8 @@ class AiAnswerSegmentsView extends StatelessWidget {
                 live: live && index == segments.length - 1,
                 clock: clock,
                 status: status,
+                // 进行中的一轮不记展开状态（落库后换成这条回答的 id）。
+                storageId: live ? null : '$keyPrefix:fold:$index',
               ),
               AiNavigationSegment(:final call) => AiDestinationCard(
                 key: ValueKey<String>('$keyPrefix-${call.id}'),
@@ -61,6 +63,7 @@ class AiAnswerSegmentsView extends StatelessWidget {
                 calls: calls,
                 live: live,
                 actions: actions,
+                storagePrefix: live ? null : keyPrefix,
               ),
               AiConfirmSegment(:final call) => AiConfirmCard(
                 key: ValueKey<String>('$keyPrefix-${call.id}'),

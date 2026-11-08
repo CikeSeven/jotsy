@@ -29,6 +29,7 @@ import '../viewmodels/ai_answer_segments.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import '../widgets/ai_error_view.dart';
+import '../widgets/ai_view_state.dart';
 import 'chat/ai_answer_actions.dart';
 import 'chat/ai_answer_segments_view.dart';
 import 'chat/ai_subject_chips.dart';
@@ -308,6 +309,7 @@ class _AnswerFooter extends StatelessWidget {
               citations: citations,
               contextEntries: meta.contextEntries!,
               onOpen: actions.onOpenSubject,
+              storageId: '${message.messageId}:citations',
             ),
           if (footer.isNotEmpty)
             Padding(
@@ -370,18 +372,20 @@ class _CitationList extends StatefulWidget {
     required this.citations,
     required this.contextEntries,
     required this.onOpen,
+    required this.storageId,
   });
 
   final List<AiCitation> citations;
   final int contextEntries;
   final ValueChanged<AiToolSubject> onOpen;
+  final String storageId;
 
   @override
   State<_CitationList> createState() => _CitationListState();
 }
 
 class _CitationListState extends State<_CitationList> {
-  bool _expanded = false;
+  late bool _expanded = aiReadExpanded(context, widget.storageId);
 
   @override
   Widget build(BuildContext context) {
@@ -407,7 +411,10 @@ class _CitationListState extends State<_CitationList> {
             borderRadius: BorderRadius.circular(8),
             onTap: cited.isEmpty
                 ? null
-                : () => setState(() => _expanded = !_expanded),
+                : () {
+                    setState(() => _expanded = !_expanded);
+                    aiWriteExpanded(context, widget.storageId, _expanded);
+                  },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(

@@ -27,6 +27,7 @@ import '../../tools/ai_tool_registry.dart';
 import '../../viewmodels/ai_answer_segments.dart';
 import '../../widgets/ai_markdown_view.dart';
 import '../../widgets/ai_tint_badge.dart';
+import '../../widgets/ai_view_state.dart';
 import 'ai_answer_actions.dart';
 import 'ai_subject_chips.dart';
 import 'ai_tool_details_view.dart';
@@ -39,6 +40,7 @@ class AiProcessFold extends StatefulWidget {
     this.live = false,
     this.clock,
     this.status,
+    this.storageId,
   });
 
   final AiProcessSegment segment;
@@ -53,12 +55,16 @@ class AiProcessFold extends StatefulWidget {
   /// 进行中的固定状态（检索问答的“正在查找相关的日记…”），优先显示。
   final String? status;
 
+  /// 展开状态在对话存储桶里的标识（`aiReadExpanded`），也是里面工具行的
+  /// 前缀；进行中的一轮为 null（不记）。
+  final String? storageId;
+
   @override
   State<AiProcessFold> createState() => _AiProcessFoldState();
 }
 
 class _AiProcessFoldState extends State<AiProcessFold> {
-  bool _expanded = false;
+  late bool _expanded = aiReadExpanded(context, widget.storageId);
   Timer? _ticker;
 
   @override
@@ -157,7 +163,10 @@ class _AiProcessFoldState extends State<AiProcessFold> {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: canExpand
-                ? () => setState(() => _expanded = !_expanded)
+                ? () {
+                    setState(() => _expanded = !_expanded);
+                    aiWriteExpanded(context, widget.storageId, _expanded);
+                  }
                 : null,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -250,6 +259,7 @@ class _AiProcessFoldState extends State<AiProcessFold> {
                         items: widget.segment.items,
                         live: live,
                         actions: widget.actions,
+                        storageId: widget.storageId,
                       ),
                     ),
                   ),
@@ -266,11 +276,13 @@ class _Timeline extends StatelessWidget {
     required this.items,
     required this.live,
     required this.actions,
+    this.storageId,
   });
 
   final List<AiProcessItem> items;
   final bool live;
   final AiAnswerActions actions;
+  final String? storageId;
 
   @override
   Widget build(BuildContext context) {
@@ -314,6 +326,9 @@ class _Timeline extends StatelessWidget {
                   call: call,
                   live: live,
                   actions: actions,
+                  storageId: storageId == null
+                      ? null
+                      : '$storageId:tool:${call.id}',
                 ),
                 AiPreparingItem(:final tool) => _PreparingItem(
                   key: ValueKey<String>('preparing-$index'),
@@ -421,18 +436,20 @@ class _ToolItem extends StatefulWidget {
     required this.call,
     required this.live,
     required this.actions,
+    this.storageId,
   });
 
   final AiAgentCallRecord call;
   final bool live;
   final AiAnswerActions actions;
+  final String? storageId;
 
   @override
   State<_ToolItem> createState() => _ToolItemState();
 }
 
 class _ToolItemState extends State<_ToolItem> {
-  bool _details = false;
+  late bool _details = aiReadExpanded(context, widget.storageId);
 
   @override
   Widget build(BuildContext context) {
@@ -476,7 +493,10 @@ class _ToolItemState extends State<_ToolItem> {
           InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: expandable
-                ? () => setState(() => _details = !_details)
+                ? () {
+                    setState(() => _details = !_details);
+                    aiWriteExpanded(context, widget.storageId, _details);
+                  }
                 : null,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,

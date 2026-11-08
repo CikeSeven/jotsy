@@ -45,6 +45,7 @@ import '../models/ai_conversation_options.dart';
 import '../models/ai_preference_parts.dart';
 import '../models/ai_recap_range.dart';
 import '../providers/ai_chat_return_provider.dart';
+import '../providers/ai_chat_view_memory_provider.dart';
 import '../providers/ai_providers.dart';
 import '../providers/ai_records_providers.dart';
 import '../sections/ai_chat_message_view.dart';
@@ -71,6 +72,7 @@ class AiChatPage extends ConsumerStatefulWidget {
     this.scope = const AiChatScope.auto(),
     this.initialQuestion,
     this.seedReply,
+    this.restoreView = false,
   });
 
   final String? conversationId;
@@ -81,6 +83,10 @@ class AiChatPage extends ConsumerStatefulWidget {
 
   /// “继续聊聊”：那条回应（`ai_results` 行），对话以它开头。
   final AiResultRow? seedReply;
+
+  /// 回到对话：恢复离开前的滚动位置与展开状态（`aiChatViewMemoryProvider`），
+  /// 而不是从底部开始。
+  final bool restoreView;
 
   @override
   ConsumerState<AiChatPage> createState() => _AiChatPageState();
@@ -114,6 +120,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       personaId: _defaultPersonaId,
     );
     _controller.addListener(_onControllerChanged);
+    _scroll.restoreSaved = widget.restoreView;
     if (widget.conversationId case final id?) {
       unawaited(_load(id));
     } else if (widget.seedReply != null) {
@@ -147,7 +154,8 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     await _controller.openConversation(id);
     if (!mounted) return;
     setState(() => _ready = true);
-    _scroll.jumpToBottom();
+    // 回到对话时由列表按记下的位置恢复；其余（打开、换对话）从底部开始。
+    if (!_scroll.restoreSaved) _scroll.jumpToBottom();
   }
 
   /// “继续聊聊”：以那条回应开头的新对话。
@@ -211,18 +219,21 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   Future<void> _openConversation(String id) async {
     _closeDrawer();
     if (id == _controller.conversationId) return;
+    _scroll.restoreSaved = false;
     setState(() => _ready = false);
     await _load(id);
   }
 
   Future<void> _startNew() async {
     _closeDrawer();
+    _scroll.restoreSaved = false;
     _inputFocus.requestFocus();
     await _controller.startNew(defaultPersonaId: _defaultPersonaId);
     if (mounted) setState(() => _ready = true);
   }
 
   void _onDeleted(String id) {
+    ref.read(aiChatViewMemoryProvider).forget(id);
     if (id == _controller.conversationId) unawaited(_startNew());
   }
 
@@ -421,11 +432,25 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     );
   }
 
-  Widget _messages(BuildContext context, double side, bool docked) {
+  /// 消息区放进这段对话的存储桶：滚动位置、展开过的思考过程与工具详情
+  /// 在列表回收、换页回来后都还在。
+  Widget _messages(BuildContext context, double side, bool docked) =>
+      PageStorage(
+        bucket: ref
+            .read(aiChatViewMemoryProvider)
+            .bucketFor(_controller.conversationId),
+        child: _messageList(context, side, docked),
+      );
+
+  Widget _messageList(BuildContext context, double side, bool docked) {
     final id = _controller.conversationId;
-    final rows = id == null
-        ? const <AiMessageRow>[]
-        : ref.watch(aiMessagesProvider(id)).value ?? const <AiMessageRow>[];
+    final loaded = id == null ? null : ref.watch(aiMessagesProvider(id)).value;
+    // 打开已有对话、消息还没读出来：先什么都不画（不闪欢迎页或空列表；
+    // 回到对话时列表要等内容齐了再建，才能按记下的位置恢复）。
+    if (id != null && loaded == null && !_controller.busy) {
+      return const SizedBox.shrink();
+    }
+    final rows = loaded ?? const <AiMessageRow>[];
     // 智能体这一轮的消息行边做边落库，进行中由末尾的“进行中”一项显示。
     final pendingRow = _controller.agentTurn?.messageId;
     final messages = pendingRow == null
@@ -468,7 +493,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     }
     return ListView.builder(
       // 换对话时整段列表重来（展开状态、元素复用不串到别的对话）。
-      key: ValueKey<String>('chat-${id ?? 'new'}'),
+      key: PageStorageKey<String>('chat-${id ?? 'new'}'),
       controller: _scroll,
       padding: EdgeInsets.fromLTRB(side, 8, side, 24),
       itemCount: messages.length + (busy ? 1 : 0),

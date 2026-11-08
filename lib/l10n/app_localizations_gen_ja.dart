@@ -11607,6 +11607,13 @@ class AppLocalizationsJa extends AppLocalizations {
       'モデルに思考過程を返してもらいます。非対応のモデルでは自動的に外して再試行します';
 
   @override
+  String get aiModelToolsToggle => 'ツール呼び出しに対応';
+
+  @override
+  String get aiModelToolsSubtitle =>
+      'AI アシスタントがアプリを直接操作できます。非対応のモデルでは通常の質問応答に切り替わります';
+
+  @override
   String get aiModelMaxOutput => '最大出力トークン数';
 
   @override

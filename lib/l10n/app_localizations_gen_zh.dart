@@ -11405,6 +11405,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModelReasoningSubtitle => '让模型返回思考过程；模型不支持时自动去掉再试';
 
   @override
+  String get aiModelToolsToggle => '支持工具调用';
+
+  @override
+  String get aiModelToolsSubtitle => '让 AI 助手直接操作应用；模型不支持时自动改用检索问答';
+
+  @override
   String get aiModelMaxOutput => '最多输出（token）';
 
   @override

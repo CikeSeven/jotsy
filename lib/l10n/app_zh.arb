@@ -15793,6 +15793,14 @@
   "@aiModelReasoningSubtitle": {
     "description": "思考过程开关的说明。"
   },
+  "aiModelToolsToggle": "支持工具调用",
+  "@aiModelToolsToggle": {
+    "description": "模型是否支持工具调用（AI 助手直接操作应用）的开关。"
+  },
+  "aiModelToolsSubtitle": "让 AI 助手直接操作应用；模型不支持时自动改用检索问答",
+  "@aiModelToolsSubtitle": {
+    "description": "工具调用开关的说明。"
+  },
   "aiModelMaxOutput": "最多输出（token）",
   "@aiModelMaxOutput": {
     "description": "模型最多输出输入框。"

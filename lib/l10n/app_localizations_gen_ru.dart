@@ -13233,6 +13233,13 @@ class AppLocalizationsRu extends AppLocalizations {
       'Просить модель показывать ход мыслей; если модель это не поддерживает, запрос повторяется без этого';
 
   @override
+  String get aiModelToolsToggle => 'Поддерживает вызов инструментов';
+
+  @override
+  String get aiModelToolsSubtitle =>
+      'Ассистент сможет сам выполнять действия в приложении; если модель это не поддерживает, остаются обычные ответы на вопросы';
+
+  @override
   String get aiModelMaxOutput => 'Максимум токенов в ответе';
 
   @override

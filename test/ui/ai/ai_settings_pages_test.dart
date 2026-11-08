@@ -17,6 +17,7 @@ import 'package:node_diary/ui/ai/pages/settings/ai_privacy_page.dart';
 import 'package:node_diary/ui/ai/pages/settings/ai_provider_edit_page.dart';
 import 'package:node_diary/ui/ai/pages/settings/ai_settings_page.dart';
 import 'package:node_diary/ui/ai/pages/settings/ai_usage_page.dart';
+import 'package:node_diary/ui/ai/sections/settings/ai_model_sheets.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
 
@@ -243,6 +244,40 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('tiny-model'), findsOneWidget);
     expect(find.text(h.l10n.aiStatusTest), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('model sheet saves tool calling turned off', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    AiModelSheetResult? result;
+    await h.pump(
+      Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () async => result = await showAiModelSettingsSheet(
+              context,
+              const AiModelConfig(id: 'tool-model'),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    );
+    Future<AiModelConfig> toggleAndSave() async {
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      final toggle = find.text(h.l10n.aiModelToolsToggle);
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(h.l10n.commonSave));
+      await tester.pumpAndSettle();
+      return (result! as AiModelSheetUpdated).model;
+    }
+
+    final off = await toggleAndSave();
+    expect(off.tools, isFalse);
+    expect(off.toJson()['tools'], isFalse);
     await h.unmount();
   });
 

@@ -150,9 +150,9 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
 
   Future<void> _pickReminders() async {
     final settings = ref.read(todoSettingsProvider);
-    // 提醒相对截止日：没有日期时先定为今天。
+    // 提醒相对截止日：没有日期时按今天算，真加上提醒时才把日期定下（只看
+    // 一眼就关掉面板不改日期）。
     final due = _dueDate ?? _today;
-    setState(() => _dueDate = due);
     await showTodoReminderSheet(
       context,
       reminders: _reminders,
@@ -160,7 +160,10 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
       dueMinute: _dueMinute,
       allDayMinute: settings.allDayReminderMinute,
       onChanged: (List<TodoReminder> next) {
-        setState(() => _reminders = next);
+        setState(() {
+          _reminders = next;
+          if (next.isNotEmpty) _dueDate ??= due;
+        });
         if (next.isNotEmpty) {
           unawaited(ensureTodoReminderPermission(context, ref));
         }

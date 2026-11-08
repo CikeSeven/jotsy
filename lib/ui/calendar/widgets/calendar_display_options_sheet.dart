@@ -18,15 +18,16 @@ import 'calendar_options_controls.dart';
 /// 放开（默认上限 9/16 屏高，内部滚动）：日历网格在页面上方，调整时能透过
 /// 遮罩直接看到格子样式的变化。
 ///
-/// [showCapsuleBadgeOption] / [showAnniversariesOption] 为 false 时隐藏
-/// “胶囊角标”“显示纪念日”两行（时间胶囊、纪念日功能关闭时隐藏入口，数据
-/// 保留）；已存的选项值不变，胶囊角标照常按它绘制。
+/// [showCapsuleBadgeOption] / [showAnniversariesOption] / [showTodosOption]
+/// 为 false 时隐藏“胶囊角标”“显示纪念日”“显示待办”（时间胶囊、纪念日、
+/// 待办功能关闭时隐藏入口，数据保留）；已存的选项值不变，胶囊角标照常按它绘制。
 Future<void> showCalendarDisplayOptionsSheet(
   BuildContext context, {
   required CalendarDisplayOptions options,
   required ValueChanged<CalendarDisplayOptions> onChanged,
   bool showCapsuleBadgeOption = true,
   bool showAnniversariesOption = true,
+  bool showTodosOption = true,
 }) {
   return showAppModalBottomSheet<void>(
     context: context,
@@ -42,6 +43,7 @@ Future<void> showCalendarDisplayOptionsSheet(
       onChanged: onChanged,
       showCapsuleBadgeOption: showCapsuleBadgeOption,
       showAnniversariesOption: showAnniversariesOption,
+      showTodosOption: showTodosOption,
     ),
   );
 }
@@ -57,6 +59,7 @@ class CalendarDisplayOptionsSheet extends StatefulWidget {
     required this.onChanged,
     this.showCapsuleBadgeOption = true,
     this.showAnniversariesOption = true,
+    this.showTodosOption = true,
   });
 
   final CalendarDisplayOptions initialOptions;
@@ -67,6 +70,7 @@ class CalendarDisplayOptionsSheet extends StatefulWidget {
 
   /// 是否显示“显示纪念日”一行（纪念日功能关闭时为 false）。
   final bool showAnniversariesOption;
+  final bool showTodosOption;
 
   @override
   State<CalendarDisplayOptionsSheet> createState() =>
@@ -295,6 +299,14 @@ class _CalendarDisplayOptionsSheetState
                 value: options.showAnniversaries,
                 onChanged: (bool value) =>
                     _update(options.copyWith(showAnniversaries: value)),
+              ),
+            if (widget.showTodosOption)
+              CalendarOptionSwitch(
+                label: l10n.calendarShowTodos,
+                description: l10n.calendarShowTodosDescription,
+                value: options.showTodos,
+                onChanged: (bool value) =>
+                    _update(options.copyWith(showTodos: value)),
               ),
             CalendarOptionSwitch(
               label: l10n.calendarShowDayMoods,

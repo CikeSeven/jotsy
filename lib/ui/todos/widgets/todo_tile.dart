@@ -17,8 +17,9 @@ import 'todo_labels.dart';
 /// 方框按优先级着色（高 error、中 tertiary、低 primary）。已完成的标题变灰
 /// 并加删除线。
 ///
-/// 只负责展示与把点按交出去：勾选 [onToggle]、点行 [onTap]；拖动手柄
-/// [trailing] 由调用方在可手动排序的视图里给出。
+/// 只负责展示与把点按交出去：勾选 [onToggle]（为 null 时方框淡化、不能
+/// 勾选，如日历上重复待办以后的某一次，读屏念 [disabledHint]）、点行
+/// [onTap]；拖动手柄 [trailing] 由调用方在可手动排序的视图里给出。
 class TodoTile extends StatelessWidget {
   const TodoTile({
     super.key,
@@ -28,14 +29,18 @@ class TodoTile extends StatelessWidget {
     required this.onTap,
     this.list,
     this.trailing,
+    this.disabledHint,
   });
 
   final TodoRow row;
 
   /// 本地零点的“今天”（截止日的相对说法与是否逾期）。
   final DateTime today;
-  final VoidCallback onToggle;
+  final VoidCallback? onToggle;
   final VoidCallback onTap;
+
+  /// [onToggle] 为 null 时方框的读屏说明。
+  final String? disabledHint;
 
   /// 所在清单；给出时在元信息里显示清单名。
   final TodoListRow? list;
@@ -74,7 +79,12 @@ class TodoTile extends StatelessWidget {
               Semantics(
                 checked: done,
                 button: true,
-                label: done ? l10n.todoMarkUndone : l10n.todoMarkDone,
+                enabled: onToggle != null,
+                label: onToggle == null
+                    ? disabledHint
+                    : done
+                    ? l10n.todoMarkUndone
+                    : l10n.todoMarkDone,
                 excludeSemantics: true,
                 child: InkResponse(
                   onTap: onToggle,
@@ -83,11 +93,14 @@ class TodoTile extends StatelessWidget {
                     width: 48,
                     height: 48,
                     child: Center(
-                      child: TodoCheckBoxVisual(
-                        checked: done,
-                        size: 20,
-                        accent: accent,
-                        onAccent: onAccent,
+                      child: Opacity(
+                        opacity: onToggle == null ? 0.38 : 1,
+                        child: TodoCheckBoxVisual(
+                          checked: done,
+                          size: 20,
+                          accent: accent,
+                          onAccent: onAccent,
+                        ),
                       ),
                     ),
                   ),

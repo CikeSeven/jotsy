@@ -55,6 +55,7 @@ class CalendarDayCell extends StatelessWidget {
     this.lunar,
     this.holiday,
     this.anniversary,
+    this.hasOpenTodo = false,
     this.dayMood,
     this.highlightMaxWidth,
   });
@@ -85,6 +86,9 @@ class CalendarDayCell extends StatelessWidget {
   /// 当天第一条纪念日的名称；没有或不显示纪念日时为 null。显示农历时写在
   /// 小字行，否则在数字左上画心形。
   final String? anniversary;
+
+  /// 这天有未完成的待办（不显示待办时为 false）：数字左上画方框勾角标。
+  final bool hasOpenTodo;
 
   /// 这天的心情；没有记或不显示时为 null。
   final DayMood? dayMood;
@@ -447,7 +451,7 @@ class CalendarDayCell extends StatelessWidget {
     );
   }
 
-  /// 数字左上方的角标（锁 > 休/班 > 心形 > 天气），见
+  /// 数字左上方的角标（锁 > 休/班 > 心形 > 待办 > 天气），见
   /// [CalendarCellLeadingBadge]。纪念日在没有小字行时（不显示农历，或心情格
   /// 省掉了小字，[subtitleShown] 为 false）画成心形。
   Widget? _leadingBadge(
@@ -464,6 +468,7 @@ class CalendarDayCell extends StatelessWidget {
       isOutside: isOutside,
       anniversaryHeart:
           (lunar == null || !subtitleShown) && anniversary != null,
+      todoMark: hasOpenTodo,
       onFill: onFill,
       onPhoto: onPhoto,
     );

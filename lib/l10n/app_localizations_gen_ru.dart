@@ -16020,4 +16020,63 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get todoReminderPermissionAction => 'Включить';
+
+  @override
+  String get calendarShowTodos => 'Показывать задачи';
+
+  @override
+  String get calendarShowTodosDescription =>
+      'Отмечать дни с задачами и показывать их при выборе дня';
+
+  @override
+  String get calendarAddTodo => 'Добавить задачу';
+
+  @override
+  String get calendarTodoSectionTitle => 'Задачи на этот день';
+
+  @override
+  String get calendarTodoRepeatHint =>
+      'Будущий повтор задачи; отметите, когда наступит';
+
+  @override
+  String get diaryPreviewAddTodo => 'Добавить задачу';
+
+  @override
+  String get diaryPreviewConvertTodos => 'Перенести список в задачи';
+
+  @override
+  String get todoConvertTitle => 'Перенести в задачи';
+
+  @override
+  String get todoConvertHint =>
+      'Выбранные пункты станут задачами, связанными с этой записью. Сама запись не изменится.';
+
+  @override
+  String todoConvertSubmit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавить $count',
+      many: 'Добавить $count',
+      few: 'Добавить $count',
+      one: 'Добавить $count',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoConvertDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавлено $count задачи',
+      many: 'Добавлено $count задач',
+      few: 'Добавлено $count задачи',
+      one: 'Добавлена $count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryLinkedTodosTitle => 'Связанные задачи';
 }

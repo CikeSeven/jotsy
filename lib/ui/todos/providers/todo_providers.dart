@@ -4,6 +4,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../models/todo_settings.dart';
+import '../viewmodels/todo_calendar_index.dart';
 
 /// 待办的数据与偏好。数据一律经 drift `.watch()` 推送：本机编辑、局域网同步
 /// 写入与导入备份后都会自动刷新，所以不必登记到 `syncedDataRefreshProvider`。
@@ -28,6 +29,20 @@ final todoOpenCountsByListProvider = StreamProvider<Map<String?, int>>((
   Ref ref,
 ) {
   return ref.watch(appDatabaseProvider).watchOpenTodoCountsByList();
+});
+
+/// 日历用的按日索引。重新加载期间沿用上一份数据，日期格上的角标不会闪
+/// 一下消失；还没有数据时为空索引。只在待办功能开启、日历显示待办时订阅。
+final todoCalendarIndexProvider = Provider<TodoCalendarIndex>((Ref ref) {
+  final open = ref.watch(openTodosProvider).value;
+  final completed = ref.watch(completedTodosProvider).value;
+  if (open == null && completed == null) return TodoCalendarIndex.empty;
+  final now = DateTime.now();
+  return TodoCalendarIndex.build(
+    open: open ?? const <TodoRow>[],
+    completed: completed ?? const <TodoRow>[],
+    today: DateTime(now.year, now.month, now.day),
+  );
 });
 
 /// 单条待办（详情页）；被删除后推送 null。

@@ -80,6 +80,7 @@ CalendarDisplayOptions _optionsFromJson(Map<String, dynamic> json) {
       json['showAnniversaries'],
       defaults.showAnniversaries,
     ),
+    showTodos: _bool(json['showTodos'], defaults.showTodos),
     showDayMoods: _bool(json['showDayMoods'], defaults.showDayMoods),
   );
 }
@@ -105,6 +106,7 @@ Map<String, Object> _optionsToJson(CalendarDisplayOptions o) =>
       'lunarMode': o.lunarMode.name,
       'holidayMode': o.holidayMode.name,
       'showAnniversaries': o.showAnniversaries,
+      'showTodos': o.showTodos,
       'showDayMoods': o.showDayMoods,
     };
 

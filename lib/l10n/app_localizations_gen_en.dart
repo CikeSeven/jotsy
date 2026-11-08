@@ -15476,4 +15476,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todoReminderPermissionAction => 'Turn on';
+
+  @override
+  String get calendarShowTodos => 'Show to-dos';
+
+  @override
+  String get calendarShowTodosDescription =>
+      'Mark days with to-dos and list them when a day is selected';
+
+  @override
+  String get calendarAddTodo => 'Add a to-do';
+
+  @override
+  String get calendarTodoSectionTitle => 'To-dos for this day';
+
+  @override
+  String get calendarTodoRepeatHint =>
+      'An upcoming repeat of this to-do; tick it when it comes';
+
+  @override
+  String get diaryPreviewAddTodo => 'Add a to-do';
+
+  @override
+  String get diaryPreviewConvertTodos => 'Copy checklist to to-dos';
+
+  @override
+  String get todoConvertTitle => 'Copy to to-dos';
+
+  @override
+  String get todoConvertHint =>
+      'The selected items are added as to-dos linked to this diary. The diary itself is unchanged.';
+
+  @override
+  String todoConvertSubmit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count',
+      one: 'Add 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoConvertDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added $count to-dos',
+      one: 'Added 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryLinkedTodosTitle => 'Related to-dos';
 }

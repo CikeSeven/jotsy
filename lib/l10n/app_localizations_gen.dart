@@ -24905,6 +24905,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn on'**
   String get todoReminderPermissionAction;
+
+  /// Calendar display options: show to-dos switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Show to-dos'**
+  String get calendarShowTodos;
+
+  /// Calendar display options: description of the show to-dos switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark days with to-dos and list them when a day is selected'**
+  String get calendarShowTodosDescription;
+
+  /// Calendar day long-press sheet: add a to-do due on this day.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a to-do'**
+  String get calendarAddTodo;
+
+  /// Title of the to-do card below the selected calendar day.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos for this day'**
+  String get calendarTodoSectionTitle;
+
+  /// Screen reader hint on an upcoming repeat occurrence in the calendar that can't be ticked yet.
+  ///
+  /// In en, this message translates to:
+  /// **'An upcoming repeat of this to-do; tick it when it comes'**
+  String get calendarTodoRepeatHint;
+
+  /// Diary preview More sheet: add a to-do linked to this diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a to-do'**
+  String get diaryPreviewAddTodo;
+
+  /// Diary preview More sheet: copy the body's checklist items into to-dos (the body is unchanged).
+  ///
+  /// In en, this message translates to:
+  /// **'Copy checklist to to-dos'**
+  String get diaryPreviewConvertTodos;
+
+  /// Title of the copy-checklist-to-to-dos sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to to-dos'**
+  String get todoConvertTitle;
+
+  /// Explanation in the copy-checklist-to-to-dos sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected items are added as to-dos linked to this diary. The diary itself is unchanged.'**
+  String get todoConvertHint;
+
+  /// Submit button of the copy-checklist-to-to-dos sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1} other{Add {count}}}'**
+  String todoConvertSubmit(int count);
+
+  /// Notice after copying checklist items to to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added 1 to-do} other{Added {count} to-dos}}'**
+  String todoConvertDone(int count);
+
+  /// Title of the related to-dos block after the diary body in preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Related to-dos'**
+  String get diaryLinkedTodosTitle;
 }
 
 class _AppLocalizationsDelegate

@@ -13939,4 +13939,44 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get todoReminderPermissionAction => 'オンにする';
+
+  @override
+  String get calendarShowTodos => 'ToDoを表示';
+
+  @override
+  String get calendarShowTodosDescription => 'ToDoのある日に印を付け、選んだ日のToDoを一覧表示します';
+
+  @override
+  String get calendarAddTodo => 'ToDoを追加';
+
+  @override
+  String get calendarTodoSectionTitle => 'この日のToDo';
+
+  @override
+  String get calendarTodoRepeatHint => '繰り返しToDoの今後の回です。その日になったらチェックします';
+
+  @override
+  String get diaryPreviewAddTodo => 'ToDoを追加';
+
+  @override
+  String get diaryPreviewConvertTodos => 'チェックリストをToDoにする';
+
+  @override
+  String get todoConvertTitle => 'ToDoにする';
+
+  @override
+  String get todoConvertHint => '選んだ項目をこの日記に関連付けたToDoとして追加します。日記本文は変わりません。';
+
+  @override
+  String todoConvertSubmit(int count) {
+    return '$count件を追加';
+  }
+
+  @override
+  String todoConvertDone(int count) {
+    return 'ToDoを$count件追加しました';
+  }
+
+  @override
+  String get diaryLinkedTodosTitle => '関連するToDo';
 }

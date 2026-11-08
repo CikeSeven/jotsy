@@ -75,13 +75,10 @@ class TodoDetailFields extends ConsumerWidget {
     }
 
     Future<void> pickReminders() async {
-      var dueDate = due;
-      if (dueDate == null) {
-        // 提醒相对截止日：没有日期时先定为今天。
-        dueDate = today;
-        await database.setTodoDue(row.todoId, date: today);
-      }
-      if (!context.mounted) return;
+      // 提醒相对截止日：没有日期时按今天算，真加上第一条提醒时才把日期
+      // 定下（只看一眼就关掉面板不改日期）。
+      final dueDate = due ?? today;
+      var dated = due != null;
       await showTodoReminderSheet(
         context,
         reminders: reminders,
@@ -89,6 +86,10 @@ class TodoDetailFields extends ConsumerWidget {
         dueMinute: row.dueMinute,
         allDayMinute: settings.allDayReminderMinute,
         onChanged: (List<TodoReminder> next) {
+          if (!dated && next.isNotEmpty) {
+            dated = true;
+            unawaited(database.setTodoDue(row.todoId, date: dueDate));
+          }
           unawaited(database.setTodoReminders(row.todoId, next));
           if (next.isNotEmpty && context.mounted) {
             unawaited(ensureTodoReminderPermission(context, ref));

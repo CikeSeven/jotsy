@@ -13689,4 +13689,44 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoReminderPermissionAction => '去开启';
+
+  @override
+  String get calendarShowTodos => '显示待办';
+
+  @override
+  String get calendarShowTodosDescription => '在日期上标出有待办的日子，选中时列出这天的待办';
+
+  @override
+  String get calendarAddTodo => '添加待办';
+
+  @override
+  String get calendarTodoSectionTitle => '这天的待办';
+
+  @override
+  String get calendarTodoRepeatHint => '重复待办的这一次，到时候再勾选';
+
+  @override
+  String get diaryPreviewAddTodo => '添加待办';
+
+  @override
+  String get diaryPreviewConvertTodos => '转为独立待办';
+
+  @override
+  String get todoConvertTitle => '转为独立待办';
+
+  @override
+  String get todoConvertHint => '选中的项会加进待办并关联这篇日记，日记正文不变。';
+
+  @override
+  String todoConvertSubmit(int count) {
+    return '添加 $count 条';
+  }
+
+  @override
+  String todoConvertDone(int count) {
+    return '已添加 $count 条待办';
+  }
+
+  @override
+  String get diaryLinkedTodosTitle => '相关待办';
 }

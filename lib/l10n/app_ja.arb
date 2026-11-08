@@ -18818,5 +18818,7 @@
   "storageMgmtGrowthByMonth": "日記の日付ごと・直近12か月の月別追加量",
   "@storageMgmtGrowthByMonth": {"description": "Growth chart caption when grouped by month."},
   "storageMgmtGrowthPeak": "最も多いのは {period}：{size}",
-  "@storageMgmtGrowthPeak": {"description": "Growth chart: the period with the most media.", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}}
+  "@storageMgmtGrowthPeak": {"description": "Growth chart: the period with the most media.", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}},
+  "storageMgmtOpenExternally": "ほかのアプリで開く",
+  "@storageMgmtOpenExternally": {"description": "Video preview page: tooltip of the action that hands the video to another app."}
 }

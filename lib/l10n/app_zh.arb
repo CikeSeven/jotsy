@@ -18251,5 +18251,7 @@
   "storageMgmtGrowthByMonth": "按日记日期，近 12 个月每月新增",
   "@storageMgmtGrowthByMonth": {"description": "按月统计时的说明。"},
   "storageMgmtGrowthPeak": "{period} 新增最多，共 {size}",
-  "@storageMgmtGrowthPeak": {"description": "增长图：新增最多的一段。", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}}
+  "@storageMgmtGrowthPeak": {"description": "增长图：新增最多的一段。", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}},
+  "storageMgmtOpenExternally": "用其他应用打开",
+  "@storageMgmtOpenExternally": {"description": "视频预览页：交给其他应用打开的按钮提示。"}
 }

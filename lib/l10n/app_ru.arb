@@ -18818,5 +18818,7 @@
   "storageMgmtGrowthByMonth": "Добавлено по месяцам за 12 месяцев, по дате записи",
   "@storageMgmtGrowthByMonth": {"description": "Growth chart caption when grouped by month."},
   "storageMgmtGrowthPeak": "Больше всего добавлено — {period}: {size}",
-  "@storageMgmtGrowthPeak": {"description": "Growth chart: the period with the most media.", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}}
+  "@storageMgmtGrowthPeak": {"description": "Growth chart: the period with the most media.", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}},
+  "storageMgmtOpenExternally": "Открыть в другом приложении",
+  "@storageMgmtOpenExternally": {"description": "Video preview page: tooltip of the action that hands the video to another app."}
 }

@@ -24735,6 +24735,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Most added in {period}: {size}'**
   String storageMgmtGrowthPeak(String period, String size);
+
+  /// Video preview page: tooltip of the action that hands the video to another app.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in another app'**
+  String get storageMgmtOpenExternally;
 }
 
 class _AppLocalizationsDelegate

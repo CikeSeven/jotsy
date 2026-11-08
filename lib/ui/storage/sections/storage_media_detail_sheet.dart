@@ -5,7 +5,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
-import '../../../core/services/file_open_service.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../../diaries/widgets/diary_image_source.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
@@ -16,6 +15,7 @@ import '../../widgets/image_viewer_page.dart';
 import '../../widgets/long_image/long_image_policy.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../widgets/width_layout_builder.dart';
+import '../controllers/storage_media_open_flow.dart';
 import '../viewmodels/storage_labels.dart';
 import '../viewmodels/storage_media_view.dart';
 import '../widgets/storage_media_thumb.dart';
@@ -229,6 +229,7 @@ class _Preview extends StatelessWidget {
     final entry = item.entry;
     final radius = BorderRadius.circular(AppSpacing.l);
     if (item.masked || entry.kind != DiaryBlockMediaKind.image) {
+      final video = entry.kind == DiaryBlockMediaKind.video;
       return ClipRRect(
         borderRadius: radius,
         child: SizedBox(
@@ -241,10 +242,13 @@ class _Preview extends StatelessWidget {
                 masked: item.masked,
                 extent: _height,
               ),
+              if (!item.masked && video) const Center(child: _PlayButton()),
               if (!item.masked)
                 Material(
                   type: MaterialType.transparency,
-                  child: InkWell(onTap: () => unawaited(_openExternally())),
+                  child: InkWell(
+                    onTap: () => unawaited(openStorageMedia(context, item)),
+                  ),
                 ),
             ],
           ),
@@ -292,9 +296,25 @@ class _Preview extends StatelessWidget {
       ),
     );
   }
+}
 
-  Future<void> _openExternally() async {
-    await const FileOpenService().open(item.entry.path);
+/// 视频预览上的播放按钮：表面色半透明圆底，点按整块预览进视频预览页。
+class _PlayButton extends StatelessWidget {
+  const _PlayButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface.withValues(alpha: 0.82),
+        shape: BoxShape.circle,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        child: FaIcon(FontAwesomeIcons.play, size: 20, color: scheme.primary),
+      ),
+    );
   }
 }
 

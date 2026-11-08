@@ -18251,5 +18251,7 @@
   "storageMgmtGrowthByMonth": "Added each month over the last 12 months, by entry date",
   "@storageMgmtGrowthByMonth": {"description": "Growth chart caption when grouped by month."},
   "storageMgmtGrowthPeak": "Most added in {period}: {size}",
-  "@storageMgmtGrowthPeak": {"description": "Growth chart: the period with the most media.", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}}
+  "@storageMgmtGrowthPeak": {"description": "Growth chart: the period with the most media.", "placeholders": {"period": {"type": "String"}, "size": {"type": "String"}}},
+  "storageMgmtOpenExternally": "Open in another app",
+  "@storageMgmtOpenExternally": {"description": "Video preview page: tooltip of the action that hands the video to another app."}
 }

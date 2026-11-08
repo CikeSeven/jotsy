@@ -15404,4 +15404,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String storageMgmtGrowthPeak(String period, String size) {
     return 'Most added in $period: $size';
   }
+
+  @override
+  String get storageMgmtOpenExternally => 'Open in another app';
 }

@@ -15949,4 +15949,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String storageMgmtGrowthPeak(String period, String size) {
     return 'Больше всего добавлено — $period: $size';
   }
+
+  @override
+  String get storageMgmtOpenExternally => 'Открыть в другом приложении';
 }

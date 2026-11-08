@@ -13614,4 +13614,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String storageMgmtGrowthPeak(String period, String size) {
     return '$period 新增最多，共 $size';
   }
+
+  @override
+  String get storageMgmtOpenExternally => '用其他应用打开';
 }

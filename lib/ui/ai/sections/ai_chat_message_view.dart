@@ -1,8 +1,7 @@
 // 对话里的一条消息（DESIGN §5.29“消息”）。
 //
-// - 问题：靠右的气泡（`primaryContainer`，20 圆角、右下角 6，最宽 520）；
-//   长按 / 右键弹菜单（复制、编辑并重发——只在最后一问），最后一问左侧另有
-//   12dp 铅笔。
+// - 问题：靠右的气泡（`primaryContainer`，20 圆角、右下角 6，最宽 520），
+//   可长按选字（`AppSelectionArea`）；最后一问左侧 12dp 铅笔“编辑并重发”。
 // - 回答：头部（24dp 人设头像 + 名称），分段（`AiAnswerSegmentsView`：思考
 //   过程折叠块、前往 / 改动 / 确认卡片、正文），然后是没有正常作答的说明、
 //   错误与重试、“参考了 N 篇日记”（点按展开为可点的日记胶囊）、一行灰字
@@ -18,8 +17,6 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../widgets/expressive_menu/expressive_menu_anchor.dart';
-import '../../widgets/expressive_menu/expressive_menu_item.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_chat_links.dart';
 import '../models/ai_agent_steps.dart';
@@ -28,6 +25,7 @@ import '../models/ai_tool_subject.dart';
 import '../viewmodels/ai_answer_segments.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
+import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../widgets/ai_error_view.dart';
 import '../widgets/ai_view_state.dart';
 import 'chat/ai_answer_actions.dart';
@@ -63,11 +61,7 @@ class AiChatMessageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.role == AiMessageRole.user) {
-      return AiQuestionBubble(
-        text: message.content,
-        onCopy: () => onCopy(message.content),
-        onEdit: onEdit,
-      );
+      return AiQuestionBubble(text: message.content, onEdit: onEdit);
     }
     final meta = _AnswerMeta.decode(message.meta);
     final segments = buildAiAnswerSegments(
@@ -108,15 +102,9 @@ class AiChatMessageView extends StatelessWidget {
 
 /// 问题气泡。
 class AiQuestionBubble extends StatelessWidget {
-  const AiQuestionBubble({
-    super.key,
-    required this.text,
-    required this.onCopy,
-    this.onEdit,
-  });
+  const AiQuestionBubble({super.key, required this.text, this.onEdit});
 
   final String text;
-  final VoidCallback onCopy;
   final VoidCallback? onEdit;
 
   @override
@@ -150,44 +138,24 @@ class AiQuestionBubble extends StatelessWidget {
           Flexible(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 520),
-              child: ExpressiveMenuAnchor(
-                menuChildren: <Widget>[
-                  ExpressiveMenuItem(
-                    leadingIcon: const FaIcon(FontAwesomeIcons.copy),
-                    onPressed: onCopy,
-                    child: Text(l10n.aiPanelCopy),
-                  ),
-                  if (onEdit != null)
-                    ExpressiveMenuItem(
-                      leadingIcon: const FaIcon(FontAwesomeIcons.pen),
-                      onPressed: onEdit,
-                      child: Text(l10n.aiChatEditResend),
-                    ),
-                ],
-                builder: (context, menu, child) => GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onLongPressStart: (details) =>
-                      menu.openAt(details.globalPosition),
-                  onSecondaryTapDown: (details) =>
-                      menu.openAt(details.globalPosition),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: colors.primaryContainer,
-                      borderRadius: radius,
-                    ),
-                    child: child,
-                  ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: radius,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  child: Text(
-                    text,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colors.onPrimaryContainer,
-                      height: 1.5,
+                // 长按选字，菜单与回答正文同一套（复制、全选、分享）。
+                child: AppSelectionArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    child: Text(
+                      text,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colors.onPrimaryContainer,
+                        height: 1.5,
+                      ),
                     ),
                   ),
                 ),

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/ai_thinking_clock.dart';
 import '../../viewmodels/ai_answer_segments.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../viewmodels/ai_citations.dart';
 import '../../widgets/ai_markdown_view.dart';
 import 'ai_action_cards.dart';
@@ -70,10 +71,13 @@ class AiAnswerSegmentsView extends StatelessWidget {
                 call: call,
                 actions: actions,
               ),
-              AiTextSegment(:final text) => AiMarkdownView(
-                markdown: aiNormalizeCitations(text),
-                onCitation: actions.onCitation,
-                bodyStyle: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
+              // 回答正文可长按选字，菜单与输入框同一套。
+              AiTextSegment(:final text) => AppSelectionArea(
+                child: AiMarkdownView(
+                  markdown: aiNormalizeCitations(text),
+                  onCitation: actions.onCitation,
+                  bodyStyle: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
+                ),
               ),
             },
           ),

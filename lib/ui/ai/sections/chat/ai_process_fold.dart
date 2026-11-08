@@ -20,6 +20,7 @@ import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../widgets/expressive_loading_indicator.dart';
+import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../controllers/ai_thinking_clock.dart';
 import '../../models/ai_agent_steps.dart';
 import '../../tools/ai_destinations.dart';
@@ -385,7 +386,8 @@ class _TextItem extends StatelessWidget {
         size: 24,
         circle: true,
       ),
-      child: child,
+      // 思考与过渡句同样可以长按选字。
+      child: AppSelectionArea(child: child),
     );
   }
 }

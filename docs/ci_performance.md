@@ -42,7 +42,8 @@ GitHub 按最近使用时间淘汰。其中 setup-java 整份缓存 `~/.gradle/c
 | Flutter SDK 与引擎产物 | flutter-action 给出的 SDK 目录 | `flutter-<os>-stable-<版本>-<arch>-<hash>-artifacts-v1` | 安装与 precache 之后立即保存 |
 | pub 包 | `PUB_CACHE` | `flutter-pub-…-<版本>-…-<pubspec.lock 哈希>`，未命中时退回同一 Flutter 版本的最近缓存 | `pub get` 之后立即保存 |
 | 构建钩子下载（sqlite3 预编译库） | `.dart_tool/hooks_runner/shared` | `hook-downloads-<os>-<android\|host>-<job>-<pubspec.lock 哈希>` | job 成功结束时 |
-| Gradle 依赖与发行版 | `~/.gradle/caches/modules-2`、`~/.gradle/wrapper/dists` | `gradle-<os>-<Flutter 版本>-<Gradle 脚本与 pubspec.lock 哈希>` | job 成功结束时 |
+| Gradle 发行版 | `~/.gradle/wrapper/dists` | `gradle-wrapper-<os>-<gradle-wrapper.properties 哈希>` | job 成功结束时 |
+| Gradle 依赖 | `~/.gradle/caches/modules-2` | `gradle-<os>-<Flutter 版本>-<Gradle 脚本与 pubspec.lock 哈希>` | job 成功结束时 |
 | Robolectric 的 Android jar | `~/.m2/repository/org/robolectric` | `robolectric-<os>-<build.gradle.kts 与原生测试源码哈希>` | job 成功结束时 |
 | actionlint | `~/.cache/actionlint` | `actionlint-<版本>-linux-amd64` | job 成功结束时 |
 
@@ -69,13 +70,25 @@ Windows 取 `--windows`）再保存，缓存内容与哪个 job 先存无关。`
 CI 里同类 job 的缓存。
 
 **Gradle 只缓存下载来的东西。** transforms、构建缓存等是本机生成的产物，体积是
-依赖的数倍，恢复比重新生成还慢。键带 Flutter 版本（引擎以 maven 包形式提供），
-只在同一 Flutter 版本内退回旧缓存，避免旧版本的依赖一代代累积；Robolectric 的
-键也不设回退，原因相同。
+依赖的数倍，恢复比重新生成还慢。依赖缓存的键带 Flutter 版本（引擎以 maven 包
+形式提供），只在同一 Flutter 版本内退回旧缓存，避免旧版本的依赖一代代累积；
+Robolectric 的键也不设回退，原因相同。发行版单独缓存、只随 Gradle 版本变：
+services.gradle.org 会跳转到 GitHub Releases 下载，同样会遇到 504，升级 Flutter
+时不必跟着重新下载。
 
-**其余下载有重试。** pub get 最多 3 次，actionlint 的 curl 最多重试 8 次，
-apt 最多重试 3 次。2026-11-08 本地复现时，actionlint 的下载连续 5 次 504 后
-第 6 次成功。
+**缓存未命中时，sqlite3 库先带重试预取。** 钩子自己下载时不重试，失败的 job
+又不写缓存，下载服务故障期间冷缓存的运行每次都从头失败（#197 第一次 CI 运行
+的 6 个测试分片、静态检查与 Linux 构建都因此失败）。`setup-flutter` 在钩子运行前，从锁定版本的 sqlite3
+包里读出文件名、release tag 与 SHA-256（`lib/src/hook/asset_hashes.dart`），
+用 curl 带重试下载，校验后放进钩子会找的 `download-<哈希前 8 位>/libsqlite3.so`
+（Windows 为 `sqlite3.dll`）。这依赖 sqlite3 钩子的内部布局，所以只是尽力而为：
+包里找不到哈希、或下载失败时只告警，交给钩子照常下载；布局变了时预取的文件
+不会被用上，构建结果不受影响。2026-11-08 在本地删掉缓存、断网（代理指向无效
+地址）并清掉钩子的输出记录，钩子重新运行后直接用了预取的文件，测试通过。
+
+**其余下载有重试。** pub get 最多 3 次，actionlint 与 sqlite3 预取的 curl 最多
+重试 8 次，apt 最多重试 3 次。2026-11-08 本地复现时，actionlint 的下载连续
+5 次 504 后第 6 次成功。
 
 **没有缓存的部分：**
 
@@ -85,9 +98,9 @@ apt 最多重试 3 次。2026-11-08 本地复现时，actionlint 的下载连续
 - `.dart_tool`、`build/` 与 Gradle 构建缓存：都是与源码相关的产物，体积大，
   失效条件复杂。
 
-**仍有的风险：** 钩子下载缓存未命中时（sqlite3 升级后的第一次运行，或缓存
-7 天未用被淘汰）仍直接从 GitHub 下载，钩子自己不重试；遇到下载服务故障时
-重跑失败的 job。
+**仍有的风险：** 缓存未命中又遇上 GitHub 下载服务长时间故障时，预取重试完仍会
+失败；Gradle 升级版本后的第一次运行会下载新发行版，这一步不重试。遇到时等服务
+恢复后重跑失败的 job。
 
 ## 测试分片
 

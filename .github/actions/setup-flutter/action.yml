@@ -129,6 +129,62 @@ runs:
           hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-${{ github.job }}-
           hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-
 
+    # 缓存未命中时（sqlite3 升级后、缓存被淘汰后）钩子自己下载，失败不重试，
+    # 失败的 job 又不写缓存，下载服务故障期间每次运行都从头失败（2026-11-08 的
+    # PR #197 即此）。这里先用 curl 带重试下载到钩子会找的位置：文件名、release
+    # tag 与 SHA-256 取自锁定版本的 sqlite3 包（asset_hashes.dart），目录名
+    # download-<哈希前 8 位> 与文件名同钩子（hook/build.dart）。只是尽力而为：
+    # 找不到包、格式变了或下载失败都只告警，交给钩子照常下载。
+    - name: Prefetch sqlite3 libraries
+      shell: bash
+      env:
+        RUNNER_OS_NAME: ${{ runner.os }}
+        ANDROID_BUILD: ${{ inputs.java }}
+      run: |
+        if [[ "$ANDROID_BUILD" == 'true' ]]; then
+          assets=(libsqlite3.arm.android.so libsqlite3.arm64.android.so libsqlite3.x64.android.so)
+        elif [[ "$RUNNER_OS_NAME" == 'Windows' ]]; then
+          assets=(sqlite3.x64.windows.dll)
+        else
+          assets=(libsqlite3.x64.linux.so)
+        fi
+        # Windows 检出时换行是 CRLF，先去掉 \r 再按行匹配。
+        version="$(tr -d '\r' < pubspec.lock |
+          awk '/^  sqlite3:$/ { found = 1 } found && /^    version:/ { gsub(/"/, "", $2); print $2; exit }')"
+        pub_cache="$(cygpath -u "$PUB_CACHE" 2>/dev/null || printf '%s' "$PUB_CACHE")"
+        hashes="$pub_cache/hosted/pub.dev/sqlite3-$version/lib/src/hook/asset_hashes.dart"
+        if [[ -z "$version" || ! -f "$hashes" ]]; then
+          echo "::notice::sqlite3 asset hashes not found ($hashes); leaving downloads to the build hook"
+          exit 0
+        fi
+        tag="$(sed -n "s/^const String? releaseTag = '\([^']*\)';$/\1/p" "$hashes")"
+        for asset in "${assets[@]}"; do
+          hash="$(sed -n "s/^  '${asset//./\\.}': '\([0-9a-f]\{64\}\)',$/\1/p" "$hashes")"
+          if [[ -z "$tag" || -z "$hash" ]]; then
+            echo "::notice::No release tag or hash for $asset in $hashes; leaving it to the build hook"
+            continue
+          fi
+          case "$asset" in
+            *.dll) name=sqlite3.dll ;;
+            *) name=libsqlite3.so ;;
+          esac
+          dir=".dart_tool/hooks_runner/shared/sqlite3/build/download-${hash:0:8}"
+          if [[ -f "$dir/$name" && "$(sha256sum "$dir/$name" | cut -d' ' -f1)" == "$hash" ]]; then
+            echo "$asset: cached"
+            continue
+          fi
+          mkdir -p "$dir"
+          if curl -sSfL --retry 8 --retry-all-errors --retry-delay 10 -o "$dir/$name.part" \
+              "https://github.com/simolus3/sqlite3.dart/releases/download/$tag/$asset" &&
+            [[ "$(sha256sum "$dir/$name.part" | cut -d' ' -f1)" == "$hash" ]]; then
+            mv "$dir/$name.part" "$dir/$name"
+            echo "$asset: downloaded"
+          else
+            rm -f "$dir/$name.part"
+            echo "::warning::Could not prefetch $asset; the build hook will try again"
+          fi
+        done
+
     - name: Set up Java
       if: inputs.java == 'true'
       uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
@@ -136,9 +192,19 @@ runs:
         distribution: temurin
         java-version: '17'
 
-    # 只缓存下载来的东西：依赖 jar（modules-2）与 Gradle 发行版（wrapper/dists）。
+    # Gradle 只缓存下载来的东西：发行版（wrapper/dists）与依赖 jar（modules-2）。
     # transforms、build-cache 等是本机产物，体积是依赖的数倍（setup-java 整份缓存
     # ~/.gradle/caches 时达 3.6 GB，恢复就要一分多钟），重新生成比恢复还快。
+    # 发行版单独一份，只随 Gradle 版本变：services.gradle.org 会跳转到 GitHub
+    # Releases 下载，与 sqlite3 同样会遇到 504（2026-11-08 PR #197），升级 Flutter
+    # 时依赖缓存要重建，发行版不必跟着重新下载。
+    - name: Cache Gradle distribution
+      if: inputs.java == 'true'
+      uses: ./.github/actions/main-cache
+      with:
+        path: ~/.gradle/wrapper/dists
+        key: gradle-wrapper-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
+
     # 依赖由 Gradle 脚本、插件版本（pubspec.lock）与 Flutter 版本（引擎 maven 包）
     # 决定；只在同一 Flutter 版本内退回旧缓存，避免旧依赖一代代累积。
     - name: Cache Gradle dependencies
@@ -147,7 +213,6 @@ runs:
       with:
         path: |
           ~/.gradle/caches/modules-2
-          ~/.gradle/wrapper/dists
           !~/.gradle/caches/modules-2/*.lock
           !~/.gradle/caches/modules-2/gc.properties
         key: >-

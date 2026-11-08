@@ -5,11 +5,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 
-/// 列表卡片左滑时露在卡片下面的动作背景（`DiarySwipeActionItem` 内部使用）。
+/// 列表卡片滑开时露在卡片下面的一侧动作背景（`DiarySwipeActionItem` 内部
+/// 使用，行尾动作与可选的行首动作各一份）。
 ///
-/// 输入：卡片滑开比例 [slide]（0~1，占条目宽度）、滑出后的收起进度
-/// [collapse]、武装态过渡 [armColor] / [armPop]，以及动作方向 [actionSign]
-/// （-1 向左、1 向右，与卡片平移方向一致）。无副作用，只随动画重绘。
+/// 输入：这一侧的卡片滑开比例 [slide]（0~1，占条目宽度；卡片在另一侧时为
+/// 0，不画）、滑出后的收起进度 [collapse]、武装态过渡 [armColor] /
+/// [armPop]，以及动作方向 [actionSign]（-1 向左、1 向右，与卡片平移方向
+/// 一致；图标放在相反的、露出的那一侧）。无副作用，只随动画重绘。
 ///
 /// 形状：与卡片同圆角的整条底板，但只画在卡片没有盖住的地方——裁切区为
 /// “整条矩形减去当前位置的卡片圆角矩形”。`Dismissible` 的背景按卡片的外接
@@ -96,9 +98,16 @@ class DiarySwipeActionBackground extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
             ),
             child: Align(
-              alignment: AlignmentDirectional.centerEnd,
+              // 图标贴着露出的那一侧：卡片朝 actionSign 平移，露出的是相反
+              // 一侧（行尾动作在行尾、行首动作在行首；RTL 的镜像已含在
+              // actionSign 里）。行尾动作在 LTR / RTL 下分别等于原来的
+              // centerEnd + end 内边距，像素不变。
+              alignment: Alignment(-actionSign, 0),
               child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: AppSpacing.xl),
+                padding: EdgeInsets.only(
+                  left: actionSign > 0 ? AppSpacing.xl : 0,
+                  right: actionSign < 0 ? AppSpacing.xl : 0,
+                ),
                 child: Transform.scale(
                   scale: scale,
                   child: FaIcon(

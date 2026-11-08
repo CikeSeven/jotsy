@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:path/path.dart' as p;
 
 import 'app_platform.dart';
+import 'managed_file_paths.dart';
 
 /// 把源文件转成 JPEG 写到目标路径；成功返回 true。测试经
 /// [HeifImageConverter.debugTranscoder] 替换。
@@ -139,17 +139,9 @@ abstract final class HeifImageConverter {
     }
   }
 
-  /// 与 [source] 同目录、主名相同的 `.jpg` 路径；已被占用时依次加 `_1`、`_2`…
-  /// 不覆盖已有文件：那可能是别处引用着的另一张图。
-  static String jpegSiblingPath(String source) {
-    final directory = p.dirname(source);
-    final stem = p.basenameWithoutExtension(source);
-    var candidate = p.join(directory, '$stem.jpg');
-    for (var index = 1; File(candidate).existsSync(); index++) {
-      candidate = p.join(directory, '${stem}_$index.jpg');
-    }
-    return candidate;
-  }
+  /// 与 [source] 同目录、主名相同的 `.jpg` 路径（[freshSiblingPath]）。
+  static String jpegSiblingPath(String source) =>
+      freshSiblingPath(source, 'jpg');
 
   /// 刚复制进托管目录、还没有任何地方引用的 [path]：是 HEIF 且转码成功时
   /// 在同目录写出 JPEG、删掉这份副本并返回 JPEG 路径；否则原样返回 [path]。

@@ -2,23 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_fonts.dart';
-import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../../../app/theme/expressive_surfaces.dart';
-import '../../app_surface/widgets/app_glass_scope.dart';
-import '../../app_surface/widgets/app_glass_surface.dart';
-import '../../widgets/expressive_state_blend.dart';
 import '../../widgets/long_image/long_image_cover_alignment.dart';
+import '../../widgets/selectable_row_surface.dart';
 import '../../widgets/long_image/long_image_policy.dart';
 import 'diary_card/diary_card_cover.dart';
 import 'diary_image_source.dart';
 
 /// 草稿箱与回收站共用的可多选列表行：标题、摘要、底行小字，右侧可选缩略图。
 ///
-/// 卡片表面 + 0.8dp 微边框、16dp 圆角；[selectionMode] 时左侧勾选框横向展开
-/// 出现（`fast`，退出时收回），选中态的底色与描边经 [ExpressiveStateBlend]
-/// 补间到 `secondaryContainer` / `secondary`。[compact] 用于面板：摘要只留
+/// 卡片表面与选中态经 [SelectableRowSurface]；[selectionMode] 时左侧勾选框
+/// 横向展开出现（`fast`，退出时收回）。[compact] 用于面板：摘要只留
 /// 一行、行距更紧。只负责展示与点按回调，展示什么（含私密、未解封胶囊时
 /// 隐去摘要与缩略图）由调用方决定。标题与摘要是日记自己的文字，与日记
 /// 卡片一样跟随正文字体（[AppFonts.diary]）。
@@ -157,73 +152,12 @@ class DiaryListRowCard extends StatelessWidget {
       ),
     );
 
-    final radius = BorderRadius.circular(AppRadii.input);
-    final glass = AppGlass.of(context).isGlass(AppGlassComponent.cards);
-    return ExpressiveStateBlend(
-      active: selected,
-      builder: (BuildContext context, double t, Widget? child) {
-        if (glass) {
-          return _buildGlass(radius, t, child!, colorScheme);
-        }
-        return Material(
-          color: Color.lerp(
-            ExpressiveSurfaces.cardColor(colorScheme),
-            colorScheme.secondaryContainer,
-            t,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: radius,
-            side: BorderSide(
-              color: Color.lerp(
-                ExpressiveSurfaces.cardBorderColor(colorScheme),
-                colorScheme.secondary,
-                t,
-              )!,
-              width: 0.8,
-            ),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: child,
-        );
-      },
-      child: Semantics(
-        selected: selectionMode ? selected : null,
-        child: InkWell(onTap: onTap, onLongPress: onLongPress, child: content),
-      ),
-    );
-  }
-
-  /// 玻璃材质的行：内容玻璃（共用页面背景读取、无背景图不模糊），选中态
-  /// 叠在玻璃之上——底色按 [t] 补间到 secondaryContainer、描边到 secondary，
-  /// 与经典分支同一组目标色。节点结构不随 [t] 变化，补间中不重建内容。
-  ///
-  /// 水波纹画在最上面那层透明 Material 上：玻璃表面自带的 Material 在选中
-  /// 底色之下，选中后水波纹会被底色盖住。
-  Widget _buildGlass(
-    BorderRadius radius,
-    double t,
-    Widget child,
-    ColorScheme colorScheme,
-  ) {
-    return AppGlassSurface(
-      component: AppGlassComponent.cards,
-      borderRadius: radius,
-      child: DecoratedBox(
-        position: DecorationPosition.foreground,
-        decoration: ShapeDecoration(
-          shape: RoundedRectangleBorder(
-            borderRadius: radius,
-            side: BorderSide(
-              color: colorScheme.secondary.withValues(alpha: t),
-              width: 0.8,
-            ),
-          ),
-        ),
-        child: ColoredBox(
-          color: colorScheme.secondaryContainer.withValues(alpha: t),
-          child: Material(type: MaterialType.transparency, child: child),
-        ),
-      ),
+    return SelectableRowSurface(
+      selected: selected,
+      selectionMode: selectionMode,
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: content,
     );
   }
 }

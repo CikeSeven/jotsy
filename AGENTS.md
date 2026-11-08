@@ -18,7 +18,8 @@
 │  │  └─ services/  # 跨模块服务（平台能力 AppPlatform、数据根目录、设置、备份与网盘、导入、媒体、更新等）
 │  │     ├─ ai/  # AI 助手引擎（纯 Dart，docs/ai_assistant.md）
 │  │     ├─ app_passcode/  # 应用密码（数字 / 图案）的本机存储、摘要与限流
-│  │     └─ lan_sync/  # 局域网同步引擎（docs/lan_sync.md）；sync/：同步数据层与纯函数规划器
+│  │     ├─ lan_sync/  # 局域网同步引擎（docs/lan_sync.md）；sync/：同步数据层与纯函数规划器
+│  │     └─ storage/  # 存储管理：占用扫描、媒体删除与压缩
 │  ├─ ui/
 │  │  ├─ diaries/  # 日记主业务模块：pages / controllers / providers / models|viewmodels / export / sections|widgets（widgets/diary_editor/ 为共用编辑器）
 │  │  ├─ app_surface/  # 背景与材质（玻璃）
@@ -28,6 +29,7 @@
 │  │  ├─ ai/  # AI 助手界面
 │  │  ├─ app_lock/  # 应用锁、应用密码（数字键盘 / 图案）与统一验证入口 IdentityVerifier
 │  │  ├─ lan_sync/  # 局域网同步界面
+│  │  ├─ storage/  # 存储管理界面
 │  │  ├─ home|calendar|explore|settings/  # 首页与各 Tab、设置页
 │  │  └─ widgets/  # 跨 feature 公共 UI（app_modal/、expressive_menu/、glass/、text_selection_menu/、fast_scroller/ 等）
 │  ├─ l10n/  # 国际化封装
@@ -55,7 +57,7 @@
 - 必须：业务流程（异步链路、批量操作、撤销、防抖、发布流程）放 `controllers/`。
 - 必须：数据映射、草稿模型、metadata 组装放 `models/` 或 `viewmodels/`。
 - 必须：可复用 UI 放 `sections/` 或 `widgets/`，避免页面文件膨胀。
-- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / day mood ops / draft ops / template ops / notebook ops / explore ops / place history ops（用过的地点）/ comment ops / diary link ops / diary batch writes（多选的批量状态写入）/ sync ops（同步读行）/ sync writes（同步按原值写入）/ sync order（同步顺序列表重排）/ ai ops（AI 对话、消息与结果）/ ai context ops（发给 AI 的日记）/ media repair ops（托管图片格式修复）/ scope SQL）。
+- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / day mood ops / draft ops / template ops / notebook ops / explore ops / place history ops（用过的地点）/ comment ops / diary link ops / diary batch writes（多选的批量状态写入）/ sync ops（同步读行）/ sync writes（同步按原值写入）/ sync order（同步顺序列表重排）/ ai ops（AI 对话、消息与结果）/ ai context ops（发给 AI 的日记）/ media repair ops（托管图片格式修复）/ storage ops（存储管理）/ scope SQL）。
 - 禁止：单文件混杂“页面布局 + 业务编排 + 数据转换”。
 - 例外：极简静态页面可不强制拆 controller。
 - 必须：库里从不开启外键：彻底删除日记、删除日记本、合并日记本与覆盖恢复等每条删除路径都必须在同一事务里手动清理关联行（标签、日记本成员、留言、AI 回应等）。
@@ -112,6 +114,7 @@
 | 局域网同步，以及会被同步的数据 | `lan_sync.md` |
 | 导入 / 恢复、其他应用与云端笔记导入、网盘备份 | `backup_import.md` |
 | 分享与导出 | `export_share.md` |
+| 存储管理：占用、清理、删除与压缩媒体 | `storage.md` |
 | 功能管理开关 | `app_features.md` |
 | 应用锁、应用密码（数字 / 图案）、验证身份（系统验证 / 应用密码） | `app_lock.md` |
 | 应用内更新、更新日志、官网、打赏、发布与下载统计 | `release_website.md` |

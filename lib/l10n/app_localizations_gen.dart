@@ -23898,6 +23898,706 @@ abstract class AppLocalizations {
   /// **'Shows entries that have all selected tags'**
   String get diarySearchTagSheetHint;
 
+  /// Settings home: subtitle of the Storage row; size is the space the app uses.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} used'**
+  String settingsStorageSubtitle(String size);
+
+  /// Title of the storage management page and its settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get storageMgmtTitle;
+
+  /// Storage overview card: label above the total size.
+  ///
+  /// In en, this message translates to:
+  /// **'Total used'**
+  String get storageMgmtTotalLabel;
+
+  /// Button that clears cache, unused files and database free pages; size is what it frees.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean up · free {size}'**
+  String storageMgmtCleanUpAll(String size);
+
+  /// Tooltip of the storage page action that measures storage again.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescan'**
+  String get storageMgmtRescan;
+
+  /// Shown when measuring storage failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t measure storage. Try again later.'**
+  String get storageMgmtScanFailed;
+
+  /// Storage category: images in entries and comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get storageMgmtCategoryImages;
+
+  /// Storage category: videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get storageMgmtCategoryVideos;
+
+  /// Storage category: voice recordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Recordings'**
+  String get storageMgmtCategoryAudio;
+
+  /// Storage category: file attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get storageMgmtCategoryAttachments;
+
+  /// Storage category: entry and notebook covers.
+  ///
+  /// In en, this message translates to:
+  /// **'Covers'**
+  String get storageMgmtCategoryCovers;
+
+  /// Storage category: app background images.
+  ///
+  /// In en, this message translates to:
+  /// **'Backgrounds'**
+  String get storageMgmtCategoryBackgrounds;
+
+  /// Storage category: imported fonts.
+  ///
+  /// In en, this message translates to:
+  /// **'Fonts'**
+  String get storageMgmtCategoryFonts;
+
+  /// Storage category: the database with all text and settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary data'**
+  String get storageMgmtCategoryDatabase;
+
+  /// Storage category: temporary files.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache'**
+  String get storageMgmtCategoryCache;
+
+  /// Storage category: media files no entry refers to.
+  ///
+  /// In en, this message translates to:
+  /// **'Unused files'**
+  String get storageMgmtCategoryUnused;
+
+  /// Storage category: sync and backup state and other app data.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get storageMgmtCategoryOther;
+
+  /// Storage page: title of the group of suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Free up space'**
+  String get storageMgmtSuggestionsTitle;
+
+  /// Suggestion row: clear the cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache'**
+  String get storageMgmtSuggestCache;
+
+  /// Subtitle of the cache suggestion; size is what can be cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} can be cleared. Cache used in the last hour is kept.'**
+  String storageMgmtSuggestCacheSubtitle(String size);
+
+  /// Suggestion row: delete media files no entry uses.
+  ///
+  /// In en, this message translates to:
+  /// **'Unused files'**
+  String get storageMgmtSuggestUnused;
+
+  /// Subtitle of the unused files suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file no entry uses, {size}} other{{count} files no entry uses, {size}}}'**
+  String storageMgmtSuggestUnusedSubtitle(int count, String size);
+
+  /// Suggestion row that opens the trash.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries in the trash'**
+  String get storageMgmtSuggestTrash;
+
+  /// Subtitle of the trash suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file is used only by entries in the trash, {size}} other{{count} files are used only by entries in the trash, {size}}}'**
+  String storageMgmtSuggestTrashSubtitle(int count, String size);
+
+  /// Suggestion row that lists compressible media.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos & videos to compress'**
+  String get storageMgmtSuggestCompress;
+
+  /// Subtitle of the compress suggestion; size is the estimated saving.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item, saves about {size}} other{{count} items, saves about {size}}}'**
+  String storageMgmtSuggestCompressSubtitle(int count, String size);
+
+  /// Suggestion row that compacts the database.
+  ///
+  /// In en, this message translates to:
+  /// **'Tidy up diary data'**
+  String get storageMgmtSuggestDatabase;
+
+  /// Subtitle of the database suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Frees {size} left behind by deleted content'**
+  String storageMgmtSuggestDatabaseSubtitle(String size);
+
+  /// Button on a suggestion row that clears it.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get storageMgmtClear;
+
+  /// Button on the database suggestion row.
+  ///
+  /// In en, this message translates to:
+  /// **'Tidy up'**
+  String get storageMgmtCompact;
+
+  /// Shown when there is nothing to clear.
+  ///
+  /// In en, this message translates to:
+  /// **'All tidy'**
+  String get storageMgmtAllClean;
+
+  /// Subtitle of the all tidy row.
+  ///
+  /// In en, this message translates to:
+  /// **'No cache or unused files to clear right now'**
+  String get storageMgmtAllCleanSubtitle;
+
+  /// Storage page: title of the media group.
+  ///
+  /// In en, this message translates to:
+  /// **'Media'**
+  String get storageMgmtMediaTitle;
+
+  /// Row and page title for all media.
+  ///
+  /// In en, this message translates to:
+  /// **'All media'**
+  String get storageMgmtAllMedia;
+
+  /// Number of files in a category.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file} other{{count} files}}'**
+  String storageMgmtFileCount(int count);
+
+  /// Row for files of 10 MB or more.
+  ///
+  /// In en, this message translates to:
+  /// **'Large files'**
+  String get storageMgmtLargeFiles;
+
+  /// Storage page: title of the other data group.
+  ///
+  /// In en, this message translates to:
+  /// **'Other data'**
+  String get storageMgmtOtherTitle;
+
+  /// Footnote at the end of the storage page.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting and compressing reach your other devices with the next LAN sync. Older cloud backups keep the original files until they are pruned.'**
+  String get storageMgmtFooter;
+
+  /// Busy overlay while cleaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning up…'**
+  String get storageMgmtCleaning;
+
+  /// Busy overlay while deleting media.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting…'**
+  String get storageMgmtDeleting;
+
+  /// Shown after cleaning up.
+  ///
+  /// In en, this message translates to:
+  /// **'Freed {size}'**
+  String storageMgmtFreed(String size);
+
+  /// Shown when cleaning freed nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to clear right now'**
+  String get storageMgmtNothingFreed;
+
+  /// Shown when deleting or compressing is refused because an editor is open.
+  ///
+  /// In en, this message translates to:
+  /// **'An entry is open for editing. Close it and try again.'**
+  String get storageMgmtBusyEditing;
+
+  /// Shown when an undo prompt is still open.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for the undo prompt to disappear, then try again.'**
+  String get storageMgmtBusyUndo;
+
+  /// Shown for files the storage page cannot remove references to.
+  ///
+  /// In en, this message translates to:
+  /// **'Other data refers to this file, so it can\'t be deleted here.'**
+  String get storageMgmtCannotDelete;
+
+  /// Title of the delete confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 file?} other{Delete {count} files?}}'**
+  String storageMgmtDeleteTitle(int count);
+
+  /// Delete confirmation: first line, followed by the places.
+  ///
+  /// In en, this message translates to:
+  /// **'Frees {size}. They will be removed from:'**
+  String storageMgmtDeleteBody(String size);
+
+  /// Delete confirmation: entries affected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String storageMgmtDeleteFromDiaries(int count);
+
+  /// Delete confirmation: notebook covers affected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 notebook cover} other{{count} notebook covers}}'**
+  String storageMgmtDeleteFromNotebooks(int count);
+
+  /// Delete confirmation: comments affected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 comment} other{{count} comments}}'**
+  String storageMgmtDeleteFromComments(int count);
+
+  /// Delete confirmation: drafts affected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 draft} other{{count} drafts}}'**
+  String storageMgmtDeleteFromDrafts(int count);
+
+  /// Delete confirmation: note about comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments left with no text or images are deleted too.'**
+  String get storageMgmtDeleteCommentNote;
+
+  /// Delete confirmation: note about sealed capsules.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes content from sealed time capsules.'**
+  String get storageMgmtDeleteCapsuleNote;
+
+  /// Delete confirmation: last note.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t be undone.'**
+  String get storageMgmtDeleteIrreversible;
+
+  /// Shown after deleting media.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Deleted 1 file, freed {size}} other{Deleted {count} files, freed {size}}}'**
+  String storageMgmtDeleted(int count, String size);
+
+  /// Appended when some rows changed during the operation and were skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 place changed in the meantime and was left as it is.} other{{count} places changed in the meantime and were left as they are.}}'**
+  String storageMgmtSkippedRows(int count);
+
+  /// Selection bar button that compresses the selected media.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get storageMgmtCompress;
+
+  /// Title of the compress sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Compress 1 file} other{Compress {count} files}}'**
+  String storageMgmtCompressTitle(int count);
+
+  /// Compress sheet: photo presets heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get storageMgmtCompressImages;
+
+  /// Compress sheet: video presets heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get storageMgmtCompressVideos;
+
+  /// Photo preset: largest and sharpest.
+  ///
+  /// In en, this message translates to:
+  /// **'High quality'**
+  String get storageMgmtPresetHigh;
+
+  /// Photo preset: balanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get storageMgmtPresetBalanced;
+
+  /// Photo preset: smallest files.
+  ///
+  /// In en, this message translates to:
+  /// **'Save space'**
+  String get storageMgmtPresetCompact;
+
+  /// Description of a photo preset; estimate is the size line.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest side {maxSide} px · quality {quality} · {estimate}'**
+  String storageMgmtImagePresetDetail(
+    int maxSide,
+    int quality,
+    String estimate,
+  );
+
+  /// Size before and estimated size after compressing.
+  ///
+  /// In en, this message translates to:
+  /// **'{before} → about {after}'**
+  String storageMgmtPresetEstimate(String before, String after);
+
+  /// Preset description when nothing would get smaller.
+  ///
+  /// In en, this message translates to:
+  /// **'Already small enough'**
+  String get storageMgmtPresetNoGain;
+
+  /// Compress sheet summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{before} → about {after}, saves about {saved}'**
+  String storageMgmtCompressSummary(String before, String after, String saved);
+
+  /// Shown when no selected file can be compressed.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these files need compressing'**
+  String get storageMgmtCompressNothing;
+
+  /// Compress sheet: files that will be skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file is already small or in a format that can\'t be compressed and will be skipped.} other{{count} files are already small or in a format that can\'t be compressed and will be skipped.}}'**
+  String storageMgmtCompressSkipped(int count);
+
+  /// Compress sheet: warning that originals are replaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Compressed files replace the originals and can\'t be restored. Photos keep their capture time and location.'**
+  String get storageMgmtCompressNote;
+
+  /// Compress sheet confirm button.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get storageMgmtCompressStart;
+
+  /// Title of the compress progress sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Compressing'**
+  String get storageMgmtCompressing;
+
+  /// Progress sheet before the first file starts.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting ready…'**
+  String get storageMgmtCompressPreparing;
+
+  /// Progress sheet: current file.
+  ///
+  /// In en, this message translates to:
+  /// **'{index} of {total} · {name}'**
+  String storageMgmtCompressStep(int index, int total, String name);
+
+  /// Cancel button after it was pressed.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping…'**
+  String get storageMgmtCancelling;
+
+  /// Result title.
+  ///
+  /// In en, this message translates to:
+  /// **'Compression finished'**
+  String get storageMgmtCompressFinished;
+
+  /// Result title after cancelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Compression stopped'**
+  String get storageMgmtCompressCancelled;
+
+  /// Result line: files compressed and space saved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Compressed 1 file, saved {size}} other{Compressed {count} files, saved {size}}}'**
+  String storageMgmtCompressDone(int count, String size);
+
+  /// Result line: files kept because the output was not smaller.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file didn\'t get smaller; the original was kept.} other{{count} files didn\'t get smaller; the originals were kept.}}'**
+  String storageMgmtCompressUnchanged(int count);
+
+  /// Result line: failures.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file couldn\'t be compressed.} other{{count} files couldn\'t be compressed.}}'**
+  String storageMgmtCompressFailed(int count);
+
+  /// Result line when nothing happened.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was compressed.'**
+  String get storageMgmtCompressNoneDone;
+
+  /// Button that closes the result.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get storageMgmtDone;
+
+  /// Detail sheet compress button with the estimated saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress · saves {size}'**
+  String storageMgmtCompressSaving(String size);
+
+  /// Media page title while selecting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 selected} other{{count} selected}}'**
+  String storageMgmtSelectedCount(int count);
+
+  /// Selection bar summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 selected · {size}} other{{count} selected · {size}}}'**
+  String storageMgmtSelectionSummary(int count, String size);
+
+  /// Media page: count and size of the list.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item · {size}} other{{count} items · {size}}}'**
+  String storageMgmtListSummary(int count, String size);
+
+  /// Media filter chip: all categories.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get storageMgmtFilterAll;
+
+  /// Media filter chip: 10 MB or more.
+  ///
+  /// In en, this message translates to:
+  /// **'Large files'**
+  String get storageMgmtFilterLarge;
+
+  /// Media filter chip: compressible.
+  ///
+  /// In en, this message translates to:
+  /// **'Compressible'**
+  String get storageMgmtFilterCompressible;
+
+  /// Media filter chip: used only by entries in the trash.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash only'**
+  String get storageMgmtFilterTrash;
+
+  /// Tooltip of the sort menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get storageMgmtSort;
+
+  /// Sort option.
+  ///
+  /// In en, this message translates to:
+  /// **'Largest first'**
+  String get storageMgmtSortLargest;
+
+  /// Sort option.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get storageMgmtSortNewest;
+
+  /// Sort option.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get storageMgmtSortOldest;
+
+  /// Tooltip: switch to grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as grid'**
+  String get storageMgmtViewGrid;
+
+  /// Tooltip: switch to list.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as list'**
+  String get storageMgmtViewList;
+
+  /// Empty media list.
+  ///
+  /// In en, this message translates to:
+  /// **'No files here'**
+  String get storageMgmtEmpty;
+
+  /// Media page: private items are masked.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item from private entries is hidden} other{{count} items from private entries are hidden}}'**
+  String storageMgmtPrivateHidden(int count);
+
+  /// Button that reveals private media.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get storageMgmtReveal;
+
+  /// Reason shown on the verification prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify to show media from private entries'**
+  String get storageMgmtRevealReason;
+
+  /// Shown when identity cannot be verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t verify on this device. Set an app passcode first.'**
+  String get storageMgmtRevealUnavailable;
+
+  /// Badge: used only by entries in the trash.
+  ///
+  /// In en, this message translates to:
+  /// **'In trash'**
+  String get storageMgmtBadgeTrash;
+
+  /// Badge: estimated saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Can save {size}'**
+  String storageMgmtBadgeCompressible(String size);
+
+  /// Grid badge: compressible.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get storageMgmtBadgeCompressShort;
+
+  /// Badge: number of places using the file.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Used once} other{Used in {count} places}}'**
+  String storageMgmtBadgeUsedIn(int count);
+
+  /// Badge: references cannot be removed here.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t delete'**
+  String get storageMgmtBadgeLocked;
+
+  /// Title of an entry without one.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled entry'**
+  String get storageMgmtUntitledDiary;
+
+  /// Title of a draft without one.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled draft'**
+  String get storageMgmtUntitledDraft;
+
+  /// Used by a comment on the entry titled title.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment · {title}'**
+  String storageMgmtRefComment(String title);
+
+  /// Used as the cover of the entry titled title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover · {title}'**
+  String storageMgmtRefDiaryCover(String title);
+
+  /// Used as a notebook cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook cover · {name}'**
+  String storageMgmtRefNotebookCover(String name);
+
+  /// Used by a draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft · {title}'**
+  String storageMgmtRefDraft(String title);
+
+  /// Referenced in a way the storage page cannot edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Referenced by other data'**
+  String get storageMgmtRefOther;
+
+  /// Placeholder title for masked private media.
+  ///
+  /// In en, this message translates to:
+  /// **'Content from a private entry'**
+  String get storageMgmtMaskedPrivate;
+
+  /// Placeholder title for media in sealed capsules.
+  ///
+  /// In en, this message translates to:
+  /// **'Content from a sealed time capsule'**
+  String get storageMgmtMaskedCapsule;
+
+  /// Detail sheet heading over the list of places.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Used in 1 place} other{Used in {count} places}}'**
+  String storageMgmtUsedIn(int count);
+
   /// Screen reader long-press hint on a home tag filter chip: long-pressing adds or removes the tag while keeping the others selected.
   ///
   /// In en, this message translates to:
@@ -23933,6 +24633,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t publish the diary. It\'s kept in Drafts.'**
   String get publishOnLeaveFailedKeptDraft;
+
+  /// Storage page: heading of the card that breaks down what the app uses.
+  ///
+  /// In en, this message translates to:
+  /// **'Used by Jotsy'**
+  String get storageMgmtAppTitle;
+
+  /// Storage category: the installed app itself (APK and compiled code).
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get storageMgmtCategoryApp;
+
+  /// Heading of the device storage card.
+  ///
+  /// In en, this message translates to:
+  /// **'Device storage'**
+  String get storageMgmtDeviceTitle;
+
+  /// Device storage card: total capacity.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} total'**
+  String storageMgmtDeviceTotal(String size);
+
+  /// Device storage card: follows the used percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'used'**
+  String get storageMgmtDeviceUsedLabel;
+
+  /// Device storage legend: this app.
+  ///
+  /// In en, this message translates to:
+  /// **'Jotsy'**
+  String get storageMgmtDeviceApp;
+
+  /// Device storage legend: everything else that is used.
+  ///
+  /// In en, this message translates to:
+  /// **'Other apps & system'**
+  String get storageMgmtDeviceOther;
+
+  /// Device storage legend: free space.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get storageMgmtDeviceFree;
+
+  /// Device storage legend: the app's share of the device.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent} of the device'**
+  String storageMgmtShareOfDevice(String percent);
+
+  /// App card: label over the share of the device storage.
+  ///
+  /// In en, this message translates to:
+  /// **'Share of device'**
+  String get storageMgmtDeviceShareLabel;
+
+  /// App card: label over the space the one-tap cleanup frees.
+  ///
+  /// In en, this message translates to:
+  /// **'Can be freed'**
+  String get storageMgmtReclaimable;
+
+  /// Storage page: heading of the largest files list.
+  ///
+  /// In en, this message translates to:
+  /// **'Largest files'**
+  String get storageMgmtTopTitle;
+
+  /// Opens the media page.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get storageMgmtSeeAll;
+
+  /// Storage page: heading of the growth chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Media over time'**
+  String get storageMgmtGrowthTitle;
+
+  /// Growth chart caption when grouped by year.
+  ///
+  /// In en, this message translates to:
+  /// **'Added each year, by entry date'**
+  String get storageMgmtGrowthByYear;
+
+  /// Growth chart caption when grouped by month.
+  ///
+  /// In en, this message translates to:
+  /// **'Added each month over the last 12 months, by entry date'**
+  String get storageMgmtGrowthByMonth;
+
+  /// Growth chart: the period with the most media.
+  ///
+  /// In en, this message translates to:
+  /// **'Most added in {period}: {size}'**
+  String storageMgmtGrowthPeak(String period, String size);
+
+  /// Video preview page: tooltip of the action that hands the video to another app.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in another app'**
+  String get storageMgmtOpenExternally;
 }
 
 class _AppLocalizationsDelegate

@@ -60,6 +60,13 @@ void main() {
     'Icon(Icons.',
   ]);
   guard(filesUnder('lib/ui/calendar'), ['.showSnackBar(']);
+  // 存储管理：公共组件、主题色与动效 token 同其他新模块。
+  guard(filesUnder('lib/ui/storage'), [
+    ...common,
+    ...fixedColors,
+    animation,
+    'Icon(Icons.',
+  ]);
   final appLock = filesUnder('lib/ui/app_lock');
   guard(appLock, [...common, ...fixedColors, 'Icon(Icons.']);
   // 控制器里的被拒保留时长是显示计时，不是动画时长。

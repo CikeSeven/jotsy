@@ -82,6 +82,13 @@ abstract final class AppPlatform {
   /// 所以由手机在图片进库时转码、并修复已存的旧图（`heif_image_converter.dart`）。
   static bool get supportsHeifToJpeg => isAndroid;
 
+  /// 存储管理里的压缩（图片重编码、视频转码）、视频元数据与缩略图、设备
+  /// 剩余空间：只有 Android 原生通道（系统 ImageDecoder、Media3 Transformer、
+  /// MediaMetadataRetriever、StatFs，见 `storage/media_compressor.dart`）。
+  /// 桌面替代：存储管理照常查看占用、删除与清理，不出现压缩入口，视频显示
+  /// 图标占位，不显示设备空间。
+  static bool get supportsMediaCompression => isAndroid;
+
   /// 正文里直接拍照 / 录像：只有 Android 原生通道（交给系统相机应用，
   /// `diary_camera_capture_service.dart`）。桌面没有可调用的相机应用，iOS
   /// 没有接这条通道，那里的图片 / 视频按钮仍直接打开选择器。

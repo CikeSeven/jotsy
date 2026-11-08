@@ -8,6 +8,7 @@ import '../ui/diaries/providers/diary_detail_provider.dart';
 import '../ui/diaries/providers/diary_link_providers.dart';
 import '../ui/diary_templates/providers/diary_template_providers.dart';
 import '../ui/notebooks/providers/notebook_providers.dart';
+import '../ui/storage/providers/storage_providers.dart';
 
 /// 局域网同步写库之后，失效界面里一次性读取的 provider。
 ///
@@ -27,7 +28,9 @@ import '../ui/notebooks/providers/notebook_providers.dart';
 /// - [userDiaryTemplatesSnapshotProvider]：新建编辑页的模板建议条与面板；
 /// - [tagListProvider]：虽然订阅标签表，但自定义顺序取自设置、只在标签表
 ///   推送时套用；同步改写标签顺序（设置分面 `tagOrderNames`）而标签行未变时
-///   不会重排，故一并失效。
+///   不会重排，故一并失效；
+/// - [storageReportProvider] / [storageQuickTotalProvider]：存储管理的占用
+///   扫描（同步会带来新文件、改掉或删掉引用）。
 ///
 /// 有意不失效的：
 /// - 基于 `.watch()` 的 StreamProvider（日记分页与时间轴、日记本与成员、
@@ -53,5 +56,7 @@ void _invalidateSyncedSnapshots(Ref ref) {
     ..invalidate(diaryNotebooksProvider)
     ..invalidate(diaryPreviewBacklinksProvider)
     ..invalidate(userDiaryTemplatesSnapshotProvider)
-    ..invalidate(tagListProvider);
+    ..invalidate(tagListProvider)
+    ..invalidate(storageReportProvider)
+    ..invalidate(storageQuickTotalProvider);
 }

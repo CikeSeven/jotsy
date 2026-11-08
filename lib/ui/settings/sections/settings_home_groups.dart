@@ -42,6 +42,7 @@ import '../widgets/settings_nav_tile.dart';
 import 'settings_app_lock_tile.dart';
 import 'settings_language_tile.dart';
 import 'settings_lan_sync_tile.dart';
+import 'settings_storage_tile.dart';
 
 void _push(BuildContext context, Widget page) {
   Navigator.of(
@@ -159,6 +160,7 @@ class SettingsDataSecurityGroup extends StatelessWidget {
           subtitle: l10n.settingsDataManagementSubtitle,
           onTap: () => _push(context, const DataManagementPage()),
         ),
+        const SettingsStorageTile(),
         if (AppPlatform.supportsLanSync) const SettingsLanSyncTile(),
         const SettingsAppLockTile(),
       ],

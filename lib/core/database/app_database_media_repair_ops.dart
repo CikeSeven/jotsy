@@ -42,7 +42,7 @@ class NotebookMediaPathRepair {
 ///
 /// 前置条件（compare-and-swap）：读取之后用户或局域网同步可能已改写这一行，
 /// 内容不再是读取时的样子就跳过这一行，下次启动再处理，绝不覆盖别人的改动。
-mixin _AppDatabaseMediaRepairOps on _$AppDatabase {
+mixin _AppDatabaseMediaRepairOps on _$AppDatabase, _AppDatabaseStorageOps {
   /// 全部日记（含归档、回收站与未解封的胶囊）的本地 id、正文与封面。
   Future<List<({int id, String content, String? cover})>>
   getDiaryMediaSources() async {
@@ -71,44 +71,33 @@ mixin _AppDatabaseMediaRepairOps on _$AppDatabase {
   }
 
   /// 在一个事务里写入全部改写，返回实际写入的行数（不含因前置条件跳过的）。
+  /// 写入与前置条件同存储管理（[applyStorageMediaEdits]），纯文本镜像不变。
   Future<int> applyMediaPathRepairs({
     List<DiaryMediaPathRepair> diaryRepairs = const [],
     List<NotebookMediaPathRepair> notebookRepairs = const [],
-  }) {
-    return transaction(() async {
-      var written = 0;
-      for (final repair in diaryRepairs) {
-        final row = await (select(
-          diaries,
-        )..where((t) => t.id.equals(repair.id))).getSingleOrNull();
-        if (row == null ||
-            row.content != repair.expectedContent ||
-            row.cover != repair.expectedCover) {
-          continue;
-        }
-        await (update(diaries)..where((t) => t.id.equals(repair.id))).write(
-          DiariesCompanion(
-            content: Value(repair.content),
-            cover: Value(repair.cover),
-            updatedAt: Value(row.updatedAt.add(const Duration(seconds: 1))),
-          ),
-        );
-        written++;
-      }
-      for (final repair in notebookRepairs) {
-        final row = await (select(
-          notebooks,
-        )..where((t) => t.id.equals(repair.id))).getSingleOrNull();
-        if (row == null || row.payload != repair.expectedPayload) continue;
-        await (update(notebooks)..where((t) => t.id.equals(repair.id))).write(
-          NotebooksCompanion(
-            payload: Value(repair.payload),
-            updatedAt: Value(row.updatedAt.add(const Duration(seconds: 1))),
-          ),
-        );
-        written++;
-      }
-      return written;
-    });
+  }) async {
+    final result = await applyStorageMediaEdits(
+      StorageMediaEdits(
+        diaries: [
+          for (final repair in diaryRepairs)
+            StorageDiaryEdit(
+              id: repair.id,
+              expectedContent: repair.expectedContent,
+              expectedCover: repair.expectedCover,
+              content: repair.content,
+              cover: repair.cover,
+            ),
+        ],
+        notebooks: [
+          for (final repair in notebookRepairs)
+            StorageNotebookEdit(
+              id: repair.id,
+              expectedPayload: repair.expectedPayload,
+              payload: repair.payload,
+            ),
+        ],
+      ),
+    );
+    return result.applied;
   }
 }

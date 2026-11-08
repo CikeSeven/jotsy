@@ -13110,6 +13110,435 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diarySearchTagSheetHint => '只显示同时带有所选全部标签的日记';
 
   @override
+  String settingsStorageSubtitle(String size) {
+    return '已用 $size';
+  }
+
+  @override
+  String get storageMgmtTitle => '存储管理';
+
+  @override
+  String get storageMgmtTotalLabel => '共占用';
+
+  @override
+  String storageMgmtCleanUpAll(String size) {
+    return '一键清理 · 可释放 $size';
+  }
+
+  @override
+  String get storageMgmtRescan => '重新统计';
+
+  @override
+  String get storageMgmtScanFailed => '统计失败，请稍后再试';
+
+  @override
+  String get storageMgmtCategoryImages => '图片';
+
+  @override
+  String get storageMgmtCategoryVideos => '视频';
+
+  @override
+  String get storageMgmtCategoryAudio => '录音';
+
+  @override
+  String get storageMgmtCategoryAttachments => '附件';
+
+  @override
+  String get storageMgmtCategoryCovers => '封面';
+
+  @override
+  String get storageMgmtCategoryBackgrounds => '背景图';
+
+  @override
+  String get storageMgmtCategoryFonts => '字体';
+
+  @override
+  String get storageMgmtCategoryDatabase => '日记数据';
+
+  @override
+  String get storageMgmtCategoryCache => '缓存';
+
+  @override
+  String get storageMgmtCategoryUnused => '未使用的文件';
+
+  @override
+  String get storageMgmtCategoryOther => '其他';
+
+  @override
+  String get storageMgmtSuggestionsTitle => '可释放空间';
+
+  @override
+  String get storageMgmtSuggestCache => '缓存';
+
+  @override
+  String storageMgmtSuggestCacheSubtitle(String size) {
+    return '可清理 $size，最近一小时内用到的会保留';
+  }
+
+  @override
+  String get storageMgmtSuggestUnused => '未使用的文件';
+
+  @override
+  String storageMgmtSuggestUnusedSubtitle(int count, String size) {
+    return '$count 个没有日记在用的文件，共 $size';
+  }
+
+  @override
+  String get storageMgmtSuggestTrash => '回收站里的日记';
+
+  @override
+  String storageMgmtSuggestTrashSubtitle(int count, String size) {
+    return '$count 个文件只被回收站里的日记使用，共 $size';
+  }
+
+  @override
+  String get storageMgmtSuggestCompress => '可压缩的照片与视频';
+
+  @override
+  String storageMgmtSuggestCompressSubtitle(int count, String size) {
+    return '$count 项，约可节省 $size';
+  }
+
+  @override
+  String get storageMgmtSuggestDatabase => '整理日记数据';
+
+  @override
+  String storageMgmtSuggestDatabaseSubtitle(String size) {
+    return '可释放已删除内容留下的 $size';
+  }
+
+  @override
+  String get storageMgmtClear => '清理';
+
+  @override
+  String get storageMgmtCompact => '整理';
+
+  @override
+  String get storageMgmtAllClean => '已经很整洁了';
+
+  @override
+  String get storageMgmtAllCleanSubtitle => '现在没有可清理的缓存和未使用的文件';
+
+  @override
+  String get storageMgmtMediaTitle => '媒体文件';
+
+  @override
+  String get storageMgmtAllMedia => '全部媒体';
+
+  @override
+  String storageMgmtFileCount(int count) {
+    return '$count 个文件';
+  }
+
+  @override
+  String get storageMgmtLargeFiles => '大文件';
+
+  @override
+  String get storageMgmtOtherTitle => '其他数据';
+
+  @override
+  String get storageMgmtFooter =>
+      '删除与压缩会在下次局域网同步时带到其他设备；网盘里较早的备份仍保留原文件，直到按保留份数清理。';
+
+  @override
+  String get storageMgmtCleaning => '正在清理…';
+
+  @override
+  String get storageMgmtDeleting => '正在删除…';
+
+  @override
+  String storageMgmtFreed(String size) {
+    return '已释放 $size';
+  }
+
+  @override
+  String get storageMgmtNothingFreed => '现在没有可清理的内容';
+
+  @override
+  String get storageMgmtBusyEditing => '有日记正在编辑，请先关闭编辑页再试';
+
+  @override
+  String get storageMgmtBusyUndo => '请等撤销提示消失后再试';
+
+  @override
+  String get storageMgmtCannotDelete => '它被日记的其他数据引用着，不能在这里删除';
+
+  @override
+  String storageMgmtDeleteTitle(int count) {
+    return '删除 $count 个文件？';
+  }
+
+  @override
+  String storageMgmtDeleteBody(String size) {
+    return '将释放 $size，并从以下位置移除：';
+  }
+
+  @override
+  String storageMgmtDeleteFromDiaries(int count) {
+    return '$count 篇日记';
+  }
+
+  @override
+  String storageMgmtDeleteFromNotebooks(int count) {
+    return '$count 个日记本封面';
+  }
+
+  @override
+  String storageMgmtDeleteFromComments(int count) {
+    return '$count 条留言';
+  }
+
+  @override
+  String storageMgmtDeleteFromDrafts(int count) {
+    return '$count 份草稿';
+  }
+
+  @override
+  String get storageMgmtDeleteCommentNote => '删除后既没有文字也没有图片的留言会一并删除。';
+
+  @override
+  String get storageMgmtDeleteCapsuleNote => '其中包含尚未解封的时间胶囊里的内容。';
+
+  @override
+  String get storageMgmtDeleteIrreversible => '删除后无法恢复。';
+
+  @override
+  String storageMgmtDeleted(int count, String size) {
+    return '已删除 $count 个文件，释放 $size';
+  }
+
+  @override
+  String storageMgmtSkippedRows(int count) {
+    return '$count 处内容刚被修改，已跳过。';
+  }
+
+  @override
+  String get storageMgmtCompress => '压缩';
+
+  @override
+  String storageMgmtCompressTitle(int count) {
+    return '压缩 $count 个文件';
+  }
+
+  @override
+  String get storageMgmtCompressImages => '照片';
+
+  @override
+  String get storageMgmtCompressVideos => '视频';
+
+  @override
+  String get storageMgmtPresetHigh => '高清';
+
+  @override
+  String get storageMgmtPresetBalanced => '均衡';
+
+  @override
+  String get storageMgmtPresetCompact => '省空间';
+
+  @override
+  String storageMgmtImagePresetDetail(
+    int maxSide,
+    int quality,
+    String estimate,
+  ) {
+    return '最长边 $maxSide px · 画质 $quality · $estimate';
+  }
+
+  @override
+  String storageMgmtPresetEstimate(String before, String after) {
+    return '$before → 约 $after';
+  }
+
+  @override
+  String get storageMgmtPresetNoGain => '已经足够小，无需压缩';
+
+  @override
+  String storageMgmtCompressSummary(String before, String after, String saved) {
+    return '$before → 约 $after，约节省 $saved';
+  }
+
+  @override
+  String get storageMgmtCompressNothing => '这些文件都不需要压缩';
+
+  @override
+  String storageMgmtCompressSkipped(int count) {
+    return '$count 个文件已经足够小或格式不适合压缩，会跳过。';
+  }
+
+  @override
+  String get storageMgmtCompressNote => '压缩后会替换原文件，无法恢复；照片的拍摄时间和位置会保留。';
+
+  @override
+  String get storageMgmtCompressStart => '开始压缩';
+
+  @override
+  String get storageMgmtCompressing => '正在压缩';
+
+  @override
+  String get storageMgmtCompressPreparing => '正在准备…';
+
+  @override
+  String storageMgmtCompressStep(int index, int total, String name) {
+    return '第 $index/$total 项 · $name';
+  }
+
+  @override
+  String get storageMgmtCancelling => '正在停止…';
+
+  @override
+  String get storageMgmtCompressFinished => '压缩完成';
+
+  @override
+  String get storageMgmtCompressCancelled => '已停止压缩';
+
+  @override
+  String storageMgmtCompressDone(int count, String size) {
+    return '已压缩 $count 个文件，节省 $size';
+  }
+
+  @override
+  String storageMgmtCompressUnchanged(int count) {
+    return '$count 个文件压缩后没有变小，已保留原文件。';
+  }
+
+  @override
+  String storageMgmtCompressFailed(int count) {
+    return '$count 个文件压缩失败。';
+  }
+
+  @override
+  String get storageMgmtCompressNoneDone => '没有压缩任何文件。';
+
+  @override
+  String get storageMgmtDone => '完成';
+
+  @override
+  String storageMgmtCompressSaving(String size) {
+    return '压缩 · 约省 $size';
+  }
+
+  @override
+  String storageMgmtSelectedCount(int count) {
+    return '已选择 $count 项';
+  }
+
+  @override
+  String storageMgmtSelectionSummary(int count, String size) {
+    return '已选 $count 项 · 共 $size';
+  }
+
+  @override
+  String storageMgmtListSummary(int count, String size) {
+    return '共 $count 项 · $size';
+  }
+
+  @override
+  String get storageMgmtFilterAll => '全部';
+
+  @override
+  String get storageMgmtFilterLarge => '大文件';
+
+  @override
+  String get storageMgmtFilterCompressible => '可压缩';
+
+  @override
+  String get storageMgmtFilterTrash => '仅回收站';
+
+  @override
+  String get storageMgmtSort => '排序';
+
+  @override
+  String get storageMgmtSortLargest => '从大到小';
+
+  @override
+  String get storageMgmtSortNewest => '从新到旧';
+
+  @override
+  String get storageMgmtSortOldest => '从旧到新';
+
+  @override
+  String get storageMgmtViewGrid => '网格显示';
+
+  @override
+  String get storageMgmtViewList => '列表显示';
+
+  @override
+  String get storageMgmtEmpty => '这里没有文件';
+
+  @override
+  String storageMgmtPrivateHidden(int count) {
+    return '$count 项来自私密日记，已隐藏预览';
+  }
+
+  @override
+  String get storageMgmtReveal => '显示';
+
+  @override
+  String get storageMgmtRevealReason => '验证身份以显示私密日记里的媒体';
+
+  @override
+  String get storageMgmtRevealUnavailable => '这台设备无法验证身份，请先设置应用密码';
+
+  @override
+  String get storageMgmtBadgeTrash => '回收站';
+
+  @override
+  String storageMgmtBadgeCompressible(String size) {
+    return '可省 $size';
+  }
+
+  @override
+  String get storageMgmtBadgeCompressShort => '可压缩';
+
+  @override
+  String storageMgmtBadgeUsedIn(int count) {
+    return '用在 $count 处';
+  }
+
+  @override
+  String get storageMgmtBadgeLocked => '不可删除';
+
+  @override
+  String get storageMgmtUntitledDiary => '无标题日记';
+
+  @override
+  String get storageMgmtUntitledDraft => '无标题草稿';
+
+  @override
+  String storageMgmtRefComment(String title) {
+    return '留言 · $title';
+  }
+
+  @override
+  String storageMgmtRefDiaryCover(String title) {
+    return '封面 · $title';
+  }
+
+  @override
+  String storageMgmtRefNotebookCover(String name) {
+    return '日记本封面 · $name';
+  }
+
+  @override
+  String storageMgmtRefDraft(String title) {
+    return '草稿 · $title';
+  }
+
+  @override
+  String get storageMgmtRefOther => '被其他数据引用';
+
+  @override
+  String get storageMgmtMaskedPrivate => '私密日记里的内容';
+
+  @override
+  String get storageMgmtMaskedCapsule => '未解封的时间胶囊里的内容';
+
+  @override
+  String storageMgmtUsedIn(int count) {
+    return '用在 $count 处';
+  }
+
+  @override
   String get diaryTagFilterMultiSelectSemanticHint => '同时选中多个标签';
 
   @override
@@ -13128,4 +13557,64 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get publishOnLeaveFailedKeptDraft => '发表失败，这篇已留在草稿箱';
+
+  @override
+  String get storageMgmtAppTitle => '应用占用';
+
+  @override
+  String get storageMgmtCategoryApp => '应用本体';
+
+  @override
+  String get storageMgmtDeviceTitle => '手机存储';
+
+  @override
+  String storageMgmtDeviceTotal(String size) {
+    return '共 $size';
+  }
+
+  @override
+  String get storageMgmtDeviceUsedLabel => '已用';
+
+  @override
+  String get storageMgmtDeviceApp => '本应用';
+
+  @override
+  String get storageMgmtDeviceOther => '其他应用与系统';
+
+  @override
+  String get storageMgmtDeviceFree => '可用';
+
+  @override
+  String storageMgmtShareOfDevice(String percent) {
+    return '占手机 $percent';
+  }
+
+  @override
+  String get storageMgmtDeviceShareLabel => '占手机';
+
+  @override
+  String get storageMgmtReclaimable => '可释放';
+
+  @override
+  String get storageMgmtTopTitle => '占用最多';
+
+  @override
+  String get storageMgmtSeeAll => '查看全部';
+
+  @override
+  String get storageMgmtGrowthTitle => '媒体增长';
+
+  @override
+  String get storageMgmtGrowthByYear => '按日记日期，每年新增';
+
+  @override
+  String get storageMgmtGrowthByMonth => '按日记日期，近 12 个月每月新增';
+
+  @override
+  String storageMgmtGrowthPeak(String period, String size) {
+    return '$period 新增最多，共 $size';
+  }
+
+  @override
+  String get storageMgmtOpenExternally => '用其他应用打开';
 }

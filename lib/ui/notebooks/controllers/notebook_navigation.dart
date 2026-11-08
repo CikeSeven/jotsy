@@ -32,7 +32,7 @@ Future<void> openNotebookFromAnywhere(
     return;
   }
   final scope = ref.read(homeNotebookScopeProvider.notifier);
-  final tabs = ref.read(homeDiariesTabRequestProvider.notifier);
+  final tabs = ref.read(homeTabRequestProvider.notifier);
   Navigator.of(context).popUntil((Route<dynamic> route) => route.isFirst);
   scope.enter(notebook.id);
   tabs.request();

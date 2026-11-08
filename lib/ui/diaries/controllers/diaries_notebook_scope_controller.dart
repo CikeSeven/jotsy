@@ -90,10 +90,18 @@ class DiariesNotebookScopeController {
     _switchScope(notebookId, () => _notifier.enter(notebookId));
   }
 
-  /// 系统返回（多选与标签栏都已收起之后）：在子本里先回到上级本子，在顶层
-  /// 本子里才回到全部日记。往上走不需要验证：上级要么与这本在同一个上锁
-  /// 范围里，要么本身没有上锁（这本自己上的锁不会传给上级）。
-  void back() => _goUp(resolution.notebook?.parentId);
+  /// 系统返回（多选与标签栏都已收起之后）：只在子本里回到上级本子。顶层
+  /// 本子、未收录与全部日记不拦返回，应用直接退到后台、范围留着（#196）；
+  /// 别的 PopScope 拦下返回时这里也会被叫到，所以没有上级时什么都不做，
+  /// 不能回到全部日记。往上走不需要验证：上级要么与这本在同一个上锁范围
+  /// 里，要么本身没有上锁（这本自己上的锁不会传给上级）。
+  void back() {
+    final parentId = resolution.notebook?.parentId;
+    if (parentId == null) {
+      return;
+    }
+    _goUp(parentId);
+  }
 
   /// 头部的“新建子本”：打开预填了上级的编辑页。保存后留在当前
   /// 本子里，新子本出现在子本网格里。

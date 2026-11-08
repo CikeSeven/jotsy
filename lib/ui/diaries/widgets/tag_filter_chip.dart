@@ -19,6 +19,8 @@ class TagFilterChip extends StatelessWidget {
     required this.unselectedColor,
     required this.unselectedForegroundColor,
     required this.onTap,
+    this.onLongPress,
+    this.longPressHint,
     this.colorDot,
     this.leading,
     this.radius = AppRadii.nav,
@@ -47,6 +49,13 @@ class TagFilterChip extends StatelessWidget {
 
   /// 点击回调。
   final VoidCallback onTap;
+
+  /// 长按回调（首页标签栏用来多选）；为 null 时不响应长按。
+  final VoidCallback? onLongPress;
+
+  /// 读屏的长按说明（“双击并按住以 …”），只在 [onLongPress] 不为 null 时
+  /// 有意义。
+  final String? longPressHint;
   final Color? colorDot;
   final Widget? leading;
   final double radius;
@@ -76,10 +85,12 @@ class TagFilterChip extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
+      onLongPressHint: onLongPress == null ? null : longPressHint,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(effectiveRadius),
           child: AnimatedContainer(
             duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),

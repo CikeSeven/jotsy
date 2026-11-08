@@ -80,6 +80,12 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
       await _state._editPanelController.collapse();
       return;
     }
+    // 新建页“返回时直接发表”：写库后退场（见 EditDiaryCreateLeaveFlow）。
+    if (_state._isCreateEntry &&
+        _state.ref.read(diaryCreatePrefsProvider).publishOnLeave) {
+      await leaveCreateEntryPublishing();
+      return;
+    }
     _state.setState(() => _state._saving = true);
     try {
       final saved = await flushEditAutoSave();

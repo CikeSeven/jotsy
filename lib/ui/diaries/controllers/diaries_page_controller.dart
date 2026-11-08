@@ -79,8 +79,39 @@ class DiariesPageController {
     }
   }
 
-  /// 切换标签筛选。实际写入动作会通过过渡协调器排队，确保列表过渡连续。
+  /// “长按可以多选”的一次性提示，见 [selectTagFilter]。
+  late final TagFilterMultiSelectTip _multiSelectTip = TagFilterMultiSelectTip(
+    () => _state.ref.read(settingsServiceProvider).asData?.value,
+  );
+
+  /// 单击标签：只看这一个标签，已是唯一选中的再点一次取消（#196）。写入
+  /// 经过渡协调器排队，确保列表过渡连续。把已选的别的标签换掉时，用户还
+  /// 没长按过就提示一次长按可以多选（频率见 [TagFilterMultiSelectTip]）。
+  void selectTagFilter(int tagId) {
+    final before = _state.ref.read(diaryFilterProvider).selectedTagIds;
+    final replacesOthers = before.any((int id) => id != tagId);
+    transitionCoordinator.queueFilterMutation(() {
+      _state.ref.read(diaryFilterProvider.notifier).selectOnlyTag(tagId);
+      _persistTagFilterMemoryIfNeeded();
+    });
+    if (replacesOthers && _multiSelectTip.takeHint()) {
+      final l10n = _state.context.l10n;
+      unawaited(
+        feedback.showInfoSnackBar(
+          AppPlatform.isDesktop
+              ? l10n.diaryTagFilterMultiSelectTipDesktop(
+                  AppPlatform.isMacOS ? '⌘' : 'Ctrl',
+                )
+              : l10n.diaryTagFilterMultiSelectTip,
+        ),
+      );
+    }
+  }
+
+  /// 长按标签（桌面上也可以按住 Ctrl / ⌘ 点击）：在已选的标签里加上或去掉
+  /// 它，其余保留（多选，同时带有才匹配）。写入同样经过渡协调器排队。
   void toggleTagFilter(int tagId, bool selected) {
+    _multiSelectTip.markLearned();
     transitionCoordinator.queueFilterMutation(() {
       _state.ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
       _persistTagFilterMemoryIfNeeded();

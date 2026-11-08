@@ -21,10 +21,20 @@ import '../viewmodels/ai_labels.dart';
 
 /// 单篇 AI 功能能否用于 [diaryId]（还没保存的新日记传 null，按草稿要收进
 /// 的日记本由调用方另行判断）。
-Future<bool> aiDiaryAllowed(WidgetRef ref, String? diaryId) async {
-  if (ref.read(aiPreferencesProvider).privacy.allowPrivate) return true;
+Future<bool> aiDiaryAllowed(WidgetRef ref, String? diaryId) => aiDiaryAllowedIn(
+  ProviderScope.containerOf(ref.context, listen: false),
+  diaryId,
+);
+
+/// 同 [aiDiaryAllowed]，经应用的 [container] 读取：给发起页面可能已经关闭的
+/// 后台流程用（`WidgetRef` 在页面卸载后不能再用）。
+Future<bool> aiDiaryAllowedIn(
+  ProviderContainer container,
+  String? diaryId,
+) async {
+  if (container.read(aiPreferencesProvider).privacy.allowPrivate) return true;
   if (diaryId == null) return true;
-  return !(await ref.read(appDatabaseProvider).isDiaryPrivate(diaryId));
+  return !(await container.read(appDatabaseProvider).isDiaryPrivate(diaryId));
 }
 
 /// 一次请求要发送的内容，给确认面板展示。

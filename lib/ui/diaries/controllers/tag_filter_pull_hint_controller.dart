@@ -247,12 +247,17 @@ class TagFilterPullHintController extends ChangeNotifier {
     }
   }
 
-  /// 写失败只会让提示多出现一次，不值得打扰用户，吞掉错误。
+  /// 只把这条提示的进度合进设置里最新的整份进度（别的提示可能在这之后
+  /// 写过，见 `SettingsService.updateFeatureTips`）。写失败只会让提示多
+  /// 出现一次，不值得打扰用户，吞掉错误。
   void _persist() {
     final settings = _settings;
     if (settings == null) return;
+    final record = _tips.recordOf(_tip);
     unawaited(
-      settings.setFeatureTipsRaw(_tips.encode()).catchError((Object _) {}),
+      settings
+          .updateFeatureTips((latest) => latest.withRecord(_tip, record))
+          .catchError((Object _) {}),
     );
   }
 

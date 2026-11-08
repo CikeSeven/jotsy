@@ -98,6 +98,7 @@ Widget _tagBar({Set<int> selected = const <int>{1}}) => DiaryTagFilterBar(
   canExpand: () => false,
   canCollapse: () => false,
   selectedTagFilterIds: selected,
+  onSelectTag: (_) {},
   onToggleTagFilter: (_, _) {},
   onClearTagFilters: () {},
   onVerticalDragStart: (_) {},

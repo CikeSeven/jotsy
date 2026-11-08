@@ -14748,4 +14748,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diarySearchTagSheetHint =>
       'Shows entries that have all selected tags';
+
+  @override
+  String get diaryTagFilterMultiSelectSemanticHint =>
+      'select more than one tag';
+
+  @override
+  String get diaryTagFilterMultiSelectTip =>
+      'Long-press a tag to select more than one';
+
+  @override
+  String diaryTagFilterMultiSelectTipDesktop(String key) {
+    return 'Hold $key and click tags to select more than one';
+  }
+
+  @override
+  String get settingsPublishOnLeave => 'Publish new diaries when going back';
+
+  @override
+  String get settingsPublishOnLeaveSubtitle =>
+      'Going back from a new diary saves it as a diary, not a draft';
+
+  @override
+  String get publishOnLeaveFailedKeptDraft =>
+      'Couldn\'t publish the diary. It\'s kept in Drafts.';
 }

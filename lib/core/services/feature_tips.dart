@@ -15,7 +15,11 @@ import 'dart:convert';
 /// 可提示的功能。
 enum FeatureTip {
   /// 首页标签筛选栏可以下拉展开成多行。
-  tagFilterPull('tagFilterPull', maxShows: 3);
+  tagFilterPull('tagFilterPull', maxShows: 3),
+
+  /// 首页标签单击只切换一个，长按（桌面 Ctrl / ⌘ + 点击）才同时选多个
+  /// （#196）：在单击把已选的标签换掉时提示，用过长按即学会。
+  tagFilterMultiSelect('tagFilterMultiSelect', maxShows: 2);
 
   const FeatureTip(this.storageKey, {required this.maxShows});
 
@@ -112,6 +116,12 @@ class FeatureTips {
     if (record.learned) return this;
     return _with(tip, FeatureTipRecord(learned: true, shown: record.shown));
   }
+
+  /// 把 [tip] 的进度换成 [record]，其余条目不变：各提示的控制器只改自己
+  /// 那一条，写回前经它合进设置里最新的整份进度（见
+  /// `SettingsService.updateFeatureTips`）。
+  FeatureTips withRecord(FeatureTip tip, FeatureTipRecord record) =>
+      recordOf(tip) == record ? this : _with(tip, record);
 
   FeatureTips _with(FeatureTip tip, FeatureTipRecord record) => FeatureTips._(
     <FeatureTip, FeatureTipRecord>{..._records, tip: record},

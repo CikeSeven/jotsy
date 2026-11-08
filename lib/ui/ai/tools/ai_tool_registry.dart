@@ -16,6 +16,7 @@ import 'ai_tools_settings.dart';
 const List<AiTool> aiTools = <AiTool>[
   // 查询与前往。
   GetAppContextTool(),
+  ReadGuideTool(),
   SearchDiariesTool(),
   ReadDiariesTool(),
   DiaryStatsTool(),

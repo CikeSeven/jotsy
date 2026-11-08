@@ -25,6 +25,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/http_cancel_token.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../notebooks/viewmodels/notebook_tree.dart';
+import '../models/ai_guide.dart';
 import '../models/ai_preferences.dart';
 import '../viewmodels/ai_prompt_builder.dart';
 import '../viewmodels/ai_task_prompts.dart';
@@ -254,8 +255,13 @@ class AiToolContext {
     required this.allowance,
     required this.token,
     this.ui,
+    AiGuideCatalog? guide,
     DateTime? now,
-  }) : now = now ?? DateTime.now();
+  }) : guide = guide ?? AiGuideCatalog.empty,
+       now = now ?? DateTime.now();
+
+  /// 使用指南（提示词语言的那一份）；没加载到时为空目录。
+  final AiGuideCatalog guide;
 
   /// 界面能力（申请提醒权限等）；没有界面时为 null。
   final AiToolUi? ui;

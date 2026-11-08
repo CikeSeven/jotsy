@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -32,6 +33,10 @@ void main() {
     bool acknowledge = true,
     bool tools = true,
   }) async {
+    // 智能体每轮经 rootBundle 读使用指南。rootBundle 缓存的是上一个测试
+    // 假异步区里建的 Future，在这个测试里 await 它，回调会排进那个已不再
+    // 推进的区，永远不回来；先清掉缓存，让本测试重新读取。
+    rootBundle.clear();
     final h = await DiaryDraftsHarness.create(tester);
     tester.view.physicalSize = const Size(600, 1400);
     store = (await tester.runAsync(AiProviderStore.create))!;
@@ -107,8 +112,15 @@ void main() {
     expect(requests, hasLength(2));
     expect(
       requests.first.tools.map((t) => t.name),
-      containsAll(['search_diaries', 'read_diaries', 'open_page']),
+      containsAll([
+        'search_diaries',
+        'read_diaries',
+        'open_page',
+        'read_guide',
+      ]),
     );
+    // 打包的使用指南（中文版）目录在系统提示词里。
+    expect(requests.first.system, contains('- cloud-backup: '));
     expect(requests.first.messages.last.text, contains('我去过海边吗？'));
     final result = requests.last.messages.last.toolResults.single;
     expect(result.callId, 'c1');

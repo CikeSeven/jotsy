@@ -84,6 +84,7 @@ class _AiHubPageState extends ConsumerState<AiHubPage> {
       l10n.aiHubQuickLastYear,
       l10n.aiHubQuickHappy,
       l10n.aiHubQuickGrowth,
+      l10n.aiHubQuickHelp,
     ];
     final glass = AppGlassField.of(context);
     return AiPageScaffold(

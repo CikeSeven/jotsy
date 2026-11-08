@@ -12849,6 +12849,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiToolGetAppContext => 'Check today\'s date and app status';
 
   @override
+  String get aiToolReadGuide => 'Read the user guide';
+
+  @override
+  String aiPromptAgentGuide(String index) {
+    return 'Below is the index of the Jotsy user guide. When the user asks how to do something, where a setting is, or whether something is possible, first read the relevant article with read_guide and answer from it; do not invent anything the app does not have. Offer an open_page button when it helps.\n$index';
+  }
+
+  @override
+  String get aiHubQuickHelp => 'What can Jotsy do for me?';
+
+  @override
   String aiToolOpenPage(String page) {
     return 'Open: $page';
   }

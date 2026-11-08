@@ -118,6 +118,9 @@ flutter:
     - assets/img/support/
     # 关于页“更新日志”离线读取的各版本中英文说明，与发布流程共用同一份文件。
     - docs/releases/
+    # AI 助手的使用指南（给模型按需读取的文章，中英两份）。
+    - assets/ai_guide/zh/
+    - assets/ai_guide/en/
   fonts:
     - family: HarmonyOSSansSC
       fonts:

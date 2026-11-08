@@ -22,9 +22,8 @@ class EditDiaryController {
     );
     _draftAutoSave = DebouncedAutoSaveController<NewDiaryDraftSnapshot>(
       debounce: const Duration(milliseconds: 1300),
-      // 只套用了模板、还没动过的内容不算草稿（见 snapshotFor）。
-      readSnapshot: () =>
-          _state._templates.snapshotFor(_state._currentCreateDraft),
+      // 只套用了模板、或带进来的内容还没动过，不算草稿（见 createSnapshotOf）。
+      readSnapshot: () => createSnapshotOf(_state._currentCreateDraft),
       writeSnapshot: _persistCreateDraft,
       // 快照保持未存，下一次输入、返回或切后台重试；桌面失败会阻止窗口
       // 关闭，必须给出原因，不能让用户只看到关闭按钮没有反应。
@@ -58,6 +57,48 @@ class EditDiaryController {
     _state._contentController.dispose();
     _state._contentController = nextController;
     _state._contentController.addListener(onCreateDraftInputChanged);
+  }
+
+  /// 新建草稿的快照：只套用了模板（`snapshotFor`）或带进来的初始内容
+  /// （[EditDiaryPage.createSeed]）原样未动时按“没有内容”处理——自动保存不
+  /// 写草稿、返回不留草稿，“返回时直接发表”也不发表。
+  NewDiaryDraftSnapshot createSnapshotOf(NewDiaryDraft draft) {
+    final snapshot = _state._templates.snapshotFor(draft);
+    final seed = _state._createSeedBaseline;
+    if (seed == null ||
+        !snapshot.hasContent ||
+        draft.title != seed.$1 ||
+        draft.contentDocJson != seed.$2) {
+      return snapshot;
+    }
+    return (
+      payload: snapshot.payload,
+      title: snapshot.title,
+      contentText: snapshot.contentText,
+      hasContent: false,
+    );
+  }
+
+  /// 填进带进来的初始内容，并记下填好后的样子作为“原样未动”的基准。
+  void applyCreateSeed(EditDiaryCreateSeed seed) {
+    editor.Document document;
+    try {
+      document = editor.diaryEditorDocument(seed.contentDocJson);
+    } catch (_) {
+      document = editor.diaryEditorDocument('');
+    }
+    _state.setState(() {
+      _state._titleController.text = seed.title;
+      replaceContentController(
+        editor.DiaryEditorController(
+          document: document,
+          selection: editor.Selection.single(path: [0], startOffset: 0),
+          linkSource: _state._linkSource,
+        ),
+      );
+    });
+    final seeded = _state._currentCreateDraft;
+    _state._createSeedBaseline = (seeded.title, seeded.contentDocJson);
   }
 
   /// 新建模式保存草稿，已有笔记直接自动保存；详情回填阶段不触发写入。
@@ -112,6 +153,9 @@ class EditDiaryController {
       if (!_state.mounted) return;
       // 这份草稿已不在（例如刚在别处删除）：当作新建空白，另存一份新草稿。
       if (!restored) _state._createDraftId = null;
+    } else if (_state.widget.createSeed case final seed?) {
+      // 带进来的内容代替模板；原样未动不算草稿（见 createSnapshotOf）。
+      applyCreateSeed(seed);
     } else {
       // 入口带来的模板或自动套用的模板要算进基线：原样未动时它不是草稿。
       await applyInitialTemplate();

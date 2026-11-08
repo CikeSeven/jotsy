@@ -18,6 +18,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/list_item_presence.dart';
+import '../controllers/tag_cleanup.dart';
 import '../widgets/tag_management_tile.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
@@ -136,24 +137,9 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
         return;
       }
       final db = ref.read(appDatabaseProvider);
-      final settings = await ref.read(settingsServiceProvider.future);
-      final order = decodeTagOrder(settings.tagOrderRaw)
-        ..removeWhere((id) => id == tag.id);
-      await settings.setTagOrderRaw(encodeTagOrder(order));
-      final rememberedTagIds = decodeTagOrder(
-        settings.rememberedTagFilterIdsRaw,
-      )..removeWhere((id) => id == tag.id);
-      await settings.setRememberedTagFilterIdsRaw(
-        encodeTagOrder(rememberedTagIds),
-      );
+      final container = ProviderScope.containerOf(context, listen: false);
       await db.deleteTag(tag.id);
-      final activeTagIds = ref.read(diaryFilterProvider).selectedTagIds;
-      if (activeTagIds.contains(tag.id)) {
-        ref
-            .read(diaryFilterProvider.notifier)
-            .setTags(activeTagIds.where((id) => id != tag.id));
-      }
-      ref.invalidate(tagListProvider);
+      await forgetDeletedTags(container, {tag.id});
     } catch (error) {
       // 删除失败：标签仍在数据里，取消收起使其重新展开。
       if (mounted) {

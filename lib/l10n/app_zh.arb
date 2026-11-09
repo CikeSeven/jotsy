@@ -18152,6 +18152,22 @@
   "@aiChatMore": {
     "description": "对话页菜单的提示。"
   },
+  "aiChatComposerAdd": "图片与对话选项",
+  "@aiChatComposerAdd": {
+    "description": "对话输入栏“＋”按钮的提示：打开附图、范围、人设的菜单。"
+  },
+  "aiChatScrollToBottom": "回到底部",
+  "@aiChatScrollToBottom": {
+    "description": "对话页悬浮按钮的提示：滚回最新的消息。"
+  },
+  "markdownCopyCode": "复制代码",
+  "@markdownCopyCode": {
+    "description": "Markdown（AI 回答、更新说明）里代码块复制按钮的提示。"
+  },
+  "markdownCodeCopied": "已复制",
+  "@markdownCodeCopied": {
+    "description": "代码块复制按钮刚复制完时的提示。"
+  },
   "aiChatTokens": "输入 {input} · 输出 {output}",
   "@aiChatTokens": {
     "description": "回答下方的 token 数。",

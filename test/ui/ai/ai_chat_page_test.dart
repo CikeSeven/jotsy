@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/ai/ai_models.dart';
 import 'package:node_diary/core/services/ai/ai_provider_store.dart';
@@ -100,6 +101,20 @@ void main() {
     expect(lastText(answer), isNot(contains('开了一整天的会')));
     expect(find.textContaining('你在海边走了很久'), findsOneWidget);
     expect(find.text(h.l10n.aiChatCitations(1)), findsOneWidget);
+
+    // 回答底部一行：复制、重新生成露在外面，另存为日记与删除在“更多”里。
+    expect(find.byTooltip(h.l10n.aiPanelCopy), findsOneWidget);
+    expect(find.byTooltip(h.l10n.aiReplyRegenerate), findsOneWidget);
+    expect(find.text(h.l10n.aiRecapSaveAsDiary), findsNothing);
+    // 顶栏的 ⋮ 也叫“更多”：按图标找回答这一行的（横排三点）。
+    await tester.tap(find.byIcon(FontAwesomeIcons.ellipsis.data));
+    await settleMany(h, 2);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text(h.l10n.aiRecapSaveAsDiary), findsOneWidget);
+    expect(find.text(h.l10n.aiChatDeleteMessage), findsOneWidget);
+    await tester.tapAt(const Offset(10, 300));
+    await settleMany(h, 2);
+    await tester.pump(const Duration(milliseconds: 400));
 
     final conversations = (await tester.runAsync(
       () => h.database.watchAiConversations().first,

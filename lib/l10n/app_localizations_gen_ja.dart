@@ -13318,6 +13318,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiChatMore => 'その他';
 
   @override
+  String get aiChatComposerAdd => '画像とチャットのオプション';
+
+  @override
+  String get aiChatScrollToBottom => '最新のメッセージへ';
+
+  @override
+  String get markdownCopyCode => 'コードをコピー';
+
+  @override
+  String get markdownCodeCopied => 'コピーしました';
+
+  @override
   String aiChatTokens(String input, String output) {
     return '入力：$input · 出力：$output';
   }

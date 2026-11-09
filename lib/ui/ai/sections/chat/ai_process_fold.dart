@@ -4,7 +4,9 @@
 // - 收起：18 圆角胶囊（输入框底色）：左侧 `brain` 14（进行中换加载指示 16）
 //   + 摘要 + `angleDown`（展开时旋转）。结束后摘要为“思考了 8 秒 · 调用了
 //   3 个工具”，有失败时追加 error 色“1 个未成功”；进行中写当前动作：正在
-//   准备的工具、正在执行的工具标题，或“正在思考 · 5 秒”（逐秒刷新）。
+//   准备的工具、正在执行的工具标题；在思考时，还没调用过工具写“正在思考 ·
+//   5 秒”，调用过之后写这一块的累计“思考了 12 秒 · 调用了 3 个工具”（秒数
+//   为合并进这一块的各轮思考之和，逐秒刷新）。
 // - 展开（`AnimatedSize`，medium + effects）：胶囊下一张 18 圆角的卡，左侧
 //   1.5dp `outlineVariant` 竖线串起 24dp 圆形徽标——思考 `lightbulb`、过渡句
 //   `quoteLeft`（中性灰）、工具为领域色（失败为 errorContainer）；工具行点按
@@ -104,25 +106,68 @@ class _AiProcessFoldState extends State<AiProcessFold> {
     super.dispose();
   }
 
-  String _liveLabel(AppLocalizations l10n) {
-    if (widget.status case final status?) return status;
-    final last = widget.segment.items.lastOrNull;
+  /// 这个折叠块到此刻为止的思考总时长（毫秒）：各步已经记下的时长，加上
+  /// 这一步计时器的最新读数。分段时记下的“这一步”那部分（`liveThinkingMs`）
+  /// 换成计时器现在的值；一步刚收尾、计时器已清零而分段还没重建的那一瞬
+  /// 不让数字往回跳。
+  int _thinkingMs() {
+    final segment = widget.segment;
+    final clock = widget.clock;
+    if (!widget.live || clock == null) return segment.thinkingMs;
+    final current =
+        segment.thinkingMs - segment.liveThinkingMs + clock.elapsedMs;
+    return current > segment.thinkingMs ? current : segment.thinkingMs;
+  }
+
+  /// 进行中的摘要。
+  ///
+  /// - 检索问答的固定状态优先；
+  /// - 模型正在准备、正在执行某个工具时写那个动作（用户要知道它在做什么）；
+  /// - 其余（在思考、等下一步）：还没调用过工具时写“正在思考 · N 秒”；
+  ///   已经调用过工具时写这个折叠块的累计——“思考了 N 秒 · 调用了 N 个
+  ///   工具”，秒数是合并进这一块的各轮思考之和（不是最近这一轮的），与
+  ///   结束后的摘要同一口径，连续多轮时数字只增不减。
+  (String, String?) _liveSummary(AppLocalizations l10n) {
+    if (widget.status case final status?) return (status, null);
+    final segment = widget.segment;
+    final last = segment.items.lastOrNull;
     if (last is AiPreparingItem) {
       final tool = aiToolByName(last.tool);
-      return tool == null
-          ? l10n.aiAgentPreparing
-          : tool.label(l10n, const <String, Object?>{});
+      return (
+        tool == null
+            ? l10n.aiAgentPreparing
+            : tool.label(l10n, const <String, Object?>{}),
+        null,
+      );
     }
     if (last is AiToolItem && !last.call.status.finished) {
       final tool = aiToolByName(last.call.tool);
-      return tool?.labelWith(l10n, last.call.args, last.call.subjects) ??
-          last.call.tool;
+      return (
+        tool?.labelWith(l10n, last.call.args, last.call.subjects) ??
+            last.call.tool,
+        null,
+      );
     }
-    final clock = widget.clock;
-    if (clock != null && clock.running && clock.elapsedMs >= 1000) {
-      return l10n.aiProcessThinkingFor(clock.elapsedMs ~/ 1000);
+    final seconds = _thinkingMs() ~/ 1000;
+    if (segment.toolCount == 0) {
+      return (
+        seconds >= 1
+            ? l10n.aiProcessThinkingFor(seconds)
+            : l10n.aiPanelThinking,
+        null,
+      );
     }
-    return l10n.aiPanelThinking;
+    final failed = segment.failedCount;
+    return (
+      <String>[
+        if (seconds >= 1)
+          l10n.aiProcessThoughtFor(seconds)
+        else if (segment.thought)
+          l10n.aiProcessThought,
+        l10n.aiProcessTools(segment.toolCount),
+      ].join(' · '),
+      failed > 0 ? l10n.aiProcessFailed(failed) : null,
+    );
   }
 
   /// 结束后的摘要：思考时长、调用个数，失败另起一段（error 色）。
@@ -150,7 +195,7 @@ class _AiProcessFoldState extends State<AiProcessFold> {
     final glass = AppGlassField.of(context);
     final fill = glass?.fill ?? colors.surfaceContainerHigh;
     final live = widget.live;
-    final (summary, failed) = live ? (_liveLabel(l10n), null) : _summary(l10n);
+    final (summary, failed) = live ? _liveSummary(l10n) : _summary(l10n);
     final labelStyle = theme.textTheme.labelLarge?.copyWith(
       color: colors.onSurfaceVariant,
     );

@@ -33,6 +33,11 @@ class AiProcessSegment extends AiAnswerSegment {
   /// 思考总时长（毫秒；不显示思考文字时也计入，摘要照样写“思考了 N 秒”）。
   int thinkingMs = 0;
 
+  /// [thinkingMs] 里属于“这一步还在计时”的那部分（只有进行中的一轮有）。
+  /// 折叠块自己每秒刷新时，用它把这一部分换成计时器的最新读数，累计时长
+  /// 才会跟着走，而不是停在上一次分段时的数。
+  int liveThinkingMs = 0;
+
   /// 有没有思考（含不显示文字的）。
   bool thought = false;
 
@@ -188,6 +193,10 @@ List<AiAnswerSegment> buildAiAnswerSegments({
     }
   }
   think(reasoning, thinkingMs);
+  if (live && thinkingMs > 0) {
+    // think() 刚把这一步的时长加进最后一个折叠块。
+    (segments.last as AiProcessSegment).liveThinkingMs = thinkingMs;
+  }
   if (preparingTool != null) {
     process().items.add(AiPreparingItem(preparingTool));
   }

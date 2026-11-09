@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/ai/ai_provider_store.dart';
 import 'package:node_diary/ui/ai/pages/ai_chat_page.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
+import 'package:node_diary/ui/ai/sections/chat/ai_scroll_to_bottom_button.dart';
 import 'package:node_diary/ui/ai/widgets/ai_chat_scroll_controller.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
@@ -154,6 +156,68 @@ void main() {
       controller.jumpToBottom();
       await tester.pump();
       expect(controller.following, isTrue);
+      expect(position().pixels, position().maxScrollExtent);
+    });
+
+    testWidgets('the jump button shows after scrolling up and returns to the '
+        'bottom even if content grew meanwhile', (tester) async {
+      await pumpList(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: 600,
+              child: Stack(
+                children: <Widget>[
+                  ValueListenableBuilder<int>(
+                    valueListenable: count,
+                    builder: (context, n, _) => ListView.builder(
+                      controller: controller,
+                      itemCount: n,
+                      itemBuilder: (context, i) =>
+                          SizedBox(height: 50, child: Text('item $i')),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 8,
+                    child: Center(
+                      child: AiScrollToBottomButton(controller: controller),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final l10n = lookupAppLocalizations(const Locale('zh'));
+      expect(find.byTooltip(l10n.aiChatScrollToBottom), findsNothing);
+
+      await tester.drag(find.byType(ListView), const Offset(0, 600));
+      await tester.pumpAndSettle();
+      expect(controller.followingListenable.value, isFalse);
+      expect(find.byTooltip(l10n.aiChatScrollToBottom), findsOneWidget);
+
+      await tester.tap(find.byTooltip(l10n.aiChatScrollToBottom));
+      await tester.pump();
+      // 动画途中内容又变长：结束时仍停在新的底部并重新跟随。
+      await tester.pump(const Duration(milliseconds: 100));
+      count.value += 10;
+      await tester.pumpAndSettle();
+      expect(controller.following, isTrue);
+      expect(position().pixels, position().maxScrollExtent);
+      expect(find.byTooltip(l10n.aiChatScrollToBottom), findsNothing);
+
+      // 再加内容照常跟随。
+      count.value += 3;
+      await tester.pump();
       expect(position().pixels, position().maxScrollExtent);
     });
   });

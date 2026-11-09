@@ -4,9 +4,10 @@
 //   可长按选字（`AppSelectionArea`）；最后一问左侧 12dp 铅笔“编辑并重发”。
 // - 回答：头部（24dp 人设头像 + 名称），分段（`AiAnswerSegmentsView`：思考
 //   过程折叠块、前往 / 改动 / 确认卡片、正文），然后是没有正常作答的说明、
-//   错误与重试、“参考了 N 篇日记”（点按展开为可点的日记胶囊）、一行灰字
-//   （已停止 · 思考强度 · token · 模型）与一排 14dp 图标按钮（复制、另存为
-//   日记、重新生成（只在最后一个回答）、删除）。
+//   错误与重试、“参考了 N 篇日记”（点按展开为可点的日记胶囊），最后是
+//   一行：左边 14dp 图标按钮（复制、重新生成（只在最后一个回答）、“更多”
+//   菜单：另存为日记、删除），右边一行灰字（已停止 · 模型 · 思考强度 ·
+//   token，放不下时从末尾省略）。
 
 import 'dart:convert';
 
@@ -26,6 +27,9 @@ import '../models/ai_tool_subject.dart';
 import '../viewmodels/ai_answer_segments.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
+import '../../widgets/expressive_entrance.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../widgets/ai_stream_reveal.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../widgets/ai_error_view.dart';
 import '../widgets/ai_view_state.dart';
@@ -46,7 +50,16 @@ class AiChatMessageView extends StatelessWidget {
     this.onEdit,
     this.onRegenerate,
     this.onDelete,
+    this.handoff,
+    this.animateIn = false,
   });
+
+  /// 刚落库的最后一条回答：接着进行中那一项把正文放完（见
+  /// [AiRevealHandoff]）；其余回答为 null，直接显示全文。
+  final AiRevealHandoff? handoff;
+
+  /// 刚发出的问题：气泡淡入上移。
+  final bool animateIn;
 
   final AiMessageRow message;
   final AiPersonaInfo persona;
@@ -63,13 +76,14 @@ class AiChatMessageView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (message.role == AiMessageRole.user) {
       final images = decodeAiMessageImages(message.images);
-      return AiQuestionBubble(
+      final bubble = AiQuestionBubble(
         text: message.content,
         imageGroupId: message.messageId,
         images: liveAiMessageImages(images),
         removedImages: images.length - liveAiMessageImages(images).length,
         onEdit: onEdit,
       );
+      return animateIn ? ExpressiveEntrance(child: bubble) : bubble;
     }
     final meta = _AnswerMeta.decode(message.meta);
     final segments = buildAiAnswerSegments(
@@ -91,6 +105,7 @@ class AiChatMessageView extends StatelessWidget {
               keyPrefix: message.messageId,
               segments: segments,
               actions: actions,
+              handoff: handoff,
             ),
           _AnswerFooter(
             message: message,
@@ -298,8 +313,11 @@ class _AnswerFooter extends StatelessWidget {
       'incomplete' => l10n.aiAgentIncomplete,
       _ => null,
     };
+    // 右侧的一行灰字。放不下时从末尾省略，所以越重要的越靠前：已停止、
+    // 模型、思考强度、token。
     final footer = <String>[
       if (message.status == AiMessageStatus.stopped) l10n.aiChatStoppedLabel,
+      ?meta.model,
       if (meta.thinking case final level?)
         l10n.aiChatMetaThinking(aiThinkingLevelLabel(l10n, level)),
       if (showTokens && meta.input != null && meta.output != null)
@@ -313,8 +331,8 @@ class _AnswerFooter extends StatelessWidget {
                 aiCompactCount(meta.input!),
                 aiCompactCount(meta.output!),
               ),
-      ?meta.model,
     ];
+    final canRegenerate = onRegenerate != null && error == null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -340,45 +358,65 @@ class _AnswerFooter extends StatelessWidget {
               onOpen: actions.onOpenSubject,
               storageId: '${message.messageId}:citations',
             ),
-          if (footer.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                footer.join(' · '),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ),
-          Wrap(
-            children: <Widget>[
-              if (hasText) ...<Widget>[
-                _ActionIcon(
-                  icon: FontAwesomeIcons.copy,
-                  tooltip: l10n.aiPanelCopy,
-                  onPressed: () => onCopy(message.content),
-                ),
-                _ActionIcon(
-                  icon: FontAwesomeIcons.filePen,
-                  tooltip: l10n.aiRecapSaveAsDiary,
-                  onPressed: () => onSaveAsDiary(message.content),
-                ),
+          // 操作与说明合成一行：左边是常用的复制、重新生成与“更多”（另存
+          // 为日记、删除），右边是灰字说明，窄屏上说明让位、从末尾省略。
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Row(
+              children: <Widget>[
+                if (hasText)
+                  _ActionIcon(
+                    icon: FontAwesomeIcons.copy,
+                    tooltip: l10n.aiPanelCopy,
+                    onPressed: () => onCopy(message.content),
+                  ),
+                if (canRegenerate)
+                  _ActionIcon(
+                    icon: FontAwesomeIcons.rotateRight,
+                    tooltip: l10n.aiReplyRegenerate,
+                    onPressed: onRegenerate!,
+                  ),
+                if (hasText || onDelete != null)
+                  ExpressiveMenuAnchor(
+                    placement: ExpressiveMenuPlacement.start,
+                    menuChildren: <Widget>[
+                      if (hasText)
+                        ExpressiveMenuItem(
+                          leadingIcon: const FaIcon(FontAwesomeIcons.filePen),
+                          onPressed: () => onSaveAsDiary(message.content),
+                          child: Text(l10n.aiRecapSaveAsDiary),
+                        ),
+                      if (onDelete != null)
+                        ExpressiveMenuItem(
+                          leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
+                          destructive: true,
+                          onPressed: onDelete,
+                          child: Text(l10n.aiChatDeleteMessage),
+                        ),
+                    ],
+                    builder: (context, menu, _) => _ActionIcon(
+                      icon: FontAwesomeIcons.ellipsis,
+                      tooltip: l10n.aiChatMore,
+                      onPressed: menu.toggle,
+                    ),
+                  ),
+                if (footer.isNotEmpty)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 8),
+                      child: Text(
+                        footer.join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
-              if (onRegenerate != null && error == null)
-                _ActionIcon(
-                  icon: FontAwesomeIcons.rotateRight,
-                  tooltip: l10n.aiReplyRegenerate,
-                  onPressed: onRegenerate!,
-                ),
-              if (onDelete != null)
-                _ActionIcon(
-                  icon: FontAwesomeIcons.trashCan,
-                  tooltip: l10n.aiChatDeleteMessage,
-                  onPressed: onDelete!,
-                ),
-            ],
+            ),
           ),
         ] else if (onDelete != null)
           Align(

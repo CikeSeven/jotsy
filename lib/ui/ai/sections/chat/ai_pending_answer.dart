@@ -9,6 +9,7 @@ import '../../controllers/ai_chat_controller.dart';
 import '../../models/ai_built_ins.dart';
 import '../../viewmodels/ai_answer_segments.dart';
 import '../../viewmodels/ai_task_prompts.dart';
+import '../../widgets/ai_stream_reveal.dart';
 import '../ai_chat_message_view.dart';
 import 'ai_answer_actions.dart';
 import 'ai_answer_segments_view.dart';
@@ -27,12 +28,16 @@ class AiPendingAnswer extends StatelessWidget {
     required this.persona,
     required this.showReasoning,
     required this.actionsFor,
+    this.handoff,
   });
 
   final AiChatController controller;
   final AiPersonaInfo persona;
   final bool showReasoning;
   final AiPendingActionsBuilder actionsFor;
+
+  /// 正文“放到了哪里”：这一轮落库后由那条回答接着放完。
+  final AiRevealHandoff? handoff;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +92,7 @@ class AiPendingAnswer extends StatelessWidget {
             live: true,
             clock: turn?.thinking ?? controller.run.thinking,
             status: status,
+            handoff: handoff,
           ),
         ],
       ),

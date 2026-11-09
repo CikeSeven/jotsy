@@ -11,8 +11,9 @@
 //   折叠，前往 / 改动 / 确认卡片与正文露在外面）。滚动由
 //   [AiChatScrollController] 管（贴底跟随，用户往上翻就放手）。
 // - 输入栏放在 Scaffold 的 bottomNavigationBar（`KeyboardInsetPadding` 让开
-//   键盘），浮动提示条停在它上方。胶囊依次为范围、人设、模型 · 思考，改动
-//   写进这段对话。附图经 [DiaryCommentImagesController]（与写留言同一套：
+//   键盘），浮动提示条停在它上方。底排为“＋”（附图、范围、人设）与“模型 ·
+//   思考”，改过的范围 / 人设以胶囊显示在输入框上方；改动写进这段对话。
+//   附图经 [DiaryCommentImagesController]（与写留言同一套：
 //   选了就复制进托管目录，发送前移除或离开页面就删掉文件），发送时交给
 //   控制器写进那条消息；当前模型看不到图片时附图下方说明一句。
 // - 进入：新对话在路由入场结束后聚焦输入框（进来就能打字）；打开已有对话
@@ -63,11 +64,13 @@ import '../sections/chat/ai_chat_history_panel.dart';
 import '../sections/chat/ai_chat_model_sheet.dart';
 import '../sections/chat/ai_chat_welcome.dart';
 import '../sections/chat/ai_pending_answer.dart';
+import '../sections/chat/ai_scroll_to_bottom_button.dart';
 import '../sections/chat/ai_chat_history_drawer.dart';
 import '../sections/chat/ai_chat_top_bar.dart';
 import '../viewmodels/ai_labels.dart';
 import '../viewmodels/ai_task_prompts.dart';
 import '../widgets/ai_chat_scroll_controller.dart';
+import '../widgets/ai_stream_reveal.dart';
 import '../widgets/ai_tap_outside_unfocus.dart';
 import 'ai_chat_export_page.dart';
 import 'ai_recap_page.dart';
@@ -121,6 +124,13 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   /// 上一次选图的结果（截掉、没权限、失败）；正常加上或取消时为 null。
   DiaryCommentImagePickResult? _pickResult;
 
+  /// 流式正文“放到了哪里”：进行中的那一项换成落库的回答时接着放完。
+  final AiRevealHandoff _reveal = AiRevealHandoff();
+
+  /// 打开这段对话时已经在的消息（不播入场动画）。null：等消息读出来时
+  /// 记下；空集合：新对话，之后出现的问题都淡入。
+  Set<String>? _presentAtOpen = <String>{};
+
   @override
   void initState() {
     super.initState();
@@ -167,6 +177,9 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
 
   Future<void> _load(String id) async {
     await _controller.openConversation(id);
+    // 换到这段对话之后再清：之前的构建看到的还是上一段对话的消息，那时
+    // 清掉会把它们记成“打开时已经在的”，新对话的问题反而全部播入场。
+    _presentAtOpen = null;
     if (!mounted) return;
     setState(() => _ready = true);
     // 回到对话时由列表按记下的位置恢复；其余（打开、换对话）从底部开始。
@@ -322,6 +335,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   Future<void> _startNew() async {
     _closeDrawer();
     _scroll.restoreSaved = false;
+    _presentAtOpen = <String>{};
     _inputFocus.requestFocus();
     await _controller.startNew(defaultPersonaId: _defaultPersonaId);
     if (mounted) setState(() => _ready = true);
@@ -603,7 +617,12 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
         ),
       );
     }
-    return ListView.builder(
+    // 打开对话时已经在的消息不播入场动画；之后新出现的问题淡入上移。
+    if (loaded != null) {
+      _presentAtOpen ??= <String>{for (final row in rows) row.messageId};
+    }
+    final presentAtOpen = _presentAtOpen;
+    final list = ListView.builder(
       // 换对话时整段列表重来（展开状态、元素复用不串到别的对话）。
       key: PageStorageKey<String>('chat-${id ?? 'new'}'),
       controller: _scroll,
@@ -630,6 +649,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
               persona: persona,
               showReasoning: prefs.showReasoning,
               actionsFor: _actions,
+              handoff: _reveal,
             ),
           );
         }
@@ -667,8 +687,27 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
           onDelete: busy
               ? null
               : () => unawaited(deleteAiChatMessage(context, ref, message)),
+          // 这一轮刚落库：最后一条回答接着进行中那一项把正文放完。生成中
+          // 不给（那时的“最后一条”还是上一轮的回答）。
+          handoff: !busy && i == lastAssistant ? _reveal : null,
+          animateIn:
+              message.role == AiMessageRole.user &&
+              presentAtOpen != null &&
+              !presentAtOpen.contains(message.messageId),
         );
       },
+    );
+    // “回到底部”浮在消息区底部居中，只在用户往上翻之后出现。
+    return Stack(
+      children: <Widget>[
+        Positioned.fill(child: list),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 8,
+          child: Center(child: AiScrollToBottomButton(controller: _scroll)),
+        ),
+      ],
     );
   }
 
@@ -686,6 +725,9 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final model =
         config.resolveRef(options.model) ?? config.resolveTask(AiTaskKind.chat);
     final thinking = aiThinkingLevelLabel(l10n, options.thinking);
+    final scopeLabel = aiChatScopeLabel(l10n, _controller.scope);
+    final scopeCustom = _controller.scope.kind != AiChatScopeKind.auto;
+    final personaCustom = _controller.personaId != _defaultPersonaId;
     // 这条消息的附图能不能让模型看到：图片理解开着，且模型收图片（服务还没
     // 读出来时按模型设置）。看不到也照样能发，AI 仍可按编号加进日记。
     final service = ref.watch(aiServiceProvider).value;
@@ -707,31 +749,57 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
           ? () => unawaited(_pickImages(camera: true))
           : null,
       note: _composerNote(context, canSeeImages: canSeeImages),
-      chips: <Widget>[
-        AiComposerChip(
+      // 改过的范围 / 人设露在输入框上方（点按再改，× 复原）；没改过时
+      // 这一行不出现，两项都在“＋”菜单里。
+      contextChips: <Widget>[
+        if (scopeCustom)
+          AiComposerChip(
+            icon: FontAwesomeIcons.magnifyingGlass,
+            label: scopeLabel,
+            tooltip: l10n.aiChatScope,
+            onPressed: busy ? null : _pickScope,
+            onClear: busy
+                ? null
+                : () => unawaited(
+                    _controller.updateScope(const AiChatScope.auto()),
+                  ),
+          ),
+        if (personaCustom)
+          AiComposerChip(
+            emoji: persona.emoji,
+            label: persona.name,
+            tooltip: l10n.aiChatPersona,
+            onPressed: busy ? null : _pickPersona,
+            onClear: busy
+                ? null
+                : () => unawaited(_controller.updatePersona(_defaultPersonaId)),
+          ),
+      ],
+      options: <AiComposerOption>[
+        AiComposerOption(
           icon: FontAwesomeIcons.magnifyingGlass,
-          label: aiChatScopeLabel(l10n, _controller.scope),
-          custom: _controller.scope.kind != AiChatScopeKind.auto,
-          tooltip: l10n.aiChatScope,
+          label: l10n.aiChatScope,
+          value: scopeLabel,
           onPressed: busy ? null : _pickScope,
         ),
-        AiComposerChip(
-          emoji: persona.emoji,
-          label: persona.name,
-          custom: _controller.personaId != _defaultPersonaId,
-          tooltip: l10n.aiChatPersona,
+        AiComposerOption(
+          icon: FontAwesomeIcons.masksTheater,
+          label: l10n.aiChatPersona,
+          value: persona.name,
           onPressed: busy ? null : _pickPersona,
         ),
-        AiComposerChip(
-          icon: FontAwesomeIcons.microchip,
-          label: model == null
-              ? l10n.aiChatModel
-              : '${model.model.label} · $thinking',
-          custom: options != AiConversationOptions.defaults,
-          tooltip: l10n.aiChatModelSheetTitle,
-          onPressed: busy ? null : () => unawaited(_pickModel()),
-        ),
       ],
+      model: AiComposerModelButton(
+        // 思考强度为“自动”时只写模型名，少一段要读的字。
+        label: model == null
+            ? l10n.aiChatModel
+            : options.thinking == null
+            ? model.model.label
+            : '${model.model.label} · $thinking',
+        custom: options != AiConversationOptions.defaults,
+        tooltip: l10n.aiChatModelSheetTitle,
+        onPressed: busy ? null : () => unawaited(_pickModel()),
+      ),
     );
   }
 }

@@ -18697,6 +18697,22 @@
   "@aiChatMore": {
     "description": "Tooltip of the chat page menu."
   },
+  "aiChatComposerAdd": "Фото и параметры чата",
+  "@aiChatComposerAdd": {
+    "description": "Tooltip of the plus button in the chat composer: opens a menu with photos, scope and persona."
+  },
+  "aiChatScrollToBottom": "К последнему сообщению",
+  "@aiChatScrollToBottom": {
+    "description": "Tooltip of the floating button that scrolls the chat back to the newest message."
+  },
+  "markdownCopyCode": "Копировать код",
+  "@markdownCopyCode": {
+    "description": "Tooltip of the copy button on a code block in rendered Markdown (AI answers, release notes)."
+  },
+  "markdownCodeCopied": "Скопировано",
+  "@markdownCodeCopied": {
+    "description": "Tooltip of the code block copy button right after copying."
+  },
   "aiChatTokens": "Вход: {input} · Выход: {output}",
   "@aiChatTokens": {
     "description": "Token counts under an answer.",

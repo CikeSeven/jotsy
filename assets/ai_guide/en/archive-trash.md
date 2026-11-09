@@ -17,7 +17,7 @@ keywords: [archive, unarchive, swipe to archive, archived diaries, delete diary,
 
 ## Viewing and unarchiving
 Tap the archive button (box icon) in the Diaries tab's top bar to open "Archived diaries".
-- On a phone, swipe a card left to unarchive it.
+- On a phone, swipe a card left to unarchive it (this also follows the "Swipe to archive" switch; when it's off, use selection instead).
 - Long-press to start selecting, then "Unarchive" or delete several at once.
 - On a computer, right-click a card and choose "Unarchive".
 
@@ -29,7 +29,7 @@ Tap the archive button (box icon) in the Diaries tab's top bar to open "Archived
 ## Recycle bin
 Go to Settings → Recycle Bin (in the "Organize" group).
 - The most recently deleted come first, each with the diary's date and when it was deleted.
-- Tap or long-press to tick diaries; "Select all" is at the top right. Ticking shows "Restore" and "Permanent delete" at the bottom.
+- Tapping or long-pressing only ticks a diary; you can't open one to read it in the recycle bin, so restore it first. "Select all" is at the top right, and ticking shows "Restore" and "Permanent delete" at the bottom.
 - Restoring needs no confirmation; the diary returns to its original place and notebooks.
 - Permanent delete asks for confirmation and can't be undone.
 - The recycle bin is never emptied automatically; diaries stay until you restore or permanently delete them.

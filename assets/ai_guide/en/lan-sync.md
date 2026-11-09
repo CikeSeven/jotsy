@@ -5,12 +5,14 @@ summary: Pair a phone and a computer on the same Wi-Fi and sync diaries both way
 features: []
 platforms: [android, windows, linux, macos]
 destinations: [lan_sync]
-keywords: [LAN sync, sync, multiple devices, pair, scan, QR code, Wi-Fi, phone and computer, auto sync, conflict copy, cannot find device, firewall]
+keywords: [LAN sync, sync, multiple devices, pair, scan, QR code, Wi-Fi, phone and computer, auto sync, conflict copy, cannot find device, firewall, device name, discoverable, nickname, sync history, needs your confirmation]
 ---
 LAN sync lets two copies of Jotsy on the same Wi-Fi (for example a phone and a computer) pair and then merge their data both ways. Data goes straight between the devices, encrypted all the way and never through a server.
 
 ## Where
-Settings → LAN sync (in the "Data & security" group). It is available on Android and the desktop apps (Windows, Linux); iOS isn't supported.
+Settings → LAN sync (in the "Data & security" group). It is available on Android and the desktop apps (Windows, Linux, macOS); iOS isn't supported.
+
+The top of the sync page shows this device: the pen button next to its name ("Rename this device") changes the name nearby devices see; tap "Discoverable" to switch to "Not discoverable", so nearby devices can't find this one while it can still find them.
 
 ## Pair
 1. Connect both devices to the same Wi-Fi and open the LAN sync page on both.
@@ -23,6 +25,7 @@ If this device uses app lock or has locked notebooks, you verify your identity b
 
 ## Sync
 - After pairing, tap "Sync now"; later, tap "Sync" on the device's row under "My devices".
+- Tap a device's row to open "Device details": set a "Nickname" (only shown on this device) and see what each sync sent and received in "Sync history".
 - "Auto sync" is on by default: while Jotsy is open it syncs with paired devices that are online; it doesn't sync in the background. You can turn off auto sync for one device in "Device details".
 - What syncs: diaries (including the recycle bin), tags, notebooks (with members, order and nesting), comments, diary templates, anniversaries, day moods, to-dos and lists, plus images, recordings, videos and attachments.
 - Appearance, editor and other settings sync only when both devices turn on "Sync settings" (off by default). Tag order and turning on features such as comments or notebooks always sync.
@@ -32,6 +35,7 @@ If this device uses app lock or has locked notebooks, you verify your identity b
 - If both devices changed the text of the same diary, both versions are kept: the newer one stays in the diary and the other is saved as a conflict copy.
 - On the first sync, or after an overwrite restore, differences prompt "Which version wins?": Keep both (recommended), Use this device's version, or Use the other device's version. None of them deletes any diary.
 - If a sync would delete diaries for good, you're asked first, with "Keep, and restore on the other device" selected by default.
+- When auto sync runs into either of these questions it writes nothing; the device's row shows "Needs your confirmation", and tapping "View" continues.
 
 ## Notes
 - After pairing, both devices merge all their diaries, including private notebooks and the recycle bin. Export a full backup before the first pairing.

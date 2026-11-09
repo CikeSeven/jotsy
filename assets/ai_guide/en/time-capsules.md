@@ -5,7 +5,7 @@ summary: How to write an entry for the future, what you can do while it is seale
 features: [timeCapsules]
 platforms: []
 destinations: [tab_calendar, tab_explore, settings_features]
-keywords: [time capsule, capsule, time lock, seal, sealed, unlock, unlock time, letter to the future, future self, sleeping moment, countdown, change unlock time]
+keywords: [time capsule, capsule, time lock, seal, sealed, unlock, unlock time, letter to the future, future self, sleeping moment, countdown, change unlock time, unlock notification, reminder]
 ---
 A time capsule is an entry written for the future. When you publish it you set an unlock time; until then the text stays sealed, even from you, and it opens for reading only when the time comes.
 
@@ -31,6 +31,8 @@ With a capsule set, the entry's publish time follows the unlock time, and the pu
 ## When it opens
 
 At the unlock time the capsule becomes a normal entry you can read and edit. The preview page shows a note above the text, such as "When you wrote this diary, you felt … How do you feel today?". To hide it, turn off "Unlocked capsule note" in Settings → Appearance → Diary preview page → Text.
+
+Jotsy doesn't send a notification when a capsule opens, so keep an eye on it yourself (the "Time capsules" card on Explore shows how many days are left). If you want a reminder, turn on To-dos (Settings → Features → To-dos) and add a to-do with a reminder on that day. See "To-dos".
 
 ## Where to see them
 

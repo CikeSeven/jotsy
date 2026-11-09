@@ -18,7 +18,7 @@ Jotsy's overall look is set on the Appearance page: light or dark mode, theme co
 - At the top of the Theme group, pick **System** (follows the system's dark mode setting), **Light** or **Dark**. It applies right away.
 
 ## Theme color
-- The palette in the Theme group shows the current color's code at the top, a row of color families in the middle, and eight shades of the chosen family below. Tap a family, then a shade. The default is a teal blue.
+- The palette in the Theme group shows the current color's code at the top, a row of color families in the middle, and eight shades of the chosen family below. Tap a family, then a shade. The default theme color is #1E6586: the 6th shade of the 7th family in the row (blue); look for that code to go back to the default.
 - Picking a color from the **gray** family makes the whole interface true grayscale with no hue; destructive buttons such as Delete stay red.
 - The last family is **black and white**: buttons, switches and so on are pure black in light mode and pure white in dark mode, and everything else is grayscale.
 - The theme color tints buttons, switches, selections and page backgrounds across the app. The diary preview page can use its own "Color basis"; see "Diary card, preview page and navigation bar styles".

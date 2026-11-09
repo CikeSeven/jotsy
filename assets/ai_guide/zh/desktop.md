@@ -1,11 +1,11 @@
 ---
 id: desktop
 title: 桌面端（Windows 与 Linux）
-summary: 电脑版的宽窗口双栏、快捷键、右键菜单，以及和手机版不同的地方
+summary: 电脑版的安装与数据位置、宽窗口双栏、快捷键、右键菜单，以及和手机版不同的地方
 features: []
 platforms: [windows, linux]
 destinations: [tab_diaries, search, app_update]
-keywords: [电脑版, 桌面版, 电脑, Windows, Linux, 快捷键, 键盘, 鼠标, 右键菜单, 双栏, 宽窗口, 侧边栏, 拖放, 另存为, 多选, Ctrl, 提醒]
+keywords: [电脑版, 桌面版, 电脑, Windows, Linux, 安装, 卸载, 便携版, install.sh, 数据目录, 数据在哪, 快捷键, 键盘, 鼠标, 右键菜单, 双栏, 宽窗口, 侧边栏, 拖放, 另存为, 多选, Ctrl, 提醒]
 ---
 Jotsy 有 Windows 与 Linux 桌面版，界面和手机版是同一套，只是按窗口宽度换成更适合电脑的布局，并加上键盘与鼠标操作。
 
@@ -35,6 +35,13 @@ Jotsy 有 Windows 与 Linux 桌面版，界面和手机版是同一套，只是�
 - 不能直接分享到微信、QQ 等指定应用，Linux 的分享面板改为复制文字和保存图片；也不能导入手机厂商与 WPS 的云端笔记。
 - Linux 暂不支持录音（可以播放），应用锁只能用应用密码。电脑上没有指纹 / 面容快速解锁、锁屏时上锁和防截屏，改为可选的“闲置时上锁”。
 - 局域网同步配对时，电脑只显示二维码，由手机来扫。存储管理里没有压缩图片和视频。
+
+## 安装、数据与卸载
+- 安装包在官网（jotsy.sisct.xyz）和 GitHub 的发布页下载。Windows 10 及以上（x64）有安装程序（setup.exe）和便携版（.zip，解压即可运行）；Linux（x64，GTK 3）为 .tar.gz 压缩包。
+- Windows 安装程序默认装到 Program Files，也可以选只为自己安装；可勾选创建桌面图标。安装版会为局域网同步添加防火墙规则（只对专用网络），便携版不改防火墙。
+- Linux：解压后在 jotsy 文件夹里运行 **./install.sh**，装到 ~/.local（不需要 root），之后从应用菜单打开；也可以不安装，直接运行其中的 jotsy。
+- 日记数据不在安装目录里，而在应用数据目录：Linux 为 ~/.local/share/com.jotsy.diary，Windows 为 %APPDATA%\CikeSeven\Jotsy（安装版和便携版相同）。更新、重装和卸载都不会删除它。
+- 卸载：Windows 在系统设置的“应用”里卸载 Jotsy，便携版直接删掉文件夹；Linux 在解压出的 jotsy 文件夹里运行 **./install.sh --uninstall**。日记会留着；确实要清掉，先备份，再手动删除上面的数据目录。
 
 ## 启动、关闭与更新
 - 重复启动会唤起已经打开的窗口，正在编辑的内容保留。关闭窗口前会先保存日记、草稿和发布面板的改动，保存失败时提示并保留窗口。

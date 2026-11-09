@@ -28,7 +28,7 @@ On the edit page you can set:
 - Pin: keep it at the top of the anniversary list.
 
 ## List and details
-The list is ordered by the next occurrence, soonest first (pinned ones on top, past countdowns at the bottom), with the days left on the right. Tap one for its details: the countdown card, Started / Repeat / Note, the linked diary, and "On this day over the years" with the diaries written on that day each year. Edit from the top right; "More actions" lets you pin or delete.
+The list is ordered by the next occurrence, soonest first (pinned ones on top, past countdowns at the bottom), with the days left on the right. Tap one for its details: the countdown card, Started / Repeat / Note, the linked diary, and "On this day over the years" with the diaries written on that day each year. Edit from the top right; "More actions" lets you pin or delete. Deleting asks for confirmation, and you can still undo it from the notice afterwards.
 
 ## On the calendar
 With lunar dates shown, the anniversary's name takes the lunar line of the day cell; otherwise a small heart appears at the top left of the date. Selecting the day shows its anniversary card. Turn this off under Calendar display → Sections → Anniversaries.

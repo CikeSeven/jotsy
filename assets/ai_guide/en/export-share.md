@@ -14,7 +14,7 @@ Entry points:
 - **One diary**: on its preview page, More → Export.
 - **Several diaries**: long-press diaries on the home screen to multi-select (Ctrl / Shift + click on a computer), then More → Export.
 - **By filter**: Settings → Data Management → Export diaries. Pick a date range (All diaries / This year / Last 30 days / Custom dates), tags (any selected tag matches) and "Include archived diaries", then tap "Choose format and export".
-- **A whole notebook**: open the notebook and tap ⋮ in its header → Export as book, for a title page, contents and chapters (notebooks must be turned on).
+- **A whole notebook**: open the notebook and tap ⋮ in its header → Export as book (notebooks must be turned on); diaries follow the book's order. All seven formats are available; except Spreadsheet (CSV) and Jotsy diary file, the options start with "Book structure" (title page, contents and chapter headings, on by default).
 
 Pick one of seven formats:
 - **PDF**: fixed layout for reading and printing.
@@ -25,7 +25,9 @@ Pick one of seven formats:
 - **Spreadsheet (CSV)**: one row per diary with mood, weather and more, for Excel.
 - **Jotsy diary file**: keeps everything including media, with an optional password, and imports back through "Import Data" on another Jotsy; see "Backup and restore".
 
-The "Options" shown depend on the format: Include images (or images, recordings, videos and attachments), Include mood, weather, location and tags, Include comments (when comments are on), Oldest first / Newest first, and "Book structure" when exporting a book. Finish with "Save to files" or "Share".
+The "Options" shown depend on the format: Include images (or images, recordings, videos and attachments), Include mood, weather, location and tags, Include comments (when comments are on), Oldest first / Newest first (not when exporting a book). Finish with "Save to files" or "Share".
+
+If you picked an imported font in Settings → Editor → Body font & layout, PDF, Word and web page exports use it too: PDF embeds the font (falling back to the built-in font if it can't be embedded); Word and web pages only name the font, so a device without it shows a default font instead. With the built-in or a system font, exports keep their usual font.
 
 ## Share a diary
 1. On the preview page, tap More → Share. You can also turn on the top bar's "Share button" in Settings → Appearance → Diary preview page.
@@ -33,7 +35,7 @@ The "Options" shown depend on the format: Include images (or images, recordings,
 3. Under "Share to", tap a target: Weibo, Xiaohongshu, WeChat, Moments, QQ, Qzone (only installed apps are listed), "More apps" for the system share sheet, or "Copy text".
 4. Under "Other formats", "Share as long image" renders the diary as it looks on the preview page; phones also have "Save long image to gallery". The long image leaves out the top bar, previous / next cards, comments and AI reflections.
 
-When images are attached, the text is copied for you; just paste it into the post. Xiaohongshu and Moments need at least one image, Moments takes only 1, and other apps take up to 9 per share (Weibo has no limit).
+When images are attached, the text is copied for you; just paste it into the post. Xiaohongshu and Moments need at least one image. Images per share: Moments takes 1; WeChat, QQ, Qzone and Xiaohongshu take up to 9, and any extra aren't sent; Weibo and "More apps" (the system share sheet) have no limit.
 
 ## Notes
 - Sealed time capsules are never exported; only a full backup includes them.

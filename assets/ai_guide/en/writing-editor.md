@@ -20,7 +20,7 @@ If you have drafts, "Continue a draft" opens first: pick up a recent draft, view
 ## Title and body
 
 - The title is optional; cards use the first line of the body instead.
-- Markdown shortcuts convert as you type: `# ` at the start of a line makes a heading, `- ` a bulleted list, `1. ` a numbered list, `> ` a quote, `---` a divider.
+- Markdown shortcuts convert as you type. At the start of a line, `# ` makes a heading (`## ` for heading 2, and so on), `- ` or `* ` a bulleted list, `1. ` a numbered list, `[] ` a checklist item (`[x] ` for a ticked one), `> ` a quote and `---` a divider. A line with only `` ``` `` followed by Space or Enter becomes a code block (you can add a language name, such as `` ```dart ``). Inline, you can type `**bold**`, `*italic*`, `~~strikethrough~~`, `` `inline code` `` and `[text](URL)` links. Inside code blocks and table cells these symbols stay as typed.
 - New entries save to Drafts as you write, and edits to existing entries save automatically; there's no save button to press.
 
 ## The floating toolbar

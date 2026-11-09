@@ -8,7 +8,8 @@
 // - 日期按界面语言格式化，布尔为“是 / 否”，列表用顿号连接，schema 里的枚举
 //   值经 `aiToolArgValue` 译成界面语言，长文本（正文、备注）标成长条显示；
 // - 页面跳转的目标、“立即打开”等已在卡片上表达的参数不列；
-// - 个别参数（功能名、语言）由工具的 `describeArg` 给出读法。
+// - 个别参数（功能名、语言）由工具的 `describeArg` 给出读法，参数名本身是
+//   界面名称的（每项设置）由工具的 `argLabel` 给出名称。
 //
 // 参数取的是落库的原始参数（模型给什么就是什么），格式不对时原样显示，不抛错。
 
@@ -118,7 +119,8 @@ List<AiToolFact> aiToolFacts(AppLocalizations l10n, AiAgentCallRecord call) {
     }
     // 合并标签的 `from` 是标签列表，与日期的 `from` 不是一回事。
     final nameKey = key == 'from' && value is List ? 'merge_from' : key;
-    final label = aiToolArgLabel(l10n, nameKey);
+    final label =
+        tool?.argLabel(l10n, nameKey) ?? aiToolArgLabel(l10n, nameKey);
     final custom = tool?.describeArg(l10n, key, value);
     if (custom != null) {
       if (custom.isNotEmpty) facts.add(AiToolFact(label, custom));

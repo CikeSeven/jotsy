@@ -40,25 +40,12 @@ class _TodoStepsSectionState extends State<TodoStepsSection> {
     super.dispose();
   }
 
-  /// 新步骤的 id：只需在这条待办内唯一；取现有 `s<n>` 里最大的序号加一，
-  /// 删掉中间的步骤后也不会撞上。
-  String _nextId() {
-    var max = -1;
-    for (final step in widget.steps) {
-      final n = int.tryParse(
-        step.id.startsWith('s') ? step.id.substring(1) : '',
-      );
-      if (n != null && n > max) max = n;
-    }
-    return 's${max + 1}';
-  }
-
   void _submitNew() {
     final title = _add.text.trim();
     if (title.isEmpty || widget.steps.length >= TodoStep.maxSteps) return;
     widget.onChanged(<TodoStep>[
       ...widget.steps,
-      TodoStep(id: _nextId(), title: title),
+      TodoStep(id: TodoStep.nextId(widget.steps), title: title),
     ]);
     _add.clear();
     _addFocus.requestFocus();

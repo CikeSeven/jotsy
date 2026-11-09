@@ -63,6 +63,20 @@ mixin _AppDatabaseTodoCompleteOps on _$AppDatabase, _AppDatabaseTodoQueries {
     );
   }
 
+  /// 撤销 [uncompleteTodo]：把完成时间写回 [completedAt]（只写这一列外加
+  /// `updated_at`；撤销本身是一次新的编辑，同步时要盖过刚才的取消完成）。
+  /// 期间又被完成过的不动。
+  Future<void> restoreTodoCompletedAt(String todoId, DateTime completedAt) {
+    return (update(
+      todos,
+    )..where((t) => t.todoId.equals(todoId) & t.completedAt.isNull())).write(
+      TodosCompanion(
+        completedAt: Value(completedAt),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   /// 勾选 / 取消勾选一个步骤；步骤不存在时不写。
   Future<void> setTodoStepDone(String todoId, String stepId, bool done) {
     return transaction(() async {

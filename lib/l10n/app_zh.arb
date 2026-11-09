@@ -16220,6 +16220,127 @@
   "@aiToolDone": {
     "description": "AI 步骤卡片：改动已完成。"
   },
+  "aiToolListTodoLists": "查看待办清单",
+  "@aiToolListTodoLists": {
+    "description": "AI 步骤卡片：查看待办清单。"
+  },
+  "aiToolTodoListCount": "{count} 个清单",
+  "@aiToolTodoListCount": {
+    "description": "AI 步骤卡片：待办清单的个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReopenTodos": "把 {count} 项待办改回未完成",
+  "@aiToolReopenTodos": {
+    "description": "AI 步骤卡片：把已完成的待办改回未完成。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEditTodoSteps": "修改待办的步骤",
+  "@aiToolEditTodoSteps": {
+    "description": "AI 步骤卡片：修改待办的步骤。"
+  },
+  "aiToolEditTodoStepsOf": "修改步骤：{title}",
+  "@aiToolEditTodoStepsOf": {
+    "description": "AI 步骤卡片：修改某项待办的步骤。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateTodoList": "新建待办清单：{name}",
+  "@aiToolCreateTodoList": {
+    "description": "AI 步骤卡片：新建待办清单。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTodoList": "待办清单改名为：{name}",
+  "@aiToolRenameTodoList": {
+    "description": "AI 步骤卡片：待办清单改名（新名称）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoList": "删除待办清单 {name}",
+  "@aiToolDeleteTodoList": {
+    "description": "AI 步骤卡片：删除待办清单。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoListCount": "其中的 {count} 项待办会一起删除",
+  "@aiToolDeleteTodoListCount": {
+    "description": "AI 确认卡片：删除清单时一起删掉的待办数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolGetSettings": "查看设置",
+  "@aiToolGetSettings": {
+    "description": "AI 步骤卡片：查看应用设置。"
+  },
+  "aiToolChangeSettingsAny": "修改设置",
+  "@aiToolChangeSettingsAny": {
+    "description": "AI 步骤卡片：修改设置（还不知道改哪几项时）。"
+  },
+  "aiToolChangeSetting": "修改设置：{name}",
+  "@aiToolChangeSetting": {
+    "description": "AI 步骤卡片：修改一项设置。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolChangeSettings": "修改 {count} 项设置",
+  "@aiToolChangeSettings": {
+    "description": "AI 步骤卡片：修改几项设置。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolSettingName": "{page} · {setting}",
+  "@aiToolSettingName": {
+    "description": "AI 步骤卡片：设置项连同它所在的页面。",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "setting": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgNone": "无",
+  "@aiToolArgNone": {
+    "description": "AI 步骤详情：空值（如去掉全部提醒）。"
+  },
+  "aiToolArgOn": "开",
+  "@aiToolArgOn": {
+    "description": "AI 步骤详情：开关打开。"
+  },
+  "aiToolArgOff": "关",
+  "@aiToolArgOff": {
+    "description": "AI 步骤详情：开关关闭。"
+  },
   "aiToolBlockedByEditor": "有页面正在编辑，先关掉再试",
   "@aiToolBlockedByEditor": {
     "description": "AI 步骤卡片：有编辑页开着，AI 不改数据。"
@@ -19318,7 +19439,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} other{}}",
   "@aiToolArgName": {
     "description": "工具详情里参数的名称（arg_参数名）；空串表示没有译名，界面显示参数名。",
     "placeholders": {

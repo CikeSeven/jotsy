@@ -21204,6 +21204,108 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get aiToolDone;
 
+  /// AI step card: listing to-do lists.
+  ///
+  /// In en, this message translates to:
+  /// **'List to-do lists'**
+  String get aiToolListTodoLists;
+
+  /// AI step card: number of to-do lists.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 list} other{{count} lists}}'**
+  String aiToolTodoListCount(int count);
+
+  /// AI step card: marking completed to-dos as not done.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Reopen 1 to-do} other{Reopen {count} to-dos}}'**
+  String aiToolReopenTodos(int count);
+
+  /// AI step card: editing the steps of a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit to-do steps'**
+  String get aiToolEditTodoSteps;
+
+  /// AI step card: editing the steps of the named to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit steps: {title}'**
+  String aiToolEditTodoStepsOf(String title);
+
+  /// AI step card: creating a to-do list.
+  ///
+  /// In en, this message translates to:
+  /// **'Create to-do list: {name}'**
+  String aiToolCreateTodoList(String name);
+
+  /// AI step card: renaming a to-do list (the new name).
+  ///
+  /// In en, this message translates to:
+  /// **'Rename to-do list to: {name}'**
+  String aiToolRenameTodoList(String name);
+
+  /// AI step card: deleting a to-do list.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete to-do list {name}'**
+  String aiToolDeleteTodoList(String name);
+
+  /// AI confirm card: how many to-dos go with the deleted list.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Its 1 to-do is deleted too} other{Its {count} to-dos are deleted too}}'**
+  String aiToolDeleteTodoListCount(int count);
+
+  /// AI step card: reading app settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Check settings'**
+  String get aiToolGetSettings;
+
+  /// AI step card: changing settings (before the settings are known).
+  ///
+  /// In en, this message translates to:
+  /// **'Change settings'**
+  String get aiToolChangeSettingsAny;
+
+  /// AI step card: changing one setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Change setting: {name}'**
+  String aiToolChangeSetting(String name);
+
+  /// AI step card: changing several settings.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Change 1 setting} other{Change {count} settings}}'**
+  String aiToolChangeSettings(int count);
+
+  /// AI step card: a setting with the page it is on.
+  ///
+  /// In en, this message translates to:
+  /// **'{page} · {setting}'**
+  String aiToolSettingName(String page, String setting);
+
+  /// AI step details: an empty value (e.g. reminders removed).
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get aiToolArgNone;
+
+  /// AI step details: a switch turned on.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get aiToolArgOn;
+
+  /// AI step details: a switch turned off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get aiToolArgOff;
+
   /// AI step card: an editor is open, so the AI did not change data.
   ///
   /// In en, this message translates to:
@@ -26551,7 +26653,7 @@ abstract class AppLocalizations {
   /// Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.
   ///
   /// In en, this message translates to:
-  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} other{}}'**
+  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} other{}}'**
   String aiToolArgName(String key);
 
   /// Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.

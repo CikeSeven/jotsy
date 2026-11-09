@@ -16220,6 +16220,127 @@
   "@aiToolDone": {
     "description": "AI step card: the change is done."
   },
+  "aiToolListTodoLists": "List to-do lists",
+  "@aiToolListTodoLists": {
+    "description": "AI step card: listing to-do lists."
+  },
+  "aiToolTodoListCount": "{count, plural, =1{1 list} other{{count} lists}}",
+  "@aiToolTodoListCount": {
+    "description": "AI step card: number of to-do lists.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReopenTodos": "{count, plural, =1{Reopen 1 to-do} other{Reopen {count} to-dos}}",
+  "@aiToolReopenTodos": {
+    "description": "AI step card: marking completed to-dos as not done.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEditTodoSteps": "Edit to-do steps",
+  "@aiToolEditTodoSteps": {
+    "description": "AI step card: editing the steps of a to-do."
+  },
+  "aiToolEditTodoStepsOf": "Edit steps: {title}",
+  "@aiToolEditTodoStepsOf": {
+    "description": "AI step card: editing the steps of the named to-do.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateTodoList": "Create to-do list: {name}",
+  "@aiToolCreateTodoList": {
+    "description": "AI step card: creating a to-do list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTodoList": "Rename to-do list to: {name}",
+  "@aiToolRenameTodoList": {
+    "description": "AI step card: renaming a to-do list (the new name).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoList": "Delete to-do list {name}",
+  "@aiToolDeleteTodoList": {
+    "description": "AI step card: deleting a to-do list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoListCount": "{count, plural, =1{Its 1 to-do is deleted too} other{Its {count} to-dos are deleted too}}",
+  "@aiToolDeleteTodoListCount": {
+    "description": "AI confirm card: how many to-dos go with the deleted list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolGetSettings": "Check settings",
+  "@aiToolGetSettings": {
+    "description": "AI step card: reading app settings."
+  },
+  "aiToolChangeSettingsAny": "Change settings",
+  "@aiToolChangeSettingsAny": {
+    "description": "AI step card: changing settings (before the settings are known)."
+  },
+  "aiToolChangeSetting": "Change setting: {name}",
+  "@aiToolChangeSetting": {
+    "description": "AI step card: changing one setting.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolChangeSettings": "{count, plural, =1{Change 1 setting} other{Change {count} settings}}",
+  "@aiToolChangeSettings": {
+    "description": "AI step card: changing several settings.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolSettingName": "{page} · {setting}",
+  "@aiToolSettingName": {
+    "description": "AI step card: a setting with the page it is on.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "setting": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgNone": "None",
+  "@aiToolArgNone": {
+    "description": "AI step details: an empty value (e.g. reminders removed)."
+  },
+  "aiToolArgOn": "On",
+  "@aiToolArgOn": {
+    "description": "AI step details: a switch turned on."
+  },
+  "aiToolArgOff": "Off",
+  "@aiToolArgOff": {
+    "description": "AI step details: a switch turned off."
+  },
   "aiToolBlockedByEditor": "A page is being edited; close it and try again",
   "@aiToolBlockedByEditor": {
     "description": "AI step card: an editor is open, so the AI did not change data."
@@ -19318,7 +19439,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

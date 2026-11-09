@@ -1,4 +1,4 @@
-// 日历类的只读工具：某一天的概览、待办、纪念日。
+// 日历类的只读工具：某一天的概览、纪念日（待办见 `ai_tools_todos.dart`）。
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/agent/ai_tool_schema.dart';
@@ -10,6 +10,7 @@ import '../../calendar/viewmodels/calendar_holiday_day.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
 import '../models/ai_tool_subject.dart';
 import 'ai_tool.dart';
+import 'ai_tool_todo_parts.dart';
 import 'ai_tools_diaries.dart';
 
 /// 某一天：农历、节假日、这天的心情、这天写的日记、到期的待办、纪念日。
@@ -102,111 +103,13 @@ class GetCalendarDayTool extends AiTool {
           for (final diary in diaries) aiDiaryToolHeader(context, diary),
         ],
         if (features.todos)
-          'todos_due': [for (final todo in todos) _todoItem(todo, null)],
+          'todos_due': [for (final todo in todos) aiTodoItem(todo, null)],
         if (features.anniversariesEnabled) 'anniversaries': anniversaries,
       },
       subjects: [
         AiToolSubject.day(day),
         for (final diary in diaries) aiContextDiarySubject(diary),
-        for (final todo in todos)
-          AiToolSubject.todo(
-            todo.todoId,
-            todo.title,
-            due: todo.dueDate == null ? null : DateTime.tryParse(todo.dueDate!),
-          ),
-      ],
-    );
-  }
-}
-
-class ListTodosTool extends AiTool {
-  const ListTodosTool();
-
-  @override
-  String get name => 'list_todos';
-
-  @override
-  AiToolGroup get group => AiToolGroup.calendar;
-
-  @override
-  AiToolEffect get effect => AiToolEffect.read;
-
-  @override
-  String get description =>
-      'List to-dos: open (default), completed or all; optionally only those '
-      'due in a date range (inclusive) or matching keywords.';
-
-  @override
-  AiObjectSchema get schema => const AiObjectSchema(
-    properties: <String, AiSchema>{
-      'status': AiStringSchema(
-        enumValues: <String>['open', 'completed', 'all'],
-      ),
-      'due_from': AiDateSchema(),
-      'due_to': AiDateSchema(),
-      'query': AiStringSchema(),
-      'limit': AiIntegerSchema(minimum: 1, maximum: 200),
-    },
-  );
-
-  @override
-  bool isAvailable(AiToolEnv env) => env.features.todos;
-
-  @override
-  String label(AppLocalizations l10n, Map<String, Object?> args) =>
-      l10n.aiToolListTodos;
-
-  @override
-  Future<AiToolOutcome> run(
-    AiToolContext context,
-    Map<String, Object?> args,
-  ) async {
-    final database = context.database;
-    final status = args['status'] as String? ?? 'open';
-    final from = args['due_from'] as DateTime?;
-    final to = args['due_to'] as DateTime?;
-    final query = (args['query'] as String?)?.trim();
-    List<TodoRow> rows;
-    if (query != null && query.isNotEmpty) {
-      rows = await database.watchTodoSearch(query).first;
-    } else if (from != null || to != null) {
-      rows = await database
-          .watchTodosDueBetween(from ?? DateTime(1970), to ?? DateTime(9999))
-          .first;
-    } else if (status == 'completed') {
-      rows = await database.watchCompletedTodos().first;
-    } else if (status == 'open') {
-      rows = await database.getOpenTodos();
-    } else {
-      rows = [
-        ...await database.getOpenTodos(),
-        ...await database.watchCompletedTodos().first,
-      ];
-    }
-    final filtered = [
-      for (final row in rows)
-        if (status == 'all' || (status == 'open') == (row.completedAt == null))
-          row,
-    ];
-    final lists = <String, String>{
-      for (final list in await database.getTodoLists()) list.listId: list.name,
-    };
-    final limit = args['limit'] as int? ?? 50;
-    return AiToolOutcome(
-      data: <String, Object?>{
-        'total': filtered.length,
-        'todos': [
-          for (final row in filtered.take(limit)) _todoItem(row, lists),
-        ],
-      },
-      summary: context.l10n.aiToolTodoCount(filtered.length),
-      subjects: [
-        for (final row in filtered.take(limit))
-          AiToolSubject.todo(
-            row.todoId,
-            row.title,
-            due: row.dueDate == null ? null : DateTime.tryParse(row.dueDate!),
-          ),
+        for (final todo in todos) aiTodoSubject(todo),
       ],
     );
   }
@@ -275,22 +178,4 @@ class ListAnniversariesTool extends AiTool {
       ],
     );
   }
-}
-
-Map<String, Object?> _todoItem(TodoRow row, Map<String, String>? lists) {
-  String two(int value) => value.toString().padLeft(2, '0');
-  final minute = row.dueMinute;
-  final note = row.note.trim();
-  return <String, Object?>{
-    'id': row.todoId,
-    'title': row.title,
-    if (lists != null) 'list': lists[row.listId] ?? 'Inbox',
-    'due_date': ?row.dueDate,
-    if (row.dueDate != null && minute != null)
-      'due_time': '${two(minute ~/ 60)}:${two(minute % 60)}',
-    if (row.priority > 0) 'priority': TodoPriority.of(row.priority).name,
-    'done': row.completedAt != null,
-    if (note.isNotEmpty)
-      'note': note.length > 200 ? '${note.substring(0, 200)}…' : note,
-  };
 }

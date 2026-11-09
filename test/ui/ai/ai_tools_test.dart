@@ -16,9 +16,13 @@ import 'package:node_diary/ui/ai/models/ai_agent_options.dart';
 import 'package:node_diary/ui/ai/models/ai_preferences.dart';
 import 'package:node_diary/ui/ai/models/ai_privacy_options.dart';
 import 'package:node_diary/ui/ai/tools/ai_destinations.dart';
+import 'package:node_diary/ui/ai/tools/ai_setting_specs.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool_registry.dart';
+import 'package:node_diary/ui/ai/tools/ai_tool_todo_parts.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_prompt_builder.dart';
+import 'package:node_diary/ui/todos/models/todo_settings.dart';
+import 'package:node_diary/ui/todos/providers/todo_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// AI 助手的工具：清单的一致性（名称、schema、标题、前往目标），以及几个
@@ -26,6 +30,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late AppDatabase db;
+  late SettingsService settings;
   late ProviderContainer container;
 
   setUpAll(() async {
@@ -35,7 +40,7 @@ void main() {
 
   setUp(() async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
-    final settings = await SettingsService.create();
+    settings = await SettingsService.create();
     db = AppDatabase.forTesting(NativeDatabase.memory());
     container = ProviderContainer(
       overrides: [
@@ -152,8 +157,58 @@ void main() {
           notebooks: false,
         ),
       );
-      expect(more, containsAll(['list_todos', 'list_anniversaries']));
+      expect(defaults, isNot(contains('list_todo_lists')));
+      expect(defaults, isNot(contains('create_todo_list')));
+      expect(defaults, containsAll(['get_settings', 'change_settings']));
+      expect(
+        more,
+        containsAll([
+          'list_todos',
+          'list_todo_lists',
+          'list_anniversaries',
+          'reopen_todos',
+          'edit_todo_steps',
+          'delete_todo_list',
+        ]),
+      );
       expect(more, isNot(contains('list_notebooks')));
+    });
+
+    test(
+      'the repeat schema lists exactly the frequencies the parser knows',
+      () {
+        final properties = aiTodoRepeatSchema.properties;
+        expect((properties['frequency']! as AiStringSchema).enumValues, [
+          'none',
+          ...aiTodoRepeatFrequencyKeys,
+        ]);
+        expect(
+          (properties['monthly_on']! as AiStringSchema).enumValues,
+          aiTodoMonthlyModeKeys,
+        );
+      },
+    );
+
+    test('every adjustable setting has a unique key, a name and a schema '
+        'entry on its platforms', () {
+      final keys = <String>{};
+      for (final spec in aiSettingSpecs) {
+        expect(keys.add(spec.key), isTrue, reason: 'duplicate ${spec.key}');
+        expect(RegExp(r'^[a-z][a-z0-9_]+$').hasMatch(spec.key), isTrue);
+        for (final l10n in [zh, en]) {
+          expect(spec.name(l10n).trim(), isNotEmpty, reason: spec.key);
+        }
+      }
+      final schema = aiToolByName('change_settings')!.schema.properties;
+      expect(schema.keys.toSet(), {
+        for (final spec in aiSettingSpecs)
+          if (spec.onThisPlatform) spec.key,
+      });
+      // 卡片详情里的参数名就是设置名，不显示参数名本身。
+      final tool = aiToolByName('change_settings')!;
+      for (final key in schema.keys) {
+        expect(tool.argLabel(zh, key), isNot(key));
+      }
     });
 
     test(
@@ -389,6 +444,135 @@ void main() {
         throwsA(isA<AiToolArgumentError>()),
       );
     });
+  });
+
+  group('to-dos', () {
+    const todosOn = AppFeatures(todos: true, ai: true);
+
+    test('list_todos filters by list, priority and keywords within dates, '
+        'and returns steps, reminders and repeat', () async {
+      final work = await db.createTodoList(name: '工作');
+      final report = await db.createTodo(
+        TodoInput(
+          title: '写周报',
+          listId: work,
+          priority: TodoPriority.high,
+          dueDate: DateTime(2026, 11, 9),
+          dueMinute: 17 * 60,
+          reminders: const [TodoReminder.beforeDue(30)],
+          repeat: TodoRepeatRule(
+            frequency: TodoRepeatFrequency.weekly,
+            weekdays: const [1],
+            anchor: DateTime(2026, 11, 9),
+          ),
+          steps: const [TodoStep(id: 's0', title: '汇总数据')],
+        ),
+      );
+      await db.createTodo(
+        TodoInput(title: '周报模板', dueDate: DateTime(2026, 12, 1)),
+      );
+      await db.createTodo(const TodoInput(title: '买菜'));
+
+      Future<List<Map>> list(Map<String, Object?> args) async {
+        final outcome = await run(
+          'list_todos',
+          args,
+          with_: context(features: todosOn),
+        );
+        return ((outcome.data! as Map)['todos'] as List).cast<Map>();
+      }
+
+      final byList = await list({'list': '工作'});
+      expect(byList.map((t) => t['id']), [report]);
+      final item = byList.single;
+      expect(item['list'], '工作');
+      expect(item['due_time'], '17:00');
+      expect(item['steps'], [
+        {'id': 's0', 'title': '汇总数据', 'done': false},
+      ]);
+      expect(item['reminders'], [
+        {'minutes_before': 30},
+      ]);
+      expect(item['repeat'], {
+        'frequency': 'weekly',
+        'weekdays': [1],
+      });
+
+      expect((await list({'list': ''})).map((t) => t['title']).toSet(), {
+        '周报模板',
+        '买菜',
+      });
+      expect((await list({'priority': 'high'})).single['id'], report);
+      // 关键词与日期范围一起生效。
+      expect(
+        (await list({
+          'query': '周报',
+          'due_from': '2026-11-01',
+          'due_to': '2026-11-30',
+        })).map((t) => t['title']),
+        ['写周报'],
+      );
+      expect(
+        () => run('list_todos', {
+          'list': '不存在',
+        }, with_: context(features: todosOn)),
+        throwsA(isA<AiToolFailure>()),
+      );
+    });
+
+    test(
+      'list_todo_lists counts each list, the inbox and the default',
+      () async {
+        final work = await db.createTodoList(name: '工作');
+        await db.createTodoList(name: '生活');
+        final done = await db.createTodo(TodoInput(title: 'a', listId: work));
+        await db.createTodo(TodoInput(title: 'b', listId: work));
+        await db.createTodo(const TodoInput(title: 'c'));
+        await db.completeTodo(done);
+        await saveTodoSettings(
+          settings,
+          TodoSettings.defaults.copyWith(defaultListId: work),
+        );
+        final outcome = await run(
+          'list_todo_lists',
+          {},
+          with_: context(features: todosOn),
+        );
+        expect(outcome.data, {
+          'lists': [
+            {'name': '工作', 'open': 1, 'done': 1},
+            {'name': '生活', 'open': 0, 'done': 0},
+          ],
+          'inbox': {'open': 1, 'done': 0},
+          'default_list': '工作',
+        });
+        expect(outcome.summary, zh.aiToolTodoListCount(2));
+      },
+    );
+  });
+
+  test('get_settings reports values in the same shape change_settings takes, '
+      'leaving out features that are off', () async {
+    await saveTodoSettings(
+      settings,
+      TodoSettings.defaults.copyWith(allDayReminderMinute: 8 * 60 + 30),
+    );
+    final off = await run('get_settings', {});
+    final offValues = (off.data! as Map)['settings'] as Map;
+    expect(offValues.keys, isNot(contains('todo_show_completed')));
+    expect(offValues['calendar_week_start'], 'language');
+    expect(offValues['open_diary_in_editor'], isFalse);
+    expect((off.data! as Map)['appearance'], containsPair('text_size', 1.0));
+
+    final on = await run(
+      'get_settings',
+      {},
+      with_: context(features: const AppFeatures(todos: true, ai: true)),
+    );
+    final values = (on.data! as Map)['settings'] as Map;
+    expect(values['todo_all_day_reminder_time'], '08:30');
+    expect(values['todo_default_list'], 'Inbox');
+    expect(values['todo_sort'], 'manual');
   });
 
   test('get_app_context reports features and mood options', () async {

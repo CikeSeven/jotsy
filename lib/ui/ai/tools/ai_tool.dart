@@ -92,6 +92,11 @@ abstract class AiTool {
   /// 返回空串表示不列这一项。
   String? describeArg(AppLocalizations l10n, String key, Object? value) => null;
 
+  /// 可读详情里某个参数的名称：返回 null 用 `aiToolArgName` 的译名。参数
+  /// 名本身就是某个界面名称时（如 `change_settings` 的每个参数是一项设置）
+  /// 由工具给出，不必为每个参数在 ARB 里另写一份。
+  String? argLabel(AppLocalizations l10n, String key) => null;
+
   /// 执行。[args] 已经过 [schema] 校验与转换（日期为 `DateTime`，时间为
   /// 一天中的分钟数）。
   Future<AiToolOutcome> run(AiToolContext context, Map<String, Object?> args);

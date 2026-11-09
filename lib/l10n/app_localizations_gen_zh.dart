@@ -11660,6 +11660,77 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiToolDone => '已完成';
 
   @override
+  String get aiToolListTodoLists => '查看待办清单';
+
+  @override
+  String aiToolTodoListCount(int count) {
+    return '$count 个清单';
+  }
+
+  @override
+  String aiToolReopenTodos(int count) {
+    return '把 $count 项待办改回未完成';
+  }
+
+  @override
+  String get aiToolEditTodoSteps => '修改待办的步骤';
+
+  @override
+  String aiToolEditTodoStepsOf(String title) {
+    return '修改步骤：$title';
+  }
+
+  @override
+  String aiToolCreateTodoList(String name) {
+    return '新建待办清单：$name';
+  }
+
+  @override
+  String aiToolRenameTodoList(String name) {
+    return '待办清单改名为：$name';
+  }
+
+  @override
+  String aiToolDeleteTodoList(String name) {
+    return '删除待办清单 $name';
+  }
+
+  @override
+  String aiToolDeleteTodoListCount(int count) {
+    return '其中的 $count 项待办会一起删除';
+  }
+
+  @override
+  String get aiToolGetSettings => '查看设置';
+
+  @override
+  String get aiToolChangeSettingsAny => '修改设置';
+
+  @override
+  String aiToolChangeSetting(String name) {
+    return '修改设置：$name';
+  }
+
+  @override
+  String aiToolChangeSettings(int count) {
+    return '修改 $count 项设置';
+  }
+
+  @override
+  String aiToolSettingName(String page, String setting) {
+    return '$page · $setting';
+  }
+
+  @override
+  String get aiToolArgNone => '无';
+
+  @override
+  String get aiToolArgOn => '开';
+
+  @override
+  String get aiToolArgOff => '关';
+
+  @override
   String get aiToolBlockedByEditor => '有页面正在编辑，先关掉再试';
 
   @override
@@ -14777,6 +14848,14 @@ class AppLocalizationsZh extends AppLocalizations {
       'arg_kind_todo': '待办',
       'arg_kind_anniversary': '纪念日',
       'arg_kind_day': '日期',
+      'arg_steps': '步骤',
+      'arg_reminders': '提醒',
+      'arg_add_steps': '添加步骤',
+      'arg_check_steps': '勾选步骤',
+      'arg_uncheck_steps': '取消勾选',
+      'arg_remove_steps': '删除步骤',
+      'arg_all_day': '全天',
+      'arg_kind_todoList': '待办清单',
       'other': '',
     });
     return '$_temp0';

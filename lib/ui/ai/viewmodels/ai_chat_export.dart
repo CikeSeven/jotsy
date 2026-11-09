@@ -274,7 +274,7 @@ String aiChatExportJson({
         'steps': [
           for (final step in steps)
             <String, Object?>{
-              if (step.text.trim().isNotEmpty) 'text': step.text,
+              if (step.text.trim().isNotEmpty) 'text': step.text.trim(),
               if (options.reasoning && step.reasoning.trim().isNotEmpty)
                 'reasoning': step.reasoning,
               if (step.thinkingMs > 0) 'thinkingMs': step.thinkingMs,

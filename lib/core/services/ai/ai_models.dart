@@ -117,6 +117,7 @@ class AiRequest {
     this.thinking,
     this.tools = const <AiToolSpec>[],
     this.toolChoice = AiToolChoice.auto,
+    this.cacheKey,
   });
 
   final String model;
@@ -142,6 +143,12 @@ class AiRequest {
   /// 是否允许模型调用 [tools]。
   final AiToolChoice toolChoice;
 
+  /// 提示缓存的会话键（智能体为对话 id）。给出时表示后续请求会以这次的
+  /// 消息为前缀继续，各客户端据此打开显式缓存：Anthropic 打 `cache_control`
+  /// 断点（写缓存要多计费，一次性请求不打），OpenAI 发 `prompt_cache_key`
+  /// 让同一对话落到同一缓存。DeepSeek、Gemini 等自动前缀缓存不需要。
+  final String? cacheKey;
+
   AiRequest copyWith({
     String? model,
     String? system,
@@ -162,6 +169,7 @@ class AiRequest {
       thinking: thinking,
       tools: tools ?? this.tools,
       toolChoice: toolChoice ?? this.toolChoice,
+      cacheKey: cacheKey,
     );
   }
 
@@ -176,6 +184,7 @@ class AiRequest {
     thinking: level,
     tools: tools,
     toolChoice: toolChoice,
+    cacheKey: cacheKey,
   );
 
   bool get hasImages => messages.any((message) => message.hasImages);
@@ -184,18 +193,35 @@ class AiRequest {
 }
 
 /// 一次请求消耗的 token。部分服务商不返回用量。
+///
+/// [inputTokens] 是这次读入的全部输入（含命中缓存的部分），
+/// [cachedInputTokens] 是其中命中提示缓存、按缓存价计费的部分（各协议的
+/// 写法统一到这里：Chat 兼容为 `prompt_tokens_details.cached_tokens` 或
+/// DeepSeek 的 `prompt_cache_hit_tokens`，Responses 为
+/// `input_tokens_details.cached_tokens`，Anthropic 为
+/// `cache_read_input_tokens`，Gemini 为 `cachedContentTokenCount`）。
 @immutable
 class AiUsage {
-  const AiUsage({this.inputTokens = 0, this.outputTokens = 0});
+  const AiUsage({
+    this.inputTokens = 0,
+    this.outputTokens = 0,
+    this.cachedInputTokens = 0,
+  });
 
   final int inputTokens;
   final int outputTokens;
+  final int cachedInputTokens;
 
   int get totalTokens => inputTokens + outputTokens;
+
+  /// 没命中缓存、按原价计费的输入。
+  int get uncachedInputTokens =>
+      inputTokens > cachedInputTokens ? inputTokens - cachedInputTokens : 0;
 
   AiUsage operator +(AiUsage other) => AiUsage(
     inputTokens: inputTokens + other.inputTokens,
     outputTokens: outputTokens + other.outputTokens,
+    cachedInputTokens: cachedInputTokens + other.cachedInputTokens,
   );
 
   /// 两份用量取各项较大者：流式响应里用量常分几次给出（如 Anthropic 先在
@@ -208,19 +234,32 @@ class AiUsage {
     outputTokens: other.outputTokens > outputTokens
         ? other.outputTokens
         : outputTokens,
+    cachedInputTokens: other.cachedInputTokens > cachedInputTokens
+        ? other.cachedInputTokens
+        : cachedInputTokens,
   );
+
+  /// 记进消息 / 结果 meta 的写法（界面底部的用量从这里读）。
+  Map<String, Object?> toMeta() => <String, Object?>{
+    'inputTokens': inputTokens,
+    'outputTokens': outputTokens,
+    if (cachedInputTokens > 0) 'cachedTokens': cachedInputTokens,
+  };
 
   @override
   bool operator ==(Object other) =>
       other is AiUsage &&
       other.inputTokens == inputTokens &&
-      other.outputTokens == outputTokens;
+      other.outputTokens == outputTokens &&
+      other.cachedInputTokens == cachedInputTokens;
 
   @override
-  int get hashCode => Object.hash(inputTokens, outputTokens);
+  int get hashCode => Object.hash(inputTokens, outputTokens, cachedInputTokens);
 
   @override
-  String toString() => 'AiUsage($inputTokens in, $outputTokens out)';
+  String toString() =>
+      'AiUsage($inputTokens in ($cachedInputTokens cached), '
+      '$outputTokens out)';
 }
 
 /// 结束原因，统一四种协议的写法。

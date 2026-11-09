@@ -34,11 +34,26 @@ class AnthropicChatClient extends AiChatClient {
   });
 
   Map<String, Object?> buildBody(AiRequest request, {required bool stream}) {
+    final cache = request.cacheKey != null;
+    final messages = [
+      for (final message in request.messages) _message(message),
+    ];
+    if (cache) _markLastUserMessage(messages);
+    final hasSystem = request.system?.trim().isNotEmpty ?? false;
     return withExtraBody(<String, Object?>{
       'model': request.model,
       'max_tokens': request.maxOutputTokens ?? defaultMaxTokens,
-      if (request.system?.trim().isNotEmpty ?? false) 'system': request.system,
-      'messages': [for (final message in request.messages) _message(message)],
+      if (hasSystem)
+        'system': cache
+            ? [
+                <String, Object?>{
+                  'type': 'text',
+                  'text': request.system,
+                  'cache_control': _ephemeral,
+                },
+              ]
+            : request.system,
+      'messages': messages,
       if (stream) 'stream': true,
       // 开着思考时 Claude 不接受温度。
       if (config.sendTemperature &&
@@ -58,16 +73,45 @@ class AnthropicChatClient extends AiChatClient {
         'output_config': <String, Object?>{'effort': level.name},
       if (request.hasTools)
         'tools': [
-          for (final tool in request.tools)
+          for (var i = 0; i < request.tools.length; i++)
             <String, Object?>{
-              'name': tool.name,
-              'description': tool.description,
-              'input_schema': tool.parameters,
+              'name': request.tools[i].name,
+              'description': request.tools[i].description,
+              'input_schema': request.tools[i].parameters,
+              if (cache && i == request.tools.length - 1)
+                'cache_control': _ephemeral,
             },
         ],
       if (request.hasTools && request.toolChoice == AiToolChoice.none)
         'tool_choice': <String, Object?>{'type': 'none'},
     });
+  }
+
+  static const Map<String, Object?> _ephemeral = <String, Object?>{
+    'type': 'ephemeral',
+  };
+
+  /// 提示缓存的第三个断点（前两个在系统提示词与最后一个工具上）：最后一条
+  /// 用户消息（问题或工具结果）的最后一块。Anthropic 只缓存打了断点的前缀，
+  /// 下一步 / 下一轮的请求以这里为前缀继续，就能读到这次写下的缓存。
+  static void _markLastUserMessage(List<Map<String, Object?>> messages) {
+    for (var i = messages.length - 1; i >= 0; i--) {
+      final message = messages[i];
+      if (message['role'] != 'user') continue;
+      final content = message['content'];
+      final blocks = content is String
+          ? <Map<String, Object?>>[
+              <String, Object?>{'type': 'text', 'text': content},
+            ]
+          : [
+              for (final block in content! as List)
+                <String, Object?>{...block as Map<String, Object?>},
+            ];
+      if (blocks.isEmpty) return;
+      blocks.last['cache_control'] = _ephemeral;
+      messages[i] = <String, Object?>{...message, 'content': blocks};
+      return;
+    }
   }
 
   Map<String, Object?> _message(AiMessage message) {
@@ -200,7 +244,11 @@ class AnthropicChatClient extends AiChatClient {
         jsonInt(usage['cache_creation_input_tokens']);
     final output = jsonInt(usage['output_tokens']);
     if (input == 0 && output == 0) return null;
-    return AiUsage(inputTokens: input, outputTokens: output);
+    return AiUsage(
+      inputTokens: input,
+      outputTokens: output,
+      cachedInputTokens: jsonInt(usage['cache_read_input_tokens']),
+    );
   }
 
   static AiFinishReason? _finish(String? raw) => switch (raw) {

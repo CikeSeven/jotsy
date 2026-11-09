@@ -39,6 +39,9 @@ class OpenAiResponsesClient extends AiChatClient {
       'input': [for (final message in request.messages) ..._input(message)],
       'stream': stream,
       'store': false,
+      // 同一对话的请求落到同一份提示缓存（OpenAI 按前缀与这个键路由）。
+      if (request.cacheKey case final key?)
+        'prompt_cache_key': key.length > 64 ? key.substring(0, 64) : key,
       // 推理模型不接受温度：请求思考或指定了强度（含“关”，只有推理模型
       // 才有这个参数）时都不发。
       if (config.sendTemperature &&
@@ -237,7 +240,15 @@ class OpenAiResponsesClient extends AiChatClient {
     final input = jsonInt(usage['input_tokens']);
     final output = jsonInt(usage['output_tokens']);
     if (input == 0 && output == 0) return null;
-    return AiUsage(inputTokens: input, outputTokens: output);
+    // 命中缓存的部分含在 input_tokens 里。
+    final cached = jsonInt(
+      jsonMap(usage['input_tokens_details'])?['cached_tokens'],
+    );
+    return AiUsage(
+      inputTokens: input,
+      outputTokens: output,
+      cachedInputTokens: cached.clamp(0, input),
+    );
   }
 
   static AiFinishReason? _finish(Map<String, Object?>? response) {

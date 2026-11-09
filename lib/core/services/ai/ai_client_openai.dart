@@ -23,6 +23,8 @@ class OpenAiChatClient extends AiChatClient {
       'Authorization': 'Bearer ${config.apiKey.trim()}',
   });
 
+  bool get _isOpenAi => Uri.tryParse(baseUrl)?.host == 'api.openai.com';
+
   Map<String, Object?> buildBody(AiRequest request, {required bool stream}) {
     final messages = <Map<String, Object?>>[
       if (request.system?.trim().isNotEmpty ?? false)
@@ -58,6 +60,10 @@ class OpenAiChatClient extends AiChatClient {
       // 默认就是 auto；只在禁止调用时才写，部分兼容服务不认显式的 auto。
       if (request.hasTools && request.toolChoice == AiToolChoice.none)
         'tool_choice': 'none',
+      // 只有 OpenAI 自己认这个键（兼容服务多为自动前缀缓存，未知字段可能
+      // 被拒）。
+      if (request.cacheKey case final key? when _isOpenAi)
+        'prompt_cache_key': key.length > 64 ? key.substring(0, 64) : key,
     });
   }
 
@@ -241,7 +247,22 @@ class OpenAiChatClient extends AiChatClient {
       usage['completion_tokens'] ?? usage['output_tokens'],
     );
     if (input == 0 && output == 0) return null;
-    return AiUsage(inputTokens: input, outputTokens: output);
+    // 命中缓存的输入：OpenAI 写在 `prompt_tokens_details.cached_tokens`；
+    // DeepSeek 另给 `prompt_cache_hit_tokens`（两者相同）；Kimi 等写在顶层
+    // `cached_tokens`。都算在 prompt_tokens 里。
+    final details = jsonMap(
+      usage['prompt_tokens_details'] ?? usage['input_tokens_details'],
+    );
+    final cached = jsonInt(
+      details?['cached_tokens'] ??
+          usage['prompt_cache_hit_tokens'] ??
+          usage['cached_tokens'],
+    );
+    return AiUsage(
+      inputTokens: input,
+      outputTokens: output,
+      cachedInputTokens: cached.clamp(0, input),
+    );
   }
 
   static AiFinishReason? _finish(String? raw) => switch (raw) {
@@ -390,8 +411,10 @@ class OpenAiChatStreamState {
     final ended = finish ?? _finish;
     final calls = _calls.finish();
     final replay = <String, Object?>{
-      if (_reasoningField != null && _reasoning.isNotEmpty)
-        _reasoningField!: _reasoning.toString(),
+      // 服务端给过这个字段就原样带回，空的也带：DeepSeek 思考模式下同一轮
+      // 的工具调用消息缺了它会 400（“reasoning_content must be passed
+      // back”），这一步没想什么时它可能是空串。
+      if (_reasoningField != null) _reasoningField!: _reasoning.toString(),
       if (_details.isNotEmpty) 'reasoning_details': _details,
     };
     return AiChunk(

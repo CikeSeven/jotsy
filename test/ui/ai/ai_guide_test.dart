@@ -16,6 +16,7 @@ import 'package:node_diary/ui/ai/providers/ai_guide_provider.dart';
 import 'package:node_diary/ui/ai/tools/ai_destinations.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool_registry.dart';
+import 'package:node_diary/ui/ai/viewmodels/ai_agent_history.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_agent_prompts.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_prompt_builder.dart';
 
@@ -265,9 +266,12 @@ destinations: [settings_todos]
     );
     final request = aiAgentRequest(
       kit,
-      history: const [],
-      question: '怎么备份？',
-      now: DateTime(2026, 11, 8, 10),
+      history: const AiAgentHistory(<AiMessage>[]),
+      prompt: aiAgentPrompt(
+        kit,
+        question: '怎么备份？',
+        now: DateTime(2026, 11, 8, 10),
+      ),
       persona: aiPersonaById(
         kit.l10n,
         AiPreferences.defaults,

@@ -71,10 +71,7 @@ void main() {
     tester,
   ) async {
     final h = await openSeeded(tester);
-    expect(
-      tester.widget<TextField>(titleField()).controller!.text,
-      '海边的一天',
-    );
+    expect(tester.widget<TextField>(titleField()).controller!.text, '海边的一天');
     await waitForDebouncedSave(h);
     expect(await h.drafts(), isEmpty);
 

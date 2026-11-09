@@ -3,7 +3,8 @@
 //
 // 用户只需要看的东西露在外面，过程折起来：
 // - 思考过程折叠块（[AiProcessSegment]）：各步与最后的思考内容、调用工具前
-//   说的过渡句、只读工具、以及任何失败的调用；
+//   说的过渡句、只读工具、以及任何失败的调用（只调了 `open_page` 的那一步
+//   之前说的话不算过渡句，是回答的一部分，作为正文露在外面）；
 // - 前往卡片（[AiNavigationSegment]）：成功的 `open_page`，用户要点；
 // - 改动卡片（[AiChangeSegment]）：写 / 删除类调用（执行中、成功可撤销、已
 //   撤销、已拒绝、已停止、已中断），相邻的合成一组；
@@ -159,7 +160,14 @@ List<AiAnswerSegment> buildAiAnswerSegments({
   for (final step in steps) {
     think(step.reasoning, step.thinkingMs);
     if (step.text.trim().isNotEmpty) {
-      process().items.add(AiNarrationItem(step.text.trim()));
+      // 这一步只调了 open_page：前往卡片不取回任何信息，模型在它之前说的
+      // 是给用户看的回答（常见写法是先写完回答、再附卡片），露在外面；其余
+      // 步骤调用前说的是过渡句，折进过程。
+      if (_onlyNavigation(step)) {
+        segments.add(AiTextSegment(step.text.trim()));
+      } else {
+        process().items.add(AiNarrationItem(step.text.trim()));
+      }
     }
     for (final call in step.calls) {
       switch (aiCallPlacement(call)) {
@@ -191,6 +199,12 @@ List<AiAnswerSegment> buildAiAnswerSegments({
   if (text.trim().isNotEmpty) segments.add(AiTextSegment(text));
   return segments;
 }
+
+bool _onlyNavigation(AiAgentStepRecord step) =>
+    step.calls.isNotEmpty &&
+    step.calls.every(
+      (call) => aiToolByName(call.tool)?.effect == AiToolEffect.navigate,
+    );
 
 /// 卡片之后只剩思考（没有工具、没有过渡句）的折叠块并进第一个折叠块：
 /// 不在卡片与正文之间再冒出一枚只写“思考了 2 秒”的胶囊。思考文字接在第一个

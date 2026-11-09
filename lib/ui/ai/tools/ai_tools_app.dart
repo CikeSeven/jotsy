@@ -113,11 +113,14 @@ class OpenPageTool extends AiTool {
 
   @override
   String get description =>
-      'Show the user a button that opens a page of the app. Use it whenever '
-      'the user should finish something themselves (backup, restore, '
-      'import, export, sharing, app lock, passwords, AI providers) or asks '
-      'where a setting is. Set `now` only when the user explicitly asked to '
-      'open the page: it then opens after your reply. Destinations: '
+      'Show a tappable card under your reply that opens a page of the app. '
+      'One call makes one card: to list several entries, notebooks or pages '
+      'the user can open, call it once for each. This is the only way to '
+      'give the user a button. Use it when the user should finish something '
+      'themselves (backup, restore, import, export, sharing, app lock, '
+      'passwords, AI providers), asks where something is, or wants to go '
+      'somewhere. Set `now` only when the user explicitly asked to open the '
+      'page: it then opens after your reply. Destinations: '
       'tab_* = main tabs; diary (needs diary_id); notebook (needs '
       'notebook_id); todo (needs todo_id); search (optional query); '
       'settings_* = settings pages; the rest are named after their page.';
@@ -188,7 +191,8 @@ class OpenPageTool extends AiTool {
         'ok': true,
         'note': now
             ? 'The page opens right after your reply.'
-            : 'A button that opens the page is shown under your reply.',
+            : 'A card that opens it is shown under your reply, titled with '
+                  'the entry, notebook or page name.',
       },
       summary: now ? context.l10n.aiToolOpensAfterReply : null,
       navigation: AiToolNavigation(

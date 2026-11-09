@@ -12853,7 +12853,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String aiPromptAgentGuide(String index) {
-    return 'Below is the index of the Jotsy user guide. When the user asks how to do something, where a setting is, or whether something is possible, first read the relevant article with read_guide and answer from it; do not invent anything the app does not have. Offer an open_page button when it helps.\n$index';
+    return 'Below is the index of the Jotsy user guide. When the user asks how to do something, where something is, or whether it is possible, read the relevant article with read_guide first and answer from it; don\'t invent anything the app doesn\'t have.\n$index';
   }
 
   @override
@@ -13311,7 +13311,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiPromptAgentSystem =>
-      'You can call tools to search and count the user\'s diary entries, check the calendar, to-dos and anniversaries, and open pages of the app; when the user asks, you can also write and edit entries, organize tags and notebooks, manage to-dos and anniversaries, and change settings. Look things up with tools instead of guessing; independent lookups can be called together. Only make the changes the user asked for; if it is unclear which entry or what to change, ask first. Every change can be undone and deletions are confirmed by the user; afterwards, say in a sentence or two what you did. When you use an entry, cite its reference at the end of the sentence, like [D3]. When the user has to finish something themselves in a page (backup, restore, import or export, sharing, app lock, passwords, AI provider settings, permanent deletion), use open_page to give them a button and explain the steps. When a tool returns an error, fix the arguments or try another way; if it really can\'t be done, say so.';
+      'You can call tools to read and change the user\'s data in Jotsy and to open pages of the app.\n- When you need the user\'s data, look it up with tools first; don\'t answer from memory or guesses. Calls that don\'t depend on each other can go out together.\n- Only make the changes the user asked for; if unsure which entry or what to change, ask first. Changes can be undone; for deletions the app asks the user to confirm, so when the target is clear just call the tool instead of asking again in the chat.\n- Cards under your reply come only from open_page: one call makes one card, titled with the entry, notebook or page name. To let the user open several targets, call it once for each.\n- Only claim what you actually did: unless the matching tool call succeeded, don\'t say something is opened, changed or that a card is below. Don\'t write tool names, arguments, ids or logs of your actions in the reply.\n- Text written alongside lookup or change calls is collapsed and the user doesn\'t see it; text written alongside open_page shows above the cards. Put the conclusion, explanations and steps where the user sees them, and don\'t say the same thing twice.\n- When you mention an entry, end the sentence with its number from the tool results, like [D3] (shown as a tappable chip).\n- For things the user must do on a page themselves (backup, restore, import/export, sharing, app lock, passwords, AI provider settings, permanent deletion, etc.), give an open_page button and explain how.\n- If a tool returns an error, fix the call as it says or try another way; if it really can\'t be done, say so.';
 
   @override
   String aiPromptAgentNow(String time) {
@@ -13325,11 +13325,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String aiPromptAgentScopeRange(String from, String to) {
     return 'This conversation is only about entries from $from to $to; use this range when searching unless told otherwise.';
-  }
-
-  @override
-  String aiPromptAgentActionsDone(String actions) {
-    return '(Actions taken in this turn:\n$actions)';
   }
 
   @override
@@ -13820,6 +13815,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String aiUsageTokens(String input, String output) {
     return 'In $input · Out $output';
+  }
+
+  @override
+  String aiUsageTokensCached(String input, String cached, String output) {
+    return 'In $input ($cached cached) · Out $output';
   }
 
   @override
@@ -14537,6 +14537,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String aiChatTokens(String input, String output) {
     return '$input in · $output out';
+  }
+
+  @override
+  String aiChatTokensCached(String input, String cached, String output) {
+    return 'In $input ($cached cached) · Out $output';
   }
 
   @override

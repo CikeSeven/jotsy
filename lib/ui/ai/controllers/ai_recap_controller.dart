@@ -286,10 +286,7 @@ class AiRecapController extends ChangeNotifier {
             'stats': stats.toJson(),
             'citations': [for (final c in citations) c.toJson()],
             if (run.reasoning.trim().isNotEmpty) 'reasoning': run.reasoning,
-            if (usage != null) ...<String, Object?>{
-              'inputTokens': usage.inputTokens,
-              'outputTokens': usage.outputTokens,
-            },
+            if (usage != null) ...usage.toMeta(),
           }),
         );
     if (!current()) return;

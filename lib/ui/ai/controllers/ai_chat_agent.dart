@@ -21,6 +21,7 @@ extension _AiChatAgent on AiChatController {
     String id,
     List<AiMessageRow> history,
     String text, {
+    required String? questionId,
     required AiResolvedModel model,
     required bool Function() current,
   }) async {
@@ -41,16 +42,25 @@ extension _AiChatAgent on AiChatController {
     } catch (_) {
       // 资源缺失或损坏：没有指南也能对话。
     }
-    final citations = AiCitationBook();
+    // 以前各轮原样回放；引用编号接着以前的编。
+    final replay = aiAgentHistory(
+      history,
+      l10n: kit.l10n,
+      target: model,
+      budget: aiAgentHistoryBudget(model.model),
+    );
+    final citations = AiCitationBook(aiAgentCitationsOf(history));
     final allowance = AiWordAllowance(prefs.privacy.contextBudget);
 
-    // 固定一篇 / 时间范围。
+    // 固定一篇 / 时间范围。固定的日记只在窗口里还没带过时放进这一轮。
     String? fixedDiary;
     String? scopeLine;
     var fixedWords = 0;
     switch (scope.kind) {
       case AiChatScopeKind.diary:
-        final diary = await database.getAiDiary(scope.diaryId!);
+        final diary = replay.scopeDiaries.contains(scope.diaryId)
+            ? null
+            : await database.getAiDiary(scope.diaryId!);
         final allowed =
             diary != null &&
             (prefs.privacy.allowPrivate ||
@@ -129,16 +139,31 @@ extension _AiChatAgent on AiChatController {
       personaId,
       use: AiPersonaUse.chat,
     );
-    final request = aiAgentRequest(
+    final prompt = aiAgentPrompt(
       kit,
-      history: history,
       question: text,
       now: DateTime.now(),
-      persona: persona,
-      tools: tools,
       scopeLine: scopeLine,
       fixedDiary: fixedDiary,
+    );
+    // 问题发出时的全文记在用户消息上，以后各轮原样回放。
+    if (questionId != null) {
+      await database.updateAiMessage(
+        questionId,
+        metaJson: jsonEncode(<String, Object?>{
+          'prompt': prompt,
+          if (fixedDiary != null) 'scopeDiary': scope.diaryId,
+        }),
+      );
+    }
+    final request = aiAgentRequest(
+      kit,
+      history: replay,
+      prompt: prompt,
+      persona: persona,
+      tools: tools,
       guideIndex: guide.index,
+      cacheKey: id,
     ).withThinking(options.thinking);
     var answered = true;
     try {

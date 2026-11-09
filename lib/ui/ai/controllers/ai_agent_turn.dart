@@ -121,9 +121,11 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     thinking.reset();
     steps.add(
       AiAgentStepRecord(
-        text: aiCleanOutput(output.text),
+        // 原文照存：下一轮原样回放，与这一步发回模型的逐字一致。
+        text: output.text,
         reasoning: output.reasoning,
         thinkingMs: thinkingMs,
+        replay: output.replay,
         calls: [
           for (final call in output.calls)
             AiAgentCallRecord(
@@ -131,8 +133,10 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
               tool: call.name,
               args:
                   call.arguments ??
-                  <String, Object?>{'_raw': call.argumentsRaw},
+                  <String, Object?>{kAiRawArgumentsKey: call.argumentsRaw},
               status: AiToolCallStatus.executing,
+              providerData: call.providerData,
+              idFromProvider: call.idFromProvider,
             ),
         ],
       ),
@@ -195,20 +199,25 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
       );
       final approved = await _awaitDecision(call.id);
       if (!approved) {
+        final content = jsonEncode(<String, Object?>{
+          'error':
+              'The user declined this action. Do not try to get the same '
+              'effect another way; ask what they want instead.',
+        });
         _update(
           step,
           call.id,
-          (record) => record.copyWith(status: AiToolCallStatus.rejected),
+          (record) => record.copyWith(
+            status: AiToolCallStatus.rejected,
+            result: content,
+            resultIsError: true,
+          ),
         );
         await _save();
         return AiToolResultPart(
           callId: call.id,
           name: call.name,
-          content: jsonEncode(<String, Object?>{
-            'error':
-                'The user declined this action. Do not try to get the same '
-                'effect another way; ask what they want instead.',
-          }),
+          content: content,
           isError: true,
         );
       }
@@ -222,6 +231,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     try {
       final outcome = await tool.run(toolContext, args);
       if (toolContext.token.isCancelled) throw const _Cancelled();
+      final content = aiToolResultText(outcome.data);
       _update(
         step,
         call.id,
@@ -231,6 +241,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
           navigation: outcome.navigation,
           undo: outcome.undo,
           subjects: outcome.subjects,
+          result: content,
         ),
       );
       if (outcome.navigation case final navigation? when navigation.now) {
@@ -240,7 +251,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
       return AiToolResultPart(
         callId: call.id,
         name: call.name,
-        content: aiToolResultText(outcome.data),
+        content: content,
       );
     } on AiToolFailure catch (failure) {
       return _fail(step, call, failure.message, summary: failure.summary);
@@ -287,6 +298,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     String message, {
     String? summary,
   }) async {
+    final content = jsonEncode(<String, Object?>{'error': message});
     _update(
       step,
       call.id,
@@ -294,13 +306,15 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
         status: AiToolCallStatus.failed,
         error: message,
         summary: summary,
+        result: content,
+        resultIsError: true,
       ),
     );
     await _save();
     return AiToolResultPart(
       callId: call.id,
       name: call.name,
-      content: jsonEncode(<String, Object?>{'error': message}),
+      content: content,
       isError: true,
     );
   }
@@ -433,17 +447,21 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     final usage = _usage;
     return jsonEncode(<String, Object?>{
       'provider': model.provider.name,
+      // 下一轮回放时据此判断协议回放数据（思考签名等）能不能带回去。
+      'providerId': model.provider.id,
       'model': model.model.id,
       'agent': true,
       // 本轮工具读到过的日记篇数（“参考了 N 篇”里没被引用的也算）。
       'contextEntries': toolContext.citations.length,
+      // 本轮新分配的引用编号（下一轮接着编；有这一项也表示步骤里存着结果
+      // 原文，可以原样回放）。
+      'refs': [
+        for (final citation in toolContext.citations.fresh) citation.toJson(),
+      ],
       if (thinkingLevel != null) 'thinking': thinkingLevel!.name,
       // 最后一段（作答这一步）的思考时长；各工具步骤的记在步骤里。
       if (thinking.elapsedMs > 0) 'thinkingMs': thinking.elapsedMs,
-      if (usage != null) ...<String, Object?>{
-        'inputTokens': usage.inputTokens,
-        'outputTokens': usage.outputTokens,
-      },
+      if (usage != null) ...usage.toMeta(),
       ...extra,
     });
   }

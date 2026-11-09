@@ -135,10 +135,16 @@ class _MonthGroup extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  l10n.aiUsageTokens(
-                    aiCompactCount(entry.inputTokens),
-                    aiCompactCount(entry.outputTokens),
-                  ),
+                  entry.cachedInputTokens > 0
+                      ? l10n.aiUsageTokensCached(
+                          aiCompactCount(entry.inputTokens),
+                          aiCompactCount(entry.cachedInputTokens),
+                          aiCompactCount(entry.outputTokens),
+                        )
+                      : l10n.aiUsageTokens(
+                          aiCompactCount(entry.inputTokens),
+                          aiCompactCount(entry.outputTokens),
+                        ),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),

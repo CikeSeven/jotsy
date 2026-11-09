@@ -278,6 +278,7 @@ class AiService {
       thinking: thinking,
       tools: request.tools,
       toolChoice: request.toolChoice,
+      cacheKey: request.cacheKey,
     );
     return model.supportsVision ? prepared : _withoutImages(prepared);
   }

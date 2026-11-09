@@ -90,7 +90,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 三张表都存业务 id、不建外键：
 
 - `ai_conversations`：conversationId、title、personaId、scope（JSON：自动 / 最近 N 天 / 全部 / 时间范围 / 固定一篇）、options（v21，`AiConversationOptions`：换用的模型与思考强度，`{}` 为跟随默认；新对话沿用最近活动的那段对话的选项）、pinned、createdAt、updatedAt；
-- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token、放进上下文的篇数、出错原因、所用思考强度 `thinking` 与思考时长 `thinkingMs`；智能体另有 `agent: true` 与没有正常作答的原因 `agentEnd`）、status（done / stopped / error）、steps（v20，智能体的工具步骤，见 §9；普通回答为 `[]`）、createdAt；
+- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token（`inputTokens` / `outputTokens`，命中提示缓存的输入另记 `cachedTokens`）、放进上下文的篇数、出错原因、所用思考强度 `thinking` 与思考时长 `thinkingMs`；智能体另有 `agent: true`、服务商 id `providerId`、这一轮新分配的引用编号 `refs` 与没有正常作答的原因 `agentEnd`；用户消息为发出时的全文 `prompt` 与固定日记 `scopeDiary`）、status（done / stopped / error）、steps（v20，智能体的工具步骤，见 §9；普通回答为 `[]`）、createdAt；
 - `ai_results`：resultId、kind（reply / recap）、diaryId（回应）、periodStart / periodEnd、scope（回顾的预设与日记本快照）、title、content、personaId、meta（人设快照、模型、统计、引用、思考过程、token）、createdAt。
 
 彻底删除日记时在同一事务里删掉它的回应。备份合并按业务 id：本机没有的新增，“合并”保留本机，“合并并覆盖”替换；引用的日记已不存在的回应丢弃。
@@ -136,9 +136,13 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **停止与中断**：停止时取消请求与正在执行的工具，已收到的正文与已完成的步骤保留，未完成的调用记为已停止；离开页面等同停止。落库的 executing 在不进行中的消息里按“已中断”显示，**绝不重放**。
 
-**历史**：以前各轮只回传问题与最终回答（去掉旧编号、截到 1500 字），回答后面附一行本地生成的“这一轮做过的操作”（只列改动与跳转的工具名与参数，查询不列）；不回放旧轮的工具消息与签名，换模型、换协议都不出错。现在几点、对话范围放在最后一条用户消息开头，系统提示词与工具定义保持不变，利于提示缓存。
+**历史**（`ai_agent_history.dart`，借鉴 pi 等编码智能体的只追加记录）：以前各轮**按当时发给模型的样子原样回放**——用户消息用发出时的全文（`meta.prompt`：现在几点、对话范围、固定的日记与问题）；智能体回答逐步回放助手消息（这一步的原文、工具调用；同一服务商与模型时带协议回放数据与调用上的签名）与工具结果（`steps` 里每个调用记着回传给模型的结果原文 `result`；停止或中断而没有结果的调用补一条错误结果），最后是回答正文（引用编号原样保留）；出错或停止的回答只回放已经做过的步骤，没有步骤的出错回答不进历史；检索问答的回答与旧版本的智能体回答（`meta` 里没有 `refs`）只回放正文并去掉编号。这样做有两个原因：模型看到的是自己真实发出的调用，不会去模仿一段“做过哪些操作”的文字（旧做法在回答后附这样一段，模型学着在正文里写调用记录、以为按钮已经生成，实际一个工具都没调）；前缀只追加不改写，下一轮请求的开头与上一轮最后一次请求逐字相同，服务商的前缀缓存整段命中。换了服务商或模型时协议回放数据与签名不带、调用 id 规范成各家都接受的字符。窗口按字数预算（模型写明上下文长度时取它，夹在 3.2 万到 20 万字之间，否则 12.8 万）：超出时从最旧的整轮开始丢、一次丢到预算的一半，起点按顺序模拟得出、每轮重算结果一样，缓存只在丢的那一轮断一次；单轮超过预算一半的回答只回放正文。固定的日记只在窗口里的用户消息没带过时才放进这一轮。
 
-**引用**：一轮之内同一篇日记不论被哪个工具返回都用同一个 `[Dn]`（`AiCitationBook`）；回答与步骤说明里用到的才记进 citations。
+**提示缓存**：请求从前到后越稳定的越靠前——系统提示词（同一段对话的提示词语言按第一个问题定下，不随每个问题变）与固定顺序的工具定义、原样回放的历史、最后是这一轮的问题。智能体请求带 `AiRequest.cacheKey`（对话 id）：Anthropic 在系统提示词、最后一个工具与最后一条用户消息上打 `cache_control` 断点（一次性请求不打，写缓存要多计费），OpenAI（Responses，以及主机为 `api.openai.com` 的 Chat）发 `prompt_cache_key`；DeepSeek、Gemini 等自动前缀缓存不需要。四种协议命中缓存的输入统一读进 `AiUsage.cachedInputTokens`（Chat 兼容为 `prompt_tokens_details.cached_tokens` 或 DeepSeek 的 `prompt_cache_hit_tokens`，Responses 为 `input_tokens_details.cached_tokens`，Anthropic 为 `cache_read_input_tokens`，Gemini 为 `cachedContentTokenCount`；都含在 `inputTokens` 里），回答 `meta.cachedTokens`、用量账本与回答下方的 token 行（“输入 N（缓存 M）· 输出 K”）都显示。DeepSeek 思考模式下同一轮的工具调用消息必须带回 `reasoning_content`（空串也行，之前各轮不要求），Chat 兼容客户端只要服务端给过这个字段就原样带回。
+
+**引用**：同一篇日记不论被哪个工具返回都用同一个 `[Dn]`，编号在整段对话里连续（`AiCitationBook` 以以前各轮的 `meta.refs` 起头，再见到旧日记沿用旧编号）——旧结果原样回放，旧编号必须仍指同一篇；回答与步骤说明里用到的才记进 citations，这一轮新分配的编号记进 `meta.refs`。
+
+**运行环境**：工具读到的功能开关取最新值（`AiToolContext.env`）：同一轮里先 `set_feature_enabled` 再打开它的页面或查询要能用上。
 
 **工具**（`lib/ui/ai/tools/`，清单只在 `ai_tool_registry.dart`）：
 
@@ -183,7 +187,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示前往卡片、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`）。`AiDestination` 写明类别、位置（首页 / 设置）、图标与色调；会关掉对话页的目标（首页各 Tab 与日记本，`leavesChat`）打开前登记 `aiChatReturnProvider`，首页与日记页的返回键、以及落地后的提示条据此重新打开那段对话（打开后对话页仍在栈里就撤销登记）。`open_page` 打开具体的一篇 / 一本 / 一项前核对存在且 AI 可以碰（私密与 AI 隐私排除的按找不到），名称只给界面。
 
-**涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、纪念日、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面。
+**涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、纪念日、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面；只调了 `open_page` 的那一步之前说的话不算过渡句（模型常先写完回答再附卡片），作为正文露在外面。
 
 **导出对话**（`aiChatExportText`，对话页 ⋮ 或历史抽屉进入）：标题与“导出于 … · 共 N 条消息”，然后逐条写选中的消息——问题为“你 · 时间”与原文；回答为“人设名 · 时间”，可选的思考过程（各步与最后一段）、可选的过程与操作（调用前说的话，每个调用的具体标题 `labelWith`、结果说明与涉及的对象；撤销过、取消、失败、中断照实写）、正文、参考的日记（编号、标题、日期）、出错原因或“已停止”。Markdown 保留正文原样与 `[Dn]`；纯文本把正文经块文档转成纯文字并去掉引用编号。JSON（`aiChatExportJson`，`format: jotsy-ai-chat`、`version: 1`）为对话信息（id、标题、署名、创建与更新时间）与逐条消息：id、角色、署名、时间、状态、正文（Markdown 原文）、引用（编号、日记 id、标题、日期）、模型与思考强度、出错原因，按选项带思考与步骤（调用前说的话、思考时长，每个调用的工具名、界面标题、状态、是否撤销、参数、结果说明、错误与涉及的对象）；撤销用的内部数据不导出。文件名为“标题 日期.md / .txt / .json”（去掉文件名不能用的字符）。
 

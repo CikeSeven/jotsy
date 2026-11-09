@@ -160,7 +160,11 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     }
     final Map<String, Object?> args;
     try {
-      args = tool.schema.validate(raw);
+      // 日记 id 参数里的编号（D3）先换成 id，确认卡与执行看到的都是真 id。
+      args = toolContext.citations.resolveDiaryArgs(
+        tool.schema.validate(raw),
+        tool.diaryIdArgs,
+      );
     } on AiToolArgumentError catch (error) {
       return _fail(step, call, error.message);
     }

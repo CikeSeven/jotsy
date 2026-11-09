@@ -279,6 +279,9 @@ class AddCommentTool extends AiTool {
       'user) to an entry by id. Only when the user asks for it.';
 
   @override
+  Set<String> get diaryIdArgs => const <String>{'id'};
+
+  @override
   AiObjectSchema get schema => const AiObjectSchema(
     properties: <String, AiSchema>{
       'id': AiStringSchema(),

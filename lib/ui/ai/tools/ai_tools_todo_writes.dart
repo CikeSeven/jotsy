@@ -59,6 +59,9 @@ class CreateTodoTool extends AiTool {
       'the default list).';
 
   @override
+  Set<String> get diaryIdArgs => const <String>{'diary_id'};
+
+  @override
   AiObjectSchema get schema => const AiObjectSchema(
     properties: <String, AiSchema>{
       'title': AiStringSchema(maxLength: 500),
@@ -201,6 +204,9 @@ class UpdateTodosTool extends AiTool {
       'reminders ([] removes them); `repeat` replaces the repeat rule. '
       '`list` ("" = inbox), `priority`, and `diary_id` ("" unlinks). `title` '
       'and `note` only for one to-do at a time. Steps: edit_todo_steps.';
+
+  @override
+  Set<String> get diaryIdArgs => const <String>{'diary_id'};
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(

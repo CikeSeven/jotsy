@@ -156,6 +156,54 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('reads an entry when the model passes its reference instead '
+      'of the id', (tester) async {
+    // 实际对话里模型搜索后用 `D1` 调 read_diaries，每篇都回“找不到”，
+    // 于是把读不到的正文怪到回收站与时间胶囊头上。
+    final h = await setUpHarness(tester);
+    final photo = await seedDiary(h, '这样子哦', '123 今天拍了一张晚霞');
+    service = scriptedAiService(
+      store,
+      requests: requests,
+      turns: [
+        toolTurn([
+          (id: 'c1', name: 'search_diaries', args: const {'sort': 'newest'}),
+        ]),
+        toolTurn([
+          (
+            id: 'c2',
+            name: 'read_diaries',
+            args: const {
+              'ids': ['D1'],
+            },
+          ),
+        ]),
+        textTurn('你拍了晚霞 [D1]。'),
+      ],
+    );
+    await h.pump(
+      const AiChatPage(initialQuestion: '这个月我过得怎么样？'),
+      overrides: overrides(),
+    );
+    await settleMany(h);
+
+    expect(requests, hasLength(3));
+    final result = requests.last.messages.last.toolResults.single;
+    expect(result.callId, 'c2');
+    expect(result.isError, isFalse);
+    expect(result.content, contains('今天拍了一张晚霞'));
+    expect(result.content, isNot(contains('error')));
+
+    final steps = AiAgentStepRecord.decodeList(
+      (await savedMessages(h)).last.steps,
+    );
+    final read = steps[1].calls.single;
+    expect(read.status, AiToolCallStatus.succeeded);
+    expect(read.summary, h.l10n.aiToolReadEntries(1));
+    expect(read.subjects.single.id, photo);
+    await h.unmount();
+  });
+
   testWidgets('a notebook card names the notebook and follows renames', (
     tester,
   ) async {

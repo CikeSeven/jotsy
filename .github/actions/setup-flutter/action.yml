@@ -150,25 +150,54 @@ runs:
           hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-${{ github.job }}-
           hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-
 
-    # 缓存未命中时（sqlite3 升级后、缓存被淘汰后）钩子自己下载，失败不重试，
-    # 失败的 job 又不写缓存，下载服务故障期间每次运行都从头失败（2026-11-08 的
-    # PR #197 即此）。这里先用 curl 带重试下载到钩子会找的位置：文件名、release
-    # tag 与 SHA-256 取自锁定版本的 sqlite3 包（asset_hashes.dart），目录名
-    # download-<哈希前 8 位> 与文件名同钩子（hook/build.dart）。只是尽力而为：
-    # 找不到包、格式变了或下载失败都只告警，交给钩子照常下载。
+    # 缓存未命中时（sqlite3 升级后、缓存被淘汰后）钩子自己下载，失败不重试、
+    # 也不看 HTTP 状态码（504 错误页被当作库校验而失败），失败的 job 又不写缓存，
+    # 下载服务故障期间每次运行都从头失败（2026-11-08 的 PR #197 即此）。这里先带
+    # 重试下载到钩子会找的位置：文件名、release tag 与 SHA-256 取自锁定版本的
+    # sqlite3 包（asset_hashes.dart），目录名 download-<哈希前 8 位> 与文件名同钩子
+    # （hook/build.dart）。只是尽力而为：找不到包、格式变了或下载失败都只告警，
+    # 交给钩子照常下载。
+    #
+    # 下载先带 github.token 经 API（gh release download）：2026-11-09 GitHub 因匿名
+    # 访问激增而限流，匿名的 releases/download 连续 504，带 token 的请求照常。
+    # 它是 job 自动发的只读 token（不是仓库 secrets，fork 的 PR 也有），只用来读
+    # 公开仓库的 release；拿不到或失败时退回原来的匿名 curl。
     - name: Prefetch sqlite3 libraries
       shell: bash
       env:
         RUNNER_OS_NAME: ${{ runner.os }}
         ANDROID_BUILD: ${{ inputs.java }}
+        GH_TOKEN: ${{ github.token }}
       run: |
-        if [[ "$ANDROID_BUILD" == 'true' ]]; then
-          assets=(libsqlite3.arm.android.so libsqlite3.arm64.android.so libsqlite3.x64.android.so)
-        elif [[ "$RUNNER_OS_NAME" == 'Windows' ]]; then
+        # 本机的库每个 job 都要：dart run / flutter test 跑本机目标的钩子，Android
+        # 构建 job 里也有 dart run（发布工作流写网盘密钥）。2026-11-09 测试包构建就因
+        # Android job 只预取了各 ABI 的库，本机的库落到钩子自己下载而失败。
+        if [[ "$RUNNER_OS_NAME" == 'Windows' ]]; then
           assets=(sqlite3.x64.windows.dll)
         else
           assets=(libsqlite3.x64.linux.so)
         fi
+        if [[ "$ANDROID_BUILD" == 'true' ]]; then
+          assets+=(libsqlite3.arm.android.so libsqlite3.arm64.android.so libsqlite3.x64.android.so)
+        fi
+        # 带 token 下载，最多 3 次、每次限 60 秒（Git Bash 也带 coreutils 的
+        # timeout；万一没有就不限时）。
+        fetch_authenticated() {
+          [[ -n "${GH_TOKEN:-}" ]] && command -v gh > /dev/null || return 1
+          local limit=()
+          if command -v timeout > /dev/null; then
+            limit=(timeout 60)
+          fi
+          local attempt
+          for attempt in 1 2 3; do
+            if "${limit[@]}" gh release download "$tag" --repo simolus3/sqlite3.dart \
+                --pattern "$1" --output "$2" --clobber; then
+              return 0
+            fi
+            (( attempt < 3 )) && sleep 5
+          done
+          return 1
+        }
         # Windows 检出时换行是 CRLF，先去掉 \r 再按行匹配。
         version="$(tr -d '\r' < pubspec.lock |
           awk '/^  sqlite3:$/ { found = 1 } found && /^    version:/ { gsub(/"/, "", $2); print $2; exit }')"
@@ -195,11 +224,12 @@ runs:
             continue
           fi
           mkdir -p "$dir"
-          # 故障时下载服务常挂起约 130 秒才回 504（2026-11-08 Windows 上一次预取等了
-          # 4.5 分钟），单次限 30 秒（库不到 2 MB），重试总时长限 3 分钟。
-          if curl -sSfL --connect-timeout 10 --max-time 30 --retry 10 --retry-all-errors \
-              --retry-delay 5 --retry-max-time 180 -o "$dir/$name.part" \
-              "https://github.com/simolus3/sqlite3.dart/releases/download/$tag/$asset" &&
+          # 匿名 curl：故障时下载服务常挂起约 130 秒才回 504（2026-11-08 Windows 上
+          # 一次预取等了 4.5 分钟），单次限 30 秒（库不到 2 MB），重试总时长限 3 分钟。
+          if { fetch_authenticated "$asset" "$dir/$name.part" ||
+              curl -sSfL --connect-timeout 10 --max-time 30 --retry 10 --retry-all-errors \
+                --retry-delay 5 --retry-max-time 180 -o "$dir/$name.part" \
+                "https://github.com/simolus3/sqlite3.dart/releases/download/$tag/$asset"; } &&
             [[ "$(sha256sum "$dir/$name.part" | cut -d' ' -f1)" == "$hash" ]]; then
             mv "$dir/$name.part" "$dir/$name"
             echo "$asset: downloaded"

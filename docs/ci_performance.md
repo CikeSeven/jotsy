@@ -107,11 +107,24 @@ transforms 不会一代代累积；Robolectric 的键不设回退，原因相同
 又不写缓存，下载服务故障期间冷缓存的运行每次都从头失败（#197 第一次 CI 运行
 的 6 个测试分片、静态检查与 Linux 构建都因此失败）。`setup-flutter` 在钩子运行前，从锁定版本的 sqlite3
 包里读出文件名、release tag 与 SHA-256（`lib/src/hook/asset_hashes.dart`），
-用 curl 带重试下载，校验后放进钩子会找的 `download-<哈希前 8 位>/libsqlite3.so`
+下载并校验后放进钩子会找的 `download-<哈希前 8 位>/libsqlite3.so`
 （Windows 为 `sqlite3.dll`）。这依赖 sqlite3 钩子的内部布局，所以只是尽力而为：
 包里找不到哈希、或下载失败时只告警，交给钩子照常下载；布局变了时预取的文件
 不会被用上，构建结果不受影响。2026-11-08 在本地删掉缓存、断网（代理指向无效
 地址）并清掉钩子的输出记录，钩子重新运行后直接用了预取的文件，测试通过。
+
+每个 job 都预取本机的库（Linux `libsqlite3.x64.linux.so`、Windows
+`sqlite3.x64.windows.dll`），Android 构建再加各 ABI 的库：Android job 里的
+`dart run`（发布工作流写网盘密钥）也跑本机目标的钩子。2026-11-09 测试包构建
+就因 Android job 只预取了 Android 的库，本机的库落到钩子自己下载、遇上 504 而
+失败（钩子不看 HTTP 状态码，报的是 `Hash of downloaded file … is bef140a1…`，
+那是 92 字节的 504 错误页）。
+
+下载先带 job 自动发的 `github.token` 经 API 取（`gh release download`，最多 3 次、
+每次限 60 秒），拿不到 token 或失败时退回匿名 curl。2026-11-09 GitHub 因匿名
+访问激增限流：本地匿名 curl 连续 11 次 504，同一时刻带 token 的下载 4 个库全部
+成功。这个 token 是工作流 `contents: read` 权限下的只读 token，不是仓库
+secrets，fork 的 PR 里也有，不违反“CI 门禁不读 secrets”。
 
 **其余下载有重试。** pub get 最多 3 次，apt 最多重试 3 次。actionlint 与 sqlite3
 预取的 curl 单次限 30 秒、重试总时长限 3 分钟：故障时下载服务常挂起约 130 秒

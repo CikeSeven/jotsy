@@ -125,6 +125,8 @@ class BackupMerge {
       mode,
       paths,
     );
+    // AI 消息的附图同样在搬文件前改写；只改写本次真正写入的对话里的消息。
+    final aiImages = await _prepareAiMessageImages(db, payload, mode, paths);
 
     for (final entry in paths.boundFiles.entries) {
       final target = File(entry.value);
@@ -185,7 +187,7 @@ class BackupMerge {
     final addedTemplates = await _mergeTemplates(db, payload.diaryTemplates);
     final dayMoods = await _mergeDayMoods(db, payload.dayMoods, mode);
     final commentCounts = await _writeDiaryComments(db, comments);
-    await _mergeAiRecords(db, payload, mode);
+    await _mergeAiRecords(db, payload, mode, aiImages);
     final todos = await BackupTodoMerge.write(
       db,
       lists: payload.todoLists,
@@ -275,6 +277,42 @@ class BackupMerge {
     return (added: plan.inserts.length, replaced: plan.replacements.length);
   }
 
+  /// AI 消息附图的路径改写（必须在搬运文件之前：[BackupMediaPaths.rewritePath]
+  /// 登记要搬的文件）。只处理 [_mergeAiRecords] 真正会写入的对话（本机没有，
+  /// 或合并并覆盖）里带图片的消息；跳过的对话不搬它的文件。返回消息业务 id
+  /// → 改写后的图片列。
+  Future<Map<String, String?>> _prepareAiMessageImages(
+    AppDatabase db,
+    BackupPayload payload,
+    BackupImportMode mode,
+    BackupMediaPaths paths,
+  ) async {
+    if (!payload.aiMessages.any((message) => message.images != null)) {
+      return const <String, String?>{};
+    }
+    final table = db.aiConversations;
+    final local = <String>{
+      for (final row in await (db.selectOnly(
+        table,
+      )..addColumns([table.conversationId])).get())
+        row.read(table.conversationId)!,
+    };
+    final overwrite = mode == BackupImportMode.mergeOverwrite;
+    final written = <String>{
+      for (final row in payload.aiConversations)
+        if (overwrite || !local.contains(row.conversationId))
+          row.conversationId,
+    };
+    return <String, String?>{
+      for (final message in payload.aiMessages)
+        if (message.images != null && written.contains(message.conversationId))
+          message.messageId: await BackupPayload.rebindAiMessageImages(
+            message.images,
+            paths,
+          ),
+    };
+  }
+
   /// AI 记录并入本机，与留言同一口径：
   /// - 对话按 conversationId 匹配：本机没有的连同它的消息新增；本机已有的，
   ///   合并保留本机（文件里这次对话的消息一并跳过，不把两份对话混在一起），
@@ -285,6 +323,7 @@ class BackupMerge {
     AppDatabase db,
     BackupPayload payload,
     BackupImportMode mode,
+    Map<String, String?> reboundImages,
   ) async {
     final overwrite = mode == BackupImportMode.mergeOverwrite;
     if (payload.aiConversations.isNotEmpty) {
@@ -323,7 +362,16 @@ class BackupMerge {
           await db
               .into(db.aiMessages)
               .insert(
-                message.toCompanion(false).copyWith(id: const Value.absent()),
+                message
+                    .toCompanion(false)
+                    .copyWith(
+                      id: const Value.absent(),
+                      images: Value(
+                        reboundImages.containsKey(message.messageId)
+                            ? reboundImages[message.messageId]
+                            : message.images,
+                      ),
+                    ),
                 mode: InsertMode.insertOrIgnore,
               );
         }

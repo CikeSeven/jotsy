@@ -409,4 +409,112 @@ void main() {
       },
     );
   });
+
+  group('schema v22 migration', () {
+    test(
+      'v21 upgrade adds the images column; old messages have none',
+      () async {
+        final root = await Directory.systemTemp.createTemp('jotsy_v22_ai');
+        addTearDown(() => root.delete(recursive: true));
+        final file = File('${root.path}/v21.sqlite');
+        final original = AppDatabase.forTesting(NativeDatabase(file));
+        final conversation = await original.createAiConversation(title: 'old');
+        await original.close();
+        // 按 v21 的结构重建 ai_messages（没有 images 列），放一条旧消息。
+        final legacy = sqlite3.open(file.path);
+        legacy
+          ..execute('DROP TABLE ai_messages')
+          ..execute('''
+          CREATE TABLE ai_messages (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            message_id TEXT NOT NULL UNIQUE,
+            conversation_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL DEFAULT '',
+            reasoning TEXT NOT NULL DEFAULT '',
+            citations TEXT NOT NULL DEFAULT '[]',
+            meta TEXT NOT NULL DEFAULT '{}',
+            status TEXT NOT NULL DEFAULT 'done',
+            steps TEXT NOT NULL DEFAULT '[]',
+            created_at INTEGER NOT NULL
+          )''')
+          ..execute(
+            "INSERT INTO ai_messages (message_id, conversation_id, role, "
+            "content, created_at) VALUES ('m1', '$conversation', 'user', "
+            "'旧问题', 0)",
+          )
+          ..execute('PRAGMA user_version = 21');
+        legacy.close();
+
+        final migrated = AppDatabase.forTesting(NativeDatabase(file));
+        try {
+          final old = (await migrated.getAiMessages(conversation)).single;
+          expect(old.content, '旧问题');
+          expect(old.images, isNull);
+          await migrated.addAiMessage(
+            conversationId: conversation,
+            role: AiMessageRole.user,
+            content: '',
+            imagesJson: encodeAiMessageImages(['/x/diary_images/m/a.jpg']),
+          );
+          final rows = await migrated.getAiMessages(conversation);
+          expect(decodeAiMessageImages(rows.last.images), [
+            '/x/diary_images/m/a.jpg',
+          ]);
+          final version = await migrated
+              .customSelect('PRAGMA user_version')
+              .getSingle();
+          expect(version.read<int>('user_version'), migrated.schemaVersion);
+        } finally {
+          await migrated.close();
+        }
+      },
+    );
+
+    test('migrating twice is harmless (column already there)', () async {
+      final root = await Directory.systemTemp.createTemp('jotsy_v22_again');
+      addTearDown(() => root.delete(recursive: true));
+      final file = File('${root.path}/v22.sqlite');
+      final original = AppDatabase.forTesting(NativeDatabase(file));
+      await original.createAiConversation();
+      await original.close();
+      // 降级后再升级：库里已有 images 列、版本号却回到 21。
+      final legacy = sqlite3.open(file.path)
+        ..execute('PRAGMA user_version = 21');
+      legacy.close();
+      final migrated = AppDatabase.forTesting(NativeDatabase(file));
+      try {
+        expect(await migrated.watchAiConversations().first, hasLength(1));
+      } finally {
+        await migrated.close();
+      }
+    });
+  });
+
+  test('replacing the last question keeps its images in one step', () async {
+    final conversation = await db.createAiConversation();
+    final question = await db.addAiMessage(
+      conversationId: conversation,
+      role: AiMessageRole.user,
+      content: '旧问题',
+      imagesJson: encodeAiMessageImages(['/x/diary_images/m/a.jpg']),
+    );
+    final answer = await db.addAiMessage(
+      conversationId: conversation,
+      role: AiMessageRole.assistant,
+      content: '旧回答',
+    );
+    final replaced = await db.replaceAiQuestion(
+      conversationId: conversation,
+      deleteMessageIds: [question, answer],
+      content: '新问题',
+      imagesJson: encodeAiMessageImages(['/x/diary_images/m/a.jpg']),
+    );
+    final rows = await db.getAiMessages(conversation);
+    expect(rows.single.messageId, replaced);
+    expect(rows.single.content, '新问题');
+    expect(decodeAiMessageImages(rows.single.images), [
+      '/x/diary_images/m/a.jpg',
+    ]);
+  });
 }

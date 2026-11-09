@@ -238,6 +238,56 @@ void main() {
     },
   );
 
+  test(
+    'AI chat photos are kept while a message or an entry uses them',
+    () async {
+      final sent = await put(documents, 'diary_images/media_a/sent.jpg');
+      final shared = await put(documents, 'diary_images/media_a/shared.jpg');
+      final removed = await put(documents, 'diary_images/media_a/removed.jpg');
+      final conversation = await database.createAiConversation();
+      await database.addAiMessage(
+        conversationId: conversation,
+        role: AiMessageRole.user,
+        content: '',
+        // 第三张已被存储管理删掉：留下墓碑、不再引用文件。
+        imagesJson: encodeAiMessageImages([
+          stored('diary_images/media_a/sent.jpg'),
+          stored('diary_images/media_a/shared.jpg'),
+          kAiMessageImageRemoved,
+        ]),
+      );
+      // AI 把第二张加进了一篇日记：两处共用一个文件。
+      await database.createDiary(
+        title: '',
+        contentText: '',
+        metadataJson: '{}',
+        contentDocJson: jsonEncode({
+          'document': {
+            'type': 'page',
+            'children': [
+              {
+                'type': 'image',
+                'data': {'url': stored('diary_images/media_a/shared.jpg')},
+              },
+            ],
+          },
+        }),
+      );
+      final cleanup = service();
+
+      await cleanup.sweep();
+      expect(await sent.exists(), isTrue);
+      expect(await shared.exists(), isTrue);
+      expect(await removed.exists(), isFalse);
+
+      // 删掉对话：只被消息用着的图片随下一轮回收删掉，日记里的照常。
+      await database.deleteAiConversation(conversation);
+      await cleanup.sweep();
+      expect(await sent.exists(), isFalse);
+      expect(await shared.exists(), isTrue);
+    },
+  );
+
   test('a failed reference read deletes nothing', () async {
     final orphan = await put(documents, 'diary_images/media_1/orphan.jpg');
 

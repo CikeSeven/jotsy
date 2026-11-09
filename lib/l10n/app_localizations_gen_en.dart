@@ -15562,8 +15562,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String storageMgmtDeleteFromAiChats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count AI chat messages',
+      one: '1 AI chat message',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get storageMgmtDeleteCommentNote =>
       'Comments left with no text or images are deleted too.';
+
+  @override
+  String get storageMgmtDeleteAiChatNote =>
+      'In AI chats, deleted images show as removed; the messages stay.';
 
   @override
   String get storageMgmtDeleteCapsuleNote =>
@@ -15855,6 +15870,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String storageMgmtRefComment(String title) {
     return 'Comment · $title';
+  }
+
+  @override
+  String storageMgmtRefAiChat(String title) {
+    return 'AI chat · $title';
   }
 
   @override

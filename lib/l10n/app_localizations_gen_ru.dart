@@ -16124,8 +16124,25 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String storageMgmtDeleteFromAiChats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count сообщения в чатах с ИИ',
+      many: '$count сообщений в чатах с ИИ',
+      few: '$count сообщений в чатах с ИИ',
+      one: '$count сообщения в чатах с ИИ',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get storageMgmtDeleteCommentNote =>
       'Комментарии без текста и изображений тоже будут удалены.';
+
+  @override
+  String get storageMgmtDeleteAiChatNote =>
+      'В чатах с ИИ удалённые изображения будут отмечены как удалённые, сами сообщения останутся.';
 
   @override
   String get storageMgmtDeleteCapsuleNote =>
@@ -16442,6 +16459,11 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String storageMgmtRefComment(String title) {
     return 'Комментарий · $title';
+  }
+
+  @override
+  String storageMgmtRefAiChat(String title) {
+    return 'Чат с ИИ · $title';
   }
 
   @override

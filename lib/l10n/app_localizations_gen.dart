@@ -24840,11 +24840,23 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 draft} other{{count} drafts}}'**
   String storageMgmtDeleteFromDrafts(int count);
 
+  /// Delete confirmation: AI chat messages whose attached images are affected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 AI chat message} other{{count} AI chat messages}}'**
+  String storageMgmtDeleteFromAiChats(int count);
+
   /// Delete confirmation: note about comments.
   ///
   /// In en, this message translates to:
   /// **'Comments left with no text or images are deleted too.'**
   String get storageMgmtDeleteCommentNote;
+
+  /// Delete confirmation: note about images attached in AI chats.
+  ///
+  /// In en, this message translates to:
+  /// **'In AI chats, deleted images show as removed; the messages stay.'**
+  String get storageMgmtDeleteAiChatNote;
 
   /// Delete confirmation: note about sealed capsules.
   ///
@@ -25191,6 +25203,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Comment · {title}'**
   String storageMgmtRefComment(String title);
+
+  /// Used as an image attached in the AI chat titled title.
+  ///
+  /// In en, this message translates to:
+  /// **'AI chat · {title}'**
+  String storageMgmtRefAiChat(String title);
 
   /// Used as the cover of the entry titled title.
   ///

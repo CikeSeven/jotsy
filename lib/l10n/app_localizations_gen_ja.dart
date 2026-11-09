@@ -13971,7 +13971,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String storageMgmtDeleteFromAiChats(int count) {
+    return 'AI チャットのメッセージ $count 件';
+  }
+
+  @override
   String get storageMgmtDeleteCommentNote => '文字も画像もなくなったコメントは一緒に削除されます。';
+
+  @override
+  String get storageMgmtDeleteAiChatNote =>
+      'AI チャットでは削除した画像が「削除済み」と表示され、メッセージは残ります。';
 
   @override
   String get storageMgmtDeleteCapsuleNote => 'まだ開封されていないタイムカプセルの内容も含まれます。';
@@ -14186,6 +14195,11 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String storageMgmtRefComment(String title) {
     return 'コメント・$title';
+  }
+
+  @override
+  String storageMgmtRefAiChat(String title) {
+    return 'AI チャット・$title';
   }
 
   @override

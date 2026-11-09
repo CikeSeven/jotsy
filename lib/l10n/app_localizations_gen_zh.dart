@@ -13721,7 +13721,15 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String storageMgmtDeleteFromAiChats(int count) {
+    return '$count 条 AI 对话消息';
+  }
+
+  @override
   String get storageMgmtDeleteCommentNote => '删除后既没有文字也没有图片的留言会一并删除。';
+
+  @override
+  String get storageMgmtDeleteAiChatNote => 'AI 对话里这些图片会显示为已删除，消息本身保留。';
 
   @override
   String get storageMgmtDeleteCapsuleNote => '其中包含尚未解封的时间胶囊里的内容。';
@@ -13934,6 +13942,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String storageMgmtRefComment(String title) {
     return '留言 · $title';
+  }
+
+  @override
+  String storageMgmtRefAiChat(String title) {
+    return 'AI 对话 · $title';
   }
 
   @override

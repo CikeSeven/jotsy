@@ -282,6 +282,19 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     }
   }
 
+  /// v22 AI 消息加 `images`（用户附带的图片 JSON，可空）。
+  ///
+  /// 与 [_migrateAiMessagesAddSteps] 同理：列已存在时跳过（从 v17 之前升级
+  /// 时按最新定义建表已带上它，降级后再升级时旧构建不会删列）；可空、没有
+  /// 默认值，旧行读成“没有图片”。
+  Future<void> _migrateAiMessagesAddImages(Migrator migrator) async {
+    final columns = await customSelect('PRAGMA table_info(ai_messages)').get();
+    final present = columns.any((row) => row.read<String>('name') == 'images');
+    if (!present) {
+      await migrator.addColumn(aiMessages, aiMessages.images);
+    }
+  }
+
   Future<void> _createTableIfMissing(
     Migrator migrator,
     TableInfo<Table, Object?> table,

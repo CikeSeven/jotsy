@@ -144,6 +144,25 @@ void main() {
       await typeTitle(tester, 'Saved by hand');
       expect((await storedDiary(tester)).diary.title, 'Original title');
       expect(saveEnabled(tester), isTrue);
+      // 编辑中（标题有焦点）顶栏只有“保存”，没有自动保存时那个“完成”对勾。
+      final titleEditable = tester.widget<EditableText>(
+        find.descendant(
+          of: find.widgetWithText(TextField, 'Saved by hand'),
+          matching: find.byType(EditableText),
+        ),
+      );
+      expect(titleEditable.focusNode.hasFocus, isTrue);
+      expect(find.byTooltip(l10n.diaryReadingDone), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is FaIcon && widget.icon == FontAwesomeIcons.check.data,
+          ),
+        ),
+        findsNothing,
+      );
 
       await tester.tap(saveButton(tester));
       await tester.pump();

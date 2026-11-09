@@ -71,6 +71,7 @@ class AiAgentCallRecord {
     this.resultIsError = false,
     this.providerData,
     this.idFromProvider = true,
+    this.images = const <AiAgentImageRecord>[],
   });
 
   final String id;
@@ -114,6 +115,11 @@ class AiAgentCallRecord {
   final Map<String, Object?>? providerData;
   final bool idFromProvider;
 
+  /// 结果之后附上的图片（“查看图片”看的），按附上的顺序。回放时按它重新
+  /// 读图、放回结果之后；不算存储引用（只是看过哪张，日记里删了图就读成
+  /// “读不出来”）。
+  final List<AiAgentImageRecord> images;
+
   /// 能不能撤销：成功了、带着撤销数据、还没撤销过。
   bool get canUndo =>
       status == AiToolCallStatus.succeeded && undo != null && !undone;
@@ -129,6 +135,7 @@ class AiAgentCallRecord {
     List<AiToolSubject>? subjects,
     String? result,
     bool? resultIsError,
+    List<AiAgentImageRecord>? images,
   }) {
     final allSubjects = subjects;
     return AiAgentCallRecord(
@@ -155,6 +162,7 @@ class AiAgentCallRecord {
       resultIsError: resultIsError ?? this.resultIsError,
       providerData: providerData,
       idFromProvider: idFromProvider,
+      images: images ?? this.images,
     );
   }
 
@@ -177,6 +185,8 @@ class AiAgentCallRecord {
     if (resultIsError) 'resultError': true,
     'providerData': ?providerData,
     if (!idFromProvider) 'localId': true,
+    if (images.isNotEmpty)
+      'images': [for (final image in images) image.toJson()],
   };
 
   static AiAgentCallRecord? fromJson(Object? raw) {
@@ -192,6 +202,7 @@ class AiAgentCallRecord {
     final more = raw['moreSubjects'];
     final result = raw['result'];
     final providerData = raw['providerData'];
+    final images = raw['images'];
     return AiAgentCallRecord(
       id: id,
       tool: tool,
@@ -216,6 +227,49 @@ class AiAgentCallRecord {
           ? providerData.cast<String, Object?>()
           : null,
       idFromProvider: raw['localId'] != true,
+      images: [
+        if (images is List)
+          for (final item in images)
+            if (AiAgentImageRecord.fromJson(item) case final image?) image,
+      ],
+    );
+  }
+}
+
+/// 一次调用结果之后附上的一张图片。
+@immutable
+class AiAgentImageRecord {
+  const AiAgentImageRecord({
+    required this.label,
+    required this.source,
+    this.diaryId,
+  });
+
+  /// 给模型看的称呼（`D3#2`、`P1`），回放的占位文字里用它。
+  final String label;
+
+  /// 托管图片的绝对路径。
+  final String source;
+
+  /// 来自日记时那篇日记的业务 id（回放时重新检查还能不能给 AI 看）。
+  final String? diaryId;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'label': label,
+    'source': source,
+    'diary': ?diaryId,
+  };
+
+  static AiAgentImageRecord? fromJson(Object? raw) {
+    if (raw is! Map) return null;
+    final label = raw['label'];
+    final source = raw['source'];
+    final diary = raw['diary'];
+    if (label is! String || source is! String || source.isEmpty) return null;
+    return AiAgentImageRecord(
+      label: label,
+      source: source,
+      diaryId: diary is String ? diary : null,
     );
   }
 }

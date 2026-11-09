@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/ai/agent/ai_agent_loop.dart';
 import 'package:node_diary/core/services/ai/ai_failure.dart';
@@ -11,12 +13,15 @@ import '../../../support/fake_ai.dart';
 
 /// 记录回调的宿主：每个调用按 [results] 回一个结果（默认 `{"ok":true}`）。
 class _RecordingHost implements AiAgentHost {
-  _RecordingHost({this.onExecute});
+  _RecordingHost({this.onExecute, this.imagesFor});
 
   final List<String> executed = <String>[];
   final List<AiAgentStepOutput> outputs = <AiAgentStepOutput>[];
   final List<String> started = <String>[];
   final Future<void> Function(AiToolCall call)? onExecute;
+
+  /// 某个调用附在结果之后的图片。
+  final List<AiImagePart> Function(AiToolCall call)? imagesFor;
 
   @override
   void onDelta(int step, AiChunk chunk) {
@@ -28,13 +33,16 @@ class _RecordingHost implements AiAgentHost {
       outputs.add(output);
 
   @override
-  Future<AiToolResultPart> execute(int step, AiToolCall call) async {
+  Future<AiToolExecution> execute(int step, AiToolCall call) async {
     executed.add(call.name);
     await onExecute?.call(call);
-    return AiToolResultPart(
-      callId: call.id,
-      name: call.name,
-      content: '{"ok":true}',
+    return AiToolExecution(
+      AiToolResultPart(
+        callId: call.id,
+        name: call.name,
+        content: '{"ok":true}',
+      ),
+      images: imagesFor?.call(call) ?? const <AiImagePart>[],
     );
   }
 }
@@ -97,6 +105,50 @@ void main() {
     expect(followUp[2].role, AiRole.user);
     expect(followUp[2].toolResults.map((r) => r.callId), ['c1', 'c2']);
     expect(requests.last.tools.single.name, 'list_tags');
+  });
+
+  test('images from tools follow all the results, in call order', () async {
+    final requests = <AiRequest>[];
+    final service = scriptedAiService(
+      store,
+      requests: requests,
+      turns: [
+        toolTurn([
+          (id: 'c1', name: 'view_images', args: const {}),
+          (id: 'c2', name: 'list_tags', args: const {}),
+          (id: 'c3', name: 'view_images', args: const {}),
+        ]),
+        textTurn('看到了'),
+      ],
+    );
+    AiImagePart image(int marker) =>
+        AiImagePart(Uint8List.fromList([marker]), 'image/jpeg');
+    final host = _RecordingHost(
+      imagesFor: (call) => switch (call.id) {
+        'c1' => [image(1), image(2)],
+        'c3' => [image(3)],
+        _ => const <AiImagePart>[],
+      },
+    );
+    await AiAgentLoop(
+      service: service,
+      model: target,
+      host: host,
+    ).run(request(), HttpCancelToken());
+
+    final results = requests.last.messages.last;
+    expect(results.role, AiRole.user);
+    expect(
+      [
+        for (final part in results.parts)
+          switch (part) {
+            AiToolResultPart(:final callId) => callId,
+            AiImagePart(:final bytes) => 'image ${bytes.single}',
+            _ => 'other',
+          },
+      ],
+      ['c1', 'c2', 'c3', 'image 1', 'image 2', 'image 3'],
+    );
   });
 
   test('the last step forbids tools; ignoring that ends the turn', () async {

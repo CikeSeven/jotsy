@@ -13894,6 +13894,28 @@ class AppLocalizationsRu extends AppLocalizations {
       '[Фото не отправлено: эта модель не принимает изображения]';
 
   @override
+  String aiPromptDiaryImage(int index) {
+    return '[Фото $index]';
+  }
+
+  @override
+  String get aiToolViewImages => 'Посмотреть фото';
+
+  @override
+  String aiToolViewedImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Просмотрено $count фото',
+      many: 'Просмотрено $count фото',
+      few: 'Просмотрено $count фото',
+      one: 'Просмотрено $count фото',
+      zero: 'Фото не отправлены',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aiModelMaxOutput => 'Максимум токенов в ответе';
 
   @override
@@ -17766,6 +17788,8 @@ class AppLocalizationsRu extends AppLocalizations {
       'arg_remove_steps': 'Удалить шаги',
       'arg_all_day': 'Весь день',
       'arg_kind_todoList': 'Список задач',
+      'arg_images': 'Фото',
+      'arg_attachments': 'Фото из чата',
       'other': '',
     });
     return '$_temp0';

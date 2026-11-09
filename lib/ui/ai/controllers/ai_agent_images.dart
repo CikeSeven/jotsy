@@ -27,27 +27,6 @@ import '../viewmodels/ai_agent_image_slots.dart';
 typedef AiImageLoader =
     Future<AiImagePart?> Function(String source, int maxSide);
 
-/// 一次请求里的图片张数与字节（原始字节）。
-class AiImageBudget {
-  AiImageBudget({
-    this.maxCount = kAiRequestMaxImages,
-    this.maxBytes = kAiRequestMaxImageBytes,
-  });
-
-  final int maxCount;
-  final int maxBytes;
-  int count = 0;
-  int bytes = 0;
-
-  /// 再加一张 [size] 字节的图片仍在上限之内。
-  bool fits(int size) => count + 1 <= maxCount && bytes + size <= maxBytes;
-
-  void add(int size) {
-    count++;
-    bytes += size;
-  }
-}
-
 /// 加载结果：槽位键 → 图片或占位文字，以及请求里已有的图片。
 class AiResolvedImages {
   const AiResolvedImages(this.parts, this.budget);

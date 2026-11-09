@@ -60,6 +60,7 @@ import '../providers/ai_guide_provider.dart';
 import '../providers/ai_providers.dart';
 import '../tools/ai_tool.dart';
 import '../tools/ai_tool_registry.dart';
+import '../tools/ai_tools_images.dart';
 import '../viewmodels/ai_agent_history.dart';
 import '../viewmodels/ai_agent_image_slots.dart';
 import '../viewmodels/ai_agent_prompts.dart';

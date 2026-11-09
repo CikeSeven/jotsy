@@ -16519,6 +16519,12 @@
   "@aiPromptImageRemoved": {"description": "提示词占位：用户已在存储管理里删除的图片。", "placeholders": {"label": {"type": "String"}}},
   "aiPromptImagesRejected": "[图片没有发出：这个模型不接受图片]",
   "@aiPromptImagesRejected": {"description": "提示词占位：服务端拒收图片、去掉图片重试时的说明。"},
+  "aiPromptDiaryImage": "[图片 {index}]",
+  "@aiPromptDiaryImage": {"description": "发给 AI 的日记正文里第 n 张图片的标记（view_images 用同一编号）。", "placeholders": {"index": {"type": "int"}}},
+  "aiToolViewImages": "查看图片",
+  "@aiToolViewImages": {"description": "步骤卡片标题：智能体查看图片。"},
+  "aiToolViewedImages": "{count, plural, =0{没有发出图片} other{看了 {count} 张图片}}",
+  "@aiToolViewedImages": {"description": "步骤卡片结果：智能体看了几张图片。", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "最多输出（token）",
   "@aiModelMaxOutput": {
     "description": "模型最多输出输入框。"
@@ -19475,7 +19481,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} arg_images{图片} arg_attachments{对话里的图片} other{}}",
   "@aiToolArgName": {
     "description": "工具详情里参数的名称（arg_参数名）；空串表示没有译名，界面显示参数名。",
     "placeholders": {

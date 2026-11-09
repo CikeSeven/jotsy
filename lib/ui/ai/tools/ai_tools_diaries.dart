@@ -11,17 +11,18 @@
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/agent/ai_tool_schema.dart';
+import '../../../core/services/ai/ai_vision.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/text_stats.dart';
 import '../../explore/controllers/explore_stats_builder.dart';
 import '../../explore/viewmodels/explore_entry.dart';
 import '../../notebooks/models/notebook_scope_resolver.dart';
-import '../controllers/ai_privacy_gate.dart';
 import '../viewmodels/ai_context_budget.dart';
 import '../viewmodels/ai_recap_material.dart';
 import '../viewmodels/ai_retrieval.dart';
 import '../models/ai_tool_subject.dart';
 import 'ai_tool.dart';
+import 'ai_tools_images.dart';
 
 /// 搜索结果每篇的摘录上限（字）。
 const int _excerptWords = 60;
@@ -185,8 +186,9 @@ class ReadDiariesTool extends AiTool {
   @override
   String get description =>
       'Read the full text of diary entries by id or reference like D3 (from '
-      'search_diaries). Long entries may be cut when the per-turn text '
-      'budget runs out.';
+      'search_diaries). Photos are marked in the text as [Photo n]; use '
+      'view_images to look at them. Long entries may be cut when the '
+      'per-turn text budget runs out.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'ids'};
@@ -211,40 +213,33 @@ class ReadDiariesTool extends AiTool {
     Map<String, Object?> args,
   ) async {
     final ids = (args['ids']! as List).cast<String>().toSet();
-    final database = context.database;
-    final privacy = context.prefs.privacy;
     final results = <Map<String, Object?>>[];
     final subjects = <AiToolSubject>[];
     var read = 0;
+    var photos = false;
     for (final id in ids) {
-      final diary = await database.getAiDiary(id, now: context.now);
-      if (diary == null) {
-        // 不要断言“在回收站 / 是时间胶囊”：id 写错时模型会照着去怪用户的
-        // 数据。先提示换成查询结果里的 id 或编号。
-        results.add(<String, Object?>{
-          'id': id,
-          'error':
-              'No readable entry with this id. Use an id or reference '
-              'returned by search_diaries; if it came from there, the entry '
-              'was deleted, moved to the recycle bin or is a sealed time '
-              'capsule.',
-        });
+      // 读得到才给：口径见 aiAgentReadDiary（找不到时不断言“在回收站 /
+      // 是时间胶囊”，先提示换成查询结果里的 id 或编号）。
+      final access = await aiAgentReadDiary(
+        context.container,
+        prefs: context.prefs,
+        id: id,
+        now: context.now,
+      );
+      final found = access.diary;
+      if (found == null) {
+        results.add(<String, Object?>{'id': id, 'error': access.refusal});
         continue;
       }
-      final excluded =
-          await database.isDiaryPrivate(id) ||
-          diary.tags.any(privacy.excludedTagNames.contains) ||
-          (await database.getDiaryNotebookIds(
-            id,
-          )).any(privacy.excludedNotebookIds.contains) ||
-          !(await aiDiaryAllowedIn(context.container, id));
-      if (excluded) {
-        results.add(<String, Object?>{
-          'id': id,
-          'error': 'This entry is private or excluded from AI by the user.',
-        });
-        continue;
-      }
+      // 正文里的图片写成“[图片 n]”，编号与 view_images 相同。
+      final diary = aiDiaryWithText(
+        found,
+        aiDiaryTextWithImageMarks(context.kit.l10n, found),
+      );
+      final photoCount = AiVisionImages.sourcesOf(
+        found.contentJson ?? '',
+      ).length;
+      if (photoCount > 0) photos = true;
       final words =
           TextStats.countWords(diary.contentText) +
           TextStats.countWords(diary.title);
@@ -267,12 +262,21 @@ class ReadDiariesTool extends AiTool {
           ref: '[$ref]',
           maxWords: granted < words ? granted : null,
         ),
+        if (photoCount > 0) 'photos': photoCount,
       });
       subjects.add(aiContextDiarySubject(diary));
       read++;
     }
     return AiToolOutcome(
-      data: <String, Object?>{'diaries': results},
+      data: <String, Object?>{
+        'diaries': results,
+        if (photos)
+          'photos_hint': context.env.vision
+              ? 'To look at photos, call view_images with diary_id and the '
+                    'photo numbers.'
+              : 'This model cannot see photos, so view_images is not '
+                    'available.',
+      },
       summary: context.l10n.aiToolReadEntries(read),
       subjects: subjects,
     );

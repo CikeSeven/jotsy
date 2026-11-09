@@ -312,6 +312,18 @@ List<_Entry> _replayAnswer(
                 isError: call.result == null || call.resultIsError,
               ),
           ]),
+          // 当轮各调用附的图片按调用顺序接在全部结果之后（与
+          // `AiAgentLoop` 一致）。
+          trailing: [
+            for (final call in step.calls)
+              for (final (index, image) in call.images.indexed)
+                AiImageSlot(
+                  key: aiCallImageKey(row.messageId, call.id, index),
+                  label: image.label,
+                  source: image.source,
+                  diaryId: image.diaryId,
+                ),
+          ],
         ),
       );
   }

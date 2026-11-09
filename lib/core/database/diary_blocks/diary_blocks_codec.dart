@@ -158,7 +158,13 @@ Map<String, Object?> diaryBlocksFromPlainText(String text) {
 /// 每个块一行，媒体与分隔线只占一个空行；与 Quill `Document.toPlainText`
 /// 去掉嵌入占位符后的结果一致，去掉末尾空白。结构有效的表格每行一行、
 /// 格与格之间 ` | `（[DiaryTableGrid.rowTexts]），不再逐格逐段各占一行。
-String diaryBlocksPlainText(Map<String, Object?> document) {
+///
+/// [embedText] 给出时，它对某个块返回的文字代替那个块的原文（返回 null 的
+/// 块照常）：发给 AI 的正文在图片的位置写“[图片 3]”，其余与镜像一字不差。
+String diaryBlocksPlainText(
+  Map<String, Object?> document, {
+  String? Function(Map<String, Object?> node)? embedText,
+}) {
   final buffer = StringBuffer();
   // 正在跳过的表格所在深度：它的格子与格内段落已经按行写过。
   int? tableDepth;
@@ -178,7 +184,7 @@ String diaryBlocksPlainText(Map<String, Object?> document) {
       continue;
     }
     buffer
-      ..write(diaryBlockText(node))
+      ..write(embedText?.call(node) ?? diaryBlockText(node))
       ..write('\n');
   }
   return buffer

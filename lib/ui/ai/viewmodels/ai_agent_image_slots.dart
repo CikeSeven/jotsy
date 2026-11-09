@@ -43,6 +43,32 @@ const int kAiImageHistoryWeight = 1500;
 const int kAiRequestMaxImages = 20;
 const int kAiRequestMaxImageBytes = 12 * 1024 * 1024;
 
+/// 一次请求里的图片张数与字节（原始字节）。历史与这一轮附图加载后
+/// （`resolveAiImageSlots`）是起点，这一轮“查看图片”在它之上累加。
+class AiImageBudget {
+  AiImageBudget({
+    this.maxCount = kAiRequestMaxImages,
+    this.maxBytes = kAiRequestMaxImageBytes,
+  });
+
+  final int maxCount;
+  final int maxBytes;
+  int count = 0;
+  int bytes = 0;
+
+  /// 再加一张 [size] 字节的图片仍在上限之内。
+  bool fits(int size) => count + 1 <= maxCount && bytes + size <= maxBytes;
+
+  void add(int size) {
+    count++;
+    bytes += size;
+  }
+}
+
+/// 工具结果之后那张图片的位置键。
+String aiCallImageKey(String messageId, String callId, int index) =>
+    'c:$messageId:$callId:$index';
+
 /// 用户附图的位置键。
 String aiQuestionImageKey(String messageId, int index) => 'q:$messageId:$index';
 

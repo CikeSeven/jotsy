@@ -11878,6 +11878,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPromptImagesRejected => '[图片没有发出：这个模型不接受图片]';
 
   @override
+  String aiPromptDiaryImage(int index) {
+    return '[图片 $index]';
+  }
+
+  @override
+  String get aiToolViewImages => '查看图片';
+
+  @override
+  String aiToolViewedImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '看了 $count 张图片',
+      zero: '没有发出图片',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aiModelMaxOutput => '最多输出（token）';
 
   @override
@@ -14931,6 +14950,8 @@ class AppLocalizationsZh extends AppLocalizations {
       'arg_remove_steps': '删除步骤',
       'arg_all_day': '全天',
       'arg_kind_todoList': '待办清单',
+      'arg_images': '图片',
+      'arg_attachments': '对话里的图片',
       'other': '',
     });
     return '$_temp0';

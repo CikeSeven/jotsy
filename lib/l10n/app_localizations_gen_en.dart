@@ -13456,6 +13456,26 @@ class AppLocalizationsEn extends AppLocalizations {
       '[Photo not sent: this model does not accept images]';
 
   @override
+  String aiPromptDiaryImage(int index) {
+    return '[Photo $index]';
+  }
+
+  @override
+  String get aiToolViewImages => 'Look at photos';
+
+  @override
+  String aiToolViewedImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Looked at $count photos',
+      one: 'Looked at 1 photo',
+      zero: 'No photos sent',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aiModelMaxOutput => 'Max output tokens';
 
   @override
@@ -17111,6 +17131,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'arg_remove_steps': 'Steps removed',
       'arg_all_day': 'All day',
       'arg_kind_todoList': 'To-do list',
+      'arg_images': 'Photos',
+      'arg_attachments': 'Chat photos',
       'other': '',
     });
     return '$_temp0';

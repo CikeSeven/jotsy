@@ -13,6 +13,7 @@ import 'package:node_diary/core/services/ai/ai_provider_store.dart';
 import 'package:node_diary/core/services/ai/ai_service.dart';
 import 'package:node_diary/core/services/ai/ai_vision.dart';
 import 'package:node_diary/ui/ai/controllers/ai_chat_controller.dart';
+import 'package:node_diary/ui/ai/models/ai_agent_steps.dart';
 import 'package:node_diary/ui/ai/models/ai_chat_scope.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_chat_images.dart';
@@ -195,6 +196,86 @@ void main() {
       (edited.parts.last as AiTextPart).text,
       contains(h.l10n.aiPromptAgentImagesAttached('P1, P2')),
     );
+  });
+
+  testWidgets('the agent looks at an entry photo; it is re-sent next turn', (
+    tester,
+  ) async {
+    final h = await setUpHarness(tester);
+    final first = await photo(tester, 'p1.jpg');
+    final second = await photo(tester, 'p2.jpg');
+    final diaryId = (await tester.runAsync(
+      () => h.database.createDiary(
+        title: '海边',
+        contentText: '傍晚',
+        metadataJson: '{}',
+        contentDocJson: jsonEncode({
+          'document': {
+            'type': 'page',
+            'children': [
+              {
+                'type': 'image',
+                'data': {'url': first},
+              },
+              {
+                'type': 'image',
+                'data': {'url': second},
+              },
+            ],
+          },
+        }),
+      ),
+    ))!;
+    service = scriptedAiService(
+      store,
+      requests: requests,
+      turns: [
+        toolTurn([
+          (
+            id: 'c1',
+            name: 'view_images',
+            args: {
+              'diary_id': diaryId,
+              'images': [2],
+            },
+          ),
+        ]),
+        textTurn('第二张是日落'),
+        textTurn('记得'),
+      ],
+    );
+    final (context, ref) = await host(h);
+    final controller = AiChatController(
+      database: h.database,
+      scope: const AiChatScope.auto(),
+    );
+    addTearDown(controller.dispose);
+
+    await tester.runAsync(() => controller.send(context, ref, '看看第二张'));
+    // 工具结果在前，看的那张图紧跟其后（同一条用户消息）。
+    final results = requests[1].messages.last;
+    expect(results.parts.first, isA<AiToolResultPart>());
+    expect((results.parts.first as AiToolResultPart).content, contains('D1#2'));
+    final viewed = results.parts.last as AiImagePart;
+    expect(viewed.bytes, base64Decode(jpgBase64));
+
+    final rows = (await tester.runAsync(
+      () => h.database.getAiMessages(controller.conversationId!),
+    ))!;
+    final call = AiAgentStepRecord.decodeList(
+      rows.last.steps,
+    ).single.calls.single;
+    expect(call.images.single.label, 'D1#2');
+    expect(call.images.single.source, second);
+    expect(call.images.single.diaryId, diaryId);
+
+    // 下一轮：那一步的结果与图片原样回放，位置、字节都不变。
+    await tester.runAsync(() => controller.send(context, ref, '还记得吗'));
+    final replayed = requests[2].messages.firstWhere(
+      (message) => message.toolResults.isNotEmpty,
+    );
+    expect(replayed.parts.length, results.parts.length);
+    expect((replayed.parts.last as AiImagePart).bytes, viewed.bytes);
   });
 
   testWidgets('a model that cannot see photos gets placeholders instead', (

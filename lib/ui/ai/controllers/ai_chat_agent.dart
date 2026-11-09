@@ -137,6 +137,14 @@ extension _AiChatAgent on AiChatController {
       vision: vision,
       maxSide: prefs.visionMaxSide,
       l10n: kit.l10n,
+      // 来自日记的旧图片：那篇现在还能不能给 AI 看（与 read_diaries 同口径）。
+      diaryAllowed: (diaryId) async =>
+          (await aiAgentReadDiary(
+            container,
+            prefs: prefs,
+            id: diaryId,
+          )).diary !=
+          null,
     );
     if (!current()) return true;
     if (!context.mounted) {
@@ -168,6 +176,8 @@ extension _AiChatAgent on AiChatController {
         token: token,
         ui: _AgentToolUi(context, ref),
         guide: guide,
+        chatImages: [...aiChatImages(history), ...attached],
+        imageBudget: images.budget,
       ),
     );
     _agentTurn = turn;

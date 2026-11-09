@@ -30,6 +30,8 @@ import '../../settings/providers/app_features_provider.dart';
 import '../models/ai_guide.dart';
 import '../models/ai_preferences.dart';
 import '../models/ai_tool_subject.dart';
+import '../viewmodels/ai_agent_image_slots.dart';
+import '../viewmodels/ai_chat_images.dart';
 import '../viewmodels/ai_prompt_builder.dart';
 import '../viewmodels/ai_task_prompts.dart';
 
@@ -161,6 +163,7 @@ class AiToolOutcome {
     this.navigation,
     this.undo,
     this.subjects = const <AiToolSubject>[],
+    this.images = const <AiToolImage>[],
   });
 
   /// 回传模型的数据（JSON 可编码）。
@@ -179,6 +182,33 @@ class AiToolOutcome {
   /// 涉及的对象（查到的日记、改动的待办、筛选用的日记本……），界面据此写
   /// 出具体名称、列出可点的胶囊。写工具成功时必须给。
   final List<AiToolSubject> subjects;
+
+  /// 附在结果之后发给模型的图片（“查看图片”），按顺序；[data] 里要写明
+  /// 依次是哪几张（Anthropic 会把图片挪到文字前面，图与说明不能靠相邻对应）。
+  final List<AiToolImage> images;
+}
+
+/// 工具附在结果之后的一张图片。
+@immutable
+class AiToolImage {
+  const AiToolImage({
+    required this.label,
+    required this.source,
+    required this.part,
+    this.diaryId,
+  });
+
+  /// 给模型看的称呼（`D3#2`、`P1`）。
+  final String label;
+
+  /// 托管图片的绝对路径（落库，回放时重新读）。
+  final String source;
+
+  /// 来自日记时那篇日记的业务 id。
+  final String? diaryId;
+
+  /// 已经读好、缩好的图片。
+  final AiImagePart part;
 }
 
 /// 执行前确认面板的内容：一句标题与几行要点（界面语言）。
@@ -355,9 +385,20 @@ class AiToolContext {
     this.ui,
     AiGuideCatalog? guide,
     DateTime? now,
+    this.chatImages = const <AiChatImage>[],
+    AiImageBudget? imageBudget,
   }) : _featuresAtStart = container.read(appFeaturesProvider),
        guide = guide ?? AiGuideCatalog.empty,
+       imageBudget = imageBudget ?? AiImageBudget(),
        now = now ?? DateTime.now();
+
+  /// 这段对话里用户附过的图片（含这一轮的），“查看图片”按编号重看、
+  /// 新建 / 追加日记按编号加图都从这里取。
+  final List<AiChatImage> chatImages;
+
+  /// 这次请求里已有的图片（历史与这一轮附图，见 `resolveAiImageSlots`）；
+  /// “查看图片”在它之上累加，超出上限时拒绝。
+  final AiImageBudget imageBudget;
 
   /// 使用指南（提示词语言的那一份）；没加载到时为空目录。
   final AiGuideCatalog guide;

@@ -16519,6 +16519,12 @@
   "@aiPromptImageRemoved": {"description": "Prompt placeholder for a photo the user deleted from Storage.", "placeholders": {"label": {"type": "String"}}},
   "aiPromptImagesRejected": "[Photo not sent: this model does not accept images]",
   "@aiPromptImagesRejected": {"description": "Prompt placeholder used when the service rejects images and they are removed before retrying."},
+  "aiPromptDiaryImage": "[Photo {index}]",
+  "@aiPromptDiaryImage": {"description": "Prompt mark for the n-th photo in an entry's text sent to the AI (view_images uses the same number).", "placeholders": {"index": {"type": "int"}}},
+  "aiToolViewImages": "Look at photos",
+  "@aiToolViewImages": {"description": "Step card title: the agent looks at photos."},
+  "aiToolViewedImages": "{count, plural, =0{No photos sent} =1{Looked at 1 photo} other{Looked at {count} photos}}",
+  "@aiToolViewedImages": {"description": "Step card result: how many photos the agent looked at.", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "Max output tokens",
   "@aiModelMaxOutput": {
     "description": "Model max output field."
@@ -19475,7 +19481,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

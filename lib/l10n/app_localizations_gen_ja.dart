@@ -12084,6 +12084,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiPromptImagesRejected => '[画像は送られていません：このモデルは画像を受け付けません]';
 
   @override
+  String aiPromptDiaryImage(int index) {
+    return '[画像 $index]';
+  }
+
+  @override
+  String get aiToolViewImages => '画像を見る';
+
+  @override
+  String aiToolViewedImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '画像を $count 枚見ました',
+      zero: '画像は送られていません',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aiModelMaxOutput => '最大出力トークン数';
 
   @override
@@ -15190,6 +15209,8 @@ class AppLocalizationsJa extends AppLocalizations {
       'arg_remove_steps': '削除するステップ',
       'arg_all_day': '終日',
       'arg_kind_todoList': 'リスト',
+      'arg_images': '画像',
+      'arg_attachments': 'チャットの画像',
       'other': '',
     });
     return '$_temp0';

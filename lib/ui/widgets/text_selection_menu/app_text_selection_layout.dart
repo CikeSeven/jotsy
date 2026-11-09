@@ -15,6 +15,8 @@ import 'package:flutter/rendering.dart';
 ///   [secondaryAnchor] 下方 [gapBelow]，留出选区把手（Material 的
 ///   `_kHandleSize - 2`）；
 /// - 仍放不下时夹进屏幕（会盖住选区一部分，但不出屏）；
+/// - 给了 [softBottom]（内容底部浮层的上沿）时，下沿再守在它上方 [margin]
+///   （见 [softBottom] 的例外）；
 /// - 水平居中于所在一侧的锚点，夹进 [安全区左 + margin, 宽 − 安全区右 − margin]。
 ///
 /// 放在哪一侧只按收起时的高度判断（[collapsedHeight]），展开不会让胶囊换边：
@@ -26,6 +28,8 @@ class AppTextToolbarGeometry {
     required this.primaryAnchor,
     this.secondaryAnchor,
     required this.collapsedHeight,
+    this.softBottom,
+    this.minExpandedHeight = 0,
   });
 
   /// 菜单到安全区边缘的最小距离。
@@ -49,10 +53,34 @@ class AppTextToolbarGeometry {
   /// 收起时（只有主行）的菜单高度。
   final double collapsedHeight;
 
+  /// 菜单尽量不越过的下沿（覆盖层坐标），如日记编辑页悬浮工具栏连同展开
+  /// 面板的上沿；为 null 时只避开 [safePadding]。
+  ///
+  /// 收起的菜单一律守在它上方（放不下就往上夹、盖住选区一部分，不盖浮层）。
+  /// 唯一的例外：菜单在选区下方、到它为止连 [minExpandedHeight] 都放不下
+  /// 时，用户主动展开的次要区可以越过它、长到安全区边缘——临时盖住浮层，
+  /// 好过把次要区挤成一条缝。
+  final double? softBottom;
+
+  /// 展开后至少要放得下的高度（主行、分隔线与一行次要项），见 [softBottom]。
+  final double minExpandedHeight;
+
   Offset get _below => secondaryAnchor ?? primaryAnchor;
 
   double get _top => safePadding.top + margin;
-  double get _bottom => overlaySize.height - safePadding.bottom - margin;
+
+  /// 安全区（系统栏与键盘）的下沿。
+  double get _hardBottom => overlaySize.height - safePadding.bottom - margin;
+
+  /// 收起的菜单守住的下沿：安全区与 [softBottom] 取较高者。
+  double get _bottom {
+    final soft = softBottom;
+    return soft == null ? _hardBottom : math.min(_hardBottom, soft - margin);
+  }
+
+  /// 在下方时展开的菜单能长到的下沿（见 [softBottom] 的例外）。
+  double get _expandedBottomBelow =>
+      _bottom - _anchorTopBelow >= minExpandedHeight ? _bottom : _hardBottom;
   double get _left => safePadding.left + margin;
   double get _right => overlaySize.width - safePadding.right - margin;
 
@@ -65,7 +93,9 @@ class AppTextToolbarGeometry {
   /// 所在一侧留给菜单的高度（展开后整张卡片不超过它）。
   double get availableHeight => math.max(
     0,
-    above ? primaryAnchor.dy - gapAbove - _top : _bottom - _anchorTopBelow,
+    above
+        ? primaryAnchor.dy - gapAbove - _top
+        : _expandedBottomBelow - _anchorTopBelow,
   );
 
   /// 在下方时菜单顶边的位置（未夹取）。
@@ -81,9 +111,13 @@ class AppTextToolbarGeometry {
     final y = above
         ? primaryAnchor.dy - gapAbove - size.height
         : _anchorTopBelow;
+    // 展开（高于收起高度）且在下方时按展开能到的下沿夹，主行留在原处。
+    final bottom = !above && size.height > collapsedHeight
+        ? _expandedBottomBelow
+        : _bottom;
     return Offset(
       x,
-      y.clamp(_top, math.max(_top, _bottom - size.height)).toDouble(),
+      y.clamp(_top, math.max(_top, bottom - size.height)).toDouble(),
     );
   }
 }
@@ -117,7 +151,9 @@ class AppTextSelectionLayoutDelegate extends SingleChildLayoutDelegate {
         a.safePadding != b.safePadding ||
         a.primaryAnchor != b.primaryAnchor ||
         a.secondaryAnchor != b.secondaryAnchor ||
-        a.collapsedHeight != b.collapsedHeight;
+        a.collapsedHeight != b.collapsedHeight ||
+        a.softBottom != b.softBottom ||
+        a.minExpandedHeight != b.minExpandedHeight;
   }
 }
 

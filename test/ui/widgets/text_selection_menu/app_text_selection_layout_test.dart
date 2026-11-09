@@ -9,12 +9,16 @@ AppTextToolbarGeometry _geometry({
   required Offset primary,
   Offset? secondary,
   EdgeInsets safe = EdgeInsets.zero,
+  double? softBottom,
+  double minExpandedHeight = 0,
 }) => AppTextToolbarGeometry(
   overlaySize: _screen,
   safePadding: safe,
   primaryAnchor: primary,
   secondaryAnchor: secondary,
   collapsedHeight: _menu.height,
+  softBottom: softBottom,
+  minExpandedHeight: minExpandedHeight,
 );
 
 void main() {
@@ -72,6 +76,62 @@ void main() {
     test('falls back to the primary anchor without a secondary anchor', () {
       final geometry = _geometry(primary: const Offset(180, 30));
       expect(geometry.offsetFor(_menu).dy, 30 + 20);
+    });
+  });
+
+  // 内容底部浮层（日记编辑页的悬浮工具栏与面板）的上沿，#221。
+  group('AppTextToolbarGeometry with a soft bottom', () {
+    test('a menu above the selection keeps its room', () {
+      final geometry = _geometry(
+        primary: const Offset(180, 300),
+        softBottom: 320,
+      );
+      expect(geometry.above, isTrue);
+      expect(geometry.offsetFor(_menu).dy + _menu.height, 300 - 8);
+      expect(geometry.availableHeight, 300 - 8 - 8);
+    });
+
+    test('a collapsed menu below the selection stays above the layer', () {
+      final geometry = _geometry(
+        primary: const Offset(180, 40),
+        secondary: const Offset(180, 60),
+        softBottom: 140,
+        minExpandedHeight: 120,
+      );
+      expect(geometry.above, isFalse);
+      // 下方放不下整个菜单：往上夹进浮层上沿以上，不盖浮层。
+      expect(geometry.offsetFor(_menu).dy, 140 - 8 - _menu.height);
+    });
+
+    test('an expansion that fits grows only down to the layer', () {
+      final geometry = _geometry(
+        primary: const Offset(180, 40),
+        secondary: const Offset(180, 60),
+        softBottom: 400,
+        minExpandedHeight: 120,
+      );
+      expect(geometry.availableHeight, 400 - 8 - (60 + 20));
+      const expanded = Size(240, 200);
+      expect(geometry.offsetFor(expanded).dy, 60 + 20);
+    });
+
+    test('an expansion without room for one row may cover the layer', () {
+      final geometry = _geometry(
+        primary: const Offset(180, 40),
+        secondary: const Offset(180, 60),
+        safe: const EdgeInsets.only(bottom: 300),
+        softBottom: 160,
+        minExpandedHeight: 120,
+      );
+      // 到浮层为止只有 160 − 8 − 80 = 72，不够一行次要项：展开可以长到
+      // 键盘上沿，主行留在原处。
+      expect(geometry.availableHeight, 800 - 300 - 8 - 80);
+      const expanded = Size(240, 200);
+      expect(geometry.offsetFor(expanded).dy, 60 + 20);
+      // 收起时仍守在浮层上沿以上（72 放得下收起的 64）。
+      final collapsed = geometry.offsetFor(_menu).dy;
+      expect(collapsed, 60 + 20);
+      expect(collapsed + _menu.height, lessThanOrEqualTo(160 - 8));
     });
   });
 

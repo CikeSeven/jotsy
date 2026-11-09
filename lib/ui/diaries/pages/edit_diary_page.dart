@@ -12,7 +12,6 @@ import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import '../controllers/diary_editor_controller.dart' as editor;
 import '../models/diary_link_candidate.dart';
 import '../widgets/diary_editor/diary_editor.dart';
-import '../widgets/diary_editor/diary_editor_caret.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -946,6 +945,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             appearance: appearance,
             templatesEnabled: templatesEnabled,
           );
+    final aiPrompts = ref.watch(aiModuleAvailableProvider(AiModule.prompts));
+    final footer = Column(
+      children: [
+        ?readingTrailing,
+        DiaryToolbarPanelReserve(extent: _toolbarPanelExtent),
+        ValueListenableBuilder<double>(
+          valueListenable: _editPanelExpandProgress,
+          builder: (context, progress, _) => SizedBox(
+            key: const ValueKey('diary-editor-page-reserve'),
+            height: resolveBottomSpacer(progress),
+          ),
+        ),
+      ],
+    );
     return IgnorePointer(
       ignoring: contentLocked,
       // 自定义正文颜色（阅读式版式、通过对比度检查时）经 DefaultTextStyle
@@ -953,38 +966,33 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       // 这一层：颜色有无切换时组件树结构不变，编辑器不会重建。
       child: DefaultTextStyle.merge(
         style: TextStyle(color: readingResolved?.bodyColor),
-        child: DiaryEditor(
-          controller: _contentController,
-          appearance: appearance,
-          focusNode: _contentFocusNode,
-          onMediaCommand: (kind) => unawaited(_controller.importMedia(kind)),
-          onCameraCommand: AppPlatform.supportsCameraCapture
-              ? (kind) => unawaited(_controller.captureMedia(kind))
-              : null,
-          onRecordingCommand: _recordingAvailable
-              ? _toggleRecordingPanel
-              : null,
-          onAiCommand: _aiWritingAvailable
-              ? (command) => unawaited(_controller.handleAiSlash(command))
-              : null,
-          aiPrompts: ref.watch(aiModuleAvailableProvider(AiModule.prompts)),
-          placeholder: context.l10n.autoT0133,
-          padding: EdgeInsets.symmetric(horizontal: gutter),
-          header: header,
-          scrollHandle: _readingScroll,
-          autoScrollEdgeOffset: _editorBottomCover(),
-          footer: Column(
-            children: [
-              ?readingTrailing,
-              DiaryToolbarPanelReserve(extent: _toolbarPanelExtent),
-              ValueListenableBuilder<double>(
-                valueListenable: _editPanelExpandProgress,
-                builder: (context, progress, _) => SizedBox(
-                  key: const ValueKey('diary-editor-page-reserve'),
-                  height: resolveBottomSpacer(progress),
-                ),
-              ),
-            ],
+        // 「更多」等面板展开 / 收起时只重建这一层，把新的遮挡高度交给正文：
+        // 光标与选区避让（DiaryEditorViewport）、选区菜单与把手的边缘滚动都
+        // 按面板上沿计算（#221）。面板只在展开 / 收起时报告一次目标高度，
+        // 不逐帧重建。
+        child: ValueListenableBuilder<double>(
+          valueListenable: _toolbarPanelExtent,
+          builder: (context, _, _) => DiaryEditor(
+            controller: _contentController,
+            appearance: appearance,
+            focusNode: _contentFocusNode,
+            onMediaCommand: (kind) => unawaited(_controller.importMedia(kind)),
+            onCameraCommand: AppPlatform.supportsCameraCapture
+                ? (kind) => unawaited(_controller.captureMedia(kind))
+                : null,
+            onRecordingCommand: _recordingAvailable
+                ? _toggleRecordingPanel
+                : null,
+            onAiCommand: _aiWritingAvailable
+                ? (command) => unawaited(_controller.handleAiSlash(command))
+                : null,
+            aiPrompts: aiPrompts,
+            placeholder: context.l10n.autoT0133,
+            padding: EdgeInsets.symmetric(horizontal: gutter),
+            header: header,
+            scrollHandle: _readingScroll,
+            autoScrollEdgeOffset: _editorBottomCover(),
+            footer: footer,
           ),
         ),
       ),
@@ -1715,31 +1723,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
   }
 
-  /// 「更多」面板展开/收起：正文末尾留白跟着变（见 [DiaryToolbarPanelReserve]）；
-  /// 展开时若光标会被面板挡住，在留白生效的下一帧把它滚到面板上方。
-  /// 编辑标题时光标不在正文里，不滚动。
+  /// 「更多」面板展开/收起：正文末尾留白（[DiaryToolbarPanelReserve]）与交给
+  /// 正文的遮挡高度跟着变（见 [_buildEditorColumn]）；展开时光标或选中的文字
+  /// 会被面板挡住的，由正文的 DiaryEditorViewport 在留白生效的同一帧之后滚到
+  /// 面板上方。编辑标题时正文没有焦点，不滚动。
   void _handleToolbarPanelExtentChanged(double extent) {
-    if (!mounted) {
-      return;
+    if (mounted) {
+      _toolbarPanelExtent.value = extent;
     }
-    final grew = extent > _toolbarPanelExtent.value;
-    _toolbarPanelExtent.value = extent;
-    if (!grew || !_contentFocusNode.hasFocus) {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final selection = _contentController.selection;
-      if (!mounted || selection == null) {
-        return;
-      }
-      revealDiaryEditorCaretAbove(
-        _contentController,
-        // 被遮住的高度 = 工具栏一排、底部留白与光标空隙（与平时的正文避让
-        // 一致）+ 面板。
-        coveredHeight: _editorBottomCover(),
-        duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
-      );
-    });
   }
 
   Widget _buildRecordingPanel() {

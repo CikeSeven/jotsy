@@ -5,7 +5,7 @@ summary: Turning on to-dos, lists and views, due dates, reminders, repeats, prio
 features: [todos]
 platforms: []
 destinations: [tab_todos, settings_todos, settings_features]
-keywords: [to-do, todo, to-dos, tasks, list, inbox, due date, reminder, notification, repeat, priority, steps, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day]
+keywords: [to-do, todo, to-dos, tasks, list, inbox, due date, reminder, notification, repeat, priority, steps, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
 ---
 To-dos are a task list separate from your diary, with due dates, reminders, repeats and priorities. Checkboxes inside a diary's text are unrelated to them.
 
@@ -14,6 +14,8 @@ To-dos are off by default: turn on "To-dos" in Settings → Features and a "To-d
 
 ## Views and lists
 Tap the page title (such as "Today ▾"; wide windows show them in the left column) to switch views: Today, Planned, Important, All, Inbox and Completed, followed by your lists. To-dos not in a list live in the Inbox. Use "New list" to create one with a name, color and icon. The page's "More" menu lets you edit or delete a list, "Manage lists", change the sort, show or hide completed items, and clear completed. Deleting a list deletes its to-dos too (undoable from the notice).
+- Sort by: Manual, Due date, Priority or Date created. With Manual, in the Inbox or a list you can hold the handle at the end of an open to-do and drag it to reorder (not while selecting).
+- Search: the magnifier "Search to-dos" in the page header looks through titles, notes and steps; completed to-dos are listed too (open ones first).
 
 ## Adding to-dos
 - Tap "New to-do" at the bottom right, type in "What needs doing?" and press Enter. The panel stays open so you can keep adding; the buttons below set Date, Reminders, Repeat, List and Priority.
@@ -28,8 +30,8 @@ Tap the page title (such as "Today ▾"; wide windows show them in the left colu
 
 ## Dates, reminders and repeats
 - Date: Today, Tomorrow, Next Monday or Pick a date…, then optionally set a time or make it all day.
-- Reminders: for timed to-dos, at due time or some minutes, hours or days before; all-day to-dos remind at a set time on the day or the day before; you can also pick a custom time. Notifications have "Done" and "Snooze" buttons.
-- Repeat: Daily, Workdays (China public holidays), weekly, monthly, yearly or Custom… (interval, weekdays, end condition; "Count from completion" suits things like watering plants). Completing a repeating to-do moves it to the next occurrence.
+- Reminders: for timed to-dos, at due time or some minutes, hours or days before; all-day to-dos remind at a set time on the day or the day before; you can also pick a custom time. Each to-do can have up to 5 reminders. Reminders count from the due date: a to-do without a date never reminds you, adding a reminder to one sets its date to today, and removing the date stops its reminders. Notifications have "Done" and "Snooze" buttons.
+- Repeat: Daily, Workdays (China public holidays), weekly, monthly, yearly or Custom… (interval, weekdays, end condition; monthly repeats can fall on a day of the month, the Nth weekday such as the second Wednesday, or the last day of the month; "Count from completion" suits things like watering plants). Completing a repeating to-do moves it to the next occurrence.
 
 ## With diaries and the calendar
 - On the preview page, "More → Add a to-do" creates a to-do linked to that diary. If the diary has a checklist, "Copy checklist to to-dos" also appears (the diary itself is unchanged). Linked to-dos show under "Related to-dos" at the end of the diary.

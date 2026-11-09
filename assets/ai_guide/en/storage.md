@@ -5,7 +5,7 @@ summary: See how much space Jotsy uses, clear cache and unused files, and delete
 features: []
 platforms: []
 destinations: [storage, recycle_bin, settings_background]
-keywords: [storage, space, usage, running out of space, clean up, cache, unused files, compress, delete photos, delete videos, large files, device storage, media]
+keywords: [storage, space, usage, running out of space, clean up, cache, unused files, compress, delete photos, delete videos, large files, device storage, media, can't delete]
 ---
 Storage shows how much space Jotsy takes and what it is made of, and lets you clear cache and delete or compress photos and videos you don't need.
 
@@ -32,7 +32,7 @@ The "Free up space" group:
 
 ## Delete and compress
 1. Filter the media list at the top (All / Images / Videos / Recordings / Attachments / Covers, plus Large files, Compressible and Trash only). Sort by Largest first, Newest first or Oldest first; images and videos can also be shown as a grid.
-2. Tap an item for details, including where it is used; long-press to multi-select.
+2. Tap an item for details, including where it is used; long-press to multi-select. A file marked "Can't delete" is still referenced by other diary data (its details show "Referenced by other data"), so it can't be deleted or compressed here and is skipped in multi-select.
 3. **Delete**: the file is first removed from the entries, notebook covers, comments and drafts that use it, then deleted. The confirmation says what is affected and how much is freed. It can't be undone, and comments left with no text or images are deleted too.
 4. **Compress** (Android only): choose High quality, Balanced or Save space for photos and for videos. Compressed files replace the originals and can't be restored; photos keep their capture time and location. Files that are already small, animated images and images with transparency are skipped, and files that don't get noticeably smaller keep their original.
 

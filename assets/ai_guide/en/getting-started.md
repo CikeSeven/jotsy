@@ -54,5 +54,5 @@ Notebooks, diary templates, time capsules and swipe to archive are on by default
 
 ## Good to know
 
-- Your diary is stored only on this device. Uninstalling the app or clearing its data deletes it, so make regular backups in Settings → Data Management.
+- Your diary is stored only on this device. On a phone, uninstalling the app or clearing its data deletes it; on a computer, updating or uninstalling keeps your data (it's in the app data folder; see "Desktop on Windows and Linux"). Make regular backups in Settings → Data Management.
 - For more on writing, see "Writing and the editor" and "Drafts and publishing". For sorting, filtering and selecting in the list, see "The diary list"; for feature switches, "Turning features on or off"; for notebooks, "Notebooks".

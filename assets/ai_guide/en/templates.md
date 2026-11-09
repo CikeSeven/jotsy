@@ -5,7 +5,7 @@ summary: Start entries from a template, manage and edit templates, use template 
 features: [templates]
 platforms: []
 destinations: [settings_templates]
-keywords: [template, diary templates, start from a template, choose a template, built-in templates, my templates, save as template, template variables, insert a variable, question of the day, lunar date, solar term, apply automatically, time range, default template, template code, import a template code]
+keywords: [template, diary templates, start from a template, choose a template, switch template, built-in templates, my templates, save as template, template variables, insert a variable, question of the day, lunar date, solar term, apply automatically, time range, default template, template code, import a template code]
 ---
 Diary templates are ready-made formats you can apply to a blank new entry with one tap. A template can also set tags, mood and a time capsule. There are 8 built-in templates (Daily journal, Morning pages, Evening review, Gratitude journal, Question of the day, Weekly review, Untangle a feeling, Reading notes), and you can make your own.
 
@@ -20,7 +20,7 @@ Diary templates are ready-made formats you can apply to a blank new entry with o
 
 1. Start a blank entry. "Start from a template" appears under the title with up to 5 templates: ones suggested for the time of day, weekday and so on come first, marked "Suggested", then recently used ones.
 2. Tap one to apply it; you can undo within 4 seconds. Tap All to open the template sheet, where you can search and filter by Suggested, Mine or category. Tap a row to preview it, then "Use this template". Templates with the question of the day offer "Another question".
-3. Templates only apply to a blank entry; if you've already typed, you'll see a note instead. If you leave without changing an applied template, no draft is left behind.
+3. Templates only apply to a blank entry; if you've already typed, you'll see a note instead. While an applied template (including one applied automatically) is still unchanged, you can switch to another from "Choose a template" in the top-right menu; the old template's content and presets are replaced. Once you've changed it, you can't switch. If you leave without changing an applied template, no draft is left behind.
 
 ## Managing and editing templates
 

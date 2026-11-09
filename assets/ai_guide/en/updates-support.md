@@ -38,8 +38,8 @@ The About page brings together app updates, feedback and support, and privacy an
 
 ## Privacy & data security
 - Jotsy has no accounts and no server of its own. Your diaries, tags and media files are stored only on this device and aren't uploaded to the cloud by default.
-- Jotsy only goes online in these cases: fetching location and weather automatically (Android only; you can type them in instead), cloud backup and restore (to the server or drive you set up), checking for and downloading updates (no diary data is sent), importing cloud notes (you sign in on the vendor's website), and using the AI assistant (off by default; when on, it sends only what a feature needs, directly to the AI service you configured, and your key stays on this device). LAN sync only transfers data between devices on the same local network.
-- Because your data lives only on this device, uninstalling the app or clearing its data deletes your diaries too, so back up regularly.
+- Jotsy only goes online in these cases: fetching location and weather automatically (Android only; you can type them in instead), cloud backup and restore (to the server or drive you set up), checking for and downloading updates (no diary data is sent), importing cloud notes (you sign in on the vendor's website), and using the AI assistant (off by default; when on, it sends only what a feature needs, directly to the AI service you configured, and your key stays on this device). LAN sync only transfers data between devices on the same local network. Web images in an entry (image links brought in by pasting web content or Markdown, or by some imports) load from their web address when shown.
+- Your data lives only on this device. On a phone, uninstalling the app or clearing its data deletes your diaries too; on a computer, updating or uninstalling keeps them (they're in the app data folder, not the install folder). Back up regularly.
 - **Open-source repository** opens the project's GitHub page; **Third-party open-source licenses** lists the licenses of the open-source components Jotsy uses.
 
 ## Notes

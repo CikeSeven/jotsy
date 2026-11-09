@@ -5,7 +5,7 @@ summary: Insert images, videos and files, shoot photos, record audio, view image
 features: []
 platforms: []
 destinations: [settings_editor, settings_preview_style, storage]
-keywords: [image, photo, picture, insert image, video, insert video, attachment, file, take photo, record video, camera, recording, voice note, audio, image viewer, long image, long screenshot, thumbnail, resize image, save to gallery, photos from this day, backfill, set as cover, HEIC]
+keywords: [image, photo, picture, insert image, paste image, GIF, sticker, video, insert video, attachment, file, take photo, record video, camera, recording, voice note, audio, image viewer, long image, long screenshot, thumbnail, resize image, save to gallery, photos from this day, backfill, set as cover, HEIC]
 ---
 The body can hold images, videos, attachments and recordings. They're copied into the diary's own storage; the originals in your photo library are never changed or deleted.
 
@@ -14,6 +14,7 @@ The body can hold images, videos, attachments and recordings. They're copied int
 - Use Insert image, Insert video and Insert attachment on the toolbar, or the same commands in the slash menu. You can pick several images or videos at once; they go in at the cursor. An attachment can be any file and opens in another app when tapped.
 - On Android, Insert image and Insert video first show a small menu: "Choose from gallery" or "Take photo" / "Record video". The slash menu also has Take photo and Record video. What you shoot stays only in the diary, not in the system gallery, and the camera permission is asked the first time.
 - On desktop you can drag files from your file manager straight into the body.
+- Copied images can be pasted straight into the body: on a phone, long-press an empty spot (such as an empty line) and choose Paste; on a computer, press Ctrl / ⌘ + V. On Android, images and GIFs sent from your keyboard (such as stickers) go into the body too.
 
 ## Images
 

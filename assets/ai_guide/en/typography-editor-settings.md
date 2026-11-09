@@ -5,7 +5,7 @@ summary: Body font, size, spacing and indent, code block style, toolbar order an
 features: []
 platforms: []
 destinations: [settings_editor, settings_typography, settings_code_block_style]
-keywords: [editor settings, body font, font, import font, font size, line spacing, letter spacing, paragraph spacing, first-line indent, layout, typography, code block style, code theme, line numbers, toolbar, toolbar order, toolbar size, always show toolbar, open in editor, publish when going back, day photos]
+keywords: [editor settings, body font, font, import font, missing font, font size, line spacing, letter spacing, paragraph spacing, first-line indent, layout, typography, code block style, code theme, line numbers, toolbar, toolbar order, toolbar size, always show toolbar, open in editor, publish when going back, day photos]
 ---
 Settings for writing live under Editor: body font and layout, code block style, the toolbar, and a few editing behaviors.
 
@@ -38,5 +38,6 @@ Settings → Editor → Code block style, with a preview at the top and three ta
 
 ## Notes
 - Body layout and code block style are included in full backups; toolbar size and Always show toolbar are kept on this device only.
+- Imported font files aren't included in backups; a backup only remembers which font you chose. After moving to a new device or restoring a backup, import that font again, or the body falls back to the built-in font.
 - The size of interface text isn't set here; see "Theme and interface".
 - The AI assistant can't change these settings for you, but it can open Editor, Body font & layout or Code block style.

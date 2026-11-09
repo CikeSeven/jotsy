@@ -5,7 +5,7 @@ summary: Customize diary cards, the reading page and the home navigation bar, wi
 features: []
 platforms: []
 destinations: [settings_card_style, settings_preview_style, settings_nav_bar_style, settings_appearance]
-keywords: [card style, diary card, card color, gradient, untitled, first line as title, tag count, preview page, reading page, paper, color basis, cover, paging, navigation bar, bottom bar, glass bar, floating bar, my styles, style code, presets]
+keywords: [card style, diary card, card color, gradient, untitled, first line as title, tag count, preview page, reading page, paper, color basis, cover, paging, swipe sensitivity, accidental page turns, navigation bar, bottom bar, glass bar, floating bar, my styles, style code, presets]
 ---
 Diary cards (the cards on the home page, in search, archive and the calendar), the diary preview page (where you read an entry) and the home navigation bar can all be restyled. The three style pages work the same way: a live preview at the top, options in tabs below, and every change applies right away.
 
@@ -18,21 +18,23 @@ Diary cards (the cards on the home page, in search, archive and the calendar), t
 - Above the preview you can switch between light and dark preview; the card style page can also switch between list and waterfall, so you can tune each layout.
 - **Presets** tab: tap a built-in style to apply it; **Save current style** keeps it in "My styles" (up to 12); **Copy style code** to send it to a friend or keep it as a backup; **Import from clipboard** to apply a style code someone shared.
 - **Reset** in the top-right corner restores the default style, and you can undo it.
+- When picking a custom color you can turn on "Pick the dark color automatically" to derive a readable dark-mode color from the light one.
 
 ## Diary card style
 - Built-in styles: Classic (default), Compact, Magazine, Minimal, Gallery, Sticky note, Journal, Mood colors, Glass.
 - Tabs, in order: Presets, Layout, Cover, Content, Date, Order, Text, Color, Finish.
 - **Color**: material Solid or Glass (glass only blurs on pages with a background image); **Card color** can be Default, Primary, Secondary, Tertiary, Mood, First tag or Custom; Card opacity; **Gradient** (blend from the card color into a second color, off by default).
-- **Content**: Show title; **Use the first line as the title when there is none** (on by default; when off, the title line is left out); Show excerpt; title and excerpt line limits; tag style and how many tags to show (or none); pinned badge; show mood and weather; and **Footer details**: Location, Energy, Word count, Photo and attachment badges, Comment count (Comment count only appears when Comments is turned on).
+- **Content**: Show title; **Use the first line as the title when there is none** (on by default; when off, the title line is left out); Show excerpt; title and excerpt line limits; tag style and how many tags to show (or none); pinned badge and "Tint pinned cards"; show mood and weather; and **Footer details**: Location, Energy, Word count, Photo and attachment badges, Comment count (Comment count only appears when Comments is turned on).
 - Other tabs: cover position, size, shape and photo collage; date format, weekday, time and which date is shown; drag to reorder a card's parts; text size, weight and color, plus **Keep text readable**; corners, spacing and waterfall columns; border, accent strip and shadow.
 
 ## Diary preview page style
 - Built-in presets: Classic (default), Paper book, Magazine, Minimal, Night, Journal, Mood color, Immersive.
-- **Page**: Color basis (App theme / Mood / First tag / Custom, with intensity Soft / True color / Vivid), Paper (Theme, Warm, Sepia, Mint, Gray, Ink, Custom), custom text color, side margins, limit text width, top bar (Hide on scroll / Always shown, and which buttons it has), reading progress line, back-to-top button.
+- **Page**: Color basis (App theme / Mood / First tag / Custom) with intensity (Soft / True color / Vivid), and "When there's no color" set to App theme or Neutral gray; when the basis isn't App theme and Paper is Theme, also "Tint the paper" and "Tint the background veil" (only matters with a background image); Paper (Theme, Warm, Sepia, Mint, Gray, Ink, Custom), custom text color, side margins, limit text width, top bar (Hide on scroll / Always shown, and which buttons it has), reading progress line, back-to-top button.
 - **Cover**: Full width / Inset / Hidden, height, corners, and whether to use the first photo when there's no cover.
 - **Title** and **Details**: title size, weight, alignment and color, and whether to show "Untitled"; put the details above the title, below it or after the text, as Stacked, Inline or Card, and choose which items to show: date, word count, reading time, location, weather, mood, energy, tags and more.
 - **Text**: Font and layout (shared with the editor) and the "last edited" format; reading behavior: Tick to-dos while reading, Select text by long-press, Double-tap to edit (phones only), and long images Fold or Full.
-- **Paging**: Swipe between diaries (in the order of the list you opened it from), Transition (Slide / Stack / Fade), Previous and next at the end, and more. Reading behavior and paging settings aren't changed by presets or style codes.
+- **Paging**: the "Reading behavior" group has Swipe between diaries (in the order of the list you opened it from, on by default) and, while it's on, **Sensitivity** (Sensitive / Standard / Strict, Standard by default; further right needs a flatter swipe, and Strict also needs a half-screen drag or a firm flick) and Vibrate when turning pages; below are Transition (Slide / Stack / Fade), Previous and next at the end, and Hint at either end.
+- Presets and style codes don't change reading behavior: Tick to-dos while reading, Select text by long-press, Double-tap to edit and long images on the Text tab, and Swipe between diaries, Sensitivity and Vibrate when turning pages on the Paging tab. Transition, Previous and next at the end, and Hint at either end are part of the style: applying a preset resets them to the defaults, and style codes carry them.
 
 ## Navigation bar style
 - Covers the home bottom bar and the top bars of Diaries, Calendar, Explore and Settings. Built-in styles: Classic (default), Glass, Clear, Misty, Tinted, Compact.

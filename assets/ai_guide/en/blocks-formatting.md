@@ -5,13 +5,15 @@ summary: How to use headings, alignment, font size, colors, lists, quotes, callo
 features: []
 platforms: []
 destinations: [settings_editor, settings_code_block_style, settings_typography]
-keywords: [formatting, heading, header style, alignment, font size, text color, background color, highlight, my colors, bold, italic, underline, strikethrough, superscript, subscript, clear formatting, numbered list, bulleted list, checklist, list style, indent, quote, callout, toggle, table, code block, syntax highlighting, divider, Markdown, paste]
+keywords: [formatting, heading, header style, alignment, font size, text color, background color, highlight, my colors, bold, italic, underline, strikethrough, superscript, subscript, clear formatting, link, URL, hyperlink, remove link, numbered list, bulleted list, checklist, list style, indent, quote, callout, toggle, table, code block, syntax highlighting, divider, Markdown, paste]
 ---
 The body is made of blocks: paragraphs, headings, lists, quotes, callouts, toggles, tables, code blocks, dividers and more. Everything can be set from the floating toolbar, many blocks can also be inserted from the slash menu, and Markdown shortcuts work as you type. Every formatting change can be undone in one step.
 
 ## Text styles
 
-- **Bold, Italic, Underline, Strikethrough, Superscript, Subscript, Inline code**: select text and tap the matching toolbar button. Clear formatting removes the formatting from the selection.
+- **Bold, Italic, Underline, Strikethrough, Superscript, Subscript, Inline code**: select text and tap the matching toolbar button.
+- **Clear formatting**: works on every whole block the cursor or selection touches, not just the selected words. It removes all inline formatting (bold, colors, links and so on) and turns the block back into plain text, so headings, lists, checklists, quotes and alignment are removed too. One undo brings it back.
+- **Link**: tap Link on the toolbar (or press Ctrl / ⌘ + K on desktop), enter the Link URL on the Web page and tap Confirm. With text selected, that text becomes the link. With nothing selected, nothing is inserted; the text you type next becomes the link, until you type a space or start a new line. With the cursor on an existing link, you can change the URL or tap Remove link.
 - **Font size**: tap Font size to open a panel with Small, Normal, Large and Huge.
 - **Text color / Background color**: opens a color panel above the toolbar with three pages:
   - Swatches: the default color and 12 preset colors, with a row of your own colors below;

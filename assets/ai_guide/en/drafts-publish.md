@@ -22,8 +22,8 @@ When you tap + at the top right (its tooltip says Publish) of the new entry page
 - **Cover**: pick an image (optional). Without one, cards and the preview page use the first image in the body.
 - **Tags**: opens "Choose tags". Search by name (Chinese names also by pinyin), create a tag if it isn't there, or switch to Alphabetical order.
 - **Notebooks**: choose which notebooks it goes into (when notebooks are turned on).
-- **Here and now**: place and weather. On Android, the buttons on the right fetch your location and weather, and "Address detail" chooses City, District / county, Subdistrict / town, Road or House number. Elsewhere, type them in. The clock button by the place field opens "Recent places" so you can reuse a place with one tap.
-- **Publish time**: the current time by default; tap to choose another date and time.
+- **Here and now**: place and weather. On Android, the buttons on the right fetch your location and weather, and "Address detail" chooses City, District / county, Subdistrict / town, Road or House number. Elsewhere, type them in. The clock button by the place field opens "Recent places" so you can reuse a place with one tap. While the place is empty, your most recent places also appear under the field (up to 8, with "All N" at the end when there are more); tap one to fill it in.
+- **Publish time**: the current time by default, or that day when you start the entry from a day on the calendar; tap to choose another date and time. With a time lock set, it follows the unlock time and can't be changed separately.
 - **Time lock**: turns the entry into a time capsule (when time capsules are turned on). See "Time capsules".
 - **Mood** and **Energy**: the mood comes from your mood emojis; energy has 5 levels and isn't recorded by default.
 

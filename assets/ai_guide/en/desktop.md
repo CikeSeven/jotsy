@@ -1,11 +1,11 @@
 ---
 id: desktop
 title: Desktop on Windows and Linux
-summary: Wide two-pane layout, keyboard shortcuts and right-click menus on computers, and what differs from the phone app
+summary: Install, data location, two-pane layout, shortcuts and right-click menus on computers, and what differs from the phone app
 features: []
 platforms: [windows, linux]
 destinations: [tab_diaries, search, app_update]
-keywords: [desktop, computer, PC, Windows, Linux, keyboard shortcuts, keyboard, mouse, right-click menu, context menu, two panes, wide window, navigation rail, drag and drop, save as, multi-select, Ctrl, reminders]
+keywords: [desktop, computer, PC, Windows, Linux, install, uninstall, portable, install.sh, data folder, where is my data, keyboard shortcuts, keyboard, mouse, right-click menu, context menu, two panes, wide window, navigation rail, drag and drop, save as, multi-select, Ctrl, reminders]
 ---
 Jotsy has desktop versions for Windows and Linux. They use the same interface as the phone app, with layouts that adapt to the window width and added keyboard and mouse controls.
 
@@ -35,6 +35,13 @@ Jotsy has desktop versions for Windows and Linux. They use the same interface as
 - No sharing straight to specific apps such as WeChat or QQ, and on Linux the share panel offers copying the text and saving the image instead. Cloud notes from phone makers and WPS can't be imported.
 - Linux can't record audio yet (playback works), and its app lock only works with an app password. Computers have no fingerprint or face quick unlock, no "Lock when the screen locks" and no "Block screenshots"; there's an optional "Lock when idle" instead.
 - When pairing for LAN sync, the computer only shows a QR code for the phone to scan. Storage management has no image or video compression.
+
+## Installing, data and uninstalling
+- Download from the website (jotsy.sisct.xyz) or the GitHub releases page. Windows 10 or later (x64) has an installer (setup.exe) and a portable version (.zip; unzip and run); Linux (x64, GTK 3) has a .tar.gz archive.
+- The Windows installer installs to Program Files by default, or just for you if you choose; it can also add a desktop icon. The installed version adds firewall rules for LAN sync (private networks only); the portable version leaves the firewall alone.
+- Linux: unpack the archive and run **./install.sh** in the jotsy folder. It installs to ~/.local (no root needed), and you then open Jotsy from the app menu. You can also skip installing and run jotsy in that folder directly.
+- Your diaries aren't in the install folder but in the app data folder: ~/.local/share/com.jotsy.diary on Linux, %APPDATA%\CikeSeven\Jotsy on Windows (the same for the installed and portable versions). Updating, reinstalling and uninstalling never delete it.
+- Uninstalling: on Windows, uninstall Jotsy under Apps in system settings, or just delete the portable folder; on Linux, run **./install.sh --uninstall** in the unpacked jotsy folder. Your diaries stay; to really remove them, back up first, then delete the data folder above by hand.
 
 ## Starting, closing and updating
 - Launching Jotsy again brings the open window to the front and keeps what you were editing. Closing the window first saves changes to entries, drafts and the publish panel; if saving fails you're told and the window stays open.

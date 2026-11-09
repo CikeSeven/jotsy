@@ -11645,6 +11645,10 @@
   "@diaryBlockDeleted": {"description": "Snackbar after deleting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
   "diaryBlockCutDone": "{count} 段落を切り取りました",
   "@diaryBlockCutDone": {"description": "Snackbar after cutting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
+  "diaryBlockTurnInto": "変換",
+  "@diaryBlockTurnInto": {"description": "Block action bar tool and panel title: change the type of the selected blocks (paragraph, heading, list, to-do…)."},
+  "diaryBlockStyle": "スタイル",
+  "@diaryBlockStyle": {"description": "Block action bar tool and panel title: bold / italic / underline / strikethrough and alignment for the selected blocks."},
   "diaryEditorParagraph": "本文",
   "@diaryEditorParagraph": {
     "description": "Plain paragraph option in the diary editor block menu."

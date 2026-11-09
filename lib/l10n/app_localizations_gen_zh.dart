@@ -8128,6 +8128,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get diaryBlockTurnInto => '转换为';
+
+  @override
+  String get diaryBlockStyle => '样式';
+
+  @override
   String get diaryEditorParagraph => '正文';
 
   @override

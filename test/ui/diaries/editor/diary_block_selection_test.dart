@@ -259,6 +259,44 @@ void main() {
     await _dispose(tester, controller, focus);
   });
 
+  testWidgets('Turn into and Style format every selected block at once', (
+    tester,
+  ) async {
+    final focus = FocusNode();
+    final controller = DiaryEditorController.fromContent('a\nb\nc');
+    await _pump(tester, controller, focus);
+    await _enterAt(tester, controller, focus, 0);
+    await tester.tap(find.text('全选'));
+    await _frames(tester, 2);
+
+    await tester.tap(find.byTooltip('转换为'));
+    await _frames(tester);
+    await tester.tap(find.text('待办列表'));
+    await _frames(tester, 2);
+    expect(
+      controller.document.root.children.map((node) => node.type),
+      everyElement('todo_list'),
+    );
+    // 换了类型仍全选着，面板保持打开。
+    expect(controller.blockSelection.count, 3);
+    expect(find.text('待办列表'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('样式'));
+    await _frames(tester);
+    await tester.tap(find.text('加粗'));
+    await _frames(tester, 2);
+    for (final node in controller.document.root.children) {
+      expect(node.delta!.toJson().single['attributes'], {'bold': true});
+    }
+    await tester.tap(find.text('居中'));
+    await _frames(tester, 2);
+    expect(
+      controller.document.root.children.map((node) => node.attributes['align']),
+      everyElement('center'),
+    );
+    await _dispose(tester, controller, focus);
+  });
+
   testWidgets('sliding along the selection circles selects a run, sliding '
       'back restores it', (tester) async {
     final focus = FocusNode();

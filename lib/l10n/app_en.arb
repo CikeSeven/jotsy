@@ -11586,6 +11586,10 @@
   "@diaryBlockDeleted": {"description": "Snackbar after deleting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
   "diaryBlockCutDone": "{count, plural, =1{Cut 1 block} other{Cut {count} blocks}}",
   "@diaryBlockCutDone": {"description": "Snackbar after cutting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
+  "diaryBlockTurnInto": "Turn into",
+  "@diaryBlockTurnInto": {"description": "Block action bar tool and panel title: change the type of the selected blocks (paragraph, heading, list, to-do…)."},
+  "diaryBlockStyle": "Style",
+  "@diaryBlockStyle": {"description": "Block action bar tool and panel title: bold / italic / underline / strikethrough and alignment for the selected blocks."},
   "diaryEditorParagraph": "Paragraph",
   "@diaryEditorParagraph": {
     "description": "Plain paragraph option in the diary editor block menu."

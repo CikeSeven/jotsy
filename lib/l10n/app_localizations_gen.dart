@@ -14808,6 +14808,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Cut 1 block} other{Cut {count} blocks}}'**
   String diaryBlockCutDone(int count);
 
+  /// Block action bar tool and panel title: change the type of the selected blocks (paragraph, heading, list, to-do…).
+  ///
+  /// In en, this message translates to:
+  /// **'Turn into'**
+  String get diaryBlockTurnInto;
+
+  /// Block action bar tool and panel title: bold / italic / underline / strikethrough and alignment for the selected blocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get diaryBlockStyle;
+
   /// Plain paragraph option in the diary editor block menu.
   ///
   /// In en, this message translates to:

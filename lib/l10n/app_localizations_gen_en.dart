@@ -9115,6 +9115,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get diaryBlockTurnInto => 'Turn into';
+
+  @override
+  String get diaryBlockStyle => 'Style';
+
+  @override
   String get diaryEditorParagraph => 'Paragraph';
 
   @override

@@ -15,23 +15,25 @@ import '../diary_toolbar_config.dart';
 import '../diary_toolbar_more_panel.dart';
 import 'diary_block_actions.dart';
 import 'diary_block_more_panel.dart';
+import 'diary_block_style_panel.dart';
+import 'diary_block_type_panel.dart';
 
 /// 段落操作栏表头一行的高度。
 const double kDiaryBlockActionHeaderHeight = 40;
 
 /// 操作栏卡片内正在展开的面板。
-enum _BlockPanel { none, more }
+enum _BlockPanel { none, type, style, more }
 
 /// 段落选择模式下取代悬浮工具栏的段落操作栏（同一张卡片、同一位置，由
 /// `DiaryFloatingToolbar` 在模式里换上）。自上而下：
-/// - 面板区：「更多」等面板在卡片内向上展开（同工具栏面板：外框
+/// - 面板区：「转换为」「样式」「更多」面板在卡片内向上展开（同工具栏面板：外框
 ///   [DiaryToolbarPanelFrame]、SizeTransition + 淡入，`medium`），不另开路由、
 ///   对话框或底部面板；
 /// - 表头（[kDiaryBlockActionHeaderHeight]）：「已选 N 段」/「未选择段落」、
 ///   全选 / 取消全选、完成（退出模式，光标回到第一块末尾）；
-/// - 工具一排（与工具栏同高、随工具栏大小缩放）：上移、下移、复制、删除
-///   （错误色）、更多。上移 / 下移可以连点，朝那个方向放不下时停用；一个
-///   都没选时全部停用。
+/// - 工具一排（与工具栏同高、随工具栏大小缩放）：上移、下移、转换为、样式、
+///   复制、删除（错误色）、更多。上移 / 下移可以连点，朝那个方向放不下时
+///   停用；一个都没选时操作全部停用（面板仍能开合）。
 ///
 /// 输出：[onPanelExtentChanged] 报告表头加展开面板的高度（卸载后为 0），
 /// 编辑页据此给正文末尾让位、计入遮挡高度，与工具栏面板同一条链路。
@@ -113,10 +115,11 @@ class _DiaryBlockActionBarState extends State<DiaryBlockActionBar>
   /// 面板内容的高度（已按上限夹住）。
   double _bodyHeight(_BlockPanel panel) => switch (panel) {
     _BlockPanel.none => 0,
-    _BlockPanel.more => diaryToolbarPanelBodyLimit(
-      kDiaryBlockMorePanelHeight,
-      _maxExtent - kDiaryBlockActionHeaderHeight,
-    ),
+    _ => diaryToolbarPanelBodyLimit(switch (panel) {
+      _BlockPanel.type => kDiaryBlockTypePanelHeight,
+      _BlockPanel.style => kDiaryBlockStylePanelHeight,
+      _ => kDiaryBlockMorePanelHeight,
+    }, _maxExtent - kDiaryBlockActionHeaderHeight),
   };
 
   double _targetExtent() =>
@@ -207,9 +210,17 @@ class _DiaryBlockActionBarState extends State<DiaryBlockActionBar>
   }
 
   Widget _buildPanel(_BlockPanel panel) => switch (panel) {
+    _BlockPanel.type => DiaryBlockTypePanel(
+      controller: widget.controller,
+      bodyHeight: _bodyHeight(panel),
+    ),
+    _BlockPanel.style => DiaryBlockStylePanel(
+      controller: widget.controller,
+      bodyHeight: _bodyHeight(panel),
+    ),
     _BlockPanel.more => DiaryBlockMorePanel(
       controller: widget.controller,
-      bodyHeight: _bodyHeight(_BlockPanel.more),
+      bodyHeight: _bodyHeight(panel),
     ),
     _BlockPanel.none => const SizedBox.shrink(),
   };
@@ -272,6 +283,20 @@ class _DiaryBlockActionBarState extends State<DiaryBlockActionBar>
         onPressed: some && DiaryBlockActions.canStep(controller, up: false)
             ? () => DiaryBlockActions.step(controller, up: false)
             : null,
+      ),
+      _tool(
+        context,
+        icon: FontAwesomeIcons.arrowRightArrowLeft,
+        tooltip: l10n.diaryBlockTurnInto,
+        active: _panel == _BlockPanel.type,
+        onPressed: () => _toggle(_BlockPanel.type),
+      ),
+      _tool(
+        context,
+        icon: FontAwesomeIcons.font,
+        tooltip: l10n.diaryBlockStyle,
+        active: _panel == _BlockPanel.style,
+        onPressed: () => _toggle(_BlockPanel.style),
       ),
       _tool(
         context,

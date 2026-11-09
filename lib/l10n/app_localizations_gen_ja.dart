@@ -8271,6 +8271,12 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get diaryBlockTurnInto => '変換';
+
+  @override
+  String get diaryBlockStyle => 'スタイル';
+
+  @override
   String get diaryEditorParagraph => '本文';
 
   @override

@@ -302,16 +302,7 @@ void _apply(
       }
     case DiaryToolbarItem.clearFormat:
       final transaction = controller.state.transaction;
-      for (final node in controller.selectedNodes) {
-        final delta = node.delta;
-        if (delta == null) continue;
-        final clean = af.Delta.fromJson([
-          for (final op in delta) {'insert': (op as af.TextInsert).text},
-        ]);
-        transaction.updateNodeType(node, 'paragraph', {
-          'delta': clean.toJson(),
-        });
-      }
+      addDiaryClearFormat(transaction, controller.selectedNodes);
       transaction.afterSelection = controller.selection;
       controller.apply(transaction);
     default:

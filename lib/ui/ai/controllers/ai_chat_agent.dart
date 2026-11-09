@@ -261,7 +261,6 @@ extension _AiChatAgent on AiChatController {
           text.isEmpty && attached.isNotEmpty
               ? l10n.aiChatImagesSummary(attached.length)
               : text,
-          citations.length,
           current,
         ),
       );

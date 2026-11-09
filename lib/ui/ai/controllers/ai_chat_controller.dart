@@ -404,7 +404,6 @@ class AiChatController extends ChangeNotifier {
           text.isEmpty && attached.isNotEmpty
               ? context.l10n.aiChatImagesSummary(attached.length)
               : text,
-          diaries.length,
           current,
         ),
       );
@@ -693,7 +692,6 @@ class AiChatController extends ChangeNotifier {
     AiPromptKit kit,
     AiPreferences prefs,
     String question,
-    int entries,
     bool Function() current,
   ) async {
     final row = await database.getAiConversation(conversationId);
@@ -719,6 +717,10 @@ class AiChatController extends ChangeNotifier {
         question: question,
         answer: answer.content,
       );
+      // 起标题只发“问题 + 回答”这一段文字，不带日记正文：按单段文字确认
+      // （不传这轮参考的篇数）。否则“多篇时”会把首轮参考了多篇的对话当成
+      // 多篇上下文，每个新对话回答完都在后台弹一次确认，面板上的“N 篇日记”
+      // 也不实。首次发给这个主机与“每次”模式照常询问。
       final ok = await confirmAiSend(
         context,
         ref,
@@ -727,7 +729,6 @@ class AiChatController extends ChangeNotifier {
           words: TextStats.countWords(
             '${request.system}\n${request.messages.single.text}',
           ),
-          entries: entries,
         ),
       );
       if (!ok || !current() || !context.mounted || token.isCancelled) return;

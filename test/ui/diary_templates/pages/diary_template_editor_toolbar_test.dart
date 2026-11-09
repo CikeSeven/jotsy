@@ -83,8 +83,8 @@ void main() {
     );
 
     testWidgets(
-      'expanding More lets mobile auto scrolling stop in a short viewport '
-      '(${brightness.name})',
+      'expanding More gives upstream no auto scroller to loop in a short '
+      'viewport (${brightness.name})',
       (tester) async {
         final h = await openEditor(
           tester,
@@ -110,29 +110,29 @@ void main() {
         await tester.pump();
 
         // 上游按宿主操作系统选择滚动服务，Linux widget 测试不会进入移动端。
-        // 直接重放手机选区通知使用的零时长滚动；计步到上限主动停止，旧代码的
-        // 微任务换向循环才会正常报断言失败，而不是卡住整个测试进程。
-        final scroller = state.autoScroller!;
-        const maxScrollSteps = 100;
-        var scrollSteps = 0;
-        void countScroll() {
-          if (++scrollSteps >= maxScrollSteps) scroller.stopAutoScroll();
-        }
-
+        // 这里照手机滚动服务的写法重放选区通知后的零时长边缘滚动（先取
+        // `editorState.autoScroller`，再 `autoScroller?.startAutoScroll`）。
+        // 可编辑的整页正文关掉了自动滚动，会话的 EditorState 不再把滚动器
+        // 交给上游（`DiaryEditorController` 的 `_DiaryEditorState`）：这一下
+        // 什么都不做，短视口里零时长滚动反复换向、耗尽微任务队列的卡死
+        // 无从发生。正文自己的边缘滚动见 diary_cursor_drag_follow_test。
+        expect(state.disableAutoScroll, isTrue);
+        final autoScroller = state.autoScroller;
+        expect(autoScroller, isNull);
+        var scrolled = 0;
+        void countScroll() => scrolled++;
         state.addScrollViewScrolledListener(countScroll);
-        addTearDown(() {
-          scroller.stopAutoScroll();
-          state.removeScrollViewScrolledListener(countScroll);
-        });
-        scroller.startAutoScroll(
+        addTearDown(() => state.removeScrollViewScrolledListener(countScroll));
+        final before = position.pixels;
+        autoScroller?.startAutoScroll(
           tester.getCenter(body),
           edgeOffset: editor.autoScrollEdgeOffset,
           duration: Duration.zero,
         );
         await tester.pump();
 
-        expect(scrollSteps, lessThan(maxScrollSteps));
-        expect(scroller.scrolling, isFalse);
+        expect(scrolled, 0);
+        expect(position.pixels, before);
         expect(tester.takeException(), isNull);
       },
     );

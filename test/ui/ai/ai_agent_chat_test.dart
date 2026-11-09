@@ -33,6 +33,7 @@ void main() {
     WidgetTester tester, {
     bool acknowledge = true,
     bool tools = true,
+    bool autoTitle = false,
   }) async {
     // 智能体每轮经 rootBundle 读使用指南。rootBundle 缓存的是上一个测试
     // 假异步区里建的 Future，在这个测试里 await 它，回调会排进那个已不再
@@ -44,7 +45,7 @@ void main() {
     addTearDown(store.dispose);
     requests = <AiRequest>[];
     await h.settings.setAppFeaturesRaw('{"ai":true}');
-    await h.settings.setAiPrefsRaw('{"autoTitle":false}');
+    await h.settings.setAiPrefsRaw(jsonEncode({'autoTitle': autoTitle}));
     await tester.runAsync(() async {
       await store.saveProvider(
         fakeAiProvider.copyWith(
@@ -365,6 +366,46 @@ void main() {
     await settleMany(h);
     expect(requests, hasLength(1));
     expect(find.text('好的。'), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('auto title after a first answer citing several entries does '
+      'not ask again in multi-entry mode', (tester) async {
+    // 默认确认时机是“多篇时”；主机已确认过。起标题只发问题与回答，不带
+    // 日记正文，不能因为这轮引用了多篇就在回答完后再弹确认面板。
+    final h = await setUpHarness(tester, autoTitle: true);
+    await seedDiary(h, '周末', '傍晚去海边散步，风很大');
+    await seedDiary(h, '假期', '早上在海边看日出');
+    service = scriptedAiService(
+      store,
+      requests: requests,
+      turns: [
+        toolTurn([
+          (id: 'c1', name: 'search_diaries', args: const {'query': '海边'}),
+        ]),
+        textTurn('你去过两次海边 [D1] [D2]。'),
+        textTurn('海边的回忆'),
+      ],
+    );
+    await h.pump(
+      const AiChatPage(initialQuestion: '我去过海边吗？'),
+      overrides: overrides(),
+    );
+    await settleMany(h);
+    await tester.pump(const Duration(seconds: 1));
+    await settleMany(h);
+
+    expect(
+      find.text(h.l10n.aiConfirmSendTitle(fakeAiProvider.host)),
+      findsNothing,
+    );
+    expect(requests, hasLength(3));
+    final answer = (await savedMessages(h)).last;
+    expect(AiCitation.decodeList(answer.citations), hasLength(2));
+    final conversations = (await tester.runAsync(
+      () => h.database.watchAiConversations().first,
+    ))!;
+    expect(conversations.single.title, '海边的回忆');
     await h.unmount();
   });
 

@@ -15917,6 +15917,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t publish the diary. It\'s kept in Drafts.';
 
   @override
+  String get settingsManualSave => 'Save edits manually';
+
+  @override
+  String get settingsManualSaveSubtitle =>
+      'Edits to existing diaries are saved only when you tap Save; going back with unsaved edits asks first';
+
+  @override
+  String get diaryEditSaved => 'Saved';
+
+  @override
   String get storageMgmtAppTitle => 'Used by Jotsy';
 
   @override

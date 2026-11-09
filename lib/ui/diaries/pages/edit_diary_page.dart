@@ -43,6 +43,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.da
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_new_diary_directly.dart';
 import 'package:node_diary/ui/diaries/providers/diary_create_prefs_provider.dart';
+import 'package:node_diary/ui/diaries/providers/diary_edit_prefs_provider.dart';
 import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
@@ -127,7 +128,10 @@ import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/settings/pages/diary_preview_style_page.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
+import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/primary_shortcut.dart';
+import 'package:node_diary/ui/widgets/unsaved_changes_dialog.dart';
 import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
 import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 
@@ -342,6 +346,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
   bool _saving = false;
+  // 编辑已有日记是否手动保存（`DiaryEditPrefs`，见 EditDiaryPersistenceFlow）：
+  // 打开时读入，设置中途切换（“更多 → 编辑器设置”）随之生效。
+  bool _manualSave = false;
+  // 手动保存成功后“保存”按钮短暂显示对勾（[_flashEditSaved]）。
+  bool _editSavedFlash = false;
+  Timer? _editSavedFlashTimer;
   // 新建模式对应的草稿（草稿表业务 id）：续写时取入口传入的 id，新建空白在
   // 第一次有内容写入时由数据库生成。草稿写入与发布后的删除都按它进行。
   String? _createDraftId;
@@ -442,6 +452,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       linkSource: _linkSource,
     );
     _toolbarOrder = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
+    _manualSave = ref.read(diaryEditPrefsProvider).manualSave;
+    ref.listenManual<bool>(
+      diaryEditPrefsProvider.select((prefs) => prefs.manualSave),
+      (bool? previous, bool next) => _onManualSaveChanged(next),
+    );
     _controller = EditDiaryController(this);
     _readingExport = DiaryPreviewExportController(
       onHint: _controller._showHint,
@@ -474,6 +489,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     // 必须排在释放输入控制器之前：flush 当场读出快照，写库在页面卸载后完成。
     // 发布后草稿自动保存已关闭，这里不会把刚删除的草稿写回去。
     if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
+    _editSavedFlashTimer?.cancel();
     _aiSession?.dispose();
     // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
     widget.coverHero?.dispose();
@@ -517,9 +533,31 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
       // 切到后台可能就被系统回收进程：已有日记与新建草稿都不等防抖，立即补存。
-      if (_isEditEntry) unawaited(_controller.flushEditAutoSave());
+      // 手动保存时不写：未保存的修改只在用户点保存时写入。
+      if (_isEditEntry && !_controller.manualEditSave) {
+        unawaited(_controller.flushEditAutoSave());
+      }
       if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
     }
+  }
+
+  /// 设置里切换了自动 / 手动保存（编辑页之上打开的编辑器设置）。切到手动：
+  /// 比对一次，“保存”按钮按实际状态显示；切回自动：手动期间没保存的修改
+  /// 按自动保存的节拍写下去。
+  void _onManualSaveChanged(bool manual) {
+    if (manual == _manualSave || !mounted) return;
+    setState(() => _manualSave = manual);
+    _controller.scheduleEditAutoSave();
+  }
+
+  /// 手动保存成功：“保存”按钮显示对勾 1 秒再换回（同改版前的保存按钮）。
+  /// 计时只决定对勾停留多久，切换动画本身取 ExpressiveMotion。
+  void _flashEditSaved() {
+    _editSavedFlashTimer?.cancel();
+    setState(() => _editSavedFlash = true);
+    _editSavedFlashTimer = Timer(const Duration(seconds: 1), () {
+      if (mounted) setState(() => _editSavedFlash = false);
+    });
   }
 
   /// 当前正文纯文本（用于搜索、字数统计和空内容判断）。
@@ -1514,10 +1552,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   // 新建模式直接返回：补存防抖窗口里的输入，草稿静默留在草稿箱。
                   if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
                 },
-                // 桌面上 Esc 与顶栏返回按钮相同（补存、先收起面板与录音）。
+                // 桌面上 Esc 与顶栏返回按钮相同（补存、先收起面板与录音）；
+                // 手动保存时 Ctrl / ⌘ + S 与顶栏“保存”相同。
                 child: DesktopPageKeys(
                   onEscape: () => unawaited(_controller.attemptExit()),
-                  child: scaffold,
+                  child: AppPlatform.isDesktop
+                      ? CallbackShortcuts(
+                          bindings: <ShortcutActivator, VoidCallback>{
+                            if (_controller.manualEditSave)
+                              primaryShortcut(LogicalKeyboardKey.keyS): () =>
+                                  unawaited(_controller.saveEditManually()),
+                          },
+                          child: scaffold,
+                        )
+                      : scaffold,
                 ),
               );
             },

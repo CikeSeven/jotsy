@@ -25270,6 +25270,24 @@ abstract class AppLocalizations {
   /// **'Couldn\'t publish the diary. It\'s kept in Drafts.'**
   String get publishOnLeaveFailedKeptDraft;
 
+  /// Editor settings switch: edits to existing diaries are saved only when the user taps Save instead of automatically.
+  ///
+  /// In en, this message translates to:
+  /// **'Save edits manually'**
+  String get settingsManualSave;
+
+  /// Subtitle of the "Save edits manually" switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Edits to existing diaries are saved only when you tap Save; going back with unsaved edits asks first'**
+  String get settingsManualSaveSubtitle;
+
+  /// Reading-style editor in manual-save mode: tooltip of the save button while it briefly shows a check mark after saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get diaryEditSaved;
+
   /// Storage page: heading of the card that breaks down what the app uses.
   ///
   /// In en, this message translates to:

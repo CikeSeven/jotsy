@@ -84,6 +84,7 @@ class SettingsService {
     required String? appFeaturesRaw,
     required String? exploreLayoutRaw,
     required String? diaryCreatePrefsRaw,
+    required String? diaryEditPrefsRaw,
     required String? todoSettingsRaw,
     required String? aiPrefsRaw,
     required String? appLockOptionsRaw,
@@ -145,6 +146,7 @@ class SettingsService {
        diaryCreatePrefsRawNotifier = ValueNotifier<String?>(
          diaryCreatePrefsRaw,
        ),
+       diaryEditPrefsRawNotifier = ValueNotifier<String?>(diaryEditPrefsRaw),
        todoSettingsRawNotifier = ValueNotifier<String?>(todoSettingsRaw),
        aiPrefsRawNotifier = ValueNotifier<String?>(aiPrefsRaw),
        appLockOptionsRawNotifier = ValueNotifier<String?>(appLockOptionsRaw);
@@ -232,6 +234,10 @@ class SettingsService {
   /// 解析与默认值由 `DiaryCreatePrefs` 负责，服务层只保存原文。随备份导出。
   final ValueNotifier<String?> diaryCreatePrefsRawNotifier;
 
+  /// 编辑已有日记的偏好（单个 JSON 字符串，目前只有自动 / 手动保存）；
+  /// 解析与默认值由 `DiaryEditPrefs` 负责，服务层只保存原文。随备份导出。
+  final ValueNotifier<String?> diaryEditPrefsRawNotifier;
+
   /// 待办的偏好（单个 JSON 字符串：显示已完成、默认清单、排序、全天待办的
   /// 默认提醒时间、稍后提醒时长、锁屏隐藏内容）；解析与默认值由
   /// `TodoSettings` 负责，服务层只保存原文。随备份导出。
@@ -313,6 +319,7 @@ class SettingsService {
   static const _keyAppFeatures = 'app.settings.app_features';
   static const _keyExploreLayout = 'app.settings.explore_layout';
   static const _keyDiaryCreatePrefs = 'app.settings.diary_create_prefs';
+  static const _keyDiaryEditPrefs = 'app.settings.diary_edit_prefs';
   static const _keyTodoSettings = 'app.settings.todos';
   static const _keyAiPrefs = 'app.settings.ai_prefs';
 
@@ -385,6 +392,7 @@ class SettingsService {
     final storedAppFeatures = prefs.get(_keyAppFeatures);
     final storedExploreLayout = prefs.get(_keyExploreLayout);
     final storedDiaryCreatePrefs = prefs.get(_keyDiaryCreatePrefs);
+    final storedDiaryEditPrefs = prefs.get(_keyDiaryEditPrefs);
     final storedTodoSettings = prefs.get(_keyTodoSettings);
     final storedAiPrefs = prefs.get(_keyAiPrefs);
     final storedAppLockOptions = prefs.get(_keyAppLockOptions);
@@ -439,6 +447,9 @@ class SettingsService {
           : null,
       diaryCreatePrefsRaw: storedDiaryCreatePrefs is String
           ? storedDiaryCreatePrefs
+          : null,
+      diaryEditPrefsRaw: storedDiaryEditPrefs is String
+          ? storedDiaryEditPrefs
           : null,
       todoSettingsRaw: storedTodoSettings is String ? storedTodoSettings : null,
       aiPrefsRaw: storedAiPrefs is String ? storedAiPrefs : null,
@@ -511,6 +522,7 @@ class SettingsService {
   String? get exploreLayoutRaw => exploreLayoutRawNotifier.value;
 
   String? get diaryCreatePrefsRaw => diaryCreatePrefsRawNotifier.value;
+  String? get diaryEditPrefsRaw => diaryEditPrefsRawNotifier.value;
   String? get todoSettingsRaw => todoSettingsRawNotifier.value;
   String? get aiPrefsRaw => aiPrefsRawNotifier.value;
   List<String> get moodOptions =>
@@ -795,6 +807,18 @@ class SettingsService {
     }
     diaryCreatePrefsRawNotifier.value = normalized;
     await _writePreference(_prefs.setString(_keyDiaryCreatePrefs, normalized));
+  }
+
+  /// 保存编辑已有日记的偏好；空值移除该键，回到默认（自动保存）。
+  Future<void> setDiaryEditPrefsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      diaryEditPrefsRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyDiaryEditPrefs));
+      return;
+    }
+    diaryEditPrefsRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyDiaryEditPrefs, normalized));
   }
 
   /// 保存待办的偏好；空值移除该键，回到默认。

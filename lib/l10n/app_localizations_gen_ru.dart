@@ -16505,6 +16505,16 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось опубликовать запись. Она осталась в черновиках.';
 
   @override
+  String get settingsManualSave => 'Сохранять правки вручную';
+
+  @override
+  String get settingsManualSaveSubtitle =>
+      'Правки в готовых записях сохраняются только по кнопке «Сохранить»; при возврате с несохранёнными правками появится вопрос';
+
+  @override
+  String get diaryEditSaved => 'Сохранено';
+
+  @override
   String get storageMgmtAppTitle => 'Занято Jotsy';
 
   @override

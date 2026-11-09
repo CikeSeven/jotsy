@@ -22,9 +22,11 @@ import '../../../l10n/app_localizations.dart';
 import '../../calendar/models/calendar_display_options.dart';
 import '../../calendar/providers/calendar_display_options_provider.dart';
 import '../../diaries/models/diary_create_prefs.dart';
+import '../../diaries/models/diary_edit_prefs.dart';
 import '../../diaries/models/diary_preview_style/diary_preview_behavior.dart';
 import '../../diaries/models/diary_preview_style/diary_preview_settings.dart';
 import '../../diaries/providers/diary_create_prefs_provider.dart';
+import '../../diaries/providers/diary_edit_prefs_provider.dart';
 import '../../diaries/providers/diary_preview_style_provider.dart';
 import '../../todos/models/todo_settings.dart';
 import '../../todos/models/todo_view.dart';
@@ -264,6 +266,27 @@ final List<AiSettingSpec> aiSettingSpecs = <AiSettingSpec>[
         leaveAction: value == true
             ? DiaryCreateLeaveAction.publish
             : DiaryCreateLeaveAction.keepDraft,
+      ),
+    ),
+  ),
+  AiSettingSpec(
+    key: 'manual_save',
+    page: AiSettingPage.editor,
+    schema: const AiBooleanSchema(
+      description:
+          'Edits to existing entries are saved only when Save is tapped; '
+          'leaving with unsaved edits asks first.',
+    ),
+    name: (l10n) => l10n.settingsManualSave,
+    read: (settings) => DiaryEditPrefs.decode(
+      settings.diaryEditPrefsRawNotifier.value,
+    ).manualSave,
+    write: (settings, value) => saveDiaryEditPrefs(
+      settings,
+      DiaryEditPrefs.decode(settings.diaryEditPrefsRawNotifier.value).copyWith(
+        saveMode: value == true
+            ? DiaryEditSaveMode.manual
+            : DiaryEditSaveMode.auto,
       ),
     ),
   ),

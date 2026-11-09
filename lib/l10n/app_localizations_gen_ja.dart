@@ -14238,6 +14238,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get publishOnLeaveFailedKeptDraft => '日記を投稿できませんでした。下書きに残しています。';
 
   @override
+  String get settingsManualSave => '変更を手動で保存';
+
+  @override
+  String get settingsManualSaveSubtitle =>
+      '既存の日記の変更は自動保存せず、保存をタップしたときだけ保存します。未保存のまま戻ると確認します';
+
+  @override
+  String get diaryEditSaved => '保存しました';
+
+  @override
   String get storageMgmtAppTitle => 'Jotsy の使用量';
 
   @override

@@ -54,10 +54,18 @@ enum AiToolEffect {
 /// 发送时固定的运行环境，决定哪些工具可用。
 @immutable
 class AiToolEnv {
-  const AiToolEnv({required this.features, required this.prefs});
+  const AiToolEnv({
+    required this.features,
+    required this.prefs,
+    this.vision = false,
+  });
 
   final AppFeatures features;
   final AiPreferences prefs;
+
+  /// 这一轮能把图片发给模型：图片理解开着，且模型现在收图片
+  /// （`AiService.acceptsImages`）。轮开始时定下，决定“查看图片”给不给。
+  final bool vision;
 }
 
 abstract class AiTool {
@@ -375,7 +383,7 @@ class AiToolContext {
   AiToolEnv get env {
     final live = container.read(appFeaturesProvider);
     if (live == _featuresAtStart) return _env;
-    return AiToolEnv(features: live, prefs: _env.prefs);
+    return AiToolEnv(features: live, prefs: _env.prefs, vision: _env.vision);
   }
 
   final AiCitationBook citations;

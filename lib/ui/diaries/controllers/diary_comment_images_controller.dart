@@ -1,5 +1,5 @@
-/// 写留言面板里的图片：从相册 / 文件选图 → 复制进托管目录 → 面板里增删，
-/// 保存时交给写库流程。
+/// 写留言面板（以及 AI 对话输入栏）里的图片：从相册 / 文件选图 → 复制进
+/// 托管目录 → 面板里增删，保存（发送）时交给写库流程。
 ///
 /// 职责边界：不构建 UI、不写数据库。输入为编辑时原有的图片（[initial]）与
 /// 用户的挑选；输出为当前的图片列表、复制中的张数与每次挑选的结果，经
@@ -53,6 +53,12 @@ enum DiaryCommentImagePickResult {
   /// 没有读取图片的权限。
   permissionDenied,
 
+  /// 拍照时没有相机权限。
+  cameraPermissionDenied,
+
+  /// 拍照时没有可用的相机或相机应用。
+  cameraUnavailable,
+
   /// 选择器不可用或复制失败（已加上的保留）。
   failed,
 }
@@ -63,11 +69,15 @@ class DiaryCommentImagesController extends ChangeNotifier {
     DiaryCommentImagePicker? picker,
     DiaryCommentImageImporter? importer,
     DiaryCommentImageDiscarder? discarder,
+    this.maxImages = kDiaryCommentMaxImages,
   }) : _images = normalizeDiaryCommentImages(initial).toList(),
        _picker = picker ?? _pickImages,
        _importer = importer ?? _importImage,
        _discarder =
            discarder ?? DiaryMediaStorageService.deleteManagedDiaryFile;
+
+  /// 最多几张（留言 [kDiaryCommentMaxImages]，AI 对话的一条消息另定）。
+  final int maxImages;
 
   final List<String> _images;
   final DiaryCommentImagePicker _picker;
@@ -92,21 +102,25 @@ class DiaryCommentImagesController extends ChangeNotifier {
   bool get isBusy => _picking;
 
   /// 还能再加几张。
-  int get remaining => (kDiaryCommentMaxImages - _images.length - _pending)
-      .clamp(0, kDiaryCommentMaxImages);
+  int get remaining =>
+      (maxImages - _images.length - _pending).clamp(0, maxImages);
 
   bool get canAdd => !_picking && remaining > 0;
 
   /// 打开选择器选图并逐张复制进来。复制是一张一张进行的：每复制完一张就
   /// 出现在面板里，大图或 HEIC 转码慢时用户能看到进度。
-  Future<DiaryCommentImagePickResult> pick() async {
+  ///
+  /// [source] 给出时用它代替构造时的选图来源（例如 AI 对话里的“拍照”）。
+  Future<DiaryCommentImagePickResult> pick({
+    DiaryCommentImagePicker? source,
+  }) async {
     if (_disposed || !canAdd) return DiaryCommentImagePickResult.busy;
     _picking = true;
     _notify();
     List<PlatformFile>? files;
     var result = DiaryCommentImagePickResult.added;
     try {
-      files = await _picker();
+      files = await (source ?? _picker)();
       if (_disposed || files == null || files.isEmpty) {
         return DiaryCommentImagePickResult.cancelled;
       }
@@ -183,8 +197,15 @@ class DiaryCommentImagesController extends ChangeNotifier {
   }
 
   DiaryCommentImagePickResult _failureOf(Object error) {
-    if (error is PlatformException && error.code == 'permission_denied') {
-      return DiaryCommentImagePickResult.permissionDenied;
+    if (error is PlatformException) {
+      switch (error.code) {
+        case 'permission_denied':
+          return DiaryCommentImagePickResult.permissionDenied;
+        case 'camera_permission_denied':
+          return DiaryCommentImagePickResult.cameraPermissionDenied;
+        case 'camera_unavailable':
+          return DiaryCommentImagePickResult.cameraUnavailable;
+      }
     }
     if (error is FileSystemException &&
         const <int>{1, 13}.contains(error.osError?.errorCode)) {

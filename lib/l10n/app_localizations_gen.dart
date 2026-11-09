@@ -21462,6 +21462,12 @@ abstract class AppLocalizations {
   /// **'The AI will look up and read entries as needed (never private ones) without asking each time'**
   String get aiConfirmSendAgent;
 
+  /// Send confirmation for the agent when the model can see photos.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI will look up and read entries and their photos as needed (never private ones) without asking each time'**
+  String get aiConfirmSendAgentImages;
+
   /// AI settings: toggle for tool use in chat.
   ///
   /// In en, this message translates to:
@@ -21509,6 +21515,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This conversation is only about entries from {from} to {to}; use this range when searching unless told otherwise.'**
   String aiPromptAgentScopeRange(String from, String to);
+
+  /// Prompt line (agent): the photo references attached to the user's message.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos attached to this message, in order: {refs}. Add them to entries with the `images` parameter of create_diary or append_to_diary, or with ![](P1) in the body.'**
+  String aiPromptAgentImagesAttached(String refs);
+
+  /// Prompt placeholder for a photo that is not sent because images are off.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} was not sent to you: this model or the settings do not allow images]'**
+  String aiPromptImageNotSent(String label);
+
+  /// Prompt placeholder for an older photo left out to keep the request small.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} was left out of this request to keep it small; call view_images to see it again]'**
+  String aiPromptImageOmitted(String label);
+
+  /// Prompt placeholder for a photo that cannot be read or shown anymore.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} is unavailable: the file is gone or can no longer be shown to the AI]'**
+  String aiPromptImageUnavailable(String label);
+
+  /// Prompt placeholder for a photo the user deleted from Storage.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} was deleted]'**
+  String aiPromptImageRemoved(String label);
+
+  /// Prompt placeholder used when the service rejects images and they are removed before retrying.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo not sent: this model does not accept images]'**
+  String get aiPromptImagesRejected;
 
   /// Model max output field.
   ///
@@ -23297,6 +23339,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ask something…'**
   String get aiChatInputHint;
+
+  /// Tooltip of the chat composer button that attaches photos to the message.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get aiChatAttachImages;
+
+  /// Shown under the attached photos when more were picked than a message can hold.
+  ///
+  /// In en, this message translates to:
+  /// **'A message holds up to {max} photos; the extra ones were not added'**
+  String aiChatImagesTruncated(int max);
+
+  /// Shown under the attached photos when the chat model cannot receive images.
+  ///
+  /// In en, this message translates to:
+  /// **'This model can\'t see photos (or photo understanding is off), but the AI can still add them to entries'**
+  String get aiChatImagesNoVision;
+
+  /// Stands for the photos of a message that has no text (title, export).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{[1 photo]} other{[{count} photos]}}'**
+  String aiChatImagesSummary(int count);
+
+  /// Under a chat message whose attached photos were deleted from Storage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo was deleted} other{{count} photos were deleted}}'**
+  String aiChatImagesRemoved(int count);
 
   /// Shown while a search plan is made.
   ///

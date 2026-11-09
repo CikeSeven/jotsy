@@ -17027,6 +17027,8 @@
   "@aiConfirmSendAgent": {
     "description": "Send confirmation sheet: the assistant reads entries as needed."
   },
+  "aiConfirmSendAgentImages": "AI は必要に応じて日記とその画像を検索・閲覧します（非公開の日記は除く）。毎回は確認しません",
+  "@aiConfirmSendAgentImages": {"description": "Send confirmation for the agent when the model can see photos."},
   "aiOptionAgent": "AI にツールを使わせる",
   "@aiOptionAgent": {
     "description": "AI settings: toggle for tool use in chat."
@@ -17072,6 +17074,18 @@
       }
     }
   },
+  "aiPromptAgentImagesAttached": "このメッセージに添付された画像（順番どおり）：{refs}。create_diary / append_to_diary の `images` パラメーター、または本文の ![](P1) で日記に追加できます。",
+  "@aiPromptAgentImagesAttached": {"description": "Prompt line (agent): the photo references attached to the user's message.", "placeholders": {"refs": {"type": "String"}}},
+  "aiPromptImageNotSent": "[画像 {label} は送られていません：このモデルまたは設定では画像を送りません]",
+  "@aiPromptImageNotSent": {"description": "Prompt placeholder for a photo that is not sent because images are off.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageOmitted": "[画像 {label} はリクエストを小さく保つため今回は送っていません。必要なら view_images で見直してください]",
+  "@aiPromptImageOmitted": {"description": "Prompt placeholder for an older photo left out to keep the request small.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageUnavailable": "[画像 {label} は利用できません：ファイルがないか、AI に見せられなくなりました]",
+  "@aiPromptImageUnavailable": {"description": "Prompt placeholder for a photo that cannot be read or shown anymore.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageRemoved": "[画像 {label} は削除されました]",
+  "@aiPromptImageRemoved": {"description": "Prompt placeholder for a photo the user deleted from Storage.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImagesRejected": "[画像は送られていません：このモデルは画像を受け付けません]",
+  "@aiPromptImagesRejected": {"description": "Prompt placeholder used when the service rejects images and they are removed before retrying."},
   "aiModelMaxOutput": "最大出力トークン数",
   "@aiModelMaxOutput": {
     "description": "Model max output field."
@@ -18512,6 +18526,16 @@
   "@aiChatInputHint": {
     "description": "Hint of the chat input."
   },
+  "aiChatAttachImages": "画像を追加",
+  "@aiChatAttachImages": {"description": "Tooltip of the chat composer button that attaches photos to the message."},
+  "aiChatImagesTruncated": "1 件のメッセージに添付できる画像は {max} 枚までです。超えた分は追加されませんでした",
+  "@aiChatImagesTruncated": {"description": "Shown under the attached photos when more were picked than a message can hold.", "placeholders": {"max": {"type": "int"}}},
+  "aiChatImagesNoVision": "このモデルは画像を見られません（または画像の理解がオフです）が、AI は画像を日記に追加できます",
+  "@aiChatImagesNoVision": {"description": "Shown under the attached photos when the chat model cannot receive images."},
+  "aiChatImagesSummary": "[画像 {count} 枚]",
+  "@aiChatImagesSummary": {"description": "Stands for the photos of a message that has no text (title, export).", "placeholders": {"count": {"type": "int"}}},
+  "aiChatImagesRemoved": "画像 {count} 枚は削除されました",
+  "@aiChatImagesRemoved": {"description": "Under a chat message whose attached photos were deleted from Storage.", "placeholders": {"count": {"type": "int"}}},
   "aiChatPlanning": "質問を理解しています…",
   "@aiChatPlanning": {
     "description": "Shown while a search plan is made."

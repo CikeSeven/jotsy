@@ -11817,6 +11817,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiConfirmSendAgent => 'AI 会按需查找、读取你的日记（私密日记除外），之后不再逐次询问';
 
   @override
+  String get aiConfirmSendAgentImages =>
+      'AI 会按需查找、读取你的日记及其中的图片（私密日记除外），之后不再逐次询问';
+
+  @override
   String get aiOptionAgent => '让 AI 使用工具';
 
   @override
@@ -11844,6 +11848,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String aiPromptAgentScopeRange(String from, String to) {
     return '这次对话只关心 $from 到 $to 之间的日记，查日记时默认用这个范围。';
   }
+
+  @override
+  String aiPromptAgentImagesAttached(String refs) {
+    return '这条消息附带的图片（按顺序）：$refs。可用 create_diary / append_to_diary 的 `images` 参数或正文里的 ![](P1) 把它们加进日记。';
+  }
+
+  @override
+  String aiPromptImageNotSent(String label) {
+    return '[图片 $label 没有发给你：当前模型或设置不发送图片]';
+  }
+
+  @override
+  String aiPromptImageOmitted(String label) {
+    return '[图片 $label 为控制请求大小未随本次请求发送；需要时调用 view_images 重看]';
+  }
+
+  @override
+  String aiPromptImageUnavailable(String label) {
+    return '[图片 $label 读不出来：文件已不在，或已不能再给 AI 看]';
+  }
+
+  @override
+  String aiPromptImageRemoved(String label) {
+    return '[图片 $label 已删除]';
+  }
+
+  @override
+  String get aiPromptImagesRejected => '[图片没有发出：这个模型不接受图片]';
 
   @override
   String get aiModelMaxOutput => '最多输出（token）';
@@ -12843,6 +12875,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiChatInputHint => '问点什么…';
+
+  @override
+  String get aiChatAttachImages => '添加图片';
+
+  @override
+  String aiChatImagesTruncated(int max) {
+    return '一条消息最多 $max 张图片，多选的没有加上';
+  }
+
+  @override
+  String get aiChatImagesNoVision => '当前模型看不到图片内容（或图片理解已关闭），但 AI 仍可以把图片加进日记';
+
+  @override
+  String aiChatImagesSummary(int count) {
+    return '[$count 张图片]';
+  }
+
+  @override
+  String aiChatImagesRemoved(int count) {
+    return '$count 张图片已删除';
+  }
 
   @override
   String get aiChatPlanning => '正在理解问题…';

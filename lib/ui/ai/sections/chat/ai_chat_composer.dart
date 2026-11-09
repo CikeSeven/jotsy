@@ -1,12 +1,13 @@
 // 对话页底部的输入栏（DESIGN §5.29“输入栏”）：一张 28 圆角的卡片，上面是
-// 多行输入框（1–6 行、普通文字键盘），下面一排可横向滚动的胶囊（范围、
-// 人设、模型 · 思考）与右侧固定的 40dp 圆形发送 / 停止按钮。
+// 附图缩略图（有图时）与多行输入框（1–6 行、普通文字键盘），下面一排是附图
+// 按钮、可横向滚动的胶囊（范围、人设、模型 · 思考）与右侧固定的 40dp 圆形
+// 发送 / 停止按钮。附图的部件见 `ai_chat_composer_images.dart`。
 //
 // - 底色与描边取 `AppGlassField`（玻璃时半透明 + 玻璃描边，经典时
 //   `surfaceContainerHigh`）；聚焦时描边经 `ExpressiveStateBlend` 补间到
 //   `primary` 的 0.5 不透明度。
-// - 发送按钮在没有文字时禁用（颜色补间），生成中换成描边“停止”（交叉
-//   淡入）；发送 / 停止算作输入框的一部分（`TextFieldTapRegion`），点了不
+// - 发送按钮在既没有文字也没有图片、或图片还在复制时禁用（颜色补间），
+//   生成中换成描边“停止”（交叉淡入）；发送 / 停止算作输入框的一部分（`TextFieldTapRegion`），点了不
 //   收键盘。桌面 Enter 发送、Shift + Enter 换行。
 // - 胶囊：跟随默认时为细描边透明底，改过（范围不是自动、换了人设 / 模型 /
 //   思考强度）时为 `secondaryContainer` 底，一眼看出这段对话的特别设置。
@@ -21,9 +22,11 @@ import '../../../../app/theme/expressive_motion.dart';
 import '../../../../core/services/app_platform.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_glass_field.dart';
+import '../../../diaries/controllers/diary_comment_images_controller.dart';
 import '../../../widgets/desktop_horizontal_scroll.dart';
 import '../../../widgets/expressive_state_blend.dart';
 import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
+import 'ai_chat_composer_images.dart';
 
 class AiChatComposer extends StatefulWidget {
   const AiChatComposer({
@@ -36,6 +39,10 @@ class AiChatComposer extends StatefulWidget {
     required this.onSend,
     required this.onStop,
     required this.chips,
+    this.images,
+    this.onPickImages,
+    this.onTakePhoto,
+    this.note,
   });
 
   final TextEditingController controller;
@@ -48,6 +55,16 @@ class AiChatComposer extends StatefulWidget {
   final VoidCallback onSend;
   final VoidCallback onStop;
   final List<Widget> chips;
+
+  /// 这条消息的附图；null 时没有附图按钮。
+  final DiaryCommentImagesController? images;
+  final VoidCallback? onPickImages;
+
+  /// 拍照；null 时附图按钮直接打开选择器。
+  final VoidCallback? onTakePhoto;
+
+  /// 缩略图下方的一行说明；null 时不显示。
+  final Widget? note;
 
   @override
   State<AiChatComposer> createState() => _AiChatComposerState();
@@ -141,12 +158,29 @@ class _AiChatComposerState extends State<AiChatComposer> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
+                if (widget.images case final images?)
+                  AiComposerImageStrip(images: images),
+                ?widget.note,
                 field,
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 2, 8, 8),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
+                      if ((widget.images, widget.onPickImages) case (
+                        final images?,
+                        final onPick?,
+                      )) ...<Widget>[
+                        TextFieldTapRegion(
+                          child: AiComposerAttachButton(
+                            images: images,
+                            enabled: widget.enabled && !widget.busy,
+                            onPick: onPick,
+                            onTakePhoto: widget.onTakePhoto,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                      ],
                       Expanded(
                         child: DesktopHorizontalScroll(
                           child: SingleChildScrollView(
@@ -167,6 +201,7 @@ class _AiChatComposerState extends State<AiChatComposer> {
                       TextFieldTapRegion(
                         child: _SendButton(
                           controller: widget.controller,
+                          images: widget.images,
                           busy: widget.busy,
                           enabled: widget.enabled,
                           onSend: widget.onSend,
@@ -188,6 +223,7 @@ class _AiChatComposerState extends State<AiChatComposer> {
 class _SendButton extends StatelessWidget {
   const _SendButton({
     required this.controller,
+    required this.images,
     required this.busy,
     required this.enabled,
     required this.onSend,
@@ -195,6 +231,7 @@ class _SendButton extends StatelessWidget {
   });
 
   final TextEditingController controller;
+  final DiaryCommentImagesController? images;
   final bool busy;
   final bool enabled;
   final VoidCallback onSend;
@@ -218,14 +255,21 @@ class _SendButton extends StatelessWidget {
             )
           : ListenableBuilder(
               key: const ValueKey<String>('send'),
-              listenable: controller,
-              builder: (context, _) => IconButton.filled(
-                tooltip: l10n.aiPanelSend,
-                onPressed: enabled && controller.text.trim().isNotEmpty
-                    ? onSend
-                    : null,
-                icon: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
-              ),
+              listenable: Listenable.merge(<Listenable?>[controller, images]),
+              builder: (context, _) {
+                final images = this.images;
+                final hasImages = images != null && images.images.isNotEmpty;
+                final copying = images != null && images.isBusy;
+                final ready =
+                    enabled &&
+                    !copying &&
+                    (controller.text.trim().isNotEmpty || hasImages);
+                return IconButton.filled(
+                  tooltip: l10n.aiPanelSend,
+                  onPressed: ready ? onSend : null,
+                  icon: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
+                );
+              },
             ),
     );
   }

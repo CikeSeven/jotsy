@@ -16460,6 +16460,8 @@
   "@aiConfirmSendAgent": {
     "description": "发送前确认面板：智能体会按需读日记的说明。"
   },
+  "aiConfirmSendAgentImages": "AI 会按需查找、读取你的日记及其中的图片（私密日记除外），之后不再逐次询问",
+  "@aiConfirmSendAgentImages": {"description": "智能体的发送确认（模型能看图时）。"},
   "aiOptionAgent": "让 AI 使用工具",
   "@aiOptionAgent": {
     "description": "AI 设置：对话时调用工具的开关。"
@@ -16505,6 +16507,18 @@
       }
     }
   },
+  "aiPromptAgentImagesAttached": "这条消息附带的图片（按顺序）：{refs}。可用 create_diary / append_to_diary 的 `images` 参数或正文里的 ![](P1) 把它们加进日记。",
+  "@aiPromptAgentImagesAttached": {"description": "提示词（智能体）：用户这条消息附带的图片编号。", "placeholders": {"refs": {"type": "String"}}},
+  "aiPromptImageNotSent": "[图片 {label} 没有发给你：当前模型或设置不发送图片]",
+  "@aiPromptImageNotSent": {"description": "提示词占位：因不发送图片而没发的那张图。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageOmitted": "[图片 {label} 为控制请求大小未随本次请求发送；需要时调用 view_images 重看]",
+  "@aiPromptImageOmitted": {"description": "提示词占位：为控制请求大小而没发的较早图片。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageUnavailable": "[图片 {label} 读不出来：文件已不在，或已不能再给 AI 看]",
+  "@aiPromptImageUnavailable": {"description": "提示词占位：读不出或已不能给 AI 看的图片。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageRemoved": "[图片 {label} 已删除]",
+  "@aiPromptImageRemoved": {"description": "提示词占位：用户已在存储管理里删除的图片。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImagesRejected": "[图片没有发出：这个模型不接受图片]",
+  "@aiPromptImagesRejected": {"description": "提示词占位：服务端拒收图片、去掉图片重试时的说明。"},
   "aiModelMaxOutput": "最多输出（token）",
   "@aiModelMaxOutput": {
     "description": "模型最多输出输入框。"
@@ -17945,6 +17959,16 @@
   "@aiChatInputHint": {
     "description": "对话输入框的提示。"
   },
+  "aiChatAttachImages": "添加图片",
+  "@aiChatAttachImages": {"description": "对话输入栏里附加图片按钮的提示。"},
+  "aiChatImagesTruncated": "一条消息最多 {max} 张图片，多选的没有加上",
+  "@aiChatImagesTruncated": {"description": "多选的图片超过一条消息的上限时，在附图下方提示。", "placeholders": {"max": {"type": "int"}}},
+  "aiChatImagesNoVision": "当前模型看不到图片内容（或图片理解已关闭），但 AI 仍可以把图片加进日记",
+  "@aiChatImagesNoVision": {"description": "当前模型收不到图片时，在附图下方提示。"},
+  "aiChatImagesSummary": "[{count} 张图片]",
+  "@aiChatImagesSummary": {"description": "没有文字、只有图片的消息的代称（标题、导出）。", "placeholders": {"count": {"type": "int"}}},
+  "aiChatImagesRemoved": "{count} 张图片已删除",
+  "@aiChatImagesRemoved": {"description": "附图已在存储管理里删除的消息下方的说明。", "placeholders": {"count": {"type": "int"}}},
   "aiChatPlanning": "正在理解问题…",
   "@aiChatPlanning": {
     "description": "生成检索计划时的提示。"

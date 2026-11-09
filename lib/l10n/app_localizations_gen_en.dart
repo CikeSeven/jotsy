@@ -13391,6 +13391,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The AI will look up and read entries as needed (never private ones) without asking each time';
 
   @override
+  String get aiConfirmSendAgentImages =>
+      'The AI will look up and read entries and their photos as needed (never private ones) without asking each time';
+
+  @override
   String get aiOptionAgent => 'Let the AI use tools';
 
   @override
@@ -13421,6 +13425,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String aiPromptAgentScopeRange(String from, String to) {
     return 'This conversation is only about entries from $from to $to; use this range when searching unless told otherwise.';
   }
+
+  @override
+  String aiPromptAgentImagesAttached(String refs) {
+    return 'Photos attached to this message, in order: $refs. Add them to entries with the `images` parameter of create_diary or append_to_diary, or with ![](P1) in the body.';
+  }
+
+  @override
+  String aiPromptImageNotSent(String label) {
+    return '[Photo $label was not sent to you: this model or the settings do not allow images]';
+  }
+
+  @override
+  String aiPromptImageOmitted(String label) {
+    return '[Photo $label was left out of this request to keep it small; call view_images to see it again]';
+  }
+
+  @override
+  String aiPromptImageUnavailable(String label) {
+    return '[Photo $label is unavailable: the file is gone or can no longer be shown to the AI]';
+  }
+
+  @override
+  String aiPromptImageRemoved(String label) {
+    return '[Photo $label was deleted]';
+  }
+
+  @override
+  String get aiPromptImagesRejected =>
+      '[Photo not sent: this model does not accept images]';
 
   @override
   String get aiModelMaxOutput => 'Max output tokens';
@@ -14515,6 +14548,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiChatInputHint => 'Ask something…';
+
+  @override
+  String get aiChatAttachImages => 'Add photos';
+
+  @override
+  String aiChatImagesTruncated(int max) {
+    return 'A message holds up to $max photos; the extra ones were not added';
+  }
+
+  @override
+  String get aiChatImagesNoVision =>
+      'This model can\'t see photos (or photo understanding is off), but the AI can still add them to entries';
+
+  @override
+  String aiChatImagesSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '[$count photos]',
+      one: '[1 photo]',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiChatImagesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos were deleted',
+      one: '1 photo was deleted',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get aiChatPlanning => 'Understanding the question…';

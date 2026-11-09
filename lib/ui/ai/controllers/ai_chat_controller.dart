@@ -47,6 +47,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/http_cancel_token.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/text_stats.dart';
+import '../../diaries/controllers/diary_comment_images_controller.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../../todos/controllers/todo_reminder_permission.dart';
 import '../models/ai_built_ins.dart';
@@ -60,13 +61,16 @@ import '../providers/ai_providers.dart';
 import '../tools/ai_tool.dart';
 import '../tools/ai_tool_registry.dart';
 import '../viewmodels/ai_agent_history.dart';
+import '../viewmodels/ai_agent_image_slots.dart';
 import '../viewmodels/ai_agent_prompts.dart';
+import '../viewmodels/ai_chat_images.dart';
 import '../viewmodels/ai_chat_prompts.dart';
 import '../viewmodels/ai_citations.dart';
 import '../viewmodels/ai_context_budget.dart';
 import '../viewmodels/ai_prompt_builder.dart';
 import '../viewmodels/ai_retrieval.dart';
 import '../viewmodels/ai_task_prompts.dart';
+import 'ai_agent_images.dart';
 import 'ai_agent_turn.dart';
 import 'ai_privacy_gate.dart';
 import 'ai_stream_run.dart';
@@ -132,15 +136,44 @@ class AiChatController extends ChangeNotifier {
     return value;
   }
 
-  /// 发一个问题（[resend] 时问题已经在库里，不再追加用户消息）。
+  /// 发一个问题（[resend] 时问题已经在库里，不再追加用户消息，附图也取
+  /// 库里那一行的）。[images] 是这条消息新附的托管图片：输入栏已把它们复制
+  /// 进托管目录、交给这里；问题没能写进库就放弃时（忙、页面已换走）立即删掉
+  /// 这些文件，不留下没人引用、要等回收的图片。
   Future<void> send(
     BuildContext context,
     WidgetRef ref,
     String question, {
     bool resend = false,
+    List<String> images = const <String>[],
+  }) async {
+    var stored = false;
+    try {
+      await _sendQuestion(
+        context,
+        ref,
+        question,
+        resend: resend,
+        images: images,
+        onStored: () => stored = true,
+      );
+    } finally {
+      if (!resend && !stored && images.isNotEmpty) {
+        unawaited(DiaryCommentImagesController.discardImages(images));
+      }
+    }
+  }
+
+  Future<void> _sendQuestion(
+    BuildContext context,
+    WidgetRef ref,
+    String question, {
+    required bool resend,
+    required List<String> images,
+    required VoidCallback onStored,
   }) async {
     final text = question.trim();
-    if (text.isEmpty || busy) return;
+    if (busy || (!resend && text.isEmpty && images.isEmpty)) return;
     final generation = ++_generation;
     bool current() => !_disposed && generation == _generation;
     final locale = Localizations.localeOf(context);
@@ -166,13 +199,30 @@ class AiChatController extends ChangeNotifier {
     }
     final history = await database.getAiMessages(id);
     String? questionId;
+    // 这条问题的附图与编号（P1…，接着整段对话往后编，写进 meta 后不再变）。
+    var attached = const <AiChatImage>[];
     if (!resend) {
-      questionId = await database.addAiMessage(
+      final refs = aiNextImageRefs(history, images.length);
+      final newId = questionId = await database.addAiMessage(
         conversationId: id,
         role: AiMessageRole.user,
         content: text,
+        imagesJson: encodeAiMessageImages(images),
+        metaJson: jsonEncode(aiImageRefsMeta(refs)),
       );
+      onStored();
+      attached = [
+        for (final (index, path) in images.indexed)
+          AiChatImage(
+            ref: refs[index],
+            messageId: newId,
+            index: index,
+            path: path,
+          ),
+      ];
     } else if (history.isNotEmpty && history.last.role == AiMessageRole.user) {
+      final row = history.last;
+      attached = aiChatImagesOf(history, row.messageId);
       questionId = history.removeLast().messageId;
     }
     if (!current()) return;
@@ -203,6 +253,7 @@ class AiChatController extends ChangeNotifier {
         history,
         text,
         questionId: questionId,
+        attached: attached,
         model: model,
         current: current,
       );
@@ -218,6 +269,7 @@ class AiChatController extends ChangeNotifier {
       id,
       history,
       text,
+      attached: attached,
       model: model,
       current: current,
     );
@@ -233,9 +285,16 @@ class AiChatController extends ChangeNotifier {
     String id,
     List<AiMessageRow> history,
     String text, {
+    required List<AiChatImage> attached,
     required AiResolvedModel model,
     required bool Function() current,
   }) async {
+    final vision =
+        prefs.isModuleEnabled(AiModule.vision) && service.acceptsImages(model);
+    final liveImages = [
+      for (final image in attached)
+        if (!image.removed) image,
+    ];
     _set(
       prefs.retrieval == AiRetrievalMode.smart &&
               scope.kind == AiChatScopeKind.auto
@@ -277,6 +336,7 @@ class AiChatController extends ChangeNotifier {
             diaries.fold<int>(0, (sum, d) => sum + d.maxWords) +
             TextStats.countWords(text),
         entries: diaries.length,
+        images: vision ? liveImages.length : 0,
       ),
     );
     if (!current()) return;
@@ -299,14 +359,29 @@ class AiChatController extends ChangeNotifier {
           date: item.diary.createdAt,
         ),
     ];
+    // 检索问答只带这条问题的附图（不回放以前的图片）：一律经同一套加载，
+    // 不能发图时换成占位。
+    final images = await resolveAiImageSlots(
+      aiQuestionImageSlots(attached),
+      vision: vision,
+      maxSide: prefs.visionMaxSide,
+      l10n: kit.l10n,
+    );
+    if (!current()) return;
     _set(AiChatPhase.answering);
     final request = aiChatRequest(
       kit,
       history: history,
-      question: text,
+      question: text.isEmpty && attached.isNotEmpty
+          ? kit.l10n.aiChatImagesSummary(attached.length)
+          : text,
       diaries: diaries,
       today: DateTime.now(),
       persona: persona,
+      attachments: [
+        for (final slot in aiQuestionImageSlots(attached))
+          ?images.parts[slot.key],
+      ],
     ).withThinking(options.thinking);
     await run.start(
       (token) => service.stream(model, request, cancelToken: token),
@@ -325,7 +400,9 @@ class AiChatController extends ChangeNotifier {
           service,
           kit,
           prefs,
-          text,
+          text.isEmpty && attached.isNotEmpty
+              ? context.l10n.aiChatImagesSummary(attached.length)
+              : text,
           diaries.length,
           current,
         ),
@@ -349,7 +426,9 @@ class AiChatController extends ChangeNotifier {
     await send(context, ref, messages[lastUser].content, resend: true);
   }
 
-  /// 编辑并重发最后一个问题：删掉它与之后的回答，再发 [question]。
+  /// 编辑并重发最后一个问题：删掉它与之后的回答，换成 [question] 再问。
+  /// 附图原样带到新问题上（编号不变）：删旧插新在同一个事务里，图片不会
+  /// 有一刻没人引用。
   Future<void> editLast(
     BuildContext context,
     WidgetRef ref,
@@ -362,11 +441,19 @@ class AiChatController extends ChangeNotifier {
       (m) => m.role == AiMessageRole.user,
     );
     if (lastUser < 0) return;
-    await database.deleteAiMessages([
-      for (final m in messages.skip(lastUser)) m.messageId,
-    ]);
+    final old = messages[lastUser];
+    final refs = [
+      for (final image in aiChatImagesOf(messages, old.messageId)) image.ref,
+    ];
+    await database.replaceAiQuestion(
+      conversationId: id,
+      deleteMessageIds: [for (final m in messages.skip(lastUser)) m.messageId],
+      content: question.trim(),
+      imagesJson: old.images,
+      metaJson: jsonEncode(aiImageRefsMeta(refs)),
+    );
     if (!context.mounted) return;
-    await send(context, ref, question);
+    await send(context, ref, question, resend: true);
   }
 
   /// 换范围 / 人设：对话已存在时一并保存。

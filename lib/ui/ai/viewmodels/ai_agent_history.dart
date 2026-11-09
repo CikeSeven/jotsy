@@ -23,7 +23,12 @@
 //   id 规范成各家都接受的字符；
 // - 窗口：超过字数预算时从最旧的整轮开始丢，一次丢到预算的一半，之后起点
 //   不变直到再次超出（按顺序模拟得到起点，每轮重算结果一样），缓存只在丢的
-//   那一轮断一次；单轮超过预算一半的回答只回放正文。
+//   那一轮断一次；单轮超过预算一半的回答只回放正文；
+// - 图片：用户附图放在提问文字之前，“查看图片”看过的图放在那一步的工具
+//   结果之后，与当轮发出时的位置一致。这里只给出槽位
+//   （[aiAgentHistoryImageSlots]），由调用方统一加载成图片或占位后经
+//   [aiAgentHistory] 的 `images` 插回；窗口大小按每张图固定的字数
+//   （[kAiImageHistoryWeight]）计，不因加载结果而变。
 
 import 'dart:convert';
 
@@ -32,6 +37,8 @@ import '../../../core/services/ai/ai_models.dart';
 import '../../../core/services/ai/ai_provider_config.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/ai_agent_steps.dart';
+import 'ai_agent_image_slots.dart';
+import 'ai_chat_images.dart';
 import 'ai_citations.dart';
 import 'ai_task_prompts.dart';
 
@@ -95,12 +102,15 @@ class AiAgentHistory {
 }
 
 /// 把 [rows]（旧 → 新，不含这一轮的问题）回放成消息。[target] 是这一轮的
-/// 模型，决定协议回放数据带不带；[budget] 为字数预算（字符）。
+/// 模型，决定协议回放数据带不带；[budget] 为字数预算（字符）；[images] 为
+/// 窗口里各图片槽位（[aiAgentHistoryImageSlots]）加载成的图片或占位文字，
+/// 缺的槽位不放东西（不带图片的调用方传空表即可）。
 AiAgentHistory aiAgentHistory(
   List<AiMessageRow> rows, {
   required AppLocalizations l10n,
   required AiResolvedModel target,
   int budget = kAiAgentHistoryBudget,
+  Map<String, AiPart> images = const <String, AiPart>{},
 }) {
   final units = _units(rows, l10n: l10n, target: target, budget: budget);
   final start = aiAgentWindowStart([
@@ -109,8 +119,8 @@ AiAgentHistory aiAgentHistory(
   final messages = <AiMessage>[];
   final scopeDiaries = <String>{};
   for (final unit in units.skip(start)) {
-    for (final message in unit.messages) {
-      _push(messages, message);
+    for (final entry in unit.entries) {
+      _push(messages, entry.withImages(images));
     }
     scopeDiaries.addAll(unit.scopeDiaries);
   }
@@ -125,6 +135,26 @@ AiAgentHistory aiAgentHistory(
   return AiAgentHistory(messages, scopeDiaries: scopeDiaries);
 }
 
+/// 窗口里的图片槽位，按在请求里出现的顺序（与 [aiAgentHistory] 同一窗口）。
+List<AiImageSlot> aiAgentHistoryImageSlots(
+  List<AiMessageRow> rows, {
+  required AppLocalizations l10n,
+  required AiResolvedModel target,
+  int budget = kAiAgentHistoryBudget,
+}) {
+  final units = _units(rows, l10n: l10n, target: target, budget: budget);
+  final start = aiAgentWindowStart([
+    for (final unit in units) unit.size,
+  ], budget);
+  return [
+    for (final unit in units.skip(start))
+      for (final entry in unit.entries) ...[
+        ...entry.leading,
+        ...entry.trailing,
+      ],
+  ];
+}
+
 /// 整段对话里智能体用过的引用编号（新记录的 `meta.refs`），这一轮的
 /// `AiCitationBook` 接着编号：旧结果里的 [D3] 仍指同一篇。
 List<AiCitation> aiAgentCitationsOf(List<AiMessageRow> rows) => [
@@ -132,11 +162,39 @@ List<AiCitation> aiAgentCitationsOf(List<AiMessageRow> rows) => [
     if (row.role == AiMessageRole.assistant) ..._RowMeta.of(row).refs,
 ];
 
+/// 回放出的一条消息，以及插在它前面（用户附图）与后面（工具结果后的图）
+/// 的图片槽位。
+class _Entry {
+  const _Entry(
+    this.message, {
+    this.leading = const <AiImageSlot>[],
+    this.trailing = const <AiImageSlot>[],
+  });
+
+  final AiMessage message;
+  final List<AiImageSlot> leading;
+  final List<AiImageSlot> trailing;
+
+  /// 估算的大小：文字按字符，每张图按固定字数（不看加载结果）。
+  int get size =>
+      _sizeOf(<AiMessage>[message]) +
+      (leading.length + trailing.length) * kAiImageHistoryWeight;
+
+  AiMessage withImages(Map<String, AiPart> images) {
+    if (leading.isEmpty && trailing.isEmpty) return message;
+    return AiMessage(message.role, <AiPart>[
+      for (final slot in leading) ?images[slot.key],
+      ...message.parts,
+      for (final slot in trailing) ?images[slot.key],
+    ]);
+  }
+}
+
 /// 一轮（以用户消息开头，或开头的助手消息）回放成的消息与估算的大小。
 class _Unit {
   _Unit();
 
-  final List<AiMessage> messages = <AiMessage>[];
+  final List<_Entry> entries = <_Entry>[];
   final Set<String> scopeDiaries = <String>{};
   int size = 0;
 }
@@ -147,19 +205,33 @@ List<_Unit> _units(
   required AiResolvedModel target,
   required int budget,
 }) {
+  final imagesByMessage = <String, List<AiChatImage>>{};
+  for (final image in aiChatImages(rows)) {
+    (imagesByMessage[image.messageId] ??= <AiChatImage>[]).add(image);
+  }
   final units = <_Unit>[];
   _Unit? current;
   for (final row in rows) {
     final meta = _RowMeta.of(row);
     if (row.role != AiMessageRole.assistant) {
       // 连续的用户消息（中间的回答出错了）留在同一轮里。
-      if (current == null || current.messages.lastOrNull?.role != AiRole.user) {
+      if (current == null ||
+          current.entries.lastOrNull?.message.role != AiRole.user) {
         current = _Unit();
         units.add(current);
       }
-      final text = meta.prompt ?? row.content;
-      current.messages.add(AiMessage.text(AiRole.user, text));
-      current.size += text.length;
+      final images = imagesByMessage[row.messageId] ?? const <AiChatImage>[];
+      var text = meta.prompt ?? row.content;
+      // 检索问答里只发了图片的问题没有存全文：用“[N 张图片]”占住文字。
+      if (text.trim().isEmpty && images.isNotEmpty) {
+        text = l10n.aiChatImagesSummary(images.length);
+      }
+      final entry = _Entry(
+        AiMessage.text(AiRole.user, text),
+        leading: aiQuestionImageSlots(images),
+      );
+      current.entries.add(entry);
+      current.size += entry.size;
       if (meta.scopeDiary case final id?) current.scopeDiaries.add(id);
       continue;
     }
@@ -170,18 +242,25 @@ List<_Unit> _units(
     final full = meta.replayable
         ? _replayAnswer(row, meta, target: target)
         : null;
-    final fullSize = full == null ? 0 : _sizeOf(full);
+    final fullSize = full == null ? 0 : _entriesSize(full);
     // 单轮太大（读了很多日记）时只回放正文：整轮都放会挤掉其他轮。
-    final messages = full != null && fullSize <= budget ~/ 2
+    final entries = full != null && fullSize <= budget ~/ 2
         ? full
-        : _plainAnswer(row, keepCitations: meta.replayable);
-    current.messages.addAll(messages);
-    current.size += full != null && fullSize <= budget ~/ 2
-        ? fullSize
-        : _sizeOf(messages);
+        : [
+            for (final message in _plainAnswer(
+              row,
+              keepCitations: meta.replayable,
+            ))
+              _Entry(message),
+          ];
+    current.entries.addAll(entries);
+    current.size += _entriesSize(entries);
   }
   return units;
 }
+
+int _entriesSize(List<_Entry> entries) =>
+    entries.fold<int>(0, (sum, entry) => sum + entry.size);
 
 /// 窗口起点：按顺序累加各轮大小，超出 [budget] 时把起点往后挪到剩下的不超过
 /// 预算的一半。只看已有各轮的大小，所以每轮重算得到同样的起点（只有再次超出
@@ -201,41 +280,45 @@ int aiAgentWindowStart(List<int> sizes, int budget) {
 }
 
 /// 新记录的智能体回答：逐步回放，最后是正文（出错 / 停止时不带半截正文）。
-List<AiMessage> _replayAnswer(
+List<_Entry> _replayAnswer(
   AiMessageRow row,
   _RowMeta meta, {
   required AiResolvedModel target,
 }) {
   final sameModel =
       meta.providerId == target.provider.id && meta.model == target.model.id;
-  final messages = <AiMessage>[];
+  final entries = <_Entry>[];
   for (final step in AiAgentStepRecord.decodeList(row.steps)) {
     if (step.calls.isEmpty) continue;
-    messages
+    entries
       ..add(
-        AiMessage(AiRole.assistant, <AiPart>[
-          if (sameModel) ...step.replay,
-          if (step.text.isNotEmpty) AiTextPart(step.text),
-          for (final call in step.calls)
-            AiToolCallPart(_call(call, sameModel: sameModel)),
-        ]),
+        _Entry(
+          AiMessage(AiRole.assistant, <AiPart>[
+            if (sameModel) ...step.replay,
+            if (step.text.isNotEmpty) AiTextPart(step.text),
+            for (final call in step.calls)
+              AiToolCallPart(_call(call, sameModel: sameModel)),
+          ]),
+        ),
       )
       ..add(
-        AiMessage(AiRole.user, <AiPart>[
-          for (final call in step.calls)
-            AiToolResultPart(
-              callId: sameModel ? call.id : aiPortableCallId(call.id),
-              name: call.tool,
-              content: call.result ?? _missingResult(call.status),
-              isError: call.result == null || call.resultIsError,
-            ),
-        ]),
+        _Entry(
+          AiMessage(AiRole.user, <AiPart>[
+            for (final call in step.calls)
+              AiToolResultPart(
+                callId: sameModel ? call.id : aiPortableCallId(call.id),
+                name: call.tool,
+                content: call.result ?? _missingResult(call.status),
+                isError: call.result == null || call.resultIsError,
+              ),
+          ]),
+        ),
       );
   }
   if (row.status == AiMessageStatus.done && row.content.trim().isNotEmpty) {
-    messages.add(AiMessage.text(AiRole.assistant, row.content));
+    entries.add(_Entry(AiMessage.text(AiRole.assistant, row.content)));
   }
-  return messages;
+  return entries;
 }
 
 /// 只回放正文：检索问答、旧记录与超大的回答。
@@ -285,7 +368,7 @@ int _sizeOf(List<AiMessage> messages) {
           call.name.length + call.argumentsRaw.length,
         AiToolResultPart(:final content) => content.length,
         AiReplayPart(:final data) => jsonEncode(data).length,
-        AiImagePart() => 1000,
+        AiImagePart() => kAiImageHistoryWeight,
       };
     }
   }

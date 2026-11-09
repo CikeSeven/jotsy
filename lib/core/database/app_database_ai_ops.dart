@@ -242,7 +242,8 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
   }
 
   /// 编辑并重发问题：在**一个事务**里删掉 [deleteMessageIds]（旧问题与它
-  /// 之后的回答），再追加新问题（带着 [imagesJson]），返回新问题的业务 id。
+  /// 之后的回答），再追加新问题（带着 [imagesJson] 与记着图片编号的
+  /// [metaJson]），返回新问题的业务 id。
   ///
   /// 为什么要同一事务：旧问题的附图要原样交给新问题。分两步时，删掉旧问题
   /// 之后、写入新问题之前这些图片没有任何引用，此时恰好跑一轮媒体回收
@@ -252,6 +253,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
     required Iterable<String> deleteMessageIds,
     required String content,
     String? imagesJson,
+    String metaJson = '{}',
     DateTime? now,
   }) {
     final ids = deleteMessageIds.toList(growable: false);
@@ -264,6 +266,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
         role: AiMessageRole.user,
         content: content,
         imagesJson: imagesJson,
+        metaJson: metaJson,
         now: now,
       );
     });

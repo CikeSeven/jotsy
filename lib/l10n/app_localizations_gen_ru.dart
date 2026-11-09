@@ -13829,6 +13829,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'ИИ будет при необходимости искать и читать записи (кроме приватных), не спрашивая каждый раз';
 
   @override
+  String get aiConfirmSendAgentImages =>
+      'ИИ будет при необходимости искать и читать записи и их фото (кроме приватных), не спрашивая каждый раз';
+
+  @override
   String get aiOptionAgent => 'Разрешить ИИ использовать инструменты';
 
   @override
@@ -13859,6 +13863,35 @@ class AppLocalizationsRu extends AppLocalizations {
   String aiPromptAgentScopeRange(String from, String to) {
     return 'Этот разговор касается только записей с $from по $to; используй этот период при поиске, если не сказано иначе.';
   }
+
+  @override
+  String aiPromptAgentImagesAttached(String refs) {
+    return 'Фото, приложенные к этому сообщению, по порядку: $refs. Добавить их в записи можно параметром `images` у create_diary или append_to_diary либо через ![](P1) в тексте.';
+  }
+
+  @override
+  String aiPromptImageNotSent(String label) {
+    return '[Фото $label не отправлено: эта модель или настройки не разрешают изображения]';
+  }
+
+  @override
+  String aiPromptImageOmitted(String label) {
+    return '[Фото $label не включено в этот запрос, чтобы он не был слишком большим; чтобы снова его увидеть, вызови view_images]';
+  }
+
+  @override
+  String aiPromptImageUnavailable(String label) {
+    return '[Фото $label недоступно: файла нет или его больше нельзя показывать ИИ]';
+  }
+
+  @override
+  String aiPromptImageRemoved(String label) {
+    return '[Фото $label удалено]';
+  }
+
+  @override
+  String get aiPromptImagesRejected =>
+      '[Фото не отправлено: эта модель не принимает изображения]';
 
   @override
   String get aiModelMaxOutput => 'Максимум токенов в ответе';
@@ -15023,6 +15056,44 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiChatInputHint => 'Спросите что-нибудь…';
+
+  @override
+  String get aiChatAttachImages => 'Добавить фото';
+
+  @override
+  String aiChatImagesTruncated(int max) {
+    return 'К сообщению можно приложить не больше $max фото; лишние не добавлены';
+  }
+
+  @override
+  String get aiChatImagesNoVision =>
+      'Эта модель не видит фото (или распознавание изображений выключено), но ИИ всё равно может добавить их в записи';
+
+  @override
+  String aiChatImagesSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '[$count фото]',
+      many: '[$count фото]',
+      few: '[$count фото]',
+      one: '[$count фото]',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiChatImagesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count фото удалено',
+      many: '$count фото удалены',
+      few: '$count фото удалены',
+      one: '$count фото удалено',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get aiChatPlanning => 'Разбираюсь в вопросе…';

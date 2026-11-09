@@ -16460,6 +16460,8 @@
   "@aiConfirmSendAgent": {
     "description": "Send confirmation sheet: the assistant reads entries as needed."
   },
+  "aiConfirmSendAgentImages": "The AI will look up and read entries and their photos as needed (never private ones) without asking each time",
+  "@aiConfirmSendAgentImages": {"description": "Send confirmation for the agent when the model can see photos."},
   "aiOptionAgent": "Let the AI use tools",
   "@aiOptionAgent": {
     "description": "AI settings: toggle for tool use in chat."
@@ -16505,6 +16507,18 @@
       }
     }
   },
+  "aiPromptAgentImagesAttached": "Photos attached to this message, in order: {refs}. Add them to entries with the `images` parameter of create_diary or append_to_diary, or with ![](P1) in the body.",
+  "@aiPromptAgentImagesAttached": {"description": "Prompt line (agent): the photo references attached to the user's message.", "placeholders": {"refs": {"type": "String"}}},
+  "aiPromptImageNotSent": "[Photo {label} was not sent to you: this model or the settings do not allow images]",
+  "@aiPromptImageNotSent": {"description": "Prompt placeholder for a photo that is not sent because images are off.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageOmitted": "[Photo {label} was left out of this request to keep it small; call view_images to see it again]",
+  "@aiPromptImageOmitted": {"description": "Prompt placeholder for an older photo left out to keep the request small.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageUnavailable": "[Photo {label} is unavailable: the file is gone or can no longer be shown to the AI]",
+  "@aiPromptImageUnavailable": {"description": "Prompt placeholder for a photo that cannot be read or shown anymore.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageRemoved": "[Photo {label} was deleted]",
+  "@aiPromptImageRemoved": {"description": "Prompt placeholder for a photo the user deleted from Storage.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImagesRejected": "[Photo not sent: this model does not accept images]",
+  "@aiPromptImagesRejected": {"description": "Prompt placeholder used when the service rejects images and they are removed before retrying."},
   "aiModelMaxOutput": "Max output tokens",
   "@aiModelMaxOutput": {
     "description": "Model max output field."
@@ -17945,6 +17959,16 @@
   "@aiChatInputHint": {
     "description": "Hint of the chat input."
   },
+  "aiChatAttachImages": "Add photos",
+  "@aiChatAttachImages": {"description": "Tooltip of the chat composer button that attaches photos to the message."},
+  "aiChatImagesTruncated": "A message holds up to {max} photos; the extra ones were not added",
+  "@aiChatImagesTruncated": {"description": "Shown under the attached photos when more were picked than a message can hold.", "placeholders": {"max": {"type": "int"}}},
+  "aiChatImagesNoVision": "This model can't see photos (or photo understanding is off), but the AI can still add them to entries",
+  "@aiChatImagesNoVision": {"description": "Shown under the attached photos when the chat model cannot receive images."},
+  "aiChatImagesSummary": "{count, plural, =1{[1 photo]} other{[{count} photos]}}",
+  "@aiChatImagesSummary": {"description": "Stands for the photos of a message that has no text (title, export).", "placeholders": {"count": {"type": "int"}}},
+  "aiChatImagesRemoved": "{count, plural, =1{1 photo was deleted} other{{count} photos were deleted}}",
+  "@aiChatImagesRemoved": {"description": "Under a chat message whose attached photos were deleted from Storage.", "placeholders": {"count": {"type": "int"}}},
   "aiChatPlanning": "Understanding the question…",
   "@aiChatPlanning": {
     "description": "Shown while a search plan is made."

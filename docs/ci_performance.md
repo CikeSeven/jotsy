@@ -52,6 +52,19 @@ main 和其他 PR 都用不上，却照样计入配额，还会按最近使用�
 挤掉。所以 PR、tag（发布）与其他分支的手动运行只恢复不保存：
 `main-cache` 在 main 上用 `actions/cache`，其他 ref 用 `actions/cache/restore`；
 SDK 与 pub 缓存由 `setup-flutter` 在 main 上显式 `actions/cache/save`。
+
+**`main-cache` 只能由工作流直接使用。** job 结束时保存靠 `actions/cache` 的
+post 步骤；它嵌套在两层组合 action 里（`setup-flutter` → `main-cache` →
+`actions/cache`）时，post 步骤拿不到输入，只告警 `Input required and not
+supplied: path` 就跳过保存，job 照样成功。#197 合并后，`setup-flutter` 里经
+`main-cache` 的钩子下载、Gradle 发行版与 Gradle 依赖三份缓存一次都没存下
+（`gh cache list` 里没有这三类键），main 每次都从网络冷下载。2026-11-09 #211
+合并后的运行 [42566989143](https://github.com/CikeSeven/jotsy/actions/runs/42566989143)
+又遇上 GitHub Releases 504：Android 构建下载 Kotlin 编译器 jar 失败，一个测试
+分片的 sqlite3 钩子把错误页当成库校验而失败。工作流直接用 `main-cache` 的
+Robolectric 与 actionlint 缓存保存正常。现在 `setup-flutter` 里的这三份缓存直接用
+`actions/cache`（main）与 `actions/cache/restore`（其他 ref），与 `main-cache`
+同一套规则。
 flutter-action 自带的缓存引用浮动 tag，且任何 ref 都会写入，所以它只用来
 解析版本与路径（`dry-run`），缓存改由固定 SHA 的 `actions/cache` 管理。
 
@@ -78,6 +91,12 @@ transforms（jetifier、AAR 解包等）与编译好的构建脚本每次重新�
 transforms 不会一代代累积；Robolectric 的键不设回退，原因相同。发行版单独
 缓存、只随 Gradle 版本变：services.gradle.org 会跳转到 GitHub Releases 下载，
 同样会遇到 504，升级 Flutter 时不必跟着重新下载。
+
+不再使用的键不会立刻消失，要 7 天未访问或超出配额时才被淘汰：2026-11-09 的
+10.03 GB 里约 5.2 GB 是改键后不再使用的旧缓存（不带 `-artifacts-v1` 的旧 SDK
+键、`setup-java-*`、旧锁文件哈希的 pub 键与旧的 Robolectric 键），已手动删除。
+改动缓存键后，等 main 上存下新键，再用 `gh cache list` 检查并删掉旧键，免得
+新缓存写入时超出配额。
 
 按 2026-11-08 的大小估算，main 上的缓存约 8.5 GB（两份 SDK 3.5 GB、Gradle
 约 3.7 GB、发行版 0.4 GB、两份 pub 0.6 GB、Robolectric 0.25 GB，其余都在

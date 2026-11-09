@@ -17092,6 +17092,8 @@
   "@aiToolViewImages": {"description": "Step card title: the agent looks at photos."},
   "aiToolViewedImages": "{count, plural, =0{Фото не отправлены} one{Просмотрено {count} фото} few{Просмотрено {count} фото} many{Просмотрено {count} фото} other{Просмотрено {count} фото}}",
   "@aiToolViewedImages": {"description": "Step card result: how many photos the agent looked at.", "placeholders": {"count": {"type": "int"}}},
+  "aiToolWithImages": "{count, plural, one{С {count} фото} few{С {count} фото} many{С {count} фото} other{С {count} фото}}",
+  "@aiToolWithImages": {"description": "Confirmation card line: the new or appended entry text comes with photos from the chat.", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "Максимум токенов в ответе",
   "@aiModelMaxOutput": {
     "description": "Model max output field."

@@ -7,11 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/services/ai/ai_models.dart';
 import 'package:node_diary/core/services/ai/ai_provider_config.dart';
 import 'package:node_diary/core/services/ai/ai_provider_store.dart';
 import 'package:node_diary/core/services/ai/ai_service.dart';
 import 'package:node_diary/core/services/ai/ai_vision.dart';
+import 'package:node_diary/core/services/storage/storage_reference_index.dart';
+import 'package:node_diary/core/services/storage/storage_usage_models.dart';
 import 'package:node_diary/ui/ai/controllers/ai_chat_controller.dart';
 import 'package:node_diary/ui/ai/models/ai_agent_steps.dart';
 import 'package:node_diary/ui/ai/models/ai_chat_scope.dart';
@@ -276,6 +279,55 @@ void main() {
     );
     expect(replayed.parts.length, results.parts.length);
     expect((replayed.parts.last as AiImagePart).bytes, viewed.bytes);
+  });
+
+  testWidgets('the agent puts a sent photo into a new entry', (tester) async {
+    final h = await setUpHarness(tester);
+    final sea = await photo(tester, 'sea.jpg');
+    service = scriptedAiService(
+      store,
+      requests: requests,
+      turns: [
+        toolTurn([
+          (
+            id: 'c1',
+            name: 'create_diary',
+            args: const {
+              'title': '海边',
+              'body': '今天去了海边',
+              'images': ['P1'],
+            },
+          ),
+        ]),
+        textTurn('写好了'),
+      ],
+    );
+    final (context, ref) = await host(h);
+    final controller = AiChatController(
+      database: h.database,
+      scope: const AiChatScope.auto(),
+    );
+    addTearDown(controller.dispose);
+
+    await tester.runAsync(
+      () => controller.send(context, ref, '把这张图写进日记', images: [sea]),
+    );
+    final diary = (await tester.runAsync(
+      () => (h.database.select(
+        h.database.diaries,
+      )..where((t) => t.title.equals('海边'))).getSingle(),
+    ))!;
+    // 日记里的图片块就是消息里的那个托管文件。
+    expect(extractDiaryImageSources(diary.content).single, sea);
+
+    // 存储管理同时记着两处引用：删了对话，日记里的图仍在。
+    final sources = (await tester.runAsync(
+      h.database.getStorageReferenceSources,
+    ))!;
+    final index = buildStorageReferenceIndex(sources, now: DateTime.now());
+    final refs = index.refsOf('diary_images/media_t/sea.jpg');
+    expect(refs.whereType<StorageDiaryRef>(), hasLength(1));
+    expect(refs.whereType<StorageAiMessageRef>(), hasLength(1));
   });
 
   testWidgets('a model that cannot see photos gets placeholders instead', (

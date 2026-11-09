@@ -11897,6 +11897,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String aiToolWithImages(int count) {
+    return '附 $count 张图片';
+  }
+
+  @override
   String get aiModelMaxOutput => '最多输出（token）';
 
   @override

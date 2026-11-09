@@ -17092,6 +17092,8 @@
   "@aiToolViewImages": {"description": "Step card title: the agent looks at photos."},
   "aiToolViewedImages": "{count, plural, =0{画像は送られていません} other{画像を {count} 枚見ました}}",
   "@aiToolViewedImages": {"description": "Step card result: how many photos the agent looked at.", "placeholders": {"count": {"type": "int"}}},
+  "aiToolWithImages": "画像 {count} 枚付き",
+  "@aiToolWithImages": {"description": "Confirmation card line: the new or appended entry text comes with photos from the chat.", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "最大出力トークン数",
   "@aiModelMaxOutput": {
     "description": "Model max output field."

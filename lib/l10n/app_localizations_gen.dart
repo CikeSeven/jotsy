@@ -21570,6 +21570,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No photos sent} =1{Looked at 1 photo} other{Looked at {count} photos}}'**
   String aiToolViewedImages(int count);
 
+  /// Confirmation card line: the new or appended entry text comes with photos from the chat.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{With 1 photo} other{With {count} photos}}'**
+  String aiToolWithImages(int count);
+
   /// Model max output field.
   ///
   /// In en, this message translates to:

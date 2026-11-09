@@ -16525,6 +16525,8 @@
   "@aiToolViewImages": {"description": "步骤卡片标题：智能体查看图片。"},
   "aiToolViewedImages": "{count, plural, =0{没有发出图片} other{看了 {count} 张图片}}",
   "@aiToolViewedImages": {"description": "步骤卡片结果：智能体看了几张图片。", "placeholders": {"count": {"type": "int"}}},
+  "aiToolWithImages": "附 {count} 张图片",
+  "@aiToolWithImages": {"description": "确认卡片的一行：新建 / 追加的日记带着对话里的图片。", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "最多输出（token）",
   "@aiModelMaxOutput": {
     "description": "模型最多输出输入框。"

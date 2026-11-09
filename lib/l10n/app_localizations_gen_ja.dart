@@ -12103,6 +12103,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String aiToolWithImages(int count) {
+    return '画像 $count 枚付き';
+  }
+
+  @override
   String get aiModelMaxOutput => '最大出力トークン数';
 
   @override

@@ -13476,6 +13476,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String aiToolWithImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'With $count photos',
+      one: 'With 1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aiModelMaxOutput => 'Max output tokens';
 
   @override

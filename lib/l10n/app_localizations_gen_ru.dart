@@ -13916,6 +13916,19 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String aiToolWithImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'С $count фото',
+      many: 'С $count фото',
+      few: 'С $count фото',
+      one: 'С $count фото',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aiModelMaxOutput => 'Максимум токенов в ответе';
 
   @override

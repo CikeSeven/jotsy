@@ -207,7 +207,7 @@ void main() {
     ]);
     addTearDown(controller.dispose);
     final moving = controller.document.nodeAtPath([2])!;
-    final gaps = DiaryBlockGaps(controller.document.root, moving);
+    final gaps = DiaryBlockGaps(controller.document.root, [moving]);
     expect(gaps.blocks.map((node) => node.type), [
       'toggle_list',
       'table',

@@ -9041,20 +9041,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorRemoveLink => 'Remove link';
 
   @override
-  String get diaryEditorDragBlock => 'Drag block';
+  String get diaryEditorMoveBlockUp => 'Up';
 
   @override
-  String get diaryEditorDragBlockHold => 'Hold to drag';
+  String get diaryEditorMoveBlockDown => 'Down';
 
   @override
-  String get diaryEditorDragBlockTip =>
-      'Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.';
+  String get diaryEditorBlockHandle => 'Select block, hold to drag';
 
   @override
-  String get diaryEditorMoveBlockUp => 'Move block up';
+  String diaryBlockSelectionCount(int count) {
+    return '$count selected';
+  }
 
   @override
-  String get diaryEditorMoveBlockDown => 'Move block down';
+  String get diaryBlockSelectionNone => 'No blocks selected';
+
+  @override
+  String get diaryBlockSelectionDone => 'Done';
+
+  @override
+  String get diaryBlockCopy => 'Copy';
+
+  @override
+  String get diaryBlockCut => 'Cut';
+
+  @override
+  String get diaryBlockDuplicate => 'Duplicate';
+
+  @override
+  String get diaryBlockMoveToTop => 'Move to top';
+
+  @override
+  String get diaryBlockMoveToBottom => 'Move to bottom';
+
+  @override
+  String diaryBlockCopied(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Copied $count blocks',
+      one: 'Copied 1 block',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryBlockDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Deleted $count blocks',
+      one: 'Deleted 1 block',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryBlockCutDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cut $count blocks',
+      one: 'Cut 1 block',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryBlockTurnInto => 'Convert';
+
+  @override
+  String get diaryBlockStyle => 'Style';
+
+  @override
+  String get diaryBlockSplitLines => 'Split into paragraphs';
+
+  @override
+  String get diaryBlockMerge => 'Merge into one';
+
+  @override
+  String get diaryEditorSelectBlocks => 'Select blocks';
 
   @override
   String get diaryEditorParagraph => 'Paragraph';

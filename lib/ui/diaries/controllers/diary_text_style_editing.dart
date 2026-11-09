@@ -72,9 +72,14 @@ void setDiaryHeadingLevel(DiaryEditorController controller, int level) {
 // ---- 对齐 ----
 
 /// 选区里文字块的对齐；各块不同时为 null。
-DiaryTextAlign? selectedDiaryTextAlign(DiaryEditorController controller) {
+DiaryTextAlign? selectedDiaryTextAlign(DiaryEditorController controller) =>
+    diaryTextAlignOf(diaryTextStyleTargets(controller));
+
+/// [nodes] 共同的对齐；各块不同或没有块时为 null。工具栏（选区）与段落
+/// 选择模式（选中的块）共用。
+DiaryTextAlign? diaryTextAlignOf(Iterable<af.Node> nodes) {
   final aligns = {
-    for (final node in diaryTextStyleTargets(controller))
+    for (final node in nodes)
       DiaryTextAlign.fromAttribute(node.attributes[kDiaryBlockAlignKey]),
   };
   return aligns.length == 1 ? aligns.single : null;
@@ -84,18 +89,52 @@ DiaryTextAlign? selectedDiaryTextAlign(DiaryEditorController controller) {
 /// 按左对齐读出，选左对齐时一并清掉。
 void setDiaryTextAlign(DiaryEditorController controller, DiaryTextAlign align) {
   if (controller.readOnly) return;
-  final value = align.attributeValue;
-  final nodes = [
-    for (final node in diaryTextStyleTargets(controller))
-      if (node.attributes[kDiaryBlockAlignKey] != value) node,
-  ];
-  if (nodes.isEmpty) return;
   final transaction = controller.state.transaction;
-  for (final node in nodes) {
-    transaction.updateNode(node, {kDiaryBlockAlignKey: value});
+  if (!addDiaryTextAlign(
+    transaction,
+    diaryTextStyleTargets(controller),
+    align,
+  )) {
+    return;
   }
   transaction.afterSelection = controller.selection;
   controller.apply(transaction);
+}
+
+/// 把 [nodes] 设为 [align] 写进 [transaction]（只改取值不同的块）；没有要改
+/// 的块时返回 false，调用方不提交空事务。
+bool addDiaryTextAlign(
+  af.Transaction transaction,
+  Iterable<af.Node> nodes,
+  DiaryTextAlign align,
+) {
+  final value = align.attributeValue;
+  var changed = false;
+  for (final node in nodes) {
+    if (node.attributes[kDiaryBlockAlignKey] == value) continue;
+    transaction.updateNode(node, {kDiaryBlockAlignKey: value});
+    changed = true;
+  }
+  return changed;
+}
+
+/// 清除格式写进 [transaction]：[nodes] 里的文字块换回正文段落、去掉全部行内
+/// 格式（只留文字）与块属性（对齐、首行缩进等）。工具栏「清除格式」与段落
+/// 选择模式共用；返回是否有块被改写。
+bool addDiaryClearFormat(af.Transaction transaction, Iterable<af.Node> nodes) {
+  var changed = false;
+  for (final node in nodes) {
+    final delta = node.delta;
+    if (delta == null) continue;
+    final clean = af.Delta.fromJson([
+      for (final op in delta) {'insert': (op as af.TextInsert).text},
+    ]);
+    transaction.updateNodeType(node, kDiaryBlockParagraph, {
+      kDiaryBlockDeltaKey: clean.toJson(),
+    });
+    changed = true;
+  }
+  return changed;
 }
 
 // ---- 字号 ----

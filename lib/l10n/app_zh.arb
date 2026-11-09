@@ -11554,26 +11554,48 @@
   "@diaryEditorRemoveLink": {
     "description": "Clear the URL from the selected diary text."
   },
-  "diaryEditorDragBlock": "拖动段落",
-  "@diaryEditorDragBlock": {
-    "description": "Accessibility label for the diary editor paragraph drag handle."
-  },
-  "diaryEditorDragBlockHold": "长按拖动",
-  "@diaryEditorDragBlockHold": {
-    "description": "Paragraph handle menu item between move up and move down: press and hold it, then slide to move the block."
-  },
-  "diaryEditorDragBlockTip": "按住“长按拖动”后上下滑动，段落会跟着移动；也可以直接长按左侧把手",
-  "@diaryEditorDragBlockTip": {
-    "description": "Hint shown after tapping the drag item in the paragraph handle menu instead of holding it."
-  },
-  "diaryEditorMoveBlockUp": "上移段落",
+  "diaryEditorMoveBlockUp": "上移",
   "@diaryEditorMoveBlockUp": {
-    "description": "Move the selected editor block above its previous sibling."
+    "description": "Short label under the move-up tool in the block action bar (keep it to one short word): move the selected blocks up one step."
   },
-  "diaryEditorMoveBlockDown": "下移段落",
+  "diaryEditorMoveBlockDown": "下移",
   "@diaryEditorMoveBlockDown": {
-    "description": "Move the selected editor block below its next sibling."
+    "description": "Short label under the move-down tool in the block action bar (keep it to one short word): move the selected blocks down one step."
   },
+  "diaryEditorBlockHandle": "选择段落，长按拖动",
+  "@diaryEditorBlockHandle": {"description": "Accessibility label of the diary editor paragraph handle: tapping selects the block (block selection mode), holding drags it."},
+  "diaryBlockSelectionCount": "已选 {count} 段",
+  "@diaryBlockSelectionCount": {"description": "Header of the block action bar in block selection mode: how many blocks are selected.", "placeholders": {"count": {"type": "int"}}},
+  "diaryBlockSelectionNone": "未选择段落",
+  "@diaryBlockSelectionNone": {"description": "Header of the block action bar when no block is selected (still in block selection mode)."},
+  "diaryBlockSelectionDone": "完成",
+  "@diaryBlockSelectionDone": {"description": "Button that leaves block selection mode and returns to typing."},
+  "diaryBlockCopy": "复制",
+  "@diaryBlockCopy": {"description": "Short label under the copy tool in the block action bar: copy the selected blocks with their formatting."},
+  "diaryBlockCut": "剪切",
+  "@diaryBlockCut": {"description": "Block action: copy the selected blocks, then delete them."},
+  "diaryBlockDuplicate": "创建副本",
+  "@diaryBlockDuplicate": {"description": "Block action: insert copies of the selected blocks after them."},
+  "diaryBlockMoveToTop": "移到开头",
+  "@diaryBlockMoveToTop": {"description": "Block action: move the selected blocks to the start of the diary."},
+  "diaryBlockMoveToBottom": "移到末尾",
+  "@diaryBlockMoveToBottom": {"description": "Block action: move the selected blocks to the end of the diary."},
+  "diaryBlockCopied": "已复制 {count} 段",
+  "@diaryBlockCopied": {"description": "Snackbar after copying blocks in block selection mode.", "placeholders": {"count": {"type": "int"}}},
+  "diaryBlockDeleted": "已删除 {count} 段",
+  "@diaryBlockDeleted": {"description": "Snackbar after deleting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
+  "diaryBlockCutDone": "已剪切 {count} 段",
+  "@diaryBlockCutDone": {"description": "Snackbar after cutting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
+  "diaryBlockTurnInto": "转换",
+  "@diaryBlockTurnInto": {"description": "Short label under the block action bar tool that opens the block type panel (keep it to one short word): change the selected blocks into a paragraph, heading, list, to-do…"},
+  "diaryBlockStyle": "样式",
+  "@diaryBlockStyle": {"description": "Short label under the block action bar tool that opens the style panel (keep it to one short word): bold / italic / underline / strikethrough and alignment for the selected blocks."},
+  "diaryBlockSplitLines": "拆分成段落",
+  "@diaryBlockSplitLines": {"description": "Block action: split selected blocks whose text contains line breaks into one block per line (old pasted text that landed in one block)."},
+  "diaryBlockMerge": "合并成一段",
+  "@diaryBlockMerge": {"description": "Block action: join the selected text blocks into the first one, separated by line breaks."},
+  "diaryEditorSelectBlocks": "选择段落",
+  "@diaryEditorSelectBlocks": {"description": "Diary text selection menu item: select every block the text selection touches and enter block selection mode."},
   "diaryEditorParagraph": "正文",
   "@diaryEditorParagraph": {
     "description": "Plain paragraph option in the diary editor block menu."

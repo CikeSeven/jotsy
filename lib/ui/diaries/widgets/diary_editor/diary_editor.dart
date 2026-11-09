@@ -14,6 +14,7 @@ import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
 import '../../controllers/diary_block_editing.dart';
+import '../../controllers/diary_block_group_move.dart';
 import '../../controllers/diary_editor_clipboard.dart';
 import '../../controllers/diary_link_open_flow.dart';
 import '../../controllers/diary_link_search.dart';
@@ -27,6 +28,7 @@ import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
+import 'diary_block_select_target.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
 import 'diary_embed_keys.dart';
@@ -154,6 +156,9 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   final DiaryEmbedKeyboardInterceptor _embedInterceptor =
       DiaryEmbedKeyboardInterceptor();
 
+  /// 段落选择模式里块上的长按交给段落把手层拖动整组（块包装与把手层共用）。
+  final DiaryBlockDragRelay _blockDragRelay = DiaryBlockDragRelay();
+
   /// 输入法剪贴板一次上屏的多行文字（见 [DiaryMultilineInputInterceptor]），
   /// 排在表格拦截器之后；随控制器在 [_bind] 里重建。
   late DiaryMultilineInputInterceptor _multilineInterceptor;
@@ -251,6 +256,9 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       return;
     }
     final controller = widget.controller;
+    // 段落选择模式里正文没有选区：上游手势顺带把焦点交给正文时不恢复光标
+    // （恢复即退出模式），焦点由段落选择层收回。
+    if (controller.blockSelection.isActive) return;
     final selection =
         controller.selection ??
         af.Selection.collapsed(
@@ -566,6 +574,18 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               ? KeyEventResult.handled
               : KeyEventResult.ignored,
         ),
+        // Alt + Shift + ↑ / ↓ 上移 / 下移光标所在的段落（文字选区跨块时为
+        // 碰到的几块），选区跟着走，缩进规则同段落把手。Ctrl / ⌘ + Shift +
+        // ↑ / ↓ 是上游的“选到文首 / 文末”，不占用。
+        for (final up in [true, false])
+          af.CommandShortcutEvent(
+            key: 'diary_move_blocks_${up ? 'up' : 'down'}',
+            getDescription: () => up ? 'move blocks up' : 'move blocks down',
+            command: 'alt+shift+arrow ${up ? 'up' : 'down'}',
+            handler: (_) => moveDiaryBlocksAtSelection(controller, up: up)
+                ? KeyEventResult.handled
+                : KeyEventResult.ignored,
+          ),
         // 桌面的 Ctrl / ⌘ + . 与 Ctrl / ⌘ + , 切换上标 / 下标，与工具栏同一
         // 动作；上游与应用都没有占用这两个组合。代码块里不处理（交还按键）。
         if (AppPlatform.isDesktop)
@@ -644,6 +664,16 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       header: widget.header == null ? null : _headerHost,
       footer: _footerHost,
       editable: !controller.readOnly,
+      // 段落选择模式里接管块上的点按与长按（见 DiaryBlockSelectTarget）；
+      // 只读正文没有这个模式。
+      blockWrapper: controller.readOnly
+          ? null
+          : (context, {required node, required child}) =>
+                DiaryBlockSelectTarget(
+                  controller: controller,
+                  relay: _blockDragRelay,
+                  child: child,
+                ),
       disableSelectionService: !widget.textSelection,
       disableKeyboardService: controller.readOnly,
       autoScrollEdgeOffset: widget.autoScrollEdgeOffset,
@@ -715,6 +745,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
           widget.appearance.typography.fontSize,
           diaryEditorTextScaler(context),
         ),
+        blockDragRelay: _blockDragRelay,
         revealPath: (path) {
           if (path.isNotEmpty &&
               widget.controller.document.nodeAtPath(path) != null &&

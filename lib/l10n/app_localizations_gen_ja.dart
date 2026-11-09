@@ -8221,20 +8221,69 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryEditorRemoveLink => 'リンクを削除';
 
   @override
-  String get diaryEditorDragBlock => 'ブロックをドラッグ';
+  String get diaryEditorMoveBlockUp => '上へ';
 
   @override
-  String get diaryEditorDragBlockHold => '長押ししてドラッグ';
+  String get diaryEditorMoveBlockDown => '下へ';
 
   @override
-  String get diaryEditorDragBlockTip =>
-      '「長押ししてドラッグ」を押したまま上下にスライドすると、ブロックが一緒に移動します。左側のハンドルを長押ししても移動できます。';
+  String get diaryEditorBlockHandle => '段落を選択（長押しでドラッグ）';
 
   @override
-  String get diaryEditorMoveBlockUp => 'ブロックを上へ移動';
+  String diaryBlockSelectionCount(int count) {
+    return '$count 件を選択中';
+  }
 
   @override
-  String get diaryEditorMoveBlockDown => 'ブロックを下へ移動';
+  String get diaryBlockSelectionNone => '段落が選択されていません';
+
+  @override
+  String get diaryBlockSelectionDone => '完了';
+
+  @override
+  String get diaryBlockCopy => 'コピー';
+
+  @override
+  String get diaryBlockCut => '切り取り';
+
+  @override
+  String get diaryBlockDuplicate => '複製を作成';
+
+  @override
+  String get diaryBlockMoveToTop => '先頭へ移動';
+
+  @override
+  String get diaryBlockMoveToBottom => '末尾へ移動';
+
+  @override
+  String diaryBlockCopied(int count) {
+    return '$count 段落をコピーしました';
+  }
+
+  @override
+  String diaryBlockDeleted(int count) {
+    return '$count 段落を削除しました';
+  }
+
+  @override
+  String diaryBlockCutDone(int count) {
+    return '$count 段落を切り取りました';
+  }
+
+  @override
+  String get diaryBlockTurnInto => '変換';
+
+  @override
+  String get diaryBlockStyle => 'スタイル';
+
+  @override
+  String get diaryBlockSplitLines => '段落に分割';
+
+  @override
+  String get diaryBlockMerge => '1 つにまとめる';
+
+  @override
+  String get diaryEditorSelectBlocks => '段落を選択';
 
   @override
   String get diaryEditorParagraph => '本文';

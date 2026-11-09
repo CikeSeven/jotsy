@@ -187,20 +187,6 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
     };
   }
 
-  /// 把标准尺寸（[width] × 一格高）的工具按工具栏大小缩放：图标、可见按钮、
-  /// 选中底色、按压水波与点按区域一起等比变化，各按钮自己不必知道大小。标准
-  /// 大小原样返回，与改版前逐像素一致。
-  Widget _scaledTool(Widget tool, {required double width}) {
-    final standard = SizedBox(
-      width: width,
-      height: kDiaryToolbarButtonExtent,
-      child: Center(child: tool),
-    );
-    if (_scale == 1) return standard;
-    return SizedBox(
-      width: width * _scale,
-      height: diaryToolbarButtonExtent(_scale),
-      child: FittedBox(child: standard),
-    );
-  }
+  Widget _scaledTool(Widget tool, {required double width}) =>
+      diaryToolbarScaledTool(tool, width: width, scale: _scale);
 }

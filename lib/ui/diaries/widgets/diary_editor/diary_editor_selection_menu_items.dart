@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/services/text_process_actions_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/text_selection_menu/app_text_context_menu.dart';
+import '../../controllers/diary_block_group_move.dart';
 import '../../controllers/diary_editor_clipboard.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_text_process_flow.dart';
@@ -21,7 +22,8 @@ import 'diary_editor_keyboard_hold.dart';
 ///     [appTextMenuActionsFromButtonItems] 映射，文字、图标与桌面快捷键提示
 ///     与输入框同源。有选中文字才有复制 / 剪切，可编辑才有剪切 / 粘贴（桌面
 ///     右键可落在光标上、手机长按可只落下光标，此时只有粘贴与全选），全选
-///     始终有。
+///     始终有。可编辑且有选中文字时其后是「选择段落」：选区碰到的块整块
+///     选中，进入段落选择模式（拖选区把手跨过几段即可一次选中一串段落）。
 ///   - lead：AI 写作，只在有选中文字、可编辑且编辑页给了处理函数时出现。
 ///   - 次要区（secondary）：有选中文字时的分享（只在手机，只读正文也有）与
 ///     其他应用的文字处理（只在 Android，[TextProcessActionsService.current]
@@ -75,6 +77,22 @@ List<AppTextMenuAction> diaryEditorSelectionMenuItems(
         },
       ),
     ]),
+    if (ranged && editable)
+      AppTextMenuAction(
+        label: context.l10n.diaryEditorSelectBlocks,
+        icon: FontAwesomeIcons.squareCheck,
+        onPressed: () {
+          // 先取下键盘状态与选区碰到的块：收起菜单可能改动焦点与选区。
+          final keyboardVisible = View.of(context).viewInsets.bottom > 0;
+          final nodes = diaryBlocksTouchedBySelection(controller);
+          dismiss();
+          if (nodes.isEmpty) return;
+          controller.blockSelection.enter(
+            nodes,
+            keyboardVisible: keyboardVisible,
+          );
+        },
+      ),
     // AI 写作：对选中的文字使用（编辑页打开 AI 写作面板）。
     if (ranged && editable && ai != null)
       AppTextMenuAction(

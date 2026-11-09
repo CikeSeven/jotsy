@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_drag_session.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_block_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_block_reorder.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
@@ -92,8 +93,8 @@ void main() {
       );
       final before = controller.contentJson;
       final parent = controller.document.nodeAtPath([0])!;
-      expect(moveDiaryEditorBlock(controller, parent, [0, 0]), isFalse);
-      expect(moveDiaryEditorBlock(controller, parent, [2]), isTrue);
+      expect(moveDiaryEditorBlocks(controller, [parent], [0, 0]), isFalse);
+      expect(moveDiaryEditorBlocks(controller, [parent], [2]), isTrue);
       expect(
         controller.document.nodeAtPath([1, 0])!.attributes['checked'],
         isTrue,
@@ -160,7 +161,7 @@ void main() {
       String text(af.Path path) =>
           controller.document.nodeAtPath(path)!.delta!.toPlainText();
 
-      final session = DiaryBlockDragSession(controller, a);
+      final session = DiaryBlockDragSession(controller, [a]);
       expect(controller.draggingBlock, isTrue);
       // 预览就是真实的树：挪进列表的两个子项之间，再挪到末尾、挪回 b 之后。
       expect(session.preview([2, 1]), isTrue);
@@ -188,7 +189,7 @@ void main() {
 
       // 取消：放回原处，不留撤销。
       final d = controller.document.nodeAtPath([3])!;
-      final cancelled = DiaryBlockDragSession(controller, d);
+      final cancelled = DiaryBlockDragSession(controller, [d]);
       expect(cancelled.preview([2, 0]), isTrue);
       expect(text([2, 0]), 'd');
       cancelled.cancel();
@@ -197,7 +198,7 @@ void main() {
       expect(controller.hasUndo, isFalse);
 
       // 拖回原位再松手：什么都不记。
-      final same0 = DiaryBlockDragSession(controller, a);
+      final same0 = DiaryBlockDragSession(controller, [a]);
       expect(same0.preview([3]), isTrue);
       expect(same0.preview([0]), isTrue);
       expect(same0.commit(), isFalse);

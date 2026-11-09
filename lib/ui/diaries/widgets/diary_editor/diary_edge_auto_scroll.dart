@@ -43,3 +43,52 @@ Rect? diaryEdgeAutoScrollTarget(
   }
   return null;
 }
+
+/// 拖动途中的边缘自动滚动（段落拖动与段落选择模式的连选共用）：拖动点进入
+/// 看得见的范围上下 [kDiaryAutoScrollZone] 时朝那一边滚，越靠外越快，离开
+/// 边缘即停。
+///
+/// 调用方每帧（拖动的 Ticker）都按当前拖动点调用 [update]，滚动器每滚一步
+/// 也回调 [onScrolled] 让调用方再给一次目标，手指不动也接着滚：列表滚动范围
+/// 要到下一次布局才更新，滚动器若恰在这时判断“滚不动了”会自己停下，只靠
+/// 它自己的回调接不上。
+class DiaryEdgeAutoScrollDriver {
+  DiaryEdgeAutoScrollDriver(this.onScrolled);
+
+  final VoidCallback onScrolled;
+  EdgeDraggingAutoScroller? _scroller;
+
+  /// 按拖动点 [point]（全局坐标）与看得见的范围给一次目标；不在边缘时停下。
+  void update(
+    ScrollableState scrollable,
+    Offset point, {
+    required double visibleTop,
+    required double visibleBottom,
+    required double viewportTop,
+    required double viewportBottom,
+  }) {
+    final target = diaryEdgeAutoScrollTarget(
+      point,
+      visibleTop: visibleTop,
+      visibleBottom: visibleBottom,
+      viewportTop: viewportTop,
+      viewportBottom: viewportBottom,
+    );
+    if (target == null) {
+      _scroller?.stopAutoScroll();
+      return;
+    }
+    final scroller = _scroller ??= EdgeDraggingAutoScroller(
+      scrollable,
+      onScrollViewScrolled: onScrolled,
+      velocityScalar: kDiaryAutoScrollVelocity,
+    );
+    scroller.startAutoScrollIfNecessary(target);
+  }
+
+  /// 拖动结束：停下并丢掉滚动器（下次拖动重新绑定滚动视图）。
+  void stop() {
+    _scroller?.stopAutoScroll();
+    _scroller = null;
+  }
+}

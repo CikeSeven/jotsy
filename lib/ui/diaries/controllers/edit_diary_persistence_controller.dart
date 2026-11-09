@@ -135,6 +135,12 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
 
   Future<void> attemptExit() async {
     if (_state._saving) return;
+    // 返回键 / Esc 先退出段落选择模式（光标回到原段落，键盘不弹）。
+    final blocks = _state._contentController.blockSelection;
+    if (blocks.isActive) {
+      blocks.exit(DiaryBlockSelectionExit.dismiss);
+      return;
+    }
     if (_state._recordingPanelOpen) {
       _state._closeRecordingPanel();
       return;

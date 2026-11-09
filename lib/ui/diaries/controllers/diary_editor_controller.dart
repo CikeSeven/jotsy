@@ -12,6 +12,7 @@ import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/content_codec.dart';
 import '../models/diary_link_candidate.dart';
 import 'diary_block_convert.dart';
+import 'diary_block_selection.dart';
 import 'diary_link_typing.dart';
 import 'diary_toggle_state.dart';
 
@@ -48,6 +49,7 @@ class DiaryEditorController extends ChangeNotifier {
     });
     state.selectionNotifier.addListener(_onSelection);
     state.toggledStyleNotifier.addListener(_onToggledStyle);
+    (state as _DiaryEditorState).blockSelection = blockSelection;
   }
 
   factory DiaryEditorController.fromContent(
@@ -81,6 +83,9 @@ class DiaryEditorController extends ChangeNotifier {
 
   /// 折叠光标上设了网址后接着打字的链接输入会话（见 [DiaryLinkTyping]）。
   late final DiaryLinkTyping linkTyping = DiaryLinkTyping(state);
+
+  /// 段落选择模式（点段落把手进入，见 [DiaryBlockSelection]）。
+  late final DiaryBlockSelection blockSelection = DiaryBlockSelection(state);
 
   /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；
   /// null 即不能（模板编辑页、只读正文）。见 [DiaryLinkSource]。
@@ -146,6 +151,12 @@ class DiaryEditorController extends ChangeNotifier {
     if (state.selection != null) {
       _lastSelection = state.selection;
       _lastToggledStyle = Map.of(state.toggledStyle);
+      // 段落选择模式里正文没有选区：别处把选区设成非空（撤销 / 重做、
+      // 页面动作）即由它接手，退出模式、不再动选区。上游点按落下的选区已在
+      // EditorState 里挡掉，到不了这里。
+      if (blockSelection.isActive) {
+        blockSelection.exit(DiaryBlockSelectionExit.release);
+      }
     }
     _revealCollapsedSelection();
     notifyListeners();
@@ -423,6 +434,7 @@ class DiaryEditorController extends ChangeNotifier {
     if (_disposeRequested) return;
     _disposeRequested = true;
     linkTyping.end();
+    blockSelection.dispose();
     state.selectionNotifier.removeListener(_onSelection);
     state.toggledStyleNotifier.removeListener(_onToggledStyle);
     unawaited(_subscription.cancel());
@@ -467,17 +479,21 @@ af.Selection diaryEditorSelectionAtOffset(af.Document document, int offset) {
   );
 }
 
-/// 会话的 EditorState：在两处补上上游缺的行为。
+/// 会话的 EditorState：在三处补上上游缺的行为。
 ///
 /// - 收起的键盘（见 [DiaryEditorController.holdingKeyboard]）：上游键盘服务
 ///   在选区通知里按 `selectionExtraInfoDoNotAttachTextService` 决定是否接上
 ///   输入法，这里在选区写入前补上这个标记；其余信息（拖动方式、是否禁止
 ///   浮动工具栏）原样。
 /// - 关掉的自动滚动（见 [autoScroller]）。
+/// - 段落选择模式（[blockSelection]）里挡掉手势落下的选区：上游手机与桌面
+///   选区服务的点按、长按、拖选都以 `uiEvent` 写选区，写进去就会落下光标、
+///   接上输入法弹出键盘；模式里的点按由块上的手势自己处理（切换选中）。
 class _DiaryEditorState extends af.EditorState {
   _DiaryEditorState({required super.document});
 
   int holds = 0;
+  DiaryBlockSelection? blockSelection;
 
   /// 上游只有桌面滚动服务理会 [disableAutoScroll]；手机滚动服务照样在每次
   /// 选区变化后用这个滚动器做固定边距的边缘滚动，拖选区时还会逐帧续滚。
@@ -503,12 +519,19 @@ class _DiaryEditorState extends af.EditorState {
     af.SelectionUpdateReason reason = af.SelectionUpdateReason.transaction,
     Map? extraInfo,
     af.SelectionType? customSelectionType,
-  }) => super.updateSelectionWithReason(
-    selection,
-    reason: reason,
-    extraInfo: holds > 0
-        ? {...?extraInfo, af.selectionExtraInfoDoNotAttachTextService: true}
-        : extraInfo,
-    customSelectionType: customSelectionType,
-  );
+  }) {
+    if (selection != null &&
+        reason == af.SelectionUpdateReason.uiEvent &&
+        (blockSelection?.isActive ?? false)) {
+      return Future<void>.value();
+    }
+    return super.updateSelectionWithReason(
+      selection,
+      reason: reason,
+      extraInfo: holds > 0
+          ? {...?extraInfo, af.selectionExtraInfoDoNotAttachTextService: true}
+          : extraInfo,
+      customSelectionType: customSelectionType,
+    );
+  }
 }

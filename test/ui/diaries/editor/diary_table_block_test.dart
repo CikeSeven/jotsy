@@ -625,26 +625,29 @@ void main() {
         controller,
         af.Selection.collapsed(af.Position(path: [1, 2, 0], offset: 1)),
       );
-      final handle = tester.widget<DiaryBlockHandle>(
-        find.byType(DiaryBlockHandle),
-      );
-      expect(handle.node.type, 'table');
-      expect(handle.node.path, [1]);
+      // 点把手选中的是整个表格（段落选择模式）。
+      await tester.tap(find.byType(DiaryBlockHandle));
+      await tester.pump();
+      final selected = controller.blockSelection.roots;
+      expect(selected.single.type, 'table');
+      expect(selected.single.path, [1]);
+      controller.blockSelection.exit();
+      await tester.pump();
 
       final root = controller.document.root;
       final after = controller.document.nodeAtPath([2])!;
-      final gaps = DiaryBlockGaps(root, after);
+      final gaps = DiaryBlockGaps(root, [after]);
       expect(gaps.blocks.map((node) => node.type), ['paragraph', 'table']);
       // 手指落在表格各处：落点只能是表格之前或之后，不进格子。
       final rect = _tableNode(controller, 1).rect;
       for (final dy in [rect.top + 2, rect.center.dy, rect.bottom - 2]) {
-        final destination = resolveDiaryBlockDrop(root, after, dy, depth: 1);
+        final destination = resolveDiaryBlockDrop(root, [after], dy, depth: 1);
         expect(destination, anyOf(isNull, hasLength(1)), reason: '$dy');
       }
       // 上移 / 下移整个表格。
       final table = _tableNode(controller, 1);
-      expect(DiaryBlockGaps(root, table).step(up: true), [0]);
-      expect(moveDiaryEditorBlock(controller, table, [0]), isTrue);
+      expect(DiaryBlockGaps(root, [table]).step(up: true), [0]);
+      expect(moveDiaryEditorBlocks(controller, [table], [0]), isTrue);
       expect(controller.document.root.children.map((node) => node.type), [
         'table',
         'paragraph',

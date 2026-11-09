@@ -20,6 +20,7 @@ import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_size.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_block_actions/diary_block_action_bar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_callout/diary_callout_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_code_block_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_toolbar_code_block_button.dart';
@@ -36,6 +37,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_more_panel.dart';
 
 part 'diary_floating_toolbar_bar.dart';
+part 'diary_floating_toolbar_blocks.dart';
 part 'diary_floating_toolbar_callout.dart';
 part 'diary_floating_toolbar_code.dart';
 part 'diary_floating_toolbar_list.dart';
@@ -98,6 +100,9 @@ enum _ToolbarPanel {
 ///
 /// 工具栏大小（[size]）只缩放一排与「更多」面板里的工具格（见 [_scaledTool]）
 /// 与排布用的格宽、行高；颜色、代码块等面板的内容保持原尺寸。
+///
+/// 段落选择模式（`DiaryBlockSelection.active`）里整张卡片换成段落操作栏
+/// （[DiaryBlockActionBar]，见 diary_floating_toolbar_blocks.dart）。
 class DiaryFloatingToolbar extends StatefulWidget {
   const DiaryFloatingToolbar({
     super.key,
@@ -227,6 +232,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   void initState() {
     super.initState();
     widget.controller.addListener(_handleSelectionChanged);
+    widget.controller.blockSelection.active.addListener(_handleBlockMode);
     widget.maxPanelExtent?.addListener(_handleMaxPanelExtentChanged);
   }
 
@@ -235,7 +241,11 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_handleSelectionChanged);
+      oldWidget.controller.blockSelection.active.removeListener(
+        _handleBlockMode,
+      );
       widget.controller.addListener(_handleSelectionChanged);
+      widget.controller.blockSelection.active.addListener(_handleBlockMode);
     }
     if (oldWidget.maxPanelExtent != widget.maxPanelExtent) {
       oldWidget.maxPanelExtent?.removeListener(_handleMaxPanelExtentChanged);
@@ -259,6 +269,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     // 卸载发生在构建收尾阶段，此时回调会让编辑页在锁定的树上刷新，改到下一帧。
     _reportExtent(0, deferred: true);
     widget.controller.removeListener(_handleSelectionChanged);
+    widget.controller.blockSelection.active.removeListener(_handleBlockMode);
     widget.maxPanelExtent?.removeListener(_handleMaxPanelExtentChanged);
     _panelAnimation.dispose();
     _panelController.dispose();
@@ -446,8 +457,27 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     return kDiaryToolbarPanelChrome + _bodyHeight(panel);
   }
 
+  /// 段落选择模式进出（类成员而非扩展方法：注册与注销要用同一个函数对象）。
+  /// 进入时收起正在展开的面板（不播动画：卡片内容整个换成段落操作栏）；
+  /// 两边的高度报告交接：工具栏记成 0，与操作栏卸载时报告的一致，退出后
+  /// 工具栏回到收起态、下次构建照常报告自己的高度。
+  void _handleBlockMode() {
+    if (!mounted) return;
+    if (widget.controller.blockSelection.isActive) {
+      _panel = _ToolbarPanel.none;
+      _content = _ToolbarPanel.none;
+      _panelFromMore = false;
+      _panelController.value = 0;
+    }
+    _reportedExtent = 0;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.controller.blockSelection.isActive) {
+      return _buildBlockActionBar();
+    }
     return ListenableBuilder(
       listenable: Listenable.merge(<Listenable?>[widget.mediaImportController]),
       builder: (BuildContext context, Widget? child) => LayoutBuilder(

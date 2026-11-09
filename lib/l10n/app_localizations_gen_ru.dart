@@ -9399,6 +9399,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryBlockStyle => 'Стиль';
 
   @override
+  String get diaryBlockSplitLines => 'Разбить на абзацы';
+
+  @override
+  String get diaryBlockMerge => 'Объединить в один';
+
+  @override
   String get diaryEditorParagraph => 'Текст';
 
   @override

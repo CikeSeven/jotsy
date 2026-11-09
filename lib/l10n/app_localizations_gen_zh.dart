@@ -8134,6 +8134,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryBlockStyle => '样式';
 
   @override
+  String get diaryBlockSplitLines => '拆分成段落';
+
+  @override
+  String get diaryBlockMerge => '合并成一段';
+
+  @override
   String get diaryEditorParagraph => '正文';
 
   @override

@@ -14820,6 +14820,18 @@ abstract class AppLocalizations {
   /// **'Style'**
   String get diaryBlockStyle;
 
+  /// Block action: split selected blocks whose text contains line breaks into one block per line (old pasted text that landed in one block).
+  ///
+  /// In en, this message translates to:
+  /// **'Split into paragraphs'**
+  String get diaryBlockSplitLines;
+
+  /// Block action: join the selected text blocks into the first one, separated by line breaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into one'**
+  String get diaryBlockMerge;
+
   /// Plain paragraph option in the diary editor block menu.
   ///
   /// In en, this message translates to:

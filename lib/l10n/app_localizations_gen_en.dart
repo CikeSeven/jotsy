@@ -9121,6 +9121,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBlockStyle => 'Style';
 
   @override
+  String get diaryBlockSplitLines => 'Split into paragraphs';
+
+  @override
+  String get diaryBlockMerge => 'Merge into one';
+
+  @override
   String get diaryEditorParagraph => 'Paragraph';
 
   @override

@@ -8277,6 +8277,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryBlockStyle => 'スタイル';
 
   @override
+  String get diaryBlockSplitLines => '段落に分割';
+
+  @override
+  String get diaryBlockMerge => '1 つにまとめる';
+
+  @override
   String get diaryEditorParagraph => '本文';
 
   @override

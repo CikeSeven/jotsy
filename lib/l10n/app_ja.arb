@@ -11649,6 +11649,10 @@
   "@diaryBlockTurnInto": {"description": "Block action bar tool and panel title: change the type of the selected blocks (paragraph, heading, list, to-do…)."},
   "diaryBlockStyle": "スタイル",
   "@diaryBlockStyle": {"description": "Block action bar tool and panel title: bold / italic / underline / strikethrough and alignment for the selected blocks."},
+  "diaryBlockSplitLines": "段落に分割",
+  "@diaryBlockSplitLines": {"description": "Block action: split selected blocks whose text contains line breaks into one block per line (old pasted text that landed in one block)."},
+  "diaryBlockMerge": "1 つにまとめる",
+  "@diaryBlockMerge": {"description": "Block action: join the selected text blocks into the first one, separated by line breaks."},
   "diaryEditorParagraph": "本文",
   "@diaryEditorParagraph": {
     "description": "Plain paragraph option in the diary editor block menu."

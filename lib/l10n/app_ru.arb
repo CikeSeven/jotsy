@@ -18697,6 +18697,14 @@
   "@aiChatMore": {
     "description": "Tooltip of the chat page menu."
   },
+  "markdownCopyCode": "Копировать код",
+  "@markdownCopyCode": {
+    "description": "Tooltip of the copy button on a code block in rendered Markdown (AI answers, release notes)."
+  },
+  "markdownCodeCopied": "Скопировано",
+  "@markdownCodeCopied": {
+    "description": "Tooltip of the code block copy button right after copying."
+  },
   "aiChatTokens": "Вход: {input} · Выход: {output}",
   "@aiChatTokens": {
     "description": "Token counts under an answer.",

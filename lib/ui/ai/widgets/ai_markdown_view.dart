@@ -8,19 +8,21 @@ import '../../settings/widgets/release_notes_view.dart';
 
 /// AI 回答的 Markdown 渲染：复用更新说明的 Markdown 子集渲染
 /// （[ReleaseNotesView]），网址链接在浏览器打开，`[Dn]` 引用经
-/// [onCitation] 跳到日记。流式生成中内容不断变长，按全文重新解析（回答
-/// 通常不长，解析很快）。
+/// [onCitation] 跳到日记。[streaming]（流式生成中、内容不断变长）时只重新
+/// 解析末尾还在变的那一段，新出现的段落淡入（见 [ReleaseNotesView]）。
 class AiMarkdownView extends StatelessWidget {
   const AiMarkdownView({
     super.key,
     required this.markdown,
     this.onCitation,
     this.bodyStyle,
+    this.streaming = false,
   });
 
   final String markdown;
   final ValueChanged<String>? onCitation;
   final TextStyle? bodyStyle;
+  final bool streaming;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,7 @@ class AiMarkdownView extends StatelessWidget {
       bodyStyle: bodyStyle,
       onCitation: onCitation,
       onOpenLink: (link) => openExternalLink(context, link),
+      streaming: streaming,
     );
   }
 }

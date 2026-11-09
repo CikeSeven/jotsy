@@ -23586,6 +23586,18 @@ abstract class AppLocalizations {
   /// **'More'**
   String get aiChatMore;
 
+  /// Tooltip of the copy button on a code block in rendered Markdown (AI answers, release notes).
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get markdownCopyCode;
+
+  /// Tooltip of the code block copy button right after copying.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get markdownCodeCopied;
+
   /// Token counts under an answer.
   ///
   /// In en, this message translates to:

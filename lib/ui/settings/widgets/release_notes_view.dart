@@ -1,12 +1,23 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/expressive_entrance.dart';
+import '../../widgets/markdown/markdown_code_block.dart';
+import '../../widgets/markdown/markdown_table.dart';
 import '../models/release_notes_document.dart';
+import '../models/release_notes_incremental.dart';
 
-/// 渲染更新说明（Markdown 子集，见 [parseReleaseNotes]）。
+/// 渲染 Markdown（子集，见 [parseReleaseNotes]）：更新说明与 AI 回答共用。
 ///
 /// 标题、段落与列表沿用应用字阶；链接为主色可点按文字，交给 [onOpenLink]。
 /// 每个链接地址只建一个点按识别器（点按时再读取最新的回调），随组件销毁。
+///
+/// 重建开销：每个块建好的组件按块对象记着，块没变就交回同一个组件实例，
+/// 框架不再往下重建与排版。整段解析时（[streaming] 为 false）内容不变就
+/// 全部复用；流式时（[streaming] 为 true）经 [ReleaseNotesIncrementalParser]
+/// 只重新解析末尾还在变的那一段，前面定稿的块原样复用——回答再长，一帧也
+/// 只重排最后一块。主题、正文字样或是否画引用胶囊变了时整份重建。
 class ReleaseNotesView extends StatefulWidget {
   const ReleaseNotesView({
     super.key,
@@ -14,6 +25,7 @@ class ReleaseNotesView extends StatefulWidget {
     this.onOpenLink,
     this.bodyStyle,
     this.onCitation,
+    this.streaming = false,
   });
 
   final String markdown;
@@ -27,21 +39,63 @@ class ReleaseNotesView extends StatefulWidget {
   /// （`D3`）。AI 对话与回顾用它跳到被引用的日记；更新说明不传。
   final ValueChanged<String>? onCitation;
 
+  /// 内容正在流式变长（AI 回答生成中）：增量解析；之后新出现的块淡入上移
+  /// （组件建立时已经有的块不动，滚出屏幕再回来不会整段重播）；还在变长的
+  /// 代码块先不高亮，定稿后再上色。
+  final bool streaming;
+
   @override
   State<ReleaseNotesView> createState() => _ReleaseNotesViewState();
 }
 
 class _ReleaseNotesViewState extends State<ReleaseNotesView> {
-  late List<ReleaseNoteBlock> _blocks = parseReleaseNotes(widget.markdown);
+  ReleaseNotesIncrementalParser? _parser;
+  List<ReleaseNoteBlock> _blocks = const <ReleaseNoteBlock>[];
+
+  /// 前多少块已经定稿（组件可以记住）；整段解析时为全部。
+  int _stableCount = 0;
+
+  /// 流式时，组件建立那一刻已经有的块数：它们不播入场动画。
+  int _initialCount = 0;
+
+  /// 定稿的块建好的组件（含块前的间距与入场动画的外壳），按块的位置记：
+  /// 定稿之后同一位置的块不再变。不按块对象记——分隔线是同一个常量对象，
+  /// 出现两次时会拿到同一份带着别处间距的组件。
+  final Map<int, Widget> _built = <int, Widget>{};
+
   final Map<String, TapGestureRecognizer> _recognizers =
       <String, TapGestureRecognizer>{};
 
   @override
+  void initState() {
+    super.initState();
+    _parse();
+    _initialCount = _blocks.length;
+  }
+
+  @override
   void didUpdateWidget(covariant ReleaseNotesView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.markdown != widget.markdown) {
-      _blocks = parseReleaseNotes(widget.markdown);
+    if (oldWidget.streaming != widget.streaming) {
+      _parser = null;
+      _built.clear();
+      _parse();
+    } else if (oldWidget.markdown != widget.markdown) {
+      _parse();
     }
+    // 记住的组件里带着当时的字样，以及引用画不画成胶囊、链接能不能点。
+    if (oldWidget.bodyStyle != widget.bodyStyle ||
+        (oldWidget.onCitation == null) != (widget.onCitation == null) ||
+        (oldWidget.onOpenLink == null) != (widget.onOpenLink == null)) {
+      _built.clear();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 主题变了（明暗、配色、字体）：记住的组件带着旧颜色，全部重建。
+    _built.clear();
   }
 
   @override
@@ -52,33 +106,54 @@ class _ReleaseNotesViewState extends State<ReleaseNotesView> {
     super.dispose();
   }
 
+  void _parse() {
+    if (!widget.streaming) {
+      _built.clear();
+      _blocks = parseReleaseNotes(widget.markdown);
+      _stableCount = _blocks.length;
+      return;
+    }
+    final parser = _parser ??= ReleaseNotesIncrementalParser();
+    _blocks = parser.update(widget.markdown);
+    // 定稿的块变少了：内容不是原来的延长（解析器从头来过），旧组件作废。
+    if (parser.stableCount < _stableCount) _built.clear();
+    _stableCount = parser.stableCount;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
     final body =
         widget.bodyStyle ??
-        textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurface,
+        theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurface,
           height: 1.55,
         );
-    final children = <Widget>[];
-    for (var i = 0; i < _blocks.length; i++) {
-      final block = _blocks[i];
-      final previous = i == 0 ? null : _blocks[i - 1];
-      children.add(
-        Padding(
-          padding: EdgeInsets.only(top: _gapBefore(block, previous)),
-          child: _buildBlock(context, block, body),
-        ),
-      );
-    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
-      children: children,
+      children: <Widget>[
+        for (var i = 0; i < _blocks.length; i++)
+          if (i < _stableCount)
+            _built.putIfAbsent(i, () => _item(context, i, body))
+          else
+            _item(context, i, body),
+      ],
     );
+  }
+
+  /// 第 [index] 块连同它前面的间距；流式时新出现的块外面套一层入场动画
+  /// （同一位置始终是同一种外壳，块从“末尾”转为“定稿”时动画状态不丢）。
+  Widget _item(BuildContext context, int index, TextStyle? body) {
+    final block = _blocks[index];
+    final item = Padding(
+      padding: EdgeInsets.only(
+        top: _gapBefore(block, index == 0 ? null : _blocks[index - 1]),
+      ),
+      child: _buildBlock(context, block, body, settled: index < _stableCount),
+    );
+    if (!widget.streaming || index < _initialCount) return item;
+    return ExpressiveEntrance(duration: ExpressiveMotion.fast, child: item);
   }
 
   /// 标题前留出段落感，同一列表内的条目紧凑排列。
@@ -99,8 +174,9 @@ class _ReleaseNotesViewState extends State<ReleaseNotesView> {
   Widget _buildBlock(
     BuildContext context,
     ReleaseNoteBlock block,
-    TextStyle? body,
-  ) {
+    TextStyle? body, {
+    required bool settled,
+  }) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
@@ -179,20 +255,30 @@ class _ReleaseNotesViewState extends State<ReleaseNotesView> {
           ),
         );
       case ReleaseNoteBlockKind.code:
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            block.text,
-            style: textTheme.bodySmall?.copyWith(
-              fontFamily: 'monospace',
-              color: colorScheme.onSurface,
-              height: 1.45,
-            ),
-          ),
+        return MarkdownCodeBlock(
+          code: block.text,
+          language: block.language,
+          // 还在变长的块每帧都变，写完再识别语言、上色。
+          highlight: settled,
+        );
+      case ReleaseNoteBlockKind.table:
+        final header = body?.copyWith(fontWeight: FontWeight.w600);
+        return MarkdownTable(
+          rows: <List<InlineSpan>>[
+            for (final (index, row) in block.rows.indexed)
+              <InlineSpan>[
+                for (final cell in row)
+                  _spans(cell, index == 0 ? header : body),
+              ],
+          ],
+          alignments: <TextAlign>[
+            for (final align in block.alignments)
+              switch (align) {
+                ReleaseNoteColumnAlign.start => TextAlign.start,
+                ReleaseNoteColumnAlign.center => TextAlign.center,
+                ReleaseNoteColumnAlign.end => TextAlign.end,
+              },
+          ],
         );
       case ReleaseNoteBlockKind.rule:
         return Divider(height: 8, color: colorScheme.outlineVariant);
@@ -221,7 +307,13 @@ class _ReleaseNotesViewState extends State<ReleaseNotesView> {
                     ? colorScheme.surfaceContainerHighest
                     : null,
                 color: span.link != null ? colorScheme.primary : null,
-                decoration: span.link != null ? TextDecoration.underline : null,
+                // 链接的下划线与删除线可以同时出现。
+                decoration: span.link == null && !span.strike
+                    ? null
+                    : TextDecoration.combine(<TextDecoration>[
+                        if (span.link != null) TextDecoration.underline,
+                        if (span.strike) TextDecoration.lineThrough,
+                      ]),
                 decorationColor: span.link != null
                     ? colorScheme.primary.withValues(alpha: 0.5)
                     : null,

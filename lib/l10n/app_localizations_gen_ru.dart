@@ -15256,6 +15256,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiChatMore => 'Ещё';
 
   @override
+  String get markdownCopyCode => 'Копировать код';
+
+  @override
+  String get markdownCodeCopied => 'Скопировано';
+
+  @override
   String aiChatTokens(String input, String output) {
     return 'Вход: $input · Выход: $output';
   }

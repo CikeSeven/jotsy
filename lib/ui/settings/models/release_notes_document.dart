@@ -1,8 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:markdown/markdown.dart' as md;
 
-/// 更新说明的块类型。只覆盖 Release 说明会用到的 Markdown 子集。
-enum ReleaseNoteBlockKind { heading, paragraph, listItem, quote, code, rule }
+/// Markdown 的块类型。更新说明与 AI 回答共用，只覆盖两者会用到的子集。
+enum ReleaseNoteBlockKind {
+  heading,
+  paragraph,
+  listItem,
+  quote,
+  code,
+  rule,
+  table,
+}
+
+/// 表格一列的对齐（分隔行里的 `:---` / `:---:` / `---:`）。
+enum ReleaseNoteColumnAlign { start, center, end }
 
 /// 一段行内文字及其样式。
 @immutable
@@ -12,6 +23,7 @@ class ReleaseNoteSpan {
     this.bold = false,
     this.italic = false,
     this.code = false,
+    this.strike = false,
     this.link,
   });
 
@@ -19,6 +31,9 @@ class ReleaseNoteSpan {
   final bool bold;
   final bool italic;
   final bool code;
+
+  /// 删除线（`~~文字~~`）。
+  final bool strike;
 
   /// 链接地址（http/https），其余协议当普通文字。
   final String? link;
@@ -33,6 +48,9 @@ class ReleaseNoteBlock {
     this.level = 0,
     this.marker,
     this.text = '',
+    this.language,
+    this.rows = const <List<List<ReleaseNoteSpan>>>[],
+    this.alignments = const <ReleaseNoteColumnAlign>[],
   });
 
   final ReleaseNoteBlockKind kind;
@@ -47,16 +65,36 @@ class ReleaseNoteBlock {
   /// 代码块的原文。
   final String text;
 
-  String get plainText => kind == ReleaseNoteBlockKind.code
-      ? text
-      : spans.map((span) => span.text).join();
+  /// 代码块围栏上写的语言（```` ```dart ```` 的 `dart`，原样小写）；没写为
+  /// null。
+  final String? language;
+
+  /// 表格的各行，每格是一段行内文字；第一行是表头。
+  final List<List<List<ReleaseNoteSpan>>> rows;
+
+  /// 表格各列的对齐；比列数短时其余列靠起始边。
+  final List<ReleaseNoteColumnAlign> alignments;
+
+  String get plainText => switch (kind) {
+    ReleaseNoteBlockKind.code => text,
+    ReleaseNoteBlockKind.table =>
+      rows
+          .map(
+            (row) => row
+                .map((cell) => cell.map((span) => span.text).join())
+                .join(' · '),
+          )
+          .join('\n'),
+    _ => spans.map((span) => span.text).join(),
+  };
 }
 
 /// 把 Markdown（GitHub 风格）解析成扁平的块列表：标题、段落、（嵌套）列表项、
-/// 引用、代码块、分隔线；表格每行拼成一段，图片取替代文字。
+/// 引用、代码块（带语言）、表格、分隔线；图片取替代文字。
 ///
-/// 为什么不用 HTML 或通用 Markdown 组件：说明只在更新页与提示面板里出现，
-/// 子集很小；扁平块列表便于逐块套用应用自己的字阶与配色，也易于测试。
+/// 为什么不用 HTML 或通用 Markdown 组件：子集很小；扁平块列表便于逐块套用
+/// 应用自己的字阶与配色，也易于测试，流式回答还能只重新解析末尾那一块
+/// （见 `release_notes_incremental.dart`）。
 List<ReleaseNoteBlock> parseReleaseNotes(String markdown) {
   final document = md.Document(
     extensionSet: md.ExtensionSet.gitHubFlavored,
@@ -141,25 +179,63 @@ void _collectBlock(
         ReleaseNoteBlock(
           ReleaseNoteBlockKind.code,
           text: node.textContent.replaceAll(RegExp(r'\n+$'), ''),
+          language: _codeLanguage(node),
         ),
       );
     case 'hr':
       out.add(const ReleaseNoteBlock(ReleaseNoteBlockKind.rule));
     case 'table':
-      for (final row in _descendants(node, 'tr')) {
-        final cells = (row.children ?? const <md.Node>[])
-            .map((cell) => cell.textContent.trim())
-            .where((text) => text.isNotEmpty)
-            .join(' · ');
-        out.add(
-          _textBlock(<ReleaseNoteSpan>[
-            ReleaseNoteSpan(cells),
-          ], inQuote: inQuote),
-        );
-      }
+      final table = _tableBlock(node);
+      if (table != null) out.add(table);
     default:
       out.add(_textBlock(_inlineSpans(children), inQuote: inQuote));
   }
+}
+
+/// 围栏代码块的语言：`<pre><code class="language-dart">`，取 `dart`。
+String? _codeLanguage(md.Element pre) {
+  for (final child in pre.children ?? const <md.Node>[]) {
+    if (child is! md.Element || child.tag != 'code') continue;
+    for (final name in (child.attributes['class'] ?? '').split(' ')) {
+      if (name.startsWith('language-') && name.length > 9) {
+        return name.substring(9).toLowerCase();
+      }
+    }
+  }
+  return null;
+}
+
+/// 表格：表头与各行的格子各自保留行内样式；对齐取表头那一行的。没有任何
+/// 一行时返回 null。
+ReleaseNoteBlock? _tableBlock(md.Element table) {
+  final rows = <List<List<ReleaseNoteSpan>>>[];
+  var alignments = const <ReleaseNoteColumnAlign>[];
+  for (final row in _descendants(table, 'tr')) {
+    final cells = (row.children ?? const <md.Node>[])
+        .whereType<md.Element>()
+        .toList(growable: false);
+    if (cells.isEmpty) continue;
+    if (rows.isEmpty) {
+      alignments = <ReleaseNoteColumnAlign>[
+        for (final cell in cells)
+          switch (cell.attributes['align']) {
+            'center' => ReleaseNoteColumnAlign.center,
+            'right' => ReleaseNoteColumnAlign.end,
+            _ => ReleaseNoteColumnAlign.start,
+          },
+      ];
+    }
+    rows.add(<List<ReleaseNoteSpan>>[
+      for (final cell in cells)
+        _inlineSpans(cell.children ?? const <md.Node>[]),
+    ]);
+  }
+  if (rows.isEmpty) return null;
+  return ReleaseNoteBlock(
+    ReleaseNoteBlockKind.table,
+    rows: rows,
+    alignments: alignments,
+  );
 }
 
 /// 列表项：紧凑列表的文字直接挂在 li 下，松散列表包在 p 里；嵌套列表
@@ -198,6 +274,11 @@ void _collectListItem(
       flushInline();
       inline.addAll(child.children ?? const <md.Node>[]);
       flushInline();
+    } else if (child is md.Element &&
+        (child.tag == 'pre' || child.tag == 'table')) {
+      // 列表项里的代码块 / 表格：作为独立的块接在这一项后面，不压成一行字。
+      flushInline();
+      _collectBlock(child, out, listDepth: depth, inQuote: inQuote);
     } else {
       inline.add(child);
     }
@@ -231,12 +312,19 @@ List<ReleaseNoteSpan> _inlineSpans(List<md.Node> nodes) {
     md.Node node, {
     bool bold = false,
     bool italic = false,
+    bool strike = false,
     String? link,
   }) {
     if (node is md.Text) {
       if (node.text.isNotEmpty) {
         spans.add(
-          ReleaseNoteSpan(node.text, bold: bold, italic: italic, link: link),
+          ReleaseNoteSpan(
+            node.text,
+            bold: bold,
+            italic: italic,
+            strike: strike,
+            link: link,
+          ),
         );
       }
       return;
@@ -267,6 +355,7 @@ List<ReleaseNoteSpan> _inlineSpans(List<md.Node> nodes) {
         child,
         bold: bold || node.tag == 'strong',
         italic: italic || node.tag == 'em',
+        strike: strike || node.tag == 'del',
         link: isWebLink ? href : link,
       );
     }

@@ -14728,6 +14728,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiChatMore => 'More';
 
   @override
+  String get markdownCopyCode => 'Copy code';
+
+  @override
+  String get markdownCodeCopied => 'Copied';
+
+  @override
   String aiChatTokens(String input, String output) {
     return '$input in · $output out';
   }

@@ -23,6 +23,8 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
   /// 打开信息面板：挂上面板，下一帧展开（面板挂上后控制器才连上）。
   void _openMetaPanel() {
     if (_saving) return;
+    // 信息面板挂着期间工具栏（段落操作栏）让位：先退出段落选择模式。
+    _contentController.blockSelection.exit(DiaryBlockSelectionExit.release);
     FocusManager.instance.primaryFocus?.unfocus();
     if (_metaPanelOpen) {
       unawaited(_editPanelController.expand());

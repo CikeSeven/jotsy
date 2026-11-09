@@ -9310,20 +9310,87 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryEditorRemoveLink => 'Удалить ссылку';
 
   @override
-  String get diaryEditorDragBlock => 'Перетащить блок';
-
-  @override
-  String get diaryEditorDragBlockHold => 'Зажать и перетащить';
-
-  @override
-  String get diaryEditorDragBlockTip =>
-      'Удерживайте пункт «Зажать и перетащить» и ведите вверх или вниз — блок последует за пальцем. Можно также удерживать маркер слева.';
-
-  @override
   String get diaryEditorMoveBlockUp => 'Переместить блок вверх';
 
   @override
   String get diaryEditorMoveBlockDown => 'Переместить блок вниз';
+
+  @override
+  String get diaryEditorBlockHandle =>
+      'Выбрать блок, удерживайте для перетаскивания';
+
+  @override
+  String diaryBlockSelectionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выбрано $count блока',
+      many: 'Выбрано $count блоков',
+      few: 'Выбрано $count блока',
+      one: 'Выбран $count блок',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryBlockSelectionNone => 'Блоки не выбраны';
+
+  @override
+  String get diaryBlockSelectionDone => 'Готово';
+
+  @override
+  String get diaryBlockCopy => 'Копировать';
+
+  @override
+  String get diaryBlockCut => 'Вырезать';
+
+  @override
+  String get diaryBlockDuplicate => 'Дублировать';
+
+  @override
+  String get diaryBlockMoveToTop => 'В начало';
+
+  @override
+  String get diaryBlockMoveToBottom => 'В конец';
+
+  @override
+  String diaryBlockCopied(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Скопировано $count блока',
+      many: 'Скопировано $count блоков',
+      few: 'Скопировано $count блока',
+      one: 'Скопирован $count блок',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryBlockDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалено $count блока',
+      many: 'Удалено $count блоков',
+      few: 'Удалено $count блока',
+      one: 'Удалён $count блок',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryBlockCutDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Вырезано $count блока',
+      many: 'Вырезано $count блоков',
+      few: 'Вырезано $count блока',
+      one: 'Вырезан $count блок',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get diaryEditorParagraph => 'Текст';

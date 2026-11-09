@@ -64,6 +64,28 @@ bool isDiaryToolbarItemActive(
   _ => false,
 };
 
+/// 把标准尺寸（[width] × 一格高）的工具按工具栏大小 [scale] 缩放：图标、
+/// 可见按钮、选中底色、按压水波与点按区域一起等比变化，各按钮自己不必知道
+/// 大小。标准大小原样返回，与改版前逐像素一致。悬浮工具栏与段落操作栏
+/// 共用。
+Widget diaryToolbarScaledTool(
+  Widget tool, {
+  required double width,
+  required double scale,
+}) {
+  final standard = SizedBox(
+    width: width,
+    height: kDiaryToolbarButtonExtent,
+    child: Center(child: tool),
+  );
+  if (scale == 1) return standard;
+  return SizedBox(
+    width: width * scale,
+    height: diaryToolbarButtonExtent(scale),
+    child: FittedBox(child: standard),
+  );
+}
+
 /// 构建一个工具按钮。[onPressed] 给出时取代默认动作（有序 / 无序列表由
 /// 工具栏决定转为列表还是打开列表面板，标题、对齐、字号打开各自的面板），
 /// [panelOpen] 为它的面板正开着，与“选区正处在这种格式里”一样显示选中态。

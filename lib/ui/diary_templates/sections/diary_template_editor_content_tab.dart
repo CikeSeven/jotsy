@@ -86,6 +86,8 @@ class _DiaryTemplateEditorContentTabState
     _titleFocus.addListener(_trackFocus);
     _bodyFocus.addListener(_trackFocus);
     _toolbarFocus.addListener(_trackFocus);
+    // 段落选择模式进出时重建：工具栏换成段落操作栏，键盘收起也显示。
+    widget.controller.body.blockSelection.active.addListener(_trackFocus);
   }
 
   void _trackFocus() {
@@ -97,6 +99,7 @@ class _DiaryTemplateEditorContentTabState
 
   @override
   void dispose() {
+    widget.controller.body.blockSelection.active.removeListener(_trackFocus);
     _titleFocus.dispose();
     _bodyFocus.dispose();
     _toolbarFocus.dispose();
@@ -151,11 +154,14 @@ class _DiaryTemplateEditorContentTabState
     final alwaysVisible =
         AppPlatform.isDesktop ||
         (settings?.isDiaryToolbarAlwaysVisible ?? false);
+    // 段落选择模式里换成段落操作栏：键盘已收起、工具都被隐藏时同样显示。
+    final blockMode = widget.controller.body.blockSelection.isActive;
     final showToolbar =
-        (alwaysVisible ||
-            (widget.keyboardVisible && _bodyFocus.hasFocus) ||
-            _toolbarFocus.hasFocus) &&
-        order.isNotEmpty;
+        blockMode ||
+        ((alwaysVisible ||
+                (widget.keyboardVisible && _bodyFocus.hasFocus) ||
+                _toolbarFocus.hasFocus) &&
+            order.isNotEmpty);
     final savedColors = ref.watch(diarySavedColorsProvider);
     // 只随宽度重建：键盘升降时正文区逐帧变矮，不必逐帧重建整列（见
     // WidthLayoutBuilder；按高度限制面板的那一层仍是 LayoutBuilder）。

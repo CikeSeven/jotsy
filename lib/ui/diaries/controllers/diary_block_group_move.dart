@@ -107,6 +107,20 @@ bool stepDiaryBlockGroup(
       );
 }
 
+/// 段落选择模式：[nodes] 移到文首 / 文末会不会改变文档（已在那里时停用）。
+bool canMoveDiaryBlockGroupToEdge(
+  DiaryEditorController controller,
+  List<af.Node> nodes, {
+  required bool top,
+}) {
+  if (nodes.isEmpty) return false;
+  final destination = DiaryBlockGaps(
+    controller.document.root,
+    nodes,
+  ).edge(top: top);
+  return destination != null && diaryBlocksMoveChanges(nodes, destination);
+}
+
 /// 段落选择模式的移到开头 / 末尾：整组成为文首 / 文末的顶层块。
 bool moveDiaryBlockGroupToEdge(
   DiaryEditorController controller,

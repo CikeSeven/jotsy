@@ -318,118 +318,44 @@ void main() {
     },
   );
 
-  testWidgets(
-    'holding the menu drag item folds the menu into a chip that follows the finger',
-    (tester) async {
-      final focus = FocusNode();
-      final controller = DiaryEditorController.fromContent(
-        'first\nsecond\nthird',
-      );
-      controller.select(af.Selection.collapsed(af.Position(path: [0])));
-      await pump(
-        tester,
-        controller,
-        focusNode: focus,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-      );
-      focus.requestFocus();
-      Future<void> frames([int count = 6]) async {
-        for (var i = 0; i < count; i++) {
-          await tester.pump(const Duration(milliseconds: 50));
-        }
-      }
+  testWidgets('a handle drag cancelled by the system puts the block back', (
+    tester,
+  ) async {
+    final focus = FocusNode();
+    final controller = DiaryEditorController.fromContent(
+      'first\nsecond\nthird',
+    );
+    controller.select(af.Selection.collapsed(af.Position(path: [0])));
+    await pump(
+      tester,
+      controller,
+      focusNode: focus,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+    );
+    focus.requestFocus();
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    final handle = find.byType(DiaryBlockHandle);
+    final blocks = find.byType(af.ParagraphBlockComponentWidget);
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+    await gesture.moveTo(
+      tester.getBottomLeft(blocks.at(2)) + const Offset(100, -2),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(controller.plainText, isNot('first\nsecond\nthird'));
+    await gesture.cancel();
+    await tester.pump();
+    expect(controller.plainText, 'first\nsecond\nthird');
+    expect(controller.hasUndo, isFalse);
 
-      await frames(4);
-      final handle = find.byType(DiaryBlockHandle);
-      await tester.tap(handle);
-      await frames();
-      final up = find.text('上移段落');
-      final drag = find.text('长按拖动');
-      final down = find.text('下移段落');
-      expect(drag, findsOneWidget);
-      // 拖动在上移与下移之间。
-      expect(tester.getCenter(up).dy, lessThan(tester.getCenter(drag).dy));
-      expect(tester.getCenter(drag).dy, lessThan(tester.getCenter(down).dy));
-
-      // 轻点只收起菜单并提示用法，不移动任何段落。
-      await tester.tap(drag);
-      await frames();
-      expect(drag, findsNothing);
-      expect(find.text('按住“长按拖动”后上下滑动，段落会跟着移动；也可以直接长按左侧把手'), findsOneWidget);
-      expect(controller.plainText, 'first\nsecond\nthird');
-
-      await tester.tap(handle);
-      await frames();
-      final blocks = find.byType(af.ParagraphBlockComponentWidget);
-      final item = tester.getCenter(drag);
-      final handleAt = tester.getCenter(handle);
-      double handleOpacity() => tester
-          .widget<AnimatedOpacity>(
-            find.descendant(of: handle, matching: find.byType(AnimatedOpacity)),
-          )
-          .opacity;
-      // 手指在块下方几行：落点按位移找，长按生效时块不跳。
-      final gesture = await tester.startGesture(item);
-      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-      await gesture.moveBy(const Offset(0, 1));
-      await frames();
-      expect(controller.plainText, 'first\nsecond\nthird');
-      // 菜单收起，上移 / 下移不再出现；“长按拖动”留在手指下，把手隐去。
-      expect(up, findsNothing);
-      expect(down, findsNothing);
-      expect(drag, findsOneWidget);
-      expect(tester.getCenter(drag), item + const Offset(0, 1));
-      expect(handleOpacity(), 0);
-      // 往下滑过两段：拖动条跟着手指，块在正文里跟着挪。
-      final travel = tester.getBottomLeft(blocks.at(2)).dy - 4 - handleAt.dy;
-      for (var step = 1; step <= 6; step++) {
-        await gesture.moveTo(item + Offset(0, travel * step / 6));
-        await tester.pump();
-        await tester.pump();
-      }
-      expect(controller.plainText, 'second\nthird\nfirst');
-      expect(controller.hasUndo, isFalse);
-      expect(tester.getCenter(drag), item + Offset(0, travel));
-      await gesture.up();
-      await tester.pump();
-      // 松手后拖动条淡出，把手回到块上。
-      await frames();
-      expect(drag, findsNothing);
-      expect(handleOpacity(), 1);
-      expect(controller.plainText, 'second\nthird\nfirst');
-      expect(
-        (tester.getCenter(handle).dy - tester.getCenter(blocks.at(2)).dy).abs(),
-        lessThan(4),
-      );
-      controller.undo();
-      await tester.pump();
-      expect(controller.plainText, 'first\nsecond\nthird');
-      expect(controller.hasUndo, isFalse);
-
-      // 系统取消指针时放回原处。
-      await frames();
-      controller.select(af.Selection.collapsed(af.Position(path: [0])));
-      focus.requestFocus();
-      await frames(4);
-      final again = await tester.startGesture(tester.getCenter(handle));
-      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-      await again.moveTo(
-        tester.getBottomLeft(blocks.at(2)) + const Offset(100, -2),
-      );
-      await tester.pump();
-      await tester.pump();
-      expect(controller.plainText, isNot('first\nsecond\nthird'));
-      await again.cancel();
-      await tester.pump();
-      expect(controller.plainText, 'first\nsecond\nthird');
-      expect(controller.hasUndo, isFalse);
-
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump(const Duration(seconds: 5));
-      controller.dispose();
-      focus.dispose();
-    },
-  );
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 5));
+    controller.dispose();
+    focus.dispose();
+  });
 
   testWidgets(
     'the block handle lines up with the first-line marker and stays in the page margin',

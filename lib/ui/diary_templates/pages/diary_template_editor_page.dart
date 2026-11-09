@@ -12,6 +12,7 @@ import '../../widgets/app_top_bar.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/keyboard_visibility.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
+import '../../diaries/controllers/diary_block_selection.dart';
 import '../controllers/diary_template_editor_controller.dart';
 import '../controllers/diary_templates_controller.dart';
 import '../models/diary_template.dart';
@@ -74,6 +75,12 @@ class _DiaryTemplateEditorPageState
   }
 
   Future<void> _attemptExit() async {
+    // 返回键 / Esc 先退出正文的段落选择模式（光标回到原段落，键盘不弹）。
+    final blocks = _editor.body.blockSelection;
+    if (blocks.isActive) {
+      blocks.exit(DiaryBlockSelectionExit.dismiss);
+      return;
+    }
     if (!_editor.dirty) {
       Navigator.of(context).pop();
       return;
@@ -148,10 +155,13 @@ class _DiaryTemplateEditorPageState
     );
     // 只有 canPop 随改动变化；child 不跟着重建，正文输入时整页不重排。
     return ListenableBuilder(
-      listenable: _editor,
+      listenable: Listenable.merge([
+        _editor,
+        _editor.body.blockSelection.active,
+      ]),
       child: scaffold,
       builder: (BuildContext context, Widget? child) => PopScope(
-        canPop: !_editor.dirty,
+        canPop: !_editor.dirty && !_editor.body.blockSelection.isActive,
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) unawaited(_attemptExit());
         },

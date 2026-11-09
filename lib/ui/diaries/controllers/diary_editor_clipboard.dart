@@ -48,6 +48,18 @@ abstract final class DiaryEditorClipboard {
     await Clipboard.setData(ClipboardData(text: _text!));
   }
 
+  /// 段落选择模式的复制：[nodes]（各自连同子树）整块写进剪贴板，与 [copy]
+  /// 同一份格式快照与纯文本口径，粘回正文时保留格式与嵌套。
+  static Future<void> copyBlocks(Iterable<af.Node> nodes) async {
+    final blocks = nodes.toList();
+    if (blocks.isEmpty) return;
+    _text = _plainTextOf(blocks);
+    _nodes = [for (final node in blocks) node.toJson()];
+    _imageDigest = null;
+    _imageData = null;
+    await Clipboard.setData(ClipboardData(text: _text!));
+  }
+
   /// 选中内容的纯文本，与 [copy] 写进系统剪贴板的文字同一口径（选区菜单的
   /// 分享、其他应用的文字处理也用它）；没有选区或只是光标时为 null。
   static String? selectedPlainText(DiaryEditorController controller) {

@@ -9,6 +9,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
+import '../controllers/diary_block_selection.dart';
 import '../controllers/diary_editor_controller.dart' as editor;
 import '../models/diary_link_candidate.dart';
 import '../widgets/diary_editor/diary_editor.dart';
@@ -467,6 +468,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _contentFocusNode.addListener(_onEditingFocusChanged);
     _titleController.addListener(_controller.onCreateDraftInputChanged);
     _contentController.addListener(_controller.onCreateDraftInputChanged);
+    // 段落选择模式进出时重建：工具栏换成段落操作栏、键盘收起也显示，返回
+    // 键先退出模式（只在进出时，不随每次点选）。
+    _contentController.blockSelection.active.addListener(_onBlockModeChanged);
     // 新建模式无需等详情查询，直接允许渲染编辑区域。
     _initialized = widget.diaryId == null;
     if (_isCreateEntry) {
@@ -498,6 +502,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _controller.dispose();
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
+    _contentController.blockSelection.active.removeListener(
+      _onBlockModeChanged,
+    );
     _mediaImportController.removeListener(_onMediaImportChanged);
     _mediaImportController.dispose();
     _dayPhotoSettings?.dayPhotoSuggestionsEnabledNotifier.removeListener(
@@ -660,6 +667,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   void _onEditingFocusChanged() {
     if (_isEditEntry) _rebuildReading();
+  }
+
+  void _onBlockModeChanged() {
+    if (mounted) setState(() {});
   }
 
   /// 阅读式版式重建页面：面板草稿变化（信息栏、头图、配色基调）与编辑焦点
@@ -1167,10 +1178,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     // 再弹出，键盘高度会短暂归零；此时卸载工具栏会连同面板与输入框一起丢掉。
     // 打开“始终显示工具栏”后不看键盘与焦点（接实体键盘时软键盘不弹出），
     // 只在信息面板挂着时让位；桌面上一直如此（见 [_toolbarAlwaysShown]）。
+    // 段落选择模式里卡片换成段落操作栏：键盘已收起也显示，工具都被隐藏时
+    // 同样显示（操作栏不看工具顺序）。
+    final blockMode = _contentController.blockSelection.isActive;
     final rawShowFloatingToolbar =
         _hasFloatingToolbar &&
         !_metaPanelOpen &&
-        (_toolbarAlwaysShown ||
+        (blockMode ||
+            _toolbarAlwaysShown ||
             ((keyboardVisible || _toolbarFocusNode.hasFocus) &&
                 _isEditingNoteText));
     final enabledToolbarOrder = filterEnabledDiaryToolbarOrder(
@@ -1178,7 +1193,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       _effectiveToolbarHiddenItems,
     );
     final showFloatingToolbar =
-        enabledToolbarOrder.isNotEmpty &&
+        (enabledToolbarOrder.isNotEmpty || blockMode) &&
         (rawShowFloatingToolbar ||
             (_hasFloatingToolbar && _bottomPanelOpen && !_metaPanelOpen));
     _floatingToolbarShown = showFloatingToolbar;
@@ -1551,7 +1566,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               return PopScope(
                 // 编辑模式返回时先补存最后一次输入，面板和录音仍优先收起；
                 // 新建模式设为“返回时直接发表”时同样先拦下（见上）。
-                canPop: !_isEditEntry && !_bottomPanelOpen && !publishOnLeave,
+                canPop:
+                    !_isEditEntry &&
+                    !_bottomPanelOpen &&
+                    !publishOnLeave &&
+                    !_contentController.blockSelection.isActive,
                 onPopInvokedWithResult: (didPop, result) {
                   if (!didPop) {
                     unawaited(_controller.attemptExit());

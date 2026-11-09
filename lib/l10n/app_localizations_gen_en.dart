@@ -9041,20 +9041,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorRemoveLink => 'Remove link';
 
   @override
-  String get diaryEditorDragBlock => 'Drag block';
-
-  @override
-  String get diaryEditorDragBlockHold => 'Hold to drag';
-
-  @override
-  String get diaryEditorDragBlockTip =>
-      'Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.';
-
-  @override
   String get diaryEditorMoveBlockUp => 'Move block up';
 
   @override
   String get diaryEditorMoveBlockDown => 'Move block down';
+
+  @override
+  String get diaryEditorBlockHandle => 'Select block, hold to drag';
+
+  @override
+  String diaryBlockSelectionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count blocks selected',
+      one: '1 block selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryBlockSelectionNone => 'No blocks selected';
+
+  @override
+  String get diaryBlockSelectionDone => 'Done';
+
+  @override
+  String get diaryBlockCopy => 'Copy';
+
+  @override
+  String get diaryBlockCut => 'Cut';
+
+  @override
+  String get diaryBlockDuplicate => 'Duplicate';
+
+  @override
+  String get diaryBlockMoveToTop => 'Move to top';
+
+  @override
+  String get diaryBlockMoveToBottom => 'Move to bottom';
+
+  @override
+  String diaryBlockCopied(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Copied $count blocks',
+      one: 'Copied 1 block',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryBlockDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Deleted $count blocks',
+      one: 'Deleted 1 block',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryBlockCutDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cut $count blocks',
+      one: 'Cut 1 block',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get diaryEditorParagraph => 'Paragraph';

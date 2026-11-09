@@ -8078,19 +8078,54 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorRemoveLink => '移除链接';
 
   @override
-  String get diaryEditorDragBlock => '拖动段落';
-
-  @override
-  String get diaryEditorDragBlockHold => '长按拖动';
-
-  @override
-  String get diaryEditorDragBlockTip => '按住“长按拖动”后上下滑动，段落会跟着移动；也可以直接长按左侧把手';
-
-  @override
   String get diaryEditorMoveBlockUp => '上移段落';
 
   @override
   String get diaryEditorMoveBlockDown => '下移段落';
+
+  @override
+  String get diaryEditorBlockHandle => '选择段落，长按拖动';
+
+  @override
+  String diaryBlockSelectionCount(int count) {
+    return '已选 $count 段';
+  }
+
+  @override
+  String get diaryBlockSelectionNone => '未选择段落';
+
+  @override
+  String get diaryBlockSelectionDone => '完成';
+
+  @override
+  String get diaryBlockCopy => '复制';
+
+  @override
+  String get diaryBlockCut => '剪切';
+
+  @override
+  String get diaryBlockDuplicate => '创建副本';
+
+  @override
+  String get diaryBlockMoveToTop => '移到开头';
+
+  @override
+  String get diaryBlockMoveToBottom => '移到末尾';
+
+  @override
+  String diaryBlockCopied(int count) {
+    return '已复制 $count 段';
+  }
+
+  @override
+  String diaryBlockDeleted(int count) {
+    return '已删除 $count 段';
+  }
+
+  @override
+  String diaryBlockCutDone(int count) {
+    return '已剪切 $count 段';
+  }
 
   @override
   String get diaryEditorParagraph => '正文';

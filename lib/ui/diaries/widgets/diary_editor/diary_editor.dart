@@ -28,6 +28,7 @@ import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_block_marker_metrics.dart';
+import 'diary_block_select_target.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
 import 'diary_embed_keys.dart';
@@ -155,6 +156,9 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   final DiaryEmbedKeyboardInterceptor _embedInterceptor =
       DiaryEmbedKeyboardInterceptor();
 
+  /// 段落选择模式里块上的长按交给段落把手层拖动整组（块包装与把手层共用）。
+  final DiaryBlockDragRelay _blockDragRelay = DiaryBlockDragRelay();
+
   /// 输入法剪贴板一次上屏的多行文字（见 [DiaryMultilineInputInterceptor]），
   /// 排在表格拦截器之后；随控制器在 [_bind] 里重建。
   late DiaryMultilineInputInterceptor _multilineInterceptor;
@@ -252,6 +256,9 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       return;
     }
     final controller = widget.controller;
+    // 段落选择模式里正文没有选区：上游手势顺带把焦点交给正文时不恢复光标
+    // （恢复即退出模式），焦点由段落选择层收回。
+    if (controller.blockSelection.isActive) return;
     final selection =
         controller.selection ??
         af.Selection.collapsed(
@@ -657,6 +664,16 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       header: widget.header == null ? null : _headerHost,
       footer: _footerHost,
       editable: !controller.readOnly,
+      // 段落选择模式里接管块上的点按与长按（见 DiaryBlockSelectTarget）；
+      // 只读正文没有这个模式。
+      blockWrapper: controller.readOnly
+          ? null
+          : (context, {required node, required child}) =>
+                DiaryBlockSelectTarget(
+                  controller: controller,
+                  relay: _blockDragRelay,
+                  child: child,
+                ),
       disableSelectionService: !widget.textSelection,
       disableKeyboardService: controller.readOnly,
       autoScrollEdgeOffset: widget.autoScrollEdgeOffset,
@@ -728,6 +745,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
           widget.appearance.typography.fontSize,
           diaryEditorTextScaler(context),
         ),
+        blockDragRelay: _blockDragRelay,
         revealPath: (path) {
           if (path.isNotEmpty &&
               widget.controller.document.nodeAtPath(path) != null &&

@@ -5,7 +5,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
     as editor;
 import 'package:node_diary/ui/diaries/controllers/diary_table_editing.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_table_structure.dart';
-import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_panel_action_cell.dart';
 
 /// 表头一行高度：与代码块、列表、提示块面板的表头同高。
 const double _kHeaderHeight = 40;
@@ -19,11 +19,6 @@ const double _kBottomGap = 4;
 
 /// 标题与两排操作的左右缩进，左缘对齐（同代码块、列表、提示块面板）。
 const double _kInset = 4;
-
-const double _kIconSize = 16;
-const double _kIconGap = 4;
-const double _kLabelSize = 11;
-const double _kCellRadius = 12;
 
 /// 表格面板内容的自然高度（不含面板外框）。与选区、取值无关，工具栏据此
 /// 直接算出面板目标高度，不必等测量。
@@ -214,7 +209,7 @@ class DiaryTablePanel extends StatelessWidget {
         children: <Widget>[
           for (final action in actions)
             Expanded(
-              child: _DiaryTableActionCell(
+              child: DiaryPanelActionCell(
                 icon: action.icon,
                 label: action.label(l10n),
                 enabled:
@@ -232,84 +227,6 @@ class DiaryTablePanel extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-/// 一格操作：图标在上、标签在下；选中（表头行开着）时垫 primaryContainer
-/// 圆角方块，经 [ExpressiveStateBlend] 补间；停用时变淡；删除表格用错误色。
-/// 只是按钮，不请求焦点。
-class _DiaryTableActionCell extends StatelessWidget {
-  const _DiaryTableActionCell({
-    required this.icon,
-    required this.label,
-    required this.enabled,
-    required this.selected,
-    required this.destructive,
-    required this.onTap,
-  });
-
-  final FaIconData icon;
-  final String label;
-  final bool enabled;
-  final bool selected;
-  final bool destructive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(_kCellRadius),
-    );
-    final base = destructive ? colors.error : colors.onSurface;
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      selected: selected,
-      label: label,
-      excludeSemantics: true,
-      child: ExpressiveStateBlend(
-        active: selected,
-        builder: (BuildContext context, double t, Widget? child) {
-          final foreground = Color.lerp(
-            base,
-            colors.onPrimaryContainer,
-            t,
-          )!.withValues(alpha: enabled ? 1 : 0.38);
-          return Material(
-            color: colors.primaryContainer.withValues(alpha: t),
-            shape: shape,
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: enabled ? onTap : null,
-              customBorder: shape,
-              canRequestFocus: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    FaIcon(icon, size: _kIconSize, color: foreground),
-                    const SizedBox(height: _kIconGap),
-                    Text(
-                      label,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: _kLabelSize,
-                        height: 1.2,
-                        color: foreground,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }

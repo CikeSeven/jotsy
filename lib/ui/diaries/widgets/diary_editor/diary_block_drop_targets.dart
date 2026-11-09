@@ -35,7 +35,7 @@ af.Path? resolveDiaryBlockDrop(
   required int depth,
 }) {
   final moving = sources.toSet();
-  final hit = _hitBlock(root.children, dy);
+  final hit = diaryBlockAt(root, dy);
   if (hit != null &&
       moving.any((source) => source == hit || source.isParentOf(hit))) {
     return null;
@@ -98,6 +98,11 @@ int _gapBelow(DiaryBlockGaps gaps, double dy) {
   }
   return gap;
 }
+
+/// 纵坐标 [dy]（全局）处最内层的块：表格整个算一块（格子与格内段落不算），
+/// 没有布局的块（收起的折叠块里的内容、滚出缓存区的块）跳过；不在任何块上
+/// 时为 null。拖动的落点与段落选择模式的点选共用。
+af.Node? diaryBlockAt(af.Node root, double dy) => _hitBlock(root.children, dy);
 
 af.Node? _hitBlock(Iterable<af.Node> nodes, double dy) {
   for (final node in nodes) {

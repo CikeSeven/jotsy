@@ -625,11 +625,14 @@ void main() {
         controller,
         af.Selection.collapsed(af.Position(path: [1, 2, 0], offset: 1)),
       );
-      final handle = tester.widget<DiaryBlockHandle>(
-        find.byType(DiaryBlockHandle),
-      );
-      expect(handle.node.type, 'table');
-      expect(handle.node.path, [1]);
+      // 点把手选中的是整个表格（段落选择模式）。
+      await tester.tap(find.byType(DiaryBlockHandle));
+      await tester.pump();
+      final selected = controller.blockSelection.roots;
+      expect(selected.single.type, 'table');
+      expect(selected.single.path, [1]);
+      controller.blockSelection.exit();
+      await tester.pump();
 
       final root = controller.document.root;
       final after = controller.document.nodeAtPath([2])!;

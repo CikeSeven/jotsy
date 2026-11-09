@@ -14724,24 +14724,6 @@ abstract class AppLocalizations {
   /// **'Remove link'**
   String get diaryEditorRemoveLink;
 
-  /// Accessibility label for the diary editor paragraph drag handle.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag block'**
-  String get diaryEditorDragBlock;
-
-  /// Paragraph handle menu item between move up and move down: press and hold it, then slide to move the block.
-  ///
-  /// In en, this message translates to:
-  /// **'Hold to drag'**
-  String get diaryEditorDragBlockHold;
-
-  /// Hint shown after tapping the drag item in the paragraph handle menu instead of holding it.
-  ///
-  /// In en, this message translates to:
-  /// **'Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.'**
-  String get diaryEditorDragBlockTip;
-
   /// Move the selected editor block above its previous sibling.
   ///
   /// In en, this message translates to:
@@ -14753,6 +14735,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Move block down'**
   String get diaryEditorMoveBlockDown;
+
+  /// Accessibility label of the diary editor paragraph handle: tapping selects the block (block selection mode), holding drags it.
+  ///
+  /// In en, this message translates to:
+  /// **'Select block, hold to drag'**
+  String get diaryEditorBlockHandle;
+
+  /// Header of the block action bar in block selection mode: how many blocks are selected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 block selected} other{{count} blocks selected}}'**
+  String diaryBlockSelectionCount(int count);
+
+  /// Header of the block action bar when no block is selected (still in block selection mode).
+  ///
+  /// In en, this message translates to:
+  /// **'No blocks selected'**
+  String get diaryBlockSelectionNone;
+
+  /// Button that leaves block selection mode and returns to typing.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get diaryBlockSelectionDone;
+
+  /// Block action: copy the selected blocks with their formatting.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get diaryBlockCopy;
+
+  /// Block action: copy the selected blocks, then delete them.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut'**
+  String get diaryBlockCut;
+
+  /// Block action: insert copies of the selected blocks after them.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get diaryBlockDuplicate;
+
+  /// Block action: move the selected blocks to the start of the diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to top'**
+  String get diaryBlockMoveToTop;
+
+  /// Block action: move the selected blocks to the end of the diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to bottom'**
+  String get diaryBlockMoveToBottom;
+
+  /// Snackbar after copying blocks in block selection mode.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Copied 1 block} other{Copied {count} blocks}}'**
+  String diaryBlockCopied(int count);
+
+  /// Snackbar after deleting blocks in block selection mode; it has an undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Deleted 1 block} other{Deleted {count} blocks}}'**
+  String diaryBlockDeleted(int count);
+
+  /// Snackbar after cutting blocks in block selection mode; it has an undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Cut 1 block} other{Cut {count} blocks}}'**
+  String diaryBlockCutDone(int count);
 
   /// Plain paragraph option in the diary editor block menu.
   ///

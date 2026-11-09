@@ -15904,7 +15904,7 @@
   "@aiModuleVision": {
     "description": "AI module name."
   },
-  "aiModuleVisionSubtitle": "Фото из записи отправляются вместе с текстом; если модель не принимает изображения — только текст",
+  "aiModuleVisionSubtitle": "Фото из записей и из чата отправляются вместе с текстом; если модель не принимает изображения — только текст",
   "@aiModuleVisionSubtitle": {
     "description": "AI module description."
   },

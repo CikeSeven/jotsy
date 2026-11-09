@@ -15337,7 +15337,7 @@
   "@aiModuleVision": {
     "description": "AI module name."
   },
-  "aiModuleVisionSubtitle": "Send the photos in an entry along with the text; text only if the model can't take images",
+  "aiModuleVisionSubtitle": "Send photos from entries and from the chat along with the text; text only if the model can't take images",
   "@aiModuleVisionSubtitle": {
     "description": "AI module description."
   },

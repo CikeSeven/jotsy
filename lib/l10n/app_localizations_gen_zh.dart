@@ -11068,7 +11068,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModuleVision => '图片理解';
 
   @override
-  String get aiModuleVisionSubtitle => '把日记里的图片一起发给模型；模型不认图片时自动只发文字';
+  String get aiModuleVisionSubtitle => '把日记里的图片、对话里发的图片一起发给模型；模型不认图片时自动只发文字';
 
   @override
   String get aiOptionTitleButton => '标题旁显示“生成标题”';

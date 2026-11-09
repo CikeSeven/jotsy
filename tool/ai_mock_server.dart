@@ -710,17 +710,36 @@ List<String> _toolNames(_Protocol protocol, Map<String, Object?> json) {
 }
 
 /// 最后一条是工具结果时返回结果文字，否则返回 null。
+///
+/// Chat 与 Responses 把附在工具结果之后的图片（“查看图片”）拆成结果之后的
+/// 一条只有图片的用户消息：跳过它再看。带文字的用户消息是新的问题，不跳。
 String? _lastToolResult(_Protocol protocol, Map<String, Object?> json) {
-  Object? last(Object? list) =>
-      list is List && list.isNotEmpty ? list.last : null;
+  bool onlyImages(Object? message, String imageType) {
+    if (message is! Map || message['role'] != 'user') return false;
+    final content = message['content'];
+    return content is List &&
+        content.isNotEmpty &&
+        content.every((part) => part is Map && part['type'] == imageType);
+  }
+
+  Object? last(Object? list, [String? imageType]) {
+    if (list is! List || list.isEmpty) return null;
+    if (imageType != null &&
+        list.length > 1 &&
+        onlyImages(list.last, imageType)) {
+      return list[list.length - 2];
+    }
+    return list.last;
+  }
+
   switch (protocol) {
     case _Protocol.openAi:
-      final message = last(json['messages']);
+      final message = last(json['messages'], 'image_url');
       if (message is Map && message['role'] == 'tool') {
         return '${message['content']}';
       }
     case _Protocol.responses:
-      final item = last(json['input']);
+      final item = last(json['input'], 'input_image');
       if (item is Map && item['type'] == 'function_call_output') {
         return '${item['output']}';
       }

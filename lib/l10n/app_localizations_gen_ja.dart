@@ -11261,7 +11261,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiModuleVisionSubtitle =>
-      '日記の写真を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します';
+      '日記の写真やチャットで送った画像を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します';
 
   @override
   String get aiOptionTitleButton => 'タイトルの横に「タイトルを生成」を表示';

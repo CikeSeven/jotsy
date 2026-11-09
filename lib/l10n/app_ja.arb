@@ -15904,7 +15904,7 @@
   "@aiModuleVision": {
     "description": "AI module name."
   },
-  "aiModuleVisionSubtitle": "日記の写真を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します",
+  "aiModuleVisionSubtitle": "日記の写真やチャットで送った画像を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します",
   "@aiModuleVisionSubtitle": {
     "description": "AI module description."
   },

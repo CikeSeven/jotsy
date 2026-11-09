@@ -12467,7 +12467,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiModuleVisionSubtitle =>
-      'Send the photos in an entry along with the text; text only if the model can\'t take images';
+      'Send photos from entries and from the chat along with the text; text only if the model can\'t take images';
 
   @override
   String get aiOptionTitleButton => 'Show “Generate title” next to the title';

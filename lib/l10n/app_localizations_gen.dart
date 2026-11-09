@@ -20187,7 +20187,7 @@ abstract class AppLocalizations {
   /// AI module description.
   ///
   /// In en, this message translates to:
-  /// **'Send the photos in an entry along with the text; text only if the model can\'t take images'**
+  /// **'Send photos from entries and from the chat along with the text; text only if the model can\'t take images'**
   String get aiModuleVisionSubtitle;
 
   /// AI option under smart fill.

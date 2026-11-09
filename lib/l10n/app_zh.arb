@@ -15337,7 +15337,7 @@
   "@aiModuleVision": {
     "description": "AI 模块名称。"
   },
-  "aiModuleVisionSubtitle": "把日记里的图片一起发给模型；模型不认图片时自动只发文字",
+  "aiModuleVisionSubtitle": "把日记里的图片、对话里发的图片一起发给模型；模型不认图片时自动只发文字",
   "@aiModuleVisionSubtitle": {
     "description": "AI 模块说明。"
   },

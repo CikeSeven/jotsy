@@ -12850,7 +12850,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiModuleVisionSubtitle =>
-      'Фото из записи отправляются вместе с текстом; если модель не принимает изображения — только текст';
+      'Фото из записей и из чата отправляются вместе с текстом; если модель не принимает изображения — только текст';
 
   @override
   String get aiOptionTitleButton =>

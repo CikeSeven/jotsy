@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -120,7 +121,11 @@ void main() {
       ),
     );
     expect(prepared.hasImages, isFalse);
-    expect(prepared.messages.single.text, 'describe');
+    // 图片换成说明，模型知道这里原本有图。
+    expect(
+      prepared.messages.single.text,
+      'describe\n${AiRequest.defaultImageOmittedText}',
+    );
     expect(prepared.model, 'm1');
 
     final vision = provider(vision: true);
@@ -158,22 +163,50 @@ void main() {
     reloaded.dispose();
   });
 
-  test('a 400 drops images, then thinking, and remembers it', () async {
+  test('omitted images become one note per run, in the request language', () {
+    final target = AiResolvedModel(provider(), provider().models.first);
+    final prepared = AiService.prepareRequest(
+      target,
+      AiRequest(
+        model: 'x',
+        imageOmittedText: '（图片未发送）',
+        messages: [
+          AiMessage(AiRole.user, [
+            AiImagePart(Uint8List(1), 'image/png'),
+            AiImagePart(Uint8List(1), 'image/png'),
+            const AiTextPart('看这两张'),
+            AiImagePart(Uint8List(1), 'image/jpeg'),
+          ]),
+          AiMessage.text(AiRole.assistant, '好的'),
+        ],
+      ),
+    );
+    final parts = prepared.messages.first.parts;
+    expect(parts.whereType<AiImagePart>(), isEmpty);
+    expect(
+      [for (final part in parts) (part as AiTextPart).text],
+      ['（图片未发送）', '看这两张', '（图片未发送）'],
+    );
+    // 没有图片的消息原样保留。
+    expect(prepared.messages.last.text, '好的');
+  });
+
+  test('a 400 fixed by dropping images is remembered', () async {
     final bodies = <Map<String, Object?>>[];
     server.handler = (request, response) async {
       final body = request.json;
       bodies.add(body);
       final input = (body['input'] as List).cast<Map>();
-      final hasImage = input.any((m) => m['content'] is List);
+      final hasImage = input.any(
+        (m) =>
+            m['content'] is List &&
+            (m['content'] as List).any(
+              (c) => (c as Map)['type'] == 'input_image',
+            ),
+      );
       if (hasImage) {
         await writeJson(response, {
           'error': {'message': 'Image input is not supported'},
-        }, status: 400);
-        return;
-      }
-      if (body.containsKey('reasoning')) {
-        await writeJson(response, {
-          'error': {'message': "Unsupported parameter: 'reasoning.summary'"},
         }, status: 400);
         return;
       }
@@ -181,9 +214,8 @@ void main() {
         (null, '{"type":"response.output_text.delta","delta":"ok"}'),
       ]);
     };
-    // 模型设置都是默认（看图、思考都开）。
     final config = AiProviderConfig(
-      id: 'r1',
+      id: 'r2',
       name: 'Responses',
       protocol: AiProtocol.openAiResponses,
       baseUrl: server.baseUrl,
@@ -192,6 +224,7 @@ void main() {
     );
     final target = AiResolvedModel(config, config.models.single);
     final ai = service();
+    expect(ai.acceptsImages(target), isTrue);
     AiRequest request() => AiRequest(
       model: 'x',
       messages: [
@@ -201,18 +234,83 @@ void main() {
         ]),
       ],
     );
-    final first = await ai.complete(target, request());
-    expect(first.text, 'ok');
-    expect(bodies, hasLength(3));
-    expect(bodies[1].containsKey('reasoning'), isTrue);
-    expect(bodies[2].containsKey('reasoning'), isFalse);
+    expect((await ai.complete(target, request())).text, 'ok');
+    expect(bodies, hasLength(2));
+    // 去图重发时图片位置换成说明。
+    expect(jsonEncode(bodies[1]), contains('image omitted'));
+    expect(ai.acceptsImages(target), isFalse);
 
-    // 同一个模型之后直接不带图片与思考，一次就成。
     bodies.clear();
     await ai.complete(target, request());
     expect(bodies, hasLength(1));
-    expect(bodies.single.containsKey('reasoning'), isFalse);
   });
+
+  test(
+    'a 400 that persists without images does not blame the images',
+    () async {
+      final bodies = <Map<String, Object?>>[];
+      server.handler = (request, response) async {
+        final body = request.json;
+        bodies.add(body);
+        final input = (body['input'] as List).cast<Map>();
+        final hasImage = input.any((m) => m['content'] is List);
+        if (hasImage) {
+          await writeJson(response, {
+            'error': {'message': 'Image input is not supported'},
+          }, status: 400);
+          return;
+        }
+        if (body.containsKey('reasoning')) {
+          await writeJson(response, {
+            'error': {'message': "Unsupported parameter: 'reasoning.summary'"},
+          }, status: 400);
+          return;
+        }
+        await writeSse(response, [
+          (null, '{"type":"response.output_text.delta","delta":"ok"}'),
+        ]);
+      };
+      // 模型设置都是默认（看图、思考都开）。
+      final config = AiProviderConfig(
+        id: 'r1',
+        name: 'Responses',
+        protocol: AiProtocol.openAiResponses,
+        baseUrl: server.baseUrl,
+        retries: 0,
+        models: const [AiModelConfig(id: 'text-only')],
+      );
+      final target = AiResolvedModel(config, config.models.single);
+      final ai = service();
+      AiRequest request() => AiRequest(
+        model: 'x',
+        messages: [
+          AiMessage(AiRole.user, [
+            const AiTextPart('describe'),
+            AiImagePart(Uint8List(1), 'image/png'),
+          ]),
+        ],
+      );
+      final first = await ai.complete(target, request());
+      expect(first.text, 'ok');
+      expect(bodies, hasLength(3));
+      expect(bodies[1].containsKey('reasoning'), isTrue);
+      expect(bodies[2].containsKey('reasoning'), isFalse);
+      // 去掉图片后仍被拒（思考参数的错）：不记“不认图片”，只记思考。
+      expect(ai.acceptsImages(target), isTrue);
+
+      // 下一次不带思考、先带着图片试：被拒后去图成功，这才记住。
+      bodies.clear();
+      await ai.complete(target, request());
+      expect(bodies, hasLength(2));
+      expect(bodies.every((body) => !body.containsKey('reasoning')), isTrue);
+      expect(ai.acceptsImages(target), isFalse);
+
+      // 之后图片与思考都不带，一次就成。
+      bodies.clear();
+      await ai.complete(target, request());
+      expect(bodies, hasLength(1));
+    },
+  );
 
   group('tools', () {
     const tool = AiToolSpec(
@@ -267,6 +365,8 @@ void main() {
       expect(bodies, hasLength(3));
       expect(bodies.every((body) => body.containsKey('tools')), isTrue);
       expect(ai.supportsTools(target), isFalse);
+      // 去图后仍被拒：图片不背锅。
+      expect(ai.acceptsImages(target), isTrue);
 
       // 已知不支持后，带工具的请求不再发出去。
       bodies.clear();

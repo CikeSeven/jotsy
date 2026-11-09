@@ -118,7 +118,12 @@ class AiRequest {
     this.tools = const <AiToolSpec>[],
     this.toolChoice = AiToolChoice.auto,
     this.cacheKey,
+    this.imageOmittedText,
   });
+
+  /// 图片没能发出时（模型不识图、服务端拒收图片）换上的说明文字的缺省值。
+  static const String defaultImageOmittedText =
+      '(image omitted: this model does not accept images)';
 
   final String model;
   final String? system;
@@ -149,6 +154,12 @@ class AiRequest {
   /// 让同一对话落到同一缓存。DeepSeek、Gemini 等自动前缀缓存不需要。
   final String? cacheKey;
 
+  /// 图片没能发出时代替它的说明（提示词语言，由提示词层按 ARB 给出）；
+  /// null 时用 [defaultImageOmittedText]。`AiService` 去掉图片时按连续的
+  /// 一组换成一段这样的文字：模型知道这里原本有图、只是没收到，不会把
+  /// “请看图”当成没有图的问题来答。
+  final String? imageOmittedText;
+
   AiRequest copyWith({
     String? model,
     String? system,
@@ -170,6 +181,7 @@ class AiRequest {
       tools: tools ?? this.tools,
       toolChoice: toolChoice ?? this.toolChoice,
       cacheKey: cacheKey,
+      imageOmittedText: imageOmittedText,
     );
   }
 
@@ -185,6 +197,7 @@ class AiRequest {
     tools: tools,
     toolChoice: toolChoice,
     cacheKey: cacheKey,
+    imageOmittedText: imageOmittedText,
   );
 
   bool get hasImages => messages.any((message) => message.hasImages);

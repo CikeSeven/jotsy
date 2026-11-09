@@ -181,4 +181,110 @@ void main() {
     expect(await controller.flush(), isFalse);
     expect(written, ['edit']);
   });
+
+  group('manual mode', () {
+    const settleDelay = Duration(milliseconds: 300);
+
+    test('edits only mark unsaved changes and flush writes them', () async {
+      var current = snapshot('original');
+      final written = <String>[];
+      final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+        debounce: const Duration(milliseconds: 10),
+        readSnapshot: () => current,
+        writeSnapshot: (value) async => written.add(value.title),
+        onError: (error) => fail('$error'),
+        manual: () => true,
+      );
+      addTearDown(controller.dispose);
+      controller.initialize(current);
+      expect(controller.hasUnsavedChanges, isFalse);
+
+      current = snapshot('edit');
+      controller.schedule();
+      controller.schedule();
+      await Future<void>.delayed(settleDelay);
+      // 防抖早已过去也不写：只更新“有未保存的修改”。
+      expect(written, isEmpty);
+      expect(controller.unsaved.value, isTrue);
+      expect(controller.hasUnsavedChanges, isTrue);
+      // settle 只等进行中的写入，不发起新的写入。
+      expect(await controller.settle(), isTrue);
+      expect(written, isEmpty);
+
+      expect(await controller.flush(), isTrue);
+      expect(written, ['edit']);
+      expect(controller.unsaved.value, isFalse);
+      expect(controller.hasUnsavedChanges, isFalse);
+    });
+
+    test('changing back to the saved content clears the mark', () async {
+      var current = snapshot('original');
+      final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+        debounce: const Duration(milliseconds: 10),
+        readSnapshot: () => current,
+        writeSnapshot: (_) async => fail('manual mode must not write'),
+        onError: (error) => fail('$error'),
+        manual: () => true,
+      );
+      addTearDown(controller.dispose);
+      controller.initialize(current);
+      current = snapshot('edit');
+      controller.schedule();
+      await Future<void>.delayed(settleDelay);
+      expect(controller.unsaved.value, isTrue);
+
+      current = snapshot('original');
+      controller.schedule();
+      await Future<void>.delayed(settleDelay);
+      expect(controller.unsaved.value, isFalse);
+    });
+
+    test('settle waits for a save in flight', () async {
+      var current = snapshot('original');
+      final write = Completer<void>();
+      final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+        debounce: const Duration(milliseconds: 10),
+        readSnapshot: () => current,
+        writeSnapshot: (_) => write.future,
+        onError: (error) => fail('$error'),
+        manual: () => true,
+      );
+      addTearDown(controller.dispose);
+      controller.initialize(current);
+      current = snapshot('edit');
+      final saving = controller.flush();
+      var settled = false;
+      final settling = controller.settle().then((ok) => settled = ok);
+      await Future<void>.delayed(Duration.zero);
+      expect(settled, isFalse);
+      write.complete();
+      await settling;
+      expect(settled, isTrue);
+      expect(await saving, isTrue);
+    });
+
+    test('switching back to automatic saving writes on schedule', () async {
+      var manual = true;
+      var current = snapshot('original');
+      final written = <String>[];
+      final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+        debounce: const Duration(milliseconds: 10),
+        readSnapshot: () => current,
+        writeSnapshot: (value) async => written.add(value.title),
+        onError: (error) => fail('$error'),
+        manual: () => manual,
+      );
+      addTearDown(controller.dispose);
+      controller.initialize(current);
+      current = snapshot('edit');
+      controller.schedule();
+      await Future<void>.delayed(settleDelay);
+      expect(written, isEmpty);
+
+      manual = false;
+      controller.schedule();
+      await Future<void>.delayed(settleDelay);
+      expect(written, ['edit']);
+    });
+  });
 }

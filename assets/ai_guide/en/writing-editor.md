@@ -21,7 +21,7 @@ If you have drafts, "Continue a draft" opens first: pick up a recent draft, view
 
 - The title is optional; cards use the first line of the body instead.
 - Markdown shortcuts convert as you type. At the start of a line, `# ` makes a heading (`## ` for heading 2, and so on), `- ` or `* ` a bulleted list, `1. ` a numbered list, `[] ` a checklist item (`[x] ` for a ticked one), `> ` a quote and `---` a divider. A line with only `` ``` `` followed by Space or Enter becomes a code block (you can add a language name, such as `` ```dart ``). Inline, you can type `**bold**`, `*italic*`, `~~strikethrough~~`, `` `inline code` `` and `[text](URL)` links. Inside code blocks and table cells these symbols stay as typed.
-- New entries save to Drafts as you write, and edits to existing entries save automatically; there's no save button to press.
+- New entries save to Drafts as you write, and by default edits to existing entries save automatically, so there's no save button to press. With **Save edits manually** turned on in Settings → Editor, edits to an existing entry are saved only when you tap the save button in the top bar (or press Ctrl / ⌘ + S on a computer); going back with unsaved edits asks Cancel / Exit / Save and exit, and Exit discards them.
 
 ## The floating toolbar
 
@@ -52,7 +52,7 @@ Edit on the preview page, double-tapping the preview text on a phone, Edit in th
 
 ## Editor settings
 
-In Settings → Editor: Toolbar order (drag to reorder, untick a tool to hide it), Toolbar size (Small, Standard, Large, Extra large) and Always show toolbar (phones only). Under Behavior: Open diaries in the editor (skip the preview page), Publish new diaries when going back, and Show that day's photos automatically. See "Body text layout and editor settings" for details.
+In Settings → Editor: Toolbar order (drag to reorder, untick a tool to hide it), Toolbar size (Small, Standard, Large, Extra large) and Always show toolbar (phones only). Under Behavior: Open diaries in the editor (skip the preview page), Publish new diaries when going back, Save edits manually, and Show that day's photos automatically. See "Body text layout and editor settings" for details.
 
 ## Good to know
 

@@ -457,8 +457,21 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     return kDiaryToolbarPanelChrome + _bodyHeight(panel);
   }
 
-  /// 类成员而非扩展方法：注册与注销要用同一个函数对象。
-  void _handleBlockMode() => _syncBlockMode();
+  /// 段落选择模式进出（类成员而非扩展方法：注册与注销要用同一个函数对象）。
+  /// 进入时收起正在展开的面板（不播动画：卡片内容整个换成段落操作栏）；
+  /// 两边的高度报告交接：工具栏记成 0，与操作栏卸载时报告的一致，退出后
+  /// 工具栏回到收起态、下次构建照常报告自己的高度。
+  void _handleBlockMode() {
+    if (!mounted) return;
+    if (widget.controller.blockSelection.isActive) {
+      _panel = _ToolbarPanel.none;
+      _content = _ToolbarPanel.none;
+      _panelFromMore = false;
+      _panelController.value = 0;
+    }
+    _reportedExtent = 0;
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {

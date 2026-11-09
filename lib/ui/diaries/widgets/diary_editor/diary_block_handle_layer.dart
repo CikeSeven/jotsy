@@ -9,7 +9,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
-import '../../controllers/diary_block_reorder.dart';
+import '../../controllers/diary_block_drag_session.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_table_editing.dart';
 import 'diary_block_drop_targets.dart';
@@ -372,7 +372,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
       _chipReveal.value = 1;
       _chip.show();
     }
-    setState(() => _session = DiaryBlockDragSession(widget.controller, node));
+    setState(() => _session = DiaryBlockDragSession(widget.controller, [node]));
     _dragTicker.start();
   }
 
@@ -435,18 +435,19 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     final root = widget.controller.document.root;
     final destination = resolveDiaryBlockDrop(
       root,
-      session.node,
+      session.nodes,
       dy,
       depth: session.depth,
     );
     if (destination != null) {
       final list = viewport?.list;
+      final (low, high) = diaryBlockMoveRange(session.nodes, destination);
       final anchor = list == null
           ? null
           : diaryBlockDragAnchor(
               root,
-              from: session.node.path,
-              destination: destination,
+              low: low,
+              high: high,
               viewportTop: list.top,
               viewportHeight: list.height,
               itemInset: widget.controller.state.editorStyle.padding.top,
@@ -465,7 +466,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     if (_chipItem == null && placement != null && box is RenderBox) {
       final y = box.globalToLocal(pointer).dy + _handleGrab.dy;
       _setPlacement(
-        _HandlePlacement(session.node, Offset(placement.center.dx, y)),
+        _HandlePlacement(session.nodes.first, Offset(placement.center.dx, y)),
       );
     }
   }
@@ -553,7 +554,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
           painter: session == null
               ? null
               : _LiftedBlockPainter(
-                  rect: () => _localBlockRect(session.node),
+                  rect: () => _localBlockRect(session.nodes.first),
                   color: colors.surfaceContainerHigh,
                   repaint: _liftedFrame,
                 ),

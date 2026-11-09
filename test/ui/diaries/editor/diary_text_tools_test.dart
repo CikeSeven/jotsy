@@ -231,6 +231,53 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
 
+  testWidgets('Alt+Shift+Up/Down move the caret block and keep the caret', (
+    tester,
+  ) async {
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
+    final controller = _document([
+      _block('paragraph', 'one'),
+      _block('paragraph', 'two'),
+      _block('paragraph', 'three'),
+    ]);
+    await _pump(tester, controller, focusNode: focus);
+    focus.requestFocus();
+    await tester.pumpAndSettle();
+    controller.select(
+      af.Selection.collapsed(af.Position(path: [1], offset: 2)),
+    );
+    await tester.pumpAndSettle();
+    String order() => [
+      for (final node in controller.document.root.children)
+        node.delta!.toPlainText(),
+    ].join(',');
+
+    Future<void> move(LogicalKeyboardKey key) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(key);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
+      await tester.pumpAndSettle();
+    }
+
+    await move(LogicalKeyboardKey.arrowUp);
+    expect(order(), 'two,one,three');
+    expect(
+      controller.selection,
+      af.Selection.collapsed(af.Position(path: [0], offset: 2)),
+    );
+    await move(LogicalKeyboardKey.arrowDown);
+    await move(LogicalKeyboardKey.arrowDown);
+    expect(order(), 'one,three,two');
+    expect(controller.selection!.end.path, [2]);
+    // 每次移动一步撤销。
+    controller.undo();
+    expect(order(), 'one,two,three');
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
   testWidgets('Ctrl+K on desktop opens the app link dialog', (tester) async {
     final focus = FocusNode();
     addTearDown(focus.dispose);

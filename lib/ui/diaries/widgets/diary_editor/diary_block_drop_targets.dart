@@ -11,8 +11,9 @@ import '../../models/diary_thumbnail_rows.dart';
 /// 只读节点的全局矩形（上一帧的布局），不改文档。
 
 /// 纵坐标 [dy]（全局）处的落点：先定落在哪条缝（[DiaryBlockGaps]），再在
-/// 缝里取最接近 [depth] 的层级，返回按当前的树解释的目标路径；落在自身、
-/// 后代或等于没动时为 null。
+/// 缝里取最接近 [depth] 的层级，返回按当前的树解释的目标路径；落在被拖的
+/// 块、它们的后代或等于没动时为 null。被拖的是一组块（段落选择模式）时
+/// 整组一起算：阅读顺序里去掉全部，落点上整组按先后排开。
 ///
 /// 缝按手指所在的块（嵌套时取最内层；表格整个算一块，格子与格内段落不是
 /// 落点）找：在它自身文字的上半区为它之前，下半区为它之后。带子块的块只取之前——它“之后”就是第一个子块之前，
@@ -29,18 +30,20 @@ import '../../models/diary_thumbnail_rows.dart';
 /// 看不见的地方），由调用方夹好。
 af.Path? resolveDiaryBlockDrop(
   af.Node root,
-  af.Node source,
+  Iterable<af.Node> sources,
   double dy, {
   required int depth,
 }) {
+  final moving = sources.toSet();
   final hit = _hitBlock(root.children, dy);
-  if (hit == source || (hit != null && source.isParentOf(hit))) return null;
-  final gaps = DiaryBlockGaps(root, source);
+  if (hit != null &&
+      moving.any((source) => source == hit || source.isParentOf(hit))) {
+    return null;
+  }
+  final gaps = DiaryBlockGaps(root, moving);
   final gap = hit == null ? null : _gapOn(gaps, hit, dy);
   final destination = gaps.destination(gap ?? _gapBelow(gaps, dy), depth);
-  if (destination == null) return null;
-  final sourcePath = source.path;
-  if (destination.equals(sourcePath) || destination.equals(sourcePath.next)) {
+  if (destination == null || !diaryBlocksMoveChanges(moving, destination)) {
     return null;
   }
   return destination;
@@ -63,7 +66,7 @@ int? _gapOn(DiaryBlockGaps gaps, af.Node hit, double dy) {
   final hasChildren =
       !atomic &&
       !isDiaryToggleCollapsed(hit) &&
-      hit.children.any((child) => child != gaps.source);
+      hit.children.any((child) => !gaps.sources.contains(child));
   final after = !hasChildren && dy >= (rect.top + ownBottom) / 2;
   return _rowGap(gaps, hit, after: after) ?? (after ? index + 1 : index);
 }
@@ -77,7 +80,7 @@ int? _rowGap(DiaryBlockGaps gaps, af.Node hit, {required bool after}) {
   if (row == null || row.end - row.start < 2) return null;
   final members = [
     for (var i = row.start; i < row.end; i++) hit.parent!.children[i],
-  ].where((node) => node != gaps.source);
+  ].where((node) => !gaps.sources.contains(node));
   if (members.isEmpty) return null;
   return after
       ? gaps.blocks.indexOf(members.last) + 1
@@ -114,8 +117,8 @@ double? _firstVisibleTop(Iterable<af.Node> nodes) {
   return null;
 }
 
-/// 把 [source] 移到 [destination] 之前，挑一个不受这次移动影响的顶层块，
-/// 返回它与它的前缘在视口里的比例（0 顶端、1 底端）。
+/// 移动影响到顶层下标 [low]–[high]（含两端）的块时，挑一个不受影响的
+/// 顶层块，返回它与它的前缘在视口里的比例（0 顶端、1 底端）。
 ///
 /// 为什么需要：上游的长列表（ScrollablePositionedList）以某一项为锚点向上
 /// 向下排版，跳转过（如揭示光标）锚点就停在那一项。块移过锚点、或块自己
@@ -123,23 +126,19 @@ double? _firstVisibleTop(Iterable<af.Node> nodes) {
 /// 跟着变，块就上下来回跳。移动后让列表改以这一块为锚点、停在原处，排版
 /// 就与普通列表一致。
 ///
-/// 受影响的是两处所在的顶层块及其之间的块；只挑完全在视口里的块
-/// （锚点比例必须在 0–1 之间），先找上方的，没有再找下方的。[viewportTop]、
-/// [viewportHeight] 是列表视口的全局位置与高度，[itemInset] 是列表项在块
-/// 之上的内边距。
+/// 受影响的是被移动的块与目标处所在的顶层块及其之间的块（调用方按移动前
+/// 的路径给出区间）；只挑完全在视口里的块（锚点比例必须在 0–1 之间），
+/// 先找上方的，没有再找下方的。[viewportTop]、[viewportHeight] 是列表视口
+/// 的全局位置与高度，[itemInset] 是列表项在块之上的内边距。
 (af.Node, double)? diaryBlockDragAnchor(
   af.Node root, {
-  required af.Path from,
-  required af.Path destination,
+  required int low,
+  required int high,
   required double viewportTop,
   required double viewportHeight,
   double itemInset = 0,
 }) {
   if (viewportHeight <= 0) return null;
-  final a = from.first;
-  final b = destination.first;
-  final low = a < b ? a : b;
-  final high = a < b ? b : a;
   (af.Node, double)? below;
   final blocks = root.children.toList();
   final rows = diaryThumbnailRows(blocks);
@@ -156,4 +155,17 @@ double? _firstVisibleTop(Iterable<af.Node> nodes) {
     below ??= anchor;
   }
   return below;
+}
+
+/// 把 [nodes] 移到 [destination]（按移动前的树解释）影响到的顶层下标区间，
+/// 交给 [diaryBlockDragAnchor]。
+(int, int) diaryBlockMoveRange(Iterable<af.Node> nodes, af.Path destination) {
+  var low = destination.first;
+  var high = destination.first;
+  for (final node in nodes) {
+    final top = node.path.first;
+    if (top < low) low = top;
+    if (top > high) high = top;
+  }
+  return (low, high);
 }

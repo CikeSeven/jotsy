@@ -674,10 +674,9 @@ void main() {
           _toggle('empty'),
           _p('p'),
         ]);
-        final gaps = DiaryBlockGaps(
-          controller.document.root,
+        final gaps = DiaryBlockGaps(controller.document.root, [
           named(controller, 'p'),
-        );
+        ]);
         expect(gaps.blocks.map(text), ['closed', 'open', 'shown', 'empty']);
         // 收起的折叠块之后只能是同级，放不进去。
         expect(gaps.depths(1), (1, 1));
@@ -697,12 +696,11 @@ void main() {
       ]);
       bool step(String value, {required bool up}) {
         final node = named(controller, value);
-        final destination = DiaryBlockGaps(
-          controller.document.root,
+        final destination = DiaryBlockGaps(controller.document.root, [
           node,
-        ).step(up: up);
+        ]).step(up: up);
         return destination != null &&
-            moveDiaryEditorBlock(controller, node, destination);
+            moveDiaryEditorBlocks(controller, [node], destination);
       }
 
       expect(step('b', up: true), isTrue);
@@ -732,10 +730,9 @@ void main() {
         _toggle('closed', collapsed: true, children: [_p('hidden')]),
         _block('paragraph', 'p', children: [_p('c')]),
       ]);
-      af.Path? up(String value) => DiaryBlockGaps(
-        controller.document.root,
+      af.Path? up(String value) => DiaryBlockGaps(controller.document.root, [
         named(controller, value),
-      ).step(up: true);
+      ]).step(up: true);
 
       // 收起的折叠块里没有缝：缩进的块上移找不到放得下的位置。
       expect(up('c'), isNull);
@@ -746,7 +743,7 @@ void main() {
         _block('paragraph', 'p', children: [_p('c')]),
       ]);
       final c = named(open, 'c');
-      expect(DiaryBlockGaps(open.document.root, c).step(up: true), [0, 1]);
+      expect(DiaryBlockGaps(open.document.root, [c]).step(up: true), [0, 1]);
     });
 
     Future<void> drag(

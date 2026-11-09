@@ -492,7 +492,7 @@ void main() {
         expect(
           resolveDiaryBlockDrop(
             controller.document.root,
-            _block(controller, 0),
+            [_block(controller, 0)],
             row.top + row.height * 0.75,
             depth: 1,
           ),

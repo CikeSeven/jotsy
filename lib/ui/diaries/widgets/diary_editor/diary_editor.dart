@@ -14,6 +14,7 @@ import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
 import '../../controllers/diary_block_editing.dart';
+import '../../controllers/diary_block_group_move.dart';
 import '../../controllers/diary_editor_clipboard.dart';
 import '../../controllers/diary_link_open_flow.dart';
 import '../../controllers/diary_link_search.dart';
@@ -566,6 +567,18 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               ? KeyEventResult.handled
               : KeyEventResult.ignored,
         ),
+        // Alt + Shift + ↑ / ↓ 上移 / 下移光标所在的段落（文字选区跨块时为
+        // 碰到的几块），选区跟着走，缩进规则同段落把手。Ctrl / ⌘ + Shift +
+        // ↑ / ↓ 是上游的“选到文首 / 文末”，不占用。
+        for (final up in [true, false])
+          af.CommandShortcutEvent(
+            key: 'diary_move_blocks_${up ? 'up' : 'down'}',
+            getDescription: () => up ? 'move blocks up' : 'move blocks down',
+            command: 'alt+shift+arrow ${up ? 'up' : 'down'}',
+            handler: (_) => moveDiaryBlocksAtSelection(controller, up: up)
+                ? KeyEventResult.handled
+                : KeyEventResult.ignored,
+          ),
         // 桌面的 Ctrl / ⌘ + . 与 Ctrl / ⌘ + , 切换上标 / 下标，与工具栏同一
         // 动作；上游与应用都没有占用这两个组合。代码块里不处理（交还按键）。
         if (AppPlatform.isDesktop)

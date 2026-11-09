@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_drag_session.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_block_reorder.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 
@@ -48,12 +49,11 @@ af.Node _node(DiaryEditorController controller, String text) =>
 
 bool _step(DiaryEditorController controller, String text, {required bool up}) {
   final node = _node(controller, text);
-  final destination = DiaryBlockGaps(
-    controller.document.root,
+  final destination = DiaryBlockGaps(controller.document.root, [
     node,
-  ).step(up: up);
+  ]).step(up: up);
   return destination != null &&
-      moveDiaryEditorBlock(controller, node, destination);
+      moveDiaryEditorBlocks(controller, [node], destination);
 }
 
 void main() {
@@ -103,7 +103,7 @@ void main() {
     expect(_step(controller, 'a1', up: true), isFalse);
 
     final a1 = _node(controller, 'a1');
-    final gaps = DiaryBlockGaps(controller.document.root, a1);
+    final gaps = DiaryBlockGaps(controller.document.root, [a1]);
     expect(gaps.blocks.map(_text), ['h', 'q', 'x', 'a']);
     expect(gaps.current, 4);
     // 拖到它们后面只能取顶层（放不下的层级取最近的一级）。
@@ -131,9 +131,9 @@ void main() {
       _p('z'),
     ]);
     final a1 = _node(controller, 'a1');
-    final session = DiaryBlockDragSession(controller, a1);
+    final session = DiaryBlockDragSession(controller, [a1]);
     expect(session.depth, 2);
-    DiaryBlockGaps gaps() => DiaryBlockGaps(controller.document.root, a1);
+    DiaryBlockGaps gaps() => DiaryBlockGaps(controller.document.root, [a1]);
     int gapAfter(String text) =>
         gaps().blocks.indexWhere((node) => _text(node) == text) + 1;
 
@@ -153,8 +153,8 @@ void main() {
     // 顶层块拖过列表末项不会被并进列表；只有列表项之间（下面那块更深）
     // 才不得不跟着缩进。
     final z = _node(controller, 'z');
-    final top = DiaryBlockDragSession(controller, z);
-    DiaryBlockGaps zGaps() => DiaryBlockGaps(controller.document.root, z);
+    final top = DiaryBlockDragSession(controller, [z]);
+    DiaryBlockGaps zGaps() => DiaryBlockGaps(controller.document.root, [z]);
     int zGapAfter(String text) =>
         zGaps().blocks.indexWhere((node) => _text(node) == text) + 1;
     expect(top.preview(zGaps().destination(zGapAfter('a1'), 1)!), isTrue);
@@ -252,19 +252,21 @@ void main() {
 
     // 每一块都下移一格、上移一格，再整段拖到文末并松手。
     for (final node in blocks) {
-      final gaps = DiaryBlockGaps(controller.document.root, node);
+      final gaps = DiaryBlockGaps(controller.document.root, [node]);
       final down = gaps.step(up: false);
       if (down != null) {
-        expect(moveDiaryEditorBlock(controller, node, down), isTrue);
+        expect(moveDiaryEditorBlocks(controller, [node], down), isTrue);
         expectIntact();
       }
-      final up = DiaryBlockGaps(controller.document.root, node).step(up: true);
+      final up = DiaryBlockGaps(controller.document.root, [
+        node,
+      ]).step(up: true);
       if (up != null) {
-        expect(moveDiaryEditorBlock(controller, node, up), isTrue);
+        expect(moveDiaryEditorBlocks(controller, [node], up), isTrue);
         expectIntact();
       }
-      final session = DiaryBlockDragSession(controller, node);
-      final end = DiaryBlockGaps(controller.document.root, node);
+      final session = DiaryBlockDragSession(controller, [node]);
+      final end = DiaryBlockGaps(controller.document.root, [node]);
       final destination = end.destination(end.blocks.length, session.depth);
       if (destination != null) session.preview(destination);
       session.commit();

@@ -160,7 +160,7 @@ class _StepMenuItem extends StatelessWidget {
 
   af.Path? _destination() => node.parent == null
       ? null
-      : DiaryBlockGaps(controller.document.root, node).step(up: up);
+      : DiaryBlockGaps(controller.document.root, [node]).step(up: up);
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -171,7 +171,7 @@ class _StepMenuItem extends StatelessWidget {
           : () {
               final destination = _destination();
               if (destination != null) {
-                moveDiaryEditorBlock(controller, node, destination);
+                moveDiaryEditorBlocks(controller, [node], destination);
               }
             },
       leadingIcon: _menuIcon(

@@ -334,7 +334,8 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
 
   /// 顶栏：外观同预览页顶栏（经典时为纸色栏，玻璃照旧），常驻不随滚动隐藏。
   /// 预览页“编辑”按钮的位置在编辑标题或正文时换成“完成”（收起键盘）；
-  /// 手动保存时那里另有“保存”（在“完成”之后，一直在）。
+  /// 手动保存时那里一直是“保存”，不再放“完成”：对勾读起来就是“确认 /
+  /// 保存”，与“保存”并排显得重复、让人以为点勾也会保存（键盘用系统返回收起）。
   PreferredSizeWidget _buildReadingTopBar(
     BuildContext context, {
     required _ReadingFrame frame,
@@ -345,11 +346,6 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
     final style = resolved.style;
     final pageColors = diaryPreviewPageColors(context, resolved);
     final editing = _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
-    final done = IconButton(
-      tooltip: l10n.diaryReadingDone,
-      onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
-      icon: const FaIcon(FontAwesomeIcons.check, size: 16),
-    );
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: DiaryPreviewTopBar(
@@ -372,15 +368,13 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
         onShare: () => unawaited(_shareFromReading(resolved)),
         onMore: () => unawaited(_openReadingMore(frame)),
         editSlot: _controller.manualEditSave
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  if (editing) done,
-                  _buildReadingSaveButton(),
-                ],
-              )
+            ? _buildReadingSaveButton()
             : editing
-            ? done
+            ? IconButton(
+                tooltip: l10n.diaryReadingDone,
+                onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
+                icon: const FaIcon(FontAwesomeIcons.check, size: 16),
+              )
             : const SizedBox.shrink(),
       ),
     );

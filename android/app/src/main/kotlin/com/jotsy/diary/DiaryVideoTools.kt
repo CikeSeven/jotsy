@@ -319,6 +319,19 @@ class DiaryVideoTools(
         mainHandler.post(poll)
       } catch (error: Exception) {
         finish { result.error("transcode_failed", error.message, null) }
+      } catch (error: LinkageError) {
+        // A class the shrunk Media3 code resolves on this path can be missing on older systems
+        // (R8 once turned a null LogSessionId field read into a cast, see proguard-rules.pro).
+        // This runs on the main thread, so letting it escape kills the app; fail this video
+        // instead and let the storage manager carry on with the rest.
+        try {
+          transformer?.cancel()
+        } catch (ignored: Exception) {
+          // Never started.
+        } catch (ignored: LinkageError) {
+          // Never started.
+        }
+        finish { result.error("transcode_failed", error.toString(), null) }
       }
     }
 

@@ -82,7 +82,8 @@ class DiaryPreviewTopBar extends StatelessWidget {
   final bool sliver;
 
   /// 不为 null 时代替“编辑”按钮的位置（不看 [DiaryPreviewPageStyle.showEditButton]）：
-  /// 阅读式编辑页在编辑中放“完成”，其余时候放空占位。
+  /// 阅读式编辑页在编辑中放“完成”，其余时候放空占位；手动保存时一直放
+  /// “保存”。
   final Widget? editSlot;
 
   @override

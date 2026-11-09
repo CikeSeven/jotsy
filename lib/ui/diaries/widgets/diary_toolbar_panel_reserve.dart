@@ -5,8 +5,8 @@ import 'package:node_diary/app/theme/expressive_motion.dart';
 /// 正文末尾为「更多」面板额外让出的空间，高度跟随 [extent]。
 ///
 /// 悬浮工具栏叠在正文之上，正文要靠末尾留白才能把最后几行滚到工具栏上方。
-/// - 展开时立即让出：随后的光标揭示（`revealDiaryEditorCaretAbove`）需要滚动范围
-///   已经足够，留白若还在慢慢长高，滚动会顶到旧的边界提前停住；
+/// - 展开时立即让出：随后的光标 / 选区揭示（`DiaryEditorViewport`）需要滚动
+///   范围已经足够，留白若还在慢慢长高，滚动会顶到旧的边界提前停住；
 /// - 收起时随面板同速缩回：留白一次性变短会把停在末尾的正文瞬间拉下来，而面板
 ///   这时还在收拢，看起来像整页跳了一下；逐帧缩短时正文跟着面板平滑落下。
 class DiaryToolbarPanelReserve extends StatefulWidget {

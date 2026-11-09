@@ -9,7 +9,6 @@ import 'package:appflowy_editor/src/editor/editor_component/service/selection/mo
     show MobileSelectionDragMode, MobileSelectionServiceWidget;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show RenderSliver;
 import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter/services.dart' show HapticFeedback;
 
@@ -17,6 +16,7 @@ import '../../controllers/diary_editor_controller.dart';
 import 'diary_cursor_drag_follow.dart';
 import 'diary_edge_auto_scroll.dart';
 import 'diary_editor_keyboard_hold.dart';
+import 'diary_editor_visible_range.dart';
 
 enum DiarySelectionHandleSide { start, end }
 
@@ -511,62 +511,19 @@ class _DiaryEditorSelectionGesturesState
 
   /// 自动滚动的对象：编辑页为正文自己的列表，嵌入阅读页时为外层页面的
   /// 纵向滚动视图。
-  ScrollableState? _scrollable() {
-    if (widget.controller.isDisposed) return null;
-    final scrollable = widget.pageScroll
-        ? Scrollable.maybeOf(context, axis: Axis.vertical)
-        : widget.controller.state.scrollableState;
-    if (scrollable == null ||
-        !scrollable.mounted ||
-        axisDirectionToAxis(scrollable.axisDirection) != Axis.vertical) {
-      return null;
-    }
-    return scrollable;
-  }
+  ScrollableState? _scrollable() => diaryEditorScrollable(
+    context,
+    widget.controller,
+    pageScroll: widget.pageScroll,
+  );
 
-  /// 看得见的范围与滚动视图本身（全局纵坐标）。
-  ({double top, double bottom, double viewportTop, double viewportBottom})?
-  _visible() {
-    final box = _scrollable()?.context.findRenderObject();
-    if (box is! RenderBox || !box.hasSize || !box.attached) return null;
-    final viewportTop = box.localToGlobal(Offset.zero).dy;
-    final viewportBottom = viewportTop + box.size.height;
-    final view = View.of(context);
-    final ratio = view.devicePixelRatio;
-    final screen = view.physicalSize.height / ratio;
-    var top = viewportTop;
-    var bottom =
-        math.min(viewportBottom, screen - view.viewInsets.bottom / ratio) -
-        widget.coveredHeight;
-    if (widget.pageScroll) {
-      top = math.max(
-        viewportTop + _headerOverlap(),
-        view.viewPadding.top / ratio,
-      );
-      bottom = math.min(bottom, screen - view.viewPadding.bottom / ratio);
-    }
-    if (bottom <= top) return null;
-    return (
-      top: top,
-      bottom: bottom,
-      viewportTop: viewportTop,
-      viewportBottom: viewportBottom,
-    );
-  }
-
-  /// 嵌入阅读页时，固定或浮出的顶栏（`SliverAppBar`）盖在正文所在 sliver
-  /// 上的高度。
-  double _headerOverlap() {
-    for (
-      RenderObject? node = context.findRenderObject();
-      node != null;
-      node = node.parent
-    ) {
-      // 只在指针事件与帧回调里读取上一次布局的约束，不参与布局。
-      if (node is RenderSliver) return math.max(0, node.constraints.overlap);
-    }
-    return 0;
-  }
+  /// 看得见的范围与滚动视图本身（全局纵坐标），与选区菜单同一口径。
+  DiaryEditorVisibleRange? _visible() => diaryEditorVisibleRange(
+    context,
+    widget.controller,
+    pageScroll: widget.pageScroll,
+    coveredHeight: widget.coveredHeight,
+  );
 
   DiarySelectionHandleSide? _resolveHandle(Offset point) {
     final controller = widget.controller;

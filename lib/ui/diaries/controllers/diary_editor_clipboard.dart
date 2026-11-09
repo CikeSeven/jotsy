@@ -170,17 +170,34 @@ abstract final class DiaryEditorClipboard {
     if (hasHtml) await pasteHtml(controller, html);
   }
 
-  /// 输入法一次上屏的多行文字看起来是 Markdown 时按粘贴转换（见
-  /// `DiaryMarkdownInputInterceptor`）。不是 Markdown、光标在代码块或格子里
-  /// 时返回 false，交给上游按原文插入。
-  static Future<bool> pasteMarkdown(
+  /// 输入法一次上屏的多行文字（输入法剪贴板面板里的粘贴，见
+  /// `DiaryMultilineInputInterceptor`）与菜单粘贴同样落成块：看起来是
+  /// Markdown 时按 Markdown 转换，否则每行一段（与 [_pastePlain] 同一路径，
+  /// 表格格子里成为格内段落）。返回 false 时交给上游按原文插入：
+  /// - 光标在代码块里：多行原样留在块内；
+  /// - 不像 Markdown、换行只在末尾（如 `好的\n`）：分不清是粘贴还是输入法
+  ///   把确认的字和回车一起上屏。按粘贴切段时在待办 / 列表里回车得到的是
+  ///   正文段而不是下一项，iOS 上游还会去掉末尾换行另走回车，切段会多出一个
+  ///   空段，所以照旧交给上游。
+  static Future<bool> pasteInputText(
     DiaryEditorController controller,
     String text,
   ) async {
     if (controller.readOnly) return false;
     final nodes = _markdownNodes(controller, text);
-    if (nodes == null) return false;
-    await _pasteNodes(controller, nodes);
+    if (nodes != null) {
+      await _pasteNodes(controller, nodes);
+      return true;
+    }
+    final normalized = _normalizedLineBreaks(text);
+    // 第一个换行就在末尾 = 没有换行或只有末尾一个换行。
+    final firstBreak = normalized.indexOf('\n');
+    if (firstBreak < 0 ||
+        firstBreak == normalized.length - 1 ||
+        _caretInside(controller, const {kDiaryBlockCode})) {
+      return false;
+    }
+    await _pastePlain(controller, normalized);
     return true;
   }
 
@@ -237,22 +254,31 @@ abstract final class DiaryEditorClipboard {
   ) async {
     controller.select(diaryEditorInsertionSelection(controller));
     await _pasteNodes(controller, [
-      for (final line in text.replaceAll('\r\n', '\n').split('\n'))
+      for (final line in _normalizedLineBreaks(text).split('\n'))
         af.paragraphNode(text: line).toJson(),
     ]);
   }
 
+  /// Windows 的 `\r\n` 与旧式 `\r` 都按一个换行算，不留在段落里。
+  static String _normalizedLineBreaks(String text) =>
+      text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+
   /// 光标所在的块是代码块，或在表格格子里：这两处粘贴原文，不转换 Markdown。
-  static bool _caretInRawTextBlock(DiaryEditorController controller) {
+  static bool _caretInRawTextBlock(DiaryEditorController controller) =>
+      _caretInside(controller, const {kDiaryBlockCode, kDiaryBlockTableCell});
+
+  /// 插入点所在的块或它的某一层父块是 [types] 之一。
+  static bool _caretInside(
+    DiaryEditorController controller,
+    Set<String> types,
+  ) {
     final selection = diaryEditorInsertionSelection(controller);
     for (
       af.Node? node = controller.document.nodeAtPath(selection.start.path);
       node != null;
       node = node.parent
     ) {
-      if (node.type == kDiaryBlockCode || node.type == kDiaryBlockTableCell) {
-        return true;
-      }
+      if (types.contains(node.type)) return true;
     }
     return false;
   }

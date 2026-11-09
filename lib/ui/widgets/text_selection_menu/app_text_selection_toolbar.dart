@@ -42,10 +42,18 @@ class AppTextSelectionToolbar extends StatefulWidget {
     required this.anchors,
     required this.actions,
     this.collapseScope,
+    this.bottomLimit,
   });
 
   final TextSelectionToolbarAnchors anchors;
   final List<AppTextMenuAction> actions;
+
+  /// 菜单可用区域的下沿（覆盖层坐标，即全局纵坐标）：叠在内容底部的浮层
+  /// （如日记编辑页的悬浮工具栏与它展开的面板）的上沿，菜单不压在它上面；
+  /// 与系统栏、键盘一起取较高者。为 null 时只避开系统栏与键盘。下方连一行
+  /// 次要项都放不下时，展开的「更多」可以越过它，见
+  /// [AppTextToolbarGeometry.softBottom]。
+  final double? bottomLimit;
 
   /// 展开态所属的范围（如当前选区）：与上一次不相等时把展开的次要区收起。
   /// 为 null 时只在胶囊重新挂载时回到收起态。
@@ -142,6 +150,11 @@ class _AppTextSelectionToolbarState extends State<AppTextSelectionToolbar>
       safePadding: view.padding.copyWith(
         bottom: math.max(view.padding.bottom, view.viewInsets.bottom),
       ),
+      softBottom: widget.bottomLimit,
+      minExpandedHeight:
+          AppTextSelectionToolbar.collapsedHeight +
+          AppTextToolbarMetrics.dividerHeight +
+          AppTextToolbarMetrics.cellHeight,
       primaryAnchor: widget.anchors.primaryAnchor,
       secondaryAnchor: widget.anchors.secondaryAnchor,
       collapsedHeight: AppTextSelectionToolbar.collapsedHeight,

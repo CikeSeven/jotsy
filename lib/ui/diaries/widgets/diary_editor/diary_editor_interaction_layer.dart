@@ -98,6 +98,8 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
       child: DiaryEditorSelectionToolbar(
         controller: controller,
         enabled: textSelection,
+        pageScroll: shrinkWrap,
+        coveredHeight: shrinkWrap ? 0 : coveredHeight,
         child: shrinkWrap
             ? SizedBox(height: inlineHeight + handleSpace, child: native)
             : native,

@@ -57,6 +57,44 @@ void main() {
   );
 
   // #196：“返回时直接发表新日记”默认关（返回存进草稿箱），打开后写进
+  // 编辑已有日记的偏好（随备份）。
+  testWidgets('the manual-save switch is off by default and persists', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(
+      Scaffold(
+        body: ListView(
+          children: <Widget>[
+            SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final tile = find.widgetWithText(SwitchListTile, h.l10n.settingsManualSave);
+    await tester.scrollUntilVisible(tile, 200);
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(find.text(h.l10n.settingsManualSaveSubtitle), findsOneWidget);
+    expect(h.settings.diaryEditPrefsRaw, isNull);
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+    expect(h.settings.diaryEditPrefsRaw, '{"save":"manual"}');
+    expect(
+      BackupSettings.capture(h.settings)['diaryEditPrefsRaw'],
+      '{"save":"manual"}',
+    );
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(h.settings.diaryEditPrefsRaw, isNull);
+    await h.unmount();
+  });
+
   // 新建日记的偏好（随备份）。
   testWidgets('the publish-on-leave switch is off by default and persists', (
     tester,

@@ -89,6 +89,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           '{"v":1,"behavior":{"period":"week"}}',
         );
         await fixture.settings.setDiaryCreatePrefsRaw('{"leave":"publish"}');
+        await fixture.settings.setDiaryEditPrefsRaw('{"save":"manual"}');
         // 升级前还没迁移的旧版单份草稿：覆盖恢复会清掉它，失败时须原样回滚。
         await fixture.settings.setCreateDiaryDraftRaw(
           '{"title":"legacy draft"}',
@@ -118,6 +119,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['appFeaturesRaw'] = '{"explore":false}';
         settings['exploreLayoutRaw'] = '{"v":1,"behavior":{"period":"year"}}';
         settings['diaryCreatePrefsRaw'] = '{"leave":"draft"}';
+        settings['diaryEditPrefsRaw'] = '{"save":"auto"}';
         final row =
             ((incoming['database'] as Map)['diaries'] as List).single as Map;
         row['title'] = 'incoming diary';
@@ -185,6 +187,10 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         );
         expect(fixture.settings.diaryCreatePrefsRaw, '{"leave":"publish"}');
         expect(
+          fixture.settings.diaryEditPrefsRawNotifier.value,
+          '{"save":"manual"}',
+        );
+        expect(
           fixture.settings.diaryCreatePrefsRawNotifier.value,
           '{"leave":"publish"}',
         );
@@ -211,6 +217,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           '{"v":1,"behavior":{"period":"week"}}',
         );
         expect(recreated.diaryCreatePrefsRaw, '{"leave":"publish"}');
+        expect(recreated.diaryEditPrefsRaw, '{"save":"manual"}');
       },
     );
   }

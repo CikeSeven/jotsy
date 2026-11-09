@@ -16,6 +16,7 @@ import 'package:node_diary/ui/ai/models/ai_tool_subject.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_prompt_builder.dart';
 import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
 import 'package:node_diary/ui/diaries/models/diary_create_prefs.dart';
+import 'package:node_diary/ui/diaries/models/diary_edit_prefs.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
@@ -781,6 +782,7 @@ void main() {
           'calendar_lunar': 'hide',
           'open_diary_in_editor': true,
           'publish_on_leave': true,
+          'manual_save': true,
         });
         TodoSettings todos() =>
             TodoSettings.decode(settings.todoSettingsRawNotifier.value);
@@ -805,6 +807,12 @@ void main() {
           ).publishOnLeave,
           isTrue,
         );
+        expect(
+          DiaryEditPrefs.decode(
+            settings.diaryEditPrefsRawNotifier.value,
+          ).manualSave,
+          isTrue,
+        );
 
         // 用户之后在同一页改了别的设置：撤销只写回 AI 改过的那几项。
         await saveTodoSettings(settings, todos().copyWith(smartParse: false));
@@ -827,6 +835,7 @@ void main() {
           ).publishOnLeave,
           isFalse,
         );
+        expect(settings.diaryEditPrefsRaw, isNull);
       },
     );
 

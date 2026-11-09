@@ -35,6 +35,7 @@ class BackupSettings {
     'appFeaturesRaw': settingsService.appFeaturesRaw,
     'exploreLayoutRaw': settingsService.exploreLayoutRaw,
     'diaryCreatePrefsRaw': settingsService.diaryCreatePrefsRaw,
+    'diaryEditPrefsRaw': settingsService.diaryEditPrefsRaw,
     'todoSettingsRaw': settingsService.todoSettingsRaw,
     // AI 偏好不含密钥（服务商与密钥只在本机的 AiProviderStore）。
     'aiPrefsRaw': settingsService.aiPrefsRaw,
@@ -279,6 +280,18 @@ class BackupSettings {
           _ => null,
         },
       );
+    }
+
+    // 编辑已有日记的偏好同上：旧版备份没有时保留本机偏好，显式 null 时
+    // 回到默认。
+    if (settingsNode.containsKey('diaryEditPrefsRaw')) {
+      final diaryEditPrefsRaw = settingsNode['diaryEditPrefsRaw'];
+      await settingsService.setDiaryEditPrefsRaw(switch (diaryEditPrefsRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
     }
 
     // 待办的偏好同上：旧版备份没有时保留本机偏好，显式 null 时回到默认。

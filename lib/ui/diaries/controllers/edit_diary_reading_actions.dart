@@ -8,13 +8,17 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 ///
 /// 副作用都先补存（[_EditDiaryReadingActions._flushAndReload]），再按库里
 /// 的最新内容执行；删除确认后移进回收站，以 true 结束编辑页，入口给撤销。
+/// 手动保存时这些地方都不写库（`settleEditAutoSave` 只等进行中的保存），
+/// 分享、导出与 AI 回应用的是上次保存的版本，离开本页的日记本胶囊同返回
+/// 一样先问（见 `EditDiaryPersistenceFlow`）。
 ///
 /// 别处的修改：编辑页之上还能打开别的页面（标签搜索、提到这篇的日记、
 /// 看图……），从那里可能又打开这一篇并改掉它，而本页手里是改之前的内存
 /// 副本，回来接着写会把那次修改整份覆盖。所以本页被盖住时立即补存，回到
 /// 最上层时先等自己的写入落盘，再看库里这一篇：已删除就提示并退出（继续
 /// 写会经 `updateDiary` 把它从回收站带回来），更新时间或标签与本页知道的
-/// 不同就换成库里的最新内容并提示。
+/// 不同就换成库里的最新内容并提示——手动保存且有未保存的修改时不换，
+/// 留着用户的修改（保存时以本页为准），免得悄悄丢掉没存的内容。
 extension _EditDiaryReadingActions on _EditDiaryPageState {
   /// 打开信息面板：挂上面板，下一帧展开（面板挂上后控制器才连上）。
   void _openMetaPanel() {
@@ -66,27 +70,23 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
   }
 
   /// 信息栏的标签胶囊：与预览页一样按这个标签打开搜索（压在编辑页之上，
-  /// 返回后接着编辑）。先补存：搜索结果里就是刚写下的内容。
+  /// 返回后接着编辑）。先补存：搜索结果里就是刚写下的内容（手动保存时不
+  /// 写，搜索的是上次保存的版本）。
   Future<void> _openReadingTag(int tagId) async {
     if (_saving) return;
-    final saved = await _controller.flushEditAutoSave();
+    final saved = await _controller.settleEditAutoSave();
     if (!saved || !mounted) return;
     await openDiaryTagSearch(context, tagId);
   }
 
   /// 信息栏的日记本胶囊：与预览页一样回到首页、打开那本。这会直接关掉首页
-  /// 之上的所有页面（编辑页的返回补存不会执行），所以先补存，保存失败时
-  /// 留在本页（自动保存给出提示）。
+  /// 之上的所有页面（编辑页的返回补存不会执行），所以先按返回的口径处理
+  /// 保存（补存；手动保存且有未保存的修改时先问），保存失败或取消时留在
+  /// 本页。
   Future<void> _openReadingNotebook(NotebookView notebook) async {
     if (_saving) return;
-    setState(() => _saving = true);
-    final bool saved;
-    try {
-      saved = await _controller.flushEditAutoSave();
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
-    if (!saved || !mounted) return;
+    final leave = await _controller._settleBeforeLeaving();
+    if (!leave || !mounted) return;
     await openNotebookFromAnywhere(context, ref, notebook);
   }
 
@@ -99,8 +99,9 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
       return;
     }
     if (!current) {
-      // 被盖住：上面的页面可能马上读这一篇，先把防抖窗口里的输入写下去。
-      unawaited(_controller.flushEditAutoSave());
+      // 被盖住：上面的页面可能马上读这一篇，先把防抖窗口里的输入写下去
+      // （手动保存时不写，包括返回时弹出的询问框盖住本页的这一下）。
+      unawaited(_controller.settleEditAutoSave());
       return;
     }
     unawaited(_checkForChangesElsewhere());
@@ -112,11 +113,14 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
   /// 时间）落盘，[_knownStoredAt] 随之更新，自己的写入不会被当成别处的修改。
   /// 标签也比对：多选批量改标签不改更新时间。日记本收录不比对——本页只在
   /// 用户改过时才写收录（`_notebookIdsDirty`），不会覆盖别处的改动。
+  ///
+  /// 手动保存时不写，只等进行中的保存；有未保存的修改时只看删没删，不换成
+  /// 库里的内容（本页的标签与库里不同本就是没存的修改）。
   Future<void> _checkForChangesElsewhere() async {
     if (_checkingElsewhere || _saving) return;
     _checkingElsewhere = true;
     try {
-      final saved = await _controller.flushEditAutoSave();
+      final saved = await _controller.settleEditAutoSave();
       if (!saved || !mounted) return;
       final stored = await _database.getDiaryWithTagsByDiaryId(widget.diaryId!);
       if (!mounted) return;
@@ -126,6 +130,7 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
         Navigator.of(context).pop();
         return;
       }
+      if (_controller.hasUnsavedEditChanges) return;
       final storedTags = stored.tags.map((Tag tag) => tag.id).toSet();
       final changed =
           stored.diary.updatedAt != _knownStoredAt ||
@@ -153,9 +158,10 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
   }
 
   /// 补存，再按库里的最新内容读出这一篇；保存失败或日记已不在时为 null
-  /// （保存失败的提示由自动保存给出）。
+  /// （保存失败的提示由自动保存给出）。手动保存时不写，读出的是上次保存的
+  /// 版本。
   Future<DiaryWithTags?> _flushAndReload() async {
-    final saved = await _controller.flushEditAutoSave();
+    final saved = await _controller.settleEditAutoSave();
     if (!saved || !mounted) return null;
     return _database.getDiaryWithTagsByDiaryId(widget.diaryId!);
   }
@@ -220,7 +226,7 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
           : null,
       onAiReply: frame.aiReplyAvailable
           ? () async {
-              final saved = await _controller.flushEditAutoSave();
+              final saved = await _controller.settleEditAutoSave();
               if (!saved || !mounted) return;
               await requestAiReply(context, ref, diaryId: diary.diaryId);
             }
@@ -286,7 +292,8 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
 
   /// 删除：确认后先补存（撤销删除时拿回的是改过的内容），再移进回收站，
   /// 以 true 结束编辑页，入口按“已删除”收尾并给出撤销（同预览页的删除，
-  /// 不刷新“最后编辑”时间）。
+  /// 不刷新“最后编辑”时间）。手动保存时没存的修改随之放弃，撤销拿回的是
+  /// 上次保存的版本。
   Future<void> _deleteFromReading() async {
     final diaryId = widget.diaryId;
     if (diaryId == null || _saving) return;
@@ -294,7 +301,7 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
     if (!confirmed || !mounted) return;
     setState(() => _saving = true);
     try {
-      final saved = await _controller.flushEditAutoSave();
+      final saved = await _controller.settleEditAutoSave();
       if (!saved || !mounted) return;
       await _database.softDeleteDiary(diaryId, touchUpdatedAt: false);
       if (!mounted) return;

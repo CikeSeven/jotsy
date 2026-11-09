@@ -6,7 +6,7 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 ///
 /// 职责边界：
 /// - 新建模式：草稿箱里这一份草稿的自动保存、续写恢复与发布后删除；
-/// - 协调已有笔记自动保存、删除与新建发布跳转链路；
+/// - 协调已有笔记的自动 / 手动保存、删除与新建发布跳转链路；
 /// - 不构建 UI，仅协调页面状态与数据层。
 class EditDiaryController {
   EditDiaryController(this._state) {
@@ -19,6 +19,9 @@ class EditDiaryController {
           _showHint(_state.context.l10n.autoT0087(error.toString()));
         }
       },
+      // 设置为手动保存时只在点保存时写库（见 EditDiaryPersistenceFlow）。
+      manual: () => manualEditSave,
+      confirmManualExit: _confirmDesktopExit,
     );
     _draftAutoSave = DebouncedAutoSaveController<NewDiaryDraftSnapshot>(
       debounce: const Duration(milliseconds: 1300),

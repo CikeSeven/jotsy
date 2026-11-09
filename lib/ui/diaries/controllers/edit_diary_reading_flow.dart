@@ -333,7 +333,8 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
   }
 
   /// 顶栏：外观同预览页顶栏（经典时为纸色栏，玻璃照旧），常驻不随滚动隐藏。
-  /// 预览页“编辑”按钮的位置在编辑标题或正文时换成“完成”（收起键盘）。
+  /// 预览页“编辑”按钮的位置在编辑标题或正文时换成“完成”（收起键盘）；
+  /// 手动保存时那里另有“保存”（在“完成”之后，一直在）。
   PreferredSizeWidget _buildReadingTopBar(
     BuildContext context, {
     required _ReadingFrame frame,
@@ -344,6 +345,11 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
     final style = resolved.style;
     final pageColors = diaryPreviewPageColors(context, resolved);
     final editing = _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
+    final done = IconButton(
+      tooltip: l10n.diaryReadingDone,
+      onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
+      icon: const FaIcon(FontAwesomeIcons.check, size: 16),
+    );
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: DiaryPreviewTopBar(
@@ -365,13 +371,44 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
         onEdit: () {},
         onShare: () => unawaited(_shareFromReading(resolved)),
         onMore: () => unawaited(_openReadingMore(frame)),
-        editSlot: editing
-            ? IconButton(
-                tooltip: l10n.diaryReadingDone,
-                onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
-                icon: const FaIcon(FontAwesomeIcons.check, size: 16),
+        editSlot: _controller.manualEditSave
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (editing) done,
+                  _buildReadingSaveButton(),
+                ],
               )
+            : editing
+            ? done
             : const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  /// 手动保存时编辑位置的“保存”：有未保存的修改时可点（只随
+  /// `unsaved` 局部重建，不牵动整页），写库期间停用；保存成功后对勾停留
+  /// 1 秒（[_EditDiaryPageState._flashEditSaved]）。
+  Widget _buildReadingSaveButton() {
+    final l10n = context.l10n;
+    final saved = _editSavedFlash;
+    return ValueListenableBuilder<bool>(
+      valueListenable: _controller._editAutoSave.unsaved,
+      builder: (BuildContext context, bool unsaved, Widget? _) => IconButton(
+        tooltip: saved ? l10n.diaryEditSaved : l10n.commonSave,
+        onPressed: unsaved && !_saving
+            ? () => unawaited(_controller.saveEditManually())
+            : null,
+        icon: ExpressiveIconSwap(
+          switchKey: saved,
+          child: saved
+              ? FaIcon(
+                  FontAwesomeIcons.check,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                )
+              : const FaIcon(FontAwesomeIcons.floppyDisk, size: 16),
+        ),
       ),
     );
   }

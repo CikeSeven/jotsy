@@ -13986,6 +13986,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get publishOnLeaveFailedKeptDraft => '发表失败，这篇已留在草稿箱';
 
   @override
+  String get settingsManualSave => '手动保存修改';
+
+  @override
+  String get settingsManualSaveSubtitle => '改已有的日记时不自动保存，点保存才写入；有未保存的修改时返回会先询问';
+
+  @override
+  String get diaryEditSaved => '已保存';
+
+  @override
   String get storageMgmtAppTitle => '应用占用';
 
   @override

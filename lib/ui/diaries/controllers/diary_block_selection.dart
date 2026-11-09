@@ -125,7 +125,7 @@ class DiaryBlockSelection extends ChangeNotifier {
   }
 
   /// 在 [base] 上把 [from]–[to]（阅读顺序，含两端）这一段全部选中或取消，
-  /// 返回新的选择。选择圈上滑动连选时，每一帧都以开始滑动时的选择为底重新
+  /// 返回新的选择。页边距里滑动连选时，每一帧都以开始滑动时的选择为底重新
   /// 算，滑回去的块恢复原状。
   List<af.Node> rangeApplied({
     required List<af.Node> base,
@@ -149,7 +149,7 @@ class DiaryBlockSelection extends ChangeNotifier {
     ];
   }
 
-  /// 把选择换成 [roots]（选择圈连选的每一帧、批量操作换了块之后）。
+  /// 把选择换成 [roots]（页边距里连选的每一帧、批量操作换了块之后）。
   void replace(Iterable<af.Node> roots) {
     if (!isActive) return;
     _roots = diaryBlockRoots(roots);

@@ -6,15 +6,15 @@ import 'package:flutter/rendering.dart' show RenderParagraph;
 
 import 'diary_block_marker_metrics.dart';
 
-/// 块在页边距里那一列的几何：段落把手与段落选择圈都画在块首行的字形
-/// 中线上、水平固定在页面左边距里。只读上一帧的布局，不改文档。
+/// 块的几何：段落把手画在块首行的字形中线上、水平固定在页面左边距里；
+/// 段落选择的色块按块的矩形与首行文字顶端画。只读上一帧的布局，不改文档。
 ///
-/// 按块样式与缩放缓存首行字形中心（到文字顶端的距离）：把手与选择圈可见
-/// 期间每帧都要核对位置，样式只在换块或改排版时才变。
+/// 按块样式与缩放缓存首行字形中心（到文字顶端的距离）：把手可见期间每帧
+/// 都要核对位置，样式只在换块或改排版时才变。
 class DiaryBlockLineGeometry {
   final Map<(TextStyle, TextScaler), double> _glyphCenters = {};
 
-  /// 把手 / 选择圈中线的全局纵坐标：文字块为首行字形中心，媒体等没有文字
+  /// 把手中线的全局纵坐标：文字块为首行字形中心，媒体等没有文字
   /// 的块为块顶下方 20dp（矮于 40dp 时取块的中线）。
   double centerY(af.Node node) {
     final rect = node.rect;
@@ -40,6 +40,16 @@ class DiaryBlockLineGeometry {
       return DiaryMarkerMetrics.measure(style, scaler).glyphCenter;
     });
     return paragraph.localToGlobal(Offset(0, center)).dy;
+  }
+
+  /// 文字块首行文字顶端的全局纵坐标（首行上方的半个行距已裁掉，段落顶端
+  /// 就是字形顶端）；媒体等没有文字的块返回 null。段落选择的色块据此在
+  /// 文字上方留一样多的白，不随块自己的上边距（标题上方很大）变化。
+  double? textTop(af.Node node) {
+    if (node.delta == null) return null;
+    final paragraph = _placeholderParagraph(node);
+    if (paragraph == null || !paragraph.hasSize) return null;
+    return paragraph.localToGlobal(Offset.zero).dy;
   }
 
   /// 块自身文字的占位段落：块里第一个 [af.AppFlowyRichText]（子块排在自身
@@ -104,8 +114,8 @@ class DiaryBlockLineGeometry {
     );
   }
 
-  /// 把手与选择圈中心的横坐标（[box] 的局部坐标）：固定在页面左边距里，
-  /// 不随缩进右移。
+  /// 把手中心的横坐标（[box] 的局部坐标）：固定在页面左边距里，不随缩进
+  /// 右移。
   static double columnCenterX(double contentLeft, double width) =>
       math.max(contentLeft - width / 2, 8.0);
 }

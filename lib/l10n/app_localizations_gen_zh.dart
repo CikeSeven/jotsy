@@ -8078,10 +8078,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorRemoveLink => '移除链接';
 
   @override
-  String get diaryEditorMoveBlockUp => '上移段落';
+  String get diaryEditorMoveBlockUp => '上移';
 
   @override
-  String get diaryEditorMoveBlockDown => '下移段落';
+  String get diaryEditorMoveBlockDown => '下移';
 
   @override
   String get diaryEditorBlockHandle => '选择段落，长按拖动';
@@ -8128,7 +8128,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diaryBlockTurnInto => '转换为';
+  String get diaryBlockTurnInto => '转换';
 
   @override
   String get diaryBlockStyle => '样式';

@@ -19,11 +19,14 @@ final List<(DiaryToolbarItem, String)> _inline = [
 ];
 
 /// 「样式」面板内容的自然高度（不含面板外框）。
-final double kDiaryBlockStylePanelHeight = diaryBlockPanelHeight(2);
+final double kDiaryBlockStylePanelHeight = diaryBlockPanelHeight(
+  2,
+  footer: true,
+);
 
 /// 段落操作栏的「样式」面板：第一排加粗 / 斜体 / 下划线 / 删除线（整段开关：
 /// 选中的文字都带着时显示选中态、再点去掉），第二排左对齐 / 居中 / 右对齐 /
-/// 两端对齐，表头右侧「清除格式」。作用于选中块（连同子块）里的文字块，
+/// 两端对齐，最下通栏一格「清除格式」。作用于选中块（连同子块）里的文字块，
 /// 代码块不加格式、不改对齐（同工具栏）；每次一步撤销，面板保持打开。
 class DiaryBlockStylePanel extends StatelessWidget {
   const DiaryBlockStylePanel({
@@ -46,34 +49,42 @@ class DiaryBlockStylePanel extends StatelessWidget {
       final enabled = !controller.readOnly && textNodes.isNotEmpty;
       final align = diaryBlocksAlign(roots);
       return DiaryBlockPanelBody(
-        title: l10n.diaryBlockStyle,
         bodyHeight: bodyHeight,
-        trailing: TextButton(
-          onPressed: enabled
-              ? () =>
-                    selection.replace(clearDiaryBlocksFormat(controller, roots))
-              : null,
-          child: Text(DiaryToolbarItem.clearFormat.label(l10n)),
+        footer: DiaryPanelActionCell(
+          icon: DiaryToolbarItem.clearFormat.iconData,
+          label: DiaryToolbarItem.clearFormat.label(l10n),
+          enabled: enabled,
+          filled: true,
+          wide: true,
+          maxLines: 1,
+          onTap: () =>
+              selection.replace(clearDiaryBlocksFormat(controller, roots)),
         ),
         rows: [
           [
             for (final (item, key) in _inline)
-              DiaryPanelActionCell(
-                icon: item.iconData,
-                label: item.label(l10n),
-                enabled: enabled,
-                selected: diaryBlocksHaveInline(roots, key),
-                onTap: () => toggleDiaryBlocksInline(controller, roots, key),
+              DiaryBlockPanelItem(
+                DiaryPanelActionCell(
+                  icon: item.iconData,
+                  label: item.label(l10n),
+                  enabled: enabled,
+                  selected: diaryBlocksHaveInline(roots, key),
+                  filled: true,
+                  onTap: () => toggleDiaryBlocksInline(controller, roots, key),
+                ),
               ),
           ],
           [
             for (final value in DiaryTextAlign.values)
-              DiaryPanelActionCell(
-                icon: diaryTextAlignIcon(value),
-                label: _alignLabel(l10n, value),
-                enabled: enabled,
-                selected: value == align,
-                onTap: () => setDiaryBlocksAlign(controller, roots, value),
+              DiaryBlockPanelItem(
+                DiaryPanelActionCell(
+                  icon: diaryTextAlignIcon(value),
+                  label: _alignLabel(l10n, value),
+                  enabled: enabled,
+                  selected: value == align,
+                  filled: true,
+                  onTap: () => setDiaryBlocksAlign(controller, roots, value),
+                ),
               ),
           ],
         ],

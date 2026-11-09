@@ -35,9 +35,10 @@ final double kDiaryBlockTypePanelHeight = diaryBlockPanelHeight(_rows.length);
 
 /// 段落操作栏的「转换为」面板：把选中的块（连同子块）里的文字块一起换成
 /// 正文、一二三级标题、无序 / 有序列表、待办、引用、提示块、折叠块或代码块，
-/// 一步撤销，面板保持打开。选中的块都是同一种时那一格显示选中态；没有能
-/// 换类型的文字块（只选了图片、表格等）时整面停用。名称与图标与 `/` 菜单、
-/// 工具栏同一套。
+/// 一步撤销，面板保持打开。三排磁贴，选中的块都是同一种时那一格显示选中
+/// 态；没有能换类型的文字块（只选了图片、表格等）时整面停用。名称与图标
+/// 与 `/` 菜单、工具栏同一套，三级标题用 H1 / H2 / H3 字样区分（图标是
+/// 同一个）。
 class DiaryBlockTypePanel extends StatelessWidget {
   const DiaryBlockTypePanel({
     super.key,
@@ -57,19 +58,24 @@ class DiaryBlockTypePanel extends StatelessWidget {
       final current = diaryBlocksType(roots);
       final enabled = !controller.readOnly && diaryBlocksConvertible(roots);
       return DiaryBlockPanelBody(
-        title: context.l10n.diaryBlockTurnInto,
         bodyHeight: bodyHeight,
         rows: [
           for (final row in _rows)
             [
               for (final choice in row)
-                DiaryPanelActionCell(
-                  icon: _icon(choice),
-                  label: _label(context.l10n, choice),
-                  enabled: enabled,
-                  selected: choice == current,
-                  onTap: () => selection.replace(
-                    setDiaryBlocksType(controller, roots, choice),
+                DiaryBlockPanelItem(
+                  DiaryPanelActionCell(
+                    icon: _icon(choice),
+                    glyph: choice.type == kDiaryBlockHeading
+                        ? 'H${choice.level}'
+                        : null,
+                    label: _label(context.l10n, choice),
+                    enabled: enabled,
+                    selected: choice == current,
+                    filled: true,
+                    onTap: () => selection.replace(
+                      setDiaryBlocksType(controller, roots, choice),
+                    ),
                   ),
                 ),
             ],
@@ -104,6 +110,7 @@ class DiaryBlockTypePanel extends StatelessWidget {
         kDiaryBlockQuote => DiaryToolbarItem.quote.label(l10n),
         kDiaryBlockCallout => DiaryToolbarItem.callout.label(l10n),
         kDiaryBlockToggleList => DiaryToolbarItem.toggle.label(l10n),
-        _ => DiaryToolbarItem.codeBlock.label(l10n),
+        // 工具栏上叫“代码块（多行）”是为了与行内代码区分；这里只有块。
+        _ => l10n.codeBlockPanelTitle,
       };
 }

@@ -35,7 +35,7 @@ import 'diary_edge_auto_scroll.dart';
 ///   一变就经 [DiaryBlockDragSession] 把块真的挪过去，正文即是松手后的
 ///   样子；不能落到自身及后代上。被拖的块衬一块圆角底表示“拿在手里”，把手
 ///   只随手指上下。松手只记一步撤销；指针被系统取消时放回原处。
-/// - 段落选择模式里长按块或选择圈（经 [DiaryBlockDragRelay]）：拖动选中的
+/// - 段落选择模式里长按块或左侧页边距（经 [DiaryBlockDragRelay]）：拖动选中的
 ///   整组，同一条链路；不连续的几块在第一次预览时聚到一起，正文选区保持
 ///   为空。
 /// - 落点按手指的位移找（见 [_DiaryBlockHandleLayerState._grabOffset]），

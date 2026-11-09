@@ -9041,23 +9041,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorRemoveLink => 'Remove link';
 
   @override
-  String get diaryEditorMoveBlockUp => 'Move block up';
+  String get diaryEditorMoveBlockUp => 'Up';
 
   @override
-  String get diaryEditorMoveBlockDown => 'Move block down';
+  String get diaryEditorMoveBlockDown => 'Down';
 
   @override
   String get diaryEditorBlockHandle => 'Select block, hold to drag';
 
   @override
   String diaryBlockSelectionCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count blocks selected',
-      one: '1 block selected',
-    );
-    return '$_temp0';
+    return '$count selected';
   }
 
   @override
@@ -9115,7 +9109,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryBlockTurnInto => 'Turn into';
+  String get diaryBlockTurnInto => 'Convert';
 
   @override
   String get diaryBlockStyle => 'Style';

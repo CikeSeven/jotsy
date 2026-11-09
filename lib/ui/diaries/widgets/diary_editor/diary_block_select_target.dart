@@ -11,7 +11,7 @@ import 'diary_block_drop_targets.dart';
 typedef DiaryBlockGroupDragStart =
     void Function(int pointer, Offset position, af.Node held);
 
-/// 段落选择模式里块上（正文与左侧选择圈）的长按交给段落把手层，由它开始
+/// 段落选择模式里块上（正文与左侧页边距）的长按交给段落把手层，由它开始
 /// 拖动选中的整组（拖动链路只有把手层一处）。由 `DiaryEditor` 持有、同时
 /// 交给块包装与把手层；把手层挂载时登记 [start]。
 class DiaryBlockDragRelay {

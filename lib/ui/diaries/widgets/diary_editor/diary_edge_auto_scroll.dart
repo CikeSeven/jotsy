@@ -44,7 +44,7 @@ Rect? diaryEdgeAutoScrollTarget(
   return null;
 }
 
-/// 拖动途中的边缘自动滚动（段落拖动与段落选择圈的连选共用）：拖动点进入
+/// 拖动途中的边缘自动滚动（段落拖动与段落选择模式的连选共用）：拖动点进入
 /// 看得见的范围上下 [kDiaryAutoScrollZone] 时朝那一边滚，越靠外越快，离开
 /// 边缘即停。
 ///

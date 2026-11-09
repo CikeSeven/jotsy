@@ -8221,17 +8221,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryEditorRemoveLink => 'リンクを削除';
 
   @override
-  String get diaryEditorMoveBlockUp => 'ブロックを上へ移動';
+  String get diaryEditorMoveBlockUp => '上へ';
 
   @override
-  String get diaryEditorMoveBlockDown => 'ブロックを下へ移動';
+  String get diaryEditorMoveBlockDown => '下へ';
 
   @override
   String get diaryEditorBlockHandle => '段落を選択（長押しでドラッグ）';
 
   @override
   String diaryBlockSelectionCount(int count) {
-    return '$count 段落を選択中';
+    return '$count 件を選択中';
   }
 
   @override

@@ -14724,16 +14724,16 @@ abstract class AppLocalizations {
   /// **'Remove link'**
   String get diaryEditorRemoveLink;
 
-  /// Move the selected editor block above its previous sibling.
+  /// Short label under the move-up tool in the block action bar (keep it to one short word): move the selected blocks up one step.
   ///
   /// In en, this message translates to:
-  /// **'Move block up'**
+  /// **'Up'**
   String get diaryEditorMoveBlockUp;
 
-  /// Move the selected editor block below its next sibling.
+  /// Short label under the move-down tool in the block action bar (keep it to one short word): move the selected blocks down one step.
   ///
   /// In en, this message translates to:
-  /// **'Move block down'**
+  /// **'Down'**
   String get diaryEditorMoveBlockDown;
 
   /// Accessibility label of the diary editor paragraph handle: tapping selects the block (block selection mode), holding drags it.
@@ -14745,7 +14745,7 @@ abstract class AppLocalizations {
   /// Header of the block action bar in block selection mode: how many blocks are selected.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 block selected} other{{count} blocks selected}}'**
+  /// **'{count} selected'**
   String diaryBlockSelectionCount(int count);
 
   /// Header of the block action bar when no block is selected (still in block selection mode).
@@ -14760,7 +14760,7 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get diaryBlockSelectionDone;
 
-  /// Block action: copy the selected blocks with their formatting.
+  /// Short label under the copy tool in the block action bar: copy the selected blocks with their formatting.
   ///
   /// In en, this message translates to:
   /// **'Copy'**
@@ -14808,13 +14808,13 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Cut 1 block} other{Cut {count} blocks}}'**
   String diaryBlockCutDone(int count);
 
-  /// Block action bar tool and panel title: change the type of the selected blocks (paragraph, heading, list, to-do…).
+  /// Short label under the block action bar tool that opens the block type panel (keep it to one short word): change the selected blocks into a paragraph, heading, list, to-do…
   ///
   /// In en, this message translates to:
-  /// **'Turn into'**
+  /// **'Convert'**
   String get diaryBlockTurnInto;
 
-  /// Block action bar tool and panel title: bold / italic / underline / strikethrough and alignment for the selected blocks.
+  /// Short label under the block action bar tool that opens the style panel (keep it to one short word): bold / italic / underline / strikethrough and alignment for the selected blocks.
   ///
   /// In en, this message translates to:
   /// **'Style'**

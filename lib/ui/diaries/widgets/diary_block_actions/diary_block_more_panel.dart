@@ -13,10 +13,11 @@ import 'diary_block_panel_body.dart';
 final double kDiaryBlockMorePanelHeight = diaryBlockPanelHeight(2);
 
 /// 段落操作栏的「更多」面板：第一排移到开头 / 末尾、创建副本、剪切，第二排
-/// 拆分成段落、合并成一段。作用于选中的块、一步撤销；移动、创建副本、拆分
-/// 与合并后面板保持打开（选择跟着换到操作后的块），剪切后退出选择模式（操作
-/// 栏随之收起）。停用只看文档与选择：一个都没选、已在开头 / 末尾、没有带
-/// 换行的文字块（拆分）、不到两块文字块（合并）时停用。
+/// 拆分成段落、合并成一段（标签长，各占两格、图标与标签横排）。作用于选中
+/// 的块、一步撤销；移动、创建副本、拆分与合并后面板保持打开（选择跟着换到
+/// 操作后的块），剪切后退出选择模式（操作栏随之收起）。停用只看文档与
+/// 选择：一个都没选、已在开头 / 末尾、没有带换行的文字块（拆分）、不到两块
+/// 文字块（合并）时停用。
 class DiaryBlockMorePanel extends StatelessWidget {
   const DiaryBlockMorePanel({
     super.key,
@@ -34,52 +35,70 @@ class DiaryBlockMorePanel extends StatelessWidget {
       final l10n = context.l10n;
       final roots = controller.blockSelection.roots;
       final editable = !controller.readOnly && roots.isNotEmpty;
+      DiaryBlockPanelItem cell(
+        FaIconData icon,
+        String label, {
+        required bool enabled,
+        required VoidCallback onTap,
+        bool wide = false,
+      }) => DiaryBlockPanelItem(
+        DiaryPanelActionCell(
+          icon: icon,
+          label: label,
+          enabled: enabled,
+          filled: true,
+          wide: wide,
+          onTap: onTap,
+        ),
+        span: wide ? 2 : 1,
+      );
       return DiaryBlockPanelBody(
-        title: l10n.diaryEditorMoreActions,
         bodyHeight: bodyHeight,
         rows: [
           [
-            DiaryPanelActionCell(
-              icon: FontAwesomeIcons.anglesUp,
-              label: l10n.diaryBlockMoveToTop,
+            cell(
+              FontAwesomeIcons.anglesUp,
+              l10n.diaryBlockMoveToTop,
               enabled:
                   editable &&
                   canMoveDiaryBlockGroupToEdge(controller, roots, top: true),
               onTap: () => DiaryBlockActions.moveToEdge(controller, top: true),
             ),
-            DiaryPanelActionCell(
-              icon: FontAwesomeIcons.anglesDown,
-              label: l10n.diaryBlockMoveToBottom,
+            cell(
+              FontAwesomeIcons.anglesDown,
+              l10n.diaryBlockMoveToBottom,
               enabled:
                   editable &&
                   canMoveDiaryBlockGroupToEdge(controller, roots, top: false),
               onTap: () => DiaryBlockActions.moveToEdge(controller, top: false),
             ),
-            DiaryPanelActionCell(
-              icon: FontAwesomeIcons.clone,
-              label: l10n.diaryBlockDuplicate,
+            cell(
+              FontAwesomeIcons.clone,
+              l10n.diaryBlockDuplicate,
               enabled: editable,
               onTap: () => DiaryBlockActions.duplicate(controller),
             ),
-            DiaryPanelActionCell(
-              icon: FontAwesomeIcons.scissors,
-              label: l10n.diaryBlockCut,
+            cell(
+              FontAwesomeIcons.scissors,
+              l10n.diaryBlockCut,
               enabled: editable,
               onTap: () => DiaryBlockActions.cut(context, controller),
             ),
           ],
           [
-            DiaryPanelActionCell(
-              icon: FontAwesomeIcons.arrowsSplitUpAndLeft,
-              label: l10n.diaryBlockSplitLines,
+            cell(
+              FontAwesomeIcons.arrowsSplitUpAndLeft,
+              l10n.diaryBlockSplitLines,
+              wide: true,
               enabled: editable && canSplitDiaryBlockLines(roots),
               onTap: () => controller.blockSelection.replace(
                 splitDiaryBlockLines(controller, roots),
               ),
             ),
-            DiaryPanelActionCell(
-              icon: FontAwesomeIcons.objectGroup,
-              label: l10n.diaryBlockMerge,
+            cell(
+              FontAwesomeIcons.objectGroup,
+              l10n.diaryBlockMerge,
+              wide: true,
               enabled: editable && canMergeDiaryBlocks(roots),
               onTap: () => controller.blockSelection.replace(
                 mergeDiaryBlocks(controller, roots),

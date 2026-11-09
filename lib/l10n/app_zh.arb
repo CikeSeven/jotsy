@@ -11554,13 +11554,13 @@
   "@diaryEditorRemoveLink": {
     "description": "Clear the URL from the selected diary text."
   },
-  "diaryEditorMoveBlockUp": "上移段落",
+  "diaryEditorMoveBlockUp": "上移",
   "@diaryEditorMoveBlockUp": {
-    "description": "Move the selected editor block above its previous sibling."
+    "description": "Short label under the move-up tool in the block action bar (keep it to one short word): move the selected blocks up one step."
   },
-  "diaryEditorMoveBlockDown": "下移段落",
+  "diaryEditorMoveBlockDown": "下移",
   "@diaryEditorMoveBlockDown": {
-    "description": "Move the selected editor block below its next sibling."
+    "description": "Short label under the move-down tool in the block action bar (keep it to one short word): move the selected blocks down one step."
   },
   "diaryEditorBlockHandle": "选择段落，长按拖动",
   "@diaryEditorBlockHandle": {"description": "Accessibility label of the diary editor paragraph handle: tapping selects the block (block selection mode), holding drags it."},
@@ -11571,7 +11571,7 @@
   "diaryBlockSelectionDone": "完成",
   "@diaryBlockSelectionDone": {"description": "Button that leaves block selection mode and returns to typing."},
   "diaryBlockCopy": "复制",
-  "@diaryBlockCopy": {"description": "Block action: copy the selected blocks with their formatting."},
+  "@diaryBlockCopy": {"description": "Short label under the copy tool in the block action bar: copy the selected blocks with their formatting."},
   "diaryBlockCut": "剪切",
   "@diaryBlockCut": {"description": "Block action: copy the selected blocks, then delete them."},
   "diaryBlockDuplicate": "创建副本",
@@ -11586,10 +11586,10 @@
   "@diaryBlockDeleted": {"description": "Snackbar after deleting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
   "diaryBlockCutDone": "已剪切 {count} 段",
   "@diaryBlockCutDone": {"description": "Snackbar after cutting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
-  "diaryBlockTurnInto": "转换为",
-  "@diaryBlockTurnInto": {"description": "Block action bar tool and panel title: change the type of the selected blocks (paragraph, heading, list, to-do…)."},
+  "diaryBlockTurnInto": "转换",
+  "@diaryBlockTurnInto": {"description": "Short label under the block action bar tool that opens the block type panel (keep it to one short word): change the selected blocks into a paragraph, heading, list, to-do…"},
   "diaryBlockStyle": "样式",
-  "@diaryBlockStyle": {"description": "Block action bar tool and panel title: bold / italic / underline / strikethrough and alignment for the selected blocks."},
+  "@diaryBlockStyle": {"description": "Short label under the block action bar tool that opens the style panel (keep it to one short word): bold / italic / underline / strikethrough and alignment for the selected blocks."},
   "diaryBlockSplitLines": "拆分成段落",
   "@diaryBlockSplitLines": {"description": "Block action: split selected blocks whose text contains line breaks into one block per line (old pasted text that landed in one block)."},
   "diaryBlockMerge": "合并成一段",

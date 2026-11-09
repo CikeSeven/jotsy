@@ -11613,24 +11613,24 @@
   "@diaryEditorRemoveLink": {
     "description": "Clear the URL from the selected diary text."
   },
-  "diaryEditorMoveBlockUp": "Переместить блок вверх",
+  "diaryEditorMoveBlockUp": "Вверх",
   "@diaryEditorMoveBlockUp": {
-    "description": "Move the selected editor block above its previous sibling."
+    "description": "Short label under the move-up tool in the block action bar (keep it to one short word): move the selected blocks up one step."
   },
-  "diaryEditorMoveBlockDown": "Переместить блок вниз",
+  "diaryEditorMoveBlockDown": "Вниз",
   "@diaryEditorMoveBlockDown": {
-    "description": "Move the selected editor block below its next sibling."
+    "description": "Short label under the move-down tool in the block action bar (keep it to one short word): move the selected blocks down one step."
   },
   "diaryEditorBlockHandle": "Выбрать блок, удерживайте для перетаскивания",
   "@diaryEditorBlockHandle": {"description": "Accessibility label of the diary editor paragraph handle: tapping selects the block (block selection mode), holding drags it."},
-  "diaryBlockSelectionCount": "{count, plural, one{Выбран {count} блок} few{Выбрано {count} блока} many{Выбрано {count} блоков} other{Выбрано {count} блока}}",
+  "diaryBlockSelectionCount": "Выбрано: {count}",
   "@diaryBlockSelectionCount": {"description": "Header of the block action bar in block selection mode: how many blocks are selected.", "placeholders": {"count": {"type": "int"}}},
   "diaryBlockSelectionNone": "Блоки не выбраны",
   "@diaryBlockSelectionNone": {"description": "Header of the block action bar when no block is selected (still in block selection mode)."},
   "diaryBlockSelectionDone": "Готово",
   "@diaryBlockSelectionDone": {"description": "Button that leaves block selection mode and returns to typing."},
   "diaryBlockCopy": "Копировать",
-  "@diaryBlockCopy": {"description": "Block action: copy the selected blocks with their formatting."},
+  "@diaryBlockCopy": {"description": "Short label under the copy tool in the block action bar: copy the selected blocks with their formatting."},
   "diaryBlockCut": "Вырезать",
   "@diaryBlockCut": {"description": "Block action: copy the selected blocks, then delete them."},
   "diaryBlockDuplicate": "Дублировать",
@@ -11645,10 +11645,10 @@
   "@diaryBlockDeleted": {"description": "Snackbar after deleting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
   "diaryBlockCutDone": "{count, plural, one{Вырезан {count} блок} few{Вырезано {count} блока} many{Вырезано {count} блоков} other{Вырезано {count} блока}}",
   "@diaryBlockCutDone": {"description": "Snackbar after cutting blocks in block selection mode; it has an undo action.", "placeholders": {"count": {"type": "int"}}},
-  "diaryBlockTurnInto": "Преобразовать",
-  "@diaryBlockTurnInto": {"description": "Block action bar tool and panel title: change the type of the selected blocks (paragraph, heading, list, to-do…)."},
+  "diaryBlockTurnInto": "Тип",
+  "@diaryBlockTurnInto": {"description": "Short label under the block action bar tool that opens the block type panel (keep it to one short word): change the selected blocks into a paragraph, heading, list, to-do…"},
   "diaryBlockStyle": "Стиль",
-  "@diaryBlockStyle": {"description": "Block action bar tool and panel title: bold / italic / underline / strikethrough and alignment for the selected blocks."},
+  "@diaryBlockStyle": {"description": "Short label under the block action bar tool that opens the style panel (keep it to one short word): bold / italic / underline / strikethrough and alignment for the selected blocks."},
   "diaryBlockSplitLines": "Разбить на абзацы",
   "@diaryBlockSplitLines": {"description": "Block action: split selected blocks whose text contains line breaks into one block per line (old pasted text that landed in one block)."},
   "diaryBlockMerge": "Объединить в один",

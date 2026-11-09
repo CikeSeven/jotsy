@@ -9310,10 +9310,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryEditorRemoveLink => 'Удалить ссылку';
 
   @override
-  String get diaryEditorMoveBlockUp => 'Переместить блок вверх';
+  String get diaryEditorMoveBlockUp => 'Вверх';
 
   @override
-  String get diaryEditorMoveBlockDown => 'Переместить блок вниз';
+  String get diaryEditorMoveBlockDown => 'Вниз';
 
   @override
   String get diaryEditorBlockHandle =>
@@ -9321,15 +9321,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String diaryBlockSelectionCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Выбрано $count блока',
-      many: 'Выбрано $count блоков',
-      few: 'Выбрано $count блока',
-      one: 'Выбран $count блок',
-    );
-    return '$_temp0';
+    return 'Выбрано: $count';
   }
 
   @override
@@ -9393,7 +9385,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get diaryBlockTurnInto => 'Преобразовать';
+  String get diaryBlockTurnInto => 'Тип';
 
   @override
   String get diaryBlockStyle => 'Стиль';

@@ -23,11 +23,13 @@ import 'diary_editor_visible_range.dart';
 
 /// 段落选择模式在正文上的一层（段落把手层里、编辑器外面）。模式外只是
 /// 透传，不多做任何事。模式里：
-/// - 绘制选中块的底与左侧选择圈（[DiaryBlockSelectionPainter]）；
-/// - 左侧选择圈那一列（页边距 + 4dp）的手势：点按切换；竖向滑动连选 /
-///   连续取消（以起点那块的新状态为准，以开始滑动时的选择为底逐帧重算，
-///   滑回去的块恢复原状），到看得见的范围边缘自动滚动；长按拖动整组。这一
-///   列吃掉竖向拖动，从页边距起手不滚动页面；
+/// - 绘制选中块的色块（[DiaryBlockSelectionPainter]，文字块衬在正文下、
+///   自带底色的块盖在正文上），逐块淡入淡出（`fast`）；退出后色块淡出完
+///   才撤掉绘制；
+/// - 左侧页边距那一列（页边距 + 4dp，不画任何东西）的手势：点按切换；竖向
+///   滑动连选 / 连续取消（以起点那块的新状态为准，以开始滑动时的选择为底
+///   逐帧重算，滑回去的块恢复原状），到看得见的范围边缘自动滚动；长按拖动
+///   整组。这一列吃掉竖向拖动，从页边距起手不滚动页面；
 /// - 自己取得焦点，接实体键盘的 Esc（退出、键盘不弹）/ Enter（完成）/
 ///   Delete / Backspace（删除）/ Ctrl·⌘ + A / C / X / D（全选 / 复制 /
 ///   剪切 / 创建副本）/ Alt + Shift + ↑ / ↓（移动）；焦点交给别的输入框
@@ -81,7 +83,7 @@ class DiaryBlockSelectionLayer extends StatefulWidget {
 }
 
 class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final FocusNode _focus = FocusNode(debugLabel: 'DiaryBlockSelection');
 
   /// 绘制的重绘源之一：滚动、布局变化时加一。
@@ -94,7 +96,15 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
   (af.Node, double)? _anchor;
   bool _revealScheduled = false;
 
-  // ---- 选择圈连选 ----
+  // ---- 选中色的淡入淡出 ----
+
+  /// 要画的块与它的淡入进度（0–1，线性；绘制时再套曲线）：选中的块朝 1 走，
+  /// 取消的朝 0 走、到 0 即移出。退出模式后选择为空，全部淡出。
+  final Map<af.Node, double> _fades = <af.Node, double>{};
+  late final Ticker _fadeTicker = createTicker(_tickFade);
+  Duration _fadeElapsed = Duration.zero;
+
+  // ---- 页边距里连选 ----
   late final Ticker _rangeTicker = createTicker((_) => _trackRange());
   late final DiaryEdgeAutoScrollDriver _autoScroll = DiaryEdgeAutoScrollDriver(
     _trackRange,
@@ -105,7 +115,7 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
   List<af.Node> _rangeBase = const [];
   Offset? _rangePointer;
 
-  /// 选择圈那一列按下的指针：长按时交给把手层拖动整组。
+  /// 页边距那一列按下的指针：长按时交给把手层拖动整组。
   int? _pointer;
 
   /// 正文上按下的点与时刻：点在最后一块下方的空白处即「完成」。
@@ -121,11 +131,13 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
   }
 
   void _bind(DiaryEditorController controller) {
+    controller.blockSelection.addListener(_onSelectionChanged);
     controller.blockSelection.active.addListener(_onActive);
     if (controller.blockSelection.isActive) _onActive();
   }
 
   void _unbind(DiaryEditorController controller) {
+    controller.blockSelection.removeListener(_onSelectionChanged);
     controller.blockSelection.active.removeListener(_onActive);
     unawaited(_transactions?.cancel());
     _transactions = null;
@@ -136,6 +148,7 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
     super.didUpdateWidget(old);
     if (old.controller != widget.controller) {
       _unbind(old.controller);
+      _fades.clear();
       _bind(widget.controller);
     }
   }
@@ -146,6 +159,7 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
     _focus.removeListener(_onFocus);
     _focus.dispose();
     _rangeTicker.dispose();
+    _fadeTicker.dispose();
     _autoScroll.stop();
     _repaint.dispose();
     super.dispose();
@@ -170,6 +184,56 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
       _restoreAfterExit();
     }
     setState(() {});
+  }
+
+  /// 选择变了（进入、点选、连选、批量操作换了块、退出）：新选中的块从 0
+  /// 淡入，取消的淡出。关闭动画时直接到位。
+  void _onSelectionChanged() {
+    if (!mounted) return;
+    for (final root in _selection.roots) {
+      _fades.putIfAbsent(root, () => 0);
+    }
+    if (_fades.isEmpty) return;
+    if (ExpressiveMotion.duration(context, ExpressiveMotion.fast) ==
+        Duration.zero) {
+      _advanceFades(1);
+    } else if (!_fadeTicker.isActive) {
+      _fadeElapsed = Duration.zero;
+      unawaited(_fadeTicker.start());
+    }
+  }
+
+  void _tickFade(Duration elapsed) {
+    final total = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+    final delta = elapsed - _fadeElapsed;
+    _fadeElapsed = elapsed;
+    _advanceFades(
+      total == Duration.zero ? 1 : delta.inMicroseconds / total.inMicroseconds,
+    );
+  }
+
+  /// 每块朝自己的目标走 [step]（1 即一步到位）；都到位后停表，退出模式后
+  /// 最后一块淡完时重建一次、撤掉绘制。
+  void _advanceFades(double step) {
+    final selected = _selection.roots.toSet();
+    var moving = false;
+    for (final node in _fades.keys.toList()) {
+      final value = _fades[node]!;
+      final target = selected.contains(node) ? 1.0 : 0.0;
+      final next = target > value
+          ? math.min(target, value + step)
+          : math.max(target, value - step);
+      if (next == 0 && target == 0) {
+        _fades.remove(node);
+      } else {
+        _fades[node] = next;
+        moving = moving || next != target;
+      }
+    }
+    _repaint.value++;
+    if (moving) return;
+    if (_fadeTicker.isActive) _fadeTicker.stop();
+    if (_fades.isEmpty && !_selection.isActive) setState(() {});
   }
 
   /// 焦点交给了别的输入框（点标题、颜色代码框）：由它接手，退出模式。
@@ -445,7 +509,7 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
     return KeyEventResult.handled;
   }
 
-  // ---- 选择圈那一列 ----
+  // ---- 页边距那一列 ----
 
   af.Node? _unitAt(double globalDy) {
     final hit = diaryBlockAt(widget.controller.document.root, globalDy);
@@ -540,7 +604,24 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
   @override
   Widget build(BuildContext context) {
     final active = _selection.isActive;
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    // 半透明的主色：衬在文字下与盖在图片、代码块上是同一种颜色，页面有
+    // 背景图或玻璃时也透得出来。暗色主题的主色偏亮，要多一些才看得清。
+    final tint = theme.colorScheme.primary.withValues(
+      alpha: theme.brightness == Brightness.dark ? 0.24 : 0.14,
+    );
+    final painting = active || _fades.isNotEmpty;
+    DiaryBlockSelectionPainter painter({required bool overlay}) =>
+        DiaryBlockSelectionPainter(
+          opacities: _fades,
+          curve: ExpressiveMotion.effects,
+          blockRect: _localRect,
+          textTop: _localTextTop,
+          contentLeft: widget.contentLeft,
+          color: tint,
+          overlay: overlay,
+          repaint: _repaint,
+        );
     return Focus(
       focusNode: _focus,
       canRequestFocus: active,
@@ -555,21 +636,9 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
           onPointerDown: active ? _onPointerDown : null,
           onPointerUp: active ? _onPointerUp : null,
           child: CustomPaint(
-            painter: active
-                ? DiaryBlockSelectionPainter(
-                    selection: _selection,
-                    root: widget.controller.document.root,
-                    blockRect: _localRect,
-                    centerY: _localCenterY,
-                    circleX: DiaryBlockLineGeometry.columnCenterX(
-                      widget.contentLeft,
-                      kDiaryBlockSelectCircleSize,
-                    ),
-                    colors: colors,
-                    repaint: Listenable.merge([_selection, _repaint]),
-                  )
-                : null,
-            // 子层都带 key：选择圈那一列出现或消失时不按位置复用元素，编辑器
+            painter: painting ? painter(overlay: false) : null,
+            foregroundPainter: painting ? painter(overlay: true) : null,
+            // 子层都带 key：页边距那一列出现或消失时不按位置复用元素，编辑器
             // 不会被重建。
             child: Stack(
               children: [
@@ -620,9 +689,10 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
     );
   }
 
-  double _localCenterY(af.Node node) {
+  double? _localTextTop(af.Node node) {
     final box = context.findRenderObject();
-    final y = widget.geometry.centerY(node);
+    final y = widget.geometry.textTop(node);
+    if (y == null) return null;
     return box is RenderBox && box.hasSize
         ? box.globalToLocal(Offset(0, y)).dy
         : y;

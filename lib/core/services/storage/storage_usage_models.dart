@@ -117,6 +117,28 @@ final class StorageCommentRef extends StorageMediaRef {
   final StorageRefVisibility visibility;
 }
 
+/// AI 对话里用户附带的一张图片。对话不分私密，一律可见。
+final class StorageAiMessageRef extends StorageMediaRef {
+  const StorageAiMessageRef({
+    required this.messageLocalId,
+    required this.conversationId,
+    required this.conversationTitle,
+    required this.createdAt,
+  });
+
+  final int messageLocalId;
+  final String conversationId;
+
+  /// 所属对话的标题；空为“新对话”。
+  final String conversationTitle;
+
+  /// 消息发送的时间。
+  final DateTime createdAt;
+
+  @override
+  StorageRefVisibility get visibility => StorageRefVisibility.visible;
+}
+
 /// 草稿箱里的一份草稿（正文或封面）。
 final class StorageDraftRef extends StorageMediaRef {
   const StorageDraftRef({required this.draftLocalId, required this.title});
@@ -193,14 +215,15 @@ class StorageMediaEntry {
         },
       );
 
-  /// 最早引用它的日记日期（列表副标题与“从旧到新”排序用）；没有日记引用时
-  /// 取文件修改时间。
+  /// 最早引用它的日记（或 AI 对话消息）日期（列表副标题与“从旧到新”排序
+  /// 用）；都没有时取文件修改时间。
   DateTime get displayDate {
     DateTime? earliest;
     for (final ref in refs) {
       final date = switch (ref) {
         StorageDiaryRef(:final createdAt) => createdAt,
         StorageCommentRef(:final diaryCreatedAt) => diaryCreatedAt,
+        StorageAiMessageRef(:final createdAt) => createdAt,
         _ => null,
       };
       if (date != null && (earliest == null || date.isBefore(earliest))) {

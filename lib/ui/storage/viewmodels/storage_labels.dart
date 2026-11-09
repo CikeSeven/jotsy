@@ -74,6 +74,12 @@ String storageRefLabel(AppLocalizations l10n, StorageMediaRef ref) =>
       StorageDraftRef(:final title) => l10n.storageMgmtRefDraft(
         title.trim().isEmpty ? l10n.storageMgmtUntitledDraft : title.trim(),
       ),
+      StorageAiMessageRef(:final conversationTitle) =>
+        l10n.storageMgmtRefAiChat(
+          conversationTitle.trim().isEmpty
+              ? l10n.aiChatUntitled
+              : conversationTitle.trim(),
+        ),
       StorageOtherRef() => l10n.storageMgmtRefOther,
     };
 
@@ -83,6 +89,7 @@ FaIconData storageRefIcon(StorageMediaRef ref) => switch (ref) {
   StorageCommentRef() => FontAwesomeIcons.comment,
   StorageNotebookCoverRef() => FontAwesomeIcons.book,
   StorageDraftRef() => FontAwesomeIcons.penToSquare,
+  StorageAiMessageRef() => FontAwesomeIcons.wandMagicSparkles,
   StorageOtherRef() => FontAwesomeIcons.link,
 };
 

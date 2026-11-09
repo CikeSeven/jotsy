@@ -3,8 +3,8 @@ part of 'app_database.dart';
 // 存储管理（删除 / 压缩托管媒体）的读写，见 docs/rules/storage.md。
 //
 // - 读：全部可能引用托管媒体的行（日记含回收站、归档与未解封的胶囊；日记
-//   本载荷；留言图片；草稿箱），附带私密 / 上锁 / 胶囊这些决定界面要不要
-//   打码的标记。只返回纯数据，可以整份送进后台 isolate 解析；
+//   本载荷；留言图片；草稿箱；AI 对话里用户附带的图片），附带私密 / 上锁 /
+//   胶囊这些决定界面要不要打码的标记。只返回纯数据，可以整份送进后台 isolate 解析；
 // - 写：[applyStorageMediaEdits] 在一个事务里按前置条件（compare-and-swap）
 //   改写引用。读取之后用户或局域网同步可能已改写某一行，内容不再是读取时
 //   的样子就跳过那一行，绝不覆盖别人的改动；调用方据“文件是否仍被引用”
@@ -94,6 +94,29 @@ class StorageCommentSource {
   final String images;
 }
 
+/// 存储管理读到的一条带图片的 AI 对话消息（用户附图）。
+class StorageAiMessageSource {
+  const StorageAiMessageSource({
+    required this.id,
+    required this.messageId,
+    required this.conversationId,
+    required this.conversationTitle,
+    required this.createdAt,
+    required this.images,
+  });
+
+  final int id;
+  final String messageId;
+  final String conversationId;
+
+  /// 所属对话的标题；空为“新对话”。
+  final String conversationTitle;
+  final DateTime createdAt;
+
+  /// 原始图片列（JSON 数组字符串，见 `ai_message_images.dart`）。
+  final String images;
+}
+
 /// 存储管理读到的一份草稿（正文与封面在载荷 JSON 里）。
 class StorageDraftSource {
   const StorageDraftSource({
@@ -114,12 +137,14 @@ class StorageReferenceSources {
     required this.notebooks,
     required this.comments,
     required this.drafts,
+    this.aiMessages = const <StorageAiMessageSource>[],
   });
 
   final List<StorageDiarySource> diaries;
   final List<StorageNotebookSource> notebooks;
   final List<StorageCommentSource> comments;
   final List<StorageDraftSource> drafts;
+  final List<StorageAiMessageSource> aiMessages;
 }
 
 /// 一篇日记的改写：正文与封面仍是 [expectedContent] / [expectedCover] 时写入。
@@ -169,6 +194,21 @@ class StorageCommentEdit {
   final String? images;
 }
 
+/// 一条 AI 对话消息图片列的改写：仍是 [expectedImages] 时写入 [images]。
+/// 删除时被删的位置写成墓碑、消息本身不删（对话结构不变，后面的图片编号
+/// 也不变）；替换时只换路径。
+class StorageAiMessageEdit {
+  const StorageAiMessageEdit({
+    required this.id,
+    required this.expectedImages,
+    required this.images,
+  });
+
+  final int id;
+  final String expectedImages;
+  final String images;
+}
+
 /// 一份草稿载荷的改写；[contentText] 同步写进草稿表的纯文本列（列表摘要）。
 class StorageDraftEdit {
   const StorageDraftEdit({
@@ -191,15 +231,21 @@ class StorageMediaEdits {
     this.notebooks = const [],
     this.comments = const [],
     this.drafts = const [],
+    this.aiMessages = const [],
   });
 
   final List<StorageDiaryEdit> diaries;
   final List<StorageNotebookEdit> notebooks;
   final List<StorageCommentEdit> comments;
   final List<StorageDraftEdit> drafts;
+  final List<StorageAiMessageEdit> aiMessages;
 
   int get length =>
-      diaries.length + notebooks.length + comments.length + drafts.length;
+      diaries.length +
+      notebooks.length +
+      comments.length +
+      drafts.length +
+      aiMessages.length;
 
   bool get isEmpty => length == 0;
 }
@@ -273,6 +319,12 @@ mixin _AppDatabaseStorageOps on _$AppDatabase {
       diaryComments,
     )..where((t) => t.images.isNotNull())).get();
     final draftRows = await select(diaryDrafts).get();
+    final aiRows = await (select(aiMessages).join([
+      leftOuterJoin(
+        aiConversations,
+        aiConversations.conversationId.equalsExp(aiMessages.conversationId),
+      ),
+    ])..where(aiMessages.images.isNotNull())).get();
     return StorageReferenceSources(
       diaries: [
         for (final row in diaryRows)
@@ -318,6 +370,19 @@ mixin _AppDatabaseStorageOps on _$AppDatabase {
             title: row.title,
             payload: row.payload,
           ),
+      ],
+      aiMessages: [
+        for (final row in aiRows)
+          if (row.readTable(aiMessages) case final message)
+            StorageAiMessageSource(
+              id: message.id,
+              messageId: message.messageId,
+              conversationId: message.conversationId,
+              conversationTitle:
+                  row.readTableOrNull(aiConversations)?.title ?? '',
+              createdAt: message.createdAt,
+              images: message.images!,
+            ),
       ],
     );
   }
@@ -381,6 +446,17 @@ mixin _AppDatabaseStorageOps on _$AppDatabase {
             ),
           );
         }
+        applied++;
+      }
+      for (final edit in edits.aiMessages) {
+        final row = await (select(
+          aiMessages,
+        )..where((t) => t.id.equals(edit.id))).getSingleOrNull();
+        if (row == null || row.images != edit.expectedImages) continue;
+        // 只改图片列：消息不删、不改时间（对话按时间排序，编号按位置）。
+        await (update(aiMessages)..where((t) => t.id.equals(row.id))).write(
+          AiMessagesCompanion(images: Value(edit.images)),
+        );
         applied++;
       }
       for (final edit in edits.drafts) {

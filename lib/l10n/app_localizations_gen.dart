@@ -20271,7 +20271,7 @@ abstract class AppLocalizations {
   /// AI module description.
   ///
   /// In en, this message translates to:
-  /// **'Send the photos in an entry along with the text; text only if the model can\'t take images'**
+  /// **'Send photos from entries and from the chat along with the text; text only if the model can\'t take images'**
   String get aiModuleVisionSubtitle;
 
   /// AI option under smart fill.
@@ -21546,6 +21546,12 @@ abstract class AppLocalizations {
   /// **'The AI will look up and read entries as needed (never private ones) without asking each time'**
   String get aiConfirmSendAgent;
 
+  /// Send confirmation for the agent when the model can see photos.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI will look up and read entries and their photos as needed (never private ones) without asking each time'**
+  String get aiConfirmSendAgentImages;
+
   /// AI settings: toggle for tool use in chat.
   ///
   /// In en, this message translates to:
@@ -21593,6 +21599,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This conversation is only about entries from {from} to {to}; use this range when searching unless told otherwise.'**
   String aiPromptAgentScopeRange(String from, String to);
+
+  /// Prompt line (agent): the photo references attached to the user's message.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos attached to this message, in order: {refs}. Add them to entries with the `images` parameter of create_diary or append_to_diary, or with ![](P1) in the body.'**
+  String aiPromptAgentImagesAttached(String refs);
+
+  /// Prompt placeholder for a photo that is not sent because images are off.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} was not sent to you: this model or the settings do not allow images]'**
+  String aiPromptImageNotSent(String label);
+
+  /// Prompt placeholder for an older photo left out to keep the request small.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} was left out of this request to keep it small; call view_images to see it again]'**
+  String aiPromptImageOmitted(String label);
+
+  /// Prompt placeholder for a photo that cannot be read or shown anymore.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} is unavailable: the file is gone or can no longer be shown to the AI]'**
+  String aiPromptImageUnavailable(String label);
+
+  /// Prompt placeholder for a photo the user deleted from Storage.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {label} was deleted]'**
+  String aiPromptImageRemoved(String label);
+
+  /// Prompt placeholder used when the service rejects images and they are removed before retrying.
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo not sent: this model does not accept images]'**
+  String get aiPromptImagesRejected;
+
+  /// Prompt mark for the n-th photo in an entry's text sent to the AI (view_images uses the same number).
+  ///
+  /// In en, this message translates to:
+  /// **'[Photo {index}]'**
+  String aiPromptDiaryImage(int index);
+
+  /// Step card title: the agent looks at photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Look at photos'**
+  String get aiToolViewImages;
+
+  /// Step card result: how many photos the agent looked at.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No photos sent} =1{Looked at 1 photo} other{Looked at {count} photos}}'**
+  String aiToolViewedImages(int count);
+
+  /// Confirmation card line: the new or appended entry text comes with photos from the chat.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{With 1 photo} other{With {count} photos}}'**
+  String aiToolWithImages(int count);
 
   /// Model max output field.
   ///
@@ -23382,6 +23448,36 @@ abstract class AppLocalizations {
   /// **'Ask something…'**
   String get aiChatInputHint;
 
+  /// Tooltip of the chat composer button that attaches photos to the message.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get aiChatAttachImages;
+
+  /// Shown under the attached photos when more were picked than a message can hold.
+  ///
+  /// In en, this message translates to:
+  /// **'A message holds up to {max} photos; the extra ones were not added'**
+  String aiChatImagesTruncated(int max);
+
+  /// Shown under the attached photos when the chat model cannot receive images.
+  ///
+  /// In en, this message translates to:
+  /// **'This model can\'t see photos (or photo understanding is off), but the AI can still add them to entries'**
+  String get aiChatImagesNoVision;
+
+  /// Stands for the photos of a message that has no text (title, export).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{[1 photo]} other{[{count} photos]}}'**
+  String aiChatImagesSummary(int count);
+
+  /// Under a chat message whose attached photos were deleted from Storage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo was deleted} other{{count} photos were deleted}}'**
+  String aiChatImagesRemoved(int count);
+
   /// Shown while a search plan is made.
   ///
   /// In en, this message translates to:
@@ -24924,11 +25020,23 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 draft} other{{count} drafts}}'**
   String storageMgmtDeleteFromDrafts(int count);
 
+  /// Delete confirmation: AI chat messages whose attached images are affected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 AI chat message} other{{count} AI chat messages}}'**
+  String storageMgmtDeleteFromAiChats(int count);
+
   /// Delete confirmation: note about comments.
   ///
   /// In en, this message translates to:
   /// **'Comments left with no text or images are deleted too.'**
   String get storageMgmtDeleteCommentNote;
+
+  /// Delete confirmation: note about images attached in AI chats.
+  ///
+  /// In en, this message translates to:
+  /// **'In AI chats, deleted images show as removed; the messages stay.'**
+  String get storageMgmtDeleteAiChatNote;
 
   /// Delete confirmation: note about sealed capsules.
   ///
@@ -25275,6 +25383,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Comment · {title}'**
   String storageMgmtRefComment(String title);
+
+  /// Used as an image attached in the AI chat titled title.
+  ///
+  /// In en, this message translates to:
+  /// **'AI chat · {title}'**
+  String storageMgmtRefAiChat(String title);
 
   /// Used as the cover of the entry titled title.
   ///
@@ -26755,7 +26869,7 @@ abstract class AppLocalizations {
   /// Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.
   ///
   /// In en, this message translates to:
-  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} other{}}'**
+  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} other{}}'**
   String aiToolArgName(String key);
 
   /// Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.

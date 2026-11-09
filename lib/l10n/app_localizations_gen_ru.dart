@@ -12932,7 +12932,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiModuleVisionSubtitle =>
-      'Фото из записи отправляются вместе с текстом; если модель не принимает изображения — только текст';
+      'Фото из записей и из чата отправляются вместе с текстом; если модель не принимает изображения — только текст';
 
   @override
   String get aiOptionTitleButton =>
@@ -13911,6 +13911,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'ИИ будет при необходимости искать и читать записи (кроме приватных), не спрашивая каждый раз';
 
   @override
+  String get aiConfirmSendAgentImages =>
+      'ИИ будет при необходимости искать и читать записи и их фото (кроме приватных), не спрашивая каждый раз';
+
+  @override
   String get aiOptionAgent => 'Разрешить ИИ использовать инструменты';
 
   @override
@@ -13940,6 +13944,70 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String aiPromptAgentScopeRange(String from, String to) {
     return 'Этот разговор касается только записей с $from по $to; используй этот период при поиске, если не сказано иначе.';
+  }
+
+  @override
+  String aiPromptAgentImagesAttached(String refs) {
+    return 'Фото, приложенные к этому сообщению, по порядку: $refs. Добавить их в записи можно параметром `images` у create_diary или append_to_diary либо через ![](P1) в тексте.';
+  }
+
+  @override
+  String aiPromptImageNotSent(String label) {
+    return '[Фото $label не отправлено: эта модель или настройки не разрешают изображения]';
+  }
+
+  @override
+  String aiPromptImageOmitted(String label) {
+    return '[Фото $label не включено в этот запрос, чтобы он не был слишком большим; чтобы снова его увидеть, вызови view_images]';
+  }
+
+  @override
+  String aiPromptImageUnavailable(String label) {
+    return '[Фото $label недоступно: файла нет или его больше нельзя показывать ИИ]';
+  }
+
+  @override
+  String aiPromptImageRemoved(String label) {
+    return '[Фото $label удалено]';
+  }
+
+  @override
+  String get aiPromptImagesRejected =>
+      '[Фото не отправлено: эта модель не принимает изображения]';
+
+  @override
+  String aiPromptDiaryImage(int index) {
+    return '[Фото $index]';
+  }
+
+  @override
+  String get aiToolViewImages => 'Посмотреть фото';
+
+  @override
+  String aiToolViewedImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Просмотрено $count фото',
+      many: 'Просмотрено $count фото',
+      few: 'Просмотрено $count фото',
+      one: 'Просмотрено $count фото',
+      zero: 'Фото не отправлены',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolWithImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'С $count фото',
+      many: 'С $count фото',
+      few: 'С $count фото',
+      one: 'С $count фото',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -15107,6 +15175,44 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiChatInputHint => 'Спросите что-нибудь…';
 
   @override
+  String get aiChatAttachImages => 'Добавить фото';
+
+  @override
+  String aiChatImagesTruncated(int max) {
+    return 'К сообщению можно приложить не больше $max фото; лишние не добавлены';
+  }
+
+  @override
+  String get aiChatImagesNoVision =>
+      'Эта модель не видит фото (или распознавание изображений выключено), но ИИ всё равно может добавить их в записи';
+
+  @override
+  String aiChatImagesSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '[$count фото]',
+      many: '[$count фото]',
+      few: '[$count фото]',
+      one: '[$count фото]',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiChatImagesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count фото удалено',
+      many: '$count фото удалены',
+      few: '$count фото удалены',
+      one: '$count фото удалено',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aiChatPlanning => 'Разбираюсь в вопросе…';
 
   @override
@@ -16206,8 +16312,25 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String storageMgmtDeleteFromAiChats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count сообщения в чатах с ИИ',
+      many: '$count сообщений в чатах с ИИ',
+      few: '$count сообщений в чатах с ИИ',
+      one: '$count сообщения в чатах с ИИ',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get storageMgmtDeleteCommentNote =>
       'Комментарии без текста и изображений тоже будут удалены.';
+
+  @override
+  String get storageMgmtDeleteAiChatNote =>
+      'В чатах с ИИ удалённые изображения будут отмечены как удалённые, сами сообщения останутся.';
 
   @override
   String get storageMgmtDeleteCapsuleNote =>
@@ -16524,6 +16647,11 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String storageMgmtRefComment(String title) {
     return 'Комментарий · $title';
+  }
+
+  @override
+  String storageMgmtRefAiChat(String title) {
+    return 'Чат с ИИ · $title';
   }
 
   @override
@@ -17755,6 +17883,8 @@ class AppLocalizationsRu extends AppLocalizations {
       'arg_remove_steps': 'Удалить шаги',
       'arg_all_day': 'Весь день',
       'arg_kind_todoList': 'Список задач',
+      'arg_images': 'Фото',
+      'arg_attachments': 'Фото из чата',
       'other': '',
     });
     return '$_temp0';

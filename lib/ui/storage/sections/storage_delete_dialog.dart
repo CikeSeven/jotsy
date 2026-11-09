@@ -6,7 +6,7 @@ import '../../../core/services/storage/storage_usage_models.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 
 /// 删除媒体前的确认：写明删几个文件、释放多少，会从哪些日记 / 日记本封面
-/// / 留言 / 草稿里移除，删除后无法恢复。左灰“取消”，右 error 色“删除”。
+/// / 留言 / 草稿 / AI 对话消息里移除，删除后无法恢复。左灰“取消”，右 error 色“删除”。
 Future<bool> confirmStorageDelete(
   BuildContext context,
   List<StorageMediaEntry> entries,
@@ -15,6 +15,7 @@ Future<bool> confirmStorageDelete(
   final notebooks = <int>{};
   final comments = <int>{};
   final drafts = <int>{};
+  final aiMessages = <int>{};
   var capsule = false;
   var bytes = 0;
   for (final entry in entries) {
@@ -30,6 +31,8 @@ Future<bool> confirmStorageDelete(
           comments.add(commentLocalId);
         case StorageDraftRef(:final draftLocalId):
           drafts.add(draftLocalId);
+        case StorageAiMessageRef(:final messageLocalId):
+          aiMessages.add(messageLocalId);
         case StorageOtherRef():
           break;
       }
@@ -49,9 +52,12 @@ Future<bool> confirmStorageDelete(
         if (comments.isNotEmpty)
           l10n.storageMgmtDeleteFromComments(comments.length),
         if (drafts.isNotEmpty) l10n.storageMgmtDeleteFromDrafts(drafts.length),
+        if (aiMessages.isNotEmpty)
+          l10n.storageMgmtDeleteFromAiChats(aiMessages.length),
       ];
       final notes = <String>[
         if (comments.isNotEmpty) l10n.storageMgmtDeleteCommentNote,
+        if (aiMessages.isNotEmpty) l10n.storageMgmtDeleteAiChatNote,
         if (capsule) l10n.storageMgmtDeleteCapsuleNote,
         l10n.storageMgmtDeleteIrreversible,
       ];

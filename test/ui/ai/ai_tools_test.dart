@@ -130,6 +130,7 @@ void main() {
       // 漏登记的工具收到 `D3` 会原样查库，每篇都“找不到”。
       const expected = <String, Set<String>>{
         'read_diaries': {'ids'},
+        'view_images': {'diary_id'},
         'open_page': {'diary_id'},
         'append_to_diary': {'id'},
         'update_diary': {'id'},

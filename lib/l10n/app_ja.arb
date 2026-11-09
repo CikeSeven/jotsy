@@ -15926,7 +15926,7 @@
   "@aiModuleVision": {
     "description": "AI module name."
   },
-  "aiModuleVisionSubtitle": "日記の写真を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します",
+  "aiModuleVisionSubtitle": "日記の写真やチャットで送った画像を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します",
   "@aiModuleVisionSubtitle": {
     "description": "AI module description."
   },
@@ -17049,6 +17049,8 @@
   "@aiConfirmSendAgent": {
     "description": "Send confirmation sheet: the assistant reads entries as needed."
   },
+  "aiConfirmSendAgentImages": "AI は必要に応じて日記とその画像を検索・閲覧します（非公開の日記は除く）。毎回は確認しません",
+  "@aiConfirmSendAgentImages": {"description": "Send confirmation for the agent when the model can see photos."},
   "aiOptionAgent": "AI にツールを使わせる",
   "@aiOptionAgent": {
     "description": "AI settings: toggle for tool use in chat."
@@ -17094,6 +17096,26 @@
       }
     }
   },
+  "aiPromptAgentImagesAttached": "このメッセージに添付された画像（順番どおり）：{refs}。create_diary / append_to_diary の `images` パラメーター、または本文の ![](P1) で日記に追加できます。",
+  "@aiPromptAgentImagesAttached": {"description": "Prompt line (agent): the photo references attached to the user's message.", "placeholders": {"refs": {"type": "String"}}},
+  "aiPromptImageNotSent": "[画像 {label} は送られていません：このモデルまたは設定では画像を送りません]",
+  "@aiPromptImageNotSent": {"description": "Prompt placeholder for a photo that is not sent because images are off.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageOmitted": "[画像 {label} はリクエストを小さく保つため今回は送っていません。必要なら view_images で見直してください]",
+  "@aiPromptImageOmitted": {"description": "Prompt placeholder for an older photo left out to keep the request small.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageUnavailable": "[画像 {label} は利用できません：ファイルがないか、AI に見せられなくなりました]",
+  "@aiPromptImageUnavailable": {"description": "Prompt placeholder for a photo that cannot be read or shown anymore.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageRemoved": "[画像 {label} は削除されました]",
+  "@aiPromptImageRemoved": {"description": "Prompt placeholder for a photo the user deleted from Storage.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImagesRejected": "[画像は送られていません：このモデルは画像を受け付けません]",
+  "@aiPromptImagesRejected": {"description": "Prompt placeholder used when the service rejects images and they are removed before retrying."},
+  "aiPromptDiaryImage": "[画像 {index}]",
+  "@aiPromptDiaryImage": {"description": "Prompt mark for the n-th photo in an entry's text sent to the AI (view_images uses the same number).", "placeholders": {"index": {"type": "int"}}},
+  "aiToolViewImages": "画像を見る",
+  "@aiToolViewImages": {"description": "Step card title: the agent looks at photos."},
+  "aiToolViewedImages": "{count, plural, =0{画像は送られていません} other{画像を {count} 枚見ました}}",
+  "@aiToolViewedImages": {"description": "Step card result: how many photos the agent looked at.", "placeholders": {"count": {"type": "int"}}},
+  "aiToolWithImages": "画像 {count} 枚付き",
+  "@aiToolWithImages": {"description": "Confirmation card line: the new or appended entry text comes with photos from the chat.", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "最大出力トークン数",
   "@aiModelMaxOutput": {
     "description": "Model max output field."
@@ -18534,6 +18556,16 @@
   "@aiChatInputHint": {
     "description": "Hint of the chat input."
   },
+  "aiChatAttachImages": "画像を追加",
+  "@aiChatAttachImages": {"description": "Tooltip of the chat composer button that attaches photos to the message."},
+  "aiChatImagesTruncated": "1 件のメッセージに添付できる画像は {max} 枚までです。超えた分は追加されませんでした",
+  "@aiChatImagesTruncated": {"description": "Shown under the attached photos when more were picked than a message can hold.", "placeholders": {"max": {"type": "int"}}},
+  "aiChatImagesNoVision": "このモデルは画像を見られません（または画像の理解がオフです）が、AI は画像を日記に追加できます",
+  "@aiChatImagesNoVision": {"description": "Shown under the attached photos when the chat model cannot receive images."},
+  "aiChatImagesSummary": "[画像 {count} 枚]",
+  "@aiChatImagesSummary": {"description": "Stands for the photos of a message that has no text (title, export).", "placeholders": {"count": {"type": "int"}}},
+  "aiChatImagesRemoved": "画像 {count} 枚は削除されました",
+  "@aiChatImagesRemoved": {"description": "Under a chat message whose attached photos were deleted from Storage.", "placeholders": {"count": {"type": "int"}}},
   "aiChatPlanning": "質問を理解しています…",
   "@aiChatPlanning": {
     "description": "Shown while a search plan is made."
@@ -19375,8 +19407,12 @@
   "@storageMgmtDeleteFromComments": {"description": "Delete confirmation: comments affected.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteFromDrafts": "下書き {count} 件",
   "@storageMgmtDeleteFromDrafts": {"description": "Delete confirmation: drafts affected.", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtDeleteFromAiChats": "AI チャットのメッセージ {count} 件",
+  "@storageMgmtDeleteFromAiChats": {"description": "Delete confirmation: AI chat messages whose attached images are affected.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteCommentNote": "文字も画像もなくなったコメントは一緒に削除されます。",
   "@storageMgmtDeleteCommentNote": {"description": "Delete confirmation: note about comments."},
+  "storageMgmtDeleteAiChatNote": "AI チャットでは削除した画像が「削除済み」と表示され、メッセージは残ります。",
+  "@storageMgmtDeleteAiChatNote": {"description": "Delete confirmation: note about images attached in AI chats."},
   "storageMgmtDeleteCapsuleNote": "まだ開封されていないタイムカプセルの内容も含まれます。",
   "@storageMgmtDeleteCapsuleNote": {"description": "Delete confirmation: note about sealed capsules."},
   "storageMgmtDeleteIrreversible": "削除すると元に戻せません。",
@@ -19491,6 +19527,8 @@
   "@storageMgmtUntitledDraft": {"description": "Title of a draft without one."},
   "storageMgmtRefComment": "コメント・{title}",
   "@storageMgmtRefComment": {"description": "Used by a comment on the entry titled title.", "placeholders": {"title": {"type": "String"}}},
+  "storageMgmtRefAiChat": "AI チャット・{title}",
+  "@storageMgmtRefAiChat": {"description": "Used as an image attached in the AI chat titled title.", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefDiaryCover": "表紙・{title}",
   "@storageMgmtRefDiaryCover": {"description": "Used as the cover of the entry titled title.", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefNotebookCover": "ノートの表紙・{name}",
@@ -20034,7 +20072,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} arg_images{画像} arg_attachments{チャットの画像} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

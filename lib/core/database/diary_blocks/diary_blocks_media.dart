@@ -26,22 +26,31 @@ Iterable<DiaryBlockMedia> diaryBlocksMedia(
   Map<String, Object?> document,
 ) sync* {
   for (final (node, _) in walkDiaryBlocks(document)) {
-    final data = diaryBlockData(node);
-    final type = node[kDiaryBlockTypeKey];
-    if (type == kDiaryBlockUnknownEmbed) {
-      // 无法完整解析的历史嵌入仍保留在 value 中；统计与路径提取不能因此
-      // 漏掉其中可识别的媒体，尤其是旧版多键嵌入。
-      final value = data[kDiaryBlockValueKey];
-      if (value is Map) {
-        for (final entry in value.entries) {
-          final media = diaryBlockMediaOf(entry.key, entry.value);
-          if (media != null) yield media;
-        }
+    yield* diaryNodeMedia(node);
+  }
+}
+
+/// 一个块里的媒体：媒体块本身，或旧版多键嵌入里能认出的几项。
+///
+/// 与 [diaryBlocksMedia] 同一口径（它就是逐块调用这里），按块给媒体标记
+/// （例如发给 AI 的纯文本里写“[图片 3]”）时用它，编号与
+/// [extractDiaryImageSources] 的顺序一致。
+Iterable<DiaryBlockMedia> diaryNodeMedia(Map<String, Object?> node) sync* {
+  final data = diaryBlockData(node);
+  final type = node[kDiaryBlockTypeKey];
+  if (type == kDiaryBlockUnknownEmbed) {
+    // 无法完整解析的历史嵌入仍保留在 value 中；统计与路径提取不能因此
+    // 漏掉其中可识别的媒体，尤其是旧版多键嵌入。
+    final value = data[kDiaryBlockValueKey];
+    if (value is Map) {
+      for (final entry in value.entries) {
+        final media = diaryBlockMediaOf(entry.key, entry.value);
+        if (media != null) yield media;
       }
-    } else {
-      final media = diaryBlockMediaOf(type, data);
-      if (media != null) yield media;
     }
+  } else {
+    final media = diaryBlockMediaOf(type, data);
+    if (media != null) yield media;
   }
 }
 

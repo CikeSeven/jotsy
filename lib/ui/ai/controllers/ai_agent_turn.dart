@@ -149,7 +149,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
   }
 
   @override
-  Future<AiToolResultPart> execute(int step, AiToolCall call) async {
+  Future<AiToolExecution> execute(int step, AiToolCall call) async {
     final tool = tools[call.name];
     if (tool == null) {
       return _fail(step, call, 'Unknown tool `${call.name}`.');
@@ -218,11 +218,13 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
           ),
         );
         await _save();
-        return AiToolResultPart(
-          callId: call.id,
-          name: call.name,
-          content: content,
-          isError: true,
+        return AiToolExecution(
+          AiToolResultPart(
+            callId: call.id,
+            name: call.name,
+            content: content,
+            isError: true,
+          ),
         );
       }
       _update(
@@ -246,16 +248,23 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
           undo: outcome.undo,
           subjects: outcome.subjects,
           result: content,
+          images: [
+            for (final image in outcome.images)
+              AiAgentImageRecord(
+                label: image.label,
+                source: image.source,
+                diaryId: image.diaryId,
+              ),
+          ],
         ),
       );
       if (outcome.navigation case final navigation? when navigation.now) {
         autoOpen = navigation;
       }
       await _save();
-      return AiToolResultPart(
-        callId: call.id,
-        name: call.name,
-        content: content,
+      return AiToolExecution(
+        AiToolResultPart(callId: call.id, name: call.name, content: content),
+        images: [for (final image in outcome.images) image.part],
       );
     } on AiToolFailure catch (failure) {
       return _fail(step, call, failure.message, summary: failure.summary);
@@ -296,7 +305,7 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
     }
   }
 
-  Future<AiToolResultPart> _fail(
+  Future<AiToolExecution> _fail(
     int step,
     AiToolCall call,
     String message, {
@@ -315,11 +324,13 @@ class AiAgentTurn extends ChangeNotifier implements AiAgentHost {
       ),
     );
     await _save();
-    return AiToolResultPart(
-      callId: call.id,
-      name: call.name,
-      content: content,
-      isError: true,
+    return AiToolExecution(
+      AiToolResultPart(
+        callId: call.id,
+        name: call.name,
+        content: content,
+        isError: true,
+      ),
     );
   }
 

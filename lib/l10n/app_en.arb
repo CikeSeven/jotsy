@@ -15359,7 +15359,7 @@
   "@aiModuleVision": {
     "description": "AI module name."
   },
-  "aiModuleVisionSubtitle": "Send the photos in an entry along with the text; text only if the model can't take images",
+  "aiModuleVisionSubtitle": "Send photos from entries and from the chat along with the text; text only if the model can't take images",
   "@aiModuleVisionSubtitle": {
     "description": "AI module description."
   },
@@ -16482,6 +16482,8 @@
   "@aiConfirmSendAgent": {
     "description": "Send confirmation sheet: the assistant reads entries as needed."
   },
+  "aiConfirmSendAgentImages": "The AI will look up and read entries and their photos as needed (never private ones) without asking each time",
+  "@aiConfirmSendAgentImages": {"description": "Send confirmation for the agent when the model can see photos."},
   "aiOptionAgent": "Let the AI use tools",
   "@aiOptionAgent": {
     "description": "AI settings: toggle for tool use in chat."
@@ -16527,6 +16529,26 @@
       }
     }
   },
+  "aiPromptAgentImagesAttached": "Photos attached to this message, in order: {refs}. Add them to entries with the `images` parameter of create_diary or append_to_diary, or with ![](P1) in the body.",
+  "@aiPromptAgentImagesAttached": {"description": "Prompt line (agent): the photo references attached to the user's message.", "placeholders": {"refs": {"type": "String"}}},
+  "aiPromptImageNotSent": "[Photo {label} was not sent to you: this model or the settings do not allow images]",
+  "@aiPromptImageNotSent": {"description": "Prompt placeholder for a photo that is not sent because images are off.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageOmitted": "[Photo {label} was left out of this request to keep it small; call view_images to see it again]",
+  "@aiPromptImageOmitted": {"description": "Prompt placeholder for an older photo left out to keep the request small.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageUnavailable": "[Photo {label} is unavailable: the file is gone or can no longer be shown to the AI]",
+  "@aiPromptImageUnavailable": {"description": "Prompt placeholder for a photo that cannot be read or shown anymore.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageRemoved": "[Photo {label} was deleted]",
+  "@aiPromptImageRemoved": {"description": "Prompt placeholder for a photo the user deleted from Storage.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImagesRejected": "[Photo not sent: this model does not accept images]",
+  "@aiPromptImagesRejected": {"description": "Prompt placeholder used when the service rejects images and they are removed before retrying."},
+  "aiPromptDiaryImage": "[Photo {index}]",
+  "@aiPromptDiaryImage": {"description": "Prompt mark for the n-th photo in an entry's text sent to the AI (view_images uses the same number).", "placeholders": {"index": {"type": "int"}}},
+  "aiToolViewImages": "Look at photos",
+  "@aiToolViewImages": {"description": "Step card title: the agent looks at photos."},
+  "aiToolViewedImages": "{count, plural, =0{No photos sent} =1{Looked at 1 photo} other{Looked at {count} photos}}",
+  "@aiToolViewedImages": {"description": "Step card result: how many photos the agent looked at.", "placeholders": {"count": {"type": "int"}}},
+  "aiToolWithImages": "{count, plural, =1{With 1 photo} other{With {count} photos}}",
+  "@aiToolWithImages": {"description": "Confirmation card line: the new or appended entry text comes with photos from the chat.", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "Max output tokens",
   "@aiModelMaxOutput": {
     "description": "Model max output field."
@@ -17967,6 +17989,16 @@
   "@aiChatInputHint": {
     "description": "Hint of the chat input."
   },
+  "aiChatAttachImages": "Add photos",
+  "@aiChatAttachImages": {"description": "Tooltip of the chat composer button that attaches photos to the message."},
+  "aiChatImagesTruncated": "A message holds up to {max} photos; the extra ones were not added",
+  "@aiChatImagesTruncated": {"description": "Shown under the attached photos when more were picked than a message can hold.", "placeholders": {"max": {"type": "int"}}},
+  "aiChatImagesNoVision": "This model can't see photos (or photo understanding is off), but the AI can still add them to entries",
+  "@aiChatImagesNoVision": {"description": "Shown under the attached photos when the chat model cannot receive images."},
+  "aiChatImagesSummary": "{count, plural, =1{[1 photo]} other{[{count} photos]}}",
+  "@aiChatImagesSummary": {"description": "Stands for the photos of a message that has no text (title, export).", "placeholders": {"count": {"type": "int"}}},
+  "aiChatImagesRemoved": "{count, plural, =1{1 photo was deleted} other{{count} photos were deleted}}",
+  "@aiChatImagesRemoved": {"description": "Under a chat message whose attached photos were deleted from Storage.", "placeholders": {"count": {"type": "int"}}},
   "aiChatPlanning": "Understanding the question…",
   "@aiChatPlanning": {
     "description": "Shown while a search plan is made."
@@ -18808,8 +18840,12 @@
   "@storageMgmtDeleteFromComments": {"description": "Delete confirmation: comments affected.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteFromDrafts": "{count, plural, =1{1 draft} other{{count} drafts}}",
   "@storageMgmtDeleteFromDrafts": {"description": "Delete confirmation: drafts affected.", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtDeleteFromAiChats": "{count, plural, =1{1 AI chat message} other{{count} AI chat messages}}",
+  "@storageMgmtDeleteFromAiChats": {"description": "Delete confirmation: AI chat messages whose attached images are affected.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteCommentNote": "Comments left with no text or images are deleted too.",
   "@storageMgmtDeleteCommentNote": {"description": "Delete confirmation: note about comments."},
+  "storageMgmtDeleteAiChatNote": "In AI chats, deleted images show as removed; the messages stay.",
+  "@storageMgmtDeleteAiChatNote": {"description": "Delete confirmation: note about images attached in AI chats."},
   "storageMgmtDeleteCapsuleNote": "Includes content from sealed time capsules.",
   "@storageMgmtDeleteCapsuleNote": {"description": "Delete confirmation: note about sealed capsules."},
   "storageMgmtDeleteIrreversible": "This can't be undone.",
@@ -18924,6 +18960,8 @@
   "@storageMgmtUntitledDraft": {"description": "Title of a draft without one."},
   "storageMgmtRefComment": "Comment · {title}",
   "@storageMgmtRefComment": {"description": "Used by a comment on the entry titled title.", "placeholders": {"title": {"type": "String"}}},
+  "storageMgmtRefAiChat": "AI chat · {title}",
+  "@storageMgmtRefAiChat": {"description": "Used as an image attached in the AI chat titled title.", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefDiaryCover": "Cover · {title}",
   "@storageMgmtRefDiaryCover": {"description": "Used as the cover of the entry titled title.", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefNotebookCover": "Notebook cover · {name}",
@@ -19467,7 +19505,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

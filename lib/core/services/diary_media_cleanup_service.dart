@@ -17,8 +17,10 @@ import 'app_data_directory.dart';
 /// 所以编辑期只改文档，文件统一在这里回收：
 /// - 引用来源：全部日记（含归档、回收站、时间胶囊）的正文/封面/metadata，
 ///   新建日记草稿，日记本载荷（封面放在 `diary_covers/`，只被日记本
-///   引用），以及留言的图片列（留言图片与正文图片同在 `diary_images/`；
-///   删除留言或彻底删除日记后，图片在这里按宽限期回收，撤销期间不受影响）；
+///   引用），留言的图片列（留言图片与正文图片同在 `diary_images/`；
+///   删除留言或彻底删除日记后，图片在这里按宽限期回收，撤销期间不受影响），
+///   以及 AI 对话里用户附带的图片（`ai_messages.images`，同在
+///   `diary_images/`；AI 把它加进日记后两处共用一个文件，删了对话日记照常）；
 /// - 宽限期：[gracePeriod] 内写入的文件一律保留，覆盖“刚导入还没保存”的会话；
 /// - 触发：启动后延迟一次（[scheduleStartupSweep]）、回收站彻底删除后一次。
 ///   请求串行执行，后一次一定读取到前一次之后的引用快照。
@@ -106,6 +108,11 @@ class DiaryMediaCleanupService {
     final commentRows = await (_database.selectOnly(
       comments,
     )..addColumns([comments.images])).get();
+    // AI 对话里用户附带的图片只出现在 ai_messages.images 的 JSON 数组里。
+    final messages = _database.aiMessages;
+    final messageRows = await (_database.selectOnly(
+      messages,
+    )..addColumns([messages.images])).get();
     final settings = await _settings();
     return DiaryMediaSweepRequest(
       documentsPath: (await _documentsDirectory()).path,
@@ -119,6 +126,7 @@ class DiaryMediaCleanupService {
         for (final row in draftRows) row.read(drafts.payload),
         for (final row in notebookRows) row.read(notebooks.payload),
         for (final row in commentRows) row.read(comments.images),
+        for (final row in messageRows) row.read(messages.images),
         // 旧版本的单份草稿迁进草稿箱前仍算引用（迁移成功后此键清空）。
         settings.createDiaryDraftRaw,
       ],

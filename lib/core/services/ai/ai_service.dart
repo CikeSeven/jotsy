@@ -17,10 +17,15 @@ typedef AiClientFactory =
 /// - 解析任务该用哪个服务商与模型（[resolve]，规则见
 ///   [AiLocalConfig.resolveTask]）；
 /// - 补上模型级的设置（最大输出、思考过程），模型标明不支持图片时去掉图片；
+///   去掉的图片一律换成 [AiRequest.imageOmittedText] 说明（按连续的一组），
+///   不悄悄丢掉：模型知道这里有图只是没收到；
 /// - 降级重试：图片与思考默认都发（现在的主流模型几乎都支持）。首块之前
 ///   收到 400（请求被拒）时，先去掉图片再试，仍被拒且带了思考参数（Claude、
 ///   Gemini、OpenAI Responses 才会发）时再去掉思考试一次；被拒过的模型记在
-///   本服务的内存里，之后的请求直接不带（服务商配置变了会重建本服务）；
+///   本服务的内存里，之后的请求直接不带（服务商配置变了会重建本服务）。
+///   “不认图片”只在**去掉图片后的那次真的开始返回**时才记住：去图后仍被
+///   拒，说明 400 另有原因（思考参数、工具），图片是无辜的，记下来会让这个
+///   模型在本次运行里再也收不到图片；这次请求仍不带图继续降级；
 /// - 工具：去掉图片与思考后仍被拒、且请求带着工具时，把这个模型记为不支持
 ///   工具并照常抛出错误——不悄悄去掉工具重发（那会变成另一种回答），由
 ///   AI 助手据 [supportsTools] 改走检索问答；
@@ -82,6 +87,12 @@ class AiService {
   bool supportsTools(AiResolvedModel target) =>
       target.model.tools && !_rejectsTools.contains(_modelKey(target));
 
+  /// 这个模型现在收不收图片：模型设置里标明接受图片，且本次运行里没被服务端
+  /// 拒过。智能体据此决定这一轮给不给“查看图片”工具、附图发不发。
+  bool acceptsImages(AiResolvedModel target) =>
+      target.model.supportsVision &&
+      !_rejectsImages.contains(_modelKey(target));
+
   /// 解析任务的模型，没有可用模型时抛 [AiFailureKind.notConfigured]。
   AiResolvedModel require(AiTaskKind task, {AiModelRef? override}) {
     final model = resolve(task, override: override);
@@ -115,6 +126,9 @@ class AiService {
     var started = false;
     var failed = false;
     var attempt = 0;
+    // 这次请求因 400 去掉了图片、还不知道是不是图片的错：去图后的那次真的
+    // 开始返回才记住“不认图片”，去图后仍被拒就不记（见类注释）。
+    var imagesOnTrial = false;
     try {
       while (true) {
         try {
@@ -122,6 +136,7 @@ class AiService {
             effective,
             cancelToken: cancelToken,
           )) {
+            if (!started && imagesOnTrial) _rejectsImages.add(key);
             started = true;
             if (chunk.usage case final chunkUsage?) {
               usage = usage.merge(chunkUsage);
@@ -138,10 +153,12 @@ class AiService {
               !cancelled &&
               error.kind == AiFailureKind.badRequest) {
             if (effective.hasImages) {
-              _rejectsImages.add(key);
+              imagesOnTrial = true;
               effective = _withoutImages(effective);
               continue;
             }
+            // 去掉图片后仍被拒：不是图片的错，不记“不认图片”。
+            imagesOnTrial = false;
             // 四种协议都会为强度多带参数（关掉思考也是显式参数）：先只去掉
             // 强度、保留思考本身（模型照常按自己的默认思考）。
             if (effective.thinking != null) {
@@ -279,20 +296,30 @@ class AiService {
       tools: request.tools,
       toolChoice: request.toolChoice,
       cacheKey: request.cacheKey,
+      imageOmittedText: request.imageOmittedText,
     );
     return model.supportsVision ? prepared : _withoutImages(prepared);
   }
 
-  /// 去掉所有图片（文字、工具调用与结果、回放数据都保留）。
+  /// 去掉所有图片（文字、工具调用与结果、回放数据都保留）：每一组连续的
+  /// 图片换成一段 [AiRequest.imageOmittedText]，模型知道这里原本有图。
   static AiRequest _withoutImages(AiRequest request) {
     if (!request.hasImages) return request;
+    final omitted =
+        request.imageOmittedText ?? AiRequest.defaultImageOmittedText;
     return request.copyWith(
       messages: [
         for (final message in request.messages)
-          AiMessage(message.role, [
-            for (final part in message.parts)
-              if (part is! AiImagePart) part,
-          ]),
+          if (!message.hasImages)
+            message
+          else
+            AiMessage(message.role, [
+              for (final (index, part) in message.parts.indexed)
+                if (part is! AiImagePart)
+                  part
+                else if (index == 0 || message.parts[index - 1] is! AiImagePart)
+                  AiTextPart(omitted),
+            ]),
       ],
     );
   }

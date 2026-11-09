@@ -11310,7 +11310,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiModuleVisionSubtitle =>
-      '日記の写真を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します';
+      '日記の写真やチャットで送った画像を本文と一緒に送信します。モデルが画像に対応していない場合はテキストのみ送信します';
 
   @override
   String get aiOptionTitleButton => 'タイトルの横に「タイトルを生成」を表示';
@@ -12071,6 +12071,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiConfirmSendAgent => 'AI は必要に応じて日記を検索・閲覧します（非公開の日記は除く）。毎回は確認しません';
 
   @override
+  String get aiConfirmSendAgentImages =>
+      'AI は必要に応じて日記とその画像を検索・閲覧します（非公開の日記は除く）。毎回は確認しません';
+
+  @override
   String get aiOptionAgent => 'AI にツールを使わせる';
 
   @override
@@ -12098,6 +12102,58 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String aiPromptAgentScopeRange(String from, String to) {
     return 'この会話は $from から $to までの日記だけが対象です。特に指示がなければ、検索にはこの期間を使ってください。';
+  }
+
+  @override
+  String aiPromptAgentImagesAttached(String refs) {
+    return 'このメッセージに添付された画像（順番どおり）：$refs。create_diary / append_to_diary の `images` パラメーター、または本文の ![](P1) で日記に追加できます。';
+  }
+
+  @override
+  String aiPromptImageNotSent(String label) {
+    return '[画像 $label は送られていません：このモデルまたは設定では画像を送りません]';
+  }
+
+  @override
+  String aiPromptImageOmitted(String label) {
+    return '[画像 $label はリクエストを小さく保つため今回は送っていません。必要なら view_images で見直してください]';
+  }
+
+  @override
+  String aiPromptImageUnavailable(String label) {
+    return '[画像 $label は利用できません：ファイルがないか、AI に見せられなくなりました]';
+  }
+
+  @override
+  String aiPromptImageRemoved(String label) {
+    return '[画像 $label は削除されました]';
+  }
+
+  @override
+  String get aiPromptImagesRejected => '[画像は送られていません：このモデルは画像を受け付けません]';
+
+  @override
+  String aiPromptDiaryImage(int index) {
+    return '[画像 $index]';
+  }
+
+  @override
+  String get aiToolViewImages => '画像を見る';
+
+  @override
+  String aiToolViewedImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '画像を $count 枚見ました',
+      zero: '画像は送られていません',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolWithImages(int count) {
+    return '画像 $count 枚付き';
   }
 
   @override
@@ -13134,6 +13190,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiChatInputHint => '質問を入力…';
 
   @override
+  String get aiChatAttachImages => '画像を追加';
+
+  @override
+  String aiChatImagesTruncated(int max) {
+    return '1 件のメッセージに添付できる画像は $max 枚までです。超えた分は追加されませんでした';
+  }
+
+  @override
+  String get aiChatImagesNoVision =>
+      'このモデルは画像を見られません（または画像の理解がオフです）が、AI は画像を日記に追加できます';
+
+  @override
+  String aiChatImagesSummary(int count) {
+    return '[画像 $count 枚]';
+  }
+
+  @override
+  String aiChatImagesRemoved(int count) {
+    return '画像 $count 枚は削除されました';
+  }
+
+  @override
   String get aiChatPlanning => '質問を理解しています…';
 
   @override
@@ -14020,7 +14098,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String storageMgmtDeleteFromAiChats(int count) {
+    return 'AI チャットのメッセージ $count 件';
+  }
+
+  @override
   String get storageMgmtDeleteCommentNote => '文字も画像もなくなったコメントは一緒に削除されます。';
+
+  @override
+  String get storageMgmtDeleteAiChatNote =>
+      'AI チャットでは削除した画像が「削除済み」と表示され、メッセージは残ります。';
 
   @override
   String get storageMgmtDeleteCapsuleNote => 'まだ開封されていないタイムカプセルの内容も含まれます。';
@@ -14235,6 +14322,11 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String storageMgmtRefComment(String title) {
     return 'コメント・$title';
+  }
+
+  @override
+  String storageMgmtRefAiChat(String title) {
+    return 'AI チャット・$title';
   }
 
   @override
@@ -15171,6 +15263,8 @@ class AppLocalizationsJa extends AppLocalizations {
       'arg_remove_steps': '削除するステップ',
       'arg_all_day': '終日',
       'arg_kind_todoList': 'リスト',
+      'arg_images': '画像',
+      'arg_attachments': 'チャットの画像',
       'other': '',
     });
     return '$_temp0';

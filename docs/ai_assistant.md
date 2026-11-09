@@ -84,16 +84,19 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | 偏好（模块开关、人设、写作指令、关于我、输出、隐私、图片、回应、灵感、回顾、对话） | `app.settings.ai_prefs`（`AiPreferences`，稀疏写入、逐字段容错，与默认相同时删除键） | 是（`aiPrefsRaw`） | 随“同步设置” |
 | 功能开关 | `AppFeatures.ai` | 是 | 界面类开关，随“同步设置” |
 | 对话、消息、回应与回顾 | Drift `ai_conversations` / `ai_messages` / `ai_results` | 完整备份（日记包不带） | 否 |
+| 对话里用户发的图片 | 托管目录 `diary_images/`（与正文、留言图片同一处），路径记在 `ai_messages.images` | 完整备份（整目录） | 否 |
 
 偏好里用户自建的人设与自定义写作指令各最多 50 个；用户自己写的提示词文字（人设提示词、写作指令提示词与内置指令的改写、关于我、文风偏好）共用上限 `kAiPromptTextMaxLength`（10 万字），输入框按它限字，读取时超出部分截掉。
 
 三张表都存业务 id、不建外键：
 
 - `ai_conversations`：conversationId、title、personaId、scope（JSON：自动 / 最近 N 天 / 全部 / 时间范围 / 固定一篇）、options（v21，`AiConversationOptions`：换用的模型与思考强度，`{}` 为跟随默认；新对话沿用最近活动的那段对话的选项）、pinned、createdAt、updatedAt；
-- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token（`inputTokens` / `outputTokens`，命中提示缓存的输入另记 `cachedTokens`）、放进上下文的篇数、出错原因、所用思考强度 `thinking` 与思考时长 `thinkingMs`；智能体另有 `agent: true`、服务商 id `providerId`、这一轮新分配的引用编号 `refs` 与没有正常作答的原因 `agentEnd`；用户消息为发出时的全文 `prompt` 与固定日记 `scopeDiary`）、status（done / stopped / error）、steps（v20，智能体的工具步骤，见 §9；普通回答为 `[]`）、createdAt；
+- `ai_messages`：messageId、conversationId、role（user / assistant）、content（Markdown）、reasoning、citations（被引用日记的编号、业务 id、标题、日期）、meta（服务商、模型、token（`inputTokens` / `outputTokens`，命中提示缓存的输入另记 `cachedTokens`）、放进上下文的篇数、出错原因、所用思考强度 `thinking` 与思考时长 `thinkingMs`；智能体另有 `agent: true`、服务商 id `providerId`、这一轮新分配的引用编号 `refs` 与没有正常作答的原因 `agentEnd`；用户消息为发出时的全文 `prompt` 与固定日记 `scopeDiary`）、status（done / stopped / error）、steps（v20，智能体的工具步骤，见 §9；普通回答为 `[]`）、images（v22，用户附图：托管图片绝对路径的 JSON 数组，按位置；存储管理删掉的位置写空串墓碑，编解码见 `ai_message_images.dart`；编号 `P1…` 发送时记在用户消息的 `meta.imageRefs`）、createdAt；
 - `ai_results`：resultId、kind（reply / recap）、diaryId（回应）、periodStart / periodEnd、scope（回顾的预设与日记本快照）、title、content、personaId、meta（人设快照、模型、统计、引用、思考过程、token）、createdAt。
 
 彻底删除日记时在同一事务里删掉它的回应。备份合并按业务 id：本机没有的新增，“合并”保留本机，“合并并覆盖”替换；引用的日记已不存在的回应丢弃。
+
+对话附图与留言图片同一套：选图即经 `DiaryMediaStorageService.importFile` 复制进托管目录（HEIC 照常转 JPEG，保存原图），发送前移除或离开页面就删掉文件，问题没写进库就放弃时同样删掉；写进消息后由存储管理（引用为“AI 对话”，删除写墓碑、压缩换路径）与媒体回收（`ai_messages.images` 算引用）管理，删了对话且没被日记用到的按宽限期回收；覆盖恢复与合并经 `rebindAiMessageImages` 改写路径并保留墓碑。编辑重发经 `replaceAiQuestion` 在同一事务里删旧插新、带上原图与编号。
 
 ## 6. 提示词
 
@@ -105,7 +108,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 - **写作助手**：工具栏、`/` 菜单、选区菜单 / 桌面右键菜单与图片菜单进入。面板是编辑页自己的浮层（与录音面板同位），会话由编辑页持有，键盘收起、工具栏卸载时生成不中断。作用范围为选中文字、当前段落、全文，续写为光标前的内容。15 个内置指令（续写、润色、扩写、精简、纠错、五种语气、翻译、总结、列成要点、提取待办、改成诗）可排序、隐藏、改提示词；自定义指令的提示词可用变量 `{{文字}}` `{{全文}}` `{{标题}}` `{{日期}}` `{{心情}}`（英文别名 `{{text}}` `{{diary}}` `{{title}}` `{{date}}` `{{mood}}` 同样认，认不出的原样保留），输出方式为替换 / 插在下方 / 只复制。写回只经 `diary_ai_editing.dart`：AI 输出的 Markdown 经 `diaryMarkdownPasteNodes` 转成块，一次事务替换或插入，一步撤销；代码块与表格格子里只写原文；生成期间目标被改动时退回到末尾插入。
 - **智能填写**：一次请求拿到标题、标签与心情（JSON 输出，`aiExtractJsonObject` 稳健提取），优先用快速模型。标签按名称匹配已有的，新标签经就地新建流程；心情只能从用户自己的心情选项里选。
-- **图片理解**（默认开）：开启且模型没被标为不支持图片时，回应与“AI 描述图片”附带正文里的图片（模型实际不认图片时按上文自动只发文字）：原图够小原样发送，否则按长边（默认 1024）缩小为 PNG，最多 N 张（默认 3，可在 1–20 之间调）。
+- **图片理解**（默认开）：开启且模型没被标为不支持图片时，回应与“AI 描述图片”附带正文里的图片，对话里附带用户发的图片、智能体可查看日记里的图片（§9）；模型实际不认图片时按上文自动只发文字，图片位置换成说明。`AiVisionImages`：原图够小（JPEG / PNG / WebP / GIF、长边与大小都不超）原样发送，否则按长边（默认 1024）缩小，不透明的编成 JPEG（q85，后台 isolate）、带透明的编 PNG；结果按（来源、大小、修改时间、尺寸）缓存在内存里，同一张图每次逐字节相同。回应最多 N 张（“每次最多发送”，默认 3，可在 1–20 之间调）；智能体每次 `view_images` 也按它。
 - **读后回应**：预览页“更多”与回应区；进行中的任务在常驻的 `aiReplyJobsProvider` 里（离开预览页再回来进度还在），完成即保存。“继续聊聊”以那篇日记为固定范围、那条回应开头开一段对话。
 - **写作灵感**：新建空白日记时标题下的灵感条，点了才生成 3–5 个问题（日期、中文另加农历与节气、可选天气，以及可选的最近 3 篇非私密日记的摘录）。
 - **回顾**：范围（本周 / 上周 / 本月 / 上月 / 今年 / 自定义）、日记本（可见的手动本与智能本，含子孙本子）、章节与口吻。先在本地算篇数、字数、心情分布与常用标签，发给模型的统计遵守“发送心情 / 标签”开关，本地展示保留完整统计。放得进字数预算时一次写完，否则按时间顺序切块、先用快速模型逐块总结，再汇总；每篇整篇放入（比一块还长的那篇截到一块的大小），只有 16 块也装不下时才按实际装箱结果压低每篇字数，严格限制最多 16 块且每块不超预算。极端情况下连每篇 1 字都装不下时按时间均匀取样，保留时段首尾。日记按时间全局编号 `[Dn]`，分块摘要里保留编号，最终回顾里的引用可点按打开原文。完成即保存，可另存为日记（写一份草稿后打开新建编辑页）。
@@ -115,7 +118,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 `confirmAiSend` 按 AI 隐私里的“发送前确认”决定：首次（第一次发往某个主机时问，可勾“不再询问”）、多篇时（默认：首次之外，多篇上下文每次都问）、每次。面板写明主机、模型、篇数与字数、图片张数。
 
-智能体的一轮（§9）只在发问前确认一次：工具会按需连续读日记，所以“多篇时”按“首次”处理，“每次”为每轮问一次，面板另有一行说明 AI 会按需查找、读取日记（私密日记除外）。
+智能体的一轮（§9）只在发问前确认一次：工具会按需连续读日记，所以“多篇时”按“首次”处理，“每次”为每轮问一次，面板另有一行说明 AI 会按需查找、读取日记（私密日记除外）；这一轮能发图时那一行写作“日记及其中的图片”（`AiSendSummary.agentImages`），附图张数计入图片一行。
 
 智能检索计划、各块回顾摘要、最终回答 / 回顾和自动起标题都在各自请求前确认实际使用的主机与模型；主模型的确认不授权另一个服务商。取消检索或摘要阶段的确认即停止后续流程，取消起标题则保留问题开头作为标题。固定单篇对话每次发送时重新读取日记，未解封胶囊与回收站中的正文不会读入上下文。编辑页的图片描述与文字功能共用单篇私密权限判断，草稿也检查日记本继承的私密性。
 
@@ -138,6 +141,14 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **历史**（`ai_agent_history.dart`，借鉴 pi 等编码智能体的只追加记录）：以前各轮**按当时发给模型的样子原样回放**——用户消息用发出时的全文（`meta.prompt`：现在几点、对话范围、固定的日记与问题）；智能体回答逐步回放助手消息（这一步的原文、工具调用；同一服务商与模型时带协议回放数据与调用上的签名）与工具结果（`steps` 里每个调用记着回传给模型的结果原文 `result`；停止或中断而没有结果的调用补一条错误结果），最后是回答正文（引用编号原样保留）；出错或停止的回答只回放已经做过的步骤，没有步骤的出错回答不进历史；检索问答的回答与旧版本的智能体回答（`meta` 里没有 `refs`）只回放正文并去掉编号。这样做有两个原因：模型看到的是自己真实发出的调用，不会去模仿一段“做过哪些操作”的文字（旧做法在回答后附这样一段，模型学着在正文里写调用记录、以为按钮已经生成，实际一个工具都没调）；前缀只追加不改写，下一轮请求的开头与上一轮最后一次请求逐字相同，服务商的前缀缓存整段命中。换了服务商或模型时协议回放数据与签名不带、调用 id 规范成各家都接受的字符。窗口按字数预算（模型写明上下文长度时取它，夹在 3.2 万到 20 万字之间，否则 12.8 万）：超出时从最旧的整轮开始丢、一次丢到预算的一半，起点按顺序模拟得出、每轮重算结果一样，缓存只在丢的那一轮断一次；单轮超过预算一半的回答只回放正文。固定的日记只在窗口里的用户消息没带过时才放进这一轮。
 
+**图片**（参考 pi 与 deepseek-harness）：
+- 这一轮能不能发图（`AiToolEnv.vision`）在开始时定下：图片理解开着，且 `AiService.acceptsImages`（模型设置接受图片、本次运行里没被拒过）。不能发时图片位置一律换成说明为什么没发的占位，`view_images` 不提供；用户照样能发图，AI 仍能按编号把图加进日记。
+- 用户附图：编号 `P1…` 整段对话连续，发送时定下、记在 `meta.imageRefs`，之后不变（删别的消息、存储里删图都不换号）；提问全文写“附带的图片：P1, P2”，图片放在提问文字之前。
+- 列日记的工具（`search_diaries`、`get_calendar_day`）在每篇的头部写图片张数（`aiDiaryPhotoCounts`，只数列出来的那几篇）：模型不必为了知道有没有图去读全文，也不会把“摘要里没提到图片”当成没有图（实测出现过这种误判）。
+- `read_diaries` 在正文的图片位置写“[图片 n]”（编号按正文顺序去重，`AiVisionImages.sourcesOf`，与 `view_images` 同一口径）。`view_images` 按 `diary_id` + `images`（任意序号）或 `attachments`（P 编号）取图，一次最多“每次最多发送”张，多要的列进 `not_sent_yet`；图片附在这一步全部工具结果之后（同一条用户消息，按调用顺序），结果 JSON 按顺序写明附上的是哪几张（Anthropic 会把图片挪到文字前，不能靠相邻对应）；调用记录存看过哪张（`AiAgentImageRecord`，不算存储引用）。
+- 历史里的图片每轮原样重发（同样的字节、同样的位置），回放时重新检查来源（日记变私密、被排除或删除，文件不在 → 占位）。一次请求最多 20 张、12 MB（`kAiRequestMaxImages` / `kAiRequestMaxImageBytes`），超出时从最旧的开始一次换掉一批、降到一半以下（高水位分段，`resolveAiImageSlots`；判定只取决于对话内容，前缀只往前移，缓存只在越过上限那一轮断一次）；这一轮 `view_images` 在剩余额度里累加，满了就请模型先就已看的作答。历史窗口里每张图按 1500 字计。
+- 服务端拒收图片（400）时去图重试，只有去图后的那次成功才记住“不认图片”；去掉的图片换成 `AiRequest.imageOmittedText`。
+
 **提示缓存**：请求从前到后越稳定的越靠前——系统提示词（同一段对话的提示词语言按第一个问题定下，不随每个问题变）与固定顺序的工具定义、原样回放的历史、最后是这一轮的问题。智能体请求带 `AiRequest.cacheKey`（对话 id）：Anthropic 在系统提示词、最后一个工具与最后一条用户消息上打 `cache_control` 断点（一次性请求不打，写缓存要多计费），OpenAI（Responses，以及主机为 `api.openai.com` 的 Chat）发 `prompt_cache_key`；DeepSeek、Gemini 等自动前缀缓存不需要。四种协议命中缓存的输入统一读进 `AiUsage.cachedInputTokens`（Chat 兼容为 `prompt_tokens_details.cached_tokens` 或 DeepSeek 的 `prompt_cache_hit_tokens`，Responses 为 `input_tokens_details.cached_tokens`，Anthropic 为 `cache_read_input_tokens`，Gemini 为 `cachedContentTokenCount`；都含在 `inputTokens` 里），回答 `meta.cachedTokens`、用量账本与回答下方的 token 行（“输入 N（缓存 M）· 输出 K”）都显示。DeepSeek 思考模式下同一轮的工具调用消息必须带回 `reasoning_content`（空串也行，之前各轮不要求），Chat 兼容客户端只要服务端给过这个字段就原样带回。
 
 **引用**：同一篇日记不论被哪个工具返回都用同一个 `[Dn]`，编号在整段对话里连续（`AiCitationBook` 以以前各轮的 `meta.refs` 起头，再见到旧日记沿用旧编号）——旧结果原样回放，旧编号必须仍指同一篇；回答与步骤说明里用到的才记进 citations，这一轮新分配的编号记进 `meta.refs`。
@@ -149,10 +160,11 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | 工具 | 作用 | 数据来源 |
 |---|---|---|
 | `get_app_context` | 今天（含农历、节气、法定节假日）、平台、界面语言、开启的功能、心情选项、本轮剩余字数 | `CalendarLunarDay`、`AppPlatform`、`AppFeatures`、`SettingsService.moodOptions` |
-| `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本找日记，返回编号、id、日期、标题与摘录 | `getAiContextDiaries`、`aiRankDiaries` |
-| `read_diaries` | 按 id 读全文（一次最多 10 篇） | `getAiDiary`；私密日记、排除的本子与标签一律不给 |
+| `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本找日记，返回编号、id、日期、标题、摘录与图片张数（`photos`，没有图片的不写，说明里写明“没写就是没有”） | `getAiContextDiaries`、`aiRankDiaries`、`aiDiaryPhotoCounts` |
+| `read_diaries` | 按 id 读全文（一次最多 10 篇），图片位置写“[图片 n]”并给出张数 | `aiAgentReadDiary`（`getAiDiary`；私密日记、排除的本子与标签一律不给） |
+| `view_images` | 看日记里的图片（按序号）或对话里用户发的图片（按 P 编号），能发图的一轮才有 | `aiAgentReadDiary`、`AiVisionImages`、`AiImageBudget` |
 | `diary_stats` | 篇数、字数、记录天数、最长 / 当前连续天数、常用心情与标签，可按日 / 周 / 月 / 年分组 | `getAiContextDiaries`、`AiRecapStats`、`ExploreStatsBuilder` |
-| `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
+| `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题与图片张数）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
 | `list_todos` | 未完成 / 已完成 / 全部，可按到期日、关键词（与日期可同时用）、清单（`""` 为收集箱）、优先级筛选；每项带步骤、提醒、重复（与改动类工具的参数同一写法，见 `aiTodoItem`）与完成时间（待办功能开启时） | 待办查询 |
 | `list_todo_lists` | 各清单与收集箱的未完成 / 已完成数，以及新待办默认进哪个清单 | `watchTodoListProgress`、`TodoSettings` |
 | `list_anniversaries` | 纪念日与下一次日期、还有几天（纪念日功能开启时） | `AnniversaryCountdown` |
@@ -165,8 +177,8 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 | 工具 | 作用 | 写库 | 撤销 |
 |---|---|---|---|
-| `create_diary` | 新建日记（Markdown 正文、日期与时刻、标签（没有的就建）、心情（只能取心情选项）、天气、地点、手动日记本） | `publishNewDiaryDirectly` | 摘掉顺带新建的标签、移入回收站、删掉没人用的新标签 |
-| `append_to_diary` | 在日记末尾追加 Markdown | `updateDiaryContent` | 写回原正文 |
+| `create_diary` | 新建日记（Markdown 正文、日期与时刻、标签（没有的就建）、心情（只能取心情选项）、天气、地点、手动日记本）；`images`（P 编号）与正文里的 `![](P1)` 把对话里的图片放进正文（`aiDiaryBodyWithImages`：写之前全部校验，有一个不对就整次不写） | `publishNewDiaryDirectly` | 摘掉顺带新建的标签、移入回收站、删掉没人用的新标签 |
+| `append_to_diary` | 在日记末尾追加 Markdown，同样可带对话里的图片 | `updateDiaryContent` | 写回原正文 |
 | `update_diary` | 改标题、日期、时刻、心情、天气、地点（空字符串清空） | `patchDiaryFields`（不碰归档、删除、标签与正文） | 写回原值 |
 | `tag_diaries` | 批量加减标签 | `applyDiaryTagBatch` | `restoreDiaryTagBatch` |
 | `pin_diaries` / `archive_diaries` | 置顶 / 归档（或取消） | batch writes | 按每篇原来的状态写回 |
@@ -196,7 +208,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、待办清单、纪念日、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面；只调了 `open_page` 的那一步之前说的话不算过渡句（模型常先写完回答再附卡片），作为正文露在外面。
 
-**导出对话**（`aiChatExportText`，对话页 ⋮ 或历史抽屉进入）：标题与“导出于 … · 共 N 条消息”，然后逐条写选中的消息——问题为“你 · 时间”与原文；回答为“人设名 · 时间”，可选的思考过程（各步与最后一段）、可选的过程与操作（调用前说的话，每个调用的具体标题 `labelWith`、结果说明与涉及的对象；撤销过、取消、失败、中断照实写）、正文、参考的日记（编号、标题、日期）、出错原因或“已停止”。Markdown 保留正文原样与 `[Dn]`；纯文本把正文经块文档转成纯文字并去掉引用编号。JSON（`aiChatExportJson`，`format: jotsy-ai-chat`、`version: 1`）为对话信息（id、标题、署名、创建与更新时间）与逐条消息：id、角色、署名、时间、状态、正文（Markdown 原文）、引用（编号、日记 id、标题、日期）、模型与思考强度、出错原因，按选项带思考与步骤（调用前说的话、思考时长，每个调用的工具名、界面标题、状态、是否撤销、参数、结果说明、错误与涉及的对象）；撤销用的内部数据不导出。文件名为“标题 日期.md / .txt / .json”（去掉文件名不能用的字符）。
+**导出对话**（`aiChatExportText`，对话页 ⋮ 或历史抽屉进入）：标题与“导出于 … · 共 N 条消息”，然后逐条写选中的消息——问题为“你 · 时间”、附图张数（“[N 张图片]”）与原文；回答为“人设名 · 时间”，可选的思考过程（各步与最后一段）、可选的过程与操作（调用前说的话，每个调用的具体标题 `labelWith`、结果说明与涉及的对象；撤销过、取消、失败、中断照实写）、正文、参考的日记（编号、标题、日期）、出错原因或“已停止”。Markdown 保留正文原样与 `[Dn]`；纯文本把正文经块文档转成纯文字并去掉引用编号。JSON（`aiChatExportJson`，`format: jotsy-ai-chat`、`version: 1`）为对话信息（id、标题、署名、创建与更新时间）与逐条消息：id、角色、署名、时间、状态、正文（Markdown 原文）、附图（编号与托管目录里的定位键，被删的标 removed，不写本机绝对路径）、引用（编号、日记 id、标题、日期）、模型与思考强度、出错原因，按选项带思考与步骤（调用前说的话、思考时长，每个调用的工具名、界面标题、状态、是否撤销、参数、结果说明、错误与涉及的对象）；撤销用的内部数据不导出。文件名为“标题 日期.md / .txt / .json”（去掉文件名不能用的字符）。
 
 **隐私**：多篇只经 `getAiContextDiaries`；`read_diaries` 比单篇功能更严，私密日记即使打开了“允许对私密日记使用 AI”也不给；日期、心情、标签、天气、地点按“发送”开关给；摘录与正文从本轮“最多发送”预算里扣，用完只给标题与日期。
 

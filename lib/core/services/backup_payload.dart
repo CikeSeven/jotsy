@@ -619,9 +619,19 @@ class BackupPayload {
             images: Value(await rebindCommentImages(comment.images, paths)),
           ),
       ],
-      // AI 记录与待办只有文字，没有媒体路径要改写。
       aiConversations: aiConversations,
-      aiMessages: aiMessages,
+      // AI 消息的图片列（用户附图）与留言图片同样重绑，保留墓碑的位置。
+      aiMessages: <AiMessageRow>[
+        for (final message in aiMessages)
+          message.images == null
+              ? message
+              : message.copyWith(
+                  images: Value(
+                    await rebindAiMessageImages(message.images, paths),
+                  ),
+                ),
+      ],
+      // AI 结果与待办只有文字，没有媒体路径要改写。
       aiResults: aiResults,
       todoLists: todoLists,
       todos: todos,
@@ -676,6 +686,30 @@ class BackupPayload {
               ],
             ) ??
             source,
+    ]);
+  }
+
+  /// AI 消息的图片列（`ai_messages.images`）：逐张按正文图片的规则改写，
+  /// 覆盖恢复与合并导入共用。与留言不同，**位置要原样保留**（对话里的图片
+  /// 按位置编号，见 `ai_message_images.dart`）：墓碑原样留着，暂存区里没有的
+  /// 文件保留原路径（显示为图片缺失），坏数据按“没有图片”处理。
+  static Future<String?> rebindAiMessageImages(
+    String? images,
+    BackupMediaPaths paths,
+  ) async {
+    final sources = decodeAiMessageImages(images);
+    if (sources.isEmpty) return null;
+    return encodeAiMessageImages(<String>[
+      for (final source in sources)
+        source == kAiMessageImageRemoved
+            ? source
+            : await paths.rewritePath(
+                    source,
+                    directoryNames: const [
+                      DiaryMediaStorageService.imagesDirectoryName,
+                    ],
+                  ) ??
+                  source,
     ]);
   }
 

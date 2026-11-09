@@ -24,14 +24,16 @@ import '../widgets/storage_media_tile.dart';
 /// 单个媒体的详情面板：大预览（图片点开看图页，其余交给系统应用打开）、
 /// 大小与规格、“用在”哪些日记 / 日记本封面 / 留言 / 草稿，以及压缩与删除。
 ///
-/// 打码的项不显示预览、文件名与引用的标题，只写有几处私密内容。三个回调
-/// 都在面板关闭之后执行（打开日记、压缩、删除都会换到别的界面）。
+/// 打码的项不显示预览、文件名与引用的标题，只写有几处私密内容。回调都在
+/// 面板关闭之后执行（打开日记 / 对话、压缩、删除都会换到别的界面）。
+/// [onOpenConversation] 为 null（AI 助手关着）时 AI 对话的引用不可点。
 Future<void> showStorageMediaDetail(
   BuildContext context, {
   required StorageMediaItemView item,
   required VoidCallback? onCompress,
   required VoidCallback onDelete,
   required ValueChanged<String> onOpenDiary,
+  ValueChanged<String>? onOpenConversation,
 }) => showAppModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
@@ -43,11 +45,15 @@ Future<void> showStorageMediaDetail(
     }
 
     final compress = onCompress;
+    final openConversation = onOpenConversation;
     return _DetailBody(
       item: item,
       onCompress: compress == null ? null : () => closeThen(compress),
       onDelete: () => closeThen(onDelete),
       onOpenDiary: (id) => closeThen(() => onOpenDiary(id)),
+      onOpenConversation: openConversation == null
+          ? null
+          : (id) => closeThen(() => openConversation(id)),
     );
   },
 );
@@ -58,12 +64,14 @@ class _DetailBody extends StatelessWidget {
     required this.onCompress,
     required this.onDelete,
     required this.onOpenDiary,
+    required this.onOpenConversation,
   });
 
   final StorageMediaItemView item;
   final VoidCallback? onCompress;
   final VoidCallback onDelete;
   final ValueChanged<String> onOpenDiary;
+  final ValueChanged<String>? onOpenConversation;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +151,11 @@ class _DetailBody extends StatelessWidget {
             )
           else
             for (final ref in entry.refs)
-              _RefRow(ref: ref, onOpen: onOpenDiary),
+              _RefRow(
+                ref: ref,
+                onOpen: onOpenDiary,
+                onOpenConversation: onOpenConversation,
+              ),
           const SizedBox(height: AppSpacing.l),
           if (!entry.isEditable)
             Padding(
@@ -318,12 +330,18 @@ class _PlayButton extends StatelessWidget {
   }
 }
 
-/// “用在”里的一处：能打开的日记（不在回收站）带箭头，点按关面板后打开。
+/// “用在”里的一处：能打开的日记（不在回收站）与 AI 对话带箭头，点按关面板
+/// 后打开。
 class _RefRow extends StatelessWidget {
-  const _RefRow({required this.ref, required this.onOpen});
+  const _RefRow({
+    required this.ref,
+    required this.onOpen,
+    required this.onOpenConversation,
+  });
 
   final StorageMediaRef ref;
   final ValueChanged<String> onOpen;
+  final ValueChanged<String>? onOpenConversation;
 
   @override
   Widget build(BuildContext context) {
@@ -343,14 +361,22 @@ class _RefRow extends StatelessWidget {
         :final diaryIsDeleted,
       ) =>
         (diaryId, diaryCreatedAt, diaryIsDeleted),
+      StorageAiMessageRef(:final createdAt) => (null, createdAt, false),
       _ => (null, null, false),
+    };
+    final conversationId = switch (ref) {
+      StorageAiMessageRef(:final conversationId)
+          when onOpenConversation != null =>
+        conversationId,
+      _ => null,
     };
     // 面板只在没打码（公开，或私密已揭示）时列出引用，这里不必再看私密；
     // 胶囊的内容永远打码，不会走到这里。
     final openable =
-        diaryId != null &&
-        !deleted &&
-        ref.visibility != StorageRefVisibility.capsule;
+        (diaryId != null &&
+            !deleted &&
+            ref.visibility != StorageRefVisibility.capsule) ||
+        conversationId != null;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       dense: true,
@@ -382,7 +408,11 @@ class _RefRow extends StatelessWidget {
                     foreground: scheme.onSurfaceVariant,
                   )
                 : null),
-      onTap: openable ? () => onOpen(diaryId) : null,
+      onTap: !openable
+          ? null
+          : conversationId != null
+          ? () => onOpenConversation!(conversationId)
+          : () => onOpen(diaryId!),
     );
   }
 }

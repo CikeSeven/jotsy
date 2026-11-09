@@ -176,7 +176,8 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
         .get();
   }
 
-  /// 追加一条消息并刷新对话的更新时间，返回消息的业务 id。
+  /// 追加一条消息并刷新对话的更新时间，返回消息的业务 id。[imagesJson]
+  /// 为用户附图（`encodeAiMessageImages` 的结果，没有图片为 null）。
   Future<String> addAiMessage({
     required String conversationId,
     required String role,
@@ -186,6 +187,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
     String metaJson = '{}',
     String status = AiMessageStatus.done,
     String stepsJson = '[]',
+    String? imagesJson,
     DateTime? now,
   }) {
     final id = _newBusinessUuid();
@@ -202,6 +204,7 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
           meta: Value(metaJson),
           status: Value(status),
           steps: Value(stepsJson),
+          images: Value(imagesJson),
           createdAt: time,
         ),
       );
@@ -236,6 +239,37 @@ mixin _AppDatabaseAiOps on _$AppDatabase {
         steps: stepsJson == null ? const Value.absent() : Value(stepsJson),
       ),
     );
+  }
+
+  /// 编辑并重发问题：在**一个事务**里删掉 [deleteMessageIds]（旧问题与它
+  /// 之后的回答），再追加新问题（带着 [imagesJson] 与记着图片编号的
+  /// [metaJson]），返回新问题的业务 id。
+  ///
+  /// 为什么要同一事务：旧问题的附图要原样交给新问题。分两步时，删掉旧问题
+  /// 之后、写入新问题之前这些图片没有任何引用，此时恰好跑一轮媒体回收
+  /// （文件早就写好、过了宽限期）就会把它们当孤儿删掉。
+  Future<String> replaceAiQuestion({
+    required String conversationId,
+    required Iterable<String> deleteMessageIds,
+    required String content,
+    String? imagesJson,
+    String metaJson = '{}',
+    DateTime? now,
+  }) {
+    final ids = deleteMessageIds.toList(growable: false);
+    return transaction(() async {
+      if (ids.isNotEmpty) {
+        await (delete(aiMessages)..where((t) => t.messageId.isIn(ids))).go();
+      }
+      return addAiMessage(
+        conversationId: conversationId,
+        role: AiMessageRole.user,
+        content: content,
+        imagesJson: imagesJson,
+        metaJson: metaJson,
+        now: now,
+      );
+    });
   }
 
   /// 删除一组消息（重新生成、编辑重发时删掉它们之后的回答）。

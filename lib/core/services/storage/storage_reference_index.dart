@@ -8,7 +8,7 @@ import 'storage_usage_models.dart';
 /// 托管媒体的引用索引：定位键 → 谁在引用它（纯函数，可在后台 isolate 里建）。
 ///
 /// 结构化地解析每一种已知来源（日记正文与封面、日记本封面、留言图片、草稿
-/// 正文与封面），删除与压缩据此知道要改写哪些行。另外用与媒体回收同一份
+/// 正文与封面、AI 对话里用户附带的图片），删除与压缩据此知道要改写哪些行。另外用与媒体回收同一份
 /// 保守扫描（[DiaryMediaReferences]：遍历 JSON 里每个字符串，再按“原文包含”
 /// 兜底）判断文件是否在用：结构化解析不认识的提及（日记 metadata、旧版单份
 /// 草稿）记为 [StorageOtherRef]，文件算在用、但存储管理不删不压；回收与这里
@@ -110,6 +110,18 @@ StorageReferenceIndex buildStorageReferenceIndex(
       add(image, ref, 'm${comment.id}');
     }
   }
+  for (final message in sources.aiMessages) {
+    final ref = StorageAiMessageRef(
+      messageLocalId: message.id,
+      conversationId: message.conversationId,
+      conversationTitle: message.conversationTitle,
+      createdAt: message.createdAt,
+    );
+    // 墓碑（被删掉的位置）是空串，没有定位键，自然跳过。
+    for (final image in decodeAiMessageImages(message.images)) {
+      add(image, ref, 'a${message.id}');
+    }
+  }
   for (final draft in sources.drafts) {
     final payload = draftPayloadOf(draft.payload);
     if (payload == null) continue;
@@ -133,6 +145,7 @@ StorageReferenceIndex buildStorageReferenceIndex(
     for (final draft in sources.drafts) draft.payload,
     for (final notebook in sources.notebooks) notebook.payload,
     for (final comment in sources.comments) comment.images,
+    for (final message in sources.aiMessages) message.images,
     legacyDraftRaw,
   ]);
   for (final key in conservative.keys) {

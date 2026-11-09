@@ -165,6 +165,31 @@ ${_diaryScopeJoinSql(scope)}WHERE d.is_deleted = 0
     ];
   }
 
+  /// 一组日记的块文档原文（业务 id → 正文 JSON），智能体列日记时数图片用。
+  /// 只给调用方已经按隐私口径查出来的那几篇（搜索结果、某天的日记），这里
+  /// 不再过滤；不存在的 id 不在结果里。分批查询，不碰 SQLite 的变量上限。
+  Future<Map<String, String>> getAiDiaryContents(
+    Iterable<String> diaryIds,
+  ) async {
+    final ids = diaryIds.toSet().toList(growable: false);
+    final result = <String, String>{};
+    for (var start = 0; start < ids.length; start += 200) {
+      final batch = ids.sublist(
+        start,
+        start + 200 < ids.length ? start + 200 : ids.length,
+      );
+      final rows =
+          await (selectOnly(diaries)
+                ..addColumns([diaries.diaryId, diaries.content])
+                ..where(diaries.diaryId.isIn(batch)))
+              .get();
+      for (final row in rows) {
+        result[row.read(diaries.diaryId)!] = row.read(diaries.content)!;
+      }
+    }
+    return result;
+  }
+
   /// 读一篇日记（含块文档原文），回收站、未解封胶囊与不存在的返回 null。
   /// 每次发送都重新检查封存状态，已有的固定单篇对话也不能提前读取正文。
   /// 不过滤私密：单篇功能由调用方按 `allowPrivate` 决定能否发送。

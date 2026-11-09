@@ -1,6 +1,10 @@
 import 'dart:async';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
+// 上游的自动滚动器类型未导出，EditorState.autoScroller 的覆盖要用到它。
+// ignore: implementation_imports
+import 'package:appflowy_editor/src/editor/editor_component/service/scroll/auto_scroller.dart'
+    show AutoScroller;
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
@@ -23,7 +27,7 @@ class DiaryEditorController extends ChangeNotifier {
     af.Selection? selection,
     bool readOnly = false,
     this.linkSource,
-  }) : state = _KeyboardHoldingEditorState(
+  }) : state = _DiaryEditorState(
          document: document ?? af.Document.blank(withInitialText: true),
        ) {
     state.editable = !readOnly;
@@ -104,7 +108,7 @@ class DiaryEditorController extends ChangeNotifier {
   /// 调用方先确认软键盘收着（见 `holdHiddenKeyboard`）。之后点正文打字时
   /// 上游照常重新接上并弹出键盘。
   T holdingKeyboard<T>(T Function() action) {
-    final state = this.state as _KeyboardHoldingEditorState;
+    final state = this.state as _DiaryEditorState;
     state.holds++;
     try {
       return action();
@@ -463,13 +467,35 @@ af.Selection diaryEditorSelectionAtOffset(af.Document document, int offset) {
   );
 }
 
-/// 见 [DiaryEditorController.holdingKeyboard]：上游键盘服务在选区通知里按
-/// `selectionExtraInfoDoNotAttachTextService` 决定是否接上输入法，这里在
-/// 选区写入前补上这个标记；其余信息（拖动方式、是否禁止浮动工具栏）原样。
-class _KeyboardHoldingEditorState extends af.EditorState {
-  _KeyboardHoldingEditorState({required super.document});
+/// 会话的 EditorState：在两处补上上游缺的行为。
+///
+/// - 收起的键盘（见 [DiaryEditorController.holdingKeyboard]）：上游键盘服务
+///   在选区通知里按 `selectionExtraInfoDoNotAttachTextService` 决定是否接上
+///   输入法，这里在选区写入前补上这个标记；其余信息（拖动方式、是否禁止
+///   浮动工具栏）原样。
+/// - 关掉的自动滚动（见 [autoScroller]）。
+class _DiaryEditorState extends af.EditorState {
+  _DiaryEditorState({required super.document});
 
   int holds = 0;
+
+  /// 上游只有桌面滚动服务理会 [disableAutoScroll]；手机滚动服务照样在每次
+  /// 选区变化后用这个滚动器做固定边距的边缘滚动，拖选区时还会逐帧续滚。
+  /// 可编辑的整页正文（`DiaryEditor` 非收缩、非只读时关掉自动滚动）已经由
+  /// 自己的组件负责滚动：`DiaryEditorViewport` 按实际遮挡揭示光标，
+  /// `DiaryEditorSelectionGestures` 在拖选区（把手、长按）到边缘时滚动。上游
+  /// 再同时对同一个滚动位置 animateTo，两边每次都把对方的滚动动画顶掉，被
+  /// 顶掉的一方 Future 立刻完成、马上再滚一次——整个循环在微任务里转、一帧
+  /// 也不让出，界面直接卡死（把选区把手拖到正文顶部时必现：交给上游的点
+  /// 夹在可见顶边，上游朝上量的边距越出视口）。关掉时不交出滚动器，手机与
+  /// 桌面一致。
+  ///
+  /// 手机滚动服务第一次用到时取一次并一直沿用；上游在编辑器 initState 里
+  /// 就写好 [disableAutoScroll]，早于任何选区变化。会话的只读与否在创建后
+  /// 不再改变，取到的结果不会过期。
+  @override
+  AutoScroller? get autoScroller =>
+      disableAutoScroll ? null : super.autoScroller;
 
   @override
   Future<void> updateSelectionWithReason(

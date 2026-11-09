@@ -14,6 +14,7 @@ import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter/services.dart' show HapticFeedback;
 
 import '../../controllers/diary_editor_controller.dart';
+import 'diary_cursor_drag_follow.dart';
 import 'diary_edge_auto_scroll.dart';
 import 'diary_editor_keyboard_hold.dart';
 
@@ -148,13 +149,19 @@ class _UpstreamHandleDriver extends DiarySelectionHandleDriver {
 /// 所在的行或字；放大镜也因此跟着端点所在的文字，而不是手指。只按下、没有
 /// 移动就抬起时什么也不做（不交给正文的点按把选区收成光标）。
 ///
-/// 拖到看得见的范围上下边缘时自动滚动（上游手机选区服务不做这件事；参数与
-/// 段落拖动相同，见 [diaryEdgeAutoScrollTarget]）：编辑页滚正文自己的列表
-/// （[pageScroll] 为 false，底部去掉键盘与悬浮工具栏 [coveredHeight]），嵌入
-/// 阅读页的收缩正文滚外层页面（[pageScroll] 为 true，顶部去掉盖在正文上的
-/// 顶栏与状态栏、底部去掉导航条）。手指不动、内容在滚时逐帧按手指位置重新
-/// 取选区，选区跟着内容一路扩展；交给上游的位置夹在看得见的范围里，拖到
-/// 栏或键盘上也只选到边缘那一行。
+/// 拖到看得见的范围上下边缘时自动滚动（参数与段落拖动相同，见
+/// [diaryEdgeAutoScrollTarget]）：编辑页滚正文自己的列表（[pageScroll] 为
+/// false，底部去掉键盘与悬浮工具栏 [coveredHeight]），嵌入阅读页的收缩正文
+/// 滚外层页面（[pageScroll] 为 true，顶部去掉盖在正文上的顶栏与状态栏、底部
+/// 去掉导航条）。手指不动、内容在滚时逐帧按手指位置重新取选区，选区跟着
+/// 内容一路扩展；交给上游的位置夹在看得见的范围里，拖到栏或键盘上也只选到
+/// 边缘那一行。
+///
+/// 上游自己的插入点式拖动（长按后不松手拖着扩选、拖光标等）也按同样的规则
+/// 自动滚动：这里只旁听触点（`Listener` 不参与手势竞争），在上游写下这种
+/// 拖动的选区后跟踪手指，滚动时由 [DiaryCursorDragFollow] 替上游重新取选区。
+/// 可编辑正文的上游自动滚动已关掉（见 `DiaryEditorController` 的
+/// EditorState），拖选区时只有这里在滚，不会与它争同一个滚动位置。
 class DiaryEditorSelectionGestures extends StatefulWidget {
   const DiaryEditorSelectionGestures({
     super.key,
@@ -203,6 +210,29 @@ class _DiaryEditorSelectionGesturesState
   /// 最近一次手指的全局位置（未加 [_grab]）。
   Offset? _finger;
 
+  /// 旁听的触点（第一根按下的手指），用来跟随上游的插入点式拖动。
+  int? _pointer;
+
+  /// 正在跟随的上游插入点式拖动，见类注释。
+  DiaryCursorDragFollow? _follow;
+
+  /// 开始跟随后的下一次移动再量一次手指到光标的偏移：上游在触点事件里放下
+  /// 光标时，这次事件还没传到外层的 `Listener`，开始时手里的手指位置是上一次
+  /// 的（见 [DiaryCursorDragFollow.grab]）。
+  bool _remeasure = false;
+
+  /// 把手拖动或跟随上游拖动进行中，逐帧检查是否要自动滚动与重新取选区。
+  bool get _tracking => _dragging != null || _follow != null;
+
+  /// 拖动点：手指加上按到的端点或光标的偏移。
+  Offset? get _dragPoint {
+    final finger = _finger;
+    if (finger == null) return null;
+    if (_dragging != null) return finger + _grab;
+    final follow = _follow;
+    return follow == null ? null : finger + follow.grab;
+  }
+
   /// 上次交给上游时滚动视图的位置；逐帧比较，内容滚过才重新取选区。
   double? _draggedPixels;
 
@@ -215,15 +245,27 @@ class _DiaryEditorSelectionGesturesState
       widget.driver ?? _UpstreamHandleDriver(widget.controller);
 
   @override
+  void initState() {
+    super.initState();
+    widget.controller.state.selectionNotifier.addListener(_onSelection);
+  }
+
+  @override
   void didUpdateWidget(DiaryEditorSelectionGestures old) {
     super.didUpdateWidget(old);
     if (old.driver != widget.driver || old.controller != widget.controller) {
       _driver = _createDriver();
     }
+    if (old.controller != widget.controller) {
+      old.controller.state.selectionNotifier.removeListener(_onSelection);
+      widget.controller.state.selectionNotifier.addListener(_onSelection);
+      if (_follow != null) _endFollow();
+    }
   }
 
   @override
   void dispose() {
+    widget.controller.state.selectionNotifier.removeListener(_onSelection);
     _autoScroller?.stopAutoScroll();
     _ticker?.dispose();
     super.dispose();
@@ -231,8 +273,81 @@ class _DiaryEditorSelectionGesturesState
 
   bool get _ios => Theme.of(context).platform == TargetPlatform.iOS;
 
+  /// 选区变化：上游开始插入点式拖动就跟随手指，选区被别的操作换掉就停下
+  /// （见 [DiaryCursorDragFollow.interrupted]），手指抬起也停下。只在手指
+  /// 按着、不在拖把手时开始。
+  void _onSelection() {
+    final controller = widget.controller;
+    if (controller.isDisposed) return;
+    final current = _follow;
+    if (current != null) {
+      if (current.interrupted()) _endFollow();
+      return;
+    }
+    if (!widget.enabled ||
+        _pointer == null ||
+        _dragging != null ||
+        _pending != null) {
+      return;
+    }
+    final follow = DiaryCursorDragFollow.begin(controller.state);
+    if (follow == null) return;
+    _follow = follow;
+    final finger = _finger;
+    if (finger != null) follow.measure(finger);
+    _remeasure = true;
+    _draggedPixels = _scrollable()?.position.pixels;
+    final ticker = _ticker ??= createTicker((_) => _onTick());
+    if (!ticker.isActive) ticker.start();
+  }
+
+  void _endFollow() {
+    _follow = null;
+    _remeasure = false;
+    if (_dragging != null) return;
+    _draggedPixels = null;
+    _autoScroller?.stopAutoScroll();
+    _ticker?.stop();
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    if (_pointer != null) return;
+    _pointer = event.pointer;
+    if (_dragging == null && _pending == null) _finger = event.position;
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    // 拖把手时手指位置由把手手势给出（见 onUpdate）。
+    if (event.pointer != _pointer || _dragging != null || _pending != null) {
+      return;
+    }
+    _finger = event.position;
+    final follow = _follow;
+    if (follow == null) return;
+    if (_remeasure) {
+      _remeasure = false;
+      follow.measure(event.position);
+    }
+    _autoScroll();
+  }
+
+  void _onPointerEnd(PointerEvent event) {
+    if (event.pointer != _pointer) return;
+    _pointer = null;
+    if (_follow != null) _endFollow();
+    if (_dragging == null && _pending == null) _finger = null;
+  }
+
   @override
-  Widget build(BuildContext context) => DiarySelectionHandleGestureRegion(
+  Widget build(BuildContext context) => Listener(
+    onPointerDown: _onPointerDown,
+    onPointerMove: _onPointerMove,
+    onPointerUp: _onPointerEnd,
+    onPointerCancel: _onPointerEnd,
+    child: _buildHandleRegion(),
+  );
+
+  Widget _buildHandleRegion() => DiarySelectionHandleGestureRegion(
     key: ObjectKey(widget.controller),
     resolveHandle: _resolveHandle,
     onStart: (details, side) {
@@ -298,20 +413,9 @@ class _DiaryEditorSelectionGesturesState
     double? primaryDelta,
   }) {
     final side = _dragging;
-    final finger = _finger;
-    if (side == null || finger == null || widget.controller.isDisposed) {
+    final point = _clampedDragPoint();
+    if (side == null || point == null || widget.controller.isDisposed) {
       return;
-    }
-    var point = finger + _grab;
-    final visible = _visible();
-    if (visible != null) {
-      point = Offset(
-        point.dx,
-        point.dy.clamp(
-          visible.top + 1,
-          math.max(visible.top + 1, visible.bottom - 1),
-        ),
-      );
     }
     _draggedPixels = _scrollable()?.position.pixels;
     final selection = _toUpstream(
@@ -334,29 +438,56 @@ class _DiaryEditorSelectionGesturesState
     }
   }
 
+  /// 拖动点夹进看得见的范围（上下各留 1px，落在边缘那一行里）。
+  Offset? _clampedDragPoint() {
+    final point = _dragPoint;
+    final visible = _visible();
+    if (point == null || visible == null) return point;
+    return Offset(
+      point.dx,
+      point.dy.clamp(
+        visible.top + 1,
+        math.max(visible.top + 1, visible.bottom - 1),
+      ),
+    );
+  }
+
+  /// 跟随上游拖动时内容滚过：按夹取后的拖动点替上游重新取选区。
+  void _followScroll() {
+    final follow = _follow;
+    final point = _clampedDragPoint();
+    if (follow == null || point == null || widget.controller.isDisposed) {
+      return;
+    }
+    _draggedPixels = _scrollable()?.position.pixels;
+    follow.follow(point);
+  }
+
   void _onTick() {
-    if (!mounted || _dragging == null) {
+    if (!mounted || !_tracking) {
       _ticker?.stop();
       return;
     }
     final pixels = _scrollable()?.position.pixels;
-    if (pixels != null && pixels != _draggedPixels) _drag();
+    if (pixels != null && pixels != _draggedPixels) {
+      _dragging != null ? _drag() : _followScroll();
+    }
     _autoScroll();
   }
 
-  /// 拖动点（手指加 [_grab]，不夹取：越出边缘越多滚得越快）靠近看得见的
+  /// 拖动点（[_dragPoint]，不夹取：越出边缘越多滚得越快）靠近看得见的
   /// 范围上下边缘时朝那一边滚动，离开边缘即停。每帧与滚动器每滚一步都按
   /// 当前位置重新给一次目标。
   void _autoScroll() {
     // 停下后滚动器还在途中的那一步会再回调一次。
-    if (!mounted || _dragging == null) return;
-    final finger = _finger;
+    if (!mounted || !_tracking) return;
+    final point = _dragPoint;
     final scrollable = _scrollable();
     final visible = _visible();
-    final target = finger == null || scrollable == null || visible == null
+    final target = point == null || scrollable == null || visible == null
         ? null
         : diaryEdgeAutoScrollTarget(
-            finger + _grab,
+            point,
             visibleTop: visible.top,
             visibleBottom: visible.bottom,
             viewportTop: visible.viewportTop,

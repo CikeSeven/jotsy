@@ -84,6 +84,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            // Flutter 插件已经开启 R8 并带上默认规则；应用自己的规则显式登记在这里，
+            // 不依赖插件对同名文件的隐式回落。
+            proguardFiles("proguard-rules.pro")
         }
         getByName("profile") {
             // A profile install must retain the installed release package's

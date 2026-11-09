@@ -8283,6 +8283,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryBlockMerge => '1 つにまとめる';
 
   @override
+  String get diaryEditorSelectBlocks => '段落を選択';
+
+  @override
   String get diaryEditorParagraph => '本文';
 
   @override

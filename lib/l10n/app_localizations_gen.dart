@@ -14832,6 +14832,12 @@ abstract class AppLocalizations {
   /// **'Merge into one'**
   String get diaryBlockMerge;
 
+  /// Diary text selection menu item: select every block the text selection touches and enter block selection mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Select blocks'**
+  String get diaryEditorSelectBlocks;
+
   /// Plain paragraph option in the diary editor block menu.
   ///
   /// In en, this message translates to:

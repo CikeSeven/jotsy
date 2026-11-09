@@ -9127,6 +9127,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBlockMerge => 'Merge into one';
 
   @override
+  String get diaryEditorSelectBlocks => 'Select blocks';
+
+  @override
   String get diaryEditorParagraph => 'Paragraph';
 
   @override

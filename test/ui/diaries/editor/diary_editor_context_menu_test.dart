@@ -210,6 +210,9 @@ void main() {
         l10n.copyButtonLabel,
         l10n.pasteButtonLabel,
         l10n.selectAllButtonLabel,
+        AppLocalizations.of(
+          tester.element(find.byType(DiaryEditor)),
+        ).diaryEditorSelectBlocks,
       ]);
       // 行尾是与输入框同源的快捷键提示；桌面没有分享。
       for (final key in ['X', 'C', 'V', 'A']) {
@@ -449,15 +452,14 @@ void main() {
         af.Selection.single(path: [0], startOffset: 0, endOffset: 5),
       );
       final l10n = labels(tester);
-      final ai = AppLocalizations.of(
-        tester.element(find.byType(DiaryEditor)),
-      ).aiSelectionMenu;
+      final app = AppLocalizations.of(tester.element(find.byType(DiaryEditor)));
       final row = [
         l10n.cutButtonLabel,
         l10n.copyButtonLabel,
         l10n.pasteButtonLabel,
         l10n.selectAllButtonLabel,
-        ai,
+        app.diaryEditorSelectBlocks,
+        app.aiSelectionMenu,
       ];
       expect(menuLabels(tester), row);
       final xs = [
@@ -472,6 +474,39 @@ void main() {
       await unmount(tester, controller);
     },
   );
+
+  testWidgets('Select blocks turns the text selection into block selection', (
+    tester,
+  ) async {
+    final controller = DiaryEditorController.fromContent(
+      'alpha\nbravo\ncharlie',
+    );
+    await pump(tester, controller);
+    await select(
+      tester,
+      controller,
+      af.Selection(
+        start: af.Position(path: [0], offset: 2),
+        end: af.Position(path: [1], offset: 3),
+      ),
+    );
+    final app = AppLocalizations.of(tester.element(find.byType(DiaryEditor)));
+    await tester.tap(find.text(app.diaryEditorSelectBlocks));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    final selection = controller.blockSelection;
+    expect(selection.isActive, isTrue);
+    expect(selection.roots.map((node) => node.delta!.toPlainText()), [
+      'alpha',
+      'bravo',
+    ]);
+    // 正文选区清空，选区菜单随之收起。
+    expect(controller.state.selection, isNull);
+    expect(find.text(app.diaryEditorSelectBlocks), findsNothing);
+    selection.exit();
+    await tester.pump(const Duration(milliseconds: 300));
+    await unmount(tester, controller);
+  });
 
   testWidgets(
     'widening the selection keeps the same phone menu and collapses more',

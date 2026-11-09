@@ -11653,6 +11653,8 @@
   "@diaryBlockSplitLines": {"description": "Block action: split selected blocks whose text contains line breaks into one block per line (old pasted text that landed in one block)."},
   "diaryBlockMerge": "1 つにまとめる",
   "@diaryBlockMerge": {"description": "Block action: join the selected text blocks into the first one, separated by line breaks."},
+  "diaryEditorSelectBlocks": "段落を選択",
+  "@diaryEditorSelectBlocks": {"description": "Diary text selection menu item: select every block the text selection touches and enter block selection mode."},
   "diaryEditorParagraph": "本文",
   "@diaryEditorParagraph": {
     "description": "Plain paragraph option in the diary editor block menu."

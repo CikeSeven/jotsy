@@ -11594,6 +11594,8 @@
   "@diaryBlockSplitLines": {"description": "Block action: split selected blocks whose text contains line breaks into one block per line (old pasted text that landed in one block)."},
   "diaryBlockMerge": "合并成一段",
   "@diaryBlockMerge": {"description": "Block action: join the selected text blocks into the first one, separated by line breaks."},
+  "diaryEditorSelectBlocks": "选择段落",
+  "@diaryEditorSelectBlocks": {"description": "Diary text selection menu item: select every block the text selection touches and enter block selection mode."},
   "diaryEditorParagraph": "正文",
   "@diaryEditorParagraph": {
     "description": "Plain paragraph option in the diary editor block menu."

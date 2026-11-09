@@ -9405,6 +9405,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryBlockMerge => 'Объединить в один';
 
   @override
+  String get diaryEditorSelectBlocks => 'Выбрать блоки';
+
+  @override
   String get diaryEditorParagraph => 'Текст';
 
   @override

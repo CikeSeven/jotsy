@@ -8140,6 +8140,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryBlockMerge => '合并成一段';
 
   @override
+  String get diaryEditorSelectBlocks => '选择段落';
+
+  @override
   String get diaryEditorParagraph => '正文';
 
   @override

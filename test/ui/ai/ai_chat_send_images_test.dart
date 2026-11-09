@@ -38,6 +38,7 @@ void main() {
   Future<DiaryDraftsHarness> setUpHarness(
     WidgetTester tester, {
     bool vision = true,
+    bool tools = true,
   }) async {
     rootBundle.clear();
     AiVisionImages.debugClearCache();
@@ -63,7 +64,11 @@ void main() {
       await store.saveProvider(
         fakeAiProvider.copyWith(
           models: [
-            AiModelConfig(id: 'fake-model', vision: vision ? null : false),
+            AiModelConfig(
+              id: 'fake-model',
+              vision: vision ? null : false,
+              tools: tools,
+            ),
           ],
         ),
       );
@@ -368,6 +373,36 @@ void main() {
       () => h.database.getAiMessages(controller.conversationId!),
     ))!;
     expect(decodeAiMessageImages(rows.first.images), [sea]);
+  });
+
+  testWidgets('without tools a photo-only question is one request', (
+    tester,
+  ) async {
+    final h = await setUpHarness(tester, tools: false);
+    final sea = await photo(tester, 'sea.jpg');
+    service = scriptedAiService(
+      store,
+      requests: requests,
+      turns: [textTurn('是海')],
+    );
+    final (context, ref) = await host(h);
+    final controller = AiChatController(
+      database: h.database,
+      scope: const AiChatScope.auto(),
+    );
+    addTearDown(controller.dispose);
+
+    // 检索问答：没有文字时不再多发一次检索计划，图片放在问题之前。
+    await tester.runAsync(
+      () => controller.send(context, ref, '', images: [sea]),
+    );
+    expect(requests, hasLength(1));
+    final question = requests.single.messages.last;
+    expect(
+      (question.parts.first as AiImagePart).bytes,
+      base64Decode(jpgBase64),
+    );
+    expect(question.text, contains(h.l10n.aiChatImagesSummary(1)));
   });
 
   testWidgets('photos are discarded when the question never gets stored', (

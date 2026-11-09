@@ -174,7 +174,9 @@ class _AiChatComposerState extends State<AiChatComposer> {
                         TextFieldTapRegion(
                           child: AiComposerAttachButton(
                             images: images,
-                            enabled: widget.enabled && !widget.busy,
+                            // 生成中也能先给下一条消息选图（与打字一样）；
+                            // 发送按钮那时是“停止”，不会提前发出。
+                            enabled: widget.enabled,
                             onPick: onPick,
                             onTakePhoto: widget.onTakePhoto,
                           ),

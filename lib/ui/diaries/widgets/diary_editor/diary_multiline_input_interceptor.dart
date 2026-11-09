@@ -4,27 +4,29 @@ import 'package:flutter/services.dart';
 import '../../controllers/diary_editor_clipboard.dart';
 import '../../controllers/diary_editor_controller.dart';
 
-/// 输入法一次上屏的多行 Markdown 与粘贴同样转换。
+/// 输入法一次上屏的多行文字与粘贴同样落成块：Markdown 照样转换，普通文字
+/// 每行一段。
 ///
-/// 为什么需要：手机上光标停在文字中间时没有“粘贴”菜单（见
-/// `DiaryEditorSelectionToolbar`），很多人直接在输入法的剪贴板面板里点一条
-/// 粘贴。这段文字作为一次输入（折叠光标为 `TextEditingDeltaInsertion`，选中
-/// 文字时为 `TextEditingDeltaReplacement`）交给上游，而上游对多于一个字符的
-/// 输入不跑任何字符快捷规则，整段连同换行原样插进当前这一段：Markdown 不
-/// 转换，多行也挤在同一段里。
+/// 为什么需要：手机上很多人直接在输入法的剪贴板面板里点一条粘贴。这段文字
+/// 作为一次输入（折叠光标为 `TextEditingDeltaInsertion`，选中文字时为
+/// `TextEditingDeltaReplacement`）交给上游，而上游对多于一个字符的输入不跑
+/// 任何字符快捷规则，整段连同换行原样插进当前这一段：Markdown 不转换，几十段
+/// 文字也全挤在同一个块里（换行只是块内的软换行），没法逐段改成待办、列表。
 ///
-/// 只接手同时满足这些条件的输入，交给 [DiaryEditorClipboard.pasteMarkdown]
+/// 只接手同时满足这些条件的输入，交给 [DiaryEditorClipboard.pasteInputText]
 /// （与菜单粘贴同一转换与插入路径，一步撤销）：
 /// - 含换行且不止一个字符：单独的回车（以及上游当作回车的“空格 + 回车”）
 ///   仍走回车规则；打字、语音转写的一次上屏不带换行；
 /// - 不在组字中：组字区间非空时是输入法还没确认的文字；
-/// - 看起来是 Markdown、光标不在代码块或表格格子里（由 `pasteMarkdown`
-///   判断）。代码块里的多行输入要原样留在块内。
+/// - 由 `pasteInputText` 判断要不要切段：像 Markdown 的按 Markdown 转换；
+///   普通文字只在换行出现在末尾之前时每行一段（只有末尾一个换行时多半是
+///   输入法把确认的字和回车一起上屏）；光标在代码块里一律原样留在块内。
 ///
-/// 其余输入一律返回 false 交给上游（或排在前面的表格拦截器），行为不变。
-class DiaryMarkdownInputInterceptor
+/// 其余输入一律返回 false 交给上游（或排在前面的表格、嵌入块拦截器），行为
+/// 不变。
+class DiaryMultilineInputInterceptor
     extends af.AppFlowyKeyboardServiceInterceptor {
-  DiaryMarkdownInputInterceptor(this.controller);
+  DiaryMultilineInputInterceptor(this.controller);
 
   final DiaryEditorController controller;
 
@@ -54,6 +56,6 @@ class DiaryMarkdownInputInterceptor
         editorState.selection == null) {
       return false;
     }
-    return DiaryEditorClipboard.pasteMarkdown(controller, text);
+    return DiaryEditorClipboard.pasteInputText(controller, text);
   }
 }

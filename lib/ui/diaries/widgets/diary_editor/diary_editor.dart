@@ -30,8 +30,8 @@ import 'diary_block_marker_metrics.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
 import 'diary_embed_keys.dart';
-import 'diary_markdown_input_interceptor.dart';
 import 'diary_mention_menu.dart';
+import 'diary_multiline_input_interceptor.dart';
 import 'diary_slash_commands.dart';
 import 'diary_slash_menu.dart';
 import 'diary_table_keyboard_interceptor.dart';
@@ -154,9 +154,9 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   final DiaryEmbedKeyboardInterceptor _embedInterceptor =
       DiaryEmbedKeyboardInterceptor();
 
-  /// 输入法剪贴板一次上屏的多行 Markdown（见 [DiaryMarkdownInputInterceptor]），
+  /// 输入法剪贴板一次上屏的多行文字（见 [DiaryMultilineInputInterceptor]），
   /// 排在表格拦截器之后；随控制器在 [_bind] 里重建。
-  late DiaryMarkdownInputInterceptor _markdownInterceptor;
+  late DiaryMultilineInputInterceptor _multilineInterceptor;
   @override
   void initState() {
     super.initState();
@@ -168,7 +168,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
 
   void _bind() {
     widget.controller.attachView();
-    _markdownInterceptor = DiaryMarkdownInputInterceptor(widget.controller);
+    _multilineInterceptor = DiaryMultilineInputInterceptor(widget.controller);
     _slashMenu = DiarySlashMenuController(widget.controller);
     _mentionMenu = DiaryMentionMenuController(
       widget.controller,
@@ -195,7 +195,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         state.service.keyboardService
           ?..registerInterceptor(_tableInterceptor)
           ..registerInterceptor(_embedInterceptor)
-          ..registerInterceptor(_markdownInterceptor);
+          ..registerInterceptor(_multilineInterceptor);
       }
     });
   }
@@ -205,7 +205,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       controller.state.service.keyboardService
         ?..unregisterInterceptor(_tableInterceptor)
         ..unregisterInterceptor(_embedInterceptor)
-        ..unregisterInterceptor(_markdownInterceptor);
+        ..unregisterInterceptor(_multilineInterceptor);
     }
   }
 

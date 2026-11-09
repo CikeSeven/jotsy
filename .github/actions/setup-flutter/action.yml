@@ -118,8 +118,29 @@ runs:
     # job（如静态检查）会抢先存下一份空的或旧的缓存，测试分片之后每次都要重新下载。
     # Android 构建要 Android 各 ABI 的库，其余 job 只要本机的库：发布工作流的 job
     # 在 tag 上只读，按这一段前缀退回 CI 里同类 job 的缓存。
+    #
+    # 这里和下面的 Gradle 缓存直接用 actions/cache，不经 main-cache：缓存要在 job
+    # 结束时保存，靠的是 actions/cache 的 post 步骤，而它嵌套在两层组合 action 里
+    # （setup-flutter → main-cache → actions/cache）时 post 步骤拿不到输入，只告警
+    # “Input required and not supplied: path” 就跳过保存。#197 合并后这三份缓存
+    # 一次都没存下，2026-11-09 #211 合并后 GitHub Releases 504，Android 构建与
+    # 一个测试分片又因下载失败而失败。只嵌套一层（工作流直接用 main-cache）时
+    # 保存正常。只由 main 写入的规则不变：main 上用 actions/cache，其他 ref 只恢复。
     - name: Cache build hook downloads
-      uses: ./.github/actions/main-cache
+      if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: .dart_tool/hooks_runner/shared
+        key: >-
+          hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-${{
+          github.job }}-${{ hashFiles('pubspec.lock') }}
+        restore-keys: |
+          hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-${{ github.job }}-
+          hook-downloads-${{ runner.os }}-${{ inputs.java == 'true' && 'android' || 'host' }}-
+
+    - name: Restore build hook downloads (read-only)
+      if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: .dart_tool/hooks_runner/shared
         key: >-
@@ -198,9 +219,21 @@ runs:
     # Gradle 发行版单独一份，只随 Gradle 版本变：services.gradle.org 会跳转到
     # GitHub Releases 下载，与 sqlite3 同样会遇到 504（2026-11-08 PR #197），升级
     # Flutter 时 Gradle 缓存要重建，发行版不必跟着重新下载。
+    # 与上面的钩子下载缓存一样直接用 actions/cache，不经 main-cache。
     - name: Cache Gradle distribution
-      if: inputs.java == 'true'
-      uses: ./.github/actions/main-cache
+      if: >-
+        inputs.java == 'true' &&
+        github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.gradle/wrapper/dists
+        key: gradle-wrapper-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
+
+    - name: Restore Gradle distribution (read-only)
+      if: >-
+        inputs.java == 'true' &&
+        github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.gradle/wrapper/dists
         key: gradle-wrapper-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
@@ -212,9 +245,27 @@ runs:
     # 是本机进程状态，不缓存。内容由 Gradle 脚本、插件版本（pubspec.lock）与
     # Flutter 版本（引擎 maven 包）决定；只在同一 Flutter 版本内退回旧缓存，
     # 升级 Flutter 时整份重建，旧依赖与旧 transforms 不会一代代累积。
+    # 同样直接用 actions/cache，不经 main-cache。
     - name: Cache Gradle user home
-      if: inputs.java == 'true'
-      uses: ./.github/actions/main-cache
+      if: >-
+        inputs.java == 'true' &&
+        github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.gradle/caches
+          !~/.gradle/caches/**/*.lock
+          !~/.gradle/caches/**/gc.properties
+        key: >-
+          gradle-${{ runner.os }}-${{ steps.flutter.outputs.VERSION }}-${{ hashFiles('android/**/*.gradle*',
+          'android/gradle.properties', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+        restore-keys: gradle-${{ runner.os }}-${{ steps.flutter.outputs.VERSION }}-
+
+    - name: Restore Gradle user home (read-only)
+      if: >-
+        inputs.java == 'true' &&
+        github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: |
           ~/.gradle/caches

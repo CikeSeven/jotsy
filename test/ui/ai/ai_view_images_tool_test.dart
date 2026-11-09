@@ -145,6 +145,51 @@ void main() {
     );
   });
 
+  test('lists of entries say how many photos each one has', () async {
+    final photos = await diaryWithPhotos(2);
+    final plain = await db.createDiary(
+      title: '只有字',
+      contentDocJson: '',
+      contentText: '没有图',
+      metadataJson: '{}',
+      createdAtOverride: DateTime(2026, 11, 1, 10),
+    );
+
+    // 搜索结果：有图片的写张数，没有的不写（说明里写明“没写就是没有”）。
+    final search = await run('search_diaries', {}, context());
+    final found = {
+      for (final entry
+          in ((search.data! as Map)['diaries'] as List).cast<Map>())
+        entry['id']: entry,
+    };
+    expect(found[photos]!['photos'], 2);
+    expect(found[plain]!.containsKey('photos'), isFalse);
+    expect((search.data! as Map)['photos_hint'], contains('view_images'));
+    expect(aiToolByName('search_diaries')!.description, contains('photos'));
+
+    // 某天的日记同样写张数。
+    final day = await run('get_calendar_day', {
+      'date': '2026-11-01',
+    }, context());
+    final entries = ((day.data! as Map)['diaries'] as List).cast<Map>();
+    expect(entries.firstWhere((e) => e['id'] == photos)['photos'], 2);
+    expect(
+      entries.firstWhere((e) => e['id'] == plain).containsKey('photos'),
+      isFalse,
+    );
+  });
+
+  test('without photos the list says nothing about them', () async {
+    await db.createDiary(
+      title: '只有字',
+      contentDocJson: '',
+      contentText: '没有图',
+      metadataJson: '{}',
+    );
+    final search = await run('search_diaries', {}, context());
+    expect((search.data! as Map).containsKey('photos_hint'), isFalse);
+  });
+
   test('read_diaries marks where each photo is', () async {
     final id = await diaryWithPhotos(2);
     final outcome = await run('read_diaries', {

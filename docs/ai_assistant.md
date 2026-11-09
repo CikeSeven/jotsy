@@ -144,6 +144,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 **图片**（参考 pi 与 deepseek-harness）：
 - 这一轮能不能发图（`AiToolEnv.vision`）在开始时定下：图片理解开着，且 `AiService.acceptsImages`（模型设置接受图片、本次运行里没被拒过）。不能发时图片位置一律换成说明为什么没发的占位，`view_images` 不提供；用户照样能发图，AI 仍能按编号把图加进日记。
 - 用户附图：编号 `P1…` 整段对话连续，发送时定下、记在 `meta.imageRefs`，之后不变（删别的消息、存储里删图都不换号）；提问全文写“附带的图片：P1, P2”，图片放在提问文字之前。
+- 列日记的工具（`search_diaries`、`get_calendar_day`）在每篇的头部写图片张数（`aiDiaryPhotoCounts`，只数列出来的那几篇）：模型不必为了知道有没有图去读全文，也不会把“摘要里没提到图片”当成没有图（实测出现过这种误判）。
 - `read_diaries` 在正文的图片位置写“[图片 n]”（编号按正文顺序去重，`AiVisionImages.sourcesOf`，与 `view_images` 同一口径）。`view_images` 按 `diary_id` + `images`（任意序号）或 `attachments`（P 编号）取图，一次最多“每次最多发送”张，多要的列进 `not_sent_yet`；图片附在这一步全部工具结果之后（同一条用户消息，按调用顺序），结果 JSON 按顺序写明附上的是哪几张（Anthropic 会把图片挪到文字前，不能靠相邻对应）；调用记录存看过哪张（`AiAgentImageRecord`，不算存储引用）。
 - 历史里的图片每轮原样重发（同样的字节、同样的位置），回放时重新检查来源（日记变私密、被排除或删除，文件不在 → 占位）。一次请求最多 20 张、12 MB（`kAiRequestMaxImages` / `kAiRequestMaxImageBytes`），超出时从最旧的开始一次换掉一批、降到一半以下（高水位分段，`resolveAiImageSlots`；判定只取决于对话内容，前缀只往前移，缓存只在越过上限那一轮断一次）；这一轮 `view_images` 在剩余额度里累加，满了就请模型先就已看的作答。历史窗口里每张图按 1500 字计。
 - 服务端拒收图片（400）时去图重试，只有去图后的那次成功才记住“不认图片”；去掉的图片换成 `AiRequest.imageOmittedText`。
@@ -159,11 +160,11 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | 工具 | 作用 | 数据来源 |
 |---|---|---|
 | `get_app_context` | 今天（含农历、节气、法定节假日）、平台、界面语言、开启的功能、心情选项、本轮剩余字数 | `CalendarLunarDay`、`AppPlatform`、`AppFeatures`、`SettingsService.moodOptions` |
-| `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本找日记，返回编号、id、日期、标题与摘录 | `getAiContextDiaries`、`aiRankDiaries` |
+| `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本找日记，返回编号、id、日期、标题、摘录与图片张数（`photos`，没有图片的不写，说明里写明“没写就是没有”） | `getAiContextDiaries`、`aiRankDiaries`、`aiDiaryPhotoCounts` |
 | `read_diaries` | 按 id 读全文（一次最多 10 篇），图片位置写“[图片 n]”并给出张数 | `aiAgentReadDiary`（`getAiDiary`；私密日记、排除的本子与标签一律不给） |
 | `view_images` | 看日记里的图片（按序号）或对话里用户发的图片（按 P 编号），能发图的一轮才有 | `aiAgentReadDiary`、`AiVisionImages`、`AiImageBudget` |
 | `diary_stats` | 篇数、字数、记录天数、最长 / 当前连续天数、常用心情与标签，可按日 / 周 / 月 / 年分组 | `getAiContextDiaries`、`AiRecapStats`、`ExploreStatsBuilder` |
-| `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
+| `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题与图片张数）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
 | `list_todos` | 未完成 / 已完成 / 全部，可按到期日、关键词（与日期可同时用）、清单（`""` 为收集箱）、优先级筛选；每项带步骤、提醒、重复（与改动类工具的参数同一写法，见 `aiTodoItem`）与完成时间（待办功能开启时） | 待办查询 |
 | `list_todo_lists` | 各清单与收集箱的未完成 / 已完成数，以及新待办默认进哪个清单 | `watchTodoListProgress`、`TodoSettings` |
 | `list_anniversaries` | 纪念日与下一次日期、还有几天（纪念日功能开启时） | `AnniversaryCountdown` |

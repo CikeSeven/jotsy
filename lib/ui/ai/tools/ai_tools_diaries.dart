@@ -44,7 +44,8 @@ class SearchDiariesTool extends AiTool {
   String get description =>
       'Find diary entries. Keywords match title or body (any keyword); '
       'dates are inclusive; tags must all match. Returns each entry with a '
-      'reference like D3, its id, date, title and a short excerpt; use '
+      'reference like D3, its id, date, title, a short excerpt and `photos` '
+      '(how many photos it has; entries without it have none); use '
       'read_diaries for full text. Private entries are never returned. '
       'Cite entries in your answer as [D3].';
 
@@ -102,6 +103,9 @@ class SearchDiariesTool extends AiTool {
     };
     final limit = args['limit'] as int? ?? 20;
     final picked = ordered.take(limit).toList();
+    final photos = await aiDiaryPhotoCounts(context, [
+      for (final diary in picked) diary.diaryId,
+    ]);
     final notebook = await aiNotebookParamSubject(context, args['notebook_id']);
     return AiToolOutcome(
       data: <String, Object?>{
@@ -109,8 +113,15 @@ class SearchDiariesTool extends AiTool {
         if (diaries.length >= 400) 'matched_is_lower_bound': true,
         'returned': picked.length,
         'diaries': [
-          for (final diary in picked) _summaryItem(context, diary, keywords),
+          for (final diary in picked)
+            _summaryItem(
+              context,
+              diary,
+              keywords,
+              photos: photos[diary.diaryId] ?? 0,
+            ),
         ],
+        if (photos.isNotEmpty) 'photos_hint': aiPhotosHint(context),
         if (picked.isEmpty)
           'hint':
               'Nothing matched. Try fewer or different keywords, a wider '
@@ -143,12 +154,13 @@ class SearchDiariesTool extends AiTool {
   Map<String, Object?> _summaryItem(
     AiToolContext context,
     AiContextDiary diary,
-    List<String> keywords,
-  ) {
+    List<String> keywords, {
+    required int photos,
+  }) {
     final excerpt = _excerpt(diary.contentText, keywords);
     final granted = context.allowance.take(TextStats.countWords(excerpt));
     return <String, Object?>{
-      ...aiDiaryToolHeader(context, diary),
+      ...aiDiaryToolHeader(context, diary, photos: photos),
       'words': TextStats.countWords(diary.contentText),
       if (granted > 0) 'excerpt': aiTruncateWords(excerpt, granted),
     };
@@ -246,7 +258,7 @@ class ReadDiariesTool extends AiTool {
       final granted = context.allowance.take(words);
       if (granted <= 0) {
         results.add(<String, Object?>{
-          ...aiDiaryToolHeader(context, diary),
+          ...aiDiaryToolHeader(context, diary, photos: photoCount),
           'error':
               'The diary text budget for this turn is used up; the body was '
               'not sent. Answer with what you have.',
@@ -270,12 +282,7 @@ class ReadDiariesTool extends AiTool {
     return AiToolOutcome(
       data: <String, Object?>{
         'diaries': results,
-        if (photos)
-          'photos_hint': context.env.vision
-              ? 'To look at photos, call view_images with diary_id and the '
-                    'photo numbers.'
-              : 'This model cannot see photos, so view_images is not '
-                    'available.',
+        if (photos) 'photos_hint': aiPhotosHint(context),
       },
       summary: context.l10n.aiToolReadEntries(read),
       subjects: subjects,
@@ -412,11 +419,13 @@ class DiaryStatsTool extends AiTool {
   }
 }
 
-/// 日记的头部信息：编号、id、日期与按隐私开关给出的元数据。
+/// 日记的头部信息：编号、id、日期、按隐私开关给出的元数据，以及图片张数
+/// （[photos]，有图片时才写）。
 Map<String, Object?> aiDiaryToolHeader(
   AiToolContext context,
-  AiContextDiary diary,
-) {
+  AiContextDiary diary, {
+  int photos = 0,
+}) {
   final privacy = context.prefs.privacy;
   return <String, Object?>{
     'ref': _ref(context, diary),
@@ -429,6 +438,7 @@ Map<String, Object?> aiDiaryToolHeader(
     if (privacy.sendLocation && diary.location != null)
       'location': diary.location,
     if (diary.isArchived) 'archived': true,
+    if (photos > 0) 'photos': photos,
   };
 }
 

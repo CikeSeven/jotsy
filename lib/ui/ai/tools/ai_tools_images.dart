@@ -89,6 +89,32 @@ String aiDiaryTextWithImageMarks(AppLocalizations l10n, AiContextDiary diary) {
   );
 }
 
+/// 这些日记各有几张图片（编号口径同 `AiVisionImages.sourcesOf`）；没有
+/// 图片的不在结果里。列日记的工具（搜索、某天的日记）据此在每篇的头部写
+/// `photos`：模型不必为了知道“有没有图”去读全文，也不会把“摘要里没提到
+/// 图片”当成“没有图片”。
+Future<Map<String, int>> aiDiaryPhotoCounts(
+  AiToolContext context,
+  Iterable<String> diaryIds,
+) async {
+  final contents = await context.database.getAiDiaryContents(diaryIds);
+  return <String, int>{
+    for (final MapEntry(:key, :value) in contents.entries)
+      if (AiVisionImages.sourcesOf(value).length case final count
+          when count > 0)
+        key: count,
+  };
+}
+
+/// 列出的日记里有图片时附在结果里的一句提示（这一轮能不能看图说法不同）。
+String aiPhotosHint(AiToolContext context) => context.env.vision
+    ? 'Entries with `photos` contain that many photos (entries without it '
+          'have none). read_diaries marks where they are; view_images shows '
+          'them.'
+    : 'Entries with `photos` contain that many photos (entries without it '
+          'have none). This model cannot see photos, so view_images is not '
+          'available.';
+
 /// 同一篇日记换一份正文文字（其余原样）。
 AiContextDiary aiDiaryWithText(AiContextDiary diary, String text) =>
     AiContextDiary(

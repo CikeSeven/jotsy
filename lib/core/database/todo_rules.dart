@@ -50,6 +50,19 @@ class TodoStep {
   TodoStep copyWith({String? title, bool? done}) =>
       TodoStep(id: id, title: title ?? this.title, done: done ?? this.done);
 
+  /// 给 [steps] 新加一步时的 id：只需在这条待办内唯一；取现有 `s<n>` 里最大
+  /// 的序号加一，删掉中间的步骤后也不会撞上。
+  static String nextId(Iterable<TodoStep> steps) {
+    var max = -1;
+    for (final step in steps) {
+      final n = int.tryParse(
+        step.id.startsWith('s') ? step.id.substring(1) : '',
+      );
+      if (n != null && n > max) max = n;
+    }
+    return 's${max + 1}';
+  }
+
   Map<String, Object?> toJson() => <String, Object?>{
     'id': id,
     'title': title,

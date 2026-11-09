@@ -16787,6 +16787,127 @@
   "@aiToolDone": {
     "description": "AI step card: the change is done."
   },
+  "aiToolListTodoLists": "Списки задач",
+  "@aiToolListTodoLists": {
+    "description": "AI step card: listing to-do lists."
+  },
+  "aiToolTodoListCount": "{count, plural, one{{count} список} few{{count} списка} many{{count} списков} other{{count} списка}}",
+  "@aiToolTodoListCount": {
+    "description": "AI step card: number of to-do lists.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReopenTodos": "{count, plural, one{Вернуть {count} задачу} few{Вернуть {count} задачи} many{Вернуть {count} задач} other{Вернуть {count} задачи}}",
+  "@aiToolReopenTodos": {
+    "description": "AI step card: marking completed to-dos as not done.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEditTodoSteps": "Изменить шаги задачи",
+  "@aiToolEditTodoSteps": {
+    "description": "AI step card: editing the steps of a to-do."
+  },
+  "aiToolEditTodoStepsOf": "Изменить шаги: {title}",
+  "@aiToolEditTodoStepsOf": {
+    "description": "AI step card: editing the steps of the named to-do.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateTodoList": "Создать список задач: {name}",
+  "@aiToolCreateTodoList": {
+    "description": "AI step card: creating a to-do list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTodoList": "Переименовать список задач: {name}",
+  "@aiToolRenameTodoList": {
+    "description": "AI step card: renaming a to-do list (the new name).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoList": "Удалить список задач {name}",
+  "@aiToolDeleteTodoList": {
+    "description": "AI step card: deleting a to-do list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoListCount": "{count, plural, one{Вместе с ним удалится {count} задача} few{Вместе с ним удалятся {count} задачи} many{Вместе с ним удалятся {count} задач} other{Вместе с ним удалятся {count} задачи}}",
+  "@aiToolDeleteTodoListCount": {
+    "description": "AI confirm card: how many to-dos go with the deleted list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolGetSettings": "Посмотреть настройки",
+  "@aiToolGetSettings": {
+    "description": "AI step card: reading app settings."
+  },
+  "aiToolChangeSettingsAny": "Изменить настройки",
+  "@aiToolChangeSettingsAny": {
+    "description": "AI step card: changing settings (before the settings are known)."
+  },
+  "aiToolChangeSetting": "Изменить настройку: {name}",
+  "@aiToolChangeSetting": {
+    "description": "AI step card: changing one setting.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolChangeSettings": "{count, plural, one{Изменить {count} настройку} few{Изменить {count} настройки} many{Изменить {count} настроек} other{Изменить {count} настройки}}",
+  "@aiToolChangeSettings": {
+    "description": "AI step card: changing several settings.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolSettingName": "{page} · {setting}",
+  "@aiToolSettingName": {
+    "description": "AI step card: a setting with the page it is on.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "setting": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgNone": "Нет",
+  "@aiToolArgNone": {
+    "description": "AI step details: an empty value (e.g. reminders removed)."
+  },
+  "aiToolArgOn": "Вкл.",
+  "@aiToolArgOn": {
+    "description": "AI step details: a switch turned on."
+  },
+  "aiToolArgOff": "Выкл.",
+  "@aiToolArgOff": {
+    "description": "AI step details: a switch turned off."
+  },
   "aiToolBlockedByEditor": "Открыта страница редактирования — закройте её и повторите",
   "@aiToolBlockedByEditor": {
     "description": "AI step card: an editor is open, so the AI did not change data."
@@ -19885,7 +20006,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} arg_steps{Шаги} arg_reminders{Напоминания} arg_add_steps{Добавить шаги} arg_check_steps{Отметить шаги} arg_uncheck_steps{Снять отметку} arg_remove_steps{Удалить шаги} arg_all_day{Весь день} arg_kind_todoList{Список задач} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

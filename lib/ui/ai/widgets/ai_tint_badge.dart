@@ -60,6 +60,7 @@ AiTint aiSubjectTint(AiSubjectKind kind) => switch (kind) {
   AiSubjectKind.diary => AiTint.primary,
   AiSubjectKind.notebook || AiSubjectKind.tag => AiTint.tertiary,
   AiSubjectKind.todo ||
+  AiSubjectKind.todoList ||
   AiSubjectKind.anniversary ||
   AiSubjectKind.day => AiTint.secondary,
 };
@@ -69,6 +70,7 @@ FaIconData aiSubjectIcon(AiSubjectKind kind) => switch (kind) {
   AiSubjectKind.notebook => FontAwesomeIcons.book,
   AiSubjectKind.tag => FontAwesomeIcons.hashtag,
   AiSubjectKind.todo => FontAwesomeIcons.squareCheck,
+  AiSubjectKind.todoList => FontAwesomeIcons.listCheck,
   AiSubjectKind.anniversary => FontAwesomeIcons.cakeCandles,
   AiSubjectKind.day => FontAwesomeIcons.calendarDay,
 };

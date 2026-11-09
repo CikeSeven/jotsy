@@ -11864,6 +11864,77 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiToolDone => '完了しました';
 
   @override
+  String get aiToolListTodoLists => 'ToDo リストを確認';
+
+  @override
+  String aiToolTodoListCount(int count) {
+    return 'リスト $count 件';
+  }
+
+  @override
+  String aiToolReopenTodos(int count) {
+    return 'ToDo を $count 件未完了に戻す';
+  }
+
+  @override
+  String get aiToolEditTodoSteps => 'ToDo のステップを編集';
+
+  @override
+  String aiToolEditTodoStepsOf(String title) {
+    return 'ステップを編集：$title';
+  }
+
+  @override
+  String aiToolCreateTodoList(String name) {
+    return 'ToDo リストを作成：$name';
+  }
+
+  @override
+  String aiToolRenameTodoList(String name) {
+    return 'ToDo リストの名前を変更：$name';
+  }
+
+  @override
+  String aiToolDeleteTodoList(String name) {
+    return 'ToDo リスト $name を削除';
+  }
+
+  @override
+  String aiToolDeleteTodoListCount(int count) {
+    return '中の ToDo $count 件も一緒に削除されます';
+  }
+
+  @override
+  String get aiToolGetSettings => '設定を確認';
+
+  @override
+  String get aiToolChangeSettingsAny => '設定を変更';
+
+  @override
+  String aiToolChangeSetting(String name) {
+    return '設定を変更：$name';
+  }
+
+  @override
+  String aiToolChangeSettings(int count) {
+    return '設定を $count 件変更';
+  }
+
+  @override
+  String aiToolSettingName(String page, String setting) {
+    return '$page · $setting';
+  }
+
+  @override
+  String get aiToolArgNone => 'なし';
+
+  @override
+  String get aiToolArgOn => 'オン';
+
+  @override
+  String get aiToolArgOff => 'オフ';
+
+  @override
   String get aiToolBlockedByEditor => '編集中のページがあります。閉じてからもう一度お試しください';
 
   @override
@@ -15033,6 +15104,14 @@ class AppLocalizationsJa extends AppLocalizations {
       'arg_kind_todo': 'ToDo',
       'arg_kind_anniversary': '記念日',
       'arg_kind_day': '日',
+      'arg_steps': 'ステップ',
+      'arg_reminders': 'リマインダー',
+      'arg_add_steps': '追加するステップ',
+      'arg_check_steps': '完了にするステップ',
+      'arg_uncheck_steps': '未完了に戻すステップ',
+      'arg_remove_steps': '削除するステップ',
+      'arg_all_day': '終日',
+      'arg_kind_todoList': 'リスト',
       'other': '',
     });
     return '$_temp0';

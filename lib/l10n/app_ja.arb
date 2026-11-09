@@ -16787,6 +16787,127 @@
   "@aiToolDone": {
     "description": "AI step card: the change is done."
   },
+  "aiToolListTodoLists": "ToDo リストを確認",
+  "@aiToolListTodoLists": {
+    "description": "AI step card: listing to-do lists."
+  },
+  "aiToolTodoListCount": "リスト {count} 件",
+  "@aiToolTodoListCount": {
+    "description": "AI step card: number of to-do lists.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReopenTodos": "ToDo を {count} 件未完了に戻す",
+  "@aiToolReopenTodos": {
+    "description": "AI step card: marking completed to-dos as not done.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolEditTodoSteps": "ToDo のステップを編集",
+  "@aiToolEditTodoSteps": {
+    "description": "AI step card: editing the steps of a to-do."
+  },
+  "aiToolEditTodoStepsOf": "ステップを編集：{title}",
+  "@aiToolEditTodoStepsOf": {
+    "description": "AI step card: editing the steps of the named to-do.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateTodoList": "ToDo リストを作成：{name}",
+  "@aiToolCreateTodoList": {
+    "description": "AI step card: creating a to-do list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRenameTodoList": "ToDo リストの名前を変更：{name}",
+  "@aiToolRenameTodoList": {
+    "description": "AI step card: renaming a to-do list (the new name).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoList": "ToDo リスト {name} を削除",
+  "@aiToolDeleteTodoList": {
+    "description": "AI step card: deleting a to-do list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTodoListCount": "中の ToDo {count} 件も一緒に削除されます",
+  "@aiToolDeleteTodoListCount": {
+    "description": "AI confirm card: how many to-dos go with the deleted list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolGetSettings": "設定を確認",
+  "@aiToolGetSettings": {
+    "description": "AI step card: reading app settings."
+  },
+  "aiToolChangeSettingsAny": "設定を変更",
+  "@aiToolChangeSettingsAny": {
+    "description": "AI step card: changing settings (before the settings are known)."
+  },
+  "aiToolChangeSetting": "設定を変更：{name}",
+  "@aiToolChangeSetting": {
+    "description": "AI step card: changing one setting.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolChangeSettings": "設定を {count} 件変更",
+  "@aiToolChangeSettings": {
+    "description": "AI step card: changing several settings.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolSettingName": "{page} · {setting}",
+  "@aiToolSettingName": {
+    "description": "AI step card: a setting with the page it is on.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "setting": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgNone": "なし",
+  "@aiToolArgNone": {
+    "description": "AI step details: an empty value (e.g. reminders removed)."
+  },
+  "aiToolArgOn": "オン",
+  "@aiToolArgOn": {
+    "description": "AI step details: a switch turned on."
+  },
+  "aiToolArgOff": "オフ",
+  "@aiToolArgOff": {
+    "description": "AI step details: a switch turned off."
+  },
   "aiToolBlockedByEditor": "編集中のページがあります。閉じてからもう一度お試しください",
   "@aiToolBlockedByEditor": {
     "description": "AI step card: an editor is open, so the AI did not change data."
@@ -19885,7 +20006,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

@@ -155,6 +155,17 @@ mixin _AppDatabaseTodoListOps on _$AppDatabase {
     return row.read(count) ?? 0;
   }
 
+  /// 清单里全部待办的业务 id（含已完成）：撤销 AI 新建的清单前，把之后放
+  /// 进去的待办移回收集箱用。
+  Future<List<String>> getTodoIdsInList(String listId) async {
+    final query = selectOnly(todos)
+      ..addColumns(<Expression<Object>>[todos.todoId])
+      ..where(todos.listId.equals(listId));
+    return <String>[
+      for (final row in await query.get()) row.read(todos.todoId)!,
+    ];
+  }
+
   String _normalizeTodoListName(String raw) {
     final name = raw.trim();
     if (name.isEmpty) {

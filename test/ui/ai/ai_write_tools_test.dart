@@ -12,9 +12,15 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/models/ai_preferences.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool_registry.dart';
+import 'package:node_diary/ui/ai/models/ai_tool_subject.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_prompt_builder.dart';
+import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
+import 'package:node_diary/ui/diaries/models/diary_create_prefs.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
+import 'package:node_diary/ui/todos/models/todo_settings.dart';
+import 'package:node_diary/ui/todos/providers/todo_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 改动数据的工具：每个都执行一次、再撤销，数据回到原样；私密日记不写；
@@ -40,7 +46,12 @@ const Set<String> _covered = <String>{
   'create_todo',
   'update_todos',
   'complete_todos',
+  'reopen_todos',
+  'edit_todo_steps',
   'delete_todos',
+  'create_todo_list',
+  'rename_todo_list',
+  'delete_todo_list',
   'create_anniversary',
   'delete_anniversary',
   'set_day_mood',
@@ -48,6 +59,7 @@ const Set<String> _covered = <String>{
   'set_app_language',
   'set_font_scale',
   'set_feature_enabled',
+  'change_settings',
 };
 
 void main() {
@@ -100,9 +112,16 @@ void main() {
     now: DateTime(2026, 11, 8, 10),
   );
 
-  Future<AiToolOutcome> run(String name, Map<String, Object?> args) async {
+  Future<AiToolOutcome> run(
+    String name,
+    Map<String, Object?> args, {
+    AppFeatures features = everything,
+  }) async {
     final tool = aiToolByName(name)!;
-    final outcome = await tool.run(context(), tool.schema.validate(args));
+    final outcome = await tool.run(
+      context(features: features),
+      tool.schema.validate(args),
+    );
     // 改动类工具都要说清改了谁（卡片标题与对象胶囊靠它），设置类除外。
     if (tool.group != AiToolGroup.settings) {
       expect(outcome.subjects, isNotEmpty, reason: '$name names no subject');
@@ -460,6 +479,241 @@ void main() {
       expect(await db.getTodo(id), isNull);
     });
 
+    test(
+      'create_todo takes steps, reminders, repeat and the default list',
+      () async {
+        final work = await db.createTodoList(name: '工作');
+        await saveTodoSettings(
+          settings,
+          TodoSettings.defaults.copyWith(defaultListId: work),
+        );
+        final created = await run('create_todo', {
+          'title': '浇花',
+          'steps': ['接水', '浇水'],
+          'repeat': {
+            'frequency': 'daily',
+            'interval': 3,
+            'from_completion': true,
+          },
+          'reminders': [
+            {'time': '20:00', 'days_before': 1},
+          ],
+        });
+        final data = created.data! as Map;
+        final id = data['id']! as String;
+        final todo = (await db.getTodo(id))!;
+        // 没给清单进默认清单；设了重复没给日期，截止日定为今天。
+        expect(todo.listId, work);
+        expect(todo.dueDate, '2026-11-08');
+        expect(data['due_date'], '2026-11-08');
+        expect(decodeTodoSteps(todo.steps).map((s) => s.title), ['接水', '浇水']);
+        final rule = decodeTodoRepeat(todo.repeat)!;
+        expect(rule.frequency, TodoRepeatFrequency.daily);
+        expect(rule.interval, 3);
+        expect(rule.basis, TodoRepeatBasis.completion);
+        expect(rule.anchor, DateTime(2026, 11, 8));
+        expect(decodeTodoReminders(todo.reminders), [
+          const TodoReminder.onDay(days: -1, minute: 20 * 60),
+        ]);
+
+        final inbox = await run('create_todo', {'title': '随手记', 'list': ''});
+        expect(
+          (await db.getTodo((inbox.data! as Map)['id']! as String))!.listId,
+          isNull,
+        );
+        // 全天待办到不了“截止前若干分钟”。
+        expect(
+          () => run('create_todo', {
+            'title': 'x',
+            'date': '2026-11-09',
+            'reminders': [
+              {'minutes_before': 10},
+            ],
+          }),
+          throwsA(isA<AiToolFailure>()),
+        );
+        await undo('create_todo', created);
+        expect(await db.getTodo(id), isNull);
+      },
+    );
+
+    test('update_todos keeps each time, sets reminders, repeat and a link, '
+        'and undo puts everything back', () async {
+      final a = await db.createTodo(
+        TodoInput(
+          title: 'a',
+          dueDate: DateTime(2026, 11, 9),
+          dueMinute: 9 * 60,
+          reminders: const [TodoReminder.beforeDue(15)],
+        ),
+      );
+      final b = await db.createTodo(
+        TodoInput(title: 'b', dueDate: DateTime(2026, 11, 9)),
+      );
+
+      // 只给日期：各自保留时刻（与多选改日期同一口径）。
+      final moved = await run('update_todos', {
+        'ids': [a, b],
+        'date': '2026-11-12',
+      });
+      var rowA = (await db.getTodo(a))!;
+      expect(rowA.dueDate, '2026-11-12');
+      expect(rowA.dueMinute, 9 * 60);
+      expect((await db.getTodo(b))!.dueMinute, isNull);
+      await undo('update_todos', moved);
+      expect((await db.getTodo(a))!.dueDate, '2026-11-09');
+      expect((await db.getTodo(b))!.dueDate, '2026-11-09');
+
+      // 改为全天：去掉“截止前”提醒；撤销连提醒一起放回。
+      final allDay = await run('update_todos', {
+        'ids': [a],
+        'all_day': true,
+      });
+      rowA = (await db.getTodo(a))!;
+      expect(rowA.dueMinute, isNull);
+      expect(decodeTodoReminders(rowA.reminders), isEmpty);
+      await undo('update_todos', allDay);
+      rowA = (await db.getTodo(a))!;
+      expect(rowA.dueMinute, 9 * 60);
+      expect(decodeTodoReminders(rowA.reminders), [
+        const TodoReminder.beforeDue(15),
+      ]);
+
+      final entry = await diary('周报');
+      final changed = await run('update_todos', {
+        'ids': [b],
+        'reminders': [
+          {'time': '08:30'},
+        ],
+        'repeat': {
+          'frequency': 'weekly',
+          'weekdays': [1, 3],
+        },
+        'diary_id': entry,
+      });
+      var rowB = (await db.getTodo(b))!;
+      expect(decodeTodoReminders(rowB.reminders), [
+        const TodoReminder.onDay(days: 0, minute: 8 * 60 + 30),
+      ]);
+      expect(decodeTodoRepeat(rowB.repeat)!.weekdays, [1, 3]);
+      expect(rowB.linkedDiaryId, entry);
+      expect(
+        changed.subjects.map((s) => s.kind),
+        containsAll([AiSubjectKind.todo, AiSubjectKind.diary]),
+      );
+      await undo('update_todos', changed);
+      rowB = (await db.getTodo(b))!;
+      expect(decodeTodoReminders(rowB.reminders), isEmpty);
+      expect(rowB.repeat, isNull);
+      expect(rowB.linkedDiaryId, isNull);
+
+      // 校验都在写库之前：有一条不合规就整批不做。
+      final c = await db.createTodo(const TodoInput(title: 'c'));
+      await expectLater(
+        () => run('update_todos', {
+          'ids': [a, c],
+          'time': '10:00',
+        }),
+        throwsA(isA<AiToolFailure>()),
+      );
+      expect((await db.getTodo(a))!.dueMinute, 9 * 60);
+      expect(
+        () => run('update_todos', {
+          'ids': [b],
+          'reminders': [
+            {'minutes_before': 5},
+          ],
+        }),
+        throwsA(isA<AiToolFailure>()),
+      );
+    });
+
+    test('reopen_todos and edit_todo_steps undo', () async {
+      final id = await db.createTodo(
+        const TodoInput(
+          title: '买菜',
+          steps: [TodoStep(id: 's0', title: '牛奶')],
+        ),
+      );
+      await db.completeTodo(id);
+      final reopened = await run('reopen_todos', {
+        'ids': [id],
+      });
+      expect((await db.getTodo(id))!.completedAt, isNull);
+      await undo('reopen_todos', reopened);
+      expect((await db.getTodo(id))!.completedAt, isNotNull);
+      final open = await db.createTodo(const TodoInput(title: '没完成'));
+      expect(
+        () => run('reopen_todos', {
+          'ids': [open],
+        }),
+        throwsA(isA<AiToolFailure>()),
+      );
+
+      final edited = await run('edit_todo_steps', {
+        'id': id,
+        'add_steps': ['鸡蛋'],
+        'check_steps': ['牛奶'],
+      });
+      expect(decodeTodoSteps((await db.getTodo(id))!.steps), const [
+        TodoStep(id: 's0', title: '牛奶', done: true),
+        TodoStep(id: 's1', title: '鸡蛋'),
+      ]);
+      expect(
+        () => run('edit_todo_steps', {
+          'id': id,
+          'remove_steps': ['不存在'],
+        }),
+        throwsA(isA<AiToolFailure>()),
+      );
+      await undo('edit_todo_steps', edited);
+      expect(decodeTodoSteps((await db.getTodo(id))!.steps), const [
+        TodoStep(id: 's0', title: '牛奶'),
+      ]);
+    });
+
+    test('to-do lists: create, rename and delete all undo', () async {
+      final created = await run('create_todo_list', {'name': '旅行'});
+      expect(
+        () => run('create_todo_list', {'name': '旅行'}),
+        throwsA(isA<AiToolFailure>()),
+      );
+      expect(
+        () => run('create_todo_list', {'name': 'Inbox'}),
+        throwsA(isA<AiToolFailure>()),
+      );
+      final listId = (await db.getTodoLists()).single.listId;
+      final renamed = await run('rename_todo_list', {
+        'name': '旅行',
+        'new_name': '出行',
+      });
+      expect((await db.getTodoList(listId))!.name, '出行');
+      await undo('rename_todo_list', renamed);
+      expect((await db.getTodoList(listId))!.name, '旅行');
+
+      final todo = await db.createTodo(TodoInput(title: '订票', listId: listId));
+      final tool = aiToolByName('delete_todo_list')!;
+      final preview = await tool.preview(
+        context(),
+        tool.schema.validate({'name': '旅行'}),
+      );
+      expect(preview!.lines, [zh.aiToolDeleteTodoListCount(1)]);
+      final deleted = await run('delete_todo_list', {'name': '旅行'});
+      expect(await db.getTodoLists(), isEmpty);
+      expect(await db.getTodo(todo), isNull);
+      await undo('delete_todo_list', deleted);
+      expect((await db.getTodo(todo))!.listId, listId);
+
+      // 撤销新建：清单里已经有待办时先报冲突，仍要撤销就把待办移回收集箱。
+      await expectLater(
+        () => undo('create_todo_list', created),
+        throwsA(isA<AiUndoConflict>()),
+      );
+      await undo('create_todo_list', created, force: true);
+      expect(await db.getTodoLists(), isEmpty);
+      expect((await db.getTodo(todo))!.listId, isNull);
+    });
+
     test('anniversaries and the day mood undo', () async {
       final created = await run('create_anniversary', {
         'title': '生日',
@@ -512,6 +766,97 @@ void main() {
       expect(settings.fontScaleValue, isNot(scale));
       await undo('set_font_scale', size);
       expect(settings.fontScaleValue, scale);
+    });
+
+    test(
+      'change_settings changes several settings and undo restores only them',
+      () async {
+        final work = await db.createTodoList(name: '工作');
+        final outcome = await run('change_settings', {
+          'todo_show_completed': false,
+          'todo_sort': 'due',
+          'todo_default_list': '工作',
+          'todo_all_day_reminder_time': '08:00',
+          'calendar_week_start': 'monday',
+          'calendar_lunar': 'hide',
+          'open_diary_in_editor': true,
+          'publish_on_leave': true,
+        });
+        TodoSettings todos() =>
+            TodoSettings.decode(settings.todoSettingsRawNotifier.value);
+        CalendarDisplayOptions calendar() => CalendarDisplayOptions.decode(
+          settings.calendarDisplayOptionsRawNotifier.value,
+        );
+        expect(todos().showCompleted, isFalse);
+        expect(todos().sort, TodoSortMode.due);
+        expect(todos().defaultListId, work);
+        expect(todos().allDayReminderMinute, 8 * 60);
+        expect(calendar().weekStart, CalendarWeekStart.monday);
+        expect(calendar().lunarMode, CalendarLunarMode.never);
+        expect(
+          DiaryPreviewSettings.decode(
+            settings.diaryPreviewStyleRawNotifier.value,
+          ).behavior.openInEditor,
+          isTrue,
+        );
+        expect(
+          DiaryCreatePrefs.decode(
+            settings.diaryCreatePrefsRawNotifier.value,
+          ).publishOnLeave,
+          isTrue,
+        );
+
+        // 用户之后在同一页改了别的设置：撤销只写回 AI 改过的那几项。
+        await saveTodoSettings(settings, todos().copyWith(smartParse: false));
+        await undo('change_settings', outcome);
+        expect(todos().showCompleted, isTrue);
+        expect(todos().sort, TodoSortMode.manual);
+        expect(todos().defaultListId, isNull);
+        expect(todos().allDayReminderMinute, 9 * 60);
+        expect(todos().smartParse, isFalse);
+        expect(calendar(), const CalendarDisplayOptions());
+        expect(
+          DiaryPreviewSettings.decode(
+            settings.diaryPreviewStyleRawNotifier.value,
+          ).behavior.openInEditor,
+          isFalse,
+        );
+        expect(
+          DiaryCreatePrefs.decode(
+            settings.diaryCreatePrefsRawNotifier.value,
+          ).publishOnLeave,
+          isFalse,
+        );
+      },
+    );
+
+    test('change_settings checks features and values before writing', () async {
+      // 待办功能关着：整次不做，同一次里的日历设置也不写。
+      await expectLater(
+        () => run('change_settings', {
+          'calendar_week_numbers': true,
+          'todo_sort': 'due',
+        }, features: AppFeatures.defaults),
+        throwsA(isA<AiToolFailure>()),
+      );
+      expect(
+        CalendarDisplayOptions.decode(
+          settings.calendarDisplayOptionsRawNotifier.value,
+        ).showWeekNumbers,
+        isFalse,
+      );
+      expect(
+        () => run('change_settings', {'todo_snooze_minutes': 7}),
+        throwsA(isA<AiToolFailure>()),
+      );
+      expect(
+        () => run('change_settings', {'todo_default_list': '不存在'}),
+        throwsA(isA<AiToolFailure>()),
+      );
+      expect(() => run('change_settings', {}), throwsA(isA<AiToolFailure>()));
+      final same = await run('change_settings', {'todo_show_completed': true});
+      expect((same.data! as Map)['already_set'], ['todo_show_completed']);
+      expect(same.undo, {'previous': <String, Object?>{}});
     });
 
     test(

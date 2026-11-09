@@ -10,7 +10,12 @@ import 'ai_tools_diaries.dart';
 import 'ai_tools_diary_writes.dart';
 import 'ai_tools_organize.dart';
 import 'ai_tools_organize_writes.dart';
+import 'ai_tools_preferences.dart';
 import 'ai_tools_settings.dart';
+import 'ai_tools_todo_list_writes.dart';
+import 'ai_tools_todo_status_writes.dart';
+import 'ai_tools_todo_writes.dart';
+import 'ai_tools_todos.dart';
 
 /// 全部工具（顺序即发给模型的顺序；保持稳定，利于服务商的提示缓存）。
 const List<AiTool> aiTools = <AiTool>[
@@ -22,9 +27,11 @@ const List<AiTool> aiTools = <AiTool>[
   DiaryStatsTool(),
   GetCalendarDayTool(),
   ListTodosTool(),
+  ListTodoListsTool(),
   ListAnniversariesTool(),
   ListTagsTool(),
   ListNotebooksTool(),
+  GetSettingsTool(),
   OpenPageTool(),
   // 日记。
   CreateDiaryTool(),
@@ -44,11 +51,17 @@ const List<AiTool> aiTools = <AiTool>[
   RenameNotebookTool(),
   AddToNotebookTool(),
   RemoveFromNotebookTool(),
-  // 待办、纪念日、这天的心情。
+  // 待办与待办清单。
   CreateTodoTool(),
   UpdateTodosTool(),
   CompleteTodosTool(),
+  ReopenTodosTool(),
+  EditTodoStepsTool(),
   DeleteTodosTool(),
+  CreateTodoListTool(),
+  RenameTodoListTool(),
+  DeleteTodoListTool(),
+  // 纪念日、这天的心情。
   CreateAnniversaryTool(),
   DeleteAnniversaryTool(),
   SetDayMoodTool(),
@@ -57,6 +70,7 @@ const List<AiTool> aiTools = <AiTool>[
   SetAppLanguageTool(),
   SetFontScaleTool(),
   SetFeatureEnabledTool(),
+  ChangeSettingsTool(),
 ];
 
 final Map<String, AiTool> _byName = <String, AiTool>{

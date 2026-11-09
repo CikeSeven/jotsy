@@ -40,4 +40,4 @@ Go to Settings → To-dos (in the "Organize" group) for Show completed, Open to,
 - On phones, reminders are delivered by the system on time; the app asks for notification permission the first time you add a reminder. Android also has "Hide content on the lock screen", and "Reminders late or missing?" explains what to do if reminders are often late.
 - On computers, reminders only appear while Jotsy is open; reminders that come due while it's closed won't pop up.
 - Deleted to-dos don't go to the recycle bin; you can only undo from the notice.
-- The AI assistant can create, change, complete and delete to-dos, for example "Remind me to hand in the report tomorrow at 3pm".
+- The AI assistant can create, change, complete, reopen and delete to-dos, set reminders, repeats and steps, and create, rename or delete lists, for example "Remind me to hand in the report tomorrow at 3pm", "Remind me every Monday to send the weekly report" or "Split groceries into milk and eggs". It can also change to-do settings such as showing completed to-dos, sort order, the view to open on, the default list and smart recognition.

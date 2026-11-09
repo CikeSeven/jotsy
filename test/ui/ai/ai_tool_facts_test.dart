@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/models/ai_agent_steps.dart';
 import 'package:node_diary/ui/ai/models/ai_tool_subject.dart';
+import 'package:node_diary/ui/ai/tools/ai_tool_registry.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_tool_facts.dart';
 
 void main() {
@@ -94,6 +95,71 @@ void main() {
     expect(facts.first.value, 'Dark');
     final color = facts.firstWhere((f) => f.color != null);
     expect(color.color, 0xff3366cc);
+  });
+
+  test('settings read as "page · setting — on / off" with readable values', () {
+    final facts = aiToolFacts(
+      zh,
+      call('change_settings', {
+        'todo_show_completed': false,
+        'calendar_week_start': 'monday',
+        'todo_default_list': '',
+        'todo_snooze_minutes': 15,
+      }),
+    );
+    final byLabel = {for (final fact in facts) fact.label: fact.value};
+    expect(
+      byLabel[zh.aiToolSettingName(zh.navTodos, zh.todoShowCompleted)],
+      zh.aiToolArgOff,
+    );
+    expect(
+      byLabel[zh.aiToolSettingName(
+        zh.navCalendar,
+        zh.calendarOptionsWeekStart,
+      )],
+      zh.calendarWeekStartMonday,
+    );
+    expect(
+      byLabel[zh.aiToolSettingName(zh.navTodos, zh.todoSettingsDefaultList)],
+      zh.todoViewInbox,
+    );
+    expect(
+      byLabel[zh.aiToolSettingName(zh.navTodos, zh.todoSettingsSnooze)],
+      zh.todoSettingsSnoozeMinutes(15),
+    );
+    expect(
+      aiToolByName('change_settings')!.label(zh, {'todo_sort': 'due'}),
+      zh.aiToolChangeSetting(
+        zh.aiToolSettingName(zh.navTodos, zh.todoSortTitle),
+      ),
+    );
+  });
+
+  test('reminders and repeat read as sentences, never as JSON', () {
+    final facts = aiToolFacts(
+      en,
+      call('update_todos', {
+        'reminders': [
+          {'minutes_before': 30},
+          {'time': '20:00', 'days_before': 1},
+        ],
+        'repeat': {
+          'frequency': 'weekly',
+          'weekdays': [1, 3],
+          'count': 5,
+        },
+      }),
+    );
+    final text = facts.map((f) => f.value).join('\n');
+    expect(text, isNot(contains('{')));
+    expect(text, contains(en.todoReminderMinutesBefore(30)));
+    expect(text, contains(en.todoReminderDaysBeforeAt(1, '20:00')));
+    expect(text, contains(en.todoRepeatEndsAfter(5)));
+    final cleared = aiToolFacts(
+      zh,
+      call('update_todos', {'reminders': <Object?>[]}),
+    );
+    expect(cleared.single.value, zh.aiToolArgNone);
   });
 
   test('untitled diaries are named by their date', () {

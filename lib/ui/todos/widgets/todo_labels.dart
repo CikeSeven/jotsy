@@ -140,8 +140,20 @@ abstract final class TodoLabels {
     return due(context, day, row.dueMinute, today);
   }
 
-  static String reminder(BuildContext context, TodoReminder reminder) {
-    final l10n = context.l10n;
+  static String reminder(BuildContext context, TodoReminder reminder) =>
+      reminderWith(
+        context.l10n,
+        reminder,
+        (int minute) => formatTodoTime(context, minute),
+      );
+
+  /// 一条提醒的说法；时刻经 [formatTime] 写出（界面按系统 12 / 24 小时制，
+  /// 没有 BuildContext 的地方如 AI 工具卡片的详情写 `HH:MM`）。
+  static String reminderWith(
+    AppLocalizations l10n,
+    TodoReminder reminder,
+    String Function(int minute) formatTime,
+  ) {
     switch (reminder.kind) {
       case TodoReminderKind.beforeDue:
         final minutes = reminder.minutesBefore;
@@ -154,7 +166,7 @@ abstract final class TodoLabels {
         }
         return l10n.todoReminderMinutesBefore(minutes);
       case TodoReminderKind.onDay:
-        final time = formatTodoTime(context, reminder.minuteOfDay);
+        final time = formatTime(reminder.minuteOfDay);
         if (reminder.dayOffset == 0) return l10n.todoReminderOnDayAt(time);
         return l10n.todoReminderDaysBeforeAt(-reminder.dayOffset, time);
     }

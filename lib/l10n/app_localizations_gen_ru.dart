@@ -13627,6 +13627,109 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiToolDone => 'Готово';
 
   @override
+  String get aiToolListTodoLists => 'Списки задач';
+
+  @override
+  String aiToolTodoListCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count списка',
+      many: '$count списков',
+      few: '$count списка',
+      one: '$count список',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolReopenTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Вернуть $count задачи',
+      many: 'Вернуть $count задач',
+      few: 'Вернуть $count задачи',
+      one: 'Вернуть $count задачу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolEditTodoSteps => 'Изменить шаги задачи';
+
+  @override
+  String aiToolEditTodoStepsOf(String title) {
+    return 'Изменить шаги: $title';
+  }
+
+  @override
+  String aiToolCreateTodoList(String name) {
+    return 'Создать список задач: $name';
+  }
+
+  @override
+  String aiToolRenameTodoList(String name) {
+    return 'Переименовать список задач: $name';
+  }
+
+  @override
+  String aiToolDeleteTodoList(String name) {
+    return 'Удалить список задач $name';
+  }
+
+  @override
+  String aiToolDeleteTodoListCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Вместе с ним удалятся $count задачи',
+      many: 'Вместе с ним удалятся $count задач',
+      few: 'Вместе с ним удалятся $count задачи',
+      one: 'Вместе с ним удалится $count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolGetSettings => 'Посмотреть настройки';
+
+  @override
+  String get aiToolChangeSettingsAny => 'Изменить настройки';
+
+  @override
+  String aiToolChangeSetting(String name) {
+    return 'Изменить настройку: $name';
+  }
+
+  @override
+  String aiToolChangeSettings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Изменить $count настройки',
+      many: 'Изменить $count настроек',
+      few: 'Изменить $count настройки',
+      one: 'Изменить $count настройку',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolSettingName(String page, String setting) {
+    return '$page · $setting';
+  }
+
+  @override
+  String get aiToolArgNone => 'Нет';
+
+  @override
+  String get aiToolArgOn => 'Вкл.';
+
+  @override
+  String get aiToolArgOff => 'Выкл.';
+
+  @override
   String get aiToolBlockedByEditor =>
       'Открыта страница редактирования — закройте её и повторите';
 
@@ -17552,6 +17655,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'arg_kind_todo': 'Задача',
       'arg_kind_anniversary': 'Памятная дата',
       'arg_kind_day': 'День',
+      'arg_steps': 'Шаги',
+      'arg_reminders': 'Напоминания',
+      'arg_add_steps': 'Добавить шаги',
+      'arg_check_steps': 'Отметить шаги',
+      'arg_uncheck_steps': 'Снять отметку',
+      'arg_remove_steps': 'Удалить шаги',
+      'arg_all_day': 'Весь день',
+      'arg_kind_todoList': 'Список задач',
       'other': '',
     });
     return '$_temp0';

@@ -153,10 +153,12 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | `read_diaries` | 按 id 读全文（一次最多 10 篇） | `getAiDiary`；私密日记、排除的本子与标签一律不给 |
 | `diary_stats` | 篇数、字数、记录天数、最长 / 当前连续天数、常用心情与标签，可按日 / 周 / 月 / 年分组 | `getAiContextDiaries`、`AiRecapStats`、`ExploreStatsBuilder` |
 | `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
-| `list_todos` | 未完成 / 已完成 / 全部，可按到期日或关键词（待办功能开启时） | 待办查询 |
+| `list_todos` | 未完成 / 已完成 / 全部，可按到期日、关键词（与日期可同时用）、清单（`""` 为收集箱）、优先级筛选；每项带步骤、提醒、重复（与改动类工具的参数同一写法，见 `aiTodoItem`）与完成时间（待办功能开启时） | 待办查询 |
+| `list_todo_lists` | 各清单与收集箱的未完成 / 已完成数，以及新待办默认进哪个清单 | `watchTodoListProgress`、`TodoSettings` |
 | `list_anniversaries` | 纪念日与下一次日期、还有几天（纪念日功能开启时） | `AnniversaryCountdown` |
 | `list_tags` | 标签与使用篇数（排除的标签不列） | `watchAllTags`、`watchTagUsageCounts` |
 | `list_notebooks` | 日记本树（私密 / 上锁本与排除的本子不列） | `notebookTreeProvider` |
+| `get_settings` | `change_settings` 能改的各项设置的当前值（与参数同一写法；功能关着的不列），以及主题、主题色、字号、界面语言 | `aiSettingSpecs` |
 | `open_page` | 给用户一个“前往”按钮；用户明确说“打开”时（`now`）本轮结束后自动打开 | `AiDestination` |
 
 **改动类工具**（“允许 AI 改动数据”默认开，关掉后只有查询与前往；“每次改动前确认”默认关）：
@@ -174,26 +176,31 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | `merge_tags` / `delete_tag` | 合并 / 删除标签（**确认**，覆盖私密与回收站里的日记） | `mergeTags` / `deleteTagWithSnapshot` + `forgetDeletedTags` | 按快照原样放回（期间建了同名标签时报冲突） |
 | `create_notebook` / `rename_notebook` | 新建手动本（可选上级）/ 改名 | `createNotebook` / `updateNotebook` | 删掉（已收了日记时先报冲突）/ 改回 |
 | `add_to_notebook` / `remove_from_notebook` | 收录 / 移出（只动手动、非私密的本子） | 日记本成员 ops | 移出新收的 / 放回原成员行 |
-| `create_todo` / `update_todos` / `complete_todos` / `delete_todos`（**确认**） | 待办（清单按名称，带提醒时按待办页口径申请通知权限） | 待办 ops | 删掉 / `restoreTodoFields` 与改回标题备注 / `undoTodoCompletion` / `restoreTodos` |
+| `create_todo` / `update_todos` / `complete_todos` / `delete_todos`（**确认**） | 待办：清单按名称（`""` 为收集箱，新建时不给为设置里的默认清单）；提醒（截止前若干分钟，或截止日当天 / 之前某天的某个时刻）、重复（每天 / 每周几 / 每月 / 每年 / 法定工作日，间隔、从完成起算、截止日期或次数）与步骤；设提醒或重复时没有截止日按详情页口径定为今天；批量只给日期时各自保留时刻（与多选改日期同一口径），`all_day` 才改为全天；关联 / 解除关联日记（只经 `aiWritableDiary`）；带提醒时按待办页口径申请通知权限，本平台没有提醒时其余照做并告诉模型；全部校验在写库之前 | 待办 ops | 删掉 / 截止日一组（日期、时刻、提醒、重复、稍后提醒）经 `restoreTodoFields`、清单与优先级同样、改回关联日记与标题备注 / 倒序 `undoTodoCompletion` / `restoreTodos` |
+| `reopen_todos` / `edit_todo_steps` | 把已完成的改回未完成 / 一项待办的步骤：新增、勾选、取消勾选、删除（按步骤 id 或标题） | `uncompleteTodo` / `setTodoSteps` | `restoreTodoCompletedAt` / 写回原步骤 |
+| `create_todo_list` / `rename_todo_list` / `delete_todo_list`（**确认**，连同其中的待办） | 待办清单（按名称，不重名、不叫 Inbox；颜色与图标不动） | 清单 ops | 删掉（已放进待办时先报冲突，强制时把待办移回收集箱再删）/ 改回 / `restoreTodoList` |
 | `create_anniversary` / `delete_anniversary`（**确认**） | 纪念日（不重复 / 每年 / 农历每年） | `AnniversaryEditController.save` / `deleteAnniversary` | 删掉 / `restoreAnniversary` |
 | `set_day_mood` | 这天的心情（或清空） | `setDayMood` / `clearDayMood` | 恢复原来的心情或清空 |
 | `set_theme` / `set_app_language` / `set_font_scale` / `set_feature_enabled` | 明暗与主题色 / 界面语言 / 字体大小 / 功能开关（不含 AI 本身；有私密本时不关日记本） | `SettingsService` / `saveAppFeatures` | 写回原值 |
+| `change_settings` | 一次改一项或几项设置，每个参数是一项（清单只在 `ai_setting_specs.dart` 的 `aiSettingSpecs`）：编辑器（打开日记时直接编辑、返回时直接发表新日记、自动显示当天照片、始终显示工具栏）、日记预览页（左右滑动切换、允许勾选待办、长按选字、双击编辑）、日历（一周起始日、周末着色、周数、农历与节气、法定节假日、月度概览、那年今日、这天的心情、显示待办、纪念日）、待办（显示已完成、排序、打开时显示、默认清单（按名称）、智能识别、全天待办的提醒时刻、稍后提醒时长、锁屏隐藏内容）；本平台没有的项不进 schema，所属功能关着的整次拒绝；全部校验通过才写，值相同的不写 | 各设置自己的模型与保存函数（在最新的存储值上只改这一项） | 逐项写回改动前的值（同一页里之后改的别的设置不受影响） |
+
+**设置清单**（`aiSettingSpecs`）：每项一个稳定的参数名、schema（说明写在 schema 里）、设置页里的名称（卡片写作“页面 · 设置名”，经工具的 `argLabel` 显示在可读详情里，不另进 `aiToolArgName`）、按存储口径的读写函数、依附的功能开关与平台，以及可选的取值说法与写前校验。只收用户在设置页里点一下就能改、改错了也无伤的开关与选项；AI 助手自己的设置（权限、隐私、服务商）一律不收，应用锁与密码、备份 / 网盘 / 同步 / 存储、各样式页只给前往。
 
 共同约束：写日记只经 `aiWritableDiary`（私密、回收站、未解封胶囊、AI 隐私排除的一律不写，批量里有一篇不能写就整批不做）；`EditingSessionRegistry` 有编辑页时不写（编辑页整份保存会盖掉改动），执行期间登记为编辑会话；写后一次性 provider 手动失效。
 
 **确认与撤销**：删除类（以及打开“每次改动前确认”时的写操作）执行前，步骤行下展开确认卡（工具的 `preview` 列出要删 / 要改的内容），用户点“删除 / 执行”才继续，点“取消”回传“用户拒绝了，不要换别的方式达成同样效果”；等待期间可停止。成功的改动在保存后的回答里有“撤销”，可撤销的有两个以上时另有“撤销本轮全部改动”（`undoAiAgentCalls`，从后往前撤）。改日记的撤销前按内容指纹（`aiDiaryFingerprint`：标题、正文、元数据、发表与更新时间的 FNV-1a，库里的时间只到秒）核对之后有没有被改过，改过就问用户要不要覆盖。撤过的在步骤记录里标为已撤销。
 
-**只给前往、不提供工具的**：彻底删除与清空回收站、备份 / 恢复 / 导入 / 导出 / 分享、网盘、局域网同步配对、应用锁与密码、私密与上锁日记本的设置、AI 服务商与密钥、存储清理，以及关闭 AI 助手本身。
+**只给前往、不提供工具的**：彻底删除与清空回收站、备份 / 恢复 / 导入 / 导出 / 分享、网盘、局域网同步配对、应用锁与密码、私密与上锁日记本的设置、AI 服务商与密钥以及 AI 助手自己的其他设置、存储清理，以及关闭 AI 助手本身；各样式页（背景、导航栏、日记卡片、预览页样式、探索页布局、代码块样式）也只给前往。
 
 工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示前往卡片、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`）。`AiDestination` 写明类别、位置（首页 / 设置）、图标与色调；会关掉对话页的目标（首页各 Tab 与日记本，`leavesChat`）打开前登记 `aiChatReturnProvider`，首页与日记页的返回键、以及落地后的提示条据此重新打开那段对话（打开后对话页仍在栈里就撤销登记）。`open_page` 打开具体的一篇 / 一本 / 一项前核对存在且 AI 可以碰（私密与 AI 隐私排除的按找不到），名称只给界面。
 
-**涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、纪念日、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面；只调了 `open_page` 的那一步之前说的话不算过渡句（模型常先写完回答再附卡片），作为正文露在外面。
+**涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、待办清单、纪念日、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面；只调了 `open_page` 的那一步之前说的话不算过渡句（模型常先写完回答再附卡片），作为正文露在外面。
 
 **导出对话**（`aiChatExportText`，对话页 ⋮ 或历史抽屉进入）：标题与“导出于 … · 共 N 条消息”，然后逐条写选中的消息——问题为“你 · 时间”与原文；回答为“人设名 · 时间”，可选的思考过程（各步与最后一段）、可选的过程与操作（调用前说的话，每个调用的具体标题 `labelWith`、结果说明与涉及的对象；撤销过、取消、失败、中断照实写）、正文、参考的日记（编号、标题、日期）、出错原因或“已停止”。Markdown 保留正文原样与 `[Dn]`；纯文本把正文经块文档转成纯文字并去掉引用编号。JSON（`aiChatExportJson`，`format: jotsy-ai-chat`、`version: 1`）为对话信息（id、标题、署名、创建与更新时间）与逐条消息：id、角色、署名、时间、状态、正文（Markdown 原文）、引用（编号、日记 id、标题、日期）、模型与思考强度、出错原因，按选项带思考与步骤（调用前说的话、思考时长，每个调用的工具名、界面标题、状态、是否撤销、参数、结果说明、错误与涉及的对象）；撤销用的内部数据不导出。文件名为“标题 日期.md / .txt / .json”（去掉文件名不能用的字符）。
 
 **隐私**：多篇只经 `getAiContextDiaries`；`read_diaries` 比单篇功能更严，私密日记即使打开了“允许对私密日记使用 AI”也不给；日期、心情、标签、天气、地点按“发送”开关给；摘录与正文从本轮“最多发送”预算里扣，用完只给标题与日期。
 
-**接入新功能**：在对应领域的 `ai_tools_<领域>.dart` 写一个 `AiTool`（功能开关经 `isAvailable`），加进清单；改动数据的工具同时实现 `undo`（删除类再实现 `preview`），并加进 `test/ui/ai/ai_write_tools_test.dart` 的清单补“执行再撤销”的测试；需要页面时在 `aiDestinations` 加一项；补“功能关闭时工具不出现”与主流程测试（`test/ui/ai/ai_tools_test.dart` 会检查名称、schema 与标题）。
+**接入新功能**：新增的设置开关先看能不能登记进 `aiSettingSpecs`（设置的往返测试与清单一致性测试会覆盖）；在对应领域的 `ai_tools_<领域>.dart` 写一个 `AiTool`（功能开关经 `isAvailable`），加进清单；改动数据的工具同时实现 `undo`（删除类再实现 `preview`），并加进 `test/ui/ai/ai_write_tools_test.dart` 的清单补“执行再撤销”的测试；需要页面时在 `aiDestinations` 加一项；补“功能关闭时工具不出现”与主流程测试（`test/ui/ai/ai_tools_test.dart` 会检查名称、schema 与标题）。
 
 ## 10. 使用指南
 

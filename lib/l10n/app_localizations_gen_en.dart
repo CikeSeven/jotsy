@@ -13199,6 +13199,101 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiToolDone => 'Done';
 
   @override
+  String get aiToolListTodoLists => 'List to-do lists';
+
+  @override
+  String aiToolTodoListCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lists',
+      one: '1 list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolReopenTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Reopen $count to-dos',
+      one: 'Reopen 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolEditTodoSteps => 'Edit to-do steps';
+
+  @override
+  String aiToolEditTodoStepsOf(String title) {
+    return 'Edit steps: $title';
+  }
+
+  @override
+  String aiToolCreateTodoList(String name) {
+    return 'Create to-do list: $name';
+  }
+
+  @override
+  String aiToolRenameTodoList(String name) {
+    return 'Rename to-do list to: $name';
+  }
+
+  @override
+  String aiToolDeleteTodoList(String name) {
+    return 'Delete to-do list $name';
+  }
+
+  @override
+  String aiToolDeleteTodoListCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Its $count to-dos are deleted too',
+      one: 'Its 1 to-do is deleted too',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolGetSettings => 'Check settings';
+
+  @override
+  String get aiToolChangeSettingsAny => 'Change settings';
+
+  @override
+  String aiToolChangeSetting(String name) {
+    return 'Change setting: $name';
+  }
+
+  @override
+  String aiToolChangeSettings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Change $count settings',
+      one: 'Change 1 setting',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolSettingName(String page, String setting) {
+    return '$page · $setting';
+  }
+
+  @override
+  String get aiToolArgNone => 'None';
+
+  @override
+  String get aiToolArgOn => 'On';
+
+  @override
+  String get aiToolArgOff => 'Off';
+
+  @override
   String get aiToolBlockedByEditor =>
       'A page is being edited; close it and try again';
 
@@ -16911,6 +17006,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'arg_kind_todo': 'To-do',
       'arg_kind_anniversary': 'Anniversary',
       'arg_kind_day': 'Day',
+      'arg_steps': 'Steps',
+      'arg_reminders': 'Reminders',
+      'arg_add_steps': 'Steps added',
+      'arg_check_steps': 'Steps checked',
+      'arg_uncheck_steps': 'Steps unchecked',
+      'arg_remove_steps': 'Steps removed',
+      'arg_all_day': 'All day',
+      'arg_kind_todoList': 'To-do list',
       'other': '',
     });
     return '$_temp0';

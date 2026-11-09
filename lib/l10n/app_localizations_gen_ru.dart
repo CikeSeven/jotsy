@@ -15256,6 +15256,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiChatMore => 'Ещё';
 
   @override
+  String get aiChatComposerAdd => 'Фото и параметры чата';
+
+  @override
+  String get aiChatScrollToBottom => 'К последнему сообщению';
+
+  @override
   String get markdownCopyCode => 'Копировать код';
 
   @override

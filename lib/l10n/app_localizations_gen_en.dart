@@ -14728,6 +14728,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiChatMore => 'More';
 
   @override
+  String get aiChatComposerAdd => 'Photos and chat options';
+
+  @override
+  String get aiChatScrollToBottom => 'Jump to latest';
+
+  @override
   String get markdownCopyCode => 'Copy code';
 
   @override

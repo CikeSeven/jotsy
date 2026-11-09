@@ -13028,6 +13028,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiChatMore => '更多';
 
   @override
+  String get aiChatComposerAdd => '图片与对话选项';
+
+  @override
+  String get aiChatScrollToBottom => '回到底部';
+
+  @override
   String get markdownCopyCode => '复制代码';
 
   @override

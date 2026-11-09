@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 /// 对话消息列表的滚动控制器：贴着底部时跟随新内容，用户一往上翻就放手；
@@ -24,6 +27,8 @@ import 'package:flutter/widgets.dart';
 /// - 每次滚动停下时把位置与是否跟随记进最近的 `PageStorage`（对话页给每段
 ///   对话一个常驻本次运行的存储桶）；[restoreSaved] 时（从首页“回到对话”）
 ///   新建的列表按记下的位置与跟随状态恢复，否则从底部开始。
+/// - 是否跟随可监听（[followingListenable]）：不跟随时对话页浮出“回到底部”
+///   按钮，点了经 [scrollToBottom] 平滑滚回并重新跟随。
 class AiChatScrollController extends ScrollController {
   AiChatScrollController({super.debugLabel});
 
@@ -35,6 +40,62 @@ class AiChatScrollController extends ScrollController {
   /// 是否贴着底部跟随新内容。
   bool get following => _following;
 
+  final ValueNotifier<bool> _followingNotifier = ValueNotifier<bool>(true);
+
+  /// [following] 的可监听版本，给“回到底部”按钮用：用户往上翻（不再跟随）
+  /// 时按钮出现，回到底部后消失。
+  ///
+  /// 跟随状态可能在排版阶段改变（内容尺寸变化让滚动活动结束），那时不能
+  /// 通知——监听方的 setState 会落在排版中——所以改到这一帧结束之后再通知；
+  /// 其余时候立即通知。
+  ValueListenable<bool> get followingListenable => _followingNotifier;
+
+  /// “回到底部”的动画正在进行：结束时一律重新跟随并停到底，哪怕动画期间
+  /// 内容又变长、落点离新的底部超过了 [resumeDistance]。
+  bool _returning = false;
+
+  void _setFollowing(bool value) {
+    _following = value;
+    if (_followingNotifier.value == value) return;
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!_disposed) _followingNotifier.value = _following;
+      });
+    } else {
+      _followingNotifier.value = value;
+    }
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _followingNotifier.dispose();
+    super.dispose();
+  }
+
+  /// 平滑滚回底部并重新跟随（“回到底部”按钮）。[duration] 为零（减少
+  /// 动画）时直接跳过去。
+  void scrollToBottom({required Duration duration, required Curve curve}) {
+    if (!hasClients ||
+        !position.hasContentDimensions ||
+        duration <= Duration.zero) {
+      jumpToBottom();
+      return;
+    }
+    _returning = true;
+    _setFollowing(true);
+    unawaited(
+      position.animateTo(
+        position.maxScrollExtent,
+        duration: duration,
+        curve: curve,
+      ),
+    );
+  }
+
   /// 列表建好时按 `PageStorage` 里记下的位置恢复（回到对话），而不是从底部
   /// 开始。只影响之后新建的滚动位置。
   bool restoreSaved = false;
@@ -45,7 +106,8 @@ class AiChatScrollController extends ScrollController {
   /// 回到底部并重新跟随（发送问题、打开对话时）。还没排版时只记下跟随，
   /// 首次排版就停在底部。
   void jumpToBottom() {
-    _following = true;
+    _returning = false;
+    _setFollowing(true);
     if (!hasClients) return;
     final position = this.position;
     if (position.hasContentDimensions) {
@@ -143,7 +205,7 @@ class _AiChatScrollPosition extends ScrollPositionWithSingleContext {
       identifier: AiChatScrollController._followingId,
     );
     if (following is! bool) return;
-    owner._following = following;
+    owner._setFollowing(following);
     if (!following) super.restoreScrollOffset();
   }
 
@@ -160,16 +222,39 @@ class _AiChatScrollPosition extends ScrollPositionWithSingleContext {
   @override
   void updateUserScrollDirection(ScrollDirection value) {
     // forward = 内容往下走、看更早的消息。手指一动就放手，不等松开。
-    if (value == ScrollDirection.forward) owner._following = false;
+    if (value == ScrollDirection.forward) {
+      owner._returning = false;
+      owner._setFollowing(false);
+    }
     super.updateUserScrollDirection(value);
+  }
+
+  /// 手指按上来：打断“回到底部”的动画，之后照常按停下的位置决定是否跟随
+  /// （否则动画被按停时也会被当成“回到了底部”，列表从手指下跑开）。
+  @override
+  ScrollHoldController hold(VoidCallback holdCancelCallback) {
+    owner._returning = false;
+    return super.hold(holdCancelCallback);
   }
 
   @override
   void didEndScroll() {
     // 先定下是否跟随再交给默认实现：它会顺带存下位置与跟随状态。
-    if (hasContentDimensions && hasPixels) {
-      owner._following =
-          maxScrollExtent - pixels <= AiChatScrollController.resumeDistance;
+    if (owner._returning) {
+      // “回到底部”的动画走完了：重新跟随。动画期间内容可能又变长，落点
+      // 不在新的底部——等这次回调结束后再跳过去（这里正处在滚动活动
+      // 切换的中途，不能直接改位置）。
+      owner._returning = false;
+      owner._setFollowing(true);
+      if (hasContentDimensions && hasPixels && pixels < maxScrollExtent) {
+        scheduleMicrotask(() {
+          if (!owner._disposed && owner._following) owner.jumpToBottom();
+        });
+      }
+    } else if (hasContentDimensions && hasPixels) {
+      owner._setFollowing(
+        maxScrollExtent - pixels <= AiChatScrollController.resumeDistance,
+      );
     }
     super.didEndScroll();
   }

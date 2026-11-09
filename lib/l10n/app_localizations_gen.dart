@@ -23586,6 +23586,18 @@ abstract class AppLocalizations {
   /// **'More'**
   String get aiChatMore;
 
+  /// Tooltip of the plus button in the chat composer: opens a menu with photos, scope and persona.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and chat options'**
+  String get aiChatComposerAdd;
+
+  /// Tooltip of the floating button that scrolls the chat back to the newest message.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to latest'**
+  String get aiChatScrollToBottom;
+
   /// Tooltip of the copy button on a code block in rendered Markdown (AI answers, release notes).
   ///
   /// In en, this message translates to:

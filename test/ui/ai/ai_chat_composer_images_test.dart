@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/sections/chat/ai_chat_composer.dart';
@@ -30,6 +31,9 @@ void main() {
     required VoidCallback onSend,
     VoidCallback? onTakePhoto,
     Widget? note,
+    List<Widget> contextChips = const <Widget>[],
+    List<AiComposerOption> options = const <AiComposerOption>[],
+    Widget? model,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -45,11 +49,13 @@ void main() {
             enabled: true,
             onSend: onSend,
             onStop: () {},
-            chips: const <Widget>[],
             images: controller,
             onPickImages: () => controller.pick(),
             onTakePhoto: onTakePhoto,
             note: note,
+            contextChips: contextChips,
+            options: options,
+            model: model,
           ),
         ),
       ),
@@ -127,5 +133,120 @@ void main() {
     await tester.tap(find.text(l10n.diaryMediaTakePhoto));
     await tester.pumpAndSettle();
     expect(photos, 1);
+  });
+
+  testWidgets('the plus menu holds photos, scope and persona; changed '
+      'settings show above the input and can be reset', (tester) async {
+    final controller = images();
+    addTearDown(controller.dispose);
+    var scope = 0;
+    var cleared = 0;
+    var model = 0;
+    await pump(
+      tester,
+      controller: controller,
+      onSend: () {},
+      options: <AiComposerOption>[
+        AiComposerOption(
+          icon: FontAwesomeIcons.magnifyingGlass,
+          label: l10n.aiChatScope,
+          value: l10n.aiChatScopeAuto,
+          onPressed: () => scope++,
+        ),
+        // 生成中不能改：这一行停用。
+        AiComposerOption(
+          icon: FontAwesomeIcons.masksTheater,
+          label: l10n.aiChatPersona,
+          value: '树洞',
+          onPressed: null,
+        ),
+      ],
+      contextChips: <Widget>[
+        AiComposerChip(
+          icon: FontAwesomeIcons.magnifyingGlass,
+          label: '最近 7 天',
+          onPressed: () {},
+          onClear: () => cleared++,
+        ),
+      ],
+      model: AiComposerModelButton(
+        label: '某模型 · 高',
+        tooltip: l10n.aiChatModelSheetTitle,
+        onPressed: () => model++,
+      ),
+    );
+
+    // 只有附图时是附图按钮；有范围 / 人设时是“＋”。
+    expect(find.byTooltip(l10n.aiChatAttachImages), findsNothing);
+    await tester.tap(find.byTooltip(l10n.aiChatComposerAdd));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.diaryMediaFromLibrary), findsOneWidget);
+    expect(find.text(l10n.aiChatScopeAuto), findsOneWidget);
+    expect(find.text('树洞'), findsOneWidget);
+    await tester.tap(find.text(l10n.aiChatPersona));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.aiChatScope));
+    await tester.pumpAndSettle();
+    expect(scope, 1);
+
+    expect(find.text('最近 7 天'), findsOneWidget);
+    await tester.tap(find.byTooltip(l10n.commonReset));
+    expect(cleared, 1);
+
+    await tester.tap(find.byTooltip(l10n.aiChatModelSheetTitle));
+    expect(model, 1);
+    expect(find.text('某模型 · 高'), findsOneWidget);
+  });
+
+  testWidgets('fits a narrow phone: a long model name is shortened, the row '
+      'does not scroll or overflow', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final controller = images();
+    addTearDown(controller.dispose);
+    await pump(
+      tester,
+      controller: controller,
+      onSend: () {},
+      onTakePhoto: () {},
+      options: <AiComposerOption>[
+        AiComposerOption(
+          icon: FontAwesomeIcons.magnifyingGlass,
+          label: l10n.aiChatScope,
+          value: l10n.aiChatScopeAuto,
+          onPressed: () {},
+        ),
+      ],
+      contextChips: <Widget>[
+        AiComposerChip(
+          icon: FontAwesomeIcons.magnifyingGlass,
+          label: '2026年10月1日 – 2026年11月10日',
+          onPressed: () {},
+          onClear: () {},
+        ),
+        AiComposerChip(
+          emoji: '🌙',
+          label: '一位名字很长很长很长很长的人设',
+          onPressed: () {},
+          onClear: () {},
+        ),
+      ],
+      model: AiComposerModelButton(
+        label: 'a-very-long-model-name-with-many-parts-2026-preview · 高',
+        tooltip: l10n.aiChatModelSheetTitle,
+        onPressed: () {},
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    // 发送按钮仍在屏幕内，模型按钮没有把它挤出去。
+    expect(
+      tester.getRect(find.byTooltip(l10n.aiPanelSend)).right,
+      lessThanOrEqualTo(320),
+    );
+    expect(
+      tester.getRect(find.byTooltip(l10n.aiChatModelSheetTitle)).right,
+      lessThan(tester.getRect(find.byTooltip(l10n.aiPanelSend)).left),
+    );
   });
 }

@@ -13269,6 +13269,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiChatMore => 'その他';
 
   @override
+  String get aiChatComposerAdd => '画像とチャットのオプション';
+
+  @override
+  String get aiChatScrollToBottom => '最新のメッセージへ';
+
+  @override
   String get markdownCopyCode => 'コードをコピー';
 
   @override

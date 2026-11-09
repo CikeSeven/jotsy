@@ -18130,6 +18130,14 @@
   "@aiChatMore": {
     "description": "Tooltip of the chat page menu."
   },
+  "aiChatComposerAdd": "Photos and chat options",
+  "@aiChatComposerAdd": {
+    "description": "Tooltip of the plus button in the chat composer: opens a menu with photos, scope and persona."
+  },
+  "aiChatScrollToBottom": "Jump to latest",
+  "@aiChatScrollToBottom": {
+    "description": "Tooltip of the floating button that scrolls the chat back to the newest message."
+  },
   "markdownCopyCode": "Copy code",
   "@markdownCopyCode": {
     "description": "Tooltip of the copy button on a code block in rendered Markdown (AI answers, release notes)."

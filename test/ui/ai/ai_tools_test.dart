@@ -21,6 +21,7 @@ import 'package:node_diary/ui/ai/tools/ai_tool.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool_registry.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool_todo_parts.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_prompt_builder.dart';
+import 'package:node_diary/ui/ai/viewmodels/ai_task_prompts.dart';
 import 'package:node_diary/ui/todos/models/todo_settings.dart';
 import 'package:node_diary/ui/todos/providers/todo_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -122,6 +123,37 @@ void main() {
         for (final l10n in [zh, en]) {
           expect(tool.label(l10n, const {}).trim(), isNotEmpty);
         }
+      }
+    });
+
+    test('every tool that takes diary ids declares them for ref lookup', () {
+      // 漏登记的工具收到 `D3` 会原样查库，每篇都“找不到”。
+      const expected = <String, Set<String>>{
+        'read_diaries': {'ids'},
+        'open_page': {'diary_id'},
+        'append_to_diary': {'id'},
+        'update_diary': {'id'},
+        'tag_diaries': {'ids'},
+        'pin_diaries': {'ids'},
+        'archive_diaries': {'ids'},
+        'trash_diaries': {'ids'},
+        'add_to_notebook': {'ids'},
+        'remove_from_notebook': {'ids'},
+        'add_comment': {'id'},
+        'create_todo': {'diary_id'},
+        'update_todos': {'diary_id'},
+      };
+      for (final tool in aiTools) {
+        final keys = tool.schema.properties.keys.toSet();
+        expect(keys.containsAll(tool.diaryIdArgs), isTrue, reason: tool.name);
+        if (keys.contains('diary_id')) {
+          expect(tool.diaryIdArgs, contains('diary_id'), reason: tool.name);
+        }
+        expect(
+          tool.diaryIdArgs,
+          expected[tool.name] ?? const <String>{},
+          reason: tool.name,
+        );
       }
     });
 
@@ -310,10 +342,58 @@ void main() {
         expect(results[0]['text'], contains(zh.aiPromptTruncated));
         expect(results[1]['error'], contains('private'));
         expect(results[1].containsKey('text'), isFalse);
-        expect(results[2]['error'], contains('Not found'));
+        // 找不到时先让模型核对 id，而不是断言日记进了回收站。
+        expect(results[2]['error'], contains('search_diaries'));
         expect(outcome.summary, zh.aiToolReadEntries(1));
       },
     );
+
+    test('a reference like D1 resolves to the entry it was given to', () async {
+      final first = await diary('周末', '傍晚去海边散步', at: DateTime(2026, 11, 1, 9));
+      final second = await diary('上班', '开了一整天的会', at: DateTime(2026, 11, 2, 9));
+      final ctx = context();
+      await run('search_diaries', {'sort': 'oldest'}, with_: ctx);
+      final args = ctx.citations.resolveDiaryArgs(
+        {
+          'ids': ['D1', '[D2]', 'd1', 'D9', second],
+          'query': 'D1',
+        },
+        const {'ids'},
+      );
+      // 认得的编号换成 id，认不出的（D9）与真 id 原样留下，别的参数不动。
+      expect(args['ids'], [first, second, first, 'D9', second]);
+      expect(args['query'], 'D1');
+
+      final outcome = await run('read_diaries', {
+        'ids': args['ids'],
+      }, with_: ctx);
+      final results = ((outcome.data! as Map)['diaries'] as List).cast<Map>();
+      expect(results[0]['text'], contains('海边'));
+      expect(results[0]['ref'], 'D1');
+      expect(results[1]['text'], contains('一整天的会'));
+      expect(results[2]['error'], contains('search_diaries'));
+      expect(outcome.summary, zh.aiToolReadEntries(2));
+    });
+
+    test('references from earlier turns still resolve', () {
+      final book = AiCitationBook([
+        AiCitation(
+          ref: 'D4',
+          diaryId: 'old-id',
+          title: '旧',
+          date: DateTime(2026, 10, 1),
+        ),
+      ]);
+      expect(book.diaryIdOf('D4'), 'old-id');
+      expect(book.diaryIdOf(' [d4] '), 'old-id');
+      expect(book.diaryIdOf('D5'), isNull);
+      expect(book.diaryIdOf('old-id'), isNull);
+      expect(
+        book.refFor('new-id', title: '新', date: DateTime(2026, 11, 1)),
+        'D5',
+      );
+      expect(book.diaryIdOf('D5'), 'new-id');
+    });
 
     test('with the budget used up only the header is sent', () async {
       final id = await diary('周末', '正文内容');
@@ -375,6 +455,22 @@ void main() {
         () => run('open_page', {'destination': 'tab_todos'}),
         throwsA(isA<AiToolFailure>()),
       );
+    });
+
+    test('accepts a reference like D1 instead of the diary id', () async {
+      final id = await diary('周末', '海边');
+      final ctx = context();
+      await run('search_diaries', {}, with_: ctx);
+      final tool = aiToolByName('open_page')!;
+      final outcome = await tool.run(
+        ctx,
+        ctx.citations.resolveDiaryArgs(
+          tool.schema.validate({'destination': 'diary', 'diary_id': 'D1'}),
+          tool.diaryIdArgs,
+        ),
+      );
+      expect(outcome.navigation!.params['diary_id'], id);
+      expect(outcome.subjects.single.id, id);
     });
 
     test('names the diary and notebook it opens', () async {

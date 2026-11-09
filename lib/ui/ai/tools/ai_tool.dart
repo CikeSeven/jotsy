@@ -7,7 +7,8 @@
 // 2. 把它加进 `ai_tool_registry.dart` 的清单；
 // 3. 数据读写只经现有的 DB ops / 控制器，日记内容只经 `getAiContextDiaries`
 //    （多篇）与 `aiDiaryAllowedIn`（单篇），并把正文字数计入
-//    [AiToolContext.allowance]；
+//    [AiToolContext.allowance]；接收日记 id 的参数登记在 [AiTool.diaryIdArgs]
+//    （模型传回的编号 `D3` 在执行前换成 id）；
 // 4. 补测试：可用性（功能关闭时不出现）、主流程与一个异常路径。
 //
 // 工具失败时抛 [AiToolFailure]（说明原样回传模型，让它改正或换个做法），
@@ -73,6 +74,12 @@ abstract class AiTool {
   String get description;
 
   AiObjectSchema get schema;
+
+  /// 值是日记 id 的参数（字符串或字符串数组）。执行前经
+  /// [AiCitationBook.resolveDiaryArgs] 把其中的编号（`D3`）换成日记 id：
+  /// 查询结果里每篇同时有编号与 id，模型常把编号当 id 传回来，原样查库
+  /// 每篇都“找不到”。接收日记 id 的工具都必须在这里登记。
+  Set<String> get diaryIdArgs => const <String>{};
 
   /// 这次运行能不能用（功能开关、平台）。
   bool isAvailable(AiToolEnv env) => true;
@@ -262,6 +269,40 @@ class AiCitationBook {
       date: date,
     );
     return ref;
+  }
+
+  /// 编号对应的日记 id（`D3`，也认 `[D3]`、`d3`）；不像编号或这段对话里
+  /// 没分配过时为 null。以前各轮的编号也认：旧结果原样回放，模型会沿用。
+  String? diaryIdOf(String ref) {
+    final match = _refPattern.firstMatch(ref);
+    if (match == null) return null;
+    final key = 'D${int.parse(match.group(1)!)}';
+    for (final citation in _byDiary.values) {
+      if (citation.ref == key) return citation.diaryId;
+    }
+    return null;
+  }
+
+  static final RegExp _refPattern = RegExp(
+    r'^\s*\[?\s*[Dd](\d{1,6})\s*\]?\s*$',
+  );
+
+  /// [args] 里 [keys] 这些参数的值中，编号换成日记 id，其余原样（认不出的
+  /// 编号也原样留下，由工具照常报“找不到”）。
+  Map<String, Object?> resolveDiaryArgs(
+    Map<String, Object?> args,
+    Set<String> keys,
+  ) {
+    if (keys.isEmpty) return args;
+    Object? resolve(Object? value) => switch (value) {
+      final String text => diaryIdOf(text) ?? text,
+      final List<Object?> items => [for (final item in items) resolve(item)],
+      _ => value,
+    };
+    return <String, Object?>{
+      for (final MapEntry(:key, :value) in args.entries)
+        key: keys.contains(key) ? resolve(value) : value,
+    };
   }
 
   /// 全部编号（含以前各轮的），回答引用时按它找日记。

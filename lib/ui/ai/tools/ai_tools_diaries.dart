@@ -184,8 +184,12 @@ class ReadDiariesTool extends AiTool {
 
   @override
   String get description =>
-      'Read the full text of diary entries by id (from search_diaries). '
-      'Long entries may be cut when the per-turn text budget runs out.';
+      'Read the full text of diary entries by id or reference like D3 (from '
+      'search_diaries). Long entries may be cut when the per-turn text '
+      'budget runs out.';
+
+  @override
+  Set<String> get diaryIdArgs => const <String>{'ids'};
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -215,10 +219,14 @@ class ReadDiariesTool extends AiTool {
     for (final id in ids) {
       final diary = await database.getAiDiary(id, now: context.now);
       if (diary == null) {
+        // 不要断言“在回收站 / 是时间胶囊”：id 写错时模型会照着去怪用户的
+        // 数据。先提示换成查询结果里的 id 或编号。
         results.add(<String, Object?>{
           'id': id,
           'error':
-              'Not found: deleted, in the recycle bin, or a sealed time '
+              'No readable entry with this id. Use an id or reference '
+              'returned by search_diaries; if it came from there, the entry '
+              'was deleted, moved to the recycle bin or is a sealed time '
               'capsule.',
         });
         continue;

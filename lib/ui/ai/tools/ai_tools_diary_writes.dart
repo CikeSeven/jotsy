@@ -219,6 +219,9 @@ class AppendToDiaryTool extends AiTool {
       'of the entry is left as it is.';
 
   @override
+  Set<String> get diaryIdArgs => const <String>{'id'};
+
+  @override
   AiObjectSchema get schema => const AiObjectSchema(
     properties: <String, AiSchema>{
       'id': AiStringSchema(),
@@ -308,6 +311,9 @@ class UpdateDiaryTool extends AiTool {
       "Change an entry's title, date, time, mood, weather or location (by "
       'id). Pass only what changes; an empty string clears mood, weather or '
       'location. The body is not touched (use append_to_diary to add text).';
+
+  @override
+  Set<String> get diaryIdArgs => const <String>{'id'};
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -449,6 +455,9 @@ class TagDiariesTool extends AiTool {
       'exist are created; tags to remove must exist.';
 
   @override
+  Set<String> get diaryIdArgs => const <String>{'ids'};
+
+  @override
   AiObjectSchema get schema => const AiObjectSchema(
     properties: <String, AiSchema>{
       'ids': AiArraySchema(items: AiStringSchema(), maxItems: 50),
@@ -548,6 +557,9 @@ abstract class _FlagDiariesTool extends AiTool {
 
   @override
   AiToolEffect get effect => AiToolEffect.write;
+
+  @override
+  Set<String> get diaryIdArgs => const <String>{'ids'};
 
   @override
   AiObjectSchema get schema => AiObjectSchema(
@@ -670,6 +682,9 @@ class TrashDiariesTool extends AiTool {
   String get description =>
       'Move entries to the recycle bin (by id). The user confirms first; '
       'they can be restored from the recycle bin.';
+
+  @override
+  Set<String> get diaryIdArgs => const <String>{'ids'};
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(

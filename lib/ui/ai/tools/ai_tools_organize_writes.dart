@@ -545,6 +545,9 @@ class AddToNotebookTool extends AiTool {
       'several notebooks.';
 
   @override
+  Set<String> get diaryIdArgs => const <String>{'ids'};
+
+  @override
   AiObjectSchema get schema => const AiObjectSchema(
     properties: <String, AiSchema>{
       'notebook_id': AiStringSchema(),
@@ -646,6 +649,9 @@ class RemoveFromNotebookTool extends AiTool {
   @override
   String get description =>
       'Take entries (by id) out of a manual notebook. The entries are kept.';
+
+  @override
+  Set<String> get diaryIdArgs => const <String>{'ids'};
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(

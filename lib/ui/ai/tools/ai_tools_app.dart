@@ -126,6 +126,9 @@ class OpenPageTool extends AiTool {
       'settings_* = settings pages; the rest are named after their page.';
 
   @override
+  Set<String> get diaryIdArgs => const <String>{'diary_id'};
+
+  @override
   AiObjectSchema get schema => AiObjectSchema(
     properties: <String, AiSchema>{
       'destination': AiStringSchema(

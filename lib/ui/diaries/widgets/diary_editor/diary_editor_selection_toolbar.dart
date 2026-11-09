@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/foundation.dart' show ValueListenable;
@@ -15,6 +16,7 @@ import 'diary_editor_keyboard_hold.dart';
 import 'diary_editor_selection_gestures.dart'
     show kDiarySelectionHandleOverhang;
 import 'diary_editor_selection_menu_items.dart';
+import 'diary_editor_visible_range.dart';
 
 /// 原生块选区的复制/剪切/粘贴入口。使用应用统一的文字选区菜单（手机为
 /// 玻璃胶囊 [AppTextSelectionToolbar]、桌面为竖排菜单 [AppTextContextMenuPanel]，
@@ -31,16 +33,30 @@ import 'diary_editor_selection_menu_items.dart';
 /// 手指按着正文、选区又在变（长按选词与扩选、拖动选区把手、横滑移光标）
 /// 时菜单收起，让出上游的放大镜；最后一根手指抬起后再按松手时的选区决定
 /// 是否弹出（#190，与系统文本框一致）。
+///
+/// 菜单开着期间每帧结束都按选区与正文看得见的范围（[diaryEditorVisibleRange]，
+/// 与把手的边缘自动滚动同一口径）重新定位：上下滚动正文时跟着选区走；选区
+/// 只露出一部分时贴着露出的部分；整段离开看得见的范围（滚出视口、被键盘或
+/// 底部浮层 [coveredHeight] 盖住）时隐藏，滚回来再出现。菜单本身也不压在
+/// 底部浮层上（悬浮工具栏连同展开的面板，#221）。
 class DiaryEditorSelectionToolbar extends StatefulWidget {
   const DiaryEditorSelectionToolbar({
     super.key,
     required this.controller,
     required this.child,
     this.enabled = true,
+    this.pageScroll = false,
+    this.coveredHeight = 0,
   });
   final DiaryEditorController controller;
   final Widget child;
   final bool enabled;
+
+  /// 正文嵌在外层页面的滚动视图里（收缩正文），看得见的范围按外层页面算。
+  final bool pageScroll;
+
+  /// 正文底部被悬浮工具栏等盖住的高度（不含键盘），见 `DiaryEditorViewport`。
+  final double coveredHeight;
   @override
   State<DiaryEditorSelectionToolbar> createState() =>
       _DiaryEditorSelectionToolbarState();
@@ -50,8 +66,14 @@ class _DiaryEditorSelectionToolbarState
     extends State<DiaryEditorSelectionToolbar> {
   static _DiaryEditorSelectionToolbarState? _active;
   OverlayEntry? _entry;
-  ScrollPosition? _parentScroll;
   bool _scheduled = false;
+
+  /// 菜单此刻的位置（全局坐标）；选区整段不在看得见的范围里时为 null，
+  /// 菜单不画（见 [_measurePlacement]）。
+  _MenuPlacement? _placement;
+
+  /// 已登记下一帧结束时的重新定位（见 [_track]）。
+  bool _tracking = false;
 
   /// 按在正文上的触点数，经 [build] 里只观察指针、不参与手势竞争的
   /// [Listener] 统计。
@@ -67,17 +89,6 @@ class _DiaryEditorSelectionToolbarState
   void initState() {
     super.initState();
     widget.controller.addListener(_onControllerChanged);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final position = Scrollable.maybeOf(context)?.position;
-    if (position != _parentScroll) {
-      _parentScroll?.removeListener(_hide);
-      _parentScroll = position;
-      _parentScroll?.addListener(_hide);
-    }
   }
 
   @override
@@ -187,7 +198,90 @@ class _DiaryEditorSelectionToolbarState
     _processActions = null;
     _entry?.remove();
     _entry = null;
+    _placement = null;
     if (identical(_active, this)) _active = null;
+  }
+
+  /// 按本帧布局后的选区与看得见的范围算菜单位置；变了返回 true。
+  bool _measurePlacement() {
+    final next = _currentPlacement();
+    if (next == _placement) return false;
+    _placement = next;
+    return true;
+  }
+
+  _MenuPlacement? _currentPlacement() {
+    final controller = widget.controller;
+    if (controller.state.isDisposed) return null;
+    final rects = controller.state.selectionRects();
+    if (rects.isEmpty) return null;
+    // 翻到选区下方时让出整块把手触控区（文字下方
+    // kDiarySelectionHandleOverhang），否则选区靠近屏幕顶部时菜单正好盖在
+    // 把手上，按到的是菜单（#190）。
+    const handleDrop = Offset(
+      0,
+      kDiarySelectionHandleOverhang - AppTextToolbarGeometry.gapBelow,
+    );
+    // 不在任何纵向滚动视图里的正文（如嵌在不滚动的卡片里）没有“滚出去”
+    // 一说：照旧贴着整个选区，只避开系统栏与键盘。
+    if (diaryEditorScrollable(
+          context,
+          controller,
+          pageScroll: widget.pageScroll,
+        ) ==
+        null) {
+      return (
+        primary: rects.first.topCenter,
+        secondary: rects.last.bottomCenter + handleDrop,
+        bottomLimit: null,
+      );
+    }
+    final visible = diaryEditorVisibleRange(
+      context,
+      controller,
+      pageScroll: widget.pageScroll,
+      coveredHeight: widget.coveredHeight,
+    );
+    if (visible == null) return null;
+    final shown = [
+      for (final rect in rects)
+        if (rect.bottom > visible.top && rect.top < visible.bottom) rect,
+    ];
+    if (shown.isEmpty) return null;
+    // 只露出一部分时贴着露出的那段：上沿不高于看得见的顶端，下沿不低于
+    // 看得见的底端（不翻到盖住选区的浮层上）。
+    return (
+      primary: Offset(
+        shown.first.center.dx,
+        math.max(shown.first.top, visible.top),
+      ),
+      secondary:
+          Offset(
+            shown.last.center.dx,
+            math.min(shown.last.bottom, visible.bottom),
+          ) +
+          handleDrop,
+      // 编辑页（正文自己的列表）的菜单不越过看得见的底端：底下是悬浮工具栏
+      // 与它的面板，模板编辑页则是排在正文下方的工具栏。嵌入阅读页时底下
+      // 没有叠在正文上的浮层，系统栏与键盘由菜单自己避开；不再按外层滚动
+      // 视图的底边限制（视图可能只有内容那么高，展开「更多」时放不下）。
+      bottomLimit: widget.pageScroll ? null : visible.bottom,
+    );
+  }
+
+  /// 菜单开着期间每帧结束都重新定位一次（帧尾回调不请求新帧，静止时不
+  /// 耗电）：上下滚动正文（正文自己的列表或外层页面）、键盘升降、面板展开
+  /// 与页头动画都会移动选区或改变看得见的范围；位置变了才重建菜单。
+  void _track() {
+    if (_tracking) return;
+    _tracking = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tracking = false;
+      final entry = _entry;
+      if (!mounted || entry == null) return;
+      if (_measurePlacement()) entry.markNeedsBuild();
+      _track();
+    });
   }
 
   /// 查询在菜单开着时返回：重建一次，补上新查到的动作。
@@ -196,6 +290,7 @@ class _DiaryEditorSelectionToolbarState
   void _show() {
     if (_active != this) _active?._hide();
     _active = this;
+    _measurePlacement();
     if (_entry != null) {
       _entry!.markNeedsBuild();
       return;
@@ -207,12 +302,15 @@ class _DiaryEditorSelectionToolbarState
     unawaited(processText.refresh());
     _entry = OverlayEntry(
       builder: (_) {
-        if (!mounted || widget.controller.state.isDisposed) {
+        final placement = _placement;
+        if (!mounted ||
+            widget.controller.state.isDisposed ||
+            placement == null) {
+          // 选区整段不在看得见的范围里：不画；滚回来时胶囊重新挂载、
+          // 重播入场动画。
           return const SizedBox.shrink();
         }
         final controller = widget.controller;
-        final rects = controller.state.selectionRects();
-        if (rects.isEmpty) return const SizedBox.shrink();
         final selection = controller.selection;
         if (selection == null) return const SizedBox.shrink();
         return Theme(
@@ -222,18 +320,10 @@ class _DiaryEditorSelectionToolbarState
             // 选区每帧都在变，换 key 会每帧重播入场动画）。
             collapseScope: selection,
             anchors: TextSelectionToolbarAnchors(
-              primaryAnchor: rects.first.topCenter,
-              // 翻到选区下方时让出整块把手触控区（文字下方
-              // kDiarySelectionHandleOverhang），否则选区靠近屏幕顶部时菜单
-              // 正好盖在把手上，按到的是菜单（#190）。
-              secondaryAnchor:
-                  rects.last.bottomCenter +
-                  const Offset(
-                    0,
-                    kDiarySelectionHandleOverhang -
-                        AppTextToolbarGeometry.gapBelow,
-                  ),
+              primaryAnchor: placement.primary,
+              secondaryAnchor: placement.secondary,
             ),
+            bottomLimit: placement.bottomLimit,
             actions: diaryEditorSelectionMenuItems(
               context,
               controller,
@@ -262,13 +352,13 @@ class _DiaryEditorSelectionToolbarState
       },
     );
     Overlay.of(context, rootOverlay: true).insert(_entry!);
+    _track();
   }
 
   @override
   void dispose() {
     _hide();
     widget.controller.removeListener(_onControllerChanged);
-    _parentScroll?.removeListener(_hide);
     super.dispose();
   }
 
@@ -280,6 +370,15 @@ class _DiaryEditorSelectionToolbarState
     child: widget.child,
   );
 }
+
+/// 手机选区菜单的位置（全局坐标）：[primary] 为露出的第一行上沿中点，
+/// [secondary] 为露出的最后一行下沿中点再让出把手触控区；[bottomLimit] 为
+/// 看得见的范围的下沿（底部浮层的上沿），为 null 时只避开系统栏与键盘。
+typedef _MenuPlacement = ({
+  Offset primary,
+  Offset secondary,
+  double? bottomLimit,
+});
 
 /// 桌面正文的右键菜单，交给 [af.AppFlowyEditor.contextMenuBuilder]。
 ///

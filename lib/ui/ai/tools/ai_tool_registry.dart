@@ -8,6 +8,7 @@ import 'ai_tools_calendar.dart';
 import 'ai_tools_calendar_writes.dart';
 import 'ai_tools_diaries.dart';
 import 'ai_tools_diary_writes.dart';
+import 'ai_tools_images.dart';
 import 'ai_tools_organize.dart';
 import 'ai_tools_organize_writes.dart';
 import 'ai_tools_preferences.dart';
@@ -24,6 +25,7 @@ const List<AiTool> aiTools = <AiTool>[
   ReadGuideTool(),
   SearchDiariesTool(),
   ReadDiariesTool(),
+  ViewImagesTool(),
   DiaryStatsTool(),
   GetCalendarDayTool(),
   ListTodosTool(),

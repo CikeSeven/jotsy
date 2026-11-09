@@ -4,6 +4,9 @@ import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/storage/storage_media_edit_plan.dart';
+import 'package:node_diary/core/services/storage/storage_reference_index.dart';
+import 'package:node_diary/core/services/storage/storage_usage_models.dart';
 
 void main() {
   late AppDatabase database;
@@ -122,6 +125,78 @@ void main() {
     expect(after.updatedAt, before.updatedAt.add(const Duration(seconds: 1)));
     expect((await diaryRow(changed)).content, 'edited elsewhere');
   });
+
+  test(
+    'AI chat images: sources, references, tombstones and path swaps',
+    () async {
+      const a = '/x/diary_images/m/a.jpg';
+      const b = '/x/diary_images/m/b.jpg';
+      final conversation = await database.createAiConversation(title: '旅行');
+      final messageId = await database.addAiMessage(
+        conversationId: conversation,
+        role: AiMessageRole.user,
+        content: '看看',
+        imagesJson: encodeAiMessageImages([a, b]),
+      );
+      // 没有图片的消息不是来源。
+      await database.addAiMessage(
+        conversationId: conversation,
+        role: AiMessageRole.assistant,
+        content: '好',
+      );
+
+      final sources = await database.getStorageReferenceSources();
+      final source = sources.aiMessages.single;
+      expect(source.conversationId, conversation);
+      expect(source.conversationTitle, '旅行');
+
+      final index = buildStorageReferenceIndex(sources, now: DateTime.now());
+      final ref = index.refsOf('diary_images/m/a.jpg').single;
+      expect(ref, isA<StorageAiMessageRef>());
+      expect((ref as StorageAiMessageRef).conversationTitle, '旅行');
+      expect(index.isReferenced('diary_images/m/b.jpg'), isTrue);
+
+      // 删除第一张：那一位写成墓碑，第二张的位置（编号 P2）不变。
+      final removal = await planStorageMediaRemoval(sources, {
+        'diary_images/m/a.jpg',
+      });
+      expect(removal.aiMessages, 1);
+      expect(
+        removal.edits.aiMessages.single.images,
+        encodeAiMessageImages(['', b]),
+      );
+
+      // 压缩第二张：只换路径。
+      final replacement = await planStorageMediaReplacement(sources, {
+        'diary_images/m/b.jpg': '/x/diary_images/m/b_small.jpg',
+      });
+      expect(
+        decodeAiMessageImages(replacement.edits.aiMessages.single.images),
+        [a, '/x/diary_images/m/b_small.jpg'],
+      );
+
+      final result = await database.applyStorageMediaEdits(removal.edits);
+      expect(result.applied, 1);
+      final row = (await database.getAiMessages(
+        conversation,
+      )).singleWhere((m) => m.messageId == messageId);
+      expect(decodeAiMessageImages(row.images), ['', b]);
+      expect(row.content, '看看');
+
+      // 读取之后被改过的行跳过（第二次按旧前置条件写不进去）。
+      final stale = await database.applyStorageMediaEdits(replacement.edits);
+      expect(stale.applied, 0);
+      expect(stale.skipped, 1);
+
+      // 墓碑不算引用：重读后第一张已经没人用。
+      final after = buildStorageReferenceIndex(
+        await database.getStorageReferenceSources(),
+        now: DateTime.now(),
+      );
+      expect(after.isReferenced('diary_images/m/a.jpg'), isFalse);
+      expect(after.isReferenced('diary_images/m/b.jpg'), isTrue);
+    },
+  );
 
   test('deletes a comment left without text or images', () async {
     final diary = await database.createDiary(

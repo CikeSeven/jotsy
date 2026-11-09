@@ -10,10 +10,12 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
+import '../../ai/controllers/ai_assistant_entry.dart';
 import '../../diaries/controllers/diary_open_flow.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../settings/pages/app_surface_page.dart';
 import '../../settings/pages/recycle_bin_page.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_gate.dart';
@@ -110,8 +112,16 @@ class _StoragePageState extends ConsumerState<StoragePage>
             : null,
         onDelete: () => unawaited(_flows.delete(context, [item.entry])),
         onOpenDiary: (id) => unawaited(_openDiary(id)),
+        onOpenConversation: ref.read(appFeaturesProvider).ai
+            ? (id) => unawaited(_openConversation(id))
+            : null,
       ),
     );
+  }
+
+  Future<void> _openConversation(String conversationId) async {
+    await openAiConversation(context, conversationId);
+    if (mounted) refreshStorageViews(ref);
   }
 
   Future<void> _openDiary(String diaryId) async {

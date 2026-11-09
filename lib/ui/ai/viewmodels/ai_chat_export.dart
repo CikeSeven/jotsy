@@ -22,12 +22,14 @@ import 'package:intl/intl.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/services/diary_media_references.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
 import '../models/ai_agent_steps.dart';
 import '../models/ai_tool_subject.dart';
 import '../tools/ai_tool_registry.dart';
+import 'ai_chat_images.dart';
 import 'ai_labels.dart';
 import 'ai_task_prompts.dart';
 import 'ai_tool_facts.dart';
@@ -162,7 +164,10 @@ String aiChatExportText({
       '${time.format(message.createdAt)}',
     );
     if (user) {
-      paragraph(message.content);
+      // 附图只写张数（导出是文字，不带图片文件）。
+      final images = liveAiMessageImages(decodeAiMessageImages(message.images));
+      if (images.isNotEmpty) paragraph(l10n.aiChatImagesSummary(images.length));
+      if (message.content.trim().isNotEmpty) paragraph(message.content);
       continue;
     }
     final steps = AiAgentStepRecord.decodeList(message.steps);
@@ -256,11 +261,18 @@ String aiChatExportJson({
     };
   }
 
+  // 附图的编号按整段对话算（与对话里 AI 用的编号一致）。
+  final imagesByMessage = <String, List<AiChatImage>>{};
+  for (final image in aiChatImages(messages)) {
+    (imagesByMessage[image.messageId] ??= <AiChatImage>[]).add(image);
+  }
+
   Map<String, Object?> message(AiMessageRow row) {
     final user = row.role == AiMessageRole.user;
     final meta = _decodeMeta(row.meta);
     final steps = AiAgentStepRecord.decodeList(row.steps);
     final error = aiMessageError(row);
+    final images = imagesByMessage[row.messageId] ?? const <AiChatImage>[];
     return <String, Object?>{
       'id': row.messageId,
       'role': row.role,
@@ -268,6 +280,20 @@ String aiChatExportJson({
       'createdAt': row.createdAt.toIso8601String(),
       if (!user) 'status': row.status,
       'content': row.content,
+      // 附图只写编号与托管目录里的定位键（不写本机绝对路径）；被删掉的
+      // 标为 removed。
+      if (images.isNotEmpty)
+        'images': [
+          for (final image in images)
+            <String, Object?>{
+              'ref': image.ref,
+              if (image.removed)
+                'removed': true
+              else
+                'file':
+                    diaryMediaKeyOf(image.path) ?? image.path.split('/').last,
+            },
+        ],
       if (!user && options.reasoning && row.reasoning.trim().isNotEmpty)
         'reasoning': row.reasoning,
       if (!user && options.steps && steps.isNotEmpty)

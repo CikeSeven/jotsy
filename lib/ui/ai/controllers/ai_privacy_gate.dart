@@ -46,6 +46,7 @@ class AiSendSummary {
     this.entries = 0,
     this.images = 0,
     this.agent = false,
+    this.agentImages = false,
   });
 
   /// 发送的字数（`TextStats` 口径）。
@@ -58,6 +59,9 @@ class AiSendSummary {
 
   /// 智能体的一轮：之后工具还会按需读取日记（不含私密日记）。
   final bool agent;
+
+  /// 智能体这一轮的模型能看图：工具还会按需发送日记里的图片。
+  final bool agentImages;
 
   bool get multiDiary => entries > 1;
 }
@@ -171,7 +175,12 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
                 l10n.aiConfirmSendImages(summary.images),
               ),
             if (summary.agent)
-              line(FontAwesomeIcons.screwdriverWrench, l10n.aiConfirmSendAgent),
+              line(
+                FontAwesomeIcons.screwdriverWrench,
+                summary.agentImages
+                    ? l10n.aiConfirmSendAgentImages
+                    : l10n.aiConfirmSendAgent,
+              ),
             const SizedBox(height: 14),
             Text(
               l10n.aiConfirmSendNote,

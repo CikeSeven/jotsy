@@ -15337,7 +15337,7 @@
   "@aiModuleVision": {
     "description": "AI 模块名称。"
   },
-  "aiModuleVisionSubtitle": "把日记里的图片一起发给模型；模型不认图片时自动只发文字",
+  "aiModuleVisionSubtitle": "把日记里的图片、对话里发的图片一起发给模型；模型不认图片时自动只发文字",
   "@aiModuleVisionSubtitle": {
     "description": "AI 模块说明。"
   },
@@ -16460,6 +16460,8 @@
   "@aiConfirmSendAgent": {
     "description": "发送前确认面板：智能体会按需读日记的说明。"
   },
+  "aiConfirmSendAgentImages": "AI 会按需查找、读取你的日记及其中的图片（私密日记除外），之后不再逐次询问",
+  "@aiConfirmSendAgentImages": {"description": "智能体的发送确认（模型能看图时）。"},
   "aiOptionAgent": "让 AI 使用工具",
   "@aiOptionAgent": {
     "description": "AI 设置：对话时调用工具的开关。"
@@ -16505,6 +16507,26 @@
       }
     }
   },
+  "aiPromptAgentImagesAttached": "这条消息附带的图片（按顺序）：{refs}。可用 create_diary / append_to_diary 的 `images` 参数或正文里的 ![](P1) 把它们加进日记。",
+  "@aiPromptAgentImagesAttached": {"description": "提示词（智能体）：用户这条消息附带的图片编号。", "placeholders": {"refs": {"type": "String"}}},
+  "aiPromptImageNotSent": "[图片 {label} 没有发给你：当前模型或设置不发送图片]",
+  "@aiPromptImageNotSent": {"description": "提示词占位：因不发送图片而没发的那张图。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageOmitted": "[图片 {label} 为控制请求大小未随本次请求发送；需要时调用 view_images 重看]",
+  "@aiPromptImageOmitted": {"description": "提示词占位：为控制请求大小而没发的较早图片。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageUnavailable": "[图片 {label} 读不出来：文件已不在，或已不能再给 AI 看]",
+  "@aiPromptImageUnavailable": {"description": "提示词占位：读不出或已不能给 AI 看的图片。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageRemoved": "[图片 {label} 已删除]",
+  "@aiPromptImageRemoved": {"description": "提示词占位：用户已在存储管理里删除的图片。", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImagesRejected": "[图片没有发出：这个模型不接受图片]",
+  "@aiPromptImagesRejected": {"description": "提示词占位：服务端拒收图片、去掉图片重试时的说明。"},
+  "aiPromptDiaryImage": "[图片 {index}]",
+  "@aiPromptDiaryImage": {"description": "发给 AI 的日记正文里第 n 张图片的标记（view_images 用同一编号）。", "placeholders": {"index": {"type": "int"}}},
+  "aiToolViewImages": "查看图片",
+  "@aiToolViewImages": {"description": "步骤卡片标题：智能体查看图片。"},
+  "aiToolViewedImages": "{count, plural, =0{没有发出图片} other{看了 {count} 张图片}}",
+  "@aiToolViewedImages": {"description": "步骤卡片结果：智能体看了几张图片。", "placeholders": {"count": {"type": "int"}}},
+  "aiToolWithImages": "附 {count} 张图片",
+  "@aiToolWithImages": {"description": "确认卡片的一行：新建 / 追加的日记带着对话里的图片。", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "最多输出（token）",
   "@aiModelMaxOutput": {
     "description": "模型最多输出输入框。"
@@ -17945,6 +17967,16 @@
   "@aiChatInputHint": {
     "description": "对话输入框的提示。"
   },
+  "aiChatAttachImages": "添加图片",
+  "@aiChatAttachImages": {"description": "对话输入栏里附加图片按钮的提示。"},
+  "aiChatImagesTruncated": "一条消息最多 {max} 张图片，多选的没有加上",
+  "@aiChatImagesTruncated": {"description": "多选的图片超过一条消息的上限时，在附图下方提示。", "placeholders": {"max": {"type": "int"}}},
+  "aiChatImagesNoVision": "当前模型看不到图片内容（或图片理解已关闭），但 AI 仍可以把图片加进日记",
+  "@aiChatImagesNoVision": {"description": "当前模型收不到图片时，在附图下方提示。"},
+  "aiChatImagesSummary": "[{count} 张图片]",
+  "@aiChatImagesSummary": {"description": "没有文字、只有图片的消息的代称（标题、导出）。", "placeholders": {"count": {"type": "int"}}},
+  "aiChatImagesRemoved": "{count} 张图片已删除",
+  "@aiChatImagesRemoved": {"description": "附图已在存储管理里删除的消息下方的说明。", "placeholders": {"count": {"type": "int"}}},
   "aiChatPlanning": "正在理解问题…",
   "@aiChatPlanning": {
     "description": "生成检索计划时的提示。"
@@ -18786,8 +18818,12 @@
   "@storageMgmtDeleteFromComments": {"description": "删除确认：受影响的留言条数。", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteFromDrafts": "{count} 份草稿",
   "@storageMgmtDeleteFromDrafts": {"description": "删除确认：受影响的草稿数。", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtDeleteFromAiChats": "{count} 条 AI 对话消息",
+  "@storageMgmtDeleteFromAiChats": {"description": "删除确认：受影响的 AI 对话消息（用户附带的图片）。", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteCommentNote": "删除后既没有文字也没有图片的留言会一并删除。",
   "@storageMgmtDeleteCommentNote": {"description": "删除确认：留言的说明。"},
+  "storageMgmtDeleteAiChatNote": "AI 对话里这些图片会显示为已删除，消息本身保留。",
+  "@storageMgmtDeleteAiChatNote": {"description": "删除确认：AI 对话附图的说明。"},
   "storageMgmtDeleteCapsuleNote": "其中包含尚未解封的时间胶囊里的内容。",
   "@storageMgmtDeleteCapsuleNote": {"description": "删除确认：未解封胶囊的说明。"},
   "storageMgmtDeleteIrreversible": "删除后无法恢复。",
@@ -18902,6 +18938,8 @@
   "@storageMgmtUntitledDraft": {"description": "没有标题的草稿。"},
   "storageMgmtRefComment": "留言 · {title}",
   "@storageMgmtRefComment": {"description": "用在某篇日记的留言里。", "placeholders": {"title": {"type": "String"}}},
+  "storageMgmtRefAiChat": "AI 对话 · {title}",
+  "@storageMgmtRefAiChat": {"description": "用在某段 AI 对话里用户附带的图片。", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefDiaryCover": "封面 · {title}",
   "@storageMgmtRefDiaryCover": {"description": "用作某篇日记的封面。", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefNotebookCover": "日记本封面 · {name}",
@@ -19445,7 +19483,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} arg_images{图片} arg_attachments{对话里的图片} other{}}",
   "@aiToolArgName": {
     "description": "工具详情里参数的名称（arg_参数名）；空串表示没有译名，界面显示参数名。",
     "placeholders": {

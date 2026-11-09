@@ -76,6 +76,11 @@ class AiMessages extends Table {
   /// `AiAgentStepRecord`）；普通回答为 `[]`。v20 加入。
   TextColumn get steps => text().withDefault(const Constant('[]'))();
 
+  /// 用户这条消息附带的图片（v22）：没有图片为 NULL，有时为托管图片
+  /// （`diary_images/…`）绝对路径的 JSON 数组，按发送顺序；被存储管理删掉的
+  /// 位置留空串，后面的图片编号不变。编解码见 `ai_message_images.dart`。
+  TextColumn get images => text().nullable()();
+
   DateTimeColumn get createdAt => dateTime().named('created_at')();
 }
 

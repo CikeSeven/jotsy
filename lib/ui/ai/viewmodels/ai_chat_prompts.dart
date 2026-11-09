@@ -21,6 +21,8 @@ import 'ai_prompt_builder.dart';
 const int kAiChatHistory = 12;
 
 /// 一轮对话的请求。[history] 为之前的消息（旧 → 新，不含这一轮的问题）。
+/// [attachments] 是这条问题的附图（加载好的图片或占位），放在问题文字之前；
+/// 检索问答不回放以前的图片。
 AiRequest aiChatRequest(
   AiPromptKit kit, {
   required List<AiMessageRow> history,
@@ -28,6 +30,7 @@ AiRequest aiChatRequest(
   required List<AiBudgetedDiary> diaries,
   required DateTime today,
   required AiPersonaInfo persona,
+  List<AiPart> attachments = const <AiPart>[],
 }) {
   final l10n = kit.l10n;
   final messages = <AiMessage>[];
@@ -79,6 +82,10 @@ AiRequest aiChatRequest(
     '${l10n.aiPromptChatToday(kit.date(today))}\n\n$context\n\n---\n\n'
     '${question.trim()}',
   );
+  if (attachments.isNotEmpty) {
+    final last = messages.removeLast();
+    messages.add(AiMessage(last.role, <AiPart>[...attachments, ...last.parts]));
+  }
   return AiRequest(
     model: '',
     system: kit.system(
@@ -88,5 +95,6 @@ AiRequest aiChatRequest(
     ),
     temperature: kit.temperature(AiTaskKind.chat),
     messages: messages,
+    imageOmittedText: l10n.aiPromptImagesRejected,
   );
 }

@@ -33,7 +33,7 @@ The "Free up space" group:
 ## Delete and compress
 1. Filter the media list at the top (All / Images / Videos / Recordings / Attachments / Covers, plus Large files, Compressible and Trash only). Sort by Largest first, Newest first or Oldest first; images and videos can also be shown as a grid.
 2. Tap an item for details, including where it is used; long-press to multi-select. A file marked "Can't delete" is still referenced by other diary data (its details show "Referenced by other data"), so it can't be deleted or compressed here and is skipped in multi-select.
-3. **Delete**: the file is first removed from the entries, notebook covers, comments and drafts that use it, then deleted. The confirmation says what is affected and how much is freed. It can't be undone, and comments left with no text or images are deleted too.
+3. **Delete**: the file is first removed from the entries, notebook covers, comments, drafts and AI chats that use it, then deleted. The confirmation says what is affected and how much is freed. It can't be undone; comments left with no text or images are deleted too, and in AI chats the photo shows as deleted while the message stays.
 4. **Compress** (Android only): choose High quality, Balanced or Save space for photos and for videos. Compressed files replace the originals and can't be restored; photos keep their capture time and location. Files that are already small, animated images and images with transparency are skipped, and files that don't get noticeably smaller keep their original.
 
 ## Notes

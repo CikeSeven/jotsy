@@ -20,6 +20,7 @@ import 'todo_recurrence.dart';
 import 'todo_rules.dart';
 import '../services/app_data_directory.dart';
 
+export 'ai_message_images.dart';
 export 'diary_comment_images.dart';
 export 'diary_list_scope.dart';
 export 'diary_search_terms.dart';
@@ -141,7 +142,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -204,6 +205,11 @@ class AppDatabase extends _$AppDatabase
       // 之前；必须在 v17 分支之后（理由同 v20）。
       if (from < 21) {
         await _migrateAiConversationsAddOptions(m);
+      }
+      // v22 AI 消息加图片列，只动 ai_messages，同样排在 v1 分支之前；必须
+      // 在 v17 分支之后（理由同 v20）。
+      if (from < 22) {
+        await _migrateAiMessagesAddImages(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

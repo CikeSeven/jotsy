@@ -12,7 +12,9 @@
 //   [AiChatScrollController] 管（贴底跟随，用户往上翻就放手）。
 // - 输入栏放在 Scaffold 的 bottomNavigationBar（`KeyboardInsetPadding` 让开
 //   键盘），浮动提示条停在它上方。胶囊依次为范围、人设、模型 · 思考，改动
-//   写进这段对话。
+//   写进这段对话。附图经 [DiaryCommentImagesController]（与写留言同一套：
+//   选了就复制进托管目录，发送前移除或离开页面就删掉文件），发送时交给
+//   控制器写进那条消息；当前模型看不到图片时附图下方说明一句。
 // - 进入：新对话在路由入场结束后聚焦输入框（进来就能打字）；打开已有对话
 //   不聚焦。模型与思考强度每段对话各自记住，新对话沿用最近那段的选择。
 // - “继续聊聊”（[seedReply]）：以那篇日记为固定范围，把那条回应作为对话的
@@ -20,6 +22,7 @@
 
 import 'dart:async';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -27,10 +30,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/ai_provider_config.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/diary_camera_capture_service.dart';
+import '../../../core/services/diary_media_storage_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
+import '../../diaries/controllers/diary_comment_images_controller.dart';
 import '../../widgets/keyboard_visibility.dart';
 import '../../widgets/route_entrance_waiter.dart';
 import '../../widgets/width_layout_builder.dart';
@@ -51,6 +58,7 @@ import '../providers/ai_records_providers.dart';
 import '../sections/ai_chat_message_view.dart';
 import '../sections/chat/ai_answer_actions.dart';
 import '../sections/chat/ai_chat_composer.dart';
+import '../sections/chat/ai_chat_composer_images.dart';
 import '../sections/chat/ai_chat_history_panel.dart';
 import '../sections/chat/ai_chat_model_sheet.dart';
 import '../sections/chat/ai_chat_welcome.dart';
@@ -106,6 +114,12 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
 
   /// 对话行 / 上次的选项读出来之前不让发送，免得用默认值发出去。
   bool _ready = false;
+
+  /// 输入栏里这条消息的附图；发出去之后换一个新的。
+  late DiaryCommentImagesController _images = _newImages();
+
+  /// 上一次选图的结果（截掉、没权限、失败）；正常加上或取消时为 null。
+  DiaryCommentImagePickResult? _pickResult;
 
   @override
   void initState() {
@@ -167,8 +181,21 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     _inputFocus.requestFocus();
   }
 
+  DiaryCommentImagesController _newImages() =>
+      DiaryCommentImagesController(maxImages: kAiMessageMaxImages)
+        ..addListener(_onImagesChanged);
+
+  /// 附图变了：说明行（模型看不到图片）跟着出现或消失。
+  void _onImagesChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    // 还没发出去的附图随控制器一起删掉（没有任何引用）。
+    _images
+      ..removeListener(_onImagesChanged)
+      ..dispose();
     _entrance.dispose();
     _controller.removeListener(_onControllerChanged);
     _controller.dispose();
@@ -202,13 +229,80 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
 
   // ------------------------------------------------------------ 动作
 
+  /// 发送：[question] 给出时（欢迎页的快捷问题、带着问题打开）只发文字；
+  /// 否则发输入栏里的文字与附图。附图在复制中时不发。
   Future<void> _send([String? question]) async {
     final text = (question ?? _input.text).trim();
-    if (text.isEmpty || _controller.busy || !_ready) return;
-    if (question == null) _input.clear();
+    final images = question == null ? _images.images : const <String>[];
+    if (_controller.busy || !_ready) return;
+    if (text.isEmpty && images.isEmpty) return;
+    if (question == null && _images.isBusy) return;
+    if (question == null) {
+      _input.clear();
+      if (images.isNotEmpty) {
+        // 交给控制器写进消息（写不进去时由它删掉），输入栏换一组新的。
+        _images
+          ..handOff()
+          ..removeListener(_onImagesChanged)
+          ..dispose();
+        setState(() {
+          _images = _newImages();
+          _pickResult = null;
+        });
+      }
+    }
     // 发问就回到底部并重新跟随：随后加入的问题与回答都贴着底部出现。
     _scroll.jumpToBottom();
-    await _controller.send(context, ref, text);
+    await _controller.send(context, ref, text, images: images);
+  }
+
+  /// 选图（[camera] 时拍照）；结果有话要说时显示在附图下方。
+  Future<void> _pickImages({bool camera = false}) async {
+    final result = await _images.pick(source: camera ? _capturePhoto : null);
+    if (!mounted) return;
+    setState(() {
+      _pickResult = switch (result) {
+        DiaryCommentImagePickResult.added ||
+        DiaryCommentImagePickResult.cancelled ||
+        DiaryCommentImagePickResult.busy => null,
+        _ => result,
+      };
+    });
+  }
+
+  static Future<List<PlatformFile>?> _capturePhoto() =>
+      DiaryCameraCaptureService.capture(DiaryMediaKind.image);
+
+  /// 附图下方的说明：选图的结果优先，其次是“模型看不到图片”。
+  Widget? _composerNote(BuildContext context, {required bool canSeeImages}) {
+    final l10n = context.l10n;
+    final result = _pickResult;
+    if (result != null) {
+      final (String text, bool error) = switch (result) {
+        DiaryCommentImagePickResult.truncated => (
+          l10n.aiChatImagesTruncated(kAiMessageMaxImages),
+          false,
+        ),
+        DiaryCommentImagePickResult.permissionDenied => (
+          l10n.diaryCommentImagePermissionDenied,
+          true,
+        ),
+        DiaryCommentImagePickResult.cameraPermissionDenied => (
+          l10n.diaryMediaCameraPermissionDenied,
+          true,
+        ),
+        DiaryCommentImagePickResult.cameraUnavailable => (
+          l10n.diaryMediaCameraUnavailable,
+          true,
+        ),
+        _ => (l10n.diaryCommentImageAddFailed, true),
+      };
+      return AiComposerNote(text: text, error: error);
+    }
+    if (!canSeeImages && _images.images.isNotEmpty) {
+      return AiComposerNote(text: l10n.aiChatImagesNoVision);
+    }
+    return null;
   }
 
   void _closeDrawer() {
@@ -592,6 +686,13 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final model =
         config.resolveRef(options.model) ?? config.resolveTask(AiTaskKind.chat);
     final thinking = aiThinkingLevelLabel(l10n, options.thinking);
+    // 这条消息的附图能不能让模型看到：图片理解开着，且模型收图片（服务还没
+    // 读出来时按模型设置）。看不到也照样能发，AI 仍可按编号加进日记。
+    final service = ref.watch(aiServiceProvider).value;
+    final canSeeImages =
+        prefs.isModuleEnabled(AiModule.vision) &&
+        model != null &&
+        (service?.acceptsImages(model) ?? model.model.supportsVision);
     return AiChatComposer(
       controller: _input,
       focusNode: _inputFocus,
@@ -600,6 +701,12 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       enabled: _ready,
       onSend: () => unawaited(_send()),
       onStop: _controller.stop,
+      images: _images,
+      onPickImages: () => unawaited(_pickImages()),
+      onTakePhoto: AppPlatform.supportsCameraCapture
+          ? () => unawaited(_pickImages(camera: true))
+          : null,
+      note: _composerNote(context, canSeeImages: canSeeImages),
       chips: <Widget>[
         AiComposerChip(
           icon: FontAwesomeIcons.magnifyingGlass,

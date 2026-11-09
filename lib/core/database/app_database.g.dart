@@ -5593,6 +5593,15 @@ class $AiMessagesTable extends AiMessages
     requiredDuringInsert: false,
     defaultValue: const Constant('[]'),
   );
+  static const VerificationMeta _imagesMeta = const VerificationMeta('images');
+  @override
+  late final GeneratedColumn<String> images = GeneratedColumn<String>(
+    'images',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -5616,6 +5625,7 @@ class $AiMessagesTable extends AiMessages
     meta,
     status,
     steps,
+    images,
     createdAt,
   ];
   @override
@@ -5696,6 +5706,12 @@ class $AiMessagesTable extends AiMessages
         steps.isAcceptableOrUnknown(data['steps']!, _stepsMeta),
       );
     }
+    if (data.containsKey('images')) {
+      context.handle(
+        _imagesMeta,
+        images.isAcceptableOrUnknown(data['images']!, _imagesMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -5753,6 +5769,10 @@ class $AiMessagesTable extends AiMessages
         DriftSqlType.string,
         data['${effectivePrefix}steps'],
       )!,
+      images: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}images'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -5792,6 +5812,11 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
   /// 智能体回答的工具步骤 JSON 数组（每步的说明文字与调用记录，见
   /// `AiAgentStepRecord`）；普通回答为 `[]`。v20 加入。
   final String steps;
+
+  /// 用户这条消息附带的图片（v22）：没有图片为 NULL，有时为托管图片
+  /// （`diary_images/…`）绝对路径的 JSON 数组，按发送顺序；被存储管理删掉的
+  /// 位置留空串，后面的图片编号不变。编解码见 `ai_message_images.dart`。
+  final String? images;
   final DateTime createdAt;
   const AiMessageRow({
     required this.id,
@@ -5804,6 +5829,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
     required this.meta,
     required this.status,
     required this.steps,
+    this.images,
     required this.createdAt,
   });
   @override
@@ -5819,6 +5845,9 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
     map['meta'] = Variable<String>(meta);
     map['status'] = Variable<String>(status);
     map['steps'] = Variable<String>(steps);
+    if (!nullToAbsent || images != null) {
+      map['images'] = Variable<String>(images);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -5835,6 +5864,9 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
       meta: Value(meta),
       status: Value(status),
       steps: Value(steps),
+      images: images == null && nullToAbsent
+          ? const Value.absent()
+          : Value(images),
       createdAt: Value(createdAt),
     );
   }
@@ -5855,6 +5887,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
       meta: serializer.fromJson<String>(json['meta']),
       status: serializer.fromJson<String>(json['status']),
       steps: serializer.fromJson<String>(json['steps']),
+      images: serializer.fromJson<String?>(json['images']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -5872,6 +5905,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
       'meta': serializer.toJson<String>(meta),
       'status': serializer.toJson<String>(status),
       'steps': serializer.toJson<String>(steps),
+      'images': serializer.toJson<String?>(images),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -5887,6 +5921,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
     String? meta,
     String? status,
     String? steps,
+    Value<String?> images = const Value.absent(),
     DateTime? createdAt,
   }) => AiMessageRow(
     id: id ?? this.id,
@@ -5899,6 +5934,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
     meta: meta ?? this.meta,
     status: status ?? this.status,
     steps: steps ?? this.steps,
+    images: images.present ? images.value : this.images,
     createdAt: createdAt ?? this.createdAt,
   );
   AiMessageRow copyWithCompanion(AiMessagesCompanion data) {
@@ -5915,6 +5951,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
       meta: data.meta.present ? data.meta.value : this.meta,
       status: data.status.present ? data.status.value : this.status,
       steps: data.steps.present ? data.steps.value : this.steps,
+      images: data.images.present ? data.images.value : this.images,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -5932,6 +5969,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
           ..write('meta: $meta, ')
           ..write('status: $status, ')
           ..write('steps: $steps, ')
+          ..write('images: $images, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -5949,6 +5987,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
     meta,
     status,
     steps,
+    images,
     createdAt,
   );
   @override
@@ -5965,6 +6004,7 @@ class AiMessageRow extends DataClass implements Insertable<AiMessageRow> {
           other.meta == this.meta &&
           other.status == this.status &&
           other.steps == this.steps &&
+          other.images == this.images &&
           other.createdAt == this.createdAt);
 }
 
@@ -5979,6 +6019,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
   final Value<String> meta;
   final Value<String> status;
   final Value<String> steps;
+  final Value<String?> images;
   final Value<DateTime> createdAt;
   const AiMessagesCompanion({
     this.id = const Value.absent(),
@@ -5991,6 +6032,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
     this.meta = const Value.absent(),
     this.status = const Value.absent(),
     this.steps = const Value.absent(),
+    this.images = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   AiMessagesCompanion.insert({
@@ -6004,6 +6046,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
     this.meta = const Value.absent(),
     this.status = const Value.absent(),
     this.steps = const Value.absent(),
+    this.images = const Value.absent(),
     required DateTime createdAt,
   }) : messageId = Value(messageId),
        conversationId = Value(conversationId),
@@ -6020,6 +6063,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
     Expression<String>? meta,
     Expression<String>? status,
     Expression<String>? steps,
+    Expression<String>? images,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -6033,6 +6077,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
       if (meta != null) 'meta': meta,
       if (status != null) 'status': status,
       if (steps != null) 'steps': steps,
+      if (images != null) 'images': images,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -6048,6 +6093,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
     Value<String>? meta,
     Value<String>? status,
     Value<String>? steps,
+    Value<String?>? images,
     Value<DateTime>? createdAt,
   }) {
     return AiMessagesCompanion(
@@ -6061,6 +6107,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
       meta: meta ?? this.meta,
       status: status ?? this.status,
       steps: steps ?? this.steps,
+      images: images ?? this.images,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -6098,6 +6145,9 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
     if (steps.present) {
       map['steps'] = Variable<String>(steps.value);
     }
+    if (images.present) {
+      map['images'] = Variable<String>(images.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -6117,6 +6167,7 @@ class AiMessagesCompanion extends UpdateCompanion<AiMessageRow> {
           ..write('meta: $meta, ')
           ..write('status: $status, ')
           ..write('steps: $steps, ')
+          ..write('images: $images, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -11771,6 +11822,7 @@ typedef $$AiMessagesTableCreateCompanionBuilder =
       Value<String> meta,
       Value<String> status,
       Value<String> steps,
+      Value<String?> images,
       required DateTime createdAt,
     });
 typedef $$AiMessagesTableUpdateCompanionBuilder =
@@ -11785,6 +11837,7 @@ typedef $$AiMessagesTableUpdateCompanionBuilder =
       Value<String> meta,
       Value<String> status,
       Value<String> steps,
+      Value<String?> images,
       Value<DateTime> createdAt,
     });
 
@@ -11844,6 +11897,11 @@ class $$AiMessagesTableFilterComposer
 
   ColumnFilters<String> get steps => $composableBuilder(
     column: $table.steps,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get images => $composableBuilder(
+    column: $table.images,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11912,6 +11970,11 @@ class $$AiMessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get images => $composableBuilder(
+    column: $table.images,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -11959,6 +12022,9 @@ class $$AiMessagesTableAnnotationComposer
   GeneratedColumn<String> get steps =>
       $composableBuilder(column: $table.steps, builder: (column) => column);
 
+  GeneratedColumn<String> get images =>
+      $composableBuilder(column: $table.images, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 }
@@ -12004,6 +12070,7 @@ class $$AiMessagesTableTableManager
                 Value<String> meta = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String> steps = const Value.absent(),
+                Value<String?> images = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => AiMessagesCompanion(
                 id: id,
@@ -12016,6 +12083,7 @@ class $$AiMessagesTableTableManager
                 meta: meta,
                 status: status,
                 steps: steps,
+                images: images,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -12030,6 +12098,7 @@ class $$AiMessagesTableTableManager
                 Value<String> meta = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String> steps = const Value.absent(),
+                Value<String?> images = const Value.absent(),
                 required DateTime createdAt,
               }) => AiMessagesCompanion.insert(
                 id: id,
@@ -12042,6 +12111,7 @@ class $$AiMessagesTableTableManager
                 meta: meta,
                 status: status,
                 steps: steps,
+                images: images,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0

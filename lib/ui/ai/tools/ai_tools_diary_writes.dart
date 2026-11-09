@@ -18,9 +18,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../diaries/controllers/publish_new_diary_directly.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/publish_metadata_composer.dart';
-import '../controllers/ai_save_as_diary_flow.dart';
 import '../models/ai_tool_subject.dart';
 import 'ai_tool.dart';
+import 'ai_tool_diary_images.dart';
 import 'ai_tool_writes.dart';
 
 String _firstLine(String text, [int max = 40]) {
@@ -64,13 +64,23 @@ class CreateDiaryTool extends AiTool {
       'dated now; a date alone keeps the current time of day; future dates '
       'fall back to now. Tags that do not exist are created. `mood` must be '
       'one of the mood options from get_app_context. Only manual, '
-      'non-private notebooks can be chosen.';
+      'non-private notebooks can be chosen. To add photos the user sent in '
+      'this chat, list their references (P1…) in `images` (added after the '
+      'body) or put ![](P1) in the body where a photo belongs.';
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
     properties: <String, AiSchema>{
       'title': AiStringSchema(maxLength: 200, allowEmpty: true),
-      'body': AiStringSchema(description: 'Markdown body.'),
+      'body': AiStringSchema(
+        description: 'Markdown body; may be empty when `images` is given.',
+        allowEmpty: true,
+      ),
+      'images': AiArraySchema(
+        items: AiStringSchema(),
+        maxItems: 20,
+        description: 'Photo references like P1 from this chat.',
+      ),
       'date': AiDateSchema(),
       'time': AiTimeSchema(),
       'tags': AiArraySchema(items: AiStringSchema(maxLength: 40), maxItems: 20),
@@ -98,6 +108,8 @@ class CreateDiaryTool extends AiTool {
     title: label(context.l10n, args),
     lines: [
       _firstLine(args['body']! as String, 80),
+      if (args['images'] case final List images when images.isNotEmpty)
+        context.l10n.aiToolWithImages(images.length),
       if (args['date'] case final DateTime date) aiToolDate(date),
       if (args['tags'] case final List tags when tags.isNotEmpty)
         tags.map((tag) => '#$tag').join(' '),
@@ -111,6 +123,15 @@ class CreateDiaryTool extends AiTool {
   ) async {
     final database = context.database;
     final features = context.env.features;
+    // 正文与图片先转好：图片编号有一个不对就整次不写（下面任何写入之前）。
+    final body = aiDiaryBodyWithImages(
+      args['body']! as String,
+      images: (args['images'] as List?)?.cast<String>() ?? const <String>[],
+      chatImages: context.chatImages,
+    );
+    if (body.children.isEmpty) {
+      throw const AiToolFailure('`body` is empty and no `images` were given.');
+    }
     final mood = await _checkedMood(context, args['mood']);
     final notebookId = args['notebook_id'] as String?;
     if (notebookId != null) {
@@ -137,7 +158,9 @@ class CreateDiaryTool extends AiTool {
         : minute == null
         ? date
         : DateTime(date.year, date.month, date.day, minute ~/ 60, minute % 60);
-    final document = aiMarkdownDiaryDocument(args['body']! as String);
+    final document = <String, Object?>{
+      'document': <String, Object?>{'type': 'page', 'children': body.children},
+    };
     final id = await publishNewDiaryDirectly(
       database: database,
       draft: NewDiaryDraft(
@@ -216,7 +239,9 @@ class AppendToDiaryTool extends AiTool {
   @override
   String get description =>
       'Add Markdown text to the end of an existing entry (by id). The rest '
-      'of the entry is left as it is.';
+      'of the entry is left as it is. To add photos the user sent in this '
+      'chat, list their references (P1…) in `images` (added after the text) '
+      'or put ![](P1) in the text where a photo belongs.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'id'};
@@ -225,7 +250,15 @@ class AppendToDiaryTool extends AiTool {
   AiObjectSchema get schema => const AiObjectSchema(
     properties: <String, AiSchema>{
       'id': AiStringSchema(),
-      'text': AiStringSchema(description: 'Markdown to append.'),
+      'text': AiStringSchema(
+        description: 'Markdown to append; may be empty when `images` is given.',
+        allowEmpty: true,
+      ),
+      'images': AiArraySchema(
+        items: AiStringSchema(),
+        maxItems: 20,
+        description: 'Photo references like P1 from this chat.',
+      ),
     },
     required: <String>['id', 'text'],
   );
@@ -241,12 +274,16 @@ class AppendToDiaryTool extends AiTool {
   ) async {
     final found = await aiWritableDiary(context, args['id']! as String);
     final diary = found.diary;
+    final added = aiDiaryBodyWithImages(
+      args['text']! as String,
+      images: (args['images'] as List?)?.cast<String>() ?? const <String>[],
+      chatImages: context.chatImages,
+    ).children;
+    if (added.isEmpty) {
+      throw const AiToolFailure('`text` is empty and no `images` were given.');
+    }
     final document = decodeStoredDiaryBlocks(diary.content);
     final page = (document['document']! as Map).cast<String, Object?>();
-    final added =
-        (aiMarkdownDiaryDocument(args['text']! as String)['document']!
-                as Map)['children']!
-            as List;
     final next = <String, Object?>{
       ...document,
       'document': <String, Object?>{

@@ -10,6 +10,7 @@ import '../../calendar/viewmodels/calendar_holiday_day.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
 import '../models/ai_tool_subject.dart';
 import 'ai_tool.dart';
+import 'ai_tools_images.dart';
 import 'ai_tool_todo_parts.dart';
 import 'ai_tools_diaries.dart';
 
@@ -29,8 +30,8 @@ class GetCalendarDayTool extends AiTool {
   @override
   String get description =>
       'Everything on one day: lunar date, public holiday, the day mood, '
-      'entries written that day (titles only), to-dos due and anniversaries '
-      'falling on it.';
+      'entries written that day (titles and how many photos, no text), '
+      'to-dos due and anniversaries falling on it.';
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -66,6 +67,9 @@ class GetCalendarDayTool extends AiTool {
       excludedTagNames: privacy.excludedTagNames,
       now: context.now,
     );
+    final photos = await aiDiaryPhotoCounts(context, [
+      for (final diary in diaries) diary.diaryId,
+    ]);
     final key = formatAnniversaryDate(day);
     final moods = await database.watchDayMoods().first;
     final mood = moods.where((row) => row.day == key).firstOrNull;
@@ -100,8 +104,14 @@ class GetCalendarDayTool extends AiTool {
           },
         if (privacy.sendMood && mood != null) 'day_mood': mood.mood,
         'diaries': [
-          for (final diary in diaries) aiDiaryToolHeader(context, diary),
+          for (final diary in diaries)
+            aiDiaryToolHeader(
+              context,
+              diary,
+              photos: photos[diary.diaryId] ?? 0,
+            ),
         ],
+        if (photos.isNotEmpty) 'photos_hint': aiPhotosHint(context),
         if (features.todos)
           'todos_due': [for (final todo in todos) aiTodoItem(todo, null)],
         if (features.anniversariesEnabled) 'anniversaries': anniversaries,

@@ -134,6 +134,54 @@ void main() {
     expect(find.text(l10n.storageMgmtSelectedCount(1)), findsNothing);
   });
 
+  testWidgets('an image sent in an AI chat says so and is listed on delete', (
+    tester,
+  ) async {
+    final entry = storageEntry(
+      'diary_images/m9/chat.jpg',
+      bytes: 2 * mb,
+      refs: [
+        StorageAiMessageRef(
+          messageLocalId: 7,
+          conversationId: 'c1',
+          conversationTitle: '海边对话',
+          createdAt: DateTime(2026, 11, 9),
+        ),
+      ],
+    );
+    final service = FakeStorageMediaService(
+      StorageUsageReport(
+        categoryBytes: const {StorageCategory.images: 2 * mb},
+        media: [entry],
+        orphanFiles: 0,
+        orphanBytes: 0,
+        clearableOrphanFiles: 0,
+        clearableOrphanBytes: 0,
+        cacheBytes: 0,
+        clearableCacheBytes: 0,
+      ),
+    );
+    await pumpStoragePage(tester, const StorageMediaPage(), service: service);
+
+    final label = l10n.storageMgmtRefAiChat('海边对话');
+    await tester.tap(find.text(label).first);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.storageMgmtUsedIn(1)), findsOneWidget);
+    expect(find.text(label), findsWidgets);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text(label).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('· ${l10n.storageMgmtDeleteFromAiChats(1)}'),
+      findsOneWidget,
+    );
+    expect(find.text(l10n.storageMgmtDeleteAiChatNote), findsOneWidget);
+  });
+
   testWidgets('compress is offered only where the platform can compress', (
     tester,
   ) async {

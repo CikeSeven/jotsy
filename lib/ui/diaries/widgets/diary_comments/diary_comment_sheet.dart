@@ -180,6 +180,9 @@ class _DiaryCommentSheetState extends State<DiaryCommentSheet> {
       () => _pickNotice = switch (result) {
         DiaryCommentImagePickResult.truncated ||
         DiaryCommentImagePickResult.permissionDenied ||
+        // 留言只从相册 / 文件选图，拍照的两种结果不会出现，按失败提示。
+        DiaryCommentImagePickResult.cameraPermissionDenied ||
+        DiaryCommentImagePickResult.cameraUnavailable ||
         DiaryCommentImagePickResult.failed => result,
         DiaryCommentImagePickResult.added ||
         DiaryCommentImagePickResult.cancelled ||

@@ -350,7 +350,8 @@ void main() {
     );
     await settleMany(h);
 
-    expect(find.text(h.l10n.aiConfirmSendAgent), findsOneWidget);
+    // 假模型能看图：确认面板说明 AI 还会按需看日记里的图片。
+    expect(find.text(h.l10n.aiConfirmSendAgentImages), findsOneWidget);
     expect(requests, isEmpty);
     final send = find
         .widgetWithText(FilledButton, h.l10n.aiConfirmSendAction)

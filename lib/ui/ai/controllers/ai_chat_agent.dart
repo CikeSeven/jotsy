@@ -5,10 +5,13 @@ part of 'ai_chat_controller.dart';
 //    一次）——工具可能连续读好几次日记，不按工具结果逐次弹；
 // 2. 固定了一篇日记时把它放进上下文（私密日记只在用户允许时），时间范围
 //    写成一句提示；其余的日记都由模型调工具按需去查；
-// 3. 运行 `AiAgentLoop`，每一步经 `AiAgentTurn` 落库与显示；
-// 4. 模型第一步就回 400 且被记为不支持工具（还没有任何输出）时，删掉占位
+// 3. 图片：这一轮能不能发图（图片理解开着、模型收图）在开始时定下；确认
+//    之后才读图片——历史里的图片与这条问题的附图按原样重发，超出请求上限
+//    时较早的换成占位（`resolveAiImageSlots`）；
+// 4. 运行 `AiAgentLoop`，每一步经 `AiAgentTurn` 落库与显示；
+// 5. 模型第一步就回 400 且被记为不支持工具（还没有任何输出）时，删掉占位
 //    消息、返回 false，由调用方改走检索问答；
-// 5. 第一轮结束后起标题。
+// 6. 第一轮结束后起标题。
 
 extension _AiChatAgent on AiChatController {
   /// 返回 false 表示要改走检索问答。
@@ -22,14 +25,18 @@ extension _AiChatAgent on AiChatController {
     List<AiMessageRow> history,
     String text, {
     required String? questionId,
+    required List<AiChatImage> attached,
     required AiResolvedModel model,
     required bool Function() current,
   }) async {
     final container = ProviderScope.containerOf(context, listen: false);
     final l10n = context.l10n;
+    final vision =
+        prefs.isModuleEnabled(AiModule.vision) && service.acceptsImages(model);
     final env = AiToolEnv(
       features: ref.read(appFeaturesProvider),
       prefs: prefs,
+      vision: vision,
     );
     final tools = aiAvailableTools(env);
     // 使用指南（提示词语言的那一份）：目录放进系统提示词，正文由
@@ -42,12 +49,14 @@ extension _AiChatAgent on AiChatController {
     } catch (_) {
       // 资源缺失或损坏：没有指南也能对话。
     }
-    // 以前各轮原样回放；引用编号接着以前的编。
-    final replay = aiAgentHistory(
+    // 以前各轮原样回放；引用编号接着以前的编。这里先不带图片（只用来看
+    // 窗口里带过哪篇固定日记），确认之后再读图片、组装真正的历史。
+    final historyBudget = aiAgentHistoryBudget(model.model);
+    final textReplay = aiAgentHistory(
       history,
       l10n: kit.l10n,
       target: model,
-      budget: aiAgentHistoryBudget(model.model),
+      budget: historyBudget,
     );
     final citations = AiCitationBook(aiAgentCitationsOf(history));
     final allowance = AiWordAllowance(prefs.privacy.contextBudget);
@@ -58,7 +67,7 @@ extension _AiChatAgent on AiChatController {
     var fixedWords = 0;
     switch (scope.kind) {
       case AiChatScopeKind.diary:
-        final diary = replay.scopeDiaries.contains(scope.diaryId)
+        final diary = textReplay.scopeDiaries.contains(scope.diaryId)
             ? null
             : await database.getAiDiary(scope.diaryId!);
         final allowed =
@@ -102,7 +111,9 @@ extension _AiChatAgent on AiChatController {
       summary: AiSendSummary(
         words: fixedWords + TextStats.countWords(text),
         entries: fixedDiary == null ? 0 : 1,
+        images: vision ? attached.where((image) => !image.removed).length : 0,
         agent: true,
+        agentImages: vision,
       ),
     );
     if (!current()) return true;
@@ -110,6 +121,43 @@ extension _AiChatAgent on AiChatController {
       _set(AiChatPhase.idle);
       return true;
     }
+    // 历史里的图片与这条问题的附图：按顺序加载，超出请求上限时较早的
+    // 换成占位。窗口与上面同一个（同样的记录、同样的预算）。
+    final questionSlots = aiQuestionImageSlots(attached);
+    final images = await resolveAiImageSlots(
+      [
+        ...aiAgentHistoryImageSlots(
+          history,
+          l10n: kit.l10n,
+          target: model,
+          budget: historyBudget,
+        ),
+        ...questionSlots,
+      ],
+      vision: vision,
+      maxSide: prefs.visionMaxSide,
+      l10n: kit.l10n,
+      // 来自日记的旧图片：那篇现在还能不能给 AI 看（与 read_diaries 同口径）。
+      diaryAllowed: (diaryId) async =>
+          (await aiAgentReadDiary(
+            container,
+            prefs: prefs,
+            id: diaryId,
+          )).diary !=
+          null,
+    );
+    if (!current()) return true;
+    if (!context.mounted) {
+      _set(AiChatPhase.idle);
+      return true;
+    }
+    final replay = aiAgentHistory(
+      history,
+      l10n: kit.l10n,
+      target: model,
+      budget: historyBudget,
+      images: images.parts,
+    );
 
     final token = _agentToken = HttpCancelToken();
     final turn = AiAgentTurn(
@@ -128,6 +176,8 @@ extension _AiChatAgent on AiChatController {
         token: token,
         ui: _AgentToolUi(context, ref),
         guide: guide,
+        chatImages: [...aiChatImages(history), ...attached],
+        imageBudget: images.budget,
       ),
     );
     _agentTurn = turn;
@@ -139,20 +189,23 @@ extension _AiChatAgent on AiChatController {
       personaId,
       use: AiPersonaUse.chat,
     );
+    final imageRefs = [for (final image in attached) image.ref];
     final prompt = aiAgentPrompt(
       kit,
       question: text,
       now: DateTime.now(),
       scopeLine: scopeLine,
       fixedDiary: fixedDiary,
+      imageRefs: imageRefs,
     );
-    // 问题发出时的全文记在用户消息上，以后各轮原样回放。
+    // 问题发出时的全文记在用户消息上，以后各轮原样回放；附图编号照旧保留。
     if (questionId != null) {
       await database.updateAiMessage(
         questionId,
         metaJson: jsonEncode(<String, Object?>{
           'prompt': prompt,
           if (fixedDiary != null) 'scopeDiary': scope.diaryId,
+          ...aiImageRefsMeta(imageRefs),
         }),
       );
     }
@@ -162,6 +215,7 @@ extension _AiChatAgent on AiChatController {
       prompt: prompt,
       persona: persona,
       tools: tools,
+      attachments: [for (final slot in questionSlots) ?images.parts[slot.key]],
       guideIndex: guide.index,
       cacheKey: id,
     ).withThinking(options.thinking);
@@ -204,7 +258,9 @@ extension _AiChatAgent on AiChatController {
           service,
           kit,
           prefs,
-          text,
+          text.isEmpty && attached.isNotEmpty
+              ? l10n.aiChatImagesSummary(attached.length)
+              : text,
           citations.length,
           current,
         ),

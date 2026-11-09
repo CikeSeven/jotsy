@@ -15,8 +15,9 @@ import 'storage_reference_index.dart';
 ///
 /// 删除：正文里的媒体块整块移除（纯文本镜像随之重算），日记封面清空，日记
 /// 本封面去掉 `cover` 并重置取景（换图或移除封面图时取景重置，与日记本编辑
-/// 页同一口径），留言图片列去掉该项，草稿同正文与封面。替换：只换路径，
-/// 其余数据（显示宽高、小图标记、取景）原样保留：压缩不改变画面比例。
+/// 页同一口径），留言图片列去掉该项，草稿同正文与封面，AI 对话消息的
+/// 图片列把该位置写成墓碑（位置即编号，不能前移）。替换：只换路径，其余数据
+/// （显示宽高、小图标记、取景、图片位置）原样保留：压缩不改变画面比例。
 class StorageEditPlan {
   const StorageEditPlan({
     required this.edits,
@@ -25,6 +26,7 @@ class StorageEditPlan {
     required this.comments,
     required this.removedComments,
     required this.drafts,
+    this.aiMessages = 0,
   });
 
   final StorageMediaEdits edits;
@@ -37,6 +39,9 @@ class StorageEditPlan {
   /// 删完图片后既没字也没图、要整条删除的留言数（已含在 [comments] 里）。
   final int removedComments;
   final int drafts;
+
+  /// 图片列要改的 AI 对话消息数。
+  final int aiMessages;
 }
 
 /// 删除 [keys] 指向的文件前要做的改写。
@@ -157,18 +162,36 @@ Future<StorageEditPlan> _plan(
     );
   }
 
+  final aiEdits = <StorageAiMessageEdit>[];
+  for (final message in sources.aiMessages) {
+    final images = decodeAiMessageImages(message.images);
+    if (!images.any(hit)) continue;
+    aiEdits.add(
+      StorageAiMessageEdit(
+        id: message.id,
+        expectedImages: message.images,
+        images: encodeAiMessageImages([
+          for (final image in images)
+            hit(image) ? (replaced(image) ?? kAiMessageImageRemoved) : image,
+        ])!,
+      ),
+    );
+  }
+
   return StorageEditPlan(
     edits: StorageMediaEdits(
       diaries: diaryEdits,
       notebooks: notebookEdits,
       comments: commentEdits,
       drafts: draftEdits,
+      aiMessages: aiEdits,
     ),
     diaries: diaryEdits.length,
     notebooks: notebookEdits.length,
     comments: commentEdits.length,
     removedComments: removedComments,
     drafts: draftEdits.length,
+    aiMessages: aiEdits.length,
   );
 }
 

@@ -48,10 +48,18 @@ abstract interface class AiAgentHost {
   /// 一步的输出收齐、准备执行其中的调用之前（宿主据此落库这一步）。
   Future<void> onStepOutput(int step, AiAgentStepOutput output);
 
-  /// 执行一个调用（含参数校验、确认与落库），返回回传给模型的结果。
-  /// 失败也要返回结果（`isError: true`），不要抛出——模型会据此改正或换个
-  /// 做法；只有停止（令牌已取消）时可以抛 cancelled。
-  Future<AiToolResultPart> execute(int step, AiToolCall call);
+  /// 执行一个调用（含参数校验、确认与落库），返回回传给模型的结果与要附在
+  /// 结果之后的图片。失败也要返回结果（`isError: true`），不要抛出——模型
+  /// 会据此改正或换个做法；只有停止（令牌已取消）时可以抛 cancelled。
+  Future<AiToolExecution> execute(int step, AiToolCall call);
+}
+
+/// 一个调用的执行结果：回传的结果与附在后面的图片（“查看图片”）。
+class AiToolExecution {
+  const AiToolExecution(this.result, {this.images = const <AiImagePart>[]});
+
+  final AiToolResultPart result;
+  final List<AiImagePart> images;
 }
 
 enum AiAgentEnd {
@@ -133,10 +141,15 @@ class AiAgentLoop {
       if (last) return finish(AiAgentEnd.stepsExhausted);
 
       await host.onStepOutput(step, output);
+      // 工具结果在前，各调用附的图片按调用顺序接在全部结果之后，同在一条
+      // 用户消息里（各家客户端都能把图片与结果分开发出；回放时也放在这里）。
       final results = <AiPart>[];
+      final images = <AiPart>[];
       for (final call in output.calls) {
         _checkCancelled(token);
-        results.add(await host.execute(step, call));
+        final execution = await host.execute(step, call);
+        results.add(execution.result);
+        images.addAll(execution.images);
       }
       _checkCancelled(token);
       messages
@@ -147,7 +160,7 @@ class AiAgentLoop {
             for (final call in output.calls) AiToolCallPart(call),
           ]),
         )
-        ..add(AiMessage(AiRole.user, results));
+        ..add(AiMessage(AiRole.user, <AiPart>[...results, ...images]));
     }
     // 上面最后一步要么作答、要么以 stepsExhausted 返回，走不到这里。
     throw StateError('unreachable');

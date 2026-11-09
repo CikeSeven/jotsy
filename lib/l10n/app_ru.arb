@@ -15904,7 +15904,7 @@
   "@aiModuleVision": {
     "description": "AI module name."
   },
-  "aiModuleVisionSubtitle": "Фото из записи отправляются вместе с текстом; если модель не принимает изображения — только текст",
+  "aiModuleVisionSubtitle": "Фото из записей и из чата отправляются вместе с текстом; если модель не принимает изображения — только текст",
   "@aiModuleVisionSubtitle": {
     "description": "AI module description."
   },
@@ -17027,6 +17027,8 @@
   "@aiConfirmSendAgent": {
     "description": "Send confirmation sheet: the assistant reads entries as needed."
   },
+  "aiConfirmSendAgentImages": "ИИ будет при необходимости искать и читать записи и их фото (кроме приватных), не спрашивая каждый раз",
+  "@aiConfirmSendAgentImages": {"description": "Send confirmation for the agent when the model can see photos."},
   "aiOptionAgent": "Разрешить ИИ использовать инструменты",
   "@aiOptionAgent": {
     "description": "AI settings: toggle for tool use in chat."
@@ -17072,6 +17074,26 @@
       }
     }
   },
+  "aiPromptAgentImagesAttached": "Фото, приложенные к этому сообщению, по порядку: {refs}. Добавить их в записи можно параметром `images` у create_diary или append_to_diary либо через ![](P1) в тексте.",
+  "@aiPromptAgentImagesAttached": {"description": "Prompt line (agent): the photo references attached to the user's message.", "placeholders": {"refs": {"type": "String"}}},
+  "aiPromptImageNotSent": "[Фото {label} не отправлено: эта модель или настройки не разрешают изображения]",
+  "@aiPromptImageNotSent": {"description": "Prompt placeholder for a photo that is not sent because images are off.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageOmitted": "[Фото {label} не включено в этот запрос, чтобы он не был слишком большим; чтобы снова его увидеть, вызови view_images]",
+  "@aiPromptImageOmitted": {"description": "Prompt placeholder for an older photo left out to keep the request small.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageUnavailable": "[Фото {label} недоступно: файла нет или его больше нельзя показывать ИИ]",
+  "@aiPromptImageUnavailable": {"description": "Prompt placeholder for a photo that cannot be read or shown anymore.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImageRemoved": "[Фото {label} удалено]",
+  "@aiPromptImageRemoved": {"description": "Prompt placeholder for a photo the user deleted from Storage.", "placeholders": {"label": {"type": "String"}}},
+  "aiPromptImagesRejected": "[Фото не отправлено: эта модель не принимает изображения]",
+  "@aiPromptImagesRejected": {"description": "Prompt placeholder used when the service rejects images and they are removed before retrying."},
+  "aiPromptDiaryImage": "[Фото {index}]",
+  "@aiPromptDiaryImage": {"description": "Prompt mark for the n-th photo in an entry's text sent to the AI (view_images uses the same number).", "placeholders": {"index": {"type": "int"}}},
+  "aiToolViewImages": "Посмотреть фото",
+  "@aiToolViewImages": {"description": "Step card title: the agent looks at photos."},
+  "aiToolViewedImages": "{count, plural, =0{Фото не отправлены} one{Просмотрено {count} фото} few{Просмотрено {count} фото} many{Просмотрено {count} фото} other{Просмотрено {count} фото}}",
+  "@aiToolViewedImages": {"description": "Step card result: how many photos the agent looked at.", "placeholders": {"count": {"type": "int"}}},
+  "aiToolWithImages": "{count, plural, one{С {count} фото} few{С {count} фото} many{С {count} фото} other{С {count} фото}}",
+  "@aiToolWithImages": {"description": "Confirmation card line: the new or appended entry text comes with photos from the chat.", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "Максимум токенов в ответе",
   "@aiModelMaxOutput": {
     "description": "Model max output field."
@@ -18512,6 +18534,16 @@
   "@aiChatInputHint": {
     "description": "Hint of the chat input."
   },
+  "aiChatAttachImages": "Добавить фото",
+  "@aiChatAttachImages": {"description": "Tooltip of the chat composer button that attaches photos to the message."},
+  "aiChatImagesTruncated": "К сообщению можно приложить не больше {max} фото; лишние не добавлены",
+  "@aiChatImagesTruncated": {"description": "Shown under the attached photos when more were picked than a message can hold.", "placeholders": {"max": {"type": "int"}}},
+  "aiChatImagesNoVision": "Эта модель не видит фото (или распознавание изображений выключено), но ИИ всё равно может добавить их в записи",
+  "@aiChatImagesNoVision": {"description": "Shown under the attached photos when the chat model cannot receive images."},
+  "aiChatImagesSummary": "{count, plural, one{[{count} фото]} few{[{count} фото]} many{[{count} фото]} other{[{count} фото]}}",
+  "@aiChatImagesSummary": {"description": "Stands for the photos of a message that has no text (title, export).", "placeholders": {"count": {"type": "int"}}},
+  "aiChatImagesRemoved": "{count, plural, one{{count} фото удалено} few{{count} фото удалены} many{{count} фото удалены} other{{count} фото удалено}}",
+  "@aiChatImagesRemoved": {"description": "Under a chat message whose attached photos were deleted from Storage.", "placeholders": {"count": {"type": "int"}}},
   "aiChatPlanning": "Разбираюсь в вопросе…",
   "@aiChatPlanning": {
     "description": "Shown while a search plan is made."
@@ -19353,8 +19385,12 @@
   "@storageMgmtDeleteFromComments": {"description": "Delete confirmation: comments affected.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteFromDrafts": "{count, plural, one{{count} черновика} few{{count} черновиков} many{{count} черновиков} other{{count} черновика}}",
   "@storageMgmtDeleteFromDrafts": {"description": "Delete confirmation: drafts affected.", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtDeleteFromAiChats": "{count, plural, one{{count} сообщения в чатах с ИИ} few{{count} сообщений в чатах с ИИ} many{{count} сообщений в чатах с ИИ} other{{count} сообщения в чатах с ИИ}}",
+  "@storageMgmtDeleteFromAiChats": {"description": "Delete confirmation: AI chat messages whose attached images are affected.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteCommentNote": "Комментарии без текста и изображений тоже будут удалены.",
   "@storageMgmtDeleteCommentNote": {"description": "Delete confirmation: note about comments."},
+  "storageMgmtDeleteAiChatNote": "В чатах с ИИ удалённые изображения будут отмечены как удалённые, сами сообщения останутся.",
+  "@storageMgmtDeleteAiChatNote": {"description": "Delete confirmation: note about images attached in AI chats."},
   "storageMgmtDeleteCapsuleNote": "Среди них есть содержимое ещё не открытых капсул времени.",
   "@storageMgmtDeleteCapsuleNote": {"description": "Delete confirmation: note about sealed capsules."},
   "storageMgmtDeleteIrreversible": "Это действие нельзя отменить.",
@@ -19469,6 +19505,8 @@
   "@storageMgmtUntitledDraft": {"description": "Title of a draft without one."},
   "storageMgmtRefComment": "Комментарий · {title}",
   "@storageMgmtRefComment": {"description": "Used by a comment on the entry titled title.", "placeholders": {"title": {"type": "String"}}},
+  "storageMgmtRefAiChat": "Чат с ИИ · {title}",
+  "@storageMgmtRefAiChat": {"description": "Used as an image attached in the AI chat titled title.", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefDiaryCover": "Обложка · {title}",
   "@storageMgmtRefDiaryCover": {"description": "Used as the cover of the entry titled title.", "placeholders": {"title": {"type": "String"}}},
   "storageMgmtRefNotebookCover": "Обложка блокнота · {name}",
@@ -20012,7 +20050,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} arg_steps{Шаги} arg_reminders{Напоминания} arg_add_steps{Добавить шаги} arg_check_steps{Отметить шаги} arg_uncheck_steps{Снять отметку} arg_remove_steps{Удалить шаги} arg_all_day{Весь день} arg_kind_todoList{Список задач} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} arg_steps{Шаги} arg_reminders{Напоминания} arg_add_steps{Добавить шаги} arg_check_steps{Отметить шаги} arg_uncheck_steps{Снять отметку} arg_remove_steps{Удалить шаги} arg_all_day{Весь день} arg_kind_todoList{Список задач} arg_images{Фото} arg_attachments{Фото из чата} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

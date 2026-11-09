@@ -87,6 +87,10 @@ extension _AiChatRetrieval on AiChatController {
             candidates = await recent(prefs.recentDays);
           case AiRetrievalMode.keyword:
             candidates = await byKeywords(keywords);
+          // 只发了图片、没有文字的问题拿不出关键词：不再多发一次检索计划，
+          // 直接按最近 N 天取日记。
+          case AiRetrievalMode.smart when question.trim().isEmpty:
+            candidates = await recent(prefs.recentDays);
           case AiRetrievalMode.smart:
             if (!context.mounted) return const <AiBudgetedDiary>[];
             final plan = await _plan(

@@ -19,3 +19,13 @@ Future<void> openAiAssistant(BuildContext context, WidgetRef ref) {
     ),
   );
 }
+
+/// 打开一段已有的对话（存储管理里“用在”某段 AI 对话的图片）。调用方负责
+/// 只在 AI 助手开着时提供这个入口。
+Future<void> openAiConversation(BuildContext context, String conversationId) {
+  return Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (_) => AiChatPage(conversationId: conversationId),
+    ),
+  );
+}

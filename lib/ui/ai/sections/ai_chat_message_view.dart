@@ -17,6 +17,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/ai_models.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../diaries/widgets/diary_comments/diary_comment_images.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../controllers/ai_chat_links.dart';
 import '../models/ai_agent_steps.dart';
@@ -61,7 +62,14 @@ class AiChatMessageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.role == AiMessageRole.user) {
-      return AiQuestionBubble(text: message.content, onEdit: onEdit);
+      final images = decodeAiMessageImages(message.images);
+      return AiQuestionBubble(
+        text: message.content,
+        imageGroupId: message.messageId,
+        images: liveAiMessageImages(images),
+        removedImages: images.length - liveAiMessageImages(images).length,
+        onEdit: onEdit,
+      );
     }
     final meta = _AnswerMeta.decode(message.meta);
     final segments = buildAiAnswerSegments(
@@ -100,12 +108,32 @@ class AiChatMessageView extends StatelessWidget {
   }
 }
 
-/// 问题气泡。
+/// 问题气泡：附图（与留言同一种拼贴，点开看图）在上，文字气泡在下，都靠
+/// 右；附图被存储管理删掉时下方注明几张已删除。只有图片时没有文字气泡。
 class AiQuestionBubble extends StatelessWidget {
-  const AiQuestionBubble({super.key, required this.text, this.onEdit});
+  const AiQuestionBubble({
+    super.key,
+    required this.text,
+    this.imageGroupId = '',
+    this.images = const <String>[],
+    this.removedImages = 0,
+    this.onEdit,
+  });
+
+  /// 附图拼贴的共享元素标签按它区分（消息的业务 id）。
+  final String imageGroupId;
 
   final String text;
+
+  /// 还在的附图（托管图片路径）。
+  final List<String> images;
+
+  /// 已被删掉的附图张数。
+  final int removedImages;
   final VoidCallback? onEdit;
+
+  /// 附图拼贴的最大宽度。
+  static const double imagesMaxWidth = 280;
 
   @override
   Widget build(BuildContext context) {
@@ -136,30 +164,57 @@ class AiQuestionBubble extends StatelessWidget {
               ),
             ),
           Flexible(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer,
-                  borderRadius: radius,
-                ),
-                // 长按选字，菜单与回答正文同一套（复制、全选、分享）。
-                child: AppSelectionArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                if (images.isNotEmpty)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: imagesMaxWidth),
+                    child: DiaryCommentImages(
+                      commentId: 'ai-$imageGroupId',
+                      images: images,
                     ),
-                    child: Text(
-                      text,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colors.onPrimaryContainer,
-                        height: 1.5,
+                  ),
+                if (images.isNotEmpty && text.trim().isNotEmpty)
+                  const SizedBox(height: 6),
+                if (text.trim().isNotEmpty)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.primaryContainer,
+                        borderRadius: radius,
+                      ),
+                      // 长按选字，菜单与回答正文同一套（复制、全选、分享）。
+                      child: AppSelectionArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          child: Text(
+                            text,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: colors.onPrimaryContainer,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                if (removedImages > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, right: 4),
+                    child: Text(
+                      l10n.aiChatImagesRemoved(removedImages),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

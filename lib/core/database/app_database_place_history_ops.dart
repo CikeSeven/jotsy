@@ -5,8 +5,16 @@ part of 'app_database.dart';
 ///
 /// 不另建表、不另存设置：地点本来就随日记保存，汇总出来的历史天然随备份、
 /// 局域网同步与删除走，删掉（含进回收站）或改掉最后一篇用到它的日记，它就
-/// 不在列表里。同一地点文案算一个地点，坐标、地址组件与地址层级取最近一篇
-/// （SQLite 的聚合裸列：只有一个 `MAX()` 时，裸列取自 MAX 所在的那一行）。
+/// 不在列表里。同一地点文案算一个地点，篇数与最近使用时间按全部用到它的
+/// 日记算；坐标、地址组件与地址层级取最近一篇**带坐标**的日记，一篇都没有
+/// 时（一直手填）才取最近一篇。
+///
+/// 为什么不直接取最近一篇：最近一篇可能恰好没存坐标（清空后重新手打了同一
+/// 个地名、导入的日记、选用时这个地点还没有坐标），只看它就会把更早定位
+/// 得到的坐标整个丢掉，选用后取不了天气；而这一篇又会成为下次的“最近”，
+/// 坐标从此再也回不来。挑行用窗口函数：先按“有没有合法坐标”再按发表时间
+/// 排，每个地点取第一行。合法坐标与 [DiaryPlaceUsage._fromRow] 同口径（经纬度
+/// 都是数字），坏掉的 geo 不会顶掉更早的好坐标。
 ///
 /// 口径：不含回收站；私密日记经 [_writeDiaryScopeFilter] 排除——在普通日记
 /// 里写字时不该露出私密日记去过哪里，`readsFrom` 因此带上日记本两表；
@@ -21,20 +29,43 @@ mixin _AppDatabasePlaceHistoryOps
   Stream<List<DiaryPlaceUsage>> watchPlaceHistory() {
     final variables = <Variable<Object>>[];
     final sql = StringBuffer('''
-SELECT
-  trim(json_extract(d.metadata, '\$.context.location')) AS label,
-  COUNT(*) AS uses,
-  MAX(d.created_at) AS last_used_at,
-  json_extract(d.metadata, '\$.context.locationPrecision') AS precision,
-  json_extract(d.metadata, '\$.context.geo') AS geo
-FROM diaries d
-WHERE d.is_deleted = 0
-  AND json_valid(d.metadata)
-  AND json_type(d.metadata, '\$.context.location') = 'text'
-  AND trim(json_extract(d.metadata, '\$.context.location')) <> ''
+WITH used AS (
+  SELECT
+    trim(json_extract(d.metadata, '\$.context.location')) AS label,
+    d.created_at AS created_at,
+    json_extract(d.metadata, '\$.context.locationPrecision') AS precision,
+    CASE
+      WHEN json_type(d.metadata, '\$.context.geo.latitude') IN ('integer', 'real')
+        AND json_type(d.metadata, '\$.context.geo.longitude') IN ('integer', 'real')
+      THEN json_extract(d.metadata, '\$.context.geo')
+    END AS geo
+  FROM diaries d
+  WHERE d.is_deleted = 0
+    AND json_valid(d.metadata)
+    AND json_type(d.metadata, '\$.context.location') = 'text'
+    AND trim(json_extract(d.metadata, '\$.context.location')) <> ''
 ''');
     _writeDiaryScopeFilter(sql, variables, DiaryListScope.all);
-    sql.write('GROUP BY label\nORDER BY last_used_at DESC, label ASC\n');
+    sql.write('''
+),
+ranked AS (
+  SELECT
+    label,
+    precision,
+    geo,
+    COUNT(*) OVER (PARTITION BY label) AS uses,
+    MAX(created_at) OVER (PARTITION BY label) AS last_used_at,
+    ROW_NUMBER() OVER (
+      PARTITION BY label
+      ORDER BY geo IS NULL, created_at DESC
+    ) AS pick
+  FROM used
+)
+SELECT label, uses, last_used_at, precision, geo
+FROM ranked
+WHERE pick = 1
+ORDER BY last_used_at DESC, label ASC
+''');
     return customSelect(
       sql.toString(),
       variables: variables,
@@ -56,9 +87,9 @@ WHERE d.is_deleted = 0
 
 /// 一个用过的地点（[AppDatabase.watchPlaceHistory] 的一行）。
 ///
-/// [latitude] / [longitude] / [addressComponent] 来自最近一篇用到它的日记的
-/// `geo`（自动定位时才有）；手填的地点三者都为 null。[precision] 是那篇
-/// 日记保存的地址层级名称（原样字符串，由界面层解析）。
+/// [latitude] / [longitude] / [addressComponent] 来自最近一篇用到它且带坐标
+/// 的日记的 `geo`（自动定位时才有）；从没带过坐标的地点三者都为 null。
+/// [precision] 是同一篇日记保存的地址层级名称（原样字符串，由界面层解析）。
 @immutable
 class DiaryPlaceUsage {
   const DiaryPlaceUsage({

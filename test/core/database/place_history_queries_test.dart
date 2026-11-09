@@ -89,6 +89,63 @@ void main() {
     expect(typed.addressComponent, isNull);
   });
 
+  test(
+    'a newer use without coordinates keeps the older located coordinates',
+    () async {
+      await diary(
+        '杭州 · 西湖区',
+        daysLater: 0,
+        precision: 'district',
+        geo: (
+          lat: 30.25,
+          lng: 120.13,
+          components: <String, Object?>{'city': '杭州市', 'district': '西湖区'},
+        ),
+      );
+      // 之后又手打了同一个地名：这篇没有 geo，层级也不同。
+      await diary('杭州 · 西湖区', daysLater: 3, precision: 'township');
+
+      final places = await db.watchPlaceHistory().first;
+      final place = places.single;
+      expect(place.uses, 2);
+      expect(place.lastUsedAt, day.add(const Duration(days: 3)));
+      expect(place.hasCoordinates, isTrue);
+      expect(place.latitude, 30.25);
+      expect(place.longitude, 120.13);
+      // 层级与坐标取自同一篇，仍能按地址组件重组文案。
+      expect(place.precision, 'district');
+      expect(place.addressComponent, <String, Object?>{
+        'city': '杭州市',
+        'district': '西湖区',
+      });
+    },
+  );
+
+  test('a broken newer geo does not hide older valid coordinates', () async {
+    await diary(
+      '公司',
+      daysLater: 0,
+      geo: (lat: 31.2, lng: 121.5, components: <String, Object?>{}),
+    );
+    await db.createDiary(
+      title: 'broken geo',
+      contentDocJson: '[]',
+      contentText: '',
+      metadataJson: jsonEncode(<String, Object?>{
+        'context': <String, Object?>{
+          'location': '公司',
+          'geo': <String, Object?>{'latitude': 'x', 'longitude': null},
+        },
+      }),
+      createdAtOverride: day.add(const Duration(days: 2)),
+    );
+
+    final place = (await db.watchPlaceHistory().first).single;
+    expect(place.uses, 2);
+    expect(place.latitude, 31.2);
+    expect(place.longitude, 121.5);
+  });
+
   test('deleted and private diaries do not leak their places', () async {
     final locked = await db.createNotebook(
       name: 'secret',

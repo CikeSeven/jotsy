@@ -32,10 +32,10 @@ void main() {
   test('commitWith writes on top of the current draft', () async {
     controller.previewWith((s) => s.copyWith(barHeight: 70));
     await controller.commitWith(
-      (s) => s.copyWith(material: HomeBarMaterial.glass),
+      (s) => s.copyWith(fabPlacement: HomeBarFabPlacement.inline),
     );
     expect(stored().current.barHeight, 70);
-    expect(stored().current.material, HomeBarMaterial.glass);
+    expect(stored().current.fabPlacement, HomeBarFabPlacement.inline);
     expect(controller.style, stored().current);
   });
 
@@ -57,9 +57,10 @@ void main() {
     expect(controller.matchingPreset, HomeBarPreset.frosted);
     expect(stored().behavior.hideOnScroll, isTrue);
 
-    final again = await controller.applyPreset(HomeBarPreset.classic);
+    final again = await controller.applyPreset(HomeBarPreset.glass);
     expect(again, HomeBarPreset.frosted.style);
-    expect(controller.matchingPreset, HomeBarPreset.classic);
+    expect(controller.matchingPreset, HomeBarPreset.glass);
+    expect(controller.style.isDefault, isTrue);
     expect(stored().behavior.hideOnScroll, isTrue);
   });
 }

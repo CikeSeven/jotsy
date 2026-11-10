@@ -11109,15 +11109,6 @@
       }
     }
   },
-  "homeBarStyleCustomName": "{material} — свой вариант",
-  "@homeBarStyleCustomName": {
-    "description": "Navigation bar style settings: display name when the look matches no preset or saved style; material is “Solid” or “Glass”.",
-    "placeholders": {
-      "material": {
-        "type": "String"
-      }
-    }
-  },
   "homeBarStyleTabPresets": "Пресеты",
   "@homeBarStyleTabPresets": {
     "description": "Navigation bar style settings: presets tab."
@@ -11137,14 +11128,6 @@
   "homeBarStyleTabBehavior": "Поведение",
   "@homeBarStyleTabBehavior": {
     "description": "Navigation bar style settings: behavior tab."
-  },
-  "homeBarStylePresetClassic": "Классика",
-  "@homeBarStylePresetClassic": {
-    "description": "Navigation bar style preset: classic (solid) name."
-  },
-  "homeBarStylePresetClassicDesc": "Сплошная нижняя панель, как до редизайна",
-  "@homeBarStylePresetClassicDesc": {
-    "description": "Navigation bar style preset: classic description."
   },
   "homeBarStylePresetGlass": "Стекло",
   "@homeBarStylePresetGlass": {
@@ -11186,17 +11169,9 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
-  "homeBarStyleMaterialSolid": "Сплошной цвет",
-  "@homeBarStyleMaterialSolid": {
-    "description": "Navigation bar style settings: solid material option."
-  },
-  "homeBarStyleMaterialGlass": "Стекло",
-  "@homeBarStyleMaterialGlass": {
-    "description": "Navigation bar style settings: glass material option."
-  },
-  "homeBarStyleGlassFooter": "Со стеклом нижняя панель парит над страницей, а содержимое, прокручиваемое под ней, просвечивает размытым.",
+  "homeBarStyleGlassFooter": "Нижняя панель парит над страницей, а содержимое, прокручиваемое под ней, просвечивает размытым.",
   "@homeBarStyleGlassFooter": {
-    "description": "Navigation bar style settings: material group footer when glass is selected."
+    "description": "Navigation bar style settings: material group footer."
   },
   "homeBarStyleHighContrastNote": "В системе включён высокий контраст, поэтому стекло пока отображается непрозрачным.",
   "@homeBarStyleHighContrastNote": {
@@ -11285,14 +11260,6 @@
   "homeBarStyleShadowSubtitle": "Мягкая тень под плавающей панелью",
   "@homeBarStyleShadowSubtitle": {
     "description": "Navigation bar style settings: subtitle of the shadow switch."
-  },
-  "homeBarStyleFloatingSolidHint": "Плавающая панель используется только со стеклянным материалом.",
-  "@homeBarStyleFloatingSolidHint": {
-    "description": "Navigation bar style settings: floating bar tab hint while the material is solid."
-  },
-  "homeBarStyleSwitchToGlass": "Выбрать стекло",
-  "@homeBarStyleSwitchToGlass": {
-    "description": "Navigation bar style settings: button in the floating bar tab that switches to the glass material."
   },
   "homeBarStyleSizeGroup": "Размер",
   "@homeBarStyleSizeGroup": {
@@ -11389,10 +11356,6 @@
   "homeBarStyleHideOnScrollSubtitle": "Освобождает место при прокрутке вниз и появляется снова при прокрутке вверх или в начале страницы",
   "@homeBarStyleHideOnScrollSubtitle": {
     "description": "Navigation bar style settings: subtitle of the hide-on-scroll switch."
-  },
-  "homeBarStyleHideOnScrollSolidHint": "Скрытие при прокрутке доступно только для стеклянной плавающей панели.",
-  "@homeBarStyleHideOnScrollSolidHint": {
-    "description": "Navigation bar style settings: footer shown instead of the hide-on-scroll switch while the material is solid."
   },
   "homeBarStyleIndicatorFollows": "Индикатор следует за свайпом",
   "@homeBarStyleIndicatorFollows": {

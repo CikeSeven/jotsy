@@ -11,7 +11,7 @@ import '../../widgets/style_editor/style_editor_common.dart';
 import 'home_bar_style_common.dart';
 
 /// “导航项”标签页：文字显示方式与图标文字间距、图标大小、选中指示器与
-/// 色块内边距。实色与玻璃两种材质共用这些选项，因此不随材质显隐。
+/// 色块内边距。
 ///
 /// 间距只在显示文字时有意义、内边距只属于色块，它们作为从属行缩进一级，
 /// 并与所从属的选择器合成分组里的同一项（经 SettingsReveal 显隐）：分组按

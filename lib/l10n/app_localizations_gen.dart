@@ -13998,12 +13998,6 @@ abstract class AppLocalizations {
   /// **'Current: {name}'**
   String homeBarStyleEntrySubtitle(String name);
 
-  /// Navigation bar style settings: display name when the look matches no preset or saved style; material is “Solid” or “Glass”.
-  ///
-  /// In en, this message translates to:
-  /// **'{material} (custom)'**
-  String homeBarStyleCustomName(String material);
-
   /// Navigation bar style settings: presets tab.
   ///
   /// In en, this message translates to:
@@ -14033,18 +14027,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Behavior'**
   String get homeBarStyleTabBehavior;
-
-  /// Navigation bar style preset: classic (solid) name.
-  ///
-  /// In en, this message translates to:
-  /// **'Classic'**
-  String get homeBarStylePresetClassic;
-
-  /// Navigation bar style preset: classic description.
-  ///
-  /// In en, this message translates to:
-  /// **'The solid bottom bar from before the redesign'**
-  String get homeBarStylePresetClassicDesc;
 
   /// Navigation bar style preset: glass name.
   ///
@@ -14106,22 +14088,10 @@ abstract class AppLocalizations {
   /// **'A shorter floating bar with icons only'**
   String get homeBarStylePresetCompactDesc;
 
-  /// Navigation bar style settings: solid material option.
+  /// Navigation bar style settings: material group footer.
   ///
   /// In en, this message translates to:
-  /// **'Solid'**
-  String get homeBarStyleMaterialSolid;
-
-  /// Navigation bar style settings: glass material option.
-  ///
-  /// In en, this message translates to:
-  /// **'Glass'**
-  String get homeBarStyleMaterialGlass;
-
-  /// Navigation bar style settings: material group footer when glass is selected.
-  ///
-  /// In en, this message translates to:
-  /// **'With glass, the bottom bar floats over the page, and content scrolling beneath it shows through blurred.'**
+  /// **'The bottom bar floats over the page, and content scrolling beneath it shows through blurred.'**
   String get homeBarStyleGlassFooter;
 
   /// Navigation bar style settings: note appended to the material footer while system high contrast is on.
@@ -14255,18 +14225,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A soft shadow beneath the floating bar'**
   String get homeBarStyleShadowSubtitle;
-
-  /// Navigation bar style settings: floating bar tab hint while the material is solid.
-  ///
-  /// In en, this message translates to:
-  /// **'The floating bar is only used with the glass material.'**
-  String get homeBarStyleFloatingSolidHint;
-
-  /// Navigation bar style settings: button in the floating bar tab that switches to the glass material.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to glass'**
-  String get homeBarStyleSwitchToGlass;
 
   /// Navigation bar style settings: floating bar size group title.
   ///
@@ -14411,12 +14369,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Makes room while you scroll down, and comes back when you scroll up or reach the top'**
   String get homeBarStyleHideOnScrollSubtitle;
-
-  /// Navigation bar style settings: footer shown instead of the hide-on-scroll switch while the material is solid.
-  ///
-  /// In en, this message translates to:
-  /// **'Hiding on scroll is only available with the floating glass bar.'**
-  String get homeBarStyleHideOnScrollSolidHint;
 
   /// Navigation bar style settings: switch for the indicator following swipes.
   ///

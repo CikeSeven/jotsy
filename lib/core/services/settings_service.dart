@@ -202,7 +202,7 @@ class SettingsService {
   final ValueNotifier<String?> diaryCodeBlockStyleRawNotifier;
 
   /// 首页栏样式设置（单个 JSON 字符串：当前样式 + 已保存的样式 + 栏的行为，
-  /// 底栏与各 Tab 顶栏实色 / 玻璃材质等）；解析与默认值由首页模块
+  /// 悬浮底栏与各 Tab 顶栏的玻璃参数等）；解析与默认值由首页模块
   /// （`HomeBarSettings`）负责，服务层只保存原文。
   final ValueNotifier<String?> homeBarStyleRawNotifier;
 
@@ -735,7 +735,7 @@ class SettingsService {
     );
   }
 
-  /// 保存首页栏样式设置；空值移除该键，回到默认的实色栏与默认行为。
+  /// 保存首页栏样式设置；空值移除该键，回到默认样式与默认行为。
   Future<void> setHomeBarStyleRaw(String? value) async {
     final normalized = value?.trim();
     if (normalized == null || normalized.isEmpty) {

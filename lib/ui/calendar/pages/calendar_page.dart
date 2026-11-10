@@ -206,9 +206,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // 玻璃底栏悬浮在内容之上（首页 Scaffold extendBody）时，这里的底部
-    // padding 是底栏槽位高度：列表照常滚到胶囊下方，末尾多留这一段，最后
-    // 一项才能完整滚到胶囊上方。实色底栏时 Scaffold 已扣掉，为 0。
+    // 底栏悬浮在内容之上（首页 Scaffold extendBody），这里的底部 padding
+    // 是底栏槽位高度：列表照常滚到胶囊下方，末尾多留这一段，最后一项才能
+    // 完整滚到胶囊上方。没有底栏（宽窗口、只剩一个 Tab）时为 0。
     final floatingBarInset = MediaQuery.paddingOf(context).bottom;
     final now = DateTime.now();
     final focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month);

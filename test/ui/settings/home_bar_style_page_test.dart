@@ -10,20 +10,13 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/settings/pages/home_bar_style_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_home_bar_style_tile.dart';
 import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
-import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/home_bar_style_page_harness.dart';
 
-Finder _materialOption(String label) => find.descendant(
-  of: find.byType(ExpressiveButtonGroup<HomeBarMaterial>),
-  matching: find.text(label),
-);
-
 const _glassCustom = HomeBarSettings(
   current: HomeBarStyle(
-    material: HomeBarMaterial.glass,
     tint: HomeBarTint.custom,
     tintColor: 0xFF88AACC,
     // 两条线都打开、底栏描边用自定义色：320dp 检查要覆盖描边分组展开最多的
@@ -53,9 +46,9 @@ void main() {
     ]) {
       expect(find.widgetWithText(Tab, label), findsOneWidget);
     }
-    // 默认是实色：预览里是贴底的实色底栏。
-    expect(find.byType(BottomNav), findsOneWidget);
-    expect(find.byType(HomeFloatingBar), findsNothing);
+    // 预览里是悬浮的玻璃胶囊（底栏只有这一种形态）。
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
     expect(
       tester
           .widget<TextButton>(find.widgetWithText(TextButton, l10n.commonReset))
@@ -65,29 +58,15 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('choosing glass reveals the glass rows, solid hides them', (
+  testWidgets('the material tab shows the glass rows without a selector', (
     tester,
   ) async {
     final (settings, l10n) = await pumpHomeBarStylePage(tester);
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabMaterial);
-    expect(inHomeBarOptions(l10n.homeBarStyleGlassTopBars), findsNothing);
-
-    await tapHomeBarOption(
-      tester,
-      _materialOption(l10n.homeBarStyleMaterialGlass),
-    );
-    expect(
-      storedHomeBarSettings(settings).current.material,
-      HomeBarMaterial.glass,
-    );
-    // 切到玻璃时默认的图标文字间距随之收紧。
-    expect(
-      storedHomeBarSettings(settings).current.labelGap,
-      HomeBarStyle.glassLabelGap,
-    );
+    // 没有“实色 / 玻璃”选择器：玻璃参数直接可调。
     expect(inHomeBarOptions(l10n.homeBarStyleGlassTopBars), findsOneWidget);
     expect(inHomeBarOptions(l10n.homeBarStyleGlassFooter), findsOneWidget);
-    expect(find.byType(HomeFloatingBar), findsOneWidget);
+    expect(inHomeBarOptions(l10n.homeBarStyleTintColor), findsNothing);
 
     // 自定义色调：起始色是当前中性底色（不透明），颜色行随之展开。
     await tapHomeBarOption(
@@ -103,18 +82,17 @@ void main() {
     expect(custom.tintColor! >> 24, 0xFF);
     expect(inHomeBarOptions(l10n.homeBarStyleTintColor), findsOneWidget);
 
+    // 换回中性色调，颜色行收起（颜色保留，再切回来还在）。
     await tapHomeBarOption(
       tester,
-      _materialOption(l10n.homeBarStyleMaterialSolid),
+      find.descendant(
+        of: find.byType(ExpressiveButtonGroup<HomeBarTint>),
+        matching: find.text(l10n.homeBarStyleTintNeutral),
+      ),
     );
-    expect(
-      storedHomeBarSettings(settings).current.material,
-      HomeBarMaterial.solid,
-    );
-    expect(storedHomeBarSettings(settings).current.labelGap, 4);
-    expect(inHomeBarOptions(l10n.homeBarStyleGlassTopBars), findsNothing);
+    expect(storedHomeBarSettings(settings).current.tint, HomeBarTint.neutral);
+    expect(storedHomeBarSettings(settings).current.tintColor, isNotNull);
     expect(inHomeBarOptions(l10n.homeBarStyleTintColor), findsNothing);
-    expect(find.byType(BottomNav), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -123,9 +101,7 @@ void main() {
   ) async {
     final (settings, l10n) = await pumpHomeBarStylePage(
       tester,
-      initial: const HomeBarSettings(
-        current: HomeBarStyle(material: HomeBarMaterial.glass),
-      ),
+      initial: HomeBarSettings.defaults,
     );
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabMaterial);
     await scrollToHomeBarOption(
@@ -197,10 +173,15 @@ void main() {
   testWidgets('spacing sliders follow the label mode and the indicator', (
     tester,
   ) async {
-    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    final (settings, l10n) = await pumpHomeBarStylePage(
+      tester,
+      initial: const HomeBarSettings(
+        current: HomeBarStyle(indicator: HomeBarIndicator.capsule),
+      ),
+    );
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabItems);
     expect(inHomeBarOptions(l10n.homeBarStyleItemsFooter), findsOneWidget);
-    // 默认显示文字、胶囊指示器：有间距滑块，没有内边距滑块。
+    // 显示文字、胶囊指示器：有间距滑块，没有内边距滑块（默认是圆角块）。
     expect(inHomeBarOptions(l10n.homeBarStyleLabelGap), findsOneWidget);
     expect(inHomeBarOptions(l10n.homeBarStyleBlockPadding), findsNothing);
 
@@ -249,31 +230,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the floating tab offers to switch to glass when solid', (
+  testWidgets('the floating tab sizes the bar and places the create button', (
     tester,
   ) async {
     final (settings, l10n) = await pumpHomeBarStylePage(tester);
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabFloating);
-    expect(
-      inHomeBarOptions(l10n.homeBarStyleFloatingSolidHint),
-      findsOneWidget,
-    );
-    expect(inHomeBarOptions(l10n.homeBarStyleSizeGroup), findsNothing);
-
-    await tapHomeBarOption(
-      tester,
-      inHomeBarOptions(l10n.homeBarStyleSwitchToGlass),
-    );
-    expect(
-      storedHomeBarSettings(settings).current.material,
-      HomeBarMaterial.glass,
-    );
-    expect(
-      storedHomeBarSettings(settings).current.labelGap,
-      HomeBarStyle.glassLabelGap,
-    );
-    expect(inHomeBarOptions(l10n.homeBarStyleFloatingSolidHint), findsNothing);
     expect(inHomeBarOptions(l10n.homeBarStyleSizeGroup), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
 
     await tapHomeBarOption(
       tester,
@@ -288,19 +251,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the behavior tab hides hide-on-scroll while solid', (
-    tester,
-  ) async {
+  testWidgets('the behavior tab always offers both switches', (tester) async {
     final (settings, l10n) = await pumpHomeBarStylePage(tester);
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabBehavior);
-    expect(inHomeBarOptions(l10n.homeBarStyleHideOnScroll), findsNothing);
-    expect(
-      find.descendant(
-        of: find.byType(TabBarView),
-        matching: find.textContaining(l10n.homeBarStyleHideOnScrollSolidHint),
-      ),
-      findsOneWidget,
-    );
 
     await tapHomeBarOption(
       tester,
@@ -312,12 +265,6 @@ void main() {
     );
     expect(storedHomeBarSettings(settings).current, HomeBarStyle.defaults);
 
-    await settings.setHomeBarStyleRaw(
-      storedHomeBarSettings(settings)
-          .withCurrent(const HomeBarStyle(material: HomeBarMaterial.glass))
-          .encode(),
-    );
-    await tester.pumpAndSettle();
     await tapHomeBarOption(
       tester,
       find.widgetWithText(SwitchListTile, l10n.homeBarStyleHideOnScroll),
@@ -332,21 +279,25 @@ void main() {
 
   testWidgets('a preset applies with an undo snackbar', (tester) async {
     final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    // 没有“经典”预设了：第一个预设“玻璃”就是默认样式。
+    expect(inHomeBarOptions('经典'), findsNothing);
     await tapHomeBarOption(
       tester,
-      inHomeBarOptions(l10n.homeBarStylePresetGlass),
+      inHomeBarOptions(l10n.homeBarStylePresetFrosted),
     );
-    expect(storedHomeBarSettings(settings).current, HomeBarPreset.glass.style);
-    expect(find.byType(HomeFloatingBar), findsOneWidget);
     expect(
-      find.text(l10n.styleEditorApplied(l10n.homeBarStylePresetGlass)),
+      storedHomeBarSettings(settings).current,
+      HomeBarPreset.frosted.style,
+    );
+    expect(
+      find.text(l10n.styleEditorApplied(l10n.homeBarStylePresetFrosted)),
       findsOneWidget,
     );
 
     await tester.tap(find.text(l10n.commonUndo));
     await tester.pumpAndSettle();
     expect(storedHomeBarSettings(settings).current, HomeBarStyle.defaults);
-    expect(find.byType(BottomNav), findsOneWidget);
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
   });
 
   testWidgets('the appearance entry names the current style and opens it', (
@@ -367,18 +318,14 @@ void main() {
     await tester.pumpAndSettle();
     final l10n = AppLocalizations.of(tester.element(find.byType(Scaffold)));
     expect(
-      find.text(l10n.homeBarStyleEntrySubtitle(l10n.homeBarStylePresetClassic)),
+      find.text(l10n.homeBarStyleEntrySubtitle(l10n.homeBarStylePresetGlass)),
       findsOneWidget,
     );
 
     await settings.setHomeBarStyleRaw(_glassCustom.encode());
     await tester.pump();
     expect(
-      find.text(
-        l10n.homeBarStyleEntrySubtitle(
-          l10n.homeBarStyleCustomName(l10n.homeBarStyleMaterialGlass),
-        ),
-      ),
+      find.text(l10n.homeBarStyleEntrySubtitle(l10n.styleEditorCustom)),
       findsOneWidget,
     );
 
@@ -391,11 +338,14 @@ void main() {
     tester,
   ) async {
     await pumpHomeBarStylePage(tester, size: const Size(1184, 800));
-    final bar = tester.getRect(find.byType(BottomNav));
+    final bar = tester.getRect(find.byType(HomeFloatingBar));
     final pane = tester.getRect(find.byType(VerticalDivider));
-    // 画框最宽 412，在预览栏（分隔线左侧）里水平居中。
-    expect(bar.width, lessThanOrEqualTo(412));
-    expect(bar.width, greaterThan(360));
+    // 画框最宽 412，在预览栏（分隔线左侧）里水平居中；悬浮栏两侧各收进
+    // 默认的侧边距。
+    const inset = 2 * 20.0;
+    expect(HomeBarStyle.defaults.sideMargin * 2, inset);
+    expect(bar.width, lessThanOrEqualTo(412 - inset));
+    expect(bar.width, greaterThan(360 - inset));
     expect(bar.center.dx, moreOrLessEquals(pane.left / 2, epsilon: 1));
     expect(tester.takeException(), isNull);
   });

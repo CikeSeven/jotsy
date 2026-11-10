@@ -40,7 +40,6 @@ HomeBarResolvedStyle _glass({
   HomeBarLineStyle topBarLine = HomeBarLineStyle.topBarDefaults,
 }) => HomeBarResolvedStyle.resolve(
   HomeBarStyle(
-    material: HomeBarMaterial.glass,
     glassTopBars: top,
     border: border,
     topBarHairline: hairline,

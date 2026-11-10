@@ -11050,15 +11050,6 @@
       }
     }
   },
-  "homeBarStyleCustomName": "{material} (custom)",
-  "@homeBarStyleCustomName": {
-    "description": "Navigation bar style settings: display name when the look matches no preset or saved style; material is “Solid” or “Glass”.",
-    "placeholders": {
-      "material": {
-        "type": "String"
-      }
-    }
-  },
   "homeBarStyleTabPresets": "Presets",
   "@homeBarStyleTabPresets": {
     "description": "Navigation bar style settings: presets tab."
@@ -11078,14 +11069,6 @@
   "homeBarStyleTabBehavior": "Behavior",
   "@homeBarStyleTabBehavior": {
     "description": "Navigation bar style settings: behavior tab."
-  },
-  "homeBarStylePresetClassic": "Classic",
-  "@homeBarStylePresetClassic": {
-    "description": "Navigation bar style preset: classic (solid) name."
-  },
-  "homeBarStylePresetClassicDesc": "The solid bottom bar from before the redesign",
-  "@homeBarStylePresetClassicDesc": {
-    "description": "Navigation bar style preset: classic description."
   },
   "homeBarStylePresetGlass": "Glass",
   "@homeBarStylePresetGlass": {
@@ -11127,17 +11110,9 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
-  "homeBarStyleMaterialSolid": "Solid",
-  "@homeBarStyleMaterialSolid": {
-    "description": "Navigation bar style settings: solid material option."
-  },
-  "homeBarStyleMaterialGlass": "Glass",
-  "@homeBarStyleMaterialGlass": {
-    "description": "Navigation bar style settings: glass material option."
-  },
-  "homeBarStyleGlassFooter": "With glass, the bottom bar floats over the page, and content scrolling beneath it shows through blurred.",
+  "homeBarStyleGlassFooter": "The bottom bar floats over the page, and content scrolling beneath it shows through blurred.",
   "@homeBarStyleGlassFooter": {
-    "description": "Navigation bar style settings: material group footer when glass is selected."
+    "description": "Navigation bar style settings: material group footer."
   },
   "homeBarStyleHighContrastNote": "High contrast is on in system settings, so the glass shows as opaque for now.",
   "@homeBarStyleHighContrastNote": {
@@ -11226,14 +11201,6 @@
   "homeBarStyleShadowSubtitle": "A soft shadow beneath the floating bar",
   "@homeBarStyleShadowSubtitle": {
     "description": "Navigation bar style settings: subtitle of the shadow switch."
-  },
-  "homeBarStyleFloatingSolidHint": "The floating bar is only used with the glass material.",
-  "@homeBarStyleFloatingSolidHint": {
-    "description": "Navigation bar style settings: floating bar tab hint while the material is solid."
-  },
-  "homeBarStyleSwitchToGlass": "Switch to glass",
-  "@homeBarStyleSwitchToGlass": {
-    "description": "Navigation bar style settings: button in the floating bar tab that switches to the glass material."
   },
   "homeBarStyleSizeGroup": "Size",
   "@homeBarStyleSizeGroup": {
@@ -11330,10 +11297,6 @@
   "homeBarStyleHideOnScrollSubtitle": "Makes room while you scroll down, and comes back when you scroll up or reach the top",
   "@homeBarStyleHideOnScrollSubtitle": {
     "description": "Navigation bar style settings: subtitle of the hide-on-scroll switch."
-  },
-  "homeBarStyleHideOnScrollSolidHint": "Hiding on scroll is only available with the floating glass bar.",
-  "@homeBarStyleHideOnScrollSolidHint": {
-    "description": "Navigation bar style settings: footer shown instead of the hide-on-scroll switch while the material is solid."
   },
   "homeBarStyleIndicatorFollows": "Indicator follows swipes",
   "@homeBarStyleIndicatorFollows": {

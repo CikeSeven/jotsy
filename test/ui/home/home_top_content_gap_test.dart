@@ -79,14 +79,16 @@ class _GatedLoader {
   void release() => _gate.complete();
 }
 
-final String _glassTopBars = const HomeBarSettings(
-  current: HomeBarStyle(material: HomeBarMaterial.glass),
+/// 顶栏保持实色（底栏仍是悬浮玻璃）：这组测试的基线。默认样式的顶栏是
+/// 玻璃，要测实色顶栏得显式关掉。
+final String _solidTopBars = const HomeBarSettings(
+  current: HomeBarStyle(glassTopBars: false),
 ).encode()!;
 
 Future<void> _pumpHome(
   WidgetTester tester, {
   String? surfaceRaw,
-  String? homeBarRaw,
+  bool glassTopBars = false,
   int diaryCount = 3,
   AppBackgroundImageCache? imageCache,
 }) async {
@@ -97,7 +99,8 @@ Future<void> _pumpHome(
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(<String, Object>{
     'app.settings.app_surface': ?surfaceRaw,
-    'app.settings.home_bar_style': ?homeBarRaw,
+    // 玻璃顶栏即默认样式：不写设置键。
+    'app.settings.home_bar_style': ?(glassTopBars ? null : _solidTopBars),
   });
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -260,7 +263,7 @@ void main() {
     });
 
     testWidgets('with glass top bars and no background', (tester) async {
-      await _pumpHome(tester, homeBarRaw: _glassTopBars);
+      await _pumpHome(tester, glassTopBars: true);
       final gaps = await _measureGaps(tester);
       for (final entry in gaps.entries) {
         expect(

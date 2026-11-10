@@ -71,14 +71,15 @@ class HomeNavBlockBorder extends ShapeBorder {
   int get hashCode => Object.hash(cornerRadius, barHeight);
 }
 
-/// 同一栏各导航项最近一次布局量到的内容尺寸，供跟随滑动时的锚点项推算
-/// 相邻一项的圆角块大小。
+/// 同一栏各导航项最近一次布局量到的内容尺寸与文字显现程度，供指示器滑动
+/// 时的锚点项推算相邻一项的圆角块大小。
 ///
 /// 为什么需要共享：块宽可能由文字宽度决定（长名称、大内边距），而锚点项
-/// 的布局里量不到下一项的文字。各项在自己的布局里写入本项的值，锚点项读
-/// 下一项的值；Row 按序号依次布局，读到的可能是上一帧的值，但跟随滑动时
-/// 每一帧都会重新布局所有项，下一帧即更新，块大小仍连续变化，不会在锚点
-/// 换项时跳变。只是缓存，不触发重新布局；没量到时回退本项自己的值。
+/// 的布局里量不到下一项的文字，也不知道下一项的文字此刻显现了多少（弹簧
+/// 驱动时每项的文字按自己的选中动画显现）。各项在自己的布局里写入本项的
+/// 值，锚点项读下一项的值；Row 按序号依次布局，读到的可能是上一帧的值，
+/// 但指示器滑动时每一帧都会重新布局，下一帧即更新，块大小仍连续变化，不会
+/// 在锚点换项时跳变。只是缓存，不触发重新布局；没量到时回退本项自己的值。
 class HomeNavContentMetrics {
   final Map<int, HomeNavContentSize> _sizes = <int, HomeNavContentSize>{};
 
@@ -88,11 +89,17 @@ class HomeNavContentMetrics {
 }
 
 /// 一项内容在文字完全显现时的尺寸：[width] 为图标框与文字中较宽的一个，
-/// [labelHeight] 为间距 + 文字高度（文字收起时这部分高度随之收起）。
+/// [labelHeight] 为间距 + 文字高度（文字收起时这部分高度随之收起）；
+/// [reveal] 是量到它的那一帧文字实际显现的程度（0 ~ 1）。
 @immutable
 class HomeNavContentSize {
-  const HomeNavContentSize({required this.width, required this.labelHeight});
+  const HomeNavContentSize({
+    required this.width,
+    required this.labelHeight,
+    required this.reveal,
+  });
 
   final double width;
   final double labelHeight;
+  final double reveal;
 }

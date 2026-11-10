@@ -8916,11 +8916,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String homeBarStyleCustomName(String material) {
-    return '$material — свой вариант';
-  }
-
-  @override
   String get homeBarStyleTabPresets => 'Пресеты';
 
   @override
@@ -8934,13 +8929,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeBarStyleTabBehavior => 'Поведение';
-
-  @override
-  String get homeBarStylePresetClassic => 'Классика';
-
-  @override
-  String get homeBarStylePresetClassicDesc =>
-      'Сплошная нижняя панель, как до редизайна';
 
   @override
   String get homeBarStylePresetGlass => 'Стекло';
@@ -8977,14 +8965,8 @@ class AppLocalizationsRu extends AppLocalizations {
       'Более низкая плавающая панель только со значками';
 
   @override
-  String get homeBarStyleMaterialSolid => 'Сплошной цвет';
-
-  @override
-  String get homeBarStyleMaterialGlass => 'Стекло';
-
-  @override
   String get homeBarStyleGlassFooter =>
-      'Со стеклом нижняя панель парит над страницей, а содержимое, прокручиваемое под ней, просвечивает размытым.';
+      'Нижняя панель парит над страницей, а содержимое, прокручиваемое под ней, просвечивает размытым.';
 
   @override
   String get homeBarStyleHighContrastNote =>
@@ -9055,13 +9037,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeBarStyleShadowSubtitle => 'Мягкая тень под плавающей панелью';
-
-  @override
-  String get homeBarStyleFloatingSolidHint =>
-      'Плавающая панель используется только со стеклянным материалом.';
-
-  @override
-  String get homeBarStyleSwitchToGlass => 'Выбрать стекло';
 
   @override
   String get homeBarStyleSizeGroup => 'Размер';
@@ -9138,10 +9113,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get homeBarStyleHideOnScrollSubtitle =>
       'Освобождает место при прокрутке вниз и появляется снова при прокрутке вверх или в начале страницы';
-
-  @override
-  String get homeBarStyleHideOnScrollSolidHint =>
-      'Скрытие при прокрутке доступно только для стеклянной плавающей панели.';
 
   @override
   String get homeBarStyleIndicatorFollows => 'Индикатор следует за свайпом';

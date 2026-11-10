@@ -25,7 +25,7 @@ void main() {
         final resolved = _resolve(glass, scheme);
         expect(
           resolved.borderColor,
-          scheme.outlineVariant.withValues(alpha: 0.6),
+          scheme.outlineVariant.withValues(alpha: 0.5),
         );
         expect(resolved.borderWidth, 1.0);
         expect(
@@ -133,16 +133,13 @@ void main() {
         _resolve(glass.copyWith(topBarHairline: true), _light).topBarHairline,
         isTrue,
       );
-      // 实色栏没有这两条线，改了线条样式也一样。
-      final solid = _resolve(
-        HomeBarStyle.defaults.copyWith(
-          topBarHairline: true,
-          borderLine: HomeBarLineStyle.borderDefaults.copyWith(width: 3),
-        ),
+      // 顶栏不用玻璃时没有分隔线，开关开着也一样。
+      final solidTop = _resolve(
+        glass.copyWith(glassTopBars: false, topBarHairline: true),
         _light,
       );
-      expect(solid.border, isFalse);
-      expect(solid.topBarHairline, isFalse);
+      expect(solidTop.border, isTrue);
+      expect(solidTop.topBarHairline, isFalse);
     });
 
     test('the clear preset resolves to a highlight rim', () {

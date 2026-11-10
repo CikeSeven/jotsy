@@ -13,8 +13,8 @@ import '../../../widgets/glass/outer_shadow_painter.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import 'home_nav_bar.dart';
 
-/// 玻璃材质的悬浮底栏（纯展示）：一条玻璃胶囊承载导航项，右侧可并排一个
-/// 新建按钮。首页底栏与设置页的样式预览共用。
+/// 悬浮底栏（纯展示）：一条玻璃胶囊承载导航项，右侧可并排一个新建按钮。
+/// 首页底栏与设置页的样式预览共用。
 ///
 /// 输入：导航项、选中项、点按回调、已解析样式 [style]、可选的页面位置
 /// [position]（指示器跟随滑动）、启动显现进度 [progress]，以及并排按钮

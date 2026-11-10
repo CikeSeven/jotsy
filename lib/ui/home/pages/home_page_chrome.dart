@@ -1,12 +1,12 @@
 part of 'home_page.dart';
 
-/// 首页的底栏 / 侧边栏与“新建”入口（全局 FAB / 玻璃底栏并排按钮 / 侧边栏
+/// 首页的底栏 / 侧边栏与“新建”入口（全局 FAB / 底栏并排按钮 / 侧边栏
 /// 顶部按钮）的组装。
 ///
 /// 只负责按 [HomeBarResolvedStyle] 与首页状态拼出 widget，状态（当前 Tab、
 /// 切页中、滚动隐藏、提示可见）都由 [_HomePageState] 持有与更新。
 extension _HomePageChrome on _HomePageState {
-  /// Scaffold.bottomNavigationBar 槽位：实色贴底栏或玻璃悬浮胶囊。
+  /// Scaffold.bottomNavigationBar 槽位：悬浮的玻璃胶囊。
   Widget _buildBottomBar({
     required List<BottomNavItem> navItems,
     required HomeBarResolvedStyle barStyle,
@@ -106,7 +106,7 @@ extension _HomePageChrome on _HomePageState {
     return LaunchReveal(slot: LaunchRevealSlot.action, child: button);
   }
 
-  /// 玻璃底栏右侧的并排新建按钮；文字与全局 FAB 相同，只作提示与读屏。
+  /// 悬浮底栏右侧的并排新建按钮；文字与全局 FAB 相同，只作提示与读屏。
   /// 实色按钮放进 LaunchReveal 的 Opacity，按 action 槽位弹出；“控件”为
   /// 玻璃时按钮是玻璃，入场改经 [LaunchReveal.builder] + [GlassReveal]。
   Widget _buildInlineCreateButton(HomeBarResolvedStyle barStyle) {
@@ -150,9 +150,9 @@ extension _HomePageChrome on _HomePageState {
   /// 长按菜单已能在任意一天写日记或时间胶囊，再叠一个 FAB 会挡住当天日记
   /// 列表的末尾。待办页的 FAB 不随滚动收起（列表末尾留了空位）。
   ///
-  /// 实色底栏时 body 止于底栏上沿，FAB 按原样离底栏 10dp；玻璃底栏时 body
-  /// 延伸到屏幕底部，再加上悬浮槽位的高度（胶囊 + 底部间距 + 手势条），
-  /// 让 FAB 仍在胶囊上方 10dp；底栏被滚动收起时落到手势条上方 10dp。
+  /// body 延伸到屏幕底部（底栏悬浮在它上面），FAB 的底边距加上悬浮槽位的
+  /// 高度（胶囊 + 底部间距 + 手势条），停在胶囊上方 10dp；底栏被滚动收起
+  /// 时落到手势条上方 10dp。
   /// 提示出现时的上移量在此之上照旧计算（提示同样排在底栏槽位上方）。
   Widget _buildGlobalCreateFab(HomeBarResolvedStyle barStyle) {
     final shouldShow = switch (_effectiveTab) {
@@ -161,12 +161,10 @@ extension _HomePageChrome on _HomePageState {
       HomeTab.calendar || HomeTab.explore => false,
     };
     final fabBaseBottomOffset = _HomePageState._fabBottomGapAboveNav;
-    // 没有底栏（只剩日记一个 Tab）时 body 同样止于屏幕底部，按收起的玻璃
-    // 底栏处理：落到手势条上方 10dp。
+    // 没有底栏（只剩日记一个 Tab）时 body 同样止于屏幕底部，按收起的底栏
+    // 处理：落到手势条上方 10dp。
     final navOffset = !_hasBottomBar || _barHiddenByScroll
         ? MediaQuery.viewPaddingOf(context).bottom
-        : !barStyle.isGlass
-        ? 0.0
         : HomeBottomBar.floatingSlotExtent(context, barStyle);
 
     final hintExtent = HomeHintVisibilityScope.maybeController(

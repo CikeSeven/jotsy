@@ -11,7 +11,6 @@ import '../../widgets/style_editor/style_preset_grid.dart';
 
 String homeBarPresetName(AppLocalizations l10n, HomeBarPreset preset) =>
     switch (preset) {
-      HomeBarPreset.classic => l10n.homeBarStylePresetClassic,
       HomeBarPreset.glass => l10n.homeBarStylePresetGlass,
       HomeBarPreset.clear => l10n.homeBarStylePresetClear,
       HomeBarPreset.frosted => l10n.homeBarStylePresetFrosted,
@@ -30,7 +29,6 @@ String homeBarLineColorLabel(AppLocalizations l10n, HomeBarLineColor color) =>
 
 String _presetDescription(AppLocalizations l10n, HomeBarPreset preset) =>
     switch (preset) {
-      HomeBarPreset.classic => l10n.homeBarStylePresetClassicDesc,
       HomeBarPreset.glass => l10n.homeBarStylePresetGlassDesc,
       HomeBarPreset.clear => l10n.homeBarStylePresetClearDesc,
       HomeBarPreset.frosted => l10n.homeBarStylePresetFrostedDesc,
@@ -39,7 +37,6 @@ String _presetDescription(AppLocalizations l10n, HomeBarPreset preset) =>
     };
 
 FaIconData _presetIcon(HomeBarPreset preset) => switch (preset) {
-  HomeBarPreset.classic => FontAwesomeIcons.tableColumns,
   HomeBarPreset.glass => FontAwesomeIcons.droplet,
   HomeBarPreset.clear => FontAwesomeIcons.eye,
   HomeBarPreset.frosted => FontAwesomeIcons.snowflake,
@@ -59,16 +56,7 @@ List<StylePresetOption<HomeBarPreset>> homeBarPresetOptions(
     ),
 ];
 
-String homeBarMaterialLabel(AppLocalizations l10n, HomeBarMaterial material) =>
-    switch (material) {
-      HomeBarMaterial.solid => l10n.homeBarStyleMaterialSolid,
-      HomeBarMaterial.glass => l10n.homeBarStyleMaterialGlass,
-    };
-
-/// 当前外观的显示名：内置预设名、我的样式名，或“材质（自定义）”。
-///
-/// 与预览页样式不同，这里不只写“自定义”：导航栏最关键的区别是实色还是
-/// 玻璃，入口副标题直接说出材质，用户不必点进去也知道现在是哪种。
+/// 当前外观的显示名：内置预设名、我的样式名，或“自定义”。
 String homeBarStyleDisplayName(
   AppLocalizations l10n,
   HomeBarSettings settings,
@@ -82,7 +70,5 @@ String homeBarStyleDisplayName(
       return item.name;
     }
   }
-  return l10n.homeBarStyleCustomName(
-    homeBarMaterialLabel(l10n, settings.current.material),
-  );
+  return l10n.styleEditorCustom;
 }

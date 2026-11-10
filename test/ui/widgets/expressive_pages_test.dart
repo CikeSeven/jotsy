@@ -10,11 +10,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_header.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_nav_bar.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
-import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -55,7 +58,11 @@ void main() {
                 locale: locale,
                 child: Scaffold(
                   body: const SettingsPage(),
-                  bottomNavigationBar: BottomNav(
+                  bottomNavigationBar: HomeBottomBar(
+                    style: HomeBarResolvedStyle.resolve(
+                      HomeBarStyle.defaults,
+                      expressiveTestTheme(brightness).colorScheme,
+                    ),
                     items: const [
                       BottomNavItem(
                         label: 'Diaries',

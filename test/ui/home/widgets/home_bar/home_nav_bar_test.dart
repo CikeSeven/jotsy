@@ -22,11 +22,10 @@ const _items = <BottomNavItem>[
 ColorScheme get _scheme => expressiveTestTheme(Brightness.light).colorScheme;
 
 HomeBarResolvedStyle _style({
-  HomeBarMaterial material = HomeBarMaterial.solid,
   HomeBarLabelMode labelMode = HomeBarLabelMode.always,
   HomeBarIndicator indicator = HomeBarIndicator.capsule,
 }) => HomeBarResolvedStyle.resolve(
-  HomeBarStyle(material: material, labelMode: labelMode, indicator: indicator),
+  HomeBarStyle(labelMode: labelMode, indicator: indicator),
   _scheme,
 );
 
@@ -38,9 +37,14 @@ Future<void> _pump(
   ValueListenable<double>? position,
   double width = 400,
   double height = 80,
+  bool reduceMotion = false,
 }) => tester.pumpWidget(
   MaterialApp(
     theme: expressiveTestTheme(Brightness.light),
+    builder: (BuildContext context, Widget? child) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
+      child: child!,
+    ),
     home: Scaffold(
       body: Align(
         alignment: Alignment.bottomCenter,
@@ -83,6 +87,32 @@ Offset _iconCenter(WidgetTester tester, int index) => tester.getCenter(
 double _indicatorScaleX(WidgetTester tester, int index) => tester
     .widget<Transform>(
       find.descendant(of: _indicator(index), matching: find.byType(Transform)),
+    )
+    .transform
+    .storage[0];
+
+/// 此刻画着指示器的那一项（其余项的指示器缩放为 0）。
+int _anchor(WidgetTester tester) => <int>[
+  for (var i = 0; i < _items.length; i++)
+    if (_indicatorScaleX(tester, i) == 1) i,
+].single;
+
+FaIcon _icon(WidgetTester tester, int index) => tester.widget<FaIcon>(
+  find.descendant(of: _destination(index), matching: find.byType(FaIcon)),
+);
+
+/// 整项的按压缩放（包着导航项布局的那层 Transform）。
+double _pressScale(WidgetTester tester, int index) => tester
+    .widget<Transform>(
+      find
+          .ancestor(
+            of: find.descendant(
+              of: _destination(index),
+              matching: find.byType(CustomMultiChildLayout),
+            ),
+            matching: find.byType(Transform),
+          )
+          .first,
     )
     .transform
     .storage[0];
@@ -204,19 +234,170 @@ void main() {
     final icon = tester.widget<FaIcon>(
       find.descendant(of: _destination(0), matching: find.byType(FaIcon)),
     );
-    expect(icon.color, _scheme.onSecondaryContainer);
+    expect(icon.color, _style().selectedForeground);
   });
 
-  testWidgets('a new selection grows its indicator over the motion duration', (
+  testWidgets('a new selection slides the one indicator over on a spring', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(_anchor(tester), 0);
+    final from = _iconCenter(tester, 0).dx;
+    final to = _iconCenter(tester, 3).dx;
+
+    await _pump(tester, selected: 3);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+    // 途中：只有一个指示器，位置在两项之间，并被速度横向拉长。
+    final mid = tester.getRect(_indicator(_anchor(tester)));
+    expect(mid.center.dx, inExclusiveRange(from, to));
+    expect(mid.width, greaterThan(64));
+    expect(mid.height, 32);
+
+    await tester.pumpAndSettle();
+    expect(_anchor(tester), 3);
+    final rest = tester.getRect(_indicator(3));
+    expect(rest.center.dx, closeTo(to, 0.1));
+    expect(rest.width, closeTo(64, 0.01));
+  });
+
+  testWidgets('the spring overshoots the target before settling', (
+    tester,
+  ) async {
+    await _pump(tester);
+    final to = _iconCenter(tester, 1).dx;
+    await _pump(tester, selected: 1);
+    await tester.pump();
+    var furthest = double.negativeInfinity;
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      final dx = tester.getRect(_indicator(_anchor(tester))).center.dx;
+      if (dx > furthest) furthest = dx;
+    }
+    // 越过目标一点再落回，但不会冲到下一项。
+    expect(furthest, greaterThan(to + 1));
+    expect(furthest, lessThan(to + 20));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(_indicator(1)).center.dx, closeTo(to, 0.1));
+  });
+
+  testWidgets('destinations the indicator passes over keep their colour', (
+    tester,
+  ) async {
+    final style = _style();
+    await _pump(tester, style: style);
+    await _pump(tester, style: style, selected: 3);
+    await tester.pump();
+    for (var i = 0; i < 12; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(_icon(tester, 1).color, style.unselectedForeground);
+      expect(_icon(tester, 2).color, style.unselectedForeground);
+    }
+    // 新旧两项的颜色在渐变，途中既不是选中色也不是未选中色。
+    expect(_icon(tester, 3).color, isNot(style.unselectedForeground));
+    expect(_icon(tester, 3).color, isNot(style.selectedForeground));
+    await tester.pumpAndSettle();
+    expect(_icon(tester, 3).color, style.selectedForeground);
+    expect(_icon(tester, 0).color, style.unselectedForeground);
+  });
+
+  testWidgets('retargeting mid-flight heads for the newest selection', (
     tester,
   ) async {
     await _pump(tester);
     await _pump(tester, selected: 3);
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
-    expect(_indicatorScaleX(tester, 3), inExclusiveRange(0.4, 1.2));
+    await _pump(tester, selected: 1);
     await tester.pumpAndSettle();
-    expect(_indicatorScaleX(tester, 3), 1);
-    expect(_indicatorScaleX(tester, 0), 0);
+    expect(_anchor(tester), 1);
+    expect(
+      tester.getRect(_indicator(1)).center.dx,
+      closeTo(_iconCenter(tester, 1).dx, 0.1),
+    );
+  });
+
+  testWidgets('reduce motion moves the indicator at once', (tester) async {
+    await _pump(tester, reduceMotion: true);
+    await _pump(tester, selected: 2, reduceMotion: true);
+    await tester.pump();
+    expect(_anchor(tester), 2);
+    expect(
+      tester.getRect(_indicator(2)).center.dx,
+      closeTo(_iconCenter(tester, 2).dx, 0.01),
+    );
+    // 图标的放大与颜色也一步到位。
+    expect(_icon(tester, 2).color, _style().selectedForeground);
+    expect(_icon(tester, 0).color, _style().unselectedForeground);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('pressing shrinks a destination and releasing springs it back', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(_pressScale(tester, 2), 1);
+    final gesture = await tester.startGesture(
+      tester.getCenter(_destination(2)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+    expect(_pressScale(tester, 2), lessThan(0.97));
+    // 其他项不受影响。
+    expect(_pressScale(tester, 1), 1);
+
+    await gesture.up();
+    var largest = 0.0;
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      final scale = _pressScale(tester, 2);
+      if (scale > largest) largest = scale;
+    }
+    // 松手后弹过原大小一点再落回。
+    expect(largest, greaterThan(1));
+    await tester.pumpAndSettle();
+    expect(_pressScale(tester, 2), closeTo(1, 0.001));
+  });
+
+  testWidgets('reduce motion skips the press scale', (tester) async {
+    await _pump(tester, reduceMotion: true);
+    final gesture = await tester.startGesture(
+      tester.getCenter(_destination(2)),
+    );
+    await tester.pump(const Duration(milliseconds: 80));
+    expect(_pressScale(tester, 2), 1);
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('switching tab sets drops the indicator on the new index', (
+    tester,
+  ) async {
+    await _pump(tester, selected: 3);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: expressiveTestTheme(Brightness.light),
+        home: Scaffold(
+          body: SizedBox(
+            width: 400,
+            child: HomeNavBar(
+              items: _items.sublist(0, 2),
+              selectedIndex: 1,
+              onTap: (_) {},
+              style: _style(),
+              height: 80,
+            ),
+          ),
+        ),
+      ),
+    );
+    // 没有滑动的过程：下一帧指示器就在新的选中项上。
+    expect(_indicatorScaleX(tester, 1), 1);
+    expect(
+      tester.getRect(_indicator(1)).center.dx,
+      closeTo(_iconCenter(tester, 1).dx, 0.01),
+    );
+    await tester.pumpAndSettle();
   });
 
   testWidgets('follow swipe puts the indicator between the two pages', (
@@ -236,8 +417,8 @@ void main() {
     }
     // 颜色按距离插值：两项各一半。
     final half = Color.lerp(
-      _scheme.onSurfaceVariant,
-      _scheme.onSecondaryContainer,
+      _style().unselectedForeground,
+      _style().selectedForeground,
       0.5,
     );
     for (final index in <int>[1, 2]) {
@@ -263,8 +444,8 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('glass colours come from the resolved style', (tester) async {
-    final style = _style(material: HomeBarMaterial.glass);
+  testWidgets('colours come from the resolved style', (tester) async {
+    final style = _style();
     await _pump(tester, style: style, selected: 1);
     FaIcon icon(int index) => tester.widget<FaIcon>(
       find.descendant(of: _destination(index), matching: find.byType(FaIcon)),

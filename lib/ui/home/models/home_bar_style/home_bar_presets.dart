@@ -3,13 +3,10 @@ import 'home_bar_style.dart';
 /// 首页栏的内置预设；名称、说明与图标由设置页按枚举值解析（模型层不含
 /// 文案）。
 ///
-/// 套用预设即把当前样式整体替换为预设值（之后可继续微调）；[classic] 就是
-/// 默认的实色栏。栏的行为（滚动隐藏等）是独立设置，预设不改动它。
+/// 套用预设即把当前样式整体替换为预设值（之后可继续微调）；[glass] 就是
+/// 默认样式。栏的行为（滚动隐藏等）是独立设置，预设不改动它。
 enum HomeBarPreset {
-  /// 经典：改版前的实色栏。
-  classic,
-
-  /// 玻璃：默认参数的毛玻璃悬浮底栏，选中项用圆角块标出。
+  /// 玻璃：默认的毛玻璃悬浮底栏，选中项用圆角块标出。
   glass,
 
   /// 通透：更透、更模糊、不要投影，下方内容透得最清楚；描边换成明亮的
@@ -26,8 +23,7 @@ enum HomeBarPreset {
   compact;
 
   HomeBarStyle get style => switch (this) {
-    HomeBarPreset.classic => HomeBarStyle.defaults,
-    HomeBarPreset.glass => _glass,
+    HomeBarPreset.glass => HomeBarStyle.defaults,
     HomeBarPreset.clear => _clear,
     HomeBarPreset.frosted => _frosted,
     HomeBarPreset.tinted => _tinted,
@@ -45,18 +41,9 @@ enum HomeBarPreset {
   }
 }
 
-// 玻璃系预设的间距与 HomeBarStyle.withMaterial 切到玻璃时的结果一致：
-// 从经典栏切到玻璃、再选圆角块，得到的正是“玻璃”预设，预设标记才能对上。
-const _glass = HomeBarStyle(
-  material: HomeBarMaterial.glass,
-  labelGap: HomeBarStyle.glassLabelGap,
-  indicator: HomeBarIndicator.block,
-);
-
+// 各预设只写与默认样式不同的字段：默认值调整时预设跟着走，只保留各自的
+// 特征（更透 / 更浓 / 染色 / 紧凑）。
 const _clear = HomeBarStyle(
-  material: HomeBarMaterial.glass,
-  labelGap: HomeBarStyle.glassLabelGap,
-  indicator: HomeBarIndicator.block,
   blurSigma: 28,
   tintOpacity: 0.45,
   shadow: false,
@@ -69,28 +56,13 @@ const _clear = HomeBarStyle(
   ),
 );
 
-const _frosted = HomeBarStyle(
-  material: HomeBarMaterial.glass,
-  labelGap: HomeBarStyle.glassLabelGap,
-  indicator: HomeBarIndicator.block,
-  blurSigma: 32,
-  tintOpacity: 0.88,
-);
+const _frosted = HomeBarStyle(blurSigma: 32, tintOpacity: 0.88);
 
-const _tinted = HomeBarStyle(
-  material: HomeBarMaterial.glass,
-  labelGap: HomeBarStyle.glassLabelGap,
-  indicator: HomeBarIndicator.block,
-  tint: HomeBarTint.theme,
-);
+const _tinted = HomeBarStyle(tint: HomeBarTint.theme);
 
 const _compact = HomeBarStyle(
-  material: HomeBarMaterial.glass,
-  labelGap: HomeBarStyle.glassLabelGap,
   barHeight: 56,
   cornerRadius: 16,
   sideMargin: 24,
   labelMode: HomeBarLabelMode.never,
-  iconSize: 22,
-  indicator: HomeBarIndicator.block,
 );

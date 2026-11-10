@@ -11050,15 +11050,6 @@
       }
     }
   },
-  "homeBarStyleCustomName": "{material}（自定义）",
-  "@homeBarStyleCustomName": {
-    "description": "导航栏样式设置：当前外观不是任何预设或我的样式时的显示名；material 为“实色”或“玻璃”。",
-    "placeholders": {
-      "material": {
-        "type": "String"
-      }
-    }
-  },
   "homeBarStyleTabPresets": "预设",
   "@homeBarStyleTabPresets": {
     "description": "导航栏样式设置页：预设标签页。"
@@ -11078,14 +11069,6 @@
   "homeBarStyleTabBehavior": "行为",
   "@homeBarStyleTabBehavior": {
     "description": "导航栏样式设置页：行为标签页。"
-  },
-  "homeBarStylePresetClassic": "经典",
-  "@homeBarStylePresetClassic": {
-    "description": "导航栏样式预设：经典（实色）名称。"
-  },
-  "homeBarStylePresetClassicDesc": "改版前的实色底栏",
-  "@homeBarStylePresetClassicDesc": {
-    "description": "导航栏样式预设：经典的说明。"
   },
   "homeBarStylePresetGlass": "玻璃",
   "@homeBarStylePresetGlass": {
@@ -11127,17 +11110,9 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "导航栏样式预设：紧凑的说明。"
   },
-  "homeBarStyleMaterialSolid": "实色",
-  "@homeBarStyleMaterialSolid": {
-    "description": "导航栏样式设置：实色材质选项。"
-  },
-  "homeBarStyleMaterialGlass": "玻璃",
-  "@homeBarStyleMaterialGlass": {
-    "description": "导航栏样式设置：玻璃材质选项。"
-  },
-  "homeBarStyleGlassFooter": "玻璃材质下底栏悬浮在页面上，内容从栏下滚过时透出模糊。",
+  "homeBarStyleGlassFooter": "底栏悬浮在页面上，内容从栏下滚过时透出模糊。",
   "@homeBarStyleGlassFooter": {
-    "description": "导航栏样式设置：选中玻璃材质时材质分组的附注。"
+    "description": "导航栏样式设置：材质分组的附注。"
   },
   "homeBarStyleHighContrastNote": "系统开启了高对比度，玻璃暂时显示为不透明。",
   "@homeBarStyleHighContrastNote": {
@@ -11226,14 +11201,6 @@
   "homeBarStyleShadowSubtitle": "悬浮栏下方的柔和投影",
   "@homeBarStyleShadowSubtitle": {
     "description": "导航栏样式设置：阴影开关的说明。"
-  },
-  "homeBarStyleFloatingSolidHint": "悬浮栏只在玻璃材质下使用。",
-  "@homeBarStyleFloatingSolidHint": {
-    "description": "导航栏样式设置：实色材质时悬浮栏标签页的说明。"
-  },
-  "homeBarStyleSwitchToGlass": "切换到玻璃",
-  "@homeBarStyleSwitchToGlass": {
-    "description": "导航栏样式设置：悬浮栏标签页里切换到玻璃材质的按钮。"
   },
   "homeBarStyleSizeGroup": "尺寸",
   "@homeBarStyleSizeGroup": {
@@ -11330,10 +11297,6 @@
   "homeBarStyleHideOnScrollSubtitle": "往下浏览时让出空间，往上滑或回到顶部时出现",
   "@homeBarStyleHideOnScrollSubtitle": {
     "description": "导航栏样式设置：下滑收起开关的说明。"
-  },
-  "homeBarStyleHideOnScrollSolidHint": "下滑收起只在玻璃悬浮栏下可用。",
-  "@homeBarStyleHideOnScrollSolidHint": {
-    "description": "导航栏样式设置：实色材质时代替下滑收起开关的附注。"
   },
   "homeBarStyleIndicatorFollows": "指示器跟随滑动",
   "@homeBarStyleIndicatorFollows": {

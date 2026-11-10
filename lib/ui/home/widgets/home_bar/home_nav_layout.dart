@@ -56,7 +56,7 @@ abstract final class HomeNavGeometry {
   }
 
   /// 圆角块的圆角：与栏的圆角同心（栏圆角减去块到栏上下边缘的距离），
-  /// 且不超过块高的一半、不小于 0。实色栏同样按 `style.cornerRadius` 算。
+  /// 且不超过块高的一半、不小于 0。
   static double blockRadius(
     double cornerRadius,
     double barHeight,
@@ -155,6 +155,7 @@ class HomeNavDestinationLayout extends MultiChildLayoutDelegate {
     final full = HomeNavContentSize(
       width: math.max(iconSize.width, textSize.width),
       labelHeight: labelHeight,
+      reveal: reveal,
     );
     follow?.metrics.record(follow.index, full);
 
@@ -185,22 +186,22 @@ class HomeNavDestinationLayout extends MultiChildLayoutDelegate {
     if (!hasChild(indicatorId)) {
       return;
     }
-    // 跟随滑动：只有锚点项画指示器，按小数部分平移到下一项（RTL 时下一项
-    // 在左边）；其他项的指示器缩放为 0，见 HomeNavIndicator。
+    // 只有锚点项画指示器，按小数部分平移到下一项（RTL 时下一项在左边）；
+    // 其他项的指示器缩放为 0，见 HomeNavIndicator。弹簧过冲时 shift 可以
+    // 略小于 0（越过第一项）或在最后一项上大于 0。
     var shift = 0.0;
-    if (follow != null &&
-        HomeNavGeometry.followAnchor(follow.position.value, follow.count) ==
-            follow.index) {
-      shift =
-          HomeNavGeometry.clampPosition(follow.position.value, follow.count) -
-          follow.index;
+    var stretch = 1.0;
+    if (follow != null && follow.isAnchor) {
+      shift = follow.shift;
+      stretch += follow.stretch;
     }
     final dx =
         shift * size.width * (textDirection == TextDirection.rtl ? -1 : 1);
     switch (indicator) {
       case HomeBarIndicator.capsule:
+        // 拉长只加宽：占位仍居中在图标框上。
         final capsule = Size(
-          math.min(HomeNavGeometry.capsuleWidth, size.width),
+          math.min(HomeNavGeometry.capsuleWidth, size.width) * stretch,
           math.min(HomeNavGeometry.capsuleHeight, size.height),
         );
         layoutChild(indicatorId, BoxConstraints.tight(capsule));
@@ -235,6 +236,8 @@ class HomeNavDestinationLayout extends MultiChildLayoutDelegate {
           block = Size.lerp(ownBlock, nextBlock, shift)!;
           centerY = lerpDouble(centerY, size.height / 2, shift)!;
         }
+        // 拉长只加宽、不改高：圆角按块高推算，仍与栏的圆角同心。
+        block = Size(block.width * stretch, block.height);
         layoutChild(indicatorId, BoxConstraints.tight(block));
         positionChild(
           indicatorId,

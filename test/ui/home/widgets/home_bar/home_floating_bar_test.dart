@@ -26,7 +26,6 @@ HomeBarResolvedStyle _style({
   bool highContrast = false,
 }) => HomeBarResolvedStyle.resolve(
   HomeBarStyle(
-    material: HomeBarMaterial.glass,
     barHeight: barHeight,
     cornerRadius: cornerRadius,
     shadow: shadow,

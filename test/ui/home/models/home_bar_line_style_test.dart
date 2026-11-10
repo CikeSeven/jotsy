@@ -12,7 +12,7 @@ void main() {
   group('HomeBarLineStyle', () {
     test('the two lines have their own defaults', () {
       expect(_border.color, HomeBarLineColor.theme);
-      expect(_border.opacity, 0.6);
+      expect(_border.opacity, 0.5);
       expect(_border.width, 1.0);
       expect(_top.color, HomeBarLineColor.theme);
       expect(_top.opacity, 0.35);
@@ -83,7 +83,7 @@ void main() {
       expect(_top.toJson(_top), isEmpty);
       // 底栏描边的默认值放到顶栏分隔线上就是“改过”的。
       expect(_border.toJson(_top), <String, Object>{
-        'opacity': 0.6,
+        'opacity': 0.5,
         'width': 1.0,
       });
       final line = _border.copyWith(
@@ -123,7 +123,6 @@ void main() {
 
   group('HomeBarStyle with lines', () {
     const style = HomeBarStyle(
-      material: HomeBarMaterial.glass,
       topBarHairline: true,
       borderLine: HomeBarLineStyle(
         color: HomeBarLineColor.custom,
@@ -144,7 +143,6 @@ void main() {
         'border': false,
       });
       expect(style.toJson(), <String, Object>{
-        'material': 'glass',
         'borderLine': <String, Object>{
           'color': 'custom',
           'customColor': '#224466',
@@ -168,11 +166,11 @@ void main() {
 
     test('a bad line object only resets that line', () {
       final decoded = HomeBarStyle.fromJson(<String, Object?>{
-        'material': 'glass',
+        'blurSigma': 30,
         'borderLine': 'oops',
         'topBarLine': <String, Object?>{'width': 2},
       });
-      expect(decoded.material, HomeBarMaterial.glass);
+      expect(decoded.blurSigma, 30);
       expect(decoded.borderLine, _border);
       expect(decoded.topBarLine, _top.copyWith(width: 2));
     });

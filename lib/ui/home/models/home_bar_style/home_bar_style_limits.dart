@@ -23,7 +23,7 @@ abstract final class HomeBarStyleLimits {
   /// 悬浮底栏与屏幕底部（系统手势区之上）的距离。
   static const bottomGap = StyleRange(0, 32, 2);
 
-  /// 底栏图标大小（两种材质都适用）。
+  /// 底栏图标大小。
   static const iconSize = StyleRange(16, 28, 1);
 
   /// 图标与文字的间距：0 时文字紧贴图标框，12 已足够疏朗，再大就像两行。

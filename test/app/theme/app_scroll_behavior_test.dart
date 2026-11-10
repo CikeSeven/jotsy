@@ -27,7 +27,7 @@ AppPageBackdrop _backdrop({required bool image}) {
 }
 
 HomeBarResolvedStyle _glassTopBars() => HomeBarResolvedStyle.resolve(
-  const HomeBarStyle(material: HomeBarMaterial.glass, glassTopBars: true),
+  const HomeBarStyle(glassTopBars: true),
   expressiveTestTheme(Brightness.light).colorScheme,
   highContrast: false,
 );

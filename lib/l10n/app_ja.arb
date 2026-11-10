@@ -11109,15 +11109,6 @@
       }
     }
   },
-  "homeBarStyleCustomName": "{material}（カスタム）",
-  "@homeBarStyleCustomName": {
-    "description": "Navigation bar style settings: display name when the look matches no preset or saved style; material is “Solid” or “Glass”.",
-    "placeholders": {
-      "material": {
-        "type": "String"
-      }
-    }
-  },
   "homeBarStyleTabPresets": "プリセット",
   "@homeBarStyleTabPresets": {
     "description": "Navigation bar style settings: presets tab."
@@ -11137,14 +11128,6 @@
   "homeBarStyleTabBehavior": "動作",
   "@homeBarStyleTabBehavior": {
     "description": "Navigation bar style settings: behavior tab."
-  },
-  "homeBarStylePresetClassic": "クラシック",
-  "@homeBarStylePresetClassic": {
-    "description": "Navigation bar style preset: classic (solid) name."
-  },
-  "homeBarStylePresetClassicDesc": "リニューアル前の単色のボトムバー",
-  "@homeBarStylePresetClassicDesc": {
-    "description": "Navigation bar style preset: classic description."
   },
   "homeBarStylePresetGlass": "ガラス",
   "@homeBarStylePresetGlass": {
@@ -11186,17 +11169,9 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
-  "homeBarStyleMaterialSolid": "単色",
-  "@homeBarStyleMaterialSolid": {
-    "description": "Navigation bar style settings: solid material option."
-  },
-  "homeBarStyleMaterialGlass": "ガラス",
-  "@homeBarStyleMaterialGlass": {
-    "description": "Navigation bar style settings: glass material option."
-  },
-  "homeBarStyleGlassFooter": "ガラスでは、ボトムバーがページの上に浮かび、その下をスクロールするコンテンツがぼやけて透けて見えます。",
+  "homeBarStyleGlassFooter": "ボトムバーはページの上に浮かび、その下をスクロールするコンテンツがぼやけて透けて見えます。",
   "@homeBarStyleGlassFooter": {
-    "description": "Navigation bar style settings: material group footer when glass is selected."
+    "description": "Navigation bar style settings: material group footer."
   },
   "homeBarStyleHighContrastNote": "システム設定でハイコントラストがオンになっているため、ガラスは現在不透明で表示されています。",
   "@homeBarStyleHighContrastNote": {
@@ -11285,14 +11260,6 @@
   "homeBarStyleShadowSubtitle": "フローティングバーの下にやわらかい影を表示",
   "@homeBarStyleShadowSubtitle": {
     "description": "Navigation bar style settings: subtitle of the shadow switch."
-  },
-  "homeBarStyleFloatingSolidHint": "フローティングバーはガラス素材でのみ使用されます。",
-  "@homeBarStyleFloatingSolidHint": {
-    "description": "Navigation bar style settings: floating bar tab hint while the material is solid."
-  },
-  "homeBarStyleSwitchToGlass": "ガラスに切り替え",
-  "@homeBarStyleSwitchToGlass": {
-    "description": "Navigation bar style settings: button in the floating bar tab that switches to the glass material."
   },
   "homeBarStyleSizeGroup": "サイズ",
   "@homeBarStyleSizeGroup": {
@@ -11389,10 +11356,6 @@
   "homeBarStyleHideOnScrollSubtitle": "下にスクロールするとバーが隠れて表示領域が広がり、上にスクロールするか先頭に戻ると再び表示されます",
   "@homeBarStyleHideOnScrollSubtitle": {
     "description": "Navigation bar style settings: subtitle of the hide-on-scroll switch."
-  },
-  "homeBarStyleHideOnScrollSolidHint": "スクロール時にバーを隠す機能は、ガラスのフローティングバーでのみ使用できます。",
-  "@homeBarStyleHideOnScrollSolidHint": {
-    "description": "Navigation bar style settings: footer shown instead of the hide-on-scroll switch while the material is solid."
   },
   "homeBarStyleIndicatorFollows": "インジケーターをスワイプに追従",
   "@homeBarStyleIndicatorFollows": {

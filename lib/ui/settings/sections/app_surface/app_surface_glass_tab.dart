@@ -110,7 +110,7 @@ const EdgeInsets _linkPadding = EdgeInsets.symmetric(
   vertical: 4,
 );
 
-/// 跳到导航栏样式页；副标题为导航栏当前材质（实色 / 玻璃）。
+/// 跳到导航栏样式页；副标题与外观页的入口同一写法（当前样式名）。
 class _HomeBarStyleLink extends StatelessWidget {
   const _HomeBarStyleLink({required this.settings});
 
@@ -125,10 +125,7 @@ class _HomeBarStyleLink extends StatelessWidget {
         contentPadding: _linkPadding,
         title: Text(l10n.homeBarStyleTitle),
         subtitle: Text(
-          homeBarMaterialLabel(
-            l10n,
-            HomeBarSettings.decode(raw).current.material,
-          ),
+          homeBarStyleDisplayName(l10n, HomeBarSettings.decode(raw)),
         ),
         trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
         onTap: () => Navigator.of(context).push(

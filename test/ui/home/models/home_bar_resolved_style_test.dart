@@ -23,20 +23,23 @@ void main() {
   final glass = HomeBarPreset.glass.style;
 
   group('material', () {
-    test('solid defaults never use glass', () {
+    test('the defaults are translucent glass with border and shadow', () {
       final resolved = _resolve(HomeBarStyle.defaults, _light);
-      expect(resolved.isGlass, isFalse);
-      expect(resolved.glassTopBars, isFalse);
-      expect(resolved.border, isFalse);
-      expect(resolved.shadow, isFalse);
-    });
-
-    test('glass applies, including top bars unless turned off', () {
-      final resolved = _resolve(glass, _light);
-      expect(resolved.isGlass, isTrue);
+      expect(resolved.translucent, isTrue);
       expect(resolved.glassTopBars, isTrue);
       expect(resolved.border, isTrue);
       expect(resolved.shadow, isTrue);
+      expect(resolved.fabPlacement, HomeBarFabPlacement.above);
+    });
+
+    test('border, shadow and top bars follow their own switches', () {
+      final resolved = _resolve(
+        glass.copyWith(border: false, shadow: false),
+        _light,
+      );
+      expect(resolved.border, isFalse);
+      expect(resolved.shadow, isFalse);
+      expect(resolved.glassTopBars, isTrue);
       expect(
         _resolve(glass.copyWith(glassTopBars: false), _light).glassTopBars,
         isFalse,
@@ -60,13 +63,6 @@ void main() {
         _resolve(on.copyWith(glassTopBars: false), _light).topBarHairline,
         isFalse,
       );
-      expect(
-        _resolve(
-          HomeBarStyle.defaults.copyWith(topBarHairline: true),
-          _light,
-        ).topBarHairline,
-        isFalse,
-      );
       expect(_resolve(on, _light), isNot(_resolve(glass, _light)));
     });
 
@@ -76,7 +72,6 @@ void main() {
         _light,
         highContrast: true,
       );
-      expect(resolved.isGlass, isTrue);
       expect(resolved.translucent, isFalse);
       expect(resolved.glassTopBars, isTrue);
       expect(resolved.fabPlacement, HomeBarFabPlacement.inline);
@@ -104,7 +99,6 @@ void main() {
     test('out-of-range constructed values are clamped again', () {
       final resolved = _resolve(
         const HomeBarStyle(
-          material: HomeBarMaterial.glass,
           blurSigma: 99,
           tintOpacity: 0.1,
           iconSize: 3,

@@ -1,93 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../home/models/home_bar_style/home_bar_style.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../controllers/home_bar_style_editor_controller.dart';
 import '../../widgets/settings_card_group.dart';
-import '../../widgets/settings_reveal.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import 'home_bar_style_common.dart';
 
 /// “悬浮栏”标签页：悬浮底栏的尺寸与新建按钮位置。
-///
-/// 悬浮栏只存在于玻璃材质：实色时整页换成一段说明和“切换到玻璃”按钮，
-/// 而不是一排禁用的滑块（调了也看不到效果）。两种内容按材质整体切换并带
-/// 过渡，切到玻璃时尺寸分组从说明处展开。
 class HomeBarStyleFloatingTab extends StatelessWidget {
   const HomeBarStyleFloatingTab({super.key, required this.controller});
-
-  final HomeBarStyleEditorController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final isGlass = controller.style.material == HomeBarMaterial.glass;
-    return StyleEditorTabList(
-      children: <Widget>[
-        SettingsReveal.swap(
-          child: isGlass
-              ? _GlassOptions(
-                  key: const ValueKey<HomeBarMaterial>(HomeBarMaterial.glass),
-                  controller: controller,
-                )
-              : _SolidHint(
-                  key: const ValueKey<HomeBarMaterial>(HomeBarMaterial.solid),
-                  controller: controller,
-                ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SolidHint extends StatelessWidget {
-  const _SolidHint({super.key, required this.controller});
-
-  final HomeBarStyleEditorController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    return SettingsCardGroup(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                l10n.homeBarStyleFloatingSolidHint,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Builder 取卡片之内的 context：分组卡片为玻璃时按钮才读得到
-              // OnGlass。
-              Builder(
-                builder: (BuildContext cardContext) => FilledButton.tonal(
-                  // 与材质页的选择器同一条换材质路径（withMaterial），两处
-                  // 切到玻璃得到的间距一致，预设标记也才对得上。
-                  onPressed: () => controller.commitWith(
-                    (s) => s.withMaterial(HomeBarMaterial.glass),
-                  ),
-                  style: AppGlassField.tonalButtonStyle(cardContext),
-                  child: Text(l10n.homeBarStyleSwitchToGlass),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GlassOptions extends StatelessWidget {
-  const _GlassOptions({super.key, required this.controller});
 
   final HomeBarStyleEditorController controller;
 
@@ -97,9 +20,7 @@ class _GlassOptions extends StatelessWidget {
     final style = controller.style;
     String dp(double v) => l10n.diaryCardStyleValueDp('${v.round()}');
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return StyleEditorTabList(
       children: <Widget>[
         SettingsCardGroup(
           title: l10n.homeBarStyleSizeGroup,
@@ -138,7 +59,6 @@ class _GlassOptions extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
         SettingsCardGroup(
           title: l10n.homeBarStyleFabGroup,
           footer: l10n.homeBarStyleFabFooter,

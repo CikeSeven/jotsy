@@ -2,25 +2,25 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
-import '../../../widgets/bottom_nav.dart';
 import '../../../widgets/launch_reveal.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import 'home_floating_bar.dart';
+import 'home_nav_bar.dart';
 
-/// 首页 `Scaffold.bottomNavigationBar` 槽位里的底栏：按材质在实色贴底栏与
-/// 玻璃悬浮胶囊之间切换，并负责启动编排与“滚动时隐藏”的位移。
+/// 首页 `Scaffold.bottomNavigationBar` 槽位里的底栏：悬浮的玻璃胶囊，并负责
+/// 启动编排与“滚动时隐藏”的位移。
 ///
 /// 输入：导航项、选中项、点按回调、已解析样式 [style]、页面位置
 /// [position]、并排新建按钮 [inlineAction] 与是否显示，以及 [hidden]（滚动
 /// 隐藏的结果，由首页决定）；输出：槽位内容，无副作用。
 ///
-/// - 实色：与改版前完全相同的 `LaunchReveal(navigation) → BottomNav`（启动
-///   测试依赖每个槽位下的 Opacity）；实色栏不响应 [hidden]；
-/// - 玻璃：外边距（左右 sideMargin、下方系统手势条 + bottomGap）在胶囊之外，
-///   透明且不拦截点按；系统手势条取 viewPadding，首页不随键盘缩放
+/// - 外边距（左右 sideMargin、下方系统手势条 + bottomGap）在胶囊之外，透明
+///   且不拦截点按；系统手势条取 viewPadding，首页不随键盘缩放
 ///   （resizeToAvoidBottomInset: false），键盘弹出时底栏不跟着上移；
-///   隐藏时整条向下移出屏幕（连同投影），从不淡出玻璃；启动编排用
-///   [LaunchReveal.builder]，玻璃只经 `progress` 显现，绝不放进 Opacity。
+/// - 隐藏时整条向下移出屏幕（连同投影），从不淡出玻璃；位移由弹簧驱动
+///   （见 [_HomeBarSlide]）；
+/// - 启动编排用 [LaunchReveal.builder]，玻璃只经 `progress` 显现，绝不放进
+///   Opacity。
 class HomeBottomBar extends StatelessWidget {
   const HomeBottomBar({
     super.key,
@@ -46,7 +46,7 @@ class HomeBottomBar extends StatelessWidget {
   final bool showInlineAction;
   final bool hidden;
 
-  /// 玻璃悬浮底栏在屏幕底部占用的高度（胶囊 + 底部间距 + 系统手势条）；
+  /// 悬浮底栏在屏幕底部占用的高度（胶囊 + 底部间距 + 系统手势条）；
   /// FAB 等浮在底栏上方的元素按它让位。
   static double floatingSlotExtent(
     BuildContext context,
@@ -58,18 +58,6 @@ class HomeBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!style.isGlass) {
-      return LaunchReveal(
-        slot: LaunchRevealSlot.navigation,
-        child: BottomNav(
-          items: items,
-          selectedIndex: selectedIndex,
-          onTap: onTap,
-          style: style,
-          position: position,
-        ),
-      );
-    }
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final hiddenOffset =
         style.barHeight + style.bottomGap + bottomInset + hiddenShadowAllowance;
@@ -79,14 +67,8 @@ class HomeBottomBar extends StatelessWidget {
         right: style.sideMargin,
         bottom: bottomInset + style.bottomGap,
       ),
-      // 位移而不是淡出：玻璃不能放进透明度层。TweenAnimationBuilder 从当前值
-      // 补间到新终点，滚动中途反向时不会跳变；减少动画时长为 0，直接到位。
-      child: TweenAnimationBuilder<double>(
-        tween: Tween<double>(end: hidden ? hiddenOffset : 0),
-        duration: ExpressiveMotion.duration(context, ExpressiveMotion.standard),
-        curve: ExpressiveMotion.spatial,
-        builder: (BuildContext context, double dy, Widget? child) =>
-            Transform.translate(offset: Offset(0, dy), child: child),
+      child: _HomeBarSlide(
+        offset: hidden ? hiddenOffset : 0,
         child: LaunchReveal.builder(
           slot: LaunchRevealSlot.navigation,
           builder: (BuildContext context, double opacity, Widget? _) =>
@@ -104,4 +86,50 @@ class HomeBottomBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 把 [child] 向下平移 [offset]，目标变化时用弹簧过渡。
+///
+/// 位移而不是淡出：玻璃不能放进透明度层。用真弹簧而不是补间：滚动方向
+/// 来回变时目标会在动画中途翻转，弹簧带着当前速度掉头，不会先停一下再从
+/// 零速起步；出现时略微越过终点再落回（约 2%），收起时的过冲在屏幕外。
+/// 减少动画时直接到位。首帧不播动画：一出现就在目标位置。
+class _HomeBarSlide extends StatefulWidget {
+  const _HomeBarSlide({required this.offset, required this.child});
+
+  final double offset;
+  final Widget child;
+
+  @override
+  State<_HomeBarSlide> createState() => _HomeBarSlideState();
+}
+
+class _HomeBarSlideState extends State<_HomeBarSlide>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _dy = AnimationController.unbounded(
+    vsync: this,
+    value: widget.offset,
+  );
+
+  @override
+  void didUpdateWidget(_HomeBarSlide oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.offset != widget.offset) {
+      ExpressiveMotion.springTo(context, _dy, widget.offset);
+    }
+  }
+
+  @override
+  void dispose() {
+    _dy.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _dy,
+    builder: (BuildContext context, Widget? child) =>
+        Transform.translate(offset: Offset(0, _dy.value), child: child),
+    child: widget.child,
+  );
 }

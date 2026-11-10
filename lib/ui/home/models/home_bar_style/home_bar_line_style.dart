@@ -25,18 +25,14 @@ class HomeBarLineStyle {
     required this.width,
   });
 
-  /// 悬浮底栏描边的默认值：与改版前浅色主题下的描边相同（outlineVariant、
-  /// 60% 不透明、1dp）。
-  ///
-  /// 改版前深色主题的描边是 50%，统一为一个不透明度后深色略微变亮；玻璃
-  /// 材质尚未发布、实色栏没有描边，这个差异可以接受。
+  /// 悬浮底栏描边的默认值：outlineVariant、50% 不透明、1dp——只在与底色
+  /// 相近的内容上勾出胶囊的边界，不抢投影的戏。
   static const HomeBarLineStyle borderDefaults = HomeBarLineStyle(
-    opacity: 0.6,
+    opacity: 0.5,
     width: 1.0,
   );
 
-  /// 玻璃顶栏分隔线的默认值：与改版前浅色主题下的分隔线相同（35%、0.6dp）。
-  /// 改版前深色为 20%，同样统一后略微变亮，理由同 [borderDefaults]。
+  /// 玻璃顶栏分隔线的默认值：outlineVariant、35% 不透明、0.6dp。
   static const HomeBarLineStyle topBarDefaults = HomeBarLineStyle(
     opacity: 0.35,
     width: 0.6,

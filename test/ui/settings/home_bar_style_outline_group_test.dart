@@ -8,9 +8,8 @@ import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 
 import '../../support/home_bar_style_page_harness.dart';
 
-const _glass = HomeBarSettings(
-  current: HomeBarStyle(material: HomeBarMaterial.glass),
-);
+/// 默认样式（悬浮玻璃栏）。
+const _glass = HomeBarSettings.defaults;
 
 /// 颜色来源按钮组里的某个选项；[index] 0 为底栏描边、1 为顶栏分隔线。
 Finder _lineColorOption(String label, {int index = 0}) => find
@@ -24,31 +23,19 @@ Finder _slider(String title) =>
     find.widgetWithText(SettingsSliderTile, title).first;
 
 void main() {
-  testWidgets('the outline group is hidden in solid and shown in glass', (
+  testWidgets('the outline group always sits below the glass options', (
     tester,
   ) async {
-    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    final (_, l10n) = await pumpHomeBarStylePage(tester);
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabMaterial);
-    expect(inHomeBarOptions(l10n.homeBarStyleOutlineGroup), findsNothing);
-    expect(inHomeBarOptions(l10n.homeBarStyleBorder), findsNothing);
-
-    await tapHomeBarOption(
-      tester,
-      find.descendant(
-        of: find.byType(ExpressiveButtonGroup<HomeBarMaterial>),
-        matching: find.text(l10n.homeBarStyleMaterialGlass),
-      ),
-    );
+    // 没有材质选择器了：玻璃参数与描边分组常驻。
+    expect(inHomeBarOptions(l10n.homeBarStyleGlassTopBars), findsOneWidget);
     await scrollToHomeBarOption(
       tester,
       inHomeBarOptions(l10n.homeBarStyleOutlineGroup),
     );
     expect(inHomeBarOptions(l10n.homeBarStyleOutlineGroup), findsOneWidget);
     expect(inHomeBarOptions(l10n.homeBarStyleBorder), findsOneWidget);
-    expect(
-      storedHomeBarSettings(settings).current.material,
-      HomeBarMaterial.glass,
-    );
     expect(tester.takeException(), isNull);
   });
 
@@ -108,11 +95,7 @@ void main() {
     final (settings, l10n) = await pumpHomeBarStylePage(
       tester,
       initial: const HomeBarSettings(
-        current: HomeBarStyle(
-          material: HomeBarMaterial.glass,
-          glassTopBars: false,
-          topBarHairline: true,
-        ),
+        current: HomeBarStyle(glassTopBars: false, topBarHairline: true),
       ),
     );
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabMaterial);
@@ -238,7 +221,10 @@ void main() {
     expect(opacityTile.min, HomeBarStyleLimits.lineOpacity.min);
     opacityTile.onChanged!(0.85);
     await tester.pump();
-    expect(storedHomeBarSettings(settings).current.borderLine.opacity, 0.6);
+    expect(
+      storedHomeBarSettings(settings).current.borderLine.opacity,
+      HomeBarLineStyle.borderDefaults.opacity,
+    );
     opacityTile.onChangeEnd!(0.85);
     await tester.pumpAndSettle();
     final stored = storedHomeBarSettings(settings).current;

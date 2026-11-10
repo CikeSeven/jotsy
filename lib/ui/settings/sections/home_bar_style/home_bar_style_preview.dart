@@ -20,8 +20,8 @@ import '../../../home/models/home_bar_style/home_bar_style.dart';
 import '../../../home/models/home_tab.dart';
 import '../../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../../home/widgets/home_bar/home_floating_bar.dart';
+import '../../../home/widgets/home_bar/home_nav_bar.dart';
 import '../../../home/widgets/home_bar/home_top_bar_surface.dart';
-import '../../../widgets/bottom_nav.dart';
 import '../../controllers/home_bar_style_editor_controller.dart';
 import '../../widgets/style_editor/style_preview_background.dart';
 import 'home_bar_style_preview_toolbar.dart';
@@ -30,9 +30,8 @@ import 'home_bar_style_preview_toolbar.dart';
 ///
 /// 输入：编辑控制器（当前样式含拖动中的草稿、栏的行为、预览明暗）与示例
 /// 日记；输出：圆角画框里的“首页”——顶部 56dp 的日记页顶栏、可滚动的示例
-/// 日记列表（真实的 [DiariesListSection]，套用用户当前的卡片样式），底部按
-/// 材质画实色底栏 [BottomNav] 或悬浮的玻璃胶囊 [HomeFloatingBar]，以及新建
-/// 按钮。无副作用：导航项点按只改预览里的选中项，新建按钮与卡片都不做事。
+/// 日记列表（真实的 [DiariesListSection]，套用用户当前的卡片样式），底部是
+/// 悬浮的玻璃胶囊 [HomeFloatingBar]，以及新建按钮。无副作用：导航项点按只改预览里的选中项，新建按钮与卡片都不做事。
 ///
 /// - 列表上下留出栏的高度，首尾两张卡片能完整露出，中间的内容可以滚到
 ///   玻璃栏下方，直接看到模糊与透出的效果；
@@ -171,44 +170,28 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
         BottomNavItem(label: tab.label(l10n), icon: tab.icon),
     ];
     final position = behavior.indicatorFollowsSwipe ? _position : null;
-    final barExtent = resolved.isGlass
-        ? resolved.barHeight + resolved.bottomGap
-        : BottomNav.navHeight;
-    final inline =
-        resolved.isGlass && resolved.fabPlacement == HomeBarFabPlacement.inline;
+    final barExtent = resolved.barHeight + resolved.bottomGap;
+    final inline = resolved.fabPlacement == HomeBarFabPlacement.inline;
     final radius = BorderRadius.circular(AppRadii.card);
 
-    final bottomBar = resolved.isGlass
-        ? Positioned(
-            left: resolved.sideMargin,
-            right: resolved.sideMargin,
-            bottom: resolved.bottomGap,
-            child: HomeFloatingBar(
-              items: items,
-              selectedIndex: _selected,
-              onTap: _select,
-              style: resolved,
-              position: position,
-              inlineAction: HomeInlineCreateButton(
-                style: resolved,
-                label: l10n.commonNew,
-                onPressed: () {},
-              ),
-              showInlineAction: inline,
-            ),
-          )
-        : Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: BottomNav(
-              items: items,
-              selectedIndex: _selected,
-              onTap: _select,
-              style: resolved,
-              position: position,
-            ),
-          );
+    final bottomBar = Positioned(
+      left: resolved.sideMargin,
+      right: resolved.sideMargin,
+      bottom: resolved.bottomGap,
+      child: HomeFloatingBar(
+        items: items,
+        selectedIndex: _selected,
+        onTap: _select,
+        style: resolved,
+        position: position,
+        inlineAction: HomeInlineCreateButton(
+          style: resolved,
+          label: l10n.commonNew,
+          onPressed: () {},
+        ),
+        showInlineAction: inline,
+      ),
+    );
 
     return DecoratedBox(
       position: DecorationPosition.foreground,
@@ -276,8 +259,8 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
             right: 0,
             child: _PreviewTopBar(title: HomeTab.diaries.label(l10n)),
           ),
-          // 栏上方的新建按钮：实色与玻璃都有（与首页一致），位置随
-          // 栏高变化；放在栏右侧时由悬浮栏自己画。
+          // 栏上方的新建按钮（与首页一致），位置随栏高变化；放在栏右侧时
+          // 由悬浮栏自己画。
           if (!inline)
             Positioned(
               right: _fabEnd,

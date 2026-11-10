@@ -12,14 +12,11 @@ import '../../widgets/style_editor/style_color_dialog.dart';
 import '../../widgets/style_editor/style_custom_color_tile.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import 'home_bar_style_common.dart';
-import 'home_bar_style_labels.dart';
 import 'home_bar_style_outline_group.dart';
 
-/// “材质”标签页：实色 / 玻璃，以及只在玻璃下出现的玻璃参数。
+/// “材质”标签页：玻璃参数（顶栏、模糊、不透明度、色调、阴影）与描边。
 ///
-/// 玻璃参数是材质的从属项，与材质选择器合成分组里的同一项：分组按位置
-/// 复用子项并在子项之间插分割线，若把它们作为单独的项增删，分割线会多出
-/// 一条，后面的行也会接手前一行的状态补播动画。从属行一律缩进一级。
+/// 底栏只有悬浮玻璃一种形态，这里没有材质选择器；两个分组常驻。
 class HomeBarStyleMaterialTab extends StatelessWidget {
   const HomeBarStyleMaterialTab({super.key, required this.controller});
 
@@ -28,20 +25,16 @@ class HomeBarStyleMaterialTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final style = controller.style;
-    final isGlass = style.material == HomeBarMaterial.glass;
     final highContrast = MediaQuery.highContrastOf(context);
-    final footer = isGlass
-        ? <String>[
-            l10n.homeBarStyleGlassFooter,
-            if (highContrast) l10n.homeBarStyleHighContrastNote,
-          ].join('\n')
-        : null;
+    final footer = <String>[
+      l10n.homeBarStyleGlassFooter,
+      if (highContrast) l10n.homeBarStyleHighContrastNote,
+    ].join('\n');
 
     return StyleEditorTabList(
       children: <Widget>[
-        // 描边分组只在玻璃下出现，与材质分组合成列表里的同一项：两组之间
-        // 的间距放进 Reveal 一起展开收起，实色时列表底部不会多出一段空白。
+        // 两个分组合成列表里的同一项：列表是懒构建的，拆成两项时描边分组要
+        // 滚到才进树，展开自定义色调把它顶出屏幕时还会连同状态一起卸载。
         Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -49,50 +42,10 @@ class HomeBarStyleMaterialTab extends StatelessWidget {
             SettingsCardGroup(
               title: l10n.homeBarStyleTabMaterial,
               footer: footer,
-              children: <Widget>[
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ExpressiveButtonGroup<HomeBarMaterial>(
-                        minSegmentWidth: 96,
-                        segments: <ButtonSegment<HomeBarMaterial>>[
-                          for (final material in HomeBarMaterial.values)
-                            ButtonSegment<HomeBarMaterial>(
-                              value: material,
-                              label: Text(homeBarMaterialLabel(l10n, material)),
-                            ),
-                        ],
-                        selected: <HomeBarMaterial>{style.material},
-                        // 经 withMaterial 换材质：图标与文字间距随之联动（玻璃栏
-                        // 更矮，默认间距会让文字贴住色块下沿），只替换默认值。
-                        onSelectionChanged: (Set<HomeBarMaterial> v) =>
-                            controller.commitWith(
-                              (s) => s.withMaterial(v.single),
-                            ),
-                      ),
-                    ),
-                    SettingsReveal(
-                      visible: isGlass,
-                      child: _GlassOptions(controller: controller),
-                    ),
-                  ],
-                ),
-              ],
+              children: <Widget>[_GlassOptions(controller: controller)],
             ),
-            SettingsReveal(
-              visible: isGlass,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  const SizedBox(height: 16),
-                  HomeBarStyleOutlineGroup(controller: controller),
-                ],
-              ),
-            ),
+            const SizedBox(height: 16),
+            HomeBarStyleOutlineGroup(controller: controller),
           ],
         ),
       ],
@@ -100,9 +53,9 @@ class HomeBarStyleMaterialTab extends StatelessWidget {
   }
 }
 
-/// 玻璃参数（顶栏、模糊、不透明度、色调、阴影），每行前一条缩进的分割线，
-/// 与上方的材质选择器隔开。描边与分隔线在单独的“描边”分组里
-/// （[HomeBarStyleOutlineGroup]）。
+/// 玻璃参数（顶栏、模糊、不透明度、色调、阴影），合成分组里的同一项：
+/// 自定义色调的颜色行会展开收起，作为单独的项增删时分组的分割线会多出
+/// 一条。描边与分隔线在单独的“描边”分组里（[HomeBarStyleOutlineGroup]）。
 class _GlassOptions extends StatelessWidget {
   const _GlassOptions({required this.controller});
 

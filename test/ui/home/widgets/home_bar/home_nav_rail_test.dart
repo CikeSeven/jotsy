@@ -19,11 +19,11 @@ const _items = <BottomNavItem>[
 ];
 
 HomeBarResolvedStyle _style({
-  HomeBarMaterial material = HomeBarMaterial.solid,
   HomeBarLabelMode labelMode = HomeBarLabelMode.always,
   HomeBarIndicator indicator = HomeBarIndicator.capsule,
 }) => HomeBarResolvedStyle.resolve(
-  HomeBarStyle(material: material, labelMode: labelMode, indicator: indicator),
+  // 图标 20：侧边栏的尺寸断言按 20 图标推算（默认图标是 22）。
+  HomeBarStyle(labelMode: labelMode, indicator: indicator, iconSize: 20),
   expressiveTestTheme(Brightness.light).colorScheme,
 );
 
@@ -70,9 +70,7 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('a solid rail paints the same fill as the phone bottom bar', (
-    tester,
-  ) async {
+  testWidgets('an untinted rail blends with the page canvas', (tester) async {
     for (final brightness in Brightness.values) {
       final theme = expressiveTestTheme(brightness);
       final style = HomeBarResolvedStyle.resolve(
@@ -85,7 +83,8 @@ void main() {
       final material = tester.widget<Material>(
         find.descendant(of: rail, matching: find.byType(Material)).first,
       );
-      // 与 BottomNav 的底色同源。
+      // 中性色调：与页面连成一片，不用玻璃的等效色。
+      expect(style.tinted, isFalse);
       expect(
         material.color,
         theme.navigationBarTheme.backgroundColor,
@@ -94,14 +93,10 @@ void main() {
     }
   });
 
-  testWidgets('a glass rail uses the opaque tint, custom colours included, '
+  testWidgets('a tinted rail uses the opaque tint, custom colours included, '
       'and never blurs', (tester) async {
     final style = HomeBarResolvedStyle.resolve(
-      const HomeBarStyle(
-        material: HomeBarMaterial.glass,
-        tint: HomeBarTint.custom,
-        tintColor: 0xFF3366AA,
-      ),
+      const HomeBarStyle(tint: HomeBarTint.custom, tintColor: 0xFF3366AA),
       expressiveTestTheme(Brightness.light).colorScheme,
     );
     await _pump(tester, style: style);

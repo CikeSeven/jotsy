@@ -3,18 +3,40 @@ part of 'home_bar_style.dart';
 // HomeBarStyle 的 JSON 读写：逐字段容错解码、稀疏编码。拆出来只为让模型
 // 文件保持在拆分阈值以内；规则见 HomeBarStyle 与 StyleJson 的说明。
 
-HomeBarStyle _homeBarStyleFromJson(Object? raw) {
+/// 移除实色栏之前的默认值（去掉已不存在的 `material`）：旧格式里玻璃样式
+/// 的稀疏 JSON 以它为基准，见 [HomeBarStyle.fromLegacyJson]。只用于读取旧
+/// 数据，数值不得再改。
+const HomeBarStyle _legacyGlassDefaults = HomeBarStyle(
+  glassTopBars: true,
+  blurSigma: 20,
+  tintOpacity: 0.72,
+  tint: HomeBarTint.neutral,
+  border: true,
+  borderLine: HomeBarLineStyle(opacity: 0.6, width: 1.0),
+  topBarHairline: false,
+  topBarLine: HomeBarLineStyle(opacity: 0.35, width: 0.6),
+  shadow: true,
+  barHeight: 64,
+  cornerRadius: 32,
+  sideMargin: 16,
+  bottomGap: 12,
+  fabPlacement: HomeBarFabPlacement.above,
+  labelMode: HomeBarLabelMode.always,
+  iconSize: 20,
+  indicator: HomeBarIndicator.capsule,
+  labelGap: 4,
+  blockPadding: 6,
+);
+
+/// [d] 是缺失 / 无效字段回退的基准：当前格式为 [HomeBarStyle.defaults]，
+/// 旧格式的玻璃样式为 [_legacyGlassDefaults]。旧格式里的 `material` 键在
+/// 这里不读（已由调用方用来挑基准）。
+HomeBarStyle _homeBarStyleFromJson(Object? raw, HomeBarStyle d) {
   final json = StyleJson.map(raw);
   if (json == null) {
-    return HomeBarStyle.defaults;
+    return d;
   }
-  const d = HomeBarStyle.defaults;
   return HomeBarStyle(
-    material: StyleJson.enumByName(
-      HomeBarMaterial.values,
-      json['material'],
-      d.material,
-    ),
     glassTopBars: StyleJson.boolean(json['glassTopBars'], d.glassTopBars),
     blurSigma: StyleJson.number(
       json['blurSigma'],
@@ -99,7 +121,6 @@ HomeBarStyle _homeBarStyleFromJson(Object? raw) {
 Map<String, Object> _homeBarStyleToJson(HomeBarStyle s) {
   const d = HomeBarStyle.defaults;
   final json = <String, Object>{};
-  StyleJson.putEnum(json, 'material', s.material, d.material);
   StyleJson.put(json, 'glassTopBars', s.glassTopBars, d.glassTopBars);
   StyleJson.put(json, 'blurSigma', s.blurSigma, d.blurSigma);
   StyleJson.put(json, 'tintOpacity', s.tintOpacity, d.tintOpacity);

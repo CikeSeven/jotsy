@@ -18,26 +18,27 @@ part 'home_bar_style_json.dart';
 /// ARGB 整数保存，解析为具体颜色、尺寸由渲染层（`HomeBarResolvedStyle`）
 /// 负责，那里还会处理高对比度回退与自定义色的可读性兜底。
 ///
-/// 字段分三组：
-/// - 材质与玻璃：[material]、[glassTopBars]、[blurSigma]、[tintOpacity]、
-///   [tint]、[tintColor]、[tintColorDark]、[border]、[borderLine]、
-///   [topBarHairline]、[topBarLine]；只在玻璃材质下生效；
+/// 底栏只有一种形态：悬浮的毛玻璃胶囊（贴底铺满的实色栏已移除）。字段分
+/// 三组：
+/// - 玻璃：[glassTopBars]、[blurSigma]、[tintOpacity]、[tint]、[tintColor]、
+///   [tintColorDark]、[border]、[borderLine]、[topBarHairline]、[topBarLine]；
 /// - 悬浮底栏几何：[shadow]、[barHeight]、[cornerRadius]、[sideMargin]、
-///   [bottomGap]、[fabPlacement]；实色底栏贴底铺满，不用这些；
+///   [bottomGap]、[fabPlacement]；
 /// - 导航项：[labelMode]、[iconSize]、[labelGap]、[indicator]、
-///   [blockPadding]；两种材质都适用。
+///   [blockPadding]。
 ///
 /// 兼容策略：
-/// - 默认值即改版前写死的实色栏，未自定义的用户看不到变化；
 /// - 解码逐字段容错：缺失、类型不符、未知枚举名或越界的数值只让该字段回退
 ///   到默认值（越界夹到边界），见 [StyleJson]；
-/// - 编码是稀疏的：只写与默认值不同的字段。
+/// - 编码是稀疏的：只写与默认值不同的字段。因此默认值一变，已保存的稀疏
+///   JSON 的含义也跟着变——移除实色栏时默认值整体换过一次，旧数据（设置
+///   `v` < 2、样式码 v1）必须经 [HomeBarStyle.fromLegacyJson] 读取，见那里的
+///   说明；以后再改默认值同样要提升版本并保留旧默认值。
 @immutable
 class HomeBarStyle {
   const HomeBarStyle({
-    this.material = HomeBarMaterial.solid,
     this.glassTopBars = true,
-    this.blurSigma = 20,
+    this.blurSigma = 24,
     this.tintOpacity = 0.72,
     this.tint = HomeBarTint.neutral,
     this.tintColor,
@@ -49,29 +50,45 @@ class HomeBarStyle {
     this.shadow = true,
     this.barHeight = 64,
     this.cornerRadius = 32,
-    this.sideMargin = 16,
+    this.sideMargin = 20,
     this.bottomGap = 12,
     this.fabPlacement = HomeBarFabPlacement.above,
     this.labelMode = HomeBarLabelMode.always,
-    this.iconSize = 20,
-    this.indicator = HomeBarIndicator.capsule,
-    this.labelGap = 4,
+    this.iconSize = 22,
+    this.indicator = HomeBarIndicator.block,
+    this.labelGap = 2,
     this.blockPadding = 6,
   });
 
+  /// 默认样式：悬浮玻璃胶囊 + 与胶囊同心的圆角块指示器（视觉规格见
+  /// DESIGN.md §5.19）。
   static const HomeBarStyle defaults = HomeBarStyle();
 
-  /// 玻璃材质下推荐的图标与文字间距：玻璃悬浮栏默认只有 64 高，圆角块
-  /// 还要在内容四周留出内边距，M3 的 4dp 间距会让文字贴住块的下沿。
-  static const double glassLabelGap = 2;
+  /// 从已解码的当前格式 JSON 构造；不是对象时返回默认样式。
+  factory HomeBarStyle.fromJson(Object? raw) =>
+      _homeBarStyleFromJson(raw, HomeBarStyle.defaults);
 
-  /// 从已解码的 JSON 构造；不是对象时返回默认样式。
-  factory HomeBarStyle.fromJson(Object? raw) => _homeBarStyleFromJson(raw);
+  /// 读取移除实色栏之前保存的样式（设置 `v` 1、样式码 v1）。
+  ///
+  /// 旧格式的稀疏 JSON 以当时的默认值（实色栏、胶囊指示器、间距 4……）为
+  /// 基准，并带一个 `material` 字段：
+  /// - `material` 为 `glass`：用户已经在用悬浮玻璃栏，没写出来的字段按
+  ///   **旧默认值**补齐，外观与升级前完全相同；
+  /// - 其余（实色或缺失）：实色栏不再存在，改用新的默认样式，只保留用户
+  ///   明确改过（写进 JSON）的字段，如文字模式、图标大小。
+  factory HomeBarStyle.fromLegacyJson(Object? raw) {
+    final json = StyleJson.map(raw);
+    if (json == null) {
+      return defaults;
+    }
+    return _homeBarStyleFromJson(
+      json,
+      json['material'] == 'glass' ? _legacyGlassDefaults : defaults,
+    );
+  }
 
-  final HomeBarMaterial material;
-
-  /// 玻璃材质下顶栏是否也用玻璃（透出下方滚动的内容）；关闭时只有底栏是
-  /// 玻璃，顶栏保持实色。实色材质下不生效。
+  /// 顶栏是否也用玻璃（透出下方滚动的内容）；关闭时只有底栏是玻璃，顶栏
+  /// 保持实色。
   final bool glassTopBars;
   final double blurSigma;
 
@@ -113,8 +130,9 @@ class HomeBarStyle {
   final double iconSize;
   final HomeBarIndicator indicator;
 
-  /// 文字与图标框之间的距离（与 M3 `labelPadding.top` 同义）；默认 4 即 M3，
-  /// 实色栏才能与改版前逐像素一致。
+  /// 文字与图标框之间的距离（与 M3 `labelPadding.top` 同义）。默认 2：
+  /// 悬浮栏只有 64 高，圆角块还要在内容四周留出内边距，M3 的 4dp 会让文字
+  /// 贴住块的下沿。
   final double labelGap;
 
   /// 圆角块指示器在内容（图标框 + 文字）四周留出的内边距；只对
@@ -126,24 +144,9 @@ class HomeBarStyle {
   /// 稀疏 JSON：默认样式编码为空对象。
   Map<String, Object> toJson() => _homeBarStyleToJson(this);
 
-  /// 换材质，并联动图标与文字间距：玻璃栏更矮、又常配圆角块，默认的 4dp
-  /// 会让内容撑满块，所以切到玻璃时把仍是实色默认值的间距收紧到
-  /// [glassLabelGap]，切回实色时把仍是玻璃默认值的间距还原。用户调过的
-  /// 其他值一律保留——联动只替换“没人动过”的默认值，不覆盖用户的选择。
-  HomeBarStyle withMaterial(HomeBarMaterial material) {
-    var gap = labelGap;
-    if (material == HomeBarMaterial.glass && gap == defaults.labelGap) {
-      gap = glassLabelGap;
-    } else if (material == HomeBarMaterial.solid && gap == glassLabelGap) {
-      gap = defaults.labelGap;
-    }
-    return copyWith(material: material, labelGap: gap);
-  }
-
   /// 可空颜色用 [ValueGetter] 传入，才能区分“不改”（不传）与“清除”
   /// （`() => null`）。
   HomeBarStyle copyWith({
-    HomeBarMaterial? material,
     bool? glassTopBars,
     double? blurSigma,
     double? tintOpacity,
@@ -167,7 +170,6 @@ class HomeBarStyle {
     double? blockPadding,
   }) {
     return HomeBarStyle(
-      material: material ?? this.material,
       glassTopBars: glassTopBars ?? this.glassTopBars,
       blurSigma: blurSigma ?? this.blurSigma,
       tintOpacity: tintOpacity ?? this.tintOpacity,
@@ -197,7 +199,6 @@ class HomeBarStyle {
   @override
   bool operator ==(Object other) {
     return other is HomeBarStyle &&
-        other.material == material &&
         other.glassTopBars == glassTopBars &&
         other.blurSigma == blurSigma &&
         other.tintOpacity == tintOpacity &&
@@ -223,7 +224,6 @@ class HomeBarStyle {
 
   @override
   int get hashCode => Object.hashAll(<Object?>[
-    material,
     glassTopBars,
     blurSigma,
     tintOpacity,

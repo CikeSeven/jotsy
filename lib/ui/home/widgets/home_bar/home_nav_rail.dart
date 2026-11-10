@@ -4,8 +4,9 @@
 // 的新建按钮；输出：96dp 宽、铺满高度的竖栏，无副作用。设置不是 Tab，不在
 // 这里（从日记页顶栏“更多”进入）。
 //
-// - 底色与手机底栏是同一块表面（见 [HomeNavRail.backgroundOf]），但从不画
-//   玻璃：侧边栏下面没有会滚过去的内容，模糊没有意义；也不画分隔线；
+// - 底色默认与页面连成一片，给玻璃染了色时改用它的不透明等效色（见
+//   [HomeNavRail.backgroundOf]）；从不画玻璃：侧边栏下面没有会滚过去的
+//   内容，模糊没有意义；也不画分隔线；
 // - 导航项与底栏同一套视觉口径：颜色经 [HomeNavColors.resolve]，指示器
 //   形态（胶囊 / 色块 / 无）、文字模式、图标大小、文字间距、色块内边距都读
 //   [HomeBarResolvedStyle]，选中动画复用 [HomeNavSelectionAnimator] 与
@@ -57,19 +58,20 @@ class HomeNavRail extends StatelessWidget {
   /// 的文字到栏底仍是 [edgePadding]。
   static const double itemPadding = 2;
 
-  /// 侧边栏底色：与手机底栏实际画出的颜色相同，两种宽度下是同一块表面。
-  /// - 实色：底栏（BottomNav）的底色，即 navigationBarTheme 的背景色（亮色
-  ///   与页面画布同色，暗色 surfaceContainer）；当前 Tab 区域设了背景时
-  ///   （[backdrop] 实际在画）改为该区域的实色栏底色——纯色背景时与页面
-  ///   连成一片，图片背景时保持不透明的 surface；
-  /// - 玻璃：玻璃底色（含自定义颜色）的不透明等效色 solidFill——侧边栏不
-  ///   模糊，与高对比度下的玻璃底栏同一颜色。
+  /// 侧边栏底色。侧边栏不模糊，是一整条不透明的表面：
+  /// - 玻璃染了色（主题色调 / 自定义颜色，`style.tinted`）：用玻璃底色的
+  ///   不透明等效色 solidFill，与高对比度下的悬浮底栏同一颜色——用户挑的
+  ///   颜色在宽窗口下同样看得到；
+  /// - 中性色调（默认）：与页面连成一片。当前 Tab 区域设了背景时
+  ///   （[backdrop] 实际在画）取该区域的实色栏底色——纯色背景时与页面同色，
+  ///   图片背景时保持不透明的 surface；没有背景时取 navigationBarTheme 的
+  ///   背景色（亮色与页面画布同色，暗色 surfaceContainer）。
   static Color backgroundOf(
     ThemeData theme,
     HomeBarResolvedStyle style, {
     AppPageBackdrop? backdrop,
   }) {
-    if (style.isGlass) {
+    if (style.tinted) {
       return style.solidFill;
     }
     if (backdrop != null && backdrop.hasBackground) {

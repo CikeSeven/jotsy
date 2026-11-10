@@ -29,7 +29,6 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_nav_destination.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_indicator.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,7 +38,11 @@ const double _screenHeight = 860;
 /// 模拟的系统手势条高度。
 const double _gestureInset = 24;
 
-const HomeBarStyle _glass = HomeBarStyle(material: HomeBarMaterial.glass);
+/// 默认样式：悬浮玻璃栏 + 玻璃顶栏。
+const HomeBarStyle _glass = HomeBarStyle.defaults;
+
+/// 只有顶栏保持实色（底栏仍是悬浮玻璃）。
+const HomeBarStyle _solidTopBars = HomeBarStyle(glassTopBars: false);
 
 String? _raw(HomeBarStyle style, [HomeBarBehavior? behavior]) =>
     HomeBarSettings(
@@ -244,23 +247,14 @@ double _tagBarBottom(WidgetTester tester) => tester
     .bottom;
 
 void main() {
-  testWidgets('the default style keeps the solid bar under the body', (
-    tester,
-  ) async {
+  testWidgets('the default style floats a blurred pill above the gesture '
+      'inset', (tester) async {
+    // 没有存过任何样式：默认就是悬浮玻璃栏，不再有贴底的实色栏。
     await _pumpHome(tester);
-    expect(_homeScaffold(tester).extendBody, isFalse);
-    expect(find.byType(BottomNav), findsOneWidget);
-    expect(find.byType(HomeFloatingBar), findsNothing);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
-    await _unmount(tester);
-  });
-
-  testWidgets('glass floats a blurred pill above the gesture inset', (
-    tester,
-  ) async {
-    await _pumpHome(tester, homeBarRaw: _raw(_glass));
     expect(_homeScaffold(tester).extendBody, isTrue);
-    expect(find.byType(BottomNav), findsNothing);
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
     final rect = tester.getRect(_pill);
     expect(rect.left, _glass.sideMargin);
     expect(rect.right, _screenWidth - _glass.sideMargin);
@@ -495,25 +489,37 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('changing the setting swaps solid and glass live', (
-    tester,
-  ) async {
+  testWidgets('changing the style reshapes the pill live', (tester) async {
     final settings = await _pumpHome(tester, diaryCount: 3);
-    expect(find.byType(BottomNav), findsOneWidget);
+    expect(tester.getRect(_pill).left, _glass.sideMargin);
 
-    unawaited(settings.setHomeBarStyleRaw(_raw(_glass)));
+    const wide = HomeBarStyle(sideMargin: 32, barHeight: 72);
+    unawaited(settings.setHomeBarStyleRaw(_raw(wide)));
     await tester.pumpAndSettle();
-    expect(find.byType(BottomNav), findsNothing);
-    expect(find.byType(HomeFloatingBar), findsOneWidget);
-    expect(_homeScaffold(tester).extendBody, isTrue);
+    expect(tester.getRect(_pill).left, 32);
+    expect(tester.getRect(_pill).height, 72);
     expect(find.byType(DiariesPage), findsOneWidget);
 
     unawaited(settings.setHomeBarStyleRaw(null));
     await tester.pumpAndSettle();
-    expect(find.byType(BottomNav), findsOneWidget);
-    expect(find.byType(HomeFloatingBar), findsNothing);
-    expect(_homeScaffold(tester).extendBody, isFalse);
+    expect(tester.getRect(_pill).left, _glass.sideMargin);
+    expect(tester.getRect(_pill).height, _glass.barHeight);
+    expect(_homeScaffold(tester).extendBody, isTrue);
     expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets('settings saved while the solid bar existed still open', (
+    tester,
+  ) async {
+    // v1 的实色样式：升级后落到默认的悬浮栏上，保留写明的字段。
+    await _pumpHome(
+      tester,
+      homeBarRaw: '{"v":1,"current":{"material":"solid","barHeight":72}}',
+    );
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
+    expect(tester.getRect(_pill).height, 72);
+    expect(tester.getRect(_pill).left, _glass.sideMargin);
     await _unmount(tester);
   });
 
@@ -665,10 +671,15 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('solid bars keep the first card flush with the tag bar', (
+    testWidgets('solid top bars keep the first card flush with the tag bar', (
       tester,
     ) async {
-      await _pumpHome(tester, diaryCount: 3, statusBar: _statusBar);
+      await _pumpHome(
+        tester,
+        diaryCount: 3,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_solidTopBars),
+      );
       expect(
         find.byKey(const ValueKey<String>('diaries_top_content_gap')),
         findsNothing,
@@ -680,10 +691,15 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('solid bars keep the status bar inset and no glass', (
+    testWidgets('solid top bars keep the status bar inset and no glass', (
       tester,
     ) async {
-      await _pumpHome(tester, diaryCount: 3, statusBar: _statusBar);
+      await _pumpHome(
+        tester,
+        diaryCount: 3,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_solidTopBars),
+      );
       expect(
         find.descendant(
           of: find.byType(DiariesPage),
@@ -702,9 +718,7 @@ void main() {
     // 这组只关心纵向留白，用宽一点的屏幕避开它。
     const wide = 480.0;
 
-    testWidgets('glass: every tab pads its end by the bar slot', (
-      tester,
-    ) async {
+    testWidgets('every tab pads its end by the bar slot', (tester) async {
       await _pumpHome(
         tester,
         diaryCount: 18,
@@ -737,20 +751,6 @@ void main() {
         tester.getRect(find.byType(ExploreContentView)).bottom,
         lessThanOrEqualTo(pillTop),
       );
-      await _unmount(tester);
-    });
-
-    testWidgets('solid: the trailing space stays as before', (tester) async {
-      await _pumpHome(tester, diaryCount: 18, width: wide);
-      final l10n = _l10n(tester);
-      final diaries = find.byType(DiariesPage);
-      expect(_slotHeight(tester, diaries), 0);
-      expect(_trailingSpace(tester, diaries), 12);
-
-      await _openTab(tester, l10n.navCalendar);
-      expect(_trailingSpace(tester, find.byType(CalendarPage)), 12);
-      await _openTab(tester, l10n.navExplore);
-      expect(_trailingSpace(tester, find.byType(ExplorePage)), 12);
       await _unmount(tester);
     });
   });

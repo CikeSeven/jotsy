@@ -7707,11 +7707,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String homeBarStyleCustomName(String material) {
-    return '$material（自定义）';
-  }
-
-  @override
   String get homeBarStyleTabPresets => '预设';
 
   @override
@@ -7725,12 +7720,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleTabBehavior => '行为';
-
-  @override
-  String get homeBarStylePresetClassic => '经典';
-
-  @override
-  String get homeBarStylePresetClassicDesc => '改版前的实色底栏';
 
   @override
   String get homeBarStylePresetGlass => '玻璃';
@@ -7763,13 +7752,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStylePresetCompactDesc => '更矮的悬浮栏，只有图标';
 
   @override
-  String get homeBarStyleMaterialSolid => '实色';
-
-  @override
-  String get homeBarStyleMaterialGlass => '玻璃';
-
-  @override
-  String get homeBarStyleGlassFooter => '玻璃材质下底栏悬浮在页面上，内容从栏下滚过时透出模糊。';
+  String get homeBarStyleGlassFooter => '底栏悬浮在页面上，内容从栏下滚过时透出模糊。';
 
   @override
   String get homeBarStyleHighContrastNote => '系统开启了高对比度，玻璃暂时显示为不透明。';
@@ -7836,12 +7819,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleShadowSubtitle => '悬浮栏下方的柔和投影';
-
-  @override
-  String get homeBarStyleFloatingSolidHint => '悬浮栏只在玻璃材质下使用。';
-
-  @override
-  String get homeBarStyleSwitchToGlass => '切换到玻璃';
 
   @override
   String get homeBarStyleSizeGroup => '尺寸';
@@ -7914,9 +7891,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleHideOnScrollSubtitle => '往下浏览时让出空间，往上滑或回到顶部时出现';
-
-  @override
-  String get homeBarStyleHideOnScrollSolidHint => '下滑收起只在玻璃悬浮栏下可用。';
 
   @override
   String get homeBarStyleIndicatorFollows => '指示器跟随滑动';

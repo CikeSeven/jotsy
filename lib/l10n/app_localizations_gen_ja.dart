@@ -7839,11 +7839,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String homeBarStyleCustomName(String material) {
-    return '$material（カスタム）';
-  }
-
-  @override
   String get homeBarStyleTabPresets => 'プリセット';
 
   @override
@@ -7857,12 +7852,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeBarStyleTabBehavior => '動作';
-
-  @override
-  String get homeBarStylePresetClassic => 'クラシック';
-
-  @override
-  String get homeBarStylePresetClassicDesc => 'リニューアル前の単色のボトムバー';
 
   @override
   String get homeBarStylePresetGlass => 'ガラス';
@@ -7895,14 +7884,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeBarStylePresetCompactDesc => 'アイコンだけの、低めのフローティングバー';
 
   @override
-  String get homeBarStyleMaterialSolid => '単色';
-
-  @override
-  String get homeBarStyleMaterialGlass => 'ガラス';
-
-  @override
   String get homeBarStyleGlassFooter =>
-      'ガラスでは、ボトムバーがページの上に浮かび、その下をスクロールするコンテンツがぼやけて透けて見えます。';
+      'ボトムバーはページの上に浮かび、その下をスクロールするコンテンツがぼやけて透けて見えます。';
 
   @override
   String get homeBarStyleHighContrastNote =>
@@ -7971,12 +7954,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeBarStyleShadowSubtitle => 'フローティングバーの下にやわらかい影を表示';
-
-  @override
-  String get homeBarStyleFloatingSolidHint => 'フローティングバーはガラス素材でのみ使用されます。';
-
-  @override
-  String get homeBarStyleSwitchToGlass => 'ガラスに切り替え';
 
   @override
   String get homeBarStyleSizeGroup => 'サイズ';
@@ -8051,10 +8028,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get homeBarStyleHideOnScrollSubtitle =>
       '下にスクロールするとバーが隠れて表示領域が広がり、上にスクロールするか先頭に戻ると再び表示されます';
-
-  @override
-  String get homeBarStyleHideOnScrollSolidHint =>
-      'スクロール時にバーを隠す機能は、ガラスのフローティングバーでのみ使用できます。';
 
   @override
   String get homeBarStyleIndicatorFollows => 'インジケーターをスワイプに追従';

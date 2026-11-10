@@ -3,22 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
-import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import '../../models/home_bar_style/home_bar_style.dart';
 import 'home_nav_block.dart';
+import 'home_nav_colors.dart';
 import 'home_nav_indicator.dart';
+import 'home_nav_ink_response.dart';
 import 'home_nav_layout.dart';
+
+// 颜色与水波纹从本文件拆出（保持在拆分阈值附近），底栏与侧边导航栏共用；
+// 这里转出，引用方不必改 import。
+export 'home_nav_colors.dart';
+export 'home_nav_ink_response.dart';
 
 /// 首页底栏的一个导航项（[HomeNavBar] 内部使用）。
 ///
 /// 结构照搬 Material `NavigationDestination`：按钮语义 + “第 x 个标签，共 y
-/// 个”、长按提示、水波纹裁到指示器形状、文字最多放大到 1.3 倍。选中程度有
-/// 两种来源：
-/// - 未跟随滑动：[selection] 是本项自己的选中动画（选中时 0→1），只驱动
-///   指示器的长出与“只显示选中项文字”时的文字显现；图标与文字颜色在选中
-///   变化的那一帧直接切换（与 M3 一致），图标放大经 AnimatedScale 补间；
+/// 个”、长按提示、水波纹裁到指示器形状、文字最多放大到 1.3 倍。
+///
+/// 指示器整栏只有一个，由 [indicatorPosition] 所在的锚点项画并平移到相邻
+/// 一项（见 [HomeNavDestinationLayout]）。图标与文字的选中程度有两种来源：
+/// - 未跟随滑动（[position] 为空）：本项自己的选中动画——颜色与“只显示
+///   选中项文字”的文字显现按 [labelCurve] 渐变（不越界），图标的放大由弹簧
+///   弹出（[ExpressiveMotion.springSpatialFast]，略微过冲）。指示器滑过
+///   中间项时它们不变色：只有新旧两项在过渡；
 /// - 跟随滑动（[position] 非空）：颜色、放大与文字显现都按与页面位置的距离
-///   逐帧插值，指示器由锚点项画并平移（见 [HomeNavDestinationLayout]）。
+///   逐帧插值。
+///
+/// 按下时整项（连同落在本项的指示器）缩小一点，松手弹回：位移 / 缩放类的
+/// 反馈都走真弹簧，按下中途松手会带着速度回弹。减少动画时没有缩放。
 class HomeNavDestination extends StatefulWidget {
   const HomeNavDestination({
     super.key,
@@ -30,6 +42,8 @@ class HomeNavDestination extends StatefulWidget {
     required this.selection,
     required this.labelCurve,
     required this.position,
+    required this.indicatorPosition,
+    required this.indicatorVelocity,
     required this.labelMode,
     required this.iconSize,
     required this.indicator,
@@ -51,7 +65,15 @@ class HomeNavDestination extends StatefulWidget {
   /// 本项的选中动画（线性）与它的文字显现曲线。
   final Animation<double> selection;
   final Animation<double> labelCurve;
+
+  /// 页面位置；非空时图标与文字的选中程度跟随它（“指示器跟随滑动”）。
   final ValueListenable<double>? position;
+
+  /// 指示器的位置（小数序号）：跟随滑动时就是 [position]，否则是导航行的
+  /// 弹簧。[indicatorVelocity] 给出弹簧此刻的速度（项 / 秒），指示器按它
+  /// 拉长；跟随滑动时为 null。
+  final ValueListenable<double> indicatorPosition;
+  final ValueGetter<double>? indicatorVelocity;
   final HomeBarLabelMode labelMode;
   final double iconSize;
   final HomeBarIndicator indicator;
@@ -73,9 +95,57 @@ class HomeNavDestination extends StatefulWidget {
   State<HomeNavDestination> createState() => _HomeNavDestinationState();
 }
 
-class _HomeNavDestinationState extends State<HomeNavDestination> {
+class _HomeNavDestinationState extends State<HomeNavDestination>
+    with TickerProviderStateMixin {
+  /// 按到底时整项缩小的比例。
+  static const double _pressDepth = 0.07;
+
   /// 图标框（胶囊大小）的 key：胶囊样式的水波纹按它的位置画。
   final GlobalKey _iconKey = GlobalKey();
+
+  /// 按压程度：0 松开、1 按到底；无界，松手时越过 0 再回落（整项略微弹大）。
+  late final AnimationController _press = AnimationController.unbounded(
+    vsync: this,
+  );
+
+  /// 未跟随滑动时图标的选中放大：0 未选中、1 选中；无界，选中时弹过头一点。
+  late final AnimationController _pop = AnimationController.unbounded(
+    vsync: this,
+    value: widget.selected ? 1 : 0,
+  );
+
+  @override
+  void didUpdateWidget(HomeNavDestination oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selected != widget.selected) {
+      ExpressiveMotion.springTo(
+        context,
+        _pop,
+        widget.selected ? 1 : 0,
+        spring: ExpressiveMotion.springSpatialFast,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _press.dispose();
+    _pop.dispose();
+    super.dispose();
+  }
+
+  void _setPressed(bool pressed) {
+    // 减少动画时不做按压缩放：没有过渡的缩小再复原只是一下闪动。
+    if (ExpressiveMotion.reduceMotion(context)) {
+      return;
+    }
+    ExpressiveMotion.springTo(
+      context,
+      _press,
+      pressed ? 1 : 0,
+      spring: ExpressiveMotion.springSpatialFast,
+    );
+  }
 
   /// 本项圆角块占位的 key：圆角块与无指示器的水波纹按它的位置画。块的
   /// 大小要到布局时才知道（随文字宽度、内边距与文字显现变化），由布局
@@ -89,11 +159,16 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
   static TextStyle _mixStyle(TextStyle from, TextStyle to, double t) =>
       t <= 0 ? from : (t >= 1 ? to : TextStyle.lerp(from, to, t)!);
 
-  /// 未跟随时按是否选中取 0 / 1，跟随时随页面位置逐帧重建。
+  /// 选中程度 t 下的内容：未跟随时取本项选中动画的渐变值（[labelCurve]，
+  /// 不越界），跟随时随页面位置逐帧重建。
   Widget _tracked(Widget Function(double t) builder) {
     final position = widget.position;
     if (position == null) {
-      return builder(widget.selected ? 1 : 0);
+      return AnimatedBuilder(
+        animation: widget.labelCurve,
+        builder: (BuildContext context, Widget? _) =>
+            builder(widget.labelCurve.value),
+      );
     }
     return ValueListenableBuilder<double>(
       valueListenable: position,
@@ -136,22 +211,24 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
   Widget build(BuildContext context) {
     final colors = widget.colors;
     final position = widget.position;
-    final duration = ExpressiveMotion.duration(context);
     final iconSize = widget.iconSize;
+    const grow = HomeNavGeometry.selectedIconScale - 1;
 
     final icon = _tracked((double t) {
       final color = _mixColor(colors.unselectedIcon, colors.selectedIcon, t);
+      final glyph = FaIcon(widget.icon, size: iconSize, color: color);
       return IconTheme.merge(
         data: IconThemeData(size: iconSize, color: color),
-        child: AnimatedScale(
-          // 跟随滑动时放大量已逐帧给出，不再补间（否则落后于手指）。
-          scale: position == null
-              ? (widget.selected ? HomeNavGeometry.selectedIconScale : 1)
-              : 1 + (HomeNavGeometry.selectedIconScale - 1) * t,
-          duration: position == null ? duration : Duration.zero,
-          curve: ExpressiveMotion.spatial,
-          child: FaIcon(widget.icon, size: iconSize, color: color),
-        ),
+        // 跟随滑动时放大量按页面位置逐帧给出（弹簧会落后于手指）；否则由
+        // 弹簧 _pop 给出，可以越过 1。
+        child: position == null
+            ? AnimatedBuilder(
+                animation: _pop,
+                builder: (BuildContext context, Widget? child) =>
+                    Transform.scale(scale: 1 + grow * _pop.value, child: child),
+                child: glyph,
+              )
+            : Transform.scale(scale: 1 + grow * t, child: glyph),
       );
     });
     // 间距不再包在文字外（M3 用 Padding），由布局 delegate 加上：栏太矮
@@ -186,15 +263,14 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
         textDirection: Directionality.of(context),
         labelGap: widget.labelGap,
         blockPadding: widget.blockPadding,
-        follow: position == null
-            ? null
-            : HomeNavFollow(
-                position: position,
-                index: widget.index,
-                count: widget.count,
-                labelMode: widget.labelMode,
-                metrics: widget.metrics,
-              ),
+        follow: HomeNavFollow(
+          position: widget.indicatorPosition,
+          velocity: widget.indicatorVelocity,
+          index: widget.index,
+          count: widget.count,
+          labelMode: widget.labelMode,
+          metrics: widget.metrics,
+        ),
       ),
       children: <Widget>[
         if (!_isCapsule)
@@ -207,7 +283,7 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
             id: HomeNavDestinationLayout.indicatorId,
             child: HomeNavIndicator(
               selection: widget.selection,
-              position: position,
+              position: widget.indicatorPosition,
               index: widget.index,
               count: widget.count,
               shape: _rippleShape,
@@ -246,11 +322,33 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
       verticalOffset: 42,
       excludeFromSemantics: true,
       preferBelow: false,
-      child: HomeNavIndicatorInkResponse(
-        rectOf: _rippleRect,
-        customBorder: _rippleShape,
-        onTap: widget.onTap,
-        child: Row(children: <Widget>[Expanded(child: layout)]),
+      // 按压反馈听原始指针事件而不是 InkResponse 的 onTapDown：长按提示
+      // 也在手势竞技场里，点按要等 100ms 才判定“按下”，轻点时按下与抬起
+      // 会在同一帧到达，缩放根本来不及出现。
+      child: Listener(
+        onPointerDown: (_) => _setPressed(true),
+        onPointerUp: (_) => _setPressed(false),
+        onPointerCancel: (_) => _setPressed(false),
+        child: HomeNavIndicatorInkResponse(
+          rectOf: _rippleRect,
+          customBorder: _rippleShape,
+          onTap: widget.onTap,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: _press,
+                  builder: (BuildContext context, Widget? child) =>
+                      Transform.scale(
+                        scale: 1 - _pressDepth * _press.value,
+                        child: child,
+                      ),
+                  child: layout,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
     return Semantics(
@@ -272,80 +370,4 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
             ),
     );
   }
-}
-
-/// 水波纹与焦点高亮只画在 [rectOf] 给出的矩形里（指示器或圆角块的位置），
-/// 而不是整个导航项。底栏与宽窗口的侧边导航栏共用；侧边栏另给悬停与焦点
-/// 的状态层颜色（底栏不传，沿用主题）。
-class HomeNavIndicatorInkResponse extends InkResponse {
-  const HomeNavIndicatorInkResponse({
-    super.key,
-    required this.rectOf,
-    super.customBorder,
-    super.onTap,
-    super.hoverColor,
-    super.focusColor,
-    super.focusNode,
-    super.mouseCursor,
-    super.child,
-  }) : super(containedInkWell: true, highlightColor: Colors.transparent);
-
-  final Rect Function(RenderBox referenceBox) rectOf;
-
-  @override
-  RectCallback? getRectCallback(RenderBox referenceBox) =>
-      () => rectOf(referenceBox);
-}
-
-/// 导航项的颜色：实色取主题，玻璃取 `HomeBarResolvedStyle` 的前景色。
-@immutable
-class HomeNavColors {
-  const HomeNavColors({
-    required this.indicator,
-    required this.selectedIcon,
-    required this.unselectedIcon,
-    required this.selectedLabel,
-    required this.unselectedLabel,
-  });
-
-  /// 按材质解析导航项颜色（底栏与侧边导航栏共用同一口径）：
-  /// - 实色沿用主题（选中图标 onSecondaryContainer、未选中 onSurfaceVariant、
-  ///   指示器 secondaryContainer，文字取 navigationBarTheme）；
-  /// - 玻璃（高对比度下仍算玻璃）用 [style] 的前景色与指示器色。
-  factory HomeNavColors.resolve(ThemeData theme, HomeBarResolvedStyle style) {
-    final scheme = theme.colorScheme;
-    final labelTheme = theme.navigationBarTheme.labelTextStyle;
-    final base = theme.textTheme.labelMedium ?? const TextStyle();
-    // 与 M3 NavigationBar 取文字样式的顺序一致：主题优先，缺省用 M3 默认。
-    final selectedLabel =
-        labelTheme?.resolve(const <WidgetState>{WidgetState.selected}) ??
-        base.apply(color: scheme.onSurface);
-    final unselectedLabel =
-        labelTheme?.resolve(const <WidgetState>{}) ??
-        base.apply(color: scheme.onSurfaceVariant);
-    if (!style.isGlass) {
-      return HomeNavColors(
-        indicator: scheme.secondaryContainer,
-        selectedIcon: scheme.onSecondaryContainer,
-        unselectedIcon: scheme.onSurfaceVariant,
-        selectedLabel: selectedLabel,
-        unselectedLabel: unselectedLabel,
-      );
-    }
-    return HomeNavColors(
-      indicator: style.indicatorColor,
-      selectedIcon: style.selectedForeground,
-      unselectedIcon: style.unselectedForeground,
-      selectedLabel: selectedLabel.copyWith(color: style.selectedForeground),
-      unselectedLabel: unselectedLabel.copyWith(
-        color: style.unselectedForeground,
-      ),
-    );
-  }
-
-  final Color indicator;
-  final Color selectedIcon;
-  final Color unselectedIcon;
-  final TextStyle selectedLabel;
-  final TextStyle unselectedLabel;
 }

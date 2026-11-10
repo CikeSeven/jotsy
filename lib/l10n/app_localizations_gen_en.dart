@@ -8645,11 +8645,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String homeBarStyleCustomName(String material) {
-    return '$material (custom)';
-  }
-
-  @override
   String get homeBarStyleTabPresets => 'Presets';
 
   @override
@@ -8663,13 +8658,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeBarStyleTabBehavior => 'Behavior';
-
-  @override
-  String get homeBarStylePresetClassic => 'Classic';
-
-  @override
-  String get homeBarStylePresetClassicDesc =>
-      'The solid bottom bar from before the redesign';
 
   @override
   String get homeBarStylePresetGlass => 'Glass';
@@ -8706,14 +8694,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'A shorter floating bar with icons only';
 
   @override
-  String get homeBarStyleMaterialSolid => 'Solid';
-
-  @override
-  String get homeBarStyleMaterialGlass => 'Glass';
-
-  @override
   String get homeBarStyleGlassFooter =>
-      'With glass, the bottom bar floats over the page, and content scrolling beneath it shows through blurred.';
+      'The bottom bar floats over the page, and content scrolling beneath it shows through blurred.';
 
   @override
   String get homeBarStyleHighContrastNote =>
@@ -8785,13 +8767,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeBarStyleShadowSubtitle =>
       'A soft shadow beneath the floating bar';
-
-  @override
-  String get homeBarStyleFloatingSolidHint =>
-      'The floating bar is only used with the glass material.';
-
-  @override
-  String get homeBarStyleSwitchToGlass => 'Switch to glass';
 
   @override
   String get homeBarStyleSizeGroup => 'Size';
@@ -8868,10 +8843,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeBarStyleHideOnScrollSubtitle =>
       'Makes room while you scroll down, and comes back when you scroll up or reach the top';
-
-  @override
-  String get homeBarStyleHideOnScrollSolidHint =>
-      'Hiding on scroll is only available with the floating glass bar.';
 
   @override
   String get homeBarStyleIndicatorFollows => 'Indicator follows swipes';

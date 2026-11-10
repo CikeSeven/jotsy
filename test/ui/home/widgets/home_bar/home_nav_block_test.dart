@@ -21,10 +21,11 @@ const _items = <BottomNavItem>[
   BottomNavItem(label: 'Settings', icon: FontAwesomeIcons.gear),
 ];
 
+/// 圆角块 + 图标 20：与测试里按 20 图标推算的尺寸对应（默认图标是 22）。
 const _glassBlock = HomeBarStyle(
-  material: HomeBarMaterial.glass,
   indicator: HomeBarIndicator.block,
-  labelGap: HomeBarStyle.glassLabelGap,
+  iconSize: 20,
+  labelGap: 2,
 );
 
 Future<void> _pump(

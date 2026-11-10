@@ -7,7 +7,7 @@ import '../../models/home_bar_style/home_bar_resolved_style.dart';
 ///
 /// 首页在主题、高对比度与用户样式变化时解析一次 [HomeBarResolvedStyle]，
 /// 各栏只读这里，不再各自 watch provider 或重复解析。不在首页之下的
-/// 用法（独立使用的页头、单页测试）读不到 scope，一律按实色栏渲染。
+/// 用法（独立使用的页头、单页测试）读不到 scope，顶栏一律按实色渲染。
 class HomeChromeScope extends InheritedWidget {
   const HomeChromeScope({
     super.key,

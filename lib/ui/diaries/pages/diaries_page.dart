@@ -370,9 +370,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     // DiariesHeaderSliver）。两处高度都从页面自己的 context 读（在下面的
     // SafeArea 之外、首页 Scaffold 的 body 之内）：
     // - top：状态栏高度；
-    // - bottom：玻璃底栏悬浮在内容之上（首页 Scaffold extendBody）时为底栏
-    //   槽位高度，末尾多留这一段，最后一篇才能完整滚到胶囊上方；实色底栏时
-    //   Scaffold 已扣掉，为 0，列表底部与改版前一致。
+    // - bottom：底栏悬浮在内容之上（首页 Scaffold extendBody），为底栏槽位
+    //   高度，末尾多留这一段，最后一篇才能完整滚到胶囊上方；没有底栏（宽
+    //   窗口、只剩一个 Tab）时为 0。
     final glassTopBars = HomeChromeScope.glassTopBarsOf(context);
     // 标签栏下缘到第一张卡片的间距（四个 Tab 统一口径，见
     // HomeTopBarSurface.contentGapOf）。

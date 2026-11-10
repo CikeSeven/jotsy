@@ -4,6 +4,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/models/tag_picker_sort.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_tag_row.dart';
 import 'package:node_diary/ui/widgets/alphabet_index_bar.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 
 import '../../../support/publish_panel_driver.dart';
 
@@ -202,17 +203,20 @@ void main() {
       await tester.tap(driver.tagSortButton);
       await tester.pumpAndSettle();
 
-      final selected = tester.widget<MenuItemButton>(
+      final selected = tester.widget<ExpressiveMenuItem>(
         find.widgetWithText(
-          MenuItemButton,
+          ExpressiveMenuItem,
           driver.l10n.tagPickerSortAlphabetical,
         ),
       );
-      final other = tester.widget<MenuItemButton>(
-        find.widgetWithText(MenuItemButton, driver.l10n.tagPickerSortCustom),
+      final other = tester.widget<ExpressiveMenuItem>(
+        find.widgetWithText(
+          ExpressiveMenuItem,
+          driver.l10n.tagPickerSortCustom,
+        ),
       );
-      expect(selected.trailingIcon, isNotNull);
-      expect(other.trailingIcon, isNull);
+      expect(selected.selected, isTrue);
+      expect(other.selected, isFalse);
     });
   });
 

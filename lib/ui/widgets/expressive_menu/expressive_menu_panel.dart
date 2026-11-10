@@ -1,162 +1,193 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../glass/glass_surface.dart';
+import 'expressive_menu_motion.dart';
+import 'expressive_menu_row.dart';
+import 'expressive_menu_selection.dart';
 import 'expressive_menu_surface.dart';
 
-/// 菜单可以占用的区域：安全区（扣掉系统栏、键盘与显示特征）再留 8dp 边距，
-/// 以及面板的最大宽度（所在屏幕宽度 − 32）。
-class ExpressiveMenuArea {
-  const ExpressiveMenuArea({required this.bounds, required this.maxWidth});
-
-  /// 菜单到安全区边缘的最小距离。
-  static const double screenMargin = 8;
-
-  /// 宽度留白：菜单最宽为所在屏幕宽度减去它。
-  static const double horizontalReserve = 32;
-
-  final Rect bounds;
-  final double maxWidth;
-
-  static ExpressiveMenuArea of(BuildContext context, RawMenuOverlayInfo info) {
-    // 系统栏与键盘取自视图本身：Scaffold 正文、底部面板会在局部 MediaQuery
-    // 里抹掉顶部 padding，用局部值会让翻到上方的菜单钻进状态栏。
-    final view = MediaQueryData.fromView(View.of(context));
-    final viewport = view.padding.deflateRect(
-      view.viewInsets.deflateRect(Offset.zero & info.overlaySize),
-    );
-    // 折叠屏铰链等显示特征两侧各算一块屏幕，菜单只放在离锚点最近的那块上。
-    final screens = DisplayFeatureSubScreen.subScreensInBounds(
-      viewport,
-      DisplayFeatureSubScreen.avoidBounds(view),
-    );
-    final screen = screens.isEmpty
-        ? viewport
-        : screens.reduce(
-            (Rect a, Rect b) =>
-                (a.center - info.anchorRect.center).distanceSquared <=
-                    (b.center - info.anchorRect.center).distanceSquared
-                ? a
-                : b,
-          );
-    return ExpressiveMenuArea(
-      bounds: screen.deflate(screenMargin),
-      maxWidth: math.max(0, screen.width - horizontalReserve),
-    );
-  }
-}
-
-/// 菜单面板：玻璃表面 [ExpressiveMenuSurface]、内边距 8；宽度取内容固有宽度
-/// （最小 176，最大 [maxWidth]），高度超出可用区域时内部滚动。
+/// 一块菜单面板的内容（主菜单或二级菜单）：可滚动的一列菜单行，背后是滑动的
+/// 高亮胶囊，最外面是这块面板唯一的点按 / 跟手滑选手势层。玻璃底由
+/// [ExpressiveMenuGlass] 单独画（形变时按面板矩形裁出），这里只管内容。
 ///
-/// 换页（进出二级菜单）：[pageKey] 变化时整页重建，新一页随 [pageReveal]
-/// 淡入并从 [pageForward] 决定的方向横移 6%；表面尺寸经 AnimatedSize 过渡到
-/// 新一页的大小（fast / effects），玻璃表面本身不参与淡入。
-class ExpressiveMenuPanel extends StatelessWidget {
+/// - 宽度：取内容固有宽度，夹在 [minWidth]–[maxWidth]（200–288；二级菜单至少
+///   与主菜单同宽，由布局经约束给出），超过可用宽度时再收窄。
+/// - 高度：超过布局给出的最大高度时内部滚动；只在展开完成后显示滚动条。
+/// - 上下各留 [ExpressiveMenuRowMetrics.panelPadding]；有 [header]（二级菜单的
+///   标题行）时它是第一行。
+/// - 手势见 [ExpressiveMenuSelection]：[ready] 为 false 时（展开未到 98%、被
+///   二级菜单盖住）不接管；[jelly] 为这块面板的按压形变。
+class ExpressiveMenuPanel extends StatefulWidget {
   const ExpressiveMenuPanel({
     super.key,
-    required this.reveal,
-    required this.scrollController,
     required this.showScrollbar,
-    required this.maxWidth,
     required this.children,
-    this.pageKey,
-    this.pageReveal = kAlwaysCompleteAnimation,
-    this.pageForward = true,
-    this.withSurface = true,
+    this.ready,
+    this.jelly,
+    this.scrollController,
+    this.header,
+    this.minWidth = defaultMinWidth,
+    this.maxWidth = defaultMaxWidth,
   });
 
-  static const double minWidth = 176;
-  static const double padding = 8;
+  static const double defaultMinWidth = 200;
+  static const double defaultMaxWidth = 288;
 
-  /// 展开进度：驱动表面的底色、描边、模糊与内容淡入。
-  final Animation<double> reveal;
-  final ScrollController scrollController;
   final bool showScrollbar;
-  final double maxWidth;
   final List<Widget> children;
+  final bool Function()? ready;
+  final ExpressiveMenuJelly? jelly;
 
-  /// 当前一页的身份；变化时换页。
-  final Key? pageKey;
+  /// 不传时面板自己建一个（二级菜单每次展开都是新的一块，滚动从顶部开始）。
+  final ScrollController? scrollController;
+  final Widget? header;
+  final double minWidth;
+  final double maxWidth;
 
-  /// 当前一页的显现进度（淡入与横移）。
-  final Animation<double> pageReveal;
+  @override
+  State<ExpressiveMenuPanel> createState() => _ExpressiveMenuPanelState();
+}
 
-  /// 进入下一级（从结束方向移入）为 true，退回上一级为 false。
-  final bool pageForward;
+class _ExpressiveMenuPanelState extends State<ExpressiveMenuPanel>
+    with TickerProviderStateMixin {
+  final GlobalKey _contentKey = GlobalKey(debugLabel: 'ExpressiveMenuPanel');
+  late final ExpressiveMenuSelection _selection = ExpressiveMenuSelection(
+    vsync: this,
+  );
+  ScrollController? _ownScroll;
 
-  /// 是否自带玻璃表面。按钮长成菜单（ExpressiveMenuMorph）时玻璃由形变单独
-  /// 画、内容的淡入也由它负责：这里只垫一层透明 Material 承接水波纹，
-  /// [reveal] 不用。
-  final bool withSurface;
+  ScrollController get _scroll =>
+      widget.scrollController ?? (_ownScroll ??= ScrollController());
 
-  static const double _pageShift = 0.06;
+  @override
+  void initState() {
+    super.initState();
+    _selection
+      ..contentBox = _contentBox
+      ..ready = _ready
+      ..fits = _fits
+      ..reduceMotion = _reduceMotion
+      ..jelly = widget.jelly;
+  }
+
+  RenderBox? _contentBox() {
+    final box = _contentKey.currentContext?.findRenderObject();
+    return box is RenderBox ? box : null;
+  }
+
+  bool _ready() => mounted && (widget.ready?.call() ?? true);
+
+  bool _fits() {
+    final scroll = _scroll;
+    return !scroll.hasClients || scroll.position.maxScrollExtent <= 1;
+  }
+
+  bool _reduceMotion() => mounted && ExpressiveMotion.reduceMotion(context);
+
+  @override
+  void didUpdateWidget(ExpressiveMenuPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _selection.jelly = widget.jelly;
+  }
+
+  @override
+  void dispose() {
+    _selection.dispose();
+    _ownScroll?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final page = KeyedSubtree(
-      key: pageKey,
-      child: FadeTransition(
-        opacity: pageReveal,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: Offset(pageForward ? _pageShift : -_pageShift, 0),
-            end: Offset.zero,
-          ).animate(pageReveal),
-          // 按阅读方向翻转：RTL 下“结束方向”在左。
-          textDirection: Directionality.of(context),
-          child: ListBody(children: children),
+    final colors = Theme.of(context).colorScheme;
+    final header = widget.header;
+    final maskColor = colors.onSurface.withValues(
+      alpha: colors.brightness == Brightness.dark ? 0.10 : 0.06,
+    );
+    final content = Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: _selection.handlePointerDown,
+      onPointerMove: _selection.handlePointerMove,
+      onPointerUp: _selection.handlePointerUp,
+      onPointerCancel: _selection.handlePointerCancel,
+      child: Padding(
+        key: _contentKey,
+        padding: const EdgeInsets.symmetric(
+          vertical: ExpressiveMenuRowMetrics.panelPadding,
+        ),
+        child: CustomPaint(
+          painter: ExpressiveMenuMaskPainter(
+            selection: _selection,
+            color: maskColor,
+            inset: ExpressiveMenuRowMetrics.inset,
+          ),
+          child: ListBody(children: <Widget>[?header, ...widget.children]),
         ),
       ),
     );
-    final content = Padding(
-      padding: const EdgeInsets.all(padding),
-      child: ScrollConfiguration(
-        // 关掉平台默认滚动条与越界效果，滚动条由下面的 Scrollbar 按
-        // [showScrollbar] 控制。
-        behavior: ScrollConfiguration.of(context).copyWith(
-          scrollbars: false,
-          overscroll: false,
-          physics: const ClampingScrollPhysics(),
-        ),
-        child: Scrollbar(
-          controller: scrollController,
-          thumbVisibility: showScrollbar,
-          child: SingleChildScrollView(
-            controller: scrollController,
-            primary: false,
-            child: page,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: widget.minWidth,
+        maxWidth: widget.maxWidth,
+      ),
+      // 按最终尺寸布局，形变只发生在绘制阶段，文字不会逐帧重排。
+      child: IntrinsicWidth(
+        child: Material(
+          type: MaterialType.transparency,
+          child: ExpressiveMenuSelectionScope(
+            selection: _selection,
+            child: ScrollConfiguration(
+              // 关掉平台默认滚动条与越界效果，滚动条由下面的 Scrollbar 按
+              // [showScrollbar] 控制。
+              behavior: ScrollConfiguration.of(context).copyWith(
+                scrollbars: false,
+                overscroll: false,
+                physics: const ClampingScrollPhysics(),
+              ),
+              child: Scrollbar(
+                controller: _scroll,
+                thumbVisibility: widget.showScrollbar,
+                child: SingleChildScrollView(
+                  controller: _scroll,
+                  primary: false,
+                  child: RepaintBoundary(child: content),
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
-    // 尺寸过渡放在表面里面：表面（圆角、描边、投影）随过渡中的尺寸画，
-    // 内容按新一页的最终尺寸布局、只被裁切。首次布局直接取内容尺寸，不从
-    // 0 长出来。
-    //
-    // 减少动画时不套 AnimatedSize：它的时长不能为 0（见 durationNonZero），
-    // 1ms 的过渡仍要等两帧（检测到变化的那帧与 ticker 起步的那帧）才到位，
-    // 换页时会先露出两帧裁切的内容。代价是菜单开着时切换减少动画，内容会
-    // 重建一次（滚动位置回到顶部）。
-    final sized = ExpressiveMotion.reduceMotion(context)
-        ? IntrinsicWidth(child: content)
-        : AnimatedSize(
-            duration: ExpressiveMotion.fast,
-            curve: ExpressiveMotion.effects,
-            alignment: AlignmentDirectional.topStart,
-            child: IntrinsicWidth(child: content),
-          );
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: math.min(minWidth, maxWidth),
-        maxWidth: maxWidth,
-      ),
-      // 按最终尺寸布局，缩放只发生在绘制阶段，文字不会逐帧重排。
-      child: RepaintBoundary(
-        child: withSurface
-            ? ExpressiveMenuSurface(reveal: reveal, child: sized)
-            : Material(type: MaterialType.transparency, child: sized),
+  }
+}
+
+/// 面板的玻璃底（[GlassSurface]：半透明底色 + 背景模糊，直角，由布局按此刻的
+/// 面板矩形裁成超椭圆）。底色、模糊随 [ExpressiveMenuMotion.containerAlpha]
+/// 显现；不接收点按、不进语义。减少动画或高对比度时为不透明底、不模糊。
+class ExpressiveMenuGlass extends StatelessWidget {
+  const ExpressiveMenuGlass({super.key, required this.motion});
+
+  final ExpressiveMenuMotion motion;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final solid = ExpressiveMenuSurface.solidOf(context);
+    final tint = ExpressiveMenuSurface.tintOf(colors);
+    return IgnorePointer(
+      child: ExcludeSemantics(
+        child: AnimatedBuilder(
+          animation: motion,
+          builder: (BuildContext context, Widget? child) => GlassSurface(
+            fill: solid ? Color.alphaBlend(tint, colors.surface) : tint,
+            blurSigma: ExpressiveMenuSurface.blurSigma,
+            blur: !solid,
+            progress: motion.containerAlpha,
+            child: child!,
+          ),
+          child: const SizedBox.expand(),
+        ),
       ),
     );
   }

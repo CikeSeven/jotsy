@@ -24,6 +24,21 @@ abstract final class ExpressiveMotion {
   static const flowLoop = Duration(milliseconds: 1800);
   static const scanLoop = Duration(milliseconds: 2400);
 
+  /// 弹出菜单（移植自 NexioSchedule 的 ListPopup / LiquidGlassDropdownMenu），
+  /// 与原实现逐值一致；面板的长大与二级菜单的展开是弹簧，见
+  /// `ExpressiveMenuMotion`。
+  /// - [menuMorphExit] / [menuMorphExitCurve]：收起时锚点迁回触发控件的时长
+  ///   与曲线，它跑完即移除浮层；
+  /// - [menuHighlightIn] / [menuHighlightOut]：行高亮胶囊的淡入淡出
+  ///   （[menuHighlightCurve]），淡出覆盖一路滑到边界项的弹簧行程。
+  static const menuMorphExit = Duration(milliseconds: 340);
+  static const menuMorphExitCurve = Cubic(0, 0, 0, 1);
+  static const menuHighlightIn = Duration(milliseconds: 90);
+  static const menuHighlightOut = Duration(milliseconds: 220);
+
+  /// Compose `tween` 的默认曲线 FastOutSlowIn。
+  static const menuHighlightCurve = Curves.fastOutSlowIn;
+
   /// 进场与状态变化：减速收尾，不越界。
   static const effects = Curves.easeOutCubic;
 

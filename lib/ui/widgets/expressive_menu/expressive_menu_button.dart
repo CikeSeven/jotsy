@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../../core/services/app_platform.dart';
 import 'expressive_menu_anchor.dart';
 
-/// 图标按钮入口的 [ExpressiveMenuAnchor]：自带菜单控制器与焦点，点按开合。
+/// 图标按钮入口的 [ExpressiveMenuAnchor]（移植自 NexioSchedule 顶栏“更多”的
+/// LiquidGlassDropdownMenu）：自带菜单控制器与焦点，点按开合。
 ///
 /// 用于顶栏、列表行尾的“更多操作”（调用方传入现有的
 /// `FaIcon(FontAwesomeIcons.ellipsisVertical, …)`）。按钮在语义上标注
 /// 展开 / 收起，收起动画一开始即视为收起。
 ///
-/// 按钮本身长成菜单（[ExpressiveMenuAnchor.morph]）：点按后玻璃从按钮的圆
-/// 以弹簧长成面板、盖住按钮，图标随之淡出；收起时缩回按钮、图标淡入。
+/// - 按钮与菜单是同一块玻璃：点按后面板从按钮那个 40 的圆长成面板、盖住按钮
+///   （贴着圆的角对齐），按钮的图标随之淡出；收起时缩回按钮并带一下回弹。
+/// - 按下不铺状态层、不起水波纹：形变即是按下的反馈，按下的圆还会从面板
+///   25 的圆角上露出来。悬停与键盘聚焦仍有高亮。
+/// - Android 上打开时给一次 CONTEXT_CLICK 触感（Flutter 的 heavyImpact 在
+///   Android 上即这一档）。
 class ExpressiveMenuButton extends StatefulWidget {
   const ExpressiveMenuButton({
     super.key,
@@ -33,9 +40,6 @@ class ExpressiveMenuButton extends StatefulWidget {
 }
 
 class _ExpressiveMenuButtonState extends State<ExpressiveMenuButton> {
-  /// 按下不铺状态层、不起水波纹：按钮本身就长成菜单，形变即是按下的反馈；
-  /// 而面板贴着按钮的角，28 的圆角比按钮 20 的半径收得更多，按下的圆会从
-  /// 面板角上露出来，要到水波纹淡完才消失。悬停与键盘聚焦仍有高亮。
   static final ButtonStyle _noPressFeedback = ButtonStyle(
     overlayColor: WidgetStateProperty.resolveWith(
       (Set<WidgetState> states) =>
@@ -52,12 +56,19 @@ class _ExpressiveMenuButtonState extends State<ExpressiveMenuButton> {
     super.dispose();
   }
 
+  void _toggle(ExpressiveMenuAnchorState menu) {
+    if (!menu.isExpanded && AppPlatform.isAndroid) {
+      HapticFeedback.heavyImpact();
+    }
+    menu.toggle();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ExpressiveMenuAnchor(
       childFocusNode: _focus,
       placement: widget.placement,
-      morph: true,
+      iconTrigger: true,
       menuChildren: widget.items,
       builder:
           (BuildContext context, ExpressiveMenuAnchorState menu, Widget? _) =>
@@ -68,13 +79,9 @@ class _ExpressiveMenuButtonState extends State<ExpressiveMenuButton> {
                   child: IconButton(
                     focusNode: _focus,
                     tooltip: widget.tooltip,
-                    onPressed: widget.enabled ? menu.toggle : null,
+                    onPressed: widget.enabled ? () => _toggle(menu) : null,
                     style: _noPressFeedback,
-                    // 玻璃长大时按钮的图标淡出，缩回按钮时再淡入。
-                    icon: FadeTransition(
-                      opacity: menu.triggerOpacity,
-                      child: widget.icon,
-                    ),
+                    icon: widget.icon,
                   ),
                 ),
               ),

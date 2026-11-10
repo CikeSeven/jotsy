@@ -3,17 +3,20 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'expressive_menu_anchor.dart';
 import 'expressive_menu_item.dart';
+import 'expressive_menu_row.dart';
 
-/// 打开二级菜单的一项：行尾带 ›，点按后菜单在原地换成 [menuChildren]
-/// （顶部是“‹ 标题”返回行），而不是在旁边再弹一块面板。
+/// 打开二级菜单的一项：行尾带 ›，点按后二级菜单从这一行的胶囊变形展开（miuix
+/// 的级联方式，NexioSchedule 的样式）：胶囊（17 圆角）长成一块新面板（25 圆角）
+/// 盖在主菜单上，顶部是这一行的副本（› 转向上方，点按收回），下面是分隔线与
+/// [menuChildren]；主菜单缩到 0.95 并盖上半透明遮罩，点遮罩、点外部或返回都先
+/// 收回二级菜单。
 ///
-/// 为什么原地下钻而不是向侧面级联：菜单多从顶栏行尾的 ⋮ 打开，贴着屏幕的
-/// 结束边，侧面没有放第二块面板的地方，手机上级联只会盖住上一级。
+/// 级联深度上限为 2：二级菜单里再放 [ExpressiveSubmenuItem] 不会再展开。
 ///
-/// [menuChildren] 在点按时取定、放进锚点的下钻栈：二级菜单显示期间外面重建
-/// 不会刷新它。要随选择即时变化的内容（保持菜单打开的单选项的对勾）应放进
-/// 自己维护选中态的子组件里。
-class ExpressiveSubmenuItem extends StatelessWidget {
+/// [menuChildren] 在点按时取定：二级菜单显示期间外面重建不会刷新它。要随
+/// 选择即时变化的内容（保持菜单打开的单选项的对勾）应放进自己维护选中态的
+/// 子组件里。
+class ExpressiveSubmenuItem extends StatefulWidget {
   const ExpressiveSubmenuItem({
     super.key,
     required this.child,
@@ -21,7 +24,7 @@ class ExpressiveSubmenuItem extends StatelessWidget {
     this.leadingIcon,
   });
 
-  /// 条目文字；二级菜单顶部的返回行也用它作标题。
+  /// 条目文字；二级菜单顶部的标题行也用它。
   final Widget child;
 
   /// 前置图标，与 [ExpressiveMenuItem.leadingIcon] 相同。
@@ -31,157 +34,111 @@ class ExpressiveSubmenuItem extends StatelessWidget {
   final List<Widget> menuChildren;
 
   @override
-  Widget build(BuildContext context) {
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    return ExpressiveMenuItem(
-      closeOnActivate: false,
-      leadingIcon: leadingIcon,
-      // 行尾 › 只是“还有下一级”的提示，取次要色，不与主色的前置图标抢眼。
-      trailingIcon: ExcludeSemantics(
-        child: FaIcon(
-          rtl ? FontAwesomeIcons.angleLeft : FontAwesomeIcons.angleRight,
-          size: ExpressiveMenuItem.checkSize,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-      onPressed: () =>
-          ExpressiveMenuAnchorState.maybeOf(context)?.openSubmenu(this),
-      child: child,
-    );
-  }
+  State<ExpressiveSubmenuItem> createState() => _ExpressiveSubmenuItemState();
 }
 
-/// 二级菜单顶部的返回行：‹ + 加粗标题，点按回到上一级；读屏读作“返回，标题”。
-class ExpressiveSubmenuHeader extends StatelessWidget {
-  const ExpressiveSubmenuHeader({
-    super.key,
-    required this.title,
-    required this.onBack,
-  });
+class _ExpressiveSubmenuItemState extends State<ExpressiveSubmenuItem> {
+  /// 这一行的焦点：键盘打开二级菜单再收回时，焦点回到这一行。
+  final FocusNode _focus = FocusNode(debugLabel: 'ExpressiveSubmenuItem');
 
-  final Widget title;
-  final VoidCallback onBack;
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ExpressiveMenuItem(
+    closeOnActivate: false,
+    focusNode: _focus,
+    leadingIcon: widget.leadingIcon,
+    trailingIcon: const ExpressiveSubmenuChevron(),
+    onPressed: () => ExpressiveMenuAnchorState.maybeOf(
+      context,
+    )?.openSubmenu(widget, context, _focus),
+    child: widget.child,
+  );
+}
+
+/// 二级菜单入口行尾的 ›（RTL 为 ‹），10 × 16 的格子；在标题行里随 [turns]
+/// 转向上方。
+class ExpressiveSubmenuChevron extends StatelessWidget {
+  const ExpressiveSubmenuChevron({super.key, this.turns});
+
+  /// 转过的圈数；null 不转。
+  final Animation<double>? turns;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return ExpressiveMenuItem(
-      closeOnActivate: false,
-      leadingIcon: FaIcon(
-        rtl ? FontAwesomeIcons.angleRight : FontAwesomeIcons.angleLeft,
-      ),
-      style: ButtonStyle(
-        textStyle: WidgetStatePropertyAll<TextStyle?>(
-          theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ),
-      onPressed: onBack,
-      child: Semantics(
-        label: MaterialLocalizations.of(context).backButtonTooltip,
-        child: title,
+    Widget icon = FaIcon(
+      rtl ? FontAwesomeIcons.angleLeft : FontAwesomeIcons.angleRight,
+      size: ExpressiveMenuRowMetrics.chevronCell.height,
+    );
+    final turns = this.turns;
+    if (turns != null) icon = RotationTransition(turns: turns, child: icon);
+    return SizedBox.fromSize(
+      size: ExpressiveMenuRowMetrics.chevronCell,
+      child: OverflowBox(
+        maxWidth: ExpressiveMenuRowMetrics.chevronCell.height,
+        child: icon,
       ),
     );
   }
 }
 
-/// 菜单里分组之间的细线：`outlineVariant` 1dp，左右缩进 12、上下各留 4。
+/// 二级菜单顶部的标题行：入口行的副本（同一块胶囊、同样的排版），点按收回
+/// 二级菜单；读屏读作“返回，标题”。变形开始时它与触发行逐像素重合，看起来
+/// 就是那一行本身长成了面板；行尾 › 随 [arrow] 转向上方（LTR −90°、RTL +90°）。
+class ExpressiveSubmenuHeader extends StatelessWidget {
+  const ExpressiveSubmenuHeader({
+    super.key,
+    required this.item,
+    required this.arrow,
+    required this.onCollapse,
+  });
+
+  final ExpressiveSubmenuItem item;
+  final Animation<double> arrow;
+  final VoidCallback onCollapse;
+
+  @override
+  Widget build(BuildContext context) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return ExpressiveMenuRowInk(
+      onTap: onCollapse,
+      expanded: true,
+      child: ExpressiveMenuRowContent(
+        leadingIcon: item.leadingIcon,
+        trailing: ExpressiveSubmenuChevron(
+          turns: arrow.drive(Tween<double>(begin: 0, end: rtl ? 0.25 : -0.25)),
+        ),
+        child: Semantics(
+          label: MaterialLocalizations.of(context).backButtonTooltip,
+          child: item.child,
+        ),
+      ),
+    );
+  }
+}
+
+/// 菜单里分组之间的分隔线：`outlineVariant` 1dp，左右缩进 20、上下各留 4
+/// （位置同 NexioSchedule / miuix 的 HorizontalDivider；它们的 1.5dp 在实机上
+/// 显得太粗，按用户反馈改为 1dp）。
 class ExpressiveMenuDivider extends StatelessWidget {
   const ExpressiveMenuDivider({super.key});
 
-  static const double inset = 12;
+  static const double inset = 20;
   static const double spacing = 4;
+  static const double thickness = 1;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: inset, vertical: spacing),
     child: Divider(
-      height: 1,
-      thickness: 1,
+      height: thickness,
+      thickness: thickness,
       color: Theme.of(context).colorScheme.outlineVariant,
     ),
   );
-}
-
-/// 锚点的下钻栈：当前显示的各级二级菜单，以及它们在所在路由登记的返回历史。
-///
-/// 每进一层登记一条 [LocalHistoryEntry]：系统返回 / 预测式返回先退一层，退回
-/// 根菜单后才轮到锚点自己的那条历史关闭菜单（局部历史按后进先出弹出）。
-class ExpressiveSubmenuStack {
-  ExpressiveSubmenuStack({required this.onPoppedByRoute});
-
-  /// 被系统返回退掉一层后调用；经 [pop] 主动退出时不调用。
-  final VoidCallback onPoppedByRoute;
-
-  final List<_SubmenuLevel> _levels = <_SubmenuLevel>[];
-
-  /// 栈顶的二级菜单；null 为根菜单。
-  ExpressiveSubmenuItem? get current =>
-      _levels.isEmpty ? null : _levels.last.item;
-
-  bool get isEmpty => _levels.isEmpty;
-
-  void push(ExpressiveSubmenuItem item, ModalRoute<Object?>? route) {
-    final level = _SubmenuLevel(item);
-    _levels.add(level);
-    _register(level, route);
-  }
-
-  /// 收起途中又被重新展开：页面还是收起前的那一级，按层补回返回历史（锚点
-  /// 自己的那条已先补上，顺序仍是根菜单在最底下）。
-  void restoreHistory(ModalRoute<Object?>? route) {
-    for (final level in _levels) {
-      if (level.entry == null) _register(level, route);
-    }
-  }
-
-  void _register(_SubmenuLevel level, ModalRoute<Object?>? route) {
-    if (route == null) return;
-    late final LocalHistoryEntry entry;
-    entry = LocalHistoryEntry(
-      // 不让 AppBar 因此把返回键换成关闭键。
-      impliesAppBarDismissal: false,
-      onRemove: () {
-        // 主动退出或撤销历史时已先解除关联；只有被返回弹出时才退一层。
-        if (level.entry != entry || !_levels.contains(level)) return;
-        level.entry = null;
-        _levels.remove(level);
-        onPoppedByRoute();
-      },
-    );
-    level.entry = entry;
-    route.addLocalHistoryEntry(entry);
-  }
-
-  /// 退回上一级。
-  void pop() {
-    if (_levels.isEmpty) return;
-    final level = _levels.removeLast();
-    final entry = level.entry;
-    level.entry = null;
-    entry?.remove();
-  }
-
-  /// 撤掉全部返回历史、页面保留：菜单开始收起时调用，收起动画里内容不换，
-  /// 动画中的返回手势作用于页面本身。
-  void releaseHistory() {
-    for (final level in _levels) {
-      final entry = level.entry;
-      level.entry = null;
-      entry?.remove();
-    }
-  }
-
-  /// 回到根菜单（浮层移除后、下次重新展开前调用）。
-  void clear() {
-    releaseHistory();
-    _levels.clear();
-  }
-}
-
-class _SubmenuLevel {
-  _SubmenuLevel(this.item);
-
-  final ExpressiveSubmenuItem item;
-  LocalHistoryEntry? entry;
 }

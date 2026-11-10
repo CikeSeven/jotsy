@@ -2,6 +2,8 @@ import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_panel.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_toolbar_code_block_button.dart';
@@ -155,11 +157,19 @@ void main() {
       expect(picked, isEmpty);
       expect(find.text('从相册选择'), findsOneWidget);
       expect(find.text('录像'), findsNothing);
-      // 菜单落在工具栏上方（工具栏贴底，下方是键盘）。
-      expect(
-        tester.getBottomLeft(find.text('拍照')).dy,
-        lessThan(tester.getTopLeft(find.byTooltip('插入图片')).dy),
+      // 菜单从按钮长出来、向上长（工具栏贴底，下方是键盘）：面板盖住按钮，
+      // 底边与按钮的底边对齐。
+      final button = tester.getRect(
+        find
+            .descendant(
+              of: find.byType(ExpressiveMenuAnchor).first,
+              matching: find.byType(IconButton),
+            )
+            .first,
       );
+      final panel = tester.getRect(find.byType(ExpressiveMenuPanel));
+      expect(panel.bottom, moreOrLessEquals(button.bottom, epsilon: 0.01));
+      expect(panel.top, lessThan(button.top));
       await tester.tap(find.text('拍照'));
       await tester.pumpAndSettle();
       expect(captured, [DiaryMediaKind.image]);

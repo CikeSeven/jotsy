@@ -10,7 +10,7 @@ keywords: [desktop, computer, PC, Windows, Linux, install, uninstall, portable, 
 Jotsy has desktop versions for Windows and Linux. They use the same interface as the phone app, with layouts that adapt to the window width and added keyboard and mouse controls.
 
 ## Wide window layout
-- In a wider window, the home bottom bar becomes a navigation rail on the left, with the New button at the top and Settings pinned at the bottom.
+- In a wider window, the home bottom bar becomes a navigation rail on the left, with the New button at the top and the pages below it. Settings is in the More menu at the top right of the Diaries page.
 - When the window is wide enough, the Diaries tab splits into two panes: the diary list on the left, and the entry you click opens for reading on the right. The card you're reading has a thin ring around it. In a narrower window, clicking a card opens the preview page as usual.
 - In a very wide window the calendar splits into two columns (the month on the left, the selected day on the right); Settings, search, notebooks and other pages are centered instead of stretching across the window.
 

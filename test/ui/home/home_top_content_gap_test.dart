@@ -28,8 +28,6 @@ import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
-import 'package:node_diary/ui/settings/pages/settings_page.dart';
-import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 import 'package:node_diary/ui/widgets/page_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -201,19 +199,6 @@ Future<Map<String, double>> _measureGaps(WidgetTester tester) async {
             find.descendant(of: explore, matching: find.byType(PageHeader)),
           )
           .bottom;
-
-  await _openTab(tester, l10n.navSettings);
-  final settings = find.byType(SettingsPage);
-  final firstCard = find
-      .descendant(of: settings, matching: find.byType(SettingsCardGroup))
-      .first;
-  gaps['settings'] =
-      tester.getRect(firstCard).top -
-      tester
-          .getRect(
-            find.descendant(of: settings, matching: find.byType(PageHeader)),
-          )
-          .bottom;
   return gaps;
 }
 
@@ -238,8 +223,6 @@ void main() {
       expect(_statusBarPainted(tester, find.byType(CalendarPage), _bg), isTrue);
       await _openTab(tester, l10n.navExplore);
       expect(_statusBarPainted(tester, find.byType(ExplorePage), _bg), isTrue);
-      await _openTab(tester, l10n.navSettings);
-      expect(_statusBarPainted(tester, find.byType(SettingsPage), _bg), isTrue);
       await _unmount(tester);
     });
 
@@ -294,10 +277,9 @@ void main() {
     ) async {
       await _pumpHome(tester);
       final gaps = await _measureGaps(tester);
-      // 日记与设置贴着顶栏（栏与页面同色，下缘看不出来）；日历与探索本来
-      // 就固定留 12。
+      // 日记贴着顶栏（栏与页面同色，下缘看不出来）；日历与探索本来就固定
+      // 留 12。
       expect(gaps['diaries'], closeTo(0, 0.01));
-      expect(gaps['settings'], closeTo(0, 0.01));
       expect(gaps['calendar'], closeTo(kHomeTopContentGap, 0.01));
       expect(gaps['explore'], closeTo(kHomeTopContentGap, 0.01));
       await _unmount(tester);

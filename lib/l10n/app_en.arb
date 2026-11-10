@@ -10856,7 +10856,7 @@
   "@settingsFeaturesPagesGroup": {
     "description": "Features page: group title for pages (bottom bar tabs) that can be turned off."
   },
-  "settingsFeaturesPagesFooter": "Diaries and Settings always stay. Pages you turn off leave the bottom bar; your data isn't affected.",
+  "settingsFeaturesPagesFooter": "Diaries always stays, and Settings is in the More menu at the top of Diaries. Pages you turn off leave the bottom bar; your data isn't affected.",
   "@settingsFeaturesPagesFooter": {
     "description": "Features page: footer of the pages group."
   },
@@ -11767,7 +11767,7 @@
   "appSurfaceAreaExplore": "Explore",
   "@appSurfaceAreaExplore": {"description": "背景与材质设置：区域胶囊，探索 Tab。"},
   "appSurfaceAreaSettings": "Settings",
-  "@appSurfaceAreaSettings": {"description": "背景与材质设置：区域胶囊，设置 Tab 与设置子页。"},
+  "@appSurfaceAreaSettings": {"description": "背景与材质设置：区域胶囊，设置首页与设置子页。"},
   "appSurfaceAreaEditor": "Editor",
   "@appSurfaceAreaEditor": {"description": "背景与材质设置：区域胶囊，编辑页、发表页与模板编辑页。"},
   "appSurfaceAreaPreview": "Preview",

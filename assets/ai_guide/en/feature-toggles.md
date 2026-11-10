@@ -13,7 +13,7 @@ The Features page lets you choose which pages and features you use. Turning a fe
 - Settings → Features (the last row of the **General** group on the Settings home page). Each row is a switch and takes effect immediately.
 
 ## Pages group
-Controls which tabs appear in the bottom navigation. Diaries and Settings always stay and can't be turned off.
+Controls which tabs appear in the bottom navigation. Diaries always stays and can't be turned off. Settings isn't in the bottom navigation: it's the Settings item in the More menu at the top right of the Diaries page, and these switches don't affect it.
 - **Calendar** (on by default): view diaries by month, with lunar dates, holidays and anniversaries.
 - **Anniversaries** (off by default): anniversaries and countdowns, marked on the calendar. It depends on the calendar: its switch sits under Calendar and only shows while Calendar is on, and turning Calendar off hides anniversaries too.
 - **To-dos** (off by default): to-dos, lists and reminders separate from your diary. Turning it off hides the To-dos tab, the To-dos row in Settings, to-dos on the calendar and the to-do entries on the preview page, and stops all reminders.

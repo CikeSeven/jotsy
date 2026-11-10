@@ -28,9 +28,8 @@ void main() {
   final cases = <_PageCase>[
     _PageCase(
       'settings root',
-      page: (_) => const Scaffold(body: SettingsPage()),
+      page: (_) => const SettingsPage(),
       content: cardGroupColumn,
-      hasTopBar: false,
     ),
     _PageCase(
       'editor settings subpage',
@@ -96,16 +95,10 @@ void main() {
       expect(rect.width, lessThanOrEqualTo(720));
       expect(rect.width, greaterThan(600));
       expect(rect.center.dx, moreOrLessEquals(640, epsilon: 0.5));
-      if (c.hasTopBar) {
-        // 标题栏两侧各缩进 gutter − 16，返回键与内容列对齐。
-        final bar = tester.getRect(find.byType(AppBar));
-        expect(bar.left, moreOrLessEquals((1280 - 720) / 2 - 16));
-        expect(bar.right, moreOrLessEquals(1280 - ((1280 - 720) / 2 - 16)));
-      } else {
-        // 设置首页的 PageHeader：标题与卡片列左缘对齐。
-        final title = find.text(h.l10n.settingsTitle);
-        expect(tester.getTopLeft(title).dx, moreOrLessEquals(rect.left));
-      }
+      // 标题栏两侧各缩进 gutter − 16，返回键与内容列对齐。
+      final bar = tester.getRect(find.byType(AppBar));
+      expect(bar.left, moreOrLessEquals((1280 - 720) / 2 - 16));
+      expect(bar.right, moreOrLessEquals(1280 - ((1280 - 720) / 2 - 16)));
       await h.unmount();
     });
 
@@ -116,26 +109,17 @@ void main() {
       final rect = tester.getRect(c.content());
       expect(rect.left, 16);
       expect(rect.right, 400 - 16);
-      if (c.hasTopBar) {
-        expect(tester.getRect(find.byType(AppBar)).width, 400);
-      }
+      expect(tester.getRect(find.byType(AppBar)).width, 400);
       await h.unmount();
     });
   }
 }
 
 class _PageCase {
-  _PageCase(
-    this.name, {
-    this.seed,
-    required this.page,
-    required this.content,
-    this.hasTopBar = true,
-  });
+  _PageCase(this.name, {this.seed, required this.page, required this.content});
 
   final String name;
   final Future<void> Function(DiaryDraftsHarness h)? seed;
   final Widget Function(DiaryDraftsHarness h) page;
   final Finder Function() content;
-  final bool hasTopBar;
 }

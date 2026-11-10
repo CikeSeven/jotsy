@@ -32,7 +32,7 @@ void main() {
       await h.settings.setAppFeaturesRaw(featuresRaw);
     }
     await h.pump(
-      const Scaffold(body: SettingsPage()),
+      const SettingsPage(),
       overrides: [
         lanSyncControllerProvider.overrideWithValue(FakeLanSyncController()),
         // 不去遍历真实的数据目录：“已用”给一个固定值。

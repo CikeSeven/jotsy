@@ -121,7 +121,8 @@ class OpenPageTool extends AiTool {
       'passwords, AI providers), asks where something is, or wants to go '
       'somewhere. Set `now` only when the user explicitly asked to open the '
       'page: it then opens after your reply. Destinations: '
-      'tab_* = main tabs; diary (needs diary_id); notebook (needs '
+      'tab_* = main tabs (tab_settings is the settings home page); diary '
+      '(needs diary_id); notebook (needs '
       'notebook_id); todo (needs todo_id); search (optional query); '
       'settings_* = settings pages; the rest are named after their page.';
 

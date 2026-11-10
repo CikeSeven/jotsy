@@ -38,12 +38,13 @@ class DiaryViewMenuOptions {
   final bool allowBookOrder;
   final ValueChanged<NotebookSort>? onNotebookSortChanged;
 
-  /// 切到设置 Tab；null 时不显示“设置”。
+  /// 打开设置页；null 时不显示“设置”。
   final VoidCallback? onOpenSettings;
 }
 
 /// 首页顶栏的“更多”（⋮）：弹出菜单，“排序方式 ›”“显示布局 ›”两项从所在
-/// 那一行展开二级菜单（miuix 的级联变形），“设置”直接切到设置 Tab。
+/// 那一行展开二级菜单（miuix 的级联变形），“设置”推入设置页（设置不在底栏，
+/// 这里是它的入口）。
 ///
 /// 二级菜单里的单选项点了不关菜单：排序依据与方向常常要连着调，列表在菜单
 /// 后方淡出、换序、淡入，效果看得见；点外部或返回关闭。选中态由二级菜单页

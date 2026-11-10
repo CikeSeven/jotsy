@@ -11,7 +11,7 @@ export 'home_bar_style_limits.dart';
 
 part 'home_bar_style_json.dart';
 
-/// 首页栏（底部导航栏 + 日记 / 日历 / 探索 / 设置四个 Tab 的顶栏）的外观。
+/// 首页栏（底部导航栏 + 日记 / 待办 / 日历 / 探索各 Tab 的顶栏）的外观。
 ///
 /// 输入：持久化的 JSON（单键 `homeBarStyleRaw` 中的 `current`，或样式码）；
 /// 输出：不可变的样式对象。无副作用，也不依赖 Flutter 的 `Color`——颜色以

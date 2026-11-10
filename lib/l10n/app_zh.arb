@@ -10856,7 +10856,7 @@
   "@settingsFeaturesPagesGroup": {
     "description": "功能管理页：可关闭的页面（底部导航 Tab）分组标题。"
   },
-  "settingsFeaturesPagesFooter": "日记和设置始终保留。关闭的页面不再出现在底部导航，数据不受影响。",
+  "settingsFeaturesPagesFooter": "日记始终保留，设置在日记页顶栏的“更多”菜单里。关闭的页面不再出现在底部导航，数据不受影响。",
   "@settingsFeaturesPagesFooter": {
     "description": "功能管理页：页面分组底部说明。"
   },
@@ -11767,7 +11767,7 @@
   "appSurfaceAreaExplore": "探索",
   "@appSurfaceAreaExplore": {"description": "背景与材质设置：区域胶囊，探索 Tab。"},
   "appSurfaceAreaSettings": "设置",
-  "@appSurfaceAreaSettings": {"description": "背景与材质设置：区域胶囊，设置 Tab 与设置子页。"},
+  "@appSurfaceAreaSettings": {"description": "背景与材质设置：区域胶囊，设置首页与设置子页。"},
   "appSurfaceAreaEditor": "编辑",
   "@appSurfaceAreaEditor": {"description": "背景与材质设置：区域胶囊，编辑页、发表页与模板编辑页。"},
   "appSurfaceAreaPreview": "预览",

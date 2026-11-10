@@ -1186,4 +1186,53 @@ void main() {
       expect(triggerOpacity(tester), 1);
     });
   });
+
+  group('when its page stops ticking (switched to another tab)', () {
+    for (final scale in <bool>[false, true]) {
+      testWidgets('a closing menu goes away at once and taps reach the rest '
+          '(${scale ? 'scale' : 'morph'})', (tester) async {
+        var ticking = true;
+        var navTaps = 0;
+        await tester.pumpWidget(
+          _app(
+            home: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) => Column(
+                children: <Widget>[
+                  Expanded(
+                    child: TickerMode(
+                      enabled: ticking,
+                      child: _topBarPage(
+                        scale: scale,
+                        items: <Widget>[
+                          // 与“更多 → 设置”一样：点了就切走这个 Tab。
+                          ExpressiveMenuItem(
+                            onPressed: () => setState(() => ticking = false),
+                            child: const Text('Settings'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => navTaps++,
+                    child: const Text('Nav'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        await openMenu(tester);
+        await tester.tap(find.text('Settings'));
+        // 帧尾执行动作、页面静音；下一帧菜单直接关掉，不等收起动画。
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
+        expect(find.byType(MenuItemButton), findsNothing);
+
+        await tester.tap(find.text('Nav'));
+        expect(navTaps, 1);
+      });
+    }
+  });
 }

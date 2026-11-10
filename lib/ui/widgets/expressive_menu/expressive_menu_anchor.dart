@@ -276,6 +276,31 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
         }
       });
     }
+    // 所在页面的 ticker 被静音（首页切走了这个 Tab，如“更多 → 设置”）：
+    // 开合动画不会再前进，收起永远等不到结束，浮层连同点外部拦截
+    // （consumeOutsideTaps）一直留着，吞掉底栏等别处的点按。此时直接关掉
+    // 菜单、不播动画。build 期间不能开合，放到这一帧之后。
+    _tickersEnabled = TickerMode.valuesOf(context).enabled;
+    if (!_tickersEnabled && controller.isOpen) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_tickersEnabled) _dismissImmediately();
+      });
+    }
+  }
+
+  /// 所在子树的 ticker 是否在走（见 [didChangeDependencies]）。
+  bool _tickersEnabled = true;
+
+  /// 不播动画地关掉菜单（还没开始收起时先发起收起，再直接跳到终点）。
+  void _dismissImmediately() {
+    if (!controller.isOpen) return;
+    if (_status != AnimationStatus.reverse) controller.close();
+    if (widget.morph) {
+      _motion.snapClosed();
+    } else {
+      _animation.value = 0;
+    }
+    _finishClose();
   }
 
   @override

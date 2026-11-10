@@ -1202,9 +1202,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0147 => 'Waterfall';
 
   @override
-  String get autoT0148 => 'Archived diaries';
-
-  @override
   String get autoT0149 => 'Edit tag';
 
   @override

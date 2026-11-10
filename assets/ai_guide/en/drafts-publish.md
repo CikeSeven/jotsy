@@ -11,7 +11,7 @@ A new entry is a draft until you publish it, and it saves automatically. Tapping
 
 ## Drafts
 
-- Open Drafts from the button in the Diaries page's top bar (with a badge showing how many) or from Settings → Drafts.
+- Open Drafts from ⋮ (More) → Drafts in the Diaries page's top bar (the row shows how many you have) or from Settings → Drafts.
 - Every new entry is its own draft and saves when you go back or switch apps. A draft whose content is cleared is deleted automatically, and a template that was applied but never changed doesn't count as a draft.
 - With drafts waiting, New opens "Continue a draft": tap a recent draft to keep writing, or choose "View all drafts", "Start from a template" or "New blank entry".
 - On the Drafts page, tap a draft to continue it, swipe left to delete, or long-press to select several (with select all) and delete them. Deletions can be undone for 4 seconds. A draft disappears once it's published.

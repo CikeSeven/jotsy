@@ -1229,9 +1229,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get autoT0147 => 'Плитка';
 
   @override
-  String get autoT0148 => 'Архив';
-
-  @override
   String get autoT0149 => 'Изменить тег';
 
   @override

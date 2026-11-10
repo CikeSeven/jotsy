@@ -1634,10 +1634,6 @@
   "@autoT0147": {
     "description": "Auto-generated metadata for autoT0147."
   },
-  "autoT0148": "已归档笔记",
-  "@autoT0148": {
-    "description": "Auto-generated metadata for autoT0148."
-  },
   "autoT0149": "编辑标签",
   "@autoT0149": {
     "description": "Auto-generated metadata for autoT0149."
@@ -7639,7 +7635,7 @@
   },
   "diaryDraftsTitle": "草稿箱",
   "@diaryDraftsTitle": {
-    "description": "草稿箱页面标题，也是首页顶栏与设置里的入口名称。"
+    "description": "草稿箱页面标题，也是首页顶栏“更多”菜单与设置里的入口名称。"
   },
   "diaryDraftsEmpty": "还没有草稿。写到一半离开的新日记会自动存在这里",
   "@diaryDraftsEmpty": {

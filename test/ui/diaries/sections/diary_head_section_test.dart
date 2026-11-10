@@ -8,8 +8,6 @@ import 'package:node_diary/ui/diaries/sections/diary_view_options_menu.dart';
 Widget _host({
   required bool selection,
   int count = 3,
-  int draftCount = 0,
-  VoidCallback? onOpenDrafts,
   bool inManualNotebook = false,
   VoidCallback? onAddToNotebook,
   VoidCallback? onSetTags,
@@ -34,10 +32,9 @@ Widget _host({
       onAddToNotebookSelected: onAddToNotebook ?? () {},
       onRemoveFromNotebookSelected: inManualNotebook ? () {} : null,
       onMoveToNotebookSelected: inManualNotebook ? () {} : null,
-      onOpenArchived: () {},
-      onOpenDrafts: onOpenDrafts ?? () {},
-      draftCount: draftCount,
       viewOptions: DiaryViewMenuOptions(
+        onOpenDrafts: () {},
+        onOpenArchived: () {},
         sortMode: DiarySortMode.updatedDesc,
         layoutMode: DiaryLayoutMode.list,
         onSortModeChanged: (_) {},
@@ -89,32 +86,22 @@ void main() {
     expect(find.text('在 Jotsy 中搜索'), findsOneWidget);
   });
 
-  testWidgets('the drafts button shows the draft count only when non-zero', (
+  testWidgets('drafts and archive live in the more menu, not the top bar', (
     tester,
   ) async {
-    var opened = 0;
-    await tester.pumpWidget(
-      _host(selection: false, draftCount: 0, onOpenDrafts: () => opened++),
-    );
-    Badge badge() => tester.widget<Badge>(
-      find.descendant(of: find.byTooltip('草稿箱'), matching: find.byType(Badge)),
-    );
-    expect(badge().isLabelVisible, isFalse);
+    final l10n = lookupAppLocalizations(const Locale('zh'));
+    await tester.pumpWidget(_host(selection: false));
+    // 顶栏只剩搜索条与“更多”。
+    expect(find.byTooltip(l10n.diaryDraftsTitle), findsNothing);
+    expect(find.byTooltip(l10n.autoT0100), findsNothing);
+    // 唯一的图标按钮就是“更多”本身（AI 不可用时）。
+    expect(find.byType(IconButton), findsOneWidget);
+    expect(find.byTooltip(l10n.autoT0125), findsOneWidget);
 
-    await tester.pumpWidget(
-      _host(selection: false, draftCount: 3, onOpenDrafts: () => opened++),
-    );
-    expect(badge().isLabelVisible, isTrue);
-    expect(find.text('3'), findsOneWidget);
-
-    await tester.pumpWidget(_host(selection: false, draftCount: 120));
-    expect(find.text('99+'), findsOneWidget);
-
-    await tester.pumpWidget(
-      _host(selection: false, draftCount: 3, onOpenDrafts: () => opened++),
-    );
-    await tester.tap(find.byTooltip('草稿箱'));
-    expect(opened, 1);
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.diaryDraftsTitle), findsOneWidget);
+    expect(find.text(l10n.autoT0100), findsOneWidget);
   });
 
   testWidgets('selection bar fits 320dp with a large count', (tester) async {

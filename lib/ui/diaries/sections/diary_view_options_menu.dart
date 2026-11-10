@@ -11,6 +11,9 @@ import 'diary_head_section.dart';
 @immutable
 class DiaryViewMenuOptions {
   const DiaryViewMenuOptions({
+    required this.onOpenDrafts,
+    required this.onOpenArchived,
+    this.draftCount = 0,
     required this.sortMode,
     required this.layoutMode,
     required this.onSortModeChanged,
@@ -21,6 +24,15 @@ class DiaryViewMenuOptions {
     this.onNotebookSortChanged,
     this.onOpenSettings,
   });
+
+  /// 打开草稿箱页。
+  final VoidCallback onOpenDrafts;
+
+  /// 打开归档日记页。
+  final VoidCallback onOpenArchived;
+
+  /// 草稿份数：大于 0 时“草稿箱”行尾带份数角标。
+  final int draftCount;
 
   final DiarySortMode sortMode;
   final DiaryLayoutMode layoutMode;
@@ -42,15 +54,18 @@ class DiaryViewMenuOptions {
   final VoidCallback? onOpenSettings;
 }
 
-/// 首页顶栏的“更多”（⋮）：弹出菜单，“排序方式 ›”“显示布局 ›”两项从所在
-/// 那一行展开二级菜单（miuix 的级联变形），“设置”推入设置页（设置不在底栏，
-/// 这里是它的入口）。
+/// 首页顶栏的“更多”（⋮）：弹出菜单，分三组——
+/// - 草稿箱、归档日记：跳转页面（原先是顶栏上的两枚图标按钮，收进来让搜索条
+///   更宽）。草稿份数大于 0 时“草稿箱”行尾为份数角标，配色与原图标角标相同
+///   （主色底，草稿是“还没写完”，不是警告），超过 99 显示 99+；
+/// - 排序方式 ›、显示布局 ›：从所在那一行展开二级菜单（miuix 的级联变形）；
+/// - 设置：推入设置页（设置不在底栏，这里是它的入口）。
 ///
 /// 二级菜单里的单选项点了不关菜单：排序依据与方向常常要连着调，列表在菜单
 /// 后方淡出、换序、淡入，效果看得见；点外部或返回关闭。选中态由二级菜单页
 /// 自己维护（初值取展开时的页面状态）：二级菜单的内容在展开时取定、不随页面
 /// 重建刷新，打开期间排序与布局只能经由这个菜单修改，本地状态不会与页面分叉。
-/// “卡片样式”“设置”是跳转，点按先关菜单。
+/// 草稿箱、归档日记、“卡片样式”“设置”是跳转，点按先关菜单。
 class DiaryViewOptionsMenuButton extends StatelessWidget {
   const DiaryViewOptionsMenuButton({super.key, required this.options});
 
@@ -59,10 +74,32 @@ class DiaryViewOptionsMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final colorScheme = Theme.of(context).colorScheme;
+    final draftCount = options.draftCount;
     return ExpressiveMenuButton(
       tooltip: l10n.autoT0125,
       icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
       items: <Widget>[
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.filePen),
+          trailingIcon: draftCount > 0
+              ? Badge.count(
+                  key: const ValueKey<String>('diary_menu_draft_count'),
+                  count: draftCount,
+                  maxCount: 99,
+                  backgroundColor: colorScheme.primary,
+                  textColor: colorScheme.onPrimary,
+                )
+              : null,
+          onPressed: options.onOpenDrafts,
+          child: Text(l10n.diaryDraftsTitle),
+        ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.boxArchive),
+          onPressed: options.onOpenArchived,
+          child: Text(l10n.autoT0100),
+        ),
+        const ExpressiveMenuDivider(),
         ExpressiveSubmenuItem(
           leadingIcon: const FaIcon(FontAwesomeIcons.arrowDownWideShort),
           menuChildren: <Widget>[_SortMenuPage(options: options)],
@@ -73,12 +110,14 @@ class DiaryViewOptionsMenuButton extends StatelessWidget {
           menuChildren: <Widget>[_LayoutMenuPage(options: options)],
           child: Text(l10n.autoT0145),
         ),
-        if (options.onOpenSettings case final openSettings?)
+        if (options.onOpenSettings case final openSettings?) ...<Widget>[
+          const ExpressiveMenuDivider(),
           ExpressiveMenuItem(
             leadingIcon: const FaIcon(FontAwesomeIcons.gear),
             onPressed: openSettings,
             child: Text(l10n.navSettings),
           ),
+        ],
       ],
     );
   }

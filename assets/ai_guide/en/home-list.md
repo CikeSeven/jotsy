@@ -10,13 +10,12 @@ keywords: [home, diary list, list, waterfall, layout, sort, pin, multi-select, b
 The Diaries tab is the home page you see when you open the app: a search bar and a few buttons at the top, then the tag bar (see "Tags" and "Notebooks") and the diary list, with the "New" button at the bottom right.
 
 ## Layout and sorting
-Tap ⋮ (More) at the right of the top bar to open the view options:
+Tap ⋮ (More) at the right of the top bar to open the menu, in three groups from top to bottom: Drafts and Archived diaries (see "Drafts and publishing" and "Archive and recycle bin"); Sort and Layout; Settings.
 - Sort: Date updated, Date published or Title, each Ascending or Descending.
-- Layout: List or Waterfall.
-- Card style: "Customize card style" opens Settings → Appearance → Diary card style, where you can switch presets and adjust covers, text, colors and more; see "Diary card, preview page and navigation bar styles".
+- Layout: List or Waterfall; "Card style" below them opens the card style page, where you can switch presets and adjust covers, text, colors and more; see "Diary card, preview page and navigation bar styles".
 - Inside a notebook, the sort section becomes "Sort in this notebook": Date published, newest first; Date published, oldest first; Recently edited; or Book order (arranged by hand in the contents; smart notebooks don't have it, see "Notebooks"). It only applies to that notebook.
 
-The other top-bar buttons open Drafts and the archive (see "Archive and recycle bin"); with the AI assistant on there is also an AI assistant button.
+When you have drafts, the Drafts row in the menu shows how many. With the AI assistant on, there is also an AI assistant button to the left of ⋮.
 
 ## Pinning
 Pinned diaries always stay at the top of the list with a "Pinned" mark. Long-press a card to start selecting, then tap "More actions → Pin" ("Unpin" for pinned ones). On a computer you can also right-click a card.

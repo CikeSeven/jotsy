@@ -17,6 +17,8 @@ class _Calls {
   final List<NotebookSort> notebookSorts = <NotebookSort>[];
   int cardStyle = 0;
   int settings = 0;
+  int drafts = 0;
+  int archived = 0;
 }
 
 /// 顶栏右侧放一个“更多”按钮（zh），返回回调记录与文案。
@@ -27,6 +29,7 @@ Future<(_Calls, AppLocalizations)> _pump(
   NotebookSort? notebookSort,
   bool allowBookOrder = false,
   bool withSettings = true,
+  int draftCount = 0,
 }) async {
   final calls = _Calls();
   await tester.pumpWidget(
@@ -40,6 +43,9 @@ Future<(_Calls, AppLocalizations)> _pump(
           actions: <Widget>[
             DiaryViewOptionsMenuButton(
               options: DiaryViewMenuOptions(
+                onOpenDrafts: () => calls.drafts++,
+                onOpenArchived: () => calls.archived++,
+                draftCount: draftCount,
                 sortMode: sortMode,
                 layoutMode: layoutMode,
                 onSortModeChanged: calls.sorts.add,
@@ -85,17 +91,81 @@ bool? _selected(WidgetTester tester, String label) => tester
     .selected;
 
 void main() {
-  testWidgets('the menu lists sort, layout and settings', (tester) async {
+  testWidgets('the menu lists drafts, archive, sort, layout and settings in '
+      'three groups', (tester) async {
     final (_, l10n) = await _pump(tester);
     await _openMenu(tester, l10n);
 
     expect(find.byType(ExpressiveSubmenuItem), findsNWidgets(2));
-    expect(find.text(l10n.autoT0141), findsOneWidget);
-    expect(find.text(l10n.autoT0145), findsOneWidget);
-    expect(find.text(l10n.navSettings), findsOneWidget);
-    // 选项都在二级菜单里，第一级只有三项入口。
+    final labels = <String>[
+      l10n.diaryDraftsTitle,
+      l10n.autoT0100,
+      l10n.autoT0141,
+      l10n.autoT0145,
+      l10n.navSettings,
+    ];
+    final tops = <double>[
+      for (final label in labels) tester.getTopLeft(find.text(label)).dy,
+    ];
+    for (var i = 1; i < tops.length; i++) {
+      expect(tops[i], greaterThan(tops[i - 1]), reason: labels[i]);
+    }
+    // 跳转 | 视图 | 设置，两条分隔线。
+    expect(find.byType(ExpressiveMenuDivider), findsNWidgets(2));
+    // 选项都在二级菜单里，第一级只有入口。
     expect(find.text(l10n.diarySortFieldUpdated), findsNothing);
     expect(find.text(l10n.autoT0146), findsNothing);
+  });
+
+  testWidgets('drafts and archive close the menu and open their pages', (
+    tester,
+  ) async {
+    final (calls, l10n) = await _pump(tester);
+    await _openMenu(tester, l10n);
+    await tester.tap(find.text(l10n.diaryDraftsTitle));
+    await tester.pumpAndSettle();
+    expect(calls.drafts, 1);
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
+
+    await _openMenu(tester, l10n);
+    await tester.tap(find.text(l10n.autoT0100));
+    await tester.pumpAndSettle();
+    expect(calls.archived, 1);
+    expect(calls.drafts, 1);
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
+  });
+
+  testWidgets('the drafts row shows the draft count only when non-zero', (
+    tester,
+  ) async {
+    const countKey = ValueKey<String>('diary_menu_draft_count');
+    var (_, l10n) = await _pump(tester);
+    await _openMenu(tester, l10n);
+    expect(find.byKey(countKey), findsNothing);
+    await tester.tapAt(const Offset(200, 500));
+    await tester.pumpAndSettle();
+
+    (_, l10n) = await _pump(tester, draftCount: 3);
+    await _openMenu(tester, l10n);
+    final badge = tester.widget<Badge>(find.byKey(countKey));
+    // 主色底而不是默认的错误色：草稿是“还没写完”，不是警告。
+    final colors = Theme.of(tester.element(find.byKey(countKey))).colorScheme;
+    expect(badge.backgroundColor, colors.primary);
+    expect(badge.textColor, colors.onPrimary);
+    expect(
+      find.descendant(of: find.byKey(countKey), matching: find.text('3')),
+      findsOneWidget,
+    );
+    await tester.tapAt(const Offset(200, 500));
+    await tester.pumpAndSettle();
+
+    (_, l10n) = await _pump(tester, draftCount: 120);
+    await _openMenu(tester, l10n);
+    expect(
+      find.descendant(of: find.byKey(countKey), matching: find.text('99+')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('settings closes the menu and opens settings', (tester) async {
@@ -115,6 +185,8 @@ void main() {
     await _openMenu(tester, l10n);
     expect(find.text(l10n.navSettings), findsNothing);
     expect(find.byType(ExpressiveSubmenuItem), findsNWidgets(2));
+    // 没有“设置”时末尾不留一条孤零零的分隔线。
+    expect(find.byType(ExpressiveMenuDivider), findsOneWidget);
   });
 
   testWidgets('sort options apply on tap while the menu stays open', (

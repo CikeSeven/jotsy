@@ -16,7 +16,7 @@ keywords: [archive, unarchive, swipe to archive, archived diaries, delete diary,
 - Archived diaries no longer show in the home list, but the calendar and Explore stats still count them, and search finds them when "Include archived" is on.
 
 ## Viewing and unarchiving
-Tap the archive button (box icon) in the Diaries tab's top bar to open "Archived diaries".
+In the Diaries tab's top bar, tap ⋮ (More) → Archived diaries.
 - On a phone, swipe a card left to unarchive it (this also follows the "Swipe to archive" switch; when it's off, use selection instead).
 - Long-press to start selecting, then "Unarchive" or delete several at once.
 - On a computer, right-click a card and choose "Unarchive".

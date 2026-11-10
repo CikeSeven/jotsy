@@ -1162,9 +1162,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0147 => '瀑布流';
 
   @override
-  String get autoT0148 => '已归档笔记';
-
-  @override
   String get autoT0149 => '编辑标签';
 
   @override

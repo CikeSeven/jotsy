@@ -1634,10 +1634,6 @@
   "@autoT0147": {
     "description": "Auto-generated metadata for autoT0147."
   },
-  "autoT0148": "アーカイブした日記",
-  "@autoT0148": {
-    "description": "Auto-generated metadata for autoT0148."
-  },
   "autoT0149": "タグを編集",
   "@autoT0149": {
     "description": "Auto-generated metadata for autoT0149."
@@ -7692,7 +7688,7 @@
   },
   "diaryDraftsTitle": "下書き",
   "@diaryDraftsTitle": {
-    "description": "Title of the drafts page; also the entry name in the home header and settings."
+    "description": "Title of the drafts page; also the entry name in the home header's More menu and settings."
   },
   "diaryDraftsEmpty": "下書きはまだありません。投稿せずに閉じた新しい日記は、ここに自動で保存されます",
   "@diaryDraftsEmpty": {

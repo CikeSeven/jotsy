@@ -1171,9 +1171,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autoT0147 => 'タイル';
 
   @override
-  String get autoT0148 => 'アーカイブした日記';
-
-  @override
   String get autoT0149 => 'タグを編集';
 
   @override

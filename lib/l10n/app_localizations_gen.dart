@@ -2184,12 +2184,6 @@ abstract class AppLocalizations {
   /// **'Waterfall'**
   String get autoT0147;
 
-  /// Auto-generated metadata for autoT0148.
-  ///
-  /// In en, this message translates to:
-  /// **'Archived diaries'**
-  String get autoT0148;
-
   /// Auto-generated metadata for autoT0149.
   ///
   /// In en, this message translates to:
@@ -9936,7 +9930,7 @@ abstract class AppLocalizations {
   /// **'Full'**
   String get diaryPreviewStyleLongImageFull;
 
-  /// Title of the drafts page; also the entry name in the home header and settings.
+  /// Title of the drafts page; also the entry name in the home header's More menu and settings.
   ///
   /// In en, this message translates to:
   /// **'Drafts'**

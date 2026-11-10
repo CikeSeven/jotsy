@@ -18,8 +18,8 @@ enum DiaryLayoutMode { list, waterfall }
 /// 日记页顶部头部区块。
 ///
 /// 布局职责：
-/// - 普通态：搜索条占满左侧，右侧为草稿箱（有草稿时带份数角标）、归档列表
-///   与“更多”菜单（排序方式 / 显示布局两个二级菜单与设置，见
+/// - 普通态：搜索条占满左侧，右侧为 AI 助手（可用时）与“更多”菜单（草稿箱、
+///   归档日记、排序方式 / 显示布局两个二级菜单与设置，见
 ///   [DiaryViewOptionsMenuButton]）；
 /// - 多选态：取消 · 全选开关（勾选框 + 已选数量） · 收进日记本 · 归档 ·
 ///   删除 · 更多（置顶或取消置顶、设置标签、导出；在普通日记本里另有“从
@@ -49,9 +49,6 @@ class DiaryHeadSection extends StatelessWidget {
     this.onAddToNotebookSelected,
     this.onRemoveFromNotebookSelected,
     this.onMoveToNotebookSelected,
-    required this.onOpenArchived,
-    required this.onOpenDrafts,
-    required this.draftCount,
     required this.viewOptions,
     required this.onOpenSearchPage,
     this.searchHint,
@@ -83,13 +80,9 @@ class DiaryHeadSection extends StatelessWidget {
   /// 菜单里不出现这两项。
   final VoidCallback? onRemoveFromNotebookSelected;
   final VoidCallback? onMoveToNotebookSelected;
-  final VoidCallback onOpenArchived;
-  final VoidCallback onOpenDrafts;
 
-  /// 草稿份数，大于 0 时草稿箱图标带角标。
-  final int draftCount;
-
-  /// “更多”菜单的当前值与回调（排序、布局、卡片样式、设置），由页面控制器组装。
+  /// “更多”菜单的当前值与回调（草稿箱、归档、排序、布局、卡片样式、设置），
+  /// 由页面控制器组装。
   final DiaryViewMenuOptions viewOptions;
   final VoidCallback onOpenSearchPage;
 
@@ -250,13 +243,7 @@ class DiaryHeadSection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.s),
-        _TrailingActions(
-          onOpenAi: onOpenAi,
-          onOpenDrafts: onOpenDrafts,
-          draftCount: draftCount,
-          onOpenArchived: onOpenArchived,
-          viewOptions: viewOptions,
-        ),
+        _TrailingActions(onOpenAi: onOpenAi, viewOptions: viewOptions),
       ],
     );
   }
@@ -456,24 +443,16 @@ class _SearchPreview extends StatelessWidget {
   }
 }
 
+/// 普通态搜索条右侧：AI 助手（可用时）+ “更多”菜单。草稿箱与归档日记收在
+/// “更多”菜单第一组里，顶栏只留这两枚图标，搜索条更宽。
 class _TrailingActions extends StatelessWidget {
-  const _TrailingActions({
-    required this.onOpenAi,
-    required this.onOpenDrafts,
-    required this.draftCount,
-    required this.onOpenArchived,
-    required this.viewOptions,
-  });
+  const _TrailingActions({required this.onOpenAi, required this.viewOptions});
 
   final VoidCallback? onOpenAi;
-  final VoidCallback onOpenDrafts;
-  final int draftCount;
-  final VoidCallback onOpenArchived;
   final DiaryViewMenuOptions viewOptions;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -483,24 +462,6 @@ class _TrailingActions extends StatelessWidget {
             onPressed: onOpenAi,
             icon: const FaIcon(FontAwesomeIcons.wandMagicSparkles, size: 18),
           ),
-        IconButton(
-          tooltip: context.l10n.diaryDraftsTitle,
-          onPressed: onOpenDrafts,
-          // 角标用主色而不是默认的错误色：草稿是“还没写完”，不是警告。
-          icon: Badge.count(
-            count: draftCount,
-            maxCount: 99,
-            isLabelVisible: draftCount > 0,
-            backgroundColor: colorScheme.primary,
-            textColor: colorScheme.onPrimary,
-            child: const FaIcon(FontAwesomeIcons.filePen, size: 18),
-          ),
-        ),
-        IconButton(
-          tooltip: context.l10n.autoT0148,
-          onPressed: onOpenArchived,
-          icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
-        ),
         DiaryViewOptionsMenuButton(options: viewOptions),
       ],
     );

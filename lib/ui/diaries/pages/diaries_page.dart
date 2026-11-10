@@ -800,16 +800,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                               _membershipController
                                                   .moveSelectedToNotebook(),
                                             ),
-                                      onOpenArchived:
-                                          _controller.openArchivedPage,
-                                      onOpenDrafts: _controller.openDraftsPage,
-                                      draftCount:
-                                          ref
-                                              .watch(diaryDraftCountProvider)
-                                              .value ??
-                                          0,
                                       viewOptions: _controller.viewMenuOptions(
                                         notebooksEnabled: notebooksEnabled,
+                                        draftCount:
+                                            ref
+                                                .watch(diaryDraftCountProvider)
+                                                .value ??
+                                            0,
                                       ),
                                       onOpenSearchPage:
                                           _controller.openSearchPage,

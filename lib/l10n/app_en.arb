@@ -1634,10 +1634,6 @@
   "@autoT0147": {
     "description": "Auto-generated metadata for autoT0147."
   },
-  "autoT0148": "Archived diaries",
-  "@autoT0148": {
-    "description": "Auto-generated metadata for autoT0148."
-  },
   "autoT0149": "Edit tag",
   "@autoT0149": {
     "description": "Auto-generated metadata for autoT0149."
@@ -7639,7 +7635,7 @@
   },
   "diaryDraftsTitle": "Drafts",
   "@diaryDraftsTitle": {
-    "description": "Title of the drafts page; also the entry name in the home header and settings."
+    "description": "Title of the drafts page; also the entry name in the home header's More menu and settings."
   },
   "diaryDraftsEmpty": "No drafts yet. New entries you leave before publishing are kept here",
   "@diaryDraftsEmpty": {

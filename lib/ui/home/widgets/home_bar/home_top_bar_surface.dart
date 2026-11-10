@@ -5,11 +5,11 @@ import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../widgets/glass/glass_surface.dart';
 import 'home_chrome_scope.dart';
 
-/// 首页四个 Tab（日记 / 日历 / 探索 / 设置）顶栏下缘到第一块内容的统一距离。
+/// 首页各 Tab（日记 / 待办 / 日历 / 探索）顶栏下缘到第一块内容的统一距离。
 ///
-/// 四个 Tab 的顶栏结构各不相同（日记是刊头 + 钉住的标签栏，日历是可收起
-/// 月份行的页头，探索 / 设置是叠在 Stack 上的 PageHeader），间距如果各写
-/// 各的，有背景图时顶栏下缘一清楚，四页就会一页一个样。统一从这里取。
+/// 各 Tab 的顶栏结构各不相同（日记是刊头 + 钉住的标签栏，日历是可收起
+/// 月份行的页头，待办 / 探索是叠在 Stack 上的 PageHeader），间距如果各写
+/// 各的，有背景图时顶栏下缘一清楚，几页就会一页一个样。统一从这里取。
 const double kHomeTopContentGap = AppSpacing.m;
 
 /// 首页 Tab 顶栏的底：实色时就是页面原来画的那块颜色，玻璃时换成
@@ -53,7 +53,7 @@ class HomeTopBarSurface extends StatelessWidget {
       HomeChromeScope.glassTopBarsOf(context) ||
       AppPageBackdrop.of(context).wantsBackground;
 
-  /// 日记 / 设置 Tab 顶栏下缘与第一块内容之间要补的间距：下缘看得见时为
+  /// 日记 Tab 顶栏下缘与第一块内容之间要补的间距：下缘看得见时为
   /// [kHomeTopContentGap]，否则为 0（经典无背景与改版前逐像素一致）。
   ///
   /// 日历与探索的第一块内容本来就在页头下方固定留了同样的 12，无论有没有

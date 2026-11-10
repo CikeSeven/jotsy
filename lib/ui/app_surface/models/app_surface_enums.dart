@@ -12,7 +12,7 @@ enum AppBackgroundKind { none, color, image }
 /// 可以单独设置背景的区域。
 ///
 /// - [diaries] / [calendar] / [explore]：首页对应的 Tab；
-/// - [settings]：设置 Tab 与全部设置子页；
+/// - [settings]：设置首页（从日记页顶栏“更多”推入）与全部设置子页；
 /// - [editor]：编辑页、发表页、模板编辑页；
 /// - [preview]：预览页（仅当预览样式的纸张为“跟随主题”时，用户自定义的
 ///   纸张颜色优先）；

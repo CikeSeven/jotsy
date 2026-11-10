@@ -5,24 +5,25 @@ summary: What each home tab is for, how to write your first entry, and which fea
 features: [calendar, todos, explore, notebooks, anniversaries, templates, timeCapsules, swipeArchive, comments, ai]
 platforms: []
 destinations: [tab_diaries, tab_calendar, tab_explore, tab_settings, search, archive, settings_features, settings_notebooks, data_management]
-keywords: [getting started, first time, beginner, home, bottom bar, tabs, new entry, write, preview, edit, shelf, switch notebook, tag filter, multi-select, archive, features, turned off by default]
+keywords: [getting started, first time, beginner, home, bottom bar, tabs, where is settings, new entry, write, preview, edit, shelf, switch notebook, tag filter, multi-select, archive, features, turned off by default]
 ---
 Jotsy is a diary that lives on your own device. There's no account to create; open it and start writing. This article walks through the home screen, your first entry, and the features that start out turned off.
 
 ## The pages in the bottom bar
 
-The bottom bar (a side rail on wide windows) has four pages by default:
+The bottom bar (a side rail on wide windows) has three pages by default:
 - **Diaries**: the list of all your entries, and where you start writing.
 - **Calendar**: entries by month or week, with lunar dates and holidays. Long-press a day to write for it.
 - **Explore**: cards for stats, On this day, mood trends, the media gallery and more.
-- **Settings**: appearance, editor, data management and so on.
 
-Diaries and Settings always stay; Calendar and Explore can be turned off. The To-dos page is off by default; turn it on and a To-dos tab appears in the bottom bar.
+Diaries always stays; Calendar and Explore can be turned off. The To-dos page is off by default; turn it on and a To-dos tab appears in the bottom bar. With Calendar, Explore and To-dos all off, only Diaries is left and the bottom bar goes away.
+
+**Settings** (appearance, editor, data management and so on) isn't in the bottom bar: tap More (⋮) at the top right of the Diaries page, and Settings is the last item in the menu.
 
 ## What's on the Diaries page
 
 - The search bar at the top ("Search in Jotsy") searches titles and text.
-- To its right: AI assistant (only once AI is turned on and set up), Drafts (with a number badge when you have drafts), Archived diaries, and More (sort order, list or waterfall layout, card style, switch notebook).
+- To its right: AI assistant (only once AI is turned on and set up), Drafts (with a number badge when you have drafts), Archived diaries, and More (sort order; layout: list or waterfall, and card style; Settings).
 - Below it is the tag bar. Tap a tag to show only that tag, long-press to combine several, and drag down to see all tags. With notebooks turned on, the first chip is the notebook switcher (it normally reads "All entries"); tap it to open the shelf and jump to a notebook or to "Not in a notebook".
 - The New button at the bottom right writes a new entry. Inside a notebook it reads "Write in" plus the notebook's name.
 - On a phone, swipe a card left to archive it, or long-press to select several (add to notebook, archive, delete, pin, set tags, export and more). On desktop, use the right-click menu.

@@ -81,19 +81,21 @@ void main() {
               theme: pinkTheme,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              home: const Scaffold(body: SettingsPage()),
+              home: const SettingsPage(),
             ),
           ),
         );
 
-        // Verify ColoredBox in SettingsPage uses pink theme surface
-        final coloredBoxes = tester.widgetList<ColoredBox>(
-          find.byType(ColoredBox),
+        // 设置页的页面底色取当前主题的 surface（没有设背景时）。
+        final scaffold = tester.widget<Scaffold>(
+          find
+              .descendant(
+                of: find.byType(SettingsPage),
+                matching: find.byType(Scaffold),
+              )
+              .first,
         );
-        expect(
-          coloredBoxes.any((box) => box.color == pinkTheme.colorScheme.surface),
-          isTrue,
-        );
+        expect(scaffold.backgroundColor, pinkTheme.colorScheme.surface);
       },
     );
   });

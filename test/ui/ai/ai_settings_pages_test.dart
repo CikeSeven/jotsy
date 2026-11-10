@@ -43,7 +43,7 @@ void main() {
     tester,
   ) async {
     final h = await DiaryDraftsHarness.create(tester);
-    await h.pump(const Scaffold(body: SettingsPage()));
+    await h.pump(const SettingsPage());
     await tester.pumpAndSettle();
     // AI 助手在末尾一组（关于之上）：先滚到底，确认关闭时那里没有它。
     await tester.scrollUntilVisible(

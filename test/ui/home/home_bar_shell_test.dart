@@ -29,11 +29,8 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_nav_destination.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_indicator.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/settings/pages/settings_page.dart';
-import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
-import 'package:node_diary/ui/widgets/page_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const double _screenWidth = 400;
@@ -54,6 +51,7 @@ String? _raw(HomeBarStyle style, [HomeBarBehavior? behavior]) =>
 Future<SettingsService> _mountApp(
   WidgetTester tester, {
   String? homeBarRaw,
+  String? appFeaturesRaw,
   int diaryCount = 0,
   double statusBar = 0,
   double width = _screenWidth,
@@ -68,6 +66,7 @@ Future<SettingsService> _mountApp(
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(<String, Object>{
     'app.settings.home_bar_style': ?homeBarRaw,
+    'app.settings.app_features': ?appFeaturesRaw,
   });
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -98,6 +97,7 @@ Future<SettingsService> _mountApp(
 Future<SettingsService> _pumpHome(
   WidgetTester tester, {
   String? homeBarRaw,
+  String? appFeaturesRaw,
   int diaryCount = 0,
   double statusBar = 0,
   double width = _screenWidth,
@@ -105,6 +105,7 @@ Future<SettingsService> _pumpHome(
   final settings = await _mountApp(
     tester,
     homeBarRaw: homeBarRaw,
+    appFeaturesRaw: appFeaturesRaw,
     diaryCount: diaryCount,
     statusBar: statusBar,
     width: width,
@@ -242,10 +243,6 @@ double _tagBarBottom(WidgetTester tester) => tester
     )
     .bottom;
 
-/// 设置页第一个分组（通用，含组标题）。
-Finder _firstSettingsCard(WidgetTester tester) =>
-    find.byType(SettingsCardGroup).first;
-
 void main() {
   testWidgets('the default style keeps the solid bar under the body', (
     tester,
@@ -340,7 +337,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(HomeFloatingBar),
-        matching: find.text(l10n.navSettings),
+        matching: find.text(l10n.navExplore),
       ),
     );
     await tester.pumpAndSettle();
@@ -349,6 +346,27 @@ void main() {
         tester.getRect(find.byType(HomeFloatingBar)).right -
         tester.getRect(_pill).right;
     expect(slotWidth, closeTo(0, 0.01));
+    await _unmount(tester);
+  });
+
+  testWidgets('with only diaries left the glass bar and inline button give '
+      'way to the global FAB', (tester) async {
+    await _pumpHome(
+      tester,
+      homeBarRaw: _raw(
+        _glass.copyWith(fabPlacement: HomeBarFabPlacement.inline),
+      ),
+      appFeaturesRaw: '{"calendar":false,"explore":false}',
+    );
+    // 只有一个 Tab：不画底栏，内容也不再延伸到胶囊下方。
+    expect(find.byType(HomeBottomBar), findsNothing);
+    expect(find.byType(HomeFloatingBar), findsNothing);
+    expect(_inlineButton, findsNothing);
+    expect(_homeScaffold(tester).extendBody, isFalse);
+    // 新建入口回到全局 FAB，落在手势条上方 10dp。
+    final fab = tester.getRect(find.byType(FloatingActionButton));
+    expect(fab.bottom, closeTo(_screenHeight - _gestureInset - 10, 0.01));
+    expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
 
@@ -679,32 +697,6 @@ void main() {
     });
   });
 
-  group('settings tab first card', () {
-    testWidgets('glass leaves 12dp below the header hairline', (tester) async {
-      await _pumpHome(tester, statusBar: _statusBar, homeBarRaw: _raw(_glass));
-      await _openTab(tester, _l10n(tester).navSettings);
-      final headerBottom = tester.getRect(find.byType(PageHeader)).bottom;
-      expect(headerBottom, _statusBar + PageHeader.contentHeight);
-      expect(
-        tester.getRect(_firstSettingsCard(tester)).top,
-        closeTo(headerBottom + 12, 0.01),
-      );
-      await _unmount(tester);
-    });
-
-    testWidgets('solid keeps the first card flush with the header', (
-      tester,
-    ) async {
-      await _pumpHome(tester, statusBar: _statusBar);
-      await _openTab(tester, _l10n(tester).navSettings);
-      expect(
-        tester.getRect(_firstSettingsCard(tester)).top,
-        closeTo(tester.getRect(find.byType(PageHeader)).bottom, 0.01),
-      );
-      await _unmount(tester);
-    });
-  });
-
   group('content scrolls fully above the floating pill', () {
     // 日历页在 400dp 宽的测试字体下本就有一处横向溢出（与底栏无关），
     // 这组只关心纵向留白，用宽一点的屏幕避开它。
@@ -745,15 +737,6 @@ void main() {
         tester.getRect(find.byType(ExploreContentView)).bottom,
         lessThanOrEqualTo(pillTop),
       );
-
-      await _openTab(tester, l10n.navSettings);
-      final settings = find.byType(SettingsPage);
-      expect(_trailingSpace(tester, settings), 8 + slot);
-      await _scrollToEnd(tester, settings);
-      expect(
-        tester.getRect(find.text(l10n.settingsAbout)).bottom,
-        lessThanOrEqualTo(pillTop),
-      );
       await _unmount(tester);
     });
 
@@ -768,8 +751,6 @@ void main() {
       expect(_trailingSpace(tester, find.byType(CalendarPage)), 12);
       await _openTab(tester, l10n.navExplore);
       expect(_trailingSpace(tester, find.byType(ExplorePage)), 12);
-      await _openTab(tester, l10n.navSettings);
-      expect(_trailingSpace(tester, find.byType(SettingsPage)), 8);
       await _unmount(tester);
     });
   });

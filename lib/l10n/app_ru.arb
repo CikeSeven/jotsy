@@ -10915,7 +10915,7 @@
   "@settingsFeaturesPagesGroup": {
     "description": "Features page: group title for pages (bottom bar tabs) that can be turned off."
   },
-  "settingsFeaturesPagesFooter": "«Записи» и «Настройки» есть всегда. Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.",
+  "settingsFeaturesPagesFooter": "«Записи» есть всегда, а «Настройки» находятся в меню «Ещё» вверху раздела «Записи». Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.",
   "@settingsFeaturesPagesFooter": {
     "description": "Features page: footer of the pages group."
   },
@@ -11987,7 +11987,7 @@
   },
   "appSurfaceAreaSettings": "Настройки",
   "@appSurfaceAreaSettings": {
-    "description": "背景与材质设置：区域胶囊，设置 Tab 与设置子页。"
+    "description": "背景与材质设置：区域胶囊，设置首页与设置子页。"
   },
   "appSurfaceAreaEditor": "Редактор",
   "@appSurfaceAreaEditor": {

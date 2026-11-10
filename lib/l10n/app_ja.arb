@@ -10915,7 +10915,7 @@
   "@settingsFeaturesPagesGroup": {
     "description": "Features page: group title for pages (bottom bar tabs) that can be turned off."
   },
-  "settingsFeaturesPagesFooter": "「日記」と「設定」は常に表示されます。オフにしたページは下部のナビゲーションバーから消えますが、データには影響しません。",
+  "settingsFeaturesPagesFooter": "「日記」は常に表示され、「設定」は日記ページ上部の「その他」メニューにあります。オフにしたページは下部のナビゲーションバーから消えますが、データには影響しません。",
   "@settingsFeaturesPagesFooter": {
     "description": "Features page: footer of the pages group."
   },
@@ -11987,7 +11987,7 @@
   },
   "appSurfaceAreaSettings": "設定",
   "@appSurfaceAreaSettings": {
-    "description": "背景与材质设置：区域胶囊，设置 Tab 与设置子页。"
+    "description": "背景与材质设置：区域胶囊，设置首页与设置子页。"
   },
   "appSurfaceAreaEditor": "編集",
   "@appSurfaceAreaEditor": {

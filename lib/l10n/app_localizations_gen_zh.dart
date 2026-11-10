@@ -7567,7 +7567,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsFeaturesPagesGroup => '页面';
 
   @override
-  String get settingsFeaturesPagesFooter => '日记和设置始终保留。关闭的页面不再出现在底部导航，数据不受影响。';
+  String get settingsFeaturesPagesFooter =>
+      '日记始终保留，设置在日记页顶栏的“更多”菜单里。关闭的页面不再出现在底部导航，数据不受影响。';
 
   @override
   String get settingsFeaturesCalendarSubtitle => '按月查看日记，含农历、节假日与纪念日';

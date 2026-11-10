@@ -37,7 +37,7 @@ Diary cards (the cards on the home page, in search, archive and the calendar), t
 - Presets and style codes don't change reading behavior: Tick to-dos while reading, Select text by long-press, Double-tap to edit and long images on the Text tab, and Swipe between diaries, Sensitivity and Vibrate when turning pages on the Paging tab. Transition, Previous and next at the end, and Hint at either end are part of the style: applying a preset resets them to the defaults, and style codes carry them.
 
 ## Navigation bar style
-- Covers the home bottom bar and the top bars of Diaries, Calendar, Explore and Settings. Built-in styles: Classic (default), Glass, Clear, Misty, Tinted, Compact.
+- Covers the home bottom bar and the top bars of Diaries, To-dos, Calendar and Explore. Built-in styles: Classic (default), Glass, Clear, Misty, Tinted, Compact.
 - **Material**: Solid or Glass. With glass the bottom bar becomes a floating capsule, with Blur, Opacity, Tint, Shadow and Outlines to adjust, and you can turn on **Glass top bars too**.
 - **Floating bar** (glass only): Height, Corner radius, Side margins, Distance from bottom; place the New button **Above the bar** or **Beside the bar**.
 - **Items**: Labels (Always / Selected only / Hidden), Icon size, Selection indicator (Capsule / Block / None).

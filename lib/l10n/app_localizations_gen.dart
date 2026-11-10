@@ -13755,7 +13755,7 @@ abstract class AppLocalizations {
   /// Features page: footer of the pages group.
   ///
   /// In en, this message translates to:
-  /// **'Diaries and Settings always stay. Pages you turn off leave the bottom bar; your data isn\'t affected.'**
+  /// **'Diaries always stays, and Settings is in the More menu at the top of Diaries. Pages you turn off leave the bottom bar; your data isn\'t affected.'**
   String get settingsFeaturesPagesFooter;
 
   /// Features page: subtitle of the calendar switch.
@@ -15276,7 +15276,7 @@ abstract class AppLocalizations {
   /// **'Explore'**
   String get appSurfaceAreaExplore;
 
-  /// 背景与材质设置：区域胶囊，设置 Tab 与设置子页。
+  /// 背景与材质设置：区域胶囊，设置首页与设置子页。
   ///
   /// In en, this message translates to:
   /// **'Settings'**

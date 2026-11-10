@@ -19,7 +19,7 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_tab_entrance.dart';
-import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -130,10 +130,11 @@ void main() {
         l10n.navDiaries,
         l10n.navCalendar,
         l10n.navExplore,
-        l10n.navSettings,
       ]) {
         expect(_railItem(label), findsOneWidget);
       }
+      // 设置不是 Tab，不在侧边栏里（从日记页顶栏“更多”进入）。
+      expect(_railItem(l10n.navSettings), findsNothing);
       await _unmount(tester);
     });
   }
@@ -173,10 +174,10 @@ void main() {
     expect(cover.opacity.value, 0);
     expect(find.byType(CalendarPage), findsOneWidget);
 
-    await tester.tap(_railItem(l10n.navSettings));
+    await tester.tap(_railItem(l10n.navExplore));
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 3);
-    expect(find.byType(SettingsPage), findsOneWidget);
+    expect(_homePage(tester), 2);
+    expect(find.byType(ExplorePage), findsOneWidget);
 
     await tester.tap(_railItem(l10n.navDiaries));
     await tester.pumpAndSettle();
@@ -254,22 +255,22 @@ void main() {
       offset,
     );
 
-    // 宽窗口里切到设置再拖回窄窗口：当前 Tab 保持，日记页仍是同一个。
+    // 宽窗口里切到探索再拖回窄窗口：当前 Tab 保持，日记页仍是同一个。
     // （日历页在测试字体与 18 篇日记下本身就会溢出，与外壳无关，这里不用它。）
-    await tester.tap(_railItem(_l10n(tester).navSettings));
+    await tester.tap(_railItem(_l10n(tester).navExplore));
     await tester.pumpAndSettle();
-    final settingsList = find
+    final exploreList = find
         .descendant(
-          of: find.byType(SettingsPage),
+          of: find.byType(ExplorePage),
           matching: find.byType(Scrollable),
         )
         .first;
-    final settingsState = tester.state(settingsList);
+    final exploreState = tester.state(exploreList);
     await _resize(tester, _phone);
     expect(find.byType(HomeNavRail), findsNothing);
     expect(find.byType(BottomNav), findsOneWidget);
-    expect(_homePage(tester), 3);
-    expect(tester.state(settingsList), same(settingsState));
+    expect(_homePage(tester), 2);
+    expect(tester.state(exploreList), same(exploreState));
     expect(
       tester.state(find.byType(DiariesPage, skipOffstage: false)),
       same(diariesState),
@@ -282,9 +283,10 @@ void main() {
     await _pressShortcut(tester, LogicalKeyboardKey.digit3);
     await tester.pumpAndSettle();
     expect(_homePage(tester), 2);
+    // 默认只有三个可见 Tab：超出可见数量的数字键忽略。
     await _pressShortcut(tester, LogicalKeyboardKey.digit4);
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 3);
+    expect(_homePage(tester), 2);
     await _pressShortcut(tester, LogicalKeyboardKey.digit1);
     await tester.pumpAndSettle();
     expect(_homePage(tester), 0);
@@ -303,7 +305,7 @@ void main() {
 
   testWidgets('Ctrl+N opens the editor from any tab', (tester) async {
     await _pumpHome(tester);
-    await tester.tap(_railItem(_l10n(tester).navSettings));
+    await tester.tap(_railItem(_l10n(tester).navExplore));
     await tester.pumpAndSettle();
     await _pressShortcut(tester, LogicalKeyboardKey.keyN);
     await tester.pumpAndSettle();

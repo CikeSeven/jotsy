@@ -4,7 +4,7 @@ part of 'home_page.dart';
 /// - Ctrl+N（macOS / iOS 为 ⌘+N）：新建日记，与侧边栏新建按钮同一入口；
 ///   在待办 Tab 时新建待办；
 /// - Ctrl+F（⌘+F）：打开日记搜索页（由日记页注册的入口执行）；
-/// - Ctrl+1…5（⌘+1…5）：切到第 n 个可见 Tab，超出可见数量时忽略。
+/// - Ctrl+1…4（⌘+1…4）：切到第 n 个可见 Tab，超出可见数量时忽略。
 ///
 /// 生效范围：快捷键挂在首页 Scaffold 外层，只有焦点在首页子树内时才收到
 /// 按键。推入的页面（编辑页、搜索页、底部面板与对话框）是别的路由，焦点
@@ -32,7 +32,6 @@ extension _HomePageShortcuts on _HomePageState {
     LogicalKeyboardKey.digit2,
     LogicalKeyboardKey.digit3,
     LogicalKeyboardKey.digit4,
-    LogicalKeyboardKey.digit5,
   ];
 
   Map<ShortcutActivator, VoidCallback> _shortcutBindings() {

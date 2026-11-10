@@ -13,9 +13,9 @@ import '../../../../support/expressive_test_theme.dart';
 
 const _items = <BottomNavItem>[
   BottomNavItem(label: 'Diaries', icon: FontAwesomeIcons.book),
+  BottomNavItem(label: 'To-dos', icon: FontAwesomeIcons.squareCheck),
   BottomNavItem(label: 'Calendar', icon: FontAwesomeIcons.calendarDays),
   BottomNavItem(label: 'Explore', icon: FontAwesomeIcons.compass),
-  BottomNavItem(label: 'Settings', icon: FontAwesomeIcons.gear),
 ];
 
 HomeBarResolvedStyle _style({
@@ -130,13 +130,15 @@ void main() {
     expect(find.byTooltip('New'), findsOneWidget);
   });
 
-  testWidgets('destinations stack below the button and settings is pinned '
-      'to the bottom', (tester) async {
+  testWidgets('destinations stack below the button from the top', (
+    tester,
+  ) async {
     await _pump(tester);
     final fabBottom = tester.getBottomLeft(find.byType(FloatingActionButton));
     final diaries = tester.getRect(find.text('Diaries'));
+    final todos = tester.getRect(find.text('To-dos'));
     final calendar = tester.getRect(find.text('Calendar'));
-    final settings = tester.getRect(find.text('Settings'));
+    final explore = tester.getRect(find.text('Explore'));
     final indicators = find.byType(HomeNavIndicator);
     // 第一个指示器在 FAB 下方 28 处。
     expect(
@@ -149,10 +151,15 @@ void main() {
       closeTo(16, 0.01),
     );
     expect(
-      tester.getRect(indicators.at(2)).top - calendar.bottom,
+      tester.getRect(indicators.at(2)).top - todos.bottom,
       closeTo(16, 0.01),
     );
-    expect(settings.bottom, closeTo(600 - 16, 0.01));
+    // 最后一项同样紧接上一项，不再固定在栏底（设置不是 Tab）。
+    expect(
+      tester.getRect(indicators.at(3)).top - calendar.bottom,
+      closeTo(16, 0.01),
+    );
+    expect(explore.bottom, lessThan(600 - 16 - 100));
   });
 
   testWidgets('the capsule indicator is 56 by 32 around the icon', (
@@ -170,14 +177,14 @@ void main() {
     final tapped = <int>[];
     await _pump(tester, onTap: tapped.add);
     await tester.tap(find.text('Calendar'));
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.text('Explore'));
     await tester.tap(find.text('Diaries'));
-    expect(tapped, <int>[1, 3, 0]);
+    expect(tapped, <int>[2, 3, 0]);
   });
 
   testWidgets('semantics marks only the selected destination', (tester) async {
     final handle = tester.ensureSemantics();
-    await _pump(tester, selected: 2);
+    await _pump(tester, selected: 3);
     expect(
       tester.getSemantics(find.text('Explore')),
       matchesSemantics(
@@ -210,7 +217,7 @@ void main() {
     await _pump(tester, style: _style(labelMode: HomeBarLabelMode.never));
     expect(find.text('Diaries'), findsNothing);
     expect(find.byTooltip('Diaries'), findsOneWidget);
-    expect(find.byTooltip('Settings'), findsOneWidget);
+    expect(find.byTooltip('Explore'), findsOneWidget);
   });
 
   testWidgets('selected-only labels show the selected label alone', (
@@ -219,7 +226,7 @@ void main() {
     await _pump(
       tester,
       style: _style(labelMode: HomeBarLabelMode.selected),
-      selected: 1,
+      selected: 2,
     );
     // 未选中项的文字高度收为 0，只留提示。
     expect(tester.getSize(find.text('Calendar')).height, greaterThan(0));

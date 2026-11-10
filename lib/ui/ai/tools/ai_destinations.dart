@@ -49,6 +49,7 @@ import '../../settings/pages/explore_layout_page.dart';
 import '../../settings/pages/home_bar_style_page.dart';
 import '../../settings/pages/mood_options_page.dart';
 import '../../settings/pages/recycle_bin_page.dart';
+import '../../settings/pages/settings_page.dart';
 import '../../settings/pages/tag_management_page.dart';
 import '../../storage/pages/storage_page.dart';
 import '../../todos/controllers/todo_navigation.dart';
@@ -188,16 +189,6 @@ final List<AiDestination> aiDestinations = <AiDestination>[
     open: _tab(HomeTab.explore),
     available: (env) => env.features.explore,
   ),
-  AiDestination(
-    'tab_settings',
-    kind: AiDestinationKind.tab,
-    section: AiDestinationSection.home,
-    icon: FontAwesomeIcons.gear,
-    tint: AiTint.neutral,
-    leavesChat: true,
-    title: (l10n) => l10n.navSettings,
-    open: _tab(HomeTab.settings),
-  ),
   // ---- 具体的一篇 / 一本 / 一项 ----
   AiDestination(
     'diary',
@@ -276,6 +267,16 @@ final List<AiDestination> aiDestinations = <AiDestination>[
     open: _page(() => const AiRecapPage()),
   ),
   // ---- 设置 ----
+  // 设置首页。它曾是首页的 Tab，现在是推入的二级页，不再离开对话；id 仍是
+  // `tab_settings`：已保存的对话卡片与使用指南按 id 引用它。
+  AiDestination(
+    'tab_settings',
+    kind: AiDestinationKind.page,
+    icon: FontAwesomeIcons.gear,
+    tint: AiTint.neutral,
+    title: (l10n) => l10n.navSettings,
+    open: _page(() => const SettingsPage()),
+  ),
   AiDestination(
     'settings_appearance',
     kind: AiDestinationKind.page,

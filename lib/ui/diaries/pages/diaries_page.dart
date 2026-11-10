@@ -119,7 +119,8 @@ class DiariesPage extends ConsumerStatefulWidget {
   final ValueChanged<VoidCallback?>? onSearchActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
 
-  /// 顶栏“更多 → 设置”：切到首页的设置 Tab；null 时菜单里没有这一项。
+  /// 顶栏“更多 → 设置”：推入设置页（应用里唯一的设置入口）；null 时菜单里
+  /// 没有这一项。
   final VoidCallback? onOpenSettings;
 
   @override

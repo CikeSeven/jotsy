@@ -7695,7 +7695,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsFeaturesPagesFooter =>
-      '「日記」と「設定」は常に表示されます。オフにしたページは下部のナビゲーションバーから消えますが、データには影響しません。';
+      '「日記」は常に表示され、「設定」は日記ページ上部の「その他」メニューにあります。オフにしたページは下部のナビゲーションバーから消えますが、データには影響しません。';
 
   @override
   String get settingsFeaturesCalendarSubtitle => '月ごとに日記を表示。旧暦・祝日・記念日も確認できます';

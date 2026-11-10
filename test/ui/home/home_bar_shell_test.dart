@@ -21,6 +21,7 @@ import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/explore/sections/explore_content_view.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_metrics.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
@@ -29,7 +30,6 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_nav_destination.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_indicator.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,7 +39,15 @@ const double _screenHeight = 860;
 /// 模拟的系统手势条高度。
 const double _gestureInset = 24;
 
-const HomeBarStyle _glass = HomeBarStyle(material: HomeBarMaterial.glass);
+/// 默认三个 Tab（日记 / 日历 / 探索；待办默认关闭，设置不在底栏）的胶囊
+/// 宽度：3 × 72 + 两侧各 6 的缝。
+const double _pillWidth = 3 * 72 + 12;
+
+/// 不显示文字时的胶囊：每项 64 宽，栏高 54。
+const Size _compactPill = Size(3 * 64 + 12, 54);
+
+/// 默认样式：悬浮玻璃栏 + 玻璃顶栏。
+const HomeBarStyle _glass = HomeBarStyle.defaults;
 
 String? _raw(HomeBarStyle style, [HomeBarBehavior? behavior]) =>
     HomeBarSettings(
@@ -244,28 +252,23 @@ double _tagBarBottom(WidgetTester tester) => tester
     .bottom;
 
 void main() {
-  testWidgets('the default style keeps the solid bar under the body', (
-    tester,
-  ) async {
+  testWidgets('the default style floats a blurred pill above the gesture '
+      'inset', (tester) async {
+    // 没有存过任何样式：默认就是悬浮玻璃栏，不再有贴底的实色栏。
     await _pumpHome(tester);
-    expect(_homeScaffold(tester).extendBody, isFalse);
-    expect(find.byType(BottomNav), findsOneWidget);
-    expect(find.byType(HomeFloatingBar), findsNothing);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
-    await _unmount(tester);
-  });
-
-  testWidgets('glass floats a blurred pill above the gesture inset', (
-    tester,
-  ) async {
-    await _pumpHome(tester, homeBarRaw: _raw(_glass));
     expect(_homeScaffold(tester).extendBody, isTrue);
-    expect(find.byType(BottomNav), findsNothing);
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    // 胶囊按内容定宽（四项 × 72 + 两侧的缝）、水平居中，不再左右撑满。
     final rect = tester.getRect(_pill);
-    expect(rect.left, _glass.sideMargin);
-    expect(rect.right, _screenWidth - _glass.sideMargin);
-    expect(rect.bottom, _screenHeight - _gestureInset - _glass.bottomGap);
-    expect(rect.height, _glass.barHeight);
+    expect(rect.width, _pillWidth);
+    expect(rect.center.dx, _screenWidth / 2);
+    expect(
+      rect.bottom,
+      _screenHeight - _gestureInset - HomeBarMetrics.bottomGap,
+    );
+    expect(rect.height, HomeBarMetrics.labeledBarHeight);
     expect(tester.widget<BackdropFilter>(_pillBackdrop).enabled, isTrue);
     expect(_glassUnderOpacity(tester), isFalse);
     await _unmount(tester);
@@ -324,7 +327,15 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(tester.getSize(_inlineButton), Size.square(_glass.barHeight));
+    expect(
+      tester.getSize(_inlineButton),
+      const Size.square(HomeBarMetrics.labeledBarHeight),
+    );
+    // 胶囊与按钮作为一组居中。
+    expect(
+      (tester.getRect(_pill).left + tester.getRect(_inlineButton).right) / 2,
+      closeTo(_screenWidth / 2, 0.01),
+    );
     expect(
       tester.widget<HomeInlineCreateButton>(_inlineButton).label,
       l10n.commonNew,
@@ -341,11 +352,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(tester.getSize(_pill).width, _screenWidth - _glass.sideMargin * 2);
-    final slotWidth =
-        tester.getRect(find.byType(HomeFloatingBar)).right -
-        tester.getRect(_pill).right;
-    expect(slotWidth, closeTo(0, 0.01));
+    // 探索页没有新建按钮：槽位收起，胶囊回到正中。
+    expect(tester.getSize(_pill).width, _pillWidth);
+    expect(tester.getRect(_pill).center.dx, closeTo(_screenWidth / 2, 0.01));
     await _unmount(tester);
   });
 
@@ -461,10 +470,29 @@ void main() {
           ),
         )
         .dx;
-    final indicator = find.descendant(
-      of: destination(0),
-      matching: find.byType(HomeNavIndicator),
+    // 指示器是栏里铺满导航行的一层画布（不属于某个导航项），量它此刻画出
+    // 的圆角矩形，再换算到屏幕坐标。
+    final indicatorLayer = find.descendant(
+      of: find.descendant(
+        of: find.byType(HomeFloatingBar),
+        matching: find.byType(HomeNavIndicator),
+      ),
+      matching: find.byType(CustomPaint),
     );
+    double indicatorX() {
+      RRect? painted;
+      expect(
+        tester.renderObject(indicatorLayer),
+        paints..something((Symbol method, List<dynamic> arguments) {
+          if (method != #drawRRect) {
+            return false;
+          }
+          painted = arguments.first as RRect;
+          return true;
+        }),
+      );
+      return tester.getTopLeft(indicatorLayer).dx + painted!.center.dx;
+    }
 
     final gesture = await tester.startGesture(
       const Offset(_screenWidth / 2, _screenHeight / 2),
@@ -473,7 +501,7 @@ void main() {
     await tester.pump();
     await gesture.moveBy(const Offset(-150, 0));
     await tester.pump();
-    final x = tester.getRect(indicator).center.dx;
+    final x = indicatorX();
     expect(x, greaterThan(iconX(0) + 1));
     expect(x, lessThan(iconX(1) - 1));
     await gesture.up();
@@ -491,29 +519,39 @@ void main() {
     expect(_homeScaffold(tester).extendBody, isTrue);
     expect(find.byType(HomeFloatingBar), findsOneWidget);
     expect(tester.widget<BackdropFilter>(_pillBackdrop).enabled, isFalse);
-    expect(tester.getRect(_pill).left, _glass.sideMargin);
+    expect(tester.getRect(_pill).width, _pillWidth);
     await _unmount(tester);
   });
 
-  testWidgets('changing the setting swaps solid and glass live', (
-    tester,
-  ) async {
+  testWidgets('changing the style reshapes the pill live', (tester) async {
     final settings = await _pumpHome(tester, diaryCount: 3);
-    expect(find.byType(BottomNav), findsOneWidget);
+    expect(tester.getSize(_pill), const Size(_pillWidth, 60));
 
-    unawaited(settings.setHomeBarStyleRaw(_raw(_glass)));
+    const compact = HomeBarStyle(labelMode: HomeBarLabelMode.never);
+    unawaited(settings.setHomeBarStyleRaw(_raw(compact)));
     await tester.pumpAndSettle();
-    expect(find.byType(BottomNav), findsNothing);
-    expect(find.byType(HomeFloatingBar), findsOneWidget);
-    expect(_homeScaffold(tester).extendBody, isTrue);
+    expect(tester.getSize(_pill), _compactPill);
+    expect(tester.getRect(_pill).center.dx, _screenWidth / 2);
     expect(find.byType(DiariesPage), findsOneWidget);
 
     unawaited(settings.setHomeBarStyleRaw(null));
     await tester.pumpAndSettle();
-    expect(find.byType(BottomNav), findsOneWidget);
-    expect(find.byType(HomeFloatingBar), findsNothing);
-    expect(_homeScaffold(tester).extendBody, isFalse);
+    expect(tester.getSize(_pill), const Size(_pillWidth, 60));
+    expect(_homeScaffold(tester).extendBody, isTrue);
     expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets('settings saved by older versions still open', (tester) async {
+    // 旧版本的样式：已移除的字段（材质、栏高）忽略，留下的照常生效。
+    await _pumpHome(
+      tester,
+      homeBarRaw:
+          '{"v":1,"current":{"material":"solid","barHeight":72,'
+          '"labelMode":"never"}}',
+    );
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
+    expect(tester.getSize(_pill), _compactPill);
     await _unmount(tester);
   });
 
@@ -622,12 +660,11 @@ void main() {
     testWidgets('the top bar hairline lands on the tag bar only', (
       tester,
     ) async {
-      // 关掉底栏描边也不影响顶栏分隔线：两者是独立开关。
       await _pumpHome(
         tester,
         diaryCount: 3,
         statusBar: _statusBar,
-        homeBarRaw: _raw(_glass.copyWith(topBarHairline: true, border: false)),
+        homeBarRaw: _raw(_glass.copyWith(topBarHairline: true)),
       );
       expect(
         tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
@@ -665,34 +702,31 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('solid bars keep the first card flush with the tag bar', (
+    testWidgets('settings that turned glass top bars off still get glass', (
       tester,
     ) async {
-      await _pumpHome(tester, diaryCount: 3, statusBar: _statusBar);
-      expect(
-        find.byKey(const ValueKey<String>('diaries_top_content_gap')),
-        findsNothing,
+      // 旧版本可以关掉顶栏玻璃；这个开关已移除，存过的值一律忽略。
+      await _pumpHome(
+        tester,
+        diaryCount: 3,
+        statusBar: _statusBar,
+        homeBarRaw: '{"v":1,"current":{"glassTopBars":false}}',
       );
-      expect(
-        tester.getRect(find.byType(DiaryCard).first).top,
-        closeTo(_tagBarBottom(tester), 0.01),
-      );
-      await _unmount(tester);
-    });
-
-    testWidgets('solid bars keep the status bar inset and no glass', (
-      tester,
-    ) async {
-      await _pumpHome(tester, diaryCount: 3, statusBar: _statusBar);
       expect(
         find.descendant(
           of: find.byType(DiariesPage),
           matching: find.byType(GlassSurface),
         ),
-        findsNothing,
+        findsWidgets,
       );
-      // 实色时仍由 SafeArea 让出状态栏：刊头从状态栏线以下开始。
+      // 玻璃刊头铺到状态栏，第一张卡片与标签栏之间留出统一的间距。
+      expect(tester.getRect(_mastheadGlass).top, 0);
       expect(tester.getTopLeft(find.byType(DiaryHeadSection)).dy, _statusBar);
+      expect(
+        tester.getRect(find.byType(DiaryCard).first).top -
+            _tagBarBottom(tester),
+        closeTo(kHomeTopContentGap, 0.01),
+      );
       await _unmount(tester);
     });
   });
@@ -702,9 +736,7 @@ void main() {
     // 这组只关心纵向留白，用宽一点的屏幕避开它。
     const wide = 480.0;
 
-    testWidgets('glass: every tab pads its end by the bar slot', (
-      tester,
-    ) async {
+    testWidgets('every tab pads its end by the bar slot', (tester) async {
       await _pumpHome(
         tester,
         diaryCount: 18,
@@ -737,20 +769,6 @@ void main() {
         tester.getRect(find.byType(ExploreContentView)).bottom,
         lessThanOrEqualTo(pillTop),
       );
-      await _unmount(tester);
-    });
-
-    testWidgets('solid: the trailing space stays as before', (tester) async {
-      await _pumpHome(tester, diaryCount: 18, width: wide);
-      final l10n = _l10n(tester);
-      final diaries = find.byType(DiariesPage);
-      expect(_slotHeight(tester, diaries), 0);
-      expect(_trailingSpace(tester, diaries), 12);
-
-      await _openTab(tester, l10n.navCalendar);
-      expect(_trailingSpace(tester, find.byType(CalendarPage)), 12);
-      await _openTab(tester, l10n.navExplore);
-      expect(_trailingSpace(tester, find.byType(ExplorePage)), 12);
       await _unmount(tester);
     });
   });

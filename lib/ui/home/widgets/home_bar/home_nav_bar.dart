@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../models/home_bar_style/home_bar_metrics.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
-import 'home_nav_block.dart';
 import 'home_nav_destination.dart';
+import 'home_nav_indicator.dart';
 
 /// 底部导航栏单项配置。
 class BottomNavItem {
@@ -17,22 +18,23 @@ class BottomNavItem {
   final FaIconData icon;
 }
 
-/// 首页底栏的导航项一行（取代 Material `NavigationBar`），实色与玻璃两种
-/// 材质共用，因此文字模式、图标大小、指示器样式与跟随滑动在实色栏也生效。
+/// 首页底栏的导航项一行（取代 Material `NavigationBar`）。
 ///
-/// 输入：导航项、选中项、点按回调、已解析的首页栏样式 [style]，可选的栏高
-/// [height]（缺省取 `style.barHeight`）与页面位置 [position]；输出：一行
-/// 等宽的导航项，不画底色（底色、SafeArea 与外框由 BottomNav /
-/// 悬浮底栏负责）。
+/// 输入：导航项、选中项、点按回调、已解析的首页栏样式 [style]、每项的宽度
+/// [itemWidth]（缺省取 `style.itemWidth`，屏幕放不下时由悬浮栏传入收窄后的
+/// 值）与页面位置 [position]；输出：一排等宽的格子，宽 = 项数 × 项宽、高 =
+/// 栏高减去上下的缝。不画底色（玻璃底色与外框由悬浮底栏负责），无副作用。
 ///
-/// - 默认样式（始终显示文字、图标 20、胶囊、不跟随）与改版前的
-///   `NavigationBar` 逐像素一致：结构、尺寸、语义与动画照搬 M3（见
-///   home_nav_layout.dart / home_nav_destination.dart）；
-/// - 颜色：玻璃材质（`style.isGlass`，高对比度下仍为 true）用 style 的前景色
-///   与指示器色；实色沿用主题（选中图标 onSecondaryContainer、未选中
-///   onSurfaceVariant、指示器 secondaryContainer，文字取 navigationBarTheme）；
-/// - [position] 非空时指示器跟着页面的小数位置在相邻两项间连续移动；
-///   语义上的“已选中”始终按 [selectedIndex]。
+/// 结构是两层：下面一颗指示器（[HomeNavIndicator]），上面一排导航项
+/// （[HomeNavDestination]）。指示器的位置是一个小数序号：
+/// - [position] 为空：选中项变化时由本组件的弹簧推到新的一项
+///   （[ExpressiveMotion.springIndicator]，轻轻越过再收回；连点时带着速度
+///   改道），途中按速度拉长；
+/// - [position] 非空（“指示器跟随滑动”）：跟着页面的小数位置走，图标、
+///   文字的选中程度也按它插值，没有弹簧。
+///
+/// 语义照搬 M3 `NavigationBar`（tabBar / tab 角色），“已选中”始终按
+/// [selectedIndex]。
 class HomeNavBar extends StatefulWidget {
   const HomeNavBar({
     super.key,
@@ -40,33 +42,77 @@ class HomeNavBar extends StatefulWidget {
     required this.selectedIndex,
     required this.onTap,
     required this.style,
-    this.height,
+    this.itemWidth,
     this.position,
   });
 
-  /// 导航项，至少一项（空态由调用方处理，如 BottomNav 不画栏）。
+  /// 导航项，至少一项（空态由调用方处理，悬浮底栏此时只画空胶囊）。
   final List<BottomNavItem> items;
 
   /// 选中项；越界时夹到有效范围（Tab 集合变化的那一帧可能短暂越界）。
   final int selectedIndex;
   final ValueChanged<int> onTap;
   final HomeBarResolvedStyle style;
-  final double? height;
 
-  /// 页面位置（如 PageController.page）；null 时指示器只在选中变化时动画。
+  /// 每个导航项的宽度；null 时取 `style.itemWidth`。
+  final double? itemWidth;
+
+  /// 页面位置（如 PageController.page）；null 时指示器由弹簧滑向选中项。
   final ValueListenable<double>? position;
 
   @override
   State<HomeNavBar> createState() => _HomeNavBarState();
 }
 
-/// 有状态只为持有各项共享的内容尺寸（跟随滑动时推算相邻一项的圆角块
-/// 大小，见 [HomeNavContentMetrics]），它要跨帧保留。
-class _HomeNavBarState extends State<HomeNavBar> {
-  final HomeNavContentMetrics _metrics = HomeNavContentMetrics();
+class _HomeNavBarState extends State<HomeNavBar>
+    with SingleTickerProviderStateMixin {
+  /// 弹簧停稳的阈值：位置以“项”为单位，千分之一项不到 0.1 像素。
+  static const Tolerance _settleTolerance = Tolerance(
+    distance: 0.001,
+    velocity: 0.01,
+  );
+
+  /// 指示器的位置（小数序号），无界：弹簧会越过目标再回落。跟随滑动时
+  /// 不用它，但值保持对齐选中项，关掉跟随的那一刻指示器不会跳。
+  late final AnimationController _indicator = AnimationController.unbounded(
+    vsync: this,
+    value: _clampedIndex.toDouble(),
+  );
 
   int get _clampedIndex =>
       widget.selectedIndex.clamp(0, widget.items.length - 1);
+
+  double _indicatorVelocity() =>
+      _indicator.isAnimating ? _indicator.velocity : 0;
+
+  @override
+  void didUpdateWidget(HomeNavBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final target = _clampedIndex.toDouble();
+    if (widget.position != null ||
+        oldWidget.items.length != widget.items.length) {
+      // 跟随滑动时位置由页面给出；Tab 集合变化（功能管理开关）时旧序号
+      // 已不对应同一项，滑过去只会经过无关的项——两种情况都直接到位。
+      _indicator.value = target;
+      return;
+    }
+    if (oldWidget.selectedIndex != widget.selectedIndex ||
+        oldWidget.position != null) {
+      ExpressiveMotion.springTo(
+        context,
+        _indicator,
+        target,
+        spring: ExpressiveMotion.springIndicator,
+        tolerance: _settleTolerance,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _indicator.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +120,13 @@ class _HomeNavBarState extends State<HomeNavBar> {
     final items = widget.items;
     final position = widget.position;
     final colors = HomeNavColors.resolve(Theme.of(context), style);
-    final barHeight = widget.height ?? style.barHeight;
+    final itemWidth = widget.itemWidth ?? style.itemWidth;
     final selected = _clampedIndex;
-    final duration = ExpressiveMotion.duration(context);
-    // 透明 Material 承载指示器（Ink）与水波纹，底色由外层负责。
+    final duration = ExpressiveMotion.duration(
+      context,
+      ExpressiveMotion.medium,
+    );
+    // 透明 Material 承载水波纹，底色由外层负责。
     return Material(
       type: MaterialType.transparency,
       child: Semantics(
@@ -85,47 +134,54 @@ class _HomeNavBarState extends State<HomeNavBar> {
         explicitChildNodes: true,
         container: true,
         child: SizedBox(
-          height: barHeight,
-          child: Row(
+          width: itemWidth * items.length,
+          height: HomeBarMetrics.itemHeight(style.barHeight),
+          child: Stack(
             children: <Widget>[
-              for (var i = 0; i < items.length; i++)
-                Expanded(
-                  child: MergeSemantics(
-                    child: Semantics(
-                      role: SemanticsRole.tab,
-                      selected: i == selected,
-                      child: HomeNavSelectionAnimator(
-                        selected: i == selected,
-                        duration: duration,
-                        builder:
-                            (
-                              BuildContext context,
-                              Animation<double> selection,
-                              Animation<double> labelCurve,
-                            ) => HomeNavDestination(
-                              index: i,
-                              count: items.length,
-                              icon: items[i].icon,
-                              label: items[i].label,
-                              selected: i == selected,
-                              selection: selection,
-                              labelCurve: labelCurve,
-                              position: position,
-                              labelMode: style.labelMode,
-                              iconSize: style.iconSize,
-                              indicator: style.indicator,
-                              labelGap: style.labelGap,
-                              blockPadding: style.blockPadding,
-                              cornerRadius: style.cornerRadius,
-                              barHeight: barHeight,
-                              metrics: _metrics,
-                              colors: colors,
-                              onTap: () => widget.onTap(i),
-                            ),
+              Positioned.fill(
+                child: HomeNavIndicator(
+                  position: position ?? _indicator,
+                  velocity: position == null ? _indicatorVelocity : null,
+                  count: items.length,
+                  color: colors.indicator,
+                ),
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  for (var i = 0; i < items.length; i++)
+                    SizedBox(
+                      width: itemWidth,
+                      child: MergeSemantics(
+                        child: Semantics(
+                          role: SemanticsRole.tab,
+                          selected: i == selected,
+                          child: HomeNavSelectionAnimator(
+                            selected: i == selected,
+                            duration: duration,
+                            builder:
+                                (
+                                  BuildContext context,
+                                  Animation<double> selection,
+                                  Animation<double> labelCurve,
+                                ) => HomeNavDestination(
+                                  index: i,
+                                  count: items.length,
+                                  icon: items[i].icon,
+                                  label: items[i].label,
+                                  selected: i == selected,
+                                  labelCurve: labelCurve,
+                                  position: position,
+                                  labelMode: style.labelMode,
+                                  colors: colors,
+                                  onTap: () => widget.onTap(i),
+                                ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                ],
+              ),
             ],
           ),
         ),

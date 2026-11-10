@@ -3,6 +3,9 @@ import 'package:flutter/physics.dart';
 
 /// Expressive 的空间运动与颜色过渡分开处理：只有位移/缩放允许弹簧过冲，
 /// 颜色、圆角与透明度使用不越界的 effects 曲线。所有新增动效尊重系统减弱动画。
+/// 弹簧有两种：固定时长的曲线 [spatial]（配 [duration]，给隐式动画组件用）
+/// 与按物理模拟推进的真弹簧（[springSpatial] 等，经 [springTo]，可带速度
+/// 改目标）。
 ///
 /// 时长分档（对齐 M3 duration token，UI 层不再手写毫秒数）：
 /// - [fast]：微交互，图标/颜色切换、小元素显隐、遮罩淡入淡出；
@@ -45,6 +48,63 @@ abstract final class ExpressiveMotion {
   /// 退场：加速离开，与 [effects] 对称，用于 AnimatedSwitcher.switchOutCurve 等。
   static const exit = Curves.easeInCubic;
   static const spatial = _ExpressiveSpringCurve();
+
+  /// 真弹簧（按物理模拟推进，而不是 [spatial] 那样固定时长的曲线）：只用于
+  /// 位移、尺寸与缩放。中途改目标时带着当前速度接着走，不会像补间那样从
+  /// 零速重新起步——连点、滚动中途反向时动作才连贯。参数对齐 M3 Expressive
+  /// 的 spatial 弹簧（阻尼比 / 刚度），经 [springTo] 驱动。
+  /// - [springSpatial]：默认档，过冲约 2%，较大位移（底栏显隐、槽位展开）；
+  /// - [springSpatialFast]：快而弹，过冲约 10%，小元素的按压回弹与图标弹出；
+  /// - [springIndicator]：选中指示器在导航项之间滑动。偏软、过冲约 2.5%：
+  ///   起步不猛、落点轻轻越过再收回，配合途中按速度的拉伸，看起来是一滴
+  ///   滑过去的水而不是一块弹过去的板。
+  static final SpringDescription springSpatial =
+      SpringDescription.withDampingRatio(mass: 1, stiffness: 380, ratio: 0.8);
+  static final SpringDescription springSpatialFast =
+      SpringDescription.withDampingRatio(mass: 1, stiffness: 800, ratio: 0.6);
+  static final SpringDescription springIndicator =
+      SpringDescription.withDampingRatio(mass: 1, stiffness: 320, ratio: 0.76);
+
+  /// 让无界控制器 [controller] 以弹簧 [spring] 从当前值、当前速度奔向
+  /// [target]。
+  ///
+  /// [controller] 必须由 `AnimationController.unbounded` 创建（弹簧会越过
+  /// 目标再回落，有界控制器会把过冲截掉）。减少动画时直接到位、不启动模拟；
+  /// 已经停在目标上时同样什么都不做，免得白跑一帧。[tolerance] 是判定“停稳”
+  /// 的距离与速度阈值，按被驱动的量纲给（像素量用默认值即可）。
+  ///
+  /// [kick] 是叠加在当前速度上的初速度（单位 / 秒，与被驱动的量同量纲）：
+  /// 给一个朝目标方向的初速度，弹簧会多越过终点一截再落回——图标选中时
+  /// “弹一下”用它，不必另起一段动画。有 [kick] 时即使已停在目标上也会
+  /// 启动。
+  static void springTo(
+    BuildContext context,
+    AnimationController controller,
+    double target, {
+    SpringDescription? spring,
+    Tolerance tolerance = Tolerance.defaultTolerance,
+    double kick = 0,
+  }) {
+    if (reduceMotion(context)) {
+      controller.value = target;
+      return;
+    }
+    if (kick == 0 && !controller.isAnimating && controller.value == target) {
+      return;
+    }
+    controller.animateWith(
+      SpringSimulation(
+        spring ?? springSpatial,
+        controller.value,
+        target,
+        (controller.isAnimating ? controller.velocity : 0) + kick,
+        tolerance: tolerance,
+        // 停稳时落在目标值上，而不是差着容差以内的一点：静止后的位置与
+        // 尺寸才是整值，不留亚像素的偏差。
+        snapToEnd: true,
+      ),
+    );
+  }
 
   /// 系统是否开启了“减少动态效果”。
   static bool reduceMotion(BuildContext context) =>

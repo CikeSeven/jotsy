@@ -6,9 +6,11 @@ import 'package:loading_indicator_m3e/loading_indicator_m3e.dart' as m3e;
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_destination.dart';
-import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 
@@ -212,12 +214,17 @@ void main() {
       BottomNavItem(label: 'Diaries', icon: FontAwesomeIcons.book),
       BottomNavItem(label: 'Settings', icon: FontAwesomeIcons.gear),
     ];
+    final style = HomeBarResolvedStyle.resolve(
+      HomeBarStyle.defaults,
+      expressiveTestTheme(Brightness.light).colorScheme,
+    );
     await tester.pumpWidget(
       _app(
-        child: BottomNav(
+        child: HomeFloatingBar(
           items: items,
           selectedIndex: 9,
           onTap: (value) => tapped = value,
+          style: style,
         ),
       ),
     );
@@ -234,23 +241,31 @@ void main() {
     semantics.dispose();
     await tester.tap(find.text('Diaries'));
     expect(tapped, 0);
+    // 没有导航项时只画空胶囊，不构建导航行。
     await tester.pumpWidget(
       _app(
-        child: BottomNav(items: const [], selectedIndex: -1, onTap: (_) {}),
+        child: HomeFloatingBar(
+          items: const [],
+          selectedIndex: -1,
+          onTap: (_) {},
+          style: style,
+        ),
       ),
     );
     expect(find.byType(HomeNavBar), findsNothing);
     await tester.pumpWidget(
       _app(
-        child: BottomNav(
+        child: HomeFloatingBar(
           items: [items.first],
           selectedIndex: 9,
           onTap: (value) => tapped = value,
+          style: style,
         ),
       ),
     );
     await tester.tap(find.text('Diaries'));
     expect(tapped, 0);
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 

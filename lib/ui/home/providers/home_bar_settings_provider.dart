@@ -10,7 +10,7 @@ import '../models/home_bar_style/home_bar_style.dart';
 ///
 /// 与日记卡片样式一样是同步 Notifier 而不是 `async*` StreamProvider：
 /// StreamProvider 在 settings 就绪后的第一帧必然处于 loading，首页只能先用
-/// 默认的实色栏画一帧，随后再跳成玻璃栏——启动时底栏会闪一下。这里 settings
+/// 默认样式画一帧，随后再跳成用户的样式——启动时底栏会闪一下。这里 settings
 /// 未就绪时给默认值；就绪后 build 立即同步解码存储值，首页首帧读到的就是
 /// 用户样式。
 ///

@@ -144,7 +144,7 @@ Widget buildTodosPageList({
 /// 键盘高度读窗口本身（`View.viewInsets`，经 [WidgetsBindingObserver] 在
 /// 窗口尺寸变化时更新）：首页挂着 `KeyboardShield`，MediaQuery 里的键盘高度
 /// 恒为打开首页时的值，读它既让不开键盘、也不会随键盘收起复原。只让出盖住
-/// 列表的部分（键盘高度减去列表底边到屏幕底边的距离，如实色底栏），不输入
+/// 列表的部分（键盘高度减去列表底边到屏幕底边的距离），不输入
 /// 时为 0、也不监听。结构恒定，切换时列表不重建。
 class _KeyboardGap extends StatefulWidget {
   const _KeyboardGap({required this.enabled, required this.child});

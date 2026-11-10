@@ -8,10 +8,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../controllers/home_bar_style_editor_controller.dart';
 import '../sections/diary_card_style/diary_card_style_samples.dart';
+import '../sections/home_bar_style/home_bar_style_appearance_tab.dart';
 import '../sections/home_bar_style/home_bar_style_behavior_tab.dart';
-import '../sections/home_bar_style/home_bar_style_floating_tab.dart';
-import '../sections/home_bar_style/home_bar_style_items_tab.dart';
-import '../sections/home_bar_style/home_bar_style_material_tab.dart';
 import '../sections/home_bar_style/home_bar_style_presets_tab.dart';
 import '../sections/home_bar_style/home_bar_style_preview.dart';
 import '../sections/home_bar_style/home_bar_style_preview_toolbar.dart';
@@ -21,10 +19,10 @@ import '../widgets/style_editor/style_editor_scaffold.dart';
 /// 设置 → 外观 → 导航栏样式。
 ///
 /// 页面壳层：上方是实时预览（一个缩小的首页：顶栏、示例日记列表与底栏），
-/// 下方按标签页分组调整（预设、材质、悬浮栏、导航项、行为）；布局与三档
-/// 面板见 [StyleEditorScaffold]。状态与写入由 [HomeBarStyleEditorController]
-/// 负责，改动即时生效；右上角“重置”回到默认外观（实色）并提供撤销，栏的
-/// 行为不受重置影响。
+/// 下方三个标签页（预设、外观、行为）；布局与三档面板见
+/// [StyleEditorScaffold]。状态与写入由 [HomeBarStyleEditorController] 负责，
+/// 改动即时生效；右上角“重置”回到默认外观并提供撤销，栏的行为不受重置
+/// 影响。
 class HomeBarStylePage extends StatefulWidget {
   const HomeBarStylePage({super.key, required this.settingsService});
 
@@ -78,16 +76,12 @@ class _HomeBarStylePageState extends State<HomeBarStylePage> {
       onReset: _reset,
       tabs: <String>[
         l10n.homeBarStyleTabPresets,
-        l10n.homeBarStyleTabMaterial,
-        l10n.homeBarStyleTabFloating,
-        l10n.homeBarStyleTabItems,
+        l10n.homeBarStyleTabAppearance,
         l10n.homeBarStyleTabBehavior,
       ],
       tabViews: () => <Widget>[
         HomeBarStylePresetsTab(controller: _controller),
-        HomeBarStyleMaterialTab(controller: _controller),
-        HomeBarStyleFloatingTab(controller: _controller),
-        HomeBarStyleItemsTab(controller: _controller),
+        HomeBarStyleAppearanceTab(controller: _controller),
         HomeBarStyleBehaviorTab(controller: _controller),
       ],
       toolbarBuilder: (_) =>

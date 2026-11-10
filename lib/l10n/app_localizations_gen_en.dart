@@ -8645,31 +8645,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String homeBarStyleCustomName(String material) {
-    return '$material (custom)';
-  }
-
-  @override
   String get homeBarStyleTabPresets => 'Presets';
 
   @override
-  String get homeBarStyleTabMaterial => 'Material';
+  String get homeBarStyleTabAppearance => 'Appearance';
 
   @override
-  String get homeBarStyleTabFloating => 'Floating bar';
+  String get homeBarStyleGlassGroup => 'Glass';
 
   @override
-  String get homeBarStyleTabItems => 'Items';
+  String get homeBarStyleLayoutGroup => 'Layout';
 
   @override
   String get homeBarStyleTabBehavior => 'Behavior';
-
-  @override
-  String get homeBarStylePresetClassic => 'Classic';
-
-  @override
-  String get homeBarStylePresetClassicDesc =>
-      'The solid bottom bar from before the redesign';
 
   @override
   String get homeBarStylePresetGlass => 'Glass';
@@ -8682,7 +8670,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeBarStylePresetClear => 'Clear';
 
   @override
-  String get homeBarStylePresetClearDesc => 'Clearer glass without a shadow';
+  String get homeBarStylePresetClearDesc =>
+      'Clearer glass that shows more of the page';
 
   @override
   String get homeBarStylePresetFrosted => 'Misty';
@@ -8706,25 +8695,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'A shorter floating bar with icons only';
 
   @override
-  String get homeBarStyleMaterialSolid => 'Solid';
-
-  @override
-  String get homeBarStyleMaterialGlass => 'Glass';
-
-  @override
-  String get homeBarStyleGlassFooter =>
-      'With glass, the bottom bar floats over the page, and content scrolling beneath it shows through blurred.';
-
-  @override
   String get homeBarStyleHighContrastNote =>
       'High contrast is on in system settings, so the glass shows as opaque for now.';
-
-  @override
-  String get homeBarStyleGlassTopBars => 'Glass top bars too';
-
-  @override
-  String get homeBarStyleGlassTopBarsSubtitle =>
-      'The Diaries, Calendar, Explore and Settings top bars turn frosted as well';
 
   @override
   String get homeBarStyleTopBarHairline => 'Top bar divider';
@@ -8732,9 +8704,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeBarStyleTopBarHairlineSubtitle =>
       'A thin line along the bottom of the glass top bars';
-
-  @override
-  String get homeBarStyleBlur => 'Blur';
 
   @override
   String get homeBarStyleOpacity => 'Opacity';
@@ -8747,66 +8716,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeBarStyleTintTheme => 'Theme';
-
-  @override
-  String get homeBarStyleTintColor => 'Glass color';
-
-  @override
-  String get homeBarStyleBorder => 'Bottom bar outline';
-
-  @override
-  String get homeBarStyleBorderSubtitle =>
-      'A thin line along the edge of the floating bar';
-
-  @override
-  String get homeBarStyleOutlineGroup => 'Outlines';
-
-  @override
-  String get homeBarStyleLineColor => 'Color';
-
-  @override
-  String get homeBarStyleLineColorTheme => 'Default';
-
-  @override
-  String get homeBarStyleLineColorHighlight => 'Highlight';
-
-  @override
-  String get homeBarStyleLineColorPrimary => 'Accent';
-
-  @override
-  String get homeBarStyleLineCustomColor => 'Line color';
-
-  @override
-  String get homeBarStyleLineWidth => 'Width';
-
-  @override
-  String get homeBarStyleShadow => 'Shadow';
-
-  @override
-  String get homeBarStyleShadowSubtitle =>
-      'A soft shadow beneath the floating bar';
-
-  @override
-  String get homeBarStyleFloatingSolidHint =>
-      'The floating bar is only used with the glass material.';
-
-  @override
-  String get homeBarStyleSwitchToGlass => 'Switch to glass';
-
-  @override
-  String get homeBarStyleSizeGroup => 'Size';
-
-  @override
-  String get homeBarStyleHeight => 'Height';
-
-  @override
-  String get homeBarStyleCornerRadius => 'Corner radius';
-
-  @override
-  String get homeBarStyleSideMargin => 'Side margins';
-
-  @override
-  String get homeBarStyleBottomGap => 'Distance from bottom';
 
   @override
   String get homeBarStyleFabGroup => 'New button';
@@ -8834,31 +8743,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeBarStyleLabelsNever => 'Hidden';
 
   @override
-  String get homeBarStyleIconSize => 'Icon size';
-
-  @override
-  String get homeBarStyleLabelGap => 'Icon to label spacing';
-
-  @override
-  String get homeBarStyleIndicator => 'Selection indicator';
-
-  @override
-  String get homeBarStyleIndicatorCapsule => 'Capsule';
-
-  @override
-  String get homeBarStyleIndicatorBlock => 'Block';
-
-  @override
-  String get homeBarStyleIndicatorNone => 'None';
-
-  @override
-  String get homeBarStyleBlockPadding => 'Block padding';
-
-  @override
-  String get homeBarStyleItemsFooter =>
-      'Switching to glass tightens the icon to label spacing a little.';
-
-  @override
   String get homeBarStyleBehaviorFooter =>
       'Behavior doesn\'t change with presets or style codes.';
 
@@ -8868,10 +8752,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeBarStyleHideOnScrollSubtitle =>
       'Makes room while you scroll down, and comes back when you scroll up or reach the top';
-
-  @override
-  String get homeBarStyleHideOnScrollSolidHint =>
-      'Hiding on scroll is only available with the floating glass bar.';
 
   @override
   String get homeBarStyleIndicatorFollows => 'Indicator follows swipes';

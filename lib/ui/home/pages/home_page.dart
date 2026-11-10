@@ -30,6 +30,7 @@ import 'package:node_diary/ui/home/providers/home_tab_request_provider.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_nav_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';
 import 'package:node_diary/ui/home/widgets/home_tab_entrance.dart';
 import 'package:node_diary/ui/widgets/primary_shortcut.dart';
@@ -48,7 +49,6 @@ import 'package:node_diary/core/services/settings_service.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../../widgets/bottom_nav.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../../widgets/launch_reveal.dart';
 import '../../ai/controllers/ai_chat_return_flow.dart';
@@ -161,16 +161,17 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// PageView 小数页码的监听包装，开启“指示器跟随滑动”时交给底栏。
   late final PagePositionListenable _pagePosition;
 
-  /// 玻璃底栏是否因“滚动时隐藏”而收起。
+  /// 底栏是否因“滚动时隐藏”而收起。
   ///
-  /// 生命周期：只在玻璃材质且开启该行为时由 [_handleScrollForBar] 置为
+  /// 生命周期：只在有底栏且开启该行为时由 [_handleScrollForBar] 置为
   /// true；以下时机一律放回 false（并清空 [_barScrollHider] 的累计量）：
   /// - 切 Tab 开始或页码变化：新页面的滚动位置与收起时无关，导航必须可见；
   /// - 首页出现提示（SnackBar）：提示叠在底栏上方，底栏收起会让提示悬空；
-  /// - 关闭该行为或离开玻璃材质：在 build 中直接复位，实色栏没有隐藏态。
+  /// - 关闭该行为或底栏消失（变成宽窗口、只剩一个 Tab）：在 build 中直接
+  ///   复位。
   bool _barHiddenByScroll = false;
 
-  /// 最近一次 build 时“滚动时隐藏底栏”是否生效（玻璃材质且开启该行为）；
+  /// 最近一次 build 时“滚动时隐藏底栏”是否生效（有底栏且开启该行为）；
   /// 滚动回调在 build 之外，读这里而不是重新解析样式。
   bool _barHideOnScrollEnabled = false;
   final HomeBarScrollHider _barScrollHider = HomeBarScrollHider();
@@ -464,11 +465,10 @@ class _HomePageState extends ConsumerState<HomePage> {
       highContrast: MediaQuery.highContrastOf(context),
     );
     final barBehavior = ref.watch(homeBarBehaviorProvider);
-    // 关闭“滚动时隐藏”或离开玻璃材质时直接复位隐藏态（正在 build，随后的
-    // 组装读的就是新值，不需要 setState）；重新开启后从显示状态开始。
+    // 关闭“滚动时隐藏”时直接复位隐藏态（正在 build，随后的组装读的就是
+    // 新值，不需要 setState）；重新开启后从显示状态开始。
     // 没有底栏（宽窗口、只剩日记一个 Tab）时“滚动时隐藏”不生效。
-    _barHideOnScrollEnabled =
-        _hasBottomBar && barStyle.isGlass && barBehavior.hideOnScroll;
+    _barHideOnScrollEnabled = _hasBottomBar && barBehavior.hideOnScroll;
     if (!_barHideOnScrollEnabled && _barHiddenByScroll) {
       _barHiddenByScroll = false;
       _barScrollHider.reset();
@@ -538,12 +538,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   }) {
     final wide = _wide;
     final hasBottomBar = _hasBottomBar;
-    // 并排新建按钮只属于玻璃底栏；其余窄窗口（含没有底栏时）保留浮在底栏
-    // 上方的全局 FAB。宽窗口两者都没有，新建按钮在侧边栏顶部。
+    // 并排新建按钮要有底栏才放得下；其余窄窗口（含没有底栏时）保留浮在
+    // 底栏上方的全局 FAB。宽窗口两者都没有，新建按钮在侧边栏顶部。
     final inlineCreate =
-        hasBottomBar &&
-        barStyle.isGlass &&
-        barStyle.fabPlacement == HomeBarFabPlacement.inline;
+        hasBottomBar && barStyle.fabPlacement == HomeBarFabPlacement.inline;
     // 页面区挂在 GlobalKey 下：窄 / 宽外壳把它放在不同父级，跨过 600 时原样
     // 搬家，不重建 PageView 与保活的 Tab 页面。窄窗口下 KeyedSubtree 不产生
     // 渲染对象，树与改版前等价。
@@ -604,9 +602,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 builder: (BuildContext context) => Scaffold(
                   backgroundColor: AppPagedBackground.shellColorOf(context),
                   resizeToAvoidBottomInset: false,
-                  // 玻璃底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
+                  // 底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
                   // 透出。没有底栏时内容止于窗口底部。
-                  extendBody: hasBottomBar && barStyle.isGlass,
+                  extendBody: hasBottomBar,
                   body: wide
                       ? _buildWideBody(
                           navItems: navItems,

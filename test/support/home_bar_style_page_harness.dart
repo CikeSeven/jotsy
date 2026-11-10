@@ -46,7 +46,8 @@ Future<(SettingsService, AppLocalizations)> pumpHomeBarStylePage(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(<String, Object>{
-    if (initial != null) 'app.settings.home_bar_style': initial.encode()!,
+    // 默认设置编码为 null（不写键）。
+    'app.settings.home_bar_style': ?initial?.encode(),
   });
   final settings = (await tester.runAsync(SettingsService.create))!;
   await tester.pumpWidget(

@@ -34,18 +34,9 @@ Future<void> _pump(
 
 HomeBarResolvedStyle _glass({
   bool highContrast = false,
-  bool top = true,
-  bool border = true,
   bool hairline = false,
-  HomeBarLineStyle topBarLine = HomeBarLineStyle.topBarDefaults,
 }) => HomeBarResolvedStyle.resolve(
-  HomeBarStyle(
-    material: HomeBarMaterial.glass,
-    glassTopBars: top,
-    border: border,
-    topBarHairline: hairline,
-    topBarLine: topBarLine,
-  ),
+  HomeBarStyle(topBarHairline: hairline),
   expressiveTestTheme(Brightness.light).colorScheme,
   highContrast: highContrast,
 );
@@ -70,14 +61,6 @@ void main() {
     expect(_below(Material), findsNothing);
   });
 
-  testWidgets('a glass scope with solid top bars keeps the coloured box', (
-    tester,
-  ) async {
-    await _pump(tester, style: _glass(top: false));
-    expect(tester.widget<ColoredBox>(_below(ColoredBox).first).color, _solid);
-    expect(_below(BackdropFilter), findsNothing);
-  });
-
   testWidgets('glass top bars blur the content behind a translucent tint', (
     tester,
   ) async {
@@ -90,6 +73,10 @@ void main() {
     final fill = tester.widget<Material>(_below(Material).first).color!;
     expect(fill, style.tint);
     expect(fill.a, lessThan(1));
+    // 与悬浮底栏同一配方：同样的模糊强度与饱和度增强。
+    final surface = tester.widget<GlassSurface>(_below(GlassSurface));
+    expect(surface.blurSigma, style.blurSigma);
+    expect(surface.saturation, style.saturation);
   });
 
   testWidgets('high contrast keeps glass top bars opaque and unblurred', (
@@ -111,10 +98,8 @@ void main() {
     expect(_hairline(tester), isNull);
   });
 
-  testWidgets('the top bar hairline follows its own switch, not the border', (
-    tester,
-  ) async {
-    final style = _glass(hairline: true, border: false);
+  testWidgets('the top bar hairline follows its own switch', (tester) async {
+    final style = _glass(hairline: true);
     await _pump(tester, style: style);
     expect(_hairline(tester), style.hairlineColor);
 
@@ -123,46 +108,16 @@ void main() {
     expect(_hairline(tester), isNull);
   });
 
-  testWidgets('the hairline width and color follow the top bar line style', (
+  testWidgets('the hairline is the fixed thin outline-variant line', (
     tester,
   ) async {
-    final defaults = _glass(hairline: true);
-    await _pump(tester, style: defaults);
+    final style = _glass(hairline: true);
+    await _pump(tester, style: style);
     final surface = tester.widget<GlassSurface>(_below(GlassSurface));
-    expect(surface.bottomHairlineWidth, 0.6);
-    expect(surface.bottomHairline, defaults.hairlineColor);
-
-    final custom = _glass(
-      hairline: true,
-      topBarLine: const HomeBarLineStyle(
-        color: HomeBarLineColor.highlight,
-        opacity: 0.9,
-        width: 1.8,
-      ),
-    );
-    await _pump(tester, style: custom);
-    final painted = tester.widget<DecoratedBox>(
-      find.descendant(
-        of: _below(GlassSurface),
-        matching: find.byWidgetPredicate(
-          (Widget w) =>
-              w is DecoratedBox && w.position == DecorationPosition.foreground,
-        ),
-      ),
-    );
-    final bottom =
-        ((painted.decoration as BoxDecoration).border! as Border).bottom;
-    expect(bottom.width, 1.8);
-    expect(bottom.color, custom.hairlineColor);
-    expect(
-      custom.hairlineColor,
-      expressiveTestTheme(
-        Brightness.light,
-      ).colorScheme.surfaceContainerLowest.withValues(alpha: 0.9),
-    );
+    expect(surface.bottomHairlineWidth, GlassSurface.hairlineWidth);
+    expect(surface.bottomHairline, style.hairlineColor);
   });
-
-  testWidgets('glassTopBarsOf is false without a scope', (tester) async {
+  testWidgets('glassTopBarsOf is true exactly under a scope', (tester) async {
     late bool withoutScope;
     late bool withScope;
     await tester.pumpWidget(

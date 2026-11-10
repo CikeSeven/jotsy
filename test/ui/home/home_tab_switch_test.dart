@@ -13,9 +13,9 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
-import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 挂载完整应用并停在首页；[appFeaturesRaw] 为功能管理开关的设置原文
@@ -60,19 +60,21 @@ Future<SettingsService> _pumpHome(
 
 /// 底栏当前的各项文案（按顺序）。
 List<String> _navLabels(WidgetTester tester) => tester
-    .widget<BottomNav>(find.byType(BottomNav))
+    .widget<HomeFloatingBar>(find.byType(HomeFloatingBar))
     .items
     .map((item) => item.label)
     .toList();
 
 /// 底栏高亮项的文案。
 String _selectedNavLabel(WidgetTester tester) {
-  final nav = tester.widget<BottomNav>(find.byType(BottomNav));
+  final nav = tester.widget<HomeFloatingBar>(find.byType(HomeFloatingBar));
   return nav.items[nav.selectedIndex].label;
 }
 
-Finder _navItem(String label) =>
-    find.descendant(of: find.byType(BottomNav), matching: find.text(label));
+Finder _navItem(String label) => find.descendant(
+  of: find.byType(HomeFloatingBar),
+  matching: find.text(label),
+);
 
 double _homePage(WidgetTester tester) => tester
     .widget<PageView>(
@@ -283,7 +285,7 @@ void main() {
       final l10n = tester.element(find.byType(HomePage)).l10n;
 
       // 一项的导航行没有意义：底栏整个不显示，新建入口仍是全局 FAB。
-      expect(find.byType(BottomNav), findsNothing);
+      expect(find.byType(HomeFloatingBar), findsNothing);
       expect(find.text(l10n.navDiaries), findsNothing);
       expect(_createFabShown(tester), isTrue);
       final fabBottom = tester

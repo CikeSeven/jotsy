@@ -15,7 +15,6 @@ import 'package:node_diary/ui/app_surface/services/app_background_image_cache.da
 import 'package:node_diary/ui/app_surface/services/app_background_image_pipeline.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_backdrop.dart';
 import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
-import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_header.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_refresh_capsule.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
@@ -23,8 +22,6 @@ import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/explore/sections/explore_period_bar.dart';
-import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
-import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
@@ -79,14 +76,9 @@ class _GatedLoader {
   void release() => _gate.complete();
 }
 
-final String _glassTopBars = const HomeBarSettings(
-  current: HomeBarStyle(material: HomeBarMaterial.glass),
-).encode()!;
-
 Future<void> _pumpHome(
   WidgetTester tester, {
   String? surfaceRaw,
-  String? homeBarRaw,
   int diaryCount = 3,
   AppBackgroundImageCache? imageCache,
 }) async {
@@ -97,7 +89,6 @@ Future<void> _pumpHome(
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(<String, Object>{
     'app.settings.app_surface': ?surfaceRaw,
-    'app.settings.home_bar_style': ?homeBarRaw,
   });
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -203,91 +194,28 @@ Future<Map<String, double>> _measureGaps(WidgetTester tester) async {
 }
 
 void main() {
-  group('solid top bars over a background', () {
-    testWidgets('every tab paints the status bar strip in the bar color', (
-      tester,
-    ) async {
-      await _pumpHome(tester, surfaceRaw: _colorBackground);
-      final l10n = _l10n(tester);
-      // 页面底透明：不垫的话状态栏那一条只剩背景。
-      expect(_statusBarPainted(tester, find.byType(DiariesPage), _bg), isTrue);
-      expect(
-        find.descendant(
-          of: find.byType(DiariesPage),
-          matching: find.byType(HomeStatusBarFill),
-        ),
-        findsOneWidget,
-      );
-
-      await _openTab(tester, l10n.navCalendar);
-      expect(_statusBarPainted(tester, find.byType(CalendarPage), _bg), isTrue);
-      await _openTab(tester, l10n.navExplore);
-      expect(_statusBarPainted(tester, find.byType(ExplorePage), _bg), isTrue);
-      await _unmount(tester);
-    });
-
-    testWidgets('the diaries status bar stays solid with the masthead hidden', (
-      tester,
-    ) async {
-      await _pumpHome(tester, surfaceRaw: _colorBackground, diaryCount: 18);
-      final list = find
-          .descendant(
-            of: find.byType(DiariesPage),
-            matching: find.byType(Scrollable),
-          )
-          .first;
-      // 下滑到刊头整体浮动收起（标签栏钉在状态栏线下）。
-      await tester.drag(list, const Offset(0, -400));
-      await tester.pumpAndSettle();
-      expect(_tagBarBottom(tester), lessThan(_statusBar + 80));
-      expect(_statusBarPainted(tester, find.byType(DiariesPage), _bg), isTrue);
-      await _unmount(tester);
-    });
-  });
-
+  // 首页各 Tab 的顶栏恒为玻璃：下缘总看得见，有没有背景都隔同一个 12。
   group('first content sits one shared gap below the top bar', () {
-    testWidgets('with a background behind solid bars', (tester) async {
-      await _pumpHome(tester, surfaceRaw: _colorBackground);
-      final gaps = await _measureGaps(tester);
-      for (final entry in gaps.entries) {
-        expect(
-          entry.value,
-          closeTo(kHomeTopContentGap, 0.01),
-          reason: entry.key,
-        );
-      }
-      await _unmount(tester);
-    });
-
-    testWidgets('with glass top bars and no background', (tester) async {
-      await _pumpHome(tester, homeBarRaw: _glassTopBars);
-      final gaps = await _measureGaps(tester);
-      for (final entry in gaps.entries) {
-        expect(
-          entry.value,
-          closeTo(kHomeTopContentGap, 0.01),
-          reason: entry.key,
-        );
-      }
-      await _unmount(tester);
-    });
-
-    testWidgets('classic without a background keeps the old spacing', (
-      tester,
-    ) async {
-      await _pumpHome(tester);
-      final gaps = await _measureGaps(tester);
-      // 日记贴着顶栏（栏与页面同色，下缘看不出来）；日历与探索本来就固定
-      // 留 12。
-      expect(gaps['diaries'], closeTo(0, 0.01));
-      expect(gaps['calendar'], closeTo(kHomeTopContentGap, 0.01));
-      expect(gaps['explore'], closeTo(kHomeTopContentGap, 0.01));
-      await _unmount(tester);
-    });
+    for (final background in <String?>[null, _colorBackground]) {
+      testWidgets('with ${background == null ? 'no' : 'a'} background', (
+        tester,
+      ) async {
+        await _pumpHome(tester, surfaceRaw: background);
+        final gaps = await _measureGaps(tester);
+        for (final entry in gaps.entries) {
+          expect(
+            entry.value,
+            closeTo(kHomeTopContentGap, 0.01),
+            reason: entry.key,
+          );
+        }
+        await _unmount(tester);
+      });
+    }
   });
 
   group('the image background has not decoded yet', () {
-    testWidgets('the gap and the status bar fill are already in place', (
+    testWidgets('the gap is already in place and nothing jumps', (
       tester,
     ) async {
       final loader = _GatedLoader();
@@ -299,13 +227,12 @@ void main() {
       expect(loader.requests, greaterThan(0));
       expect(before.hasBackground, isFalse);
       expect(before.wantsBackground, isTrue);
-      // 解码前：间距已经是 12，状态栏已垫上实色栏色（图片背景下为 surface）。
+      // 解码前：间距已经是 12（玻璃顶栏的下缘恒看得见）。
       final cardTop = tester.getRect(find.byType(DiaryCard).first).top;
       expect(
         cardTop - _tagBarBottom(tester),
         closeTo(kHomeTopContentGap, 0.01),
       );
-      expect(_statusBarPainted(tester, diaries, before.solidBarColor), isTrue);
 
       await tester.runAsync(() async {
         loader.release();
@@ -317,7 +244,6 @@ void main() {
       expect(after.hasImage, isTrue);
       // 解码完成前后第一张卡片的位置不变（不跳）。
       expect(tester.getRect(find.byType(DiaryCard).first).top, cardTop);
-      expect(_statusBarPainted(tester, diaries, after.solidBarColor), isTrue);
       await _unmount(tester);
     });
   });

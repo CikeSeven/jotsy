@@ -15,12 +15,12 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_tab_entrance.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
-import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Size _desktop = Size(1280, 800);
@@ -117,7 +117,7 @@ void main() {
       final l10n = _l10n(tester);
       expect(find.byType(HomeNavRail), findsOneWidget);
       expect(find.byType(HomeBottomBar), findsNothing);
-      expect(find.byType(BottomNav), findsNothing);
+      expect(find.byType(HomeFloatingBar), findsNothing);
       expect(_globalCreateFab, findsNothing);
       expect(tester.getRect(find.byType(HomeNavRail)).left, 0);
       expect(tester.getSize(find.byType(HomeNavRail)).width, 96);
@@ -144,7 +144,7 @@ void main() {
   ) async {
     await _pumpHome(tester, size: _phone);
     expect(find.byType(HomeNavRail), findsNothing);
-    expect(find.byType(BottomNav), findsOneWidget);
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
     expect(_globalCreateFab, findsOneWidget);
     expect(find.byType(HomeTabEntrance), findsNothing);
     await _unmount(tester);
@@ -268,7 +268,7 @@ void main() {
     final exploreState = tester.state(exploreList);
     await _resize(tester, _phone);
     expect(find.byType(HomeNavRail), findsNothing);
-    expect(find.byType(BottomNav), findsOneWidget);
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
     expect(_homePage(tester), 2);
     expect(tester.state(exploreList), same(exploreState));
     expect(

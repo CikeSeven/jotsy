@@ -28,6 +28,7 @@ class GlassSurface extends StatelessWidget {
     this.borderRadius = BorderRadius.zero,
     required this.fill,
     this.blurSigma = 20,
+    this.saturation = 1,
     this.blur = true,
     this.border,
     this.bottomHairline,
@@ -52,6 +53,12 @@ class GlassSurface extends StatelessWidget {
   /// 底色（已带透明度；不透明时就是实色表面）。
   final Color fill;
   final double blurSigma;
+
+  /// 模糊后背景的饱和度倍数（1 = 不变）。大于 1 时透出来的颜色更鲜亮，
+  /// 底色再淡也看得出是一块玻璃而不是一层灰；随 [progress] 从 1 过渡到
+  /// 目标值。为 1 时滤镜与只有模糊时完全相同（菜单、卡片等其余玻璃不受
+  /// 影响）。
+  final double saturation;
 
   /// 是否模糊背景；高对比度等退回不透明底色时为 false。
   final bool blur;
@@ -86,6 +93,18 @@ class GlassSurface extends StatelessWidget {
 
   static Color _scaled(Color color, double factor) =>
       color.withValues(alpha: color.a * factor);
+
+  /// 保持亮度不变的饱和度矩阵（Rec. 709 亮度系数）。
+  static List<double> _saturationMatrix(double s) {
+    const r = 0.2126, g = 0.7152, b = 0.0722;
+    final k = 1 - s;
+    return <double>[
+      r * k + s, g * k, b * k, 0, 0, //
+      r * k, g * k + s, b * k, 0, 0, //
+      r * k, g * k, b * k + s, 0, 0, //
+      0, 0, 0, 1, 0,
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +150,15 @@ class GlassSurface extends StatelessWidget {
       child: content,
     );
     final sigma = blurSigma * t;
-    final filter = ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
+    final blurFilter = ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
+    final saturate = 1 + (saturation - 1) * t;
+    // 先模糊再提饱和度：一次背景读取里完成，不多一层离屏。
+    final filter = saturate == 1
+        ? blurFilter
+        : ImageFilter.compose(
+            outer: ColorFilter.matrix(_saturationMatrix(saturate)),
+            inner: blurFilter,
+          );
     // 始终保留 BackdropFilter 节点、只切换 enabled：增删节点会让内容整棵
     // 重建，丢掉焦点、滚动位置与水波纹。
     final enabled = blur && t > 0 && blurSigma > 0;

@@ -403,6 +403,43 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
 
+  testWidgets('after the mode ends Enter is left to the input method again '
+      'and starts a new paragraph (#231)', (tester) async {
+    final focus = FocusNode();
+    final controller = DiaryEditorController.fromContent('one\ntwo\nthree');
+    await _pump(tester, controller, focus);
+    await _enterAt(tester, controller, focus, 1);
+    await tester.tap(find.text('完成'));
+    await _frames(tester);
+    expect(controller.blockSelection.isActive, isFalse);
+
+    // 点回最后一段打字。
+    await tester.tapAt(
+      tester.getTopRight(_blocks.at(2)) + const Offset(-20, 8),
+    );
+    await _frames(tester);
+    expect(controller.state.selection!.end.path, [2]);
+
+    // 正文没有 Enter 的按键规则：框架不处理，平台才会把它交给输入法换行
+    // （很多输入法的回车以按键送来）。模式里接 Enter 的那一层不能再拦。
+    expect(await tester.sendKeyEvent(LogicalKeyboardKey.enter), isFalse);
+
+    // 输入法上屏的回车照常新起一段。
+    final state = tester.testTextInput.editingState!;
+    final value = state['text'] as String;
+    final caret = state['selectionBase'] as int;
+    tester.testTextInput.updateEditingValue(
+      TextEditingValue(
+        text: '${value.substring(0, caret)}\n${value.substring(caret)}',
+        selection: TextSelection.collapsed(offset: caret + 1),
+      ),
+    );
+    await _frames(tester);
+    expect(_order(controller), 'one,two,three,');
+    expect(controller.state.selection!.end.path, [3]);
+    await _dispose(tester, controller, focus);
+  });
+
   testWidgets('tapping the blank space below the last block finishes', (
     tester,
   ) async {

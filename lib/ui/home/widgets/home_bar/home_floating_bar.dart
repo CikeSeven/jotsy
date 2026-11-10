@@ -41,8 +41,9 @@ class HomeFloatingBar extends StatelessWidget {
   /// 胶囊与并排按钮之间的距离。
   static const double inlineGap = 8;
 
-  /// 导航项一行在胶囊内的左右内边距。
-  static const double horizontalPadding = 4;
+  /// 导航项一行在胶囊内的左右内边距：圆角块与胶囊的圆弧之间再留一点，
+  /// 块不会贴着两端的内壁。
+  static const double horizontalPadding = 6;
 
   final List<BottomNavItem> items;
   final int selectedIndex;

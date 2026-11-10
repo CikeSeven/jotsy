@@ -61,8 +61,8 @@ const _frosted = HomeBarStyle(blurSigma: 32, tintOpacity: 0.88);
 const _tinted = HomeBarStyle(tint: HomeBarTint.theme);
 
 const _compact = HomeBarStyle(
-  barHeight: 56,
+  barHeight: 52,
   cornerRadius: 16,
-  sideMargin: 24,
+  sideMargin: 32,
   labelMode: HomeBarLabelMode.never,
 );

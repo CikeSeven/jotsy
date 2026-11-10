@@ -135,7 +135,12 @@ void main() {
     final pill = tester.getRect(_pill);
     expect(
       tester.getRect(find.byType(HomeNavBar)),
-      Rect.fromLTRB(pill.left + 4, pill.top, pill.right - 4, pill.bottom),
+      Rect.fromLTRB(
+        pill.left + HomeFloatingBar.horizontalPadding,
+        pill.top,
+        pill.right - HomeFloatingBar.horizontalPadding,
+        pill.bottom,
+      ),
     );
   });
 

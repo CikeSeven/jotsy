@@ -217,7 +217,10 @@ void main() {
     expect(tile.nested, isTrue);
     tile.onChanged!(10);
     await tester.pump();
-    expect(storedHomeBarSettings(settings).current.blockPadding, 6);
+    expect(
+      storedHomeBarSettings(settings).current.blockPadding,
+      HomeBarStyle.defaults.blockPadding,
+    );
     tile.onChangeEnd!(10);
     await tester.pumpAndSettle();
     expect(storedHomeBarSettings(settings).current.blockPadding, 10);
@@ -342,8 +345,7 @@ void main() {
     final pane = tester.getRect(find.byType(VerticalDivider));
     // 画框最宽 412，在预览栏（分隔线左侧）里水平居中；悬浮栏两侧各收进
     // 默认的侧边距。
-    const inset = 2 * 20.0;
-    expect(HomeBarStyle.defaults.sideMargin * 2, inset);
+    final inset = HomeBarStyle.defaults.sideMargin * 2;
     expect(bar.width, lessThanOrEqualTo(412 - inset));
     expect(bar.width, greaterThan(360 - inset));
     expect(bar.center.dx, moreOrLessEquals(pane.left / 2, epsilon: 1));

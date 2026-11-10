@@ -21,11 +21,13 @@ const _items = <BottomNavItem>[
   BottomNavItem(label: 'Settings', icon: FontAwesomeIcons.gear),
 ];
 
-/// 圆角块 + 图标 20：与测试里按 20 图标推算的尺寸对应（默认图标是 22）。
+/// 圆角块 + 图标 20：与测试里按 20 图标推算的尺寸对应。栏高固定 60，
+/// 与默认一致；内边距取默认的 3。
 const _glassBlock = HomeBarStyle(
   indicator: HomeBarIndicator.block,
   iconSize: 20,
   labelGap: 2,
+  barHeight: 60,
 );
 
 Future<void> _pump(
@@ -87,16 +89,16 @@ void main() {
     final icon = _icon(tester, 0);
     final label = _label(tester, 0);
     // 选中图标放大 1.12 倍，量到的是放大后的矩形；图标框按放大留了余量，
-    // 上沿最多比未放大时高 (1.12 − 1) × 20 / 2 = 1.2。
-    expect(block.top, lessThanOrEqualTo(icon.top - 6 + 1.2 + 0.01));
-    expect(block.bottom, greaterThanOrEqualTo(label.bottom + 5.5));
+    // 上沿最多比未放大时高 (1.12 − 1) × 20 / 2 = 1.2。内边距 3。
+    expect(block.top, lessThanOrEqualTo(icon.top - 3 + 1.2 + 0.01));
+    expect(block.bottom, greaterThanOrEqualTo(label.bottom + 2.5));
     expect(block.top, greaterThanOrEqualTo(bar.top));
     expect(block.bottom, lessThanOrEqualTo(bar.bottom));
     // 块与内容同心，内容在栏里竖直居中。
     expect(block.center.dy, closeTo(bar.center.dy, 0.01));
     expect(block.center.dx, closeTo(icon.center.dx, 0.01));
 
-    // 圆角与栏同心：栏圆角 32 减去块到栏上下边缘的距离。
+    // 圆角与栏同心：栏圆角 30 减去块到栏上下边缘的距离。
     final ink = tester.widget<Ink>(
       find.descendant(of: _destination(0), matching: find.byType(Ink)),
     );
@@ -105,46 +107,54 @@ void main() {
     final radius = (shape as HomeNavBlockBorder).radiusFor(block.height);
     expect(
       radius,
-      closeTo((32 - (64 - block.height) / 2).clamp(0, block.height / 2), 0.001),
+      closeTo((30 - (64 - block.height) / 2).clamp(0, block.height / 2), 0.001),
     );
   });
 
-  testWidgets('block width keeps the old base rule and grows for long text', (
-    tester,
-  ) async {
-    // 宽格子（每格 200）：短于基础宽度的内容用基础宽度 96。
+  testWidgets('block width hugs the content with the padding', (tester) async {
+    // 宽格子（每格 200）：块宽 = 内容宽 + 2 × 内边距，不再按格宽铺开。
     await _pump(
       tester,
       _glassBlock.copyWith(labelMode: HomeBarLabelMode.never),
       width: 800,
     );
-    expect(_block(tester, 0).width, closeTo(96, 0.01));
+    final iconOnly = _block(tester, 0);
+    // 只有图标时也不窄于最小宽度，仍是一颗像样的胶囊；测试字体下图标框
+    // 24 宽，加内边距 6 是 30，被最小宽度 32 托住。
+    expect(iconOnly.width, closeTo(32, 0.01));
 
-    // 文字比基础宽度更宽时，块按文字宽 + 2 × 内边距加宽。
-    await _pump(tester, _glassBlock.copyWith(blockPadding: 16), width: 800);
+    // 长文字让块按文字宽加内边距加宽。
+    await _pump(tester, _glassBlock.copyWith(blockPadding: 12), width: 800);
     final label = _label(tester, 0);
     expect(
       _block(tester, 0).width,
-      closeTo((label.width + 32).clamp(96, 200 - 4), 0.01),
+      closeTo((label.width + 24).clamp(32, 200 - 4), 0.01),
     );
 
     // 窄格子（每格 100）：块宽封顶为格宽 − 4。
-    await _pump(tester, _glassBlock.copyWith(blockPadding: 16));
-    expect(_block(tester, 0).width, lessThanOrEqualTo(96 + 0.01));
+    await _pump(tester, _glassBlock.copyWith(blockPadding: 12));
+    expect(_block(tester, 0).width, lessThanOrEqualTo(100 - 4 + 0.01));
   });
 
-  testWidgets('more padding grows the block until it reaches the bar margin', (
+  testWidgets('padding keeps equal gaps inside the block and to the bar', (
     tester,
   ) async {
-    await _pump(tester, _glassBlock.copyWith(blockPadding: 4));
-    final base = _block(tester, 0).height;
+    // 块与栏同心：上下留白相等，不会一头贴着栏边、一头空着。
     await _pump(tester, _glassBlock);
-    expect(_block(tester, 0).height, closeTo(base + 4, 0.01));
-    // 再大就夹到栏高 − 4，块不贴住栏的边缘。
-    await _pump(tester, _glassBlock.copyWith(blockPadding: 16));
-    expect(_block(tester, 0).height, closeTo(64 - 4, 0.01));
     final bar = tester.getRect(find.byType(HomeNavBar));
-    expect(_block(tester, 0).top, closeTo(bar.top + 2, 0.01));
+    final block = _block(tester, 0);
+    expect(block.top - bar.top, closeTo(bar.bottom - block.bottom, 0.01));
+    // 块高 = 内容高 + 2 × 内边距（内边距 3）：图标框 24 + 间距 + 文字。
+    expect(block.height - _icon(tester, 0).height, greaterThan(2 * 3 + 2 + 10));
+    // 栏高 64 默认下块仍与栏边留出距离（不被栏高顶满）。
+    expect(block.top - bar.top, greaterThan(1));
+
+    // 内边距越大块越高，但永远不贴住栏边（至少留 2）。
+    await _pump(tester, _glassBlock.copyWith(blockPadding: 12));
+    final tall = _block(tester, 0);
+    expect(tall.height, greaterThan(block.height));
+    expect(tall.top, greaterThanOrEqualTo(bar.top + 2 - 0.01));
+    expect(tall.bottom, lessThanOrEqualTo(bar.bottom - 2 + 0.01));
   });
 
   for (final indicator in <HomeBarIndicator>[
@@ -179,8 +189,8 @@ void main() {
       _glassBlock.copyWith(labelMode: HomeBarLabelMode.never),
     );
     final block = _block(tester, 0);
-    // 图标框 = 图标 20 + 放大余量 4，上下各加内边距 6。
-    expect(block.height, closeTo(20 + 4 + 12, 0.01));
+    // 图标框 = 图标 20 + 放大余量 4，上下各加默认内边距 3。
+    expect(block.height, closeTo(20 + 4 + 6, 0.01));
     expect(block.center.dy, closeTo(_icon(tester, 0).center.dy, 0.01));
   });
 
@@ -230,7 +240,7 @@ void main() {
   });
 
   test('block radius is concentric with the bar and never negative', () {
-    const border = HomeNavBlockBorder(cornerRadius: 32, barHeight: 64);
+    const border = HomeNavBlockBorder(cornerRadius: 32, barHeight: 60);
     expect(border.radiusFor(52), 26);
     expect(border.radiusFor(20), 10);
     const square = HomeNavBlockBorder(cornerRadius: 0, barHeight: 64);

@@ -48,16 +48,16 @@ class HomeBarStyle {
     this.topBarHairline = false,
     this.topBarLine = HomeBarLineStyle.topBarDefaults,
     this.shadow = true,
-    this.barHeight = 64,
-    this.cornerRadius = 32,
-    this.sideMargin = 20,
+    this.barHeight = 60,
+    this.cornerRadius = 30,
+    this.sideMargin = 40,
     this.bottomGap = 12,
     this.fabPlacement = HomeBarFabPlacement.above,
     this.labelMode = HomeBarLabelMode.always,
-    this.iconSize = 22,
+    this.iconSize = 18,
     this.indicator = HomeBarIndicator.block,
     this.labelGap = 2,
-    this.blockPadding = 6,
+    this.blockPadding = 3,
   });
 
   /// 默认样式：悬浮玻璃胶囊 + 与胶囊同心的圆角块指示器（视觉规格见
@@ -131,12 +131,13 @@ class HomeBarStyle {
   final HomeBarIndicator indicator;
 
   /// 文字与图标框之间的距离（与 M3 `labelPadding.top` 同义）。默认 2：
-  /// 悬浮栏只有 64 高，圆角块还要在内容四周留出内边距，M3 的 4dp 会让文字
+  /// 悬浮栏只有 60 高，圆角块还要在内容四周留出内边距，M3 的 4dp 会让文字
   /// 贴住块的下沿。
   final double labelGap;
 
   /// 圆角块指示器在内容（图标框 + 文字）四周留出的内边距；只对
-  /// [HomeBarIndicator.block] 生效，块放不下时渲染层会先收窄它。
+  /// [HomeBarIndicator.block] 生效，块放不下时渲染层会先收窄它。默认 3：
+  /// 块与栏上下边缘之间还能留出约 5，四周留白才一致。
   final double blockPadding;
 
   bool get isDefault => this == defaults;

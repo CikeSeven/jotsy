@@ -22,10 +22,9 @@ abstract final class HomeNavGeometry {
   static const double capsuleWidth = 64;
   static const double capsuleHeight = 32;
 
-  /// 圆角块的基础宽度规则（改版前的块宽）：导航项左右各缩 [blockInset]，
-  /// 且不超过 [blockMaxWidth]；文字更宽时块再按内容加宽。
-  static const double blockInset = 6;
-  static const double blockMaxWidth = 96;
+  /// 圆角块的最小宽度：只有图标（不显示文字）时块仍是一颗像样的胶囊，
+  /// 不会缩成一个圆点。
+  static const double blockMinWidth = 32;
 
   /// 圆角块与导航项四边至少留出的距离：块再大也不贴住栏的边缘。
   static const double blockMinMargin = 2;
@@ -40,17 +39,19 @@ abstract final class HomeNavGeometry {
   /// 圆角块 / 无指示器时图标框的边长。
   static double iconSlot(double iconSize) => iconSize + iconSlotExtra;
 
-  /// 包住 [content] 的圆角块尺寸（[cell] 为导航项大小）：
-  /// - 高 = 内容高 + 2 × [padding]，但不超过导航项高 − 2 × [blockMinMargin]；
-  /// - 宽取基础宽度规则与内容宽 + 2 × [padding] 中较大的一个，同样不超过
-  ///   导航项宽 − 2 × [blockMinMargin]。
+  /// 包住 [content] 的圆角块尺寸（[cell] 为导航项大小）：两个方向都取
+  /// “内容 + 2 × [padding]”，宽的下限为 [blockMinWidth]，都不超过导航项
+  /// 减 2 × [blockMinMargin]。
+  ///
+  /// 为什么不按导航项宽度给固定块宽：指示器跟手时四项各占一格，块若铺满
+  /// 大半格，块与内容之间会空出一大条——上下只贴着栏边、左右却离内容很远，
+  /// 看着一头紧一头松。按内容包住它，四周留白一致，块也仍随文字宽度变化。
   /// 放不下时收窄的是内边距（块不越出栏），内容本身不受影响。
   static Size blockSize(Size cell, Size content, double padding) {
     final maxHeight = math.max(0.0, cell.height - blockMinMargin * 2);
     final maxWidth = math.max(0.0, cell.width - blockMinMargin * 2);
-    final base = math.min(cell.width - blockInset * 2, blockMaxWidth);
     return Size(
-      math.min(math.max(base, content.width + padding * 2), maxWidth),
+      math.min(math.max(blockMinWidth, content.width + padding * 2), maxWidth),
       math.min(content.height + padding * 2, maxHeight),
     );
   }

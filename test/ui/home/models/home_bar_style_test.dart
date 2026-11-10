@@ -19,16 +19,16 @@ void main() {
       expect(d.borderLine.opacity, 0.5);
       expect(d.topBarHairline, isFalse);
       expect(d.shadow, isTrue);
-      expect(d.barHeight, 64);
-      expect(d.cornerRadius, 32);
-      expect(d.sideMargin, 20);
+      expect(d.barHeight, 60);
+      expect(d.cornerRadius, 30);
+      expect(d.sideMargin, 40);
       expect(d.bottomGap, 12);
       expect(d.fabPlacement, HomeBarFabPlacement.above);
       expect(d.labelMode, HomeBarLabelMode.always);
-      expect(d.iconSize, 22);
+      expect(d.iconSize, 18);
       expect(d.indicator, HomeBarIndicator.block);
       expect(d.labelGap, 2);
-      expect(d.blockPadding, 6);
+      expect(d.blockPadding, 3);
       expect(d.isDefault, isTrue);
       expect(d.toJson(), isEmpty);
     });
@@ -67,7 +67,7 @@ void main() {
       expect(style.topBarHairline, isFalse);
       expect(style.shadow, isTrue);
       expect(style.barHeight, 70);
-      expect(style.cornerRadius, 32);
+      expect(style.cornerRadius, 30);
       expect(style.labelMode, HomeBarLabelMode.selected);
       expect(style.indicator, HomeBarIndicator.block);
     });
@@ -92,7 +92,7 @@ void main() {
       expect(high.bottomGap, HomeBarStyleLimits.bottomGap.max);
       expect(high.iconSize, HomeBarStyleLimits.iconSize.max);
       expect(high.labelGap, 12);
-      expect(high.blockPadding, 16);
+      expect(high.blockPadding, 12);
 
       final low = HomeBarStyle.fromJson(<String, Object?>{
         'blurSigma': -5,
@@ -123,7 +123,7 @@ void main() {
         'blockPadding': 'wide',
       });
       expect(style.labelGap, 7);
-      expect(style.blockPadding, 6);
+      expect(style.blockPadding, 3);
     });
 
     test('falls back on unknown enum names', () {
@@ -212,7 +212,7 @@ void main() {
 
     test('omits default spacing and writes changed spacing', () {
       expect(
-        const HomeBarStyle(labelGap: 2, blockPadding: 6).toJson(),
+        const HomeBarStyle(labelGap: 2, blockPadding: 3).toJson(),
         isEmpty,
       );
       expect(

@@ -8,11 +8,15 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/todos/models/todo_settings.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
+import 'package:node_diary/ui/todos/providers/todo_providers.dart';
 import 'package:node_diary/ui/todos/sections/todo_detail_body.dart';
 import 'package:node_diary/ui/todos/widgets/todo_detail_pane.dart';
+import 'package:node_diary/ui/todos/widgets/todo_labels.dart';
 import 'package:node_diary/ui/todos/widgets/todo_tile.dart';
 import 'package:node_diary/ui/todos/widgets/todo_view_switcher.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/todo_check_box.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -199,6 +203,57 @@ void main() {
     await tester.tap(find.widgetWithText(TodoListNavRow, '工作'));
     await _settle(tester);
     expect(_openTitles(tester), <String>['开会']);
+    await _unmount(tester);
+  });
+
+  testWidgets('more is a popup menu whose sort submenu stays open', (
+    tester,
+  ) async {
+    await _pumpTodos(
+      tester,
+      seed: (db) async {
+        await db.createTodo(TodoInput(title: '买菜', dueDate: _today));
+      },
+    );
+    final l10n = _l10n(tester);
+    Future<void> settleMenu() async {
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 800));
+    }
+
+    await tester.tap(find.byTooltip(l10n.todoMore));
+    await settleMenu();
+    // 弹出菜单而不是底部面板：今天视图有排序与管理清单，没有清单专属的项。
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(find.byType(ExpressiveSubmenuItem), findsOneWidget);
+    expect(find.text(l10n.todoListManage), findsOneWidget);
+    expect(find.text(l10n.todoListDelete), findsNothing);
+
+    await tester.tap(find.text(l10n.todoSortTitle));
+    await settleMenu();
+    final due = TodoLabels.sortMode(l10n, TodoSortMode.due);
+    await tester.tap(find.text(due));
+    await settleMenu();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TodosPage)),
+    );
+    expect(container.read(todoSettingsProvider).sort, TodoSortMode.due);
+    // 点了即生效、菜单保持打开，对勾移到新选的一项。
+    final dueItem = tester.widget<ExpressiveMenuItem>(
+      find.ancestor(
+        of: find.text(due),
+        matching: find.byType(ExpressiveMenuItem),
+      ),
+    );
+    expect(dueItem.selected, isTrue);
+
+    // 点外部先收回二级菜单，再点关掉菜单。
+    await tester.tapAt(const Offset(200, 700));
+    await settleMenu();
+    expect(find.text(due), findsNothing);
+    await tester.tapAt(const Offset(200, 700));
+    await settleMenu();
+    expect(find.text(l10n.todoListManage), findsNothing);
     await _unmount(tester);
   });
 

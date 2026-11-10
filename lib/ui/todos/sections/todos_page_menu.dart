@@ -14,7 +14,7 @@ import '../models/todo_settings.dart';
 import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import '../widgets/todo_labels.dart';
-import '../widgets/todo_sheet.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
 
 /// 视图 [view] 里已完成的条数（“清除已完成”用）：已完成视图为全部，清单与
 /// 收集箱为其中已完成的，其余视图没有已完成的可清。
@@ -24,8 +24,16 @@ int countCompletedInView(TodoView view, List<TodoRow> completed) {
   return completed.where((row) => row.listId == view.listId).length;
 }
 
-/// 待办页头的“更多”：项目多（排序、显示已完成、清除已完成、编辑 / 删除
-/// 清单、管理清单），按规范用底部面板而不是弹出菜单。
+/// 待办页头的“更多”（⋮）：弹出菜单（用户要求由底部面板改来，与日记页的
+/// “更多”一致），按分隔线分三组：
+/// - 排序方式 ›（“已完成”视图没有，那里按完成日期排）、显示 / 隐藏已完成
+///   （清单视图）、清除已完成（当前视图有已完成的才出现）；
+/// - 编辑清单、删除清单（清单视图）；
+/// - 管理清单。
+///
+/// 排序在二级菜单里：点了即生效、菜单保持打开、对勾随之移动（选中态由二级
+/// 菜单页自己维护，初值取展开时的设置，二级菜单的内容在展开时取定）。其余
+/// 都是动作，点按先关菜单再执行。
 class TodosPageMenu extends ConsumerWidget {
   const TodosPageMenu({
     super.key,
@@ -47,131 +55,133 @@ class TodosPageMenu extends ConsumerWidget {
     if (service != null) await saveTodoSettings(service, next);
   }
 
-  Future<void> _pickSort(BuildContext context, WidgetRef ref) async {
-    final mode = await showTodoSheet<TodoSortMode>(
-      context: context,
-      builder: (BuildContext sheetContext) {
-        final l10n = sheetContext.l10n;
-        return TodoSheetBody(
-          title: l10n.todoSortTitle,
-          children: <Widget>[
-            for (final mode in TodoSortMode.values)
-              TodoSheetOption(
-                icon: switch (mode) {
-                  TodoSortMode.manual => FontAwesomeIcons.gripVertical,
-                  TodoSortMode.due => FontAwesomeIcons.calendar,
-                  TodoSortMode.priority => FontAwesomeIcons.flag,
-                  TodoSortMode.created => FontAwesomeIcons.clock,
-                },
-                label: TodoLabels.sortMode(l10n, mode),
-                selected: mode == settings.sort,
-                onTap: () => Navigator.of(sheetContext).pop(mode),
-              ),
-          ],
-        );
-      },
-    );
-    if (mode != null) await _save(ref, settings.copyWith(sort: mode));
-  }
-
-  Future<void> _open(BuildContext context, WidgetRef ref) async {
-    final database = ref.read(appDatabaseProvider);
-    final action = await showTodoSheet<_MenuAction>(
-      context: context,
-      builder: (BuildContext sheetContext) {
-        final l10n = sheetContext.l10n;
-        void pick(_MenuAction value) => Navigator.of(sheetContext).pop(value);
-        return TodoSheetBody(
-          title: l10n.todoMore,
-          children: <Widget>[
-            if (view.smart != TodoSmartView.completed)
-              TodoSheetOption(
-                icon: FontAwesomeIcons.arrowDownWideShort,
-                label: l10n.todoSortLabel(
-                  TodoLabels.sortMode(l10n, settings.sort),
-                ),
-                onTap: () => pick(_MenuAction.sort),
-              ),
-            if (view.isSingleList)
-              TodoSheetOption(
-                icon: settings.showCompleted
-                    ? FontAwesomeIcons.eyeSlash
-                    : FontAwesomeIcons.eye,
-                label: settings.showCompleted
-                    ? l10n.todoHideCompleted
-                    : l10n.todoShowCompleted,
-                onTap: () => pick(_MenuAction.toggleCompleted),
-              ),
-            if (completedInView > 0)
-              TodoSheetOption(
-                icon: FontAwesomeIcons.broom,
-                label: l10n.todoClearCompleted,
-                destructive: true,
-                onTap: () => pick(_MenuAction.clearCompleted),
-              ),
-            if (list != null) ...<Widget>[
-              TodoSheetOption(
-                icon: FontAwesomeIcons.pen,
-                label: l10n.todoListEdit,
-                onTap: () => pick(_MenuAction.editList),
-              ),
-              TodoSheetOption(
-                icon: FontAwesomeIcons.trashCan,
-                label: l10n.todoListDelete,
-                destructive: true,
-                onTap: () => pick(_MenuAction.deleteList),
-              ),
-            ],
-            TodoSheetOption(
-              icon: FontAwesomeIcons.sliders,
-              label: l10n.todoListManage,
-              onTap: () => pick(_MenuAction.manageLists),
-            ),
-          ],
-        );
-      },
-    );
-    if (action == null || !context.mounted) return;
-    switch (action) {
-      case _MenuAction.sort:
-        await _pickSort(context, ref);
-      case _MenuAction.toggleCompleted:
-        await _save(
-          ref,
-          settings.copyWith(showCompleted: !settings.showCompleted),
-        );
-      case _MenuAction.clearCompleted:
-        await clearCompletedTodos(
-          context,
-          database,
-          count: completedInView,
-          listId: view.listId,
-          allLists: view.smart == TodoSmartView.completed,
-        );
-      case _MenuAction.editList:
-        await editTodoListFlow(context, ref, list!);
-      case _MenuAction.deleteList:
-        await deleteTodoListFlow(context, ref, list!);
-      case _MenuAction.manageLists:
-        await openTodoListsManage(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      tooltip: context.l10n.todoMore,
-      onPressed: () => unawaited(_open(context, ref)),
+    final l10n = context.l10n;
+    final list = this.list;
+    final first = <Widget>[
+      if (view.smart != TodoSmartView.completed)
+        ExpressiveSubmenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.arrowDownWideShort),
+          menuChildren: <Widget>[
+            _TodoSortMenuPage(
+              initial: settings.sort,
+              // 设置可能在二级菜单打开期间被别处改过：以最新读到的为准，
+              // 只换排序这一项。
+              onChanged: (TodoSortMode mode) {
+                final latest = ref.read(todoSettingsProvider);
+                unawaited(_save(ref, latest.copyWith(sort: mode)));
+              },
+            ),
+          ],
+          child: Text(l10n.todoSortTitle),
+        ),
+      if (view.isSingleList)
+        ExpressiveMenuItem(
+          leadingIcon: FaIcon(
+            settings.showCompleted
+                ? FontAwesomeIcons.eyeSlash
+                : FontAwesomeIcons.eye,
+          ),
+          onPressed: () => unawaited(
+            _save(
+              ref,
+              settings.copyWith(showCompleted: !settings.showCompleted),
+            ),
+          ),
+          child: Text(
+            settings.showCompleted
+                ? l10n.todoHideCompleted
+                : l10n.todoShowCompleted,
+          ),
+        ),
+      if (completedInView > 0)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.broom),
+          destructive: true,
+          onPressed: () => unawaited(
+            clearCompletedTodos(
+              context,
+              ref.read(appDatabaseProvider),
+              count: completedInView,
+              listId: view.listId,
+              allLists: view.smart == TodoSmartView.completed,
+            ),
+          ),
+          child: Text(l10n.todoClearCompleted),
+        ),
+    ];
+    final listItems = <Widget>[
+      if (list != null) ...<Widget>[
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.pen),
+          onPressed: () => unawaited(editTodoListFlow(context, ref, list)),
+          child: Text(l10n.todoListEdit),
+        ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
+          destructive: true,
+          onPressed: () => unawaited(deleteTodoListFlow(context, ref, list)),
+          child: Text(l10n.todoListDelete),
+        ),
+      ],
+    ];
+    final manage = ExpressiveMenuItem(
+      leadingIcon: const FaIcon(FontAwesomeIcons.sliders),
+      onPressed: () => unawaited(openTodoListsManage(context)),
+      child: Text(l10n.todoListManage),
+    );
+    final groups = <List<Widget>>[
+      first,
+      listItems,
+      <Widget>[manage],
+    ].where((List<Widget> group) => group.isNotEmpty).toList();
+    return ExpressiveMenuButton(
+      tooltip: l10n.todoMore,
       icon: const FaIcon(FontAwesomeIcons.ellipsis, size: 18),
+      items: <Widget>[
+        for (final (index, group) in groups.indexed) ...<Widget>[
+          if (index > 0) const ExpressiveMenuDivider(),
+          ...group,
+        ],
+      ],
     );
   }
 }
 
-enum _MenuAction {
-  sort,
-  toggleCompleted,
-  clearCompleted,
-  editList,
-  deleteList,
-  manageLists,
+/// “排序方式”二级菜单：四种排序，点了即生效、菜单保持打开。
+class _TodoSortMenuPage extends StatefulWidget {
+  const _TodoSortMenuPage({required this.initial, required this.onChanged});
+
+  final TodoSortMode initial;
+  final ValueChanged<TodoSortMode> onChanged;
+
+  @override
+  State<_TodoSortMenuPage> createState() => _TodoSortMenuPageState();
+}
+
+class _TodoSortMenuPageState extends State<_TodoSortMenuPage> {
+  late TodoSortMode _mode = widget.initial;
+
+  void _select(TodoSortMode mode) {
+    if (mode == _mode) return;
+    setState(() => _mode = mode);
+    widget.onChanged(mode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ListBody(
+      children: <Widget>[
+        for (final mode in TodoSortMode.values)
+          ExpressiveMenuItem(
+            closeOnActivate: false,
+            selected: mode == _mode,
+            onPressed: () => _select(mode),
+            child: Text(TodoLabels.sortMode(l10n, mode)),
+          ),
+      ],
+    );
+  }
 }

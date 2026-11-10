@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
@@ -26,21 +24,20 @@ abstract final class ExpressiveMotion {
   static const flowLoop = Duration(milliseconds: 1800);
   static const scanLoop = Duration(milliseconds: 2400);
 
-  /// 弹出菜单（移植自 miuix 的 ListPopup）的淡入淡出与背景变暗，与 miuix
-  /// 逐值一致；菜单的缩放与二级菜单的展开是弹簧，见 `ExpressiveMenuMotion`。
-  /// - [popupFadeIn] / [popupFadeOut]：面板内容的透明度（[popupFade] 曲线），
-  ///   收起时淡出跑完即移除浮层；
-  /// - [popupDimIn] / [popupDimOut]：铺满屏幕的变暗层（[popupDim] 曲线）。
-  static const popupFadeIn = Duration(milliseconds: 200);
-  static const popupFadeOut = Duration(milliseconds: 150);
-  static const popupDimIn = Duration(milliseconds: 300);
-  static const popupDimOut = Duration(milliseconds: 150);
+  /// 弹出菜单（移植自 NexioSchedule 的 ListPopup / LiquidGlassDropdownMenu），
+  /// 与原实现逐值一致；面板的长大与二级菜单的展开是弹簧，见
+  /// `ExpressiveMenuMotion`。
+  /// - [menuMorphExit] / [menuMorphExitCurve]：收起时锚点迁回触发控件的时长
+  ///   与曲线，它跑完即移除浮层；
+  /// - [menuHighlightIn] / [menuHighlightOut]：行高亮胶囊的淡入淡出
+  ///   （[menuHighlightCurve]），淡出覆盖一路滑到边界项的弹簧行程。
+  static const menuMorphExit = Duration(milliseconds: 340);
+  static const menuMorphExitCurve = Cubic(0, 0, 0, 1);
+  static const menuHighlightIn = Duration(milliseconds: 90);
+  static const menuHighlightOut = Duration(milliseconds: 220);
 
-  /// miuix 透明度过渡的曲线（Compose `tween` 的默认 FastOutSlowIn）。
-  static const popupFade = Curves.fastOutSlowIn;
-
-  /// miuix 的 SinOut：sin(t·π/2)，变暗层起得快、收得柔。
-  static const popupDim = _SineOutCurve();
+  /// Compose `tween` 的默认曲线 FastOutSlowIn。
+  static const menuHighlightCurve = Curves.fastOutSlowIn;
 
   /// 进场与状态变化：减速收尾，不越界。
   static const effects = Curves.easeOutCubic;
@@ -82,11 +79,4 @@ class _ExpressiveSpringCurve extends Curve {
 
   @override
   double transformInternal(double t) => _spring.x(t * 0.6);
-}
-
-class _SineOutCurve extends Curve {
-  const _SineOutCurve();
-
-  @override
-  double transformInternal(double t) => math.sin(t * math.pi / 2);
 }

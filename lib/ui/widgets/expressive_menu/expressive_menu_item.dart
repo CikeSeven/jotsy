@@ -4,16 +4,16 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'expressive_menu_anchor.dart';
 import 'expressive_menu_row.dart';
 
-/// [ExpressiveMenuAnchor] 里的一项（移植自 miuix 的 DropdownImpl）。
+/// [ExpressiveMenuAnchor] 里的一项（移植自 NexioSchedule 的菜单项）。
 ///
-/// 外观：整行无圆角、左右内边距 20、上下 12（首末行另有面板留白，合计 20）；
-/// 前置图标在至少 26 × 26 的格子里（18px，与文字同色）、到文字 12；文字
-/// `bodyLarge` 字重 500（`onSurface`），可带一行说明 [summary]（`bodyMedium`，
-/// `onSurfaceVariant`）；图标 + 文字那段最宽 216。行尾始终留出 12 + 20 的
-/// 对勾格：[selected] 为 true 时画主色对勾、文字与说明也换成主色，其余行
-/// 留空（文字不会因选中而左右挪动）；给了 [trailingIcon] 时由它占据这一格。
-/// [destructive] 文字与图标为 `error`；禁用时 38% 的 `onSurface`。按下 /
-/// 悬停 / 聚焦是铺满整行的 `onSurface` 色块，见 [ExpressiveMenuRowInk]。
+/// 外观：每行是左右缩进 8 的胶囊（高亮胶囊 17 圆角，由面板统一画，见
+/// [ExpressiveMenuRowInk]），胶囊里左右 14、上下 10.5；前置图标在 24 宽的格子里
+/// （24 × 24，图标 18px、与文字同色）、到文字 10；文字 15.6 字重 500（`onSurface`），可带
+/// 一行说明 [summary]（`bodyMedium`，`onSurfaceVariant`）；图标 + 文字那段最宽
+/// 216。动作项（[selected] 为 null）行尾不留空；选择项行尾始终留出 12 + 20 的
+/// 对勾格，当前项画主色对勾、文字与说明也换成主色（文字不会因选中而左右挪动）；
+/// 给了 [trailingIcon] 时由它占据这一格。[destructive] 文字与图标为 `error`；
+/// 禁用时 38% 的 `onSurface`。
 ///
 /// 点按：RawMenuAnchor 不会替条目关闭菜单，这里先经锚点关闭（收起途中的
 /// 点按直接忽略，动作不会执行两次）再执行 [onPressed]。[closeOnActivate] 为
@@ -43,7 +43,7 @@ class ExpressiveMenuItem extends StatelessWidget {
   /// 前置图标，通常是不带尺寸与颜色的 `FaIcon`，由条目统一尺寸与颜色。
   final Widget? leadingIcon;
 
-  /// 占据行尾对勾格的控件（如二级菜单入口的 ›、快捷键提示）。
+  /// 行尾控件（如二级菜单入口的 ›、快捷键提示）；选择项里占据对勾格。
   final Widget? trailingIcon;
 
   /// 文字下方的一行说明，通常是 `Text`。
@@ -85,6 +85,21 @@ class ExpressiveMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
     final isSelected = selected ?? false;
+    final Widget? trailing =
+        trailingIcon ??
+        (selected == null
+            ? null
+            : SizedBox.square(
+                dimension: ExpressiveMenuRowMetrics.checkCell,
+                child: isSelected
+                    ? const Center(
+                        child: FaIcon(
+                          FontAwesomeIcons.check,
+                          size: ExpressiveMenuRowMetrics.checkSize,
+                        ),
+                      )
+                    : null,
+              ));
     return ExpressiveMenuRowInk(
       onTap: enabled ? () => _activate(context) : null,
       focusNode: focusNode,
@@ -96,51 +111,34 @@ class ExpressiveMenuItem extends StatelessWidget {
         destructive: destructive,
         leadingIcon: leadingIcon,
         summary: summary,
-        trailing:
-            trailingIcon ??
-            SizedBox.square(
-              dimension: ExpressiveMenuRowMetrics.checkCell,
-              child: isSelected
-                  ? const Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.check,
-                        size: ExpressiveMenuRowMetrics.checkSize,
-                      ),
-                    )
-                  : null,
-            ),
+        trailing: trailing,
         child: child,
       ),
     );
   }
 }
 
-/// 菜单行的排版：内边距、前置图标格、文字与说明、行尾格；颜色按状态取。
+/// 菜单行胶囊里的排版：内边距、前置图标格、文字与说明、行尾格；颜色按状态取。
 /// 菜单项与二级菜单的标题行共用，变形起止两端逐像素一致。
 class ExpressiveMenuRowContent extends StatelessWidget {
   const ExpressiveMenuRowContent({
     super.key,
     required this.child,
-    required this.trailing,
+    this.trailing,
     this.enabled = true,
     this.selected = false,
     this.destructive = false,
     this.leadingIcon,
     this.summary,
-    this.padding = const EdgeInsets.symmetric(
-      horizontal: ExpressiveMenuRowMetrics.horizontalPadding,
-      vertical: ExpressiveMenuRowMetrics.verticalPadding,
-    ),
   });
 
   final Widget child;
-  final Widget trailing;
+  final Widget? trailing;
   final bool enabled;
   final bool selected;
   final bool destructive;
   final Widget? leadingIcon;
   final Widget? summary;
-  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -161,12 +159,15 @@ class ExpressiveMenuRowContent extends StatelessWidget {
         : colors.onSurfaceVariant;
     final leading = leadingIcon;
     final summary = this.summary;
+    final trailing = this.trailing;
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         DefaultTextStyle.merge(
           style: theme.textTheme.bodyLarge?.copyWith(
+            fontSize: ExpressiveMenuRowMetrics.titleSize,
+            height: ExpressiveMenuRowMetrics.titleHeight,
             fontWeight: FontWeight.w500,
             color: titleColor,
           ),
@@ -180,7 +181,10 @@ class ExpressiveMenuRowContent extends StatelessWidget {
       ],
     );
     return Padding(
-      padding: padding,
+      padding: const EdgeInsets.symmetric(
+        horizontal: ExpressiveMenuRowMetrics.horizontalPadding,
+        vertical: ExpressiveMenuRowMetrics.verticalPadding,
+      ),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -198,14 +202,9 @@ class ExpressiveMenuRowContent extends StatelessWidget {
                         padding: const EdgeInsetsDirectional.only(
                           end: ExpressiveMenuRowMetrics.iconGap,
                         ),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minWidth: ExpressiveMenuRowMetrics.iconCell,
-                            minHeight: ExpressiveMenuRowMetrics.iconCell,
-                          ),
+                        child: SizedBox.square(
+                          dimension: ExpressiveMenuRowMetrics.iconBox,
                           child: Center(
-                            widthFactor: 1,
-                            heightFactor: 1,
                             child: IconTheme.merge(
                               data: IconThemeData(
                                 size: ExpressiveMenuRowMetrics.iconSize,
@@ -222,23 +221,24 @@ class ExpressiveMenuRowContent extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: ExpressiveMenuRowMetrics.trailingGap,
-            ),
-            child: IconTheme.merge(
-              data: IconThemeData(
-                size: ExpressiveMenuRowMetrics.checkSize,
-                color: enabled
-                    ? (selected ? colors.primary : colors.onSurfaceVariant)
-                    : disabled,
+          if (trailing != null)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: ExpressiveMenuRowMetrics.trailingGap,
               ),
-              child: DefaultTextStyle.merge(
-                style: TextStyle(color: summaryColor),
-                child: trailing,
+              child: IconTheme.merge(
+                data: IconThemeData(
+                  size: ExpressiveMenuRowMetrics.checkSize,
+                  color: enabled
+                      ? (selected ? colors.primary : colors.onSurfaceVariant)
+                      : disabled,
+                ),
+                child: DefaultTextStyle.merge(
+                  style: TextStyle(color: summaryColor),
+                  child: trailing,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

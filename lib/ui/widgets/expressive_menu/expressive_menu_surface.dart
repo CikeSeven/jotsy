@@ -49,6 +49,13 @@ class ExpressiveMenuSurface extends StatelessWidget {
     alpha: colors.brightness == Brightness.light ? 0.12 : 0.32,
   );
 
+  /// 弹出菜单面板的环形外投影色（NexioSchedule 的 popupPanelShadow：
+  /// 0x1A / 0x2E 的黑经 3.2 倍增益，亮 33% / 暗 58%）。环形只有 2dp 宽、再经
+  /// 模糊散开，看上去远比这个不透明度淡。
+  static Color ringShadowOf(ColorScheme colors) => colors.shadow.withValues(
+    alpha: colors.brightness == Brightness.light ? 0.326 : 0.577,
+  );
+
   /// 是否退回不透明、无模糊的底。
   static bool solidOf(BuildContext context) =>
       ExpressiveMotion.reduceMotion(context) ||

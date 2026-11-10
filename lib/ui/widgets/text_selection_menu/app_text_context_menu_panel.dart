@@ -16,15 +16,15 @@ import 'app_text_menu_action.dart';
 /// - 输入：指针位置 [anchor]（全局坐标；覆盖层从屏幕原点开始，同手机胶囊）、
 ///   菜单项 [actions]、关闭回调 [onDismiss]。
 /// - 输出：铺满覆盖层的盒子，菜单经 [ExpressiveMenuCascade] 定位：指针为
-///   起始角，下方放不下翻到上方，右侧放不下左移，夹进安全区。
+///   起始角，下方放不下翻到上方，右侧放不下左移，夹进安全区（左右留 8）。
 /// - 副作用：挂载期间登记一个早期按键处理器（见下），卸载时撤掉。
 ///
-/// 外观与动效同 §5.4 的弹出菜单（移植自 miuix）：面板复用 [ExpressiveMenuPanel]
-/// （宽度取内容固有宽、最小 200，这里最大 320），每行是 [ExpressiveMenuItem]
-/// （没有锚点时它直接执行动作），行尾为快捷键提示。按 [AppTextMenuSlot] 分成
-/// 三组（lead → primary → secondary），组间为 [ExpressiveMenuDivider]。从起始角
-/// 以弹簧放大并向下（翻到上方时向上）拉开、内容淡入（[ExpressiveMenuMotion]），
-/// 不铺变暗层；减少动画时瞬时。
+/// 外观与动效同 §5.4 的弹出菜单：玻璃 [ExpressiveMenuGlass] + 面板
+/// [ExpressiveMenuPanel]（宽度取内容固有宽、最小 200，这里最大 320），每行是
+/// [ExpressiveMenuItem]（没有锚点时它直接执行动作），行尾为快捷键提示。按
+/// [AppTextMenuSlot] 分成三组（lead → primary → secondary），组间为
+/// [ExpressiveMenuDivider]。从指针处 28 的小圆长成面板（[ExpressiveMenuMotion]
+/// 的容器变换）；减少动画时瞬时。
 ///
 /// 键盘：↑/↓ 移动高亮、Enter 执行高亮项、Esc 调 [onDismiss]。为什么不把焦点
 /// 移进菜单：输入框（与正文）失去焦点就会拆掉自己的选区浮层，菜单也跟着没了。
@@ -154,19 +154,23 @@ class _AppTextContextMenuPanelState extends State<AppTextContextMenuPanel>
                 constraints.biggest,
                 anchor,
               ).bounds,
+              cover: false,
               placement: ExpressiveMenuPlacement.start,
               textDirection: Directionality.of(context),
-              margin: 0,
               motion: _motion,
-              shadowColor: ExpressiveMenuSurface.shadowOf(colors),
+              shadowColor: ExpressiveMenuSurface.ringShadowOf(colors),
               borderColor: ExpressiveMenuSurface.borderOf(colors),
-              primary: ExpressiveMenuPanel(
-                alpha: _motion.alpha,
-                scrollController: _scroll,
-                showScrollbar: _motion.status == AnimationStatus.completed,
-                maxWidth: AppTextContextMenuPanel.maxWidth,
-                children: _rows(context),
-              ),
+              children: <Widget>[
+                ExpressiveMenuGlass(motion: _motion),
+                ExpressiveMenuPanel(
+                  scrollController: _scroll,
+                  jelly: _motion.primaryJelly,
+                  ready: () => _motion.dragSelectReadyNow,
+                  showScrollbar: _motion.status == AnimationStatus.completed,
+                  maxWidth: AppTextContextMenuPanel.maxWidth,
+                  children: _rows(context),
+                ),
+              ],
             );
           },
         );

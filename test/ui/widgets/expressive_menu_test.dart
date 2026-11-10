@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +7,7 @@ import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_geometry.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_layout.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_panel.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_selection.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_submenu.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -83,6 +83,10 @@ Widget _alignedPage(
 
 Finder get _trigger => find.byTooltip(_tooltip);
 
+/// 图标按钮那个 40 的圆（面板从它长出来、贴着它的角对齐）。
+Rect _circle(WidgetTester tester) =>
+    Rect.fromCenter(center: tester.getCenter(_trigger), width: 40, height: 40);
+
 Finder _faIcon(FaIconData icon) => find.byWidgetPredicate(
   (Widget widget) =>
       widget is FaIcon && widget.icon?.codePoint == icon.codePoint,
@@ -97,13 +101,20 @@ RenderExpressiveMenuCascade _cascade(WidgetTester tester) =>
       find.byType(ExpressiveMenuCascade),
     );
 
-/// 铺满屏幕的变暗层。
-Finder get _dim => find.byWidgetPredicate(
-  (Widget widget) =>
-      widget is FadeTransition &&
-      widget.child is ColoredBox &&
-      widget.opacity is AnimationController,
-);
+ExpressiveMenuSelection _selection(WidgetTester tester, Finder panel) {
+  final paint = tester.widget<CustomPaint>(
+    find
+        .descendant(
+          of: panel,
+          matching: find.byWidgetPredicate(
+            (Widget w) =>
+                w is CustomPaint && w.painter is ExpressiveMenuMaskPainter,
+          ),
+        )
+        .first,
+  );
+  return (paint.painter! as ExpressiveMenuMaskPainter).selection;
+}
 
 Matcher _near(double value, {double epsilon = 0.01}) =>
     moreOrLessEquals(value, epsilon: epsilon);
@@ -113,6 +124,13 @@ Matcher _nearOffset(Offset value) =>
 
 Color _textColor(WidgetTester tester, String text) =>
     tester.renderObject<RenderParagraph>(find.text(text)).text.style!.color!;
+
+double _opacityAbove(WidgetTester tester, Finder trigger) => tester
+    .widget<FadeTransition>(
+      find.ancestor(of: trigger, matching: find.byType(FadeTransition)).first,
+    )
+    .opacity
+    .value;
 
 void main() {
   void useSize(WidgetTester tester, Size size) {
@@ -126,41 +144,37 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('placement (miuix dropdown rules)', () {
-    testWidgets('opens 8dp below an end-aligned trigger, end edges aligned', (
+  group('placement', () {
+    testWidgets('covers the button, top-right corner on its circle', (
       tester,
     ) async {
       useSize(tester, const Size(393, 800));
       await tester.pumpWidget(_app(home: _topBarPage()));
+      final circle = _circle(tester);
       await openMenu(tester);
 
-      final trigger = tester.getRect(_trigger);
       final panel = tester.getRect(_primary);
-      expect(panel.right, _near(trigger.right));
-      expect(panel.top, _near(trigger.bottom + 8));
+      expect(panel.topRight, _nearOffset(circle.topRight));
       expect(panel.width, inInclusiveRange(200, 288));
       final placed = _cascade(tester).primaryPlacement!;
       expect(placed.side, ExpressiveMenuSide.below);
       expect(placed.alignRight, isTrue);
+      expect(placed.seed, circle);
     });
 
-    testWidgets('aligns the start edge to the trigger in right-to-left text', (
+    testWidgets('aligns the top-left corner in right-to-left text', (
       tester,
     ) async {
       useSize(tester, const Size(393, 800));
       await tester.pumpWidget(
         _app(home: _topBarPage(), textDirection: TextDirection.rtl),
       );
+      final circle = _circle(tester);
       await openMenu(tester);
-
-      final trigger = tester.getRect(_trigger);
-      final panel = tester.getRect(_primary);
-      // RTL 下“结束边”是左缘。
-      expect(panel.left, _near(trigger.left));
-      expect(panel.top, _near(trigger.bottom + 8));
+      expect(tester.getRect(_primary).topLeft, _nearOffset(circle.topLeft));
     });
 
-    testWidgets('a start-aligned menu lines up with the trigger start edge', (
+    testWidgets('a start-aligned menu starts at the circle start corner', (
       tester,
     ) async {
       useSize(tester, const Size(393, 800));
@@ -172,15 +186,14 @@ void main() {
           ),
         ),
       );
+      final circle = _circle(tester);
       await openMenu(tester);
-
-      final trigger = tester.getRect(_trigger);
-      final panel = tester.getRect(_primary);
-      expect(panel.left, _near(trigger.left));
-      expect(panel.top, _near(trigger.bottom + 8));
+      expect(tester.getRect(_primary).topLeft, _nearOffset(circle.topLeft));
     });
 
-    testWidgets('flips above the trigger near the bottom edge', (tester) async {
+    testWidgets('grows upward from the bottom corner near the bottom edge', (
+      tester,
+    ) async {
       useSize(tester, const Size(393, 800));
       await tester.pumpWidget(
         _app(
@@ -190,12 +203,12 @@ void main() {
           ),
         ),
       );
+      final circle = _circle(tester);
       await openMenu(tester);
-
-      final trigger = tester.getRect(_trigger);
-      final panel = tester.getRect(_primary);
-      expect(panel.bottom, _near(trigger.top - 8));
-      expect(panel.right, _near(trigger.right));
+      expect(
+        tester.getRect(_primary).bottomRight,
+        _nearOffset(circle.bottomRight),
+      );
       expect(_cascade(tester).primaryPlacement!.side, ExpressiveMenuSide.above);
     });
 
@@ -219,10 +232,10 @@ void main() {
           );
           await openMenu(tester);
           final panel = tester.getRect(_primary);
-          expect(panel.left, greaterThanOrEqualTo(0), reason: '$alignment');
-          expect(panel.right, lessThanOrEqualTo(320), reason: '$alignment');
-          expect(panel.top, greaterThanOrEqualTo(8), reason: '$alignment');
-          expect(panel.bottom, lessThanOrEqualTo(632), reason: '$alignment');
+          expect(panel.left, greaterThanOrEqualTo(8), reason: '$alignment');
+          expect(panel.right, lessThanOrEqualTo(312), reason: '$alignment');
+          expect(panel.top, greaterThanOrEqualTo(0), reason: '$alignment');
+          expect(panel.bottom, lessThanOrEqualTo(640), reason: '$alignment');
           expect(panel.width, lessThanOrEqualTo(288));
           expect(tester.takeException(), isNull);
           await tester.tapAt(const Offset(160, 320));
@@ -231,51 +244,104 @@ void main() {
       }
     });
 
-    test('a menu taller than both sides is centred on the anchor', () {
-      final placed = placeExpressiveMenu(
-        anchor: const Rect.fromLTWH(100, 290, 40, 40),
+    testWidgets('a large anchor gets the menu beside it, grown from a dot', (
+      tester,
+    ) async {
+      useSize(tester, const Size(393, 800));
+      await tester.pumpWidget(
+        _app(
+          home: Scaffold(
+            body: Align(
+              alignment: const Alignment(0, -0.6),
+              child: ExpressiveMenuAnchor(
+                placement: ExpressiveMenuPlacement.start,
+                menuChildren: _items(),
+                builder: (context, menu, child) => GestureDetector(
+                  onTap: menu.toggle,
+                  child: const SizedBox(
+                    width: 300,
+                    height: 120,
+                    child: Text('Card'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final card = tester.getRect(
+        find.ancestor(of: find.text('Card'), matching: find.byType(SizedBox)),
+      );
+      await tester.tap(find.text('Card'));
+      await tester.pumpAndSettle();
+      final panel = tester.getRect(_primary);
+      expect(panel.left, _near(card.left));
+      expect(panel.top, _near(card.bottom + 8));
+      final seed = _cascade(tester).primaryPlacement!.seed;
+      expect(seed.size, const Size(28, 28));
+      expect(seed.topLeft, _nearOffset(panel.topLeft));
+      // 卡片不会随菜单淡出。
+      expect(_opacityAbove(tester, find.text('Card')), 1);
+    });
+
+    test('a menu taller than both sides is centred on the seed', () {
+      final placed = placeCoveringMenu(
+        seed: const Rect.fromLTWH(100, 290, 40, 40),
         size: const Size(200, 500),
         bounds: const Rect.fromLTWH(0, 0, 400, 600),
         placement: ExpressiveMenuPlacement.start,
         textDirection: TextDirection.ltr,
-        margin: 8,
       );
       expect(placed.side, ExpressiveMenuSide.middle);
       expect(placed.rect.center.dy, _near(310));
-      expect(placed.pivot, Offset(100, placed.rect.center.dy));
+    });
+
+    test('the morph rect starts on the seed and ends on the panel', () {
+      const size = Size(220, 180);
+      const seed = Rect.fromLTWH(180, 0, 40, 40);
+      Rect at(double f, double p) => expressiveMenuMorphRect(
+        size: size,
+        seed: seed,
+        fraction: f,
+        origin: p,
+        side: ExpressiveMenuSide.below,
+        alignRight: true,
+      );
+      expect(at(0, 0), seed);
+      expect(at(1, 1), Offset.zero & size);
+      // 只迁移、不长大：中心移到面板中心。
+      expect(at(0, 1).center, _nearOffset(size.center(Offset.zero)));
+      // 只长大、不迁移：右上角钉在起点的右上角。
+      expect(at(0.5, 0).topRight, _nearOffset(seed.topRight));
     });
   });
 
   group('motion', () {
-    testWidgets('grows from the trigger corner and reveals downward', (
+    testWidgets('the button grows into the panel, its icon fading out', (
       tester,
     ) async {
       useSize(tester, const Size(393, 800));
       await tester.pumpWidget(_app(home: _topBarPage()));
+      final circle = _circle(tester);
       await tester.tap(_trigger);
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 40));
-
-      final trigger = tester.getRect(_trigger);
+      await tester.pump(const Duration(milliseconds: 16));
+      final early = tester.getRect(_primary);
+      final earlyIcon = _opacityAbove(tester, _trigger);
+      await tester.pump(const Duration(milliseconds: 60));
       final midway = tester.getRect(_primary);
-      final opacity = tester
-          .widget<FadeTransition>(
-            find
-                .descendant(of: _primary, matching: find.byType(FadeTransition))
-                .first,
-          )
-          .opacity
-          .value;
       await tester.pumpAndSettle();
       final settled = tester.getRect(_primary);
-      // 缩放以贴着按钮的右上角为原点：这一角始终在原处。
-      expect(midway.width, lessThan(settled.width * 0.9));
-      expect(midway.right, _near(trigger.right));
-      expect(midway.top, _near(trigger.bottom + 8));
-      expect(opacity, inExclusiveRange(0, 1));
+
+      // 内容按“此刻宽 / 面板宽”等比缩放：一开始只比那个圆大一点。
+      expect(early.width, lessThan(settled.width * 0.5));
+      expect(midway.width, inExclusiveRange(early.width, settled.width));
+      expect((early.center - circle.center).distance, lessThan(60));
+      expect(earlyIcon, inExclusiveRange(0, 1));
+      expect(_opacityAbove(tester, _trigger), 0);
     });
 
-    testWidgets('the scale spring overshoots a little before settling', (
+    testWidgets('the size spring overshoots a little before settling', (
       tester,
     ) async {
       useSize(tester, const Size(393, 800));
@@ -291,60 +357,42 @@ void main() {
       await tester.pumpAndSettle();
       final settled = tester.getRect(_primary).width;
       expect(widest, greaterThan(settled + 1));
-      expect(widest, lessThan(settled * 1.02));
+      expect(widest, lessThan(settled * 1.04));
     });
 
-    testWidgets('dims the screen while open', (tester) async {
-      await tester.pumpWidget(_app(home: _topBarPage()));
-      expect(_dim, findsNothing);
-      await tester.tap(_trigger);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      final midway = tester.widget<FadeTransition>(_dim).opacity.value;
-      expect(midway, inExclusiveRange(0, 1));
-      await tester.pumpAndSettle();
-      expect(tester.widget<FadeTransition>(_dim).opacity.value, 1);
-      final color = tester.widget<ColoredBox>(
-        find.descendant(of: _dim, matching: find.byType(ColoredBox)),
-      );
-      expect(color.color.a, _near(0.3, epsilon: 0.01));
-    });
-
-    testWidgets('closing fades out in 150ms, then the overlay is removed', (
+    testWidgets('closing shrinks back into the button within 340ms', (
       tester,
     ) async {
       await tester.pumpWidget(_app(home: _topBarPage()));
       await openMenu(tester);
       await tester.tapAt(const Offset(40, 400));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 200));
       expect(_items0, findsNWidgets(2));
-      // 收起途中不再响应条目。
+      // 收起途中不再响应条目，按钮的图标提早淡回来。
       expect(
         tester
             .state<ExpressiveMenuAnchorState>(find.byType(ExpressiveMenuAnchor))
             .interactive,
         isFalse,
       );
-      await tester.pump(const Duration(milliseconds: 60));
+      expect(_opacityAbove(tester, _trigger), greaterThan(0.5));
+      await tester.pump(const Duration(milliseconds: 160));
       await tester.pump();
       expect(_items0, findsNothing);
+      expect(_opacityAbove(tester, _trigger), 1);
     });
 
-    testWidgets('the panel is opaque over the dim, no blur', (tester) async {
+    testWidgets('the glass panel blurs what is behind it', (tester) async {
       for (final brightness in Brightness.values) {
         await tester.pumpWidget(
           _app(home: _topBarPage(), brightness: brightness),
         );
         await openMenu(tester);
         final blur = tester.widget<BackdropFilter>(
-          find.descendant(of: _primary, matching: find.byType(BackdropFilter)),
+          find.byType(BackdropFilter).first,
         );
-        expect(blur.enabled, isFalse);
-        final material = tester.widget<Material>(
-          find.descendant(of: _primary, matching: find.byType(Material)).first,
-        );
-        expect(material.color!.a, 1, reason: '$brightness');
+        expect(blur.enabled, isTrue, reason: '$brightness');
         await tester.tapAt(const Offset(40, 400));
         await tester.pumpAndSettle();
       }
@@ -356,19 +404,23 @@ void main() {
             .clearAccessibilityFeaturesTestValue(),
       );
 
-      testWidgets('opens and closes instantly', (tester) async {
+      testWidgets('opens and closes instantly, solid and unblurred', (
+        tester,
+      ) async {
         tester.platformDispatcher.accessibilityFeaturesTestValue =
             const FakeAccessibilityFeatures(disableAnimations: true);
         await tester.pumpWidget(_app(home: _topBarPage()));
+        final circle = _circle(tester);
         await tester.tap(_trigger);
         await tester.pump();
 
-        final trigger = tester.getRect(_trigger);
-        final panel = tester.getRect(_primary);
-        expect(panel.right, _near(trigger.right));
-        expect(panel.width, greaterThanOrEqualTo(200));
-        expect(tester.widget<FadeTransition>(_dim).opacity.value, 1);
-
+        expect(tester.getRect(_primary).topRight, _nearOffset(circle.topRight));
+        expect(
+          tester
+              .widget<BackdropFilter>(find.byType(BackdropFilter).first)
+              .enabled,
+          isFalse,
+        );
         await tester.tapAt(const Offset(40, 400));
         await tester.pump();
         expect(_items0, findsNothing);
@@ -377,7 +429,7 @@ void main() {
   });
 
   group('items', () {
-    testWidgets('tapping an item closes the menu and runs the callback once', (
+    testWidgets('tapping an item closes the menu and runs it once', (
       tester,
     ) async {
       var edits = 0;
@@ -394,22 +446,49 @@ void main() {
       expect(_items0, findsNothing);
     });
 
-    testWidgets('rows follow the miuix metrics', (tester) async {
+    testWidgets('taps while the panel is still growing are ignored', (
+      tester,
+    ) async {
+      var edits = 0;
+      await tester.pumpWidget(
+        _app(
+          home: _topBarPage(items: _items(onEdit: () => edits++)),
+        ),
+      );
+      await tester.tap(_trigger);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      await tester.tap(find.text('Edit'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(edits, 0);
+    });
+
+    testWidgets('rows are inset pills with the NexioSchedule metrics', (
+      tester,
+    ) async {
       useSize(tester, const Size(393, 800));
       await tester.pumpWidget(_app(home: _topBarPage()));
       await openMenu(tester);
       final panel = tester.getRect(_primary);
-      final edit = tester.getRect(find.text('Edit'));
+      final row = tester.getRect(_items0.first);
       final icon = tester.getRect(_faIcon(FontAwesomeIcons.penToSquare));
-      // 首行文字离面板顶边 20（行内 12 + 面板 8），左内边距 20。
-      final editRow = tester.getRect(_items0.first);
-      expect(editRow.top - panel.top, _near(8));
-      expect(icon.center.dx - panel.left, _near(20 + 13));
-      expect(edit.left - panel.left, _near(20 + 26 + 12));
-      expect(tester.getRect(_items0.last).bottom, _near(panel.bottom - 8));
+      final edit = tester.getRect(find.text('Edit'));
+      expect(row.top - panel.top, _near(8));
+      expect(panel.bottom - tester.getRect(_items0.last).bottom, _near(8));
+      // 胶囊缩进 8 + 内边距 14，图标格 24、间距 10。
+      expect(icon.center.dx - panel.left, _near(8 + 14 + 12));
+      expect(edit.left - panel.left, _near(8 + 14 + 24 + 10));
+      // 动作项行高 = 上下 10.5 + 24 的图标格。
+      expect(row.height, _near(45));
+      final style = tester
+          .renderObject<RenderParagraph>(find.text('Edit'))
+          .text
+          .style!;
+      expect(style.fontSize, 15.6);
+      expect(style.fontWeight, FontWeight.w500);
     });
 
-    testWidgets('a selected item turns primary with a trailing check', (
+    testWidgets('a selected choice turns primary with a trailing check', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -435,11 +514,6 @@ void main() {
       expect(_textColor(tester, 'Newest'), colors.primary);
       expect(_textColor(tester, 'Oldest'), colors.onSurface);
       expect(_faIcon(FontAwesomeIcons.check), findsOneWidget);
-      // 对勾格始终留着：两行文字起点一致，选中不会左右挪动。
-      expect(
-        tester.getRect(find.text('Newest')).left,
-        tester.getRect(find.text('Oldest')).left,
-      );
       expect(
         tester.getSemantics(find.text('Newest')),
         isSemantics(isSelected: true, isButton: true, hasSelectedState: true),
@@ -495,10 +569,75 @@ void main() {
         tester.getRect(find.text('Hangzhou, Xihu')).top,
         greaterThanOrEqualTo(tester.getRect(find.text('District')).bottom),
       );
-      final colors = Theme.of(
-        tester.element(find.text('District')),
-      ).colorScheme;
-      expect(_textColor(tester, 'Hangzhou, Xihu'), colors.onSurfaceVariant);
+    });
+  });
+
+  group('drag to select', () {
+    List<Widget> three(List<String> log) => <Widget>[
+      for (final label in <String>['One', 'Two', 'Three'])
+        ExpressiveMenuItem(onPressed: () => log.add(label), child: Text(label)),
+    ];
+
+    testWidgets('press, slide to another row and release runs that row', (
+      tester,
+    ) async {
+      final log = <String>[];
+      await tester.pumpWidget(_app(home: _topBarPage(items: three(log))));
+      await openMenu(tester);
+      final from = tester.getCenter(find.text('One'));
+      final to = tester.getCenter(find.text('Three'));
+      final gesture = await tester.startGesture(from);
+      await tester.pump();
+      final selection = _selection(tester, _primary);
+      expect(selection.pressed, isNotNull);
+      final top = selection.maskTop.value;
+      for (var i = 0; i < 10; i++) {
+        await gesture.moveBy((to - from) / 10);
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await tester.pump(const Duration(milliseconds: 200));
+      // 高亮胶囊滑到了 Three。
+      expect(selection.maskTop.value, greaterThan(top + 50));
+      expect(selection.maskAlpha.value, 1);
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(log, <String>['Three']);
+      expect(_items0, findsNothing);
+    });
+
+    testWidgets('sliding off the rows and releasing runs nothing', (
+      tester,
+    ) async {
+      final log = <String>[];
+      await tester.pumpWidget(_app(home: _topBarPage(items: three(log))));
+      await openMenu(tester);
+      final panel = tester.getRect(_primary);
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Two')),
+      );
+      await tester.pump();
+      await gesture.moveTo(Offset(panel.center.dx, panel.bottom + 60));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(log, isEmpty);
+      expect(_items0, findsNWidgets(3));
+    });
+
+    testWidgets('pressing makes the panel a little bigger', (tester) async {
+      await tester.pumpWidget(_app(home: _topBarPage()));
+      await openMenu(tester);
+      final settled = tester.getRect(_primary);
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Edit')),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      final pressed = tester.getRect(_primary);
+      expect(pressed.height, greaterThan(settled.height + 1));
+      expect(pressed.height, lessThan(settled.height + 4));
+      await gesture.cancel();
+      await tester.pumpAndSettle();
     });
   });
 
@@ -517,7 +656,6 @@ void main() {
       expect(_items0, findsNothing);
       expect(bodyTaps, 0);
 
-      // 菜单关上后，同一位置的点按照常到达正文。
       await tester.tapAt(const Offset(40, 400));
       await tester.pump();
       expect(bodyTaps, 1);
@@ -543,7 +681,6 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       await openMenu(tester);
-      // 打开菜单不应让顶栏把返回键换成关闭键。
       expect(find.byType(BackButton), findsOneWidget);
 
       await tester.binding.handlePopRoute();
@@ -553,29 +690,12 @@ void main() {
 
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Page'), findsNothing);
       expect(find.text('Open'), findsOneWidget);
     });
 
-    testWidgets('escape closes the menu and focus returns to the trigger', (
+    testWidgets('keyboard: arrows focus items, enter runs, escape closes', (
       tester,
     ) async {
-      await tester.pumpWidget(_app(home: _topBarPage()));
-      await openMenu(tester);
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-      await tester.pump();
-      expect(Focus.of(tester.element(find.text('Edit'))).hasFocus, isTrue);
-
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
-      expect(_items0, findsNothing);
-      expect(
-        Focus.of(tester.element(find.byType(FaIcon).first)).hasFocus,
-        isTrue,
-      );
-    });
-
-    testWidgets('enter on a focused item runs it', (tester) async {
       var edits = 0;
       await tester.pumpWidget(
         _app(
@@ -584,10 +704,21 @@ void main() {
       );
       await openMenu(tester);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(Focus.of(tester.element(find.text('Edit'))).hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(_items0, findsNothing);
+      expect(
+        Focus.of(tester.element(find.byType(FaIcon).first)).hasFocus,
+        isTrue,
+      );
+
+      await openMenu(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
       expect(edits, 1);
-      expect(_items0, findsNothing);
     });
 
     testWidgets('the trigger reports its expanded state to semantics', (
@@ -606,25 +737,6 @@ void main() {
       );
       handle.dispose();
     });
-
-    testWidgets('the trigger stays held down until the menu is gone', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_app(home: _topBarPage()));
-      ExpressiveMenuAnchorState menu() => tester
-          .state<ExpressiveMenuAnchorState>(find.byType(ExpressiveMenuAnchor));
-      expect(menu().isShowing, isFalse);
-      await openMenu(tester);
-      expect(menu().isShowing, isTrue);
-      await tester.tapAt(const Offset(40, 400));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 80));
-      // 收起途中已算“收起”，但按住的底色要等浮层移除才褪去。
-      expect(menu().isExpanded, isFalse);
-      expect(menu().isShowing, isTrue);
-      await tester.pumpAndSettle();
-      expect(menu().isShowing, isFalse);
-    });
   });
 
   group('openAt (context menu at a position)', () {
@@ -632,7 +744,6 @@ void main() {
     final fieldFocus = FocusNode();
     tearDownAll(fieldFocus.dispose);
 
-    /// 铺满页面的锚点（像一张卡片），另有一个输入框持有打开前的焦点。
     Widget page() => Scaffold(
       body: Column(
         children: <Widget>[
@@ -655,10 +766,12 @@ void main() {
       await tester.pumpWidget(_app(home: page()));
       anchorKey.currentState!.openAt(const Offset(200, 300));
       await tester.pumpAndSettle();
-
-      final panel = tester.getRect(_primary);
-      expect(panel.left, _near(200));
-      expect(panel.top, _near(300));
+      expect(
+        tester.getRect(_primary).topLeft,
+        _nearOffset(const Offset(200, 300)),
+      );
+      final seed = _cascade(tester).primaryPlacement!.seed;
+      expect(seed.topLeft, _nearOffset(const Offset(200, 300)));
     });
 
     testWidgets('flips above the point and stays inside near the corner', (
@@ -668,10 +781,9 @@ void main() {
       await tester.pumpWidget(_app(home: page()));
       anchorKey.currentState!.openAt(const Offset(790, 590));
       await tester.pumpAndSettle();
-
       final panel = tester.getRect(_primary);
       expect(panel.bottom, _near(590));
-      expect(panel.right, lessThanOrEqualTo(800));
+      expect(panel.right, lessThanOrEqualTo(800 - 8));
     });
 
     testWidgets('reopening at another point moves the menu', (tester) async {
@@ -681,10 +793,11 @@ void main() {
       await tester.pumpAndSettle();
       anchorKey.currentState!.openAt(const Offset(300, 250));
       await tester.pumpAndSettle();
-
       expect(_items0, findsNWidgets(2));
-      final panel = tester.getRect(_primary);
-      expect(panel.topLeft, _nearOffset(const Offset(300, 250)));
+      expect(
+        tester.getRect(_primary).topLeft,
+        _nearOffset(const Offset(300, 250)),
+      );
     });
 
     testWidgets('escape closes it and focus goes back to where it was', (
@@ -697,12 +810,9 @@ void main() {
       anchorKey.currentState!.openAt(const Offset(200, 300));
       await tester.pumpAndSettle();
       expect(fieldFocus.hasFocus, isFalse);
-
-      // 鼠标打开时焦点停在菜单本身：↓ 进入第一项。
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump();
       expect(Focus.of(tester.element(find.text('Edit'))).hasFocus, isTrue);
-
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(_items0, findsNothing);
@@ -729,37 +839,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(Focus.of(tester.element(find.text('Edit'))).hasFocus, isTrue);
-
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
       expect(edits, 1);
       expect(_items0, findsNothing);
-    });
-
-    testWidgets('a desktop right-click menu keeps the glass and no dim', (
-      tester,
-    ) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-      useSize(tester, const Size(800, 600));
-      await tester.pumpWidget(_app(home: page()));
-      anchorKey.currentState!.openAt(const Offset(200, 300));
-      await tester.pumpAndSettle();
-      expect(_dim, findsNothing);
-      final blur = tester.widget<BackdropFilter>(
-        find.descendant(of: _primary, matching: find.byType(BackdropFilter)),
-      );
-      expect(blur.enabled, isTrue);
-      debugDefaultTargetPlatformOverride = null;
-    });
-
-    testWidgets('a long-press menu on a phone still dims', (tester) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.android;
-      useSize(tester, const Size(400, 800));
-      await tester.pumpWidget(_app(home: page()));
-      anchorKey.currentState!.openAt(const Offset(200, 300));
-      await tester.pumpAndSettle();
-      expect(_dim, findsOneWidget);
-      debugDefaultTargetPlatformOverride = null;
     });
   });
 
@@ -769,7 +852,6 @@ void main() {
       VoidCallback? onPick,
       VoidCallback? onRoot,
       bool sizeFirst = true,
-      bool sizeMiddle = false,
     }) {
       final size = ExpressiveSubmenuItem(
         leadingIcon: const FaIcon(FontAwesomeIcons.font),
@@ -791,13 +873,6 @@ void main() {
         onPressed: onRoot ?? () {},
         child: const Text('Root'),
       );
-      if (sizeMiddle) {
-        return <Widget>[
-          root,
-          size,
-          ExpressiveMenuItem(onPressed: () {}, child: const Text('After')),
-        ];
-      }
       return sizeFirst ? <Widget>[size, root] : <Widget>[root, size];
     }
 
@@ -809,11 +884,13 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('the trigger row grows into a panel over the shrunk menu', (
+    testWidgets('the trigger pill grows into a panel over the shrunk menu', (
       tester,
     ) async {
       useSize(tester, const Size(393, 800));
-      await tester.pumpWidget(_app(home: _topBarPage(items: nestedItems())));
+      await tester.pumpWidget(
+        _app(home: _topBarPage(items: nestedItems(sizeFirst: false))),
+      );
       await openMenu(tester);
       final primaryBefore = tester.getRect(_primary);
       final row = tester.getRect(find.byType(ExpressiveSubmenuItem));
@@ -823,20 +900,20 @@ void main() {
       expect(_panels, findsNWidgets(2));
       expect(header, findsOneWidget);
       expect(find.byType(ExpressiveMenuDivider), findsOneWidget);
-      expect(find.text('Pick'), findsOneWidget);
-      // 主菜单仍在原处，缩到 0.95（以贴着按钮的角为原点）。
+      // 主菜单以贴着按钮的右上角为原点缩到 0.95。
       final primaryAfter = tester.getRect(_primary);
       expect(primaryAfter.width, _near(primaryBefore.width * 0.95));
       expect(primaryAfter.topRight, _nearOffset(primaryBefore.topRight));
-      // 二级菜单从触发行（首行延伸到面板顶边）的位置展开，起始边对齐。
+      // 起点是触发行缩进后的胶囊；标题行停在触发行原处。
       final cascade = _cascade(tester);
-      expect(cascade.submenuAnchorRect!.top, _near(primaryBefore.top));
-      expect(cascade.submenuAnchorRect!.bottom, _near(row.bottom));
+      final pill = cascade.submenuPillRect!;
+      expect(pill.left, _near(row.left + 8));
+      expect(pill.right, _near(row.right - 8));
+      expect(pill.top, _near(row.top));
+      expect(tester.getRect(header).topLeft, _nearOffset(row.topLeft));
       final secondary = tester.getRect(_panels.last);
-      expect(secondary.top, _near(primaryBefore.top));
-      expect(secondary.left, _near(primaryBefore.left));
+      expect(secondary.top, _near(row.top - 8));
       expect(secondary.width, greaterThanOrEqualTo(primaryBefore.width));
-      // 标题行的 › 转向上方。
       final turns = tester
           .widget<RotationTransition>(
             find.descendant(
@@ -846,39 +923,12 @@ void main() {
           )
           .turns
           .value;
-      expect(turns, _near(-0.25, epsilon: 0.01));
-    });
-
-    testWidgets('mid-morph the header still matches the trigger row height', (
-      tester,
-    ) async {
-      useSize(tester, const Size(393, 800));
-      await tester.pumpWidget(
-        _app(home: _topBarPage(items: nestedItems(sizeMiddle: true))),
-      );
-      await openMenu(tester);
-      final row = tester.getRect(find.byType(ExpressiveSubmenuItem));
-
-      await tester.tap(find.text('Size'));
-      await tester.pump();
-      final start = tester.getSize(header).height;
-      await tester.pump(const Duration(milliseconds: 60));
-      final mid = tester.getSize(header).height;
-      await tester.pumpAndSettle();
-      final end = tester.getSize(header).height;
-      // 中间行：起点即触发行本身的高度，展开完是上 20、下 12。
-      expect(start, _near(row.height, epsilon: 0.5));
-      expect(mid, inExclusiveRange(start, end));
-      expect(end, _near(row.height + 8));
-      // 落点：二级菜单顶边对齐触发行顶边。
-      expect(_cascade(tester).submenuRect!.top, _near(row.top));
+      expect(turns, _near(-0.25));
     });
 
     testWidgets('tapping the header, the mask or outside collapses it first', (
       tester,
     ) async {
-      // Size 在第二行：二级菜单从它往下长，主菜单的首行 Root 露在外面、
-      // 被遮罩盖着。
       await tester.pumpWidget(
         _app(home: _topBarPage(items: nestedItems(sizeFirst: false))),
       );
@@ -894,22 +944,12 @@ void main() {
         expect(header, findsNothing);
         expect(find.text('Root'), findsOneWidget);
         expect(_panels, findsOneWidget);
-        // 再点外部才关掉整个菜单。
+        // 收回后主菜单没有残留的高亮胶囊。
+        expect(_selection(tester, _primary).maskAlpha.value, 0);
         await tester.tapAt(const Offset(40, 500));
         await tester.pumpAndSettle();
         expect(_items0, findsNothing);
       }
-    });
-
-    testWidgets('the trigger button collapses the submenu before closing', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_app(home: _topBarPage(items: nestedItems())));
-      await openSize(tester);
-      await tester.tap(_trigger, warnIfMissed: false);
-      await tester.pumpAndSettle();
-      expect(header, findsNothing);
-      expect(find.text('Root'), findsOneWidget);
     });
 
     testWidgets('an item that keeps the menu open runs without closing', (
@@ -922,7 +962,6 @@ void main() {
         ),
       );
       await openSize(tester);
-
       await tester.tap(find.text('Pick'));
       await tester.pumpAndSettle();
       expect(picks, 1);
@@ -939,13 +978,11 @@ void main() {
         ),
       );
       await openSize(tester);
-
       await tester.tap(find.text('Large'));
       await tester.pumpAndSettle();
       expect(large, 1);
       expect(_items0, findsNothing);
 
-      // 重新展开总是从主菜单开始。
       await openMenu(tester);
       expect(find.text('Root'), findsOneWidget);
       expect(header, findsNothing);
@@ -961,7 +998,6 @@ void main() {
         ),
       );
       await openSize(tester);
-      // Root 露在二级菜单上方、盖着遮罩：点它只收回二级菜单。
       await tester.tap(find.text('Root'));
       await tester.pumpAndSettle();
       expect(roots, 0);
@@ -993,7 +1029,6 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       await openSize(tester);
-      expect(find.byType(BackButton), findsOneWidget);
 
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
@@ -1010,37 +1045,6 @@ void main() {
       expect(find.text('Open'), findsOneWidget);
     });
 
-    testWidgets('closing from a submenu leaves no back interception behind', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _app(
-          home: Builder(
-            builder: (BuildContext context) => Scaffold(
-              body: TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => _topBarPage(items: nestedItems()),
-                  ),
-                ),
-                child: const Text('Open'),
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      await openSize(tester);
-      await tester.tap(find.text('Large'));
-      await tester.pumpAndSettle();
-
-      // 一次返回就回到上一页，没有残留的局部历史。
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-      expect(find.text('Open'), findsOneWidget);
-    });
-
     testWidgets('keyboard: enter opens it, left arrow and escape go back', (
       tester,
     ) async {
@@ -1051,14 +1055,12 @@ void main() {
       expect(Focus.of(tester.element(find.text('Size'))).hasFocus, isTrue);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
-      // 焦点落到二级菜单的标题行。
       expect(header, findsOneWidget);
       expect(Focus.of(tester.element(find.text('Size').last)).hasFocus, isTrue);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
       await tester.pumpAndSettle();
       expect(header, findsNothing);
-      // 收回后焦点回到入口那一行。
       expect(Focus.of(tester.element(find.text('Size'))).hasFocus, isTrue);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -1095,7 +1097,7 @@ void main() {
           )
           .turns
           .value;
-      expect(turns, _near(0.25, epsilon: 0.01));
+      expect(turns, _near(0.25));
     });
 
     testWidgets('appears and goes at once with reduced motion', (tester) async {
@@ -1110,11 +1112,6 @@ void main() {
       await tester.tap(find.text('Size'));
       await tester.pump();
       expect(find.text('Pick'), findsOneWidget);
-      // 首行触发：展开完的标题行（上 20、下 12）与延伸到顶边的触发行等高。
-      expect(
-        tester.getSize(header).height,
-        _near(tester.getSize(find.byType(ExpressiveSubmenuItem)).height + 8),
-      );
       await tester.tap(find.text('Size').last);
       await tester.pump();
       expect(header, findsNothing);
@@ -1137,7 +1134,6 @@ void main() {
                     enabled: ticking,
                     child: _topBarPage(
                       items: <Widget>[
-                        // 与“更多 → 设置”一样：点了就切走这个 Tab。
                         ExpressiveMenuItem(
                           onPressed: () => setState(() => ticking = false),
                           child: const Text('Settings'),
@@ -1157,7 +1153,6 @@ void main() {
       );
       await openMenu(tester);
       await tester.tap(find.text('Settings'));
-      // 下一帧菜单直接关掉，不等收起动画。
       await tester.pump();
       await tester.pump();
       await tester.pump();

@@ -14,6 +14,8 @@ import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_location_precision_picker.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_panel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -117,7 +119,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder option(String text) => find.widgetWithText(MenuItemButton, text);
+  Finder option(String text) => find.widgetWithText(ExpressiveMenuItem, text);
 
   AppLocalizations l10n(WidgetTester tester) => panel(tester).l10n;
 
@@ -302,16 +304,11 @@ void main() {
         await tester.tap(find.byType(TextButton));
         await tester.pumpAndSettle();
         expect(option('北京市 · 朝阳区 · 阜通东大街6号'), findsOneWidget);
-        final menu = tester.getRect(
-          find
-              .ancestor(
-                of: find.byType(MenuItemButton).first,
-                matching: find.byType(Material),
-              )
-              .first,
-        );
-        expect(menu.left, greaterThanOrEqualTo(picker.left));
-        expect(menu.right, lessThanOrEqualTo(picker.right));
+        // 菜单从入口左缘展开，宽 200–288，夹进屏幕左右各留 8。
+        final menu = tester.getRect(find.byType(ExpressiveMenuPanel));
+        expect(menu.left, lessThanOrEqualTo(picker.left));
+        expect(menu.left, greaterThanOrEqualTo(8));
+        expect(menu.right, lessThanOrEqualTo(320 - 8));
         expect(tester.takeException(), isNull);
       },
     );

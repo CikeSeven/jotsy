@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../../app/theme/expressive_motion.dart';
 import 'expressive_menu_anchor.dart';
+import 'expressive_menu_row.dart';
 
-/// [ExpressiveMenuAnchor] 里的一项（移植自 phase 的 AppMenuItemButton）。
+/// [ExpressiveMenuAnchor] 里的一项（移植自 miuix 的 DropdownImpl）。
 ///
-/// RawMenuAnchor 不会替条目关闭菜单，所以这里关掉 [MenuItemButton] 的
-/// closeOnActivate，改为先经锚点关闭菜单、再执行 [onPressed]；收起途中的
-/// 点按直接忽略，动作不会被执行两次。
+/// 外观：整行无圆角、左右内边距 20、上下 12（首末行另有面板留白，合计 20）；
+/// 前置图标在至少 26 × 26 的格子里（18px，与文字同色）、到文字 12；文字
+/// `bodyLarge` 字重 500（`onSurface`），可带一行说明 [summary]（`bodyMedium`，
+/// `onSurfaceVariant`）；图标 + 文字那段最宽 216。行尾始终留出 12 + 20 的
+/// 对勾格：[selected] 为 true 时画主色对勾、文字与说明也换成主色，其余行
+/// 留空（文字不会因选中而左右挪动）；给了 [trailingIcon] 时由它占据这一格。
+/// [destructive] 文字与图标为 `error`；禁用时 38% 的 `onSurface`。按下 /
+/// 悬停 / 聚焦是铺满整行的 `onSurface` 色块，见 [ExpressiveMenuRowInk]。
 ///
-/// 默认样式由条目自己给出（不在全局主题里加 menuButtonTheme，免得改动其他
-/// 用到 MenuItemButton 的控件）：最小高 48、左右内边距 16、图标与文字间距 12；
-/// 文字 bodyMedium + onSurface，前置图标 16px + primary（菜单底色是半透明玻璃，
-/// 灰色图标显得发闷，用主色点出每一项）；按下 / 悬停 / 聚焦的叠色也取 primary；
-/// 静止圆角 20、按下收紧到 12（fast，减少动画时无过渡）。[destructive] 把文字、
-/// 图标与叠色换成 error 色。[selected] 为 true 时铺 primaryContainer 底、
-/// 文字加粗、行尾补一个对勾，圆角放到 24（胶囊）。禁用态沿用 Material 默认的
-/// 禁用色。[style] 中非空的字段覆盖默认值。
-///
-/// [closeOnActivate] 为 false 时点按只执行动作、菜单保持打开（二级菜单入口、
-/// 要连着调的单选项）。
+/// 点按：RawMenuAnchor 不会替条目关闭菜单，这里先经锚点关闭（收起途中的
+/// 点按直接忽略，动作不会执行两次）再执行 [onPressed]。[closeOnActivate] 为
+/// false 时只执行动作、菜单保持打开（要连着调的单选项）。不在锚点里（如
+/// 桌面文字右键菜单）时直接执行。
 class ExpressiveMenuItem extends StatelessWidget {
   const ExpressiveMenuItem({
     super.key,
@@ -28,109 +26,45 @@ class ExpressiveMenuItem extends StatelessWidget {
     required this.child,
     this.leadingIcon,
     this.trailingIcon,
+    this.summary,
     this.destructive = false,
     this.selected,
-    this.style,
     this.closeOnActivate = true,
+    this.highlighted = false,
+    this.focusNode,
   });
 
   /// 为 null 时条目禁用。
   final VoidCallback? onPressed;
+
+  /// 条目文字，通常是 `Text`。
   final Widget child;
 
-  /// 前置图标，通常是不带尺寸与颜色的 `FaIcon`，由条目统一为 16px。
+  /// 前置图标，通常是不带尺寸与颜色的 `FaIcon`，由条目统一尺寸与颜色。
   final Widget? leadingIcon;
+
+  /// 占据行尾对勾格的控件（如二级菜单入口的 ›、快捷键提示）。
   final Widget? trailingIcon;
+
+  /// 文字下方的一行说明，通常是 `Text`。
+  final Widget? summary;
 
   /// 危险操作（如删除）：文字与图标使用 `colorScheme.error`。
   final bool destructive;
 
   /// 单选 / 勾选菜单里这一项是否为当前值；null 表示普通动作项。
   ///
-  /// 非 null 时同时写进语义（读屏读出“已选中”）；为 true 且没有给
-  /// [trailingIcon] 时行尾显示对勾。
+  /// 非 null 时同时写进语义（读屏读出“已选中”）；为 true 时行尾显示对勾。
   final bool? selected;
-  final ButtonStyle? style;
 
-  /// 点按后是否关闭菜单。为 false 时菜单保持打开，选中态由内容自己刷新
-  /// （如排序依据与方向要连着调）；收起途中的点按仍被忽略。
+  /// 点按后是否关闭菜单。
   final bool closeOnActivate;
 
-  static const double minHeight = 48;
-  static const double horizontalPadding = 16;
-  static const double iconSize = 16;
-  static const double restingRadius = 20;
-  static const double pressedRadius = 12;
-  static const double selectedRadius = 24;
-  static const double checkSize = 14;
+  /// 外部指定的高亮（桌面文字右键菜单的方向键高亮）。
+  final bool highlighted;
 
-  ButtonStyle _defaultStyle(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    // 只给可用状态指定颜色；禁用态返回 null，落回 MenuItemButton 的默认禁用色。
-    WidgetStateProperty<Color?> enabledColor(Color color) =>
-        WidgetStateProperty.resolveWith(
-          (Set<WidgetState> states) =>
-              states.contains(WidgetState.disabled) ? null : color,
-        );
-    final isSelected = selected ?? false;
-    final accent = destructive ? colors.error : colors.primary;
-    return ButtonStyle(
-      backgroundColor: WidgetStatePropertyAll<Color?>(
-        isSelected ? colors.primaryContainer : null,
-      ),
-      foregroundColor: enabledColor(
-        destructive
-            ? colors.error
-            : isSelected
-            ? colors.onPrimaryContainer
-            : colors.onSurface,
-      ),
-      iconColor: enabledColor(isSelected ? colors.onPrimaryContainer : accent),
-      // 叠色随强调色走：选中的按下叠色取 onPrimaryContainer，在主色容器底上
-      // 才看得出来。
-      overlayColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
-        final tone = isSelected ? colors.onPrimaryContainer : accent;
-        if (states.contains(WidgetState.pressed) ||
-            states.contains(WidgetState.focused)) {
-          return tone.withValues(alpha: 0.12);
-        }
-        if (states.contains(WidgetState.hovered)) {
-          return tone.withValues(alpha: 0.08);
-        }
-        return null;
-      }),
-      iconSize: const WidgetStatePropertyAll<double>(iconSize),
-      textStyle: WidgetStatePropertyAll<TextStyle?>(
-        isSelected
-            ? theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)
-            : theme.textTheme.bodyMedium,
-      ),
-      minimumSize: const WidgetStatePropertyAll<Size>(Size(0, minHeight)),
-      padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
-        EdgeInsets.symmetric(horizontal: horizontalPadding),
-      ),
-      // 固定标准密度：MenuItemButton 按密度推算图标与文字间距，标准密度下为 12。
-      visualDensity: VisualDensity.standard,
-      shape: WidgetStateProperty.resolveWith(
-        (Set<WidgetState> states) => RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            states.contains(WidgetState.pressed) &&
-                    !states.contains(WidgetState.disabled)
-                ? pressedRadius
-                : isSelected
-                ? selectedRadius
-                : restingRadius,
-          ),
-        ),
-      ),
-      // Material 按 animationDuration 补间形状，减少动画时直接切换。
-      animationDuration: ExpressiveMotion.duration(
-        context,
-        ExpressiveMotion.fast,
-      ),
-    );
-  }
+  /// 行的焦点（二级菜单入口用它在收起时把焦点还给自己）。
+  final FocusNode? focusNode;
 
   void _activate(BuildContext context) {
     if (!context.mounted) return;
@@ -149,26 +83,164 @@ class ExpressiveMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaults = _defaultStyle(context);
-    final isSelected = selected;
-    return MenuItemButton(
-      closeOnActivate: false,
-      overflowAxis: Axis.vertical,
-      style: style?.merge(defaults) ?? defaults,
-      leadingIcon: leadingIcon,
-      trailingIcon:
-          trailingIcon ??
-          (isSelected ?? false
-              ? const ExcludeSemantics(
-                  child: FaIcon(FontAwesomeIcons.check, size: checkSize),
-                )
-              : null),
-      onPressed: onPressed == null ? null : () => _activate(context),
-      // 选中状态标在文字上：MenuItemButton 外层是 MergeSemantics，包在它外面的
-      // Semantics 会落到父节点上，只有放在里面才并进条目自己的语义节点。
-      child: isSelected == null
-          ? child
-          : Semantics(selected: isSelected, child: child),
+    final enabled = onPressed != null;
+    final isSelected = selected ?? false;
+    return ExpressiveMenuRowInk(
+      onTap: enabled ? () => _activate(context) : null,
+      focusNode: focusNode,
+      highlighted: highlighted,
+      selected: selected,
+      child: ExpressiveMenuRowContent(
+        enabled: enabled,
+        selected: isSelected,
+        destructive: destructive,
+        leadingIcon: leadingIcon,
+        summary: summary,
+        trailing:
+            trailingIcon ??
+            SizedBox.square(
+              dimension: ExpressiveMenuRowMetrics.checkCell,
+              child: isSelected
+                  ? const Center(
+                      child: FaIcon(
+                        FontAwesomeIcons.check,
+                        size: ExpressiveMenuRowMetrics.checkSize,
+                      ),
+                    )
+                  : null,
+            ),
+        child: child,
+      ),
+    );
+  }
+}
+
+/// 菜单行的排版：内边距、前置图标格、文字与说明、行尾格；颜色按状态取。
+/// 菜单项与二级菜单的标题行共用，变形起止两端逐像素一致。
+class ExpressiveMenuRowContent extends StatelessWidget {
+  const ExpressiveMenuRowContent({
+    super.key,
+    required this.child,
+    required this.trailing,
+    this.enabled = true,
+    this.selected = false,
+    this.destructive = false,
+    this.leadingIcon,
+    this.summary,
+    this.padding = const EdgeInsets.symmetric(
+      horizontal: ExpressiveMenuRowMetrics.horizontalPadding,
+      vertical: ExpressiveMenuRowMetrics.verticalPadding,
+    ),
+  });
+
+  final Widget child;
+  final Widget trailing;
+  final bool enabled;
+  final bool selected;
+  final bool destructive;
+  final Widget? leadingIcon;
+  final Widget? summary;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final disabled = colors.onSurface.withValues(alpha: 0.38);
+    final titleColor = !enabled
+        ? disabled
+        : destructive
+        ? colors.error
+        : selected
+        ? colors.primary
+        : colors.onSurface;
+    final summaryColor = !enabled
+        ? disabled
+        : selected
+        ? colors.primary
+        : colors.onSurfaceVariant;
+    final leading = leadingIcon;
+    final summary = this.summary;
+    final text = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        DefaultTextStyle.merge(
+          style: theme.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: titleColor,
+          ),
+          child: child,
+        ),
+        if (summary != null)
+          DefaultTextStyle.merge(
+            style: theme.textTheme.bodyMedium?.copyWith(color: summaryColor),
+            child: summary,
+          ),
+      ],
+    );
+    return Padding(
+      padding: padding,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: ExpressiveMenuRowMetrics.maxTextWidth,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (leading != null)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          end: ExpressiveMenuRowMetrics.iconGap,
+                        ),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: ExpressiveMenuRowMetrics.iconCell,
+                            minHeight: ExpressiveMenuRowMetrics.iconCell,
+                          ),
+                          child: Center(
+                            widthFactor: 1,
+                            heightFactor: 1,
+                            child: IconTheme.merge(
+                              data: IconThemeData(
+                                size: ExpressiveMenuRowMetrics.iconSize,
+                                color: titleColor,
+                              ),
+                              child: ExcludeSemantics(child: leading),
+                            ),
+                          ),
+                        ),
+                      ),
+                    Flexible(child: text),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: ExpressiveMenuRowMetrics.trailingGap,
+            ),
+            child: IconTheme.merge(
+              data: IconThemeData(
+                size: ExpressiveMenuRowMetrics.checkSize,
+                color: enabled
+                    ? (selected ? colors.primary : colors.onSurfaceVariant)
+                    : disabled,
+              ),
+              child: DefaultTextStyle.merge(
+                style: TextStyle(color: summaryColor),
+                child: trailing,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

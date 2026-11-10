@@ -6,6 +6,8 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card_context_menu.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_swipe_action_item.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_panel.dart';
 
 import 'diaries_wide_test_support.dart';
 
@@ -50,21 +52,14 @@ void main() {
     }
     // 菜单的起始角贴着指针（卡片中心）。
     final cardCenter = tester.getCenter(wideCard('menu title 1'));
-    final menuTop = tester.getTopLeft(
-      find
-          .ancestor(
-            of: find.byType(MenuItemButton).first,
-            matching: find.byType(Material),
-          )
-          .first,
-    );
-    expect(menuTop.dx, moreOrLessEquals(cardCenter.dx));
-    expect(menuTop.dy, moreOrLessEquals(cardCenter.dy));
+    final menuTop = tester.getTopLeft(find.byType(ExpressiveMenuPanel));
+    expect(menuTop.dx, moreOrLessEquals(cardCenter.dx, epsilon: 0.01));
+    expect(menuTop.dy, moreOrLessEquals(cardCenter.dy, epsilon: 0.01));
 
     await tester.tap(find.text('Pin'));
     await tester.pumpAndSettle();
     expect(store.pinned, <String>{'menu-1'});
-    expect(find.byType(MenuItemButton), findsNothing);
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
 
     await unmountWideDiariesPage(tester);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
@@ -145,7 +140,7 @@ void main() {
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
-    expect(find.byType(MenuItemButton), findsNothing);
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
 
     await unmountWideDiariesPage(tester);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));

@@ -1,89 +1,173 @@
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 
-/// 菜单相对锚点的水平对齐方式，按阅读方向解析（RTL 下左右互换）。
-enum ExpressiveMenuPlacement {
-  /// 菜单起始边与锚点起始边对齐，向结束方向展开；适合行首的文本入口。
-  start,
+import '../glass/outer_shadow_painter.dart';
+import 'expressive_menu_geometry.dart';
+import 'expressive_menu_motion.dart';
 
-  /// 菜单结束边与锚点结束边对齐，向起始方向展开；适合顶栏与行尾的 ⋮ 按钮。
-  end,
+export 'expressive_menu_geometry.dart'
+    show ExpressiveMenuPlacement, ExpressiveMenuSide;
+
+/// 菜单可以占用的区域：扣掉系统栏、键盘与显示特征后的安全区（不再留边距：
+/// 水平方向贴着锚点对齐，竖直方向的 8dp 间距由布局按 margin 留出）。
+class ExpressiveMenuArea {
+  const ExpressiveMenuArea({required this.bounds});
+
+  final Rect bounds;
+
+  static ExpressiveMenuArea of(
+    BuildContext context,
+    Size overlaySize,
+    Rect near,
+  ) {
+    // 系统栏与键盘取自视图本身：Scaffold 正文、底部面板会在局部 MediaQuery
+    // 里抹掉顶部 padding，用局部值会让翻到上方的菜单钻进状态栏。
+    final view = MediaQueryData.fromView(View.of(context));
+    final viewport = view.padding.deflateRect(
+      view.viewInsets.deflateRect(Offset.zero & overlaySize),
+    );
+    // 折叠屏铰链等显示特征两侧各算一块屏幕，菜单只放在离锚点最近的那块上。
+    final screens = DisplayFeatureSubScreen.subScreensInBounds(
+      viewport,
+      DisplayFeatureSubScreen.avoidBounds(view),
+    );
+    final screen = screens.isEmpty
+        ? viewport
+        : screens.reduce(
+            (Rect a, Rect b) =>
+                (a.center - near.center).distanceSquared <=
+                    (b.center - near.center).distanceSquared
+                ? a
+                : b,
+          );
+    return ExpressiveMenuArea(bounds: screen);
+  }
 }
 
-/// 把菜单面板放到锚点旁，并从贴着锚点的那个角缩放。
+/// 二级菜单标题行在布局时报告的“比展开完少了多少高”：变形途中标题行的高度
+/// 从触发行插值到自身高度，布局据此还原二级菜单展开完的高度，落点不随帧变。
+class ExpressiveSubmenuMetrics {
+  double collapsedDelta = 0;
+}
+
+/// 主菜单与二级菜单的定位、缩放、裁切展开与变形（一个 render object 完成，
+/// 不会有一帧从错误的角放大）。
 ///
-/// 输入：锚点矩形与安全区域（都在浮层坐标系里）、对齐方式、阅读方向、缩放进度。
-/// 输出：铺满浮层的盒子，面板按真实尺寸定位在其中。
-///
-/// 为什么不用 CustomSingleChildLayout + ScaleTransition：缩放原点取决于菜单
-/// 最终是落在锚点下方还是翻到上方，而这要等面板量出高度后才知道；放在
-/// build 里的 ScaleTransition 拿不到这个结果。这里在同一个 render object 里
-/// 完成“定位 → 记下贴着锚点的角 → 以该角缩放绘制与命中测试”，不会有一帧
-/// 从错误的角放大。
-class ExpressiveMenuPosition extends SingleChildRenderObjectWidget {
-  const ExpressiveMenuPosition({
+/// - 输入：锚点矩形与安全区（浮层坐标）、对齐方式、阅读方向、竖直间距
+///   [margin]、动效 [motion]；二级菜单打开时另有触发行在主菜单里的矩形
+///   [submenuAnchor]（主菜单自身坐标，按下时取定）与它是否是最后一行。
+/// - 输出：铺满浮层的盒子。主菜单按 miuix 的下拉规则放在锚点旁；二级菜单
+///   以触发行为锚点（见 [placeExpressiveSubmenu]）。
+/// - 绘制：两块面板都以主菜单贴着锚点的角为原点缩放（0.15 + 0.85 × enter），
+///   并只画出按落点方向展开的那一段（[expressiveMenuRevealBand]）；主菜单在
+///   二级菜单打开时再缩到 0.95。二级菜单按 expand 从触发行的矩形插值到自己的
+///   矩形（圆角 0 → 16，触发行是首行 / 末行时那一侧保持 16），内容随之从触发行
+///   滑到落点。投影只画在形状外侧、描边沿形状画，都随透明度淡入。
+/// - 命中测试与绘制同一套变换，只有看得见的形状内才命中；形状外的点按穿过
+///   本盒（不算点在菜单上），由外层 TapRegion 当作点外部处理。
+class ExpressiveMenuCascade extends MultiChildRenderObjectWidget {
+  ExpressiveMenuCascade({
     super.key,
     required this.anchor,
     required this.bounds,
     required this.placement,
     required this.textDirection,
-    required this.scale,
-    this.gap = defaultGap,
-    super.child,
-  });
-
-  /// 菜单与锚点之间的间距。
-  static const double defaultGap = 4;
+    required this.margin,
+    required this.motion,
+    required this.shadowColor,
+    required this.borderColor,
+    required Widget primary,
+    Widget? secondary,
+    this.submenuAnchor,
+    this.submenuAnchorIsFirst = false,
+    this.submenuAnchorIsLast = false,
+    this.submenuMetrics,
+  }) : super(children: <Widget>[primary, ?secondary]);
 
   final Rect anchor;
-
-  /// 面板必须完整落在其中的区域（已扣除系统栏、键盘与 8dp 边距）。
   final Rect bounds;
   final ExpressiveMenuPlacement placement;
   final TextDirection textDirection;
-  final Animation<double> scale;
-  final double gap;
+  final double margin;
+  final ExpressiveMenuMotion motion;
+
+  /// 投影与描边在完全显现时的颜色。
+  final Color shadowColor;
+  final Color borderColor;
+  final Rect? submenuAnchor;
+
+  /// 触发行是主菜单的首行 / 末行：变形起点就与主菜单共用那条圆角边，
+  /// 对应的两个角从一开始就是 16，不从直角长出来（否则直角会从主菜单的
+  /// 圆角外露出来）。
+  final bool submenuAnchorIsFirst;
+  final bool submenuAnchorIsLast;
+  final ExpressiveSubmenuMetrics? submenuMetrics;
 
   @override
-  RenderExpressiveMenuPosition createRenderObject(BuildContext context) =>
-      RenderExpressiveMenuPosition(
+  RenderExpressiveMenuCascade createRenderObject(BuildContext context) =>
+      RenderExpressiveMenuCascade(
         anchor: anchor,
         bounds: bounds,
         placement: placement,
         textDirection: textDirection,
-        scale: scale,
-        gap: gap,
+        margin: margin,
+        motion: motion,
+        shadowColor: shadowColor,
+        borderColor: borderColor,
+        submenuAnchor: submenuAnchor,
+        submenuAnchorIsFirst: submenuAnchorIsFirst,
+        submenuAnchorIsLast: submenuAnchorIsLast,
+        submenuMetrics: submenuMetrics,
       );
 
   @override
   void updateRenderObject(
     BuildContext context,
-    RenderExpressiveMenuPosition renderObject,
+    RenderExpressiveMenuCascade renderObject,
   ) {
     renderObject
       ..anchor = anchor
       ..bounds = bounds
       ..placement = placement
       ..textDirection = textDirection
-      ..scale = scale
-      ..gap = gap;
+      ..margin = margin
+      ..motion = motion
+      ..shadowColor = shadowColor
+      ..borderColor = borderColor
+      ..submenuAnchor = submenuAnchor
+      ..submenuAnchorIsFirst = submenuAnchorIsFirst
+      ..submenuAnchorIsLast = submenuAnchorIsLast
+      ..submenuMetrics = submenuMetrics;
   }
 }
 
-class RenderExpressiveMenuPosition extends RenderShiftedBox {
-  RenderExpressiveMenuPosition({
+class _CascadeParentData extends ContainerBoxParentData<RenderBox> {}
+
+class RenderExpressiveMenuCascade extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _CascadeParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _CascadeParentData> {
+  RenderExpressiveMenuCascade({
     required this._anchor,
     required this._bounds,
     required this._placement,
     required this._textDirection,
-    required this._scale,
-    required this._gap,
-    RenderBox? child,
-  }) : super(child);
+    required this._margin,
+    required this._motion,
+    required this._shadowColor,
+    required this._borderColor,
+    this._submenuAnchor,
+    this._submenuAnchorIsFirst = false,
+    this._submenuAnchorIsLast = false,
+    this._submenuMetrics,
+  });
 
-  Rect get anchor => _anchor;
+  /// 面板的最小高度（miuix 的 MinPopupHeight）。
+  static const double minPanelHeight = 50;
+
   Rect _anchor;
   set anchor(Rect value) {
     if (value == _anchor) return;
@@ -91,7 +175,6 @@ class RenderExpressiveMenuPosition extends RenderShiftedBox {
     markNeedsLayout();
   }
 
-  Rect get bounds => _bounds;
   Rect _bounds;
   set bounds(Rect value) {
     if (value == _bounds) return;
@@ -99,7 +182,6 @@ class RenderExpressiveMenuPosition extends RenderShiftedBox {
     markNeedsLayout();
   }
 
-  ExpressiveMenuPlacement get placement => _placement;
   ExpressiveMenuPlacement _placement;
   set placement(ExpressiveMenuPlacement value) {
     if (value == _placement) return;
@@ -107,7 +189,6 @@ class RenderExpressiveMenuPosition extends RenderShiftedBox {
     markNeedsLayout();
   }
 
-  TextDirection get textDirection => _textDirection;
   TextDirection _textDirection;
   set textDirection(TextDirection value) {
     if (value == _textDirection) return;
@@ -115,49 +196,111 @@ class RenderExpressiveMenuPosition extends RenderShiftedBox {
     markNeedsLayout();
   }
 
-  Animation<double> get scale => _scale;
-  Animation<double> _scale;
-  set scale(Animation<double> value) {
-    if (value == _scale) return;
-    if (attached) _scale.removeListener(markNeedsPaint);
-    _scale = value;
-    if (attached) _scale.addListener(markNeedsPaint);
-    markNeedsPaint();
-  }
-
-  double get gap => _gap;
-  double _gap;
-  set gap(double value) {
-    if (value == _gap) return;
-    _gap = value;
+  double _margin;
+  set margin(double value) {
+    if (value == _margin) return;
+    _margin = value;
     markNeedsLayout();
   }
 
-  /// 缩放原点（面板自身坐标）：贴着锚点的那个角。
-  Offset _origin = Offset.zero;
+  ExpressiveMenuMotion _motion;
+  set motion(ExpressiveMenuMotion value) {
+    if (value == _motion) return;
+    if (attached) _motion.removeListener(markNeedsPaint);
+    _motion = value;
+    if (attached) _motion.addListener(markNeedsPaint);
+    markNeedsPaint();
+  }
 
-  /// 本次布局是否落在锚点下方；测试与调试用。
-  bool get opensBelow => _opensBelow;
-  bool _opensBelow = true;
+  Color _shadowColor;
+  set shadowColor(Color value) {
+    if (value == _shadowColor) return;
+    _shadowColor = value;
+    markNeedsPaint();
+  }
 
-  final LayerHandle<TransformLayer> _transformLayer =
+  Color _borderColor;
+  set borderColor(Color value) {
+    if (value == _borderColor) return;
+    _borderColor = value;
+    markNeedsPaint();
+  }
+
+  Rect? _submenuAnchor;
+  set submenuAnchor(Rect? value) {
+    if (value == _submenuAnchor) return;
+    _submenuAnchor = value;
+    markNeedsLayout();
+  }
+
+  bool _submenuAnchorIsFirst;
+  set submenuAnchorIsFirst(bool value) {
+    if (value == _submenuAnchorIsFirst) return;
+    _submenuAnchorIsFirst = value;
+    markNeedsPaint();
+  }
+
+  bool _submenuAnchorIsLast;
+  set submenuAnchorIsLast(bool value) {
+    if (value == _submenuAnchorIsLast) return;
+    _submenuAnchorIsLast = value;
+    markNeedsPaint();
+  }
+
+  ExpressiveSubmenuMetrics? _submenuMetrics;
+  set submenuMetrics(ExpressiveSubmenuMetrics? value) {
+    if (identical(value, _submenuMetrics)) return;
+    _submenuMetrics = value;
+    markNeedsLayout();
+  }
+
+  /// 本次布局的主菜单落点；测试与调试用。
+  ExpressiveMenuPlacementResult? get primaryPlacement => _primary;
+  ExpressiveMenuPlacementResult? _primary;
+
+  /// 二级菜单展开完的矩形与触发行矩形（浮层坐标）；没有二级菜单时为 null。
+  Rect? get submenuRect => _submenuRect;
+  Rect? _submenuRect;
+  Rect? get submenuAnchorRect => _submenuAnchorRect;
+  Rect? _submenuAnchorRect;
+
+  final LayerHandle<TransformLayer> _primaryTransform =
       LayerHandle<TransformLayer>();
+  final LayerHandle<ClipRSuperellipseLayer> _primaryClip =
+      LayerHandle<ClipRSuperellipseLayer>();
+  final LayerHandle<TransformLayer> _secondaryTransform =
+      LayerHandle<TransformLayer>();
+  final LayerHandle<ClipRSuperellipseLayer> _secondaryClip =
+      LayerHandle<ClipRSuperellipseLayer>();
+
+  RenderBox? get _secondaryChild =>
+      firstChild == null ? null : childAfter(firstChild!);
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _CascadeParentData) {
+      child.parentData = _CascadeParentData();
+    }
+  }
 
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    _scale.addListener(markNeedsPaint);
+    _motion.addListener(markNeedsPaint);
   }
 
   @override
   void detach() {
-    _scale.removeListener(markNeedsPaint);
+    _motion.removeListener(markNeedsPaint);
     super.detach();
   }
 
   @override
   void dispose() {
-    _transformLayer.layer = null;
+    _primaryTransform.layer = null;
+    _primaryClip.layer = null;
+    _secondaryTransform.layer = null;
+    _secondaryClip.layer = null;
     super.dispose();
   }
 
@@ -167,91 +310,298 @@ class RenderExpressiveMenuPosition extends RenderShiftedBox {
   @override
   void performLayout() {
     size = constraints.biggest;
-    final child = this.child;
-    if (child == null) return;
-    child.layout(
-      BoxConstraints.loose(
-        Size(math.max(0, bounds.width), math.max(0, bounds.height)),
+    final primary = firstChild;
+    if (primary == null) {
+      _primary = null;
+      _submenuRect = null;
+      return;
+    }
+    final maxHeight = math.max(minPanelHeight, _bounds.height - 2 * _margin);
+    final maxWidth = math.max(0.0, _bounds.width);
+    primary.layout(
+      BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
+      parentUsesSize: true,
+    );
+    final placed = placeExpressiveMenu(
+      anchor: _anchor,
+      size: primary.size,
+      bounds: _bounds,
+      placement: _placement,
+      textDirection: _textDirection,
+      margin: _margin,
+    );
+    _primary = placed;
+    (primary.parentData! as _CascadeParentData).offset = placed.rect.topLeft;
+
+    final secondary = _secondaryChild;
+    final anchorInPrimary = _submenuAnchor;
+    if (secondary == null || anchorInPrimary == null) {
+      _submenuRect = null;
+      _submenuAnchorRect = null;
+      return;
+    }
+    // 二级菜单至少与主菜单同宽（miuix 的 probe 以主菜单宽为最小宽）。
+    secondary.layout(
+      BoxConstraints(
+        minWidth: math.min(primary.size.width, maxWidth),
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
       ),
       parentUsesSize: true,
     );
-    final menu = child.size;
-    // start 在 LTR 下贴左缘、RTL 下贴右缘；end 相反。
-    final alignLeft =
-        (placement == ExpressiveMenuPlacement.start) ==
-        (textDirection == TextDirection.ltr);
-    var x = alignLeft ? anchor.left : anchor.right - menu.width;
-    final below = anchor.bottom + gap;
-    final above = anchor.top - gap - menu.height;
-    double y;
-    if (below + menu.height <= bounds.bottom) {
-      y = below;
-      _opensBelow = true;
-    } else if (above >= bounds.top) {
-      y = above;
-      _opensBelow = false;
-    } else {
-      // 上下都放不下（面板高度已被限制在安全区内，只是锚点两侧都不够）：
-      // 选空间更大的一侧，再夹回安全区，面板会盖住锚点的一部分。
-      _opensBelow = bounds.bottom - anchor.bottom >= anchor.top - bounds.top;
-      y = _opensBelow ? below : above;
-    }
-    x = x.clamp(bounds.left, math.max(bounds.left, bounds.right - menu.width));
-    y = y.clamp(bounds.top, math.max(bounds.top, bounds.bottom - menu.height));
-    (child.parentData! as BoxParentData).offset = Offset(x, y);
-    _origin = Alignment(
-      alignLeft ? -1 : 1,
-      _opensBelow ? -1 : 1,
-    ).alongSize(menu);
+    final fullHeight = math.min(
+      maxHeight,
+      secondary.size.height + (_submenuMetrics?.collapsedDelta ?? 0),
+    );
+    final anchorRect = anchorInPrimary.shift(placed.rect.topLeft);
+    _submenuAnchorRect = anchorRect;
+    _submenuRect = placeExpressiveSubmenu(
+      anchor: anchorRect,
+      size: Size(secondary.size.width, fullHeight),
+      bounds: _bounds,
+      textDirection: _textDirection,
+    );
   }
 
-  /// 面板自身坐标 → 本盒坐标：先以 [_origin] 为中心缩放，再平移到布局位置。
-  Matrix4 _childTransform() {
-    final s = scale.value;
-    final offset = (child!.parentData! as BoxParentData).offset;
-    return Matrix4.diagonal3Values(s, s, 1)..setTranslationRaw(
-      offset.dx + _origin.dx * (1 - s),
-      offset.dy + _origin.dy * (1 - s),
-      0,
+  /// 以 [pivot] 为中心缩放 [scale]，再平移 [translation]（先平移后缩放）。
+  static Matrix4 _scaleAbout(Offset pivot, double scale, Offset translation) =>
+      Matrix4.diagonal3Values(scale, scale, 1)..setTranslationRaw(
+        pivot.dx * (1 - scale) + scale * translation.dx,
+        pivot.dy * (1 - scale) + scale * translation.dy,
+        0,
+      );
+
+  Matrix4 _primaryMatrix(ExpressiveMenuPlacementResult placed) => _scaleAbout(
+    placed.pivot,
+    _motion.enterScale * _motion.primaryScale,
+    placed.rect.topLeft,
+  );
+
+  /// 二级菜单内容此刻的左上角（浮层坐标）：随 expand 从触发行滑到落点。
+  Offset _secondaryContentOffset() => Offset.lerp(
+    _submenuAnchorRect!.topLeft,
+    _submenuRect!.topLeft,
+    _motion.expand.value,
+  )!;
+
+  Matrix4 _secondaryMatrix(ExpressiveMenuPlacementResult placed) =>
+      _scaleAbout(placed.pivot, _motion.enterScale, _secondaryContentOffset());
+
+  /// 二级菜单此刻的可见矩形（浮层坐标）：变形矩形与展开那一段的交集。
+  Rect _secondaryVisibleRect(ExpressiveMenuPlacementResult placed) {
+    final morph = lerpExpressiveRect(
+      _submenuAnchorRect!,
+      _submenuRect!,
+      _motion.expand.value,
+    );
+    final union = placed.rect.expandToInclude(_submenuRect!);
+    final band = expressiveMenuRevealBand(
+      union.size,
+      _motion.enter.value,
+      placed.side,
+    ).shift(union.topLeft);
+    return morph.intersect(band);
+  }
+
+  ({double top, double bottom}) _secondaryRadii() {
+    final f = _motion.expand.value.clamp(0.0, 1.0);
+    final grown = kExpressiveMenuRadius * f;
+    return (
+      top: _submenuAnchorIsFirst ? kExpressiveMenuRadius : grown,
+      bottom: _submenuAnchorIsLast ? kExpressiveMenuRadius : grown,
     );
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    final child = this.child;
-    if (child == null) {
-      _transformLayer.layer = null;
+    final placed = _primary;
+    final primary = firstChild;
+    final opacity = _motion.alpha.value.clamp(0.0, 1.0);
+    if (placed == null ||
+        primary == null ||
+        _motion.enter.value <= 0 ||
+        opacity <= 0) {
+      _primaryTransform.layer = null;
+      _primaryClip.layer = null;
+      _secondaryTransform.layer = null;
+      _secondaryClip.layer = null;
       return;
     }
-    if (scale.value == 1) {
-      _transformLayer.layer = null;
-      super.paint(context, offset);
-      return;
-    }
-    _transformLayer.layer = context.pushTransform(
+    _primaryTransform.layer = context.pushTransform(
       needsCompositing,
       offset,
-      _childTransform(),
-      (PaintingContext context, Offset offset) =>
-          context.paintChild(child, offset),
-      oldLayer: _transformLayer.layer,
+      _primaryMatrix(placed),
+      (PaintingContext context, Offset offset) {
+        final band = expressiveMenuRevealBand(
+          primary.size,
+          _motion.enter.value,
+          placed.side,
+        );
+        if (band.isEmpty) {
+          _primaryClip.layer = null;
+          return;
+        }
+        final shape = expressiveMenuShape(band);
+        _paintShadow(context.canvas, shape.shift(offset), opacity);
+        _primaryClip.layer = context.pushClipRSuperellipse(
+          needsCompositing,
+          offset,
+          band,
+          shape,
+          (PaintingContext context, Offset offset) =>
+              context.paintChild(primary, offset),
+          oldLayer: _primaryClip.layer,
+        );
+        _paintBorder(context.canvas, shape.shift(offset), opacity);
+      },
+      oldLayer: _primaryTransform.layer,
+    );
+
+    final secondary = _secondaryChild;
+    if (secondary == null || _submenuRect == null) {
+      _secondaryTransform.layer = null;
+      _secondaryClip.layer = null;
+      return;
+    }
+    final visible = _secondaryVisibleRect(placed);
+    final contentOffset = _secondaryContentOffset();
+    final radii = _secondaryRadii();
+    final reveal = opacity * _motion.expand.value.clamp(0.0, 1.0);
+    _secondaryTransform.layer = context.pushTransform(
+      needsCompositing,
+      offset,
+      _scaleAbout(placed.pivot, _motion.enterScale, Offset.zero),
+      (PaintingContext context, Offset offset) {
+        if (visible.isEmpty) {
+          _secondaryClip.layer = null;
+          return;
+        }
+        final shape = expressiveMenuShape(
+          visible,
+          topRadius: radii.top,
+          bottomRadius: radii.bottom,
+        );
+        _paintShadow(context.canvas, shape.shift(offset), reveal);
+        _secondaryClip.layer = context.pushClipRSuperellipse(
+          needsCompositing,
+          offset,
+          visible,
+          shape,
+          (PaintingContext context, Offset offset) =>
+              context.paintChild(secondary, offset + contentOffset),
+          oldLayer: _secondaryClip.layer,
+        );
+        _paintBorder(context.canvas, shape.shift(offset), reveal);
+      },
+      oldLayer: _secondaryTransform.layer,
+    );
+  }
+
+  /// 只画在形状外侧的投影（底色半透明，普通投影会从底下透出来压暗面板）。
+  void _paintShadow(Canvas canvas, RSuperellipse shape, double opacity) {
+    final color = _shadowColor.withValues(alpha: _shadowColor.a * opacity);
+    if (color.a == 0) return;
+    const blur = OuterShadowPainter.blur;
+    const shadowOffset = OuterShadowPainter.offset;
+    final outside = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(shape.outerRect.inflate(blur * 2 + shadowOffset.distance))
+      ..addRSuperellipse(shape);
+    canvas
+      ..save()
+      ..clipPath(outside)
+      ..drawRSuperellipse(
+        shape.shift(shadowOffset),
+        Paint()
+          ..color = color
+          ..maskFilter = MaskFilter.blur(
+            BlurStyle.normal,
+            Shadow.convertRadiusToSigma(blur),
+          ),
+      )
+      ..restore();
+  }
+
+  /// 沿形状内侧的 1dp 细描边。
+  void _paintBorder(Canvas canvas, RSuperellipse shape, double opacity) {
+    final color = _borderColor.withValues(alpha: _borderColor.a * opacity);
+    if (color.a == 0 || shape.width <= 1 || shape.height <= 1) return;
+    canvas.drawRSuperellipse(
+      shape.deflate(0.5),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = color,
     );
   }
 
   @override
+  bool hitTestSelf(Offset position) => false;
+
+  @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    final child = this.child;
-    if (child == null) return false;
+    final placed = _primary;
+    final primary = firstChild;
+    if (placed == null || primary == null || _motion.enter.value <= 0) {
+      return false;
+    }
+    final secondary = _secondaryChild;
+    if (secondary != null && _submenuRect != null) {
+      final visible = _secondaryVisibleRect(placed);
+      final hit = result.addWithPaintTransform(
+        transform: _scaleAbout(placed.pivot, _motion.enterScale, Offset.zero),
+        position: position,
+        hitTest: (BoxHitTestResult result, Offset position) {
+          if (!visible.contains(position)) return false;
+          final contentOffset = _secondaryContentOffset();
+          return result.addWithPaintOffset(
+            offset: contentOffset,
+            position: position,
+            hitTest: (BoxHitTestResult result, Offset position) =>
+                secondary.hitTest(result, position: position),
+          );
+        },
+      );
+      if (hit) return true;
+    }
     return result.addWithPaintTransform(
-      transform: _childTransform(),
+      transform: _primaryMatrix(placed),
       position: position,
-      hitTest: (BoxHitTestResult result, Offset position) =>
-          child.hitTest(result, position: position),
+      hitTest: (BoxHitTestResult result, Offset position) {
+        final band = expressiveMenuRevealBand(
+          primary.size,
+          _motion.enter.value,
+          placed.side,
+        );
+        if (!band.contains(position)) return false;
+        return primary.hitTest(result, position: position);
+      },
     );
   }
 
   @override
   void applyPaintTransform(RenderBox child, Matrix4 transform) {
-    transform.multiply(_childTransform());
+    final placed = _primary;
+    if (placed == null) return;
+    if (child == firstChild) {
+      transform.multiply(_primaryMatrix(placed));
+    } else if (_submenuRect != null) {
+      transform.multiply(_secondaryMatrix(placed));
+    }
+  }
+
+  @override
+  Rect? describeApproximatePaintClip(RenderObject child) {
+    // 本盒坐标（浮层坐标）下的裁切范围，语义树再经 applyPaintTransform 换算。
+    final placed = _primary;
+    if (placed == null) return null;
+    if (child == firstChild) return placed.rect;
+    final rect = _submenuRect;
+    if (rect == null) return null;
+    return lerpExpressiveRect(_submenuAnchorRect!, rect, _motion.expand.value);
   }
 }
+
+/// 两个数之间按 [t] 插值（供标题行等在变形时使用）。
+double lerpExpressiveValue(double a, double b, double t) =>
+    lerpDouble(a, b, t)!;

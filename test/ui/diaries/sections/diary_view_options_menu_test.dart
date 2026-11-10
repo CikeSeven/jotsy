@@ -5,6 +5,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_view_options_menu.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_panel.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_submenu.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
@@ -103,7 +105,7 @@ void main() {
     await tester.tap(find.text(l10n.navSettings));
     await tester.pumpAndSettle();
     expect(calls.settings, 1);
-    expect(find.byType(MenuItemButton), findsNothing);
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
   });
 
   testWidgets('settings is left out when there is nowhere to go', (
@@ -146,17 +148,20 @@ void main() {
     await tester.tap(find.text(l10n.diarySortFieldTitle));
     await tester.pumpAndSettle();
     expect(calls.sorts, hasLength(2));
-    expect(find.byType(MenuItemButton), findsWidgets);
+    expect(find.byType(ExpressiveMenuItem), findsWidgets);
   });
 
-  testWidgets('the back row returns to the first level', (tester) async {
+  testWidgets('the header row folds the submenu back into its row', (
+    tester,
+  ) async {
     final (_, l10n) = await _pump(tester);
     await _openSubmenu(tester, l10n, l10n.autoT0141);
-    expect(find.text(l10n.navSettings), findsNothing);
+    expect(find.byType(ExpressiveSubmenuHeader), findsOneWidget);
 
-    // 返回行的标题就是“排序方式”。
-    await tester.tap(find.text(l10n.autoT0141));
+    // 二级菜单顶部的标题行就是“排序方式”那一行的副本。
+    await tester.tap(find.text(l10n.autoT0141).last);
     await tester.pumpAndSettle();
+    expect(find.byType(ExpressiveSubmenuHeader), findsNothing);
     expect(find.text(l10n.navSettings), findsOneWidget);
     expect(find.text(l10n.diarySortFieldUpdated), findsNothing);
   });
@@ -213,16 +218,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(calls.cardStyle, 1);
     expect(calls.layouts, isEmpty);
-    expect(find.byType(MenuItemButton), findsNothing);
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
   });
 
   testWidgets('reopening starts from the first level', (tester) async {
     final (_, l10n) = await _pump(tester);
     await _openSubmenu(tester, l10n, l10n.autoT0145);
 
+    // 点外部先收回二级菜单，再点才关掉整个菜单。
     await tester.tapAt(const Offset(200, 500));
     await tester.pumpAndSettle();
-    expect(find.byType(MenuItemButton), findsNothing);
+    expect(find.byType(ExpressiveSubmenuHeader), findsNothing);
+    expect(find.text(l10n.navSettings), findsOneWidget);
+    await tester.tapAt(const Offset(200, 500));
+    await tester.pumpAndSettle();
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
 
     await _openMenu(tester, l10n);
     expect(find.text(l10n.navSettings), findsOneWidget);
@@ -241,9 +251,13 @@ void main() {
     await _openSubmenu(tester, l10n, l10n.autoT0141);
 
     expect(tester.takeException(), isNull);
-    final panel = tester.getRect(find.byType(ExpressiveMenuSurface));
-    expect(panel.left, greaterThanOrEqualTo(0));
-    expect(panel.right, lessThanOrEqualTo(320));
-    expect(panel.bottom, lessThanOrEqualTo(480));
+    final panels = find.byType(ExpressiveMenuPanel);
+    expect(panels, findsNWidgets(2));
+    for (final panel in tester.widgetList(panels).indexed) {
+      final rect = tester.getRect(panels.at(panel.$1));
+      expect(rect.left, greaterThanOrEqualTo(0));
+      expect(rect.right, lessThanOrEqualTo(320));
+      expect(rect.bottom, lessThanOrEqualTo(480));
+    }
   });
 }

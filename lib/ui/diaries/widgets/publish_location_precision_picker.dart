@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
@@ -37,13 +36,6 @@ class PublishLocationPrecisionPicker extends StatefulWidget {
 
 class _PublishLocationPrecisionPickerState
     extends State<PublishLocationPrecisionPicker> {
-  /// 选项文字列的最大宽度；窄屏时再按面板宽度收窄。
-  static const double _menuContentMaxWidth = 216;
-
-  /// 菜单在文字列之外的固定宽度：菜单内边距 16 + 选项内边距 24 + 勾选图标
-  /// 16 + 图标与文字间距 12。
-  static const double _menuChromeWidth = 68;
-
   bool _menuOpen = false;
 
   /// 菜单关闭时焦点交还给入口按钮。
@@ -87,32 +79,21 @@ class _PublishLocationPrecisionPickerState
             )
             ? widget.addressComponent
             : null;
-        // 菜单从入口左缘展开；宽度不超过面板内容宽度，320dp 屏宽下也不会
-        // 伸出面板贴到屏幕边缘，放不下的预览以省略号截断。
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final contentWidth = (constraints.maxWidth - _menuChromeWidth)
-                .clamp(120.0, _menuContentMaxWidth);
-            return Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: ExpressiveMenuAnchor(
-                placement: ExpressiveMenuPlacement.start,
-                childFocusNode: _triggerFocus,
-                onOpen: () => _setMenuOpen(true),
-                onClose: () => _setMenuOpen(false),
-                menuChildren: [
-                  for (final precision in DiaryLocationPrecision.values)
-                    _buildOption(
-                      context,
-                      precision,
-                      previewComponents,
-                      contentWidth,
-                    ),
-                ],
-                builder: (context, menu, _) => _buildTrigger(context, menu),
-              ),
-            );
-          },
+        // 菜单从入口左缘展开（宽 200–288，夹进安全区），放不下的预览以
+        // 省略号截断。
+        return Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: ExpressiveMenuAnchor(
+            placement: ExpressiveMenuPlacement.start,
+            childFocusNode: _triggerFocus,
+            onOpen: () => _setMenuOpen(true),
+            onClose: () => _setMenuOpen(false),
+            menuChildren: [
+              for (final precision in DiaryLocationPrecision.values)
+                _buildOption(context, precision, previewComponents),
+            ],
+            builder: (context, menu, _) => _buildTrigger(context, menu),
+          ),
         );
       },
     );
@@ -181,68 +162,22 @@ class _PublishLocationPrecisionPickerState
     );
   }
 
+  /// 一个层级：层级名 + 选择后的地址预览（一行说明，放不下省略）；当前层级
+  /// 为选中态（主色文字 + 行尾对勾）。
   Widget _buildOption(
     BuildContext context,
     DiaryLocationPrecision precision,
     Map<String, Object?>? previewComponents,
-    double contentWidth,
   ) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final selected = precision == widget.precision;
     final onChanged = widget.onChanged;
     final preview = DiaryLocationLabel.format(previewComponents, precision);
-    // 选中项只换容器色（与菜单项选中态同为 primaryContainer）和字重，文字
-    // 保持 onSurface：部分配色下容器的 on 色偏浅，会让选中项看起来比其他项更弱。
-    return Semantics(
-      selected: selected,
-      inMutuallyExclusiveGroup: true,
-      child: ExpressiveMenuItem(
-        onPressed: onChanged == null ? null : () => onChanged(precision),
-        // 层级选项带预览，保留自己的行首主色勾、内边距与 16 圆角，覆盖菜单项
-        // 默认样式（不用 selected：行尾不要对勾，语义由外层 Semantics 给出）。
-        style: MenuItemButton.styleFrom(
-          backgroundColor: selected ? colors.primaryContainer : null,
-          foregroundColor: colors.onSurface,
-          iconColor: colors.primary,
-          minimumSize: const Size(0, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.input),
-          ),
-        ),
-        leadingIcon: SizedBox(
-          width: 16,
-          child: selected
-              ? const FaIcon(FontAwesomeIcons.check, size: 14)
-              : null,
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: contentWidth),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _label(context.l10n, precision),
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                ),
-              ),
-              if (preview != null)
-                Text(
-                  preview,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
+    return ExpressiveMenuItem(
+      selected: precision == widget.precision,
+      onPressed: onChanged == null ? null : () => onChanged(precision),
+      summary: preview == null
+          ? null
+          : Text(preview, maxLines: 1, overflow: TextOverflow.ellipsis),
+      child: Text(_label(context.l10n, precision)),
     );
   }
 }

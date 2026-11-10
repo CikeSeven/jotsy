@@ -313,15 +313,11 @@ void main() {
     ) async {
       final controller = ScrollController();
       addTearDown(controller.dispose);
-      // 底栏描边关掉也不影响：顶栏分隔线只看自己的开关。
       await tester.pumpWidget(
         _glassHost(
           controller,
           pinned: false,
-          style: HomeBarPreset.glass.style.copyWith(
-            topBarHairline: true,
-            border: false,
-          ),
+          style: HomeBarPreset.glass.style.copyWith(topBarHairline: true),
         ),
       );
       expect(

@@ -9,7 +9,7 @@ import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style_code.dart';
 
 /// 一套与默认不同的样式（默认样式编码为空，测不出读写）。
-const _custom = HomeBarStyle(blurSigma: 30);
+const _custom = HomeBarStyle(tintOpacity: 0.35);
 const _behavior = HomeBarBehavior(hideOnScroll: true);
 
 void main() {
@@ -30,8 +30,7 @@ void main() {
       final raw = settings.encode()!;
       final json = jsonDecode(raw) as Map<String, dynamic>;
       expect(json['v'], HomeBarSettings.schemaVersion);
-      expect(json['v'], 2);
-      expect(json['current'], <String, dynamic>{'blurSigma': 30.0});
+      expect(json['current'], <String, dynamic>{'tintOpacity': 0.35});
       expect(json['behavior'], <String, dynamic>{'hideOnScroll': true});
       expect(HomeBarSettings.decode(raw), settings);
     });
@@ -45,7 +44,7 @@ void main() {
             <String, Object?>{
               'id': 'a',
               'name': 'A',
-              'style': <String, Object?>{'blurSigma': 30},
+              'style': <String, Object?>{'tintOpacity': 0.35},
             },
             'junk',
           ],
@@ -57,20 +56,23 @@ void main() {
       expect(settings.behavior.indicatorFollowsSwipe, isTrue);
     });
 
-    test('reads settings written before the solid bar was removed', () {
-      // v1：当前样式是旧的玻璃样式，“我的样式”里一套玻璃、一套实色。
+    test('reads settings written by older versions without a migration', () {
+      // 旧版本的当前样式与“我的样式”带着已移除的字段（材质、指示器、
+      // 尺寸……）：留下的字段照常读取，其余忽略，行为原样保留。
       final settings = HomeBarSettings.decode(
         jsonEncode(<String, Object?>{
           'v': 1,
           'current': <String, Object?>{
             'material': 'glass',
             'indicator': 'block',
+            'barHeight': 80,
+            'tint': 'theme',
           },
           'saved': <Object?>[
             <String, Object?>{
               'id': 'a',
               'name': 'Glass',
-              'style': <String, Object?>{'material': 'glass'},
+              'style': <String, Object?>{'material': 'glass', 'iconSize': 28},
             },
             <String, Object?>{
               'id': 'b',
@@ -81,44 +83,28 @@ void main() {
           'behavior': <String, Object?>{'hideOnScroll': true},
         }),
       );
-      // 玻璃样式按旧默认值补齐，外观不变。
-      expect(settings.current.indicator, HomeBarIndicator.block);
-      expect(settings.current.iconSize, 20);
-      expect(settings.current.sideMargin, 16);
-      expect(settings.saved.first.style.indicator, HomeBarIndicator.capsule);
-      // 实色样式落到新的默认样式上，只保留写明的字段。
+      expect(settings.current, const HomeBarStyle(tint: HomeBarTint.theme));
+      expect(settings.saved.first.name, 'Glass');
+      expect(settings.saved.first.style, HomeBarStyle.defaults);
       expect(
         settings.saved.last.style,
         HomeBarStyle.defaults.copyWith(labelMode: HomeBarLabelMode.never),
       );
       expect(settings.behavior, _behavior);
 
-      // 重新编码即新格式，再读回来不变。
+      // 重新编码后不再带旧字段，再读回来不变。
       final raw = settings.encode()!;
-      expect((jsonDecode(raw) as Map<String, dynamic>)['v'], 2);
+      expect(raw, isNot(contains('barHeight')));
       expect(HomeBarSettings.decode(raw), settings);
     });
 
-    test('a version-less payload is read as the old format', () {
+    test('a payload without a version reads the same way', () {
       final settings = HomeBarSettings.decode(
         jsonEncode(<String, Object?>{
-          'current': <String, Object?>{'material': 'glass'},
+          'current': <String, Object?>{'tintOpacity': 0.35},
         }),
       );
-      expect(settings.current.indicator, HomeBarIndicator.capsule);
-      expect(settings.current.labelGap, 4);
-    });
-
-    test('settings that were all defaults before stay default', () {
-      // 从没改过外观的用户：键里只有行为，升级后直接得到新的默认悬浮栏。
-      final settings = HomeBarSettings.decode(
-        jsonEncode(<String, Object?>{
-          'v': 1,
-          'current': <String, Object?>{},
-          'behavior': <String, Object?>{'hideOnScroll': true},
-        }),
-      );
-      expect(settings.current, HomeBarStyle.defaults);
+      expect(settings.current, _custom);
     });
 
     test('caps saved styles at twelve', () {
@@ -173,17 +159,10 @@ void main() {
     test('a customized style matches no preset', () {
       expect(
         HomeBarPreset.matching(
-          HomeBarPreset.glass.style.copyWith(iconSize: 27),
+          HomeBarPreset.glass.style.copyWith(tintOpacity: 0.6),
         ),
         isNull,
       );
-    });
-
-    test('every preset keeps the default block indicator spacing', () {
-      for (final preset in HomeBarPreset.values) {
-        expect(preset.style.indicator, HomeBarIndicator.block);
-        expect(preset.style.labelGap, HomeBarStyle.defaults.labelGap);
-      }
     });
   });
 
@@ -191,7 +170,7 @@ void main() {
     test('round-trips a style with its name', () {
       final style = HomeBarPreset.compact.style;
       final code = HomeBarStyleCode.encode(style, name: 'Tiny');
-      expect(code, startsWith('jotsy-bars:v2:'));
+      expect(code, startsWith('jotsy-bars:v1:'));
 
       final result = HomeBarStyleCode.decode('look: $code !');
       expect(result.status, StyleCodeStatus.ok);
@@ -199,30 +178,29 @@ void main() {
       expect(result.name, 'Tiny');
     });
 
-    test(
-      'still imports v1 codes exported before the solid bar was removed',
-      () {
-        String v1(Map<String, Object?> style) {
-          final data = base64Url
-              .encode(utf8.encode(jsonEncode({'v': 1, 'n': 'Old', 's': style})))
-              .replaceAll('=', '');
-          return 'jotsy-bars:v1:$data';
-        }
-
-        final glass = HomeBarStyleCode.decode(
-          v1(<String, Object?>{'material': 'glass', 'tintOpacity': 0.5}),
-        );
-        expect(glass.status, StyleCodeStatus.ok);
-        expect(glass.name, 'Old');
-        expect(glass.style!.tintOpacity, 0.5);
-        expect(glass.style!.indicator, HomeBarIndicator.capsule);
-        expect(glass.style!.iconSize, 20);
-
-        final solid = HomeBarStyleCode.decode(v1(<String, Object?>{}));
-        expect(solid.status, StyleCodeStatus.ok);
-        expect(solid.style, HomeBarStyle.defaults);
-      },
-    );
+    test('imports codes exported by older versions', () {
+      // 旧码里带着已移除的字段：照常导入，只取留下的字段。
+      final data = base64Url
+          .encode(
+            utf8.encode(
+              jsonEncode(<String, Object?>{
+                'v': 1,
+                'n': 'Old',
+                's': <String, Object?>{
+                  'material': 'glass',
+                  'tintOpacity': 0.35,
+                  'indicator': 'capsule',
+                  'iconSize': 20,
+                },
+              }),
+            ),
+          )
+          .replaceAll('=', '');
+      final result = HomeBarStyleCode.decode('jotsy-bars:v1:$data');
+      expect(result.status, StyleCodeStatus.ok);
+      expect(result.name, 'Old');
+      expect(result.style, _custom);
+    });
 
     test('rejects codes of another style scheme', () {
       final data = base64Url

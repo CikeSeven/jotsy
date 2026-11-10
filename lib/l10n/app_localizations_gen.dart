@@ -14004,23 +14004,23 @@ abstract class AppLocalizations {
   /// **'Presets'**
   String get homeBarStyleTabPresets;
 
-  /// Navigation bar style settings: material tab and group title.
+  /// Navigation bar style settings: appearance tab.
   ///
   /// In en, this message translates to:
-  /// **'Material'**
-  String get homeBarStyleTabMaterial;
+  /// **'Appearance'**
+  String get homeBarStyleTabAppearance;
 
-  /// Navigation bar style settings: floating bar tab.
+  /// Navigation bar style settings: title of the glass options group.
   ///
   /// In en, this message translates to:
-  /// **'Floating bar'**
-  String get homeBarStyleTabFloating;
+  /// **'Glass'**
+  String get homeBarStyleGlassGroup;
 
-  /// Navigation bar style settings: navigation items tab.
+  /// Navigation bar style settings: title of the layout options group (labels and new button).
   ///
   /// In en, this message translates to:
-  /// **'Items'**
-  String get homeBarStyleTabItems;
+  /// **'Layout'**
+  String get homeBarStyleLayoutGroup;
 
   /// Navigation bar style settings: behavior tab.
   ///
@@ -14049,7 +14049,7 @@ abstract class AppLocalizations {
   /// Navigation bar style preset: clear description.
   ///
   /// In en, this message translates to:
-  /// **'Clearer glass without a shadow'**
+  /// **'Clearer glass that shows more of the page'**
   String get homeBarStylePresetClearDesc;
 
   /// Navigation bar style preset: frosted (misty) name.
@@ -14088,29 +14088,11 @@ abstract class AppLocalizations {
   /// **'A shorter floating bar with icons only'**
   String get homeBarStylePresetCompactDesc;
 
-  /// Navigation bar style settings: material group footer.
-  ///
-  /// In en, this message translates to:
-  /// **'The bottom bar floats over the page, and content scrolling beneath it shows through blurred.'**
-  String get homeBarStyleGlassFooter;
-
   /// Navigation bar style settings: note appended to the material footer while system high contrast is on.
   ///
   /// In en, this message translates to:
   /// **'High contrast is on in system settings, so the glass shows as opaque for now.'**
   String get homeBarStyleHighContrastNote;
-
-  /// Navigation bar style settings: switch for using glass on the top bars too.
-  ///
-  /// In en, this message translates to:
-  /// **'Glass top bars too'**
-  String get homeBarStyleGlassTopBars;
-
-  /// Navigation bar style settings: subtitle of the glass top bars switch.
-  ///
-  /// In en, this message translates to:
-  /// **'The Diaries, Calendar, Explore and Settings top bars turn frosted as well'**
-  String get homeBarStyleGlassTopBarsSubtitle;
 
   /// Navigation bar style settings: switch for the thin divider under the glass top bars; shown only while glass top bars are on.
   ///
@@ -14123,12 +14105,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A thin line along the bottom of the glass top bars'**
   String get homeBarStyleTopBarHairlineSubtitle;
-
-  /// Navigation bar style settings: glass blur slider.
-  ///
-  /// In en, this message translates to:
-  /// **'Blur'**
-  String get homeBarStyleBlur;
 
   /// Navigation bar style settings: glass tint opacity slider.
   ///
@@ -14153,108 +14129,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Theme'**
   String get homeBarStyleTintTheme;
-
-  /// Navigation bar style settings: glass color row for the custom tint.
-  ///
-  /// In en, this message translates to:
-  /// **'Glass color'**
-  String get homeBarStyleTintColor;
-
-  /// Navigation bar style settings: outline switch of the floating glass bottom bar.
-  ///
-  /// In en, this message translates to:
-  /// **'Bottom bar outline'**
-  String get homeBarStyleBorder;
-
-  /// Navigation bar style settings: subtitle of the bottom bar outline switch.
-  ///
-  /// In en, this message translates to:
-  /// **'A thin line along the edge of the floating bar'**
-  String get homeBarStyleBorderSubtitle;
-
-  /// Navigation bar style settings: title of the outline group on the material tab (bottom bar outline and top bar divider).
-  ///
-  /// In en, this message translates to:
-  /// **'Outlines'**
-  String get homeBarStyleOutlineGroup;
-
-  /// Navigation bar style settings: color source row of an outline or divider.
-  ///
-  /// In en, this message translates to:
-  /// **'Color'**
-  String get homeBarStyleLineColor;
-
-  /// Navigation bar style settings: outline color option using the theme's outline color.
-  ///
-  /// In en, this message translates to:
-  /// **'Default'**
-  String get homeBarStyleLineColorTheme;
-
-  /// Navigation bar style settings: outline color option, a bright color like light catching the edge of glass.
-  ///
-  /// In en, this message translates to:
-  /// **'Highlight'**
-  String get homeBarStyleLineColorHighlight;
-
-  /// Navigation bar style settings: outline color option using the theme's primary color.
-  ///
-  /// In en, this message translates to:
-  /// **'Accent'**
-  String get homeBarStyleLineColorPrimary;
-
-  /// Navigation bar style settings: picker row for a custom outline or divider color.
-  ///
-  /// In en, this message translates to:
-  /// **'Line color'**
-  String get homeBarStyleLineCustomColor;
-
-  /// Navigation bar style settings: outline or divider width slider.
-  ///
-  /// In en, this message translates to:
-  /// **'Width'**
-  String get homeBarStyleLineWidth;
-
-  /// Navigation bar style settings: floating bar shadow switch.
-  ///
-  /// In en, this message translates to:
-  /// **'Shadow'**
-  String get homeBarStyleShadow;
-
-  /// Navigation bar style settings: subtitle of the shadow switch.
-  ///
-  /// In en, this message translates to:
-  /// **'A soft shadow beneath the floating bar'**
-  String get homeBarStyleShadowSubtitle;
-
-  /// Navigation bar style settings: floating bar size group title.
-  ///
-  /// In en, this message translates to:
-  /// **'Size'**
-  String get homeBarStyleSizeGroup;
-
-  /// Navigation bar style settings: floating bar height slider.
-  ///
-  /// In en, this message translates to:
-  /// **'Height'**
-  String get homeBarStyleHeight;
-
-  /// Navigation bar style settings: floating bar corner radius slider.
-  ///
-  /// In en, this message translates to:
-  /// **'Corner radius'**
-  String get homeBarStyleCornerRadius;
-
-  /// Navigation bar style settings: slider for the floating bar's distance from the screen sides.
-  ///
-  /// In en, this message translates to:
-  /// **'Side margins'**
-  String get homeBarStyleSideMargin;
-
-  /// Navigation bar style settings: slider for the floating bar's distance from the screen bottom.
-  ///
-  /// In en, this message translates to:
-  /// **'Distance from bottom'**
-  String get homeBarStyleBottomGap;
 
   /// Navigation bar style settings: new button placement group title.
   ///
@@ -14303,54 +14177,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hidden'**
   String get homeBarStyleLabelsNever;
-
-  /// Navigation bar style settings: navigation item icon size slider.
-  ///
-  /// In en, this message translates to:
-  /// **'Icon size'**
-  String get homeBarStyleIconSize;
-
-  /// Navigation bar style settings: slider for the distance between a navigation item icon and its label.
-  ///
-  /// In en, this message translates to:
-  /// **'Icon to label spacing'**
-  String get homeBarStyleLabelGap;
-
-  /// Navigation bar style settings: selection indicator style.
-  ///
-  /// In en, this message translates to:
-  /// **'Selection indicator'**
-  String get homeBarStyleIndicator;
-
-  /// Navigation bar style settings: capsule indicator.
-  ///
-  /// In en, this message translates to:
-  /// **'Capsule'**
-  String get homeBarStyleIndicatorCapsule;
-
-  /// Navigation bar style settings: block indicator covering the selected item.
-  ///
-  /// In en, this message translates to:
-  /// **'Block'**
-  String get homeBarStyleIndicatorBlock;
-
-  /// Navigation bar style settings: no indicator.
-  ///
-  /// In en, this message translates to:
-  /// **'None'**
-  String get homeBarStyleIndicatorNone;
-
-  /// Navigation bar style settings: slider for the space between the block indicator and the icon and label; shown only for the block indicator.
-  ///
-  /// In en, this message translates to:
-  /// **'Block padding'**
-  String get homeBarStyleBlockPadding;
-
-  /// Navigation bar style settings: navigation items group footer explaining that the spacing follows the material.
-  ///
-  /// In en, this message translates to:
-  /// **'Switching to glass tightens the icon to label spacing a little.'**
-  String get homeBarStyleItemsFooter;
 
   /// Navigation bar style settings: behavior group footer.
   ///

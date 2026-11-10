@@ -8919,13 +8919,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get homeBarStyleTabPresets => 'Пресеты';
 
   @override
-  String get homeBarStyleTabMaterial => 'Материал';
+  String get homeBarStyleTabAppearance => 'Вид';
 
   @override
-  String get homeBarStyleTabFloating => 'Плавающая панель';
+  String get homeBarStyleGlassGroup => 'Стекло';
 
   @override
-  String get homeBarStyleTabItems => 'Пункты';
+  String get homeBarStyleLayoutGroup => 'Расположение';
 
   @override
   String get homeBarStyleTabBehavior => 'Поведение';
@@ -8941,7 +8941,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get homeBarStylePresetClear => 'Прозрачность';
 
   @override
-  String get homeBarStylePresetClearDesc => 'Более прозрачное стекло без тени';
+  String get homeBarStylePresetClearDesc =>
+      'Более прозрачное стекло, сквозь которое лучше видно страницу';
 
   @override
   String get homeBarStylePresetFrosted => 'Туман';
@@ -8965,19 +8966,8 @@ class AppLocalizationsRu extends AppLocalizations {
       'Более низкая плавающая панель только со значками';
 
   @override
-  String get homeBarStyleGlassFooter =>
-      'Нижняя панель парит над страницей, а содержимое, прокручиваемое под ней, просвечивает размытым.';
-
-  @override
   String get homeBarStyleHighContrastNote =>
       'В системе включён высокий контраст, поэтому стекло пока отображается непрозрачным.';
-
-  @override
-  String get homeBarStyleGlassTopBars => 'Стеклянные верхние панели';
-
-  @override
-  String get homeBarStyleGlassTopBarsSubtitle =>
-      'Верхние панели разделов «Записи», «Календарь», «Обзор» и «Настройки» тоже станут матовыми';
 
   @override
   String get homeBarStyleTopBarHairline => 'Разделитель верхней панели';
@@ -8985,9 +8975,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get homeBarStyleTopBarHairlineSubtitle =>
       'Тонкая линия по нижнему краю стеклянных верхних панелей';
-
-  @override
-  String get homeBarStyleBlur => 'Размытие';
 
   @override
   String get homeBarStyleOpacity => 'Непрозрачность';
@@ -9000,58 +8987,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeBarStyleTintTheme => 'Цвет темы';
-
-  @override
-  String get homeBarStyleTintColor => 'Цвет стекла';
-
-  @override
-  String get homeBarStyleBorder => 'Контур нижней панели';
-
-  @override
-  String get homeBarStyleBorderSubtitle =>
-      'Тонкая линия по краю плавающей панели';
-
-  @override
-  String get homeBarStyleOutlineGroup => 'Контуры';
-
-  @override
-  String get homeBarStyleLineColor => 'Цвет';
-
-  @override
-  String get homeBarStyleLineColorTheme => 'По умолчанию';
-
-  @override
-  String get homeBarStyleLineColorHighlight => 'Блик';
-
-  @override
-  String get homeBarStyleLineColorPrimary => 'Акцентный';
-
-  @override
-  String get homeBarStyleLineCustomColor => 'Цвет линии';
-
-  @override
-  String get homeBarStyleLineWidth => 'Толщина';
-
-  @override
-  String get homeBarStyleShadow => 'Тень';
-
-  @override
-  String get homeBarStyleShadowSubtitle => 'Мягкая тень под плавающей панелью';
-
-  @override
-  String get homeBarStyleSizeGroup => 'Размер';
-
-  @override
-  String get homeBarStyleHeight => 'Высота';
-
-  @override
-  String get homeBarStyleCornerRadius => 'Скругление углов';
-
-  @override
-  String get homeBarStyleSideMargin => 'Отступы по бокам';
-
-  @override
-  String get homeBarStyleBottomGap => 'Отступ снизу';
 
   @override
   String get homeBarStyleFabGroup => 'Кнопка создания';
@@ -9077,31 +9012,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeBarStyleLabelsNever => 'Скрыты';
-
-  @override
-  String get homeBarStyleIconSize => 'Размер значков';
-
-  @override
-  String get homeBarStyleLabelGap => 'Отступ между значком и подписью';
-
-  @override
-  String get homeBarStyleIndicator => 'Индикатор выбора';
-
-  @override
-  String get homeBarStyleIndicatorCapsule => 'Капсула';
-
-  @override
-  String get homeBarStyleIndicatorBlock => 'Блок';
-
-  @override
-  String get homeBarStyleIndicatorNone => 'Нет';
-
-  @override
-  String get homeBarStyleBlockPadding => 'Внутренний отступ блока';
-
-  @override
-  String get homeBarStyleItemsFooter =>
-      'При переключении на стекло отступ между значком и подписью немного уменьшается.';
 
   @override
   String get homeBarStyleBehaviorFooter =>

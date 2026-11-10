@@ -38,7 +38,6 @@ class StyleCodeFormat<S> {
     required this.version,
     required this.fromJson,
     required this.toJson,
-    this.fromVersionedJson,
   }) : _pattern = RegExp(
          '${RegExp.escape(scheme)}:v(\\d{1,4}):([A-Za-z0-9_-]+)',
        );
@@ -48,10 +47,6 @@ class StyleCodeFormat<S> {
   final String scheme;
   final int version;
   final S Function(Object? json) fromJson;
-
-  /// 按样式码的版本号解析；非空时代替 [fromJson]。用于默认值换过、旧版本
-  /// 的稀疏 JSON 要按旧基准读取的样式（如首页栏 v1）。
-  final S Function(Object? json, int codeVersion)? fromVersionedJson;
   final Object Function(S style) toJson;
   final RegExp _pattern;
 
@@ -100,9 +95,7 @@ class StyleCodeFormat<S> {
         codeVersion > version
             ? StyleCodeStatus.newerVersion
             : StyleCodeStatus.ok,
-        style:
-            fromVersionedJson?.call(decoded['s'], codeVersion) ??
-            fromJson(decoded['s']),
+        style: fromJson(decoded['s']),
         name: name.isEmpty ? null : name,
       );
     } catch (_) {

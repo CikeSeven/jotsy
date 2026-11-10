@@ -15,6 +15,7 @@ import '../../../diaries/providers/diary_mood_palette_provider.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
 import '../../../diaries/sections/diaries_list_section.dart';
 import '../../../diaries/sections/diary_head_section.dart';
+import '../../../home/models/home_bar_style/home_bar_metrics.dart';
 import '../../../home/models/home_bar_style/home_bar_resolved_style.dart';
 import '../../../home/models/home_bar_style/home_bar_style.dart';
 import '../../../home/models/home_tab.dart';
@@ -31,7 +32,8 @@ import 'home_bar_style_preview_toolbar.dart';
 /// 输入：编辑控制器（当前样式含拖动中的草稿、栏的行为、预览明暗）与示例
 /// 日记；输出：圆角画框里的“首页”——顶部 56dp 的日记页顶栏、可滚动的示例
 /// 日记列表（真实的 [DiariesListSection]，套用用户当前的卡片样式），底部是
-/// 悬浮的玻璃胶囊 [HomeFloatingBar]，以及新建按钮。无副作用：导航项点按只改预览里的选中项，新建按钮与卡片都不做事。
+/// 居中悬浮的玻璃胶囊 [HomeFloatingBar]，以及新建按钮。无副作用：导航项
+/// 点按只改预览里的选中项，新建按钮与卡片都不做事。
 ///
 /// - 列表上下留出栏的高度，首尾两张卡片能完整露出，中间的内容可以滚到
 ///   玻璃栏下方，直接看到模糊与透出的效果；
@@ -170,14 +172,16 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
         BottomNavItem(label: tab.label(l10n), icon: tab.icon),
     ];
     final position = behavior.indicatorFollowsSwipe ? _position : null;
-    final barExtent = resolved.barHeight + resolved.bottomGap;
+    // 预览的手机画框里没有手势条：底部距离按无手势条的设备取。
+    final bottomSpace = resolved.bottomSpace(0);
+    final barExtent = resolved.barHeight + bottomSpace;
     final inline = resolved.fabPlacement == HomeBarFabPlacement.inline;
     final radius = BorderRadius.circular(AppRadii.card);
 
     final bottomBar = Positioned(
-      left: resolved.sideMargin,
-      right: resolved.sideMargin,
-      bottom: resolved.bottomGap,
+      left: HomeBarMetrics.minSideMargin,
+      right: HomeBarMetrics.minSideMargin,
+      bottom: bottomSpace,
       child: HomeFloatingBar(
         items: items,
         selectedIndex: _selected,

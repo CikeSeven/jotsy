@@ -3,19 +3,22 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../widgets/launch_reveal.dart';
+import '../../models/home_bar_style/home_bar_metrics.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import 'home_floating_bar.dart';
 import 'home_nav_bar.dart';
 
-/// 首页 `Scaffold.bottomNavigationBar` 槽位里的底栏：悬浮的玻璃胶囊，并负责
-/// 启动编排与“滚动时隐藏”的位移。
+/// 首页 `Scaffold.bottomNavigationBar` 槽位里的底栏：居中悬浮的玻璃胶囊，
+/// 并负责启动编排与“滚动时隐藏”的位移。
 ///
 /// 输入：导航项、选中项、点按回调、已解析样式 [style]、页面位置
 /// [position]、并排新建按钮 [inlineAction] 与是否显示，以及 [hidden]（滚动
 /// 隐藏的结果，由首页决定）；输出：槽位内容，无副作用。
 ///
-/// - 外边距（左右 sideMargin、下方系统手势条 + bottomGap）在胶囊之外，透明
-///   且不拦截点按；系统手势条取 viewPadding，首页不随键盘缩放
+/// - 胶囊按内容定宽、水平居中（见 [HomeFloatingBar]），左右至少留
+///   [HomeBarMetrics.minSideMargin]，下方留系统手势条 + bottomGap（且不少于
+///   [HomeBarMetrics.minBottomSpace]，见 [HomeBarMetrics.bottomSpace]）；胶囊之外
+///   的部分透明且不拦截点按。系统手势条取 viewPadding，首页不随键盘缩放
 ///   （resizeToAvoidBottomInset: false），键盘弹出时底栏不跟着上移；
 /// - 隐藏时整条向下移出屏幕（连同投影），从不淡出玻璃；位移由弹簧驱动
 ///   （见 [_HomeBarSlide]）；
@@ -53,19 +56,18 @@ class HomeBottomBar extends StatelessWidget {
     HomeBarResolvedStyle style,
   ) =>
       style.barHeight +
-      style.bottomGap +
-      MediaQuery.viewPaddingOf(context).bottom;
+      style.bottomSpace(MediaQuery.viewPaddingOf(context).bottom);
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    final hiddenOffset =
-        style.barHeight + style.bottomGap + bottomInset + hiddenShadowAllowance;
+    final bottomSpace = style.bottomSpace(bottomInset);
+    final hiddenOffset = style.barHeight + bottomSpace + hiddenShadowAllowance;
     return Padding(
       padding: EdgeInsets.only(
-        left: style.sideMargin,
-        right: style.sideMargin,
-        bottom: bottomInset + style.bottomGap,
+        left: HomeBarMetrics.minSideMargin,
+        right: HomeBarMetrics.minSideMargin,
+        bottom: bottomSpace,
       ),
       child: _HomeBarSlide(
         offset: hidden ? hiddenOffset : 0,

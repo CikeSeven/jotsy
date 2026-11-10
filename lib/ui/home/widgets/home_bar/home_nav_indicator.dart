@@ -1,59 +1,91 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-import '../../../../app/theme/expressive_motion.dart';
-import 'home_nav_layout.dart';
+import 'home_nav_geometry.dart';
 
-/// 选中指示器。用 [Ink] 画在外层 Material 上（与 M3 相同），点按的水波纹
-/// 才会盖在指示器上面而不是被它挡住。
+/// 底栏的选中指示器：整行只有一颗，画在导航项下面，随 [position] 滑动。
 ///
-/// - 未跟随滑动：选中时先跳到 40% 宽再横向长满（ExpressiveMotion.spatial），
-///   取消选中时缩回并消失；
-/// - 跟随滑动：只有锚点项显示（其余缩放为 0），位置由布局 delegate 平移。
+/// 输入：位置（小数序号，弹簧或页面位置）、可选的速度 [velocity]（弹簧
+/// 驱动时给出，非空即按弹性规则拉伸，见 [HomeNavGeometry.indicatorRect]）、
+/// 项数与颜色；输出：铺满导航行的一层画布，无副作用。
+///
+/// 用 CustomPaint 而不是按位置摆放一个子组件：位置每帧都变，只重画这一层
+/// （外面包了 RepaintBoundary），不触发布局，导航项的图标与文字也不跟着
+/// 重画。形状恒为胶囊（圆角取矩形高度的一半），被拉长、压扁、挤到内壁时
+/// 两端始终是完整的半圆。
 class HomeNavIndicator extends StatelessWidget {
   const HomeNavIndicator({
     super.key,
-    required this.selection,
     required this.position,
-    required this.index,
+    required this.velocity,
     required this.count,
-    required this.shape,
     required this.color,
   });
 
-  final Animation<double> selection;
-  final ValueListenable<double>? position;
-  final int index;
-  final int count;
-  final ShapeBorder shape;
-  final Color color;
+  final ValueListenable<double> position;
 
-  double _scale() {
-    final position = this.position;
-    if (position != null) {
-      return HomeNavGeometry.followAnchor(position.value, count) == index
-          ? 1
-          : 0;
-    }
-    if (selection.isDismissed) {
-      return 0;
-    }
-    return 0.4 + 0.6 * ExpressiveMotion.spatial.transform(selection.value);
-  }
+  /// 弹簧此刻的速度（项 / 秒）；null 表示位置来自页面，不拉伸也不越界。
+  final ValueGetter<double>? velocity;
+  final int count;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: position ?? selection,
-      builder: (BuildContext context, Widget? child) => Transform(
-        alignment: Alignment.center,
-        // 只横向缩放。
-        transform: Matrix4.diagonal3Values(_scale(), 1, 1),
-        child: child,
-      ),
-      child: Ink(
-        decoration: ShapeDecoration(shape: shape, color: color),
+    return RepaintBoundary(
+      child: CustomPaint(
+        painter: _IndicatorPainter(
+          position: position,
+          velocity: velocity,
+          count: count,
+          color: color,
+          rtl: Directionality.of(context) == TextDirection.rtl,
+        ),
+        size: Size.infinite,
       ),
     );
   }
+}
+
+class _IndicatorPainter extends CustomPainter {
+  _IndicatorPainter({
+    required this.position,
+    required this.velocity,
+    required this.count,
+    required this.color,
+    required this.rtl,
+  }) : super(repaint: position);
+
+  final ValueListenable<double> position;
+  final ValueGetter<double>? velocity;
+  final int count;
+  final Color color;
+  final bool rtl;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final velocity = this.velocity;
+    final rect = HomeNavGeometry.indicatorRect(
+      size: size,
+      count: count,
+      position: position.value,
+      velocity: velocity?.call() ?? 0,
+      elastic: velocity != null,
+      rtl: rtl,
+    );
+    if (rect.isEmpty) {
+      return;
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, Radius.circular(rect.height / 2)),
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_IndicatorPainter oldDelegate) =>
+      oldDelegate.position != position ||
+      (oldDelegate.velocity == null) != (velocity == null) ||
+      oldDelegate.count != count ||
+      oldDelegate.color != color ||
+      oldDelegate.rtl != rtl;
 }

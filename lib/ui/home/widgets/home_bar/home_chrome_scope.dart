@@ -35,9 +35,9 @@ class HomeChromeScope extends InheritedWidget {
   static HomeBarBehavior behaviorOf(BuildContext context) =>
       _maybeOf(context)?.behavior ?? HomeBarBehavior.defaults;
 
-  /// 顶栏是否用玻璃；没有 scope 时为 false（实色）。
-  static bool glassTopBarsOf(BuildContext context) =>
-      maybeStyleOf(context)?.glassTopBars ?? false;
+  /// 顶栏是否用玻璃：首页之下恒为玻璃；没有 scope（独立使用、单页测试）
+  /// 时为 false（实色）。
+  static bool glassTopBarsOf(BuildContext context) => _maybeOf(context) != null;
 
   /// 首页是否为宽窗口外壳；没有 scope 时为 false。
   static bool wideShellOf(BuildContext context) =>

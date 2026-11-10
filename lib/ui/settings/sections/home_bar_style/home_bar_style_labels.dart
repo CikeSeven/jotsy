@@ -3,7 +3,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/models/home_bar_style/home_bar_presets.dart';
 import '../../../home/models/home_bar_style/home_bar_settings.dart';
-import '../../../home/models/home_bar_style/home_bar_style.dart';
 import '../../widgets/style_editor/style_preset_grid.dart';
 
 // 导航栏样式设置的文案与图标映射：枚举 → 本地化标签 / 图标。只做映射，
@@ -16,15 +15,6 @@ String homeBarPresetName(AppLocalizations l10n, HomeBarPreset preset) =>
       HomeBarPreset.frosted => l10n.homeBarStylePresetFrosted,
       HomeBarPreset.tinted => l10n.homeBarStylePresetTinted,
       HomeBarPreset.compact => l10n.homeBarStylePresetCompact,
-    };
-
-/// 描边颜色来源的标签；自定义沿用样式编辑页通用的“自定义”。
-String homeBarLineColorLabel(AppLocalizations l10n, HomeBarLineColor color) =>
-    switch (color) {
-      HomeBarLineColor.theme => l10n.homeBarStyleLineColorTheme,
-      HomeBarLineColor.highlight => l10n.homeBarStyleLineColorHighlight,
-      HomeBarLineColor.primary => l10n.homeBarStyleLineColorPrimary,
-      HomeBarLineColor.custom => l10n.styleEditorCustom,
     };
 
 String _presetDescription(AppLocalizations l10n, HomeBarPreset preset) =>

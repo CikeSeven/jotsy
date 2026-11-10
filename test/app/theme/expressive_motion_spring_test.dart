@@ -121,6 +121,38 @@ void main() {
     expect(tester.binding.transientCallbackCount, 0);
   });
 
+  testWidgets('a kick overshoots further and starts even from the target', (
+    tester,
+  ) async {
+    Future<double> peak(double kick) async {
+      final (controller, context) = await _pumpHost(tester);
+      ExpressiveMotion.springTo(context, controller, 1, kick: kick);
+      var largest = 0.0;
+      for (var i = 0; i < 90; i++) {
+        await tester.pump(const Duration(milliseconds: 8));
+        if (controller.value > largest) largest = controller.value;
+      }
+      await tester.pumpAndSettle();
+      expect(controller.value, 1);
+      return largest;
+    }
+
+    final plain = await peak(0);
+    final kicked = await peak(30);
+    expect(plain, greaterThan(1));
+    expect(kicked, greaterThan(plain + 0.05));
+
+    // 已停在目标上：带初速度时照样弹出去再落回。
+    final (controller, context) = await _pumpHost(tester);
+    ExpressiveMotion.springTo(context, controller, 0, kick: 10);
+    expect(controller.isAnimating, isTrue);
+    await tester.pump(const Duration(milliseconds: 16));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(controller.value, greaterThan(0));
+    await tester.pumpAndSettle();
+    expect(controller.value, 0);
+  });
+
   test('the spring tokens are underdamped (they overshoot)', () {
     for (final spring in <SpringDescription>[
       ExpressiveMotion.springSpatial,

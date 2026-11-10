@@ -12,14 +12,10 @@ typedef HomeBarSavedStyle = SavedStyle<HomeBarStyle>;
 /// 首页栏设置的整体：当前样式、已保存的样式与栏的行为。
 ///
 /// 持久化为单个 JSON 键（`homeBarStyleRaw`）：
-/// `{"v":2,"current":{…},"saved":[…],"behavior":{…}}`。放在一个键里，备份
+/// `{"v":1,"current":{…},"saved":[…],"behavior":{…}}`。放在一个键里，备份
 /// 恢复与失败回滚都是原子的，也只需一个通知源。全为默认时编码为 null，由
 /// 设置服务删除该键。保存项的增删改与上限见 [SavedStyles]；所有修改都原样
 /// 保留 [behavior]。
-///
-/// `v` 小于 2（或缺失）的是移除实色栏之前写下的数据（含旧备份）：当前样式
-/// 与“我的样式”经 [HomeBarStyle.fromLegacyJson] 读取，下次写入时即按新格式
-/// 保存；行为的格式没有变。
 @immutable
 class HomeBarSettings implements StyleLibrary<HomeBarStyle, HomeBarSettings> {
   const HomeBarSettings({
@@ -29,7 +25,7 @@ class HomeBarSettings implements StyleLibrary<HomeBarStyle, HomeBarSettings> {
   });
 
   static const HomeBarSettings defaults = HomeBarSettings();
-  static const int schemaVersion = 2;
+  static const int schemaVersion = 1;
 
   /// 解析持久化的 JSON；null、空串或损坏时返回默认设置。各部分逐项容错。
   factory HomeBarSettings.decode(String? raw) {
@@ -46,13 +42,9 @@ class HomeBarSettings implements StyleLibrary<HomeBarStyle, HomeBarSettings> {
     if (decoded is! Map) {
       return defaults;
     }
-    final version = decoded['v'];
-    final styleFromJson = version is int && version >= 2
-        ? HomeBarStyle.fromJson
-        : HomeBarStyle.fromLegacyJson;
     return HomeBarSettings(
-      current: styleFromJson(decoded['current']),
-      saved: SavedStyles.decode(decoded['saved'], styleFromJson),
+      current: HomeBarStyle.fromJson(decoded['current']),
+      saved: SavedStyles.decode(decoded['saved'], HomeBarStyle.fromJson),
       behavior: HomeBarBehavior.fromJson(decoded['behavior']),
     );
   }

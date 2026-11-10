@@ -7842,13 +7842,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeBarStyleTabPresets => 'プリセット';
 
   @override
-  String get homeBarStyleTabMaterial => '素材';
+  String get homeBarStyleTabAppearance => '外観';
 
   @override
-  String get homeBarStyleTabFloating => 'フローティングバー';
+  String get homeBarStyleGlassGroup => 'ガラス';
 
   @override
-  String get homeBarStyleTabItems => '項目';
+  String get homeBarStyleLayoutGroup => 'レイアウト';
 
   @override
   String get homeBarStyleTabBehavior => '動作';
@@ -7863,7 +7863,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeBarStylePresetClear => 'クリア';
 
   @override
-  String get homeBarStylePresetClearDesc => '影のない、より透明なガラス';
+  String get homeBarStylePresetClearDesc => 'より透明なガラス。下のコンテンツがよく見えます';
 
   @override
   String get homeBarStylePresetFrosted => 'ミスト';
@@ -7884,28 +7884,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeBarStylePresetCompactDesc => 'アイコンだけの、低めのフローティングバー';
 
   @override
-  String get homeBarStyleGlassFooter =>
-      'ボトムバーはページの上に浮かび、その下をスクロールするコンテンツがぼやけて透けて見えます。';
-
-  @override
   String get homeBarStyleHighContrastNote =>
       'システム設定でハイコントラストがオンになっているため、ガラスは現在不透明で表示されています。';
-
-  @override
-  String get homeBarStyleGlassTopBars => 'トップバーもガラスにする';
-
-  @override
-  String get homeBarStyleGlassTopBarsSubtitle =>
-      '「日記」「カレンダー」「探索」「設定」のトップバーもすりガラスになります';
 
   @override
   String get homeBarStyleTopBarHairline => 'トップバーの区切り線';
 
   @override
   String get homeBarStyleTopBarHairlineSubtitle => 'ガラスのトップバーの下端に細い線を表示';
-
-  @override
-  String get homeBarStyleBlur => 'ぼかし';
 
   @override
   String get homeBarStyleOpacity => '不透明度';
@@ -7918,57 +7904,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeBarStyleTintTheme => 'テーマカラー';
-
-  @override
-  String get homeBarStyleTintColor => 'ガラスの色';
-
-  @override
-  String get homeBarStyleBorder => 'ボトムバーの枠線';
-
-  @override
-  String get homeBarStyleBorderSubtitle => 'フローティングバーの縁に細い線を表示';
-
-  @override
-  String get homeBarStyleOutlineGroup => '枠線';
-
-  @override
-  String get homeBarStyleLineColor => '色';
-
-  @override
-  String get homeBarStyleLineColorTheme => 'デフォルト';
-
-  @override
-  String get homeBarStyleLineColorHighlight => 'ハイライト';
-
-  @override
-  String get homeBarStyleLineColorPrimary => 'アクセント';
-
-  @override
-  String get homeBarStyleLineCustomColor => '線の色';
-
-  @override
-  String get homeBarStyleLineWidth => '太さ';
-
-  @override
-  String get homeBarStyleShadow => '影';
-
-  @override
-  String get homeBarStyleShadowSubtitle => 'フローティングバーの下にやわらかい影を表示';
-
-  @override
-  String get homeBarStyleSizeGroup => 'サイズ';
-
-  @override
-  String get homeBarStyleHeight => '高さ';
-
-  @override
-  String get homeBarStyleCornerRadius => '角の丸み';
-
-  @override
-  String get homeBarStyleSideMargin => '左右の余白';
-
-  @override
-  String get homeBarStyleBottomGap => '下端からの距離';
 
   @override
   String get homeBarStyleFabGroup => '新規作成ボタン';
@@ -7994,30 +7929,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeBarStyleLabelsNever => '非表示';
-
-  @override
-  String get homeBarStyleIconSize => 'アイコンのサイズ';
-
-  @override
-  String get homeBarStyleLabelGap => 'アイコンとラベルの間隔';
-
-  @override
-  String get homeBarStyleIndicator => '選択インジケーター';
-
-  @override
-  String get homeBarStyleIndicatorCapsule => 'カプセル';
-
-  @override
-  String get homeBarStyleIndicatorBlock => 'ブロック';
-
-  @override
-  String get homeBarStyleIndicatorNone => 'なし';
-
-  @override
-  String get homeBarStyleBlockPadding => 'ブロックの内側余白';
-
-  @override
-  String get homeBarStyleItemsFooter => 'ガラスに切り替えると、アイコンとラベルの間隔が少し狭くなります。';
 
   @override
   String get homeBarStyleBehaviorFooter => '動作はプリセットやスタイルコードでは変わりません。';

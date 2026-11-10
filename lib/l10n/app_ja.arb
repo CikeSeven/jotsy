@@ -11113,17 +11113,17 @@
   "@homeBarStyleTabPresets": {
     "description": "Navigation bar style settings: presets tab."
   },
-  "homeBarStyleTabMaterial": "素材",
-  "@homeBarStyleTabMaterial": {
-    "description": "Navigation bar style settings: material tab and group title."
+  "homeBarStyleTabAppearance": "外観",
+  "@homeBarStyleTabAppearance": {
+    "description": "Navigation bar style settings: appearance tab."
   },
-  "homeBarStyleTabFloating": "フローティングバー",
-  "@homeBarStyleTabFloating": {
-    "description": "Navigation bar style settings: floating bar tab."
+  "homeBarStyleGlassGroup": "ガラス",
+  "@homeBarStyleGlassGroup": {
+    "description": "Navigation bar style settings: title of the glass options group."
   },
-  "homeBarStyleTabItems": "項目",
-  "@homeBarStyleTabItems": {
-    "description": "Navigation bar style settings: navigation items tab."
+  "homeBarStyleLayoutGroup": "レイアウト",
+  "@homeBarStyleLayoutGroup": {
+    "description": "Navigation bar style settings: title of the layout options group (labels and new button)."
   },
   "homeBarStyleTabBehavior": "動作",
   "@homeBarStyleTabBehavior": {
@@ -11141,7 +11141,7 @@
   "@homeBarStylePresetClear": {
     "description": "Navigation bar style preset: clear name."
   },
-  "homeBarStylePresetClearDesc": "影のない、より透明なガラス",
+  "homeBarStylePresetClearDesc": "より透明なガラス。下のコンテンツがよく見えます",
   "@homeBarStylePresetClearDesc": {
     "description": "Navigation bar style preset: clear description."
   },
@@ -11169,21 +11169,9 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
-  "homeBarStyleGlassFooter": "ボトムバーはページの上に浮かび、その下をスクロールするコンテンツがぼやけて透けて見えます。",
-  "@homeBarStyleGlassFooter": {
-    "description": "Navigation bar style settings: material group footer."
-  },
   "homeBarStyleHighContrastNote": "システム設定でハイコントラストがオンになっているため、ガラスは現在不透明で表示されています。",
   "@homeBarStyleHighContrastNote": {
     "description": "Navigation bar style settings: note appended to the material footer while system high contrast is on."
-  },
-  "homeBarStyleGlassTopBars": "トップバーもガラスにする",
-  "@homeBarStyleGlassTopBars": {
-    "description": "Navigation bar style settings: switch for using glass on the top bars too."
-  },
-  "homeBarStyleGlassTopBarsSubtitle": "「日記」「カレンダー」「探索」「設定」のトップバーもすりガラスになります",
-  "@homeBarStyleGlassTopBarsSubtitle": {
-    "description": "Navigation bar style settings: subtitle of the glass top bars switch."
   },
   "homeBarStyleTopBarHairline": "トップバーの区切り線",
   "@homeBarStyleTopBarHairline": {
@@ -11192,10 +11180,6 @@
   "homeBarStyleTopBarHairlineSubtitle": "ガラスのトップバーの下端に細い線を表示",
   "@homeBarStyleTopBarHairlineSubtitle": {
     "description": "Navigation bar style settings: subtitle of the top bar divider switch."
-  },
-  "homeBarStyleBlur": "ぼかし",
-  "@homeBarStyleBlur": {
-    "description": "Navigation bar style settings: glass blur slider."
   },
   "homeBarStyleOpacity": "不透明度",
   "@homeBarStyleOpacity": {
@@ -11212,74 +11196,6 @@
   "homeBarStyleTintTheme": "テーマカラー",
   "@homeBarStyleTintTheme": {
     "description": "Navigation bar style settings: theme color tint option."
-  },
-  "homeBarStyleTintColor": "ガラスの色",
-  "@homeBarStyleTintColor": {
-    "description": "Navigation bar style settings: glass color row for the custom tint."
-  },
-  "homeBarStyleBorder": "ボトムバーの枠線",
-  "@homeBarStyleBorder": {
-    "description": "Navigation bar style settings: outline switch of the floating glass bottom bar."
-  },
-  "homeBarStyleBorderSubtitle": "フローティングバーの縁に細い線を表示",
-  "@homeBarStyleBorderSubtitle": {
-    "description": "Navigation bar style settings: subtitle of the bottom bar outline switch."
-  },
-  "homeBarStyleOutlineGroup": "枠線",
-  "@homeBarStyleOutlineGroup": {
-    "description": "Navigation bar style settings: title of the outline group on the material tab (bottom bar outline and top bar divider)."
-  },
-  "homeBarStyleLineColor": "色",
-  "@homeBarStyleLineColor": {
-    "description": "Navigation bar style settings: color source row of an outline or divider."
-  },
-  "homeBarStyleLineColorTheme": "デフォルト",
-  "@homeBarStyleLineColorTheme": {
-    "description": "Navigation bar style settings: outline color option using the theme's outline color."
-  },
-  "homeBarStyleLineColorHighlight": "ハイライト",
-  "@homeBarStyleLineColorHighlight": {
-    "description": "Navigation bar style settings: outline color option, a bright color like light catching the edge of glass."
-  },
-  "homeBarStyleLineColorPrimary": "アクセント",
-  "@homeBarStyleLineColorPrimary": {
-    "description": "Navigation bar style settings: outline color option using the theme's primary color."
-  },
-  "homeBarStyleLineCustomColor": "線の色",
-  "@homeBarStyleLineCustomColor": {
-    "description": "Navigation bar style settings: picker row for a custom outline or divider color."
-  },
-  "homeBarStyleLineWidth": "太さ",
-  "@homeBarStyleLineWidth": {
-    "description": "Navigation bar style settings: outline or divider width slider."
-  },
-  "homeBarStyleShadow": "影",
-  "@homeBarStyleShadow": {
-    "description": "Navigation bar style settings: floating bar shadow switch."
-  },
-  "homeBarStyleShadowSubtitle": "フローティングバーの下にやわらかい影を表示",
-  "@homeBarStyleShadowSubtitle": {
-    "description": "Navigation bar style settings: subtitle of the shadow switch."
-  },
-  "homeBarStyleSizeGroup": "サイズ",
-  "@homeBarStyleSizeGroup": {
-    "description": "Navigation bar style settings: floating bar size group title."
-  },
-  "homeBarStyleHeight": "高さ",
-  "@homeBarStyleHeight": {
-    "description": "Navigation bar style settings: floating bar height slider."
-  },
-  "homeBarStyleCornerRadius": "角の丸み",
-  "@homeBarStyleCornerRadius": {
-    "description": "Navigation bar style settings: floating bar corner radius slider."
-  },
-  "homeBarStyleSideMargin": "左右の余白",
-  "@homeBarStyleSideMargin": {
-    "description": "Navigation bar style settings: slider for the floating bar's distance from the screen sides."
-  },
-  "homeBarStyleBottomGap": "下端からの距離",
-  "@homeBarStyleBottomGap": {
-    "description": "Navigation bar style settings: slider for the floating bar's distance from the screen bottom."
   },
   "homeBarStyleFabGroup": "新規作成ボタン",
   "@homeBarStyleFabGroup": {
@@ -11312,38 +11228,6 @@
   "homeBarStyleLabelsNever": "非表示",
   "@homeBarStyleLabelsNever": {
     "description": "Navigation bar style settings: labels hidden."
-  },
-  "homeBarStyleIconSize": "アイコンのサイズ",
-  "@homeBarStyleIconSize": {
-    "description": "Navigation bar style settings: navigation item icon size slider."
-  },
-  "homeBarStyleLabelGap": "アイコンとラベルの間隔",
-  "@homeBarStyleLabelGap": {
-    "description": "Navigation bar style settings: slider for the distance between a navigation item icon and its label."
-  },
-  "homeBarStyleIndicator": "選択インジケーター",
-  "@homeBarStyleIndicator": {
-    "description": "Navigation bar style settings: selection indicator style."
-  },
-  "homeBarStyleIndicatorCapsule": "カプセル",
-  "@homeBarStyleIndicatorCapsule": {
-    "description": "Navigation bar style settings: capsule indicator."
-  },
-  "homeBarStyleIndicatorBlock": "ブロック",
-  "@homeBarStyleIndicatorBlock": {
-    "description": "Navigation bar style settings: block indicator covering the selected item."
-  },
-  "homeBarStyleIndicatorNone": "なし",
-  "@homeBarStyleIndicatorNone": {
-    "description": "Navigation bar style settings: no indicator."
-  },
-  "homeBarStyleBlockPadding": "ブロックの内側余白",
-  "@homeBarStyleBlockPadding": {
-    "description": "Navigation bar style settings: slider for the space between the block indicator and the icon and label; shown only for the block indicator."
-  },
-  "homeBarStyleItemsFooter": "ガラスに切り替えると、アイコンとラベルの間隔が少し狭くなります。",
-  "@homeBarStyleItemsFooter": {
-    "description": "Navigation bar style settings: navigation items group footer explaining that the spacing follows the material."
   },
   "homeBarStyleBehaviorFooter": "動作はプリセットやスタイルコードでは変わりません。",
   "@homeBarStyleBehaviorFooter": {

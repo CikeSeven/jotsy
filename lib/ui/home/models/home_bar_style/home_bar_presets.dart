@@ -6,11 +6,10 @@ import 'home_bar_style.dart';
 /// 套用预设即把当前样式整体替换为预设值（之后可继续微调）；[glass] 就是
 /// 默认样式。栏的行为（滚动隐藏等）是独立设置，预设不改动它。
 enum HomeBarPreset {
-  /// 玻璃：默认的毛玻璃悬浮底栏，选中项用圆角块标出。
+  /// 玻璃：默认的毛玻璃悬浮底栏。
   glass,
 
-  /// 通透：更透、更模糊、不要投影，下方内容透得最清楚；描边换成明亮的
-  /// 边缘高光，勾出玻璃的轮廓。
+  /// 通透：底色更淡，下方内容透得最清楚。
   clear,
 
   /// 磨砂：底色更浓，透出的内容只剩色块，文字最稳。
@@ -19,7 +18,7 @@ enum HomeBarPreset {
   /// 染色：玻璃向主题色容器色偏一点。
   tinted,
 
-  /// 紧凑：更矮、两侧收得更窄，只有图标。
+  /// 紧凑：只有图标，栏更矮更短。
   compact;
 
   HomeBarStyle get style => switch (this) {
@@ -42,27 +41,16 @@ enum HomeBarPreset {
 }
 
 // 各预设只写与默认样式不同的字段：默认值调整时预设跟着走，只保留各自的
-// 特征（更透 / 更浓 / 染色 / 紧凑）。
-const _clear = HomeBarStyle(
-  blurSigma: 28,
-  tintOpacity: 0.45,
-  shadow: false,
-  // 没有投影、底色又淡，灰色描边在浅色内容上几乎看不见；换成高光边缘，
-  // 像玻璃边缘反光一样勾出栏的轮廓。
-  borderLine: HomeBarLineStyle(
-    color: HomeBarLineColor.highlight,
-    opacity: 0.7,
-    width: 1.0,
-  ),
-);
+// 特征（更透 / 更浓 / 染色 / 紧凑）。模糊强度随不透明度一起变（见
+// `HomeBarResolvedStyle.blurSigma`），所以一个数值就决定了玻璃的性格：
+// - 默认 0.50：σ 约 15，后面的照片与文字透出模糊的轮廓；
+// - 通透 0.20：σ 约 7.5，几乎看得清后面是什么，只有一层薄薄的雾；
+// - 磨砂 0.65：σ 约 19，后面只剩柔和的色块，仍透得出颜色，不是实色；
+// - 主题色 0.45：与默认同样通透，底色带主题色。
+const _clear = HomeBarStyle(tintOpacity: 0.2);
 
-const _frosted = HomeBarStyle(blurSigma: 32, tintOpacity: 0.88);
+const _frosted = HomeBarStyle(tintOpacity: 0.65);
 
-const _tinted = HomeBarStyle(tint: HomeBarTint.theme);
+const _tinted = HomeBarStyle(tint: HomeBarTint.theme, tintOpacity: 0.45);
 
-const _compact = HomeBarStyle(
-  barHeight: 52,
-  cornerRadius: 16,
-  sideMargin: 32,
-  labelMode: HomeBarLabelMode.never,
-);
+const _compact = HomeBarStyle(labelMode: HomeBarLabelMode.never);

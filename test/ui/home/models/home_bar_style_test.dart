@@ -2,198 +2,128 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_metrics.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 
 void main() {
   group('HomeBarStyle defaults', () {
-    test('are the floating glass bar with a block indicator', () {
-      const d = HomeBarStyle.defaults;
-      expect(d.glassTopBars, isTrue);
-      expect(d.blurSigma, 24);
-      expect(d.tintOpacity, 0.72);
-      expect(d.tint, HomeBarTint.neutral);
-      expect(d.tintColor, isNull);
-      expect(d.tintColorDark, isNull);
-      expect(d.border, isTrue);
-      expect(d.borderLine, HomeBarLineStyle.borderDefaults);
-      expect(d.borderLine.opacity, 0.5);
-      expect(d.topBarHairline, isFalse);
-      expect(d.shadow, isTrue);
-      expect(d.barHeight, 60);
-      expect(d.cornerRadius, 30);
-      expect(d.sideMargin, 40);
-      expect(d.bottomGap, 12);
-      expect(d.fabPlacement, HomeBarFabPlacement.above);
-      expect(d.labelMode, HomeBarLabelMode.always);
-      expect(d.iconSize, 18);
-      expect(d.indicator, HomeBarIndicator.block);
-      expect(d.labelGap, 2);
-      expect(d.blockPadding, 3);
-      expect(d.isDefault, isTrue);
-      expect(d.toJson(), isEmpty);
+    test('are neutral glass with labels and the button above the bar', () {
+      const style = HomeBarStyle.defaults;
+      expect(style.tint, HomeBarTint.neutral);
+      expect(style.tintOpacity, 0.5);
+      expect(style.topBarHairline, isFalse);
+      expect(style.labelMode, HomeBarLabelMode.always);
+      expect(style.fabPlacement, HomeBarFabPlacement.above);
+      expect(style.isDefault, isTrue);
+      expect(style.toJson(), isEmpty);
     });
   });
 
   group('HomeBarStyle.fromJson', () {
     test('returns defaults for non-map input', () {
-      for (final raw in <Object?>[null, 'x', 3, <Object>[], true]) {
+      for (final raw in <Object?>[null, 'x', 3, <Object>[]]) {
         expect(HomeBarStyle.fromJson(raw), HomeBarStyle.defaults);
       }
     });
 
     test('decodes each field independently of bad neighbours', () {
       final style = HomeBarStyle.fromJson(<String, Object?>{
-        'glassTopBars': 'yes',
-        'blurSigma': 'big',
-        'tintOpacity': 0.5,
-        'tint': 'rainbow',
-        'tintColor': 0xFF336699,
-        'tintColorDark': 'nope',
-        'border': false,
-        'topBarHairline': 'on',
-        'shadow': 0,
-        'barHeight': 70,
-        'cornerRadius': null,
+        'tintOpacity': 0.35,
+        'tint': 'theme',
+        'topBarHairline': 'nope',
+        'fabPlacement': 7,
         'labelMode': 'selected',
-        'indicator': 7,
       });
-      expect(style.glassTopBars, isTrue);
-      expect(style.blurSigma, 24);
-      expect(style.tintOpacity, 0.5);
-      expect(style.tint, HomeBarTint.neutral);
-      expect(style.tintColor, 0xFF336699);
-      expect(style.tintColorDark, isNull);
-      expect(style.border, isFalse);
+      expect(style.tintOpacity, 0.35);
+      expect(style.tint, HomeBarTint.theme);
       expect(style.topBarHairline, isFalse);
-      expect(style.shadow, isTrue);
-      expect(style.barHeight, 70);
-      expect(style.cornerRadius, 30);
+      expect(style.fabPlacement, HomeBarFabPlacement.above);
       expect(style.labelMode, HomeBarLabelMode.selected);
-      expect(style.indicator, HomeBarIndicator.block);
     });
 
-    test('clamps numbers to their limits and rejects NaN', () {
-      final high = HomeBarStyle.fromJson(<String, Object?>{
-        'blurSigma': 999,
-        'tintOpacity': 2,
-        'barHeight': 500,
-        'cornerRadius': 100,
-        'sideMargin': 99,
-        'bottomGap': 99,
-        'iconSize': 99,
-        'labelGap': 40,
-        'blockPadding': 40,
-      });
-      expect(high.blurSigma, HomeBarStyleLimits.blurSigma.max);
-      expect(high.tintOpacity, HomeBarStyleLimits.tintOpacity.max);
-      expect(high.barHeight, HomeBarStyleLimits.barHeight.max);
-      expect(high.cornerRadius, HomeBarStyleLimits.cornerRadius.max);
-      expect(high.sideMargin, HomeBarStyleLimits.sideMargin.max);
-      expect(high.bottomGap, HomeBarStyleLimits.bottomGap.max);
-      expect(high.iconSize, HomeBarStyleLimits.iconSize.max);
-      expect(high.labelGap, 12);
-      expect(high.blockPadding, 12);
-
-      final low = HomeBarStyle.fromJson(<String, Object?>{
-        'blurSigma': -5,
-        'tintOpacity': 0,
-        'barHeight': 1,
-        'iconSize': 1,
-        'labelGap': -3,
-        'blockPadding': -3,
-      });
-      expect(low.blurSigma, 0);
-      expect(low.tintOpacity, HomeBarStyleLimits.tintOpacity.min);
-      expect(low.barHeight, HomeBarStyleLimits.barHeight.min);
-      expect(low.iconSize, HomeBarStyleLimits.iconSize.min);
-      expect(low.labelGap, 0);
-      expect(low.blockPadding, 0);
-
-      final nan = HomeBarStyle.fromJson(<String, Object?>{
-        'blurSigma': double.nan,
-        'barHeight': double.infinity,
-      });
-      expect(nan.blurSigma, HomeBarStyle.defaults.blurSigma);
-      expect(nan.barHeight, HomeBarStyle.defaults.barHeight);
-    });
-
-    test('decodes label gap and block padding tolerantly', () {
-      final style = HomeBarStyle.fromJson(<String, Object?>{
-        'labelGap': 7,
-        'blockPadding': 'wide',
-      });
-      expect(style.labelGap, 7);
-      expect(style.blockPadding, 3);
+    test('clamps the opacity to its limits and rejects NaN', () {
+      double opacity(Object? raw) => HomeBarStyle.fromJson(<String, Object?>{
+        'tintOpacity': raw,
+      }).tintOpacity;
+      expect(opacity(0.0), HomeBarStyleLimits.tintOpacity.min);
+      expect(opacity(5), HomeBarStyleLimits.tintOpacity.max);
+      expect(opacity(double.nan), HomeBarStyle.defaults.tintOpacity);
+      expect(opacity('0.5'), HomeBarStyle.defaults.tintOpacity);
     });
 
     test('falls back on unknown enum names', () {
       final style = HomeBarStyle.fromJson(<String, Object?>{
-        'tint': 'neon',
+        'tint': 'rainbow',
         'labelMode': 'sometimes',
-        'indicator': 'glow',
-        'fabPlacement': 'left',
+        'fabPlacement': 'below',
       });
       expect(style, HomeBarStyle.defaults);
     });
 
-    test('rejects colors outside the 32-bit range and forces opacity', () {
+    test('ignores the fields older versions wrote', () {
+      // 旧版本的一套玻璃样式：留下的字段照常读取，移除的几何、描边、
+      // 指示器、自定义色调与顶栏玻璃开关全部忽略（自定义色调回退中性，
+      // 顶栏恒为玻璃）。
+      final style = HomeBarStyle.fromJson(<String, Object?>{
+        'material': 'glass',
+        'glassTopBars': false,
+        'blurSigma': 30,
+        'tintOpacity': 0.45,
+        'tint': 'custom',
+        'tintColor': '#FF0000',
+        'border': false,
+        'borderLine': <String, Object?>{'color': 'highlight', 'width': 2},
+        'topBarHairline': true,
+        'topBarLine': <String, Object?>{'opacity': 0.9},
+        'shadow': false,
+        'barHeight': 80,
+        'cornerRadius': 8,
+        'sideMargin': 0,
+        'bottomGap': 30,
+        'iconSize': 28,
+        'indicator': 'capsule',
+        'labelGap': 10,
+        'blockPadding': 12,
+        'labelMode': 'never',
+        'fabPlacement': 'inline',
+      });
       expect(
-        HomeBarStyle.fromJson(<String, Object?>{'tintColor': -1}).tintColor,
-        isNull,
+        style,
+        const HomeBarStyle(
+          tintOpacity: 0.45,
+          topBarHairline: true,
+          labelMode: HomeBarLabelMode.never,
+          fabPlacement: HomeBarFabPlacement.inline,
+        ),
       );
-      expect(
-        HomeBarStyle.fromJson(<String, Object?>{
-          'tintColor': 0x1FFFFFFFF,
-        }).tintColor,
-        isNull,
-      );
-      expect(
-        HomeBarStyle.fromJson(<String, Object?>{
-          'tintColor': 0x80112233,
-        }).tintColor,
-        0xFF112233,
-      );
-    });
-
-    test('keeps a custom tint without a color as stored', () {
-      final style = HomeBarStyle.fromJson(<String, Object?>{'tint': 'custom'});
-      expect(style.tint, HomeBarTint.custom);
-      expect(style.tintColor, isNull);
+      // 再写出去只剩留下的字段。
+      expect(style.toJson().keys, <String>{
+        'tintOpacity',
+        'topBarHairline',
+        'fabPlacement',
+        'labelMode',
+      });
     });
   });
 
   group('HomeBarStyle.toJson', () {
     test('writes only fields that differ from the defaults', () {
-      const style = HomeBarStyle(blurSigma: 30, iconSize: 24);
-      expect(style.toJson(), <String, Object>{
-        'blurSigma': 30.0,
-        'iconSize': 24.0,
+      expect(
+        const HomeBarStyle(tint: HomeBarTint.theme).toJson(),
+        <String, Object>{'tint': 'theme'},
+      );
+      expect(const HomeBarStyle(tintOpacity: 0.2).toJson(), <String, Object>{
+        'tintOpacity': 0.2,
       });
-      // 已移除的材质字段不再写出。
-      expect(HomeBarStyle.defaults.toJson().containsKey('material'), isFalse);
     });
 
     test('round-trips every field through JSON text', () {
       const style = HomeBarStyle(
-        glassTopBars: false,
-        blurSigma: 33,
-        tintOpacity: 0.4,
-        tint: HomeBarTint.custom,
-        tintColor: 0xFF224466,
-        tintColorDark: 0xFF101820,
-        border: false,
+        tintOpacity: 0.55,
+        tint: HomeBarTint.theme,
         topBarHairline: true,
-        shadow: false,
-        barHeight: 72,
-        cornerRadius: 12,
-        sideMargin: 8,
-        bottomGap: 20,
         fabPlacement: HomeBarFabPlacement.inline,
-        labelMode: HomeBarLabelMode.never,
-        iconSize: 26,
-        indicator: HomeBarIndicator.none,
-        labelGap: 9,
-        blockPadding: 11,
+        labelMode: HomeBarLabelMode.selected,
       );
       final decoded = HomeBarStyle.fromJson(
         jsonDecode(jsonEncode(style.toJson())),
@@ -202,94 +132,66 @@ void main() {
       expect(decoded.hashCode, style.hashCode);
     });
 
-    test('writes the top bar hairline only when it is turned on', () {
-      const style = HomeBarStyle(topBarHairline: true);
-      expect(style.toJson(), <String, Object>{'topBarHairline': true});
-      expect(HomeBarStyle.fromJson(style.toJson()), style);
-      expect(style, isNot(HomeBarStyle.defaults));
-      expect(HomeBarStyle.defaults.copyWith(topBarHairline: true), style);
-    });
-
-    test('omits default spacing and writes changed spacing', () {
+    test('copyWith changes one field and keeps the rest', () {
+      const style = HomeBarStyle(tintOpacity: 0.5, topBarHairline: true);
       expect(
-        const HomeBarStyle(labelGap: 2, blockPadding: 3).toJson(),
-        isEmpty,
+        style.copyWith(labelMode: HomeBarLabelMode.never),
+        const HomeBarStyle(
+          tintOpacity: 0.5,
+          topBarHairline: true,
+          labelMode: HomeBarLabelMode.never,
+        ),
       );
-      expect(
-        const HomeBarStyle(labelGap: 4, blockPadding: 10).toJson(),
-        <String, Object>{'labelGap': 4.0, 'blockPadding': 10.0},
-      );
-    });
-
-    test('copyWith can clear a custom color', () {
-      const style = HomeBarStyle(tintColor: 0xFF123456);
-      expect(style.copyWith().tintColor, 0xFF123456);
-      expect(style.copyWith(tintColor: () => null).tintColor, isNull);
+      expect(style.copyWith(), style);
     });
   });
 
-  group('HomeBarStyle.fromLegacyJson', () {
-    test('keeps a legacy glass style exactly as it looked', () {
-      // 旧格式：稀疏 JSON 以旧默认值（胶囊指示器、间距 4、图标 20……）为基准。
-      final style = HomeBarStyle.fromLegacyJson(<String, Object?>{
-        'material': 'glass',
-        'tintOpacity': 0.5,
-      });
-      expect(style.tintOpacity, 0.5);
-      expect(style.blurSigma, 20);
-      expect(style.sideMargin, 16);
-      expect(style.iconSize, 20);
-      expect(style.indicator, HomeBarIndicator.capsule);
-      expect(style.labelGap, 4);
-      expect(
-        style.borderLine,
-        const HomeBarLineStyle(opacity: 0.6, width: 1.0),
-      );
-      expect(style.topBarLine, HomeBarLineStyle.topBarDefaults);
-    });
-
-    test('reads the legacy glass preset with its block indicator', () {
-      final style = HomeBarStyle.fromLegacyJson(<String, Object?>{
-        'material': 'glass',
-        'labelGap': 2,
-        'indicator': 'block',
-        'borderLine': <String, Object?>{'color': 'highlight'},
-      });
-      expect(style.indicator, HomeBarIndicator.block);
-      expect(style.labelGap, 2);
-      // 子对象同样以旧默认值补齐。
-      expect(style.borderLine.color, HomeBarLineColor.highlight);
-      expect(style.borderLine.opacity, 0.6);
-    });
-
-    test('moves a legacy solid style onto the new defaults', () {
-      for (final raw in <Map<String, Object?>>[
-        <String, Object?>{},
-        <String, Object?>{'material': 'solid'},
-        <String, Object?>{'material': 'metal'},
+  group('HomeBarMetrics', () {
+    test('the bar is shorter and its items narrower without labels', () {
+      for (final mode in <HomeBarLabelMode>[
+        HomeBarLabelMode.always,
+        HomeBarLabelMode.selected,
       ]) {
-        expect(HomeBarStyle.fromLegacyJson(raw), HomeBarStyle.defaults);
+        expect(HomeBarMetrics.barHeight(mode), 60);
+        expect(HomeBarMetrics.itemWidth(mode), 72);
       }
+      expect(HomeBarMetrics.barHeight(HomeBarLabelMode.never), 54);
+      expect(HomeBarMetrics.itemWidth(HomeBarLabelMode.never), 64);
     });
 
-    test('keeps the fields a legacy solid style spelled out', () {
-      final style = HomeBarStyle.fromLegacyJson(<String, Object?>{
-        'labelMode': 'selected',
-        'iconSize': 24,
-      });
+    test('an item leaves the same gap to the pill on every side', () {
+      // 指示器铺满一格：格高 = 栏高 − 2 × 缝，胶囊宽 = 项宽之和 + 2 × 缝。
+      expect(HomeBarMetrics.inset, 6);
+      expect(HomeBarMetrics.itemHeight(60), 48);
       expect(
-        style,
-        HomeBarStyle.defaults.copyWith(
-          labelMode: HomeBarLabelMode.selected,
-          iconSize: 24,
-        ),
+        HomeBarMetrics.pillWidth(4, 72),
+        4 * 72 + HomeBarMetrics.inset * 2,
       );
     });
 
-    test('returns defaults for non-map input', () {
-      for (final raw in <Object?>[null, 'x', 3, <Object>[]]) {
-        expect(HomeBarStyle.fromLegacyJson(raw), HomeBarStyle.defaults);
-      }
+    test('items keep their width while they fit and shrink evenly after', () {
+      // 四项 72 宽加两侧的缝共 300：放得下时不变。
+      expect(HomeBarMetrics.fitItemWidth(72, 4, 328), 72);
+      expect(HomeBarMetrics.fitItemWidth(72, 4, 300), 72);
+      // 放不下：（可用宽 − 两侧的缝）平分。
+      expect(HomeBarMetrics.fitItemWidth(72, 4, 256), (256 - 12) / 4);
+      // 再窄也不小于最小项宽。
+      expect(
+        HomeBarMetrics.fitItemWidth(72, 4, 100),
+        HomeBarMetrics.minItemWidth,
+      );
+      // 无界宽度（测试里常见）与空栏不收窄。
+      expect(HomeBarMetrics.fitItemWidth(72, 4, double.infinity), 72);
+      expect(HomeBarMetrics.fitItemWidth(72, 0, 10), 72);
+    });
+
+    test('the pill sits just above the gesture bar but never on the edge', () {
+      // 有手势条：手势条之上再留 4。
+      expect(HomeBarMetrics.bottomSpace(20), 24);
+      expect(HomeBarMetrics.bottomSpace(48), 52);
+      // 没有手势条（实体按键、桌面窄窗口）：至少离屏幕底边 12。
+      expect(HomeBarMetrics.bottomSpace(0), HomeBarMetrics.minBottomSpace);
+      expect(HomeBarMetrics.bottomSpace(4), HomeBarMetrics.minBottomSpace);
     });
   });
 

@@ -9,7 +9,7 @@ import 'package:node_diary/ui/home/providers/home_bar_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 与默认不同的样式（默认样式编码为空，读不出“存储的样式”）。
-const _custom = HomeBarStyle(blurSigma: 30);
+const _custom = HomeBarStyle(tintOpacity: 0.35);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

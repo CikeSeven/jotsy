@@ -12,13 +12,13 @@ import 'home_chrome_scope.dart';
 /// 各的，有背景图时顶栏下缘一清楚，几页就会一页一个样。统一从这里取。
 const double kHomeTopContentGap = AppSpacing.m;
 
-/// 首页 Tab 顶栏的底：实色时就是页面原来画的那块颜色，玻璃时换成
-/// 直角、贴边的 [GlassSurface]。
+/// 首页 Tab 顶栏的底：在首页之下（有 [HomeChromeScope]）恒为直角、贴边的
+/// [GlassSurface]，与悬浮底栏同一配方（底色、模糊、饱和度）。
 ///
-/// 实色分支只有一个 [ColoredBox]，不多包任何会改变布局或绘制的节点：
-/// 没有 [HomeChromeScope]（独立使用、单页测试）或顶栏不用玻璃时，渲染结果
-/// 与改版前逐像素一致。高对比度时玻璃退回不透明底色、不模糊（见
-/// `HomeBarResolvedStyle.translucent`），但仍保留玻璃顶栏的结构。
+/// 没有 [HomeChromeScope]（独立使用、单页测试）时只有一个 [ColoredBox]，
+/// 不多包任何会改变布局或绘制的节点，画的就是页面原来的那块颜色。高对比度
+/// 时玻璃退回不透明底色、不模糊（见 `HomeBarResolvedStyle.translucent`），
+/// 但仍保留玻璃顶栏的结构。
 class HomeTopBarSurface extends StatelessWidget {
   const HomeTopBarSurface({
     super.key,
@@ -28,7 +28,8 @@ class HomeTopBarSurface extends StatelessWidget {
     required this.child,
   });
 
-  /// 实色时的底色（页面原来画的颜色，如 surface 或日记页的页面底色）。
+  /// 不在首页之下时的底色（页面原来画的颜色，如 surface 或日记页的页面
+  /// 底色）。
   final Color solidColor;
 
   /// 玻璃时是否允许画底部细线（还要用户打开顶栏分隔线）；日记页的多段
@@ -39,16 +40,16 @@ class HomeTopBarSurface extends StatelessWidget {
   final bool grouped;
   final Widget child;
 
-  /// 顶栏下缘看不看得见：首页顶栏用玻璃（磨砂条与下方内容分得开），
-  /// 或者设置要求这个 Tab 区域画背景（实色栏与透明页面底不再同色）。
+  /// 顶栏下缘看不看得见：在首页之下顶栏恒为玻璃（磨砂条与下方内容分得
+  /// 开），或者设置要求这个 Tab 区域画背景（实色栏与透明页面底不再同色）。
   ///
   /// 背景看的是“设置要不要画”（[AppPageBackdrop.wantsBackground]）而不是
   /// “此刻画没画”：图片要异步解码，按后者判断时解码回来那一刻间距才出现，
   /// 打开首页时内容会往下跳一下。文件缺失 / 解码失败时因此会多留 12，可以
   /// 接受。
   ///
-  /// 经典且没有背景时栏色与页面底同为 surface，顶栏和内容连成一片，下缘
-  /// 看不出来——这时内容本就贴着顶栏排，改版前就是这样。
+  /// 不在首页之下且没有背景时栏色与页面底同为 surface，顶栏和内容连成
+  /// 一片，下缘看不出来——这时内容本就贴着顶栏排。
   static bool bottomEdgeVisibleOf(BuildContext context) =>
       HomeChromeScope.glassTopBarsOf(context) ||
       AppPageBackdrop.of(context).wantsBackground;
@@ -64,17 +65,17 @@ class HomeTopBarSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = HomeChromeScope.maybeStyleOf(context);
-    if (style == null || !style.glassTopBars) {
+    if (style == null) {
       return ColoredBox(color: solidColor, child: child);
     }
     return GlassSurface(
       fill: style.fill,
       blur: style.translucent,
       blurSigma: style.blurSigma,
+      saturation: style.saturation,
       bottomHairline: showHairline && style.topBarHairline
           ? style.hairlineColor
           : null,
-      bottomHairlineWidth: style.hairlineWidth,
       grouped: grouped,
       child: child,
     );

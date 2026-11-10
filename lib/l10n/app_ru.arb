@@ -11113,17 +11113,17 @@
   "@homeBarStyleTabPresets": {
     "description": "Navigation bar style settings: presets tab."
   },
-  "homeBarStyleTabMaterial": "Материал",
-  "@homeBarStyleTabMaterial": {
-    "description": "Navigation bar style settings: material tab and group title."
+  "homeBarStyleTabAppearance": "Вид",
+  "@homeBarStyleTabAppearance": {
+    "description": "Navigation bar style settings: appearance tab."
   },
-  "homeBarStyleTabFloating": "Плавающая панель",
-  "@homeBarStyleTabFloating": {
-    "description": "Navigation bar style settings: floating bar tab."
+  "homeBarStyleGlassGroup": "Стекло",
+  "@homeBarStyleGlassGroup": {
+    "description": "Navigation bar style settings: title of the glass options group."
   },
-  "homeBarStyleTabItems": "Пункты",
-  "@homeBarStyleTabItems": {
-    "description": "Navigation bar style settings: navigation items tab."
+  "homeBarStyleLayoutGroup": "Расположение",
+  "@homeBarStyleLayoutGroup": {
+    "description": "Navigation bar style settings: title of the layout options group (labels and new button)."
   },
   "homeBarStyleTabBehavior": "Поведение",
   "@homeBarStyleTabBehavior": {
@@ -11141,7 +11141,7 @@
   "@homeBarStylePresetClear": {
     "description": "Navigation bar style preset: clear name."
   },
-  "homeBarStylePresetClearDesc": "Более прозрачное стекло без тени",
+  "homeBarStylePresetClearDesc": "Более прозрачное стекло, сквозь которое лучше видно страницу",
   "@homeBarStylePresetClearDesc": {
     "description": "Navigation bar style preset: clear description."
   },
@@ -11169,21 +11169,9 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
-  "homeBarStyleGlassFooter": "Нижняя панель парит над страницей, а содержимое, прокручиваемое под ней, просвечивает размытым.",
-  "@homeBarStyleGlassFooter": {
-    "description": "Navigation bar style settings: material group footer."
-  },
   "homeBarStyleHighContrastNote": "В системе включён высокий контраст, поэтому стекло пока отображается непрозрачным.",
   "@homeBarStyleHighContrastNote": {
     "description": "Navigation bar style settings: note appended to the material footer while system high contrast is on."
-  },
-  "homeBarStyleGlassTopBars": "Стеклянные верхние панели",
-  "@homeBarStyleGlassTopBars": {
-    "description": "Navigation bar style settings: switch for using glass on the top bars too."
-  },
-  "homeBarStyleGlassTopBarsSubtitle": "Верхние панели разделов «Записи», «Календарь», «Обзор» и «Настройки» тоже станут матовыми",
-  "@homeBarStyleGlassTopBarsSubtitle": {
-    "description": "Navigation bar style settings: subtitle of the glass top bars switch."
   },
   "homeBarStyleTopBarHairline": "Разделитель верхней панели",
   "@homeBarStyleTopBarHairline": {
@@ -11192,10 +11180,6 @@
   "homeBarStyleTopBarHairlineSubtitle": "Тонкая линия по нижнему краю стеклянных верхних панелей",
   "@homeBarStyleTopBarHairlineSubtitle": {
     "description": "Navigation bar style settings: subtitle of the top bar divider switch."
-  },
-  "homeBarStyleBlur": "Размытие",
-  "@homeBarStyleBlur": {
-    "description": "Navigation bar style settings: glass blur slider."
   },
   "homeBarStyleOpacity": "Непрозрачность",
   "@homeBarStyleOpacity": {
@@ -11212,74 +11196,6 @@
   "homeBarStyleTintTheme": "Цвет темы",
   "@homeBarStyleTintTheme": {
     "description": "Navigation bar style settings: theme color tint option."
-  },
-  "homeBarStyleTintColor": "Цвет стекла",
-  "@homeBarStyleTintColor": {
-    "description": "Navigation bar style settings: glass color row for the custom tint."
-  },
-  "homeBarStyleBorder": "Контур нижней панели",
-  "@homeBarStyleBorder": {
-    "description": "Navigation bar style settings: outline switch of the floating glass bottom bar."
-  },
-  "homeBarStyleBorderSubtitle": "Тонкая линия по краю плавающей панели",
-  "@homeBarStyleBorderSubtitle": {
-    "description": "Navigation bar style settings: subtitle of the bottom bar outline switch."
-  },
-  "homeBarStyleOutlineGroup": "Контуры",
-  "@homeBarStyleOutlineGroup": {
-    "description": "Navigation bar style settings: title of the outline group on the material tab (bottom bar outline and top bar divider)."
-  },
-  "homeBarStyleLineColor": "Цвет",
-  "@homeBarStyleLineColor": {
-    "description": "Navigation bar style settings: color source row of an outline or divider."
-  },
-  "homeBarStyleLineColorTheme": "По умолчанию",
-  "@homeBarStyleLineColorTheme": {
-    "description": "Navigation bar style settings: outline color option using the theme's outline color."
-  },
-  "homeBarStyleLineColorHighlight": "Блик",
-  "@homeBarStyleLineColorHighlight": {
-    "description": "Navigation bar style settings: outline color option, a bright color like light catching the edge of glass."
-  },
-  "homeBarStyleLineColorPrimary": "Акцентный",
-  "@homeBarStyleLineColorPrimary": {
-    "description": "Navigation bar style settings: outline color option using the theme's primary color."
-  },
-  "homeBarStyleLineCustomColor": "Цвет линии",
-  "@homeBarStyleLineCustomColor": {
-    "description": "Navigation bar style settings: picker row for a custom outline or divider color."
-  },
-  "homeBarStyleLineWidth": "Толщина",
-  "@homeBarStyleLineWidth": {
-    "description": "Navigation bar style settings: outline or divider width slider."
-  },
-  "homeBarStyleShadow": "Тень",
-  "@homeBarStyleShadow": {
-    "description": "Navigation bar style settings: floating bar shadow switch."
-  },
-  "homeBarStyleShadowSubtitle": "Мягкая тень под плавающей панелью",
-  "@homeBarStyleShadowSubtitle": {
-    "description": "Navigation bar style settings: subtitle of the shadow switch."
-  },
-  "homeBarStyleSizeGroup": "Размер",
-  "@homeBarStyleSizeGroup": {
-    "description": "Navigation bar style settings: floating bar size group title."
-  },
-  "homeBarStyleHeight": "Высота",
-  "@homeBarStyleHeight": {
-    "description": "Navigation bar style settings: floating bar height slider."
-  },
-  "homeBarStyleCornerRadius": "Скругление углов",
-  "@homeBarStyleCornerRadius": {
-    "description": "Navigation bar style settings: floating bar corner radius slider."
-  },
-  "homeBarStyleSideMargin": "Отступы по бокам",
-  "@homeBarStyleSideMargin": {
-    "description": "Navigation bar style settings: slider for the floating bar's distance from the screen sides."
-  },
-  "homeBarStyleBottomGap": "Отступ снизу",
-  "@homeBarStyleBottomGap": {
-    "description": "Navigation bar style settings: slider for the floating bar's distance from the screen bottom."
   },
   "homeBarStyleFabGroup": "Кнопка создания",
   "@homeBarStyleFabGroup": {
@@ -11312,38 +11228,6 @@
   "homeBarStyleLabelsNever": "Скрыты",
   "@homeBarStyleLabelsNever": {
     "description": "Navigation bar style settings: labels hidden."
-  },
-  "homeBarStyleIconSize": "Размер значков",
-  "@homeBarStyleIconSize": {
-    "description": "Navigation bar style settings: navigation item icon size slider."
-  },
-  "homeBarStyleLabelGap": "Отступ между значком и подписью",
-  "@homeBarStyleLabelGap": {
-    "description": "Navigation bar style settings: slider for the distance between a navigation item icon and its label."
-  },
-  "homeBarStyleIndicator": "Индикатор выбора",
-  "@homeBarStyleIndicator": {
-    "description": "Navigation bar style settings: selection indicator style."
-  },
-  "homeBarStyleIndicatorCapsule": "Капсула",
-  "@homeBarStyleIndicatorCapsule": {
-    "description": "Navigation bar style settings: capsule indicator."
-  },
-  "homeBarStyleIndicatorBlock": "Блок",
-  "@homeBarStyleIndicatorBlock": {
-    "description": "Navigation bar style settings: block indicator covering the selected item."
-  },
-  "homeBarStyleIndicatorNone": "Нет",
-  "@homeBarStyleIndicatorNone": {
-    "description": "Navigation bar style settings: no indicator."
-  },
-  "homeBarStyleBlockPadding": "Внутренний отступ блока",
-  "@homeBarStyleBlockPadding": {
-    "description": "Navigation bar style settings: slider for the space between the block indicator and the icon and label; shown only for the block indicator."
-  },
-  "homeBarStyleItemsFooter": "При переключении на стекло отступ между значком и подписью немного уменьшается.",
-  "@homeBarStyleItemsFooter": {
-    "description": "Navigation bar style settings: navigation items group footer explaining that the spacing follows the material."
   },
   "homeBarStyleBehaviorFooter": "Поведение не меняется при выборе пресетов и кодов стиля.",
   "@homeBarStyleBehaviorFooter": {

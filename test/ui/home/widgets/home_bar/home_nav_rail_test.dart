@@ -6,7 +6,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_bar.dart';
-import 'package:node_diary/ui/home/widgets/home_bar/home_nav_indicator.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';
 
 import '../../../../support/expressive_test_theme.dart';
@@ -20,11 +19,21 @@ const _items = <BottomNavItem>[
 
 HomeBarResolvedStyle _style({
   HomeBarLabelMode labelMode = HomeBarLabelMode.always,
-  HomeBarIndicator indicator = HomeBarIndicator.capsule,
 }) => HomeBarResolvedStyle.resolve(
-  // 图标 20：侧边栏的尺寸断言按 20 图标推算（默认图标是 22）。
-  HomeBarStyle(labelMode: labelMode, indicator: indicator, iconSize: 20),
+  HomeBarStyle(labelMode: labelMode),
   expressiveTestTheme(Brightness.light).colorScheme,
+);
+
+/// 各导航项的格子（承载指示器与内容的那层 Stack）。
+Finder get _cells => find.descendant(
+  of: find.byType(HomeNavRailDestination),
+  matching: find.byType(Stack),
+);
+
+/// 各格子里的指示器（未选中时横向缩放为 0）。
+Finder get _indicators => find.descendant(
+  of: find.byType(HomeNavRailDestination),
+  matching: find.byType(Ink),
 );
 
 Future<void> _pump(
@@ -93,10 +102,11 @@ void main() {
     }
   });
 
-  testWidgets('a tinted rail uses the opaque tint, custom colours included, '
-      'and never blurs', (tester) async {
+  testWidgets('a tinted rail uses the opaque tint and never blurs', (
+    tester,
+  ) async {
     final style = HomeBarResolvedStyle.resolve(
-      const HomeBarStyle(tint: HomeBarTint.custom, tintColor: 0xFF3366AA),
+      const HomeBarStyle(tint: HomeBarTint.theme),
       expressiveTestTheme(Brightness.light).colorScheme,
     );
     await _pump(tester, style: style);
@@ -130,42 +140,66 @@ void main() {
   ) async {
     await _pump(tester);
     final fabBottom = tester.getBottomLeft(find.byType(FloatingActionButton));
-    final diaries = tester.getRect(find.text('Diaries'));
-    final todos = tester.getRect(find.text('To-dos'));
-    final calendar = tester.getRect(find.text('Calendar'));
-    final explore = tester.getRect(find.text('Explore'));
-    final indicators = find.byType(HomeNavIndicator);
-    // 第一个指示器在 FAB 下方 28 处。
-    expect(
-      tester.getRect(indicators.at(0)).top,
-      closeTo(fabBottom.dy + 28, 0.01),
-    );
-    // 上一项文字底到下一项指示器顶 16。
-    expect(
-      tester.getRect(indicators.at(1)).top - diaries.bottom,
-      closeTo(16, 0.01),
-    );
-    expect(
-      tester.getRect(indicators.at(2)).top - todos.bottom,
-      closeTo(16, 0.01),
-    );
-    // 最后一项同样紧接上一项，不再固定在栏底（设置不是 Tab）。
-    expect(
-      tester.getRect(indicators.at(3)).top - calendar.bottom,
-      closeTo(16, 0.01),
-    );
-    expect(explore.bottom, lessThan(600 - 16 - 100));
+    expect(_cells, findsNWidgets(4));
+    // 第一格在 FAB 下方 28 处。
+    expect(tester.getRect(_cells.at(0)).top, closeTo(fabBottom.dy + 28, 0.01));
+    // 相邻两格之间 8；最后一项同样紧接上一项，不固定在栏底（设置不是 Tab）。
+    for (var i = 1; i < 4; i++) {
+      expect(
+        tester.getRect(_cells.at(i)).top -
+            tester.getRect(_cells.at(i - 1)).bottom,
+        closeTo(8, 0.01),
+      );
+    }
+    expect(tester.getRect(_cells.at(3)).bottom, lessThan(600 - 16 - 100));
   });
 
-  testWidgets('the capsule indicator is 56 by 32 around the icon', (
+  testWidgets('a destination is the same cell as on the bottom bar', (
     tester,
   ) async {
     await _pump(tester, selected: 1);
-    final indicators = find.byType(HomeNavIndicator);
-    expect(indicators, findsNWidgets(4));
-    expect(tester.getSize(indicators.at(1)), const Size(56, 32));
-    final icon = tester.getCenter(find.byType(FaIcon).at(2));
-    expect(tester.getCenter(indicators.at(1)), icon);
+    for (var i = 0; i < 4; i++) {
+      final cell = tester.getRect(_cells.at(i));
+      // 72×56 的格子在 96 宽的栏里居中，图标与文字在格子里居中。
+      expect(cell.size, const Size(72, 48));
+      expect(cell.center.dx, 48);
+      final icon = tester.getCenter(find.byType(FaIcon).at(i + 1));
+      final label = tester.getRect(find.text(_items[i].label));
+      expect(icon.dx, closeTo(cell.center.dx, 0.01));
+      expect(label.center.dx, closeTo(cell.center.dx, 0.01));
+      expect(
+        icon.dy - 12 - cell.top,
+        closeTo(cell.bottom - label.bottom, 0.01),
+      );
+    }
+
+    await _pump(tester, style: _style(labelMode: HomeBarLabelMode.never));
+    expect(tester.getRect(_cells.at(0)).size, const Size(64, 42));
+  });
+
+  testWidgets('only the selected cell shows the capsule indicator', (
+    tester,
+  ) async {
+    final style = _style();
+    await _pump(tester, style: style, selected: 2);
+    for (var i = 0; i < 4; i++) {
+      final ink = tester.widget<Ink>(_indicators.at(i));
+      final decoration = ink.decoration! as ShapeDecoration;
+      expect(decoration.shape, const StadiumBorder());
+      expect(decoration.color, style.indicatorColor);
+      final scaleX = tester
+          .widget<Transform>(
+            find
+                .ancestor(
+                  of: _indicators.at(i),
+                  matching: find.byType(Transform),
+                )
+                .first,
+          )
+          .transform
+          .storage[0];
+      expect(scaleX, i == 2 ? 1 : 0, reason: 'cell $i');
+    }
   });
 
   testWidgets('tapping a destination reports its index', (tester) async {
@@ -249,18 +283,16 @@ void main() {
     },
   );
 
-  for (final indicator in HomeBarIndicator.values) {
-    for (final labelMode in HomeBarLabelMode.values) {
-      testWidgets('a short window scrolls instead of overflowing '
-          '($indicator, $labelMode, text 2.0)', (tester) async {
-        await _pump(
-          tester,
-          style: _style(indicator: indicator, labelMode: labelMode),
-          size: const Size(700, 260),
-          textScale: 2,
-        );
-        expect(tester.takeException(), isNull);
-      });
-    }
+  for (final labelMode in HomeBarLabelMode.values) {
+    testWidgets('a short window scrolls instead of overflowing '
+        '($labelMode, text 2.0)', (tester) async {
+      await _pump(
+        tester,
+        style: _style(labelMode: labelMode),
+        size: const Size(700, 260),
+        textScale: 2,
+      );
+      expect(tester.takeException(), isNull);
+    });
   }
 }

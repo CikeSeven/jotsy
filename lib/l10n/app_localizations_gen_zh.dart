@@ -7710,13 +7710,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStyleTabPresets => '预设';
 
   @override
-  String get homeBarStyleTabMaterial => '材质';
+  String get homeBarStyleTabAppearance => '外观';
 
   @override
-  String get homeBarStyleTabFloating => '悬浮栏';
+  String get homeBarStyleGlassGroup => '玻璃';
 
   @override
-  String get homeBarStyleTabItems => '导航项';
+  String get homeBarStyleLayoutGroup => '布局';
 
   @override
   String get homeBarStyleTabBehavior => '行为';
@@ -7731,7 +7731,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStylePresetClear => '通透';
 
   @override
-  String get homeBarStylePresetClearDesc => '更通透的玻璃，不加阴影';
+  String get homeBarStylePresetClearDesc => '更通透的玻璃，内容透得更清楚';
 
   @override
   String get homeBarStylePresetFrosted => '浓雾';
@@ -7752,25 +7752,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStylePresetCompactDesc => '更矮的悬浮栏，只有图标';
 
   @override
-  String get homeBarStyleGlassFooter => '底栏悬浮在页面上，内容从栏下滚过时透出模糊。';
-
-  @override
   String get homeBarStyleHighContrastNote => '系统开启了高对比度，玻璃暂时显示为不透明。';
-
-  @override
-  String get homeBarStyleGlassTopBars => '顶栏也用玻璃';
-
-  @override
-  String get homeBarStyleGlassTopBarsSubtitle => '日记、日历、探索、设置的顶栏一起变成磨砂';
 
   @override
   String get homeBarStyleTopBarHairline => '顶栏分隔线';
 
   @override
   String get homeBarStyleTopBarHairlineSubtitle => '玻璃顶栏底部的细线';
-
-  @override
-  String get homeBarStyleBlur => '模糊强度';
 
   @override
   String get homeBarStyleOpacity => '不透明度';
@@ -7783,57 +7771,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleTintTheme => '主题色';
-
-  @override
-  String get homeBarStyleTintColor => '玻璃颜色';
-
-  @override
-  String get homeBarStyleBorder => '底栏描边';
-
-  @override
-  String get homeBarStyleBorderSubtitle => '悬浮栏边缘的细线';
-
-  @override
-  String get homeBarStyleOutlineGroup => '描边';
-
-  @override
-  String get homeBarStyleLineColor => '颜色';
-
-  @override
-  String get homeBarStyleLineColorTheme => '默认';
-
-  @override
-  String get homeBarStyleLineColorHighlight => '高光';
-
-  @override
-  String get homeBarStyleLineColorPrimary => '主题色';
-
-  @override
-  String get homeBarStyleLineCustomColor => '描边颜色';
-
-  @override
-  String get homeBarStyleLineWidth => '粗细';
-
-  @override
-  String get homeBarStyleShadow => '阴影';
-
-  @override
-  String get homeBarStyleShadowSubtitle => '悬浮栏下方的柔和投影';
-
-  @override
-  String get homeBarStyleSizeGroup => '尺寸';
-
-  @override
-  String get homeBarStyleHeight => '高度';
-
-  @override
-  String get homeBarStyleCornerRadius => '圆角';
-
-  @override
-  String get homeBarStyleSideMargin => '两侧边距';
-
-  @override
-  String get homeBarStyleBottomGap => '离底距离';
 
   @override
   String get homeBarStyleFabGroup => '新建按钮';
@@ -7858,30 +7795,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleLabelsNever => '不显示';
-
-  @override
-  String get homeBarStyleIconSize => '图标大小';
-
-  @override
-  String get homeBarStyleLabelGap => '图标与文字间距';
-
-  @override
-  String get homeBarStyleIndicator => '选中指示器';
-
-  @override
-  String get homeBarStyleIndicatorCapsule => '胶囊';
-
-  @override
-  String get homeBarStyleIndicatorBlock => '色块';
-
-  @override
-  String get homeBarStyleIndicatorNone => '无';
-
-  @override
-  String get homeBarStyleBlockPadding => '色块内边距';
-
-  @override
-  String get homeBarStyleItemsFooter => '切换到玻璃时，图标与文字间距会自动收紧一些。';
 
   @override
   String get homeBarStyleBehaviorFooter => '行为不随预设和样式码改变。';

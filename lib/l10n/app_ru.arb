@@ -2580,37 +2580,29 @@
   "@diarySortFieldTitle": {
     "description": "Diary list sort option that orders diaries by title."
   },
-  "diarySortDescending": "По убыванию",
-  "@diarySortDescending": {
-    "description": "Diary list sort direction button for descending order (newest first, or titles Z to A)."
-  },
-  "diarySortAscending": "По возрастанию",
-  "@diarySortAscending": {
-    "description": "Diary list sort direction button for ascending order (oldest first, or titles A to Z)."
-  },
   "diarySortHintUpdatedDesc": "Сначала недавно изменённые",
   "@diarySortHintUpdatedDesc": {
-    "description": "Explains the current diary list order: by update time, descending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, descending."
   },
   "diarySortHintUpdatedAsc": "Сначала давно изменённые",
   "@diarySortHintUpdatedAsc": {
-    "description": "Explains the current diary list order: by update time, ascending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, ascending."
   },
   "diarySortHintPublishedDesc": "Сначала новые",
   "@diarySortHintPublishedDesc": {
-    "description": "Explains the current diary list order: by publish time, descending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, descending."
   },
   "diarySortHintPublishedAsc": "Сначала старые",
   "@diarySortHintPublishedAsc": {
-    "description": "Explains the current diary list order: by publish time, ascending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, ascending."
   },
   "diarySortHintTitleAsc": "Заголовки А → Я, без заголовка — в конце",
   "@diarySortHintTitleAsc": {
-    "description": "Explains the current diary list order: by title A to Z, with untitled diaries always last."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by title A to Z, with untitled diaries always last."
   },
   "diarySortHintTitleDesc": "Заголовки Я → А, без заголовка — в конце",
   "@diarySortHintTitleDesc": {
-    "description": "Explains the current diary list order: by title Z to A, with untitled diaries always last."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by title Z to A, with untitled diaries always last."
   },
   "diaryToolbarMoreTools": "Другие инструменты",
   "@diaryToolbarMoreTools": {
@@ -5229,15 +5221,7 @@
   },
   "diaryCardStyleSheetSection": "Стиль карточек",
   "@diaryCardStyleSheetSection": {
-    "description": "Diary view options sheet: card style section title."
-  },
-  "diaryCardStyleSheetEntry": "Настроить стиль карточек",
-  "@diaryCardStyleSheetEntry": {
-    "description": "Diary view options sheet: opens the card style settings."
-  },
-  "diaryCardStyleSheetEntrySubtitle": "Обложки, текст, цвета и макет",
-  "@diaryCardStyleSheetEntrySubtitle": {
-    "description": "Diary view options sheet: description of the card style entry."
+    "description": "Diary list more menu → Layout: opens the card style settings."
   },
   "diaryCardStyleSampleTitle1": "Закат у моря",
   "@diaryCardStyleSampleTitle1": {
@@ -9677,18 +9661,6 @@
   "notebookEmptyCreateHint": "Нажмите кнопку внизу, чтобы написать первую запись",
   "@notebookEmptyCreateHint": {
     "description": "Explanation under the empty state of a notebook on the home page."
-  },
-  "notebookViewSortSection": "Сортировка в этом блокноте",
-  "@notebookViewSortSection": {
-    "description": "Sort section title of the view options sheet while inside a notebook."
-  },
-  "notebookViewOptionsEntry": "Сменить блокнот",
-  "@notebookViewOptionsEntry": {
-    "description": "Entry in the view options sheet that opens the notebook shelf."
-  },
-  "notebookViewOptionsEntrySubtitle": "Показывать записи только одного блокнота или создать новый",
-  "@notebookViewOptionsEntrySubtitle": {
-    "description": "Subtitle of the notebook shelf entry in the view options sheet."
   },
   "notebookUnlockReason": "Разблокировать «{name}»",
   "@notebookUnlockReason": {

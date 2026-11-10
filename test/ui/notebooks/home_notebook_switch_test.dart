@@ -134,7 +134,7 @@ void main() {
     await h.unmount();
   });
 
-  testWidgets('the view options sort writes the notebook sort', (tester) async {
+  testWidgets('the more menu sort writes the notebook sort', (tester) async {
     late String travel;
     final h = await pumpHome(
       tester,
@@ -144,9 +144,12 @@ void main() {
       },
     );
     await openShelfAndPick(h, '旅行');
+    // 更多 → 排序方式：在日记本里换成本子的排序（普通本有书序）。
     await tester.tap(find.byTooltip(h.l10n.autoT0125));
     await h.settleAll();
-    expect(find.text('本日记本的排序'), findsOneWidget);
+    await tester.tap(find.text(h.l10n.autoT0141));
+    await h.settleAll();
+    expect(find.text(h.l10n.diarySortFieldTitle), findsNothing);
     expect(find.text(h.l10n.notebookSortBook), findsOneWidget);
     await tester.tap(find.text(h.l10n.notebookSortCreatedAsc));
     await h.settleAll();

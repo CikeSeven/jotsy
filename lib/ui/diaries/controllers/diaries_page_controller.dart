@@ -659,34 +659,27 @@ class DiariesPageController {
     );
   }
 
-  /// 打开视图选项面板（排序依据、正/倒序与布局），选项即点即生效。
+  /// 组装顶栏“更多”菜单的当前值与回调（排序、布局、卡片样式、设置）。
   ///
-  /// 在日记本里时排序换成本子的排序（写回本子，布局仍是全局的）；面板里
-  /// 另有打开书架的入口。
-  void openViewOptions() {
+  /// 在日记本里时排序换成本子的排序（写回本子，布局仍是全局的）；日记本
+  /// 功能关闭时没有本子排序，数据保留。
+  DiaryViewMenuOptions viewMenuOptions({required bool notebooksEnabled}) {
     final scope = _state._scopeController.resolution;
     final notebook = scope.notebook;
-    // 日记本功能关闭时隐藏入口，数据保留：没有书架入口与本子排序。
-    final notebooksEnabled = _state.ref.read(appFeaturesProvider).notebooks;
-    unawaited(
-      showDiaryViewOptionsSheet(
-        _state.context,
-        sortMode: _state._sortMode,
-        layoutMode: _state._layoutMode,
-        onSortModeChanged: _changeSortMode,
-        onLayoutModeChanged: _changeLayoutMode,
-        onOpenCardStyle: openCardStyleEditor,
-        onOpenNotebookShelf: notebooksEnabled
-            ? () => unawaited(_state._scopeController.openShelf())
-            : null,
-        notebookSort: notebooksEnabled ? scope.sort : null,
-        allowBookOrder: notebook != null && !notebook.isSmart,
-        onNotebookSortChanged: _state._scopeController.changeNotebookSort,
-      ),
+    return DiaryViewMenuOptions(
+      sortMode: _state._sortMode,
+      layoutMode: _state._layoutMode,
+      onSortModeChanged: _changeSortMode,
+      onLayoutModeChanged: _changeLayoutMode,
+      onOpenCardStyle: openCardStyleEditor,
+      notebookSort: notebooksEnabled ? scope.sort : null,
+      allowBookOrder: notebook != null && !notebook.isSmart,
+      onNotebookSortChanged: _state._scopeController.changeNotebookSort,
+      onOpenSettings: _state.widget.onOpenSettings,
     );
   }
 
-  /// 从视图选项面板进入卡片样式页，预览并编辑当前所用的布局。
+  /// 从“更多 → 显示布局 → 卡片样式”进入卡片样式页，预览并编辑当前所用的布局。
   void openCardStyleEditor() {
     final settingsService = _state.ref
         .read(settingsServiceProvider)

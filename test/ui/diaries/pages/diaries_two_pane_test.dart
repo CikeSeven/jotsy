@@ -267,13 +267,15 @@ void main() {
     await tester.tap(wideCard('layout title 2'));
     await tester.pumpAndSettle();
 
-    // 左栏刊头的“更多”（不是右栏顶栏的）→ 瀑布流。
+    // 左栏刊头的“更多”（不是右栏顶栏的）→ 显示布局 → 瀑布流。
     await tester.tap(
       find.descendant(
         of: find.byType(DiaryHeadSection),
         matching: find.byTooltip(l10n.autoT0125),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.autoT0145));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.autoT0147));
     await tester.pumpAndSettle();

@@ -178,6 +178,8 @@ void main() {
 
     await tester.tap(find.byTooltip(l10n.autoT0125));
     await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.autoT0145));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.autoT0147));
 
     var sawListFading = false;
@@ -202,21 +204,34 @@ void main() {
     expect(find.text('Old'), findsOneWidget);
   });
 
-  testWidgets('the view sheet appears without sliding under reduce motion', (
-    tester,
-  ) async {
-    tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
-    await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
-    final l10n = tester.element(find.byType(DiariesPage)).l10n;
+  testWidgets(
+    'the more menu and its submenu appear in place under reduce motion',
+    (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
+      final l10n = tester.element(find.byType(DiariesPage)).l10n;
 
-    await tester.tap(find.byTooltip(l10n.autoT0125));
-    await tester.pump();
-    await tester.pump();
-    final settledTop = tester.getTopLeft(find.text(l10n.autoT0141)).dy;
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(tester.getTopLeft(find.text(l10n.autoT0141)).dy, settledTop);
-    await tester.pumpAndSettle();
-  });
+      await tester.tap(find.byTooltip(l10n.autoT0125));
+      await tester.pump();
+      await tester.pump();
+      final settledTop = tester.getTopLeft(find.text(l10n.autoT0141)).dy;
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.getTopLeft(find.text(l10n.autoT0141)).dy, settledTop);
+
+      // 下钻到“显示布局”：新一页不横移、面板尺寸不过渡。
+      await tester.tap(find.text(l10n.autoT0145));
+      // MenuItemButton 在帧尾才执行 onPressed，换页在下一帧。
+      await tester.pump();
+      await tester.pump();
+      final listItem = find.text(l10n.autoT0146);
+      final settledItem = tester.getTopLeft(listItem);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.getTopLeft(listItem), settledItem);
+      await tester.pumpAndSettle();
+    },
+  );
 }

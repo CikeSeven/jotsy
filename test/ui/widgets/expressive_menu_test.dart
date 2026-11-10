@@ -85,6 +85,11 @@ Widget _alignedPage(
 
 Finder get _trigger => find.byTooltip(_tooltip);
 
+Finder _faIcon(FaIconData icon) => find.byWidgetPredicate(
+  (Widget widget) =>
+      widget is FaIcon && widget.icon?.codePoint == icon.codePoint,
+);
+
 /// 玻璃表面里单独淡入的内容层。
 Finder get _contentFade => find
     .descendant(
@@ -643,6 +648,295 @@ void main() {
       await tester.pumpAndSettle();
       expect(edits, 1);
       expect(find.byType(MenuItemButton), findsNothing);
+    });
+  });
+
+  group('submenus (drill down in place)', () {
+    List<Widget> nestedItems({
+      VoidCallback? onLarge,
+      VoidCallback? onPick,
+      VoidCallback? onRoot,
+    }) => <Widget>[
+      ExpressiveSubmenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.font),
+        menuChildren: <Widget>[
+          ExpressiveMenuItem(
+            onPressed: onLarge ?? () {},
+            child: const Text('Large text that makes the page wider'),
+          ),
+          ExpressiveMenuItem(
+            closeOnActivate: false,
+            onPressed: onPick ?? () {},
+            child: const Text('Pick'),
+          ),
+        ],
+        child: const Text('Size'),
+      ),
+      ExpressiveMenuItem(onPressed: onRoot ?? () {}, child: const Text('Root')),
+    ];
+
+    Future<void> openSize(WidgetTester tester) async {
+      await openMenu(tester);
+      await tester.tap(find.text('Size'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('replaces the menu with the submenu under a back row', (
+      tester,
+    ) async {
+      useSize(tester, const Size(393, 800));
+      await tester.pumpWidget(_app(home: _topBarPage(items: nestedItems())));
+      await openMenu(tester);
+      final rootWidth = tester.getSize(_panel).width;
+      expect(find.text('Root'), findsOneWidget);
+
+      await tester.tap(find.text('Size'));
+      await tester.pumpAndSettle();
+      // 原地换页：根菜单的项不在了，顶部是“‹ Size”返回行。
+      expect(find.text('Root'), findsNothing);
+      expect(find.text('Size'), findsOneWidget);
+      expect(_faIcon(FontAwesomeIcons.angleLeft), findsOneWidget);
+      expect(find.byType(ExpressiveMenuDivider), findsOneWidget);
+      // 面板尺寸过渡到新一页，结束边仍对齐触发控件。
+      expect(tester.getSize(_panel).width, greaterThan(rootWidth));
+      expect(
+        tester.getRect(_panel).right,
+        moreOrLessEquals(tester.getRect(_trigger).right),
+      );
+
+      await tester.tap(find.text('Size'));
+      await tester.pumpAndSettle();
+      expect(find.text('Root'), findsOneWidget);
+      expect(find.text('Pick'), findsNothing);
+    });
+
+    testWidgets('the panel size animates between pages', (tester) async {
+      useSize(tester, const Size(393, 800));
+      await tester.pumpWidget(_app(home: _topBarPage(items: nestedItems())));
+      await openMenu(tester);
+      final rootWidth = tester.getSize(_panel).width;
+
+      await tester.tap(find.text('Size'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.pump(const Duration(milliseconds: 60));
+      final midWidth = tester.getSize(_panel).width;
+      await tester.pumpAndSettle();
+      final finalWidth = tester.getSize(_panel).width;
+      expect(midWidth, greaterThan(rootWidth));
+      expect(midWidth, lessThan(finalWidth));
+    });
+
+    testWidgets('an item that keeps the menu open runs without closing', (
+      tester,
+    ) async {
+      var picks = 0;
+      await tester.pumpWidget(
+        _app(
+          home: _topBarPage(items: nestedItems(onPick: () => picks++)),
+        ),
+      );
+      await openSize(tester);
+
+      await tester.tap(find.text('Pick'));
+      await tester.pumpAndSettle();
+      expect(picks, 1);
+      expect(find.text('Pick'), findsOneWidget);
+    });
+
+    testWidgets('a normal item in a submenu closes the whole menu', (
+      tester,
+    ) async {
+      var large = 0;
+      await tester.pumpWidget(
+        _app(
+          home: _topBarPage(items: nestedItems(onLarge: () => large++)),
+        ),
+      );
+      await openSize(tester);
+
+      await tester.tap(find.text('Large text that makes the page wider'));
+      await tester.pumpAndSettle();
+      expect(large, 1);
+      expect(find.byType(MenuItemButton), findsNothing);
+
+      // 重新展开总是从根菜单开始。
+      await openMenu(tester);
+      expect(find.text('Root'), findsOneWidget);
+      expect(find.text('Pick'), findsNothing);
+    });
+
+    testWidgets('system back leaves the submenu first, then closes', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          home: Builder(
+            builder: (BuildContext context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => _topBarPage(items: nestedItems()),
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await openSize(tester);
+      expect(find.byType(BackButton), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Root'), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(MenuItemButton), findsNothing);
+      expect(find.text('Page'), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Open'), findsOneWidget);
+    });
+
+    testWidgets('closing from a submenu leaves no back interception behind', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          home: Builder(
+            builder: (BuildContext context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => _topBarPage(items: nestedItems()),
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await openSize(tester);
+
+      // 点外部直接关掉整个菜单：下一次返回作用于页面本身。
+      await tester.tapAt(const Offset(200, 500));
+      await tester.pumpAndSettle();
+      expect(find.byType(MenuItemButton), findsNothing);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Open'), findsOneWidget);
+    });
+
+    testWidgets('reopening while it closes keeps back on the submenu', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          home: Builder(
+            builder: (BuildContext context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => _topBarPage(items: nestedItems()),
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await openSize(tester);
+
+      // 收起到一半又点触发控件：仍是二级菜单，返回先退一层。
+      await tester.tap(_trigger);
+      await tester.pump(const Duration(milliseconds: 60));
+      await tester.tap(_trigger, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(find.text('Pick'), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Root'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(MenuItemButton), findsNothing);
+      expect(find.text('Page'), findsOneWidget);
+    });
+
+    testWidgets('escape and the back arrow key leave the submenu first', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(home: _topBarPage(items: nestedItems())));
+      await openMenu(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(Focus.of(tester.element(find.text('Size'))).hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      // 焦点落到新一页的第一项（返回行）。
+      expect(find.text('Pick'), findsOneWidget);
+      expect(Focus.of(tester.element(find.text('Size'))).hasFocus, isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('Root'), findsOneWidget);
+
+      await tester.tap(find.text('Size'));
+      await tester.pumpAndSettle();
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pumpAndSettle();
+      expect(find.text('Root'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.byType(MenuItemButton), findsNothing);
+    });
+
+    testWidgets('chevrons point the other way in right-to-left text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          home: _topBarPage(items: nestedItems()),
+          textDirection: TextDirection.rtl,
+        ),
+      );
+      await openMenu(tester);
+      expect(_faIcon(FontAwesomeIcons.angleLeft), findsOneWidget);
+      await tester.tap(find.text('Size'));
+      await tester.pumpAndSettle();
+      expect(_faIcon(FontAwesomeIcons.angleRight), findsOneWidget);
+    });
+
+    testWidgets('switches pages instantly with reduced motion', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      useSize(tester, const Size(393, 800));
+      await tester.pumpWidget(_app(home: _topBarPage(items: nestedItems())));
+      await openMenu(tester);
+
+      await tester.tap(find.text('Size'));
+      // MenuItemButton 在帧尾才执行 onPressed，换页在下一帧。
+      await tester.pump();
+      await tester.pump();
+      final settled = tester.getRect(find.text('Pick'));
+      await tester.pump(const Duration(milliseconds: 80));
+      expect(tester.getRect(find.text('Pick')), settled);
     });
   });
 }

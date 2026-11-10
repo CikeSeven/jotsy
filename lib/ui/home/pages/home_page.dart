@@ -203,6 +203,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     return _controller.onTap(index);
   }
 
+  /// 日记页顶栏“更多 → 设置”：与点底栏的设置 Tab 一样是用户自己换页。
+  void _openSettingsTab() {
+    ref.read(aiChatReturnProvider.notifier).disarm();
+    unawaited(_controller.switchToHomeTab(HomeTab.settings));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -369,6 +375,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             onCreateActionChanged: _diariesCreateActionChanged,
             onSearchActionChanged: _diariesSearchActionChanged,
             onFabVisibilityChanged: _diariesFabVisibilityChanged,
+            onOpenSettings: _openSettingsTab,
           ),
           HomeTab.todos => TodosPage(
             key: const PageStorageKey<String>('tab_todos'),

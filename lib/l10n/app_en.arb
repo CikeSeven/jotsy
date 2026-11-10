@@ -2541,37 +2541,29 @@
   "@diarySortFieldTitle": {
     "description": "Diary list sort option that orders diaries by title."
   },
-  "diarySortDescending": "Descending",
-  "@diarySortDescending": {
-    "description": "Diary list sort direction button for descending order (newest first, or titles Z to A)."
-  },
-  "diarySortAscending": "Ascending",
-  "@diarySortAscending": {
-    "description": "Diary list sort direction button for ascending order (oldest first, or titles A to Z)."
-  },
   "diarySortHintUpdatedDesc": "Most recently updated first",
   "@diarySortHintUpdatedDesc": {
-    "description": "Explains the current diary list order: by update time, descending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, descending."
   },
   "diarySortHintUpdatedAsc": "Least recently updated first",
   "@diarySortHintUpdatedAsc": {
-    "description": "Explains the current diary list order: by update time, ascending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, ascending."
   },
   "diarySortHintPublishedDesc": "Newest first",
   "@diarySortHintPublishedDesc": {
-    "description": "Explains the current diary list order: by publish time, descending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, descending."
   },
   "diarySortHintPublishedAsc": "Oldest first",
   "@diarySortHintPublishedAsc": {
-    "description": "Explains the current diary list order: by publish time, ascending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, ascending."
   },
   "diarySortHintTitleAsc": "Titles A → Z, untitled last",
   "@diarySortHintTitleAsc": {
-    "description": "Explains the current diary list order: by title A to Z, with untitled diaries always last."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by title A to Z, with untitled diaries always last."
   },
   "diarySortHintTitleDesc": "Titles Z → A, untitled last",
   "@diarySortHintTitleDesc": {
-    "description": "Explains the current diary list order: by title Z to A, with untitled diaries always last."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by title Z to A, with untitled diaries always last."
   },
   "diaryToolbarMoreTools": "More tools",
   "@diaryToolbarMoreTools": {
@@ -5176,15 +5168,7 @@
   },
   "diaryCardStyleSheetSection": "Card style",
   "@diaryCardStyleSheetSection": {
-    "description": "Diary view options sheet: card style section title."
-  },
-  "diaryCardStyleSheetEntry": "Customize card style",
-  "@diaryCardStyleSheetEntry": {
-    "description": "Diary view options sheet: opens the card style settings."
-  },
-  "diaryCardStyleSheetEntrySubtitle": "Covers, text, colors and layout",
-  "@diaryCardStyleSheetEntrySubtitle": {
-    "description": "Diary view options sheet: description of the card style entry."
+    "description": "Diary list more menu → Layout: opens the card style settings."
   },
   "diaryCardStyleSampleTitle1": "Sunset by the sea",
   "@diaryCardStyleSampleTitle1": {
@@ -9618,18 +9602,6 @@
   "notebookEmptyCreateHint": "Tap New below to write the first entry",
   "@notebookEmptyCreateHint": {
     "description": "Explanation under the empty state of a notebook on the home page."
-  },
-  "notebookViewSortSection": "Sort in this notebook",
-  "@notebookViewSortSection": {
-    "description": "Sort section title of the view options sheet while inside a notebook."
-  },
-  "notebookViewOptionsEntry": "Switch notebook",
-  "@notebookViewOptionsEntry": {
-    "description": "Entry in the view options sheet that opens the notebook shelf."
-  },
-  "notebookViewOptionsEntrySubtitle": "Show only one notebook's entries, or create one",
-  "@notebookViewOptionsEntrySubtitle": {
-    "description": "Subtitle of the notebook shelf entry in the view options sheet."
   },
   "notebookUnlockReason": "Unlock \"{name}\"",
   "@notebookUnlockReason": {

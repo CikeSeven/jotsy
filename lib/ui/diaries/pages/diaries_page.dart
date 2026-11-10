@@ -70,7 +70,7 @@ import '../viewmodels/diary_selection_summary.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_tag_batch_sheet.dart';
-import '../sections/diary_view_options_sheet.dart';
+import '../sections/diary_view_options_menu.dart';
 import '../widgets/diaries_fast_scroller.dart';
 import '../widgets/diaries_header_sliver.dart';
 import '../widgets/diary_card/diary_card_reading_ring.dart';
@@ -108,6 +108,7 @@ class DiariesPage extends ConsumerStatefulWidget {
     this.onCreateActionChanged,
     this.onSearchActionChanged,
     this.onFabVisibilityChanged,
+    this.onOpenSettings,
   });
 
   final Color? pageBackgroundColor;
@@ -117,6 +118,9 @@ class DiariesPage extends ConsumerStatefulWidget {
   /// [onCreateActionChanged] 同样在挂载时注册、销毁时注销（传 null）。
   final ValueChanged<VoidCallback?>? onSearchActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
+
+  /// 顶栏“更多 → 设置”：切到首页的设置 Tab；null 时菜单里没有这一项。
+  final VoidCallback? onOpenSettings;
 
   @override
   ConsumerState<DiariesPage> createState() => _DiariesPage();
@@ -803,8 +807,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                               .watch(diaryDraftCountProvider)
                                               .value ??
                                           0,
-                                      onOpenViewOptions:
-                                          _controller.openViewOptions,
+                                      viewOptions: _controller.viewMenuOptions(
+                                        notebooksEnabled: notebooksEnabled,
+                                      ),
                                       onOpenSearchPage:
                                           _controller.openSearchPage,
                                       onOpenAi:

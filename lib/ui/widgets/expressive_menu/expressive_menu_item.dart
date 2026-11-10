@@ -18,6 +18,9 @@ import 'expressive_menu_anchor.dart';
 /// 图标与叠色换成 error 色。[selected] 为 true 时铺 primaryContainer 底、
 /// 文字加粗、行尾补一个对勾，圆角放到 24（胶囊）。禁用态沿用 Material 默认的
 /// 禁用色。[style] 中非空的字段覆盖默认值。
+///
+/// [closeOnActivate] 为 false 时点按只执行动作、菜单保持打开（二级菜单入口、
+/// 要连着调的单选项）。
 class ExpressiveMenuItem extends StatelessWidget {
   const ExpressiveMenuItem({
     super.key,
@@ -28,6 +31,7 @@ class ExpressiveMenuItem extends StatelessWidget {
     this.destructive = false,
     this.selected,
     this.style,
+    this.closeOnActivate = true,
   });
 
   /// 为 null 时条目禁用。
@@ -47,6 +51,10 @@ class ExpressiveMenuItem extends StatelessWidget {
   /// [trailingIcon] 时行尾显示对勾。
   final bool? selected;
   final ButtonStyle? style;
+
+  /// 点按后是否关闭菜单。为 false 时菜单保持打开，选中态由内容自己刷新
+  /// （如排序依据与方向要连着调）；收起途中的点按仍被忽略。
+  final bool closeOnActivate;
 
   static const double minHeight = 48;
   static const double horizontalPadding = 16;
@@ -129,11 +137,13 @@ class ExpressiveMenuItem extends StatelessWidget {
     final anchor = ExpressiveMenuAnchorState.maybeOf(context);
     if (anchor != null) {
       if (!anchor.interactive) return;
-      anchor.close();
+      if (closeOnActivate) anchor.close();
     }
-    // 先让焦点回到触发控件，再执行动作：动作若打开对话框或新页面，
-    // 关闭后焦点能正确落回入口。
-    FocusManager.instance.applyFocusChangesIfNeeded();
+    if (closeOnActivate) {
+      // 先让焦点回到触发控件，再执行动作：动作若打开对话框或新页面，
+      // 关闭后焦点能正确落回入口。
+      FocusManager.instance.applyFocusChangesIfNeeded();
+    }
     onPressed?.call();
   }
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
+import 'package:node_diary/ui/diaries/sections/diary_view_options_menu.dart';
 
 Widget _host({
   required bool selection,
@@ -35,7 +37,13 @@ Widget _host({
       onOpenArchived: () {},
       onOpenDrafts: onOpenDrafts ?? () {},
       draftCount: draftCount,
-      onOpenViewOptions: () {},
+      viewOptions: DiaryViewMenuOptions(
+        sortMode: DiarySortMode.updatedDesc,
+        layoutMode: DiaryLayoutMode.list,
+        onSortModeChanged: (_) {},
+        onLayoutModeChanged: (_) {},
+        onOpenCardStyle: () {},
+      ),
       onOpenSearchPage: () {},
       onOpenAi: onOpenAi,
     ),

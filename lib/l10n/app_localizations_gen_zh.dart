@@ -1828,12 +1828,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diarySortFieldTitle => '标题';
 
   @override
-  String get diarySortDescending => '倒序';
-
-  @override
-  String get diarySortAscending => '正序';
-
-  @override
   String get diarySortHintUpdatedDesc => '最近更新的在前';
 
   @override
@@ -3648,12 +3642,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryCardStyleSheetSection => '卡片样式';
-
-  @override
-  String get diaryCardStyleSheetEntry => '自定义卡片样式';
-
-  @override
-  String get diaryCardStyleSheetEntrySubtitle => '封面、文字、颜色与排版';
 
   @override
   String get diaryCardStyleSampleTitle1 => '海边的黄昏';
@@ -6768,15 +6756,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookEmptyCreateHint => '点下方的新建，写下第一篇';
-
-  @override
-  String get notebookViewSortSection => '本日记本的排序';
-
-  @override
-  String get notebookViewOptionsEntry => '切换日记本';
-
-  @override
-  String get notebookViewOptionsEntrySubtitle => '只看某一本里的日记，或新建一本';
 
   @override
   String notebookUnlockReason(String name) {

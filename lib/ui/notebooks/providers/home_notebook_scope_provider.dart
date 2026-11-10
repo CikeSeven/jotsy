@@ -22,8 +22,8 @@ import 'notebook_providers.dart';
 /// 预热的就是恢复后的范围。临时排序与上锁会话不记。
 ///
 /// - [chapterId] / [unassignedChapterOnly]：章节筛选（章节界面接入前恒为空）；
-/// - [sortOverride]：在视图选项里改了本子的排序、写库结果还没推送回来时
-///   先按它显示（见 [HomeNotebookScopeNotifier.setSortOverride]）；
+/// - [sortOverride]：在首页“更多 → 排序方式”里改了本子的排序、写库结果还没
+///   推送回来时先按它显示（见 [HomeNotebookScopeNotifier.setSortOverride]）；
 /// - [relocked]：上锁日记本的验证会话因切到后台而失效，需要重新验证
 ///   （`NotebookLockLayer` 盖住整个应用）。
 @immutable
@@ -224,8 +224,8 @@ class HomeNotebookScopeNotifier extends Notifier<HomeNotebookScope> {
     );
   }
 
-  /// 视图选项里改了本子的排序：写库结果推送回来之前先按 [sort] 显示，列表
-  /// 过渡等到的就是新排序的数据。推送回来后（或写入失败时）经
+  /// 首页“更多 → 排序方式”里改了本子的排序：写库结果推送回来之前先按 [sort]
+  /// 显示，列表过渡等到的就是新排序的数据。推送回来后（或写入失败时）经
   /// [clearSortOverride] 清除，之后在编辑页改排序不会被它挡住。
   void setSortOverride(NotebookSort sort) {
     if (state.notebookId == null) {

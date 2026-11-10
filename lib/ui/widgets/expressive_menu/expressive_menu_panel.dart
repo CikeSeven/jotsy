@@ -64,6 +64,7 @@ class ExpressiveMenuPanel extends StatelessWidget {
     this.pageKey,
     this.pageReveal = kAlwaysCompleteAnimation,
     this.pageForward = true,
+    this.withSurface = true,
   });
 
   static const double minWidth = 176;
@@ -84,6 +85,11 @@ class ExpressiveMenuPanel extends StatelessWidget {
 
   /// 进入下一级（从结束方向移入）为 true，退回上一级为 false。
   final bool pageForward;
+
+  /// 是否自带玻璃表面。按钮长成菜单（ExpressiveMenuMorph）时玻璃由形变单独
+  /// 画、内容的淡入也由它负责：这里只垫一层透明 Material 承接水波纹，
+  /// [reveal] 不用。
+  final bool withSurface;
 
   static const double _pageShift = 0.06;
 
@@ -125,6 +131,22 @@ class ExpressiveMenuPanel extends StatelessWidget {
         ),
       ),
     );
+    // 尺寸过渡放在表面里面：表面（圆角、描边、投影）随过渡中的尺寸画，
+    // 内容按新一页的最终尺寸布局、只被裁切。首次布局直接取内容尺寸，不从
+    // 0 长出来。
+    //
+    // 减少动画时不套 AnimatedSize：它的时长不能为 0（见 durationNonZero），
+    // 1ms 的过渡仍要等两帧（检测到变化的那帧与 ticker 起步的那帧）才到位，
+    // 换页时会先露出两帧裁切的内容。代价是菜单开着时切换减少动画，内容会
+    // 重建一次（滚动位置回到顶部）。
+    final sized = ExpressiveMotion.reduceMotion(context)
+        ? IntrinsicWidth(child: content)
+        : AnimatedSize(
+            duration: ExpressiveMotion.fast,
+            curve: ExpressiveMotion.effects,
+            alignment: AlignmentDirectional.topStart,
+            child: IntrinsicWidth(child: content),
+          );
     return ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: math.min(minWidth, maxWidth),
@@ -132,25 +154,9 @@ class ExpressiveMenuPanel extends StatelessWidget {
       ),
       // 按最终尺寸布局，缩放只发生在绘制阶段，文字不会逐帧重排。
       child: RepaintBoundary(
-        child: ExpressiveMenuSurface(
-          reveal: reveal,
-          // 尺寸过渡放在表面里面：表面（圆角、描边、投影）随过渡中的尺寸
-          // 画，内容按新一页的最终尺寸布局、只被裁切。首次布局直接取内容
-          // 尺寸，不从 0 长出来。
-          //
-          // 减少动画时不套 AnimatedSize：它的时长不能为 0（见
-          // durationNonZero），1ms 的过渡仍要等两帧（检测到变化的那帧与
-          // ticker 起步的那帧）才到位，换页时会先露出两帧裁切的内容。代价
-          // 是菜单开着时切换减少动画，内容会重建一次（滚动位置回到顶部）。
-          child: ExpressiveMotion.reduceMotion(context)
-              ? IntrinsicWidth(child: content)
-              : AnimatedSize(
-                  duration: ExpressiveMotion.fast,
-                  curve: ExpressiveMotion.effects,
-                  alignment: AlignmentDirectional.topStart,
-                  child: IntrinsicWidth(child: content),
-                ),
-        ),
+        child: withSurface
+            ? ExpressiveMenuSurface(reveal: reveal, child: sized)
+            : Material(type: MaterialType.transparency, child: sized),
       ),
     );
   }

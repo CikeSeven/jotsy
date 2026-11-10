@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import 'expressive_menu_layout.dart';
+import 'expressive_menu_morph.dart';
 import 'expressive_menu_panel.dart';
 import 'expressive_menu_surface.dart';
 import 'expressive_submenu.dart';
@@ -30,6 +31,11 @@ typedef ExpressiveMenuTriggerBuilder =
 /// - 动效：展开 0.96→1 缩放，同时底色、描边、模糊由浅到深、内容淡入
 ///   （fast / effects），收起反向（exit），从贴着锚点的角缩放；减少动画时瞬时
 ///   开合。收起过程中不可交互。
+/// - 按钮长成菜单（[morph]，[ExpressiveMenuButton] 默认开启）：触发按钮与
+///   菜单是同一块玻璃，从按钮的圆以弹簧长成面板、面板盖住按钮（贴着按钮的
+///   角对齐），内容随之等比放大、淡入并在中途短暂模糊，触发图标同时淡出；
+///   收起时缩回按钮并带一点回弹。弹簧参数与时序见 [ExpressiveMenuMorphMotion]，
+///   布局与绘制见 [ExpressiveMenuMorph]。
 /// - 定位：见 [ExpressiveMenuPosition]，默认菜单结束边对齐锚点结束边、落在
 ///   锚点下方 4dp，下方放不下时翻到上方，并夹在安全区内（留 8dp 边距）。
 /// - 行为：点外部关闭且不穿透；系统返回 / 预测式返回先关菜单（打开期间在
@@ -58,6 +64,7 @@ class ExpressiveMenuAnchor extends StatefulWidget {
     this.onOpen,
     this.onClose,
     this.onAnimationStatusChanged,
+    this.morph = false,
   });
 
   /// 菜单内容，通常是若干 [ExpressiveMenuItem]。
@@ -82,6 +89,15 @@ class ExpressiveMenuAnchor extends StatefulWidget {
   /// 收起动画结束、浮层移除后调用。
   final VoidCallback? onClose;
   final ValueChanged<AnimationStatus>? onAnimationStatusChanged;
+
+  /// 是否由触发控件长成菜单（容器变换）。起点为触发控件中心、边长不超过
+  /// [morphSeedSize] 的正方形（图标按钮的那个圆）；[ExpressiveMenuAnchorState.openAt]
+  /// 打开时从指针处那一点长出。触发控件应经 [ExpressiveMenuAnchorState.triggerOpacity]
+  /// 淡出自己的图标。
+  final bool morph;
+
+  /// 形变起点的最大边长：标准图标按钮的圆（触控区 48 里的 40）。
+  static const double morphSeedSize = 40;
 
   @override
   State<ExpressiveMenuAnchor> createState() => ExpressiveMenuAnchorState();
@@ -114,6 +130,15 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
   VoidCallback? _hideOverlay;
   LocalHistoryEntry? _history;
   bool _reduced = false;
+
+  /// 按钮长成菜单的动效（[ExpressiveMenuAnchor.morph] 时使用，用到时才创建）。
+  ExpressiveMenuMorphMotion get _motion => _motionInstance ??=
+      ExpressiveMenuMorphMotion(vsync: this, onStatusChanged: _statusChanged);
+  ExpressiveMenuMorphMotion? _motionInstance;
+
+  /// 当前所用动效的状态：形变或缩放。
+  AnimationStatus get _status =>
+      widget.morph ? _motion.status : _animation.status;
 
   /// 二级菜单的下钻栈；空时显示根菜单 [ExpressiveMenuAnchor.menuChildren]。
   late final ExpressiveSubmenuStack _submenus = ExpressiveSubmenuStack(
@@ -155,7 +180,12 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
       widget.controller ?? (_internalController ??= MenuController());
 
   /// 展开中或已展开：收起动画开始后即为 false，触发控件据此显示“已收起”。
-  bool get isExpanded => _animation.status.isForwardOrCompleted;
+  bool get isExpanded => _status.isForwardOrCompleted;
+
+  /// 触发控件自己的图标该有的不透明度：形变时随玻璃长大淡出、缩回时淡入；
+  /// 不形变时恒为 1。
+  Animation<double> get triggerOpacity =>
+      widget.morph ? _motion.triggerOpacity : kAlwaysCompleteAnimation;
 
   /// 菜单项只在展开中或已展开时响应，收起途中的点按不再执行动作。
   bool get interactive => isExpanded;
@@ -231,9 +261,19 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
       ..duration = duration
       ..reverseDuration = duration;
     // 动画途中切换到减少动画：下一帧直接跳到终点，不留半开的菜单。
-    if (_reduced && _animation.isAnimating) {
+    final animating = widget.morph
+        ? _motion.isAnimating
+        : _animation.isAnimating;
+    if (_reduced && animating) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _reduced) _animation.value = isExpanded ? 1 : 0;
+        if (!mounted || !_reduced) return;
+        if (!widget.morph) {
+          _animation.value = isExpanded ? 1 : 0;
+        } else if (isExpanded) {
+          _motion.snapOpen();
+        } else {
+          _motion.snapClosed();
+        }
       });
     }
   }
@@ -265,14 +305,20 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
       _pageAnimation.value = 1;
       // 换到新位置：RawMenuAnchor 重新挂浮层，缩放也从头播放（从新的角）。
       showOverlay();
-      if (moved && !_reduced) _animation.value = 0;
+      if (moved && !_reduced) {
+        if (widget.morph) {
+          _motion.restart();
+        } else {
+          _animation.value = 0;
+        }
+      }
     } else if (!interactive) {
       widget.onOpen?.call();
     }
     _addHistory();
     // 收起途中重新展开、仍停在二级菜单时，补回各层的返回历史。
     _submenus.restoreHistory(ModalRoute.of(context));
-    if (!interactive) _animation.forward();
+    if (!interactive) _startOpenAnimation();
     if (position != null) {
       // 浮层这一帧才建出来，焦点要等它挂进焦点树之后再移。
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -301,12 +347,32 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
       }
     }
     _focusBeforeOpen = null;
+    if (widget.morph) {
+      if (_motion.status == AnimationStatus.reverse) return;
+      if (_reduced || _motion.status == AnimationStatus.dismissed) {
+        _motion.snapClosed();
+        _finishClose();
+      } else {
+        _motion.close();
+      }
+      return;
+    }
     if (_animation.status == AnimationStatus.reverse) return;
     if (_reduced || _animation.value == 0) {
       _animation.value = 0;
       _finishClose();
     } else {
       _animation.reverse();
+    }
+  }
+
+  void _startOpenAnimation() {
+    if (!widget.morph) {
+      _animation.forward();
+    } else if (_reduced) {
+      _motion.snapOpen();
+    } else {
+      _motion.open();
     }
   }
 
@@ -393,6 +459,7 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
     _removeHistory();
     _pageProgress.dispose();
     _pageAnimation.dispose();
+    _motionInstance?.dispose();
     _progress.dispose();
     _animation.dispose();
     _menuFocus.dispose();
@@ -439,46 +506,80 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
             0,
             0,
           );
+    final placement = position == null
+        ? widget.placement
+        : ExpressiveMenuPlacement.start;
+    final textDirection = Directionality.of(context);
+    if (widget.morph) {
+      return ExpressiveMenuMorph(
+        seed: position == null ? _morphSeed(anchor) : anchor,
+        bounds: area.bounds,
+        placement: placement,
+        textDirection: textDirection,
+        motion: _motion,
+        // 玻璃只是形变的外壳，不接收点按：面板范围外的点按算作点外部。
+        surface: IgnorePointer(
+          child: ExpressiveMenuSurface(
+            reveal: _motion.surfaceReveal,
+            child: const SizedBox.expand(),
+          ),
+        ),
+        content: _menuContent(info, area, withSurface: false),
+      );
+    }
     return ExpressiveMenuPosition(
       anchor: anchor,
       bounds: area.bounds,
-      placement: position == null
-          ? widget.placement
-          : ExpressiveMenuPlacement.start,
+      placement: placement,
       gap: position == null ? ExpressiveMenuPosition.defaultGap : 0,
-      textDirection: Directionality.of(context),
+      textDirection: textDirection,
       scale: _scale,
-      child: TapRegion(
-        groupId: info.tapRegionGroupId,
-        consumeOutsideTaps: true,
-        onTapOutside: (_) => close(),
-        child: ExcludeSemantics(
-          excluding: !interactive,
-          child: ExcludeFocus(
-            excluding: !interactive,
-            child: IgnorePointer(
-              ignoring: !interactive,
-              child: Semantics(
-                scopesRoute: true,
-                explicitChildNodes: true,
-                child: FocusTraversalGroup(
-                  child: FocusScope(
-                    node: _menuFocus,
-                    skipTraversal: true,
-                    child: _shortcuts(
-                      ExpressiveMenuPanel(
-                        reveal: _progress,
-                        scrollController: _scroll,
-                        // 只在展开完成后显示滚动条，缩放过程中不闪现。
-                        showScrollbar:
-                            _animation.status == AnimationStatus.completed,
-                        maxWidth: area.maxWidth,
-                        pageKey: ValueKey<int>(_pageSerial),
-                        pageReveal: _pageProgress,
-                        pageForward: _pageForward,
-                        children: _pageChildren(),
-                      ),
-                    ),
+      child: _menuContent(info, area, withSurface: true),
+    );
+  }
+
+  /// 形变起点：触发控件中心、边长不超过 [ExpressiveMenuAnchor.morphSeedSize]
+  /// 的正方形（图标按钮触控区 48 里看得见的那个 40 的圆）。
+  Rect _morphSeed(Rect anchor) => Rect.fromCenter(
+    center: anchor.center,
+    width: ExpressiveMenuAnchor.morphSeedSize.clamp(0.0, anchor.shortestSide),
+    height: ExpressiveMenuAnchor.morphSeedSize.clamp(0.0, anchor.shortestSide),
+  );
+
+  /// 面板与它外面的点外部关闭、焦点、语义与收起途中禁用的各层。
+  Widget _menuContent(
+    RawMenuOverlayInfo info,
+    ExpressiveMenuArea area, {
+    required bool withSurface,
+  }) => TapRegion(
+    groupId: info.tapRegionGroupId,
+    consumeOutsideTaps: true,
+    onTapOutside: (_) => close(),
+    child: ExcludeSemantics(
+      excluding: !interactive,
+      child: ExcludeFocus(
+        excluding: !interactive,
+        child: IgnorePointer(
+          ignoring: !interactive,
+          child: Semantics(
+            scopesRoute: true,
+            explicitChildNodes: true,
+            child: FocusTraversalGroup(
+              child: FocusScope(
+                node: _menuFocus,
+                skipTraversal: true,
+                child: _shortcuts(
+                  ExpressiveMenuPanel(
+                    reveal: _progress,
+                    scrollController: _scroll,
+                    // 只在展开完成后显示滚动条，缩放 / 形变过程中不闪现。
+                    showScrollbar: _status == AnimationStatus.completed,
+                    maxWidth: area.maxWidth,
+                    pageKey: ValueKey<int>(_pageSerial),
+                    pageReveal: _pageProgress,
+                    pageForward: _pageForward,
+                    withSurface: withSurface,
+                    children: _pageChildren(),
                   ),
                 ),
               ),
@@ -486,6 +587,6 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

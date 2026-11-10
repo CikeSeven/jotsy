@@ -2580,37 +2580,29 @@
   "@diarySortFieldTitle": {
     "description": "Diary list sort option that orders diaries by title."
   },
-  "diarySortDescending": "降順",
-  "@diarySortDescending": {
-    "description": "Diary list sort direction button for descending order (newest first, or titles Z to A)."
-  },
-  "diarySortAscending": "昇順",
-  "@diarySortAscending": {
-    "description": "Diary list sort direction button for ascending order (oldest first, or titles A to Z)."
-  },
   "diarySortHintUpdatedDesc": "更新が新しい順",
   "@diarySortHintUpdatedDesc": {
-    "description": "Explains the current diary list order: by update time, descending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, descending."
   },
   "diarySortHintUpdatedAsc": "更新が古い順",
   "@diarySortHintUpdatedAsc": {
-    "description": "Explains the current diary list order: by update time, ascending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, ascending."
   },
   "diarySortHintPublishedDesc": "投稿が新しい順",
   "@diarySortHintPublishedDesc": {
-    "description": "Explains the current diary list order: by publish time, descending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, descending."
   },
   "diarySortHintPublishedAsc": "投稿が古い順",
   "@diarySortHintPublishedAsc": {
-    "description": "Explains the current diary list order: by publish time, ascending."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, ascending."
   },
   "diarySortHintTitleAsc": "タイトル A → Z、無題は最後",
   "@diarySortHintTitleAsc": {
-    "description": "Explains the current diary list order: by title A to Z, with untitled diaries always last."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by title A to Z, with untitled diaries always last."
   },
   "diarySortHintTitleDesc": "タイトル Z → A、無題は最後",
   "@diarySortHintTitleDesc": {
-    "description": "Explains the current diary list order: by title Z to A, with untitled diaries always last."
+    "description": "Diary list more menu → Sort: sort direction option labelled with its actual effect, by title Z to A, with untitled diaries always last."
   },
   "diaryToolbarMoreTools": "その他のツール",
   "@diaryToolbarMoreTools": {
@@ -5229,15 +5221,7 @@
   },
   "diaryCardStyleSheetSection": "カードスタイル",
   "@diaryCardStyleSheetSection": {
-    "description": "Diary view options sheet: card style section title."
-  },
-  "diaryCardStyleSheetEntry": "カードスタイルをカスタマイズ",
-  "@diaryCardStyleSheetEntry": {
-    "description": "Diary view options sheet: opens the card style settings."
-  },
-  "diaryCardStyleSheetEntrySubtitle": "表紙、テキスト、色、レイアウト",
-  "@diaryCardStyleSheetEntrySubtitle": {
-    "description": "Diary view options sheet: description of the card style entry."
+    "description": "Diary list more menu → Layout: opens the card style settings."
   },
   "diaryCardStyleSampleTitle1": "海辺の夕暮れ",
   "@diaryCardStyleSampleTitle1": {
@@ -9677,18 +9661,6 @@
   "notebookEmptyCreateHint": "下のボタンをタップして、最初の日記を書きましょう",
   "@notebookEmptyCreateHint": {
     "description": "Explanation under the empty state of a notebook on the home page."
-  },
-  "notebookViewSortSection": "この日記帳での並び順",
-  "@notebookViewSortSection": {
-    "description": "Sort section title of the view options sheet while inside a notebook."
-  },
-  "notebookViewOptionsEntry": "日記帳を切り替え",
-  "@notebookViewOptionsEntry": {
-    "description": "Entry in the view options sheet that opens the notebook shelf."
-  },
-  "notebookViewOptionsEntrySubtitle": "1冊の日記帳の日記だけを表示するか、新しい日記帳を作成します",
-  "@notebookViewOptionsEntrySubtitle": {
-    "description": "Subtitle of the notebook shelf entry in the view options sheet."
   },
   "notebookUnlockReason": "「{name}」のロックを解除",
   "@notebookUnlockReason": {

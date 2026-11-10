@@ -3414,49 +3414,37 @@ abstract class AppLocalizations {
   /// **'Title'**
   String get diarySortFieldTitle;
 
-  /// Diary list sort direction button for descending order (newest first, or titles Z to A).
-  ///
-  /// In en, this message translates to:
-  /// **'Descending'**
-  String get diarySortDescending;
-
-  /// Diary list sort direction button for ascending order (oldest first, or titles A to Z).
-  ///
-  /// In en, this message translates to:
-  /// **'Ascending'**
-  String get diarySortAscending;
-
-  /// Explains the current diary list order: by update time, descending.
+  /// Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, descending.
   ///
   /// In en, this message translates to:
   /// **'Most recently updated first'**
   String get diarySortHintUpdatedDesc;
 
-  /// Explains the current diary list order: by update time, ascending.
+  /// Diary list more menu → Sort: sort direction option labelled with its actual effect, by update time, ascending.
   ///
   /// In en, this message translates to:
   /// **'Least recently updated first'**
   String get diarySortHintUpdatedAsc;
 
-  /// Explains the current diary list order: by publish time, descending.
+  /// Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, descending.
   ///
   /// In en, this message translates to:
   /// **'Newest first'**
   String get diarySortHintPublishedDesc;
 
-  /// Explains the current diary list order: by publish time, ascending.
+  /// Diary list more menu → Sort: sort direction option labelled with its actual effect, by publish time, ascending.
   ///
   /// In en, this message translates to:
   /// **'Oldest first'**
   String get diarySortHintPublishedAsc;
 
-  /// Explains the current diary list order: by title A to Z, with untitled diaries always last.
+  /// Diary list more menu → Sort: sort direction option labelled with its actual effect, by title A to Z, with untitled diaries always last.
   ///
   /// In en, this message translates to:
   /// **'Titles A → Z, untitled last'**
   String get diarySortHintTitleAsc;
 
-  /// Explains the current diary list order: by title Z to A, with untitled diaries always last.
+  /// Diary list more menu → Sort: sort direction option labelled with its actual effect, by title Z to A, with untitled diaries always last.
   ///
   /// In en, this message translates to:
   /// **'Titles Z → A, untitled last'**
@@ -6690,23 +6678,11 @@ abstract class AppLocalizations {
   /// **'Enter a 6-digit hex color, such as FFB300'**
   String get styleEditorHexInvalid;
 
-  /// Diary view options sheet: card style section title.
+  /// Diary list more menu → Layout: opens the card style settings.
   ///
   /// In en, this message translates to:
   /// **'Card style'**
   String get diaryCardStyleSheetSection;
-
-  /// Diary view options sheet: opens the card style settings.
-  ///
-  /// In en, this message translates to:
-  /// **'Customize card style'**
-  String get diaryCardStyleSheetEntry;
-
-  /// Diary view options sheet: description of the card style entry.
-  ///
-  /// In en, this message translates to:
-  /// **'Covers, text, colors and layout'**
-  String get diaryCardStyleSheetEntrySubtitle;
 
   /// Diary card style settings: title of preview sample entry 1.
   ///
@@ -12383,24 +12359,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap New below to write the first entry'**
   String get notebookEmptyCreateHint;
-
-  /// Sort section title of the view options sheet while inside a notebook.
-  ///
-  /// In en, this message translates to:
-  /// **'Sort in this notebook'**
-  String get notebookViewSortSection;
-
-  /// Entry in the view options sheet that opens the notebook shelf.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch notebook'**
-  String get notebookViewOptionsEntry;
-
-  /// Subtitle of the notebook shelf entry in the view options sheet.
-  ///
-  /// In en, this message translates to:
-  /// **'Show only one notebook\'s entries, or create one'**
-  String get notebookViewOptionsEntrySubtitle;
 
   /// Reason shown on the system authentication prompt when opening a locked notebook.
   ///

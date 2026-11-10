@@ -303,8 +303,8 @@ class DiariesNotebookScopeController {
     await exportNotebookAsBook(_state.context, _state.ref, notebook);
   }
 
-  /// 视图选项里改本子的排序：先按新排序过渡显示，再写回本子；写入失败时
-  /// 退回原排序并提示。
+  /// 首页“更多 → 排序方式”里改本子的排序：先按新排序过渡显示，再写回本子；
+  /// 写入失败时退回原排序并提示。
   void changeNotebookSort(NotebookSort sort) {
     final current = resolution;
     final notebook = current.notebook;

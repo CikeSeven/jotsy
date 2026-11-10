@@ -137,7 +137,10 @@ void main() {
         await _dragBackWithFrames(tester);
         expect(_listOffset(tester), greaterThan(1000));
 
+        // 更多 → 排序方式（二级菜单）→ 发表时间。
         await tester.tap(find.byTooltip(l10n.autoT0125));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l10n.autoT0141));
         await tester.pumpAndSettle();
         await tester.tap(find.text(l10n.diarySortFieldPublished));
         await tester.pumpAndSettle();
@@ -149,8 +152,9 @@ void main() {
         expect(find.text('createdDesc 1'), findsOneWidget);
         expect(find.text('updatedDesc 1'), findsNothing);
 
-        // 面板保持打开，可以接着切换正/倒序。
-        await tester.tap(find.text(l10n.diarySortAscending));
+        // 菜单保持打开，方向选项随依据换成实际效果，可以接着切换。
+        expect(find.text(l10n.diarySortHintPublishedDesc), findsOneWidget);
+        await tester.tap(find.text(l10n.diarySortHintPublishedAsc));
         await tester.pumpAndSettle();
         expect(queried.last, DiarySortMode.createdAsc);
         expect(settings.diarySortModeRaw, 'createdAsc');

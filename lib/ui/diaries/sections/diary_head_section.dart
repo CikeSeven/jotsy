@@ -10,6 +10,7 @@ import '../../app_surface/widgets/app_glass_field.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/select_all_button.dart';
+import 'diary_view_options_menu.dart';
 
 /// 日记列表布局模式。
 enum DiaryLayoutMode { list, waterfall }
@@ -18,7 +19,8 @@ enum DiaryLayoutMode { list, waterfall }
 ///
 /// 布局职责：
 /// - 普通态：搜索条占满左侧，右侧为草稿箱（有草稿时带份数角标）、归档列表
-///   与视图选项入口；
+///   与“更多”菜单（排序方式 / 显示布局两个二级菜单与设置，见
+///   [DiaryViewOptionsMenuButton]）；
 /// - 多选态：取消 · 全选开关（勾选框 + 已选数量） · 收进日记本 · 归档 ·
 ///   删除 · 更多（置顶或取消置顶、设置标签、导出；在普通日记本里另有“从
 ///   本日记本移出”“移动到…”，最多 5 项、都是单行动作，仍用弹出菜单而不是
@@ -50,7 +52,7 @@ class DiaryHeadSection extends StatelessWidget {
     required this.onOpenArchived,
     required this.onOpenDrafts,
     required this.draftCount,
-    required this.onOpenViewOptions,
+    required this.viewOptions,
     required this.onOpenSearchPage,
     this.searchHint,
     this.onOpenAi,
@@ -87,8 +89,8 @@ class DiaryHeadSection extends StatelessWidget {
   /// 草稿份数，大于 0 时草稿箱图标带角标。
   final int draftCount;
 
-  /// 打开视图选项面板（排序与布局），面板由页面控制器负责呈现。
-  final VoidCallback onOpenViewOptions;
+  /// “更多”菜单的当前值与回调（排序、布局、卡片样式、设置），由页面控制器组装。
+  final DiaryViewMenuOptions viewOptions;
   final VoidCallback onOpenSearchPage;
 
   /// 搜索条占位文字；null 时用默认文案（在日记本里时为“在「旅行」中搜索”）。
@@ -253,7 +255,7 @@ class DiaryHeadSection extends StatelessWidget {
           onOpenDrafts: onOpenDrafts,
           draftCount: draftCount,
           onOpenArchived: onOpenArchived,
-          onOpenViewOptions: onOpenViewOptions,
+          viewOptions: viewOptions,
         ),
       ],
     );
@@ -460,14 +462,14 @@ class _TrailingActions extends StatelessWidget {
     required this.onOpenDrafts,
     required this.draftCount,
     required this.onOpenArchived,
-    required this.onOpenViewOptions,
+    required this.viewOptions,
   });
 
   final VoidCallback? onOpenAi;
   final VoidCallback onOpenDrafts;
   final int draftCount;
   final VoidCallback onOpenArchived;
-  final VoidCallback onOpenViewOptions;
+  final DiaryViewMenuOptions viewOptions;
 
   @override
   Widget build(BuildContext context) {
@@ -499,11 +501,7 @@ class _TrailingActions extends StatelessWidget {
           onPressed: onOpenArchived,
           icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
         ),
-        IconButton(
-          tooltip: context.l10n.autoT0125,
-          onPressed: onOpenViewOptions,
-          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
-        ),
+        DiaryViewOptionsMenuButton(options: viewOptions),
       ],
     );
   }

@@ -1925,12 +1925,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diarySortFieldTitle => 'Title';
 
   @override
-  String get diarySortDescending => 'Descending';
-
-  @override
-  String get diarySortAscending => 'Ascending';
-
-  @override
   String get diarySortHintUpdatedDesc => 'Most recently updated first';
 
   @override
@@ -4073,13 +4067,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryCardStyleSheetSection => 'Card style';
-
-  @override
-  String get diaryCardStyleSheetEntry => 'Customize card style';
-
-  @override
-  String get diaryCardStyleSheetEntrySubtitle =>
-      'Covers, text, colors and layout';
 
   @override
   String get diaryCardStyleSampleTitle1 => 'Sunset by the sea';
@@ -7529,16 +7516,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notebookEmptyCreateHint =>
       'Tap New below to write the first entry';
-
-  @override
-  String get notebookViewSortSection => 'Sort in this notebook';
-
-  @override
-  String get notebookViewOptionsEntry => 'Switch notebook';
-
-  @override
-  String get notebookViewOptionsEntrySubtitle =>
-      'Show only one notebook\'s entries, or create one';
 
   @override
   String notebookUnlockReason(String name) {

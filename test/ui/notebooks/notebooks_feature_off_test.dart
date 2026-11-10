@@ -79,17 +79,11 @@ void main() {
       return h;
     }
 
-    testWidgets('off: no switcher chip, shelf entry or multi-select actions', (
+    testWidgets('off: no switcher chip or multi-select actions', (
       tester,
     ) async {
       final h = await pumpHome(tester, enabled: false);
       expect(find.byType(NotebookSwitcherChip), findsNothing);
-
-      await tester.tap(find.byTooltip(h.l10n.autoT0125));
-      await h.settleAll();
-      expect(find.text(h.l10n.notebookViewOptionsEntry), findsNothing);
-      await tester.tapAt(const Offset(200, 40));
-      await h.settleAll();
 
       await tester.longPress(card('上班路上'));
       await tester.pumpAndSettle();
@@ -102,17 +96,9 @@ void main() {
       await h.unmount();
     });
 
-    testWidgets('on: the switcher chip, shelf entry and add action appear', (
-      tester,
-    ) async {
+    testWidgets('on: the switcher chip and add action appear', (tester) async {
       final h = await pumpHome(tester, enabled: true);
       expect(find.byType(NotebookSwitcherChip), findsOneWidget);
-
-      await tester.tap(find.byTooltip(h.l10n.autoT0125));
-      await h.settleAll();
-      expect(find.text(h.l10n.notebookViewOptionsEntry), findsOneWidget);
-      await tester.tapAt(const Offset(200, 40));
-      await h.settleAll();
 
       await tester.longPress(card('上班路上'));
       await tester.pumpAndSettle();

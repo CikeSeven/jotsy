@@ -1959,12 +1959,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diarySortFieldTitle => 'Заголовок';
 
   @override
-  String get diarySortDescending => 'По убыванию';
-
-  @override
-  String get diarySortAscending => 'По возрастанию';
-
-  @override
   String get diarySortHintUpdatedDesc => 'Сначала недавно изменённые';
 
   @override
@@ -4186,13 +4180,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryCardStyleSheetSection => 'Стиль карточек';
-
-  @override
-  String get diaryCardStyleSheetEntry => 'Настроить стиль карточек';
-
-  @override
-  String get diaryCardStyleSheetEntrySubtitle =>
-      'Обложки, текст, цвета и макет';
 
   @override
   String get diaryCardStyleSampleTitle1 => 'Закат у моря';
@@ -7732,16 +7719,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get notebookEmptyCreateHint =>
       'Нажмите кнопку внизу, чтобы написать первую запись';
-
-  @override
-  String get notebookViewSortSection => 'Сортировка в этом блокноте';
-
-  @override
-  String get notebookViewOptionsEntry => 'Сменить блокнот';
-
-  @override
-  String get notebookViewOptionsEntrySubtitle =>
-      'Показывать записи только одного блокнота или создать новый';
 
   @override
   String notebookUnlockReason(String name) {

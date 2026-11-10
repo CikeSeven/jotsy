@@ -1851,12 +1851,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diarySortFieldTitle => 'タイトル';
 
   @override
-  String get diarySortDescending => '降順';
-
-  @override
-  String get diarySortAscending => '昇順';
-
-  @override
   String get diarySortHintUpdatedDesc => '更新が新しい順';
 
   @override
@@ -3707,12 +3701,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diaryCardStyleSheetSection => 'カードスタイル';
-
-  @override
-  String get diaryCardStyleSheetEntry => 'カードスタイルをカスタマイズ';
-
-  @override
-  String get diaryCardStyleSheetEntrySubtitle => '表紙、テキスト、色、レイアウト';
 
   @override
   String get diaryCardStyleSampleTitle1 => '海辺の夕暮れ';
@@ -6889,16 +6877,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notebookEmptyCreateHint => '下のボタンをタップして、最初の日記を書きましょう';
-
-  @override
-  String get notebookViewSortSection => 'この日記帳での並び順';
-
-  @override
-  String get notebookViewOptionsEntry => '日記帳を切り替え';
-
-  @override
-  String get notebookViewOptionsEntrySubtitle =>
-      '1冊の日記帳の日記だけを表示するか、新しい日記帳を作成します';
 
   @override
   String notebookUnlockReason(String name) {

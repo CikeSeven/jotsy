@@ -474,8 +474,12 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
 
   // ---- 按键 ----
 
+  /// 一直挂在这一层的焦点上，模式外原样放行（见 build 里的说明）。正文的
+  /// 按键先经正文自己的焦点，没处理的才冒泡到这里：模式外吃掉的话，正文
+  /// 上没有快捷规则的 Enter 就到不了输入法，不会换行（#231）。
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+    if (!_selection.isActive ||
+        (event is! KeyDownEvent && event is! KeyRepeatEvent)) {
       return KeyEventResult.ignored;
     }
     final keys = HardwareKeyboard.instance;
@@ -626,7 +630,11 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
       focusNode: _focus,
       canRequestFocus: active,
       skipTraversal: true,
-      onKeyEvent: active ? _onKey : null,
+      // 不能按模式传 null：`Focus` 的 onKeyEvent 为 null 时取的是焦点节点上
+      // 已有的回调，节点上的 _onKey 就一直留着，退出模式后照样拦下按键
+      // （#231：退出后输入法以按键送来的回车被吞，无法换行，重进编辑页
+      // 才好）。由 _onKey 自己在模式外放行。
+      onKeyEvent: _onKey,
       child: NotificationListener<ScrollNotification>(
         onNotification: (_) {
           if (active) _repaint.value++;

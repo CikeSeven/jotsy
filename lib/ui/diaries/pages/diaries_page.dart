@@ -178,6 +178,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// BackdropGroup 不会通知引用它的玻璃重建。
   final BackdropKey _topBarsBackdropKey = BackdropKey();
 
+  /// 玻璃顶栏两片之间的渐隐纽带：标签栏把自己的高度报给刊头，顶栏下缘的
+  /// 渐隐才能跨过两片的接缝连续地画（见 [HomeTopBarFadeLink]）。
+  final HomeTopBarFadeLink _topBarFadeLink = HomeTopBarFadeLink();
+
   // ==================== 列表整体过渡动画 ====================
   late final AnimationController _listRefreshPulseController;
   // 筛选过渡状态（由 DiaryListTransitionCoordinator 读写）：
@@ -343,6 +347,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _keyboardFocusNode.dispose();
     _pagingCooldownTimer?.cancel();
     _tagFilterExpansionController.dispose();
+    _topBarFadeLink.dispose();
     _pullHint.dispose();
     _listRefreshPulseController.dispose();
     super.dispose();
@@ -608,12 +613,16 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         // 底色留在编排之外：入场期间只有标签内容淡入上浮，不透出下方列表；
         // 玻璃时同理，玻璃绝不能放进 LaunchReveal 的透明度层（模糊采不到
         // 页面）。标签栏始终存在（没有标签时也留着上下间距），是顶栏最下面
-        // 一片，底缘细线画在这里、不画在刊头上。
+        // 一片，顶栏的下缘（渐隐，或打开分隔线时的细线）画在这里、不画在
+        // 刊头上：刊头收起、多选固定、标签栏展开时，渐隐都贴着标签栏当时的
+        // 下缘。标签栏比渐隐区矮时（没有标签只剩上下留白）渐隐经
+        // _topBarFadeLink 接着画进刊头，不会断在两片的接缝上。
         // 宽窗口里底色仍铺满整页，只有标签内容收进内容列（[contentInset]）。
         Widget tagHeader(double contentInset) => PinnedHeaderSliver(
           child: HomeTopBarSurface(
             solidColor: solidBarColor,
-            showHairline: true,
+            bottomEdge: true,
+            fadeLink: _topBarFadeLink,
             grouped: true,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: contentInset),
@@ -718,6 +727,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                             height: _headerCollapsibleHeight,
                             glass: glassTopBars,
                             topInset: viewPadding.top,
+                            fadeLink: _topBarFadeLink,
                             backgroundColor: solidBarColor,
                             child: Container(
                               height: _headerCollapsibleHeight,

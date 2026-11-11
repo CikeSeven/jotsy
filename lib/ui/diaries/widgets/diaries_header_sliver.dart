@@ -37,7 +37,8 @@ class DiariesHeaderSliver extends StatefulWidget {
     required this.backgroundColor,
     this.glass = false,
     this.topInset = 0,
-    this.showHairline = false,
+    this.bottomEdge = false,
+    this.fadeLink,
     required this.child,
   });
 
@@ -54,8 +55,13 @@ class DiariesHeaderSliver extends StatefulWidget {
   /// 玻璃顶栏并进来的状态栏高度；实色时不使用。
   final double topInset;
 
-  /// 玻璃时是否画底缘细线：只有顶栏是最下面一片玻璃时才画。
-  final bool showHairline;
+  /// 玻璃时刊头的下缘是不是整条顶栏的下缘（渐隐或细线画在这里，见
+  /// [HomeTopBarSurface.bottomEdge]）。日记页刊头下面还钉着标签栏，为 false。
+  final bool bottomEdge;
+
+  /// 玻璃时与下面钉住的标签栏共用的渐隐纽带（见 [HomeTopBarFadeLink]）：
+  /// 顶栏的渐隐区比标签栏高时要接着画进刊头的下半截。
+  final HomeTopBarFadeLink? fadeLink;
   final Widget child;
 
   @override
@@ -160,7 +166,8 @@ class _DiariesHeaderSliverState extends State<DiariesHeaderSliver>
             topInset: topInset,
             minExtent: minExtent,
             glass: glass,
-            showHairline: widget.showHairline,
+            bottomEdge: widget.bottomEdge,
+            fadeLink: widget.fadeLink,
             backgroundColor: widget.backgroundColor,
             onShrinkOffset: (value) => _hiddenExtent = value,
             child: child!,
@@ -178,7 +185,8 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.topInset,
     required this.minExtent,
     required this.glass,
-    required this.showHairline,
+    required this.bottomEdge,
+    required this.fadeLink,
     required this.backgroundColor,
     required this.onShrinkOffset,
     required this.child,
@@ -193,7 +201,8 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   final double minExtent;
   final bool glass;
-  final bool showHairline;
+  final bool bottomEdge;
+  final HomeTopBarFadeLink? fadeLink;
   final Color backgroundColor;
 
   /// 布局阶段回报可收起部分被滚动收起的高度；只能记录，不能触发重建。
@@ -229,7 +238,8 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
     // 共用一次背景读取。
     return HomeTopBarSurface(
       solidColor: backgroundColor,
-      showHairline: showHairline,
+      bottomEdge: bottomEdge,
+      fadeLink: fadeLink,
       grouped: true,
       child: Padding(
         padding: EdgeInsets.only(top: topInset),
@@ -244,7 +254,8 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.topInset != topInset ||
         oldDelegate.minExtent != minExtent ||
         oldDelegate.glass != glass ||
-        oldDelegate.showHairline != showHairline ||
+        oldDelegate.bottomEdge != bottomEdge ||
+        oldDelegate.fadeLink != fadeLink ||
         oldDelegate.backgroundColor != backgroundColor ||
         oldDelegate.child != child;
   }

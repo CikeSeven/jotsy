@@ -1,7 +1,9 @@
 import 'dart:ui' show ImageFilter;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'glass_bottom_fade_painter.dart';
 import 'glass_reveal.dart';
 import 'outer_shadow_painter.dart';
 
@@ -22,6 +24,8 @@ import 'outer_shadow_painter.dart';
 ///   会从底下透出来，把表面中间压暗。
 /// - 底色由一层 canvas 类型的 [Material] 画出，因此内容里的 InkWell 水波纹
 ///   可以直接画在玻璃上。
+/// - 底缘渐隐（[bottomFadeExtent]）时底色改由 [GlassBottomFadePainter] 画，
+///   模糊的淡出靠在背景模糊图层里擦除实现，见该字段的说明。
 class GlassSurface extends StatelessWidget {
   const GlassSurface({
     super.key,
@@ -35,10 +39,16 @@ class GlassSurface extends StatelessWidget {
     this.bottomHairlineWidth = hairlineWidth,
     this.shadowColor,
     this.progress = 1,
+    this.bottomFadeExtent,
+    this.bottomFadeTrailing,
     this.grouped = false,
     this.backdropKey,
     required this.child,
   }) : assert(
+         bottomFadeExtent == null || bottomFadeExtent >= 0,
+         'bottomFadeExtent 不能为负。',
+       ),
+       assert(
          !grouped || backdropKey == null,
          'grouped 与 backdropKey 只能二选一：前者取最近的 BackdropGroup，'
          '后者直接指定共享背景的键。',
@@ -78,6 +88,29 @@ class GlassSurface extends StatelessWidget {
 
   /// 显现进度（0 完全透明、1 完全显现）。
   final double progress;
+
+  /// 底缘渐隐的高度（玻璃顶栏用）：表面最下面这么高的一段里，玻璃自上而下
+  /// 淡出——底色在整段里淡到全透明，背景模糊（连同饱和度增强）在最下面
+  /// 三分之一里淡出（分两段的原因见 [GlassBottomFadePainter]）；到下缘时
+  /// 只剩没有模糊的页面，表面没有看得见的下边界。内容（文字、按钮）不受
+  /// 影响。表面比它矮时仍按下缘对齐，只是从半途开始。
+  ///
+  /// - null（默认）：不渐隐，树结构与没有这个参数时完全相同；
+  /// - 0：不渐隐，但保留渐隐用的节点——调用方在“渐隐 / 不渐隐”之间切换时
+  ///   传 0 而不是 null，树结构不变，内容不会被重新挂载；
+  /// - 大于 0：渐隐。模糊的那一段只在模糊开启时画（[blur] 为 false 或
+  ///   [progress] 为 0 时只淡底色）：它靠在背景模糊的离屏图层里擦除实现，
+  ///   没有这一层时会直接擦掉下方的页面。
+  ///
+  /// 只适合直角、不画底部细线与描边的表面：它们都落在淡没了的那一段上。
+  final double? bottomFadeExtent;
+
+  /// 本表面下缘之下、同属一条栏的玻璃还有多高：一条栏由上下几片玻璃拼成时
+  /// （日记页的刊头 + 标签栏），渐隐区按整条栏的下缘量，上面的片把下面
+  /// 各片的高度经这里传入，渐隐就能跨片接着画，接缝处不断开。null（默认）
+  /// 即 0——本表面的下缘就是栏的下缘。只在 [bottomFadeExtent] 大于 0 时
+  /// 使用；值变化时只触发重画。
+  final ValueListenable<double>? bottomFadeTrailing;
 
   /// 是否经 `BackdropFilter.grouped` 共用最近的 [BackdropGroup]：相邻的几块
   /// 玻璃（如顶栏与底栏）同在一个 BackdropGroup 下时只读一次背景，省掉重复
@@ -134,9 +167,35 @@ class GlassSurface extends StatelessWidget {
         child: content,
       );
     }
+    // 始终保留 BackdropFilter 节点、只切换 enabled：增删节点会让内容整棵
+    // 重建，丢掉焦点、滚动位置与水波纹。
+    final enabled = blur && t > 0 && blurSigma > 0;
+    final fade = bottomFadeExtent;
+    final fading = fade != null && fade > 0;
+    if (fade != null) {
+      // 渐隐时底色不再由外层 Material 均匀地画，改由画笔画成自上而下淡出的
+      // 一块（先擦淡模糊、再画底色，见 GlassBottomFadePainter）；CustomPaint
+      // 先画 painter 再画 child，内容照常叠在上面。
+      //
+      // 里面再垫一层透明的 Material 接住水波纹与悬停高亮：外层 Material 的
+      // 墨迹画在它的 child（也就是这支画笔）之前，会被擦淡、再被底色盖住，
+      // 渐隐区里的按钮按下去高亮就缺了一块。无论此刻渐隐与否都垫着，树
+      // 结构不变。
+      content = CustomPaint(
+        painter: fading
+            ? GlassBottomFadePainter(
+                extent: fade,
+                fill: _scaled(fill, t),
+                eraseBackdrop: enabled,
+                trailing: bottomFadeTrailing,
+              )
+            : null,
+        child: Material(type: MaterialType.transparency, child: content),
+      );
+    }
     final surface = Material(
       type: MaterialType.canvas,
-      color: _scaled(fill, t),
+      color: fading ? Colors.transparent : _scaled(fill, t),
       surfaceTintColor: Colors.transparent,
       // 进度已经逐帧给出颜色与描边，关掉 Material 自己的颜色补间，免得拖尾。
       animationDuration: Duration.zero,
@@ -159,9 +218,6 @@ class GlassSurface extends StatelessWidget {
             outer: ColorFilter.matrix(_saturationMatrix(saturate)),
             inner: blurFilter,
           );
-    // 始终保留 BackdropFilter 节点、只切换 enabled：增删节点会让内容整棵
-    // 重建，丢掉焦点、滚动位置与水波纹。
-    final enabled = blur && t > 0 && blurSigma > 0;
     final blurred = ClipRRect(
       borderRadius: borderRadius,
       child: grouped

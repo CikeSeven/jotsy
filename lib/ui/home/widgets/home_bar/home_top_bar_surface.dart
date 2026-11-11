@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../../app/theme/app_spacing.dart';
@@ -12,6 +13,19 @@ import 'home_chrome_scope.dart';
 /// 各的，有背景图时顶栏下缘一清楚，几页就会一页一个样。统一从这里取。
 const double kHomeTopContentGap = AppSpacing.m;
 
+/// 上下两片玻璃拼成一条顶栏时（日记页：刊头 + 钉住的标签栏），两片之间
+/// 传递“下面那片有多高”的纽带，由页面的 State 持有并传给两片的
+/// [HomeTopBarSurface.fadeLink]。
+///
+/// 渐隐区按整条顶栏的下缘量、长度固定，而下面那片的高度不固定（没有标签
+/// 时标签栏只剩上下留白的 6，展开标签时又有好几行），渐隐区常常要伸进
+/// 上面那片：下面一片在布局时把自己的高度写进来，上面一片的画笔监听它，
+/// 把渐隐接着往上画。高度在布局阶段才知道，所以走监听 + 重画，不经过
+/// 重建；两片在同一帧里先后布局、之后才绘制，不会错开一帧。
+class HomeTopBarFadeLink extends ValueNotifier<double> {
+  HomeTopBarFadeLink() : super(0);
+}
+
 /// 首页 Tab 顶栏的底：在首页之下（有 [HomeChromeScope]）恒为直角、贴边的
 /// [GlassSurface]，与悬浮底栏同一配方（底色、模糊、饱和度）。
 ///
@@ -19,11 +33,20 @@ const double kHomeTopContentGap = AppSpacing.m;
 /// 不多包任何会改变布局或绘制的节点，画的就是页面原来的那块颜色。高对比度
 /// 时玻璃退回不透明底色、不模糊（见 `HomeBarResolvedStyle.translucent`），
 /// 但仍保留玻璃顶栏的结构。
+///
+/// 下缘：玻璃越往下越透明，到顶栏下缘完全消失（底色与模糊一起淡出，见
+/// `HomeBarResolvedStyle.topBarFadeExtent`），滚到栏下的内容慢慢化进去，
+/// 没有硬边；栏里的文字与按钮不跟着变淡。用户打开顶栏分隔线时改为均匀的
+/// 玻璃加一条细线，高对比度时为不透明的实边。下缘只在最下面一片上处理
+/// （[bottomEdge]）。渐隐区按顶栏当时的下缘对齐，所以日历月份行收起、日记
+/// 刊头收起或标签栏展开时渐隐始终贴着下缘走；由两片玻璃拼成的顶栏经
+/// [fadeLink] 让渐隐跨片连续。
 class HomeTopBarSurface extends StatelessWidget {
   const HomeTopBarSurface({
     super.key,
     required this.solidColor,
-    this.showHairline = true,
+    this.bottomEdge = true,
+    this.fadeLink,
     this.grouped = false,
     required this.child,
   });
@@ -32,9 +55,15 @@ class HomeTopBarSurface extends StatelessWidget {
   /// 底色）。
   final Color solidColor;
 
-  /// 玻璃时是否允许画底部细线（还要用户打开顶栏分隔线）；日记页的多段
-  /// 顶栏只让最下面一段画。
-  final bool showHairline;
+  /// 这一片的下缘是不是整条顶栏的下缘（默认是）。顶栏的下缘——渐隐，或
+  /// 用户打开分隔线时的细线——只画在最下面一片上：日记页的顶栏是刊头 +
+  /// 标签栏两片玻璃，刊头传 false，否则两片中间会淡出一道缝 / 多一条线。
+  final bool bottomEdge;
+
+  /// 两片玻璃拼成一条顶栏时两片共用的纽带（见 [HomeTopBarFadeLink]）：
+  /// 最下面一片（[bottomEdge] 为 true）把自己的高度写进去，上面一片据此把
+  /// 渐隐接着画。单片的顶栏不用传。
+  final HomeTopBarFadeLink? fadeLink;
 
   /// 是否与同一 BackdropGroup 下的其他玻璃共用背景（见 [GlassSurface.grouped]）。
   final bool grouped;
@@ -68,17 +97,64 @@ class HomeTopBarSurface extends StatelessWidget {
     if (style == null) {
       return ColoredBox(color: solidColor, child: child);
     }
-    return GlassSurface(
+    final link = fadeLink;
+    // 渐隐画在最下面一片上；上面的片只有拿到纽带（知道下面还有多高的玻璃）
+    // 才参与，否则保持均匀。不渐隐时传 0 而不是 null：渐隐用的节点一直在，
+    // 系统切换高对比度时栏里的内容不会被重新挂载。
+    final fades = bottomEdge || link != null;
+    final Widget surface = GlassSurface(
       fill: style.fill,
       blur: style.translucent,
       blurSigma: style.blurSigma,
       saturation: style.saturation,
-      bottomHairline: showHairline && style.topBarHairline
+      bottomHairline: bottomEdge && style.topBarHairline
           ? style.hairlineColor
           : null,
+      bottomFadeExtent: fades ? style.topBarFadeExtent : 0,
+      bottomFadeTrailing: bottomEdge ? null : link,
       grouped: grouped,
       child: child,
     );
+    if (link == null || !bottomEdge) return surface;
+    return _ReportExtent(link: link, child: surface);
+  }
+}
+
+/// 把自己的高度在布局时写进 [link]（最下面一片玻璃用）。
+class _ReportExtent extends SingleChildRenderObjectWidget {
+  const _ReportExtent({required this.link, super.child});
+
+  final HomeTopBarFadeLink link;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderReportExtent(link);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderReportExtent renderObject,
+  ) {
+    renderObject.link = link;
+  }
+}
+
+class _RenderReportExtent extends RenderProxyBox {
+  _RenderReportExtent(this._link);
+
+  HomeTopBarFadeLink _link;
+  set link(HomeTopBarFadeLink value) {
+    if (identical(value, _link)) return;
+    _link = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    // 监听者只有上面那片的画笔（markNeedsPaint），布局阶段通知是允许的；
+    // 高度没变时 ValueNotifier 不通知。
+    _link.value = size.height;
   }
 }
 

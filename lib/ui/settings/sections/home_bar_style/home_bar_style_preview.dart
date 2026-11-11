@@ -72,12 +72,18 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
   static const double _fabEnd = 20;
   static const double _topBarHeight = 56;
 
-  int _selected = 0;
+  /// 预览栏里的项目：全部 Tab，按首页底栏的顺序（日记在中间）。
+  static final List<HomeTab> _tabs = allHomeTabsInBarOrder;
 
-  /// 指示器跟随滑动时的“页面位置”，从旧选中项补间到新选中项。
+  /// 初始选中日记：画框里画的就是日记页。
+  int _selected = _tabs.indexOf(HomeTab.diaries);
+
+  /// 指示器跟随滑动时的“页面位置”，从旧选中项补间到新选中项；从日记的
+  /// 位置开始。
   late final AnimationController _position = AnimationController(
     vsync: this,
-    upperBound: (HomeTab.values.length - 1).toDouble(),
+    upperBound: (_tabs.length - 1).toDouble(),
+    value: _selected.toDouble(),
   );
 
   @override
@@ -168,7 +174,7 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
     );
     final behavior = controller.behavior;
     final items = <BottomNavItem>[
-      for (final tab in HomeTab.values)
+      for (final tab in _tabs)
         BottomNavItem(label: tab.label(l10n), icon: tab.icon),
     ];
     final position = behavior.indicatorFollowsSwipe ? _position : null;

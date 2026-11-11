@@ -111,16 +111,20 @@ class _ExpressiveMenuPanelState extends State<ExpressiveMenuPanel>
       onPointerMove: _selection.handlePointerMove,
       onPointerUp: _selection.handlePointerUp,
       onPointerCancel: _selection.handlePointerCancel,
-      child: Padding(
+      // 胶囊的画布、行位置的参照盒与手势层三者原点必须重合：行的位置相对
+      // [_contentKey] 量，按下的位置相对 Listener 量，胶囊画在 CustomPaint
+      // 上。所以留白放在画布里面，不能把画布放进留白（那样胶囊整体下移
+      // panelPadding）。
+      child: CustomPaint(
         key: _contentKey,
-        padding: const EdgeInsets.symmetric(
-          vertical: ExpressiveMenuRowMetrics.panelPadding,
+        painter: ExpressiveMenuMaskPainter(
+          selection: _selection,
+          color: maskColor,
+          inset: ExpressiveMenuRowMetrics.inset,
         ),
-        child: CustomPaint(
-          painter: ExpressiveMenuMaskPainter(
-            selection: _selection,
-            color: maskColor,
-            inset: ExpressiveMenuRowMetrics.inset,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: ExpressiveMenuRowMetrics.panelPadding,
           ),
           child: ListBody(children: <Widget>[?header, ...widget.children]),
         ),

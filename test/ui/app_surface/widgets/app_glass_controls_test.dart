@@ -27,6 +27,7 @@ import 'package:node_diary/ui/diaries/widgets/tag_filter_chip.dart';
 import 'package:node_diary/ui/diary_templates/widgets/diary_template_search_field.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_presets.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
@@ -424,9 +425,58 @@ void main() {
       expect(find.byType(BackdropFilter), findsNothing);
     });
 
-    testWidgets('the glass header still has exactly two enabled blurs', (
+    testWidgets('chips on a fading glass top bar sit on a solid body', (
       tester,
     ) async {
+      late HomeBarResolvedStyle bar;
+      Widget onBar(HomeBarStyle barStyle, {AppGlassStyle? glass}) => _host(
+        style: glass,
+        child: Builder(
+          builder: (BuildContext context) {
+            bar = HomeBarResolvedStyle.resolve(
+              barStyle,
+              Theme.of(context).colorScheme,
+            );
+            return HomeChromeScope(style: bar, child: _tagBar());
+          },
+        ),
+      );
+
+      // 默认顶栏下半截渐变：标签垫上栏自己的颜色、几乎不透明的底，经典
+      // 控件仍叠一层标签色浅底。
+      await tester.pumpWidget(onBar(HomeBarStyle.defaults));
+      expect(bar.topBarFades, isTrue);
+      final idle = _chip(tester, 'Work');
+      final picked = _chip(tester, 'Travel');
+      expect(
+        idle.unselectedColor,
+        Color.alphaBlend(
+          const Color(0xffaa5500).withValues(alpha: 0.08),
+          bar.topBarControlFill,
+        ),
+      );
+      expect(idle.unselectedColor.a, greaterThanOrEqualTo(0.9));
+      expect(picked.selectedColor.a, greaterThanOrEqualTo(0.9));
+      expect(picked.selectedColor, isNot(idle.unselectedColor));
+
+      // 玻璃控件同样换成实底。
+      await tester.pumpWidget(onBar(HomeBarStyle.defaults, glass: _glass));
+      expect(_chip(tester, 'Work').unselectedColor, bar.topBarControlFill);
+
+      // 打开分隔线（顶栏均匀、不渐变）时照旧是淡底。
+      await tester.pumpWidget(onBar(const HomeBarStyle(topBarHairline: true)));
+      expect(bar.topBarFades, isFalse);
+      expect(
+        _chip(tester, 'Work').unselectedColor,
+        const Color(0xffaa5500).withValues(alpha: 0.08),
+      );
+    });
+
+    testWidgets('the glass header still has exactly one enabled blur', (
+      tester,
+    ) async {
+      final link = HomeTopBarStackLink();
+      addTearDown(link.dispose);
       await tester.pumpWidget(
         _host(
           style: _glass,
@@ -436,31 +486,31 @@ void main() {
                 HomeBarPreset.glass.style,
                 Theme.of(context).colorScheme,
               ),
-              child: BackdropGroup(
-                child: Column(
-                  children: <Widget>[
-                    const HomeTopBarSurface(
-                      solidColor: Color(0xFFEEEEEE),
-                      grouped: true,
-                      child: SizedBox(height: 68, child: Text('masthead')),
-                    ),
-                    HomeTopBarSurface(
-                      solidColor: const Color(0xFFEEEEEE),
-                      grouped: true,
-                      child: _tagBar(),
-                    ),
-                  ],
-                ),
+              child: Column(
+                children: <Widget>[
+                  HomeTopBarSurface.upper(
+                    solidColor: const Color(0xFFEEEEEE),
+                    link: link,
+                    child: const SizedBox(height: 68, child: Text('masthead')),
+                  ),
+                  HomeTopBarSurface(
+                    solidColor: const Color(0xFFEEEEEE),
+                    glassAbove: 68,
+                    link: link,
+                    child: _tagBar(),
+                  ),
+                ],
               ),
             ),
           ),
         ),
       );
+      // 整条顶栏只有标签栏画的那一块玻璃，标签本身不多加模糊。
       final filters = tester
           .renderObjectList<RenderBackdropFilter>(find.byType(BackdropFilter))
           .where((filter) => filter.enabled)
           .toList();
-      expect(filters, hasLength(2));
+      expect(filters, hasLength(1));
     });
   });
 

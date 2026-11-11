@@ -1,4 +1,5 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
@@ -12,6 +13,17 @@ import 'home_chrome_scope.dart';
 /// 各的，有背景图时顶栏下缘一清楚，几页就会一页一个样。统一从这里取。
 const double kHomeTopContentGap = AppSpacing.m;
 
+/// 由上下几片拼成的顶栏（日记页：浮动的刊头 + 钉住的标签栏）里，上面各片
+/// 此刻露出来的总高度：上面的片（[HomeTopBarSurface.upper]）在布局时写入，
+/// 最下面那片的玻璃据此知道自己往上铺的那截露出来多少，渐变从露出来的上缘
+/// 起算。由页面的 State 持有并传给各片。
+///
+/// 高度在布局阶段才知道，所以走监听 + 重画，不经过重建；上面的片先布局、
+/// 两片都布局完才绘制，不会错开一帧。
+class HomeTopBarStackLink extends ValueNotifier<double> {
+  HomeTopBarStackLink() : super(0);
+}
+
 /// 首页 Tab 顶栏的底：在首页之下（有 [HomeChromeScope]）恒为直角、贴边的
 /// [GlassSurface]，与悬浮底栏同一配方（底色、模糊、饱和度）。
 ///
@@ -19,25 +31,54 @@ const double kHomeTopContentGap = AppSpacing.m;
 /// 不多包任何会改变布局或绘制的节点，画的就是页面原来的那块颜色。高对比度
 /// 时玻璃退回不透明底色、不模糊（见 `HomeBarResolvedStyle.translucent`），
 /// 但仍保留玻璃顶栏的结构。
+///
+/// 透明度：整条顶栏自上而下逐渐变透明——从顶栏露出来的上缘（屏幕顶端）
+/// 到下缘，底色与模糊一起由完整淡到没有（见
+/// `HomeBarResolvedStyle.topBarFades`）；滚到栏下的内容越靠近下缘越清楚，
+/// 下缘处与页面连成一片，没有硬边。栏里的文字与按钮不跟着变淡。用户打开
+/// 顶栏分隔线时改为均匀的玻璃加一条细线，高对比度时为不透明的实边。渐变
+/// 按顶栏当时的高度铺：日历月份行收起、日记刊头收起或标签栏展开时都跟着。
+///
+/// 由上下几片拼成的顶栏只有一块玻璃：最下面一片用默认构造、经
+/// [glassAbove] 把玻璃往上铺到上面各片之后，下缘也由它处理；上面的片用
+/// [HomeTopBarSurface.upper]，只画内容，并经同一个 [link] 报上自己的高度。
+/// 原因见 `GlassSurface.extendAbove`。
 class HomeTopBarSurface extends StatelessWidget {
+  /// 自己画玻璃的一片：单片的顶栏，或多片顶栏最下面的那一片。
   const HomeTopBarSurface({
     super.key,
     required this.solidColor,
-    this.showHairline = true,
-    this.grouped = false,
+    this.glassAbove = 0,
+    this.link,
     required this.child,
-  });
+  }) : _upper = false;
+
+  /// 多片顶栏里叠在玻璃那一片上方的片：在首页之下不画底、只画内容，底由
+  /// 下面那一片的玻璃（[glassAbove]）垫着，并把自己的高度写进 [link]；
+  /// 不在首页之下时仍是自己的 [ColoredBox]。
+  const HomeTopBarSurface.upper({
+    super.key,
+    required this.solidColor,
+    required HomeTopBarStackLink this.link,
+    required this.child,
+  }) : glassAbove = 0,
+       _upper = true;
 
   /// 不在首页之下时的底色（页面原来画的颜色，如 surface 或日记页的页面
   /// 底色）。
   final Color solidColor;
 
-  /// 玻璃时是否允许画底部细线（还要用户打开顶栏分隔线）；日记页的多段
-  /// 顶栏只让最下面一段画。
-  final bool showHairline;
+  /// 玻璃越过这一片的上缘再往上铺多高，垫到用 [HomeTopBarSurface.upper]
+  /// 构建、叠在它上方的那几片之后：取上面各片可能的最大总高度，铺过头的
+  /// 部分落在滚动视图之外。单片的顶栏为 0。
+  final double glassAbove;
 
-  /// 是否与同一 BackdropGroup 下的其他玻璃共用背景（见 [GlassSurface.grouped]）。
-  final bool grouped;
+  /// 多片顶栏各片共用的纽带（见 [HomeTopBarStackLink]）：上面的片写入
+  /// 自己的高度，最下面一片据此知道往上铺的那截露出来多少。单片的顶栏
+  /// 不用传。
+  final HomeTopBarStackLink? link;
+
+  final bool _upper;
   final Widget child;
 
   /// 顶栏下缘看不看得见：在首页之下顶栏恒为玻璃（磨砂条与下方内容分得
@@ -68,17 +109,65 @@ class HomeTopBarSurface extends StatelessWidget {
     if (style == null) {
       return ColoredBox(color: solidColor, child: child);
     }
+    if (_upper) {
+      // 底由下面那片的玻璃垫着；透明的 Material 接住按钮的水波纹，否则墨迹
+      // 会画到更外层、被玻璃盖住的 Material 上。
+      return _ReportExtent(
+        link: link!,
+        child: Material(type: MaterialType.transparency, child: child),
+      );
+    }
     return GlassSurface(
       fill: style.fill,
       blur: style.translucent,
       blurSigma: style.blurSigma,
       saturation: style.saturation,
-      bottomHairline: showHairline && style.topBarHairline
-          ? style.hairlineColor
-          : null,
-      grouped: grouped,
+      bottomHairline: style.topBarHairline ? style.hairlineColor : null,
+      // 不渐变时传 false 而不是 null：渐变用的节点一直在，打开分隔线或系统
+      // 切换高对比度时栏里的内容不会被重新挂载。
+      fadeToBottom: style.topBarFades,
+      extendAbove: glassAbove,
+      extendAboveVisible: glassAbove > 0 ? link : null,
       child: child,
     );
+  }
+}
+
+/// 把自己的高度在布局时写进 [link]（多片顶栏上面的片用）。
+class _ReportExtent extends SingleChildRenderObjectWidget {
+  const _ReportExtent({required this.link, super.child});
+
+  final HomeTopBarStackLink link;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderReportExtent(link);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderReportExtent renderObject,
+  ) {
+    renderObject.link = link;
+  }
+}
+
+class _RenderReportExtent extends RenderProxyBox {
+  _RenderReportExtent(this._link);
+
+  HomeTopBarStackLink _link;
+  set link(HomeTopBarStackLink value) {
+    if (identical(value, _link)) return;
+    _link = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    // 监听者只有下面那片玻璃的画笔（markNeedsPaint），布局阶段通知是允许
+    // 的；高度没变时 ValueNotifier 不通知。
+    _link.value = size.height;
   }
 }
 

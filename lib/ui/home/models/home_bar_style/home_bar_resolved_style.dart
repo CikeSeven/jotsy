@@ -16,7 +16,7 @@ import 'home_bar_style.dart';
 /// 尺寸：项宽、缝、图标、文字与间距取自样式（渲染层再夹紧一次），格高、
 /// 栏高与两处圆角由它们推导（[HomeBarMetrics.itemHeight]）；其余几何是
 /// 常量。模糊强度跟着不透明度走（[blurSigma]），饱和度增强是常量；首页
-/// 各 Tab 的顶栏恒为同一种玻璃。
+/// 各 Tab 的顶栏恒为同一种玻璃，自上而下渐变或画分隔线（[topBarFades]）。
 ///
 /// 高对比度时布局不变（悬浮底栏、顶栏结构、FAB 位置），只把底色换成不透明
 /// 的 [solidFill] 并关闭模糊（[translucent] 为 false）：半透明底色叠在任意
@@ -116,6 +116,26 @@ class HomeBarResolvedStyle {
   /// GlassSurface 的默认值）。
   final bool topBarHairline;
   final Color hairlineColor;
+
+  /// 顶栏是否自上而下逐渐变透明；false 时为均匀的玻璃、下缘是清楚的一条边。
+  ///
+  /// 默认渐变：整条顶栏从露出来的上缘到下缘，底色与模糊一起由完整淡到
+  /// 没有，滚到栏下的内容在栏里逐渐变清楚，下缘处与页面连成一片、没有硬边。
+  /// 两种情况不渐变，三者互斥、不会叠在一起：
+  /// - 用户打开了顶栏分隔线（[topBarHairline]）：要的就是一条清楚的下缘，
+  ///   细线画在淡没了的玻璃底下只会像悬空的一根线；
+  /// - 高对比度（[translucent] 为 false）：底色整片不透明才保证得了栏里
+  ///   文字的对比度。
+  bool get topBarFades => translucent && !topBarHairline;
+
+  /// 顶栏渐变时，栏里自带底色的控件（日记页的搜索胶囊、标签）的底色：不透明
+  /// 等效色 [solidFill] 只留一点透明度。
+  ///
+  /// 这些控件平时的底色很淡（压在均匀的磨砂上只需轻轻一层），可顶栏的下半截
+  /// 玻璃逐渐淡没，它们背后就是滚上来的原样内容，淡底跟着一起看不见。换成
+  /// 栏自己的颜色、几乎不透明：像从栏上切下来的一小块，在任何内容上都分得
+  /// 清，与栏的上半截同色、不显突兀。不渐变时（分隔线、高对比度）不用它。
+  Color get topBarControlFill => solidFill.withValues(alpha: 0.9);
 
   /// 背景模糊半径（底栏与顶栏共用）：不透明度最低时为
   /// [HomeBarMetrics.minBlurSigma]，最高时为 [HomeBarMetrics.maxBlurSigma]，

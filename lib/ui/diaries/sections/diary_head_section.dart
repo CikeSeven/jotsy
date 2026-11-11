@@ -384,8 +384,13 @@ class _SearchPreview extends StatelessWidget {
     // 内容，改成在玻璃上轻轻压一层前景色，保留描边勾出胶囊轮廓。
     final glassField = AppGlassField.of(context);
     final glassTopBars = HomeChromeScope.glassTopBarsOf(context);
+    final barStyle = HomeChromeScope.maybeStyleOf(context);
     final Color fill;
-    if (glassField != null) {
+    if (barStyle != null && barStyle.topBarFades) {
+      // 顶栏自上而下渐变时，胶囊背后的玻璃会变薄：换上栏自己的颜色、几乎
+      // 不透明的底，不然它跟着玻璃一起看不见（见 topBarControlFill）。
+      fill = barStyle.topBarControlFill;
+    } else if (glassField != null) {
       fill = glassField.fill;
     } else if (glassTopBars) {
       fill = colorScheme.onSurface.withValues(alpha: isLight ? 0.05 : 0.08);

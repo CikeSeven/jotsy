@@ -11,6 +11,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../widgets/list_item_presence.dart';
 import 'expanded_tag_filter_list.dart';
 import 'tag_filter_chip.dart';
@@ -415,17 +416,32 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     // 对比度时为不透明等效色），标签色只留在色点与描边上；选中态在同一块
     // 玻璃底色上叠标签色浅底，加上满色 2dp 描边，仍一眼可辨。不模糊：标签
     // 栏挂在刊头下面，那条栏是否模糊由导航栏样式决定，这里再加一层模糊就
-    // 成了同一区域两层模糊（刊头恰好两块启用的 BackdropFilter 由测试兜底）。
+    // 成了同一区域两层模糊（整条顶栏只有一块启用的 BackdropFilter，由测试
+    // 兜底）。
+    //
+    // 首页顶栏自上而下渐变时，标签栏落在玻璃淡出的下半截，背后是滚上来的
+    // 原样内容：胶囊改垫栏自己的颜色、几乎不透明的底（topBarControlFill），
+    // 再按上面的规则叠标签色，否则淡底跟着玻璃一起看不见。
     final glass = _glass;
-    final unselectedBg =
-        glass?.fill ?? tagColor.withValues(alpha: isLight ? 0.08 : 0.16);
+    final barStyle = HomeChromeScope.maybeStyleOf(context);
+    final Color? base = barStyle != null && barStyle.topBarFades
+        ? barStyle.topBarControlFill
+        : glass?.fill;
+    final classicTint = tagColor.withValues(alpha: isLight ? 0.08 : 0.16);
+    final Color unselectedBg;
+    if (base == null) {
+      unselectedBg = classicTint;
+    } else if (glass == null) {
+      // 经典控件：保留标签色浅底，只是垫在实底上。
+      unselectedBg = Color.alphaBlend(classicTint, base);
+    } else {
+      unselectedBg = base;
+    }
     final unselectedBorder = tagColor.withValues(alpha: isLight ? 0.22 : 0.32);
     final unselectedText = colorScheme.onSurface;
 
     final tagTint = tagColor.withValues(alpha: isLight ? 0.22 : 0.36);
-    final selectedBg = glass == null
-        ? tagTint
-        : Color.alphaBlend(tagTint, glass.fill);
+    final selectedBg = base == null ? tagTint : Color.alphaBlend(tagTint, base);
     final selectedBorder = tagColor;
     final selectedText = isLight
         ? (ThemeData.estimateBrightnessForColor(tagColor) == Brightness.dark

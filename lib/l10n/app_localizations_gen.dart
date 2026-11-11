@@ -14088,6 +14088,96 @@ abstract class AppLocalizations {
   /// **'A shorter floating bar with icons only'**
   String get homeBarStylePresetCompactDesc;
 
+  /// Navigation bar style preset: rounded name.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounded'**
+  String get homeBarStylePresetRounded;
+
+  /// Navigation bar style preset: rounded description.
+  ///
+  /// In en, this message translates to:
+  /// **'A rounded-rectangle bar with a matching highlight'**
+  String get homeBarStylePresetRoundedDesc;
+
+  /// Navigation bar style preset: roomy name.
+  ///
+  /// In en, this message translates to:
+  /// **'Roomy'**
+  String get homeBarStylePresetRoomy;
+
+  /// Navigation bar style preset: roomy description.
+  ///
+  /// In en, this message translates to:
+  /// **'Bigger icons and labels, wider items'**
+  String get homeBarStylePresetRoomyDesc;
+
+  /// Navigation bar style preset: focus name.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get homeBarStylePresetFocus;
+
+  /// Navigation bar style preset: focus description.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the selected item shows its label, with a fuller highlight'**
+  String get homeBarStylePresetFocusDesc;
+
+  /// Navigation bar style settings: shape group title (roundness, item width, highlight inset).
+  ///
+  /// In en, this message translates to:
+  /// **'Shape'**
+  String get homeBarStyleShapeGroup;
+
+  /// Navigation bar style settings: shape group footer.
+  ///
+  /// In en, this message translates to:
+  /// **'The bar\'s height follows the icon and label sizes; the highlight\'s corners stay concentric with the bar.'**
+  String get homeBarStyleShapeFooter;
+
+  /// Navigation bar style settings: roundness slider (100% is a full capsule).
+  ///
+  /// In en, this message translates to:
+  /// **'Corner roundness'**
+  String get homeBarStyleRoundness;
+
+  /// Navigation bar style settings: width of each item (and its highlight).
+  ///
+  /// In en, this message translates to:
+  /// **'Item width'**
+  String get homeBarStyleItemWidth;
+
+  /// Navigation bar style settings: gap between the selection highlight and the bar edge.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight inset'**
+  String get homeBarStyleItemInset;
+
+  /// Navigation bar style settings: icons and labels group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Icons & labels'**
+  String get homeBarStyleItemsGroup;
+
+  /// Navigation bar style settings: icon size slider.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon size'**
+  String get homeBarStyleIconSize;
+
+  /// Navigation bar style settings: label font size slider (shown when labels are on).
+  ///
+  /// In en, this message translates to:
+  /// **'Label size'**
+  String get homeBarStyleLabelSize;
+
+  /// Navigation bar style settings: icon-to-label spacing slider (shown when labels are on).
+  ///
+  /// In en, this message translates to:
+  /// **'Icon-label spacing'**
+  String get homeBarStyleLabelGap;
+
   /// Navigation bar style settings: note appended to the material footer while system high contrast is on.
   ///
   /// In en, this message translates to:

@@ -14,6 +14,9 @@ String homeBarPresetName(AppLocalizations l10n, HomeBarPreset preset) =>
       HomeBarPreset.clear => l10n.homeBarStylePresetClear,
       HomeBarPreset.frosted => l10n.homeBarStylePresetFrosted,
       HomeBarPreset.tinted => l10n.homeBarStylePresetTinted,
+      HomeBarPreset.rounded => l10n.homeBarStylePresetRounded,
+      HomeBarPreset.roomy => l10n.homeBarStylePresetRoomy,
+      HomeBarPreset.focus => l10n.homeBarStylePresetFocus,
       HomeBarPreset.compact => l10n.homeBarStylePresetCompact,
     };
 
@@ -23,6 +26,9 @@ String _presetDescription(AppLocalizations l10n, HomeBarPreset preset) =>
       HomeBarPreset.clear => l10n.homeBarStylePresetClearDesc,
       HomeBarPreset.frosted => l10n.homeBarStylePresetFrostedDesc,
       HomeBarPreset.tinted => l10n.homeBarStylePresetTintedDesc,
+      HomeBarPreset.rounded => l10n.homeBarStylePresetRoundedDesc,
+      HomeBarPreset.roomy => l10n.homeBarStylePresetRoomyDesc,
+      HomeBarPreset.focus => l10n.homeBarStylePresetFocusDesc,
       HomeBarPreset.compact => l10n.homeBarStylePresetCompactDesc,
     };
 
@@ -31,6 +37,9 @@ FaIconData _presetIcon(HomeBarPreset preset) => switch (preset) {
   HomeBarPreset.clear => FontAwesomeIcons.eye,
   HomeBarPreset.frosted => FontAwesomeIcons.snowflake,
   HomeBarPreset.tinted => FontAwesomeIcons.palette,
+  HomeBarPreset.rounded => FontAwesomeIcons.square,
+  HomeBarPreset.roomy => FontAwesomeIcons.expand,
+  HomeBarPreset.focus => FontAwesomeIcons.bullseye,
   HomeBarPreset.compact => FontAwesomeIcons.compress,
 };
 

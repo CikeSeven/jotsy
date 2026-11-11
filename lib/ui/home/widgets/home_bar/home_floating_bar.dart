@@ -25,6 +25,7 @@ export 'home_inline_create_button.dart';
 ///
 /// - 胶囊的宽度由内容决定：项数 × 项宽 + 两侧的缝（[HomeBarMetrics]），
 ///   不撑满；给定宽度放不下时项宽等比收窄（[HomeBarMetrics.fitItemWidth]）；
+///   圆角取 `style.cornerRadius`（圆角程度为 1 时是完整胶囊）；
 /// - 胶囊是 [GlassSurface]：禁止整体放进 Opacity（背景模糊会失效），启动
 ///   显现经 [progress] 交给 GlassSurface，导航项在玻璃内部另行淡入；
 /// - 并排按钮的槽位宽度由弹簧在 0 与（栏高 + 间距）之间推动，胶囊与按钮
@@ -114,12 +115,9 @@ class _HomeFloatingBarState extends State<HomeFloatingBar>
       child: Opacity(
         opacity: t,
         child: Padding(
-          padding: const EdgeInsets.all(HomeBarMetrics.inset),
+          padding: EdgeInsets.all(style.itemInset),
           child: items.isEmpty
-              ? SizedBox(
-                  width: itemWidth,
-                  height: HomeBarMetrics.itemHeight(style.barHeight),
-                )
+              ? SizedBox(width: itemWidth, height: style.itemHeight)
               : HomeNavBar(
                   items: items,
                   selectedIndex: widget.selectedIndex,
@@ -147,7 +145,12 @@ class _HomeFloatingBarState extends State<HomeFloatingBar>
           if (action == null) {
             return Center(
               child: _pill(
-                HomeBarMetrics.fitItemWidth(style.itemWidth, count, maxWidth),
+                HomeBarMetrics.fitItemWidth(
+                  style.itemWidth,
+                  count,
+                  maxWidth,
+                  inset: style.itemInset,
+                ),
               ),
             );
           }
@@ -167,6 +170,7 @@ class _HomeFloatingBarState extends State<HomeFloatingBar>
                 style.itemWidth,
                 count,
                 maxWidth - slotWidth,
+                inset: style.itemInset,
               );
               if (pill == null || pillItemWidth != itemWidth) {
                 pillItemWidth = itemWidth;

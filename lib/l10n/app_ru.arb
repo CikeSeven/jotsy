@@ -11169,6 +11169,66 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
+  "homeBarStylePresetRounded": "Скруглённая",
+  "@homeBarStylePresetRounded": {
+    "description": "Navigation bar style preset: rounded name."
+  },
+  "homeBarStylePresetRoundedDesc": "Панель со скруглёнными углами и такой же подсветкой",
+  "@homeBarStylePresetRoundedDesc": {
+    "description": "Navigation bar style preset: rounded description."
+  },
+  "homeBarStylePresetRoomy": "Просторная",
+  "@homeBarStylePresetRoomy": {
+    "description": "Navigation bar style preset: roomy name."
+  },
+  "homeBarStylePresetRoomyDesc": "Крупнее значки и подписи, шире пункты",
+  "@homeBarStylePresetRoomyDesc": {
+    "description": "Navigation bar style preset: roomy description."
+  },
+  "homeBarStylePresetFocus": "Фокус",
+  "@homeBarStylePresetFocus": {
+    "description": "Navigation bar style preset: focus name."
+  },
+  "homeBarStylePresetFocusDesc": "Подпись только у выбранного пункта, подсветка крупнее",
+  "@homeBarStylePresetFocusDesc": {
+    "description": "Navigation bar style preset: focus description."
+  },
+  "homeBarStyleShapeGroup": "Форма",
+  "@homeBarStyleShapeGroup": {
+    "description": "Navigation bar style settings: shape group title (roundness, item width, highlight inset)."
+  },
+  "homeBarStyleShapeFooter": "Высота панели подстраивается под размер значков и подписей; углы подсветки концентричны панели.",
+  "@homeBarStyleShapeFooter": {
+    "description": "Navigation bar style settings: shape group footer."
+  },
+  "homeBarStyleRoundness": "Скругление углов",
+  "@homeBarStyleRoundness": {
+    "description": "Navigation bar style settings: roundness slider (100% is a full capsule)."
+  },
+  "homeBarStyleItemWidth": "Ширина пункта",
+  "@homeBarStyleItemWidth": {
+    "description": "Navigation bar style settings: width of each item (and its highlight)."
+  },
+  "homeBarStyleItemInset": "Отступ подсветки",
+  "@homeBarStyleItemInset": {
+    "description": "Navigation bar style settings: gap between the selection highlight and the bar edge."
+  },
+  "homeBarStyleItemsGroup": "Значки и подписи",
+  "@homeBarStyleItemsGroup": {
+    "description": "Navigation bar style settings: icons and labels group title."
+  },
+  "homeBarStyleIconSize": "Размер значков",
+  "@homeBarStyleIconSize": {
+    "description": "Navigation bar style settings: icon size slider."
+  },
+  "homeBarStyleLabelSize": "Размер подписей",
+  "@homeBarStyleLabelSize": {
+    "description": "Navigation bar style settings: label font size slider (shown when labels are on)."
+  },
+  "homeBarStyleLabelGap": "Отступ между значком и подписью",
+  "@homeBarStyleLabelGap": {
+    "description": "Navigation bar style settings: icon-to-label spacing slider (shown when labels are on)."
+  },
   "homeBarStyleHighContrastNote": "В системе включён высокий контраст, поэтому стекло пока отображается непрозрачным.",
   "@homeBarStyleHighContrastNote": {
     "description": "Navigation bar style settings: note appended to the material footer while system high contrast is on."

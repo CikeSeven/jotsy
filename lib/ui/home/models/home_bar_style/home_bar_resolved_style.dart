@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'home_bar_metrics.dart';
@@ -6,14 +8,15 @@ import 'home_bar_style.dart';
 /// 把 [HomeBarStyle] 落到当前主题下可直接渲染的值。
 ///
 /// 输入：样式、当前 [ColorScheme]（决定明暗与语义色）与系统“高对比度”开关；
-/// 输出：不可变的解析结果（玻璃是否半透明、模糊强度、栏的尺寸、各处
-/// 颜色）。纯函数、
+/// 输出：不可变的解析结果（玻璃是否半透明、模糊强度、栏与导航项的尺寸、
+/// 各处颜色）。纯函数、
 /// 无副作用，不依赖 widget 树，方便底栏、四个顶栏与设置页预览共用同一份
 /// 结果，并按 `==` 跳过无变化的重建。
 ///
-/// 尺寸不来自用户设置：栏高与项宽只按文字模式在 [HomeBarMetrics] 的两档里
-/// 取，其余几何是常量。模糊强度跟着不透明度走（[blurSigma]），饱和度增强
-/// 是常量；首页各 Tab 的顶栏恒为同一种玻璃。
+/// 尺寸：项宽、缝、图标、文字与间距取自样式（渲染层再夹紧一次），格高、
+/// 栏高与两处圆角由它们推导（[HomeBarMetrics.itemHeight]）；其余几何是
+/// 常量。模糊强度跟着不透明度走（[blurSigma]），饱和度增强是常量；首页
+/// 各 Tab 的顶栏恒为同一种玻璃。
 ///
 /// 高对比度时布局不变（悬浮底栏、顶栏结构、FAB 位置），只把底色换成不透明
 /// 的 [solidFill] 并关闭模糊（[translucent] 为 false）：半透明底色叠在任意
@@ -25,8 +28,13 @@ class HomeBarResolvedStyle {
     required this.blurSigma,
     required this.topBarHairline,
     required this.hairlineColor,
-    required this.barHeight,
     required this.itemWidth,
+    required this.itemHeight,
+    required this.itemInset,
+    required this.roundness,
+    required this.iconSize,
+    required this.labelSize,
+    required this.labelGap,
     required this.fabPlacement,
     required this.labelMode,
     required this.tint,
@@ -54,6 +62,12 @@ class HomeBarResolvedStyle {
       scheme,
       dark,
     ).withValues(alpha: tintOpacity);
+    final iconSize = HomeBarStyleLimits.itemIconSize.clamp(style.itemIconSize);
+    final labelSize = HomeBarStyleLimits.itemLabelSize.clamp(
+      style.itemLabelSize,
+    );
+    final labelGap = HomeBarStyleLimits.itemLabelGap.clamp(style.itemLabelGap);
+    final labeled = style.labelMode != HomeBarLabelMode.never;
     return HomeBarResolvedStyle._(
       translucent: !highContrast,
       blurSigma:
@@ -61,8 +75,17 @@ class HomeBarResolvedStyle {
           (HomeBarMetrics.maxBlurSigma - HomeBarMetrics.minBlurSigma) * density,
       topBarHairline: style.topBarHairline,
       hairlineColor: scheme.outlineVariant.withValues(alpha: 0.35),
-      barHeight: HomeBarMetrics.barHeight(style.labelMode),
-      itemWidth: HomeBarMetrics.itemWidth(style.labelMode),
+      itemWidth: HomeBarStyleLimits.itemWidth.clamp(style.itemWidth),
+      itemHeight: HomeBarMetrics.itemHeight(
+        iconSize: iconSize,
+        labelSize: labeled ? labelSize : null,
+        labelGap: labelGap,
+      ),
+      itemInset: HomeBarStyleLimits.itemInset.clamp(style.itemInset),
+      roundness: HomeBarStyleLimits.roundness.clamp(style.roundness),
+      iconSize: iconSize,
+      labelSize: labelSize,
+      labelGap: labelGap,
       fabPlacement: style.fabPlacement,
       labelMode: style.labelMode,
       tint: tint,
@@ -102,13 +125,37 @@ class HomeBarResolvedStyle {
   /// 模糊后背景的饱和度倍数（常量）。
   double get saturation => HomeBarMetrics.saturation;
 
-  /// 悬浮底栏的高度与每个导航项的首选宽度（按文字模式取，见
-  /// [HomeBarMetrics]）；屏幕放不下时项宽由悬浮栏等比收窄。
-  final double barHeight;
+  /// 每个导航项（与选中指示器）的首选宽度；屏幕放不下时由悬浮栏等比
+  /// 收窄。
   final double itemWidth;
 
-  /// 胶囊的圆角：恒为栏高的一半。
-  double get cornerRadius => barHeight / 2;
+  /// 导航项（与选中指示器）的高度：由图标、文字与间距推导（只有图标时
+  /// 不算文字），见 [HomeBarMetrics.itemHeight]。
+  final double itemHeight;
+
+  /// 导航项与胶囊内壁的缝：指示器四周离胶囊边都是这么宽。
+  final double itemInset;
+
+  /// 圆角程度（0 直角 ~ 1 胶囊），见 [cornerRadius]。
+  final double roundness;
+
+  /// 导航项的图标大小、文字字号与两者间距。
+  final double iconSize;
+  final double labelSize;
+  final double labelGap;
+
+  /// 图标占的方框边长（比图标大一点，容纳选中时的放大）。
+  double get iconBox => HomeBarMetrics.iconBox(iconSize);
+
+  /// 悬浮底栏的高度：格高加上下两道缝。
+  double get barHeight => itemHeight + itemInset * 2;
+
+  /// 胶囊的圆角：栏高一半的 [roundness] 倍（1 时两端是完整的半圆）。
+  double get cornerRadius => barHeight / 2 * roundness;
+
+  /// 选中指示器的圆角：与胶囊同心（胶囊圆角减去缝），所以缝在四角也一样
+  /// 宽；胶囊为完整胶囊时它也是（格高的一半）。不小于 0。
+  double get indicatorRadius => math.max(0, cornerRadius - itemInset);
 
   /// 悬浮底栏与系统手势条之间的距离。
   double get bottomGap => HomeBarMetrics.bottomGap;
@@ -164,8 +211,13 @@ class HomeBarResolvedStyle {
         other.blurSigma == blurSigma &&
         other.topBarHairline == topBarHairline &&
         other.hairlineColor == hairlineColor &&
-        other.barHeight == barHeight &&
         other.itemWidth == itemWidth &&
+        other.itemHeight == itemHeight &&
+        other.itemInset == itemInset &&
+        other.roundness == roundness &&
+        other.iconSize == iconSize &&
+        other.labelSize == labelSize &&
+        other.labelGap == labelGap &&
         other.fabPlacement == fabPlacement &&
         other.labelMode == labelMode &&
         other.tint == tint &&
@@ -179,13 +231,18 @@ class HomeBarResolvedStyle {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll(<Object?>[
     translucent,
     blurSigma,
     topBarHairline,
     hairlineColor,
-    barHeight,
     itemWidth,
+    itemHeight,
+    itemInset,
+    roundness,
+    iconSize,
+    labelSize,
+    labelGap,
     fabPlacement,
     labelMode,
     tint,
@@ -196,5 +253,5 @@ class HomeBarResolvedStyle {
     indicatorColor,
     selectedForeground,
     unselectedForeground,
-  );
+  ]);
 }

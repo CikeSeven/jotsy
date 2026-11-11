@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../models/home_bar_style/home_bar_metrics.dart';
+import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import '../../models/home_bar_style/home_bar_style.dart';
 import 'home_nav_colors.dart';
 import 'home_nav_geometry.dart';
@@ -15,8 +16,10 @@ export 'home_nav_ink_response.dart';
 /// 图标在上、文字在下，整体在格子里居中。不画指示器——整行共用的那一颗由
 /// 导航行画在所有项的下面。
 ///
+/// 图标大小、文字字号、两者间距与指示器圆角取自已解析样式 [style]。
+///
 /// 语义照搬 Material `NavigationDestination`：按钮 + “第 x 个标签，共 y
-/// 个”、长按提示；水波纹裁成与指示器相同的胶囊形。
+/// 个”、长按提示；焦点 / 悬停高亮裁成与指示器相同的形状。
 ///
 /// 图标与文字的选中程度有两种来源：
 /// - 未跟随滑动（[position] 为空）：颜色与文字的淡入按 [labelCurve] 渐变
@@ -40,7 +43,7 @@ class HomeNavDestination extends StatefulWidget {
     required this.selected,
     required this.labelCurve,
     required this.position,
-    required this.labelMode,
+    required this.style,
     required this.colors,
     required this.onTap,
   });
@@ -56,7 +59,7 @@ class HomeNavDestination extends StatefulWidget {
 
   /// 页面位置；非空时图标与文字的选中程度跟随它（“指示器跟随滑动”）。
   final ValueListenable<double>? position;
-  final HomeBarLabelMode labelMode;
+  final HomeBarResolvedStyle style;
   final HomeNavColors colors;
   final VoidCallback onTap;
 
@@ -130,23 +133,25 @@ class _HomeNavDestinationState extends State<HomeNavDestination>
   /// 与文字展开的程度（弹簧驱动时可以越过 0~1）。
   Widget _content(double tone, double pop) {
     final colors = widget.colors;
+    final style = widget.style;
+    final labelMode = style.labelMode;
     final icon = SizedBox.square(
-      dimension: HomeBarMetrics.iconBox,
+      dimension: style.iconBox,
       child: Center(
         child: Transform.scale(
           scale: 1 + (HomeNavGeometry.selectedIconScale - 1) * pop,
           child: FaIcon(
             widget.icon,
-            size: HomeBarMetrics.iconSize,
+            size: style.iconSize,
             color: _mixColor(colors.unselectedIcon, colors.selectedIcon, tone),
           ),
         ),
       ),
     );
     Widget? label;
-    if (widget.labelMode != HomeBarLabelMode.never) {
+    if (labelMode != HomeBarLabelMode.never) {
       label = Padding(
-        padding: const EdgeInsets.only(top: HomeBarMetrics.labelGap),
+        padding: EdgeInsets.only(top: style.labelGap),
         // 文字最多放大到 1.3 倍，大字体下栏的层级不变；格子宽度固定，
         // 太长的名称等比缩小到放得下，不截成省略号。
         child: MediaQuery.withClampedTextScaling(
@@ -157,16 +162,20 @@ class _HomeNavDestinationState extends State<HomeNavDestination>
               widget.label,
               maxLines: 1,
               softWrap: false,
-              style: _mixStyle(
-                colors.unselectedLabel,
-                colors.selectedLabel,
-                tone,
-              ).copyWith(fontSize: HomeBarMetrics.labelFontSize, height: 1.2),
+              style:
+                  _mixStyle(
+                    colors.unselectedLabel,
+                    colors.selectedLabel,
+                    tone,
+                  ).copyWith(
+                    fontSize: style.labelSize,
+                    height: HomeBarMetrics.labelLineHeight,
+                  ),
             ),
           ),
         ),
       );
-      if (widget.labelMode == HomeBarLabelMode.selected) {
+      if (labelMode == HomeBarLabelMode.selected) {
         // 只显示选中项文字：文字从图标下方展开（高度由弹簧给出，图标随之
         // 让到上方）并淡入；收起时反向。结构恒定，未选中时高度为 0。
         label = ClipRect(
@@ -231,8 +240,11 @@ class _HomeNavDestinationState extends State<HomeNavDestination>
         child: InkWell(
           onTap: widget.onTap,
           // 不画点按水波纹：按压反馈只有内容的缩放回弹，波纹叠在玻璃上
-          // 显得脏。焦点 / 悬停高亮仍裁成指示器的形状（铺满一格的胶囊）。
-          customBorder: const StadiumBorder(),
+          // 显得脏。焦点 / 悬停高亮仍裁成指示器的形状（铺满一格，圆角与
+          // 指示器相同；完整胶囊时圆角被夹到格高的一半）。
+          customBorder: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(widget.style.indicatorRadius),
+          ),
           splashFactory: NoSplash.splashFactory,
           highlightColor: Colors.transparent,
           child: SizedBox.expand(

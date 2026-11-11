@@ -9,7 +9,7 @@ library;
 enum HomeBarTint { neutral, theme }
 
 /// 底栏文字：[always] 始终显示；[selected] 只显示选中项；[never] 只有图标
-/// （栏更矮、每项更窄）。
+/// （格高不再算文字，栏更矮；项宽仍取样式里的值）。
 enum HomeBarLabelMode { always, selected, never }
 
 /// 新建按钮（FAB）相对悬浮底栏的位置：[above] 浮在底栏上方；[inline] 并排

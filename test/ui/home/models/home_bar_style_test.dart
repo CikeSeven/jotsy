@@ -12,6 +12,12 @@ void main() {
       expect(style.tint, HomeBarTint.neutral);
       expect(style.tintOpacity, 0.5);
       expect(style.topBarHairline, isFalse);
+      expect(style.roundness, 1);
+      expect(style.itemWidth, 72);
+      expect(style.itemInset, 6);
+      expect(style.itemIconSize, 22);
+      expect(style.itemLabelSize, 11);
+      expect(style.itemLabelGap, 3);
       expect(style.labelMode, HomeBarLabelMode.always);
       expect(style.fabPlacement, HomeBarFabPlacement.above);
       expect(style.isDefault, isTrue);
@@ -51,6 +57,23 @@ void main() {
       expect(opacity('0.5'), HomeBarStyle.defaults.tintOpacity);
     });
 
+    test('decodes the shape and item fields and clamps them', () {
+      final style = HomeBarStyle.fromJson(<String, Object?>{
+        'roundness': 0.4,
+        'itemWidth': 200,
+        'itemInset': 1,
+        'itemIconSize': 24,
+        'itemLabelSize': '12',
+        'itemLabelGap': double.nan,
+      });
+      expect(style.roundness, 0.4);
+      expect(style.itemWidth, HomeBarStyleLimits.itemWidth.max);
+      expect(style.itemInset, HomeBarStyleLimits.itemInset.min);
+      expect(style.itemIconSize, 24);
+      expect(style.itemLabelSize, HomeBarStyle.defaults.itemLabelSize);
+      expect(style.itemLabelGap, HomeBarStyle.defaults.itemLabelGap);
+    });
+
     test('falls back on unknown enum names', () {
       final style = HomeBarStyle.fromJson(<String, Object?>{
         'tint': 'rainbow',
@@ -63,7 +86,8 @@ void main() {
     test('ignores the fields older versions wrote', () {
       // 旧版本的一套玻璃样式：留下的字段照常读取，移除的几何、描边、
       // 指示器、自定义色调与顶栏玻璃开关全部忽略（自定义色调回退中性，
-      // 顶栏恒为玻璃）。
+      // 顶栏恒为玻璃）。旧的 cornerRadius / iconSize / labelGap 是按另一套
+      // 栏高存的，新的形状字段用了新键名，不会把它们读进来。
       final style = HomeBarStyle.fromJson(<String, Object?>{
         'material': 'glass',
         'glassTopBars': false,
@@ -115,6 +139,10 @@ void main() {
       expect(const HomeBarStyle(tintOpacity: 0.2).toJson(), <String, Object>{
         'tintOpacity': 0.2,
       });
+      expect(
+        const HomeBarStyle(roundness: 0.5, itemIconSize: 24).toJson(),
+        <String, Object>{'roundness': 0.5, 'itemIconSize': 24.0},
+      );
     });
 
     test('round-trips every field through JSON text', () {
@@ -122,6 +150,12 @@ void main() {
         tintOpacity: 0.55,
         tint: HomeBarTint.theme,
         topBarHairline: true,
+        roundness: 0.35,
+        itemWidth: 80,
+        itemInset: 4,
+        itemIconSize: 20,
+        itemLabelSize: 12.5,
+        itemLabelGap: 5,
         fabPlacement: HomeBarFabPlacement.inline,
         labelMode: HomeBarLabelMode.selected,
       );
@@ -147,42 +181,47 @@ void main() {
   });
 
   group('HomeBarMetrics', () {
-    test('the bar is shorter and its items narrower without labels', () {
-      for (final mode in <HomeBarLabelMode>[
-        HomeBarLabelMode.always,
-        HomeBarLabelMode.selected,
-      ]) {
-        expect(HomeBarMetrics.barHeight(mode), 60);
-        expect(HomeBarMetrics.itemWidth(mode), 72);
-      }
-      expect(HomeBarMetrics.barHeight(HomeBarLabelMode.never), 54);
-      expect(HomeBarMetrics.itemWidth(HomeBarLabelMode.never), 64);
+    test('the item height is the content plus fixed padding', () {
+      // 显示文字：图标框 + 间距 + 文字行高 + 上下各 4，取整。
+      expect(
+        HomeBarMetrics.itemHeight(iconSize: 22, labelSize: 11, labelGap: 3),
+        48,
+      );
+      expect(
+        HomeBarMetrics.itemHeight(iconSize: 18, labelSize: 10, labelGap: 0),
+        40,
+      );
+      // 只有图标：图标框 + 上下各 9。
+      expect(HomeBarMetrics.itemHeight(iconSize: 22), 42);
+      expect(HomeBarMetrics.itemHeight(iconSize: 18), 38);
     });
 
-    test('an item leaves the same gap to the pill on every side', () {
-      // 指示器铺满一格：格高 = 栏高 − 2 × 缝，胶囊宽 = 项宽之和 + 2 × 缝。
-      expect(HomeBarMetrics.inset, 6);
-      expect(HomeBarMetrics.itemHeight(60), 48);
-      expect(
-        HomeBarMetrics.pillWidth(4, 72),
-        4 * 72 + HomeBarMetrics.inset * 2,
-      );
+    test('the largest content still fits at 1.3x text scaling', () {
+      // 文字最多放大到 1.3 倍：多出的高度不超过上下留白之和。
+      const limits = HomeBarStyleLimits.itemLabelSize;
+      final extra = limits.max * HomeBarMetrics.labelLineHeight * 0.3;
+      expect(extra, lessThan(HomeBarMetrics.labeledContentPadding * 2));
+    });
+
+    test('the pill is the items plus the inset on both sides', () {
+      expect(HomeBarMetrics.pillWidth(4, 72, 6), 4 * 72 + 6 * 2);
+      expect(HomeBarMetrics.pillWidth(3, 60, 10), 3 * 60 + 10 * 2);
     });
 
     test('items keep their width while they fit and shrink evenly after', () {
+      double fit(double available, {double inset = 6, int count = 4}) =>
+          HomeBarMetrics.fitItemWidth(72, count, available, inset: inset);
       // 四项 72 宽加两侧的缝共 300：放得下时不变。
-      expect(HomeBarMetrics.fitItemWidth(72, 4, 328), 72);
-      expect(HomeBarMetrics.fitItemWidth(72, 4, 300), 72);
-      // 放不下：（可用宽 − 两侧的缝）平分。
-      expect(HomeBarMetrics.fitItemWidth(72, 4, 256), (256 - 12) / 4);
+      expect(fit(328), 72);
+      expect(fit(300), 72);
+      // 放不下：（可用宽 − 两侧的缝）平分；缝越宽项越窄。
+      expect(fit(256), (256 - 12) / 4);
+      expect(fit(256, inset: 10), (256 - 20) / 4);
       // 再窄也不小于最小项宽。
-      expect(
-        HomeBarMetrics.fitItemWidth(72, 4, 100),
-        HomeBarMetrics.minItemWidth,
-      );
+      expect(fit(100), HomeBarMetrics.minItemWidth);
       // 无界宽度（测试里常见）与空栏不收窄。
-      expect(HomeBarMetrics.fitItemWidth(72, 4, double.infinity), 72);
-      expect(HomeBarMetrics.fitItemWidth(72, 0, 10), 72);
+      expect(fit(double.infinity), 72);
+      expect(fit(10, count: 0), 72);
     });
 
     test('the pill sits just above the gesture bar but never on the edge', () {

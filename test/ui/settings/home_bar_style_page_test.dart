@@ -59,25 +59,59 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the appearance tab holds every look option and no sizes', (
-    tester,
-  ) async {
+  testWidgets('the appearance tab holds every look option and no bar '
+      'height', (tester) async {
     final (settings, l10n) = await pumpHomeBarStylePage(tester);
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabAppearance);
-    for (final title in <String>[
-      l10n.homeBarStyleTint,
-      l10n.homeBarStyleOpacity,
-      l10n.homeBarStyleTopBarHairline,
-    ]) {
-      expect(inHomeBarOptions(title), findsOneWidget, reason: title);
+    // 自上而下走一遍（列表是懒构建的）：(标题, 是否滑块)。
+    final rows = <(String, bool)>[
+      (l10n.homeBarStyleTint, false),
+      (l10n.homeBarStyleOpacity, true),
+      (l10n.homeBarStyleTopBarHairline, false),
+      (l10n.homeBarStyleRoundness, true),
+      (l10n.homeBarStyleItemWidth, true),
+      (l10n.homeBarStyleItemInset, true),
+      (l10n.homeBarStyleIconSize, true),
+      (l10n.homeBarStyleLabels, false),
+      (l10n.homeBarStyleLabelSize, true),
+      (l10n.homeBarStyleLabelGap, true),
+      (l10n.homeBarStyleFabGroup, false),
+    ];
+    final seenSliders = <String>{};
+    for (final (title, isSlider) in rows) {
+      final finder = isSlider
+          ? find.widgetWithText(SettingsSliderTile, title)
+          : inHomeBarOptions(title);
+      await scrollToHomeBarOption(tester, finder);
+      expect(finder, findsOneWidget, reason: title);
+      for (final element
+          in find
+              .descendant(
+                of: find.byType(TabBarView),
+                matching: find.byType(SettingsSliderTile),
+              )
+              .evaluate()) {
+        seenSliders.add((element.widget as SettingsSliderTile).title);
+      }
     }
-    // 几何是固定的：整页只有“不透明度”一个滑块。
-    expect(
-      find.descendant(
-        of: find.byType(TabBarView),
-        matching: find.byType(SettingsSliderTile),
-      ),
-      findsOneWidget,
+    // 栏高与指示器圆角由这些推导，不单独开放：滑块只有上面这七个。
+    expect(seenSliders, <String>{
+      for (final (title, isSlider) in rows)
+        if (isSlider) title,
+    });
+    await tester.scrollUntilVisible(
+      find.byType(ExpressiveButtonGroup<HomeBarTint>),
+      -120,
+      scrollable: find
+          .descendant(
+            of: find.byType(TabBarView),
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Scrollable &&
+                  widget.axisDirection == AxisDirection.down,
+            ),
+          )
+          .first,
     );
 
     // 色调只有中性 / 主题色两档。
@@ -140,6 +174,84 @@ void main() {
     expect(storedHomeBarSettings(settings).current.tintOpacity, 0.5);
   });
 
+  testWidgets('shape sliders reshape the preview and persist snapped '
+      'values', (tester) async {
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabAppearance);
+    final roundness = find.widgetWithText(
+      SettingsSliderTile,
+      l10n.homeBarStyleRoundness,
+    );
+    await scrollToHomeBarOption(tester, roundness);
+    final tile = tester.widget<SettingsSliderTile>(roundness);
+    // 默认是完整胶囊：滑块在最右端，显示 100%。
+    expect(tile.value, 1);
+    tile.onChanged!(0.4499999);
+    await tester.pump();
+    expect(settings.homeBarStyleRaw, isNull);
+    expect(
+      tester.widget<GlassSurface>(_pill).borderRadius,
+      BorderRadius.circular(0.45 * 30),
+    );
+    tile.onChangeEnd!(0.4499999);
+    await tester.pumpAndSettle();
+    expect(
+      storedHomeBarSettings(settings).current,
+      HomeBarPreset.rounded.style,
+    );
+
+    final inset = find.widgetWithText(
+      SettingsSliderTile,
+      l10n.homeBarStyleItemInset,
+    );
+    await scrollToHomeBarOption(tester, inset);
+    tester.widget<SettingsSliderTile>(inset).onChangeEnd!(3.6);
+    await tester.pumpAndSettle();
+    expect(storedHomeBarSettings(settings).current.itemInset, 4);
+    // 栏高 = 格高 48 + 两道 4 的缝。
+    expect(tester.getSize(_pill).height, 56);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('label size and spacing only show while labels are on', (
+    tester,
+  ) async {
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabAppearance);
+    final labelSize = find.widgetWithText(
+      SettingsSliderTile,
+      l10n.homeBarStyleLabelSize,
+    );
+    await scrollToHomeBarOption(tester, labelSize);
+    expect(tester.widget<SettingsSliderTile>(labelSize).nested, isTrue);
+
+    await tapHomeBarOption(
+      tester,
+      find.descendant(
+        of: find.byType(ExpressiveButtonGroup<HomeBarLabelMode>),
+        matching: find.text(l10n.homeBarStyleLabelsNever),
+      ),
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleLabelSize), findsNothing);
+    expect(inHomeBarOptions(l10n.homeBarStyleLabelGap), findsNothing);
+    // 图标大小与文字模式无关，仍在。
+    expect(inHomeBarOptions(l10n.homeBarStyleIconSize), findsOneWidget);
+
+    await tapHomeBarOption(
+      tester,
+      find.descendant(
+        of: find.byType(ExpressiveButtonGroup<HomeBarLabelMode>),
+        matching: find.text(l10n.homeBarStyleLabelsSelected),
+      ),
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleLabelSize), findsOneWidget);
+    expect(
+      storedHomeBarSettings(settings).current.labelMode,
+      HomeBarLabelMode.selected,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('labels and the create button reshape the preview pill', (
     tester,
   ) async {
@@ -156,7 +268,7 @@ void main() {
     );
     expect(
       storedHomeBarSettings(settings).current,
-      HomeBarPreset.compact.style,
+      HomeBarStyle.defaults.copyWith(labelMode: HomeBarLabelMode.never),
     );
     expect(tester.getSize(_pill).height, 54);
 

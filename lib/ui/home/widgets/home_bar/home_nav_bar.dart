@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
-import '../../models/home_bar_style/home_bar_metrics.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
 import 'home_nav_destination.dart';
+import 'home_nav_geometry.dart';
 import 'home_nav_indicator.dart';
 
 /// 底部导航栏单项配置。
@@ -135,7 +135,7 @@ class _HomeNavBarState extends State<HomeNavBar>
         container: true,
         child: SizedBox(
           width: itemWidth * items.length,
-          height: HomeBarMetrics.itemHeight(style.barHeight),
+          height: style.itemHeight,
           child: Stack(
             children: <Widget>[
               Positioned.fill(
@@ -144,6 +144,8 @@ class _HomeNavBarState extends State<HomeNavBar>
                   velocity: position == null ? _indicatorVelocity : null,
                   count: items.length,
                   color: colors.indicator,
+                  radius: style.indicatorRadius,
+                  edgeRoom: HomeNavGeometry.edgeRoom(style.itemInset),
                 ),
               ),
               Row(
@@ -172,7 +174,7 @@ class _HomeNavBarState extends State<HomeNavBar>
                                   selected: i == selected,
                                   labelCurve: labelCurve,
                                   position: position,
-                                  labelMode: style.labelMode,
+                                  style: style,
                                   colors: colors,
                                   onTap: () => widget.onTap(i),
                                 ),

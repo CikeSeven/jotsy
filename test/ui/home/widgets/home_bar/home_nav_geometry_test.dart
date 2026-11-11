@@ -5,6 +5,9 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_nav_geometry.dart';
 /// 四项、每项 72×56 的导航行。
 const Size _row = Size(288, 56);
 
+/// 缝为 6 时首尾最多探出的距离。
+final double _room = HomeNavGeometry.edgeRoom(6);
+
 Rect _rect(
   double position, {
   double velocity = 0,
@@ -18,6 +21,7 @@ Rect _rect(
   velocity: velocity,
   elastic: elastic,
   rtl: rtl,
+  edgeRoom: _room,
 );
 
 void main() {
@@ -72,12 +76,12 @@ void main() {
     test('an overshooting spring is squashed against the pill wall', () {
       // 越过最后一项 0.2 项（14.4dp）：右缘最多探出 edgeRoom，宽度被挤窄。
       final rect = _rect(3.2, elastic: true);
-      expect(rect.right, _row.width + HomeNavGeometry.edgeRoom);
+      expect(rect.right, _row.width + _room);
       expect(rect.width, lessThan(72));
       expect(rect.left, closeTo(3.2 * 72, 0.001));
 
       final start = _rect(-0.2, elastic: true);
-      expect(start.left, -HomeNavGeometry.edgeRoom);
+      expect(start.left, -_room);
       expect(start.width, lessThan(72));
     });
 
@@ -85,7 +89,13 @@ void main() {
       expect(_rect(0, rtl: true), const Rect.fromLTWH(216, 0, 72, 56));
       expect(_rect(3, rtl: true), const Rect.fromLTWH(0, 0, 72, 56));
       final rect = _rect(3.2, elastic: true, rtl: true);
-      expect(rect.left, -HomeNavGeometry.edgeRoom);
+      expect(rect.left, -_room);
+    });
+
+    test('the edge room leaves 1 to the pill wall and never goes negative', () {
+      expect(HomeNavGeometry.edgeRoom(6), 5);
+      expect(HomeNavGeometry.edgeRoom(2), 1);
+      expect(HomeNavGeometry.edgeRoom(0.5), 0);
     });
 
     test('degenerate inputs give an empty or pinned rect', () {
@@ -93,7 +103,7 @@ void main() {
       // 位置远在范围之外（Tab 集合变化的那一帧）：不画出反向的矩形。
       final far = _rect(40, elastic: true);
       expect(far.width, 0);
-      expect(far.right, _row.width + HomeNavGeometry.edgeRoom);
+      expect(far.right, _row.width + _room);
     });
   });
 }

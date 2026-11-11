@@ -11110,6 +11110,66 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "导航栏样式预设：紧凑的说明。"
   },
+  "homeBarStylePresetRounded": "方圆",
+  "@homeBarStylePresetRounded": {
+    "description": "导航栏样式预设：方圆名称。"
+  },
+  "homeBarStylePresetRoundedDesc": "圆角矩形的栏，选中块同心跟随",
+  "@homeBarStylePresetRoundedDesc": {
+    "description": "导航栏样式预设：方圆的说明。"
+  },
+  "homeBarStylePresetRoomy": "舒展",
+  "@homeBarStylePresetRoomy": {
+    "description": "导航栏样式预设：舒展名称。"
+  },
+  "homeBarStylePresetRoomyDesc": "更大的图标与文字，导航项更宽",
+  "@homeBarStylePresetRoomyDesc": {
+    "description": "导航栏样式预设：舒展的说明。"
+  },
+  "homeBarStylePresetFocus": "聚焦",
+  "@homeBarStylePresetFocus": {
+    "description": "导航栏样式预设：聚焦名称。"
+  },
+  "homeBarStylePresetFocusDesc": "只显示选中项文字，选中块更饱满",
+  "@homeBarStylePresetFocusDesc": {
+    "description": "导航栏样式预设：聚焦的说明。"
+  },
+  "homeBarStyleShapeGroup": "形状",
+  "@homeBarStyleShapeGroup": {
+    "description": "导航栏样式设置：形状分组标题（圆角、导航项宽度、指示器边距）。"
+  },
+  "homeBarStyleShapeFooter": "栏高随图标与文字自动调整；选中块的圆角与栏同心。",
+  "@homeBarStyleShapeFooter": {
+    "description": "导航栏样式设置：形状分组的说明。"
+  },
+  "homeBarStyleRoundness": "圆角",
+  "@homeBarStyleRoundness": {
+    "description": "导航栏样式设置：圆角程度滑块（100% 为完整胶囊）。"
+  },
+  "homeBarStyleItemWidth": "导航项宽度",
+  "@homeBarStyleItemWidth": {
+    "description": "导航栏样式设置：每个导航项（与选中块）的宽度滑块。"
+  },
+  "homeBarStyleItemInset": "选中块边距",
+  "@homeBarStyleItemInset": {
+    "description": "导航栏样式设置：选中块到栏边缘的距离滑块。"
+  },
+  "homeBarStyleItemsGroup": "图标与文字",
+  "@homeBarStyleItemsGroup": {
+    "description": "导航栏样式设置：图标与文字分组标题。"
+  },
+  "homeBarStyleIconSize": "图标大小",
+  "@homeBarStyleIconSize": {
+    "description": "导航栏样式设置：图标大小滑块。"
+  },
+  "homeBarStyleLabelSize": "文字大小",
+  "@homeBarStyleLabelSize": {
+    "description": "导航栏样式设置：文字字号滑块（显示文字时出现）。"
+  },
+  "homeBarStyleLabelGap": "图标与文字间距",
+  "@homeBarStyleLabelGap": {
+    "description": "导航栏样式设置：图标与文字间距滑块（显示文字时出现）。"
+  },
   "homeBarStyleHighContrastNote": "系统开启了高对比度，玻璃暂时显示为不透明。",
   "@homeBarStyleHighContrastNote": {
     "description": "导航栏样式设置：系统开启高对比度时追加在材质附注后的说明。"

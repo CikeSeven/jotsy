@@ -2,8 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
-import '../../models/home_bar_style/home_bar_metrics.dart';
-
 /// 首页底栏导航行的几何换算（纯函数）：选中指示器的矩形、导航项随页面
 /// 位置的选中程度。
 ///
@@ -32,9 +30,9 @@ abstract final class HomeNavGeometry {
   /// 变扁，像一滴被拖着走的水，而不是一块只会变宽的板。
   static const double squashRatio = 0.3;
 
-  /// 指示器越过首尾两项时最多探出导航行的距离：到胶囊内壁还留 1，再往外
-  /// 就被挤扁（见 [indicatorRect]）。
-  static const double edgeRoom = HomeBarMetrics.inset - 1;
+  /// 指示器越过首尾两项时最多探出导航行的距离：缝为 [inset] 时到胶囊
+  /// 内壁还留 1，再往外就被挤扁（见 [indicatorRect]）。
+  static double edgeRoom(double inset) => math.max(0, inset - 1);
 
   /// 页面位置夹到有效范围内。
   static double clampPosition(double position, int count) =>
@@ -47,7 +45,8 @@ abstract final class HomeNavGeometry {
   /// 指示器在导航行（大小 [size]，共 [count] 项）里的矩形。
   ///
   /// [position] 是小数序号；[velocity] 是它此刻的速度（项 / 秒），只在
-  /// [elastic]（弹簧驱动）时使用。[rtl] 时序号从右往左数。
+  /// [elastic]（弹簧驱动）时使用。[rtl] 时序号从右往左数。[edgeRoom] 是
+  /// 首尾两端最多探出导航行的距离（取 [HomeNavGeometry.edgeRoom]）。
   ///
   /// - 非弹性：位置夹到首尾，矩形就是所在的那一格（两格之间线性平移）；
   /// - 弹性：位置原样使用（可以越界），宽度按速度拉长、高度相应收窄，
@@ -57,6 +56,7 @@ abstract final class HomeNavGeometry {
     required Size size,
     required int count,
     required double position,
+    required double edgeRoom,
     double velocity = 0,
     bool elastic = false,
     bool rtl = false,

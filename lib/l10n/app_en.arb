@@ -11110,6 +11110,66 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
+  "homeBarStylePresetRounded": "Rounded",
+  "@homeBarStylePresetRounded": {
+    "description": "Navigation bar style preset: rounded name."
+  },
+  "homeBarStylePresetRoundedDesc": "A rounded-rectangle bar with a matching highlight",
+  "@homeBarStylePresetRoundedDesc": {
+    "description": "Navigation bar style preset: rounded description."
+  },
+  "homeBarStylePresetRoomy": "Roomy",
+  "@homeBarStylePresetRoomy": {
+    "description": "Navigation bar style preset: roomy name."
+  },
+  "homeBarStylePresetRoomyDesc": "Bigger icons and labels, wider items",
+  "@homeBarStylePresetRoomyDesc": {
+    "description": "Navigation bar style preset: roomy description."
+  },
+  "homeBarStylePresetFocus": "Focus",
+  "@homeBarStylePresetFocus": {
+    "description": "Navigation bar style preset: focus name."
+  },
+  "homeBarStylePresetFocusDesc": "Only the selected item shows its label, with a fuller highlight",
+  "@homeBarStylePresetFocusDesc": {
+    "description": "Navigation bar style preset: focus description."
+  },
+  "homeBarStyleShapeGroup": "Shape",
+  "@homeBarStyleShapeGroup": {
+    "description": "Navigation bar style settings: shape group title (roundness, item width, highlight inset)."
+  },
+  "homeBarStyleShapeFooter": "The bar's height follows the icon and label sizes; the highlight's corners stay concentric with the bar.",
+  "@homeBarStyleShapeFooter": {
+    "description": "Navigation bar style settings: shape group footer."
+  },
+  "homeBarStyleRoundness": "Corner roundness",
+  "@homeBarStyleRoundness": {
+    "description": "Navigation bar style settings: roundness slider (100% is a full capsule)."
+  },
+  "homeBarStyleItemWidth": "Item width",
+  "@homeBarStyleItemWidth": {
+    "description": "Navigation bar style settings: width of each item (and its highlight)."
+  },
+  "homeBarStyleItemInset": "Highlight inset",
+  "@homeBarStyleItemInset": {
+    "description": "Navigation bar style settings: gap between the selection highlight and the bar edge."
+  },
+  "homeBarStyleItemsGroup": "Icons & labels",
+  "@homeBarStyleItemsGroup": {
+    "description": "Navigation bar style settings: icons and labels group title."
+  },
+  "homeBarStyleIconSize": "Icon size",
+  "@homeBarStyleIconSize": {
+    "description": "Navigation bar style settings: icon size slider."
+  },
+  "homeBarStyleLabelSize": "Label size",
+  "@homeBarStyleLabelSize": {
+    "description": "Navigation bar style settings: label font size slider (shown when labels are on)."
+  },
+  "homeBarStyleLabelGap": "Icon-label spacing",
+  "@homeBarStyleLabelGap": {
+    "description": "Navigation bar style settings: icon-to-label spacing slider (shown when labels are on)."
+  },
   "homeBarStyleHighContrastNote": "High contrast is on in system settings, so the glass shows as opaque for now.",
   "@homeBarStyleHighContrastNote": {
     "description": "Navigation bar style settings: note appended to the material footer while system high contrast is on."

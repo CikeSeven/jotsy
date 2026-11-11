@@ -8966,6 +8966,55 @@ class AppLocalizationsRu extends AppLocalizations {
       'Более низкая плавающая панель только со значками';
 
   @override
+  String get homeBarStylePresetRounded => 'Скруглённая';
+
+  @override
+  String get homeBarStylePresetRoundedDesc =>
+      'Панель со скруглёнными углами и такой же подсветкой';
+
+  @override
+  String get homeBarStylePresetRoomy => 'Просторная';
+
+  @override
+  String get homeBarStylePresetRoomyDesc =>
+      'Крупнее значки и подписи, шире пункты';
+
+  @override
+  String get homeBarStylePresetFocus => 'Фокус';
+
+  @override
+  String get homeBarStylePresetFocusDesc =>
+      'Подпись только у выбранного пункта, подсветка крупнее';
+
+  @override
+  String get homeBarStyleShapeGroup => 'Форма';
+
+  @override
+  String get homeBarStyleShapeFooter =>
+      'Высота панели подстраивается под размер значков и подписей; углы подсветки концентричны панели.';
+
+  @override
+  String get homeBarStyleRoundness => 'Скругление углов';
+
+  @override
+  String get homeBarStyleItemWidth => 'Ширина пункта';
+
+  @override
+  String get homeBarStyleItemInset => 'Отступ подсветки';
+
+  @override
+  String get homeBarStyleItemsGroup => 'Значки и подписи';
+
+  @override
+  String get homeBarStyleIconSize => 'Размер значков';
+
+  @override
+  String get homeBarStyleLabelSize => 'Размер подписей';
+
+  @override
+  String get homeBarStyleLabelGap => 'Отступ между значком и подписью';
+
+  @override
   String get homeBarStyleHighContrastNote =>
       'В системе включён высокий контраст, поэтому стекло пока отображается непрозрачным.';
 

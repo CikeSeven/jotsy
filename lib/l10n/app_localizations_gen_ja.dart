@@ -7884,6 +7884,52 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeBarStylePresetCompactDesc => 'アイコンだけの、低めのフローティングバー';
 
   @override
+  String get homeBarStylePresetRounded => '角丸';
+
+  @override
+  String get homeBarStylePresetRoundedDesc => '角丸長方形のバー。選択中の背景も同じ形に';
+
+  @override
+  String get homeBarStylePresetRoomy => 'ゆったり';
+
+  @override
+  String get homeBarStylePresetRoomyDesc => 'アイコンとラベルが大きく、項目も広め';
+
+  @override
+  String get homeBarStylePresetFocus => 'フォーカス';
+
+  @override
+  String get homeBarStylePresetFocusDesc => '選択中の項目だけラベルを表示し、背景を大きめに';
+
+  @override
+  String get homeBarStyleShapeGroup => '形';
+
+  @override
+  String get homeBarStyleShapeFooter =>
+      'バーの高さはアイコンとラベルの大きさに合わせて決まり、選択中の背景の角はバーと同心になります。';
+
+  @override
+  String get homeBarStyleRoundness => '角の丸み';
+
+  @override
+  String get homeBarStyleItemWidth => '項目の幅';
+
+  @override
+  String get homeBarStyleItemInset => '選択背景の余白';
+
+  @override
+  String get homeBarStyleItemsGroup => 'アイコンとラベル';
+
+  @override
+  String get homeBarStyleIconSize => 'アイコンの大きさ';
+
+  @override
+  String get homeBarStyleLabelSize => 'ラベルの大きさ';
+
+  @override
+  String get homeBarStyleLabelGap => 'アイコンとラベルの間隔';
+
+  @override
   String get homeBarStyleHighContrastNote =>
       'システム設定でハイコントラストがオンになっているため、ガラスは現在不透明で表示されています。';
 

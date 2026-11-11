@@ -43,8 +43,8 @@ const double _gestureInset = 24;
 /// 宽度：3 × 72 + 两侧各 6 的缝。
 const double _pillWidth = 3 * 72 + 12;
 
-/// 不显示文字时的胶囊：每项 64 宽，栏高 54。
-const Size _compactPill = Size(3 * 64 + 12, 54);
+/// 默认样式只关掉文字时的胶囊：项宽不变（72），格高 42，栏高 54。
+const Size _compactPill = Size(3 * 72 + 12, 54);
 
 /// 默认样式：悬浮玻璃栏 + 玻璃顶栏。
 const HomeBarStyle _glass = HomeBarStyle.defaults;
@@ -268,7 +268,8 @@ void main() {
       rect.bottom,
       _screenHeight - _gestureInset - HomeBarMetrics.bottomGap,
     );
-    expect(rect.height, HomeBarMetrics.labeledBarHeight);
+    // 默认样式：格高 48 + 上下两道 6 的缝。
+    expect(rect.height, 60);
     expect(tester.widget<BackdropFilter>(_pillBackdrop).enabled, isTrue);
     expect(_glassUnderOpacity(tester), isFalse);
     await _unmount(tester);
@@ -327,10 +328,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(
-      tester.getSize(_inlineButton),
-      const Size.square(HomeBarMetrics.labeledBarHeight),
-    );
+    expect(tester.getSize(_inlineButton), const Size.square(60));
     // 胶囊与按钮作为一组居中。
     expect(
       (tester.getRect(_pill).left + tester.getRect(_inlineButton).right) / 2,

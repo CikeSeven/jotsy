@@ -89,7 +89,7 @@ void main() {
     // 导航行四周到胶囊内壁都是同样的缝：指示器与胶囊同心。
     expect(
       tester.getRect(find.byType(HomeNavBar)),
-      pill.deflate(HomeBarMetrics.inset),
+      pill.deflate(style.itemInset),
     );
 
     // 项越少胶囊越短。
@@ -139,7 +139,7 @@ void main() {
       style: _style(labelMode: HomeBarLabelMode.never),
       withInline: false,
     );
-    expect(tester.getSize(_pill), const Size(3 * 64 + 12, 54));
+    expect(tester.getSize(_pill), const Size(3 * 72 + 12, 54));
     expect(
       tester.widget<GlassSurface>(_pill).borderRadius,
       BorderRadius.circular(27),

@@ -174,7 +174,7 @@ void main() {
     }
 
     await _pump(tester, style: _style(labelMode: HomeBarLabelMode.never));
-    expect(tester.getRect(_cells.at(0)).size, const Size(64, 42));
+    expect(tester.getRect(_cells.at(0)).size, const Size(72, 42));
   });
 
   testWidgets('only the selected cell shows the capsule indicator', (
@@ -185,7 +185,11 @@ void main() {
     for (var i = 0; i < 4; i++) {
       final ink = tester.widget<Ink>(_indicators.at(i));
       final decoration = ink.decoration! as ShapeDecoration;
-      expect(decoration.shape, const StadiumBorder());
+      // 圆角与底栏指示器同心：默认是完整胶囊（格高 48 的一半）。
+      expect(
+        decoration.shape,
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      );
       expect(decoration.color, style.indicatorColor);
       final scaleX = tester
           .widget<Transform>(

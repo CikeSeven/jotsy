@@ -84,7 +84,14 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (_editing) widget.onEditingChanged?.call(false);
+    // 卸载发生在一帧收尾、树已锁住时，父级在回调里 setState 会断言失败：
+    // 挪到这一帧结束后再通知（父级自己判断 mounted）。
+    final onEditingChanged = widget.onEditingChanged;
+    if (_editing && onEditingChanged != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => onEditingChanged(false),
+      );
+    }
     _focus.removeListener(_onFocusChanged);
     _controller.removeListener(_onTextChanged);
     _controller.dispose();

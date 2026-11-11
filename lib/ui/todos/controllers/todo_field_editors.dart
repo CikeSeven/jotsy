@@ -7,6 +7,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../anniversaries/widgets/anniversary_diary_picker.dart';
 import '../providers/todo_providers.dart';
+import '../viewmodels/todo_reminder_pick.dart';
 import '../widgets/todo_due_sheet.dart';
 import '../widgets/todo_list_picker_sheet.dart';
 import '../widgets/todo_reminder_sheet.dart';
@@ -19,7 +20,7 @@ import 'todo_reminder_permission.dart';
 /// 截止日改为全天时，只对有时刻的待办有效的提醒（准时、提前若干分钟）随之
 /// 去掉；去掉日期时重复由数据库一并去掉，提醒保留但不会触发。提醒与重复
 /// 相对截止日：没有日期时按今天算，真加上时才把日期定下（只看一眼就关掉
-/// 面板不改日期）。
+/// 面板不改日期）；自定义提醒选在截止时间之后时截止时间顺延过去。
 class TodoFieldEditors {
   const TodoFieldEditors({
     required this.context,
@@ -85,6 +86,14 @@ class TodoFieldEditors {
         if (next.isNotEmpty && context.mounted) {
           unawaited(ensureTodoReminderPermission(context, ref));
         }
+      },
+      // 自定义提醒选在截止时间之后时截止时间顺延；面板先交出顺延再交出提醒，
+      // 置上 [dated] 后上面就不会再按今天定日期。两次写入按调用顺序执行。
+      onDueMoved: (TodoDueMove move) {
+        dated = true;
+        unawaited(
+          database.setTodoDue(row.todoId, date: move.date, minute: move.minute),
+        );
       },
     );
   }

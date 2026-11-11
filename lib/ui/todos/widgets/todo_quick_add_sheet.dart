@@ -16,6 +16,7 @@ import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_list_style.dart';
 import '../viewmodels/todo_quick_parse.dart';
+import '../viewmodels/todo_reminder_pick.dart';
 import 'todo_due_sheet.dart';
 import 'todo_field_pill.dart';
 import 'todo_labels.dart';
@@ -232,6 +233,16 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
         if (next.isNotEmpty) {
           unawaited(ensureTodoReminderPermission(context, ref));
         }
+      },
+      onDueMoved: (TodoDueMove move) {
+        // 自定义提醒选在截止时间之后：截止时间顺延过去，成为手动选的值。
+        setState(() {
+          _dueDate = move.date;
+          _dueMinute = move.minute;
+          _duePicked = true;
+          final repeat = _repeat;
+          if (repeat != null) _repeat = repeat.copyWith(anchor: move.date);
+        });
       },
     );
     _onChanged();

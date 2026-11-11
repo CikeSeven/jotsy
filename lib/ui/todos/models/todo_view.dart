@@ -66,8 +66,11 @@ class TodoView {
     return fallbackListId;
   }
 
-  /// 在这个视图里新建的待办预先带上的截止日：“今天”视图带今天，其余不带。
-  bool get presetsToday => smart == TodoSmartView.today;
+  /// 在这个视图里新建的待办预先带上的截止日：“今天”与“计划”视图带今天，
+  /// 其余不带。计划视图只列有日期的待办，不带日期的新待办回车后不会出现在
+  /// 当前列表里，看起来像没建成。
+  bool get presetsToday =>
+      smart == TodoSmartView.today || smart == TodoSmartView.planned;
 
   /// 在这个视图里新建的待办预先带上的优先级：“重要”视图带高优先级。
   bool get presetsHighPriority => smart == TodoSmartView.important;

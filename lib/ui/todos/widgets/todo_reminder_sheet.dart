@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../viewmodels/todo_reminder_pick.dart';
 import 'todo_labels.dart';
 import 'todo_sheet.dart';
 
@@ -15,8 +16,11 @@ import 'todo_sheet.dart';
 ///
 /// 可选项随截止日有没有时刻而不同：有时刻时是“准时 / 提前 5、15、30 分钟 /
 /// 提前 1 小时 / 提前 1 天”，全天时是“当天 [allDayMinute] / 前一天 20:00”；
-/// 两种都能“自定义时间…”（选日期与时刻，换算成相对截止日的天数与时刻，
-/// 最早提前 28 天、不晚于截止时刻）。
+/// 两种都能“自定义时间…”（选日期与时刻，经 [resolveTodoReminderPick] 换算
+/// 成相对截止日的提醒，最早提前 28 天）。自定义选在截止时间之后时截止时间
+/// 顺延过去：先经 [onDueMoved] 交出新的截止日与时刻（调用方写库或改草稿），
+/// 再经 [onChanged] 交出提醒列表；面板记住顺延后的截止时间，接着再选时以它
+/// 为准。
 Future<void> showTodoReminderSheet(
   BuildContext context, {
   required List<TodoReminder> reminders,
@@ -24,6 +28,7 @@ Future<void> showTodoReminderSheet(
   required int? dueMinute,
   required int allDayMinute,
   required ValueChanged<List<TodoReminder>> onChanged,
+  required ValueChanged<TodoDueMove> onDueMoved,
 }) {
   return showTodoSheet<void>(
     context: context,
@@ -33,6 +38,7 @@ Future<void> showTodoReminderSheet(
       dueMinute: dueMinute,
       allDayMinute: allDayMinute,
       onChanged: onChanged,
+      onDueMoved: onDueMoved,
     ),
   );
 }
@@ -44,6 +50,7 @@ class _ReminderSheet extends StatefulWidget {
     required this.dueMinute,
     required this.allDayMinute,
     required this.onChanged,
+    required this.onDueMoved,
   });
 
   final List<TodoReminder> initial;
@@ -51,6 +58,7 @@ class _ReminderSheet extends StatefulWidget {
   final int? dueMinute;
   final int allDayMinute;
   final ValueChanged<List<TodoReminder>> onChanged;
+  final ValueChanged<TodoDueMove> onDueMoved;
 
   @override
   State<_ReminderSheet> createState() => _ReminderSheetState();
@@ -58,6 +66,10 @@ class _ReminderSheet extends StatefulWidget {
 
 class _ReminderSheetState extends State<_ReminderSheet> {
   late List<TodoReminder> _reminders = List<TodoReminder>.of(widget.initial);
+
+  // 当前的截止时间：自定义提醒把它顺延后以新的为准（全天 / 有时刻不会变）。
+  late DateTime _due = widget.dueDate;
+  late int? _dueMinute = widget.dueMinute;
 
   bool get _full => _reminders.length >= TodoReminder.maxReminders;
 
@@ -72,7 +84,7 @@ class _ReminderSheetState extends State<_ReminderSheet> {
   }
 
   Future<void> _custom() async {
-    final due = widget.dueDate;
+    final due = _due;
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: due,
@@ -81,36 +93,38 @@ class _ReminderSheetState extends State<_ReminderSheet> {
         due.month,
         due.day - TodoReminder.maxDaysBefore,
       ),
-      lastDate: due,
+      // 截止日之后也能选（截止日随之顺延），上限与截止日面板一样是 30 年后。
+      lastDate: DateTime(due.year + 30, 12, 31),
     );
     if (pickedDate == null || !mounted) return;
-    final initial = widget.dueMinute ?? widget.allDayMinute;
+    final initial = _dueMinute ?? widget.allDayMinute;
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: initial ~/ 60, minute: initial % 60),
     );
     if (pickedTime == null || !mounted) return;
-    final days = DateTime.utc(
-      pickedDate.year,
-      pickedDate.month,
-      pickedDate.day,
-    ).difference(DateTime.utc(due.year, due.month, due.day)).inDays;
-    final minute = pickedTime.hour * 60 + pickedTime.minute;
-    final dueMinute = widget.dueMinute;
-    // 日期选择器已限定在截止日之前 28 天到截止日当天；只剩“当天、晚于截止
-    // 时刻”这一种越界，按准时提醒处理。
-    if (days == 0 && dueMinute != null && minute > dueMinute) {
-      _add(const TodoReminder.beforeDue(0));
-      return;
+    final pick = resolveTodoReminderPick(
+      due: due,
+      dueMinute: _dueMinute,
+      date: pickedDate,
+      minute: pickedTime.hour * 60 + pickedTime.minute,
+    );
+    final move = pick.dueMove;
+    if (move != null) {
+      // 先顺延截止时间再加提醒：调用方在加第一条提醒时会把截止日定下来，
+      // 顺序反了会先写成旧的截止日。
+      _due = move.date;
+      _dueMinute = move.minute;
+      widget.onDueMoved(move);
     }
-    _add(TodoReminder.onDay(days: days, minute: minute));
+    _add(pick.reminder);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final timed = widget.dueMinute != null;
+    final timed = _dueMinute != null;
     final presets = timed
         ? const <TodoReminder>[
             TodoReminder.beforeDue(0),

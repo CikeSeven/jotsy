@@ -6,12 +6,12 @@ import 'expressive_menu_row.dart';
 
 /// [ExpressiveMenuAnchor] 里的一项（移植自 NexioSchedule 的菜单项）。
 ///
-/// 外观：每行是左右缩进 8 的胶囊（高亮胶囊 17 圆角，由面板统一画，见
-/// [ExpressiveMenuRowInk]），胶囊里左右 14、上下 10.5；前置图标在 24 宽的格子里
-/// （24 × 24，图标 18px、与文字同色）、到文字 10；文字 15.6 字重 500（`onSurface`），可带
-/// 一行说明 [summary]（`bodyMedium`，`onSurfaceVariant`）；图标 + 文字那段最宽
-/// 216。动作项（[selected] 为 null）行尾不留空；选择项行尾始终留出 12 + 20 的
-/// 对勾格，当前项画主色对勾、文字与说明也换成主色（文字不会因选中而左右挪动）；
+/// 外观（尺寸见 [ExpressiveMenuRowMetrics]）：每行是左右缩进 6 的胶囊（高亮胶囊
+/// 16 圆角，由面板统一画，见 [ExpressiveMenuRowInk]），胶囊里左右 12、上下 9；
+/// 前置图标在 22 × 22 的格子里（图标 16px、与文字同色）、到文字 10；文字 14.5
+/// 字重 500（`onSurface`），可带一行说明 [summary]（`bodyMedium`，
+/// `onSurfaceVariant`）；图标 + 文字那段最宽 216。动作项（[selected] 为 null）
+/// 行尾不留空；选择项行尾始终留出 10 + 18 的对勾格，当前项画主色对勾、文字与说明也换成主色（文字不会因选中而左右挪动）；
 /// 给了 [trailingIcon] 时由它占据这一格。[destructive] 文字与图标为 `error`；
 /// 禁用时 38% 的 `onSurface`。
 ///

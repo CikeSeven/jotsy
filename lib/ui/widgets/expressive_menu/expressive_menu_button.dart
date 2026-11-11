@@ -14,7 +14,7 @@ import 'expressive_menu_anchor.dart';
 /// - 按钮与菜单是同一块玻璃：点按后面板从按钮那个 40 的圆长成面板、盖住按钮
 ///   （贴着圆的角对齐），按钮的图标随之淡出；收起时缩回按钮并带一下回弹。
 /// - 按下不铺状态层、不起水波纹：形变即是按下的反馈，按下的圆还会从面板
-///   25 的圆角上露出来。悬停与键盘聚焦仍有高亮。
+///   22 的圆角上露出来。悬停与键盘聚焦仍有高亮。
 /// - Android 上打开时给一次 CONTEXT_CLICK 触感（Flutter 的 heavyImpact 在
 ///   Android 上即这一档）。
 class ExpressiveMenuButton extends StatefulWidget {

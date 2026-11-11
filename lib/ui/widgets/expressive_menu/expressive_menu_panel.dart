@@ -11,7 +11,7 @@ import 'expressive_menu_surface.dart';
 /// 高亮胶囊，最外面是这块面板唯一的点按 / 跟手滑选手势层。玻璃底由
 /// [ExpressiveMenuGlass] 单独画（形变时按面板矩形裁出），这里只管内容。
 ///
-/// - 宽度：取内容固有宽度，夹在 [minWidth]–[maxWidth]（200–288；二级菜单至少
+/// - 宽度：取内容固有宽度，夹在 [minWidth]–[maxWidth]（160–288；二级菜单至少
 ///   与主菜单同宽，由布局经约束给出），超过可用宽度时再收窄。
 /// - 高度：超过布局给出的最大高度时内部滚动；只在展开完成后显示滚动条。
 /// - 上下各留 [ExpressiveMenuRowMetrics.panelPadding]；有 [header]（二级菜单的
@@ -31,7 +31,7 @@ class ExpressiveMenuPanel extends StatefulWidget {
     this.maxWidth = defaultMaxWidth,
   });
 
-  static const double defaultMinWidth = 200;
+  static const double defaultMinWidth = 160;
   static const double defaultMaxWidth = 288;
 
   final bool showScrollbar;

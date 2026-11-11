@@ -155,7 +155,7 @@ void main() {
 
       final panel = tester.getRect(_primary);
       expect(panel.topRight, _nearOffset(circle.topRight));
-      expect(panel.width, inInclusiveRange(200, 288));
+      expect(panel.width, inInclusiveRange(160, 288));
       final placed = _cascade(tester).primaryPlacement!;
       expect(placed.side, ExpressiveMenuSide.below);
       expect(placed.alignRight, isTrue);
@@ -463,9 +463,7 @@ void main() {
       expect(edits, 0);
     });
 
-    testWidgets('rows are inset pills with the NexioSchedule metrics', (
-      tester,
-    ) async {
+    testWidgets('rows are compact inset pills', (tester) async {
       useSize(tester, const Size(393, 800));
       await tester.pumpWidget(_app(home: _topBarPage()));
       await openMenu(tester);
@@ -473,18 +471,18 @@ void main() {
       final row = tester.getRect(_items0.first);
       final icon = tester.getRect(_faIcon(FontAwesomeIcons.penToSquare));
       final edit = tester.getRect(find.text('Edit'));
-      expect(row.top - panel.top, _near(8));
-      expect(panel.bottom - tester.getRect(_items0.last).bottom, _near(8));
-      // 胶囊缩进 8 + 内边距 14，图标格 24、间距 10。
-      expect(icon.center.dx - panel.left, _near(8 + 14 + 12));
-      expect(edit.left - panel.left, _near(8 + 14 + 24 + 10));
-      // 动作项行高 = 上下 10.5 + 24 的图标格。
-      expect(row.height, _near(45));
+      expect(row.top - panel.top, _near(6));
+      expect(panel.bottom - tester.getRect(_items0.last).bottom, _near(6));
+      // 胶囊缩进 6 + 内边距 12，图标格 22、间距 10。
+      expect(icon.center.dx - panel.left, _near(6 + 12 + 11));
+      expect(edit.left - panel.left, _near(6 + 12 + 22 + 10));
+      // 动作项行高 = 上下 9 + 22 的图标格。
+      expect(row.height, _near(40));
       final style = tester
           .renderObject<RenderParagraph>(find.text('Edit'))
           .text
           .style!;
-      expect(style.fontSize, 15.6);
+      expect(style.fontSize, 14.5);
       expect(style.fontWeight, FontWeight.w500);
     });
 
@@ -907,12 +905,12 @@ void main() {
       // 起点是触发行缩进后的胶囊；标题行停在触发行原处。
       final cascade = _cascade(tester);
       final pill = cascade.submenuPillRect!;
-      expect(pill.left, _near(row.left + 8));
-      expect(pill.right, _near(row.right - 8));
+      expect(pill.left, _near(row.left + 6));
+      expect(pill.right, _near(row.right - 6));
       expect(pill.top, _near(row.top));
       expect(tester.getRect(header).topLeft, _nearOffset(row.topLeft));
       final secondary = tester.getRect(_panels.last);
-      expect(secondary.top, _near(row.top - 8));
+      expect(secondary.top, _near(row.top - 6));
       expect(secondary.width, greaterThanOrEqualTo(primaryBefore.width));
       final turns = tester
           .widget<RotationTransition>(

@@ -29,11 +29,12 @@ enum ExpressiveMenuSide {
   middle,
 }
 
-/// 面板圆角（NexioSchedule 的 PanelCornerRadius，连续曲线，这里用超椭圆）。
-const double kExpressiveMenuRadius = 25;
+/// 面板圆角（NexioSchedule 的 PanelCornerRadius 为 25，随行收小改为 22；
+/// 连续曲线，这里用超椭圆）。
+const double kExpressiveMenuRadius = 22;
 
-/// 行高亮胶囊的圆角。
-const double kExpressiveMenuRowRadius = 17;
+/// 行高亮胶囊的圆角：面板圆角减去行的缩进（6），与面板同心。
+const double kExpressiveMenuRowRadius = 16;
 
 /// 不贴着触发控件长出来时（卡片、指针处）起点小圆的边长（NexioSchedule
 /// 没有触发尺寸时的兜底）。

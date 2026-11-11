@@ -324,6 +324,27 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('the first inline add keeps the field focused for the next', (
+    tester,
+  ) async {
+    final db = await _pumpTodos(tester);
+    final l10n = _l10n(tester);
+    await tester.tap(find.text(l10n.todoInlineAddHint));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.enterText(find.byType(TextField), '买菜');
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await _settle(tester);
+    final row = await _rowTitled(tester, db, '买菜');
+    expect(row.dueDate, formatAnniversaryDate(_today));
+    expect(_openTitles(tester), <String>['买菜']);
+    // 列表从空到有一组，内联输入框换了位置也还是同一个：仍聚焦、接着记。
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.focusNode!.hasFocus, isTrue);
+    expect(field.controller!.text, '');
+    await _unmount(tester);
+  });
+
   testWidgets('closing the keyboard releases the inline field and the gap', (
     tester,
   ) async {

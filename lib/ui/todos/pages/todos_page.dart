@@ -93,6 +93,13 @@ class _TodosPageState extends ConsumerState<TodosPage> {
   final TodoAppearanceTracker _appearance = TodoAppearanceTracker();
   bool _inlineEditing = false;
 
+  /// 内联新建按视图各用一把 GlobalKey：组的增减会让它在 sliver 列表里换位置
+  /// （空列表时在空状态之上，有组后在最后一组未完成之后，上面多出一组也会
+  /// 挪），普通 key 只在同级之间对应，换了位置就重建——输入框失焦、键盘收起、
+  /// 打到一半的字丢掉，在空视图里记第一条时尤其明显。换视图时换一把，预填与
+  /// 输入框跟着视图走。
+  final Map<String, GlobalKey> _inlineAddKeys = <String, GlobalKey>{};
+
   /// 宽窗口详情栏正在看的那一条；[_threePane] 为当前布局能否放详情栏。
   String? _detailId;
   bool _threePane = false;
@@ -321,6 +328,10 @@ class _TodosPageState extends ConsumerState<TodosPage> {
       inlinePreset: view.smart == TodoSmartView.completed
           ? null
           : _presetFor(view),
+      inlineAddKey: _inlineAddKeys.putIfAbsent(
+        view.key,
+        () => GlobalKey(debugLabel: 'todo_inline_add_${view.key}'),
+      ),
       onInlineEditingChanged: (bool editing) {
         if (mounted && editing != _inlineEditing) {
           setState(() => _inlineEditing = editing);

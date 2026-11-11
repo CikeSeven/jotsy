@@ -45,6 +45,7 @@ Widget buildTodosPageList({
   required TodoListRowState rowState,
   required TodoListCallbacks callbacks,
   required TodoQuickAddPreset? inlinePreset,
+  required Key inlineAddKey,
   required ValueChanged<bool> onInlineEditingChanged,
   required VoidCallback? onEditList,
 }) {
@@ -66,8 +67,9 @@ Widget buildTodosPageList({
   final inlineAdd = inlinePreset == null
       ? null
       : TodoInlineAddRow(
-          // 换视图时换一个：预填的清单 / 日期跟着视图走，输入框也收起。
-          key: ValueKey<String>('inline_add_${view.key}'),
+          // 页面按视图给的 GlobalKey：列表从空到有、上面多出一组时换了位置
+          // 也不重建；换视图时换一把，预填的清单 / 日期跟着视图走。
+          key: inlineAddKey,
           preset: inlinePreset,
           onEditingChanged: onInlineEditingChanged,
         );

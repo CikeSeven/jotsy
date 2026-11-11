@@ -13,6 +13,7 @@ import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:node_diary/ui/todos/providers/todo_providers.dart';
 import 'package:node_diary/ui/todos/sections/todo_detail_body.dart';
 import 'package:node_diary/ui/todos/widgets/todo_detail_pane.dart';
+import 'package:node_diary/ui/todos/widgets/todo_group_header.dart';
 import 'package:node_diary/ui/todos/widgets/todo_labels.dart';
 import 'package:node_diary/ui/todos/widgets/todo_tile.dart';
 import 'package:node_diary/ui/todos/widgets/todo_view_switcher.dart';
@@ -342,6 +343,34 @@ void main() {
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.focusNode!.hasFocus, isTrue);
     expect(field.controller!.text, '');
+    await _unmount(tester);
+  });
+
+  testWidgets('adding in the planned view dates it today so it shows up', (
+    tester,
+  ) async {
+    final db = await _pumpTodos(tester);
+    final l10n = _l10n(tester);
+    await tester.tap(find.byIcon(FontAwesomeIcons.angleDown.data).first);
+    await _settle(tester);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(TodoSmartViewGrid),
+        matching: find.text(l10n.todoViewPlanned),
+      ),
+    );
+    await _settle(tester);
+    await tester.tap(find.text(l10n.todoInlineAddHint));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.enterText(find.byType(TextField), '交周报');
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await _settle(tester);
+    // 计划只列有日期的待办：新建的带上今天，回车后就出现在“今天”组里。
+    final row = await _rowTitled(tester, db, '交周报');
+    expect(row.dueDate, formatAnniversaryDate(_today));
+    expect(_openTitles(tester), <String>['交周报']);
+    expect(find.widgetWithText(TodoGroupHeader, l10n.todoGroupToday), findsOne);
     await _unmount(tester);
   });
 

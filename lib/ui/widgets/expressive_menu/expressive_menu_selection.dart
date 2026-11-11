@@ -43,7 +43,8 @@ class ExpressiveMenuSelection extends ChangeNotifier {
   final AnimationController maskBottom;
   final AnimationController maskAlpha;
 
-  /// 行的位置都相对这个盒子（面板滚动内容，含上下留白）。
+  /// 行的位置都相对这个盒子（面板滚动内容，含上下留白）。它必须就是胶囊的
+  /// 画布、且与手势层原点重合，否则胶囊与行错开。
   RenderBox? Function() contentBox = () => null;
 
   /// 面板是否已可接管点按（菜单已长到 98%、且没被二级菜单盖住）。
@@ -70,6 +71,12 @@ class ExpressiveMenuSelection extends ChangeNotifier {
   /// 胶囊当前的目标（显现 / 隐去）：按下与松开可能落在同一帧，那时透明度还没
   /// 离开 0，只看当前值会漏掉“隐去”，淡入跑完后胶囊一直亮着。
   bool _maskShown = false;
+
+  /// 胶囊上下边此刻弹向的位置。手指移动时每个触摸事件都会走一遍
+  /// [_updateMask]，目标没变就不能重启弹簧：重启后的第一帧经过时间为 0、
+  /// 位置不动，触摸事件比帧还密时胶囊会一直停在原处，等手指停下才开始滑。
+  double? _maskTopTarget;
+  double? _maskBottomTarget;
   Offset _down = Offset.zero;
   bool _scrolled = false;
 
@@ -234,13 +241,15 @@ class ExpressiveMenuSelection extends ChangeNotifier {
     final reduced = reduceMotion();
     if (span != null) {
       _maskRow = geometryRow;
-      if (reduced || maskAlpha.value < 0.01) {
-        maskTop.value = span.$1;
-        maskBottom.value = span.$2;
-      } else {
-        _springTo(maskTop, span.$1);
-        _springTo(maskBottom, span.$2);
-      }
+      // 看不见时直接到位（从无到有淡入，不从上一次的位置滑过来）。
+      final jump = reduced || maskAlpha.value < 0.01;
+      _maskTopTarget = _moveMask(maskTop, _maskTopTarget, span.$1, jump: jump);
+      _maskBottomTarget = _moveMask(
+        maskBottom,
+        _maskBottomTarget,
+        span.$2,
+        jump: jump,
+      );
     }
     final visible = visibleRow != null && span != null;
     final target = visible ? 1.0 : 0.0;
@@ -260,15 +269,29 @@ class ExpressiveMenuSelection extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _springTo(AnimationController c, double target) => c.animateWith(
-    SpringSimulation(
-      maskSpring,
-      c.value,
-      target,
-      c.velocity,
-      tolerance: const Tolerance(distance: 0.01, velocity: 0.1),
-    ),
-  );
+  /// 把胶囊的一条边送到 [target]，返回新的目标。[current] 是这条边正在弹向的
+  /// 目标：相同时让正在跑（或已跑完）的弹簧继续，不重启（见 [_maskTopTarget]）。
+  double _moveMask(
+    AnimationController c,
+    double? current,
+    double target, {
+    required bool jump,
+  }) {
+    if (jump) {
+      c.value = target;
+    } else if (current != target) {
+      c.animateWith(
+        SpringSimulation(
+          maskSpring,
+          c.value,
+          target,
+          c.velocity,
+          tolerance: const Tolerance(distance: 0.01, velocity: 0.1),
+        ),
+      );
+    }
+    return target;
+  }
 
   @override
   void dispose() {

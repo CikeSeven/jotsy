@@ -27,8 +27,8 @@ typedef ExpressiveMenuTriggerBuilder =
 /// 为 500ms，PopupMenuButton 是整页路由、从中心放大且不随锚点对齐；这里用
 /// 底层锚点自己掌握表面、动效与定位。
 ///
-/// - 表面：玻璃面板（[ExpressiveMenuGlass]，25 圆角的超椭圆，环形外投影 +
-///   细描边），宽 200–288，高度受安全区限制、超出时内部滚动；行样式见
+/// - 表面：玻璃面板（[ExpressiveMenuGlass]，22 圆角的超椭圆，环形外投影 +
+///   细描边），宽 160–288，高度受安全区限制、超出时内部滚动；行样式见
 ///   [ExpressiveMenuItem]。不铺变暗层。
 /// - 从哪长出来（容器变换，见 [ExpressiveMenuMotion]）：
 ///   - 图标按钮（[iconTrigger]，或不超过 56 × 56 的锚点）：面板盖住按钮，从

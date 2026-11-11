@@ -6,7 +6,7 @@ import 'expressive_menu_item.dart';
 import 'expressive_menu_row.dart';
 
 /// 打开二级菜单的一项：行尾带 ›，点按后二级菜单从这一行的胶囊变形展开（miuix
-/// 的级联方式，NexioSchedule 的样式）：胶囊（17 圆角）长成一块新面板（25 圆角）
+/// 的级联方式，NexioSchedule 的样式）：胶囊（16 圆角）长成一块新面板（22 圆角）
 /// 盖在主菜单上，顶部是这一行的副本（› 转向上方，点按收回），下面是分隔线与
 /// [menuChildren]；主菜单缩到 0.95 并盖上半透明遮罩，点遮罩、点外部或返回都先
 /// 收回二级菜单。
@@ -60,7 +60,7 @@ class _ExpressiveSubmenuItemState extends State<ExpressiveSubmenuItem> {
   );
 }
 
-/// 二级菜单入口行尾的 ›（RTL 为 ‹），10 × 16 的格子；在标题行里随 [turns]
+/// 二级菜单入口行尾的 ›（RTL 为 ‹），9 × 14 的格子；在标题行里随 [turns]
 /// 转向上方。
 class ExpressiveSubmenuChevron extends StatelessWidget {
   const ExpressiveSubmenuChevron({super.key, this.turns});
@@ -122,13 +122,13 @@ class ExpressiveSubmenuHeader extends StatelessWidget {
   }
 }
 
-/// 菜单里分组之间的分隔线：`outlineVariant` 1dp，左右缩进 20、上下各留 4
-/// （位置同 NexioSchedule / miuix 的 HorizontalDivider；它们的 1.5dp 在实机上
-/// 显得太粗，按用户反馈改为 1dp）。
+/// 菜单里分组之间的分隔线：`outlineVariant` 1dp，左右缩进 18（与行内文字的
+/// 起点对齐：行缩进 6 + 胶囊内边距 12）、上下各留 4（NexioSchedule / miuix 的
+/// HorizontalDivider 为 1.5dp，实机上显得太粗，按用户反馈改为 1dp）。
 class ExpressiveMenuDivider extends StatelessWidget {
   const ExpressiveMenuDivider({super.key});
 
-  static const double inset = 20;
+  static const double inset = 18;
   static const double spacing = 4;
   static const double thickness = 1;
 

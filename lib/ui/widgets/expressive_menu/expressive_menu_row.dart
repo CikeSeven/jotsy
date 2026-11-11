@@ -3,37 +3,42 @@ import 'package:flutter/rendering.dart';
 
 import 'expressive_menu_selection.dart';
 
-/// 菜单行的尺寸（移植自 NexioSchedule 的 DropdownImpl /
-/// LiquidGlassDropdownMenuItem）。
+/// 菜单行的尺寸。结构移植自 NexioSchedule 的 DropdownImpl /
+/// LiquidGlassDropdownMenuItem，数值按用户反馈（原值“太大了”）整体收小：
+/// 行高 45 → 40、字号 15.6 → 14.5。
 abstract final class ExpressiveMenuRowMetrics {
   /// 行的胶囊离面板左右边缘的距离（高亮胶囊同样缩进）。
-  static const double inset = 8;
+  ///
+  /// 必须与 [panelPadding] 相等：二级菜单的标题行从触发行的胶囊往外各扩这么多
+  /// 就是面板的左上角（见 ExpressiveMenuCascade 的二级面板形变）。面板圆角减去
+  /// 它就是胶囊圆角（同心）。
+  static const double inset = 6;
 
   /// 面板上下的留白（首行之上、末行之下）。
-  static const double panelPadding = 8;
+  static const double panelPadding = 6;
 
   /// 胶囊里的左右、上下内边距。
-  static const double horizontalPadding = 14;
-  static const double verticalPadding = 10.5;
+  static const double horizontalPadding = 12;
+  static const double verticalPadding = 9;
 
   /// 前置图标格的宽度、到文字的间距与图标大小。
-  static const double iconBox = 24;
+  static const double iconBox = 22;
   static const double iconGap = 10;
-  static const double iconSize = 18;
+  static const double iconSize = 16;
 
   /// 选择菜单行尾对勾（或 ›、自定义尾随控件）前的间距与对勾格边长。
-  static const double trailingGap = 12;
-  static const double checkCell = 20;
-  static const double checkSize = 16;
+  static const double trailingGap = 10;
+  static const double checkCell = 18;
+  static const double checkSize = 14;
 
-  /// 二级菜单入口行尾 › 的格子（10 × 16）。
-  static const Size chevronCell = Size(10, 16);
+  /// 二级菜单入口行尾 › 的格子（9 × 14）。
+  static const Size chevronCell = Size(9, 14);
 
   /// 图标 + 文字那一段的最大宽度。
   static const double maxTextWidth = 216;
 
-  /// 标题字号与行高（15.6sp 中等字重）。
-  static const double titleSize = 15.6;
+  /// 标题字号与行高（14.5sp 中等字重）。
+  static const double titleSize = 14.5;
   static const double titleHeight = 1.3;
 }
 

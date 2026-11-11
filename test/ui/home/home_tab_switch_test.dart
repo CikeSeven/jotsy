@@ -142,7 +142,7 @@ void main() {
   ) async {
     await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
     final l10n = tester.element(find.byType(HomePage)).l10n;
-    await tester.tap(_navItem(l10n.navTodos));
+    await tester.tap(_navItem(l10n.navCalendar));
     await tester.pumpAndSettle();
     expect(_homePage(tester), 0);
 
@@ -150,7 +150,7 @@ void main() {
     await tester.pump();
     for (var frame = 0; frame < 30; frame++) {
       await tester.pump(const Duration(milliseconds: 16));
-      // 待办(0) -> 探索(3)：不应再滑过日记(1)与日历(2)。
+      // 日历(0) -> 探索(3)：不应再滑过日记(1)与待办(2)。
       expect(_homePage(tester), greaterThanOrEqualTo(2), reason: '$frame');
     }
     await tester.pumpAndSettle();
@@ -310,17 +310,18 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('to-dos are off by default and sit first when on', (
+    testWidgets('to-dos are off by default and sit third when on', (
       tester,
     ) async {
       await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
       final l10n = tester.element(find.byType(HomePage)).l10n;
 
-      // 四个 Tab 时日记居中偏左（第二格），启动仍落在日记。
+      // 四个 Tab 时日历第一格、日记居中偏左（第二格）、待办第三格，启动仍
+      // 落在日记。
       expect(_navLabels(tester), <String>[
-        l10n.navTodos,
-        l10n.navDiaries,
         l10n.navCalendar,
+        l10n.navDiaries,
+        l10n.navTodos,
         l10n.navExplore,
       ]);
       expect(_selectedNavLabel(tester), l10n.navDiaries);

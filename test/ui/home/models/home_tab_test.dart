@@ -12,11 +12,11 @@ void main() {
       ]);
     });
 
-    test('four tabs put diaries in the second slot', () {
+    test('four tabs put calendar first, diaries second, to-dos third', () {
       expect(visibleHomeTabs(const AppFeatures(todos: true)), <HomeTab>[
-        HomeTab.todos,
-        HomeTab.diaries,
         HomeTab.calendar,
+        HomeTab.diaries,
+        HomeTab.todos,
         HomeTab.explore,
       ]);
     });
@@ -24,7 +24,7 @@ void main() {
     test('any three tabs keep the others in their relative order', () {
       expect(
         visibleHomeTabs(const AppFeatures(todos: true, explore: false)),
-        <HomeTab>[HomeTab.todos, HomeTab.diaries, HomeTab.calendar],
+        <HomeTab>[HomeTab.calendar, HomeTab.diaries, HomeTab.todos],
       );
       expect(
         visibleHomeTabs(const AppFeatures(todos: true, calendar: false)),

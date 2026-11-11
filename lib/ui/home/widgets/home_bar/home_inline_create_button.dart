@@ -7,8 +7,9 @@ import '../../../widgets/glass/glass_reveal.dart';
 import '../../../widgets/glass/outer_shadow_painter.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
 
-/// 与悬浮底栏并排的新建按钮：直径为栏高的圆（与胶囊两端的半圆同一弧度），
-/// 主色容器底色 + 加号图标，投影与胶囊同源。
+/// 与悬浮底栏并排的新建按钮：边长为栏高的方块，圆角与胶囊相同（完整胶囊
+/// 时就是直径为栏高的圆，与胶囊两端的半圆同一弧度），主色容器底色 + 加号
+/// 图标，投影与胶囊同源。
 ///
 /// “小控件”为玻璃时与全局 FAB 同一外壳（[AppGlassFab]：主色玻璃、玻璃
 /// 描边与投影，浮在列表上总是模糊），否则为实色。
@@ -42,7 +43,7 @@ class HomeInlineCreateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final side = style.barHeight;
-    final radius = BorderRadius.circular(side / 2);
+    final radius = BorderRadius.circular(style.cornerRadius);
     if (isGlass(context)) {
       return Semantics(
         container: true,

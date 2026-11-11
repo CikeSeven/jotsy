@@ -7752,6 +7752,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStylePresetCompactDesc => '更矮的悬浮栏，只有图标';
 
   @override
+  String get homeBarStylePresetRounded => '方圆';
+
+  @override
+  String get homeBarStylePresetRoundedDesc => '圆角矩形的栏，选中块同心跟随';
+
+  @override
+  String get homeBarStylePresetRoomy => '舒展';
+
+  @override
+  String get homeBarStylePresetRoomyDesc => '更大的图标与文字，导航项更宽';
+
+  @override
+  String get homeBarStylePresetFocus => '聚焦';
+
+  @override
+  String get homeBarStylePresetFocusDesc => '只显示选中项文字，选中块更饱满';
+
+  @override
+  String get homeBarStyleShapeGroup => '形状';
+
+  @override
+  String get homeBarStyleShapeFooter => '栏高随图标与文字自动调整；选中块的圆角与栏同心。';
+
+  @override
+  String get homeBarStyleRoundness => '圆角';
+
+  @override
+  String get homeBarStyleItemWidth => '导航项宽度';
+
+  @override
+  String get homeBarStyleItemInset => '选中块边距';
+
+  @override
+  String get homeBarStyleItemsGroup => '图标与文字';
+
+  @override
+  String get homeBarStyleIconSize => '图标大小';
+
+  @override
+  String get homeBarStyleLabelSize => '文字大小';
+
+  @override
+  String get homeBarStyleLabelGap => '图标与文字间距';
+
+  @override
   String get homeBarStyleHighContrastNote => '系统开启了高对比度，玻璃暂时显示为不透明。';
 
   @override

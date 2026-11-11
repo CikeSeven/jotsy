@@ -8695,6 +8695,55 @@ class AppLocalizationsEn extends AppLocalizations {
       'A shorter floating bar with icons only';
 
   @override
+  String get homeBarStylePresetRounded => 'Rounded';
+
+  @override
+  String get homeBarStylePresetRoundedDesc =>
+      'A rounded-rectangle bar with a matching highlight';
+
+  @override
+  String get homeBarStylePresetRoomy => 'Roomy';
+
+  @override
+  String get homeBarStylePresetRoomyDesc =>
+      'Bigger icons and labels, wider items';
+
+  @override
+  String get homeBarStylePresetFocus => 'Focus';
+
+  @override
+  String get homeBarStylePresetFocusDesc =>
+      'Only the selected item shows its label, with a fuller highlight';
+
+  @override
+  String get homeBarStyleShapeGroup => 'Shape';
+
+  @override
+  String get homeBarStyleShapeFooter =>
+      'The bar\'s height follows the icon and label sizes; the highlight\'s corners stay concentric with the bar.';
+
+  @override
+  String get homeBarStyleRoundness => 'Corner roundness';
+
+  @override
+  String get homeBarStyleItemWidth => 'Item width';
+
+  @override
+  String get homeBarStyleItemInset => 'Highlight inset';
+
+  @override
+  String get homeBarStyleItemsGroup => 'Icons & labels';
+
+  @override
+  String get homeBarStyleIconSize => 'Icon size';
+
+  @override
+  String get homeBarStyleLabelSize => 'Label size';
+
+  @override
+  String get homeBarStyleLabelGap => 'Icon-label spacing';
+
+  @override
   String get homeBarStyleHighContrastNote =>
       'High contrast is on in system settings, so the glass shows as opaque for now.';
 

@@ -73,10 +73,18 @@ void main() {
   });
 
   group('geometry', () {
-    test('follows the label mode and nothing else', () {
+    test('the defaults keep the reviewed proportions', () {
       final labeled = _resolve(glass, _light);
-      expect(labeled.barHeight, HomeBarMetrics.labeledBarHeight);
-      expect(labeled.itemWidth, HomeBarMetrics.labeledItemWidth);
+      // 图标框 24 + 间距 3 + 文字 13.2 + 上下各 4，取整为 48；栏高再加两道
+      // 6 的缝。
+      expect(labeled.itemWidth, 72);
+      expect(labeled.itemHeight, 48);
+      expect(labeled.itemInset, 6);
+      expect(labeled.barHeight, 60);
+      expect(labeled.iconSize, 22);
+      expect(labeled.iconBox, 24);
+      expect(labeled.labelSize, 11);
+      expect(labeled.labelGap, 3);
 
       final selected = _resolve(
         glass.copyWith(labelMode: HomeBarLabelMode.selected),
@@ -85,17 +93,85 @@ void main() {
       expect(selected.barHeight, labeled.barHeight);
       expect(selected.itemWidth, labeled.itemWidth);
 
-      final compact = _resolve(HomeBarPreset.compact.style, _dark);
-      expect(compact.barHeight, HomeBarMetrics.compactBarHeight);
-      expect(compact.itemWidth, HomeBarMetrics.compactItemWidth);
+      // 只有图标：文字的字号与间距不算进格高，上下各留 9。
+      final iconsOnly = _resolve(
+        glass.copyWith(
+          labelMode: HomeBarLabelMode.never,
+          itemLabelSize: 14,
+          itemLabelGap: 8,
+        ),
+        _light,
+      );
+      expect(iconsOnly.itemHeight, 42);
+      expect(iconsOnly.barHeight, 54);
     });
 
-    test('the pill is always a capsule', () {
+    test('the bar grows with its content and its inset', () {
+      final resolved = _resolve(
+        glass.copyWith(
+          itemIconSize: 26,
+          itemLabelSize: 14,
+          itemLabelGap: 8,
+          itemInset: 10,
+        ),
+        _light,
+      );
+      // 28 + 8 + 16.8 + 8 = 60.8 → 61；栏高 61 + 20。
+      expect(resolved.itemHeight, 61);
+      expect(resolved.barHeight, 81);
+    });
+
+    test('presets resolve to their documented sizes', () {
+      final compact = _resolve(HomeBarPreset.compact.style, _dark);
+      expect(compact.itemWidth, 60);
+      expect(compact.itemHeight, 42);
+      expect(compact.barHeight, 52);
+
+      final roomy = _resolve(HomeBarPreset.roomy.style, _light);
+      expect(roomy.itemHeight, 52);
+      expect(roomy.barHeight, 66);
+
+      final focus = _resolve(HomeBarPreset.focus.style, _light);
+      expect(focus.itemHeight, 48);
+      expect(focus.barHeight, 56);
+    });
+
+    test('a full roundness is a capsule with a concentric indicator', () {
       for (final preset in HomeBarPreset.values) {
         final resolved = _resolve(preset.style, _light);
-        expect(resolved.cornerRadius, resolved.barHeight / 2);
         expect(resolved.bottomGap, HomeBarMetrics.bottomGap);
+        if (preset.style.roundness == 1) {
+          expect(resolved.cornerRadius, resolved.barHeight / 2);
+          expect(resolved.indicatorRadius, resolved.itemHeight / 2);
+        }
       }
+    });
+
+    test('a lower roundness keeps the indicator concentric', () {
+      final rounded = _resolve(HomeBarPreset.rounded.style, _light);
+      expect(rounded.cornerRadius, closeTo(13.5, 1e-9));
+      expect(rounded.indicatorRadius, closeTo(7.5, 1e-9));
+
+      // 圆角比缝还小时指示器为直角，不出现负数。
+      final square = _resolve(glass.copyWith(roundness: 0.1), _light);
+      expect(square.cornerRadius, closeTo(3, 1e-9));
+      expect(square.indicatorRadius, 0);
+    });
+
+    test('constructed out-of-range values are clamped when rendering', () {
+      final resolved = _resolve(
+        const HomeBarStyle(
+          roundness: 3,
+          itemWidth: 400,
+          itemInset: -2,
+          itemIconSize: 100,
+        ),
+        _light,
+      );
+      expect(resolved.roundness, HomeBarStyleLimits.roundness.max);
+      expect(resolved.itemWidth, HomeBarStyleLimits.itemWidth.max);
+      expect(resolved.itemInset, HomeBarStyleLimits.itemInset.min);
+      expect(resolved.iconSize, HomeBarStyleLimits.itemIconSize.max);
     });
   });
 

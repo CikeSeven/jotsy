@@ -11169,6 +11169,66 @@
   "@homeBarStylePresetCompactDesc": {
     "description": "Navigation bar style preset: compact description."
   },
+  "homeBarStylePresetRounded": "角丸",
+  "@homeBarStylePresetRounded": {
+    "description": "Navigation bar style preset: rounded name."
+  },
+  "homeBarStylePresetRoundedDesc": "角丸長方形のバー。選択中の背景も同じ形に",
+  "@homeBarStylePresetRoundedDesc": {
+    "description": "Navigation bar style preset: rounded description."
+  },
+  "homeBarStylePresetRoomy": "ゆったり",
+  "@homeBarStylePresetRoomy": {
+    "description": "Navigation bar style preset: roomy name."
+  },
+  "homeBarStylePresetRoomyDesc": "アイコンとラベルが大きく、項目も広め",
+  "@homeBarStylePresetRoomyDesc": {
+    "description": "Navigation bar style preset: roomy description."
+  },
+  "homeBarStylePresetFocus": "フォーカス",
+  "@homeBarStylePresetFocus": {
+    "description": "Navigation bar style preset: focus name."
+  },
+  "homeBarStylePresetFocusDesc": "選択中の項目だけラベルを表示し、背景を大きめに",
+  "@homeBarStylePresetFocusDesc": {
+    "description": "Navigation bar style preset: focus description."
+  },
+  "homeBarStyleShapeGroup": "形",
+  "@homeBarStyleShapeGroup": {
+    "description": "Navigation bar style settings: shape group title (roundness, item width, highlight inset)."
+  },
+  "homeBarStyleShapeFooter": "バーの高さはアイコンとラベルの大きさに合わせて決まり、選択中の背景の角はバーと同心になります。",
+  "@homeBarStyleShapeFooter": {
+    "description": "Navigation bar style settings: shape group footer."
+  },
+  "homeBarStyleRoundness": "角の丸み",
+  "@homeBarStyleRoundness": {
+    "description": "Navigation bar style settings: roundness slider (100% is a full capsule)."
+  },
+  "homeBarStyleItemWidth": "項目の幅",
+  "@homeBarStyleItemWidth": {
+    "description": "Navigation bar style settings: width of each item (and its highlight)."
+  },
+  "homeBarStyleItemInset": "選択背景の余白",
+  "@homeBarStyleItemInset": {
+    "description": "Navigation bar style settings: gap between the selection highlight and the bar edge."
+  },
+  "homeBarStyleItemsGroup": "アイコンとラベル",
+  "@homeBarStyleItemsGroup": {
+    "description": "Navigation bar style settings: icons and labels group title."
+  },
+  "homeBarStyleIconSize": "アイコンの大きさ",
+  "@homeBarStyleIconSize": {
+    "description": "Navigation bar style settings: icon size slider."
+  },
+  "homeBarStyleLabelSize": "ラベルの大きさ",
+  "@homeBarStyleLabelSize": {
+    "description": "Navigation bar style settings: label font size slider (shown when labels are on)."
+  },
+  "homeBarStyleLabelGap": "アイコンとラベルの間隔",
+  "@homeBarStyleLabelGap": {
+    "description": "Navigation bar style settings: icon-to-label spacing slider (shown when labels are on)."
+  },
   "homeBarStyleHighContrastNote": "システム設定でハイコントラストがオンになっているため、ガラスは現在不透明で表示されています。",
   "@homeBarStyleHighContrastNote": {
     "description": "Navigation bar style settings: note appended to the material footer while system high contrast is on."

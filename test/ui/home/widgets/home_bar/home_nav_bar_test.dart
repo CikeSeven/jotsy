@@ -25,7 +25,9 @@ ColorScheme get _scheme => expressiveTestTheme(Brightness.light).colorScheme;
 
 HomeBarResolvedStyle _style({
   HomeBarLabelMode labelMode = HomeBarLabelMode.always,
-}) => HomeBarResolvedStyle.resolve(HomeBarStyle(labelMode: labelMode), _scheme);
+  HomeBarStyle base = HomeBarStyle.defaults,
+}) =>
+    HomeBarResolvedStyle.resolve(base.copyWith(labelMode: labelMode), _scheme);
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -135,10 +137,30 @@ void main() {
     expect(tester.getSize(find.byType(HomeNavBar)), const Size(144, 48));
   });
 
-  testWidgets('icon-only bars use shorter, narrower cells', (tester) async {
+  testWidgets('icon-only bars use shorter cells of the same width', (
+    tester,
+  ) async {
     await _pump(tester, style: _style(labelMode: HomeBarLabelMode.never));
-    expect(tester.getSize(find.byType(HomeNavBar)), const Size(256, 42));
-    expect(tester.getSize(_destination(0)), const Size(64, 42));
+    expect(tester.getSize(find.byType(HomeNavBar)), const Size(288, 42));
+    expect(tester.getSize(_destination(0)), const Size(72, 42));
+  });
+
+  testWidgets('cells follow the item width and content sizes', (tester) async {
+    await _pump(
+      tester,
+      style: _style(
+        base: const HomeBarStyle(
+          itemWidth: 80,
+          itemIconSize: 24,
+          itemLabelSize: 12,
+          itemLabelGap: 4,
+        ),
+      ),
+    );
+    // 26 + 4 + 14.4 + 8 = 52.4 → 52。
+    expect(tester.getSize(_destination(0)), const Size(80, 52));
+    expect(_icon(tester, 0).size, 24);
+    expect(tester.widget<Text>(find.text('Diaries')).style!.fontSize, 12);
   });
 
   testWidgets('a narrower item width from the bar is honoured', (tester) async {
@@ -202,13 +224,11 @@ void main() {
       expect(icon.dx, closeTo(cell.center.dx, 0.01));
       expect(label.center.dx, closeTo(cell.center.dx, 0.01));
       // 图标框（24）+ 间距 + 文字整体竖直居中：上下留白相等。
-      final top = icon.dy - HomeBarMetrics.iconBox / 2 - cell.top;
+      final box = HomeBarMetrics.iconBox(22);
+      final top = icon.dy - box / 2 - cell.top;
       final bottom = cell.bottom - label.bottom;
       expect(top, closeTo(bottom, 0.01));
-      expect(
-        label.top - (icon.dy + HomeBarMetrics.iconBox / 2),
-        closeTo(HomeBarMetrics.labelGap, 0.01),
-      );
+      expect(label.top - (icon.dy + box / 2), closeTo(3, 0.01));
     }
   });
 
@@ -270,6 +290,17 @@ void main() {
       ),
     );
     semantics.dispose();
+  });
+
+  testWidgets('a lower roundness gives the indicator concentric corners', (
+    tester,
+  ) async {
+    final style = _style(base: const HomeBarStyle(roundness: 0.45));
+    await _pump(tester, style: style, selected: 1);
+    final indicator = _indicator(tester);
+    expect(indicator.outerRect, const Rect.fromLTWH(72, 0, 72, 48));
+    // 胶囊圆角 0.45 × 30 = 13.5，减去 6 的缝。
+    expect(indicator.tlRadiusX, closeTo(7.5, 1e-9));
   });
 
   testWidgets('the indicator is a capsule filling the selected cell', (
@@ -342,14 +373,12 @@ void main() {
     await _pump(tester);
     await _pump(tester, selected: 3);
     final bar = tester.getSize(find.byType(HomeNavBar));
+    final room = HomeNavGeometry.edgeRoom(6);
     for (var i = 0; i < 60; i++) {
       await tester.pump(const Duration(milliseconds: 16));
       final rect = _indicator(tester).outerRect;
-      expect(rect.left, greaterThanOrEqualTo(-HomeNavGeometry.edgeRoom));
-      expect(
-        rect.right,
-        lessThanOrEqualTo(bar.width + HomeNavGeometry.edgeRoom),
-      );
+      expect(rect.left, greaterThanOrEqualTo(-room));
+      expect(rect.right, lessThanOrEqualTo(bar.width + room));
     }
   });
 
@@ -529,7 +558,7 @@ void main() {
     );
     final unselected = tester.widget<Text>(find.text('Diaries')).style!;
     expect(unselected.color, style.unselectedForeground);
-    expect(unselected.fontSize, HomeBarMetrics.labelFontSize);
+    expect(unselected.fontSize, style.labelSize);
     // 选中与否同一字重：切换时文字不左右抖。
     expect(
       unselected.fontWeight,

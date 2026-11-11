@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../models/home_bar_style/home_bar_metrics.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
@@ -10,19 +13,20 @@ import 'home_nav_geometry.dart';
 import 'home_nav_ink_response.dart';
 
 /// 侧边栏（宽窗口，[HomeNavRail]）的一个导航项：与底栏同样大小的一格
-/// （显示文字时 72×48，只有图标时 64×42），图标在上、文字在下并在格子里
-/// 居中，选中时格子铺上胶囊形的指示器。
+/// （默认显示文字时 72×48，只有图标时 72×42；宽不超过侧边栏减去两侧
+/// 各 4），图标在上、文字在下并在格子里居中，选中时格子铺上与底栏指示器
+/// 同样圆角的指示器。
 ///
 /// 输入：图标、名称、是否选中、选中动画（[selection] 线性、[labelCurve]
-/// 渐变）、已解析样式（只读文字模式）与颜色；输出：占满侧边栏宽度的一行
-/// 点按区。无副作用。
+/// 渐变）、已解析样式（文字模式、格子尺寸、图标、文字与间距、指示器圆角）
+/// 与颜色；输出：占满侧边栏宽度的一行点按区。无副作用。
 ///
 /// 选中变化时颜色直接切换、图标经 AnimatedScale 放大、指示器先跳到 40%
 /// 宽再横向长满（[ExpressiveMotion.spatial]）；“只显示选中项文字”时文字随
 /// [labelCurve] 展开并淡入。侧边栏的各项竖着排、彼此不相邻，指示器不在
 /// 项之间滑动（底栏那颗滑动的指示器见 `HomeNavIndicator`）。
 ///
-/// 水波纹、悬停与焦点状态层只画在格子里（胶囊形），不铺满整行。
+/// 水波纹、悬停与焦点状态层只画在格子里（与指示器同形），不铺满整行。
 class HomeNavRailDestination extends StatefulWidget {
   const HomeNavRailDestination({
     super.key,
@@ -36,8 +40,11 @@ class HomeNavRailDestination extends StatefulWidget {
     required this.onTap,
   });
 
-  /// 文字字号：比底栏大一号，桌面上隔着更远的距离也读得清。
-  static const double labelFontSize = 12;
+  /// 文字字号比底栏大这么多：桌面上隔着更远的距离也读得清。
+  static const double labelFontBoost = 1;
+
+  /// 格子两侧至少离侧边栏边缘的距离：项宽调到最大时格子也不贴边。
+  static const double cellSideRoom = 4;
 
   /// 每个导航项上下各自的内边距，算进点按区域（`HomeNavRail.itemPadding`
   /// 取它，排版时从相邻的间距里扣掉）。
@@ -47,10 +54,11 @@ class HomeNavRailDestination extends StatefulWidget {
   static const double hoverOpacity = 0.08;
   static const double focusOpacity = 0.12;
 
-  /// 一格（指示器、水波纹与状态层）的大小：与底栏的导航项相同。
-  static Size cellSize(HomeBarLabelMode mode) => Size(
-    HomeBarMetrics.itemWidth(mode),
-    HomeBarMetrics.itemHeight(HomeBarMetrics.barHeight(mode)),
+  /// 一格（指示器、水波纹与状态层）的大小：与底栏的导航项相同，宽度不
+  /// 超过侧边栏减去两侧的 [cellSideRoom]。
+  static Size cellSize(HomeBarResolvedStyle style) => Size(
+    math.min(style.itemWidth, AppContentWidth.navRail - cellSideRoom * 2),
+    style.itemHeight,
   );
 
   final FaIconData icon;
@@ -103,15 +111,20 @@ class _HomeNavRailDestinationState extends State<HomeNavRailDestination> {
     },
     child: Ink(
       decoration: ShapeDecoration(
-        shape: const StadiumBorder(),
+        shape: _cellShape,
         color: widget.colors.indicator,
       ),
     ),
   );
 
+  /// 格子的形状：与底栏指示器同样的圆角（完整胶囊时被夹到格高的一半）。
+  ShapeBorder get _cellShape => RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(widget.style.indicatorRadius),
+  );
+
   Widget _label(TextStyle style) {
     final text = Padding(
-      padding: const EdgeInsets.only(top: HomeBarMetrics.labelGap),
+      padding: EdgeInsets.only(top: widget.style.labelGap),
       // 与底栏相同：文字最多放大到 1.3 倍，太长的名称等比缩小到放得下。
       child: MediaQuery.withClampedTextScaling(
         maxScaleFactor: 1.3,
@@ -139,12 +152,13 @@ class _HomeNavRailDestinationState extends State<HomeNavRailDestination> {
     final iconColor = selected ? colors.selectedIcon : colors.unselectedIcon;
     final labelStyle =
         (selected ? colors.selectedLabel : colors.unselectedLabel).copyWith(
-          fontSize: HomeNavRailDestination.labelFontSize,
-          height: 1.2,
+          fontSize:
+              widget.style.labelSize + HomeNavRailDestination.labelFontBoost,
+          height: HomeBarMetrics.labelLineHeight,
         );
 
     final icon = SizedBox.square(
-      dimension: HomeBarMetrics.iconBox,
+      dimension: widget.style.iconBox,
       child: Center(
         child: AnimatedScale(
           scale: selected ? HomeNavGeometry.selectedIconScale : 1,
@@ -152,14 +166,14 @@ class _HomeNavRailDestinationState extends State<HomeNavRailDestination> {
           curve: ExpressiveMotion.spatial,
           child: FaIcon(
             widget.icon,
-            size: HomeBarMetrics.iconSize,
+            size: widget.style.iconSize,
             color: iconColor,
           ),
         ),
       ),
     );
     final cell = SizedBox.fromSize(
-      size: HomeNavRailDestination.cellSize(_labelMode),
+      size: HomeNavRailDestination.cellSize(widget.style),
       child: Stack(
         children: <Widget>[
           Positioned.fill(
@@ -189,7 +203,7 @@ class _HomeNavRailDestinationState extends State<HomeNavRailDestination> {
 
     Widget result = HomeNavIndicatorInkResponse(
       rectOf: _rippleRect,
-      customBorder: const StadiumBorder(),
+      customBorder: _cellShape,
       hoverColor: iconColor.withValues(
         alpha: HomeNavRailDestination.hoverOpacity,
       ),

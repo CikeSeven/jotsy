@@ -192,7 +192,7 @@ void main() {
       ),
     );
     expect(blend.opacity, inExclusiveRange(0.05, 0.6));
-    // 下层是日记的颜色（不透明），上层是日历的页面底色。
+    // 日记居中，左滑去探索：下层是日记的颜色（不透明），上层是探索的页面底色。
     expect(_backgroundColors(tester), <Color>[_diariesColor, surface]);
 
     await gesture.up();

@@ -119,10 +119,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   LanSyncAutoSyncNotices? _lanSyncNotices;
 
   // 页面切换状态。下标都是在 [_tabs] 中的位置；[_tabs] 变化时由
-  // `_HomePageController.syncVisibleTabs` 换算到新列表。
+  // `_HomePageController.syncVisibleTabs` 换算到新列表。日记排在底栏中间、
+  // 不一定是第 0 个，两个下标在 initState 中按身份取日记的位置。
   late List<HomeTab> _tabs;
-  int _currentIndex = 0;
-  int _targetIndex = 0;
+  late int _currentIndex;
+  late int _targetIndex;
   int _tabSwitchGeneration = 0;
   bool _isTabSwitching = false;
   String? _shownStartupNotice;
@@ -229,6 +230,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     // settings 在首页构建前已就绪（启动门槛），首帧即是真实的开关，不会先
     // 出现四个 Tab 再收起。
     _tabs = visibleHomeTabs(ref.read(appFeaturesProvider));
+    // 启动落在日记页（它始终可见）；PageController 的初始页取自这里。
+    _currentIndex = _targetIndex = _tabs.indexOf(HomeTab.diaries);
     _controller = _HomePageController(this);
     _controller.init();
     _visibleTabs = ValueNotifier<_VisibleTabRange>(

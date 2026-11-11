@@ -156,10 +156,12 @@ void main() {
     await _pumpHome(tester);
     final l10n = _l10n(tester);
 
+    // 侧边栏与底栏同序：日历(0) · 日记(1) · 探索(2)，启动落在日记。
+    expect(_homePage(tester), 1);
     await tester.tap(_railItem(l10n.navCalendar));
     await tester.pump();
     // 不滑动：第一帧就落在目标页。
-    expect(_homePage(tester), 1);
+    expect(_homePage(tester), 0);
     await tester.pump(const Duration(milliseconds: 60));
     final cover = tester.widget<FadeTransition>(
       find
@@ -181,7 +183,7 @@ void main() {
 
     await tester.tap(_railItem(l10n.navDiaries));
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 0);
+    expect(_homePage(tester), 1);
     await _unmount(tester);
   });
 
@@ -213,7 +215,7 @@ void main() {
     await _pumpHome(tester);
     await tester.drag(find.byType(DiariesPage), const Offset(-600, 0));
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 0);
+    expect(_homePage(tester), 1);
     await _unmount(tester);
   });
 
@@ -297,9 +299,10 @@ void main() {
     tester,
   ) async {
     await _pumpHome(tester, size: _phone);
-    await _pressShortcut(tester, LogicalKeyboardKey.digit2);
-    await tester.pumpAndSettle();
     expect(_homePage(tester), 1);
+    await _pressShortcut(tester, LogicalKeyboardKey.digit1);
+    await tester.pumpAndSettle();
+    expect(_homePage(tester), 0);
     await _unmount(tester);
   });
 
@@ -320,17 +323,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(DiarySearchPage), findsOneWidget);
 
-    // 搜索页在上面时首页快捷键不响应。
-    await _pressShortcut(tester, LogicalKeyboardKey.digit2);
+    // 搜索页在上面时首页快捷键不响应：仍停在日记(1)。
+    await _pressShortcut(tester, LogicalKeyboardKey.digit3);
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 0);
+    expect(_homePage(tester), 1);
 
     Navigator.of(tester.element(find.byType(DiarySearchPage))).pop();
     await tester.pumpAndSettle();
     expect(find.byType(DiarySearchPage), findsNothing);
-    await _pressShortcut(tester, LogicalKeyboardKey.digit2);
+    await _pressShortcut(tester, LogicalKeyboardKey.digit3);
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 1);
+    expect(_homePage(tester), 2);
     await _unmount(tester);
   });
 

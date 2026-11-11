@@ -30,7 +30,8 @@ enum AppBackgroundArea {
   todos,
 }
 
-/// 区域在“背景与材质”里的展示顺序：首页 Tab 按底栏顺序在前，二级页在后。
+/// 区域在“背景与材质”里的展示顺序：首页 Tab 在前（日记是主体排第一，其余
+/// 按底栏里的相对顺序；底栏本身让日记居中，见 `visibleHomeTabs`），二级页在后。
 /// 枚举只能在末尾追加（见文件头），展示顺序另列。
 const List<AppBackgroundArea> appBackgroundAreaDisplayOrder =
     <AppBackgroundArea>[

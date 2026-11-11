@@ -603,6 +603,78 @@ void main() {
       expect(_items0, findsNothing);
     });
 
+    testWidgets('the highlight pill sits exactly on the pressed row', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(home: _topBarPage(items: three(<String>[]))),
+      );
+      await openMenu(tester);
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Two')),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      final selection = _selection(tester, _primary);
+      expect(selection.maskAlpha.value, 1);
+      // 胶囊画在遮罩那块画布上，换成全局坐标与按住的那一行比较（按压形变
+      // 两者一起受，不影响比较）。
+      final canvas = tester.renderObject<RenderBox>(
+        find.descendant(
+          of: _primary,
+          matching: find.byWidgetPredicate(
+            (Widget w) =>
+                w is CustomPaint && w.painter is ExpressiveMenuMaskPainter,
+          ),
+        ),
+      );
+      final row = tester.getRect(
+        find.ancestor(
+          of: find.text('Two'),
+          matching: find.byType(ExpressiveMenuItem),
+        ),
+      );
+      final maskTop = canvas.localToGlobal(Offset(0, selection.maskTop.value));
+      final maskBottom = canvas.localToGlobal(
+        Offset(0, selection.maskBottom.value),
+      );
+      expect(maskTop.dy, _near(row.top, epsilon: 0.1));
+      expect(maskBottom.dy, _near(row.bottom, epsilon: 0.1));
+      await gesture.cancel();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('the pill follows the finger while it is still moving', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(home: _topBarPage(items: three(<String>[]))),
+      );
+      await openMenu(tester);
+      final selection = _selection(tester, _primary);
+      final one = tester.getCenter(find.text('One'));
+      final two = tester.getCenter(find.text('Two'));
+      final gesture = await tester.startGesture(one);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      final startTop = selection.maskTop.value;
+      await gesture.moveTo(two);
+      // 手指停在 Two 上但一直在微动：触摸事件比帧还密，每帧两次移动。
+      for (var i = 0; i < 20; i++) {
+        await gesture.moveBy(Offset(i.isEven ? 1 : -1, 0));
+        await gesture.moveBy(Offset(i.isEven ? -1 : 1, 0));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      final rowHeight = two.dy - one.dy;
+      expect(
+        selection.maskTop.value,
+        _near(startTop + rowHeight, epsilon: 1),
+        reason: 'the pill must reach Two before the finger stops',
+      );
+      await gesture.cancel();
+      await tester.pumpAndSettle();
+    });
+
     testWidgets('sliding off the rows and releasing runs nothing', (
       tester,
     ) async {

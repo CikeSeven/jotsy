@@ -36,8 +36,8 @@ enum AppBackgroundArea {
 const List<AppBackgroundArea> appBackgroundAreaDisplayOrder =
     <AppBackgroundArea>[
       AppBackgroundArea.diaries,
-      AppBackgroundArea.todos,
       AppBackgroundArea.calendar,
+      AppBackgroundArea.todos,
       AppBackgroundArea.explore,
       AppBackgroundArea.settings,
       AppBackgroundArea.editor,

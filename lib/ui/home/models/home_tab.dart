@@ -53,22 +53,22 @@ enum HomeTab {
 /// 按功能开关推出可见的 Tab，即底栏（宽窗口为侧边栏）从左到右的顺序。
 ///
 /// 日记是应用的主体，始终可见（设置入口也在它的顶栏“更多”里），并排在
-/// 中间：其余开启的 Tab 保持待办 → 日历 → 探索的相对顺序，日记插在它们的
-/// 中点——共奇数个 Tab 时正中，偶数个时居中偏左（四个时为第二格，两个时
-/// 仍在最左）。待办、日历、探索全部关闭时只剩日记一项，首页不显示底栏
-/// （见 `HomePage`）。
+/// 中间：其余开启的 Tab 保持日历 → 待办 → 探索的相对顺序，日记插在它们的
+/// 中点——共奇数个 Tab 时正中，偶数个时居中偏左（四个时依次为日历、日记、
+/// 待办、探索；两个时日记仍在最左）。待办、日历、探索全部关闭时只剩日记
+/// 一项，首页不显示底栏（见 `HomePage`）。
 List<HomeTab> visibleHomeTabs(AppFeatures features) =>
     _withDiariesCentered(<HomeTab>[
-      if (features.todos) HomeTab.todos,
       if (features.calendar) HomeTab.calendar,
+      if (features.todos) HomeTab.todos,
       if (features.explore) HomeTab.explore,
     ]);
 
 /// 全部 Tab 都开启时的底栏顺序（设置里导航栏样式的预览用）。
 final List<HomeTab> allHomeTabsInBarOrder = List<HomeTab>.unmodifiable(
   _withDiariesCentered(<HomeTab>[
-    HomeTab.todos,
     HomeTab.calendar,
+    HomeTab.todos,
     HomeTab.explore,
   ]),
 );

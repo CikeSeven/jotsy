@@ -176,10 +176,12 @@ const double _statusBar = 24;
 /// 日记页刊头可收起部分的高度（与 `_headerCollapsibleHeight` 一致）。
 const double _mastheadHeight = 56;
 
-Finder get _mastheadGlass => find
+/// 日记页刊头这一片：只画内容，玻璃由下面的标签栏垫着；它的范围就是刊头
+/// 当时露出的范围。
+Finder get _masthead => find
     .descendant(
       of: find.byType(DiariesHeaderSliver),
-      matching: find.byType(GlassSurface),
+      matching: find.byType(HomeTopBarSurface),
     )
     .first;
 
@@ -564,7 +566,7 @@ void main() {
         statusBar: _statusBar,
         homeBarRaw: _raw(_glass),
       );
-      final masthead = tester.getRect(_mastheadGlass);
+      final masthead = tester.getRect(_masthead);
       expect(masthead.top, 0);
       expect(masthead.height, _statusBar + _mastheadHeight);
       expect(tester.getTopLeft(find.byType(DiaryHeadSection)).dy, _statusBar);
@@ -583,8 +585,8 @@ void main() {
       );
       await tester.drag(_diariesList(), const Offset(0, -600));
       await tester.pumpAndSettle();
-      expect(tester.getRect(_mastheadGlass).top, 0);
-      expect(tester.getRect(_mastheadGlass).height, _statusBar);
+      expect(tester.getRect(_masthead).top, 0);
+      expect(tester.getRect(_masthead).height, _statusBar);
       expect(tester.getRect(_tagBarGlass).top, _statusBar);
 
       // 浮动刊头：上滑要逐帧推进才会露出（见 diaries_sort_test）。
@@ -597,10 +599,7 @@ void main() {
       }
       await gesture.up();
       await tester.pumpAndSettle();
-      expect(
-        tester.getRect(_mastheadGlass).height,
-        _statusBar + _mastheadHeight,
-      );
+      expect(tester.getRect(_masthead).height, _statusBar + _mastheadHeight);
       expect(tester.getRect(_tagBarGlass).top, _statusBar + _mastheadHeight);
       await _unmount(tester);
     });
@@ -618,16 +617,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.drag(_diariesList(), const Offset(0, -600));
       await tester.pumpAndSettle();
-      expect(tester.getRect(_mastheadGlass).top, 0);
-      expect(
-        tester.getRect(_mastheadGlass).height,
-        _statusBar + _mastheadHeight,
-      );
+      expect(tester.getRect(_masthead).top, 0);
+      expect(tester.getRect(_masthead).height, _statusBar + _mastheadHeight);
       expect(tester.getRect(_tagBarGlass).top, _statusBar + _mastheadHeight);
       await _unmount(tester);
     });
 
-    testWidgets('both slices share one backdrop and draw no line by default', (
+    testWidgets('the whole top bar is one sheet of glass with no line', (
       tester,
     ) async {
       await _pumpHome(
@@ -636,22 +632,31 @@ void main() {
         statusBar: _statusBar,
         homeBarRaw: _raw(_glass),
       );
-      final filters = tester
-          .renderObjectList<RenderBackdropFilter>(
-            find.descendant(
-              of: find.byType(DiariesPage),
-              matching: find.byType(BackdropFilter),
-            ),
-          )
-          .toList();
-      expect(filters, hasLength(2));
-      expect(filters.every((filter) => filter.enabled), isTrue);
-      expect(filters.first.backdropKey, isNotNull);
-      expect(filters.last.backdropKey, same(filters.first.backdropKey));
+      // 刊头不画玻璃，整条顶栏只读一次背景：两片各读一次时，后画的刊头会把
+      // 标签糊进自己的下缘，接缝处看得出一道线。
       expect(
-        tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
-        isNull,
+        find.descendant(
+          of: find.byType(DiariesHeaderSliver),
+          matching: find.byType(GlassSurface),
+        ),
+        findsNothing,
       );
+      final backdrops = find.descendant(
+        of: find.byType(DiariesPage),
+        matching: find.byType(BackdropFilter),
+      );
+      final filters = tester
+          .renderObjectList<RenderBackdropFilter>(backdrops)
+          .toList();
+      expect(filters, hasLength(1));
+      expect(filters.single.enabled, isTrue);
+      // 渐变靠在自己的图层里擦除：不共用背景读取，否则 Impeller 会把页面
+      // 擦成黑色。
+      expect(filters.single.backdropKey, isNull);
+      // 玻璃从屏幕顶端一直铺到标签栏下缘。
+      final glass = tester.getRect(backdrops);
+      expect(glass.top, lessThanOrEqualTo(0));
+      expect(glass.bottom, _tagBarBottom(tester));
       expect(tester.widget<GlassSurface>(_tagBarGlass).bottomHairline, isNull);
       await _unmount(tester);
     });
@@ -666,8 +671,11 @@ void main() {
         homeBarRaw: _raw(_glass.copyWith(topBarHairline: true)),
       );
       expect(
-        tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
-        isNull,
+        find.descendant(
+          of: find.byType(DiariesHeaderSliver),
+          matching: find.byType(GlassSurface),
+        ),
+        findsNothing,
       );
       expect(
         tester.widget<GlassSurface>(_tagBarGlass).bottomHairline,
@@ -719,7 +727,7 @@ void main() {
         findsWidgets,
       );
       // 玻璃刊头铺到状态栏，第一张卡片与标签栏之间留出统一的间距。
-      expect(tester.getRect(_mastheadGlass).top, 0);
+      expect(tester.getRect(_masthead).top, 0);
       expect(tester.getTopLeft(find.byType(DiaryHeadSection)).dy, _statusBar);
       expect(
         tester.getRect(find.byType(DiaryCard).first).top -

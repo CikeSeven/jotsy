@@ -66,13 +66,15 @@ const double _statusBar = 24;
 const double _glassHeight = 68;
 
 /// 与日记页玻璃顶栏相同的组合：玻璃预设的 [HomeChromeScope]、页面不让出
-/// 状态栏、刊头并进状态栏高度，标签栏是最下面一片玻璃，两片共用一个
-/// [BackdropGroup]。
+/// 状态栏、刊头并进状态栏高度、只画内容，整条顶栏的玻璃由最下面的标签栏
+/// 画、往上铺到刊头之后。
 Widget _glassHost(
   ScrollController controller, {
   required bool pinned,
   HomeBarStyle? style,
+  HomeTopBarStackLink? link,
 }) {
+  final stackLink = link ?? HomeTopBarStackLink();
   return MaterialApp(
     home: Builder(
       builder: (context) => HomeChromeScope(
@@ -81,38 +83,38 @@ Widget _glassHost(
           Theme.of(context).colorScheme,
         ),
         child: Scaffold(
-          body: BackdropGroup(
-            child: CustomScrollView(
-              controller: controller,
-              slivers: <Widget>[
-                DiariesHeaderSliver(
-                  pinned: pinned,
+          body: CustomScrollView(
+            controller: controller,
+            slivers: <Widget>[
+              DiariesHeaderSliver(
+                pinned: pinned,
+                height: _glassHeight,
+                glass: true,
+                topInset: _statusBar,
+                link: stackLink,
+                backgroundColor: const Color(0xFFEEEEEE),
+                child: const SizedBox(
                   height: _glassHeight,
-                  glass: true,
-                  topInset: _statusBar,
-                  backgroundColor: const Color(0xFFEEEEEE),
-                  child: const SizedBox(
-                    height: _glassHeight,
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Text('masthead'),
-                    ),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text('masthead'),
                   ),
                 ),
-                const PinnedHeaderSliver(
-                  child: HomeTopBarSurface(
-                    solidColor: Color(0xFFEEEEEE),
-                    grouped: true,
-                    child: SizedBox(height: 40, child: Text('tags')),
-                  ),
+              ),
+              PinnedHeaderSliver(
+                child: HomeTopBarSurface(
+                  solidColor: const Color(0xFFEEEEEE),
+                  glassAbove: _statusBar + _glassHeight,
+                  link: stackLink,
+                  child: const SizedBox(height: 40, child: Text('tags')),
                 ),
-                SliverList.builder(
-                  itemCount: 100,
-                  itemBuilder: (context, index) =>
-                      SizedBox(height: 60, child: Text('item $index')),
-                ),
-              ],
-            ),
+              ),
+              SliverList.builder(
+                itemCount: 100,
+                itemBuilder: (context, index) =>
+                    SizedBox(height: 60, child: Text('item $index')),
+              ),
+            ],
           ),
         ),
       ),
@@ -120,10 +122,11 @@ Widget _glassHost(
   );
 }
 
-Finder get _mastheadGlass => find
+/// 刊头这一片（只画内容）：它的范围就是刊头当时露出的范围。
+Finder get _masthead => find
     .descendant(
       of: find.byType(DiariesHeaderSliver),
-      matching: find.byType(GlassSurface),
+      matching: find.byType(HomeTopBarSurface),
     )
     .first;
 
@@ -220,7 +223,7 @@ void main() {
       final controller = ScrollController();
       addTearDown(controller.dispose);
       await tester.pumpWidget(_glassHost(controller, pinned: false));
-      final masthead = tester.getRect(_mastheadGlass);
+      final masthead = tester.getRect(_masthead);
       expect(masthead.top, 0);
       expect(masthead.height, _statusBar + _glassHeight);
       // 内容从状态栏线以下开始。
@@ -237,8 +240,8 @@ void main() {
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -600));
       await tester.pumpAndSettle();
       // 刊头收起到只剩状态栏那一条，标签栏紧贴在它下面。
-      expect(tester.getRect(_mastheadGlass).height, _statusBar);
-      expect(tester.getRect(_mastheadGlass).top, 0);
+      expect(tester.getRect(_masthead).height, _statusBar);
+      expect(tester.getRect(_masthead).top, 0);
       expect(_tagsTop(tester), _statusBar);
       // 收起的内容在状态栏线处被裁掉，不会清晰地压在状态栏上。
       final clip = tester.renderObject<RenderClipRect>(
@@ -254,7 +257,7 @@ void main() {
       // 上滑即现，与实色时的浮动顶栏一致。
       await _dragBackWithFrames(tester);
       expect(controller.offset, greaterThan(300));
-      expect(tester.getRect(_mastheadGlass).height, _statusBar + _glassHeight);
+      expect(tester.getRect(_masthead).height, _statusBar + _glassHeight);
       expect(_tagsTop(tester), _statusBar + _glassHeight);
     });
 
@@ -287,25 +290,43 @@ void main() {
       expect(_tagsTop(tester), _statusBar);
     });
 
-    testWidgets('both slices share one backdrop and draw no line by default', (
+    testWidgets('the tags draw one sheet of glass for the whole bar', (
       tester,
     ) async {
       final controller = ScrollController();
       addTearDown(controller.dispose);
       await tester.pumpWidget(_glassHost(controller, pinned: false));
+      // 刊头不画玻璃：两片各读一次背景时，后画的刊头会把标签糊进自己的
+      // 下缘，接缝处看得出一道线。
+      expect(
+        find.descendant(
+          of: find.byType(DiariesHeaderSliver),
+          matching: find.byType(GlassSurface),
+        ),
+        findsNothing,
+      );
       final filters = tester
           .renderObjectList<RenderBackdropFilter>(find.byType(BackdropFilter))
           .toList();
-      expect(filters, hasLength(2));
-      expect(filters.every((filter) => filter.enabled), isTrue);
-      final key = filters.first.backdropKey;
-      expect(key, isNotNull);
-      expect(filters.last.backdropKey, same(key));
-      expect(
-        tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
-        isNull,
-      );
+      expect(filters, hasLength(1));
+      expect(filters.single.enabled, isTrue);
+      // 渐变要在自己的图层里擦除：不共用背景读取。
+      expect(filters.single.backdropKey, isNull);
+      // 玻璃从屏幕顶端（状态栏那一条）一直铺到标签栏下缘之外。
+      final glass = tester.getRect(find.byType(BackdropFilter));
+      final tags = tester.getRect(_tagsGlass);
+      expect(glass.top, lessThanOrEqualTo(0));
+      expect(glass.bottom, tags.bottom);
       expect(tester.widget<GlassSurface>(_tagsGlass).bottomHairline, isNull);
+
+      // 刊头收起到只剩状态栏那一条：玻璃仍铺到屏幕顶端。
+      controller.jumpTo(400);
+      await tester.pumpAndSettle();
+      expect(tester.getRect(_masthead).height, _statusBar);
+      expect(
+        tester.getRect(find.byType(BackdropFilter)).top,
+        lessThanOrEqualTo(0),
+      );
     });
 
     testWidgets('with the hairline on, only the tags get a line', (
@@ -321,8 +342,11 @@ void main() {
         ),
       );
       expect(
-        tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
-        isNull,
+        find.descendant(
+          of: find.byType(DiariesHeaderSliver),
+          matching: find.byType(GlassSurface),
+        ),
+        findsNothing,
       );
       expect(tester.widget<GlassSurface>(_tagsGlass).bottomHairline, isNotNull);
     });

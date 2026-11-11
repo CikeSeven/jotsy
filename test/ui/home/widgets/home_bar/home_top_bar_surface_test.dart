@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/ui/home/models/home_bar_style/home_bar_metrics.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
@@ -16,21 +15,30 @@ const _content = SizedBox(height: 56, width: double.infinity);
 Future<void> _pump(
   WidgetTester tester, {
   HomeBarResolvedStyle? style,
-  bool bottomEdge = true,
+  bool upper = false,
+  double glassAbove = 0,
+  HomeTopBarStackLink? link,
   Widget child = _content,
 }) {
-  Widget surface = HomeTopBarSurface(
-    solidColor: _solid,
-    bottomEdge: bottomEdge,
-    child: child,
-  );
+  Widget surface = upper
+      ? HomeTopBarSurface.upper(
+          solidColor: _solid,
+          link: link ?? HomeTopBarStackLink(),
+          child: child,
+        )
+      : HomeTopBarSurface(
+          solidColor: _solid,
+          glassAbove: glassAbove,
+          link: link,
+          child: child,
+        );
   if (style != null) {
     surface = HomeChromeScope(style: style, child: surface);
   }
   return tester.pumpWidget(
     MaterialApp(
       theme: expressiveTestTheme(Brightness.light),
-      home: Align(alignment: Alignment.topCenter, child: surface),
+      home: Align(alignment: Alignment.center, child: surface),
     ),
   );
 }
@@ -52,22 +60,17 @@ Finder _below(Type type) => find.descendant(
   matching: find.byType(type),
 );
 
-/// [surface]（默认唯一的那一片）底缘渐隐的画笔；不渐隐时为 null。
-GlassBottomFadePainter? _fade(WidgetTester tester, [Finder? surface]) {
-  final paints = find.descendant(
-    of: surface ?? find.byType(HomeTopBarSurface),
-    matching: find.byType(CustomPaint),
-  );
-  for (final paint in tester.widgetList<CustomPaint>(paints)) {
+/// 玻璃的画笔（底色与渐变都由它画）。
+GlassBottomFadePainter? _painter(WidgetTester tester) {
+  for (final paint in tester.widgetList<CustomPaint>(_below(CustomPaint))) {
     final painter = paint.painter;
     if (painter is GlassBottomFadePainter) return painter;
   }
   return null;
 }
 
-/// 玻璃均匀画出的底色（不渐隐时由外层 Material 画）。
-Color _uniformFill(WidgetTester tester) =>
-    tester.widget<Material>(_below(Material).first).color!;
+/// 玻璃（背景模糊）实际铺开的范围。
+Rect _glassRect(WidgetTester tester) => tester.getRect(_below(BackdropFilter));
 
 void main() {
   testWidgets('without a scope the top bar is exactly a coloured box', (
@@ -79,6 +82,11 @@ void main() {
     expect(identical(box.child, _content), isTrue);
     expect(_below(BackdropFilter), findsNothing);
     expect(_below(Material), findsNothing);
+
+    // 上面的片不在首页之下时同样是自己的色块。
+    await _pump(tester, upper: true);
+    expect(tester.widget<ColoredBox>(_below(ColoredBox).first).color, _solid);
+    expect(_below(BackdropFilter), findsNothing);
   });
 
   testWidgets('glass top bars blur the content behind a translucent tint', (
@@ -90,8 +98,7 @@ void main() {
       tester.widget<BackdropFilter>(_below(BackdropFilter)).enabled,
       isTrue,
     );
-    // 默认下缘渐隐，底色交给渐隐画笔（见下面的渐隐用例）。
-    final fill = _fade(tester)!.fill;
+    final fill = _painter(tester)!.fill;
     expect(fill, style.tint);
     expect(fill.a, lessThan(1));
     // 与悬浮底栏同一配方：同样的模糊强度与饱和度增强。
@@ -109,25 +116,24 @@ void main() {
       tester.widget<BackdropFilter>(_below(BackdropFilter)).enabled,
       isFalse,
     );
-    final fill = _uniformFill(tester);
-    expect(fill, style.solidFill);
-    expect(fill.a, 1);
-    // 不透明的底色才保证得了栏里文字的对比度：不渐隐。
-    expect(_fade(tester), isNull);
+    final painter = _painter(tester)!;
+    expect(painter.fill, style.solidFill);
+    expect(painter.fill.a, 1);
+    // 不透明的底色才保证得了栏里文字的对比度：不渐变。
+    expect(style.topBarFades, isFalse);
+    expect(painter.fade, isFalse);
   });
 
-  testWidgets('the glass thins out towards the bottom edge by default', (
-    tester,
-  ) async {
+  testWidgets('the glass fades from top to bottom by default', (tester) async {
     final style = _glass();
     await _pump(tester, style: style);
-    final fade = _fade(tester)!;
-    expect(fade.extent, HomeBarMetrics.topBarFadeExtent);
-    expect(style.topBarFadeExtent, HomeBarMetrics.topBarFadeExtent);
+    expect(style.topBarFades, isTrue);
+    final painter = _painter(tester)!;
+    expect(painter.fade, isTrue);
     // 模糊也一起淡出，下缘不留一条模糊与清晰的分界线。
-    expect(fade.eraseBackdrop, isTrue);
-    // 单片顶栏：自己的下缘就是顶栏的下缘。
-    expect(fade.trailing, isNull);
+    expect(painter.eraseBackdrop, isTrue);
+    // 渐变在顶栏之内：玻璃与顶栏一样大，不往外挂。
+    expect(_glassRect(tester), tester.getRect(find.byType(HomeTopBarSurface)));
   });
 
   testWidgets('the hairline replaces the fade with a crisp uniform edge', (
@@ -135,17 +141,56 @@ void main() {
   ) async {
     final style = _glass(hairline: true);
     await _pump(tester, style: style);
-    expect(style.topBarFadeExtent, 0);
-    expect(_fade(tester), isNull);
-    expect(_uniformFill(tester), style.tint);
+    expect(style.topBarFades, isFalse);
+    final painter = _painter(tester)!;
+    expect(painter.fade, isFalse);
+    expect(painter.fill, style.tint);
     expect(_hairline(tester), style.hairlineColor);
   });
 
-  testWidgets('an upper piece without a link stays uniform', (tester) async {
-    final style = _glass();
-    await _pump(tester, style: style, bottomEdge: false);
-    expect(_fade(tester), isNull);
-    expect(_uniformFill(tester), style.tint);
+  testWidgets('glassAbove lays the glass behind the pieces above', (
+    tester,
+  ) async {
+    final link = HomeTopBarStackLink();
+    addTearDown(link.dispose);
+    await _pump(tester, style: _glass(), glassAbove: 80, link: link);
+    final bar = tester.getRect(find.byType(HomeTopBarSurface));
+    // 只画、不占布局：这一片仍是内容的大小。
+    expect(bar.height, 56);
+    final glass = _glassRect(tester);
+    expect(glass.top, bar.top - 80);
+    expect(glass.bottom, bar.bottom);
+    // 往上铺的那截露出多少由上面的片经 link 报上来，渐变从露出的上缘起算。
+    final painter = _painter(tester)!;
+    expect(painter.overhang, 80);
+    expect(painter.visibleOverhang, same(link));
+  });
+
+  testWidgets('an upper piece draws only its content over the glass below', (
+    tester,
+  ) async {
+    late MaterialType inkMaterial;
+    final link = HomeTopBarStackLink();
+    addTearDown(link.dispose);
+    await _pump(
+      tester,
+      style: _glass(hairline: true),
+      upper: true,
+      link: link,
+      child: Builder(
+        builder: (BuildContext context) {
+          inkMaterial = context.findAncestorWidgetOfExactType<Material>()!.type;
+          return _content;
+        },
+      ),
+    );
+    // 不自己读背景、不画底色，也不画下缘；水波纹落在透明的 Material 上。
+    expect(_below(BackdropFilter), findsNothing);
+    expect(_below(GlassSurface), findsNothing);
+    expect(_below(ColoredBox), findsNothing);
+    expect(inkMaterial, MaterialType.transparency);
+    // 布局时把自己的高度报给下面那片。
+    expect(link.value, 56);
   });
 
   testWidgets('toggling high contrast keeps the bar content mounted', (
@@ -158,136 +203,16 @@ void main() {
     await _pump(tester, style: _glass(), child: field);
     await tester.enterText(find.byType(TextField), 'kept');
     final state = tester.state(find.byType(TextField));
-    // 渐隐 ↔ 高对比度的实边：渐隐用的节点一直在，内容不重新挂载。
+    // 渐变 ↔ 高对比度的实边 ↔ 分隔线：渐变用的节点一直在，内容不重新挂载。
     await _pump(tester, style: _glass(highContrast: true), child: field);
-    expect(_fade(tester), isNull);
+    expect(_painter(tester)!.fade, isFalse);
+    expect(tester.state(find.byType(TextField)), same(state));
+    await _pump(tester, style: _glass(hairline: true), child: field);
     expect(tester.state(find.byType(TextField)), same(state));
     await _pump(tester, style: _glass(), child: field);
-    expect(_fade(tester), isNotNull);
+    expect(_painter(tester)!.fade, isTrue);
     expect(tester.state(find.byType(TextField)), same(state));
     expect(find.text('kept'), findsOneWidget);
-  });
-
-  group('two pieces sharing one fade', () {
-    const upperKey = ValueKey<String>('upper');
-    const lowerKey = ValueKey<String>('lower');
-
-    Future<HomeTopBarFadeLink> pumpPieces(
-      WidgetTester tester, {
-      required double lowerHeight,
-      HomeBarResolvedStyle? style,
-    }) async {
-      final link = HomeTopBarFadeLink();
-      addTearDown(link.dispose);
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: expressiveTestTheme(Brightness.light),
-          home: HomeChromeScope(
-            style: style ?? _glass(),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  HomeTopBarSurface(
-                    key: upperKey,
-                    solidColor: _solid,
-                    bottomEdge: false,
-                    fadeLink: link,
-                    child: _content,
-                  ),
-                  HomeTopBarSurface(
-                    key: lowerKey,
-                    solidColor: _solid,
-                    fadeLink: link,
-                    child: SizedBox(
-                      height: lowerHeight,
-                      width: double.infinity,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-      return link;
-    }
-
-    testWidgets('the lower piece reports its height to the upper piece', (
-      tester,
-    ) async {
-      final link = await pumpPieces(tester, lowerHeight: 6);
-      expect(link.value, 6);
-      // 上面一片把渐隐接着画：按“自己的下缘 + 下面那片的高度”对齐。
-      final upper = _fade(tester, find.byKey(upperKey))!;
-      expect(upper.extent, HomeBarMetrics.topBarFadeExtent);
-      expect(upper.trailing, same(link));
-      // 最下面一片按自己的下缘对齐。
-      final lower = _fade(tester, find.byKey(lowerKey))!;
-      expect(lower.extent, HomeBarMetrics.topBarFadeExtent);
-      expect(lower.trailing, isNull);
-    });
-
-    testWidgets('a resize repaints the upper piece without rebuilding it', (
-      tester,
-    ) async {
-      final link = HomeTopBarFadeLink();
-      addTearDown(link.dispose);
-      final height = ValueNotifier<double>(6);
-      addTearDown(height.dispose);
-      var upperBuilds = 0;
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: expressiveTestTheme(Brightness.light),
-          home: HomeChromeScope(
-            style: _glass(),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  HomeTopBarSurface(
-                    key: upperKey,
-                    solidColor: _solid,
-                    bottomEdge: false,
-                    fadeLink: link,
-                    child: Builder(
-                      builder: (BuildContext context) {
-                        upperBuilds++;
-                        return _content;
-                      },
-                    ),
-                  ),
-                  HomeTopBarSurface(
-                    key: lowerKey,
-                    solidColor: _solid,
-                    fadeLink: link,
-                    child: ValueListenableBuilder<double>(
-                      valueListenable: height,
-                      builder: (_, double value, _) =>
-                          SizedBox(height: value, width: double.infinity),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-      expect(link.value, 6);
-      // 标签栏展开：高度在布局阶段报上来，上面一片只需要重画。
-      height.value = 120;
-      await tester.pump();
-      expect(link.value, 120);
-      expect(upperBuilds, 1);
-    });
-
-    testWidgets('with the hairline on neither piece fades', (tester) async {
-      await pumpPieces(tester, lowerHeight: 6, style: _glass(hairline: true));
-      expect(_fade(tester, find.byKey(upperKey)), isNull);
-      expect(_fade(tester, find.byKey(lowerKey)), isNull);
-    });
   });
 
   testWidgets('the default glass top bar draws no hairline', (tester) async {
@@ -299,10 +224,6 @@ void main() {
     final style = _glass(hairline: true);
     await _pump(tester, style: style);
     expect(_hairline(tester), style.hairlineColor);
-
-    // 页面不允许这一片画线时（日记页刊头不是最下面一片），开关打开也不画。
-    await _pump(tester, style: style, bottomEdge: false);
-    expect(_hairline(tester), isNull);
   });
 
   testWidgets('the hairline is the fixed thin outline-variant line', (
@@ -314,6 +235,7 @@ void main() {
     expect(surface.bottomHairlineWidth, GlassSurface.hairlineWidth);
     expect(surface.bottomHairline, style.hairlineColor);
   });
+
   testWidgets('glassTopBarsOf is true exactly under a scope', (tester) async {
     late bool withoutScope;
     late bool withScope;

@@ -62,24 +62,6 @@ abstract final class HomeBarMetrics {
   /// 描边粗细。
   static const double borderWidth = 1;
 
-  /// 顶栏底缘渐隐区的高度：各 Tab 顶栏最下面这么高的一段里，玻璃的底色
-  /// 自上而下淡到没有，模糊在其中最下面的三分之一（16）淡出（见
-  /// `HomeBarResolvedStyle.topBarFadeExtent` 与 `GlassBottomFadePainter`）。
-  /// 四个 Tab 用同一个长度，从顶栏当时的下缘往上量。
-  ///
-  /// 取 48 是按顶栏里内容的位置定的：
-  /// - 待办 / 探索与收起后的日历只有 64 高的标题栏：上面 16 与状态栏一起
-  ///   是完整的玻璃，往下 48 渐隐。标题（含下伸笔画）与按钮图标的下沿在
-  ///   标题栏的 44 上下，模糊从 48 才开始淡出：标题背后始终是磨砂，滚到
-  ///   栏下的文字不会清晰地叠在标题上；
-  /// - 日历展开时正好是整条月份行（48），月份标题居中，同样在模糊完整的
-  ///   那一段；
-  /// - 日记页有标签时大致是整条标签栏（46），没有标签时标签栏只剩 6，
-  ///   渐隐接着画进刊头的下半截（两片经 `HomeTopBarFadeLink` 对齐）。
-  /// 再长，模糊就会在标题背后开始变淡；再短，“越往下越透明”就只剩一道
-  /// 柔边。
-  static const double topBarFadeExtent = 48;
-
   /// 胶囊底缘到屏幕底边的距离：系统手势条 [bottomInset] 之上再留
   /// [bottomGap]，且不少于 [minBottomSpace]。
   static double bottomSpace(double bottomInset) =>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
+import '../../home/widgets/home_bar/home_chrome_scope.dart';
 
 import '../../widgets/expressive_state_blend.dart';
 import '../viewmodels/notebook_view.dart';
@@ -112,8 +113,19 @@ class NotebookSwitcherChip extends StatelessWidget {
     // “控件”为玻璃时，停在全部日记的静止态与旁边的标签胶囊一样换成玻璃
     // 底色 + 玻璃描边；在某本 / 未收录时仍是强调色容器（表示“正在范围里”），
     // 描边随补间淡出。
+    //
+    // 首页顶栏自上而下渐变时，玻璃底色在标签栏这半截会跟着淡没：静止态改垫
+    // 栏自己的颜色、几乎不透明的底（与旁边的标签胶囊一致，见
+    // `HomeBarResolvedStyle.topBarControlFill`）。经典控件本就是不透明的
+    // 容器色，不用换。
     final glassField = AppGlassField.of(context);
-    final restingBackground = glassField?.fill ?? scheme.secondaryContainer;
+    final barStyle = HomeChromeScope.maybeStyleOf(context);
+    final glassFill = glassField == null
+        ? null
+        : (barStyle != null && barStyle.topBarFades
+              ? barStyle.topBarControlFill
+              : glassField.fill);
+    final restingBackground = glassFill ?? scheme.secondaryContainer;
     final restingSide = glassField?.border;
     return Semantics(
       button: true,

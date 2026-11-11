@@ -29,6 +29,13 @@ import '../../home/widgets/home_bar/home_top_bar_surface.dart';
 /// sliver 的遮挡，排在它后面时会从它下方滑过。多选时仍为固定，最小高度
 /// = 最大高度。露出过渡的比例只针对可收起的 [height] 部分，状态栏那一条
 /// 始终在。实色时（[glass] 为 false）完全按原来的浮动 / 固定与纯色底渲染。
+///
+/// 玻璃时刊头自己不画玻璃（[HomeTopBarSurface.upper]）：底由紧接在它下面的
+/// 那一片顶栏（日记页的标签栏）垫着——那一片用 `HomeTopBarSurface` 并把
+/// `glassAbove` 设为本顶栏的最大高度（topInset + [height]），玻璃往上铺到
+/// 刊头之后；刊头把自己此刻的高度经 [link] 报给它，整条顶栏的渐变从刊头
+/// 露出来的上缘起算。两片各画一块玻璃时，后画的刊头读背景会把标签栏里的
+/// 标签模糊进自己的下缘，接缝处看得出一道线，渐变也连不成一条。
 class DiariesHeaderSliver extends StatefulWidget {
   const DiariesHeaderSliver({
     super.key,
@@ -37,8 +44,7 @@ class DiariesHeaderSliver extends StatefulWidget {
     required this.backgroundColor,
     this.glass = false,
     this.topInset = 0,
-    this.bottomEdge = false,
-    this.fadeLink,
+    this.link,
     required this.child,
   });
 
@@ -55,13 +61,9 @@ class DiariesHeaderSliver extends StatefulWidget {
   /// 玻璃顶栏并进来的状态栏高度；实色时不使用。
   final double topInset;
 
-  /// 玻璃时刊头的下缘是不是整条顶栏的下缘（渐隐或细线画在这里，见
-  /// [HomeTopBarSurface.bottomEdge]）。日记页刊头下面还钉着标签栏，为 false。
-  final bool bottomEdge;
-
-  /// 玻璃时与下面钉住的标签栏共用的渐隐纽带（见 [HomeTopBarFadeLink]）：
-  /// 顶栏的渐隐区比标签栏高时要接着画进刊头的下半截。
-  final HomeTopBarFadeLink? fadeLink;
+  /// 玻璃时与下面那片共用的纽带：刊头在布局时把自己的高度写进去（见
+  /// [HomeTopBarStackLink]）。玻璃时必须给。
+  final HomeTopBarStackLink? link;
   final Widget child;
 
   @override
@@ -166,8 +168,7 @@ class _DiariesHeaderSliverState extends State<DiariesHeaderSliver>
             topInset: topInset,
             minExtent: minExtent,
             glass: glass,
-            bottomEdge: widget.bottomEdge,
-            fadeLink: widget.fadeLink,
+            link: widget.link,
             backgroundColor: widget.backgroundColor,
             onShrinkOffset: (value) => _hiddenExtent = value,
             child: child!,
@@ -185,8 +186,7 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.topInset,
     required this.minExtent,
     required this.glass,
-    required this.bottomEdge,
-    required this.fadeLink,
+    required this.link,
     required this.backgroundColor,
     required this.onShrinkOffset,
     required this.child,
@@ -201,8 +201,7 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   final double minExtent;
   final bool glass;
-  final bool bottomEdge;
-  final HomeTopBarFadeLink? fadeLink;
+  final HomeTopBarStackLink? link;
   final Color backgroundColor;
 
   /// 布局阶段回报可收起部分被滚动收起的高度；只能记录，不能触发重建。
@@ -233,14 +232,12 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
     if (!glass) {
       return ColoredBox(color: backgroundColor, child: content);
     }
-    // 玻璃铺满整个范围（含状态栏那一条）；内容在状态栏线以下裁切，收起
-    // 途中不会清晰地压在状态栏上。与标签栏同在页面的 BackdropGroup 下，
-    // 共用一次背景读取。
-    return HomeTopBarSurface(
+    // 玻璃不在这里画：由下面钉住的标签栏那一块往上铺满整个范围（含状态栏
+    // 那一条），整条顶栏只读一次背景、没有接缝（见类注释）。这里只画内容，
+    // 内容在状态栏线以下裁切，收起途中不会清晰地压在状态栏上。
+    return HomeTopBarSurface.upper(
       solidColor: backgroundColor,
-      bottomEdge: bottomEdge,
-      fadeLink: fadeLink,
-      grouped: true,
+      link: link!,
       child: Padding(
         padding: EdgeInsets.only(top: topInset),
         child: content,
@@ -254,8 +251,7 @@ class _DiariesHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.topInset != topInset ||
         oldDelegate.minExtent != minExtent ||
         oldDelegate.glass != glass ||
-        oldDelegate.bottomEdge != bottomEdge ||
-        oldDelegate.fadeLink != fadeLink ||
+        oldDelegate.link != link ||
         oldDelegate.backgroundColor != backgroundColor ||
         oldDelegate.child != child;
   }

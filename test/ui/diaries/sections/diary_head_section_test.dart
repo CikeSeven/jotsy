@@ -4,6 +4,9 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_view_options_menu.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 
 Widget _host({
   required bool selection,
@@ -12,10 +15,13 @@ Widget _host({
   VoidCallback? onAddToNotebook,
   VoidCallback? onSetTags,
   VoidCallback? onOpenAi,
+  HomeBarResolvedStyle? bar,
 }) => MaterialApp(
   locale: const Locale('zh'),
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
+  builder: (BuildContext context, Widget? child) =>
+      bar == null ? child! : HomeChromeScope(style: bar, child: child!),
   home: Scaffold(
     body: DiaryHeadSection(
       isSelectionMode: selection,
@@ -47,7 +53,39 @@ Widget _host({
   ),
 );
 
+/// 搜索胶囊的底色。
+Color _searchFill(WidgetTester tester) {
+  final box = tester.widget<Container>(
+    find
+        .descendant(
+          of: find.byKey(const ValueKey<String>('search_preview')),
+          matching: find.byType(Container),
+        )
+        .first,
+  );
+  return (box.decoration! as BoxDecoration).color!;
+}
+
 void main() {
+  testWidgets('the search pill sits on a solid body over a fading top bar', (
+    tester,
+  ) async {
+    HomeBarResolvedStyle resolve(HomeBarStyle style) =>
+        HomeBarResolvedStyle.resolve(style, ThemeData().colorScheme);
+
+    // 顶栏下半截渐变：胶囊背后的玻璃会变薄，换上栏自己的颜色、几乎不透明
+    // 的底，不跟着玻璃一起看不见。
+    final fading = resolve(HomeBarStyle.defaults);
+    await tester.pumpWidget(_host(selection: false, bar: fading));
+    expect(_searchFill(tester), fading.topBarControlFill);
+    expect(_searchFill(tester).a, greaterThanOrEqualTo(0.9));
+
+    // 打开分隔线（顶栏均匀）时照旧是压在磨砂上的一层淡前景色。
+    final uniform = resolve(const HomeBarStyle(topBarHairline: true));
+    await tester.pumpWidget(_host(selection: false, bar: uniform));
+    expect(_searchFill(tester).a, lessThan(0.2));
+  });
+
   testWidgets('selection header shows the selected count and cross-fades', (
     tester,
   ) async {

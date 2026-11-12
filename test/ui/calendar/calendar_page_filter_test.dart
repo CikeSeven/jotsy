@@ -250,12 +250,17 @@ void main() {
           tester.getTopLeft(_inSheet(find.text('旧本子'))).dx,
           greaterThan(tester.getTopLeft(_inSheet(find.text('旅行本'))).dx),
         );
+        // 变淡的那一层（胶囊文字的字重交叉淡入另有一层，静止时为 1）。
         expect(
-          find.ancestor(
-            of: _inSheet(find.text('旧本子')),
-            matching: find.byType(Opacity),
-          ),
-          findsOneWidget,
+          tester
+              .widgetList<Opacity>(
+                find.ancestor(
+                  of: _inSheet(find.text('旧本子')),
+                  matching: find.byType(Opacity),
+                ),
+              )
+              .where((Opacity opacity) => opacity.opacity < 1),
+          hasLength(1),
         );
 
         await tester.tap(_inSheet(find.text('旧本子')));

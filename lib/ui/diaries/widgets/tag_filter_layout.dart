@@ -1,17 +1,20 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/database/app_database.dart';
+import 'tag_filter_chip.dart';
 
-/// Resolves chip rows from the available width and text/selection geometry.
+/// Resolves chip rows from the available width and text geometry.
 /// The panel height and lazy list share this result so wrapping, clipping, and
 /// gesture bounds cannot disagree. Expansion frames reuse it without measuring
 /// text again; only changes to the layout inputs invalidate the cache.
+///
+/// 宽度与选中无关：`TagFilterChip` 按粗体字与较粗的选中描边占位（两种字重
+/// 叠放交叉淡入、描边粗细差补进内边距），这里同样一律按粗体 + 2dp 描边
+/// 测量。选中不会让展开的多行重新换行。
 class TagFilterLayoutCache {
   List<Tag>? _source;
-  Set<int> _selected = <int>{};
   TextStyle? _style;
   TextScaler? _scaler;
   TextDirection? _direction;
@@ -23,7 +26,6 @@ class TagFilterLayoutCache {
   TagFilterLayout resolve(
     BuildContext context, {
     required List<Tag> tags,
-    required Set<int> selectedTagIds,
     required double width,
     required double spacing,
     double leadingWidth = 0,
@@ -31,15 +33,12 @@ class TagFilterLayoutCache {
     if (width <= 0) {
       return const TagFilterLayout(<List<TagFilterCell>>[]);
     }
-    final style = Theme.of(context).textTheme.labelMedium!.copyWith(
-      fontWeight: MediaQuery.boldTextOf(context)
-          ? FontWeight.w700
-          : FontWeight.w600,
-    );
+    final style = Theme.of(
+      context,
+    ).textTheme.labelMedium!.copyWith(fontWeight: FontWeight.w700);
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
     if (identical(_source, tags) &&
-        setEquals(_selected, selectedTagIds) &&
         _style == style &&
         _scaler == scaler &&
         _direction == direction &&
@@ -66,10 +65,14 @@ class TagFilterLayoutCache {
           final tag = tags[index - 1];
           painter.text = TextSpan(text: tag.name, style: style);
           painter.layout();
-          final border = selectedTagIds.contains(tag.id) ? 2.0 : 1.2;
-          // Match the horizontal chips: 12dp dot, 8dp gap, 10dp padding
-          // per side, and the selected/unselected border on both sides.
-          itemWidth = painter.width + 12 + 8 + 20 + border * 2;
+          // Match the horizontal chips: 14dp `#` dot, 6dp gap, 10dp padding
+          // per side, and the (selected-width) border on both sides.
+          itemWidth =
+              painter.width +
+              14 +
+              6 +
+              20 +
+              TagFilterChip.selectedBorderWidth * 2;
         }
         itemWidth = math.min(itemWidth, width);
         final gap = row.isEmpty ? 0.0 : spacing;
@@ -91,7 +94,6 @@ class TagFilterLayoutCache {
       painter.dispose();
     }
     _source = tags;
-    _selected = Set<int>.of(selectedTagIds);
     _style = style;
     _scaler = scaler;
     _direction = direction;

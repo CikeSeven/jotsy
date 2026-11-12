@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
@@ -10,9 +11,8 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../app_surface/widgets/app_glass_scope.dart';
-import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../widgets/list_item_presence.dart';
+import '../viewmodels/tag_chip_palette.dart';
 import 'expanded_tag_filter_list.dart';
 import 'tag_filter_chip.dart';
 import 'tag_filter_clear_button.dart';
@@ -20,6 +20,7 @@ import 'tag_filter_collapse_handle.dart';
 import 'tag_filter_expansion_gesture.dart';
 import 'tag_filter_layout.dart';
 import 'tag_filter_pull_hint.dart';
+import 'tag_selection_pill.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 日记页顶部标签筛选栏。
@@ -37,7 +38,11 @@ import '../../widgets/desktop_horizontal_scroll.dart';
 /// - 一次性的“下拉展开”提示（[pullHintVisible]）：收着时在标签行下方展开
 ///   一行 [TagFilterPullHint]，标签栏按 [pullHintPeek] 往下探一段再弹回；
 ///   收起的一行是否放不下全部标签经 [onHiddenTagsChanged] 回报（时序与记录
-///   见 `TagFilterPullHintController`）。
+///   见 `TagFilterPullHintController`）；
+/// - 只选中一个标签时，选中底色由一块滑动色块画在胶囊下方（见
+///   [TagSelectionPillController]），换选时从旧标签滑到新标签；多选时各
+///   胶囊自己画选中态；
+/// - 收着时新选中的标签被左右边缘截住一部分，会被滚进视口（留出边距）。
 class DiaryTagFilterBar extends StatefulWidget {
   const DiaryTagFilterBar({
     super.key,
@@ -136,8 +141,16 @@ class DiaryTagFilterBar extends StatefulWidget {
   State<DiaryTagFilterBar> createState() => _DiaryTagFilterBarState();
 }
 
-class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
+class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
+    with TickerProviderStateMixin {
   final ScrollController _horizontalController = ScrollController();
+  late final TagSelectionPillController _pill = TagSelectionPillController(
+    vsync: this,
+  );
+
+  /// 本次构建里每个标签的配色（build 开头重算）：色块按它取颜色，与胶囊
+  /// 自己画选中态时完全一致。
+  Map<int, TagChipPalette> _palettes = const <int, TagChipPalette>{};
   final ScrollController _verticalController = ScrollController();
   final GlobalKey _clearKey = GlobalKey();
   final TagFilterLayoutCache _layoutCache = TagFilterLayoutCache();
@@ -149,11 +162,89 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
   double get _expandedContentExtent =>
       _expandedRowsExtent + DiaryTagFilterBar.collapseHandleExtent;
 
+  /// 只选中一个标签时为它；未选或多选时为 null（色块不显示）。
+  static int? _singleSelected(Set<int> ids) =>
+      ids.length == 1 ? ids.single : null;
+
+  @override
+  void initState() {
+    super.initState();
+    _pill.jumpTo(_singleSelected(widget.selectedTagFilterIds));
+  }
+
+  @override
+  void didUpdateWidget(DiaryTagFilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final before = oldWidget.selectedTagFilterIds;
+    final after = widget.selectedTagFilterIds;
+    if (setEquals(before, after)) {
+      return;
+    }
+    _pill.select(context, _singleSelected(after));
+    final added = after.difference(before);
+    if (added.length == 1) {
+      // 等这一帧布局完（色块与胶囊都已到新状态）再量位置、决定是否滚动。
+      final tagId = added.single;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _revealSelectedChip(tagId);
+      });
+    }
+  }
+
   @override
   void dispose() {
     _horizontalController.dispose();
     _verticalController.dispose();
+    _pill.dispose();
     super.dispose();
+  }
+
+  /// 收着时把新选中的胶囊完整滚进横向视口，两侧至少留出 [AppSpacing.m]：
+  /// 点在边缘只露出一半的标签，选中后它不再被截住，旁边的邻居也露出一截，
+  /// 看得出后面还有。已经完整可见时不动；展开时各行本就都在视口里排开，
+  /// 不处理。
+  void _revealSelectedChip(int tagId) {
+    if (widget.expansionProgress.value > 0 ||
+        !_horizontalController.hasClients) {
+      return;
+    }
+    final anchor = _pill.anchorOf(tagId);
+    if (anchor == null || !anchor.attached) {
+      return;
+    }
+    final viewport = RenderAbstractViewport.maybeOf(anchor);
+    if (viewport == null) {
+      return;
+    }
+    final position = _horizontalController.position;
+    const margin = AppSpacing.m;
+    final alignStart = viewport.getOffsetToReveal(anchor, 0).offset - margin;
+    final alignEnd = viewport.getOffsetToReveal(anchor, 1).offset + margin;
+    final current = position.pixels;
+    final double target;
+    if (current > alignStart) {
+      target = alignStart;
+    } else if (current < alignEnd) {
+      target = alignEnd;
+    } else {
+      return;
+    }
+    final clamped = target.clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    if ((clamped - current).abs() < 0.5) {
+      return;
+    }
+    if (ExpressiveMotion.reduceMotion(context)) {
+      position.jumpTo(clamped);
+      return;
+    }
+    position.animateTo(
+      clamped,
+      duration: ExpressiveMotion.medium,
+      curve: ExpressiveMotion.effects,
+    );
   }
 
   @override
@@ -161,6 +252,10 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     _chipExtent = DiaryTagFilterBar.chipExtentFor(
       MediaQuery.textScalerOf(context),
     );
+    _palettes = <int, TagChipPalette>{
+      for (final tag in widget.tags)
+        tag.id: TagChipPalette.resolve(context, Color(tag.color)),
+    };
     final collapsedTags = _buildCollapsedTags();
 
     // 显隐会推动下方列表，不能在一帧内出现/消失；ListItemPresence 结构恒定，
@@ -186,7 +281,6 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
         final layout = _layoutCache.resolve(
           context,
           tags: widget.tags,
-          selectedTagIds: widget.selectedTagFilterIds,
           width: _contentWidth,
           spacing: AppSpacing.s,
           leadingWidth: widget.leading == null ? 0 : widget.leadingWidth,
@@ -342,18 +436,43 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     return position.maxScrollExtent > position.minScrollExtent;
   }
 
+  /// 色块的取色：与该标签选中时胶囊自己画的颜色相同。
+  TagPillColors? _pillColorsFor(int tagId) {
+    final palette = _palettes[tagId];
+    return palette == null
+        ? null
+        : TagPillColors(
+            fill: palette.selectedBg,
+            border: palette.selectedBorder,
+          );
+  }
+
   Widget _buildCollapsedTags() {
-    return DesktopHorizontalScroll(
-      child: ListView.separated(
-        key: const PageStorageKey<String>('diary_tag_filter_horizontal'),
-        controller: _horizontalController,
-        scrollDirection: Axis.horizontal,
-        itemCount: widget.tags.length + 1 + (widget.leading == null ? 0 : 1),
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
-        // 有前置项时整体后移一位：-1 为前置项，0 为清除按钮。
-        itemBuilder: (BuildContext context, int index) =>
-            _buildTagItem(widget.leading == null ? index : index - 1),
-      ),
+    // 色块叠在列表下面、铺满同一个视口：随横向滚动重画、裁切到视口。
+    return Stack(
+      children: <Widget>[
+        Positioned.fill(
+          child: TagSelectionPillLayer(
+            controller: _pill,
+            scrollController: _horizontalController,
+            axis: Axis.horizontal,
+            colors: _pillColorsFor,
+          ),
+        ),
+        DesktopHorizontalScroll(
+          child: ListView.separated(
+            key: const PageStorageKey<String>('diary_tag_filter_horizontal'),
+            controller: _horizontalController,
+            scrollDirection: Axis.horizontal,
+            itemCount:
+                widget.tags.length + 1 + (widget.leading == null ? 0 : 1),
+            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
+            // 有前置项时整体后移一位：-1 为前置项，0 为清除按钮。
+            itemBuilder: (BuildContext context, int index) =>
+                _buildTagItem(widget.leading == null ? index : index - 1),
+          ),
+        ),
+      ],
     );
   }
 
@@ -364,13 +483,25 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
         children: <Widget>[
           SizedBox(
             height: _expandedRowsExtent,
-            child: ExpandedTagFilterList(
-              layout: layout,
-              controller: _verticalController,
-              itemBuilder: _buildTagItem,
-              rowHeight: _chipExtent,
-              spacing: AppSpacing.s,
-              rowSpacing: DiaryTagFilterBar._expandedRowSpacing,
+            child: Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: TagSelectionPillLayer(
+                    controller: _pill,
+                    scrollController: _verticalController,
+                    axis: Axis.vertical,
+                    colors: _pillColorsFor,
+                  ),
+                ),
+                ExpandedTagFilterList(
+                  layout: layout,
+                  controller: _verticalController,
+                  itemBuilder: _buildTagItem,
+                  rowHeight: _chipExtent,
+                  spacing: AppSpacing.s,
+                  rowSpacing: DiaryTagFilterBar._expandedRowSpacing,
+                ),
+              ],
             ),
           ),
           SizedBox(
@@ -385,14 +516,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     );
   }
 
-  /// “控件”为玻璃时的材质；经典时为 null（胶囊照旧用标签色浅底）。
-  AppGlassResolved? get _glass {
-    final glass = AppGlass.of(context);
-    return glass.isGlass(AppGlassComponent.controls) ? glass : null;
-  }
-
   Widget _buildTagItem(int index) {
-    final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = widget.selectedTagFilterIds.isNotEmpty;
     if (index < 0) {
       return Center(
@@ -409,78 +533,47 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
 
     final tag = widget.tags[index - 1];
     final selected = widget.selectedTagFilterIds.contains(tag.id);
-    final tagColor = Color(tag.color);
-    final isLight = Theme.of(context).brightness == Brightness.light;
-
-    // “控件”为玻璃时，未选中胶囊的底色换成玻璃底色（半透明的中性色，高
-    // 对比度时为不透明等效色），标签色只留在色点与描边上；选中态在同一块
-    // 玻璃底色上叠标签色浅底，加上满色 2dp 描边，仍一眼可辨。不模糊：标签
-    // 栏挂在刊头下面，那条栏是否模糊由导航栏样式决定，这里再加一层模糊就
-    // 成了同一区域两层模糊（整条顶栏只有一块启用的 BackdropFilter，由测试
-    // 兜底）。
-    //
-    // 首页顶栏自上而下渐变时，标签栏落在玻璃淡出的下半截，背后是滚上来的
-    // 原样内容：胶囊改垫栏自己的颜色、几乎不透明的底（topBarControlFill），
-    // 再按上面的规则叠标签色，否则淡底跟着玻璃一起看不见。
-    final glass = _glass;
-    final barStyle = HomeChromeScope.maybeStyleOf(context);
-    final Color? base = barStyle != null && barStyle.topBarFades
-        ? barStyle.topBarControlFill
-        : glass?.fill;
-    final classicTint = tagColor.withValues(alpha: isLight ? 0.08 : 0.16);
-    final Color unselectedBg;
-    if (base == null) {
-      unselectedBg = classicTint;
-    } else if (glass == null) {
-      // 经典控件：保留标签色浅底，只是垫在实底上。
-      unselectedBg = Color.alphaBlend(classicTint, base);
-    } else {
-      unselectedBg = base;
-    }
-    final unselectedBorder = tagColor.withValues(alpha: isLight ? 0.22 : 0.32);
-    final unselectedText = colorScheme.onSurface;
-
-    final tagTint = tagColor.withValues(alpha: isLight ? 0.22 : 0.36);
-    final selectedBg = base == null ? tagTint : Color.alphaBlend(tagTint, base);
-    final selectedBorder = tagColor;
-    final selectedText = isLight
-        ? (ThemeData.estimateBrightnessForColor(tagColor) == Brightness.dark
-              ? tagColor
-              : colorScheme.onSurface)
-        : colorScheme.onSurface;
+    final palette =
+        _palettes[tag.id] ?? TagChipPalette.resolve(context, Color(tag.color));
 
     // A horizontal ListView supplies a tight chip-extent cross-axis constraint, but a
     // Multi-row layout otherwise uses the chip's smaller intrinsic height. Retain that same
     // constraint here so expansion changes only positions, never card styling.
-    return SizedBox(
-      height: _chipExtent,
-      child: TagFilterChip(
-        label: tag.name,
-        colorDot: tagColor,
-        selected: selected,
-        selectedColor: selectedBg,
-        selectedForegroundColor: selectedText,
-        selectedBorderColor: selectedBorder,
-        unselectedColor: unselectedBg,
-        unselectedForegroundColor: unselectedText,
-        unselectedBorderColor: unselectedBorder,
-        radius: 12,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        animateBorder: true,
-        showSelectedShadow: false,
-        onTap: () {
-          // 键鼠专属：桌面上按住 Ctrl / ⌘ 点击与长按相同（只在桌面生效，
-          // 手机外接键盘时单击照旧只切换）。
-          final keyboard = HardwareKeyboard.instance;
-          if (AppPlatform.isDesktop &&
-              (keyboard.isControlPressed || keyboard.isMetaPressed)) {
-            widget.onToggleTagFilter(tag.id, !selected);
-            return;
-          }
-          widget.onSelectTag(tag.id);
-        },
-        onLongPress: () => widget.onToggleTagFilter(tag.id, !selected),
-        longPressHint: context.l10n.diaryTagFilterMultiSelectSemanticHint,
+    return TagPillAnchor(
+      controller: _pill,
+      tagId: tag.id,
+      child: SizedBox(
+        height: _chipExtent,
+        child: TagFilterChip(
+          label: tag.name,
+          colorDot: palette.tagColor,
+          selected: selected,
+          selectedColor: palette.selectedBg,
+          selectedForegroundColor: palette.selectedText,
+          selectedBorderColor: palette.selectedBorder,
+          unselectedColor: palette.unselectedBg,
+          unselectedForegroundColor: palette.unselectedText,
+          unselectedBorderColor: palette.unselectedBorder,
+          // 只选中一个时由滑动色块画选中底色（见 [TagSelectionPillController]）。
+          paintsSelectedSurface: widget.selectedTagFilterIds.length != 1,
+          radius: 12,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          animateBorder: true,
+          showSelectedShadow: false,
+          onTap: () {
+            // 键鼠专属：桌面上按住 Ctrl / ⌘ 点击与长按相同（只在桌面生效，
+            // 手机外接键盘时单击照旧只切换）。
+            final keyboard = HardwareKeyboard.instance;
+            if (AppPlatform.isDesktop &&
+                (keyboard.isControlPressed || keyboard.isMetaPressed)) {
+              widget.onToggleTagFilter(tag.id, !selected);
+              return;
+            }
+            widget.onSelectTag(tag.id);
+          },
+          onLongPress: () => widget.onToggleTagFilter(tag.id, !selected),
+          longPressHint: context.l10n.diaryTagFilterMultiSelectSemanticHint,
+        ),
       ),
     );
   }

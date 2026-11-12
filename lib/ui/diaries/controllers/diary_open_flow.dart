@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../app_surface/models/app_surface_enums.dart';
+import '../../app_surface/widgets/app_page_background.dart';
+import '../../widgets/container_transform/container_transform_route.dart';
+import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../models/time_capsule.dart';
 import '../pages/diary_preview_page.dart';
@@ -28,6 +32,12 @@ import 'diary_preview_edit_flow.dart';
 /// 编辑页不左右翻页，[sequence] 只交给预览页。宽窗口日记页的右栏是页面内的
 /// 阅读区，选中一篇不算“打开”，不经过这里（Enter 与右栏的“编辑”照常进入
 /// 编辑页）。
+///
+/// 入口给出 [origin]（点按的卡片，见 `ContainerTransformSource`）时预览页 /
+/// 编辑页从这张卡片展开成整页、返回时缩回去（[ContainerTransformPageRoute]）；
+/// 在里面删除了日记时不缩回（卡片随后会从列表里收起），原地淡出。没有
+/// [origin] 的入口照旧按主题转场推入。[origin] 的画面归这里：交给路由，或
+/// 没用上时释放。
 Future<DiaryPreviewResult?> openDiaryPage(
   BuildContext context,
   WidgetRef ref, {
@@ -35,11 +45,13 @@ Future<DiaryPreviewResult?> openDiaryPage(
   DiaryWithTags? initialDetail,
   ImageViewerHero? coverHero,
   DiaryPreviewSequence? sequence,
+  ContainerTransformOrigin? origin,
 }) async {
   if (ref.read(diaryPreviewBehaviorProvider).openInEditor) {
     final detail = initialDetail ?? await _loadDetail(ref, diaryId);
     if (!context.mounted) {
       coverHero?.dispose();
+      origin?.dispose();
       return null;
     }
     if (canOpenDiaryInEditor(detail, now: DateTime.now())) {
@@ -49,19 +61,28 @@ Future<DiaryPreviewResult?> openDiaryPage(
         diaryId,
         initialDetail: detail,
         coverHero: coverHero,
+        origin: origin,
       );
       return deleted ? DiaryPreviewResult.deleted(diaryId) : null;
     }
   }
+  Widget page(BuildContext context) => DiaryPreviewPage(
+    diaryId: diaryId,
+    initialDetail: initialDetail,
+    coverHero: coverHero,
+    sequence: sequence,
+  );
   return Navigator.of(context).push<DiaryPreviewResult?>(
-    MaterialPageRoute<DiaryPreviewResult?>(
-      builder: (BuildContext context) => DiaryPreviewPage(
-        diaryId: diaryId,
-        initialDetail: initialDetail,
-        coverHero: coverHero,
-        sequence: sequence,
-      ),
-    ),
+    origin == null
+        ? MaterialPageRoute<DiaryPreviewResult?>(builder: page)
+        : ContainerTransformPageRoute<DiaryPreviewResult?>(
+            builder: page,
+            origin: origin,
+            backdrop: const AppPageBackgroundFill(
+              area: AppBackgroundArea.preview,
+            ),
+            returnsToOrigin: (DiaryPreviewResult? result) => result == null,
+          ),
   );
 }
 

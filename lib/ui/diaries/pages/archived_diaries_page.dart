@@ -29,6 +29,7 @@ import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../sections/diary_head_section.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
@@ -302,11 +303,16 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                         moodPalette: ref.watch(
                                           diaryMoodPaletteProvider,
                                         ),
-                                        onOpenEditor: (diary, coverHero) =>
-                                            _controller.openPreview(
+                                        onOpenEditor:
+                                            (
+                                              diary,
+                                              coverHero,
+                                              origin,
+                                            ) => _controller.openPreview(
                                               diary.diary.diaryId,
                                               initialDetail: diary,
                                               coverHero: coverHero,
+                                              origin: origin,
                                               // 正在取消归档而淡出的条目不参与翻页。
                                               sequence:
                                                   DiaryPreviewSequence.fromItems(

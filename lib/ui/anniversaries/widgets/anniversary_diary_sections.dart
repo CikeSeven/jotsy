@@ -15,6 +15,7 @@ import '../../calendar/widgets/calendar_day_content_switcher.dart';
 import '../../calendar/widgets/calendar_diary_mini_card.dart';
 import '../../diaries/models/diary_preview_sequence.dart';
 import '../../notebooks/providers/notebook_providers.dart';
+import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../controllers/anniversary_navigation.dart';
 import '../providers/anniversary_providers.dart';
@@ -187,13 +188,18 @@ class AnniversaryLinkedDiarySection extends ConsumerWidget {
           eyebrow: DateFormat.yMMMEd(
             l10n.localeName,
           ).format(diary.diary.createdAt.toLocal()),
-          onOpenDiary: (DiaryWithTags diary, ImageViewerHero? hero) =>
-              unawaited(
+          onOpenDiary:
+              (
+                DiaryWithTags diary,
+                ImageViewerHero? hero,
+                ContainerTransformOrigin? origin,
+              ) => unawaited(
                 openDiaryFromAnniversary(
                   context,
                   ref,
                   diary: diary,
                   coverHero: hero,
+                  origin: origin,
                 ),
               ),
         );
@@ -294,13 +300,18 @@ class AnniversaryPastDiariesSection extends ConsumerWidget {
               child: CalendarDiaryMiniCard(
                 diary: diary,
                 eyebrow: eyebrowOf(diary),
-                onOpenDiary: (DiaryWithTags diary, ImageViewerHero? hero) =>
-                    unawaited(
+                onOpenDiary:
+                    (
+                      DiaryWithTags diary,
+                      ImageViewerHero? hero,
+                      ContainerTransformOrigin? origin,
+                    ) => unawaited(
                       openDiaryFromAnniversary(
                         context,
                         ref,
                         diary: diary,
                         coverHero: hero,
+                        origin: origin,
                         sequence: DiaryPreviewSequence.fromItems(diaries),
                       ),
                     ),

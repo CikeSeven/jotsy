@@ -118,7 +118,8 @@ void main() {
                     isSelectionMode: false,
                     maxVisibleTags: 3,
                     onToggleSelection: (_, _) {},
-                    onOpenEditor: (detail, coverHero) {
+                    onOpenEditor: (detail, coverHero, origin) {
+                      origin?.dispose();
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => DiaryPreviewPage(
@@ -199,7 +200,7 @@ void main() {
                 isSelectionMode: false,
                 maxVisibleTags: 3,
                 onToggleSelection: (_, _) {},
-                onOpenEditor: (_, _) {},
+                onOpenEditor: (_, _, _) {},
               ),
             ],
           ),

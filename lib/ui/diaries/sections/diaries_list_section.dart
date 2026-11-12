@@ -24,7 +24,8 @@ import '../../widgets/list_item_presence.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 
-export '../widgets/diary_card/diary_card.dart' show DiaryOpenCallback;
+export '../widgets/diary_card/diary_card.dart'
+    show DiaryOpenCallback, diaryCardTransitionTag;
 export '../widgets/diary_card/diary_card_context_menu.dart'
     show DiaryCardMenuActions;
 export '../controllers/diary_pointer_selection.dart' show DiarySelectionAnchor;

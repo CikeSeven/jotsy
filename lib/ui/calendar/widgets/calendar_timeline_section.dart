@@ -8,8 +8,9 @@ import '../../app_surface/widgets/app_card_surface.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/sections/diaries_list_section.dart'
-    show DiaryOpenCallback;
+    show DiaryOpenCallback, diaryCardTransitionTag;
 import '../../diaries/widgets/energy_battery_indicator.dart';
+import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../../widgets/qweather_icon.dart';
 import 'calendar_day_content_switcher.dart';
@@ -205,72 +206,80 @@ class CalendarTimelineSection extends StatelessWidget {
           Expanded(
             // 经典分支与原来的 Container + Material 写法逐像素一致；玻璃
             // 时为内容玻璃。
-            child: AppCardSurface(
-              borderRadius: const BorderRadius.all(Radius.circular(22)),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(22),
-                onTap: () => onOpenDiary(
-                  diary,
-                  coverAnchor.capture(
-                    tag: diaryCoverHeroTag(diary.diary.diaryId),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              createdAtLabel,
-                              style: Theme.of(context).textTheme.labelLarge
-                                  ?.copyWith(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              summary,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: isLockedCapsule
-                                        ? colorScheme.primary
-                                        : colorScheme.onSurfaceVariant,
-                                    fontWeight: isLockedCapsule
-                                        ? FontWeight.w700
-                                        : FontWeight.w400,
-                                    height: 1.38,
-                                  ),
-                            ),
-                            if (hasMetaRow) ...<Widget>[
-                              const SizedBox(height: 6),
-                              _buildMetaInlineRow(
-                                context,
-                                location: location,
-                                weather: weather,
-                                weatherIconCode: weatherIconCode,
-                                energyLevel: energyLevel,
-                              ),
-                            ],
-                          ],
-                        ),
+            // 预览页从这张卡片展开；点按处的 context 在来源之内才量得到它。
+            child: ContainerTransformSource(
+              tag: diaryCardTransitionTag(diary.diary.diaryId),
+              borderRadius: 22,
+              child: AppCardSurface(
+                borderRadius: const BorderRadius.all(Radius.circular(22)),
+                child: Builder(
+                  builder: (BuildContext tapContext) => InkWell(
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: () => onOpenDiary(
+                      diary,
+                      coverAnchor.capture(
+                        tag: diaryCoverHeroTag(diary.diary.diaryId),
                       ),
-                      if (cover != null) ...<Widget>[
-                        const SizedBox(width: 12),
-                        CalendarEntryThumbnail(
-                          source: cover,
-                          diaryId: diary.diary.diaryId,
-                          anchor: coverAnchor,
-                        ),
-                      ],
-                    ],
+                      ContainerTransformSource.capture(tapContext),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text(
+                                  createdAtLabel,
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: colorScheme.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  summary,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: isLockedCapsule
+                                            ? colorScheme.primary
+                                            : colorScheme.onSurfaceVariant,
+                                        fontWeight: isLockedCapsule
+                                            ? FontWeight.w700
+                                            : FontWeight.w400,
+                                        height: 1.38,
+                                      ),
+                                ),
+                                if (hasMetaRow) ...<Widget>[
+                                  const SizedBox(height: 6),
+                                  _buildMetaInlineRow(
+                                    context,
+                                    location: location,
+                                    weather: weather,
+                                    weatherIconCode: weatherIconCode,
+                                    energyLevel: energyLevel,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          if (cover != null) ...<Widget>[
+                            const SizedBox(width: 12),
+                            CalendarEntryThumbnail(
+                              source: cover,
+                              diaryId: diary.diary.diaryId,
+                              anchor: coverAnchor,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

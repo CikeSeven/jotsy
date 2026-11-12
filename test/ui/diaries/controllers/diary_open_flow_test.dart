@@ -8,6 +8,8 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_s
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/locked_diary_page.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 
 import '../../../support/diary_drafts_harness.dart';
 
@@ -43,11 +45,13 @@ void main() {
   }
 
   /// 一个按钮：按入口的方式打开 [diaryId]。[withDetail] 为 true 时像列表一样
-  /// 带上已有的数据，否则像探索页一样只给 id。
+  /// 带上已有的数据，否则像探索页一样只给 id。[fromCard] 时按钮是一张卡片
+  /// （展开来源），像列表卡片一样带上起点。
   Future<void> pumpOpener(
     DiaryDraftsHarness h,
     String diaryId, {
     bool withDetail = true,
+    bool fromCard = false,
   }) async {
     final detail = withDetail
         ? await h.tester.runAsync(
@@ -60,18 +64,32 @@ void main() {
           // 应用外壳一直订阅设置服务（`NodeDiaryApp`），入口能点开日记时它
           // 早已就绪；这里同样订阅，阅读行为才读得到存储值。
           ref.watch(settingsServiceProvider);
-          return Scaffold(
-            body: TextButton(
+          final button = Builder(
+            builder: (BuildContext tapContext) => TextButton(
               onPressed: () async => results.add(
                 await openDiaryPage(
                   context,
                   ref,
                   diaryId: diaryId,
                   initialDetail: detail,
+                  origin: fromCard
+                      ? ContainerTransformSource.capture(tapContext)
+                      : null,
                 ),
               ),
               child: const Text('Open'),
             ),
+          );
+          return Scaffold(
+            body: fromCard
+                ? Center(
+                    child: ContainerTransformSource(
+                      tag: 'card',
+                      borderRadius: 16,
+                      child: button,
+                    ),
+                  )
+                : button,
           );
         },
       ),
@@ -98,6 +116,62 @@ void main() {
 
     expect(find.byType(DiaryPreviewPage), findsOneWidget);
     expect(find.byType(EditDiaryPage), findsNothing);
+    await h.unmount();
+  });
+
+  testWidgets('opened from a card the preview expands from that card', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final diaryId = await seedDiary(h);
+    await pumpOpener(h, diaryId, fromCard: true);
+
+    await tapOpen(tester, h);
+
+    final page = find.byType(DiaryPreviewPage);
+    expect(page, findsOneWidget);
+    expect(
+      ModalRoute.of(tester.element(page)),
+      isA<ContainerTransformPageRoute<DiaryPreviewResult?>>(),
+    );
+    await tester.binding.handlePopRoute();
+    await h.settle();
+    await tester.pumpAndSettle();
+    expect(page, findsNothing);
+    expect(results, <DiaryPreviewResult?>[null]);
+    await h.unmount();
+  });
+
+  testWidgets('entries without a card keep the theme page transition', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final diaryId = await seedDiary(h);
+    await pumpOpener(h, diaryId);
+
+    await tapOpen(tester, h);
+
+    expect(
+      ModalRoute.of(tester.element(find.byType(DiaryPreviewPage))),
+      isA<MaterialPageRoute<DiaryPreviewResult?>>(),
+    );
+    await h.unmount();
+  });
+
+  testWidgets('with open-in-editor on the editor also expands from the card', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await setOpenInEditor(h);
+    final diaryId = await seedDiary(h);
+    await pumpOpener(h, diaryId, fromCard: true);
+
+    await tapOpen(tester, h);
+
+    expect(
+      ModalRoute.of(tester.element(find.byType(EditDiaryPage))),
+      isA<ContainerTransformPageRoute<Object?>>(),
+    );
     await h.unmount();
   });
 

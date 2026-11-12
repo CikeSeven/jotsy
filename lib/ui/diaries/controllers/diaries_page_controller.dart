@@ -228,10 +228,15 @@ class DiariesPageController {
   }
 
   /// 点按列表卡片（普通模式）：双栏时在右栏阅读（选中这一篇，不推入路由；
-  /// 双栏不抓取封面，这里只兜底释放）；否则推入预览页。
-  void openDiary(DiaryWithTags diary, ImageViewerHero? coverHero) {
+  /// 双栏不抓取封面、也不量卡片，这里只兜底释放）；否则从这张卡片展开预览页。
+  void openDiary(
+    DiaryWithTags diary,
+    ImageViewerHero? coverHero,
+    ContainerTransformOrigin? origin,
+  ) {
     if (_state._twoPane) {
       coverHero?.dispose();
+      origin?.dispose();
       _state._readingSelection.select(diary.diary.diaryId);
       return;
     }
@@ -239,6 +244,7 @@ class DiariesPageController {
       diary.diary.diaryId,
       initialDetail: diary,
       coverHero: coverHero,
+      origin: origin,
     );
   }
 
@@ -252,6 +258,7 @@ class DiariesPageController {
     String diaryId, {
     DiaryWithTags? initialDetail,
     ImageViewerHero? coverHero,
+    ContainerTransformOrigin? origin,
   }) {
     final sequence = _previewSequence();
     unawaited(
@@ -262,6 +269,7 @@ class DiariesPageController {
         initialDetail: initialDetail,
         coverHero: coverHero,
         sequence: sequence,
+        origin: origin,
       ).then((DiaryPreviewResult? result) async {
         if (!_state.mounted) {
           return;

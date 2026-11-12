@@ -15,7 +15,12 @@ import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/locked_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_markers.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_pager_view.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card.dart'
+    show diaryCardTransitionTag;
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_view.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -72,6 +77,7 @@ Future<_Harness> _open(
   DiaryWithTags? initialDetail,
   DiaryPreviewStyle style = DiaryPreviewStyle.defaults,
   DiaryPreviewBehavior behavior = DiaryPreviewBehavior.defaults,
+  bool settle = true,
 }) async {
   tester.view.physicalSize = const Size(400, 800);
   tester.view.devicePixelRatio = 1;
@@ -122,7 +128,9 @@ Future<_Harness> _open(
     ),
   );
   await tester.tap(find.text('打开'));
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  }
   return _Harness(database, results);
 }
 
@@ -437,6 +445,116 @@ void main() {
     await _swipe(tester);
     expect(find.byType(LockedDiaryPage), findsOneWidget);
     expect(find.text('胶囊 的正文'), findsNothing);
+    await _unmount(tester);
+  });
+
+  testWidgets('neighbours are only laid out after the entrance finishes', (
+    tester,
+  ) async {
+    final diaries = await _seed(tester, database, <String>['甲', '乙', '丙']);
+    await _open(
+      tester,
+      database,
+      diaryId: diaries[1].diary.diaryId,
+      initialDetail: diaries[1],
+      sequence: DiaryPreviewSequence.fromItems(diaries),
+      settle: false,
+    );
+    int pages() =>
+        find.byType(DiaryPreviewView, skipOffstage: false).evaluate().length;
+    // 推入后的第一帧路由 offstage、路由动画被代理成“已完成”：不能因此
+    // 误以为入场已结束，首帧只排版当前这一篇。
+    await tester.pump();
+    expect(pages(), 1);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(pages(), 1);
+
+    await tester.pumpAndSettle();
+    expect(pages(), 3);
+    await _unmount(tester);
+  });
+
+  testWidgets('after paging, back collapses into that diary\'s card', (
+    tester,
+  ) async {
+    final diaries = await _seed(tester, database, <String>['甲', '乙']);
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final settings = await SettingsService.create();
+    final sequence = DiaryPreviewSequence.fromItems(diaries);
+    // 列表页替身：每篇一张卡片，点按从卡片展开预览页。
+    Widget card(DiaryWithTags diary) => SizedBox(
+      height: 120,
+      child: ContainerTransformSource(
+        tag: diaryCardTransitionTag(diary.diary.diaryId),
+        borderRadius: 16,
+        child: Builder(
+          builder: (BuildContext tapContext) => GestureDetector(
+            onTap: () => Navigator.of(tapContext).push<DiaryPreviewResult?>(
+              ContainerTransformPageRoute<DiaryPreviewResult?>(
+                origin: ContainerTransformSource.capture(tapContext)!,
+                builder: (BuildContext context) => DiaryPreviewPage(
+                  diaryId: diary.diary.diaryId,
+                  initialDetail: diary,
+                  sequence: sequence,
+                ),
+              ),
+            ),
+            child: ColoredBox(
+              color: Colors.teal,
+              child: Text('卡片 ${diary.diary.title}'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          settingsServiceProvider.overrideWith((ref) async => settings),
+        ],
+        child: MaterialApp(
+          theme: expressiveTestTheme(Brightness.light),
+          locale: const Locale('zh'),
+          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+            ...AppLocalizations.localizationsDelegates,
+            quill.AppFlowyEditorLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Column(
+              children: <Widget>[for (final diary in diaries) card(diary)],
+            ),
+          ),
+        ),
+      ),
+    );
+    final secondCard = tester.getRect(
+      find.ancestor(
+        of: find.text('卡片 乙'),
+        matching: find.byType(ContainerTransformSource),
+      ),
+    );
+
+    await tester.tap(find.text('卡片 甲'));
+    await tester.pumpAndSettle();
+    await _swipe(tester);
+    expect(find.text('乙'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+    await tester.pump();
+    final geometry = tester
+        .widget<ContainerTransformTransition>(
+          find.byType(ContainerTransformTransition),
+        )
+        .geometry;
+    expect(geometry.closed?.rect, secondCard);
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryPreviewPage), findsNothing);
     await _unmount(tester);
   });
 

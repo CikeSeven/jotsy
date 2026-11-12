@@ -42,6 +42,17 @@ abstract final class ExpressiveMotion {
   /// Compose `tween` 的默认曲线 FastOutSlowIn。
   static const menuHighlightCurve = Curves.fastOutSlowIn;
 
+  /// 容器展开（列表卡片 ↔ 整页，见 `ContainerTransformPageRoute`），对齐 M3
+  /// 容器转场：
+  /// - [containerOpen]：展开（M3 long1，450ms）；
+  /// - [containerClose]：收回卡片（M3 medium4，400ms），返回比进入略快；
+  /// - [emphasized]：两端都在屏上的大幅形变用的强调曲线（M3 emphasized）：
+  ///   起步柔和、中段迅速走完大部分行程、末段长长地减速落位。收回时同一条
+  ///   曲线作用在“离开整页的进度”上，同样是快走、轻落进卡片。
+  static const containerOpen = Duration(milliseconds: 450);
+  static const containerClose = Duration(milliseconds: 400);
+  static const emphasized = Curves.easeInOutCubicEmphasized;
+
   /// 进场与状态变化：减速收尾，不越界。
   static const effects = Curves.easeOutCubic;
 

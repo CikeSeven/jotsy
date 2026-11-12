@@ -78,6 +78,7 @@ import '../widgets/calendar_range_header.dart';
 import '../widgets/calendar_refresh_capsule.dart';
 import '../widgets/calendar_year_view.dart';
 import '../../widgets/action_loading_overlay.dart';
+import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../widgets/calendar_timeline_section.dart';
 import '../../../app/theme/app_effects.dart';

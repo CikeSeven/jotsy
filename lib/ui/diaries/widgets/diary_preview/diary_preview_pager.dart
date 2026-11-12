@@ -6,12 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../widgets/container_transform/container_transform_route.dart';
 import '../../../widgets/image_viewer_hero.dart';
+import '../../../widgets/route_entrance_waiter.dart';
 import '../../controllers/diary_audio_player_controller.dart';
 import '../../controllers/diary_video_player_controller.dart';
 import '../../models/diary_preview_sequence.dart';
 import '../../providers/diary_detail_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
+import '../diary_card/diary_card.dart' show diaryCardTransitionTag;
 import 'diary_pager_view.dart';
 import 'diary_preview_neighbors.dart';
 import 'diary_preview_view.dart';
@@ -25,14 +28,20 @@ import 'diary_preview_view.dart';
 /// 时序：
 /// - 路由入场结束前只构建当前页，结束后才预构建两侧各一页，并（列表还有没
 ///   加载的部分时）一次取出同条件的全部 id 接在后面——打开时不同时排版三篇
-///   正文；翻到离末尾 3 篇以内而还没接上时也会触发；
+///   正文；翻到离末尾 3 篇以内而还没接上时也会触发。入场是否结束只经
+///   [RouteEntranceWaiter] 判断：推入后的第一帧路由是 offstage 的，路由动画
+///   在那一帧被代理成“已完成”，直接读会误以为入场已结束，首帧就同时排版
+///   三篇；
 /// - 当前页与两侧页的详情由这里订阅并作为入口数据交给各页：Riverpod 会暂停
 ///   `TickerMode` 关闭的页里的订阅，翻过去时数据已经就绪；
 /// - 翻页后暂停正在播放的录音与视频；当前页导出或分享长图期间暂停翻页。
 ///
-/// 共享元素：只有最初那页沿用 `diaryCoverHeroTag`，返回时飞回列表卡片；翻到
-/// 的其他页改用翻页器专用的标签——它们的卡片可能根本不在屏幕上。最初那页
-/// 可能翻走后被回收又翻回来，列表封面的占位画面由这里在路由结束时释放。
+/// 共享元素：只有最初那页沿用 `diaryCoverHeroTag`；翻到的其他页改用翻页器
+/// 专用的标签——它们的卡片可能根本不在屏幕上。最初那页可能翻走后被回收又
+/// 翻回来，列表封面的占位画面由这里在路由结束时释放。
+///
+/// 从卡片展开进来时（`ContainerTransformPageRoute`），翻页后把返回目标换成
+/// 当前这一篇：返回时缩回它在列表里的卡片，卡片不在屏上时原地淡出。
 class DiaryPreviewPager extends ConsumerStatefulWidget {
   const DiaryPreviewPager({
     super.key,
@@ -63,7 +72,7 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
   late bool _complete;
   bool _loadingRest = false;
   bool _entered = false;
-  Animation<double>? _routeAnimation;
+  final RouteEntranceWaiter _entrance = RouteEntranceWaiter();
 
   /// 当前与两侧页的最新详情（翻页器订阅所得），优先于入口快照。
   final Map<String, DiaryWithTags> _details = <String, DiaryWithTags>{};
@@ -85,39 +94,18 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
       _complete = widget.sequence.query == null;
     }
     _current = _initialIndex;
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_entered || _routeAnimation != null) {
-      return;
-    }
-    final animation = ModalRoute.of(context)?.animation;
-    if (animation == null || animation.isCompleted) {
-      _entered = true;
+    _entrance.schedule(this, () {
+      setState(() => _entered = true);
       unawaited(_loadRest());
-      return;
-    }
-    _routeAnimation = animation..addStatusListener(_handleRouteStatus);
+    });
   }
 
   @override
   void dispose() {
-    _routeAnimation?.removeStatusListener(_handleRouteStatus);
+    _entrance.dispose();
     // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
     widget.coverHero?.dispose();
     super.dispose();
-  }
-
-  void _handleRouteStatus(AnimationStatus status) {
-    if (status != AnimationStatus.completed || !mounted) {
-      return;
-    }
-    _routeAnimation?.removeStatusListener(_handleRouteStatus);
-    _routeAnimation = null;
-    setState(() => _entered = true);
-    unawaited(_loadRest());
   }
 
   /// 按列表的同一条件一次取出全部 id，只追加快照之后的部分，已有页的序号
@@ -156,6 +144,10 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
 
   void _handlePageChanged(int index) {
     setState(() => _current = index);
+    ContainerTransformPageRoute.setReturnTag(
+      context,
+      diaryCardTransitionTag(_ids[index]),
+    );
     unawaited(DiaryAudioPlayerController.pauseActive());
     unawaited(DiaryVideoPlayerController.pauseActive());
     if (index >= _ids.length - _loadAheadPages) {

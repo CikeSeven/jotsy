@@ -57,7 +57,7 @@ void main() {
           body: CalendarTimelineSection(
             selectedDay: diary.diary.createdAt,
             diaries: <DiaryWithTags>[diary],
-            onOpenDiary: (_, _) {},
+            onOpenDiary: (_, _, _) {},
           ),
         ),
       ),
@@ -100,7 +100,7 @@ void main() {
             body: CalendarTimelineSection(
               selectedDay: now,
               diaries: <DiaryWithTags>[diary],
-              onOpenDiary: (_, _) {},
+              onOpenDiary: (_, _, _) {},
             ),
           ),
         ),
@@ -148,7 +148,10 @@ void main() {
           body: CalendarTimelineSection(
             selectedDay: now,
             diaries: <DiaryWithTags>[diary],
-            onOpenDiary: (_, hero) => received = hero,
+            onOpenDiary: (_, hero, origin) {
+              received = hero;
+              origin?.dispose();
+            },
           ),
         ),
       ),

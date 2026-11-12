@@ -407,7 +407,6 @@ Widget _buildTestApp({
               selectedDiaryIds: selectedDiaryIds,
               isSelectionMode: selectedDiaryIds.isNotEmpty,
               maxVisibleTags: maxVisibleTags,
-              onCreate: () {},
               onOpenEditor: (_, _) {},
               onToggleSelection: (_, _) {},
               onArchiveDiary: enableSwipeAction ? (_) {} : null,

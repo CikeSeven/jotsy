@@ -54,7 +54,6 @@ class DiariesListSection extends StatelessWidget {
     required this.maxVisibleTags,
     this.pendingHideDiaryIds = const <String>{},
     this.appearingDiaryIds = const <String>{},
-    required this.onCreate,
     required this.onOpenEditor,
     required this.onToggleSelection,
     this.onArchiveDiary,
@@ -114,7 +113,6 @@ class DiariesListSection extends StatelessWidget {
 
   /// 标记“正在出现动画”的日记项集合。
   final Set<String> appearingDiaryIds;
-  final VoidCallback onCreate;
 
   /// 普通模式点击卡片：传入整条数据（预览页可直接用它渲染首帧）与从封面抓取
   /// 的画面（预览页头图以它为共享元素落点，无封面或减少动画时为 null）。
@@ -226,30 +224,22 @@ class DiariesListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final backgroundColor = colorScheme.surface;
-
-    // 空态：根据是否搜索场景展示不同文案。
+    // 空态：根据是否搜索场景展示不同文案。不垫底色：直接画在页面背景上，
+    // 玻璃 / 背景图时不出现一块实色（经典无背景时页面底色本就是 surface）。
     if (diaries.isEmpty) {
       return SliverToBoxAdapter(
         child: _revealPlain(
           0,
-          ColoredBox(
-            color: backgroundColor,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.m,
-                vertical: AppSpacing.m,
-              ),
-              // 最后一篇被归档/删除、或首屏没有日记时淡入上移，而不是硬切出现。
-              child: ExpressiveEntrance(
-                child:
-                    emptyState ??
-                    DiariesEmptyState(
-                      onCreate: onCreate,
-                      isSearchResultEmpty: isSearchResultEmpty,
-                    ),
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.m,
+              vertical: AppSpacing.m,
+            ),
+            // 最后一篇被归档/删除、或首屏没有日记时淡入上移，而不是硬切出现。
+            child: ExpressiveEntrance(
+              child:
+                  emptyState ??
+                  DiariesEmptyState(isSearchResultEmpty: isSearchResultEmpty),
             ),
           ),
         ),

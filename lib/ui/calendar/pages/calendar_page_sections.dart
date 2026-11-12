@@ -370,7 +370,6 @@ extension _CalendarPageSections on _CalendarPageState {
               ref.watch(diaryCommentCountsProvider).value ??
               const <String, int>{},
           onOpenDiary: openDiary,
-          onCreate: () => unawaited(_openCreateForSelectedDay()),
         ),
       ];
     }

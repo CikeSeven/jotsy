@@ -952,10 +952,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     ),
                                     pendingHideDiaryIds: _pendingHideDiaryIds,
                                     appearingDiaryIds: _appearingDiaryIds,
-                                    onCreate: () => unawaited(
-                                      _controller
-                                          .openCreateEditorWithDraftPrompt(),
-                                    ),
                                     onOpenEditor: _controller.openDiary,
                                     onToggleSelection: (noteId, forceSelect) =>
                                         _controller.toggleSelection(

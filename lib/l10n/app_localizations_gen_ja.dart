@@ -1174,9 +1174,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autoT0154 => 'まだ日記がありません';
 
   @override
-  String get autoT0155 => '日記を書く';
-
-  @override
   String get autoT0156 => '表紙を読み込めませんでした';
 
   @override

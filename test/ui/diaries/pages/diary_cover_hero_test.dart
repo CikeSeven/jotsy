@@ -117,7 +117,6 @@ void main() {
                     selectedDiaryIds: const <String>{},
                     isSelectionMode: false,
                     maxVisibleTags: 3,
-                    onCreate: () {},
                     onToggleSelection: (_, _) {},
                     onOpenEditor: (detail, coverHero) {
                       Navigator.of(context).push(
@@ -199,7 +198,6 @@ void main() {
                 selectedDiaryIds: const <String>{},
                 isSelectionMode: false,
                 maxVisibleTags: 3,
-                onCreate: () {},
                 onToggleSelection: (_, _) {},
                 onOpenEditor: (_, _) {},
               ),

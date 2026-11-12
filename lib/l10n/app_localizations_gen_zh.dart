@@ -1165,9 +1165,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0154 => '还没有日记';
 
   @override
-  String get autoT0155 => '新建日记';
-
-  @override
   String get autoT0156 => '封面加载失败';
 
   @override

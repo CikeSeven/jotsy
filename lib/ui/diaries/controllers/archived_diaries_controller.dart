@@ -16,9 +16,6 @@ class ArchivedDiariesController {
   /// 控制器通过它读取当前选择集、调用 `setState` 以及访问 `context/ref`。
   final _ArchivedDiariesPageState _state;
 
-  /// 归档页不提供“新建”入口，这里用于占位对齐列表组件回调签名。
-  void noopCreate() {}
-
   /// 退出多选模式并清空当前选中项。
   void clearSelection() {
     if (_state._selectedDiaryIds.isEmpty) {

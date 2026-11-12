@@ -5,14 +5,16 @@ import 'package:flutter/widgets.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
+import 'container_transform_source_visibility.dart';
 
 /// 容器展开（卡片 ↔ 整页）的来源端：登记卡片、在点按时量出它在屏上的位置
 /// 并截下画面，返回时按同一标签找回它。
 ///
 /// 输入：标签 [ContainerTransformSource.tag]（如日记卡片按日记 id）、卡片的
 /// 圆角；输出：[ContainerTransformOrigin]（点按时）与 [ContainerTransformShot]
-/// （返回时，经 [locateContainerTransformSource]）。副作用只有截图——画面是
-/// GPU 上的 `ui.Image`，所有权随对象转交，拿到的一方负责释放。
+/// （返回时，经 [locateContainerTransformSource]）。画面是 GPU 上的 `ui.Image`，
+/// 所有权随对象转交；路由持有 [ContainerTransformShot.holdSource] 时，来源
+/// 卡片保留布局但停止绘制，归位时恢复，避免飞行画面与原卡片同时显示。
 ///
 /// 画面截的是卡片所在页面的整层（路由最外层的 RepaintBoundary），再裁出
 /// 卡片那一块，而不是只画卡片自己：玻璃卡片的模糊要读页面背景，单独截卡片
@@ -134,12 +136,17 @@ class ContainerTransformShot {
     required this.radius,
     required this.image,
     required this.imageRect,
+    this.holdSource,
   });
 
   final Rect rect;
   final double radius;
   final ui.Image image;
   final Rect imageRect;
+
+  /// 截图完成且飞行画面能够接替来源时由路由调用，返回幂等的恢复句柄。
+  /// 不能在截图前隐藏，否则玻璃卡片的整页截图只会剩下背景。
+  final ValueGetter<VoidCallback>? holdSource;
 
   void dispose() => image.dispose();
 }
@@ -154,6 +161,7 @@ class _ContainerTransformSourceState extends State<ContainerTransformSource> {
   static const double _minVisibleExtent = 24;
 
   ModalRoute<Object?>? _route;
+  final _visibility = ContainerTransformSourceVisibility();
 
   @override
   void initState() {
@@ -179,6 +187,7 @@ class _ContainerTransformSourceState extends State<ContainerTransformSource> {
   @override
   void dispose() {
     _unregister(widget.tag);
+    _visibility.dispose();
     super.dispose();
   }
 
@@ -271,9 +280,13 @@ class _ContainerTransformSourceState extends State<ContainerTransformSource> {
       radius: widget.borderRadius,
       image: image,
       imageRect: imageRect,
+      holdSource: _visibility.hold,
     );
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) => ContainerTransformSourcePaintGate(
+    visibility: _visibility,
+    child: widget.child,
+  );
 }

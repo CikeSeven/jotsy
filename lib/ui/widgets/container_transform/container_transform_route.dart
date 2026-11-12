@@ -36,6 +36,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
   ContainerTransformPageRoute({
     required this.builder,
     required ContainerTransformOrigin origin,
+    this.backdrop,
     this.returnsToOrigin,
     super.settings,
   }) : _originRoute = origin.route,
@@ -43,6 +44,13 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
        _geometry = ContainerTransformGeometry(origin.takeShot());
 
   final WidgetBuilder builder;
+
+  /// 转场途中垫在容器里、页面下面的底，铺满路由（见
+  /// [ContainerTransformTransition.backdrop]）。应画得与页面自己的背景一样
+  /// （如 `AppPageBackgroundFill` 画页面所在区域的背景），与页面作为一整层
+  /// 淡入淡出，收回末段不在卡片下方留下不透明的底。null 时为主题的
+  /// `scaffoldBackgroundColor`。
+  final Widget? backdrop;
 
   /// 按返回值决定返回时是否缩回卡片；null 时总是尝试。如页面里删除了这篇
   /// 日记：卡片随后会从列表里收起，缩回去反而奇怪，改为原地淡出。
@@ -52,6 +60,9 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
   Object _returnTag;
   final ContainerTransformGeometry _geometry;
   _TransitionGate _gate = _TransitionGate.opened();
+  VoidCallback? _releaseSource;
+  Object? _heldTag;
+  bool _disposed = false;
 
   /// 返回时要缩回的来源标签：页面里换了内容（预览页左右翻到另一篇）时由
   /// 页面改成那一篇的标签。[context] 不在本路由里时什么都不做。
@@ -83,21 +94,47 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
     // 展开完毕就不再需要起飞时的卡片画面，先释放掉；返回时会重新截。听的是
     // 真正的控制器：[animation] 是代理，推入后的第一帧路由 offstage 时它报告
     // “已完成”。
-    controller!.addStatusListener(_releaseOpeningShot);
+    controller!.addStatusListener(_handleStatus);
   }
 
-  void _releaseOpeningShot(AnimationStatus status) {
-    if (status.isCompleted) {
+  void _handleStatus(AnimationStatus status) {
+    if (status.isCompleted || status.isDismissed) {
+      // 停稳或归位的这一帧就交还来源，不能等路由销毁后的下一帧，否则
+      // 卡片会先消失一帧。来源布局一直保留，恢复绘制不会挤动列表。
+      _restoreSource();
       _geometry.replace(null);
     }
+  }
+
+  void _holdSource(ContainerTransformShot? shot, Object tag) {
+    _restoreSource();
+    _releaseSource = shot?.holdSource?.call();
+    _heldTag = tag;
+  }
+
+  void _restoreSource() {
+    _releaseSource?.call();
+    _releaseSource = null;
+    _heldTag = null;
   }
 
   @override
   TickerFuture didPush() {
     final gate = _gate = _TransitionGate();
     // 第一帧：Hero 控制器让新路由 offstage，页面只构建、排版；第二帧：页面
-    // 第一次绘制（卡片画面盖着，看不见）。两帧都画完才开始计时。
+    // 第一次绘制（卡片画面盖着，看不见）。首帧必须仍画来源卡片；帧末等
+    // Hero 把目的路由移回屏上，下一帧有截图接替时才隐藏来源，否则会闪空位。
+    _afterFrames(1, () {
+      if (_disposed ||
+          !identical(_gate, gate) ||
+          controller?.status != AnimationStatus.forward) {
+        return;
+      }
+      _holdSource(_geometry.closed, _returnTag);
+    });
+    // 两帧都画完才开始计时。
     _afterFrames(2, () {
+      if (_disposed || !identical(_gate, gate)) return;
       gate.open(
         duration: ExpressiveMotion.containerOpen,
         curve: ExpressiveMotion.emphasized,
@@ -122,10 +159,17 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
     final gate = _gate = _TransitionGate();
     final toOrigin = returnsToOrigin?.call(result) ?? true;
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_disposed || controller == null || controller!.isDismissed) return;
       // 下层页面已在这一帧重新排版、绘制：量出卡片此刻的位置与样子。
-      final shot = toOrigin && !_reduceMotion
-          ? locateContainerTransformSource(_returnTag, route: _originRoute)
-          : null;
+      // 进入途中返回同一张卡片时来源仍隐藏：沿用已经截好的画面，不能再截
+      // 一次空位。翻到别篇时则捕获新目标，只隐藏实际要归位的那张卡片。
+      final reuse = _releaseSource != null && _heldTag == _returnTag;
+      final shot = !toOrigin || _reduceMotion
+          ? null
+          : reuse
+          ? _geometry.closed
+          : locateContainerTransformSource(_returnTag, route: _originRoute);
+      if (!reuse || shot == null) _holdSource(shot, _returnTag);
       _geometry.replace(shot);
       gate.open(
         duration: shot == null
@@ -211,14 +255,16 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
       animation: animation,
       geometry: _geometry,
       scrimColor: theme.colorScheme.scrim,
-      surfaceColor: theme.scaffoldBackgroundColor,
+      backdrop: backdrop ?? ColoredBox(color: theme.scaffoldBackgroundColor),
       child: outgoing,
     );
   }
 
   @override
   void dispose() {
-    controller?.removeStatusListener(_releaseOpeningShot);
+    _disposed = true;
+    controller?.removeStatusListener(_handleStatus);
+    _restoreSource();
     _geometry.dispose();
     super.dispose();
   }

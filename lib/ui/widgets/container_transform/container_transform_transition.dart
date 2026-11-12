@@ -40,37 +40,68 @@ class ContainerTransformGeometry extends ChangeNotifier {
   }
 }
 
+/// [ContainerTransformTransition] 的两个子节点。
+enum ContainerTransformSlot {
+  /// 容器的底：与页面自己的背景一样，与页面整体淡入淡出。
+  backdrop,
+
+  /// 页面本身。
+  page,
+}
+
 /// 按路由进度 [animation]（0 = 卡片，1 = 整页）把页面画成从卡片展开的容器。
 ///
 /// 只在绘制阶段逐帧变化：页面按整屏尺寸布局一次，之后每帧只改裁切、缩放与
 /// 透明度，页面本身既不重建也不重新布局（它在路由的 RepaintBoundary 里，连
 /// 重绘都不需要，只是换一层变换重新合成）。进度为 1 时原样绘制页面，不留
-/// 任何额外图层。
+/// 任何额外图层，[backdrop] 也不再绘制。
 ///
 /// 每帧自下而上：
 /// 1. 下层页面上的遮罩（`scrim`），随进度加深；
 /// 2. 容器：圆角矩形从卡片插值到整屏，圆角从卡片圆角到 0，里面依次是
-///    - 底色（不透明，盖住下层的原卡片，交叉淡入时不透出重影）；
-///    - 页面：按整屏布局，宽度缩放到容器宽、顶边对齐容器顶边，随进度淡入；
+///    - 底（[backdrop]）：按整屏布局、与页面同样缩放贴顶；
+///    - 页面：按整屏布局，宽度缩放到容器宽、顶边对齐容器顶边；底与页面
+///      在同一透明度层里随进度淡入，返回末段一起淡去；
 ///    - 卡片画面：同样按容器宽度缩放、顶边对齐，随进度淡出。
+///
+/// 底与页面必须一起消退：卡片画面只按宽度缩放，容器高度却独立插值，返回
+/// 最后一段容器仍比卡片高。单独淡去页面而保持底不透明，就会在卡片下方拖
+/// 出一截白底（有背景图时是一截背景图），直到路由卸载才突然消失。一起淡去
+/// 后，这一段直接露出列表，最后只剩卡片画面落回来源。
 ///
 /// 透明度只按进度取值（不按时间），返回途中再点进入、进入途中返回都不会
 /// 跳变。无处可回时（[ContainerTransformGeometry.fallback]）终点是屏幕中央
-/// 缩小一点的矩形，底色与页面作为一整层一起淡出。
-class ContainerTransformTransition extends SingleChildRenderObjectWidget {
+/// 缩小一点的矩形，底与页面作为一整层一起淡出。
+class ContainerTransformTransition
+    extends
+        SlottedMultiChildRenderObjectWidget<ContainerTransformSlot, RenderBox> {
   const ContainerTransformTransition({
     super.key,
     required this.animation,
     required this.geometry,
     required this.scrimColor,
-    required this.surfaceColor,
-    super.child,
+    required this.backdrop,
+    required this.child,
   });
 
   final Animation<double> animation;
   final ContainerTransformGeometry geometry;
   final Color scrimColor;
-  final Color surfaceColor;
+
+  /// 容器的底，应与页面自己的背景一致（见类注释）；不参与点按与读屏。
+  final Widget backdrop;
+
+  /// 页面。
+  final Widget child;
+
+  @override
+  Iterable<ContainerTransformSlot> get slots => ContainerTransformSlot.values;
+
+  @override
+  Widget? childForSlot(ContainerTransformSlot slot) => switch (slot) {
+    ContainerTransformSlot.backdrop => backdrop,
+    ContainerTransformSlot.page => child,
+  };
 
   @override
   RenderContainerTransform createRenderObject(BuildContext context) {
@@ -78,20 +109,18 @@ class ContainerTransformTransition extends SingleChildRenderObjectWidget {
       animation: animation,
       geometry: geometry,
       scrimColor: scrimColor,
-      surfaceColor: surfaceColor,
     );
   }
 
   @override
   void updateRenderObject(
     BuildContext context,
-    RenderContainerTransform renderObject,
+    covariant RenderContainerTransform renderObject,
   ) {
     renderObject
       ..animation = animation
       ..geometry = geometry
-      ..scrimColor = scrimColor
-      ..surfaceColor = surfaceColor;
+      ..scrimColor = scrimColor;
   }
 }
 
@@ -104,7 +133,6 @@ class _Frame {
     required this.transform,
     required this.scrimAlpha,
     required this.groupAlpha,
-    required this.contentAlpha,
     required this.imageAlpha,
     required this.imageRect,
   });
@@ -116,29 +144,30 @@ class _Frame {
   final Matrix4 transform;
   final double scrimAlpha;
 
-  /// 底色 + 页面整体的透明度：只在无处可回时小于 1。
+  /// 底 + 页面整体的透明度，卡片画面另外叠在上方。
   final double groupAlpha;
-  final double contentAlpha;
   final double imageAlpha;
 
   /// 卡片画面此刻画在哪；没有画面时为 null。
   final Rect? imageRect;
 }
 
-class RenderContainerTransform extends RenderProxyBox {
+/// 布局与页面相同（页面按父级约束布局，底按页面尺寸铺满）；点按、读屏与
+/// 停稳后的绘制都只有页面，底只在转场途中画。
+class RenderContainerTransform extends RenderBox
+    with SlottedContainerRenderObjectMixin<ContainerTransformSlot, RenderBox> {
   RenderContainerTransform({
     required this._animation,
     required this._geometry,
     required this._scrimColor,
-    required this._surfaceColor,
   });
 
   /// 下层页面上遮罩的最大不透明度（M3 的遮罩约 32%，这里略轻：容器本身已
   /// 足够醒目，只需把下层压下去一点）。
   static const double _maxScrim = 0.28;
 
-  /// 页面淡入的进度区间：展开时约在 30–130ms 之间（强调曲线前段走得快），
-  /// 与卡片画面的淡出交叠，中间露出的是不透明底色而不是下层页面。
+  /// 页面连同底一起显隐。返回末段进度小于 0.05 时必须几乎透明，不能让
+  /// 比卡片高的容器底停留到动画结束。区间仍只依赖进度，途中反向不跳变。
   static const Interval _contentFade = Interval(0.05, 0.75);
 
   /// 卡片画面淡出的进度区间：比页面淡入早开始、早结束。
@@ -183,23 +212,62 @@ class RenderContainerTransform extends RenderProxyBox {
     markNeedsPaint();
   }
 
-  Color _surfaceColor;
-  set surfaceColor(Color value) {
-    if (value == _surfaceColor) {
-      return;
-    }
-    _surfaceColor = value;
-    markNeedsPaint();
-  }
+  RenderBox? get _backdrop => childForSlot(ContainerTransformSlot.backdrop);
+  RenderBox? get _page => childForSlot(ContainerTransformSlot.page);
 
   final LayerHandle<ClipRRectLayer> _clipLayer = LayerHandle<ClipRRectLayer>();
   final LayerHandle<OpacityLayer> _groupLayer = LayerHandle<OpacityLayer>();
-  final LayerHandle<OpacityLayer> _contentLayer = LayerHandle<OpacityLayer>();
   final LayerHandle<TransformLayer> _transformLayer =
       LayerHandle<TransformLayer>();
 
   /// 进度到 1（整页）时与普通页面完全相同。
   bool get _settled => _animation.value >= 1;
+
+  @override
+  void performLayout() {
+    final page = _page;
+    if (page == null) {
+      size = constraints.smallest;
+    } else {
+      page.layout(constraints, parentUsesSize: true);
+      size = constraints.constrain(page.size);
+    }
+    // 底与页面同尺寸：缩放、贴顶的方式相同，背景图的取景与页面背景一致。
+    _backdrop?.layout(BoxConstraints.tight(size));
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final page = _page;
+    return page == null
+        ? constraints.smallest
+        : constraints.constrain(page.getDryLayout(constraints));
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      _page?.getMinIntrinsicWidth(height) ?? 0;
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _page?.getMaxIntrinsicWidth(height) ?? 0;
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _page?.getMinIntrinsicHeight(width) ?? 0;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _page?.getMaxIntrinsicHeight(width) ?? 0;
+
+  @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {
+    // 底只是转场时的画面，读屏只看页面。
+    final page = _page;
+    if (page != null) {
+      visitor(page);
+    }
+  }
 
   @override
   void attach(PipelineOwner owner) {
@@ -224,7 +292,6 @@ class RenderContainerTransform extends RenderProxyBox {
   void _clearLayers() {
     _clipLayer.layer = null;
     _groupLayer.layer = null;
-    _contentLayer.layer = null;
     _transformLayer.layer = null;
   }
 
@@ -270,11 +337,10 @@ class RenderContainerTransform extends RenderProxyBox {
       radius: lerpDouble(closedRadius, 0, p)!,
       transform: transform,
       scrimAlpha: _maxScrim * p,
-      groupAlpha: fallback ? p : 1,
-      // 进入时页面一开始就以近乎透明的一层画出来（被不透明的卡片画面整块
-      // 盖住，看不见）：页面的首次绘制与栅格化落在起步前的等待帧里，而不是
-      // 淡入开始的那一帧。
-      contentAlpha: fallback ? 1 : math.max(_contentFade.transform(p), 1 / 255),
+      // 保留 1/255 的预绘制层：起步等待帧里页面就完成首次绘制与栅格化，
+      // 起点处被不透明卡片截图盖住。淡去时同样只剩这一不可感知的余量，
+      // 不再把不透明的容器底拖到收回结束。
+      groupAlpha: fallback ? p : math.max(_contentFade.transform(p), 1 / 255),
       imageAlpha: imageAlpha,
       imageRect: imageRect,
     );
@@ -282,7 +348,7 @@ class RenderContainerTransform extends RenderProxyBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    final child = this.child;
+    final child = _page;
     if (child == null) {
       return;
     }
@@ -322,34 +388,21 @@ class RenderContainerTransform extends RenderProxyBox {
     _Frame frame,
     RenderBox child,
   ) {
+    final backdrop = _backdrop;
     void paintPage(PaintingContext context, Offset offset) {
-      context.canvas.drawRect(
-        frame.rect.shift(offset),
-        Paint()..color = _surfaceColor.withValues(alpha: 1),
+      // 底与页面共同进入外侧的透明度层，页内玻璃仍能采到先画好的页面背景。
+      _transformLayer.layer = context.pushTransform(
+        needsCompositing,
+        offset,
+        frame.transform,
+        (PaintingContext context, Offset offset) {
+          if (backdrop != null) {
+            context.paintChild(backdrop, offset);
+          }
+          context.paintChild(child, offset);
+        },
+        oldLayer: _transformLayer.layer,
       );
-      void paintTransformed(PaintingContext context, Offset offset) {
-        _transformLayer.layer = context.pushTransform(
-          needsCompositing,
-          offset,
-          frame.transform,
-          (PaintingContext context, Offset offset) =>
-              context.paintChild(child, offset),
-          oldLayer: _transformLayer.layer,
-        );
-      }
-
-      final contentAlpha = (frame.contentAlpha * 255).round();
-      if (contentAlpha >= 255) {
-        _contentLayer.layer = null;
-        paintTransformed(context, offset);
-      } else {
-        _contentLayer.layer = context.pushOpacity(
-          offset,
-          math.max(contentAlpha, 1),
-          paintTransformed,
-          oldLayer: _contentLayer.layer,
-        );
-      }
     }
 
     final groupAlpha = (frame.groupAlpha * 255).round();
@@ -365,7 +418,6 @@ class RenderContainerTransform extends RenderProxyBox {
       );
     } else {
       _groupLayer.layer = null;
-      _contentLayer.layer = null;
       _transformLayer.layer = null;
     }
 
@@ -385,10 +437,17 @@ class RenderContainerTransform extends RenderProxyBox {
   }
 
   @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    // 只在停稳后经 [hitTest] 走到这里：底不接点按。
+    return _page?.hitTest(result, position: position) ?? false;
+  }
+
+  @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
     if (_settled) {
       return super.hitTest(result, position: position);
     }
+    final child = _page;
     if (!size.contains(position)) {
       return false;
     }
@@ -396,9 +455,7 @@ class RenderContainerTransform extends RenderProxyBox {
     // 篇。页面已完全显出时，容器内的点按照常交给页面（展开末段长长的减速
     // 里就能开始滑动）。
     final frame = _frame();
-    if (frame.contentAlpha >= 1 &&
-        frame.groupAlpha >= 1 &&
-        frame.rect.contains(position)) {
+    if (frame.groupAlpha >= 1 && frame.rect.contains(position)) {
       result.addWithPaintTransform(
         transform: frame.transform,
         position: position,
@@ -412,6 +469,7 @@ class RenderContainerTransform extends RenderProxyBox {
 
   @override
   void applyPaintTransform(RenderBox child, Matrix4 transform) {
+    // 两个子节点都画在原点；转场途中同样套着容器的变换。
     if (!_settled) {
       transform.multiply(_frame().transform);
     }

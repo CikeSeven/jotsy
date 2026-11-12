@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../app_surface/models/app_surface_enums.dart';
+import '../../../app_surface/widgets/app_page_background.dart';
 import '../../../widgets/container_transform/container_transform_route.dart';
 import '../../../widgets/container_transform/container_transform_source.dart';
 import '../../../widgets/image_viewer_hero.dart';
@@ -259,6 +261,9 @@ class DiaryCard extends StatelessWidget {
                               : ContainerTransformPageRoute<void>(
                                   builder: page,
                                   origin: origin,
+                                  backdrop: const AppPageBackgroundFill(
+                                    area: AppBackgroundArea.preview,
+                                  ),
                                 ),
                         );
                         return;

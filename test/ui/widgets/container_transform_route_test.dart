@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
+
+import '../app_surface/app_surface_test_images.dart';
 
 /// 容器展开路由：从卡片展开、首帧画完才起步、停稳后与普通页面无异、返回时
 /// 缩回卡片（找不到卡片或页面说不回时原地淡出）、转场期间关闭 Hero。
@@ -16,6 +19,7 @@ void main() {
     bool disableAnimations = false,
     bool Function(Object? result)? returnsToOrigin,
     List<ContainerTransformOrigin?>? captured,
+    GlobalKey? sceneKey,
   }) async {
     final results = <Object?>[];
     tester.view.physicalSize = const Size(400, 800);
@@ -67,6 +71,9 @@ void main() {
     }
     await tester.pumpWidget(
       MaterialApp(
+        builder: sceneKey == null
+            ? null
+            : (context, child) => RepaintBoundary(key: sceneKey, child: child),
         home: Scaffold(
           body: Stack(children: <Widget>[card('a', 200), card('b', 340)]),
         ),
@@ -84,6 +91,122 @@ void main() {
         find.byType(ContainerTransformTransition),
       )
       .geometry;
+
+  void expectSourceVisible(WidgetTester tester, String tag, bool visible) {
+    final source = tester.renderObject(
+      find.ancestor(
+        of: find.text('card $tag', skipOffstage: false),
+        matching: find.byType(ContainerTransformSource, skipOffstage: false),
+      ),
+    );
+    final cardPaint = paints..rect(color: const Color(0xFF009688));
+    expect(source, visible ? cardPaint : isNot(cardPaint));
+  }
+
+  testWidgets('the first offstage frame keeps the original card on screen', (
+    tester,
+  ) async {
+    final scene = GlobalKey();
+    await pumpList(tester, sceneKey: scene);
+    Future<int> cardPixel() async => (await tester.runAsync(() async {
+      final boundary =
+          scene.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+      final image = await boundary.toImage();
+      try {
+        return (await pixelReader(image))(200, 280).toARGB32();
+      } finally {
+        image.dispose();
+      }
+    }))!;
+    final before = await cardPixel();
+    await tester.tap(find.text('card a'));
+    // Hero 首帧把目的路由放到 offstage：这帧还没有飞行画面接替来源。
+    // 连续三帧采集真正上屏的合成结果，不能只检查帧末的 widget 状态。
+    for (var frame = 0; frame < 3; frame++) {
+      await tester.pump();
+      expect(await cardPixel(), before, reason: 'opening frame $frame');
+    }
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('only the flying card paints until it reaches its source', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    expectSourceVisible(tester, 'a', true);
+    await tester.tap(find.text('card a'));
+    await tester.pump();
+    await tester.pump();
+    expectSourceVisible(tester, 'a', false);
+    expectSourceVisible(tester, 'b', true);
+
+    await tester.pumpAndSettle();
+    expectSourceVisible(tester, 'a', true);
+
+    Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(routeOf(tester).animation!.value, inExclusiveRange(0, 1));
+    expectSourceVisible(tester, 'a', false);
+    expectSourceVisible(tester, 'b', true);
+
+    await tester.pumpAndSettle();
+    expectSourceVisible(tester, 'a', true);
+  });
+
+  testWidgets('removing a route during expansion restores the source card', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tester.tap(find.text('card a'));
+    await tester.pump();
+    await tester.pump();
+    expectSourceVisible(tester, 'a', false);
+
+    final context = tester.element(find.byType(_DetailPage));
+    Navigator.of(context).removeRoute(routeOf(tester));
+    await tester.pumpAndSettle();
+    expectSourceVisible(tester, 'a', true);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'losing the return target during expansion releases the old source',
+    (tester) async {
+      await pumpList(tester);
+      await tester.tap(find.text('card a'));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expectSourceVisible(tester, 'a', false);
+
+      final context = tester.element(find.byType(_DetailPage));
+      ContainerTransformPageRoute.setReturnTag(context, 'missing');
+      Navigator.of(context).pop();
+      await tester.pump();
+      await tester.pump();
+      expectSourceVisible(tester, 'a', true);
+      expect(geometryOf(tester).fallback, isTrue);
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets(
+    'disposing the navigator during return setup releases the source safely',
+    (tester) async {
+      await pumpList(tester);
+      await tester.tap(find.text('card a'));
+      await tester.pumpAndSettle();
+      Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+      // 截图与隐藏来源安排在帧末；在回调执行前移除整个导航器，不能再访问
+      // 已销毁的来源、路由控制器或截图。
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('a tap captures the card rect and a snapshot of it', (
     tester,
@@ -236,7 +359,10 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(geometryOf(tester).closed!.rect, cardRect.translate(0, 140));
+    expectSourceVisible(tester, 'a', true);
+    expectSourceVisible(tester, 'b', false);
     await tester.pumpAndSettle();
+    expectSourceVisible(tester, 'b', true);
   });
 
   testWidgets('without a card to return to the page fades out in place', (
@@ -285,14 +411,18 @@ void main() {
     await tester.pump(const Duration(milliseconds: 120));
     final route = routeOf(tester);
     final before = route.animation!.value;
+    final openingShot = geometryOf(tester).closed;
     expect(before, inExclusiveRange(0, 1));
 
     Navigator.of(tester.element(find.byType(_DetailPage))).pop();
     await tester.pump(const Duration(milliseconds: 16));
     // 等待下层重新排版的那一帧不动：进度停在返回时的位置，不跳变。
     expect(route.animation!.value, closeTo(before, 0.001));
+    expect(geometryOf(tester).closed, same(openingShot));
+    expectSourceVisible(tester, 'a', false);
     await tester.pumpAndSettle();
     expect(find.byType(_DetailPage), findsNothing);
+    expectSourceVisible(tester, 'a', true);
   });
 
   testWidgets('with reduced motion no origin is captured', (tester) async {

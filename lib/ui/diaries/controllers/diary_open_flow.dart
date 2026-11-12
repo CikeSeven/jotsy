@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../app_surface/models/app_surface_enums.dart';
+import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/container_transform/container_transform_route.dart';
 import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
@@ -76,6 +78,9 @@ Future<DiaryPreviewResult?> openDiaryPage(
         : ContainerTransformPageRoute<DiaryPreviewResult?>(
             builder: page,
             origin: origin,
+            backdrop: const AppPageBackgroundFill(
+              area: AppBackgroundArea.preview,
+            ),
             returnsToOrigin: (DiaryPreviewResult? result) => result == null,
           ),
   );

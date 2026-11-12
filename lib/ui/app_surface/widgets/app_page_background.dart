@@ -177,6 +177,30 @@ class AppPageBackgroundCopy extends StatelessWidget {
   }
 }
 
+/// 单独画一整块 [area] 区域的页面背景，不放页面内容：与在该区域打开的
+/// 页面背景看起来一样（同一份设置、同一张已解码的图、同样的 cover 对齐与
+/// 遮罩），且始终不透明——没有背景时是页面底色，图片还在解码、正在淡入
+/// 时下面也垫着页面底色。
+///
+/// 用途：页面之外需要一块“页面的底”——容器展开（`ContainerTransformPageRoute.backdrop`）
+/// 时垫在页面下面，与页面作为一整层显隐，不能单独保持不透明地留到收回
+/// 末段。按区域读设置，不随页面里的内容（如预览页各篇的纸色、
+/// 按基调染色的遮罩）变化，那些在页面淡入时自然过渡过去。
+class AppPageBackgroundFill extends StatelessWidget {
+  const AppPageBackgroundFill({super.key, required this.area});
+
+  final AppBackgroundArea area;
+
+  @override
+  Widget build(BuildContext context) {
+    // 最下面垫页面底色：没有背景、图片还在解码或正在淡入时也不透出下层。
+    return ColoredBox(
+      color: AppPageBackdrop.plain(Theme.of(context).colorScheme).pageColor,
+      child: AppPageBackground(area: area, child: const SizedBox.expand()),
+    );
+  }
+}
+
 /// 把背景图层交给 [AppPageBackgroundCopy]。`layers` 每次构建都是新的只读
 /// 列表，按元素比较：图层不变时不通知依赖者。
 class _AppPageBackgroundLayersScope extends InheritedWidget {

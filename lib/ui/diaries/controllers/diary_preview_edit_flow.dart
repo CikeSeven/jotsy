@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../app_surface/models/app_surface_enums.dart';
+import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/container_transform/container_transform_route.dart';
 import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
@@ -49,6 +51,10 @@ Future<bool> openDiaryEditorFromPreview(
         : ContainerTransformPageRoute<Object?>(
             builder: page,
             origin: origin,
+            // 编辑已有日记与预览页同一背景区域（见 EditDiaryPage 的背景）。
+            backdrop: const AppPageBackgroundFill(
+              area: AppBackgroundArea.preview,
+            ),
             returnsToOrigin: (Object? result) => result != true,
           ),
   );

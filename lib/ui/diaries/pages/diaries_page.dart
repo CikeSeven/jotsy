@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollDirection;
+import 'package:flutter/rendering.dart' show RenderSliver, ScrollDirection;
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,6 +55,8 @@ import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../controllers/diary_card_menu_flows.dart';
+import '../controllers/diary_list_start_scroll.dart';
+import '../controllers/diary_list_switch_motion.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_preview_edit_flow.dart';
 import '../controllers/tag_filter_multi_select_tip.dart';
@@ -68,6 +70,7 @@ import '../providers/diary_timeline_provider.dart';
 import '../viewmodels/diaries_page_layout.dart';
 import '../viewmodels/diary_selection_summary.dart';
 import '../viewmodels/diary_view_preferences.dart';
+import '../viewmodels/tag_switch_direction.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_tag_batch_sheet.dart';
 import '../sections/diary_view_options_menu.dart';
@@ -75,6 +78,7 @@ import '../widgets/diaries_fast_scroller.dart';
 import '../widgets/diaries_header_sliver.dart';
 import '../widgets/diary_card/diary_card_reading_ring.dart';
 import '../widgets/diary_detail_pane/diary_detail_pane.dart';
+import '../widgets/diary_list_switch_reveal.dart';
 import '../widgets/diary_preview/diary_pager_view.dart';
 import '../widgets/diary_preview/diary_preview_dialogs.dart';
 import '../widgets/diary_preview/diary_preview_host.dart';
@@ -135,8 +139,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _restoreHintDuration = Duration(seconds: 2);
   static const Duration _listItemTransitionDuration =
       DiariesListSection.itemTransitionDuration;
-  static const Duration _listRefreshFadeOutDuration = ExpressiveMotion.fast;
-  static const Duration _listRefreshFadeInDuration = ExpressiveMotion.medium;
   static const double _fabToggleScrollThreshold = 26;
   static const int _diaryPageSize = diaryFirstPageSize;
   static const double _loadMoreTriggerExtent = 420;
@@ -179,17 +181,25 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   final HomeTopBarStackLink _topBarLink = HomeTopBarStackLink();
 
   // ==================== 列表整体过渡动画 ====================
-  late final AnimationController _listRefreshPulseController;
+  /// 列表整体切换的退场 / 级联入场（见 [DiaryListSwitchMotion]），逐项经
+  /// [DiaryListSwitchReveal] 读取。
+  late final DiaryListSwitchMotion _listSwitchMotion;
   // 筛选过渡状态（由 DiaryListTransitionCoordinator 读写）：
-  // - generation：每次筛选变更自增，过渡只为最新一轮淡入；
-  // - held：淡出期间冻结的展示列表，防止新旧数据在半透明时互换；
-  // - scrollToTop：本轮过渡释放冻结时让列表回到顶部（切换排序时置位）；
+  // - generation：每次筛选变更自增，过渡只为最新一轮入场；
+  // - held：退场期间冻结的展示列表，防止新旧数据在半透明时互换；
+  // - heldTagStripPosition：冻结时筛选在标签条上的位置，与最新位置比较定
+  //   本轮的左右方向（listSwitchDirection，见 tagSwitchDirection）；
+  // - scrollToTop：本轮过渡换数据时让列表回到最顶（切换排序、日记本时置位）；
+  // - scrollToListStart：本轮过渡换数据时回到列表开头、刊头不动（切换标签）；
   // - lastDisplayed/currentQuery：build 写入，供冻结与等待首帧数据使用。
   int _filterMutationGeneration = 0;
   Future<void>? _queuedFilterTransition;
   Completer<void>? _filterQueryWaiter;
   List<DiaryWithTags>? _heldDisplayedItems;
+  int? _heldTagStripPosition;
+  int _listSwitchDirection = 0;
   bool _scrollToTopOnFilterRelease = false;
+  bool _scrollToListStartOnFilterRelease = false;
   List<DiaryWithTags> _lastDisplayedItems = const <DiaryWithTags>[];
   DiaryPageQuery? _currentDiaryPageQuery;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
@@ -310,13 +320,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     widget.onSearchActionChanged?.call(_controller.openSearchPage);
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     unawaited(_controller.restoreRememberedTagFiltersOnStartup());
-    // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。控制器值直接作为
-    // 不透明度，曲线只在 animateTo 中给一次，避免与 CurvedAnimation 叠加。
-    _listRefreshPulseController = AnimationController(
-      vsync: this,
-      duration: _listRefreshFadeInDuration,
-      value: 1,
-    );
+    _listSwitchMotion = DiaryListSwitchMotion(vsync: this);
   }
 
   @override
@@ -345,7 +349,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _tagFilterExpansionController.dispose();
     _topBarLink.dispose();
     _pullHint.dispose();
-    _listRefreshPulseController.dispose();
+    _listSwitchMotion.dispose();
     super.dispose();
   }
 
@@ -476,7 +480,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           _readingSelection.syncWithList(latestVisibleItems);
         }
 
-        // 筛选过渡淡出期间优先展示冻结列表，新查询首帧数据到达后才释放。
+        // 筛选过渡退场期间优先展示冻结列表，新查询首帧数据到达后才释放。
         final displayedItems =
             _heldDisplayedItems ?? latestVisibleItems ?? _cachedVisibleItems;
         _lastDisplayedItems = displayedItems;
@@ -500,19 +504,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               : DiaryCardMode.list,
         );
         final cardSideMargin = cardModeStyle.sideMargin;
-        // 筛选切换的整列表刷新淡入：实色卡片照旧整块套 SliverFadeTransition；
-        // 玻璃卡片不能进透明度层（背景模糊会采不到页面，淡入途中先闪一块
-        // 没有模糊的底），改由 DiariesListSection 按同一进度逐项淡入
-        // （revealProgress），加载与错误占位各自套淡入。
-        final glassCards = cardStyle.surface.isGlass;
-        Widget refreshFade(Widget sliver) => SliverFadeTransition(
-          opacity: _listRefreshPulseController,
-          sliver: sliver,
+        // 列表整体切换的进出场逐项进行（DiariesListSection 按 switchMotion
+        // 给每张卡片套 DiaryListSwitchReveal，玻璃卡片不进透明度层）；加载与
+        // 错误占位同样跟着走，不在退场后的空白里硬切出现。
+        Widget switchReveal(Widget child) => DiaryListSwitchReveal(
+          motion: _listSwitchMotion,
+          index: 0,
+          child: child,
         );
-        Widget wrapListFade(Widget sliver) =>
-            glassCards ? sliver : refreshFade(sliver);
-        Widget wrapPlaceholderFade(Widget sliver) =>
-            glassCards ? refreshFade(sliver) : sliver;
         final tagHeaderContent = tagsAsync.when(
           data: (tags) {
             final visibleTagFilters = _resolveTagFiltersForDisplay(
@@ -883,126 +882,117 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                         ),
                         KeyedSubtree(
                           key: _listSliverKey,
-                          child: wrapListFade(
-                            SliverPadding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: contentInset,
-                              ),
-                              sliver:
-                                  // 数据状态优先级：
-                                  // 1) 首屏加载且无缓存；
-                                  // 2) 首屏错误且无缓存；
-                                  // 3) 渲染列表/空态内容。
-                                  diariesAsync.isLoading &&
+                          child: SliverPadding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: contentInset,
+                            ),
+                            sliver:
+                                // 数据状态优先级：
+                                // 1) 首屏加载且无缓存；
+                                // 2) 首屏错误且无缓存；
+                                // 3) 渲染列表/空态内容。
+                                diariesAsync.isLoading && displayedItems.isEmpty
+                                ? SliverFillRemaining(
+                                    hasScrollBody: false,
+                                    child: switchReveal(
+                                      const DelayedLoadingIndicator(size: 22),
+                                    ),
+                                  )
+                                : diariesAsync.hasError &&
                                       displayedItems.isEmpty
-                                  ? wrapPlaceholderFade(
-                                      const SliverFillRemaining(
-                                        hasScrollBody: false,
-                                        child: DelayedLoadingIndicator(
-                                          size: 22,
-                                        ),
-                                      ),
-                                    )
-                                  : diariesAsync.hasError &&
-                                        displayedItems.isEmpty
-                                  ? wrapPlaceholderFade(
-                                      SliverFillRemaining(
-                                        hasScrollBody: false,
-                                        child: Center(
-                                          child: Text(
-                                            context.l10n.autoT0127(
-                                              diariesAsync.asError?.error
-                                                      .toString() ??
-                                                  '',
-                                            ),
+                                ? SliverFillRemaining(
+                                    hasScrollBody: false,
+                                    child: switchReveal(
+                                      Center(
+                                        child: Text(
+                                          context.l10n.autoT0127(
+                                            diariesAsync.asError?.error
+                                                    .toString() ??
+                                                '',
                                           ),
                                         ),
                                       ),
-                                    )
-                                  : DiariesListSection(
-                                      key: ValueKey<String>(
-                                        'diaries_list_${_layoutMode.name}',
-                                      ),
-                                      diaries: displayedItems,
-                                      commentCounts:
-                                          ref
-                                              .watch(diaryCommentCountsProvider)
-                                              .value ??
-                                          const <String, int>{},
-                                      layoutMode: _layoutMode,
-                                      availableWidth: listWidth,
-                                      minWaterfallColumns:
-                                          layout.minWaterfallColumns,
-                                      isSelectionMode: _isSelectionMode,
-                                      selectedDiaryIds: _selectedDiaryIds,
-                                      // 双栏：卡片带阅读环，点按在右栏阅读（未
-                                      // 解封胶囊也在右栏显示封存页），不抓取
-                                      // 封面做共享元素。
-                                      readingRing: twoPane,
-                                      readingDiaryId: readingId,
-                                      readingCardLocator: _readingCardLocator,
-                                      enableCoverHero: !twoPane,
-                                      opensLockedCapsulePage: !twoPane,
-                                      maxVisibleTags: diaryCardTagLimit,
-                                      cardStyle: cardStyle,
-                                      revealProgress: glassCards
-                                          ? _listRefreshPulseController
-                                          : null,
-                                      moodPalette: ref.watch(
-                                        diaryMoodPaletteProvider,
-                                      ),
-                                      pendingHideDiaryIds: _pendingHideDiaryIds,
-                                      appearingDiaryIds: _appearingDiaryIds,
-                                      onCreate: () => unawaited(
-                                        _controller
-                                            .openCreateEditorWithDraftPrompt(),
-                                      ),
-                                      onOpenEditor: _controller.openDiary,
-                                      onToggleSelection:
-                                          (noteId, forceSelect) =>
-                                              _controller.toggleSelection(
-                                                noteId,
-                                                forceSelect: forceSelect,
-                                              ),
-                                      onArchiveDiary: swipeArchiveEnabled
-                                          ? (diaryId) => unawaited(
-                                              _controller.archiveDiaryBySwipe(
-                                                diaryId,
-                                              ),
-                                            )
-                                          : null,
-                                      isSearchResultEmpty: false,
-                                      selectionAnchor: _selectionAnchor,
-                                      menuActions: _controller.menuActions(
-                                        notebooksEnabled: notebooksEnabled,
-                                      ),
-                                      sectionHeaderBuilder: _bookSectionHeaders(
-                                        scopeResolution,
-                                        displayedItems,
-                                      ),
-                                      // 日记本里没筛选时的空列表：“这本还空着”。
-                                      emptyState:
-                                          currentNotebook != null &&
-                                              filterState.selectedTagIds.isEmpty
-                                          ? NotebookEmptyState(
-                                              onWriteFirst:
-                                                  manualNotebook == null
-                                                  ? null
-                                                  : () => unawaited(
-                                                      _controller
-                                                          .openCreateEditorWithDraftPrompt(),
-                                                    ),
-                                              onPickExisting:
-                                                  manualNotebook == null
-                                                  ? null
-                                                  : () => unawaited(
-                                                      _scopeController
-                                                          .openAddDiaries(),
-                                                    ),
-                                            )
-                                          : null,
                                     ),
-                            ),
+                                  )
+                                : DiariesListSection(
+                                    key: ValueKey<String>(
+                                      'diaries_list_${_layoutMode.name}',
+                                    ),
+                                    diaries: displayedItems,
+                                    commentCounts:
+                                        ref
+                                            .watch(diaryCommentCountsProvider)
+                                            .value ??
+                                        const <String, int>{},
+                                    layoutMode: _layoutMode,
+                                    availableWidth: listWidth,
+                                    minWaterfallColumns:
+                                        layout.minWaterfallColumns,
+                                    isSelectionMode: _isSelectionMode,
+                                    selectedDiaryIds: _selectedDiaryIds,
+                                    // 双栏：卡片带阅读环，点按在右栏阅读（未
+                                    // 解封胶囊也在右栏显示封存页），不抓取
+                                    // 封面做共享元素。
+                                    readingRing: twoPane,
+                                    readingDiaryId: readingId,
+                                    readingCardLocator: _readingCardLocator,
+                                    enableCoverHero: !twoPane,
+                                    opensLockedCapsulePage: !twoPane,
+                                    maxVisibleTags: diaryCardTagLimit,
+                                    cardStyle: cardStyle,
+                                    switchMotion: _listSwitchMotion,
+                                    moodPalette: ref.watch(
+                                      diaryMoodPaletteProvider,
+                                    ),
+                                    pendingHideDiaryIds: _pendingHideDiaryIds,
+                                    appearingDiaryIds: _appearingDiaryIds,
+                                    onCreate: () => unawaited(
+                                      _controller
+                                          .openCreateEditorWithDraftPrompt(),
+                                    ),
+                                    onOpenEditor: _controller.openDiary,
+                                    onToggleSelection: (noteId, forceSelect) =>
+                                        _controller.toggleSelection(
+                                          noteId,
+                                          forceSelect: forceSelect,
+                                        ),
+                                    onArchiveDiary: swipeArchiveEnabled
+                                        ? (diaryId) => unawaited(
+                                            _controller.archiveDiaryBySwipe(
+                                              diaryId,
+                                            ),
+                                          )
+                                        : null,
+                                    isSearchResultEmpty: false,
+                                    selectionAnchor: _selectionAnchor,
+                                    menuActions: _controller.menuActions(
+                                      notebooksEnabled: notebooksEnabled,
+                                    ),
+                                    sectionHeaderBuilder: _bookSectionHeaders(
+                                      scopeResolution,
+                                      displayedItems,
+                                    ),
+                                    // 日记本里没筛选时的空列表：“这本还空着”。
+                                    emptyState:
+                                        currentNotebook != null &&
+                                            filterState.selectedTagIds.isEmpty
+                                        ? NotebookEmptyState(
+                                            onWriteFirst: manualNotebook == null
+                                                ? null
+                                                : () => unawaited(
+                                                    _controller
+                                                        .openCreateEditorWithDraftPrompt(),
+                                                  ),
+                                            onPickExisting:
+                                                manualNotebook == null
+                                                ? null
+                                                : () => unawaited(
+                                                    _scopeController
+                                                        .openAddDiaries(),
+                                                  ),
+                                          )
+                                        : null,
+                                  ),
                           ),
                         ),
                         // 还有下一页时常驻一个固定高度的槽位（加载前后

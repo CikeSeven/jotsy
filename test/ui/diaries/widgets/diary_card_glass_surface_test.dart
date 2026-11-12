@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_backdrop.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_list_switch_motion.dart';
 import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
@@ -65,7 +66,7 @@ Future<void> _pump(
   DiaryCardStyle style = _glass,
   AppPageBackdrop? backdrop,
   Set<String> appearing = const <String>{},
-  Animation<double>? revealProgress,
+  DiaryListSwitchMotion? switchMotion,
   bool highContrast = false,
   DiaryLayoutMode layout = DiaryLayoutMode.list,
   bool settle = true,
@@ -83,7 +84,7 @@ Future<void> _pump(
         onToggleSelection: (_, _) {},
         cardStyle: style,
         appearingDiaryIds: appearing,
-        revealProgress: revealProgress,
+        switchMotion: switchMotion,
       ),
     ],
   );
@@ -287,55 +288,70 @@ void main() {
     });
   }
 
-  testWidgets('the list refresh pulse reveals glass cards item by item', (
+  testWidgets('the list switch reveals glass cards without an opacity layer', (
     tester,
   ) async {
     final diary = _diary();
     final id = diary.diary.diaryId;
-    final pulse = AnimationController(vsync: tester, value: 0.4);
-    addTearDown(pulse.dispose);
+    final motion = DiaryListSwitchMotion(vsync: tester);
+    addTearDown(motion.dispose);
+    // 换数据前的那一帧：入场归零，卡片完全不可见。
+    motion.prepareEnter(1);
     await _pump(
       tester,
       diary: diary,
       backdrop: _backdrop(image: true, key: BackdropKey()),
-      revealProgress: pulse,
+      switchMotion: motion,
+      settle: false,
     );
     _expectNoOpacityAbove(tester, id);
-    final contentOpacity = tester.widget<Opacity>(
-      find.descendant(of: _surfaceOf(id), matching: find.byType(Opacity)).first,
-    );
-    expect(contentOpacity.opacity, closeTo(0.4, 0.001));
-    final decoration = _baseOf(tester, id);
-    expect(decoration.color!.a, closeTo(0.55 * 0.4, 0.01));
+    expect(_baseOf(tester, id).color!.a, closeTo(0, 0.001));
 
-    pulse.value = 1;
+    // 入场途中：玻璃表面自己按进度显现，模糊一直开着。
+    motion.enter();
+    // 第一帧只启动计时，之后才按时间推进。
     await tester.pump();
-    final settled = _baseOf(tester, id);
-    expect(settled.color!.a, closeTo(0.55, 0.01));
+    await tester.pump(DiaryListSwitchMotion.itemDuration ~/ 2);
+    _expectNoOpacityAbove(tester, id);
+    final halfway = _baseOf(tester, id).color!.a;
+    expect(halfway, greaterThan(0));
+    expect(halfway, lessThan(0.55));
+    expect(_filter(tester, id).enabled, isTrue);
+
+    await tester.pumpAndSettle();
+    expect(_baseOf(tester, id).color!.a, closeTo(0.55, 0.01));
   });
 
-  testWidgets('solid cards fade the refresh pulse with a FadeTransition', (
+  testWidgets('solid cards follow the list switch through one Opacity', (
     tester,
   ) async {
     final diary = _diary();
     final id = diary.diary.diaryId;
-    final pulse = AnimationController(vsync: tester, value: 0.4);
-    addTearDown(pulse.dispose);
+    final motion = DiaryListSwitchMotion(vsync: tester);
+    addTearDown(motion.dispose);
+    motion.prepareEnter(1);
     await _pump(
       tester,
       diary: diary,
       style: DiaryCardStyle.defaults,
-      revealProgress: pulse,
+      switchMotion: motion,
+      settle: false,
     );
-    final fades = tester
-        .widgetList<FadeTransition>(
-          find.ancestor(
-            of: _surfaceOf(id),
-            matching: find.byType(FadeTransition),
-          ),
+    final hidden = tester
+        .widgetList<Opacity>(
+          find.ancestor(of: _surfaceOf(id), matching: find.byType(Opacity)),
         )
-        .where((fade) => fade.opacity == pulse);
-    expect(fades, hasLength(1));
+        .where((opacity) => opacity.opacity == 0);
+    expect(hidden, hasLength(1));
+
+    motion.enter();
+    await tester.pumpAndSettle();
+    final remaining = tester
+        .widgetList<Opacity>(
+          find.ancestor(of: _surfaceOf(id), matching: find.byType(Opacity)),
+        )
+        .where((opacity) => opacity.opacity < 1);
+    expect(remaining, isEmpty);
   });
 
   testWidgets('settled glass cards render at full opacity', (tester) async {

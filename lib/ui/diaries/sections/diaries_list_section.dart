@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
+import '../controllers/diary_list_switch_motion.dart';
 import '../controllers/diary_pointer_selection.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../models/diary_mood_palette.dart';
@@ -12,6 +13,7 @@ import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_card/diary_card.dart';
 import '../widgets/diary_card/diary_card_context_menu.dart';
 import '../widgets/diary_card/diary_card_reading_ring.dart';
+import '../widgets/diary_list_switch_reveal.dart';
 import '../widgets/diary_swipe_action_item.dart';
 import '../widgets/diary_waterfall_sliver.dart';
 import 'diary_head_section.dart';
@@ -36,8 +38,8 @@ export '../controllers/diary_pointer_selection.dart' show DiarySelectionAnchor;
 ///
 /// 玻璃卡片（`DiaryCardSurfaceStyle.isGlass`）不能放进 Opacity /
 /// FadeTransition（背景模糊采不到页面，见 [GlassReveal]）：本区块里的启动
-/// 编排与进出场在玻璃时改用 [GlassReveal]，宿主的整列表淡入改经
-/// [revealProgress] 交进来逐项处理。实色卡片的结构与改版前相同。
+/// 编排与进出场在玻璃时改用 [GlassReveal]，宿主的整列表切换动效经
+/// [switchMotion] 交进来逐项处理。实色卡片的结构与改版前相同。
 class DiariesListSection extends StatelessWidget {
   /// 单条日记项进入/退出列表时的过渡时长。日记页的隐藏/出现计时器复用
   /// 同一常量，保证动画结束与状态收尾同步。
@@ -73,7 +75,7 @@ class DiariesListSection extends StatelessWidget {
     this.readingCardLocator,
     this.menuActions,
     this.selectionAnchor,
-    this.revealProgress,
+    this.switchMotion,
     this.commentCounts = const <String, int>{},
     this.belowCardBuilder,
     this.highlightTerms = const <String>[],
@@ -175,31 +177,34 @@ class DiariesListSection extends StatelessWidget {
   /// 日历这类没有多选的列表）。手机上忽略。
   final DiarySelectionAnchor? selectionAnchor;
 
-  /// 整列表淡入的进度，由宿主代替外层的 `SliverFadeTransition` 交进来（日记
-  /// 页筛选切换的刷新脉冲在卡片为玻璃时这样做）。非 null 时本区块逐项淡入：
-  /// 玻璃卡片经 [GlassRevealTransition]，实色卡片、分组标题与空态经
-  /// FadeTransition。null（默认）时不加任何包装，由宿主自己淡入。
-  final Animation<double>? revealProgress;
+  /// 列表整体切换（日记页的标签筛选、排序、布局与日记本范围）的退场 /
+  /// 级联入场，由宿主交进来。非 null 时每一项经 [DiaryListSwitchReveal]
+  /// 按下标错峰进出：卡片按是否为玻璃决定怎么淡入，分组标题与空态按实色
+  /// 处理，同一篇里的两块位移一致。null（默认，其他列表）时不加任何包装。
+  final DiaryListSwitchMotion? switchMotion;
 
   bool get _glass => cardStyle.surface.isGlass;
 
-  /// 按 [revealProgress] 淡入一块不含玻璃的内容（分组标题、空态）。
-  Widget _fadePlain(Widget child) {
-    final progress = revealProgress;
-    return progress == null
+  /// 让第 [index] 项里一块不含玻璃的内容（分组标题、空态）随列表切换进出。
+  Widget _revealPlain(int index, Widget child) {
+    final motion = switchMotion;
+    return motion == null
         ? child
-        : FadeTransition(opacity: progress, child: child);
+        : DiaryListSwitchReveal(motion: motion, index: index, child: child);
   }
 
-  /// 按 [revealProgress] 淡入一个卡片列表项：玻璃不进透明度层。
-  Widget _revealItem(Widget child) {
-    final progress = revealProgress;
-    if (progress == null) {
+  /// 让第 [index] 项的卡片随列表切换进出：玻璃不进透明度层。
+  Widget _revealItem(int index, Widget child) {
+    final motion = switchMotion;
+    if (motion == null) {
       return child;
     }
-    return _glass
-        ? GlassRevealTransition(progress: progress, child: child)
-        : FadeTransition(opacity: progress, child: child);
+    return DiaryListSwitchReveal(
+      motion: motion,
+      index: index,
+      glass: _glass,
+      child: child,
+    );
   }
 
   /// 启动编排：实色照旧整块 Opacity；玻璃改用不套 Opacity 的
@@ -227,7 +232,8 @@ class DiariesListSection extends StatelessWidget {
     // 空态：根据是否搜索场景展示不同文案。
     if (diaries.isEmpty) {
       return SliverToBoxAdapter(
-        child: _fadePlain(
+        child: _revealPlain(
+          0,
           ColoredBox(
             color: backgroundColor,
             child: Padding(
@@ -279,6 +285,7 @@ class DiariesListSection extends StatelessWidget {
           return KeyedSubtree(
             key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
             child: _revealItem(
+              index,
               _launchReveal(
                 index,
                 _buildDiaryItem(context, diary: diary, resolved: resolved),
@@ -306,8 +313,9 @@ class DiariesListSection extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  if (sectionHeader != null) _fadePlain(sectionHeader),
+                  if (sectionHeader != null) _revealPlain(index, sectionHeader),
                   _revealItem(
+                    index,
                     _buildDiaryItem(context, diary: diary, resolved: resolved),
                   ),
                   if (!isLast) SizedBox(height: modeStyle.cardGap),

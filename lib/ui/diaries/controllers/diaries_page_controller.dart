@@ -85,15 +85,20 @@ class DiariesPageController {
   );
 
   /// 单击标签：只看这一个标签，已是唯一选中的再点一次取消（#196）。写入
-  /// 经过渡协调器排队，确保列表过渡连续。把已选的别的标签换掉时，用户还
+  /// 经过渡协调器排队，确保列表过渡连续：按标签条上的左右位置定进出方向，
+  /// 新列表从开头看起（刊头保持原状）。把已选的别的标签换掉时，用户还
   /// 没长按过就提示一次长按可以多选（频率见 [TagFilterMultiSelectTip]）。
   void selectTagFilter(int tagId) {
     final before = _state.ref.read(diaryFilterProvider).selectedTagIds;
     final replacesOthers = before.any((int id) => id != tagId);
-    transitionCoordinator.queueFilterMutation(() {
-      _state.ref.read(diaryFilterProvider.notifier).selectOnlyTag(tagId);
-      _persistTagFilterMemoryIfNeeded();
-    });
+    transitionCoordinator.queueFilterMutation(
+      () {
+        _state.ref.read(diaryFilterProvider.notifier).selectOnlyTag(tagId);
+        _persistTagFilterMemoryIfNeeded();
+      },
+      directional: true,
+      scrollToListStart: true,
+    );
     if (replacesOthers && _multiSelectTip.takeHint()) {
       final l10n = _state.context.l10n;
       unawaited(
@@ -109,24 +114,29 @@ class DiariesPageController {
   }
 
   /// 长按标签（桌面上也可以按住 Ctrl / ⌘ 点击）：在已选的标签里加上或去掉
-  /// 它，其余保留（多选，同时带有才匹配）。写入同样经过渡协调器排队。
+  /// 它，其余保留（多选，同时带有才匹配）。写入同样经过渡协调器排队；
+  /// 多选没有左右之分，列表纵向进出，同样从开头看起。
   void toggleTagFilter(int tagId, bool selected) {
     _multiSelectTip.markLearned();
     transitionCoordinator.queueFilterMutation(() {
       _state.ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
       _persistTagFilterMemoryIfNeeded();
-    });
+    }, scrollToListStart: true);
   }
 
-  /// 清空所有标签筛选条件。
+  /// 清空所有标签筛选条件：回到最左端的“全部”，新列表从左边进来。
   void clearTagFilters() {
     if (_state.ref.read(diaryFilterProvider).selectedTagIds.isEmpty) {
       return;
     }
-    transitionCoordinator.queueFilterMutation(() {
-      _state.ref.read(diaryFilterProvider.notifier).clearTags();
-      _persistTagFilterMemoryIfNeeded();
-    });
+    transitionCoordinator.queueFilterMutation(
+      () {
+        _state.ref.read(diaryFilterProvider.notifier).clearTags();
+        _persistTagFilterMemoryIfNeeded();
+      },
+      directional: true,
+      scrollToListStart: true,
+    );
   }
 
   /// “记住标签筛选”只记全部日记里的选择：日记本里的筛选各自独立、不落盘。

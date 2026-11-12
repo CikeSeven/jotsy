@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../widgets/container_transform/container_transform_route.dart';
+import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../pages/edit_diary_page.dart';
 import '../providers/diary_detail_provider.dart';
@@ -21,7 +23,9 @@ import 'diary_editor_controller.dart' show Position;
 ///
 /// [initialDetail]：入口已持有的同一篇，编辑页查询返回前直接用它渲染（版式
 /// 与预览页相同，路由滑入时就是完整页面）。[coverHero]：入口抓取的封面
-/// 画面，交给编辑页的头图作共享元素落点，所有权随之转给编辑页。
+/// 画面，交给编辑页的头图作共享元素落点，所有权随之转给编辑页。[origin]：
+/// 从列表直接进编辑页时点按的卡片，编辑页从它展开、返回时缩回去（见
+/// `openDiaryPage`）；从预览页进入时不传，照旧按主题转场。
 Future<bool> openDiaryEditorFromPreview(
   BuildContext context,
   WidgetRef ref,
@@ -29,19 +33,24 @@ Future<bool> openDiaryEditorFromPreview(
   Position? caret,
   DiaryWithTags? initialDetail,
   ImageViewerHero? coverHero,
+  ContainerTransformOrigin? origin,
 }) async {
+  Widget page(BuildContext context) => EditDiaryPage(
+    diaryId: diaryId,
+    entryMode: EditDiaryEntryMode.edit,
+    initialCaret: caret,
+    initialDetail: initialDetail,
+    coverHero: coverHero,
+  );
   final result = await Navigator.of(context).push<Object?>(
-    MaterialPageRoute<Object?>(
-      builder: (BuildContext context) {
-        return EditDiaryPage(
-          diaryId: diaryId,
-          entryMode: EditDiaryEntryMode.edit,
-          initialCaret: caret,
-          initialDetail: initialDetail,
-          coverHero: coverHero,
-        );
-      },
-    ),
+    origin == null
+        ? MaterialPageRoute<Object?>(builder: page)
+        // 在编辑页里删除（返回 true）时不缩回卡片：它随后会从列表里收起。
+        : ContainerTransformPageRoute<Object?>(
+            builder: page,
+            origin: origin,
+            returnsToOrigin: (Object? result) => result != true,
+          ),
   );
   if (result == true) {
     return true;

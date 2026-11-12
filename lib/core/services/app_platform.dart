@@ -132,4 +132,9 @@ abstract final class AppPlatform {
   /// 通知的锁屏可见性（“锁屏时隐藏内容”）：只有 Android 能逐条设置；iOS
   /// 由系统设置统一决定是否在锁屏显示预览。
   static bool get supportsNotificationVisibility => isAndroid;
+
+  /// 点开日记时从卡片展开成整页、返回时缩回卡片（`ContainerTransformPageRoute`）。
+  /// iOS / macOS 不用：那里的页面转场带系统的左缘侧滑返回（Cupertino），换成
+  /// 容器展开就没有侧滑返回了，仍按主题转场推入。
+  static bool get supportsContainerTransform => !isIOS && !isMacOS;
 }

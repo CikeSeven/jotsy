@@ -102,7 +102,7 @@ void main() {
                   day: DateTime(2026, 10, 20),
                   diaries: diaries,
                   maxVisibleTags: SettingsService.defaultDiaryCardTagLimit,
-                  onOpenDiary: (_, _) {},
+                  onOpenDiary: (_, _, _) {},
                 ),
               ),
             ],

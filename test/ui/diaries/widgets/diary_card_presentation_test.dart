@@ -66,7 +66,7 @@ void main() {
               selectedDiaryIds: selectedDiaryIds,
               isSelectionMode: isSelectionMode,
               maxVisibleTags: 3,
-              onOpenEditor: (_, _) {},
+              onOpenEditor: (_, _, _) {},
               onToggleSelection: (_, __) {},
             ),
           ],

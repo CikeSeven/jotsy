@@ -355,7 +355,7 @@ class _SampleList extends ConsumerWidget {
           selectedDiaryIds: const <String>{},
           isSelectionMode: false,
           maxVisibleTags: tagLimit,
-          onOpenEditor: (_, _) {},
+          onOpenEditor: (_, _, _) {},
           onToggleSelection: (_, _) {},
           cardStyle: ref.watch(diaryCardStyleProvider),
           moodPalette: ref.watch(diaryMoodPaletteProvider),

@@ -8,15 +8,16 @@ import '../../../core/database/app_database.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../diaries/sections/diaries_list_section.dart'
-    show DiaryOpenCallback;
+    show DiaryOpenCallback, diaryCardTransitionTag;
 import '../../diaries/viewmodels/diary_card_view_data.dart';
+import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
 import 'calendar_entry_thumbnail.dart';
 
 /// 一篇日记的小卡片：可选缩略图 + 主色眉线 + 标题与摘要（无标题时摘要占两行）。
 ///
 /// 日历“那年今日”横向列表与纪念日详情的“历年这一天”共用；点按经
-/// [onOpenDiary] 打开预览，缩略图作为预览页头图的共享元素。
+/// [onOpenDiary] 打开预览：预览页从这张小卡片展开，缩略图是头图的占位。
 class CalendarDiaryMiniCard extends StatelessWidget {
   const CalendarDiaryMiniCard({
     super.key,
@@ -47,100 +48,114 @@ class CalendarDiaryMiniCard extends StatelessWidget {
         : l10n.autoT0186;
     final cover = viewData.previewCover;
     final anchor = ImageViewerHeroAnchor();
-    final radius = BorderRadius.circular(20);
-    final content = InkWell(
-      onTap: () => onOpenDiary(
-        diary,
-        anchor.capture(tag: diaryCoverHeroTag(diary.diary.diaryId)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.m),
-        child: Row(
-          children: <Widget>[
-            if (cover != null) ...<Widget>[
-              CalendarEntryThumbnail(
-                source: cover,
-                diaryId: diary.diary.diaryId,
-                anchor: anchor,
-                size: 56,
-                radius: 12,
-              ),
-              const SizedBox(width: AppSpacing.m),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    eyebrow,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    title.isEmpty ? summary : title,
-                    maxLines: title.isEmpty ? 2 : 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: title.isEmpty
-                          ? FontWeight.w400
-                          : FontWeight.w700,
-                      color: title.isEmpty
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface,
-                      height: 1.35,
-                    ),
-                  ),
-                  if (title.isNotEmpty)
+    const radiusValue = 20.0;
+    final radius = BorderRadius.circular(radiusValue);
+    // 点按处的 context 在展开来源之内，才能从这里量出卡片、截下画面。
+    final content = Builder(
+      builder: (BuildContext tapContext) => InkWell(
+        onTap: () => onOpenDiary(
+          diary,
+          anchor.capture(tag: diaryCoverHeroTag(diary.diary.diaryId)),
+          ContainerTransformSource.capture(tapContext),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.m),
+          child: Row(
+            children: <Widget>[
+              if (cover != null) ...<Widget>[
+                CalendarEntryThumbnail(
+                  source: cover,
+                  diaryId: diary.diary.diaryId,
+                  anchor: anchor,
+                  size: 56,
+                  radius: 12,
+                ),
+                const SizedBox(width: AppSpacing.m),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
                     Text(
-                      summary,
+                      eyebrow,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      title.isEmpty ? summary : title,
+                      maxLines: title.isEmpty ? 2 : 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: title.isEmpty
+                            ? FontWeight.w400
+                            : FontWeight.w700,
+                        color: title.isEmpty
+                            ? colorScheme.onSurfaceVariant
+                            : colorScheme.onSurface,
+                        height: 1.35,
+                      ),
+                    ),
+                    if (title.isNotEmpty)
+                      Text(
+                        summary,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+    Widget source(Widget card) => ContainerTransformSource(
+      tag: diaryCardTransitionTag(diary.diary.diaryId),
+      borderRadius: radiusValue,
+      child: card,
     );
     if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
       // 小卡片既出现在页面上（那年今日横条），也叠在纪念日详情的卡片里：
       // 不做模糊、只用半透明底，叠在玻璃卡片上时不会同一区域两层模糊；
       // 外侧投影在小块上显得脏，也不画。
-      return SizedBox(
-        width: width,
-        child: AppGlassSurface(
-          component: AppGlassComponent.cards,
-          borderRadius: radius,
-          blur: AppGlassBlur.none,
-          child: content,
+      return source(
+        SizedBox(
+          width: width,
+          child: AppGlassSurface(
+            component: AppGlassComponent.cards,
+            borderRadius: radius,
+            blur: AppGlassBlur.none,
+            child: content,
+          ),
         ),
       );
     }
-    return Container(
-      width: width,
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        border: Border.all(
-          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-          width: 0.8,
+    return source(
+      Container(
+        width: width,
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          border: Border.all(
+            color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+            width: 0.8,
+          ),
+          boxShadow: AppEffects.restingCardShadow(colorScheme),
         ),
-        boxShadow: AppEffects.restingCardShadow(colorScheme),
-      ),
-      child: Material(
-        color: ExpressiveSurfaces.cardColor(colorScheme),
-        borderRadius: radius,
-        clipBehavior: Clip.antiAlias,
-        child: content,
+        child: Material(
+          color: ExpressiveSurfaces.cardColor(colorScheme),
+          borderRadius: radius,
+          clipBehavior: Clip.antiAlias,
+          child: content,
+        ),
       ),
     );
   }

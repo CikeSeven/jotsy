@@ -79,7 +79,7 @@ Future<void> _pump(
         selectedDiaryIds: const <String>{},
         isSelectionMode: false,
         maxVisibleTags: 3,
-        onOpenEditor: (_, _) {},
+        onOpenEditor: (_, _, _) {},
         onToggleSelection: (_, _) {},
         cardStyle: style,
         appearingDiaryIds: appearing,

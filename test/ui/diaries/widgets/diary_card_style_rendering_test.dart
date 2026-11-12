@@ -75,7 +75,10 @@ Future<void> _pump(
               selectedDiaryIds: selected,
               isSelectionMode: selectionMode,
               maxVisibleTags: 3,
-              onOpenEditor: (diary, _) => onOpen?.call(diary),
+              onOpenEditor: (diary, _, origin) {
+                origin?.dispose();
+                onOpen?.call(diary);
+              },
               onToggleSelection: (_, _) {},
               cardStyle: style,
               opensLockedCapsulePage: opensLockedCapsulePage,

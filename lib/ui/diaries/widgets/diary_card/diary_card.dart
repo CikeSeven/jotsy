@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../widgets/container_transform/container_transform_route.dart';
+import '../../../widgets/container_transform/container_transform_source.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../models/diary_card_style/diary_card_style.dart';
 import '../../models/time_capsule.dart';
@@ -18,9 +20,18 @@ import 'diary_card_content.dart';
 import 'diary_card_locked_content.dart';
 import 'diary_card_selection_mark.dart';
 
-/// 打开日记：整条数据 + 从封面抓取的共享元素画面（可能为 null）。
+/// 打开日记：整条数据 + 从封面抓取的共享元素画面 + 卡片展开成整页的起点
+/// （后两者都可能为 null；拿到的一方负责释放，用不上时调用 `dispose`）。
 typedef DiaryOpenCallback =
-    void Function(DiaryWithTags diary, ImageViewerHero? coverHero);
+    void Function(
+      DiaryWithTags diary,
+      ImageViewerHero? coverHero,
+      ContainerTransformOrigin? origin,
+    );
+
+/// 日记卡片作为容器展开来源的标签：返回时按日记 id 找回卡片（预览页翻到
+/// 另一篇时找那一篇的卡片）。
+Object diaryCardTransitionTag(String diaryId) => ('diary_card', diaryId);
 
 /// 日记列表 / 瀑布流 / 搜索 / 归档 / 日历卡片视图共用的日记卡片。
 ///
@@ -35,7 +46,8 @@ typedef DiaryOpenCallback =
 /// 语义仍并入 DiarySelectionSurface 的容器节点。
 ///
 /// 交互：选择模式下点击切换选中；普通模式点击进入预览页（未解封胶囊进入
-/// 封存页）；长按强制选中。
+/// 封存页），页面从这张卡片展开（卡片包在 [ContainerTransformSource] 里，
+/// 点按时量出位置、截下画面交给路由）；长按强制选中。
 class DiaryCard extends StatelessWidget {
   const DiaryCard({
     super.key,
@@ -64,8 +76,9 @@ class DiaryCard extends StatelessWidget {
   final DiaryOpenCallback onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
 
-  /// 封面是否作为预览页头图的共享元素来源；设置页预览里关闭，避免与真实
-  /// 列表的同名 Hero 冲突。
+  /// 是否作为打开日记的转场来源：封面是预览页头图的共享元素，卡片本身是
+  /// 展开成整页的起点（[ContainerTransformSource]）。设置页预览与宽窗口双栏
+  /// （选中只在右栏阅读、不推入路由）里关闭，避免与真实列表的同名 Hero 冲突。
   final bool enableCoverHero;
 
   /// 点按未解封胶囊是否进入封存页；设置页预览的示例胶囊不是真实日记，
@@ -175,7 +188,7 @@ class DiaryCard extends StatelessWidget {
 
     final accentBar = style.surface.accentBar;
     final accentBarColor = appearance.accentBarColor;
-    return DiarySelectionSurface(
+    final card = DiarySelectionSurface(
       diaryId: diaryId,
       selected: selected,
       compact: resolved.compact,
@@ -216,50 +229,69 @@ class DiaryCard extends StatelessWidget {
                 ),
               ),
             Positioned.fill(
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  borderRadius: radius > 0
-                      ? BorderRadius.circular(radius)
-                      : null,
-                  onTap: () {
-                    if (onTapIntercept?.call(diary) ?? false) {
-                      return;
-                    }
-                    if (isSelectionMode) {
-                      onToggleSelection(diaryId, false);
-                      return;
-                    }
-                    if (isLockedCapsule && opensLockedCapsulePage) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) => LockedDiaryPage(
-                            diaryId: diaryId,
-                            initialDetail: diary,
-                          ),
-                        ),
+              // 点按处的 context 在展开来源之内，才能从这里量出卡片、截下画面。
+              child: Builder(
+                builder: (BuildContext tapContext) => Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    borderRadius: radius > 0
+                        ? BorderRadius.circular(radius)
+                        : null,
+                    onTap: () {
+                      if (onTapIntercept?.call(diary) ?? false) {
+                        return;
+                      }
+                      if (isSelectionMode) {
+                        onToggleSelection(diaryId, false);
+                        return;
+                      }
+                      final origin = enableCoverHero
+                          ? ContainerTransformSource.capture(tapContext)
+                          : null;
+                      if (isLockedCapsule && opensLockedCapsulePage) {
+                        Widget page(BuildContext context) => LockedDiaryPage(
+                          diaryId: diaryId,
+                          initialDetail: diary,
+                        );
+                        Navigator.of(context).push(
+                          origin == null
+                              ? MaterialPageRoute<void>(builder: page)
+                              : ContainerTransformPageRoute<void>(
+                                  builder: page,
+                                  origin: origin,
+                                ),
+                        );
+                        return;
+                      }
+                      onOpenEditor(
+                        diary,
+                        coverAnchor?.capture(tag: diaryCoverHeroTag(diaryId)),
+                        origin,
                       );
-                      return;
-                    }
-                    onOpenEditor(
-                      diary,
-                      coverAnchor?.capture(tag: diaryCoverHeroTag(diaryId)),
-                    );
-                  },
-                  onLongPress: () {
-                    // Android 上 InkWell 已经通过 Feedback.forLongPress
-                    // 震动；iOS 不会，补一次以确认进入多选。
-                    if (Theme.of(context).platform == TargetPlatform.iOS) {
-                      unawaited(HapticFeedback.mediumImpact());
-                    }
-                    onToggleSelection(diaryId, true);
-                  },
+                    },
+                    onLongPress: () {
+                      // Android 上 InkWell 已经通过 Feedback.forLongPress
+                      // 震动；iOS 不会，补一次以确认进入多选。
+                      if (Theme.of(context).platform == TargetPlatform.iOS) {
+                        unawaited(HapticFeedback.mediumImpact());
+                      }
+                      onToggleSelection(diaryId, true);
+                    },
+                  ),
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+    if (!enableCoverHero) {
+      return card;
+    }
+    return ContainerTransformSource(
+      tag: diaryCardTransitionTag(diaryId),
+      borderRadius: radius,
+      child: card,
     );
   }
 }

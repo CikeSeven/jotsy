@@ -180,7 +180,7 @@ void main() {
                         selectedDiaryIds: const <String>{'matrix_pinned'},
                         isSelectionMode: true,
                         maxVisibleTags: 3,
-                        onOpenEditor: (_, _) {},
+                        onOpenEditor: (_, _, _) {},
                         onToggleSelection: (_, _) {},
                         cardStyle: entry.value,
                       ),

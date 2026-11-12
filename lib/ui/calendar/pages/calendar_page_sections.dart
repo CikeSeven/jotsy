@@ -329,12 +329,17 @@ extension _CalendarPageSections on _CalendarPageState {
       ];
     }
 
-    void openDiary(DiaryWithTags diary, ImageViewerHero? coverHero) {
+    void openDiary(
+      DiaryWithTags diary,
+      ImageViewerHero? coverHero,
+      ContainerTransformOrigin? origin,
+    ) {
       _controller.openPreview(
         diary.diary.diaryId,
         initialDetail: diary,
         coverHero: coverHero,
         sequence: DiaryPreviewSequence.fromItems(day.diaries),
+        origin: origin,
       );
     }
 
@@ -436,12 +441,14 @@ extension _CalendarPageSections on _CalendarPageState {
                   ),
                   selectedDay: _selectedDay,
                   diaries: diaries,
-                  onOpenDiary: (diary, coverHero) => _controller.openPreview(
-                    diary.diary.diaryId,
-                    initialDetail: diary,
-                    coverHero: coverHero,
-                    sequence: DiaryPreviewSequence.fromItems(diaries),
-                  ),
+                  onOpenDiary: (diary, coverHero, origin) =>
+                      _controller.openPreview(
+                        diary.diary.diaryId,
+                        initialDetail: diary,
+                        coverHero: coverHero,
+                        sequence: DiaryPreviewSequence.fromItems(diaries),
+                        origin: origin,
+                      ),
                 ),
         ),
       ),

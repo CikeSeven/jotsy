@@ -19,6 +19,7 @@ import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/form_width.dart';
 import '../../widgets/image_viewer_hero.dart';
+import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/primary_shortcut.dart';
 import '../../widgets/route_entrance_waiter.dart';
 import '../../widgets/width_layout_builder.dart';
@@ -398,8 +399,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                         maxVisibleTags: diaryCardTagLimit,
                         cardStyle: cardStyle,
                         moodPalette: moodPalette,
-                        onOpenEditor: (diary, coverHero) =>
-                            unawaited(_openPreview(diary, coverHero)),
+                        onOpenEditor: (diary, coverHero, origin) =>
+                            unawaited(_openPreview(diary, coverHero, origin)),
                         onToggleSelection: (_, __) {},
                         isSearchResultEmpty: true,
                         emptyState: _NoResults(
@@ -535,6 +536,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   Future<void> _openPreview(
     DiaryWithTags diary,
     ImageViewerHero? coverHero,
+    ContainerTransformOrigin? origin,
   ) async {
     final session = _session;
     if (session.keyword.isNotEmpty) {
@@ -564,6 +566,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       initialDetail: diary,
       coverHero: coverHero,
       sequence: sequence,
+      origin: origin,
     );
     if (result != null && mounted) {
       await offerDeletedDiaryUndo(context, ref, result.diaryId);

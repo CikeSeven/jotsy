@@ -86,6 +86,7 @@ import '../widgets/diary_preview/diary_preview_neighbors.dart';
 import '../widgets/diary_tag_filter_bar.dart';
 import '../widgets/tag_filter_pull_hint.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/launch_reveal.dart';
 import '../../ai/controllers/ai_chat_return_flow.dart';
 import '../../ai/providers/ai_chat_return_provider.dart';

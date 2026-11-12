@@ -391,6 +391,7 @@ class ArchivedDiariesController {
     DiaryWithTags? initialDetail,
     ImageViewerHero? coverHero,
     DiaryPreviewSequence? sequence,
+    ContainerTransformOrigin? origin,
   }) {
     openDiaryPage(
       _state.context,
@@ -399,6 +400,7 @@ class ArchivedDiariesController {
       initialDetail: initialDetail,
       coverHero: coverHero,
       sequence: sequence,
+      origin: origin,
     ).then((DiaryPreviewResult? result) async {
       if (!_state.mounted) {
         return;

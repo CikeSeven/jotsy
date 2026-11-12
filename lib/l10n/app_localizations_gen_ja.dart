@@ -144,21 +144,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get settingsTabSwitchCurve => 'タブ切り替えのカーブ';
-
-  @override
-  String get settingsTabSwitchCurveSubtitle => '下部タブを切り替えるときのアニメーションの動きを選択';
-
-  @override
-  String get settingsTabSwitchCurveEaseOutCirc => 'なめらか（Circ）';
-
-  @override
-  String get settingsTabSwitchCurveEaseOutCubic => 'バランス（Cubic）';
-
-  @override
-  String get settingsTabSwitchCurveLinear => 'リニア';
-
-  @override
   String get settingsLanguage => '言語';
 
   @override

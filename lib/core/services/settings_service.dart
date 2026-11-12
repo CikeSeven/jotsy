@@ -13,26 +13,8 @@ part 'settings_service_backup.dart';
 
 const String _defaultDiaryToolbarCurrentTimeFormat = 'M月d日 HH:mm';
 
-enum HomeTabSwitchCurveType { easeOutCirc, easeOutCubic, linear }
-
-extension HomeTabSwitchCurveTypeX on HomeTabSwitchCurveType {
-  String get storageValue => switch (this) {
-    HomeTabSwitchCurveType.easeOutCirc => 'easeOutCirc',
-    HomeTabSwitchCurveType.easeOutCubic => 'easeOutCubic',
-    HomeTabSwitchCurveType.linear => 'linear',
-  };
-
-  Curve get curve => switch (this) {
-    HomeTabSwitchCurveType.easeOutCirc => Curves.easeOutCirc,
-    HomeTabSwitchCurveType.easeOutCubic => Curves.easeOutCubic,
-    HomeTabSwitchCurveType.linear => Curves.linear,
-  };
-}
-
 class SettingsService {
   static const int defaultThemeSeedColorValue = 0xFF1E6586;
-  static const HomeTabSwitchCurveType defaultHomeTabSwitchCurveType =
-      HomeTabSwitchCurveType.easeOutCirc;
   static const double defaultFontScale = 1.0;
   static const double minFontScale = 0.85;
   static const double maxFontScale = 1.25;
@@ -58,7 +40,6 @@ class SettingsService {
     required this._prefs,
     required ThemeMode mode,
     required Color themeSeedColor,
-    required HomeTabSwitchCurveType homeTabSwitchCurveType,
     required DiaryTypography diaryTypography,
     required double fontScale,
     required Locale locale,
@@ -90,9 +71,6 @@ class SettingsService {
     required String? appLockOptionsRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
-       homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
-         homeTabSwitchCurveType,
-       ),
        diaryTypographyNotifier = ValueNotifier<DiaryTypography>(
          diaryTypography,
        ),
@@ -154,7 +132,6 @@ class SettingsService {
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<Color> themeSeedColorNotifier;
-  final ValueNotifier<HomeTabSwitchCurveType> homeTabSwitchCurveNotifier;
 
   /// 日记正文排版（编辑 / 预览 / 发布三处共用）。
   final ValueNotifier<DiaryTypography> diaryTypographyNotifier;
@@ -257,7 +234,9 @@ class SettingsService {
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
-  static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
+  // 旧版“标签页切换曲线”（首页切页改为弹簧后移除）；启动时删除。
+  static const _keyLegacyHomeTabSwitchCurve =
+      'app.settings.home_tab_switch_curve';
   static const _keyDiaryTypography = 'app.settings.diary_typography';
   // 旧版三档预设，只在启动迁移时读取一次，迁移后删除。
   static const _keyLegacyEditorBodyFontSizePreset =
@@ -343,9 +322,6 @@ class SettingsService {
     final mode = _parseMode(prefs.getString(_keyThemeMode));
     final themeSeedColorValue =
         prefs.getInt(_keyThemeSeedColorValue) ?? defaultThemeSeedColorValue;
-    final homeTabSwitchCurveType = _parseHomeTabSwitchCurveType(
-      prefs.getString(_keyHomeTabSwitchCurve),
-    );
     final diaryTypography = await _loadDiaryTypography(prefs);
     final fontScale = _normalizeFontScale(
       prefs.getDouble(_keyFontScale) ?? defaultFontScale,
@@ -355,6 +331,9 @@ class SettingsService {
     }
     if (prefs.containsKey(_keyLegacyReleaseMirrorStartIndex)) {
       await prefs.remove(_keyLegacyReleaseMirrorStartIndex);
+    }
+    if (prefs.containsKey(_keyLegacyHomeTabSwitchCurve)) {
+      await prefs.remove(_keyLegacyHomeTabSwitchCurve);
     }
     final storedLocaleCode = _normalizeLocaleCode(
       prefs.getString(_keyAppLocaleCode),
@@ -400,7 +379,6 @@ class SettingsService {
       prefs: prefs,
       mode: mode,
       themeSeedColor: Color(themeSeedColorValue),
-      homeTabSwitchCurveType: homeTabSwitchCurveType,
       diaryTypography: diaryTypography,
       fontScale: fontScale,
       locale: _localeFromCode(localeCode),
@@ -469,15 +447,6 @@ class SettingsService {
     final value = color.toARGB32();
     themeSeedColorNotifier.value = Color(value);
     await _writePreference(_prefs.setInt(_keyThemeSeedColorValue, value));
-  }
-
-  Future<void> setHomeTabSwitchCurveType(
-    HomeTabSwitchCurveType curveType,
-  ) async {
-    homeTabSwitchCurveNotifier.value = curveType;
-    await _writePreference(
-      _prefs.setString(_keyHomeTabSwitchCurve, curveType.storageValue),
-    );
   }
 
   Future<void> setDiaryTypography(DiaryTypography typography) async {
@@ -980,8 +949,6 @@ class SettingsService {
   String get appLocaleCode => _codeFromLocale(localeNotifier.value);
   bool get isAppLockEnabled => appLockEnabledNotifier.value;
   int get themeSeedColorValue => themeSeedColorNotifier.value.toARGB32();
-  String get homeTabSwitchCurveTypeValue =>
-      homeTabSwitchCurveNotifier.value.storageValue;
   DiaryTypography get diaryTypography => diaryTypographyNotifier.value;
   double get fontScaleValue => fontScaleNotifier.value;
 
@@ -1040,15 +1007,6 @@ class SettingsService {
       default:
         return ThemeMode.system;
     }
-  }
-
-  static HomeTabSwitchCurveType _parseHomeTabSwitchCurveType(String? raw) {
-    return switch (raw) {
-      'easeOutCubic' => HomeTabSwitchCurveType.easeOutCubic,
-      'linear' => HomeTabSwitchCurveType.linear,
-      'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
-      _ => defaultHomeTabSwitchCurveType,
-    };
   }
 
   /// 读取正文排版；没有新键但存在旧版三档预设时迁移一次：写入新键后删除

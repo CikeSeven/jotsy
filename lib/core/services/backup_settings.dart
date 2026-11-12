@@ -12,7 +12,6 @@ class BackupSettings {
   static Map<String, Object?> capture(SettingsService settingsService) => {
     'themeMode': settingsService.themeModeNotifier.value.name,
     'themeSeedColorValue': settingsService.themeSeedColorValue,
-    'homeTabSwitchCurveType': settingsService.homeTabSwitchCurveTypeValue,
     'diaryTypography': settingsService.diaryTypography.toJson(),
     'fontScale': settingsService.fontScaleValue,
     'appLocaleCode': settingsService.appLocaleCode,
@@ -76,17 +75,8 @@ class BackupSettings {
       await settingsService.setThemeSeedColor(Color(themeSeedColorValue));
     }
 
-    final tabSwitchCurveTypeRaw = settingsNode['homeTabSwitchCurveType'];
-    if (tabSwitchCurveTypeRaw is String && tabSwitchCurveTypeRaw.isNotEmpty) {
-      await settingsService.setHomeTabSwitchCurveType(
-        switch (tabSwitchCurveTypeRaw) {
-          'easeOutCubic' => HomeTabSwitchCurveType.easeOutCubic,
-          'linear' => HomeTabSwitchCurveType.linear,
-          'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
-          _ => SettingsService.defaultHomeTabSwitchCurveType,
-        },
-      );
-    }
+    // 旧备份里的 homeTabSwitchCurveType（已移除的“标签页切换曲线”，首页
+    // 切页改为弹簧）不再读取，原样忽略。
 
     final diaryTypography = _parseDiaryTypography(settingsNode);
     if (diaryTypography != null) {

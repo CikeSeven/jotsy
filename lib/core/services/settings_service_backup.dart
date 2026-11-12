@@ -7,7 +7,6 @@ extension SettingsServiceBackup on SettingsService {
     const keys = [
       SettingsService._keyThemeMode,
       SettingsService._keyThemeSeedColorValue,
-      SettingsService._keyHomeTabSwitchCurve,
       SettingsService._keyDiaryTypography,
       SettingsService._keyFontScale,
       SettingsService._keyDiarySortMode,
@@ -47,7 +46,6 @@ extension SettingsServiceBackup on SettingsService {
       [
         _notifierRollback(themeModeNotifier),
         _notifierRollback(themeSeedColorNotifier),
-        _notifierRollback(homeTabSwitchCurveNotifier),
         _notifierRollback(diaryTypographyNotifier),
         _notifierRollback(fontScaleNotifier),
         _notifierRollback(localeNotifier),

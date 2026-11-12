@@ -8,27 +8,32 @@ import 'package:node_diary/ui/explore/models/explore_computation_input.dart';
 import 'package:node_diary/ui/explore/models/explore_layout.dart';
 import 'package:node_diary/ui/explore/models/explore_module_id.dart';
 import 'package:node_diary/ui/explore/models/explore_period.dart';
+import 'package:node_diary/ui/explore/models/explore_module_options.dart';
 import 'package:node_diary/ui/explore/viewmodels/explore_entry.dart';
 
 ExploreComputationInput input(
   int count, {
   ExplorePeriod period = ExplorePeriod.all,
+  ExploreLayout? layout,
+  List<ExploreDiaryOverview>? diaries,
 }) {
   final now = DateTime(2026, 11, 7);
   return ExploreComputationInput(
-    diaries: List.generate(
-      count,
-      (i) => ExploreDiaryOverview(
-        diaryId: 'diary-$i',
-        title: 'title',
-        contentText: 'hello 世界',
-        metadata: i.isEven ? '{}' : '{broken',
-        createdAt: DateTime(2025, 11, 7),
-        updatedAt: now,
-        tags: const [],
-      ),
-    ),
-    layout: ExploreLayout.defaults,
+    diaries:
+        diaries ??
+        List.generate(
+          count,
+          (i) => ExploreDiaryOverview(
+            diaryId: 'diary-$i',
+            title: 'title',
+            contentText: 'hello 世界',
+            metadata: i.isEven ? '{}' : '{broken',
+            createdAt: DateTime(2025, 11, 7),
+            updatedAt: now,
+            tags: const [],
+          ),
+        ),
+    layout: layout ?? ExploreLayout.defaults,
     modules: ExploreModuleId.values.toSet(),
     period: period,
     now: now,
@@ -39,6 +44,45 @@ ExploreComputationInput input(
 }
 
 void main() {
+  test(
+    'appearance, card width and ordering reuse aggregation while data options recompute',
+    () {
+      final controller = ExploreComputationController();
+      addTearDown(controller.dispose);
+      final request = input(2);
+      final data = controller.resolve(request);
+      final layout = request.layout
+          .moveModule(0, 2)
+          .copyWith(
+            showPeriodBar: false,
+            appearance: request.layout.appearance.copyWith(radius: 8),
+          );
+      final restyled = layout.withModule(
+        layout
+            .module(ExploreModuleId.overview)
+            .copyWith(span: ExploreModuleSpan.half),
+      );
+      expect(
+        controller.resolve(
+          input(0, diaries: request.diaries, layout: restyled),
+        ),
+        same(data),
+      );
+      final changed = restyled.withModule(
+        restyled
+            .module(ExploreModuleId.onThisDay)
+            .withOption(
+              ExploreOptions.onThisDayCount,
+              ExploreOptions.onThisDayCount.values.first,
+            ),
+      );
+      expect(
+        controller.resolve(input(0, diaries: request.diaries, layout: changed)),
+        isNot(same(data)),
+      );
+    },
+  );
+
   test(
     'large libraries compute off isolate with localized dates and corrupt metadata',
     () async {

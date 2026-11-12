@@ -38,10 +38,14 @@ class ExploreComputationInput {
   final Map<DateTime, DayMood>? dayMoods;
   final Map<String, int>? photoCounts;
 
+  /// 外观、卡片顺序与宽度不改变统计值，调整它们时沿用已算好的结果。
+  /// 可见模块集合或统计选项变化仍重算，不能把隐藏前/新范围的值误用回来。
   bool sameAs(ExploreComputationInput other) =>
       identical(diaries, other.diaries) &&
-      layout == other.layout &&
       setEquals(modules, other.modules) &&
+      modules.every(
+        (id) => layout.module(id).hasSameOptionsAs(other.layout.module(id)),
+      ) &&
       period == other.period &&
       exploreDayKey(now) == exploreDayKey(other.now) &&
       firstWeekday == other.firstWeekday &&

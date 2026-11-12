@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
+import 'package:node_diary/ui/widgets/long_image/bounded_cover_image.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_swipe_action_item.dart';
 
 const _threeTags = <Tag>[
@@ -68,12 +69,11 @@ void main() {
     );
 
     final image = tester.widget<Image>(find.byType(Image));
-    final resizedImage = image.image as ResizeImage;
+    final resizedImage = image.image as BoundedCoverImage;
     expect(image.fit, BoxFit.cover);
     expect(resizedImage.width, isNotNull);
-    // 只按宽度定解码尺寸，高度只给安全上限，fit 策略保持原图比例。
-    expect(resizedImage.policy, ResizeImagePolicy.fit);
-    expect(resizedImage.height, kSafeImageDecodeExtent);
+    expect(resizedImage.height, isPositive);
+    expect(resizedImage.maxExtent, kSafeImageDecodeExtent);
   });
 
   testWidgets('waterfall cover decodes at the column width', (tester) async {
@@ -86,16 +86,15 @@ void main() {
     );
 
     final image = tester.widget<Image>(find.byType(Image));
-    final resizedImage = image.image as ResizeImage;
+    final resizedImage = image.image as BoundedCoverImage;
     final dpr = tester.view.devicePixelRatio;
     final imageWidth = tester.getSize(find.byType(Image)).width;
     expect(image.fit, BoxFit.cover);
-    // 只限高时竖图只解码出约 140dp 宽、被拉伸到整列宽而发糊；按列宽解码，
-    // 高度交给 BoxFit.cover 裁切（不同时限定宽高，避免按容器比例拉伸）。
+    // 解码目标取实际列宽与显示高度，解码器按原图比例铺满它。
     expect(resizedImage.width, (imageWidth * dpr).round());
-    // 只按宽度定解码尺寸，高度只给安全上限，fit 策略保持原图比例。
-    expect(resizedImage.policy, ResizeImagePolicy.fit);
-    expect(resizedImage.height, kSafeImageDecodeExtent);
+    final imageHeight = tester.getSize(find.byType(Image)).height;
+    expect(resizedImage.height, (imageHeight * dpr).round());
+    expect(resizedImage.maxExtent, kSafeImageDecodeExtent);
   });
 
   testWidgets('waterfall layout hides tags when the configured limit is zero', (

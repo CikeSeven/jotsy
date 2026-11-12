@@ -91,6 +91,10 @@ void main() {
       expect(rows, hasLength(21));
     });
 
+    await _report('explore overview query, 10000 rows', (_) async {
+      final rows = await db.watchExploreDiaryOverviews().first;
+      expect(rows, hasLength(9656));
+    });
     final diaries = await db.watchExploreDiaryOverviews().first;
     final l10n = AppLocalizationsEn();
     // 全部卡片都显示时的整页聚合；每轮新建条目缓存，计入首次解析的开销。

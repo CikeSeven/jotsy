@@ -1,12 +1,34 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:node_diary/ui/explore/controllers/explore_content_extractor.dart';
 
 import '../explore_test_fixtures.dart';
 
 void main() {
   const extractor = ExploreContentExtractor();
+
+  test(
+    'long previews stop before the body and retain whole emoji clusters',
+    () {
+      const emoji = '👨‍👩‍👧‍👦';
+      final prefix = 'x' * (ExploreContentExtractor.summaryMaxLength - 1);
+      final summary = extractor.summaryFromText(
+        ' \n$prefix$emoji${'tail' * 100000}',
+      );
+      expect(summary, '$prefix$emoji');
+      expect(
+        summary.characters.length,
+        ExploreContentExtractor.summaryMaxLength,
+      );
+      expect(extractor.summaryFromText(' \n Hello\nworld  '), 'Hello world');
+      expect(
+        extractor.summaryFromText(' \n\t ', emptyFallback: 'empty'),
+        'empty',
+      );
+    },
+  );
 
   test('collects the cover and every distinct Delta image in order', () {
     final diary = createExploreTestDiary(

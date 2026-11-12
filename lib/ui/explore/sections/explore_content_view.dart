@@ -46,6 +46,7 @@ class ExploreContentView extends StatefulWidget {
     this.draftCount = 0,
     this.now,
     this.onPeriodChanged,
+    this.sliver = false,
   });
 
   final List<ExploreDiaryOverview> diaries;
@@ -62,6 +63,9 @@ class ExploreContentView extends StatefulWidget {
   /// 测试与预览注入的“现在”；null 时取当前时间。
   final DateTime? now;
   final ValueChanged<ExplorePeriod>? onPeriodChanged;
+
+  /// 首页直接接入外层视口，卡片按需构建；设置页的有限预览保留盒布局。
+  final bool sliver;
 
   /// 当前会出现在页面上的卡片（按布局顺序）。
   static List<ExploreModuleConfig> shownModules(
@@ -148,25 +152,39 @@ class _ExploreContentViewState extends State<ExploreContentView> {
       child: Builder(
         builder: (BuildContext context) {
           final look = ExploreAppearanceScope.of(context);
+          final periodBar = layout.showPeriodBar
+              ? Padding(
+                  padding: EdgeInsets.only(bottom: look.cardGap),
+                  child: ExplorePeriodBar(
+                    period: widget.period,
+                    onChanged: widget.onPeriodChanged,
+                  ),
+                )
+              : null;
+          final Widget content;
+          if (_computation.error != null) {
+            content = Text(l10n.autoT0059);
+          } else if (data == null) {
+            content = const DelayedLoadingIndicator();
+          } else if (slots.isEmpty) {
+            content = const _ExploreNoModulesCard();
+          } else {
+            content = ExploreModulesView(slots: slots, sliver: widget.sliver);
+          }
+          if (widget.sliver) {
+            return SliverMainAxisGroup(
+              slivers: <Widget>[
+                if (periodBar != null) SliverToBoxAdapter(child: periodBar),
+                if (content is ExploreModulesView)
+                  content
+                else
+                  SliverToBoxAdapter(child: content),
+              ],
+            );
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              if (layout.showPeriodBar) ...<Widget>[
-                ExplorePeriodBar(
-                  period: widget.period,
-                  onChanged: widget.onPeriodChanged,
-                ),
-                SizedBox(height: look.cardGap),
-              ],
-              if (_computation.error != null)
-                Text(l10n.autoT0059)
-              else if (data == null)
-                const DelayedLoadingIndicator()
-              else if (slots.isEmpty)
-                const _ExploreNoModulesCard()
-              else
-                ExploreModulesView(slots: slots),
-            ],
+            children: <Widget>[?periodBar, content],
           );
         },
       ),

@@ -70,6 +70,8 @@ ORDER BY d.is_pinned DESC, d.updated_at DESC
   /// 日记）；日记本统计传日记本范围复用同一口径（成书顺序不影响这里的排序）。
   /// [includeArchived] 为 false 时只要未归档的（与首页列表的篇目一致，供
   /// 日记本头部卡片统计字数与时间跨度）。
+  /// 标签在相关子查询里按日记聚合：主查询可沿更新时间索引读取，避免
+  /// JOIN + GROUP BY 后把包含长正文纯文本的全库行再次放进临时排序表。
   Stream<List<ExploreDiaryOverview>> watchExploreDiaryOverviews({
     DiaryListScope scope = DiaryListScope.all,
     bool includeArchived = true,
@@ -84,17 +86,14 @@ SELECT
   d.metadata,
   d.created_at,
   d.updated_at,
-  COALESCE(
-    json_group_array(
-      CASE
-        WHEN t.id IS NOT NULL THEN json_object('id', t.id, 'name', t.name, 'color', t.color)
-      END
-    ),
-    '[]'
+  (
+    SELECT json_group_array(json_object('id', t.id, 'name', t.name, 'color', t.color))
+    FROM diary_tags dt
+    JOIN tags t ON t.id = dt.tag_id
+    WHERE dt.diary_id = d.id
   ) AS tags_json
 FROM diaries d
-${_diaryScopeJoinSql(scope)}LEFT JOIN diary_tags dt ON dt.diary_id = d.id
-LEFT JOIN tags t ON t.id = dt.tag_id
+${_diaryScopeJoinSql(scope)}
 WHERE d.is_deleted = 0
   AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)
 ''');
@@ -103,7 +102,6 @@ WHERE d.is_deleted = 0
     }
     _writeDiaryScopeFilter(sql, variables, scope);
     sql.write('''
-GROUP BY d.id
 ORDER BY d.updated_at DESC, d.id DESC
 ''');
     return customSelect(

@@ -77,6 +77,10 @@ final class ExploreModuleConfig extends ExploreLayoutEntry {
 
   ExploreModuleSpec get spec => ExploreModuleSpec.of(id);
 
+  /// 聚合只依赖卡片选项；顺序、显隐和宽度交给布局层处理。
+  bool hasSameOptionsAs(ExploreModuleConfig other) =>
+      id == other.id && _signature == other._signature;
+
   /// 宽窗口下实际占的宽度（自动时取默认）。
   ExploreModuleSpan get resolvedSpan => spec.resolveSpan(span);
 

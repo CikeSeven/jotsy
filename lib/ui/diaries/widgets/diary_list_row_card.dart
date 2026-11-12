@@ -178,12 +178,13 @@ class _RowThumbnail extends StatelessWidget {
       child: SizedBox.square(
         dimension: size,
         child: CoverCroppedImage(
-          // 只限宽度（另一边由 boundedImageProvider 限在纹理上限内）：同时限高
-          // 会让长图按比例缩成细条，再裁成正方形时发虚。宽度取 2 倍，横图裁
-          // 成正方形后高度也够用。
+          // 编码头给出原图比例后按短边铺满，不再猜测为两倍宽度：普通竖图
+          // 的像素占用可降到原来的四分之一，横图仍有足够的裁切清晰度。
           image: boundedImageProvider(
             diaryImageProvider(source),
-            width: extent * 2,
+            width: extent,
+            height: extent,
+            cover: true,
           ),
           errorBuilder: (context, _, _) =>
               const DiaryCardCoverErrorPlaceholder(),

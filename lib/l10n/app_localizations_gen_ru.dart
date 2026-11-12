@@ -3248,9 +3248,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get diaryTypographyQuickTooltip => 'Шрифт и оформление';
-
-  @override
   String get diaryTypographyFontSection => 'Шрифт';
 
   @override
@@ -3363,9 +3360,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get diaryTypographyScopeHint =>
       'Размер, интервалы и отступы применяются при написании, чтении и публикации записей.';
-
-  @override
-  String get diaryTypographyMoreSettings => 'Другие настройки';
 
   @override
   String get diaryTypographySampleTitle => 'Вечер после дождя';
@@ -4542,15 +4536,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleTopBarTitleNone => 'Нет';
-
-  @override
-  String get diaryPreviewStyleShowTypographyButton => 'Кнопка «Шрифт и макет»';
-
-  @override
-  String get diaryPreviewStyleShowEditButton => 'Кнопка «Изменить»';
-
-  @override
-  String get diaryPreviewStyleShowShareButton => 'Кнопка «Поделиться»';
 
   @override
   String get diaryPreviewStyleReadingGroup => 'Помощь при чтении';
@@ -6004,6 +5989,9 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get settingsOpenDiaryInEditorSubtitle =>
       'Нажатие на запись сразу открывает её для правки — в том же оформлении, что и просмотр.';
+
+  @override
+  String get diaryReadingAiMenu => 'ИИ';
 
   @override
   String get diaryReadingEditInfo => 'Изменить сведения';

@@ -2832,9 +2832,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get diaryTypographyQuickTooltip => 'フォントとレイアウト';
-
-  @override
   String get diaryTypographyFontSection => 'フォント';
 
   @override
@@ -2935,9 +2932,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diaryTypographyScopeHint => '文字サイズや行間などは日記の作成・閲覧・投稿画面に適用されます。';
-
-  @override
-  String get diaryTypographyMoreSettings => 'その他の設定';
 
   @override
   String get diaryTypographySampleTitle => '雨上がりの夕暮れ';
@@ -4032,15 +4026,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleTopBarTitleNone => '非表示';
-
-  @override
-  String get diaryPreviewStyleShowTypographyButton => 'フォントとレイアウトのボタン';
-
-  @override
-  String get diaryPreviewStyleShowEditButton => '編集ボタン';
-
-  @override
-  String get diaryPreviewStyleShowShareButton => '共有ボタン';
 
   @override
   String get diaryPreviewStyleReadingGroup => '読書の補助';
@@ -5375,6 +5360,9 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get settingsOpenDiaryInEditorSubtitle =>
       '日記をタップするとすぐ編集できます。レイアウトはプレビューと同じです。';
+
+  @override
+  String get diaryReadingAiMenu => 'AI';
 
   @override
   String get diaryReadingEditInfo => '情報を編集';

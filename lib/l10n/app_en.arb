@@ -3970,10 +3970,6 @@
       "lineHeight": {"type": "String"}
     }
   },
-  "diaryTypographyQuickTooltip": "Font & layout",
-  "@diaryTypographyQuickTooltip": {
-    "description": "Diary preview: tooltip of the font & layout button and title of its quick panel."
-  },
   "diaryTypographyFontSection": "Font",
   "@diaryTypographyFontSection": {
     "description": "Body font & layout: font group title."
@@ -4109,10 +4105,6 @@
   "diaryTypographyScopeHint": "Size, spacing and indent apply when writing, reading and publishing diaries.",
   "@diaryTypographyScopeHint": {
     "description": "Body font & layout: footer explaining where the settings apply."
-  },
-  "diaryTypographyMoreSettings": "More settings",
-  "@diaryTypographyMoreSettings": {
-    "description": "Font & layout quick panel: button opening the full settings page."
   },
   "diaryTypographySampleTitle": "An evening after the rain",
   "@diaryTypographySampleTitle": {
@@ -5614,18 +5606,6 @@
   "diaryPreviewStyleTopBarTitleNone": "None",
   "@diaryPreviewStyleTopBarTitleNone": {
     "description": "Diary preview style settings: top bar title option: no title."
-  },
-  "diaryPreviewStyleShowTypographyButton": "Font and layout button",
-  "@diaryPreviewStyleShowTypographyButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
-  },
-  "diaryPreviewStyleShowEditButton": "Edit button",
-  "@diaryPreviewStyleShowEditButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
-  },
-  "diaryPreviewStyleShowShareButton": "Share button",
-  "@diaryPreviewStyleShowShareButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
   },
   "diaryPreviewStyleReadingGroup": "Reading aids",
   "@diaryPreviewStyleReadingGroup": {
@@ -7419,6 +7399,10 @@
   "settingsOpenDiaryInEditorSubtitle": "Tap a diary to edit it right away, laid out just like the preview.",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "Editor settings: description of the open-in-editor switch."
+  },
+  "diaryReadingAiMenu": "AI",
+  "@diaryReadingAiMenu": {
+    "description": "Reading-style diary edit page: More menu item opening the submenu of AI actions (writing prompts, title and tag suggestions, AI reflection)."
   },
   "diaryReadingEditInfo": "Edit details",
   "@diaryReadingEditInfo": {

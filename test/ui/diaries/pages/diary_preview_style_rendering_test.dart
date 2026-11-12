@@ -554,17 +554,13 @@ void main() {
     expect(paragraphColor(), theme.textTheme.bodyMedium!.color);
   });
 
-  testWidgets('top bar mode, title, buttons and reading aids apply', (
-    tester,
-  ) async {
+  testWidgets('top bar mode, title and reading aids apply', (tester) async {
     await _pump(
       tester,
       style: const DiaryPreviewStyle(
         page: DiaryPreviewPageStyle(
           topBar: DiaryPreviewTopBarMode.pinned,
           topBarTitle: DiaryPreviewTopBarTitle.none,
-          showEditButton: false,
-          showShareButton: true,
           progress: DiaryPreviewProgress.line,
           backToTop: true,
         ),
@@ -573,26 +569,23 @@ void main() {
     final bar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
     expect(bar.pinned, isTrue);
     expect(find.text('日记'), findsNothing);
-    expect(find.byTooltip('编辑'), findsNothing);
+    // 按钮不随样式变化：分享、编辑与“更多”一直都在。
+    expect(find.byTooltip('编辑'), findsOneWidget);
     expect(find.byTooltip('分享'), findsOneWidget);
     expect(find.byType(DiaryPreviewProgressLine), findsOneWidget);
     expect(find.byType(DiaryPreviewBackToTop), findsOneWidget);
   });
 
-  testWidgets('share sits before edit, and edit stays next to more', (
+  testWidgets('the top bar shows share, edit and more but no font button', (
     tester,
   ) async {
-    await _pump(
-      tester,
-      style: const DiaryPreviewStyle(
-        page: DiaryPreviewPageStyle(showShareButton: true),
-      ),
-    );
+    await _pump(tester, style: DiaryPreviewStyle.defaults);
     final share = tester.getCenter(find.byTooltip('分享')).dx;
     final edit = tester.getCenter(find.byTooltip('编辑')).dx;
     final more = tester.getCenter(find.byTooltip('更多')).dx;
     expect(share, lessThan(edit));
     expect(edit, lessThan(more));
+    expect(find.byTooltip('字体与排版'), findsNothing);
   });
 
   testWidgets('the default style hides the word count and reading time', (

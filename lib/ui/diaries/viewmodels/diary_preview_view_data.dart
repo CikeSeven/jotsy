@@ -5,10 +5,11 @@ import 'package:flutter/foundation.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 import '../../../utils/text_stats.dart';
+import '../../todos/viewmodels/diary_todo_items.dart';
 import 'diary_card_media_summary.dart';
 
 /// 预览页的派生展示数据：metadata.context 里的心情、精力、地点与天气，看图页
-/// 的图片来源，以及字数统计与媒体数量（惰性计算）。
+/// 的图片来源，以及字数统计、媒体数量与正文里的待办列表项（惰性计算）。
 ///
 /// 图片来源的顺序：显式封面在前，其后是正文中的全部图片（不去重，看图页
 /// 打开时再去重）。预览页封面与正文图片共用这一组来源，点按任一张都能进入
@@ -78,6 +79,10 @@ class DiaryPreviewViewData {
 
   /// 正文媒体数量（字数明细面板用）。
   late final DiaryCardMediaSummary media = DiaryCardMediaSummary.scan(_content);
+
+  /// 正文里的待办列表项（“更多 → 转为独立待办”的候选）：预览页每次构建都
+  /// 要决定这一项出不出现，按正文记忆化，只在待办功能开启时才解析。
+  late final List<DiaryTodoItem> todoItems = diaryTodoItems(_content);
 
   /// 看图页的图片来源（显式封面在前，其后是正文图片）。
   final List<String> images;

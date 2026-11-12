@@ -2,8 +2,8 @@
 
 part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 
-/// 阅读式编辑页（编辑已有日记）的动作：打开 / 卸载信息面板、“更多”、分享、
-/// 导出与删除。版式（页头、页尾、顶栏、整页样式）见
+/// 阅读式编辑页（编辑已有日记）的动作：打开 / 卸载信息面板、“更多”菜单、
+/// 分享、导出与删除。版式（页头、页尾、顶栏、整页样式）见
 /// `edit_diary_reading_flow.dart`。
 ///
 /// 副作用都先补存（[_EditDiaryReadingActions._flushAndReload]），再按库里
@@ -55,7 +55,8 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
     }
   }
 
-  /// 滚到页尾的留言区（信息栏的“N 条留言”、“更多 → 写留言”）：[end] 为 true
+  /// 滚到页尾的留言区（信息栏的“N 条留言”；打开日记时直接编辑时还有
+  /// “更多 → 写留言”）：[end] 为 true
   /// 时让留言区末尾进入视口，否则留言区开头对齐视口顶部（同预览页）。
   ///
   /// 页尾在编辑器的虚拟列表里，滚出视口时没有构建、按 key 找不到：先按
@@ -181,104 +182,79 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
     );
   }
 
-  /// “更多”：编辑信息在最前；分享、导出、写留言、AI 回应、设为纪念日、
-  /// 另存为模板、页面样式与预览页相同；这天的照片、AI 写作相关与编辑器
-  /// 设置在“删除”之前。收进日记本不单列（信息面板里就有）。
+  /// 顶栏“更多”弹出菜单的条目（排法见 `diaryMoreMenuItems`）：编辑信息、
+  /// 设为纪念日、另存为模板 | 这天的照片、AI › | 编辑器设置 | 删除。收进
+  /// 日记本不单列（信息面板里就有）；页面样式不放（在预览页的“更多”里）。
   ///
-  /// 打开前不主动收焦点：底部面板自己的路由会接过焦点（键盘随之收起），
-  /// 关掉后焦点回到原处——桌面上页面级的 Esc 仍能收到。
-  Future<void> _openReadingMore(_ReadingFrame frame) async {
+  /// 分享在顶栏上；导出、写留言与 AI 回应平时在预览页（编辑页从预览页进入，
+  /// 返回即是），菜单里不重复。只有“打开日记时直接编辑”开着时用户不经过
+  /// 预览页，这时分享、导出与写留言排在“编辑信息”之后，AI 回应进 AI 二级
+  /// 菜单（[_ReadingMenuOptions]）。
+  ///
+  /// 在 build 里构建（开关来自这一帧的 [_ReadingFrame.menu]，不在这里订阅）。
+  /// 分享、导出、AI 回应与删除先补存，手动保存时不写（见各动作）。
+  List<Widget> _readingMoreItems(_ReadingFrame frame) {
     final snapshot = frame.snapshot;
-    final resolved = frame.resolved;
+    final menu = frame.menu;
     final l10n = context.l10n;
     final diary = snapshot.detail.diary;
-    final features = ref.read(appFeaturesProvider);
-    final settings = ref.read(settingsServiceProvider).asData?.value;
     final busy = _saving || _bottomPanelOpen || _mediaImportController.isBusy;
-    final aiSuggest = ref.read(aiModuleAvailableProvider(AiModule.suggest));
-    DiaryPreviewSheetEntry entry(
-      FaIconData icon,
-      String label,
-      Future<void> Function() action,
-    ) => DiaryPreviewSheetEntry(
-      icon: FaIcon(icon, size: 16),
-      label: label,
-      action: action,
-    );
-    await showDiaryPreviewActionsSheet(
-      context,
-      leadingEntries: <DiaryPreviewSheetEntry>[
-        entry(FontAwesomeIcons.circleInfo, l10n.diaryReadingEditInfo, () async {
-          _openMetaPanel();
-        }),
+    final comments = frame.comments;
+    final aiItems = _readingAiMenuItems(frame, busy: busy);
+    return diaryMoreMenuItems(
+      l10n,
+      leading: <Widget>[
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.circleInfo,
+          l10n.diaryReadingEditInfo,
+          () async {
+            _openMetaPanel();
+          },
+        ),
       ],
-      onShare: () => _shareFromReading(resolved),
-      onExport: () async {
-        final detail = await _flushAndReload();
-        if (detail == null || !mounted) return;
-        await _readingExport.exportDiary(context, ref, detail: detail);
-      },
-      onWriteComment: frame.comments != null
+      onShare: menu.openInEditor
+          ? () => _shareFromReading(frame.resolved)
+          : null,
+      onExport: menu.openInEditor
           ? () async {
-              // 同预览页：先滚到留言区末尾再打开面板，写下的那条就在眼前。
+              final detail = await _flushAndReload();
+              if (detail == null || !mounted) return;
+              await _readingExport.exportDiary(context, ref, detail: detail);
+            }
+          : null,
+      onWriteComment: menu.openInEditor && comments != null
+          ? () async {
+              // 同留言区的“写留言…”：先滚到留言区末尾再打开面板，写下的
+              // 那条就在眼前。
               await _revealReadingComments(end: true);
               if (!mounted) return;
               await writeDiaryComment(context, ref, diary: diary);
             }
           : null,
-      onAiReply: frame.aiReplyAvailable
-          ? () async {
-              final saved = await _controller.settleEditAutoSave();
-              if (!saved || !mounted) return;
-              await requestAiReply(context, ref, diaryId: diary.diaryId);
-            }
+      onSetAsAnniversary: menu.anniversaries
+          ? () => openAnniversaryEditor(
+              context,
+              database: _database,
+              draft: AnniversaryDraft.fromDiary(diary),
+            )
           : null,
-      onSetAsAnniversary: features.anniversariesEnabled
-          ? () async {
-              await openAnniversaryEditor(
-                context,
-                database: _database,
-                draft: AnniversaryDraft.fromDiary(diary),
-              );
-            }
-          : null,
-      onSaveAsTemplate: features.templates ? _controller.saveAsTemplate : null,
-      onOpenStyle: settings == null
-          ? null
-          : () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) => DiaryPreviewStylePage(
-                  settingsService: settings,
-                  previewDiary: snapshot.detail,
-                ),
-              ),
-            ),
-      trailingEntries: <DiaryPreviewSheetEntry>[
-        if (_dayPhotos.library.isSupported && _dayPhotosDay != null && !busy)
-          entry(
+      onSaveAsTemplate: menu.templates ? _controller.saveAsTemplate : null,
+      tools: <Widget>[
+        if (_dayPhotos.library.isSupported && _dayPhotosDay != null)
+          diaryMoreMenuEntry(
             FontAwesomeIcons.solidImages,
             l10n.diaryDayPhotosMenu,
-            _controller.openDayPhotos,
+            busy ? null : _controller.openDayPhotos,
           ),
-        if (ref.read(aiModuleAvailableProvider(AiModule.prompts)) && !busy)
-          entry(
-            FontAwesomeIcons.lightbulb,
-            l10n.aiSlashPrompts,
-            _openAiPrompts,
+        if (aiItems.isNotEmpty)
+          ExpressiveSubmenuItem(
+            leadingIcon: const FaIcon(FontAwesomeIcons.wandMagicSparkles),
+            menuChildren: aiItems,
+            child: Text(l10n.diaryReadingAiMenu),
           ),
-        if (aiSuggest && !busy && !_aiBusy) ...<DiaryPreviewSheetEntry>[
-          entry(
-            FontAwesomeIcons.heading,
-            l10n.aiSuggestTitle,
-            () => _controller.suggestWithAi(titleOnly: true),
-          ),
-          entry(
-            FontAwesomeIcons.wandMagicSparkles,
-            l10n.aiSuggestMeta,
-            () => _controller.suggestWithAi(titleOnly: false),
-          ),
-        ],
-        entry(
+      ],
+      settings: <Widget>[
+        diaryMoreMenuEntry(
           FontAwesomeIcons.penNib,
           l10n.settingsEditorTitle,
           () => Navigator.of(context).push(
@@ -290,6 +266,53 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
       ],
       onDelete: _deleteFromReading,
     );
+  }
+
+  /// “更多 → AI ›”二级菜单的条目：写作灵感、AI 生成标题、AI 推荐标签与心情
+  /// （各按 AI 模块开关出现），“打开日记时直接编辑”开着时再加 AI 回应；一项
+  /// 都没有时为空，菜单里不出现“AI”这一行。
+  ///
+  /// 二级菜单的条目在点开时取定（见 [ExpressiveSubmenuItem]），所以停用状态
+  /// 按点开那一刻：保存、导入媒体或录音 / AI 写作面板开着时写作辅助停用，AI
+  /// 生成中时生成标题与推荐停用。AI 回应先补存（手动保存时不写）。
+  List<Widget> _readingAiMenuItems(_ReadingFrame frame, {required bool busy}) {
+    final menu = frame.menu;
+    final l10n = context.l10n;
+    final diaryId = frame.snapshot.detail.diary.diaryId;
+    return <Widget>[
+      if (menu.aiPrompts)
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.lightbulb,
+          l10n.aiSlashPrompts,
+          busy ? null : _openAiPrompts,
+        ),
+      if (menu.aiSuggest) ...<Widget>[
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.heading,
+          l10n.aiSuggestTitle,
+          busy || _aiBusy
+              ? null
+              : () => _controller.suggestWithAi(titleOnly: true),
+        ),
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.wandMagicSparkles,
+          l10n.aiSuggestMeta,
+          busy || _aiBusy
+              ? null
+              : () => _controller.suggestWithAi(titleOnly: false),
+        ),
+      ],
+      if (menu.openInEditor && frame.aiReplyAvailable)
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.commentDots,
+          l10n.aiReplyMoreItem,
+          () async {
+            final saved = await _controller.settleEditAutoSave();
+            if (!saved || !mounted) return;
+            await requestAiReply(context, ref, diaryId: diaryId);
+          },
+        ),
+    ];
   }
 
   /// 删除：确认后先补存（撤销删除时拿回的是改过的内容），再移进回收站，

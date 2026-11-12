@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/home/models/home_tab.dart';
@@ -74,7 +75,7 @@ void main() {
     final h = await open(tester);
     await tester.tap(find.byTooltip('更多'));
     await tester.pumpAndSettle();
-    final item = find.widgetWithText(ListTile, '收进日记本');
+    final item = find.widgetWithText(ExpressiveMenuItem, '收进日记本');
     expect(item, findsOneWidget);
     expect(
       find.descendant(of: item, matching: find.text('旅行')),

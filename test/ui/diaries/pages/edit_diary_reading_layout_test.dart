@@ -10,6 +10,10 @@ import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/ai/models/ai_preference_parts.dart';
+import 'package:node_diary/ui/ai/providers/ai_providers.dart';
+import 'package:node_diary/ui/ai/providers/ai_records_providers.dart';
+import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_behavior.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
@@ -19,8 +23,10 @@ import 'package:node_diary/ui/diaries/widgets/diary_comments/diary_comments_sect
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_trailing_region.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_reading_editor/diary_reading_editor_header.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_share_widgets.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_summary_bar.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/diary_content_test_helpers.dart';
@@ -37,14 +43,18 @@ void main() {
 
   /// 装配：按 [style] 写入预览页样式，建一篇带心情与标签的日记。
   /// [comments] 打开留言功能；[paragraphs] 为正文段落数（长正文时页尾在
-  /// 视口之外、没有构建）。
+  /// 视口之外、没有构建）；[openInEditor] 打开“打开日记时直接编辑”。
   Future<void> prepare({
     DiaryPreviewStyle style = DiaryPreviewStyle.defaults,
     bool comments = false,
     int paragraphs = 1,
     bool inNotebook = false,
+    bool openInEditor = false,
   }) async {
-    final encoded = DiaryPreviewSettings(current: style).encode();
+    final encoded = DiaryPreviewSettings(
+      current: style,
+      behavior: DiaryPreviewBehavior(openInEditor: openInEditor),
+    ).encode();
     SharedPreferences.setMockInitialValues(<String, Object>{
       'app.settings.diary_preview_style': ?encoded,
       if (comments)
@@ -74,10 +84,12 @@ void main() {
 
   tearDown(() => database.close());
 
-  /// 打开编辑页；返回编辑页结束时的结果（删除时为 true）。
+  /// 打开编辑页；返回编辑页结束时的结果（删除时为 true）。[ai] 让写作灵感、
+  /// 生成标题 / 推荐与 AI 回应三个模块可用（不配置真实服务）。
   Future<Future<Object?>> openEditor(
     WidgetTester tester, {
     Brightness brightness = Brightness.light,
+    bool ai = false,
   }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -88,6 +100,18 @@ void main() {
         overrides: [
           appDatabaseProvider.overrideWithValue(database),
           settingsServiceProvider.overrideWith((ref) async => settings),
+          if (ai) ...[
+            aiModuleAvailableProvider.overrideWith(
+              (ref, module) => const <AiModule>{
+                AiModule.prompts,
+                AiModule.suggest,
+                AiModule.reply,
+              }.contains(module),
+            ),
+            aiPrivateDiaryIdsProvider.overrideWith(
+              (ref) => Stream<Set<String>>.value(const <String>{}),
+            ),
+          ],
         ],
         child: MaterialApp(
           theme: expressiveTestTheme(brightness),
@@ -486,6 +510,87 @@ void main() {
     ))!;
     expect(stored.diary.isDeleted, isTrue);
     expect(stored.diary.title, 'Last words');
+    await unmount(tester);
+  });
+
+  /// “更多”菜单里文字为 [label] 的那一项。
+  Finder menuItem(String label) =>
+      find.widgetWithText(ExpressiveMenuItem, label);
+
+  testWidgets('the top bar shares, and More leaves out what the preview page '
+      'already offers', (tester) async {
+    await prepare(comments: true);
+    await openEditor(tester);
+    final l10n = l10nOf(tester);
+
+    // 顶栏的分享按钮（不随预览页样式开关）打开分享面板。
+    await tester.tap(find.byTooltip(l10n.previewShare));
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryShareTextPreview), findsOneWidget);
+    Navigator.of(tester.element(find.byType(DiaryShareTextPreview))).pop();
+    await tester.pumpAndSettle();
+
+    // “更多”是弹出菜单：分享、导出、写留言与 AI 回应在预览页，这里没有。
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    expect(menuItem(l10n.diaryReadingEditInfo), findsOneWidget);
+    expect(menuItem(l10n.diaryTemplateSaveAs), findsOneWidget);
+    expect(menuItem(l10n.settingsEditorTitle), findsOneWidget);
+    // 页面样式在预览页的“更多”里；AI 不可用时没有 AI 二级菜单。
+    expect(menuItem(l10n.diaryPreviewStyleMoreEntry), findsNothing);
+    expect(menuItem(l10n.diaryReadingAiMenu), findsNothing);
+    expect(menuItem(l10n.commonDelete), findsOneWidget);
+    expect(menuItem(l10n.previewShare), findsNothing);
+    expect(menuItem(l10n.previewExport), findsNothing);
+    expect(menuItem(l10n.diaryCommentSheetNew), findsNothing);
+    expect(menuItem(l10n.aiReplyMoreItem), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('with “open diaries in the editor” on, More keeps share, export '
+      'and writing a comment', (tester) async {
+    await prepare(comments: true, openInEditor: true);
+    await openEditor(tester);
+    final l10n = l10nOf(tester);
+
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    expect(menuItem(l10n.diaryReadingEditInfo), findsOneWidget);
+    expect(menuItem(l10n.previewShare), findsOneWidget);
+    expect(menuItem(l10n.previewExport), findsOneWidget);
+    expect(menuItem(l10n.diaryCommentSheetNew), findsOneWidget);
+    // AI 不可用时没有 AI 回应。
+    expect(menuItem(l10n.aiReplyMoreItem), findsNothing);
+
+    // 菜单里的分享与顶栏同一个面板。
+    await tester.tap(menuItem(l10n.previewShare));
+    await tester.pumpAndSettle();
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
+    expect(find.byType(DiaryShareTextPreview), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('AI actions sit together in an AI submenu', (tester) async {
+    await prepare(openInEditor: true);
+    await openEditor(tester, ai: true);
+    final l10n = l10nOf(tester);
+
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    // 主菜单里只有“AI ›”一行，AI 的各项不平铺。
+    expect(menuItem(l10n.diaryReadingAiMenu), findsOneWidget);
+    expect(find.text(l10n.aiSlashPrompts), findsNothing);
+    expect(find.text(l10n.aiSuggestTitle), findsNothing);
+    expect(find.text(l10n.aiReplyMoreItem), findsNothing);
+    expect(menuItem(l10n.diaryPreviewStyleMoreEntry), findsNothing);
+
+    await tester.tap(menuItem(l10n.diaryReadingAiMenu));
+    await tester.pumpAndSettle();
+    expect(menuItem(l10n.aiSlashPrompts), findsOneWidget);
+    expect(menuItem(l10n.aiSuggestTitle), findsOneWidget);
+    expect(menuItem(l10n.aiSuggestMeta), findsOneWidget);
+    // 打开日记时直接编辑：AI 回应也在二级菜单里。
+    expect(menuItem(l10n.aiReplyMoreItem), findsOneWidget);
     await unmount(tester);
   });
 }

@@ -2780,9 +2780,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diaryTypographyQuickTooltip => '字体与排版';
-
-  @override
   String get diaryTypographyFontSection => '字体';
 
   @override
@@ -2881,9 +2878,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTypographyScopeHint => '字号、行距等排版作用于日记的编辑、阅读与发布页面。';
-
-  @override
-  String get diaryTypographyMoreSettings => '更多设置';
 
   @override
   String get diaryTypographySampleTitle => '雨后的傍晚';
@@ -3966,15 +3960,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleTopBarTitleNone => '不显示';
-
-  @override
-  String get diaryPreviewStyleShowTypographyButton => '字体与排版按钮';
-
-  @override
-  String get diaryPreviewStyleShowEditButton => '编辑按钮';
-
-  @override
-  String get diaryPreviewStyleShowShareButton => '分享按钮';
 
   @override
   String get diaryPreviewStyleReadingGroup => '阅读辅助';
@@ -5268,6 +5253,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsOpenDiaryInEditorSubtitle => '点开日记直接编辑，版式与预览页相同';
+
+  @override
+  String get diaryReadingAiMenu => 'AI';
 
   @override
   String get diaryReadingEditInfo => '编辑信息';

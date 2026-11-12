@@ -4015,10 +4015,6 @@
       }
     }
   },
-  "diaryTypographyQuickTooltip": "Шрифт и оформление",
-  "@diaryTypographyQuickTooltip": {
-    "description": "Diary preview: tooltip of the font & layout button and title of its quick panel."
-  },
   "diaryTypographyFontSection": "Шрифт",
   "@diaryTypographyFontSection": {
     "description": "Body font & layout: font group title."
@@ -4162,10 +4158,6 @@
   "diaryTypographyScopeHint": "Размер, интервалы и отступы применяются при написании, чтении и публикации записей.",
   "@diaryTypographyScopeHint": {
     "description": "Body font & layout: footer explaining where the settings apply."
-  },
-  "diaryTypographyMoreSettings": "Другие настройки",
-  "@diaryTypographyMoreSettings": {
-    "description": "Font & layout quick panel: button opening the full settings page."
   },
   "diaryTypographySampleTitle": "Вечер после дождя",
   "@diaryTypographySampleTitle": {
@@ -5667,18 +5659,6 @@
   "diaryPreviewStyleTopBarTitleNone": "Нет",
   "@diaryPreviewStyleTopBarTitleNone": {
     "description": "Diary preview style settings: top bar title option: no title."
-  },
-  "diaryPreviewStyleShowTypographyButton": "Кнопка «Шрифт и макет»",
-  "@diaryPreviewStyleShowTypographyButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
-  },
-  "diaryPreviewStyleShowEditButton": "Кнопка «Изменить»",
-  "@diaryPreviewStyleShowEditButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
-  },
-  "diaryPreviewStyleShowShareButton": "Кнопка «Поделиться»",
-  "@diaryPreviewStyleShowShareButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
   },
   "diaryPreviewStyleReadingGroup": "Помощь при чтении",
   "@diaryPreviewStyleReadingGroup": {
@@ -7472,6 +7452,10 @@
   "settingsOpenDiaryInEditorSubtitle": "Нажатие на запись сразу открывает её для правки — в том же оформлении, что и просмотр.",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "Editor settings: description of the open-in-editor switch."
+  },
+  "diaryReadingAiMenu": "ИИ",
+  "@diaryReadingAiMenu": {
+    "description": "Reading-style diary edit page: More menu item opening the submenu of AI actions (writing prompts, title and tag suggestions, AI reflection)."
   },
   "diaryReadingEditInfo": "Изменить сведения",
   "@diaryReadingEditInfo": {

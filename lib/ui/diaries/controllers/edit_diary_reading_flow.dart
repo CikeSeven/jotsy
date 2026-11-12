@@ -3,9 +3,10 @@
 part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 
 /// 阅读式版式这一帧用到的数据：这一篇此刻的样子、解析后的整页样式、信息栏
-/// 的日记本胶囊，以及页尾的留言区、提到这篇的日记与 AI 回应。在 State 的
-/// build 里一次算好（内部 `ref.watch`，不在 LayoutBuilder 的回调里订阅），
-/// 页头、页尾与顶栏共用。
+/// 的日记本胶囊，页尾的留言区、提到这篇的日记与 AI 回应，以及顶栏“更多”
+/// 菜单要看的开关（[_ReadingMenuOptions]）。在 State 的 build 里一次算好
+/// （内部 `ref.watch`，不在 LayoutBuilder / Builder 的回调里订阅），页头、页尾
+/// 与顶栏共用。
 typedef _ReadingFrame = ({
   DiaryReadingSnapshot snapshot,
   DiaryPreviewResolvedStyle resolved,
@@ -15,6 +16,18 @@ typedef _ReadingFrame = ({
   String? aiRepliesFor,
   ValueChanged<AiResultRow>? onAiContinueChat,
   bool aiReplyAvailable,
+  _ReadingMenuOptions menu,
+});
+
+/// 顶栏“更多”菜单的开关：功能管理（纪念日、日记模板）、AI 模块（写作灵感、
+/// 生成标题与推荐信息），以及“打开日记时直接编辑”——开着时用户不经过
+/// 预览页，分享、导出、写留言与 AI 回应留在菜单里。
+typedef _ReadingMenuOptions = ({
+  bool openInEditor,
+  bool anniversaries,
+  bool templates,
+  bool aiPrompts,
+  bool aiSuggest,
 });
 
 /// 编辑已有日记时的“阅读式”版式：页面长得和预览页一样（纸色与配色基调、
@@ -52,6 +65,21 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
       aiRepliesFor: DiaryPreviewExtras.aiRepliesFor(ref, diary),
       onAiContinueChat: DiaryPreviewExtras.aiContinueChat(context, ref),
       aiReplyAvailable: DiaryPreviewExtras.aiReplyAvailable(ref, diary),
+      menu: _readingMenuOptions(),
+    );
+  }
+
+  /// 顶栏“更多”菜单要看的开关（见 [_ReadingMenuOptions]）。
+  _ReadingMenuOptions _readingMenuOptions() {
+    final features = ref.watch(appFeaturesProvider);
+    return (
+      openInEditor: ref.watch(
+        diaryPreviewBehaviorProvider.select((b) => b.openInEditor),
+      ),
+      anniversaries: features.anniversariesEnabled,
+      templates: features.templates,
+      aiPrompts: ref.watch(aiModuleAvailableProvider(AiModule.prompts)),
+      aiSuggest: ref.watch(aiModuleAvailableProvider(AiModule.suggest)),
     );
   }
 
@@ -333,6 +361,7 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
   }
 
   /// 顶栏：外观同预览页顶栏（经典时为纸色栏，玻璃照旧），常驻不随滚动隐藏。
+  /// 右侧为分享、编辑位置与“更多”菜单（条目见 `_readingMoreItems`）。
   /// 预览页“编辑”按钮的位置在编辑标题或正文时换成“完成”（收起键盘）；
   /// 手动保存时那里一直是“保存”，不再放“完成”：对勾读起来就是“确认 /
   /// 保存”，与“保存”并排显得重复、让人以为点勾也会保存（键盘用系统返回收起）。
@@ -363,10 +392,9 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
         background: pageColors.bar,
         pageColor: pageColors.page,
         onBack: () => unawaited(_controller.attemptExit()),
-        onOpenTypography: () => showDiaryTypographySheet(context),
         onEdit: () {},
         onShare: () => unawaited(_shareFromReading(resolved)),
-        onMore: () => unawaited(_openReadingMore(frame)),
+        moreItems: _readingMoreItems(frame),
         editSlot: _controller.manualEditSave
             ? _buildReadingSaveButton()
             : editing

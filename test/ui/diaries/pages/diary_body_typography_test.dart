@@ -12,7 +12,6 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
-import 'package:node_diary/ui/diaries/sections/diary_typography_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -144,7 +143,7 @@ void main() {
       },
     );
 
-    testWidgets('the preview body uses the typography and the quick panel in '
+    testWidgets('the preview body uses the typography in '
         '${brightness.name}', (tester) async {
       final database = _PendingDetailDatabase();
       addTearDown(database.close);
@@ -176,25 +175,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final l10n = tester.element(find.byType(DiaryPreviewPage)).l10n;
 
       _expectThemeBodyStyle(tester, _paragraph(tester).style);
       expect(_paragraph(tester).style.fontSize, 18);
       expect(_paragraph(tester).style.height, 2);
-
-      await tester.tap(find.byTooltip(l10n.diaryTypographyQuickTooltip));
-      await tester.pumpAndSettle();
-      expect(find.byType(DiaryTypographySheet), findsOneWidget);
-      await tester.tap(
-        find.byTooltip(
-          l10n.diaryTypographyIncrease(l10n.diaryTypographyFontSize),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // 面板后方的正文随之重排。
-      expect(settings.diaryTypography.fontSize, 19);
-      expect(_paragraph(tester).style.fontSize, 19);
     });
   }
 }

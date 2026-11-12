@@ -1,5 +1,4 @@
 import 'dart:async';
-import '../../../ai/controllers/ai_reply_flow.dart';
 
 import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
@@ -31,14 +30,12 @@ import '../../pages/locked_diary_page.dart';
 import '../../providers/diary_detail_provider.dart';
 import '../../providers/diary_mood_palette_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
-import '../../sections/diary_typography_sheet.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
-import '../diary_comments/diary_comments_section.dart';
-import 'diary_preview_actions_sheet.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
 import 'diary_preview_host.dart';
+import 'diary_preview_more_menu.dart';
 import 'diary_preview_neighbors.dart';
 import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
@@ -250,15 +247,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     Navigator.of(context).pop(DiaryPreviewResult.deleted(widget.diaryId));
   }
 
-  /// 写留言。从“更多”进入时（[reveal]）先滚到留言区末尾再打开面板：面板
-  /// 收起后，新写下的那条就在眼前。
-  Future<void> _writeComment(Diary diary, {bool reveal = false}) async {
-    if (reveal) {
-      await DiaryCommentsSection.reveal(context, _commentsKey, end: true);
-      if (!mounted) return;
-    }
-    await writeDiaryComment(context, ref, diary: diary);
-  }
+  /// 写留言（留言区末尾的“写留言…”）。
+  Future<void> _writeComment(Diary diary) =>
+      writeDiaryComment(context, ref, diary: diary);
 
   Future<void> _deleteDiary() async {
     final shouldDelete = await confirmDiaryPreviewDelete(context);
@@ -395,7 +386,6 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       onWrite: () => unawaited(_writeComment(detail.diary)),
       suppressed: capturing,
     );
-    final canComment = DiaryPreviewExtras.canComment(ref, detail.diary);
     return DiaryPreviewSurface(
       resolved: resolved,
       scrollController: _scrollController,
@@ -436,7 +426,6 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               unawaited(openDiaryTagSearch(context, tagId)),
           onOpenImage: _openImageViewer,
           actions: DiaryPreviewActions(
-            onOpenTypography: () => showDiaryTypographySheet(context),
             onEdit: _openEditor,
             onEditAt: (Position caret) => unawaited(_openEditor(caret: caret)),
             onShare: () => openDiaryPreviewShare(
@@ -446,20 +435,14 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               detail: detail,
               background: resolved.background,
             ),
-            onMore: () => showDiaryPreviewMore(
+            moreItems: diaryPreviewMoreItems(
               context,
               ref,
               export: _export,
               detail: detail,
-              background: resolved.background,
+              viewData: viewData,
               onDelete: _deleteDiary,
               notebooks: notebooks,
-              onWriteComment: canComment
-                  ? () => _writeComment(detail.diary, reveal: true)
-                  : null,
-              onAiReply: DiaryPreviewExtras.aiReplyAvailable(ref, detail.diary)
-                  ? () => requestAiReply(context, ref, diaryId: widget.diaryId)
-                  : null,
             ),
           ),
         ),

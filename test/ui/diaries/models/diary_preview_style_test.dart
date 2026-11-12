@@ -28,9 +28,6 @@ const _everything = DiaryPreviewStyle(
     contentWidth: 720,
     topBar: DiaryPreviewTopBarMode.pinned,
     topBarTitle: DiaryPreviewTopBarTitle.position,
-    showTypographyButton: false,
-    showEditButton: false,
-    showShareButton: true,
     progress: DiaryPreviewProgress.line,
     backToTop: true,
   ),
@@ -431,5 +428,31 @@ void main() {
       expect(title.divider, isFalse);
       expect(title.bodyGap, 14);
     }
+  });
+
+  test('top bar button switches from older styles are ignored', () {
+    // 顶栏按钮固定之前保存的样式与样式码：三个按钮开关读取时忽略，其余
+    // 字段照常，写回时不再出现。
+    final old = DiaryPreviewStyle.fromJson(<String, Object?>{
+      'page': <String, Object?>{
+        'showTypographyButton': false,
+        'showEditButton': false,
+        'showShareButton': true,
+        'topBar': 'pinned',
+      },
+    });
+    expect(
+      old.page,
+      const DiaryPreviewPageStyle(topBar: DiaryPreviewTopBarMode.pinned),
+    );
+    expect(old.toJson()['page'], <String, Object>{'topBar': 'pinned'});
+    final onlyButtons = DiaryPreviewStyle.fromJson(<String, Object?>{
+      'page': <String, Object?>{'showShareButton': true},
+    });
+    expect(onlyButtons, DiaryPreviewStyle.defaults);
+    expect(
+      DiaryPreviewPresets.match(onlyButtons),
+      DiaryPreviewPresetId.classic,
+    );
   });
 }

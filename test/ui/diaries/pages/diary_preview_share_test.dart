@@ -6,16 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_settings.dart';
-import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_share_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
-/// 预览页“更多 → 分享”：打开分享面板，复制文字后给出提示，内容开关被记住；
-/// 顶栏分享按钮打开同一个面板。
+/// 预览页顶栏的分享按钮（默认就有，“更多”菜单里不再有分享）：打开分享
+/// 面板，复制文字后给出提示，内容开关被记住。
 void main() {
   late AppDatabase database;
   late String diaryId;
@@ -47,7 +45,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('More → Share copies the composed text and remembers toggles', (
+  testWidgets('top bar Share copies the composed text and remembers toggles', (
     tester,
   ) async {
     final copied = <String>[];
@@ -69,9 +67,15 @@ void main() {
 
     await pumpPreview(tester);
 
+    // “更多”菜单里没有分享（顶栏上有）。
     await tester.tap(find.byTooltip('更多'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('分享'));
+    expect(find.text('导出'), findsOneWidget);
+    expect(find.text('分享'), findsNothing);
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('分享'));
     await tester.pumpAndSettle();
     expect(find.text('分享日记'), findsOneWidget);
 
@@ -107,13 +111,6 @@ void main() {
   testWidgets('top bar share button opens the share sheet, not a long image', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues(<String, Object>{
-      'app.settings.diary_preview_style': const DiaryPreviewSettings(
-        current: DiaryPreviewStyle(
-          page: DiaryPreviewPageStyle(showShareButton: true),
-        ),
-      ).encode()!,
-    });
     await pumpPreview(tester);
 
     await tester.tap(find.byTooltip('分享'));

@@ -36,15 +36,13 @@ typedef DiaryPreviewImageOpener =
 /// 预览页顶栏的动作。
 class DiaryPreviewActions {
   const DiaryPreviewActions({
-    required this.onOpenTypography,
     required this.onEdit,
     required this.onShare,
-    required this.onMore,
+    this.moreItems = const <Widget>[],
     this.onBack,
     this.onEditAt,
   });
 
-  final VoidCallback onOpenTypography;
   final VoidCallback onEdit;
 
   /// 双击正文进入编辑，光标放在 [Position] 处；null 时双击不进入编辑（设置页
@@ -52,7 +50,10 @@ class DiaryPreviewActions {
   /// [DiaryPreviewContent]。
   final ValueChanged<Position>? onEditAt;
   final VoidCallback onShare;
-  final VoidCallback onMore;
+
+  /// 顶栏“更多”弹出菜单的条目；为空时（设置页预览）按钮点了没反应，见
+  /// [DiaryPreviewTopBar.moreItems]。
+  final List<Widget> moreItems;
 
   /// 返回按钮；null 时返回上一页。
   final VoidCallback? onBack;
@@ -277,10 +278,9 @@ class DiaryPreviewContent extends ConsumerWidget {
             // diaryPreviewPageColors），否则仍是纸色。
             background: pageColors.bar,
             pageColor: pageColors.page,
-            onOpenTypography: actions.onOpenTypography,
             onEdit: actions.onEdit,
             onShare: actions.onShare,
-            onMore: actions.onMore,
+            moreItems: actions.moreItems,
             onBack: actions.onBack,
           ),
         if (coverSource != null)

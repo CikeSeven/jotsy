@@ -10,7 +10,8 @@ import '../../widgets/style_editor/style_editor_common.dart';
 import '../diary_card_style/diary_card_style_labels.dart';
 import 'diary_preview_style_color_group.dart';
 
-/// “页面”标签页：配色基调、纸张与正文颜色，边距与正文宽度，顶栏，阅读
+/// “页面”标签页：配色基调、纸张与正文颜色，边距与正文宽度，顶栏（随滚动
+/// 隐藏 / 固定与标题；按钮固定为分享、编辑与“更多”，不在这里开关），阅读
 /// 辅助（进度线、回到顶部）。
 class DiaryPreviewStylePageTab extends StatelessWidget {
   const DiaryPreviewStylePageTab({super.key, required this.controller});
@@ -113,22 +114,6 @@ class DiaryPreviewStylePageTab extends StatelessWidget {
                 onSelectionChanged: (Set<DiaryPreviewTopBarTitle> v) =>
                     commit(page.copyWith(topBarTitle: v.single)),
               ),
-            ),
-            SettingsSwitchTile(
-              title: l10n.diaryPreviewStyleShowTypographyButton,
-              value: page.showTypographyButton,
-              onChanged: (bool v) =>
-                  commit(page.copyWith(showTypographyButton: v)),
-            ),
-            SettingsSwitchTile(
-              title: l10n.diaryPreviewStyleShowShareButton,
-              value: page.showShareButton,
-              onChanged: (bool v) => commit(page.copyWith(showShareButton: v)),
-            ),
-            SettingsSwitchTile(
-              title: l10n.diaryPreviewStyleShowEditButton,
-              value: page.showEditButton,
-              onChanged: (bool v) => commit(page.copyWith(showEditButton: v)),
             ),
           ],
         ),

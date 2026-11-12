@@ -3151,9 +3151,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryTypographyQuickTooltip => 'Font & layout';
-
-  @override
   String get diaryTypographyFontSection => 'Font';
 
   @override
@@ -3264,9 +3261,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryTypographyScopeHint =>
       'Size, spacing and indent apply when writing, reading and publishing diaries.';
-
-  @override
-  String get diaryTypographyMoreSettings => 'More settings';
 
   @override
   String get diaryTypographySampleTitle => 'An evening after the rain';
@@ -4430,15 +4424,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleTopBarTitleNone => 'None';
-
-  @override
-  String get diaryPreviewStyleShowTypographyButton => 'Font and layout button';
-
-  @override
-  String get diaryPreviewStyleShowEditButton => 'Edit button';
-
-  @override
-  String get diaryPreviewStyleShowShareButton => 'Share button';
 
   @override
   String get diaryPreviewStyleReadingGroup => 'Reading aids';
@@ -5840,6 +5825,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsOpenDiaryInEditorSubtitle =>
       'Tap a diary to edit it right away, laid out just like the preview.';
+
+  @override
+  String get diaryReadingAiMenu => 'AI';
 
   @override
   String get diaryReadingEditInfo => 'Edit details';

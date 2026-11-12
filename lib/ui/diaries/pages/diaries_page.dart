@@ -147,7 +147,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const double _tagSectionBottomGap = 4;
 
   /// 收起时标签栏一行的高度（与加载占位同高）。
-  static const double _tagBarHeight = 40;
+  static const double _tagBarHeight =
+      DiaryTagFilterBar.chipExtent + AppSpacing.xs * 2;
 
   /// 快速滚动条轨道下端为右下角“新建”按钮让出的高度：按钮离底栏 10dp、
   /// 高 56dp，再留 8dp。
@@ -540,6 +541,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   canExpand: () => _tagFilterExpansionController.value < 1,
                   canCollapse: () => _tagFilterExpansionController.value > 0,
                   selectedTagFilterIds: filterState.selectedTagIds,
+                  multiSelect: filterState.isMultiSelect,
                   onSelectTag: _controller.selectTagFilter,
                   onToggleTagFilter: _controller.toggleTagFilter,
                   onClearTagFilters: _controller.clearTagFilters,

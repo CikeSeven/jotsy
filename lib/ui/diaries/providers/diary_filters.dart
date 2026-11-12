@@ -7,21 +7,35 @@ import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_restore.da
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/utils/provider_retention.dart';
 
-/// 列表筛选状态：关键词 + 选中的标签集合。
+/// 列表筛选状态：关键词 + 选中的标签集合 + 标签栏是否处在多选模式。
 class DiaryFilterState {
   const DiaryFilterState({
     this.keyword = '',
     this.selectedTagIds = const <int>{},
+    this.multiSelect = false,
   });
 
   final String keyword;
   final Set<int> selectedTagIds;
 
+  /// 首页标签栏是否已由长按进入多选模式（见 [isMultiSelect]）。
+  final bool multiSelect;
+
+  /// 是否处在多选模式：长按进入、点 ✕ 退出；选中两个以上（如恢复记住的
+  /// 筛选）时一定是多选。多选模式下单击标签增减、不丢掉已选的，单选模式
+  /// 下单击只选这一个。
+  bool get isMultiSelect => multiSelect || selectedTagIds.length > 1;
+
   /// 生成新的筛选状态副本，保持不可变数据流。
-  DiaryFilterState copyWith({String? keyword, Set<int>? selectedTagIds}) {
+  DiaryFilterState copyWith({
+    String? keyword,
+    Set<int>? selectedTagIds,
+    bool? multiSelect,
+  }) {
     return DiaryFilterState(
       keyword: keyword ?? this.keyword,
       selectedTagIds: selectedTagIds ?? this.selectedTagIds,
+      multiSelect: multiSelect ?? this.multiSelect,
     );
   }
 }
@@ -141,7 +155,8 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     state = state.copyWith(keyword: value);
   }
 
-  /// 单个标签开关，保留其余已选的标签（多选：同时带有这些标签才匹配）。
+  /// 单个标签开关，保留其余已选的标签（多选：同时带有这些标签才匹配），
+  /// 并进入多选模式。
   void toggleTag(int tagId, bool selected) {
     final next = <int>{...state.selectedTagIds};
     if (selected) {
@@ -149,32 +164,48 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     } else {
       next.remove(tagId);
     }
-    state = state.copyWith(selectedTagIds: next);
+    state = state.copyWith(selectedTagIds: next, multiSelect: true);
   }
 
-  /// 单击标签：只选这一个（#196）。它已是唯一选中的标签时取消选择；多选
-  /// 时点其中一个同样收成只选它。多选只经 [toggleTag]（长按）。
+  /// 进入多选模式，已选的标签不变（单选模式下长按已选中的那一个）。
+  void enterMultiSelect() {
+    if (state.isMultiSelect) {
+      return;
+    }
+    state = state.copyWith(multiSelect: true);
+  }
+
+  /// 单选模式下单击标签：只选这一个（#196），它已是唯一选中的标签时取消
+  /// 选择。多选模式下的单击走 [toggleTag]（由 `DiariesPageController` 按
+  /// [DiaryFilterState.isMultiSelect] 分流）。
   void selectOnlyTag(int tagId) {
     final current = state.selectedTagIds;
     final onlyThis = current.length == 1 && current.contains(tagId);
-    state = state.copyWith(selectedTagIds: onlyThis ? <int>{} : <int>{tagId});
+    state = state.copyWith(
+      selectedTagIds: onlyThis ? <int>{} : <int>{tagId},
+      multiSelect: false,
+    );
   }
 
-  /// 批量替换标签筛选，用于从设置中的“标签记忆”恢复状态。
+  /// 批量替换标签筛选，用于从设置中的“标签记忆”恢复状态、切换日记本时
+  /// 换回各自的选择。模式按数量推断：两个以上为多选，否则回到单选。
   void setTags(Iterable<int> tagIds) {
     final normalized = <int>{
       for (final tagId in tagIds)
         if (tagId > 0) tagId,
     };
-    state = state.copyWith(selectedTagIds: normalized);
+    state = state.copyWith(
+      selectedTagIds: normalized,
+      multiSelect: normalized.length > 1,
+    );
   }
 
-  /// 清空标签筛选（保留关键词）。
+  /// 清空标签筛选（保留关键词）并回到单选模式（标签栏的 ✕）。
   void clearTags() {
-    if (state.selectedTagIds.isEmpty) {
+    if (state.selectedTagIds.isEmpty && !state.multiSelect) {
       return;
     }
-    state = state.copyWith(selectedTagIds: <int>{});
+    state = state.copyWith(selectedTagIds: <int>{}, multiSelect: false);
   }
 }
 

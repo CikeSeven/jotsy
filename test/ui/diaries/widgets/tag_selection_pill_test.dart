@@ -8,8 +8,8 @@ import 'package:node_diary/ui/diaries/widgets/tag_selection_pill.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
-/// 会响应点按的标签栏：单击只选这一个（再点取消）、长按加减、✕ 清空，
-/// 与首页的选择规则一致。
+/// 会响应点按的标签栏，与首页的选择规则一致：单选模式下单击只选这一个
+/// （再点取消）；长按进入多选模式，之后单击增减；✕ 清空并回到单选。
 class _SelectableBar extends StatefulWidget {
   const _SelectableBar({required this.tags, this.initial = const <int>{}});
 
@@ -22,7 +22,14 @@ class _SelectableBar extends StatefulWidget {
 
 class _SelectableBarState extends State<_SelectableBar> {
   late Set<int> _selected = widget.initial;
+  late bool _multi = widget.initial.length > 1;
   final ValueNotifier<double> _progress = ValueNotifier<double>(0);
+
+  void _toggle(int id, bool select) {
+    _selected = select
+        ? <int>{..._selected, id}
+        : (<int>{..._selected}..remove(id));
+  }
 
   @override
   void dispose() {
@@ -40,17 +47,25 @@ class _SelectableBarState extends State<_SelectableBar> {
         canExpand: () => false,
         canCollapse: () => false,
         selectedTagFilterIds: _selected,
-        onSelectTag: (int id) => setState(
-          () => _selected = _selected.length == 1 && _selected.contains(id)
+        multiSelect: _multi,
+        onSelectTag: (int id) => setState(() {
+          if (_multi) {
+            _toggle(id, !_selected.contains(id));
+            return;
+          }
+          _selected = _selected.length == 1 && _selected.contains(id)
               ? <int>{}
-              : <int>{id},
-        ),
-        onToggleTagFilter: (int id, bool selected) => setState(
-          () => _selected = selected
-              ? <int>{..._selected, id}
-              : (<int>{..._selected}..remove(id)),
-        ),
-        onClearTagFilters: () => setState(() => _selected = <int>{}),
+              : <int>{id};
+        }),
+        onToggleTagFilter: (int id, bool selected) => setState(() {
+          // 单选模式下长按：进入多选并选上它。
+          _toggle(id, _multi ? selected : true);
+          _multi = true;
+        }),
+        onClearTagFilters: () => setState(() {
+          _selected = <int>{};
+          _multi = false;
+        }),
         onVerticalDragStart: (_) {},
         onVerticalDragUpdate: (_, __) {},
         onVerticalDragEnd: (_) {},
@@ -187,17 +202,26 @@ void main() {
       expect(chip.paintsSelectedSurface, isTrue);
     }
 
-    // 回到只选一个：色块在它身上重新出现。
-    await tester.longPress(find.text('Tag 2'));
+    // 多选模式下只剩一个时仍由胶囊自己画；点 ✕ 回到单选后再选，色块回来。
+    await tester.tap(find.text('Tag 2'));
     await tester.pumpAndSettle();
-    _expectRectClose(_pill(tester)!, tester.getRect(_chip(1)));
+    expect(_pill(tester), isNull);
+    expect(
+      tester.widget<TagFilterChip>(_chip(1)).paintsSelectedSurface,
+      isTrue,
+    );
+    await tester.tap(find.bySemanticsLabel('Clear tag filters'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tag 3'));
+    await tester.pumpAndSettle();
+    _expectRectClose(_pill(tester)!, tester.getRect(_chip(3)));
   });
 
-  testWidgets('clearing fades the pill out where it is', (tester) async {
+  testWidgets('deselecting fades the pill out where it is', (tester) async {
     await _pump(tester, initial: const <int>{2});
     final chip = tester.getRect(_chip(2));
 
-    await tester.tap(find.bySemanticsLabel('Clear tag filters'));
+    await tester.tap(find.text('Tag 2'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
     final fading = _pill(tester);

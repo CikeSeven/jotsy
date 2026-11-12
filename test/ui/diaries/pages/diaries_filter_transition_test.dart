@@ -239,7 +239,7 @@ void main() {
     expect(_opacityOf(tester, _revealOf('Fresh')), 1);
   });
 
-  testWidgets('clearing the tag brings the list in from the left', (
+  testWidgets('deselecting the tag brings the list in from the left', (
     tester,
   ) async {
     await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
@@ -247,7 +247,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Fresh'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel('Clear tag filters'));
+    // 单选模式下再点一次选中的标签：回到最左端的“全部”。
+    await tester.tap(_tagChip);
     final enter = await _trackOffsets(tester, 'Old');
     expect(enter.first.dx, lessThan(-10));
     await tester.pumpAndSettle();
@@ -349,11 +350,14 @@ void main() {
     });
   }
 
-  testWidgets('tag filter clear button is announced as a button', (
+  testWidgets('the multi-select clear button is announced as a button', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
+    // ✕ 只在多选模式出现：长按进入。
+    await tester.longPress(_tagChip);
+    await tester.pumpAndSettle();
 
     expect(
       tester.getSemantics(find.bySemanticsLabel('Clear tag filters')),

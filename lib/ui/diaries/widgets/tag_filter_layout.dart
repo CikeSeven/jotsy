@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/database/app_database.dart';
 import 'tag_filter_chip.dart';
+import 'tag_filter_clear_button.dart';
 
 /// Resolves chip rows from the available width and text geometry.
 /// The panel height and lazy list share this result so wrapping, clipping, and
@@ -13,6 +14,10 @@ import 'tag_filter_chip.dart';
 /// 宽度与选中无关：`TagFilterChip` 按粗体字与较粗的选中描边占位（两种字重
 /// 叠放交叉淡入、描边粗细差补进内边距），这里同样一律按粗体 + 2dp 描边
 /// 测量。选中不会让展开的多行重新换行。
+///
+/// 尺寸取首页标签栏的紧凑胶囊（`TagFilterChip.dense`）。✕ 只在多选模式
+/// （或选中了不在标签条上的标签）时出现：[resolve] 的 `includeClear` 为
+/// false 时它不占格子。
 class TagFilterLayoutCache {
   List<Tag>? _source;
   TextStyle? _style;
@@ -21,6 +26,7 @@ class TagFilterLayoutCache {
   double _width = -1;
   double _spacing = -1;
   double _leadingWidth = 0;
+  bool _includeClear = true;
   TagFilterLayout? _layout;
 
   TagFilterLayout resolve(
@@ -29,13 +35,15 @@ class TagFilterLayoutCache {
     required double width,
     required double spacing,
     double leadingWidth = 0,
+    bool includeClear = true,
   }) {
     if (width <= 0) {
       return const TagFilterLayout(<List<TagFilterCell>>[]);
     }
-    final style = Theme.of(
+    final style = TagFilterChip.labelStyleOf(
       context,
-    ).textTheme.labelMedium!.copyWith(fontWeight: FontWeight.w700);
+      dense: true,
+    ).copyWith(fontWeight: FontWeight.w700);
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
     if (identical(_source, tags) &&
@@ -44,7 +52,8 @@ class TagFilterLayoutCache {
         _direction == direction &&
         _width == width &&
         _spacing == spacing &&
-        _leadingWidth == leadingWidth) {
+        _leadingWidth == leadingWidth &&
+        _includeClear == includeClear) {
       return _layout!;
     }
 
@@ -60,18 +69,20 @@ class TagFilterLayoutCache {
       // 有前置项（日记本切换胶囊）时它占第一格，下标为 -1。
       final firstIndex = leadingWidth > 0 ? -1 : 0;
       for (var index = firstIndex; index <= tags.length; index++) {
-        var itemWidth = index < 0 ? leadingWidth : 26.0;
+        if (index == 0 && !includeClear) {
+          continue;
+        }
+        var itemWidth = index < 0 ? leadingWidth : TagFilterClearButton.width;
         if (index > 0) {
           final tag = tags[index - 1];
           painter.text = TextSpan(text: tag.name, style: style);
           painter.layout();
-          // Match the horizontal chips: 14dp `#` dot, 6dp gap, 10dp padding
-          // per side, and the (selected-width) border on both sides.
+          // 与横向胶囊一致：`#` 色点与间距、左右内边距，以及两侧按选中
+          // 粗细算的描边。
           itemWidth =
               painter.width +
-              14 +
-              6 +
-              20 +
+              TagFilterChip.prefixExtent(dense: true) +
+              TagFilterChip.densePadding.horizontal +
               TagFilterChip.selectedBorderWidth * 2;
         }
         itemWidth = math.min(itemWidth, width);
@@ -100,6 +111,7 @@ class TagFilterLayoutCache {
     _width = width;
     _spacing = spacing;
     _leadingWidth = leadingWidth;
+    _includeClear = includeClear;
     return _layout = TagFilterLayout(rows);
   }
 }

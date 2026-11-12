@@ -46,6 +46,7 @@ class TagFilterChip extends StatefulWidget {
     this.selectedBorderColor,
     this.unselectedBorderColor,
     this.paintsSelectedSurface = true,
+    this.dense = false,
   });
 
   /// [animateBorder] 时选中与未选中的描边粗细；外框按较粗的一档占位。
@@ -54,6 +55,30 @@ class TagFilterChip extends StatefulWidget {
 
   /// 选中时的圆角（超过胶囊高度一半，即两端全圆）。
   static const double selectedRadius = 24.0;
+
+  /// 紧凑尺寸（首页标签栏，[dense]）：字号、`#` 色点的宽与它后面的间距、
+  /// 内边距。`TagFilterLayoutCache` 按同一组数测量。
+  static const double denseFontSize = 11.5;
+  static const double densePrefixWidth = 12;
+  static const double densePrefixGap = 4;
+  static const EdgeInsets densePadding = EdgeInsets.symmetric(
+    horizontal: 8,
+    vertical: 3,
+  );
+
+  /// 常规尺寸的 `#` 色点宽与间距。
+  static const double _prefixWidth = 14;
+  static const double _prefixGap = 6;
+
+  /// 标签文字的样式（未定颜色与字重）。
+  static TextStyle labelStyleOf(BuildContext context, {bool dense = false}) {
+    final base = Theme.of(context).textTheme.labelMedium!;
+    return dense ? base.copyWith(fontSize: denseFontSize) : base;
+  }
+
+  /// `#` 色点连同它后面的间距占的宽度。
+  static double prefixExtent({bool dense = false}) =>
+      dense ? densePrefixWidth + densePrefixGap : _prefixWidth + _prefixGap;
 
   /// 变为选中时叠加的缩放初速度（倍 / 秒）：`springSpatialFast` 下峰值约
   /// 1.035 倍，看得出“弹了一下”又不显得跳。
@@ -96,6 +121,10 @@ class TagFilterChip extends StatefulWidget {
   /// 一个标签，由滑动色块画在胶囊下方）底色与描边淡成透明、露出下面的
   /// 色块，文字仍按选中补间。
   final bool paintsSelectedSurface;
+
+  /// 紧凑尺寸：较小的字号与 `#` 色点（首页标签栏，内边距由调用方传
+  /// [densePadding]）。
+  final bool dense;
 
   @override
   State<TagFilterChip> createState() => _TagFilterChipState();
@@ -170,7 +199,7 @@ class _TagFilterChipState extends State<TagFilterChip>
     final targetRadius = selected
         ? TagFilterChip.selectedRadius
         : widget.radius;
-    final labelStyle = Theme.of(context).textTheme.labelMedium!;
+    final labelStyle = TagFilterChip.labelStyleOf(context, dense: widget.dense);
 
     return Semantics(
       selected: selected,
@@ -239,17 +268,22 @@ class _TagFilterChipState extends State<TagFilterChip>
     if (colorDot == null) {
       return null;
     }
+    final dense = widget.dense;
     return Padding(
-      padding: const EdgeInsetsDirectional.only(end: 6),
+      padding: EdgeInsetsDirectional.only(
+        end: dense ? TagFilterChip.densePrefixGap : TagFilterChip._prefixGap,
+      ),
       child: SizedBox(
-        width: 14,
+        width: dense
+            ? TagFilterChip.densePrefixWidth
+            : TagFilterChip._prefixWidth,
         child: Center(
           child: Text(
             '#',
             style: TextStyle(
               color: colorDot,
               fontWeight: FontWeight.w800,
-              fontSize: 12.5,
+              fontSize: dense ? TagFilterChip.denseFontSize : 12.5,
             ),
           ),
         ),

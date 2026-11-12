@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
+import '../../diaries/widgets/tag_filter_chip.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 
 import '../../widgets/expressive_state_blend.dart';
@@ -35,12 +36,12 @@ class NotebookSwitcherChip extends StatelessWidget {
 
   /// 名称最多显示的字符数，超出截断加“…”。
   static const int maxLabelCharacters = 8;
-  static const double _horizontalPadding = 10;
-  static const double _iconSize = 14;
-  static const double _iconGap = 6;
-  static const double _caretGap = 4;
-  static const double _caretSize = 10;
-  static const double _radius = 12;
+  static const double _horizontalPadding = 8;
+  static const double _iconSize = 12;
+  static const double _iconGap = 5;
+  static const double _caretGap = 3;
+  static const double _caretSize = 9;
+  static const double _radius = 10;
 
   /// 胶囊上显示的名称（截断后）。
   static String labelFor(
@@ -62,6 +63,8 @@ class NotebookSwitcherChip extends StatelessWidget {
 
   static TextStyle _labelStyle(BuildContext context) =>
       Theme.of(context).textTheme.labelMedium!.copyWith(
+        // 与旁边的紧凑标签胶囊同一字号。
+        fontSize: TagFilterChip.denseFontSize,
         fontWeight: MediaQuery.boldTextOf(context)
             ? FontWeight.w700
             : FontWeight.w600,

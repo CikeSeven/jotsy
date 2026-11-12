@@ -14,10 +14,17 @@ class TagFilterClearButton extends StatefulWidget {
     super.key,
     required this.hasSelection,
     required this.onClear,
+    this.height = width + 6,
   });
 
   final bool hasSelection;
   final VoidCallback onClear;
+
+  /// 按钮占的宽度（标签栏排版按它留格子，见 `TagFilterLayoutCache`）。
+  static const double width = 22;
+
+  /// 按钮的高度，与旁边的标签胶囊同高（由标签栏传入）。
+  final double height;
 
   @override
   State<TagFilterClearButton> createState() => _TagFilterClearButtonState();
@@ -104,7 +111,7 @@ class _TagFilterClearButtonState extends State<TagFilterClearButton>
         angle: _baseAngle + _rotation.value,
         child: Transform.scale(scale: _scale.value, child: child),
       ),
-      // 宽度受标签栏布局（TagFilterLayout 固定 26dp）约束，至少补齐读屏语义。
+      // 宽度受标签栏布局（TagFilterLayout 按 [TagFilterClearButton.width] 留格子）约束，至少补齐读屏语义。
       child: Semantics(
         button: true,
         label: context.l10n.tagFilterClearLabel,
@@ -115,8 +122,8 @@ class _TagFilterClearButtonState extends State<TagFilterClearButton>
           onTapCancel: () => _setPressed(false),
           onTap: () => unawaited(_clear()),
           child: SizedBox(
-            width: 26,
-            height: 32,
+            width: TagFilterClearButton.width,
+            height: widget.height,
             child: Center(
               child: AnimatedScale(
                 scale: _pressed ? 0.8 : 1,
@@ -127,7 +134,7 @@ class _TagFilterClearButtonState extends State<TagFilterClearButton>
                 curve: ExpressiveMotion.spatial,
                 child: FaIcon(
                   FontAwesomeIcons.xmark,
-                  size: 16,
+                  size: 13,
                   color: widget.hasSelection
                       ? colors.primary
                       : colors.onSurfaceVariant,

@@ -58,12 +58,17 @@ abstract final class ExpressiveMotion {
   /// - [springIndicator]：选中指示器在导航项之间滑动。偏软、过冲约 2.5%：
   ///   起步不猛、落点轻轻越过再收回，配合途中按速度的拉伸，看起来是一滴
   ///   滑过去的水而不是一块弹过去的板。
+  /// - [springPage]：首页翻页（点按底栏切页与松手吸附到页）。响应速度与
+  ///   [springIndicator] 相近，两者同时落位；阻尼比高，过冲不到千分之二
+  ///   （一整屏也不到 1 像素）——整页内容晃动会显得廉价，弹性留给指示器。
   static final SpringDescription springSpatial =
       SpringDescription.withDampingRatio(mass: 1, stiffness: 380, ratio: 0.8);
   static final SpringDescription springSpatialFast =
       SpringDescription.withDampingRatio(mass: 1, stiffness: 800, ratio: 0.6);
   static final SpringDescription springIndicator =
       SpringDescription.withDampingRatio(mass: 1, stiffness: 320, ratio: 0.76);
+  static final SpringDescription springPage =
+      SpringDescription.withDampingRatio(mass: 1, stiffness: 340, ratio: 0.9);
 
   /// 让无界控制器 [controller] 以弹簧 [spring] 从当前值、当前速度奔向
   /// [target]。

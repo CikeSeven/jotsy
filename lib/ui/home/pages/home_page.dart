@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_fab.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_scope.dart';
@@ -21,10 +20,12 @@ import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:node_diary/ui/home/controllers/home_bar_scroll_hider.dart';
 import 'package:node_diary/ui/home/controllers/page_position_listenable.dart';
+import 'package:node_diary/ui/home/controllers/page_spring_driver.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/models/home_tab.dart';
+import 'package:node_diary/ui/home/models/home_tab_page_order.dart';
 import 'package:node_diary/ui/home/providers/home_bar_settings_provider.dart';
 import 'package:node_diary/ui/home/providers/home_tab_request_provider.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
@@ -32,6 +33,7 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';
+import 'package:node_diary/ui/home/widgets/home_tab_depth.dart';
 import 'package:node_diary/ui/home/widgets/home_tab_entrance.dart';
 import 'package:node_diary/ui/widgets/primary_shortcut.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
@@ -44,17 +46,18 @@ import 'package:node_diary/ui/settings/controllers/cloud_backup_auto_scheduler.d
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/core/services/app_platform.dart';
-import 'package:node_diary/core/services/settings_service.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../../widgets/launch_reveal.dart';
 import '../../ai/controllers/ai_chat_return_flow.dart';
 import '../../ai/providers/ai_chat_return_provider.dart';
 part '../controllers/home_page_controller.dart';
 part 'home_page_chrome.dart';
+part 'home_page_pager.dart';
 part 'home_page_shortcuts.dart';
 
 /// 主框架页：承载 Tab 导航（日记 / 待办 / 日历 / 探索）。设置不是 Tab，从
@@ -70,8 +73,17 @@ part 'home_page_shortcuts.dart';
 /// - 窄于 600：底栏 + 全局 FAB，与改版前完全相同；
 /// - 600 及以上：左侧 [HomeNavRail]（新建按钮在栏顶，对所有 Tab 有效），没有
 ///   底栏、全局 FAB 与玻璃栏的并排按钮，不能左右滑动切页，切页改为新 Tab
-///   淡入并轻微放大（[HomeTabEntrance]），“滚动时隐藏”与“指示器跟随滑动”
-///   不生效。
+///   沿侧边栏方向移入、淡入并轻微放大（[HomeTabEntrance]），“滚动时隐藏”与
+///   “指示器跟随滑动”不生效。
+///
+/// 窄窗口切页（点按与左右滑动同一套运动）：
+/// - 页面由真弹簧推动（[PageSpringDriver]，松手吸附同为
+///   `ExpressiveMotion.springPage`），与底栏指示器的弹簧同时落位；途中再点
+///   别的 Tab 带着速度改道，弹簧途中也能用手指接住；
+/// - 跨过几个 Tab 时临时把目标排到当前页隔壁（[HomeTabPageOrder]），只滑
+///   一页，停稳后换回底栏顺序；
+/// - 途中每页按离视口中心的距离缩成圆角卡片并压暗（[HomeTabDepth]），落位时
+///   铺满；减少动画时直接跳页、没有景深。
 /// 窗口拖动跨过 600 时，页面区挂在 `_contentKey` 这个 GlobalKey 下随外壳
 /// 搬家而不重建，各 Tab 的状态（滚动位置、筛选、日记本范围）都保留。
 ///
@@ -122,6 +134,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   // `_HomePageController.syncVisibleTabs` 换算到新列表。日记排在底栏中间、
   // 不一定是第 0 个，两个下标在 initState 中按身份取日记的位置。
   late List<HomeTab> _tabs;
+
+  /// PageView 的子页顺序：静止时等于 [_tabs]，跨页切换途中临时把目标排到
+  /// 当前页隔壁（见 [HomeTabPageOrder]）。PageView 的页码、[_visibleTabs]
+  /// 与景深都按它的显示下标；[_currentIndex] / [_targetIndex] 仍是 [_tabs]
+  /// 中的下标。
+  late HomeTabPageOrder _pageOrder;
   late int _currentIndex;
   late int _targetIndex;
   int _tabSwitchGeneration = 0;
@@ -159,8 +177,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   final Map<HomeTab, ScrollController> _tabScrollControllers =
       <HomeTab, ScrollController>{};
 
-  /// PageView 小数页码的监听包装，开启“指示器跟随滑动”时交给底栏。
+  /// PageView 小数页码换算到底栏上的位置，开启“指示器跟随滑动”时交给底栏。
   late final PagePositionListenable _pagePosition;
+
+  /// PageView 的小数页码（显示序），交给背景插值与翻页景深。
+  late final PagePositionListenable _displayPosition;
 
   /// 底栏是否因“滚动时隐藏”而收起。
   ///
@@ -188,6 +209,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   /// 宽窗口切页的次数：每次加一，[HomeTabEntrance] 据此重播入场。
   int _wideEntranceGeneration = 0;
+
+  /// 宽窗口最近一次切页在侧边栏上的方向（往下 1、往上 -1）。
+  int _wideEntranceDirection = 0;
 
   /// 首页快捷键的焦点：首页路由的焦点作用域默认聚焦它（autofocus），从
   /// 推入的页面返回时由路由恢复，快捷键随之重新生效。
@@ -232,15 +256,21 @@ class _HomePageState extends ConsumerState<HomePage> {
     _tabs = visibleHomeTabs(ref.read(appFeaturesProvider));
     // 启动落在日记页（它始终可见）；PageController 的初始页取自这里。
     _currentIndex = _targetIndex = _tabs.indexOf(HomeTab.diaries);
+    _pageOrder = HomeTabPageOrder.canonical(_tabs);
     _controller = _HomePageController(this);
     _controller.init();
     _visibleTabs = ValueNotifier<_VisibleTabRange>(
       _VisibleTabRange(_currentIndex, _currentIndex),
     );
     _controller.pageController.addListener(_syncVisibleTabs);
+    _displayPosition = PagePositionListenable(
+      _controller.pageController,
+      _currentDisplayIndex,
+    );
     _pagePosition = PagePositionListenable(
       _controller.pageController,
-      () => _currentIndex,
+      _currentDisplayIndex,
+      map: (double page) => _pageOrder.barPosition(page),
     );
     widget.homeHintVisibleListenable.addListener(_handleHomeHintVisibility);
     _updateAutoChecker = AppUpdateAutoChecker(() async {
@@ -305,6 +335,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     _lanSyncNotices?.dispose();
     widget.homeHintVisibleListenable.removeListener(_handleHomeHintVisibility);
     _pagePosition.dispose();
+    _displayPosition.dispose();
     _controller.pageController.removeListener(_syncVisibleTabs);
     _visibleTabs.dispose();
     _controller.dispose();
@@ -329,49 +360,12 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   bool _isValidTabIndex(int index) => index >= 0 && index < _tabs.length;
 
-  int _beginTabSwitch(int targetIndex) {
-    if (!mounted || !_isValidTabIndex(targetIndex)) {
-      return _tabSwitchGeneration;
-    }
-    _tabSwitchGeneration++;
-    _barScrollHider.reset();
-    setState(() {
-      _targetIndex = targetIndex;
-      _isTabSwitching = true;
-      _barHiddenByScroll = false;
-    });
-    return _tabSwitchGeneration;
-  }
+  /// 当前页在 PageView 中的显示下标（读不到页码时的退路）。
+  int _currentDisplayIndex() => _pageOrder.displayIndexOf(_tabs[_currentIndex]);
 
-  void _settleTabSwitch(int fallbackIndex, int generation) {
-    if (!mounted || generation != _tabSwitchGeneration) {
-      return;
-    }
-    final pageController = _controller.pageController;
-    final page = pageController.hasClients ? pageController.page : null;
-    final settledIndex = (page?.round() ?? fallbackIndex)
-        .clamp(0, _tabs.length - 1)
-        .toInt();
-    setState(() {
-      _currentIndex = settledIndex;
-      _targetIndex = settledIndex;
-      _isTabSwitching = false;
-    });
-  }
-
-  void _handlePageChanged(int index) {
-    if (!_isValidTabIndex(index)) {
-      return;
-    }
-    _barScrollHider.reset();
-    setState(() {
-      _currentIndex = index;
-      if (!_isTabSwitching) {
-        _targetIndex = index;
-      }
-      _barHiddenByScroll = false;
-    });
-  }
+  /// 切页编排（home_page_pager.dart）改状态的入口：`setState` 受保护，扩展
+  /// 里不能直接调用。
+  void _setPagerState(VoidCallback fn) => setState(fn);
 
   /// 取 [tab] 的页面，第一次用到时创建并缓存。
   Widget _pageFor(HomeTab tab) {
@@ -499,36 +493,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       );
     });
 
-    final settingsService = ref.watch(settingsServiceProvider).asData?.value;
-    if (settingsService == null) {
-      _controller.pageSwitchCurve =
-          SettingsService.defaultHomeTabSwitchCurveType.curve;
-      return _buildHomeShell(
-        baseTheme: baseTheme,
-        snackBarTheme: snackBarTheme,
-        navItems: navItems,
-        barStyle: barStyle,
-        barBehavior: barBehavior,
-      );
-    }
-
-    return ValueListenableBuilder<HomeTabSwitchCurveType>(
-      valueListenable: settingsService.homeTabSwitchCurveNotifier,
-      builder:
-          (
-            BuildContext context,
-            HomeTabSwitchCurveType curveType,
-            Widget? child,
-          ) {
-            _controller.pageSwitchCurve = curveType.curve;
-            return _buildHomeShell(
-              baseTheme: baseTheme,
-              snackBarTheme: snackBarTheme,
-              navItems: navItems,
-              barStyle: barStyle,
-              barBehavior: barBehavior,
-            );
-          },
+    return _buildHomeShell(
+      baseTheme: baseTheme,
+      snackBarTheme: snackBarTheme,
+      navItems: navItems,
+      barStyle: barStyle,
+      barBehavior: barBehavior,
     );
   }
 
@@ -592,12 +562,14 @@ class _HomePageState extends ConsumerState<HomePage> {
             // 各 Tab 区域的背景画在整个首页 Scaffold 下面（键盘弹出时不动），
             // 按 PageView 的页位置在相邻 Tab 之间插值；宽窗口跳页时交叉淡入。
             // 没有任何 Tab 设背景时只插入不绘制的节点，与接入前一致。
+            // 区域按显示序给：跨页折叠时只在真正相邻的两页之间插值，不会
+            // 掠过中间页的背景。
             AppPagedBackground(
               areas: <AppBackgroundArea>[
-                for (final tab in _tabs) tab.backgroundArea,
+                for (final tab in _pageOrder.order) tab.backgroundArea,
               ],
-              current: _effectiveIndex,
-              position: _pagePosition,
+              current: _pageOrder.displayIndexOf(_effectiveTab),
+              position: _displayPosition,
               interpolate: !wide,
               // Builder：Scaffold 底色要从背景组件之下的 context 读——背景层
               // 在画时首页 Scaffold 透明，否则仍是主题页面底色。
@@ -662,61 +634,24 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
-  Widget _buildPageView() {
-    return ValueListenableBuilder<_VisibleTabRange>(
-      valueListenable: _visibleTabs,
-      builder: (BuildContext context, _VisibleTabRange visible, Widget? _) {
-        return PageView(
-          controller: _controller.pageController,
-          // 宽窗口不能左右滑动切页（鼠标拖动与触控板横滑都不切），只经
-          // 侧边栏与快捷键切换。
-          physics: _isTabSwitching || _wide
-              ? const NeverScrollableScrollPhysics()
-              : const PageScrollPhysics(),
-          onPageChanged: _handlePageChanged,
-          children: <Widget>[
-            for (var index = 0; index < _tabs.length; index++)
-              // 被保活但不可见的 Tab 静音 ticker：其中仍在播放或循环的动画
-              // （加载指示、入场动画等）不再在后台逐帧出帧；切回来时从当前
-              // 时刻续上。滑动途中两侧页面都启用，不会冻结半露出的内容。
-              // 同理关闭不可见 Tab 的 Hero：各 Tab 同属一个路由，否则从日历
-              // 打开预览时，会从后台日记列表里同一篇的封面飞出来。
-              //
-              // 最外层以 Tab 身份为 key：关闭日历 / 探索后其余 Tab 的下标会
-              // 前移，PageView 的列表代理按 key 把已有页面搬到新下标，保活的
-              // 页面状态（滚动位置、筛选等）不会因为换了位置而重建。
-              TickerMode(
-                key: ValueKey<HomeTab>(_tabs[index]),
-                enabled: visible.contains(index),
-                child: HeroMode(
-                  enabled: visible.contains(index),
-                  child: _pageFor(_tabs[index]),
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
+  /// 离整页不到这么多页时按整页算可见区间：弹簧落位时的过冲不到 1 像素，
+  /// 不为这一丝露出唤醒隔壁页的 ticker（折叠途中隔壁正是不该出现的中间页）。
+  static const double _visiblePageSlack = 1e-3;
 
-  /// 根据 PageView 的实时位置更新可见 Tab 区间；只有区间变化才重建。
+  /// 根据 PageView 的实时位置更新可见 Tab 区间（显示下标）；只有区间变化才
+  /// 重建。
   void _syncVisibleTabs() {
     final controller = _controller.pageController;
-    final page = controller.hasClients
-        ? (controller.page ?? _currentIndex.toDouble())
-        : _currentIndex.toDouble();
+    final fallback = _currentDisplayIndex().toDouble();
+    var page = controller.hasClients ? (controller.page ?? fallback) : fallback;
+    final whole = page.roundToDouble();
+    if ((page - whole).abs() < _visiblePageSlack) {
+      page = whole;
+    }
     final next = _VisibleTabRange(page.floor(), page.ceil());
     if (next != _visibleTabs.value) {
       _visibleTabs.value = next;
     }
-  }
-
-  /// 宽窗口切页：重播新 Tab 的入场（见 [HomeTabEntrance]）。
-  void _playWideEntrance() {
-    if (!mounted) {
-      return;
-    }
-    setState(() => _wideEntranceGeneration++);
   }
 
   /// 宽窗口提示的外边距：最宽 [_wideSnackBarMaxWidth]，在侧边栏另一侧的

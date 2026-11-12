@@ -60,6 +60,7 @@ extension _HomePageChrome on _HomePageState {
               removeRight: !ltr,
               child: HomeTabEntrance(
                 generation: _wideEntranceGeneration,
+                direction: _wideEntranceDirection,
                 color: _wideEntranceCoverColor(context),
                 child: content,
               ),

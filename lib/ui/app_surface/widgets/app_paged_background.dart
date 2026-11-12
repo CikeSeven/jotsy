@@ -58,6 +58,14 @@ class AppPagedBackground extends ConsumerStatefulWidget {
     return ExpressiveSurfaces.pageBackground(Theme.of(context).colorScheme);
   }
 
+  /// 背景层此刻是否在画（任何一页有背景时为 true）；不在本组件之下时为
+  /// false。在画时各页的页面底色透明，页面之间的空隙直接露出背景。
+  static bool paintsOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<_AppPagedBackdropScope>()
+          ?.painting ??
+      false;
+
   @override
   ConsumerState<AppPagedBackground> createState() => _AppPagedBackgroundState();
 }

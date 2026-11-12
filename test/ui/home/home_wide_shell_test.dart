@@ -187,6 +187,45 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('the wide entrance moves along the rail direction', (
+    tester,
+  ) async {
+    await _pumpHome(tester);
+    final l10n = _l10n(tester);
+    double entranceShift() => tester
+        .widget<Transform>(
+          find
+              .descendant(
+                of: find.byType(HomeTabEntrance),
+                matching: find.byType(Transform),
+              )
+              .first,
+        )
+        .transform
+        .getTranslation()
+        .y;
+
+    // 静止时不位移。
+    expect(entranceShift(), 0);
+
+    // 日记(1) → 日历(0)：在侧边栏上往上，新页从上方落下来。
+    await tester.tap(_railItem(l10n.navCalendar));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 32));
+    expect(entranceShift(), lessThan(0));
+    await tester.pumpAndSettle();
+    expect(entranceShift(), 0);
+
+    // 日历(0) → 探索(2)：往下，新页从下方升上来。
+    await tester.tap(_railItem(l10n.navExplore));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 32));
+    expect(entranceShift(), greaterThan(0));
+    await tester.pumpAndSettle();
+    expect(entranceShift(), 0);
+    await _unmount(tester);
+  });
+
   testWidgets('reduce motion switches wide tabs without the fade', (
     tester,
   ) async {

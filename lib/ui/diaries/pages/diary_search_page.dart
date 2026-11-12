@@ -398,7 +398,6 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                         maxVisibleTags: diaryCardTagLimit,
                         cardStyle: cardStyle,
                         moodPalette: moodPalette,
-                        onCreate: () {},
                         onOpenEditor: (diary, coverHero) =>
                             unawaited(_openPreview(diary, coverHero)),
                         onToggleSelection: (_, __) {},
@@ -629,7 +628,7 @@ class _NoResults extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        DiariesEmptyState(onCreate: () {}, isSearchResultEmpty: true),
+        const DiariesEmptyState(isSearchResultEmpty: true),
         if (onClearFilters case final clear?)
           TextButton(
             key: const ValueKey<String>('search_clear_filters'),

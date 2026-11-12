@@ -302,7 +302,6 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                         moodPalette: ref.watch(
                                           diaryMoodPaletteProvider,
                                         ),
-                                        onCreate: _controller.noopCreate,
                                         onOpenEditor: (diary, coverHero) =>
                                             _controller.openPreview(
                                               diary.diary.diaryId,

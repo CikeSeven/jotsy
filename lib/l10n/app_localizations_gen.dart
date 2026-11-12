@@ -2190,12 +2190,6 @@ abstract class AppLocalizations {
   /// **'No diaries yet'**
   String get autoT0154;
 
-  /// Auto-generated metadata for autoT0155.
-  ///
-  /// In en, this message translates to:
-  /// **'Create diary'**
-  String get autoT0155;
-
   /// Auto-generated metadata for autoT0156.
   ///
   /// In en, this message translates to:

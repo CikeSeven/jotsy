@@ -1204,9 +1204,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0154 => 'No diaries yet';
 
   @override
-  String get autoT0155 => 'Create diary';
-
-  @override
   String get autoT0156 => 'Cover load failed';
 
   @override

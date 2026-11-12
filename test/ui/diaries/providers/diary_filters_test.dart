@@ -98,6 +98,23 @@ void main() {
     expect(selected(), isEmpty);
   });
 
+  test('toggling off the last tag leaves multi-select', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final notifier = container.read(diaryFilterProvider.notifier);
+    DiaryFilterState state() => container.read(diaryFilterProvider);
+
+    notifier.toggleTag(1, true);
+    notifier.toggleTag(2, true);
+    notifier.toggleTag(2, false);
+    // 还剩一个：仍在多选模式。
+    expect(state().selectedTagIds, <int>{1});
+    expect(state().isMultiSelect, isTrue);
+    notifier.toggleTag(1, false);
+    expect(state().selectedTagIds, isEmpty);
+    expect(state().isMultiSelect, isFalse);
+  });
+
   test('setTags filters non-positive ids and replaces selected tags', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

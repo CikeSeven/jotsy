@@ -143,8 +143,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const int _diaryPageSize = diaryFirstPageSize;
   static const double _loadMoreTriggerExtent = 420;
   static const double _listBottomExtraSpace = 12;
-  static const double _tagSectionTopGap = 2;
-  static const double _tagSectionBottomGap = 4;
+
+  /// 标签栏一行外再加的上下留白：栏自身上下已有 4dp，胶囊改为紧凑的 28dp
+  /// 后外圈只补 0 / 2dp，免得整行显得空（上方紧邻搜索条，下方还有列表的
+  /// 顶部间距）。
+  static const double _tagSectionTopGap = 0;
+  static const double _tagSectionBottomGap = 2;
 
   /// 收起时标签栏一行的高度（与加载占位同高）。
   static const double _tagBarHeight =
@@ -591,7 +595,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               right: AppSpacing.m,
             ),
             child: SizedBox(
-              height: 40,
+              height: _tagBarHeight,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -948,10 +952,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     ),
                                     pendingHideDiaryIds: _pendingHideDiaryIds,
                                     appearingDiaryIds: _appearingDiaryIds,
-                                    onCreate: () => unawaited(
-                                      _controller
-                                          .openCreateEditorWithDraftPrompt(),
-                                    ),
                                     onOpenEditor: _controller.openDiary,
                                     onToggleSelection: (noteId, forceSelect) =>
                                         _controller.toggleSelection(

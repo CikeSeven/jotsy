@@ -53,7 +53,8 @@ void main() {
           );
           expect(
             header.geometry!.scrollExtent,
-            tester.getSize(tagBarFinder).height + 6,
+            // 标签栏外圈上 0 下 2dp（diaries_page 的 _tagSection*Gap）。
+            tester.getSize(tagBarFinder).height + 2,
           );
           expect(verticalDiaryScroll(tester).position.pixels, 0);
           final container = ProviderScope.containerOf(

@@ -1231,9 +1231,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get autoT0154 => 'Записей пока нет';
 
   @override
-  String get autoT0155 => 'Создать запись';
-
-  @override
   String get autoT0156 => 'Не удалось загрузить обложку';
 
   @override

@@ -156,7 +156,8 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
   }
 
   /// 单个标签开关，保留其余已选的标签（多选：同时带有这些标签才匹配），
-  /// 并进入多选模式。
+  /// 并进入多选模式。把最后一个已选的也取消掉时直接回到单选模式，与点 ✕
+  /// 的结果相同：一个都没选时留在多选模式没有意义，还得再点 ✕ 才能恢复。
   void toggleTag(int tagId, bool selected) {
     final next = <int>{...state.selectedTagIds};
     if (selected) {
@@ -164,7 +165,7 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     } else {
       next.remove(tagId);
     }
-    state = state.copyWith(selectedTagIds: next, multiSelect: true);
+    state = state.copyWith(selectedTagIds: next, multiSelect: next.isNotEmpty);
   }
 
   /// 进入多选模式，已选的标签不变（单选模式下长按已选中的那一个）。

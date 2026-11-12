@@ -131,7 +131,6 @@ class _DiaryCardStylePreviewState extends ConsumerState<DiaryCardStylePreview> {
                           selectedDiaryIds: _selected,
                           isSelectionMode: _selected.isNotEmpty,
                           maxVisibleTags: controller.tagLimit,
-                          onCreate: () {},
                           onOpenEditor: (diary, _) =>
                               _toggle(diary.diary.diaryId),
                           onToggleSelection: (diaryId, _) => _toggle(diaryId),

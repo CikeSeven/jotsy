@@ -27,7 +27,6 @@ class CalendarDayCardsSliver extends StatefulWidget {
     required this.diaries,
     required this.maxVisibleTags,
     required this.onOpenDiary,
-    required this.onCreate,
     this.cardStyle = DiaryCardStyle.defaults,
     this.moodPalette,
     this.commentCounts = const <String, int>{},
@@ -37,7 +36,6 @@ class CalendarDayCardsSliver extends StatefulWidget {
   final List<DiaryWithTags> diaries;
   final int maxVisibleTags;
   final DiaryOpenCallback onOpenDiary;
-  final VoidCallback onCreate;
 
   /// 与日记列表相同的用户卡片样式。
   final DiaryCardStyle cardStyle;
@@ -116,7 +114,6 @@ class _CalendarDayCardsSliverState extends State<CalendarDayCardsSliver>
             selectedDiaryIds: const <String>{},
             isSelectionMode: false,
             maxVisibleTags: widget.maxVisibleTags,
-            onCreate: widget.onCreate,
             onOpenEditor: widget.onOpenDiary,
             onToggleSelection: (_, __) {},
             cardStyle: widget.cardStyle,

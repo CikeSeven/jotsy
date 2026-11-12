@@ -56,7 +56,6 @@ void main() {
                 selectedDiaryIds: const <String>{},
                 isSelectionMode: false,
                 maxVisibleTags: 3,
-                onCreate: () {},
                 onOpenEditor: (_, _) {},
                 onToggleSelection: (_, _) {},
               ),

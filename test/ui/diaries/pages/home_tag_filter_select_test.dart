@@ -113,19 +113,11 @@ void main() {
     await h.settleAll();
     expect(selected(tester), <int>{work, travel});
 
-    // 一个都不剩时仍在多选模式，✕ 还在。
+    // 逐个取消到一个都不剩：直接回到单选模式，✕ 收起；之后单击只选一个。
     await tester.tap(chip('工作'));
     await h.settleAll();
-    await tester.tap(chip('旅行'));
-    await h.settleAll();
-    expect(selected(tester), isEmpty);
     expect(filter(tester).isMultiSelect, isTrue);
-    expect(clearButton(), findsOneWidget);
-
-    // 点 ✕：清空并回到单选模式，✕ 收起；之后单击又只选一个。
-    await tester.tap(chip('工作'));
-    await h.settleAll();
-    await tester.tap(clearButton());
+    await tester.tap(chip('旅行'));
     await h.settleAll();
     expect(selected(tester), isEmpty);
     expect(filter(tester).isMultiSelect, isFalse);
@@ -135,6 +127,17 @@ void main() {
     await tester.tap(chip('旅行'));
     await h.settleAll();
     expect(selected(tester), <int>{travel});
+    expect(filter(tester).isMultiSelect, isFalse);
+
+    // 点 ✕：清空并回到单选模式，✕ 收起。
+    await tester.longPress(chip('工作'));
+    await h.settleAll();
+    expect(selected(tester), <int>{work, travel});
+    await tester.tap(clearButton());
+    await h.settleAll();
+    expect(selected(tester), isEmpty);
+    expect(filter(tester).isMultiSelect, isFalse);
+    expect(clearButton(), findsNothing);
     expect(tester.takeException(), isNull);
     await h.unmount();
   });

@@ -103,7 +103,6 @@ void main() {
                   diaries: diaries,
                   maxVisibleTags: SettingsService.defaultDiaryCardTagLimit,
                   onOpenDiary: (_, _) {},
-                  onCreate: () {},
                 ),
               ),
             ],

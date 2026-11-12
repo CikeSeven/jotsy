@@ -64,7 +64,6 @@ Future<void> _pump(
                   isSelectionMode: false,
                   maxVisibleTags: SettingsService.defaultDiaryCardTagLimit,
                   cardStyle: style,
-                  onCreate: () {},
                   onOpenEditor: (_, _) {},
                   onToggleSelection: (_, _) {},
                   availableWidth: availableWidth,

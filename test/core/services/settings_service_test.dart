@@ -1213,4 +1213,35 @@ void main() {
       },
     );
   });
+
+  group('SettingsService removed tab switch curve', () {
+    const legacyKey = 'app.settings.home_tab_switch_curve';
+
+    test('create drops the stored legacy curve', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        legacyKey: 'linear',
+      });
+      await SettingsService.create();
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(legacyKey), isFalse);
+    });
+
+    test('backups no longer carry it and old backups still restore', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final settings = await SettingsService.create();
+      expect(
+        BackupSettings.capture(settings).containsKey('homeTabSwitchCurveType'),
+        isFalse,
+      );
+
+      // 旧版备份带着这个字段：忽略它，其余设置照常恢复。
+      await BackupSettings.restore(settings, <String, dynamic>{
+        'themeMode': 'dark',
+        'homeTabSwitchCurveType': 'linear',
+      });
+      expect(settings.themeModeNotifier.value.name, 'dark');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(legacyKey), isFalse);
+    });
+  });
 }

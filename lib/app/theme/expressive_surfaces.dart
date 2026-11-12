@@ -14,6 +14,17 @@ abstract final class ExpressiveSurfaces {
   /// 仍在其上清晰浮起。
   static Color pageBackground(ColorScheme colors) => colors.surface;
 
+  /// 首页翻页途中，缩成卡片的两页之间露出的“舞台”底色：页面底色向 scrim
+  /// 压暗一档，卡片（中途只压暗约一半）在它上面浮得起来。只在区域没有背景
+  /// 图时由 `HomeTabDepth` 铺在缩小的页面后面；静止时被页面整个盖住，不影响
+  /// 任何静态画面。暗色的页面底色本就很深，压得更多才分得出层次。
+  static Color tabStage(ColorScheme colors) => Color.alphaBlend(
+    colors.scrim.withValues(
+      alpha: colors.brightness == Brightness.light ? 0.14 : 0.42,
+    ),
+    pageBackground(colors),
+  );
+
   /// 卡片纯净表面底色：
   /// - 亮色模式下使用纯白 (surfaceContainerLowest)，彻底消除发灰与脏感；
   /// - 暗色模式下使用温和深灰 (surfaceContainerLow)，与深色底形成舒适层次。

@@ -12,8 +12,8 @@ import '../../widgets/palette_color_picker.dart';
 
 /// 外观页的「主题」与「界面」两组。
 ///
-/// 「主题」：明暗模式按钮组与主题色色板；「界面」：字体大小与标签页切换
-/// 曲线。只负责这两组 UI，不耦合标签或编辑器设置。主题色的色系为统一色板加
+/// 「主题」：明暗模式按钮组与主题色色板；「界面」：字体大小。只负责这两组
+/// UI，不耦合标签或编辑器设置。主题色的色系为统一色板加
 /// 末尾的“黑白”（[kThemeColorPaletteFamilies]）；灰色与黑白怎样装配成主题见
 /// `appColorSchemeFromSeed`。
 class SettingsThemeSection extends StatelessWidget {
@@ -34,93 +34,76 @@ class SettingsThemeSection extends StatelessWidget {
           builder: (BuildContext context, ThemeMode mode, Widget? child) {
             return ValueListenableBuilder<Color>(
               valueListenable: settingsService.themeSeedColorNotifier,
-              builder: (BuildContext context, Color themeSeedColor, Widget? child) {
-                return ValueListenableBuilder<HomeTabSwitchCurveType>(
-                  valueListenable: settingsService.homeTabSwitchCurveNotifier,
-                  builder:
-                      (
-                        BuildContext context,
-                        HomeTabSwitchCurveType curveType,
-                        Widget? child,
-                      ) {
-                        return ValueListenableBuilder<double>(
-                          valueListenable: settingsService.fontScaleNotifier,
-                          builder:
-                              (
-                                BuildContext context,
-                                double fontScale,
-                                Widget? child,
-                              ) {
-                                final selection = resolveColorPaletteSelection(
-                                  initialColor: themeSeedColor.toARGB32(),
-                                  fallbackFamilyIndex: _fallbackFamilyIndex,
-                                  fallbackColorIndex: _fallbackColorIndex,
-                                  preserveUnknownColor: false,
-                                  families: kThemeColorPaletteFamilies,
-                                );
-                                final selectedFamily =
-                                    kThemeColorPaletteFamilies[selection
-                                        .familyIndex];
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+              builder:
+                  (BuildContext context, Color themeSeedColor, Widget? child) {
+                    return ValueListenableBuilder<double>(
+                      valueListenable: settingsService.fontScaleNotifier,
+                      builder:
+                          (
+                            BuildContext context,
+                            double fontScale,
+                            Widget? child,
+                          ) {
+                            final selection = resolveColorPaletteSelection(
+                              initialColor: themeSeedColor.toARGB32(),
+                              fallbackFamilyIndex: _fallbackFamilyIndex,
+                              fallbackColorIndex: _fallbackColorIndex,
+                              preserveUnknownColor: false,
+                              families: kThemeColorPaletteFamilies,
+                            );
+                            final selectedFamily =
+                                kThemeColorPaletteFamilies[selection
+                                    .familyIndex];
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SettingsCardGroup(
+                                  title: l10n.settingsThemeGroup,
                                   children: <Widget>[
-                                    SettingsCardGroup(
-                                      title: l10n.settingsThemeGroup,
-                                      children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.all(16),
-                                          child: _ThemeModeButtons(
-                                            mode: mode,
-                                            onChanged:
-                                                settingsService.setThemeMode,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(16),
-                                          child: PaletteColorPicker(
-                                            selectedColor: themeSeedColor,
-                                            selectedFamilyIndex:
-                                                selection.familyIndex,
-                                            selectedColorIndex:
-                                                selection.colorIndex,
-                                            selectedFamily: selectedFamily,
-                                            families:
-                                                kThemeColorPaletteFamilies,
-                                            onSelectFamily: (int familyIndex) {
-                                              settingsService.setThemeSeedColor(
-                                                kThemeColorPaletteFamilies[familyIndex]
-                                                    .colors[0],
-                                              );
-                                            },
-                                            onSelectColor: settingsService
-                                                .setThemeSeedColor,
-                                          ),
-                                        ),
-                                      ],
+                                    Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: _ThemeModeButtons(
+                                        mode: mode,
+                                        onChanged: settingsService.setThemeMode,
+                                      ),
                                     ),
-                                    const SizedBox(height: 16),
-                                    SettingsCardGroup(
-                                      title: l10n.settingsInterfaceGroup,
-                                      children: <Widget>[
-                                        _FontScaleSelector(
-                                          selectedScale: fontScale,
-                                          onChanged:
-                                              settingsService.setFontScale,
-                                        ),
-                                        _TabSwitchCurveSelector(
-                                          selectedCurveType: curveType,
-                                          onChanged: settingsService
-                                              .setHomeTabSwitchCurveType,
-                                        ),
-                                      ],
+                                    Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: PaletteColorPicker(
+                                        selectedColor: themeSeedColor,
+                                        selectedFamilyIndex:
+                                            selection.familyIndex,
+                                        selectedColorIndex:
+                                            selection.colorIndex,
+                                        selectedFamily: selectedFamily,
+                                        families: kThemeColorPaletteFamilies,
+                                        onSelectFamily: (int familyIndex) {
+                                          settingsService.setThemeSeedColor(
+                                            kThemeColorPaletteFamilies[familyIndex]
+                                                .colors[0],
+                                          );
+                                        },
+                                        onSelectColor:
+                                            settingsService.setThemeSeedColor,
+                                      ),
                                     ),
                                   ],
-                                );
-                              },
-                        );
-                      },
-                );
-              },
+                                ),
+                                const SizedBox(height: 16),
+                                SettingsCardGroup(
+                                  title: l10n.settingsInterfaceGroup,
+                                  children: <Widget>[
+                                    _FontScaleSelector(
+                                      selectedScale: fontScale,
+                                      onChanged: settingsService.setFontScale,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
+                    );
+                  },
             );
           },
         );
@@ -305,131 +288,6 @@ class _FontScaleSelector extends StatelessWidget {
         ],
       ),
       onTap: () => _showFontScaleDialog(context),
-    );
-  }
-}
-
-class _TabSwitchCurveSelector extends StatelessWidget {
-  const _TabSwitchCurveSelector({
-    required this.selectedCurveType,
-    required this.onChanged,
-  });
-
-  final HomeTabSwitchCurveType selectedCurveType;
-  final ValueChanged<HomeTabSwitchCurveType> onChanged;
-
-  String _labelForCurve(
-    AppLocalizations l10n,
-    HomeTabSwitchCurveType curveType,
-  ) {
-    return switch (curveType) {
-      HomeTabSwitchCurveType.easeOutCirc =>
-        l10n.settingsTabSwitchCurveEaseOutCirc,
-      HomeTabSwitchCurveType.easeOutCubic =>
-        l10n.settingsTabSwitchCurveEaseOutCubic,
-      HomeTabSwitchCurveType.linear => l10n.settingsTabSwitchCurveLinear,
-    };
-  }
-
-  Future<void> _showCurvePickerDialog(BuildContext context) async {
-    final result = await showAppDialog<HomeTabSwitchCurveType>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final l10n = dialogContext.l10n;
-        return AlertDialog(
-          title: Text(l10n.settingsTabSwitchCurve),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                selected:
-                    selectedCurveType == HomeTabSwitchCurveType.easeOutCirc,
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                onTap: () => Navigator.of(
-                  dialogContext,
-                ).pop(HomeTabSwitchCurveType.easeOutCirc),
-                leading: FaIcon(
-                  selectedCurveType == HomeTabSwitchCurveType.easeOutCirc
-                      ? FontAwesomeIcons.circleDot
-                      : FontAwesomeIcons.circle,
-                  size: 16,
-                ),
-                title: Text(l10n.settingsTabSwitchCurveEaseOutCirc),
-              ),
-              ListTile(
-                selected:
-                    selectedCurveType == HomeTabSwitchCurveType.easeOutCubic,
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                onTap: () => Navigator.of(
-                  dialogContext,
-                ).pop(HomeTabSwitchCurveType.easeOutCubic),
-                leading: FaIcon(
-                  selectedCurveType == HomeTabSwitchCurveType.easeOutCubic
-                      ? FontAwesomeIcons.circleDot
-                      : FontAwesomeIcons.circle,
-                  size: 16,
-                ),
-                title: Text(l10n.settingsTabSwitchCurveEaseOutCubic),
-              ),
-              ListTile(
-                selected: selectedCurveType == HomeTabSwitchCurveType.linear,
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                onTap: () => Navigator.of(
-                  dialogContext,
-                ).pop(HomeTabSwitchCurveType.linear),
-                leading: FaIcon(
-                  selectedCurveType == HomeTabSwitchCurveType.linear
-                      ? FontAwesomeIcons.circleDot
-                      : FontAwesomeIcons.circle,
-                  size: 16,
-                ),
-                title: Text(l10n.settingsTabSwitchCurveLinear),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    if (result == null || result == selectedCurveType) {
-      return;
-    }
-    onChanged(result);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final currentLabel = _labelForCurve(l10n, selectedCurveType);
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Text(l10n.settingsTabSwitchCurve),
-      subtitle: Text(l10n.settingsTabSwitchCurveSubtitle),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            currentLabel,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(width: 8),
-          const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-        ],
-      ),
-      onTap: () => _showCurvePickerDialog(context),
     );
   }
 }

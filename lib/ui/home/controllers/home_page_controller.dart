@@ -3,19 +3,20 @@ part of 'package:node_diary/ui/home/pages/home_page.dart';
 /// Home 页控制器。
 ///
 /// 职责边界：
-/// - 处理底部导航页切换；
+/// - 处理底部导航页切换（弹簧推动、跨页折叠、途中改道，见 [_animateToTab]）；
 /// - 功能管理开关改变可见 Tab 时，对齐页面下标并回收被关闭的 Tab；
 /// - 处理启动提示仅展示一次逻辑；
 /// - 不直接构建 UI。
 class _HomePageController {
   _HomePageController(this._state);
 
-  static const Duration _pageSwitchDuration = ExpressiveMotion.medium;
   static const Duration _scrollToTopDuration = ExpressiveMotion.standard;
 
   final _HomePageState _state;
   late final PageController pageController;
-  Curve pageSwitchCurve = SettingsService.defaultHomeTabSwitchCurveType.curve;
+
+  /// 点按切页的弹簧；连点时带着上一段的速度改道。
+  final PageSpringDriver _pageSpring = PageSpringDriver();
 
   /// 被关闭的 Tab 留下的滚动控制器：页面在本帧末尾才卸载、解除挂载，
   /// 帧后（或首页销毁时）再释放，避免释放仍挂着位置的控制器。
@@ -84,6 +85,8 @@ class _HomePageController {
     }
 
     _state._tabs = List<HomeTab>.unmodifiable(next);
+    // 折叠途中的显示序作废：新列表一律从规范序开始（下面按规范下标校正）。
+    _state._pageOrder = HomeTabPageOrder.canonical(next);
     _state._tabSwitchGeneration++;
     _state._isTabSwitching = false;
     _state._currentIndex = keptIndex;
@@ -100,6 +103,10 @@ class _HomePageController {
       }
     }
     _state._visibleTabs.value = _VisibleTabRange(keptIndex, keptIndex);
+    // correctPixels 不发通知：背景插值、景深与底栏位置按新页码刷新（监听者
+    // 都在首页子树内，build 期间允许标脏）。
+    _state._displayPosition.refresh();
+    _state._pagePosition.refresh();
 
     final generation = _state._tabSwitchGeneration;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -119,13 +126,14 @@ class _HomePageController {
     });
   }
 
-  /// 响应底部导航点击：切到其他 Tab 时执行切页动画；重复点击当前 Tab 时
-  /// 把它的主列表滚回顶部（移动端通用的“回到顶部”手势）。
+  /// 响应底部导航点击：切到其他 Tab 时执行切页动画（切页途中点别的 Tab
+  /// 即改道）；重复点击当前 Tab 时把它的主列表滚回顶部（移动端通用的
+  /// “回到顶部”手势）。
   Future<void> onTap(int index) {
     if (index == _state._targetIndex && !_state._isTabSwitching) {
       return _scrollTabToTop(index);
     }
-    return _switchToTab(index, allowDuringSwitch: false);
+    return _switchToTab(index);
   }
 
   /// 把 [index] 对应 Tab 的主列表滚回顶部。
@@ -175,15 +183,10 @@ class _HomePageController {
 
   /// 统一维护目标态、重复点击拦截与动画结束校正。
   ///
-  /// 底部导航点击不允许打断正在进行的切页，避免多段动画竞争；系统返回
-  /// 则允许回到日记页，因为 PopScope 已经基于目标态拦截了本次退出。
-  Future<void> _switchToTab(
-    int index, {
-    required bool allowDuringSwitch,
-  }) async {
-    if (_state._isTabSwitching && !allowDuringSwitch) {
-      return;
-    }
+  /// 切页途中可以再次切换（点按、快捷键、返回键都一样）：新的一次递增代次、
+  /// 接手页面运动（弹簧带着速度改道），上一次的结算因代次不符而作废，只有
+  /// 最后一次在停稳后结算。
+  Future<void> _switchToTab(int index) async {
     if (index == _state._targetIndex) {
       return;
     }
@@ -199,33 +202,40 @@ class _HomePageController {
     }
   }
 
-  /// 切页动画：
-  /// - 宽窗口直接跳页并淡入（见上）；
-  /// - 减少动画时直接跳页；
-  /// - 跨多页时先无动画跳到目标的相邻页，只动画最后一页，避免 250ms 内
-  ///   把中间的日历/探索页整页滑过（既晃眼又要额外布局绘制中间页）。
-  ///   下标是当前可见列表中的位置，关闭了中间的 Tab 时自然只剩一步。
+  /// 切页运动：
+  /// - 宽窗口：直接跳页，由 HomeTabEntrance 沿侧边栏方向播放入场（减少
+  ///   动画时它直接到位）；
+  /// - 减少动画：直接跳页；
+  /// - 其余：先按 [HomeTabPageOrder.routeTo] 求路线——目标不在行进方向的
+  ///   隔壁时临时换序（可见的页原地不动，必要时同步平移页码），再由
+  ///   [PageSpringDriver] 从当前位置、当前速度用弹簧推到目标。跨几个 Tab
+  ///   也只滑一页，中间页一帧都不出现；停稳后由 `_settleTabSwitch` 换回
+  ///   底栏顺序。
   Future<void> _animateToTab(int index) async {
-    // 宽窗口不滑动：直接跳到目标页，由 HomeTabEntrance 播放淡入与轻微放大
-    // （减少动画时它直接到位）。
-    if (_state._wide) {
-      _state._playWideEntrance();
+    if (_state._wide || ExpressiveMotion.reduceMotion(_state.context)) {
+      // 跳页不经过中间页，用不着折叠；途中改道到这里时可能仍是折叠的显示
+      // 序，先换回（跳页会通知监听者，按新页码刷新）。
+      _state._applyPageOrder(_state._pageOrder.restored);
+      if (_state._wide) {
+        _state._playWideEntrance((index - _state._currentIndex).sign);
+      }
       pageController.jumpToPage(index);
       return;
     }
-    if (ExpressiveMotion.reduceMotion(_state.context)) {
+    final position = pageController.position;
+    if (!position.hasViewportDimension) {
+      _state._applyPageOrder(_state._pageOrder.restored);
       pageController.jumpToPage(index);
       return;
     }
-    final currentPage = (pageController.page ?? _state._currentIndex).round();
-    if ((index - currentPage).abs() > 1) {
-      pageController.jumpToPage(index > currentPage ? index - 1 : index + 1);
-    }
-    await pageController.animateToPage(
-      index,
-      duration: _pageSwitchDuration,
-      curve: pageSwitchCurve,
+    final route = _state._pageOrder.routeTo(
+      _state._tabs[index],
+      page: pageController.page ?? _state._currentDisplayIndex().toDouble(),
+      velocity: _pageSpring.velocity,
     );
+    _state._applyPageOrder(route.order, pageShift: route.pageShift);
+    final extent = position.viewportDimension * pageController.viewportFraction;
+    await _pageSpring.springTo(position, route.targetPage * extent);
   }
 
   /// 切到第 [index] 个可见 Tab（快捷键 Ctrl/⌘+数字）；越界或已在该 Tab
@@ -234,7 +244,7 @@ class _HomePageController {
     if (!_state._isValidTabIndex(index)) {
       return Future<void>.value();
     }
-    return _switchToTab(index, allowDuringSwitch: false);
+    return _switchToTab(index);
   }
 
   Future<void> switchToDiariesTab() => switchToHomeTab(HomeTab.diaries);
@@ -243,7 +253,7 @@ class _HomePageController {
   Future<void> switchToHomeTab(HomeTab tab) {
     final index = _state._tabs.indexOf(tab);
     if (index < 0) return Future<void>.value();
-    return _switchToTab(index, allowDuringSwitch: true);
+    return _switchToTab(index);
   }
 
   /// 若存在启动提示并且尚未展示，则在首帧后展示一次。

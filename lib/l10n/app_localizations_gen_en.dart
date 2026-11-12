@@ -155,22 +155,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsTabSwitchCurve => 'Tab switch curve';
-
-  @override
-  String get settingsTabSwitchCurveSubtitle =>
-      'Choose the animation feel when switching tabs';
-
-  @override
-  String get settingsTabSwitchCurveEaseOutCirc => 'Smooth (Circ)';
-
-  @override
-  String get settingsTabSwitchCurveEaseOutCubic => 'Balanced (Cubic)';
-
-  @override
-  String get settingsTabSwitchCurveLinear => 'Linear';
-
-  @override
   String get settingsLanguage => 'Language';
 
   @override

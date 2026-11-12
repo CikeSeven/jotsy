@@ -88,6 +88,14 @@ double _homePage(WidgetTester tester) => tester
     .controller!
     .page!;
 
+/// [page] 所在的 Tab 此刻是否露在屏幕上（可见的页才开着 TickerMode）；还没
+/// 构建过的页同样算不可见。
+bool _tabShown(WidgetTester tester, Type page) {
+  final finder = find.byType(page, skipOffstage: false);
+  if (finder.evaluate().isEmpty) return false;
+  return TickerMode.valuesOf(tester.element(finder)).enabled;
+}
+
 /// 日记页主列表。切到其他 Tab 后日记页仍被保活，只是不在可见视口里。
 Finder _diariesList() => find
     .descendant(
@@ -137,7 +145,7 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('jumping across tabs only animates the final page', (
+  testWidgets('jumping across tabs never shows the tabs in between', (
     tester,
   ) async {
     await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
@@ -148,13 +156,91 @@ void main() {
 
     await tester.tap(_navItem(l10n.navExplore));
     await tester.pump();
+    var sawMotion = false;
     for (var frame = 0; frame < 30; frame++) {
       await tester.pump(const Duration(milliseconds: 16));
-      // 日历(0) -> 探索(3)：不应再滑过日记(1)与待办(2)。
-      expect(_homePage(tester), greaterThanOrEqualTo(2), reason: '$frame');
+      // 日历(0) -> 探索(3)：探索临时排到日历隔壁，只滑一页，日记(1)与
+      // 待办(2)一帧都不露出来。
+      expect(_tabShown(tester, DiariesPage), isFalse, reason: '$frame');
+      expect(_tabShown(tester, TodosPage), isFalse, reason: '$frame');
+      final page = _homePage(tester);
+      if (page > 0 && page < 1) {
+        sawMotion = true;
+        expect(_tabShown(tester, CalendarPage), isTrue, reason: '$frame');
+        expect(_tabShown(tester, ExplorePage), isTrue, reason: '$frame');
+      }
+    }
+    // 是滑过去的，不是跳过去的。
+    expect(sawMotion, isTrue);
+    await tester.pumpAndSettle();
+    // 停稳后换回底栏顺序。
+    expect(_homePage(tester), 3);
+    expect(_selectedNavLabel(tester), l10n.navExplore);
+    expect(find.byType(ExplorePage), findsOneWidget);
+
+    // 换回底栏顺序后，往右滑一页是待办。
+    await tester.drag(find.byType(ExplorePage), const Offset(300, 0));
+    await tester.pumpAndSettle();
+    expect(_homePage(tester), 2);
+    expect(_selectedNavLabel(tester), l10n.navTodos);
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets('tapping another tab mid-switch redirects without stopping', (
+    tester,
+  ) async {
+    await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    // 日历 · 日记 · 待办 · 探索，启动在日记(1)。
+    await tester.tap(_navItem(l10n.navTodos));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 64));
+    final before = _homePage(tester);
+    expect(before, inExclusiveRange(1, 2));
+
+    // 还没到待办就改点探索：同向带着速度继续走，不倒退、不停顿。
+    await tester.tap(_navItem(l10n.navExplore));
+    await tester.pump();
+    var previous = before;
+    for (var frame = 0; frame < 12; frame++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      final page = _homePage(tester);
+      expect(page, greaterThanOrEqualTo(previous), reason: '$frame');
+      previous = page;
     }
     await tester.pumpAndSettle();
     expect(_homePage(tester), 3);
+    expect(_selectedNavLabel(tester), l10n.navExplore);
+    expect(find.byType(ExplorePage), findsOneWidget);
+    await _unmount(tester);
+  });
+
+  testWidgets('a finger can catch the page mid-switch', (tester) async {
+    await _pumpHome(tester);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    // 日历(0) · 日记(1) · 探索(2)：点探索后立刻用手指把页面拖回日记。
+    await tester.tap(_navItem(l10n.navExplore));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 48));
+    expect(_homePage(tester), inExclusiveRange(1, 2));
+
+    final gesture = await tester.startGesture(const Offset(200, 400));
+    await tester.pump();
+    final caught = _homePage(tester);
+    // 按下即停住，不再被弹簧拉走。
+    await tester.pump(const Duration(milliseconds: 48));
+    expect(_homePage(tester), caught);
+    // 往回拖一小段、停稳再松手（没有甩动速度），按位置吸附回日记。
+    await gesture.moveBy(const Offset(30, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+    await gesture.moveBy(const Offset(30, 0));
+    await tester.pump(const Duration(milliseconds: 200));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(_homePage(tester), 1);
+    expect(_selectedNavLabel(tester), l10n.navDiaries);
+    expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
 
@@ -380,6 +466,40 @@ void main() {
       expect(_homePage(tester), 0);
       expect(_selectedNavLabel(tester), l10n.navDiaries);
       expect(_createFabShown(tester), isTrue);
+      await _unmount(tester);
+    });
+
+    testWidgets('hiding a tab mid-switch lands on the target in the new list', (
+      tester,
+    ) async {
+      final settings = await _pumpHome(
+        tester,
+        appFeaturesRaw: '{"todos":true}',
+      );
+      final l10n = tester.element(find.byType(HomePage)).l10n;
+      // 日记(1) → 探索(3) 折叠途中关掉待办：探索在新列表里是 2。
+      await tester.tap(_navItem(l10n.navExplore));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 64));
+
+      unawaited(settings.setAppFeaturesRaw('{"todos":false}'));
+      await tester.pumpAndSettle();
+      expect(_navLabels(tester), <String>[
+        l10n.navCalendar,
+        l10n.navDiaries,
+        l10n.navExplore,
+      ]);
+      expect(_selectedNavLabel(tester), l10n.navExplore);
+      expect(_homePage(tester), 2);
+      expect(find.byType(ExplorePage), findsOneWidget);
+      expect(_tabShown(tester, DiariesPage), isFalse);
+
+      // 之后照常滑动：往右回到日记。
+      await tester.drag(find.byType(ExplorePage), const Offset(300, 0));
+      await tester.pumpAndSettle();
+      expect(_homePage(tester), 1);
+      expect(_selectedNavLabel(tester), l10n.navDiaries);
+      expect(tester.takeException(), isNull);
       await _unmount(tester);
     });
 

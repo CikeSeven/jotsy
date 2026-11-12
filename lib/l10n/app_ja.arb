@@ -194,26 +194,6 @@
       }
     }
   },
-  "settingsTabSwitchCurve": "タブ切り替えのカーブ",
-  "@settingsTabSwitchCurve": {
-    "description": "Title for selecting bottom tab switch animation curve."
-  },
-  "settingsTabSwitchCurveSubtitle": "下部タブを切り替えるときのアニメーションの動きを選択",
-  "@settingsTabSwitchCurveSubtitle": {
-    "description": "Subtitle for tab switch curve selection setting."
-  },
-  "settingsTabSwitchCurveEaseOutCirc": "なめらか（Circ）",
-  "@settingsTabSwitchCurveEaseOutCirc": {
-    "description": "Option label for easeOutCirc tab switch animation curve."
-  },
-  "settingsTabSwitchCurveEaseOutCubic": "バランス（Cubic）",
-  "@settingsTabSwitchCurveEaseOutCubic": {
-    "description": "Option label for easeOutCubic tab switch animation curve."
-  },
-  "settingsTabSwitchCurveLinear": "リニア",
-  "@settingsTabSwitchCurveLinear": {
-    "description": "Option label for linear tab switch animation curve."
-  },
   "settingsLanguage": "言語",
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."

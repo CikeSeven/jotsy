@@ -194,26 +194,6 @@
       }
     }
   },
-  "settingsTabSwitchCurve": "Анимация вкладок",
-  "@settingsTabSwitchCurve": {
-    "description": "Title for selecting bottom tab switch animation curve."
-  },
-  "settingsTabSwitchCurveSubtitle": "Характер анимации при переключении нижних вкладок",
-  "@settingsTabSwitchCurveSubtitle": {
-    "description": "Subtitle for tab switch curve selection setting."
-  },
-  "settingsTabSwitchCurveEaseOutCirc": "Плавная (Circ)",
-  "@settingsTabSwitchCurveEaseOutCirc": {
-    "description": "Option label for easeOutCirc tab switch animation curve."
-  },
-  "settingsTabSwitchCurveEaseOutCubic": "Сбалансированная (Cubic)",
-  "@settingsTabSwitchCurveEaseOutCubic": {
-    "description": "Option label for easeOutCubic tab switch animation curve."
-  },
-  "settingsTabSwitchCurveLinear": "Линейная",
-  "@settingsTabSwitchCurveLinear": {
-    "description": "Option label for linear tab switch animation curve."
-  },
   "settingsLanguage": "Язык",
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."

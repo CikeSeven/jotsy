@@ -348,36 +348,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Show up to 1 tag} other{Show up to {count} tags}}'**
   String settingsDiaryCardTagLimitValue(int count);
 
-  /// Title for selecting bottom tab switch animation curve.
-  ///
-  /// In en, this message translates to:
-  /// **'Tab switch curve'**
-  String get settingsTabSwitchCurve;
-
-  /// Subtitle for tab switch curve selection setting.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose the animation feel when switching tabs'**
-  String get settingsTabSwitchCurveSubtitle;
-
-  /// Option label for easeOutCirc tab switch animation curve.
-  ///
-  /// In en, this message translates to:
-  /// **'Smooth (Circ)'**
-  String get settingsTabSwitchCurveEaseOutCirc;
-
-  /// Option label for easeOutCubic tab switch animation curve.
-  ///
-  /// In en, this message translates to:
-  /// **'Balanced (Cubic)'**
-  String get settingsTabSwitchCurveEaseOutCubic;
-
-  /// Option label for linear tab switch animation curve.
-  ///
-  /// In en, this message translates to:
-  /// **'Linear'**
-  String get settingsTabSwitchCurveLinear;
-
   /// Auto-generated metadata for settingsLanguage.
   ///
   /// In en, this message translates to:

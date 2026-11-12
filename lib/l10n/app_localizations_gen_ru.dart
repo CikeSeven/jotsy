@@ -166,22 +166,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get settingsTabSwitchCurve => 'Анимация вкладок';
-
-  @override
-  String get settingsTabSwitchCurveSubtitle =>
-      'Характер анимации при переключении нижних вкладок';
-
-  @override
-  String get settingsTabSwitchCurveEaseOutCirc => 'Плавная (Circ)';
-
-  @override
-  String get settingsTabSwitchCurveEaseOutCubic => 'Сбалансированная (Cubic)';
-
-  @override
-  String get settingsTabSwitchCurveLinear => 'Линейная';
-
-  @override
   String get settingsLanguage => 'Язык';
 
   @override

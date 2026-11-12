@@ -15,6 +15,7 @@ Widget buildTagBarHarness({
   double pageContentHeight = 900,
   Brightness brightness = Brightness.light,
   Set<int> selectedTagIds = const <int>{},
+  bool multiSelect = false,
   PageController? pageController,
 }) {
   final page = Scaffold(
@@ -24,6 +25,7 @@ Widget buildTagBarHarness({
       initiallyExpanded: initiallyExpanded,
       pageContentHeight: pageContentHeight,
       selectedTagIds: selectedTagIds,
+      multiSelect: multiSelect,
     ),
   );
   return MaterialApp(
@@ -52,12 +54,14 @@ class TagBarHarness extends StatefulWidget {
     this.initiallyExpanded = false,
     this.pageContentHeight = 900,
     this.selectedTagIds = const <int>{},
+    this.multiSelect = false,
   });
 
   final List<Tag> tags;
   final bool initiallyExpanded;
   final double pageContentHeight;
   final Set<int> selectedTagIds;
+  final bool multiSelect;
 
   @override
   State<TagBarHarness> createState() => TagBarHarnessState();
@@ -95,6 +99,7 @@ class TagBarHarnessState extends State<TagBarHarness> {
             canExpand: () => _progress.value < 1,
             canCollapse: () => _progress.value > 0,
             selectedTagFilterIds: widget.selectedTagIds,
+            multiSelect: widget.multiSelect,
             onSelectTag: (_) {},
             onToggleTagFilter: (_, __) {},
             onClearTagFilters: () {},

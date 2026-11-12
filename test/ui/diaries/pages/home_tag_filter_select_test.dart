@@ -7,13 +7,15 @@ import 'package:node_diary/core/services/feature_tips.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
+import 'package:node_diary/ui/diaries/widgets/tag_filter_clear_button.dart';
 
 import '../../../support/diary_drafts_harness.dart';
 import '../../notebooks/notebook_test_support.dart';
 
-/// 首页标签筛选栏的选择（#196）：单击只看一个标签（换掉已选的，再点取消），
-/// 长按在已选的标签里增减（多选，同时带有才显示），桌面上 Ctrl / ⌘ + 点击
-/// 与长按相同；单击换掉已选标签时提示一次长按可以多选。
+/// 首页标签筛选栏的选择（#196）：单选模式下单击只看一个标签（换掉已选的，
+/// 再点取消），没有 ✕；长按进入多选模式（桌面上 Ctrl / ⌘ + 点击相同），之后
+/// 单击也在已选的标签里增减（同时带有才显示），✕ 出现，点 ✕ 清空并回到
+/// 单选模式；单击换掉已选标签时提示一次长按可以多选。
 void main() {
   late int work;
   late int travel;
@@ -51,9 +53,13 @@ void main() {
     matching: find.text(name),
   );
 
-  Set<int> selected(WidgetTester tester) => ProviderScope.containerOf(
+  DiaryFilterState filter(WidgetTester tester) => ProviderScope.containerOf(
     tester.element(find.byType(DiariesPage)),
-  ).read(diaryFilterProvider).selectedTagIds;
+  ).read(diaryFilterProvider);
+
+  Set<int> selected(WidgetTester tester) => filter(tester).selectedTagIds;
+
+  Finder clearButton() => find.byType(TagFilterClearButton).hitTestable();
 
   FeatureTipRecord tipRecord(DiaryDraftsHarness h) => FeatureTips.decode(
     h.settings.featureTipsRaw,
@@ -65,6 +71,8 @@ void main() {
     tester,
   ) async {
     final h = await pumpHome(tester);
+    // 单选模式没有 ✕。
+    expect(clearButton(), findsNothing);
 
     await tester.tap(chip('工作'));
     await h.settleAll();
@@ -73,6 +81,7 @@ void main() {
     expect(find.text('只带旅行'), findsNothing);
     // 从无到有不是“换掉”，不提示。
     expect(find.text(mobileTip), findsNothing);
+    expect(clearButton(), findsNothing);
 
     // 单击另一个标签：换成它，而不是两个都选。
     await tester.tap(chip('旅行'));
@@ -84,33 +93,66 @@ void main() {
     expect(find.text(mobileTip), findsOneWidget);
     expect(tipRecord(h).shown, 1);
 
-    // 长按：保留已选的，再加上它（同时带有才显示）。
+    // 长按：进入多选，保留已选的，再加上它（同时带有才显示）；✕ 出现。
     await tester.longPress(chip('工作'));
     await h.settleAll();
     expect(selected(tester), <int>{work, travel});
+    expect(filter(tester).isMultiSelect, isTrue);
     expect(find.text('两个都带'), findsOneWidget);
     expect(find.text('只带工作'), findsNothing);
     expect(find.text('只带旅行'), findsNothing);
     expect(tipRecord(h).learned, isTrue);
+    expect(clearButton(), findsOneWidget);
 
-    // 多选时单击其中一个：收成只选它；再点一次取消。
+    // 多选模式下单击：去掉 / 加上它，不丢掉其余的。
     await tester.tap(chip('旅行'));
     await h.settleAll();
-    expect(selected(tester), <int>{travel});
+    expect(selected(tester), <int>{work});
+    expect(filter(tester).isMultiSelect, isTrue);
+    await tester.tap(chip('旅行'));
+    await h.settleAll();
+    expect(selected(tester), <int>{work, travel});
+
+    // 一个都不剩时仍在多选模式，✕ 还在。
+    await tester.tap(chip('工作'));
+    await h.settleAll();
     await tester.tap(chip('旅行'));
     await h.settleAll();
     expect(selected(tester), isEmpty);
-    expect(find.text('只带工作'), findsOneWidget);
+    expect(filter(tester).isMultiSelect, isTrue);
+    expect(clearButton(), findsOneWidget);
 
-    // 长按已选的标签把它去掉，其余保留。
-    await tester.longPress(chip('工作'));
+    // 点 ✕：清空并回到单选模式，✕ 收起；之后单击又只选一个。
+    await tester.tap(chip('工作'));
     await h.settleAll();
-    await tester.longPress(chip('旅行'));
+    await tester.tap(clearButton());
     await h.settleAll();
-    await tester.longPress(chip('工作'));
+    expect(selected(tester), isEmpty);
+    expect(filter(tester).isMultiSelect, isFalse);
+    expect(clearButton(), findsNothing);
+    await tester.tap(chip('工作'));
+    await h.settleAll();
+    await tester.tap(chip('旅行'));
     await h.settleAll();
     expect(selected(tester), <int>{travel});
     expect(tester.takeException(), isNull);
+    await h.unmount();
+  });
+
+  testWidgets('long-pressing the only selected tag just enters multi-select', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester);
+    await tester.tap(chip('工作'));
+    await h.settleAll();
+
+    await tester.longPress(chip('工作'));
+    await h.settleAll();
+    expect(selected(tester), <int>{work});
+    expect(filter(tester).isMultiSelect, isTrue);
+    await tester.tap(chip('旅行'));
+    await h.settleAll();
+    expect(selected(tester), <int>{work, travel});
     await h.unmount();
   });
 

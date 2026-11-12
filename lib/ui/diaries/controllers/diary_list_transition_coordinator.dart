@@ -5,7 +5,8 @@ part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 /// 日记列表过渡协调器。
 ///
 /// 职责边界：
-/// - 处理筛选切换的淡入淡出节奏（冻结旧列表、等待新数据首帧再淡入）；
+/// - 处理筛选切换的进出场节奏（冻结旧列表、退场、等待新数据首帧、定位、
+///   级联入场，见 [DiaryListSwitchMotion]）；
 /// - 维护删除/归档过程中的隐藏与出现动画状态；
 /// - 统一管理相关计时器，避免页面销毁后回调触发。
 class DiaryListTransitionCoordinator {
@@ -14,7 +15,7 @@ class DiaryListTransitionCoordinator {
   /// 页面状态引用，内部动画状态都托管在页面 State 字段里。
   final _DiariesPage _state;
 
-  /// 新查询首帧数据的最长等待时间；超时后照常淡入（退化为旧行为），
+  /// 新查询首帧数据的最长等待时间；超时后照常入场（退化为旧行为），
   /// 避免查询异常挂起时列表一直不可见。
   static const Duration _maxFreshPageWait = Duration(milliseconds: 600);
 
@@ -25,22 +26,54 @@ class DiaryListTransitionCoordinator {
   /// 应用筛选变更并启动列表过渡。
   ///
   /// 时序：
-  /// 1) 冻结当前展示列表，然后立即写入筛选（标签选中态下一帧即反馈）；
-  /// 2) 后台过渡：淡出 -> 等新查询首帧数据 -> 释放冻结 -> 淡入；
+  /// 1) 冻结当前展示列表（并记下此刻标签条上的位置，见 [tagStripPosition]），
+  ///    然后立即写入筛选（标签选中态下一帧即反馈）；
+  /// 2) 后台过渡：退场 -> 等新查询首帧数据 -> 定位 -> 换数据 -> 级联入场
+  ///    （见 [DiaryListSwitchMotion]）；
   /// 3) 过渡途中再次变更只会递增 generation，循环会继续处理最新一轮，
-  ///    且只为最新结果淡入，不会把中间态或旧数据淡入出来。
+  ///    且只为最新结果入场，不会把中间态或旧数据露出来。
   ///
-  /// [scrollToTop] 为 true 时，释放冻结的同一帧让列表回到顶部（见
-  /// [_jumpListToTop]）；标记跨轮保留，期间又有变更也会在最终释放时生效。
-  void queueFilterMutation(VoidCallback mutation, {bool scrollToTop = false}) {
-    _state._heldDisplayedItems ??= _state._lastDisplayedItems;
+  /// [directional] 为 true（点标签、清空标签）时按冻结时与此刻的标签条位置
+  /// 定左右方向（连点 A→B→C 按 A→C 算）；其余变更（长按多选、排序、日记本
+  /// 与章节）没有左右之分，纵向进出。
+  ///
+  /// [scrollToTop] 为 true 时，换数据的同一帧让列表回到最顶（见
+  /// [_jumpListToTop]）；[scrollToListStart] 为 true 时只回到列表开头、刊头
+  /// 保持原状（见 [jumpDiaryListToStart]）。两个标记都跨轮保留，期间又有
+  /// 变更也会在最终换数据时生效，同时置位时回到最顶。
+  void queueFilterMutation(
+    VoidCallback mutation, {
+    bool scrollToTop = false,
+    bool scrollToListStart = false,
+    bool directional = false,
+  }) {
+    if (_state._heldDisplayedItems == null) {
+      _state._heldDisplayedItems = _state._lastDisplayedItems;
+      _state._heldTagStripPosition = _currentTagStripPosition();
+    }
     _state._filterMutationGeneration++;
     if (scrollToTop) {
       _state._scrollToTopOnFilterRelease = true;
     }
+    if (scrollToListStart) {
+      _state._scrollToListStartOnFilterRelease = true;
+    }
     mutation();
+    _state._listSwitchDirection = directional
+        ? tagSwitchDirection(
+            _state._heldTagStripPosition,
+            _currentTagStripPosition(),
+            Directionality.of(_state.context),
+          )
+        : 0;
     _state._queuedFilterTransition ??= _runFilterTransition();
   }
+
+  /// 当前筛选在标签条上的位置（按标签条此刻的显示顺序）。
+  int? _currentTagStripPosition() => tagStripPosition(
+    _state.ref.read(diaryFilterProvider).selectedTagIds,
+    <int>[for (final tag in _state._cachedTagFilters) tag.id],
+  );
 
   Future<void> _runFilterTransition() async {
     var settledGeneration = -1;
@@ -48,7 +81,10 @@ class DiaryListTransitionCoordinator {
       while (_state.mounted &&
           settledGeneration != _state._filterMutationGeneration) {
         final generation = _state._filterMutationGeneration;
-        await _fadeOutListIfNeeded();
+        await _exitListIfNeeded();
+        if (!_state.mounted) {
+          return;
+        }
         // 筛选写入后要到下一帧重建才会产生新的分页 query。
         await WidgetsBinding.instance.endOfFrame;
         if (!_state.mounted) {
@@ -59,19 +95,27 @@ class DiaryListTransitionCoordinator {
           return;
         }
         if (generation != _state._filterMutationGeneration) {
-          // 等待期间又有新筛选：保持淡出与冻结，直接处理最新一轮。
+          // 等待期间又有新筛选：保持退场与冻结，直接处理最新一轮。
           continue;
         }
-        if (_state._scrollToTopOnFilterRelease) {
-          _state._scrollToTopOnFilterRelease = false;
-          _jumpListToTop();
+        _positionListForRelease();
+        // 入场归零与换数据落在同一帧：新列表第一帧就是不可见的起点。
+        final animate = !_reduceMotion;
+        if (animate) {
+          _state._listSwitchMotion.prepareEnter(_state._listSwitchDirection);
+        } else {
+          _state._listSwitchMotion.settle();
         }
         _state.setState(() => _state._heldDisplayedItems = null);
         await WidgetsBinding.instance.endOfFrame;
         if (!_state.mounted) {
           return;
         }
-        await _fadeInListIfNeeded();
+        // 入场不等它走完就结束本轮：之后再有变更立即开始新一轮退场，从入场
+        // 进行到一半的画面出发，而不是等入场播完。
+        if (animate) {
+          unawaited(_state._listSwitchMotion.enter());
+        }
         settledGeneration = generation;
       }
     } finally {
@@ -79,9 +123,36 @@ class DiaryListTransitionCoordinator {
     }
   }
 
+  /// 换数据之前的定位：回到最顶，或回到列表开头（保持刊头原状）。
+  void _positionListForRelease() {
+    final toTop = _state._scrollToTopOnFilterRelease;
+    final toStart = _state._scrollToListStartOnFilterRelease;
+    _state._scrollToTopOnFilterRelease = false;
+    _state._scrollToListStartOnFilterRelease = false;
+    if (toTop) {
+      _jumpListToTop();
+      return;
+    }
+    if (!toStart) {
+      return;
+    }
+    final tagBarContext = _state._listScrollContext;
+    final listSliver = _state._listSliverKey.currentContext?.findRenderObject();
+    if (tagBarContext == null ||
+        !tagBarContext.mounted ||
+        listSliver is! RenderSliver) {
+      return;
+    }
+    jumpDiaryListToStart(
+      tagBarContext: tagBarContext,
+      listSliver: listSliver,
+      leadingGap: HomeTopBarSurface.contentGapOf(_state.context),
+    );
+  }
+
   /// 等待当前分页 query 拿到首帧数据（或错误）。
   ///
-  /// family 换 key 后首帧必为 loading；若只等一帧就淡入，淡入的会是旧列表，
+  /// family 换 key 后首帧必为 loading；若只等一帧就入场，入场的会是旧列表，
   /// 新数据随后在半透明状态下硬替换。已缓存的 query 会经 fireImmediately
   /// 立刻完成。页面销毁时由 [dispose] 提前完成，避免悬挂计时器。
   Future<void> _waitForFreshPage() async {
@@ -113,8 +184,8 @@ class DiaryListTransitionCoordinator {
 
   /// 让主列表直接跳回顶部（不滚动）。
   ///
-  /// 只在释放冻结前调用：跳转与换入新数据落在同一帧，列表此时已淡出，看不到
-  /// 跳动；减少动画时没有淡出，两者也合成一次变化，而不是旧列表先跳一下。
+  /// 只在换数据前调用：跳转与换入新数据落在同一帧，列表此时已退场，看不到
+  /// 跳动；减少动画时没有退场，两者也合成一次变化，而不是旧列表先跳一下。
   /// 主列表挂在 Tab 级 PrimaryScrollController 上，可能同时挂着多个位置
   /// （布局切换交叉期间），逐个处理。
   void _jumpListToTop() {
@@ -127,58 +198,38 @@ class DiaryListTransitionCoordinator {
     }
   }
 
-  /// 切换布局：整体淡出 → 应用 [apply]（换布局）→ 下一帧淡入。
+  /// 切换布局：退场 → 应用 [apply]（换布局）→ 下一帧级联入场（纵向）。
   ///
-  /// 布局必须在淡出完成后再换：先换再淡出等于硬切后补一个淡出。减少动画或
-  /// 筛选过渡正在进行时直接应用（后者结束时会自行淡入）。
+  /// 布局必须在退场完成后再换：先换再退场等于硬切后补一个淡出。入场归零与
+  /// 换布局同一帧，新布局第一帧不可见。减少动画或筛选过渡正在进行时直接
+  /// 应用（后者换数据时会自行入场）。
   Future<void> switchLayout(VoidCallback apply) async {
     if (_reduceMotion || _state._queuedFilterTransition != null) {
       apply();
       return;
     }
-    await _fadeOutListIfNeeded();
+    await _state._listSwitchMotion.exit(0);
     if (!_state.mounted) {
       return;
     }
+    _state._listSwitchMotion.prepareEnter(0);
     apply();
     await WidgetsBinding.instance.endOfFrame;
     if (!_state.mounted) {
       return;
     }
-    await _fadeInListIfNeeded();
+    unawaited(_state._listSwitchMotion.enter());
   }
 
-  /// 系统开启“减少动画”时不做整列表淡入淡出，只保留“数据到齐再替换”。
+  /// 系统开启“减少动画”时不做进出场，只保留“数据到齐再替换”。
   bool get _reduceMotion => MediaQuery.disableAnimationsOf(_state.context);
 
-  /// 当列表当前可见时执行整体淡出。
-  Future<void> _fadeOutListIfNeeded() async {
-    if (!_state.mounted ||
-        _reduceMotion ||
-        _state._listRefreshPulseController.value <= 0) {
+  /// 列表可见时执行退场（方向取本轮的 [_DiariesPage._listSwitchDirection]）。
+  Future<void> _exitListIfNeeded() async {
+    if (!_state.mounted || _reduceMotion) {
       return;
     }
-    await _state._listRefreshPulseController.animateTo(
-      0,
-      duration: _DiariesPage._listRefreshFadeOutDuration,
-      curve: ExpressiveMotion.effects,
-    );
-  }
-
-  /// 当列表非全可见时执行整体淡入。
-  Future<void> _fadeInListIfNeeded() async {
-    if (!_state.mounted || _state._listRefreshPulseController.value >= 1) {
-      return;
-    }
-    if (_reduceMotion) {
-      _state._listRefreshPulseController.value = 1;
-      return;
-    }
-    await _state._listRefreshPulseController.animateTo(
-      1,
-      duration: _DiariesPage._listRefreshFadeInDuration,
-      curve: ExpressiveMotion.effects,
-    );
+    await _state._listSwitchMotion.exit(_state._listSwitchDirection);
   }
 
   /// 为即将删除/归档的项启动收起动画计时器。

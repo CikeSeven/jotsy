@@ -1,15 +1,27 @@
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/expressive_state_blend.dart';
 
 /// 顶部标签筛选项通用组件。
 ///
 /// 支持两类视觉形态：
 /// - 普通标签（可选颜色点）；
 /// - 特殊入口（通过 `leading` 自定义左侧图标）。
-class TagFilterChip extends StatelessWidget {
+///
+/// 选中切换的动效（外框尺寸不随选中变化：邻居不被挤动，展开多行时不换行）：
+/// - 字重 w600 → w700 不是一帧跳变：两种字重的文字叠放、交叉淡入，宽度
+///   始终按粗体占位；
+/// - 文字颜色与底色、描边、圆角同步补间（`ExpressiveStateBlend` /
+///   AnimatedContainer，同为 fast + effects）；
+/// - [animateBorder] 时描边 1.2 ↔ 2.0 的粗细差补进内边距，外框不变；
+/// - 自己画选中底色时（[paintsSelectedSurface]），变为选中的那一刻按
+///   `springSpatialFast` 轻弹一下（减少动画时没有）。
+class TagFilterChip extends StatefulWidget {
   const TagFilterChip({
     super.key,
     required this.label,
@@ -33,7 +45,44 @@ class TagFilterChip extends StatelessWidget {
     this.showSelectedShadow = false,
     this.selectedBorderColor,
     this.unselectedBorderColor,
+    this.paintsSelectedSurface = true,
+    this.dense = false,
   });
+
+  /// [animateBorder] 时选中与未选中的描边粗细；外框按较粗的一档占位。
+  static const double selectedBorderWidth = 2.0;
+  static const double unselectedBorderWidth = 1.2;
+
+  /// 选中时的圆角（超过胶囊高度一半，即两端全圆）。
+  static const double selectedRadius = 24.0;
+
+  /// 紧凑尺寸（首页标签栏，[dense]）：字号、`#` 色点的宽与它后面的间距、
+  /// 内边距。`TagFilterLayoutCache` 按同一组数测量。
+  static const double denseFontSize = 11.5;
+  static const double densePrefixWidth = 12;
+  static const double densePrefixGap = 4;
+  static const EdgeInsets densePadding = EdgeInsets.symmetric(
+    horizontal: 8,
+    vertical: 3,
+  );
+
+  /// 常规尺寸的 `#` 色点宽与间距。
+  static const double _prefixWidth = 14;
+  static const double _prefixGap = 6;
+
+  /// 标签文字的样式（未定颜色与字重）。
+  static TextStyle labelStyleOf(BuildContext context, {bool dense = false}) {
+    final base = Theme.of(context).textTheme.labelMedium!;
+    return dense ? base.copyWith(fontSize: denseFontSize) : base;
+  }
+
+  /// `#` 色点连同它后面的间距占的宽度。
+  static double prefixExtent({bool dense = false}) =>
+      dense ? densePrefixWidth + densePrefixGap : _prefixWidth + _prefixGap;
+
+  /// 变为选中时叠加的缩放初速度（倍 / 秒）：`springSpatialFast` 下峰值约
+  /// 1.035 倍，看得出“弹了一下”又不显得跳。
+  static const double popKick = 2.0;
 
   /// 文案标签。
   final String label;
@@ -68,95 +117,261 @@ class TagFilterChip extends StatelessWidget {
   /// 选中态阴影开关。
   final bool showSelectedShadow;
 
+  /// 选中时是否由胶囊自己画选中底色与描边。为 false 时（首页标签栏只选
+  /// 一个标签，由滑动色块画在胶囊下方）底色与描边淡成透明、露出下面的
+  /// 色块，文字仍按选中补间。
+  final bool paintsSelectedSurface;
+
+  /// 紧凑尺寸：较小的字号与 `#` 色点（首页标签栏，内边距由调用方传
+  /// [densePadding]）。
+  final bool dense;
+
+  @override
+  State<TagFilterChip> createState() => _TagFilterChipState();
+}
+
+class _TagFilterChipState extends State<TagFilterChip>
+    with SingleTickerProviderStateMixin {
+  /// 选中轻弹的缩放（无界：弹簧会越过 1 再落回）。
+  late final AnimationController _pop = AnimationController.unbounded(
+    vsync: this,
+    value: 1,
+  );
+
+  @override
+  void didUpdateWidget(TagFilterChip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected &&
+        !oldWidget.selected &&
+        widget.paintsSelectedSurface) {
+      ExpressiveMotion.springTo(
+        context,
+        _pop,
+        1,
+        spring: ExpressiveMotion.springSpatialFast,
+        kick: TagFilterChip.popKick,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _pop.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final backgroundColor = selected ? selectedColor : unselectedColor;
-    final foregroundColor = selected
-        ? selectedForegroundColor
-        : unselectedForegroundColor;
-    final borderColor = selected
-        ? (selectedBorderColor ??
-              selectedForegroundColor.withValues(alpha: 0.45))
-        : (unselectedBorderColor ??
-              colorScheme.outlineVariant.withValues(alpha: 0.55));
+    final selected = widget.selected;
+    final selfSelected = selected && widget.paintsSelectedSurface;
+    final selectedBorder =
+        widget.selectedBorderColor ??
+        widget.selectedForegroundColor.withValues(alpha: 0.45);
+    final unselectedBorder =
+        widget.unselectedBorderColor ??
+        colorScheme.outlineVariant.withValues(alpha: 0.55);
+    // 由色块代画时淡到同色的全透明（而不是 Colors.transparent），补间途中
+    // 不会先发灰发黑。
+    final Color backgroundColor;
+    final Color borderColor;
+    if (selfSelected) {
+      backgroundColor = widget.selectedColor;
+      borderColor = selectedBorder;
+    } else if (selected) {
+      backgroundColor = widget.unselectedColor.withValues(alpha: 0);
+      borderColor = unselectedBorder.withValues(alpha: 0);
+    } else {
+      backgroundColor = widget.unselectedColor;
+      borderColor = unselectedBorder;
+    }
+    final borderWidth = selected
+        ? TagFilterChip.selectedBorderWidth
+        : TagFilterChip.unselectedBorderWidth;
+    // 描边变细时把差额补进内边距：AnimatedContainer 用同一条曲线补间两者，
+    // 途中每一帧外框都不变。
+    final padding = widget.animateBorder
+        ? widget.padding.add(
+            EdgeInsets.all(TagFilterChip.selectedBorderWidth - borderWidth),
+          )
+        : widget.padding;
+    final duration = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+    final targetRadius = selected
+        ? TagFilterChip.selectedRadius
+        : widget.radius;
+    final labelStyle = TagFilterChip.labelStyleOf(context, dense: widget.dense);
 
-    final effectiveRadius = selected ? 24.0 : radius;
     return Semantics(
       selected: selected,
       button: true,
-      onLongPressHint: onLongPress == null ? null : longPressHint,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(effectiveRadius),
-          child: AnimatedContainer(
-            duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-            curve: ExpressiveMotion.effects,
-            padding: padding,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(effectiveRadius),
-              border: animateBorder
-                  ? Border.all(color: borderColor, width: selected ? 2.0 : 1.2)
-                  : null,
-              boxShadow: selected && showSelectedShadow
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: backgroundColor.withAlpha(140),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: DefaultTextStyle(
-              style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                color: foregroundColor,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  if (leading != null) ...[
-                    IconTheme(
-                      data: IconThemeData(color: foregroundColor, size: 12),
-                      child: leading!,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                  ],
-                  if (colorDot != null) ...[
-                    SizedBox(
-                      width: 14,
-                      child: Center(
-                        child: Text(
-                          '#',
-                          style: TextStyle(
-                            color: colorDot,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                  Flexible(
-                    fit: FlexFit.loose,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+      onLongPressHint: widget.onLongPress == null ? null : widget.longPressHint,
+      child: ScaleTransition(
+        scale: _pop,
+        child: ExpressiveStateBlend(
+          active: selected,
+          child: _buildPrefix(),
+          builder: (BuildContext context, double t, Widget? prefix) {
+            // 水波纹的裁切圆角与底色圆角同一条曲线补间，按下时不露方角。
+            final inkRadius = BorderRadius.circular(
+              lerpDouble(widget.radius, TagFilterChip.selectedRadius, t)!,
+            );
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: widget.onTap,
+                onLongPress: widget.onLongPress,
+                borderRadius: inkRadius,
+                child: AnimatedContainer(
+                  duration: duration,
+                  curve: ExpressiveMotion.effects,
+                  padding: padding,
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    borderRadius: BorderRadius.circular(targetRadius),
+                    border: widget.animateBorder
+                        ? Border.all(color: borderColor, width: borderWidth)
+                        : null,
+                    boxShadow: selfSelected && widget.showSelectedShadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                              color: backgroundColor.withAlpha(140),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
                   ),
-                ],
+                  child: _ChipLabelBlend(
+                    t: t,
+                    label: widget.label,
+                    style: labelStyle,
+                    foreground: Color.lerp(
+                      widget.unselectedForegroundColor,
+                      widget.selectedForegroundColor,
+                      t,
+                    )!,
+                    leading: widget.leading,
+                    prefix: prefix,
+                  ),
+                ),
               ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// `#` 色点：颜色不随选中变化，交给补间的 builder 原样复用。
+  Widget? _buildPrefix() {
+    final colorDot = widget.colorDot;
+    if (colorDot == null) {
+      return null;
+    }
+    final dense = widget.dense;
+    return Padding(
+      padding: EdgeInsetsDirectional.only(
+        end: dense ? TagFilterChip.densePrefixGap : TagFilterChip._prefixGap,
+      ),
+      child: SizedBox(
+        width: dense
+            ? TagFilterChip.densePrefixWidth
+            : TagFilterChip._prefixWidth,
+        child: Center(
+          child: Text(
+            '#',
+            style: TextStyle(
+              color: colorDot,
+              fontWeight: FontWeight.w800,
+              fontSize: dense ? TagFilterChip.denseFontSize : 12.5,
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 胶囊里的一行：前置图标、`#` 色点与两种字重叠放的标签文字。
+///
+/// 常规字重的一层是真正的文字（参与语义与 `find.text`）；粗体的一层用
+/// RichText 直接画并排除语义，只负责交叉淡入与按粗体宽度占位——Stack 取
+/// 最宽的子项，选中前后宽度一致。
+class _ChipLabelBlend extends StatelessWidget {
+  const _ChipLabelBlend({
+    required this.t,
+    required this.label,
+    required this.style,
+    required this.foreground,
+    required this.leading,
+    required this.prefix,
+  });
+
+  /// 选中程度（0 未选中 → 1 选中）。
+  final double t;
+  final String label;
+  final TextStyle style;
+  final Color foreground;
+  final Widget? leading;
+  final Widget? prefix;
+
+  @override
+  Widget build(BuildContext context) {
+    final defaults = DefaultTextStyle.of(context);
+    final regular = style.copyWith(
+      color: foreground,
+      fontWeight: FontWeight.w600,
+    );
+    final bold = defaults.style.merge(
+      style.copyWith(color: foreground, fontWeight: FontWeight.w700),
+    );
+    final leading = this.leading;
+    final prefix = this.prefix;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        if (leading != null) ...[
+          IconTheme(
+            data: IconThemeData(color: foreground, size: 12),
+            child: leading,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+        ],
+        ?prefix,
+        Flexible(
+          fit: FlexFit.loose,
+          child: Stack(
+            alignment: Alignment.center,
+            // 粗体垫在下面：命中测试从上往下找，点在文字上命中的是常规
+            // 那一层（真正的文字），交叉淡入与叠放顺序无关。
+            children: <Widget>[
+              ExcludeSemantics(
+                child: Opacity(
+                  opacity: t,
+                  child: RichText(
+                    text: TextSpan(text: label, style: bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textScaler: MediaQuery.textScalerOf(context),
+                    textHeightBehavior: defaults.textHeightBehavior,
+                  ),
+                ),
+              ),
+              Opacity(
+                opacity: 1 - t,
+                // 选中后这一层完全透明，读屏仍要读到标签名。
+                alwaysIncludeSemantics: true,
+                child: Text(
+                  label,
+                  style: regular,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

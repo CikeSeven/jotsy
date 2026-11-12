@@ -7,6 +7,7 @@ import 'package:node_diary/ui/diaries/widgets/tag_filter_clear_button.dart';
 import 'tag_filter_bar_test_support.dart';
 
 /// 一个标签都没有时，标签栏只剩清除叉：整栏收起，有标签或仍有选中的筛选时显示。
+/// 清除叉只在多选模式、或选中了不在标签条上的标签时出现。
 void main() {
   final bar = find.byType(DiaryTagFilterBar);
   final clearButton = find.byType(TagFilterClearButton).hitTestable();
@@ -29,17 +30,37 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('tags keep the clear button even when nothing is selected', (
+  testWidgets('single mode hides the clear button, multi-select shows it', (
     tester,
   ) async {
+    final key = GlobalKey<TagBarHarnessState>();
     await tester.pumpWidget(
       buildTagBarHarness(
-        key: GlobalKey<TagBarHarnessState>(),
+        key: key,
         tags: createTags(2),
+        selectedTagIds: const <int>{1},
       ),
     );
     await tester.pumpAndSettle();
+    expect(clearButton, findsNothing);
+    final firstTag = tester.getTopLeft(find.text('Tag 1')).dx;
 
+    await tester.pumpWidget(
+      buildTagBarHarness(
+        key: key,
+        tags: createTags(2),
+        selectedTagIds: const <int>{1},
+        multiSelect: true,
+      ),
+    );
+    // 出现途中标签被平移开，而不是一帧被挤开。
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+    final midway = tester.getTopLeft(find.text('Tag 1')).dx;
+    await tester.pumpAndSettle();
+    final settled = tester.getTopLeft(find.text('Tag 1')).dx;
+    expect(midway, greaterThan(firstTag));
+    expect(midway, lessThan(settled));
     expect(clearButton, findsOneWidget);
   });
 
@@ -75,7 +96,9 @@ void main() {
 
     expect(midHeight, greaterThan(0));
     expect(midHeight, lessThan(settledHeight));
-    expect(clearButton, findsOneWidget);
+    // 单选模式、没有选中：只有标签，没有 ✕。
+    expect(clearButton, findsNothing);
+    expect(find.text('Tag 1').hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

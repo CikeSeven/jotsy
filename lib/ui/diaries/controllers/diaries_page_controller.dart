@@ -84,16 +84,31 @@ class DiariesPageController {
     () => _state.ref.read(settingsServiceProvider).asData?.value,
   );
 
-  /// 单击标签：只看这一个标签，已是唯一选中的再点一次取消（#196）。写入
-  /// 经过渡协调器排队，确保列表过渡连续。把已选的别的标签换掉时，用户还
-  /// 没长按过就提示一次长按可以多选（频率见 [TagFilterMultiSelectTip]）。
+  /// 单击标签。
+  ///
+  /// - 单选模式（默认）：只看这一个标签，已是唯一选中的再点一次取消
+  ///   （#196）。按标签条上的左右位置定列表进出方向，新列表从开头看起
+  ///   （刊头保持原状）。把已选的别的标签换掉时，用户还没长按过就提示一次
+  ///   长按可以多选（频率见 [TagFilterMultiSelectTip]）；
+  /// - 多选模式（长按进入，见 [toggleTagFilter]）：在已选的标签里加上或
+  ///   去掉它，不丢掉其余的。
+  ///
+  /// 写入一律经过渡协调器排队，确保列表过渡连续。
   void selectTagFilter(int tagId) {
-    final before = _state.ref.read(diaryFilterProvider).selectedTagIds;
-    final replacesOthers = before.any((int id) => id != tagId);
-    transitionCoordinator.queueFilterMutation(() {
-      _state.ref.read(diaryFilterProvider.notifier).selectOnlyTag(tagId);
-      _persistTagFilterMemoryIfNeeded();
-    });
+    final filter = _state.ref.read(diaryFilterProvider);
+    if (filter.isMultiSelect) {
+      _queueToggle(tagId, !filter.selectedTagIds.contains(tagId));
+      return;
+    }
+    final replacesOthers = filter.selectedTagIds.any((int id) => id != tagId);
+    transitionCoordinator.queueFilterMutation(
+      () {
+        _state.ref.read(diaryFilterProvider.notifier).selectOnlyTag(tagId);
+        _persistTagFilterMemoryIfNeeded();
+      },
+      directional: true,
+      scrollToListStart: true,
+    );
     if (replacesOthers && _multiSelectTip.takeHint()) {
       final l10n = _state.context.l10n;
       unawaited(
@@ -108,25 +123,50 @@ class DiariesPageController {
     }
   }
 
-  /// 长按标签（桌面上也可以按住 Ctrl / ⌘ 点击）：在已选的标签里加上或去掉
-  /// 它，其余保留（多选，同时带有才匹配）。写入同样经过渡协调器排队。
+  /// 长按标签（桌面上也可以按住 Ctrl / ⌘ 点击）。
+  ///
+  /// - 单选模式：进入多选模式并选上它，已选的那一个保留（长按的正是已选
+  ///   中的那一个时只换模式，筛选不变、列表不动）；
+  /// - 多选模式：与单击相同，按 [selected] 加上或去掉它。
+  ///
+  /// 多选没有左右之分，列表纵向进出，同样从开头看起。
   void toggleTagFilter(int tagId, bool selected) {
     _multiSelectTip.markLearned();
+    final filter = _state.ref.read(diaryFilterProvider);
+    if (!filter.isMultiSelect) {
+      if (filter.selectedTagIds.contains(tagId)) {
+        _state.ref.read(diaryFilterProvider.notifier).enterMultiSelect();
+        return;
+      }
+      _queueToggle(tagId, true);
+      return;
+    }
+    _queueToggle(tagId, selected);
+  }
+
+  void _queueToggle(int tagId, bool selected) {
     transitionCoordinator.queueFilterMutation(() {
       _state.ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
       _persistTagFilterMemoryIfNeeded();
-    });
+    }, scrollToListStart: true);
   }
 
-  /// 清空所有标签筛选条件。
+  /// 标签栏的 ✕：清空所有标签筛选并回到单选模式。多选模式下已经一个都
+  /// 没选时只退出多选，筛选不变、列表不动。
   void clearTagFilters() {
-    if (_state.ref.read(diaryFilterProvider).selectedTagIds.isEmpty) {
+    final filter = _state.ref.read(diaryFilterProvider);
+    if (filter.selectedTagIds.isEmpty) {
+      _state.ref.read(diaryFilterProvider.notifier).clearTags();
       return;
     }
-    transitionCoordinator.queueFilterMutation(() {
-      _state.ref.read(diaryFilterProvider.notifier).clearTags();
-      _persistTagFilterMemoryIfNeeded();
-    });
+    transitionCoordinator.queueFilterMutation(
+      () {
+        _state.ref.read(diaryFilterProvider.notifier).clearTags();
+        _persistTagFilterMemoryIfNeeded();
+      },
+      directional: true,
+      scrollToListStart: true,
+    );
   }
 
   /// “记住标签筛选”只记全部日记里的选择：日记本里的筛选各自独立、不落盘。

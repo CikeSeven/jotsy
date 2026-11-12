@@ -26,7 +26,7 @@ abstract final class DiaryPreviewExtras {
   /// null（不显示留言区）。[suppressed]（截取分享长图期间）同样为 null：
   /// 分享不带留言，但仍然订阅，截完立刻原样回来、不必重新读取。
   ///
-  /// [onWrite] 为“写留言…”的动作（预览页从“更多”进入时先滚到留言区）。
+  /// [onWrite] 为留言区末尾“写留言…”的动作。
   static DiaryPreviewComments? comments(
     BuildContext context,
     WidgetRef ref, {
@@ -55,12 +55,9 @@ abstract final class DiaryPreviewExtras {
     );
   }
 
-  /// 能不能写留言（“更多 → 写留言”是否出现）：留言功能开着、日记不在回收站。
-  static bool canComment(WidgetRef ref, Diary diary) =>
-      ref.watch(diaryCommentsEnabledProvider) && !diary.isDeleted;
-
-  /// “AI 回应”区与“更多 → AI 回应”是否出现：AI 可用且回应模块开启、日记
-  /// 不在回收站、私密日记只在用户允许时。
+  /// “AI 回应”区与阅读式编辑页“更多 → AI 回应”（打开日记时直接编辑时）
+  /// 是否出现：AI 可用且回应模块开启、日记不在回收站、私密日记只在用户
+  /// 允许时。
   static bool aiReplyAvailable(WidgetRef ref, Diary diary) {
     if (diary.isDeleted) return false;
     if (!ref.watch(aiModuleAvailableProvider(AiModule.reply))) return false;

@@ -219,10 +219,8 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
         comments: _sampleComments(detail.diary),
         onOpenImage: (_, _, hero) => hero?.dispose(),
         actions: DiaryPreviewActions(
-          onOpenTypography: ignore,
           onEdit: ignore,
           onShare: ignore,
-          onMore: ignore,
           onBack: ignore,
         ),
       ),

@@ -64,20 +64,14 @@ void main() {
     await tester.pump(Duration.zero);
   });
 
-  // 功能管理：纪念日 / 日记模板关闭时，“更多”里对应的一项隐藏（数据保留）；
-  // 纪念日默认关闭。
-  for (final (label, features, anniversary, template)
-      in <(String, String?, bool, bool)>[
-        ('the defaults', null, false, true),
-        ('everything on', '{"anniversaries":true}', true, true),
-        ('anniversaries off', '{"anniversaries":false}', false, true),
-        (
-          'templates off',
-          '{"anniversaries":true,"templates":false}',
-          true,
-          false,
-        ),
-      ]) {
+  // 功能管理：纪念日关闭时，“更多”里对应的一项隐藏（数据保留）；纪念日
+  // 默认关闭。分享在顶栏上，写留言与 AI 回应在页尾，存为模板只在编辑页：
+  // 预览页的“更多”里不论开关如何都没有这几项。
+  for (final (label, features, anniversary) in <(String, String?, bool)>[
+    ('the defaults', null, false),
+    ('everything on', '{"anniversaries":true,"comments":true}', true),
+    ('anniversaries off', '{"anniversaries":false}', false),
+  ]) {
     testWidgets('the More menu with $label', (tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{
         'app.settings.app_features': ?features,
@@ -104,10 +98,12 @@ void main() {
         find.text(l10n.previewSetAsAnniversary),
         anniversary ? findsOneWidget : findsNothing,
       );
-      expect(
-        find.text(l10n.diaryTemplateSaveAs),
-        template ? findsOneWidget : findsNothing,
-      );
+      expect(find.text(l10n.diaryTemplateSaveAs), findsNothing);
+      expect(find.text(l10n.previewShare), findsNothing);
+      expect(find.text(l10n.diaryCommentSheetNew), findsNothing);
+      expect(find.text(l10n.aiReplyMoreItem), findsNothing);
+      // 删除在最后，与上面的动作之间隔着分隔线。
+      expect(find.text(l10n.commonDelete), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(Duration.zero);

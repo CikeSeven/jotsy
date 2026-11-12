@@ -3970,10 +3970,6 @@
       "lineHeight": {"type": "String"}
     }
   },
-  "diaryTypographyQuickTooltip": "字体与排版",
-  "@diaryTypographyQuickTooltip": {
-    "description": "日记预览页：打开字体与排版快捷面板的按钮提示，也是面板标题。"
-  },
   "diaryTypographyFontSection": "字体",
   "@diaryTypographyFontSection": {
     "description": "正文字体与排版：字体分组标题。"
@@ -4109,10 +4105,6 @@
   "diaryTypographyScopeHint": "字号、行距等排版作用于日记的编辑、阅读与发布页面。",
   "@diaryTypographyScopeHint": {
     "description": "正文字体与排版：排版分组底部的作用范围说明。"
-  },
-  "diaryTypographyMoreSettings": "更多设置",
-  "@diaryTypographyMoreSettings": {
-    "description": "字体与排版快捷面板：打开完整设置页的按钮。"
   },
   "diaryTypographySampleTitle": "雨后的傍晚",
   "@diaryTypographySampleTitle": {
@@ -5614,18 +5606,6 @@
   "diaryPreviewStyleTopBarTitleNone": "不显示",
   "@diaryPreviewStyleTopBarTitleNone": {
     "description": "预览页样式设置：顶栏标题选项：不显示。"
-  },
-  "diaryPreviewStyleShowTypographyButton": "字体与排版按钮",
-  "@diaryPreviewStyleShowTypographyButton": {
-    "description": "预览页样式设置：开关：顶栏按钮。"
-  },
-  "diaryPreviewStyleShowEditButton": "编辑按钮",
-  "@diaryPreviewStyleShowEditButton": {
-    "description": "预览页样式设置：开关：顶栏按钮。"
-  },
-  "diaryPreviewStyleShowShareButton": "分享按钮",
-  "@diaryPreviewStyleShowShareButton": {
-    "description": "预览页样式设置：开关：顶栏按钮。"
   },
   "diaryPreviewStyleReadingGroup": "阅读辅助",
   "@diaryPreviewStyleReadingGroup": {
@@ -7419,6 +7399,10 @@
   "settingsOpenDiaryInEditorSubtitle": "点开日记直接编辑，版式与预览页相同",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "编辑器设置：打开日记直接编辑开关的说明。"
+  },
+  "diaryReadingAiMenu": "AI",
+  "@diaryReadingAiMenu": {
+    "description": "阅读式编辑页“更多”菜单：打开 AI 相关动作（写作灵感、生成标题、推荐标签与心情、AI 回应）二级菜单的一项。"
   },
   "diaryReadingEditInfo": "编辑信息",
   "@diaryReadingEditInfo": {

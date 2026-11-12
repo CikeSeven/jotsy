@@ -4015,10 +4015,6 @@
       }
     }
   },
-  "diaryTypographyQuickTooltip": "フォントとレイアウト",
-  "@diaryTypographyQuickTooltip": {
-    "description": "Diary preview: tooltip of the font & layout button and title of its quick panel."
-  },
   "diaryTypographyFontSection": "フォント",
   "@diaryTypographyFontSection": {
     "description": "Body font & layout: font group title."
@@ -4162,10 +4158,6 @@
   "diaryTypographyScopeHint": "文字サイズや行間などは日記の作成・閲覧・投稿画面に適用されます。",
   "@diaryTypographyScopeHint": {
     "description": "Body font & layout: footer explaining where the settings apply."
-  },
-  "diaryTypographyMoreSettings": "その他の設定",
-  "@diaryTypographyMoreSettings": {
-    "description": "Font & layout quick panel: button opening the full settings page."
   },
   "diaryTypographySampleTitle": "雨上がりの夕暮れ",
   "@diaryTypographySampleTitle": {
@@ -5667,18 +5659,6 @@
   "diaryPreviewStyleTopBarTitleNone": "非表示",
   "@diaryPreviewStyleTopBarTitleNone": {
     "description": "Diary preview style settings: top bar title option: no title."
-  },
-  "diaryPreviewStyleShowTypographyButton": "フォントとレイアウトのボタン",
-  "@diaryPreviewStyleShowTypographyButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
-  },
-  "diaryPreviewStyleShowEditButton": "編集ボタン",
-  "@diaryPreviewStyleShowEditButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
-  },
-  "diaryPreviewStyleShowShareButton": "共有ボタン",
-  "@diaryPreviewStyleShowShareButton": {
-    "description": "Diary preview style settings: switch for a top bar button."
   },
   "diaryPreviewStyleReadingGroup": "読書の補助",
   "@diaryPreviewStyleReadingGroup": {
@@ -7472,6 +7452,10 @@
   "settingsOpenDiaryInEditorSubtitle": "日記をタップするとすぐ編集できます。レイアウトはプレビューと同じです。",
   "@settingsOpenDiaryInEditorSubtitle": {
     "description": "Editor settings: description of the open-in-editor switch."
+  },
+  "diaryReadingAiMenu": "AI",
+  "@diaryReadingAiMenu": {
+    "description": "Reading-style diary edit page: More menu item opening the submenu of AI actions (writing prompts, title and tag suggestions, AI reflection)."
   },
   "diaryReadingEditInfo": "情報を編集",
   "@diaryReadingEditInfo": {

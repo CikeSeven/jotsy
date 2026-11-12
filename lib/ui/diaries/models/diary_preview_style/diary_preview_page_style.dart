@@ -4,6 +4,10 @@ part of 'diary_preview_style.dart';
 /// 随基调染色、背景遮罩是否随基调染色）、正文颜色、边距、正文宽度、顶栏、
 /// 阅读进度与回到顶部。
 ///
+/// 顶栏的按钮固定为分享、编辑与“更多”，不可自定义：旧版本写下的
+/// `showTypographyButton` / `showEditButton` / `showShareButton` 读取时忽略、
+/// 不迁移（样式码同理）。
+///
 /// 自定义颜色分浅色与深色两态（不透明 ARGB）：深色为 null 时由渲染层按色相
 /// 推导；正文颜色浅色值为 null 表示“自动”（跟随纸张与主题）。
 @immutable
@@ -25,9 +29,6 @@ class DiaryPreviewPageStyle {
     this.contentWidth = 640,
     this.topBar = DiaryPreviewTopBarMode.floating,
     this.topBarTitle = DiaryPreviewTopBarTitle.label,
-    this.showTypographyButton = true,
-    this.showEditButton = true,
-    this.showShareButton = false,
     this.progress = DiaryPreviewProgress.none,
     this.backToTop = false,
   });
@@ -66,9 +67,6 @@ class DiaryPreviewPageStyle {
   final double contentWidth;
   final DiaryPreviewTopBarMode topBar;
   final DiaryPreviewTopBarTitle topBarTitle;
-  final bool showTypographyButton;
-  final bool showEditButton;
-  final bool showShareButton;
   final DiaryPreviewProgress progress;
   final bool backToTop;
 
@@ -102,9 +100,6 @@ class DiaryPreviewPageStyle {
     double? contentWidth,
     DiaryPreviewTopBarMode? topBar,
     DiaryPreviewTopBarTitle? topBarTitle,
-    bool? showTypographyButton,
-    bool? showEditButton,
-    bool? showShareButton,
     DiaryPreviewProgress? progress,
     bool? backToTop,
   }) {
@@ -125,9 +120,6 @@ class DiaryPreviewPageStyle {
       contentWidth: contentWidth ?? this.contentWidth,
       topBar: topBar ?? this.topBar,
       topBarTitle: topBarTitle ?? this.topBarTitle,
-      showTypographyButton: showTypographyButton ?? this.showTypographyButton,
-      showEditButton: showEditButton ?? this.showEditButton,
-      showShareButton: showShareButton ?? this.showShareButton,
       progress: progress ?? this.progress,
       backToTop: backToTop ?? this.backToTop,
     );
@@ -188,18 +180,6 @@ class DiaryPreviewPageStyle {
         json['topBarTitle'],
         d.topBarTitle,
       ),
-      showTypographyButton: StyleJson.boolean(
-        json['showTypographyButton'],
-        d.showTypographyButton,
-      ),
-      showEditButton: StyleJson.boolean(
-        json['showEditButton'],
-        d.showEditButton,
-      ),
-      showShareButton: StyleJson.boolean(
-        json['showShareButton'],
-        d.showShareButton,
-      ),
       progress: StyleJson.enumByName(
         DiaryPreviewProgress.values,
         json['progress'],
@@ -233,14 +213,6 @@ class DiaryPreviewPageStyle {
     StyleJson.put(json, 'contentWidth', contentWidth, d.contentWidth);
     StyleJson.putEnum(json, 'topBar', topBar, d.topBar);
     StyleJson.putEnum(json, 'topBarTitle', topBarTitle, d.topBarTitle);
-    StyleJson.put(
-      json,
-      'showTypographyButton',
-      showTypographyButton,
-      d.showTypographyButton,
-    );
-    StyleJson.put(json, 'showEditButton', showEditButton, d.showEditButton);
-    StyleJson.put(json, 'showShareButton', showShareButton, d.showShareButton);
     StyleJson.putEnum(json, 'progress', progress, d.progress);
     StyleJson.put(json, 'backToTop', backToTop, d.backToTop);
     return json;
@@ -265,16 +237,12 @@ class DiaryPreviewPageStyle {
         other.contentWidth == contentWidth &&
         other.topBar == topBar &&
         other.topBarTitle == topBarTitle &&
-        other.showTypographyButton == showTypographyButton &&
-        other.showEditButton == showEditButton &&
-        other.showShareButton == showShareButton &&
         other.progress == progress &&
         other.backToTop == backToTop;
   }
 
   @override
-  // 字段超过 Object.hash 的 20 个参数上限，改用 hashAll。
-  int get hashCode => Object.hashAll(<Object?>[
+  int get hashCode => Object.hash(
     colorSeed,
     seedColor,
     seedIntensity,
@@ -291,10 +259,7 @@ class DiaryPreviewPageStyle {
     contentWidth,
     topBar,
     topBarTitle,
-    showTypographyButton,
-    showEditButton,
-    showShareButton,
     progress,
     backToTop,
-  ]);
+  );
 }

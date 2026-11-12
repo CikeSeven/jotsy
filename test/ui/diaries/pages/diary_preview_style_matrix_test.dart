@@ -27,7 +27,6 @@ const _extreme = DiaryPreviewStyle(
     horizontalPadding: 48,
     topBar: DiaryPreviewTopBarMode.pinned,
     topBarTitle: DiaryPreviewTopBarTitle.date,
-    showShareButton: true,
     progress: DiaryPreviewProgress.line,
     backToTop: true,
   ),

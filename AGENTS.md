@@ -133,7 +133,7 @@
   - 左侧按钮：灰色语义（取消/返回）
   - 右侧按钮：主色语义（确认）
   - 危险动作：右侧按钮使用 `colorScheme.error`
-- 必须：内容少的操作（约 4 项以内、单行文字的动作）用 `ExpressiveMenuButton` / `ExpressiveMenuAnchor`（菜单项为 `ExpressiveMenuItem`，`lib/ui/widgets/expressive_menu/`）弹出菜单；项目多、需要说明文字、预览或分组时用底部面板（如预览页“更多”）。禁止在该目录之外使用 `PopupMenuButton`、`PopupMenuItem` / `PopupMenuEntry`、`showMenu` 或 SDK 的 `MenuAnchor`（`test/ui/widgets/expressive_menu_source_test.dart` 源码检查兜底）。菜单规格见 DESIGN.md §5.4。
+- 必须：内容少的操作（约 4 项以内、单行文字的动作）用 `ExpressiveMenuButton` / `ExpressiveMenuAnchor`（菜单项为 `ExpressiveMenuItem`，`lib/ui/widgets/expressive_menu/`）弹出菜单；项目多、需要说明文字、预览或分组时用底部面板。禁止在该目录之外使用 `PopupMenuButton`、`PopupMenuItem` / `PopupMenuEntry`、`showMenu` 或 SDK 的 `MenuAnchor`（`test/ui/widgets/expressive_menu_source_test.dart` 源码检查兜底）。菜单规格见 DESIGN.md §5.4。
 - 例外：桌面日记卡片的右键菜单（编辑、置顶、日记本、归档、删除，最多 5 项）经同一 `ExpressiveMenuAnchor` 的 `openAt` 在指针处打开（键盘为菜单键 / Shift+F10，在卡片中央），不受“约 4 项以内”与锚定位置限制；首页多选顶栏的“更多”菜单（置顶、设置标签、导出，在普通日记本里另有移出、移动到，最多 5 项单行动作）同样仍用弹出菜单。
 - 必须：文字选区菜单只经 `lib/ui/widgets/text_selection_menu/`：输入框一律传 `contextMenuBuilder: appTextContextMenuBuilder`，日记正文经 `AppTextSelectionMenu.adaptive`；禁止在该目录之外使用 `AdaptiveTextSelectionToolbar` / `DesktopTextSelectionToolbar` / `CupertinoTextSelectionToolbar` / `TextSelectionToolbar`（`text_selection_menu_source_test.dart` 兜底）。细则见 `docs/rules/ui_components.md`。
 - 必须：键盘升降时 viewInsets 与 body 高度逐帧变化，大组件不得跟着逐帧重建：只关心键盘在不在经 `KeyboardVisibility.of`，面板为键盘留白经 `KeyboardInsetPadding`，只按宽度构建的 `LayoutBuilder` 改用 `WidthLayoutBuilder`，`MaterialApp.builder` 里的主题覆盖经 `DerivedThemeCache`；禁止在页面 / 面板的 build 里直接读 `MediaQuery.viewInsetsOf`。细则见 `docs/rules/ui_components.md`。

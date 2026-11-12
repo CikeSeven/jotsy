@@ -5058,12 +5058,6 @@ abstract class AppLocalizations {
   /// **'{font} · Size {size} · Line spacing {lineHeight}'**
   String diaryTypographySummary(String font, String size, String lineHeight);
 
-  /// Diary preview: tooltip of the font & layout button and title of its quick panel.
-  ///
-  /// In en, this message translates to:
-  /// **'Font & layout'**
-  String get diaryTypographyQuickTooltip;
-
   /// Body font & layout: font group title.
   ///
   /// In en, this message translates to:
@@ -5237,12 +5231,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Size, spacing and indent apply when writing, reading and publishing diaries.'**
   String get diaryTypographyScopeHint;
-
-  /// Font & layout quick panel: button opening the full settings page.
-  ///
-  /// In en, this message translates to:
-  /// **'More settings'**
-  String get diaryTypographyMoreSettings;
 
   /// Body layout preview: sample title.
   ///
@@ -7301,24 +7289,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'None'**
   String get diaryPreviewStyleTopBarTitleNone;
-
-  /// Diary preview style settings: switch for a top bar button.
-  ///
-  /// In en, this message translates to:
-  /// **'Font and layout button'**
-  String get diaryPreviewStyleShowTypographyButton;
-
-  /// Diary preview style settings: switch for a top bar button.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit button'**
-  String get diaryPreviewStyleShowEditButton;
-
-  /// Diary preview style settings: switch for a top bar button.
-  ///
-  /// In en, this message translates to:
-  /// **'Share button'**
-  String get diaryPreviewStyleShowShareButton;
 
   /// Diary preview style settings: group title.
   ///
@@ -9683,6 +9653,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap a diary to edit it right away, laid out just like the preview.'**
   String get settingsOpenDiaryInEditorSubtitle;
+
+  /// Reading-style diary edit page: More menu item opening the submenu of AI actions (writing prompts, title and tag suggestions, AI reflection).
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get diaryReadingAiMenu;
 
   /// Reading-style editor: the tappable info bar and the More item that open the details panel (mood, weather, place, tags, time, cover).
   ///

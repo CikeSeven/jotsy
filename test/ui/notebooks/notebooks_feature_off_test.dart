@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -293,11 +294,11 @@ void main() {
         await tester.tap(find.byTooltip('更多'));
         await tester.pumpAndSettle();
         expect(
-          find.widgetWithText(ListTile, h.l10n.notebookPickerTitle),
+          find.widgetWithText(ExpressiveMenuItem, h.l10n.notebookPickerTitle),
           enabled ? findsOneWidget : findsNothing,
         );
         expect(
-          find.widgetWithText(ListTile, h.l10n.previewExport),
+          find.widgetWithText(ExpressiveMenuItem, h.l10n.previewExport),
           findsOneWidget,
         );
         await h.unmount();

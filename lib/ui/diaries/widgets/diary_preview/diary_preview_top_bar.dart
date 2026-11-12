@@ -6,6 +6,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_glass_scope.dart';
 import '../../../app_surface/widgets/app_glass_surface.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
+import '../../../widgets/expressive_menu/expressive_menu.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
 import 'diary_preview_host.dart';
 
@@ -26,10 +27,11 @@ class DiaryPreviewBackButton extends StatelessWidget {
 }
 
 /// 预览页顶栏 [SliverAppBar]：随滚动隐藏或常驻（[DiaryPreviewPageStyle.topBar]），
-/// 右侧依次为“字体与排版”、分享、编辑（各自可关）与常驻的“更多”：最常点的
-/// 编辑紧挨“更多”，打开分享按钮时也不挪位置。预览嵌在页面里（宽窗口日记页的
-/// 右栏，见 [DiaryPreviewHostScope]）时没有返回按钮，也不显示标题（右栏本就是
-/// 阅读区，“日记”之类的标题多余），只留右侧的动作。
+/// 右侧固定为分享、编辑与“更多”（不随样式开关）：最常点的编辑紧挨“更多”。
+/// “更多”是弹出菜单（[ExpressiveMenuButton]，条目由页面给出，见
+/// `diary_preview_more_menu.dart`）。预览嵌在页面里（宽窗口日记页的右栏，见
+/// [DiaryPreviewHostScope]）时没有返回按钮，也不显示标题（右栏本就是阅读区，
+/// “日记”之类的标题多余），只留右侧的动作。
 ///
 /// 材质：经典时底色为 [background]（与页面相同），滚动到正文上方时不加阴影与
 /// 染色。组件材质里顶栏（`AppGlassComponent.topBars`）为玻璃时，栏本身透明，
@@ -44,10 +46,9 @@ class DiaryPreviewTopBar extends StatelessWidget {
     required this.title,
     required this.background,
     required this.pageColor,
-    required this.onOpenTypography,
     required this.onEdit,
     required this.onShare,
-    required this.onMore,
+    required this.moreItems,
     this.titleSemantics,
     this.onBack,
     this.sliver = true,
@@ -68,10 +69,12 @@ class DiaryPreviewTopBar extends StatelessWidget {
   /// 栏下面的页面底色（纸色；让位给页面背景时透明），玻璃底色是自定义色时
   /// 据此检查前景是否看得清（见 [AppGlassResolved.foregroundFor]）。
   final Color pageColor;
-  final VoidCallback onOpenTypography;
   final VoidCallback onEdit;
   final VoidCallback onShare;
-  final VoidCallback onMore;
+
+  /// “更多”弹出菜单的条目（[ExpressiveMenuItem] 与分隔线）。为空时（设置页的
+  /// 样式预览）按钮照常画出、点了没反应，与真实页面长得一样。
+  final List<Widget> moreItems;
 
   /// 返回按钮；null 时返回上一页（设置页的预览里换成空操作）。
   final VoidCallback? onBack;
@@ -81,9 +84,8 @@ class DiaryPreviewTopBar extends StatelessWidget {
   /// 里，没有 sliver 可放；顶栏常驻，不随滚动隐藏）。
   final bool sliver;
 
-  /// 不为 null 时代替“编辑”按钮的位置（不看 [DiaryPreviewPageStyle.showEditButton]）：
-  /// 阅读式编辑页在编辑中放“完成”，其余时候放空占位；手动保存时一直放
-  /// “保存”。
+  /// 不为 null 时代替“编辑”按钮的位置：阅读式编辑页在编辑中放“完成”，
+  /// 其余时候放空占位；手动保存时一直放“保存”。
   final Widget? editSlot;
 
   @override
@@ -148,32 +150,31 @@ class DiaryPreviewTopBar extends StatelessWidget {
               : Brightness.light,
         );
     final editSlot = this.editSlot;
+    const moreIcon = FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16);
     final actions = <Widget>[
-      if (style.showTypographyButton)
-        IconButton(
-          tooltip: context.l10n.diaryTypographyQuickTooltip,
-          onPressed: onOpenTypography,
-          icon: const FaIcon(FontAwesomeIcons.font, size: 16),
-        ),
-      if (style.showShareButton)
-        IconButton(
-          tooltip: context.l10n.previewShare,
-          onPressed: onShare,
-          icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
-        ),
-      if (editSlot != null)
-        editSlot
-      else if (style.showEditButton)
-        IconButton(
-          tooltip: context.l10n.commonEdit,
-          onPressed: onEdit,
-          icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
-        ),
       IconButton(
-        tooltip: context.l10n.autoT0125,
-        onPressed: onMore,
-        icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
+        tooltip: context.l10n.previewShare,
+        onPressed: onShare,
+        icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
       ),
+      editSlot ??
+          IconButton(
+            tooltip: context.l10n.commonEdit,
+            onPressed: onEdit,
+            icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
+          ),
+      if (moreItems.isEmpty)
+        IconButton(
+          tooltip: context.l10n.autoT0125,
+          onPressed: () {},
+          icon: moreIcon,
+        )
+      else
+        ExpressiveMenuButton(
+          tooltip: context.l10n.autoT0125,
+          icon: moreIcon,
+          items: moreItems,
+        ),
     ];
     if (!sliver) {
       return AppBar(

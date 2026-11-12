@@ -115,10 +115,8 @@ Future<void> _pump(
             paging: _paging(),
             onOpenImage: (_, _, hero) => hero?.dispose(),
             actions: DiaryPreviewActions(
-              onOpenTypography: ignore,
               onEdit: ignore,
               onShare: ignore,
-              onMore: ignore,
               onBack: ignore,
             ),
           ),

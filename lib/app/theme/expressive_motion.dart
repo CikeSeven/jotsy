@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
@@ -42,16 +44,21 @@ abstract final class ExpressiveMotion {
   /// Compose `tween` 的默认曲线 FastOutSlowIn。
   static const menuHighlightCurve = Curves.fastOutSlowIn;
 
-  /// 容器展开（列表卡片 ↔ 整页，见 `ContainerTransformPageRoute`），对齐 M3
-  /// 容器转场：
+  /// 容器展开（列表卡片 ↔ 整页，见 `ContainerTransformPageRoute`）：
   /// - [containerOpen]：展开（M3 long1，450ms）；
   /// - [containerClose]：收回卡片（M3 medium4，400ms），返回比进入略快；
-  /// - [emphasized]：两端都在屏上的大幅形变用的强调曲线（M3 emphasized）：
-  ///   起步柔和、中段迅速走完大部分行程、末段长长地减速落位。收回时同一条
-  ///   曲线作用在“离开整页的进度”上，同样是快走、轻落进卡片。
+  /// - [containerSpring]：位置、尺寸、圆角共用的空间曲线，仿手机系统打开
+  ///   应用——一按就走、速度平滑地升起又回落、慢慢落稳、不回弹。收回时同
+  ///   一条曲线作用在“离开整页的进度”上，同样是立刻离开、轻轻落进卡片。
+  ///
+  /// 为什么不用 M3 emphasized：它前 ~40ms 几乎不动，随后速度峰值冲到平均
+  /// 速度的约 10 倍、100ms 左右就走完八成，剩下的时间只挪最后 2%；挂在进度
+  /// 上的交叉淡化也被压进 70ms 左右——看起来是“顿一下、甩一下、闪一下”。
+  /// 临界阻尼弹簧的峰值只有平均速度的约 3.3 倍，同样的时长里交叉淡化也拉
+  /// 长了约一半。
   static const containerOpen = Duration(milliseconds: 450);
   static const containerClose = Duration(milliseconds: 400);
-  static const emphasized = Curves.easeInOutCubicEmphasized;
+  static const containerSpring = _CriticallyDampedSpringCurve(9);
 
   /// 进场与状态变化：减速收尾，不越界。
   static const effects = Curves.easeOutCubic;
@@ -155,4 +162,31 @@ class _ExpressiveSpringCurve extends Curve {
 
   @override
   double transformInternal(double t) => _spring.x(t * 0.6);
+}
+
+/// 临界阻尼弹簧从静止出发、奔向 1 的位移，压进固定时长（见
+/// [ExpressiveMotion.containerSpring]）。
+///
+/// 位移为 `x(u) = 1 − (1 + u)·e^(−u)`（`u = ωt`）：起点速度为 0 但加速度
+/// 最大，第一帧就动起来；速度在 `u = 1` 处达到峰值后平滑回落，没有尖峰，
+/// 也永远不越过终点。
+///
+/// 为什么是固定时长的曲线而不是真弹簧（[ExpressiveMotion.springTo]）：转场
+/// 的总时长要可控（时长 token 决定），路由的闸门模拟也是按时长计时的。
+///
+/// 为什么刻意不回弹：路由控制器的进度被夹在 0–1，欠阻尼弹簧的过冲会被截
+/// 成一段平台，整页在终点前后来回切换“容器 / 停稳”两种绘制；整页晃动本
+/// 身也显得廉价。
+class _CriticallyDampedSpringCurve extends Curve {
+  const _CriticallyDampedSpringCurve(this.settle);
+
+  /// 时长走完时弹簧走过的 `ωt`。越大越靠前（起步越猛、落稳段越长）。取 9
+  /// 时终点处离 1 只差约 0.12%，归一化补上这点差额后，停下那一刻的速度只
+  /// 剩平均速度的约 1%，看不出到位的顿挫。
+  final double settle;
+
+  static double _raw(double u) => 1 - (1 + u) * math.exp(-u);
+
+  @override
+  double transformInternal(double t) => _raw(settle * t) / _raw(settle);
 }

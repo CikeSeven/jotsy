@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 
@@ -46,6 +47,21 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(overlayOpacity(tester), 0);
+    // 淡出期间指示器照常在转，淡出结束的那一帧才卸下；它在那一帧的 tick
+    // 里已排好下一帧，所以再泵一帧之后才完全静止。
+    expect(find.byType(LoadingIndicatorM3E), findsNothing);
+    await tester.pump();
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('hidden overlay unmounts the indicator and its morph timer', (
+    tester,
+  ) async {
+    // 第三方指示器的形变由 Timer.periodic 驱动、不受 TickerMode 管：隐藏时
+    // 仍挂着就会每约 650ms 触发一次重建与整屏光栅。隐藏的遮罩里不应有它。
+    await tester.pumpWidget(buildOverlay(visible: false));
+    expect(find.byType(LoadingIndicatorM3E), findsNothing);
+    await tester.pump(const Duration(seconds: 2));
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
 

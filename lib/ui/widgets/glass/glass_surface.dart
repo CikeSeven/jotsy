@@ -3,6 +3,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'glass_backdrop_sample.dart';
 import 'glass_bottom_fade_painter.dart';
 import 'glass_reveal.dart';
 import 'outer_shadow_painter.dart';
@@ -44,6 +45,7 @@ class GlassSurface extends StatelessWidget {
     this.extendAboveVisible,
     this.grouped = false,
     this.backdropKey,
+    this.backdropSample,
     required this.child,
   }) : assert(
          extendAbove >= 0 &&
@@ -135,22 +137,16 @@ class GlassSurface extends StatelessWidget {
   /// 同一片背景上的玻璃（如页面背景交给内容卡片的
   /// `AppPageBackdrop.contentBackdropKey`）。与 [grouped] 互斥。
   final BackdropKey? backdropKey;
+
+  /// 内容玻璃的预模糊背景取样（见 [GlassBackdropSample]）：非 null 时不开
+  /// 背景模糊，改在底色下面画预先模糊好的页面背景。只对共用页面背景读取的
+  /// 内容玻璃（[backdropKey] 非 null）生效；取样层的位置在这类玻璃里始终
+  /// 保留（没有取样时是空占位），背景图出现或消失时内容不被重新挂载。
+  final GlassBackdropSample? backdropSample;
   final Widget child;
 
   static Color _scaled(Color color, double factor) =>
       color.withValues(alpha: color.a * factor);
-
-  /// 保持亮度不变的饱和度矩阵（Rec. 709 亮度系数）。
-  static List<double> _saturationMatrix(double s) {
-    const r = 0.2126, g = 0.7152, b = 0.0722;
-    final k = 1 - s;
-    return <double>[
-      r * k + s, g * k, b * k, 0, 0, //
-      r * k, g * k + s, b * k, 0, 0, //
-      r * k, g * k, b * k + s, 0, 0, //
-      0, 0, 0, 1, 0,
-    ];
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +183,11 @@ class GlassSurface extends StatelessWidget {
     }
     // 始终保留 BackdropFilter 节点、只切换 enabled：增删节点会让内容整棵
     // 重建，丢掉焦点、滚动位置与水波纹。
-    final enabled = blur && t > 0 && blurSigma > 0;
+    // 内容玻璃有预模糊背景可取样时不开背景模糊（见 [backdropSample]）；
+    // 渐变结构不取样（它叠在内容上，模糊的是会滚动的内容）。
+    final sampleSlot = backdropKey != null && fadeToBottom == null;
+    final sample = sampleSlot ? backdropSample : null;
+    final enabled = blur && t > 0 && blurSigma > 0 && sample == null;
     final sigma = blurSigma * t;
     final blurFilter = ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
     final saturate = 1 + (saturation - 1) * t;
@@ -195,7 +195,9 @@ class GlassSurface extends StatelessWidget {
     final filter = saturate == 1
         ? blurFilter
         : ImageFilter.compose(
-            outer: ColorFilter.matrix(_saturationMatrix(saturate)),
+            outer: ColorFilter.matrix(
+              GlassBackdropBlurCache.saturationMatrix(saturate),
+            ),
             inner: blurFilter,
           );
     final fade = fadeToBottom;
@@ -222,7 +224,24 @@ class GlassSurface extends StatelessWidget {
           enabled: enabled,
           filter: filter,
           shared: true,
-          child: surface,
+          child: sampleSlot
+              ? Stack(
+                  fit: StackFit.passthrough,
+                  children: <Widget>[
+                    Positioned.fill(
+                      child: sample != null && blur && blurSigma > 0
+                          ? GlassBackdropSampleView(
+                              sample: sample,
+                              sigma: blurSigma,
+                              saturation: saturation,
+                              opacity: t,
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    surface,
+                  ],
+                )
+              : surface,
         ),
       );
     } else {

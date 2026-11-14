@@ -302,7 +302,13 @@ class _DiaryPagerViewState extends State<DiaryPagerView> {
                           animation: _controller,
                           child: _PagerPageBase(
                             opaque: opaquePages,
-                            child: page,
+                            // 缓存区里看不见的一页等翻页动画停下再建（见
+                            // DiaryPagerDeferredPage）。
+                            child: DiaryPagerDeferredPage(
+                              index: index,
+                              visibility: _visibility,
+                              child: page,
+                            ),
                           ),
                           builder: (BuildContext context, Widget? child) {
                             return DiaryPagerTransition(

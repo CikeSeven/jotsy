@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../../app/theme/expressive_surfaces.dart';
+import '../../widgets/glass/glass_backdrop_sample.dart';
 import '../models/app_surface_settings.dart';
 import '../services/app_background_image_cache.dart';
 import '../viewmodels/app_resolved_background.dart';
@@ -242,6 +244,7 @@ class AppBackgroundSlot extends ChangeNotifier {
     required AppBackgroundArea area,
     required ColorScheme scheme,
     BackdropKey? contentBackdropKey,
+    GlassBackdropLink? contentGlassLink,
     bool deferScrim = false,
   }) {
     final visual = front;
@@ -269,6 +272,25 @@ class AppBackgroundSlot extends ChangeNotifier {
       estimated = color ?? scheme.surface;
     }
     final deferred = deferScrim && background.isImage ? scrim : null;
+    // 只取完全落定、由背景自己画遮罩的一层。交叉淡入时背景是两张图的
+    // 混合，直接取 front 会让卡片提前显出新图；延后的遮罩还可能被预览页
+    // 按每篇基调染色，原始 scrim 不能代表它。这两种情况保留实时模糊。
+    final image = visual.image;
+    final contentGlass =
+        contentGlassLink != null &&
+            _layers.length == 1 &&
+            _layers.single.opacity.value == 1 &&
+            !deferScrim &&
+            background.isImage &&
+            image != null
+        ? GlassBackdropSample(
+            link: contentGlassLink,
+            image: image.image,
+            alignment: background.alignment,
+            underColor: ExpressiveSurfaces.pageBackground(scheme),
+            scrim: scrim,
+          )
+        : null;
     return AppPageBackdrop(
       area: area,
       hasBackground: true,
@@ -280,6 +302,7 @@ class AppBackgroundSlot extends ChangeNotifier {
       solidBarColor: color ?? scheme.surface,
       estimatedColor: estimated,
       contentBackdropKey: contentBackdropKey,
+      contentGlass: contentGlass,
     );
   }
 

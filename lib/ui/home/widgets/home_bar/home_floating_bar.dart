@@ -110,6 +110,8 @@ class _HomeFloatingBarState extends State<HomeFloatingBar>
       ),
       shadowColor: style.shadowColor,
       progress: t,
+      // 与新建按钮共用首页外壳 BackdropGroup 的一次背景读取。
+      grouped: true,
       // 导航项在玻璃内部淡入：Opacity 在 BackdropFilter 之下，只作用于
       // 内容，不影响背景采样。结构恒定，进度到 1 后为恒等值。
       child: Opacity(

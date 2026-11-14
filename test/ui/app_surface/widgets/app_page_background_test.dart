@@ -379,6 +379,58 @@ void main() {
     );
   });
 
+  testWidgets(
+    'an image background gives content glass a pre-blurred sample anchored '
+    'at the background layer',
+    (tester) async {
+      final harness = await _pump(
+        tester,
+        settings: _settings(_image),
+        warmImage: true,
+      );
+      final sample = harness.backdrop.contentGlass;
+      expect(sample, isNotNull);
+      expect(sample!.alignment, const Alignment(0.5, 0));
+      expect(sample.scrim, harness.scheme.surface.withValues(alpha: 0.3));
+      // Leader 就挂在背景图层外面：取样与背景按同一个坐标系对齐。
+      final target = tester.widget<CompositedTransformTarget>(
+        find.ancestor(
+          of: find.byType(AppBackgroundLayersView),
+          matching: find.byType(CompositedTransformTarget),
+        ),
+      );
+      expect(target.link, same(sample.link));
+      expect(
+        sample.image.isCloneOf(
+          tester.widget<RawImage>(find.byType(RawImage)).image!,
+        ),
+        isTrue,
+      );
+    },
+  );
+
+  testWidgets('a deferred scrim keeps live blur for per-page tinting', (
+    tester,
+  ) async {
+    final harness = await _pump(
+      tester,
+      settings: _settings(_image),
+      warmImage: true,
+      deferScrim: true,
+    );
+    expect(harness.backdrop.contentGlass, isNull);
+    expect(harness.backdrop.contentBackdropKey, isNotNull);
+  });
+
+  testWidgets('color backgrounds and no background have no glass sample', (
+    tester,
+  ) async {
+    final color = await _pump(tester, settings: _color(_colorA));
+    expect(color.backdrop.contentGlass, isNull);
+    final none = await _pump(tester, settings: const AppSurfaceSettings());
+    expect(none.backdrop.contentGlass, isNull);
+  });
+
   testWidgets('deferScrim leaves color backgrounds as they were', (
     tester,
   ) async {
@@ -406,10 +458,12 @@ void main() {
     // 淡入时下面垫着不透明的页面底色。
     expect(_layers(tester), hasLength(2));
     expect(_scaffoldColor(tester), Colors.transparent);
+    expect(harness.backdrop.contentGlass, isNull);
 
     await tester.pumpAndSettle();
     expect(_layers(tester), hasLength(1));
     expect(harness.backdrop.hasImage, isTrue);
+    expect(harness.backdrop.contentGlass, isNotNull);
   });
 
   testWidgets('a missing image renders as no background', (tester) async {

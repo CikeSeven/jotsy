@@ -27,6 +27,7 @@ import 'package:node_diary/ui/settings/sections/diary_code_block_style/diary_cod
 import 'package:node_diary/ui/settings/sections/diary_preview_style/diary_preview_style_preview.dart';
 import 'package:node_diary/ui/settings/sections/home_bar_style/home_bar_style_preview.dart';
 import 'package:node_diary/ui/settings/widgets/style_editor/style_editor_common.dart';
+import 'package:node_diary/ui/widgets/glass/glass_backdrop_sample.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -237,8 +238,18 @@ void main() {
           )
           .toList();
       expect(blurs, isNotEmpty);
+      expect(backdrop.contentGlass, isNotNull);
+      final samples = tester
+          .widgetList<GlassBackdropSampleView>(
+            find.byType(GlassBackdropSampleView),
+          )
+          .toList();
+      expect(samples, hasLength(blurs.length));
+      for (final sample in samples) {
+        expect(sample.sample, backdrop.contentGlass);
+      }
       for (final blur in blurs) {
-        expect(blur.enabled, isTrue);
+        expect(blur.enabled, isFalse);
         expect(blur.backdropGroupKey, backdrop.contentBackdropKey);
       }
     });

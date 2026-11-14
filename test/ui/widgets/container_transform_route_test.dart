@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/core/services/display_corners.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
@@ -260,6 +261,25 @@ void main() {
     expect(route.animation!.status, AnimationStatus.completed);
     // 停稳后不再留着起飞的卡片画面。
     expect(geometryOf(tester).closed, isNull);
+  });
+
+  testWidgets('the page grows into the screen corners', (tester) async {
+    DisplayCorners.debugRadii = BorderRadius.circular(40);
+    addTearDown(DisplayCorners.debugReset);
+    await pumpList(tester);
+
+    await tester.tap(find.text('card a'));
+    await tester.pump();
+    await tester.pump();
+    expect(
+      tester
+          .widget<ContainerTransformTransition>(
+            find.byType(ContainerTransformTransition),
+          )
+          .pageRadius,
+      BorderRadius.circular(40),
+    );
+    await tester.pumpAndSettle();
   });
 
   testWidgets('expanding and returning each take their container duration', (

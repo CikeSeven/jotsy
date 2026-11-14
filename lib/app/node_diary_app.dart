@@ -18,6 +18,7 @@ import 'package:node_diary/core/services/app_lock_platform.dart';
 import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/app_passcode/app_passcode_store.dart';
+import 'package:node_diary/core/services/display_corners.dart';
 import 'package:node_diary/ui/app_lock/controllers/app_lock_controller.dart';
 import 'package:node_diary/ui/app_lock/controllers/identity_verifier.dart';
 import 'package:node_diary/ui/app_lock/models/app_lock_options.dart';
@@ -127,6 +128,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     ref.listenManual(appLockOptionsProvider, (_, AppLockOptions next) {
       _appLock?.options = next;
     });
+    // 屏幕自带的圆角：从卡片展开日记时整页落在这个圆角上，点开前就要读好。
+    DisplayCorners.start();
   }
 
   /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/services/display_corners.dart';
 import 'container_transform_source.dart';
 import 'container_transform_transition.dart';
 
@@ -255,6 +256,9 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
       animation: animation,
       geometry: _geometry,
       scrimColor: theme.colorScheme.scrim,
+      // 整页的圆角取屏幕自带的圆角：卡片一路长成屏幕的形状，落位与物理
+      // 圆角重合（读不到时为直角）。
+      pageRadius: DisplayCorners.radii,
       backdrop: backdrop ?? ColoredBox(color: theme.scaffoldBackgroundColor),
       child: outgoing,
     );

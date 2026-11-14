@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -58,7 +57,8 @@ enum ContainerTransformSlot {
 ///
 /// 每帧自下而上：
 /// 1. 下层页面上的遮罩（`scrim`），随进度加深；
-/// 2. 容器：圆角矩形从卡片插值到整屏，圆角从卡片圆角到 0，里面依次是
+/// 2. 容器：圆角矩形从卡片插值到整屏，圆角从卡片圆角过渡到 [pageRadius]
+///    （屏幕自带的圆角，落位时与屏幕的物理圆角重合），里面依次是
 ///    - 底（[backdrop]）：按整屏布局、与页面同样缩放贴顶；
 ///    - 页面：按整屏布局，宽度缩放到容器宽、顶边对齐容器顶边；底与页面
 ///      在同一透明度层里随进度淡入，返回末段一起淡去；
@@ -82,11 +82,17 @@ class ContainerTransformTransition
     required this.scrimColor,
     required this.backdrop,
     required this.child,
+    this.pageRadius = BorderRadius.zero,
   });
 
   final Animation<double> animation;
   final ContainerTransformGeometry geometry;
   final Color scrimColor;
+
+  /// 整页（进度 1）时容器的圆角，应取屏幕自带的圆角（`DisplayCorners`）：
+  /// 展开落位时容器的角与屏幕的物理圆角重合，停稳后不再裁切也看不出变化；
+  /// 收回时也是从屏幕的形状出发。读不到时为直角。
+  final BorderRadius pageRadius;
 
   /// 容器的底，应与页面自己的背景一致（见类注释）；不参与点按与读屏。
   final Widget backdrop;
@@ -109,6 +115,7 @@ class ContainerTransformTransition
       animation: animation,
       geometry: geometry,
       scrimColor: scrimColor,
+      pageRadius: pageRadius,
     );
   }
 
@@ -120,7 +127,8 @@ class ContainerTransformTransition
     renderObject
       ..animation = animation
       ..geometry = geometry
-      ..scrimColor = scrimColor;
+      ..scrimColor = scrimColor
+      ..pageRadius = pageRadius;
   }
 }
 
@@ -138,7 +146,7 @@ class _Frame {
   });
 
   final Rect rect;
-  final double radius;
+  final BorderRadius radius;
 
   /// 页面（整屏布局）到容器的变换：按宽度等比缩放，左上角对齐容器。
   final Matrix4 transform;
@@ -160,6 +168,7 @@ class RenderContainerTransform extends RenderBox
     required this._animation,
     required this._geometry,
     required this._scrimColor,
+    this._pageRadius = BorderRadius.zero,
   });
 
   /// 下层页面上遮罩的最大不透明度（M3 的遮罩约 32%，这里略轻：容器本身已
@@ -209,6 +218,15 @@ class RenderContainerTransform extends RenderBox
       return;
     }
     _scrimColor = value;
+    markNeedsPaint();
+  }
+
+  BorderRadius _pageRadius;
+  set pageRadius(BorderRadius value) {
+    if (value == _pageRadius) {
+      return;
+    }
+    _pageRadius = value;
     markNeedsPaint();
   }
 
@@ -334,7 +352,13 @@ class RenderContainerTransform extends RenderBox
     final fallback = closed == null;
     return _Frame(
       rect: rect,
-      radius: lerpDouble(closedRadius, 0, p)!,
+      // 圆角与位置尺寸同一条进度：从卡片的角一路长成屏幕的角，途中不会
+      // 先变成直角。
+      radius: BorderRadius.lerp(
+        BorderRadius.circular(closedRadius),
+        _pageRadius,
+        p,
+      )!,
       transform: transform,
       scrimAlpha: _maxScrim * p,
       // 保留 1/255 的预绘制层：起步等待帧里页面就完成首次绘制与栅格化，
@@ -367,10 +391,7 @@ class RenderContainerTransform extends RenderBox
           ),
       );
     }
-    final rrect = RRect.fromRectAndRadius(
-      frame.rect,
-      Radius.circular(frame.radius),
-    );
+    final rrect = frame.radius.toRRect(frame.rect);
     _clipLayer.layer = context.pushClipRRect(
       needsCompositing,
       offset,

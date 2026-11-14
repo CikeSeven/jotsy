@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -30,6 +32,48 @@ Future<RenderHomeTabDepth> _pumpDepth(
     ),
   );
   return tester.renderObject<RenderHomeTabDepth>(find.byType(HomeTabDepth));
+}
+
+/// 按快照绘制的一页：页面是 [page]，卡片自带的底是 [background]。
+Future<RenderHomeTabDepth> _pumpSnapshotDepth(
+  WidgetTester tester, {
+  required ValueNotifier<double> position,
+  int index = 0,
+  bool hold = false,
+  Widget? background,
+  Widget page = const ColoredBox(color: Color(0xFFFAFAFA)),
+}) async {
+  await tester.pumpWidget(
+    Directionality(
+      textDirection: TextDirection.ltr,
+      child: HomeTabDepth(
+        index: index,
+        position: position,
+        enabled: true,
+        snapshot: true,
+        holdSnapshot: hold,
+        stageColor: const Color(0xFF101010),
+        scrimColor: const Color(0xFF000000),
+        background: background,
+        child: page,
+      ),
+    ),
+  );
+  return tester.renderObject<RenderHomeTabDepth>(find.byType(HomeTabDepth));
+}
+
+/// 读出 [image] 在物理像素 ([x], [y]) 处的颜色。
+Future<Color> _pixel(WidgetTester tester, ui.Image image, int x, int y) async {
+  final data = (await tester.runAsync(
+    () => image.toByteData(format: ui.ImageByteFormat.rawStraightRgba),
+  ))!;
+  final i = (y * image.width + x) * 4;
+  return Color.fromARGB(
+    data.getUint8(i + 3),
+    data.getUint8(i),
+    data.getUint8(i + 1),
+    data.getUint8(i + 2),
+  );
 }
 
 /// 图层树里变换图层的个数（根视图自己有一个）。
@@ -127,6 +171,177 @@ void main() {
       expect(_hasClip(tester), isFalse);
     });
 
+    testWidgets('moving from a snapshot builds no layers at all', (
+      tester,
+    ) async {
+      final position = ValueNotifier<double>(0);
+      addTearDown(position.dispose);
+      final render = await _pumpSnapshotDepth(tester, position: position);
+      expect(render.debugHasSnapshot, isFalse);
+
+      position.value = 0.5;
+      await tester.pump();
+      // 一张位图一笔画完：没有变换、裁切图层，页面自己的图层也不在树上。
+      expect(render.debugHasSnapshot, isTrue);
+      expect(render.debugSpec.scale, closeTo(0.96, 1e-9));
+      expect(_hasClip(tester), isFalse);
+      expect(_transformLayers(tester), 1);
+      expect(tester.layers.whereType<OffsetLayer>().length, 1);
+
+      // 继续移动只重画同一张快照。
+      position.value = 0.3;
+      await tester.pump();
+      expect(render.debugHasSnapshot, isTrue);
+
+      // 回到正中、没有保持：释放快照，直接画页面。
+      position.value = 0;
+      await tester.pump();
+      expect(render.debugHasSnapshot, isFalse);
+      expect(_hasClip(tester), isFalse);
+      expect(_transformLayers(tester), 1);
+    });
+
+    testWidgets('holds the snapshot at rest until released', (tester) async {
+      final position = ValueNotifier<double>(0);
+      addTearDown(position.dispose);
+      final render = await _pumpSnapshotDepth(
+        tester,
+        position: position,
+        hold: true,
+      );
+      // 从没移动过：保持也没有快照可画，照常实时绘制。
+      expect(render.debugHasSnapshot, isFalse);
+
+      position.value = 0.5;
+      await tester.pump();
+      position.value = 0;
+      await tester.pump();
+      // 落位后仍画快照（与实时绘制逐像素一致），不建任何图层。
+      expect(render.debugHasSnapshot, isTrue);
+      expect(render.debugSpec, same(HomeTabDepthSpec.identity));
+      expect(_transformLayers(tester), 1);
+
+      await _pumpSnapshotDepth(tester, position: position);
+      expect(render.debugHasSnapshot, isFalse);
+    });
+
+    testWidgets('releases the snapshot once the page is a full page away', (
+      tester,
+    ) async {
+      final position = ValueNotifier<double>(0);
+      addTearDown(position.dispose);
+      final render = await _pumpSnapshotDepth(
+        tester,
+        position: position,
+        hold: true,
+      );
+      position.value = 0.5;
+      await tester.pump();
+      expect(render.debugHasSnapshot, isTrue);
+      // 整页移出视口：快照不会再用到，即使在保持期间也立即释放；也不会
+      // 在视口之外重新拍一张。
+      position.value = 1;
+      expect(render.debugHasSnapshot, isFalse);
+      await tester.pump();
+      expect(render.debugHasSnapshot, isFalse);
+      expect(_transformLayers(tester), 1);
+    });
+
+    testWidgets('the snapshot carries the card background under the page', (
+      tester,
+    ) async {
+      final position = ValueNotifier<double>(0);
+      addTearDown(position.dispose);
+      const background = Color(0xFFE53935);
+      const content = Color(0xFF1E88E5);
+      final render = await _pumpSnapshotDepth(
+        tester,
+        position: position,
+        background: const ColoredBox(color: background),
+        // 页面本身透明，只在右下角画一块内容。
+        page: const Align(
+          alignment: Alignment.bottomRight,
+          child: SizedBox.square(
+            dimension: 40,
+            child: ColoredBox(color: content),
+          ),
+        ),
+      );
+      position.value = 0.5;
+      await tester.pump();
+      final image = render.debugSnapshot!;
+      // 快照按物理像素：左上角是卡片自带的底，右下角是页面的内容。
+      expect(await _pixel(tester, image, 1, 1), background);
+      expect(
+        await _pixel(tester, image, image.width - 2, image.height - 2),
+        content,
+      );
+    });
+
+    testWidgets(
+      'content glass in the snapshot lines up with the rest position',
+      (tester) async {
+        final position = ValueNotifier<double>(0.5);
+        addTearDown(position.dispose);
+        final link = LayerLink();
+        const marker = Color(0xFF43A047);
+        const width = 400.0;
+        tester.view.physicalSize = const Size(width, 300);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        // 第 1 页、页码 0.5：PageView 会把它摆在右移半页处。页面里有一块跟随
+        // 背景层 Leader 的取样（与内容玻璃同一机制），静止时它在页面左上角。
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: CompositedTransformTarget(
+                    link: link,
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+                Positioned(
+                  left: width / 2,
+                  top: 0,
+                  width: width,
+                  height: 300,
+                  child: HomeTabDepth(
+                    index: 1,
+                    position: position,
+                    enabled: true,
+                    snapshot: true,
+                    stageColor: null,
+                    scrimColor: const Color(0x00000000),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: CompositedTransformFollower(
+                        link: link,
+                        showWhenUnlinked: false,
+                        child: const SizedBox.square(
+                          dimension: 20,
+                          child: ColoredBox(color: marker),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        final render = tester.renderObject<RenderHomeTabDepth>(
+          find.byType(HomeTabDepth),
+        );
+        final image = render.debugSnapshot!;
+        // 按落在正中的位置拍：取样在快照的左上角；若按此刻右移半页的位置
+        // 拍，它会落在快照左边之外。
+        expect(await _pixel(tester, image, 5, 5), marker);
+        expect(await _pixel(tester, image, 205, 5), const Color(0x00000000));
+      },
+    );
+
     testWidgets('hit tests through the scaled card', (tester) async {
       final position = ValueNotifier<double>(0.5);
       addTearDown(position.dispose);
@@ -134,6 +349,28 @@ void main() {
       await _pumpDepth(tester, position: position, onTap: () => taps++);
       final size = tester.getSize(find.byType(HomeTabDepth));
       // 卡片缩到 0.96：左上角最边上的一点在卡片之外，正中仍在卡片里。
+      await tester.tapAt(const Offset(1, 1));
+      expect(taps, 0);
+      await tester.tapAt(size.center(Offset.zero));
+      expect(taps, 1);
+    });
+
+    testWidgets('hit tests through a card painted from a snapshot', (
+      tester,
+    ) async {
+      final position = ValueNotifier<double>(0.5);
+      addTearDown(position.dispose);
+      var taps = 0;
+      await _pumpSnapshotDepth(
+        tester,
+        position: position,
+        page: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => taps++,
+          child: const ColoredBox(color: Color(0xFFFAFAFA)),
+        ),
+      );
+      final size = tester.getSize(find.byType(HomeTabDepth));
       await tester.tapAt(const Offset(1, 1));
       expect(taps, 0);
       await tester.tapAt(size.center(Offset.zero));

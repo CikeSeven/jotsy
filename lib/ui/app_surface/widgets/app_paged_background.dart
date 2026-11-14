@@ -25,6 +25,12 @@ export 'app_page_backdrop.dart';
 ///   0.3 处就是 70% 前一页 + 30% 后一页的背景，点按切页时 PageView 本身在
 ///   动画，同一机制覆盖；为 false 时（宽窗口跳页）不看页码，[current] 变化
 ///   时交叉淡入（`ExpressiveMotion.medium`，减少动画时直接切换）；
+/// - 插值时相邻两区画面完全相同（跟随同一全局背景、都已落定，见
+///   `AppBackgroundSlot.showsSameAs`）只画下面那一层：上面那层的透明度合成
+///   是一次整屏离屏图层，结果却与只画一层相同；
+/// - [occludedWhileMoving] 为 true 时（首页窄窗口的景深切页：途中每页连同
+///   自己区域的背景缩成不透明卡片、缝隙铺舞台色，见 `HomeTabDepth`），页码
+///   不在整页上时背景整个被盖住，同样只画下面那一层，留作垫底；
 /// - 各区域各有一个 [AppBackgroundSlot]，区域自己的设置变化同样交叉淡入；
 /// - 只要有任何一页在画背景，整组背景层就一直画，没有背景的页画主题页面
 ///   底色——插值时下层始终不透明；外壳 Scaffold 此时经 [shellColorOf] 变为
@@ -41,6 +47,7 @@ class AppPagedBackground extends ConsumerStatefulWidget {
     required this.current,
     required this.position,
     this.interpolate = true,
+    this.occludedWhileMoving = false,
     required this.child,
   });
 
@@ -48,6 +55,9 @@ class AppPagedBackground extends ConsumerStatefulWidget {
   final int current;
   final ValueListenable<double> position;
   final bool interpolate;
+
+  /// 页码不在整页上时背景是否被各页整个盖住（见类注释）。
+  final bool occludedWhileMoving;
   final Widget child;
 
   /// 承载整组页面的外壳（如首页 Scaffold）的底色：背景层在画时透明，否则为
@@ -238,6 +248,10 @@ class _AppPagedBackgroundState extends ConsumerState<AppPagedBackground>
     final current = widget.areas.isEmpty ? null : _currentArea;
     return _AppPagedBackdropScope(
       backdrops: backdrops,
+      layers: <AppBackgroundArea, List<AppBackgroundLayer>>{
+        for (final MapEntry(key: area, value: slot) in _slots.entries)
+          area: slot.layers,
+      },
       painting: painting,
       child: AppPageBackdropScope(
         backdrop:
@@ -254,25 +268,38 @@ class _AppPagedBackgroundState extends ConsumerState<AppPagedBackground>
   );
 
   /// 跟随页位置：只有这一小块随每帧的页码重建，页面本身不重建。
+  ///
+  /// 上面那层只在确实看得见、又与下面不同时才画（见类注释）；结构始终是
+  /// 同一个 Stack，下面那层的位置不变，增删上面那层不会重新挂载它。
   Widget _buildInterpolated() {
     final areas = widget.areas;
     return ValueListenableBuilder<double>(
       valueListenable: widget.position,
       builder: (BuildContext context, double page, Widget? _) {
         final blend = AppPagedBlend.at(page, areas.length);
+        final lower = areas[blend.lower];
+        final upper = areas[blend.upper];
+        final showUpper =
+            blend.upperOpacity > 0 &&
+            !widget.occludedWhileMoving &&
+            !_showSame(lower, upper);
         return Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            _layersOf(areas[blend.lower]),
-            if (blend.upperOpacity > 0)
-              Opacity(
-                opacity: blend.upperOpacity,
-                child: _layersOf(areas[blend.upper]),
-              ),
+            _layersOf(lower),
+            if (showUpper)
+              Opacity(opacity: blend.upperOpacity, child: _layersOf(upper)),
           ],
         );
       },
     );
+  }
+
+  bool _showSame(AppBackgroundArea a, AppBackgroundArea b) {
+    if (a == b) return true;
+    final slotA = _slots[a];
+    final slotB = _slots[b];
+    return slotA != null && slotB != null && slotA.showsSameAs(slotB);
   }
 
   /// 宽窗口：当前区域的背景，切页时从上一区域交叉淡入。
@@ -285,6 +312,29 @@ class _AppPagedBackgroundState extends ConsumerState<AppPagedBackground>
         _layersOf(from),
         FadeTransition(opacity: _switchCurve, child: _layersOf(_currentArea)),
       ],
+    );
+  }
+}
+
+/// 首页某个区域的背景本身：与 [AppPagedBackground] 在这个区域静止时画的
+/// 完全相同（同一组图层、同一张解码图），不在 [AppPagedBackground] 之下或
+/// 没有背景时只铺主题页面底色。
+///
+/// 给首页景深切页的卡片当底（`HomeTabDepth.background`）：卡片连同自己区域
+/// 的背景一起缩放、移动，卡片里的玻璃对着这层背景取样；静止时它与背景层
+/// 重合，画面与不铺这层逐像素一致。
+class AppPagedAreaBackground extends StatelessWidget {
+  const AppPagedAreaBackground({super.key, required this.area});
+
+  final AppBackgroundArea area;
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<_AppPagedBackdropScope>();
+    return AppBackgroundLayersView(
+      layers: scope?.layers[area] ?? const <AppBackgroundLayer>[],
+      opaque: true,
     );
   }
 }
@@ -317,15 +367,33 @@ class AppAreaBackdrop extends StatelessWidget {
 class _AppPagedBackdropScope extends InheritedWidget {
   const _AppPagedBackdropScope({
     required this.backdrops,
+    required this.layers,
     required this.painting,
     required super.child,
   });
 
   final Map<AppBackgroundArea, AppPageBackdrop> backdrops;
+
+  /// 各区域此刻自下而上的背景图层（[AppPagedAreaBackground] 用）。每次构建
+  /// 都是新的只读列表，按元素比较。
+  final Map<AppBackgroundArea, List<AppBackgroundLayer>> layers;
   final bool painting;
 
   @override
   bool updateShouldNotify(_AppPagedBackdropScope oldWidget) =>
       painting != oldWidget.painting ||
-      !mapEquals(backdrops, oldWidget.backdrops);
+      !mapEquals(backdrops, oldWidget.backdrops) ||
+      !_layersEqual(layers, oldWidget.layers);
+
+  static bool _layersEqual(
+    Map<AppBackgroundArea, List<AppBackgroundLayer>> a,
+    Map<AppBackgroundArea, List<AppBackgroundLayer>> b,
+  ) {
+    if (a.length != b.length) return false;
+    for (final MapEntry(key: area, value: layers) in a.entries) {
+      final other = b[area];
+      if (other == null || !listEquals(layers, other)) return false;
+    }
+    return true;
+  }
 }

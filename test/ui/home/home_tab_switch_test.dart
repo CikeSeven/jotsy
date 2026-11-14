@@ -14,6 +14,7 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
+import 'package:node_diary/ui/home/widgets/home_tab_depth.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,13 +89,27 @@ double _homePage(WidgetTester tester) => tester
     .controller!
     .page!;
 
-/// [page] 所在的 Tab 此刻是否露在屏幕上（可见的页才开着 TickerMode）；还没
-/// 构建过的页同样算不可见。
+/// [page] 所在的 Tab 此刻是否露在屏幕上（可见区间里的页才开着 HeroMode；
+/// TickerMode 在按快照切页的途中会暂停，不能用来判断）；还没构建过的页
+/// 同样算不可见。
 bool _tabShown(WidgetTester tester, Type page) {
   final finder = find.byType(page, skipOffstage: false);
   if (finder.evaluate().isEmpty) return false;
-  return TickerMode.valuesOf(tester.element(finder)).enabled;
+  return tester
+      .widget<HeroMode>(
+        find
+            .ancestor(
+              of: finder,
+              matching: find.byType(HeroMode, skipOffstage: false),
+            )
+            .first,
+      )
+      .enabled;
 }
+
+bool _tickersEnabled(WidgetTester tester, Type page) => TickerMode.valuesOf(
+  tester.element(find.byType(page, skipOffstage: false)),
+).enabled;
 
 /// 日记页主列表。切到其他 Tab 后日记页仍被保活，只是不在可见视口里。
 Finder _diariesList() => find
@@ -343,25 +358,95 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('only the visible tab keeps its tickers running', (tester) async {
+  testWidgets('only the settled tab keeps its tickers running', (tester) async {
     await _pumpHome(tester);
     final l10n = tester.element(find.byType(HomePage)).l10n;
-    bool tickersEnabled(Type page) => TickerMode.valuesOf(
-      tester.element(find.byType(page, skipOffstage: false)),
-    ).enabled;
 
-    // PageView 只构建可见页：此时探索页尚未构建。
-    expect(tickersEnabled(DiariesPage), isTrue);
+    // 页面第一次出现在可见区间时才创建：此时探索页尚未构建。
+    expect(_tickersEnabled(tester, DiariesPage), isTrue);
+    expect(find.byType(ExplorePage, skipOffstage: false), findsNothing);
 
     await tester.tap(_navItem(l10n.navExplore));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
-    // 切换途中目标页与相邻页都在动，不会冻结半露出的内容。
-    expect(tickersEnabled(ExplorePage), isTrue);
+    // 日记页显示过，按快照画、ticker 暂停（画面冻结在起步那一刻，落位时
+    // 不会跳一下）；探索第一次显示，内容与入场动画要在途中出现：实时绘制、
+    // ticker 照常跑。
+    expect(_tabShown(tester, DiariesPage), isTrue);
+    expect(_tabShown(tester, ExplorePage), isTrue);
+    expect(_tickersEnabled(tester, DiariesPage), isFalse);
+    expect(_tickersEnabled(tester, ExplorePage), isTrue);
     await tester.pumpAndSettle();
 
-    expect(tickersEnabled(ExplorePage), isTrue);
-    expect(tickersEnabled(DiariesPage), isFalse);
+    // 落位、收尾的动画停下后放开快照：只有落定的页开着。
+    expect(_tickersEnabled(tester, ExplorePage), isTrue);
+    expect(_tickersEnabled(tester, DiariesPage), isFalse);
+
+    // 两页都显示过：再切回日记时两页都按快照画，途中都暂停。
+    await tester.tap(_navItem(l10n.navDiaries));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(_tabShown(tester, DiariesPage), isTrue);
+    expect(_tabShown(tester, ExplorePage), isTrue);
+    expect(_tickersEnabled(tester, DiariesPage), isFalse);
+    expect(_tickersEnabled(tester, ExplorePage), isFalse);
+    await tester.pumpAndSettle();
+    expect(_tickersEnabled(tester, DiariesPage), isTrue);
+    expect(_tickersEnabled(tester, ExplorePage), isFalse);
+    await _unmount(tester);
+  });
+
+  testWidgets('a tab shown for the first time is painted live, not frozen', (
+    tester,
+  ) async {
+    await _pumpHome(tester);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    RenderHomeTabDepth depthOf(Type page) =>
+        tester.renderObject<RenderHomeTabDepth>(
+          find.ancestor(
+            of: find.byType(page, skipOffstage: false),
+            matching: find.byType(HomeTabDepth, skipOffstage: false),
+          ),
+        );
+
+    await tester.tap(_navItem(l10n.navExplore));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    // 第一次显示的探索页刚创建、数据还在加载：不拍快照，途中实时绘制；
+    // 显示过的日记页按快照画。
+    expect(depthOf(DiariesPage).debugHasSnapshot, isTrue);
+    expect(depthOf(ExplorePage).debugHasSnapshot, isFalse);
+    await tester.pumpAndSettle();
+
+    // 显示过之后再切走：探索也按快照画。
+    await tester.tap(_navItem(l10n.navDiaries));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(depthOf(ExplorePage).debugHasSnapshot, isTrue);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets('with reduced motion both sliding tabs keep their tickers', (
+    tester,
+  ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await _pumpHome(tester);
+
+    // 减少动画没有景深、实时绘制：手指拖动途中两侧页面都启用，不会冻结
+    // 半露出的内容。
+    final gesture = await tester.startGesture(const Offset(200, 400));
+    await gesture.moveBy(const Offset(-20, 0));
+    await tester.pump();
+    await gesture.moveBy(const Offset(-100, 0));
+    await tester.pump();
+    expect(_tickersEnabled(tester, DiariesPage), isTrue);
+    expect(_tickersEnabled(tester, ExplorePage), isTrue);
+    await gesture.up();
+    await tester.pumpAndSettle();
     await _unmount(tester);
   });
 

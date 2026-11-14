@@ -107,6 +107,23 @@ class AppBackgroundSlot extends ChangeNotifier {
   AppBackgroundVisual? get front =>
       _layers.isEmpty ? null : _layers.last.visual;
 
+  /// 此刻是否与 [other] 画出完全相同的画面：两边都已落定（至多一层、没有
+  /// 交叉淡入），且是同一种背景、同一张解码图（同一份缓存的 clone）。首页
+  /// 各区域跟随同一全局背景时成立，翻页插值据此省掉上面那层透明度合成。
+  bool showsSameAs(AppBackgroundSlot other) {
+    if (_layers.length > 1 || other._layers.length > 1) return false;
+    final mine = front;
+    final theirs = other.front;
+    if (mine == null || theirs == null) return mine == null && theirs == null;
+    if (mine.background != theirs.background) return false;
+    final image = mine.image?.image;
+    final otherImage = theirs.image?.image;
+    if (image == null || otherImage == null) {
+      return image == null && otherImage == null;
+    }
+    return image.isCloneOf(otherImage);
+  }
+
   /// 同步更新目标背景。
   ///
   /// [logicalSize] / [devicePixelRatio] 决定图片的解码尺寸档；

@@ -23,8 +23,8 @@ import 'container_transform_transition.dart';
 ///   删除、[returnsToOrigin] 说不回）时原地缩小淡出；
 /// - 等待最多 [_GatedCurveSimulation.maxHold]，防止哪一帧迟迟不来时卡住。
 ///
-/// 进度由模拟直接给出（已套上 [ExpressiveMotion.emphasized]），推入、返回
-/// 各自从当前进度出发：进入途中返回、返回途中再进入都不跳变。
+/// 进度由模拟直接给出（已套上 [ExpressiveMotion.containerSpring]），推入、
+/// 返回各自从当前进度出发：进入途中返回、返回途中再进入都不跳变。
 ///
 /// 共享元素：转场期间关闭本页的 Hero（[_RouteHeroGate]）——卡片封面与预览
 /// 页头图同一个标签，容器本身已经把卡片展开成整页，再让封面单独飞一趟两者
@@ -137,7 +137,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
       if (_disposed || !identical(_gate, gate)) return;
       gate.open(
         duration: ExpressiveMotion.containerOpen,
-        curve: ExpressiveMotion.emphasized,
+        curve: ExpressiveMotion.containerSpring,
       );
     });
     return super.didPush();
@@ -177,7 +177,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
             : ExpressiveMotion.containerClose,
         curve: shot == null
             ? ExpressiveMotion.effects
-            : ExpressiveMotion.emphasized,
+            : ExpressiveMotion.containerSpring,
       );
     });
     return super.didPop(result);
@@ -278,7 +278,7 @@ class _TransitionGate {
 
   bool _open = false;
   Duration duration = ExpressiveMotion.containerOpen;
-  Curve curve = ExpressiveMotion.emphasized;
+  Curve curve = ExpressiveMotion.containerSpring;
 
   bool get isOpen => _open;
 

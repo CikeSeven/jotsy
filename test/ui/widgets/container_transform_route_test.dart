@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
@@ -259,6 +260,41 @@ void main() {
     expect(route.animation!.status, AnimationStatus.completed);
     // 停稳后不再留着起飞的卡片画面。
     expect(geometryOf(tester).closed, isNull);
+  });
+
+  testWidgets('expanding and returning each take their container duration', (
+    tester,
+  ) async {
+    const frame = Duration(milliseconds: 16);
+    await pumpList(tester);
+
+    await tester.tap(find.text('card a'));
+    // 两帧等页面排版、绘制，第三帧闸门打开、从 0 开始计时。
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    final route = routeOf(tester);
+    expect(route.animation!.value, 0);
+    await tester.pump(ExpressiveMotion.containerOpen - frame);
+    // 弹簧在最后一帧仍差一点点才落稳，时长走完的那一帧才停。
+    expect(route.animation!.value, lessThan(1));
+    expect(route.animation!.status, AnimationStatus.forward);
+    await tester.pump(frame);
+    expect(route.animation!.value, 1);
+    expect(route.animation!.status, AnimationStatus.completed);
+
+    Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+    // 第一帧重新排版、绘制下层并量出卡片，第二帧闸门打开、从 1 开始计时。
+    await tester.pump();
+    await tester.pump();
+    expect(route.animation!.value, 1);
+    await tester.pump(ExpressiveMotion.containerClose - frame);
+    expect(route.animation!.value, greaterThan(0));
+    expect(route.animation!.status, AnimationStatus.reverse);
+    await tester.pump(frame);
+    expect(route.animation!.status, AnimationStatus.dismissed);
+    await tester.pumpAndSettle();
+    expectSourceVisible(tester, 'a', true);
   });
 
   testWidgets('heroes in the page are off until the route settles', (

@@ -45,10 +45,8 @@ abstract final class ExpressiveMotion {
   static const menuHighlightCurve = Curves.fastOutSlowIn;
 
   /// 容器展开（列表卡片 ↔ 整页，见 `ContainerTransformPageRoute`）：
-  /// - [containerOpen]：展开，585ms（在 M3 long1 的 450ms 上放慢 30%，配合
-  ///   [containerSpring] 那段长长的落稳）；
-  /// - [containerClose]：收回卡片，520ms（M3 medium4 的 400ms 放慢 30%），
-  ///   返回仍比进入略快；
+  /// - [containerOpen]：展开（M3 long1，450ms）；
+  /// - [containerClose]：收回卡片（M3 medium4，400ms），返回比进入略快；
   /// - [containerSpring]：位置、尺寸、圆角共用的空间曲线，仿手机系统打开
   ///   应用——一按就走、速度平滑地升起又回落、慢慢落稳、不回弹。收回时同
   ///   一条曲线作用在“离开整页的进度”上，同样是立刻离开、轻轻落进卡片。
@@ -56,9 +54,10 @@ abstract final class ExpressiveMotion {
   /// 为什么不用 M3 emphasized：它前 ~40ms 几乎不动，随后速度峰值冲到平均
   /// 速度的约 10 倍、100ms 左右就走完八成，剩下的时间只挪最后 2%；挂在进度
   /// 上的交叉淡化也被压进 70ms 左右——看起来是“顿一下、甩一下、闪一下”。
-  /// 临界阻尼弹簧的峰值只有平均速度的约 3.3 倍，交叉淡化随之拉开一倍。
-  static const containerOpen = Duration(milliseconds: 585);
-  static const containerClose = Duration(milliseconds: 520);
+  /// 临界阻尼弹簧的峰值只有平均速度的约 3.3 倍，同样的时长里交叉淡化也拉
+  /// 长了约一半。
+  static const containerOpen = Duration(milliseconds: 450);
+  static const containerClose = Duration(milliseconds: 400);
   static const containerSpring = _CriticallyDampedSpringCurve(9);
 
   /// 进场与状态变化：减速收尾，不越界。

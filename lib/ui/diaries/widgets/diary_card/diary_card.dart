@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -50,7 +51,16 @@ Object diaryCardTransitionTag(String diaryId) => ('diary_card', diaryId);
 /// 交互：选择模式下点击切换选中；普通模式点击进入预览页（未解封胶囊进入
 /// 封存页），页面从这张卡片展开（卡片包在 [ContainerTransformSource] 里，
 /// 点按时量出位置、截下画面交给路由）；长按强制选中。
-class DiaryCard extends StatelessWidget {
+///
+/// 重建：输入（数据按值、样式按身份、选择状态、标签上限、留言数、高亮词）
+/// 与上次相同、依赖的继承数据也没变时，直接交回上次建好的子树，Flutter
+/// 跳过整张卡片的重建。列表在滚动中分页加载时整窗数据重发、页面重建，
+/// 原先可见的十几张卡片每张都整棵重建，一帧能到十几毫秒；数据没变的卡片
+/// 现在只走到这里。回调不参与比较：页面每次 build 可能传入新的闭包，卡片
+/// 里的点按在触发时才从最新的组件上取回调（见 [_DiaryCardState]）。日期
+/// 变了（跨天）或胶囊到了解封时间时同样重建，相对日期与封存状态不会停在
+/// 旧值。
+class DiaryCard extends StatefulWidget {
   const DiaryCard({
     super.key,
     required this.diary,
@@ -100,7 +110,24 @@ class DiaryCard extends StatelessWidget {
   final List<String> highlightTerms;
 
   @override
-  Widget build(BuildContext context) {
+  State<DiaryCard> createState() => _DiaryCardState();
+
+  /// 除回调外的输入是否与 [other] 相同（见类注释的“重建”）。
+  bool _sameInputs(DiaryCard other) =>
+      (identical(diary, other.diary) ||
+          (diary.diary == other.diary.diary &&
+              listEquals(diary.tags, other.diary.tags))) &&
+      identical(resolved, other.resolved) &&
+      selected == other.selected &&
+      isSelectionMode == other.isSelectionMode &&
+      maxVisibleTags == other.maxVisibleTags &&
+      enableCoverHero == other.enableCoverHero &&
+      opensLockedCapsulePage == other.opensLockedCapsulePage &&
+      (onTapIntercept == null) == (other.onTapIntercept == null) &&
+      commentCount == other.commentCount &&
+      listEquals(highlightTerms, other.highlightTerms);
+
+  Widget _buildCard(BuildContext context, _DiaryCardState state) {
     final l10n = context.l10n;
     final entry = diary.diary;
     final diaryId = entry.diaryId;
@@ -240,11 +267,12 @@ class DiaryCard extends StatelessWidget {
                         ? BorderRadius.circular(radius)
                         : null,
                     onTap: () {
-                      if (onTapIntercept?.call(diary) ?? false) {
+                      final latest = state.widget;
+                      if (latest.onTapIntercept?.call(latest.diary) ?? false) {
                         return;
                       }
                       if (isSelectionMode) {
-                        onToggleSelection(diaryId, false);
+                        latest.onToggleSelection(diaryId, false);
                         return;
                       }
                       final origin = enableCoverHero
@@ -268,8 +296,8 @@ class DiaryCard extends StatelessWidget {
                         );
                         return;
                       }
-                      onOpenEditor(
-                        diary,
+                      latest.onOpenEditor(
+                        latest.diary,
                         coverAnchor?.capture(tag: diaryCoverHeroTag(diaryId)),
                         origin,
                       );
@@ -280,7 +308,7 @@ class DiaryCard extends StatelessWidget {
                       if (Theme.of(context).platform == TargetPlatform.iOS) {
                         unawaited(HapticFeedback.mediumImpact());
                       }
-                      onToggleSelection(diaryId, true);
+                      state.widget.onToggleSelection(diaryId, true);
                     },
                   ),
                 ),
@@ -298,5 +326,52 @@ class DiaryCard extends StatelessWidget {
       borderRadius: radius,
       child: card,
     );
+  }
+}
+
+class _DiaryCardState extends State<DiaryCard> {
+  Widget? _built;
+
+  /// 建出 [_built] 时的日期（年月日）与胶囊封存状态：跨天或到了解封时间
+  /// 要重建，相对日期与封存外观随之更新。
+  int _builtDay = 0;
+  bool _builtLocked = false;
+
+  static int _dayOf(DateTime time) =>
+      time.year * 10000 + time.month * 100 + time.day;
+
+  bool _lockedAt(DateTime now) => TimeCapsuleState.fromFields(
+    lockedAt: widget.diary.diary.capsuleLockedAt,
+    unlockAt: widget.diary.diary.capsuleUnlockAt,
+    now: now,
+  ).isLocked;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 依赖的继承数据（语言、主题、页面背景等）变了：上次的子树作废。
+    _built = null;
+  }
+
+  @override
+  void didUpdateWidget(covariant DiaryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget._sameInputs(oldWidget)) {
+      _built = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final day = _dayOf(now);
+    final locked = _lockedAt(now);
+    final built = _built;
+    if (built != null && day == _builtDay && locked == _builtLocked) {
+      return built;
+    }
+    _builtDay = day;
+    _builtLocked = locked;
+    return _built = widget._buildCard(context, this);
   }
 }

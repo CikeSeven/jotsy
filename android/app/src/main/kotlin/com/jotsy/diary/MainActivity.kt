@@ -33,6 +33,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var appUpdateInstaller: AppUpdateInstaller? = null
   private var lanSyncChannel: LanSyncChannel? = null
   private var appLockChannel: AppLockChannel? = null
+  private var displayCornersChannel: DisplayCornersChannel? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
   private val launchBrandMarkArg = "--launch-brand-mark"
 
@@ -134,6 +135,9 @@ class MainActivity : FlutterFragmentActivity() {
     lanSyncChannel = LanSyncChannel(this, flutterEngine.dartExecutor.binaryMessenger)
     appLockChannel?.dispose()
     appLockChannel = AppLockChannel(this, flutterEngine.dartExecutor.binaryMessenger)
+    displayCornersChannel?.dispose()
+    displayCornersChannel =
+      DisplayCornersChannel(this, flutterEngine.dartExecutor.binaryMessenger)
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, configChannelName)
       .setMethodCallHandler { call, result ->
         when (call.method) {
@@ -346,6 +350,8 @@ class MainActivity : FlutterFragmentActivity() {
     lanSyncChannel = null
     appLockChannel?.dispose()
     appLockChannel = null
+    displayCornersChannel?.dispose()
+    displayCornersChannel = null
     pendingBackupSaveResult?.success(null)
     clearPendingBackupSave()
     super.onDestroy()

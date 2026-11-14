@@ -279,7 +279,7 @@ extension _HomePageChrome on _HomePageState {
             GlassReveal(
               progress: opacity,
               // 浮在日记列表上：总是模糊下面的卡片。
-              child: AppGlassFab(child: child!),
+              child: AppGlassFab(grouped: true, child: child!),
             ),
         child: button,
       ),

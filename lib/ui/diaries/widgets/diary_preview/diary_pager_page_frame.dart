@@ -82,3 +82,99 @@ class DiaryPagerVisibility {
   @override
   int get hashCode => Object.hash(first, last, current);
 }
+
+/// 只在缓存区、还看不见的一页：翻页动画进行中先不建内容，停下后再建。
+///
+/// 为什么：翻页器缓存左右各一页（`allowImplicitScrolling`）。手指一动，
+/// 视口外再往前的那一篇就进入缓存区，整页（顶栏、元信息、正文编辑器）在
+/// 这一帧里建出来并布局，真机上这一帧 10–20ms，正好落在翻页动画的开头，
+/// 掉帧最显眼。它此刻看不见，晚一点建不影响画面。
+///
+/// 状态：首次挂上时，若这一页已经露出来（[DiaryPagerVisibility.shows]）或
+/// 所在的滚动视图没有在滚动，立即建；否则先占一块空位，等到滚动停下
+/// （`isScrollingNotifier` 变为 false）或这一页开始露出来时再建——用户在
+/// 动画停下前就把它翻进视口时，在露出来的那一帧建，与原先相同。建过之后
+/// 不再回到占位。
+class DiaryPagerDeferredPage extends StatefulWidget {
+  const DiaryPagerDeferredPage({
+    super.key,
+    required this.index,
+    required this.visibility,
+    required this.child,
+  });
+
+  final int index;
+  final ValueListenable<DiaryPagerVisibility> visibility;
+  final Widget child;
+
+  @override
+  State<DiaryPagerDeferredPage> createState() => _DiaryPagerDeferredPageState();
+}
+
+class _DiaryPagerDeferredPageState extends State<DiaryPagerDeferredPage> {
+  bool _ready = false;
+  ValueListenable<bool>? _scrolling;
+  ValueListenable<DiaryPagerVisibility>? _visibility;
+
+  bool get _shouldBuild =>
+      widget.visibility.value.shows(widget.index) ||
+      !(_scrolling?.value ?? false);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_ready) {
+      return;
+    }
+    final scrolling = Scrollable.maybeOf(context)?.position.isScrollingNotifier;
+    if (!identical(scrolling, _scrolling)) {
+      _scrolling?.removeListener(_check);
+      _scrolling = scrolling?..addListener(_check);
+    }
+    if (_shouldBuild) {
+      _ready = true;
+      _detach();
+    } else {
+      _visibility ??= widget.visibility..addListener(_check);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant DiaryPagerDeferredPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_ready) return;
+    if (!identical(oldWidget.visibility, widget.visibility)) {
+      _visibility?.removeListener(_check);
+      _visibility = widget.visibility..addListener(_check);
+    }
+    if (_shouldBuild) {
+      _ready = true;
+      _detach();
+    }
+  }
+
+  void _check() {
+    if (_ready || !mounted || !_shouldBuild) {
+      return;
+    }
+    _detach();
+    setState(() => _ready = true);
+  }
+
+  void _detach() {
+    _scrolling?.removeListener(_check);
+    _scrolling = null;
+    _visibility?.removeListener(_check);
+    _visibility = null;
+  }
+
+  @override
+  void dispose() {
+    _detach();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      _ready ? widget.child : const SizedBox.expand();
+}

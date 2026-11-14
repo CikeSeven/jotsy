@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../widgets/glass/glass_backdrop_sample.dart';
 import '../controllers/app_background_slot.dart';
 import '../models/app_surface_settings.dart';
 import '../providers/app_surface_settings_provider.dart';
@@ -78,6 +79,10 @@ class _AppPagedBackgroundState extends ConsumerState<AppPagedBackground>
       <AppBackgroundArea, BackdropKey>{};
   final GlobalKey _childKey = GlobalKey(debugLabel: 'AppPagedBackground child');
 
+  /// 默认各区域跟随同一全局背景，取样可直接复用。区域背景各不相同时仍用
+  /// 实时模糊：翻页会混合两区背景，不能把某一区的静态图贴在混合图之上。
+  final GlassBackdropLink _contentGlassLink = GlassBackdropLink();
+
   /// 宽窗口切页的交叉淡入：从 [_switchFrom] 区域淡到当前区域。
   late final AnimationController _switch;
   late final CurvedAnimation _switchCurve;
@@ -148,6 +153,7 @@ class _AppPagedBackgroundState extends ConsumerState<AppPagedBackground>
     }
     _switchCurve.dispose();
     _switch.dispose();
+    _contentGlassLink.dispose();
     super.dispose();
   }
 
@@ -179,24 +185,35 @@ class _AppPagedBackgroundState extends ConsumerState<AppPagedBackground>
     final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
     final fade = ExpressiveMotion.duration(context, ExpressiveMotion.medium);
     _syncSlots();
+    final backgrounds = <AppBackgroundArea, AppResolvedBackground>{
+      for (final area in _slots.keys)
+        area: AppResolvedBackground.resolve(
+          ref.watch(appAreaBackgroundProvider(area)),
+          scheme,
+        ),
+    };
+    // 只在全部区域背景一致且没有旧背景淡出时启用静态取样。这个判断只在
+    // 设置/解码状态变化时执行，不让整页跟随逐帧的翻页进度重建。
     final backdrops = <AppBackgroundArea, AppPageBackdrop>{};
     var painting = false;
     for (final MapEntry(key: area, value: slot) in _slots.entries) {
       slot.update(
-        target: AppResolvedBackground.resolve(
-          ref.watch(appAreaBackgroundProvider(area)),
-          scheme,
-        ),
+        target: backgrounds[area]!,
         logicalSize: logicalSize,
         devicePixelRatio: devicePixelRatio,
         fadeDuration: fade,
         animate: _built,
       );
       painting = painting || slot.wantsBackground || slot.isPainting;
+    }
+    final sameBackground = backgrounds.values.toSet().length <= 1;
+    final settled = _slots.values.every((slot) => slot.layers.length <= 1);
+    for (final MapEntry(key: area, value: slot) in _slots.entries) {
       backdrops[area] = slot.backdrop(
         area: area,
         scheme: scheme,
         contentBackdropKey: _backdropKeys.putIfAbsent(area, BackdropKey.new),
+        contentGlassLink: sameBackground && settled ? _contentGlassLink : null,
       );
     }
     _built = true;
@@ -207,9 +224,12 @@ class _AppPagedBackgroundState extends ConsumerState<AppPagedBackground>
         fit: StackFit.passthrough,
         children: <Widget>[
           Positioned.fill(
-            child: widget.interpolate
-                ? _buildInterpolated()
-                : _buildCrossFaded(),
+            child: CompositedTransformTarget(
+              link: _contentGlassLink,
+              child: widget.interpolate
+                  ? _buildInterpolated()
+                  : _buildCrossFaded(),
+            ),
           ),
           child,
         ],

@@ -191,15 +191,15 @@ void main() {
           ),
         ),
       );
-      expect(find.byType(m3e.LoadingIndicatorM3E), findsOneWidget);
+      expect(find.byType(m3e.LoadingIndicatorM3E), findsNothing);
       expect(find.bySemanticsLabel('Loading diaries'), findsWidgets);
       expect(
-        TickerMode.valuesOf(
-          tester.element(find.byType(m3e.LoadingIndicatorM3E)),
-        ).enabled,
-        isFalse,
+        tester.getSize(find.byType(ExpressiveLoadingIndicator)),
+        const Size(20, 20),
       );
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
+      expect(tester.binding.hasScheduledFrame, isFalse);
       expect(tester.takeException(), isNull);
     } finally {
       semantics.dispose();

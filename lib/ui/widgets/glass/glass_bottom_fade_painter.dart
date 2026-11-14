@@ -88,8 +88,19 @@ class GlassBottomFadePainter extends CustomPainter {
     return 1 - u * u * (3 - 2 * u);
   }
 
+  /// 最近用过的渐变着色器：顶栏随滚动逐帧重画，几何与颜色却很少变，
+  /// 不必每帧在引擎里新建两个渐变对象。
+  static final Map<(double, double, Color), ui.Shader> _shaders =
+      <(double, double, Color), ui.Shader>{};
+
   /// 自 [top] 到 [bottom] 按 [strengthAt] 把 [color] 淡到全透明的着色器。
   static ui.Shader _fadeShader(double top, double bottom, Color color) {
+    final key = (top, bottom, color);
+    final cached = _shaders.remove(key);
+    if (cached != null) {
+      _shaders[key] = cached;
+      return cached;
+    }
     final colors = <Color>[];
     final stops = <double>[];
     for (var i = 0; i < _sampleCount; i++) {
@@ -97,7 +108,17 @@ class GlassBottomFadePainter extends CustomPainter {
       stops.add(fraction);
       colors.add(color.withValues(alpha: color.a * strengthAt(fraction)));
     }
-    return ui.Gradient.linear(Offset(0, top), Offset(0, bottom), colors, stops);
+    final shader = ui.Gradient.linear(
+      Offset(0, top),
+      Offset(0, bottom),
+      colors,
+      stops,
+    );
+    _shaders[key] = shader;
+    if (_shaders.length > 8) {
+      _shaders.remove(_shaders.keys.first);
+    }
+    return shader;
   }
 
   /// 露出来的上缘在画布里的位置。

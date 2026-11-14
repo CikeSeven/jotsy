@@ -78,6 +78,9 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
   final Map<String, DiaryWithTags> _details = <String, DiaryWithTags>{};
   final Set<String> _busy = <String>{};
 
+  /// 每页上次交给翻页器的组件与它的输入（见 [_pageAt]）。
+  final Map<int, _PageMemo> _pages = <int, _PageMemo>{};
+
   @override
   void initState() {
     super.initState();
@@ -196,6 +199,57 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
         widget.sequence.seeds[id];
   }
 
+  /// 第 [position] 页的组件。输入（这一篇、它的最新详情、是否入口页、
+  /// 列表是否接全、总页数与两侧标题、语言）与上次相同时原样交回上次的
+  /// 实例：翻页过半时 `onPageChanged` 让本组件 setState，翻页器用新的
+  /// itemBuilder 重建缓存着的每一页；交回同一个实例时 Flutter 跳过这些页的
+  /// 重建（原先每次翻页都要把左右三篇整页重建一遍，正落在翻页动画中途）。
+  /// 只保留当前页附近的几项。
+  Widget _pageAt(AppLocalizations l10n, DiaryPagerPosition position) {
+    final index = position.index;
+    final id = _ids[index];
+    final detail = _detailOf(id);
+    final initial = index == _initialIndex;
+    final memo = _pages[index];
+    final inputs = _PageInputs(
+      id: id,
+      detail: detail,
+      initial: initial,
+      hasMore: !_complete,
+      count: position.count,
+      previousTitle: index > 0 ? _detailOf(_ids[index - 1])?.diary.title : null,
+      nextTitle: index < _ids.length - 1
+          ? _detailOf(_ids[index + 1])?.diary.title
+          : null,
+      l10n: l10n,
+    );
+    if (memo != null && memo.inputs == inputs) {
+      return memo.page;
+    }
+    final page = DiaryPreviewView(
+      // 同时作为 PageStorage 的标识：翻回来时恢复这一篇的滚动位置。
+      key: PageStorageKey<String>('diary_preview_page_$id'),
+      diaryId: id,
+      initialDetail: detail,
+      coverHero: initial ? widget.coverHero : null,
+      ownsCoverHero: false,
+      coverHeroTag: initial
+          ? null
+          : ImageViewerHeroTag('diary_preview_pager_cover', id),
+      paging: DiaryPreviewPaging.of(
+        l10n,
+        position,
+        hasMore: !_complete,
+        titleAt: (int index) => _detailOf(_ids[index])?.diary.title,
+      ),
+      onBusyChanged: (bool busy) => _setBusy(id, busy),
+    );
+    _pages
+      ..[index] = _PageMemo(inputs, page)
+      ..removeWhere((int key, _) => (key - _current).abs() > 3);
+    return page;
+  }
+
   @override
   Widget build(BuildContext context) {
     _watchNeighborhood();
@@ -213,28 +267,63 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
       cacheNeighbors: _entered,
       desktopControls: true,
       onPageChanged: _handlePageChanged,
-      itemBuilder: (BuildContext context, DiaryPagerPosition position) {
-        final id = _ids[position.index];
-        final initial = position.index == _initialIndex;
-        return DiaryPreviewView(
-          // 同时作为 PageStorage 的标识：翻回来时恢复这一篇的滚动位置。
-          key: PageStorageKey<String>('diary_preview_page_$id'),
-          diaryId: id,
-          initialDetail: _detailOf(id),
-          coverHero: initial ? widget.coverHero : null,
-          ownsCoverHero: false,
-          coverHeroTag: initial
-              ? null
-              : ImageViewerHeroTag('diary_preview_pager_cover', id),
-          paging: DiaryPreviewPaging.of(
-            l10n,
-            position,
-            hasMore: !_complete,
-            titleAt: (int index) => _detailOf(_ids[index])?.diary.title,
-          ),
-          onBusyChanged: (bool busy) => _setBusy(id, busy),
-        );
-      },
+      itemBuilder: (BuildContext context, DiaryPagerPosition position) =>
+          _pageAt(l10n, position),
     );
   }
+}
+
+/// 一页的输入；按值比较（详情按身份比较：同一份数据对象才算没变）。
+@immutable
+class _PageInputs {
+  const _PageInputs({
+    required this.id,
+    required this.detail,
+    required this.initial,
+    required this.hasMore,
+    required this.count,
+    required this.previousTitle,
+    required this.nextTitle,
+    required this.l10n,
+  });
+
+  final String id;
+  final DiaryWithTags? detail;
+  final bool initial;
+  final bool hasMore;
+  final int count;
+  final String? previousTitle;
+  final String? nextTitle;
+  final AppLocalizations l10n;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _PageInputs &&
+      other.id == id &&
+      identical(other.detail, detail) &&
+      other.initial == initial &&
+      other.hasMore == hasMore &&
+      other.count == count &&
+      other.previousTitle == previousTitle &&
+      other.nextTitle == nextTitle &&
+      identical(other.l10n, l10n);
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    identityHashCode(detail),
+    initial,
+    hasMore,
+    count,
+    previousTitle,
+    nextTitle,
+    identityHashCode(l10n),
+  );
+}
+
+class _PageMemo {
+  const _PageMemo(this.inputs, this.page);
+
+  final _PageInputs inputs;
+  final Widget page;
 }

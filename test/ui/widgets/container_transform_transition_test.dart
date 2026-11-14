@@ -26,15 +26,26 @@ class _Harness {
 
   /// 取卡片截图底边与容器底边之间的像素：截图只按宽度缩放，这一段正是
   /// 旧版纯色底会露出来的位置，不能只检查某个背景 widget 是否已挂载。
-  Future<Color> exposedColor(WidgetTester tester) async {
+  Offset get _exposedPoint {
     final rect = Rect.lerp(_card, Offset.zero & _size, progress.value)!;
     final cardBottom = rect.top + _card.height * rect.width / _card.width;
     final y = ((cardBottom + rect.bottom) / 2).round();
-    return colorAt(tester, Offset(rect.center.dx, y.toDouble()));
+    return Offset(rect.center.dx, y.toDouble());
   }
 
-  Future<void> expectListBelowCard(WidgetTester tester) async {
-    final actual = (await exposedColor(tester)).toARGB32();
+  Future<Color> exposedColor(WidgetTester tester) =>
+      colorAt(tester, _exposedPoint);
+
+  Future<void> expectListBelowCard(WidgetTester tester) =>
+      expectListAt(tester, _exposedPoint, reason: '页面已淡去，卡片下方不应留底');
+
+  /// [point] 处没有容器，只有下层列表（errorContainer）与随进度加深的遮罩。
+  Future<void> expectListAt(
+    WidgetTester tester,
+    Offset point, {
+    required String reason,
+  }) async {
+    final actual = (await colorAt(tester, point)).toARGB32();
     // 列表只剩随进度消退的 28% 遮罩；给合成取整留 1 个色阶的余量。
     final expected = Color.alphaBlend(
       scheme.scrim.withValues(alpha: 0.28 * progress.value),
@@ -44,7 +55,7 @@ class _Harness {
       expect(
         (actual >> shift) & 0xff,
         closeTo((expected >> shift) & 0xff, 1),
-        reason: '页面已淡去，卡片下方不应留底：progress ${progress.value}',
+        reason: '$reason：progress ${progress.value}',
       );
     }
   }
@@ -70,6 +81,7 @@ Future<_Harness> _pump(
   FakeBackgroundLoader? loader,
   Widget? backdrop,
   Widget? page,
+  BorderRadius pageRadius = BorderRadius.zero,
 }) async {
   tester.view.physicalSize = _size;
   tester.view.devicePixelRatio = 1;
@@ -125,6 +137,7 @@ Future<_Harness> _pump(
               animation: progress,
               geometry: geometry,
               scrimColor: scheme.scrim,
+              pageRadius: pageRadius,
               backdrop:
                   backdrop ??
                   const AppPageBackgroundFill(
@@ -230,6 +243,40 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
   }
+
+  testWidgets('the expanding page grows into the screen corners', (
+    tester,
+  ) async {
+    final h = await _pump(
+      tester,
+      background: const AppBackground(),
+      pageRadius: BorderRadius.circular(40),
+    );
+    // 将近落位：容器几乎铺满，四角已是屏幕的圆角。
+    h.progress.value = 0.999;
+    await tester.pump();
+    await h.expectListAt(tester, const Offset(3, 796), reason: '屏幕圆角之外不画页面');
+    expect(await h.colorAt(tester, const Offset(3, 400)), h.scheme.surface);
+
+    // 刚起步：圆角仍接近卡片的 16，不会先变成直角。
+    h.progress.value = 0.02;
+    await tester.pump();
+    final rect = Rect.lerp(_card, Offset.zero & _size, 0.02)!;
+    await h.expectListAt(
+      tester,
+      rect.topLeft + const Offset(1, 1),
+      reason: '起步时仍是卡片的圆角',
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('without screen corners the page lands square', (tester) async {
+    final h = await _pump(tester, background: const AppBackground());
+    h.progress.value = 0.999;
+    await tester.pump();
+    expect(await h.colorAt(tester, const Offset(3, 796)), h.scheme.surface);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets(
     'a settled page paints, receives taps and exposes only its semantics',

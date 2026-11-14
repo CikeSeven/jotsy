@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/glass/glass_backdrop_sample.dart';
 import '../../widgets/keyboard_visibility.dart';
 import '../controllers/app_background_slot.dart';
 import '../models/app_surface_settings.dart';
@@ -76,6 +77,9 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
 
   /// 留给后续内容玻璃共用背景读取（见 [AppPageBackdrop.contentBackdropKey]）。
   final BackdropKey _contentBackdropKey = BackdropKey();
+
+  /// 内容玻璃取样的 Leader（挂在背景图层外面，见 [GlassBackdropSample]）。
+  final GlassBackdropLink _contentGlassLink = GlassBackdropLink();
   final GlobalKey _childKey = GlobalKey(debugLabel: 'AppPageBackground child');
   bool _built = false;
 
@@ -88,6 +92,7 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
     _slot
       ..removeListener(_handleSlotChanged)
       ..dispose();
+    _contentGlassLink.dispose();
     super.dispose();
   }
 
@@ -126,9 +131,12 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
           fit: StackFit.passthrough,
           children: <Widget>[
             Positioned.fill(
-              child: AppBackgroundLayersView(
-                layers: layers,
-                drawScrim: drawScrim,
+              child: CompositedTransformTarget(
+                link: _contentGlassLink,
+                child: AppBackgroundLayersView(
+                  layers: layers,
+                  drawScrim: drawScrim,
+                ),
               ),
             ),
             child,
@@ -141,6 +149,7 @@ class _AppPageBackgroundState extends ConsumerState<AppPageBackground>
         area: widget.area,
         scheme: scheme,
         contentBackdropKey: _contentBackdropKey,
+        contentGlassLink: _contentGlassLink,
         deferScrim: widget.deferScrim,
       ),
       child: child,

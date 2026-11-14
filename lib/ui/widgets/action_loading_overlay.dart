@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../app/theme/expressive_motion.dart';
 import 'delayed_loading_gate.dart';
@@ -14,9 +15,12 @@ import 'expressive_loading_indicator.dart';
 /// 文案，让它随遮罩一起淡出。
 ///
 /// 遮罩常驻树上以便淡入淡出，但透明度为 0 时 LoadingIndicatorM3E 内部的
-/// repeat 控制器仍会逐帧 tick，阅读期间持续出帧耗电，因此隐藏时静音指示器
-/// 的 ticker。TickerMode 只包指示器本身：若包住 AnimatedOpacity，淡出动画
-/// 自己的 ticker 也会被静音，遮罩会停在不透明状态。
+/// repeat 控制器仍会逐帧 tick、形变 Timer 仍每约 650ms 触发一次重建与整屏
+/// 光栅，阅读期间持续出帧耗电（预览页每篇都挂着一个）。因此隐藏且淡出结束
+/// 后对指示器关掉 TickerMode，[ExpressiveLoadingIndicator] 随之卸下第三方
+/// 指示器、Timer 一并取消（见 [_LoadingVeil]）。TickerMode 只包指示器本身：
+/// 若包住 AnimatedOpacity，淡出动画自己的 ticker 也会被静音，遮罩会停在
+/// 不透明状态。
 class ActionLoadingOverlay extends StatelessWidget {
   const ActionLoadingOverlay({
     super.key,
@@ -47,13 +51,73 @@ class ActionLoadingOverlay extends StatelessWidget {
 
   /// 遮罩画面；不透明度为 0 时仍会接住点击（ColoredBox 不透明命中），延迟显现
   /// 期间下层同样点不到。
-  Widget _buildVeil(BuildContext context, bool shown) {
+  Widget _buildVeil(BuildContext context, bool shown) => _LoadingVeil(
+    shown: shown,
+    label: label,
+    semanticLabel: semanticLabel ?? label,
+  );
+}
+
+/// 遮罩的画面与指示器的启停。
+///
+/// 状态：[_ticking] 为 true 时指示器挂着在转。显示时立即为 true；隐藏后
+/// 保持到淡出结束（[AnimatedOpacity.onEnd]）再置为 false，让指示器卸下。
+/// 淡出时长为 0（减少动画）时 onEnd 会在本组件的 build 过程中同步回调，
+/// 那时不能 setState，改到帧后再置。
+class _LoadingVeil extends StatefulWidget {
+  const _LoadingVeil({
+    required this.shown,
+    required this.label,
+    required this.semanticLabel,
+  });
+
+  final bool shown;
+  final String label;
+  final String semanticLabel;
+
+  @override
+  State<_LoadingVeil> createState() => _LoadingVeilState();
+}
+
+class _LoadingVeilState extends State<_LoadingVeil> {
+  late bool _ticking = widget.shown;
+
+  @override
+  void didUpdateWidget(covariant _LoadingVeil oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.shown) {
+      _ticking = true;
+    }
+  }
+
+  void _handleFadeEnd() {
+    if (widget.shown || !_ticking) {
+      return;
+    }
+    // 通常在动画 tick 里回调，直接 setState，当帧的 build 就卸下指示器，
+    // 不多出一帧；只有在 build / 布局阶段被同步回调时才推到帧后。
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase != SchedulerPhase.persistentCallbacks &&
+        phase != SchedulerPhase.postFrameCallbacks) {
+      setState(() => _ticking = false);
+      return;
+    }
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !widget.shown && _ticking) {
+        setState(() => _ticking = false);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return AnimatedOpacity(
-      opacity: shown ? 1 : 0,
+      opacity: widget.shown ? 1 : 0,
       duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
       curve: ExpressiveMotion.effects,
+      onEnd: _handleFadeEnd,
       child: ColoredBox(
         color: colorScheme.surface.withValues(alpha: 0.72),
         child: Center(
@@ -61,15 +125,15 @@ class ActionLoadingOverlay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TickerMode(
-                enabled: shown,
+                enabled: _ticking,
                 child: ExpressiveLoadingIndicator(
                   size: 72,
-                  semanticLabel: semanticLabel ?? label,
+                  semanticLabel: widget.semanticLabel,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
-                label,
+                widget.label,
                 style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

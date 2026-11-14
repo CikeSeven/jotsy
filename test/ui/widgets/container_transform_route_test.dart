@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/core/services/display_corners.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
@@ -92,6 +94,30 @@ void main() {
       )
       .geometry;
 
+  /// 推入后起步前的固定等待：首帧（offstage）构建排版、第二帧首次绘制并
+  /// 拍下层快照、第三帧空等光栅追上。再下一帧才开始计时（仍从 0 出发）。
+  Future<void> pumpOpeningHold(WidgetTester tester) async {
+    for (var i = 0; i < 3; i++) {
+      await tester.pump();
+    }
+  }
+
+  /// 返回后起步前的固定等待：重排下层并量卡片、拍下层快照、空等一帧。
+  /// 再下一帧才开始计时（仍从 1 出发）。
+  Future<void> pumpClosingHold(WidgetTester tester) async {
+    for (var i = 0; i < 3; i++) {
+      await tester.pump();
+    }
+  }
+
+  /// 起步帧（仍在起点）加一个正常间隔的帧：此后时钟按真实时间走。起步
+  /// 后第一步隔得太久会从那一帧重新起算（真机上是拍完快照、GPU 还没追上），
+  /// 测试里直接跳一大步就要先走这一小步。
+  Future<void> pumpStart(WidgetTester tester) async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+  }
+
   void expectSourceVisible(WidgetTester tester, String tag, bool visible) {
     final source = tester.renderObject(
       find.ancestor(
@@ -144,8 +170,8 @@ void main() {
     expectSourceVisible(tester, 'a', true);
 
     Navigator.of(tester.element(find.byType(_DetailPage))).pop();
-    await tester.pump();
-    await tester.pump();
+    await pumpClosingHold(tester);
+    await pumpStart(tester);
     await tester.pump(const Duration(milliseconds: 150));
     expect(routeOf(tester).animation!.value, inExclusiveRange(0, 1));
     expectSourceVisible(tester, 'a', false);
@@ -176,9 +202,8 @@ void main() {
     (tester) async {
       await pumpList(tester);
       await tester.tap(find.text('card a'));
-      await tester.pump();
-      await tester.pump();
-      await tester.pump();
+      await pumpOpeningHold(tester);
+      await pumpStart(tester);
       await tester.pump(const Duration(milliseconds: 100));
       expectSourceVisible(tester, 'a', false);
 
@@ -245,10 +270,14 @@ void main() {
     // 第二帧：页面第一次绘制，哪怕这两帧很慢，进度也停在卡片上。
     await tester.pump(const Duration(milliseconds: 200));
     expect(route.animation!.value, 0);
-    // 两帧画完后的这一帧才开始计时，仍从 0 出发——不会因前两帧耗时跳一截。
+    // 第三帧空等光栅线程消化下层快照，仍停在卡片上。
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(route.animation!.value, 0);
+    // 三帧画完后的这一帧才开始计时，仍从 0 出发——不会因前几帧耗时跳一截。
     await tester.pump(const Duration(milliseconds: 200));
     expect(route.animation!.value, 0);
 
+    await tester.pump(const Duration(milliseconds: 16));
     await tester.pump(const Duration(milliseconds: 100));
     final midway = route.animation!.value;
     expect(midway, greaterThan(0.2));
@@ -259,6 +288,154 @@ void main() {
     expect(route.animation!.status, AnimationStatus.completed);
     // 停稳后不再留着起飞的卡片画面。
     expect(geometryOf(tester).closed, isNull);
+  });
+
+  testWidgets('a stalled first step starts late instead of jumping', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tester.tap(find.text('card a'));
+    await pumpOpeningHold(tester);
+    // 起步帧，进度仍在 0。
+    await tester.pump();
+    final route = routeOf(tester);
+    expect(route.animation!.value, 0);
+    // 下一帧被积压的光栅工作拖了 40ms：从这一帧重新起算，不跳一截。
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(route.animation!.value, 0);
+    // 之后照常按真实时间走：一帧只走一帧的量。
+    await tester.pump(const Duration(milliseconds: 8));
+    final oneFrame = route.animation!.value;
+    expect(oneFrame, inExclusiveRange(0, 0.05));
+    // 只纠正一次：中途再卡也按真实时间追上，不会一直拖长。
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(route.animation!.value, greaterThan(0.3));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('the page grows into the screen corners', (tester) async {
+    DisplayCorners.debugRadii = BorderRadius.circular(40);
+    addTearDown(DisplayCorners.debugReset);
+    await pumpList(tester);
+
+    await tester.tap(find.text('card a'));
+    await tester.pump();
+    await tester.pump();
+    expect(
+      tester
+          .widget<ContainerTransformTransition>(
+            find.byType(ContainerTransformTransition),
+          )
+          .pageRadius,
+      BorderRadius.circular(40),
+    );
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('expanding and returning each take their container duration', (
+    tester,
+  ) async {
+    const frame = Duration(milliseconds: 16);
+    await pumpList(tester);
+
+    await tester.tap(find.text('card a'));
+    // 固定等待之后的这一帧闸门打开、从 0 开始计时。
+    await pumpOpeningHold(tester);
+    await tester.pump();
+    final route = routeOf(tester);
+    expect(route.animation!.value, 0);
+    await tester.pump(frame);
+    await tester.pump(ExpressiveMotion.containerOpen - frame * 2);
+    // 弹簧在最后一帧仍差一点点才落稳，时长走完的那一帧才停。
+    expect(route.animation!.value, lessThan(1));
+    expect(route.animation!.status, AnimationStatus.forward);
+    await tester.pump(frame);
+    expect(route.animation!.value, 1);
+    expect(route.animation!.status, AnimationStatus.completed);
+
+    Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+    // 固定等待期间停在整页上，之后的这一帧闸门打开、从 1 开始计时。
+    await pumpClosingHold(tester);
+    expect(route.animation!.value, 1);
+    await tester.pump();
+    expect(route.animation!.value, 1);
+    await tester.pump(frame);
+    await tester.pump(ExpressiveMotion.containerClose - frame * 2);
+    expect(route.animation!.value, greaterThan(0));
+    expect(route.animation!.status, AnimationStatus.reverse);
+    await tester.pump(frame);
+    expect(route.animation!.status, AnimationStatus.dismissed);
+    await tester.pumpAndSettle();
+    expectSourceVisible(tester, 'a', true);
+  });
+
+  testWidgets('the page below is a snapshot only while the card is hidden', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    // 停稳后下层路由 offstage，查找时要带上它。
+    SnapshotController below() => tester
+        .widget<SnapshotWidget>(
+          find.byType(SnapshotWidget, skipOffstage: false),
+        )
+        .controller;
+
+    await tester.tap(find.text('card a'));
+    // 第一帧原卡片仍在下层实时绘制；帧末隐藏原卡片的同时才开启快照，
+    // 下一帧拍下的下层里没有这张卡片（先拍会在展开途中多出一张）。
+    await tester.pump();
+    expectSourceVisible(tester, 'a', false);
+    expect(below().allowSnapshotting, isTrue);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(below().allowSnapshotting, isTrue);
+    // 停稳当帧恢复实时绘制。
+    await tester.pumpAndSettle();
+    expect(below().allowSnapshotting, isFalse);
+
+    // 返回：pop 当帧下层仍实时绘制，好量出卡片此刻的样子；量完、隐藏
+    // 卡片后才改画快照。
+    Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+    expect(below().allowSnapshotting, isFalse);
+    await tester.pump();
+    expectSourceVisible(tester, 'a', false);
+    expect(below().allowSnapshotting, isTrue);
+    await tester.pumpAndSettle();
+    // 归位后下层不再包快照。
+    expect(find.byType(SnapshotWidget), findsNothing);
+    expectSourceVisible(tester, 'a', true);
+  });
+
+  testWidgets('returning to another card mid-way retakes the snapshot', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tester.tap(find.text('card a'));
+    // 固定等待、起步，再走 100ms：进度已离开 0。
+    await pumpOpeningHold(tester);
+    await pumpStart(tester);
+    await tester.pump(const Duration(milliseconds: 100));
+    final below = tester
+        .widget<SnapshotWidget>(find.byType(SnapshotWidget))
+        .controller;
+    expect(below.allowSnapshotting, isTrue);
+    var retakes = 0;
+    below.addListener(() => retakes++);
+
+    // 展开途中翻到 b 再返回：a 恢复、b 隐藏，旧快照里还是 a 空着、b 在，
+    // 必须重拍，否则缩回 b 的途中下面多一张 b、a 处空一块。
+    final context = tester.element(find.byType(_DetailPage));
+    ContainerTransformPageRoute.setReturnTag(context, 'b');
+    Navigator.of(context).pop();
+    // 量 b 的这一帧下层实时绘制（画快照时量不到卡片）。
+    expect(below.allowSnapshotting, isFalse);
+    await tester.pump();
+    expect(geometryOf(tester).closed!.rect, cardRect.translate(0, 140));
+    expectSourceVisible(tester, 'a', true);
+    expectSourceVisible(tester, 'b', false);
+    expect(below.allowSnapshotting, isTrue);
+    expect(retakes, 2);
+    await tester.pumpAndSettle();
+    expectSourceVisible(tester, 'b', true);
   });
 
   testWidgets('heroes in the page are off until the route settles', (
@@ -338,7 +515,11 @@ void main() {
     final geometry = geometryOf(tester);
     expect(geometry.fallback, isFalse);
     expect(geometry.closed!.rect, cardRect);
-
+    // 下层重拍快照、空等光栅的两帧仍停在整页上。
+    expect(route.animation!.value, 1);
+    await tester.pump();
+    expect(route.animation!.value, 1);
+    await pumpStart(tester);
     await tester.pump(const Duration(milliseconds: 150));
     expect(route.animation!.value, inExclusiveRange(0, 1));
     await tester.pumpAndSettle();
@@ -406,6 +587,8 @@ void main() {
     await pumpList(tester);
     await tester.tap(find.text('card a'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    await tester.pump(const Duration(milliseconds: 16));
     await tester.pump(const Duration(milliseconds: 16));
     await tester.pump(const Duration(milliseconds: 16));
     await tester.pump(const Duration(milliseconds: 120));

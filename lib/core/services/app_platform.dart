@@ -137,4 +137,8 @@ abstract final class AppPlatform {
   /// iOS / macOS 不用：那里的页面转场带系统的左缘侧滑返回（Cupertino），换成
   /// 容器展开就没有侧滑返回了，仍按主题转场推入。
   static bool get supportsContainerTransform => !isIOS && !isMacOS;
+
+  /// 读屏幕自带的圆角（`DisplayCorners`，Android 12+ 的 WindowInsets）：容器
+  /// 展开的整页终点圆角取它。其他平台没有这个通道，终点为直角。
+  static bool get supportsDisplayCorners => isAndroid;
 }

@@ -15,6 +15,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_image_fallback.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_thumbnail.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/long_image/bounded_cover_image.dart';
 
 import '../../../support/diary_content_test_helpers.dart';
 import '../../../support/expressive_test_theme.dart';
@@ -152,7 +153,7 @@ void main() {
           const Size.square(kDiaryImageThumbnailExtent),
         );
         // 宽图按高铺满格子解码，cover 裁切后不发糊。
-        final decode = tester.widget<Image>(_image).image as ResizeImage;
+        final decode = tester.widget<Image>(_image).image as BoundedCoverImage;
         expect(decode.height, kDiaryImageThumbnailExtent.toInt());
         expect(controller.revision, 1);
         expect(_node(controller).attributes[kDiaryImageThumbnailKey], isTrue);
@@ -254,7 +255,7 @@ void main() {
         tester.getSize(_image),
         const Size.square(kDiaryImageThumbnailExtent),
       );
-      final decode = tester.widget<Image>(_image).image as ResizeImage;
+      final decode = tester.widget<Image>(_image).image as BoundedCoverImage;
       expect(decode.width, kDiaryImageThumbnailExtent.toInt());
       expect(tester.takeException(), isNull);
     },

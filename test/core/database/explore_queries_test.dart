@@ -16,6 +16,7 @@ void main() {
     String? cover,
     bool withImage = false,
     DateTime? createdAt,
+    List<int> tagIds = const <int>[],
   }) {
     return db.createDiary(
       title: title,
@@ -25,6 +26,7 @@ void main() {
       contentText: title,
       metadataJson: '{}',
       cover: cover,
+      tagIds: tagIds,
       notebookIds: notebookIds,
       createdAtOverride: createdAt ?? now.subtract(const Duration(days: 1)),
       capsuleUnlockAt: unlockAt,
@@ -59,6 +61,31 @@ void main() {
     expect(capsules.first.unlockAt, now.add(const Duration(days: 2)));
     expect(capsules.first.lockedAt, isNotNull);
   });
+
+  test(
+    'overviews return one row per diary with complete tags and stable update ordering',
+    () async {
+      final firstTag = await db.createTag(name: 'first', color: 1);
+      final secondTag = await db.createTag(name: 'second', color: 2);
+      final tagged = await diary('tagged', tagIds: [firstTag, secondTag]);
+      await db.archiveDiary(tagged);
+      final plain = await diary('plain');
+      await db.customStatement('UPDATE diaries SET updated_at = ?', [
+        now.millisecondsSinceEpoch ~/ 1000,
+      ]);
+      final rows = await db.watchExploreDiaryOverviews().first;
+      expect(rows.map((row) => row.diaryId), [plain, tagged]);
+      expect(rows.first.tags, isEmpty);
+      expect(
+        rows.last.tags.map((tag) => tag.id),
+        unorderedEquals([firstTag, secondTag]),
+      );
+      final unarchived = await db
+          .watchExploreDiaryOverviews(includeArchived: false)
+          .first;
+      expect(unarchived.map((row) => row.diaryId), [plain]);
+    },
+  );
 
   test('recent media keeps the newest image diaries up to the limit', () async {
     final hidden = await db.createNotebook(

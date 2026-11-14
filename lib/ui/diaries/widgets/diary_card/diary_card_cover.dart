@@ -8,16 +8,14 @@ import '../diary_image_source.dart';
 
 /// 卡片封面图（自动区分网络图、本地文件与内置示例资源）。
 ///
-/// 解码尺寸只按一条边定（另一边只给安全上限）：按卡片的宽高去解码会把原图
-/// 缩到卡片框里，cover 裁切后发糊，BoxFit.cover 负责绘制时裁切。
-/// - 宽度有限：按宽度解码；
+/// 解码按原图比例算到铺满卡片所需的最小尺寸，BoxFit.cover 负责绘制时裁切。
+/// - 宽度有限：取显示宽高作为 cover 目标；
 /// - 宽度为 infinity（通栏封面）：用 LayoutBuilder 取实际列宽解码，不再退化
 ///   为只限高——那样竖图只解码出约 140dp 宽，拉伸到整列后发糊；
 /// - [lowResolution]：未解封胶囊的模糊封面，按极小尺寸解码，配合模糊既省
 ///   内存又无需高清细节。
 ///
-/// 解码经 [boundedImageProvider] 保持比例：若只限一边，另一边按比例推出，
-/// 长截图的高度仍可能超过纹理上限而被压扁，所以另一边给安全上限。长图（高 ≥
+/// 解码经 [boundedImageProvider] 保持比例，边长与总像素均有限制。长图（高 ≥
 /// 宽 × 3）裁切时顶部对齐，露出开头而不是中段（[CoverCroppedImage]）。
 ///
 /// `asset:` 前缀只用于设置页预览的内置示例图，不会出现在用户数据里。
@@ -69,7 +67,7 @@ class DiaryCardCoverImage extends StatelessWidget {
         decodeWidth != null && decodeWidth.isFinite && decodeWidth > 0
         ? (decodeWidth * dpr).round()
         : null;
-    final cacheHeight = cacheWidth == null && height.isFinite && height > 0
+    final cacheHeight = !lowResolution && height.isFinite && height > 0
         ? (height * dpr).round()
         : null;
     // 低清封面放大绘制时用双线性插值，避免出现马赛克块。
@@ -88,6 +86,7 @@ class DiaryCardCoverImage extends StatelessWidget {
       diaryImageProvider(source),
       width: cacheWidth,
       height: cacheHeight,
+      cover: !lowResolution,
     );
     final imageWidget = CoverCroppedImage(
       image: provider,

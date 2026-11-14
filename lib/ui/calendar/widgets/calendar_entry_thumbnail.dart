@@ -31,9 +31,7 @@ class CalendarEntryThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    // 只按宽度定解码尺寸：同时按格子宽高解码会把非方形原图缩进方框，
-    // BoxFit.cover 再裁切时发糊；高度只给安全上限，长图不会被压扁。长图
-    // 顶部对齐。与探索页 ExploreMediaThumb 的策略保持一致。
+    // 解码器按原图比例铺满方格；无需按猜测过度解码，也不先读一次文件头。
     final cacheWidth = (size * dpr).round();
     final uri = Uri.tryParse(source);
     final isRemote =
@@ -43,6 +41,8 @@ class CalendarEntryThumbnail extends StatelessWidget {
       image: boundedImageProvider(
         isRemote ? NetworkImage(source) : FileImage(File(source)),
         width: cacheWidth,
+        height: cacheWidth,
+        cover: true,
       ),
       errorBuilder: (_, _, _) => const SizedBox.shrink(),
     );

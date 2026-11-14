@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
+import 'package:node_diary/ui/widgets/long_image/bounded_cover_image.dart';
 
 void main() {
   DiaryWithTags createMockDiary({
@@ -200,12 +201,11 @@ void main() {
       // Cover image should be present on the left
       expect(find.byType(Image), findsOneWidget);
       final image = tester.widget<Image>(find.byType(Image));
-      final resizedImage = image.image as ResizeImage;
+      final resizedImage = image.image as BoundedCoverImage;
       expect(image.fit, BoxFit.cover);
       expect(resizedImage.width, isNotNull);
-      // 只按宽度定解码尺寸，高度只给安全上限，fit 策略保持原图比例。
-      expect(resizedImage.policy, ResizeImagePolicy.fit);
-      expect(resizedImage.height, kSafeImageDecodeExtent);
+      expect(resizedImage.height, isPositive);
+      expect(resizedImage.maxExtent, kSafeImageDecodeExtent);
     },
   );
 

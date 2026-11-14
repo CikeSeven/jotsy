@@ -397,20 +397,12 @@ class ExploreMediaThumb extends StatelessWidget {
           constrained: constraints.maxHeight,
         );
         final dpr = MediaQuery.devicePixelRatioOf(context);
-        // 仅按缩略图容器长边给解码器一个缓存目标（另一边只给安全上限，按比例
-        // 解码，长图不会被压扁），避免按容器宽高把图片缩进容器后再 cover 裁切
-        // 发糊。实际填充仍交给 BoxFit.cover 裁切，长图顶部对齐。
-        final cacheExtent = _cacheExtent(
-          resolvedWidth >= resolvedHeight ? resolvedWidth : resolvedHeight,
-          dpr,
-        );
-        final cacheWidth = resolvedWidth >= resolvedHeight ? cacheExtent : null;
-        final cacheHeight = resolvedWidth < resolvedHeight ? cacheExtent : null;
         final image = CoverCroppedImage(
           image: boundedImageProvider(
             diaryImageProvider(source),
-            width: cacheWidth,
-            height: cacheHeight,
+            width: _cacheExtent(resolvedWidth, dpr),
+            height: _cacheExtent(resolvedHeight, dpr),
+            cover: true,
           ),
           width: width,
           height: height,

@@ -23,6 +23,7 @@ import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/delayed_loading_gate.dart';
 import '../../widgets/expressive_entrance.dart';
 import '../../widgets/page_header.dart';
+import '../../widgets/width_layout_builder.dart';
 import '../controllers/explore_module_actions.dart';
 import '../models/explore_module_id.dart';
 import '../models/explore_module_options.dart';
@@ -40,8 +41,8 @@ import '../sections/explore_content_view.dart';
 /// - 提供卡片动作（[ExplorePageActions]）与顶栏“自定义”入口；
 /// - 把数据交给 [ExploreContentView] 排布卡片。
 ///
-/// 骨架屏 → 内容 / 错误之间顶部对齐交叉淡入；内容区固定 key，数据刷新时
-/// 不重复播放过渡。
+/// 内容直接接入滚动视口，卡片进入缓存范围才挂载；不把整页包进一个盒子，
+/// 避免首次切页时一次排版所有图表、订阅附加查询并解码所有图片。
 class ExplorePage extends ConsumerStatefulWidget {
   const ExplorePage({super.key, this.pageBackgroundColor, this.now});
 
@@ -143,8 +144,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
             bottom: false,
             // 宽窗口下内容居中到 960：用滚动视图的左右内边距居中，滚动条仍在
             // 窗口边缘。手机上留白就是原来的 16。
-            child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) =>
+            child: WidthLayoutBuilder(
+              builder: (BuildContext context, double maxWidth) =>
                   CustomScrollView(
                     slivers: <Widget>[
                       // 顶栏下缘到第一块内容固定留四个 Tab 统一的顶部间距
@@ -157,62 +158,49 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                       SliverPadding(
                         padding: EdgeInsets.symmetric(
                           horizontal: AppContentWidth.gutter(
-                            constraints.maxWidth,
+                            maxWidth,
                             AppContentWidth.explore,
                           ),
                         ),
-                        sliver: SliverToBoxAdapter(
-                          child: AnimatedSwitcher(
-                            duration: ExpressiveMotion.duration(
-                              context,
-                              ExpressiveMotion.medium,
+                        sliver: diariesAsync.when(
+                          // 本地查询通常很快：300ms 内保持空白，慢查询才显示
+                          // 骨架。结果就绪后直接挂载视口内卡片，不保留整页过渡层。
+                          loading: () => SliverToBoxAdapter(
+                            child: DelayedLoadingGate(
+                              key: const ValueKey<String>('explore_skeleton'),
+                              loading: true,
+                              builder: (context, showSkeleton) => showSkeleton
+                                  ? const ExpressiveEntrance(
+                                      offset: Offset.zero,
+                                      duration: ExpressiveMotion.fast,
+                                      child: _ExplorePageSkeleton(),
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
-                            switchInCurve: ExpressiveMotion.effects,
-                            switchOutCurve: ExpressiveMotion.exit,
-                            layoutBuilder: (currentChild, previousChildren) =>
-                                Stack(
-                                  alignment: Alignment.topCenter,
-                                  children: <Widget>[
-                                    ...previousChildren,
-                                    ?currentChild,
-                                  ],
-                                ),
-                            child: diariesAsync.when(
-                              // 本地查询通常很快：300ms 内保持空白、内容直接淡入，
-                              // 不再先闪一帧骨架屏；慢查询才淡入骨架屏。
-                              loading: () => DelayedLoadingGate(
-                                key: const ValueKey<String>('explore_skeleton'),
-                                loading: true,
-                                builder: (context, showSkeleton) => showSkeleton
-                                    ? const ExpressiveEntrance(
-                                        offset: Offset.zero,
-                                        duration: ExpressiveMotion.fast,
-                                        child: _ExplorePageSkeleton(),
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
-                              error: (error, stackTrace) => _ExploreErrorCard(
-                                key: const ValueKey<String>('explore_error'),
-                                message: '$error',
-                              ),
-                              data: (diaries) => ExploreContentView(
-                                key: const ValueKey<String>('explore_content'),
-                                diaries: diaries,
-                                layout: layout,
-                                period: period,
-                                features: features,
-                                moodOptions: moodOptions,
-                                firstWeekday: firstWeekday,
-                                orderedTagIds: <int>[
-                                  for (final tag in orderedTags) tag.id,
-                                ],
-                                dayMoods: dayMoods,
-                                photoCounts: photoCounts,
-                                draftCount: draftCount,
-                                now: widget.now,
-                                onPeriodChanged: _setPeriod,
-                              ),
+                          ),
+                          error: (error, stackTrace) => SliverToBoxAdapter(
+                            child: _ExploreErrorCard(
+                              key: const ValueKey<String>('explore_error'),
+                              message: '$error',
                             ),
+                          ),
+                          data: (diaries) => ExploreContentView(
+                            key: const ValueKey<String>('explore_content'),
+                            sliver: true,
+                            diaries: diaries,
+                            layout: layout,
+                            period: period,
+                            features: features,
+                            moodOptions: moodOptions,
+                            firstWeekday: firstWeekday,
+                            orderedTagIds: <int>[
+                              for (final tag in orderedTags) tag.id,
+                            ],
+                            dayMoods: dayMoods,
+                            photoCounts: photoCounts,
+                            draftCount: draftCount,
+                            now: widget.now,
+                            onPeriodChanged: _setPeriod,
                           ),
                         ),
                       ),

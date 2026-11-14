@@ -31,6 +31,8 @@ class LongImageCoverAlignment extends StatefulWidget {
 }
 
 class _LongImageCoverAlignmentState extends State<LongImageCoverAlignment> {
+  late final DisposableBuildContext<_LongImageCoverAlignmentState>
+  _scrollContext = DisposableBuildContext<_LongImageCoverAlignmentState>(this);
   ImageStream? _stream;
   late final ImageStreamListener _listener = ImageStreamListener(
     _handleImage,
@@ -54,7 +56,13 @@ class _LongImageCoverAlignmentState extends State<LongImageCoverAlignment> {
   }
 
   void _listen() {
-    final stream = widget.image.resolve(createLocalImageConfiguration(context));
+    // Image 自己会在快速滚动时推迟新解码；这个尺寸监听也必须遵循同样的
+    // 策略，否则它先把原图送进缓存，反而绕过 Image 的滚动保护。键仍是原
+    // provider 的键，缓存命中时立即显示，不会额外读取或解码。
+    final stream = ScrollAwareImageProvider(
+      context: _scrollContext,
+      imageProvider: widget.image,
+    ).resolve(createLocalImageConfiguration(context));
     if (stream.key == _stream?.key) {
       return;
     }
@@ -90,6 +98,7 @@ class _LongImageCoverAlignmentState extends State<LongImageCoverAlignment> {
 
   @override
   void dispose() {
+    _scrollContext.dispose();
     _stopListening();
     super.dispose();
   }

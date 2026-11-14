@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -52,8 +53,9 @@ enum ContainerTransformSlot {
 ///
 /// 只在绘制阶段逐帧变化：页面按整屏尺寸布局一次，之后每帧只改裁切、缩放与
 /// 透明度，页面本身既不重建也不重新布局（它在路由的 RepaintBoundary 里，连
-/// 重绘都不需要，只是换一层变换重新合成）。进度为 1 时原样绘制页面，不留
-/// 任何额外图层，[backdrop] 也不再绘制。
+/// 重绘都不需要，只是按原尺寸合成进离屏纹理、再整张位图缩放，文字不随缩放
+/// 重新栅格化）。进度为 1 时原样绘制页面，不留任何额外图层，[backdrop] 也
+/// 不再绘制。
 ///
 /// 每帧自下而上：
 /// 1. 下层页面上的遮罩（`scrim`），随进度加深；
@@ -235,8 +237,8 @@ class RenderContainerTransform extends RenderBox
 
   final LayerHandle<ClipRRectLayer> _clipLayer = LayerHandle<ClipRRectLayer>();
   final LayerHandle<OpacityLayer> _groupLayer = LayerHandle<OpacityLayer>();
-  final LayerHandle<TransformLayer> _transformLayer =
-      LayerHandle<TransformLayer>();
+  final LayerHandle<ImageFilterLayer> _scaleLayer =
+      LayerHandle<ImageFilterLayer>();
 
   /// 进度到 1（整页）时与普通页面完全相同。
   bool get _settled => _animation.value >= 1;
@@ -310,7 +312,7 @@ class RenderContainerTransform extends RenderBox
   void _clearLayers() {
     _clipLayer.layer = null;
     _groupLayer.layer = null;
-    _transformLayer.layer = null;
+    _scaleLayer.layer = null;
   }
 
   _Frame _frame() {
@@ -411,19 +413,27 @@ class RenderContainerTransform extends RenderBox
   ) {
     final backdrop = _backdrop;
     void paintPage(PaintingContext context, Offset offset) {
-      // 底与页面共同进入外侧的透明度层，页内玻璃仍能采到先画好的页面背景。
-      _transformLayer.layer = context.pushTransform(
-        needsCompositing,
-        offset,
-        frame.transform,
-        (PaintingContext context, Offset offset) {
-          if (backdrop != null) {
-            context.paintChild(backdrop, offset);
-          }
-          context.paintChild(child, offset);
-        },
-        oldLayer: _transformLayer.layer,
+      // 缩放以位图方式施加（与 `Transform.filterQuality` 同一路径）：底与
+      // 页面先按原尺寸画进一张离屏纹理，再整张缩放贴进容器。直接变换画布
+      // 时文字每帧换一个字号，Impeller 要逐帧重建字形图集（真机上每帧
+      // 6ms 上下，转场一路掉帧）；按原尺寸画则每帧都命中缓存。底与页面
+      // 同在这一层里，外侧的透明度可以直接施加在这张纹理上，页内玻璃仍能
+      // 采到先画好的页面背景。
+      final matrix = Matrix4.translationValues(offset.dx, offset.dy, 0)
+        ..multiply(frame.transform)
+        ..translateByDouble(-offset.dx, -offset.dy, 0, 1);
+      final layer = _scaleLayer.layer ??= ImageFilterLayer();
+      layer.imageFilter = ImageFilter.matrix(
+        matrix.storage,
+        // 双线性即可：缩到很小时页面还几乎透明，末段接近原尺寸。
+        filterQuality: FilterQuality.low,
       );
+      context.pushLayer(layer, (PaintingContext context, Offset offset) {
+        if (backdrop != null) {
+          context.paintChild(backdrop, offset);
+        }
+        context.paintChild(child, offset);
+      }, offset);
     }
 
     final groupAlpha = (frame.groupAlpha * 255).round();
@@ -439,7 +449,7 @@ class RenderContainerTransform extends RenderBox
       );
     } else {
       _groupLayer.layer = null;
-      _transformLayer.layer = null;
+      _scaleLayer.layer = null;
     }
 
     final image = _geometry.closed?.image;

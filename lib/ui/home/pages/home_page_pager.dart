@@ -21,7 +21,10 @@ part of 'home_page.dart';
 ///   选中动画都收尾了）、手指按在页面上、或落位超过 [_snapshotHoldLimit]，
 ///   就放开——这一帧落定的页改画实时页面（与快照逐像素一致）并恢复 ticker。
 ///   页内按 TickerMode 判断自己是否可见的逻辑（日记页的返回处理、下拉提示）
-///   在这最多 400ms 里同样视为不可见。
+///   在这最多 400ms 里同样视为不可见；
+/// - 只有完整显示过的 Tab 按快照画（[_HomePageState._snapshotReadyTabs]）：
+///   第一次切到的页照常实时绘制、ticker 照常跑，数据与入场动画在途中出现；
+///   它落定后（放开保持或实时落位时）记为显示过。
 extension _HomePagePager on _HomePageState {
   /// 落位后最多再画多久快照：内容的更新（数据、解码好的图片）最多晚这么久
   /// 出现。不是动画时长。
@@ -61,7 +64,19 @@ extension _HomePagePager on _HomePageState {
   /// 放开快照：落定的页改画实时页面，恢复 ticker。
   void _releaseSnapshots() {
     _snapshotReleaseDeadline = null;
+    _markSettledTabReady();
     _snapshotHold.value = false;
+  }
+
+  /// 停在正中的页此后按实时绘制，算作完整显示过（[_HomePageState
+  /// ._snapshotReadyTabs]），下一次切页起可以按快照画。只记集合，不触发
+  /// 重建：下一次可见区间变化时各页随之读到。
+  void _markSettledTabReady() {
+    final visible = _visibleTabs.value;
+    if (visible.first != visible.last) return;
+    final order = _pageOrder.order;
+    if (visible.first < 0 || visible.first >= order.length) return;
+    _snapshotReadyTabs.add(order[visible.first]);
   }
 
   /// 手指按在页面上：页面马上要响应（滚动、点按、长按），停在正中时立即
@@ -247,12 +262,13 @@ extension _HomePagePager on _HomePageState {
   ///   PageView 的列表代理按 key 把已有页面搬到新下标，页面状态（滚动位置、
   ///   筛选等）不会因为换了位置而重建；
   /// - 不可见的 Tab 静音 ticker：其中仍在播放或循环的动画（加载指示、入场
-  ///   动画等）不再在后台逐帧出帧；切回来时从当前时刻续上。按快照切页时
-  ///   移动途中与落位后的保持期间同样静音（见扩展注释）；实时绘制时（减少
-  ///   动画）滑动途中两侧页面都启用，不会冻结半露出的内容；
+  ///   动画等）不再在后台逐帧出帧；切回来时从当前时刻续上。按快照画的页
+  ///   在移动途中与落位后的保持期间同样静音（见扩展注释）；实时绘制的页
+  ///   （第一次显示、减少动画）滑动途中照常启用，不会冻结半露出的内容；
   /// - 同理关闭不可见 Tab 的 Hero：各 Tab 同属一个路由，否则从日历打开预览
   ///   时，会从后台日记列表里同一篇的封面飞出来；
-  /// - 页面第一次出现在可见区间时才创建（[_pageFor]），之前是占位；
+  /// - 页面第一次出现在可见区间时才创建（[_pageFor]），之前是占位；完整显示
+  ///   过之后才按快照画（见扩展注释）；
   /// - 景深卡片在有背景图时自带本区域的背景（[AppPagedAreaBackground]）。
   Widget _buildTabSlot({
     required HomeTab tab,
@@ -267,9 +283,10 @@ extension _HomePagePager on _HomePageState {
     final Widget page = shown || _pages.containsKey(tab)
         ? _pageFor(tab)
         : const SizedBox.expand();
+    final snapshot = depth && _snapshotReadyTabs.contains(tab);
     return TickerMode(
       key: ValueKey<HomeTab>(tab),
-      enabled: shown && !hold,
+      enabled: shown && !(snapshot && hold),
       child: HeroMode(
         enabled: shown,
         child: ExcludeSemantics(
@@ -278,7 +295,7 @@ extension _HomePagePager on _HomePageState {
             index: index,
             position: _displayPosition,
             enabled: depth,
-            snapshot: depth,
+            snapshot: snapshot,
             holdSnapshot: hold,
             stageColor: stage,
             scrimColor: scrim,

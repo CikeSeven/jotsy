@@ -78,6 +78,7 @@ class _HomePageController {
         continue;
       }
       _state._pages.remove(tab);
+      _state._snapshotReadyTabs.remove(tab);
       final controller = _state._tabScrollControllers.remove(tab);
       if (controller != null) {
         _retiredScrollControllers.add(controller);

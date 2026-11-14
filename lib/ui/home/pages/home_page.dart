@@ -184,6 +184,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// 是否已登记了下一次放开检查（帧后回调）。
   bool _snapshotReleaseScheduled = false;
 
+  /// 已经完整显示过（停在正中、按实时绘制过）的 Tab：只有它们切页时按快照
+  /// 绘制。第一次切到的页刚在起步那一帧创建，数据还没到、入场动画还没播，
+  /// 拍下来会是一张空页冻结整个切页；这一次照常实时绘制、ticker 照常跑。
+  /// Tab 被关闭时移除（页面随之销毁，重新开启后又是第一次）。
+  final Set<HomeTab> _snapshotReadyTabs = <HomeTab>{};
+
   /// 每个 Tab 独立的主滚动控制器，由 [_buildTabPage] 以 PrimaryScrollController
   /// 下发给该 Tab 的主列表；随页面按需创建，Tab 被关闭时在页面卸载后释放。
   ///
@@ -273,6 +279,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     // 启动落在日记页（它始终可见）；PageController 的初始页取自这里。
     _currentIndex = _targetIndex = _tabs.indexOf(HomeTab.diaries);
     _pageOrder = HomeTabPageOrder.canonical(_tabs);
+    // 启动页一开始就实时显示在正中。
+    _snapshotReadyTabs.add(_tabs[_currentIndex]);
     _controller = _HomePageController(this);
     _controller.init();
     _visibleTabs = ValueNotifier<_VisibleTabRange>(
@@ -684,8 +692,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
     if (next.first != next.last) {
       if (_tabsUseSnapshots) _holdSnapshots();
-    } else {
+    } else if (_snapshotHold.value) {
       _scheduleSnapshotRelease();
+    } else {
+      // 没有保持（实时绘制的切页）：落定这一帧就是实时画的。
+      _markSettledTabReady();
     }
   }
 

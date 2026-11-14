@@ -14,6 +14,7 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
+import 'package:node_diary/ui/home/widgets/home_tab_depth.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -368,17 +369,62 @@ void main() {
     await tester.tap(_navItem(l10n.navExplore));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
-    // 景深切页途中两页都按快照画，画面冻结在起步那一刻：两页的 ticker
-    // 都暂停，落位时内容不会跳一下。
+    // 日记页显示过，按快照画、ticker 暂停（画面冻结在起步那一刻，落位时
+    // 不会跳一下）；探索第一次显示，内容与入场动画要在途中出现：实时绘制、
+    // ticker 照常跑。
+    expect(_tabShown(tester, DiariesPage), isTrue);
+    expect(_tabShown(tester, ExplorePage), isTrue);
+    expect(_tickersEnabled(tester, DiariesPage), isFalse);
+    expect(_tickersEnabled(tester, ExplorePage), isTrue);
+    await tester.pumpAndSettle();
+
+    // 落位、收尾的动画停下后放开快照：只有落定的页开着。
+    expect(_tickersEnabled(tester, ExplorePage), isTrue);
+    expect(_tickersEnabled(tester, DiariesPage), isFalse);
+
+    // 两页都显示过：再切回日记时两页都按快照画，途中都暂停。
+    await tester.tap(_navItem(l10n.navDiaries));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
     expect(_tabShown(tester, DiariesPage), isTrue);
     expect(_tabShown(tester, ExplorePage), isTrue);
     expect(_tickersEnabled(tester, DiariesPage), isFalse);
     expect(_tickersEnabled(tester, ExplorePage), isFalse);
     await tester.pumpAndSettle();
+    expect(_tickersEnabled(tester, DiariesPage), isTrue);
+    expect(_tickersEnabled(tester, ExplorePage), isFalse);
+    await _unmount(tester);
+  });
 
-    // 落位、收尾的动画停下后放开快照：只有落定的页恢复。
-    expect(_tickersEnabled(tester, ExplorePage), isTrue);
-    expect(_tickersEnabled(tester, DiariesPage), isFalse);
+  testWidgets('a tab shown for the first time is painted live, not frozen', (
+    tester,
+  ) async {
+    await _pumpHome(tester);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    RenderHomeTabDepth depthOf(Type page) =>
+        tester.renderObject<RenderHomeTabDepth>(
+          find.ancestor(
+            of: find.byType(page, skipOffstage: false),
+            matching: find.byType(HomeTabDepth, skipOffstage: false),
+          ),
+        );
+
+    await tester.tap(_navItem(l10n.navExplore));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    // 第一次显示的探索页刚创建、数据还在加载：不拍快照，途中实时绘制；
+    // 显示过的日记页按快照画。
+    expect(depthOf(DiariesPage).debugHasSnapshot, isTrue);
+    expect(depthOf(ExplorePage).debugHasSnapshot, isFalse);
+    await tester.pumpAndSettle();
+
+    // 显示过之后再切走：探索也按快照画。
+    await tester.tap(_navItem(l10n.navDiaries));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(depthOf(ExplorePage).debugHasSnapshot, isTrue);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
 

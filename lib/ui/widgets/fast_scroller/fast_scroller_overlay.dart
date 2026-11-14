@@ -123,54 +123,88 @@ class FastScrollerOverlay extends StatelessWidget {
     );
   }
 
+  /// 滚动条本体。按钮位置 [thumbFraction] 每个滚动帧都变，这里只让随它
+  /// 移动的三块（气泡、按钮、按压区域）各自的 [Positioned] 逐帧重建，三块
+  /// 的内容作为 `child` 传进去、元素原样复用；轨道线与刻度只在按住时才随
+  /// 按钮位置变（刻度标签给气泡让位），平时滚动完全不重建——列表滚动时
+  /// 这一层原先每帧都要重建整组刻度（每个刻度一套淡入、忽略点按与平移）。
+  /// 刻度的组件结构在按住前后不变，淡入淡出状态不丢。
   Widget _buildScroller(BuildContext context, double travel) {
     final engaged = grabbed || hovered;
-    return ValueListenableBuilder<double>(
-      valueListenable: thumbFraction,
-      builder: (BuildContext context, double fraction, Widget? _) {
-        final thumbTop = fraction * travel;
-        final thumbCenter = thumbTop + FastScrollMetrics.slot / 2;
-        return Stack(
-          clipBehavior: Clip.none,
-          children: <Widget>[
-            Positioned(
-              top: FastScrollMetrics.slot / 2,
-              bottom: FastScrollMetrics.slot / 2,
-              right: FastScrollMetrics.axis - FastScrollTrackLine.width / 2,
-              child: _EngagedFade(
-                engaged: engaged,
-                child: const FastScrollTrackLine(),
+    double thumbTopOf(double fraction) => fraction * travel;
+    double thumbCenterOf(double fraction) =>
+        thumbTopOf(fraction) + FastScrollMetrics.slot / 2;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: <Widget>[
+        Positioned.fill(
+          child: ListenableBuilder(
+            listenable: grabbed && sections.length >= 2
+                ? thumbFraction
+                : const AlwaysStoppedAnimation<double>(0),
+            builder: (BuildContext context, Widget? _) => Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                Positioned(
+                  top: FastScrollMetrics.slot / 2,
+                  bottom: FastScrollMetrics.slot / 2,
+                  right: FastScrollMetrics.axis - FastScrollTrackLine.width / 2,
+                  child: _EngagedFade(
+                    engaged: engaged,
+                    child: const FastScrollTrackLine(),
+                  ),
+                ),
+                ..._buildMarkers(
+                  travel,
+                  thumbCenterOf(thumbFraction.value),
+                  engaged,
+                ),
+              ],
+            ),
+          ),
+        ),
+        ValueListenableBuilder<double>(
+          valueListenable: thumbFraction,
+          child: _buildBubble(),
+          builder: (BuildContext context, double fraction, Widget? bubble) =>
+              Positioned(
+                top: thumbCenterOf(fraction),
+                right: FastScrollMetrics.labelInset,
+                child: FractionalTranslation(
+                  translation: const Offset(0, -0.5),
+                  child: bubble,
+                ),
               ),
-            ),
-            ..._buildMarkers(travel, thumbCenter, engaged),
-            Positioned(
-              top: thumbCenter,
-              right: FastScrollMetrics.labelInset,
-              child: FractionalTranslation(
-                translation: const Offset(0, -0.5),
-                child: _buildBubble(),
+        ),
+        ValueListenableBuilder<double>(
+          valueListenable: thumbFraction,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FastScrollThumb(grabbed: grabbed, hovered: hovered),
+          ),
+          builder: (BuildContext context, double fraction, Widget? thumb) =>
+              Positioned(
+                top: thumbTopOf(fraction),
+                right: FastScrollMetrics.edge,
+                width: FastScrollMetrics.grabbedWidth,
+                height: FastScrollMetrics.slot,
+                child: thumb!,
               ),
-            ),
-            Positioned(
-              top: thumbTop,
-              right: FastScrollMetrics.edge,
-              width: FastScrollMetrics.grabbedWidth,
-              height: FastScrollMetrics.slot,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: FastScrollThumb(grabbed: grabbed, hovered: hovered),
+        ),
+        ValueListenableBuilder<double>(
+          valueListenable: thumbFraction,
+          child: _buildThumbHitArea(context),
+          builder: (BuildContext context, double fraction, Widget? hitArea) =>
+              Positioned(
+                top: thumbTopOf(fraction) - FastScrollMetrics.hitPadding,
+                right: 0,
+                width: FastScrollMetrics.hitWidth,
+                height:
+                    FastScrollMetrics.slot + FastScrollMetrics.hitPadding * 2,
+                child: hitArea!,
               ),
-            ),
-            Positioned(
-              top: thumbTop - FastScrollMetrics.hitPadding,
-              right: 0,
-              width: FastScrollMetrics.hitWidth,
-              height: FastScrollMetrics.slot + FastScrollMetrics.hitPadding * 2,
-              child: _buildThumbHitArea(context),
-            ),
-          ],
-        );
-      },
+        ),
+      ],
     );
   }
 

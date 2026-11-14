@@ -29,6 +29,7 @@ class AppGlassFab extends StatelessWidget {
     super.key,
     this.borderRadius,
     this.blur = AppGlassBlur.always,
+    this.grouped = false,
     required this.child,
   });
 
@@ -39,6 +40,10 @@ class AppGlassFab extends StatelessWidget {
   /// 模糊策略，见 [AppGlassBlur]：浮在列表 / 正文上的按钮为 always；下面
   /// 没有内容的（如宽窗口侧栏上的）为 none。
   final AppGlassBlur blur;
+
+  /// 是否与最近的 `BackdropGroup` 里的其他玻璃共用一次背景读取（见
+  /// `GlassSurface.grouped`）：首页外壳里与悬浮底栏共用。
+  final bool grouped;
   final Widget child;
 
   /// 主色玻璃的底色：primaryContainer 取玻璃底色的透明度；高对比度时不透明。
@@ -91,6 +96,7 @@ class AppGlassFab extends StatelessWidget {
       blur: wantsBlur && glass.canBlur,
       border: glass.border,
       shadowColor: glass.shadowColor,
+      grouped: grouped,
       child: Theme(
         data: theme.copyWith(
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

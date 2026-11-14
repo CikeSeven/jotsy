@@ -574,27 +574,32 @@ class _HomePageState extends ConsumerState<HomePage> {
               // Builder：Scaffold 底色要从背景组件之下的 context 读——背景层
               // 在画时首页 Scaffold 透明，否则仍是主题页面底色。
               child: Builder(
-                builder: (BuildContext context) => Scaffold(
-                  backgroundColor: AppPagedBackground.shellColorOf(context),
-                  resizeToAvoidBottomInset: false,
-                  // 底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
-                  // 透出。没有底栏时内容止于窗口底部。
-                  extendBody: hasBottomBar,
-                  body: wide
-                      ? _buildWideBody(
-                          navItems: navItems,
-                          barStyle: barStyle,
-                          content: content,
-                        )
-                      : content,
-                  bottomNavigationBar: !hasBottomBar
-                      ? null
-                      : _buildBottomBar(
-                          navItems: navItems,
-                          barStyle: barStyle,
-                          barBehavior: barBehavior,
-                          inlineCreate: inlineCreate,
-                        ),
+                // 悬浮底栏与新建按钮都叠在列表下缘、互不重叠，经同一个
+                // BackdropGroup 共用一次背景读取（两者都 grouped）：原先
+                // 各读一次，滑动时多一次整片回读。
+                builder: (BuildContext context) => BackdropGroup(
+                  child: Scaffold(
+                    backgroundColor: AppPagedBackground.shellColorOf(context),
+                    resizeToAvoidBottomInset: false,
+                    // 底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
+                    // 透出。没有底栏时内容止于窗口底部。
+                    extendBody: hasBottomBar,
+                    body: wide
+                        ? _buildWideBody(
+                            navItems: navItems,
+                            barStyle: barStyle,
+                            content: content,
+                          )
+                        : content,
+                    bottomNavigationBar: !hasBottomBar
+                        ? null
+                        : _buildBottomBar(
+                            navItems: navItems,
+                            barStyle: barStyle,
+                            barBehavior: barBehavior,
+                            inlineCreate: inlineCreate,
+                          ),
+                  ),
                 ),
               ),
             ),

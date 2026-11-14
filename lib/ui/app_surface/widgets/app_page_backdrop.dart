@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../diaries/viewmodels/diary_card_colors.dart';
+import '../../widgets/glass/glass_backdrop_sample.dart';
 import '../models/app_surface_settings.dart';
 
 /// 页面背景向子树交代的信息：页面底色、实色栏底色、内容实际叠在什么颜色
@@ -40,6 +41,7 @@ class AppPageBackdrop {
     required this.solidBarColor,
     required this.estimatedColor,
     this.contentBackdropKey,
+    this.contentGlass,
     this.deferredScrim,
     bool? wantsBackground,
   }) : wantsBackground = wantsBackground ?? hasBackground;
@@ -92,6 +94,12 @@ class AppPageBackdrop {
   /// `BackdropFilter(backdropGroupKey: …)` 共用一次背景读取。没有祖先时为
   /// null（按各自独立模糊处理）。
   final BackdropKey? contentBackdropKey;
+
+  /// 内容玻璃的预模糊背景取样源（见 [GlassBackdropSample]）：最上层是解码
+  /// 好的图片背景、且背景层挂着取样用的 Leader 时非 null。内容玻璃有它时
+  /// 不再经 [contentBackdropKey] 逐帧回读模糊，改画预模糊背景；没有时（纯色、
+  /// 解码中、不在页面背景之下）照旧按 [hasImage] 决定是否模糊。
+  final GlassBackdropSample? contentGlass;
 
   /// 最近的页面背景信息；没有祖先时按当前主题给 [AppPageBackdrop.plain]。
   static AppPageBackdrop of(BuildContext context) {
@@ -199,7 +207,8 @@ class AppPageBackdrop {
         other.solidBarColor == solidBarColor &&
         other.estimatedColor == estimatedColor &&
         other.deferredScrim == deferredScrim &&
-        other.contentBackdropKey == contentBackdropKey;
+        other.contentBackdropKey == contentBackdropKey &&
+        other.contentGlass == contentGlass;
   }
 
   @override
@@ -213,6 +222,7 @@ class AppPageBackdrop {
     estimatedColor,
     deferredScrim,
     contentBackdropKey,
+    contentGlass,
   );
 
   @override

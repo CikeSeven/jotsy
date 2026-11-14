@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
+import '../../widgets/glass/glass_backdrop_sample.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../viewmodels/diary_card_surface_spec.dart';
 import 'diary_card_outer_shadow_decoration.dart';
@@ -27,7 +28,9 @@ import 'diary_card_outer_shadow_decoration.dart';
 ///   `DiaryCardLockedContent` 的注释），共用一个键只读一次背景。只在页面
 ///   有背景图、模糊半径大于 0、非高对比度且有键时开启（纯色背景模糊了也
 ///   看不出差别，白白回读）；节点始终在树里，只切 `enabled`，背景图淡入
-///   淡出时卡片内容不重建。
+///   淡出时卡片内容不重建。页面背景是解码好的图片时（`AppPageBackdrop.
+///   contentGlass`）不再回读模糊，改在同一裁切里画预模糊背景（见
+///   `GlassBackdropSample`），滚动时没有逐帧的背景模糊。
 ///
 /// 玻璃不能放进 Opacity / FadeTransition（模糊采不到页面，见 [GlassReveal]）：
 /// 列表的进出场与刷新淡入改由祖先 [GlassReveal] 给出进度，这里按进度缩放
@@ -157,7 +160,8 @@ class DiarySelectionSurface extends StatelessWidget {
                   child: _DiaryCardBackdropBlur(
                     diaryId: diaryId,
                     borderRadius: borderRadius,
-                    sigma: spec.blurSigma * reveal,
+                    sigma: spec.blurSigma,
+                    reveal: reveal,
                     translucent: _isTranslucent(spec),
                   ),
                 ),
@@ -249,41 +253,64 @@ class DiarySelectionSurface extends StatelessWidget {
   }
 }
 
-/// 玻璃卡片底下的背景模糊层：按卡片圆角裁切，共用页面的共享背景键。
+/// 玻璃卡片底下的背景模糊层：按卡片圆角裁切，共用页面的共享背景键；页面
+/// 背景是解码好的图片时改画预模糊背景（[GlassBackdropSampleView]），不开
+/// 背景模糊。
 ///
 /// 单独成一个组件，是为了只让这一层依赖页面背景（[AppPageBackdrop]）与
-/// 高对比度：背景图换成纯色或高对比度切换时只重建它，卡片内容不动。
+/// 高对比度：背景图换成纯色或高对比度切换时只重建它，卡片内容不动。裁切
+/// 之内恒为“模糊节点 + 取样位”两层，开关与取样有无只改数据。[reveal] 为
+/// 淡入进度：模糊半径随它缩放，取样只按它调透明度（半径不变，免得淡入的
+/// 每一帧重新生成预模糊图）。
 class _DiaryCardBackdropBlur extends StatelessWidget {
   const _DiaryCardBackdropBlur({
     required this.diaryId,
     required this.borderRadius,
     required this.sigma,
+    required this.reveal,
     required this.translucent,
   });
 
   final String diaryId;
   final BorderRadius borderRadius;
   final double sigma;
+  final double reveal;
   final bool translucent;
 
   @override
   Widget build(BuildContext context) {
     final backdrop = AppPageBackdrop.of(context);
     final key = backdrop.contentBackdropKey;
-    final enabled =
+    final wanted =
         key != null &&
         backdrop.hasImage &&
         translucent &&
         sigma > 0 &&
+        reveal > 0 &&
         !MediaQuery.highContrastOf(context);
+    final sample = backdrop.contentGlass;
+    final blurSigma = sigma * reveal;
     return ClipRRect(
       borderRadius: borderRadius,
-      child: BackdropFilter(
-        key: ValueKey<String>('diary_selection_blur_$diaryId'),
-        enabled: enabled,
-        filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-        backdropGroupKey: key,
-        child: const SizedBox.expand(),
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          BackdropFilter(
+            key: ValueKey<String>('diary_selection_blur_$diaryId'),
+            enabled: wanted && sample == null,
+            filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+            backdropGroupKey: key,
+            child: const SizedBox.expand(),
+          ),
+          if (wanted && sample != null)
+            GlassBackdropSampleView(
+              sample: sample,
+              sigma: sigma,
+              opacity: reveal,
+            )
+          else
+            const SizedBox.shrink(),
+        ],
       ),
     );
   }

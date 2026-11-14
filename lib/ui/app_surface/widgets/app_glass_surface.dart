@@ -37,7 +37,8 @@ enum AppGlassBlur {
 /// - 共享背景读取：[backdropKey] 缺省时，内容玻璃（[AppGlassComponent.cards]）
 ///   取页面的 `AppPageBackdrop.contentBackdropKey`——同一页的所有卡片都只
 ///   叠在页面背景上，共用一次背景读取；其他组件不分组（它们下面是各不相同
-///   的内容）；
+///   的内容）。页面背景是解码好的图片时（`AppPageBackdrop.contentGlass`）
+///   内容玻璃不再回读，改画预模糊背景（见 `GlassBackdropSample`）；
 /// - 前景兜底：自定义底色时，按“底色叠在页面估计色上”的结果检查主题前景
 ///   的对比度，不够时子树的 onSurface / onSurfaceVariant（含文字、图标与
 ///   ListTile、AppBar 主题）换成可读色。自定义底色下始终插入同一组主题
@@ -118,6 +119,11 @@ class AppGlassSurface extends StatelessWidget {
       shadowColor: shadow ? glass.shadowColor : null,
       progress: progress,
       backdropKey: key,
+      // 共用页面背景读取的内容玻璃改画预模糊背景（见 GlassBackdropSample）。
+      backdropSample:
+          backdropKey == null && component == AppGlassComponent.cards
+          ? backdrop.contentGlass
+          : null,
       child: content,
     );
   }

@@ -3,6 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -167,6 +169,20 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   /// 当前（含滑动途中）可见的 Tab 区间，驱动各页的 TickerMode。
   late final ValueNotifier<_VisibleTabRange> _visibleTabs;
+
+  /// 景深切页是否按快照绘制各页：窄窗口且未减少动画时（与景深同时开关），
+  /// build 时更新。
+  bool _tabsUseSnapshots = false;
+
+  /// 各页是否正在按快照绘制（移动途中与落位后的保持期间）。生命周期与
+  /// 放开时机见 home_page_pager.dart 的扩展注释。
+  final ValueNotifier<bool> _snapshotHold = ValueNotifier<bool>(false);
+
+  /// 落位后放开快照的最晚时刻（帧时间戳），第一次检查时确定。
+  Duration? _snapshotReleaseDeadline;
+
+  /// 是否已登记了下一次放开检查（帧后回调）。
+  bool _snapshotReleaseScheduled = false;
 
   /// 每个 Tab 独立的主滚动控制器，由 [_buildTabPage] 以 PrimaryScrollController
   /// 下发给该 Tab 的主列表；随页面按需创建，Tab 被关闭时在页面卸载后释放。
@@ -338,6 +354,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     _displayPosition.dispose();
     _controller.pageController.removeListener(_syncVisibleTabs);
     _visibleTabs.dispose();
+    _snapshotHold.dispose();
     _controller.dispose();
     for (final controller in _tabScrollControllers.values) {
       controller.dispose();
@@ -431,6 +448,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final windowWidth = MediaQuery.sizeOf(context).width;
     _wide = AppBreakpoints.classOf(windowWidth).isWide;
+    _tabsUseSnapshots = !_wide && !ExpressiveMotion.reduceMotion(context);
+    // 变成宽窗口或开启减少动画：不再按快照画（各页 build 时随之换回实时）。
+    if (!_tabsUseSnapshots && _snapshotHold.value) {
+      _releaseSnapshots();
+    }
 
     final baseTheme = Theme.of(context);
     final snackBarTheme = baseTheme.snackBarTheme.copyWith(
@@ -571,6 +593,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               current: _pageOrder.displayIndexOf(_effectiveTab),
               position: _displayPosition,
               interpolate: !wide,
+              // 景深切页途中各页连同自己区域的背景缩成不透明卡片、缝隙铺
+              // 舞台色，背景层被整个盖住，不必再画相邻两区的插值。
+              occludedWhileMoving: _tabsUseSnapshots,
               // Builder：Scaffold 底色要从背景组件之下的 context 读——背景层
               // 在画时首页 Scaffold 透明，否则仍是主题页面底色。
               child: Builder(
@@ -656,6 +681,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     final next = _VisibleTabRange(page.floor(), page.ceil());
     if (next != _visibleTabs.value) {
       _visibleTabs.value = next;
+    }
+    if (next.first != next.last) {
+      if (_tabsUseSnapshots) _holdSnapshots();
+    } else {
+      _scheduleSnapshotRelease();
     }
   }
 

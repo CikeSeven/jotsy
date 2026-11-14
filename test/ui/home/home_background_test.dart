@@ -86,16 +86,65 @@ Color _scaffoldColorIn(WidgetTester tester, Finder page) => tester
 Color _homeScaffoldColor(WidgetTester tester) =>
     _scaffoldColorIn(tester, find.byType(HomePage));
 
-/// 首页背景层里铺满的纯色（自下而上）。
+/// 首页背景层里铺满的纯色（自下而上）。只看背景层本身，不含景深卡片
+/// 自带的那份区域背景（[AppPagedAreaBackground]，在各页的 HomeTabDepth 里）。
 List<Color> _backgroundColors(WidgetTester tester) => tester
     .widgetList<ColoredBox>(
       find.descendant(
-        of: find.byType(AppBackgroundLayersView),
+        of: find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is AppBackgroundLayersView &&
+              widget.key is ValueKey<AppBackgroundArea>,
+        ),
         matching: find.byType(ColoredBox),
       ),
     )
     .map((box) => box.color)
     .toList();
+
+/// 景深卡片自带的 [area] 区域背景铺的纯色。
+List<Color> _cardBackgroundColors(
+  WidgetTester tester,
+  AppBackgroundArea area,
+) => tester
+    .widgetList<ColoredBox>(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is AppPagedAreaBackground && widget.area == area,
+          skipOffstage: false,
+        ),
+        matching: find.byType(ColoredBox, skipOffstage: false),
+      ),
+    )
+    .map((box) => box.color)
+    .toList();
+
+/// 背景层里插值上面那一层的透明度层（没有时为空）。
+Iterable<Opacity> _blendLayers(WidgetTester tester) =>
+    tester.widgetList<Opacity>(
+      find.ancestor(
+        of: find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is AppBackgroundLayersView &&
+              widget.key is ValueKey<AppBackgroundArea>,
+        ),
+        matching: find.byType(Opacity),
+      ),
+    );
+
+/// 在屏幕中央按下、左滑到 0.3 页处停住（不松手），返回手势。
+Future<TestGesture> _dragToThreeTenths(WidgetTester tester) async {
+  final gesture = await tester.startGesture(
+    const Offset(_width / 2, _height / 2),
+  );
+  await gesture.moveBy(const Offset(-20, 0));
+  await tester.pump();
+  // 再左滑 100：共 120 / 400 = 0.3 页（触发拖动的那 20 也算在页位置里）。
+  await gesture.moveBy(const Offset(-100, 0));
+  await tester.pump();
+  return gesture;
+}
 
 Future<void> _openTab(WidgetTester tester, String label) async {
   await tester.tap(
@@ -170,30 +219,76 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('swiping between tabs blends the two area backgrounds', (
+  testWidgets('swiping with depth carries each area background on its card', (
     tester,
   ) async {
     await _pumpHome(tester, appSurfaceRaw: _diariesColorOnly());
     final surface = _scheme(tester).surface;
 
-    final gesture = await tester.startGesture(
-      const Offset(_width / 2, _height / 2),
-    );
-    await gesture.moveBy(const Offset(-20, 0));
-    await tester.pump();
-    // 再左滑 100：共 120 / 400 = 0.3 页（触发拖动的那 20 也算在页位置里）。
-    await gesture.moveBy(const Offset(-100, 0));
-    await tester.pump();
+    final gesture = await _dragToThreeTenths(tester);
+    // 日记居中，左滑去探索：两页各自连同自己区域的背景缩成卡片——日记卡片
+    // 垫着日记的颜色，探索卡片垫着探索的页面底色。
+    expect(_cardBackgroundColors(tester, AppBackgroundArea.diaries), <Color>[
+      _diariesColor,
+    ]);
+    expect(_cardBackgroundColors(tester, AppBackgroundArea.explore), <Color>[
+      surface,
+    ]);
+    // 背景层被卡片与舞台色整个盖住：只垫下面那一层，不再做透明度插值。
+    expect(_blendLayers(tester), isEmpty);
+    expect(_backgroundColors(tester), <Color>[_diariesColor]);
 
-    final blend = tester.widget<Opacity>(
-      find.ancestor(
-        of: find.byType(AppBackgroundLayersView),
-        matching: find.byType(Opacity),
-      ),
-    );
+    // 只拖了 0.3 页、没有甩动：松手吸附回日记，背景层仍是日记的颜色。
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(_backgroundColors(tester), <Color>[_diariesColor]);
+    await _unmount(tester);
+  });
+
+  testWidgets('with reduced motion swiping blends the two area backgrounds', (
+    tester,
+  ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await _pumpHome(tester, appSurfaceRaw: _diariesColorOnly());
+    final surface = _scheme(tester).surface;
+
+    final gesture = await _dragToThreeTenths(tester);
+    // 减少动画没有景深：页面透明地平移，背景固定在下面按页位置插值。
+    final blend = _blendLayers(tester).single;
     expect(blend.opacity, inExclusiveRange(0.05, 0.6));
-    // 日记居中，左滑去探索：下层是日记的颜色（不透明），上层是探索的页面底色。
+    // 下层是日记的颜色（不透明），上层是探索的页面底色。
     expect(_backgroundColors(tester), <Color>[_diariesColor, surface]);
+    expect(find.byType(AppPagedAreaBackground), findsNothing);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await _unmount(tester);
+  });
+
+  testWidgets('identical area backgrounds skip the blend layer', (
+    tester,
+  ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    // 全局纯色背景，各区域都跟随它：相邻两区画面完全相同。
+    await _pumpHome(
+      tester,
+      appSurfaceRaw: AppSurfaceSettings.defaults
+          .withGlobal(
+            AppBackground(
+              kind: AppBackgroundKind.color,
+              colorLight: _diariesColor.toARGB32(),
+            ),
+          )
+          .encode(),
+    );
+
+    final gesture = await _dragToThreeTenths(tester);
+    expect(_blendLayers(tester), isEmpty);
+    expect(_backgroundColors(tester), <Color>[_diariesColor]);
 
     await gesture.up();
     await tester.pumpAndSettle();

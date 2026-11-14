@@ -103,6 +103,8 @@ class _HomePageController {
       }
     }
     _state._visibleTabs.value = _VisibleTabRange(keptIndex, keptIndex);
+    // 切页途中改了可见 Tab：区间直接回到一页，同样等收尾后放开快照。
+    _state._scheduleSnapshotRelease();
     // correctPixels 不发通知：背景插值、景深与底栏位置按新页码刷新（监听者
     // 都在首页子树内，build 期间允许标脏）。
     _state._displayPosition.refresh();
@@ -146,6 +148,8 @@ class _HomePageController {
     if (!_state._isValidTabIndex(index)) {
       return;
     }
+    // 刚落位、还在画快照时：先换回实时页面，回到顶部的滚动才看得见。
+    _state._releaseSnapshots();
     final controller = _state._tabScrollControllers[_state._tabs[index]];
     if (controller == null || !controller.hasClients) {
       return;

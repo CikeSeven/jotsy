@@ -164,6 +164,54 @@ void main() {
     expect(dismissed, 1);
   });
 
+  testWidgets('a second finger mid-drag abandons the dismiss', (tester) async {
+    final haptics = _recordHaptics(tester);
+    var dismissed = 0;
+    await tester.pumpWidget(
+      _Host(
+        enabled: true,
+        onDismiss: () => dismissed++,
+        chromeOpacities: <double>[],
+      ),
+    );
+    final resting = _contentCenter(tester);
+
+    final first = await tester.startGesture(resting, pointer: 101);
+    await first.moveBy(const Offset(0, 20));
+    await first.moveBy(const Offset(0, 60));
+    await tester.pump();
+    expect(_contentCenter(tester).dy, greaterThan(resting.dy + 50));
+
+    // 用户改主意要捏合：第二根手指落下，本次下拉作废并回位。
+    final second = await tester.startGesture(
+      resting + const Offset(0, 150),
+      pointer: 102,
+    );
+    await tester.pumpAndSettle();
+    expect(_contentCenter(tester), resting);
+
+    // 之后哪怕拖过阈值、快速松手，也不关闭、不跟手。
+    await first.moveBy(const Offset(0, 300));
+    await second.moveBy(const Offset(0, 300));
+    await tester.pump();
+    expect(_contentCenter(tester), resting);
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+    expect(_contentCenter(tester), resting);
+    expect(dismissed, 0);
+    expect(haptics, isEmpty);
+
+    // 下一次单指下拉照常关闭。
+    final again = await tester.startGesture(resting);
+    await again.moveBy(const Offset(0, 20));
+    await again.moveBy(const Offset(0, 200));
+    await tester.pump(const Duration(milliseconds: 300));
+    await again.up();
+    await tester.pumpAndSettle();
+    expect(dismissed, 1);
+  });
+
   testWidgets('disabled viewer leaves vertical drags alone', (tester) async {
     var dismissed = 0;
     await tester.pumpWidget(

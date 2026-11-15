@@ -77,7 +77,9 @@ class _DiaryDayPhotoPreviewImageState extends State<DiaryDayPhotoPreviewImage> {
 }
 
 /// 预览页的一段视频：封面帧垫底，播放器就绪后叠上画面；下方一行播放 /
-/// 暂停与进度（[DiaryVideoProgressBar]，与正文播放器同一套）。
+/// 暂停与进度（[DiaryVideoProgressBar]，与正文播放器同一套）。画面可捏合
+/// 放大（[DiaryVideoSurface.zoomable]），放大态经 [onZoomChanged] 交给宿主
+/// 锁住翻页与下拉关闭。
 ///
 /// 时序：挂载后经 [loadSource] 取播放地址（相册原文件，不复制），取到才建
 /// [DiaryVideoPlayerController] 并初始化；不自动播放。页面翻走时 PageView
@@ -90,9 +92,11 @@ class DiaryDayPhotoPreviewVideo extends StatefulWidget {
     required this.poster,
     required this.aspectRatio,
     required this.loadSource,
+    required this.onZoomChanged,
   });
 
   final ImageProvider poster;
+  final ValueChanged<bool> onZoomChanged;
 
   /// 视频画面的宽高比（相册记录的尺寸）；未知时为 null，封面帧按自身比例。
   final double? aspectRatio;
@@ -169,7 +173,11 @@ class _DiaryDayPhotoPreviewVideoState extends State<DiaryDayPhotoPreviewVideo> {
               // 读取中由 DiaryVideoSurface 自己显示延迟出现的等待指示，封面帧
               // 留在下面；就绪后画面盖住封面帧，点按播放 / 暂停。
               if (player != null && !failed)
-                DiaryVideoSurface(controller: player),
+                DiaryVideoSurface(
+                  controller: player,
+                  zoomable: true,
+                  onZoomChanged: widget.onZoomChanged,
+                ),
               if (failed)
                 _PreviewUnavailable(
                   icon: FontAwesomeIcons.film,

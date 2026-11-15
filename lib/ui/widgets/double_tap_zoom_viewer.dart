@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 
 import '../../app/theme/expressive_motion.dart';
 import '../../core/services/app_platform.dart';
+import 'pinch_zoom_gesture_recognizer.dart';
+import 'zoom_geometry.dart';
 
 /// 长内容的构建函数：[contentSize] 为内容尺寸，[visible] 为当前可见区域
 /// （内容坐标，已按缩放换算）。
@@ -19,10 +21,17 @@ typedef DoubleTapZoomContentBuilder =
 ///
 /// - 双击未放大的内容：以点按位置为不动点放大到 [doubleTapScale]；已放大时双击
 ///   回到原始大小。过程是 Matrix4 补间（medium + effects），不是瞬间跳变；减少
-///   动画时直接落位。
+///   动画时直接落位。[doubleTapZoomsIn] 为 false 时（视频：单击要立即播放 /
+///   暂停，不能等双击判定）未放大时不响应双击，只在放大后双击复原。
+/// - 双指捏合由 [PinchZoomGestureRecognizer] 接管：第二根手指落下即胜出，不再
+///   被翻页 / 下拉关闭抢走（#252）。以两指中点为不动点缩放、两指同移即平移；
+///   越过 1 或 [maxScale] 时阻尼跟手（[ZoomGeometry.rubberBand]），松手后以
+///   medium + effects 回弹到边界。单指平移、触控板捏合与滚轮缩放仍由
+///   InteractiveViewer 处理（放大后先单指拖动再落第二指时，第一根手指已归它，
+///   这次捏合也由它完成）。
 /// - 捏合/平移开始时立即停止进行中的补间，手指永远拥有最高优先级。
 /// - 宿主应在放大态禁用外层 PageView 的翻页：手势竞技场里 PageView 的水平拖动
-///   识别器（触摸阈值 18）总是先于 InteractiveViewer 的缩放识别器（平移阈值 36）
+///   识别器（触摸阈值 18）总是先于 InteractiveViewer 的平移识别器（平移阈值 36）
 ///   胜出，放大后左右拖动会直接翻页，无法平移查看细节。
 ///
 /// [DoubleTapZoomViewer.tall] 用于比视口高的内容（长图）：内容宽度铺满视口、
@@ -43,6 +52,7 @@ class DoubleTapZoomViewer extends StatefulWidget {
     required Widget this.child,
     this.maxScale = 4,
     this.doubleTapScale = 2.5,
+    this.doubleTapZoomsIn = true,
     this.onZoomChanged,
   }) : contentHeightFactor = null,
        builder = null,
@@ -54,6 +64,7 @@ class DoubleTapZoomViewer extends StatefulWidget {
     required DoubleTapZoomContentBuilder this.builder,
     this.maxScale = 4,
     this.doubleTapScale = 2.5,
+    this.doubleTapZoomsIn = true,
     this.onZoomChanged,
     this.onScrolledChanged,
   }) : child = null;
@@ -65,6 +76,9 @@ class DoubleTapZoomViewer extends StatefulWidget {
   final DoubleTapZoomContentBuilder? builder;
   final double maxScale;
   final double doubleTapScale;
+
+  /// 未放大时双击是否放大；为 false 时双击只用于复原。
+  final bool doubleTapZoomsIn;
   final ValueChanged<bool>? onZoomChanged;
 
   /// 长内容是否已离开顶部（滚动或放大后平移过）。
@@ -131,11 +145,22 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
     super.dispose();
   }
 
+  ZoomGeometry get _geometry => ZoomGeometry(
+    viewport: _viewportSize,
+    content: _contentSize,
+    maxScale: widget.maxScale,
+  );
+
   void _handleTransformationChanged() {
     final matrix = _transformation.value;
     final zoomed = matrix.getMaxScaleOnAxis() > _zoomedEpsilon;
     if (zoomed != _zoomed) {
-      _zoomed = zoomed;
+      if (widget.doubleTapZoomsIn) {
+        _zoomed = zoomed;
+      } else {
+        // 双击识别器只在放大时挂上，要随放大态重建。
+        setState(() => _zoomed = zoomed);
+      }
       widget.onZoomChanged?.call(zoomed);
     }
     if (_tall) {
@@ -160,13 +185,18 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
     final zoomedIn = current.getMaxScaleOnAxis() > _zoomedEpsilon;
     final Matrix4 target;
     if (!zoomedIn) {
-      target = _scaledMatrixAt(current, focal, widget.doubleTapScale);
+      target = _geometry.scaledAt(current, focal, widget.doubleTapScale);
     } else if (_tall) {
       // 长内容复原时保留滚动位置：点按处的那一行留在手指下。
-      target = _scaledMatrixAt(current, focal, 1);
+      target = _geometry.scaledAt(current, focal, 1);
     } else {
       target = Matrix4.identity();
     }
+    _animateTo(target);
+  }
+
+  /// 从当前变换补间到 [target]（medium + effects）；减少动画时直接落位。
+  void _animateTo(Matrix4 target) {
     final duration = ExpressiveMotion.duration(
       context,
       ExpressiveMotion.medium,
@@ -177,39 +207,71 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
       _transformation.value = target;
       return;
     }
-    _zoomAnimation = Matrix4Tween(begin: current, end: target).animate(
-      CurvedAnimation(parent: _zoomController, curve: ExpressiveMotion.effects),
-    );
+    _zoomAnimation =
+        Matrix4Tween(begin: _transformation.value.clone(), end: target).animate(
+          CurvedAnimation(
+            parent: _zoomController,
+            curve: ExpressiveMotion.effects,
+          ),
+        );
     _zoomController
       ..duration = duration
       ..forward(from: 0);
   }
 
-  /// 以 [focal]（视口坐标）为不动点把 [current] 缩放到 [scale]。
-  ///
-  /// 设变换为 x' = s·x + t：focal 对应的内容点 p = (focal - t₀) / s₀，要求缩放后
-  /// 仍落在 focal 下，得 t₁ = focal - p·s₁。再把 t₁ 夹到 [视口 - 内容·s₁, 0]，
-  /// 放大后不会露出内容以外的空白。普通模式从原始大小起算时 t₁ = focal·(1 - s)，
-  /// 天然落在范围内，夹取只防边缘点按的坐标略微越界。
-  Matrix4 _scaledMatrixAt(Matrix4 current, Offset focal, double scale) {
-    final currentScale = current.getMaxScaleOnAxis();
-    final translation = current.getTranslation();
-    final contentPoint = Offset(
-      (focal.dx - translation.x) / currentScale,
-      (focal.dy - translation.y) / currentScale,
+  // ---- 双指捏合（PinchZoomGestureRecognizer）----
+  //
+  // 每段捏合（两指落下，或中途抬起一指后剩下那根再动）开始时记下起点变换、
+  // 未阻尼的起点缩放与焦点；更新时按“起点焦点下的内容点跟着当前焦点走”求
+  // 平移，缩放经阻尼；最后一根手指离开时（onRelease）把越界的缩放补间回
+  // 边界。平移在更新时已夹回范围，范围内松手不需要动画。
+
+  /// 本段捏合开始时的变换；为 null 表示没有进行中的一段。
+  Matrix4? _pinchStart;
+
+  /// 本段开始时未经阻尼的缩放（从阻尼中的画面接着捏时不跳）。
+  double _pinchRawStartScale = 1;
+  Offset _pinchStartFocal = Offset.zero;
+
+  /// 最近一次的焦点：松手回弹以它为不动点。
+  Offset _pinchFocal = Offset.zero;
+
+  void _handlePinchStart(ScaleStartDetails details) {
+    _zoomController.stop();
+    final current = _transformation.value.clone();
+    _pinchStart = current;
+    _pinchRawStartScale = _geometry.unband(current.getMaxScaleOnAxis());
+    _pinchStartFocal = details.localFocalPoint;
+    _pinchFocal = details.localFocalPoint;
+  }
+
+  void _handlePinchUpdate(ScaleUpdateDetails details) {
+    final start = _pinchStart;
+    if (start == null) {
+      return;
+    }
+    final geometry = _geometry;
+    final scale = geometry.rubberBand(_pinchRawStartScale * details.scale);
+    final contentPoint = ZoomGeometry.contentPointAt(start, _pinchStartFocal);
+    _pinchFocal = details.localFocalPoint;
+    _transformation.value = geometry.clamped(
+      scale,
+      details.localFocalPoint - contentPoint * scale,
     );
-    final dx = (focal.dx - contentPoint.dx * scale).clamp(
-      _viewportSize.width - _contentSize.width * scale,
-      0.0,
-    );
-    // 内容比视口矮（普通模式缩放到 1 时恰好等高）时下限取 0，不留空白。
-    final double minDy = math.min(
-      0.0,
-      _viewportSize.height - _contentSize.height * scale,
-    );
-    final dy = (focal.dy - contentPoint.dy * scale).clamp(minDy, 0.0);
-    return Matrix4.translationValues(dx, dy, 0)
-      ..scaleByDouble(scale, scale, 1, 1);
+  }
+
+  void _handlePinchEnd(ScaleEndDetails details) {
+    _pinchStart = null;
+  }
+
+  void _handlePinchRelease() {
+    _pinchStart = null;
+    final current = _transformation.value;
+    final scale = current.getMaxScaleOnAxis();
+    final target = scale.clamp(ZoomGeometry.minScale, widget.maxScale);
+    if (target != scale) {
+      _animateTo(_geometry.scaledAt(current, _pinchFocal, target));
+    }
   }
 
   @override
@@ -221,52 +283,73 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
         _contentSize = factor == null
             ? _viewportSize
             : Size(_viewportSize.width, _viewportSize.width * factor);
+        final doubleTaps = widget.doubleTapZoomsIn || _zoomed;
+        final viewer = factor == null
+            ? InteractiveViewer(
+                transformationController: _transformation,
+                minScale: 1,
+                maxScale: widget.maxScale,
+                onInteractionStart: (_) => _zoomController.stop(),
+                child: widget.child!,
+              )
+            : InteractiveViewer.builder(
+                transformationController: _transformation,
+                minScale: 1,
+                maxScale: widget.maxScale,
+                scaleFactor: _wheelScrolls && !_zoomModifier
+                    ? double.maxFinite
+                    : kDefaultMouseScrollToScaleFactor,
+                onInteractionStart: (_) => _zoomController.stop(),
+                builder: (BuildContext context, viewport) {
+                  // 视口四角映射回内容坐标后的外接矩形即可见区域。
+                  final corners = <Offset>[
+                    Offset(viewport.point0.x, viewport.point0.y),
+                    Offset(viewport.point1.x, viewport.point1.y),
+                    Offset(viewport.point2.x, viewport.point2.y),
+                    Offset(viewport.point3.x, viewport.point3.y),
+                  ];
+                  final content = SizedBox.fromSize(
+                    size: _contentSize,
+                    child: widget.builder!(
+                      context,
+                      _contentSize,
+                      _boundsOf(corners),
+                    ),
+                  );
+                  if (!_wheelScrolls) {
+                    return content;
+                  }
+                  return Listener(
+                    onPointerSignal: _handlePointerSignal,
+                    child: content,
+                  );
+                },
+              );
         return GestureDetector(
-          onDoubleTapDown: (TapDownDetails details) {
-            _doubleTapPosition = details.localPosition;
-          },
-          onDoubleTap: _handleDoubleTap,
-          child: factor == null
-              ? InteractiveViewer(
-                  transformationController: _transformation,
-                  minScale: 1,
-                  maxScale: widget.maxScale,
-                  onInteractionStart: (_) => _zoomController.stop(),
-                  child: widget.child!,
-                )
-              : InteractiveViewer.builder(
-                  transformationController: _transformation,
-                  minScale: 1,
-                  maxScale: widget.maxScale,
-                  scaleFactor: _wheelScrolls && !_zoomModifier
-                      ? double.maxFinite
-                      : kDefaultMouseScrollToScaleFactor,
-                  onInteractionStart: (_) => _zoomController.stop(),
-                  builder: (BuildContext context, viewport) {
-                    // 视口四角映射回内容坐标后的外接矩形即可见区域。
-                    final corners = <Offset>[
-                      Offset(viewport.point0.x, viewport.point0.y),
-                      Offset(viewport.point1.x, viewport.point1.y),
-                      Offset(viewport.point2.x, viewport.point2.y),
-                      Offset(viewport.point3.x, viewport.point3.y),
-                    ];
-                    final content = SizedBox.fromSize(
-                      size: _contentSize,
-                      child: widget.builder!(
-                        context,
-                        _contentSize,
-                        _boundsOf(corners),
-                      ),
-                    );
-                    if (!_wheelScrolls) {
-                      return content;
-                    }
-                    return Listener(
-                      onPointerSignal: _handlePointerSignal,
-                      child: content,
-                    );
-                  },
-                ),
+          onDoubleTapDown: doubleTaps
+              ? (TapDownDetails details) {
+                  _doubleTapPosition = details.localPosition;
+                }
+              : null,
+          onDoubleTap: doubleTaps ? _handleDoubleTap : null,
+          // 与 InteractiveViewer 同一个盒子：识别器的本地坐标即视口坐标。
+          child: RawGestureDetector(
+            behavior: HitTestBehavior.opaque,
+            gestures: <Type, GestureRecognizerFactory>{
+              PinchZoomGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<
+                    PinchZoomGestureRecognizer
+                  >(
+                    () => PinchZoomGestureRecognizer(debugOwner: this),
+                    (PinchZoomGestureRecognizer recognizer) => recognizer
+                      ..onStart = _handlePinchStart
+                      ..onUpdate = _handlePinchUpdate
+                      ..onEnd = _handlePinchEnd
+                      ..onRelease = _handlePinchRelease,
+                  ),
+            },
+            child: viewer,
+          ),
         );
       },
     );

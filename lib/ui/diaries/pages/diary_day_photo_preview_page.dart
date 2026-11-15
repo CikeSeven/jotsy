@@ -83,10 +83,10 @@ Future<bool?> openDiaryDayPhotoPreview(
 ///   关闭本页；
 /// - 不复制文件、不写正文，也不提供分享 / 保存（照片本就在相册里）。
 ///
-/// 交互：图片双击 / 捏合缩放，放大时锁住翻页与下拉关闭；视频点画面或下方
-/// 按钮播放，翻页时暂停正在播放的那段；下拉关闭时背景与顶栏、底栏随距离
-/// 淡出（与看图页相同的 [SwipeDismissViewer]）。顶栏为返回、页码与勾选圈，
-/// 底栏为拍摄时间与“插入”。
+/// 交互：图片双击 / 捏合缩放、视频捏合缩放，放大时锁住翻页与下拉关闭；视频
+/// 点画面或下方按钮播放，翻页时暂停正在播放的那段；下拉关闭时背景与顶栏、
+/// 底栏随距离淡出（与看图页相同的 [SwipeDismissViewer]）。顶栏为返回、页码与
+/// 勾选圈，底栏为拍摄时间与“插入”。
 class DiaryDayPhotoPreviewPage extends StatefulWidget {
   const DiaryDayPhotoPreviewPage({
     super.key,
@@ -226,6 +226,7 @@ class _DiaryDayPhotoPreviewPageState extends State<DiaryDayPhotoPreviewPage> {
             ? photo.width / photo.height
             : null,
         loadSource: () => controller.library.videoSourceOf(photo),
+        onZoomChanged: _handleZoomChanged,
       );
     }
     return DiaryDayPhotoPreviewImage(

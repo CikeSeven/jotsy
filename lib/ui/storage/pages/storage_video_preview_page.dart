@@ -126,7 +126,11 @@ class _StorageVideoPreviewPageState
                           // 就绪前的缩略图帧；就绪后画面盖在它上面。
                           if (_player.isLoading || failed)
                             _Poster(poster: _poster),
-                          if (!failed) DiaryVideoSurface(controller: _player),
+                          if (!failed)
+                            DiaryVideoSurface(
+                              controller: _player,
+                              zoomable: true,
+                            ),
                           if (failed)
                             Center(
                               child: _Unavailable(

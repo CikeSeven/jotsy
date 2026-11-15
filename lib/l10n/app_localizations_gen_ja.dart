@@ -3315,6 +3315,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryCardStyleScrim => 'テキスト下地の濃さ';
 
   @override
+  String get diaryCardStyleFirstImageCover => '本文の最初の写真を表紙にする';
+
+  @override
+  String get diaryCardStyleFirstImageCoverSubtitle =>
+      '表紙を設定していない日記は本文の最初の写真を表示します。オフにすると、設定した表紙だけを表示します';
+
+  @override
   String get diaryCardStyleCollage => '写真のコラージュ';
 
   @override

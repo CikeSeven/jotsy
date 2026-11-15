@@ -3665,6 +3665,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStyleScrim => 'Text panel strength';
 
   @override
+  String get diaryCardStyleFirstImageCover => 'Use first photo as cover';
+
+  @override
+  String get diaryCardStyleFirstImageCoverSubtitle =>
+      'Entries without a cover show their first photo; when off, only covers you set are shown';
+
+  @override
   String get diaryCardStyleCollage => 'Photo collage';
 
   @override

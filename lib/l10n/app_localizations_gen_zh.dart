@@ -3258,6 +3258,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStyleScrim => '文字底板浓度';
 
   @override
+  String get diaryCardStyleFirstImageCover => '用正文第一张图当封面';
+
+  @override
+  String get diaryCardStyleFirstImageCoverSubtitle =>
+      '没设封面的日记取正文里的第一张图；关闭后只显示手动设置的封面';
+
+  @override
   String get diaryCardStyleCollage => '多图拼贴';
 
   @override

@@ -4705,6 +4705,14 @@
   "@diaryCardStyleScrim": {
     "description": "Diary card style settings: opacity of the text panel over a background cover."
   },
+  "diaryCardStyleFirstImageCover": "本文の最初の写真を表紙にする",
+  "@diaryCardStyleFirstImageCover": {
+    "description": "Diary card style settings: whether entries without a cover use their first photo as the cover."
+  },
+  "diaryCardStyleFirstImageCoverSubtitle": "表紙を設定していない日記は本文の最初の写真を表示します。オフにすると、設定した表紙だけを表示します",
+  "@diaryCardStyleFirstImageCoverSubtitle": {
+    "description": "Diary card style settings: description of Use first photo as cover."
+  },
   "diaryCardStyleCollage": "写真のコラージュ",
   "@diaryCardStyleCollage": {
     "description": "Diary card style settings: combines several photos in a top cover."

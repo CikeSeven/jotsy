@@ -12,7 +12,8 @@ import 'diary_leading_line.dart';
 ///
 /// 输入：[Diary] 实体；输出：metadata.context 中的心情、天气、地点、精力，
 /// 单行化并截断的摘要文本、正文字数（惰性计算），没写标题时代替标题的正文第一行
-/// 与去掉这一行的摘要（惰性计算），预览封面（显式封面优先，否则取正文第一张图），
+/// 与去掉这一行的摘要（惰性计算），预览封面（显式封面优先，否则取正文第一张图；
+/// 卡片可按样式只认显式封面，见 [cardCover]），
 /// 以及按需惰性扫描的媒体概况（拼贴图片与媒体角标）。
 ///
 /// 为什么缓存：列表滚动、日历选日/翻月、筛选过渡都会高频重建卡片，若每次
@@ -128,9 +129,20 @@ class DiaryCardViewData {
   /// 扫描整段纯文本。
   late final int wordCount = TextStats.countWords(_contentText);
 
+  /// 日记里手动设置的封面（去首尾空白）；没设时为 null。
+  late final String? explicitCover = _resolveExplicitCover();
+
   /// 预览封面：显式封面字段优先，否则取正文中第一张图片。
   /// 懒计算：未解封胶囊等不展示封面的场景不必解析整段正文。
-  late final String? previewCover = _resolvePreviewCover();
+  late final String? previewCover =
+      explicitCover ?? firstImageInContent(_contentJson);
+
+  /// 日记卡片用的封面：[firstImage] 对应卡片样式的“用正文第一张图当封面”
+  /// （`DiaryCardContentStyle.firstImageCover`）。关闭时只认显式封面，也就
+  /// 不解析正文；开启时同 [previewCover]。多图拼贴以封面打头（[collageImages]），
+  /// 关闭时没有显式封面的日记因此也不拼贴正文图片。
+  String? cardCover({required bool firstImage}) =>
+      firstImage ? previewCover : explicitCover;
 
   /// 正文媒体概况（图片、录音、视频、附件）。懒计算：只有开启多图拼贴或
   /// 媒体角标的样式才会扫描整段正文。
@@ -158,12 +170,9 @@ class DiaryCardViewData {
     return List<String>.unmodifiable(images);
   }
 
-  String? _resolvePreviewCover() {
+  String? _resolveExplicitCover() {
     final explicit = _explicitCover?.trim();
-    if (explicit != null && explicit.isNotEmpty) {
-      return explicit;
-    }
-    return firstImageInContent(_contentJson);
+    return explicit == null || explicit.isEmpty ? null : explicit;
   }
 
   /// 任一代正文中的第一张图片；无图或正文损坏时为

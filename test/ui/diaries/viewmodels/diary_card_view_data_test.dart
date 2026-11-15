@@ -130,6 +130,26 @@ void main() {
     expect(explicit.previewCover, '/cover.png');
   });
 
+  test('card cover can skip the first body image and keep explicit covers', () {
+    final bodyOnly = DiaryCardViewData.of(
+      _diary(content: '[{"insert":"intro\\n"},{"insert":{"image":"/a.png"}}]'),
+    );
+    expect(bodyOnly.cardCover(firstImage: true), '/a.png');
+    expect(bodyOnly.cardCover(firstImage: false), isNull);
+    // 关闭只影响卡片：其他位置的预览封面照旧取正文第一张图。
+    expect(bodyOnly.previewCover, '/a.png');
+
+    final explicit = DiaryCardViewData.of(
+      _diary(
+        id: 'd2',
+        cover: ' /cover.png ',
+        content: '[{"insert":{"image":"/a.png"}}]',
+      ),
+    );
+    expect(explicit.cardCover(firstImage: false), '/cover.png');
+    expect(explicit.cardCover(firstImage: true), '/cover.png');
+  });
+
   test('tolerates corrupted metadata and content', () {
     final data = DiaryCardViewData.of(
       _diary(metadata: '{broken', content: 'not json'),

@@ -18121,4 +18121,277 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiChatExportJson => 'JSON';
+
+  @override
+  String get homeWidgetsTitle => 'Виджеты';
+
+  @override
+  String get homeWidgetsSubtitle => 'Дневник, даты и ярлыки на главном экране';
+
+  @override
+  String get homeWidgetsInstalledGroup => 'На главном экране';
+
+  @override
+  String get homeWidgetsInstalledEmpty =>
+      'На главном экране пока нет виджетов. Выберите виджет в галерее ниже.';
+
+  @override
+  String get homeWidgetsInstalledHint =>
+      'Изменения сразу появятся на главном экране.';
+
+  @override
+  String get homeWidgetsGalleryGroup => 'Галерея виджетов';
+
+  @override
+  String get homeWidgetGroupCapture => 'Записи и воспоминания';
+
+  @override
+  String get homeWidgetGroupTime => 'Дни и календарь';
+
+  @override
+  String get homeWidgetGroupTodos => 'Задачи';
+
+  @override
+  String get homeWidgetGroupStats => 'Статистика и фото';
+
+  @override
+  String get homeWidgetKindQuickCapture => 'Быстрая запись';
+
+  @override
+  String get homeWidgetKindQuickCaptureDescription =>
+      'Одно касание — и вы пишете запись, добавляете задачу или открываете календарь.';
+
+  @override
+  String get homeWidgetKindToday => 'Сегодня';
+
+  @override
+  String get homeWidgetKindTodayDescription =>
+      'Дата, лунный календарь, праздники и то, как проходит день.';
+
+  @override
+  String get homeWidgetAddToHome => 'Добавить на главный экран';
+
+  @override
+  String get homeWidgetPinRequested =>
+      'Подтвердите добавление в появившемся окне';
+
+  @override
+  String get homeWidgetPinUnsupportedTitle => 'Добавьте с главного экрана';
+
+  @override
+  String homeWidgetPinUnsupportedBody(String name) {
+    return 'Нажмите и удерживайте пустое место на главном экране, откройте «Виджеты» и найдите Jotsy. Следующий виджет «$name», добавленный в течение 15 минут, получит этот дизайн.';
+  }
+
+  @override
+  String get homeWidgetTabContent => 'Содержимое';
+
+  @override
+  String get homeWidgetTabStyle => 'Стиль';
+
+  @override
+  String get homeWidgetPreviewSize => 'Размер предпросмотра';
+
+  @override
+  String get homeWidgetStylePalette => 'Цвета';
+
+  @override
+  String get homeWidgetPaletteApp => 'Тема приложения';
+
+  @override
+  String get homeWidgetPaletteWallpaper => 'Обои';
+
+  @override
+  String get homeWidgetPaletteWallpaperHint =>
+      'На Android 12 и новее цвета берутся из обоев.';
+
+  @override
+  String get homeWidgetPaletteCustom => 'Свой цвет';
+
+  @override
+  String get homeWidgetStyleBrightness => 'Светлая и тёмная';
+
+  @override
+  String get homeWidgetBrightnessSystem => 'Как в системе';
+
+  @override
+  String get homeWidgetBrightnessLight => 'Светлая';
+
+  @override
+  String get homeWidgetBrightnessDark => 'Тёмная';
+
+  @override
+  String get homeWidgetStyleBackground => 'Фон';
+
+  @override
+  String get homeWidgetBackgroundSurface => 'Сплошной';
+
+  @override
+  String get homeWidgetBackgroundTonal => 'Тональный';
+
+  @override
+  String get homeWidgetBackgroundVivid => 'Яркий';
+
+  @override
+  String get homeWidgetBackgroundClear => 'Прозрачный';
+
+  @override
+  String get homeWidgetStyleOpacity => 'Непрозрачность';
+
+  @override
+  String get homeWidgetStyleCorners => 'Скругление';
+
+  @override
+  String get homeWidgetCornersSystem => 'Как в системе';
+
+  @override
+  String get homeWidgetStyleTextSize => 'Размер текста';
+
+  @override
+  String get homeWidgetStyleDensity => 'Отступы';
+
+  @override
+  String get homeWidgetDensityCompact => 'Плотно';
+
+  @override
+  String get homeWidgetDensityStandard => 'Стандарт';
+
+  @override
+  String get homeWidgetDensityRoomy => 'Свободно';
+
+  @override
+  String get homeWidgetStyleAccent => 'Акцент';
+
+  @override
+  String get homeWidgetAccentPrimary => 'Основной';
+
+  @override
+  String get homeWidgetAccentSecondary => 'Дополнительный';
+
+  @override
+  String get homeWidgetAccentTertiary => 'Третичный';
+
+  @override
+  String get homeWidgetQuickActions => 'Действия';
+
+  @override
+  String get homeWidgetQuickActionsHint => 'До 4. Первое выделяется.';
+
+  @override
+  String get homeWidgetQuickActionWrite => 'Запись';
+
+  @override
+  String get homeWidgetQuickActionTodo => 'Задача';
+
+  @override
+  String get homeWidgetQuickActionCalendar => 'Календарь';
+
+  @override
+  String get homeWidgetQuickActionSearch => 'Поиск';
+
+  @override
+  String get homeWidgetQuickAddAction => 'Добавить действие';
+
+  @override
+  String get homeWidgetQuickRemoveAction => 'Убрать';
+
+  @override
+  String get homeWidgetQuickNotebook => 'Записывать в';
+
+  @override
+  String get homeWidgetQuickNotebookNone => 'Не выбрано';
+
+  @override
+  String get homeWidgetQuickShowLabels => 'Показывать подписи';
+
+  @override
+  String get homeWidgetQuickShowGreeting => 'Дата и приветствие';
+
+  @override
+  String get homeWidgetQuickShowGreetingHint => 'В размере 2×2 и больше';
+
+  @override
+  String get homeWidgetTodayLunar => 'Лунный календарь и сезоны';
+
+  @override
+  String get homeWidgetTodayHoliday => 'Праздники (Китай)';
+
+  @override
+  String get homeWidgetTodayWriting => 'Написано сегодня';
+
+  @override
+  String get homeWidgetTodayShowTodos => 'Задачи на сегодня';
+
+  @override
+  String get homeWidgetTodayYearProgress => 'Прогресс года';
+
+  @override
+  String get homeWidgetTapAction => 'По нажатию';
+
+  @override
+  String get homeWidgetTapCalendar => 'Календарь';
+
+  @override
+  String get homeWidgetTapWrite => 'Новая запись';
+
+  @override
+  String get homeWidgetTapApp => 'Приложение';
+
+  @override
+  String get homeWidgetGreetingMorning => 'Доброе утро';
+
+  @override
+  String get homeWidgetGreetingAfternoon => 'Добрый день';
+
+  @override
+  String get homeWidgetGreetingEvening => 'Добрый вечер';
+
+  @override
+  String get homeWidgetGreetingNight => 'Не спится?';
+
+  @override
+  String get homeWidgetQuickPrompt => 'О чём думаете?';
+
+  @override
+  String homeWidgetTodayWords(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сегодня $count слова',
+      many: 'Сегодня $count слов',
+      few: 'Сегодня $count слова',
+      one: 'Сегодня $count слово',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetTodayNotWritten => 'Сегодня ещё ничего не написано';
+
+  @override
+  String homeWidgetTodayTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count задачи',
+      many: '$count задач',
+      few: '$count задачи',
+      one: '$count задача',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetTodayNoTodos => 'Задач нет';
+
+  @override
+  String homeWidgetYearProgress(String percent) {
+    return 'Прошло $percent года';
+  }
+
+  @override
+  String get homeWidgetFeatureOff => 'Отключено в управлении функциями';
+
+  @override
+  String get homeWidgetOpenToUpdate => 'Откройте Jotsy, чтобы обновить';
 }

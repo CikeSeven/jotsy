@@ -17436,4 +17436,273 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiChatExportJson => 'JSON';
+
+  @override
+  String get homeWidgetsTitle => 'Home screen widgets';
+
+  @override
+  String get homeWidgetsSubtitle =>
+      'Your diary, dates and shortcuts on the home screen';
+
+  @override
+  String get homeWidgetsInstalledGroup => 'On your home screen';
+
+  @override
+  String get homeWidgetsInstalledEmpty =>
+      'No widgets on your home screen yet. Pick one from the gallery below.';
+
+  @override
+  String get homeWidgetsInstalledHint =>
+      'Changes appear on the home screen right away.';
+
+  @override
+  String get homeWidgetsGalleryGroup => 'Widget gallery';
+
+  @override
+  String get homeWidgetGroupCapture => 'Write & remember';
+
+  @override
+  String get homeWidgetGroupTime => 'Days & calendar';
+
+  @override
+  String get homeWidgetGroupTodos => 'To-dos';
+
+  @override
+  String get homeWidgetGroupStats => 'Stats & photos';
+
+  @override
+  String get homeWidgetKindQuickCapture => 'Quick capture';
+
+  @override
+  String get homeWidgetKindQuickCaptureDescription =>
+      'Start an entry, a to-do or today\'s calendar in one tap.';
+
+  @override
+  String get homeWidgetKindToday => 'Today';
+
+  @override
+  String get homeWidgetKindTodayDescription =>
+      'The date, lunar calendar and holidays, plus how today is going.';
+
+  @override
+  String get homeWidgetAddToHome => 'Add to home screen';
+
+  @override
+  String get homeWidgetPinRequested => 'Confirm in the dialog to add it';
+
+  @override
+  String get homeWidgetPinUnsupportedTitle => 'Add it from the home screen';
+
+  @override
+  String homeWidgetPinUnsupportedBody(String name) {
+    return 'Long-press an empty spot on your home screen, open Widgets and find Jotsy. The next “$name” you add within 15 minutes uses the design you made here.';
+  }
+
+  @override
+  String get homeWidgetTabContent => 'Content';
+
+  @override
+  String get homeWidgetTabStyle => 'Style';
+
+  @override
+  String get homeWidgetPreviewSize => 'Preview size';
+
+  @override
+  String get homeWidgetStylePalette => 'Colors';
+
+  @override
+  String get homeWidgetPaletteApp => 'App theme';
+
+  @override
+  String get homeWidgetPaletteWallpaper => 'Wallpaper';
+
+  @override
+  String get homeWidgetPaletteWallpaperHint =>
+      'Takes colors from your wallpaper on Android 12 and later.';
+
+  @override
+  String get homeWidgetPaletteCustom => 'Custom color';
+
+  @override
+  String get homeWidgetStyleBrightness => 'Light & dark';
+
+  @override
+  String get homeWidgetBrightnessSystem => 'System';
+
+  @override
+  String get homeWidgetBrightnessLight => 'Light';
+
+  @override
+  String get homeWidgetBrightnessDark => 'Dark';
+
+  @override
+  String get homeWidgetStyleBackground => 'Background';
+
+  @override
+  String get homeWidgetBackgroundSurface => 'Solid';
+
+  @override
+  String get homeWidgetBackgroundTonal => 'Tonal';
+
+  @override
+  String get homeWidgetBackgroundVivid => 'Vivid';
+
+  @override
+  String get homeWidgetBackgroundClear => 'Clear';
+
+  @override
+  String get homeWidgetStyleOpacity => 'Opacity';
+
+  @override
+  String get homeWidgetStyleCorners => 'Corners';
+
+  @override
+  String get homeWidgetCornersSystem => 'Match system';
+
+  @override
+  String get homeWidgetStyleTextSize => 'Text size';
+
+  @override
+  String get homeWidgetStyleDensity => 'Spacing';
+
+  @override
+  String get homeWidgetDensityCompact => 'Compact';
+
+  @override
+  String get homeWidgetDensityStandard => 'Standard';
+
+  @override
+  String get homeWidgetDensityRoomy => 'Roomy';
+
+  @override
+  String get homeWidgetStyleAccent => 'Accent';
+
+  @override
+  String get homeWidgetAccentPrimary => 'Primary';
+
+  @override
+  String get homeWidgetAccentSecondary => 'Secondary';
+
+  @override
+  String get homeWidgetAccentTertiary => 'Tertiary';
+
+  @override
+  String get homeWidgetQuickActions => 'Actions';
+
+  @override
+  String get homeWidgetQuickActionsHint => 'Up to 4. The first one stands out.';
+
+  @override
+  String get homeWidgetQuickActionWrite => 'Write';
+
+  @override
+  String get homeWidgetQuickActionTodo => 'To-do';
+
+  @override
+  String get homeWidgetQuickActionCalendar => 'Calendar';
+
+  @override
+  String get homeWidgetQuickActionSearch => 'Search';
+
+  @override
+  String get homeWidgetQuickAddAction => 'Add action';
+
+  @override
+  String get homeWidgetQuickRemoveAction => 'Remove';
+
+  @override
+  String get homeWidgetQuickNotebook => 'Write into';
+
+  @override
+  String get homeWidgetQuickNotebookNone => 'Not set';
+
+  @override
+  String get homeWidgetQuickShowLabels => 'Show labels';
+
+  @override
+  String get homeWidgetQuickShowGreeting => 'Date and greeting';
+
+  @override
+  String get homeWidgetQuickShowGreetingHint => 'On 2×2 and larger';
+
+  @override
+  String get homeWidgetTodayLunar => 'Lunar calendar & solar terms';
+
+  @override
+  String get homeWidgetTodayHoliday => 'Public holidays (China)';
+
+  @override
+  String get homeWidgetTodayWriting => 'Today\'s writing';
+
+  @override
+  String get homeWidgetTodayShowTodos => 'To-dos due';
+
+  @override
+  String get homeWidgetTodayYearProgress => 'Year progress';
+
+  @override
+  String get homeWidgetTapAction => 'When tapped';
+
+  @override
+  String get homeWidgetTapCalendar => 'Calendar';
+
+  @override
+  String get homeWidgetTapWrite => 'New entry';
+
+  @override
+  String get homeWidgetTapApp => 'App';
+
+  @override
+  String get homeWidgetGreetingMorning => 'Good morning';
+
+  @override
+  String get homeWidgetGreetingAfternoon => 'Good afternoon';
+
+  @override
+  String get homeWidgetGreetingEvening => 'Good evening';
+
+  @override
+  String get homeWidgetGreetingNight => 'Still up?';
+
+  @override
+  String get homeWidgetQuickPrompt => 'What\'s on your mind?';
+
+  @override
+  String homeWidgetTodayWords(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words today',
+      one: '1 word today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetTodayNotWritten => 'Nothing written yet today';
+
+  @override
+  String homeWidgetTodayTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos',
+      one: '1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetTodayNoTodos => 'No to-dos';
+
+  @override
+  String homeWidgetYearProgress(String percent) {
+    return '$percent of the year';
+  }
+
+  @override
+  String get homeWidgetFeatureOff => 'Turned off in Feature management';
+
+  @override
+  String get homeWidgetOpenToUpdate => 'Open Jotsy to update';
 }

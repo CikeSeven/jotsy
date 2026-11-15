@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 桌面小组件在启动器列表里的名称与描述，以及快照到达之前的兜底文字。这是界面文案走
+     ARB 的必要例外（启动器按系统语言读 Android 资源），只放这几条；小组件上的其他文字
+     一律来自快照（docs/rules/home_widgets.md「文案」）。四种语言须同步。 -->
+<resources>
+    <string name="widget_quick_capture_name">Quick capture</string>
+    <string name="widget_quick_capture_description">Start an entry, a to-do or today\'s calendar in one tap.</string>
+    <string name="widget_today_name">Today</string>
+    <string name="widget_today_description">The date, lunar calendar and holidays, plus how today is going.</string>
+    <string name="widget_open_app">Open Jotsy to finish setting up</string>
+</resources>

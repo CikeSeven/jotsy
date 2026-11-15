@@ -19744,5 +19744,349 @@
   "aiChatExportJson": "JSON",
   "@aiChatExportJson": {
     "description": "Export format: JSON (structured, for programs)."
+  },
+  "homeWidgetsTitle": "Home screen widgets",
+  "@homeWidgetsTitle": {
+    "description": "Settings: the home screen widgets page title and its row."
+  },
+  "homeWidgetsSubtitle": "Your diary, dates and shortcuts on the home screen",
+  "@homeWidgetsSubtitle": {
+    "description": "Settings: subtitle of the home screen widgets row."
+  },
+  "homeWidgetsInstalledGroup": "On your home screen",
+  "@homeWidgetsInstalledGroup": {
+    "description": "Widgets page: group of the widgets currently on the home screen."
+  },
+  "homeWidgetsInstalledEmpty": "No widgets on your home screen yet. Pick one from the gallery below.",
+  "@homeWidgetsInstalledEmpty": {
+    "description": "Widgets page: shown when no widget is on the home screen."
+  },
+  "homeWidgetsInstalledHint": "Changes appear on the home screen right away.",
+  "@homeWidgetsInstalledHint": {
+    "description": "Widget studio: note under the preview when editing a widget already on the home screen."
+  },
+  "homeWidgetsGalleryGroup": "Widget gallery",
+  "@homeWidgetsGalleryGroup": {
+    "description": "Widgets page: group of all widget kinds."
+  },
+  "homeWidgetGroupCapture": "Write & remember",
+  "@homeWidgetGroupCapture": {
+    "description": "Widget gallery section: capture and memories."
+  },
+  "homeWidgetGroupTime": "Days & calendar",
+  "@homeWidgetGroupTime": {
+    "description": "Widget gallery section: dates and calendar."
+  },
+  "homeWidgetGroupTodos": "To-dos",
+  "@homeWidgetGroupTodos": {
+    "description": "Widget gallery section: to-dos."
+  },
+  "homeWidgetGroupStats": "Stats & photos",
+  "@homeWidgetGroupStats": {
+    "description": "Widget gallery section: stats and photos."
+  },
+  "homeWidgetKindQuickCapture": "Quick capture",
+  "@homeWidgetKindQuickCapture": {
+    "description": "Widget kind name: quick capture shortcuts."
+  },
+  "homeWidgetKindQuickCaptureDescription": "Start an entry, a to-do or today's calendar in one tap.",
+  "@homeWidgetKindQuickCaptureDescription": {
+    "description": "Widget gallery: description of the quick capture widget."
+  },
+  "homeWidgetKindToday": "Today",
+  "@homeWidgetKindToday": {
+    "description": "Widget kind name: today card."
+  },
+  "homeWidgetKindTodayDescription": "The date, lunar calendar and holidays, plus how today is going.",
+  "@homeWidgetKindTodayDescription": {
+    "description": "Widget gallery: description of the today widget."
+  },
+  "homeWidgetAddToHome": "Add to home screen",
+  "@homeWidgetAddToHome": {
+    "description": "Widget studio: button that asks the launcher to add the widget."
+  },
+  "homeWidgetPinRequested": "Confirm in the dialog to add it",
+  "@homeWidgetPinRequested": {
+    "description": "Snackbar after asking the launcher to add a widget."
+  },
+  "homeWidgetPinUnsupportedTitle": "Add it from the home screen",
+  "@homeWidgetPinUnsupportedTitle": {
+    "description": "Dialog title when the launcher cannot add widgets from apps."
+  },
+  "homeWidgetPinUnsupportedBody": "Long-press an empty spot on your home screen, open Widgets and find Jotsy. The next “{name}” you add within 15 minutes uses the design you made here.",
+  "@homeWidgetPinUnsupportedBody": {
+    "description": "Dialog body when the launcher cannot add widgets from apps.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetTabContent": "Content",
+  "@homeWidgetTabContent": {
+    "description": "Widget studio tab: content options."
+  },
+  "homeWidgetTabStyle": "Style",
+  "@homeWidgetTabStyle": {
+    "description": "Widget studio tab: style options."
+  },
+  "homeWidgetPreviewSize": "Preview size",
+  "@homeWidgetPreviewSize": {
+    "description": "Widget studio: label of the preview size buttons."
+  },
+  "homeWidgetStylePalette": "Colors",
+  "@homeWidgetStylePalette": {
+    "description": "Widget style: color source."
+  },
+  "homeWidgetPaletteApp": "App theme",
+  "@homeWidgetPaletteApp": {
+    "description": "Widget colors follow the app theme color."
+  },
+  "homeWidgetPaletteWallpaper": "Wallpaper",
+  "@homeWidgetPaletteWallpaper": {
+    "description": "Widget colors follow the wallpaper (Android dynamic color)."
+  },
+  "homeWidgetPaletteWallpaperHint": "Takes colors from your wallpaper on Android 12 and later.",
+  "@homeWidgetPaletteWallpaperHint": {
+    "description": "Widget style: hint for the wallpaper colors option."
+  },
+  "homeWidgetPaletteCustom": "Custom color",
+  "@homeWidgetPaletteCustom": {
+    "description": "Widget colors from a picked seed color."
+  },
+  "homeWidgetStyleBrightness": "Light & dark",
+  "@homeWidgetStyleBrightness": {
+    "description": "Widget style: light or dark."
+  },
+  "homeWidgetBrightnessSystem": "System",
+  "@homeWidgetBrightnessSystem": {
+    "description": "Widget brightness follows the system."
+  },
+  "homeWidgetBrightnessLight": "Light",
+  "@homeWidgetBrightnessLight": {
+    "description": "Widget brightness: always light."
+  },
+  "homeWidgetBrightnessDark": "Dark",
+  "@homeWidgetBrightnessDark": {
+    "description": "Widget brightness: always dark."
+  },
+  "homeWidgetStyleBackground": "Background",
+  "@homeWidgetStyleBackground": {
+    "description": "Widget style: background."
+  },
+  "homeWidgetBackgroundSurface": "Solid",
+  "@homeWidgetBackgroundSurface": {
+    "description": "Widget background: the card surface color."
+  },
+  "homeWidgetBackgroundTonal": "Tonal",
+  "@homeWidgetBackgroundTonal": {
+    "description": "Widget background: the tonal container color."
+  },
+  "homeWidgetBackgroundVivid": "Vivid",
+  "@homeWidgetBackgroundVivid": {
+    "description": "Widget background: the primary color."
+  },
+  "homeWidgetBackgroundClear": "Clear",
+  "@homeWidgetBackgroundClear": {
+    "description": "Widget background: none, straight on the wallpaper."
+  },
+  "homeWidgetStyleOpacity": "Opacity",
+  "@homeWidgetStyleOpacity": {
+    "description": "Widget style: background opacity."
+  },
+  "homeWidgetStyleCorners": "Corners",
+  "@homeWidgetStyleCorners": {
+    "description": "Widget style: corner radius."
+  },
+  "homeWidgetCornersSystem": "Match system",
+  "@homeWidgetCornersSystem": {
+    "description": "Widget corners follow the system widget radius."
+  },
+  "homeWidgetStyleTextSize": "Text size",
+  "@homeWidgetStyleTextSize": {
+    "description": "Widget style: text scale."
+  },
+  "homeWidgetStyleDensity": "Spacing",
+  "@homeWidgetStyleDensity": {
+    "description": "Widget style: padding density."
+  },
+  "homeWidgetDensityCompact": "Compact",
+  "@homeWidgetDensityCompact": {
+    "description": "Widget spacing: compact."
+  },
+  "homeWidgetDensityStandard": "Standard",
+  "@homeWidgetDensityStandard": {
+    "description": "Widget spacing: standard."
+  },
+  "homeWidgetDensityRoomy": "Roomy",
+  "@homeWidgetDensityRoomy": {
+    "description": "Widget spacing: roomy."
+  },
+  "homeWidgetStyleAccent": "Accent",
+  "@homeWidgetStyleAccent": {
+    "description": "Widget style: which color slot is the accent."
+  },
+  "homeWidgetAccentPrimary": "Primary",
+  "@homeWidgetAccentPrimary": {
+    "description": "Widget accent: primary."
+  },
+  "homeWidgetAccentSecondary": "Secondary",
+  "@homeWidgetAccentSecondary": {
+    "description": "Widget accent: secondary."
+  },
+  "homeWidgetAccentTertiary": "Tertiary",
+  "@homeWidgetAccentTertiary": {
+    "description": "Widget accent: tertiary."
+  },
+  "homeWidgetQuickActions": "Actions",
+  "@homeWidgetQuickActions": {
+    "description": "Quick capture: the list of actions."
+  },
+  "homeWidgetQuickActionsHint": "Up to 4. The first one stands out.",
+  "@homeWidgetQuickActionsHint": {
+    "description": "Quick capture: hint under the actions."
+  },
+  "homeWidgetQuickActionWrite": "Write",
+  "@homeWidgetQuickActionWrite": {
+    "description": "Quick capture action: new entry."
+  },
+  "homeWidgetQuickActionTodo": "To-do",
+  "@homeWidgetQuickActionTodo": {
+    "description": "Quick capture action: new to-do."
+  },
+  "homeWidgetQuickActionCalendar": "Calendar",
+  "@homeWidgetQuickActionCalendar": {
+    "description": "Quick capture action: open today in the calendar."
+  },
+  "homeWidgetQuickActionSearch": "Search",
+  "@homeWidgetQuickActionSearch": {
+    "description": "Quick capture action: search entries."
+  },
+  "homeWidgetQuickAddAction": "Add action",
+  "@homeWidgetQuickAddAction": {
+    "description": "Quick capture: button to add an action."
+  },
+  "homeWidgetQuickRemoveAction": "Remove",
+  "@homeWidgetQuickRemoveAction": {
+    "description": "Quick capture: tooltip to remove an action."
+  },
+  "homeWidgetQuickNotebook": "Write into",
+  "@homeWidgetQuickNotebook": {
+    "description": "Quick capture: which notebook new entries go into."
+  },
+  "homeWidgetQuickNotebookNone": "Not set",
+  "@homeWidgetQuickNotebookNone": {
+    "description": "Quick capture: no notebook chosen."
+  },
+  "homeWidgetQuickShowLabels": "Show labels",
+  "@homeWidgetQuickShowLabels": {
+    "description": "Quick capture: show text under the icons."
+  },
+  "homeWidgetQuickShowGreeting": "Date and greeting",
+  "@homeWidgetQuickShowGreeting": {
+    "description": "Quick capture: show the date and a greeting."
+  },
+  "homeWidgetQuickShowGreetingHint": "On 2×2 and larger",
+  "@homeWidgetQuickShowGreetingHint": {
+    "description": "Quick capture: hint for the greeting option."
+  },
+  "homeWidgetTodayLunar": "Lunar calendar & solar terms",
+  "@homeWidgetTodayLunar": {
+    "description": "Today widget: show the lunar date, solar terms and festivals."
+  },
+  "homeWidgetTodayHoliday": "Public holidays (China)",
+  "@homeWidgetTodayHoliday": {
+    "description": "Today widget: show public holidays and make-up workdays."
+  },
+  "homeWidgetTodayWriting": "Today's writing",
+  "@homeWidgetTodayWriting": {
+    "description": "Today widget: show how much was written today."
+  },
+  "homeWidgetTodayShowTodos": "To-dos due",
+  "@homeWidgetTodayShowTodos": {
+    "description": "Today widget: show how many to-dos are due."
+  },
+  "homeWidgetTodayYearProgress": "Year progress",
+  "@homeWidgetTodayYearProgress": {
+    "description": "Today widget: show how much of the year has passed."
+  },
+  "homeWidgetTapAction": "When tapped",
+  "@homeWidgetTapAction": {
+    "description": "Widget option: what opens when tapped."
+  },
+  "homeWidgetTapCalendar": "Calendar",
+  "@homeWidgetTapCalendar": {
+    "description": "Tap action: open the calendar."
+  },
+  "homeWidgetTapWrite": "New entry",
+  "@homeWidgetTapWrite": {
+    "description": "Tap action: start a new entry."
+  },
+  "homeWidgetTapApp": "App",
+  "@homeWidgetTapApp": {
+    "description": "Tap action: just open the app."
+  },
+  "homeWidgetGreetingMorning": "Good morning",
+  "@homeWidgetGreetingMorning": {
+    "description": "Widget greeting before noon."
+  },
+  "homeWidgetGreetingAfternoon": "Good afternoon",
+  "@homeWidgetGreetingAfternoon": {
+    "description": "Widget greeting in the afternoon."
+  },
+  "homeWidgetGreetingEvening": "Good evening",
+  "@homeWidgetGreetingEvening": {
+    "description": "Widget greeting in the evening."
+  },
+  "homeWidgetGreetingNight": "Still up?",
+  "@homeWidgetGreetingNight": {
+    "description": "Widget greeting late at night."
+  },
+  "homeWidgetQuickPrompt": "What's on your mind?",
+  "@homeWidgetQuickPrompt": {
+    "description": "Quick capture widget: prompt above the write button."
+  },
+  "homeWidgetTodayWords": "{count, plural, =1{1 word today} other{{count} words today}}",
+  "@homeWidgetTodayWords": {
+    "description": "Today widget: how much was written today (count from TextStats).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNotWritten": "Nothing written yet today",
+  "@homeWidgetTodayNotWritten": {
+    "description": "Today widget: nothing written yet."
+  },
+  "homeWidgetTodayTodos": "{count, plural, =1{1 to-do} other{{count} to-dos}}",
+  "@homeWidgetTodayTodos": {
+    "description": "Today widget: to-dos due by that day.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNoTodos": "No to-dos",
+  "@homeWidgetTodayNoTodos": {
+    "description": "Today widget: no to-dos due."
+  },
+  "homeWidgetYearProgress": "{percent} of the year",
+  "@homeWidgetYearProgress": {
+    "description": "Today widget: how much of the year has passed, e.g. “87%”.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetFeatureOff": "Turned off in Feature management",
+  "@homeWidgetFeatureOff": {
+    "description": "Widget placeholder when its feature is turned off."
+  },
+  "homeWidgetOpenToUpdate": "Open Jotsy to update",
+  "@homeWidgetOpenToUpdate": {
+    "description": "Widget placeholder when its data is out of date."
   }
 }

@@ -20,6 +20,9 @@ plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "9.1.0" apply false
     id("org.jetbrains.kotlin.android") version "2.4.0" apply false
+    // 桌面小组件（Jetpack Glance）的 @Composable 需要 Compose 编译器；版本必须与
+    // Kotlin 插件一致，升级 Kotlin 时一并改。
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0" apply false
 }
 
 include(":app")

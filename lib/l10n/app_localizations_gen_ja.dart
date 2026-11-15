@@ -15435,4 +15435,257 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiChatExportJson => 'JSON';
+
+  @override
+  String get homeWidgetsTitle => 'ホーム画面ウィジェット';
+
+  @override
+  String get homeWidgetsSubtitle => '日記・日付・ショートカットをホーム画面に';
+
+  @override
+  String get homeWidgetsInstalledGroup => 'ホーム画面のウィジェット';
+
+  @override
+  String get homeWidgetsInstalledEmpty =>
+      'ホーム画面にはまだウィジェットがありません。下のギャラリーから選んでください。';
+
+  @override
+  String get homeWidgetsInstalledHint => '変更はすぐにホーム画面に反映されます。';
+
+  @override
+  String get homeWidgetsGalleryGroup => 'ウィジェットギャラリー';
+
+  @override
+  String get homeWidgetGroupCapture => '記録と思い出';
+
+  @override
+  String get homeWidgetGroupTime => '日付とカレンダー';
+
+  @override
+  String get homeWidgetGroupTodos => 'ToDo';
+
+  @override
+  String get homeWidgetGroupStats => '統計と写真';
+
+  @override
+  String get homeWidgetKindQuickCapture => 'クイック記録';
+
+  @override
+  String get homeWidgetKindQuickCaptureDescription =>
+      'ワンタップで日記や ToDo、今日のカレンダーへ。';
+
+  @override
+  String get homeWidgetKindToday => '今日';
+
+  @override
+  String get homeWidgetKindTodayDescription => '日付、旧暦、祝日と今日の進み具合。';
+
+  @override
+  String get homeWidgetAddToHome => 'ホーム画面に追加';
+
+  @override
+  String get homeWidgetPinRequested => '表示されたダイアログで確認すると追加されます';
+
+  @override
+  String get homeWidgetPinUnsupportedTitle => 'ホーム画面から追加';
+
+  @override
+  String homeWidgetPinUnsupportedBody(String name) {
+    return 'ホーム画面の空いている所を長押しし、「ウィジェット」から Jotsy を探してください。15 分以内に追加した次の「$name」に、ここでのデザインが適用されます。';
+  }
+
+  @override
+  String get homeWidgetTabContent => '内容';
+
+  @override
+  String get homeWidgetTabStyle => 'スタイル';
+
+  @override
+  String get homeWidgetPreviewSize => 'プレビューのサイズ';
+
+  @override
+  String get homeWidgetStylePalette => '配色';
+
+  @override
+  String get homeWidgetPaletteApp => 'アプリのテーマ';
+
+  @override
+  String get homeWidgetPaletteWallpaper => '壁紙';
+
+  @override
+  String get homeWidgetPaletteWallpaperHint => 'Android 12 以降は壁紙から色を取ります。';
+
+  @override
+  String get homeWidgetPaletteCustom => 'カスタムカラー';
+
+  @override
+  String get homeWidgetStyleBrightness => 'ライト / ダーク';
+
+  @override
+  String get homeWidgetBrightnessSystem => 'システム';
+
+  @override
+  String get homeWidgetBrightnessLight => 'ライト';
+
+  @override
+  String get homeWidgetBrightnessDark => 'ダーク';
+
+  @override
+  String get homeWidgetStyleBackground => '背景';
+
+  @override
+  String get homeWidgetBackgroundSurface => 'ソリッド';
+
+  @override
+  String get homeWidgetBackgroundTonal => 'トーン';
+
+  @override
+  String get homeWidgetBackgroundVivid => 'ビビッド';
+
+  @override
+  String get homeWidgetBackgroundClear => '透明';
+
+  @override
+  String get homeWidgetStyleOpacity => '不透明度';
+
+  @override
+  String get homeWidgetStyleCorners => '角の丸み';
+
+  @override
+  String get homeWidgetCornersSystem => 'システムに合わせる';
+
+  @override
+  String get homeWidgetStyleTextSize => '文字サイズ';
+
+  @override
+  String get homeWidgetStyleDensity => '余白';
+
+  @override
+  String get homeWidgetDensityCompact => '狭め';
+
+  @override
+  String get homeWidgetDensityStandard => '標準';
+
+  @override
+  String get homeWidgetDensityRoomy => '広め';
+
+  @override
+  String get homeWidgetStyleAccent => 'アクセント';
+
+  @override
+  String get homeWidgetAccentPrimary => 'プライマリ';
+
+  @override
+  String get homeWidgetAccentSecondary => 'セカンダリ';
+
+  @override
+  String get homeWidgetAccentTertiary => 'ターシャリ';
+
+  @override
+  String get homeWidgetQuickActions => 'アクション';
+
+  @override
+  String get homeWidgetQuickActionsHint => '最大 4 つ。最初のものが目立ちます。';
+
+  @override
+  String get homeWidgetQuickActionWrite => '日記を書く';
+
+  @override
+  String get homeWidgetQuickActionTodo => 'ToDo';
+
+  @override
+  String get homeWidgetQuickActionCalendar => 'カレンダー';
+
+  @override
+  String get homeWidgetQuickActionSearch => '検索';
+
+  @override
+  String get homeWidgetQuickAddAction => 'アクションを追加';
+
+  @override
+  String get homeWidgetQuickRemoveAction => '削除';
+
+  @override
+  String get homeWidgetQuickNotebook => '書き込む日記帳';
+
+  @override
+  String get homeWidgetQuickNotebookNone => '指定しない';
+
+  @override
+  String get homeWidgetQuickShowLabels => 'ラベルを表示';
+
+  @override
+  String get homeWidgetQuickShowGreeting => '日付とあいさつ';
+
+  @override
+  String get homeWidgetQuickShowGreetingHint => '2×2 以上で表示';
+
+  @override
+  String get homeWidgetTodayLunar => '旧暦と二十四節気';
+
+  @override
+  String get homeWidgetTodayHoliday => '祝日（中国）';
+
+  @override
+  String get homeWidgetTodayWriting => '今日書いた量';
+
+  @override
+  String get homeWidgetTodayShowTodos => '期限の ToDo';
+
+  @override
+  String get homeWidgetTodayYearProgress => '今年の進み具合';
+
+  @override
+  String get homeWidgetTapAction => 'タップで開く';
+
+  @override
+  String get homeWidgetTapCalendar => 'カレンダー';
+
+  @override
+  String get homeWidgetTapWrite => '日記を書く';
+
+  @override
+  String get homeWidgetTapApp => 'アプリ';
+
+  @override
+  String get homeWidgetGreetingMorning => 'おはようございます';
+
+  @override
+  String get homeWidgetGreetingAfternoon => 'こんにちは';
+
+  @override
+  String get homeWidgetGreetingEvening => 'こんばんは';
+
+  @override
+  String get homeWidgetGreetingNight => '夜更かしですね';
+
+  @override
+  String get homeWidgetQuickPrompt => '今、何を考えていますか？';
+
+  @override
+  String homeWidgetTodayWords(int count) {
+    return '今日は $count 字';
+  }
+
+  @override
+  String get homeWidgetTodayNotWritten => '今日はまだ書いていません';
+
+  @override
+  String homeWidgetTodayTodos(int count) {
+    return 'ToDo $count 件';
+  }
+
+  @override
+  String get homeWidgetTodayNoTodos => 'ToDo はありません';
+
+  @override
+  String homeWidgetYearProgress(String percent) {
+    return '今年の $percent が経過';
+  }
+
+  @override
+  String get homeWidgetFeatureOff => '機能管理でオフになっています';
+
+  @override
+  String get homeWidgetOpenToUpdate => 'Jotsy を開いて更新';
 }

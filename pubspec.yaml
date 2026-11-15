@@ -96,6 +96,7 @@ dependencies:
   # AI 看图：缩小后的照片编成 JPEG 再发给模型（引擎只能编 PNG，照片的 PNG
   # 是 JPEG 的好几倍，请求体会超出服务商上限）。已有传递依赖的显式声明。
   image: ^4.12.0
+  home_widget: ^0.10.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

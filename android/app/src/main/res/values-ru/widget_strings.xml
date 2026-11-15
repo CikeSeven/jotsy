@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- См. values/widget_strings.xml. -->
+<resources>
+    <string name="widget_quick_capture_name">Быстрая запись</string>
+    <string name="widget_quick_capture_description">Одно касание — и вы пишете запись, добавляете задачу или открываете календарь.</string>
+    <string name="widget_today_name">Сегодня</string>
+    <string name="widget_today_description">Дата, лунный календарь, праздники и то, как проходит день.</string>
+    <string name="widget_open_app">Откройте Jotsy, чтобы завершить настройку</string>
+</resources>

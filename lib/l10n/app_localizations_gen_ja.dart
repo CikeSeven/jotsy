@@ -1595,6 +1595,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get recordingIdleHint => 'マイクをタップして録音を開始';
 
   @override
+  String get recordingNoticeRecording => '録音中';
+
+  @override
+  String get recordingNoticePaused => '録音を一時停止中';
+
+  @override
+  String get recordingNoticeHint => 'タップして日記に戻る';
+
+  @override
+  String get recordingNoticeChannel => '録音';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => 'ツールの設定';
 
   @override

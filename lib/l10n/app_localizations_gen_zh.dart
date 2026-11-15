@@ -1581,6 +1581,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordingIdleHint => '点按麦克风开始录音';
 
   @override
+  String get recordingNoticeRecording => '正在录音';
+
+  @override
+  String get recordingNoticePaused => '录音已暂停';
+
+  @override
+  String get recordingNoticeHint => '点按回到正在写的日记';
+
+  @override
+  String get recordingNoticeChannel => '录音';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => '配置工具参数';
 
   @override

@@ -2207,6 +2207,22 @@
   "@recordingIdleHint": {
     "description": "尚未开始录音时，计时器下方的操作提示。"
   },
+  "recordingNoticeRecording": "正在录音",
+  "@recordingNoticeRecording": {
+    "description": "应用在后台或熄屏时继续录音，常驻通知的标题（录音中）。"
+  },
+  "recordingNoticePaused": "录音已暂停",
+  "@recordingNoticePaused": {
+    "description": "录音常驻通知在暂停时的标题。"
+  },
+  "recordingNoticeHint": "点按回到正在写的日记",
+  "@recordingNoticeHint": {
+    "description": "录音常驻通知的正文，点按回到应用。"
+  },
+  "recordingNoticeChannel": "录音",
+  "@recordingNoticeChannel": {
+    "description": "系统通知设置里录音这一类通知的名称。"
+  },
   "diaryToolbarToolSettingsTooltip": "配置工具参数",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "工具栏排序页中工具参数设置按钮的 tooltip。"

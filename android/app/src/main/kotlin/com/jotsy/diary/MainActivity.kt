@@ -35,6 +35,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var lanSyncChannel: LanSyncChannel? = null
   private var appLockChannel: AppLockChannel? = null
   private var displayCornersChannel: DisplayCornersChannel? = null
+  private var recordingServiceChannel: RecordingServiceChannel? = null
   private var widgetPreviewFactory: WidgetPreviewFactory? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
   private val launchBrandMarkArg = "--launch-brand-mark"
@@ -140,6 +141,10 @@ class MainActivity : FlutterFragmentActivity() {
     displayCornersChannel?.dispose()
     displayCornersChannel =
       DisplayCornersChannel(this, flutterEngine.dartExecutor.binaryMessenger)
+    // 熄屏 / 切到后台继续录音的前台服务（RecordingForegroundService.kt）。
+    recordingServiceChannel?.dispose()
+    recordingServiceChannel =
+      RecordingServiceChannel(this, flutterEngine.dartExecutor.binaryMessenger)
     // 桌面小组件的应用内预览：用桌面上同一份 Glance 代码画出来（widgets/WidgetPreviewView.kt）。
     widgetPreviewFactory?.dispose()
     widgetPreviewFactory =
@@ -361,6 +366,8 @@ class MainActivity : FlutterFragmentActivity() {
     appLockChannel = null
     displayCornersChannel?.dispose()
     displayCornersChannel = null
+    recordingServiceChannel?.dispose()
+    recordingServiceChannel = null
     widgetPreviewFactory?.dispose()
     widgetPreviewFactory = null
     pendingBackupSaveResult?.success(null)

@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/audio_recording_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
+import 'package:node_diary/core/services/recording_keep_alive.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:record/record.dart' show RecordState;
@@ -14,15 +15,25 @@ void main() {
   late FakeRecorder recorder;
   late FakeRecordingStorage storage;
   late FakeRecordingClock clock;
+  late FakeKeepAlive keepAlive;
   late DiaryRecordingController controller;
+
+  const texts = RecordingNoticeTexts(
+    recording: 'Recording',
+    paused: 'Paused',
+    hint: 'Tap to return',
+    channelName: 'Recordings',
+  );
 
   setUp(() {
     recorder = FakeRecorder();
     storage = FakeRecordingStorage();
     clock = FakeRecordingClock();
+    keepAlive = FakeKeepAlive(recorder);
     controller = DiaryRecordingController(
       recorder: recorder,
       storage: storage,
+      keepAlive: keepAlive,
       clock: clock,
     );
   });
@@ -124,6 +135,123 @@ void main() {
     controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
     expect(controller.phase, DiaryRecordingPhase.paused);
     expect(recorder.resumeCalls, 0);
+  });
+
+  group('background capture (#251)', () {
+    test(
+      'keeps recording after leaving the app once the keep-alive runs',
+      () async {
+        await controller.start(notice: texts);
+        expect(keepAlive.started, hasLength(1));
+        expect(keepAlive.started.single.title, 'Recording');
+        expect(keepAlive.started.single.paused, isFalse);
+        // 保活在采音之前启动：Android 只允许前台应用启动麦克风前台服务。
+        expect(keepAlive.startedBeforeCapture, isTrue);
+
+        controller.didChangeAppLifecycleState(AppLifecycleState.hidden);
+        controller.didChangeAppLifecycleState(AppLifecycleState.paused);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.phase, DiaryRecordingPhase.recording);
+        expect(recorder.pauseCalls, 0);
+      },
+    );
+
+    test(
+      'still pauses on leaving the app when the service cannot start',
+      () async {
+        keepAlive.result = false;
+        await controller.start(notice: texts);
+
+        controller.didChangeAppLifecycleState(AppLifecycleState.paused);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.phase, DiaryRecordingPhase.paused);
+        expect(recorder.pauseCalls, 1);
+      },
+    );
+
+    test('a keep-alive that throws counts as unavailable', () async {
+      keepAlive.startError = StateError('channel gone');
+      await controller.start(notice: texts);
+      expect(controller.phase, DiaryRecordingPhase.recording);
+
+      controller.didChangeAppLifecycleState(AppLifecycleState.paused);
+      await Future<void>.delayed(Duration.zero);
+      expect(controller.phase, DiaryRecordingPhase.paused);
+    });
+
+    test('the notice follows pause and resume and stops on finish', () async {
+      await controller.start(notice: texts);
+      clock.elapse(const Duration(seconds: 4));
+
+      await controller.pause();
+      expect(keepAlive.updates, hasLength(1));
+      expect(keepAlive.updates.last.title, 'Paused');
+      expect(keepAlive.updates.last.paused, isTrue);
+      expect(keepAlive.updates.last.elapsed, const Duration(seconds: 4));
+
+      await controller.resume();
+      expect(keepAlive.updates, hasLength(2));
+      expect(keepAlive.updates.last.title, 'Recording');
+      expect(keepAlive.updates.last.paused, isFalse);
+      expect(keepAlive.updates.last.elapsed, const Duration(seconds: 4));
+
+      final recording = await controller.finish();
+      expect(recording, isNotNull);
+      expect(keepAlive.stopCalls, 1);
+      expect(keepAlive.updates, hasLength(2));
+    });
+
+    test('a system interruption pause updates the notice too', () async {
+      await controller.start(notice: texts);
+      recorder.stateController.add(RecordState.pause);
+      expect(controller.phase, DiaryRecordingPhase.paused);
+      expect(keepAlive.updates.single.paused, isTrue);
+    });
+
+    test('cancel, a failed start and closing the page release it', () async {
+      await controller.start(notice: texts);
+      await controller.cancel();
+      expect(keepAlive.stopCalls, 1);
+
+      recorder.startError = StateError('Audio device unavailable');
+      await controller.start(notice: texts);
+      expect(controller.failure, DiaryRecordingFailure.recordingFailed);
+      expect(keepAlive.stopCalls, 2);
+
+      recorder.startError = null;
+      await controller.start(notice: texts);
+      controller.dispose();
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(keepAlive.stopCalls, 3);
+      // tearDown 再 dispose 一次。
+      controller = DiaryRecordingController(
+        recorder: recorder,
+        storage: storage,
+        keepAlive: keepAlive,
+        clock: clock,
+      );
+    });
+
+    test('denied permission never starts the keep-alive', () async {
+      recorder.permission = false;
+      await controller.start(notice: texts);
+      expect(keepAlive.started, isEmpty);
+      expect(keepAlive.stopCalls, 0);
+    });
+
+    test(
+      'without notice texts it neither starts nor keeps recording',
+      () async {
+        await controller.start();
+        expect(keepAlive.started, isEmpty);
+        controller.didChangeAppLifecycleState(AppLifecycleState.paused);
+        await Future<void>.delayed(Duration.zero);
+        expect(controller.phase, DiaryRecordingPhase.paused);
+      },
+    );
   });
 
   test(
@@ -233,6 +361,41 @@ class FakeRecorder implements AudioRecordingService {
 
   @override
   Future<double> getAmplitude() async => 0.5;
+}
+
+class FakeKeepAlive implements RecordingKeepAlive {
+  FakeKeepAlive(this.recorder);
+
+  final FakeRecorder recorder;
+  bool result = true;
+  Object? startError;
+  final List<RecordingNotice> started = [];
+  final List<RecordingNotice> updates = [];
+  int stopCalls = 0;
+  bool _held = false;
+
+  /// 保活启动时录音器是否还没开始采音。
+  bool startedBeforeCapture = false;
+
+  @override
+  Future<bool> start(RecordingNotice notice) async {
+    started.add(notice);
+    startedBeforeCapture = recorder.startCalls == 0;
+    if (startError != null) throw startError!;
+    _held = result;
+    return result;
+  }
+
+  @override
+  Future<void> update(RecordingNotice notice) async {
+    if (_held) updates.add(notice);
+  }
+
+  @override
+  Future<void> stop() async {
+    stopCalls++;
+    _held = false;
+  }
 }
 
 class FakeRecordingStorage extends DiaryAudioStorageService {

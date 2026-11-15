@@ -10,7 +10,16 @@ extension EditDiaryRecordingFlow on EditDiaryController {
     await DiaryAudioPlayerController.pauseActive();
     await DiaryVideoPlayerController.pauseActive();
     if (!_state.mounted || !_state._recordingPanelOpen) return;
-    await _state._recordingController.start();
+    // 通知文案按应用内语言给出：熄屏 / 切到后台继续录音时常驻状态栏（#251）。
+    final l10n = _state.context.l10n;
+    await _state._recordingController.start(
+      notice: RecordingNoticeTexts(
+        recording: l10n.recordingNoticeRecording,
+        paused: l10n.recordingNoticePaused,
+        hint: l10n.recordingNoticeHint,
+        channelName: l10n.recordingNoticeChannel,
+      ),
+    );
     // 真正进入录音（权限通过、原生会话建立）才震一下，确认“已经在录”；失败时
     // 面板状态行会给出原因，不再额外震动。
     if (_state.mounted &&

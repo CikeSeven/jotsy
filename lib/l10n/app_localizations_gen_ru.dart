@@ -1669,6 +1669,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get recordingIdleHint => 'Нажмите на микрофон, чтобы начать';
 
   @override
+  String get recordingNoticeRecording => 'Идёт запись';
+
+  @override
+  String get recordingNoticePaused => 'Запись приостановлена';
+
+  @override
+  String get recordingNoticeHint => 'Нажмите, чтобы вернуться к записи';
+
+  @override
+  String get recordingNoticeChannel => 'Запись звука';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => 'Параметры инструмента';
 
   @override

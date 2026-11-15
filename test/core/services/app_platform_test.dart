@@ -27,6 +27,7 @@ void main() {
       expect(AppPlatform.supportsInAppInstall, isTrue);
       expect(AppPlatform.supportsAutoLocation, isTrue);
       expect(AppPlatform.supportsAudioRecording, isTrue);
+      expect(AppPlatform.supportsBackgroundRecording, isTrue);
     });
 
     test('Linux lacks device auth, file share, inline video and recording', () {
@@ -45,6 +46,7 @@ void main() {
       expect(AppPlatform.supportsInAppInstall, isFalse);
       expect(AppPlatform.supportsAutoLocation, isFalse);
       expect(AppPlatform.supportsAudioRecording, isFalse);
+      expect(AppPlatform.supportsBackgroundRecording, isFalse);
     });
 
     test('Windows keeps device auth, system share and recording', () {
@@ -56,6 +58,7 @@ void main() {
       expect(AppPlatform.supportsBiometricOnly, isFalse);
       expect(AppPlatform.supportsSystemFileShare, isTrue);
       expect(AppPlatform.supportsAudioRecording, isTrue);
+      expect(AppPlatform.supportsBackgroundRecording, isTrue);
       expect(AppPlatform.supportsShareTargets, isFalse);
       expect(AppPlatform.savesImagesToGallery, isFalse);
       expect(AppPlatform.supportsInlineVideo, isFalse);
@@ -70,6 +73,8 @@ void main() {
       expect(AppPlatform.supportsInAppInstall, isFalse);
       expect(AppPlatform.supportsAutoLocation, isFalse);
       expect(AppPlatform.savesImagesToGallery, isTrue);
+      // 没有配置后台音频模式：离开应用仍暂停录音。
+      expect(AppPlatform.supportsBackgroundRecording, isFalse);
     });
   });
 

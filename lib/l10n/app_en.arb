@@ -2207,6 +2207,22 @@
   "@recordingIdleHint": {
     "description": "Hint under the timer before a recording has started."
   },
+  "recordingNoticeRecording": "Recording",
+  "@recordingNoticeRecording": {
+    "description": "Title of the ongoing notification while a recording keeps going with the app in the background or the screen off."
+  },
+  "recordingNoticePaused": "Recording paused",
+  "@recordingNoticePaused": {
+    "description": "Title of the ongoing recording notification while the recording is paused."
+  },
+  "recordingNoticeHint": "Tap to return to your diary",
+  "@recordingNoticeHint": {
+    "description": "Text of the ongoing recording notification; tapping it brings the app back."
+  },
+  "recordingNoticeChannel": "Recording",
+  "@recordingNoticeChannel": {
+    "description": "Name of the recording notification category in the system notification settings."
+  },
   "diaryToolbarToolSettingsTooltip": "Configure tool parameters",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "Tooltip for the tool parameter settings button on the toolbar order page."

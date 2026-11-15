@@ -24,6 +24,7 @@ import 'package:node_diary/core/services/day_photo_library.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
+import 'package:node_diary/core/services/recording_keep_alive.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_create_seed.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';

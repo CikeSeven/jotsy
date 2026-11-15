@@ -67,6 +67,12 @@ abstract final class AppPlatform {
   static bool get supportsAudioRecording =>
       isAndroid || isIOS || isWindows || isMacOS;
 
+  /// 熄屏 / 切到后台继续录音（#251）：Android 经 microphone 类型的前台服务
+  /// （原生 `RecordingForegroundService`，后台应用没有它只能录到静音），桌面
+  /// 窗口最小化本来就不影响采音。iOS 没有配置后台音频模式，离开应用仍暂停。
+  static bool get supportsBackgroundRecording =>
+      isAndroid || isWindows || isMacOS;
+
   /// 局域网同步：Android 与桌面都能开组播发现、监听端口。iOS 14+ 需要受限的
   /// 组播权限（com.apple.developer.networking.multicast）与本地网络权限说明，
   /// 本项目没有配置，所以不列入。
